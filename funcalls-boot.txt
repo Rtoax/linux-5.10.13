@@ -1,0 +1,61 @@
+_start:	arch/x86/boot/header.S
+  start_of_setup: arch/x86/boot/header.S
+    main(): arch/x86/boot/main.c
+      copy_boot_params()
+      console_init()
+      ...
+      go_to_protected_mode()
+        protected_mode_jump(): arch/x86/boot/pmjump.S
+          jmpl	*%eax -> startup_32
+          startup_32(): arch/x86/boot/compressed/head_64.S
+            startup_64(): arch/x86/boot/compressed/head_64.S
+              extract_kernel(): arch/x86/boot/compressed/misc.c
+                choose_random_location
+                __decompress
+                parse_elf
+                handle_relocations
+                
+startup_64(): arch/x86/kernel/head_64.S
+  startup_64_setup_env()
+  verify_cpu
+  __startup_64()
+  x86_64_start_kernel()
+    x86_64_start_reservations()
+      start_kernel()
+        ...
+        cgroup_init_early()
+        ...
+        setup_arch()
+        ...
+        setup_per_cpu_areas()
+        ...
+        mm_init()
+          ...
+          kmemleak_init()
+          ...
+        ...
+        sched_init()
+        ...
+        init_IRQ()
+        ...
+        init_timers()
+        ...
+        arch_call_rest_init()
+          rest_init()
+            kernel_thread()
+              kernel_init() => PID=1
+              kernel_init()
+	   			->kernel_init_freeable()
+ 	   			  ->do_basic_setup()
+ 	   				->do_initcalls()
+ 	   				  ->do_initcall_level()
+ 	   					->do_one_initcall()
+ 	   					  ->xxx__initcall()
+            kernel_thread()
+              kthreadd() => PID=2
+            cpu_startup_entry()
+              while (1)
+		        do_idle();
+		          tick_nohz_idle_enter()
+		          cpuidle_idle_call()
+		prevent_tail_call_optimization()

@@ -1,0 +1,33 @@
+SYSCALL 引起操作系统系统调用处理器处于特权级0，通过加载IA32_LSTAR MSR至RIP完成
+------------------------------------------------------------------------------
+/* 
+ * 系统调用或中断处理在被 Linux 内核调用前需要一些准备。 
+ * 1. 宏 `idtentry` 完成异常处理被执行前的所需准备，
+ * 2. 宏 `interrupt` 完成中断处理被调用前的所需准备 ，
+ * 3. `entry_SYSCALL_64` 完成系统调用执行前的所需准备。
+ */
+
+数据结构
+------------------------------
+sys_call_table[]
+
+初始化
+------------------------------
+start_kernel()
+  trap_init()
+    cpu_init()
+      syscall_init()
+
+系统调用入口
+------------------------------
+entry_SYSCALL_64 : 在`syscall_init()`中初始化
+  do_syscall_64()
+
+
+vsyscall/vDSO
+------------------------------
+map_vsyscall()	[vsyscall]
+init_vdso()		[vDSO]
+  ...
+  load_elf_binary()
+    start_thread()

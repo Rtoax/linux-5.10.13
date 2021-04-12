@@ -1,0 +1,1 @@
+cmd_arch/x86/include/generated/asm/xen-hypercalls.h := sh 'scripts/xen-hypercalls.sh' arch/x86/include/generated/asm/xen-hypercalls.h include/xen/interface/xenpmu.h include/xen/interface/xen.h include/xen/interface/xen-mca.h

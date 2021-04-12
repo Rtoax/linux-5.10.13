@@ -1,0 +1,134 @@
+
+
+ `spin_lock_init` ——给定的`自旋锁`进行初始化；
+ `spin_lock` ——获取给定的`自旋锁`；
+ `spin_lock_bh` ——禁止软件[中断](https://en.wikipedia.org/wiki/Interrupt)并且获取给定的`自旋锁`。
+ `spin_lock_irqsave` 和 `spin_lock_irq`——禁止本地处理器上的中断，并且保存／不保存之前的中断状态的`标识 (flag)`；
+ `spin_unlock` ——释放给定的`自旋锁`;
+ `spin_unlock_bh` ——释放给定的`自旋锁`并且启动软件中断；
+ `spin_is_locked` - 返回给定的`自旋锁`的状态；
+
+ `spin_acquire` 
+ `lock_acquire_exclusive` 
+
+ `lock_acquire` 
+
+
+ `arch_spin_lock`
+
+MCS锁
+--------------------------------------------------------------------------------
+上文中提到过Mutex在实现过程中，采用了optimistic spinning自旋等待机制，
+这个机制的核心就是基于MCS锁机制来实现的；
+
+MCS锁机制是由John Mellor Crummey和Michael Scott在论文中《algorithms for
+scalable synchronization on shared-memory multiprocessors》提出的，并以
+他俩的名字来命名；
+
+MCS锁机制要解决的问题是：在多CPU系统中，自旋锁都在同一个变量上进行自旋，
+在获取锁时会将包含锁的cache line移动到本地CPU，这种cache-line bouncing会
+很大程度影响性能；
+
+MCS锁机制的核心思想：每个CPU都分配一个自旋锁结构体，自旋锁的申请者（per-
+CPU）在local-CPU变量上自旋，这些结构体组建成一个链表，申请者自旋等待前驱
+节点释放该锁；
+
+osq(optimistci spinning queue)是基于MCS算法的一个具体实现，并经过了迭代优化；
+
+
+队列自旋锁
+--------------------------------------------------------------------------------
+struct mcs_spinlock
+struct qspinlock
+
+static DEFINE_PER_CPU_ALIGNED(struct mcs_spinlock, mcs_nodes[4])
+
+#define arch_spin_is_locked(l)		queued_spin_is_locked(l)
+#define arch_spin_is_contended(l)	queued_spin_is_contended(l)
+#define arch_spin_value_unlocked(l)	queued_spin_value_unlocked(l)
+#define arch_spin_lock(l)		queued_spin_lock(l)
+#define arch_spin_trylock(l)		queued_spin_trylock(l)
+#define arch_spin_unlock(l)		queued_spin_unlock(l)
+
+
+信号量
+--------------------------------------------------------------------------------
+struct semaphore;
+struct semaphore_waiter;
+void sema_init(struct semaphore *sem, int val);
+void down(struct semaphore *sem);
+void up(struct semaphore *sem);
+int  down_interruptible(struct semaphore *sem);
+int  down_killable(struct semaphore *sem);
+int  down_trylock(struct semaphore *sem);
+int  down_timeout(struct semaphore *sem, long jiffies);
+
+
+互斥锁
+--------------------------------------------------------------------------------
+struct mutex;
+struct mutex_waiter;
+mutex_init()
+mutex_lock()
+
+
+读写信号量
+--------------------------------------------------------------------------------
+struct rw_semaphore;
+
+int init_rwsem(struct rw_semaphore *sem);
+int exit_rwsem(struct rw_semaphore *sem);
+
+int down_read(struct rw_semaphore *sem);
+int up_read(struct rw_semaphore *sem);
+
+int down_write(struct rw_semaphore *sem);
+int up_write(struct rw_semaphore *sem);
+
+
+顺序锁
+--------------------------------------------------------------------------------
+顺序锁(seqlock)是对读写锁的一种优化,
+提高了读锁和写锁的独立性。写锁不会被读锁阻塞，读锁也不会被写锁阻塞。写锁会被写锁阻塞。
+
+若使用顺序锁,读执行单元绝对不会被写执行单元所阻塞,也就是说,
+临界区可以在写临界区对被顺序锁保护的共享资源进行写操作的同时仍然可以继续读,
+而不必等待写执行单元完成之后再去读,同样,
+写执行单元也不必等待所有的读执行单元读完之后才去进行写操作。
+
+但是写执行单元与写执行单元之间仍然是互斥的,即:如果有写执行单元正在进行写操作,
+那么其它的写执行单元必须自旋在那里,直到写执行单元释放顺序锁为止。
+
+如果读执行单元在读操作期间,写执行单元已经发生了写操作,那么,
+读执行单元必须重新去读数据,以便确保读到的数据是完整的;
+这种锁在读写操作同时进行的概率比较小,性能是非常好的,而且它允许读写操作同时进行,
+因而更大地提高了并发性。
+
+顺序锁有一个限制:它必须要求被保护的共享资源中不能含有指针;
+因为写执行单元可能会使指针失效,当读执行单元如果正要访问该指针时,系统就会崩溃。
+--------------------------------------------------------------------------------
+seqlock_t; 
+
+SEQCOUNT_LOCKNAME()
+- ``seqcount_spinlock_t``
+- ``seqcount_raw_spinlock_t``
+- ``seqcount_rwlock_t``
+- ``seqcount_mutex_t``
+- ``seqcount_ww_mutex_t``
+
+
+static inline unsigned read_seqbegin(const seqlock_t *sl);
+static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start);
+static inline void write_seqlock(seqlock_t *sl);
+static inline void write_sequnlock(seqlock_t *sl);
+static inline void write_seqlock_irq(seqlock_t *sl);
+static inline void write_sequnlock_irq(seqlock_t *sl);
+static inline void read_seqlock_excl(seqlock_t *sl)
+static inline void read_sequnlock_excl(seqlock_t *sl)
+
+
+
+
+
+
+

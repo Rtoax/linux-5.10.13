@@ -1,0 +1,38 @@
+# Linux-5.10.13
+
+注意：此代码不可编译
+
+* 注释掉了为空的函数
+* 删除掉了"不相关"代码
+* arch 只保留 x86-64
+* 删除重声明的结构，如 list_head
+* 删除 `BITS_PER_LONG == 32` 分支代码, 恒为假
+* 保留 `BITS_PER_LONG == 64` 分支代码, 恒为真
+* 删除 `__BIG_ENDIAN` 分支代码, 恒为假
+* 保留 `__LITTLE_ENDIAN` 分支代码, 恒为真
+
+## 配置
+
+* CONFIG_SMP
+* CONFIG_X86_64
+
+# 原 README
+
+Linux kernel
+============
+
+There are several guides for kernel developers and users. These guides can
+be rendered in a number of formats, like HTML and PDF. Please read
+Documentation/admin-guide/README.rst first.
+
+In order to build the documentation, use ``make htmldocs`` or
+``make pdfdocs``.  The formatted documentation can also be read online at:
+
+    https://www.kernel.org/doc/html/latest/
+
+There are various text files in the Documentation/ subdirectory,
+several of them using the Restructured Text markup notation.
+
+Please read the Documentation/process/changes.rst file, as it contains the
+requirements for building and running the kernel, and information about
+the problems which may result by upgrading your kernel.

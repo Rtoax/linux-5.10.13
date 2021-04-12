@@ -1,0 +1,6 @@
+drivers/vfio/vfio.ko
+drivers/vfio/vfio_virqfd.ko
+drivers/vfio/vfio_iommu_type1.ko
+drivers/vfio/pci/vfio-pci.ko
+drivers/vfio/mdev/mdev.ko
+drivers/vfio/mdev/vfio_mdev.ko
