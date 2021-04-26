@@ -46,19 +46,10 @@ void napi_busy_loop(unsigned int napi_id,
 		    void *loop_end_arg);
 
 #else /* CONFIG_NET_RX_BUSY_POLL */
-static inline unsigned long net_busy_loop_on(void)
-{
-	return 0;
-}
-
-static inline bool sk_can_busy_loop(struct sock *sk)
-{
-	return false;
-}
-
+/*  */
 #endif /* CONFIG_NET_RX_BUSY_POLL */
 
-static inline unsigned long busy_loop_current_time(void)
+static inline unsigned long busy_loop_current_time(void)    /*  */
 {
 #ifdef CONFIG_NET_RX_BUSY_POLL
 	return (unsigned long)(local_clock() >> 10);

@@ -11,7 +11,7 @@
 #include <linux/atomic.h>
 #include <linux/static_key.h>
 
-struct static_call_key;
+struct static_call_key; /*  */
 
 struct trace_print_flags {
 	unsigned long		mask;
@@ -23,7 +23,7 @@ struct trace_print_flags_u64 {
 	const char		*name;
 };
 
-struct tracepoint_func {
+struct tracepoint_func {    /*  */
 	void *func;
 	void *data;
 	int prio;
@@ -43,7 +43,7 @@ struct tracepoint { /*  */
 #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 typedef const int tracepoint_ptr_t;
 #else
-typedef struct tracepoint * const tracepoint_ptr_t;
+//typedef struct tracepoint * const tracepoint_ptr_t;
 #endif
 
 struct bpf_raw_event_map {
@@ -84,7 +84,7 @@ struct bpf_raw_event_map {
 # define tracepoint_enabled(tp) \
 	static_key_false(&(__tracepoint_##tp).key)
 #else
-# define tracepoint_enabled(tracepoint) false
+//# define tracepoint_enabled(tracepoint) false
 #endif
 
 #endif

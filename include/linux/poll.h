@@ -40,9 +40,9 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
  * Do not touch the structure directly, use the access functions
  * poll_does_not_wait() and poll_requested_events() instead.
  */
-typedef struct poll_table_struct {
-	poll_queue_proc _qproc;
-	__poll_t _key;
+typedef struct poll_table_struct {  /* 轮询表 */
+	poll_queue_proc _qproc; /* 回调 */
+	__poll_t _key;          /* key */
 } poll_table;
 
 static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
@@ -75,7 +75,7 @@ static inline __poll_t poll_requested_events(const poll_table *p)
 static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
 {
 	pt->_qproc = qproc;
-	pt->_key   = ~(__poll_t)0; /* all events enabled */
+	pt->_key   = ~(__poll_t)0; /* all events enabled - 0xffff... */
 }
 
 static inline bool file_can_poll(struct file *file)
@@ -83,30 +83,30 @@ static inline bool file_can_poll(struct file *file)
 	return file->f_op->poll;
 }
 
-static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
+static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)    /*  */
 {
 	if (unlikely(!file->f_op->poll))
 		return DEFAULT_POLLMASK;
 	return file->f_op->poll(file, pt);
 }
 
-struct poll_table_entry {
-	struct file *filp;
-	__poll_t key;
-	wait_queue_entry_t wait;
-	wait_queue_head_t *wait_address;
+struct poll_table_entry {   /* 轮询表项 */
+	struct file *filp;      /* 文件指针 */
+	__poll_t key;           /* key */
+	wait_queue_entry_t wait;/* 等待队列 entry */
+	wait_queue_head_t *wait_address;    /* 等待队列 */
 };
 
 /*
  * Structures and helpers for select/poll syscall
  */
-struct poll_wqueues {
-	poll_table pt;
-	struct poll_table_page *table;
-	struct task_struct *polling_task;
-	int triggered;
-	int error;
-	int inline_index;
+struct poll_wqueues {   /* 轮询等待队列 */
+	poll_table pt;      /* 回调+key */
+	struct poll_table_page *table;      /*  */
+	struct task_struct *polling_task;   /*  */
+	int triggered;      /* 被触发 */
+	int error;          /*  */
+	int inline_index;   /*  */
 	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
 };
 

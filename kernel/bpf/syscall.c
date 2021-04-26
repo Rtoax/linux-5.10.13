@@ -58,6 +58,56 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
 	[_id] = &_ops,
 #define BPF_LINK_TYPE(_id, _name)
 #include <linux/bpf_types.h>
+
+#ifdef __rtoax_debug /*++++*/
+    [BPF_MAP_TYPE_ARRAY] = &array_map_ops,
+    [BPF_MAP_TYPE_PERCPU_ARRAY] = &percpu_array_map_ops,
+    [BPF_MAP_TYPE_PROG_ARRAY] = &prog_array_map_ops,
+    [BPF_MAP_TYPE_PERF_EVENT_ARRAY] = &perf_event_array_map_ops,
+#ifdef CONFIG_CGROUPS
+    [BPF_MAP_TYPE_CGROUP_ARRAY] = &cgroup_array_map_ops,
+#endif
+#ifdef CONFIG_CGROUP_BPF
+    [BPF_MAP_TYPE_CGROUP_STORAGE] = &cgroup_storage_map_ops,
+    [BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE] = &cgroup_storage_map_ops,
+#endif
+    [BPF_MAP_TYPE_HASH] = &htab_map_ops,
+    [BPF_MAP_TYPE_PERCPU_HASH] = &htab_percpu_map_ops,
+    [BPF_MAP_TYPE_LRU_HASH] = &htab_lru_map_ops,
+    [BPF_MAP_TYPE_LRU_PERCPU_HASH] = &htab_lru_percpu_map_ops,
+    [BPF_MAP_TYPE_LPM_TRIE] = &trie_map_ops,
+#ifdef CONFIG_PERF_EVENTS
+    [BPF_MAP_TYPE_STACK_TRACE] = &stack_trace_map_ops,
+#endif
+    [BPF_MAP_TYPE_ARRAY_OF_MAPS] = &array_of_maps_map_ops,
+    [BPF_MAP_TYPE_HASH_OF_MAPS] = &htab_of_maps_map_ops,
+#ifdef CONFIG_NET
+    [BPF_MAP_TYPE_DEVMAP] = &dev_map_ops,
+    [BPF_MAP_TYPE_DEVMAP_HASH] = &dev_map_hash_ops,
+    [BPF_MAP_TYPE_SK_STORAGE] = &sk_storage_map_ops,
+#if defined(CONFIG_BPF_STREAM_PARSER,
+    [BPF_MAP_TYPE_SOCKMAP] = &sock_map_ops,
+    [BPF_MAP_TYPE_SOCKHASH] = &sock_hash_ops,
+#endif
+#ifdef CONFIG_BPF_LSM
+    [BPF_MAP_TYPE_INODE_STORAGE] = &inode_storage_map_ops,
+#endif
+    [BPF_MAP_TYPE_CPUMAP] = &cpu_map_ops,
+#if defined(CONFIG_XDP_SOCKETS,
+    [BPF_MAP_TYPE_XSKMAP] = &xsk_map_ops,
+#endif
+#ifdef CONFIG_INET
+    [BPF_MAP_TYPE_REUSEPORT_SOCKARRAY] = &reuseport_array_ops,
+#endif
+#endif
+    [BPF_MAP_TYPE_QUEUE] = &queue_map_ops,
+    [BPF_MAP_TYPE_STACK] = &stack_map_ops,
+#if defined(CONFIG_BPF_JIT,
+    [BPF_MAP_TYPE_STRUCT_OPS] = &bpf_struct_ops_map_ops,
+#endif
+    [BPF_MAP_TYPE_RINGBUF] = &ringbuf_map_ops,
+#endif /*__rtoax_debug*/
+
 #undef BPF_PROG_TYPE
 #undef BPF_MAP_TYPE
 #undef BPF_LINK_TYPE
@@ -82,13 +132,13 @@ int bpf_check_uarg_tail_zero(void __user *uaddr,
 	if (unlikely(actual_size > PAGE_SIZE))	/* silly large */
 		return -E2BIG;
 
-	if (actual_size <= expected_size)
+	if (actual_size <= expected_size)   /* 对比大小 */
 		return 0;
 
 	res = check_zeroed_user(addr, actual_size - expected_size);
 	if (res < 0)
 		return res;
-	return res ? 0 : -E2BIG;
+	return res ? 0 : -E2BIG;    /* 传入太多的 用户数据 */
 }
 
 const struct bpf_map_ops bpf_map_offload_ops = {
@@ -98,7 +148,7 @@ const struct bpf_map_ops bpf_map_offload_ops = {
 	.map_check_btf = map_check_no_btf,
 };
 
-static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
+static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 {
 	const struct bpf_map_ops *ops;
 	u32 type = attr->map_type;
@@ -112,14 +162,14 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
 	if (!ops)
 		return ERR_PTR(-EINVAL);
 
-	if (ops->map_alloc_check) {
+	if (ops->map_alloc_check) { /* 分配内存前的参数检测 */
 		err = ops->map_alloc_check(attr);
 		if (err)
 			return ERR_PTR(err);
 	}
 	if (attr->map_ifindex)
 		ops = &bpf_map_offload_ops;
-	map = ops->map_alloc(attr);
+	map = ops->map_alloc(attr); /* 分配 例如:kzmalloc() */
 	if (IS_ERR(map))
 		return map;
 	map->ops = ops;
@@ -331,7 +381,7 @@ static u32 bpf_map_flags_retain_permanent(u32 flags)
 	return flags & ~(BPF_F_RDONLY | BPF_F_WRONLY);
 }
 
-void bpf_map_init_from_attr(struct bpf_map *map, union bpf_attr *attr)
+void bpf_map_init_from_attr(struct bpf_map *map, union bpf_attr *attr)  /*  */
 {
 	map->map_type = attr->map_type;
 	map->key_size = attr->key_size;
@@ -358,7 +408,7 @@ static void bpf_uncharge_memlock(struct user_struct *user, u32 pages)
 		atomic_long_sub(pages, &user->locked_vm);
 }
 
-int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)
+int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)   /*  */
 {
 	u32 pages = round_up(size, PAGE_SIZE) >> PAGE_SHIFT;
 	struct user_struct *user;
@@ -605,12 +655,12 @@ static void bpf_map_mmap_close(struct vm_area_struct *vma)
 	}
 }
 
-static const struct vm_operations_struct bpf_map_default_vmops = {
+static const struct vm_operations_struct bpf_map_default_vmops = {  /*  */
 	.open		= bpf_map_mmap_open,
 	.close		= bpf_map_mmap_close,
 };
 
-static int bpf_map_mmap(struct file *filp, struct vm_area_struct *vma)
+static int bpf_map_mmap(struct file *filp, struct vm_area_struct *vma)  /*  */
 {
 	struct bpf_map *map = filp->private_data;
 	int err;
@@ -668,7 +718,7 @@ static __poll_t bpf_map_poll(struct file *filp, struct poll_table_struct *pts)
 	return EPOLLERR;
 }
 
-const struct file_operations bpf_map_fops = {
+const struct file_operations bpf_map_fops = {   /*  */
 #ifdef CONFIG_PROC_FS
 	.show_fdinfo	= bpf_map_show_fdinfo,
 #endif
@@ -691,7 +741,7 @@ int bpf_map_new_fd(struct bpf_map *map, int flags)
 				flags | O_CLOEXEC);
 }
 
-int bpf_get_file_flag(int flags)
+int bpf_get_file_flag(int flags)    /* 读写权限 */
 {
 	if ((flags & BPF_F_RDONLY) && (flags & BPF_F_WRONLY))
 		return -EINVAL;
@@ -812,7 +862,7 @@ static int map_create(union bpf_attr *attr)
 		return -EINVAL;
 	}
 
-	f_flags = bpf_get_file_flag(attr->map_flags);
+	f_flags = bpf_get_file_flag(attr->map_flags);   /* 读写权限 */
 	if (f_flags < 0)
 		return f_flags;
 
@@ -822,7 +872,7 @@ static int map_create(union bpf_attr *attr)
 		return -EINVAL;
 
 	/* find map type and init map: hashtable vs rbtree vs bloom vs ... */
-	map = find_and_alloc_map(attr);
+	map = find_and_alloc_map(attr); /* 分配 bpf_map */
 	if (IS_ERR(map))
 		return PTR_ERR(map);
 
@@ -846,7 +896,7 @@ static int map_create(union bpf_attr *attr)
 	    attr->btf_vmlinux_value_type_id) {
 		struct btf *btf;
 
-		btf = btf_get_by_fd(attr->btf_fd);
+		btf = btf_get_by_fd(attr->btf_fd);  /* 每个 btf 有一个 fd */
 		if (IS_ERR(btf)) {
 			err = PTR_ERR(btf);
 			goto free_map;
@@ -866,15 +916,15 @@ static int map_create(union bpf_attr *attr)
 			attr->btf_vmlinux_value_type_id;
 	}
 
-	err = security_bpf_map_alloc(map);
+	err = security_bpf_map_alloc(map);  /*  */
 	if (err)
 		goto free_map;
 
-	err = bpf_map_alloc_id(map);
+	err = bpf_map_alloc_id(map);    /*  */
 	if (err)
 		goto free_map_sec;
 
-	err = bpf_map_new_fd(map, f_flags);
+	err = bpf_map_new_fd(map, f_flags); /*  */
 	if (err < 0) {
 		/* failed to allocate fd.
 		 * bpf_map_put_with_uref() is needed because the above
@@ -4091,7 +4141,7 @@ out:
 
 #define BPF_LINK_UPDATE_LAST_FIELD link_update.old_prog_fd
 
-static int link_update(union bpf_attr *attr)
+static int link_update(union bpf_attr *attr)    /*  */
 {
 	struct bpf_prog *old_prog = NULL, *new_prog;
 	struct bpf_link *link;
@@ -4356,63 +4406,64 @@ out_prog_put:
 	return ret;
 }
 
+/* bpf syscall */
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
 {
-	union bpf_attr attr;
+	union bpf_attr attr;    /* 存放 用户 uattr */
 	int err;
 
 	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
 		return -EPERM;
-
+    /* 检查attr个数是否太多了 */
 	err = bpf_check_uarg_tail_zero(uattr, sizeof(attr), size);
 	if (err)
 		return err;
-	size = min_t(u32, size, sizeof(attr));
+	size = min_t(u32, size, sizeof(attr));  /* 取 一个 bpf_attr 大小 */
 
 	/* copy attributes from user space, may be less than sizeof(bpf_attr) */
 	memset(&attr, 0, sizeof(attr));
 	if (copy_from_user(&attr, uattr, size) != 0)
 		return -EFAULT;
-
+    /* 安全的系统调用 */
 	err = security_bpf(cmd, &attr, size);
 	if (err < 0)
 		return err;
 
 	switch (cmd) {
-	case BPF_MAP_CREATE:
+	case BPF_MAP_CREATE:        /* 创建 */
 		err = map_create(&attr);
 		break;
-	case BPF_MAP_LOOKUP_ELEM:
+	case BPF_MAP_LOOKUP_ELEM:   /*  */
 		err = map_lookup_elem(&attr);
 		break;
-	case BPF_MAP_UPDATE_ELEM:
+	case BPF_MAP_UPDATE_ELEM:   /*  */
 		err = map_update_elem(&attr);
 		break;
-	case BPF_MAP_DELETE_ELEM:
+	case BPF_MAP_DELETE_ELEM:   /*  */
 		err = map_delete_elem(&attr);
 		break;
-	case BPF_MAP_GET_NEXT_KEY:
+	case BPF_MAP_GET_NEXT_KEY:  /*  */
 		err = map_get_next_key(&attr);
 		break;
-	case BPF_MAP_FREEZE:
+	case BPF_MAP_FREEZE:        /*  */
 		err = map_freeze(&attr);
 		break;
-	case BPF_PROG_LOAD:
+	case BPF_PROG_LOAD:         /*  */
 		err = bpf_prog_load(&attr, uattr);
 		break;
-	case BPF_OBJ_PIN:
+	case BPF_OBJ_PIN:           /*  */
 		err = bpf_obj_pin(&attr);
 		break;
-	case BPF_OBJ_GET:
+	case BPF_OBJ_GET:           /*  */
 		err = bpf_obj_get(&attr);
 		break;
-	case BPF_PROG_ATTACH:
+	case BPF_PROG_ATTACH:       /*  */
 		err = bpf_prog_attach(&attr);
 		break;
-	case BPF_PROG_DETACH:
+	case BPF_PROG_DETACH:       /*  */
 		err = bpf_prog_detach(&attr);
 		break;
-	case BPF_PROG_QUERY:
+	case BPF_PROG_QUERY:        /*  */
 		err = bpf_prog_query(&attr, uattr);
 		break;
 	case BPF_PROG_TEST_RUN:

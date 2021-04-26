@@ -1861,7 +1861,7 @@ extern int _cond_resched(void);
 /*  */
 #endif
 
-#define cond_resched() ({			\
+#define cond_resched() ({			/*  */\
 	___might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\
 })

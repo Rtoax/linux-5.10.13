@@ -40,7 +40,7 @@ struct eventfd_ctx {
 	 * side eventfd_signal() also, adds to the "count" counter and
 	 * issue a wakeup.
 	 */
-	__u64 count;
+	__u64 count;    /*  */
 	unsigned int flags;
 	int id;
 };
@@ -124,13 +124,13 @@ static int eventfd_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static __poll_t eventfd_poll(struct file *file, poll_table *wait)
+static __poll_t eventfd_poll(struct file *file, poll_table *wait)   /* poll */
 {
 	struct eventfd_ctx *ctx = file->private_data;
 	__poll_t events = 0;
 	u64 count;
 
-	poll_wait(file, &ctx->wqh, wait);
+	poll_wait(file, &ctx->wqh, wait);   /* wait->_qproc() */
 
 	/*
 	 * All writes to ctx->count occur within ctx->wqh.lock.  This read

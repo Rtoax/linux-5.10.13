@@ -49,17 +49,17 @@ struct bpf_iter_seq_info {
 	bpf_iter_fini_seq_priv_t fini_seq_private;
 	u32 seq_priv_size;
 };
-
+typedef struct bpf_map * p_bpf_map_t;/* 我加的 */
 /* map is generic key/value storage optionally accesible by eBPF programs */
 struct bpf_map_ops {
 	/* funcs callable from userspace (via syscall) */
 	int (*map_alloc_check)(union bpf_attr *attr);
-	struct bpf_map *(*map_alloc)(union bpf_attr *attr);
+	p_bpf_map_t (*map_alloc)(union bpf_attr *attr);
 	void (*map_release)(struct bpf_map *map, struct file *map_file);
 	void (*map_free)(struct bpf_map *map);
 	int (*map_get_next_key)(struct bpf_map *map, void *key, void *next_key);
 	void (*map_release_uref)(struct bpf_map *map);
-	void *(*map_lookup_elem_sys_only)(struct bpf_map *map, void *key);
+	pvoid_t (*map_lookup_elem_sys_only)(struct bpf_map *map, void *key);
 	int (*map_lookup_batch)(struct bpf_map *map, const union bpf_attr *attr,
 				union bpf_attr __user *uattr);
 	int (*map_lookup_and_delete_batch)(struct bpf_map *map,
@@ -71,7 +71,7 @@ struct bpf_map_ops {
 				union bpf_attr __user *uattr);
 
 	/* funcs callable from userspace and from eBPF programs */
-	void *(*map_lookup_elem)(struct bpf_map *map, void *key);
+	pvoid_t (*map_lookup_elem)(struct bpf_map *map, void *key);
 	int (*map_update_elem)(struct bpf_map *map, void *key, void *value, u64 flags);
 	int (*map_delete_elem)(struct bpf_map *map, void *key);
 	int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags);
@@ -79,7 +79,7 @@ struct bpf_map_ops {
 	int (*map_peek_elem)(struct bpf_map *map, void *value);
 
 	/* funcs called by prog_array and perf_event_array map */
-	void *(*map_fd_get_ptr)(struct bpf_map *map, struct file *map_file,
+	pvoid_t (*map_fd_get_ptr)(struct bpf_map *map, struct file *map_file,
 				int fd);
 	void (*map_fd_put_ptr)(void *ptr);
 	int (*map_gen_lookup)(struct bpf_map *map, struct bpf_insn *insn_buf);
@@ -133,16 +133,16 @@ struct bpf_map_ops {
 	const struct bpf_iter_seq_info *iter_seq_info;
 };
 
-struct bpf_map_memory {
+struct bpf_map_memory { /*  */
 	u32 pages;
 	struct user_struct *user;
 };
 
-struct bpf_map {
+struct bpf_map {    /*  */
 	/* The first two cachelines with read-mostly members of which some
 	 * are also accessed in fast-path (e.g. ops, max_entries).
 	 */
-	const struct bpf_map_ops *ops ____cacheline_aligned;
+	const struct bpf_map_ops ____cacheline_aligned *ops ;
 	struct bpf_map *inner_map_meta;
 #ifdef CONFIG_SECURITY
 	void *security;
@@ -168,7 +168,7 @@ struct bpf_map {
 	/* The 3rd and 4th cacheline with misc members to avoid false sharing
 	 * particularly with refcounting.
 	 */
-	atomic64_t refcnt ____cacheline_aligned;
+	atomic64_t ____cacheline_aligned refcnt ;
 	atomic64_t usercnt;
 	struct work_struct work;
 	struct mutex freeze_mutex;

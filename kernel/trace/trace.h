@@ -858,19 +858,14 @@ void update_max_tr_single(struct trace_array *tr,
 void latency_fsnotify(struct trace_array *tr);
 
 #else
-
-static inline void latency_fsnotify(struct trace_array *tr) { }
-
+/*  */
 #endif
 
 #ifdef CONFIG_STACKTRACE
 void __trace_stack(struct trace_array *tr, unsigned long flags, int skip,
 		   int pc);
 #else
-static inline void __trace_stack(struct trace_array *tr, unsigned long flags,
-				 int skip, int pc)
-{
-}
+/*  */
 #endif /* CONFIG_STACKTRACE */
 
 extern u64 ftrace_now(int cpu);
@@ -885,7 +880,7 @@ extern unsigned long ftrace_number_of_pages;
 extern unsigned long ftrace_number_of_groups;
 void ftrace_init_trace_array(struct trace_array *tr);
 #else
-static inline void ftrace_init_trace_array(struct trace_array *tr) { }
+/*  */
 #endif
 #define DYN_FTRACE_TEST_NAME trace_selftest_dynamic_test_func
 extern int DYN_FTRACE_TEST_NAME(void);
@@ -921,11 +916,11 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  */
 #define __tracer_data		__refdata
 #else
-static inline void __init disable_tracing_selftest(const char *reason)
-{
-}
-/* Tracers are seldom changed. Optimize when selftests are disabled. */
-#define __tracer_data		__read_mostly
+//static inline void __init disable_tracing_selftest(const char *reason)
+//{
+//}
+///* Tracers are seldom changed. Optimize when selftests are disabled. */
+//#define __tracer_data		__read_mostly
 #endif /* CONFIG_FTRACE_STARTUP_TEST */
 
 extern void *head_page(struct trace_array_cpu *data);
@@ -1094,17 +1089,7 @@ static inline int ftrace_graph_notrace_addr(unsigned long addr)
 	return ret;
 }
 #else
-static inline int ftrace_graph_addr(struct ftrace_graph_ent *trace)
-{
-	return 1;
-}
-
-static inline int ftrace_graph_notrace_addr(unsigned long addr)
-{
-	return 0;
-}
-static inline void ftrace_graph_addr_finish(struct ftrace_graph_ret *trace)
-{ }
+/*  */
 #endif /* CONFIG_DYNAMIC_FTRACE */
 
 extern unsigned int fgraph_max_depth;
@@ -1119,11 +1104,7 @@ static inline bool ftrace_graph_ignore_func(struct ftrace_graph_ent *trace)
 }
 
 #else /* CONFIG_FUNCTION_GRAPH_TRACER */
-static inline enum print_line_t
-print_graph_function_flags(struct trace_iterator *iter, u32 flags)
-{
-	return TRACE_TYPE_UNHANDLED;
-}
+/*  */
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 
 extern struct list_head ftrace_pids;
@@ -1163,33 +1144,7 @@ void ftrace_clear_pids(struct trace_array *tr);
 int init_function_trace(void);
 void ftrace_pid_follow_fork(struct trace_array *tr, bool enable);
 #else
-//static inline int ftrace_trace_task(struct trace_array *tr)
-//{
-//	return 1;
-//}
-//static inline int ftrace_is_dead(void) { return 0; }
-//static inline int
-//ftrace_create_function_files(struct trace_array *tr,
-//			     struct dentry *parent)
-//{
-//	return 0;
-//}
-//static inline int ftrace_allocate_ftrace_ops(struct trace_array *tr)
-//{
-//	return 0;
-//}
-//static inline void ftrace_free_ftrace_ops(struct trace_array *tr) { }
-//static inline void ftrace_destroy_function_files(struct trace_array *tr) { }
-//static inline __init void
-//ftrace_init_global_array_ops(struct trace_array *tr) { }
-//static inline void ftrace_reset_array_ops(struct trace_array *tr) { }
-//static inline void ftrace_init_tracefs(struct trace_array *tr, struct dentry *d) { }
-//static inline void ftrace_init_tracefs_toplevel(struct trace_array *tr, struct dentry *d) { }
-//static inline void ftrace_clear_pids(struct trace_array *tr) { }
-//static inline int init_function_trace(void) { return 0; }
-//static inline void ftrace_pid_follow_fork(struct trace_array *tr, bool enable) { }
-///* ftace_func_t type is not defined, use macro instead of static inline */
-//#define ftrace_init_array_ops(tr, func) do { } while (0)
+/*  */
 #endif /* CONFIG_FUNCTION_TRACER */
 
 #if defined(CONFIG_FUNCTION_TRACER) && defined(CONFIG_DYNAMIC_FTRACE)
@@ -1246,26 +1201,7 @@ extern int ftrace_set_filter(struct ftrace_ops *ops, unsigned char *buf,
 extern int ftrace_set_notrace(struct ftrace_ops *ops, unsigned char *buf,
 			      int len, int reset);
 #else
-struct ftrace_func_command;
-
-static inline __init int register_ftrace_command(struct ftrace_func_command *cmd)
-{
-	return -EINVAL;
-}
-static inline __init int unregister_ftrace_command(char *cmd_name)
-{
-	return -EINVAL;
-}
-static inline void clear_ftrace_function_probes(struct trace_array *tr)
-{
-}
-
-/*
- * The ops parameter passed in is usually undefined.
- * This must be a macro.
- */
-#define ftrace_create_filter_files(ops, parent) do { } while (0)
-#define ftrace_destroy_filter_files(ops) do { } while (0)
+/*  */
 #endif /* CONFIG_FUNCTION_TRACER && CONFIG_DYNAMIC_FTRACE */
 
 bool ftrace_event_is_function(struct trace_event_call *call);
@@ -1312,14 +1248,14 @@ extern int trace_get_user(struct trace_parser *parser, const char __user *ubuf,
 # define FGRAPH_FLAGS						\
 		C(DISPLAY_GRAPH,	"display-graph"),
 #else
-# define FGRAPH_FLAGS
+/*  */
 #endif
 
 #ifdef CONFIG_BRANCH_TRACER
 # define BRANCH_FLAGS					\
 		C(BRANCH,		"branch"),
 #else
-# define BRANCH_FLAGS
+//# define BRANCH_FLAGS
 #endif
 
 #ifdef CONFIG_FUNCTION_TRACER
@@ -1328,16 +1264,16 @@ extern int trace_get_user(struct trace_parser *parser, const char __user *ubuf,
 		C(FUNC_FORK,		"function-fork"),
 # define FUNCTION_DEFAULT_FLAGS		TRACE_ITER_FUNCTION
 #else
-# define FUNCTION_FLAGS
-# define FUNCTION_DEFAULT_FLAGS		0UL
-# define TRACE_ITER_FUNC_FORK		0UL
+//# define FUNCTION_FLAGS
+//# define FUNCTION_DEFAULT_FLAGS		0UL
+//# define TRACE_ITER_FUNC_FORK		0UL
 #endif
 
 #ifdef CONFIG_STACKTRACE
 # define STACK_FLAGS				\
 		C(STACKTRACE,		"stacktrace"),
 #else
-# define STACK_FLAGS
+//# define STACK_FLAGS
 #endif
 
 /*
@@ -1422,13 +1358,7 @@ static inline void trace_branch_disable(void)
 	disable_branch_tracing();
 }
 #else
-//static inline int trace_branch_enable(struct trace_array *tr)
-//{
-//	return 0;
-//}
-//static inline void trace_branch_disable(void)
-//{
-//}
+/*  */
 #endif /* CONFIG_BRANCH_TRACER */
 
 /* set ring buffers to default size if not already done so */
@@ -2052,11 +1982,7 @@ int perf_ftrace_event_register(struct trace_event_call *call,
 void init_ftrace_syscalls(void);
 const char *get_syscall_name(int syscall);
 #else
-//static inline void init_ftrace_syscalls(void) { }
-//static inline const char *get_syscall_name(int syscall)
-//{
-//	return NULL;
-//}
+/*  */
 #endif
 
 #ifdef CONFIG_EVENT_TRACING /*  */
@@ -2066,34 +1992,27 @@ void trace_event_eval_update(struct trace_eval_map **map, int len);
 extern int ftrace_set_clr_event(struct trace_array *tr, char *buf, int set);
 extern int trigger_process_regex(struct trace_event_file *file, char *buff);
 #else
-//static inline void __init trace_event_init(void) { }
-//static inline void trace_event_eval_update(struct trace_eval_map **map, int len) { }
+/*  */
 #endif
 
 #ifdef CONFIG_TRACER_SNAPSHOT
 void tracing_snapshot_instance(struct trace_array *tr);
 int tracing_alloc_snapshot_instance(struct trace_array *tr);
 #else
-static inline void tracing_snapshot_instance(struct trace_array *tr) { }
-static inline int tracing_alloc_snapshot_instance(struct trace_array *tr)
-{
-	return 0;
-}
+/*  */
 #endif
 
 #ifdef CONFIG_PREEMPT_TRACER
 void tracer_preempt_on(unsigned long a0, unsigned long a1);
 void tracer_preempt_off(unsigned long a0, unsigned long a1);
 #else
-static inline void tracer_preempt_on(unsigned long a0, unsigned long a1) { }
-static inline void tracer_preempt_off(unsigned long a0, unsigned long a1) { }
+/*  */
 #endif
 #ifdef CONFIG_IRQSOFF_TRACER
 void tracer_hardirqs_on(unsigned long a0, unsigned long a1);
 void tracer_hardirqs_off(unsigned long a0, unsigned long a1);
 #else
-static inline void tracer_hardirqs_on(unsigned long a0, unsigned long a1) { }
-static inline void tracer_hardirqs_off(unsigned long a0, unsigned long a1) { }
+/*  */
 #endif
 
 extern struct trace_iterator *tracepoint_print_iter;

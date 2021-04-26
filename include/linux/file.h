@@ -40,7 +40,7 @@ struct fd {
 #define FDPUT_FPUT       1
 #define FDPUT_POS_UNLOCK 2
 
-static inline void fdput(struct fd fd)
+static inline void fdput(struct fd fd)  /*  */
 {
 	if (fd.flags & FDPUT_FPUT)
 		fput(fd.file);

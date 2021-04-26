@@ -144,7 +144,7 @@ struct static_call_mod {
 	struct static_call_site *sites;
 };
 
-struct static_call_key {
+struct static_call_key {    /*  */
 	void *func;
 	union {
 		/* bit 0: 0 = mods, 1 = sites */

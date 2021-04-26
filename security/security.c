@@ -2508,7 +2508,7 @@ int security_bpf_prog(struct bpf_prog *prog)
 {
 	return call_int_hook(bpf_prog, 0, prog);
 }
-int security_bpf_map_alloc(struct bpf_map *map)
+int security_bpf_map_alloc(struct bpf_map *map) /*  */
 {
 	return call_int_hook(bpf_map_alloc_security, 0, map);
 }

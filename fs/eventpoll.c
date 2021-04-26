@@ -311,7 +311,7 @@ struct ctl_table epoll_table[] = {
 };
 #endif /* CONFIG_SYSCTL */
 
-static const struct file_operations eventpoll_fops;
+//static const struct file_operations eventpoll_fops;
 
 static inline int is_file_epoll(struct file *f)
 {
@@ -926,7 +926,7 @@ static __poll_t ep_eventpoll_poll(struct file *file, poll_table *wait)
 	int depth = 0;
 
 	/* Insert inside our poll wait queue */
-	poll_wait(file, &ep->poll_wait, wait);
+	poll_wait(file, &ep->poll_wait, wait);  /*  */
 
 	/*
 	 * Proceed to find out if wanted events are really available inside
@@ -966,7 +966,7 @@ static const struct file_operations eventpoll_fops/* epoll 文件操作 */ = {
 	.show_fdinfo	= ep_show_fdinfo,   /* /proc/sys/fs/epoll */
 #endif
 	.release	= ep_eventpoll_release, /* 释放 */
-	.poll		= ep_eventpoll_poll,    /*  */
+	.poll		= ep_eventpoll_poll,    /* vfs_poll */
 	.llseek		= noop_llseek,  /* file->f_pos */
 };
 

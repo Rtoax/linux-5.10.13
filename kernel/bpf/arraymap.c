@@ -48,7 +48,7 @@ static int bpf_array_alloc_percpu(struct bpf_array *array)
 }
 
 /* Called from syscall */
-int array_map_alloc_check(union bpf_attr *attr)
+int array_map_alloc_check(union bpf_attr *attr) /*  */
 {
 	bool percpu = attr->map_type == BPF_MAP_TYPE_PERCPU_ARRAY;
 	int numa_node = bpf_map_attr_numa_node(attr);
@@ -681,7 +681,7 @@ const struct bpf_map_ops percpu_array_map_ops = {
 	.iter_seq_info = &iter_seq_info,
 };
 
-static int fd_array_map_alloc_check(union bpf_attr *attr)
+static int fd_array_map_alloc_check(union bpf_attr *attr)   /*  */
 {
 	/* only file descriptors can be stored in this type of map */
 	if (attr->value_size != sizeof(u32))

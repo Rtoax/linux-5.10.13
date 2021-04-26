@@ -195,7 +195,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 				TP_CONDITION(cond), 1);			\
 	}
 #else
-#define __DECLARE_TRACE_RCU(name, proto, args, cond, data_proto, data_args)
+//#define __DECLARE_TRACE_RCU(name, proto, args, cond, data_proto, data_args)
 #endif
 
 /*
@@ -352,8 +352,8 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
  * tracing tools. When tracing isn't configured, there's no need to save
  * anything.
  */
-# define tracepoint_string(str) str
-# define __tracepoint_string
+//# define tracepoint_string(str) str
+//# define __tracepoint_string
 #endif
 
 #define DECLARE_TRACE(name, proto, args)				\

@@ -94,10 +94,10 @@ u64 select_estimate_accuracy(struct timespec64 *tv)
 
 
 
-struct poll_table_page {
-	struct poll_table_page * next;
-	struct poll_table_entry * entry;
-	struct poll_table_entry entries[];
+struct poll_table_page {    /* 轮询表 page */
+	struct poll_table_page * next;      /* 单链表 */
+	struct poll_table_entry * entry;    /* 轮询表 entry */
+	struct poll_table_entry entries[];  /*  */
 };
 
 #define POLL_TABLE_FULL(table) \
@@ -157,14 +157,14 @@ void poll_freewait(struct poll_wqueues *pwq)
 }
 EXPORT_SYMBOL(poll_freewait);
 
-static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
+static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)  /*  */
 {
 	struct poll_table_page *table = p->table;
 
 	if (p->inline_index < N_INLINE_POLL_ENTRIES)
 		return p->inline_entries + p->inline_index++;
 
-	if (!table || POLL_TABLE_FULL(table)) {
+	if (!table || POLL_TABLE_FULL(table)) { /* 为空或者已满 */
 		struct poll_table_page *new_table;
 
 		new_table = (struct poll_table_page *) __get_free_page(GFP_KERNEL);
@@ -181,7 +181,7 @@ static struct poll_table_entry *poll_get_entry(struct poll_wqueues *p)
 	return table->entry++;
 }
 
-static int __pollwake(wait_queue_entry_t *wait, unsigned mode, int sync, void *key)
+static int __pollwake(wait_queue_entry_t *wait, unsigned mode, int sync, void *key) /*  */
 {
 	struct poll_wqueues *pwq = wait->private;
 	DECLARE_WAITQUEUE(dummy_wait, pwq->polling_task);
@@ -193,7 +193,7 @@ static int __pollwake(wait_queue_entry_t *wait, unsigned mode, int sync, void *k
 	 * smp_wmb() is equivalent to smp_wmb() in try_to_wake_up()
 	 * and is paired with smp_store_mb() in poll_schedule_timeout.
 	 */
-	smp_wmb();
+	smp_wmb();  /*  */
 	pwq->triggered = 1;
 
 	/*
@@ -234,7 +234,7 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
 }
 
 static int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-			  ktime_t *expires, unsigned long slack)
+			  ktime_t *expires, unsigned long slack)    /* 轮询调度 */
 {
 	int rc = -EINTR;
 
@@ -312,7 +312,7 @@ static int poll_select_finish(struct timespec64 *end_time,
 	if (!end_time->tv_sec && !end_time->tv_nsec)
 		return ret;
 
-	ktime_get_ts64(&rts);
+	ktime_get_ts64(&rts);   /* 计算select返回时候的 time */
 	rts = timespec64_sub(*end_time, rts);
 	if (rts.tv_sec < 0)
 		rts.tv_sec = rts.tv_nsec = 0;
@@ -327,7 +327,7 @@ static int poll_select_finish(struct timespec64 *end_time,
 				memset(&rtv, 0, sizeof(rtv));
 			rtv.tv_sec = rts.tv_sec;
 			rtv.tv_usec = rts.tv_nsec / NSEC_PER_USEC;
-			if (!copy_to_user(p, &rtv, sizeof(rtv)))
+			if (!copy_to_user(p, &rtv, sizeof(rtv)))    /* 将时间拷贝至用户态 */
 				return ret;
 		}
 		break;
@@ -370,7 +370,7 @@ sticky:
  * Scalable version of the fd_set.
  */
 
-typedef struct {
+typedef struct {    /* bitmap */
 	unsigned long *in, *out, *ex;
 	unsigned long *res_in, *res_out, *res_ex;
 } fd_set_bits;
@@ -385,19 +385,19 @@ typedef struct {
 /*
  * Use "unsigned long" accesses to let user-mode fd_set's be long-aligned.
  */
-static inline
+static inline   /*  */
 int get_fd_set(unsigned long nr, void __user *ufdset, unsigned long *fdset)
 {
-	nr = FDS_BYTES(nr);
-	if (ufdset)
+	nr = FDS_BYTES(nr); /* 对齐与字节计算 */
+	if (ufdset) /* 拷贝 */
 		return copy_from_user(fdset, ufdset, nr) ? -EFAULT : 0;
 
-	memset(fdset, 0, nr);
+	memset(fdset, 0, nr);   /* 用户数据为空， 直接清空 */
 	return 0;
 }
 
 static inline unsigned long __must_check
-set_fd_set(unsigned long nr, void __user *ufdset, unsigned long *fdset)
+set_fd_set(unsigned long nr, void __user *ufdset, unsigned long *fdset) /*  */
 {
 	if (ufdset)
 		return __copy_to_user(ufdset, fdset, FDS_BYTES(nr));
@@ -416,7 +416,7 @@ void zero_fd_set(unsigned long nr, unsigned long *fdset)
 
 #define BITS(fds, n)	(*FDS_IN(fds, n)|*FDS_OUT(fds, n)|*FDS_EX(fds, n))
 
-static int max_select_fd(unsigned long n, fd_set_bits *fds)
+static int max_select_fd(unsigned long n, fd_set_bits *fds) /* 求最大的 fd */
 {
 	unsigned long *open_fds;
 	unsigned long set;
@@ -426,18 +426,18 @@ static int max_select_fd(unsigned long n, fd_set_bits *fds)
 	/* handle last in-complete long-word first */
 	set = ~(~0UL << (n & (BITS_PER_LONG-1)));
 	n /= BITS_PER_LONG;
-	fdt = files_fdtable(current->files);
-	open_fds = fdt->open_fds + n;
+	fdt = files_fdtable(current->files);    /* 获取 fdt */
+	open_fds = fdt->open_fds + n;   /*  */
 	max = 0;
 	if (set) {
-		set &= BITS(fds, n);
+		set &= BITS(fds, n);    /* 求 set */
 		if (set) {
 			if (!(set & ~*open_fds))
 				goto get_max;
 			return -EBADF;
 		}
 	}
-	while (n) {
+	while (n) { /*  */
 		open_fds--;
 		n--;
 		set = BITS(fds, n);
@@ -458,9 +458,9 @@ get_max:
 	return max;
 }
 
-#define POLLIN_SET (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN | EPOLLHUP | EPOLLERR)
-#define POLLOUT_SET (EPOLLWRBAND | EPOLLWRNORM | EPOLLOUT | EPOLLERR)
-#define POLLEX_SET (EPOLLPRI)
+#define POLLIN_SET (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN | EPOLLHUP | EPOLLERR)  /*  */
+#define POLLOUT_SET (EPOLLWRBAND | EPOLLWRNORM | EPOLLOUT | EPOLLERR)   /*  */
+#define POLLEX_SET (EPOLLPRI)   /*  */
 
 static inline void wait_key_set(poll_table *wait, unsigned long in,
 				unsigned long out, unsigned long bit,
@@ -468,15 +468,15 @@ static inline void wait_key_set(poll_table *wait, unsigned long in,
 {
 	wait->_key = POLLEX_SET | ll_flag;
 	if (in & bit)
-		wait->_key |= POLLIN_SET;
+		wait->_key |= POLLIN_SET;   /* IN */
 	if (out & bit)
-		wait->_key |= POLLOUT_SET;
+		wait->_key |= POLLOUT_SET;  /* OUT */
 }
-
+        /* select */
 static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 {
 	ktime_t expire, *to = NULL;
-	struct poll_wqueues table;
+	struct poll_wqueues table;  /*  */
 	poll_table *wait;
 	int retval, i, timed_out = 0;
 	u64 slack = 0;
@@ -484,56 +484,57 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 	unsigned long busy_start = 0;
 
 	rcu_read_lock();
-	retval = max_select_fd(n, fds);
+	retval = max_select_fd(n, fds); /* 求最大的 fd */
 	rcu_read_unlock();
 
 	if (retval < 0)
 		return retval;
 	n = retval;
 
-	poll_initwait(&table);
+	poll_initwait(&table);  /* 初始化等待队列 */
 	wait = &table.pt;
 	if (end_time && !end_time->tv_sec && !end_time->tv_nsec) {
 		wait->_qproc = NULL;
 		timed_out = 1;
 	}
-
+    /* 如果设置了超时 */
 	if (end_time && !timed_out)
 		slack = select_estimate_accuracy(end_time);
 
 	retval = 0;
-	for (;;) {
+	for (;;) {  /* 循环 */
 		unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
 		bool can_busy_loop = false;
 
 		inp = fds->in; outp = fds->out; exp = fds->ex;
 		rinp = fds->res_in; routp = fds->res_out; rexp = fds->res_ex;
 
+        /* 遍历到最大 fd， select 的最大 fd */
 		for (i = 0; i < n; ++rinp, ++routp, ++rexp) {
 			unsigned long in, out, ex, all_bits, bit = 1, j;
 			unsigned long res_in = 0, res_out = 0, res_ex = 0;
 			__poll_t mask;
 
 			in = *inp++; out = *outp++; ex = *exp++;
-			all_bits = in | out | ex;
-			if (all_bits == 0) {
+			all_bits = in | out | ex;   /* 读写异常 */
+			if (all_bits == 0) {    /* 为空，下一组 */
 				i += BITS_PER_LONG;
 				continue;
 			}
-
+            /* 如果这一组 fd_set 不为空，进行遍历这个 8 位 fd */
 			for (j = 0; j < BITS_PER_LONG; ++j, ++i, bit <<= 1) {
 				struct fd f;
 				if (i >= n)
 					break;
-				if (!(bit & all_bits))
+				if (!(bit & all_bits))  /* 判断是否设置 */
 					continue;
-				f = fdget(i);
-				if (f.file) {
+				f = fdget(i);   /* 从 int fd 到 struct fd */
+				if (f.file) {   /* 如果文件存在 */
 					wait_key_set(wait, in, out, bit,
 						     busy_flag);
-					mask = vfs_poll(f.file, wait);
-
-					fdput(f);
+					mask = vfs_poll(f.file, wait);  /* 文件系统 poll 函数*/
+                            /* 如果是eventfd，将为-> eventfd_fops->eventfd_poll()  */
+					fdput(f);   
 					if ((mask & POLLIN_SET) && (in & bit)) {
 						res_in |= bit;
 						retval++;
@@ -550,7 +551,7 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 						wait->_qproc = NULL;
 					}
 					/* got something, stop busy polling */
-					if (retval) {
+					if (retval) {   /*  */
 						can_busy_loop = false;
 						busy_flag = 0;
 
@@ -563,15 +564,17 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 
 				}
 			}
-			if (res_in)
-				*rinp = res_in;
+			if (res_in) /*  */
+				*rinp = res_in;     /* 读 */
 			if (res_out)
-				*routp = res_out;
+				*routp = res_out;   /* 写 */
 			if (res_ex)
-				*rexp = res_ex;
-			cond_resched();
+				*rexp = res_ex;     /* 异常 */
+			cond_resched(); /*  */
 		}
 		wait->_qproc = NULL;
+
+        /* 如果有fd准备好，超时 或者 有信号被挂起，则返回 */
 		if (retval || timed_out || signal_pending(current))
 			break;
 		if (table.error) {
@@ -580,7 +583,7 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 		}
 
 		/* only if found POLL_BUSY_LOOP sockets && not out of time */
-		if (can_busy_loop && !need_resched()) {
+		if (can_busy_loop && !need_resched()) { /* 可以忙等并且不需要重新调度 */
 			if (!busy_start) {
 				busy_start = busy_loop_current_time();
 				continue;
@@ -595,11 +598,11 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 		 * given, then we convert to ktime_t and set the to
 		 * pointer to the expiry value.
 		 */
-		if (end_time && !to) {
+		if (end_time && !to) {  /* 如果设置了超时 */
 			expire = timespec64_to_ktime(*end_time);
-			to = &expire;
+			to = &expire;   /* 到期时间 */
 		}
-
+        /* 进行调度 */
 		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
 					   to, slack))
 			timed_out = 1;
@@ -627,7 +630,7 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 	size_t size, alloc_size;
 	struct fdtable *fdt;
 	/* Allocate small arguments on the stack to save memory and be faster */
-	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];
+	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];    /* 256 * 8 = 2048 个描述符 */
 
 	ret = -EINVAL;
 	if (n < 0)
@@ -635,18 +638,18 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 
 	/* max_fds can increase, so grab it once to avoid race */
 	rcu_read_lock();
-	fdt = files_fdtable(current->files);
-	max_fds = fdt->max_fds;
+	fdt = files_fdtable(current->files);    /* 当前进程打开的文件描述符 */
+	max_fds = fdt->max_fds; /* 最大 FD */
 	rcu_read_unlock();
 	if (n > max_fds)
-		n = max_fds;
+		n = max_fds;    /* fd检查，提高性能 */
 
 	/*
 	 * We need 6 bitmaps (in/out/ex for both incoming and outgoing),
 	 * since we used fdset we need to allocate memory in units of
 	 * long-words. 
 	 */
-	size = FDS_BYTES(n);
+	size = FDS_BYTES(n);    /* 获取最大需要的 bitmap 位 */
 	bits = stack_fds;
 	if (size > sizeof(stack_fds) / 6) {
 		/* Not enough space in on-stack array; must use kmalloc */
@@ -655,36 +658,38 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 			goto out_nofds;
 
 		alloc_size = 6 * size;
-		bits = kvmalloc(alloc_size, GFP_KERNEL);
+		bits = kvmalloc(alloc_size, GFP_KERNEL);    /* 栈上的 FDs 大小不够，申请 */
 		if (!bits)
 			goto out_nofds;
 	}
+    /* 均衡地分配 fd 入参 */
 	fds.in      = bits;
 	fds.out     = bits +   size;
 	fds.ex      = bits + 2*size;
 	fds.res_in  = bits + 3*size;
 	fds.res_out = bits + 4*size;
 	fds.res_ex  = bits + 5*size;
-
+    /* 将用户态的 fd_set 拷贝至内核态，这也是 select 的开销，fd很多的情况下，
+        将严重影响select性能 */
 	if ((ret = get_fd_set(n, inp, fds.in)) ||
 	    (ret = get_fd_set(n, outp, fds.out)) ||
 	    (ret = get_fd_set(n, exp, fds.ex)))
 		goto out;
-	zero_fd_set(n, fds.res_in);
+	zero_fd_set(n, fds.res_in); /* 清理输出的返回的 fd_set，返回时将返回给用户态 */
 	zero_fd_set(n, fds.res_out);
 	zero_fd_set(n, fds.res_ex);
 
-	ret = do_select(n, &fds, end_time);
+	ret = do_select(n, &fds, end_time); /* 正经八百的 内核态 select 开始 */
 
-	if (ret < 0)
+	if (ret < 0)    /* 失败了 */
 		goto out;
-	if (!ret) {
+	if (!ret) { /*  */
 		ret = -ERESTARTNOHAND;
 		if (signal_pending(current))
 			goto out;
 		ret = 0;
 	}
-
+    /* 成功的话，将读写异常的 fd 拷贝至 用户态 */
 	if (set_fd_set(n, inp, fds.res_in) ||
 	    set_fd_set(n, outp, fds.res_out) ||
 	    set_fd_set(n, exp, fds.res_ex))
@@ -692,7 +697,7 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 
 out:
 	if (bits != stack_fds)
-		kvfree(bits);
+		kvfree(bits);   /* 释放 */
 out_nofds:
 	return ret;
 }
@@ -704,21 +709,22 @@ static int kern_select(int n, fd_set __user *inp, fd_set __user *outp,
 	struct __kernel_old_timeval tv;
 	int ret;
 
-	if (tvp) {
+	if (tvp) {  /* 超时选项 */
 		if (copy_from_user(&tv, tvp, sizeof(tv)))
 			return -EFAULT;
 
 		to = &end_time;
-		if (poll_select_set_timeout(to,
+		if (poll_select_set_timeout(to, /* 计算到时时间 */
 				tv.tv_sec + (tv.tv_usec / USEC_PER_SEC),
 				(tv.tv_usec % USEC_PER_SEC) * NSEC_PER_USEC))
 			return -EINVAL;
 	}
-
-	ret = core_sys_select(n, inp, outp, exp, to);
-	return poll_select_finish(&end_time, tvp, PT_TIMEVAL, ret);
+    /* select处理 */
+	ret = core_sys_select(n, inp, outp, exp, to);   /*  */
+	return poll_select_finish(&end_time, tvp, PT_TIMEVAL, ret); /* 拷贝 timeval 到用户态 */
 }
 
+/*  */
 SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
 		fd_set __user *, exp, struct __kernel_old_timeval __user *, tvp)
 {
@@ -866,7 +872,7 @@ static inline __poll_t do_pollfd(struct pollfd *pollfd, poll_table *pwait,
 	/* userland u16 ->events contains POLL... bitmap */
 	filter = demangle_poll(pollfd->events) | EPOLLERR | EPOLLHUP;
 	pwait->_key = filter | busy_flag;
-	mask = vfs_poll(f.file, pwait);
+	mask = vfs_poll(f.file, pwait); /*  */
 	if (mask & busy_flag)
 		*can_busy_poll = true;
 	mask &= filter;		/* Mask out unneeded events. */

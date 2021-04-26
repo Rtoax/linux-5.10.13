@@ -488,12 +488,12 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
 	__put_user_size((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)), label)
 
 #ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-#define unsafe_get_user(x, ptr, err_label)					\
-do {										\
-	__inttype(*(ptr)) __gu_val;						\
-	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);		\
-	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
-} while (0)
+//#define unsafe_get_user(x, ptr, err_label)					\
+//do {										\
+//	__inttype(*(ptr)) __gu_val;						\
+//	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);		\
+//	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+//} while (0)
 #else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 #define unsafe_get_user(x, ptr, err_label)					\
 do {										\

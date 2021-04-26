@@ -18,17 +18,17 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
 
 /* wait_queue_entry::flags */
 #define WQ_FLAG_EXCLUSIVE	0x01/* 独占的 */
-#define WQ_FLAG_WOKEN		0x02
-#define WQ_FLAG_BOOKMARK	0x04
-#define WQ_FLAG_CUSTOM		0x08
-#define WQ_FLAG_DONE		0x10
+#define WQ_FLAG_WOKEN		0x02/*  */
+#define WQ_FLAG_BOOKMARK	0x04/*  */
+#define WQ_FLAG_CUSTOM		0x08/*  */
+#define WQ_FLAG_DONE		0x10/*  */
 
 /*
  * A single wait-queue entry structure:
  */
 struct wait_queue_entry {   /* 等待队列 */
-	unsigned int		flags;
-	void			*private;
+	unsigned int		flags;  /* 标志位 */
+	void			*private;   /* 私有数据 */
 	wait_queue_func_t	func;   /* 回调函数 */
 	struct list_head	entry;  /* wait_queue_head->head 中的 链表节点 */
 };

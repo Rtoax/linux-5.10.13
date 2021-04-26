@@ -480,7 +480,7 @@ struct bpf_stack_build_id {
 
 #define BPF_OBJ_NAME_LEN 16U
 
-union bpf_attr {
+union bpf_attr {    /*  */
 	struct { /* anonymous struct used by BPF_MAP_CREATE command */
 		__u32	map_type;	/* one of enum bpf_map_type */
 		__u32	key_size;	/* size of key in bytes */
@@ -495,7 +495,7 @@ union bpf_attr {
 					 */
 		char	map_name[BPF_OBJ_NAME_LEN];
 		__u32	map_ifindex;	/* ifindex of netdev to create on */
-		__u32	btf_fd;		/* fd pointing to a BTF type data */
+		__u32	btf_fd;		/* fd pointing to a BTF type data *//* BPF Type Format */
 		__u32	btf_key_type_id;	/* BTF type_id of the key */
 		__u32	btf_value_type_id;	/* BTF type_id of the value */
 		__u32	btf_vmlinux_value_type_id;/* BTF type_id of a kernel-

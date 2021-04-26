@@ -884,7 +884,7 @@ static inline unsigned imajor(const struct inode *inode)
 	return MAJOR(inode->i_rdev);
 }
 
-struct fown_struct {    /*  */
+struct fown_struct {    /* 文件拥有者 */
 	rwlock_t lock;          /* protects pid, uid, euid fields */
 	struct pid *pid;	/* pid or -pgrp where SIGIO should be sent */
 	enum pid_type pid_type;	/* Kind of process group SIGIO should be sent to */
@@ -895,7 +895,7 @@ struct fown_struct {    /*  */
 /*
  * Track a single file's readahead state
  */
-struct file_ra_state {
+struct file_ra_state {  /*  */
 	pgoff_t start;			/* where readahead started */
 	unsigned int size;		/* # of readahead pages */
 	unsigned int async_size;	/* do asynchronous readahead when
@@ -917,29 +917,29 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 
 struct file {   /*  */
 	union {
-		struct llist_node	fu_llist;
-		struct rcu_head 	fu_rcuhead;
+		struct llist_node	fu_llist;   /* 单链表 */
+		struct rcu_head 	fu_rcuhead; /* 单链表+回调函数 */
 	} f_u;
-	struct path		f_path;
+	struct path		f_path;         /* 文件路径 */
 	struct inode		*f_inode;	/* cached value */
-	const struct file_operations	*f_op;
+	const struct file_operations	*f_op;  /* 文件操作符 */
 
 	/*
 	 * Protects f_ep_links, f_flags.
 	 * Must not be taken from IRQ context.
 	 */
-	spinlock_t		f_lock;
-	enum rw_hint		f_write_hint;
-	atomic_long_t		f_count;
-	unsigned int 		f_flags;
+	spinlock_t		f_lock;         /* 文件锁 */
+	enum rw_hint	f_write_hint;   /*  */
+	atomic_long_t	f_count;
+	unsigned int 	f_flags;
 	fmode_t			f_mode;
-	struct mutex		f_pos_lock;
+	struct mutex	f_pos_lock;
 	loff_t			f_pos;
-	struct fown_struct	f_owner;
-	const struct cred	*f_cred;
-	struct file_ra_state	f_ra;
+	struct fown_struct	f_owner;    /* 文件拥有者 */
+	const struct cred	*f_cred;    /* 文件安全上下文 */
+	struct file_ra_state    f_ra;   /*  */
 
-	u64			f_version;
+	u64			f_version;          /*  */
 #ifdef CONFIG_SECURITY
 	void			*f_security;
 #endif

@@ -850,12 +850,12 @@ struct bpf_shtab_elem {
 	u8 key[];
 };
 
-struct bpf_shtab_bucket {
+struct bpf_shtab_bucket {   /* 哈希捅 */
 	struct hlist_head head;
 	raw_spinlock_t lock;
 };
 
-struct bpf_shtab {
+struct bpf_shtab {  /*  */
 	struct bpf_map map;
 	struct bpf_shtab_bucket *buckets;
 	u32 buckets_num;
@@ -1099,9 +1099,9 @@ find_first_elem:
 	return -ENOENT;
 }
 
-static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)
+static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)    /*  */
 {
-	struct bpf_shtab *htab;
+	struct bpf_shtab *htab; /*  */
 	int i, err;
 	u64 cost;
 
@@ -1140,7 +1140,7 @@ static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)
 	err = bpf_map_charge_init(&htab->map.memory, cost);
 	if (err)
 		goto free_htab;
-
+    /* 哈希 table */
 	htab->buckets = bpf_map_area_alloc(htab->buckets_num *
 					   sizeof(struct bpf_shtab_bucket),
 					   htab->map.numa_node);

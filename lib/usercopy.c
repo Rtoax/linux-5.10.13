@@ -50,7 +50,7 @@ EXPORT_SYMBOL(_copy_to_user);
  *  * 0: There were non-zero bytes present in the buffer.
  *  * 1: The buffer was full of zero bytes.
  *  * -EFAULT: access to userspace failed.
- */
+ */ /*  */
 int check_zeroed_user(const void __user *from, size_t size)
 {
 	unsigned long val;
@@ -67,7 +67,7 @@ int check_zeroed_user(const void __user *from, size_t size)
 
 	unsafe_get_user(val, (unsigned long __user *) from, err_fault);
 	if (align)
-		val &= ~aligned_byte_mask(align);
+		val &= ~ aligned_byte_mask(align);
 
 	while (size > sizeof(unsigned long)) {
 		if (unlikely(val))
