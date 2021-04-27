@@ -1119,7 +1119,7 @@ static inline void xa_release(struct xarray *xa, unsigned long index)
  * @nr_values is the count of every element in ->slots which is
  * either a value entry or a sibling of a value entry.
  */
-struct xa_node {    /*  */
+struct xa_node {    /* xarray j基数树节点 */
 	unsigned char	shift;		/* Bits remaining in each slot */
 	unsigned char	offset;		/* Slot offset in parent */
 	unsigned char	count;		/* Total entry count */

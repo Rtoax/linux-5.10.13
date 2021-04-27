@@ -317,7 +317,7 @@ enum rw_hint {
 #define IOCB_WAITQ		(1 << 19)
 #define IOCB_NOIO		(1 << 20)
 
-struct kiocb {
+struct kiocb {  /* 跟踪正在运行的同步和异步IO操作的状态 */
 	struct file		*ki_filp;
 
 	/* The 'ki_filp' pointer is shared in a union for aio */
@@ -453,23 +453,23 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
 struct address_space {  
 	struct inode		*host;      /* owner: inode, block_device拥有它的节点 */
 	struct xarray		i_pages;
-	gfp_t			gfp_mask;
-	atomic_t		i_mmap_writable;
+	gfp_t			    gfp_mask;
+	atomic_t		    i_mmap_writable;
 #ifdef CONFIG_READ_ONLY_THP_FOR_FS
 	/* number of thp, only for non-shmem files */
-	atomic_t		nr_thps;
+	atomic_t		    nr_thps;
 #endif
 	struct rb_root_cached	i_mmap; /* tree of private and shared mappings 优先搜索树的树根*/
 	struct rw_semaphore	i_mmap_rwsem;
 	unsigned long		nrpages;        /* number of total pages 页总数*/
 	unsigned long		nrexceptional;
-	pgoff_t			writeback_index;    /* writeback starts here 回写的起始偏移*/
+	pgoff_t			    writeback_index;    /* writeback starts here 回写的起始偏移*/
 	const struct address_space_operations *a_ops;   /* methods  操作该文件映射到内存的页面，比如把内存中的修改写回文件、从文件中读入数据到页面缓冲等*/
 	unsigned long		flags;          /* error bits/gfp mask ，gfp_mask掩码与错误标识 */
-	errseq_t		wb_err;
-	spinlock_t		private_lock;
+	errseq_t		    wb_err;
+	spinlock_t		    private_lock;
 	struct list_head	private_list;   /* ditto 私有address_space链表*/
-	void			*private_data;
+	void			    *private_data;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 	/*
 	 * On most architectures that alignment is already the case; but

@@ -2072,8 +2072,8 @@ static void __wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
 	if (!bdi_has_dirty_io(bdi))
 		return;
 
-	list_for_each_entry_rcu(wb, &bdi->wb_list, bdi_node)
-		wb_start_writeback(wb, reason);
+	list_for_each_entry_rcu(wb, &bdi->wb_list, bdi_node) {
+		wb_start_writeback(wb, reason);}
 }
 
 void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
@@ -2098,8 +2098,8 @@ void wakeup_flusher_threads(enum wb_reason reason)
 		blk_schedule_flush_plug(current);
 
 	rcu_read_lock();
-	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list)
-		__wakeup_flusher_threads_bdi(bdi, reason);
+	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
+		__wakeup_flusher_threads_bdi(bdi, reason);}
 	rcu_read_unlock();
 }
 

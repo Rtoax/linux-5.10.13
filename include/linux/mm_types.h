@@ -76,7 +76,7 @@ struct page {
 	 * avoid collision and false-positive PageTail().
 	 */
 	union {
-		struct {	/* Page cache and anonymous pages */
+		struct {	/* Page cache and anonymous pages 页缓存 和 匿名页 */
 			/**
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
@@ -94,14 +94,14 @@ struct page {
 			 */
 			unsigned long private;
 		};
-		struct {	/* page_pool used by netstack */
+		struct {	/* page_pool used by netstack 页池 */
 			/**
 			 * @dma_addr: might require a 64-bit value even on
 			 * 32-bit architectures.
 			 */
 			dma_addr_t dma_addr;
 		};
-		struct {	/* slab, slob and slub */
+		struct {	/* slab, slob and slub 被slab使用 */
 			union {
 				struct list_head slab_list;
 				struct {	/* Partial pages */
@@ -143,7 +143,7 @@ struct page {
 			/* For both global and memcg */
 			struct list_head deferred_list;
 		};
-		struct {	/* Page table pages */
+		struct {	/* Page table pages 页表使用的Page */
 			unsigned long _pt_pad_1;	/* compound_head */
 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
 			unsigned long _pt_pad_2;	/* mapping */
@@ -157,7 +157,7 @@ struct page {
 			spinlock_t ptl;
 #endif
 		};
-		struct {	/* ZONE_DEVICE pages */
+		struct {	/* ZONE_DEVICE pages ZONE设备Page */
 			/** @pgmap: Points to the hosting device page map. */
 			struct dev_pagemap *pgmap;
 			void *zone_device_data;

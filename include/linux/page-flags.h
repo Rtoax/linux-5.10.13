@@ -208,9 +208,7 @@ static inline int PagePoisoned(const struct page *page)
 #ifdef CONFIG_DEBUG_VM
 void page_init_poison(struct page *page, size_t size);
 #else
-static inline void page_init_poison(struct page *page, size_t size)
-{
-}
+/*  */
 #endif
 
 /*
@@ -405,7 +403,7 @@ static __always_inline int PageSwapCache(struct page *page)
 SETPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 CLEARPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 #else
-PAGEFLAG_FALSE(SwapCache)
+/*  */
 #endif
 
 PAGEFLAG(Unevictable, unevictable, PF_HEAD)
@@ -417,14 +415,13 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 #else
-PAGEFLAG_FALSE(Mlocked) __CLEARPAGEFLAG_NOOP(Mlocked)
-	TESTSCFLAG_FALSE(Mlocked)
+/*  */
 #endif
 
 #ifdef CONFIG_ARCH_USES_PG_UNCACHED
 PAGEFLAG(Uncached, uncached, PF_NO_COMPOUND)
 #else
-PAGEFLAG_FALSE(Uncached)
+/*  */
 #endif
 
 #ifdef CONFIG_MEMORY_FAILURE
@@ -433,8 +430,7 @@ TESTSCFLAG(HWPoison, hwpoison, PF_ANY)
 #define __PG_HWPOISON (1UL << PG_hwpoison)
 extern bool take_page_off_buddy(struct page *page);
 #else
-PAGEFLAG_FALSE(HWPoison)
-#define __PG_HWPOISON 0
+/*  */
 #endif
 
 #if defined(CONFIG_IDLE_PAGE_TRACKING) && defined(CONFIG_64BIT)

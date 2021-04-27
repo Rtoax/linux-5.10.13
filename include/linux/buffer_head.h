@@ -56,24 +56,35 @@ typedef void (bh_end_io_t)(struct buffer_head *bh, int uptodate);
  * mappings (via a get_block_t call), for tracking state within
  * a page (via a page_mapping) and for wrapping bio submission
  * for backward compatibility reasons (e.g. submit_bh).
+ *
+ * Buffer Head的结构体定义在/include/linux/buffer_head.h。一般不容易理解其作用，
+ * 代码上也经常和page混在一起。它其实表针的不是内存，虽然名称里面有buffer字眼。
+ * 它实际代表的是物理内存映射的块设备偏移位置。
+ * 举个简单例子，从块设备/dev/block/sda的第512 sector上的读取一个4K大小的数据，
+ * 需要用一个page结构来缓存这个数据，而这个512 sector偏移这个信息则由buffer_head
+ * 来保存。
+ * 所以page是存数据，buffer_head是存偏移。两个结构体内部互有指针保存相互的地址。
+ * 一般一个buffer_head也表征4K大小，这样一个buffer_head正好对应一个page。某些文件
+ * 系统可能采用更小的block size，例如1K，或者512字节。这样一个page最多可以用4或者
+ * 8个buffer_head结构体来描述其内存对应的物理磁盘位置。
  */
-struct buffer_head {
-	unsigned long b_state;		/* buffer state bitmap (see above) */
-	struct buffer_head *b_this_page;/* circular list of page's buffers */
-	struct page *b_page;		/* the page this bh is mapped to */
+struct buffer_head {    /* 块缓冲区首部 */
+	unsigned long        b_state;		/* 缓冲区状态标志 buffer state bitmap (see above) */
+	struct buffer_head  *b_this_page;   /* 缓冲区链表的下一个元素 circular list of page's buffers */
+	struct page         *b_page;		/* 拥有该块的缓冲区页的描述符指针 the page this bh is mapped to */
 
-	sector_t b_blocknr;		/* start block number */
-	size_t b_size;			/* size of mapping */
-	char *b_data;			/* pointer to data within the page */
+	sector_t             b_blocknr;		/* 与块设备相关的块号 start block number */
+	size_t               b_size;	    /* 块大小 size of mapping */
+	char                *b_data;		/* 块在缓冲区页的位置 pointer to data within the page */
 
-	struct block_device *b_bdev;
-	bh_end_io_t *b_end_io;		/* I/O completion */
- 	void *b_private;		/* reserved for b_end_io */
-	struct list_head b_assoc_buffers; /* associated with another mapping */
+	struct block_device *b_bdev;        /* 包含块的块设备 */
+	bh_end_io_t         *b_end_io;		/* IO完成方法 I/O completion */
+ 	void                *b_private;		/* reserved for b_end_io */
+	struct list_head     b_assoc_buffers; /* associated with another mapping */
 	struct address_space *b_assoc_map;	/* mapping this buffer is
 						   associated with */
-	atomic_t b_count;		/* users using this buffer_head */
-	spinlock_t b_uptodate_lock;	/* Used by the first bh in a page, to
+	atomic_t             b_count;		/* 块使用计数器 users using this buffer_head */
+	spinlock_t           b_uptodate_lock;	/* Used by the first bh in a page, to
 					 * serialise IO completion of other
 					 * buffers in the page */
 };

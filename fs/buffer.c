@@ -1013,6 +1013,8 @@ failed:
 /*
  * Create buffers for the specified block device block's page.  If
  * that page was dirty, the buffers are set dirty also.
+ *
+ * 把 块设备缓冲区页 添加到 页高速缓存 中
  */
 static int
 grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
@@ -3331,7 +3333,7 @@ static void recalc_bh_state(void)
 	buffer_heads_over_limit = (tot > max_buffer_heads);
 }
 
-struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
+struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)  /* 获取缓冲区首部 */
 {
 	struct buffer_head *ret = kmem_cache_zalloc(bh_cachep, gfp_flags);
 	if (ret) {
@@ -3346,7 +3348,7 @@ struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
 }
 EXPORT_SYMBOL(alloc_buffer_head);
 
-void free_buffer_head(struct buffer_head *bh)
+void free_buffer_head(struct buffer_head *bh)   /* 释放 */
 {
 	BUG_ON(!list_empty(&bh->b_assoc_buffers));
 	kmem_cache_free(bh_cachep, bh);

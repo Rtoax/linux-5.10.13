@@ -19,7 +19,7 @@ struct cgroup_subsys_state;
 typedef void (bio_end_io_t) (struct bio *);
 struct bio_crypt_ctx;
 
-struct block_device {
+struct block_device {   /* 块设备 */
 	dev_t			bd_dev;
 	int			bd_openers;
 	struct inode *		bd_inode;	/* will die */
@@ -200,7 +200,7 @@ static inline void bio_issue_init(struct bio_issue *issue,
  * main unit of I/O for the block layer and lower layers (ie drivers and
  * stacking drivers)
  */
-struct bio {
+struct bio {    /*  */
 	struct bio		*bi_next;	/* request queue link */
 	struct gendisk		*bi_disk;
 	unsigned int		bi_opf;		/* bottom bits req flags,
