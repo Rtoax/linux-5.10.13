@@ -600,7 +600,7 @@ int lsm_inode_alloc(struct inode *inode)
  *
  * Returns 0, or -ENOMEM if memory can't be allocated.
  */
-static int lsm_task_alloc(struct task_struct *task)
+static int lsm_task_alloc(struct task_struct *task) /*  */
 {
 	if (blob_sizes.lbs_task == 0) {
 		task->security = NULL;

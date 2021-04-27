@@ -113,13 +113,13 @@ struct ptrace_syscall_info {
 #define PTRACE_PEEKSIGINFO_SHARED	(1 << 0)
 
 /* Wait extended result codes for the above trace options.  */
-#define PTRACE_EVENT_FORK	1
+#define PTRACE_EVENT_FORK	1   /* 通过fork() */
 #define PTRACE_EVENT_VFORK	2
 #define PTRACE_EVENT_CLONE	3
 #define PTRACE_EVENT_EXEC	4
 #define PTRACE_EVENT_VFORK_DONE	5
 #define PTRACE_EVENT_EXIT	6
-#define PTRACE_EVENT_SECCOMP	7
+#define PTRACE_EVENT_SECCOMP	7   /* Security Computing: 限制系统调用 */
 /* Extended result codes which enabled by means other than options.  */
 #define PTRACE_EVENT_STOP	128
 

@@ -2298,7 +2298,7 @@ int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)/* 内
  */
 
 /* Slow path of a mempolicy duplicate */
-struct mempolicy *__mpol_dup(struct mempolicy *old) /*  */
+struct mempolicy *__mpol_dup(struct mempolicy *old) /* dup 内存策略 */
 {
 	struct mempolicy *new = kmem_cache_alloc(policy_cache, GFP_KERNEL);
 

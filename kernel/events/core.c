@@ -12644,24 +12644,24 @@ inherit_task_group(struct perf_event *event, struct task_struct *parent,
 /*
  * Initialize the perf_event context in task_struct
  */
-static int perf_event_init_context(struct task_struct *child, int ctxn)
+static int perf_event_init_context(struct task_struct *child, int ctxn) /*  */
 {
 	struct perf_event_context *child_ctx, *parent_ctx;
 	struct perf_event_context *cloned_ctx;
 	struct perf_event *event;
-	struct task_struct *parent = current;
+	struct task_struct *parent = current;   /* 调用 fork/clone 的进程 */
 	int inherited_all = 1;
 	unsigned long flags;
 	int ret = 0;
 
-	if (likely(!parent->perf_event_ctxp[ctxn]))
+	if (likely(!parent->perf_event_ctxp[ctxn])) /* 更可能父进程的 perf_event 为空， 也就是说没有perf 监听 父进程 */
 		return 0;
 
 	/*
 	 * If the parent's context is a clone, pin it so it won't get
 	 * swapped under us.
 	 */
-	parent_ctx = perf_pin_task_context(parent, ctxn);
+	parent_ctx = perf_pin_task_context(parent, ctxn);   /*  */
 	if (!parent_ctx)
 		return 0;
 
@@ -12742,18 +12742,18 @@ out_unlock:
 /*
  * Initialize the perf_event context in task_struct
  */
-int perf_event_init_task(struct task_struct *child)
+int perf_event_init_task(struct task_struct *child) /* 软硬件 perf_event */
 {
 	int ctxn, ret;
 
-	memset(child->perf_event_ctxp, 0, sizeof(child->perf_event_ctxp));
-	mutex_init(&child->perf_event_mutex);
-	INIT_LIST_HEAD(&child->perf_event_list);
+	memset(child->perf_event_ctxp, 0, sizeof(child->perf_event_ctxp));  /* 清零 */
+	mutex_init(&child->perf_event_mutex);   /* 互斥 */
+	INIT_LIST_HEAD(&child->perf_event_list);/*  */
 
-	for_each_task_context_nr(ctxn) {
-		ret = perf_event_init_context(child, ctxn);
+	for_each_task_context_nr(ctxn) {    /* 遍历 (ctxn=perf_hw_context; ctxn<=perf_sw_context;ctxn++) */
+		ret = perf_event_init_context(child, ctxn); /*  */
 		if (ret) {
-			perf_event_free_task(child);
+			perf_event_free_task(child);    /*  */
 			return ret;
 		}
 	}

@@ -172,8 +172,8 @@ static inline void cpu_relax(void)
 	/* Nothing */
 }
 
-#undef  HZ
-#define HZ 1000
+//#undef  HZ
+//#define HZ 1000
 static inline uint32_t raid6_jiffies(void)
 {
 	struct timeval tv;

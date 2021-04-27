@@ -143,7 +143,7 @@ struct sem_queue {
 /* Each task has a list of undo requests. They are executed automatically
  * when the process exits.
  */
-struct sem_undo {
+struct sem_undo {   /* UNDO 请求 */
 	struct list_head	list_proc;	/* per-process list: *
 						 * all undos from one process
 						 * rcu protected */
@@ -151,7 +151,7 @@ struct sem_undo {
 	struct sem_undo_list	*ulp;		/* back ptr to sem_undo_list */
 	struct list_head	list_id;	/* per semaphore array list:
 						 * all undos for one array */
-	int			semid;		/* semaphore set identifier */
+	int			    semid;		/* semaphore set identifier */
 	short			*semadj;	/* array of adjustments */
 						/* one per semaphore */
 };

@@ -95,7 +95,7 @@ struct audit_proctitle {
 };
 
 /* The per-task audit context. */
-struct audit_context {  /*  */
+struct audit_context {  /* 鉴权上下文 */
 	int		    dummy;	/* must be the first element */
 	int		    in_syscall;	/* 1 if task is in a syscall */
 	enum audit_state    state, current_state;

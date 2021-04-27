@@ -298,10 +298,10 @@ static int kthread(void *_create)   /*  */
 int tsk_fork_get_node(struct task_struct *tsk)
 {
 #ifdef CONFIG_NUMA
-	if (tsk == kthreadd_task)
+	if (tsk == kthreadd_task)   /* 如果是内核线程 kthreadd_task *//* kthreadd 内核线程 PID=2 */
 		return tsk->pref_node_fork;
 #endif
-	return NUMA_NO_NODE;
+	return NUMA_NO_NODE;    /* 不在特定node上 */
 }
 
 static void create_kthread(struct kthread_create_info *create)

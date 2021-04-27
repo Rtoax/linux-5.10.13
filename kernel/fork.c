@@ -189,80 +189,80 @@ static inline void free_task_struct(struct task_struct *tsk)
  * vmalloc() is a bit slow, and calling vfree() enough times will force a TLB
  * flush.  Try to minimize the number of calls by caching stacks.
  */
-#define NR_CACHED_STACKS 2
-static DEFINE_PER_CPU(struct vm_struct *, cached_stacks[NR_CACHED_STACKS]);
+//#define NR_CACHED_STACKS 2
+//static DEFINE_PER_CPU(struct vm_struct *, cached_stacks[NR_CACHED_STACKS]);
 
-static int free_vm_stack_cache(unsigned int cpu)
-{
-	struct vm_struct **cached_vm_stacks = per_cpu_ptr(cached_stacks, cpu);
-	int i;
-
-	for (i = 0; i < NR_CACHED_STACKS; i++) {
-		struct vm_struct *vm_stack = cached_vm_stacks[i];
-
-		if (!vm_stack)
-			continue;
-
-		vfree(vm_stack->addr);
-		cached_vm_stacks[i] = NULL;
-	}
-
-	return 0;
-}
+//static int free_vm_stack_cache(unsigned int cpu)
+//{
+//	struct vm_struct **cached_vm_stacks = per_cpu_ptr(cached_stacks, cpu);
+//	int i;
+//
+//	for (i = 0; i < NR_CACHED_STACKS; i++) {
+//		struct vm_struct *vm_stack = cached_vm_stacks[i];
+//
+//		if (!vm_stack)
+//			continue;
+//
+//		vfree(vm_stack->addr);
+//		cached_vm_stacks[i] = NULL;
+//	}
+//
+//	return 0;
+//}
 #endif
 
 static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
 #ifdef CONFIG_VMAP_STACK
-	void *stack;
-	int i;
-
-	for (i = 0; i < NR_CACHED_STACKS; i++) {
-		struct vm_struct *s;
-
-		s = this_cpu_xchg(cached_stacks[i], NULL);
-
-		if (!s)
-			continue;
-
-		/* Clear the KASAN shadow of the stack. */
-		kasan_unpoison_shadow(s->addr, THREAD_SIZE);
-
-		/* Clear stale pointers from reused stack. */
-		memset(s->addr, 0, THREAD_SIZE);
-
-		tsk->stack_vm_area = s;
-		tsk->stack = s->addr;
-		return s->addr;
-	}
-
-	/*
-	 * Allocated stacks are cached and later reused by new threads,
-	 * so memcg accounting is performed manually on assigning/releasing
-	 * stacks to tasks. Drop __GFP_ACCOUNT.
-	 */
-	stack = __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN,
-				     VMALLOC_START, VMALLOC_END,
-				     THREADINFO_GFP & ~__GFP_ACCOUNT,
-				     PAGE_KERNEL,
-				     0, node, __builtin_return_address(0));
-
-	/*
-	 * We can't call find_vm_area() in interrupt context, and
-	 * free_thread_stack() can be called in interrupt context,
-	 * so cache the vm_struct.
-	 */
-	if (stack) {
-		tsk->stack_vm_area = find_vm_area(stack);
-		tsk->stack = stack;
-	}
-	return stack;
+//	void *stack;
+//	int i;
+//
+//	for (i = 0; i < NR_CACHED_STACKS; i++) {
+//		struct vm_struct *s;
+//
+//		s = this_cpu_xchg(cached_stacks[i], NULL);
+//
+//		if (!s)
+//			continue;
+//
+//		/* Clear the KASAN shadow of the stack. */
+//		kasan_unpoison_shadow(s->addr, THREAD_SIZE);
+//
+//		/* Clear stale pointers from reused stack. */
+//		memset(s->addr, 0, THREAD_SIZE);
+//
+//		tsk->stack_vm_area = s;
+//		tsk->stack = s->addr;
+//		return s->addr;
+//	}
+//
+//	/*
+//	 * Allocated stacks are cached and later reused by new threads,
+//	 * so memcg accounting is performed manually on assigning/releasing
+//	 * stacks to tasks. Drop __GFP_ACCOUNT.
+//	 */
+//	stack = __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN,
+//				     VMALLOC_START, VMALLOC_END,
+//				     THREADINFO_GFP & ~__GFP_ACCOUNT,
+//				     PAGE_KERNEL,
+//				     0, node, __builtin_return_address(0));
+//
+//	/*
+//	 * We can't call find_vm_area() in interrupt context, and
+//	 * free_thread_stack() can be called in interrupt context,
+//	 * so cache the vm_struct.
+//	 */
+//	if (stack) {
+//		tsk->stack_vm_area = find_vm_area(stack);
+//		tsk->stack = stack;
+//	}
+//	return stack;
 #else
 	struct page *page = alloc_pages_node(node, THREADINFO_GFP,
 					     THREAD_SIZE_ORDER);
 
 	if (likely(page)) {
-		tsk->stack = kasan_reset_tag(page_address(page));
+		tsk->stack = kasan_reset_tag(page_address(page)/* 虚拟地址 */);   
 		return tsk->stack;
 	}
 	return NULL;
@@ -272,54 +272,54 @@ static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 static inline void free_thread_stack(struct task_struct *tsk)
 {
 #ifdef CONFIG_VMAP_STACK
-	struct vm_struct *vm = task_stack_vm_area(tsk);
-
-	if (vm) {
-		int i;
-
-		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
-			memcg_kmem_uncharge_page(vm->pages[i], 0);
-
-		for (i = 0; i < NR_CACHED_STACKS; i++) {
-			if (this_cpu_cmpxchg(cached_stacks[i],
-					NULL, tsk->stack_vm_area) != NULL)
-				continue;
-
-			return;
-		}
-
-		vfree_atomic(tsk->stack);
-		return;
-	}
+//	struct vm_struct *vm = task_stack_vm_area(tsk);
+//
+//	if (vm) {
+//		int i;
+//
+//		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
+//			memcg_kmem_uncharge_page(vm->pages[i], 0);
+//
+//		for (i = 0; i < NR_CACHED_STACKS; i++) {
+//			if (this_cpu_cmpxchg(cached_stacks[i],
+//					NULL, tsk->stack_vm_area) != NULL)
+//				continue;
+//
+//			return;
+//		}
+//
+//		vfree_atomic(tsk->stack);
+//		return;
+//	}
 #endif
 
 	__free_pages(virt_to_page(tsk->stack), THREAD_SIZE_ORDER);
 }
 # else
-static struct kmem_cache *thread_stack_cache;
-
-static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
-						  int node)
-{
-	unsigned long *stack;
-	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
-	stack = kasan_reset_tag(stack);
-	tsk->stack = stack;
-	return stack;
-}
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	kmem_cache_free(thread_stack_cache, tsk->stack);
-}
-
-void thread_stack_cache_init(void)  /*线程栈  */
-{
-	thread_stack_cache = kmem_cache_create_usercopy("thread_stack",
-					THREAD_SIZE, THREAD_SIZE, 0, 0,
-					THREAD_SIZE, NULL);
-	BUG_ON(thread_stack_cache == NULL);
-}
+//static struct kmem_cache *thread_stack_cache;
+//
+//static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
+//						  int node)
+//{
+//	unsigned long *stack;
+//	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
+//	stack = kasan_reset_tag(stack);
+//	tsk->stack = stack;
+//	return stack;
+//}
+//
+//static void free_thread_stack(struct task_struct *tsk)
+//{
+//	kmem_cache_free(thread_stack_cache, tsk->stack);
+//}
+//
+//void thread_stack_cache_init(void)  /*线程栈  */
+//{
+//	thread_stack_cache = kmem_cache_create_usercopy("thread_stack",
+//					THREAD_SIZE, THREAD_SIZE, 0, 0,
+//					THREAD_SIZE, NULL);
+//	BUG_ON(thread_stack_cache == NULL);
+//}
 # endif
 #endif
 
@@ -380,7 +380,6 @@ static void account_kernel_stack(struct task_struct *tsk, int account)
 	void *stack = task_stack_page(tsk); /* tast_struct->stack */
 	struct vm_struct *vm = task_stack_vm_area(tsk); /* t->stack_vm_area */
 
-
 	/* All stack pages are in the same node. */
 	if (vm)
 		mod_lruvec_page_state(vm->pages[0], NR_KERNEL_STACK_KB,
@@ -393,28 +392,28 @@ static void account_kernel_stack(struct task_struct *tsk, int account)
 static int memcg_charge_kernel_stack(struct task_struct *tsk)
 {
 #ifdef CONFIG_VMAP_STACK
-	struct vm_struct *vm = task_stack_vm_area(tsk);
-	int ret;
-
-	BUILD_BUG_ON(IS_ENABLED(CONFIG_VMAP_STACK) && PAGE_SIZE % 1024 != 0);
-
-	if (vm) {
-		int i;
-
-		BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
-
-		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++) {
-			/*
-			 * If memcg_kmem_charge_page() fails, page->mem_cgroup
-			 * pointer is NULL, and memcg_kmem_uncharge_page() in
-			 * free_thread_stack() will ignore this page.
-			 */
-			ret = memcg_kmem_charge_page(vm->pages[i], GFP_KERNEL,
-						     0);
-			if (ret)
-				return ret;
-		}
-	}
+//	struct vm_struct *vm = task_stack_vm_area(tsk);
+//	int ret;
+//
+//	BUILD_BUG_ON(IS_ENABLED(CONFIG_VMAP_STACK) && PAGE_SIZE % 1024 != 0);
+//
+//	if (vm) {
+//		int i;
+//
+//		BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
+//
+//		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++) {
+//			/*
+//			 * If memcg_kmem_charge_page() fails, page->mem_cgroup
+//			 * pointer is NULL, and memcg_kmem_uncharge_page() in
+//			 * free_thread_stack() will ignore this page.
+//			 */
+//			ret = memcg_kmem_charge_page(vm->pages[i], GFP_KERNEL,
+//						     0);
+//			if (ret)
+//				return ret;
+//		}
+//	}
 #endif
 	return 0;
 }
@@ -872,42 +871,42 @@ void set_task_stack_end_magic(struct task_struct *tsk)/* 设置越界检测 以�
 	stackend = end_of_stack(tsk);   /*  */
 	*stackend = STACK_END_MAGIC;	/* for overflow detection 越界检测*/
 }
-                            /*  */
+                            /* 拷贝一个新的 task_struct */
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
 	unsigned long *stack;
-	struct vm_struct __maybe_unused *stack_vm_area ;
+	struct vm_struct __maybe_unused *stack_vm_area ;/*  */
 	int err;
 
 	if (node == NUMA_NO_NODE)
-		node = tsk_fork_get_node(orig); /* kthreadd  */
-	tsk = alloc_task_struct_node(node); /* kmem_cache_alloc */
+		node = tsk_fork_get_node(orig); /* kthreadd 的node */
+	tsk = alloc_task_struct_node(node); /* kmem_cache_alloc *//* 分配 task_struct 结构 */
 	if (!tsk)
 		return NULL;
-
+    /* 分配进程栈 */
 	stack = alloc_thread_stack_node(tsk, node); /* task_struct->stack */
 	if (!stack)
 		goto free_tsk;
 
-	if (memcg_charge_kernel_stack(tsk)) /*  */
+	if (memcg_charge_kernel_stack(tsk)) /* =0 */
 		goto free_stack;
 
-	stack_vm_area = task_stack_vm_area(tsk);    /*  */
+	stack_vm_area = task_stack_vm_area(tsk);    /* =NULL */
 
-	err = arch_dup_task_struct(tsk, orig);  /*  */
+	err = arch_dup_task_struct(tsk, orig);  /* 直接赋值 */
 
 	/*
 	 * arch_dup_task_struct() clobbers the stack-related fields.  Make
 	 * sure they're properly initialized before using any stack-related
 	 * functions again.
 	 */
-	tsk->stack = stack;
+	tsk->stack = stack; /* 进程栈 */
 #ifdef CONFIG_VMAP_STACK
-	tsk->stack_vm_area = stack_vm_area;
+//	tsk->stack_vm_area = stack_vm_area;
 #endif
 #ifdef CONFIG_THREAD_INFO_IN_TASK
-	refcount_set(&tsk->stack_refcount, 1);  /*  */
+	refcount_set(&tsk->stack_refcount, 1);  /* 栈的引用计数 */
 #endif
 
 	if (err)
@@ -930,12 +929,12 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	setup_thread_stack(tsk, orig);  /*  */
 	clear_user_return_notifier(tsk);/* 清理 标志位 */
 	clear_tsk_need_resched(tsk);    /* 清理 标志位 */
-	set_task_stack_end_magic(tsk);  /*  */
+	set_task_stack_end_magic(tsk);  /* 设置栈边界 magic */
 
 #ifdef CONFIG_STACKPROTECTOR
-	tsk->stack_canary = get_random_canary();
+	tsk->stack_canary = get_random_canary();    /* 随机金丝雀 */
 #endif
-	if (orig->cpus_ptr == &orig->cpus_mask)
+	if (orig->cpus_ptr == &orig->cpus_mask) /* CPU亲和性 */
 		tsk->cpus_ptr = &tsk->cpus_mask;
 
 	/*
@@ -1046,7 +1045,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	spin_lock_init(&mm->arg_lock);
 	mm_init_cpumask(mm);
 	mm_init_aio(mm);
-	mm_init_owner(mm, p);
+	mm_init_owner(mm, p);   /* mm->owner = p */
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	mmu_notifier_subscriptions_init(mm);
 	init_tlb_flush_pending(mm);
@@ -1276,13 +1275,13 @@ static void complete_vfork_done(struct task_struct *tsk)
 }
 
 static int wait_for_vfork_done(struct task_struct *child,
-				struct completion *vfork)
+				struct completion *vfork)   /*  */
 {
 	int killed;
 
 	freezer_do_not_count();
 	cgroup_enter_frozen();
-	killed = wait_for_completion_killable(vfork);
+	killed = wait_for_completion_killable(vfork);   /* vfork 等待，直到 子进程 退出 */
 	cgroup_leave_frozen(false);
 	freezer_count();
 
@@ -1427,9 +1426,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 		return 0;
 
 	/* initialize the new vmacache entries */
-	vmacache_flush(tsk);
+	vmacache_flush(tsk);    /*  */
 
-	if (clone_flags & CLONE_VM) {   /* 如果共享 VM 区 */
+	if (clone_flags & CLONE_VM) {   /* 如果共享 VM 区，直接返回 */
 		mmget(oldmm);
 		mm = oldmm;
 		goto good_mm;
@@ -1441,18 +1440,18 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 		goto fail_nomem;
 
 good_mm:
-	tsk->mm = mm;
-	tsk->active_mm = mm;
+	tsk->mm = mm;   /* 赋值 */
+	tsk->active_mm = mm;    /* 赋值 */
 	return 0;
 
 fail_nomem:
 	return retval;
 }
 
-static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
+static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 {
 	struct fs_struct *fs = current->fs;
-	if (clone_flags & CLONE_FS) {
+	if (clone_flags & CLONE_FS) {   /*  */
 		/* tsk->fs is already what we want */
 		spin_lock(&fs->lock);
 		if (fs->in_exec) {
@@ -1481,12 +1480,12 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 	if (!oldf)
 		goto out;
 
-	if (clone_flags & CLONE_FILES) {
-		atomic_inc(&oldf->count);
+	if (clone_flags & CLONE_FILES) {    /* 如果克隆 FILES */
+		atomic_inc(&oldf->count);   /* 引用计数+1 返回 */
 		goto out;
 	}
 
-	newf = dup_fd(oldf, NR_OPEN_MAX, &error);   /*  */
+	newf = dup_fd(oldf, NR_OPEN_MAX, &error);   /* 赋值 FILES */
 	if (!newf)
 		goto out;
 
@@ -1496,7 +1495,7 @@ out:
 	return error;
 }
 
-static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
+static int copy_io(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 {
 #ifdef CONFIG_BLOCK
 	struct io_context *ioc = current->io_context;
@@ -1507,7 +1506,7 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 	/*
 	 * Share io context with parent, if CLONE_IO is set
 	 */
-	if (clone_flags & CLONE_IO) {
+	if (clone_flags & CLONE_IO) {   /* 克隆 IO 上下文 */
 		ioc_task_link(ioc);
 		tsk->io_context = ioc;
 	} else if (ioprio_valid(ioc->ioprio)) {
@@ -1522,12 +1521,12 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
+static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk) /*  */
 {
 	struct sighand_struct *sig;
 
 	if (clone_flags & CLONE_SIGHAND) {
-		refcount_inc(&current->sighand->count);
+		refcount_inc(&current->sighand->count); /* 添加引用计数 */
 		return 0;
 	}
 	sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
@@ -1690,7 +1689,7 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 		task->signal->pids[type] = pid;
 }
 
-static inline void rcu_copy_process(struct task_struct *p)
+static inline void rcu_copy_process(struct task_struct *p)  /* 初始化RCU 字段 */
 {
 #ifdef CONFIG_PREEMPT_RCU
 	p->rcu_read_lock_nesting = 0;
@@ -1815,7 +1814,7 @@ static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
 	return poll_flags;
 }
 
-const struct file_operations pidfd_fops = {
+const struct file_operations pidfd_fops = { /*  */
 	.release = pidfd_release,
 	.poll = pidfd_poll,
 #ifdef CONFIG_PROC_FS
@@ -1865,7 +1864,7 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
  */
-static __latent_entropy struct task_struct *copy_process(   /*  */
+static __latent_entropy struct task_struct *copy_process(   /* 复制进程，并不运行 */
 					struct pid *pid,
 					int trace,
 					int node,
@@ -1881,16 +1880,19 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	/*
 	 * Don't allow sharing the root directory with processes in a different
 	 * namespace
+	 * 如果只设置了 NEWNS 和 FS ，返回参数不可用
 	 */
 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
 		return ERR_PTR(-EINVAL);
-
+    /* NEWUSER 和 FS */
 	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
 		return ERR_PTR(-EINVAL);
 
 	/*
 	 * Thread groups must share signals as well, and detached threads
 	 * can only be started up within the thread group.
+	 *
+	 * 线程组共享 并且 信号处理 不共享，返回错误
 	 */
 	if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
 		return ERR_PTR(-EINVAL);
@@ -1899,6 +1901,8 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * Shared signal handlers imply shared VM. By way of the above,
 	 * thread groups also imply shared VM. Blocking this case allows
 	 * for various simplifications in other code.
+	 * 
+	 * 如果 信号处理 共享，但是 内存地址不共享，返回错误
 	 */
 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
 		return ERR_PTR(-EINVAL);
@@ -1908,6 +1912,8 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * not reaped by their parent (swapper). To solve this and to avoid
 	 * multi-rooted process trees, prevent global and container-inits
 	 * from creating siblings.
+	 *
+	 * 如果 和当前进程共享父进程，但是 当前进程 不可 kill，返回错误
 	 */
 	if ((clone_flags & CLONE_PARENT) &&
 				current->signal->flags & SIGNAL_UNKILLABLE)
@@ -1916,6 +1922,11 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	/*
 	 * If the new process will be in a different pid or user namespace
 	 * do not allow it to share a thread group with the forking task.
+	 *
+	 * 如果共享线程组，
+	 *      1. 那就不应该有 NEWUSER 和 NEWPID
+	 *      2. 同时 当前进程的pid_namespace 应该等于 namespace->pid_namespace
+	 * 否则失败
 	 */
 	if (clone_flags & CLONE_THREAD) {
 		if ((clone_flags & (CLONE_NEWUSER | CLONE_NEWPID)) ||
@@ -1926,12 +1937,16 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	/*
 	 * If the new process will be in a different time namespace
 	 * do not allow it to share VM or a thread group with the forking task.
+	 *
+	 * 如果共享线程组 或者 共享虚拟地址，那么
+	 *      当前进程 的 time_namespace 应该等于 time_ns_for_children
 	 */
 	if (clone_flags & (CLONE_THREAD | CLONE_VM)) {
 		if (nsp->time_ns != nsp->time_ns_for_children)
 			return ERR_PTR(-EINVAL);
 	}
 
+    /* 如果克隆 FD  */
 	if (clone_flags & CLONE_PIDFD) {
 		/*
 		 * - CLONE_DETACHED is blocked so that we can potentially
@@ -1952,16 +1967,16 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	INIT_HLIST_NODE(&delayed.node);
 
 	spin_lock_irq(&current->sighand->siglock);/* 保护 task_struct->signal */
-	if (!(clone_flags & CLONE_THREAD))
+	if (!(clone_flags & CLONE_THREAD))  /* 如果不属于一个线程组，需要保存信号 */
 		hlist_add_head(&delayed.node, &current->signal->multiprocess);
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
-	if (signal_pending(current))    /*  */
+	if (signal_pending(current))    /* 检测当前进程是否由挂起的信号，如果有，返回 */
 		goto fork_out;
 
 	retval = -ENOMEM;
-	p = dup_task_struct(current, node); /*  */
+	p = dup_task_struct(current, node); /* 拷贝一个 task_struct 结构 */
 	if (!p)
 		goto fork_out;
 
@@ -1970,20 +1985,20 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * to any of the bad_fork_* labels. This is to avoid freeing
 	 * p->set_child_tid which is (ab)used as a kthread's data pointer for
 	 * kernel threads (PF_KTHREAD).
-	 */
+	 *//*  */
 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
 	/*
 	 * Clear TID on mm_release()?
-	 */
+	 *//*  */
 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
 	ftrace_graph_init_task(p);  /* tracing */
 
 	rt_mutex_init_task(p);  /*  */
 
-	lockdep_assert_irqs_enabled();  /*  */
+	lockdep_assert_irqs_enabled();  /* 死锁检测 */
 #ifdef CONFIG_PROVE_LOCKING
-	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
+//	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
 #endif
 	retval = -EAGAIN;
 	if (atomic_read(&p->real_cred->user->processes) >=
@@ -1992,7 +2007,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
 			goto bad_fork_free;
 	}
-	current->flags &= ~PF_NPROC_EXCEEDED;
+	current->flags &= ~PF_NPROC_EXCEEDED;   /* 清理超出位 */
 
 	retval = copy_creds(p, clone_flags);
 	if (retval < 0)
@@ -2008,21 +2023,21 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 		goto bad_fork_cleanup_count;
 
 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
-	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);
-	p->flags |= PF_FORKNOEXEC;
+	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);/* 清理超级用户，工作队列worker，空闲线程标志位 */
+	p->flags |= PF_FORKNOEXEC;  /* fork but didn't exec */
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
-	rcu_copy_process(p);
+	rcu_copy_process(p);    /*  */
 	p->vfork_done = NULL;
-	spin_lock_init(&p->alloc_lock);
+	spin_lock_init(&p->alloc_lock); /* 初始化spinlock */
 
-	init_sigpending(&p->pending);
+	init_sigpending(&p->pending);   /* 信号挂起链表初始化 */
 
-	p->utime = p->stime = p->gtime = 0;
+	p->utime = p->stime = p->gtime = 0; /* 时间清零 */
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
-	p->utimescaled = p->stimescaled = 0;
+//	p->utimescaled = p->stimescaled = 0;
 #endif
-	prev_cputime_init(&p->prev_cputime);
+//	prev_cputime_init(&p->prev_cputime);
 
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
 	seqcount_init(&p->vtime.seqcount);
@@ -2044,23 +2059,23 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	p->psi_flags = 0;
 #endif
 
-	task_io_accounting_init(&p->ioac);
-	acct_clear_integrals(p);    /*  */
+	task_io_accounting_init(&p->ioac);  /* 清零 */
+	acct_clear_integrals(p);    /* 清零 */
 
-	posix_cputimers_init(&p->posix_cputimers);
+	posix_cputimers_init(&p->posix_cputimers);  /* 定时器初始化 */
 
 	p->io_context = NULL;
-	audit_set_context(p, NULL);
-	cgroup_fork(p); /*  */
+	audit_set_context(p, NULL); /* 清 NULL */
+	cgroup_fork(p);     /* 控制组初始化 */
 #ifdef CONFIG_NUMA
-	p->mempolicy = mpol_dup(p->mempolicy);
+	p->mempolicy = mpol_dup(p->mempolicy);  /* 内存策略 numa 相关*/
 	if (IS_ERR(p->mempolicy)) {
 		retval = PTR_ERR(p->mempolicy);
 		p->mempolicy = NULL;
 		goto bad_fork_cleanup_threadgroup_lock;
 	}
 #endif
-#ifdef CONFIG_CPUSETS
+#ifdef CONFIG_CPUSETS   /*  */
 	p->cpuset_mem_spread_rotor = NUMA_NO_NODE;
 	p->cpuset_slab_spread_rotor = NUMA_NO_NODE;
 	seqcount_spinlock_init(&p->mems_allowed_seq, &p->alloc_lock);
@@ -2088,50 +2103,50 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 #endif
 
 	/* Perform scheduler related setup. Assign this task to a CPU. */
-	retval = sched_fork(clone_flags, p);    /*  */
+	retval = sched_fork(clone_flags, p);    /* 调度 */
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
-	retval = perf_event_init_task(p);   /*  */
+	retval = perf_event_init_task(p);   /* perf_event */
 	if (retval)
 		goto bad_fork_cleanup_policy;
-	retval = audit_alloc(p);    /*  */
+	retval = audit_alloc(p);            /* 鉴权结构分配 */
 	if (retval)
 		goto bad_fork_cleanup_perf;
 	/* copy all the process information */
-	shm_init_task(p);   /*  */
-	retval = security_task_alloc(p, clone_flags);   /*  */
+	shm_init_task(p);   /* System V 共享内存 */
+	retval = security_task_alloc(p, clone_flags);   /* lsm 安全模块 */
 	if (retval)
 		goto bad_fork_cleanup_audit;
-	retval = copy_semundo(clone_flags, p);  /*  */
+	retval = copy_semundo(clone_flags, p);  /* undo */
 	if (retval)
 		goto bad_fork_cleanup_security;
-	retval = copy_files(clone_flags, p);    /*  */
+	retval = copy_files(clone_flags, p);    /* 文件 */
 	if (retval)
 		goto bad_fork_cleanup_semundo;
-	retval = copy_fs(clone_flags, p);       /*  */
+	retval = copy_fs(clone_flags, p);       /* 文件系统 */
 	if (retval)
 		goto bad_fork_cleanup_files;
-	retval = copy_sighand(clone_flags, p);  /*  */
+	retval = copy_sighand(clone_flags, p);  /* 信号处理 */
 	if (retval)
 		goto bad_fork_cleanup_fs;
-	retval = copy_signal(clone_flags, p);   /*  */
+	retval = copy_signal(clone_flags, p);   /* 信号 */
 	if (retval)
 		goto bad_fork_cleanup_sighand;
-	retval = copy_mm(clone_flags, p);       /*  */
+	retval = copy_mm(clone_flags, p);       /* mm 数据结构 */
 	if (retval)
 		goto bad_fork_cleanup_signal;
-	retval = copy_namespaces(clone_flags, p);
+	retval = copy_namespaces(clone_flags, p);   /* 命名空间 */
 	if (retval)
 		goto bad_fork_cleanup_mm;
-	retval = copy_io(clone_flags, p);
+	retval = copy_io(clone_flags, p);   /* IO */
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
-	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls);
+	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls); /* 线程 */
 	if (retval)
 		goto bad_fork_cleanup_io;
 
-	stackleak_task_init(p);
+	stackleak_task_init(p); /*  */
 
 	if (pid != &init_struct_pid) {
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,
@@ -2147,13 +2162,13 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * descriptor table (so that the pidfd doesn't leak into the child
 	 * if the fd table isn't shared).
 	 */
-	if (clone_flags & CLONE_PIDFD) {
+	if (clone_flags & CLONE_PIDFD) {    /* FD */
 		retval = get_unused_fd_flags(O_RDWR | O_CLOEXEC);
 		if (retval < 0)
 			goto bad_fork_free_pid;
 
 		pidfd = retval;
-
+        /*  */
 		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid,
 					      O_RDWR | O_CLOEXEC);
 		if (IS_ERR(pidfile)) {
@@ -2163,7 +2178,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 		}
 		get_pid(pid);	/* held by pidfile now */
 
-		retval = put_user(pidfd, args->pidfd);
+		retval = put_user(pidfd, args->pidfd);  /*  */
 		if (retval)
 			goto bad_fork_put_pidfd;
 	}
@@ -2171,7 +2186,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 #ifdef CONFIG_BLOCK
 	p->plug = NULL;
 #endif
-	futex_init_task(p);
+	futex_init_task(p); /* futex */
 
 	/*
 	 * sigaltstack should be cleared when sharing the same VM
@@ -2191,7 +2206,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	clear_tsk_latency_tracing(p);
 
 	/* ok, now we should be set up.. */
-	p->pid = pid_nr(pid);
+	p->pid = pid_nr(pid);   /*  */
 	if (clone_flags & CLONE_THREAD) {
 		p->group_leader = current->group_leader;
 		p->tgid = current->tgid;
@@ -2214,7 +2229,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * between here and cgroup_post_fork() if an organisation operation is in
 	 * progress.
 	 */
-	retval = cgroup_can_fork(p, args);
+	retval = cgroup_can_fork(p, args);  /*  */
 	if (retval)
 		goto bad_fork_put_pidfd;
 
@@ -2226,7 +2241,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * visible to the system.
 	 */
 
-	p->start_time = ktime_get_ns();
+	p->start_time = ktime_get_ns(); /*  */
 	p->start_boottime = ktime_get_boottime_ns();
 
 	/*
@@ -2257,9 +2272,9 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	 * Copy seccomp details explicitly here, in case they were changed
 	 * before holding sighand lock.
 	 */
-	copy_seccomp(p);
+	copy_seccomp(p);    /*  */
 
-	rseq_fork(p, clone_flags);
+	rseq_fork(p, clone_flags);  /*  */
 
 	/* Don't start children in a dying pid namespace */
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
@@ -2277,7 +2292,7 @@ static __latent_entropy struct task_struct *copy_process(   /*  */
 	if (pidfile)
 		fd_install(pidfd, pidfile);
 
-	init_task_pid_links(p);
+	init_task_pid_links(p); /*  */
 	if (likely(p->pid)) {
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
 
@@ -2438,10 +2453,10 @@ struct mm_struct *copy_init_mm(void)    /*  */
  *
  * args->exit_signal is expected to be checked for sanity by the caller.
  */
-pid_t kernel_clone(struct kernel_clone_args *args)  /*  */
+pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...) */
 {
 	u64 clone_flags = args->flags;
-	struct completion vfork;
+	struct completion vfork;      /* 等待结束 */
 	struct pid *pid;
 	struct task_struct *p;
 	int trace = 0;
@@ -2474,12 +2489,12 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /*  */
 			trace = PTRACE_EVENT_CLONE;
 		else
 			trace = PTRACE_EVENT_FORK;
-
+        /* 检查标志位  ，如果没有设置 ptrace 标志位，trace=0*/
 		if (likely(!ptrace_event_enabled(current, trace)))  /* 追踪 */
 			trace = 0;  /* 不可追踪 */
 	}
-
-	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);  /*  */
+    /* 复制进程，并不运行 */
+	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);    /*  */
 	add_latent_entropy();
 
 	if (IS_ERR(p))
@@ -2499,17 +2514,18 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /*  */
 
 	if (clone_flags & CLONE_VFORK) {
 		p->vfork_done = &vfork;
-		init_completion(&vfork);
+		init_completion(&vfork);    /* VFORK 机制 使用completion完成 */
 		get_task_struct(p);
 	}
 
-	wake_up_new_task(p);
+    /* 唤醒 新进程 */
+	wake_up_new_task(p);    /* 这里唤醒新的 task 这就是为什么 fork 返回两次 */
 
 	/* forking complete and child started to run, tell ptracer */
 	if (unlikely(trace))
 		ptrace_event_pid(trace, pid);
 
-	if (clone_flags & CLONE_VFORK) {
+	if (clone_flags & CLONE_VFORK) {    /* vfork() */
 		if (!wait_for_vfork_done(p, &vfork))
 			ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
 	}
@@ -2535,7 +2551,7 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 }
 
 #ifdef __ARCH_WANT_SYS_FORK
-SYSCALL_DEFINE0(fork)
+SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
 {
 #ifdef CONFIG_MMU
 	struct kernel_clone_args args = {

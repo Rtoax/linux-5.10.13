@@ -941,7 +941,7 @@ static inline struct audit_context *audit_alloc_context(enum audit_state state)
  * specified task.  This is called from copy_process, so no lock is
  * needed.
  */
-int audit_alloc(struct task_struct *tsk)
+int audit_alloc(struct task_struct *tsk)    /*  */
 {
 	struct audit_context *context;
 	enum audit_state     state;

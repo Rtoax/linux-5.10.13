@@ -115,11 +115,11 @@ enum hrtimer_restart {
  *
  * The hrtimer structure must be initialized by hrtimer_init()
  */
-struct hrtimer {    /*  */
-	struct timerqueue_node		node;
-	ktime_t				_softexpires;
-	enum hrtimer_restart		(*function)(struct hrtimer *);
-	struct hrtimer_clock_base	*base;
+struct hrtimer {    /* 高精度定时器 */
+	struct timerqueue_node		node;   /* 在红黑树中的节点 */
+	ktime_t				_softexpires;   /* 过期时间 */
+	enum hrtimer_restart		(*function)(struct hrtimer *);  /* 过期回调函数 */
+	struct hrtimer_clock_base	*base;  /* 红黑树的根 */
 	u8				state;
 	u8				is_rel;
 	u8				is_soft;
@@ -156,15 +156,15 @@ struct hrtimer_sleeper {
  * @get_time:		function to retrieve the current time of the clock
  * @offset:		offset of this clock to the monotonic base
  */
-struct hrtimer_clock_base {
-	struct hrtimer_cpu_base	*cpu_base;
-	unsigned int		index;
-	clockid_t		clockid;
-	seqcount_raw_spinlock_t	seq;
-	struct hrtimer		*running;/* 记录正被执行的 timer */
-	struct timerqueue_head	active;
-	ktime_t			(*get_time)(void);
-	ktime_t			offset;
+struct hrtimer_clock_base { /*  */
+	struct hrtimer_cpu_base	*cpu_base;  /*  */
+	unsigned int		index;      /*  */
+	clockid_t		clockid;        /* 时钟策略 */
+	seqcount_raw_spinlock_t	seq;    /*  */
+	struct hrtimer		*running;   /* 记录正被执行的 timer */
+	struct timerqueue_head	active; /* 红黑树的根 */
+	ktime_t			(*get_time)(void);  /* 获取时间 */
+	ktime_t			offset;         /*  */
 } __hrtimer_clock_base_align;
 
 enum  hrtimer_base_type {
@@ -211,7 +211,7 @@ enum  hrtimer_base_type {
  *	 Do not dereference the pointer because it is not reliable on
  *	 cross cpu removals.
  */
-struct hrtimer_cpu_base {
+struct hrtimer_cpu_base {   /*  */
 	raw_spinlock_t			lock;
 	unsigned int			cpu;
 	unsigned int			active_bases;

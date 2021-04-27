@@ -277,9 +277,9 @@ struct vtime {
  * @UCLAMP_CNT:	Utilization clamp constraints count
  */
 enum uclamp_id {
-	UCLAMP_MIN = 0,
-	UCLAMP_MAX,
-	UCLAMP_CNT
+	UCLAMP_MIN = 0, /*  */
+	UCLAMP_MAX,     /*  */
+	UCLAMP_CNT      /*  */
 };
 
 #ifdef CONFIG_SMP
@@ -352,9 +352,9 @@ struct load_weight {    /* 负载权重 */
  * estimated utilization. This allows to absorb sporadic drops in utilization
  * of an otherwise almost periodic task.
  */
-struct util_est {   /*  */
-	unsigned int			enqueued;
-	unsigned int			ewma;
+struct util_est {   /* 评估利用率 */
+	unsigned int			enqueued;   /* 任务/ CPU的瞬时估计利用率 */
+	unsigned int			ewma;       /* 任务的指数加权移动平均（EWMA）利用率 */
 #define UTIL_EST_WEIGHT_SHIFT		2
 } __attribute__((__aligned__(sizeof(u64))));
 
@@ -402,17 +402,19 @@ struct util_est {   /*  */
  *
  * Then it is the load_weight's responsibility to consider overflow
  * issues.
+ *
+ * 抽象一个se或者cfs rq的平均负载
  */
 struct sched_avg {  /*  */
-	u64				last_update_time;
-	u64				load_sum;
-	u64				runnable_sum;
-	u32				util_sum;
-	u32				period_contrib;
-	unsigned long			load_avg;
-	unsigned long			runnable_avg;
-	unsigned long			util_avg;
-	struct util_est			util_est;
+	u64				last_update_time;   /*  */
+	u64				load_sum;           /*  */
+	u64				runnable_sum;       /*  */
+	u32				util_sum;           /*  */
+	u32				period_contrib;     /*  */
+	unsigned long			load_avg;       /* runnable% * scale_load_down(load) */
+	unsigned long			runnable_avg;   /* runnable% * SCHED_CAPACITY_SCALE */
+	unsigned long			util_avg;       /* running% * SCHED_CAPACITY_SCALE */
+	struct util_est			util_est;   /* 评估利用率 */
 } ____cacheline_aligned;
 
 struct sched_statistics {   /* 调度统计 */
@@ -451,17 +453,17 @@ struct sched_statistics {   /* 调度统计 */
 #endif
 };
 
-struct sched_entity {/* 调度实体 */
+struct sched_entity {   /* 调度实体 */
 	/* For load-balancing: */
-	struct load_weight		load;   /*  */
-	struct rb_node			run_node;
-	struct list_head		group_node;
-	unsigned int			on_rq;
+	struct load_weight		load;       /*  */
+	struct rb_node			run_node;   /*  */
+	struct list_head		group_node; /*  */
+	unsigned int			on_rq;      /*  */
 
-	u64				exec_start;
-	u64				sum_exec_runtime;
-	u64				vruntime;
-	u64				prev_sum_exec_runtime;
+	u64				exec_start;         /*  */
+	u64				sum_exec_runtime;   /*  */
+	u64				vruntime;           /*  */
+	u64				prev_sum_exec_runtime;  /*  */
 
 	u64				nr_migrations;
 
@@ -563,7 +565,7 @@ struct sched_dl_entity {
 	 * Bandwidth enforcement timer. Each -deadline task has its
 	 * own bandwidth to be enforced, thus we need one timer per task.
 	 */
-	struct hrtimer			dl_timer;
+	struct hrtimer			dl_timer;   /*  */
 
 	/*
 	 * Inactive timer, responsible for decreasing the active utilization
@@ -572,7 +574,7 @@ struct sched_dl_entity {
 	 * timer is needed to decrease the active utilization at the correct
 	 * time.
 	 */
-	struct hrtimer inactive_timer;
+	struct hrtimer inactive_timer;      /*  */
 
 #ifdef CONFIG_RT_MUTEXES
 	/*
@@ -629,11 +631,11 @@ union rcu_special {
 	u32 s; /* Set of bits. */
 };
 
-enum perf_event_task_context {  /*  */
+enum perf_event_task_context {  /* perf_event task 上下文 */
 	perf_invalid_context = -1,
-	perf_hw_context = 0,
-	perf_sw_context,
-	perf_nr_task_contexts,
+	perf_hw_context = 0,    /* 硬件 */
+	perf_sw_context,        /* 软件 */
+	perf_nr_task_contexts,  /*  */
 };
 
 struct wake_q_node {
@@ -647,7 +649,7 @@ struct wake_q_node {
 //|                       |             |                    |
 //|      thread_info      |<----------->|     task_struct    |
 //+-----------------------+             +--------------------+
-struct task_struct {    /*  */
+struct task_struct {    /* PCB */
 #ifdef CONFIG_THREAD_INFO_IN_TASK   /*  */
 	/*
 	 * For reasons of header soup (see current_thread_info()), this
@@ -664,7 +666,7 @@ struct task_struct {    /*  */
 	 */
 	randomized_struct_fields_start
 
-	void				*stack;/*  */
+	void				*stack; /* thread_union */
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: 例如: PF_IDLE */
 	unsigned int			flags;  
@@ -765,8 +767,8 @@ struct task_struct {    /*  */
 
 	struct list_head		tasks;/* 任务链表 */
 #ifdef CONFIG_SMP
-	struct plist_node		pushable_tasks;/* 优先级队列 */
-	struct rb_node			pushable_dl_tasks;/* deadline 任务 */
+	struct plist_node		pushable_tasks;     /* 优先级队列 */
+	struct rb_node			pushable_dl_tasks;  /* deadline 任务 */
 #endif
 
 	struct mm_struct		*mm;        /* `mm` 指向进程地址空间 */
@@ -1122,7 +1124,7 @@ struct task_struct {    /*  */
 	unsigned int			futex_state;
 #endif
 #ifdef CONFIG_PERF_EVENTS
-	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
+	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];    /* 软件+硬件 perf_event */
 	struct mutex			perf_event_mutex;
 	struct list_head		perf_event_list;
 #endif
@@ -1346,7 +1348,7 @@ struct task_struct {    /*  */
 #endif
 #ifdef CONFIG_SECURITY
 	/* Used by LSM modules for access restriction: */
-	void				*security;
+	void				*security;  /*  */
 #endif
 
 #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
@@ -1549,7 +1551,7 @@ extern struct pid *cad_pid;
 #define PF_DUMPCORE		0x00000200	/* Dumped core */
 #define PF_SIGNALED		0x00000400	/* Killed by a signal */
 #define PF_MEMALLOC		0x00000800	/* Allocating memory */
-#define PF_NPROC_EXCEEDED	0x00001000	/* set_user() noticed that RLIMIT_NPROC was exceeded */
+#define PF_NPROC_EXCEEDED	0x00001000	/* set_user() noticed that RLIMIT_NPROC was exceeded(超出) */
 #define PF_USED_MATH		0x00002000	/* If unset the fpu must be initialized before use */
 #define PF_USED_ASYNC		0x00004000	/* Used async_schedule*(), used by module init */
 #define PF_NOFREEZE		0x00008000	/* This thread should not be frozen */

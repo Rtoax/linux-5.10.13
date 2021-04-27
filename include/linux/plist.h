@@ -80,7 +80,7 @@ struct plist_head {
 	struct list_head node_list;
 };
 
-struct plist_node {/* 优先级队列 */
+struct plist_node { /* 优先级队列： 类似于跳表，二维双向链表 */
 	int			prio;
 	struct list_head	prio_list;
 	struct list_head	node_list;
@@ -230,11 +230,11 @@ static inline int plist_node_empty(const struct plist_node *node)
  * @member:	the name of the list_head within the struct
  */
 #ifdef CONFIG_DEBUG_PLIST
-# define plist_first_entry(head, type, member)	\
-({ \
-	WARN_ON(plist_head_empty(head)); \
-	container_of(plist_first(head), type, member); \
-})
+//# define plist_first_entry(head, type, member)	\
+//({ \
+//	WARN_ON(plist_head_empty(head)); \
+//	container_of(plist_first(head), type, member); \
+//})
 #else
 # define plist_first_entry(head, type, member)	\
 	container_of(plist_first(head), type, member)
@@ -247,11 +247,11 @@ static inline int plist_node_empty(const struct plist_node *node)
  * @member:	the name of the list_head within the struct
  */
 #ifdef CONFIG_DEBUG_PLIST
-# define plist_last_entry(head, type, member)	\
-({ \
-	WARN_ON(plist_head_empty(head)); \
-	container_of(plist_last(head), type, member); \
-})
+//# define plist_last_entry(head, type, member)	\
+//({ \
+//	WARN_ON(plist_head_empty(head)); \
+//	container_of(plist_last(head), type, member); \
+//})
 #else
 # define plist_last_entry(head, type, member)	\
 	container_of(plist_last(head), type, member)

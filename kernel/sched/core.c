@@ -828,7 +828,7 @@ int tg_nop(struct task_group *tg, void *data)
 }
 #endif
 
-static void set_load_weight(struct task_struct *p, bool update_load)
+static void set_load_weight(struct task_struct *p, bool update_load)    /*  */
 {
 	int prio = p->static_prio - MAX_RT_PRIO/* 100 */;    //calculate initial `prio`
 	struct load_weight *load = &p->se.load;
@@ -836,7 +836,7 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	/*
 	 * SCHED_IDLE tasks get minimal weight:
 	 */
-	if (task_has_idle_policy(p)) {
+	if (task_has_idle_policy(p)) {  /* 空闲线程 */
 		load->weight = scale_load(WEIGHT_IDLEPRIO);
 		load->inv_weight = WMULT_IDLEPRIO;
 		return;
@@ -846,10 +846,10 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	 * SCHED_OTHER tasks have to update their load when changing their
 	 * weight
 	 */
-	if (update_load && p->sched_class == &fair_sched_class) {
+	if (update_load && p->sched_class == &fair_sched_class) {   /* CFS 调度 */
 		reweight_task(p, prio);
 	} else {
-		load->weight = scale_load(sched_prio_to_weight[prio]);
+		load->weight = scale_load(sched_prio_to_weight[prio]);  /* 设置权重 */
 		load->inv_weight = sched_prio_to_wmult[prio];
 	}
 }
@@ -1217,7 +1217,7 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
 	}
 }
 
-static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
+static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)  /*  */
 {
 	enum uclamp_id clamp_id;
 
@@ -1233,8 +1233,8 @@ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
 	if (unlikely(!p->sched_class->uclamp_enabled))
 		return;
 
-	for_each_clamp_id(clamp_id)
-		uclamp_rq_inc_id(rq, p, clamp_id);
+	for_each_clamp_id(clamp_id) {
+		uclamp_rq_inc_id(rq, p, clamp_id);}
 
 	/* Reset clamp idle holding when there is one RUNNABLE task */
 	if (rq->uclamp_flags & UCLAMP_FLAG_IDLE)
@@ -1530,7 +1530,7 @@ static void __init init_uclamp(void)
 /*  */
 #endif /* CONFIG_UCLAMP_TASK */
 
-static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
+static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /*  */
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
@@ -1541,7 +1541,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_inc(rq, p);
-	p->sched_class->enqueue_task(rq, p, flags);
+	p->sched_class->enqueue_task(rq, p, flags); /* 调用调度类入队函数 *//* CFS->`enqueue_task_fair` */
 }
 
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
@@ -1558,9 +1558,9 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
-void activate_task(struct rq *rq, struct task_struct *p, int flags)
+void activate_task(struct rq *rq, struct task_struct *p, int flags) /*  */
 {
-	enqueue_task(rq, p, flags);
+	enqueue_task(rq, p, flags); /* 入队 */
 
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
@@ -1577,7 +1577,7 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
  */
 static inline int __normal_prio(struct task_struct *p)
 {
-	return p->static_prio;
+	return p->static_prio;  /*  */
 }
 
 /*
@@ -3022,7 +3022,7 @@ int wake_up_state(struct task_struct *p, unsigned int state)
  *
  * __sched_fork() is basic setup used by init_idle() too:
  */
-static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  */
 {
 	p->on_rq			= 0;
 
@@ -3043,14 +3043,17 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
 
-	RB_CLEAR_NODE(&p->dl.rb_node);
-	init_dl_task_timer(&p->dl);
-	init_dl_inactive_task_timer(&p->dl);
-	__dl_clear_params(p);
+	RB_CLEAR_NODE(&p->dl.rb_node);  /* 清空红黑树节点 */
+
+    /* 为什么直接初始化 deadline???????????????????? */
+
+	init_dl_task_timer(&p->dl);     /* 初始化 deadline hrtimer */
+	init_dl_inactive_task_timer(&p->dl);    /*  */
+	__dl_clear_params(p);           /* 清理 deadline 参数 */
 
 	INIT_LIST_HEAD(&p->rt.run_list);
 	p->rt.timeout		= 0;
-	p->rt.time_slice	= sched_rr_timeslice;
+	p->rt.time_slice	= sched_rr_timeslice;   /* 100Hz */
 	p->rt.on_rq		= 0;
 	p->rt.on_list		= 0;
 
@@ -3061,7 +3064,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 #ifdef CONFIG_COMPACTION    /* 紧致机制 */
 	p->capture_control = NULL;
 #endif
-	init_numa_balancing(clone_flags, p);
+	init_numa_balancing(clone_flags, p);    /*  */
 #ifdef CONFIG_SMP
 	p->wake_entry.u_flags = CSD_TYPE_TTWU;
 #endif
@@ -3182,30 +3185,30 @@ int sysctl_schedstats(struct ctl_table *table, int write, void *buffer,
 /*
  * fork()/clone()-time setup:
  */
-int sched_fork(unsigned long clone_flags, struct task_struct *p)
+int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 {
 	unsigned long flags;
 
-	__sched_fork(clone_flags, p);
+	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
 	/*
 	 * We mark the process as NEW here. This guarantees that
 	 * nobody will actually run it, and a signal or other external
 	 * event cannot wake it up and insert it on the runqueue either.
 	 */
-	p->state = TASK_NEW;
+	p->state = TASK_NEW;    /* 确保没有 CPU 会运行它的临时标志位 */
 
 	/*
 	 * Make sure we do not leak PI boosting priority to the child.
 	 */
-	p->prio = current->normal_prio;
+	p->prio = current->normal_prio; /* 继承父进程的优先级 */
 
-	uclamp_fork(p); /*  */
+	uclamp_fork(p);     /*  */
 
 	/*
 	 * Revert to default priority/policy on fork if requested.
 	 */
-	if (unlikely(p->sched_reset_on_fork)) {
-		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
+	if (unlikely(p->sched_reset_on_fork)) { /* 重新设置调度 */
+		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {   /* 有实时标志位 */
 			p->policy = SCHED_NORMAL;
 			p->static_prio = NICE_TO_PRIO(0);
 			p->rt_priority = 0;
@@ -3213,7 +3216,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 			p->static_prio = NICE_TO_PRIO(0);
 
 		p->prio = p->normal_prio = __normal_prio(p);
-		set_load_weight(p, false);
+		set_load_weight(p, false);  /* 负载 */
 
 		/*
 		 * We don't need the reset flag anymore after the fork. It has
@@ -3222,14 +3225,14 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
-	if (dl_prio(p->prio))
+	if (dl_prio(p->prio))       /* 如果 优先级   小于 0*/
 		return -EAGAIN;
-	else if (rt_prio(p->prio))
+	else if (rt_prio(p->prio))  /* 如果 优先级小于 100 */
 		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
+	else                        /* 如果 优先级大于 100 ***大概率****/
+		p->sched_class = &fair_sched_class; /* 使用公平调度类 */
 
-	init_entity_runnable_average(&p->se);
+	init_entity_runnable_average(&p->se);   /* 清零 */
 
 	/*
 	 * The child is not yet in the pid-hash so no cgroup attach races,
@@ -3246,7 +3249,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 */
 	__set_task_cpu(p, smp_processor_id());
 	if (p->sched_class->task_fork)
-		p->sched_class->task_fork(p);
+		p->sched_class->task_fork(p);   /* ->task_fork_fair() */
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 
 #ifdef CONFIG_SCHED_INFO
@@ -3256,7 +3259,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 #if defined(CONFIG_SMP)
 	p->on_cpu = 0;
 #endif
-	init_task_preempt_count(p);
+	init_task_preempt_count(p); /*  */
 #ifdef CONFIG_SMP
 	plist_node_init(&p->pushable_tasks, MAX_PRIO);
 	RB_CLEAR_NODE(&p->pushable_dl_tasks);
@@ -3292,7 +3295,7 @@ unsigned long to_ratio(u64 period, u64 runtime)
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
  */
-void wake_up_new_task(struct task_struct *p)
+void wake_up_new_task(struct task_struct *p)    /*  */
 {
 	struct rq_flags rf;
 	struct rq *rq;
@@ -3316,7 +3319,7 @@ void wake_up_new_task(struct task_struct *p)
 	update_rq_clock(rq);
 	post_init_entity_util_avg(p);
 
-	activate_task(rq, p, ENQUEUE_NOCLOCK);
+	activate_task(rq, p, ENQUEUE_NOCLOCK);  /*  */
 	trace_sched_wakeup_new(p);
 	check_preempt_curr(rq, p, WF_FORK);
 #ifdef CONFIG_SMP
@@ -3326,7 +3329,7 @@ void wake_up_new_task(struct task_struct *p)
 		 * drop it.
 		 */
 		rq_unpin_lock(rq, &rf);
-		p->sched_class->task_woken(rq, p);
+		p->sched_class->task_woken(rq, p);  /*  */
 		rq_repin_lock(rq, &rf);
 	}
 #endif

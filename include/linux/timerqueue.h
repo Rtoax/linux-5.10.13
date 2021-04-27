@@ -6,9 +6,9 @@
 #include <linux/ktime.h>
 
 
-struct timerqueue_node {
-	struct rb_node node;
-	ktime_t expires;    /* 时间 */
+struct timerqueue_node {    /* 定时器队列 节点 */
+	struct rb_node node;    /* 红黑树节点 */
+	ktime_t expires;        /* 过期时间 */
 };
 
 struct timerqueue_head {    /* 红黑树保存 */

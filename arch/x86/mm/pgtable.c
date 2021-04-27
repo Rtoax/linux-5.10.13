@@ -202,12 +202,7 @@ void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd)
 	flush_tlb_mm(mm);
 }
 #else  /* !CONFIG_X86_PAE */
-
-/* No need to prepopulate any pagetable entries in non-PAE modes. */
-#define PREALLOCATED_PMDS	0
-#define MAX_PREALLOCATED_PMDS	0
-#define PREALLOCATED_USER_PMDS	 0
-#define MAX_PREALLOCATED_USER_PMDS 0
+/*  */
 #endif	/* CONFIG_X86_PAE */
 
 static void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
@@ -343,10 +338,7 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
 
 }
 #else
-static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
-				     pgd_t *k_pgd, pmd_t *pmds[])
-{
-}
+/*  */
 #endif
 /*
  * Xen paravirt assumes pgd table should be in one page. 64 bit kernel also
@@ -409,16 +401,16 @@ static inline void _pgd_free(pgd_t *pgd)
 }
 #else
 
-static inline pgd_t *_pgd_alloc(void)
-{
-	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
-					 PGD_ALLOCATION_ORDER);
-}
-
-static inline void _pgd_free(pgd_t *pgd)
-{
-	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
-}
+//static inline pgd_t *_pgd_alloc(void)
+//{
+//	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
+//					 PGD_ALLOCATION_ORDER);
+//}
+//
+//static inline void _pgd_free(pgd_t *pgd)
+//{
+//	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
+//}
 #endif /* CONFIG_X86_PAE Page Address Extension（PAE） */
 
 pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
@@ -427,7 +419,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 	pmd_t *u_pmds[MAX_PREALLOCATED_USER_PMDS];
 	pmd_t *pmds[MAX_PREALLOCATED_PMDS];
 
-	pgd = _pgd_alloc();
+	pgd = _pgd_alloc(); /*  */
 
 	if (pgd == NULL)
 		goto out;
@@ -869,19 +861,19 @@ int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
 
 #else /* !CONFIG_X86_64 */
 
-int pud_free_pmd_page(pud_t *pud, unsigned long addr)
-{
-	return pud_none(*pud);
-}
+//int pud_free_pmd_page(pud_t *pud, unsigned long addr)
+//{
+//	return pud_none(*pud);
+//}
 
 /*
  * Disable free page handling on x86-PAE. This assures that ioremap()
  * does not update sync'd pmd entries. See vmalloc_sync_one().
  */
-int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
-{
-	return pmd_none(*pmd);
-}
+//int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+//{
+//	return pmd_none(*pmd);
+//}
 
 #endif /* CONFIG_X86_64 */
 #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */

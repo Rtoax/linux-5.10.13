@@ -371,29 +371,10 @@ extern int blkdev_zone_mgmt_ioctl(struct block_device *bdev, fmode_t mode,
 				  unsigned int cmd, unsigned long arg);
 
 #else /* CONFIG_BLK_DEV_ZONED */
-
-static inline unsigned int blkdev_nr_zones(struct gendisk *disk)
-{
-	return 0;
-}
-
-static inline int blkdev_report_zones_ioctl(struct block_device *bdev,
-					    fmode_t mode, unsigned int cmd,
-					    unsigned long arg)
-{
-	return -ENOTTY;
-}
-
-static inline int blkdev_zone_mgmt_ioctl(struct block_device *bdev,
-					 fmode_t mode, unsigned int cmd,
-					 unsigned long arg)
-{
-	return -ENOTTY;
-}
-
+/*  */
 #endif /* CONFIG_BLK_DEV_ZONED */
 
-struct request_queue {
+struct request_queue {  /*  */
 	struct request		*last_merge;
 	struct elevator_queue	*elevator;
 

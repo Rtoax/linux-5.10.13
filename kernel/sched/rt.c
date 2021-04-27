@@ -7,7 +7,7 @@
 
 #include "pelt.h"
 
-int sched_rr_timeslice = RR_TIMESLICE;
+int sched_rr_timeslice = RR_TIMESLICE;  /* 100Hz */
 int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
 /* More than 4 hours if BW_SHIFT equals 20. */
 static const u64 max_rt_runtime = MAX_BW;

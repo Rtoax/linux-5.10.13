@@ -18,7 +18,7 @@
  */
 static inline void *task_stack_page(const struct task_struct *task)
 {
-	return task->stack;
+	return task->stack; /*  */
 }
 
 #define setup_thread_stack(new,old)	do { } while(0)

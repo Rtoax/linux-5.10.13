@@ -30,7 +30,7 @@ static inline void add_latent_entropy(void)
 			      sizeof(latent_entropy));
 }
 #else
-//static inline void add_latent_entropy(void) {}
+/*  */
 #endif
 
 extern void add_input_randomness(unsigned int type, unsigned int code,

@@ -136,7 +136,7 @@ extern struct cgroup_subsys pids_cgrp_subsys;
 extern struct cgroup_subsys rdma_cgrp_subsys;
 #endif
 
-struct cgroup_subsys *cgroup_subsys[] = {
+struct cgroup_subsys *cgroup_subsys[] = {   /*  */
 #include <linux/cgroup_subsys.h>
 };
 #undef SUBSYS
@@ -5929,7 +5929,7 @@ out:
  * A task is associated with the init_css_set until cgroup_post_fork()
  * attaches it to the target css_set.
  */
-void cgroup_fork(struct task_struct *child) /*  */
+void cgroup_fork(struct task_struct *child) /* 控制组 */
 {
 	RCU_INIT_POINTER(child->cgroups, &init_css_set);
 	INIT_LIST_HEAD(&child->cg_list);
@@ -6090,7 +6090,7 @@ static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
  * callback returns an error, the fork aborts with that error code. This
  * allows for a cgroup subsystem to conditionally allow or deny new forks.
  */
-int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
+int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs) /*  */
 {
 	struct cgroup_subsys *ss;
 	int i, j, ret;
@@ -6108,7 +6108,7 @@ int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
 	return 0;
 
 out_revert:
-	for_each_subsys(ss, j) {
+	for_each_subsys(ss, j) {    /*  */
 		if (j >= i)
 			break;
 		if (ss->cancel_fork)

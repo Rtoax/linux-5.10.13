@@ -519,19 +519,19 @@ extern void set_task_rq_fair(struct sched_entity *se,
 * `SCHED_BATCH`;
 * `SCHED_IDLE`.
 */
-struct cfs_rq { /* 完全公平调度 */
+struct cfs_rq {     /* 完全公平调度 运行队列 */
 	struct load_weight	load;
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;      /* SCHED_{NORMAL,BATCH,IDLE} */
 	unsigned int		idle_h_nr_running; /* SCHED_IDLE */
 
 	u64			exec_clock;
-	u64			min_vruntime;
+	u64			min_vruntime;   /* 最小虚拟时间 */
 #ifndef CONFIG_64BIT
 	u64			min_vruntime_copy;
 #endif
 
-	struct rb_root_cached	tasks_timeline;
+	struct rb_root_cached	tasks_timeline; /* 红黑树 */
 
 	/*
 	 * 'curr' points to currently running entity on this cfs_rq.

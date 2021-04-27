@@ -1411,7 +1411,7 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
  *              The PINNED variants of the above can be handed in,
  *              but the PINNED bit is ignored as pinning happens
  *              when the hrtimer is started
- */
+ */ /*  */
 void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 		  enum hrtimer_mode mode)
 {

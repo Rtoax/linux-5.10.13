@@ -27,7 +27,7 @@ struct sigqueue {   /*  */
 /* flags values. */
 #define SIGQUEUE_PREALLOC	1
 
-struct sigpending {
+struct sigpending { /* 信号挂起链表 */
 	struct list_head list;
 	sigset_t signal;
 };

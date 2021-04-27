@@ -70,7 +70,7 @@ enum {
  *   locks.  Due to the lock ordering, q exit is simple but ioc exit
  *   requires reverse-order double lock dance.
  */
-struct io_cq {
+struct io_cq {  /*  */
 	struct request_queue	*q;
 	struct io_context	*ioc;
 
@@ -96,7 +96,7 @@ struct io_cq {
  * I/O subsystem state of the associated processes.  It is refcounted
  * and kmalloc'ed. These could be shared between processes.
  */
-struct io_context { /*  */
+struct io_context { /* IO 上下文 */
 	atomic_long_t refcount;
 	atomic_t active_ref;
 	atomic_t nr_tasks;

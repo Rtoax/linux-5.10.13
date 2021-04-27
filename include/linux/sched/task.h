@@ -19,7 +19,7 @@ struct css_set;
 #define CLONE_LEGACY_FLAGS 0xffffffffULL
 
 struct kernel_clone_args {  /* kernel_clone()'s arguments */
-	u64 flags;
+	u64         flags;  /* 标志 */
 	int __user *pidfd;
 	int __user *child_tid;
 	int __user *parent_tid;
@@ -142,12 +142,15 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 #endif
 
 #ifdef CONFIG_VMAP_STACK
+//static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
+//{
+//	return t->stack_vm_area;    
+//}
+#else
 static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
 {
-	return t->stack_vm_area;    
+	return NULL;    
 }
-#else
-/*  */
 #endif
 
 /*

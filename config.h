@@ -3897,15 +3897,11 @@
 #define CONFIG_SCTP_COOKIE_HMAC_SHA1 1
 #define CONFIG_SCTP_DEFAULT_COOKIE_HMAC_SHA1 1
 #define CONFIG_SDIO_UART_MODULE 1
-#define CONFIG_SECCOMP 1
-#define CONFIG_SECCOMP_FILTER   /*  */
-#define CONFIG_SECCOMP_FILTER 1
-#define CONFIG_SECCOMP          /* secure computing mode 通过seccomp，限制使用某些系统调用, /proc/sys/kernel/seccomp/xxx */
+#define CONFIG_SECCOMP_FILTER 1 /*  */
+#define CONFIG_SECCOMP 1         /* secure computing mode 通过seccomp，限制使用某些系统调用, /proc/sys/kernel/seccomp/xxx */
 #define CONFIG_SECTION_MISMATCH_WARN_ONLY 1
-#define CONFIG_SECURITY         /*  */
-#define CONFIG_SECURITY 1
-#define CONFIG_SECURITYFS 1
-#define CONFIG_SECURITYFS       /* 文件系统安全 */
+#define CONFIG_SECURITY 1   /*  */
+#define CONFIG_SECURITYFS  1     /* 文件系统安全 */
 #define CONFIG_SECURITY_INFINIBAND 1
 #define CONFIG_SECURITY_INFINIBAND  /* 无线带宽安全 */
 #define CONFIG_SECURITY_NETWORK 1

@@ -274,7 +274,7 @@ static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 }
 
 /* runqueue on which this entity is (to be) queued */
-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
+static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se) /*  */
 {
 	return se->cfs_rq;
 }
@@ -513,7 +513,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 /*
  * Enqueue an entity into the rb-tree:
  */
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /*  */
 {
 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_root.rb_node;
 	struct rb_node *parent = NULL;
@@ -772,7 +772,7 @@ void post_init_entity_util_avg(struct task_struct *p)
 /*
  * Update the current task's runtime statistics.
  */
-static void update_curr(struct cfs_rq *cfs_rq)
+static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 {
 	struct sched_entity *curr = cfs_rq->curr;
 	u64 now = rq_clock_task(rq_of(cfs_rq));
@@ -793,7 +793,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->sum_exec_runtime += delta_exec;
 	schedstat_add(cfs_rq->exec_clock, delta_exec);
 
-	curr->vruntime += calc_delta_fair(delta_exec, curr);
+	curr->vruntime += calc_delta_fair(delta_exec, curr);    /* 计算虚拟时间 */
 	update_min_vruntime(cfs_rq);
 
 	if (entity_is_task(curr)) {
@@ -3680,7 +3680,7 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 #define DO_ATTACH	0x4
 
 /* Update task and its cfs_rq load average */
-static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)   /*  */
 {
 	u64 now = cfs_rq_clock_pelt(cfs_rq);
 	int decayed;
@@ -3812,7 +3812,7 @@ static inline unsigned long uclamp_task_util(struct task_struct *p)
 #endif
 
 static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-				    struct task_struct *p)
+				    struct task_struct *p)  /*  */
 {
 	unsigned int enqueued;
 
@@ -3971,7 +3971,7 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 static void
-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)   /*  */
 {
 	u64 vruntime = cfs_rq->min_vruntime;
 
@@ -4100,7 +4100,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_stats_enqueue(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
 	if (!curr)
-		__enqueue_entity(cfs_rq, se);
+		__enqueue_entity(cfs_rq, se);   /*  */
 	se->on_rq = 1;
 
 	/*
@@ -5284,7 +5284,7 @@ static int sched_idle_cpu(int cpu)
  * then put the task into the rbtree:
  */
 static void /*  */
-enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;   /* 该进程的调度实体 */
@@ -5297,7 +5297,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 * Let's add the task's estimated utilization to the cfs_rq's
 	 * estimated utilization, before we update schedutil.
 	 */
-	util_est_enqueue(&rq->cfs, p);
+	util_est_enqueue(&rq->cfs, p);  /*  */
 
 	/*
 	 * If in_iowait is set, the code below may not trigger any cpufreq
@@ -5307,11 +5307,11 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	if (p->in_iowait)
 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
 
-	for_each_sched_entity(se) {
+	for_each_sched_entity(se) { /* 遍历调度实体 */
 		if (se->on_rq)
 			break;
 		cfs_rq = cfs_rq_of(se);
-		enqueue_entity(cfs_rq, se, flags);
+		enqueue_entity(cfs_rq, se, flags);      /*  */
 
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
@@ -5323,7 +5323,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags = ENQUEUE_WAKEUP;
 	}
 
-	for_each_sched_entity(se) {
+	for_each_sched_entity(se) { /*  */
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
@@ -5346,7 +5346,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	/* At this point se is NULL and we are at root level*/
-	add_nr_running(rq, 1);
+	add_nr_running(rq, 1);  /* 添加运行进程数 */
 
 	/*
 	 * Since new tasks are assigned an initial util_avg equal to
@@ -5383,7 +5383,7 @@ enqueue_throttle:
 
 	assert_list_leaf_cfs_rq(rq);
 
-	hrtick_update(rq);
+	hrtick_update(rq);  /* 高精度定时器更新 */
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -10478,7 +10478,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  *  - child not yet on the tasklist
  *  - preemption disabled
  */
-static void task_fork_fair(struct task_struct *p)
+static void task_fork_fair(struct task_struct *p)   /*  */
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se, *curr;
@@ -10489,12 +10489,12 @@ static void task_fork_fair(struct task_struct *p)
 	update_rq_clock(rq);
 
 	cfs_rq = task_cfs_rq(current);
-	curr = cfs_rq->curr;
+	curr = cfs_rq->curr;    /* 获取当前 SE */
 	if (curr) {
-		update_curr(cfs_rq);
-		se->vruntime = curr->vruntime;
+		update_curr(cfs_rq);        /* 更新 cfs  运行队列 */
+		se->vruntime = curr->vruntime;  /* 虚拟时间赋值 */
 	}
-	place_entity(cfs_rq, se, 1);
+	place_entity(cfs_rq, se, 1);    /*  */
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
 		/*
@@ -10933,10 +10933,10 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
 
 /*
  * All the scheduling class methods:
- */const struct sched_class fair_sched_class, __fair_sched_class;/* 我加的 */
+ */const struct sched_class fair_sched_class, __fair_sched_class;/* 我加的 *//* CFS 调度类 */
 const struct sched_class fair_sched_class
 	__section("__fair_sched_class") = {
-	.enqueue_task		= enqueue_task_fair,
+	.enqueue_task		= enqueue_task_fair,    /* 入队 */
 	.dequeue_task		= dequeue_task_fair,
 	.yield_task		= yield_task_fair,
 	.yield_to_task		= yield_to_task_fair,
@@ -10960,7 +10960,7 @@ const struct sched_class fair_sched_class
 #endif
 
 	.task_tick		= task_tick_fair,
-	.task_fork		= task_fork_fair,
+	.task_fork		= task_fork_fair,   /* fork 时候 会调用 */
 
 	.prio_changed		= prio_changed_fair,
 	.switched_from		= switched_from_fair,

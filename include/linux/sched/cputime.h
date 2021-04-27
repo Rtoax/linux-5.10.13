@@ -180,8 +180,8 @@ static inline void account_group_exec_runtime(struct task_struct *tsk,
 static inline void prev_cputime_init(struct prev_cputime *prev)
 {
 #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-	prev->utime = prev->stime = 0;
-	raw_spin_lock_init(&prev->lock);
+//	prev->utime = prev->stime = 0;
+//	raw_spin_lock_init(&prev->lock);
 #endif
 }
 

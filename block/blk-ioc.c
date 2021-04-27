@@ -311,7 +311,7 @@ struct io_context *get_task_io_context(struct task_struct *task,
 		task_lock(task);
 		ioc = task->io_context;
 		if (likely(ioc)) {
-			get_io_context(ioc);
+			get_io_context(ioc);    /*  */
 			task_unlock(task);
 			return ioc;
 		}

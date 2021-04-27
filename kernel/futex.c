@@ -170,7 +170,7 @@ static int  __read_mostly futex_cmpxchg_enabled;
 /*
  * Priority Inheritance state:
  */
-struct futex_pi_state {
+struct futex_pi_state { /*  */
 	/*
 	 * list of 'owned' pi_state instances - these have to be
 	 * cleaned up in do_exit() if the task exits prematurely:

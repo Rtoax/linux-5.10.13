@@ -282,7 +282,7 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
  * passed in files structure.
  * errorp will be valid only when the returned files_struct is NULL.
  */
-struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)
+struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)   /*  */
 {
 	struct files_struct *newf;
 	struct file **old_fds, **new_fds;
@@ -343,7 +343,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 		open_files = sane_fdtable_size(old_fdt, max_fds);
 	}
 
-	copy_fd_bitmaps(new_fdt, old_fdt, open_files);
+	copy_fd_bitmaps(new_fdt, old_fdt, open_files);  /*  */
 
 	old_fds = old_fdt->fd;
 	new_fds = new_fdt->fd;

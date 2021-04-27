@@ -112,7 +112,7 @@ void exit_thread(struct task_struct *tsk)
 	fpu__drop(fpu);
 }
 
-static int set_new_tls(struct task_struct *p, unsigned long tls)
+static int set_new_tls(struct task_struct *p, unsigned long tls)    /*  */
 {
 	struct user_desc __user *utls = (struct user_desc __user *)tls;
 
@@ -123,7 +123,7 @@ static int set_new_tls(struct task_struct *p, unsigned long tls)
 }
 
 int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
-		struct task_struct *p, unsigned long tls)
+		struct task_struct *p, unsigned long tls)   /*  */
 {
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
@@ -174,12 +174,12 @@ int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
 		childregs->sp = sp;
 
 #ifdef CONFIG_X86_32
-	task_user_gs(p) = get_user_gs(current_pt_regs());
+//	task_user_gs(p) = get_user_gs(current_pt_regs());
 #endif
 
 	/* Set a new TLS for the child thread? */
 	if (clone_flags & CLONE_SETTLS)
-		ret = set_new_tls(p, tls);
+		ret = set_new_tls(p, tls);  /* thread local storage */
 
 	if (!ret && unlikely(test_tsk_thread_flag(current, TIF_IO_BITMAP)))
 		io_bitmap_share(p);

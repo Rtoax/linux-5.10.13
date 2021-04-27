@@ -30,7 +30,7 @@
 #ifdef CONFIG_TRACE_IRQFLAGS
 
 /* Per-task IRQ trace events information. */
-struct irqtrace_events {
+struct irqtrace_events {    /* 中断 trace */
 	unsigned int	irq_events;
 	unsigned long	hardirq_enable_ip;
 	unsigned long	hardirq_disable_ip;

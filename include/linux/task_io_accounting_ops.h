@@ -68,10 +68,7 @@ static inline void task_chr_io_accounting_add(struct task_io_accounting *dst,
 	dst->syscw += src->syscw;
 }
 #else
-static inline void task_chr_io_accounting_add(struct task_io_accounting *dst,
-						struct task_io_accounting *src)
-{
-}
+/*  */
 #endif /* CONFIG_TASK_XACCT */
 
 static inline void task_io_accounting_add(struct task_io_accounting *dst,

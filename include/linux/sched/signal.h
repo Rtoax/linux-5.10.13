@@ -67,7 +67,7 @@ struct thread_group_cputimer {
 	struct task_cputime_atomic cputime_atomic;
 };
 
-struct multiprocess_signals {   /*  */
+struct multiprocess_signals {   /* 多进程信号 set 链表 */
 	sigset_t signal;
 	struct hlist_node node;
 };
@@ -79,7 +79,7 @@ struct multiprocess_signals {   /*  */
  * sighand_struct is always a proper superset of
  * the locking of signal_struct.
  */
-struct signal_struct {  /*  */
+struct signal_struct {  /* 信号结构 */
 	refcount_t		sigcnt;
 	atomic_t		live;
 	int			nr_threads;
@@ -94,7 +94,7 @@ struct signal_struct {  /*  */
 	struct sigpending	shared_pending;
 
 	/* For collecting multiprocess signals during fork */
-	struct hlist_head	multiprocess;
+	struct hlist_head	multiprocess;   /* 多进程下的哈希表 head为: `struct multiprocess_signals`*/
 
 	/* thread group exit support */
 	int			group_exit_code;
@@ -543,8 +543,8 @@ static inline int on_sig_stack(unsigned long sp)
 		return 0;
 
 #ifdef CONFIG_STACK_GROWSUP
-	return sp >= current->sas_ss_sp &&
-		sp - current->sas_ss_sp < current->sas_ss_size;
+//	return sp >= current->sas_ss_sp &&
+//		sp - current->sas_ss_sp < current->sas_ss_size;
 #else
 	return sp > current->sas_ss_sp &&
 		sp - current->sas_ss_sp <= current->sas_ss_size;
@@ -570,7 +570,7 @@ static inline unsigned long sigsp(unsigned long sp, struct ksignal *ksig)
 {
 	if (unlikely((ksig->ka.sa.sa_flags & SA_ONSTACK)) && ! sas_ss_flags(sp))
 #ifdef CONFIG_STACK_GROWSUP
-		return current->sas_ss_sp;
+//		return current->sas_ss_sp;
 #else
 		return current->sas_ss_sp + current->sas_ss_size;
 #endif

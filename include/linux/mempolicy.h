@@ -42,7 +42,7 @@ struct mm_struct;
  * to the new storage.  The reference count of the new object is initialized
  * to 1, representing the caller of mpol_dup().
  */
-struct mempolicy {/* numa 内存策略 */
+struct mempolicy {  /* numa 内存策略 */
 	atomic_t refcnt;
 	unsigned short mode; 	/* See MPOL_* above */
 	unsigned short flags;	/* See set_mempolicy() MPOL_F_* above */

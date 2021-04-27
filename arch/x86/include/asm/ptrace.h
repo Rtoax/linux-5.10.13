@@ -366,7 +366,7 @@ extern int do_set_thread_area(struct task_struct *p, int idx,
 #ifdef CONFIG_X86_64
 # define do_set_thread_area_64(p, s, t)	do_arch_prctl_64(p, s, t)
 #else
-# define do_set_thread_area_64(p, s, t)	(0)
+/*  */
 #endif
 
 #endif /* !__ASSEMBLY__ */
