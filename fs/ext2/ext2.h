@@ -299,7 +299,7 @@ static inline __u32 ext2_mask_flags(umode_t mode, __u32 flags)
 /*
  * Structure of an inode on the disk
  */
-struct ext2_inode {
+struct ext2_inode { /*  */
 	__le16	i_mode;		/* File mode */
 	__le16	i_uid;		/* Low 16 bits of Owner Uid */
 	__le32	i_size;		/* Size in bytes */
@@ -413,7 +413,7 @@ struct ext2_inode {
 /*
  * Structure of the super block
  */
-struct ext2_super_block {
+struct ext2_super_block {   /*  */
 	__le32	s_inodes_count;		/* Inodes count */
 	__le32	s_blocks_count;		/* Blocks count */
 	__le32	s_r_blocks_count;	/* Reserved blocks count */
@@ -691,8 +691,7 @@ struct ext2_inode_info {
 #define dax_sem_down_write(ext2_inode)	down_write(&(ext2_inode)->dax_sem)
 #define dax_sem_up_write(ext2_inode)	up_write(&(ext2_inode)->dax_sem)
 #else
-#define dax_sem_down_write(ext2_inode)
-#define dax_sem_up_write(ext2_inode)
+/*  */
 #endif
 
 /*
