@@ -766,7 +766,7 @@ out:
  * Try to evict the inode's dentries from the dentry cache.  If the inode is a
  * directory, then it can have at most one dentry; however, that dentry may be
  * pinned by child dentries, so first try to evict the children too.
- */
+ */ /* 回收 inode 高速缓存 */
 static void shrink_dcache_inode(struct inode *inode)
 {
 	struct dentry *dentry;

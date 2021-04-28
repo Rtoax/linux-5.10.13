@@ -107,20 +107,20 @@ static inline int current_is_kswapd(void)
  * For 2.5 we'll probably want to move the magic to just beyond the
  * bootbits...
  */
-union swap_header {
+union swap_header { /* 交换区的第一个页槽，用来永久存放有关交换区的信息 */
 	struct {
 		char reserved[PAGE_SIZE - 10];
-		char magic[10];			/* SWAP-SPACE or SWAPSPACE2 */
+		char magic[10];			/* SWAP-SPACE or SWAPSPACE2 用来把磁盘的某部分明确的标记为交换区*/
 	} magic;
 	struct {
-		char		bootbits[1024];	/* Space for disklabel etc. */
-		__u32		version;
-		__u32		last_page;
-		__u32		nr_badpages;
-		unsigned char	sws_uuid[16];
+		char		bootbits[1024];	/* Space for disklabel etc. 不使用 */
+		__u32		version;        /* 交换算法的版本 */
+		__u32		last_page;      /* 可有效使用的最后一个页槽 */
+		__u32		nr_badpages;    /* 有缺陷的页槽的个数 */
+		unsigned char	sws_uuid[16];   /*  */
 		unsigned char	sws_volume[16];
-		__u32		padding[117];
-		__u32		badpages[1];
+		__u32		padding[117];   /* 填充字节 */
+		__u32		badpages[1];    /* 一共637个数字，用来指定有缺陷页槽的位置 */
 	} info;
 };
 
@@ -128,7 +128,7 @@ union swap_header {
  * current->reclaim_state points to one of these when a task is running
  * memory reclaim
  */
-struct reclaim_state {
+struct reclaim_state {  /*  */
 	unsigned long reclaimed_slab;
 };
 
@@ -237,13 +237,14 @@ struct swap_cluster_list {
 /*
  * The in-memory structure used to track swap areas.
  */
-struct swap_info_struct {
+struct swap_info_struct {   /* 交换区描述符 */
 	unsigned long	flags;		/* SWP_USED etc: see above */
 	signed short	prio;		/* swap priority of this type */
 	struct plist_node list;		/* entry in swap_active_head */
 	signed char	type;		/* strange name for an index */
 	unsigned int	max;		/* extent of the swap_map */
-	unsigned char *swap_map;	/* vmalloc'ed array of usage counts */
+	unsigned char *swap_map;	/* vmalloc'ed array of usage counts 
+	                                指向计数器数组的指针，交换区的每个页槽对应一个数组元素 */
 	struct swap_cluster_info *cluster_info; /* cluster info. Only for SSD */
 	struct swap_cluster_list free_clusters; /* free clusters list */
 	unsigned int lowest_bit;	/* index of first free in swap_map */
@@ -255,8 +256,8 @@ struct swap_info_struct {
 	unsigned int __percpu *cluster_next_cpu; /*percpu index for next allocation */
 	struct percpu_cluster __percpu *percpu_cluster; /* per cpu's swap location */
 	struct rb_root swap_extent_root;/* root of the swap extent rbtree */
-	struct block_device *bdev;	/* swap device or bdev of swap file */
-	struct file *swap_file;		/* seldom referenced */
+	struct block_device *bdev;	/* swap device or bdev of swap file 存放交换区的块设备描述符 */
+	struct file *swap_file;		/* seldom referenced 指向交换区的普通文件或设备文件的文件对象 */
 	unsigned int old_block_size;	/* seldom referenced */
 #ifdef CONFIG_FRONTSWAP /*  */
 	unsigned long *frontswap_map;	/* frontswap in-use, one bit per page */

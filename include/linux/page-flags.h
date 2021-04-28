@@ -106,7 +106,7 @@ enum pageflags {
 	PG_referenced,
 	PG_uptodate,
 	PG_dirty,
-	PG_lru,
+	PG_lru,         /* 最近最少使用 zone->inactive_list */
 	PG_active,
 	PG_workingset,
 	PG_waiters,		/* Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */

@@ -846,7 +846,7 @@ static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)
  *
  * Quick test_and_clear_referenced for all mappings to a page,
  * returns the number of ptes which referenced the page.
- */
+ */ /* Page Frame Reclaim Algorithm-PFRA 算法扫描一页调用一次该函数 */
 int page_referenced(struct page *page,
 		    int is_locked,
 		    struct mem_cgroup *memcg,

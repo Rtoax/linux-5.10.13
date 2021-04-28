@@ -497,7 +497,7 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
  * alter it if its implementation requires a different allocation context.
  *
  * pgoff should be used in favour of virtual_address, if possible.
- */
+ */ /*  */
 struct vm_fault {   /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
 	unsigned int flags;		/* FAULT_FLAG_xxx flags */

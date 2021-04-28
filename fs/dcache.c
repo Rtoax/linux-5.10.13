@@ -856,7 +856,7 @@ static inline bool fast_dput(struct dentry *dentry)
  * releasing its resources. If the parent dentries were scheduled for release
  * they too may now get deleted.
  */
-void dput(struct dentry *dentry)
+void dput(struct dentry *dentry)    /* 释放一个目录 */
 {
 	while (dentry) {
 		might_sleep();
@@ -1556,7 +1556,7 @@ out:
  *
  * Prune the dcache to remove unused children of the parent dentry.
  */
-void shrink_dcache_parent(struct dentry *parent)
+void shrink_dcache_parent(struct dentry *parent)    /*  */
 {
 	for (;;) {
 		struct select_data data = {.start = parent};

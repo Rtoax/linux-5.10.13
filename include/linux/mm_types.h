@@ -82,7 +82,7 @@ struct page {
 			 * pgdat->lru_lock.  Sometimes used as a generic list
 			 * by the page owner.
 			 */
-			struct list_head lru;   /* 串入 zone->freelist */
+			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
 			struct address_space *mapping;
 			pgoff_t index;		/* Our offset within mapping. */
@@ -128,7 +128,7 @@ struct page {
 				};
 			};
 		};
-		struct {	/* Tail pages of compound page */
+		struct {	/* Tail pages of compound(复合) page *//*  */
 			unsigned long compound_head;	/* Bit zero is set */
 
 			/* First tail page only */

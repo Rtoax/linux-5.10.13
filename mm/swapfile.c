@@ -3147,10 +3147,10 @@ static bool swap_discardable(struct swap_info_struct *si)
 
 	return true;
 }
-
+/* swapon 系统调用 int swapon(const char *path, int swapflags); */
 SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 {
-	struct swap_info_struct *p;
+	struct swap_info_struct *p; /*  */
 	struct filename *name;
 	struct file *swap_file = NULL;
 	struct address_space *mapping;

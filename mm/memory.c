@@ -3249,7 +3249,7 @@ EXPORT_SYMBOL(unmap_mapping_range);
  * We return with the mmap_lock locked or unlocked in the same cases
  * as does filemap_fault().
  */
-vm_fault_t do_swap_page(struct vm_fault *vmf)
+vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page = NULL, *swapcache;

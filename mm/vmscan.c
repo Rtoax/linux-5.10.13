@@ -63,7 +63,7 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>
 
-struct scan_control {
+struct scan_control {   /* 存放回收操作执行时相关信息 */
 	/* How many pages shrink_list() should reclaim */
 	unsigned long nr_to_reclaim;
 
@@ -639,7 +639,7 @@ unlock:
  * in order to get the scan target.
  *
  * Returns the number of reclaimed slab objects.
- */
+ */ /*  */
 static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
 				 struct mem_cgroup *memcg,
 				 int priority)
@@ -772,6 +772,8 @@ typedef enum {
 /*
  * pageout is called by shrink_page_list() for each dirty page.
  * Calls ->writepage().
+ *
+ * 当一个脏页必须写回磁盘
  */
 static pageout_t pageout(struct page *page, struct address_space *mapping)
 {
@@ -972,11 +974,11 @@ void putback_lru_page(struct page *page)
 	put_page(page);		/* drop ref from isolate */
 }
 
-enum page_references {
-	PAGEREF_RECLAIM,
-	PAGEREF_RECLAIM_CLEAN,
-	PAGEREF_KEEP,
-	PAGEREF_ACTIVATE,
+enum page_references {  /* 页引用 */
+	PAGEREF_RECLAIM,        /* 回收 */
+	PAGEREF_RECLAIM_CLEAN,  /* 回收清理 */
+	PAGEREF_KEEP,           /* 保持 */
+	PAGEREF_ACTIVATE,       /* 激活 */
 };
 
 static enum page_references page_check_references(struct page *page,
@@ -2150,7 +2152,7 @@ unsigned long reclaim_pages(struct list_head *page_list)
 
 	return nr_reclaimed;
 }
-
+                    /*  */
 static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 				 struct lruvec *lruvec, struct scan_control *sc)
 {
@@ -2889,8 +2891,10 @@ static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
  *
  * If a zone is deemed to be full of pinned pages then just give it a light
  * scan then give up on it.
+ *
+ * 对页高速缓存和用户态地址空间进行页回收
  */
-static void shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
+static void shrink_zones(struct zonelist *zonelist, struct scan_control *sc)    /*  */
 {
 	struct zoneref *z;
 	struct zone *zone;
@@ -3224,6 +3228,7 @@ out:
 	return false;
 }
 
+                    /* 内存紧缺时 进行页回收 */
 unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 				gfp_t gfp_mask, nodemask_t *nodemask)
 {

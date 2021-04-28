@@ -243,7 +243,7 @@ static __always_inline bool vmstat_item_in_bytes(int idx)
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
 
-enum lru_list {
+enum lru_list { /* 最近最少使用 list */
 	LRU_INACTIVE_ANON = LRU_BASE,
 	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
@@ -835,7 +835,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
 	/* Write-intensive fields used by page reclaim */
 	ZONE_PADDING(_pad1_)
-	spinlock_t		lru_lock;
+	spinlock_t		lru_lock;   /* 最近最少使用 */
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 	/*
