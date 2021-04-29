@@ -59,6 +59,21 @@
 #ifndef O_NOATIME
 #define O_NOATIME	01000000
 #endif
+
+/**
+ *	关于open函数O_CLOEXEC模式，fcntl函数FD_CLOEXEC选项，总结为如下几点：
+ *
+ *	1.调用open函数O_CLOEXEC模式打开的文件描述符在执行exec调用新程序中关闭，且为原子操作。
+ *
+ *	2.调用open函数不使用O_CLOEXEC模式打开的文件描述符，然后调用fcntl 函数设置FD_CLOEXEC选项，
+ *		效果和使用O_CLOEXEC选项open函数相同，但分别调用open、fcnt两个l函数，不是原子操作，
+ *		多线程环境中存在竞态条件，故用open函数O_CLOEXEC选项代替之。
+ *
+ *	3.调用open函数O_CLOEXEC模式打开的文件描述符，或是使用fcntl设置FD_CLOEXEC选项，这二者得到
+ *		（处理）的描述符在通过fork调用产生的子进程中均不被关闭。
+ *
+ *	4.调用dup族类函数得到的新文件描述符将清除O_CLOEXEC模式。
+ */
 #ifndef O_CLOEXEC
 #define O_CLOEXEC	02000000	/* set close_on_exec */
 #endif

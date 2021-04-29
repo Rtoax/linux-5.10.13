@@ -2,7 +2,7 @@
 #ifndef _LINUX_PIPE_FS_I_H
 #define _LINUX_PIPE_FS_I_H
 
-#define PIPE_DEF_BUFFERS	16
+#define PIPE_DEF_BUFFERS	16  /* pipe 默认值 */
 
 #define PIPE_BUF_FLAG_LRU	0x01	/* page is on the LRU */
 #define PIPE_BUF_FLAG_ATOMIC	0x02	/* was atomically mapped */
@@ -24,7 +24,7 @@
  *	@private: private data owned by the ops.
  **/
 struct pipe_buffer {    /* 管道 buf */
-	struct page *page;
+	struct page *page;  /* 页 */
 	unsigned int offset, len;
 	const struct pipe_buf_operations *ops;
 	unsigned int flags;
@@ -73,7 +73,7 @@ struct pipe_inode_info {    /* 内核 管道 */
 	struct page *tmp_page;
 	struct fasync_struct *fasync_readers;
 	struct fasync_struct *fasync_writers;
-	struct pipe_buffer *bufs;
+	struct pipe_buffer *bufs;   /* 管道 buffer */
 	struct user_struct *user;
 #ifdef CONFIG_WATCH_QUEUE
 	struct watch_queue *watch_queue;
@@ -90,7 +90,7 @@ struct pipe_inode_info {    /* 内核 管道 */
  * the meaning of each operation.  Also see the kerneldoc in fs/pipe.c for the
  * pipe and generic variants of these hooks.
  */
-struct pipe_buf_operations {    /*  */
+struct pipe_buf_operations {    /* 管道操作符 */
 	/*
 	 * ->confirm() verifies that the data in the pipe buffer is there
 	 * and that the contents are good. If the pages in the pipe belong
@@ -209,7 +209,7 @@ static inline void pipe_buf_release(struct pipe_inode_info *pipe,
 static inline int pipe_buf_confirm(struct pipe_inode_info *pipe,
 				   struct pipe_buffer *buf)
 {
-	if (!buf->ops->confirm)
+	if (!buf->ops->confirm) /* 未定义 */
 		return 0;
 	return buf->ops->confirm(pipe, buf);
 }

@@ -32,41 +32,41 @@ static inline void invalidate_kernel_vmap_range(void *vaddr, int size)
 #include <asm/kmap_types.h>
 
 #ifdef CONFIG_HIGHMEM
-extern void *kmap_atomic_high_prot(struct page *page, pgprot_t prot);
-extern void kunmap_atomic_high(void *kvaddr);
-#include <asm/highmem.h>
-
-#ifndef ARCH_HAS_KMAP_FLUSH_TLB
-static inline void kmap_flush_tlb(unsigned long addr) { }
-#endif
-
-#ifndef kmap_prot
-#define kmap_prot PAGE_KERNEL
-#endif
-
-void *kmap_high(struct page *page);
-static inline void *kmap(struct page *page)
-{
-	void *addr;
-
-	might_sleep();
-	if (!PageHighMem(page))
-		addr = page_address(page);
-	else
-		addr = kmap_high(page);
-	kmap_flush_tlb((unsigned long)addr);
-	return addr;
-}
-
-void kunmap_high(struct page *page);
-
-static inline void kunmap(struct page *page)
-{
-	might_sleep();
-	if (!PageHighMem(page))
-		return;
-	kunmap_high(page);
-}
+//extern void *kmap_atomic_high_prot(struct page *page, pgprot_t prot);
+//extern void kunmap_atomic_high(void *kvaddr);
+//#include <asm/highmem.h>
+//
+//#ifndef ARCH_HAS_KMAP_FLUSH_TLB
+//static inline void kmap_flush_tlb(unsigned long addr) { }
+//#endif
+//
+//#ifndef kmap_prot
+//#define kmap_prot PAGE_KERNEL
+//#endif
+//
+//void *kmap_high(struct page *page);
+//static inline void *kmap(struct page *page)
+//{
+//	void *addr;
+//
+//	might_sleep();
+//	if (!PageHighMem(page))
+//		addr = page_address(page);
+//	else
+//		addr = kmap_high(page);
+//	kmap_flush_tlb((unsigned long)addr);
+//	return addr;
+//}
+//
+//void kunmap_high(struct page *page);
+//
+//static inline void kunmap(struct page *page)
+//{
+//	might_sleep();
+//	if (!PageHighMem(page))
+//		return;
+//	kunmap_high(page);
+//}
 
 /*
  * kmap_atomic/kunmap_atomic is significantly faster than kmap/kunmap because
@@ -81,58 +81,58 @@ static inline void kunmap(struct page *page)
  * be used in IRQ contexts, so in some (very limited) cases we need
  * it.
  */
-static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
-{
-	preempt_disable();
-	pagefault_disable();
-	if (!PageHighMem(page))
-		return page_address(page);
-	return kmap_atomic_high_prot(page, prot);
-}
-#define kmap_atomic(page)	kmap_atomic_prot(page, kmap_prot)
+//static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
+//{
+//	preempt_disable();
+//	pagefault_disable();
+//	if (!PageHighMem(page))
+//		return page_address(page);
+//	return kmap_atomic_high_prot(page, prot);
+//}
+//#define kmap_atomic(page)	kmap_atomic_prot(page, kmap_prot)
 
 /* declarations for linux/mm/highmem.c */
-unsigned int nr_free_highpages(void);
-extern atomic_long_t _totalhigh_pages;
-static inline unsigned long totalhigh_pages(void)
-{
-	return (unsigned long)atomic_long_read(&_totalhigh_pages);
-}
-
-static inline void totalhigh_pages_inc(void)
-{
-	atomic_long_inc(&_totalhigh_pages);
-}
-
-static inline void totalhigh_pages_dec(void)
-{
-	atomic_long_dec(&_totalhigh_pages);
-}
-
-static inline void totalhigh_pages_add(long count)
-{
-	atomic_long_add(count, &_totalhigh_pages);
-}
-
-static inline void totalhigh_pages_set(long val)
-{
-	atomic_long_set(&_totalhigh_pages, val);
-}
-
-void kmap_flush_unused(void);
-
-struct page *kmap_to_page(void *addr);
+//unsigned int nr_free_highpages(void);
+//extern atomic_long_t _totalhigh_pages;
+//static inline unsigned long totalhigh_pages(void)
+//{
+//	return (unsigned long)atomic_long_read(&_totalhigh_pages);
+//}
+//
+//static inline void totalhigh_pages_inc(void)
+//{
+//	atomic_long_inc(&_totalhigh_pages);
+//}
+//
+//static inline void totalhigh_pages_dec(void)
+//{
+//	atomic_long_dec(&_totalhigh_pages);
+//}
+//
+//static inline void totalhigh_pages_add(long count)
+//{
+//	atomic_long_add(count, &_totalhigh_pages);
+//}
+//
+//static inline void totalhigh_pages_set(long val)
+//{
+//	atomic_long_set(&_totalhigh_pages, val);
+//}
+//
+//void kmap_flush_unused(void);
+//
+//struct page *kmap_to_page(void *addr);
 
 #else /* CONFIG_HIGHMEM */
 
-//static inline unsigned int nr_free_highpages(void) { return 0; }
+static inline unsigned int nr_free_highpages(void) { return 0; }
 
 static inline struct page *kmap_to_page(void *addr)
 {
 	return virt_to_page(addr);
 }
 
-//static inline unsigned long totalhigh_pages(void) { return 0UL; }
+static inline unsigned long totalhigh_pages(void) { return 0UL; }
 
 static inline void *kmap(struct page *page)
 {
@@ -140,9 +140,9 @@ static inline void *kmap(struct page *page)
 	return page_address(page);
 }
 
-//static inline void kunmap_high(struct page *page)
-//{
-//}
+static inline void kunmap_high(struct page *page)
+{
+}
 
 static inline void kunmap(struct page *page)
 {

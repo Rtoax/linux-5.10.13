@@ -54,11 +54,11 @@ char *perf_exe(char *buf, int len);
 
 #ifndef O_CLOEXEC
 #ifdef __sparc__
-#define O_CLOEXEC      0x400000
+//#define O_CLOEXEC      0x400000
 #elif defined(__alpha__) || defined(__hppa__)
-#define O_CLOEXEC      010000000
+//#define O_CLOEXEC      010000000
 #else
-#define O_CLOEXEC      02000000
+//#define O_CLOEXEC      02000000
 #endif
 #endif
 

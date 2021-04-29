@@ -1264,11 +1264,7 @@ int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len);
 #ifdef CONFIG_ADVISE_SYSCALLS
 int ksys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice);
 #else
-static inline int ksys_fadvise64_64(int fd, loff_t offset, loff_t len,
-				    int advice)
-{
-	return -EINVAL;
-}
+/*  */
 #endif
 unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,

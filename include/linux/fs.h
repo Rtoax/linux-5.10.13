@@ -697,7 +697,7 @@ struct inode {
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {
-		struct pipe_inode_info	*i_pipe;
+		struct pipe_inode_info	*i_pipe;    /* pipe info */
 		struct block_device	*i_bdev;
 		struct cdev		*i_cdev;
 		char			*i_link;
@@ -1762,7 +1762,9 @@ static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 				      struct iov_iter *iter)
 {
-	return file->f_op->write_iter(kio, iter);
+    /*  */
+    /* pipe() -> pipefifo_fops.pipe_write() */
+	return file->f_op->write_iter(kio, iter);   /*  */
 }
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma)

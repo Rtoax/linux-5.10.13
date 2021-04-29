@@ -599,14 +599,15 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
 	file_start_write(file);
-	if (file->f_op->write)
-		ret = file->f_op->write(file, buf, count, pos);
-	else if (file->f_op->write_iter)
+	if (file->f_op->write)  /* 首先查看 write() 操作 */
+		ret = file->f_op->write(file, buf, count, pos); /* 调用具体的 write */
+	else if (file->f_op->write_iter)    /*  */
+        /* pipe() -> pipe_write() */
 		ret = new_sync_write(file, buf, count, pos);
 	else
 		ret = -EINVAL;
 	if (ret > 0) {
-		fsnotify_modify(file);
+		fsnotify_modify(file);  /* notify通知 */
 		add_wchar(current, ret);
 	}
 	inc_syscw(current);
@@ -644,9 +645,9 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 	return ksys_read(fd, buf, count);
 }
 
-ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)
+ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* write系统调用 */
 {
-	struct fd f = fdget_pos(fd);
+	struct fd f = fdget_pos(fd);    /* fd 专为 struct fd{struct file; flags} */
 	ssize_t ret = -EBADF;
 
 	if (f.file) {
@@ -655,7 +656,7 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)
 			pos = *ppos;
 			ppos = &pos;
 		}
-		ret = vfs_write(f.file, buf, count, ppos);
+		ret = vfs_write(f.file, buf, count, ppos);  /* vfs_write->  */
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
 		fdput_pos(f);
@@ -663,7 +664,7 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)
 
 	return ret;
 }
-
+    /* write 系统调用 */
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 		size_t, count)
 {

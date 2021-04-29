@@ -214,7 +214,7 @@ static struct file *alloc_file(const struct path *path, int flags,
 
 struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 				const char *name, int flags,
-				const struct file_operations *fops)
+				const struct file_operations *fops) /* 分配一个 file */
 {
 	static const struct dentry_operations anon_ops = {
 		.d_dname = simple_dname
@@ -240,7 +240,7 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 EXPORT_SYMBOL(alloc_file_pseudo);
 
 struct file *alloc_file_clone(struct file *base, int flags,
-				const struct file_operations *fops)
+				const struct file_operations *fops) /* 克隆，使用同一个文件生成的 file 结构 */
 {
 	struct file *f = alloc_file(&base->f_path, flags, fops);
 	if (!IS_ERR(f)) {

@@ -80,7 +80,7 @@
 #include <perf/mmap.h>
 
 #ifndef O_CLOEXEC
-# define O_CLOEXEC		02000000
+//# define O_CLOEXEC		02000000
 #endif
 
 #ifndef F_LINUX_SPECIFIC_BASE

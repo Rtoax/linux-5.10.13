@@ -33,7 +33,7 @@ static inline void fput_light(struct file *file, int fput_needed)
 		fput(file);
 }
 
-struct fd {
+struct fd { /*  */
 	struct file *file;
 	unsigned int flags;
 };

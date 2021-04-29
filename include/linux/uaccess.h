@@ -176,7 +176,7 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
 }
 
 static __always_inline unsigned long __must_check
-copy_to_user(void __user *to, const void *from, unsigned long n)
+copy_to_user(void __user *to, const void *from, unsigned long n)    /*  */
 {
 	if (likely(check_copy_size(from, n, true)))
 		n = _copy_to_user(to, from, n);
