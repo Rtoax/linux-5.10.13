@@ -2904,7 +2904,7 @@ static void __net_exit unix_net_exit(struct net *net)
 	remove_proc_entry("unix", net->proc_net);
 }
 
-static struct pernet_operations unix_net_ops = {
+static struct pernet_operations unix_net_ops = {    /* UNIX */
 	.init = unix_net_init,
 	.exit = unix_net_exit,
 };

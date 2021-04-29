@@ -4545,7 +4545,7 @@ static const struct proto_ops packet_ops = {
 	.sendpage =	sock_no_sendpage,
 };
 
-static const struct net_proto_family packet_family_ops = {
+static const struct net_proto_family packet_family_ops = {  /*  */
 	.family =	PF_PACKET,
 	.create =	packet_create,
 	.owner	=	THIS_MODULE,

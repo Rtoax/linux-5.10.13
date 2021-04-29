@@ -225,7 +225,7 @@ static void i_callback(struct rcu_head *head)
 		free_inode_nonrcu(inode);
 }
 
-static struct inode *alloc_inode(struct super_block *sb)
+static struct inode *alloc_inode(struct super_block *sb)    /* 从 超级块中申请 inode */
 {
 	const struct super_operations *ops = sb->s_op;
 	struct inode *inode;
@@ -925,9 +925,9 @@ EXPORT_SYMBOL(get_next_ino);
  *	- fs can't be unmount
  *	- quotas, fsnotify, writeback can't work
  */
-struct inode *new_inode_pseudo(struct super_block *sb)  /*  */
+struct inode *new_inode_pseudo(struct super_block *sb)  /* 获取一个inode 结构 */
 {
-	struct inode *inode = alloc_inode(sb);
+	struct inode *inode = alloc_inode(sb);  /*  */
 
 	if (inode) {
 		spin_lock(&inode->i_lock);

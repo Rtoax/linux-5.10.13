@@ -2,21 +2,21 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#ifndef SOCK_DCCP
-# define SOCK_DCCP		6
-#endif
+//#ifndef SOCK_DCCP
+//# define SOCK_DCCP		6
+//#endif
 
-#ifndef SOCK_CLOEXEC
-# define SOCK_CLOEXEC		02000000
-#endif
+//#ifndef SOCK_CLOEXEC
+////# define SOCK_CLOEXEC		02000000
+//#endif
 
-#ifndef SOCK_NONBLOCK
-# define SOCK_NONBLOCK		00004000
-#endif
+//#ifndef SOCK_NONBLOCK
+////# define SOCK_NONBLOCK		00004000
+//#endif
 
-#ifndef SOCK_TYPE_MASK
-#define SOCK_TYPE_MASK 0xf
-#endif
+//#ifndef SOCK_TYPE_MASK
+////#define SOCK_TYPE_MASK 0xf
+//#endif
 
 static size_t syscall_arg__scnprintf_socket_type(char *bf, size_t size, struct syscall_arg *arg)
 {

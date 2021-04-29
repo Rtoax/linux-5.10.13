@@ -2099,7 +2099,9 @@ EXPORT_SYMBOL(security_unix_may_send);
 
 int security_socket_create(int family, int type, int protocol, int kern)
 {
-	return call_int_hook(socket_create, 0, family, type, protocol, kern);
+    /* selinux_socket_create() */
+    /* apparmor_socket_create() */
+	return call_int_hook(socket_create, 0, family, type, protocol, kern);   
 }
 
 int security_socket_post_create(struct socket *sock, int family,

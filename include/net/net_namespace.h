@@ -281,33 +281,7 @@ static inline int check_net(const struct net *net)
 void net_drop_ns(void *);
 
 #else
-
-static inline struct net *get_net(struct net *net)
-{
-	return net;
-}
-
-static inline void put_net(struct net *net)
-{
-}
-
-static inline struct net *maybe_get_net(struct net *net)
-{
-	return net;
-}
-
-static inline
-int net_eq(const struct net *net1, const struct net *net2)
-{
-	return 1;
-}
-
-static inline int check_net(const struct net *net)
-{
-	return 1;
-}
-
-#define net_drop_ns NULL
+/*  */
 #endif
 
 
@@ -347,10 +321,7 @@ static inline struct net *read_pnet(const possible_net_t *pnet)
 #define __net_initdata
 #define __net_initconst
 #else
-#define __net_init	__init
-#define __net_exit	__ref
-#define __net_initdata	__initdata
-#define __net_initconst	__initconst
+/*  */
 #endif
 
 int peernet2id_alloc(struct net *net, struct net *peer, gfp_t gfp);
@@ -423,15 +394,7 @@ struct ctl_table_header *register_net_sysctl(struct net *net, const char *path,
 					     struct ctl_table *table);
 void unregister_net_sysctl_table(struct ctl_table_header *header);
 #else
-static inline int net_sysctl_init(void) { return 0; }
-static inline struct ctl_table_header *register_net_sysctl(struct net *net,
-	const char *path, struct ctl_table *table)
-{
-	return NULL;
-}
-static inline void unregister_net_sysctl_table(struct ctl_table_header *header)
-{
-}
+/*  */
 #endif
 
 static inline int rt_genid_ipv4(const struct net *net)

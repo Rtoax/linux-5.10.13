@@ -170,7 +170,7 @@ static const struct file_operations socket_file_ops = {
  */
 
 static DEFINE_SPINLOCK(net_family_lock);
-static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO] ;
+static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO] ;    /*  */
 
 /*
  * Support routines.
@@ -364,7 +364,7 @@ static int sockfs_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
-static struct vfsmount __read_mostly *sock_mnt ;
+static struct vfsmount __read_mostly *sock_mnt ;/* sock_mnt = kern_mount(&sock_fs_type); */
 
 static struct file_system_type sock_fs_type = {
 	.name =		"sockfs",
@@ -552,7 +552,7 @@ static int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
 	return err;
 }
 
-static const struct inode_operations sockfs_inode_ops = {
+static const struct inode_operations sockfs_inode_ops = {   /*  */
 	.listxattr = sockfs_listxattr,
 	.setattr = sockfs_setattr,
 };
@@ -565,22 +565,22 @@ static const struct inode_operations sockfs_inode_ops = {
  *	NULL is returned. This functions uses GFP_KERNEL internally.
  */
 
-struct socket *sock_alloc(void)
+struct socket *sock_alloc(void) /* 分配 inode */
 {
 	struct inode *inode;
 	struct socket *sock;
 
-	inode = new_inode_pseudo(sock_mnt->mnt_sb);
+	inode = new_inode_pseudo(sock_mnt->mnt_sb); /* 分配 inode, sock_mnt = kern_mount(&sock_fs_type); */
 	if (!inode)
 		return NULL;
 
-	sock = SOCKET_I(inode);
+	sock = SOCKET_I(inode); /* container_of */
 
 	inode->i_ino = get_next_ino();
 	inode->i_mode = S_IFSOCK | S_IRWXUGO;
 	inode->i_uid = current_fsuid();
 	inode->i_gid = current_fsgid();
-	inode->i_op = &sockfs_inode_ops;
+	inode->i_op = &sockfs_inode_ops;    /* 操作符 */
 
 	return sock;
 }
@@ -1378,7 +1378,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 			     current->comm);
 		family = PF_PACKET;
 	}
-
+    /* 安全钩子 */
 	err = security_socket_create(family, type, protocol, kern);
 	if (err)
 		return err;
@@ -1388,7 +1388,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	 *	the protocol is 0, the family is instructed to select an appropriate
 	 *	default.
 	 */
-	sock = sock_alloc();
+	sock = sock_alloc();    /* 分配 inode 和 struct socket 结构 */
 	if (!sock) {
 		net_warn_ratelimited("socket: no more sockets\n");
 		return -ENFILE;	/* Not exactly a match, but its the
@@ -1404,7 +1404,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	 * requested real, full-featured networking support upon configuration.
 	 * Otherwise module support will break!
 	 */
-	if (rcu_access_pointer(net_families[family]) == NULL)
+	if (rcu_access_pointer(net_families[family]) == NULL)   /* 协议族 */
 		request_module("net-pf-%d", family);
 #endif
 
@@ -1424,7 +1424,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	/* Now protected by module ref count */
 	rcu_read_unlock();
 
-	err = pf->create(net, sock, protocol, kern);
+    /* 如 AF_INET->inet_create() */
+	err = pf->create(net, sock, protocol, kern);    /* create */
 	if (err < 0)
 		goto out_module_put;
 
@@ -1472,8 +1473,7 @@ EXPORT_SYMBOL(__sock_create);
  *	A wrapper around __sock_create().
  *	Returns 0 or an error. This function internally uses GFP_KERNEL.
  */
-
-int sock_create(int family, int type, int protocol, struct socket **res)
+int sock_create(int family, int type, int protocol, struct socket **res)    /* 创建 socket */
 {
 	return __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
 }
@@ -1513,7 +1513,7 @@ int __sys_socket(int family, int type, int protocol)
 	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
 		return -EINVAL;
 	type &= SOCK_TYPE_MASK;
-
+    /* 标志位 */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
 
@@ -1524,6 +1524,7 @@ int __sys_socket(int family, int type, int protocol)
 	return sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
 }
 
+/* socket 系统调用 */
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
 	return __sys_socket(family, type, protocol);

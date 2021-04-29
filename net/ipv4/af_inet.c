@@ -244,7 +244,7 @@ EXPORT_SYMBOL(inet_listen);
 /*
  *	Create an inet socket.
  */
-
+/* AF_INET */
 static int inet_create(struct net *net, struct socket *sock, int protocol,
 		       int kern)
 {
@@ -319,7 +319,7 @@ lookup_protocol:
 	WARN_ON(!answer_prot->slab);
 
 	err = -ENOBUFS;
-	sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot, kern);
+	sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot, kern); /* 申请 struct sock */
 	if (!sk)
 		goto out;
 
@@ -327,7 +327,7 @@ lookup_protocol:
 	if (INET_PROTOSW_REUSE & answer_flags)
 		sk->sk_reuse = SK_CAN_REUSE;
 
-	inet = inet_sk(sk);
+	inet = inet_sk(sk); /*  */
 	inet->is_icsk = (INET_PROTOSW_ICSK & answer_flags) != 0;
 
 	inet->nodefrag = 0;
@@ -1106,9 +1106,9 @@ static const struct proto_ops inet_sockraw_ops = {
 #endif
 };
 
-static const struct net_proto_family inet_family_ops = {
+static const struct net_proto_family inet_family_ops = {    /* IPv4 */
 	.family = PF_INET,
-	.create = inet_create,
+	.create = inet_create,  /* inet_create() */
 	.owner	= THIS_MODULE,
 };
 

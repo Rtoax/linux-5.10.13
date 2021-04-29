@@ -1409,7 +1409,7 @@ static inline int __sk_prot_rehash(struct sock *sk)
 #define SOCK_BINDADDR_LOCK	4
 #define SOCK_BINDPORT_LOCK	8
 
-struct socket_alloc {
+struct socket_alloc {   /* socket 申请 */
 	struct socket socket;
 	struct inode vfs_inode;
 };

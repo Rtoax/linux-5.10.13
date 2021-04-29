@@ -192,7 +192,7 @@ struct rtable;
  * @mc_list - Group array
  * @cork - info to build ip hdr on each ip frag while socket is corked
  */
-struct inet_sock {
+struct inet_sock {  /* AF_INET sock 结构 */
 	/* sk and pinet6 has to be the first two members of inet_sock */
 	struct sock		sk;
 #if IS_ENABLED(CONFIG_IPV6)

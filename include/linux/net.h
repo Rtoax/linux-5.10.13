@@ -115,18 +115,18 @@ struct socket_wq {
  *  @sk: internal networking protocol agnostic socket representation
  *  @wq: wait queue for several uses
  */
-struct socket {
-	socket_state		state;
+struct socket { /* 套接字结构 */
+	socket_state		state;  /* socket 状态 如 SS_CONNECTING */
 
 	short			type;
 
-	unsigned long		flags;
+	unsigned long		flags;  /* 标志位 */
 
-	struct file		*file;
-	struct sock		*sk;
-	const struct proto_ops	*ops;
+	struct file		*file;  /* 打开的文件 */
+	struct sock		*sk;    /* 网络层 sock */
+	const struct proto_ops	*ops;   /* 操作 */
 
-	struct socket_wq	wq;
+	struct socket_wq	wq; /*  */
 };
 
 struct vm_area_struct;
@@ -138,7 +138,7 @@ struct sk_buff;
 typedef int (*sk_read_actor_t)(read_descriptor_t *, struct sk_buff *,
 			       unsigned int, size_t);
 
-struct proto_ops {  /*  */
+struct proto_ops {  /* struct socket 操作 */
 	int		family;
 	unsigned int	flags;
 	struct module	*owner;
