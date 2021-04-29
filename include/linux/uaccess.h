@@ -150,18 +150,18 @@ _copy_from_user(void *, const void __user *, unsigned long);
 #endif
 
 #ifdef INLINE_COPY_TO_USER
-static inline __must_check unsigned long
-_copy_to_user(void __user *to, const void *from, unsigned long n)
-{
-	might_fault();
-	if (should_fail_usercopy())
-		return n;
-	if (access_ok(to, n)) {
-		instrument_copy_to_user(to, from, n);
-		n = raw_copy_to_user(to, from, n);
-	}
-	return n;
-}
+//static inline __must_check unsigned long
+//_copy_to_user(void __user *to, const void *from, unsigned long n)
+//{
+//	might_fault();
+//	if (should_fail_usercopy())
+//		return n;
+//	if (access_ok(to, n)) {
+//		instrument_copy_to_user(to, from, n);
+//		n = raw_copy_to_user(to, from, n);
+//	}
+//	return n;
+//}
 #else
 extern __must_check unsigned long
 _copy_to_user(void __user *, const void *, unsigned long);
