@@ -1403,6 +1403,8 @@ long populate_vma_page_range(struct vm_area_struct *vma,
  * This is used to implement mlock() and the MAP_POPULATE / MAP_LOCKED mmap
  * flags. VMAs must be already marked with the desired vm_flags, and
  * mmap_lock must not be held.
+ *
+ * 在地址空间范围内填充和/或锁定页面。
  */
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {

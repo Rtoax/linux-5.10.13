@@ -2407,6 +2407,21 @@ static inline int check_data_rlimit(unsigned long rlim,
 				    unsigned long end_data,
 				    unsigned long start_data)
 {
+    /**
+    +-------+ new
+    |       |
+    |       |   堆
+    |  heap |
+    +-------+ start
+    |       |
+    |  ...  |
+    |       |
+    +-------+ end_data
+    |       |     
+    |  data |   数据段
+    |       |
+    +-------+ start_data
+     */
 	if (rlim < RLIM_INFINITY) {
 		if (((new - start) + (end_data - start_data)) > rlim)
 			return -ENOSPC;
@@ -2457,7 +2472,7 @@ extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);
 static inline void mm_populate(unsigned long addr, unsigned long len)
 {
-	/* Ignore errors */
+	/* Ignore errors 在地址空间范围内填充和/或锁定页面。 */
 	(void) __mm_populate(addr, len, 1);
 }
 #else

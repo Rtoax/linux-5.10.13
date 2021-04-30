@@ -187,7 +187,7 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)    /*  */
 
 static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags,
 		struct list_head *uf);
-SYSCALL_DEFINE1(brk, unsigned long, brk)    /*  */
+SYSCALL_DEFINE1(brk, unsigned long, brk)    /* int brk(void *addr);  void *sbrk(intptr_t increment); */
 {
 	unsigned long retval;
 	unsigned long newbrk, oldbrk, origbrk;
@@ -201,7 +201,7 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /*  */
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	origbrk = mm->brk;
+	origbrk = mm->brk;  /* 原始的堆顶 */
 
 #ifdef CONFIG_COMPAT_BRK
 	/*
@@ -224,13 +224,29 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /*  */
 	 * of oldbrk with newbrk then it can escape the test and let the data
 	 * segment grow beyond its set limit the in case where the limit is
 	 * not page aligned -Ram Gupta
-	 *//* 检测资源限制 */
+	 *//* 检测资源限制 
+	 
+    +-------+ brk
+    |       |
+    |       |   堆
+    |  heap |
+    +-------+ mm->start_brk
+    |       |
+    |  ...  |
+    |       |
+    +-------+ mm->end_data
+    |       |     
+    |  data |   数据段
+    |       |
+    +-------+ mm->start_data
+
+	 */
 	if (check_data_rlimit(rlimit(RLIMIT_DATA), brk, mm->start_brk,
 			      mm->end_data, mm->start_data))
 		goto out;
 
-	newbrk = PAGE_ALIGN(brk);
-	oldbrk = PAGE_ALIGN(mm->brk);
+	newbrk = PAGE_ALIGN(brk);       /* 新的 brk ：页对齐，申请大小对齐 page */
+	oldbrk = PAGE_ALIGN(mm->brk);   /* 旧的 brk */
 	if (oldbrk == newbrk) { /* brk 位置没有发生变化 */
 		mm->brk = brk;
 		goto success;
@@ -239,6 +255,8 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /*  */
 	/*
 	 * Always allow shrinking brk.
 	 * __do_munmap() may downgrade mmap_lock to read.
+	 *
+	 * 对应 free 操作
 	 */
 	if (brk <= mm->brk) {   /* brk < 原有 brk -> 这是一个 free 操作 */
 		int ret;
@@ -248,7 +266,17 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /*  */
 		 * before downgrading mmap_lock. When __do_munmap() fails,
 		 * mm->brk will be restored from origbrk.
 		 */
-		mm->brk = brk;
+		mm->brk = brk;  /* 保存 */
+
+        /*
+        +-------+ oldbrk ~ mm->brk 上次的位置
+        |       |
+        |       |
+        |       | newbrk ~ mm->brk 约等于，页对齐
+        |       |
+        |       |
+        +-------+ mm->start_brk
+        */
 		ret = __do_munmap(mm, newbrk, oldbrk-newbrk, &uf, true);    /* do munmap */
 		if (ret < 0) {
 			mm->brk = origbrk;  /* unmap 失败使用原来的brk 位置 */
@@ -734,11 +762,35 @@ static __always_inline void __vma_unlink(struct mm_struct *mm,
  * The following helper function should be used when such adjustments
  * are necessary.  The "insert" vma (if any) is to be inserted
  * before we drop the necessary locks.
+ *
+ * 如果不调整树，则无法调整i_mmap树中已经存在的vma的vm_start，vm_end，vm_pgoff字段。 
+ * 当需要进行此类调整时，应使用以下帮助器功能。 在插入必要的锁之前，将插入“插入” vma（如果有）。
  */ /*  */
 int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
 	struct vm_area_struct *expand)
 {
+    /*
+                                +-------+
+                                |       |
+                                |       |
+                                |       |
+                                | next  |
+                                |       |
+                                |       |
+                                +-------+
+                                
+    +-------+--- end            orig_vma
+    |       |                   +-------+               +-------+
+    |       | len               |  vma  |               |       |
+    |       |--- start -------->|       |               | insert|
+    |       |                   |       |               |       |
+    |       |                   |       | <-- end ----> +-------+
+    +-------+ mm->start_brk     |       |
+                                |       |
+                                +-------+ start
+
+    */
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *next = vma->vm_next, *orig_vma = vma;
 	struct address_space *mapping = NULL;
@@ -872,7 +924,24 @@ again:
 		if (adjust_next)
 			vma_interval_tree_remove(next, root);
 	}
+    /*
+     +-------+
+     |  vma  |
+     |       | 
+     |       |
+     |       | <-- end
+     |       |
+     |       |
+     +-------+ start
+ 
+     >>>> 变为
+                
+     +-------+ <-- vma->vm_end
+     |  vma  |
+     |       |
+     +-------+ <-- vma->vm_start
 
+     */
 	if (start != vma->vm_start) {
 		vma->vm_start = start;
 		start_changed = true;
@@ -1636,7 +1705,7 @@ out_fput:
 		fput(file);
 	return retval;
 }
-
+    /*  */
 SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags,
 		unsigned long, fd, unsigned long, pgoff)
@@ -2266,7 +2335,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (len > TASK_SIZE)    /* 错误 */
 		return -ENOMEM;
 
-	get_area = current->mm->get_unmapped_area;  /* 可能=get_unmapped_area_mem(...) */
+	get_area = current->mm->get_unmapped_area;  /* 可能=arch_get_unmapped_area(...) */
 	if (file) { /* 如果是文件映射 */
 		if (file->f_op->get_unmapped_area)
 			get_area = file->f_op->get_unmapped_area;
@@ -2737,14 +2806,64 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 		if (err)
 			return err;
 	}
+    /**
+    +-------+
+    |  ...  |
+    +-------+
+        |
+    +---|---+
+    | next  |
+    |       |
+    |  vma  |
+    |       |
+    | prev  |
+    +---|---+
+        |
+    +-------+
+    |  ...  |
+    +-------+
 
+    ---------------------------
+
+      NULL
+        |
+    +---|---+
+    | next  |
+    |       |
+    |  new  |
+    |       |
+    | prev  |
+    +---|---+
+        |
+      NULL
+    */
 	new = vm_area_dup(vma); /* 直接 dup 一个 vma 结构 */
 	if (!new)   /* 失败的话，oom error */
 		return -ENOMEM;
 
 	if (new_below)  /*  */
+        /* 
+        +-------+
+        |       | 
+        |       | 
+        |       | <-- addr  +-------+ <-- new->vm_end
+        |  vma  |           |       |
+        |       |           |  new  |
+        +-------+           +-------+
+        */
 		new->vm_end = addr;
 	else {
+        /*
+        +-------+--- end
+        |       |                   +-------+ vma->vm_end   +-------+
+        |       | len               |  vma  |               |       |
+        |       |--- start -------->|       | <-- end       |  new  |
+        |       |                   |       |               |       |
+        |       |                   |       | <-- addr **** +-------+ = new->vm_start
+        +-------+ mm->start_brk     |       |
+                                    |       |
+                                    +-------+ vma->vm_start
+        */
 		new->vm_start = addr;   /* 初始化地址 */
 		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);/* 页偏移以外的其他部分内容 */
 	}
@@ -2766,10 +2885,29 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_ops && new->vm_ops->open)
 		new->vm_ops->open(new);
 
-	if (new_below)
+	if (new_below)        
+        /* 
+        +-------+
+        |       | 
+        |       | 
+        |       | <-- addr      +-------+ <-- new->vm_end
+        |  vma  |               |       |
+        |       |               |  new  |
+        +-------+               +-------+ <-- new->vm_start
+        */
 		err = vma_adjust(vma, addr, vma->vm_end, vma->vm_pgoff +
 			((addr - new->vm_start) >> PAGE_SHIFT), new);
 	else
+        /*
+        +-------+ vma->vm_end   +-------+
+        |       |               |       |
+        |       |               |  new  |
+        |  vma  |               |       |
+        |       | <-- addr **** +-------+ <-- new->vm_start
+        |       |
+        |       |
+        +-------+ vma->vm_start
+        */
 		err = vma_adjust(vma, vma->vm_start, addr, vma->vm_pgoff, new);
 
 	/* Success. */
@@ -2806,10 +2944,19 @@ int split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
  * what needs doing, and the areas themselves, which do the
  * work.  This now handles partial unmappings.
  * Jeremy Fitzhardinge <jeremy@goop.org>
- */ /*  */
+ */ /* free->unmap */
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		struct list_head *uf, bool downgrade)
 {
+    
+    //+-------+--- 
+    //|       |
+    //|       | len
+    //|       |--- start
+    //|       |
+    //|       |
+    //+-------+ mm->start_brk
+    
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;
 
@@ -2818,8 +2965,17 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		return -EINVAL;
 
     /* 页对齐 */
-	len = PAGE_ALIGN(len);
-	end = start + len;  /* 结束点位置 */
+	len = PAGE_ALIGN(len);  /*  */
+    /*
+    +-------+--- end
+    |       |
+    |       | len
+    |       |--- start
+    |       |
+    |       |
+    +-------+ mm->start_brk
+    */
+	end = start + len;      /* 结束点位置 */
 	if (len == 0)
 		return -EINVAL;
 
@@ -2831,9 +2987,40 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	arch_unmap(mm, start, end); /* 架构相关的unmap, x86 问下为空*/
 
 	/* Find the first overlapping VMA */
+    /*
+    +-------+--- end
+    |       |                   +-------+
+    |       | len               |  VMA  |
+    |       |--- start -------->|       |
+    |       |                   |       |
+    |       |                   |       |
+    +-------+ mm->start_brk     |       |
+                                +-------+
+    */
 	vma = find_vma(mm, start);  /* 发现一个 vma 结构 */
 	if (!vma)
 		return 0;   /* 如果没有这个 vma， 说明 地址不存在，后续可能段错误 */
+    /*
+    +-------+--- end
+    |       |                   +-------+ vma->vm_end
+    |       | len               |  vma  |
+    |       |--- start -------->|       |
+    |       |                   |       |
+    |       |                   |       |
+    +-------+ mm->start_brk     |       |
+                                |       |
+                                +-------+ vma->vm_start
+
+                                
+                                +-------+ 
+                                | prev  |
+                                |       |
+                                |       |
+                                |       |
+                                |       |
+                                |       |
+                                +-------+
+    */
 	prev = vma->vm_prev;    /* 上一块 vma */
 	/* we have  start < vma->vm_end  */
 
@@ -2848,6 +3035,18 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	 * unmapped vm_area_struct will remain in use: so lower split_vma
 	 * places tmp vma above, and higher split_vma places tmp vma below.
 	 */
+	/*
+    +-------+--- end
+    |       |                   +-------+ vma->vm_end
+    |       | len               |  vma  |
+    |       |--- start -------->|       | 
+    |       |                   |       |
+    |       |                   |       | <-- start
+    +-------+ mm->start_brk     |       |
+                                |       |
+                                +-------+ vma->vm_start
+
+	*/
 	if (start > vma->vm_start) {    /* 地址在这个 vma 中 */
 		int error;
 
@@ -2860,18 +3059,68 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		    如果错误，返回 oom 错误
 		vm_start                            vm_end
 		    |-----------#############---------|*/
+    	/*
+        +-------+--- end
+        |       |                   +-------+ vma->vm_end
+        |       | len               |  vma  |
+        |       |--- start -------->|       | <-- end
+        |       |                   |       |
+        |       |                   |       | <-- start
+        +-------+ mm->start_brk     |       |
+                                    |       |
+                                    +-------+ vma->vm_start
+        这种情况下是需要进一步切分 vma 结构的，如果超出允许切分的大小，返回 OOM
+    	*/
 		if (end < vma->vm_end && mm->map_count >= sysctl_max_map_count) 
 			return -ENOMEM;
 
+        /*
+        +-------+--- end
+        |       |                   +-------+ vma->vm_end 
+        |       | len               |  vma  |
+        |       |--- start -------->|       | <-- end
+        |       |                   |       |
+        |       |                   |       | <-- start
+        +-------+ mm->start_brk     |       |
+                                    |       |
+                                    +-------+ vma->vm_start
+        */
 		error = __split_vma(mm, vma, start, 0); /* 分离一个 vma 结构 */
 		if (error)
 			return error;
+
+        /*
+                                              <-- end
+        +-------+--- end            +-------+ <-- end
+        |       |                   |       | <-- end
+        |       | len               |       |
+        |       |                   +-------+
+        |       |                   
+        |       |                   +-------+ vma->vm_end
+        +-------+ mm->start_brk     | prev  |
+                                    |       |
+                                    +-------+ vma->vm_start
+        */
 		prev = vma;
 	}
 
 	/* Does it split the last one? */
-	last = find_vma(mm, end);   /* end 地址大于 下一个 vma 的 vm_start 起始地址 */
+	last = find_vma(mm, end);   /* last->vm_start <= end,否则返回最后一个vma */
 	if (last && end > last->vm_start) {
+        /* 需要继续切分
+                                    +-------+
+                                    |       | 
+                                    |       | 
+        +-------+--- end            |       | <-- end
+        |       |                   | last  |
+        |       | len               |       | 
+        |       |                   +-------+ last->vm_start
+        |       |                   
+        |       |                   +-------+ vma->vm_end
+        +-------+ mm->start_brk     | prev  |
+                                    |       |
+                                    +-------+ vma->vm_start
+        */
 		int error = __split_vma(mm, last, end, 1);  /* 拆分这个 vma  */
 		if (error)
 			return error;

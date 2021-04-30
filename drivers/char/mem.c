@@ -328,34 +328,34 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 #endif
 
 #ifndef CONFIG_MMU
-static unsigned long get_unmapped_area_mem(struct file *file,
-					   unsigned long addr,
-					   unsigned long len,
-					   unsigned long pgoff,
-					   unsigned long flags)
-{
-	if (!valid_mmap_phys_addr_range(pgoff, len))
-		return (unsigned long) -EINVAL;
-	return pgoff << PAGE_SHIFT;
-}
-
-/* permit direct mmap, for read, write or exec */
-static unsigned memory_mmap_capabilities(struct file *file)
-{
-	return NOMMU_MAP_DIRECT |
-		NOMMU_MAP_READ | NOMMU_MAP_WRITE | NOMMU_MAP_EXEC;
-}
-
-static unsigned zero_mmap_capabilities(struct file *file)
-{
-	return NOMMU_MAP_COPY;
-}
-
-/* can't do an in-place private mapping if there's no MMU */
-static inline int private_mapping_ok(struct vm_area_struct *vma)
-{
-	return vma->vm_flags & VM_MAYSHARE;
-}
+//static unsigned long get_unmapped_area_mem(struct file *file,
+//					   unsigned long addr,
+//					   unsigned long len,
+//					   unsigned long pgoff,
+//					   unsigned long flags)
+//{
+//	if (!valid_mmap_phys_addr_range(pgoff, len))
+//		return (unsigned long) -EINVAL;
+//	return pgoff << PAGE_SHIFT;
+//}
+//
+///* permit direct mmap, for read, write or exec */
+//static unsigned memory_mmap_capabilities(struct file *file)
+//{
+//	return NOMMU_MAP_DIRECT |
+//		NOMMU_MAP_READ | NOMMU_MAP_WRITE | NOMMU_MAP_EXEC;
+//}
+//
+//static unsigned zero_mmap_capabilities(struct file *file)
+//{
+//	return NOMMU_MAP_COPY;
+//}
+//
+///* can't do an in-place private mapping if there's no MMU */
+//static inline int private_mapping_ok(struct vm_area_struct *vma)
+//{
+//	return vma->vm_flags & VM_MAYSHARE;
+//}
 #else
 /*  */
 #endif
