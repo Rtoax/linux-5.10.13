@@ -88,6 +88,9 @@
  * Intel problem.
  *
  * With page table isolation enabled, we map the LDT in ... [stay tuned]
+ *
+ * 五级页表时 = 0x00fffffffffff000
+ * 四级页表时 = 0x00007ffffffff000
  */
 #define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
     /*(1UL << 47)   0x0000 8000 0000 0000 

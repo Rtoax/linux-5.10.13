@@ -89,7 +89,7 @@ static int addr_to_vsyscall_nr(unsigned long addr)
 	if ((addr & ~0xC00UL) != VSYSCALL_ADDR)
 		return -EINVAL;
 
-	nr = (addr & 0xC00UL) >> 10;
+	nr = (addr & 0xC00UL) >> 10;/* 110000000000 */
 	if (nr >= 3)
 		return -EINVAL;
 
@@ -182,7 +182,7 @@ bool emulate_vsyscall(unsigned long error_code,
 	 * vsyscalls, NULL means "don't write anything" not "write it at
 	 * address 0".
 	 */
-	switch (vsyscall_nr) {
+	switch (vsyscall_nr) {  /* vsyscall number */
 	case 0:
 		if (!write_ok_or_segv(regs->di, sizeof(struct __kernel_old_timeval)) ||
 		    !write_ok_or_segv(regs->si, sizeof(struct timezone))) {
@@ -240,7 +240,7 @@ bool emulate_vsyscall(unsigned long error_code,
 	current->thread.sig_on_uaccess_err = 1;
 
 	ret = -EFAULT;
-	switch (vsyscall_nr) {
+	switch (vsyscall_nr) {  /* 调用 */
 	case 0:
 		/* this decodes regs->di and regs->si on its own */
 		ret = __x64_sys_gettimeofday(regs);

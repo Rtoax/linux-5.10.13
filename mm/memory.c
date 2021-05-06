@@ -3477,7 +3477,7 @@ out_release:
  * but allow concurrent faults), and pte mapped but not yet locked.
  * We return with mmap_lock still held, but pte unmapped and unlocked.
  */
-static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
+static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
@@ -3498,7 +3498,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	 *
 	 * Here we only have mmap_read_lock(mm).
 	 */
-	if (pte_alloc(vma->vm_mm, vmf->pmd))
+	if (pte_alloc(vma->vm_mm, vmf->pmd))    /* 分配 pte */
 		return VM_FAULT_OOM;
 
 	/* See the comment in pte_alloc_one_map() */
@@ -4375,14 +4375,14 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		}
 	}
 
-	if (!vmf->pte) {    /*  */
+	if (!vmf->pte) {    /* 如果pte页表项为空 */
 		if (vma_is_anonymous(vmf->vma)) /* 匿名 */
 			return do_anonymous_page(vmf);
 		else
 			return do_fault(vmf);   /*  */
 	}
 
-	if (!pte_present(vmf->orig_pte))
+	if (!pte_present(vmf->orig_pte))/* pte不存在 */
 		return do_swap_page(vmf);   /* 交换空间 */
 
 	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))/* 如果vma可访问，并且访问权限没有设置 */
@@ -4583,13 +4583,15 @@ static inline void mm_account_fault(struct pt_regs *regs,
  *
  * The mmap_lock may have been released depending on flags and our
  * return value.  See filemap_fault() and __lock_page_or_retry().
- */
+ *
+ * 缺页中断处理函数
+ */ 
 vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 			   unsigned int flags, struct pt_regs *regs)
 {
 	vm_fault_t ret;
 
-	__set_current_state(TASK_RUNNING);
+	__set_current_state(TASK_RUNNING);  /* 当前进程就绪 */
 
 	count_vm_event(PGFAULT);
 	count_memcg_event_mm(vma->vm_mm, PGFAULT);
@@ -4610,9 +4612,9 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 		mem_cgroup_enter_user_fault();
 
 	if (unlikely(is_vm_hugetlb_page(vma)))  /* 如果是大页内存放生了 page fault */
-		ret = hugetlb_fault(vma->vm_mm, vma, address, flags);   /*  */
+		ret = hugetlb_fault(vma->vm_mm, vma, address, flags);   /* hugepage缺页 */
 	else    /* 普通页发生了 pagefault */
-		ret = __handle_mm_fault(vma, address, flags);
+		ret = __handle_mm_fault(vma, address, flags);   /* 普通 page 缺页 */
 
 	if (flags & FAULT_FLAG_USER) {
 		mem_cgroup_exit_user_fault();

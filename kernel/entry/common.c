@@ -18,7 +18,7 @@
  * 2) Invoke context tracking if enabled to reactivate RCU
  * 3) Trace interrupts off state
  */
-static __always_inline void enter_from_user_mode(struct pt_regs *regs)
+static __always_inline void enter_from_user_mode(struct pt_regs *regs)  /* TODO */
 {
 	arch_check_user_regs(regs);
 	lockdep_hardirqs_off(CALLER_ADDR0);
@@ -268,7 +268,7 @@ __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)  /*  */
 	exit_to_user_mode();    /*  */
 }
 
-noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)
+noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)    /* 用户态的irq */
 {
 	enter_from_user_mode(regs); /*  */
 }

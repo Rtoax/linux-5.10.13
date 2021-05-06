@@ -2128,7 +2128,8 @@ out:
 }
 
 /* Allocate a page in interleaved policy.
-   Own path because it needs to do special accounting. 在某个node上分配 page */
+   Own path because it needs to do special accounting.  交织
+   在某个node上分配 page */
 static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
 					unsigned nid)
 {
@@ -2180,7 +2181,7 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 
 	pol = get_vma_policy(vma, addr);
 
-	if (pol->mode == MPOL_INTERLEAVE) {
+	if (pol->mode == MPOL_INTERLEAVE) { /* 交织 */
 		unsigned nid;
 
 		nid = interleave_nid(pol, vma, addr, PAGE_SHIFT + order);

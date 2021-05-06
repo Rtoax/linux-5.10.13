@@ -775,7 +775,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 * Generally the first zones will be references to this node's
 	 * node_zones.
 	 */
-	struct zonelist node_zonelists[MAX_ZONELISTS];
+	struct zonelist node_zonelists[MAX_ZONELISTS];  /*  */
 
 	int nr_zones; /* number of populated zones in this node */
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */

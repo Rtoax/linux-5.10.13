@@ -240,7 +240,7 @@ static inline unsigned long pgd_pfn(pgd_t pgd)
 }
 
 #define p4d_leaf	p4d_large
-static inline int p4d_large(p4d_t p4d)
+static inline int p4d_large(p4d_t p4d)  /* 四级页表项就是大页 */
 {
 	/* No 512 GiB pages yet */
 	return 0;

@@ -6,7 +6,7 @@
 
 #include <linux/mm.h>
 
-static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma)
+static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma)   /*  设置了大页标记 */
 {
 	return !!(vma->vm_flags & VM_HUGETLB);
 }

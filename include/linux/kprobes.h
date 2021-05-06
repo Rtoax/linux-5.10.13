@@ -85,7 +85,7 @@ struct kprobe { /*  */
 	 * ... called if executing addr causes a fault (eg. page fault).
 	 * Return 1 if it handled fault, otherwise kernel will see it.
 	 */
-	kprobe_fault_handler_t fault_handler;
+	kprobe_fault_handler_t fault_handler;   /* 缺页 */
 
 	/* Saved opcode (which has been replaced with breakpoint) */
 	kprobe_opcode_t opcode;
@@ -403,19 +403,6 @@ static inline int enable_kretprobe(struct kretprobe *rp)
 {
 	return enable_kprobe(&rp->kp);
 }
-
-#ifndef CONFIG_KPROBES
-static inline bool is_kprobe_insn_slot(unsigned long addr)
-{
-	return false;
-}
-#endif
-#ifndef CONFIG_OPTPROBES
-static inline bool is_kprobe_optinsn_slot(unsigned long addr)
-{
-	return false;
-}
-#endif
 
 /* Returns true if kprobes handled the fault */
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,

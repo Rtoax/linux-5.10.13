@@ -51,7 +51,7 @@ enum {
 #if USE_SPLIT_PTE_PTLOCKS && defined(CONFIG_MMU)
 #define SPLIT_RSS_COUNTING
 /* per-thread cached information, */
-struct task_rss_stat {
+struct task_rss_stat {  /*  */
 	int events;	/* for synchronization threshold */
 	int count[NR_MM_COUNTERS];
 };

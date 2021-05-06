@@ -916,7 +916,7 @@ NOKPROBE_SYMBOL(kprobe_debug_handler);
 
 int kprobe_fault_handler(struct pt_regs *regs, int trapnr)  /*  */
 {
-	struct kprobe *cur = kprobe_running();
+	struct kprobe *cur = kprobe_running();  /* TODO */
 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();    /*  */
 
 	if (unlikely(regs->ip == (unsigned long)cur->ainsn.insn)) {

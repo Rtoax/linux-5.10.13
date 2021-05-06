@@ -11,7 +11,7 @@
 /* Check that the stack and regs on entry from user mode are sane. */
 static __always_inline void arch_check_user_regs(struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_ENTRY)) {
+	if (IS_ENABLED(CONFIG_DEBUG_ENTRY)) {   /* TODO */
 		/*
 		 * Make sure that the entry code gave us a sensible EFLAGS
 		 * register.  Native because we want to check the actual CPU

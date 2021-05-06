@@ -580,8 +580,7 @@
 #define CONFIG_CFS_BANDWIDTH    /*  */
 #define CONFIG_CFS_BANDWIDTH 1
 #define CONFIG_CGROUP_BPF       /*  */
-#define CONFIG_CGROUP_CPUACCT 1
-#define CONFIG_CGROUP_CPUACCT   /* 对cpu使用状况做统计，并自动生成cgroup中进程所使用的CPU资源报告 */
+#define CONFIG_CGROUP_CPUACCT 1 /* 对cpu使用状况做统计，并自动生成cgroup中进程所使用的CPU资源报告 */
 #define CONFIG_CGROUP_DEBUG     /*  */
 #define CONFIG_CGROUP_DEVICE    /*  */
 #define CONFIG_CGROUP_DEVICE 1
@@ -657,8 +656,7 @@
 #define CONFIG_CMDLINE_BOOL 1
 #define CONFIG_CNIC_MODULE 1
 #define CONFIG_COMMON_CLK 1
-#define CONFIG_COMPACTION 1
-#define CONFIG_COMPACTION       /* (内存)规整 */
+#define CONFIG_COMPACTION 1     /* (内存)规整 */
 #define CONFIG_COMPAL_LAPTOP_MODULE 1
 #define CONFIG_COMPAT 1
 #define CONFIG_COMPAT_32 1

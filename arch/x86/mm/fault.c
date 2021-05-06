@@ -779,7 +779,7 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
  * The (legacy) vsyscall page is the long page in the kernel portion
  * of the address space that has user-accessible permissions.
  */
-static bool is_vsyscall_vaddr(unsigned long vaddr)
+static bool is_vsyscall_vaddr(unsigned long vaddr)  /* vsyscall地址 */
 {
 	return unlikely((vaddr & PAGE_MASK) == VSYSCALL_ADDR);
 }
@@ -1047,17 +1047,17 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 		return 0;
 
     /* 全局页表项 */
-	pgd = init_mm.pgd + pgd_index(address);
-	if (!pgd_present(*pgd))
+	pgd = init_mm.pgd + pgd_index(address); /* 页全局目录项 */
+	if (!pgd_present(*pgd)) /* 是否存在 */
 		return 0;
 
     /* 4 级页表项 */
-	p4d = p4d_offset(pgd, address);
+	p4d = p4d_offset(pgd, address); /* 四级 */
 	if (!p4d_present(*p4d))
 		return 0;
 
     /* 检测 四级页表是否是大页页表， 目前不支持 */
-	if (p4d_large(*p4d))
+	if (p4d_large(*p4d))    /* 目前恒为 0 */
 		return spurious_kernel_fault_check(error_code, (pte_t *) p4d);
 
     /* 页上级目录 */
@@ -1080,8 +1080,8 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 
     /* 页表项 */
 	pte = pte_offset_kernel(pmd, address);
-	if (!pte_present(*pte))
-		return 0;
+	if (!pte_present(*pte)) /* 是否存在 */
+		return 0;   /* 如果不存在，返回0 */
 
     /*  */
 	ret = spurious_kernel_fault_check(error_code, pte);
@@ -1144,7 +1144,7 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 
 //内核空间的错误
 //`kmemcheck` fault, spurious fault, [kprobes] fault and etc
-bool fault_in_kernel_space(unsigned long address)
+bool fault_in_kernel_space(unsigned long address)   /* 根据地址，判定缺页发生在内核态还是用户态 */
 {
 	/*
 	 * On 64-bit systems, the vsyscall page is at an address above
@@ -1154,6 +1154,10 @@ bool fault_in_kernel_space(unsigned long address)
 	if (IS_ENABLED(CONFIG_X86_64) && is_vsyscall_vaddr(address))
 		return false;
 
+    /*
+     * 五级页表时 = 0x00fffffffffff000
+     * 四级页表时 = 0x00007ffffffff000
+     */
 	return address >= TASK_SIZE_MAX;
 }
 
@@ -1225,12 +1229,12 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 NOKPROBE_SYMBOL(do_kern_addr_fault);
 
 /* Handle faults in the user portion of the address space */
-static inline   /*  */
+static inline   /* 用户态缺页 */
 void do_user_addr_fault(struct pt_regs *regs,
 			unsigned long hw_error_code,
 			unsigned long address)
 {
-	struct vm_area_struct *vma; /*  */
+	struct vm_area_struct *vma; /* vma结构 */
 	struct task_struct *tsk;
 	struct mm_struct *mm;
 	vm_fault_t fault;
@@ -1350,7 +1354,7 @@ retry:
     /* 查找 vma 结构 */
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
-		bad_area(regs, hw_error_code, address);
+		bad_area(regs, hw_error_code, address); /*  */
 		return;
 	}
 	if (likely(vma->vm_start <= address))   /* 如果vma的起始地址小于address， 那么地址合法 */
@@ -1387,7 +1391,7 @@ good_area:
 	 * userland). The return to userland is identified whenever
 	 * FAULT_FLAG_USER|FAULT_FLAG_KILLABLE are both set in flags.
 	 */
-	fault = handle_mm_fault(vma, address, flags, regs); /*  */
+	fault = handle_mm_fault(vma, address, flags, regs); /* mm fault */
 
 	/* Quick path to respond to signals */
 	if (fault_signal_pending(fault, regs)) {
@@ -1437,7 +1441,7 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 {
 	trace_page_fault_entries(regs, error_code, address);
 
-	if (unlikely(kmmio_fault(regs, address))) /*  */
+	if (unlikely(kmmio_fault(regs, address))) /* TODO */
 		return;
 
 	/* Was the fault on kernel-controlled part of the address space? 
@@ -1463,6 +1467,9 @@ void exc_page_fault(struct pt_regs *regs, int error_code){/* 我加的 */}
 void do_page_fault(struct pt_regs *regs, int error_code){/* 我加的： 因为老版本的内核叫做这个名字 */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 {
+    struct pt_regs *regs/* 我加的 */;
+    int error_code/* 我加的 */;
+    
 	unsigned long address = read_cr2(); /* cr2 = 引发缺页中断的 线性地址 */
 	irqentry_state_t state;
 
@@ -1502,7 +1509,7 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 	 * code reenabled RCU to avoid subsequent wreckage which helps
 	 * debugability.
 	 */
-	state = irqentry_enter(regs);
+	state = irqentry_enter(regs);   /* TODO */
 
 	instrumentation_begin();
 
@@ -1511,5 +1518,5 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 	instrumentation_end();
 
     /*  */
-	irqentry_exit(regs, state);
+	irqentry_exit(regs, state); 
 }

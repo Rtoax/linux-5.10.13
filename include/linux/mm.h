@@ -497,18 +497,18 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
  * alter it if its implementation requires a different allocation context.
  *
  * pgoff should be used in favour of virtual_address, if possible.
- */ /*  */
-struct vm_fault {   /* 缺页异常/中断 */
+ */ 
+struct vm_fault {       /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
 	unsigned int flags;		/* FAULT_FLAG_xxx flags */
 	gfp_t gfp_mask;			/* gfp mask to be used for allocations */
 	pgoff_t pgoff;			/* Logical page offset based on vma */
 	unsigned long address;		/* Faulting virtual address */
 	pmd_t *pmd;			/* Pointer to pmd entry matching
-					 * the 'address' */
+					        * the 'address' */
 	pud_t *pud;			/* Pointer to pud entry matching
-					 * the 'address'
-					 */
+    					 * the 'address'
+    					 */
 	pte_t orig_pte;			/* Value of PTE at the time of fault */
 
 	struct page *cow_page;		/* Page handler may use for COW fault */
