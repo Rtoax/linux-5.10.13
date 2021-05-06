@@ -90,7 +90,9 @@
  * With page table isolation enabled, we map the LDT in ... [stay tuned]
  */
 #define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
-
+    /*(1UL << 47)   0x0000 8000 0000 0000 
+       PAGE_SIZE    0x0000 0000 0000 1000
+        =           0x0000 7fff ffff f000 */
 #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
 
 /* This decides where the kernel will search for a free chunk of vm

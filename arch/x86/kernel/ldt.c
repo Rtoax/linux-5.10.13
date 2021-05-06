@@ -376,16 +376,7 @@ static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
 }
 
 #else /* !CONFIG_PAGE_TABLE_ISOLATION */
-
-static int
-map_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt, int slot)
-{
-	return 0;
-}
-
-static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
-{
-}
+/*  */
 #endif /* CONFIG_PAGE_TABLE_ISOLATION */
 
 static void free_ldt_pgtables(struct mm_struct *mm)
@@ -440,7 +431,7 @@ static void free_ldt_struct(struct ldt_struct *ldt)
  * Called on fork from arch_dup_mmap(). Just copy the current LDT state,
  * the new task is not running, so nothing can be installed.
  */
-int ldt_dup_context(struct mm_struct *old_mm, struct mm_struct *mm)
+int ldt_dup_context(struct mm_struct *old_mm, struct mm_struct *mm) /* 局部描述符表 */
 {
 	struct ldt_struct *new_ldt;
 	int retval = 0;

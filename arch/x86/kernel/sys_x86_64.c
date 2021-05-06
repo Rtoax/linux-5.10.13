@@ -124,7 +124,7 @@ static void find_start_end(unsigned long addr, unsigned long flags,
 	if (in_32bit_syscall())
 		*end = task_size_32bit();
 	else
-		*end = task_size_64bit(addr > DEFAULT_MAP_WINDOW);
+		*end = task_size_64bit(addr > DEFAULT_MAP_WINDOW/*0x0000 7fff ffff f000*/);
 }
 
 unsigned long   /* 获取没被映射的内存区域 */
@@ -139,14 +139,26 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	if (flags & MAP_FIXED)
 		return addr;
 
+    /*
+    +-------+ end
+    |       |
+    |       |
+    |       | <-- addr
+    |       |
+    |       |
+    +-------+ begin
+    */
 	find_start_end(addr, flags, &begin, &end);  /* 查找 */
 
 	if (len > end)
 		return -ENOMEM;
 
+    //If an address is provided, use it for the mapping
 	if (addr) {
-		addr = PAGE_ALIGN(addr);    /* 对齐 */
-		vma = find_vma(mm, addr);   /* 查找对应 vma */
+		addr = PAGE_ALIGN(addr);    /* 对齐 Make sure the address is page aligned */
+		vma = find_vma(mm, addr);   /* 查找对应 vma, return the region closest to the requested address*/
+        /* Make sure the mapping will not overlap with another region. 
+           If it does not, return it as it is safe to use. Otherwise it gets ignored */
 		if (end - len >= addr &&
 		    (!vma || addr + len <= vm_start_gap(vma)))
 			return addr;

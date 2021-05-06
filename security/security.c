@@ -801,7 +801,7 @@ int security_settime64(const struct timespec64 *ts, const struct timezone *tz)
 	return call_int_hook(settime, 0, ts, tz);
 }
 
-int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
+int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)  /*  */
 {
 	struct security_hook_list *hp;
 	int cap_sys_admin = 1;
@@ -813,6 +813,8 @@ int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 	 * made with the cap_sys_admin set. If all of the modules
 	 * agree that it should be set it will. If any module
 	 * thinks it should not be set it won't.
+	 *
+	 * 对应 cap_vm_enough_memory()
 	 */
 	hlist_for_each_entry(hp, &security_hook_heads.vm_enough_memory, list) {
 		rc = hp->hook.vm_enough_memory(mm, pages);

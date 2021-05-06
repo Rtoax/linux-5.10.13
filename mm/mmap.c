@@ -94,7 +94,7 @@ static void unmap_region(struct mm_struct *mm,
  *		w: (no) no	w: (no) no	w: (copy) copy	w: (no) no
  *		x: (no) no	x: (no) yes	x: (no) yes	x: (yes) yes
  */
-pgprot_t __ro_after_init protection_map[16]  = {
+pgprot_t __ro_after_init protection_map[16]  = {    /* VMA 权限 */
 	__P000, __P001, __P010, __P011, __P100, __P101, __P110, __P111,
 	__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
 };
@@ -106,7 +106,7 @@ static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
 }
 #endif
 
-pgprot_t vm_get_page_prot(unsigned long vm_flags)
+pgprot_t vm_get_page_prot(unsigned long vm_flags)   /*  */
 {
 	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags &
 				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
@@ -287,7 +287,18 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /* int brk(void *addr);  void *sbrk(
 		goto success;
 	}
     /* 新的 brk 位置高于 旧的 brk 位置 */
-	/* Check against existing mmap mappings. */
+    /*
+                  newbrk ~ mm->brk 约等于，页对齐
+        
+        +-------+ oldbrk ~ mm->brk 上次的位置
+        |       |
+        |       |
+        |       | 
+        |       |
+        |       |
+        +-------+ mm->start_brk
+    */
+	/* Check against existing mmap mappings. vm_start <= oldbrk */
 	next = find_vma(mm, oldbrk);
 	if (next && newbrk + PAGE_SIZE > vm_start_gap(next))
 		goto out;
@@ -295,17 +306,18 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)    /* int brk(void *addr);  void *sbrk(
 	/* Ok, looks good - let it rip. */
 	if (do_brk_flags(oldbrk, newbrk-oldbrk, 0, &uf) < 0)    /* 如果 brk 比原来 高，分配新的vma */
 		goto out;
-	mm->brk = brk;  /*  */
+	mm->brk = brk;  /* 更新brk位置 */
 
 success:
+    /* 如果新页并且锁定标志设置 */
 	populate = newbrk > oldbrk && (mm->def_flags & VM_LOCKED) != 0;
 	if (downgraded)
 		mmap_read_unlock(mm);
 	else
 		mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
-	if (populate)
-		mm_populate(oldbrk, newbrk - oldbrk);
+	userfaultfd_unmap_complete(mm, &uf);    /*  */
+	if (populate)   /*  */
+		mm_populate(oldbrk, newbrk - oldbrk);   /* TODO */
 	return brk;
 
 out:
@@ -428,8 +440,8 @@ static void validate_mm(struct mm_struct *mm)   /*  */
 
 		if (anon_vma) {
 			anon_vma_lock_read(anon_vma);
-			list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-				anon_vma_interval_tree_verify(avc);
+			list_for_each_entry(avc, &vma->anon_vma_chain, same_vma) {
+				anon_vma_interval_tree_verify(avc); }
 			anon_vma_unlock_read(anon_vma);
 		}
 
@@ -557,7 +569,7 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 {
 	struct rb_node **__rb_link, *__rb_parent, *rb_prev;
 
-	__rb_link = &mm->mm_rb.rb_node;
+	__rb_link = &mm->mm_rb.rb_node; /* 以此节点为根进行遍历 */
 	rb_prev = __rb_parent = NULL;
 
 	while (*__rb_link) {
@@ -566,13 +578,37 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 		__rb_parent = *__rb_link;
 		vma_tmp = rb_entry(__rb_parent, struct vm_area_struct, vm_rb);
 
+        /* vma->vm_end 大于 addr */
 		if (vma_tmp->vm_end > addr) {
-			/* Fail if an existing vma overlaps the area */
-			if (vma_tmp->vm_start < end)
-				return -ENOMEM;
+			/* Fail if an existing vma overlaps the area 如果现存vma覆盖了这个area*/
+			if (vma_tmp->vm_start < end)    
+				return -ENOMEM; /* 这个 start~start+len 已经存在 vma */
+            /* 
+            vm_start-vm_end(s-e)
+                    o
+                   / \
+                  /   \
+                 /     \
+                /       \
+              s-e       s-e
+               o         o
+              ^^^
+            */
 			__rb_link = &__rb_parent->rb_left;
 		} else {
-			rb_prev = __rb_parent;
+            
+            /* 
+            vm_start-vm_end(s-e)
+                    o
+                   / \
+                  /   \
+                 /     \
+                /       \
+              s-e       s-e
+               o         o
+                        ^^^
+            */
+			rb_prev = __rb_parent;  /* 右孩子才有 prev */
 			__rb_link = &__rb_parent->rb_right;
 		}
 	}
@@ -622,9 +658,9 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct vm_area_struct **pprev, struct rb_node ***link,
 		 struct rb_node **parent, struct list_head *uf)
 {
-
+    /*  */
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (do_munmap(mm, start, len, uf))
+		if (do_munmap(mm, start, len, uf))  /* 这句话将永远不会执行 */
 			return -ENOMEM;
 
 	return 0;
@@ -686,7 +722,7 @@ static void __vma_link_file(struct vm_area_struct *vma)
 	struct file *file;
 
 	file = vma->vm_file;
-	if (file) {
+	if (file) { /* 文件映射，更新 缓存 */
 		struct address_space *mapping = file->f_mapping;
 
 		if (vma->vm_flags & VM_DENYWRITE)
@@ -705,8 +741,8 @@ __vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	struct vm_area_struct *prev, struct rb_node **rb_link,
 	struct rb_node *rb_parent)
 {
-	__vma_link_list(mm, vma, prev);
-	__vma_link_rb(mm, vma, rb_link, rb_parent);
+	__vma_link_list(mm, vma, prev); /* 添加至链表 */
+	__vma_link_rb(mm, vma, rb_link, rb_parent); /* 添加至红黑树 */
 }
 
 static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
@@ -715,19 +751,19 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 {
 	struct address_space *mapping = NULL;
 
-	if (vma->vm_file) {
+	if (vma->vm_file) { /* 文件映射 */
 		mapping = vma->vm_file->f_mapping;
 		i_mmap_lock_write(mapping);
 	}
 
-	__vma_link(mm, vma, prev, rb_link, rb_parent);
-	__vma_link_file(vma);
+	__vma_link(mm, vma, prev, rb_link, rb_parent);  /* 添加至链表和红黑树 */
+	__vma_link_file(vma);   /* 文件映射的话，更新缓存 */
 
 	if (mapping)
 		i_mmap_unlock_write(mapping);
 
-	mm->map_count++;
-	validate_mm(mm);
+	mm->map_count++;    /* 映射计数++ */
+	validate_mm(mm);    /*  */
 }
 
 /*
@@ -1191,6 +1227,8 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
  * this area are about to be changed to vm_flags - and the no-change
  * case has already been eliminated.
  *
+ * int mprotect(void *addr, size_t len, int prot);
+ * 
  * The following mprotect cases have to be considered, where AAAA is
  * the area passed down from mprotect_fixup, never extending beyond one
  * vma, PPPPPP is the prev vma specified, and NNNNNN the next vma after:
@@ -1988,11 +2026,29 @@ static unsigned long unmapped_area(struct vm_unmapped_area_info *info)
 {
 	/*
 	 * We implement the search by looking for an rbtree node that
-	 * immediately follows a suitable gap. That is,
+	 * immediately follows a suitable gap(差距). That is,
 	 * - gap_start = vma->vm_prev->vm_end <= info->high_limit - length;
 	 * - gap_end   = vma->vm_start        >= info->low_limit  + length;
 	 * - gap_end - gap_start >= length
 	 */
+    /*
+    +-------+ info->high_limit
+    |       |
+    |       | 
+    |       | info->high_limit - length <-- vma->vm_prev->vm_end = gap_start
+    |       |                           <-- vma->vm_prev->vm_end
+    |       |
+    |       |
+    |       | 
+    |       | 
+    |       | 
+    |       |
+    |       |                           <-- vma->vm_start = gap_end
+    |       | info->low_limit  + length <-- vma->vm_start
+    |       |
+    |       |
+    +-------+ info->low_limit
+    */
 
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -2013,9 +2069,12 @@ static unsigned long unmapped_area(struct vm_unmapped_area_info *info)
 	low_limit = info->low_limit + length;
 
 	/* Check if rbtree root looks promising */
+    /* 如果红黑树为空 */
 	if (RB_EMPTY_ROOT(&mm->mm_rb))
 		goto check_highest;
 	vma = rb_entry(mm->mm_rb.rb_node, struct vm_area_struct, vm_rb);
+
+    /* 检查子树的 vma 地址差距 */
 	if (vma->rb_subtree_gap < length)
 		goto check_highest;
 
@@ -2026,7 +2085,7 @@ static unsigned long unmapped_area(struct vm_unmapped_area_info *info)
 			struct vm_area_struct *left =
 				rb_entry(vma->vm_rb.rb_left,
 					 struct vm_area_struct, vm_rb);
-			if (left->rb_subtree_gap >= length) {
+			if (left->rb_subtree_gap >= length) {   /* 尝试找到一个可以装下 length 的子树 */
 				vma = left;
 				continue;
 			}
@@ -2194,6 +2253,12 @@ found_highest:
  * - is contained within the [low_limit, high_limit) interval;
  * - is at least the desired size.
  * - satisfies (begin_addr & align_mask) == (align_offset & align_mask)
+ *
+ * 我们正在寻找以下范围：
+ *  -不与任何VMA相交；
+ *  -包含在[low_limit，high_limit）间隔内；
+ *  -至少是所需的大小。
+ *  -满足（begin_addr和align_mask）==（align_offset和align_mask）
  */
 unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 {
@@ -2331,7 +2396,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (error)
 		return error;
 
-	/* Careful about overflows.. */
+	/* Careful about overflows.. Sanity check, make sure the required map length is not too long*/
 	if (len > TASK_SIZE)    /* 错误 */
 		return -ENOMEM;
 
@@ -2355,7 +2420,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 
 	if (addr > TASK_SIZE - len)
 		return -ENOMEM;
-	if (offset_in_page(addr))
+	if (offset_in_page(addr))   /* 必须页对齐，低12bit为0 */
 		return -EINVAL;
 
 	error = security_mmap_addr(addr);
@@ -3320,7 +3385,7 @@ out:
  *  this is really a simplified "do_mmap".  it only handles
  *  anonymous maps.  eventually we may be able to do some
  *  brk-specific accounting here.
- */ /*  */
+ */ /* brk 内存申请流程核心函数 */
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)
 {
 	struct mm_struct *mm = current->mm;
@@ -3335,8 +3400,9 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 		return -EINVAL;
 	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
 
+    /* 获取映射的addr */
 	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
-	if (IS_ERR_VALUE(mapped_addr))
+	if (IS_ERR_VALUE(mapped_addr))  /* unlikely */
 		return mapped_addr;
 
 	error = mlock_future_check(mm, mm->def_flags, len);
@@ -3351,18 +3417,21 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 	if (!may_expand_vm(mm, flags, len >> PAGE_SHIFT))
 		return -ENOMEM;
 
+    /* 检查sysctl */
 	if (mm->map_count > sysctl_max_map_count)
 		return -ENOMEM;
-
+    /* TODO */
 	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT))
 		return -ENOMEM;
 
-	/* Can we just expand an old private anonymous mapping? *//*  */
+	/* Can we just expand an old private anonymous mapping? */
+	/* 可以直接用一个 old 私有匿名 映射吗 */
 	vma = vma_merge(mm, prev, addr, addr + len, flags,
 			NULL, NULL, pgoff, NULL, NULL_VM_UFFD_CTX);
 	if (vma)
 		goto out;
 
+    /* 当 vma 不可合并 */
 	/*
 	 * create a vma struct for an anonymous mapping
 	 */
@@ -3372,19 +3441,19 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 		return -ENOMEM;
 	}
 
-	vma_set_anonymous(vma);     /*  */
-	vma->vm_start = addr;
-	vma->vm_end = addr + len;
-	vma->vm_pgoff = pgoff;
-	vma->vm_flags = flags;
-	vma->vm_page_prot = vm_get_page_prot(flags);
-	vma_link(mm, vma, prev, rb_link, rb_parent);
+	vma_set_anonymous(vma);     /* 匿名vma */
+	vma->vm_start = addr;       /* start */
+	vma->vm_end = addr + len;   /* end */
+	vma->vm_pgoff = pgoff;      /* 页内偏移 */
+	vma->vm_flags = flags;      /* 标志 */
+	vma->vm_page_prot = vm_get_page_prot(flags);    /* VMA 的权限 */
+	vma_link(mm, vma, prev, rb_link, rb_parent);    /* 插入 */
 out:
-	perf_event_mmap(vma);
-	mm->total_vm += len >> PAGE_SHIFT;
-	mm->data_vm += len >> PAGE_SHIFT;
+	perf_event_mmap(vma);   /* TODO */
+	mm->total_vm += len >> PAGE_SHIFT;  /* 共映射的页数计数 */
+	mm->data_vm += len >> PAGE_SHIFT;   /* 数据映射计数 */
 	if (flags & VM_LOCKED)
-		mm->locked_vm += (len >> PAGE_SHIFT);
+		mm->locked_vm += (len >> PAGE_SHIFT);   /* 锁定的页面计数 */
 	vma->vm_flags |= VM_SOFTDIRTY;
 	return 0;
 }
@@ -3615,9 +3684,12 @@ out:
  */
 bool may_expand_vm(struct mm_struct *mm, vm_flags_t flags, unsigned long npages)
 {
+    /* 检查映射的页数有没有超限 */
 	if (mm->total_vm + npages > rlimit(RLIMIT_AS) >> PAGE_SHIFT)
 		return false;
 
+    /* 数据 mapping 
+        1.在 brk系统调用传入的是0，此代码不执行*/
 	if (is_data_mapping(flags) &&
 	    mm->data_vm + npages > rlimit(RLIMIT_DATA) >> PAGE_SHIFT) {
 		/* Workaround for Valgrind */

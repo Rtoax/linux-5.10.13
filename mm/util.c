@@ -272,7 +272,7 @@ void *memdup_user_nul(const void __user *src, size_t len)
 EXPORT_SYMBOL(memdup_user_nul);
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct vm_area_struct *prev)
+		struct vm_area_struct *prev)    /* 将新的vma 添加至链表 */
 {
 	struct vm_area_struct *next;
 

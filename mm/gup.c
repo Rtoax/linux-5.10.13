@@ -1406,7 +1406,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
  *
  * 在地址空间范围内填充和/或锁定页面。
  */
-int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
+int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    /*  */
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long end, nstart, nend;

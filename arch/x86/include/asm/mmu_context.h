@@ -33,14 +33,14 @@ void cr4_update_pce(void *ignored);
  * ldt_structs can be allocated, used, and freed, but they are never
  * modified while live.
  */
-struct ldt_struct { /*  */
+struct ldt_struct { /* 局部描述附表 */
 	/*
 	 * Xen requires page-aligned LDTs with special permissions.  This is
 	 * needed to prevent us from installing evil descriptors such as
 	 * call gates.  On native, we could merge the ldt_struct and LDT
 	 * allocations, but it's not worth trying to optimize.
 	 */
-	struct desc_struct	*entries;
+	struct desc_struct	*entries;   /* 描述符 */
 	unsigned int		nr_entries;
 
 	/*

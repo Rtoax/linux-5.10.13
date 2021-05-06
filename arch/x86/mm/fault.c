@@ -1488,7 +1488,7 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 	 *
 	 * The async #PF handling code takes care of idtentry handling
 	 * itself.
-	 *//*  */
+	 *//* TODO */
 	if (kvm_handle_async_pf(regs, (u32)address))
 		return;
 

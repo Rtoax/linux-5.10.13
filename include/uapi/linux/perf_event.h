@@ -705,7 +705,7 @@ struct perf_event_mmap_page {
  */
 #define PERF_RECORD_MISC_EXT_RESERVED		(1 << 15)
 
-struct perf_event_header {
+struct perf_event_header {  /*  */
 	__u32	type;
 	__u16	misc;
 	__u16	size;

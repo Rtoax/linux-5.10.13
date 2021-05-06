@@ -60,7 +60,7 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 #define SIZE_128M    (128 * 1024 * 1024UL)
 
 static int mmap_is_legacy(void)
-{
+{ //使得mmap_is_legacy()返回真，那么就可以让mmap不进行随机化
 	if (current->personality & ADDR_COMPAT_LAYOUT)
 		return 1;
 

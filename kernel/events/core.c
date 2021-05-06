@@ -7856,13 +7856,13 @@ static void perf_event_cgroup(struct cgroup *cgrp)
  * mmap tracking
  */
 
-struct perf_mmap_event {
+struct perf_mmap_event {    /*  */
 	struct vm_area_struct	*vma;
 
 	const char		*file_name;
 	int			file_size;
-	int			maj, min;
-	u64			ino;
+	int			maj, min;   /*  */
+	u64			ino;        /*  */
 	u64			ino_generation;
 	u32			prot, flags;
 
@@ -8164,7 +8164,7 @@ static void perf_addr_filters_adjust(struct vm_area_struct *vma)
 	rcu_read_unlock();
 }
 
-void perf_event_mmap(struct vm_area_struct *vma)
+void perf_event_mmap(struct vm_area_struct *vma)    /*  */
 {
 	struct perf_mmap_event mmap_event;
 

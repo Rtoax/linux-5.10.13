@@ -2470,7 +2470,7 @@ extern int do_madvise(struct mm_struct *mm, unsigned long start, size_t len_in, 
 #ifdef CONFIG_MMU
 extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);
-static inline void mm_populate(unsigned long addr, unsigned long len)
+static inline void mm_populate(unsigned long addr, unsigned long len)   /*  */
 {
 	/* Ignore errors 在地址空间范围内填充和/或锁定页面。 */
 	(void) __mm_populate(addr, len, 1);

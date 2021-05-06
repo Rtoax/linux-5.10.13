@@ -578,14 +578,15 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 
 		/*
 		 * Link in the new vma and copy the page table entries.
-		 */
+		 */ /* 链表 */
 		*pprev = tmp;
 		pprev = &tmp->vm_next;
 		tmp->vm_prev = prev;
 		prev = tmp;
 
+        /* 红黑树操作 */
 		__vma_link_rb(mm, tmp, rb_link, rb_parent);
-		rb_link = &tmp->vm_rb.rb_right;
+		rb_link = &tmp->vm_rb.rb_right; /* 往后(右)插入 */
 		rb_parent = &tmp->vm_rb;
 
 		mm->map_count++;
@@ -2558,7 +2559,7 @@ SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
 		.exit_signal = SIGCHLD,
 	};
 
-	return kernel_clone(&args);
+	return kernel_clone(&args); /*  */
 #else
 	/* can not support in nommu mode */
 	return -EINVAL;
