@@ -790,7 +790,7 @@ EXPORT_SYMBOL(set_create_files_as);
 
 bool creds_are_invalid(const struct cred *cred)
 {
-	if (cred->magic != CRED_MAGIC)
+	if (cred->magic != CRED_MAGIC)  /* 检查 magic number */
 		return true;
 	return false;
 }

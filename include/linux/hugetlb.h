@@ -261,9 +261,11 @@ struct file *hugetlb_file_setup(const char *name, size_t size, vm_flags_t acct,
 
 static inline bool is_file_hugepages(struct file *file)
 {
+    /* 打开的文件 操作符 是大页内存操作符 */
 	if (file->f_op == &hugetlbfs_file_operations)
 		return true;
 
+    /* 共享内存 */
 	return is_file_shm_hugepages(file);
 }
 

@@ -8,7 +8,7 @@
 #define MAP_DENYWRITE	0x0800		/* ETXTBSY */
 #define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
 #define MAP_LOCKED	0x2000		/* pages are locked */
-#define MAP_NORESERVE	0x4000		/* don't check for reservations */
+#define MAP_NORESERVE	0x4000		/* don't check for reservations, 不要为此映射提供swap空间*/
 
 /*
  * Bits [26:31] are reserved, see asm-generic/hugetlb_encode.h

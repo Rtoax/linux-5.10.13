@@ -585,29 +585,23 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 				return -ENOMEM; /* 这个 start~start+len 已经存在 vma */
             /* 
             vm_start-vm_end(s-e)
+                  [7-8)
                     o
                    / \
                   /   \
                  /     \
                 /       \
-              s-e       s-e
-               o         o
+               /         \
+            [3-4)       [11-12)
+             / \         / \
+            /   \       /   \
+           /     \     /     \
+        [1-2)  [5-6) [9-10) [13-14)
               ^^^
             */
 			__rb_link = &__rb_parent->rb_left;
 		} else {
             
-            /* 
-            vm_start-vm_end(s-e)
-                    o
-                   / \
-                  /   \
-                 /     \
-                /       \
-              s-e       s-e
-               o         o
-                        ^^^
-            */
 			rb_prev = __rb_parent;  /* 右孩子才有 prev */
 			__rb_link = &__rb_parent->rb_right;
 		}
@@ -658,15 +652,15 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct vm_area_struct **pprev, struct rb_node ***link,
 		 struct rb_node **parent, struct list_head *uf)
 {
-    /*  */
+    /* 查找 vma，如果返回 -ENOMEM ，进行 do_munmap */
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (do_munmap(mm, start, len, uf))  /* 这句话将永远不会执行 */
+		if (do_munmap(mm, start, len, uf))  /*  */
 			return -ENOMEM;
 
 	return 0;
 }
 static unsigned long count_vma_pages_range(struct mm_struct *mm,
-		unsigned long addr, unsigned long end)
+		unsigned long addr, unsigned long end)/*  */
 {
 	unsigned long nr_pages = 0;
 	struct vm_area_struct *vma;
@@ -676,10 +670,12 @@ static unsigned long count_vma_pages_range(struct mm_struct *mm,
 	if (!vma)
 		return 0;
 
+    /* 计算页数 */
 	nr_pages = (min(end, vma->vm_end) -
 		max(addr, vma->vm_start)) >> PAGE_SHIFT;
 
 	/* Iterate over the rest of the overlaps */
+    /* 轮询属于这个地址范围内的 vma */
 	for (vma = vma->vm_next; vma; vma = vma->vm_next) {
 		unsigned long overlap_len;
 
@@ -1506,18 +1502,19 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 
 /*
  * The caller must write-lock current->mm->mmap_lock.
- */ /*  */
+ */ /* mmap 映射 */
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
 			unsigned long flags, unsigned long pgoff,
 			unsigned long *populate, struct list_head *uf)
 {
-	struct mm_struct *mm = current->mm;
+	struct mm_struct *mm = current->mm; /* 当前进程 mm 结构 */
 	vm_flags_t vm_flags;
 	int pkey = 0;
 
 	*populate = 0;
 
+    /* 长度合法 */
 	if (!len)
 		return -EINVAL;
 
@@ -1526,7 +1523,13 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 *
 	 * (the exception is when the underlying filesystem is noexec
 	 *  mounted, in which case we dont add PROT_EXEC.)
+	 * 
+	 * PROT_EXEC  Pages may be executed.
+     * PROT_READ  Pages may be read.
+     * PROT_WRITE Pages may be written.
+     * PROT_NONE  Pages may not be accessed.
 	 */
+	/*  */
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
 		if (!(file && path_noexec(&file->f_path)))
 			prot |= PROT_EXEC;
@@ -1538,13 +1541,13 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	if (!(flags & MAP_FIXED))
 		addr = round_hint_to_min(addr);
 
-	/* Careful about overflows.. */
+	/* Careful about overflows.. 页对齐，最少映射一页*/
 	len = PAGE_ALIGN(len);
 	if (!len)
 		return -ENOMEM;
 
-	/* offset overflow? */
-	if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)  /*  */
+	/* offset overflow? len溢出 */
+	if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)  /* 页偏移+长度 < pgoff,表明 len 溢出 */
 		return -EOVERFLOW;
 
 	/* Too many mappings? */
@@ -1553,18 +1556,29 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 	/* Obtain the address to map to. we verify (or select) it and ensure
 	 * that it represents a valid section of the address space.
-	 */ /*  */
+	 */ /* 获取地址空间未被映射的区域 */
 	addr = get_unmapped_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
 		return addr;
 
+    /* 不能覆盖已经存在的地址空间 */
 	if (flags & MAP_FIXED_NOREPLACE) {
 		struct vm_area_struct *vma = find_vma(mm, addr);
 
+        /* 
+        +-------+ vma->vm_end
+        |       |
+        |       |
+        |       | <---- addr + len
+        | vma   |
+        |       | addr
+        |       |
+        +-------+ vma->vm_start
+        */
 		if (vma && vma->vm_start < addr + len)
 			return -EEXIST;
 	}
-
+    /* 如果是可执行的 */
 	if (prot == PROT_EXEC) {
 		pkey = execute_only_pkey(mm);
 		if (pkey < 0)
@@ -1574,18 +1588,26 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	/* Do simple checking here so the lower-level routines won't have
 	 * to. we assume access permissions have been handled by the open
 	 * of the memory object, so we don't do any here.
+	 *
+	 * 计算权限
 	 */
 	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
+    //MAP_LOCKED：不会被swap出去
 	if (flags & MAP_LOCKED)
 		if (!can_do_mlock())
 			return -EPERM;
 
+    /*  */
 	if (mlock_future_check(mm, vm_flags, len))
 		return -EAGAIN;
 
-	if (file) { /* 文件映射 */
+    /**
+     *  文件映射 
+     */
+	if (file) { 
+        /* 获取inode */
 		struct inode *inode = file_inode(file); /* file -> inode */
 		unsigned long flags_mask;
 
@@ -1594,6 +1616,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 		flags_mask = LEGACY_MAP_MASK | file->f_op->mmap_supported_flags;
 
+        /* 映射类型：私有，共享 */
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:    /* 共享内存 */
 			/*
@@ -1609,8 +1632,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			if (flags & ~flags_mask)
 				return -EOPNOTSUPP;
 			if (prot & PROT_WRITE) {
+                /* 写权限冲突 */
 				if (!(file->f_mode & FMODE_WRITE))
 					return -EACCES;
+                /* 不能写映射交换文件 */
 				if (IS_SWAPFILE(file->f_mapping->host))
 					return -ETXTBSY;
 			}
@@ -1619,6 +1644,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			 * Make sure we don't allow writing to an append-only
 			 * file..
 			 */
+			/* 可添加 并且 可写 why?? */
 			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
 				return -EACCES; /* 不允许 */
 
@@ -1628,28 +1654,35 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			if (locks_verify_locked(file))
 				return -EAGAIN;
 
+            /* 将 vma 设置为 共享 */
 			vm_flags |= VM_SHARED | VM_MAYSHARE;
 			if (!(file->f_mode & FMODE_WRITE))
 				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
 			fallthrough;
 		case MAP_PRIVATE:   /* 私有 */
+            /* 私有必须可读 */
 			if (!(file->f_mode & FMODE_READ))
 				return -EACCES;
 			if (path_noexec(&file->f_path)) {
-				if (vm_flags & VM_EXEC)
-					return -EPERM;  /* 返回没有权限 */
-				vm_flags &= ~VM_MAYEXEC;
+				if (vm_flags & VM_EXEC) /* vma 与 file  可执行权限不一样 */
+					return -EPERM;      /* 返回没有权限 */
+				vm_flags &= ~VM_MAYEXEC;/* 文件不可执行，vma也不可执行 */
 			}
 
+            /* 文件操作符 mmap 指针不能为空 */
 			if (!file->f_op->mmap)  /* 如果 mmap 指针为空 */
-				return -ENODEV;/* 没有这个设备 */
-			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))   /*  */
+				return -ENODEV;     /* 没有这个设备 */
+			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))   /* vma 向上还是向下 */
 				return -EINVAL;
 			break;
 
 		default:
 			return -EINVAL;
 		}
+
+    /**
+     *  匿名映射
+     */
 	} else {    /* 如果不是文件映射 */
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:    /* 共享的 */
@@ -1658,9 +1691,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			/*
 			 * Ignore pgoff.
 			 */
-			pgoff = 0;
+			pgoff = 0;  /* 共享匿名映射，忽略pageoffset，我估计必须为页对齐的原因 */
 			vm_flags |= VM_SHARED | VM_MAYSHARE;
 			break;
+            
 		case MAP_PRIVATE:   /* 私有的 */
 			/*
 			 * Set pgoff according to addr for anon_vma.
@@ -1676,16 +1710,16 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 * Set 'VM_NORESERVE' if we should not account for the
 	 * memory use of this mapping.
 	 */
-	if (flags & MAP_NORESERVE) {    /* 不检测预留 */
+	if (flags & MAP_NORESERVE) {    /* 不要为此映射提供swap空间 */
 		/* We honor MAP_NORESERVE if allowed to overcommit */
 		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-			vm_flags |= VM_NORESERVE;
+			vm_flags |= VM_NORESERVE;   /*  */
 
 		/* hugetlb applies strict overcommit unless MAP_NORESERVE */
 		if (file && is_file_hugepages(file))    /* 如果是大页内存 */
-			vm_flags |= VM_NORESERVE;   /* 不检测预留位置位 */
+			vm_flags |= VM_NORESERVE;           /* 大页内存不能 swap 交换 */
 	}
-    /*  */
+    /* 核心 mmap 函数 */
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
 	if (!IS_ERR_VALUE(addr) &&
 	    ((vm_flags & VM_LOCKED) ||
@@ -1693,7 +1727,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		*populate = len;
 	return addr;
 }
-                /* SYSCALL_DEFINE6(mmap, ...) */
+/* SYSCALL_DEFINE6(mmap, ...) */
 unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,
 			      unsigned long fd, unsigned long pgoff)
@@ -1701,17 +1735,21 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	struct file *file = NULL;
 	unsigned long retval;
 
+    /* 文件映射 */
 	if (!(flags & MAP_ANONYMOUS)) { /* 如果不是匿名 */
 		audit_mmap_fd(fd, flags);   /* 查找这个FD */
-		file = fget(fd);    /* 获取 file 数据结构 */
+		file = fget(fd);            /* 获取 file 数据结构 */
+        /* 没有打开的文件 */
 		if (!file)
 			return -EBADF;
+        /* 大页文件 */
 		if (is_file_hugepages(file)) {  /* 如果是 大页文件 映射的 内存 */
 			len = ALIGN(len, huge_page_size(hstate_file(file)));
 		} else if (unlikely(flags & MAP_HUGETLB)) { /* 如果不是大页内存，并且设置了 MAP_HUGETLB 标志位 */
-			retval = -EINVAL;   /* 不可用的参数 */
+			retval = -EINVAL;           /* 不可用的参数 */
 			goto out_fput;
 		}
+    /* 大页内存 */
 	} else if (flags & MAP_HUGETLB) {   /* 大页内存 */
 		struct user_struct *user = NULL;
 		struct hstate *hs;
@@ -1737,13 +1775,14 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 
 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE); /* 不允许执行 + 可以写 */
 
-	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);    /*  */
+	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);    /* 最终执行的 */
 out_fput:
 	if (file)
 		fput(file);
 	return retval;
 }
-    /*  */
+                  
+/* void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); */
 SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags,
 		unsigned long, fd, unsigned long, pgoff)
@@ -1828,7 +1867,7 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
 
 	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
-    /*  */
+    /* mmap 核心函数 */
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
 		struct list_head *uf)
@@ -1855,6 +1894,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	}
 
 	/* Clear old maps, set up prev, rb_link, rb_parent, and uf */
+    /* 清理old map， */
 	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
 		return -ENOMEM;
 	/*
@@ -1869,7 +1909,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 
 	/*
 	 * Can we just expand an old mapping?
-	 */ /*  */
+	 *
+	 * 可以直接扩充原有的 mapping 吗？
+	 */ 
 	vma = vma_merge(mm, prev, addr, addr + len, vm_flags,
 			NULL, file, pgoff, NULL, NULL_VM_UFFD_CTX);
 	if (vma)
@@ -1880,19 +1922,19 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	 * specific mapper. the address has already been validated, but
 	 * not unmapped, but the maps are removed from the list.
 	 */
-	vma = vm_area_alloc(mm);
+	vma = vm_area_alloc(mm);/* 分配一个 vma 数据结构 */
 	if (!vma) {
 		error = -ENOMEM;
 		goto unacct_error;
 	}
 
-	vma->vm_start = addr;
-	vma->vm_end = addr + len;
-	vma->vm_flags = vm_flags;
+	vma->vm_start = addr;       /*  */
+	vma->vm_end = addr + len;   /*  */
+	vma->vm_flags = vm_flags;   /*  */
 	vma->vm_page_prot = vm_get_page_prot(vm_flags);
-	vma->vm_pgoff = pgoff;
+	vma->vm_pgoff = pgoff;      /*  */
 
-	if (file) {
+	if (file) { /* 文件映射 */
 		if (vm_flags & VM_DENYWRITE) {
 			error = deny_write_access(file);
 			if (error)
@@ -1909,8 +1951,8 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		 * and map writably if VM_SHARED is set. This usually means the
 		 * new file must not have been exposed to user-space, yet.
 		 */
-		vma->vm_file = get_file(file);
-		error = call_mmap(file, vma);
+		vma->vm_file = get_file(file);  /* 引用计数+1 */
+		error = call_mmap(file, vma);   /* 调用文件对应的 mmap, 可能是 shm_mmap() */
 		if (error)
 			goto unmap_and_free_vma;
 
@@ -2392,19 +2434,24 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	unsigned long (*get_area)(struct file *, unsigned long,
 				  unsigned long, unsigned long, unsigned long);
 
-	unsigned long error = arch_mmap_check(addr, len, flags);
+	unsigned long error = arch_mmap_check(addr, len, flags);    /* x86 为 0 */
 	if (error)
 		return error;
 
 	/* Careful about overflows.. Sanity check, make sure the required map length is not too long*/
-	if (len > TASK_SIZE)    /* 错误 */
+	if (len > TASK_SIZE)    /* len 错误 */
 		return -ENOMEM;
 
-	get_area = current->mm->get_unmapped_area;  /* 可能=arch_get_unmapped_area(...) */
-	if (file) { /* 如果是文件映射 */
+    /*  */
+	get_area = current->mm->get_unmapped_area;  
+
+    /* 文件映射，一个打开的文件 */
+	if (file) { 
 		if (file->f_op->get_unmapped_area)
-			get_area = file->f_op->get_unmapped_area;
-	} else if (flags & MAP_SHARED) {    /* 如果是共享的映射 */
+			get_area = file->f_op->get_unmapped_area;   /* 可能=arch_get_unmapped_area(...) */
+
+    /* 共享 */
+	} else if (flags & MAP_SHARED) {
 		/*
 		 * mmap_region() will call shmem_zero_setup() to create a file,
 		 * so use shmem's get_unmapped_area in case it can be huge.
@@ -2414,6 +2461,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 		get_area = shmem_get_unmapped_area; /* 共享 */
 	}
 
+    /*  */
 	addr = get_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
 		return addr;
@@ -2423,6 +2471,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (offset_in_page(addr))   /* 必须页对齐，低12bit为0 */
 		return -EINVAL;
 
+    /*  */
 	error = security_mmap_addr(addr);
 	return error ? error : addr;
 }

@@ -1154,7 +1154,7 @@ static void init_once(void *foo)
 	inode_init_once(&ei->vfs_inode);
 }
 
-const struct file_operations hugetlbfs_file_operations = {
+const struct file_operations hugetlbfs_file_operations = {  /* 大页内存 hugetlbfs 文件操作符 */
 	.read_iter		= hugetlbfs_read_iter,
 	.mmap			= hugetlbfs_file_mmap,
 	.fsync			= noop_fsync,

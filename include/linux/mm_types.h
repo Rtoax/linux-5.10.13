@@ -315,10 +315,14 @@ struct vm_area_struct { /* VMA */
 	struct rb_node vm_rb;   /* 在 mm_struct 为根的节点 */
 
 	/*
-	 * Largest free memory gap in bytes to the left of this VMA.
+	 * Largest free memory gap(差距) in bytes to the left of this VMA.
 	 * Either between this VMA and vma->vm_prev, or between one of the
 	 * VMAs below us in the VMA rbtree and its ->vm_prev. This helps
 	 * get_unmapped_area find a free area of the right size.
+	 *
+	 * 此VMA左侧的最大可用内存间隙（差异），以字节为单位。 在此VMA和
+	 * vma-> vm_prev之间，或在VMA rbtree中我们下面的VMA之一与其-> vm_prev之间。
+	 * 这有助于`get_unmapped_area`找到合适大小的空闲区域。
 	 */
 	unsigned long rb_subtree_gap;   /*  */
 

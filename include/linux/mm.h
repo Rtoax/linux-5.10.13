@@ -547,6 +547,7 @@ enum page_entry_size {
  * unmapping it (needed to keep files on disk up-to-date etc), pointer
  * to the functions called when a no-page or a wp-page exception occurs.
  */ /* vma操作符 */
+typedef struct mempolicy * pmempolicy_t; /* 我加的 */
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
@@ -597,7 +598,7 @@ struct vm_operations_struct {
 	 * must return NULL--i.e., do not "fallback" to task or system default
 	 * policy.
 	 */
-	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+	pmempolicy_t (*get_policy)(struct vm_area_struct *vma,
 					unsigned long addr);
 #endif
 	/*

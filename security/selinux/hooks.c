@@ -1635,9 +1635,11 @@ static int inode_has_perm(const struct cred *cred,
 	struct inode_security_struct *isec;
 	u32 sid;
 
+    /* 检查cred 的magic number */
 	validate_creds(cred);
 
-	if (unlikely(IS_PRIVATE(inode)))
+    /* 如果是私有的 inode，直接返回没有权限 */
+	if (unlikely(IS_PRIVATE(inode)))    /* 是否为私有的 */
 		return 0;
 
 	sid = cred_sid(cred);
@@ -3715,12 +3717,14 @@ static int selinux_mmap_file(struct file *file, unsigned long reqprot,
 	if (file) {
 		ad.type = LSM_AUDIT_DATA_FILE;
 		ad.u.file = file;
+        /* 当前进程是否有权限 */
 		rc = inode_has_perm(current_cred(), file_inode(file),
 				    FILE__MAP, &ad);
-		if (rc)
+		if (rc) /* 有权限，直接返回 */
 			return rc;
 	}
 
+    /* 不是文件映射，或者文件映射没有权限 */
 	if (checkreqprot_get(&selinux_state))
 		prot = reqprot;
 

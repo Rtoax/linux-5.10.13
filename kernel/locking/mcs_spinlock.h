@@ -13,9 +13,8 @@
 #ifndef __LINUX_MCS_SPINLOCK_H
 #define __LINUX_MCS_SPINLOCK_H
 
-#include <asm/mcs_spinlock.h>
 
-struct mcs_spinlock {
+struct mcs_spinlock {   /* MCS 锁 */
 	struct mcs_spinlock *next;
 	int locked; /* 1 if lock acquired */
 	int count;  /* nesting count, see qspinlock.c */

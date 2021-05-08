@@ -71,10 +71,7 @@ static inline int ep_op_has_event(int op)
 }
 
 #else
-
-static inline void eventpoll_init_file(struct file *file) {}
-static inline void eventpoll_release(struct file *file) {}
-
+/*  */
 #endif
 
 #endif /* #ifndef _LINUX_EVENTPOLL_H */

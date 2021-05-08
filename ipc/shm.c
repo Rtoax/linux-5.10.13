@@ -498,7 +498,7 @@ static int shm_mmap(struct file *file, struct vm_area_struct *vma)
 	if (ret)
 		return ret;
 
-	ret = call_mmap(sfd->file, vma);
+	ret = call_mmap(sfd->file, vma);    /* 可能是调用 shmem_mmap() */
 	if (ret) {
 		shm_close(vma);
 		return ret;
@@ -564,7 +564,7 @@ static const struct file_operations shm_file_operations = {
  * shm_file_operations_huge is now identical to shm_file_operations,
  * but we keep it distinct for the sake of is_file_shm_hugepages().
  */
-static const struct file_operations shm_file_operations_huge = {
+static const struct file_operations shm_file_operations_huge = {    /* 共享内存 */
 	.mmap		= shm_mmap,
 	.fsync		= shm_fsync,
 	.release	= shm_release,
@@ -573,7 +573,7 @@ static const struct file_operations shm_file_operations_huge = {
 	.fallocate	= shm_fallocate,
 };
 
-bool is_file_shm_hugepages(struct file *file)
+bool is_file_shm_hugepages(struct file *file)   /* 共享内存 */
 {
 	return file->f_op == &shm_file_operations_huge;
 }

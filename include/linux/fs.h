@@ -832,21 +832,21 @@ void unlock_two_nondirectories(struct inode *, struct inode*);
 static inline loff_t i_size_read(const struct inode *inode)
 {
 #if BITS_PER_LONG==32 && defined(CONFIG_SMP)
-	loff_t i_size;
-	unsigned int seq;
-
-	do {
-		seq = read_seqcount_begin(&inode->i_size_seqcount);
-		i_size = inode->i_size;
-	} while (read_seqcount_retry(&inode->i_size_seqcount, seq));
-	return i_size;
+//	loff_t i_size;
+//	unsigned int seq;
+//
+//	do {
+//		seq = read_seqcount_begin(&inode->i_size_seqcount);
+//		i_size = inode->i_size;
+//	} while (read_seqcount_retry(&inode->i_size_seqcount, seq));
+//	return i_size;
 #elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPTION)
-	loff_t i_size;
-
-	preempt_disable();
-	i_size = inode->i_size;
-	preempt_enable();
-	return i_size;
+//	loff_t i_size;
+//
+//	preempt_disable();
+//	i_size = inode->i_size;
+//	preempt_enable();
+//	return i_size;
 #else
 	return inode->i_size;
 #endif
@@ -860,15 +860,15 @@ static inline loff_t i_size_read(const struct inode *inode)
 static inline void i_size_write(struct inode *inode, loff_t i_size)
 {
 #if BITS_PER_LONG==32 && defined(CONFIG_SMP)
-	preempt_disable();
-	write_seqcount_begin(&inode->i_size_seqcount);
-	inode->i_size = i_size;
-	write_seqcount_end(&inode->i_size_seqcount);
-	preempt_enable();
+//	preempt_disable();
+//	write_seqcount_begin(&inode->i_size_seqcount);
+//	inode->i_size = i_size;
+//	write_seqcount_end(&inode->i_size_seqcount);
+//	preempt_enable();
 #elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPTION)
-	preempt_disable();
-	inode->i_size = i_size;
-	preempt_enable();
+//	preempt_disable();
+//	inode->i_size = i_size;
+//	preempt_enable();
 #else
 	inode->i_size = i_size;
 #endif
@@ -951,7 +951,7 @@ struct file {   /*  */
 	struct list_head	f_ep_links;/* 用于 epoll 链接所有 就绪的 files */
 	struct list_head	f_tfile_llink;
 #endif /* #ifdef CONFIG_EPOLL */
-	struct address_space	*f_mapping;
+	struct address_space	*f_mapping; /* 文件缓存 */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
 } __randomize_layout
@@ -1713,7 +1713,7 @@ struct file_operations {    /* 文件操作符 */
 			  loff_t len);
 	void (*show_fdinfo)(struct seq_file *m, struct file *f);
 #ifndef CONFIG_MMU
-	unsigned (*mmap_capabilities)(struct file *);
+//	unsigned (*mmap_capabilities)(struct file *);
 #endif
 	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
 			loff_t, size_t, unsigned int);
@@ -1723,11 +1723,15 @@ struct file_operations {    /* 文件操作符 */
 	int (*fadvise)(struct file *, loff_t, loff_t, int);
 } __randomize_layout;
 
+/* 我加的 */
+typedef struct dentry * pdentry_t;
+typedef struct posix_acl * pposix_acl_t;
+
 struct inode_operations {   /* inode 操作符 */
-	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
-	const char * (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
+	pdentry_t (*lookup) (struct inode *,struct dentry *, unsigned int);
+	const pchar_t (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
 	int (*permission) (struct inode *, int);
-	struct posix_acl * (*get_acl)(struct inode *, int);
+	pposix_acl_t (*get_acl)(struct inode *, int);
 
 	int (*readlink) (struct dentry *, char __user *,int);
 
@@ -1769,6 +1773,13 @@ static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 {
+    /*
+     hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
+     shm_file_operations_huge.mmap = shm_mmap,
+     shmem_file_operations.mmap = shmem_mmap,
+     socket_file_ops.mmap = sock_mmap,
+     
+    */
 	return file->f_op->mmap(file, vma);
 }
 
@@ -1796,8 +1807,12 @@ extern loff_t vfs_dedupe_file_range_one(struct file *src_file, loff_t src_pos,
 					loff_t len, unsigned int remap_flags);
 
 
+/* 我加的 */
+typedef struct inode * pinode_t;
+typedef struct dquot ** ppdquot_t;
+
 struct super_operations {   /* 超级块操作符 */
-   	struct inode *(*alloc_inode)(struct super_block *sb);
+   	pinode_t (*alloc_inode)(struct super_block *sb);
 	void (*destroy_inode)(struct inode *);
 	void (*free_inode)(struct inode *);
 
@@ -1822,7 +1837,7 @@ struct super_operations {   /* 超级块操作符 */
 #ifdef CONFIG_QUOTA /*  */
 	ssize_t (*quota_read)(struct super_block *, int, char *, size_t, loff_t);
 	ssize_t (*quota_write)(struct super_block *, int, const char *, size_t, loff_t);
-	struct dquot **(*get_dquots)(struct inode *);
+	ppdquot_t (*get_dquots)(struct inode *);
 #endif
 	int (*bdev_try_to_free_page)(struct super_block*, struct page*, gfp_t);
 	long (*nr_cached_objects)(struct super_block *,
@@ -1882,7 +1897,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_I_VERSION(inode)	__IS_FLG(inode, SB_I_VERSION)
 
 #define IS_NOQUOTA(inode)	((inode)->i_flags & S_NOQUOTA)
-#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
+#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)   /*  */
 #define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 

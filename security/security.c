@@ -1521,6 +1521,12 @@ int security_mmap_file(struct file *file, unsigned long prot,
 			unsigned long flags)
 {
 	int ret;
+    /**
+     *  security/selinux/hooks.c:   selinux_mmap_file()
+     *  security/apparmor/lsm.c:    apparmor_mmap_file()
+     *  security/smack/smack_lsm.c: smack_mmap_file()
+     *  security/commoncap.c:       cap_mmap_file()
+     */
 	ret = call_int_hook(mmap_file, 0, file, prot,
 					mmap_prot(file, prot), flags);
 	if (ret)
@@ -1530,6 +1536,11 @@ int security_mmap_file(struct file *file, unsigned long prot,
 
 int security_mmap_addr(unsigned long addr)
 {
+    /**
+     *  security/selinux/hooks.c:   selinux_mmap_addr()
+     *  security/smack/smack_lsm.c: cap_mmap_addr()
+     *  security/commoncap.c:       cap_mmap_addr()
+     */
 	return call_int_hook(mmap_addr, 0, addr);
 }
 
@@ -2103,6 +2114,7 @@ int security_socket_create(int family, int type, int protocol, int kern)
 {
     /* selinux_socket_create() */
     /* apparmor_socket_create() */
+    /*  */
 	return call_int_hook(socket_create, 0, family, type, protocol, kern);   
 }
 

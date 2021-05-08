@@ -159,7 +159,7 @@ typedef __u64 __bitwise __addrpair;
  *	This is the minimal network layer representation of sockets, the header
  *	for struct sock and struct inet_timewait_sock.
  */
-struct sock_common {
+struct sock_common {    /* 网络层 */
 	/* skc_daddr and skc_rcv_saddr must be grouped on a 8 bytes aligned
 	 * address on 64bit arches : cf INET_MATCH()
 	 */
@@ -397,9 +397,14 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	 * Note : rmem_alloc is in this structure to fill a hole
 	 * on 64bit arches, not because its logically part of
 	 * backlog.
+	 *
+	 * 积压队列是特殊的，它总是与每个套接字的自旋锁一起使用，
+	 * 并且要求低延迟访问。 因此，我们特意将其实现。 
+	 * 注意：rmem_alloc在此结构中可以填补64位拱门上的漏洞，
+	 * 而不是因为它在逻辑上是积压的一部分。
 	 */
-	struct {
-		atomic_t	rmem_alloc;
+	struct {    /* backlog */
+		atomic_t	rmem_alloc; /*  */
 		int		len;
 		struct sk_buff	*head;
 		struct sk_buff	*tail;
@@ -484,7 +489,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	long			sk_rcvtimeo;
 	ktime_t			sk_stamp;
 #if BITS_PER_LONG==32
-	seqlock_t		sk_stamp_seq;
+//	seqlock_t		sk_stamp_seq;
 #endif
 	u16			sk_tsflags;
 	u8			sk_shutdown;
@@ -510,7 +515,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	int			(*sk_backlog_rcv)(struct sock *sk,
 						  struct sk_buff *skb);
 #ifdef CONFIG_SOCK_VALIDATE_XMIT    
-	struct sk_buff*		(*sk_validate_xmit_skb)(struct sock *sk,
+	psk_buff_t		(*sk_validate_xmit_skb)(struct sock *sk,
 							struct net_device *dev,
 							struct sk_buff *skb);
 #endif

@@ -1497,7 +1497,7 @@ int sock_create_kern(struct net *net, int family, int type, int protocol, struct
 }
 EXPORT_SYMBOL(sock_create_kern);
 
-int __sys_socket(int family, int type, int protocol)
+int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 {
 	int retval;
 	struct socket *sock;

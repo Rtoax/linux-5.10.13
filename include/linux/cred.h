@@ -169,7 +169,7 @@ extern bool creds_are_invalid(const struct cred *cred);
 static inline void __validate_creds(const struct cred *cred,
 				    const char *file, unsigned line)
 {
-	if (unlikely(creds_are_invalid(cred)))
+	if (unlikely(creds_are_invalid(cred)))  /* 检查 magic number */
 		__invalid_creds(cred, file, line);
 }
 

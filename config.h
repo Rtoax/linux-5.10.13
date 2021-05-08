@@ -641,7 +641,7 @@
 #define CONFIG_CLS_U32_MARK 1
 #define CONFIG_CLS_U32_PERF 1
 #define CONFIG_CLZ_TAB 1
-#define CONFIG_CMA 1
+#define CONFIG_CMA 1    /* linux kernel中的CMA即，连续内存区管理 */
 #define CONFIG_CMA_ALIGNMENT 8
 #define CONFIG_CMA_AREAS        /*  */
 #define CONFIG_CMA_AREAS 19
@@ -649,7 +649,6 @@
 #define CONFIG_CMA_DEBUG 1
 #define CONFIG_CMA_DEBUGFS      /*  */
 #define CONFIG_CMA_DEBUGFS 1
-#define CONFIG_CMA              /* linux kernel中的CMA即，连续内存区管理 */
 #define CONFIG_CMA_SIZE_MBYTES 0
 #define CONFIG_CMA_SIZE_SEL_MBYTES 1
 #define CONFIG_CMDLINE ""
@@ -2487,10 +2486,8 @@
 #define CONFIG_LPC_ICH_MODULE 1
 #define CONFIG_LPC_SCH_MODULE 1
 #define CONFIG_LSI_ET1011C_PHY_MODULE 1
-#define CONFIG_LSM              /* Linux Security Module */
-#define CONFIG_LSM "lockdown,yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor,bpf"
-#define CONFIG_LSM_MMAP_MIN_ADDR/*  */
-#define CONFIG_LSM_MMAP_MIN_ADDR 65535
+#define CONFIG_LSM "lockdown,yama,loadpin,safesetid,integrity,selinux,smack,tomoyo,apparmor,bpf"/* Linux Security Module */
+#define CONFIG_LSM_MMAP_MIN_ADDR 65535  /*  */
 #define CONFIG_LWTUNNEL 1
 #define CONFIG_LWTUNNEL_BPF 1
 #define CONFIG_LXT_PHY_MODULE 1
@@ -3589,8 +3586,7 @@
 #define CONFIG_QUEUED_SPINLOCKS 1
 #define CONFIG_QUOTA 1
 #define CONFIG_QUOTACTL 1
-#define CONFIG_QUOTA_NETLINK_INTERFACE /*  */
-#define CONFIG_QUOTA_NETLINK_INTERFACE 1
+#define CONFIG_QUOTA_NETLINK_INTERFACE 1    /*  */
 #define CONFIG_QUOTA            /* quota:共享 */
 #define CONFIG_QUOTA_TREE 1
 #define CONFIG_R8169            /*  */
@@ -3617,8 +3613,7 @@
 #define CONFIG_RCU_NEED_SEGCBLIST 1
 #define CONFIG_RCU_NOCB_CPU     /*  */
 #define CONFIG_RCU_NOCB_CPU 1
-#define CONFIG_RCU_STALL_COMMON /*  */
-#define CONFIG_RCU_STALL_COMMON 1
+#define CONFIG_RCU_STALL_COMMON 1   /*  */
 #define CONFIG_RD_BZIP2 1
 #define CONFIG_RD_GZIP 1
 #define CONFIG_RD_LZ4 1
@@ -3653,8 +3648,7 @@
 #define CONFIG_RFKILL_INPUT 1
 #define CONFIG_RFKILL_LEDS 1
 #define CONFIG_RFKILL_MODULE 1
-#define CONFIG_RFS_ACCEL        /*  */
-#define CONFIG_RFS_ACCEL 1
+#define CONFIG_RFS_ACCEL 1      /*  */
 #define CONFIG_RFS              /* Receive Flow Steering - 接收流控制 */
 #define CONFIG_RING_BUFFER 1
 #define CONFIG_RING_BUFFER_ALLOW_SWAP 1
@@ -3812,17 +3806,12 @@
 #define CONFIG_SATA_VITESSE_MODULE 1
 #define CONFIG_SBC_FITPC2_WATCHDOG_MODULE 1
 #define CONFIG_SBITMAP 1
-#define CONFIG_SCHED_AUTOGROUP  /*  */
-#define CONFIG_SCHED_AUTOGROUP 1
+#define CONFIG_SCHED_AUTOGROUP 1/*  */
 #define CONFIG_SCHED_BOOK       /*  */
-#define CONFIG_SCHED_DEBUG      /*  */
-#define CONFIG_SCHED_DEBUG 1
-#define CONFIG_SCHED_HRTICK     /*  */
-#define CONFIG_SCHED_HRTICK 1
-#define CONFIG_SCHED_INFO       /*  */
-#define CONFIG_SCHED_INFO 1
-#define CONFIG_SCHED_MC         /*  */
-#define CONFIG_SCHED_MC 1
+#define CONFIG_SCHED_DEBUG 1    /*  */
+#define CONFIG_SCHED_HRTICK 1   /*  */
+#define CONFIG_SCHED_INFO 1     /*  */
+#define CONFIG_SCHED_MC 1       /*  */
 #define CONFIG_SCHED_MC_PRIO 1
 #define CONFIG_SCHED_OMIT_FRAME_POINTER 1
 #define CONFIG_SCHED_SMT 1

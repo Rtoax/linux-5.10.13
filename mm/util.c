@@ -500,10 +500,12 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long populate;
 	LIST_HEAD(uf);
 
+    /* 映射文件 */
 	ret = security_mmap_file(file, prot, flag); /* 文件映射 */
 	if (!ret) { /* 如果为文件映射失败 */
 		if (mmap_write_lock_killable(mm))   /* 信号量 down */
 			return -EINTR;
+        /* do mmap */
 		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate,
 			      &uf);
 		mmap_write_unlock(mm);  /* 信号量 up */
