@@ -121,8 +121,8 @@ enum zone_type policy_zone = 0;
  */
 static struct mempolicy default_policy = {  /*  */
 	.refcnt = ATOMIC_INIT(1), /* never free it */
-	.mode = MPOL_PREFERRED,
-	.flags = MPOL_F_LOCAL,
+	.mode = MPOL_PREFERRED, /* 偏好策略 */
+	.flags = MPOL_F_LOCAL,  /* 偏好在本地的内存节点分配 */
 };
 
 static struct mempolicy preferred_node_policy[MAX_NUMNODES];    /* NODE 内存策略偏好 */
@@ -1884,8 +1884,9 @@ nodemask_t *policy_nodemask(gfp_t gfp, struct mempolicy *policy)
 /* Return the node id preferred by the given mempolicy, or the given id */
 static int policy_node(gfp_t gfp, struct mempolicy *policy, int nd)
 {
+    /* 如果设置了偏好并且没有设置本地 */
 	if (policy->mode == MPOL_PREFERRED && !(policy->flags & MPOL_F_LOCAL))
-		nd = policy->v.preferred_node;
+		nd = policy->v.preferred_node;  /* 使用偏好的 node */
 	else {
 		/*
 		 * __GFP_THISNODE shouldn't even be used with the bind policy
@@ -2256,7 +2257,7 @@ EXPORT_SYMBOL(alloc_pages_vma);
  */
 struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
 {
-	struct mempolicy *pol = &default_policy;
+	struct mempolicy *pol = &default_policy;    /* 默认的 策略 */
 	struct page *page;
 
 	if (!in_interrupt() && !(gfp & __GFP_THISNODE)) /*  */
@@ -2269,9 +2270,10 @@ struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
 	if (pol->mode == MPOL_INTERLEAVE)/* 交织 mempolicy 在指定的几个node上交叉使用*/
 		page = alloc_page_interleave(gfp, order, interleave_nodes(pol)/* 选择上次使用的下一个node */);
 	else
+        /* 根据nodemask申请内存 */
 		page = __alloc_pages_nodemask(gfp, order,
-				policy_node(gfp, pol, numa_node_id()),
-				policy_nodemask(gfp, pol));
+                        				policy_node(gfp, pol, numa_node_id()),
+                        				policy_nodemask(gfp, pol));
 
 	return page;
 }

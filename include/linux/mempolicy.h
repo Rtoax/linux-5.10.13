@@ -44,8 +44,8 @@ struct mm_struct;
  */
 struct mempolicy {  /* numa 内存策略 */
 	atomic_t refcnt;
-	unsigned short mode; 	/* See MPOL_* above */
-	unsigned short flags;	/* See set_mempolicy() MPOL_F_* above */
+	unsigned short mode; 	/* See MPOL_* above 偏好 */
+	unsigned short flags;	/* See set_mempolicy() MPOL_F_* above 本地还是共享 */
 	union {
 		short 		 preferred_node; /* preferred */
 		nodemask_t	 nodes;		/* interleave/bind */
