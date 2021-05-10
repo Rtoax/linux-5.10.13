@@ -3760,7 +3760,10 @@ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
 	return -ENOSYS;
 }
 
-
+/**
+fast user-space locking
+int futex(int *uaddr, int op, int val, const struct timespec *timeout, int *uaddr2, int val3);
+*/
 SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
 		struct __kernel_timespec __user *, utime, u32 __user *, uaddr2,
 		u32, val3)
