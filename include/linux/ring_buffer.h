@@ -150,12 +150,7 @@ void ring_buffer_reset(struct trace_buffer *buffer);
 int ring_buffer_swap_cpu(struct trace_buffer *buffer_a,
 			 struct trace_buffer *buffer_b, int cpu);
 #else
-static inline int
-ring_buffer_swap_cpu(struct trace_buffer *buffer_a,
-		     struct trace_buffer *buffer_b, int cpu)
-{
-	return -ENODEV;
-}
+/**/
 #endif
 
 bool ring_buffer_empty(struct trace_buffer *buffer);
@@ -208,7 +203,7 @@ enum ring_buffer_flags {
 #ifdef CONFIG_RING_BUFFER
 int trace_rb_cpu_prepare(unsigned int cpu, struct hlist_node *node);
 #else
-#define trace_rb_cpu_prepare	NULL
+/**/
 #endif
 
 #endif /* _LINUX_RING_BUFFER_H */

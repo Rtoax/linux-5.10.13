@@ -117,7 +117,7 @@ struct trace_event_functions {
 	trace_print_func	binary;
 };
 
-struct trace_event {    /*  */
+struct trace_event {    /* trace 时间 */
 	struct hlist_node		node;
 	struct list_head		list;
 	int				type;
@@ -621,46 +621,7 @@ int bpf_get_perf_event_info(const struct perf_event *event, u32 *prog_id,
 			    u32 *fd_type, const char **buf,
 			    u64 *probe_offset, u64 *probe_addr);
 #else
-static inline unsigned int trace_call_bpf(struct trace_event_call *call, void *ctx)
-{
-	return 1;
-}
-
-static inline int
-perf_event_attach_bpf_prog(struct perf_event *event, struct bpf_prog *prog)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline void perf_event_detach_bpf_prog(struct perf_event *event) { }
-
-static inline int
-perf_event_query_prog_array(struct perf_event *event, void __user *info)
-{
-	return -EOPNOTSUPP;
-}
-static inline int bpf_probe_register(struct bpf_raw_event_map *btp, struct bpf_prog *p)
-{
-	return -EOPNOTSUPP;
-}
-static inline int bpf_probe_unregister(struct bpf_raw_event_map *btp, struct bpf_prog *p)
-{
-	return -EOPNOTSUPP;
-}
-static inline struct bpf_raw_event_map *bpf_get_raw_tracepoint(const char *name)
-{
-	return NULL;
-}
-static inline void bpf_put_raw_tracepoint(struct bpf_raw_event_map *btp)
-{
-}
-static inline int bpf_get_perf_event_info(const struct perf_event *event,
-					  u32 *prog_id, u32 *fd_type,
-					  const char **buf, u64 *probe_offset,
-					  u64 *probe_addr)
-{
-	return -EOPNOTSUPP;
-}
+/*  */
 #endif
 
 enum {

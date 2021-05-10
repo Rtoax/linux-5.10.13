@@ -145,8 +145,8 @@ struct static_call_mod {
 };
 
 struct static_call_key {    /*  */
-	void *func;
-	union {
+	void *func;             /*  */
+	union {                 /*  */
 		/* bit 0: 0 = mods, 1 = sites */
 		unsigned long type;
 		struct static_call_mod *mods;

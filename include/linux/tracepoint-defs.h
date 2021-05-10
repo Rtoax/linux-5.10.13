@@ -29,14 +29,14 @@ struct tracepoint_func {    /*  */
 	int prio;
 };
 
-struct tracepoint { /*  */
+struct tracepoint {         /* 跟踪点 */
 	const char *name;		/* Tracepoint name */
-	struct static_key key;
+	struct static_key key;  /* static_key */
 	struct static_call_key *static_call_key;
-	void *static_call_tramp;
-	void *iterator;
-	int (*regfunc)(void);
-	void (*unregfunc)(void);
+	void *static_call_tramp;/*  */
+	void *iterator;         /*  */
+	int (*regfunc)(void);   /* 注册函数 */
+	void (*unregfunc)(void);/* 注销函数 */
 	struct tracepoint_func __rcu *funcs;
 };
 

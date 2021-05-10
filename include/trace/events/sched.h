@@ -182,6 +182,150 @@ TRACE_EVENT(sched_switch,
 		__entry->prev_state & TASK_REPORT_MAX ? "+" : "",
 		__entry->next_comm, __entry->next_pid, __entry->next_prio)
 );
+//对 TRACE_EVENT(sched_switch, 的展开
+#ifdef __rtoax_debug
+
+/**
+*  按照 include/trace/define_trace.h 中展开
+*/
+static const char __section("__tracepoints_strings") __tpstrtab_sched_switch[] = "sched_switch";            
+extern struct static_call_key STATIC_CALL_KEY(tp_func_sched_switch); 
+int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next);           
+struct tracepoint __used __section("__tracepoints") __tracepoint_sched_switch = {                  
+    .name = __tpstrtab_sched_switch,             
+    .key = STATIC_KEY_INIT_FALSE,               
+    .static_call_key = &STATIC_CALL_KEY(tp_func_sched_switch),   
+    .static_call_tramp = STATIC_CALL_TRAMP_ADDR(tp_func_sched_switch), 
+    .iterator = &__traceiter_sched_switch,           
+    .regfunc = NULL,                    
+    .unregfunc = NULL,                    
+    .funcs = NULL 
+};                    
+asm("   .section \"__tracepoints_ptrs\", \"a\"      \n" \
+    "   .balign 4                   \n" \
+    "   .long   __tracepoint_sched_switch - .      \n" \
+    "   .previous                   \n");
+
+int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next)            
+{                               
+    struct tracepoint_func *it_func_ptr;            
+    void *it_func;                      
+   
+    it_func_ptr =                       
+    rcu_dereference_raw((&__tracepoint_sched_switch)->funcs); 
+    do {                            
+        it_func = (it_func_ptr)->func;          
+        __data = (it_func_ptr)->data;           
+        ((void(*)(void *, bool preempt, struct task_struct *prev, struct task_struct *next))(it_func))(__data, preempt, prev, next); 
+    } while ((++it_func_ptr)->func);            
+    return 0;                       
+}                               
+DEFINE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);
+
+
+
+/**
+ *  按照 include/linux/tracepoint.h 中展开
+ */
+extern int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next);
+DECLARE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);    
+extern struct tracepoint __tracepoint_sched_switch; 
+
+static inline void trace_sched_switch(bool preempt, struct task_struct *prev, struct task_struct *next)
+{
+    if (static_key_false(&__tracepoint_sched_switch.key)) {
+        struct tracepoint_func *it_func_ptr;
+        int __maybe_unused __idx = 0;
+        void *__data;
+
+        if (!(cpu_online(raw_smp_processor_id())))
+            return;
+
+        /* srcu can't be used from NMI */
+        WARN_ON_ONCE(0 && in_nmi());
+
+        /* keep srcu and sched-rcu usage consistent */
+        preempt_disable_notrace()
+
+        /*
+         * For rcuidle callers, use srcu since sched-rcu
+         * doesn't work from the idle path.
+         */
+        if (0) {
+            __idx = srcu_read_lock_notrace(&tracepoint_srcu);
+            rcu_irq_enter_irqson();
+        }
+		it_func_ptr =						
+			rcu_dereference_raw((&__tracepoint_sched_switch)->funcs); 
+		if (it_func_ptr) {					
+			__data = (it_func_ptr)->data;			
+//			__DO_TRACE_CALL(sched_switch)(__data, preempt, prev, next);	
+            __traceiter_sched_switch(__data, preempt, prev, next);	 /* 这里最终对应这个函数 */
+		}
+
+		if (0) {						
+			rcu_irq_exit_irqson();				
+			srcu_read_unlock_notrace(&tracepoint_srcu, __idx);
+		}							
+									
+		preempt_enable_notrace();				
+	} 
+    if (IS_ENABLED(CONFIG_LOCKDEP) && (cpu_online(raw_smp_processor_id()))) {     
+        rcu_read_lock_sched_notrace();          
+        rcu_dereference_sched(__tracepoint_sched_switch.funcs);
+        rcu_read_unlock_sched_notrace();        
+    }                           
+}                               
+
+#ifndef MODULE
+static inline void trace_sched_switch_rcuidle(proto)		
+{								
+	if (static_key_false(&__tracepoint_sched_switch.key))		
+		/* 同上static_key_false 部分代码  */		
+}
+#endif
+
+static inline int                       
+register_trace_sched_switch(void (*probe)(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next), void *data)    
+{                               
+    return tracepoint_probe_register(&__tracepoint_sched_switch,  
+                    (void *)probe, data);   
+}                               
+static inline int                       
+register_trace_prio_sched_switch(void (*probe)(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next),
+                void *data,
+               int prio)
+{                               
+    return tracepoint_probe_register_prio(&__tracepoint_sched_switch, 
+                      (void *)probe, data, prio); 
+}                               
+static inline int                       
+unregister_trace_sched_switch(void (*probe)(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next), 
+        void *data)  
+{                               
+    return tracepoint_probe_unregister(&__tracepoint_sched_switch,
+                    (void *)probe, data);   
+}                               
+static inline void
+check_trace_callback_type_sched_switch(void (*cb)(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next))    
+{
+}
+static inline bool
+trace_sched_switch_enabled(void)
+{
+    return static_key_false(&__tracepoint_sched_switch.key);  
+}
+
+
+/**
+ *  按照 include/trace/trace_events.h 中展开
+ */
+//TODO
+
+
+
+
+#endif //
 
 /*
  * Tracepoint for a task being migrated:
@@ -340,8 +484,8 @@ TRACE_EVENT(sched_process_exec,
 #define DEFINE_EVENT_SCHEDSTAT DEFINE_EVENT
 #define DECLARE_EVENT_CLASS_SCHEDSTAT DECLARE_EVENT_CLASS
 #else
-#define DEFINE_EVENT_SCHEDSTAT DEFINE_EVENT_NOP
-#define DECLARE_EVENT_CLASS_SCHEDSTAT DECLARE_EVENT_CLASS_NOP
+//#define DEFINE_EVENT_SCHEDSTAT DEFINE_EVENT_NOP
+//#define DECLARE_EVENT_CLASS_SCHEDSTAT DECLARE_EVENT_CLASS_NOP
 #endif
 
 /*
