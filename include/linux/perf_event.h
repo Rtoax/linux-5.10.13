@@ -447,7 +447,7 @@ struct pmu {    /* 性能监控单元 */
 	/*
 	 * Set up pmu-private data structures for an AUX area
 	 */
-	void *(*setup_aux)		(struct perf_event *event, void **pages,
+	pvoid_t (*setup_aux)		(struct perf_event *event, void **pages,
 					 int nr_pages, bool overwrite);
 					/* optional */
 
@@ -622,7 +622,7 @@ struct pmu_event_list {
 /**
  * struct perf_event - performance event kernel representation:
  */
-struct perf_event {/*  */
+struct perf_event { /*  */
 #ifdef CONFIG_PERF_EVENTS
 	/*
 	 * entry onto perf_event_context::event_list;
@@ -659,7 +659,7 @@ struct perf_event {/*  */
 	int				group_caps;
 
 	struct perf_event		*group_leader;
-	struct pmu			*pmu;
+	struct pmu			*pmu;   /* 性能监控单元 */
 	void				*pmu_private;
 
 	enum perf_event_state		state;

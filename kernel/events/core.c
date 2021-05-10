@@ -11545,6 +11545,14 @@ again:
  * @pid:		target pid
  * @cpu:		target cpu
  * @group_fd:		group leader event fd
+ *
+ * 用户态 API
+ * #include <linux/perf_event.h>
+ * #include <linux/hw_breakpoint.h>
+ *
+ * int perf_event_open(struct perf_event_attr *attr,
+ *                     pid_t pid, int cpu, int group_fd,
+ *                     unsigned long flags);
  */
 SYSCALL_DEFINE5(perf_event_open,
 		struct perf_event_attr __user *, attr_uptr,
