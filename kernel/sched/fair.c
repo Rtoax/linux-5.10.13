@@ -9301,6 +9301,8 @@ static int should_we_balance(struct lb_env *env)
 /*
  * Check this_cpu to ensure it is balanced within domain. Attempt to move
  * tasks if there is an imbalance.
+ *
+ * 负载均衡
  */
 static int load_balance(int this_cpu, struct rq *this_rq,
 			struct sched_domain *sd, enum cpu_idle_type idle,

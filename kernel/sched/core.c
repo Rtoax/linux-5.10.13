@@ -3930,6 +3930,8 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 /*
  * This function gets called by the timer code, with HZ frequency.
  * We call it with interrupts disabled.
+ *
+ * 分时通过系统时钟中断调用
  */
 void scheduler_tick(void)
 {

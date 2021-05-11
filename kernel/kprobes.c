@@ -1634,7 +1634,7 @@ out:
 	return ret;
 }
 
-int register_kprobe(struct kprobe *p)
+int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 {
 	int ret;
 	struct kprobe *old_p;
@@ -1831,7 +1831,7 @@ static void __unregister_kprobe_bottom(struct kprobe *p)
 	/* Otherwise, do nothing. */
 }
 
-int register_kprobes(struct kprobe **kps, int num)
+int register_kprobes(struct kprobe **kps, int num)  //注册多个kprobe探测点
 {
 	int i, ret = 0;
 
@@ -1849,13 +1849,13 @@ int register_kprobes(struct kprobe **kps, int num)
 }
 EXPORT_SYMBOL_GPL(register_kprobes);
 
-void unregister_kprobe(struct kprobe *p)
+void unregister_kprobe(struct kprobe *p)    //卸载kprobe探测点
 {
 	unregister_kprobes(&p, 1);
 }
 EXPORT_SYMBOL_GPL(unregister_kprobe);
 
-void unregister_kprobes(struct kprobe **kps, int num)
+void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探测点
 {
 	int i;
 
@@ -2193,7 +2193,7 @@ static void kill_kprobe(struct kprobe *p)
 }
 
 /* Disable one kprobe */
-int disable_kprobe(struct kprobe *kp)
+int disable_kprobe(struct kprobe *kp)   //暂停指定定kprobe探测点
 {
 	int ret = 0;
 	struct kprobe *p;
@@ -2211,7 +2211,7 @@ int disable_kprobe(struct kprobe *kp)
 EXPORT_SYMBOL_GPL(disable_kprobe);
 
 /* Enable one kprobe */
-int enable_kprobe(struct kprobe *kp)
+int enable_kprobe(struct kprobe *kp)    //恢复指定kprobe探测点
 {
 	int ret = 0;
 	struct kprobe *p;
@@ -2247,7 +2247,7 @@ out:
 EXPORT_SYMBOL_GPL(enable_kprobe);
 
 /* Caller must NOT call this in usual path. This is only for critical case */
-void dump_kprobe(struct kprobe *kp)
+void dump_kprobe(struct kprobe *kp) //打印指定kprobe探测点的名称、地址、偏移
 {
 	pr_err("Dumping kprobe:\n");
 	pr_err("Name: %s\nOffset: %x\nAddress: %pS\n",
