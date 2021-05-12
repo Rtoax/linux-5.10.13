@@ -315,7 +315,7 @@ u64 ring_buffer_event_time_stamp(struct ring_buffer_event *event)
 struct buffer_data_page {
 	u64		 time_stamp;	/* page time stamp */
 	local_t		 commit;	/* write committed index */
-	unsigned char	 data[] RB_ALIGN_DATA;	/* data of buffer page */
+	unsigned char	RB_ALIGN_DATA data[] ;	/* data of buffer page */
 };
 
 /*

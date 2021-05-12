@@ -163,6 +163,12 @@
  * Need to also make ftrace_stub_graph point to ftrace_stub
  * so that the same stub location may have different protocols
  * and not mess up with C verifiers.
+ *
+ * ftrace调用站点记录到一个部分，该部分的名称取决于所使用的编译器选项。 
+ * 给定的内核映像将仅使用一个映像，即FTRACE_CALLSITE_SECTION。 我们在这
+ * 里捕获了所有它们，以避免FTRACE_CALLSITE_SECTION定义的头依赖。
+ * 还需要使ftrace_stub_graph指向ftrace_stub，以便同一存根位置可能具有不
+ * 同的协议，并且不会与C验证程序混淆。
  *//* ffffffff83dfa990 - ffffffff83e4a800 */
 #define MCOUNT_REC()	. = ALIGN(8);	/*  */			\
 			__start_mcount_loc = .;		/* ffffffff83dfa990 */	\

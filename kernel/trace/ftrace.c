@@ -5565,7 +5565,7 @@ ftrace_set_early_filter(struct ftrace_ops *ops, char *buf, int enable)
 	}
 }
 
-static void __init set_ftrace_early_filters(void)
+static void __init set_ftrace_early_filters(void)   /* 过滤 */
 {
 	if (ftrace_filter_buf[0])
 		ftrace_set_early_filter(&global_ops, ftrace_filter_buf, 1);
@@ -6104,16 +6104,19 @@ static __init int ftrace_init_dyn_tracefs(struct dentry *d_tracer)
     /* /sys/kernel/debug/tracing/available_filter_functions */
 	trace_create_file("available_filter_functions", 0444,
 			d_tracer, NULL, &ftrace_avail_fops);
-
+    
+    /* /sys/kernel/debug/tracing/enabled_functions */
 	trace_create_file("enabled_functions", 0444,
 			d_tracer, NULL, &ftrace_enabled_fops);
 
 	ftrace_create_filter_files(&global_ops, d_tracer);
 
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+    /* /sys/kernel/debug/tracing/set_graph_function */
 	trace_create_file("set_graph_function", 0644, d_tracer,
 				    NULL,
 				    &ftrace_graph_fops);
+    /* /sys/kernel/debug/tracing/set_graph_notrace */
 	trace_create_file("set_graph_notrace", 0644, d_tracer,
 				    NULL,
 				    &ftrace_graph_notrace_fops);
@@ -6155,7 +6158,7 @@ static int ftrace_process_locs(struct module *mod,
 	sort(start, count, sizeof(*start),
 	     ftrace_cmp_ips, NULL);
 
-	start_pg = ftrace_allocate_pages(count);
+	start_pg = ftrace_allocate_pages(count);    /* 分配pages */
 	if (!start_pg)
 		return -ENOMEM;
 
@@ -6798,7 +6801,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	int ret;
 
 	local_irq_save(flags);
-	ret = ftrace_dyn_arch_init();
+	ret = ftrace_dyn_arch_init();   /* x86 为空 */
 	local_irq_restore(flags);
 	if (ret)
 		goto failed;
@@ -6812,8 +6815,9 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	pr_info("ftrace: allocating %ld entries in %ld pages\n",
 		count, count / ENTRIES_PER_PAGE + 1);
 
-	last_ftrace_enabled = ftrace_enabled = 1;
+	last_ftrace_enabled = ftrace_enabled = 1;   /* 默认开启 */
 
+    /*  */
 	ret = ftrace_process_locs(NULL,
 				  __start_mcount_loc,
 				  __stop_mcount_loc);
@@ -6829,9 +6833,9 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 }
 
 /* Do nothing if arch does not support this */
-//void __weak arch_ftrace_update_trampoline(struct ftrace_ops *ops)
-//{
-//}
+void __weak arch_ftrace_update_trampoline(struct ftrace_ops *ops)
+{
+}
 
 static void ftrace_update_trampoline(struct ftrace_ops *ops)
 {
