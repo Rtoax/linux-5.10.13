@@ -4299,6 +4299,7 @@ unsigned long module_kallsyms_lookup_name(const char *name)
 		if ((mod = find_module_all(name, colon - name, false)) != NULL)
 			ret = find_kallsyms_symbol_value(mod, colon+1);
 	} else {
+	    /* 遍历模块 */
 		list_for_each_entry_rcu(mod, &modules, list) {
 			if (mod->state == MODULE_STATE_UNFORMED)
 				continue;

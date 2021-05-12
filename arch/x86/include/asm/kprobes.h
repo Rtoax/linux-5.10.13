@@ -58,8 +58,8 @@ extern void arch_kprobe_override_function(struct pt_regs *regs);
 struct arch_specific_insn {
 	/* copy of the original instruction */
 	kprobe_opcode_t *insn;
-	/*
-	 * boostable = false: This instruction type is not boostable.
+	/* boostable: 可提升的
+	 * boostable = false: This instruction type is not boostable(可提升的).
 	 * boostable = true: This instruction has been boosted: we have
 	 * added a relative jump after the instruction copy in insn,
 	 * so no single-step and fixup are needed (unless there's

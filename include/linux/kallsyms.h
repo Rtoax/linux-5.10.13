@@ -102,68 +102,7 @@ int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *
 extern bool kallsyms_show_value(const struct cred *cred);
 
 #else /* !CONFIG_KALLSYMS */
-
-static inline unsigned long kallsyms_lookup_name(const char *name)
-{
-	return 0;
-}
-
-static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-						    struct module *,
-						    unsigned long),
-					  void *data)
-{
-	return 0;
-}
-
-static inline int kallsyms_lookup_size_offset(unsigned long addr,
-					      unsigned long *symbolsize,
-					      unsigned long *offset)
-{
-	return 0;
-}
-
-static inline const char *kallsyms_lookup(unsigned long addr,
-					  unsigned long *symbolsize,
-					  unsigned long *offset,
-					  char **modname, char *namebuf)
-{
-	return NULL;
-}
-
-static inline int sprint_symbol(char *buffer, unsigned long addr)
-{
-	*buffer = '\0';
-	return 0;
-}
-
-static inline int sprint_symbol_no_offset(char *buffer, unsigned long addr)
-{
-	*buffer = '\0';
-	return 0;
-}
-
-static inline int sprint_backtrace(char *buffer, unsigned long addr)
-{
-	*buffer = '\0';
-	return 0;
-}
-
-static inline int lookup_symbol_name(unsigned long addr, char *symname)
-{
-	return -ERANGE;
-}
-
-static inline int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
-{
-	return -ERANGE;
-}
-
-static inline bool kallsyms_show_value(const struct cred *cred)
-{
-	return false;
-}
-
+/**/
 #endif /*CONFIG_KALLSYMS*/
 
 static inline void print_ip_sym(const char *loglvl, unsigned long ip)

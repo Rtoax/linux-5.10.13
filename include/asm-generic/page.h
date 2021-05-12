@@ -56,7 +56,7 @@
 #define __pte(x)	((pte_t) { (x) } )
 #define __pmd(x)	((pmd_t) { (x) } )
 #define __pgd(x)	((pgd_t) { (x) } )
-#define __pgprot(x)	((pgprot_t) { (x) } )
+//#define __pgprot(x)	((pgprot_t) { (x) } )
 
 extern unsigned long memory_start;
 extern unsigned long memory_end;

@@ -8,16 +8,16 @@
 #include <asm/special_insns.h>
 
 #ifdef CONFIG_X86_32
-static inline void iret_to_self(void)
-{
-	asm volatile (
-		"pushfl\n\t"
-		"pushl %%cs\n\t"
-		"pushl $1f\n\t"
-		"iret\n\t"
-		"1:"
-		: ASM_CALL_CONSTRAINT : : "memory");
-}
+//static inline void iret_to_self(void)
+//{
+//	asm volatile (
+//		"pushfl\n\t"
+//		"pushl %%cs\n\t"
+//		"pushl $1f\n\t"
+//		"iret\n\t"
+//		"1:"
+//		: ASM_CALL_CONSTRAINT : : "memory");
+//}
 #else
 static inline void iret_to_self(void)
 {

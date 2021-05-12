@@ -380,7 +380,7 @@ NOKPROBE_SYMBOL(get_kprobe);
 static int aggr_pre_handler(struct kprobe *p, struct pt_regs *regs);
 
 /* Return true if the kprobe is an aggregator */
-static inline int kprobe_aggrprobe(struct kprobe *p)
+static inline int kprobe_aggrprobe(struct kprobe *p)    /* 聚合探针 */
 {
 	return p->pre_handler == aggr_pre_handler;
 }
@@ -1377,6 +1377,8 @@ static void init_aggr_kprobe(struct kprobe *ap, struct kprobe *p)
 /*
  * This is the second or subsequent kprobe at the address - handle
  * the intricacies
+ *
+ * 这是该地址上的第二个或后续kprobe-处理复杂情况
  */
 static int register_aggr_kprobe(struct kprobe *orig_p, struct kprobe *p)
 {
@@ -1389,6 +1391,7 @@ static int register_aggr_kprobe(struct kprobe *orig_p, struct kprobe *p)
 	jump_label_lock();
 	mutex_lock(&text_mutex);
 
+    /* 聚合探针 */
 	if (!kprobe_aggrprobe(orig_p)) {
 		/* If orig_p is not an aggr_kprobe, create new aggr_kprobe. */
 		ap = alloc_aggr_kprobe(orig_p);
@@ -1664,7 +1667,8 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 
 	old_p = get_kprobe(p->addr);
 	if (old_p) {
-		/* Since this may unoptimize old_p, locking text_mutex. */
+		/* Since this may unoptimize old_p, locking text_mutex. 
+         这是该地址上的第二个或后续kprobe-处理复杂情况*/
 		ret = register_aggr_kprobe(old_p, p);
 		goto out;
 	}

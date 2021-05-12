@@ -31,24 +31,24 @@
  * These will be re-linked against their real values
  * during the second link stage.
  */
-extern const unsigned long kallsyms_addresses[] __weak;
-extern const int kallsyms_offsets[] __weak;
-extern const u8 kallsyms_names[] __weak;
+extern const unsigned long __weak kallsyms_addresses[] ;
+extern const int __weak kallsyms_offsets[] ;
+extern const u8 __weak kallsyms_names[] ;
 
 /*
  * Tell the compiler that the count isn't in the small data section if the arch
  * has one (eg: FRV).
  */
-extern const unsigned int kallsyms_num_syms
-__section(".rodata") __attribute__((weak));
+#define ____rodata_weak __section(".rodata") __attribute__((weak)) //+++
 
-extern const unsigned long kallsyms_relative_base
-__section(".rodata") __attribute__((weak));
+extern const unsigned int  ____rodata_weak kallsyms_num_syms;
 
-extern const char kallsyms_token_table[] __weak;
-extern const u16 kallsyms_token_index[] __weak;
+extern const unsigned long  ____rodata_weak kallsyms_relative_base;
 
-extern const unsigned int kallsyms_markers[] __weak;
+extern const char __weak kallsyms_token_table[] ;
+extern const u16 __weak kallsyms_token_index[] ;
+
+extern const unsigned int __weak kallsyms_markers[] ;
 
 /*
  * Expand a compressed symbol data into the resulting uncompressed string,
