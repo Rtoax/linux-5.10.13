@@ -953,11 +953,11 @@ enum {
 };
 
 struct ftrace_hash {
-	unsigned long		size_bits;
-	struct hlist_head	*buckets;
-	unsigned long		count;
-	unsigned long		flags;
-	struct rcu_head		rcu;
+	unsigned long		size_bits;  /* 默认值为 10 (1<<10=1024), hash桶的大小 */
+	struct hlist_head	*buckets;   /*  */
+	unsigned long		count;      /*  */
+	unsigned long		flags;      /*  */
+	struct rcu_head		rcu;        /*  */
 };
 
 struct ftrace_func_entry *

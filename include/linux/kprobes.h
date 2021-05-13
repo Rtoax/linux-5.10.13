@@ -76,6 +76,19 @@ struct kprobe { /*  */
 	/* Offset into the symbol */
 	unsigned int offset;        /* 被探测点在函数内部的偏移，用于探测函数内核的指令，如果该值为0表示函数的入口。 */
 
+    /*
+     original        kprobe
+       code        registered
+    |        |     |        |
+    | instr1 |     | instr1 |      / call pre_handler
+    |        |     |        |>----/  single step instr2
+    | instr2 |     |  trap  |<---\   call post_handler
+    |        |     |        |     \  continue
+    | instr3 |     | instr3 |
+    |        |     |        |
+    | instr4 |     | instr4 |
+    |        |     |        |
+    */
 	/* Called before addr is executed. 在被探测指令被执行前回调*/
 	kprobe_pre_handler_t pre_handler;   
 

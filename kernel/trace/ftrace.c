@@ -62,7 +62,7 @@
 	})
 
 /* hash bits for specific function selection */
-#define FTRACE_HASH_DEFAULT_BITS 10
+#define FTRACE_HASH_DEFAULT_BITS 10 /* 默认 */
 #define FTRACE_HASH_MAX_BITS 12
 
 #ifdef CONFIG_DYNAMIC_FTRACE
@@ -111,7 +111,7 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops);
  * ftrace_disabled is set when an anomaly is discovered.
  * ftrace_disabled is much stronger than ftrace_enabled.
  */
-static int __read_mostly ftrace_disabled ;/*  */
+static int __read_mostly ftrace_disabled ;/* =0 默认开启 */
 
 DEFINE_MUTEX(ftrace_lock);
 
@@ -128,7 +128,7 @@ static void ftrace_ops_no_ops(unsigned long ip, unsigned long parent_ip);
 #define ftrace_ops_list_func ((ftrace_func_t)ftrace_ops_no_ops)
 #endif
 
-static inline void ftrace_ops_init(struct ftrace_ops *ops)
+static inline void ftrace_ops_init(struct ftrace_ops *ops)  /* 是否已经初始化 */
 {
 #ifdef CONFIG_DYNAMIC_FTRACE
 	if (!(ops->flags & FTRACE_OPS_FL_INITIALIZED)) {
@@ -1087,16 +1087,17 @@ bool is_ftrace_trampoline(unsigned long addr)
 
 struct ftrace_page {    /*  */
 	struct ftrace_page	*next;
-	struct dyn_ftrace	*records;
-	int			index;
-	int			size;
+	struct dyn_ftrace	*records;   /* 指向申请的内存页 = __get_free_pages() in `ftrace_allocate_records()` */
+	int			index;  /*  */
+	int			size;   /* records 中有多少 struct dyn_ftrace */
 };
 
 #define ENTRY_SIZE sizeof(struct dyn_ftrace)
 #define ENTRIES_PER_PAGE (PAGE_SIZE / ENTRY_SIZE)
 
-static struct ftrace_page	*ftrace_pages_start;
-static struct ftrace_page	*ftrace_pages;
+static struct ftrace_page	*ftrace_pages_start;    /* ftrace 起始地址 */
+                                                    /* 初始化位置 ftrace_process_locs() */
+static struct ftrace_page	*ftrace_pages;          /* 同上，用于定位链表中最后一个 pg */
 
 static __always_inline unsigned long
 ftrace_hash_key(struct ftrace_hash *hash, unsigned long ip)
@@ -1116,10 +1117,10 @@ __ftrace_lookup_ip(struct ftrace_hash *hash, unsigned long ip)
 	struct hlist_head *hhd;
 
 	key = ftrace_hash_key(hash, ip);
-	hhd = &hash->buckets[key];
+	hhd = &hash->buckets[key];  /* 哈希链表 */
 
 	hlist_for_each_entry_rcu_notrace(entry, hhd, hlist) {
-		if (entry->ip == ip)
+		if (entry->ip == ip)    /*  找到了 */
 			return entry;
 	}
 	return NULL;
@@ -1138,10 +1139,10 @@ __ftrace_lookup_ip(struct ftrace_hash *hash, unsigned long ip)
 struct ftrace_func_entry *
 ftrace_lookup_ip(struct ftrace_hash *hash, unsigned long ip)
 {
-	if (ftrace_hash_empty(hash))
+	if (ftrace_hash_empty(hash))    /* 是否为空 */
 		return NULL;
 
-	return __ftrace_lookup_ip(hash, ip);
+	return __ftrace_lookup_ip(hash, ip);    /* 查找 */
 }
 
 static void __add_hash_entry(struct ftrace_hash *hash,
@@ -1151,20 +1152,21 @@ static void __add_hash_entry(struct ftrace_hash *hash,
 	unsigned long key;
 
 	key = ftrace_hash_key(hash, entry->ip);
-	hhd = &hash->buckets[key];
+	hhd = &hash->buckets[key];  /* 哈希桶 */
 	hlist_add_head(&entry->hlist, hhd);
 	hash->count++;
 }
 
-static int add_hash_entry(struct ftrace_hash *hash, unsigned long ip)
+static int add_hash_entry(struct ftrace_hash *hash, unsigned long ip)   /* 添加到 hash */
 {
 	struct ftrace_func_entry *entry;
 
+    /* 申请 */
 	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
 	if (!entry)
 		return -ENOMEM;
 
-	entry->ip = ip;
+	entry->ip = ip; /*  */
 	__add_hash_entry(hash, entry);
 
 	return 0;
@@ -1259,19 +1261,19 @@ void ftrace_free_filter(struct ftrace_ops *ops)
 	free_ftrace_hash(ops->func_hash->notrace_hash);
 }
 
-static struct ftrace_hash *alloc_ftrace_hash(int size_bits)
+static struct ftrace_hash *alloc_ftrace_hash(int size_bits) /* 申请一个 ftrace hash */
 {
 	struct ftrace_hash *hash;
 	int size;
-
+    /* 分配结构 */
 	hash = kzalloc(sizeof(*hash), GFP_KERNEL);
 	if (!hash)
 		return NULL;
 
-	size = 1 << size_bits;
-	hash->buckets = kcalloc(size, sizeof(*hash->buckets), GFP_KERNEL);
+	size = 1 << size_bits;  /* 1<<10 = 1024*/
+	hash->buckets = kcalloc(size, sizeof(*hash->buckets), GFP_KERNEL);  /* 申请 buckets */
 
-	if (!hash->buckets) {
+	if (!hash->buckets) {   /* 内存申请失败 */
 		kfree(hash);
 		return NULL;
 	}
@@ -1330,7 +1332,7 @@ alloc_and_copy_ftrace_hash(int size_bits, struct ftrace_hash *hash)
 	if (ftrace_hash_empty(hash))
 		return new_hash;
 
-	size = 1 << hash->size_bits;
+	size = 1 << hash->size_bits;    /* 默认值 1<<10 = 1024 */
 	for (i = 0; i < size; i++) {
 		hlist_for_each_entry(entry, &hash->buckets[i], hlist) {
 			ret = add_hash_entry(new_hash, entry->ip);
@@ -1385,8 +1387,8 @@ static struct ftrace_hash *dup_hash(struct ftrace_hash *src, int size)
 	for (i = 0; i < size; i++) {
 		hhd = &src->buckets[i];
 		hlist_for_each_entry_safe(entry, tn, hhd, hlist) {
-			remove_hash_entry(src, entry);
-			__add_hash_entry(new_hash, entry);
+			remove_hash_entry(src, entry);      /* 删除 */
+			__add_hash_entry(new_hash, entry);  /* 添加到新的hash中 */
 		}
 	}
 	return new_hash;
@@ -1417,7 +1419,7 @@ ftrace_hash_move(struct ftrace_ops *ops, int enable,
 	if (ops->flags & FTRACE_OPS_FL_IPMODIFY && !enable)
 		return -EINVAL;
 
-	new_hash = __ftrace_hash_move(src);
+	new_hash = __ftrace_hash_move(src); /* 从src移动到new中 */
 	if (!new_hash)
 		return -ENOMEM;
 
@@ -1513,7 +1515,7 @@ ftrace_ops_test(struct ftrace_ops *ops, unsigned long ip, void *regs)
 	}
 
 
-static int ftrace_cmp_recs(const void *a, const void *b)
+static int ftrace_cmp_recs(const void *a, const void *b)    /* 比较函数 */
 {
 	const struct dyn_ftrace *key = a;
 	const struct dyn_ftrace *rec = b;
@@ -1534,10 +1536,14 @@ static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 	key.ip = start;
 	key.flags = end;	/* overload flags, as it is unsigned long */
 
+    /* 遍历 pg 链表 */
 	for (pg = ftrace_pages_start; pg; pg = pg->next) {
+
+        /* start-end 不在这个 pg 内 */
 		if (end < pg->records[0].ip ||
-		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE))
+		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE/* x86下=5 */))
 			continue;
+        /* 二分查找 */
 		rec = bsearch(&key, pg->records, pg->index,
 			      sizeof(struct dyn_ftrace),
 			      ftrace_cmp_recs);
@@ -1579,7 +1585,7 @@ unsigned long ftrace_location_range(unsigned long start, unsigned long end)
  * the function tracer. It checks the ftrace internal tables to
  * determine if the address belongs or not.
  */
-unsigned long ftrace_location(unsigned long ip)
+unsigned long ftrace_location(unsigned long ip) /*  */
 {
 	return ftrace_location_range(ip, ip);
 }
@@ -2648,24 +2654,6 @@ ftrace_nop_initialize(struct module *mod, struct dyn_ftrace *rec)
 	return 1;
 }
 
-/*
- * archs can override this function if they must do something
- * before the modifying code is performed.
- */
-int __weak ftrace_arch_code_modify_prepare(void)
-{
-	return 0;
-}
-
-/*
- * archs can override this function if they must do something
- * after the modifying code is performed.
- */
-int __weak ftrace_arch_code_modify_post_process(void)
-{
-	return 0;
-}
-
 void ftrace_modify_all_code(int command)
 {
 	int update = command & FTRACE_UPDATE_TRACE_FUNC;
@@ -2764,7 +2752,7 @@ static void ftrace_run_update_code(int command)
 	 */
 	arch_ftrace_update_code(command);
 
-	ret = ftrace_arch_code_modify_post_process();
+	ret = ftrace_arch_code_modify_post_process();   /* arch_ftrace_trampoline_free */
 	FTRACE_WARN_ON(ret);
 }
 
@@ -2783,9 +2771,6 @@ static void ftrace_run_modify_code(struct ftrace_ops *ops, int command,
 static ftrace_func_t saved_ftrace_func;
 static int ftrace_start_up;
 
-void __weak arch_ftrace_trampoline_free(struct ftrace_ops *ops)
-{
-}
 
 /* List of trace_ops that have allocated trampolines */
 static LIST_HEAD(ftrace_ops_trampoline_list);
@@ -3186,7 +3171,7 @@ static int ftrace_allocate_records(struct ftrace_page *pg, int count)/*  */
 	return cnt;
 }
 
-static struct ftrace_page *
+static struct ftrace_page * /*  */
 ftrace_allocate_pages(unsigned long num_to_init)
 {
 	struct ftrace_page *start_pg;
@@ -3197,6 +3182,7 @@ ftrace_allocate_pages(unsigned long num_to_init)
 	if (!num_to_init)
 		return NULL;
 
+    /* 链表起点 */
 	start_pg = pg = kzalloc(sizeof(*pg), GFP_KERNEL);
 	if (!pg)
 		return NULL;
@@ -3207,6 +3193,7 @@ ftrace_allocate_pages(unsigned long num_to_init)
 	 * waste as little space as possible.
 	 */
 	for (;;) {
+        /* 分配内存页 */
 		cnt = ftrace_allocate_records(pg, num_to_init);
 		if (cnt < 0)
 			goto free_pages;
@@ -3215,14 +3202,15 @@ ftrace_allocate_pages(unsigned long num_to_init)
 		if (!num_to_init)
 			break;
 
+        /* 申请链表下一个节点 */
 		pg->next = kzalloc(sizeof(*pg), GFP_KERNEL);
 		if (!pg->next)
 			goto free_pages;
 
-		pg = pg->next;
+		pg = pg->next;  /* 链表终点 */
 	}
 
-	return start_pg;
+	return start_pg;    /* 返回链表起点 */
 
  free_pages:
 	pg = start_pg;
@@ -4087,7 +4075,7 @@ static void ftrace_ops_update_code(struct ftrace_ops *ops,
 		}
 	} while_for_each_ftrace_op(op);
 }
-
+        /*  */
 static int ftrace_hash_move_and_update_ops(struct ftrace_ops *ops,
 					   struct ftrace_hash **orig_hash,
 					   struct ftrace_hash *hash,
@@ -4101,9 +4089,9 @@ static int ftrace_hash_move_and_update_ops(struct ftrace_ops *ops,
 	old_hash_ops.filter_hash = ops->func_hash->filter_hash;
 	old_hash_ops.notrace_hash = ops->func_hash->notrace_hash;
 	ret = ftrace_hash_move(ops, enable, orig_hash, hash);
-	if (!ret) {
-		ftrace_ops_update_code(ops, &old_hash_ops);
-		free_ftrace_hash_rcu(old_hash);
+	if (!ret) { /* 如果成功 */
+		ftrace_ops_update_code(ops, &old_hash_ops); /*  */
+		free_ftrace_hash_rcu(old_hash); /* 释放老的 */
 	}
 	return ret;
 }
@@ -4928,22 +4916,22 @@ ftrace_notrace_write(struct file *file, const char __user *ubuf,
 }
 
 static int
-ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)
+ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)   /*  */
 {
 	struct ftrace_func_entry *entry;
 
-	if (!ftrace_location(ip))
+	if (!ftrace_location(ip))   /* 检测是否存在 */
 		return -EINVAL;
 
-	if (remove) {
-		entry = ftrace_lookup_ip(hash, ip);
+	if (remove) {   /*  */
+		entry = ftrace_lookup_ip(hash, ip); /* 找到 hash backets 中的 entry */
 		if (!entry)
 			return -ENOENT;
-		free_hash_entry(hash, entry);
+		free_hash_entry(hash, entry);   /* 释放 */
 		return 0;
 	}
 
-	return add_hash_entry(hash, ip);
+	return add_hash_entry(hash, ip);    /* 添加 */
 }
 
 static int
@@ -4954,20 +4942,21 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 	struct ftrace_hash *hash;
 	int ret;
 
+    /* 默认开启 */
 	if (unlikely(ftrace_disabled))
 		return -ENODEV;
 
 	mutex_lock(&ops->func_hash->regex_lock);
 
 	if (enable)
-		orig_hash = &ops->func_hash->filter_hash;
+		orig_hash = &ops->func_hash->filter_hash;   /* 追踪函数的 hash */
 	else
-		orig_hash = &ops->func_hash->notrace_hash;
+		orig_hash = &ops->func_hash->notrace_hash;  /* 不追踪函数的 hash */
 
-	if (reset)
-		hash = alloc_ftrace_hash(FTRACE_HASH_DEFAULT_BITS);
-	else
-		hash = alloc_and_copy_ftrace_hash(FTRACE_HASH_DEFAULT_BITS, *orig_hash);
+	if (reset)  /* 重置 */
+		hash = alloc_ftrace_hash(FTRACE_HASH_DEFAULT_BITS/* 10 */);
+	else    /* 不重置，使用原来的 */
+		hash = alloc_and_copy_ftrace_hash(FTRACE_HASH_DEFAULT_BITS/* 10 */, *orig_hash);
 
 	if (!hash) {
 		ret = -ENOMEM;
@@ -4978,12 +4967,16 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 		ret = -EINVAL;
 		goto out_regex_unlock;
 	}
+    /* 
+        kprobe 情况: kprobe->addr = 被探测点的地址
+    */
 	if (ip) {
-		ret = ftrace_match_addr(hash, ip, remove);
+		ret = ftrace_match_addr(hash, ip, remove);  /* 根据remove，从哈希桶中 插入或者删除 */
 		if (ret < 0)
 			goto out_regex_unlock;
 	}
 
+    /*  */
 	mutex_lock(&ftrace_lock);
 	ret = ftrace_hash_move_and_update_ops(ops, orig_hash, hash, enable);
 	mutex_unlock(&ftrace_lock);
@@ -4995,7 +4988,7 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 	return ret;
 }
 
-static int
+static int  /*  */
 ftrace_set_addr(struct ftrace_ops *ops, unsigned long ip, int remove,
 		int reset, int enable)
 {
@@ -5372,12 +5365,17 @@ EXPORT_SYMBOL_GPL(modify_ftrace_direct);
  *
  * Filters denote which functions should be enabled when tracing is enabled
  * If @ip is NULL, it failes to update filter.
+ *
+ * 设置 address 到 filter hash 中
  */
 int ftrace_set_filter_ip(struct ftrace_ops *ops, unsigned long ip,
 			 int remove, int reset)
 {
-	ftrace_ops_init(ops);
-	return ftrace_set_addr(ops, ip, remove, reset, 1);
+	ftrace_ops_init(ops);   /* 初始化 */
+    /* 
+        kprobe -> 对应 addr
+    */
+	return ftrace_set_addr(ops, ip, remove, reset, 1);  
 }
 EXPORT_SYMBOL_GPL(ftrace_set_filter_ip);
 
@@ -6071,11 +6069,12 @@ static const struct file_operations ftrace_graph_notrace_fops = {
 void ftrace_create_filter_files(struct ftrace_ops *ops,
 				struct dentry *parent)
 {
-
+    /* /sys/kernel/debug/tracing/set_ftrace_filter */
 	trace_create_file("set_ftrace_filter", 0644, parent,
 			  ops, &ftrace_filter_fops);
 
-	trace_create_file("set_ftrace_notrace", 0644, parent,
+    /* /sys/kernel/debug/tracing/set_ftrace_filter */
+	trace_create_file("ftrace_notrace_fops", 0644, parent,
 			  ops, &ftrace_notrace_fops);
 }
 
@@ -6150,14 +6149,16 @@ static int ftrace_process_locs(struct module *mod,
 	unsigned long flags = 0; /* Shut up gcc */
 	int ret = -ENOMEM;
 
-	count = end - start;
+	count = end - start;    /* 计算数量 */
 
 	if (!count)
 		return 0;
 
+    /* 排序 */
 	sort(start, count, sizeof(*start),
 	     ftrace_cmp_ips, NULL);
 
+    /* 分配 ftrace_page */
 	start_pg = ftrace_allocate_pages(count);    /* 分配pages */
 	if (!start_pg)
 		return -ENOMEM;
@@ -6169,11 +6170,11 @@ static int ftrace_process_locs(struct module *mod,
 	 * modules will free them when they are removed.
 	 * Force a new page to be allocated for modules.
 	 */
-	if (!mod) {
+	if (!mod) { /* 不在模块中 */
 		WARN_ON(ftrace_pages || ftrace_pages_start);
 		/* First initialization */
-		ftrace_pages = ftrace_pages_start = start_pg;
-	} else {
+		ftrace_pages = ftrace_pages_start = start_pg;   
+	} else {    /* 在模块中 */
 		if (!ftrace_pages)
 			goto out;
 
@@ -6188,7 +6189,7 @@ static int ftrace_process_locs(struct module *mod,
 
 	p = start;
 	pg = start_pg;
-	while (p < end) {
+	while (p < end) {   /* 遍历整个 ftrace mcount 区间 */
 		addr = ftrace_call_adjust(*p++);
 		/*
 		 * Some architecture linkers will pad between
@@ -6199,7 +6200,7 @@ static int ftrace_process_locs(struct module *mod,
 		if (!addr)
 			continue;
 
-		if (pg->index == pg->size) {
+		if (pg->index == pg->size) {    /* 这个pg满了以后，下一个pg */
 			/* We should have allocated enough */
 			if (WARN_ON(!pg->next))
 				break;
@@ -6207,14 +6208,14 @@ static int ftrace_process_locs(struct module *mod,
 		}
 
 		rec = &pg->records[pg->index++];
-		rec->ip = addr;
+		rec->ip = addr; /* 记录这个 addr */
 	}
 
 	/* We should have used all pages */
 	WARN_ON(pg->next);
 
 	/* Assign the last page to ftrace_pages */
-	ftrace_pages = pg;
+	ftrace_pages = pg;  /* 最后一个有效的 pg */
 
 	/*
 	 * We only need to disable interrupts on start up
@@ -7466,15 +7467,15 @@ int ftrace_is_dead(void)
  *       with "notrace", otherwise it will go into a
  *       recursive loop.
  */
-int register_ftrace_function(struct ftrace_ops *ops)
+int register_ftrace_function(struct ftrace_ops *ops)    /*  注册 ftrace*/
 {
 	int ret = -1;
 
-	ftrace_ops_init(ops);
+	ftrace_ops_init(ops);   /* 初始化 */
 
 	mutex_lock(&ftrace_lock);
 
-	ret = ftrace_startup(ops, 0);
+	ret = ftrace_startup(ops, 0);   /* 启动这个 ftrace */
 
 	mutex_unlock(&ftrace_lock);
 

@@ -296,9 +296,9 @@ static void check_stack(unsigned long ip, unsigned long *stack)
 }
 
 /* Some archs may not define MCOUNT_INSN_SIZE */
-#ifndef MCOUNT_INSN_SIZE
-# define MCOUNT_INSN_SIZE 0
-#endif
+//#ifndef MCOUNT_INSN_SIZE
+//# define MCOUNT_INSN_SIZE 0
+//#endif
 
 static void
 stack_trace_call(unsigned long ip, unsigned long parent_ip,

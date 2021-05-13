@@ -163,9 +163,12 @@ enum {
 #ifdef CONFIG_DYNAMIC_FTRACE
 /* The hash used to know what functions callbacks trace */
 struct ftrace_ops_hash {
-	struct ftrace_hash __rcu	*notrace_hash;
-	struct ftrace_hash __rcu	*filter_hash;
-	struct mutex			regex_lock;
+	struct ftrace_hash __rcu	*notrace_hash;  /*Functions in notrace_hash will not be traced 
+                                                  even if they exist in filter_hash.
+                                                  empty means OK to trace all */
+	struct ftrace_hash __rcu	*filter_hash;   /* what functions to trace
+                                                  empty means to trace all */
+	struct mutex			regex_lock;         /* used to protect the hashes */
 };
 
 void ftrace_free_init_mem(void);
@@ -188,7 +191,7 @@ void ftrace_free_mem(struct module *mod, void *start, void *end);
 struct ftrace_ops {
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
-	unsigned long			flags;
+	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
 	void				*private;
 	ftrace_func_t			saved_func;
 #ifdef CONFIG_DYNAMIC_FTRACE
@@ -249,12 +252,7 @@ extern void ftrace_stub(unsigned long a0, unsigned long a1,
 			struct ftrace_ops *op, struct pt_regs *regs);
 
 #else /* !CONFIG_FUNCTION_TRACER */
-/*
- * (un)register_ftrace_function must be a macro since the ops parameter
- * must not be evaluated.
- */
-    /*  */
-
+/*  */
 #endif /* CONFIG_FUNCTION_TRACER */
 
 struct ftrace_func_entry {

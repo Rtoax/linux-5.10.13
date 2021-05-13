@@ -1014,7 +1014,8 @@ static int __arm_kprobe_ftrace(struct kprobe *p, struct ftrace_ops *ops,
 			       int *cnt)
 {
 	int ret = 0;
-
+    
+    /*  */
 	ret = ftrace_set_filter_ip(ops, (unsigned long)p->addr, 0, 0);
 	if (ret) {
 		pr_debug("Failed to arm kprobe-ftrace at %pS (%d)\n",
@@ -1044,8 +1045,22 @@ err_ftrace:
 
 static int arm_kprobe_ftrace(struct kprobe *p)
 {
+    /* 
+     original        kprobe
+       code        registered
+    |        |     |        |
+    | instr1 |     | instr1 |      / call pre_handler
+    |        |     |        |>----/  single step instr2
+    | instr2 |     |  trap  |<---\   call post_handler
+    |        |     |        |     \  continue
+    | instr3 |     | instr3 |
+    |        |     |        |
+    | instr4 |     | instr4 |
+    |        |     |        |
+    */
 	bool ipmodify = (p->post_handler != NULL);
 
+    /*  */
 	return __arm_kprobe_ftrace(p,
 		ipmodify ? &kprobe_ipmodify_ops : &kprobe_ftrace_ops,
 		ipmodify ? &kprobe_ipmodify_enabled : &kprobe_ftrace_enabled);
