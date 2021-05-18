@@ -37,7 +37,7 @@
 
 static int ftrace_poke_late = 0;
 
-int ftrace_arch_code_modify_prepare(void)
+int ftrace_arch_code_modify_prepare(void)   /*准备工作  */
     __acquires(&text_mutex)
 {
 	/*
@@ -45,8 +45,8 @@ int ftrace_arch_code_modify_prepare(void)
 	 * and live kernel patching from changing the text permissions while
 	 * ftrace has it set to "read/write".
 	 */
-	mutex_lock(&text_mutex);
-	ftrace_poke_late = 1;
+	mutex_lock(&text_mutex);    /* 锁定 */
+	ftrace_poke_late = 1;       /*  */
 	return 0;
 }
 
@@ -59,24 +59,24 @@ int ftrace_arch_code_modify_post_process(void)
 	 * that they do, here.
 	 */
 	text_poke_finish();
-	ftrace_poke_late = 0;
-	mutex_unlock(&text_mutex);
+	ftrace_poke_late = 0;       /*  */
+	mutex_unlock(&text_mutex);  /* 解锁 */
 	return 0;
 }
 
-static const char *ftrace_nop_replace(void)
+static const char *ftrace_nop_replace(void) /*  */
 {
-	return ideal_nops[NOP_ATOMIC5];
+	return ideal_nops[NOP_ATOMIC5]; /* 0x0f,0x1f,0x44,0x00,0 */
 }
 
-static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)    /* 更新 指令 */
 {
 	return text_gen_insn(CALL_INSN_OPCODE, (void *)ip, (void *)addr);
 }
 
-static int ftrace_verify_code(unsigned long ip, const char *old_code)
+static int ftrace_verify_code(unsigned long ip, const char *old_code)   /* 确认 */
 {
-	char cur_code[MCOUNT_INSN_SIZE];
+	char cur_code[MCOUNT_INSN_SIZE];    /* mcount */
 
 	/*
 	 * Note:
@@ -175,47 +175,60 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
 	return -EINVAL;
 }
 
-int ftrace_update_ftrace_func(ftrace_func_t func)
+int ftrace_update_ftrace_func(ftrace_func_t func)   /*  更新函数*/
 {
 	unsigned long ip;
 	const char *new;
 
-	ip = (unsigned long)(&ftrace_call);
-	new = ftrace_call_replace(ip, (unsigned long)func);
+    /* 
+    call ftrace_call 替换为>>
+    call func -> ftrace_ops_list_func
+    并把它写到 mcount 
+    */
+    ip = (unsigned long)(&ftrace_call); /* arch/x86/kernel/ftrace_64.S */
+	new = ftrace_call_replace(ip, (unsigned long)func); /* 用 func 替换 ftrace_call */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
+    /* 
+    call ftrace_regs_call 替换为>>
+    call func -> ftrace_regs_call
+    并把它写到 mcount 
+    */
 	ip = (unsigned long)(&ftrace_regs_call);
-	new = ftrace_call_replace(ip, (unsigned long)func);
+	new = ftrace_call_replace(ip, (unsigned long)func); /* 替换 */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
 	return 0;
 }
 
-void ftrace_replace_code(int enable)
+void ftrace_replace_code(int enable)    /*  */
 {
 	struct ftrace_rec_iter *iter;
 	struct dyn_ftrace *rec;
 	const char *new, *old;
 	int ret;
 
+    /* 遍历 ftrace_pages_start */
 	for_ftrace_rec_iter(iter) {
-		rec = ftrace_rec_iter_record(iter);
+		rec = ftrace_rec_iter_record(iter); /* 获取 动态 ftrace 结构 */
 
+        /*  */
 		switch (ftrace_test_record(rec, enable)) {
-		case FTRACE_UPDATE_IGNORE:
+		case FTRACE_UPDATE_IGNORE:    /* 忽略 */
 		default:
 			continue;
 
-		case FTRACE_UPDATE_MAKE_CALL:
-			old = ftrace_nop_replace();
+		case FTRACE_UPDATE_MAKE_CALL:     /*  */
+			old = ftrace_nop_replace(); /* 0x0f,0x1f,0x44,0x00,0 */
 			break;
 
-		case FTRACE_UPDATE_MODIFY_CALL:
+		case FTRACE_UPDATE_MODIFY_CALL:   /* 更新 */
 		case FTRACE_UPDATE_MAKE_NOP:
 			old = ftrace_call_replace(rec->ip, ftrace_get_addr_curr(rec));
 			break;
 		}
 
+        /* 确认 */
 		ret = ftrace_verify_code(rec->ip, old);
 		if (ret) {
 			ftrace_bug(ret, rec);
@@ -223,8 +236,9 @@ void ftrace_replace_code(int enable)
 		}
 	}
 
+    /* 遍历所有 ftrace pages */
 	for_ftrace_rec_iter(iter) {
-		rec = ftrace_rec_iter_record(iter);
+		rec = ftrace_rec_iter_record(iter); /* entry */
 
 		switch (ftrace_test_record(rec, enable)) {
 		case FTRACE_UPDATE_IGNORE:
@@ -240,14 +254,14 @@ void ftrace_replace_code(int enable)
 			new = ftrace_nop_replace();
 			break;
 		}
-
+        /*  */
 		text_poke_queue((void *)rec->ip, new, MCOUNT_INSN_SIZE, NULL);
 		ftrace_update_record(rec, enable);
 	}
 	text_poke_finish();
 }
 
-void arch_ftrace_update_code(int command)
+void arch_ftrace_update_code(int command)   /*  更新code*/
 {
 	ftrace_modify_all_code(command);
 }
@@ -339,12 +353,14 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 		jmp_offset = 0;
 	}
 
-	size = end_offset - start_offset;
+	size = end_offset - start_offset;   //ftrace_caller_end - ftrace_caller
 
 	/*
 	 * Allocate enough size to store the ftrace_caller code,
 	 * the iret , as well as the address of the ftrace_ops this
 	 * trampoline is used for.
+	 *
+	 * 申请 ftrace-caller code 存放的空间
 	 */
 	trampoline = alloc_tramp(size + RET_SIZE + sizeof(void *));
 	if (!trampoline)
@@ -354,6 +370,7 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	npages = DIV_ROUND_UP(*tramp_size, PAGE_SIZE);
 
 	/* Copy ftrace_caller onto the trampoline memory */
+    /* 将函数拷贝到 蹦床中 */
 	ret = copy_from_kernel_nofault(trampoline, (void *)start_offset, size);
 	if (WARN_ON(ret < 0))
 		goto fail;
@@ -478,7 +495,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	const char *new;
 
 	if (!ops->trampoline) {
-		ops->trampoline = create_trampoline(ops, &size);
+		ops->trampoline = create_trampoline(ops, &size);    /* 创建蹦床 */
 		if (!ops->trampoline)
 			return;
 		ops->trampoline_size = size;
@@ -498,7 +515,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 
 	mutex_lock(&text_mutex);
 	/* Do a safe modify in case the trampoline is executing */
-	new = ftrace_call_replace(ip, (unsigned long)func);
+	new = ftrace_call_replace(ip, (unsigned long)func);     /*  */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 	mutex_unlock(&text_mutex);
 }

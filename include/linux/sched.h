@@ -1258,7 +1258,7 @@ struct task_struct {    /* PCB */
 	int				curr_ret_depth;
 
 	/* Stack of return addresses for return function tracing: */
-	struct ftrace_ret_stack		*ret_stack; /* tracing */
+	struct ftrace_ret_stack		*ret_stack; /* 在 alloc_retstack_tasklist() 中使用*/
 
 	/* Timestamp for last schedule: */
 	unsigned long long		ftrace_timestamp;

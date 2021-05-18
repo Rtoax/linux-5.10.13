@@ -388,7 +388,7 @@ static inline void rcu_preempt_sleep_check(void) { }
 
 /**
  * rcu_assign_pointer() - assign to RCU-protected pointer 指派 RCU ptr
- * @p: pointer to assign to
+ * @p: pointer to assign分配 to
  * @v: value to assign (publish)
  *
  * Assigns the specified value to the specified RCU-protected

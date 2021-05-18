@@ -506,29 +506,7 @@ extern void lock_system_sleep(void);
 extern void unlock_system_sleep(void);
 
 #else /* !CONFIG_PM_SLEEP */
-
-static inline int register_pm_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-static inline int unregister_pm_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-static inline void ksys_sync_helper(void) {}
-
-#define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
-
-static inline bool pm_wakeup_pending(void) { return false; }
-static inline void pm_system_wakeup(void) {}
-static inline void pm_wakeup_clear(bool reset) {}
-static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
-
-static inline void lock_system_sleep(void) {}
-static inline void unlock_system_sleep(void) {}
-
+/*  */
 #endif /* !CONFIG_PM_SLEEP */
 
 #ifdef CONFIG_PM_SLEEP_DEBUG

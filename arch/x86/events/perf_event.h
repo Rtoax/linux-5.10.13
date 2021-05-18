@@ -590,7 +590,7 @@ union perf_capabilities {
 	u64	capabilities;
 };
 
-struct x86_pmu_quirk {
+struct x86_pmu_quirk {  //quirk怪癖
 	struct x86_pmu_quirk *next;
 	void (*func)(void);
 };
@@ -618,15 +618,16 @@ union x86_pmu_config {
 
 #define X86_CONFIG(args...) ((union x86_pmu_config){.bits = {args}}).value
 
-enum {
-	x86_lbr_exclusive_lbr,
-	x86_lbr_exclusive_bts,
-	x86_lbr_exclusive_pt,
+enum {  /* LBR（上次分支记录）, exclusive: 独家的，独占的 */
+	x86_lbr_exclusive_lbr,  //LBR（上次分支记录）
+	x86_lbr_exclusive_bts,  //Branch Tracking Store (BTS **分支跟踪存储**)
+	x86_lbr_exclusive_pt,   //
 	x86_lbr_exclusive_max,
 };
 
+typedef struct event_constraint * event_constraint_t; /* +++ */
 /*
- * struct x86_pmu - generic x86 pmu
+ * struct x86_pmu - generic x86 pmu 性能管理单元
  */
 struct x86_pmu {
 	/*
@@ -661,7 +662,7 @@ struct x86_pmu {
 	int		events_mask_len;
 	int		apic;
 	u64		max_period;
-	struct event_constraint *
+	event_constraint_t
 			(*get_event_constraints)(struct cpu_hw_events *cpuc,
 						 int idx,
 						 struct perf_event *event);
@@ -715,7 +716,9 @@ struct x86_pmu {
 	union perf_capabilities intel_cap;
 
 	/*
-	 * Intel DebugStore bits
+	 * Intel DebugStore bits 
+	 * https://www.felixcloutier.com/x86/bts
+	 * https://rtoax.blog.csdn.net/article/details/116978549
 	 */
 	unsigned int	bts			:1,
 			bts_active		:1,
@@ -1254,44 +1257,11 @@ static inline int is_ht_workaround_enabled(void)
 }
 
 #else /* CONFIG_CPU_SUP_INTEL */
-
-static inline void reserve_ds_buffers(void)
-{
-}
-
-static inline void release_ds_buffers(void)
-{
-}
-
-static inline void release_lbr_buffers(void)
-{
-}
-
-static inline int intel_pmu_init(void)
-{
-	return 0;
-}
-
-static inline int intel_cpuc_prepare(struct cpu_hw_events *cpuc, int cpu)
-{
-	return 0;
-}
-
-static inline void intel_cpuc_finish(struct cpu_hw_events *cpuc)
-{
-}
-
-static inline int is_ht_workaround_enabled(void)
-{
-	return 0;
-}
+/*  */
 #endif /* CONFIG_CPU_SUP_INTEL */
 
 #if ((defined CONFIG_CPU_SUP_CENTAUR) || (defined CONFIG_CPU_SUP_ZHAOXIN))
 int zhaoxin_pmu_init(void);
 #else
-static inline int zhaoxin_pmu_init(void)
-{
-	return 0;
-}
+/*  */
 #endif /*CONFIG_CPU_SUP_CENTAUR or CONFIG_CPU_SUP_ZHAOXIN*/

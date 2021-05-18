@@ -37,7 +37,7 @@ enum {  /* NMI 不可屏蔽中断 Non Maskable Interrupt */
 
 typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
 
-struct nmiaction {
+struct nmiaction {  /* 不可屏蔽中断 */
 	struct list_head	list;
 	nmi_handler_t		handler;
 	u64			max_duration;

@@ -168,7 +168,7 @@ static const unsigned char * const k7_nops[ASM_NOP_MAX+2] =
 #endif
 
 #ifdef P6_NOP1
-static const unsigned char p6nops[] =
+static const unsigned char p6nops[] =   /*  */
 {
 	P6_NOP1,
 	P6_NOP2,
@@ -182,22 +182,22 @@ static const unsigned char p6nops[] =
 };
 static const unsigned char * const p6_nops[ASM_NOP_MAX+2] =/*  */
 {
-	NULL,
-	p6nops,
-	p6nops + 1,
-	p6nops + 1 + 2,
-	p6nops + 1 + 2 + 3,
-	p6nops + 1 + 2 + 3 + 4,
-	p6nops + 1 + 2 + 3 + 4 + 5,
-	p6nops + 1 + 2 + 3 + 4 + 5 + 6,
-	p6nops + 1 + 2 + 3 + 4 + 5 + 6 + 7,
-	p6nops + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8,
+	NULL,                                   /*  */
+	p6nops,                                 /* 0x90 */
+	p6nops + 1,                             /* 0x66,0x90 */
+	p6nops + 1 + 2,                         /* 0x0f,0x1f,0x00 */
+	p6nops + 1 + 2 + 3,                     /* 0x0f,0x1f,0x40,0 */
+	p6nops + 1 + 2 + 3 + 4,                 /* 0x0f,0x1f,0x44,0x00,0 */
+	p6nops + 1 + 2 + 3 + 4 + 5,             /* 0x66,0x0f,0x1f,0x44,0x00,0 */
+	p6nops + 1 + 2 + 3 + 4 + 5 + 6,         /* 0x0f,0x1f,0x80,0,0,0,0 */
+	p6nops + 1 + 2 + 3 + 4 + 5 + 6 + 7,     /* 0x0f,0x1f,0x84,0x00,0,0,0,0 */
+	p6nops + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8, /* 0x0f,0x1f,0x44,0x00,0 */
 };
 #endif
 
 /* Initialize these to a safe default */
 #ifdef CONFIG_X86_64
-const unsigned char * const *ideal_nops = p6_nops;
+const unsigned char * const *ideal_nops = p6_nops;  /*  */
 #else
 const unsigned char * const *ideal_nops = intel_nops;
 #endif
@@ -917,7 +917,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	prev = use_temporary_mm(poking_mm);
 
 	kasan_disable_current();
-	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);
+	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);  /*  */
 	kasan_enable_current();
 
 	/*
@@ -1269,7 +1269,7 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 	if (!atomic_dec_and_test(&desc.refs))
 		atomic_cond_read_acquire(&desc.refs, !VAL);
 }
-
+            /*  */
 static void text_poke_loc_init(struct text_poke_loc *tp, void *addr,
 			       const void *opcode, size_t len, const void *emulate)
 {
@@ -1370,7 +1370,7 @@ void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const voi
 }
 
 /**
- * text_poke_bp() -- update instructions on live kernel on SMP
+ * text_poke_bp() -- update instructions on live kernel on SMP 更新SMP上运行内核中的指令
  * @addr:	address to patch
  * @opcode:	opcode of new instruction
  * @len:	length to copy
@@ -1379,12 +1379,18 @@ void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const voi
  * Update a single instruction with the vector in the stack, avoiding
  * dynamically allocated memory. This function should be used when it is
  * not possible to allocate memory.
+ *
+ * 例如
+ * 0f 1f 44 00 00 nop
+ * cc 1f 44 00 00 <bp>nop
+ * cc 37 2e 00 00 <bp>callq ffffffff810f7430 <ftrace_caller>
+ * e8 37 2e 00 00 callq ffffffff810f7430 <ftrace_caller>
  */
-void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)
+void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)    /*  */
 {
 	struct text_poke_loc tp;
 
-	if (unlikely(system_state == SYSTEM_BOOTING)) {
+	if (unlikely(system_state == SYSTEM_BOOTING)) { /* 系统启动阶段 */
 		text_poke_early(addr, opcode, len);
 		return;
 	}

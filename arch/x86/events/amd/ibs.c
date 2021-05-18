@@ -79,7 +79,7 @@ struct cpu_perf_ibs {
 	unsigned long		state[BITS_TO_LONGS(IBS_MAX_STATES)];
 };
 
-struct perf_ibs {
+struct perf_ibs {   /* IBS - apic initialization, for perf and oprofile */
 	struct pmu			pmu;
 	unsigned int			msr;
 	u64				config_mask;
@@ -790,8 +790,6 @@ static __init void perf_event_ibs_init(void)
 
 #else /* defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_AMD) */
 
-static __init void perf_event_ibs_init(void) { }
-
 #endif
 
 /* IBS - apic initialization, for perf and oprofile */
@@ -1022,9 +1020,7 @@ static void perf_ibs_pm_init(void)
 }
 
 #else
-
-static inline void perf_ibs_pm_init(void) { }
-
+/*  */
 #endif
 
 static int x86_pmu_amd_ibs_dying_cpu(unsigned int cpu)
@@ -1033,7 +1029,7 @@ static int x86_pmu_amd_ibs_dying_cpu(unsigned int cpu)
 	return 0;
 }
 
-static __init int amd_ibs_init(void)
+static __init int amd_ibs_init(void)    /* IBS - apic initialization, for perf and oprofile */
 {
 	u32 caps;
 
@@ -1066,4 +1062,4 @@ static __init int amd_ibs_init(void)
 }
 
 /* Since we need the pci subsystem to init ibs we can't do this earlier: */
-device_initcall(amd_ibs_init);  /*  */
+device_initcall(amd_ibs_init);  /*  *//* IBS - apic initialization, for perf and oprofile */

@@ -5896,8 +5896,11 @@ int tracing_set_tracer(struct trace_array *tr, const char *buf)
 
 	tr->current_trace->enabled--;
 
+    /*
+        graph_trace<"function_graph"> -> graph_trace_reset()
+    */
 	if (tr->current_trace->reset)
-		tr->current_trace->reset(tr);
+		tr->current_trace->reset(tr);   
 
 	/* Current trace needs to be nop_trace before synchronize_rcu */
 	tr->current_trace = &nop_trace;
@@ -5926,6 +5929,9 @@ int tracing_set_tracer(struct trace_array *tr, const char *buf)
 	}
 #endif
 
+    /*
+        graph_trace<"function_graph"> -> graph_trace_init()
+    */
 	if (t->init) {
 		ret = tracer_init(t, tr);
 		if (ret)
@@ -8859,9 +8865,18 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	struct trace_event_file *file;
 	int cpu;
 
+    /**
+    cd /sys/kernel/debug/tracing/
+    echo 1 > tracing_on
+    echo "schedule" > set_ftrace_filter
+    echo function_graph > current_tracer
+    cat trace
+    */
+
 	trace_create_file("available_tracers", 0444, d_tracer,  /* /sys/kernel/debug/tracing/available_tracers */
 			tr, &show_traces_fops);
 
+    /* /sys/kernel/debug/tracing/current_tracer */
 	trace_create_file("current_tracer", 0644, d_tracer,
 			tr, &set_tracer_fops);
 
@@ -8871,6 +8886,7 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	trace_create_file("trace_options", 0644, d_tracer,
 			  tr, &tracing_iter_fops);
 
+    /* /sys/kernel/debug/tracing/trace */
 	trace_create_file("trace", 0644, d_tracer,
 			  tr, &tracing_fops);
 
@@ -8883,6 +8899,7 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	trace_create_file("buffer_total_size_kb", 0444, d_tracer,
 			  tr, &tracing_total_entries_fops);
 
+    /* /sys/kernel/debug/tracing/free_buffer */
 	trace_create_file("free_buffer", 0200, d_tracer,
 			  tr, &tracing_free_buffer_fops);
 
@@ -8901,6 +8918,7 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	trace_create_file("trace_clock", 0644, d_tracer, tr,
 			  &trace_clock_fops);
 
+    /* /sys/kernel/debug/tracing/tracing_on */
 	trace_create_file("tracing_on", 0644, d_tracer,
 			  tr, &rb_simple_fops);
 

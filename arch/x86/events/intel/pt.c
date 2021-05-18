@@ -1699,7 +1699,7 @@ int is_intel_pt_event(struct perf_event *event)
 	return event->pmu == &pt_pmu.pmu;
 }
 
-static __init int pt_init(void)
+static __init int pt_init(void) /* Intel Processor Trace */
 {
 	int ret, cpu, prior_warn = 0;
 
@@ -1758,4 +1758,4 @@ static __init int pt_init(void)
 
 	return ret;
 }
-arch_initcall(pt_init);
+arch_initcall(pt_init); /* Intel Processor Trace */

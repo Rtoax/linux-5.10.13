@@ -173,7 +173,7 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 	 * some handlers need to be executed first otherwise a fake
 	 * event confuses some handlers (kdump uses this flag)
 	 */
-	if (action->flags & NMI_FLAG_FIRST)
+	if (action->flags & NMI_FLAG_FIRST) /* 添加至链表 */
 		list_add_rcu(&action->list, &desc->head);
 	else
 		list_add_tail_rcu(&action->list, &desc->head);

@@ -4902,7 +4902,7 @@ static const struct attribute_group *attr_update[] = {
 
 static struct attribute *empty_attrs;
 
-__init int intel_pmu_init(void)
+__init int intel_pmu_init(void) /*  */
 {
 	struct attribute **extra_skl_attr = &empty_attrs;
 	struct attribute **extra_attr = &empty_attrs;
@@ -4920,7 +4920,7 @@ __init int intel_pmu_init(void)
 	char *name;
 
 	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
-		switch (boot_cpu_data.x86) {
+		switch (boot_cpu_data.x86) {    /* CPU family */
 		case 0x6:
 			return p6_pmu_init();
 		case 0xb:

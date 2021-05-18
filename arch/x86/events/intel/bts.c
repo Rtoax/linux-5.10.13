@@ -579,7 +579,7 @@ static void bts_event_read(struct perf_event *event)
 {
 }
 
-static __init int bts_init(void)
+static __init int bts_init(void)    /* Branch Tracking Store (BTS **分支跟踪存储**) */
 {
 	if (!boot_cpu_has(X86_FEATURE_DTES64) || !x86_pmu.bts)
 		return -ENODEV;
@@ -616,4 +616,4 @@ static __init int bts_init(void)
 
 	return perf_pmu_register(&bts_pmu, "intel_bts", -1);
 }
-arch_initcall(bts_init);
+arch_initcall(bts_init);    /*  */

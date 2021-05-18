@@ -25,9 +25,9 @@
  * function_trace_op as the third parameter back from the
  * mcount call, then the arch should define this as 1.
  */
-#ifndef ARCH_SUPPORTS_FTRACE_OPS
-#define ARCH_SUPPORTS_FTRACE_OPS 0
-#endif
+//#ifndef ARCH_SUPPORTS_FTRACE_OPS
+//#define ARCH_SUPPORTS_FTRACE_OPS 0
+//#endif
 
 /*
  * If the arch's mcount caller does not support all of ftrace's
@@ -198,7 +198,7 @@ struct ftrace_ops {
 	struct ftrace_ops_hash		local_hash;
 	struct ftrace_ops_hash		*func_hash;
 	struct ftrace_ops_hash		old_hash;
-	unsigned long			trampoline;
+	unsigned long			trampoline; /* 蹦床 */
 	unsigned long			trampoline_size;
 	struct list_head		list;
 #endif
@@ -507,29 +507,30 @@ extern int ftrace_ip_converted(unsigned long ip);
 extern int ftrace_dyn_arch_init(void);
 extern void ftrace_replace_code(int enable);
 extern int ftrace_update_ftrace_func(ftrace_func_t func);
-extern void ftrace_caller(void);
-extern void ftrace_regs_caller(void);
-extern void ftrace_call(void);
-extern void ftrace_regs_call(void);
+extern void ftrace_caller(void);    /* arch/x86/kernel/ftrace_64.S */
+extern void ftrace_regs_caller(void);   /* arch/x86/kernel/ftrace_64.S */
+extern void ftrace_call(void);  /* arch/x86/kernel/ftrace_64.S */
+extern void ftrace_regs_call(void); /* arch/x86/kernel/ftrace_64.S */
 extern void mcount_call(void);
 
 void ftrace_modify_all_code(int command);
 
 #ifndef FTRACE_ADDR
-#define FTRACE_ADDR ((unsigned long)ftrace_caller)
+#define FTRACE_ADDR ((unsigned long)ftrace_caller)    
 #endif
 
 #ifndef FTRACE_GRAPH_ADDR
-#define FTRACE_GRAPH_ADDR ((unsigned long)ftrace_graph_caller)
+#define FTRACE_GRAPH_ADDR ((unsigned long)ftrace_graph_caller)  /* arch/x86/kernel/ftrace_64.S */
 #endif
 
 #ifndef FTRACE_REGS_ADDR
 #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-# define FTRACE_REGS_ADDR ((unsigned long)ftrace_regs_caller)
+# define FTRACE_REGS_ADDR ((unsigned long)ftrace_regs_caller)   /* arch/x86/kernel/ftrace_64.S */
 #else
 # define FTRACE_REGS_ADDR FTRACE_ADDR
 #endif
 #endif
+
 
 /*
  * If an arch would like functions that are only traced

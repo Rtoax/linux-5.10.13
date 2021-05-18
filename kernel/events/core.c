@@ -9720,23 +9720,7 @@ static void perf_event_free_bpf_prog(struct perf_event *event)
 }
 
 #else
-
-static inline void perf_tp_register(void)
-{
-}
-
-static void perf_event_free_filter(struct perf_event *event)
-{
-}
-
-static int perf_event_set_bpf_prog(struct perf_event *event, u32 prog_fd)
-{
-	return -ENOENT;
-}
-
-static void perf_event_free_bpf_prog(struct perf_event *event)
-{
-}
+/*  */
 #endif /* CONFIG_EVENT_TRACING */
 
 #ifdef CONFIG_HAVE_HW_BREAKPOINT
@@ -10596,7 +10580,7 @@ static struct attribute *pmu_dev_attrs[] = {
 ATTRIBUTE_GROUPS(pmu_dev);
 
 static int pmu_bus_running;
-static struct bus_type pmu_bus = {  /*  */
+static struct bus_type pmu_bus = {  /* perf 管理单元 : /sys/bus/event_source/ */
 	.name		= "event_source",
 	.dev_groups	= pmu_dev_groups,
 };
@@ -12893,7 +12877,7 @@ static struct notifier_block perf_reboot_notifier = {
 	.priority = INT_MIN,
 };
 
-void __init perf_event_init(void)   /*  */
+void __init perf_event_init(void)   /* 在 start_kernel 中调用 */
 {
 	int ret;
 
@@ -12932,14 +12916,15 @@ ssize_t perf_event_sysfs_show(struct device *dev, struct device_attribute *attr,
 }
 EXPORT_SYMBOL_GPL(perf_event_sysfs_show);
 
-static int __init perf_event_sysfs_init(void)   /*  */
+static int __init perf_event_sysfs_init(void)   /* 初始化 perf event sysfs */
 {
 	struct pmu *pmu;
 	int ret;
 
 	mutex_lock(&pmus_lock);
 
-	ret = bus_register(&pmu_bus);   /*  */
+    /* /sys/bus/event_source/ */
+	ret = bus_register(&pmu_bus);
 	if (ret)
 		goto unlock;
 
@@ -12958,7 +12943,7 @@ unlock:
 
 	return ret;
 }
-device_initcall(perf_event_sysfs_init); /*  */
+device_initcall(perf_event_sysfs_init); /* /sys/bus/event_source/...   */
 
 #ifdef CONFIG_CGROUP_PERF
 static struct cgroup_subsys_state *

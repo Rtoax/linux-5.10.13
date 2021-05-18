@@ -136,6 +136,7 @@ SYM_FUNC_START(__fentry__)
 SYM_FUNC_END(__fentry__)
 EXPORT_SYMBOL(__fentry__)
 
+
 SYM_FUNC_START(ftrace_caller)
 	/* save_mcount_regs fills in first two parameters */
 	save_mcount_regs

@@ -44,7 +44,7 @@
 
 #include "perf_event.h"
 
-struct  x86_pmu __read_mostly x86_pmu ;
+struct __read_mostly x86_pmu  x86_pmu ; /* x86 性能管理单元 */
 
 DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events) = {
 	.enabled = 1,
@@ -170,7 +170,7 @@ static int x86_pmu_extra_regs(u64 config, struct perf_event *event)
 	return 0;
 }
 
-static atomic_t active_events;
+static atomic_t active_events;  /* 计数器 */
 static atomic_t pmc_refcount;
 static DEFINE_MUTEX(pmc_reserve_mutex);
 
@@ -1665,7 +1665,7 @@ void perf_events_lapic_init(void)
 		return;
 
 	/*
-	 * Always use NMI for PMU
+	 * Always use NMI for PMU(总是使用不可屏蔽中断给PMU)
 	 */
 	apic_write(APIC_LVTPC, APIC_DM_NMI);
 }
@@ -1930,7 +1930,7 @@ static void _x86_pmu_read(struct perf_event *event)
 	x86_perf_event_update(event);
 }
 
-static int __init init_hw_perf_events(void)
+static int __init init_hw_perf_events(void) /*  */
 {
 	struct x86_pmu_quirk *quirk;
 	int err;
@@ -1939,7 +1939,7 @@ static int __init init_hw_perf_events(void)
 
 	switch (boot_cpu_data.x86_vendor) {
 	case X86_VENDOR_INTEL:
-		err = intel_pmu_init();
+		err = intel_pmu_init(); /*  */
 		break;
 	case X86_VENDOR_AMD:
 		err = amd_pmu_init();
@@ -1960,7 +1960,7 @@ static int __init init_hw_perf_events(void)
 		return 0;
 	}
 
-	pmu_check_apic();
+	pmu_check_apic();   /* 高级可编程中断控制器 */
 
 	/* sanity check that the hardware exists or is emulated */
 	if (!check_hw_exists())
@@ -1976,8 +1976,8 @@ static int __init init_hw_perf_events(void)
 	if (!x86_pmu.intel_ctrl)
 		x86_pmu.intel_ctrl = (1 << x86_pmu.num_counters) - 1;
 
-	perf_events_lapic_init();
-	register_nmi_handler(NMI_LOCAL, perf_event_nmi_handler, 0, "PMI");
+	perf_events_lapic_init();   /* 注册 PMU 为 NMI 中断 */
+	register_nmi_handler(NMI_LOCAL, perf_event_nmi_handler, 0, "PMI");  /* 注册函数 */
 
 	unconstrained = (struct event_constraint)
 		__EVENT_CONSTRAINT(0, (1ULL << x86_pmu.num_counters) - 1,
@@ -1990,6 +1990,14 @@ static int __init init_hw_perf_events(void)
 
 	pmu.attr_update = x86_pmu.attr_update;
 
+    //我的打印
+    //[    0.320139] ... version:                2
+    //[    0.320140] ... bit width:              48
+    //[    0.320141] ... generic registers:      4
+    //[    0.320142] ... value mask:             0000ffffffffffff
+    //[    0.320143] ... max period:             000000007fffffff
+    //[    0.320144] ... fixed-purpose events:   3
+    //[    0.320145] ... event mask:             000000070000000f
 	pr_info("... version:                %d\n",     x86_pmu.version);
 	pr_info("... bit width:              %d\n",     x86_pmu.cntval_bits);
 	pr_info("... generic registers:      %d\n",     x86_pmu.num_counters);

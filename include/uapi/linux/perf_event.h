@@ -26,13 +26,13 @@
 /*
  * attr.type
  */
-enum perf_type_id {
-	PERF_TYPE_HARDWARE			= 0,
-	PERF_TYPE_SOFTWARE			= 1,
-	PERF_TYPE_TRACEPOINT			= 2,
-	PERF_TYPE_HW_CACHE			= 3,
-	PERF_TYPE_RAW				= 4,
-	PERF_TYPE_BREAKPOINT			= 5,
+enum perf_type_id { /* perf 类型 */
+	PERF_TYPE_HARDWARE			= 0,    /* 硬件 */
+	PERF_TYPE_SOFTWARE			= 1,    /* 软件 */
+	PERF_TYPE_TRACEPOINT		= 2,    /* 跟踪点 */
+	PERF_TYPE_HW_CACHE			= 3,    /* 硬件cache */
+	PERF_TYPE_RAW				= 4,    /* RAW */
+	PERF_TYPE_BREAKPOINT		= 5,    /* 断点 */
 
 	PERF_TYPE_MAX,				/* non-ABI */
 };
@@ -344,7 +344,7 @@ struct perf_event_attr {
 				pinned	       :  1, /* must always be on PMU */
 				exclusive      :  1, /* only group on PMU     */
 				exclude_user   :  1, /* don't count user      */
-				exclude_kernel :  1, /* ditto kernel          */
+				exclude_kernel :  1, /* ditto(同上) kernel          */
 				exclude_hv     :  1, /* ditto hypervisor      */
 				exclude_idle   :  1, /* don't count when idle */
 				mmap           :  1, /* include mmap data     */

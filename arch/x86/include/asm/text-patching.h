@@ -69,21 +69,29 @@ static __always_inline int text_opcode_size(u8 opcode)
 
 #define __CASE(insn)	\
 	case insn##_INSN_OPCODE: size = insn##_INSN_SIZE; break
-
+#if 0
 	switch(opcode) {
-	__CASE(INT3);
-	__CASE(RET);
-	__CASE(CALL);
-	__CASE(JMP32);
-	__CASE(JMP8);
+	__CASE(INT3);   /* INT3_INSN_OPCODE */
+	__CASE(RET);    /* RET_INSN_OPCODE */
+	__CASE(CALL);   /* CALL_INSN_OPCODE */
+	__CASE(JMP32);  /* JMP32_INSN_OPCODE */
+	__CASE(JMP8);   /* JMP8_INSN_OPCODE */
 	}
-
+#else    
+	switch(opcode) {
+    case INT3_INSN_OPCODE:  size = INT3_INSN_SIZE; break;
+    case RET_INSN_OPCODE:   size = RET_INSN_SIZE; break;
+    case CALL_INSN_OPCODE:  size = CALL_INSN_SIZE; break;
+    case JMP32_INSN_OPCODE: size = JMP32_INSN_SIZE; break;
+    case JMP8_INSN_OPCODE:  size = JMP8_INSN_SIZE; break;
+	}
+#endif
 #undef __CASE
 
 	return size;
 }
 
-union text_poke_insn {
+union text_poke_insn {  /*  */
 	u8 text[POKE_MAX_OPCODE_SIZE];
 	struct {
 		u8 opcode;
@@ -92,15 +100,21 @@ union text_poke_insn {
 };
 
 static __always_inline
-void *text_gen_insn(u8 opcode, const void *addr, const void *dest)
+void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数不可重入?? */
 {
 	static union text_poke_insn insn; /* per instance */
-	int size = text_opcode_size(opcode);
+	int size = text_opcode_size(opcode);    /*  */
 
-	insn.opcode = opcode;
+    /*  例
+    0f 1f 44 00 00 nop
+    cc 1f 44 00 00 <bp>nop
+    cc 37 2e 00 00 <bp>callq ffffffff810f7430 <ftrace_caller>
+    e8 37 2e 00 00 callq ffffffff810f7430 <ftrace_caller>
+    */
+	insn.opcode = opcode;   /* 操作码-指令 */
 
 	if (size > 1) {
-		insn.disp = (long)dest - (long)(addr + size);
+		insn.disp = (long)dest - (long)(addr + size);   /*  */
 		if (size == 2) {
 			/*
 			 * Ensure that for JMP9 the displacement

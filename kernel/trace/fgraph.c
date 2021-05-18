@@ -366,7 +366,8 @@ trace_func_graph_ret_t ftrace_graph_return = ftrace_stub_graph;
 trace_func_graph_ent_t ftrace_graph_entry = ftrace_graph_entry_stub;
 static trace_func_graph_ent_t __ftrace_graph_entry = ftrace_graph_entry_stub;
 
-/* Try to assign a return stack array on FTRACE_RETSTACK_ALLOC_SIZE tasks. */
+/* Try to assign a return stack array on FTRACE_RETSTACK_ALLOC_SIZE tasks. 
+ 尝试在FTRACE_RETSTACK_ALLOC_SIZE任务上分配一个返回堆栈数组。 */
 static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
 {
 	int i;
@@ -389,7 +390,7 @@ static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
 
 	rcu_read_lock();
 	for_each_process_thread(g, t) {
-		if (start == end) {
+		if (start == end) { /*  */
 			ret = -EAGAIN;
 			goto unlock;
 		}
@@ -615,7 +616,9 @@ int register_ftrace_graph(struct fgraph_ops *gops)
 		ftrace_graph_active--;
 		goto out;
 	}
-
+    /*
+    funcgraph_ops.retfunc = &trace_graph_return,
+    */
 	ftrace_graph_return = gops->retfunc;
 
 	/*
@@ -624,6 +627,9 @@ int register_ftrace_graph(struct fgraph_ops *gops)
 	 * call the update fgraph entry function to determine if
 	 * the entryfunc should be called directly or not.
 	 */
+	/*
+    funcgraph_ops.retfunc = &trace_graph_return,
+    */
 	__ftrace_graph_entry = gops->entryfunc;
 	ftrace_graph_entry = ftrace_graph_entry_test;
 	update_function_graph_func();

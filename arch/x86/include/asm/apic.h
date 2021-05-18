@@ -379,7 +379,7 @@ static inline u32 apic_read(u32 reg)
 
 static inline void apic_write(u32 reg, u32 val)
 {
-	apic->write(reg, val);
+	apic->write(reg, val); //native_apic_mem_write()
 }
 
 static inline void apic_eoi(void)

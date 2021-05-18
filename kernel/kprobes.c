@@ -1101,6 +1101,7 @@ static int disarm_kprobe_ftrace(struct kprobe *p)
 /* Arm a kprobe with text_mutex */
 static int arm_kprobe(struct kprobe *kp)
 {
+    /* 如果使用 ftrace 做probe */
 	if (unlikely(kprobe_ftrace(kp)))
 		return arm_kprobe_ftrace(kp);
 
