@@ -2426,9 +2426,9 @@ static void klist_children_put(struct klist_node *n)
  * NOTE: Use put_device() to give up your reference instead of freeing
  * @dev directly once you have called this function.
  */
-void device_initialize(struct device *dev)  /*  */
+void device_initialize(struct device *dev)  /* 初始化一个设备 */
 {
-	dev->kobj.kset = devices_kset;
+	dev->kobj.kset = devices_kset;  /* /sys/devices/ */
 	kobject_init(&dev->kobj, &device_ktype);
 	INIT_LIST_HEAD(&dev->dma_pools);
 	mutex_init(&dev->mutex);
@@ -2804,7 +2804,7 @@ static int device_private_init(struct device *dev)
 }
 
 /**
- * device_add - add device to device hierarchy.
+ * device_add - add device to device hierarchy等级制度.
  * @dev: device.
  *
  * This is part 2 of device_register(), though may be called
@@ -2830,7 +2830,7 @@ static int device_private_init(struct device *dev)
  * *not* succeeded, use *only* put_device() to drop the reference
  * count.
  */
-int device_add(struct device *dev)
+int device_add(struct device *dev)  /*  */
 {
 	struct device *parent;
 	struct kobject *kobj;

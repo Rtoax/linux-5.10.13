@@ -2484,21 +2484,21 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	 *
 	 * So it's an ABI, do not remove!
 	 */
-	{
+	{/* /proc/sys/kernel/perf_event_paranoid */
 		.procname	= "perf_event_paranoid",
 		.data		= &sysctl_perf_event_paranoid,
 		.maxlen		= sizeof(sysctl_perf_event_paranoid),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{
+	{/* /proc/sys/kernel/perf_event_mlock_kb */
 		.procname	= "perf_event_mlock_kb",
 		.data		= &sysctl_perf_event_mlock,
 		.maxlen		= sizeof(sysctl_perf_event_mlock),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{
+	{/* /proc/sys/kernel/perf_event_max_sample_rate */
 		.procname	= "perf_event_max_sample_rate",
 		.data		= &sysctl_perf_event_sample_rate,
 		.maxlen		= sizeof(sysctl_perf_event_sample_rate),
@@ -2506,7 +2506,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= perf_proc_update_handler,
 		.extra1		= SYSCTL_ONE,
 	},
-	{
+	{/* /proc/sys/kernel/perf_cpu_time_max_percent */
 		.procname	= "perf_cpu_time_max_percent",
 		.data		= &sysctl_perf_cpu_time_max_percent,
 		.maxlen		= sizeof(sysctl_perf_cpu_time_max_percent),
@@ -2515,7 +2515,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= &one_hundred,
 	},
-	{
+	{/* /proc/sys/kernel/perf_event_max_stack */
 		.procname	= "perf_event_max_stack",
 		.data		= &sysctl_perf_event_max_stack,
 		.maxlen		= sizeof(sysctl_perf_event_max_stack),
@@ -2524,7 +2524,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= &six_hundred_forty_kb,
 	},
-	{
+	{/* /proc/sys/kernel/perf_event_max_contexts_per_stack */
 		.procname	= "perf_event_max_contexts_per_stack",
 		.data		= &sysctl_perf_event_max_contexts_per_stack,
 		.maxlen		= sizeof(sysctl_perf_event_max_contexts_per_stack),
@@ -2534,7 +2534,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &one_thousand,
 	},
 #endif
-	{
+	{/* /proc/sys/kernel/panic_on_warn */
 		.procname	= "panic_on_warn",
 		.data		= &panic_on_warn,
 		.maxlen		= sizeof(int),
@@ -2544,7 +2544,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= SYSCTL_ONE,
 	},
 #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ_COMMON)
-	{
+	{/* /proc/sys/kernel/timer_migration */
 		.procname	= "timer_migration",
 		.data		= &sysctl_timer_migration,
 		.maxlen		= sizeof(unsigned int),
@@ -2555,7 +2555,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 #ifdef CONFIG_BPF_SYSCALL
-	{
+	{/* /proc/sys/kernel/unprivileged_bpf_disabled */
 		.procname	= "unprivileged_bpf_disabled",
 		.data		= &sysctl_unprivileged_bpf_disabled,
 		.maxlen		= sizeof(sysctl_unprivileged_bpf_disabled),
@@ -2565,7 +2565,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= SYSCTL_ONE,
 		.extra2		= SYSCTL_ONE,
 	},
-	{
+	{/* /proc/sys/kernel/bpf_stats_enabled */
 		.procname	= "bpf_stats_enabled",
 		.data		= &bpf_stats_enabled_key.key,
 		.maxlen		= sizeof(bpf_stats_enabled_key),
@@ -2574,7 +2574,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 #if defined(CONFIG_TREE_RCU)
-	{
+	{/* /proc/sys/kernel/panic_on_rcu_stall */
 		.procname	= "panic_on_rcu_stall",
 		.data		= &sysctl_panic_on_rcu_stall,
 		.maxlen		= sizeof(sysctl_panic_on_rcu_stall),
@@ -2585,7 +2585,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 #ifdef CONFIG_STACKLEAK_RUNTIME_DISABLE
-	{
+	{/* /proc/sys/kernel/stack_erasing */
 		.procname	= "stack_erasing",
 		.data		= NULL,
 		.maxlen		= sizeof(int),

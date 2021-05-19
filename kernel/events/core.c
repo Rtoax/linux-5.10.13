@@ -402,7 +402,7 @@ static struct srcu_struct pmus_srcu;
 static cpumask_var_t perf_online_mask;
 
 /*
- * perf event paranoia level:
+ * perf event paranoia level: 性能事件妄想症级别：
  *  -1 - not paranoid at all
  *   0 - disallow raw tracepoint access for unpriv
  *   1 - disallow cpu events for unpriv
@@ -1056,14 +1056,14 @@ perf_cgroup_event_disable(struct perf_event *event, struct perf_event_context *c
 /*
  * function must be called with interrupts disabled
  */
-static enum hrtimer_restart perf_mux_hrtimer_handler(struct hrtimer *hr)
+static enum hrtimer_restart perf_mux_hrtimer_handler(struct hrtimer *hr)    /* PMU hrtimer */
 {
 	struct perf_cpu_context *cpuctx;
 	bool rotations;
 
 	lockdep_assert_irqs_disabled();
 
-	cpuctx = container_of(hr, struct perf_cpu_context, hrtimer);
+	cpuctx = container_of(hr, struct perf_cpu_context, hrtimer);    /* 找到上下文 */
 	rotations = perf_rotate_context(cpuctx);
 
 	raw_spin_lock(&cpuctx->hrtimer_lock);
@@ -1076,7 +1076,7 @@ static enum hrtimer_restart perf_mux_hrtimer_handler(struct hrtimer *hr)
 	return rotations ? HRTIMER_RESTART : HRTIMER_NORESTART;
 }
 
-static void __perf_mux_hrtimer_init(struct perf_cpu_context *cpuctx, int cpu)
+static void __perf_mux_hrtimer_init(struct perf_cpu_context *cpuctx, int cpu)   /* 高精度定时器 */
 {
 	struct hrtimer *timer = &cpuctx->hrtimer;
 	struct pmu *pmu = cpuctx->ctx.pmu;
@@ -1092,13 +1092,13 @@ static void __perf_mux_hrtimer_init(struct perf_cpu_context *cpuctx, int cpu)
 	 */
 	interval = pmu->hrtimer_interval_ms;
 	if (interval < 1)
-		interval = pmu->hrtimer_interval_ms = PERF_CPU_HRTIMER;
+		interval = pmu->hrtimer_interval_ms = PERF_CPU_HRTIMER; /* 小于1ms，就让他是 1ms */
 
 	cpuctx->hrtimer_interval = ns_to_ktime(NSEC_PER_MSEC * interval);
 
 	raw_spin_lock_init(&cpuctx->hrtimer_lock);
 	hrtimer_init(timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED_HARD);
-	timer->function = perf_mux_hrtimer_handler;
+	timer->function = perf_mux_hrtimer_handler; /* 处理函数 */
 }
 
 static int perf_mux_hrtimer_restart(struct perf_cpu_context *cpuctx)
@@ -4353,7 +4353,7 @@ again:
 /*
  * Initialize the perf_event context in a task_struct:
  */
-static void __perf_event_init_context(struct perf_event_context *ctx)
+static void __perf_event_init_context(struct perf_event_context *ctx)   /* 初始化CPU ctx */
 {
 	raw_spin_lock_init(&ctx->lock);
 	mutex_init(&ctx->mutex);
@@ -9135,15 +9135,15 @@ static void swevent_hlist_put_cpu(int cpu)
 	mutex_unlock(&swhash->hlist_mutex);
 }
 
-static void swevent_hlist_put(void)
+static void swevent_hlist_put(void) /*  */
 {
 	int cpu;
 
-	for_each_possible_cpu(cpu)
-		swevent_hlist_put_cpu(cpu);
+	for_each_possible_cpu(cpu) {
+		swevent_hlist_put_cpu(cpu);}
 }
 
-static int swevent_hlist_get_cpu(int cpu)
+static int swevent_hlist_get_cpu(int cpu)   /*  */
 {
 	struct swevent_htable *swhash = &per_cpu(swevent_htable, cpu);
 	int err = 0;
@@ -9158,22 +9158,22 @@ static int swevent_hlist_get_cpu(int cpu)
 			err = -ENOMEM;
 			goto exit;
 		}
-		rcu_assign_pointer(swhash->swevent_hlist, hlist);
+		rcu_assign_pointer(swhash->swevent_hlist, hlist);   /* 赋值 */
 	}
-	swhash->hlist_refcount++;
+	swhash->hlist_refcount++;   /* 引用计数++ */
 exit:
 	mutex_unlock(&swhash->hlist_mutex);
 
 	return err;
 }
 
-static int swevent_hlist_get(void)
+static int swevent_hlist_get(void)  /*  */
 {
 	int err, cpu, failed_cpu;
 
 	mutex_lock(&pmus_lock);
 	for_each_possible_cpu(cpu) {
-		err = swevent_hlist_get_cpu(cpu);
+		err = swevent_hlist_get_cpu(cpu);   /* 为 swevent_htable 添加 swevent_hlist */
 		if (err) {
 			failed_cpu = cpu;
 			goto fail;
@@ -9191,7 +9191,7 @@ fail:
 	return err;
 }
 
-struct static_key perf_swevent_enabled[PERF_COUNT_SW_MAX];
+struct static_key perf_swevent_enabled[PERF_COUNT_SW_MAX];  /*  */
 
 static void sw_perf_event_destroy(struct perf_event *event)
 {
@@ -9199,11 +9199,11 @@ static void sw_perf_event_destroy(struct perf_event *event)
 
 	WARN_ON(event->parent);
 
-	static_key_slow_dec(&perf_swevent_enabled[event_id]);
+	static_key_slow_dec(&perf_swevent_enabled[event_id]);   /* static_key  */
 	swevent_hlist_put();
 }
 
-static int perf_swevent_init(struct perf_event *event)
+static int perf_swevent_init(struct perf_event *event)  /*  */
 {
 	u64 event_id = event->attr.config;
 
@@ -9217,9 +9217,9 @@ static int perf_swevent_init(struct perf_event *event)
 		return -EOPNOTSUPP;
 
 	switch (event_id) {
-	case PERF_COUNT_SW_CPU_CLOCK:
-	case PERF_COUNT_SW_TASK_CLOCK:
-		return -ENOENT;
+	case PERF_COUNT_SW_CPU_CLOCK:   /* 参见`cpu_clock_event_init()`  */
+	case PERF_COUNT_SW_TASK_CLOCK:  /* 参见`task_clock_event_init()`  */
+		return -ENOENT; 
 
 	default:
 		break;
@@ -9231,12 +9231,12 @@ static int perf_swevent_init(struct perf_event *event)
 	if (!event->parent) {
 		int err;
 
-		err = swevent_hlist_get();
+		err = swevent_hlist_get();  /* 为每个CPU申请`struct swevent_hlist`结构 */
 		if (err)
 			return err;
 
-		static_key_slow_inc(&perf_swevent_enabled[event_id]);
-		event->destroy = sw_perf_event_destroy;
+		static_key_slow_inc(&perf_swevent_enabled[event_id]);   /* 使能 static_key */
+		event->destroy = sw_perf_event_destroy; /*  */
 	}
 
 	return 0;
@@ -10469,7 +10469,7 @@ static int perf_event_idx_default(struct perf_event *event)
  * Ensures all contexts with the same task_ctx_nr have the same
  * pmu_cpu_context too.
  */
-static struct perf_cpu_context __percpu *find_pmu_context(int ctxn)
+static struct perf_cpu_context __percpu *find_pmu_context(int ctxn) /* 遍历 pmus 链表 */
 {
 	struct pmu *pmu;
 
@@ -10590,29 +10590,29 @@ static void pmu_dev_release(struct device *dev)
 	kfree(dev);
 }
 
-static int pmu_dev_alloc(struct pmu *pmu)
+static int pmu_dev_alloc(struct pmu *pmu)   /* 申请一个device内存空间 */
 {
 	int ret = -ENOMEM;
 
-	pmu->dev = kzalloc(sizeof(struct device), GFP_KERNEL);
+	pmu->dev = kzalloc(sizeof(struct device), GFP_KERNEL);  /* 申请 */
 	if (!pmu->dev)
 		goto out;
 
 	pmu->dev->groups = pmu->attr_groups;
-	device_initialize(pmu->dev);
-	ret = dev_set_name(pmu->dev, "%s", pmu->name);
+	device_initialize(pmu->dev);    /* 初始化 *//* /sys/devices/tracepoint */
+	ret = dev_set_name(pmu->dev, "%s", pmu->name);  /* tracepoint */
 	if (ret)
 		goto free_dev;
 
-	dev_set_drvdata(pmu->dev, pmu);
-	pmu->dev->bus = &pmu_bus;
+	dev_set_drvdata(pmu->dev, pmu); /* 设置设备的驱动数据为 PMU 结构 */
+	pmu->dev->bus = &pmu_bus;   /* 这个设备对应的 bus-> /sys/bus/event_source/ */
 	pmu->dev->release = pmu_dev_release;
-	ret = device_add(pmu->dev);
+	ret = device_add(pmu->dev); /* 添加 */
 	if (ret)
 		goto free_dev;
 
 	/* For PMUs with address filters, throw in an extra attribute: */
-	if (pmu->nr_addr_filters)
+	if (pmu->nr_addr_filters)   /*  */
 		ret = device_create_file(pmu->dev, &dev_attr_nr_addr_filters);
 
 	if (ret)
@@ -10638,25 +10638,28 @@ free_dev:
 static struct lock_class_key cpuctx_mutex;
 static struct lock_class_key cpuctx_lock;
 
-int perf_pmu_register(struct pmu *pmu, const char *name, int type)
+int perf_pmu_register(struct pmu *pmu, const char *name, int type)  /* 注册性能管理单元 */
 {
 	int cpu, ret, max = PERF_TYPE_MAX;
 
-	mutex_lock(&pmus_lock);
+	mutex_lock(&pmus_lock); /* 锁定链表 */
 	ret = -ENOMEM;
 	pmu->pmu_disable_count = alloc_percpu(int);
 	if (!pmu->pmu_disable_count)
 		goto unlock;
 
 	pmu->type = -1;
+    
 	if (!name)
-		goto skip_type;
-	pmu->name = name;
+		goto skip_type; /* 没有设置名字，如'tracepoint' */
+    
+	pmu->name = name;   /* 设置名字 */
 
 	if (type != PERF_TYPE_SOFTWARE) {
 		if (type >= 0)
 			max = type;
 
+        /* 分配一个ID */
 		ret = idr_alloc(&pmu_idr, pmu, max, 0, GFP_KERNEL);
 		if (ret < 0)
 			goto free_pdc;
@@ -10665,10 +10668,11 @@ int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 
 		type = ret;
 	}
-	pmu->type = type;
+    
+	pmu->type = type;   /* 设置 type */
 
-	if (pmu_bus_running) {
-		ret = pmu_dev_alloc(pmu);
+	if (pmu_bus_running/* perf_event_sysfs_init() 中被设置 为 1 */) {
+		ret = pmu_dev_alloc(pmu);   /* 分配一个设备 device- /sys/devices/ */
 		if (ret)
 			goto free_idr;
 	}
@@ -10688,33 +10692,35 @@ skip_type:
 
 		hw_context_taken = 1;
 	}
-
-	pmu->pmu_cpu_context = find_pmu_context(pmu->task_ctx_nr);
+    /* 遍历 pmus 链表 */
+	pmu->pmu_cpu_context = find_pmu_context(pmu->task_ctx_nr);  /* 已存在 CPU ctx */
 	if (pmu->pmu_cpu_context)
-		goto got_cpu_context;
+		goto got_cpu_context;   /* 已存在，就不用分配了 */
 
 	ret = -ENOMEM;
-	pmu->pmu_cpu_context = alloc_percpu(struct perf_cpu_context);
+	pmu->pmu_cpu_context = alloc_percpu(struct perf_cpu_context);   /* 分配 */
 	if (!pmu->pmu_cpu_context)
-		goto free_dev;
+		goto free_dev;  /* 申请失败就退出 */
 
-	for_each_possible_cpu(cpu) {
+	for_each_possible_cpu(cpu) {    /* 遍历 CPU */
 		struct perf_cpu_context *cpuctx;
 
-		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);
-		__perf_event_init_context(&cpuctx->ctx);
-		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex);
+		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);    /* 1.获取 CPU 的ctx */
+		__perf_event_init_context(&cpuctx->ctx);            /* 2.初始化这个ctx */
+		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex);/*3.初始化lockdep  */
 		lockdep_set_class(&cpuctx->ctx.lock, &cpuctx_lock);
-		cpuctx->ctx.pmu = pmu;
-		cpuctx->online = cpumask_test_cpu(cpu, perf_online_mask);
+		cpuctx->ctx.pmu = pmu;                              /* 4.指向这个PMU */
+		cpuctx->online = cpumask_test_cpu(cpu, perf_online_mask);/* 5.是否在线标记 */
 
-		__perf_mux_hrtimer_init(cpuctx, cpu);
+		__perf_mux_hrtimer_init(cpuctx, cpu);               /* 6.高精度定时器，function=perf_mux_hrtimer_handler */
 
-		cpuctx->heap_size = ARRAY_SIZE(cpuctx->heap_default);
-		cpuctx->heap = cpuctx->heap_default;
+		cpuctx->heap_size = ARRAY_SIZE(cpuctx->heap_default);/*  */
+		cpuctx->heap = cpuctx->heap_default;    /* 默认使用2个 */
 	}
 
 got_cpu_context:
+
+    /*  */
 	if (!pmu->start_txn) {
 		if (pmu->pmu_enable) {
 			/*
@@ -10732,14 +10738,17 @@ got_cpu_context:
 		}
 	}
 
+    /* 使能 */
 	if (!pmu->pmu_enable) {
 		pmu->pmu_enable  = perf_pmu_nop_void;
 		pmu->pmu_disable = perf_pmu_nop_void;
 	}
 
+    /* 检测周期 ioctl(PERF_EVENT_IOC_PERIOD) */
 	if (!pmu->check_period)
 		pmu->check_period = perf_event_nop_int;
 
+    /*  */
 	if (!pmu->event_idx)
 		pmu->event_idx = perf_event_idx_default;
 
@@ -10749,11 +10758,11 @@ got_cpu_context:
 	 * is fast, provided a valid software event is provided.
 	 */
 	if (type == PERF_TYPE_SOFTWARE || !name)
-		list_add_rcu(&pmu->entry, &pmus);
+		list_add_rcu(&pmu->entry, &pmus);   /* 软件 或者 name=NULL */
 	else
-		list_add_tail_rcu(&pmu->entry, &pmus);
+		list_add_tail_rcu(&pmu->entry, &pmus);/*  */
 
-	atomic_set(&pmu->exclusive_cnt, 0);
+	atomic_set(&pmu->exclusive_cnt, 0); /* 独占计数 */
 	ret = 0;
 unlock:
 	mutex_unlock(&pmus_lock);
@@ -11538,7 +11547,7 @@ again:
  *                     pid_t pid, int cpu, int group_fd,
  *                     unsigned long flags);
  */
-SYSCALL_DEFINE5(perf_event_open,
+SYSCALL_DEFINE5(perf_event_open,    /*  */
 		struct perf_event_attr __user *, attr_uptr,
 		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
 {

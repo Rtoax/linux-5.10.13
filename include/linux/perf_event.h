@@ -259,7 +259,7 @@ struct perf_event;
 
 /**
  * pmu::capabilities flags
- */
+ */ /*  */
 #define PERF_PMU_CAP_NO_INTERRUPT		0x01
 #define PERF_PMU_CAP_NO_NMI			0x02
 #define PERF_PMU_CAP_AUX_NO_SG			0x04
@@ -276,24 +276,24 @@ struct perf_output_handle;
  * struct pmu - generic performance monitoring unit
  */
 struct pmu {    /* 性能监控单元 */
-	struct list_head		entry;
+	struct list_head		entry;      /* 链表节点 */
 
-	struct module			*module;
-	struct device			*dev;
-	const struct attribute_group	**attr_groups;
-	const struct attribute_group	**attr_update;
-	const char			*name;
-	int				type;
+	struct module			*module;    /* 隶属模块 */
+	struct device			*dev;       /* 隶属设备 */
+	const struct attribute_group	**attr_groups;  /*  */
+	const struct attribute_group	**attr_update;  /*  */
+	const char			*name;  /* 名称 */
+	int				type;       /* 类型, PERF_TYPE_SOFTWARE .. */
 
 	/*
 	 * various common per-pmu feature flags
 	 */
-	int				capabilities;
+	int				capabilities;   /* 能力 PERF_PMU_CAP_NO_NMI ...*/
 
-	int __percpu			*pmu_disable_count;
-	struct perf_cpu_context __percpu *pmu_cpu_context;
-	atomic_t			exclusive_cnt; /* < 0: cpu; > 0: tsk */
-	int				task_ctx_nr;
+	int __percpu			*pmu_disable_count; /*  */
+	struct perf_cpu_context __percpu *pmu_cpu_context;  /*  */
+	atomic_t			exclusive_cnt; /* < 0: cpu; > 0: tsk 独占计数 */
+	int				task_ctx_nr;    /* perf_hw_context ... */
 	int				hrtimer_interval_ms;
 
 	/* number of address filters this PMU can do */
@@ -780,7 +780,7 @@ struct perf_event { /*  */
 };
 
 
-struct perf_event_groups {
+struct perf_event_groups {  /* 红黑树 */
 	struct rb_root	tree;
 	u64		index;
 };
@@ -790,7 +790,7 @@ struct perf_event_groups {
  *
  * Used as a container for task events and CPU events as well:
  */
-struct perf_event_context {
+struct perf_event_context { /* perf event上下文 */
 	struct pmu			*pmu;
 	/*
 	 * Protect the states of the events in the list,
@@ -805,7 +805,7 @@ struct perf_event_context {
 	struct mutex			mutex;
 
 	struct list_head		active_ctx_list;
-	struct perf_event_groups	pinned_groups;
+	struct perf_event_groups	pinned_groups;      /*  */
 	struct perf_event_groups	flexible_groups;
 	struct list_head		event_list;
 
@@ -856,14 +856,15 @@ struct perf_event_context {
 /**
  * struct perf_event_cpu_context - per cpu event context structure
  */
-struct perf_cpu_context {
+struct perf_cpu_context {   /* CPU perf 上下文 */
 	struct perf_event_context	ctx;
 	struct perf_event_context	*task_ctx;
 	int				active_oncpu;
 	int				exclusive;
 
+    /* 在 __perf_mux_hrtimer_init() 中初始化 */
 	raw_spinlock_t			hrtimer_lock;
-	struct hrtimer			hrtimer;
+	struct hrtimer			hrtimer;        
 	ktime_t				hrtimer_interval;
 	unsigned int			hrtimer_active;
 
@@ -881,7 +882,7 @@ struct perf_cpu_context {
 	 */
 	int				heap_size;
 	struct perf_event		**heap;
-	struct perf_event		*heap_default[2];
+	struct perf_event		*heap_default[2];   /* 默认2个 */
 };
 
 struct perf_output_handle {

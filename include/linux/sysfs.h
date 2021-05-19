@@ -165,7 +165,7 @@ __ATTRIBUTE_GROUPS(_name)
 struct file;
 struct vm_area_struct;
 
-struct bin_attribute {
+struct bin_attribute {  /*  */
 	struct attribute	attr;
 	size_t			size;
 	void			*private;

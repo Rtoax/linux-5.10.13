@@ -29,10 +29,10 @@
 enum perf_type_id { /* perf 类型 */
 	PERF_TYPE_HARDWARE			= 0,    /* 硬件 */
 	PERF_TYPE_SOFTWARE			= 1,    /* 软件 */
-	PERF_TYPE_TRACEPOINT		= 2,    /* 跟踪点 */
+	PERF_TYPE_TRACEPOINT		= 2,    /* 跟踪点 /sys/bus/event_source/devices/tracepoint/type */
 	PERF_TYPE_HW_CACHE			= 3,    /* 硬件cache */
-	PERF_TYPE_RAW				= 4,    /* RAW */
-	PERF_TYPE_BREAKPOINT		= 5,    /* 断点 */
+	PERF_TYPE_RAW				= 4,    /* RAW/CPU /sys/bus/event_source/devices/cpu/type */
+	PERF_TYPE_BREAKPOINT		= 5,    /* 断点 /sys/bus/event_source/devices/breakpoint/type */
 
 	PERF_TYPE_MAX,				/* non-ABI */
 };
@@ -482,7 +482,7 @@ enum perf_event_ioc_flags {
 /*
  * Structure of the page that can be mapped via mmap
  */
-struct perf_event_mmap_page {
+struct perf_event_mmap_page {   /*  */
 	__u32	version;		/* version number of this structure */
 	__u32	compat_version;		/* lowest version this is compat with */
 

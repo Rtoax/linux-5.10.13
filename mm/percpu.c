@@ -1687,7 +1687,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	const char *err;
 	int slot, off, cpu, ret;
 	unsigned long flags;
-	void __percpu *ptr;
+	void __percpu *ptr; /*  */
 	size_t bits, bit_align;
 
 	gfp = current_gfp_context(gfp);
@@ -1901,7 +1901,7 @@ EXPORT_SYMBOL_GPL(__alloc_percpu_gfp);
  *
  * Equivalent to __alloc_percpu_gfp(size, align, %GFP_KERNEL).
  */
-void __percpu *__alloc_percpu(size_t size, size_t align)
+void __percpu *__alloc_percpu(size_t size, size_t align)    /*  */
 {
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
