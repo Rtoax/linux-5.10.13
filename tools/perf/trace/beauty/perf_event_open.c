@@ -1,19 +1,4 @@
 // SPDX-License-Identifier: LGPL-2.1
-#ifndef PERF_FLAG_FD_NO_GROUP
-# define PERF_FLAG_FD_NO_GROUP		(1UL << 0)
-#endif
-
-#ifndef PERF_FLAG_FD_OUTPUT
-# define PERF_FLAG_FD_OUTPUT		(1UL << 1)
-#endif
-
-#ifndef PERF_FLAG_PID_CGROUP
-# define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
-#endif
-
-#ifndef PERF_FLAG_FD_CLOEXEC
-# define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
-#endif
 
 static size_t syscall_arg__scnprintf_perf_flags(char *bf, size_t size,
 						struct syscall_arg *arg)

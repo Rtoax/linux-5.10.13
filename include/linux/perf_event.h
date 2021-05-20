@@ -264,7 +264,7 @@ struct perf_event;
 #define PERF_PMU_CAP_NO_NMI			0x02
 #define PERF_PMU_CAP_AUX_NO_SG			0x04
 #define PERF_PMU_CAP_EXTENDED_REGS		0x08
-#define PERF_PMU_CAP_EXCLUSIVE			0x10
+#define PERF_PMU_CAP_EXCLUSIVE			0x10    /* 独占 */
 #define PERF_PMU_CAP_ITRACE			0x20
 #define PERF_PMU_CAP_HETEROGENEOUS_CPUS		0x40
 #define PERF_PMU_CAP_NO_EXCLUDE			0x80
@@ -1370,6 +1370,7 @@ static inline bool has_aux(struct perf_event *event)
 
 static inline bool is_write_backward(struct perf_event *event)
 {
+    /* Write ring buffer from end to beginning */
 	return !!event->attr.write_backward;
 }
 

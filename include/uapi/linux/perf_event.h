@@ -381,7 +381,7 @@ struct perf_event_attr {
 				namespaces     :  1, /* include namespaces data */
 				ksymbol        :  1, /* include ksymbol events */
 				bpf_event      :  1, /* include bpf events */
-				aux_output     :  1, /* generate AUX records instead of events */
+				aux_output     :  1, /* generate AUX records instead of events *//* 生成AUX记录而不是事件 */
 				cgroup         :  1, /* include cgroup events */
 				text_poke      :  1, /* include text poke events */
 				__reserved_1   : 30;

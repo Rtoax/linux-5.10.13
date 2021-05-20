@@ -651,8 +651,8 @@ static void perf_event_update_sibling_time(struct perf_event *leader)
 {
 	struct perf_event *sibling;
 
-	for_each_sibling_event(sibling, leader)
-		perf_event_update_time(sibling);
+	for_each_sibling_event(sibling, leader) {
+		perf_event_update_time(sibling);}
 }
 
 static void
@@ -2016,6 +2016,7 @@ static void perf_put_aux_event(struct perf_event *event)
 
 static bool perf_need_aux_event(struct perf_event *event)
 {
+    /* 生成AUX记录而不是事件 */
 	return !!event->attr.aux_output || !!event->attr.aux_sample_size;
 }
 
@@ -4174,7 +4175,7 @@ static void __perf_event_read(void *info)
 		goto unlock;
 	}
 
-	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
+	pmu->start_txn(pmu, PERF_PMU_TXN_READ); //x86_pmu_start_txn
 
 	pmu->read(event);
 
@@ -4384,17 +4385,17 @@ alloc_perf_context(struct pmu *pmu, struct task_struct *task)
 }
 
 static struct task_struct *
-find_lively_task_by_vpid(pid_t vpid)
+find_lively_task_by_vpid(pid_t vpid)    /* 获取task_struct */
 {
 	struct task_struct *task;
 
 	rcu_read_lock();
 	if (!vpid)
-		task = current;
+		task = current; /* 当前进程 */
 	else
-		task = find_task_by_vpid(vpid);
+		task = find_task_by_vpid(vpid); /* 查找 */
 	if (task)
-		get_task_struct(task);
+		get_task_struct(task);  /* 引用计数 */
 	rcu_read_unlock();
 
 	if (!task)
@@ -4655,7 +4656,7 @@ static int exclusive_event_init(struct perf_event *event)
 {
 	struct pmu *pmu = event->pmu;
 
-	if (!is_exclusive_pmu(pmu))
+	if (!is_exclusive_pmu(pmu)) /*  */
 		return 0;
 
 	/*
@@ -5263,8 +5264,8 @@ static void perf_event_for_each_child(struct perf_event *event,
 
 	mutex_lock(&event->child_mutex);
 	func(event);
-	list_for_each_entry(child, &event->child_list, child_list)
-		func(child);
+	list_for_each_entry(child, &event->child_list, child_list) {
+		func(child);}
 	mutex_unlock(&event->child_mutex);
 }
 
@@ -5279,8 +5280,8 @@ static void perf_event_for_each(struct perf_event *event,
 	event = event->group_leader;
 
 	perf_event_for_each_child(event, func);
-	for_each_sibling_event(sibling, event)
-		perf_event_for_each_child(sibling, func);
+	for_each_sibling_event(sibling, event) {
+		perf_event_for_each_child(sibling, func);}
 }
 
 static void __perf_event_period(struct perf_event *event,
@@ -5520,7 +5521,7 @@ static long perf_compat_ioctl(struct file *file, unsigned int cmd,
 	return perf_ioctl(file, cmd, arg);
 }
 #else
-# define perf_compat_ioctl NULL
+//# define perf_compat_ioctl NULL
 #endif
 
 int perf_event_task_enable(void)
@@ -5600,10 +5601,6 @@ unlock:
 	rcu_read_unlock();
 }
 
-void __weak arch_perf_update_userpage(
-	struct perf_event *event, struct perf_event_mmap_page *userpg, u64 now)
-{
-}
 
 /*
  * Callers need to ensure there can be no nesting of this function, otherwise
@@ -8764,6 +8761,7 @@ int perf_event_account_interrupt(struct perf_event *event)
 
 /*
  * Generic event overflow handling, sampling.
+ * 通用事件溢出处理，采样。
  */
 
 static int __perf_event_overflow(struct perf_event *event,
@@ -8832,6 +8830,10 @@ static DEFINE_PER_CPU(struct swevent_htable, swevent_htable);
  * event->hw.period_left to count intervals. This period event
  * is kept in the range [-sample_period, 0] so that we can use the
  * sign as trigger.
+ *
+ * 我们直接增加event-> count，并在event-> hw.period_left中保留第二个
+ * 值以计算间隔。 此周期事件保持在[-sample_period，0]范围内，以便我们
+ * 可以将符号用作触发器。
  */
 
 u64 perf_swevent_set_period(struct perf_event *event)
@@ -10840,6 +10842,12 @@ static int perf_try_init_event(struct pmu *pmu, struct perf_event *event)
 	}
 
 	event->pmu = pmu;
+
+    /**
+    perf_swevent -> perf_swevent_init
+    perf_cpu_clock -> cpu_clock_event_init
+    perf_kprobe -> perf_kprobe_event_init
+    */
 	ret = pmu->event_init(event);
 
 	if (ctx)
@@ -11140,7 +11148,7 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 	if (overflow_handler) {
 		event->overflow_handler	= overflow_handler;
 		event->overflow_handler_context = context;
-	} else if (is_write_backward(event)){
+	} else if (is_write_backward(event)){/* Write ring buffer from end to beginning */
 		event->overflow_handler = perf_event_output_backward;
 		event->overflow_handler_context = NULL;
 	} else {
@@ -11196,7 +11204,7 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		if (err)
 			goto err_pmu;
 	}
-
+    /*  */
 	err = exclusive_event_init(event);
 	if (err)
 		goto err_pmu;
@@ -11540,6 +11548,8 @@ again:
  * @group_fd:		group leader event fd
  *
  * 用户态 API
+ * https://rtoax.blog.csdn.net/article/details/117040529
+ *
  * #include <linux/perf_event.h>
  * #include <linux/hw_breakpoint.h>
  *
@@ -11556,7 +11566,7 @@ SYSCALL_DEFINE5(perf_event_open,    /*  */
 	struct perf_event_attr attr;
 	struct perf_event_context *ctx, *gctx;
 	struct file *event_file = NULL;
-	struct fd group = {NULL, 0};
+	struct fd group = {NULL, 0};      /*  */
 	struct task_struct *task = NULL;
 	struct pmu *pmu;
 	int event_fd;
@@ -11574,7 +11584,7 @@ SYSCALL_DEFINE5(perf_event_open,    /*  */
 	if (err)
 		return err;
 
-	err = perf_copy_attr(attr_uptr, &attr);
+	err = perf_copy_attr(attr_uptr, &attr); /* 拷贝 */
 	if (err)
 		return err;
 

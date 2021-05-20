@@ -766,94 +766,94 @@ void rb_free_aux(struct perf_buffer *rb)
 /*
  * Back perf_mmap() with regular GFP_KERNEL-0 pages.
  */
-
-static struct page *
-__perf_mmap_to_page(struct perf_buffer *rb, unsigned long pgoff)
-{
-	if (pgoff > rb->nr_pages)
-		return NULL;
-
-	if (pgoff == 0)
-		return virt_to_page(rb->user_page);
-
-	return virt_to_page(rb->data_pages[pgoff - 1]);
-}
-
-static void *perf_mmap_alloc_page(int cpu)
-{
-	struct page *page;
-	int node;
-
-	node = (cpu == -1) ? cpu : cpu_to_node(cpu);
-	page = alloc_pages_node(node, GFP_KERNEL | __GFP_ZERO, 0);
-	if (!page)
-		return NULL;
-
-	return page_address(page);
-}
-
-static void perf_mmap_free_page(void *addr)
-{
-	struct page *page = virt_to_page(addr);
-
-	page->mapping = NULL;
-	__free_page(page);
-}
-
-struct perf_buffer *rb_alloc(int nr_pages, long watermark, int cpu, int flags)
-{
-	struct perf_buffer *rb;
-	unsigned long size;
-	int i;
-
-	size = sizeof(struct perf_buffer);
-	size += nr_pages * sizeof(void *);
-
-	if (order_base_2(size) >= PAGE_SHIFT+MAX_ORDER)
-		goto fail;
-
-	rb = kzalloc(size, GFP_KERNEL);
-	if (!rb)
-		goto fail;
-
-	rb->user_page = perf_mmap_alloc_page(cpu);
-	if (!rb->user_page)
-		goto fail_user_page;
-
-	for (i = 0; i < nr_pages; i++) {
-		rb->data_pages[i] = perf_mmap_alloc_page(cpu);
-		if (!rb->data_pages[i])
-			goto fail_data_pages;
-	}
-
-	rb->nr_pages = nr_pages;
-
-	ring_buffer_init(rb, watermark, flags);
-
-	return rb;
-
-fail_data_pages:
-	for (i--; i >= 0; i--)
-		perf_mmap_free_page(rb->data_pages[i]);
-
-	perf_mmap_free_page(rb->user_page);
-
-fail_user_page:
-	kfree(rb);
-
-fail:
-	return NULL;
-}
-
-void rb_free(struct perf_buffer *rb)
-{
-	int i;
-
-	perf_mmap_free_page(rb->user_page);
-	for (i = 0; i < rb->nr_pages; i++)
-		perf_mmap_free_page(rb->data_pages[i]);
-	kfree(rb);
-}
+//
+//static struct page *
+//__perf_mmap_to_page(struct perf_buffer *rb, unsigned long pgoff)
+//{
+//	if (pgoff > rb->nr_pages)
+//		return NULL;
+//
+//	if (pgoff == 0)
+//		return virt_to_page(rb->user_page);
+//
+//	return virt_to_page(rb->data_pages[pgoff - 1]);
+//}
+//
+//static void *perf_mmap_alloc_page(int cpu)
+//{
+//	struct page *page;
+//	int node;
+//
+//	node = (cpu == -1) ? cpu : cpu_to_node(cpu);
+//	page = alloc_pages_node(node, GFP_KERNEL | __GFP_ZERO, 0);
+//	if (!page)
+//		return NULL;
+//
+//	return page_address(page);
+//}
+//
+//static void perf_mmap_free_page(void *addr)
+//{
+//	struct page *page = virt_to_page(addr);
+//
+//	page->mapping = NULL;
+//	__free_page(page);
+//}
+//
+//struct perf_buffer *rb_alloc(int nr_pages, long watermark, int cpu, int flags)
+//{
+//	struct perf_buffer *rb;
+//	unsigned long size;
+//	int i;
+//
+//	size = sizeof(struct perf_buffer);
+//	size += nr_pages * sizeof(void *);
+//
+//	if (order_base_2(size) >= PAGE_SHIFT+MAX_ORDER)
+//		goto fail;
+//
+//	rb = kzalloc(size, GFP_KERNEL);
+//	if (!rb)
+//		goto fail;
+//
+//	rb->user_page = perf_mmap_alloc_page(cpu);
+//	if (!rb->user_page)
+//		goto fail_user_page;
+//
+//	for (i = 0; i < nr_pages; i++) {
+//		rb->data_pages[i] = perf_mmap_alloc_page(cpu);
+//		if (!rb->data_pages[i])
+//			goto fail_data_pages;
+//	}
+//
+//	rb->nr_pages = nr_pages;
+//
+//	ring_buffer_init(rb, watermark, flags);
+//
+//	return rb;
+//
+//fail_data_pages:
+//	for (i--; i >= 0; i--)
+//		perf_mmap_free_page(rb->data_pages[i]);
+//
+//	perf_mmap_free_page(rb->user_page);
+//
+//fail_user_page:
+//	kfree(rb);
+//
+//fail:
+//	return NULL;
+//}
+//
+//void rb_free(struct perf_buffer *rb)
+//{
+//	int i;
+//
+//	perf_mmap_free_page(rb->user_page);
+//	for (i = 0; i < rb->nr_pages; i++)
+//		perf_mmap_free_page(rb->data_pages[i]);
+//	kfree(rb);
+//}
 
 #else
 static int data_page_nr(struct perf_buffer *rb)

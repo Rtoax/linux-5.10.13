@@ -405,7 +405,7 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 	if (static_branch_unlikely(&rdpmc_always_available_key) ||
 	    (!static_branch_unlikely(&rdpmc_never_available_key) &&
 	     atomic_read(&mm->context.perf_rdpmc_allowed)))
-		cr4_set_bits_irqsoff(X86_CR4_PCE);
+		cr4_set_bits_irqsoff(X86_CR4_PCE);/* enable performance counters at ipl 3 */
 	else
 		cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
@@ -416,7 +416,7 @@ void cr4_update_pce(void *ignored)
 }
 
 #else
-static inline void cr4_update_pce_mm(struct mm_struct *mm) { }
+/**/
 #endif
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,

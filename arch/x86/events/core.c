@@ -2634,11 +2634,7 @@ perf_callchain_user32(struct pt_regs *regs, struct perf_callchain_entry_ctx *ent
 	return 1;
 }
 #else
-static inline int
-perf_callchain_user32(struct pt_regs *regs, struct perf_callchain_entry_ctx *entry)
-{
-    return 0;
-}
+/*  */
 #endif
 
 void
