@@ -413,15 +413,15 @@ static __always_inline void kfree_bulk(size_t size, void **p)
 void *__kmalloc_node(size_t size, gfp_t flags, int node) __assume_kmalloc_alignment __malloc;
 void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node) __assume_slab_alignment __malloc;
 #else
-static __always_inline void *__kmalloc_node(size_t size, gfp_t flags, int node)
-{
-	return __kmalloc(size, flags);
-}
-
-static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t flags, int node)
-{
-	return kmem_cache_alloc(s, flags);
-}
+//static __always_inline void *__kmalloc_node(size_t size, gfp_t flags, int node)
+//{
+//	return __kmalloc(size, flags);
+//}
+//
+//static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t flags, int node)
+//{
+//	return kmem_cache_alloc(s, flags);
+//}
 #endif
 
 #ifdef CONFIG_TRACING

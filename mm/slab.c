@@ -3283,11 +3283,11 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 }
 #else
 
-static __always_inline void *
-__do_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-{
-	return ____cache_alloc(cachep, flags);
-}
+//static __always_inline void *
+//__do_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+//{
+//	return ____cache_alloc(cachep, flags);
+//}
 
 #endif /* CONFIG_NUMA */
 

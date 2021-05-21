@@ -1246,23 +1246,7 @@ static struct page *new_page(struct page *page, unsigned long start)
 			vma, address);
 }
 #else
-
-static int migrate_page_add(struct page *page, struct list_head *pagelist,
-				unsigned long flags)
-{
-	return -EIO;
-}
-
-int do_migrate_pages(struct mm_struct *mm, const nodemask_t *from,
-		     const nodemask_t *to, int flags)
-{
-	return -ENOSYS;
-}
-
-static struct page *new_page(struct page *page, unsigned long start)
-{
-	return NULL;
-}
+/**/
 #endif
 
 static long do_mbind(unsigned long start, unsigned long len,

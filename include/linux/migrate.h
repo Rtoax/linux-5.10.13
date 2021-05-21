@@ -54,34 +54,7 @@ extern int migrate_huge_page_move_mapping(struct address_space *mapping,
 extern int migrate_page_move_mapping(struct address_space *mapping,
 		struct page *newpage, struct page *page, int extra_count);
 #else
-
-static inline void putback_movable_pages(struct list_head *l) {}
-static inline int migrate_pages(struct list_head *l, new_page_t new,
-		free_page_t free, unsigned long private, enum migrate_mode mode,
-		int reason)
-	{ return -ENOSYS; }
-static inline struct page *alloc_migration_target(struct page *page,
-		unsigned long private)
-	{ return NULL; }
-static inline int isolate_movable_page(struct page *page, isolate_mode_t mode)
-	{ return -EBUSY; }
-
-static inline int migrate_prep(void) { return -ENOSYS; }
-static inline int migrate_prep_local(void) { return -ENOSYS; }
-
-static inline void migrate_page_states(struct page *newpage, struct page *page)
-{
-}
-
-static inline void migrate_page_copy(struct page *newpage,
-				     struct page *page) {}
-
-static inline int migrate_huge_page_move_mapping(struct address_space *mapping,
-				  struct page *newpage, struct page *page)
-{
-	return -ENOSYS;
-}
-
+/*  */
 #endif /* CONFIG_MIGRATION */
 
 #ifdef CONFIG_COMPACTION
@@ -89,14 +62,7 @@ extern int PageMovable(struct page *page);
 extern void __SetPageMovable(struct page *page, struct address_space *mapping);
 extern void __ClearPageMovable(struct page *page);
 #else
-static inline int PageMovable(struct page *page) { return 0; };
-static inline void __SetPageMovable(struct page *page,
-				struct address_space *mapping)
-{
-}
-static inline void __ClearPageMovable(struct page *page)
-{
-}
+/*  */
 #endif
 
 #ifdef CONFIG_NUMA_BALANCING
@@ -104,15 +70,7 @@ extern bool pmd_trans_migrating(pmd_t pmd);
 extern int migrate_misplaced_page(struct page *page,
 				  struct vm_area_struct *vma, int node);
 #else
-static inline bool pmd_trans_migrating(pmd_t pmd)
-{
-	return false;
-}
-static inline int migrate_misplaced_page(struct page *page,
-					 struct vm_area_struct *vma, int node)
-{
-	return -EAGAIN; /* can't migrate now */
-}
+/*  */
 #endif /* CONFIG_NUMA_BALANCING */
 
 #if defined(CONFIG_NUMA_BALANCING) && defined(CONFIG_TRANSPARENT_HUGEPAGE)
