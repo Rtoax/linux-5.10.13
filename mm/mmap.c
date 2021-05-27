@@ -3507,7 +3507,7 @@ out:
 	return 0;
 }
 
-int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
+int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)    /*  */
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long len;
@@ -3534,7 +3534,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 }
 EXPORT_SYMBOL(vm_brk_flags);
 
-int vm_brk(unsigned long addr, unsigned long len)
+int vm_brk(unsigned long addr, unsigned long len)   /*  */
 {
 	return vm_brk_flags(addr, len, 0);
 }
@@ -3615,7 +3615,7 @@ void exit_mmap(struct mm_struct *mm)
  * and into the inode's i_mmap tree.  If vm_file is non-NULL
  * then i_mmap_rwsem is taken here.
  */
-int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
+int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)  /*  */
 {
 	struct vm_area_struct *prev;
 	struct rb_node **rb_link, *rb_parent;
@@ -3644,7 +3644,7 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
 	}
 
-	vma_link(mm, vma, prev, rb_link, rb_parent);
+	vma_link(mm, vma, prev, rb_link, rb_parent);    /*  */
 	return 0;
 }
 

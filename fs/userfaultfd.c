@@ -256,14 +256,7 @@ out:
 	return ret;
 }
 #else
-static inline bool userfaultfd_huge_must_wait(struct userfaultfd_ctx *ctx,
-					 struct vm_area_struct *vma,
-					 unsigned long address,
-					 unsigned long flags,
-					 unsigned long reason)
-{
-	return false;	/* should never get here */
-}
+/*  */
 #endif /* CONFIG_HUGETLB_PAGE */
 
 /*
@@ -1931,7 +1924,7 @@ static void userfaultfd_show_fdinfo(struct seq_file *m, struct file *f)
 }
 #endif
 
-static const struct file_operations userfaultfd_fops = {
+static const struct file_operations userfaultfd_fops = { /* userfaultfd 系统调用 */
 #ifdef CONFIG_PROC_FS
 	.show_fdinfo	= userfaultfd_show_fdinfo,
 #endif
@@ -1954,6 +1947,8 @@ static void init_once_userfaultfd_ctx(void *mem)
 	seqcount_spinlock_init(&ctx->refile_seq, &ctx->fault_pending_wqh.lock);
 }
 
+//int userfaultfd(int flags);
+//userfaultfd机制可以让用户来处理缺页，可以在用户空间定义自己的page fau handler。
 SYSCALL_DEFINE1(userfaultfd, int, flags)
 {
 	struct userfaultfd_ctx *ctx;

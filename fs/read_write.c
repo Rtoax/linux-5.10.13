@@ -462,14 +462,14 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
-ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)    /*  */
 {
 	ssize_t ret;
 
 	ret = rw_verify_area(READ, file, pos, count);
 	if (ret)
 		return ret;
-	return __kernel_read(file, buf, count, pos);
+	return __kernel_read(file, buf, count, pos);    /*  */
 }
 EXPORT_SYMBOL(kernel_read);
 

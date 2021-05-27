@@ -650,10 +650,6 @@ size_t syscall_arg__scnprintf_strarrays(char *bf, size_t size,
 	return strarrays__scnprintf(arg->parm, bf, size, "%d", arg->show_string_prefix, arg->val);
 }
 
-#ifndef AT_FDCWD
-#define AT_FDCWD	-100
-#endif
-
 static size_t syscall_arg__scnprintf_fd_at(char *bf, size_t size,
 					   struct syscall_arg *arg)
 {

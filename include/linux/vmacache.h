@@ -15,9 +15,9 @@ extern struct vm_area_struct *vmacache_find(struct mm_struct *mm,
 						    unsigned long addr);
 
 #ifndef CONFIG_MMU
-extern struct vm_area_struct *vmacache_find_exact(struct mm_struct *mm,
-						  unsigned long start,
-						  unsigned long end);
+//extern struct vm_area_struct *vmacache_find_exact(struct mm_struct *mm,
+//						  unsigned long start,
+//						  unsigned long end);
 #endif
 
 static inline void vmacache_invalidate(struct mm_struct *mm)

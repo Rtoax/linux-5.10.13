@@ -36,8 +36,6 @@ static void print_ksym(__u64 addr)
 		printf("%s;", sym->name);
 }
 
-#define TASK_COMM_LEN 16
-
 struct key_t {
 	char waker[TASK_COMM_LEN];
 	char target[TASK_COMM_LEN];

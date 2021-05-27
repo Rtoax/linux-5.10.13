@@ -504,7 +504,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		 */
 		struct mm_rss_stat rss_stat;    /*  */
 
-		struct linux_binfmt *binfmt;    /*  */
+		struct linux_binfmt *binfmt;    /* ELF 对应`elf_format` */
 
 		/* Architecture-specific MM context */
 		mm_context_t context;   /* MMU 上下文 */
@@ -533,7 +533,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		struct user_namespace *user_ns;/* name space 资源的隔离，名字的隔离， cgroup 做资源的限制*/
 
 		/* store ref to file /proc/<pid>/exe symlink points to */
-		struct file __rcu *exe_file;
+		struct file __rcu *exe_file;    /* 符号链接 */
 #ifdef CONFIG_MMU_NOTIFIER
 		struct mmu_notifier_subscriptions *notifier_subscriptions;
 #endif

@@ -230,11 +230,6 @@ struct rusage {
 #define DT_LNK    10
 #define DT_SOCK   12
 
-/* all the *at functions */
-#ifndef AT_FDWCD
-#define AT_FDCWD             -100
-#endif
-
 /* lseek */
 #define SEEK_SET        0
 #define SEEK_CUR        1

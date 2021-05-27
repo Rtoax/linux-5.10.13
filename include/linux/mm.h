@@ -1861,9 +1861,7 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 #if defined(SPLIT_RSS_COUNTING)
 void sync_mm_rss(struct mm_struct *mm);
 #else
-static inline void sync_mm_rss(struct mm_struct *mm)
-{
-}
+/*  */
 #endif
 
 

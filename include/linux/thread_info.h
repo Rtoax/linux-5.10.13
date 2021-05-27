@@ -142,10 +142,6 @@ check_copy_size(const void *addr, size_t bytes, bool is_source)
 	return true;
 }
 
-#ifndef arch_setup_new_exec
-static inline void arch_setup_new_exec(void) { }
-#endif
-
 #endif	/* __KERNEL__ */
 
 #endif /* _LINUX_THREAD_INFO_H */

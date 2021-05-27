@@ -33,7 +33,7 @@
  * @transp: Offset and size of the alpha bits. length=0 means no alpha
  * @fourcc: 32bit DRM four-CC code (see drm_fourcc.h)
  */
-struct simplefb_format {
+struct simplefb_format {    /*  */
 	const char *name;
 	u32 bits_per_pixel;
 	struct fb_bitfield red;

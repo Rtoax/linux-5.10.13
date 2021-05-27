@@ -27,15 +27,15 @@
 
 #if ELF_CLASS == ELFCLASS32
 
-extern Elf32_Dyn _DYNAMIC [];
-#define elfhdr		elf32_hdr
-#define elf_phdr	elf32_phdr
-#define elf_shdr	elf32_shdr
-#define elf_note	elf32_note
-#define elf_addr_t	Elf32_Off
-#define Elf_Half	Elf32_Half
-#define Elf_Word	Elf32_Word
-#define ELF_GNU_PROPERTY_ALIGN	ELF32_GNU_PROPERTY_ALIGN
+//extern Elf32_Dyn _DYNAMIC [];
+//#define elfhdr		elf32_hdr
+//#define elf_phdr	elf32_phdr
+//#define elf_shdr	elf32_shdr
+//#define elf_note	elf32_note
+//#define elf_addr_t	Elf32_Off
+//#define Elf_Half	Elf32_Half
+//#define Elf_Word	Elf32_Word
+//#define ELF_GNU_PROPERTY_ALIGN	ELF32_GNU_PROPERTY_ALIGN
 
 #else
 

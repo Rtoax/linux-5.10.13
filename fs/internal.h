@@ -102,7 +102,7 @@ extern bool mount_capable(struct fs_context *);
 /*
  * open.c
  */
-struct open_flags {
+struct open_flags { /* open 标志，权限等 */
 	int open_flag;
 	umode_t mode;
 	int acc_mode;

@@ -125,17 +125,17 @@
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 
 struct filename *   /* 从用户空间复制文件路径到内核空间 */
-getname_flags(const char __user *filename, int flags, int *empty)
+getname_flags(const char __user *filename, int flags, int *empty)   /*  */
 {
 	struct filename *result;
 	char *kname;
 	int len;
 
-	result = audit_reusename(filename);
+	result = audit_reusename(filename); 
 	if (result)
 		return result;
 
-	result = __getname();
+	result = __getname();   /* kmem_alloc */
 	if (unlikely(!result))
 		return ERR_PTR(-ENOMEM);
 

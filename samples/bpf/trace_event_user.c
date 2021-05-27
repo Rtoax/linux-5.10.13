@@ -50,8 +50,6 @@ static void print_addr(__u64 addr)
 	printf("%llx;", addr);
 }
 
-#define TASK_COMM_LEN 16
-
 struct key_t {
 	char comm[TASK_COMM_LEN];
 	__u32 kernstack;

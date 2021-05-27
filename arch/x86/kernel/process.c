@@ -305,7 +305,7 @@ static int set_cpuid_mode(struct task_struct *task, unsigned long cpuid_enabled)
 /*
  * Called immediately after a successful exec.
  */
-void arch_setup_new_exec(void)
+void arch_setup_new_exec(void)  /*  */
 {
 	/* If cpuid was previously disabled for this task, re-enable it. */
 	if (test_thread_flag(TIF_NOCPUID))

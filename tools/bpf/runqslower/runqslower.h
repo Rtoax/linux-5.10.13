@@ -2,7 +2,6 @@
 #ifndef __RUNQSLOWER_H
 #define __RUNQSLOWER_H
 
-#define TASK_COMM_LEN 16
 
 struct event {
 	char task[TASK_COMM_LEN];

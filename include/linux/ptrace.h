@@ -398,7 +398,7 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #endif
 
 #ifndef current_pt_regs
-#define current_pt_regs() task_pt_regs(current)
+#define current_pt_regs() task_pt_regs(current) /*  */
 #endif
 
 /*

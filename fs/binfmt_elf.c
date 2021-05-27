@@ -107,7 +107,7 @@ static struct linux_binfmt elf_format = {
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))
 
-static int set_brk(unsigned long start, unsigned long end, int prot)
+static int set_brk(unsigned long start, unsigned long end, int prot)    /*  */
 {
 	start = ELF_PAGEALIGN(start);
 	end = ELF_PAGEALIGN(end);
@@ -299,8 +299,8 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 
 	/* Point sp at the lowest address on the stack */
 #ifdef CONFIG_STACK_GROWSUP
-	sp = (elf_addr_t __user *)bprm->p - items - ei_index;
-	bprm->exec = (unsigned long)sp; /* XXX: PARISC HACK */
+//	sp = (elf_addr_t __user *)bprm->p - items - ei_index;
+//	bprm->exec = (unsigned long)sp; /* XXX: PARISC HACK */
 #else
 	sp = (elf_addr_t __user *)bprm->p;
 #endif
@@ -359,7 +359,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 
 static unsigned long elf_map(struct file *filep, unsigned long addr,
 		const struct elf_phdr *eppnt, int prot, int type,
-		unsigned long total_size)
+		unsigned long total_size)   /*  */
 {
 	unsigned long map_addr;
 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
@@ -817,7 +817,7 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 	return ret == -ENOENT ? 0 : ret;
 }
 
-static int load_elf_binary(struct linux_binprm *bprm)
+static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制文件，见 `execve`系统调用 */
 {
 	struct file *interpreter = NULL; /* to shut gcc up */
  	unsigned long load_addr = 0, load_bias = 0;
@@ -832,7 +832,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long e_entry;
 	unsigned long interp_load_addr = 0;
 	unsigned long start_code, end_code, start_data, end_data;
-	unsigned long reloc_func_desc __maybe_unused = 0;
+	unsigned long __maybe_unused reloc_func_desc  = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
 	struct elfhdr *interp_elf_ex = NULL;
@@ -851,7 +851,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 	if (elf_check_fdpic(elf_ex))
 		goto out;
-	if (!bprm->file->f_op->mmap)
+	if (!bprm->file->f_op->mmap)    /*  */
 		goto out;
 
 	elf_phdata = load_elf_phdrs(elf_ex, bprm->file);
@@ -883,6 +883,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (!elf_interpreter)
 			goto out_free_ph;
 
+        /* 读取 */
 		retval = elf_read(bprm->file, elf_interpreter, elf_ppnt->p_filesz,
 				  elf_ppnt->p_offset);
 		if (retval < 0)
@@ -892,7 +893,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 			goto out_free_interp;
 
+        /* 打开 */
 		interpreter = open_exec(elf_interpreter);
+        
 		kfree(elf_interpreter);
 		retval = PTR_ERR(interpreter);
 		if (IS_ERR(interpreter))
@@ -978,6 +981,7 @@ out_free_interp:
 			}
 	}
 
+    /* 读取属性值 */
 	retval = parse_elf_properties(interpreter ?: bprm->file,
 				      elf_property_phdata, &arch_state);
 	if (retval)
@@ -988,6 +992,7 @@ out_free_interp:
 	 * still possible to return an error to the code that invoked
 	 * the exec syscall.
 	 */
+	/*  */
 	retval = arch_check_elf(elf_ex,
 				!!interpreter, interp_elf_ex,
 				&arch_state);
@@ -995,6 +1000,7 @@ out_free_interp:
 		goto out_free_dentry;
 
 	/* Flush all traces of the currently running executable */
+    /* 开始执行 */
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
@@ -1008,6 +1014,7 @@ out_free_interp:
 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
 		current->flags |= PF_RANDOMIZE;
 
+    /*  */
 	setup_new_exec(bprm);
 
 	/* Do this so that we can load the interpreter, if need be.  We will
@@ -1069,7 +1076,7 @@ out_free_interp:
 
 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
 
-		vaddr = elf_ppnt->p_vaddr;
+		vaddr = elf_ppnt->p_vaddr;  /*  */
 		/*
 		 * If we are loading ET_EXEC or we have already performed
 		 * the ET_DYN load_addr calculations, proceed normally.
@@ -1108,9 +1115,9 @@ out_free_interp:
 			 * without MAP_FIXED).
 			 */
 			if (interpreter) {
-				load_bias = ELF_ET_DYN_BASE;
+				load_bias = ELF_ET_DYN_BASE;    /* 从这个固定位置映射 */
 				if (current->flags & PF_RANDOMIZE)
-					load_bias += arch_mmap_rnd();
+					load_bias += arch_mmap_rnd();   /* 加上随机位置 */
 				alignment = maximum_alignment(elf_phdata, elf_ex->e_phnum);
 				if (alignment)
 					load_bias &= ~(alignment - 1);
@@ -1135,6 +1142,8 @@ out_free_interp:
 			}
 		}
 
+        /* 正经的映射 二进制可执行文件 */
+        /* 映射 起始地址需要注意 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
 		if (BAD_ADDR(error)) {
@@ -1200,7 +1209,7 @@ out_free_interp:
 	 * mapping in the interpreter, to make sure it doesn't wind
 	 * up getting placed where the bss needs to go.
 	 */
-	retval = set_brk(elf_bss, elf_brk, bss_prot);
+	retval = set_brk(elf_bss, elf_brk, bss_prot);   /*  */
 	if (retval)
 		goto out_free_dentry;
 	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
@@ -1208,6 +1217,7 @@ out_free_interp:
 		goto out_free_dentry;
 	}
 
+    /*  */
 	if (interpreter) {
 		elf_entry = load_elf_interp(interp_elf_ex,
 					    interpreter,
@@ -1243,6 +1253,7 @@ out_free_interp:
 
 	kfree(elf_phdata);
 
+    /* 设置进程 */
 	set_binfmt(&elf_format);
 
 #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
@@ -1251,6 +1262,7 @@ out_free_interp:
 		goto out;
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
+    /* 创建 elf table TODO */
 	retval = create_elf_tables(bprm, elf_ex,
 			  load_addr, interp_load_addr, e_entry);
 	if (retval < 0)
@@ -1276,7 +1288,7 @@ out_free_interp:
 			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
 		}
 
-		mm->brk = mm->start_brk = arch_randomize_brk(mm);
+		mm->brk = mm->start_brk = arch_randomize_brk(mm);   /*  */
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
 #endif
@@ -1291,7 +1303,7 @@ out_free_interp:
 				MAP_FIXED | MAP_PRIVATE, 0);
 	}
 
-	regs = current_pt_regs();
+	regs = current_pt_regs();   /* 当前的寄存器 */
 #ifdef ELF_PLAT_INIT
 	/*
 	 * The ABI may specify that certain registers be set up in special
@@ -1306,8 +1318,10 @@ out_free_interp:
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
 
-	finalize_exec(bprm);
-	start_thread(regs, elf_entry, bprm->p);
+	finalize_exec(bprm);    /*  */
+
+    /* 当前进程的程序计数器 ip=elf_entry 也就是定位到了客户自行ELF文件中 */
+	start_thread(regs, elf_entry, bprm->p); /* 给寄存器赋值 */
 	retval = 0;
 out:
 	return retval;
@@ -1327,7 +1341,7 @@ out_free_ph:
 #ifdef CONFIG_USELIB
 /* This is really simpleminded and specialized - we are loading an
    a.out library that is given an ELF header. */
-static int load_elf_library(struct file *file)
+static int load_elf_library(struct file *file)  /*  */
 {
 	struct elf_phdr *elf_phdata;
 	struct elf_phdr *eppnt;
@@ -1336,7 +1350,7 @@ static int load_elf_library(struct file *file)
 	struct elfhdr elf_ex;
 
 	error = -ENOEXEC;
-	retval = elf_read(file, &elf_ex, sizeof(elf_ex), 0);
+	retval = elf_read(file, &elf_ex, sizeof(elf_ex), 0);    /* 读取ELF头 */
 	if (retval < 0)
 		goto out;
 
@@ -1376,6 +1390,9 @@ static int load_elf_library(struct file *file)
 		eppnt++;
 
 	/* Now use mmap to map the library into memory. */
+    /* 将共享库映射进进程地址空间 
+
+    *//*  */
 	error = vm_mmap(file,
 			ELF_PAGESTART(eppnt->p_vaddr),
 			(eppnt->p_filesz +
@@ -1396,7 +1413,7 @@ static int load_elf_library(struct file *file)
 	len = ELF_PAGEALIGN(eppnt->p_filesz + eppnt->p_vaddr);
 	bss = ELF_PAGEALIGN(eppnt->p_memsz + eppnt->p_vaddr);
 	if (bss > len) {
-		error = vm_brk(len, bss - len);
+		error = vm_brk(len, bss - len); /*  */
 		if (error)
 			goto out_free_ph;
 	}
@@ -2294,7 +2311,7 @@ end_coredump:
 
 #endif		/* CONFIG_ELF_CORE */
 
-static int __init init_elf_binfmt(void)
+static int __init init_elf_binfmt(void) /* ELF 格式 */
 {
 	register_binfmt(&elf_format);
 	return 0;

@@ -477,7 +477,7 @@ void x86_gsbase_write_task(struct task_struct *task, unsigned long gsbase)
 	task->thread.gsbase = gsbase;
 }
 
-static void
+static void /*  */
 start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 		    unsigned long new_sp,
 		    unsigned int _cs, unsigned int _ss, unsigned int _ds)

@@ -438,6 +438,8 @@ static int membarrier_register_private_expedited(int flags)
  *        barrier()          X           X            O
  *        smp_mb()           X           O            O
  *        sys_membarrier()   O           O            O
+ *
+ * int membarrier(int cmd, unsigned int flags, int cpu_id);
  */
 SYSCALL_DEFINE3(membarrier, int, cmd, unsigned int, flags, int, cpu_id)
 {

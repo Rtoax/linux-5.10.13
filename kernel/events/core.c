@@ -4101,7 +4101,7 @@ static void perf_event_enable_on_exec(int ctxn)
 		clone_ctx = unclone_ctx(ctx);
 		ctx_resched(cpuctx, ctx, event_type);
 	} else {
-		ctx_sched_in(ctx, cpuctx, EVENT_TIME, current);
+		ctx_sched_in(ctx, cpuctx, EVENT_TIME, current); /*  */
 	}
 	perf_ctx_unlock(cpuctx, ctx);
 
@@ -7309,7 +7309,7 @@ static void perf_event_addr_filters_exec(struct perf_event *event, void *data)
 		perf_event_stop(event, 1);
 }
 
-void perf_event_exec(void)
+void perf_event_exec(void)  /*  */
 {
 	struct perf_event_context *ctx;
 	int ctxn;
@@ -7320,7 +7320,7 @@ void perf_event_exec(void)
 		if (!ctx)
 			continue;
 
-		perf_event_enable_on_exec(ctxn);
+		perf_event_enable_on_exec(ctxn);    /*  */
 
 		perf_iterate_ctx(ctx, perf_event_addr_filters_exec, NULL,
 				   true);

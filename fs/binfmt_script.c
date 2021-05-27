@@ -31,14 +31,14 @@ static inline const char *next_terminator(const char *first, const char *last)
 	return NULL;
 }
 
-static int load_script(struct linux_binprm *bprm)
+static int load_script(struct linux_binprm *bprm)   /* 加载脚本 */
 {
 	const char *i_name, *i_sep, *i_arg, *i_end, *buf_end;
 	struct file *file;
 	int retval;
 
 	/* Not ours to exec if we don't start with "#!". */
-	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!'))
+	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!')) /* 不是#!开头直接不认识 */
 		return -ENOEXEC;
 
 	/*
@@ -142,7 +142,7 @@ static struct linux_binfmt script_format = {
 	.load_binary	= load_script,
 };
 
-static int __init init_script_binfmt(void)
+static int __init init_script_binfmt(void)  /*  */
 {
 	register_binfmt(&script_format);
 	return 0;

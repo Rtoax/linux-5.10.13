@@ -3850,14 +3850,20 @@ unsigned long nr_iowait(void)
 /*
  * sched_exec - execve() is a valuable balancing opportunity, because at
  * this point the task has the smallest effective memory and cache footprint.
+ *
+ * sched_exec-execve（）是宝贵的平衡机会，因为此时任务具有最小的有效内存和高速缓存占用空间。
  */
-void sched_exec(void)
+void sched_exec(void)   /*  */
 {
 	struct task_struct *p = current;
 	unsigned long flags;
 	int dest_cpu;
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+
+    /* 
+        fair_sched_class.select_task_rq = select_task_rq_fair()
+    */
 	dest_cpu = p->sched_class->select_task_rq(p, task_cpu(p), SD_BALANCE_EXEC, 0);
 	if (dest_cpu == smp_processor_id())
 		goto unlock;

@@ -1082,16 +1082,16 @@ fail_nopgd:
 /*
  * Allocate and initialize an mm_struct.
  */
-struct mm_struct *mm_alloc(void)
+struct mm_struct *mm_alloc(void)    /* 分配MM结构 */
 {
 	struct mm_struct *mm;
 
-	mm = allocate_mm();
+	mm = allocate_mm(); /* 申请内存 */
 	if (!mm)
 		return NULL;
 
 	memset(mm, 0, sizeof(*mm));
-	return mm_init(mm, current, current_user_ns());
+	return mm_init(mm, current, current_user_ns());/*  */
 }
 
 static inline void __mmput(struct mm_struct *mm)
@@ -1168,8 +1168,8 @@ void set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	old_exe_file = rcu_dereference_raw(mm->exe_file);
 
 	if (new_exe_file)
-		get_file(new_exe_file);
-	rcu_assign_pointer(mm->exe_file, new_exe_file);
+		get_file(new_exe_file); /* 引用计数 */
+	rcu_assign_pointer(mm->exe_file, new_exe_file); /* 符号链接 /proc/PID/exe */
 	if (old_exe_file)
 		fput(old_exe_file);
 }
@@ -1314,7 +1314,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	uprobe_free_utask(tsk);
 
 	/* Get rid of any cached register state */
-	deactivate_mm(tsk, mm);
+	deactivate_mm(tsk, mm); /*  */
 
 	/*
 	 * Signal userspace if we're not exiting with a core dump
@@ -1340,7 +1340,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	 * Also kthread_stop() uses this completion for synchronization.
 	 */
 	if (tsk->vfork_done)
-		complete_vfork_done(tsk);
+		complete_vfork_done(tsk);   /*  */
 }
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
