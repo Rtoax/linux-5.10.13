@@ -56,45 +56,7 @@ void _dev_notice(const struct device *dev, const char *fmt, ...);
 void _dev_info(const struct device *dev, const char *fmt, ...);
 
 #else
-
-static inline 
-int dev_vprintk_emit(int level, const struct device *dev,
-		     const char *fmt, va_list args)
-{ return 0; }
-static inline 
-int dev_printk_emit(int level, const struct device *dev, const char *fmt, ...)
-{ return 0; }
-
-static inline void __dev_printk(const char *level, const struct device *dev,
-				struct va_format *vaf)
-{}
-static inline 
-void dev_printk(const char *level, const struct device *dev,
-		 const char *fmt, ...)
-{}
-
-static inline 
-void _dev_emerg(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_crit(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_alert(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_err(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_warn(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_notice(const struct device *dev, const char *fmt, ...)
-{}
-static inline 
-void _dev_info(const struct device *dev, const char *fmt, ...)
-{}
-
+/*  */
 #endif
 
 /*

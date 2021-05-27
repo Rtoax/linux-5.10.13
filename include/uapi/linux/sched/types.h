@@ -100,14 +100,14 @@ struct sched_param {
 struct sched_attr {
 	__u32 size;
 
-	__u32 sched_policy;
+	__u32 sched_policy; /* 策略 */
 	__u64 sched_flags;
 
 	/* SCHED_NORMAL, SCHED_BATCH */
-	__s32 sched_nice;
+	__s32 sched_nice;   /* nice值 */
 
 	/* SCHED_FIFO, SCHED_RR */
-	__u32 sched_priority;
+	__u32 sched_priority;   /* 优先级 */
 
 	/* SCHED_DEADLINE */
 	__u64 sched_runtime;

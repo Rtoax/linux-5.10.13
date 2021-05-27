@@ -4,7 +4,7 @@
 
 #define MAX_NICE	19  /*  */
 #define MIN_NICE	-20 /*  */
-#define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
+#define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)   /* 40 */
 
 /*
  * Priority of a process goes from 0..MAX_PRIO-1, valid RT

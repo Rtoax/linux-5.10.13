@@ -1402,7 +1402,7 @@ requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se, int head)
 		struct list_head *queue = array->queue + rt_se_prio(rt_se);
 
 		if (head)
-			list_move(&rt_se->run_list, queue);
+			list_move(&rt_se->run_list, queue); /* 移动到链表尾 */
 		else
 			list_move_tail(&rt_se->run_list, queue);
 	}
@@ -1419,7 +1419,7 @@ static void requeue_task_rt(struct rq *rq, struct task_struct *p, int head)
 	}
 }
 
-static void yield_task_rt(struct rq *rq)
+static void yield_task_rt(struct rq *rq)    /*  */
 {
 	requeue_task_rt(rq, rq->curr, 0);
 }
@@ -2334,8 +2334,8 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 			resched_curr(rq);
 #else
 		/* For UP simply resched on drop of prio */
-		if (oldprio < p->prio)
-			resched_curr(rq);
+//		if (oldprio < p->prio)
+//			resched_curr(rq);
 #endif /* CONFIG_SMP */
 	} else {
 		/*

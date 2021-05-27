@@ -195,7 +195,7 @@ static inline struct cpuset *css_cs(struct cgroup_subsys_state *css)
 }
 
 /* Retrieve the cpuset for a task */
-static inline struct cpuset *task_cs(struct task_struct *task)
+static inline struct cpuset *task_cs(struct task_struct *task)  /*  */
 {
 	return css_cs(task_css(task, cpuset_cgrp_id));
 }

@@ -41,10 +41,10 @@
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
-#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
-#define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
-#define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
-#define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
+#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT) /* 0x000000ff */
+#define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT) /* 0x0000ff00 */
+#define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT) /* 0x000f0000 */
+#define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)         /* 0x00f00000 */
 
 #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
 #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
@@ -76,10 +76,14 @@
 
 /* preempt_count() and related functions, depends on PREEMPT_NEED_RESCHED */
 #include <asm/preempt.h>
+//*         PREEMPT_MASK:    0x000000ff
+//*         SOFTIRQ_MASK:    0x0000ff00
+//*         HARDIRQ_MASK:    0x000f0000
+//*             NMI_MASK:    0x00f00000
 
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
-#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
+#define irq_count()	(preempt_count() & /*0x00ffff00*/(HARDIRQ_MASK | SOFTIRQ_MASK \
 				 | NMI_MASK))
 
 /*

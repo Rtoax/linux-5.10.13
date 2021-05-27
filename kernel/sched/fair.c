@@ -35,7 +35,7 @@
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_latency			= 6000000ULL;
+unsigned int sysctl_sched_latency			= 6000000ULL;   /* 6ms */
 static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
 
 /*
@@ -141,7 +141,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 	lw->inv_weight = 0;
 }
 
-static inline void update_load_set(struct load_weight *lw, unsigned long w)
+static inline void update_load_set(struct load_weight *lw, unsigned long w) /*  */
 {
 	lw->weight = w;
 	lw->inv_weight = 0;
@@ -197,7 +197,7 @@ void __init sched_init_granularity(void)
 #define WMULT_CONST	(~0U)
 #define WMULT_SHIFT	32
 
-static void __update_inv_weight(struct load_weight *lw)
+static void __update_inv_weight(struct load_weight *lw) /*  */
 {
 	unsigned long w;
 
@@ -226,7 +226,7 @@ static void __update_inv_weight(struct load_weight *lw)
  * Or, weight =< lw.weight (because lw.weight is the runqueue weight), thus
  * weight/lw.weight <= 1, and therefore our shift will also be positive.
  */
-static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
+static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)   /*  */
 {
 	u64 fact = scale_load_down(weight);
 	int shift = WMULT_SHIFT;
@@ -475,13 +475,13 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 static inline int entity_before(struct sched_entity *a,
 				struct sched_entity *b)
 {
-	return (s64)(a->vruntime - b->vruntime) < 0;
+	return (s64)(a->vruntime - b->vruntime) < 0;    /* 红黑树使用虚拟时间进行排序 */
 }
 
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);
+	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);    /* 最左边的节点 */
 
 	u64 vruntime = cfs_rq->min_vruntime;
 
@@ -513,7 +513,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 /*
  * Enqueue an entity into the rb-tree:
  */
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /*  */
+static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 插入红黑树 */
 {
 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_root.rb_node;
 	struct rb_node *parent = NULL;
@@ -525,12 +525,12 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 	 */
 	while (*link) {
 		parent = *link;
-		entry = rb_entry(parent, struct sched_entity, run_node);
+		entry = rb_entry(parent, struct sched_entity, run_node);    /*  */
 		/*
 		 * We dont care about collisions. Nodes with
 		 * the same key stay together.
 		 */
-		if (entity_before(se, entry)) {
+		if (entity_before(se, entry)) { /* 使用虚拟时间进行排序的 */
 			link = &parent->rb_left;
 		} else {
 			link = &parent->rb_right;
@@ -538,12 +538,12 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 		}
 	}
 
-	rb_link_node(&se->run_node, parent, link);
+	rb_link_node(&se->run_node, parent, link);  /* 插入红黑树 */
 	rb_insert_color_cached(&se->run_node,
 			       &cfs_rq->tasks_timeline, leftmost);
 }
 
-static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 从红黑树中删除 */
 {
 	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
 }
@@ -639,9 +639,9 @@ static u64 __sched_period(unsigned long nr_running)
  *
  * s = p*P[w/rw]
  */
-static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)  /*  */
 {
-	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);    /* 默认6ms */
 
 	for_each_sched_entity(se) {
 		struct load_weight *load;
@@ -793,7 +793,7 @@ static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 	curr->sum_exec_runtime += delta_exec;
 	schedstat_add(cfs_rq->exec_clock, delta_exec);
 
-	curr->vruntime += calc_delta_fair(delta_exec, curr);    /* 计算虚拟时间 */
+	curr->vruntime += calc_delta_fair(delta_exec, curr);    /* 计算虚拟时间增量 */
 	update_min_vruntime(cfs_rq);
 
 	if (entity_is_task(curr)) {
@@ -2993,13 +2993,13 @@ dequeue_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
 #else
 /*  */
 #endif
-
+            /*  */
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
 {
 	if (se->on_rq) {
 		/* commit outstanding execution time */
-		if (cfs_rq->curr == se)
+		if (cfs_rq->curr == se) /* 当前正在执行 */
 			update_curr(cfs_rq);
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
@@ -3009,7 +3009,7 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 #ifdef CONFIG_SMP
 	do {
-		u32 divider = get_pelt_divider(&se->avg);
+		u32 divider = get_pelt_divider(&se->avg);   /* divider:分频器 */
 
 		se->avg.load_avg = div_u64(se_weight(se) * se->avg.load_sum, divider);
 	} while (0);
@@ -3021,15 +3021,15 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 }
 
-void reweight_task(struct task_struct *p, int prio)
+void reweight_task(struct task_struct *p, int prio) /* 公平调度器权重 */
 {
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	struct load_weight *load = &se->load;
-	unsigned long weight = scale_load(sched_prio_to_weight[prio]);
+	unsigned long weight = scale_load/* << 10 */(sched_prio_to_weight[prio]);  /*  */
 
-	reweight_entity(cfs_rq, se, weight);
-	load->inv_weight = sched_prio_to_wmult[prio];
+	reweight_entity(cfs_rq, se, weight);    /*  */
+	load->inv_weight = sched_prio_to_wmult[prio];   /*  */
 }
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -3160,10 +3160,10 @@ static void update_cfs_group(struct sched_entity *se)
 		return;
 
 #ifndef CONFIG_SMP
-	shares = READ_ONCE(gcfs_rq->tg->shares);
-
-	if (likely(se->load.weight == shares))
-		return;
+//	shares = READ_ONCE(gcfs_rq->tg->shares);
+//
+//	if (likely(se->load.weight == shares))
+//		return;
 #else
 	shares   = calc_group_shares(gcfs_rq);
 #endif
@@ -4148,7 +4148,7 @@ static void __clear_buddies_skip(struct sched_entity *se)
 	}
 }
 
-static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
+static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)   /* 清理 */
 {
 	if (cfs_rq->last == se)
 		__clear_buddies_last(se);
@@ -5311,7 +5311,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 		if (se->on_rq)
 			break;
 		cfs_rq = cfs_rq_of(se);
-		enqueue_entity(cfs_rq, se, flags);      /*  */
+		enqueue_entity(cfs_rq, se, flags);      /* 插入到红黑树中 */
 
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
@@ -6708,8 +6708,8 @@ static void set_next_buddy(struct sched_entity *se)
 
 static void set_skip_buddy(struct sched_entity *se)
 {
-	for_each_sched_entity(se)
-		cfs_rq_of(se)->skip = se;
+	for_each_sched_entity(se) {
+		cfs_rq_of(se)->skip = se;}  /* 队列中的 skip   = 当前调度实体*/
 }
 
 /*
@@ -6964,13 +6964,13 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 /*
  * sched_yield() is very simple
  *
- * The magic of dealing with the ->skip buddy is in pick_next_entity.
+ * The magic of dealing with the ->skip buddy is in pick_next_entity().
  */
-static void yield_task_fair(struct rq *rq)
+static void yield_task_fair(struct rq *rq)  /*  */
 {
 	struct task_struct *curr = rq->curr;
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	struct sched_entity *se = &curr->se;
+	struct sched_entity *se = &curr->se;    /* 获取当前实体 */
 
 	/*
 	 * Are we the only task in the tree?
@@ -6978,7 +6978,7 @@ static void yield_task_fair(struct rq *rq)
 	if (unlikely(rq->nr_running == 1))
 		return;
 
-	clear_buddies(cfs_rq, se);
+	clear_buddies(cfs_rq, se);  /*  */
 
 	if (curr->policy != SCHED_BATCH) {
 		update_rq_clock(rq);
@@ -6994,7 +6994,7 @@ static void yield_task_fair(struct rq *rq)
 		rq_clock_skip_update(rq);
 	}
 
-	set_skip_buddy(se);
+	set_skip_buddy(se); /* 设置 */
 }
 
 static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
@@ -10529,8 +10529,8 @@ prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
 	 * our priority decreased, or if we are not currently running on
 	 * this runqueue and our priority is higher than the current's
 	 */
-	if (rq->curr == p) {
-		if (p->prio > oldprio)
+	if (rq->curr == p) {    /* 正在队列中运行 */
+		if (p->prio > oldprio)  /* 优先级变高，立马调度 */
 			resched_curr(rq);
 	} else
 		check_preempt_curr(rq, p, 0);

@@ -209,7 +209,7 @@ struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 
 	for (;;) {
 		raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
-		rq = task_rq(p);
+		rq = task_rq(p);    /*  */
 		raw_spin_lock(&rq->lock);
 		/*
 		 *	move_queued_task()		task_rq_lock()
@@ -589,14 +589,14 @@ void wake_up_q(struct wake_q_head *head)
  * might also involve a cross-CPU call to trigger the scheduler on
  * the target CPU.
  */
-void resched_curr(struct rq *rq)
+void resched_curr(struct rq *rq)    /*  */
 {
 	struct task_struct *curr = rq->curr;
 	int cpu;
 
 	lockdep_assert_held(&rq->lock);
 
-	if (test_tsk_need_resched(curr))
+	if (test_tsk_need_resched(curr))    /* 是否需要重新调度 */
 		return;
 
 	cpu = cpu_of(rq);
@@ -830,6 +830,7 @@ int tg_nop(struct task_group *tg, void *data)
 
 static void set_load_weight(struct task_struct *p, bool update_load)    /*  */
 {
+    /* nice + 120 - 100 = nice + 20 */
 	int prio = p->static_prio - MAX_RT_PRIO/* 100 */;    //calculate initial `prio`
 	struct load_weight *load = &p->se.load;
 
@@ -846,10 +847,10 @@ static void set_load_weight(struct task_struct *p, bool update_load)    /*  */
 	 * SCHED_OTHER tasks have to update their load when changing their
 	 * weight
 	 */
-	if (update_load && p->sched_class == &fair_sched_class) {   /* CFS 调度 */
-		reweight_task(p, prio);
+	if (update_load && p->sched_class == &fair_sched_class) {   /* CFS 调度：只使用 100-139 优先级 */
+		reweight_task(p, prio); /*  */
 	} else {
-		load->weight = scale_load(sched_prio_to_weight[prio]);  /* 设置权重 */
+		load->weight = scale_load(sched_prio_to_weight[prio]);  /* RT 或其他 调度 */
 		load->inv_weight = sched_prio_to_wmult[prio];
 	}
 }
@@ -1530,7 +1531,7 @@ static void __init init_uclamp(void)
 /*  */
 #endif /* CONFIG_UCLAMP_TASK */
 
-static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /*  */
+static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /* 入队 */
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
@@ -1541,6 +1542,13 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_inc(rq, p);
+
+    /* 
+    fair_sched_class.enqueue_task   = enqueue_task_fair
+    rt_sched_class.enqueue_task     = enqueue_task_rt
+    dl_sched_class.enqueue_task     = enqueue_task_dl
+    idle_sched_class.enqueue_task   = NULL
+    */
 	p->sched_class->enqueue_task(rq, p, flags); /* 调用调度类入队函数 *//* CFS->`enqueue_task_fair` */
 }
 
@@ -1798,7 +1806,7 @@ static int migration_cpu_stop(void *data)
  */
 void set_cpus_allowed_common(struct task_struct *p, const struct cpumask *new_mask)
 {
-	cpumask_copy(&p->cpus_mask, new_mask);
+	cpumask_copy(&p->cpus_mask, new_mask);  /* 直接拷贝 */
 	p->nr_cpus_allowed = cpumask_weight(new_mask);
 }
 
@@ -1818,15 +1826,21 @@ void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 		 * holding rq->lock.
 		 */
 		lockdep_assert_held(&rq->lock);
-		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);
+		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);    /* 出队 */
 	}
 	if (running)
 		put_prev_task(rq, p);
 
+    /* 
+        fair_sched_class.set_cpus_allowed   = set_cpus_allowed_common   拷贝 cpumask
+        rt_sched_class.set_cpus_allowed     = set_cpus_allowed_common
+        dl_sched_class.set_cpus_allowed     = set_cpus_allowed_dl
+        stop_sched_class.set_cpus_allowed   = set_cpus_allowed_common
+    */
 	p->sched_class->set_cpus_allowed(p, new_mask);  /* 设置允许的 cpumask */
 
 	if (queued)
-		enqueue_task(rq, p, ENQUEUE_RESTORE | ENQUEUE_NOCLOCK);
+		enqueue_task(rq, p, ENQUEUE_RESTORE | ENQUEUE_NOCLOCK); /* 入队 */
 	if (running)
 		set_next_task(rq, p);
 }
@@ -1877,12 +1891,12 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	 * immediately required to distribute the tasks within their new mask.
 	 */
 	dest_cpu = cpumask_any_and_distribute(cpu_valid_mask, new_mask);
-	if (dest_cpu >= nr_cpu_ids) {
+	if (dest_cpu >= nr_cpu_ids) {   /* CPU超限 */
 		ret = -EINVAL;
 		goto out;
 	}
 
-	do_set_cpus_allowed(p, new_mask);   /*  */
+	do_set_cpus_allowed(p, new_mask);   /* 设置 */
 
 	if (p->flags & PF_KTHREAD) {
 		/*
@@ -1898,13 +1912,14 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	if (cpumask_test_cpu(task_cpu(p), new_mask))
 		goto out;
 
+    /* 如果进程真该运行或者正在唤醒 */
 	if (task_running(rq, p) || p->state == TASK_WAKING) {
 		struct migration_arg arg = { p, dest_cpu };
 		/* Need help from migration thread: drop lock and wait. */
 		task_rq_unlock(rq, p, &rf);
 		stop_one_cpu(cpu_of(rq), migration_cpu_stop, &arg);
 		return 0;
-	} else if (task_on_rq_queued(p)) {
+	} else if (task_on_rq_queued(p)) {  /* 如果进程在队列中 */
 		/*
 		 * OK, since we're going to drop the lock immediately
 		 * afterwards anyway.
@@ -4913,7 +4928,7 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	struct rq_flags rf;
 	struct rq *rq;
 
-	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE)
+	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE) /* 合理值 */
 		return;
 	/*
 	 * We have to be careful, if called from sys_setpriority(),
@@ -4928,31 +4943,39 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	 * it wont have any effect on scheduling until the task is
 	 * SCHED_DEADLINE, SCHED_FIFO or SCHED_RR:
 	 */
-	if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
-		p->static_prio = NICE_TO_PRIO(nice);
+	if (task_has_dl_policy(p) || task_has_rt_policy(p)) {   /* 实时 或者 最后期限 调度 */
+		p->static_prio = NICE_TO_PRIO(nice);    /* nice + 120 */
 		goto out_unlock;
 	}
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
-	if (queued)
-		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);
-	if (running)
-		put_prev_task(rq, p);
 
-	p->static_prio = NICE_TO_PRIO(nice);
-	set_load_weight(p, true);
+    /* 如果是 CFS */
+	queued = task_on_rq_queued(p);  /* 在队列里 */
+	running = task_current(rq, p);  /* 正在运行 */
+	if (queued)
+		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);    /* 溢出队列 */
+	if (running)
+		put_prev_task(rq, p);   /*  */
+
+	p->static_prio = NICE_TO_PRIO(nice);    /* nice + 120 */
+	set_load_weight(p, true);   /*  */
 	old_prio = p->prio;
 	p->prio = effective_prio(p);
 
-	if (queued)
+	if (queued) /* 再次入队 */
 		enqueue_task(rq, p, ENQUEUE_RESTORE | ENQUEUE_NOCLOCK);
-	if (running)
+	if (running)    /* 下次要被执行 */
 		set_next_task(rq, p);
 
 	/*
 	 * If the task increased its priority or is running and
 	 * lowered its priority, then reschedule its CPU:
 	 */
+	/* 
+        fair_sched_class.prio_changed  =  prio_changed_fair
+        rt_sched_class.prio_changed    =  prio_changed_rt
+        dl_sched_class.prio_changed    =  prio_changed_dl
+        idle_sched_class.prio_changed  =  prio_changed_idle
+    */
 	p->sched_class->prio_changed(rq, p, old_prio);  /* 修改调度类的优先级 */
 
 out_unlock:
@@ -4983,7 +5006,7 @@ int can_nice(const struct task_struct *p, const int nice)
  * sys_setpriority is a more generic, but much slower function that
  * does similar things.
  */
-SYSCALL_DEFINE1(nice, int, increment)
+SYSCALL_DEFINE1(nice, int, increment)   /*  修改nice值*/
 {
 	long nice, retval;
 
@@ -4993,7 +5016,7 @@ SYSCALL_DEFINE1(nice, int, increment)
 	 * and we have a single winner.
 	 */
 	increment = clamp(increment, -NICE_WIDTH, NICE_WIDTH);
-	nice = task_nice(current) + increment;
+	nice = task_nice(current) + increment;  /*  */
 
 	nice = clamp_val(nice, MIN_NICE, MAX_NICE);
 	if (increment < 0 && !can_nice(current, nice))
@@ -5003,7 +5026,7 @@ SYSCALL_DEFINE1(nice, int, increment)
 	if (retval)
 		return retval;
 
-	set_user_nice(current, nice);
+	set_user_nice(current, nice);   /* 设置 */
 	return 0;
 }
 
@@ -5137,12 +5160,12 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (keep_boost)
 		p->prio = rt_effective_prio(p, p->prio);
 
-	if (dl_prio(p->prio))
-		p->sched_class = &dl_sched_class;
-	else if (rt_prio(p->prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
+	if (dl_prio(p->prio))   /* 优先级 < 0 */
+		p->sched_class = &dl_sched_class;   /* deadline */
+	else if (rt_prio(p->prio))  /* 0-99 */
+		p->sched_class = &rt_sched_class;   /* 实时 */
+	else    /* 100-139(nice -20~19) */
+		p->sched_class = &fair_sched_class; /* CFS */
 }
 
 /*
@@ -5165,6 +5188,10 @@ static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr,
 				bool user, bool pi)
 {
+    /* 
+        deadline:   -1
+        otherwith:  99 - priority
+    */
 	int newprio = dl_policy(attr->sched_policy) ? MAX_DL_PRIO - 1 :
 		      MAX_RT_PRIO - 1 - attr->sched_priority;
 	int retval, oldprio, oldpolicy = -1, queued, running;
@@ -5181,7 +5208,7 @@ recheck:
 	/* Double check policy once rq lock held: */
 	if (policy < 0) {
 		reset_on_fork = p->sched_reset_on_fork;
-		policy = oldpolicy = p->policy;
+		policy = oldpolicy = p->policy; /* 当前的 策略 */
 	} else {
 		reset_on_fork = !!(attr->sched_flags & SCHED_FLAG_RESET_ON_FORK);
 
@@ -5189,6 +5216,7 @@ recheck:
 			return -EINVAL;
 	}
 
+    /*  */
 	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
 		return -EINVAL;
 
@@ -5208,12 +5236,13 @@ recheck:
 	 * Allow unprivileged RT tasks to decrease priority:
 	 */
 	if (user && !capable(CAP_SYS_NICE)) {
-		if (fair_policy(policy)) {
+        /* 公平调度 */
+		if (fair_policy(policy)) {  /*  */
 			if (attr->sched_nice < task_nice(p) &&
 			    !can_nice(p, attr->sched_nice))
 				return -EPERM;
 		}
-
+        /* 实时调度 */
 		if (rt_policy(policy)) {
 			unsigned long rlim_rtprio =
 					task_rlimit(p, RLIMIT_RTPRIO);
@@ -5234,6 +5263,7 @@ recheck:
 		  * unprivileged DL tasks to increase their relative deadline
 		  * or reduce their runtime (both ways reducing utilization)
 		  */
+		/*  */
 		if (dl_policy(policy))
 			return -EPERM;
 
@@ -5259,7 +5289,9 @@ recheck:
 		if (attr->sched_flags & SCHED_FLAG_SUGOV)
 			return -EINVAL;
 
-		retval = security_task_setscheduler(p);
+        //selinux_task_setscheduler
+        //cap_task_setscheduler
+		retval = security_task_setscheduler(p); /*  */
 		if (retval)
 			return retval;
 	}
@@ -5379,19 +5411,19 @@ change:
 			queue_flags &= ~DEQUEUE_MOVE;
 	}
 
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
+	queued = task_on_rq_queued(p);  /* 任务在就绪队列里 */
+	running = task_current(rq, p);  /* 进程正在运行 */
 	if (queued)
-		dequeue_task(rq, p, queue_flags);
+		dequeue_task(rq, p, queue_flags);   /* 将其出队 */
 	if (running)
-		put_prev_task(rq, p);
+		put_prev_task(rq, p);   /*  */
 
 	prev_class = p->sched_class;
 
-	__setscheduler(rq, p, attr, pi);
-	__setscheduler_uclamp(p, attr);
+	__setscheduler(rq, p, attr, pi);    /* 根据优先级设置调度类 */
+	__setscheduler_uclamp(p, attr);     /* 利用率管制 */
 
-	if (queued) {
+	if (queued) {   /* 如果在队列中，改变调度类后应该将其加入就绪队列中 */
 		/*
 		 * We enqueue to tail when the priority of a task is
 		 * increased (user space view).
@@ -5431,7 +5463,7 @@ unlock:
 static int _sched_setscheduler(struct task_struct *p, int policy,
 			       const struct sched_param *param, bool check)
 {
-	struct sched_attr attr = {
+	struct sched_attr attr = {  /*  */
 		.sched_policy   = policy,
 		.sched_priority = param->sched_priority,
 		.sched_nice	= PRIO_TO_NICE(p->static_prio),
@@ -5552,13 +5584,13 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 
 	rcu_read_lock();
 	retval = -ESRCH;
-	p = find_process_by_pid(pid);
+	p = find_process_by_pid(pid);   /* 获取进程 PCB */
 	if (likely(p))
-		get_task_struct(p);
+		get_task_struct(p); /* 引用计数 */
 	rcu_read_unlock();
 
 	if (likely(p)) {
-		retval = sched_setscheduler(p, policy, &lparam);
+		retval = sched_setscheduler(p, policy, &lparam);    /*  */
 		put_task_struct(p);
 	}
 
@@ -5617,8 +5649,10 @@ err_size:
  * @param: structure containing the new RT priority.
  *
  * Return: 0 on success. An error code otherwise.
+ *
+ * int sched_setscheduler(pid_t pid, int policy, const struct sched_param *param);
  */
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
+SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)    /*  */
 {
 	if (policy < 0)
 		return -EINVAL;
@@ -5632,6 +5666,8 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
  * @param: structure containing the new RT priority.
  *
  * Return: 0 on success. An error code otherwise.
+ *
+ * int sched_setparam(pid_t pid, const struct sched_param *param);
  */
 SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 {
@@ -5684,6 +5720,8 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
  *
  * Return: On success, the policy of the thread. Otherwise, a negative error
  * code.
+ *
+ * int sched_getscheduler(pid_t pid);
  */
 SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 {
@@ -5845,7 +5883,7 @@ out_unlock:
 	return retval;
 }
 
-long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
+long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)    /*  */
 {
 	cpumask_var_t cpus_allowed, new_mask;
 	struct task_struct *p;
@@ -5853,30 +5891,30 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 
 	rcu_read_lock();
 
-	p = find_process_by_pid(pid);
+	p = find_process_by_pid(pid);   /* 查找PID */
 	if (!p) {
 		rcu_read_unlock();
 		return -ESRCH;
 	}
 
 	/* Prevent p going away */
-	get_task_struct(p);
+	get_task_struct(p); /* 引用计数 */
 	rcu_read_unlock();
 
 	if (p->flags & PF_NO_SETAFFINITY) {
 		retval = -EINVAL;
 		goto out_put_task;
 	}
-	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
+	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {    /* 分配内存 */
 		retval = -ENOMEM;
 		goto out_put_task;
 	}
-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {
+	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {    /* 分配内存 */
 		retval = -ENOMEM;
 		goto out_free_cpus_allowed;
 	}
 	retval = -EPERM;
-	if (!check_same_owner(p)) {
+	if (!check_same_owner(p)) { /* 检测目标进程和当前进程有相同的 UID */
 		rcu_read_lock();
 		if (!ns_capable(__task_cred(p)->user_ns, CAP_SYS_NICE)) {
 			rcu_read_unlock();
@@ -5890,8 +5928,8 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 		goto out_free_new_mask;
 
 
-	cpuset_cpus_allowed(p, cpus_allowed);
-	cpumask_and(new_mask, in_mask, cpus_allowed);
+	cpuset_cpus_allowed(p, cpus_allowed);   /* 进程允许的CPU */
+	cpumask_and(new_mask, in_mask, cpus_allowed);   /* 输入 和 允许 的取或 */
 
 	/*
 	 * Since bandwidth control happens on root_domain basis,
@@ -5911,17 +5949,23 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 	}
 #endif
 again:
-	retval = __set_cpus_allowed_ptr(p, new_mask, true);
+	retval = __set_cpus_allowed_ptr(p, new_mask, true); /* 设置 */
 
-	if (!retval) {
+	if (!retval) {  /* 如果成功了 */
+        
 		cpuset_cpus_allowed(p, cpus_allowed);
+
+        /* 如果 `new_mask` 不是 `  cpus_allowed` 的子集 
+            Returns 1 if *@src1p is a subset of *@src2p, else returns 0*/
 		if (!cpumask_subset(new_mask, cpus_allowed)) {
 			/*
 			 * We must have raced with a concurrent cpuset
 			 * update. Just reset the cpus_allowed to the
 			 * cpuset's cpus_allowed
+			 *
+			 * 我们必须与并发cpuset更新赛跑。 只需将cpus_allowed重置为cpuset的cpus_allowed
 			 */
-			cpumask_copy(new_mask, cpus_allowed);
+			cpumask_copy(new_mask, cpus_allowed);   /* 将允许的CPU拷贝至新的CPU中 */
 			goto again;
 		}
 	}
@@ -5952,6 +5996,8 @@ static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
  * @user_mask_ptr: user-space pointer to the new CPU mask
  *
  * Return: 0 on success. An error code otherwise.
+ *
+ * int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
  */
 SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
@@ -5964,12 +6010,12 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 
 	retval = get_user_cpu_mask(user_mask_ptr, len, new_mask);
 	if (retval == 0)
-		retval = sched_setaffinity(pid, new_mask);
+		retval = sched_setaffinity(pid, new_mask);  /* 设置 */
 	free_cpumask_var(new_mask);
 	return retval;
 }
 
-long sched_getaffinity(pid_t pid, struct cpumask *mask)
+long sched_getaffinity(pid_t pid, struct cpumask *mask) /*  */
 {
 	struct task_struct *p;
 	unsigned long flags;
@@ -5978,7 +6024,7 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
 	rcu_read_lock();
 
 	retval = -ESRCH;
-	p = find_process_by_pid(pid);
+	p = find_process_by_pid(pid);   /* 查找PID */
 	if (!p)
 		goto out_unlock;
 
@@ -6004,6 +6050,8 @@ out_unlock:
  *
  * Return: size of CPU mask copied to user_mask_ptr on success. An
  * error code otherwise.
+ *
+ * int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
  */
 SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
@@ -6019,7 +6067,7 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
 		return -ENOMEM;
 
-	ret = sched_getaffinity(pid, mask);
+	ret = sched_getaffinity(pid, mask); /*  */
 	if (ret == 0) {
 		unsigned int retlen = min(len, cpumask_size());
 
@@ -6049,7 +6097,12 @@ static void do_sched_yield(void)
 	rq = this_rq_lock_irq(&rf);
 
 	schedstat_inc(rq->yld_count);
-	current->sched_class->yield_task(rq);
+    /* 
+        fair_sched_class.yield_task = yield_task_fair
+        rt_sched_class.yield_task   = yield_task_rt
+        dl_sched_class.yield_task   = yield_task_dl
+    */
+	current->sched_class->yield_task(rq);   /* 放弃 */
 
 	preempt_disable();
 	rq_unlock_irq(rq, &rf);
@@ -6058,7 +6111,11 @@ static void do_sched_yield(void)
 	schedule();
 }
 
-SYSCALL_DEFINE0(sched_yield)
+/**
+ *  放弃CPU
+ *  int sched_yield(void);
+ */
+SYSCALL_DEFINE0(sched_yield)    /*  */
 {
 	do_sched_yield();
 	return 0;
@@ -6258,14 +6315,14 @@ EXPORT_SYMBOL(io_schedule);
  * rt_priority that can be used by a given scheduling class.
  * On failure, a negative error code is returned.
  */
-SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
+SYSCALL_DEFINE1(sched_get_priority_max, int, policy)    /* 获取 */
 {
 	int ret = -EINVAL;
 
 	switch (policy) {
 	case SCHED_FIFO:
 	case SCHED_RR:
-		ret = MAX_USER_RT_PRIO-1;
+		ret = MAX_USER_RT_PRIO-1;   /* 99 */
 		break;
 	case SCHED_DEADLINE:
 	case SCHED_NORMAL:
@@ -6292,18 +6349,18 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	switch (policy) {
 	case SCHED_FIFO:
 	case SCHED_RR:
-		ret = 1;
+		ret = 1;    /* 1-99 */
 		break;
 	case SCHED_DEADLINE:
 	case SCHED_NORMAL:
 	case SCHED_BATCH:
 	case SCHED_IDLE:
-		ret = 0;
+		ret = 0;    /*  */
 	}
 	return ret;
 }
 
-static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
+static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)   /*  */
 {
 	struct task_struct *p;
 	unsigned int time_slice;
@@ -6316,7 +6373,7 @@ static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 
 	retval = -ESRCH;
 	rcu_read_lock();
-	p = find_process_by_pid(pid);
+	p = find_process_by_pid(pid);   /* 获取pid */
 	if (!p)
 		goto out_unlock;
 
@@ -6326,12 +6383,19 @@ static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 
 	rq = task_rq_lock(p, &rf);
 	time_slice = 0;
+
+    /* 
+        fair_sched_class.get_rr_interval = get_rr_interval_fair
+        rt_sched_class.get_rr_interval   = get_rr_interval_rt
+        dl_sched_class.get_rr_interval   = NULL
+        stop_sched_class.get_rr_interval = NULL
+    */
 	if (p->sched_class->get_rr_interval)
 		time_slice = p->sched_class->get_rr_interval(rq, p);
 	task_rq_unlock(rq, p, &rf);
 
 	rcu_read_unlock();
-	jiffies_to_timespec64(time_slice, t);
+	jiffies_to_timespec64(time_slice, t);   /*  */
 	return 0;
 
 out_unlock:
@@ -6340,7 +6404,7 @@ out_unlock:
 }
 
 /**
- * sys_sched_rr_get_interval - return the default timeslice of a process.
+ * sys_sched_rr_get_interval - return the default timeslice(时间片) of a process.
  * @pid: pid of the process.
  * @interval: userspace pointer to the timeslice value.
  *
@@ -6354,7 +6418,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 		struct __kernel_timespec __user *, interval)
 {
 	struct timespec64 t;
-	int retval = sched_rr_get_interval(pid, &t);
+	int retval = sched_rr_get_interval(pid, &t);    /*  */
 
 	if (retval == 0)
 		retval = put_timespec64(&t, interval);
@@ -8412,13 +8476,25 @@ void dump_cpu_task(int cpu)
  * nice 1, it will get ~10% less CPU time than another CPU-bound task
  * that remained on nice 0.
  *
+ * NICE 级别是可乘的，每更改一个 NICE 级别都会有10％的轻微变化。 
+ * 当一个CPU绑定的任务从 nice 0 变为 nice 1 时，它将比另一个保持nice 0的
+ * CPU绑定任务少大约10％的CPU时间。
+ *
+ * 当 NICE值从 0 变为 1 时，得到的CPU时间将减少 10%
+ *
  * The "10% effect" is relative and cumulative: from _any_ nice level,
  * if you go up 1 level, it's -10% CPU usage, if you go down 1 level
  * it's +10% CPU usage. (to achieve that we use a multiplier of 1.25.
  * If a task goes up by ~10% and another task goes down by ~10% then
  * the relative distance between them is ~25%.)
- *//* 优先级到权重 */
-const int sched_prio_to_weight[40] = {
+ *
+ * “ 10％效果” 是相对的和累积的：从_any_ nice级别开始，如果您提高1级，
+ * 则是-10％的CPU使用率，如果您降低1级，则是 + 10％ 的CPU使用率。 
+ * （要实现这一点，我们使用 1.25 的乘数。如果一个任务上升了10％，而另
+ * 一个任务下降了10％，则它们之间的相对距离是 25％。）
+ */
+/* 优先级(NICE)到权重 */
+const int sched_prio_to_weight[40] = {  /* 优先级越高，权重越小 */
  /* -20 */     88761,     71755,     56483,     46273,     36291,
  /* -15 */     29154,     23254,     18705,     14949,     11916,
  /* -10 */      9548,      7620,      6100,      4904,      3906,
@@ -8431,20 +8507,24 @@ const int sched_prio_to_weight[40] = {
 
 /*
  * Inverse (2^32/x) values of the sched_prio_to_weight[] array, precalculated.
+ * 
+ * 2^32=4294967296
  *
  * In cases where the weight does not change often, we can use the
  * precalculated inverse to speed up arithmetics by turning divisions
  * into multiplications:
+ * 
+ * 在权重不经常变化的情况下，我们可以使用预先计算的倒数，通过将除法转换为乘法来加快运算速度：
  */
 const u32 sched_prio_to_wmult[40] = {
- /* -20 */     48388,     59856,     76040,     92818,    118348,
+ /* -20 */     48388,     59856,     76040,     92818,    118348/* =2^32/36291 */,
  /* -15 */    147320,    184698,    229616,    287308,    360437,
  /* -10 */    449829,    563644,    704093,    875809,   1099582,
  /*  -5 */   1376151,   1717300,   2157191,   2708050,   3363326,
  /*   0 */   4194304,   5237765,   6557202,   8165337,  10153587,
  /*   5 */  12820798,  15790321,  19976592,  24970740,  31350126,
  /*  10 */  39045157,  49367440,  61356676,  76695844,  95443717,
- /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153,
+ /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153/* =2^32/15 */,
 };
 
 void call_trace_sched_update_nr_running(struct rq *rq, int count)

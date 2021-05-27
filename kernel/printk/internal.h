@@ -55,20 +55,5 @@ bool printk_percpu_data_ready(void);
 void defer_console_output(void);
 
 #else
-
- int vprintk_func(const char *fmt, va_list args) { return 0; }
-
-/*
- * In !PRINTK builds we still export logbuf_lock spin_lock, console_sem
- * semaphore and some of console functions (console_unlock()/etc.), so
- * printk-safe must preserve the existing local IRQ guarantees.
- */
-//#define printk_safe_enter_irqsave(flags) local_irq_save(flags)
-//#define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
-
-//#define printk_safe_enter_irq() local_irq_disable()
-//#define printk_safe_exit_irq() local_irq_enable()
-
-//static inline void printk_safe_init(void) { }
-//static inline bool printk_percpu_data_ready(void) { return false; }
+/*  */
 #endif /* CONFIG_PRINTK */

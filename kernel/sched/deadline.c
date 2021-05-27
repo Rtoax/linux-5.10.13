@@ -2504,7 +2504,7 @@ static void prio_changed_dl(struct rq *rq, struct task_struct *p,
 		 * or later deadline, so let's blindly set a
 		 * (maybe not needed) rescheduling point.
 		 */
-		resched_curr(rq);
+//		resched_curr(rq);
 #endif /* CONFIG_SMP */
 	}
 }

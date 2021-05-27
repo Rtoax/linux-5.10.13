@@ -6,7 +6,7 @@
 
 struct task_struct;
 
-static inline int rt_prio(int prio)
+static inline int rt_prio(int prio) /* 实时 优先级 0-99 */
 {
 	if (unlikely(prio < MAX_RT_PRIO))
 		return 1;

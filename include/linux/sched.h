@@ -462,7 +462,7 @@ struct sched_entity {   /* 调度实体 */
 
 	u64				exec_start;         /*  */
 	u64				sum_exec_runtime;   /*  */
-	u64				vruntime;           /*  */
+	u64				vruntime;           /* 虚拟时间 */
 	u64				prev_sum_exec_runtime;  /*  */
 
 	u64				nr_migrations;
@@ -471,11 +471,11 @@ struct sched_entity {   /* 调度实体 */
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int				depth;
-	struct sched_entity		*parent;
+	struct sched_entity		*parent;    /*  */
 	/* rq on which this entity is (to be) queued: */
-	struct cfs_rq			*cfs_rq;
+	struct cfs_rq			*cfs_rq;    /*  */
 	/* rq "owned" by this entity/group: */
-	struct cfs_rq			*my_q;
+	struct cfs_rq			*my_q;      /*  */
 	/* cached value of my_q->h_nr_running */
 	unsigned long			runnable_weight;
 #endif
@@ -483,11 +483,12 @@ struct sched_entity {   /* 调度实体 */
 #ifdef CONFIG_SMP
 	/*
 	 * Per entity load average tracking.
-	 *
+	 * 每个实体的平均负载跟踪。
+	 * 
 	 * Put into separate cache line so it does not
 	 * collide with read-mostly values above.
 	 */
-	struct sched_avg		avg;
+	struct sched_avg		avg;    /*  */
 #endif
 };
 
@@ -736,9 +737,9 @@ struct task_struct {    /* PCB */
 #endif
 
 	unsigned int			policy;
-	int				nr_cpus_allowed;
+	int				nr_cpus_allowed;    /* 个数 */
 	const cpumask_t			*cpus_ptr;
-	cpumask_t			cpus_mask;
+	cpumask_t			cpus_mask;  /* sched_getaffinity() */
 
 #ifdef CONFIG_PREEMPT_RCU
 	int				rcu_read_lock_nesting;

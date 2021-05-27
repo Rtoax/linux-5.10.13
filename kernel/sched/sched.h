@@ -121,7 +121,7 @@ extern void call_trace_sched_update_nr_running(struct rq *rq, int count);
  */
 #ifdef CONFIG_64BIT
 # define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT + SCHED_FIXEDPOINT_SHIFT)/* 10+10 */
-# define scale_load(w)		((w) << SCHED_FIXEDPOINT_SHIFT)
+# define scale_load(w)		((w) << SCHED_FIXEDPOINT_SHIFT/* 10 */)
 # define scale_load_down(w) \
 ({ \
 	unsigned long __w = (w); \
@@ -520,7 +520,7 @@ extern void set_task_rq_fair(struct sched_entity *se,
 * `SCHED_IDLE`.
 */
 struct cfs_rq {     /* 完全公平调度 运行队列 */
-	struct load_weight	load;
+	struct load_weight	load;   /*  */
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;      /* SCHED_{NORMAL,BATCH,IDLE} */
 	unsigned int		idle_h_nr_running; /* SCHED_IDLE */
@@ -540,7 +540,7 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 	struct sched_entity	*curr;
 	struct sched_entity	*next;
 	struct sched_entity	*last;
-	struct sched_entity	*skip;
+	struct sched_entity	*skip;  /* sched_yield */
 
 #ifdef	CONFIG_SCHED_DEBUG
 	unsigned int		nr_spread_over;
@@ -1838,12 +1838,26 @@ struct sched_class {    /* 调度类 *//*  */
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 {
 	WARN_ON_ONCE(rq->curr != prev);
+
+    /* 
+        fair_sched_class.put_prev_task  =  put_prev_task_fair
+        rt_sched_class.put_prev_task    =  put_prev_task_rt
+        dl_sched_class.put_prev_task    =  put_prev_task_dl
+        idle_sched_class.put_prev_task  =  put_prev_task_idle
+    */
 	prev->sched_class->put_prev_task(rq, prev);
 }
 
-static inline void set_next_task(struct rq *rq, struct task_struct *next)
+static inline void set_next_task(struct rq *rq, struct task_struct *next)/*  */
 {
 	WARN_ON_ONCE(rq->curr != next);
+
+    /* 
+        fair_sched_class.set_next_task  =  set_next_task_fair
+        rt_sched_class.set_next_task    =  set_next_task_rt
+        dl_sched_class.set_next_task    =  set_next_task_dl
+        idle_sched_class.set_next_task  =  set_next_task_idle
+    */
 	next->sched_class->set_next_task(rq, next, false);
 }
 
@@ -1979,8 +1993,7 @@ static inline void sched_update_tick_dependency(struct rq *rq)
 		tick_nohz_dep_set_cpu(cpu, TICK_DEP_BIT_SCHED);
 }
 #else
-static inline int sched_tick_offload_init(void) { return 0; }
-static inline void sched_update_tick_dependency(struct rq *rq) { }
+/*  */
 #endif
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
@@ -2040,12 +2053,7 @@ static inline int hrtick_enabled(struct rq *rq)
 void hrtick_start(struct rq *rq, u64 delay);
 
 #else
-
-static inline int hrtick_enabled(struct rq *rq)
-{
-	return 0;
-}
-
+/*  */
 #endif /* CONFIG_SCHED_HRTICK */
 
 #ifndef arch_scale_freq_tick

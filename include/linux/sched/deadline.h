@@ -8,7 +8,7 @@
 
 #define MAX_DL_PRIO		0
 
-static inline int dl_prio(int prio)
+static inline int dl_prio(int prio) /* deadline 优先级 小于0 */
 {
 	if (unlikely(prio < MAX_DL_PRIO))
 		return 1;

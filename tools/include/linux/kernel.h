@@ -61,13 +61,6 @@
 )
 #endif
 
-#ifndef BUG_ON
-#ifdef NDEBUG
-#define BUG_ON(cond) do { if (cond) {} } while (0)
-#else
-#define BUG_ON(cond) assert(!(cond))
-#endif
-#endif
 #define BUG()	BUG_ON(1)
 
 #define cpu_to_le16

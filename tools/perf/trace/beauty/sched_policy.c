@@ -7,9 +7,6 @@
  */
 #define SCHED_POLICY_MASK 0xff
 
-#ifndef SCHED_DEADLINE
-#define SCHED_DEADLINE 6
-#endif
 #ifndef SCHED_RESET_ON_FORK
 #define SCHED_RESET_ON_FORK 0x40000000
 #endif
