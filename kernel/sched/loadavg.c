@@ -58,7 +58,7 @@
 /* Variables and functions for calc_load */
 atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
-unsigned long avenrun[3];   /* 为啥没有加锁？ */
+unsigned long avenrun[3];   /* 为啥没有加锁？ 一分钟，五分钟，十五分钟的平均负载 */
 EXPORT_SYMBOL(avenrun); /* should be removed */
 
 /**
