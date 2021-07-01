@@ -219,84 +219,84 @@ static int __init x86_noinvpcid_setup(char *s)
 early_param("noinvpcid", x86_noinvpcid_setup);
 
 #ifdef CONFIG_X86_32
-static int cachesize_override = -1;
-static int disable_x86_serial_nr = 1;
-
-static int __init cachesize_setup(char *str)
-{
-	get_option(&str, &cachesize_override);
-	return 1;
-}
-__setup("cachesize=", cachesize_setup);
-
-static int __init x86_sep_setup(char *s)
-{
-	setup_clear_cpu_cap(X86_FEATURE_SEP);
-	return 1;
-}
-__setup("nosep", x86_sep_setup);
-
-/* Standard macro to see if a specific flag is changeable */
-static inline int flag_is_changeable_p(u32 flag)/* 看看 寄存器是不是都是可变的 */
-{
-	u32 f1, f2;
-
-	/*
-	 * Cyrix and IDT cpus allow disabling of CPUID
-	 * so the code below may return different results
-	 * when it is executed before and after enabling
-	 * the CPUID. Add "volatile" to not allow gcc to
-	 * optimize the subsequent calls to this function.
-	 */
-	asm volatile ("pushfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "movl %0, %1	\n\t"
-		      "xorl %2, %0	\n\t"
-		      "pushl %0		\n\t"
-		      "popfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "popfl		\n\t"
-
-		      : "=&r" (f1), "=&r" (f2)
-		      : "ir" (flag));
-
-	return ((f1^f2) & flag) != 0;
-}
-
-/* Probe for the CPUID instruction */
-int have_cpuid_p(void)/*  */
-{
-	return flag_is_changeable_p(X86_EFLAGS_ID);/* EFLAGS 寄存器 */
-}
-
-static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-{
-	unsigned long lo, hi;
-
-	if (!cpu_has(c, X86_FEATURE_PN) || !disable_x86_serial_nr)
-		return;
-
-	/* Disable processor serial number: */
-
-	rdmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-	lo |= 0x200000;
-	wrmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-
-	pr_notice("CPU serial number disabled.\n");
-	clear_cpu_cap(c, X86_FEATURE_PN);
-
-	/* Disabling the serial number may affect the cpuid level */
-	c->cpuid_level = cpuid_eax(0);
-}
-
-static int __init x86_serial_nr_setup(char *s)
-{
-	disable_x86_serial_nr = 0;
-	return 1;
-}
-__setup("serialnumber", x86_serial_nr_setup);
+//static int cachesize_override = -1;
+//static int disable_x86_serial_nr = 1;
+//
+//static int __init cachesize_setup(char *str)
+//{
+//	get_option(&str, &cachesize_override);
+//	return 1;
+//}
+//__setup("cachesize=", cachesize_setup);
+//
+//static int __init x86_sep_setup(char *s)
+//{
+//	setup_clear_cpu_cap(X86_FEATURE_SEP);
+//	return 1;
+//}
+//__setup("nosep", x86_sep_setup);
+//
+///* Standard macro to see if a specific flag is changeable */
+//static inline int flag_is_changeable_p(u32 flag)/* 看看 寄存器是不是都是可变的 */
+//{
+//	u32 f1, f2;
+//
+//	/*
+//	 * Cyrix and IDT cpus allow disabling of CPUID
+//	 * so the code below may return different results
+//	 * when it is executed before and after enabling
+//	 * the CPUID. Add "volatile" to not allow gcc to
+//	 * optimize the subsequent calls to this function.
+//	 */
+//	asm volatile ("pushfl		\n\t"
+//		      "pushfl		\n\t"
+//		      "popl %0		\n\t"
+//		      "movl %0, %1	\n\t"
+//		      "xorl %2, %0	\n\t"
+//		      "pushl %0		\n\t"
+//		      "popfl		\n\t"
+//		      "pushfl		\n\t"
+//		      "popl %0		\n\t"
+//		      "popfl		\n\t"
+//
+//		      : "=&r" (f1), "=&r" (f2)
+//		      : "ir" (flag));
+//
+//	return ((f1^f2) & flag) != 0;
+//}
+//
+///* Probe for the CPUID instruction */
+//int have_cpuid_p(void)/*  */
+//{
+//	return flag_is_changeable_p(X86_EFLAGS_ID);/* EFLAGS 寄存器 */
+//}
+//
+//static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
+//{
+//	unsigned long lo, hi;
+//
+//	if (!cpu_has(c, X86_FEATURE_PN) || !disable_x86_serial_nr)
+//		return;
+//
+//	/* Disable processor serial number: */
+//
+//	rdmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
+//	lo |= 0x200000;
+//	wrmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
+//
+//	pr_notice("CPU serial number disabled.\n");
+//	clear_cpu_cap(c, X86_FEATURE_PN);
+//
+//	/* Disabling the serial number may affect the cpuid level */
+//	c->cpuid_level = cpuid_eax(0);
+//}
+//
+//static int __init x86_serial_nr_setup(char *s)
+//{
+//	disable_x86_serial_nr = 0;
+//	return 1;
+//}
+//__setup("serialnumber", x86_serial_nr_setup);
 #else
 static inline int flag_is_changeable_p(u32 flag)
 {
@@ -641,7 +641,7 @@ void load_direct_gdt(int cpu)
 }
 EXPORT_SYMBOL_GPL(load_direct_gdt);
 
-/* Load a fixmap remapping of the per-cpu GDT */
+/* Load a fixmap remapping of the per-cpu GDT *//* 加载 固定映射区的全局描述符表 */
 void load_fixmap_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
@@ -1793,6 +1793,8 @@ void syscall_init(void)
      * `MSR_IA32_SYSENTER_EIP` - target `eip` for the `sysenter` instruction.
      */
 #ifdef CONFIG_IA32_EMULATION    //允许64字节内核运行32字节的程序
+
+    //把 `entry_SYSCALL_compat` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
 	wrmsrl(MSR_CSTAR, (unsigned long)entry_SYSCALL_compat);
 	/*
 	 * This only works on Intel CPUs.
@@ -1800,6 +1802,7 @@ void syscall_init(void)
 	 * This does not cause SYSENTER to jump to the wrong location, because
 	 * AMD doesn't allow SYSENTER in long mode (either 32- or 64-bit).
 	 */
+	 //将 [Global Descriptor Table]的无效段加载至 `MSR_IA32_SYSENTER_CS` 特殊模式寄存器
 	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)__KERNEL_CS);
 	wrmsrl_safe(MSR_IA32_SYSENTER_ESP,
 		    (unsigned long)(cpu_entry_stack(smp_processor_id()) + 1));
@@ -1807,15 +1810,15 @@ void syscall_init(void)
     //`entry_SYSENTER_compat`字的地址写入[指令指针]
 	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, (u64)entry_SYSENTER_compat);
 #else
-    //把 `ignore_sysret` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
-	wrmsrl(MSR_CSTAR, (unsigned long)ignore_sysret);
-
-    //将 [Global Descriptor Table]的无效段加载至 `MSR_IA32_SYSENTER_CS` 特殊模式寄存器
-	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)GDT_ENTRY_INVALID_SEG/*0*/);
-
-    //用零填充 `MSR_IA32_SYSENTER_ESP` 和 `MSR_IA32_SYSENTER_EIP`
-	wrmsrl_safe(MSR_IA32_SYSENTER_ESP, 0ULL);
-	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, 0ULL);
+//    //把 `ignore_sysret` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
+//	wrmsrl(MSR_CSTAR, (unsigned long)ignore_sysret);
+//
+//    //将 [Global Descriptor Table]的无效段加载至 `MSR_IA32_SYSENTER_CS` 特殊模式寄存器
+//	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)GDT_ENTRY_INVALID_SEG/*0*/);
+//
+//    //用零填充 `MSR_IA32_SYSENTER_ESP` 和 `MSR_IA32_SYSENTER_EIP`
+//	wrmsrl_safe(MSR_IA32_SYSENTER_ESP, 0ULL);
+//	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, 0ULL);
 #endif
 
 	/* Flags to clear on syscall */
@@ -1862,7 +1865,7 @@ static void clear_all_debug_regs(void)
 		if ((i == 4) || (i == 5))
 			continue;
 
-		set_debugreg(0, i);
+		set_debugreg(0, i); /* 清空所有 调试 寄存器 */
 	}
 }
 
@@ -1874,10 +1877,10 @@ static void clear_all_debug_regs(void)
 static void dbg_restore_debug_regs(void)
 {
 	if (unlikely(kgdb_connected && arch_kgdb_ops.correct_hw_break))
-		arch_kgdb_ops.correct_hw_break();
+		arch_kgdb_ops.correct_hw_break();   //== kgdb_correct_hw_break()
 }
 #else /* ! CONFIG_KGDB */
-#define dbg_restore_debug_regs()
+/*  */
 #endif /* ! CONFIG_KGDB */
 
 static void wait_for_master_cpu(int cpu)
@@ -1933,16 +1936,7 @@ static inline void tss_setup_ist(struct tss_struct *tss)
 }
 
 #else /* CONFIG_X86_64 */
-
-static inline void setup_getcpu(int cpu) { }
-
-static inline void ucode_cpu_init(int cpu)
-{
-	show_ucode_info_early();
-}
-
-static inline void tss_setup_ist(struct tss_struct *tss) { }
-
+/*  */
 #endif /* !CONFIG_X86_64 */
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
@@ -2000,15 +1994,17 @@ void cpu_init(void) /*  */
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
 
-	wait_for_master_cpu(cpu);
+	wait_for_master_cpu(cpu);   /* 等待主 CPU */
 
-	ucode_cpu_init(cpu);
+	ucode_cpu_init(cpu);    /*  */
 
 #ifdef CONFIG_NUMA
 	if (this_cpu_read(numa_node) == 0 &&
 	    early_cpu_to_node(cpu) != NUMA_NO_NODE)
 		set_numa_node(early_cpu_to_node(cpu));
 #endif
+
+    /*  */
 	setup_getcpu(cpu);
 
 	pr_debug("Initializing CPU#%d\n", cpu);
@@ -2022,11 +2018,17 @@ void cpu_init(void) /*  */
 	 * and set up the GDT descriptor:
 	 */
 	switch_to_new_gdt(cpu);
+
+    /* 加载中断描述符表 */
 	load_current_idt();
 
 	if (IS_ENABLED(CONFIG_X86_64)) {
 		loadsegment(fs, 0);
 		memset(cur->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
+
+        /**
+         *  syscall 系统调用初始化
+         */
 		syscall_init();
         /* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
         
@@ -2043,7 +2045,7 @@ void cpu_init(void) /*  */
 	initialize_tlbstate_and_flush();
 	enter_lazy_tlb(&init_mm, cur);
 
-	/* Initialize the TSS. */
+	/* Initialize the TSS. 任务段状态段 */
 	tss_setup_ist(tss);
 	tss_setup_io_bitmap(tss);
 	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
@@ -2055,19 +2057,20 @@ void cpu_init(void) /*  */
 	 */
 	load_sp0((unsigned long)(cpu_entry_stack(cpu) + 1));
 
+    /* 局部描述符表 */
 	load_mm_ldt(&init_mm);
 
-	clear_all_debug_regs();
+	clear_all_debug_regs(); /* 清零 所有u调试寄存器 DR0-DR7 */
 	dbg_restore_debug_regs();
 
 	doublefault_init_cpu_tss();
 
-	fpu__init_cpu();
+	fpu__init_cpu();    /* 浮点计算单元 */
 
 	if (is_uv_system())
 		uv_cpu_init();
 
-	load_fixmap_gdt(cpu);
+	load_fixmap_gdt(cpu);   /* 加载 固定映射区的全局描述符表 */
 }
 
 /*

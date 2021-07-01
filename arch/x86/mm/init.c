@@ -173,14 +173,19 @@ RESERVE_BRK(early_pgt_alloc, INIT_PGT_BUF_SIZE);
 //在早期阶段分配页表缓冲区
 void  __init early_alloc_pgt_buf(void)
 {
-	unsigned long tables = INIT_PGT_BUF_SIZE;//获得页表缓冲区的大小(6 * PAGE_SIZE)
+	unsigned long tables = INIT_PGT_BUF_SIZE;//获得页表缓冲区的大小(6 * PAGE_SIZE) 6*4096
 	phys_addr_t base;
 
     //调用 `extend_brk` 函数并且传入两个参数: size和align,会在 `brk` 段中预留给定大小的空间
     //用 `_pa` 宏得到了新的 `brk` 区段的物理地址
-	base = __pa(extend_brk(tables, PAGE_SIZE));
+    // 
+    // 在 brk_end 位置插入 6页，并返回 起始地址
+	base = __pa(extend_brk(tables/* 6*4096 */, PAGE_SIZE/* 4096 */));
 
     //计算页表缓冲区的基地址和结束地址
+    /* 
+        在 brk 区域 分配一个 pgt buf
+    */
 	pgt_buf_start = base >> PAGE_SHIFT;
 	pgt_buf_end = pgt_buf_start;
 	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);
@@ -292,7 +297,7 @@ static void setup_pcid(void)
 }
 
 #ifdef CONFIG_X86_32
-#define NR_RANGE_MR 3
+//#define NR_RANGE_MR 3
 #else /* CONFIG_X86_64 */
 #define NR_RANGE_MR 5
 #endif
@@ -697,14 +702,16 @@ static void __init memory_map_bottom_up(unsigned long map_start,
  * If KASLR is enabled, copy only the PUD which covers the low 1MB
  * area. This limits the randomization granularity to 1GB for both 4-level
  * and 5-level paging.
+ *
+ *  trampoline: 蹦床
  */
 static void __init init_trampoline(void)
 {
 #ifdef CONFIG_X86_64
-	if (!kaslr_memory_enabled())
+	if (!kaslr_memory_enabled())    /* 如果 KASLR 使能 */
 		trampoline_pgd_entry = init_top_pgt[pgd_index(__PAGE_OFFSET)];
 	else
-		init_trampoline_kaslr();
+		init_trampoline_kaslr();    /*  */
 #endif
 }
 
@@ -713,26 +720,26 @@ void __init init_mem_mapping(void)
 {
 	unsigned long end;
 
-	pti_check_boottime_disable();
+	pti_check_boottime_disable();   /* PTI 页表隔离 */
 	probe_page_size_mask();
 	setup_pcid();
 
 #ifdef CONFIG_X86_64
 	end = max_pfn << PAGE_SHIFT;
 #else
-	end = max_low_pfn << PAGE_SHIFT;
+//	end = max_low_pfn << PAGE_SHIFT;
 #endif
 
 	/* the ISA range is always mapped regardless of memory holes */
-	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
+	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);   /*  */
 
-	/* Init the trampoline, possibly with KASLR memory offset */
-	init_trampoline();
+	/* Init the trampoline(蹦床), possibly with KASLR(地址空间配置随机加载) memory offset */
+	init_trampoline();  /*  */
 
 	/*
 	 * If the allocation is in bottom-up direction, we setup direct mapping
 	 * in bottom-up, otherwise we setup direct mapping in top-down.
-	 */
+	 */ /*  */
 	if (memblock_bottom_up()) {
 		unsigned long kernel_end = __pa_symbol(_end);
 
@@ -755,7 +762,7 @@ void __init init_mem_mapping(void)
 		max_low_pfn = max_pfn;
 	}
 #else
-	early_ioremap_page_table_range_init();
+//	early_ioremap_page_table_range_init();
 #endif
 
     /* CR3 - 一级页表 */
@@ -764,6 +771,7 @@ void __init init_mem_mapping(void)
     /* CR4 - 刷新 TLB */
 	__flush_tlb_all();
 
+    /* x86_init_noop() */
 	x86_init.hyper.init_mem_mapping();
 
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
@@ -1003,17 +1011,17 @@ void __init zone_sizes_init(void)
 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
 
 #ifdef CONFIG_ZONE_DMA
-	max_zone_pfns[ZONE_DMA]		= min(MAX_DMA_PFN, max_low_pfn);
+	max_zone_pfns[ZONE_DMA]		= min(MAX_DMA_PFN, max_low_pfn);    /*  */
 #endif
 #ifdef CONFIG_ZONE_DMA32
 	max_zone_pfns[ZONE_DMA32]	= min(MAX_DMA32_PFN, max_low_pfn);
 #endif
 	max_zone_pfns[ZONE_NORMAL]	= max_low_pfn;
 #ifdef CONFIG_HIGHMEM
-	max_zone_pfns[ZONE_HIGHMEM]	= max_pfn;
+//	max_zone_pfns[ZONE_HIGHMEM]	= max_pfn;
 #endif
 
-	free_area_init(max_zone_pfns);
+	free_area_init(max_zone_pfns);  /*  */
 }
 
 __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = {

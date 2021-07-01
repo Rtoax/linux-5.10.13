@@ -60,7 +60,7 @@ static int cmp_ex_sort(const void *a, const void *b)
 		return -1;
 	return 0;
 }
-    /*  */
+    /* 对异常表排序 */
 void sort_extable(struct exception_table_entry *start,
 		  struct exception_table_entry *finish)
 {

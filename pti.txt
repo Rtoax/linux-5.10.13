@@ -1,0 +1,9 @@
+内核页表隔离 （Kernel page-table isolation，缩写KPTI，也简称PTI，旧称KAISER）
+
+-------------------------------------------------------
+CONFIG_PAGE_TABLE_ISOLATION
+
+
+是 Linux内核 
+中的一种 强化 技术，旨在更好地隔离 用户空间 与内核空间的 内存 
+来提高安全性，缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。

@@ -787,7 +787,7 @@ __kernel_physical_mapping_init(unsigned long paddr_start,
  * The virtual and physical addresses have to be aligned on PMD level
  * down. It returns the last physical address mapped.
  */
-unsigned long __meminit
+unsigned long __meminit /*  */
 kernel_physical_mapping_init(unsigned long paddr_start,
 			     unsigned long paddr_end,
 			     unsigned long page_size_mask, pgprot_t prot)
@@ -813,10 +813,10 @@ kernel_physical_mapping_change(unsigned long paddr_start,
 }
 
 #ifndef CONFIG_NUMA
-void __init initmem_init(void)
-{
-	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
-}
+//void __init initmem_init(void)
+//{
+//	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
+//}
 #endif
 
 //x86_init.paging.pagetable_init();

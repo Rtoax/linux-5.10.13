@@ -373,7 +373,7 @@ extern int lapic_can_unplug_cpu(void);
 #ifdef CONFIG_X86_LOCAL_APIC
 
 static inline u32 apic_read(u32 reg)
-{   /* apic maybe == apic_flat */
+{   /* apic maybe == apic_flat -> native_apic_mem_read() */
 	return apic->read(reg); 
 }
 
@@ -464,6 +464,7 @@ static inline unsigned int read_apic_id(void)
 {
 	unsigned int reg = apic_read(APIC_ID);
 
+    //可能是: apic_flat->flat_get_apic_id()
 	return apic->get_apic_id(reg);
 }
 

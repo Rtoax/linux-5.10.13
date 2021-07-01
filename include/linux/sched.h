@@ -1097,7 +1097,7 @@ struct task_struct {    /* PCB */
 #endif
 #ifdef CONFIG_CPUSETS
 	/* Protected by ->alloc_lock: */
-	nodemask_t			mems_allowed;
+	nodemask_t			mems_allowed;   /* 允许在哪个 NODE 上分配内存 */
 	/* Seqence number to catch updates: */
 	seqcount_spinlock_t		mems_allowed_seq;   /*  */
 	int				cpuset_mem_spread_rotor;
@@ -1720,6 +1720,14 @@ extern void ia64_set_curr_task(int cpu, struct task_struct *p);
 
 void yield(void);
 
+//+-----------------------+
+//|        stack          |
+//|_______________________|
+//|          |            |
+//|__________↓____________|             +--------------------+
+//|                       |             |                    |
+//|      thread_info      |<----------->|     task_struct    |
+//+-----------------------+             +--------------------+
 union thread_union {    /*  */
 #ifndef CONFIG_ARCH_TASK_STRUCT_ON_STACK
 	struct task_struct task;

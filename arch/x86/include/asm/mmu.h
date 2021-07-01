@@ -29,7 +29,7 @@ typedef struct {    /* MMU 硬件上下文 */
 
 #ifdef CONFIG_MODIFY_LDT_SYSCALL
 	struct rw_semaphore	ldt_usr_sem;
-	struct ldt_struct	*ldt;
+	struct ldt_struct	*ldt;   /* LDT */
 #endif
 
 #ifdef CONFIG_X86_64

@@ -138,7 +138,7 @@ void __init kernel_randomize_memory(void)
 	}
 }
 
-void __meminit init_trampoline_kaslr(void)
+void __meminit init_trampoline_kaslr(void)  /*  */
 {/* KALSR - Kernel Address Space Layout Randomization 内核地址空间随机分布 */
 	pud_t *pud_page_tramp, *pud, *pud_tramp;
 	p4d_t *p4d_page_tramp, *p4d, *p4d_tramp;

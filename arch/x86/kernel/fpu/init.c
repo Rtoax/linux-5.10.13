@@ -29,13 +29,13 @@ static void fpu__init_cpu_generic(void)
 	cr0 &= ~(X86_CR0_TS|X86_CR0_EM); /* clear TS and EM */
 	if (!boot_cpu_has(X86_FEATURE_FPU))
 		cr0 |= X86_CR0_EM;
-	write_cr0(cr0);
+	write_cr0(cr0); /*  */
 
 	/* Flush out any pending x87 state: */
 #ifdef CONFIG_MATH_EMULATION
-	if (!boot_cpu_has(X86_FEATURE_FPU))
-		fpstate_init_soft(&current->thread.fpu.state.soft);
-	else
+//	if (!boot_cpu_has(X86_FEATURE_FPU))
+//		fpstate_init_soft(&current->thread.fpu.state.soft);
+//	else
 #endif
 		asm volatile ("fninit");
 }

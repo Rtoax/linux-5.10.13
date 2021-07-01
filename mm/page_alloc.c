@@ -5203,10 +5203,10 @@ static unsigned long nr_free_zone_pages(int offset) /* 高水位以上的 pages 
 	struct zonelist *zonelist = /* 获取 ZONE list */node_zonelist(numa_node_id(), GFP_KERNEL);
 
 	for_each_zone_zonelist(zone, z, zonelist, offset) {
-		unsigned long size = zone_managed_pages(zone);
-		unsigned long high = high_wmark_pages(zone);
+		unsigned long size = zone_managed_pages(zone);  /* 读取管理页数量 */
+		unsigned long high = high_wmark_pages(zone);    /* high 水位 pages */
 		if (size > high)
-			sum += size - high; /* 管理的 - 高水位 */
+			sum += size - high; /* 管理的 - 高水位 = 没使用的free page */
 	}
 
 	return sum;
@@ -5748,7 +5748,7 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
  * may still exist in local DMA zone.
  */
 
-static void build_zonelists(pg_data_t *pgdat)
+static void build_zonelists(pg_data_t *pgdat)   /*  */
 {
 	static int node_order[MAX_NUMNODES];
 	int node, load, nr_nodes = 0;
@@ -5895,8 +5895,8 @@ static void __build_all_zonelists(void *data/* 启动阶段 data=NULL */)/*  */
 		 * secondary cpus' numa_mem as they come on-line.  During
 		 * node/memory hotplug, we'll fixup all on-line cpus.
 		 */
-		for_each_online_cpu(cpu){
-			set_cpu_numa_mem(cpu, local_memory_node(cpu_to_node(cpu)));}
+//		for_each_online_cpu(cpu){
+//			set_cpu_numa_mem(cpu, local_memory_node(cpu_to_node(cpu)));}
 #endif
 	}
 
@@ -5940,16 +5940,20 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 {
 	unsigned long vm_total_pages;
 
-	if (system_state == SYSTEM_BOOTING) {
+    /* 启动阶段 */
+	if (system_state == SYSTEM_BOOTING) {   
 		build_all_zonelists_init();     /*  */
+
+    /* 非启动阶段 */
 	} else {
 		__build_all_zonelists(pgdat);   /*  */
 		/* cpuset refresh routine should be here */
 	}
-	/* Get the number of free pages beyond high watermark in all zones. */
+	/* Get the number of free pages beyond high watermark in all zones.
+	    超出高水位的 空闲页 (所有 ZONEs)*/
 	vm_total_pages = nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
 	/*
-	 * Disable grouping by mobility if the number of pages in the
+	 * Disable grouping by mobility(流动性) if the number of pages in the
 	 * system is too low to allow the mechanism to work. It would be
 	 * more accurate, but expensive to check per-zone. This check is
 	 * made on memory-hotadd so a system can start with mobility
@@ -6227,16 +6231,16 @@ static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 	smp_wmb();
 
        /* Update high, then batch, in order */
-	pcp->high = high;
+	pcp->high = high;   /* 高水位 */
 	smp_wmb();
 
 	pcp->batch = batch;
 }
 
 /* a companion to pageset_set_high() */
-static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)
+static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)   /*  */
 {
-	pageset_update(&p->pcp, 6 * batch, max(1UL, 1 * batch));
+	pageset_update(&p->pcp, 6 * batch/* =0 */, max(1UL, 1 * batch));
 }
 
 static void pageset_init(struct per_cpu_pageset *p) /* 初始化链表 */
@@ -6251,10 +6255,10 @@ static void pageset_init(struct per_cpu_pageset *p) /* 初始化链表 */
 		INIT_LIST_HEAD(&pcp->lists[migratetype]);   /* 初始化链表 */
 }
 
-static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch/* =0 */)   /*  */
 {
-	pageset_init(p);
-	pageset_set_batch(p, batch);
+	pageset_init(p);    /* 初始化链表 */
+	pageset_set_batch(p, batch/* =0 */);    /*  */
 }
 
 /*
@@ -6275,9 +6279,7 @@ static void pageset_set_high_and_batch(struct zone *zone,
 				       struct per_cpu_pageset *pcp)
 {
 	if (percpu_pagelist_fraction)
-		pageset_set_high(pcp,
-			(zone_managed_pages(zone) /
-				percpu_pagelist_fraction));
+		pageset_set_high(pcp,  (zone_managed_pages(zone) / percpu_pagelist_fraction)  );
 	else
 		pageset_set_batch(pcp, zone_batchsize(zone));
 }

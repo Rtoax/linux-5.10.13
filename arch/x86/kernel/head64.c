@@ -320,9 +320,9 @@ unsigned long __startup_secondary_64(void)  /*  */
 重置了所有的全局页目录项，同时向 `cr3` 中重新写入了的全局页目录表的地址*/
 static void __init reset_early_page_tables(void)
 {
-	memset(early_top_pgt, 0, sizeof(pgd_t)*(PTRS_PER_PGD-1));
+	memset(early_top_pgt, 0, sizeof(pgd_t)*(PTRS_PER_PGD-1));   /*  */
 	next_early_pgt = 0;
-	write_cr3(__sme_pa_nodebug(early_top_pgt));
+	write_cr3(__sme_pa_nodebug(early_top_pgt)); /* 写到 CR3 里 */
 }
 
 /* Create a new PMD entry */
@@ -518,8 +518,10 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 	 */
 	sme_early_init();
 
+    /*  */
 	kasan_early_init();
 
+    /*  */
 	idt_setup_early_handler();
 
     //real_mode_data = `boot_params` 结构体
@@ -538,7 +540,7 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 	/* set init_top_pgt kernel high mapping*/
 	init_top_pgt[511] = early_top_pgt[511];
 
-	x86_64_start_reservations(real_mode_data);
+	x86_64_start_reservations(real_mode_data);  /*  */
 }
 
 //real_mode_data = `boot_params` 结构体

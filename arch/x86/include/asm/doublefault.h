@@ -3,7 +3,7 @@
 #define _ASM_X86_DOUBLEFAULT_H
 
 #ifdef CONFIG_X86_32
-extern void doublefault_init_cpu_tss(void);
+//extern void doublefault_init_cpu_tss(void);
 #else
 static inline void doublefault_init_cpu_tss(void)
 {

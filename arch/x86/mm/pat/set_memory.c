@@ -554,7 +554,7 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long start,
 /*
  * Lookup the page table entry for a virtual address in a specific pgd.
  * Return a pointer to the entry and the level of the mapping.
- */
+ */ /*  */
 pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address,
 			     unsigned int *level)
 {

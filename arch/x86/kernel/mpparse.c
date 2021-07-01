@@ -618,7 +618,7 @@ static int __init smp_scan_config(unsigned long base, unsigned long length)
 //      default_find_smp_config()
 //
 //扫描内存中的一些区域来寻找 `SMP` 的配置信息
-void __init default_find_smp_config(void)
+void __init default_find_smp_config(void)   /*  */
 {
 	unsigned int address;
 

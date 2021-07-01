@@ -350,7 +350,7 @@ static int bad_address(void *p)
 	return get_kernel_nofault(dummy, (unsigned long *)p);
 }
 
-static void dump_pagetable(unsigned long address)
+static void dump_pagetable(unsigned long address)   /* 转储页表 */
 {
 	pgd_t *base = __va(read_cr3_pa());
 	pgd_t *pgd = base + pgd_index(address);
@@ -503,7 +503,7 @@ static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
 		 name, index, addr, (desc.limit0 | (desc.limit1 << 16)));
 }
 
-static void
+static void /*  */
 show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address)
 {
 	if (!oops_may_print())
@@ -514,7 +514,7 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long ad
 		pgd_t *pgd;
 		pte_t *pte;
 
-		pgd = __va(read_cr3_pa());
+		pgd = __va(read_cr3_pa());  /*  */
 		pgd += pgd_index(address);
 
 		pte = lookup_address_in_pgd(pgd, address, &level);

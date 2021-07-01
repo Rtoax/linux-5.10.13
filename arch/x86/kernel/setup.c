@@ -72,7 +72,7 @@ RESERVE_BRK(dmi_alloc, 65536);
 unsigned long _brk_start = (unsigned long)__brk_base;   /* brk() 开始 */
 unsigned long _brk_end   = (unsigned long)__brk_base;   /* brk() 结束 */
 
-struct boot_params boot_params;
+struct boot_parameters boot_params;
 
 /*
  * These are the four main kernel memory regions, we put them into
@@ -220,7 +220,7 @@ void * __init extend_brk(size_t size, size_t align)
 //}
 #endif
 
-static void __init reserve_brk(void)
+static void __init reserve_brk(void)    /*  */
 {
 	if (_brk_end > _brk_start)
 		memblock_reserve(__pa_symbol(_brk_start),
@@ -317,6 +317,12 @@ static void __init early_reserve_initrd(void)
 /**
  *  1.starts from the definition of the base address and end address of the `initrd`;
  *  2.check that `initrd` is provided by a bootloader
+ */
+/**
+ *  Linux初始RAM磁盘(initrd)是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。
+ *  根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移
+ *
+ *  Ram Disk - initRD - initrd
  */
 static void __init reserve_initrd(void)
 {
@@ -831,6 +837,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 			initial_page_table + KERNEL_PGD_BOUNDARY,
 			KERNEL_PGD_PTRS);
 
+    /* 保存全局页表到 CR3 寄存器 */
 	load_cr3(swapper_pg_dir);/* CR3 寄存器 */
 	/*
 	 * Note: Quark X1000 CPUs advertise PGE incorrectly and require
@@ -877,8 +884,8 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	screen_info = boot_params.screen_info;
 	edid_info = boot_params.edid_info;
 #ifdef CONFIG_X86_32
-	apm_info.bios = boot_params.apm_bios_info;
-	ist_info = boot_params.ist_info;
+//	apm_info.bios = boot_params.apm_bios_info;
+//	ist_info = boot_params.ist_info;
 #endif
 	saved_video_mode = boot_params.hdr.vid_mode;
 	bootloader_type = boot_params.hdr.type_of_loader;
@@ -1114,13 +1121,13 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 
     
 #ifdef CONFIG_X86_32
-	if (ppro_with_ram_bug()) {
-		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
-				  E820_TYPE_RESERVED);
-		e820__update_table(e820_table);
-		printk(KERN_INFO "fixed physical RAM map:\n");
-		e820__print_table("bad_ppro");
-	}
+//	if (ppro_with_ram_bug()) {
+//		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
+//				  E820_TYPE_RESERVED);
+//		e820__update_table(e820_table);
+//		printk(KERN_INFO "fixed physical RAM map:\n");
+//		e820__print_table("bad_ppro");
+//	}
 #else
 	early_gart_iommu_check();   /*  */
 #endif
@@ -1148,13 +1155,17 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	/*
 	 * Define random base addresses for memory sections after max_pfn is
 	 * defined and before each memory section base is used.
+	 *
+	 * 随机化 内存 节 的 基址
 	 */
 	kernel_randomize_memory();  /*  */
 
 #ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */
-	find_low_pfn_range();   /*  */
+//	find_low_pfn_range();   /*  */
 #else
+
+    /* 我估计这是 CPU 内部集成的APIC吧 - 荣涛 2021年7月1日 */
 	check_x2apic(); /*  */
 
 	/* How many end-of-memory variables you have, grandma! */
@@ -1181,6 +1192,8 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 
     /**
      *  在早期阶段分配页表缓冲区
+     *
+     *  在 brk 区域 申请 6页
      */
 	early_alloc_pgt_buf();
 
@@ -1227,8 +1240,8 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 #endif
 
 #ifdef CONFIG_X86_32
-	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
-			(max_pfn_mapped<<PAGE_SHIFT) - 1);
+//	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
+//			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 #endif
 
     /**
@@ -1252,7 +1265,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
     /**
      *  用于在 `PAGE_OFFSET` 处重建物理内存的直接映射
      */
-	init_mem_mapping();
+	init_mem_mapping(); /*  */
 
     /**
      *  用于建立 `#PF` 处理函数 (Page Fault)
@@ -1269,6 +1282,8 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 * PCIDE for now).
 	 *
 	 * CR4
+	 *  <Control Registers(CR0, CR1, CR2, CR3, and CR4)>
+	 *  https://rtoax.blog.csdn.net/article/details/118164142
 	 */
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
@@ -1285,8 +1300,9 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	if (init_ohci1394_dma_early)
 		init_ohci1394_dma_on_all_controllers();
 #endif
-	/* Allocate bigger log buffer */
-	setup_log_buf(1);
+    
+	/* Allocate bigger log buffer 日志 buffer 大小 */
+	setup_log_buf(1);   /*  */
 
 	if (efi_enabled(EFI_BOOT)) {
 		switch (boot_params.secure_boot) {
@@ -1324,10 +1340,10 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
     /**
      *  This function allows to override  default I/O delay `0x80` port
      */
-	io_delay_init();
+	io_delay_init();    /*  */
 
     /**
-     *  
+     *  quirks: 怪癖
      */
 	early_platform_quirks();
 
@@ -1345,7 +1361,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
     /**
      *  
      */
-	initmem_init();
+	initmem_init(); /* x86_numa_init(); */
 
     /**
      *  Allocate area for DMA
@@ -1401,11 +1417,12 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 
     /**
      *  vsyscall mapping 
+     *  映射 vsyscall
      */
 	map_vsyscall();
 
     /**
-     *  
+     *  x86-64 为 空
      */
 	generic_apic_probe();
 
@@ -1434,7 +1451,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 *
 	 * sets the address of the local [APIC]
 	 */
-	init_apic_mappings();   /*  */
+	init_apic_mappings();   /* 中断控制器 映射 */
 
     /**
      *  makes preliminary(初步的) filling of the possible CPU's `cpumask`
@@ -1456,8 +1473,15 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
      */ 
 	io_apic_init_mappings();    /*  */
 
+    /* 
+        初始值: x86_init_noop()
+        后期可能为: xen_pv_guest_late_init()
+    */
 	x86_init.hyper.guest_late_init();
 
+    /**
+     *  E820 内存管理器
+     */
 	e820__reserve_resources();  /*  */
 	e820__register_nosave_regions(max_pfn);
 
@@ -1481,7 +1505,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	x86_init.timers.wallclock_init();
 
     //initializes `Machine check Exception`
-	mcheck_init();
+	mcheck_init();  /*  */
 
     //registers [jiffy]
 	register_refined_jiffies(CLOCK_TICK_RATE/* The clock frequency of the i8253/i8254 PIT */);
@@ -1491,6 +1515,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 		efi_apply_memmap_quirks();  /*  */
 #endif
 
+    /* 回溯 */
 	unwind_init();  /*  */
 }
 

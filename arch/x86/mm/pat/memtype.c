@@ -288,6 +288,8 @@ void init_cache_modes(void)
 		 *
 		 * If PAT MSR returns 0, it is considered invalid and emulates
 		 * as No PAT.
+		 *
+		 * MSR 寄存器 - 参见 intel 手册
 		 */
 		rdmsrl(MSR_IA32_CR_PAT, pat);
 	}

@@ -283,8 +283,8 @@ static void __init memblocks_present(void)
 	unsigned long start, end;
 	int i, nid;
 
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid)
-		memory_present(nid, start, end);
+	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid) {
+		memory_present(nid, start, end);}
 }
 
 /*

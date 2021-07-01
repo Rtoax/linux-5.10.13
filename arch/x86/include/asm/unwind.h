@@ -74,7 +74,7 @@ static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
 #ifdef CONFIG_UNWINDER_ORC
 		*partial = !state->full_regs;
 #else
-		*partial = false;
+//		*partial = false;
 #endif
 	}
 

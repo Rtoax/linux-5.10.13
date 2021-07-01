@@ -313,159 +313,159 @@ found:
 
 #ifdef CONFIG_BOOT_CONFIG
 
-static char __initdata xbc_namebuf[XBC_KEYLEN_MAX] ;
-
-#define rest(dst, end) ((end) > (dst) ? (end) - (dst) : 0)
-
-static int __init xbc_snprint_cmdline(char *buf, size_t size,
-				      struct xbc_node *root)
-{
-	struct xbc_node *knode, *vnode;
-	char *end = buf + size;
-	const char *val;
-	int ret;
-
-	xbc_node_for_each_key_value(root, knode, val) {
-		ret = xbc_node_compose_key_after(root, knode,
-					xbc_namebuf, XBC_KEYLEN_MAX);
-		if (ret < 0)
-			return ret;
-
-		vnode = xbc_node_get_child(knode);
-		if (!vnode) {
-			ret = snprintf(buf, rest(buf, end), "%s ", xbc_namebuf);
-			if (ret < 0)
-				return ret;
-			buf += ret;
-			continue;
-		}
-		xbc_array_for_each_value(vnode, val) {
-			ret = snprintf(buf, rest(buf, end), "%s=\"%s\" ",
-				       xbc_namebuf, val);
-			if (ret < 0)
-				return ret;
-			buf += ret;
-		}
-	}
-
-	return buf - (end - size);
-}
-#undef rest
-
-/* Make an extra command line under given key word */
-static char * __init xbc_make_cmdline(const char *key)
-{
-	struct xbc_node *root;
-	char *new_cmdline;
-	int ret, len = 0;
-
-	root = xbc_find_node(key);
-	if (!root)
-		return NULL;
-
-	/* Count required buffer size */
-	len = xbc_snprint_cmdline(NULL, 0, root);
-	if (len <= 0)
-		return NULL;
-
-	new_cmdline = memblock_alloc(len + 1, SMP_CACHE_BYTES);
-	if (!new_cmdline) {
-		pr_err("Failed to allocate memory for extra kernel cmdline.\n");
-		return NULL;
-	}
-
-	ret = xbc_snprint_cmdline(new_cmdline, len + 1, root);
-	if (ret < 0 || ret > len) {
-		pr_err("Failed to print extra kernel cmdline.\n");
-		return NULL;
-	}
-
-	return new_cmdline;
-}
-
-static u32 boot_config_checksum(unsigned char *p, u32 size)
-{
-	u32 ret = 0;
-
-	while (size--)
-		ret += *p++;
-
-	return ret;
-}
-
-static int __init bootconfig_params(char *param, char *val,
-				    const char *unused, void *arg)
-{
-	if (strcmp(param, "bootconfig") == 0) {
-		bootconfig_found = true;
-	}
-	return 0;
-}
-
-static void __init setup_boot_config(const char *cmdline)
-{
-	static char __initdata tmp_cmdline[COMMAND_LINE_SIZE] ;
-	const char *msg;
-	int pos;
-	u32 size, csum;
-	char *data, *copy, *err;
-	int ret;
-
-	/* Cut out the bootconfig data even if we have no bootconfig option */
-	data = get_boot_config_from_initrd(&size, &csum);
-
-	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	err = parse_args("bootconfig", tmp_cmdline, NULL, 0, 0, 0, NULL,
-			 bootconfig_params);
-
-	if (IS_ERR(err) || !bootconfig_found)
-		return;
-
-	/* parse_args() stops at '--' and returns an address */
-	if (err)
-		initargs_found = true;
-
-	if (!data) {
-		pr_err("'bootconfig' found on command line, but no bootconfig found\n");
-		return;
-	}
-
-	if (size >= XBC_DATA_MAX) {
-		pr_err("bootconfig size %d greater than max size %d\n",
-			size, XBC_DATA_MAX);
-		return;
-	}
-
-	if (boot_config_checksum((unsigned char *)data, size) != csum) {
-		pr_err("bootconfig checksum failed\n");
-		return;
-	}
-
-	copy = memblock_alloc(size + 1, SMP_CACHE_BYTES);
-	if (!copy) {
-		pr_err("Failed to allocate memory for bootconfig\n");
-		return;
-	}
-
-	memcpy(copy, data, size);
-	copy[size] = '\0';
-
-	ret = xbc_init(copy, &msg, &pos);
-	if (ret < 0) {
-		if (pos < 0)
-			pr_err("Failed to init bootconfig: %s.\n", msg);
-		else
-			pr_err("Failed to parse bootconfig: %s at %d.\n",
-				msg, pos);
-	} else {
-		pr_info("Load bootconfig: %d bytes %d nodes\n", size, ret);
-		/* keys starting with "kernel." are passed via cmdline */
-		extra_command_line = xbc_make_cmdline("kernel");
-		/* Also, "init." keys are init arguments */
-		extra_init_args = xbc_make_cmdline("init");
-	}
-	return;
-}
+//static char __initdata xbc_namebuf[XBC_KEYLEN_MAX] ;
+//
+//#define rest(dst, end) ((end) > (dst) ? (end) - (dst) : 0)
+//
+//static int __init xbc_snprint_cmdline(char *buf, size_t size,
+//				      struct xbc_node *root)
+//{
+//	struct xbc_node *knode, *vnode;
+//	char *end = buf + size;
+//	const char *val;
+//	int ret;
+//
+//	xbc_node_for_each_key_value(root, knode, val) {
+//		ret = xbc_node_compose_key_after(root, knode,
+//					xbc_namebuf, XBC_KEYLEN_MAX);
+//		if (ret < 0)
+//			return ret;
+//
+//		vnode = xbc_node_get_child(knode);
+//		if (!vnode) {
+//			ret = snprintf(buf, rest(buf, end), "%s ", xbc_namebuf);
+//			if (ret < 0)
+//				return ret;
+//			buf += ret;
+//			continue;
+//		}
+//		xbc_array_for_each_value(vnode, val) {
+//			ret = snprintf(buf, rest(buf, end), "%s=\"%s\" ",
+//				       xbc_namebuf, val);
+//			if (ret < 0)
+//				return ret;
+//			buf += ret;
+//		}
+//	}
+//
+//	return buf - (end - size);
+//}
+//#undef rest
+//
+///* Make an extra command line under given key word */
+//static char * __init xbc_make_cmdline(const char *key)
+//{
+//	struct xbc_node *root;
+//	char *new_cmdline;
+//	int ret, len = 0;
+//
+//	root = xbc_find_node(key);
+//	if (!root)
+//		return NULL;
+//
+//	/* Count required buffer size */
+//	len = xbc_snprint_cmdline(NULL, 0, root);
+//	if (len <= 0)
+//		return NULL;
+//
+//	new_cmdline = memblock_alloc(len + 1, SMP_CACHE_BYTES);
+//	if (!new_cmdline) {
+//		pr_err("Failed to allocate memory for extra kernel cmdline.\n");
+//		return NULL;
+//	}
+//
+//	ret = xbc_snprint_cmdline(new_cmdline, len + 1, root);
+//	if (ret < 0 || ret > len) {
+//		pr_err("Failed to print extra kernel cmdline.\n");
+//		return NULL;
+//	}
+//
+//	return new_cmdline;
+//}
+//
+//static u32 boot_config_checksum(unsigned char *p, u32 size)
+//{
+//	u32 ret = 0;
+//
+//	while (size--)
+//		ret += *p++;
+//
+//	return ret;
+//}
+//
+//static int __init bootconfig_params(char *param, char *val,
+//				    const char *unused, void *arg)
+//{
+//	if (strcmp(param, "bootconfig") == 0) {
+//		bootconfig_found = true;
+//	}
+//	return 0;
+//}
+//
+//static void __init setup_boot_config(const char *cmdline)
+//{
+//	static char __initdata tmp_cmdline[COMMAND_LINE_SIZE] ;
+//	const char *msg;
+//	int pos;
+//	u32 size, csum;
+//	char *data, *copy, *err;
+//	int ret;
+//
+//	/* Cut out the bootconfig data even if we have no bootconfig option */
+//	data = get_boot_config_from_initrd(&size, &csum);
+//
+//	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+//	err = parse_args("bootconfig", tmp_cmdline, NULL, 0, 0, 0, NULL,
+//			 bootconfig_params);
+//
+//	if (IS_ERR(err) || !bootconfig_found)
+//		return;
+//
+//	/* parse_args() stops at '--' and returns an address */
+//	if (err)
+//		initargs_found = true;
+//
+//	if (!data) {
+//		pr_err("'bootconfig' found on command line, but no bootconfig found\n");
+//		return;
+//	}
+//
+//	if (size >= XBC_DATA_MAX) {
+//		pr_err("bootconfig size %d greater than max size %d\n",
+//			size, XBC_DATA_MAX);
+//		return;
+//	}
+//
+//	if (boot_config_checksum((unsigned char *)data, size) != csum) {
+//		pr_err("bootconfig checksum failed\n");
+//		return;
+//	}
+//
+//	copy = memblock_alloc(size + 1, SMP_CACHE_BYTES);
+//	if (!copy) {
+//		pr_err("Failed to allocate memory for bootconfig\n");
+//		return;
+//	}
+//
+//	memcpy(copy, data, size);
+//	copy[size] = '\0';
+//
+//	ret = xbc_init(copy, &msg, &pos);
+//	if (ret < 0) {
+//		if (pos < 0)
+//			pr_err("Failed to init bootconfig: %s.\n", msg);
+//		else
+//			pr_err("Failed to parse bootconfig: %s at %d.\n",
+//				msg, pos);
+//	} else {
+//		pr_info("Load bootconfig: %d bytes %d nodes\n", size, ret);
+//		/* keys starting with "kernel." are passed via cmdline */
+//		extra_command_line = xbc_make_cmdline("kernel");
+//		/* Also, "init." keys are init arguments */
+//		extra_init_args = xbc_make_cmdline("init");
+//	}
+//	return;
+//}
 
 #else
 
@@ -901,18 +901,26 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      *  依赖于体系结构的初始化部分
      */    
 	setup_arch(&command_line);          /* 初始化 架构相关 */
-	setup_boot_config(command_line);    /*  */
+	setup_boot_config(command_line);    /* 启动配置 */
 	setup_command_line(command_line);   /* 保存命令行参数 */
 	setup_nr_cpu_ids();                 /* 设置CPU数量: setting `nr_cpu_ids` */
 	setup_per_cpu_areas();              /* setups memory areas for the `percpu` variables */
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 	boot_cpu_hotplug_init();            /*  */
+
+    /**
+     *  ZONE lists 创建
+     */
     /* `pglist_data` or `pg_data_t`  */
 	build_all_zonelists(NULL);          /* sets up the order of zones that allocations are preferred from */
-    
+
+    /**
+     *  
+     */
 	page_alloc_init();                  /*  */
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
+    
 	/* parameters may set static keys */
 	jump_label_init();      /*  */
 
@@ -934,7 +942,13 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	 * kmem_cache_init()
 	 */
 	setup_log_buf(0);           /* setups the [printk] log buffer */
+
+    /**
+     *  哈希表的初始化
+     */
 	vfs_caches_init_early();    /* VFS cache, 目录和inode的哈希表的分配 */
+
+    /*  */
 	sort_main_extable();        /* 对异常表进行排序 */
 
     /**
@@ -945,6 +959,10 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      */
 	trap_init();                /* 陷阱初始化，各种 中断的 拷贝 
                                 This function makes initialization of the remaining exceptions handlers */
+
+    /**
+     *  
+     */
 	mm_init();                  /* 内存初始化，slab，泄漏，页表初始化，大页等 */
 
 	ftrace_init();      /* 故障调试和性能分析 */

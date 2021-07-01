@@ -1340,6 +1340,23 @@ void __init e820__memory_setup(void)
 	e820__print_table(who);
 }
 
+//[rongtao@localhost src]$ dmesg | grep e820
+//[    0.000000] e820: BIOS-provided physical RAM map:
+//[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+//[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+//[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+//[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000bff7ffff] usable
+//[    0.000000] BIOS-e820: [mem 0x00000000bff80000-0x00000000bfffffff] reserved
+//[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+//[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+//[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x000000023fffffff] usable
+//[    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+//[    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
+//[    0.000000] e820: last_pfn = 0x240000 max_arch_pfn = 0x400000000
+//[    0.000000] e820: last_pfn = 0xbff80 max_arch_pfn = 0x400000000
+//[    0.000000] e820: [mem 0xc0000000-0xfeffbfff] available for PCI devices
+//[    1.258057] e820: reserve RAM buffer [mem 0x0009fc00-0x0009ffff]
+//[    1.258059] e820: reserve RAM buffer [mem 0xbff80000-0xbfffffff]
 void __init e820__memblock_setup(void)
 {
 	int i;

@@ -1180,6 +1180,7 @@ void __init trap_init(void) /* 陷阱初始化 : 执行 `non-early` 异常处理
 	/* Init GHCB memory pages when running as an SEV-ES guest */
 	sev_es_init_vc_handling();  /*  */
 
+    /* 中断描述附表 0-32 */
 	idt_setup_traps();  /* 中断描述附表 */
 
 	/*

@@ -42,7 +42,7 @@ void *memmove(void *dest, const void *src, size_t n);
 /*
  * This is set up by the setup-routine at boot-time
  */
-struct boot_params *boot_params;
+struct boot_parameters *boot_params;
 
 memptr free_mem_ptr;
 memptr free_mem_end_ptr;

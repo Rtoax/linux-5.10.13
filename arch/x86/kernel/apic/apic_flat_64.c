@@ -106,6 +106,7 @@ static int flat_probe(void)
 	return 1;
 }
 
+
 static struct apic __ro_after_init apic_flat  = {   /*  */
 	.name				= "flat",
 	.probe				= flat_probe,

@@ -15,7 +15,7 @@
 #include "boot.h"
 #include "string.h"
 
-struct boot_params __attribute__((aligned(16))) boot_params ;/* page0 */
+struct boot_parameters __attribute__((aligned(16))) boot_params ;/* page0 */
 
 char *HEAP = _end;
 char *heap_end = _end;		/* Default end of heap = no heap */

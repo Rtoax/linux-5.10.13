@@ -1,0 +1,32 @@
+E820 内存管理器：https://biscuitos.github.io/blog/MMU-E820/
+
+---------------------------------------------------------------------------------
+
+X86 架构机器在上电之后，BIOS 系统首先进行基础的硬件初始化，将机器初始化到 
+一个已知的状态，接着 BIOS 将 PC 指针跳转到特定位置以便引导内核的启动，最终 
+将执行权从 BIOS 移交给内核。以上便是一个最简单的内核引导过程，在这个过程中， BIOS 
+会初始化并探测系统可用和预留的内存信息，并将其存储在指定位置，内核在初始 
+话过程中，可以通过 BIOS 提供的一系列中断来获得内存相关的信息。
+
+
+
+
+
+[rongtao@localhost src]$ dmesg | grep e820
+[    0.000000] e820: BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000bff7ffff] usable
+[    0.000000] BIOS-e820: [mem 0x00000000bff80000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x000000023fffffff] usable
+[    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+[    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
+[    0.000000] e820: last_pfn = 0x240000 max_arch_pfn = 0x400000000
+[    0.000000] e820: last_pfn = 0xbff80 max_arch_pfn = 0x400000000
+[    0.000000] e820: [mem 0xc0000000-0xfeffbfff] available for PCI devices
+[    1.258057] e820: reserve RAM buffer [mem 0x0009fc00-0x0009ffff]
+[    1.258059] e820: reserve RAM buffer [mem 0xbff80000-0xbfffffff]
+

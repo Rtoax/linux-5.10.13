@@ -2100,8 +2100,8 @@ void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页
 	if (reset_managed_pages_done)/*  */
 		return;
 
-	for_each_online_pgdat(pgdat)  /* 遍历 每个在线 的 页表 */  
-		reset_node_managed_pages(pgdat);/*  */
+	for_each_online_pgdat(pgdat) { /* 遍历 每个在线 的 页表 */  
+		reset_node_managed_pages(pgdat);}/*  */
 
 	reset_managed_pages_done = 1;
 }

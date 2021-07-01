@@ -234,9 +234,10 @@ static inline int __nodes_full(const nodemask_t *srcp, unsigned int nbits)
 	return bitmap_full(srcp->bits, nbits);
 }
 
-#define nodes_weight(nodemask) __nodes_weight(&(nodemask), MAX_NUMNODES)
+#define nodes_weight(nodemask) __nodes_weight(&(nodemask), MAX_NUMNODES/* 1024 */)
 static inline int __nodes_weight(const nodemask_t *srcp, unsigned int nbits)
 {
+    ////bitmap_weight() 函数用于获得 bitmap 在指定范围内 1 的个数。
 	return bitmap_weight(srcp->bits, nbits);
 }
 

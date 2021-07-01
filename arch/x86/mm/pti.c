@@ -18,6 +18,13 @@
  * Mostly rewritten by Thomas Gleixner <tglx@linutronix.de> and
  *		       Andy Lutomirsky <luto@amacapital.net>
  *//* PTI 页表隔离 */
+ /* 
+内核页表隔离 （Kernel page-table isolation，
+缩写KPTI，也简称PTI，旧称KAISER）
+是 Linux内核 中的一种 强化 技术，旨在更好地隔离 
+用户空间 与内核空间的 内存 来提高安全性，
+缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
+*/
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/string.h>
@@ -75,7 +82,7 @@ static enum pti_mode {
 	PTI_FORCE_ON
 } pti_mode;
 
-void __init pti_check_boottime_disable(void)
+void __init pti_check_boottime_disable(void)    /*  */
 {
 	char arg[5];
 	int ret;
@@ -89,6 +96,11 @@ void __init pti_check_boottime_disable(void)
 		return;
 	}
 
+    /* grub 文件中 kernel 的命令行 
+    内核页表隔离 （Kernel page-table isolation，缩写KPTI，也简称PTI，旧称KAISER）
+    是 Linux内核 中的一种 强化 技术，旨在更好地隔离 用户空间 与内核空间的 内存 来提高安全性，
+    缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
+    */
 	ret = cmdline_find_option(boot_command_line, "pti", arg, sizeof(arg));
 	if (ret > 0)  {
 		if (ret == 3 && !strncmp(arg, "off", 3)) {

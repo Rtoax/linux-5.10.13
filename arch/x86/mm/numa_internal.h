@@ -26,9 +26,8 @@ void __init x86_numa_init(void);
 void __init numa_emulation(struct numa_meminfo *numa_meminfo,
 			   int numa_dist_cnt);
 #else
-static inline void numa_emulation(struct numa_meminfo *numa_meminfo,
-				  int numa_dist_cnt)
-{ }
+/*  */
+
 #endif
 
 #endif	/* __X86_MM_NUMA_INTERNAL_H */

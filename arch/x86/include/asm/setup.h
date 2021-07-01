@@ -84,7 +84,7 @@ static inline bool kaslr_enabled(void)
 }
 
 /*
- * Apply no randomization if KASLR was disabled at boot or if KASAN
+ * Apply no randomization if KASLR was disabled at boot or if KASAN(地址空间配置随机加载)
  * is enabled. KASAN shadow mappings rely on regions being PGD aligned.
  */
 static inline bool kaslr_memory_enabled(void)

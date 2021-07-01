@@ -189,7 +189,9 @@ struct jailhouse_setup_data {
 } __attribute__((packed));
 
 /* The so-called "zeropage" */
-struct boot_params {/* 所谓的零 页 page0 */
+/* 我把 `boot_params` 改名为 `boot_parameters` */
+
+struct boot_parameters {/* 所谓的零 页 page0 */
 	struct screen_info screen_info;			/* 0x000 */
 	struct apm_bios_info apm_bios_info;		/* 0x040 */
 	__u8  _pad2[4];					/* 0x054 */

@@ -394,7 +394,7 @@ static inline void set_desc_limit(struct desc_struct *desc, unsigned long limit)
 
 void alloc_intr_gate(unsigned int n, const void *addr);
 
-/* 初始化一个 中断描述符 */
+/* 初始化一个 中断描述符 - 中断门*/
 static inline void init_idt_data(struct idt_data *data, unsigned int n,
 				 const void *addr)/*  */
 {
@@ -405,7 +405,7 @@ static inline void init_idt_data(struct idt_data *data, unsigned int n,
 	data->addr	= addr;     /* 处理地址 */
 	data->segment	= __KERNEL_CS;  /* 内核代码段 */
 	data->bits.type	= GATE_INTERRUPT;/* 中断描述符 */
-	data->bits.p	= 1;    /*  */
+	data->bits.p	= 1;    /* P 位 */
 }
 
 /* 初始化一个门 */

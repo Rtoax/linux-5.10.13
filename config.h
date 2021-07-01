@@ -3303,8 +3303,15 @@
 #define CONFIG_PAGE_POISONING_ZERO 1
 #define CONFIG_PAGE_POOL 1
 #define CONFIG_PAGE_REPORTING 1
-#define CONFIG_PAGE_TABLE_ISOLATION 1
-#define CONFIG_PAGE_TABLE_ISOLATION /* PTI:页表隔离 */
+#define CONFIG_PAGE_TABLE_ISOLATION 1/* PTI:页表隔离 */
+                                    /* 
+                                    内核页表隔离 （Kernel page-table isolation，
+                                    缩写KPTI，也简称PTI，旧称KAISER）
+                                    是 Linux内核 中的一种 强化 技术，旨在更好地隔离 
+                                    用户空间 与内核空间的 内存 来提高安全性，
+                                    缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
+                                    */
+
 #define CONFIG_PANASONIC_LAPTOP_MODULE 1
 #define CONFIG_PANIC_ON_OOPS 1
 #define CONFIG_PANIC_ON_OOPS_VALUE 1

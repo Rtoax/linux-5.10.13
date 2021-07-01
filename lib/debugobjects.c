@@ -1060,7 +1060,7 @@ static int __init debug_objects_init_debugfs(void)
 __initcall(debug_objects_init_debugfs);
 
 #else
-static inline void debug_objects_init_debugfs(void) { }
+/*  */
 #endif
 
 #ifdef CONFIG_DEBUG_OBJECTS_SELFTEST
@@ -1279,7 +1279,7 @@ out:
 	local_irq_restore(flags);
 }
 #else
-static inline void debug_objects_selftest(void) { }
+/*  */
 #endif
 
 /*

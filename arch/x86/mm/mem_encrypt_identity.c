@@ -14,8 +14,8 @@
  * addresses are the same, so override these defines which are ultimately
  * used by the headers in misc.h.
  */
-#define __pa(x)  ((unsigned long)(x))
-#define __va(x)  ((void *)((unsigned long)(x)))
+//#define __pa(x)  ((unsigned long)(x))
+//#define __va(x)  ((void *)((unsigned long)(x)))
 
 /*
  * Special hack: we have to be careful, because no indirections are

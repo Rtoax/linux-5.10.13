@@ -94,9 +94,9 @@ extern unsigned ring_size;
 #if defined(__x86_64__) || defined(__i386__)
 #define cpu_relax() asm ("rep; nop" ::: "memory")
 #elif defined(__s390x__)
-#define cpu_relax() barrier()
+//#define cpu_relax() barrier()
 #else
-#define cpu_relax() assert(0)
+//#define cpu_relax() assert(0)
 #endif
 
 extern bool do_relax;

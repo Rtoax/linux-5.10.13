@@ -673,16 +673,19 @@ static void __init apple_airport_reset(int bus, int slot, int func)
 #define QFLAG_APPLY_ONCE 	0x1
 #define QFLAG_APPLIED		0x2
 #define QFLAG_DONE		(QFLAG_APPLY_ONCE|QFLAG_APPLIED)
-struct chipset {
-	u32 vendor;
-	u32 device;
-	u32 class;
-	u32 class_mask;
-	u32 flags;
+struct chipset {    /* chip set */
+	u32 vendor;     /* 厂商 */
+	u32 device;     /* 设备 */
+	u32 class;      /*  */
+	u32 class_mask; /*  */
+	u32 flags;      /*  */
 	void (*f)(int num, int slot, int func);
 };
 
-static struct chipset __initdata early_qrk[]  = {
+/**
+ *  
+ */
+static struct chipset __initdata early_qrk[]  = {   
 	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
 	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, nvidia_bugs },
 	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID,
@@ -734,6 +737,8 @@ static void __init early_pci_scan_bus(int bus);
  *
  * If the device is single function, let early_pci_scan_bus() know so we don't
  * poke at this device again.
+ *
+ * 
  */
 static int __init check_dev_quirk(int num, int slot, int func)
 {
@@ -744,11 +749,16 @@ static int __init check_dev_quirk(int num, int slot, int func)
 	u8 sec;
 	int i;
 
+    /* 通过读端口 */
 	class = read_pci_config_16(num, slot, func, PCI_CLASS_DEVICE);
 
 	if (class == 0xffff)
 		return -1; /* no class, treat as single function */
 
+    /* 
+        PCI标准的 设备 都得这样搞吧
+        荣涛 2021年7月1日
+    */
 	vendor = read_pci_config_16(num, slot, func, PCI_VENDOR_ID);
 
 	device = read_pci_config_16(num, slot, func, PCI_DEVICE_ID);
@@ -762,6 +772,8 @@ static int __init check_dev_quirk(int num, int slot, int func)
 			    early_qrk[i].class_mask))) {
 				if ((early_qrk[i].flags &
 				     QFLAG_DONE) != QFLAG_DONE)
+
+                    /* 调用函数 */
 					early_qrk[i].f(num, slot, func);
 				early_qrk[i].flags |= QFLAG_APPLIED;
 			}
@@ -782,10 +794,11 @@ static int __init check_dev_quirk(int num, int slot, int func)
 	return 0;
 }
 
-static void __init early_pci_scan_bus(int bus)
+static void __init early_pci_scan_bus(int bus)  /* 发现 PCI 设备 */
 {
 	int slot, func;
 
+    /* 发现 PCI 设备 */
 	/* Poor man's PCI discovery */
 	for (slot = 0; slot < 32; slot++)
 		for (func = 0; func < 8; func++) {
@@ -799,7 +812,7 @@ static void __init early_pci_scan_bus(int bus)
  *  
  * quirks: 怪异的性格(或行为); 怪癖; (尤指偶发的)怪事，奇事;
  */
-void __init early_quirks(void)
+void __init early_quirks(void)  /*  */
 {
 	if (!early_pci_allowed())
 		return;

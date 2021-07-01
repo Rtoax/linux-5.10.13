@@ -110,8 +110,8 @@ struct page {
 					int pages;	/* Nr of pages left */
 					int pobjects;	/* Approximate count */
 #else
-					short int pages;
-					short int pobjects;
+//					short int pages;
+//					short int pobjects;
 #endif
 				};
 			};

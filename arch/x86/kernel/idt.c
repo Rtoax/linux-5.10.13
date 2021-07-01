@@ -62,7 +62,7 @@ static const __initconst struct idt_data early_idts[] = {/* 中断描述符表 �
 	/*
 	 * Not possible on 64-bit. See idt_setup_early_pf() for details.
 	 */
-//	INTG(X86_TRAP_PF,		asm_exc_page_fault),
+	INTG(X86_TRAP_PF,		asm_exc_page_fault),
 #endif
 };
 
@@ -190,7 +190,7 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 {
 	struct idt_data data;
 
-    /*  */
+    /* 生成一个中断门(赋值) */
 	init_idt_data(&data, n/* 中断号 */, addr/* 处理地址 */);
 
     //将中断门插入至 `IDT` 表中
@@ -217,6 +217,7 @@ void __init idt_setup_early_traps(void)/* 中断描述符表 */
  */
 void __init idt_setup_traps(void)   /*  中断描述符表*/
 {
+    /* 默认的中断描述附表 */
 	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
 }
 
@@ -226,6 +227,7 @@ void __init idt_setup_traps(void)   /*  中断描述符表*/
  * stacks work only after cpu_init().
  */
 static const __initconst struct idt_data early_pf_idts[] = {
+    //exc_page_fault(struct pt_regs *regs, int error_code) ???
 	INTG(X86_TRAP_PF,		asm_exc_page_fault),    /* Page Fault */
 };
 
@@ -334,6 +336,7 @@ void __init idt_setup_early_handler(void)
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
 		set_intr_gate(i, early_idt_handler_array[i]);
 #ifdef CONFIG_X86_32
+    /* 忽略32 - 255 */
 	for ( ; i < NR_VECTORS; i++)
 		set_intr_gate(i, early_ignore_irq);
 #endif
