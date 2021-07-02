@@ -146,7 +146,7 @@ static void sock_show_fdinfo(struct seq_file *m, struct file *f)
  *	in the operation structures but are done directly via the socketcall() multiplexor.
  */
 
-static const struct file_operations socket_file_ops = {
+static const struct file_operations socket_file_ops = { /* socket */
 	.owner =	THIS_MODULE,
 	.llseek =	no_llseek,
 	.read_iter =	sock_read_iter,
@@ -170,7 +170,17 @@ static const struct file_operations socket_file_ops = {
  */
 
 static DEFINE_SPINLOCK(net_family_lock);
-static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO] ;    /*  */
+static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO]  = {
+    /* 以下 填充部分是我+的 */
+    [PF_INET]       = &inet_family_ops,
+    [PF_INET6]      = &inet6_family_ops,
+    [PF_UNIX]       = &unix_family_ops,
+    [PF_LOCAL]      = &unix_family_ops,
+    [PF_PACKET]     = &packet_family_ops,
+    [PF_NETLINK]    = &netlink_family_ops
+
+    /* MORE */
+};    
 
 /*
  * Support routines.
@@ -452,8 +462,8 @@ static int sock_map_fd(struct socket *sock, int flags)
 
 struct socket *sock_from_file(struct file *file, int *err)
 {
-	if (file->f_op == &socket_file_ops)
-		return file->private_data;	/* set in sock_map_fd */
+	if (file->f_op == &socket_file_ops) /*  */
+		return file->private_data;	/* set in sock_map_fd, = struct socket *sock 结构 */
 
 	*err = -ENOTSOCK;
 	return NULL;
@@ -493,7 +503,7 @@ EXPORT_SYMBOL(sockfd_lookup);
 
 static struct socket *sockfd_lookup_light(int fd, int *err, int *fput_needed)
 {
-	struct fd f = fdget(fd);
+	struct fd f = fdget(fd);    /* 获取fd结构 */
 	struct socket *sock;
 
 	*err = -EBADF;
@@ -570,10 +580,12 @@ struct socket *sock_alloc(void) /* 分配 inode */
 	struct inode *inode;
 	struct socket *sock;
 
+    /* 每个socket 有个inode */
 	inode = new_inode_pseudo(sock_mnt->mnt_sb); /* 分配 inode, sock_mnt = kern_mount(&sock_fs_type); */
 	if (!inode)
 		return NULL;
 
+    /* sock 什么时候分配的？ */
 	sock = SOCKET_I(inode); /* container_of */
 
 	inode->i_ino = get_next_ino();
@@ -646,8 +658,14 @@ INDIRECT_CALLABLE_DECLARE(int inet_sendmsg(struct socket *, struct msghdr *,
 					   size_t));
 INDIRECT_CALLABLE_DECLARE(int inet6_sendmsg(struct socket *, struct msghdr *,
 					    size_t));
-static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
+
+/* sendto(...) */
+static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)   
 {
+    /* 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是 inet_sendmsg */
+    /* 按照 优先级，
+        inet6_sendmsg > inet_snedmsg > sock->ops->sendmsg */
+
 	int ret = INDIRECT_CALL_INET(sock->ops->sendmsg, inet6_sendmsg,
 				     inet_sendmsg, sock, msg,
 				     msg_data_left(msg));
@@ -662,12 +680,16 @@ static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
  *
  *	Sends @msg through @sock, passing through LSM.
  *	Returns the number of bytes sent, or an error code.
+ *
+ *  通过 socket 发送数据
  */
 int sock_sendmsg(struct socket *sock, struct msghdr *msg)
 {
 	int err = security_socket_sendmsg(sock, msg,
 					  msg_data_left(msg));
 
+    //-1?"true":"false" => true
+    // 如果有权限，err=0，执行`sock_sendmsg_nosec`;
 	return err ?: sock_sendmsg_nosec(sock, msg);
 }
 EXPORT_SYMBOL(sock_sendmsg);
@@ -1340,7 +1362,7 @@ EXPORT_SYMBOL(sock_wake_async);
 
 /**
  *	__sock_create - creates a socket
- *	@net: net namespace
+ *	@net: net namespace 命名空间
  *	@family: protocol family (AF_INET, ...)
  *	@type: communication type (SOCK_STREAM, ...)
  *	@protocol: protocol (0, ...)
@@ -1352,7 +1374,6 @@ EXPORT_SYMBOL(sock_wake_async);
  *	be set to true if the socket resides in kernel space.
  *	This function internally uses GFP_KERNEL.
  */
-
 int __sock_create(struct net *net, int family, int type, int protocol,
 			 struct socket **res, int kern)
 {
@@ -1378,7 +1399,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 			     current->comm);
 		family = PF_PACKET;
 	}
-    /* 安全钩子 */
+    /* 安全钩子 是否 有权限*/
 	err = security_socket_create(family, type, protocol, kern);
 	if (err)
 		return err;
@@ -1395,7 +1416,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 				   closest posix thing */
 	}
 
-	sock->type = type;
+	sock->type = type;  /* 如 SOCK_STREAM */
 
 #ifdef CONFIG_MODULES
 	/* Attempt to load a protocol module if the find failed.
@@ -1409,6 +1430,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 #endif
 
 	rcu_read_lock();
+
+    /* 协议族 */
 	pf = rcu_dereference(net_families[family]);
 	err = -EAFNOSUPPORT;
 	if (!pf)
@@ -1475,6 +1498,7 @@ EXPORT_SYMBOL(__sock_create);
  */
 int sock_create(int family, int type, int protocol, struct socket **res)    /* 创建 socket */
 {
+    /* 在当前进程的 网络命名空间 上创建socket */
 	return __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
 }
 EXPORT_SYMBOL(sock_create);
@@ -1497,6 +1521,7 @@ int sock_create_kern(struct net *net, int family, int type, int protocol, struct
 }
 EXPORT_SYMBOL(sock_create_kern);
 
+/*  */
 int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 {
 	int retval;
@@ -1517,6 +1542,7 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
 
+    /* 创建 socket */
 	retval = sock_create(family, type, protocol, &sock);
 	if (retval < 0)
 		return retval;
@@ -1525,6 +1551,7 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 }
 
 /* socket 系统调用 */
+int socket(int domain, int type, int protocol){ /* ++ */ }
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
 	return __sys_socket(family, type, protocol);
@@ -1958,7 +1985,7 @@ SYSCALL_DEFINE3(getpeername, int, fd, struct sockaddr __user *, usockaddr,
  *	Send a datagram to a given address. We move the address into kernel
  *	space and check the user space data area is readable before invoking
  *	the protocol.
- */
+ */ /*  */
 int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		 struct sockaddr __user *addr,  int addr_len)
 {
@@ -1969,27 +1996,34 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 	struct iovec iov;
 	int fput_needed;
 
+    /* 转换成 iovec      / iov_iter */
 	err = import_single_range(WRITE, buff, len, &iov, &msg.msg_iter);
 	if (unlikely(err))
 		return err;
+
+    /* 查找 socket 结构 */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
 
+    /* 转化成 msghdr */
 	msg.msg_name = NULL;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
 	msg.msg_namelen = 0;
 	if (addr) {
+        /* copy_from_user */
 		err = move_addr_to_kernel(addr, addr_len, &address);
 		if (err < 0)
 			goto out_put;
 		msg.msg_name = (struct sockaddr *)&address;
 		msg.msg_namelen = addr_len;
 	}
-	if (sock->file->f_flags & O_NONBLOCK)
-		flags |= MSG_DONTWAIT;
+	if (sock->file->f_flags & O_NONBLOCK)   /* 是否阻塞 */
+		flags |= MSG_DONTWAIT;  /* 根据是否阻塞，设定 MSG_DONTWAIT 标志位 */
 	msg.msg_flags = flags;
+
+    /* 发送 */
 	err = sock_sendmsg(sock, &msg);
 
 out_put:
@@ -1998,6 +2032,9 @@ out:
 	return err;
 }
 
+/*  */
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+                   const struct sockaddr *dest_addr, socklen_t addrlen);
 SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
 		unsigned int, flags, struct sockaddr __user *, addr,
 		int, addr_len)
@@ -2008,7 +2045,7 @@ SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
 /*
  *	Send a datagram down a socket.
  */
-
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
 SYSCALL_DEFINE4(send, int, fd, void __user *, buff, size_t, len,
 		unsigned int, flags)
 {
@@ -2061,6 +2098,8 @@ out:
 	return err;
 }
 
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+                       struct sockaddr *src_addr, socklen_t *addrlen);
 SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
 		unsigned int, flags, struct sockaddr __user *, addr,
 		int __user *, addr_len)
@@ -2071,7 +2110,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
 /*
  *	Receive a datagram from a socket.
  */
-
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
 SYSCALL_DEFINE4(recv, int, fd, void __user *, ubuf, size_t, size,
 		unsigned int, flags)
 {

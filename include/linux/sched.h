@@ -981,7 +981,7 @@ struct task_struct {    /* PCB */
 #endif
 
 	/* Namespaces: */
-	struct nsproxy			*nsproxy;
+	struct nsproxy			*nsproxy;   /*  */
 
 	/* Signal handlers: */
 	struct signal_struct		*signal;/* 进程信号 */

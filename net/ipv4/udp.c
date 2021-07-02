@@ -982,7 +982,7 @@ out:
 }
 EXPORT_SYMBOL(udp_push_pending_frames);
 
-static int __udp_cmsg_send(struct cmsghdr *cmsg, u16 *gso_size)
+static int __udp_cmsg_send(struct cmsghdr *cmsg, u16 *gso_size) /*  */
 {
 	switch (cmsg->cmsg_type) {
 	case UDP_SEGMENT:
@@ -1019,7 +1019,7 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 }
 EXPORT_SYMBOL_GPL(udp_cmsg_send);
 
-int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
+int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 {
 	struct inet_sock *inet = inet_sk(sk);
 	struct udp_sock *up = udp_sk(sk);

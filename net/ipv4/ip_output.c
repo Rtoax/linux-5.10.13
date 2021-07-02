@@ -1215,6 +1215,8 @@ alloc_new_skb:
 			skb->truesize += copy;
 			wmem_alloc_delta += copy;
 		} else {
+
+            /* 零拷贝 */
 			err = skb_zerocopy_iter_dgram(skb, from, copy);
 			if (err < 0)
 				goto error;
@@ -1631,6 +1633,7 @@ struct sk_buff *ip_make_skb(struct sock *sk,
 	if (err)
 		return ERR_PTR(err);
 
+    /*  */
 	err = __ip_append_data(sk, fl4, &queue, cork,
 			       &current->task_frag, getfrag,
 			       from, length, transhdrlen, flags);

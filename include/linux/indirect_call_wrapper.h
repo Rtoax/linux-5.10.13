@@ -38,12 +38,12 @@
 #define INDIRECT_CALLABLE_SCOPE
 
 #else
-#define INDIRECT_CALL_1(f, f1, ...) f(__VA_ARGS__)
-#define INDIRECT_CALL_2(f, f2, f1, ...) f(__VA_ARGS__)
-#define INDIRECT_CALL_3(f, f3, f2, f1, ...) f(__VA_ARGS__)
-#define INDIRECT_CALL_4(f, f4, f3, f2, f1, ...) f(__VA_ARGS__)
-#define INDIRECT_CALLABLE_DECLARE(f)
-#define INDIRECT_CALLABLE_SCOPE		static
+//#define INDIRECT_CALL_1(f, f1, ...) f(__VA_ARGS__)
+//#define INDIRECT_CALL_2(f, f2, f1, ...) f(__VA_ARGS__)
+//#define INDIRECT_CALL_3(f, f3, f2, f1, ...) f(__VA_ARGS__)
+//#define INDIRECT_CALL_4(f, f4, f3, f2, f1, ...) f(__VA_ARGS__)
+//#define INDIRECT_CALLABLE_DECLARE(f)
+//#define INDIRECT_CALLABLE_SCOPE		static
 #endif
 
 /*
@@ -57,7 +57,7 @@
 #elif IS_ENABLED(CONFIG_INET)
 #define INDIRECT_CALL_INET(f, f2, f1, ...) INDIRECT_CALL_1(f, f1, __VA_ARGS__)
 #else
-#define INDIRECT_CALL_INET(f, f2, f1, ...) f(__VA_ARGS__)
+//#define INDIRECT_CALL_INET(f, f2, f1, ...) f(__VA_ARGS__)
 #endif
 
 #endif

@@ -106,17 +106,6 @@ static inline void free_page(unsigned long addr)
 	free((void *)addr);
 }
 
-#define container_of(ptr, type, member) ({			\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
-
-# ifndef likely
-#  define likely(x)	(__builtin_expect(!!(x), 1))
-# endif
-# ifndef unlikely
-#  define unlikely(x)	(__builtin_expect(!!(x), 0))
-# endif
-
 #define pr_err(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
 #ifdef DEBUG
 #define pr_debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
@@ -127,11 +116,5 @@ static inline void free_page(unsigned long addr)
 #define dev_warn(dev, format, ...) fprintf (stderr, format, ## __VA_ARGS__)
 
 #define WARN_ON_ONCE(cond) (unlikely(cond) ? fprintf (stderr, "WARNING\n") : 0)
-
-#define min(x, y) ({				\
-	typeof(x) _min1 = (x);			\
-	typeof(y) _min2 = (y);			\
-	(void) (&_min1 == &_min2);		\
-	_min1 < _min2 ? _min1 : _min2; })
 
 #endif /* KERNEL_H */

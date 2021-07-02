@@ -121,7 +121,7 @@ struct socket { /* 套接字结构 */
 	unsigned long		flags;      /* 标志位 */
 	struct file		*file;          /* 打开的文件 */
 	struct sock		*sk;            /* 网络层 sock */
-	const struct proto_ops	*ops;   /* 操作 */
+	const struct proto_ops	*ops;   /* 操作 - 系统调用 */
 	struct socket_wq	wq;         /* 等待队列 */
 };
 

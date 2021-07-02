@@ -319,6 +319,8 @@ lookup_protocol:
 	WARN_ON(!answer_prot->slab);
 
 	err = -ENOBUFS;
+
+    /* 申请 sk_buff */
 	sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot, kern); /* 申请 struct sock */
 	if (!sk)
 		goto out;
@@ -327,6 +329,7 @@ lookup_protocol:
 	if (INET_PROTOSW_REUSE & answer_flags)
 		sk->sk_reuse = SK_CAN_REUSE;
 
+    /*  */
 	inet = inet_sk(sk); /*  */
 	inet->is_icsk = (INET_PROTOSW_ICSK & answer_flags) != 0;
 
@@ -345,6 +348,7 @@ lookup_protocol:
 
 	inet->inet_id = 0;
 
+    /*  */
 	sock_init_data(sock, sk);
 
 	sk->sk_destruct	   = inet_sock_destruct;
@@ -814,6 +818,7 @@ int inet_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 	if (unlikely(inet_send_prepare(sk)))
 		return -EAGAIN;
 
+    /* 优先级 tcp_sendmsg > udp_sendmsg > sk->sk_prot->sendmsg */
 	return INDIRECT_CALL_2(sk->sk_prot->sendmsg, tcp_sendmsg, udp_sendmsg,
 			       sk, msg, size);
 }

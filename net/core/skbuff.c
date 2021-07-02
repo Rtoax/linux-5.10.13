@@ -1270,7 +1270,7 @@ void sock_zerocopy_put_abort(struct ubuf_info *uarg, bool have_uref)
 }
 EXPORT_SYMBOL_GPL(sock_zerocopy_put_abort);
 
-int skb_zerocopy_iter_dgram(struct sk_buff *skb, struct msghdr *msg, int len)
+int skb_zerocopy_iter_dgram(struct sk_buff *skb, struct msghdr *msg, int len)   /*  */
 {
 	return __zerocopy_sg_from_iter(skb->sk, skb, &msg->msg_iter, len);
 }

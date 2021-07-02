@@ -40,20 +40,6 @@
 #endif
 
 /*
- * Helper macro to manipulate data structures
- */
-#ifndef offsetof
-#define offsetof(TYPE, MEMBER)	((unsigned long)&((TYPE *)0)->MEMBER)
-#endif
-#ifndef container_of
-#define container_of(ptr, type, member)				\
-	({							\
-		void *__mptr = (void *)(ptr);			\
-		((type *)(__mptr - offsetof(type, member)));	\
-	})
-#endif
-
-/*
  * Helper macro to throw a compilation error if __bpf_unreachable() gets
  * built into the resulting code. This works given BPF back end does not
  * implement __builtin_trap(). This is useful to assert that certain paths

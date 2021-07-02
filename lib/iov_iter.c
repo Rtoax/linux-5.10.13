@@ -1067,7 +1067,7 @@ static void pipe_advance(struct iov_iter *i, size_t size)
 	pipe_truncate(i);
 }
 
-void iov_iter_advance(struct iov_iter *i, size_t size)
+void iov_iter_advance(struct iov_iter *i, size_t size)  /*  */
 {
 	if (unlikely(iov_iter_is_pipe(i))) {
 		pipe_advance(i, size);

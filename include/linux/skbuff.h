@@ -710,10 +710,11 @@ typedef unsigned char *sk_buff_data_t;
  *	@extensions: allocated extensions, valid if active_extensions is nonzero
  */
 typedef struct sk_buff* psk_buff_t; //我加的
+#define __aligned8 __aligned(8) //我加的
 
-struct sk_buff {
+struct sk_buff {    /* 网络协议栈 包结构 */
 	union {
-		struct {
+		struct {    /*  */
 			/* These two members must be first. */
 			struct sk_buff		*next;
 			struct sk_buff		*prev;
@@ -746,7 +747,7 @@ struct sk_buff {
 	 * want to keep them across layers you have to do a skb_clone()
 	 * first. This is owned by whoever has the skb queued ATM.
 	 */
-	char			cb[48] __aligned(8);
+	char		__aligned8	cb[48] ;
 
 	union {
 		struct {
@@ -864,9 +865,9 @@ struct sk_buff {
 	__u16			tc_index;	/* traffic control index */
 #endif
 
-	union {
+	union { /* 校验和 */
 		__wsum		csum;
-		struct {
+		struct {    /*  */
 			__u16	csum_start;
 			__u16	csum_offset;
 		};

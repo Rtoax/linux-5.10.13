@@ -417,7 +417,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	/* ===== mostly read cache line ===== */
 	unsigned int		sk_napi_id;
 #endif
-	int			sk_rcvbuf;
+	int			sk_rcvbuf;  /* 读 buffer 大小 */
 
 	struct sk_filter __rcu	*sk_filter;
 	union {
@@ -1419,7 +1419,7 @@ struct socket_alloc {   /* socket 申请 */
 	struct inode vfs_inode;
 };
 
-static inline struct socket *SOCKET_I(struct inode *inode)
+static inline struct socket *SOCKET_I(struct inode *inode)  /*  */
 {
 	return &container_of(inode, struct socket_alloc, vfs_inode)->socket;
 }

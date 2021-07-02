@@ -2952,9 +2952,10 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 	timer_setup(&sk->sk_timer, NULL, 0);
 
 	sk->sk_allocation	=	GFP_KERNEL;
-	sk->sk_rcvbuf		=	sysctl_rmem_default;
-	sk->sk_sndbuf		=	sysctl_wmem_default;
+	sk->sk_rcvbuf		=	sysctl_rmem_default;    /* 读 buffer 大小 */
+	sk->sk_sndbuf		=	sysctl_wmem_default;    /* 写 buffer 大小 */
 	sk->sk_state		=	TCP_CLOSE;
+    
 	sk_set_socket(sk, sock);
 
 	sock_set_flag(sk, SOCK_ZAPPED);
