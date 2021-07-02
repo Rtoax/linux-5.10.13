@@ -1241,8 +1241,8 @@ static void __init register_page_bootmem_info(void)/* 注册 boot page */
 #ifdef CONFIG_NUMA
 	int i;
 
-	for_each_online_node(i)
-		register_page_bootmem_info_node(NODE_DATA(i));
+	for_each_online_node(i) {
+		register_page_bootmem_info_node(NODE_DATA(i));}
 #endif
 }
 
@@ -1262,7 +1262,7 @@ static void __init preallocate_vmalloc_pages(void)
 		pud_t *pud;
 
 		lvl = "p4d";
-		p4d = p4d_alloc(&init_mm, pgd, addr);   /*  */
+		p4d = p4d_alloc(&init_mm, pgd, addr);   /* 分配一个四级页表 */
 		if (!p4d)
 			goto failed;
 
@@ -1280,7 +1280,7 @@ static void __init preallocate_vmalloc_pages(void)
 		 * hardware level is allocated on 4-level systems too.
 		 */
 		lvl = "pud";
-		pud = pud_alloc(&init_mm, p4d, addr);
+		pud = pud_alloc(&init_mm, p4d, addr);   /*  */
 		if (!pud)
 			goto failed;
 	}
@@ -1303,8 +1303,14 @@ void __init mem_init(void)  /* 64bit 初始化 */
 	/* clear_bss() already clear the empty_zero_page */
 
 	/* this will put all memory onto the freelists */
-	memblock_free_all();/* 所有的 都到 freelists TODO*/
+	memblock_free_all();/* 统计总页数 */
+    
 	after_bootmem = 1;
+
+    /* 
+        初始化阶段为 x86_init_noop()
+        可能等于 xen_after_bootmem()
+    */
 	x86_init.hyper.init_after_bootmem();
 
 	/*
@@ -1312,6 +1318,9 @@ void __init mem_init(void)  /* 64bit 初始化 */
 	 * might set fields in deferred struct pages that have not yet been
 	 * initialized, and memblock_free_all() initializes all the reserved
 	 * deferred pages for us.
+	 *
+	 * 必须在boot memory放到freelist之后才做，因为这里我们可能会在deferred struct pages
+	 * 中设置尚未初始化的字段，而memblock_free_all()会为我们初始化所有保留的deferred pages。
 	 */
 	register_page_bootmem_info();   /*  */
 
@@ -1319,7 +1328,10 @@ void __init mem_init(void)  /* 64bit 初始化 */
 	if (get_gate_vma(&init_mm)) /*  */
 		kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR, PAGE_SIZE, KCORE_USER);
 
-	preallocate_vmalloc_pages();    /* vmalloc 预分配 */
+    /**
+     *  vmalloc 的 page 分配
+     */
+	preallocate_vmalloc_pages();    /* vmalloc 预分配 pages */
 
 	mem_init_print_info(NULL);  /*  */
 }

@@ -46,7 +46,11 @@ void __init pci_iommu_alloc(void)   /*IOMMU分配  *//*  */
 	for (p = __iommu_table; p < __iommu_table_end; p++) {
 		if (p && p->detect && p->detect() > 0) {
 			p->flags |= IOMMU_DETECTED;
-			if (p->early_init)
+			if (p->early_init)  /*  */
+                
+                /**
+                 *  这里具体是哪个函数？
+                 */
 				p->early_init();
 			if (p->flags & IOMMU_FINISH_IF_DETECTED)
 				break;

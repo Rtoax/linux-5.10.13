@@ -33,9 +33,9 @@ typedef unsigned long long dma_addr_t;
 typedef size_t __kernel_size_t;
 typedef unsigned int __wsum;
 
-struct page {
-	unsigned long long dummy;
-};
+//struct page {
+//	unsigned long long dummy;
+//};
 
 /* Physical == Virtual */
 #define virt_to_phys(p) ((unsigned long)p)

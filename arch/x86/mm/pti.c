@@ -617,6 +617,10 @@ static void pti_set_kernel_image_nonglobal(void)    /*  */
 
 /*
  * Initialize kernel page table isolation
+ *
+ * 内核页表隔离（Kernel page-table isolation，缩写KPTI，也简称PTI，旧称KAISER）是Linux内核中的一种强化技术，
+ *  旨在更好地隔离用户空间与内核空间的内存来提高安全性，缓解现代x86 CPU中的“熔毁”硬件安全缺陷。
+ * https://rtoax.blog.csdn.net/article/details/118388409
  */
 void __init pti_init(void)  /* 页表隔离  */
 {
@@ -632,19 +636,19 @@ void __init pti_init(void)  /* 页表隔离  */
 	 * supported on 32 bit anyway. To print the warning we need to
 	 * check with cpuid directly again.
 	 */
-	if (cpuid_ecx(0x1) & BIT(17)) {
-		/* Use printk to work around pr_fmt() */
-		printk(KERN_WARNING "\n");
-		printk(KERN_WARNING "************************************************************\n");
-		printk(KERN_WARNING "** WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  **\n");
-		printk(KERN_WARNING "**                                                        **\n");
-		printk(KERN_WARNING "** You are using 32-bit PTI on a 64-bit PCID-capable CPU. **\n");
-		printk(KERN_WARNING "** Your performance will increase dramatically if you     **\n");
-		printk(KERN_WARNING "** switch to a 64-bit kernel!                             **\n");
-		printk(KERN_WARNING "**                                                        **\n");
-		printk(KERN_WARNING "** WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  **\n");
-		printk(KERN_WARNING "************************************************************\n");
-	}
+//	if (cpuid_ecx(0x1) & BIT(17)) {
+//		/* Use printk to work around pr_fmt() */
+//		printk(KERN_WARNING "\n");
+//		printk(KERN_WARNING "************************************************************\n");
+//		printk(KERN_WARNING "** WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  **\n");
+//		printk(KERN_WARNING "**                                                        **\n");
+//		printk(KERN_WARNING "** You are using 32-bit PTI on a 64-bit PCID-capable CPU. **\n");
+//		printk(KERN_WARNING "** Your performance will increase dramatically if you     **\n");
+//		printk(KERN_WARNING "** switch to a 64-bit kernel!                             **\n");
+//		printk(KERN_WARNING "**                                                        **\n");
+//		printk(KERN_WARNING "** WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!  **\n");
+//		printk(KERN_WARNING "************************************************************\n");
+//	}
 #endif
 
 	pti_clone_user_shared();    /* 页表隔离 */

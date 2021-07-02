@@ -500,7 +500,7 @@ int __init arch_ioremap_pud_supported(void) /* 大页 */
 #ifdef CONFIG_X86_64
 	return boot_cpu_has(X86_FEATURE_GBPAGES/* 1GB hugepage */);/* 是否有这个标志位 */
 #else
-	return 0;
+//	return 0;
 #endif
 }
 

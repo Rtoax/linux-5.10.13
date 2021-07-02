@@ -149,16 +149,17 @@ extern int __read_mostly mmap_rnd_compat_bits ;
 #define	mm_zero_struct_page(pp) __mm_zero_struct_page(pp)
 static inline void __mm_zero_struct_page(struct page *page)
 {
-	unsigned long *_pp = (void *)page;
+	unsigned long *_pp = (void *)page;  /* 获取  */
 
 	 /* Check that struct page is either 56, 64, 72, or 80 bytes */
 	BUILD_BUG_ON(sizeof(struct page) & 7);
 	BUILD_BUG_ON(sizeof(struct page) < 56);
 	BUILD_BUG_ON(sizeof(struct page) > 80);
 
+    /* 根据大小清空 page 结构 */
 	switch (sizeof(struct page)) {
 	case 80:
-		_pp[9] = 0;
+		_pp[9] = 0; /*  */
 		fallthrough;
 	case 72:
 		_pp[8] = 0;
@@ -171,9 +172,9 @@ static inline void __mm_zero_struct_page(struct page *page)
 		_pp[5] = 0;
 		_pp[4] = 0;
 		_pp[3] = 0;
-		_pp[2] = 0;
-		_pp[1] = 0;
-		_pp[0] = 0;
+		_pp[2] = 0; //
+		_pp[1] = 0; //
+		_pp[0] = 0; //
 	}
 }
 
@@ -1242,7 +1243,7 @@ static inline bool page_maybe_dma_pinned(struct page *page)
 }
 
 #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define SECTION_IN_PAGE_FLAGS
+//#define SECTION_IN_PAGE_FLAGS
 #endif
 
 /*
@@ -1368,6 +1369,13 @@ static inline pg_data_t *page_pgdat(const struct page *page)
 }
 
 #ifdef SECTION_IN_PAGE_FLAGS
+
+/**
++----------+---------+----------+--------+----------+
+|  section |   node  |   zone   |  ...   |   flag   |
++----------+---------+----------+--------+----------+
+ */
+
 static inline void set_page_section(struct page *page, unsigned long section)
 {
 	page->flags &= ~(SECTIONS_MASK << SECTIONS_PGSHIFT);
@@ -1392,13 +1400,19 @@ static inline void set_page_node(struct page *page, unsigned long node)
 	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
 }
 
+
+/**
++----------+---------+----------+--------+----------+
+|  section |   node  |   zone   |  ...   |   flag   |
++----------+---------+----------+--------+----------+
+ */
 static inline void set_page_links(struct page *page, enum zone_type zone,
 	unsigned long node, unsigned long pfn)
 {
-	set_page_zone(page, zone);
-	set_page_node(page, node);
+	set_page_zone(page, zone);  /* 设置 zone   */
+	set_page_node(page, node);  /* 设置 node */
 #ifdef SECTION_IN_PAGE_FLAGS
-	set_page_section(page, pfn_to_section_nr(pfn));
+//	set_page_section(page, pfn_to_section_nr(pfn));
 #endif
 }
 

@@ -845,14 +845,36 @@ static void __init mm_init(void)/* 内存管理初始化 */
 	init_debug_pagealloc();     /*  */
 	report_meminit();           /* 一些 LOG */
 	mem_init();                 /* 初始化: releases all `bootmem` */
+
+    /**
+     *  分配各种大小的 kmem_cache
+     *
+     *  sudo cat /proc/slabinfo | grep kmalloc
+     */
 	kmem_cache_init();          /* 初始化 slab slob slub */
 	kmemleak_init();            /* 泄漏检测 提前分配 */
+
+    /**
+     *  也是分配 kmem_cache
+     */
 	pgtable_init();             /* 页表初始化 */
 	debug_objects_mem_init();   /* 调试结构的内存分配 */
+
+    /**
+     *  vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；
+     *  然后逐页分配内存来从物理上填充hole。
+     */
 	vmalloc_init();             /* vmalloc虚拟内存连续的内存 */
+    
 	ioremap_huge_init();        /* 大页内存   */
-	/* Should be run before the first non-init thread is created */
+    
+	/**
+	 *  Should be run before the first non-init thread is created 
+	 *  应该在第一个非初始化线程前创建
+	 *
+	 */
 	init_espfix_bsp();          /* does something with the stack */
+    
 	/* Should be run after espfix64 is set up. */
 	pti_init(); /*  页表隔离 */
 }
@@ -961,7 +983,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
                                 This function makes initialization of the remaining exceptions handlers */
 
     /**
-     *  
+     *  这是非常重要的
      */
 	mm_init();                  /* 内存初始化，slab，泄漏，页表初始化，大页等 */
 
@@ -1093,6 +1115,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 		initrd_start = 0;
 	}
 #endif
+
 	setup_per_cpu_pageset();    /*  */
 	numa_policy_init();         /*  */
     

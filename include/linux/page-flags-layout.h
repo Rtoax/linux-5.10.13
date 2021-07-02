@@ -38,6 +38,11 @@
  *      " plus space for last_cpupid: | SECTION | NODE | ZONE | LAST_CPUPID ... | FLAGS |
  * classic sparse no space for node:  | SECTION |     ZONE    | ... | FLAGS |
  */
+/**
+   +----------+---------+----------+--------+----------+
+   |  section |   node  |   zone   |  ...   |   flag   |
+   +----------+---------+----------+--------+----------+
+ */
 #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
 #define SECTIONS_WIDTH		SECTIONS_SHIFT
 #else

@@ -83,7 +83,7 @@ static inline void set_page_count(struct page *page, int v)
  * Setup the page count before being freed into the page allocator for
  * the first time (boot or memory hotplug)
  */
-static inline void init_page_count(struct page *page)
+static inline void init_page_count(struct page *page)   /*  */
 {
 	set_page_count(page, 1);
 }

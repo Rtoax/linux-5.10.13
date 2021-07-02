@@ -15,9 +15,32 @@ typedef struct {
 } pfn_t;
 #endif
 
+/**
+ *  (x + 0xfff) & 0xffffffffffff000
+ *  
+ */
 #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)
+
+/**
+ *  物理地址转化为页帧号(右移 12bit`页大小`)
+ *  
+ *  (x + 0xfff) >> 12
+ *  
+ */
 #define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)
+
+/**
+ *  物理地址转化为页帧号(右移 12bit`页大小`)
+ *  
+ *  (x) >> 12
+ */
 #define PFN_DOWN(x)	((x) >> PAGE_SHIFT)
+
+/**
+ *  页帧号转化为 物理地址 (左移 12bit`页大小`)
+ *  
+ *  x << 12
+ */
 #define PFN_PHYS(x)	((phys_addr_t)(x) << PAGE_SHIFT)
 #define PHYS_PFN(x)	((unsigned long)((x) >> PAGE_SHIFT))
 

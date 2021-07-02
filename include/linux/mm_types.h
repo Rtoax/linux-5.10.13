@@ -67,6 +67,12 @@ struct mem_cgroup;
 #endif
 
 struct page {
+    /**
+    +----------+---------+----------+--------+----------+
+    |  section |   node  |   zone   |  ...   |   flag   |
+    +----------+---------+----------+--------+----------+
+     */
+    //flags -> enum pageflags
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
 	/*
@@ -81,11 +87,30 @@ struct page {
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
 			 * by the page owner.
+			 *
+			 * 链表头，主要有3个用途：
+             * a：page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
+             * b：page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
+             * c：page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
+            /*
+             * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；
+             *                 当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+             * 如果 mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
+             * 如果 mapping != 0，bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
+             * 
+             * 通过mapping恢复anon_vma的方法：anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
+            */
 			struct address_space *mapping;
+
+            /**
+             *  在映射的虚拟空间（vma_area）内的偏移；一个文件可能只映射一部分，假设映射了1M的空间，
+             *  index指的是在1M空间内的偏移，而不是在整个文件内的偏移。
+             */
 			pgoff_t index;		/* Our offset within mapping. */
+            
 			/**
 			 * @private: Mapping-private opaque data.
 			 * Usually used for buffer_heads if PagePrivate.
@@ -94,6 +119,7 @@ struct page {
 			 */
 			unsigned long private;
 		};
+        
 		struct {	/* page_pool used by netstack 页池 */
 			/**
 			 * @dma_addr: might require a 64-bit value even on
@@ -101,6 +127,7 @@ struct page {
 			 */
 			dma_addr_t dma_addr;
 		};
+        
 		struct {	/* slab, slob and slub 被slab使用 */
 			union {
 				struct list_head slab_list;
@@ -128,6 +155,7 @@ struct page {
 				};
 			};
 		};
+        
 		struct {	/* Tail pages of compound(复合) page *//*  */
 			unsigned long compound_head;	/* Bit zero is set */
 
@@ -137,12 +165,14 @@ struct page {
 			atomic_t compound_mapcount;
 			unsigned int compound_nr; /* 1 << compound_order */
 		};
+        
 		struct {	/* Second tail page of compound page */
 			unsigned long _compound_pad_1;	/* compound_head */
 			atomic_t hpage_pinned_refcount;
 			/* For both global and memcg */
 			struct list_head deferred_list;
 		};
+        
 		struct {	/* Page table pages 页表使用的Page */
 			unsigned long _pt_pad_1;	/* compound_head */
 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
@@ -157,6 +187,7 @@ struct page {
 			spinlock_t ptl;
 #endif
 		};
+
 		struct {	/* ZONE_DEVICE pages ZONE设备Page */
 			/** @pgmap: Points to the hosting device page map. */
 			struct dev_pagemap *pgmap;
@@ -181,6 +212,13 @@ struct page {
 		/*
 		 * If the page can be mapped to userspace, encodes the number
 		 * of times this page is referenced by a page table.
+		 *
+		 * 被页表映射的次数，也就是说该page同时被多少个进程共享。
+		 * 初始值为-1，如果只被一个进程的页表映射了，该值为0 。
+		 * 如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
+		 * 内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统。
+         * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
+         * 被映射了不一定在使用，但要使用必须先映射。
 		 */
 		atomic_t _mapcount;
 

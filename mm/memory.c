@@ -441,11 +441,18 @@ int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 	 * being the notable exception) will already guarantee loads are
 	 * seen in-order. See the alpha page table accessors for the
 	 * smp_rmb() barriers in page table walking code.
+	 *
+	 * 确保所有 pte 设置（例如 pte 页面锁定和页面清除）在 pte 通过放入页表而对其他 CPU 可见之前都是可见的。
+     * 故事的另一面是页表行走代码中的指针追逐（当在没有锁定的情况下行走页表时；即大部分时间）。 
+     *
+     * 幸运的是，这些数据访问由一系列与数据相关的负载组成，
+     * 这意味着大多数 CPU（alpha 是显着的例外）已经保证按顺序看到负载。 
+     * 请参阅页表遍历代码中 smp_rmb() 屏障的 alpha 页表访问器。
 	 */
 	smp_wmb(); /* Could be smp_wmb__xxx(before|after)_spin_lock */
 
 	ptl = pmd_lock(mm, pmd);
-	if (likely(pmd_none(*pmd))) {	/* Has another populated it ? */
+	if (likely(pmd_none(*pmd))) {	/* Has another populated(人口稠密) it ? */
 		mm_inc_nr_ptes(mm);
 		pmd_populate(mm, pmd, new);
 		new = NULL;
@@ -4641,14 +4648,14 @@ EXPORT_SYMBOL_GPL(handle_mm_fault);
  */ 
 int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
 {
-	p4d_t *new = p4d_alloc_one(mm, address);    /*  */
+	p4d_t *new = p4d_alloc_one(mm, address);    /* 分配一个物理 page 作为 p4d */
 	if (!new)
 		return -ENOMEM;
 
 	smp_wmb(); /* See comment in __pte_alloc */
 
 	spin_lock(&mm->page_table_lock);
-	if (pgd_present(*pgd))		/* Another has populated it */
+	if (pgd_present(*pgd)/* 是否 P 位 */)		/* Another has populated it */
 		p4d_free(mm, new);
 	else
 		pgd_populate(mm, pgd, new);

@@ -414,7 +414,7 @@ static DEFINE_SPINLOCK(free_vmap_area_lock);
 /* Export for kexec only */
 LIST_HEAD(vmap_area_list);
 static LLIST_HEAD(vmap_purge_list);
-static struct rb_root vmap_area_root = RB_ROOT;
+static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
 static bool __read_mostly vmap_initialized ; /* 根 */
 
 /*
@@ -1961,8 +1961,12 @@ static void vmap_init_free_space(void)  /*  初始化 vmalloc 区域内存*/
 	}
 }
 
+/**
+ *  vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；
+ *  然后逐页分配内存来从物理上填充hole。
+ */
 void __init vmalloc_init(void)  /* vmalloc 初始化 initializes `vmalloc` */
-{//vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；然后逐页分配内存来从物理上填充hole。
+{//
 	struct vmap_area *va;
 	struct vm_struct *tmp;
 	int i;
@@ -1984,7 +1988,11 @@ void __init vmalloc_init(void)  /* vmalloc 初始化 initializes `vmalloc` */
 		INIT_WORK(&p->wq, free_work);
 	}
 
-	/* Import existing vmlist entries. */
+	/**
+	 *  Import existing vmlist entries. 
+	 * 
+	 *  遍历整个 vm 空间，分配 vmap_area 结构，并添加至 红黑树 和 链表中
+	 */
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
 		va = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
 		if (WARN_ON_ONCE(!va))

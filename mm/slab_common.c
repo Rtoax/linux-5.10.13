@@ -657,20 +657,45 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	.size = __size,						\
 }
 #else
-#define INIT_KMALLOC_INFO(__size, __short_size)			\
-{								\
-	.name[KMALLOC_NORMAL]  = "kmalloc-" #__short_size,	\
-	.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size,	\
-	.size = __size,						\
-}
+/*  */
 #endif
 
 /*
  * kmalloc_info[] is to make slub_debug=,kmalloc-xx option work at boot time.
  * kmalloc_index() supports up to 2^26=64MB, so the final entry of the table is
  * kmalloc-67108864.
+ *
+ * sudo cat /proc/slabinfo | grep kmem_cache
+ # name      <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <s
+haredfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+ dma-kmalloc-8192       0      0   8192    4    8 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-4096       0      0   4096    8    8 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-2048       0      0   2048   16    8 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-1024       0      0   1024   32    8 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-512       64     64    512   64    8 : tunables    0    0    0 : slabdata      1      1      0
+ dma-kmalloc-256        0      0    256   64    4 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-128        0      0    128   64    2 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-64         0      0     64   64    1 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-32         0      0     32  128    1 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-16         0      0     16  256    1 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-8          0      0      8  512    1 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-192        0      0    192   42    2 : tunables    0    0    0 : slabdata      0      0      0
+ dma-kmalloc-96         0      0     96   42    1 : tunables    0    0    0 : slabdata      0      0      0
+ kmalloc-8192         312    312   8192    4    8 : tunables    0    0    0 : slabdata     78     78      0
+ kmalloc-4096         955   1024   4096    8    8 : tunables    0    0    0 : slabdata    128    128      0
+ kmalloc-2048       26906  27184   2048   16    8 : tunables    0    0    0 : slabdata   1699   1699      0
+ kmalloc-1024        5731   7104   1024   32    8 : tunables    0    0    0 : slabdata    222    222      0
+ kmalloc-512        43010  47744    512   64    8 : tunables    0    0    0 : slabdata    746    746      0
+ kmalloc-256        43168  46464    256   64    4 : tunables    0    0    0 : slabdata    726    726      0
+ kmalloc-192        43502  44646    192   42    2 : tunables    0    0    0 : slabdata   1063   1063      0
+ kmalloc-128         4573   5888    128   64    2 : tunables    0    0    0 : slabdata     92     92      0
+ kmalloc-96         29512  30366     96   42    1 : tunables    0    0    0 : slabdata    723    723      0
+ kmalloc-64         71970  72320     64   64    1 : tunables    0    0    0 : slabdata   1130   1130      0
+ kmalloc-32         22656  22656     32  128    1 : tunables    0    0    0 : slabdata    177    177      0
+ kmalloc-16         44544  44544     16  256    1 : tunables    0    0    0 : slabdata    174    174      0
+ kmalloc-8          13312  13312      8  512    1 : tunables    0    0    0 : slabdata     26     26      0
  */
-const struct kmalloc_info_struct __initconst kmalloc_info[]  = {/*  */
+const struct kmalloc_info_struct __initconst kmalloc_info[]  = {/* 缓存大小信息 */
 	INIT_KMALLOC_INFO(0, 0),
 	INIT_KMALLOC_INFO(96, 96),
 	INIT_KMALLOC_INFO(192, 192),
@@ -763,7 +788,7 @@ new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)    
  * Create the kmalloc array. Some of the regular kmalloc arrays
  * may already have been created because they were needed to
  * enable allocations for slab creation.
- */
+ */ /*  */
 void __init create_kmalloc_caches(slab_flags_t flags)   /* kmalloc array 初始化 */
 {
 	int i;

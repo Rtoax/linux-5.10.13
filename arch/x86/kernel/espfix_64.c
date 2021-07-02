@@ -99,10 +99,12 @@ static void init_espfix_random(void)    /* returns random locations for the `esp
 	/*
 	 * This is run before the entropy pools are initialized,
 	 * but this is hopefully better than nothing.
+	 *
+	 *  随机数
 	 */
 	if (!arch_get_random_long(&rand)) {
 		/* The constant is an arbitrary large prime */
-		rand = rdtsc();
+		rand = rdtsc(); /* 用 tsc 当做 随机数 */
 		rand *= 0xc345c6b72fd16123UL;
 	}
 
@@ -126,15 +128,15 @@ void __init init_espfix_bsp(void)   /*  */
 
 	/* Randomize the locations 
         returns random locations for the `espfix` page */
-	init_espfix_random();
+	init_espfix_random();   /*  */
 
 	/* The rest is the same as for any other processor .
         enables the `espfix` for the current CPU*/
-	init_espfix_ap(0);
+	init_espfix_ap(0);  /*  */
 }
 
 //enables the `espfix` for the current CPU
-void init_espfix_ap(int cpu)
+void init_espfix_ap(int cpu)    /*  */
 {
 	unsigned int page;
 	unsigned long addr;

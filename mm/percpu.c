@@ -1672,7 +1672,7 @@ static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
  *
  * RETURNS:
  * Percpu pointer to the allocated area on success, NULL on failure.
- */
+ */ /*  */
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {

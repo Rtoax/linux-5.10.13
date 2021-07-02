@@ -379,7 +379,7 @@ static inline void *index_to_obj(struct kmem_cache *cache, struct page *page,
 
 #define BOOT_CPUCACHE_ENTRIES	1
 /* internal cache of cache description objs */
-static struct kmem_cache kmem_cache_boot = {    /* 启动 */
+static struct kmem_cache kmem_cache_boot = {    /* 启动 的第一个 kmem_cache */
 	.batchcount = 1,
 	.limit = BOOT_CPUCACHE_ENTRIES,
 	.shared = 1,
@@ -1261,7 +1261,7 @@ void __init kmem_cache_init(void)/* slab 初始化 */
 				ARCH_KMALLOC_FLAGS, 0,
 				kmalloc_info[INDEX_NODE].size);
 	slab_state = PARTIAL_NODE;
-	setup_kmalloc_cache_index_table();
+	setup_kmalloc_cache_index_table();  /*  */
 
 	slab_early_init = 0;    /*  */
 
@@ -1276,8 +1276,15 @@ void __init kmem_cache_init(void)/* slab 初始化 */
 					  &init_kmem_cache_node[SIZE_NODE + nid], nid);
 		}
 	}
-
-	create_kmalloc_caches(ARCH_KMALLOC_FLAGS);  /*  */
+    //[rongtao@localhost src]$ sudo cat /proc/slabinfo | grep kmalloc
+    //dma-kmalloc-8192       0      0   8192    4    8 : tunables    0    0    0 : slabdata      0      0      0
+    //...
+    //dma-kmalloc-16         0      0     16  256    1 : tunables    0    0    0 : slabdata      0      0      0
+    //dma-kmalloc-8          0      0      8  512    1 : tunables    0    0    0 : slabdata      0      0      0
+    //kmalloc-8192         312    312   8192    4    8 : tunables    0    0    0 : slabdata     78     78      0
+    //...
+    //kmalloc-8          13312  13312      8  512    1 : tunables    0    0    0 : slabdata     26     26      0
+	create_kmalloc_caches(ARCH_KMALLOC_FLAGS);  /* 分配各种大小的 kmem_cache */
 }
 
 void __init kmem_cache_init_late(void)  /*  */

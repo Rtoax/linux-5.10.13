@@ -2068,8 +2068,9 @@ static unsigned long __init free_low_memory_core_early(void)/*  */
 
 	memblock_clear_hotplug(0, -1);
 
-	for_each_reserved_mem_range(i, &start, &end)
-		reserve_bootmem_region(start, end);
+    /* 遍历 memblock.reserved */
+	for_each_reserved_mem_range(i, &start, &end) {
+		reserve_bootmem_region(start, end); /*  */}
 
 	/*
 	 * We need to use NUMA_NO_NODE instead of NODE_DATA(0)->node_id
@@ -2078,7 +2079,7 @@ static unsigned long __init free_low_memory_core_early(void)/*  */
 	 */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
 				NULL)
-		count += __free_memory_core(start, end);    /*  */
+		count += __free_memory_core(start, end);    /* 计算总页数 */
 
 	return count;
 }
@@ -2110,14 +2111,18 @@ void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页
  * memblock_free_all - release free pages to the buddy allocator
  *
  * Return: the number of pages actually released.
+ *
+ * 释放空闲页 给 伙伴系统 分配器
  */
 unsigned long __init memblock_free_all(void)/* 所有内存块都挂入 freelists 中 */
 {
 	unsigned long pages;
 
+    //zone.managed_pages = 0
 	reset_all_zones_managed_pages();    /* 重置所有 的 ZONE 管理页 - 伙伴系统管理的页 清零 */
 
-	pages = free_low_memory_core_early();   /* 获取所有RAM 页 */
+	pages = free_low_memory_core_early();   /* 获取所有RAM 页 个数 */
+    
 	totalram_pages_add(pages);  /* 添加至 RAM原子变量 */
 
 	return pages;

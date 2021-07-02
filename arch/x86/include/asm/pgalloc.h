@@ -150,13 +150,13 @@ static inline void pgd_populate_safe(struct mm_struct *mm, pgd_t *pgd, p4d_t *p4
 	set_pgd_safe(pgd, __pgd(_PAGE_TABLE | __pa(p4d)));
 }
 
-static inline p4d_t *p4d_alloc_one(struct mm_struct *mm, unsigned long addr)
+static inline p4d_t *p4d_alloc_one(struct mm_struct *mm, unsigned long addr)    /*  */
 {
 	gfp_t gfp = GFP_KERNEL_ACCOUNT;
 
 	if (mm == &init_mm) /* 是否为 init_mm */
 		gfp &= ~__GFP_ACCOUNT;
-	return (p4d_t *)get_zeroed_page(gfp);
+	return (p4d_t *)get_zeroed_page(gfp);   /* 分配一个页(初始化0) */
 }
 
 static inline void p4d_free(struct mm_struct *mm, p4d_t *p4d)

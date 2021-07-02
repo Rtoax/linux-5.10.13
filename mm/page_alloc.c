@@ -1398,18 +1398,23 @@ static void free_one_page(struct zone *zone,    /*  */
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);    /* 释放一个 page */
 	spin_unlock(&zone->lock);
 }
-
+                    /*  */
 static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 				unsigned long zone, int nid)
 {
-	mm_zero_struct_page(page);
-	set_page_links(page, zone, nid, pfn);
-	init_page_count(page);
-	page_mapcount_reset(page);
-	page_cpupid_reset_last(page);
-	page_kasan_tag_reset(page);
+	mm_zero_struct_page(page);              /* 根据page大小清空 page=0 */
+    /**
+    +----------+---------+----------+--------+----------+
+    |  section |   node  |   zone   |  ...   |   flag   |
+    +----------+---------+----------+--------+----------+
+     */
+	set_page_links(page, zone, nid, pfn);   /* 设置 page->flags 的 zone 和 node */
+	init_page_count(page);                  /* 引用计数 _refcount = 1 */
+	page_mapcount_reset(page);              /* &(page)->_mapcount, -1 */
+	page_cpupid_reset_last(page);           /*  */
+	page_kasan_tag_reset(page);             /*  */
 
-	INIT_LIST_HEAD(&page->lru);
+	INIT_LIST_HEAD(&page->lru);             /*  */
 #ifdef WANT_PAGE_VIRTUAL
 	/* The shift won't overflow because ZONE_NORMAL is below 4G. */
 	if (!is_highmem_idx(zone))
@@ -1418,6 +1423,7 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 }
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+/*  */
 static void __meminit init_reserved_page(unsigned long pfn)
 {
 	pg_data_t *pgdat;
@@ -1435,6 +1441,8 @@ static void __meminit init_reserved_page(unsigned long pfn)
 		if (pfn >= zone->zone_start_pfn && pfn < zone_end_pfn(zone))
 			break;
 	}
+
+    /* 初始化 page */
 	__init_single_page(pfn_to_page(pfn), pfn, zid, nid);
 }
 #else
@@ -1454,12 +1462,15 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 
 	for (; start_pfn < end_pfn; start_pfn++) {
 		if (pfn_valid(start_pfn)) {
+
+            /* 获取页帧对应的页 */
 			struct page *page = pfn_to_page(start_pfn);
 
+            /* 初始化 page */
 			init_reserved_page(start_pfn);
 
 			/* Avoid false-positive PageTail() */
-			INIT_LIST_HEAD(&page->lru); /* 为 boot 预留的 */
+			INIT_LIST_HEAD(&page->lru); /* 为 boot 预留的(匿名页) */
 
 			/*
 			 * no need for atomic set_bit because the struct
@@ -4934,7 +4945,7 @@ EXPORT_SYMBOL(__alloc_pages_nodemask);
  * address cannot represent highmem pages. Use alloc_pages and then kmap if
  * you need to access high mem.
  */
-unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)  /* 获取物理页 */
 {
 	struct page *page;
 
@@ -6284,7 +6295,7 @@ static void pageset_set_high_and_batch(struct zone *zone,
 		pageset_set_batch(pcp, zone_batchsize(zone));
 }
 
-static void __meminit zone_pageset_init(struct zone *zone, int cpu)
+static void __meminit zone_pageset_init(struct zone *zone, int cpu) /*  */
 {
 	struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
 
@@ -6292,7 +6303,7 @@ static void __meminit zone_pageset_init(struct zone *zone, int cpu)
 	pageset_set_high_and_batch(zone, pcp);
 }
 
-void __meminit setup_zone_pageset(struct zone *zone)
+void __meminit setup_zone_pageset(struct zone *zone)    /*  */
 {
 	int cpu;
 	zone->pageset = alloc_percpu(struct per_cpu_pageset);
@@ -6311,7 +6322,7 @@ void __init setup_per_cpu_pageset(void) /* 为每个 CPU 分配 */
 	int __maybe_unused cpu;
 
 	for_each_populated_zone(zone){
-		setup_zone_pageset(zone);}
+		setup_zone_pageset(zone);}  /*  */
 
 #ifdef CONFIG_NUMA
 	/*
@@ -7575,7 +7586,7 @@ void free_highmem_page(struct page *page)
 #endif
 
 
-void __init mem_init_print_info(const char *str)
+void __init mem_init_print_info(const char *str)    /* 打印 内存初始化信息 */
 {
 	unsigned long physpages, codesize, datasize, rosize, bss_size;
 	unsigned long init_code_size, init_data_size;
@@ -7609,10 +7620,10 @@ void __init mem_init_print_info(const char *str)
 	adj_init_size(_sdata, _edata, datasize, __start_rodata, rosize);
 
 #undef	adj_init_size
-
+    //[    0.000000] Memory: 4961012k/9437184k available (7756k kernel code, 1049480k absent, 452036k reserved, 5971k data, 1984k init)
 	pr_info("Memory: %luK/%luK available (%luK kernel code, %luK rwdata, %luK rodata, %luK init, %luK bss, %luK reserved, %luK cma-reserved"
 #ifdef	CONFIG_HIGHMEM
-		", %luK highmem"
+//		", %luK highmem"
 #endif
 		"%s%s)\n",
 		nr_free_pages() << (PAGE_SHIFT - 10),
@@ -7622,7 +7633,7 @@ void __init mem_init_print_info(const char *str)
 		(physpages - totalram_pages() - totalcma_pages) << (PAGE_SHIFT - 10),
 		totalcma_pages << (PAGE_SHIFT - 10),
 #ifdef	CONFIG_HIGHMEM
-		totalhigh_pages() << (PAGE_SHIFT - 10),
+//		totalhigh_pages() << (PAGE_SHIFT - 10),
 #endif
 		str ? ", " : "", str ? str : "");
 }
