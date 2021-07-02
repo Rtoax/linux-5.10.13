@@ -400,11 +400,11 @@ static __always_inline void __##func(struct pt_regs *regs)
  * - The ASM entry point: asm_##func
  * - The C handler called from the C shim
  */
-#define DECLARE_IDTENTRY_DF(vector, func)				\
-	asmlinkage void asm_##func(void);				\
-	__visible void func(struct pt_regs *regs,			\
-			    unsigned long error_code,			\
-			    unsigned long address)
+//#define DECLARE_IDTENTRY_DF(vector, func)				\
+//	asmlinkage void asm_##func(void);				\
+//	__visible void func(struct pt_regs *regs,			\
+//			    unsigned long error_code,			\
+//			    unsigned long address)
 
 /**
  * DEFINE_IDTENTRY_DF - Emit code for double fault on 32bit
@@ -413,10 +413,10 @@ static __always_inline void __##func(struct pt_regs *regs)
  * This is called through the doublefault shim which already provides
  * cr2 in the address argument.
  */
-#define DEFINE_IDTENTRY_DF(func)					\
-__visible noinstr void func(struct pt_regs *regs,			\
-			    unsigned long error_code,			\
-			    unsigned long address)
+//#define DEFINE_IDTENTRY_DF(func)					\
+//__visible noinstr void func(struct pt_regs *regs,			\
+//			    unsigned long error_code,			\
+//			    unsigned long address)
 
 #endif	/* !CONFIG_X86_64 */
 

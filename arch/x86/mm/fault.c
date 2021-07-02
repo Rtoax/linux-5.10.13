@@ -1463,8 +1463,8 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 }
 
 /* 缺页中断/缺页异常 */
-void exc_page_fault(struct pt_regs *regs, int error_code){/* 我加的 */}
 void do_page_fault(struct pt_regs *regs, int error_code){/* 我加的： 因为老版本的内核叫做这个名字 */}
+__visible noinstr void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* 我加的 */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 {
     struct pt_regs *regs/* 我加的 */;

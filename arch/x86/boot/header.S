@@ -296,7 +296,7 @@ boot_flag:	.word 0xAA55
 
 	# offset 512, entry point
 
-	.globl	_start
+	.globl _start
 _start: /* 内核设置入口点， 开始了老哥 实际上 `_start` 开始之前的代码是 kenerl 自带的 bootloader*/
         //# Explicitly enter this as bytes, or the assembler
         //# tries to generate a 3-byte jump here, which causes
