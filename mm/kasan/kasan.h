@@ -5,7 +5,7 @@
 #include <linux/kasan.h>
 #include <linux/stackdepot.h>
 
-#define KASAN_SHADOW_SCALE_SIZE (1UL << KASAN_SHADOW_SCALE_SHIFT)
+#define KASAN_SHADOW_SCALE_SIZE (1UL << KASAN_SHADOW_SCALE_SHIFT/* 3 */)
 #define KASAN_SHADOW_MASK       (KASAN_SHADOW_SCALE_SIZE - 1)
 
 #define KASAN_TAG_KERNEL	0xFF /* native kernel pointers tag */
@@ -99,7 +99,7 @@ struct kasan_track {
 };
 
 #ifdef CONFIG_KASAN_SW_TAGS_IDENTIFY
-#define KASAN_NR_FREE_STACKS 5
+//#define KASAN_NR_FREE_STACKS 5
 #else
 #define KASAN_NR_FREE_STACKS 1
 #endif
@@ -116,8 +116,8 @@ struct kasan_alloc_meta {
 	struct kasan_track free_track[KASAN_NR_FREE_STACKS];
 #endif
 #ifdef CONFIG_KASAN_SW_TAGS_IDENTIFY
-	u8 free_pointer_tag[KASAN_NR_FREE_STACKS];
-	u8 free_track_idx;
+//	u8 free_pointer_tag[KASAN_NR_FREE_STACKS];
+//	u8 free_track_idx;
 #endif
 };
 

@@ -1755,7 +1755,7 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	if ((alloc_gfp & __GFP_DIRECT_RECLAIM) && oo_order(oo) > oo_order(s->min))
 		alloc_gfp = (alloc_gfp | __GFP_NOMEMALLOC) & ~(__GFP_RECLAIM|__GFP_NOFAIL);
 
-	page = alloc_slab_page(s, alloc_gfp, node, oo);
+	page = alloc_slab_page(s, alloc_gfp, node, oo); /*  */
 	if (unlikely(!page)) {
 		oo = s->min;
 		alloc_gfp = flags;
@@ -1778,7 +1778,7 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	kasan_poison_slab(page);
 
-	start = page_address(page);
+	start = page_address(page); /*  */
 
 	setup_page_debug(s, page, start);
 
@@ -2729,7 +2729,7 @@ load_freelist:
 	c->tid = next_tid(c->tid);
 	return freelist;
 
-new_slab:
+new_slab:   /* 新的 slab */
 
 	if (slub_percpu_partial(c)) {
 		page = c->page = slub_percpu_partial(c);
@@ -2738,7 +2738,7 @@ new_slab:
 		goto redo;
 	}
 
-	freelist = new_slab_objects(s, gfpflags, node, &c);
+	freelist = new_slab_objects(s, gfpflags, node, &c); /*  */
 
 	if (unlikely(!freelist)) {
 		slab_out_of_memory(s, gfpflags, node);
@@ -2893,6 +2893,7 @@ redo:
 	return object;
 }
 
+        /*  */
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
@@ -4429,11 +4430,11 @@ __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 	return s;
 }
 
-int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
+int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)   /*  */
 {
 	int err;
 
-	err = kmem_cache_open(s, flags);
+	err = kmem_cache_open(s, flags);    /*  */
 	if (err)
 		return err;
 
@@ -4441,7 +4442,7 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 	if (slab_state <= UP)
 		return 0;
 
-	err = sysfs_slab_add(s);
+	err = sysfs_slab_add(s);    /*  */
 	if (err)
 		__kmem_cache_release(s);
 

@@ -129,7 +129,7 @@ static __always_inline unsigned long arch_local_irq_save(void)
 
 #ifdef CONFIG_X86_64
 #ifdef CONFIG_DEBUG_ENTRY
-#define SAVE_FLAGS(x)		pushfq; popq %rax
+//#define SAVE_FLAGS(x)		pushfq; popq %rax
 #endif
 
 ////交换 `MSR_KERNEL_GS_BASE` and `MSR_GS_BASE`

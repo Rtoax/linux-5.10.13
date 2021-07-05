@@ -4123,8 +4123,7 @@
 #define CONFIG_SLIP_MODULE 1
 #define CONFIG_SLIP_SMART 1
 #define CONFIG_SLOB             /* 小型 */
-#define CONFIG_SLUB             /*  */
-#define CONFIG_SLUB 1
+#define CONFIG_SLUB 1           /*  */
 #define CONFIG_SLUB_CPU_PARTIAL /*  */
 #define CONFIG_SLUB_CPU_PARTIAL 1
 #define CONFIG_SLUB_DEBUG       /*  */

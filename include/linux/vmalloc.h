@@ -64,7 +64,7 @@ struct vm_struct {  /*  */
 	const void		*caller;
 };
 
-struct vmap_area {
+struct vmap_area {  /* vmalloc 管理区 */
 	unsigned long va_start;
 	unsigned long va_end;
 

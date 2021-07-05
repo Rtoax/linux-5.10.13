@@ -572,20 +572,24 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,/* 申请 */
 		unsigned int size, slab_flags_t flags,
 		unsigned int useroffset, unsigned int usersize)
 {
-	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
+    /* 分配 kmem_cache 结构 */
+	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);   /*  */
 
 	if (!s)
 		panic("Out of memory when creating slab %s\n", name);
 
+    /* 创建 cache */
 	create_boot_cache(s, name, size, flags, useroffset, usersize);
+
+    /* 添加至链表 */
 	list_add(&s->list, &slab_caches);
-	s->refcount = 1;
+	s->refcount = 1;    /* 引用计数+1 */
 	return s;
 }
 
 struct kmem_cache *__ro_after_init
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1]  =
-{ /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 */ };
+{ /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 *//*  */ };
 EXPORT_SYMBOL(kmalloc_caches);
 
 /*
@@ -630,7 +634,7 @@ static inline unsigned int size_index_elem(unsigned int bytes)  /* 8->0, 9->1, *
  * Find the kmem_cache structure that serves a given size of
  * allocation
  */
-struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
+struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)/* 返回对应的 kmem_cache 句柄 */
 {
 	unsigned int index;
 
@@ -645,7 +649,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 		index = fls(size - 1);
 	}
 
-	return kmalloc_caches[kmalloc_type(flags)][index];
+	return kmalloc_caches[kmalloc_type(flags)][index];  /*  */
 }
 
 #ifdef CONFIG_ZONE_DMA
@@ -849,7 +853,7 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
  * directly to the page allocator. We use __GFP_COMP, because we will need to
  * know the allocation order to free the pages properly in kfree.
  */
-void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
+void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)   /*  */
 {
 	void *ret = NULL;
 	struct page *page;
@@ -858,7 +862,7 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 		flags = kmalloc_fix_flags(flags);
 
 	flags |= __GFP_COMP;
-	page = alloc_pages(flags, order);
+	page = alloc_pages(flags, order);   /*  */
 	if (likely(page)) {
 		ret = page_address(page);
 		mod_node_page_state(page_pgdat(page), NR_SLAB_UNRECLAIMABLE_B,
@@ -872,7 +876,7 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 EXPORT_SYMBOL(kmalloc_order);
 
 #ifdef CONFIG_TRACING
-void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
+void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order) /*  */
 {
 	void *ret = kmalloc_order(size, flags, order);
 	trace_kmalloc(_RET_IP_, ret, size, PAGE_SIZE << order, flags);

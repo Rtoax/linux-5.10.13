@@ -37,7 +37,7 @@ static inline bool pgtable_l5_enabled(void)
 #endif /* USE_EARLY_PGTABLE_L5 */
 
 #else
-#define pgtable_l5_enabled() 0
+//#define pgtable_l5_enabled() 0
 #endif /* CONFIG_X86_5LEVEL */
 
 extern unsigned int pgdir_shift;
@@ -71,9 +71,9 @@ extern unsigned int ptrs_per_p4d;
 /*
  * PGDIR_SHIFT determines what a top-level page table entry can map
  */
-#define PGDIR_SHIFT		39
-#define PTRS_PER_PGD		512
-#define MAX_PTRS_PER_P4D	1
+//#define PGDIR_SHIFT		39
+//#define PTRS_PER_PGD		512
+//#define MAX_PTRS_PER_P4D	1
 
 #endif /* CONFIG_X86_5LEVEL */
 
@@ -120,7 +120,7 @@ extern unsigned int ptrs_per_p4d;
 #define LDT_BASE_ADDR		(LDT_PGD_ENTRY << PGDIR_SHIFT)
 #define LDT_END_ADDR		(LDT_BASE_ADDR + PGDIR_SIZE)
 
-#define __VMALLOC_BASE_L4	0xffffc90000000000UL
+#define __VMALLOC_BASE_L4	0xffffc90000000000UL    /*  */
 #define __VMALLOC_BASE_L5 	0xffa0000000000000UL
 
 #define VMALLOC_SIZE_TB_L4	32UL

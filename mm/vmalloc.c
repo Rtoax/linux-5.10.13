@@ -412,7 +412,9 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
 /* Export for kexec only */
+static struct list_head vmap_area_list; /* +++ */
 LIST_HEAD(vmap_area_list);
+static struct llist_node vmap_purge_list; /* +++ */
 static LLIST_HEAD(vmap_purge_list);
 static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
 static bool __read_mostly vmap_initialized ; /* 根 */
@@ -429,6 +431,7 @@ static struct kmem_cache *vmap_area_cachep;
  * This linked list is used in pair with free_vmap_area_root.
  * It gives O(1) access to prev/next to perform fast coalescing.
  */
+static struct list_head free_vmap_area_list;/* +++ */
 static LIST_HEAD(free_vmap_area_list);
 
 /*
@@ -441,14 +444,16 @@ static LIST_HEAD(free_vmap_area_list);
  * of its sub-tree, right or left. Therefore it is possible to
  * find a lowest match of free area.
  */
-static struct rb_root free_vmap_area_root = RB_ROOT;
+static struct rb_root free_vmap_area_root = RB_ROOT;    /* vmalloc free区域 的红黑树 根 */
 
 /*
  * Preload a CPU with one object for "no edge" split case. The
  * aim is to get rid of allocations from the atomic context, thus
  * to use more permissive allocation masks.
  */
+static struct vmap_area *ne_fit_preload_node;/* +++ */
 static DEFINE_PER_CPU(struct vmap_area *, ne_fit_preload_node);
+
 
 static __always_inline unsigned long
 va_size(struct vmap_area *va)
@@ -490,7 +495,7 @@ unsigned long vmalloc_nr_pages(void)
 	return atomic_long_read(&nr_vmalloc_pages);
 }
 
-static struct vmap_area *__find_vmap_area(unsigned long addr)
+static struct vmap_area *__find_vmap_area(unsigned long addr)   /*  */
 {
 	struct rb_node *n = vmap_area_root.rb_node;
 
@@ -503,7 +508,7 @@ static struct vmap_area *__find_vmap_area(unsigned long addr)
 		else if (addr >= va->va_end)
 			n = n->rb_right;
 		else
-			return va;
+			return va;  /* 在 start 和 end 区间 */
 	}
 
 	return NULL;
@@ -704,9 +709,9 @@ insert_vmap_area(struct vmap_area *va,
 	struct rb_node **link;
 	struct rb_node *parent;
 
-	link = find_va_links(va, root, NULL, &parent);  /* 插入红黑树 */
+	link = find_va_links(va, root, NULL, &parent);  /* 找到对应的红黑树节点 */
 	if (link)
-		link_va(va, root, parent, link, head);  /*  */
+		link_va(va, root, parent, link, head);  /* 插入到红黑树和链表 */
 }
 
 static void
@@ -829,10 +834,11 @@ insert:
 
 static __always_inline bool
 is_within_this_va(struct vmap_area *va, unsigned long size,
-	unsigned long align, unsigned long vstart)
+	unsigned long align, unsigned long vstart)  /*  */
 {
 	unsigned long nva_start_addr;
 
+    /*  */
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
 	else
@@ -843,13 +849,15 @@ is_within_this_va(struct vmap_area *va, unsigned long size,
 			nva_start_addr < vstart)
 		return false;
 
-	return (nva_start_addr + size <= va->va_end);
+	return (nva_start_addr + size <= va->va_end);   /* 在 VA 区间内 */
 }
 
 /*
  * Find the first free block(lowest start address) in the tree,
  * that will accomplish the request corresponding to passing
  * parameters.
+ *
+ * 从红黑树中搜索，获取一块区域
  */
 static __always_inline struct vmap_area *
 find_vmap_lowest_match(unsigned long size,
@@ -860,7 +868,7 @@ find_vmap_lowest_match(unsigned long size,
 	unsigned long length;
 
 	/* Start from the root. */
-	node = free_vmap_area_root.rb_node;
+	node = free_vmap_area_root.rb_node; /* 管理 空闲 vmap 的红黑树根 */
 
 	/* Adjust the search size for alignment overhead. */
 	length = size + align - 1;
@@ -868,10 +876,15 @@ find_vmap_lowest_match(unsigned long size,
 	while (node) {
 		va = rb_entry(node, struct vmap_area, rb_node);
 
-		if (get_subtree_max_size(node->rb_left) >= length &&
-				vstart < va->va_start) {
+        /* 左子树的大小的和 */
+		if (get_subtree_max_size(node->rb_left) >= length && vstart < va->va_start) {
+
+            /*  */
 			node = node->rb_left;
+            
 		} else {
+            
+            /* 在这个区间内 */
 			if (is_within_this_va(va, size, align, vstart))
 				return va;
 
@@ -879,6 +892,8 @@ find_vmap_lowest_match(unsigned long size,
 			 * Does not make sense to go deeper towards the right
 			 * sub-tree if it does not have a free block that is
 			 * equal or bigger to the requested search length.
+			 *
+			 * 右树和 大于 长度，进入右子树
 			 */
 			if (get_subtree_max_size(node->rb_right) >= length) {
 				node = node->rb_right;
@@ -889,6 +904,8 @@ find_vmap_lowest_match(unsigned long size,
 			 * OK. We roll back and find the first right sub-tree,
 			 * that will satisfy the search criteria. It can happen
 			 * only once due to "vstart" restriction.
+			 *
+			 * 
 			 */
 			while ((node = rb_parent(node))) {
 				va = rb_entry(node, struct vmap_area, rb_node);
@@ -982,7 +999,7 @@ classify_va_fit_type(struct vmap_area *va,
 static __always_inline int
 adjust_va_to_fit_type(struct vmap_area *va,
 	unsigned long nva_start_addr, unsigned long size,
-	enum fit_type type)
+	enum fit_type type)/*  */
 {
 	struct vmap_area *lva = NULL;
 
@@ -994,7 +1011,7 @@ adjust_va_to_fit_type(struct vmap_area *va,
 		 * V      NVA      V
 		 * |---------------|
 		 */
-		unlink_va(va, &free_vmap_area_root);
+		unlink_va(va, &free_vmap_area_root);    /*  */
 		kmem_cache_free(vmap_area_cachep, va);
 	} else if (type == LE_FIT_TYPE) {
 		/*
@@ -1082,7 +1099,9 @@ adjust_va_to_fit_type(struct vmap_area *va,
 /*
  * Returns a start address of the newly allocated area, if success.
  * Otherwise a vend is returned that indicates failure.
- */
+ *
+ * 从 vmalloc 区域查找一块空闲 size 大小
+ */ /*  */
 static __always_inline unsigned long
 __alloc_vmap_area(unsigned long size, unsigned long align,
 	unsigned long vstart, unsigned long vend)
@@ -1092,10 +1111,12 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 	enum fit_type type;
 	int ret;
 
-	va = find_vmap_lowest_match(size, align, vstart);
+    /*  */
+	va = find_vmap_lowest_match(size, align, vstart);   /*  */
 	if (unlikely(!va))
 		return vend;
 
+    /* 对齐 */
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
 	else
@@ -1145,7 +1166,7 @@ static void free_vmap_area(struct vmap_area *va)
 /*
  * Allocate a region of KVA of the specified size and alignment, within the
  * vstart and vend.
- */
+ *//*  */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long align,
 				unsigned long vstart, unsigned long vend,
@@ -1174,7 +1195,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	 * Only scan the relevant parts containing pointers to other objects
 	 * to avoid false negatives.
 	 */
-	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask);
+	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask);   /*  */
 
 retry:
 	/*
@@ -1194,7 +1215,7 @@ retry:
 	 */
 	pva = NULL;
 
-	if (!this_cpu_read(ne_fit_preload_node))
+	if (!this_cpu_read(ne_fit_preload_node))    /*  */
 		/*
 		 * Even if it fails we do not really care about that.
 		 * Just proceed as it is. If needed "overflow" path
@@ -1210,26 +1231,32 @@ retry:
 	/*
 	 * If an allocation fails, the "vend" address is
 	 * returned. Therefore trigger the overflow path.
+	 *
+	 * 从 vmalloc 区间找出 size 这么一块空闲区域 荣涛 2021年7月5日16:17:46
 	 */
-	addr = __alloc_vmap_area(size, align, vstart, vend);
+	addr = __alloc_vmap_area(size, align, vstart, vend);    /*  */
+    
 	spin_unlock(&free_vmap_area_lock);
 
 	if (unlikely(addr == vend))
 		goto overflow;
 
-	va->va_start = addr;
+    /* 给 va 赋值 */
+	va->va_start = addr;    /* 赋值 */
 	va->va_end = addr + size;
 	va->vm = NULL;
 
 
+    /* 插入到红黑树和链表中 */
 	spin_lock(&vmap_area_lock);
-	insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
+	insert_vmap_area(va, &vmap_area_root, &vmap_area_list); /* 插入到红黑树和链表 */
 	spin_unlock(&vmap_area_lock);
 
 	BUG_ON(!IS_ALIGNED(va->va_start, align));
 	BUG_ON(va->va_start < vstart);
 	BUG_ON(va->va_end > vend);
 
+    /* kasan overflow监控 */
 	ret = kasan_populate_vmalloc(addr, size);
 	if (ret) {
 		free_vmap_area(va);
@@ -1439,12 +1466,12 @@ static void free_unmap_vmap_area(struct vmap_area *va)
 	free_vmap_area_noflush(va);
 }
 
-static struct vmap_area *find_vmap_area(unsigned long addr)
+static struct vmap_area *find_vmap_area(unsigned long addr) /*  */
 {
 	struct vmap_area *va;
 
 	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area(addr);
+	va = __find_vmap_area(addr);    /*  */
 	spin_unlock(&vmap_area_lock);
 
 	return va;
@@ -2039,10 +2066,10 @@ static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
 }
 
 static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
-			      unsigned long flags, const void *caller)
+			      unsigned long flags, const void *caller)  /*  */
 {
 	spin_lock(&vmap_area_lock);
-	setup_vmalloc_vm_locked(vm, va, flags, caller);
+	setup_vmalloc_vm_locked(vm, va, flags, caller); /*  */
 	spin_unlock(&vmap_area_lock);
 }
 
@@ -2057,23 +2084,26 @@ static void clear_vm_uninitialized_flag(struct vm_struct *vm)
 	vm->flags &= ~VM_UNINITIALIZED;
 }
 
+/*  */
 static struct vm_struct *__get_vm_area_node(unsigned long size,
 		unsigned long align, unsigned long flags, unsigned long start,
 		unsigned long end, int node, gfp_t gfp_mask, const void *caller)
 {
-	struct vmap_area *va;
-	struct vm_struct *area;
+	struct vmap_area *va;   /* VM中的一小段 - 等同于 VMA */
+	struct vm_struct *area; /* 管理区：红黑树+链表 */
 	unsigned long requested_size = size;
 
 	BUG_ON(in_interrupt());
-	size = PAGE_ALIGN(size);
+	size = PAGE_ALIGN(size);    /* 对齐一下 */
 	if (unlikely(!size))
 		return NULL;
 
+    /* 如果是 IOREMAP 的区域 */
 	if (flags & VM_IOREMAP)
 		align = 1ul << clamp_t(int, get_count_order_long(size),
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 
+    /* 分配一个 area 结构 */
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
 		return NULL;
@@ -2081,17 +2111,20 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	if (!(flags & VM_NO_GUARD))
 		size += PAGE_SIZE;
 
+    /* 从 vmalloc 区间分配 */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {
 		kfree(area);
 		return NULL;
 	}
 
+    /* kasan： 设置 redzone */
 	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
 
+    /*  */
 	setup_vmalloc_vm(area, va, flags, caller);
 
-	return area;
+	return area;    /*  */
 }
 
 struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
@@ -2113,7 +2146,7 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
  *
  * Return: the area descriptor on success or %NULL on failure.
  */
-struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
+struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)  /*  */
 {
 	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
 				  NUMA_NO_NODE, GFP_KERNEL,
@@ -2137,7 +2170,7 @@ struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
  *
  * Return: the area descriptor on success or %NULL on failure.
  */
-struct vm_struct *find_vm_area(const void *addr)
+struct vm_struct *find_vm_area(const void *addr)    /*  */
 {
 	struct vmap_area *va;
 
@@ -2556,11 +2589,13 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages())
 		goto fail;
 
+    /*  */
 	area = __get_vm_area_node(real_size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);
 	if (!area)
 		goto fail;
 
+    /*  */
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
 	if (!addr)
 		return NULL;
@@ -2604,6 +2639,7 @@ fail:
 void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, int node, const void *caller)
 {
+    /* 区域 */
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
 				gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
@@ -2634,10 +2670,12 @@ EXPORT_SYMBOL(__vmalloc);
  * use __vmalloc() instead.
  *
  * Return: pointer to the allocated memory or %NULL on error
- *///vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；然后逐页分配内存来从物理上填充hole。
-void *vmalloc(unsigned long size)
+ *
+ * vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；然后逐页分配内存来从物理上填充hole。
+ */
+void *vmalloc(unsigned long size)   /* 从 vmalloc 区分配内存 */
 {
-	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
+	return __vmalloc_node(size, 1/* 单字节对齐? */, GFP_KERNEL, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
 EXPORT_SYMBOL(vmalloc);

@@ -541,7 +541,7 @@ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
 static inline struct page *
 alloc_pages(gfp_t gfp_mask, unsigned int order)/* 分配一个page */
 {
-	return alloc_pages_current(gfp_mask, order);
+	return alloc_pages_current(gfp_mask, order);    /*  */
 }
 extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 			struct vm_area_struct *vma, unsigned long addr,

@@ -150,14 +150,14 @@
  * when XZ_DYNALLOC is used, but the pre-boot free() doesn't support it.
  * Workaround it here because the other decompressors don't need it.
  */
-#undef kmalloc
-#undef kfree
-#undef vmalloc
-#undef vfree
-#define kmalloc(size, flags) malloc(size)
-#define kfree(ptr) free(ptr)
-#define vmalloc(size) malloc(size)
-#define vfree(ptr) do { if (ptr != NULL) free(ptr); } while (0)
+//#undef kmalloc
+//#undef kfree
+//#undef vmalloc
+//#undef vfree
+//#define kmalloc(size, flags) malloc(size)
+//#define kfree(ptr) free(ptr)
+//#define vmalloc(size) malloc(size)
+//#define vfree(ptr) do { if (ptr != NULL) free(ptr); } while (0)
 
 /*
  * FIXME: Not all basic memory functions are provided in architecture-specific
@@ -173,52 +173,52 @@
  * optimizing for speed.
  */
 
-#ifndef memeq
-static bool memeq(const void *a, const void *b, size_t size)
-{
-	const uint8_t *x = a;
-	const uint8_t *y = b;
-	size_t i;
+//#ifndef memeq
+//static bool memeq(const void *a, const void *b, size_t size)
+//{
+//	const uint8_t *x = a;
+//	const uint8_t *y = b;
+//	size_t i;
+//
+//	for (i = 0; i < size; ++i)
+//		if (x[i] != y[i])
+//			return false;
+//
+//	return true;
+//}
+//#endif
 
-	for (i = 0; i < size; ++i)
-		if (x[i] != y[i])
-			return false;
+//#ifndef memzero
+//static void memzero(void *buf, size_t size)
+//{
+//	uint8_t *b = buf;
+//	uint8_t *e = b + size;
+//
+//	while (b != e)
+//		*b++ = '\0';
+//}
+//#endif
 
-	return true;
-}
-#endif
-
-#ifndef memzero
-static void memzero(void *buf, size_t size)
-{
-	uint8_t *b = buf;
-	uint8_t *e = b + size;
-
-	while (b != e)
-		*b++ = '\0';
-}
-#endif
-
-#ifndef memmove
-/* Not static to avoid a conflict with the prototype in the Linux headers. */
-void *memmove(void *dest, const void *src, size_t size)
-{
-	uint8_t *d = dest;
-	const uint8_t *s = src;
-	size_t i;
-
-	if (d < s) {
-		for (i = 0; i < size; ++i)
-			d[i] = s[i];
-	} else if (d > s) {
-		i = size;
-		while (i-- > 0)
-			d[i] = s[i];
-	}
-
-	return dest;
-}
-#endif
+//#ifndef memmove
+///* Not static to avoid a conflict with the prototype in the Linux headers. */
+//void *memmove(void *dest, const void *src, size_t size)
+//{
+//	uint8_t *d = dest;
+//	const uint8_t *s = src;
+//	size_t i;
+//
+//	if (d < s) {
+//		for (i = 0; i < size; ++i)
+//			d[i] = s[i];
+//	} else if (d > s) {
+//		i = size;
+//		while (i-- > 0)
+//			d[i] = s[i];
+//	}
+//
+//	return dest;
+//}
+//#endif
 
 /*
  * Since we need memmove anyway, would use it as memcpy too.
