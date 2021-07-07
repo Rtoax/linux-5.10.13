@@ -2538,7 +2538,7 @@ find_vma_prev(struct mm_struct *mm, unsigned long addr,
  * grow-up and grow-down cases.
  */
 static int acct_stack_growth(struct vm_area_struct *vma,
-			     unsigned long size, unsigned long grow)
+			     unsigned long size, unsigned long grow)    /*  */
 {
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long new_start;
@@ -2579,113 +2579,140 @@ static int acct_stack_growth(struct vm_area_struct *vma,
 }
 
 #if defined(CONFIG_STACK_GROWSUP) || defined(CONFIG_IA64)
-/*
- * PA-RISC uses this for its stack; IA64 for its Register Backing Store.
- * vma is the last one with address > vma->vm_end.  Have to extend vma.
- */
-int expand_upwards(struct vm_area_struct *vma, unsigned long address)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	struct vm_area_struct *next;
-	unsigned long gap_addr;
-	int error = 0;
-
-	if (!(vma->vm_flags & VM_GROWSUP))
-		return -EFAULT;
-
-	/* Guard against exceeding limits of the address space. */
-	address &= PAGE_MASK;
-	if (address >= (TASK_SIZE & PAGE_MASK))
-		return -ENOMEM;
-	address += PAGE_SIZE;
-
-	/* Enforce stack_guard_gap */
-	gap_addr = address + stack_guard_gap;
-
-	/* Guard against overflow */
-	if (gap_addr < address || gap_addr > TASK_SIZE)
-		gap_addr = TASK_SIZE;
-
-	next = vma->vm_next;
-	if (next && next->vm_start < gap_addr && vma_is_accessible(next)) {
-		if (!(next->vm_flags & VM_GROWSUP))
-			return -ENOMEM;
-		/* Check that both stack segments have the same anon_vma? */
-	}
-
-	/* We must make sure the anon_vma is allocated. */
-	if (unlikely(anon_vma_prepare(vma)))
-		return -ENOMEM;
-
-	/*
-	 * vma->vm_start/vm_end cannot change under us because the caller
-	 * is required to hold the mmap_lock in read mode.  We need the
-	 * anon_vma lock to serialize against concurrent expand_stacks.
-	 */
-	anon_vma_lock_write(vma->anon_vma);
-
-	/* Somebody else might have raced and expanded it already */
-	if (address > vma->vm_end) {
-		unsigned long size, grow;
-
-		size = address - vma->vm_start;
-		grow = (address - vma->vm_end) >> PAGE_SHIFT;
-
-		error = -ENOMEM;
-		if (vma->vm_pgoff + (size >> PAGE_SHIFT) >= vma->vm_pgoff) {
-			error = acct_stack_growth(vma, size, grow);
-			if (!error) {
-				/*
-				 * vma_gap_update() doesn't support concurrent
-				 * updates, but we only hold a shared mmap_lock
-				 * lock here, so we need to protect against
-				 * concurrent vma expansions.
-				 * anon_vma_lock_write() doesn't help here, as
-				 * we don't guarantee that all growable vmas
-				 * in a mm share the same root anon vma.
-				 * So, we reuse mm->page_table_lock to guard
-				 * against concurrent vma expansions.
-				 */
-				spin_lock(&mm->page_table_lock);
-				if (vma->vm_flags & VM_LOCKED)
-					mm->locked_vm += grow;
-				vm_stat_account(mm, vma->vm_flags, grow);
-				anon_vma_interval_tree_pre_update_vma(vma);
-				vma->vm_end = address;
-				anon_vma_interval_tree_post_update_vma(vma);
-				if (vma->vm_next)
-					vma_gap_update(vma->vm_next);
-				else
-					mm->highest_vm_end = vm_end_gap(vma);
-				spin_unlock(&mm->page_table_lock);
-
-				perf_event_mmap(vma);
-			}
-		}
-	}
-	anon_vma_unlock_write(vma->anon_vma);
-	khugepaged_enter_vma_merge(vma, vma->vm_flags);
-	validate_mm(mm);
-	return error;
-}
+///*
+// * PA-RISC uses this for its stack; IA64 for its Register Backing Store.
+// * vma is the last one with address > vma->vm_end.  Have to extend vma.
+// */
+//int expand_upwards(struct vm_area_struct *vma, unsigned long address)
+//{
+//	struct mm_struct *mm = vma->vm_mm;
+//	struct vm_area_struct *next;
+//	unsigned long gap_addr;
+//	int error = 0;
+//
+//	if (!(vma->vm_flags & VM_GROWSUP))
+//		return -EFAULT;
+//
+//	/* Guard against exceeding limits of the address space. */
+//	address &= PAGE_MASK;
+//	if (address >= (TASK_SIZE & PAGE_MASK))
+//		return -ENOMEM;
+//	address += PAGE_SIZE;
+//
+//	/* Enforce stack_guard_gap */
+//	gap_addr = address + stack_guard_gap;
+//
+//	/* Guard against overflow */
+//	if (gap_addr < address || gap_addr > TASK_SIZE)
+//		gap_addr = TASK_SIZE;
+//
+//	next = vma->vm_next;
+//	if (next && next->vm_start < gap_addr && vma_is_accessible(next)) {
+//		if (!(next->vm_flags & VM_GROWSUP))
+//			return -ENOMEM;
+//		/* Check that both stack segments have the same anon_vma? */
+//	}
+//
+//	/* We must make sure the anon_vma is allocated. */
+//	if (unlikely(anon_vma_prepare(vma)))
+//		return -ENOMEM;
+//
+//	/*
+//	 * vma->vm_start/vm_end cannot change under us because the caller
+//	 * is required to hold the mmap_lock in read mode.  We need the
+//	 * anon_vma lock to serialize against concurrent expand_stacks.
+//	 */
+//	anon_vma_lock_write(vma->anon_vma);
+//
+//	/* Somebody else might have raced and expanded it already */
+//	if (address > vma->vm_end) {
+//		unsigned long size, grow;
+//
+//		size = address - vma->vm_start;
+//		grow = (address - vma->vm_end) >> PAGE_SHIFT;
+//
+//		error = -ENOMEM;
+//		if (vma->vm_pgoff + (size >> PAGE_SHIFT) >= vma->vm_pgoff) {
+//			error = acct_stack_growth(vma, size, grow);
+//			if (!error) {
+//				/*
+//				 * vma_gap_update() doesn't support concurrent
+//				 * updates, but we only hold a shared mmap_lock
+//				 * lock here, so we need to protect against
+//				 * concurrent vma expansions.
+//				 * anon_vma_lock_write() doesn't help here, as
+//				 * we don't guarantee that all growable vmas
+//				 * in a mm share the same root anon vma.
+//				 * So, we reuse mm->page_table_lock to guard
+//				 * against concurrent vma expansions.
+//				 */
+//				spin_lock(&mm->page_table_lock);
+//				if (vma->vm_flags & VM_LOCKED)
+//					mm->locked_vm += grow;
+//				vm_stat_account(mm, vma->vm_flags, grow);
+//				anon_vma_interval_tree_pre_update_vma(vma);
+//				vma->vm_end = address;
+//				anon_vma_interval_tree_post_update_vma(vma);
+//				if (vma->vm_next)
+//					vma_gap_update(vma->vm_next);
+//				else
+//					mm->highest_vm_end = vm_end_gap(vma);
+//				spin_unlock(&mm->page_table_lock);
+//
+//				perf_event_mmap(vma);
+//			}
+//		}
+//	}
+//	anon_vma_unlock_write(vma->anon_vma);
+//	khugepaged_enter_vma_merge(vma, vma->vm_flags);
+//	validate_mm(mm);
+//	return error;
+//}
 #endif /* CONFIG_STACK_GROWSUP || CONFIG_IA64 */
 
 /*
  * vma is the first one with address < vma->vm_start.  Have to extend vma.
+ *  扩展 VMA
+ *
+ *  情景1：
+ *  =======================================================
+ *  vm_start > addr 
+ *
+ *          vm_start    vm_end
+ *             |          |
+ *  +----------+##########+------+
+ *        ^
+ *        |
+ *       addr
+ *
+ *  expand_stack 执行后：==>
+ *  
+ *  vm_start > addr 
+ *
+ *       start
+ *        |
+ *     vm_start         vm_end
+ *        |               |
+ *  +-----+###############+------+
+ *        ^
+ *        |
+ *       addr
  */
-int expand_downwards(struct vm_area_struct *vma,
-				   unsigned long address)
+
+int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *prev;
 	int error = 0;
 
-	address &= PAGE_MASK;
-	if (address < mmap_min_addr)
+	address &= PAGE_MASK;   /* 确认一下，页偏移部分为 0 */
+    
+	if (address < mmap_min_addr)    /* 地址错误，返回权限错误 */
 		return -EPERM;
 
 	/* Enforce stack_guard_gap */
 	prev = vma->vm_prev;
+    
 	/* Check that both stack segments have the same anon_vma? */
 	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
 			vma_is_accessible(prev)) {
@@ -2701,20 +2728,42 @@ int expand_downwards(struct vm_area_struct *vma,
 	 * vma->vm_start/vm_end cannot change under us because the caller
 	 * is required to hold the mmap_lock in read mode.  We need the
 	 * anon_vma lock to serialize against concurrent expand_stacks.
+	 *
+	 * 
 	 */
 	anon_vma_lock_write(vma->anon_vma);
 
-	/* Somebody else might have raced and expanded it already */
-	if (address < vma->vm_start) {
+	/**
+	 *  Somebody else might have raced and expanded it already 
+	 *
+     *  
+     *  vm_start > addr 
+     *
+     *          vm_start    vm_end
+     *             |          |
+     *  +-----+====+##########+------+
+     *        ^               |
+     *        |               |
+     *       addr             |
+     *        |               |
+     *        |<----size----->|
+     *        |<-->| grow
+     */
+	if (address < vma->vm_start) {  /* 小于 */
+        
 		unsigned long size, grow;
 
+        /* 计算总大小 */
 		size = vma->vm_end - address;
+
+        /* 需要增加的大小 */
 		grow = (vma->vm_start - address) >> PAGE_SHIFT;
 
 		error = -ENOMEM;
-		if (grow <= vma->vm_pgoff) {
-			error = acct_stack_growth(vma, size, grow);
-			if (!error) {
+		if (grow <= vma->vm_pgoff) {    /* 小于在 page 中的偏移量 */
+            
+			error = acct_stack_growth(vma, size, grow); /* 鉴权与资源限制检测 */
+			if (!error) {   /* 没出错 */
 				/*
 				 * vma_gap_update() doesn't support concurrent
 				 * updates, but we only hold a shared mmap_lock
@@ -2727,20 +2776,23 @@ int expand_downwards(struct vm_area_struct *vma,
 				 * against concurrent vma expansions.
 				 */
 				spin_lock(&mm->page_table_lock);
+                
 				if (vma->vm_flags & VM_LOCKED)
 					mm->locked_vm += grow;
 				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
-				vma->vm_start = address;
-				vma->vm_pgoff -= grow;
+				vma->vm_start = address;    /* 赋值 */
+				vma->vm_pgoff -= grow;      /*  */
 				anon_vma_interval_tree_post_update_vma(vma);
 				vma_gap_update(vma);
+                
 				spin_unlock(&mm->page_table_lock);
 
 				perf_event_mmap(vma);
 			}
 		}
 	}
+    
 	anon_vma_unlock_write(vma->anon_vma);
 	khugepaged_enter_vma_merge(vma, vma->vm_flags);
 	validate_mm(mm);
@@ -2786,31 +2838,104 @@ __setup("stack_guard_gap=", cmdline_parse_stack_guard_gap);
 //	return prev;
 //}
 #else
-/* vma 是第一个 vma， 需要扩展 */
+
+/**
+ *  扩展 VMA
+ *
+ *  情景1：
+ *  ======================================================
+ *  vm_start > addr 
+ *
+ *          vm_start    vm_end
+ *             |          |
+ *  +----------+##########+------+
+ *        ^
+ *        |
+ *       addr
+ *
+ *  expand_stack 执行后：==>
+ *  
+ *  vm_start > addr 
+ *
+ *       start
+ *        |
+ *     vm_start         vm_end
+ *        |               |
+ *  +-----+###############+------+
+ *        ^
+ *        |
+ *       addr
+ *
+ */
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
-	return expand_downwards(vma, address);
+	return expand_downwards(vma, address);  /*  */
 }
 
 struct vm_area_struct *
-find_extend_vma(struct mm_struct *mm, unsigned long addr)
+find_extend_vma(struct mm_struct *mm, unsigned long addr)   /*  */
 {
 	struct vm_area_struct *vma;
 	unsigned long start;
 
-	addr &= PAGE_MASK;
-	vma = find_vma(mm, addr);
+	addr &= PAGE_MASK;  /* 将偏移部分置零 */
+    
+	vma = find_vma(mm, addr);   /* 查找 vma */
 	if (!vma)
-		return NULL;
-	if (vma->vm_start <= addr)
+		return NULL;    /* 没找到，直接返回 NULL */
+    
+	if (vma->vm_start <= addr)  /* 在 vma 范围内 */
 		return vma;
-	if (!(vma->vm_flags & VM_GROWSDOWN))
+
+    /**
+     *  vm_start > addr 
+     *
+     *          vm_start    vm_end
+     *             |          |
+     *  +----------+##########+------+
+     *        ^
+     *        |
+     *       addr
+     */
+	if (!(vma->vm_flags & VM_GROWSDOWN))    /* 如果不是向下增长的，直接返回错误 */
 		return NULL;
+
+
+    /**
+     *  vm_start > addr 
+     *
+     *           start
+     *             |
+     *          vm_start    vm_end
+     *             |          |
+     *  +----------+##########+------+
+     *        ^
+     *        |
+     *       addr
+     */
 	start = vma->vm_start;
-	if (expand_stack(vma, addr))
+    
+	if (expand_stack(vma, addr))    /* 扩展 */
 		return NULL;
-	if (vma->vm_flags & VM_LOCKED)
+    /**
+     *  expand_stack 执行后
+     *  
+     *  vm_start > addr 
+     *
+     *       start
+     *        |
+     *     vm_start         vm_end
+     *        |               |
+     *  +-----+###############+------+
+     *        ^
+     *        |
+     *       addr
+     */
+
+    
+	if (vma->vm_flags & VM_LOCKED)  /* 如果锁定， mlock -> 人为制造缺页异常 */
 		populate_vma_page_range(vma, addr, start, NULL);
+    
 	return vma;
 }
 #endif

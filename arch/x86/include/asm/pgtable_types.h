@@ -273,7 +273,7 @@ enum page_cache_mode {
 #include <linux/types.h>
 
 /* Extracts the PFN from a (pte|pmd|pud|pgd)val_t of a 4KB page */
-#define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
+#define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)  /* 0xffff ffff ffff f000 */
 
 /*
  *  Extracts the flags from a (pte|pmd|pud|pgd)val_t
@@ -510,7 +510,7 @@ static inline pte_t native_make_pte(pteval_t val)
 	return (pte_t) { .pte = val };
 }
 
-static inline pteval_t native_pte_val(pte_t pte)
+static inline pteval_t native_pte_val(pte_t pte)    /*  */
 {
 	return pte.pte;
 }

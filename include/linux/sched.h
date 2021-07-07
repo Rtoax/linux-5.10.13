@@ -1872,7 +1872,15 @@ extern int _cond_resched(void);
 /*  */
 #endif
 
-#define cond_resched() ({			/*  */\
+/*
+在可抢占内核中，在内核态有很多抢占点，在有高优先级的进程需要运行时，
+就会在抢占点到来时执行抢占；而在内核不可抢占系统中(如centos系统)，
+在内核态运行的程序可调用 cond_resched 主动让出cpu，防止其在内核态执行
+时间过长导致可能发生的soft lockup或者造成较大的调度延迟。
+*/
+
+/* cond_resched 主动让出cpu */
+#define cond_resched() ({			\
 	___might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\
 })

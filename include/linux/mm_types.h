@@ -400,8 +400,7 @@ struct vm_area_struct { /* VMA */
 	const struct vm_operations_struct *vm_ops;  /* VMA 操作 */
 
 	/* Information about our backing store: */
-	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE
-					   units */
+	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE units */
 	struct file * vm_file;		/* File we map to (can be NULL). */
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 

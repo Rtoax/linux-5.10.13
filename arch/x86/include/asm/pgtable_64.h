@@ -256,7 +256,7 @@ extern void cleanup_highmap(void);
 
 #define __HAVE_ARCH_PTE_SAME
 
-#define vmemmap ((struct page *)VMEMMAP_START)
+#define vmemmap ((struct page *)VMEMMAP_START)  /*  */
 
 extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
 extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);

@@ -8,7 +8,7 @@
 #include <asm/mtrr.h>
 
 #ifdef CONFIG_DYNAMIC_PHYSICAL_MASK
-phys_addr_t __ro_after_init physical_mask  = (1ULL << __PHYSICAL_MASK_SHIFT) - 1;
+phys_addr_t __ro_after_init physical_mask  = (1ULL << __PHYSICAL_MASK_SHIFT/* 52 */) - 1;/* 0xffff ffff ffff f000 */
 EXPORT_SYMBOL(physical_mask);
 #endif
 

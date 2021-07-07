@@ -1,0 +1,34 @@
+
+
+# 用户空间内存关键API 
+
+
+* get_user_pages - 主要用于锁住内存保证用户空间分配的内存不会被释放。
+* follow_page - 通过 虚拟地址 address 查找相应的 物理页面
+* vm_normal_page - 根据 PTE 来返回普通映射页面的 page 数据结构,一些特殊映射的页面，是不会返回 page 数据结构的
+
+调用关系如下：
+
+```
+follow_page	###
+	follow_page_mask <<<<
+		follow_p4d_mask
+			follow_pud_mask
+				follow_pmd_mask
+					follow_page_pte
+						vm_normal_page	###
+							pfn_to_page
+
+get_user_pages	###
+	__gup_longterm_locked
+		__get_user_pages_locked
+			__get_user_pages
+				follow_page_mask <<<<
+					follow_p4d_mask
+						follow_pud_mask
+							follow_pmd_mask
+								follow_page_pte
+									vm_normal_page	###
+										pfn_to_page
+```
+

@@ -2772,8 +2772,7 @@
 #define CONFIG_MTD_UBI_BEB_LIMIT 20
 #define CONFIG_MTD_UBI_MODULE 1
 #define CONFIG_MTD_UBI_WL_THRESHOLD 4096
-#define CONFIG_MTRR 1
-#define CONFIG_MTRR             /* Memory Type Range Register, 用于将内存类型与系统内存中的物理地址范围关联起来*/
+#define CONFIG_MTRR 1   /* Memory Type Range Register, 用于将内存类型与系统内存中的物理地址范围关联起来*/
 #define CONFIG_MTRR_SANITIZER 1
 #define CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT 1
 #define CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT 1
@@ -5233,12 +5232,9 @@
 #define CONFIG_ZISOFS 1
 #define CONFIG_ZLIB_DEFLATE 1
 #define CONFIG_ZLIB_INFLATE 1
-#define CONFIG_ZONE_DEVICE      /*  */
-#define CONFIG_ZONE_DEVICE 1
-#define CONFIG_ZONE_DMA         /*  */
-#define CONFIG_ZONE_DMA 1
-#define CONFIG_ZONE_DMA32       /*  */
-#define CONFIG_ZONE_DMA32 1
+#define CONFIG_ZONE_DEVICE 1    /*  */
+#define CONFIG_ZONE_DMA 1       /*  */
+#define CONFIG_ZONE_DMA32 1     /*  */
 #define CONFIG_ZPOOL 1
 #define CONFIG_ZRAM_MODULE 1
 #define CONFIG_ZSMALLOC 1

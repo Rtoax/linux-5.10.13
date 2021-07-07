@@ -110,7 +110,7 @@ extern pmdval_t early_pmd_flags;
 #define __pmd(x)	native_make_pmd(x)
 #endif
 
-#define pte_val(x)	native_pte_val(x)
+#define pte_val(x)	native_pte_val(x)   /*  */
 #define __pte(x)	native_make_pte(x)
 
 #define arch_end_context_switch(prev)	do {} while(0)
@@ -208,11 +208,11 @@ static inline int pte_special(pte_t pte)
 
 static inline u64 protnone_mask(u64 val);
 
-static inline unsigned long pte_pfn(pte_t pte)
+static inline unsigned long pte_pfn(pte_t pte)  /*  */
 {
 	phys_addr_t pfn = pte_val(pte);
 	pfn ^= protnone_mask(pfn);
-	return (pfn & PTE_PFN_MASK) >> PAGE_SHIFT;
+	return (pfn & PTE_PFN_MASK/* 0xffff ffff ffff f000 */) >> PAGE_SHIFT/* 12 */;
 }
 
 static inline unsigned long pmd_pfn(pmd_t pmd)
@@ -761,7 +761,7 @@ static inline int pte_present(pte_t a)   /* 该页面是否在内存中 */
 }
 
 #ifdef CONFIG_ARCH_HAS_PTE_DEVMAP
-static inline int pte_devmap(pte_t a)
+static inline int pte_devmap(pte_t a)   /*  */
 {
 	return (pte_flags(a) & _PAGE_DEVMAP) == _PAGE_DEVMAP;
 }

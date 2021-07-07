@@ -363,6 +363,7 @@ static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
 }
 
+/* 在 `follow_pmd_mask()` 中被调用 */
 static struct page *follow_page_pte(struct vm_area_struct *vma,
 		unsigned long address, pmd_t *pmd, unsigned int flags,
 		struct dev_pagemap **pgmap)
@@ -517,6 +518,7 @@ no_page:
 	return no_page_table(vma, flags);
 }
 
+/* 在 `follow_pud_mask()` 被调用 */
 static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 				    unsigned long address, pud_t *pudp,
 				    unsigned int flags,
@@ -632,7 +634,8 @@ retry_locked:
 	return page;
 }
 
-static struct page *follow_pud_mask(struct vm_area_struct *vma,
+/* 在`follow_p4d_mask()`中被调用 */
+static struct page *follow_pud_mask(struct vm_area_struct *vma, /*  */
 				    unsigned long address, p4d_t *p4dp,
 				    unsigned int flags,
 				    struct follow_page_context *ctx)
@@ -672,6 +675,7 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 	return follow_pmd_mask(vma, address, pud, flags, ctx);
 }
 
+/* 在`follow_page_mask()`中被调用 */
 static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 				    unsigned long address, pgd_t *pgdp,
 				    unsigned int flags,
@@ -1017,8 +1021,10 @@ static long __get_user_pages(struct mm_struct *mm,
 	 * If FOLL_FORCE is set then do not force a full fault as the hinting
 	 * fault information is unrelated to the reference behaviour of a task
 	 * using the address space
+	 *
+	 * 如果设置了 FOLL_FORCE，则不要强制完全错误，因为提示错误信息与使用地址空间的任务的引用行为无关
 	 */
-	if (!(gup_flags & FOLL_FORCE))
+	if (!(gup_flags & FOLL_FORCE))  /*  */
 		gup_flags |= FOLL_NUMA;
 
 	do {
@@ -1028,7 +1034,8 @@ static long __get_user_pages(struct mm_struct *mm,
 
 		/* first iteration or cross vma bound */
 		if (!vma || start >= vma->vm_end) {
-			vma = find_extend_vma(mm, start);
+            /*  */
+			vma = find_extend_vma(mm, start);   /* 查找并扩展vma */
 			if (!vma && in_gate_area(mm, start)) {
 				ret = get_gate_page(mm, start & PAGE_MASK,
 						gup_flags, &vma,
@@ -1043,6 +1050,8 @@ static long __get_user_pages(struct mm_struct *mm,
 				ret = -EFAULT;
 				goto out;
 			}
+            
+            /* 如果是大页内存 */
 			if (is_vm_hugetlb_page(vma)) {
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
 						&start, &nr_pages, i,
@@ -1071,8 +1080,17 @@ retry:
 			ret = -EINTR;
 			goto out;
 		}
+
+        /* 主动让出 CPU */
 		cond_resched();
 
+        /**
+         *  follow_page_mask
+         *
+         * 用于返回在用户进程地址空间已经有映射的普通映射(normal mapping)页面的 page 数据结构。
+         * 通过 虚拟地址 address 查找相应的 物理页面。
+         * 遍历页表，并返回物理页面的 page 数据结构。
+         */
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		if (!page) {
             /* 人为的触发一个 缺页异常 */
@@ -1244,6 +1262,7 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 		BUG_ON(*locked != 1);
 	}
 
+    /* pin 标志 */
 	if (flags & FOLL_PIN)
 		atomic_set(&mm->has_pinned, 1);
 
@@ -1255,13 +1274,22 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 	 *
 	 * FOLL_PIN always expects pages to be non-null, but no need to assert
 	 * that here, as any failures will be obvious enough.
+	 *
+	 * FOLL_PIN 和 FOLL_GET 是互斥的。 传统行为是如果调用者想要填充 pages[]（但不小心未能指定 FOLL_GET），
+	 * 则设置 FOLL_GET，所以继续这样做，但仅适用于 FOLL_GET，而不适用于较新的 FOLL_PIN。
+     *
+     * FOLL_PIN 总是期望页面为非空，但无需在这里断言，因为任何失败都足够明显。
 	 */
 	if (pages && !(flags & FOLL_PIN))
-		flags |= FOLL_GET;
+		flags |= FOLL_GET;  /* 设置标志位 */
 
-	pages_done = 0;
+	pages_done = 0; /* page 计数 */
 	lock_dropped = false;
+    
 	for (;;) {
+        /**
+         *  为地址空间分配物理内存 并建立映射关系
+         */
 		ret = __get_user_pages(mm, start, nr_pages, flags, pages,
 				       vmas, locked);
 		if (!locked)
@@ -1307,13 +1335,13 @@ retry:
 		 * start trying again otherwise it can loop forever.
 		 */
 
-		if (fatal_signal_pending(current)) {
+		if (fatal_signal_pending(current)) {    /*  */
 			if (!pages_done)
 				pages_done = -EINTR;
 			break;
 		}
 
-		ret = mmap_read_lock_killable(mm);
+		ret = mmap_read_lock_killable(mm);  /*  */
 		if (ret) {
 			BUG_ON(ret > 0);
 			if (!pages_done)
@@ -1685,6 +1713,8 @@ static long check_and_migrate_cma_pages(struct mm_struct *mm,
 /*
  * __gup_longterm_locked() is a wrapper for __get_user_pages_locked which
  * allows us to process the FOLL_LONGTERM flag.
+ *
+ * 这个函数是 `__get_user_pages_locked()` 的 wrapper ，用于处理 `FOLL_LONGTERM`
  */
 static long __gup_longterm_locked(struct mm_struct *mm,
 				  unsigned long start,
@@ -1697,10 +1727,12 @@ static long __gup_longterm_locked(struct mm_struct *mm,
 	unsigned long flags = 0;
 	long rc, i;
 
+    /* 处理 longterm 标志 */
 	if (gup_flags & FOLL_LONGTERM) {
 		if (!pages)
 			return -EINVAL;
 
+        /* 如果为空，分配 vma，每个 page 一个 vma */
 		if (!vmas_tmp) {
 			vmas_tmp = kcalloc(nr_pages,
 					   sizeof(struct vm_area_struct *),
@@ -1711,6 +1743,7 @@ static long __gup_longterm_locked(struct mm_struct *mm,
 		flags = memalloc_nocma_save();
 	}
 
+    /* 核心函数 */
 	rc = __get_user_pages_locked(mm, start, nr_pages, pages,
 				     vmas_tmp, NULL, gup_flags);
 

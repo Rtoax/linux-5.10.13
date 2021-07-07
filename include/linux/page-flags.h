@@ -1023,8 +1023,11 @@ static inline int PageTransHuge(struct page *page)
  * PageTransCompound returns true for both transparent huge pages
  * and hugetlbfs pages, so it should only be called when it's known
  * that hugetlbfs pages aren't involved.
+ *
+ * PageTransCompound 对透明大页面和 Hugetlbfs 页面都返回 true，
+ * 因此只有在知道不涉及 Hugetlbfs 页面时才应该调用它。
  */
-static inline int PageTransCompound(struct page *page)
+static inline int PageTransCompound(struct page *page)  /*  */
 {
 	return PageCompound(page);
 }

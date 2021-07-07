@@ -142,44 +142,44 @@ unsigned long vmem_altmap_offset(struct vmem_altmap *altmap);
 void vmem_altmap_free(struct vmem_altmap *altmap, unsigned long nr_pfns);
 unsigned long memremap_compat_align(void);
 #else
-static inline void *devm_memremap_pages(struct device *dev,
-		struct dev_pagemap *pgmap)
-{
-	/*
-	 * Fail attempts to call devm_memremap_pages() without
-	 * ZONE_DEVICE support enabled, this requires callers to fall
-	 * back to plain devm_memremap() based on config
-	 */
-	WARN_ON_ONCE(1);
-	return ERR_PTR(-ENXIO);
-}
-
-static inline void devm_memunmap_pages(struct device *dev,
-		struct dev_pagemap *pgmap)
-{
-}
-
-static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
-		struct dev_pagemap *pgmap)
-{
-	return NULL;
-}
-
-static inline unsigned long vmem_altmap_offset(struct vmem_altmap *altmap)
-{
-	return 0;
-}
-
-static inline void vmem_altmap_free(struct vmem_altmap *altmap,
-		unsigned long nr_pfns)
-{
-}
-
-/* when memremap_pages() is disabled all archs can remap a single page */
-static inline unsigned long memremap_compat_align(void)
-{
-	return PAGE_SIZE;
-}
+//static inline void *devm_memremap_pages(struct device *dev,
+//		struct dev_pagemap *pgmap)
+//{
+//	/*
+//	 * Fail attempts to call devm_memremap_pages() without
+//	 * ZONE_DEVICE support enabled, this requires callers to fall
+//	 * back to plain devm_memremap() based on config
+//	 */
+//	WARN_ON_ONCE(1);
+//	return ERR_PTR(-ENXIO);
+//}
+//
+//static inline void devm_memunmap_pages(struct device *dev,
+//		struct dev_pagemap *pgmap)
+//{
+//}
+//
+//static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
+//		struct dev_pagemap *pgmap)
+//{
+//	return NULL;
+//}
+//
+//static inline unsigned long vmem_altmap_offset(struct vmem_altmap *altmap)
+//{
+//	return 0;
+//}
+//
+//static inline void vmem_altmap_free(struct vmem_altmap *altmap,
+//		unsigned long nr_pfns)
+//{
+//}
+//
+///* when memremap_pages() is disabled all archs can remap a single page */
+//static inline unsigned long memremap_compat_align(void)
+//{
+//	return PAGE_SIZE;
+//}
 #endif /* CONFIG_ZONE_DEVICE */
 
 static inline void put_dev_pagemap(struct dev_pagemap *pgmap)

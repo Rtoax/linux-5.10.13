@@ -604,13 +604,18 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			    pte_t pte)
 {
+    /**
+     *  pte - 0xffff ffff ffff f000(mask)
+     *  pfn -    0xf ffff ffff ffff(mask)
+     */
 	unsigned long pfn = pte_pfn(pte);
 
+    /* 特殊的 page */
 	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {  /*  */
 		if (likely(!pte_special(pte)))
 			goto check_pfn;
 		if (vma->vm_ops && vma->vm_ops->find_special_page)
-			return vma->vm_ops->find_special_page(vma, addr);
+			return vma->vm_ops->find_special_page(vma, addr);   /*  */
 		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 			return NULL;
 		if (is_zero_pfn(pfn))
@@ -638,7 +643,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 				return NULL;
 		}
 	}
-
+    /* 系统零页 */
 	if (is_zero_pfn(pfn))
 		return NULL;
 
@@ -653,7 +658,7 @@ check_pfn:
 	 * eg. VDSO mappings can cause them to exist.
 	 */
 out:
-	return pfn_to_page(pfn);
+	return pfn_to_page(pfn);    /*  */
 }
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE

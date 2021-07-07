@@ -262,14 +262,7 @@ static inline void memalloc_nocma_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_NOCMA) | flags;
 }
 #else
-static inline unsigned int memalloc_nocma_save(void)
-{
-	return 0;
-}
-
-static inline void memalloc_nocma_restore(unsigned int flags)
-{
-}
+/*  */
 #endif
 
 #ifdef CONFIG_MEMCG

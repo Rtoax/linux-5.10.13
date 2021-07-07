@@ -22,7 +22,7 @@
 /* Cast *PAGE_MASK to a signed type so that it is sign-extended if
    virtual addresses are 32-bits but physical addresses are larger
    (ie, 32-bit PAE). */
-#define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
+#define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK/* 0xffff ffff ffff f000 */)
 #define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PUD_PAGE_MASK	(((signed long)PUD_PAGE_MASK) & __PHYSICAL_MASK)
 
@@ -65,7 +65,7 @@
 
 #ifdef CONFIG_DYNAMIC_PHYSICAL_MASK
 extern phys_addr_t physical_mask;
-#define __PHYSICAL_MASK		physical_mask
+#define __PHYSICAL_MASK		physical_mask   /* 0xffff ffff ffff f000 */
 #else
 //#define __PHYSICAL_MASK		((phys_addr_t)((1ULL << __PHYSICAL_MASK_SHIFT) - 1))
 #endif
