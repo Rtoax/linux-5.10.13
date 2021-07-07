@@ -115,6 +115,46 @@ struct kernel_symbol {
 #define EXPORT_SYMBOL_NS(sym, ns)	__EXPORT_SYMBOL(sym, "", #ns)
 #define EXPORT_SYMBOL_NS_GPL(sym, ns)	__EXPORT_SYMBOL(sym, "_gpl", #ns)
 
+
+/**********************************************************************************************************************\
+ *  EXPORT_SYMBOL 的展开示例 开始
+\**********************************************************************************************************************/
+int rtoax()
+{
+    
+}
+EXPORT_SYMBOL(rtoax);
+
+//=================>>
+
+extern typeof(rtoax) rtoax;						
+extern const char __kstrtab_rtoax[];					
+extern const char __kstrtabns_rtoax[];					
+asm("	.section \"___kcrctab+rtoax\", \"a\"	\n"	
+    "	.weak	__crc_rtoax				\n"	
+    "	.long	__crc_rtoax				\n"	
+    "	.previous					\n");
+
+asm("	.section \"__ksymtab_strings\",\"aMS\",%progbits,1	\n"	
+    "__kstrtab_rtoax:					\n"	
+    "	.asciz 	\"rtoax\"					\n"	
+    "__kstrtabns_rtoax:					\n"	
+    "	.asciz 	\"rtoax\"					\n"	
+    "	.previous						\n");	    
+static void * __section(".discard.addressable") __used __UNIQUE_ID___addressable_rtoax__COUNTER__ = (void *)&rtoax;
+asm("	.section \"___ksymtab+rtoax\", \"a\"	\n"	
+    "	.balign	4					\n"	
+    "__ksymtab_rtoax:				\n"
+    "	.long	rtoax- .				\n"	
+    "	.long	__kstrtab_rtoax- .			\n"	
+    "	.long	__kstrtabns_rtoax- .			\n"	
+    "	.previous					\n");
+
+/**********************************************************************************************************************\
+ *  EXPORT_SYMBOL 的展开示例 结束
+\**********************************************************************************************************************/
+
+
 #ifdef CONFIG_UNUSED_SYMBOLS
 #define EXPORT_UNUSED_SYMBOL(sym)	_EXPORT_SYMBOL(sym, "_unused")
 #define EXPORT_UNUSED_SYMBOL_GPL(sym)	_EXPORT_SYMBOL(sym, "_unused_gpl")

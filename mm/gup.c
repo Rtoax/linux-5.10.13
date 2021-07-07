@@ -1899,7 +1899,7 @@ static long __get_user_pages_remote(struct mm_struct *mm,
  * @pages:      array that receives pointers to the pages pinned.
  *              Should be at least nr_pages long. Or NULL, if caller
  *              only intends to ensure the pages are faulted in.
- * @vmas:       array of pointers to vmas corresponding to each page.
+ * @vmas:       array of pointers to vmas corresponding to each page. 每个 page 的vma 结构
  *              Or NULL if the caller does not require them.
  *
  * This is the same as get_user_pages_remote(), just with a less-flexible
@@ -1917,6 +1917,7 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
 	if (!is_valid_gup_flags(gup_flags))
 		return -EINVAL;
 
+    /*  */
 	return __gup_longterm_locked(current->mm, start, nr_pages,
 				     pages, vmas, gup_flags | FOLL_TOUCH);
 }

@@ -1,0 +1,5 @@
+
+
+get_user_pages - 主要用于锁住内存保证用户空间分配的内存不会被释放。
+follow_page - 通过 虚拟地址 address 查找相应的 物理页面
+vm_normal_page - 根据 PTE 来返回普通映射页面的 page 数据结构,一些特殊映射的页面，是不会返回 page 数据结构的
