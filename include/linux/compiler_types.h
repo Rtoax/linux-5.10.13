@@ -319,13 +319,13 @@ struct ftrace_likely_data {
 		"Need native word sized stores/loads for atomicity.")
 
 /* Helpers for emitting diagnostics in pragmas. */
-#ifndef __diag
-#define __diag(string)
-#endif
+//#ifndef __diag
+//#define __diag(string)
+//#endif
 
-#ifndef __diag_GCC
-#define __diag_GCC(version, severity, string)
-#endif
+//#ifndef __diag_GCC
+//#define __diag_GCC(version, severity, string)
+//#endif
 
 #define __diag_push()	__diag(push)
 #define __diag_pop()	__diag(pop)

@@ -102,10 +102,10 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __X64_SYS_NI(name)						\
 	__SYS_NI(x64, sys_##name)
 #else /* CONFIG_X86_64 */
-#define __X64_SYS_STUB0(name)
-#define __X64_SYS_STUBx(x, name, ...)
-#define __X64_COND_SYSCALL(name)
-#define __X64_SYS_NI(name)
+//#define __X64_SYS_STUB0(name)
+//#define __X64_SYS_STUBx(x, name, ...)
+//#define __X64_COND_SYSCALL(name)
+//#define __X64_SYS_NI(name)
 #endif /* CONFIG_X86_64 */
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
@@ -122,10 +122,10 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __IA32_SYS_NI(name)						\
 	__SYS_NI(ia32, sys_##name)
 #else /* CONFIG_X86_32 || CONFIG_IA32_EMULATION */
-#define __IA32_SYS_STUB0(name)
-#define __IA32_SYS_STUBx(x, name, ...)
-#define __IA32_COND_SYSCALL(name)
-#define __IA32_SYS_NI(name)
+//#define __IA32_SYS_STUB0(name)
+//#define __IA32_SYS_STUBx(x, name, ...)
+//#define __IA32_COND_SYSCALL(name)
+//#define __IA32_SYS_NI(name)
 #endif /* CONFIG_X86_32 || CONFIG_IA32_EMULATION */
 
 #ifdef CONFIG_IA32_EMULATION
@@ -151,10 +151,10 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	__SYS_NI(ia32, compat_sys_##name)
 
 #else /* CONFIG_IA32_EMULATION */
-#define __IA32_COMPAT_SYS_STUB0(name)
-#define __IA32_COMPAT_SYS_STUBx(x, name, ...)
-#define __IA32_COMPAT_COND_SYSCALL(name)
-#define __IA32_COMPAT_SYS_NI(name)
+//#define __IA32_COMPAT_SYS_STUB0(name)
+//#define __IA32_COMPAT_SYS_STUBx(x, name, ...)
+//#define __IA32_COMPAT_COND_SYSCALL(name)
+//#define __IA32_COMPAT_SYS_NI(name)
 #endif /* CONFIG_IA32_EMULATION */
 
 
@@ -164,18 +164,18 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
  * of the x86-64-style parameter ordering of x32 syscalls. The syscalls common
  * with x86_64 obviously do not need such care.
  */
-#define __X32_COMPAT_SYS_STUB0(name)					\
-	__SYS_STUB0(x32, compat_sys_##name)
-
-#define __X32_COMPAT_SYS_STUBx(x, name, ...)				\
-	__SYS_STUBx(x32, compat_sys##name,				\
-		    SC_X86_64_REGS_TO_ARGS(x, __VA_ARGS__))
-
-#define __X32_COMPAT_COND_SYSCALL(name)					\
-	__COND_SYSCALL(x32, compat_sys_##name)
-
-#define __X32_COMPAT_SYS_NI(name)					\
-	__SYS_NI(x32, compat_sys_##name)
+//#define __X32_COMPAT_SYS_STUB0(name)					\
+//	__SYS_STUB0(x32, compat_sys_##name)
+//
+//#define __X32_COMPAT_SYS_STUBx(x, name, ...)				\
+//	__SYS_STUBx(x32, compat_sys##name,				\
+//		    SC_X86_64_REGS_TO_ARGS(x, __VA_ARGS__))
+//
+//#define __X32_COMPAT_COND_SYSCALL(name)					\
+//	__COND_SYSCALL(x32, compat_sys_##name)
+//
+//#define __X32_COMPAT_SYS_NI(name)					\
+//	__SYS_NI(x32, compat_sys_##name)
 #else /* CONFIG_X86_X32 */
 #define __X32_COMPAT_SYS_STUB0(name)
 #define __X32_COMPAT_SYS_STUBx(x, name, ...)

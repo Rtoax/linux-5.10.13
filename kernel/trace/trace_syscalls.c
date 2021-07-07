@@ -502,7 +502,7 @@ struct trace_event_functions exit_syscall_print_funcs = {
 	.trace		= print_syscall_exit,
 };
 
-struct trace_event_class __refdata event_class_syscall_enter = {
+struct trace_event_class __refdata event_class_syscall_enter = {    /* 系统调用 进入 */
 	.system		= "syscalls",
 	.reg		= syscall_enter_register,
 	.fields_array	= syscall_enter_fields_array,
@@ -510,7 +510,7 @@ struct trace_event_class __refdata event_class_syscall_enter = {
 	.raw_init	= init_syscall_trace,
 };
 
-struct trace_event_class __refdata event_class_syscall_exit = {
+struct trace_event_class __refdata event_class_syscall_exit = { /* 系统调用退出 */
 	.system		= "syscalls",
 	.reg		= syscall_exit_register,
 	.fields_array	= (struct trace_event_fields[]){

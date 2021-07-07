@@ -33,9 +33,9 @@ static struct error_injection_entry __used				\
 
 void override_function_with_return(struct pt_regs *regs);
 #else
-#define ALLOW_ERROR_INJECTION(fname, _etype)
-
-static inline void override_function_with_return(struct pt_regs *regs) { }
+//#define ALLOW_ERROR_INJECTION(fname, _etype)
+//
+//static inline void override_function_with_return(struct pt_regs *regs) { }
 #endif
 #endif
 

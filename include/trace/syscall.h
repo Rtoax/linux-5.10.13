@@ -21,6 +21,8 @@
  * @enter_fields: list of fields for syscall_enter trace event
  * @enter_event: associated syscall_enter trace event
  * @exit_event: associated syscall_exit trace event
+ *
+ * 见宏 `SYSCALL_METADATA`
  */
 struct syscall_metadata {   /* 开启 系统调用追踪的元数据结构 */
 	const char	*name;

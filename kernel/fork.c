@@ -2574,24 +2574,28 @@ SYSCALL_DEFINE0(vfork)
 }
 #endif
 
+
 #ifdef __ARCH_WANT_SYS_CLONE
 #ifdef CONFIG_CLONE_BACKWARDS
-SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
-		 int __user *, parent_tidptr,
-		 unsigned long, tls,
-		 int __user *, child_tidptr)
+//SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
+//		 int __user *, parent_tidptr,
+//		 unsigned long, tls,
+//		 int __user *, child_tidptr)
 #elif defined(CONFIG_CLONE_BACKWARDS2)
-SYSCALL_DEFINE5(clone, unsigned long, newsp, unsigned long, clone_flags,
-		 int __user *, parent_tidptr,
-		 int __user *, child_tidptr,
-		 unsigned long, tls)
+//SYSCALL_DEFINE5(clone, unsigned long, newsp, unsigned long, clone_flags,
+//		 int __user *, parent_tidptr,
+//		 int __user *, child_tidptr,
+//		 unsigned long, tls)
 #elif defined(CONFIG_CLONE_BACKWARDS3)
-SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
-		int, stack_size,
-		int __user *, parent_tidptr,
-		int __user *, child_tidptr,
-		unsigned long, tls)
+//SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
+//		int, stack_size,
+//		int __user *, parent_tidptr,
+//		int __user *, child_tidptr,
+//		unsigned long, tls)
 #else
+long clone(unsigned long flags, void *child_stack,
+                 void *ptid, void *ctid,
+                 struct pt_regs *regs);
 SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
 		 int __user *, parent_tidptr,
 		 int __user *, child_tidptr,
