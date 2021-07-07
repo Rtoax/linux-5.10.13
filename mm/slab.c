@@ -152,7 +152,7 @@
 
 /* Shouldn't this be in a header file somewhere? */
 #define	BYTES_PER_WORD		sizeof(void *)
-#define	REDZONE_ALIGN		max(BYTES_PER_WORD, __alignof__(unsigned long long))
+#define	REDZONE_ALIGN		max(BYTES_PER_WORD/* 8 */, __alignof__(unsigned long long)/*  */)
 
 #ifndef ARCH_KMALLOC_FLAGS
 #define ARCH_KMALLOC_FLAGS SLAB_HWCACHE_ALIGN
@@ -180,20 +180,24 @@ typedef unsigned short freelist_idx_t;
  * The limit is stored in the per-cpu structure to reduce the data cache
  * footprint.
  *
+ * 每CPU变量
+ * 
  */
 struct array_cache {    /*  */
-	unsigned int avail;
-	unsigned int limit;
-	unsigned int batchcount;
-	unsigned int touched;
-	void *entry[];	/*
-			 * Must have this definition in here for the proper
-			 * alignment of array_cache. Also simplifies accessing
-			 * the entries.
-			 */
+	unsigned int avail;         /*  */
+	unsigned int limit;         /*  */
+	unsigned int batchcount;    /*  */
+	unsigned int touched;       /*  */
+    
+    /*
+	 * Must have this definition in here for the proper
+	 * alignment of array_cache. Also simplifies accessing
+	 * the entries.
+	 */
+	void *entry[];	
 };
 
-struct alien_cache {
+struct alien_cache {    /*  */
 	spinlock_t lock;
 	struct array_cache ac;
 };
@@ -251,6 +255,11 @@ static void kmem_cache_node_init(struct kmem_cache_node *parent)
 	MAKE_LIST((cachep), (&(ptr)->slabs_free), slabs_free, nodeid);	\
 	} while (0)
 
+/**
+ *  一共三种 slab 模式
+ *
+ *  
+ */
 #define CFLGS_OBJFREELIST_SLAB	((slab_flags_t __force)0x40000000U)
 #define CFLGS_OFF_SLAB		((slab_flags_t __force)0x80000000U)
 #define	OBJFREELIST_SLAB(x)	((x)->flags & CFLGS_OBJFREELIST_SLAB)
@@ -401,7 +410,7 @@ static unsigned int cache_estimate(unsigned long gfporder, size_t buffer_size,
 		slab_flags_t flags, size_t *left_over)
 {
 	unsigned int num;
-	size_t slab_size = PAGE_SIZE << gfporder;
+	size_t slab_size = PAGE_SIZE/* 1<<12=4096 */ << gfporder;/* slab一共占几个page大小 */
 
 	/*
 	 * The slab management structure can be either off the slab or
@@ -1374,6 +1383,8 @@ slab_out_of_memory(struct kmem_cache *cachep, gfp_t gfpflags, int nodeid)
  * would be relatively rare and ignorable.
  *
  * 尝试按照指定的参数需求分配[内存页]
+ *
+ * 在 `cache_grow_begin()` 中被调用
  */
 static struct page *kmem_getpages(struct kmem_cache *cachep, gfp_t flags,
 								int nodeid)
@@ -1673,7 +1684,7 @@ static size_t calculate_slab_order(struct kmem_cache *cachep,
 	size_t left_over = 0;
 	int gfporder;
 
-	for (gfporder = 0; gfporder <= KMALLOC_MAX_ORDER; gfporder++) {
+	for (gfporder = 0; gfporder <= KMALLOC_MAX_ORDER/* 11 */; gfporder++) {
 		unsigned int num;
 		size_t remainder;
 
@@ -1756,7 +1767,7 @@ static struct array_cache __percpu *alloc_kmem_cache_cpus(  /*  */
 	return cpu_cache;
 }
 
-static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)
+static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 {
 	if (slab_state >= FULL)
 		return enable_cpucache(cachep, gfp);
@@ -1775,8 +1786,7 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)
 		int node;
 
 		for_each_online_node(node) {
-			cachep->node[node] = kmalloc_node(
-				sizeof(struct kmem_cache_node), gfp, node);
+			cachep->node[node] = kmalloc_node(sizeof(struct kmem_cache_node), gfp, node);
 			BUG_ON(!cachep->node[node]);
 			kmem_cache_node_init(cachep->node[node]);
 		}
@@ -1852,7 +1862,7 @@ static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
 	return true;
 }
 
-static bool set_off_slab_cache(struct kmem_cache *cachep,
+static bool set_off_slab_cache(struct kmem_cache *cachep,   /*  */
 			size_t size, slab_flags_t flags)
 {
 	size_t left;
@@ -1869,6 +1879,8 @@ static bool set_off_slab_cache(struct kmem_cache *cachep,
 	/*
 	 * Size is large, assume best to place the slab management obj
 	 * off-slab (should allow better packing of objs).
+	 *
+	 * 尺寸较大，假设最好将 slab 管理 obj 放置在 slab 外（应该允许更好地包装 objs）。
 	 */
 	left = calculate_slab_order(cachep, size, flags | CFLGS_OFF_SLAB);
 	if (!cachep->num)
@@ -1956,7 +1968,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	size = ALIGN(size, BYTES_PER_WORD);
 
 	if (flags & SLAB_RED_ZONE) {
-		ralign = REDZONE_ALIGN;
+		ralign = REDZONE_ALIGN; /* 红区 对齐 */
 		/* If redzoning, ensure that the second redzone is suitably
 		 * aligned, by adjusting the object size accordingly. */
 		size = ALIGN(size, REDZONE_ALIGN);
@@ -1967,12 +1979,12 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 		ralign = cachep->align;
 	}
 	/* disable debug if necessary */
-	if (ralign > __alignof__(unsigned long long))
+	if (ralign > __alignof__(unsigned long long)/* 8 */)
 		flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
 	/*
 	 * 4) Store it.
 	 */
-	cachep->align = ralign;
+	cachep->align = ralign; /*  */
 	cachep->colour_off = cache_line_size();
 	/* Offset must be a multiple of the alignment. */
 	if (cachep->colour_off < cachep->align)

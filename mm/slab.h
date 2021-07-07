@@ -598,9 +598,7 @@ int memcg_slab_show(struct seq_file *m, void *p);
 #if defined(CONFIG_SLAB) || defined(CONFIG_SLUB_DEBUG)
 void dump_unreclaimable_slab(void);
 #else
-static inline void dump_unreclaimable_slab(void)
-{
-}
+/*  */
 #endif
 
 void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
@@ -610,12 +608,7 @@ int cache_random_seq_create(struct kmem_cache *cachep, unsigned int count,
 			gfp_t gfp);
 void cache_random_seq_destroy(struct kmem_cache *cachep);
 #else
-static inline int cache_random_seq_create(struct kmem_cache *cachep,
-					unsigned int count, gfp_t gfp)
-{
-	return 0;
-}
-static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
+/*  */
 #endif /* CONFIG_SLAB_FREELIST_RANDOM */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)

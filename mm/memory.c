@@ -141,7 +141,7 @@ static int __init disable_randmaps(char *s)
 }
 __setup("norandmaps", disable_randmaps);
 
-unsigned long __read_mostly zero_pfn ;
+unsigned long __read_mostly zero_pfn ;  /* 系统零页(zero page) */
 EXPORT_SYMBOL(zero_pfn);
 
 unsigned long __read_mostly highest_memmap_pfn ;/*  */
@@ -149,7 +149,7 @@ unsigned long __read_mostly highest_memmap_pfn ;/*  */
 /*
  * CONFIG_MMU architectures set up ZERO_PAGE in their paging_init()
  */
-static int __init init_zero_pfn(void)
+static int __init init_zero_pfn(void)   /* 系统零页(zero page) */
 {
 	zero_pfn = page_to_pfn(ZERO_PAGE(0));
 	return 0;
@@ -597,6 +597,9 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
  * advantage is that we don't have to follow the strict linearity rule of
  * PFNMAP mappings in order to support COWable mappings.
  *
+ * 根据 PTE 来返回普通映射页面的 page 数据结构
+ *
+ * 一些特殊映射的页面，是不会返回 page 数据结构的
  */
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			    pte_t pte)

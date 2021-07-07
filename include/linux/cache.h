@@ -82,7 +82,7 @@
 #endif
 
 #ifndef CONFIG_ARCH_HAS_CACHE_LINE_SIZE
-#define cache_line_size()	L1_CACHE_BYTES  /* 缓存行大小 */
+#define cache_line_size()/* 32 */	L1_CACHE_BYTES/* 32 */  /* 缓存行大小 */
 #endif
 
 #endif /* __LINUX_CACHE_H */

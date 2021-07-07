@@ -18,8 +18,18 @@
  * slow-path with reciprocal_value(). The fast-path can then just use
  * a much faster multiplication operation with a variable dividend A
  * to calculate the division A/B.
+ *
+ * 该算法基于 Torbjörn Granlund 和 Peter L. Montgomery 的论文“Division by Invariant Integers Using Multiplication”。
+ *
+ * 如果除数 B 主要是运行时不变的，则对 A/B 的这种优化很有帮助。 
+ *  B 的倒数在慢路径中用 reciprocal_value() 计算。 
+ *  然后，快速路径可以使用更快的乘法运算和可变被除数 A 来计算除法 A/B。
  */
 
+/**
+ *  reciprocal - 互惠的
+ * 
+ */
 struct reciprocal_value {
 	u32 m;
 	u8 sh1, sh2;

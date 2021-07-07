@@ -148,7 +148,7 @@ struct page {   /* 物理页 */
 			/* Double-word boundary */
 			void *freelist;		/* first free object */
 			union {
-				void *s_mem;	/* slab: first object */
+				void *s_mem;	/* slab: first object 第一个OBJ 的地址 */
 				unsigned long counters;		/* SLUB */
 				struct {			/* SLUB */
 					unsigned inuse:16;

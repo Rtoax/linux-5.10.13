@@ -25,58 +25,58 @@ static int nr_cpus;
 static unsigned long long *dist_keys;
 static unsigned int dist_key_counts;
 
-struct list_head {
-	struct list_head *next, *prev;
-};
+//struct list_head {
+//	struct list_head *next, *prev;
+//};
 
-static inline void INIT_LIST_HEAD(struct list_head *list)
-{
-	list->next = list;
-	list->prev = list;
-}
-
-static inline int list_empty(const struct list_head *head)
-{
-	return head->next == head;
-}
-
-static inline void __list_add(struct list_head *new,
-			      struct list_head *prev,
-			      struct list_head *next)
-{
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
-}
-
-static inline void list_add(struct list_head *new, struct list_head *head)
-{
-	__list_add(new, head, head->next);
-}
-
-static inline void __list_del(struct list_head *prev, struct list_head *next)
-{
-	next->prev = prev;
-	prev->next = next;
-}
-
-static inline void __list_del_entry(struct list_head *entry)
-{
-	__list_del(entry->prev, entry->next);
-}
-
-static inline void list_move(struct list_head *list, struct list_head *head)
-{
-	__list_del_entry(list);
-	list_add(list, head);
-}
-
-#define list_entry(ptr, type, member) \
-	container_of(ptr, type, member)
-
-#define list_last_entry(ptr, type, member) \
-	list_entry((ptr)->prev, type, member)
+//static inline void INIT_LIST_HEAD(struct list_head *list)
+//{
+//	list->next = list;
+//	list->prev = list;
+//}
+//
+//static inline int list_empty(const struct list_head *head)
+//{
+//	return head->next == head;
+//}
+//
+//static inline void __list_add(struct list_head *new,
+//			      struct list_head *prev,
+//			      struct list_head *next)
+//{
+//	next->prev = new;
+//	new->next = next;
+//	new->prev = prev;
+//	prev->next = new;
+//}
+//
+//static inline void list_add(struct list_head *new, struct list_head *head)
+//{
+//	__list_add(new, head, head->next);
+//}
+//
+//static inline void __list_del(struct list_head *prev, struct list_head *next)
+//{
+//	next->prev = prev;
+//	prev->next = next;
+//}
+//
+//static inline void __list_del_entry(struct list_head *entry)
+//{
+//	__list_del(entry->prev, entry->next);
+//}
+//
+//static inline void list_move(struct list_head *list, struct list_head *head)
+//{
+//	__list_del_entry(list);
+//	list_add(list, head);
+//}
+//
+//#define list_entry(ptr, type, member) \
+//	container_of(ptr, type, member)
+//
+//#define list_last_entry(ptr, type, member) \
+//	list_entry((ptr)->prev, type, member)
 
 struct pfect_lru_node {
 	struct list_head list;

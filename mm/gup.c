@@ -378,12 +378,12 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 			 (FOLL_PIN | FOLL_GET)))
 		return ERR_PTR(-EINVAL);
 retry:
-	if (unlikely(pmd_bad(*pmd)))
+	if (unlikely(pmd_bad(*pmd)))    /* 检查 PMD 是否有效 */
 		return no_page_table(vma, flags);
 
 	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
 	pte = *ptep;
-	if (!pte_present(pte)) {
+	if (!pte_present(pte)) { /* 该页面是否在内存中 */
 		swp_entry_t entry;
 		/*
 		 * KSM's break_ksm() relies upon recognizing a ksm page
@@ -408,6 +408,9 @@ retry:
 		return NULL;
 	}
 
+    /**
+     * 根据 PTE 来返回普通映射页面的 page 数据结构
+     */
 	page = vm_normal_page(vma, address, pte);
 	if (!page && pte_devmap(pte) && (flags & (FOLL_GET | FOLL_PIN))) {
 		/*
@@ -427,6 +430,7 @@ retry:
 			goto out;
 		}
 
+        /* 系统零页(zero page) */
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
@@ -697,7 +701,7 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 /**
  * follow_page_mask - look up a page descriptor from a user-virtual address
  * @vma: vm_area_struct mapping @address
- * @address: virtual address to look up
+ * @address: virtual address to look up 虚拟地址
  * @flags: flags modifying lookup behaviour
  * @ctx: contains dev_pagemap for %ZONE_DEVICE memory pinning and a
  *       pointer to output page_mask
@@ -712,6 +716,10 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
  * Return: the mapped (struct page *), %NULL if no mapping exists, or
  * an error pointer if there is a mapping to something not represented
  * by a page descriptor (see also vm_normal_page()).
+ *
+ * 用于返回在用户进程地址空间已经有映射的普通映射(normal mapping)页面的 page 数据结构。
+ * 通过 虚拟地址 address 查找相应的 物理页面。
+ * 遍历页表，并返回物理页面的 page 数据结构。
  */
 static struct page *follow_page_mask(struct vm_area_struct *vma,
 			      unsigned long address, unsigned int flags,
@@ -753,6 +761,9 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 
+/**
+ * 通过 虚拟地址 address 查找相应的 物理页面
+ */
 struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 			 unsigned int foll_flags)
 {
@@ -983,6 +994,8 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * In most cases, get_user_pages or get_user_pages_fast should be used
  * instead of __get_user_pages. __get_user_pages should be used only if
  * you need some special @gup_flags.
+ *
+ * 为地址空间分配物理内存 并建立映射关系
  */
 static long __get_user_pages(struct mm_struct *mm,
 		unsigned long start, unsigned long nr_pages,
@@ -1051,6 +1064,8 @@ retry:
 		/*
 		 * If we have a pending SIGKILL, don't keep faulting pages and
 		 * potentially allocating memory.
+		 *
+		 * 如果这时收到 SIGKILL 信号，直接退出
 		 */
 		if (fatal_signal_pending(current)) {
 			ret = -EINTR;
@@ -1060,6 +1075,7 @@ retry:
 
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		if (!page) {
+            /* 人为的触发一个 缺页异常 */
 			ret = faultin_page(vma, start, &foll_flags, locked);
 			switch (ret) {
 			case 0:
@@ -1357,6 +1373,8 @@ retry:
  *
  * If @locked is non-NULL, it must held for read only and may be
  * released.  If it's released, *@locked will be set to 0.
+ *
+ * 人为的 制造缺页异常
  */
 long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked)
@@ -1392,6 +1410,8 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	/*
 	 * We made sure addr is within a VMA, so the following will
 	 * not result in a stack expansion that recurses back here.
+	 *
+	 * 为地址空间分配物理内存 并建立映射关系
 	 */
 	return __get_user_pages(mm, start, nr_pages, gup_flags,
 				NULL, NULL, locked);
@@ -1459,48 +1479,48 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 	return ret;	/* 0 or negative error code */
 }
 #else /* CONFIG_MMU */
-static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
-		unsigned long nr_pages, struct page **pages,
-		struct vm_area_struct **vmas, int *locked,
-		unsigned int foll_flags)
-{
-	struct vm_area_struct *vma;
-	unsigned long vm_flags;
-	int i;
-
-	/* calculate required read or write permissions.
-	 * If FOLL_FORCE is set, we only require the "MAY" flags.
-	 */
-	vm_flags  = (foll_flags & FOLL_WRITE) ?
-			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
-	vm_flags &= (foll_flags & FOLL_FORCE) ?
-			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
-
-	for (i = 0; i < nr_pages; i++) {
-		vma = find_vma(mm, start);
-		if (!vma)
-			goto finish_or_fault;
-
-		/* protect what we can, including chardevs */
-		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
-		    !(vm_flags & vma->vm_flags))
-			goto finish_or_fault;
-
-		if (pages) {
-			pages[i] = virt_to_page(start);
-			if (pages[i])
-				get_page(pages[i]);
-		}
-		if (vmas)
-			vmas[i] = vma;
-		start = (start + PAGE_SIZE) & PAGE_MASK;
-	}
-
-	return i;
-
-finish_or_fault:
-	return i ? : -EFAULT;
-}
+//static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
+//		unsigned long nr_pages, struct page **pages,
+//		struct vm_area_struct **vmas, int *locked,
+//		unsigned int foll_flags)
+//{
+//	struct vm_area_struct *vma;
+//	unsigned long vm_flags;
+//	int i;
+//
+//	/* calculate required read or write permissions.
+//	 * If FOLL_FORCE is set, we only require the "MAY" flags.
+//	 */
+//	vm_flags  = (foll_flags & FOLL_WRITE) ?
+//			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
+//	vm_flags &= (foll_flags & FOLL_FORCE) ?
+//			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
+//
+//	for (i = 0; i < nr_pages; i++) {
+//		vma = find_vma(mm, start);
+//		if (!vma)
+//			goto finish_or_fault;
+//
+//		/* protect what we can, including chardevs */
+//		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
+//		    !(vm_flags & vma->vm_flags))
+//			goto finish_or_fault;
+//
+//		if (pages) {
+//			pages[i] = virt_to_page(start);
+//			if (pages[i])
+//				get_page(pages[i]);
+//		}
+//		if (vmas)
+//			vmas[i] = vma;
+//		start = (start + PAGE_SIZE) & PAGE_MASK;
+//	}
+//
+//	return i;
+//
+//finish_or_fault:
+//	return i ? : -EFAULT;
+//}
 #endif /* !CONFIG_MMU */
 
 /**
@@ -1719,16 +1739,16 @@ out:
 	return rc;
 }
 #else /* !CONFIG_FS_DAX && !CONFIG_CMA */
-static __always_inline long __gup_longterm_locked(struct mm_struct *mm,
-						  unsigned long start,
-						  unsigned long nr_pages,
-						  struct page **pages,
-						  struct vm_area_struct **vmas,
-						  unsigned int flags)
-{
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-				       NULL, flags);
-}
+//static __always_inline long __gup_longterm_locked(struct mm_struct *mm,
+//						  unsigned long start,
+//						  unsigned long nr_pages,
+//						  struct page **pages,
+//						  struct vm_area_struct **vmas,
+//						  unsigned int flags)
+//{
+//	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
+//				       NULL, flags);
+//}
 #endif /* CONFIG_FS_DAX || CONFIG_CMA */
 
 static bool is_valid_gup_flags(unsigned int gup_flags)
@@ -1886,6 +1906,9 @@ static long __get_user_pages_remote(struct mm_struct *mm,
  * calling convention where we assume that the mm being operated on belongs to
  * the current task, and doesn't allow passing of a locked parameter.  We also
  * obviously don't pass FOLL_REMOTE in here.
+ *
+ * 分配物理内存的API。
+ * 主要用于锁住内存保证用户空间分配的内存不会被释放。
  */
 long get_user_pages(unsigned long start, unsigned long nr_pages,
 		unsigned int gup_flags, struct page **pages,

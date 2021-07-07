@@ -8,16 +8,18 @@
  * Definitions unique to the original Linux SLAB allocator.
  */
 
-struct kmem_cache {
-	struct array_cache __percpu *cpu_cache;
+struct kmem_cache { /* slab 句柄 */
+    
+	struct array_cache __percpu *cpu_cache; /*  */
 
-/* 1) Cache tunables. Protected by slab_mutex */
+/* 1) Cache tunables可调参数. Protected by slab_mutex */
 	unsigned int batchcount;
 	unsigned int limit;
 	unsigned int shared;
 
 	unsigned int size;
 	struct reciprocal_value reciprocal_buffer_size;
+    
 /* 2) touched by every alloc & free from the backend */
 
 	slab_flags_t flags;		/* constant flags */
@@ -30,8 +32,15 @@ struct kmem_cache {
 	/* force GFP flags, e.g. GFP_DMA */
 	gfp_t allocflags;
 
+    /**
+     *  着色 
+     *
+     *  
+     */
 	size_t colour;			/* cache colouring range */
-	unsigned int colour_off;	/* colour offset */
+	unsigned int colour_off;	/* colour offset = cache_line_size() = 32 这是一级缓存大小 */
+
+    
 	struct kmem_cache *freelist_cache;
 	unsigned int freelist_size;
 
@@ -83,7 +92,7 @@ struct kmem_cache {
 	unsigned int useroffset;	/* Usercopy region offset */
 	unsigned int usersize;		/* Usercopy region size */
 
-	struct kmem_cache_node *node[MAX_NUMNODES];
+	struct kmem_cache_node *node[MAX_NUMNODES/* 1024 */];
 };
 
 static inline void *nearest_obj(struct kmem_cache *cache, struct page *page,
@@ -107,6 +116,7 @@ static inline void *nearest_obj(struct kmem_cache *cache, struct page *page,
 static inline unsigned int obj_to_index(const struct kmem_cache *cache,
 					const struct page *page, void *obj)
 {
+    /* obj 地址 - 第一个 obj 地址 = 偏移 */
 	u32 offset = (obj - page->s_mem);
 	return reciprocal_divide(offset, cache->reciprocal_buffer_size);
 }

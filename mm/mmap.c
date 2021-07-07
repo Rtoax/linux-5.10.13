@@ -713,7 +713,7 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	vma_rb_insert(vma, &mm->mm_rb);
 }
 
-static void __vma_link_file(struct vm_area_struct *vma)
+static void __vma_link_file(struct vm_area_struct *vma) /*  */
 {
 	struct file *file;
 
@@ -753,7 +753,7 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	}
 
 	__vma_link(mm, vma, prev, rb_link, rb_parent);  /* 添加至链表和红黑树 */
-	__vma_link_file(vma);   /* 文件映射的话，更新缓存 */
+	__vma_link_file(vma);   /* 文件映射的话，更新缓存, 添加到基数树 */
 
 	if (mapping)
 		i_mmap_unlock_write(mapping);

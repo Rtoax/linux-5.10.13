@@ -47,7 +47,7 @@ void ptdump_walk_user_pgd_level_checkwx(void);
  * ZERO_PAGE is a global shared page that is always zero: used
  * for zero-mapped memory areas etc..
  */
-extern unsigned long __visible empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]/*  */;
+extern unsigned long __visible empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]/*  *//* 系统零页(zero page) */;
 
 #define ZERO_PAGE(vaddr) ((void)(vaddr),virt_to_page(empty_zero_page))
 
@@ -755,7 +755,7 @@ static inline int pte_same(pte_t a, pte_t b)
 	return a.pte == b.pte;
 }
 ///*  */
-static inline int pte_present(pte_t a)
+static inline int pte_present(pte_t a)   /* 该页面是否在内存中 */
 {
 	return pte_flags(a) & (_PAGE_PRESENT | _PAGE_PROTNONE);
 }

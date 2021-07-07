@@ -144,6 +144,7 @@ bool slab_is_available(void);
 
 extern bool usercopy_fallback;
 
+/*  */
 struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
 			unsigned int align, slab_flags_t flags,
 			void (*ctor)(void *));
@@ -252,8 +253,8 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
  * SLUB directly allocates requests fitting in to an order-1 page
  * (PAGE_SIZE*2).  Larger requests are passed to the page allocator.
  */
-#define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1)
-#define KMALLOC_SHIFT_MAX	(MAX_ORDER + PAGE_SHIFT - 1)
+#define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT/* 12 */ + 1)
+#define KMALLOC_SHIFT_MAX	(MAX_ORDER/* 11 */ + PAGE_SHIFT/* 12 */ - 1) /* 22 */
 #ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW	3
 #endif
@@ -277,13 +278,13 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
 /* Maximum size for which we actually use a slab cache */
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
 /* Maximum order allocatable via the slab allocator */
-#define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX - PAGE_SHIFT)
+#define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX/* 22 */ - PAGE_SHIFT/* 12 */) /* 11 */
 
 /*
  * Kmalloc subsystem.
  */
 #ifndef KMALLOC_MIN_SIZE
-#define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)   /*  */
+#define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW/* 3 */)   /*  */
 #endif
 
 /*
