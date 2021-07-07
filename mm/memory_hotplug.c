@@ -850,7 +850,7 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
 	init_per_zone_wmark_min();
 
 	kswapd_run(nid);
-	kcompactd_run(nid);
+	kcompactd_run(nid); /*  */
 
 	writeback_set_ratelimit();
 

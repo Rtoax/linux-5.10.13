@@ -3375,7 +3375,7 @@ static void age_active_anon(struct pglist_data *pgdat,
 	} while (memcg);
 }
 
-static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)
+static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)  /*  */
 {
 	int i;
 	struct zone *zone;
@@ -3403,7 +3403,7 @@ static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)
  * Returns true if there is an eligible zone balanced for the request order
  * and highest_zoneidx
  */
-static bool pgdat_balanced(pg_data_t *pgdat, int order, int highest_zoneidx)
+static bool pgdat_balanced(pg_data_t *pgdat, int order, int highest_zoneidx)    /*  */
 {
 	int i;
 	unsigned long mark = -1;
@@ -3945,6 +3945,11 @@ kswapd_try_sleep:
  * pgdat.  It will wake up kcompactd after reclaiming memory.  If kswapd reclaim
  * has failed or is not needed, still wake up kcompactd if only compaction is
  * needed.
+ *
+ * 一个区域的可用内存不足，或者对于高阶内存来说太碎片化了。 
+ * 如果 kswapd 应该回收（直接回收被推迟），则为区域的 pgdat 唤醒它。 
+ * 回收内存后会唤醒kcompactd。 
+ * 如果 kswapd reclaim 失败或不需要，如果只需要压缩，仍然唤醒 kcompactd。
  */
 void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		   enum zone_type highest_zoneidx)
@@ -3952,12 +3957,15 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 	pg_data_t *pgdat;
 	enum zone_type curr_idx;
 
+    /* zone 管理的 page 为 0 */
 	if (!managed_zone(zone))
 		return;
 
+    /*  */
 	if (!cpuset_zone_allowed(zone, gfp_flags))
 		return;
 
+    /* zone 隶属 NODE */
 	pgdat = zone->zone_pgdat;
 	curr_idx = READ_ONCE(pgdat->kswapd_highest_zoneidx);
 
@@ -3981,8 +3989,10 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		 * needed.  If it fails, it will defer subsequent attempts to
 		 * ratelimit its work.
 		 */
-		if (!(gfp_flags & __GFP_DIRECT_RECLAIM))
-			wakeup_kcompactd(pgdat, order, highest_zoneidx);
+		if (!(gfp_flags & __GFP_DIRECT_RECLAIM)) {
+            /* 唤醒 内存规整进程 */
+			wakeup_kcompactd(pgdat, order, highest_zoneidx);    /*  */
+        }
 		return;
 	}
 
@@ -4220,7 +4230,7 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
 	 * thrown out if the node is overallocated. So we do not reclaim
 	 * if less than a specified percentage of the node is used by
 	 * unmapped file backed pages.
-	 */
+	 */ /* 先回收 page cache */
 	if (node_pagecache_reclaimable(pgdat) <= pgdat->min_unmapped_pages &&
 	    node_page_state_pages(pgdat, NR_SLAB_RECLAIMABLE_B) <=
 	    pgdat->min_slab_pages)

@@ -274,7 +274,7 @@ bool pm_suspended_storage(void)
 #endif /* CONFIG_PM_SLEEP */
 
 #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-unsigned int __read_mostly pageblock_order ;
+//unsigned int __read_mostly pageblock_order ;
 #endif
 
 static void __free_pages_ok(struct page *page, unsigned int order,
@@ -783,7 +783,7 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 //				unsigned int order, int migratetype) {}
 #endif
 
-static inline void set_buddy_order(struct page *page, unsigned int order)
+static inline void set_buddy_order(struct page *page, unsigned int order)   /*  */
 {
 	set_page_private(page, order);
 	__SetPageBuddy(page);
@@ -863,7 +863,7 @@ compaction_capture(struct capture_control *capc, struct page *page,
 /*  */
 #endif /* CONFIG_COMPACTION */
 
-/* Used for pages not on another list *//*  */
+/* Used for pages not on another list *//* 将 page 插入 free 链表中 */
 static inline void add_to_free_list(struct page *page, struct zone *zone,
 				    unsigned int order, int migratetype)
 {
@@ -895,7 +895,10 @@ static inline void move_to_free_list(struct page *page, struct zone *zone,
 
 	list_move_tail(&page->lru, &area->free_list[migratetype]);
 }
-    /*  */
+
+/**
+ *  将 page 从链表中删除，并清除 伙伴系统标志
+ */
 static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
 {
@@ -903,10 +906,13 @@ static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 	if (page_reported(page))    /*  */
 		__ClearPageReported(page);
 
-	list_del(&page->lru);   /*  */
-	__ClearPageBuddy(page);
+	list_del(&page->lru);   /* 从链表中删除 */
+    
+	__ClearPageBuddy(page); /*  */
+    
 	set_page_private(page, 0);
-	zone->free_area[order].nr_free--;
+    
+	zone->free_area[order].nr_free--;   /* 删除 */
 }
 
 /*
@@ -2130,15 +2136,37 @@ void __init init_cma_reserved_pageblock(struct page *page)
  * This behavior is a critical factor in sglist merging's success.
  *
  * -- nyc
+ *
+ * 如果说需要一页，但是一页的空暇 page 已经没了，就会分配两页甚至更多，
+ *  该函数用于将 多分配的重新放回伙伴系统
+ *
+ * expand - 扩展，展开
+ *
+ * 在 `__rmqueue_smallest()` 中被调用
  */
 static inline void expand(struct zone *zone, struct page *page,
 	int low, int high, int migratetype)
 {
+    /* 计算实际分配了几页 如：
+     high = 1 -> 表示两页 
+     size = 2 -> 计算得到的 页数 */
 	unsigned long size = 1 << high;
 
+    /* high > low 表明，在分配page 过程中，多分配了，需要将其归还给伙伴系统 */
 	while (high > low) {
-		high--;
+
+        /**
+            +-----------------+
+            |                 |
+            +-----------------+
+            
+            +--------+--------+
+            |        |        |
+            +--------+--------+
+         */
+		high--; /* 进行一次拆分 */
 		size >>= 1;
+        
 		VM_BUG_ON_PAGE(bad_range(zone, &page[size]), &page[size]);
 
 		/*
@@ -2150,8 +2178,12 @@ static inline void expand(struct zone *zone, struct page *page,
 		if (set_page_guard(zone, &page[size], high, migratetype))
 			continue;
 
+        /**
+         *  page 结构是连续的数组
+         *  将page 加入对应的freelist中
+         */
 		add_to_free_list(&page[size], zone, high, migratetype);
-		set_buddy_order(&page[size], high);
+		set_buddy_order(&page[size], high); /* 重新设置下这个page 的order */
 	}
 }
 
@@ -2261,6 +2293,8 @@ static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags
 /*
  * Go through the free lists for the given migratetype and remove
  * the smallest available page from the freelists
+ *
+ * 遍历给定 migratetype 的空闲列表并从空闲列表中删除最小的可用页面
  */
 static __always_inline
 struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
@@ -2270,14 +2304,31 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 	struct free_area *area;
 	struct page *page;
 
-	/* Find a page of the appropriate size in the preferred list */
+    /**
+     *  伙伴系统的算法 
+     *  Find a page of the appropriate size in the preferred list 
+     *  从 order开始扫描 
+     */
 	for (current_order = order; current_order < MAX_ORDER; ++current_order) {
+
+        /* 获取 free area */
 		area = &(zone->free_area[current_order]);
-		page = get_page_from_free_area(area, migratetype);  /*  */
+
+        /* 从链表中获取节点 */
+		page = get_page_from_free_area(area, migratetype); 
+
+        /* 如果获取失败，继续执行更大一级的 order
+           也就是从 一页变成了二页 */
 		if (!page)
 			continue;
+
+        /* 从 free list 中删除 */
 		del_page_from_free_list(page, zone, current_order);
+
+        /* 如果 current_order > order，需要将多分配的还给伙伴系统 */
 		expand(zone, page, order, current_order, migratetype);
+
+        /*  */
 		set_pcppage_migratetype(page, migratetype);
 		return page;
 	}
@@ -2289,6 +2340,8 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 /*
  * This array describes the order lists are fallen back to when
  * the free lists for the desirable migrate type are depleted
+ *
+ * fallbacks - 后备，倒退
  */
 static int fallbacks[MIGRATE_TYPES][3] = {
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },
@@ -2406,7 +2459,7 @@ static void change_pageblock_range(struct page *pageblock_page,
  * is worse than movable allocations stealing from unmovable and reclaimable
  * pageblocks.
  */
-static bool can_steal_fallback(unsigned int order, int start_mt)
+static bool can_steal_fallback(unsigned int order, int start_mt)    /*  */
 {
 	/*
 	 * Leaving this order check is intended, although there is
@@ -2553,6 +2606,10 @@ single_page:
  * If only_stealable is true, this function returns fallback_mt only if
  * we can steal other freepages all together. This would help to reduce
  * fragmentation due to mixed migratetype pages in one pageblock.
+ *
+ * 检查请求的订单是否有合适的后备空闲页面。 如果 only_stealable 为真，
+ * 则只有当我们可以一起窃取其他空闲页面时，此函数才返回 fallback_mt。 
+ * 这将有助于减少由于在一个页面块中混合迁移类型页面而造成的碎片。
  */
 int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal)
@@ -2569,15 +2626,18 @@ int find_suitable_fallback(struct free_area *area, unsigned int order,
 		if (fallback_mt == MIGRATE_TYPES)
 			break;
 
+        /* 如果为空，继续找 */
 		if (free_area_empty(area, fallback_mt))
 			continue;
 
+        /*  */
 		if (can_steal_fallback(order, migratetype))
 			*can_steal = true;
 
 		if (!only_stealable)
 			return fallback_mt;
 
+        /* 为真，返回 */
 		if (*can_steal)
 			return fallback_mt;
 	}
@@ -2712,6 +2772,14 @@ static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
  * The use of signed ints for order and current_order is a deliberate
  * deviation from the rest of this file, to make the for loop
  * condition simpler.
+ *
+ * 尝试在回退列表中找到一个空闲的伙伴页面，并将其放在请求的 migratetype 的空闲列表中，
+ *  可能与来自同一块的其他页面一起，这取决于避免碎片化的启发式方法。 
+ *  如果找到回退，则返回 true，以便 __rmqueue_smallest() 可以抓住它。
+ * 
+ * 对 order 和 current_order 使用有符号整数是故意偏离此文件的其余部分，以使 for 循环条件更简单。
+ * 
+ * fallback - 倒退
  */
 static __always_inline bool
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
@@ -2737,8 +2805,11 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 	 * approximates finding the pageblock with the most free pages, which
 	 * would be too costly to do exactly.
 	 */
-	for (current_order = MAX_ORDER - 1; current_order >= min_order;
-				--current_order) {
+	for (current_order = MAX_ORDER - 1; current_order >= min_order; --current_order) {
+
+        /**
+         *  找到一个合适 的 fallback
+         */
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
 				start_migratetype, false, &can_steal);
@@ -2763,8 +2834,9 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 	return false;
 
 find_smallest:
-	for (current_order = order; current_order < MAX_ORDER;
-							current_order++) {
+    
+	for (current_order = order; current_order < MAX_ORDER; current_order++) {
+        /*  */
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
 				start_migratetype, false, &can_steal);
@@ -2794,6 +2866,8 @@ do_steal:
 /*
  * Do the hard work of removing an element from the buddy allocator.
  * Call me with the zone->lock already held.
+ *
+ * 从伙伴系统中删除 page， 也就是 分配page
  */
 static __always_inline struct page *
 __rmqueue(struct zone *zone, unsigned int order, int migratetype,
@@ -2801,6 +2875,7 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 {
 	struct page *page;
 
+    /* 如果使能 连续内存管理 */
 	if (IS_ENABLED(CONFIG_CMA)) {
 		/*
 		 * Balance movable allocations between regular and CMA areas by
@@ -2810,6 +2885,12 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 		if (alloc_flags & ALLOC_CMA &&
 		    zone_page_state(zone, NR_FREE_CMA_PAGES) >
 		    zone_page_state(zone, NR_FREE_PAGES) / 2) {
+
+            /**
+             *  迁移类型为 MIGRATE_CMA
+             *
+             *  __rmqueue_smallest(zone, order, MIGRATE_CMA);
+             */
 			page = __rmqueue_cma_fallback(zone, order);
 			if (page)
 				goto out;
@@ -2818,16 +2899,22 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 retry:
     /* 分配 */
 	page = __rmqueue_smallest(zone, order, migratetype);
-	if (unlikely(!page)) {
-		if (alloc_flags & ALLOC_CMA)
+	if (unlikely(!page)) {  /* 一般都能成功吧 */
+        /**
+         *  迁移类型为 MIGRATE_CMA
+         *
+         *  __rmqueue_smallest(zone, order, MIGRATE_CMA);
+         */
+		if (alloc_flags & ALLOC_CMA) {
 			page = __rmqueue_cma_fallback(zone, order);
-
+        }
 		if (!page && __rmqueue_fallback(zone, order, migratetype,
 								alloc_flags))
 			goto retry;
 	}
+    
 out:
-	if (page)
+	if (page)   /* 分配成功，记录 */
 		trace_mm_page_alloc_zone_locked(page, order, migratetype);
 	return page;
 }
@@ -2836,6 +2923,9 @@ out:
  * Obtain a specified number of elements from the buddy allocator, all under
  * a single hold of the lock, for efficiency.  Add them to the supplied list.
  * Returns the number of new pages which were placed at *list.
+ *
+ * 从伙伴分配器中获取指定数量的元素，所有元素都在一个锁的持有下，以提高效率。 
+ * 将它们添加到提供的列表中。 返回放置在 *list 中的新页数。
  */
 static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			unsigned long count, struct list_head *list,
@@ -2845,6 +2935,7 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 
 	spin_lock(&zone->lock);
 	for (i = 0; i < count; ++i) {
+        /* 从伙伴系统获取一个page */
 		struct page *page = __rmqueue(zone, order, migratetype,
 								alloc_flags);
 		if (unlikely(page == NULL))
@@ -2862,9 +2953,11 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 		 * head, thus also in the physical page order. This is useful
 		 * for IO devices that can merge IO requests if the physical
 		 * pages are ordered properly.
+		 *
+		 * 添加到 PCP 链表中宏
 		 */
 		list_add_tail(&page->lru, list);
-		alloced++;
+		alloced++;  /* 添加到链表中计数 */
 		if (is_migrate_cma(get_pcppage_migratetype(page)))
 			__mod_zone_page_state(zone, NR_FREE_CMA_PAGES,
 					      -(1 << order));
@@ -3305,7 +3398,7 @@ void __putback_isolated_page(struct page *page, unsigned int order, int mt)
  *
  * Must be called with interrupts disabled.
  */
-static inline void zone_statistics(struct zone *preferred_zone, struct zone *z)
+static inline void zone_statistics(struct zone *preferred_zone, struct zone *z) /*  */
 {
 #ifdef CONFIG_NUMA
 	enum numa_stat_item local_stat = NUMA_LOCAL;
@@ -3327,7 +3420,7 @@ static inline void zone_statistics(struct zone *preferred_zone, struct zone *z)
 #endif
 }
 
-/* Remove page from the per-cpu list, caller must protect the list */
+/* Remove page from the per-cpu list, caller must protect the list *//*  */
 static struct page *__rmqueue_pcplist(struct zone *zone, int migratetype,
 			unsigned int alloc_flags,
 			struct per_cpu_pages *pcp,
@@ -3336,23 +3429,35 @@ static struct page *__rmqueue_pcplist(struct zone *zone, int migratetype,
 	struct page *page;
 
 	do {
+        /**
+         *  如果链表为空 
+         *
+         *  这块相当于链表中没有了，一次会从 伙伴系统中申请 pcp->batch 个 page
+         *  在链表为空的这次申请过程是比较满的，所以这是慢速路径的一部分
+         *      荣涛 2021年7月6日16:26:19
+         */
 		if (list_empty(list)) {
+
+            /* 如果链表为空，从伙伴系统中分配 pcp->batch 个页面加入链表中 */
 			pcp->count += rmqueue_bulk(zone, 0,
 					pcp->batch, list,
 					migratetype, alloc_flags);
-			if (unlikely(list_empty(list)))
+			if (unlikely(list_empty(list))) /* 如果从伙伴系统中获取page失败了，那就是真的没有page了 */
 				return NULL;
 		}
 
+        /* 从链表中获取第一个 page */
 		page = list_first_entry(list, struct page, lru);
+
+        /* 从这个 page 的zone freelist 中删除 */
 		list_del(&page->lru);
-		pcp->count--;
+		pcp->count--;   /* 计数-1 */
 	} while (check_new_pcp(page));
 
 	return page;
 }
 
-/* Lock and remove page from the per-cpu list */
+/* Lock and remove page from the per-cpu list - 只分配一个 page 的快速方法 */
 static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 			struct zone *zone, gfp_t gfp_flags,
 			int migratetype, unsigned int alloc_flags)
@@ -3363,10 +3468,13 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	unsigned long flags;
 
 	local_irq_save(flags);
-	pcp = &this_cpu_ptr(zone->pageset)->pcp;
-	list = &pcp->lists[migratetype];
+	pcp = &this_cpu_ptr(zone->pageset)->pcp;    /* per-CPU变量 */
+	list = &pcp->lists[migratetype];    /* 迁移类型的链表 */
+
+    /* 从这个链表获取 */
 	page = __rmqueue_pcplist(zone,  migratetype, alloc_flags, pcp, list);
 	if (page) {
+        /* 分配成功后进行统计 */
 		__count_zid_vm_events(PGALLOC, page_zonenum(page), 1);
 		zone_statistics(preferred_zone, zone);
 	}
@@ -3377,6 +3485,8 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 /*
  * Allocate a page from the given zone. Use pcplists for order-0 allocations.
  * 从 给出的 zone 中分配 page
+ *
+ * 在 `get_page_from_freelist()` 中被调用
  */
 static inline
 struct page *rmqueue(struct zone *preferred_zone,
@@ -3387,13 +3497,26 @@ struct page *rmqueue(struct zone *preferred_zone,
 	unsigned long flags;
 	struct page *page;
 
+    /* 如果只分配一个 page */
 	if (likely(order == 0)) {
 		/*
 		 * MIGRATE_MOVABLE pcplist could have the pages on CMA area and
 		 * we need to skip it when CMA area isn't allowed.
+		 *
+		 * 分配一个 page 的快速路径的前提是满足下面条件之一
+		 *  1. CMA 连续内存管理 不可用
+		 *  2. 分配 flags中 CMA 标志被设定
+		 *  3. 迁移类型为 可迁移
 		 */
 		if (!IS_ENABLED(CONFIG_CMA) || alloc_flags & ALLOC_CMA ||
 				migratetype != MIGRATE_MOVABLE) {
+
+            /**
+             *  PCP 形式的快速分配，每个CPU都有一个链表，装了一些 页面 
+             *
+             *  如果这个 pcp 的链表中没有 free page，将使用 __rmqueue 从伙伴系统申请 pcp->batch 个页面加入链表中
+             *  pcp从 伙伴系统申请 过程是慢速过程。
+             */
 			page = rmqueue_pcplist(preferred_zone, zone, gfp_flags,
 					migratetype, alloc_flags);
 			goto out;
@@ -3405,7 +3528,12 @@ struct page *rmqueue(struct zone *preferred_zone,
 	 * allocate greater than order-1 page units with __GFP_NOFAIL.
 	 */
 	WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
-	spin_lock_irqsave(&zone->lock, flags);
+
+    /**
+     * 如果申请多个页
+     */
+    
+	spin_lock_irqsave(&zone->lock, flags);  /* 首先获取 zone 的锁 */
 
 	do {
 		page = NULL;
@@ -3414,29 +3542,41 @@ struct page *rmqueue(struct zone *preferred_zone,
 		 * due to non-CMA allocation context. HIGHATOMIC area is
 		 * reserved for high-order atomic allocation, so order-0
 		 * request should skip it.
+		 *
+		 * 分配一个页的情况也有可能执行这部分代码
 		 */
 		if (order > 0 && alloc_flags & ALLOC_HARDER) {
 			page = __rmqueue_smallest(zone, order, MIGRATE_HIGHATOMIC);
 			if (page)
 				trace_mm_page_alloc_zone_locked(page, order, migratetype);
 		}
+        /* 如果分配失败，或者上面分配一个页的情况没有分配页 */
 		if (!page)
 			page = __rmqueue(zone, order, migratetype, alloc_flags);
+        
 	} while (page && check_new_pages(page, order));
 	spin_unlock(&zone->lock);
+    
 	if (!page)
 		goto failed;
+
+    /*  */
 	__mod_zone_freepage_state(zone, -(1 << order),
 				  get_pcppage_migratetype(page));
 
 	__count_zid_vm_events(PGALLOC, page_zonenum(page), 1 << order);
-	zone_statistics(preferred_zone, zone);
+
+    /* 统计 */
+    zone_statistics(preferred_zone, zone);
+    
 	local_irq_restore(flags);
 
 out:
-	/* Separate test+clear to avoid unnecessary atomics */
+	/* Separate test+clear to avoid unnecessary atomics 单独的测试+清除以避免不必要的原子 */
 	if (test_bit(ZONE_BOOSTED_WATERMARK, &zone->flags)) {
 		clear_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
+
+        /* 唤醒 kswapd 回收线程 TODO 2021年7月7日10:34:47*/
 		wakeup_kswapd(zone, 0, 0, zone_idx(zone));
 	}
 
@@ -3449,63 +3589,63 @@ failed:
 }
 
 #ifdef CONFIG_FAIL_PAGE_ALLOC
-
-static struct {
-	struct fault_attr attr;
-
-	bool ignore_gfp_highmem;
-	bool ignore_gfp_reclaim;
-	u32 min_order;
-} fail_page_alloc = {
-	.attr = FAULT_ATTR_INITIALIZER,
-	.ignore_gfp_reclaim = true,
-	.ignore_gfp_highmem = true,
-	.min_order = 1,
-};
-
-static int __init setup_fail_page_alloc(char *str)
-{
-	return setup_fault_attr(&fail_page_alloc.attr, str);
-}
-__setup("fail_page_alloc=", setup_fail_page_alloc);
-
-static bool __should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
-{
-	if (order < fail_page_alloc.min_order)
-		return false;
-	if (gfp_mask & __GFP_NOFAIL)
-		return false;
-	if (fail_page_alloc.ignore_gfp_highmem && (gfp_mask & __GFP_HIGHMEM))
-		return false;
-	if (fail_page_alloc.ignore_gfp_reclaim &&
-			(gfp_mask & __GFP_DIRECT_RECLAIM))
-		return false;
-
-	return should_fail(&fail_page_alloc.attr, 1 << order);
-}
-
-#ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
-
-static int __init fail_page_alloc_debugfs(void) /*  */
-{
-	umode_t mode = S_IFREG | 0600;
-	struct dentry *dir;
-
-	dir = fault_create_debugfs_attr("fail_page_alloc", NULL,
-					&fail_page_alloc.attr);
-
-	debugfs_create_bool("ignore-gfp-wait", mode, dir,
-			    &fail_page_alloc.ignore_gfp_reclaim);
-	debugfs_create_bool("ignore-gfp-highmem", mode, dir,
-			    &fail_page_alloc.ignore_gfp_highmem);
-	debugfs_create_u32("min-order", mode, dir, &fail_page_alloc.min_order);
-
-	return 0;
-}
-
-late_initcall(fail_page_alloc_debugfs); /*  */
-
-#endif /* CONFIG_FAULT_INJECTION_DEBUG_FS */
+//
+//static struct {
+//	struct fault_attr attr;
+//
+//	bool ignore_gfp_highmem;
+//	bool ignore_gfp_reclaim;
+//	u32 min_order;
+//} fail_page_alloc = {
+//	.attr = FAULT_ATTR_INITIALIZER,
+//	.ignore_gfp_reclaim = true,
+//	.ignore_gfp_highmem = true,
+//	.min_order = 1,
+//};
+//
+//static int __init setup_fail_page_alloc(char *str)
+//{
+//	return setup_fault_attr(&fail_page_alloc.attr, str);
+//}
+//__setup("fail_page_alloc=", setup_fail_page_alloc);
+//
+//static bool __should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
+//{
+//	if (order < fail_page_alloc.min_order)
+//		return false;
+//	if (gfp_mask & __GFP_NOFAIL)
+//		return false;
+//	if (fail_page_alloc.ignore_gfp_highmem && (gfp_mask & __GFP_HIGHMEM))
+//		return false;
+//	if (fail_page_alloc.ignore_gfp_reclaim &&
+//			(gfp_mask & __GFP_DIRECT_RECLAIM))
+//		return false;
+//
+//	return should_fail(&fail_page_alloc.attr, 1 << order);
+//}
+//
+//#ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
+//
+//static int __init fail_page_alloc_debugfs(void) /*  */
+//{
+//	umode_t mode = S_IFREG | 0600;
+//	struct dentry *dir;
+//
+//	dir = fault_create_debugfs_attr("fail_page_alloc", NULL,
+//					&fail_page_alloc.attr);
+//
+//	debugfs_create_bool("ignore-gfp-wait", mode, dir,
+//			    &fail_page_alloc.ignore_gfp_reclaim);
+//	debugfs_create_bool("ignore-gfp-highmem", mode, dir,
+//			    &fail_page_alloc.ignore_gfp_highmem);
+//	debugfs_create_u32("min-order", mode, dir, &fail_page_alloc.min_order);
+//
+//	return 0;
+//}
+//
+//late_initcall(fail_page_alloc_debugfs); /*  */
+//
+//#endif /* CONFIG_FAULT_INJECTION_DEBUG_FS */
 
 #else /* CONFIG_FAIL_PAGE_ALLOC */
 
@@ -3551,8 +3691,37 @@ static inline long __zone_watermark_unusable_free(struct zone *z,
  * one free page of a suitable size. Checking now avoids taking the zone lock
  * to check in the allocation paths if no pages are free.
  *
+ * 如果免费基页高于“标记”，则返回 true。 
+ * 对于高阶检查，如果达到 0 阶水印并且至少有一个合适大小的空闲页面，它将返回 true。 
+ * 如果没有页面空闲，现在检查可避免使用区域锁来检查分配路径。
+ *
  *  如果free 基 page 在 Mark 之上，返回 true
  *  
+ * 
+Avaliable
+Free
+Page
+|
+|+                                  Back to High 
+| +                                 WaterMark           +
+|  +                                      \         +
+|   +                                      \    +
+|----+--------------------------------------+-------------------------------WMARK_HIGH
+|     +                                   +
+|      +                                +
+|       + kswapd Wakeup               +
+|        + /                        +
+|---------+-----------------------+-----------------------------------------WMARK_LOW
+|           +       Direct      +
+|             +     Reclaim   +
+|               +    /      +
+|                 + /     +
+|-------------------+---+---------------------------------------------------WMARK_MIN
+|                    + +
+|                     +
+|
+|
+\________________________________________________________________________________> time
  */
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
@@ -3585,6 +3754,8 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	 * Check watermarks for an order-0 allocation request. If these
 	 * are not met, then a high-order request also cannot go ahead
 	 * even if a suitable page happened to be free.
+	 *
+	 * 如果 free pages 过少，返回 false
 	 */
 	if (free_pages <= min + z->lowmem_reserve[highest_zoneidx])
 		return false;
@@ -3619,7 +3790,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 }
 
 bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
-		      int highest_zoneidx, unsigned int alloc_flags)
+		      int highest_zoneidx, unsigned int alloc_flags)    /*  */
 {
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
 					zone_page_state(z, NR_FREE_PAGES));
@@ -3696,7 +3867,7 @@ static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
  * fragmentation between the Normal and DMA32 zones.
  */
 static inline unsigned int
-alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
+alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)   /*  */
 {
 	unsigned int alloc_flags;
 
@@ -3704,13 +3875,14 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
 	 * __GFP_KSWAPD_RECLAIM is assumed to be the same as ALLOC_KSWAPD
 	 * to save a branch.
 	 */
-	alloc_flags = (__force int) (gfp_mask & __GFP_KSWAPD_RECLAIM);
+	alloc_flags = (__force int) (gfp_mask & __GFP_KSWAPD_RECLAIM);  /* 可以唤醒 kswapd */
 
 #ifdef CONFIG_ZONE_DMA32
+
 	if (!zone)
 		return alloc_flags;
 
-	if (zone_idx(zone) != ZONE_NORMAL)
+	if (zone_idx(zone) != ZONE_NORMAL)  /* 如果不是 DMA32 */
 		return alloc_flags;
 
 	/*
@@ -3723,15 +3895,17 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
 		return alloc_flags;
 
 	alloc_flags |= ALLOC_NOFRAGMENT;
+    
 #endif /* CONFIG_ZONE_DMA32 */
+
 	return alloc_flags;
 }
 
-static inline unsigned int current_alloc_flags(gfp_t gfp_mask,
+static inline unsigned int current_alloc_flags(gfp_t gfp_mask,  /*  */
 					unsigned int alloc_flags)
 {
-#ifdef CONFIG_CMA
-	unsigned int pflags = current->flags;
+#ifdef CONFIG_CMA   /* 连续内存管理 */
+	unsigned int pflags = current->flags;   /* 获取进程 flags */
 
 	if (!(pflags & PF_MEMALLOC_NOCMA) &&
 			gfp_migratetype(gfp_mask) == MIGRATE_MOVABLE)
@@ -3760,11 +3934,11 @@ retry:
 	 * See also __cpuset_node_allowed() comment in kernel/cpuset.c.
 	 */
 	no_fallback = alloc_flags & ALLOC_NOFRAGMENT;
-	z = ac->preferred_zoneref;
+	z = ac->preferred_zoneref;  /* 这是偏好的 zone */
 
-    /* 遍历 zone 的所有list */
-	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx,
-					ac->nodemask) {
+    /* 遍历 zone 的所有(也不是所有)list */
+	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx, ac->nodemask) {
+	
 		struct page *page;
 		unsigned long mark;
 
@@ -3816,6 +3990,7 @@ retry:
 				goto retry;
 			}
 		}
+            
         /*  */
 		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);   /* 获取 */
 		if (!zone_watermark_fast(zone, order, mark,
@@ -3841,14 +4016,15 @@ retry:
 			if (node_reclaim_mode == 0 ||
 			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone))
 				continue;
+            
             /* 回收 */
 			ret = node_reclaim(zone->zone_pgdat, gfp_mask, order);
 			switch (ret) {
 			case NODE_RECLAIM_NOSCAN:
-				/* did not scan */
+				/* did not scan - 不扫描 */
 				continue;
 			case NODE_RECLAIM_FULL:
-				/* scanned but unreclaimable */
+				/* scanned but unreclaimable - 扫描但是不回收 */
 				continue;
 			default:
 				/* did we reclaim enough */ /*  */
@@ -3860,11 +4036,14 @@ retry:
 			}
 		}
 
-try_this_zone:  /* 从已知 NODE 中分配 page */
+try_this_zone: 
+
+        /* 从已知 NODE 中分配 page */
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 				gfp_mask, alloc_flags, ac->migratetype);
-		if (page) {
-			prep_new_page(page, order, gfp_mask, alloc_flags);
+        
+		if (page) { /* 分配成功 */
+			prep_new_page(page, order, gfp_mask, alloc_flags);  /*  */
 
 			/*
 			 * If this is a high-order atomic allocation then check
@@ -3872,9 +4051,10 @@ try_this_zone:  /* 从已知 NODE 中分配 page */
 			 */
 			if (unlikely(order && (alloc_flags & ALLOC_HARDER)))
 				reserve_highatomic_pageblock(page, zone, order);
-
-			return page;
-		} else {
+            
+			return page;/* 返回分配的物理页 */
+            
+		} else { /* 分配失败 */
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 			/* Try again if zone has deferred pages */
 			if (static_branch_unlikely(&deferred_pages)) {
@@ -4249,24 +4429,24 @@ static bool __need_fs_reclaim(gfp_t gfp_mask)
 	return true;
 }
 
-void __fs_reclaim_acquire(void)
+void __fs_reclaim_acquire(void) /* 死锁检测 */
 {
 	lock_map_acquire(&__fs_reclaim_map);
 }
 
-void __fs_reclaim_release(void)
+void __fs_reclaim_release(void) /* 死锁检测 */
 {
 	lock_map_release(&__fs_reclaim_map);
 }
 
-void fs_reclaim_acquire(gfp_t gfp_mask)
+void fs_reclaim_acquire(gfp_t gfp_mask) /* 死锁检测 */
 {
 	if (__need_fs_reclaim(gfp_mask))
 		__fs_reclaim_acquire();
 }
 EXPORT_SYMBOL_GPL(fs_reclaim_acquire);
 
-void fs_reclaim_release(gfp_t gfp_mask)
+void fs_reclaim_release(gfp_t gfp_mask)/* 死锁检测 */
 {
 	if (__need_fs_reclaim(gfp_mask))
 		__fs_reclaim_release();
@@ -4567,7 +4747,7 @@ check_retry_cpuset(int cpuset_mems_cookie, struct alloc_context *ac)
 	return false;
 }
 
-static inline struct page * /* 分配页 */
+static inline struct page * /* 慢速分配页 */
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 						struct alloc_context *ac)
 {
@@ -4833,11 +5013,11 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 		unsigned int *alloc_flags)
 {
 	ac->highest_zoneidx = gfp_zone(gfp_mask);   /* 获取 zone */
-	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
-	ac->nodemask = nodemask;
-	ac->migratetype = gfp_migratetype(gfp_mask);    /*  */
+	ac->zonelist = node_zonelist(preferred_nid, gfp_mask); /* 根据 __GFP_THISNODE 决定使用fallback还是nofallback */
+	ac->nodemask = nodemask;    /* bitmap */
+	ac->migratetype = gfp_migratetype(gfp_mask);    
 
-	if (cpusets_enabled()) {
+	if (cpusets_enabled()) {    /* static key 开关 */
 		*alloc_mask |= __GFP_HARDWALL;
 		/*
 		 * When we are in the interrupt context, it is irrelevant
@@ -4849,23 +5029,31 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 			*alloc_flags |= ALLOC_CPUSET;
 	}
 
+    /* 死锁检测 LOCKDEP 关闭情况为空 */
 	fs_reclaim_acquire(gfp_mask);
 	fs_reclaim_release(gfp_mask);
 
-	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
+    /*  */
+	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);    /* 抢占相关 */
 
+    /* 根据CONFIG_分支，恒不成立 */
 	if (should_fail_alloc_page(gfp_mask, order))
 		return false;
 
+    /*  */
 	*alloc_flags = current_alloc_flags(gfp_mask, *alloc_flags); /*  */
 
-	/* Dirty zone balancing only done in the fast path */
+	/* Dirty zone balancing only done in the fast path
+	    */
 	ac->spread_dirty_pages = (gfp_mask & __GFP_WRITE);
 
 	/*
 	 * The preferred zone is used for statistics but crucially it is
 	 * also used as the starting point for the zonelist iterator. It
 	 * may get reset for allocations that ignore memory policies.
+	 *
+	 * 首选区域用于统计，但至关重要的是，它也用作 zonelist 迭代器的起点。 
+	 * 对于忽略内存策略的分配，它可能会被重置。
 	 */
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
 					ac->highest_zoneidx, ac->nodemask);
@@ -4881,8 +5069,10 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask)
 {
 	struct page *page;
-	unsigned int alloc_flags = ALLOC_WMARK_LOW;
+	unsigned int alloc_flags = ALLOC_WMARK_LOW; /*  */
 	gfp_t alloc_mask; /* The gfp_t that was actually used for allocation */
+
+    /* 分配信息 */
 	struct alloc_context ac = { };
 
 	/*
@@ -4896,6 +5086,8 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 
 	gfp_mask &= gfp_allowed_mask;
 	alloc_mask = gfp_mask;
+
+    /* 计算 ac 变量 */
 	if (!prepare_alloc_pages(gfp_mask, order, preferred_nid, nodemask, &ac, &alloc_mask, &alloc_flags))
 		return NULL;
 
@@ -4905,8 +5097,12 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	 */
 	alloc_flags |= alloc_flags_nofragment(ac.preferred_zoneref->zone, gfp_mask);
 
-	/* First allocation attempt */
-	page = get_page_from_freelist(alloc_mask, order, alloc_flags, &ac); /*  */
+	/**
+	 *  First allocation attempt - 第一次分配尝试
+	 *
+	 *  从偏好的 zone 中申请，申请成功直接返回
+	 */
+	page = get_page_from_freelist(alloc_mask, order, alloc_flags, &ac); 
 	if (likely(page))
 		goto out;
 
@@ -4925,10 +5121,13 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	 */
 	ac.nodemask = nodemask;
 
+    /* 如果上面申请失败，则进入慢速路径 */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 
 out:
-	if (memcg_kmem_enabled() && (gfp_mask & __GFP_ACCOUNT) && page &&
+	if (memcg_kmem_enabled()/* memory cgroup */ && 
+        (gfp_mask & __GFP_ACCOUNT) && 
+        page &&
 	    unlikely(__memcg_kmem_charge_page(page, gfp_mask, order) != 0)) {
 		__free_pages(page, order);
 		page = NULL;

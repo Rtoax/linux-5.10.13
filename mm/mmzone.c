@@ -48,7 +48,7 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 #ifdef CONFIG_NUMA
 	return node_isset(zonelist_node_idx(zref), *nodes);
 #else
-	return 1;
+//	return 1;
 #endif /* CONFIG_NUMA */
 }
 
@@ -61,13 +61,13 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
 	 * Find the next suitable zone to use for the allocation.
 	 * Only filter based on nodemask if it's set
 	 */
-	if (unlikely(nodes == NULL))
+	if (unlikely(nodes == NULL))    /*  */
 		while (zonelist_zone_idx(z) > highest_zoneidx)
 			z++;
 	else
 		while (zonelist_zone_idx(z) > highest_zoneidx ||
 				(z->zone && !zref_in_nodemask(z, nodes)))
-			z++;    /*  */
+			z++;    /* 他在 pglist_data中是个数组来的 */
 
 	return z;
 }

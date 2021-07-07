@@ -314,7 +314,7 @@ struct vm_area_struct;
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
 
-static inline int gfp_migratetype(const gfp_t gfp_flags)
+static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类型 */
 {
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
 	BUILD_BUG_ON((1UL << GFP_MOVABLE_SHIFT) != ___GFP_MOVABLE);
@@ -462,7 +462,7 @@ static inline enum zone_type gfp_zone(gfp_t flags)  /* 从 flags 获取来自哪
  * virtual kernel addresses to the allocated page(s).
  */
 
-static inline int gfp_zonelist(gfp_t flags)
+static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
 {
 #ifdef CONFIG_NUMA
 	if (unlikely(flags & __GFP_THISNODE))
@@ -558,7 +558,7 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 //#define alloc_hugepage_vma(gfp_mask, vma, addr, order) \
 //	alloc_pages(gfp_mask, order)
 #endif
-#define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
+#define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)   /*  */
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id(), false)
 

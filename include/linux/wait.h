@@ -123,7 +123,7 @@ init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t f
  * Also note that this 'optimization' trades a spin_lock() for an smp_mb(),
  * which (when the lock is uncontended) are of roughly equal cost.
  */
-static inline int waitqueue_active(struct wait_queue_head *wq_head)
+static inline int waitqueue_active(struct wait_queue_head *wq_head) /*  */
 {
 	return !list_empty(&wq_head->head);
 }
@@ -149,7 +149,7 @@ static inline bool wq_has_single_sleeper(struct wait_queue_head *wq_head)
  *
  * Please refer to the comment for waitqueue_active.
  */
-static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)
+static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)  /*  */
 {
 	/*
 	 * We need to be sure we are in sync with the

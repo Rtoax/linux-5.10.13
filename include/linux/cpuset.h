@@ -33,7 +33,7 @@
  */
 extern struct static_key_false cpusets_pre_enable_key;
 extern struct static_key_false cpusets_enabled_key;
-static inline bool cpusets_enabled(void)
+static inline bool cpusets_enabled(void)    /*  */
 {
 	return static_branch_unlikely(&cpusets_enabled_key);
 }

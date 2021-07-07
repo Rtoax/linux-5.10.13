@@ -133,10 +133,10 @@ extern pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address);
  * in __alloc_pages_slowpath(). All other functions pass the whole structure
  * by a const pointer.
  */
-struct alloc_context {  /*  */
-	struct zonelist *zonelist;
-	nodemask_t *nodemask;
-	struct zoneref *preferred_zoneref;
+struct alloc_context {  /* 分配 page 的信息 */
+	struct zonelist *zonelist;  /* zonelist */
+	nodemask_t *nodemask;   /* node */
+	struct zoneref *preferred_zoneref;  /*  */
 	int migratetype;
 
 	/*

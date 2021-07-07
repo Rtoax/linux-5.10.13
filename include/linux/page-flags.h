@@ -324,69 +324,457 @@ static inline int TestClearPage##uname(struct page *page) { return 0; }
 #define TESTSCFLAG_FALSE(uname)						\
 	TESTSETFLAG_FALSE(uname) TESTCLEARFLAG_FALSE(uname)
 
+/**********************************************************************************************************************\
+ *
+ *   定义的函数是我写的，为什么会使用驼峰式命名呢？
+ *
+\**********************************************************************************************************************/
+{/* +++ 2021年7月6日 */}
+
+
+static __always_inline int PageLocked(struct page *page);
+static __always_inline void __SetPageLocked(struct page *page);
+static __always_inline void __ClearPageLocked(struct page *page);
+
+static __always_inline int PageSlab(struct page *page);
+static __always_inline void __SetPageSlab(struct page *page);
+static __always_inline void __ClearPageSlab(struct page *page);
+
+static __always_inline int PageSlobFree(struct page *page);
+static __always_inline void __SetPageSlobFree(struct page *page);
+static __always_inline void __ClearPageSlobFree(struct page *page);
+
+
+static __always_inline int PageWaiters(struct page *page);
+static __always_inline void SetPageWaiters(struct page *page);
+static __always_inline void ClearPageWaiters(struct page *page);
+static __always_inline void __ClearPageWaiters(struct page *page);
+
+
+static __always_inline int PageError(struct page *page);
+static __always_inline void SetPageError(struct page *page);
+static __always_inline void ClearPageError(struct page *page);
+static __always_inline int TestClearPageError(struct page *page);
+
+static __always_inline int PageReferenced(struct page *page);
+static __always_inline void SetPageReferenced(struct page *page);
+static __always_inline void ClearPageReferenced(struct page *page);
+static __always_inline int TestClearPageReferenced(struct page *page);
+static __always_inline void __SetPageReferenced(struct page *page);
+
+
+static __always_inline int PageDirty(struct page *page);
+static __always_inline void SetPageDirty(struct page *page);
+static __always_inline void ClearPageDirty(struct page *page);
+static __always_inline int TestClearPageDirty(struct page *page);
+static __always_inline void __ClearPageDirty(struct page *page);
+static __always_inline void __SetPageDirty(struct page *page);
+
+
+/**
+一下函数通过此脚本生成 荣涛 2021年7月6日
+下面的函数有些可能没被定义，根据具体情况具体分析。
+
+//[rongtao@localhost ~]$ cat page.sh 
+#!/bin/bash
+
+template="
+static __always_inline int PageXXXX(struct page *page);\n
+static __always_inline void SetPageXXXX(struct page *page);\n
+static __always_inline void ClearPageXXXX(struct page *page);\n
+static __always_inline int TestClearPageXXXX(struct page *page);\n
+static __always_inline void __ClearPageXXXX(struct page *page);\n
+static __always_inline void __SetPageXXXX(struct page *page);\n \n
+"
+
+flags="LRU Active Workingset Checked Pinned SavePinned Foreign XenRemapped Reserved SwapBacked Private Private2 Own
+erPriv1 WriteBack MappedToDisk Reclaim Readahead SwapCache Unevictable Mlocked Uncached HWPoison Young Idle  Uptodate Head Huge HeadHuge DoubleMap TransHuge TransCompound TransCompoundMap Buddy Offline Kmemcg Table Guard Isolated "
+for flag in $flags
+do
+echo -e $template | sed -e "s/XXXX/$flag/g"
+done
+
+#echo -e $template
+
+*/
+
+static __always_inline int PageLRU(struct page *page);
+ static __always_inline void SetPageLRU(struct page *page);
+ static __always_inline void ClearPageLRU(struct page *page);
+ static __always_inline int TestClearPageLRU(struct page *page);
+ static __always_inline void __ClearPageLRU(struct page *page);
+ static __always_inline void __SetPageLRU(struct page *page);
+ 
+
+static __always_inline int PageActive(struct page *page);
+ static __always_inline void SetPageActive(struct page *page);
+ static __always_inline void ClearPageActive(struct page *page);
+ static __always_inline int TestClearPageActive(struct page *page);
+ static __always_inline void __ClearPageActive(struct page *page);
+ static __always_inline void __SetPageActive(struct page *page);
+ 
+
+static __always_inline int PageWorkingset(struct page *page);
+ static __always_inline void SetPageWorkingset(struct page *page);
+ static __always_inline void ClearPageWorkingset(struct page *page);
+ static __always_inline int TestClearPageWorkingset(struct page *page);
+ static __always_inline void __ClearPageWorkingset(struct page *page);
+ static __always_inline void __SetPageWorkingset(struct page *page);
+ 
+
+static __always_inline int PageChecked(struct page *page);
+ static __always_inline void SetPageChecked(struct page *page);
+ static __always_inline void ClearPageChecked(struct page *page);
+ static __always_inline int TestClearPageChecked(struct page *page);
+ static __always_inline void __ClearPageChecked(struct page *page);
+ static __always_inline void __SetPageChecked(struct page *page);
+ 
+
+static __always_inline int PagePinned(struct page *page);
+ static __always_inline void SetPagePinned(struct page *page);
+ static __always_inline void ClearPagePinned(struct page *page);
+ static __always_inline int TestClearPagePinned(struct page *page);
+ static __always_inline void __ClearPagePinned(struct page *page);
+ static __always_inline void __SetPagePinned(struct page *page);
+ 
+
+static __always_inline int PageSavePinned(struct page *page);
+ static __always_inline void SetPageSavePinned(struct page *page);
+ static __always_inline void ClearPageSavePinned(struct page *page);
+ static __always_inline int TestClearPageSavePinned(struct page *page);
+ static __always_inline void __ClearPageSavePinned(struct page *page);
+ static __always_inline void __SetPageSavePinned(struct page *page);
+ 
+
+static __always_inline int PageForeign(struct page *page);
+ static __always_inline void SetPageForeign(struct page *page);
+ static __always_inline void ClearPageForeign(struct page *page);
+ static __always_inline int TestClearPageForeign(struct page *page);
+ static __always_inline void __ClearPageForeign(struct page *page);
+ static __always_inline void __SetPageForeign(struct page *page);
+ 
+
+static __always_inline int PageXenRemapped(struct page *page);
+ static __always_inline void SetPageXenRemapped(struct page *page);
+ static __always_inline void ClearPageXenRemapped(struct page *page);
+ static __always_inline int TestClearPageXenRemapped(struct page *page);
+ static __always_inline void __ClearPageXenRemapped(struct page *page);
+ static __always_inline void __SetPageXenRemapped(struct page *page);
+ 
+
+static __always_inline int PageReserved(struct page *page);
+ static __always_inline void SetPageReserved(struct page *page);
+ static __always_inline void ClearPageReserved(struct page *page);
+ static __always_inline int TestClearPageReserved(struct page *page);
+ static __always_inline void __ClearPageReserved(struct page *page);
+ static __always_inline void __SetPageReserved(struct page *page);
+ 
+
+static __always_inline int PageSwapBacked(struct page *page);
+ static __always_inline void SetPageSwapBacked(struct page *page);
+ static __always_inline void ClearPageSwapBacked(struct page *page);
+ static __always_inline int TestClearPageSwapBacked(struct page *page);
+ static __always_inline void __ClearPageSwapBacked(struct page *page);
+ static __always_inline void __SetPageSwapBacked(struct page *page);
+ 
+
+static __always_inline int PagePrivate(struct page *page);
+ static __always_inline void SetPagePrivate(struct page *page);
+ static __always_inline void ClearPagePrivate(struct page *page);
+ static __always_inline int TestClearPagePrivate(struct page *page);
+ static __always_inline void __ClearPagePrivate(struct page *page);
+ static __always_inline void __SetPagePrivate(struct page *page);
+ 
+
+static __always_inline int PagePrivate2(struct page *page);
+ static __always_inline void SetPagePrivate2(struct page *page);
+ static __always_inline void ClearPagePrivate2(struct page *page);
+ static __always_inline int TestClearPagePrivate2(struct page *page);
+ static __always_inline void __ClearPagePrivate2(struct page *page);
+ static __always_inline void __SetPagePrivate2(struct page *page);
+ 
+
+static __always_inline int PageOwnerPriv1(struct page *page);
+ static __always_inline void SetPageOwnerPriv1(struct page *page);
+ static __always_inline void ClearPageOwnerPriv1(struct page *page);
+ static __always_inline int TestClearPageOwnerPriv1(struct page *page);
+ static __always_inline void __ClearPageOwnerPriv1(struct page *page);
+ static __always_inline void __SetPageOwnerPriv1(struct page *page);
+ 
+
+static __always_inline int PageWriteBack(struct page *page);
+ static __always_inline void SetPageWriteBack(struct page *page);
+ static __always_inline void ClearPageWriteBack(struct page *page);
+ static __always_inline int TestClearPageWriteBack(struct page *page);
+ static __always_inline void __ClearPageWriteBack(struct page *page);
+ static __always_inline void __SetPageWriteBack(struct page *page);
+ 
+
+static __always_inline int PageMappedToDisk(struct page *page);
+ static __always_inline void SetPageMappedToDisk(struct page *page);
+ static __always_inline void ClearPageMappedToDisk(struct page *page);
+ static __always_inline int TestClearPageMappedToDisk(struct page *page);
+ static __always_inline void __ClearPageMappedToDisk(struct page *page);
+ static __always_inline void __SetPageMappedToDisk(struct page *page);
+ 
+
+static __always_inline int PageReclaim(struct page *page);
+ static __always_inline void SetPageReclaim(struct page *page);
+ static __always_inline void ClearPageReclaim(struct page *page);
+ static __always_inline int TestClearPageReclaim(struct page *page);
+ static __always_inline void __ClearPageReclaim(struct page *page);
+ static __always_inline void __SetPageReclaim(struct page *page);
+ 
+
+static __always_inline int PageReadahead(struct page *page);
+ static __always_inline void SetPageReadahead(struct page *page);
+ static __always_inline void ClearPageReadahead(struct page *page);
+ static __always_inline int TestClearPageReadahead(struct page *page);
+ static __always_inline void __ClearPageReadahead(struct page *page);
+ static __always_inline void __SetPageReadahead(struct page *page);
+ 
+
+static __always_inline int PageSwapCache(struct page *page);
+ static __always_inline void SetPageSwapCache(struct page *page);
+ static __always_inline void ClearPageSwapCache(struct page *page);
+ static __always_inline int TestClearPageSwapCache(struct page *page);
+ static __always_inline void __ClearPageSwapCache(struct page *page);
+ static __always_inline void __SetPageSwapCache(struct page *page);
+ 
+
+static __always_inline int PageUnevictable(struct page *page);
+ static __always_inline void SetPageUnevictable(struct page *page);
+ static __always_inline void ClearPageUnevictable(struct page *page);
+ static __always_inline int TestClearPageUnevictable(struct page *page);
+ static __always_inline void __ClearPageUnevictable(struct page *page);
+ static __always_inline void __SetPageUnevictable(struct page *page);
+ 
+
+static __always_inline int PageMlocked(struct page *page);
+ static __always_inline void SetPageMlocked(struct page *page);
+ static __always_inline void ClearPageMlocked(struct page *page);
+ static __always_inline int TestClearPageMlocked(struct page *page);
+ static __always_inline void __ClearPageMlocked(struct page *page);
+ static __always_inline void __SetPageMlocked(struct page *page);
+ 
+
+static __always_inline int PageUncached(struct page *page);
+ static __always_inline void SetPageUncached(struct page *page);
+ static __always_inline void ClearPageUncached(struct page *page);
+ static __always_inline int TestClearPageUncached(struct page *page);
+ static __always_inline void __ClearPageUncached(struct page *page);
+ static __always_inline void __SetPageUncached(struct page *page);
+ 
+
+static __always_inline int PageHWPoison(struct page *page);
+ static __always_inline void SetPageHWPoison(struct page *page);
+ static __always_inline void ClearPageHWPoison(struct page *page);
+ static __always_inline int TestClearPageHWPoison(struct page *page);
+ static __always_inline void __ClearPageHWPoison(struct page *page);
+ static __always_inline void __SetPageHWPoison(struct page *page);
+ 
+
+static __always_inline int PageYoung(struct page *page);
+ static __always_inline void SetPageYoung(struct page *page);
+ static __always_inline void ClearPageYoung(struct page *page);
+ static __always_inline int TestClearPageYoung(struct page *page);
+ static __always_inline void __ClearPageYoung(struct page *page);
+ static __always_inline void __SetPageYoung(struct page *page);
+ 
+
+static __always_inline int PageIdle(struct page *page);
+ static __always_inline void SetPageIdle(struct page *page);
+ static __always_inline void ClearPageIdle(struct page *page);
+ static __always_inline int TestClearPageIdle(struct page *page);
+ static __always_inline void __ClearPageIdle(struct page *page);
+ static __always_inline void __SetPageIdle(struct page *page);
+ 
+
+static __always_inline int PageUptodate(struct page *page);
+ static __always_inline void SetPageUptodate(struct page *page);
+ static __always_inline void ClearPageUptodate(struct page *page);
+ static __always_inline int TestClearPageUptodate(struct page *page);
+ static __always_inline void __ClearPageUptodate(struct page *page);
+ static __always_inline void __SetPageUptodate(struct page *page);
+ 
+
+static __always_inline int PageHead(struct page *page);
+ static __always_inline void SetPageHead(struct page *page);
+ static __always_inline void ClearPageHead(struct page *page);
+ static __always_inline int TestClearPageHead(struct page *page);
+ static __always_inline void __ClearPageHead(struct page *page);
+ static __always_inline void __SetPageHead(struct page *page);
+ 
+
+static __always_inline int PageHuge(struct page *page);
+ static __always_inline void SetPageHuge(struct page *page);
+ static __always_inline void ClearPageHuge(struct page *page);
+ static __always_inline int TestClearPageHuge(struct page *page);
+ static __always_inline void __ClearPageHuge(struct page *page);
+ static __always_inline void __SetPageHuge(struct page *page);
+ 
+
+static __always_inline int PageHeadHuge(struct page *page);
+ static __always_inline void SetPageHeadHuge(struct page *page);
+ static __always_inline void ClearPageHeadHuge(struct page *page);
+ static __always_inline int TestClearPageHeadHuge(struct page *page);
+ static __always_inline void __ClearPageHeadHuge(struct page *page);
+ static __always_inline void __SetPageHeadHuge(struct page *page);
+ 
+
+static __always_inline int PageDoubleMap(struct page *page);
+ static __always_inline void SetPageDoubleMap(struct page *page);
+ static __always_inline void ClearPageDoubleMap(struct page *page);
+ static __always_inline int TestClearPageDoubleMap(struct page *page);
+ static __always_inline void __ClearPageDoubleMap(struct page *page);
+ static __always_inline void __SetPageDoubleMap(struct page *page);
+ 
+
+static __always_inline int PageTransHuge(struct page *page);
+ static __always_inline void SetPageTransHuge(struct page *page);
+ static __always_inline void ClearPageTransHuge(struct page *page);
+ static __always_inline int TestClearPageTransHuge(struct page *page);
+ static __always_inline void __ClearPageTransHuge(struct page *page);
+ static __always_inline void __SetPageTransHuge(struct page *page);
+ 
+
+static __always_inline int PageTransCompound(struct page *page);
+ static __always_inline void SetPageTransCompound(struct page *page);
+ static __always_inline void ClearPageTransCompound(struct page *page);
+ static __always_inline int TestClearPageTransCompound(struct page *page);
+ static __always_inline void __ClearPageTransCompound(struct page *page);
+ static __always_inline void __SetPageTransCompound(struct page *page);
+ 
+
+static __always_inline int PageTransCompoundMap(struct page *page);
+ static __always_inline void SetPageTransCompoundMap(struct page *page);
+ static __always_inline void ClearPageTransCompoundMap(struct page *page);
+ static __always_inline int TestClearPageTransCompoundMap(struct page *page);
+ static __always_inline void __ClearPageTransCompoundMap(struct page *page);
+ static __always_inline void __SetPageTransCompoundMap(struct page *page);
+ 
+
+static __always_inline int PageBuddy(struct page *page);
+ static __always_inline void SetPageBuddy(struct page *page);
+ static __always_inline void ClearPageBuddy(struct page *page);
+ static __always_inline int TestClearPageBuddy(struct page *page);
+ static __always_inline void __ClearPageBuddy(struct page *page);
+ static __always_inline void __SetPageBuddy(struct page *page);
+ 
+
+static __always_inline int PageOffline(struct page *page);
+ static __always_inline void SetPageOffline(struct page *page);
+ static __always_inline void ClearPageOffline(struct page *page);
+ static __always_inline int TestClearPageOffline(struct page *page);
+ static __always_inline void __ClearPageOffline(struct page *page);
+ static __always_inline void __SetPageOffline(struct page *page);
+ 
+
+static __always_inline int PageKmemcg(struct page *page);
+ static __always_inline void SetPageKmemcg(struct page *page);
+ static __always_inline void ClearPageKmemcg(struct page *page);
+ static __always_inline int TestClearPageKmemcg(struct page *page);
+ static __always_inline void __ClearPageKmemcg(struct page *page);
+ static __always_inline void __SetPageKmemcg(struct page *page);
+ 
+
+static __always_inline int PageTable(struct page *page);
+ static __always_inline void SetPageTable(struct page *page);
+ static __always_inline void ClearPageTable(struct page *page);
+ static __always_inline int TestClearPageTable(struct page *page);
+ static __always_inline void __ClearPageTable(struct page *page);
+ static __always_inline void __SetPageTable(struct page *page);
+ 
+
+static __always_inline int PageGuard(struct page *page);
+ static __always_inline void SetPageGuard(struct page *page);
+ static __always_inline void ClearPageGuard(struct page *page);
+ static __always_inline int TestClearPageGuard(struct page *page);
+ static __always_inline void __ClearPageGuard(struct page *page);
+ static __always_inline void __SetPageGuard(struct page *page);
+ 
+
+static __always_inline int PageIsolated(struct page *page);
+ static __always_inline void SetPageIsolated(struct page *page);
+ static __always_inline void ClearPageIsolated(struct page *page);
+ static __always_inline int TestClearPageIsolated(struct page *page);
+ static __always_inline void __ClearPageIsolated(struct page *page);
+ static __always_inline void __SetPageIsolated(struct page *page);
+
+
+{/* +++ 2021年7月6日 */}
+
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
-PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD) __CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
-PAGEFLAG(Error, error, PF_NO_TAIL) TESTCLEARFLAG(Error, error, PF_NO_TAIL)
+PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD) 
+__CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
+PAGEFLAG(Error, error, PF_NO_TAIL) 
+TESTCLEARFLAG(Error, error, PF_NO_TAIL)
 PAGEFLAG(Referenced, referenced, PF_HEAD)
-	TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
-	__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
-PAGEFLAG(Dirty, dirty, PF_HEAD) TESTSCFLAG(Dirty, dirty, PF_HEAD)
-	__CLEARPAGEFLAG(Dirty, dirty, PF_HEAD)
-PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
-PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
-	TESTCLEARFLAG(Active, active, PF_HEAD)
+TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
+__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
+PAGEFLAG(Dirty, dirty, PF_HEAD) 
+TESTSCFLAG(Dirty, dirty, PF_HEAD)
+__CLEARPAGEFLAG(Dirty, dirty, PF_HEAD)
+PAGEFLAG(LRU, lru, PF_HEAD) 
+__CLEARPAGEFLAG(LRU, lru, PF_HEAD)
+PAGEFLAG(Active, active, PF_HEAD)
+__CLEARPAGEFLAG(Active, active, PF_HEAD)
+TESTCLEARFLAG(Active, active, PF_HEAD)
 PAGEFLAG(Workingset, workingset, PF_HEAD)
-	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
+TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 __PAGEFLAG(SlobFree, slob_free, PF_NO_TAIL)
 PAGEFLAG(Checked, checked, PF_NO_COMPOUND)	   /* Used by some filesystems */
 
 /* Xen */
 PAGEFLAG(Pinned, pinned, PF_NO_COMPOUND)
-	TESTSCFLAG(Pinned, pinned, PF_NO_COMPOUND)
+TESTSCFLAG(Pinned, pinned, PF_NO_COMPOUND)
 PAGEFLAG(SavePinned, savepinned, PF_NO_COMPOUND);
 PAGEFLAG(Foreign, foreign, PF_NO_COMPOUND);
 PAGEFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
-	TESTCLEARFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
+TESTCLEARFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
+__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
+__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
-	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
-	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
+__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
+__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 /*
  * Private page markings that may be used by the filesystem that owns the page
  * for its own purposes.
  * - PG_private and PG_private_2 cause releasepage() and co to be invoked
  */
-PAGEFLAG(Private, private, PF_ANY) __SETPAGEFLAG(Private, private, PF_ANY)
-	__CLEARPAGEFLAG(Private, private, PF_ANY)
-PAGEFLAG(Private2, private_2, PF_ANY) TESTSCFLAG(Private2, private_2, PF_ANY)
+PAGEFLAG(Private, private, PF_ANY)
+__SETPAGEFLAG(Private, private, PF_ANY)
+__CLEARPAGEFLAG(Private, private, PF_ANY)
+PAGEFLAG(Private2, private_2, PF_ANY) 
+TESTSCFLAG(Private2, private_2, PF_ANY)
 PAGEFLAG(OwnerPriv1, owner_priv_1, PF_ANY)
-	TESTCLEARFLAG(OwnerPriv1, owner_priv_1, PF_ANY)
+TESTCLEARFLAG(OwnerPriv1, owner_priv_1, PF_ANY)
 
 /*
  * Only test-and-set exist for PG_writeback.  The unconditional operators are
  * risky: they bypass page accounting.
  */
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
-	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
+TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
 PAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
 
 /* PG_readahead is only used for reads; PG_reclaim is only for writes */
 PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
-	TESTCLEARFLAG(Reclaim, reclaim, PF_NO_TAIL)
+TESTCLEARFLAG(Reclaim, reclaim, PF_NO_TAIL)
 PAGEFLAG(Readahead, reclaim, PF_NO_COMPOUND)
-	TESTCLEARFLAG(Readahead, reclaim, PF_NO_COMPOUND)
+TESTCLEARFLAG(Readahead, reclaim, PF_NO_COMPOUND)
 
 #ifdef CONFIG_HIGHMEM
 /*
  * Must use a macro here due to header dependency issues. page_zone() is not
  * available at this point.
- */
+ */{}
 #define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
+{}
 #else
 PAGEFLAG_FALSE(HighMem)
 #endif
@@ -427,7 +815,9 @@ PAGEFLAG(Uncached, uncached, PF_NO_COMPOUND)
 #ifdef CONFIG_MEMORY_FAILURE
 PAGEFLAG(HWPoison, hwpoison, PF_ANY)
 TESTSCFLAG(HWPoison, hwpoison, PF_ANY)
+{}
 #define __PG_HWPOISON (1UL << PG_hwpoison)
+{}
 extern bool take_page_off_buddy(struct page *page);
 #else
 /*  */
@@ -446,8 +836,21 @@ PAGEFLAG(Idle, idle, PF_ANY)
  * operations as both should be shielded with the zone lock to prevent
  * any possible races on the setting or clearing of the bit.
  */
-__PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
+{/*++++ 2021年7月6日*/}
+//__PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
+static __always_inline int PageReported(struct page *page)        
+{ return test_bit(PG_reported, &PF_NO_COMPOUND(page, 0)->flags); }
 
+static __always_inline void __SetPageReported(struct page *page)
+{ __set_bit(PG_reported, &PF_NO_COMPOUND(page, 1)->flags); }
+
+static __always_inline void __ClearPageReported(struct page *page)
+{ __clear_bit(PG_reported, &PF_NO_COMPOUND(page, 1)->flags); }
+
+
+
+
+{/*++++ 2021年7月6日*/}
 /*
  * On an anonymous page mapped into a user virtual memory area,
  * page->mapping points to its anon_vma, not to a struct address_space;
@@ -501,7 +904,7 @@ static __always_inline int PageKsm(struct page *page)
 				PAGE_MAPPING_KSM;
 }
 #else
-TESTPAGEFLAG_FALSE(Ksm)
+//TESTPAGEFLAG_FALSE(Ksm)
 #endif
 
 u64 stable_page_flags(struct page *page);
@@ -544,7 +947,7 @@ static __always_inline void SetPageUptodate(struct page *page)
 	set_bit(PG_uptodate, &page->flags);
 }
 
-CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL)
+CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL) {}
 
 int test_clear_page_writeback(struct page *page);
 int __test_set_page_writeback(struct page *page, bool keep_write);
@@ -784,6 +1187,7 @@ extern bool is_free_buddy_page(struct page *page);
 
 __PAGEFLAG(Isolated, isolated, PF_ANY);
 
+{}
 /*
  * If network-based swap is enabled, sl*b must keep track of whether pages
  * were allocated from pfmemalloc reserves.
@@ -815,7 +1219,7 @@ static inline void ClearPageSlabPfmemalloc(struct page *page)
 #ifdef CONFIG_MMU
 #define __PG_MLOCKED		(1UL << PG_mlocked)
 #else
-#define __PG_MLOCKED		0
+//#define __PG_MLOCKED		0
 #endif
 
 /*

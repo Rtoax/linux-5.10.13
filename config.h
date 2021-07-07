@@ -3507,8 +3507,7 @@
 #define CONFIG_PREEMPT_RCU      /*  */
 #define CONFIG_PREEMPT_RT       /*  */
 #define CONFIG_PREEMPT_TRACER   /*  */
-#define CONFIG_PREEMPT_VOLUNTARY /*  */
-#define CONFIG_PREEMPT_VOLUNTARY 1
+#define CONFIG_PREEMPT_VOLUNTARY 1  /* 自愿抢占 */
 #define CONFIG_PREVENT_FIRMWARE_BUILD 1
 #define CONFIG_PRINTER_MODULE 1
 #define CONFIG_PRINTK           /*  */

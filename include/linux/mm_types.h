@@ -66,7 +66,7 @@ struct mem_cgroup;
 #define _struct_page_alignment
 #endif
 
-struct page {
+struct page {   /* 物理页 */
     /**
     +----------+---------+----------+--------+----------+
     |  section |   node  |   zone   |  ...   |   flag   |
@@ -88,10 +88,12 @@ struct page {
 			 * pgdat->lru_lock.  Sometimes used as a generic list
 			 * by the page owner.
 			 *
-			 * 链表头，主要有3个用途：
+			 * 链表头(不一定是链表头，可能是链表节点)，主要有3个用途：
              * a：page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
              * b：page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
              * c：page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
+             *
+             * a. `zone->free_area->free_list` 为链表头的链表,见`get_page_from_free_area()`
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */

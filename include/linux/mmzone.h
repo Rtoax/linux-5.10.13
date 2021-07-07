@@ -26,7 +26,7 @@
 #ifndef CONFIG_FORCE_MAX_ZONEORDER
 #define MAX_ORDER 11
 #else
-#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
+//#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
 #endif
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER/* 11 */ - 1))/* 1024 */
 
@@ -92,8 +92,8 @@ extern int page_group_by_mobility_disabled;
 #define get_pageblock_migratetype(page)		/* 连续内存管理  */			\
 	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)/*  */
 
-struct free_area {
-	struct list_head	free_list[MIGRATE_TYPES];
+struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
+	struct list_head	free_list[MIGRATE_TYPES];   /*  page 链表头 */
 	unsigned long		nr_free;
 };
 
@@ -415,7 +415,7 @@ enum zone_type {
 	 *  - parisc uses neither.
 	 */
 #ifdef CONFIG_ZONE_DMA
-	ZONE_DMA,       /*  */
+	ZONE_DMA,       /* DMA */
 #endif
 #ifdef CONFIG_ZONE_DMA32
 	ZONE_DMA32,     /*  */
@@ -488,6 +488,10 @@ struct zone {   /* 内存 ZONE */
 	/* Read-mostly fields */
 
 	/* zone watermarks, access with *_wmark_pages(zone) macros */
+    //WMARK_MIN,  /* 最低水位 */
+    //WMARK_LOW,  /* 低水位 */
+    //WMARK_HIGH, /* 高水位 */
+    //NR_WMARK
 	unsigned long _watermark[NR_WMARK]; /* 水位:每个zone都有自己独立的min, low和high三个档位的watermark值 */
 	unsigned long watermark_boost;      /*  */
 
@@ -505,9 +509,13 @@ struct zone {   /* 内存 ZONE */
 	long lowmem_reserve[MAX_NR_ZONES];
 
 #ifdef CONFIG_NUMA
-	int node;
+	int node;   /* 属于哪个 zone */
 #endif
-	struct pglist_data	*zone_pgdat;
+
+    /* 属于哪个node */
+	struct pglist_data	*zone_pgdat;    /* node 信息 */
+
+    /*  */
 	struct per_cpu_pageset __percpu *pageset;   /* 每个CPU的pageset */
 
 #ifndef CONFIG_SPARSEMEM
@@ -519,7 +527,7 @@ struct zone {   /* 内存 ZONE */
 #endif /* CONFIG_SPARSEMEM */
 
 	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
-	unsigned long		zone_start_pfn;
+	unsigned long		zone_start_pfn; /* zone的起始页帧号 */
 
 	/*
 	 * spanned_pages is the total pages spanned by the zone, including
@@ -579,10 +587,10 @@ struct zone {   /* 内存 ZONE */
 	int initialized;/* 是否初始化 */
 
 	/* Write-intensive fields used from the page allocator */
-	ZONE_PADDING(_pad1_)
+	ZONE_PADDING(_pad1_)    /*  */
 
 	/* free areas of different sizes */
-	struct free_area	free_area[MAX_ORDER];
+	struct free_area	free_area[MAX_ORDER];   /*  */
 
 	/* zone flags, see below */
 	unsigned long		flags;
@@ -629,26 +637,28 @@ struct zone {   /* 内存 ZONE */
 	bool			contiguous;
 
 	ZONE_PADDING(_pad3_)
-	/* Zone statistics */
+        
+	/* Zone statistics - 溶剂信息 */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
 enum pgdat_flags {
-	PGDAT_DIRTY,			/* reclaim scanning has recently found
+	PGDAT_DIRTY,	 /* reclaim scanning has recently found
 					 * many dirty file pages at the tail
 					 * of the LRU.
 					 */
-	PGDAT_WRITEBACK,		/* reclaim scanning has recently found
+	PGDAT_WRITEBACK, /* reclaim scanning has recently found
 					 * many pages under writeback
 					 */
 	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
 };
 
 enum zone_flags {
-	ZONE_BOOSTED_WATERMARK,		/* zone recently boosted watermarks.
-					 * Cleared when kswapd is woken.
-					 */
+    /* zone recently boosted(提升) watermarks. 
+     * Cleared when kswapd is woken.
+     */
+	ZONE_BOOSTED_WATERMARK,		
 };
 
 static inline unsigned long zone_managed_pages(struct zone *zone)   /* ZONE 的管理数据 */
@@ -703,11 +713,13 @@ static inline bool zone_intersects(struct zone *zone,
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES/* NODE个数 */ * MAX_NR_ZONES/* ZONE个数 */)
 
 enum {
-	ZONELIST_FALLBACK,	/* zonelist with fallback */
+	ZONELIST_FALLBACK,	/* zonelist with fallback(倒退) */
 #ifdef CONFIG_NUMA
 	/*
 	 * The NUMA zonelists are doubled because we need zonelists that
 	 * restrict the allocations to a single node for __GFP_THISNODE.
+	 *
+	 * NUMA 区域列表翻了一番，因为我们需要区域列表来限制对 __GFP_THISNODE 的单个节点的分配。
 	 */
 	ZONELIST_NOFALLBACK,	/* zonelist without fallback (__GFP_THISNODE) */
 #endif
@@ -717,8 +729,10 @@ enum {
 /*
  * This struct contains information about a zone in a zonelist. It is stored
  * here to avoid dereferences into large structures and lookups of tables
+ *
+ * 避免 去引用到大的数据结构，并且查找表
  */
-struct zoneref {    /*  */
+struct zoneref {    /* 在 zonelist 中的 zone 信息 */
 	struct zone *zone;	/* Pointer to actual zone */
 	int zone_idx;		/* zone_idx(zoneref->zone) */
 };
@@ -774,10 +788,14 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 * node_zonelists contains references to all zones in all nodes.
 	 * Generally the first zones will be references to this node's
 	 * node_zones.
+	 *
+	 * 提供一种机制，可以访问所有 NODE 的 zonelist
+	 * 通常第一个zone 是当前 node 的 node_zones 的引用
 	 */
-	struct zonelist node_zonelists[MAX_ZONELISTS];  /*  */
+	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];  /*  */
 
-	int nr_zones; /* number of populated zones in this node */
+	int nr_zones; /* number of populated zones in this node 此节点中的人口稠密区数 */
+    
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
 	struct page *node_mem_map;
 #ifdef CONFIG_PAGE_EXTENSION/* 页扩展 */
@@ -814,11 +832,13 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	int kswapd_failures;		/* Number of 'reclaimed == 0' runs */
 
 #ifdef CONFIG_COMPACTION
+    /* 内存规整 */
 	int kcompactd_max_order;
 	enum zone_type kcompactd_highest_zoneidx;
 	wait_queue_head_t kcompactd_wait;   /* 内存规整线程等待 */
 	struct task_struct *kcompactd;
 #endif
+
 	/*
 	 * This is a per-node reserve of pages that are not available
 	 * to userspace allocations.
@@ -835,6 +855,8 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
 	/* Write-intensive fields used by page reclaim */
 	ZONE_PADDING(_pad1_)
+
+
 	spinlock_t		lru_lock;   /* 最近最少使用 */
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
@@ -935,8 +957,15 @@ static inline int local_memory_node(int node_id) { return node_id; };
 
 /*
  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
+ *
+ * 这个计算需要注意
+ * 	struct test T[10];
+ *  struct test *t2 = &T[2];
+ *  printf("idx = %d\n", t2 - T);
+ *
+ *  结果为 idx = 2
  */
-#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
+#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)   /* 数组成员地址 - 数组起始地址 */
 
 /*
  * Returns true if a zone has pages managed by the buddy allocator.
@@ -1128,6 +1157,14 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
  * When no eligible zone is found, zoneref->zone is NULL (zoneref itself is
  * never NULL). This may happen either genuinely, or due to concurrent nodemask
  * update due to cpuset modification.
+ */
+/*
+ * The preferred zone is used for statistics but crucially it is
+ * also used as the starting point for the zonelist iterator. It
+ * may get reset for allocations that ignore memory policies.
+ *
+ * 首选区域用于统计，但至关重要的是，它也用作 zonelist 迭代器的起点。 
+ * 对于忽略内存策略的分配，它可能会被重置。
  */
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,

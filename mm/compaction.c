@@ -2077,7 +2077,7 @@ static enum compact_result compact_finished(struct compact_control *cc)
  *   COMPACT_SUCCESS  - If the allocation would succeed without compaction
  *   COMPACT_CONTINUE - If compaction should run now
  */
-static enum compact_result __compaction_suitable(struct zone *zone, int order,
+static enum compact_result __compaction_suitable(struct zone *zone, int order,  /*  */
 					unsigned int alloc_flags,
 					int highest_zoneidx,
 					unsigned long wmark_target)
@@ -2120,7 +2120,7 @@ static enum compact_result __compaction_suitable(struct zone *zone, int order,
 	return COMPACT_CONTINUE;
 }
 
-enum compact_result compaction_suitable(struct zone *zone, int order,
+enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
 					unsigned int alloc_flags,
 					int highest_zoneidx)
 {
@@ -2667,7 +2667,7 @@ static inline bool kcompactd_work_requested(pg_data_t *pgdat)
 	return pgdat->kcompactd_max_order > 0 || kthread_should_stop();
 }
 
-static bool kcompactd_node_suitable(pg_data_t *pgdat)
+static bool kcompactd_node_suitable(pg_data_t *pgdat)   /*  */
 {
 	int zoneid;
 	struct zone *zone;
@@ -2852,7 +2852,7 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
  * This kcompactd start function will be called by init and node-hot-add.
  * On node-hot-add, kcompactd will moved to proper cpus if cpus are hot-added.
  */ /* 内存规整线程 */
-int kcompactd_run(int nid)
+int kcompactd_run(int nid)  /*  */
 {
 	pg_data_t *pgdat = NODE_DATA(nid);  /*  */
 	int ret = 0;

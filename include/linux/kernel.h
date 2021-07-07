@@ -189,11 +189,11 @@ struct completion;
 struct pt_regs;
 struct user;
 
-#ifdef CONFIG_PREEMPT_VOLUNTARY
+#ifdef CONFIG_PREEMPT_VOLUNTARY /*  */
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
-# define might_resched() do { } while (0)
+//# define might_resched() do { } while (0)
 #endif
 
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
