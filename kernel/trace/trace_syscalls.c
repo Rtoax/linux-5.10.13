@@ -550,7 +550,7 @@ void __init init_ftrace_syscalls(void)  /*  */
 		if (!meta)
 			continue;
 
-		meta->syscall_nr = i;
+		meta->syscall_nr = i;   /* 给 系统调用 号 赋值 */
 
 		if (!IS_ENABLED(CONFIG_HAVE_SPARSE_SYSCALL_NR)) {
 			syscalls_metadata[i] = meta;

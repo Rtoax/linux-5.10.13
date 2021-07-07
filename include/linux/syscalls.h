@@ -175,7 +175,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
 	static struct syscall_metadata __used			\
 	  __syscall_meta_##sname = {				\
 		.name 		= "sys"#sname,			\
-		.syscall_nr	= -1,	/* Filled in at boot */	\
+		.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls() */	\
 		.nb_args 	= nb,				\
 		.types		= nb ? types_##sname : NULL,	\
 		.args		= nb ? args_##sname : NULL,	\
@@ -241,7 +241,7 @@ static struct trace_event_call __used __section("_ftrace_events") *__event_exit_
 
 static struct syscall_metadata __used __syscall_meta__rtoax0 = {				
     __syscall_meta__rtoax0.name 		    = "sys_rtoax0",			
-    __syscall_meta__rtoax0.syscall_nr	= -1,	/* Filled in at boot */	
+    __syscall_meta__rtoax0.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls() */	
     __syscall_meta__rtoax0.nb_args 	    = 0,				
     __syscall_meta__rtoax0.types		    = 0 ? types__rtoax0 : NULL,	
     __syscall_meta__rtoax0.args		    = 0 ? args__rtoax0 : NULL,	
@@ -250,6 +250,11 @@ static struct syscall_metadata __used __syscall_meta__rtoax0 = {
     __syscall_meta__rtoax0.enter_fields	= LIST_HEAD_INIT(__syscall_meta__rtoax0.enter_fields), 
 };							
 static struct syscall_metadata __used __section("__syscalls_metadata") *__p_syscall_meta__rtoax0 = &__syscall_meta__rtoax0;
+//. = ALIGN(8); 
+//__start_syscalls_metadata = .; 
+//KEEP(*(__syscalls_metadata)) 
+//__stop_syscalls_metadata = .; 
+
 
 asmlinkage long sys_rtoax0(void);
 
@@ -330,7 +335,7 @@ static struct trace_event_call __used __section("_ftrace_events") *__event_exit_
 
 static struct syscall_metadata __used __syscall_meta__rtoax1 = {				
 	__syscall_meta__rtoax1.name 		= "sys_rtoax1",			
-	__syscall_meta__rtoax1.syscall_nr	= -1,	/* Filled in at boot */	
+	__syscall_meta__rtoax1.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls()*/	
 	__syscall_meta__rtoax1.nb_args 	= 1,				
 	__syscall_meta__rtoax1.types		= 1 ? types__rtoax1 : NULL,	
 	__syscall_meta__rtoax1.args		= 1 ? args__rtoax1 : NULL,	
