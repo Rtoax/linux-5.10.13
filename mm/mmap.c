@@ -1509,6 +1509,7 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 
 /*
  * The caller must write-lock current->mm->mmap_lock.
+ *  
  */ /* mmap 映射 */
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
@@ -1565,9 +1566,12 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		return -ENOMEM;
 
 	/**
+	 *  这是 MMAP 的核心函数，下面还有个 `mmap_region()`
+	 *
 	 * Obtain the address to map to. we verify (or select) it and ensure
 	 * that it represents a valid section of the address space.
 	 *
+	 * 从当前进程的用户地址空间中找出一块符合要求的空闲空间，给新的vma。
 	 * 获取地址空间未被映射的区域，从本进程的线性地址红黑树中分配一块空白地址
 	 */
 	addr = get_unmapped_area(file, addr, len, pgoff, flags);
@@ -1591,6 +1595,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		if (vma && vma->vm_start < addr + len)
 			return -EEXIST;
 	}
+    
     /* 如果是可执行的 ，如果prot只指定了exec*/
 	if (prot == PROT_EXEC) {
 		pkey = execute_only_pkey(mm);
@@ -1746,7 +1751,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			vm_flags |= VM_NORESERVE;           /* 大页内存不能 swap 交换 */
 	}
     /**
-     *  核心 mmap 函数 
+     *  核心 mmap 函数 , 上面还有个 `get_unmapped_area()`
      *
      *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
      */
@@ -1770,13 +1775,18 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	struct file *file = NULL;
 	unsigned long retval;
 
-    /* 文件映射 */
+    /**
+     *  文件映射 
+     *  
+     */
 	if (!(flags & MAP_ANONYMOUS)) { /* 如果不是匿名 */
+        
 		audit_mmap_fd(fd, flags);   /* 查找这个FD */
 		file = fget(fd);            /* 获取 file 数据结构 */
         /* 没有打开的文件 */
 		if (!file)
 			return -EBADF;
+        
         /* 大页文件 */
 		if (is_file_hugepages(file)) {  /* 如果是 大页文件 映射的 内存 */
 			len = ALIGN(len, huge_page_size(hstate_file(file)));
@@ -1784,8 +1794,12 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			retval = -EINVAL;           /* 不可用的参数 */
 			goto out_fput;
 		}
-    /* 大页内存 */
-	} else if (flags & MAP_HUGETLB) {   /* 大页内存 */
+	} 
+    /**
+     *  大页内存 
+     */
+    else if (flags & MAP_HUGETLB) {   /* 大页内存 */
+	
 		struct user_struct *user = NULL;
 		struct hstate *hs;
 
@@ -1794,6 +1808,7 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			return -EINVAL;
 
 		len = ALIGN(len, huge_page_size(hs));   /* 大小 */
+        
 		/*
 		 * VM_NORESERVE is used because the reservations will be
 		 * taken when vm_ops->mmap() is called
@@ -1801,9 +1816,9 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 		 * memory so no accounting is necessary
 		 */
 		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len,
-				VM_NORESERVE,
-				&user, HUGETLB_ANONHUGE_INODE,
-				(flags >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK);
+                  				VM_NORESERVE,
+                  				&user, HUGETLB_ANONHUGE_INODE,
+                  				(flags >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK);
 		if (IS_ERR(file))
 			return PTR_ERR(file);
 	}
@@ -1906,7 +1921,12 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
 
 	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
-    /* mmap 核心函数 */
+
+/**
+ *  核心 mmap 函数 , 上面还有个 `get_unmapped_area()`
+ *
+ *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
+ */
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
 		struct list_head *uf)
@@ -2528,9 +2548,15 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 //}
 #endif
 
+
 /**
- * 从当前进程的用户地址空间中找出一块符合要求的空闲空间，给新的vma。
- *  
+ *  这是 MMAP 的核心函数，下面还有个 `mmap_region()`
+ *
+ * Obtain the address to map to. we verify (or select) it and ensure
+ * that it represents a valid section of the address space.
+ *
+ * 从当前进程的用户地址空间中找出一块符合要求的空闲空间，给新的vma。
+ * 获取地址空间未被映射的区域，从本进程的线性地址红黑树中分配一块空白地址
  */
 unsigned long
 get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,

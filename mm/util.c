@@ -490,7 +490,10 @@ int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(account_locked_vm);
-                /*  */
+
+/**
+ *  
+ */
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
 	unsigned long flag, unsigned long pgoff)    /*  */

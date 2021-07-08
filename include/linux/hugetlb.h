@@ -290,7 +290,7 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 struct hstate { /* hugetlb 页 size */
 	int next_nid_to_alloc;
 	int next_nid_to_free;
-	unsigned int order;
+	unsigned int order; /* 大页内存的 order */
 	unsigned long mask;
 	unsigned long max_huge_pages;
 	unsigned long nr_huge_pages;
