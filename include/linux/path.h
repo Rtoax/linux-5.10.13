@@ -7,7 +7,7 @@ struct vfsmount;
 
 struct path {   /* 路径 */
 	struct vfsmount *mnt;
-	struct dentry *dentry;
+	struct dentry *dentry;  /*  */
 } __randomize_layout;
 
 extern void path_get(const struct path *);

@@ -1447,7 +1447,10 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	/* Now protected by module ref count */
 	rcu_read_unlock();
 
-    /* 如 AF_INET->inet_create() */
+    /* 如 
+     *  AF_INET->inet_create() 
+     *  AF_UNIX->unix_create()
+     */
 	err = pf->create(net, sock, protocol, kern);    /* create */
 	if (err < 0)
 		goto out_module_put;
@@ -1680,16 +1683,22 @@ int __sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
 			err = security_socket_bind(sock,
 						   (struct sockaddr *)&address,
 						   addrlen);
-			if (!err)
+			if (!err) {
+                /**
+                 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
+                 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_bind()
+                 */
 				err = sock->ops->bind(sock,
 						      (struct sockaddr *)
 						      &address, addrlen);
+            }
 		}
 		fput_light(sock->file, fput_needed);
 	}
 	return err;
 }
 
+int bind(int socket, const struct sockaddr *address, socklen_t address_len);
 SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
 {
 	return __sys_bind(fd, umyaddr, addrlen);

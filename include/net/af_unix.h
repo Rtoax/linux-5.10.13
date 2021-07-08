@@ -53,12 +53,16 @@ struct scm_stat {
 				spin_lock_nested(&unix_sk(s)->lock, \
 				SINGLE_DEPTH_NESTING)
 
-/* The AF_UNIX socket */
+/**
+ *  The AF_UNIX socket 
+ *  
+ *  这个结构和 struct sock sk 在 AF_UNIX 时会公用，见`unix_sk()`
+ */
 struct unix_sock {
 	/* WARNING: sk has to be the first member */
 	struct sock		sk;
 	struct unix_address	*addr;
-	struct path		path;
+	struct path		path;   /* 保存了 UNIXsocket 的路径信息 */
 	struct mutex		iolock, bindlock;
 	struct sock		*peer;
 	struct list_head	link;
