@@ -30,8 +30,8 @@ struct drm_gem_cma_object {
 	container_of(gem_obj, struct drm_gem_cma_object, base)
 
 #ifndef CONFIG_MMU
-#define DRM_GEM_CMA_UNMAPPED_AREA_FOPS \
-	.get_unmapped_area	= drm_gem_cma_get_unmapped_area,
+//#define DRM_GEM_CMA_UNMAPPED_AREA_FOPS \
+//	.get_unmapped_area	= drm_gem_cma_get_unmapped_area,
 #else
 #define DRM_GEM_CMA_UNMAPPED_AREA_FOPS
 #endif

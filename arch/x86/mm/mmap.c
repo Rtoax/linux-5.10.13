@@ -64,9 +64,13 @@ static int mmap_is_legacy(void)
 	if (current->personality & ADDR_COMPAT_LAYOUT)
 		return 1;
 
+    //$ sysctl -a
+    //...
+    //vm.legacy_va_layout = 0
 	return sysctl_legacy_va_layout;
 }
 
+//根据定义的随机bit，来计算随机偏移多少个page
 static unsigned long arch_rnd(unsigned int rndbits)
 {
 	if (!(current->flags & PF_RANDOMIZE))
@@ -79,10 +83,13 @@ unsigned long arch_mmap_rnd(void)
 	return arch_rnd(mmap_is_ia32() ? mmap32_rnd_bits : mmap64_rnd_bits);
 }
 
+//// 用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
 static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 			       struct rlimit *rlim_stack)
 {
-	unsigned long gap = rlim_stack->rlim_cur;
+    //堆栈的最大值
+	unsigned long gap = rlim_stack->rlim_cur;   
+	// 堆栈的最大随机偏移 + 1M
 	unsigned long pad = stack_maxrandom_size(task_size) + stack_guard_gap;
 	unsigned long gap_min, gap_max;
 
@@ -93,6 +100,8 @@ static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 	/*
 	 * Top of mmap area (just below the process stack).
 	 * Leave an at least ~128 MB hole with possible stack randomization.
+	 *
+	 * // 最小不小于128M，最大不大于用户空间的5/6
 	 */
 	gap_min = SIZE_128M;
 	gap_max = (task_size / 6) * 5;
@@ -119,20 +128,43 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 		unsigned long random_factor, unsigned long task_size,
 		struct rlimit *rlim_stack)
 {
+    /**
+     *  传统layout模式下，mmap的基址：
+     *  PAGE_ALIGN(task_size / 3) + rnd // 用户空间的1/3处，再加上随机偏移
+     */
 	*legacy_base = mmap_legacy_base(random_factor, task_size);
 	if (mmap_is_legacy())
 		*base = *legacy_base;
 	else
+        /**
+         *  现代layout模式下，mmap的基址:
+         *  PAGE_ALIGN(task_size - stask_gap - rnd) // 用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+         */
 		*base = mmap_base(random_factor, task_size, rlim_stack);
 }
 
+/**
+ *  经典布局的缺点：在x86_32,虚拟地址空间从0到0xc0000000,每个用户进程有3GB可用。
+ *  TASK_UNMAPPED_BASE一般起始于0x4000000（即1GB）。这意味着堆只有1GB的空间可供使用，
+ *  继续增长则进入到mmap区域。这时mmap区域是自底向上扩展的。
+ *  
+ *  传统layout模式下，mmap分配是从低到高的，从&mm->mmap_base到task_size。
+ *  默认调用current->mm->get_unmapped_area -> arch_get_unmapped_area()：
+ *
+ *  https://blog.csdn.net/pwl999/article/details/109188517
+ */
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
+    /* (1) 给get_unmapped_area成员赋值 */
 	if (mmap_is_legacy())
 		mm->get_unmapped_area = arch_get_unmapped_area;
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
+    /* (2) 计算64bit模式下，mmap的基地址
+             传统layout模式：用户空间的1/3处，再加上随机偏移
+             现代layout模式：用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+     */
 	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base,
 			arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
 			rlim_stack);
@@ -143,6 +175,8 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 	 * syscall type (64-bit or compat). This applies for 64bit
 	 * applications and 32bit applications. The 64bit syscall uses
 	 * mmap_base, the compat syscall uses mmap_compat_base.
+	 *
+	 * 计算32bit兼容模式下，mmap的基地址
 	 */
 	arch_pick_mmap_base(&mm->mmap_compat_base, &mm->mmap_compat_legacy_base,
 			arch_rnd(mmap32_rnd_bits), task_size_32bit(),
@@ -150,7 +184,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 #endif
 }
 
-unsigned long get_mmap_base(int is_legacy)  /*  */
+unsigned long get_mmap_base(int is_legacy)  /* mmap start 起始地址 */
 {
 	struct mm_struct *mm = current->mm;
 

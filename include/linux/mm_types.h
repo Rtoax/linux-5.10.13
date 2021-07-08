@@ -439,12 +439,24 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		struct rb_root mm_rb;               /* `mm_rb` 是虚拟内存区域的红黑树结构 */
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
-        /* arch_get_unmapped_area(...) */
+        /**
+         *  arch_get_unmapped_area(...), 对应 mmap
+         *
+         * arch_pick_mmap_layout():
+         *  arch_get_unmapped_area()
+         *  arch_get_unmapped_area_topdown()
+         */
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 #endif
-		unsigned long mmap_base;	/* base of mmap area */
+        /**
+         *  与经典布局不同的是：使用固定值限制栈的最大长度。由于栈是有界的，
+         *  因此安置内存映射的区域可以在栈末端的下方立即开始。这时mmap区是自顶向下扩展的。
+         *  由于堆仍然位于虚拟地址空间中较低的区域并向上增长，因此mmap区域和堆可以相对扩展，
+         *  直至耗尽虚拟地址空间中剩余的区域。
+         */
+		unsigned long mmap_base;	/* base of mmap area 虚拟地址空间中用于内存映射的起始地址 */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
 #ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
 		/* Base adresses for compatible mmap() */

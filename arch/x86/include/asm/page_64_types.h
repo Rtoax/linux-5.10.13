@@ -91,11 +91,13 @@
  *
  * 五级页表时 = 0x00fffffffffff000
  * 四级页表时 = 0x00007ffffffff000
+ *
+ * 用户地址空间的最大值：2^47-0x1000 = 0x7FFFFFFFF000       // 约128T
  */
 #define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
     /*(1UL << 47)   0x0000 8000 0000 0000 
        PAGE_SIZE    0x0000 0000 0000 1000
-        =           0x0000 7fff ffff f000 */
+        =           0x0000 7fff ffff f000 约128T */
 #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
 
 /* This decides where the kernel will search for a free chunk of vm

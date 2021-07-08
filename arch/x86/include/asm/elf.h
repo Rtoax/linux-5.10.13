@@ -330,16 +330,17 @@ extern bool mmap_address_hint_valid(unsigned long addr, unsigned long len);
 
 #ifdef CONFIG_X86_32
 
-#define __STACK_RND_MASK(is32bit) (0x7ff)
-#define STACK_RND_MASK (0x7ff)
-
-#define ARCH_DLINFO		ARCH_DLINFO_IA32
+//#define __STACK_RND_MASK(is32bit) (0x7ff)
+//#define STACK_RND_MASK (0x7ff)
+//
+//#define ARCH_DLINFO		ARCH_DLINFO_IA32
 
 /* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
 
 #else /* CONFIG_X86_32 */
 
 /* 1GB for 64bit, 8MB for 32bit */
+// 堆栈的最大随机偏移：64bit下16G，32bit下8M
 #define __STACK_RND_MASK(is32bit) ((is32bit) ? 0x7ff : 0x3fffff)
 #define STACK_RND_MASK __STACK_RND_MASK(mmap_is_ia32())
 

@@ -940,7 +940,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 }
 
 /**
- * __get_user_pages() - pin user pages in memory
+ * __get_user_pages() - pin user pages in memory 将用户页面固定在内存中
  * @mm:		mm_struct of target mm
  * @start:	starting user address
  * @nr_pages:	number of pages from start to pin
@@ -966,6 +966,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * @vmas are valid only as long as mmap_lock is held.
  *
  * Must be called with mmap_lock held.  It may be released.  See below.
+ * 必须在保持 mmap_lock 的情况下调用。它可能会被释放。见下文。
  *
  * __get_user_pages walks a process's page tables and takes a reference to
  * each struct page that each user address corresponds to at a given
@@ -1033,6 +1034,7 @@ static long __get_user_pages(struct mm_struct *mm,
 		unsigned int page_increm;
 
 		/* first iteration or cross vma bound */
+        /* 地址跨区域的处理 */
 		if (!vma || start >= vma->vm_end) {
             /*  */
 			vma = find_extend_vma(mm, start);   /* 查找并扩展vma */
@@ -1085,7 +1087,7 @@ retry:
 		cond_resched();
 
         /**
-         *  follow_page_mask
+         *  follow_page_mask - 逐个查询vma中地址对应的page是否已经分配
          *
          * 用于返回在用户进程地址空间已经有映射的普通映射(normal mapping)页面的 page 数据结构。
          * 通过 虚拟地址 address 查找相应的 物理页面。
@@ -1093,7 +1095,9 @@ retry:
          */
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		if (!page) {
-            /* 人为的触发一个 缺页异常 */
+            /**
+             *  如果page没有分配，则使用缺页处理来分配page，人为的触发一个 缺页异常
+             */
 			ret = faultin_page(vma, start, &foll_flags, locked);
 			switch (ret) {
 			case 0:
@@ -1469,6 +1473,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 		 * We want to fault in pages for [nstart; end) address range.
 		 * Find first corresponding VMA.
 		 */
+		/* (1) 根据目标地址，查找vma */
 		if (!locked) {
 			locked = 1;
 			mmap_read_lock(mm);
@@ -1481,6 +1486,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 		 * Set [nstart; nend) to intersection of desired address
 		 * range with the first VMA. Also, skip undesirable VMA types.
 		 */
+		/* (2) 计算目标地址和vma的重叠部分 */
 		nend = min(end, vma->vm_end);
 		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
 			continue;
@@ -1491,6 +1497,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 		 * double checks the vma flags, so that it won't mlock pages
 		 * if the vma was already munlocked.
 		 */
+		/* (3) 对重叠部分进行page内存填充 */
 		ret = populate_vma_page_range(vma, nstart, nend, &locked);
 		if (ret < 0) {
 			if (ignore_errors) {

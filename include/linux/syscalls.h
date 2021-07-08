@@ -1388,7 +1388,11 @@ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *r
 asmlinkage long sys_ipc(unsigned int call, int first, unsigned long second,
 		unsigned long third, void __user *ptr, long fifth);
 
-/* obsolete: mm/ */
+/* obsolete: mm/ 
+void *mmap(void *addr, size_t length, 
+            int prot, int flags,
+            int fd, off_t offset);
+        */
 asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
 			unsigned long prot, unsigned long flags,
 			unsigned long fd, unsigned long pgoff);

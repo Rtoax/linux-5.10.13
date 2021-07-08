@@ -86,7 +86,10 @@ static int __init control_va_addr_alignment(char *str)
 }
 __setup("align_va_addr", control_va_addr_alignment);
 
-    /*  */
+/*  */
+long mmap(unsigned long addr, unsigned long len,
+                        unsigned long prot, unsigned long flags,
+                        unsigned long fd, unsigned long pgoff){/* +++ */}
 SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags,
 		unsigned long, fd, unsigned long, off)
@@ -101,10 +104,24 @@ out:
 	return error;
 }
 
+/**
+ *  +-------+ end
+ *  |       |
+ *  |       |
+ *  |       | <-- addr
+ *  |       |
+ *  |       |
+ *  +-------+ begin
+ *   
+ *  获取mmap区域的开始、结束地址：
+ *      begin   ：mm->mmap_base
+ *      end     ：task_size
+ */
 static void find_start_end(unsigned long addr, unsigned long flags,
 		unsigned long *begin, unsigned long *end)
 {
-	if (!in_32bit_syscall() && (flags & MAP_32BIT)) {   /* 32 位 */
+    /* 32 位 */
+	if (!in_32bit_syscall() && (flags & MAP_32BIT)) {   
 		/* This is usually used needed to map code in small
 		   model, so it needs to be in the first 31bit. Limit
 		   it to that.  This means we need to move the
@@ -120,7 +137,8 @@ static void find_start_end(unsigned long addr, unsigned long flags,
 		return;
 	}
 
-	*begin	= get_mmap_base(1); /*  */
+    /*  */
+	*begin	= get_mmap_base(1); 
 	if (in_32bit_syscall())
 		*end = task_size_32bit();
 	else
@@ -136,29 +154,48 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	struct vm_unmapped_area_info info;
 	unsigned long begin, end;
 
+    //如果是固定映射，则返回原地址
 	if (flags & MAP_FIXED)
 		return addr;
 
-    /*
-    +-------+ end
-    |       |
-    |       |
-    |       | <-- addr
-    |       |
-    |       |
-    +-------+ begin
-    */
-	find_start_end(addr, flags, &begin, &end);  /* 查找 */
+    /**
+     *  +-------+ end
+     *  |       |
+     *  |       |
+     *  |       | <-- addr
+     *  |       |
+     *  |       |
+     *  +-------+ begin
+     *   
+     *  获取mmap区域的开始、结束地址：
+     *      begin   ：mm->mmap_base
+     *      end     ：task_size
+     */
+	find_start_end(addr/* x虚拟地址 */, flags, &begin, &end);  /* 查找 */
 
+    /* 超长出错返回 */
 	if (len > end)
 		return -ENOMEM;
 
     //If an address is provided, use it for the mapping
+    /* 按照用户给出的原始addr和len查看这里是否有空洞 */
 	if (addr) {
 		addr = PAGE_ALIGN(addr);    /* 对齐 Make sure the address is page aligned */
 		vma = find_vma(mm, addr);   /* 查找对应 vma, return the region closest to the requested address*/
         /* Make sure the mapping will not overlap with another region. 
            If it does not, return it as it is safe to use. Otherwise it gets ignored */
+
+        /**
+         *   https://blog.csdn.net/pwl999/article/details/109188517
+         *
+         *  这里容易有个误解：
+         *  开始以为find_vma()的作用是找到一个vma满足：vma->vm_start <= addr < vma->vm_end
+         *  实际find_vma()的作用是找到一个地址最小的vma满足： addr < vma->vm_end (2021年7月8日)
+         *
+         *  在vma红黑树之外找到空间：
+         *  1、如果addr的值在vma红黑树之上：!vma ，且有足够的空间：end - len >= addr
+         *  2、如果addr的值在vma红黑树之下，且有足够的空间：addr + len <= vm_start_gap(vma)
+         */
 		if (end - len >= addr &&
 		    (!vma || addr + len <= vm_start_gap(vma)))
 			return addr;
@@ -174,11 +211,21 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		info.align_mask = get_align_mask();
 		info.align_offset += get_align_bits();
 	}
+    
+    /**
+     *  否则只能废弃掉用户指定的地址，根据长度重新给他找一个合适的地址
+     *    优先在vma红黑树的空洞中找，其次在空白位置找
+     */
 	return vm_unmapped_area(&info); /*  */
 }
 
+
+/**
+ * 现代layout模式下，mmap分配是从高到低的，
+ *  调用current->mm->get_unmapped_area -> arch_get_unmapped_area_topdown()：
+ */
 unsigned long
-arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    /*  */
 			  const unsigned long len, const unsigned long pgoff,
 			  const unsigned long flags)
 {

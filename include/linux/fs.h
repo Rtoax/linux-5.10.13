@@ -1703,6 +1703,17 @@ struct file_operations {    /* 文件操作符 */
 	int (*fasync) (int, struct file *, int);
 	int (*lock) (struct file *, int, struct file_lock *);
 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
+
+    /**
+     *  
+     *  
+     *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
+     *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
+     *  ext2_file_operations->get_unmapped_area     = thp_get_unmapped_area
+     *  ext4_file_operations->get_unmapped_area     = thp_get_unmapped_area,
+     *  hugetlbfs_file_operations->get_unmapped_area= hugetlb_get_unmapped_area,
+     *  proc_reg_file_ops->get_unmapped_area        = proc_reg_get_unmapped_area,
+     */
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 	int (*check_flags)(int);
 	int (*flock) (struct file *, int, struct file_lock *);
