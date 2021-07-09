@@ -2008,6 +2008,8 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
  *  核心 mmap 函数 , 上面还有个 `get_unmapped_area()`
  *
  *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
+ *
+ *  在 do_mmap() 中调用
  */
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
