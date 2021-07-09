@@ -448,6 +448,13 @@ static bool is_write_abort(unsigned int esr)
 	return (esr & ESR_ELx_WNR) && !(esr & ESR_ELx_CM);
 }
 
+/**
+ *  处理与页表访问或者权限相关的异常错误
+ *  
+ *  addr 异常发生的地址
+ *  esr 异常放生时候的异常状态
+ *  regs 异常发生时的 pt_regs
+ */
 static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 				   struct pt_regs *regs)
 {
@@ -596,6 +603,7 @@ no_context:
 	return 0;
 }
 
+/* 处理与页表转换相关的异常错误 */
 static int __kprobes do_translation_fault(unsigned long addr,
 					  unsigned int esr,
 					  struct pt_regs *regs)
@@ -607,6 +615,7 @@ static int __kprobes do_translation_fault(unsigned long addr,
 	return 0;
 }
 
+/* 处理与页表访问或者权限相关的异常错误 */
 static int do_alignment_fault(unsigned long addr, unsigned int esr,
 			      struct pt_regs *regs)
 {
@@ -614,6 +623,7 @@ static int do_alignment_fault(unsigned long addr, unsigned int esr,
 	return 0;
 }
 
+/* 处理与未知的错误或者硬件相关的错误 */
 static int do_bad(unsigned long addr, unsigned int esr, struct pt_regs *regs)
 {
 	return 1; /* "fault" */

@@ -795,6 +795,8 @@ static inline int pmd_present(pmd_t pmd)
 /*
  * These work without NUMA balancing but the kernel does not care. See the
  * comment in include/linux/pgtable.h
+ *
+ * 页面被设置为 NUMA 调度的页面
  */
 static inline int pte_protnone(pte_t pte)
 {

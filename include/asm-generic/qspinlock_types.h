@@ -35,15 +35,15 @@ typedef struct qspinlock {
 			u16	tail;
 		};
 #else
-		struct {
-			u16	tail;
-			u16	locked_pending;
-		};
-		struct {
-			u8	reserved[2];
-			u8	pending;
-			u8	locked;
-		};
+//		struct {
+//			u16	tail;
+//			u16	locked_pending;
+//		};
+//		struct {
+//			u8	reserved[2];
+//			u8	pending;
+//			u8	locked;
+//		};
 #endif
 	};
 } arch_spinlock_t;

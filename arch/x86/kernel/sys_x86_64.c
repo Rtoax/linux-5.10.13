@@ -25,7 +25,7 @@
 /*
  * Align a virtual address to avoid aliasing in the I$ on AMD F15h.
  */
-static unsigned long get_align_mask(void)
+static unsigned long get_align_mask(void)   /*  */
 {
 	/* handle 32- and 64-bit case with a single conditional */
 	if (va_align.flags < 0 || !(va_align.flags & (2 - mmap_is_ia32())))
@@ -221,8 +221,10 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 
 
 /**
- * 现代layout模式下，mmap分配是从高到低的，
+ *  现代layout模式下，mmap分配是从高到低的，
  *  调用current->mm->get_unmapped_area -> arch_get_unmapped_area_topdown()：
+ *
+ *  https://rtoax.blog.csdn.net/article/details/118602363
  */
 unsigned long
 arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    /*  */
@@ -235,33 +237,54 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    
 	struct vm_unmapped_area_info info;
 
 	/* requested length too big for entire address space */
-	if (len > TASK_SIZE)
+	if (len > TASK_SIZE/*0x0000 7fff ffff f000 约128T*/)
 		return -ENOMEM;
 
 	/* No address checking. See comment at mmap_address_hint_valid() */
 	if (flags & MAP_FIXED)
 		return addr;
 
-	/* for MAP_32BIT mappings we force the legacy mmap base */
+	/**
+	 *  for MAP_32BIT mappings we force the legacy mmap base 
+	 *
+	 *  强制使用 legacy 老版本的 mmap 布局
+	 *  见 https://rtoax.blog.csdn.net/article/details/118602363
+	 */
 	if (!in_32bit_syscall() && (flags & MAP_32BIT))
 		goto bottomup;
 
-	/* requesting a specific address */
+	/**
+	 *  requesting a specific address 
+	 *
+	 *  如果 mmap 期间填入了 addr，就会使用特殊的地址
+	 */
 	if (addr) {
-		addr &= PAGE_MASK;
+		addr &= PAGE_MASK;  /* 清空 页偏移 12bit */
 		if (!mmap_address_hint_valid(addr, len))
 			goto get_unmapped_area;
 
+        /* 找到对应的 vma */
 		vma = find_vma(mm, addr);
+
+        /**
+         *  满足下面的条件之一直接返回地址
+         *
+         *  1. 如果 addr 不在 VMA 树内
+         *  2. 
+         *
+         *  这个 if 大概率不会成立
+         */
 		if (!vma || addr + len <= vm_start_gap(vma))
 			return addr;
 	}
+    
 get_unmapped_area:
 
-	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-	info.length = len;
-	info.low_limit = PAGE_SIZE;
-	info.high_limit = get_mmap_base(0);
+    /*  */
+	info.flags = VM_UNMAPPED_AREA_TOPDOWN;  /* 默认为 topdown ， modern 模式 */
+	info.length = len;  /* 长度 */
+	info.low_limit = PAGE_SIZE/* 4096 */; /* 这么低，那代码段和数据段也可以映射吧 */
+	info.high_limit = get_mmap_base(0); /* 由于是topdown，最高不能超出基址 */
 
 	/*
 	 * If hint address is above DEFAULT_MAP_WINDOW, look for unmapped area
@@ -269,19 +292,40 @@ get_unmapped_area:
 	 *
 	 * !in_32bit_syscall() check to avoid high addresses for x32
 	 * (and make it no op on native i386).
+	 *
+	 *  如果地址填的太高了，将从没有映射的所有区域进行查找
 	 */
 	if (addr > DEFAULT_MAP_WINDOW && !in_32bit_syscall())
-		info.high_limit += TASK_SIZE_MAX - DEFAULT_MAP_WINDOW;
+		info.high_limit += TASK_SIZE_MAX - DEFAULT_MAP_WINDOW;  /* pagetable L5 会造成差异 */
 
 	info.align_mask = 0;
-	info.align_offset = pgoff << PAGE_SHIFT;
+	info.align_offset = pgoff << PAGE_SHIFT/* 12 */;
+
+    /* 如果是文件映射 */
 	if (filp) {
-		info.align_mask = get_align_mask();
-		info.align_offset += get_align_bits();
+		info.align_mask = get_align_mask(); /*  */
+		info.align_offset += get_align_bits();  /*  */
 	}
+
+    /**
+     * Search for an unmapped address range.
+     *
+     * We are looking for a range that:
+     * - does not intersect with any VMA;
+     * - is contained within the [low_limit, high_limit) interval;
+     * - is at least the desired size.
+     * - satisfies (begin_addr & align_mask) == (align_offset & align_mask)
+     *
+     * 我们正在寻找以下范围：
+     *  -不与任何VMA相交；
+     *  -包含在 [low_limit, high_limit) 间隔内；
+     *  -至少是所需的大小。
+     *  -满足( begin_addr 和 align_mask ) == ( align_offset 和 align_mask)
+     */
 	addr = vm_unmapped_area(&info);
 	if (!(addr & ~PAGE_MASK))
 		return addr;
+    
 	VM_BUG_ON(addr != -ENOMEM);
 
 bottomup:

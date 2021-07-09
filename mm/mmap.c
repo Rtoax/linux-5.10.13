@@ -1451,8 +1451,11 @@ struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 static inline unsigned long round_hint_to_min(unsigned long hint)
 {
 	hint &= PAGE_MASK;
-	if (((void *)hint != NULL) &&
-	    (hint < mmap_min_addr))
+
+    /**
+     * 如果地址不为空，并且 地址小于最小映射地址
+     */
+	if (((void *)hint != NULL) && (hint < mmap_min_addr))
 		return PAGE_ALIGN(mmap_min_addr);
 	return hint;
 }
@@ -1510,6 +1513,8 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 /*
  * The caller must write-lock current->mm->mmap_lock.
  *  
+ *  file : 文件映射打开的 文件，可能为 NULL
+ *  addr: 用户传入的 虚拟地址，可能为 0
  */ /* mmap 映射 */
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
@@ -1546,6 +1551,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
 
+    /**
+     * MAP_FIXED 将覆盖已映射的地址空间
+     */
 	if (!(flags & MAP_FIXED))
 		addr = round_hint_to_min(addr);
 
@@ -1557,7 +1565,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 	/* offset overflow? len溢出 
 	  判断page offset + 长度，是否已经溢出 */
-	if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)  /* 页偏移+长度 < pgoff,表明 len 溢出 */
+	if ((pgoff + (len >> PAGE_SHIFT/* 12 */)) < pgoff)  /* 页偏移+长度 < pgoff,表明 len 溢出 */
 		return -EOVERFLOW;
 
 	/* Too many mappings? 
@@ -1768,6 +1776,14 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
             
 /* SYSCALL_DEFINE6(mmap, ...) */
 /* SYSCALL_DEFINE6(mmap_pgoff, ...) */
+/**
+ *  
+ *  参数
+ *  ------------------
+ *  addr: 用户传入的虚拟地址
+ *  len: 需要申请的长度
+ *  
+ */
 unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,
 			      unsigned long fd, unsigned long pgoff)
@@ -2557,6 +2573,11 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
  *
  * 从当前进程的用户地址空间中找出一块符合要求的空闲空间，给新的vma。
  * 获取地址空间未被映射的区域，从本进程的线性地址红黑树中分配一块空白地址
+ *
+ * 参数列表
+ * ---------------------------------------
+ *  file: 文件映射打开的文件，可能为 NULL
+ *  addr: 
  */
 unsigned long
 get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
@@ -2570,13 +2591,13 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 		return error;
 
 	/* Careful about overflows.. Sanity check, make sure the required map length is not too long*/
-	if (len > TASK_SIZE)    /* len 错误 */
+	if (len > TASK_SIZE/*0x0000 7fff ffff f000 约128T*/)    /* len 错误 */
 		return -ENOMEM;
 
     /**
      *  可能是malloc() 分配大于等于128KB的内存空间
      *
-     *  arch_get_unmapped_area() 在arch_pick_mmap_layout中赋值
+     *  arch_get_unmapped_area() 在`arch_pick_mmap_layout()`中赋值
      */
 	get_area = current->mm->get_unmapped_area;  
 
@@ -2590,7 +2611,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
              */
 			get_area = file->f_op->get_unmapped_area;   
 
-    /* 共享 */
+    /* 共享内存，但是没有打开的文件 */
 	} else if (flags & MAP_SHARED) {
 		/*
 		 * mmap_region() will call shmem_zero_setup() to create a file,
@@ -2608,8 +2629,10 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
      *  实际的获取线性区域
      *
      *  在`arch_pick_mmap_layout()`中赋值
-     *      arch_get_unmapped_area()
-     *      arch_get_unmapped_area_topdown()
+     *      arch_get_unmapped_area()            == legacy 模式
+     *      arch_get_unmapped_area_topdown()    == modern 模式
+     *
+     *  也可能为`shmem_get_unmapped_area()`
      */
 	addr = get_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
@@ -2954,9 +2977,9 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 }
 
 /* enforced gap between the expanding stack and other mappings. */
-unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT;
+unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT/* 12 */;/* 默认 256 个 page 大小 */
 
-static int __init cmdline_parse_stack_guard_gap(char *p)
+static int __init cmdline_parse_stack_guard_gap(char *p)    /* 可以重新设置 gap 大小 */
 {
 	unsigned long val;
 	char *endptr;

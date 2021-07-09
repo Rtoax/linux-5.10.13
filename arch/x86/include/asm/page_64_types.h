@@ -46,7 +46,7 @@
 #define __PAGE_OFFSET_BASE_L4	_AC(0xffff888000000000, UL)
 
 #ifdef CONFIG_DYNAMIC_MEMORY_LAYOUT
-#define __PAGE_OFFSET           page_offset_base
+#define __PAGE_OFFSET           page_offset_base    /* 0xffff 8880 0000 0000 */
 #else
 //#define __PAGE_OFFSET           __PAGE_OFFSET_BASE_L4
 #endif /* CONFIG_DYNAMIC_MEMORY_LAYOUT */
@@ -68,7 +68,7 @@
 #ifdef CONFIG_X86_5LEVEL
 #define __VIRTUAL_MASK_SHIFT	(pgtable_l5_enabled() ? 56 : 47)
 #else
-#define __VIRTUAL_MASK_SHIFT	47
+//#define __VIRTUAL_MASK_SHIFT	47  /*  */
 #endif
 
 /*
@@ -94,11 +94,16 @@
  *
  * 用户地址空间的最大值：2^47-0x1000 = 0x7FFFFFFFF000       // 约128T
  */
-#define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
+#define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT/*47或56*/) - PAGE_SIZE/*4096*/)
     /*(1UL << 47)   0x0000 8000 0000 0000 
        PAGE_SIZE    0x0000 0000 0000 1000
         =           0x0000 7fff ffff f000 约128T */
+        
 #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
+    /*(1UL << 47)   0x0000 8000 0000 0000 
+       PAGE_SIZE    0x0000 0000 0000 1000
+        =           0x0000 7fff ffff f000 约128T */
+
 
 /* This decides where the kernel will search for a free chunk of vm
  * space during mmap's.
@@ -110,7 +115,7 @@
 					IA32_PAGE_OFFSET : DEFAULT_MAP_WINDOW)
 /*  */
 #define TASK_SIZE		(test_thread_flag(TIF_ADDR32) ? \
-					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
+					IA32_PAGE_OFFSET : TASK_SIZE_MAX/*0x0000 7fff ffff f000 约128T*/)   
 #define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_ADDR32)) ? \
 					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
 

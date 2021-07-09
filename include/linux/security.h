@@ -180,8 +180,8 @@ struct sctp_endpoint;
 extern unsigned long mmap_min_addr;
 extern unsigned long dac_mmap_min_addr;
 #else
-#define mmap_min_addr		0UL
-#define dac_mmap_min_addr	0UL
+//#define mmap_min_addr		0UL
+//#define dac_mmap_min_addr	0UL
 #endif
 
 /*

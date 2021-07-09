@@ -8,12 +8,12 @@
 #include <asm/mtrr.h>
 
 #ifdef CONFIG_DYNAMIC_PHYSICAL_MASK
-phys_addr_t __ro_after_init physical_mask  = (1ULL << __PHYSICAL_MASK_SHIFT/* 52 */) - 1;/* 0xffff ffff ffff f000 */
+phys_addr_t __ro_after_init physical_mask /* 0x000F FFFF FFFF FFFF */ = (1ULL << __PHYSICAL_MASK_SHIFT/* 52 */) - 1;
 EXPORT_SYMBOL(physical_mask);
 #endif
 
 #ifdef CONFIG_HIGHPTE
-#define PGTABLE_HIGHMEM __GFP_HIGHMEM
+//#define PGTABLE_HIGHMEM __GFP_HIGHMEM
 #else
 #define PGTABLE_HIGHMEM 0
 #endif

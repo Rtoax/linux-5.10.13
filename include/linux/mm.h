@@ -216,7 +216,7 @@ int overcommit_policy_handler(struct ctl_table *, int, void *, size_t *,
 #define nth_page(page,n) pfn_to_page(page_to_pfn((page)) + (n))
 
 /* to align the pointer to the (next) page boundary */
-#define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
+#define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE/* 4096 */)
 
 /* test whether an address (unsigned long or pointer) is aligned to PAGE_SIZE */
 #define PAGE_ALIGNED(addr)	IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
@@ -498,21 +498,38 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
  * alter it if its implementation requires a different allocation context.
  *
  * pgoff should be used in favour of virtual_address, if possible.
+ *
+ *  缺页异常 数据结构
+ *  常常用于填充相应的参数并且传递给进程地址空间的 fault() 回调含糊中
  */ 
 struct vm_fault {       /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
-	unsigned int flags;		/* FAULT_FLAG_xxx flags */
+
+    /* 与进程内存描述符相关的标志位 */
+	unsigned int flags;		/* FAULT_FLAG_xxx(FAULT_FLAG_WRITE) flags */
+
+    /* 分配掩码 */
 	gfp_t gfp_mask;			/* gfp mask to be used for allocations */
+
+    /* VMA 中的偏移量 */
 	pgoff_t pgoff;			/* Logical page offset based on vma */
+
+    /* 发生缺页的虚拟地址 */
 	unsigned long address;		/* Faulting virtual address */
+
+    /* 对应 PMD  页表项 */
 	pmd_t *pmd;			/* Pointer to pmd entry matching
 					        * the 'address' */
 	pud_t *pud;			/* Pointer to pud entry matching
     					 * the 'address'
     					 */
+    /* 发生缺页时，address 对应的 pte 的内容 */					 
 	pte_t orig_pte;			/* Value of PTE at the time of fault */
 
+    /* 处理写时复制时用的页面 */
 	struct page *cow_page;		/* Page handler may use for COW fault */
+
+    /* 缺页异常处理程序最终会返回一个 page 实例 */
 	struct page *page;		/* ->fault handlers should return a
 					 * page here, unless VM_FAULT_NOPAGE
 					 * is set (which is also implied by
@@ -523,10 +540,13 @@ struct vm_fault {       /* 缺页异常/中断 */
 					 * the 'address'. NULL if the page
 					 * table hasn't been allocated.
 					 */
+	/* 保护页表的自旋锁 */				 
 	spinlock_t *ptl;		/* Page table lock.
 					 * Protects pte page table if 'pte'
 					 * is not NULL, otherwise pmd.
 					 */
+
+    /*  */                 
 	pgtable_t prealloc_pte;		/* Pre-allocated pte page table.
 					 * vm_ops->map_pages() calls
 					 * alloc_set_pte() from atomic context.
@@ -2500,8 +2520,14 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);
 
-struct vm_unmapped_area_info {  /*  */
-#define VM_UNMAPPED_AREA_TOPDOWN 1
+/**
+ * unmap 结构
+ *
+ *  arch_get_unmapped_area_topdown() 中使用
+ *
+ */
+struct vm_unmapped_area_info {  
+#define VM_UNMAPPED_AREA_TOPDOWN 1  /* flags 默认 */
 	unsigned long flags;
 	unsigned long length;
 	unsigned long low_limit;
@@ -2557,13 +2583,18 @@ static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * m
 	return vma;
 }
 
+/**
+ *  stack 和 mmap 之间有一部分 guard gap 
+ *  见 https://rtoax.blog.csdn.net/article/details/118602363
+ */
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {
 	unsigned long vm_start = vma->vm_start;
 
+    /* 如果是向下增长的 */
 	if (vma->vm_flags & VM_GROWSDOWN) {
 		vm_start -= stack_guard_gap;    /* 守卫 */
-		if (vm_start > vma->vm_start)
+		if (vm_start > vma->vm_start)   /* 超限了 */
 			vm_start = 0;
 	}
 	return vm_start;

@@ -5,7 +5,7 @@
 #include <linux/sysctl.h>
 
 /* amount of vm to protect from userspace access by both DAC and the LSM*/
-unsigned long mmap_min_addr;
+unsigned long mmap_min_addr;    /* 可能为 65535 */
 /* amount of vm to protect from userspace using CAP_SYS_RAWIO (DAC) */
 unsigned long dac_mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 /* amount of vm to protect from userspace using the LSM = CONFIG_LSM_MMAP_MIN_ADDR */
@@ -21,7 +21,7 @@ static void update_mmap_min_addr(void)  /*  */
 	else
 		mmap_min_addr = CONFIG_LSM_MMAP_MIN_ADDR;
 #else
-	mmap_min_addr = dac_mmap_min_addr;
+//	mmap_min_addr = dac_mmap_min_addr;
 #endif
 }
 

@@ -459,6 +459,7 @@ struct address_space {
 	/* number of thp, only for non-shmem files */
 	atomic_t		    nr_thps;
 #endif
+    /* 文件缓存的树？ */
 	struct rb_root_cached	i_mmap; /* tree of private and shared mappings 优先搜索树的树根*/
 	struct rw_semaphore	i_mmap_rwsem;
 	unsigned long		nrpages;        /* number of total pages 页总数*/
@@ -622,8 +623,8 @@ struct inode {
 #endif
 
 	const struct inode_operations	*i_op;
-	struct super_block	*i_sb;  /* inode指向的 superblock */
-	struct address_space	*i_mapping;
+	struct super_block	*i_sb;          /* inode指向的 superblock */
+	struct address_space	*i_mapping; /* 文件缓存 */
 
 #ifdef CONFIG_SECURITY
 	void			*i_security;

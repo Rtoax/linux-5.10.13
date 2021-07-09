@@ -2117,7 +2117,10 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 		return vmf_error(err);
 	return ret;
 }
-                /* 映射 共享内存 */
+
+/**
+ *  映射 共享内存 
+ */
 unsigned long shmem_get_unmapped_area(struct file *file,
 				      unsigned long uaddr, unsigned long len,
 				      unsigned long pgoff, unsigned long flags)

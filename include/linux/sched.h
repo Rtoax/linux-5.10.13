@@ -789,7 +789,10 @@ struct task_struct {    /* PCB */
 	/* JOBCTL_*, siglock protected: */
 	unsigned long			jobctl;
 
-	/* Used for emulating ABI behavior of previous Linux versions: */
+	/**
+	 *  Used for emulating ABI behavior of previous Linux versions: 
+	 *  可能为 `ADDR_COMPAT_LAYOUT`
+	 */
 	unsigned int			personality;
 
 	/* Scheduler bits, serialized by scheduler locks: */

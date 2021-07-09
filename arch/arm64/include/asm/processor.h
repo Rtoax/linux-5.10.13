@@ -55,24 +55,25 @@
  * With CONFIG_ARM64_64K_PAGES enabled, the last page is occupied
  * by the compat vectors page.
  */
-#define TASK_SIZE_32		UL(0x100000000)
+//#define TASK_SIZE_32		UL(0x100000000)
 #else
 #define TASK_SIZE_32		(UL(0x100000000) - PAGE_SIZE)
 #endif /* CONFIG_ARM64_64K_PAGES */
+
 #define TASK_SIZE		(test_thread_flag(TIF_32BIT) ? \
-				TASK_SIZE_32 : TASK_SIZE_64)
+				TASK_SIZE_32 : TASK_SIZE_64)    /*0x0000 7fff ffff f000 约128T*/
 #define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk, TIF_32BIT) ? \
 				TASK_SIZE_32 : TASK_SIZE_64)
 #define DEFAULT_MAP_WINDOW	(test_thread_flag(TIF_32BIT) ? \
 				TASK_SIZE_32 : DEFAULT_MAP_WINDOW_64)
-#else
-#define TASK_SIZE		TASK_SIZE_64
-#define DEFAULT_MAP_WINDOW	DEFAULT_MAP_WINDOW_64
+#else   //CONFIG_COMPAT
+//#define TASK_SIZE		TASK_SIZE_64
+//#define DEFAULT_MAP_WINDOW	DEFAULT_MAP_WINDOW_64
 #endif /* CONFIG_COMPAT */
 
 #ifdef CONFIG_ARM64_FORCE_52BIT
-#define STACK_TOP_MAX		TASK_SIZE_64
-#define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 4))
+//#define STACK_TOP_MAX		TASK_SIZE_64
+//#define TASK_UNMAPPED_BASE	(PAGE_ALIGN(TASK_SIZE / 4))
 #else
 #define STACK_TOP_MAX		DEFAULT_MAP_WINDOW_64
 #define TASK_UNMAPPED_BASE	(PAGE_ALIGN(DEFAULT_MAP_WINDOW / 4))

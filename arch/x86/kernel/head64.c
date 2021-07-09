@@ -58,7 +58,7 @@ EXPORT_SYMBOL(ptrs_per_p4d);
 #endif
 
 #ifdef CONFIG_DYNAMIC_MEMORY_LAYOUT
-unsigned long __ro_after_init page_offset_base  = __PAGE_OFFSET_BASE_L4;
+unsigned long __ro_after_init page_offset_base  = __PAGE_OFFSET_BASE_L4;    /* 0xffff 8880 0000 0000 */
 EXPORT_SYMBOL(page_offset_base);
 unsigned long __ro_after_init vmalloc_base  = __VMALLOC_BASE_L4;
 EXPORT_SYMBOL(vmalloc_base);

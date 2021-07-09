@@ -345,6 +345,7 @@ struct vm_userfaultfd_ctx {
 struct vm_area_struct { /* VMA */
 	/* The first cache line has the info for VMA tree walking. */
 
+    /* 这两个变量是页对齐的 */
 	unsigned long vm_start;		/* Our start address within vm_mm. */
 	unsigned long vm_end;		/* The first byte after our end address
 					   within vm_mm. */
@@ -401,7 +402,12 @@ struct vm_area_struct { /* VMA */
 
 	/* Information about our backing store: */
 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE units */
-	struct file * vm_file;		/* File we map to (can be NULL). */
+
+    /**
+     *  
+     */
+    struct file * vm_file;		/* File we map to (can be NULL). */
+    
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 
 #ifdef CONFIG_SWAP
@@ -435,7 +441,8 @@ struct kioctx_table;
  */
 struct mm_struct {  /* 进程虚拟地址空间 */
 	struct {
-		struct vm_area_struct *mmap;		/* list of VMAs */
+		struct vm_area_struct *mmap;		/* list of VMAs, 将所有的 VMA 串联成串 */
+        
 		struct rb_root mm_rb;               /* `mm_rb` 是虚拟内存区域的红黑树结构 */
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
@@ -455,9 +462,12 @@ struct mm_struct {  /* 进程虚拟地址空间 */
          *  因此安置内存映射的区域可以在栈末端的下方立即开始。这时mmap区是自顶向下扩展的。
          *  由于堆仍然位于虚拟地址空间中较低的区域并向上增长，因此mmap区域和堆可以相对扩展，
          *  直至耗尽虚拟地址空间中剩余的区域。
+         *
+         *  https://rtoax.blog.csdn.net/article/details/118602363
          */
 		unsigned long mmap_base;	/* base of mmap area 虚拟地址空间中用于内存映射的起始地址 */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
+        
 #ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
 		/* Base adresses for compatible mmap() */
 		unsigned long mmap_compat_base;
@@ -774,6 +784,7 @@ typedef __bitwise unsigned int vm_fault_t;
  *				in DAX)
  * @VM_FAULT_HINDEX_MASK:	mask HINDEX value
  *
+ * 处理 缺页异常过程中 返回的 转状态信息
  */
 enum vm_fault_reason {
 	VM_FAULT_OOM            = (__force vm_fault_t)0x000001,

@@ -21,9 +21,9 @@
 #include <getopt.h>
 
 
-#define __ALIGN_KERNEL_MASK(x, mask)	(((x) + (mask)) & ~(mask))
-#define __ALIGN_KERNEL(x, a)		__ALIGN_KERNEL_MASK(x, (typeof(x))(a) - 1)
-#define ALIGN(x, a)			__ALIGN_KERNEL((x), (a))
+//#define __ALIGN_KERNEL_MASK(x, mask)	(((x) + (mask)) & ~(mask))
+//#define __ALIGN_KERNEL(x, a)		__ALIGN_KERNEL_MASK(x, (typeof(x))(a) - 1)
+//#define ALIGN(x, a)			__ALIGN_KERNEL((x), (a))
 
 struct ihex_binrec {
 	struct ihex_binrec *next; /* not part of the real data structure */
