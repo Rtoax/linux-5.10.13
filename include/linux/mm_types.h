@@ -474,7 +474,12 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		unsigned long mmap_compat_legacy_base;
 #endif
 		unsigned long task_size;	/* size of task vm space */
+
+        /**
+         *  虚拟地址  的上限
+         */
 		unsigned long highest_vm_end;	/* highest vma end address */
+        
 		pgd_t * pgd;    /* `pgd` 是全局页目录的指针 */
 
 #ifdef CONFIG_MEMBARRIER

@@ -12,25 +12,27 @@
  * Arrange for legacy / undefined architecture specific flags to be
  * ignored by mmap handling code.
  */
-#ifndef MAP_32BIT
-#define MAP_32BIT 0
-#endif
-#ifndef MAP_HUGE_2MB
-#define MAP_HUGE_2MB 0
-#endif
-#ifndef MAP_HUGE_1GB
-#define MAP_HUGE_1GB 0
-#endif
-#ifndef MAP_UNINITIALIZED
-#define MAP_UNINITIALIZED 0
-#endif
-#ifndef MAP_SYNC
-#define MAP_SYNC 0
-#endif
+//#ifndef MAP_32BIT
+//#define MAP_32BIT 0
+//#endif
+//#ifndef MAP_HUGE_2MB
+//#define MAP_HUGE_2MB 0
+//#endif
+//#ifndef MAP_HUGE_1GB
+//#define MAP_HUGE_1GB 0
+//#endif
+//#ifndef MAP_UNINITIALIZED
+//#define MAP_UNINITIALIZED 0
+//#endif
+//#ifndef MAP_SYNC
+//#define MAP_SYNC 0
+//#endif
 
 /*
  * The historical set of flags that all mmap implementations implicitly
  * support when a ->mmap_validate() op is not provided in file_operations.
+ *
+ * 当 file_operations 中未提供 ->mmap_validate() 操作时，所有 mmap 实现隐式支持的历史标志集。
  */
 #define LEGACY_MAP_MASK (MAP_SHARED \
 		| MAP_PRIVATE \

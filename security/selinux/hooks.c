@@ -3698,7 +3698,7 @@ static int selinux_mmap_addr(unsigned long addr)
 {
 	int rc = 0;
 
-	if (addr < CONFIG_LSM_MMAP_MIN_ADDR) {
+	if (addr < CONFIG_LSM_MMAP_MIN_ADDR/* 65535 */) {
 		u32 sid = current_sid();
 		rc = avc_has_perm(&selinux_state,
 				  sid, sid, SECCLASS_MEMPROTECT,

@@ -312,7 +312,7 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_PKEY_BIT2	VM_HIGH_ARCH_2
 # define VM_PKEY_BIT3	VM_HIGH_ARCH_3
 #ifdef CONFIG_PPC
-# define VM_PKEY_BIT4  VM_HIGH_ARCH_4
+//# define VM_PKEY_BIT4  VM_HIGH_ARCH_4
 #else
 # define VM_PKEY_BIT4  0
 #endif
@@ -1553,7 +1553,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
  */
 extern void pagefault_out_of_memory(void);
 
-#define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)   /*  */
+#define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK/* ~0xffff ffff ffff f000 = 0x0000 0000 0000 0ffff */)   
 #define offset_in_thp(page, p)	((unsigned long)(p) & (thp_size(page) - 1))
 
 /*
@@ -2587,7 +2587,7 @@ static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * m
  *  stack 和 mmap 之间有一部分 guard gap 
  *  见 https://rtoax.blog.csdn.net/article/details/118602363
  */
-static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
+static inline unsigned long vm_start_gap(struct vm_area_struct *vma)    /*  */
 {
 	unsigned long vm_start = vma->vm_start;
 
@@ -2600,7 +2600,7 @@ static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 	return vm_start;
 }
 
-static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
+static inline unsigned long vm_end_gap(struct vm_area_struct *vma)  /*  */
 {
 	unsigned long vm_end = vma->vm_end;
 
