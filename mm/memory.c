@@ -2931,11 +2931,13 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		 * seen in the presence of one thread doing SMC and another
 		 * thread doing COW.
 		 *
-		 * 先把 PTE 的值 读出来，然后将PTE设置为0，最后调用 flush_tlb_page 刷新这个page对应的 TLB
+		 *  为什么要在切换页表项之前刷新 TLB
+		 *  先把 PTE 的值 读出来，然后将PTE设置为0，最后调用 flush_tlb_page 刷新这个page对应的 TLB
 		 */
 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
 		lru_cache_add_inactive_or_unevictable(new_page, vma);
+        
 		/*
 		 * We call the notify macro here because, when using secondary
 		 * mmu page tables (such as kvm shadow page tables), we want the
@@ -3118,6 +3120,8 @@ static vm_fault_t wp_page_shared(struct vm_fault *vmf)
  * but allow concurrent faults), with pte both mapped and locked.
  * We return with mmap_lock still held, but pte unmapped and unlocked.
  *
+ * 处理写时复制 缺页异常。
+ *
  * 当用户试图 修改 只读属性页面时，CPU触发异常，该函数尝试修复这个异常。
  * 通常的做法是新分配一个页面，并且赋值就业面的内容得到新的页面中，这个
  * 新分配的页面具有可写属性。
@@ -3149,6 +3153,10 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 		 */
 		if ((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
 				     (VM_WRITE|VM_SHARED))
+
+            /**
+             * 处理 可写并且共享的特殊映射 页面
+             */
 			return wp_pfn_shared(vmf);
 
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
@@ -3186,9 +3194,14 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
          * 处理可以复用的 页面
          */
 		wp_page_reuse(vmf);
+        
 		return VM_FAULT_WRITE;
 	} else if (unlikely((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
 					(VM_WRITE|VM_SHARED))) {
+
+        /**
+         * 处理 可写的并且共享的普通映射 页面
+         */            
 		return wp_page_shared(vmf);
 	}
 copy:
@@ -3198,6 +3211,10 @@ copy:
 	get_page(vmf->page);
 
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+
+    /**
+     * 处理 写时复制的 页面
+     */
 	return wp_page_copy(vmf);
 }
 
@@ -3304,6 +3321,12 @@ EXPORT_SYMBOL(unmap_mapping_range);
  *
  * We return with the mmap_lock locked or unlocked in the same cases
  * as does filemap_fault().
+ *
+ * 处理 swap 缺页异常，请求从交换分区中 读回该页。
+ *
+ * 参考:
+ *  主缺页：从交换分区中读取数据，见`VM_FAULT_MAJOR`
+ *  次缺页：从内存中直接分配页面
  */
 vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 {
@@ -3394,6 +3417,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 
 		/* Had to read the page from swap area: Major fault */
 		ret = VM_FAULT_MAJOR;
+        
 		count_vm_event(PGMAJFAULT);
 		count_memcg_event_mm(vma->vm_mm, PGMAJFAULT);
 	} else if (PageHWPoison(page)) {

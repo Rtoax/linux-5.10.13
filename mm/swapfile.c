@@ -1694,6 +1694,8 @@ static int page_trans_huge_map_swapcount(struct page *page, int *total_mapcount,
  * NOTE: total_map_swapcount should not be relied upon by the caller if
  * reuse_swap_page() returns false, but it may be always overwritten
  * (see the other implementation for CONFIG_SWAP=n).
+ *
+ * 判断页面是否只有一个进程映射的匿名页面
  */
 bool reuse_swap_page(struct page *page, int *total_map_swapcount)
 {

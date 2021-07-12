@@ -260,6 +260,8 @@ static inline bool pagefault_disabled(void)
  * Please NEVER use preempt_disable() to disable the fault handler. With
  * !CONFIG_PREEMPT_COUNT, this is like a NOP. So the handler won't be disabled.
  * in_atomic() will report different values based on !CONFIG_PREEMPT_COUNT.
+ *
+ * arm 中会调用， x86 中不会
  */
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 

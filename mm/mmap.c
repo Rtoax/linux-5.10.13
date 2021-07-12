@@ -93,6 +93,8 @@ static void unmap_region(struct mm_struct *mm,
  * MAP_PRIVATE	r: (no) no	r: (yes) yes	r: (no) yes	r: (no) yes
  *		w: (no) no	w: (no) no	w: (copy) copy	w: (no) no
  *		x: (no) no	x: (no) yes	x: (no) yes	x: (yes) yes
+ *
+ * 把 vm_flags 转化成 PTE 硬件标志位, 见`vm_get_page_prot()`
  */
 pgprot_t __ro_after_init protection_map[16]  = {    /* VMA 权限 */
 	__P000, __P001, __P010, __P011, __P100, __P101, __P110, __P111,
@@ -106,6 +108,9 @@ static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
 }
 #endif
 
+/**
+ * 把 vm_flags 转化成 PTE 硬件标志位
+ */
 pgprot_t vm_get_page_prot(unsigned long vm_flags)   /*  */
 {
 	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags &
