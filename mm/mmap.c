@@ -97,8 +97,22 @@ static void unmap_region(struct mm_struct *mm,
  * 把 vm_flags 转化成 PTE 硬件标志位, 见`vm_get_page_prot()`
  */
 pgprot_t __ro_after_init protection_map[16]  = {    /* VMA 权限 */
-	__P000, __P001, __P010, __P011, __P100, __P101, __P110, __P111,
-	__S000, __S001, __S010, __S011, __S100, __S101, __S110, __S111
+	__P000, 
+    __P001, /* VM_READ */
+    __P010, /* VM_WRITE */
+    __P011, /* VM_READ|VM_WRITE */
+    __P100, /* VM_EXEC */
+    __P101, /* VM_EXEC|VM_READ */
+    __P110,
+    __P111,
+	__S000,
+	__S001,
+	__S010,
+	__S011,
+	__S100, 
+	__S101,
+	__S110,
+	__S111  /* VM_READ|VM_WRITE|VM_EXEC */
 };
 
 #ifndef CONFIG_ARCH_HAS_FILTER_PGPROT
@@ -113,9 +127,8 @@ static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
  */
 pgprot_t vm_get_page_prot(unsigned long vm_flags)   /*  */
 {
-	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags &
-				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
-			pgprot_val(arch_vm_get_page_prot(vm_flags)));
+	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags & (VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)] ) |
+            			    pgprot_val(arch_vm_get_page_prot(vm_flags)));
 
 	return arch_filter_pgprot(ret);
 }

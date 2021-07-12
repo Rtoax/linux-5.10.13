@@ -186,7 +186,7 @@ enum page_cache_mode {
 #define PAGE_COPY_EXEC	     __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
 #define PAGE_COPY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_READONLY_EXEC   __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
+#define PAGE_READONLY_EXEC   __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)  /* VM_EXEC|VM_READ */
 
 #define __PAGE_KERNEL		 (__PP|__RW|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_EXEC	 (__PP|__RW|   0|___A|   0|___D|   0|___G)
@@ -238,7 +238,7 @@ enum page_cache_mode {
 #define __P010	PAGE_COPY
 #define __P011	PAGE_COPY
 #define __P100	PAGE_READONLY_EXEC
-#define __P101	PAGE_READONLY_EXEC
+#define __P101	PAGE_READONLY_EXEC  /* VM_EXEC|VM_READ */
 #define __P110	PAGE_COPY_EXEC
 #define __P111	PAGE_COPY_EXEC
 
