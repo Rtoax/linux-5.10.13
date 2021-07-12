@@ -611,12 +611,18 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 
 		/* store ref to file /proc/<pid>/exe symlink points to */
 		struct file __rcu *exe_file;    /* 符号链接 */
+        
 #ifdef CONFIG_MMU_NOTIFIER
+        /**
+         *  MMU 通知
+         */
 		struct mmu_notifier_subscriptions *notifier_subscriptions;
 #endif
+
 #if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
 		pgtable_t pmd_huge_pte; /* protected by page_table_lock */
 #endif
+
 #ifdef CONFIG_NUMA_BALANCING
 		/*
 		 * numa_next_scan is the next time that the PTEs will be marked

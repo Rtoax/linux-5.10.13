@@ -2969,13 +2969,14 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		entry = mk_pte(new_page, vma->vm_page_prot);
 		entry = pte_sw_mkyoung(entry);
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+        
 		/*
 		 * Clear the pte entry and flush it first, before updating the
 		 * pte with the new entry. This will avoid a race condition
 		 * seen in the presence of one thread doing SMC and another
 		 * thread doing COW.
 		 *
-		 *  为什么要在切换页表项之前刷新 TLB
+		 *  为什么要在切换页表项之前刷新 TLB??
 		 *  先把 PTE 的值 读出来，然后将PTE设置为0，最后调用 flush_tlb_page 刷新这个page对应的 TLB
 		 */
 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
@@ -2988,7 +2989,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		 * new page to be mapped directly into the secondary page table.
 		 */
 		set_pte_at_notify(mm, vmf->address, vmf->pte, entry);
-		update_mmu_cache(vma, vmf->address, vmf->pte);
+		update_mmu_cache(vma, vmf->address, vmf->pte);  /* 为空 */
 		if (old_page) {
 			/*
 			 * Only after switching the pte to the new page may

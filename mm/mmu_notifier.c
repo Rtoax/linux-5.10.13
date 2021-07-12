@@ -33,16 +33,25 @@ struct lockdep_map __mmu_notifier_invalidate_range_start_map = {
  * mm->notifier_subscriptions inside the mm_take_all_locks() protected
  * critical section and it's released only when mm_count reaches zero
  * in mmdrop().
+ *
+ * 
  */
 struct mmu_notifier_subscriptions {
-	/* all mmu notifiers registered in this mm are queued in this list */
-	struct hlist_head list;
+	/**
+	 *  all mmu notifiers registered in this mm are queued in this list 
+	 *
+	 *  `struct mmu_notifier` 的链表头
+	 */
+	struct hlist_head list; 
 	bool has_itree;
+    
 	/* to serialize the list modifications and hlist_unhashed */
 	spinlock_t lock;
+    
 	unsigned long invalidate_seq;
 	unsigned long active_invalidate_ranges;
 	struct rb_root_cached itree;
+    
 	wait_queue_head_t wq;
 	struct hlist_head deferred_list;
 };

@@ -57,7 +57,7 @@ enum mmu_notifier_event {           /*  */
 
 #define MMU_NOTIFIER_RANGE_BLOCKABLE (1 << 0)
 
-struct mmu_notifier_ops {
+struct mmu_notifier_ops {   /*  */
 	/*
 	 * Called either by mmu_notifier_unregister or when the mm is
 	 * being destroyed by exit_mmap, always before all pages are
@@ -231,7 +231,7 @@ struct mmu_notifier_ops {
  * 3. No other concurrent thread can access the list (release)
  */
 struct mmu_notifier {
-	struct hlist_node hlist;
+	struct hlist_node hlist;    //struct mmu_notifier_subscriptions->list 链表中的节点
 	const struct mmu_notifier_ops *ops;
 	struct mm_struct *mm;
 	struct rcu_head rcu;
