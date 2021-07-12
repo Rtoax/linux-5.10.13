@@ -1336,7 +1336,10 @@ struct task_struct {    /* PCB */
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
 	unsigned long			task_state_change;
 #endif
-	int				pagefault_disabled;
+
+    /* 关闭缺页 */
+    int				pagefault_disabled; //pagefault_disabled_inc() or  pagefault_disabled_dec()
+	
 #ifdef CONFIG_MMU
 	struct task_struct		*oom_reaper_list;
 #endif

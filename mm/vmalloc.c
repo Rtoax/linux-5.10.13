@@ -390,6 +390,7 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)  /*  */
 		page = pte_page(pte);
 	pte_unmap(ptep);
 	return page;
+    
 }
 EXPORT_SYMBOL(vmalloc_to_page);
 

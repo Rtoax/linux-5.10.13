@@ -213,9 +213,10 @@ static inline int pte_special(pte_t pte)
 
 static inline u64 protnone_mask(u64 val);
 
+/*  */
 static inline unsigned long pte_pfn(pte_t pte)  /*  */
 {
-	phys_addr_t pfn = pte_val(pte);
+	phys_addr_t pfn = pte_val(pte); /* pte.pte */
 	pfn ^= protnone_mask(pfn);
 	return (pfn & PTE_PFN_MASK/* 0xffff ffff ffff f000 */) >> PAGE_SHIFT/* 12 */;
 }
@@ -352,12 +353,12 @@ static inline pte_t pte_mkexec(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_NX);
 }
 
-static inline pte_t pte_mkdirty(pte_t pte)
+static inline pte_t pte_mkdirty(pte_t pte)  /*  */
 {
 	return pte_set_flags(pte, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
 }
 
-static inline pte_t pte_mkyoung(pte_t pte)
+static inline pte_t pte_mkyoung(pte_t pte)  /*  */
 {
 	return pte_set_flags(pte, _PAGE_ACCESSED);
 }
@@ -766,7 +767,7 @@ static inline int pte_present(pte_t a)   /* 该页面是否在内存中 */
 }
 
 #ifdef CONFIG_ARCH_HAS_PTE_DEVMAP
-static inline int pte_devmap(pte_t a)   /*  */
+static inline int pte_devmap(pte_t a)   /* 设备映射的 pte */
 {
 	return (pte_flags(a) & _PAGE_DEVMAP) == _PAGE_DEVMAP;
 }

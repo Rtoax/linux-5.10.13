@@ -180,12 +180,12 @@ enum pageflags {
 
 struct page;	/* forward declaration */
 
-static inline struct page *compound_head(struct page *page)
+static inline struct page *compound_head(struct page *page) /* compound:化合物 */
 {
 	unsigned long head = READ_ONCE(page->compound_head);
 
 	if (unlikely(head & 1))
-		return (struct page *) (head - 1);
+		return (struct page *) (head - 1);  /*  */
 	return page;
 }
 
@@ -871,8 +871,10 @@ static __always_inline void __ClearPageReported(struct page *page)
  * Please note that, confusingly, "page_mapping" refers to the inode
  * address_space which maps the page from disk; whereas "page_mapped"
  * refers to user virtual address space into which the page is mapped.
+ *
+ * 见`struct page->mapping[0-1]`
  */
-#define PAGE_MAPPING_ANON	0x1
+#define PAGE_MAPPING_ANON	0x1 /* 匿名页面 */
 #define PAGE_MAPPING_MOVABLE	0x2
 #define PAGE_MAPPING_KSM	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 #define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
@@ -882,7 +884,7 @@ static __always_inline int PageMappingFlags(struct page *page)
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }
 
-static __always_inline int PageAnon(struct page *page)
+static __always_inline int PageAnon(struct page *page)  /* 匿名页面: malloc/mmap */
 {
 	page = compound_head(page);
 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
@@ -901,11 +903,10 @@ static __always_inline int __PageMovable(struct page *page)
  * is found in VM_MERGEABLE vmas.  It's a PageAnon page, pointing not to any
  * anon_vma, but to that page's node of the stable tree.
  */
-static __always_inline int PageKsm(struct page *page)
+static __always_inline int PageKsm(struct page *page)   /* 同页合并 */
 {
 	page = compound_head(page);
-	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) ==
-				PAGE_MAPPING_KSM;
+	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) == PAGE_MAPPING_KSM;
 }
 #else
 //TESTPAGEFLAG_FALSE(Ksm)

@@ -29,7 +29,7 @@
 #define copy_page(to,from)	memcpy((to), (from), PAGE_SIZE)
 
 #define clear_user_page(page, vaddr, pg)	clear_page(page)
-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
+#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from) /*  */
 
 /*
  * These are used to make use of C type-checking..
@@ -82,7 +82,7 @@ extern unsigned long memory_end;
 #define pfn_to_virt(pfn)	__va((pfn) << PAGE_SHIFT)
 
 #define virt_to_page(addr)	pfn_to_page(virt_to_pfn(addr))
-#define page_to_virt(page)	pfn_to_virt(page_to_pfn(page))
+#define page_to_virt(page)	pfn_to_virt(page_to_pfn(page))  /*  */
 
 #ifndef page_to_phys
 #define page_to_phys(page)      ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT/* 12 */)

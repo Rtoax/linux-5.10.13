@@ -206,12 +206,12 @@ copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
 }
 #endif
 
-static __always_inline void pagefault_disabled_inc(void)
+static __always_inline void pagefault_disabled_inc(void)    /*  关闭缺页*/
 {
 	current->pagefault_disabled++;
 }
 
-static __always_inline void pagefault_disabled_dec(void)
+static __always_inline void pagefault_disabled_dec(void)    /*打开缺页  */
 {
 	current->pagefault_disabled--;
 }

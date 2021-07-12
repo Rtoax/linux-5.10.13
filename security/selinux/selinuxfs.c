@@ -471,7 +471,7 @@ static ssize_t sel_read_policy(struct file *filp, char __user *buf,
 	return simple_read_from_buffer(buf, count, ppos, plm->data, plm->len);
 }
 
-static vm_fault_t sel_mmap_policy_fault(struct vm_fault *vmf)
+static vm_fault_t sel_mmap_policy_fault(struct vm_fault *vmf)   /*  */
 {
 	struct policy_load_memory *plm = vmf->vma->vm_file->private_data;
 	unsigned long offset;
@@ -493,8 +493,8 @@ static vm_fault_t sel_mmap_policy_fault(struct vm_fault *vmf)
 }
 
 static const struct vm_operations_struct sel_mmap_policy_ops = {
-	.fault = sel_mmap_policy_fault,
-	.page_mkwrite = sel_mmap_policy_fault,
+	sel_mmap_policy_ops.fault = sel_mmap_policy_fault,
+	sel_mmap_policy_ops.page_mkwrite = sel_mmap_policy_fault,
 };
 
 static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)

@@ -569,6 +569,7 @@ enum page_entry_size {
  * to the functions called when a no-page or a wp-page exception occurs.
  */ /* vma操作符 */
 typedef struct mempolicy * pmempolicy_t; /* 我加的 */
+
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
@@ -582,10 +583,24 @@ struct vm_operations_struct {
 	unsigned long (*pagesize)(struct vm_area_struct * area);
 
 	/* notification that a previously read-only page is about to become
-	 * writable, if an error is returned it will cause a SIGBUS */
+	 * writable, if an error is returned it will cause a SIGBUS
+	 *
+     * fs/ubifs/file.c              -> .page_mkwrite = ubifs_vm_page_mkwrite,
+     * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
+     * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
+     * fs/cifs/file.c               -> .page_mkwrite = cifs_page_mkwrite,
+     * fs/gfs2/file.c               -> .page_mkwrite = gfs2_page_mkwrite,
+     * fs/nfs/file.c                -> nfs_file_vm_ops.page_mkwrite = nfs_vm_page_mkwrite,
+     * fs/orangefs/file.c           -> .page_mkwrite = orangefs_page_mkwrite,
+     * security/selinux/selinuxfs.c -> sel_mmap_policy_ops.page_mkwrite = sel_mmap_policy_fault,
+	 */
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 
-	/* same as page_mkwrite when using VM_PFNMAP|VM_MIXEDMAP */
+	/**
+	 *  same as page_mkwrite when using VM_PFNMAP|VM_MIXEDMAP 
+	 *  
+	 *  
+	 */
 	vm_fault_t (*pfn_mkwrite)(struct vm_fault *vmf);
 
 	/* called by access_process_vm when get_user_pages() fails, typically
@@ -597,7 +612,7 @@ struct vm_operations_struct {
 	/* Called by the /proc/PID/maps code to ask the vma whether it
 	 * has a special name.  Returning non-NULL will also cause this
 	 * vma to be dumped unconditionally. */
-	const char *(*name)(struct vm_area_struct *vma);
+	const pchar_t (*name)(struct vm_area_struct *vma);
 
 #ifdef CONFIG_NUMA
 	/*
@@ -630,6 +645,8 @@ struct vm_operations_struct {
 	ppage_t (*find_special_page)(struct vm_area_struct *vma,
 					  unsigned long addr);
 };
+
+
 typedef struct page *ppage_t;/* 我加的 */
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
 {
@@ -1455,7 +1472,7 @@ static inline struct mem_cgroup *page_memcg_rcu(struct page *page)
  */
 #include <linux/vmstat.h>
 
-static __always_inline void *lowmem_page_address(const struct page *page)
+static __always_inline void *lowmem_page_address(const struct page *page)   /*  */
 {
 	return page_to_virt(page);
 }
@@ -1495,7 +1512,7 @@ extern struct address_space *page_mapping(struct page *page);
 extern struct address_space *__page_file_mapping(struct page *);
 
 static inline
-struct address_space *page_file_mapping(struct page *page)
+struct address_space *page_file_mapping(struct page *page)  /*  */
 {
 	if (unlikely(PageSwapCache(page)))
 		return __page_file_mapping(page);

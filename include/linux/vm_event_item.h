@@ -5,27 +5,52 @@
 #ifdef CONFIG_ZONE_DMA
 #define DMA_ZONE(xx) xx##_DMA,
 #else
-#define DMA_ZONE(xx)
+//#define DMA_ZONE(xx)
 #endif
 
 #ifdef CONFIG_ZONE_DMA32
 #define DMA32_ZONE(xx) xx##_DMA32,
 #else
-#define DMA32_ZONE(xx)
+//#define DMA32_ZONE(xx)
 #endif
 
 #ifdef CONFIG_HIGHMEM
-#define HIGHMEM_ZONE(xx) xx##_HIGH,
+//#define HIGHMEM_ZONE(xx) xx##_HIGH,
 #else
 #define HIGHMEM_ZONE(xx)
 #endif
 
 #define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL, HIGHMEM_ZONE(xx) xx##_MOVABLE
 
-enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+enum vm_event_item { 
+        PGPGIN, 
+        PGPGOUT, 
+        PSWPIN, 
+        PSWPOUT,
+        
+#if 0   /* 根据我的配置，我把他展开了 */
 		FOR_ALL_ZONES(PGALLOC),
 		FOR_ALL_ZONES(ALLOCSTALL),
 		FOR_ALL_ZONES(PGSCAN_SKIP),
+#else
+        PGALLOC_DMA,
+        PGALLOC_DMA32,
+        PGALLOC_NORMAL,
+        PGALLOC_HIGH,
+        PGALLOC_MOVABLE,
+        
+        ALLOCSTALL_DMA,
+        ALLOCSTALL_DMA32,
+        ALLOCSTALL_NORMAL,
+        ALLOCSTALL_HIGH,
+        ALLOCSTALL_MOVABLE,
+        
+        PGSCAN_SKIP_DMA,
+        PGSCAN_SKIP_DMA32,
+        PGSCAN_SKIP_NORMAL,
+        PGSCAN_SKIP_HIGH,
+        PGSCAN_SKIP_MOVABLE,
+#endif
 		PGFREE, PGACTIVATE, PGDEACTIVATE, PGLAZYFREE,
 		PGFAULT, PGMAJFAULT,
 		PGLAZYFREED,
@@ -108,10 +133,10 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
 #endif
 #endif
 #ifdef CONFIG_DEBUG_TLBFLUSH
-		NR_TLB_REMOTE_FLUSH,	/* cpu tried to flush others' tlbs */
-		NR_TLB_REMOTE_FLUSH_RECEIVED,/* cpu received ipi for flush */
-		NR_TLB_LOCAL_FLUSH_ALL,
-		NR_TLB_LOCAL_FLUSH_ONE,
+//		NR_TLB_REMOTE_FLUSH,	/* cpu tried to flush others' tlbs */
+//		NR_TLB_REMOTE_FLUSH_RECEIVED,/* cpu received ipi for flush */
+//		NR_TLB_LOCAL_FLUSH_ALL,
+//		NR_TLB_LOCAL_FLUSH_ONE,
 #endif /* CONFIG_DEBUG_TLBFLUSH */
 #ifdef CONFIG_DEBUG_VM_VMACACHE
 		VMACACHE_FIND_CALLS,

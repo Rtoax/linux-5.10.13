@@ -53,7 +53,7 @@
 /* memmap is virtually contiguous.  */
 #define __pfn_to_page(pfn)	(vmemmap/*VMEMMAP_START*/ + (pfn))   /*  */
 
-#define __page_to_pfn(page)	(unsigned long)((page) - vmemmap)
+#define __page_to_pfn(page)	(unsigned long)((page) - vmemmap)   /*  */
 
 #elif defined(CONFIG_SPARSEMEM)
 /*

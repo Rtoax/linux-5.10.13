@@ -27,6 +27,7 @@
  * pointing to this anon_vma once its vma list is empty.
  */
 struct anon_vma {   /* 匿名 VMA */
+    
 	struct anon_vma *root;		/* Root of this anon_vma tree */
 	struct rw_semaphore rwsem;	/* W: modification, R: walking the list */
 	/*
@@ -79,7 +80,8 @@ struct anon_vma_chain {
 	struct anon_vma *anon_vma;
 
     /**
-     *  链表节点，链表头是：
+     *  链表节点，该链表具有相同的 VMA 结构
+     *  链表头是：
      *
      *  vm_area_struct->anon_vma_chain 
      */
@@ -153,12 +155,12 @@ void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
 int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
-static inline int anon_vma_prepare(struct vm_area_struct *vma)  /*  */
+static inline int anon_vma_prepare(struct vm_area_struct *vma)  /* RMAP 相关结构申请 */
 {
-	if (likely(vma->anon_vma))
+	if (likely(vma->anon_vma))  /* 已经申请了 anon_vma 结构 */
 		return 0;
 
-	return __anon_vma_prepare(vma); /*  */
+	return __anon_vma_prepare(vma); /* 申请 */
 }
 
 static inline void anon_vma_merge(struct vm_area_struct *vma,

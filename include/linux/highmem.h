@@ -151,10 +151,18 @@ static inline void kunmap(struct page *page)
 #endif
 }
 
-static inline void *kmap_atomic(struct page *page)
+/**
+ *  关抢占/关缺页，获取物理页的虚拟地址
+ */
+static inline void *kmap_atomic(struct page *page)  /*  */
 {
-	preempt_disable();
+    /* 关闭抢占 */
+	preempt_disable();  
+
+    /* 关闭缺页中断 */ 
 	pagefault_disable();
+
+    /*  */
 	return page_address(page);
 }
 #define kmap_atomic_prot(page, prot)	kmap_atomic(page)
@@ -215,10 +223,10 @@ static inline void kmap_atomic_idx_pop(void)
  */
 #define kunmap_atomic(addr)                                     \
 do {                                                            \
-	BUILD_BUG_ON(__same_type((addr), struct page *));       \
-	kunmap_atomic_high(addr);                                  \
-	pagefault_enable();                                     \
-	preempt_enable();                                       \
+	BUILD_BUG_ON(__same_type((addr), struct page *));           \
+	kunmap_atomic_high(addr);                                   \
+	pagefault_enable(); /* 使能缺页 */                              \
+	preempt_enable();   /* 使能抢占 */                              \
 } while (0)
 
 
@@ -316,14 +324,17 @@ static inline void zero_user(struct page *page,
 
 #ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
 
-static inline void copy_user_highpage(struct page *to, struct page *from,
+static inline void copy_user_highpage(struct page *to, struct page *from,   /*  */
 	unsigned long vaddr, struct vm_area_struct *vma)
 {
 	char *vfrom, *vto;
 
-	vfrom = kmap_atomic(from);
+	vfrom = kmap_atomic(from);  /* 获取物理页的虚拟地址 */
 	vto = kmap_atomic(to);
+
+    /*  */
 	copy_user_page(vto, vfrom, vaddr, to);
+    
 	kunmap_atomic(vto);
 	kunmap_atomic(vfrom);
 }

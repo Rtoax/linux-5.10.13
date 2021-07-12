@@ -56,6 +56,9 @@ struct vm_event_state {
 };
 
 DECLARE_PER_CPU(struct vm_event_state, vm_event_states);
+struct vm_event_state vm_event_states;  /* +++ */
+
+
 
 /*
  * vm counters are allowed to be racy. Use raw_cpu_ops to avoid the

@@ -2154,6 +2154,8 @@ static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
  *	mm_struct of the VMA to prevent it from going away. Should be used for
  *	all allocations for pages that will be mapped into user space. Returns
  *	NULL when no page can be allocated.
+ *
+ *  
  */
 struct page *
 alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
@@ -2192,14 +2194,16 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 			hpage_node = pol->v.preferred_node;
 
 		nmask = policy_nodemask(gfp, pol);
+        
 		if (!nmask || node_isset(hpage_node, *nmask)) {
 			mpol_cond_put(pol);
 			/*
 			 * First, try to allocate THP only on local node, but
 			 * don't reclaim unnecessarily, just compact.
+			 *
+			 * 分配 page
 			 */
-			page = __alloc_pages_node(hpage_node,
-				gfp | __GFP_THISNODE | __GFP_NORETRY, order);
+			page = __alloc_pages_node(hpage_node, gfp | __GFP_THISNODE | __GFP_NORETRY, order);
 
 			/*
 			 * If hugepage allocations are configured to always
@@ -2208,8 +2212,7 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 			 * memory with both reclaim and compact as well.
 			 */
 			if (!page && (gfp & __GFP_DIRECT_RECLAIM))
-				page = __alloc_pages_node(hpage_node,
-								gfp, order);
+				page = __alloc_pages_node(hpage_node, gfp, order);
 
 			goto out;
 		}

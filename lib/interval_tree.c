@@ -9,7 +9,7 @@
 
 INTERVAL_TREE_DEFINE(struct interval_tree_node, rb,
 		     unsigned long, __subtree_last,
-		     START, LAST,, interval_tree)
+		     START, LAST,, interval_tree);
 
 EXPORT_SYMBOL_GPL(interval_tree_insert);
 EXPORT_SYMBOL_GPL(interval_tree_remove);

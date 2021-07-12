@@ -142,7 +142,7 @@ static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
 }
 
 /**
- *  
+ *  将 avc 插入 vma 的管理结构中
  */
 static void anon_vma_chain_link(struct vm_area_struct *vma, 
 				struct anon_vma_chain *avc,
@@ -151,11 +151,11 @@ static void anon_vma_chain_link(struct vm_area_struct *vma,
 	avc->vma = vma;
 	avc->anon_vma = anon_vma;
 
-    /*  */
+    /* 将 AVC 插入 VMA 的 AVC 链表 */
 	list_add(&avc->same_vma, &vma->anon_vma_chain); 
 
     /*  */
-	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root); /*  */
+	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root); /* 插入 */
 }
 
 /**

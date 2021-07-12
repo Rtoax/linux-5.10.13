@@ -4153,6 +4153,7 @@ void preempt_count_add(int val) /*  */
 		return;
 #endif
 	__preempt_count_add(val);
+
 #ifdef CONFIG_DEBUG_PREEMPT
 	/*
 	 * Spinlock count overflowing soon?
