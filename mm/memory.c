@@ -2932,6 +2932,10 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 
 	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
 		goto oom_free_new;
+
+    /**
+     *  cgroup swap 的门限值 
+     */
 	cgroup_throttle_swaprate(new_page, GFP_KERNEL);
 
     /**
@@ -2939,6 +2943,9 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
      */
 	__SetPageUptodate(new_page);
 
+    /**
+     *  
+     */
 	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, mm,
 				vmf->address & PAGE_MASK,
 				(vmf->address & PAGE_MASK) + PAGE_SIZE);
