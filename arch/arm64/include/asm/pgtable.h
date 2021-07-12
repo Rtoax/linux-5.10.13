@@ -57,6 +57,11 @@
 /*
  * ZERO_PAGE is a global shared page that is always zero: used
  * for zero-mapped memory areas etc..
+ *
+ * malloc() 后，实际上先返回系统零页。
+ *  1. 当 读 数据时，将使用这个 系统零页；
+ *  2. 当 发生写 时，才进入缺页中断，进行写时复制；
+ *  
  */
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
 #define ZERO_PAGE(vaddr)	phys_to_page(__pa_symbol(empty_zero_page))

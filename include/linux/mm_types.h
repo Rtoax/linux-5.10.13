@@ -392,12 +392,19 @@ struct vm_area_struct { /* VMA */
 	 * list, after a COW of one of the file pages.	A MAP_SHARED vma
 	 * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
 	 * or brk vma (with NULL file) can only be in an anon_vma list.
+	 *
+	 * 它是一个链表头，节点为:
+	 *  anon_vma_chain->same_vma 
 	 */
-	struct list_head anon_vma_chain; /* Serialized by mmap_lock &
-					  * page_table_lock */
+	struct list_head anon_vma_chain; /* Serialized by mmap_lock & page_table_lock */
+
+    /*  */                      
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
 
-	/* Function pointers to deal with this struct. */
+	/**
+	 *  Function pointers to deal with this struct. 
+	 *  匿名页面该项 为 NULL
+	 */
 	const struct vm_operations_struct *vm_ops;  /* VMA 操作 */
 
 	/* Information about our backing store: */
@@ -798,7 +805,7 @@ enum vm_fault_reason {
 	VM_FAULT_WRITE          = (__force vm_fault_t)0x000008,
 	VM_FAULT_HWPOISON       = (__force vm_fault_t)0x000010,
 	VM_FAULT_HWPOISON_LARGE = (__force vm_fault_t)0x000020,
-	VM_FAULT_SIGSEGV        = (__force vm_fault_t)0x000040,
+	VM_FAULT_SIGSEGV        = (__force vm_fault_t)0x000040, /* 段错误 */
 	VM_FAULT_NOPAGE         = (__force vm_fault_t)0x000100,
 	VM_FAULT_LOCKED         = (__force vm_fault_t)0x000200,
 	VM_FAULT_RETRY          = (__force vm_fault_t)0x000400,
@@ -812,6 +819,7 @@ enum vm_fault_reason {
 #define VM_FAULT_SET_HINDEX(x) ((__force vm_fault_t)((x) << 16))
 #define VM_FAULT_GET_HINDEX(x) (((__force unsigned int)(x) >> 16) & 0xf)
 
+/* 缺页异常 - 错误 */
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
 			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)

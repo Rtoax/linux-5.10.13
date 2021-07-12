@@ -8,6 +8,7 @@ enum vsyscall_num { /* 为什么只有这几个系统调用 */
 	__NR_vgetcpu,
 };
 
-#define VSYSCALL_ADDR (-10UL << 20) __ro_after_init /* vsyscall 映射的起始地址 */
+
+#define VSYSCALL_ADDR /* 0xFFFF FFF6 0000 0000 */ (-10UL << 20)  __ro_after_init /* vsyscall 映射的起始地址 */
 
 #endif /* _UAPI_ASM_X86_VSYSCALL_H */

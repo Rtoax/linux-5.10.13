@@ -559,6 +559,10 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 //	alloc_pages(gfp_mask, order)
 #endif
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)   /*  */
+
+/**
+ *  分配一个页面，并把 old page 赋值到这个页面
+ */
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id(), false)
 

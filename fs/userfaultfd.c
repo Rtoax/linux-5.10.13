@@ -358,7 +358,7 @@ static inline long userfaultfd_get_blocking_state(unsigned int flags)
  * fatal_signal_pending()s, and the mmap_lock must be released before
  * returning it.
  */
-vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
+vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
 {
 	struct mm_struct *mm = vmf->vma->vm_mm;
 	struct userfaultfd_ctx *ctx;
@@ -387,6 +387,7 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 	 */
 	mmap_assert_locked(mm);
 
+    /* userfaultfd 系统调用 传入内核的上下文 */
 	ctx = vmf->vma->vm_userfaultfd_ctx.ctx;
 	if (!ctx)
 		goto out;

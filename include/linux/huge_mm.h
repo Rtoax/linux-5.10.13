@@ -129,7 +129,7 @@ extern unsigned long transparent_hugepage_flags;
  */
 static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
 {
-	if (vma->vm_flags & VM_NOHUGEPAGE)
+	if (vma->vm_flags & VM_NOHUGEPAGE)  /*  */
 		return false;
 
 	if (vma_is_temporary_stack(vma))

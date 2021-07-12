@@ -46,6 +46,11 @@ void ptdump_walk_user_pgd_level_checkwx(void);
 /*
  * ZERO_PAGE is a global shared page that is always zero: used
  * for zero-mapped memory areas etc..
+ *
+ * malloc() 后，实际上先返回系统零页。
+ *  1. 当 读 数据时，将使用这个 系统零页；
+ *  2. 当 发生写 时，才进入缺页中断，进行写时复制；
+ *  
  */
 extern unsigned long __visible empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]/*  *//* 系统零页(zero page) */;
 
@@ -382,7 +387,7 @@ static inline pte_t pte_clrglobal(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_GLOBAL);
 }
 
-static inline pte_t pte_mkspecial(pte_t pte)
+static inline pte_t pte_mkspecial(pte_t pte)    /* 特殊页-如系统零页 */
 {
 	return pte_set_flags(pte, _PAGE_SPECIAL);
 }
@@ -850,6 +855,7 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 }
 
 #if CONFIG_PGTABLE_LEVELS > 2
+/*  */
 static inline int pud_none(pud_t pud)
 {
 	return (native_pud_val(pud) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;

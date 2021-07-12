@@ -704,9 +704,9 @@ static __always_inline int PageIsolated(struct page *page);
 
 {/* +++ 2021年7月6日 */}
 
-__PAGEFLAG(Locked, locked, PF_NO_TAIL)
-PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD) 
-__CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
+__PAGEFLAG(Locked, locked, PF_NO_TAIL);
+PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD) ;
+__CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD);
 PAGEFLAG(Error, error, PF_NO_TAIL) 
 TESTCLEARFLAG(Error, error, PF_NO_TAIL)
 PAGEFLAG(Referenced, referenced, PF_HEAD)
@@ -733,6 +733,7 @@ PAGEFLAG(SavePinned, savepinned, PF_NO_COMPOUND);
 PAGEFLAG(Foreign, foreign, PF_NO_COMPOUND);
 PAGEFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
 TESTCLEARFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
+    {/* +++ */}
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 __CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
@@ -740,6 +741,7 @@ __SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 __CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 __SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
+    {/* +++ */}
 
 /*
  * Private page markings that may be used by the filesystem that owns the page
@@ -767,13 +769,14 @@ PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
 TESTCLEARFLAG(Reclaim, reclaim, PF_NO_TAIL)
 PAGEFLAG(Readahead, reclaim, PF_NO_COMPOUND)
 TESTCLEARFLAG(Readahead, reclaim, PF_NO_COMPOUND)
+    {/* +++ */}
 
 #ifdef CONFIG_HIGHMEM
 /*
  * Must use a macro here due to header dependency issues. page_zone() is not
  * available at this point.
  */{}
-#define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
+//#define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
 {}
 #else
 PAGEFLAG_FALSE(HighMem)
@@ -788,6 +791,7 @@ static __always_inline int PageSwapCache(struct page *page)
 	return PageSwapBacked(page) && test_bit(PG_swapcache, &page->flags);
 
 }
+{/* +++ */}
 SETPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 CLEARPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 #else
@@ -928,7 +932,7 @@ static inline int PageUptodate(struct page *page)
 	return ret;
 }
 
-static __always_inline void __SetPageUptodate(struct page *page)
+static __always_inline void __SetPageUptodate(struct page *page)    /*  */
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
 	smp_wmb();
@@ -1185,12 +1189,12 @@ PAGE_TYPE_OPS(Table, table)
  * Marks guardpages used with debug_pagealloc.
  */
 PAGE_TYPE_OPS(Guard, guard)
-
+    {/* +++ */}
 extern bool is_free_buddy_page(struct page *page);
-
+{/* +++ */}
 __PAGEFLAG(Isolated, isolated, PF_ANY);
 
-{}
+{/* +++ */}
 /*
  * If network-based swap is enabled, sl*b must keep track of whether pages
  * were allocated from pfmemalloc reserves.

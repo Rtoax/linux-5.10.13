@@ -58,7 +58,7 @@ struct anon_vma {   /* 匿名 VMA */
 	 */
 
 	/* Interval tree of private "related" vmas */
-	struct rb_root_cached rb_root;  /*  */
+	struct rb_root_cached rb_root;  /* anon_vma_chain->rb */
 };
 
 /*
@@ -74,12 +74,21 @@ struct anon_vma {   /* 匿名 VMA */
  * The "rb" field indexes on an interval tree the anon_vma_chains
  * which link all the VMAs associated with this anon_vma.
  */
-struct anon_vma_chain { /*  */
+struct anon_vma_chain { 
 	struct vm_area_struct *vma; /*  */
 	struct anon_vma *anon_vma;
+
+    /**
+     *  链表节点，链表头是：
+     *
+     *  vm_area_struct->anon_vma_chain 
+     */
 	struct list_head same_vma;   /* locked by mmap_lock & page_table_lock */
-	struct rb_node rb;			/* locked by anon_vma->rwsem */
+
+    /*  */
+    struct rb_node rb;			/* locked by anon_vma->rwsem */
 	unsigned long rb_subtree_last;
+    
 #ifdef CONFIG_DEBUG_VM_RB   /*  */
 	unsigned long cached_vma_start, cached_vma_last;
 #endif
@@ -114,7 +123,7 @@ static inline void put_anon_vma(struct anon_vma *anon_vma)
 		__put_anon_vma(anon_vma);
 }
 
-static inline void anon_vma_lock_write(struct anon_vma *anon_vma)
+static inline void anon_vma_lock_write(struct anon_vma *anon_vma)   /*  */
 {
 	down_write(&anon_vma->root->rwsem);
 }
@@ -144,12 +153,12 @@ void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
 int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
-static inline int anon_vma_prepare(struct vm_area_struct *vma)
+static inline int anon_vma_prepare(struct vm_area_struct *vma)  /*  */
 {
 	if (likely(vma->anon_vma))
 		return 0;
 
-	return __anon_vma_prepare(vma);
+	return __anon_vma_prepare(vma); /*  */
 }
 
 static inline void anon_vma_merge(struct vm_area_struct *vma,

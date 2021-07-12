@@ -141,14 +141,21 @@ static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
 	kmem_cache_free(anon_vma_chain_cachep, anon_vma_chain);
 }
 
-static void anon_vma_chain_link(struct vm_area_struct *vma,
+/**
+ *  
+ */
+static void anon_vma_chain_link(struct vm_area_struct *vma, 
 				struct anon_vma_chain *avc,
 				struct anon_vma *anon_vma)
 {
 	avc->vma = vma;
 	avc->anon_vma = anon_vma;
-	list_add(&avc->same_vma, &vma->anon_vma_chain);
-	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root);
+
+    /*  */
+	list_add(&avc->same_vma, &vma->anon_vma_chain); 
+
+    /*  */
+	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root); /*  */
 }
 
 /**
@@ -187,25 +194,32 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 
 	might_sleep();
 
+    /* 分配结构 */
 	avc = anon_vma_chain_alloc(GFP_KERNEL);
 	if (!avc)
 		goto out_enomem;
 
+    /* 查找可合并的 anon_vma */
 	anon_vma = find_mergeable_anon_vma(vma);
 	allocated = NULL;
-	if (!anon_vma) {
+	if (!anon_vma) {    /* 没找到就分配 */
 		anon_vma = anon_vma_alloc();
 		if (unlikely(!anon_vma))
 			goto out_enomem_free_avc;
 		allocated = anon_vma;
 	}
 
-	anon_vma_lock_write(anon_vma);
+	anon_vma_lock_write(anon_vma); /* 读写信号量 */
+    
 	/* page_table_lock to protect against threads */
 	spin_lock(&mm->page_table_lock);
-	if (likely(!vma->anon_vma)) {
+    
+	if (likely(!vma->anon_vma)) {   /* 这个 VMA 的anon_vma 很可能为空 */
 		vma->anon_vma = anon_vma;
+
+        /* 插入 */
 		anon_vma_chain_link(vma, avc, anon_vma);
+        
 		/* vma reference or self-parent link for new root */
 		anon_vma->degree++;
 		allocated = NULL;

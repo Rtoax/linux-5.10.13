@@ -579,6 +579,11 @@ static inline void mmu_notifier_range_init_migrate(
 	__young;							\
 })
 
+/*
+ *  先把 PTE 的值 读出来，
+ *  然后将PTE设置为0，
+ *  最后调用 flush_tlb_page 刷新这个page对应的 TLB
+ */
 #define	ptep_clear_flush_notify(__vma, __address, __ptep)		\
 ({									\
 	unsigned long ___addr = __address & PAGE_MASK;			\

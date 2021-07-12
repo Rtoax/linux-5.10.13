@@ -784,6 +784,7 @@ static bool is_vsyscall_vaddr(unsigned long vaddr)  /* vsyscall地址 */
 	return unlikely((vaddr & PAGE_MASK) == VSYSCALL_ADDR);
 }
 
+/* 缺页中断，发生段错误 */
 static void
 __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address, u32 pkey, int si_code)
@@ -823,7 +824,10 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		if (si_code == SEGV_PKUERR)
 			force_sig_pkuerr((void __user *)address, pkey);
 
-        /* 段错误 */
+        /**
+         *  段错误 
+         *  /proc/sys/kernel/core_pattern & ulimit -c ulimited
+         */
 		force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
         /* 关闭本地中断 */
@@ -1155,8 +1159,8 @@ bool fault_in_kernel_space(unsigned long address)   /* 根据地址，判定缺�
 		return false;
 
     /*
-     * 五级页表时 = 0x00fffffffffff000
-     * 四级页表时 = 0x00007ffffffff000
+     * 五级页表时 = 0x00ff ffff ffff f000
+     * 四级页表时 = 0x0000 7fff ffff f000
      */
 	return address >= TASK_SIZE_MAX;
 }
@@ -1351,18 +1355,54 @@ retry:
 		might_sleep();
 	}
 
-    /* 查找 vma 结构 */
+    /**
+     *  查找 当前进程 address 所在的 vma 结构 
+     */
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
 		bad_area(regs, hw_error_code, address); /*  */
 		return;
 	}
+
+    /**
+     *  +---+ vm_end
+     *  |   |
+     *  |   |
+     *  |   |   <--- address
+     *  |   |
+     *  |   |
+     *  +---+ vm_start
+     */
 	if (likely(vma->vm_start <= address))   /* 如果vma的起始地址小于address， 那么地址合法 */
 		goto good_area;
+
+    /**
+     *  +---+ vm_end
+     *  |   |
+     *  |   |
+     *  |   |   
+     *  |   |
+     *  |   |
+     *  +---+ vm_start
+     *  
+     *          <--- address
+     */
 	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {    /*向下增长   */
 		bad_area(regs, hw_error_code, address);
 		return;
 	}
+
+    /**
+     *  +---+ vm_end
+     *  |   |
+     *  |   |
+     *  |   |   
+     *  |   |
+     *  |   |
+     *  +---+ vm_start
+     *  |   |       扩展这个 vma
+     *  +---+   <--- address
+     */
 	if (unlikely(expand_stack(vma, address))) {
 		bad_area(regs, hw_error_code, address);
 		return;
@@ -1426,7 +1466,7 @@ static __always_inline void
 trace_page_fault_entries(struct pt_regs *regs, unsigned long error_code,
 			 unsigned long address)
 {
-	if (!trace_pagefault_enabled())
+	if (!trace_pagefault_enabled()) /* static key */
 		return;
 
 	if (user_mode(regs))    /* 用户态 */
@@ -1435,10 +1475,14 @@ trace_page_fault_entries(struct pt_regs *regs, unsigned long error_code,
 		trace_page_fault_kernel(address, regs, error_code);
 }
 
+/**
+ *  缺页中断
+ */
 static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
+    /* trace point */
 	trace_page_fault_entries(regs, error_code, address);
 
 	if (unlikely(kmmio_fault(regs, address))) /* TODO */
@@ -1462,7 +1506,9 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 	}
 }
 
-/* 缺页中断/缺页异常 */
+/**
+ *  缺页中断/缺页异常 
+ */
 void do_page_fault(struct pt_regs *regs, int error_code){/* 我加的： 因为老版本的内核叫做这个名字 */}
 __visible noinstr void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* 我加的 */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
@@ -1511,10 +1557,11 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 	 */
 	state = irqentry_enter(regs);   /* TODO */
 
-	instrumentation_begin();
+	instrumentation_begin();    /* 用于调试， 插入 nop 指令 */
 
     /* 处理缺页异常/中断 */
 	handle_page_fault(regs, error_code, address);   /* 处理缺页异常 */
+    
 	instrumentation_end();
 
     /*  */

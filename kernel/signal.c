@@ -1650,6 +1650,7 @@ void force_sigsegv(int sig)
 	force_sig(SIGSEGV);
 }
 
+/*  */
 int force_sig_fault_to_task(int sig, int code, void __user *addr
 	___ARCH_SI_TRAPNO(int trapno)
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
@@ -1673,6 +1674,7 @@ int force_sig_fault_to_task(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, t);
 }
 
+/*  */
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_TRAPNO(int trapno)
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))

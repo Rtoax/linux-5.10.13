@@ -837,6 +837,9 @@ unmap:
  * mmap_lock must be held on entry.  If @locked != NULL and *@flags
  * does not include FOLL_NOWAIT, the mmap_lock may be released.  If it
  * is, *@locked will be set to 0 and -EBUSY returned.
+ *
+ *  如果page没有分配，则使用缺页处理来分配page，人为的触发一个 缺页异常
+ *  在 __get_user_pages() 中调用。
  */
 static int faultin_page(struct vm_area_struct *vma,
 		unsigned long address, unsigned int *flags, int *locked)
@@ -863,6 +866,7 @@ static int faultin_page(struct vm_area_struct *vma,
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
 
+    /* 处理缺页异常 */
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
 		int err = vm_fault_to_errno(ret, *flags);

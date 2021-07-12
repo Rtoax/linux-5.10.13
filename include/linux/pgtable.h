@@ -75,10 +75,10 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #endif
 
 #if defined(CONFIG_HIGHPTE)
-#define pte_offset_map(dir, address)				\
-	((pte_t *)kmap_atomic(pmd_page(*(dir))) +		\
-	 pte_index((address)))
-#define pte_unmap(pte) kunmap_atomic((pte))
+//#define pte_offset_map(dir, address)				\
+//	((pte_t *)kmap_atomic(pmd_page(*(dir))) +		\
+//	 pte_index((address)))
+//#define pte_unmap(pte) kunmap_atomic((pte))
 #else
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	/* NOP */
@@ -323,7 +323,7 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
  * It is the difference with function update_mmu_cache.
  */
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
-static inline void update_mmu_tlb(struct vm_area_struct *vma,
+static inline void update_mmu_tlb(struct vm_area_struct *vma,   /*  */
 				unsigned long address, pte_t *ptep)
 {
 }
@@ -1077,7 +1077,8 @@ static inline int is_zero_pfn(unsigned long pfn)    /* 系统零页(zero page) *
 	return pfn == zero_pfn;
 }
 
-static inline unsigned long my_zero_pfn(unsigned long addr)
+
+static inline unsigned long my_zero_pfn(unsigned long addr) /* 零页 */
 {
 	extern unsigned long zero_pfn;
 	return zero_pfn;
@@ -1109,18 +1110,18 @@ static inline int pud_write(pud_t pud)
 #endif /* pud_write */
 
 #if !defined(CONFIG_ARCH_HAS_PTE_DEVMAP) || !defined(CONFIG_TRANSPARENT_HUGEPAGE)
-static inline int pmd_devmap(pmd_t pmd)
-{
-	return 0;
-}
-static inline int pud_devmap(pud_t pud)
-{
-	return 0;
-}
-static inline int pgd_devmap(pgd_t pgd)
-{
-	return 0;
-}
+//static inline int pmd_devmap(pmd_t pmd)
+//{
+//	return 0;
+//}
+//static inline int pud_devmap(pud_t pud)
+//{
+//	return 0;
+//}
+//static inline int pgd_devmap(pgd_t pgd)
+//{
+//	return 0;
+//}
 #endif
 
 #if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \

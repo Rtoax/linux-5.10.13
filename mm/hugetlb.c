@@ -4449,7 +4449,10 @@ u32 hugetlb_fault_mutex_hash(struct address_space *mapping, pgoff_t idx)
     /*  */
 
 #endif
-        /* hugetlb fault 处理函数 */
+
+/**
+ *  hugetlb fault 处理函数 
+ */
 vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 			unsigned long address, unsigned int flags)
 {
@@ -4494,6 +4497,10 @@ vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 	 */
 	mapping = vma->vm_file->f_mapping;
 	i_mmap_lock_read(mapping);
+
+    /**
+     *  分配 大页
+     */
 	ptep = huge_pte_alloc(mm, haddr, huge_page_size(h));    /*  */
 	if (!ptep) {
 		i_mmap_unlock_read(mapping);

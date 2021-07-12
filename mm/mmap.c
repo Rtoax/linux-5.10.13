@@ -1472,7 +1472,7 @@ static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_
  * anon_vmas being allocated, preventing vma merge in subsequent
  * mprotect.
  */
-struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
+struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)    /*  */
 {
 	struct anon_vma *anon_vma = NULL;
 

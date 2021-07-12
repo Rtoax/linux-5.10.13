@@ -131,7 +131,7 @@ extern int __read_mostly mmap_rnd_compat_bits ;
  * related to the physical page in case of virtualization.
  */
 #ifndef mm_forbids_zeropage
-#define mm_forbids_zeropage(X)	(0)
+#define mm_forbids_zeropage(X)	(0) /* 默认使用 零页 */
 #endif
 
 /*
@@ -2016,6 +2016,11 @@ int __pte_alloc_kernel(pmd_t *pmd);
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)
 {
+    /**
+     *  1. 如果 pgd 项不存在，分配 p4d 
+     *      1.1 如果p4d 分配失败，返回 NULL
+     *      1.2 如果p4d 分配成功，返回 p4d 项
+     */
 	return (unlikely(pgd_none(*pgd)) && __p4d_alloc(mm, pgd, address)) ?
 		NULL : p4d_offset(pgd, address);
 }
@@ -2023,12 +2028,14 @@ static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 static inline pud_t *pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 		unsigned long address)
 {
+    /* 同上 p4d */
 	return (unlikely(p4d_none(*p4d)) && __pud_alloc(mm, p4d, address)) ?
 		NULL : pud_offset(p4d, address);
 }
 
 static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 {
+    /* 同上 p4d */
 	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
 		NULL: pmd_offset(pud, address);
 }
@@ -2121,7 +2128,7 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	dec_zone_page_state(page, NR_PAGETABLE);
 }
 
-#define pte_offset_map_lock(mm, pmd, address, ptlp)	\
+#define pte_offset_map_lock(mm, pmd, address, ptlp)	    /*  */\
 ({							\
 	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\
 	pte_t *__pte = pte_offset_map(pmd, address);	\
@@ -2390,7 +2397,7 @@ struct vm_area_struct *vma_interval_tree_iter_next(struct vm_area_struct *node,
 	     vma; vma = vma_interval_tree_iter_next(vma, start, last))
 
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
-				   struct rb_root_cached *root);
+				   struct rb_root_cached *root);    /*  */
 void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 				   struct rb_root_cached *root);
 struct anon_vma_chain *

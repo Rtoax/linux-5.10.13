@@ -288,7 +288,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	};
 
 	if (user_mode(regs)) {  /* 用户态特权级是 3 */
-		irqentry_enter_from_user_mode(regs);    /* 用户态触发的缺页 */
+		irqentry_enter_from_user_mode(regs);    /* 用户态触发的中断 */
 		return ret;
 	}
 

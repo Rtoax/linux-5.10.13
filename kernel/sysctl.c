@@ -1821,7 +1821,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{
+	{   // /proc/sys/kernel/core_pattern
 		.procname	= "core_pattern",
 		.data		= core_pattern,
 		.maxlen		= CORENAME_MAX_SIZE,

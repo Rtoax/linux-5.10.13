@@ -87,6 +87,11 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
+/*
+ *  先把 PTE 的值 读出来，
+ *  然后将PTE设置为0，
+ *  最后调用 flush_tlb_page 刷新这个page对应的 TLB
+ */
 pte_t ptep_clear_flush(struct vm_area_struct *vma, unsigned long address,
 		       pte_t *ptep)
 {

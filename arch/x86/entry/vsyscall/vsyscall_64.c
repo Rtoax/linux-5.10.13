@@ -181,6 +181,8 @@ bool emulate_vsyscall(unsigned long error_code,
 	 * 64-bit, so we don't need to special-case it here.  For all the
 	 * vsyscalls, NULL means "don't write anything" not "write it at
 	 * address 0".
+	 *
+	 * 这三个 系统调用应该很快 
 	 */
 	switch (vsyscall_nr) {  /* vsyscall number */
 	case 0:
