@@ -4174,6 +4174,10 @@ out:
 	return ret;
 }
 
+/**
+ *  文件映射的缺页中断处理-读内存
+ *  在 `do_fault()` 中被调用
+ */
 static vm_fault_t do_read_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -4201,6 +4205,10 @@ static vm_fault_t do_read_fault(struct vm_fault *vmf)
 	return ret;
 }
 
+/**
+ *  文件映射的缺页中断处理-写内存
+ *  在 `do_fault()` 中被调用
+ */
 static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -4242,6 +4250,7 @@ uncharge_out:
 
 /**
  *  共享文件映射中 发生 写 缺页
+ *  在 `do_fault()` 中被调用
  */
 static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 {
@@ -4249,6 +4258,7 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 	vm_fault_t ret, tmp;
 
 	ret = __do_fault(vmf);
+    
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		return ret;
 
@@ -4323,14 +4333,15 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 
 			pte_unmap_unlock(vmf->pte, vmf->ptl);
 		}
-	} else if (!(vmf->flags & FAULT_FLAG_WRITE))
+	} 
+    else if (!(vmf->flags & FAULT_FLAG_WRITE))
 	    /**
-	     *  读内存
+	     *  文件映射的缺页中断处理-读内存
 	     */
 		ret = do_read_fault(vmf);   /* 读 fault */
 	else if (!(vma->vm_flags & VM_SHARED))
 	    /**
-	     *  写内存
+	     *  文件映射的缺页中断处理-写内存
 	     */
 		ret = do_cow_fault(vmf);    /* 写时复制 */
 	else
