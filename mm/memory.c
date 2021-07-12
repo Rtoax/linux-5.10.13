@@ -2944,7 +2944,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	__SetPageUptodate(new_page);
 
     /**
-     *  
+     *  通知 MMU 
      */
 	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, mm,
 				vmf->address & PAGE_MASK,
@@ -3026,6 +3026,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		put_page(new_page);
 
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+    
 	/*
 	 * No need to double call mmu_notifier->invalidate_range() callback as
 	 * the above ptep_clear_flush_notify() did already call it.

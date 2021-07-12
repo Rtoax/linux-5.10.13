@@ -42,15 +42,17 @@ struct mmu_interval_notifier;
  * @MMU_NOTIFY_MIGRATE: used during migrate_vma_collect() invalidate to signal
  * a device driver to possibly ignore the invalidation if the
  * migrate_pgmap_owner field matches the driver's device private pgmap owner.
+ *
+ * 通知 MMU 页表做出了修改
  */
-enum mmu_notifier_event {
-	MMU_NOTIFY_UNMAP = 0,
-	MMU_NOTIFY_CLEAR,
-	MMU_NOTIFY_PROTECTION_VMA,
-	MMU_NOTIFY_PROTECTION_PAGE,
-	MMU_NOTIFY_SOFT_DIRTY,
-	MMU_NOTIFY_RELEASE,
-	MMU_NOTIFY_MIGRATE,
+enum mmu_notifier_event {           /*  */
+	MMU_NOTIFY_UNMAP = 0,           /*  */
+	MMU_NOTIFY_CLEAR,               /*  */
+	MMU_NOTIFY_PROTECTION_VMA,      /*  */
+	MMU_NOTIFY_PROTECTION_PAGE,     /*  */
+	MMU_NOTIFY_SOFT_DIRTY,          /*  */
+	MMU_NOTIFY_RELEASE,             /*  */
+	MMU_NOTIFY_MIGRATE,             /*  */
 };
 
 #define MMU_NOTIFIER_RANGE_BLOCKABLE (1 << 0)
@@ -644,108 +646,7 @@ static inline void mmu_notifier_range_init_migrate(
 })
 
 #else /* CONFIG_MMU_NOTIFIER */
-
-struct mmu_notifier_range {
-	unsigned long start;
-	unsigned long end;
-};
-
-static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
-					    unsigned long start,
-					    unsigned long end)
-{
-	range->start = start;
-	range->end = end;
-}
-
-#define mmu_notifier_range_init(range,event,flags,vma,mm,start,end)  \
-	_mmu_notifier_range_init(range, start, end)
-#define mmu_notifier_range_init_migrate(range, flags, vma, mm, start, end, \
-					pgmap) \
-	_mmu_notifier_range_init(range, start, end)
-
-static inline bool
-mmu_notifier_range_blockable(const struct mmu_notifier_range *range)
-{
-	return true;
-}
-
-static inline int mm_has_notifiers(struct mm_struct *mm)
-{
-	return 0;
-}
-
-static inline void mmu_notifier_release(struct mm_struct *mm)
-{
-}
-
-static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-					  unsigned long start,
-					  unsigned long end)
-{
-	return 0;
-}
-
-static inline int mmu_notifier_test_young(struct mm_struct *mm,
-					  unsigned long address)
-{
-	return 0;
-}
-
-static inline void mmu_notifier_change_pte(struct mm_struct *mm,
-					   unsigned long address, pte_t pte)
-{
-}
-
-static inline void
-mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
-{
-}
-
-static inline int
-mmu_notifier_invalidate_range_start_nonblock(struct mmu_notifier_range *range)
-{
-	return 0;
-}
-
-static inline
-void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
-{
-}
-
-static inline void
-mmu_notifier_invalidate_range_only_end(struct mmu_notifier_range *range)
-{
-}
-
-static inline void mmu_notifier_invalidate_range(struct mm_struct *mm,
-				  unsigned long start, unsigned long end)
-{
-}
-
-static inline void mmu_notifier_subscriptions_init(struct mm_struct *mm)
-{
-}
-
-static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
-{
-}
-
-#define mmu_notifier_range_update_to_read_only(r) false
-
-#define ptep_clear_flush_young_notify ptep_clear_flush_young
-#define pmdp_clear_flush_young_notify pmdp_clear_flush_young
-#define ptep_clear_young_notify ptep_test_and_clear_young
-#define pmdp_clear_young_notify pmdp_test_and_clear_young
-#define	ptep_clear_flush_notify ptep_clear_flush
-#define pmdp_huge_clear_flush_notify pmdp_huge_clear_flush
-#define pudp_huge_clear_flush_notify pudp_huge_clear_flush
-#define set_pte_at_notify set_pte_at
-
-static inline void mmu_notifier_synchronize(void)
-{
-}
-
+/*  */
 #endif /* CONFIG_MMU_NOTIFIER */
 
 #endif /* _LINUX_MMU_NOTIFIER_H */
