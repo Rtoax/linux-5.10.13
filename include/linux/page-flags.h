@@ -933,6 +933,9 @@ static inline int PageUptodate(struct page *page)
 	return ret;
 }
 
+/**
+ *  设置   PG_uptodate 位，标识内容有效
+ */
 static __always_inline void __SetPageUptodate(struct page *page)    /*  */
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
