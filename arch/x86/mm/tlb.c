@@ -655,7 +655,7 @@ void initialize_tlbstate_and_flush(void)
  * atomic64_read operation won't be reordered by the compiler.
  */
 static void flush_tlb_func_common(const struct flush_tlb_info *f,
-				  bool local, enum tlb_flush_reason reason)
+				  bool local, enum tlb_flush_reason reason) /*  */
 {
 	/*
 	 * We have three different tlb_gen values in here.  They are:
@@ -759,6 +759,7 @@ static void flush_tlb_func_common(const struct flush_tlb_info *f,
 		if (local)
 			count_vm_tlb_events(NR_TLB_LOCAL_FLUSH_ONE, nr_invalidate);
 		trace_tlb_flush(reason, nr_invalidate);
+        
 	} else {
 		/* Full flush. */
 		flush_tlb_local();
@@ -771,7 +772,7 @@ static void flush_tlb_func_common(const struct flush_tlb_info *f,
 	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
 }
 
-static void flush_tlb_func_local(const void *info, enum tlb_flush_reason reason)
+static void flush_tlb_func_local(const void *info, enum tlb_flush_reason reason)    /*  */
 {
 	const struct flush_tlb_info *f = info;
 
@@ -839,13 +840,17 @@ void flush_tlb_others(const struct cpumask *cpumask,
  * _about_ 3,000 ns.
  *
  * This is in units of pages.
+ *
+ * ceiling: 天花板
  */
-unsigned long __read_mostly tlb_single_page_flush_ceiling  = 33;
+unsigned long __read_mostly tlb_single_page_flush_ceiling  = 33;    /*  */
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
+struct flush_tlb_info flush_tlb_info;/* +++ */
 
 #ifdef CONFIG_DEBUG_VM
 static DEFINE_PER_CPU(unsigned int, flush_tlb_info_idx);
+unsigned int flush_tlb_info_idx;/* +++ */
 #endif
 
 static inline struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
@@ -883,6 +888,7 @@ static inline void put_flush_tlb_info(void)
 #endif
 }
 
+/* 刷新 TLB */
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables)
@@ -894,14 +900,14 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 	cpu = get_cpu();
 
 	/* Should we flush just the requested range? */
-	if ((end == TLB_FLUSH_ALL) ||
+	if ((end == TLB_FLUSH_ALL) /* end == 0xffffffffffffff */||
 	    ((end - start) >> stride_shift) > tlb_single_page_flush_ceiling) {
 		start = 0;
 		end = TLB_FLUSH_ALL;
 	}
 
 	/* This is also a barrier that synchronizes with switch_mm(). */
-	new_tlb_gen = inc_mm_tlb_gen(mm);
+	new_tlb_gen = inc_mm_tlb_gen(mm);   /*  */
 
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
 				  new_tlb_gen);
@@ -909,7 +915,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		lockdep_assert_irqs_enabled();
 		local_irq_disable();
-		flush_tlb_func_local(info, TLB_LOCAL_MM_SHOOTDOWN);
+		flush_tlb_func_local(info, TLB_LOCAL_MM_SHOOTDOWN); /*  */
 		local_irq_enable();
 	}
 
@@ -921,13 +927,13 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 }
 
 
-static void do_flush_tlb_all(void *info)
+static void do_flush_tlb_all(void *info)    /*  */
 {
 	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 	__flush_tlb_all();
 }
 
-void flush_tlb_all(void)
+void flush_tlb_all(void)    /*  */
 {
 	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
 	on_each_cpu(do_flush_tlb_all, NULL, 1);

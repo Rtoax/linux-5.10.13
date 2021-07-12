@@ -44,9 +44,9 @@
 			       CONFIG_ARM64_WORKAROUND_REPEAT_TLBI)	       \
 			    : : "r" (arg))
 
-#define __TLBI_N(op, arg, n, ...) __TLBI_##n(op, arg)
+#define __TLBI_N(op, arg, n, ...) __TLBI_##n(op, arg)   /*  */
 
-#define __tlbi(op, ...)		__TLBI_N(op, ##__VA_ARGS__, 1, 0)
+#define __tlbi(op, ...)		__TLBI_N(op, ##__VA_ARGS__, 1, 0)   /*  */
 
 #define __tlbi_user(op, arg) do {						\
 	if (arm64_kernel_unmapped_at_el0())					\
@@ -235,7 +235,7 @@ static inline void local_flush_tlb_all(void)
 	isb();
 }
 
-static inline void flush_tlb_all(void)
+static inline void flush_tlb_all(void)  /*  */
 {
 	dsb(ishst);
 	__tlbi(vmalle1is);

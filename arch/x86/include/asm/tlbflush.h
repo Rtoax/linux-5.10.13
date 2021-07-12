@@ -182,7 +182,7 @@ extern void initialize_tlbstate_and_flush(void);
  * ..but the i386 has somewhat limited tlb flushing capabilities,
  * and page-granular flushes are available only on i486 and up.
  */
-struct flush_tlb_info {
+struct flush_tlb_info { /*  */
 	/*
 	 * We support several kinds of flushes.
 	 *
@@ -235,7 +235,7 @@ extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
 /*  */
 static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
 {
-	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
+	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE/* 4096 */, PAGE_SHIFT/* 12 */, false);
 }
 
 static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
