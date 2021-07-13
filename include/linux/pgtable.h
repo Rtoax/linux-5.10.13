@@ -40,9 +40,10 @@
  * because in such cases PTRS_PER_PxD equals 1.
  */
 
-static inline unsigned long pte_index(unsigned long address)
+/* 返回 PTE 所在 PMD 中的索引 [0 ~ 511] */
+static inline unsigned long pte_index(unsigned long address) 
 {
-	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
+	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE/* 512:0x200 */ - 1)/*:0x1FF*/;
 }
 
 #ifndef pmd_index
@@ -67,9 +68,12 @@ static inline unsigned long pud_index(unsigned long address)
 #endif
 
 #ifndef pte_offset_kernel
-static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
+/**
+ *  PTE 的 虚拟地址
+ */
+static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)   /*  */
 {
-	return (pte_t *)pmd_page_vaddr(*pmd) + pte_index(address);
+	return (pte_t *)pmd_page_vaddr(*pmd)/* PMD 虚拟地址 */ + pte_index(address)/* PTE 在PMD中的 索引 */;
 }
 #define pte_offset_kernel pte_offset_kernel
 #endif
@@ -80,7 +84,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 //	 pte_index((address)))
 //#define pte_unmap(pte) kunmap_atomic((pte))
 #else
-#define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
+#define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address)) /*  */
 #define pte_unmap(pte) ((void)(pte))	/* NOP */
 #endif
 
@@ -378,7 +382,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addres
  * where software maintains page access bit.
  */
 #ifndef pte_sw_mkyoung
-static inline pte_t pte_sw_mkyoung(pte_t pte)
+static inline pte_t pte_sw_mkyoung(pte_t pte)   /* TODO */
 {
 	return pte;
 }

@@ -173,7 +173,7 @@ enum page_cache_mode {
 #define __NC _PAGE_NOCACHE
 #define _PSE _PAGE_PSE
 
-#define pgprot_val(x)		((x).pgprot)
+#define pgprot_val(x)		((x).pgprot)    /* page 属性 */
 #define __pgprot(x)		((pgprot_t) { (x) } )
 #define __pg(x)			__pgprot(x) 
 
@@ -193,7 +193,7 @@ enum page_cache_mode {
 #define _KERNPG_TABLE_NOENC	 (__PP|__RW|   0|___A|   0|___D|   0|   0)  /* 页面输入访问权限 */
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
 #define _PAGE_TABLE_NOENC	 (__PP|__RW|_USR|___A|   0|___D|   0|   0)
-#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
+#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)    /*  */
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_ROX	 (__PP|   0|   0|___A|   0|___D|   0|___G)
 #define __PAGE_KERNEL_NOCACHE	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __NC)
@@ -281,7 +281,7 @@ enum page_cache_mode {
  */
 #define PTE_FLAGS_MASK		(~PTE_PFN_MASK)
 
-typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
+typedef struct pgprot { pgprotval_t pgprot; } pgprot_t; /* page 属性 */
 
 //`cr3` 是一个64位的寄存器，并且有着如下的结构：
 //63                  52 51                                                        32
@@ -440,17 +440,17 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 	return pmd.pmd;
 }
 #else
-#include <asm-generic/pgtable-nopmd.h>
-
-static inline pmd_t native_make_pmd(pmdval_t val)
-{
-	return (pmd_t) { .pud.p4d.pgd = native_make_pgd(val) };
-}
-
-static inline pmdval_t native_pmd_val(pmd_t pmd)
-{
-	return native_pgd_val(pmd.pud.p4d.pgd);
-}
+//#include <asm-generic/pgtable-nopmd.h>
+//
+//static inline pmd_t native_make_pmd(pmdval_t val)
+//{
+//	return (pmd_t) { .pud.p4d.pgd = native_make_pgd(val) };
+//}
+//
+//static inline pmdval_t native_pmd_val(pmd_t pmd)
+//{
+//	return native_pgd_val(pmd.pud.p4d.pgd);
+//}
 #endif
 
 static inline p4dval_t p4d_pfn_mask(p4d_t p4d)
@@ -487,7 +487,7 @@ static inline pudval_t pud_flags(pud_t pud)
 	return native_pud_val(pud) & pud_flags_mask(pud);
 }
 
-static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
+static inline pmdval_t pmd_pfn_mask(pmd_t pmd)  /*  */
 {
 	if (native_pmd_val(pmd) & _PAGE_PSE)
 		return PHYSICAL_PMD_PAGE_MASK;

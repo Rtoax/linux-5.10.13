@@ -81,7 +81,7 @@ static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
 	native_set_pte(ptep, pte);
 }
 
-static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)   /*  */
 {
 	WRITE_ONCE(*pmdp, pmd);
 }

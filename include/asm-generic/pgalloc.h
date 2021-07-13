@@ -4,8 +4,8 @@
 
 #ifdef CONFIG_MMU
 
-#define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
-#define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
+#define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)   /*  */
+#define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)    /*  */
 
 /**
  * __pte_alloc_one_kernel - allocate a page for PTE-level kernel page table
@@ -45,7 +45,7 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 }
 
 /**
- * __pte_alloc_one - allocate a page for PTE-level user page table
+ * __pte_alloc_one - allocate a page for PTE-level user page table 分配一个页表项 page
  * @mm: the mm_struct of the current context
  * @gfp: GFP flags to use for the allocation
  *
@@ -55,12 +55,12 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
  * anything beyond simple page allocation or must have custom GFP flags.
  *
  * Return: `struct page` initialized as page table or %NULL on error
- *//* 分配一个页表项 */
-static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
+ */
+static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)    /*  */
 {
 	struct page *pte;
 
-	pte = alloc_page(gfp);
+	pte = alloc_page(gfp);  /* 分配页：这是和伙伴系统打交道 */
 	if (!pte)
 		return NULL;
 	if (!pgtable_pte_page_ctor(pte)) {

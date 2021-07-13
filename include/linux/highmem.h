@@ -279,9 +279,12 @@ __alloc_zeroed_user_highpage(gfp_t movableflags,
  * be able to migrate in the future using move_pages() or reclaimed
  */
 static inline struct page *
-alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
+alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,  /* TODO */
 					unsigned long vaddr)
 {
+    /**
+     *  x86-64 没有高端内存，将宏定义为 alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | __GFP_MOVABLE, vma, vaddr)
+     */
 	return __alloc_zeroed_user_highpage(__GFP_MOVABLE, vma, vaddr);
 }
 

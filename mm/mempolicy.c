@@ -2155,7 +2155,7 @@ static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
  *	all allocations for pages that will be mapped into user space. Returns
  *	NULL when no page can be allocated.
  *
- *  
+ *  为 vma 分配 page
  */
 struct page *
 alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
@@ -2220,7 +2220,10 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 
 	nmask = policy_nodemask(gfp, pol);
 	preferred_nid = policy_node(gfp, pol, node);
+
+    /* TODO */
 	page = __alloc_pages_nodemask(gfp, order, preferred_nid, nmask);
+    
 	mpol_cond_put(pol);
 out:
 	return page;
@@ -2231,7 +2234,7 @@ EXPORT_SYMBOL(alloc_pages_vma);
  * 	alloc_pages_current - Allocate pages.
  *
  *	@gfp:
- *		%GFP_USER   user allocation,
+ *		    %GFP_USER   user allocation,
  *      	%GFP_KERNEL kernel allocation,
  *      	%GFP_HIGHMEM highmem allocation,
  *      	%GFP_FS     don't call back into a file system.

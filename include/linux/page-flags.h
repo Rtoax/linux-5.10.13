@@ -198,7 +198,7 @@ static inline struct page *compound_head(struct page *page) /* compound:化合�
 	return page;
 }
 
-static __always_inline int PageTail(struct page *page)
+static __always_inline int PageTail(struct page *page)  /* TODO */
 {
 	return READ_ONCE(page->compound_head) & 1;
 }
@@ -952,13 +952,15 @@ static __always_inline void __SetPageUptodate(struct page *page)    /*  */
 	__set_bit(PG_uptodate, &page->flags);
 }
 
-static __always_inline void SetPageUptodate(struct page *page)
+static __always_inline void SetPageUptodate(struct page *page)  /* TODO */
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
 	/*
 	 * Memory barrier must be issued before setting the PG_uptodate bit,
 	 * so that all previous stores issued in order to bring the page
 	 * uptodate are actually visible before PageUptodate becomes true.
+	 *
+	 * 保证前面所有的设置标志位都已经写完成
 	 */
 	smp_wmb();
 	set_bit(PG_uptodate, &page->flags);

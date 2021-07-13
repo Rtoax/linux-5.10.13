@@ -11,7 +11,7 @@
 #ifdef CONFIG_X86_64
 #include <asm/page_64.h>
 #else
-#include <asm/page_32.h>
+//#include <asm/page_32.h>
 #endif	/* CONFIG_X86_64 */
 
 #ifndef __ASSEMBLY__
@@ -34,8 +34,10 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 	copy_page(to, from);
 }
 
+/* x86_64 没哟高端内存 */
 #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+	
 #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
 
 #ifndef __pa

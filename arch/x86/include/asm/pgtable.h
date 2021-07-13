@@ -71,6 +71,7 @@ extern pmdval_t early_pmd_flags;
 #define set_pte_atomic(ptep, pte)					\
 	native_set_pte_atomic(ptep, pte)
 
+/* 设置页中间目录项 */
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
 
 #ifndef __PAGETABLE_P4D_FOLDED
@@ -602,18 +603,21 @@ static inline pgprotval_t check_pgprot(pgprot_t pgprot)
 	return massaged_val;
 }
 
+/* 设置 PTE page 属性 */
 static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 {
-	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
-	pfn &= PTE_PFN_MASK;
+	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT/* 12 */;
+
+    pfn ^= protnone_mask(pgprot_val(pgprot));   /* xor */
+	pfn &= PTE_PFN_MASK/* 0xffff ffff ffff f000 */;
+    
 	return __pte(pfn | check_pgprot(pgprot));
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 {
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
+	pfn ^= protnone_mask(pgprot_val(pgprot));   
 	pfn &= PHYSICAL_PMD_PAGE_MASK;
 	return __pmd(pfn | check_pgprot(pgprot));
 }
@@ -817,6 +821,7 @@ static inline int pmd_protnone(pmd_t pmd)
 }
 #endif /* CONFIG_NUMA_BALANCING */
 
+/* pmd ==0, 返回 1 */
 static inline int pmd_none(pmd_t pmd)
 {
 	/* Only check low word on 32-bit platforms, since it might be
@@ -825,7 +830,7 @@ static inline int pmd_none(pmd_t pmd)
 	return (val & ~_PAGE_KNL_ERRATUM_MASK) == 0;
 }
 
-static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+static inline unsigned long pmd_page_vaddr(pmd_t pmd)   /* PMD 的虚拟地址 */
 {
 	return (unsigned long)__va(pmd_val(pmd) & pmd_pfn_mask(pmd));
 }
@@ -843,7 +848,7 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
  * (Currently stuck as a macro because of indirect forward reference
  * to linux/mm.h:page_to_nid())
  */
-#define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot))
+#define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot)) /* TODO */
 
 static inline int pmd_bad(pmd_t pmd)
 {

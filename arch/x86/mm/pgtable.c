@@ -26,9 +26,17 @@ void paravirt_tlb_remove_table(struct mmu_gather *tlb, void *table)
 }
 #endif
 
-gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
+gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM/* 0 */;
 
-pgtable_t pte_alloc_one(struct mm_struct *mm)   /*  */
+/**
+ * pte_alloc_one - allocate a page for PTE-level user page table
+ * @mm: the mm_struct of the current context
+ *
+ * Allocates a page and runs the pgtable_pte_page_ctor().
+ *
+ * Return: `struct page` initialized as page table or %NULL on error
+ */
+pgtable_t pte_alloc_one(struct mm_struct *mm)   /* 分配 一个 page */
 {
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
@@ -475,7 +483,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
  * to also make the pte writeable at the same time the dirty bit is
  * set. In that case we do actually need to write the PTE.
  */
-int ptep_set_access_flags(struct vm_area_struct *vma,
+int ptep_set_access_flags(struct vm_area_struct *vma,   /*  */
 			  unsigned long address, pte_t *ptep,
 			  pte_t entry, int dirty)
 {

@@ -536,7 +536,7 @@ struct vm_fault {       /* 缺页异常/中断 */
 					 * VM_FAULT_ERROR).
 					 */
 	/* These three entries are valid only while holding ptl lock */
-	pte_t *pte;			/* Pointer to pte entry matching
+	pte_t *pte;		/* Pointer to pte entry matching
 					 * the 'address'. NULL if the page
 					 * table hasn't been allocated.
 					 */
@@ -663,7 +663,7 @@ static inline void vma_set_anonymous(struct vm_area_struct *vma)
 	vma->vm_ops = NULL;
 }
 
-static inline bool vma_is_anonymous(struct vm_area_struct *vma)
+static inline bool vma_is_anonymous(struct vm_area_struct *vma) /* 根据 vm_ops 判定 是否为匿名映射 */
 {
 	return !vma->vm_ops;    /* vm_ops 为空即为匿名 */
 }
@@ -2004,9 +2004,9 @@ static inline unsigned long mm_pgtables_bytes(const struct mm_struct *mm)
 	return atomic_long_read(&mm->pgtables_bytes);
 }
 
-static inline void mm_inc_nr_ptes(struct mm_struct *mm)
+static inline void mm_inc_nr_ptes(struct mm_struct *mm) /*  */
 {
-	atomic_long_add(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
+	atomic_long_add(PTRS_PER_PTE/* 512 */ * sizeof(pte_t), &mm->pgtables_bytes);
 }
 
 static inline void mm_dec_nr_ptes(struct mm_struct *mm)
@@ -2145,22 +2145,26 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	dec_zone_page_state(page, NR_PAGETABLE);
 }
 
-#define pte_offset_map_lock(mm, pmd, address, ptlp)	    /*  */\
+/* PTE 的虚拟地址 */
+#define pte_offset_map_lock(mm, pmd, address, ptlp)	    \
 ({							\
 	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\
-	pte_t *__pte = pte_offset_map(pmd, address);	\
+	pte_t *_____pte = pte_offset_map(pmd, address);	\
 	*(ptlp) = __ptl;				\
 	spin_lock(__ptl);				\
-	__pte;						\
+	_____pte;						\
 })
 
-#define pte_unmap_unlock(pte, ptl)	do {		\
-	spin_unlock(ptl);				\
-	pte_unmap(pte);					\
+#define pte_unmap_unlock(pte, ptl)	do {    \
+	spin_unlock(ptl);				        \
+	pte_unmap(pte);/* NOP */				\
 } while (0)
 
 #define pte_alloc(mm, pmd) (unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, pmd))
 
+/**
+ *  如果 pte_alloc 分配成功，将调用 pte_offset_map
+ */
 #define pte_alloc_map(mm, pmd, address)			\
 	(pte_alloc(mm, pmd) ? NULL : pte_offset_map(pmd, address))
 

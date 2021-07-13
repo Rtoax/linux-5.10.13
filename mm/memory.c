@@ -428,10 +428,15 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	}
 }
 
+
+/**
+ * 分配 PTE
+ */
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 {
 	spinlock_t *ptl;
-	pgtable_t new = pte_alloc_one(mm);
+	pgtable_t/* struct page* */ new = pte_alloc_one(mm);  /* 从伙伴系统分配一个物理 page */
+    
 	if (!new)
 		return -ENOMEM;
 
@@ -457,13 +462,18 @@ int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 	 */
 	smp_wmb(); /* Could be smp_wmb__xxx(before|after)_spin_lock */
 
+    /* 获取页表锁 */
 	ptl = pmd_lock(mm, pmd);
+
+    /* 如果 PMD   中没有 entry */
 	if (likely(pmd_none(*pmd))) {	/* Has another populated(人口稠密) it ? */
-		mm_inc_nr_ptes(mm);
-		pmd_populate(mm, pmd, new);
+		mm_inc_nr_ptes(mm);         /* 对这个 PMD 进行统计 */
+		pmd_populate(mm, pmd, new); /* 设置 PMD entry */
 		new = NULL;
 	}
-	spin_unlock(ptl);
+    /* 解锁 */
+    spin_unlock(ptl);
+    
 	if (new)
 		pte_free(mm, new);
 	return 0;
@@ -3105,6 +3115,10 @@ static vm_fault_t wp_pfn_shared(struct vm_fault *vmf)
 
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 		vmf->flags |= FAULT_FLAG_MKWRITE;
+
+        /**
+         *
+         */
 		ret = vma->vm_ops->pfn_mkwrite(vmf);
 		if (ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))
 			return ret;
@@ -3186,6 +3200,13 @@ static vm_fault_t wp_page_shared(struct vm_fault *vmf)  /*  */
  * 当用户试图 修改 只读属性页面时，CPU触发异常，该函数尝试修复这个异常。
  * 通常的做法是新分配一个页面，并且赋值就业面的内容得到新的页面中，这个
  * 新分配的页面具有可写属性。
+ *
+ * do_wp_page          写时复制
+ *   vm_normal_page    查找缺页异常地址addr对应页面的 page 数据结构
+ *   wp_pfn_shared     处理 可写并且共享的特殊映射 页面
+ *   wp_page_copy      处理写时复制(不可复用)
+ *   wp_page_reuse     处理写时复制(可复用)
+ *   wp_page_shared    处理 可写的并且共享的普通映射 页面
  */
 static vm_fault_t do_wp_page(struct vm_fault *vmf)  /* 写时复制 */
 	__releases(vmf->ptl)
@@ -3632,7 +3653,7 @@ out_release:
  * but allow concurrent faults), and pte mapped but not yet locked.
  * We return with mmap_lock still held, but pte unmapped and unlocked.
  *
- * 匿名页的缺页中断
+ * 匿名页的缺页中断，在 handle_pte_fault 中被调用
  */
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 {
@@ -3641,7 +3662,11 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	vm_fault_t ret = 0;
 	pte_t entry;
 
-	/* File mapping without ->vm_ops ? */
+	/**
+	 *  File mapping without ->vm_ops ? 
+	 *
+	 *  这个 page 是由 malloc 或者 mmap(NULL, .., fd=-1, ...) 分配的，当然就不能共享，是进程独占
+	 */
 	if (vma->vm_flags & VM_SHARED)
 		return VM_FAULT_SIGBUS; /* 匿名页面不能共享?那父子进程呢? */
 
@@ -3649,6 +3674,8 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	 * Use pte_alloc() instead of pte_alloc_map().  We can't run
 	 * pte_offset_map() on pmds where a huge pmd might be created
 	 * from a different thread.
+	 *
+	 * pte_alloc() 比 pte_alloc_map() 少了一步 pte_offset_map()
 	 *
 	 * pte_alloc_map() is safe to use under mmap_write_lock(mm) or when
 	 * parallel threads are excluded by other means.
@@ -3668,12 +3695,17 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	 *
 	 *  当这个缺页是由 "读" 导致的，直接使用 零页 ，见`zero_pfn`
 	 */
-	if (!(vmf->flags & FAULT_FLAG_WRITE) && !mm_forbids_zeropage(vma->vm_mm)) {
+	if (!(vmf->flags & FAULT_FLAG_WRITE)/* 没有写标志 */ && 
+        !mm_forbids_zeropage(vma->vm_mm)/* 没有禁止 零页 */) {
 
         /* 设置 特殊标志位，标志是个 系统零页 */
 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address), vma->vm_page_prot));
 
-        /*  */
+        /**
+         *  获取 PTE 的虚拟地址 ，并锁定 页表锁
+         *
+         * 
+         */
 		vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 
         /* 如果PTE不为空 */
@@ -3699,18 +3731,26 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
             /*  */
 			return handle_userfault(vmf, VM_UFFD_MISSING);
 		}
+        /**
+         *  如果是由读导致的缺页(使用系统零页),将无需进行 RMAP 和 内存cgroup
+         *  所以这里需要跳过几步。
+         */
 		goto setpte;
 	}
 
-	/* Allocate our own private page. */
+	/**
+	 *  Allocate our own private page. 
+	 *  申请 RMAP 管理结构
+	 */
 	if (unlikely(anon_vma_prepare(vma)))
 		goto oom;
 
-    /*  */
+    /* 为 VMA 分配 page */
 	page = alloc_zeroed_user_highpage_movable(vma, vmf->address);
 	if (!page)
 		goto oom;
 
+    /* TODO */
 	if (mem_cgroup_charge(page, vma->vm_mm, GFP_KERNEL))
 		goto oom_free_page;
 	cgroup_throttle_swaprate(page, GFP_KERNEL);
@@ -3719,16 +3759,19 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	 * The memory barrier inside __SetPageUptodate makes sure that
 	 * preceding stores to the page contents become visible before
 	 * the set_pte_at() write.
+	 *
+     *  设置   PG_uptodate 位，标识内容有效
 	 */
 	__SetPageUptodate(page);
 
+    /* 设置页属性 */
 	entry = mk_pte(page, vma->vm_page_prot);
 	entry = pte_sw_mkyoung(entry);
-	if (vma->vm_flags & VM_WRITE)
+	if (vma->vm_flags & VM_WRITE)   /* 可写属性 */
 		entry = pte_mkwrite(pte_mkdirty(entry));
 
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
-			&vmf->ptl);
+    /* TODO */
+	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 	if (!pte_none(*vmf->pte)) {
 		update_mmu_cache(vma, vmf->address, vmf->pte);
 		goto release;
@@ -3748,6 +3791,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	page_add_new_anon_rmap(page, vma, vmf->address, false);
 	lru_cache_add_inactive_or_unevictable(page, vma);
+    
 setpte:
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
 
@@ -4297,6 +4341,11 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
  * by other thread calling munmap()).
  *
  * 文件映射的缺页中断
+ *
+ * do_fault            文件映射
+ *    do_read_fault       文件映射读
+ *    do_cow_fault        文件映射写
+ *    do_shared_fault     共享文件映射写
  */
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
@@ -4583,6 +4632,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		 * ptl lock held. So here a barrier will do.
 		 */
 		barrier();
+        
 		if (pte_none(vmf->orig_pte)) {
 			pte_unmap(vmf->pte);
 			vmf->pte = NULL;
@@ -4590,7 +4640,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 	}
 
     /**
-     *  如果 pte 不存在，那么只能是匿名映射或者文件映射
+     *  如果 pte 不存在，将分配PTE，并处理匿名映射或者文件映射
      */
 	if (!vmf->pte) {    /* 如果pte页表项为空 */
 		if (vma_is_anonymous(vmf->vma)) /* 匿名 */
@@ -4606,42 +4656,65 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 	}
 
     /**
-     *  如果 PTE存在，那么这个page 可能在
+     *  如果 PTE存在，那么这个 page 可能在
      *  1. 交换空间中
-     *  2. NUMA
+     *  2. NUMA-> 在另一个节点?
      */
-	if (!pte_present(vmf->orig_pte))/* pte不存在 */
+	if (!pte_present(vmf->orig_pte))/* pte不存在内存中 */
+        /**
+         * 从交换分区读取该页
+         */
 		return do_swap_page(vmf);   /* 交换空间 */
 
 	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))/* 如果vma可访问，并且访问权限没有设置 */
+        /**
+         * 
+         */
 		return do_numa_page(vmf);   /* numa pagefault */
 
+    /**
+     * 程序至此，表明：
+     *  1. 已经 分配了 PTE；
+     *  2. 不是交换分区 或 NUMA  造成的缺页
+     *
+     *  获取保护页表的 自旋锁
+     */
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
-    
+
+    /* 获取页表锁 */
 	spin_lock(vmf->ptl);
 
     entry = vmf->orig_pte;
-	if (unlikely(!pte_same(*vmf->pte, entry))) {
-		update_mmu_tlb(vmf->vma, vmf->address, vmf->pte);   /*  */
+
+    /*  */
+	if (unlikely(!pte_same(*vmf->pte, entry))) {    /* 如果不是同一个 pte */
+		update_mmu_tlb(vmf->vma, vmf->address, vmf->pte);   /* 更新TLB */
 		goto unlock;
 	}
 
-    /* 写造成的缺页异常 */
+    /**
+     *  写造成的缺页异常 
+     */
 	if (vmf->flags & FAULT_FLAG_WRITE) {
-		if (!pte_write(entry))
+		if (!pte_write(entry))  /* 这个 entry 只读，将进行写时复制 */
             /**
-             * do_wp_page
+             * do_wp_page 写时复制
              * 当用户试图 修改 只读属性页面时，CPU触发异常，该函数尝试修复这个异常。
              * 通常的做法是新分配一个页面，并且赋值就业面的内容得到新的页面中，这个
              * 新分配的页面具有可写属性。
              */
 			return do_wp_page(vmf);
-        
+
+        /**
+         *  若可写，将页标记为 脏页，将写回 
+         */
 		entry = pte_mkdirty(entry);
 	}
 
     /*  */
-	entry = pte_mkyoung(entry); /*  */
+	entry = pte_mkyoung(entry); /* 设置 _PAGE_ACCESSED 标志位 */
+
+    /*  */
 	if (ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
 				              vmf->flags & FAULT_FLAG_WRITE)) {
 		update_mmu_cache(vmf->vma, vmf->address, vmf->pte); /* x86 为空 */
@@ -4651,6 +4724,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		/* Skip spurious TLB flush for retried page fault */
 		if (vmf->flags & FAULT_FLAG_TRIED)
 			goto unlock;
+        
 		/*
 		 * This is needed only for protection faults but the arch code
 		 * is not yet telling us if this is a protection fault or not.
