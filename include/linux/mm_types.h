@@ -82,7 +82,7 @@ struct page {   /* 物理页 */
 	 * avoid collision and false-positive PageTail().
 	 */
 	union {
-		struct {	/* Page cache and anonymous pages 页缓存 和 匿名页 */
+		struct {	/* Page cache and anonymous pages 页缓存 和 匿名页(管理匿名页面/文件映射页面) */
 			/**
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
@@ -97,7 +97,9 @@ struct page {   /* 物理页 */
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
-            /*
+            /**
+             *  页面指向的地址空间
+             *
              * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；
              *                 当需要使用地址空间时会指定交换分区的地址空间swapper_space。
              * 如果 mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
@@ -133,7 +135,7 @@ struct page {   /* 物理页 */
 		struct {	/* slab, slob and slub 被slab使用 */
 			union {
 				struct list_head slab_list;
-				struct {	/* Partial pages */
+				struct {	/* Partial pages(slub-16 bytes) */
 					struct page *next;
 #ifdef CONFIG_64BIT
 					int pages;	/* Nr of pages left */
@@ -144,11 +146,14 @@ struct page {   /* 物理页 */
 #endif
 				};
 			};
-			struct kmem_cache *slab_cache; /* not slob */
+
+            struct kmem_cache *slab_cache; /* not slob */
 			/* Double-word boundary */
+            /* 管理区 */
 			void *freelist;		/* first free object */
+            
 			union {
-				void *s_mem;	/* slab: first object 第一个OBJ 的地址 */
+				void *s_mem;	/* slab: first object 第一个 slab 对应OBJ 的起始地址 */
 				unsigned long counters;		/* SLUB */
 				struct {			/* SLUB */
 					unsigned inuse:16;
@@ -175,7 +180,7 @@ struct page {   /* 物理页 */
 			struct list_head deferred_list;
 		};
         
-		struct {	/* Page table pages 页表使用的Page */
+		struct {	/* Page table pages 页表使用的Page(管理页表) */
 			unsigned long _pt_pad_1;	/* compound_head */
 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
 			unsigned long _pt_pad_2;	/* mapping */
@@ -183,6 +188,10 @@ struct page {   /* 物理页 */
 				struct mm_struct *pt_mm; /* x86 pgds only */
 				atomic_t pt_frag_refcount; /* powerpc */
 			};
+            
+            /**
+             *  页表自旋锁
+             */
 #if ALLOC_SPLIT_PTLOCKS
 			spinlock_t *ptl;
 #else
@@ -232,11 +241,20 @@ struct page {   /* 物理页 */
 		 */
 		unsigned int page_type;
 
+        /**
+         *  slab 分配器中活跃的对象的数量
+         *
+         *  =0: 标识没有活跃对象，可以销毁这个slab 分配器
+         */
 		unsigned int active;		/* SLAB */
 		int units;			/* SLOB */
 	};
 
-	/* Usage count. *DO NOT USE DIRECTLY*. See page_ref.h */
+	/**
+	 *  Usage count. *DO NOT USE DIRECTLY*. See page_ref.h 
+	 *
+	 *  引用计数
+	 */
 	atomic_t _refcount;
 
 #ifdef CONFIG_MEMCG
