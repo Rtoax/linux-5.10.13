@@ -101,51 +101,60 @@
  * SPARSEMEM section (for variants of SPARSEMEM that require section ids like
  * SPARSEMEM_EXTREME with !SPARSEMEM_VMEMMAP).
  */
+/**
+ *  struct page->flags
+ * 
+ * 63    62 61  60 59             44 43                                               0  
+ *  +------+------+-----------------+-------------------------------------------------+
+ *  | node | zone |    LAST_CPUPID  |                   flags                         |
+ *  +------+------+-----------------+-------------------------------------------------+
+ *
+ */
 enum pageflags {
-	PG_locked,		/* Page is locked. Don't touch. */
-	PG_referenced,
-	PG_uptodate,
-	PG_dirty,
+	PG_locked,		/* 页面已经上锁 Page is locked. Don't touch. 见`lock_page()`*/
+	PG_referenced,  /* 和`PG_active`用于控制页面的活跃程序，在 kswapd 中使用 */
+	PG_uptodate,    /* 标识页面的数据已经从块设备成功读取 */
+	PG_dirty,       /* 页面内容发生过改变，但是还没有和外部存储器进行同步 */
 	PG_lru,         /* 最近最少使用 zone->inactive_list */
-	PG_active,
-	PG_workingset,
-	PG_waiters,		/* Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */
-	PG_error,
-	PG_slab,
-	PG_owner_priv_1,	/* Owner use. If pagecache, fs may use*/
-	PG_arch_1,
-	PG_reserved,
+	PG_active,      /* 是否活跃，和`PG_referenced`用于控制页面的活跃程序，在 kswapd 中使用 */
+	PG_workingset,  /*  */
+	PG_waiters,		/* 标识有进程正在等待这个页面。Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */
+	PG_error,       /* 页面操作过程发生过错误 */
+	PG_slab,        /* 页面用于slab */
+	PG_owner_priv_1,/* Owner use. If pagecache, fs may use*/
+	PG_arch_1,      /* 与架构相关的页面状态位 */
+	PG_reserved,    /* 该页面不可换出 */
 	PG_private,		/* If pagecache, has fs-private data */
-	PG_private_2,		/* If pagecache, has fs aux data */
-	PG_writeback,		/* Page is under writeback */
+	PG_private_2,	/* If pagecache, has fs aux data */
+	PG_writeback,	/* 页面正在向块设备回写，Page is under writeback */
 	PG_head,		/* A head page */
-	PG_mappedtodisk,	/* Has blocks allocated on-disk */
-	PG_reclaim,		/* To be reclaimed asap */
-	PG_swapbacked,		/* Page is backed by RAM/swap */
-	PG_unevictable,		/* Page is "unevictable"  */
+	PG_mappedtodisk,/* Has blocks allocated on-disk */
+	PG_reclaim,		/* 页面马上要被回收，To be reclaimed asap */
+	PG_swapbacked,	/* 可以交换到磁盘(通常是匿名页) Page is backed by RAM/swap */
+	PG_unevictable,	/* 页面不可回收 Page is "unevictable"  */
 #ifdef CONFIG_MMU
-	PG_mlocked,		/* Page is vma mlocked */
+	PG_mlocked,		/* 页面对应的VMA处于 mlocked 状态，Page is vma mlocked */
 #endif
 #ifdef CONFIG_ARCH_USES_PG_UNCACHED
-	PG_uncached,		/* Page has been mapped as uncached */
+	PG_uncached,	/* Page has been mapped as uncached */
 #endif
 #ifdef CONFIG_MEMORY_FAILURE
-	PG_hwpoison,		/* hardware poisoned page. Don't touch */
+	PG_hwpoison,    /* hardware poisoned page. Don't touch */
 #endif
 #if defined(CONFIG_IDLE_PAGE_TRACKING) && defined(CONFIG_64BIT)
-	PG_young,
-	PG_idle,
+	PG_young,       /*  */
+	PG_idle,        /*  */
 #endif
 #ifdef CONFIG_64BIT
-	PG_arch_2,
+	PG_arch_2,      /*  */
 #endif
-	__NR_PAGEFLAGS,
+	__NR_PAGEFLAGS, /*  */
 
 	/* Filesystems */
 	PG_checked = PG_owner_priv_1,
 
 	/* SwapBacked */
-	PG_swapcache = PG_owner_priv_1,	/* Swap page: swp_entry_t in private */
+	PG_swapcache = PG_owner_priv_1,	/* 页面处于交换缓存中，Swap page: swp_entry_t in private */
 
 	/* Two page bits are conscripted by FS-Cache to maintain local caching
 	 * state.  These bits are set on pages belonging to the netfs's inodes
