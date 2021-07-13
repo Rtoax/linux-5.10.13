@@ -387,11 +387,12 @@ void seq_escape_mem_ascii(struct seq_file *m, const char *src, size_t isz)
 }
 EXPORT_SYMBOL(seq_escape_mem_ascii);
 
-void seq_vprintf(struct seq_file *m, const char *f, va_list args)
+void seq_vprintf(struct seq_file *m, const char *f, va_list args)   /*  */
 {
 	int len;
 
 	if (m->count < m->size) {
+        /* 写入缓冲区 */
 		len = vsnprintf(m->buf + m->count, m->size - m->count, f, args);
 		if (m->count + len < m->size) {
 			m->count += len;
@@ -402,7 +403,7 @@ void seq_vprintf(struct seq_file *m, const char *f, va_list args)
 }
 EXPORT_SYMBOL(seq_vprintf);
 
-void seq_printf(struct seq_file *m, const char *f, ...)
+void seq_printf(struct seq_file *m, const char *f, ...) /*  */
 {
 	va_list args;
 

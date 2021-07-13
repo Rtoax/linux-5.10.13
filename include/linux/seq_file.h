@@ -12,8 +12,14 @@
 #include <linux/cred.h>
 
 struct seq_operations;
-    //seq_file只是在普通的文件read中加入了内核缓冲的功能，从而实现顺序多次遍历，读取大数据量的简单接口
+
+/**
+ *  seq_file只是在普通的文件read中加入了内核缓冲的功能，从而实现顺序多次遍历，读取大数据量的简单接口
+ */
 struct seq_file {
+    /**
+     *  buf - 缓冲区
+     */
     char *buf;  //序列文件对应的数据缓冲区，要导出的数据是首先打印到这个缓冲区，然后才被拷贝到指定的用户缓冲区。
     size_t size;  //缓冲区大小，默认为1个页面大小，随着需求会动态以2的级数倍扩张，4k,8k,16k...
     size_t from;  //没有拷贝到用户空间的数据在buf中的起始偏移量
@@ -28,6 +34,7 @@ struct seq_file {
     void *private;  //指向文件的私有数据
 };
 typedef void * ptr_t;
+
 struct seq_operations {
 	ptr_t (*start) (struct seq_file *m, loff_t *pos);
 	void (*stop) (struct seq_file *m, void *v);
@@ -146,6 +153,7 @@ void *__seq_open_private(struct file *, const struct seq_operations *, int);
 int seq_open_private(struct file *, const struct seq_operations *, int);
 int seq_release_private(struct inode *, struct file *);
 
+/*  */
 #define DEFINE_SEQ_ATTRIBUTE(__name)					\
 static int __name ## _open(struct inode *inode, struct file *file)	\
 {									\
@@ -274,4 +282,5 @@ extern struct hlist_node *seq_hlist_start_percpu(struct hlist_head __percpu *hea
 extern struct hlist_node *seq_hlist_next_percpu(void *v, struct hlist_head __percpu *head, int *cpu, loff_t *pos);
 
 void seq_file_init(void);
+
 #endif
