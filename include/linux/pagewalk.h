@@ -33,6 +33,8 @@ struct mm_walk;
  *
  * p?d_entry callbacks are called even if those levels are folded on a
  * particular architecture/configuration.
+ *
+ * 在`walk_page_range()`中被调用
  */
 struct mm_walk_ops {
 	int (*pgd_entry)(pgd_t *pgd, unsigned long addr,

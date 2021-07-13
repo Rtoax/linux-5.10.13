@@ -299,6 +299,9 @@ struct anon_vma *page_lock_anon_vma_read(struct page *page);
 void page_unlock_anon_vma_read(struct anon_vma *anon_vma);
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
 
+
+typedef struct anon_vma * anon_vma_t; /* +++ */
+
 /*
  * rmap_walk_control: To control rmap traversing for specific needs
  *
@@ -307,17 +310,31 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
  * done: for checking traversing termination condition
  * anon_lock: for getting anon_lock by optimized way rather than default
  * invalid_vma: for skipping uninterested vma
+ *
+ * 遍历你想映射 RMAP, 在 `rmap_walk()` 中被调用
+ *
+ * 可参见`try_to_unmap()`函数中有该结构的使用
  */
 struct rmap_walk_control {
+
+    /* 下面回调函数的 argument */
 	void *arg;
 	/*
 	 * Return false if page table scanning in rmap_walk should be stopped.
 	 * Otherwise, return true.
+	 *
+	 * 如果 页表 扫描应该被停止，返回 false，否则 返回 true
 	 */
 	bool (*rmap_one)(struct page *page, struct vm_area_struct *vma,
 					unsigned long addr, void *arg);
+
+    /* 完成 */
 	int (*done)(struct page *page);
-	struct anon_vma *(*anon_lock)(struct page *page);
+
+    /*  */
+	anon_vma_t (*anon_lock)(struct page *page);
+
+    /* 可用 */
 	bool (*invalid_vma)(struct vm_area_struct *vma, void *arg);
 };
 
@@ -325,27 +342,7 @@ void rmap_walk(struct page *page, struct rmap_walk_control *rwc);
 void rmap_walk_locked(struct page *page, struct rmap_walk_control *rwc);
 
 #else	/* !CONFIG_MMU */
-
-//#define anon_vma_init()		do {} while (0)
-//#define anon_vma_prepare(vma)	(0)
-//#define anon_vma_link(vma)	do {} while (0)
-//
-//static inline int page_referenced(struct page *page, int is_locked,
-//				  struct mem_cgroup *memcg,
-//				  unsigned long *vm_flags)
-//{
-//	*vm_flags = 0;
-//	return 0;
-//}
-//
-//#define try_to_unmap(page, refs) false
-//
-//static inline int page_mkclean(struct page *page)
-//{
-//	return 0;
-//}
-
-
+/*  */
 #endif	/* CONFIG_MMU */
 
 #endif	/* _LINUX_RMAP_H */

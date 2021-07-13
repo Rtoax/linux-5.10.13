@@ -110,9 +110,11 @@ struct page {   /* 物理页 */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
             /**
              *  页面指向的地址空间,一个指针，两个用途
+             *  -----------------------------------------------
              *  1. 文件映射页面，`struct address_space`
              *  2. 匿名映射页面，`struct anon_vma`. 见`PageAnon()`,`PAGE_MAPPING_ANON`
              *  3. 交换高速缓存页面，`swapper_spaces`
+             *  4. KSM页面对应 `struct stable_node`结构
              *
              * 因为 `struct address_space` 为 8bytes 对齐，所以可将 mapping 成员的低两位用作：
              *

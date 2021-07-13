@@ -151,6 +151,8 @@ struct ksm_scan {
  * @chain_prune_time: time of the last full garbage collection
  * @rmap_hlist_len: number of rmap_item entries in hlist or STABLE_NODE_CHAIN
  * @nid: NUMA node id of stable tree in which linked (may not match kpfn)
+ *
+ * KSM  页面 page->mapping 指向的地址
  */
 struct stable_node {
 	union {
@@ -191,6 +193,9 @@ struct stable_node {
  * @node: rb node of this rmap_item in the unstable tree
  * @head: pointer to stable_node heading this list in the stable tree
  * @hlist: link into hlist of rmap_items hanging off that stable_node
+ *
+ * KSM 反向映射 page->mapping 对应 struct stable_node 结构，
+ *  而 struct rmap_item 结构是 struct stable_node 结构中的一项(hlist)
  */
 struct rmap_item {  /* 虚拟地址的 反向映射项 */
 	struct rmap_item *rmap_list;
@@ -858,7 +863,7 @@ static int unmerge_ksm_pages(struct vm_area_struct *vma,
 	return err;
 }
 
-static inline struct stable_node *page_stable_node(struct page *page)
+static inline struct stable_node *page_stable_node(struct page *page)   /* 获取 page->mapping 结构 */
 {
 	return PageKsm(page) ? page_rmapping(page) : NULL;
 }
@@ -2601,6 +2606,9 @@ struct page *ksm_might_need_to_copy(struct page *page,
 	return new_page;
 }
 
+/**
+ * KSM 页面的逆向映射遍历
+ */
 void rmap_walk_ksm(struct page *page, struct rmap_walk_control *rwc)
 {
 	struct stable_node *stable_node;
@@ -2615,21 +2623,31 @@ void rmap_walk_ksm(struct page *page, struct rmap_walk_control *rwc)
 	 */
 	VM_BUG_ON_PAGE(!PageLocked(page), page);
 
-	stable_node = page_stable_node(page);
+    /**
+     *  获取 page->mapping 结构，即为 struct anon_vma 结构
+     */
+	stable_node = page_stable_node(page);   
 	if (!stable_node)
 		return;
 again:
+    /*  */
 	hlist_for_each_entry(rmap_item, &stable_node->hlist, hlist) {
 		struct anon_vma *anon_vma = rmap_item->anon_vma;
 		struct anon_vma_chain *vmac;
 		struct vm_area_struct *vma;
 
+        /* TODO */
 		cond_resched();
+
+        /* 读写信号量 锁定 */
 		anon_vma_lock_read(anon_vma);
+
+        /* 遍历 anon_vma->rb_root 红黑树 */
 		anon_vma_interval_tree_foreach(vmac, &anon_vma->rb_root,
 					       0, ULONG_MAX) {
 			unsigned long addr;
 
+            /* TODO */
 			cond_resched();
 			vma = vmac->vma;
 
@@ -2638,6 +2656,7 @@ again:
 
 			if (addr < vma->vm_start || addr >= vma->vm_end)
 				continue;
+            
 			/*
 			 * Initially we examine only the vma which covers this
 			 * rmap_item; but later, if there is still work to do,
@@ -2814,9 +2833,7 @@ static int ksm_memory_callback(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 #else
-static void wait_while_offlining(void)
-{
-}
+/*  */
 #endif /* CONFIG_MEMORY_HOTREMOVE */
 
 #ifdef CONFIG_SYSFS

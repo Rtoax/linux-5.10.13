@@ -55,38 +55,7 @@ void rmap_walk_ksm(struct page *page, struct rmap_walk_control *rwc);
 void ksm_migrate_page(struct page *newpage, struct page *oldpage);
 
 #else  /* !CONFIG_KSM */
-
-static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
-{
-	return 0;
-}
-
-static inline void ksm_exit(struct mm_struct *mm)
-{
-}
-
-#ifdef CONFIG_MMU
-static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-		unsigned long end, int advice, unsigned long *vm_flags)
-{
-	return 0;
-}
-
-static inline struct page *ksm_might_need_to_copy(struct page *page,
-			struct vm_area_struct *vma, unsigned long address)
-{
-	return page;
-}
-
-static inline void rmap_walk_ksm(struct page *page,
-			struct rmap_walk_control *rwc)
-{
-}
-
-static inline void ksm_migrate_page(struct page *newpage, struct page *oldpage)
-{
-}
-#endif /* CONFIG_MMU */
+/*  */
 #endif /* !CONFIG_KSM */
 
 #endif /* __LINUX_KSM_H */

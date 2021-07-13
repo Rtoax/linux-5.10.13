@@ -675,7 +675,7 @@ bool page_mapped(struct page *page)
 }
 EXPORT_SYMBOL(page_mapped);
 
-struct anon_vma *page_anon_vma(struct page *page)
+struct anon_vma *page_anon_vma(struct page *page)   /* 获取 anon_vma 结构 */
 {
 	unsigned long mapping;
 
@@ -683,7 +683,7 @@ struct anon_vma *page_anon_vma(struct page *page)
 	mapping = (unsigned long)page->mapping;
 	if ((mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
 		return NULL;
-	return __page_rmapping(page);
+	return __page_rmapping(page);   /* 获取 anon_vma 结构 */
 }
 
 /**

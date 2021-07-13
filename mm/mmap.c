@@ -492,6 +492,91 @@ RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks,
 			 struct vm_area_struct, vm_rb,
 			 unsigned long, rb_subtree_gap, vma_compute_gap){}/* 我加的 {} */
 
+#if __RTOAX__________RB_DECLARE_CALLBACKS_MAX
+/*
+ * Template for declaring augmented rbtree callbacks (generic case)
+ *
+ * static:    'static' or empty
+ * vma_gap_callbacks:      name of the rb_augment_callbacks structure
+ * struct vm_area_struct:    struct type of the tree nodes
+ * vm_rb:     name of struct rb_node field within struct vm_area_struct
+ * rb_subtree_gap: name of field within struct vm_area_struct holding data for subtree
+ * vma_compute_gap:   name of function that recomputes the rb_subtree_gap data
+ */
+
+// #define RB_DECLARE_CALLBACKS(static, vma_gap_callbacks,				
+			     // struct vm_area_struct, vm_rb, rb_subtree_gap, vma_compute_gap)	
+static inline void							
+vma_gap_callbacks_propagate(struct rb_node *rb, struct rb_node *stop)		
+{									
+	while (rb != stop) {						
+		struct vm_area_struct *node = rb_entry(rb, struct vm_area_struct, vm_rb);	
+		if (vma_compute_gap(node, true))				
+			break;						
+		rb = rb_parent(&node->vm_rb);				
+	}								
+}									
+static inline void							
+vma_gap_callbacks_copy(struct rb_node *rb_old, struct rb_node *rb_new)		
+{									
+	struct vm_area_struct *old = rb_entry(rb_old, struct vm_area_struct, vm_rb);		
+	struct vm_area_struct *new = rb_entry(rb_new, struct vm_area_struct, vm_rb);		
+	new->rb_subtree_gap = old->rb_subtree_gap;				
+}									
+static void								
+vma_gap_callbacks_rotate(struct rb_node *rb_old, struct rb_node *rb_new)	
+{									
+	struct vm_area_struct *old = rb_entry(rb_old, struct vm_area_struct, vm_rb);		
+	struct vm_area_struct *new = rb_entry(rb_new, struct vm_area_struct, vm_rb);		
+	new->rb_subtree_gap = old->rb_subtree_gap;				
+	vma_compute_gap(old, false);						
+}									
+static const struct rb_augment_callbacks vma_gap_callbacks = {			
+	.propagate = vma_gap_callbacks_propagate,				
+	.copy = vma_gap_callbacks_copy,					
+	.rotate = vma_gap_callbacks_rotate					
+};
+
+/*
+ * Template for declaring augmented rbtree callbacks,
+ * computing rb_subtree_gap scalar as max(vma_compute_gap(node)) for all subtree nodes.
+ *
+ * static:    'static' or empty
+ * vma_gap_callbacks:      name of the rb_augment_callbacks structure
+ * struct vm_area_struct:    struct type of the tree nodes
+ * vm_rb:     name of struct rb_node field within struct vm_area_struct
+ * unsigned long:      type of the rb_subtree_gap field
+ * rb_subtree_gap: name of unsigned long field within struct vm_area_struct holding data for subtree
+ * vma_compute_gap:   name of function that returns the per-node unsigned long scalar
+ */
+
+// #define RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks, struct vm_area_struct, vm_rb,	      
+				 // unsigned long, rb_subtree_gap, vma_compute_gap)	      
+static inline bool vma_gap_callbacks_compute_max(struct vm_area_struct *node, bool exit)	      
+{									      
+	struct vm_area_struct *child;						      
+	unsigned long max = vma_compute_gap(node);					      
+	if (node->vm_rb.rb_left) {					      
+		child = rb_entry(node->vm_rb.rb_left, struct vm_area_struct, vm_rb);   
+		if (child->rb_subtree_gap > max)				      
+			max = child->rb_subtree_gap;			      
+	}								      
+	if (node->vm_rb.rb_right) {					      
+		child = rb_entry(node->vm_rb.rb_right, struct vm_area_struct, vm_rb);  
+		if (child->rb_subtree_gap > max)				      
+			max = child->rb_subtree_gap;			      
+	}								      
+	if (exit && node->rb_subtree_gap == max)				      
+		return true;						      
+	node->rb_subtree_gap = max;					      
+	return false;							      
+}									      
+// RB_DECLARE_CALLBACKS(static, vma_gap_callbacks,					      
+		     // struct vm_area_struct, vm_rb, rb_subtree_gap, vma_gap_callbacks_compute_max)
+
+
+#endif //__RTOAX__________RB_DECLARE_CALLBACKS_MAX
+
 /*
  * Update augmented rbtree rb_subtree_gap values after vma->vm_start or
  * vma->vm_prev->vm_end values changed, without modifying the vma's position
@@ -1447,11 +1532,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
  */
 static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
 {
-	return a->vm_end == b->vm_start &&
-		mpol_equal(vma_policy(a), vma_policy(b)) &&
-		a->vm_file == b->vm_file &&
-		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
-		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);
+	return a->vm_end == b->vm_start &&  /* 起始地址相同 */
+		mpol_equal(vma_policy(a), vma_policy(b)) && /* 策略相同 */
+		a->vm_file == b->vm_file &&     /* 文件相同 */
+		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&       /*  */
+		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);   /* page offset */
 }
 
 /*

@@ -1905,7 +1905,10 @@ extern int _cond_resched(void);
 时间过长导致可能发生的soft lockup或者造成较大的调度延迟。
 */
 
-/* cond_resched 主动让出cpu */
+/**
+ *  cond_resched 主动让出cpu . why??
+ *  
+ */
 #define cond_resched() ({			\
 	___might_sleep(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\

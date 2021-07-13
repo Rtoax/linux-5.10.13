@@ -518,14 +518,15 @@ static inline pgoff_t page_to_index(struct page *page)
 }
 
 /*
- * Get the offset in PAGE_SIZE.
+ * Get the offset in PAGE_SIZE. 获取页内偏移
  * (TODO: hugepage should have ->index in PAGE_SIZE)
  */
-static inline pgoff_t page_to_pgoff(struct page *page)
+static inline pgoff_t page_to_pgoff(struct page *page)  
 {
 	if (unlikely(PageHeadHuge(page)))
 		return page->index << compound_order(page);
 
+    /*  */
 	return page_to_index(page);
 }
 

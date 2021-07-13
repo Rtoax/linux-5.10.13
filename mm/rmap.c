@@ -1399,6 +1399,8 @@ out:
 
 /*
  * @arg: enum ttu_flags will be passed to this argument
+ *
+ * unmap 物理 page 对应的 vma
  */
 static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, void *arg)
@@ -1760,6 +1762,9 @@ static int page_mapcount_is_zero(struct page *page)
  * page, used in the pageout path.  Caller must hold the page lock.
  *
  * If unmap is successful, return true. Otherwise, false.
+ *
+ * 试图 将 映射到这个 物理 页面 的 映射移除
+ *
  */
 bool try_to_unmap(struct page *page, enum ttu_flags flags)
 {
@@ -1842,11 +1847,14 @@ static struct anon_vma *rmap_walk_anon_lock(struct page *page,
 	 * because that depends on page_mapped(); but not all its usages
 	 * are holding mmap_lock. Users without mmap_lock are required to
 	 * take a reference count to prevent the anon_vma disappearing
+	 *
+	 * 从 page->mapping 获取 anon_vma 结构
 	 */
 	anon_vma = page_anon_vma(page);
 	if (!anon_vma)
 		return NULL;
 
+    /* 读 down */
 	anon_vma_lock_read(anon_vma);
 	return anon_vma;
 }
@@ -1864,6 +1872,9 @@ static struct anon_vma *rmap_walk_anon_lock(struct page *page,
  * where the page was found will be held for write.  So, we won't recheck
  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
  * LOCKED.
+ *
+ * 遍历这个逆向映射
+ * 匿名映射 page->mapping 结构指向 struct anon_vma 结构
  */
 static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
 		bool locked)
@@ -1872,30 +1883,47 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
 	pgoff_t pgoff_start, pgoff_end;
 	struct anon_vma_chain *avc;
 
+    /**
+     *  rmap_walk 中为 false
+     */
 	if (locked) {
 		anon_vma = page_anon_vma(page);
 		/* anon_vma disappear under us? */
 		VM_BUG_ON_PAGE(!anon_vma, page);
 	} else {
+        /* 获取 anon_vma 结构 */
 		anon_vma = rmap_walk_anon_lock(page, rwc);
 	}
 	if (!anon_vma)
 		return;
 
+    /*  */
 	pgoff_start = page_to_pgoff(page);
 	pgoff_end = pgoff_start + thp_nr_pages(page) - 1;
-	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root,
-			pgoff_start, pgoff_end) {
+
+    /**
+     *  遍历 红黑树 
+     */
+	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff_start, pgoff_end) {
+
+        /* 这个 vma 映射在 page 页 */
 		struct vm_area_struct *vma = avc->vma;
+
+        /* VMA 的虚拟地址 */
 		unsigned long address = vma_address(page, vma);
 
+        /* TODO */
 		cond_resched();
 
+        /* 不可用，继续下一个 */
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
 			continue;
 
+        /* RMAP 的一个处理 */
 		if (!rwc->rmap_one(page, vma, address, rwc->arg))
 			break;
+
+        /* 完成 */
 		if (rwc->done && rwc->done(page))
 			break;
 	}
@@ -1916,6 +1944,8 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
  * where the page was found will be held for write.  So, we won't recheck
  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
  * LOCKED.
+ *
+ * 文件高速缓存 page->mapping 对应  struct address_space 结构
  */
 static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 		bool locked)
@@ -1935,12 +1965,19 @@ static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 	if (!mapping)
 		return;
 
+    /* TODO */
 	pgoff_start = page_to_pgoff(page);
 	pgoff_end = pgoff_start + thp_nr_pages(page) - 1;
+    
 	if (!locked)
 		i_mmap_lock_read(mapping);
-	vma_interval_tree_foreach(vma, &mapping->i_mmap,
-			pgoff_start, pgoff_end) {
+
+    /**
+     *  
+     *
+     */
+	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff_start, pgoff_end) {
+	
 		unsigned long address = vma_address(page, vma);
 
 		cond_resched();
@@ -1948,8 +1985,10 @@ static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
 			continue;
 
+        /* 回调 */
 		if (!rwc->rmap_one(page, vma, address, rwc->arg))
 			goto done;
+        
 		if (rwc->done && rwc->done(page))
 			goto done;
 	}
@@ -1959,12 +1998,26 @@ done:
 		i_mmap_unlock_read(mapping);
 }
 
+/**
+ *  RMAP:  遍历 一个 page 的逆向映射
+ *
+ *  在下面的地方调用
+ *  try_to_unmap()
+ */
 void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 {
+    /* KSM 页面 */
 	if (unlikely(PageKsm(page)))
 		rmap_walk_ksm(page, rwc);
+
+    /**
+     *  匿名页面 
+     *
+     */
 	else if (PageAnon(page))
 		rmap_walk_anon(page, rwc, false);
+
+    /* 文件映射 */
 	else
 		rmap_walk_file(page, rwc, false);
 }
@@ -1972,8 +2025,9 @@ void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 /* Like rmap_walk, but caller holds relevant rmap lock */
 void rmap_walk_locked(struct page *page, struct rmap_walk_control *rwc)
 {
-	/* no ksm support for now */
+	/* no ksm support for now，还不支持 */
 	VM_BUG_ON_PAGE(PageKsm(page), page);
+    
 	if (PageAnon(page))
 		rmap_walk_anon(page, rwc, true);
 	else

@@ -1302,6 +1302,7 @@ static unsigned int shrink_page_list(struct list_head *page_list,
 			if (unlikely(PageTransHuge(page)))
 				flags |= TTU_SPLIT_HUGE_PMD;
 
+            /* 使用 RMAP 机制 unmap */
 			if (!try_to_unmap(page, flags)) {
 				stat->nr_unmap_fail += nr_pages;
 				if (!was_swapbacked && PageSwapBacked(page))
@@ -2126,7 +2127,7 @@ unsigned long reclaim_pages(struct list_head *page_list)
 			list_move(&page->lru, &node_page_list);
 			continue;
 		}
-
+        /*  */
 		nr_reclaimed += shrink_page_list(&node_page_list,
 						NODE_DATA(nid),
 						&sc, &dummy_stat, false);

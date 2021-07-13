@@ -280,12 +280,14 @@ static inline unsigned int thp_order(struct page *page)
 /**
  * thp_nr_pages - The number of regular pages in this huge page.
  * @page: The head page of a huge page.
+ *
+ * 大页内存中所含的 常规 page 的个数
  */
-static inline int thp_nr_pages(struct page *page)
+static inline int thp_nr_pages(struct page *page)   /* TODO */
 {
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
 	if (PageHead(page))
-		return HPAGE_PMD_NR;
+		return HPAGE_PMD_NR;    /* TODO */
 	return 1;
 }
 

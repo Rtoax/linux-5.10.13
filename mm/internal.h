@@ -384,10 +384,13 @@ extern pmd_t maybe_pmd_mkwrite(pmd_t pmd, struct vm_area_struct *vma);
 static inline unsigned long
 __vma_address(struct page *page, struct vm_area_struct *vma)
 {
-	pgoff_t pgoff = page_to_pgoff(page);
-	return vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
+	pgoff_t pgoff = page_to_pgoff(page);    /* 页内偏移 */
+
+    /*  */
+	return vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT/* 12 */);
 }
 
+/*  */
 static inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {

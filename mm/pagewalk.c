@@ -375,6 +375,8 @@ static int __walk_page_range(unsigned long start, unsigned long end,
  * Locking:
  *   Callers of walk_page_range() and walk_page_vma() should hold @mm->mmap_lock,
  *   because these function traverse vma list and/or access to vma's data.
+ *
+ * 遍历页表，通过 调用特殊的回调函数，这就简单多了。
  */
 int walk_page_range(struct mm_struct *mm, unsigned long start,
 		unsigned long end, const struct mm_walk_ops *ops,
