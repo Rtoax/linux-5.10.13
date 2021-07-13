@@ -63,7 +63,11 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>
 
-struct scan_control {   /* 存放回收操作执行时相关信息 */
+/**
+ *  存放 `页回收操作` 执行时的相关信息 
+ */
+struct scan_control { 
+    
 	/* How many pages shrink_list() should reclaim */
 	unsigned long nr_to_reclaim;
 
@@ -163,7 +167,7 @@ struct scan_control {   /* 存放回收操作执行时相关信息 */
 		}							\
 	} while (0)
 #else
-#define prefetchw_prev_lru_page(_page, _base, _field) do { } while (0)
+/*  */
 #endif
 
 /*
@@ -268,24 +272,7 @@ static bool writeback_throttling_sane(struct scan_control *sc)
 	return false;
 }
 #else
-static int prealloc_memcg_shrinker(struct shrinker *shrinker)
-{
-	return 0;
-}
-
-static void unregister_memcg_shrinker(struct shrinker *shrinker)
-{
-}
-
-static bool cgroup_reclaim(struct scan_control *sc)
-{
-	return false;
-}
-
-static bool writeback_throttling_sane(struct scan_control *sc)
-{
-	return true;
-}
+/*  */
 #endif
 
 /*

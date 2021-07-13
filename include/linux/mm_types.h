@@ -98,15 +98,17 @@ struct page {   /* 物理页 */
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
 			 * by the page owner.
-			 *
+			 * 
 			 * 链表头(不一定是链表头，可能是链表节点)，主要有3个用途：
-             * a：page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
-             * b：page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
-             * c：page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
+             * a: page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
+             * b: page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
+             * c: page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
+             * d: page回收时,见`reclaim_pages()`
              *
              * a. `zone->free_area->free_list` 为链表头的链表,见`get_page_from_free_area()`
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
+            
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
             /**
              *  页面指向的地址空间,一个指针，两个用途
