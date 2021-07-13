@@ -1057,11 +1057,11 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
  */
 
 /* Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | */
-#define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)
-#define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
-#define ZONES_PGOFF		(NODES_PGOFF - ZONES_WIDTH)
-#define LAST_CPUPID_PGOFF	(ZONES_PGOFF - LAST_CPUPID_WIDTH)
-#define KASAN_TAG_PGOFF		(LAST_CPUPID_PGOFF - KASAN_TAG_WIDTH)
+#define SECTIONS_PGOFF      /* 64 */		((sizeof(unsigned long)*8)/* 64 */ - SECTIONS_WIDTH/* 0 */)
+#define NODES_PGOFF		    /* 54 */  (SECTIONS_PGOFF/* 64 */ - NODES_WIDTH/* 10 */)
+#define ZONES_PGOFF		    /* 51 */  (NODES_PGOFF/* 54 */ - ZONES_WIDTH/* 3 */)
+#define LAST_CPUPID_PGOFF	/* 43 */  (ZONES_PGOFF/* 64 */ - LAST_CPUPID_WIDTH/* 21 */)
+#define KASAN_TAG_PGOFF		/* 43 */  (LAST_CPUPID_PGOFF/* 43 */ - KASAN_TAG_WIDTH)
 
 /*
  * Define the bit shifts to access each section.  For non-existent
@@ -1076,21 +1076,36 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
 
 /* NODE:ZONE or SECTION:ZONE is used to ID a zone for the buddy allocator */
 #ifdef NODE_NOT_IN_PAGE_FLAGS
-#define ZONEID_SHIFT		(SECTIONS_SHIFT + ZONES_SHIFT)
-#define ZONEID_PGOFF		((SECTIONS_PGOFF < ZONES_PGOFF)? \
-						SECTIONS_PGOFF : ZONES_PGOFF)
+//#define ZONEID_SHIFT		(SECTIONS_SHIFT + ZONES_SHIFT)
+//#define ZONEID_PGOFF		((SECTIONS_PGOFF < ZONES_PGOFF)? \
+//						SECTIONS_PGOFF : ZONES_PGOFF)
 #else
-#define ZONEID_SHIFT		(NODES_SHIFT + ZONES_SHIFT)
+#define ZONEID_SHIFT		(NODES_SHIFT/* 10 */ + ZONES_SHIFT/* 3 */)/* 13 */
 #define ZONEID_PGOFF		((NODES_PGOFF < ZONES_PGOFF)? \
 						NODES_PGOFF : ZONES_PGOFF)
 #endif
 
 #define ZONEID_PGSHIFT		(ZONEID_PGOFF * (ZONEID_SHIFT != 0))
 
-#define ZONES_MASK		((1UL << ZONES_WIDTH) - 1)
-#define NODES_MASK		((1UL << NODES_WIDTH) - 1)
-#define SECTIONS_MASK		((1UL << SECTIONS_WIDTH) - 1)
-#define LAST_CPUPID_MASK	((1UL << LAST_CPUPID_SHIFT) - 1)
+/**
+ *  +----------+---------+----------+--------+----------+
+ *  |  section |   node  |   zone   |  ...   |   flag   |
+ *  +----------+---------+----------+--------+----------+
+ *
+ *  struct page->flags
+ * 
+ * 63    62 61  60 59             44 43                                               0  
+ *  +------+------+-----------------+-------------------------------------------------+
+ *  | node | zone |    LAST_CPUPID  |                   flags                         |
+ *  +------+------+-----------------+-------------------------------------------------+
+ *
+ *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
+ * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+ */
+#define ZONES_MASK		((1UL << ZONES_WIDTH/* 3 */) - 1)
+#define NODES_MASK		((1UL << NODES_WIDTH/* 10 */) - 1)
+#define SECTIONS_MASK		((1UL << SECTIONS_WIDTH/* 0 */) - 1)
+#define LAST_CPUPID_MASK	((1UL << LAST_CPUPID_SHIFT/* 21 */) - 1)
 #define KASAN_TAG_MASK		((1UL << KASAN_TAG_WIDTH) - 1)
 #define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
 
@@ -1157,7 +1172,10 @@ static inline bool is_pci_p2pdma_page(const struct page *page)
 #define page_ref_zero_or_close_to_overflow(page) \
 	((unsigned int) page_ref_count(page) + 127u <= 127u)
 
-static inline void get_page(struct page *page)
+/**
+ *  page->_refcount++ 
+ */
+static inline void get_page(struct page *page)  
 {
 	page = compound_head(page);
 	/*
@@ -1179,6 +1197,9 @@ static inline __must_check bool try_get_page(struct page *page)
 	return true;
 }
 
+/**
+ *  page->_refcount--
+ */
 static inline void put_page(struct page *page)
 {
 	page = compound_head(page);
@@ -1425,6 +1446,21 @@ static inline unsigned long page_to_section(const struct page *page)
 }
 #endif
 
+/**
+ *  +----------+---------+----------+--------+----------+
+ *  |  section |   node  |   zone   |  ...   |   flag   |
+ *  +----------+---------+----------+--------+----------+
+ *
+ *  struct page->flags
+ * 
+ * 63    62 61  60 59             44 43                                               0  
+ *  +------+------+-----------------+-------------------------------------------------+
+ *  | node | zone |    LAST_CPUPID  |                   flags                         |
+ *  +------+------+-----------------+-------------------------------------------------+
+ *
+ *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
+ * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+ */
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
@@ -1437,12 +1473,6 @@ static inline void set_page_node(struct page *page, unsigned long node)
 	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
 }
 
-
-/**
-+----------+---------+----------+--------+----------+
-|  section |   node  |   zone   |  ...   |   flag   |
-+----------+---------+----------+--------+----------+
- */
 static inline void set_page_links(struct page *page, enum zone_type zone,
 	unsigned long node, unsigned long pfn)
 {

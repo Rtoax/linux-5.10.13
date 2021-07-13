@@ -63,7 +63,7 @@ struct mem_cgroup;
 #ifdef CONFIG_HAVE_ALIGNED_STRUCT_PAGE
 #define _struct_page_alignment	__aligned(2 * sizeof(unsigned long))
 #else
-#define _struct_page_alignment
+//#define _struct_page_alignment
 #endif
 
 struct page {   /* 物理页 */
@@ -79,7 +79,10 @@ struct page {   /* 物理页 */
      *  | node | zone |    LAST_CPUPID  |                   flags                         |
      *  +------+------+-----------------+-------------------------------------------------+
      *
+     *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
+     * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
      */
+    // 见 `set_page_links()`
     //flags -> enum pageflags
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
@@ -106,10 +109,12 @@ struct page {   /* 物理页 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
             /**
-             *  页面指向的地址空间
+             *  页面指向的地址空间,一个指针，两个用途
+             *  1. 文件映射页面
+             *  2. 匿名映射页面，`PageAnon()`,`PAGE_MAPPING_ANON`
              *
              * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；
-             *                 当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+             *                  当需要使用地址空间时会指定交换分区的地址空间swapper_space。
              * 如果 mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
              * 如果 mapping != 0，bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
              * 
@@ -233,10 +238,20 @@ struct page {   /* 物理页 */
 		 * If the page can be mapped to userspace, encodes the number
 		 * of times this page is referenced by a page table.
 		 *
-		 * 被页表映射的次数，也就是说该page同时被多少个进程共享。
+		 * 被页表映射的次数(映射了多少个PTE)，也就是说该page同时被多少个进程共享。
+		 * _mapcount 主要用于 RMAP 中
+		 *
+		 * =-1 标识没有PTE 映射到页面
+		 * =0  标识只有父进程映射到页面
+		 * >0  标识除了父进程外还有其他进程映射到这个页面
+		 *
+		 * 见`page_dup_rmap()`
+		 *
+		 * 下面的解释是比较古老的解释：
+		 * ==========================================
 		 * 初始值为-1，如果只被一个进程的页表映射了，该值为0 。
-		 * 如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
-		 * 内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统。
+		 * 如果该page处于伙伴系统中，该值为`PAGE_BUDDY_MAPCOUNT_VALUE`（-128），
+		 * 内核通过判断该值是否为`PAGE_BUDDY_MAPCOUNT_VALUE`来确定该page是否属于伙伴系统。
          * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
          * 被映射了不一定在使用，但要使用必须先映射。
 		 */
@@ -262,7 +277,11 @@ struct page {   /* 物理页 */
 	/**
 	 *  Usage count. *DO NOT USE DIRECTLY*. See page_ref.h 
 	 *
-	 *  引用计数
+	 *  内核中引用该页面的次数
+	 *  =0 该页面 为空闲页面或即将要被释放的页面
+	 *  >0 该页面 已经被分配，且内核正在使用，暂时不会被释放
+	 *
+	 *  操作 _refcount 的函数 `get_page()`,`put_page()`
 	 */
 	atomic_t _refcount;
 

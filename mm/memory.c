@@ -912,8 +912,8 @@ copy_present_pte(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 		if (retval <= 0)
 			return retval;
 
-		get_page(page);
-		page_dup_rmap(page, false);
+		get_page(page); //引用计数 _refcount++
+		page_dup_rmap(page, false); //映射计数 _mapcount++
 		rss[mm_counter(page)]++;
 	}
 

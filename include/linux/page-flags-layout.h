@@ -44,45 +44,45 @@
    +----------+---------+----------+--------+----------+
  */
 #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define SECTIONS_WIDTH		SECTIONS_SHIFT
+//#define SECTIONS_WIDTH		SECTIONS_SHIFT
 #else
 #define SECTIONS_WIDTH		0
 #endif
 
-#define ZONES_WIDTH		ZONES_SHIFT
+#define ZONES_WIDTH		ZONES_SHIFT /* 3 */
 
-#if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= BITS_PER_LONG - NR_PAGEFLAGS
-#define NODES_WIDTH		NODES_SHIFT
+#if SECTIONS_WIDTH/* 0 */+ZONES_WIDTH/* 3 */+NODES_SHIFT/* 10 */ <= BITS_PER_LONG/* 64 */ - NR_PAGEFLAGS/* 27 */
+#define NODES_WIDTH		NODES_SHIFT/* 10 */
 #else
-#ifdef CONFIG_SPARSEMEM_VMEMMAP
-#error "Vmemmap: No space for nodes field in page flags"
-#endif
-#define NODES_WIDTH		0
+//#ifdef CONFIG_SPARSEMEM_VMEMMAP
+//#error "Vmemmap: No space for nodes field in page flags"
+//#endif
+//#define NODES_WIDTH		0
 #endif
 
 #ifdef CONFIG_NUMA_BALANCING
 #define LAST__PID_SHIFT 8
-#define LAST__PID_MASK  ((1 << LAST__PID_SHIFT)-1)
+#define LAST__PID_MASK  ((1 << LAST__PID_SHIFT)-1)/* 255 */
 
-#define LAST__CPU_SHIFT NR_CPUS_BITS
-#define LAST__CPU_MASK  ((1 << LAST__CPU_SHIFT)-1)
+#define LAST__CPU_SHIFT NR_CPUS_BITS    /* 13 */
+#define LAST__CPU_MASK  ((1 << LAST__CPU_SHIFT)-1)/* 0x7FF=2047 */
 
-#define LAST_CPUPID_SHIFT (LAST__PID_SHIFT+LAST__CPU_SHIFT)
+#define LAST_CPUPID_SHIFT (LAST__PID_SHIFT/* 8 */+LAST__CPU_SHIFT/* 13 */)/* = 21 */
 #else
 /*  */
 #endif
 
 #ifdef CONFIG_KASAN_SW_TAGS
-#define KASAN_TAG_WIDTH 8
+//#define KASAN_TAG_WIDTH 8
 #else
 #define KASAN_TAG_WIDTH 0
 #endif
 
-#if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT+LAST_CPUPID_SHIFT+KASAN_TAG_WIDTH \
-	<= BITS_PER_LONG - NR_PAGEFLAGS
-#define LAST_CPUPID_WIDTH LAST_CPUPID_SHIFT
+#if SECTIONS_WIDTH/* 0 */+ZONES_WIDTH/* 3 */+NODES_SHIFT/*10*/+LAST_CPUPID_SHIFT/* 21 */+KASAN_TAG_WIDTH/* 0 */ \
+	<= BITS_PER_LONG/* 64 */ - NR_PAGEFLAGS/* 27 */
+#define LAST_CPUPID_WIDTH LAST_CPUPID_SHIFT/* 21 */
 #else
-#define LAST_CPUPID_WIDTH 0
+//#define LAST_CPUPID_WIDTH 0
 #endif
 
 #if SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH+LAST_CPUPID_WIDTH+KASAN_TAG_WIDTH \
