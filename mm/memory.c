@@ -3789,6 +3789,10 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	}
 
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
+
+    /**
+     *  添加 PTE mapping 到 新的 匿名页面中
+     */
 	page_add_new_anon_rmap(page, vma, vmf->address, false);
 	lru_cache_add_inactive_or_unevictable(page, vma);
     

@@ -185,6 +185,8 @@ static void anon_vma_chain_link(struct vm_area_struct *vma,
  * an anon_vma.
  *
  * This must be called with the mmap_lock held for reading.
+ *
+ * 为 RMAP 做准备
  */
 int __anon_vma_prepare(struct vm_area_struct *vma)
 {
@@ -194,15 +196,18 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 
 	might_sleep();
 
-    /* 分配结构 */
+    /* 分配 AVC 结构 */
 	avc = anon_vma_chain_alloc(GFP_KERNEL);
 	if (!avc)
 		goto out_enomem;
 
-    /* 查找可合并的 anon_vma */
+    /**
+     *  查找可合并的 anon_vma 
+     *  是否可以复用当前 VMA 的 near_vma 和 prev_vma 的 anon_vma 结构
+     */
 	anon_vma = find_mergeable_anon_vma(vma);
 	allocated = NULL;
-	if (!anon_vma) {    /* 没找到就分配 */
+	if (!anon_vma) {    /* 不能复用 就分配 */
 		anon_vma = anon_vma_alloc();
 		if (unlikely(!anon_vma))
 			goto out_enomem_free_avc;
@@ -1049,6 +1054,8 @@ void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma)
  * @vma:	VM area to add page to.
  * @address:	User virtual address of the mapping	
  * @exclusive:	the page is exclusively owned by the current process
+ *
+ * 
  */
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
@@ -1179,6 +1186,8 @@ void do_page_add_anon_rmap(struct page *page,
  * Same as page_add_anon_rmap but must only be called on *new* pages.
  * This means the inc-and-test can be bypassed.
  * Page does not have to be locked.
+ *
+ *  添加 PTE mapping 到 新的 匿名页面中
  */
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
@@ -1186,7 +1195,10 @@ void page_add_new_anon_rmap(struct page *page,
 	int nr = compound ? thp_nr_pages(page) : 1;
 
 	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
-	__SetPageSwapBacked(page);
+
+    
+    __SetPageSwapBacked(page);
+    
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
 		/* increment count (starts at -1) */
@@ -1202,6 +1214,10 @@ void page_add_new_anon_rmap(struct page *page,
 		atomic_set(&page->_mapcount, 0);
 	}
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
+
+    /**
+     *  设置这个页面为匿名映射
+     */
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 

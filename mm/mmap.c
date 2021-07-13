@@ -1439,6 +1439,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
  * there is a vm_ops->close() function, because that indicates that the
  * driver is doing some kind of reference counting. But that doesn't
  * really matter for the anon_vma sharing case.
+ *
+ * 能复用的条件比较苛刻，如：
+ *  VMA 必须相邻；
+ *  VMA 内的 policy 相同
+ *  相同的 vm_file
  */
 static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
 {
@@ -1470,6 +1475,11 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
  * We also make sure that the two vma's are compatible (adjacent,
  * and with the same memory policies). That's all stable, even with just
  * a read lock on the mm_sem.
+ *
+ * 能复用的条件比较苛刻，如：
+ *  VMA 必须相邻；
+ *  VMA 内的 policy 相同
+ *  相同的 vm_file
  */
 static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_area_struct *a, struct vm_area_struct *b)
 {
@@ -1489,6 +1499,13 @@ static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_
  * sequence of mprotects and faults may otherwise lead to distinct
  * anon_vmas being allocated, preventing vma merge in subsequent
  * mprotect.
+ *
+ * 是否可以复用当前 VMA 的 near_vma 和 prev_vma 的 anon_vma 结构。
+ *
+ * 能复用的条件比较苛刻，如：
+ *  VMA 必须相邻；
+ *  VMA 内的 policy 相同
+ *  相同的 vm_file
  */
 struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)    /*  */
 {
