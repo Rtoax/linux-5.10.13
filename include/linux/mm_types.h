@@ -110,13 +110,26 @@ struct page {   /* 物理页 */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
             /**
              *  页面指向的地址空间,一个指针，两个用途
-             *  1. 文件映射页面
-             *  2. 匿名映射页面，`PageAnon()`,`PAGE_MAPPING_ANON`
+             *  1. 文件映射页面，`struct address_space`
+             *  2. 匿名映射页面，`struct anon_vma`. 见`PageAnon()`,`PAGE_MAPPING_ANON`
+             *  3. 交换高速缓存页面，`swapper_spaces`
              *
-             * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；
+             * 因为 `struct address_space` 为 8bytes 对齐，所以可将 mapping 成员的低两位用作：
+             *
+             * bit[0] 页面是否为 匿名页面，见`PageAnon()`,`PAGE_MAPPING_ANON`
+             * bit[1] 页面是否为 非 LRU 页面
+             * 若bit[0-1]均未置位,表明这是一个 KSM 页面
+             *
+             * page_rmapping(): 清除 低2位
+             * page_mapping():  返回 page->mapping 成员指向的地址空间
+             * page_mapped():   是否映射到用户 PTE
+             *
+             * ================================================
+             * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；`page_mapping`返回NULL的情况
              *                  当需要使用地址空间时会指定交换分区的地址空间swapper_space。
-             * 如果 mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
-             * 如果 mapping != 0，bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
+             * 如果 mapping != 0，
+             *      bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
+             *      bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
              * 
              * 通过mapping恢复anon_vma的方法：anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
             */

@@ -38,7 +38,7 @@ static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
  * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
  * arch-independent format
  */
-static inline unsigned swp_type(swp_entry_t entry)
+static inline unsigned swp_type(swp_entry_t entry)  /*  */
 {
 	return (entry.val >> SWP_TYPE_SHIFT);
 }

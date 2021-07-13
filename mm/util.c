@@ -638,7 +638,7 @@ static inline void *__page_rmapping(struct page *page)
 	unsigned long mapping;
 
 	mapping = (unsigned long)page->mapping;
-	mapping &= ~PAGE_MAPPING_FLAGS;
+	mapping &= ~PAGE_MAPPING_FLAGS; //清除 page->mapping 低2位
 
 	return (void *)mapping;
 }
@@ -653,6 +653,8 @@ void *page_rmapping(struct page *page)
 /*
  * Return true if this page is mapped into pagetables.
  * For compound page it returns true if any subpage of compound page is mapped.
+ *
+ * 是否映射到 用户 PTE。使用 page->_mapcout 为依据
  */
 bool page_mapped(struct page *page)
 {
@@ -684,6 +686,9 @@ struct anon_vma *page_anon_vma(struct page *page)
 	return __page_rmapping(page);
 }
 
+/**
+ *  返回 page->mapping 成员指向的地址空间
+ */
 struct address_space *page_mapping(struct page *page)
 {
 	struct address_space *mapping;
@@ -694,17 +699,21 @@ struct address_space *page_mapping(struct page *page)
 	if (unlikely(PageSlab(page)))
 		return NULL;
 
+    /* 交换高速缓存页面 */
 	if (unlikely(PageSwapCache(page))) {
 		swp_entry_t entry;
 
 		entry.val = page_private(page);
-		return swap_address_space(entry);
+		return swap_address_space(entry);   /* 指向 swapper_spaces */
 	}
 
 	mapping = page->mapping;
+
+    /* 匿名映射时返回空 */
 	if ((unsigned long)mapping & PAGE_MAPPING_ANON)
 		return NULL;
 
+    /* 文件映射页面 */
 	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
 }
 EXPORT_SYMBOL(page_mapping);
