@@ -3841,7 +3841,11 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 		smp_wmb(); /* See comment in __pte_alloc() */
 	}
 
+    /**
+     *  
+     */
 	ret = vma->vm_ops->fault(vmf);  /* 调用回调 */
+    
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY |
 			    VM_FAULT_DONE_COW)))
 		return ret;
@@ -4355,11 +4359,15 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 
 	/*
 	 * The VMA was not fully populated on mmap() or missing VM_DONTEXPAND
+	 *
+	 * 文件映射， vm_ops 不为空，当时 fault 可能为空
 	 */
 	if (!vma->vm_ops->fault) {
 		/*
 		 * If we find a migration pmd entry or a none pmd entry, which
 		 * should never happen, return SIGBUS
+		 *
+		 * 如果 PMD 不存在，不太合适， 直接  SIGBUS
 		 */
 		if (unlikely(!pmd_present(*vmf->pmd)))
 			ret = VM_FAULT_SIGBUS;
@@ -4383,6 +4391,13 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 			pte_unmap_unlock(vmf->pte, vmf->ptl);
 		}
 	} 
+    /**
+     *  有 fault 回调 的三种情况
+     *
+     *  1. 读造成的 缺页 - 
+     *  2. 写造成的 缺页 - 写时复制
+     *  3. 共享内存 缺页 - 进程间通信方式
+     */
     else if (!(vmf->flags & FAULT_FLAG_WRITE))
 	    /**
 	     *  文件映射的缺页中断处理-读内存
