@@ -44,6 +44,13 @@
 #define __READ_ONCE(x)	(*(const volatile __unqual_scalar_typeof(x) *)&(x))
 #endif
 
+/**
+ *  volatile 
+ *  声明这个变量易变，不要把它当成一个普通的变量，做出错误的优化。
+ *  保证CPU每次都从内存重新读取变量的值，而不是用寄存器中暂存的值。
+ *      注意，这里说的是寄存器中缓存的值，而不是CPU缓存中存的值。很多英文文档里面都说了Cache，容易让人产生误解。
+ */
+
 #define READ_ONCE(x)							\
 ({									\
 	compiletime_assert_rwonce_type(x);				\

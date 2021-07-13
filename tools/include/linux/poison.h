@@ -16,16 +16,16 @@
 #endif
 
 #ifdef __cplusplus
-#define LIST_POISON1  NULL
-#define LIST_POISON2  NULL
+//#define LIST_POISON1  NULL
+//#define LIST_POISON2  NULL
 #else
 /*
  * These are non-NULL pointers that will result in page faults
  * under normal circumstances, used to verify that nobody uses
  * non-initialized list entries.
  */
-#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
-#define LIST_POISON2  ((void *) 0x200 + POISON_POINTER_DELTA)
+//#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
+//#define LIST_POISON2  ((void *) 0x200 + POISON_POINTER_DELTA)
 #endif
 
 /********** include/linux/timer.h **********/
@@ -39,7 +39,7 @@
 #ifdef CONFIG_PAGE_POISONING_ZERO
 #define PAGE_POISON 0x00
 #else
-#define PAGE_POISON 0xaa
+//#define PAGE_POISON 0xaa
 #endif
 
 /********** mm/page_alloc.c ************/
