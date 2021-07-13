@@ -458,7 +458,7 @@ struct vm_area_struct { /* VMA */
 	struct list_head anon_vma_chain; /* Serialized by mmap_lock & page_table_lock */
 
     /**
-     *  用于 RMAP 
+     *  用于 RMAP ，指向 AV(struct anon_vma)结构
      *
      * 
      */

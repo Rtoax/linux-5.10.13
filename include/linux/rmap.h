@@ -25,10 +25,39 @@
  * After unlinking the last vma on the list, we must garbage collect
  * the anon_vma object itself: we're guaranteed no page can be
  * pointing to this anon_vma once its vma list is empty.
+ *
+ * 链接 物理页面 的 page 数据结构 和 VMA 的 vm_area_struct 数据结构，
+ *
+ * 指向本数据结构的对象：
+ * -----------------------------------------
+ * vm_area_struct->anon_vma ->
+ * page->mapping(匿名页面时) ->
+ *
+ *     vma
+ * +----------+
+ * |          |
+ * +----------+
+ * | anon_vma |-------------+
+ * +----------+             |
+ * |          |             |            anon_vma
+ * +----------+             +---------->+--------+
+ *                          |           |        |
+ *                          |           +--------+          anon_vma 红黑树
+ *     page                 |           |  root  |-------->    ()
+ * +----------+             |           +--------+             /\
+ * |          |             |           |        |           ()  ()
+ * +----------+             |           +--------+           /\  /\
+ * |  mapping |-------------+                              () ()() ()
+ * +----------+             
+ * |          |             
+ * +----------+
  */
 struct anon_vma {   /* 匿名 VMA */
-    
+
+    /* 指向 根节点 */
 	struct anon_vma *root;		/* Root of this anon_vma tree */
+
+    /* 保护链表 */
 	struct rw_semaphore rwsem;	/* W: modification, R: walking the list */
 	/*
 	 * The refcount is taken on an anon_vma when there is no
@@ -36,6 +65,8 @@ struct anon_vma {   /* 匿名 VMA */
 	 * the duration of the operation. A caller that takes
 	 * the reference is responsible for clearing up the
 	 * anon_vma if they are the last user on release
+	 *
+	 * 引用计数
 	 */
 	atomic_t refcount;
 
@@ -47,6 +78,7 @@ struct anon_vma {   /* 匿名 VMA */
 	 */
 	unsigned degree;    /*  */
 
+    /* 指向 父节点 */
 	struct anon_vma *parent;	/* Parent of this anon_vma */
 
 	/*
@@ -74,9 +106,16 @@ struct anon_vma {   /* 匿名 VMA */
  * all the anon_vmas associated with this VMA.
  * The "rb" field indexes on an interval tree the anon_vma_chains
  * which link all the VMAs associated with this anon_vma.
+ *
+ * 该数据结构起到枢纽作用，比如：
+ *  1. 链接父子进程间的 struct anon_vma 结构
  */
 struct anon_vma_chain { 
-	struct vm_area_struct *vma; /*  */
+
+    /* 指向 VMA */
+	struct vm_area_struct *vma; 
+
+    /* 可以指向 父进程或子进程 的 anon_vma 结构 */
 	struct anon_vma *anon_vma;
 
     /**
