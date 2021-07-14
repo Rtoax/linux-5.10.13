@@ -458,6 +458,8 @@ EXPORT_SYMBOL(mark_page_accessed);
  * to add the page to the [in]active [file|anon] list is deferred until the
  * pagevec is drained. This gives a chance for the caller of lru_cache_add()
  * have the page added to the active list using mark_page_accessed().
+ *
+ * 加入 LRU 链表
  */
 void lru_cache_add(struct page *page)   /*  */
 {
@@ -469,8 +471,12 @@ void lru_cache_add(struct page *page)   /*  */
 	get_page(page);
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
-	if (!pagevec_add(pvec, page) || PageCompound(page))
+
+    /* 添加到 pagevec 链表 */
+	if (!pagevec_add(pvec, page) || PageCompound(page)) {
+        /* 如果 pagevec 没有空间了 */
 		__pagevec_lru_add(pvec);
+    }
 	local_unlock(&lru_pvecs.lock);
 }
 EXPORT_SYMBOL(lru_cache_add);
@@ -1015,6 +1021,10 @@ void lru_add_page_tail(struct page *page, struct page *page_tail,
 }
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
+/**
+ *  
+ *  
+ */
 static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 				 void *arg)
 {
@@ -1051,6 +1061,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	 * in an unevictable LRU.
 	 */
 	SetPageLRU(page);
+    
 	smp_mb__after_atomic();
 
 	if (page_evictable(page)) {
@@ -1065,6 +1076,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
 	}
 
+    /* 哪种 链表中 */
 	add_page_to_lru_list(page, lruvec, lru);
 	trace_mm_lru_insertion(page, lru);
 }
@@ -1072,6 +1084,8 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 /*
  * Add the passed pages to the LRU, then drop the caller's refcount
  * on them.  Reinitialises the caller's pagevec.
+ *
+ * 原有 的 链表添加
  */
 void __pagevec_lru_add(struct pagevec *pvec)
 {

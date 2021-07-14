@@ -17,6 +17,11 @@
 struct page;
 struct address_space;
 
+/**
+ *  页向量，借助一个数组来保存特定数目的页，
+ *  可以对这些页面执行同样的操作
+ *  页面会以 批处理 的方式执行，比单独处理一个页面的效率高。
+ */
 struct pagevec {    /* 多页的容器 */
 	unsigned char nr;
 	bool percpu_pvec_drained;
@@ -75,6 +80,8 @@ static inline unsigned pagevec_space(struct pagevec *pvec)
 
 /*
  * Add a page to a pagevec.  Returns the number of slots still available.
+ *
+ * 往 pagevec 里添加页面
  */
 static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 {

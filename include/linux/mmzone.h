@@ -243,11 +243,16 @@ static __always_inline bool vmstat_item_in_bytes(int idx)
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
 
+/**
+ *  用于页面回收的 最近最少使用 枚举
+ *
+ * pglist_data.lruvec.lists[NR_LRU_LISTS]
+ */
 enum lru_list { /* 最近最少使用 list */
-	LRU_INACTIVE_ANON = LRU_BASE,
-	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
-	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
-	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
+	LRU_INACTIVE_ANON   /* 不活跃的匿名页面 */ = LRU_BASE,   
+	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
+	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
+	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
 	LRU_UNEVICTABLE,
 	NR_LRU_LISTS
 };
@@ -274,7 +279,10 @@ enum lruvec_flags {
 					 */
 };
 
-struct lruvec { /*  */
+/**
+ *  最近最少使用 链表
+ */
+struct lruvec { 
 	struct list_head		lists[NR_LRU_LISTS];
 	/*
 	 * These track the cost of reclaiming one LRU - file or anon -
@@ -886,7 +894,9 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
 	/* Per-node vmstats */
 	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
+    
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
+    
 } pg_data_t;
 
 #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
