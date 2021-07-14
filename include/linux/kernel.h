@@ -212,6 +212,11 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  * This is a useful debugging help to be able to catch problems early and not
  * be bitten later when the calling function happens to sleep when it is not
  * supposed to.
+ *
+ * 简单地说，如果没有调试的需求(绝大多数下你平常跑的系统都是release版本的kernel)，
+ * 那么这个宏(或者函数，称谓并不重要)什么实质性的活都不干，内核只是用它来做一件事，
+ * 就是提醒你，调用该函数的函数可能会sleep，这个跟其名字也是匹配的: 
+ * The function calling might_sleep() might sleep。
  */
 # define might_sleep() \
 	do { __might_sleep(__FILE__, __LINE__, 0); might_resched(); } while (0)

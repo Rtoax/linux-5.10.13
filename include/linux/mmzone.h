@@ -274,7 +274,7 @@ enum lruvec_flags {
 					 */
 };
 
-struct lruvec {
+struct lruvec { /*  */
 	struct list_head		lists[NR_LRU_LISTS];
 	/*
 	 * These track the cost of reclaiming one LRU - file or anon -

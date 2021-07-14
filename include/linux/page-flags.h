@@ -893,6 +893,10 @@ static __always_inline int PageMappingFlags(struct page *page)
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }
 
+/**
+ *  如果为匿名页面 返回 true
+ *  否则返回 false
+ */
 static __always_inline int PageAnon(struct page *page)  /* 匿名页面: malloc/mmap */
 {
 	page = compound_head(page);
@@ -966,7 +970,7 @@ static __always_inline void SetPageUptodate(struct page *page)  /* TODO */
 	set_bit(PG_uptodate, &page->flags);
 }
 
-CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL) {}
+CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL) {/* {}++ */}
 
 int test_clear_page_writeback(struct page *page);
 int __test_set_page_writeback(struct page *page, bool keep_write);
@@ -986,7 +990,7 @@ static inline void set_page_writeback_keepwrite(struct page *page)
 	test_set_page_writeback_keepwrite(page);
 }
 
-__PAGEFLAG(Head, head, PF_ANY) CLEARPAGEFLAG(Head, head, PF_ANY)
+__PAGEFLAG(Head, head, PF_ANY) CLEARPAGEFLAG(Head, head, PF_ANY){/* {}++ */}
 
 static __always_inline void set_compound_head(struct page *page, struct page *head)
 {
@@ -1013,13 +1017,13 @@ int PageHuge(struct page *page);
 int PageHeadHuge(struct page *page);
 bool page_huge_active(struct page *page);
 #else
-TESTPAGEFLAG_FALSE(Huge)
-TESTPAGEFLAG_FALSE(HeadHuge)
-
-static inline bool page_huge_active(struct page *page)
-{
-	return 0;
-}
+//TESTPAGEFLAG_FALSE(Huge)
+//TESTPAGEFLAG_FALSE(HeadHuge)
+//
+//static inline bool page_huge_active(struct page *page)
+//{
+//	return 0;
+//}
 #endif
 
 

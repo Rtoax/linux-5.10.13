@@ -41,10 +41,10 @@ struct vmacache {   /* vma 缓存， 见 find_vma() 局部性原理*/
  * kernel/fork.c
  */
 enum {
-	MM_FILEPAGES,	/* Resident file mapping pages */
-	MM_ANONPAGES,	/* Resident anonymous pages */
-	MM_SWAPENTS,	/* Anonymous swap entries */
-	MM_SHMEMPAGES,	/* Resident shared memory pages */
+	MM_FILEPAGES,	/* 文件映射页面，Resident file mapping pages */
+	MM_ANONPAGES,	/* 匿名页面，Resident anonymous pages */
+	MM_SWAPENTS,	/* 交换分区页面，Anonymous swap entries */
+	MM_SHMEMPAGES,	/* 共享内存，Resident shared memory pages */
 	NR_MM_COUNTERS
 };
 
@@ -53,7 +53,7 @@ enum {
 /* per-thread cached information, */
 struct task_rss_stat {  /*  */
 	int events;	/* for synchronization threshold */
-	int count[NR_MM_COUNTERS];
+	int count[NR_MM_COUNTERS];  /* 各种类型页面的计数 */
 };
 #endif /* USE_SPLIT_PTE_PTLOCKS */
 

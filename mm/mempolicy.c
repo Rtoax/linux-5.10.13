@@ -1766,8 +1766,13 @@ struct mempolicy *__get_vma_policy(struct vm_area_struct *vma,
 	struct mempolicy *pol = NULL;
 
 	if (vma) {
+        
+        /* 文件映射 */
 		if (vma->vm_ops && vma->vm_ops->get_policy) {
+
+            /* TODO */
 			pol = vma->vm_ops->get_policy(vma, addr);
+            
 		} else if (vma->vm_policy) {
 			pol = vma->vm_policy;
 
@@ -1853,6 +1858,8 @@ static int apply_policy_zone(struct mempolicy *policy, enum zone_type zone)
 /*
  * Return a nodemask representing a mempolicy for filtering nodes for
  * page allocation
+ *
+ * NODE 掩码
  */
 nodemask_t *policy_nodemask(gfp_t gfp, struct mempolicy *policy)
 {
@@ -2156,6 +2163,8 @@ static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
  *	NULL when no page can be allocated.
  *
  *  为 vma 分配 page
+ *
+ *  addr 可能为 发生缺页异常 的虚拟地址
  */
 struct page *
 alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
@@ -2166,17 +2175,21 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 	int preferred_nid;
 	nodemask_t *nmask;
 
+    /* 策略 */
 	pol = get_vma_policy(vma, addr);
 
 	if (pol->mode == MPOL_INTERLEAVE) { /* 交织 */
 		unsigned nid;
 
 		nid = interleave_nid(pol, vma, addr, PAGE_SHIFT + order);
-		mpol_cond_put(pol);
+
+        mpol_cond_put(pol);
+        
 		page = alloc_page_interleave(gfp, order, nid);
 		goto out;
 	}
 
+    /* 大页 */
 	if (unlikely(IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) && hugepage)) {
 		int hpage_node = node;
 
@@ -2218,10 +2231,11 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 		}
 	}
 
-	nmask = policy_nodemask(gfp, pol);
+    /* 可以分配的 NODE  掩码 */
+	nmask = policy_nodemask(gfp, pol);  /* TODO */
 	preferred_nid = policy_node(gfp, pol, node);
 
-    /* TODO */
+    /* 不是交织的 `MPOL_INTERLEAVE`  */
 	page = __alloc_pages_nodemask(gfp, order, preferred_nid, nmask);
     
 	mpol_cond_put(pol);

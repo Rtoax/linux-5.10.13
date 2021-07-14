@@ -10,14 +10,14 @@
 #include <linux/rmap.h>
 #include <linux/interval_tree_generic.h>
 
-static inline unsigned long vma_start_pgoff(struct vm_area_struct *v)
+static inline unsigned long vma_start_pgoff(struct vm_area_struct *v)   /*  */
 {
 	return v->vm_pgoff;
 }
 
 static inline unsigned long vma_last_pgoff(struct vm_area_struct *v)
 {
-	return v->vm_pgoff + vma_pages(v) - 1;
+	return v->vm_pgoff + vma_pages(v)/* 页数 */ - 1;
 }
 
 INTERVAL_TREE_DEFINE(struct vm_area_struct, shared.rb,
@@ -333,7 +333,7 @@ void vma_interval_tree_insert_after(struct vm_area_struct *node,
 			    &vma_interval_tree_augment);
 }
 
-static inline unsigned long avc_start_pgoff(struct anon_vma_chain *avc)
+static inline unsigned long avc_start_pgoff(struct anon_vma_chain *avc) /*  */
 {
 	return vma_start_pgoff(avc->vma);
 }
@@ -471,7 +471,9 @@ static const struct rb_augment_callbacks __anon_vma_interval_tree_augment = {
 static inline void __anon_vma_interval_tree_insert(struct anon_vma_chain *node,			      
 				  struct rb_root_cached *root)	 	      
 {									      
-	struct rb_node **link = &root->rb_root.rb_node, *rb_parent = NULL;    
+	struct rb_node **link = &root->rb_root.rb_node, *rb_parent = NULL;   
+
+    /* 计算当前 AVC 对应的 VMA 的  */
 	unsigned long start = avc_start_pgoff(node), last = avc_last_pgoff(node);		      
 	struct anon_vma_chain *parent;						      
 	bool leftmost = true;						      
@@ -489,7 +491,9 @@ static inline void __anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 		}							      
 	}								      
 									      
-	node->rb_subtree_last = last;						      
+	node->rb_subtree_last = last;	
+
+    /* 插入红黑树 */
 	rb_link_node(&node->rb, rb_parent, link);			      
 	rb_insert_augmented_cached(&node->rb, root,			      
 				   leftmost, &__anon_vma_interval_tree_augment);	      
@@ -623,6 +627,7 @@ __anon_vma_interval_tree_iter_next(struct anon_vma_chain *node, unsigned long st
 #endif  //__RTOAX_________INTERVAL_TREE_DEFINE
 
 
+/* 将 AVC 插入 AV 红黑树中 */
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 				   struct rb_root_cached *root)
 {
@@ -630,6 +635,7 @@ void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 	node->cached_vma_start = avc_start_pgoff(node);
 	node->cached_vma_last = avc_last_pgoff(node);
 #endif
+    /*  */
 	__anon_vma_interval_tree_insert(node, root);
 }
 

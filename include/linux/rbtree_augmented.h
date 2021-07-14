@@ -35,6 +35,7 @@ extern void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 
 /*
  * Fixup the rbtree and update the augmented information when rebalancing.
+ * 修复 rbtree 并在重新平衡时更新增强信息。
  *
  * On insertion, the user must update the augmented information on the path
  * leading to the inserted node, then call rb_link_node() as usual and

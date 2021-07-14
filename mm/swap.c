@@ -459,7 +459,7 @@ EXPORT_SYMBOL(mark_page_accessed);
  * pagevec is drained. This gives a chance for the caller of lru_cache_add()
  * have the page added to the active list using mark_page_accessed().
  */
-void lru_cache_add(struct page *page)
+void lru_cache_add(struct page *page)   /*  */
 {
 	struct pagevec *pvec;
 
@@ -482,6 +482,8 @@ EXPORT_SYMBOL(lru_cache_add);
  *
  * Place @page on the inactive or unevictable LRU list, depending on its
  * evictability.
+ *
+ * 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可驱逐性。
  */
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					 struct vm_area_struct *vma)
@@ -490,8 +492,12 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
+    /* 锁定 */
 	unevictable = (vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED;
+    
 	if (unlikely(unevictable) && !TestSetPageMlocked(page)) {
+
+        /* 几个物理页 */
 		int nr_pages = thp_nr_pages(page);
 		/*
 		 * We use the irq-unsafe __mod_zone_page_stat because this
@@ -501,6 +507,8 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		__mod_zone_page_state(page_zone(page), NR_MLOCK, nr_pages);
 		count_vm_events(UNEVICTABLE_PGMLOCKED, nr_pages);
 	}
+    
+    /*  */
 	lru_cache_add(page);
 }
 

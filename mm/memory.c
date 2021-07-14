@@ -182,7 +182,7 @@ void sync_mm_rss(struct mm_struct *mm)  /*  */
 	current->rss_stat.events = 0;
 }
 
-static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
+static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)  /*  */
 {
 	struct task_struct *task = current;
 
@@ -191,7 +191,7 @@ static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
 	else
 		add_mm_counter(mm, member, val);
 }
-#define inc_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, 1)
+#define inc_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, 1)  /*  */
 #define dec_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, -1)
 
 /* sync counter once per 64 page faults */
@@ -3745,10 +3745,12 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	if (unlikely(anon_vma_prepare(vma)))
 		goto oom;
 
-    /* 为 VMA 分配 page */
+    /**
+     *  为 VMA 分配 page 
+     */
 	page = alloc_zeroed_user_highpage_movable(vma, vmf->address);
 	if (!page)
-		goto oom;
+		goto oom;   /* 分配失败，OOM */
 
     /* TODO */
 	if (mem_cgroup_charge(page, vma->vm_mm, GFP_KERNEL))
@@ -3788,22 +3790,30 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 		return handle_userfault(vmf, VM_UFFD_MISSING);
 	}
 
+    /* 匿名页面统计 */
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 
     /**
      *  添加 PTE mapping 到 新的 匿名页面中
+     * page->mapping = anon_vma 操作
      */
 	page_add_new_anon_rmap(page, vma, vmf->address, false);
+
+    /* TODO */
 	lru_cache_add_inactive_or_unevictable(page, vma);
     
 setpte:
+    
+    /* *vmf->pte = entry */
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
 
 	/* No need to invalidate - it was non-present before */
 	update_mmu_cache(vma, vmf->address, vmf->pte);
+    
 unlock:
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return ret;
+    
 release:
 	put_page(page);
 	goto unlock;

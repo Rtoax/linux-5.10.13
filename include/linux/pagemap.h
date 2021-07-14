@@ -546,14 +546,21 @@ static inline loff_t page_file_offset(struct page *page)
 extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
 				     unsigned long address);
 
+/* 返回线性地址的总偏移页数 */
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)
 {
 	pgoff_t pgoff;
 	if (unlikely(is_vm_hugetlb_page(vma)))  /* 大页内存 */
 		return linear_hugepage_index(vma, address);
+
+    /* VMA 内偏移 页数 */
 	pgoff = (address - vma->vm_start) >> PAGE_SHIFT;
+
+    /* VM 的偏移页数 */
 	pgoff += vma->vm_pgoff;
+
+    /* 线性地址的总偏移页数 */
 	return pgoff;
 }
 

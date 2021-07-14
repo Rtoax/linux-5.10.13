@@ -67,6 +67,8 @@ struct anon_vma {   /* 匿名 VMA */
 	 * anon_vma if they are the last user on release
 	 *
 	 * 引用计数
+	 *  =0 时,将被释放，见`__put_anon_vma()`
+	 *
 	 */
 	atomic_t refcount;
 
@@ -158,7 +160,7 @@ static inline void get_anon_vma(struct anon_vma *anon_vma)
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 
-static inline void put_anon_vma(struct anon_vma *anon_vma)
+static inline void put_anon_vma(struct anon_vma *anon_vma)  /*  */
 {
 	if (atomic_dec_and_test(&anon_vma->refcount))
 		__put_anon_vma(anon_vma);
@@ -194,7 +196,12 @@ void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
 int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
-static inline int anon_vma_prepare(struct vm_area_struct *vma)  /* RMAP 相关结构申请 */
+/**
+ *  RMAP 相关结构申请 
+ *
+ *  
+ */
+static inline int anon_vma_prepare(struct vm_area_struct *vma)  
 {
 	if (likely(vma->anon_vma))  /* 已经申请了 anon_vma 结构 */
 		return 0;

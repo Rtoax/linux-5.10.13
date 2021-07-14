@@ -101,7 +101,7 @@ static inline struct anon_vma *anon_vma_alloc(void)
 	return anon_vma;
 }
 
-static inline void anon_vma_free(struct anon_vma *anon_vma)
+static inline void anon_vma_free(struct anon_vma *anon_vma) /*  */
 {
 	VM_BUG_ON(atomic_read(&anon_vma->refcount));
 
@@ -123,6 +123,7 @@ static inline void anon_vma_free(struct anon_vma *anon_vma)
 	 * happen _before_ what follows.
 	 */
 	might_sleep();
+    
 	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
 		anon_vma_lock_write(anon_vma);
 		anon_vma_unlock_write(anon_vma);
@@ -131,30 +132,32 @@ static inline void anon_vma_free(struct anon_vma *anon_vma)
 	kmem_cache_free(anon_vma_cachep, anon_vma);
 }
 
-static inline struct anon_vma_chain *anon_vma_chain_alloc(gfp_t gfp)    /*  */
+static inline struct anon_vma_chain *anon_vma_chain_alloc(gfp_t gfp)    /* 分配一个 AVC */
 {
 	return kmem_cache_alloc(anon_vma_chain_cachep, gfp);
 }
 
-static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
+static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)  /* 释放 */
 {
 	kmem_cache_free(anon_vma_chain_cachep, anon_vma_chain);
 }
 
 /**
  *  将 avc 插入 vma 的管理结构中
+ *  关联 VMA-AVC-AV 结构
  */
 static void anon_vma_chain_link(struct vm_area_struct *vma, 
 				struct anon_vma_chain *avc,
 				struct anon_vma *anon_vma)
 {
+    /* 赋值 */
 	avc->vma = vma;
 	avc->anon_vma = anon_vma;
 
     /* 将 AVC 插入 VMA 的 AVC 链表 */
 	list_add(&avc->same_vma, &vma->anon_vma_chain); 
 
-    /*  */
+    /* AVC 插入 AV  红黑树中 */
 	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root); /* 插入 */
 }
 
@@ -186,7 +189,7 @@ static void anon_vma_chain_link(struct vm_area_struct *vma,
  *
  * This must be called with the mmap_lock held for reading.
  *
- * 为 RMAP 做准备
+ * 为 RMAP 做准备，在 `anon_vma_prepare()` 中被调用
  */
 int __anon_vma_prepare(struct vm_area_struct *vma)
 {
@@ -194,6 +197,7 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	struct anon_vma *anon_vma, *allocated;
 	struct anon_vma_chain *avc;
 
+    /* 不调试，这将啥都不做 */
 	might_sleep();
 
     /* 分配 AVC 结构 */
@@ -218,23 +222,35 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
     
 	/* page_table_lock to protect against threads */
 	spin_lock(&mm->page_table_lock);
-    
-	if (likely(!vma->anon_vma)) {   /* 这个 VMA 的anon_vma 很可能为空 */
+
+    /**
+     *  VMA 的anon_vma 很可能为空 
+     */
+	if (likely(!vma->anon_vma)) {   
 		vma->anon_vma = anon_vma;
 
-        /* 插入 */
+        /**
+         *  插入 AVC
+         *  关联 VMA-AVC-AV 结构
+         */
 		anon_vma_chain_link(vma, avc, anon_vma);
         
 		/* vma reference or self-parent link for new root */
 		anon_vma->degree++;
+
+        /* 插入之后置空，已判断后面是否释放 */
 		allocated = NULL;
 		avc = NULL;
 	}
+    
 	spin_unlock(&mm->page_table_lock);
 	anon_vma_unlock_write(anon_vma);
 
+    /* 如果 分配的   anon_vma 没有使用，进行释放 */
 	if (unlikely(allocated))
 		put_anon_vma(allocated);
+
+    /* 是否释放 */
 	if (unlikely(avc))
 		anon_vma_chain_free(avc);
 
@@ -1055,7 +1071,7 @@ void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma)
  * @address:	User virtual address of the mapping	
  * @exclusive:	the page is exclusively owned by the current process
  *
- * 
+ * 设置 page->mapping = anon_vma
  */
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
@@ -1064,19 +1080,31 @@ static void __page_set_anon_rmap(struct page *page,
 
 	BUG_ON(!anon_vma);
 
-	if (PageAnon(page))
+    /*  */
+	if (PageAnon(page)) /* 如果已经标记为 匿名页面，直接返回 */
 		return;
 
 	/*
 	 * If the page isn't exclusively mapped into this vma,
 	 * we must use the _oldest_ possible anon_vma for the
 	 * page mapping!
+	 *
+	 * 如果 page 不是 VMA 独占的，必须使用 最老的 AV 结构。
+	 *
+	 * 1. page_add_new_anon_rmap() 中  exclusive=1
+	 * 2. do_page_add_anon_rmap() 中根据 flag 的 RMAP_EXCLUSIVE 标志位而定
+	 *
 	 */
 	if (!exclusive)
 		anon_vma = anon_vma->root;
 
+    /* 设置匿名页面标志位 */
 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
+
+    /* 指向 AV 结构 */
 	page->mapping = (struct address_space *) anon_vma;
+
+    /* 线性地址的总偏移页数 */
 	page->index = linear_page_index(vma, address);
 }
 
@@ -1181,7 +1209,7 @@ void do_page_add_anon_rmap(struct page *page,
  * @page:	the page to add the mapping to
  * @vma:	the vm area in which the mapping is added
  * @address:	the user virtual address mapped
- * @compound:	charge the page as compound or small page
+ * @compound:	charge the page as compound(复合) or small page
  *
  * Same as page_add_anon_rmap but must only be called on *new* pages.
  * This means the inc-and-test can be bypassed.
@@ -1192,13 +1220,20 @@ void do_page_add_anon_rmap(struct page *page,
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
 {
+    /**
+     *  compound(复合): page是复合 还是 小 page
+     *  1. do_anonymous_page() 传入 false
+     *
+     * 大页内存时，compound 为 true
+     */
 	int nr = compound ? thp_nr_pages(page) : 1;
 
 	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 
-    
+    /* 交换回 */
     __SetPageSwapBacked(page);
-    
+
+    /* 复合页面 */
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
 		/* increment count (starts at -1) */
@@ -1207,12 +1242,16 @@ void page_add_new_anon_rmap(struct page *page,
 			atomic_set(compound_pincount_ptr(page), 0);
 
 		__inc_lruvec_page_state(page, NR_ANON_THPS);
-	} else {
+	} 
+    /* 普通页面 */
+    else {
 		/* Anon THP always mapped first with PMD */
 		VM_BUG_ON_PAGE(PageTransCompound(page), page);
 		/* increment count (starts at -1) */
 		atomic_set(&page->_mapcount, 0);
 	}
+
+    /* 页面回收等 TODO */
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
 
     /**
@@ -1829,8 +1868,9 @@ void __put_anon_vma(struct anon_vma *anon_vma)
 {
 	struct anon_vma *root = anon_vma->root;
 
-	anon_vma_free(anon_vma);
-	if (root != anon_vma && atomic_dec_and_test(&root->refcount))
+	anon_vma_free(anon_vma);    /*  */
+    
+	if (root != anon_vma && atomic_dec_and_test(&root->refcount))   /* 如果 root 的引用计数为0，将被释放 */
 		anon_vma_free(root);
 }
 

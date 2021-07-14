@@ -1858,7 +1858,7 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 
 void mm_trace_rss_stat(struct mm_struct *mm, int member, long count);
 
-static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
+static inline void add_mm_counter(struct mm_struct *mm, int member, long value) /*  */
 {
 	long count = atomic_long_add_return(value, &mm->rss_stat.count[member]);
 

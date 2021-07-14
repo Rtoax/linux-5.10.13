@@ -1529,6 +1529,8 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
  *  VMA 必须相邻；
  *  VMA 内的 policy 相同
  *  相同的 vm_file
+ *  vm_flags 读写 可执行 脏 要相同
+ *  
  */
 static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
 {
@@ -1536,6 +1538,10 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
 		mpol_equal(vma_policy(a), vma_policy(b)) && /* 策略相同 */
 		a->vm_file == b->vm_file &&     /* 文件相同 */
 		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&       /*  */
+
+        /**
+         *  
+         */
 		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);   /* page offset */
 }
 
@@ -1568,6 +1574,7 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
  */
 static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_area_struct *a, struct vm_area_struct *b)
 {
+    /*  */
 	if (anon_vma_compatible(a, b)) {
 		struct anon_vma *anon_vma = READ_ONCE(old->anon_vma);
 

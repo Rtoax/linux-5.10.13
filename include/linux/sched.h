@@ -799,8 +799,10 @@ struct task_struct {    /* PCB */
 	struct vmacache			vmacache;   /* vma 缓存 */
 
 #ifdef SPLIT_RSS_COUNTING
-	struct task_rss_stat		rss_stat;   /*  */
+    /* 对不同页面的统计计数 */
+	struct task_rss_stat		rss_stat;   /* 文件映射、匿名映射、交换 */
 #endif
+    
 	int				exit_state;
 	int				exit_code;
 	int				exit_signal;

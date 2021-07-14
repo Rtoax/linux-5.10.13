@@ -66,7 +66,7 @@ extern pmdval_t early_pmd_flags;
 #ifdef CONFIG_PARAVIRT_XXL
 #include <asm/paravirt.h>
 #else  /* !CONFIG_PARAVIRT_XXL */
-#define set_pte(ptep, pte)		native_set_pte(ptep, pte)
+#define set_pte(ptep, pte)		native_set_pte(ptep, pte)   /*  */
 
 #define set_pte_atomic(ptep, pte)					\
 	native_set_pte_atomic(ptep, pte)
@@ -1036,7 +1036,7 @@ static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
 }
 
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-			      pte_t *ptep, pte_t pte)
+			      pte_t *ptep, pte_t pte)   /*  */
 {
 	set_pte(ptep, pte);
 }
@@ -1283,6 +1283,8 @@ static inline unsigned long page_level_mask(enum pg_level level)
 /*
  * The x86 doesn't have any external MMU info: the kernel page
  * tables contain all the necessary information.
+ *
+ * x86 没有额外的 MMU 信息，内核 页表 已经包括所有必要的信息
  */
 static inline void update_mmu_cache(struct vm_area_struct *vma,
 		unsigned long addr, pte_t *ptep)
