@@ -65,6 +65,8 @@ struct page *find_lock_entry(struct address_space *mapping, pgoff_t index);
 
 /**
  * page_evictable - test whether a page is evictable
+ *                  测试页面是否可驱逐
+ *
  * @page: the page to test
  *
  * Test whether page is evictable--i.e., should be placed on active/inactive
@@ -74,6 +76,7 @@ struct page *find_lock_entry(struct address_space *mapping, pgoff_t index);
  * (1) page's mapping marked unevictable
  * (2) page is part of an mlocked VMA
  *
+ * 
  */
 static inline bool page_evictable(struct page *page)
 {
@@ -81,6 +84,8 @@ static inline bool page_evictable(struct page *page)
 
 	/* Prevent address_space of inode and swap cache from being freed */
 	rcu_read_lock();
+
+    /*  */
 	ret = !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);
 	rcu_read_unlock();
 	return ret;

@@ -582,6 +582,7 @@ ino_t page_cgroup_ino(struct page *page)
 static struct mem_cgroup_per_node *
 mem_cgroup_page_nodeinfo(struct mem_cgroup *memcg, struct page *page)
 {
+    /* page 属于 的节点 node */
 	int nid = page_to_nid(page);
 
 	return memcg->nodeinfo[nid];
@@ -1342,6 +1343,8 @@ int mem_cgroup_scan_tasks(struct mem_cgroup *memcg,
  *
  * This function relies on page->mem_cgroup being stable - see the
  * access rules in commit_charge().
+ *
+ * 返回 page 对应节点的 lruvec 结构
  */
 struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct pglist_data *pgdat)
 {
@@ -1349,20 +1352,27 @@ struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct pglist_data *pgd
 	struct mem_cgroup *memcg;
 	struct lruvec *lruvec;
 
+    /* 内存控制组 disable，直接使用 pgdat 的 __lruvec */
 	if (mem_cgroup_disabled()) {
 		lruvec = &pgdat->__lruvec;
 		goto out;
 	}
 
+    /* 内存控制组 */
 	memcg = page->mem_cgroup;
+    
 	/*
 	 * Swapcache readahead pages are added to the LRU - and
 	 * possibly migrated - before they are charged.
+	 *
+	 * 如果当前 页 没有控制组，使用 root 控制组
 	 */
 	if (!memcg)
 		memcg = root_mem_cgroup;
 
+    /*  */
 	mz = mem_cgroup_page_nodeinfo(memcg, page);
+    
 	lruvec = &mz->lruvec;
 out:
 	/*
@@ -1372,6 +1382,8 @@ out:
 	 */
 	if (unlikely(lruvec->pgdat != pgdat))
 		lruvec->pgdat = pgdat;
+
+    /* 返回 节点的 lruvec 结构 */
 	return lruvec;
 }
 

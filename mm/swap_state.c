@@ -61,7 +61,7 @@ static bool __read_mostly enable_vma_readahead  = true;
 #define INC_CACHE_INFO(x)	data_race(swap_cache_info.x++)
 #define ADD_CACHE_INFO(x, nr)	data_race(swap_cache_info.x += (nr))
 
-static struct {
+static struct { /*  */
 	unsigned long add_total;
 	unsigned long del_total;
 	unsigned long find_success;
@@ -372,9 +372,12 @@ struct page *lookup_swap_cache(swp_entry_t entry, struct vm_area_struct *vma,
 	struct page *page;
 	struct swap_info_struct *si;
 
+    /* 获取 device */
 	si = get_swap_device(entry);
 	if (!si)
 		return NULL;
+
+    /*  */
 	page = find_get_page(swap_address_space(entry), swp_offset(entry));
 	put_swap_device(si);
 

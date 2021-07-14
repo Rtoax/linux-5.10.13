@@ -66,11 +66,18 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 {
 	swp_entry_t arch_entry;
 
+    /* 如果设置了 _PAGE_SWP_SOFT_DIRTY */
 	if (pte_swp_soft_dirty(pte))
-		pte = pte_swp_clear_soft_dirty(pte);
+		pte = pte_swp_clear_soft_dirty(pte);    /* 清理 */
+
+    /* 用户空间可寻址标志位?? */
 	if (pte_swp_uffd_wp(pte))
-		pte = pte_swp_clear_uffd_wp(pte);
+		pte = pte_swp_clear_uffd_wp(pte);   /* 清理标志位 */
+
+    /* 强转 */
 	arch_entry = __pte_to_swp_entry(pte);
+
+    /*  */
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 

@@ -45,6 +45,9 @@ static __always_inline void update_lru_size(struct lruvec *lruvec,
 #endif
 }
 
+/**
+ *  添加至 lruvec 对应的 类别 链表中 
+ */
 static __always_inline void add_page_to_lru_list(struct page *page, /*  */
 				struct lruvec *lruvec, enum lru_list lru)
 {

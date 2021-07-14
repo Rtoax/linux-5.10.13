@@ -214,18 +214,18 @@ static inline void native_pgd_clear(pgd_t *pgd)
  */
 #define SWP_TYPE_BITS		5
 
-#define SWP_OFFSET_FIRST_BIT	(_PAGE_BIT_PROTNONE + 1)
+#define SWP_OFFSET_FIRST_BIT	/* 9 */ (_PAGE_BIT_PROTNONE/* 8 */ + 1)
 
 /* We always extract/encode the offset by shifting it all the way up, and then down again */
-#define SWP_OFFSET_SHIFT	(SWP_OFFSET_FIRST_BIT+SWP_TYPE_BITS)
+#define SWP_OFFSET_SHIFT /* 14 */	(SWP_OFFSET_FIRST_BIT/* 9 */+SWP_TYPE_BITS/* 5 */)
 
 #define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)
 
 /* Extract the high bits for type */
-#define __swp_type(x) ((x).val >> (64 - SWP_TYPE_BITS))
+#define __swp_type(x) ((x).val >> (64 - SWP_TYPE_BITS/* 5 */))
 
 /* Shift up (to get rid of type), then down to get value */
-#define __swp_offset(x) (~(x).val << SWP_TYPE_BITS >> SWP_OFFSET_SHIFT)
+#define __swp_offset(x) (~(x).val << SWP_TYPE_BITS/* 5 */ >> SWP_OFFSET_SHIFT/* 14 */)
 
 /*
  * Shift the offset up "too far" by TYPE bits, then down again
@@ -236,6 +236,7 @@ static inline void native_pgd_clear(pgd_t *pgd)
 	(~(unsigned long)(offset) << SWP_OFFSET_SHIFT >> SWP_TYPE_BITS) \
 	| ((unsigned long)(type) << (64-SWP_TYPE_BITS)) })
 
+/*  */
 #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
 #define __pmd_to_swp_entry(pmd)		((swp_entry_t) { pmd_val((pmd)) })
 #define __swp_entry_to_pte(x)		((pte_t) { .pte = (x).val })

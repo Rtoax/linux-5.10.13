@@ -408,7 +408,7 @@ done
 */
 
 static __always_inline int PageLRU(struct page *page);
- static __always_inline void SetPageLRU(struct page *page);
+ static __always_inline void SetPageLRU(struct page *page){PG_lru;}
  static __always_inline void ClearPageLRU(struct page *page);
  static __always_inline int TestClearPageLRU(struct page *page);
  static __always_inline void __ClearPageLRU(struct page *page);

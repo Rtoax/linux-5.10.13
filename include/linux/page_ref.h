@@ -35,31 +35,7 @@ extern void __page_ref_freeze(struct page *page, int v, int ret);
 extern void __page_ref_unfreeze(struct page *page, int v);
 
 #else
-
-#define page_ref_tracepoint_active(t) false
-
-static inline void __page_ref_set(struct page *page, int v)
-{
-}
-static inline void __page_ref_mod(struct page *page, int v)
-{
-}
-static inline void __page_ref_mod_and_test(struct page *page, int v, int ret)
-{
-}
-static inline void __page_ref_mod_and_return(struct page *page, int v, int ret)
-{
-}
-static inline void __page_ref_mod_unless(struct page *page, int v, int u)
-{
-}
-static inline void __page_ref_freeze(struct page *page, int v, int ret)
-{
-}
-static inline void __page_ref_unfreeze(struct page *page, int v)
-{
-}
-
+/*  */
 #endif
 
 static inline int page_ref_count(struct page *page)
@@ -111,14 +87,14 @@ static inline int page_ref_sub_return(struct page *page, int nr)
 	return ret;
 }
 
-static inline void page_ref_inc(struct page *page)
+static inline void page_ref_inc(struct page *page)  /*  */
 {
-	atomic_inc(&page->_refcount);
+	atomic_inc(&page->_refcount);   /* 引用计数 */
 	if (page_ref_tracepoint_active(page_ref_mod))
-		__page_ref_mod(page, 1);
+		__page_ref_mod(page, 1);    /* tracepoint */
 }
 
-static inline void page_ref_dec(struct page *page)
+static inline void page_ref_dec(struct page *page)  /*  */
 {
 	atomic_dec(&page->_refcount);
 	if (page_ref_tracepoint_active(page_ref_mod))

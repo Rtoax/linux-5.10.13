@@ -1339,7 +1339,7 @@ static inline pte_t pte_swp_mkuffd_wp(pte_t pte)
 	return pte_set_flags(pte, _PAGE_SWP_UFFD_WP);
 }
 
-static inline int pte_swp_uffd_wp(pte_t pte)
+static inline int pte_swp_uffd_wp(pte_t pte)    /* 用户空间可寻址标志位 */
 {
 	return pte_flags(pte) & _PAGE_SWP_UFFD_WP;
 }

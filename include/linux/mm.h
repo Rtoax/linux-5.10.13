@@ -501,6 +501,9 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
  *
  *  缺页异常 数据结构
  *  常常用于填充相应的参数并且传递给进程地址空间的 fault() 回调含糊中
+ * 
+ *  主缺页：从交换分区中读取数据，见`VM_FAULT_MAJOR`
+ *  次缺页：从内存中直接分配页面
  */ 
 struct vm_fault {       /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
@@ -1173,6 +1176,7 @@ static inline bool is_pci_p2pdma_page(const struct page *page)
 	((unsigned int) page_ref_count(page) + 127u <= 127u)
 
 /**
+ *  引用计数
  *  page->_refcount++ 
  */
 static inline void get_page(struct page *page)  

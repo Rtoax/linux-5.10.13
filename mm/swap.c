@@ -214,23 +214,41 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	struct lruvec *lruvec;
 	unsigned long flags = 0;
 
+    /* 遍历 pagevec 中的所有链表 */
 	for (i = 0; i < pagevec_count(pvec); i++) {
+
+        /* 取一个 page */
 		struct page *page = pvec->pages[i];
+
+        /* 获取 node 结构 */
 		struct pglist_data *pagepgdat = page_pgdat(page);
 
 		if (pagepgdat != pgdat) {
+
+            /* 第一次不调用 */
 			if (pgdat)
 				spin_unlock_irqrestore(&pgdat->lru_lock, flags);
+
+            /* 设定 pgdat */
 			pgdat = pagepgdat;
 			spin_lock_irqsave(&pgdat->lru_lock, flags);
 		}
 
+        /* 返回 page 所在节点 的 lruvec */
 		lruvec = mem_cgroup_page_lruvec(page, pgdat);
+
+        /* 回调 */
 		(*move_fn)(page, lruvec, arg);
 	}
+
+    /*  */
 	if (pgdat)
 		spin_unlock_irqrestore(&pgdat->lru_lock, flags);
-	release_pages(pvec->pages, pvec->nr);
+
+    /*  */
+    release_pages(pvec->pages, pvec->nr);
+
+    /* 重置 nr = 0，用于再次回收 */
 	pagevec_reinit(pvec);
 }
 
@@ -471,6 +489,7 @@ void lru_cache_add(struct page *page)   /*  */
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
 	get_page(page);
+    
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
 
@@ -876,7 +895,7 @@ void lru_add_drain_all(void)
 #endif /* CONFIG_SMP */
 
 /**
- * release_pages - batched put_page()
+ * release_pages - batched put_page() 批量 put_page()
  * @pages: array of pages to release
  * @nr: number of pages
  *
@@ -892,6 +911,7 @@ void release_pages(struct page **pages, int nr)
 	unsigned long flags;
 	unsigned int lock_batch;
 
+    /* 遍历 nr */
 	for (i = 0; i < nr; i++) {
 		struct page *page = pages[i];
 
@@ -1024,14 +1044,15 @@ void lru_add_page_tail(struct page *page, struct page *page_tail,
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 /**
- *  
+ *  将 page 添加至 lruvec 链表中， 等待被回收
  *  
  */
-static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
-				 void *arg)
+static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void *arg)
 {
 	enum lru_list lru;
 	int was_unevictable = TestClearPageUnevictable(page);
+
+    /* 计算页数 */
 	int nr_pages = thp_nr_pages(page);
 
 	VM_BUG_ON_PAGE(PageLRU(page), page);
@@ -1042,6 +1063,13 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	 * 2) Before acquiring LRU lock to put the page to correct LRU and then
 	 *   a) do PageLRU check with lock [check_move_unevictable_pages]
 	 *   b) do PageLRU check before lock [clear_page_mlock]
+	 *
+	 * ==============================================
+	 * 物理页称为 可驱逐 页 有下面两种方法
+	 * 1) munlock(2): 也就是没被锁定的页面
+	 * 2) 在获取LRU锁之前，先将页面放到更正 LRU，然后
+     *  a) 用锁检查 PageLRU [check_move_unevictable_pages]
+     *  b) 在锁定前检查页面[clear_page_mlock]
 	 *
 	 * (1) & (2a) are ok as LRU lock will serialize them. For (2b), we need
 	 * following strict ordering:
@@ -1063,25 +1091,34 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	 * in an unevictable LRU.
 	 */
 	SetPageLRU(page);
-    
+
+    /* 见上面的  注释 */
 	smp_mb__after_atomic();
 
-	if (page_evictable(page)) {
+    /* 可驱逐 */
+	if (page_evictable(page)) { /* 内部调用 PageMlocked() */
+        
 		lru = page_lru(page);
-		if (was_unevictable)
+		if (was_unevictable)/* 不可驱逐 */
 			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
 
+    /* 不可驱逐 */
     } else {
 	
-		lru = LRU_UNEVICTABLE;
-		ClearPageActive(page);
-		SetPageUnevictable(page);
+		lru = LRU_UNEVICTABLE;  /* 不可驱逐 */
+		ClearPageActive(page);      /*  */
+		SetPageUnevictable(page);   /*  */
+
+        /* 可驱逐 */
 		if (!was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
+			__count_vm_events(UNEVICTABLE_PGCULLED/* 扑杀 */, nr_pages);
 	}
 
-    /* 哪种 链表中 */
+    /**
+     *  添加至 lruvec 对应的 类别 链表中 
+     */
 	add_page_to_lru_list(page, lruvec, lru);
+    
 	trace_mm_lru_insertion(page, lru);
 }
 

@@ -1008,6 +1008,8 @@ enum tlb_flush_reason {
  /*
   * A swap entry has to fit into a "unsigned long", as the entry is hidden
   * in the "index" field of the swapper address space.
+  *
+  * swapper address space 的 index
   */
 typedef struct {
 	unsigned long val;

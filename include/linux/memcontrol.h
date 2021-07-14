@@ -103,15 +103,17 @@ struct memcg_shrinker_map {
 
 /*
  * per-node information in memory controller.
+ * 每个 node 信息的 内存控制结构
  */
 struct mem_cgroup_per_node {
-	struct lruvec		lruvec;
+	struct lruvec		lruvec; /* 用于 页面回收 的链表集合 */
 
 	/* Legacy local VM stats */
 	struct lruvec_stat __percpu *lruvec_stat_local;
 
 	/* Subtree VM stats (batched updates) */
 	struct lruvec_stat __percpu *lruvec_stat_cpu;
+    
 	atomic_long_t		lruvec_stat[NR_VM_NODE_STAT_ITEMS];
 
 	unsigned long		lru_zone_size[MAX_NR_ZONES][NR_LRU_LISTS];

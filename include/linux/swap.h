@@ -236,6 +236,7 @@ struct swap_cluster_list {
 
 /*
  * The in-memory structure used to track swap areas.
+ * swap 设备信息
  */
 struct swap_info_struct {   /* 交换区描述符 */
 	unsigned long	flags;		/* SWP_USED etc: see above */

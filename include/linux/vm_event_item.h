@@ -96,9 +96,13 @@ enum vm_event_item {
 #ifdef CONFIG_HUGETLB_PAGE
 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
 #endif
-		UNEVICTABLE_PGCULLED,	/* culled to noreclaim list */
+        
+        /**
+         *  不可驱逐
+         */
+		UNEVICTABLE_PGCULLED,	/* culled(扑杀) to noreclaim list */
 		UNEVICTABLE_PGSCANNED,	/* scanned for reclaimability */
-		UNEVICTABLE_PGRESCUED,	/* rescued from noreclaim list */
+		UNEVICTABLE_PGRESCUED,	/* rescued from noreclaim list, 还可以抢救一下 */
 		UNEVICTABLE_PGMLOCKED,
 		UNEVICTABLE_PGMUNLOCKED,
 		UNEVICTABLE_PGCLEARED,	/* on COW, page truncate */

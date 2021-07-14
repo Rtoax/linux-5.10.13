@@ -11,7 +11,7 @@
 
 #define _PAGE_BIT_PRESENT	0	/* is present 存在位 */
 #define _PAGE_BIT_RW		1	/* writeable */
-#define _PAGE_BIT_USER		2	/* userspace addressable */
+#define _PAGE_BIT_USER		2	/* userspace addressable 用户空间可寻址地址*/
 #define _PAGE_BIT_PWT		3	/* page write through */
 #define _PAGE_BIT_PCD		4	/* page cache disabled */
 #define _PAGE_BIT_ACCESSED	5	/* was accessed (raised by CPU) */
@@ -38,11 +38,11 @@
 
 /* If _PAGE_BIT_PRESENT is clear, we use these: */
 /* - if the user mapped it with PROT_NONE; pte_present gives true */
-#define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
+#define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL    /* 8 */
 
 #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
-#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
+#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)    /*  */
 #define _PAGE_PWT	(_AT(pteval_t, 1) << _PAGE_BIT_PWT)
 #define _PAGE_PCD	(_AT(pteval_t, 1) << _PAGE_BIT_PCD)
 #define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
@@ -96,14 +96,14 @@
  * mark if and only if the PTE/PMD has present bit clear!
  */
 #ifdef CONFIG_MEM_SOFT_DIRTY
-#define _PAGE_SWP_SOFT_DIRTY	_PAGE_RW
+#define _PAGE_SWP_SOFT_DIRTY	_PAGE_RW    /*  */
 #else
 //#define _PAGE_SWP_SOFT_DIRTY	(_AT(pteval_t, 0))
 #endif
 
 #ifdef CONFIG_HAVE_ARCH_USERFAULTFD_WP
 #define _PAGE_UFFD_WP		(_AT(pteval_t, 1) << _PAGE_BIT_UFFD_WP)
-#define _PAGE_SWP_UFFD_WP	_PAGE_USER
+#define _PAGE_SWP_UFFD_WP	_PAGE_USER  /* 用户空间可寻址标志位 */
 #else
 //#define _PAGE_UFFD_WP		(_AT(pteval_t, 0))
 //#define _PAGE_SWP_UFFD_WP	(_AT(pteval_t, 0))

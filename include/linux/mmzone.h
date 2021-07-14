@@ -253,7 +253,7 @@ enum lru_list { /* 最近最少使用 list */
 	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,
+	LRU_UNEVICTABLE,    /* 不可接受/不可驱逐, 见 AS_UNEVICTABLE */
 	NR_LRU_LISTS
 };
 
@@ -280,9 +280,12 @@ enum lruvec_flags {
 };
 
 /**
- *  最近最少使用 链表
+ *  最近最少使用 链表，用于页面回收
  */
 struct lruvec { 
+    /**
+     *  各种 LRU 类型 页面的 page->lru
+     */
 	struct list_head		lists[NR_LRU_LISTS];
 	/*
 	 * These track the cost of reclaiming one LRU - file or anon -
@@ -297,6 +300,8 @@ struct lruvec {
 	unsigned long			refaults[ANON_AND_FILE];
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
+
+    /*  */
 #ifdef CONFIG_MEMCG
 	struct pglist_data *pgdat;
 #endif
@@ -885,6 +890,10 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 * NOTE: THIS IS UNUSED IF MEMCG IS ENABLED.
 	 *
 	 * Use mem_cgroup_lruvec() to look up lruvecs.
+	 *
+	 * 只有当`mem_cgroup_disabled`时才使用这个结构，否则使用 mem_cgroup
+	 * ==========================================================
+	 * `mem_cgroup_page_lruvec`
 	 */
 	struct lruvec		__lruvec;
 

@@ -25,7 +25,7 @@ enum mapping_flags {
 	AS_EIO		= 0,	/* IO error on async write */
 	AS_ENOSPC	= 1,	/* ENOSPC on async write */
 	AS_MM_ALL_LOCKS	= 2,	/* under mm_take_all_locks() */
-	AS_UNEVICTABLE	= 3,	/* e.g., ramdisk, SHM_LOCK */
+	AS_UNEVICTABLE	= 3,	/* e.g., ramdisk, SHM_LOCK, 见 LRU_UNEVICTABLE */
 	AS_EXITING	= 4, 	/* final truncate in progress */
 	/* writeback related tags are not used */
 	AS_NO_WRITEBACK_TAGS = 5,

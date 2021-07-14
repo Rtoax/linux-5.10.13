@@ -2613,6 +2613,8 @@ EXPORT_SYMBOL_GPL(apply_to_existing_page_range);
  * parts, do_swap_page must check under lock before unmapping the pte and
  * proceeding (but do_wp_page is only called after already making such a check;
  * and do_anonymous_page can safely check later on).
+ *
+ * 
  */
 static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
 				pte_t *page_table, pte_t orig_pte)
@@ -3485,6 +3487,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
 		goto out;
 
+    /* 获取 swap entry */
 	entry = pte_to_swp_entry(vmf->orig_pte);
 	if (unlikely(non_swap_entry(entry))) {
 		if (is_migration_entry(entry)) {
@@ -3504,17 +3507,21 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 
 
 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+
+    /**
+     *  查找
+     */
 	page = lookup_swap_cache(entry, vma, vmf->address);
 	swapcache = page;
 
+    /*  */
 	if (!page) {
 		struct swap_info_struct *si = swp_swap_info(entry);
 
 		if (data_race(si->flags & SWP_SYNCHRONOUS_IO) &&
 		    __swap_count(entry) == 1) {
 			/* skip swapcache */
-			page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,
-							vmf->address);
+			page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
 			if (page) {
 				int err;
 
@@ -3524,8 +3531,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 
 				/* Tell memcg to use swap ownership records */
 				SetPageSwapCache(page);
-				err = mem_cgroup_charge(page, vma->vm_mm,
-							GFP_KERNEL);
+				err = mem_cgroup_charge(page, vma->vm_mm, GFP_KERNEL);
 				ClearPageSwapCache(page);
 				if (err) {
 					ret = VM_FAULT_OOM;
@@ -3536,12 +3542,16 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 				if (shadow)
 					workingset_refault(page, shadow);
 
+                /**
+                 *  
+                 */
 				lru_cache_add(page);
 				swap_readpage(page, true);
 			}
-		} else {
-			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,
-						vmf);
+		} 
+        /*  */
+        else {
+			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE, vmf);
 			swapcache = page;
 		}
 
