@@ -2927,11 +2927,15 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
          *  拷贝这个页面
          */
 		if (!cow_user_page(new_page, old_page, vmf)) {
-			/*
+			/**
+			 * 写时复制 失败
+			 *
 			 * COW failed, if the fault was solved by other,
 			 * it's fine. If not, userspace would re-fault on
 			 * the same address and we will handle the fault
 			 * from the second attempt.
+			 *
+			 * 减少 引用计数
 			 */
 			put_page(new_page);
 			if (old_page)
@@ -2939,6 +2943,10 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 			return 0;
 		}
 	}
+
+    /********************************\
+     *  到这里，COW 已经完毕
+    \********************************/
 
 	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
 		goto oom_free_new;
@@ -2966,16 +2974,28 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	 */
 	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
 	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
+
+        /* OLD 存在 */
 		if (old_page) {
+
+            /* 如果不是匿名页面 */
 			if (!PageAnon(old_page)) {
-				dec_mm_counter_fast(mm,
-						mm_counter_file(old_page));
+                /* 可能是共享内存或文件映射，减小这个统计计数 */
+				dec_mm_counter_fast(mm, mm_counter_file(old_page));
+
+                /* 增加 匿名页面的统计计数 *//*  Why??*/
 				inc_mm_counter_fast(mm, MM_ANONPAGES);
 			}
+
+        /* OLD 页面不存在 */
 		} else {
 			inc_mm_counter_fast(mm, MM_ANONPAGES);
 		}
+
+        /* 刷新 页缓存，函数为空 */
 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+
+        /*  */
 		entry = mk_pte(new_page, vma->vm_page_prot);
 		entry = pte_sw_mkyoung(entry);
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
@@ -2990,7 +3010,11 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		 *  先把 PTE 的值 读出来，然后将PTE设置为0，最后调用 flush_tlb_page 刷新这个page对应的 TLB
 		 */
 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
+
+        /* page->mapping = anon_vma */
 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
+
+        /* 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可驱逐性 */
 		lru_cache_add_inactive_or_unevictable(new_page, vma);
         
 		/*
@@ -3000,6 +3024,10 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		 */
 		set_pte_at_notify(mm, vmf->address, vmf->pte, entry);
 		update_mmu_cache(vma, vmf->address, vmf->pte);  /* 为空 */
+
+        /**
+         *  如果是写时复制
+         */
 		if (old_page) {
 			/*
 			 * Only after switching the pte to the new page may
@@ -3022,6 +3050,9 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 			 * cannot be reused until after the decremented
 			 * mapcount is visible. So transitively, TLBs to
 			 * old page will be flushed before it can be reused.
+			 *
+			 *
+			 * 
 			 */
 			page_remove_rmap(old_page, false);
 		}
