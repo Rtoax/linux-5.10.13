@@ -278,7 +278,7 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
 #define VM_SYNC		0x00800000	/* Synchronous page faults */
 #define VM_ARCH_1	0x01000000	/* Architecture-specific flag */
-#define VM_WIPEONFORK	0x02000000	/* Wipe VMA contents in child. */
+#define VM_WIPEONFORK	0x02000000	/* Wipe VMA contents in child. 擦除 子进程中 VMA内容, also `MADV_WIPEONFORK */
 #define VM_DONTDUMP	0x04000000	/* Do not include in the core dump */
 
 #ifdef CONFIG_MEM_SOFT_DIRTY
@@ -1894,7 +1894,7 @@ static inline int mm_counter(struct page *page)
 	return mm_counter_file(page);
 }
 
-static inline unsigned long get_mm_rss(struct mm_struct *mm)
+static inline unsigned long get_mm_rss(struct mm_struct *mm)    /* 统计计数 */
 {
 	return get_mm_counter(mm, MM_FILEPAGES) +
 		get_mm_counter(mm, MM_ANONPAGES) +

@@ -77,10 +77,18 @@ struct anon_vma {   /* 匿名 VMA */
 	 *
 	 * This counter is used for making decision about reusing anon_vma
 	 * instead of forking new one. See comments in function anon_vma_clone.
+	 *
+	 * 决定是否在 fork/clone 时复用 anon_vma 结构
+	 * degree < 2: 将复用
 	 */
-	unsigned degree;    /*  */
+	unsigned degree;    
 
-    /* 指向 父节点 */
+    /**
+     *  指向 父节点 
+     *
+     *  `anon_vma_fork()` 指向了 父进程的 aon_vma
+     *  `anon_vma_alloc()`指向 结构本身
+     */
 	struct anon_vma *parent;	/* Parent of this anon_vma */
 
 	/*

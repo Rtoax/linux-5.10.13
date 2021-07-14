@@ -93,7 +93,7 @@ static long madvise_behavior(struct vm_area_struct *vma,
 		}
 		new_flags &= ~VM_DONTCOPY;
 		break;
-	case MADV_WIPEONFORK:
+	case MADV_WIPEONFORK:   /*  */
 		/* MADV_WIPEONFORK is only supported on anonymous memory. */
 		if (vma->vm_file || vma->vm_flags & VM_SHARED) {
 			error = -EINVAL;
@@ -1158,6 +1158,7 @@ out:
 	return error;
 }
 
+int madvise(void *addr, size_t length, int advice);
 SYSCALL_DEFINE3(madvise, unsigned long, start, size_t, len_in, int, behavior)
 {
 	return do_madvise(current->mm, start, len_in, behavior);

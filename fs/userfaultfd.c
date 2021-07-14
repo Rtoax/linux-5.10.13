@@ -622,7 +622,7 @@ static void userfaultfd_event_complete(struct userfaultfd_ctx *ctx,
 	__remove_wait_queue(&ctx->event_wqh, &ewq->wq);
 }
 
-int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
+int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)  /*  */
 {
 	struct userfaultfd_ctx *ctx = NULL, *octx;
 	struct userfaultfd_fork_ctx *fctx;

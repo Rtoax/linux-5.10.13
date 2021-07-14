@@ -465,7 +465,10 @@ void free_task(struct task_struct *tsk)
 }
 EXPORT_SYMBOL(free_task);
 
-#ifdef CONFIG_MMU   /*  */
+#ifdef CONFIG_MMU   
+/**
+ *  
+ */
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 					struct mm_struct *oldmm)
 {
@@ -482,6 +485,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	}
 	flush_cache_dup_mm(oldmm);
 	uprobe_dup_mmap(oldmm, mm);
+    
 	/*
 	 * Not linked in yet - no deadlock potential:
 	 */
@@ -498,14 +502,26 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	rb_link = &mm->mm_rb.rb_node;
 	rb_parent = NULL;
 	pprev = &mm->mmap;
-	retval = ksm_fork(mm, oldmm);/* 同页合并 */
+
+    /**
+     *  同页合并 
+     */
+	retval = ksm_fork(mm, oldmm);
 	if (retval)
 		goto out;
+
+    /**
+     *  大页内存
+     */
 	retval = khugepaged_fork(mm, oldmm);/*  */
 	if (retval)
 		goto out;
 
 	prev = NULL;
+
+    /**
+     *  遍历 VMA 结构
+     */
 	for (mpnt = oldmm->mmap; mpnt; mpnt = mpnt->vm_next) {
 		struct file *file;
 
@@ -529,25 +545,46 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 				goto fail_nomem;
 			charge = len;
 		}
-		tmp = vm_area_dup(mpnt);    /*  */
+
+        /* 分配内存与初始化 */
+		tmp = vm_area_dup(mpnt);    
 		if (!tmp)
 			goto fail_nomem;
+
+        /* 策略 */
 		retval = vma_dup_policy(mpnt, tmp);
 		if (retval)
 			goto fail_nomem_policy;
+
+        /* 赋值 */
 		tmp->vm_mm = mm;
+
+        /*  */
 		retval = dup_userfaultfd(tmp, &uf);
 		if (retval)
 			goto fail_nomem_anon_vma_fork;
-		if (tmp->vm_flags & VM_WIPEONFORK) {
+
+        /*  */
+		if (tmp->vm_flags & VM_WIPEONFORK/* 擦除 */) {
 			/*
 			 * VM_WIPEONFORK gets a clean slate in the child.
 			 * Don't prepare anon_vma until fault since we don't
 			 * copy page for current vma.
+			 *
+			 * 这个标识位 将表明，在 fork 阶段不分配 anon_vma，而是在 缺页时候在分配
+			 *
+			 * 详情见 `  madvise(2) MADV_WIPEONFORK
 			 */
 			tmp->anon_vma = NULL;
-		} else if (anon_vma_fork(tmp, mpnt))
-			goto fail_nomem_anon_vma_fork;
+            
+		} 
+        /**
+         *  
+         */
+        else if (anon_vma_fork(tmp, mpnt))
+			goto fail_nomem_anon_vma_fork;  
+
+        /*  */
 		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
 		file = tmp->vm_file;
 		if (file) {
@@ -1359,6 +1396,9 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
  * content into it.
  *
  * Return: the duplicated mm or NULL on failure.
+ *
+ * 复制 mm 结构
+ *
  */ /* dup 一个 mm_struct */
 static struct mm_struct *dup_mm(struct task_struct *tsk,
 				struct mm_struct *oldmm)
@@ -1370,15 +1410,19 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	if (!mm)
 		goto fail_nomem;
 
+    /* 直接拷贝 */
 	memcpy(mm, oldmm, sizeof(*mm));
 
+    /* 初始化 */
 	if (!mm_init(mm, tsk, mm->user_ns))
 		goto fail_nomem;
 
+    /* 映射部分 */
 	err = dup_mmap(mm, oldmm);  /*  */
 	if (err)
 		goto free_pt;
 
+    /*  */
 	mm->hiwater_rss = get_mm_rss(mm);
 	mm->hiwater_vm = mm->total_vm;
 
@@ -1397,6 +1441,9 @@ fail_nomem:
 	return NULL;
 }
 
+/**
+ *  
+ */
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct mm_struct *mm, *oldmm;
@@ -1431,6 +1478,8 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	}
 
 	retval = -ENOMEM;
+
+    /* 复制 mm */
 	mm = dup_mm(tsk, current->mm);  /* dup */
 	if (!mm)
 		goto fail_nomem;
@@ -1859,6 +1908,8 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
  * It copies the registers, and all the appropriate
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
+ *
+ * 
  */
 static __latent_entropy struct task_struct *copy_process(   /* 复制进程，并不运行 */
 					struct pid *pid,
@@ -2129,9 +2180,15 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	retval = copy_signal(clone_flags, p);   /* 信号 */
 	if (retval)
 		goto bad_fork_cleanup_sighand;
+
+    /**
+     *  拷贝 MM 结构
+     */
 	retval = copy_mm(clone_flags, p);       /* mm 数据结构 */
 	if (retval)
 		goto bad_fork_cleanup_signal;
+
+    /*  */
 	retval = copy_namespaces(clone_flags, p);   /* 命名空间 */
 	if (retval)
 		goto bad_fork_cleanup_mm;
@@ -2489,7 +2546,9 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...)
 		if (likely(!ptrace_event_enabled(current, trace)))  /* 追踪 */
 			trace = 0;  /* 不可追踪 */
 	}
-    /* 复制进程，并不运行 */
+    /**
+     *  复制进程，并不运行 
+     */
 	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);    /*  */
 	add_latent_entropy();
 
@@ -2514,7 +2573,9 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...)
 		get_task_struct(p);
 	}
 
-    /* 唤醒 新进程 */
+    /**
+     *  唤醒 新进程 
+     */
 	wake_up_new_task(p);    /* 这里唤醒新的 task 这就是为什么 fork 返回两次 */
 
 	/* forking complete and child started to run, tell ptracer */
@@ -2547,6 +2608,7 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 }
 
 #ifdef __ARCH_WANT_SYS_FORK
+pid_t fork(void); /* +++ */
 SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
 {
 #ifdef CONFIG_MMU

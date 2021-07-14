@@ -416,6 +416,7 @@ struct vm_area_struct { /* VMA */
 	/* linked list of VM areas per task, sorted by address */
 	struct vm_area_struct *vm_next, *vm_prev;   /* 双向链表 */
 
+    /* mm_struct.mm_rb */
 	struct rb_node vm_rb;   /* 在 mm_struct 为根的节点 */
 
 	/*
@@ -572,9 +573,12 @@ struct kioctx_table;
  */
 struct mm_struct {  /* 进程虚拟地址空间 */
 	struct {
+        /* VMA 链表头 */
 		struct vm_area_struct *mmap;		/* list of VMAs, 将所有的 VMA 串联成串 */
-        
+
+        /* 节点为 vm_area_struct.vm_rb */
 		struct rb_root mm_rb;               /* `mm_rb` 是虚拟内存区域的红黑树结构 */
+        
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
         /**

@@ -2285,7 +2285,7 @@ EXPORT_SYMBOL(alloc_pages_current);
 
 int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)/* 内存策略 */
 {
-	struct mempolicy *pol = mpol_dup(vma_policy(src));
+	struct mempolicy *pol = mpol_dup(vma_policy(src));  /*  */
 
 	if (IS_ERR(pol))
 		return PTR_ERR(pol);
