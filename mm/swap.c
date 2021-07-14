@@ -1068,7 +1068,9 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 		lru = page_lru(page);
 		if (was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
-	} else {
+
+    } else {
+	
 		lru = LRU_UNEVICTABLE;
 		ClearPageActive(page);
 		SetPageUnevictable(page);
@@ -1197,6 +1199,8 @@ unsigned pagevec_lookup_range_nr_tag(struct pagevec *pvec,
 EXPORT_SYMBOL(pagevec_lookup_range_nr_tag);
 /*
  * Perform any setup for the swap system
+ *
+ * 决定要回收的页数
  */
 void __init swap_setup(void)    /*  */
 {

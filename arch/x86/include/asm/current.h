@@ -9,9 +9,14 @@
 struct task_struct;
 
 DECLARE_PER_CPU(struct task_struct *, current_task);
+struct task_struct __percpu * current_task;/* +++ */
+
 
 static __always_inline struct task_struct *get_current(void)
 {
+    /**
+     *  该结构将在 __switch_to() 中进行当前 CPU 交换
+     */
 	return this_cpu_read_stable(current_task/* per-cpu */);
 }
 

@@ -3848,14 +3848,22 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
  *
  * If there are applications that are active memory-allocators
  * (most normal use), this basically shouldn't matter.
+ *
+ * 页面回收线程 - 每一个 NODE 一个线程
  */
 static int kswapd(void *p)  /* swap 线程回调函数 */
 {
 	unsigned int alloc_order, reclaim_order;
 	unsigned int highest_zoneidx = MAX_NR_ZONES - 1;
+
+    /**
+     *  NODE 内存结构
+     */
 	pg_data_t *pgdat = (pg_data_t*)p;   /* NUMA 内存 */
+    
 	struct task_struct *tsk = current;  /* current 为swap 进程 */
-	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);    /* 在这个 NODE 上的CPU */
+
+    const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);    /* 在这个 NODE 上的CPU */
 
 	if (!cpumask_empty(cpumask))    /* 如果当前 node    的 CPU mask 不为空 */
 		set_cpus_allowed_ptr(tsk, cpumask); /* 设置 swap 进程的调度类 的CPUmask  */
@@ -3873,16 +3881,21 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 	 * trying to free the first piece of memory in the first place).
 	 */
 	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;   /* 我是 swap 进程 */
+    
 	set_freezable();    /* 设置进程可以冻结 */
 
 	WRITE_ONCE(pgdat->kswapd_order, 0);
 	WRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);
+
+    /**
+     *  
+     */
 	for ( ; ; ) {   /* 开始回收 */
+        
 		bool ret;
 
 		alloc_order = reclaim_order = READ_ONCE(pgdat->kswapd_order);
-		highest_zoneidx = kswapd_highest_zoneidx(pgdat,
-							highest_zoneidx);
+		highest_zoneidx = kswapd_highest_zoneidx(pgdat, highest_zoneidx);
 
 kswapd_try_sleep:
 		kswapd_try_to_sleep(pgdat, alloc_order, reclaim_order,
@@ -3914,10 +3927,11 @@ kswapd_try_sleep:
 		 * but kcompactd is woken to compact for the original
 		 * request (alloc_order).
 		 */
-		trace_mm_vmscan_kswapd_wake(pgdat->node_id, highest_zoneidx,
-						alloc_order);
-		reclaim_order = balance_pgdat(pgdat, alloc_order,   /* 进行 swap */
-						highest_zoneidx);
+		trace_mm_vmscan_kswapd_wake(pgdat->node_id, highest_zoneidx, alloc_order);
+        
+		reclaim_order = balance_pgdat(pgdat, 
+                                      alloc_order,   /* 进行 swap */
+						              highest_zoneidx);
 		if (reclaim_order < alloc_order)
 			goto kswapd_try_sleep;
 	}
