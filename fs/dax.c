@@ -1332,6 +1332,7 @@ static vm_fault_t dax_iomap_pte_fault(struct vm_fault *vmf, pfn_t *pfnp,
 		if (error)
 			goto error_finish_iomap;
 
+        /* 可以用了 */
 		__SetPageUptodate(vmf->cow_page);
 		ret = finish_fault(vmf);
 		if (!ret)
@@ -1652,7 +1653,7 @@ vm_fault_t dax_iomap_fault(struct vm_fault *vmf, enum page_entry_size pe_size,
 		    pfn_t *pfnp, int *iomap_errp, const struct iomap_ops *ops)
 {
 	switch (pe_size) {
-	case PE_SIZE_PTE:
+	case PE_SIZE_PTE:   /*  */
 		return dax_iomap_pte_fault(vmf, pfnp, iomap_errp, ops);
 	case PE_SIZE_PMD:
 		return dax_iomap_pmd_fault(vmf, pfnp, ops);

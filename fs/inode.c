@@ -1963,7 +1963,7 @@ EXPORT_SYMBOL(file_remove_privs);
  *	file systems who need to allocate space in order to update an inode.
  */
 
-int file_update_time(struct file *file)
+int file_update_time(struct file *file) /*  */
 {
 	struct inode *inode = file_inode(file);
 	struct timespec64 now;

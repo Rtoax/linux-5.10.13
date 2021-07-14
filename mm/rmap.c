@@ -1300,16 +1300,19 @@ out:
 	unlock_page_memcg(page);
 }
 
-static void page_remove_file_rmap(struct page *page, bool compound)
+static void page_remove_file_rmap(struct page *page, bool compound) /*  */
 {
 	int i, nr = 1;
 
 	VM_BUG_ON_PAGE(compound && !PageHead(page), page);
 
-	/* Hugepages are not counted in NR_FILE_MAPPED for now. */
+	/**
+	 *  Hugepages are not counted in NR_FILE_MAPPED for now. 
+	 *  大页内存 不 记在 NR_FILE_MAPPED 中
+	 */
 	if (unlikely(PageHuge(page))) {
 		/* hugetlb pages are always mapped with pmds */
-		atomic_dec(compound_mapcount_ptr(page));
+		atomic_dec(compound_mapcount_ptr(page));    /*  */
 		return;
 	}
 
@@ -1321,10 +1324,14 @@ static void page_remove_file_rmap(struct page *page, bool compound)
 		}
 		if (!atomic_add_negative(-1, compound_mapcount_ptr(page)))
 			return;
+
+        /*  */
 		if (PageSwapBacked(page))
 			__dec_node_page_state(page, NR_SHMEM_PMDMAPPED);
 		else
 			__dec_node_page_state(page, NR_FILE_PMDMAPPED);
+
+    /*  */
 	} else {
 		if (!atomic_add_negative(-1, &page->_mapcount))
 			return;
@@ -1396,12 +1403,18 @@ void page_remove_rmap(struct page *page, bool compound)
 {
 	lock_page_memcg(page);
 
+    /* 如果不是匿名页面 */
 	if (!PageAnon(page)) {
+
+        /* 去除 文件 RMAP */
 		page_remove_file_rmap(page, compound);
 		goto out;
 	}
 
-	if (compound) {
+    /* 复合 page */
+	if (compound) { /* 可能是大页 */
+
+        /*  */
 		page_remove_anon_compound_rmap(page);
 		goto out;
 	}

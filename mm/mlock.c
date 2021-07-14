@@ -183,8 +183,10 @@ static void __munlock_isolation_failed(struct page *page)
  * So we clear the PageMlocked as we might not get another chance.  If we
  * can't isolate the page, we leave it for putback_lru_page() and vmscan
  * [page_referenced()/try_to_unmap()] to deal with.
+ *
+ * 
  */
-unsigned int munlock_vma_page(struct page *page)
+unsigned int munlock_vma_page(struct page *page)    /*  */
 {
 	int nr_pages;
 	pg_data_t *pgdat = page_pgdat(page);

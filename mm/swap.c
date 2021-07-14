@@ -76,7 +76,7 @@ static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
  * This path almost never happens for VM activity - pages are normally
  * freed via pagevecs.  But it gets used by networking.
  */
-static void __page_cache_release(struct page *page)
+static void __page_cache_release(struct page *page) /*  */
 {
 	if (PageLRU(page)) {
 		pg_data_t *pgdat = page_pgdat(page);
@@ -87,6 +87,8 @@ static void __page_cache_release(struct page *page)
 		lruvec = mem_cgroup_page_lruvec(page, pgdat);
 		VM_BUG_ON_PAGE(!PageLRU(page), page);
 		__ClearPageLRU(page);
+
+        /*  */
 		del_page_from_lru_list(page, lruvec, page_off_lru(page));
 		spin_unlock_irqrestore(&pgdat->lru_lock, flags);
 	}

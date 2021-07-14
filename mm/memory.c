@@ -2945,7 +2945,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	}
 
     /********************************\
-     *  到这里，COW 已经完毕
+     *  到这里，COW 拷贝工作 已经完成
     \********************************/
 
 	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
@@ -2971,8 +2971,14 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 
 	/*
 	 * Re-check the pte - we dropped the lock
+	 *
+	 * 重新检查 PTE
 	 */
 	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
+
+    /**
+     *  PTE 相等 表示 ??
+     */
 	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
 
         /* OLD 存在 */
@@ -3026,7 +3032,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		update_mmu_cache(vma, vmf->address, vmf->pte);  /* 为空 */
 
         /**
-         *  如果是写时复制
+         *  
          */
 		if (old_page) {
 			/*
@@ -3051,19 +3057,27 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 			 * mapcount is visible. So transitively, TLBs to
 			 * old page will be flushed before it can be reused.
 			 *
-			 *
+			 * =============================================
+			 * 
 			 * 
 			 */
 			page_remove_rmap(old_page, false);
 		}
 
-		/* Free the old page.. */
+		/**
+		 *  Free the old page.. 
+		 *  在新的进程中  ， old_page 结构 已经没用了，所以准备free
+		 */
 		new_page = old_page;
 		page_copied = 1;
-	} else {
+        
+	} 
+    else {
+        /* x86 为 空 */
 		update_mmu_tlb(vma, vmf->address, vmf->pte);
 	}
 
+    /*  */
 	if (new_page)
 		put_page(new_page);
 
@@ -3074,20 +3088,28 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	 * the above ptep_clear_flush_notify() did already call it.
 	 */
 	mmu_notifier_invalidate_range_only_end(&range);
+
+    /* 准备释放 old page */
 	if (old_page) {
 		/*
 		 * Don't let another task, with possibly unlocked vma,
 		 * keep the mlocked page.
 		 */
 		if (page_copied && (vma->vm_flags & VM_LOCKED)) {
+            
 			lock_page(old_page);	/* LRU manipulation */
-			if (PageMlocked(old_page))
-				munlock_vma_page(old_page);
+			if (PageMlocked(old_page))      /* 如果设置了 locked 标志 */
+				munlock_vma_page(old_page); /*  */
 			unlock_page(old_page);
 		}
-		put_page(old_page);
+		put_page(old_page); /*  */
 	}
-	return page_copied ? VM_FAULT_WRITE : 0;
+
+    /**
+     *  如果 拷贝 了 page，返回 WRITE 标志
+     */
+    return page_copied ? VM_FAULT_WRITE : 0;
+    
 oom_free_new:
 	put_page(new_page);
 oom:
@@ -3858,6 +3880,8 @@ oom:
  * The mmap_lock must have been held on entry, and may have been
  * released depending on flags and vma->vm_ops->fault() return value.
  * See filemap_fault() and __lock_page_retry().
+ *
+ * 文件映射 的缺页 处理
  */
 static vm_fault_t __do_fault(struct vm_fault *vmf)
 {
@@ -3887,7 +3911,10 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	}
 
     /**
-     *  
+     *  具体文件系统的 fault() 回调函数
+     *
+     *  以 ext2/// 为例
+     *  fs/ext2/file.c:   ext2_dax_vm_ops.fault = ext2_dax_fault()
      */
 	ret = vma->vm_ops->fault(vmf);  /* 调用回调 */
     
@@ -4145,11 +4172,14 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	 */
 	if (!(vmf->vma->vm_flags & VM_SHARED))
 		ret = check_stable_address_space(vmf->vma->vm_mm);
-	if (!ret)
+
+    if (!ret)
 		ret = alloc_set_pte(vmf, page);
+    
 	if (vmf->pte)
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return ret;
+
+    return ret;
 }
 
 static unsigned long __read_mostly fault_around_bytes  =/*  */
@@ -4307,20 +4337,25 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret;
 
+    /* 准备 AV 结构 */
 	if (unlikely(anon_vma_prepare(vma)))
 		return VM_FAULT_OOM;
 
-    /* 写时复制，需要分配新的 vma */
+    /* 写时复制，为 VMA 分配新的 page */
 	vmf->cow_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
 	if (!vmf->cow_page)
 		return VM_FAULT_OOM;
 
+    /*  */
 	if (mem_cgroup_charge(vmf->cow_page, vma->vm_mm, GFP_KERNEL)) {
 		put_page(vmf->cow_page);
 		return VM_FAULT_OOM;
 	}
 	cgroup_throttle_swaprate(vmf->cow_page, GFP_KERNEL);    /*  */
 
+    /**
+     *  
+     */
 	ret = __do_fault(vmf);  /*  */
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
@@ -4328,14 +4363,21 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 		return ret;
 
 	copy_user_highpage(vmf->cow_page, vmf->page, vmf->address, vma);
+
+    /* 表明 page 可用了 */
 	__SetPageUptodate(vmf->cow_page);
 
+    /*  */
 	ret |= finish_fault(vmf);
+    
 	unlock_page(vmf->page);
 	put_page(vmf->page);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
-	return ret;
+
+    /*  */
+    return ret;
+    
 uncharge_out:
 	put_page(vmf->cow_page);
 	return ret;
