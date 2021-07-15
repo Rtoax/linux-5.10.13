@@ -43,6 +43,9 @@ struct zone *next_zone(struct zone *zone)
 	return zone;
 }
 
+/**
+ *  zoneref 当前的 zone 在 mask 中，返回 true
+ */
 static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 {
 #ifdef CONFIG_NUMA
@@ -53,6 +56,11 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 }
 
 /* Returns the next zone at or below highest_zoneidx in a zonelist *//* 遍历 */
+/**
+ *  遍历zoneref 
+ *
+ *  找到一个 zonelist_zone_idx(z) <= highest_zoneidx 的zoneref
+ */
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)
@@ -64,13 +72,20 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
 	if (unlikely(nodes == NULL))    /*  */
 		while (zonelist_zone_idx(z) > highest_zoneidx)
 			z++;
+
+    /**
+     *  nodemask 不为空
+     */
 	else
-		while (zonelist_zone_idx(z) > highest_zoneidx ||
-				(z->zone && !zref_in_nodemask(z, nodes)))
-			z++;    /* 他在 pglist_data中是个数组来的 */
+        /**
+         *  比上面多了 nodemask 约束
+         */
+		while (zonelist_zone_idx(z) > highest_zoneidx || (z->zone && !zref_in_nodemask(z, nodes)))
+			z++;    /* 他在 pglist_data.node_zonelists 中是个数组来的 */
 
 	return z;
 }
+
 
 #ifdef CONFIG_ARCH_HAS_HOLES_MEMORYMODEL
 bool memmap_valid_within(unsigned long pfn,

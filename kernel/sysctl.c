@@ -2908,6 +2908,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	},
 #endif
 #ifdef CONFIG_NUMA
+    //vm.zone_reclaim_mode = 0
 	{
 		.procname	= "zone_reclaim_mode",
 		.data		= &node_reclaim_mode,

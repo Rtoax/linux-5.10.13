@@ -71,6 +71,9 @@
 struct cgroup_subsys __read_mostly memory_cgrp_subsys ;/*  */
 EXPORT_SYMBOL(memory_cgrp_subsys);
 
+/**
+ *  我觉得 root 应该是对内存的限制是很宽泛的
+ */
 struct mem_cgroup __read_mostly *root_mem_cgroup ;
 
 /* Active memory cgroup to use from an interrupt context */

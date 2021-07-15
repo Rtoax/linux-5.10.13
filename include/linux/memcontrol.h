@@ -106,6 +106,10 @@ struct memcg_shrinker_map {
  * 每个 node 信息的 内存控制结构
  */
 struct mem_cgroup_per_node {
+
+    /**
+     *  LRU 链表
+     */
 	struct lruvec		lruvec; /* 用于 页面回收 的链表集合 */
 
 	/* Legacy local VM stats */
@@ -333,6 +337,9 @@ struct mem_cgroup {
 	struct deferred_split deferred_split_queue;
 #endif
 
+    /**
+     *  每个 NODE 都有一个 memcg??
+     */
 	struct mem_cgroup_per_node *nodeinfo[0];
 	/* WARNING: nodeinfo must be the last member here */
 };
@@ -357,6 +364,9 @@ static inline bool mem_cgroup_is_root(struct mem_cgroup *memcg)
 	return (memcg == root_mem_cgroup);
 }
 
+/**
+ *  static key 控制的
+ */
 static inline bool mem_cgroup_disabled(void)
 {
 	return !cgroup_subsys_enabled(memory_cgrp_subsys);
@@ -450,6 +460,9 @@ void mem_cgroup_uncharge_list(struct list_head *page_list);
 
 void mem_cgroup_migrate(struct page *oldpage, struct page *newpage);
 
+/**
+ *  
+ */
 static struct mem_cgroup_per_node *
 mem_cgroup_nodeinfo(struct mem_cgroup *memcg, int nid)
 {
@@ -463,6 +476,8 @@ mem_cgroup_nodeinfo(struct mem_cgroup *memcg, int nid)
  * Returns the lru list vector holding pages for a given @memcg &
  * @node combination. This can be the node lruvec, if the memory
  * controller is disabled.
+ *
+ * 从 memcg 中获取 LRU 链表向量
  */
 static inline struct lruvec *mem_cgroup_lruvec(struct mem_cgroup *memcg,
 					       struct pglist_data *pgdat)
@@ -470,16 +485,26 @@ static inline struct lruvec *mem_cgroup_lruvec(struct mem_cgroup *memcg,
 	struct mem_cgroup_per_node *mz;
 	struct lruvec *lruvec;
 
+    /**
+     *  static key 控制的
+     */
 	if (mem_cgroup_disabled()) {
 		lruvec = &pgdat->__lruvec;
 		goto out;
 	}
 
+    /**
+     *  为空 使用 root
+     */
 	if (!memcg)
 		memcg = root_mem_cgroup;
 
+    /**
+     *  获取 lruvec
+     */
 	mz = mem_cgroup_nodeinfo(memcg, pgdat->node_id);
 	lruvec = &mz->lruvec;
+    
 out:
 	/*
 	 * Since a node can be onlined after the mem_cgroup was created,
@@ -488,6 +513,7 @@ out:
 	 */
 	if (unlikely(lruvec->pgdat != pgdat))
 		lruvec->pgdat = pgdat;
+    
 	return lruvec;
 }
 
@@ -760,24 +786,40 @@ static inline void mod_memcg_page_state(struct page *page,
 		mod_memcg_state(page->mem_cgroup, idx, val);
 }
 
-static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
-					      enum node_stat_item idx)
+/**
+ *  
+ */
+static inline unsigned long lruvec_page_state(struct lruvec *lruvec, enum node_stat_item idx)
 {
 	struct mem_cgroup_per_node *pn;
 	long x;
 
+    /**
+     *  未使能 memcg
+     */
 	if (mem_cgroup_disabled())
+        /**
+         *  memcg 未使能，直接使用 统计值
+         */
 		return node_page_state(lruvec_pgdat(lruvec), idx);
 
+    /**
+     *  和上面的冲突吗, node_page_state 函数里 和下面的代码相同
+     */
 	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
 	x = atomic_long_read(&pn->lruvec_stat[idx]);
+    
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
 #endif
+    
 	return x;
 }
 
+/**
+ *  
+ */
 static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 						    enum node_stat_item idx)
 {

@@ -984,10 +984,9 @@ unsigned long sum_zone_numa_state(int node,
 }
 
 /*
- * Determine the per node value of a stat item.
+ * Determine the per node value of a stat item. 
  */
-unsigned long node_page_state_pages(struct pglist_data *pgdat,
-				    enum node_stat_item item)
+unsigned long node_page_state_pages(struct pglist_data *pgdat, enum node_stat_item item)
 {
 	long x = atomic_long_read(&pgdat->vm_stat[item]);
 #ifdef CONFIG_SMP
@@ -997,11 +996,16 @@ unsigned long node_page_state_pages(struct pglist_data *pgdat,
 	return x;
 }
 
-unsigned long node_page_state(struct pglist_data *pgdat,
-			      enum node_stat_item item)
+/**
+ *  
+ */
+unsigned long node_page_state(struct pglist_data *pgdat, enum node_stat_item item)
 {
 	VM_WARN_ON_ONCE(vmstat_item_in_bytes(item));
 
+    /**
+     *  
+     */
 	return node_page_state_pages(pgdat, item);
 }
 #endif

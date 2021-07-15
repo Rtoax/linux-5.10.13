@@ -164,11 +164,16 @@ unsigned long __read_mostly totalreserve_pages ;
 unsigned long __read_mostly totalcma_pages ;
 
 int percpu_pagelist_fraction;
+
+/**
+ *  
+ */
 gfp_t __read_mostly gfp_allowed_mask  = GFP_BOOT_MASK;  /*  */
+
 #ifdef CONFIG_INIT_ON_ALLOC_DEFAULT_ON
 //DEFINE_STATIC_KEY_TRUE(init_on_alloc);
 #else
-//DEFINE_STATIC_KEY_FALSE(init_on_alloc);/* 我改了一下成下面这样 */
+DEFINE_STATIC_KEY_FALSE(init_on_alloc);/* 我改了一下成下面这样 */
 struct static_key_false init_on_alloc = STATIC_KEY_FALSE_INIT;
 #endif
 EXPORT_SYMBOL(init_on_alloc);
@@ -176,7 +181,7 @@ EXPORT_SYMBOL(init_on_alloc);
 #ifdef CONFIG_INIT_ON_FREE_DEFAULT_ON
 //DEFINE_STATIC_KEY_TRUE(init_on_free);
 #else
-//DEFINE_STATIC_KEY_FALSE(init_on_free);
+DEFINE_STATIC_KEY_FALSE(init_on_free);
 struct static_key_false init_on_free = STATIC_KEY_FALSE_INIT;
 #endif
 EXPORT_SYMBOL(init_on_free);
@@ -3851,8 +3856,7 @@ bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 #ifdef CONFIG_NUMA
 static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
 {
-	return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <=
-				node_reclaim_distance;
+	return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <= node_reclaim_distance;
 }
 #else	/* CONFIG_NUMA */
 /*  */
@@ -3901,14 +3905,16 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)   /*  */
 	return alloc_flags;
 }
 
+/**
+ *  判定 连续内存管理
+ */
 static inline unsigned int current_alloc_flags(gfp_t gfp_mask,  /*  */
 					unsigned int alloc_flags)
 {
 #ifdef CONFIG_CMA   /* 连续内存管理 */
 	unsigned int pflags = current->flags;   /* 获取进程 flags */
 
-	if (!(pflags & PF_MEMALLOC_NOCMA) &&
-			gfp_migratetype(gfp_mask) == MIGRATE_MOVABLE)
+	if (!(pflags & PF_MEMALLOC_NOCMA) && gfp_migratetype(gfp_mask) == MIGRATE_MOVABLE)
 		alloc_flags |= ALLOC_CMA;   /*  */
 
 #endif
@@ -3934,9 +3940,15 @@ retry:
 	 * See also __cpuset_node_allowed() comment in kernel/cpuset.c.
 	 */
 	no_fallback = alloc_flags & ALLOC_NOFRAGMENT;
+
+    /**
+     *  
+     */
 	z = ac->preferred_zoneref;  /* 这是偏好的 zone */
 
-    /* 遍历 zone 的所有(也不是所有)list */
+    /**
+     *  遍历所有 NODE 的 zonelist, 找到一个 zoneref->zone_idx <= highest_zoneidx 的
+     */
 	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx, ac->nodemask) {
 	
 		struct page *page;
@@ -3975,23 +3987,33 @@ retry:
 			}
 		}
 
-		if (no_fallback && nr_online_nodes > 1 &&
-		    zone != ac->preferred_zoneref->zone) {
+        /**
+         *  
+         */
+		if (no_fallback && nr_online_nodes > 1 && zone != ac->preferred_zoneref->zone) {
+            
 			int local_nid;
 
 			/*
 			 * If moving to a remote node, retry but allow
-			 * fragmenting fallbacks. Locality is more important
+			 * fragmenting fallbacks(碎片回退). Locality is more important
 			 * than fragmentation avoidance.
+			 *
+			 * 如果 move到 另一个 NODE, 再次尝试但是允许 碎片回退,
+			 * 地方比避免碎片更重要
 			 */
+			/* 本地/更倾向的 NODE */
 			local_nid = zone_to_nid(ac->preferred_zoneref->zone);
+
+            /* 遍历的 zone 所属 NODE 不是本地 NODE */
 			if (zone_to_nid(zone) != local_nid) {   /* 如果不是本地node */
-				alloc_flags &= ~ALLOC_NOFRAGMENT;
+				alloc_flags &= ~ALLOC_NOFRAGMENT;   /* 清理标记位 */
 				goto retry;
 			}
 		}
-            
-        /*  */
+        /**
+         *  
+         */
 		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);   /* 获取 */
 		if (!zone_watermark_fast(zone, order, mark,
 				       ac->highest_zoneidx, alloc_flags,
@@ -4012,12 +4034,20 @@ retry:
 			BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
 				goto try_this_zone;
-
-			if (node_reclaim_mode == 0 ||
-			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone))
+            
+            /**
+             *  vm.zone_reclaim_mode = 0
+             *
+             *  不能回收，那就遍历下一个 zone
+             */
+			if (node_reclaim_mode == 0 ||   /* 回收模式 没开启 */
+			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone)) /* NODE 之间的距离超限 */
 				continue;
             
-            /* 回收 */
+            /**
+             *  允许回收, 进入回收流程
+             *  传入 zone 对应的 NODE
+             */
 			ret = node_reclaim(zone->zone_pgdat, gfp_mask, order);
 			switch (ret) {
 			case NODE_RECLAIM_NOSCAN:
@@ -5006,25 +5036,47 @@ fail:
 got_pg:
 	return page;
 }
-                    /* 为分配 page 做准备 */
+
+/**
+ *  为分配 page 做准备 
+ */
 static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
-		int preferred_nid, nodemask_t *nodemask,
-		struct alloc_context *ac, gfp_t *alloc_mask,
-		unsigned int *alloc_flags)
+                                            int preferred_nid, nodemask_t *nodemask,
+                                            struct alloc_context *ac, gfp_t *alloc_mask,
+                                            unsigned int *alloc_flags)
 {
+    /**
+     *  根据 mask 获取 zoneidx
+     */
 	ac->highest_zoneidx = gfp_zone(gfp_mask);   /* 获取 zone */
-	ac->zonelist = node_zonelist(preferred_nid, gfp_mask); /* 根据 __GFP_THISNODE 决定使用fallback还是nofallback */
+
+    /**
+     *  根据 __GFP_THISNODE 决定使用fallback还是nofallback
+     */
+	ac->zonelist = node_zonelist(preferred_nid, gfp_mask); /*  */
 	ac->nodemask = nodemask;    /* bitmap */
+
+    /**
+     *  返回 类型
+     *
+     *  MIGRATE_UNMOVABLE   不可移动
+     *  MIGRATE_MOVABLE     可移动
+     *  MIGRATE_RECLAIMABLE 可回收
+     */
 	ac->migratetype = gfp_migratetype(gfp_mask);    
 
+    /**
+     *  
+     */
 	if (cpusets_enabled()) {    /* static key 开关 */
+        
 		*alloc_mask |= __GFP_HARDWALL;
 		/*
 		 * When we are in the interrupt context, it is irrelevant
 		 * to the current task context. It means that any node ok.
 		 */
 		if (!in_interrupt() && !ac->nodemask)
-			ac->nodemask = &cpuset_current_mems_allowed;
+			ac->nodemask = &cpuset_current_mems_allowed/* (current->mems_allowed) */;
 		else
 			*alloc_flags |= ALLOC_CPUSET;
 	}
@@ -5040,7 +5092,9 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	if (should_fail_alloc_page(gfp_mask, order))
 		return false;
 
-    /*  */
+    /**
+     *  连续内存管理 标志位
+     */
 	*alloc_flags = current_alloc_flags(gfp_mask, *alloc_flags); /*  */
 
 	/* Dirty zone balancing only done in the fast path
@@ -5054,9 +5108,10 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	 *
 	 * 首选区域用于统计，但至关重要的是，它也用作 zonelist 迭代器的起点。 
 	 * 对于忽略内存策略的分配，它可能会被重置。
+	 *
 	 */
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
-					ac->highest_zoneidx, ac->nodemask);
+					                ac->highest_zoneidx, ac->nodemask);
 
 	return true;
 }
@@ -5087,7 +5142,13 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	gfp_mask &= gfp_allowed_mask;
 	alloc_mask = gfp_mask;
 
-    /* 计算 ac 变量 */
+    /**
+     *  计算
+     *
+     *  struct alloc_context 结构
+     *  gfp_t alloc_mask
+     *  alloc_flags
+     */
 	if (!prepare_alloc_pages(gfp_mask, order, preferred_nid, nodemask, &ac, &alloc_mask, &alloc_flags))
 		return NULL;
 
@@ -5122,6 +5183,9 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	ac.nodemask = nodemask;
 
     /* 如果上面申请失败，则进入慢速路径 */
+    /**
+     *  
+     */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 
 out:

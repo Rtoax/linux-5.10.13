@@ -1899,6 +1899,7 @@ static unsigned interleave_nodes(struct mempolicy *policy)
 	next = next_node_in(me->il_prev, policy->v.nodes);  /* 选择下一个 node */
 	if (next < MAX_NUMNODES)
 		me->il_prev = next;
+    
 	return next;    /*  */
 }
 
@@ -2119,20 +2120,35 @@ out:
 	return ret;
 }
 
-/* Allocate a page in interleaved policy.
-   Own path because it needs to do special accounting.  交织
-   在某个node上分配 page */
-static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
-					unsigned nid)
+/**
+ *  Allocate a page in interleaved policy.
+ *  Own path because it needs to do special accounting.  交织
+ *  在某个node上分配 page 
+ */
+static struct page *alloc_page_interleave(gfp_t gfp, unsigned order, unsigned nid)
 {
 	struct page *page;
 
+    /**
+     *  页面分配
+     */
 	page = __alloc_pages(gfp, order, nid);  /* 分配 page */
+
+    /**
+     *  统计信息 功能是否打开
+     */
 	/* skip NUMA_INTERLEAVE_HIT counter update if numa stats is disabled */
 	if (!static_branch_likely(&vm_numa_stat_key))
 		return page;
+
+    /**
+     *  如果开启了统计计数功能
+     */
 	if (page && page_to_nid(page) == nid) {
 		preempt_disable();  /* 不可抢占 */
+        /**
+         *  
+         */
 		__inc_numa_state(page_zone(page), NUMA_INTERLEAVE_HIT);
 		preempt_enable();
 	}
@@ -2248,32 +2264,45 @@ EXPORT_SYMBOL(alloc_pages_vma);
  * 	alloc_pages_current - Allocate pages.
  *
  *	@gfp:
- *		    %GFP_USER   user allocation,
- *      	%GFP_KERNEL kernel allocation,
- *      	%GFP_HIGHMEM highmem allocation,
- *      	%GFP_FS     don't call back into a file system.
- *      	%GFP_ATOMIC don't sleep.
+ *		    %GFP_USER   user allocation,    用户态分配
+ *      	%GFP_KERNEL kernel allocation,  内核太分配
+ *      	%GFP_HIGHMEM highmem allocation,高端内存 x86-64 不用
+ *      	%GFP_FS     don't call back into a file system. 
+ *      	%GFP_ATOMIC don't sleep.        不睡眠
  *	@order: Power of two of allocation size in pages. 0 is a single page.
  *
  *	Allocate a page from the kernel page pool.  When not in
  *	interrupt context and apply the current process NUMA policy.
  *	Returns NULL when no page can be allocated.
+ *
+ *  被 alloc_pages 调用
  */
 struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
 {
+    /**
+     *  内存分配策略
+     */
 	struct mempolicy *pol = &default_policy;    /* 默认的 策略 */
 	struct page *page;
 
+    /**
+     *  不在中断上下文并且不在 本NODE分配
+     */
 	if (!in_interrupt() && !(gfp & __GFP_THISNODE)) /*  */
 		pol = get_task_policy(current); /* 获取 策略 */
 
-	/*
+	/**
 	 * No reference counting needed for current->mempolicy
 	 * nor system default_policy
+	 *
+	 * 交织分配，实际上，最终也会调用 __alloc_pages_nodemask()
 	 */
 	if (pol->mode == MPOL_INTERLEAVE)/* 交织 mempolicy 在指定的几个node上交叉使用*/
 		page = alloc_page_interleave(gfp, order, interleave_nodes(pol)/* 选择上次使用的下一个node */);
-	else
+    /**
+     *  在特定的 node 上分配
+     */
+    else
         /* 根据nodemask申请内存 */
 		page = __alloc_pages_nodemask(gfp, order,
                         				policy_node(gfp, pol, numa_node_id()),
@@ -2283,6 +2312,9 @@ struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
 }
 EXPORT_SYMBOL(alloc_pages_current);
 
+/**
+ *  
+ */
 int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)/* 内存策略 */
 {
 	struct mempolicy *pol = mpol_dup(vma_policy(src));  /*  */

@@ -141,16 +141,24 @@ enum numa_stat_item {
 /*  */
 #endif
 
+/**
+ *  
+ */
 enum zone_stat_item {   /* ZONE 状态 */
 	/* First 128 byte cacheline (assuming 64 bit words) */
 	NR_FREE_PAGES,      /*  */
-	NR_ZONE_LRU_BASE, /* Used only for compaction and reclaim retry */
+
+    /**
+     *  
+     */
+    NR_ZONE_LRU_BASE, /* Used only for compaction and reclaim retry */
 	NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE,
 	NR_ZONE_ACTIVE_ANON,
 	NR_ZONE_INACTIVE_FILE,
 	NR_ZONE_ACTIVE_FILE,
 	NR_ZONE_UNEVICTABLE,
 	NR_ZONE_WRITE_PENDING,	/* Count of dirty, writeback and unstable pages */
+	
 	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
 	NR_PAGETABLE,		/* used for pagetables */
 	/* Second 128 byte cacheline */
@@ -168,10 +176,14 @@ enum node_stat_item {
 	NR_INACTIVE_FILE,	/*  "     "     "   "       "         */
 	NR_ACTIVE_FILE,		/*  "     "     "   "       "         */
 	NR_UNEVICTABLE,		/*  "     "     "   "       "         */
-	NR_SLAB_RECLAIMABLE_B,
+	NR_SLAB_RECLAIMABLE_B,  /* slab 可回收 */
 	NR_SLAB_UNRECLAIMABLE_B,
 	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
+
+    /**
+     *  
+     */
 	WORKINGSET_NODES,
 	WORKINGSET_REFAULT_BASE,
 	WORKINGSET_REFAULT_ANON = WORKINGSET_REFAULT_BASE,
@@ -183,6 +195,8 @@ enum node_stat_item {
 	WORKINGSET_RESTORE_ANON = WORKINGSET_RESTORE_BASE,
 	WORKINGSET_RESTORE_FILE,
 	WORKINGSET_NODERECLAIM,
+
+    
 	NR_ANON_MAPPED,	/* Mapped anonymous pages */
 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
 			   only modified from process context */
@@ -294,10 +308,13 @@ struct lruvec {
 	 */
 	unsigned long			anon_cost;
 	unsigned long			file_cost;
+    
 	/* Non-resident age, driven by LRU movement */
 	atomic_long_t			nonresident_age;
+    
 	/* Refaults at the time of last reclaim cycle */
 	unsigned long			refaults[ANON_AND_FILE];
+    
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
 
@@ -384,6 +401,9 @@ struct per_cpu_pageset {    /* 每个CPU的pageset */
 #endif
 };
 
+/**
+ *  
+ */
 struct per_cpu_nodestat {
 	s8 stat_threshold;
 	s8 vm_node_stat_diff[NR_VM_NODE_STAT_ITEMS];
@@ -804,6 +824,8 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 *
 	 * 提供一种机制，可以访问所有 NODE 的 zonelist
 	 * 通常第一个zone 是当前 node 的 node_zones 的引用
+	 *
+	 * 里面是一个 zoneref 数组
 	 */
 	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];  /*  */
 
@@ -815,6 +837,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	struct page_ext *node_page_ext;/* 页扩展 */
 #endif
 #endif
+
 #if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
 	/*
 	 * Must be held any time you expect node_start_pfn,
@@ -830,6 +853,10 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 */
 	spinlock_t node_size_lock;
 #endif
+
+    /**
+     *  
+     */
 	unsigned long node_start_pfn;   /* 起始页帧号 */
 	unsigned long node_present_pages; /* total number of physical pages *//* 物理页总个数 */
 	unsigned long node_spanned_pages; /* total size of physical page
@@ -844,8 +871,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
      */
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
-	struct task_struct *kswapd;	/* Protected by
-					   mem_hotplug_begin/end() */
+	struct task_struct *kswapd;	/* Protected by mem_hotplug_begin/end() */
 
     /*  */                   
 	int kswapd_order;
@@ -877,15 +903,20 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 #ifdef CONFIG_NUMA
 	/*
 	 * node reclaim becomes active if more unmapped pages exist.
+	 *
+	 * 如果 未映射的页面 比较多，NODE回收将激活
 	 */
 	unsigned long		min_unmapped_pages;
 	unsigned long		min_slab_pages;
+    
 #endif /* CONFIG_NUMA */
 
 	/* Write-intensive fields used by page reclaim */
 	ZONE_PADDING(_pad1_)
 
-
+    /**
+     *  
+     */
 	spinlock_t		lru_lock;   /* 最近最少使用 */
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
@@ -919,7 +950,10 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
 	/* Per-node vmstats */
 	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
-    
+
+    /**
+     *  NODE 的统计信息
+     */
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
     
 } pg_data_t;
@@ -973,6 +1007,9 @@ extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn
 
 extern void lruvec_init(struct lruvec *lruvec);
 
+/**
+ *  lruvec 对应的 NODE 
+ */
 static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 {
 #ifdef CONFIG_MEMCG
@@ -1157,7 +1194,11 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
 					nodemask_t *nodes);
 
 /**
- * next_zones_zonelist - Returns the next zone at or below highest_zoneidx within the allowed nodemask using a cursor within a zonelist as a starting point
+ * next_zones_zonelist - Returns the next zone at or below highest_zoneidx within
+ *                       the allowed nodemask using a cursor within a zonelist as a starting point
+ *
+ *  返回下一个 highest_zoneidx 及其下方的node(nodemask以内)
+ *
  * @z - The cursor used as a starting point for the search
  * @highest_zoneidx - The zone index of the highest zone to return
  * @nodes - An optional nodemask to filter the zonelist with
@@ -1169,16 +1210,27 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
  * next_zones_zonelist again.
  */
 static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+                    					enum zone_type highest_zoneidx,
+                    					nodemask_t *nodes)
 {
+    /**
+     *  nodemask 为空 并且当前的 zoneidx <= highest_zoneidx
+     */
 	if (likely(!nodes && zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
+
+    /**
+     *  nodemask 不为空, 返回一个 zoneidx <= highest_zoneidx 的 zoneref 
+     */
 	return __next_zones_zonelist(z, highest_zoneidx, nodes);
 }
 
 /**
- * first_zones_zonelist - Returns the first zone at or below highest_zoneidx within the allowed nodemask in a zonelist
+ * first_zones_zonelist - Returns the first zone at or below highest_zoneidx within 
+ *                          the allowed nodemask in a zonelist
+ *
+ *  返回第一个 highest_zoneidx 及其下方的node(nodemask以内)
+ *
  * @zonelist - The zonelist to search for a suitable zone
  * @highest_zoneidx - The zone index of the highest zone to return
  * @nodes - An optional nodemask to filter the zonelist with
@@ -1202,8 +1254,8 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
  * 对于忽略内存策略的分配，它可能会被重置。
  */
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+                    					enum zone_type highest_zoneidx,
+                    					nodemask_t *nodes)
 {
 	return next_zones_zonelist(zonelist->_zonerefs,
 							highest_zoneidx, nodes);
@@ -1226,6 +1278,9 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 		z = next_zones_zonelist(++z, highidx, nodemask),	\
 			zone = zonelist_zone(z))
 
+/**
+ *  
+ */
 #define for_next_zone_zonelist_nodemask(zone, z, highidx, nodemask) \
 	for (zone = z->zone;	\
 		zone;							\

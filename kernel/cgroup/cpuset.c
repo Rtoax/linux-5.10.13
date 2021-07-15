@@ -2765,6 +2765,9 @@ static int cpuset_css_online(struct cgroup_subsys_state *css)
 	if (is_spread_slab(parent))
 		set_bit(CS_SPREAD_SLAB, &cs->flags);
 
+    /**
+     *  
+     */
 	cpuset_inc();
 
 	spin_lock_irq(&callback_lock);

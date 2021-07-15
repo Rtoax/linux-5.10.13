@@ -2696,12 +2696,22 @@ static void shrink_node(pg_data_t *pgdat, struct scan_control *sc)
 	bool reclaimable = false;
 	unsigned long file;
 
+    /**
+     *  获取 lruvec
+     */
 	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
 
 /* 在 linux-5.0 中为 do{}while(should_continue_reclaim(..)); 循环 */
 again:
+
+    /**
+     *  将 统计数量 归零
+     */
 	memset(&sc->nr, 0, sizeof(sc->nr));
 
+    /**
+     *  已回收 和 已扫描 页数
+     */
 	nr_reclaimed = sc->nr_reclaimed;
 	nr_scanned = sc->nr_scanned;
 
@@ -2715,11 +2725,17 @@ again:
 
 	/*
 	 * Target desirable inactive:active list ratios for the anon
-	 * and file LRU lists.
+	 * and file LRU lists.*
+	 *
+	 * 目标期望 的 不活跃 比 活跃 链表 比例 (匿名和文件映射)
 	 */
 	if (!sc->force_deactivate) {
+        
 		unsigned long refaults;
 
+        /**
+         *  
+         */
 		refaults = lruvec_page_state(target_lruvec, WORKINGSET_ACTIVATE_ANON);
 		if (refaults != target_lruvec->refaults[0] ||
 			inactive_is_low(target_lruvec, LRU_INACTIVE_ANON))
@@ -2732,14 +2748,15 @@ again:
 		 * workingset is being established. Deactivate to get
 		 * rid of any stale active pages quickly.
 		 */
-		refaults = lruvec_page_state(target_lruvec,
-				WORKINGSET_ACTIVATE_FILE);
+		refaults = lruvec_page_state(target_lruvec, WORKINGSET_ACTIVATE_FILE);
 		if (refaults != target_lruvec->refaults[1] ||
 		    inactive_is_low(target_lruvec, LRU_INACTIVE_FILE))
 			sc->may_deactivate |= DEACTIVATE_FILE;
 		else
 			sc->may_deactivate &= ~DEACTIVATE_FILE;
-	} else
+        
+	} 
+    else
 		sc->may_deactivate = DEACTIVATE_ANON | DEACTIVATE_FILE;
 
 	/*
@@ -2763,19 +2780,28 @@ again:
 	 * anon pages.  Try to detect this based on file LRU size.
 	 */
 	if (!cgroup_reclaim(sc)) {
+        
 		unsigned long total_high_wmark = 0;
 		unsigned long free, anon;
 		int z;
 
+        /**
+         *  
+         */
 		free = sum_zone_node_page_state(pgdat->node_id, NR_FREE_PAGES);
-		file = node_page_state(pgdat, NR_ACTIVE_FILE) +
-			   node_page_state(pgdat, NR_INACTIVE_FILE);
+		file = node_page_state(pgdat, NR_ACTIVE_FILE) + node_page_state(pgdat, NR_INACTIVE_FILE);
 
+        /**
+         *  
+         */
 		for (z = 0; z < MAX_NR_ZONES; z++) {
 			struct zone *zone = &pgdat->node_zones[z];
 			if (!managed_zone(zone))
 				continue;
 
+            /**
+             *  
+             */
 			total_high_wmark += high_wmark_pages(zone);
 		}
 
@@ -2786,15 +2812,21 @@ again:
 		 */
 		anon = node_page_state(pgdat, NR_INACTIVE_ANON);
 
+        /**
+         *  
+         */
 		sc->file_is_tiny =
-			file + free <= total_high_wmark &&
-			!(sc->may_deactivate & DEACTIVATE_ANON) &&
-			anon >> sc->priority;
+    			file + free <= total_high_wmark &&
+    			!(sc->may_deactivate & DEACTIVATE_ANON) &&
+    			anon >> sc->priority;
 	}
 
     /* 回收页面 */
 	shrink_node_memcgs(pgdat, sc);
 
+    /**
+     *  
+     */
 	if (reclaim_state) {
 		sc->nr_reclaimed += reclaim_state->reclaimed_slab;
 		reclaim_state->reclaimed_slab = 0;
@@ -2809,6 +2841,9 @@ again:
     		   sc->nr_scanned - nr_scanned,
     		   sc->nr_reclaimed - nr_reclaimed);
 
+    /**
+     *  
+     */
 	if (sc->nr_reclaimed - nr_reclaimed)
 		reclaimable = true;
 
@@ -4203,11 +4238,13 @@ module_init(kswapd_init)
  *
  * If non-zero call node_reclaim when the number of free pages falls below
  * the watermarks.
+ *
+ * vm.zone_reclaim_mode = 0, see `struct ctl_table vm_table[]`
  */
 int __read_mostly node_reclaim_mode ;
 
-#define RECLAIM_WRITE (1<<0)	/* Writeout pages during reclaim */
-#define RECLAIM_UNMAP (1<<1)	/* Unmap pages during reclaim */
+#define RECLAIM_WRITE (1<<0)	/* Writeout pages during reclaim 回收过程中的注销页 */
+#define RECLAIM_UNMAP (1<<1)	/* Unmap pages during reclaim 在回收过程中取消映射 */
 
 /*
  * Priority for NODE_RECLAIM. This determines the fraction of pages
@@ -4228,11 +4265,16 @@ int sysctl_min_unmapped_ratio = 1;
  */
 int sysctl_min_slab_ratio = 5;
 
+/**
+ *  从 NODE 中回收 文件映射的页面
+ */
 static inline unsigned long node_unmapped_file_pages(struct pglist_data *pgdat)
 {
+    /**
+     *  直接共统计信息中获取
+     */
 	unsigned long file_mapped = node_page_state(pgdat, NR_FILE_MAPPED);
-	unsigned long file_lru = node_page_state(pgdat, NR_INACTIVE_FILE) +
-		node_page_state(pgdat, NR_ACTIVE_FILE);
+	unsigned long file_lru = node_page_state(pgdat, NR_INACTIVE_FILE) + node_page_state(pgdat, NR_ACTIVE_FILE);
 
 	/*
 	 * It's possible for there to be more file mapped pages than
@@ -4242,6 +4284,9 @@ static inline unsigned long node_unmapped_file_pages(struct pglist_data *pgdat)
 	return (file_lru > file_mapped) ? (file_lru - file_mapped) : 0;
 }
 
+/**
+ *  有多少 页面可以回收
+ */
 /* Work out how many page cache pages we can reclaim in this reclaim_mode */
 static unsigned long node_pagecache_reclaimable(struct pglist_data *pgdat)
 {
@@ -4253,12 +4298,20 @@ static unsigned long node_pagecache_reclaimable(struct pglist_data *pgdat)
 	 * potentially reclaimable. Otherwise, we have to worry about
 	 * pages like swapcache and node_unmapped_file_pages() provides
 	 * a better estimate
+	 *
+	 * 如果 设置了 RECLAIM_UNMAP, 那么所有文件页都考虑被回收。
 	 */
 	if (node_reclaim_mode & RECLAIM_UNMAP)
 		nr_pagecache_reclaimable = node_page_state(pgdat, NR_FILE_PAGES);
+    /**
+     *  否则，下面的是比较好的方案，返回回收页面数
+     */
 	else
 		nr_pagecache_reclaimable = node_unmapped_file_pages(pgdat);
 
+    /**
+     *  脏页 不能回收
+     */
 	/* If we can't clean pages, remove dirty pages from consideration */
 	if (!(node_reclaim_mode & RECLAIM_WRITE))
 		delta += node_page_state(pgdat, NR_FILE_DIRTY);
@@ -4267,6 +4320,9 @@ static unsigned long node_pagecache_reclaimable(struct pglist_data *pgdat)
 	if (unlikely(delta > nr_pagecache_reclaimable))
 		delta = nr_pagecache_reclaimable;
 
+    /**
+     *  可回收的页面 - 脏页
+     */
 	return nr_pagecache_reclaimable - delta;
 }
 
@@ -4279,15 +4335,19 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
 	const unsigned long nr_pages = 1 << order;
 	struct task_struct *p = current;
 	unsigned int noreclaim_flag;
+
+    /**
+     *  扫描控制 结构
+     */
 	struct scan_control sc = {
-		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
-		.gfp_mask = current_gfp_context(gfp_mask),
-		.order = order,
-		.priority = NODE_RECLAIM_PRIORITY,
-		.may_writepage = !!(node_reclaim_mode & RECLAIM_WRITE),
-		.may_unmap = !!(node_reclaim_mode & RECLAIM_UNMAP),
-		.may_swap = 1,
-		.reclaim_idx = gfp_zone(gfp_mask),
+		sc.nr_to_reclaim    = max(nr_pages, SWAP_CLUSTER_MAX/* 32 */),  /* 最少也要回收 32 个页面 */
+		sc.gfp_mask         = current_gfp_context(gfp_mask),    /*  */
+		sc.order            = order,
+		sc.priority         = NODE_RECLAIM_PRIORITY,    /* 回收优先级, 和上面的32 有关系 */
+		sc.may_writepage    = !!(node_reclaim_mode & RECLAIM_WRITE),
+		sc.may_unmap        = !!(node_reclaim_mode & RECLAIM_UNMAP),
+		sc.may_swap         = 1,
+		sc.reclaim_idx      = gfp_zone(gfp_mask),   /* 最高允许页面回收的zone */
 	};
 
 	trace_mm_vmscan_node_reclaim_begin(pgdat->node_id, order,
@@ -4295,6 +4355,7 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
 
 	cond_resched(); /*  */
 	fs_reclaim_acquire(sc.gfp_mask);
+    
 	/*
 	 * We need to be able to allocate from the reserves for RECLAIM_UNMAP
 	 * and we also need to be able to write out pages for RECLAIM_WRITE
@@ -4304,14 +4365,23 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
 	p->flags |= PF_SWAPWRITE;
 	set_task_reclaim_state(p, &sc.reclaim_state);
 
-    /* 如果可回收 */
+    /**
+     *  可回收的 页面数 > 最小不可映射页面数
+     */
 	if (node_pagecache_reclaimable(pgdat) > pgdat->min_unmapped_pages) {
 		/*
 		 * Free memory by calling shrink node with increasing
 		 * priorities until we have enough memory freed.
 		 */
-		do {    /* 进行回收 */
+		do {
+            /**
+             *  进行回收
+             */
 			shrink_node(pgdat, &sc);
+
+        /**
+         *  没回收完，继续
+         */
 		} while (sc.nr_reclaimed < nr_pages && --sc.priority >= 0);
 	}
 
@@ -4324,7 +4394,10 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
 
 	return sc.nr_reclaimed >= nr_pages;
 }
-    /* 回收 */
+
+/**
+ *  分配过程，主动回收页面(get_page_from_freelist()被调用)
+ */
 int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
 {
 	int ret;
@@ -4338,14 +4411,23 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
 	 * thrown out if the node is overallocated. So we do not reclaim
 	 * if less than a specified percentage of the node is used by
 	 * unmapped file backed pages.
-	 */ /* 先回收 page cache */
-	if (node_pagecache_reclaimable(pgdat) <= pgdat->min_unmapped_pages &&
-	    node_page_state_pages(pgdat, NR_SLAB_RECLAIMABLE_B) <=
-	    pgdat->min_slab_pages)
+	 *
+	 * 如果我们超过定义的限度，节点回收未映射的文件备份页面和板页。
+	 *
+     * 文件 I/O 需要一小部分未映射的文件支持页面，否则如果节点被整体分配，
+     * 文件 I/O 读取的页面将立即被丢弃。
+     * 因此，如果未映射的文件支持页面使用少于指定比例的节点，则我们不会收回。
+     *
+	 * 先回收 page cache, 也就是 文件缓存
+	 */
+	if (node_pagecache_reclaimable(pgdat) <= pgdat->min_unmapped_pages &&   /* 可回收 <= 最低 unmap 页面 */
+	    node_page_state_pages(pgdat, NR_SLAB_RECLAIMABLE_B) <= pgdat->min_slab_pages)
 		return NODE_RECLAIM_FULL;
 
 	/*
 	 * Do not scan if the allocation should not be delayed.
+	 *
+	 * 如果分配内存不能延迟太久，就别 scan了
 	 */
 	if (!gfpflags_allow_blocking(gfp_mask) || (current->flags & PF_MEMALLOC))
 		return NODE_RECLAIM_NOSCAN;
@@ -4355,14 +4437,26 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
 	 * have associated processors. This will favor the local processor
 	 * over remote processors and spread off node memory allocations
 	 * as wide as possible.
+	 *
+	 * 
 	 */
 	if (node_state(pgdat->node_id, N_CPU) && pgdat->node_id != numa_node_id())
 		return NODE_RECLAIM_NOSCAN;
 
+    /**
+     *  回收锁定
+     */
 	if (test_and_set_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags))
 		return NODE_RECLAIM_NOSCAN;
 
+    /**
+     *  上面的条件都满足，进行回收
+     */
 	ret = __node_reclaim(pgdat, gfp_mask, order);   /*  */
+
+    /**
+     *  清理 回收 锁定 位
+     */
 	clear_bit(PGDAT_RECLAIM_LOCKED, &pgdat->flags);
 
 	if (!ret)

@@ -19,8 +19,8 @@ struct vm_area_struct;
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
 #define ___GFP_DMA32		0x04u
-#define ___GFP_MOVABLE		0x08u
-#define ___GFP_RECLAIMABLE	0x10u
+#define ___GFP_MOVABLE		0x08u   /* 可移动 */
+#define ___GFP_RECLAIMABLE	0x10u   /* 可回收 */
 #define ___GFP_HIGH		0x20u
 #define ___GFP_IO		0x40u
 #define ___GFP_FS		0x80u
@@ -86,9 +86,9 @@ struct vm_area_struct;
  *
  * %__GFP_ACCOUNT causes the allocation to be accounted to kmemcg.
  */
-#define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)   /*  */
+#define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE/* 0x10 */)   /* 可回收 */
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
-#define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
+#define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)   /*  */
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT)
 
@@ -197,7 +197,7 @@ struct vm_area_struct;
  */
 #define __GFP_IO	((__force gfp_t)___GFP_IO)
 #define __GFP_FS	((__force gfp_t)___GFP_FS)
-#define __GFP_DIRECT_RECLAIM	((__force gfp_t)___GFP_DIRECT_RECLAIM) /* Caller can reclaim */
+#define __GFP_DIRECT_RECLAIM	((__force gfp_t)___GFP_DIRECT_RECLAIM) /* Caller can reclaim, 可以回收 */
 #define __GFP_KSWAPD_RECLAIM	((__force gfp_t)___GFP_KSWAPD_RECLAIM) /* kswapd can wake */
 #define __GFP_RECLAIM ((__force gfp_t)(___GFP_DIRECT_RECLAIM|___GFP_KSWAPD_RECLAIM))
 #define __GFP_RETRY_MAYFAIL	((__force gfp_t)___GFP_RETRY_MAYFAIL)
@@ -295,7 +295,7 @@ struct vm_area_struct;
  * version does not attempt reclaim/compaction at all and is by default used
  * in page fault path, while the non-light is used by khugepaged.
  */
-#define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
+#define GFP_ATOMIC	/* 不睡眠, 必须分配成功 */(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)  
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
@@ -310,12 +310,17 @@ struct vm_area_struct;
 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
 #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
 
-/* Convert GFP flags to their corresponding migrate type */
-#define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
-#define GFP_MOVABLE_SHIFT 3
 
+/**
+ *  只剩下 __GFP_RECLAIMABLE 和 __GFP_MOVABLE, 
+ *  将返回 enum migratetype 数据类型: MIGRATE_MOVABLE, MIGRATE_RECLAIMABLE
+ */
 static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类型 */
 {
+/* Convert GFP flags to their corresponding migrate type */
+#define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE/* 0x10 */|__GFP_MOVABLE/* 0x8 */)
+#define GFP_MOVABLE_SHIFT 3
+
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
 	BUILD_BUG_ON((1UL << GFP_MOVABLE_SHIFT) != ___GFP_MOVABLE);
 	BUILD_BUG_ON((___GFP_MOVABLE >> GFP_MOVABLE_SHIFT) != MIGRATE_MOVABLE);
@@ -324,12 +329,16 @@ static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类�
 		return MIGRATE_UNMOVABLE;
 
 	/* Group based on mobility */
-	return (gfp_flags & GFP_MOVABLE_MASK) >> GFP_MOVABLE_SHIFT; /* 迁移类型 */
-}
+	return (gfp_flags & GFP_MOVABLE_MASK/* 0x18 */) >> GFP_MOVABLE_SHIFT/* 3 */; /* 迁移类型 */
+    
 #undef GFP_MOVABLE_MASK
 #undef GFP_MOVABLE_SHIFT
+}
 
-static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
+/**
+ *  可回收 标志 表明 当前进程可以阻塞
+ */
+static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)   
 {
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
@@ -353,8 +362,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
  */
 static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 {
-	return (gfp_flags & (__GFP_DIRECT_RECLAIM | __GFP_MEMALLOC)) ==
-		__GFP_DIRECT_RECLAIM;
+	return (gfp_flags & (__GFP_DIRECT_RECLAIM | __GFP_MEMALLOC)) == __GFP_DIRECT_RECLAIM;
 }
 
 #ifdef CONFIG_HIGHMEM
@@ -444,14 +452,20 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
 )
 
+/**
+ *  根据掩码 获取 ZONE
+ */
 static inline enum zone_type gfp_zone(gfp_t flags)  /* 从 flags 获取来自哪个 zone */
 {
 	enum zone_type z;
 	int bit = (__force int) (flags & GFP_ZONEMASK);
 
-	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
-					 ((1 << GFP_ZONES_SHIFT) - 1);
+    /**
+     *  
+     */
+	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) & ((1 << GFP_ZONES_SHIFT) - 1);
 	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
+    
 	return z;
 }
 
@@ -461,7 +475,9 @@ static inline enum zone_type gfp_zone(gfp_t flags)  /* 从 flags 获取来自哪
  * can allocate highmem pages, the *get*page*() variants return
  * virtual kernel addresses to the allocated page(s).
  */
-
+/**
+ *  zonelist
+ */
 static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
 {
 #ifdef CONFIG_NUMA
@@ -502,9 +518,15 @@ struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask);
 
+/**
+ *  在特定的节点上分配内存
+ */
 static inline struct page * /* 分配 page */
 __alloc_pages(gfp_t gfp_mask, unsigned int order, int preferred_nid)    /* TODO */
 {
+    /**
+     *  最终调用函数
+     */
 	return __alloc_pages_nodemask(gfp_mask, order, preferred_nid, NULL);
 }
 
@@ -538,16 +560,27 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 #ifdef CONFIG_NUMA/*  */
 extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
 
+/**
+ *  分配页
+ */
 static inline struct page *
 alloc_pages(gfp_t gfp_mask, unsigned int order)/* 分配 pages */
 {
 	return alloc_pages_current(gfp_mask, order);    /*  */
 }
+
+/**
+ *  为 vma 分配 page
+ */
 extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
-			struct vm_area_struct *vma, unsigned long addr,
-			int node, bool hugepage);
+                        			struct vm_area_struct *vma, unsigned long addr,
+                        			int node, bool hugepage);
+
+/**
+ *  分配大页
+ */
 #define alloc_hugepage_vma(gfp_mask, vma, addr, order) \
-	alloc_pages_vma(gfp_mask, order, vma, addr, numa_node_id(), true)
+	        alloc_pages_vma(gfp_mask, order, vma, addr, numa_node_id(), true)
 #else
 //static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order)
 //{
