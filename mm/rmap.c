@@ -622,36 +622,51 @@ struct anon_vma *page_lock_anon_vma_read(struct page *page)
 	unsigned long anon_mapping;
 
 	rcu_read_lock();
+
+    /* 获取 anon_vma 地址 */
 	anon_mapping = (unsigned long)READ_ONCE(page->mapping);
-	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
+	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)   /* 类型判断 */
 		goto out;
+
+    /* page->_mapcount >= 0 的 非 大页，没人映射就 out */
 	if (!page_mapped(page))
 		goto out;
 
+    /* 获取AV结构 */
 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+
+    /* 获取  root AV */
 	root_anon_vma = READ_ONCE(anon_vma->root);
+
+    /* 锁定 root */
 	if (down_read_trylock(&root_anon_vma->rwsem)) {
+        /* 锁定 read 成功 */
 		/*
 		 * If the page is still mapped, then this anon_vma is still
 		 * its anon_vma, and holding the mutex ensures that it will
 		 * not go away, see anon_vma_free().
+		 *
+		 * 如果 page->_mapcount >= 0 的 非 大页，没人映射就 释放 root 的信号量
 		 */
 		if (!page_mapped(page)) {
 			up_read(&root_anon_vma->rwsem);
 			anon_vma = NULL;
 		}
-		goto out;
+		goto out; /* 退出 */
 	}
-
-	/* trylock failed, we got to sleep */
+    
+	/**
+	 *  trylock failed, we got to sleep 
+	 */
 	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
 		anon_vma = NULL;
 		goto out;
 	}
 
+    /* 如果没人映射这个页面 */
 	if (!page_mapped(page)) {
-		rcu_read_unlock();
-		put_anon_vma(anon_vma);
+		rcu_read_unlock();      /* 释放锁 */
+		put_anon_vma(anon_vma); /* 引用计数 -1 */
 		return NULL;
 	}
 
@@ -866,14 +881,18 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 {
 	struct page_referenced_arg *pra = arg;
 	struct page_vma_mapped_walk pvmw = {
-		.page = page,
-		.vma = vma,
-		.address = address,
+		pvmw.page = page,
+		pvmw.vma = vma,
+		pvmw.address = address,
 	};
 	int referenced = 0;
 
-    /* 从虚拟地址 address 遍历页表，找出对应的 PTE */
+    /**
+     *  从虚拟地址 address 遍历页表，找出对应的 PTE 
+     */
 	while (page_vma_mapped_walk(&pvmw)) {
+
+        /*  */
 		address = pvmw.address;
 
         /* 如果是锁定的，直接返回 */
@@ -883,8 +902,9 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 			return false; /* To break the loop */
 		}
 
-        /*  */
+        /* PTE 存在 */
 		if (pvmw.pte) {
+            
             /* 判断 该 PTE 最近是否被访问过 */
 			if (ptep_clear_flush_young_notify(vma, address, pvmw.pte)) {
 				/*
@@ -898,6 +918,7 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 				if (likely(!(vma->vm_flags & VM_SEQ_READ)))
 					referenced++;
 			}
+        /*  */
 		} else if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
 			if (pmdp_clear_flush_young_notify(vma, address, pvmw.pmd))
 				referenced++;
@@ -909,8 +930,10 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 		pra->mapcount--;
 	}
 
+    /*  */
 	if (referenced)
 		clear_page_idle(page);
+    
 	if (test_and_clear_page_young(page))
 		referenced++;
 
@@ -925,11 +948,12 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 	return true;
 }
 
-static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)
+static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)  /*  */
 {
 	struct page_referenced_arg *pra = arg;
 	struct mem_cgroup *memcg = pra->memcg;
 
+    /*  */
 	if (!mm_match_cgroup(vma->vm_mm, memcg))
 		return true;
 
@@ -1989,11 +2013,22 @@ void __put_anon_vma(struct anon_vma *anon_vma)
 		anon_vma_free(root);
 }
 
+/**
+ *
+ *  被 rmap_walk_anon() 调用
+ */
 static struct anon_vma *rmap_walk_anon_lock(struct page *page,
 					struct rmap_walk_control *rwc)
 {
 	struct anon_vma *anon_vma;
 
+    /**
+     *  可能为以下回调
+     *  
+     *  `page_referenced()` ==> `page_lock_anon_vma_read()`
+     *  `try_to_unmap()`    ==> `page_lock_anon_vma_read()`
+     *  其他TODO
+     */
 	if (rwc->anon_lock)
 		return rwc->anon_lock(page);
 
@@ -2042,43 +2077,70 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
      *  rmap_walk 中为 false
      */
 	if (locked) {
-		anon_vma = page_anon_vma(page);
+        /* 匿名映射 page->mapping 结构指向 struct anon_vma 结构 */
+		anon_vma = page_anon_vma(page); /*  */
 		/* anon_vma disappear under us? */
 		VM_BUG_ON_PAGE(!anon_vma, page);
 	} else {
         /* 获取 anon_vma 结构 */
-		anon_vma = rmap_walk_anon_lock(page, rwc);
+		anon_vma = rmap_walk_anon_lock(page, rwc);  /* 获取 读 信号量 */
 	}
+
+    /* 不存在 AV 直接退出 */
 	if (!anon_vma)
 		return;
 
     /*  */
-	pgoff_start = page_to_pgoff(page);
-	pgoff_end = pgoff_start + thp_nr_pages(page) - 1;
+	pgoff_start = page_to_pgoff(page);  /*  */
+	pgoff_end = pgoff_start + thp_nr_pages(page)/* 页数 */ - 1;
 
     /**
-     *  遍历 红黑树 
+     *  遍历 红黑树 ， anon_vma 是由 vm_pgoff 排序的
      */
 	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff_start, pgoff_end) {
 
-        /* 这个 vma 映射在 page 页 */
+        /**
+         *  vma 映射在 page 页 
+         *
+         *  下面将调用对应的 struct rmap_walk_control 一系列的回调函数
+         */
 		struct vm_area_struct *vma = avc->vma;
 
-        /* VMA 的虚拟地址 */
+        /* VMA 的起始虚拟地址 */
 		unsigned long address = vma_address(page, vma);
 
         /* TODO */
 		cond_resched();
 
-        /* 不可用，继续下一个 */
+        /**
+         *  不可用，继续下一个，为下列的回调
+         *
+         *  `page_referenced()` ==> `invalid_page_referenced_vma()`(memcg!=NULL) -> memcg 和当前进程的不匹配
+         *  `try_to_unmap()`    ==> `invalid_migration_vma()` TODO
+         *  MORE
+         *  
+         */
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
 			continue;
 
-        /* RMAP 的一个处理 */
+        /**
+         *  RMAP 的一个处理 
+         *
+         *  `page_referenced()` ==> `page_referenced_one()`
+         *  `try_to_unmap()`    ==> `try_to_unmap_one()` TODO
+         *  MORE
+         *  
+         */
 		if (!rwc->rmap_one(page, vma, address, rwc->arg))
 			break;
 
-        /* 完成 */
+        /**
+         *  完成 
+         *
+         *  `page_referenced()` ==> NULL
+         *  `try_to_unmap()`    ==> `page_mapcount_is_zero()` TODO
+         *  MORE
+         */
 		if (rwc->done && rwc->done(page))
 			break;
 	}
@@ -2167,7 +2229,9 @@ done:
  */
 void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 {
-    /* KSM 页面 */
+    /**
+     *  KSM 页面 
+     */
 	if (unlikely(PageKsm(page)))
 		rmap_walk_ksm(page, rwc);
 
@@ -2178,7 +2242,9 @@ void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 	else if (PageAnon(page))
 		rmap_walk_anon(page, rwc, false);
 
-    /* 文件映射 */
+    /**
+     *  文件映射   TODO
+     */
 	else
 		rmap_walk_file(page, rwc, false);
 }
@@ -2188,9 +2254,16 @@ void rmap_walk_locked(struct page *page, struct rmap_walk_control *rwc)
 {
 	/* no ksm support for now，还不支持 */
 	VM_BUG_ON_PAGE(PageKsm(page), page);
-    
+
+    /**
+     *  匿名页面 
+     *
+     */
 	if (PageAnon(page))
 		rmap_walk_anon(page, rwc, true);
+    /**
+     *  文件映射   TODO
+     */
 	else
 		rmap_walk_file(page, rwc, true);
 }

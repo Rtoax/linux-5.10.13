@@ -109,11 +109,11 @@ extern ssize_t single_hugepage_flag_show(struct kobject *kobj,
 				enum transparent_hugepage_flag flag);
 extern struct kobj_attribute shmem_enabled_attr;
 
-#define HPAGE_PMD_ORDER (HPAGE_PMD_SHIFT-PAGE_SHIFT)
+#define HPAGE_PMD_ORDER  /* 9 */ (HPAGE_PMD_SHIFT/* 21 */-PAGE_SHIFT/* 12 */)    /*  */
 #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
-#define HPAGE_PMD_SHIFT PMD_SHIFT
+#define HPAGE_PMD_SHIFT /* 21 */ PMD_SHIFT   /* 21 */
 #define HPAGE_PMD_SIZE	((1UL) << HPAGE_PMD_SHIFT)
 #define HPAGE_PMD_MASK	(~(HPAGE_PMD_SIZE - 1))
 
@@ -273,7 +273,7 @@ static inline unsigned int thp_order(struct page *page)
 {
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
 	if (PageHead(page))
-		return HPAGE_PMD_ORDER;
+		return HPAGE_PMD_ORDER/* 9 */;
 	return 0;
 }
 
@@ -343,10 +343,12 @@ static inline struct list_head *page_deferred_list(struct page *page)
  * @page: Head page of a transparent huge page.
  *
  * Return: Number of bytes in this page.
+ *
+ * 字节数
  */
 static inline unsigned long thp_size(struct page *page)
 {
-	return PAGE_SIZE << thp_order(page);
+	return PAGE_SIZE/* 4K */ << thp_order(page);
 }
 
 #endif /* _LINUX_HUGE_MM_H */

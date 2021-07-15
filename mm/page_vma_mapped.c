@@ -169,6 +169,7 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 			return not_found(pvmw);
 		return true;
 	}
+    
 restart:
 	pgd = pgd_offset(mm, pvmw->address);
 	if (!pgd_present(*pgd))
@@ -217,6 +218,8 @@ restart:
 	}
 	if (!map_pte(pvmw))
 		goto next_pte;
+
+    /*  */
 	while (1) {
 		if (check_pte(pvmw))
 			return true;
@@ -227,11 +230,10 @@ next_pte:
 		do {
 			pvmw->address += PAGE_SIZE;
 			if (pvmw->address >= pvmw->vma->vm_end ||
-			    pvmw->address >=
-					__vma_address(pvmw->page, pvmw->vma) +
-					thp_size(pvmw->page))
+			    pvmw->address >= __vma_address(pvmw->page, pvmw->vma) + thp_size(pvmw->page))
 				return not_found(pvmw);
-			/* Did we cross page table boundary? */
+            
+			/* Did we cross page table boundary? 页表边界 */
 			if (pvmw->address % PMD_SIZE == 0) {
 				pte_unmap(pvmw->pte);
 				if (pvmw->ptl) {
@@ -239,11 +241,14 @@ next_pte:
 					pvmw->ptl = NULL;
 				}
 				goto restart;
+
 			} else {
+                
 				pvmw->pte++;
 			}
 		} while (pte_none(*pvmw->pte));
 
+        /*  */
 		if (!pvmw->ptl) {
 			pvmw->ptl = pte_lockptr(mm, pvmw->pmd);
 			spin_lock(pvmw->ptl);

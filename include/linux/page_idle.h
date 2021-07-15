@@ -34,7 +34,7 @@ static inline void set_page_idle(struct page *page)
 	SetPageIdle(page);
 }
 
-static inline void clear_page_idle(struct page *page)
+static inline void clear_page_idle(struct page *page)   /*  */
 {
 	ClearPageIdle(page);
 }

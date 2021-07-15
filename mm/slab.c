@@ -515,6 +515,8 @@ static void next_reap_node(void)
  * Add the CPU number into the expiration time to minimize the possibility of
  * the CPUs getting into lockstep and contending for the global cache chain
  * lock.
+ *
+ * 
  */
 static void start_cpu_timer(int cpu)
 {
@@ -3961,7 +3963,7 @@ static void drain_array(struct kmem_cache *cachep, struct kmem_cache_node *n,
 }
 
 /**
- * cache_reap - Reclaim memory from caches.
+ * cache_reap - Reclaim memory from caches. (reap: 收获)
  * @w: work descriptor
  *
  * Called from workqueue/eventd every few seconds.
@@ -3971,6 +3973,8 @@ static void drain_array(struct kmem_cache *cachep, struct kmem_cache_node *n,
  *
  * If we cannot acquire the cache chain mutex then just give up - we'll try
  * again on the next iteration.
+ *
+ * slab 收割机
  */
 static void cache_reap(struct work_struct *w)
 {

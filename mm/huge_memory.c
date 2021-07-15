@@ -2499,7 +2499,7 @@ static void __split_huge_page(struct page *page, struct list_head *list,
 }
 
 /**
- *  获取 page->mapcount
+ *  获取 page->_mapcount
  */
 int total_mapcount(struct page *page)
 {

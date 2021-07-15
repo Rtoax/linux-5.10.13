@@ -596,17 +596,21 @@ static inline bool mem_cgroup_is_descendant(struct mem_cgroup *memcg,
 	return cgroup_is_descendant(memcg->css.cgroup, root->css.cgroup);
 }
 
+/* 任务的 memcg 和 输入的 memcg 是否匹配 */
 static inline bool mm_match_cgroup(struct mm_struct *mm,
 				   struct mem_cgroup *memcg)
 {
 	struct mem_cgroup *task_memcg;
 	bool match = false;
 
-	rcu_read_lock();
-	task_memcg = mem_cgroup_from_task(rcu_dereference(mm->owner));
+	rcu_read_lock();    /*  */
+
+    task_memcg = mem_cgroup_from_task(rcu_dereference(mm->owner));
 	if (task_memcg)
 		match = mem_cgroup_is_descendant(task_memcg, memcg);
-	rcu_read_unlock();
+
+    rcu_read_unlock();  /*  */
+    
 	return match;
 }
 

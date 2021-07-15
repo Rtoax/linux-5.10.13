@@ -394,22 +394,24 @@ __vma_address(struct page *page, struct vm_area_struct *vma)
 {
 	pgoff_t pgoff = page_to_pgoff(page);    /* 页内偏移 */
 
-    /*  */
+    /* 返回虚拟地址空间的虚拟地址 */
 	return vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT/* 12 */);
 }
 
-/*  */
+/* 返回 vma 起始虚拟地址 */
 static inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
 	unsigned long start, end;
 
+    /* 用户虚拟地址空间的地址 */
 	start = __vma_address(page, vma);
-	end = start + thp_size(page) - PAGE_SIZE;
+	end = start + thp_size(page) - PAGE_SIZE/* 4K */;
 
 	/* page should be within @vma mapping range */
 	VM_BUG_ON_VMA(end < vma->vm_start || start >= vma->vm_end, vma);
 
+    /*  */
 	return max(start, vma->vm_start);
 }
 

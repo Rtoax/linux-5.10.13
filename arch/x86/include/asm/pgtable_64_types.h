@@ -95,12 +95,12 @@ extern unsigned int ptrs_per_p4d;
  */
 #define PTRS_PER_PTE	512
 
-#define PMD_SIZE	(_AC(1, UL) << PMD_SHIFT)
-#define PMD_MASK	(~(PMD_SIZE - 1))
-#define PUD_SIZE	(_AC(1, UL) << PUD_SHIFT)
-#define PUD_MASK	(~(PUD_SIZE - 1))
-#define PGDIR_SIZE	(_AC(1, UL) << PGDIR_SHIFT)
-#define PGDIR_MASK	(~(PGDIR_SIZE - 1))
+#define PMD_SIZE	/*  */ (_AC(1, UL) << PMD_SHIFT/* 21 */)
+#define PMD_MASK	/*  */ (~(PMD_SIZE - 1))
+#define PUD_SIZE	/*  */ (_AC(1, UL) << PUD_SHIFT/* 30 */)
+#define PUD_MASK	/*  */ (~(PUD_SIZE - 1))
+#define PGDIR_SIZE	/*  */ (_AC(1, UL) << PGDIR_SHIFT)
+#define PGDIR_MASK	/*  */ (~(PGDIR_SIZE - 1))
 
 /*
  * See Documentation/x86/x86_64/mm.rst for a description of the memory map.

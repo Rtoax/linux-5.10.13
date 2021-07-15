@@ -669,9 +669,12 @@ bool page_mapped(struct page *page)
 	page = compound_head(page);
 	if (atomic_read(compound_mapcount_ptr(page)) >= 0)
 		return true;
+
+    /* 不能为大页内存 */
 	if (PageHuge(page))
 		return false;
-	for (i = 0; i < compound_nr(page); i++) {
+
+    for (i = 0; i < compound_nr(page); i++) {
 		if (atomic_read(&page[i]._mapcount) >= 0)
 			return true;
 	}
