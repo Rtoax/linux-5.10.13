@@ -899,8 +899,7 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 					referenced++;
 			}
 		} else if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
-			if (pmdp_clear_flush_young_notify(vma, address,
-						pvmw.pmd))
+			if (pmdp_clear_flush_young_notify(vma, address, pvmw.pmd))
 				referenced++;
 		} else {
 			/* unexpected pmd-mapped page? */
@@ -963,15 +962,15 @@ int page_referenced(struct page *page,
 
     /* page 引用 arg */
 	struct page_referenced_arg pra = {  /*  */
-		pra.mapcount = total_mapcount(page),
-		pra.memcg = memcg,
+		pra.mapcount = total_mapcount(page),    /* page _mapcount 数 */
+		pra.memcg = memcg,  /* memory cgroup */
 	};
 
     /* RMAP 遍历 控制结构 */
 	struct rmap_walk_control rwc = {
-		rwc.rmap_one = page_referenced_one,    /*  */
+		rwc.rmap_one = page_referenced_one,     /*  */
 		rwc.arg = (void *)&pra,
-		rwc.anon_lock = page_lock_anon_vma_read,
+		rwc.anon_lock = page_lock_anon_vma_read,/*  */
 	};
 
     /* 清理标志位 */
@@ -981,13 +980,27 @@ int page_referenced(struct page *page,
 	if (!pra.mapcount)
 		return 0;
 
-    /*  */
+    /**
+     *  如果 page->mapping 为空，表明 page 没有对应的 页框，直接返回0
+     */
 	if (!page_rmapping(page))
 		return 0;
 
+    /**
+     *  如果
+     *  1. 页面没有锁定 并且
+     *  2. 页面不是 匿名页面 或 页面是 KSM 页面
+     *
+     *  也就是两种情况:
+     *
+     *  1. 未锁定的 KSM 页面
+     *  2. 未锁定的 文件映射
+     */
 	if (!is_locked && (!PageAnon(page) || PageKsm(page))) {
+
+        /* 尝试锁定 */
 		we_locked = trylock_page(page);
-		if (!we_locked)
+		if (!we_locked) /* 锁定失败，表明该页面被锁定，返回 1 */
 			return 1;
 	}
 
@@ -995,19 +1008,26 @@ int page_referenced(struct page *page,
 	 * If we are reclaiming on behalf of a cgroup, skip
 	 * counting on behalf of references from different
 	 * cgroups
+	 *
+	 * 如果我们代表 cgroup 进行回收，请跳过代表不同 cgroup 引用的计数
 	 */
 	if (memcg) {
-		rwc.invalid_vma = invalid_page_referenced_vma;
+		rwc.invalid_vma = invalid_page_referenced_vma;  /*  */
 	}
 
-    /* 利用 RMAP 遍历 */
+    /**
+     *  利用 RMAP 遍历 
+     */
 	rmap_walk(page, &rwc);
-    
+
+    /* 获取 flags */
 	*vm_flags = pra.vm_flags;
 
+    /* 在上面种锁定成功了，进行 解锁 */
 	if (we_locked)
 		unlock_page(page);
 
+    /* 返回页面被引用的次数 */
 	return pra.referenced;
 }
 
@@ -2138,6 +2158,12 @@ done:
  *
  *  在下面的地方调用
  *  try_to_unmap()
+ *
+ * 在 page_referenced 中将把这两类页面锁定
+ *
+ *  1. 未锁定的 KSM 页面
+ *  2. 未锁定的 文件映射(PageAnon)
+ *
  */
 void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 {

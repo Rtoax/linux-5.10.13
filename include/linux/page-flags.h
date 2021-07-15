@@ -175,7 +175,10 @@ enum pageflags {
 	/* SLOB */
 	PG_slob_free = PG_private,
 
-	/* Compound pages. Stored in first tail page's flags */
+	/**
+	 *  Compound pages. Stored in first tail page's flags 
+	 *  复合页面
+	 */
 	PG_double_map = PG_workingset,
 
 	/* non-lru isolated movable page */

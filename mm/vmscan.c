@@ -2064,6 +2064,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 			}
 		}
 
+        /*  */
 		if (page_referenced(page, 0, sc->target_mem_cgroup,
 				    &vm_flags)) {
 			/*

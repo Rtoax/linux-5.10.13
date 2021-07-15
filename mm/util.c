@@ -633,7 +633,7 @@ void kvfree_sensitive(const void *addr, size_t len)
 }
 EXPORT_SYMBOL(kvfree_sensitive);
 
-static inline void *__page_rmapping(struct page *page)
+static inline void *__page_rmapping(struct page *page)  /* 清理标志位 */
 {
 	unsigned long mapping;
 
@@ -643,11 +643,15 @@ static inline void *__page_rmapping(struct page *page)
 	return (void *)mapping;
 }
 
-/* Neutral page->mapping pointer to address_space or anon_vma or other */
+/**
+ *  Neutral page->mapping pointer to address_space or anon_vma or other 
+ *  
+ *  中性页面>指头到address_space或anon_vma或其他
+ */
 void *page_rmapping(struct page *page)
 {
-	page = compound_head(page);
-	return __page_rmapping(page);
+	page = compound_head(page);     /* 回到起始页 */
+	return __page_rmapping(page);   /* 清空 page->mapping 的低两位 `PAGE_MAPPING_FLAGS`*/
 }
 
 /*
