@@ -33,6 +33,9 @@ static inline void fput_light(struct file *file, int fput_needed)
 		fput(file);
 }
 
+/**
+ *  打开的文件
+ */
 struct fd { /*  */
 	struct file *file;
 	unsigned int flags;

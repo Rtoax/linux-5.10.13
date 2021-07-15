@@ -146,23 +146,33 @@ static void sock_show_fdinfo(struct seq_file *m, struct file *f)
  *	in the operation structures but are done directly via the socketcall() multiplexor.
  */
 
+/**
+ *  socket 的操作符
+ */
 static const struct file_operations socket_file_ops = { /* socket */
-	.owner =	THIS_MODULE,
-	.llseek =	no_llseek,
-	.read_iter =	sock_read_iter,
-	.write_iter =	sock_write_iter,
-	.poll =		sock_poll,
-	.unlocked_ioctl = sock_ioctl,
+	socket_file_ops.owner =	THIS_MODULE,
+	socket_file_ops.llseek =	no_llseek,
+	socket_file_ops.read_iter =	sock_read_iter,
+	socket_file_ops.write_iter =	sock_write_iter,
+
+    /**
+     *  poll 回调 在 epoll 中会用到，没有poll，eventpoll 将 ADD 失败
+     */
+	socket_file_ops.poll =		sock_poll,
+	socket_file_ops.unlocked_ioctl = sock_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl = compat_sock_ioctl,
+	socket_file_ops.compat_ioctl = compat_sock_ioctl,
 #endif
-	.mmap =		sock_mmap,
-	.release =	sock_close,
-	.fasync =	sock_fasync,
-	.sendpage =	sock_sendpage,
-	.splice_write = generic_splice_sendpage,
-	.splice_read =	sock_splice_read,
-	.show_fdinfo =	sock_show_fdinfo,
+    /**
+     *  
+     */
+	socket_file_ops.mmap =		sock_mmap,
+	socket_file_ops.release =	sock_close,
+	socket_file_ops.fasync =	sock_fasync,
+	socket_file_ops.sendpage =	sock_sendpage,
+	socket_file_ops.splice_write = generic_splice_sendpage,
+	socket_file_ops.splice_read =	sock_splice_read,
+	socket_file_ops.show_fdinfo =	sock_show_fdinfo,
 };
 
 /*
@@ -409,8 +419,9 @@ static struct file_system_type sock_fs_type = {
  *	in sock->file. If dname is %NULL, sets to "".
  *	On failure the return is a ERR pointer (see linux/err.h).
  *	This function uses GFP_KERNEL internally.
+ *
+ *  将 socket 绑定 到 file 上
  */
-
 struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
 {
 	struct file *file;
@@ -418,6 +429,9 @@ struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
 	if (!dname)
 		dname = sock->sk ? sock->sk->sk_prot_creator->name : "";
 
+    /**
+     *  创建文件
+     */
 	file = alloc_file_pseudo(SOCK_INODE(sock), sock_mnt, dname,
 				O_RDWR | (flags & O_NONBLOCK),
 				&socket_file_ops);
@@ -433,15 +447,25 @@ struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
 }
 EXPORT_SYMBOL(sock_alloc_file);
 
+/**
+ *  socket 绑定到 fd
+ */
 static int sock_map_fd(struct socket *sock, int flags)
 {
 	struct file *newfile;
+
+    /**
+     *  未使用的 fd
+     */
 	int fd = get_unused_fd_flags(flags);
 	if (unlikely(fd < 0)) {
 		sock_release(sock);
 		return fd;
 	}
 
+    /**
+     *  新打开的文件
+     */
 	newfile = sock_alloc_file(sock, flags, NULL);
 	if (!IS_ERR(newfile)) {
 		fd_install(fd, newfile);
@@ -462,6 +486,9 @@ static int sock_map_fd(struct socket *sock, int flags)
 
 struct socket *sock_from_file(struct file *file, int *err)
 {
+    /**
+     *  如果是 socket， 返回 sock
+     */
 	if (file->f_op == &socket_file_ops) /*  */
 		return file->private_data;	/* set in sock_map_fd, = struct socket *sock 结构 */
 
@@ -1266,6 +1293,9 @@ out_release:
 }
 EXPORT_SYMBOL(sock_create_lite);
 
+/**
+ *  
+ */
 /* No kernel lock held - perfect */
 static __poll_t sock_poll(struct file *file, poll_table *wait)
 {
@@ -1275,7 +1305,13 @@ static __poll_t sock_poll(struct file *file, poll_table *wait)
 	if (!sock->ops->poll)
 		return 0;
 
+    /**
+     *  
+     */
 	if (sk_can_busy_loop(sock->sk)) {
+        /**
+         *  
+         */
 		/* poll once if requested by the syscall */
 		if (events & POLL_BUSY_LOOP)
 			sk_busy_loop(sock->sk, 1);
@@ -1284,6 +1320,9 @@ static __poll_t sock_poll(struct file *file, poll_table *wait)
 		flag = POLL_BUSY_LOOP;
 	}
 
+    /**
+     *  TODO 2021年7月15日22:45:30
+     */
 	return sock->ops->poll(file, sock, wait) | flag;
 }
 
@@ -1553,6 +1592,9 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 	return sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
 }
 
+/**
+ *  
+ */
 /* socket 系统调用 */
 int socket(int domain, int type, int protocol){ /* ++ */ }
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)

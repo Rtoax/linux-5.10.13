@@ -71,24 +71,48 @@
 #ifdef __x86_64__
 #define EPOLL_PACKED __attribute__((packed))
 #else
-#define EPOLL_PACKED
+//#define EPOLL_PACKED
 #endif
 
+/**
+ *  
+ */
 struct epoll_event {
 	__poll_t events;
-	__u64 data;
+	__u64 data; //数据类型可能是 epoll_data_t
 } EPOLL_PACKED;
 
+/**
+ *  用户态 API
+ */
+typedef union epoll_data {
+   void        *ptr;
+   int          fd;
+   uint32_t     u32;
+   uint64_t     u64;
+} epoll_data_t;
+
+#if 0
+//用户态的样子
+struct epoll_event {
+   uint32_t     events;      /* Epoll events */
+   epoll_data_t data;        /* User data variable */
+};
+#endif
+
 #ifdef CONFIG_PM_SLEEP
+/**
+ *  
+ */
 static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
 {
 	if ((epev->events & EPOLLWAKEUP) && !capable(CAP_BLOCK_SUSPEND)/* 检查当前用户 */)
 		epev->events &= ~EPOLLWAKEUP;
 }
 #else
-static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
-{
-	epev->events &= ~EPOLLWAKEUP;
-}
+//static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
+//{
+//	epev->events &= ~EPOLLWAKEUP;
+//}
 #endif
 #endif /* _UAPI_LINUX_EVENTPOLL_H */

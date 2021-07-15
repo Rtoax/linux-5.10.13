@@ -554,11 +554,17 @@ static int alloc_fd(unsigned start, unsigned flags)
 	return __alloc_fd(current->files, start, rlimit(RLIMIT_NOFILE), flags);
 }
 
+/**
+ *  未使用的 fd
+ */
 int __get_unused_fd_flags(unsigned flags, unsigned long nofile/* 进程当前打开的最大文件 FD */)
 {
 	return __alloc_fd(current->files, 0, nofile, flags);/* 分配一个 FD */
 }
 
+/**
+ *  当前进程未使用的 fd
+ */
 int get_unused_fd_flags(unsigned flags)/* 申请一个未使用的 FD */
 {
 	return __get_unused_fd_flags(flags/* 权限 */, rlimit(RLIMIT_NOFILE)/* 当前的资源限制，当前打开的文件 */);
@@ -613,6 +619,10 @@ void __fd_install(struct files_struct *files, unsigned int fd,
 	if (unlikely(files->resize_in_progress)) {
 		rcu_read_unlock_sched();
 		spin_lock(&files->file_lock);
+
+        /**
+         *  
+         */
 		fdt = files_fdtable(files); /* fdt = files->fdt */
 		BUG_ON(fdt->fd[fd] != NULL);
 		rcu_assign_pointer(fdt->fd[fd], file);/* fdt->fd[fd] = file */
@@ -630,6 +640,8 @@ void __fd_install(struct files_struct *files, unsigned int fd,
 /*
  * This consumes the "file" refcount, so callers should treat it
  * as if they had called fput(file).
+ *
+ * 关联 fd 和 file 结构
  */
 void fd_install(unsigned int fd, struct file *file)
 {

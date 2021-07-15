@@ -72,21 +72,40 @@ static inline __poll_t poll_requested_events(const poll_table *p)
 	return p ? p->_key : ~(__poll_t)0;
 }
 
+/**
+ *  
+ */
 static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
 {
 	pt->_qproc = qproc;
 	pt->_key   = ~(__poll_t)0; /* all events enabled - 0xffff... */
 }
 
+/**
+ *  文件有 poll 结构
+ */
 static inline bool file_can_poll(struct file *file)
 {
+    /**
+     *  其中如下的 poll 回调
+     *  
+     *  socket_file_ops.poll = sock_poll()
+     */
 	return file->f_op->poll;
 }
 
+/**
+ *  
+ */
 static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)    /*  */
 {
 	if (unlikely(!file->f_op->poll))
 		return DEFAULT_POLLMASK;
+
+    /**
+     *  
+     *  socket_file_ops.poll = sock_poll()
+     */
 	return file->f_op->poll(file, pt);
 }
 

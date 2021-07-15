@@ -642,6 +642,10 @@ void __pm_stay_awake(struct wakeup_source *ws)
 
 	spin_lock_irqsave(&ws->lock, flags);
 
+    /**
+     *  wakeup
+     *  TODO 2021年7月15日22:56:16
+     */
 	wakeup_source_report_event(ws, false);
 	del_timer(&ws->timer);
 	ws->timer_expires = 0;

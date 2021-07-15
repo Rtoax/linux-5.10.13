@@ -18,6 +18,9 @@ struct user_struct {    /*  */
 	atomic_t fanotify_listeners;
 #endif
 #ifdef CONFIG_EPOLL
+    /**
+     *  当前 watch 的文件描述符个数
+     */
 	atomic_long_t epoll_watches; /* The number of file descriptors currently watched */
 #endif
 #ifdef CONFIG_POSIX_MQUEUE
@@ -54,6 +57,10 @@ extern struct user_struct root_user;
 
 /* per-UID process charging. */
 extern struct user_struct * alloc_uid(kuid_t);
+
+/**
+ *  引用计数
+ */
 static inline struct user_struct *get_uid(struct user_struct *u)/* 引用计数 refcount++ */
 {
 	refcount_inc(&u->__count);

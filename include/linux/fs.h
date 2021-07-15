@@ -916,6 +916,9 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 		index <  ra->start + ra->size);
 }
 
+/**
+ *  打开的文件结构
+ */
 struct file {   /*  */
 	union {
 		struct llist_node	fu_llist;   /* 单链表 */
@@ -945,13 +948,22 @@ struct file {   /*  */
 	void			*f_security;
 #endif
 	/* needed for tty driver, and maybe others */
+
+    /**
+     *  epoll 中对应 struct eventpoll 结构
+     */
 	void			*private_data;
 
+    /**
+     *  epoll 
+     */
 #ifdef CONFIG_EPOLL
 	/* Used by fs/eventpoll.c to link all the hooks to this file */
 	struct list_head	f_ep_links;/* 用于 epoll 链接所有 就绪的 files */
-	struct list_head	f_tfile_llink;
+	struct list_head	f_tfile_llink;  /* struct epitem.fllink 的链表头 */
+
 #endif /* #ifdef CONFIG_EPOLL */
+
 	struct address_space	*f_mapping; /* 文件缓存 */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
