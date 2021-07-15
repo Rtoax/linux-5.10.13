@@ -80,6 +80,8 @@ struct scan_control {
 	/*
 	 * The memory cgroup that hit its limit and as a result is the
 	 * primary target of this reclaim invocation.
+	 *
+	 * 达到极限并因此达到其极限的 内存组 是此回收调用的主要目标。
 	 */
 	struct mem_cgroup *target_mem_cgroup;
 
@@ -246,6 +248,9 @@ static void unregister_memcg_shrinker(struct shrinker *shrinker)
 	up_write(&shrinker_rwsem);
 }
 
+/**
+ *  将要到达 cgroup 极限的  cgroup 是首选
+ */
 static bool cgroup_reclaim(struct scan_control *sc)
 {
 	return sc->target_mem_cgroup;
@@ -2630,9 +2635,15 @@ static inline bool should_continue_reclaim(struct pglist_data *pgdat,
  */
 static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 {
+    /**
+     *  将要到达极限 的 目标 cgroup
+     */
 	struct mem_cgroup *target_memcg = sc->target_mem_cgroup;
 	struct mem_cgroup *memcg;
 
+    /**
+     *  
+     */
 	memcg = mem_cgroup_iter(target_memcg, NULL, NULL);
 	do {
 		struct lruvec *lruvec = mem_cgroup_lruvec(memcg, pgdat);
@@ -2778,6 +2789,8 @@ again:
 	 * This means we have a runaway feedback loop where a tiny
 	 * thrashing file LRU becomes infinitely more attractive than
 	 * anon pages.  Try to detect this based on file LRU size.
+	 *
+	 * 将要 到达 cgroup 极限的 memcg 没有被设置
 	 */
 	if (!cgroup_reclaim(sc)) {
         
@@ -2792,10 +2805,15 @@ again:
 		file = node_page_state(pgdat, NR_ACTIVE_FILE) + node_page_state(pgdat, NR_INACTIVE_FILE);
 
         /**
-         *  
+         *  遍历 NODE 的所有 ZONE
          */
 		for (z = 0; z < MAX_NR_ZONES; z++) {
+            
 			struct zone *zone = &pgdat->node_zones[z];
+
+            /**
+             *  有管理的页面
+             */
 			if (!managed_zone(zone))
 				continue;
 
