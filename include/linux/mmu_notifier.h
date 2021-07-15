@@ -533,6 +533,7 @@ static inline void mmu_notifier_range_init_migrate(
 	range->migrate_pgmap_owner = pgmap;
 }
 
+/* 判断 该 PTE 最近是否被访问过 */
 #define ptep_clear_flush_young_notify(__vma, __address, __ptep)		\
 ({									\
 	int __young;							\

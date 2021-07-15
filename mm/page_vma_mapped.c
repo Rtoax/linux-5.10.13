@@ -138,6 +138,8 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
  *
  * If you need to stop the walk before page_vma_mapped_walk() returned false,
  * use page_vma_mapped_walk_done(). It will do the housekeeping.
+ *
+ * 从虚拟地址 address 遍历页表，找出对应的 PTE 
  */
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 {

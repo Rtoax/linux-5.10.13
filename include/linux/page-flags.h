@@ -112,7 +112,7 @@
  */
 enum pageflags {
 	PG_locked,		/* 页面已经上锁 Page is locked. Don't touch. 见`lock_page()`*/
-	PG_referenced,  /* 和`PG_active`用于控制页面的活跃程序，在 kswapd 中使用 */
+	PG_referenced,  /* 页面是否被引用过, 和`PG_active`用于控制页面的活跃程序，在 kswapd 中使用 */
 	PG_uptodate,    /* 标识页面的数据已经从块设备成功读取 */
 	PG_dirty,       /* 页面内容发生过改变，但是还没有和外部存储器进行同步 */
 	PG_lru,         /* 最近最少使用 zone->inactive_list */
@@ -367,8 +367,9 @@ static __always_inline int TestClearPageError(struct page *page);
 
 static __always_inline int PageReferenced(struct page *page);
 static __always_inline void SetPageReferenced(struct page *page);
-static __always_inline void ClearPageReferenced(struct page *page);
-static __always_inline int TestClearPageReferenced(struct page *page);
+static __always_inline void ClearPageReferenced(struct page *page); /* 清除   PG_referenced 位*/
+/* 返回 页面 PG_referenced 标志位的值，并清除该标志位 */
+static __always_inline int TestClearPageReferenced(struct page *page); 
 static __always_inline void __SetPageReferenced(struct page *page);
 
 
@@ -551,7 +552,7 @@ static __always_inline int PageSwapCache(struct page *page);
  static __always_inline void __SetPageSwapCache(struct page *page);
  
 
-static __always_inline int PageUnevictable(struct page *page);
+static __always_inline int PageUnevictable(struct page *page);  /* 不可回收 */
  static __always_inline void SetPageUnevictable(struct page *page);
  static __always_inline void ClearPageUnevictable(struct page *page);
  static __always_inline int TestClearPageUnevictable(struct page *page);

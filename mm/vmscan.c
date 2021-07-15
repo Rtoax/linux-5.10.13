@@ -64,7 +64,7 @@
 #include <trace/events/vmscan.h>
 
 /**
- *  存放 `页回收操作` 执行时的相关信息 
+ *  存放 `页回收操作`(页面扫描) 执行时的相关信息 
  */
 struct scan_control { 
     
@@ -964,18 +964,27 @@ void putback_lru_page(struct page *page)
 enum page_references {  /* 页引用 */
 	PAGEREF_RECLAIM,        /* 回收 */
 	PAGEREF_RECLAIM_CLEAN,  /* 回收清理 */
-	PAGEREF_KEEP,           /* 保持 */
+	PAGEREF_KEEP,           /* 保持不变 */
 	PAGEREF_ACTIVATE,       /* 激活 */
 };
 
+/**
+ *  页面中 访问和引用 PTE 用户数
+ *
+ *
+ */
 static enum page_references page_check_references(struct page *page,
 						  struct scan_control *sc)
 {
 	int referenced_ptes, referenced_page;
 	unsigned long vm_flags;
 
-	referenced_ptes = page_referenced(page, 1, sc->target_mem_cgroup,
-					  &vm_flags);
+    /**
+     *  检查该页面 访问、引用了多少个PTE
+     */
+	referenced_ptes = page_referenced(page, 1, sc->target_mem_cgroup, &vm_flags);
+
+    /* 返回 页面 PG_referenced 标志位的值，并清除该标志位 */
 	referenced_page = TestClearPageReferenced(page);
 
 	/*
@@ -985,6 +994,10 @@ static enum page_references page_check_references(struct page *page,
 	if (vm_flags & VM_LOCKED)
 		return PAGEREF_RECLAIM;
 
+    /**
+     *  
+     *  
+     */
 	if (referenced_ptes) {
 		/*
 		 * All mapped pages start out with page table
@@ -1002,8 +1015,12 @@ static enum page_references page_check_references(struct page *page,
 		 */
 		SetPageReferenced(page);
 
+        /**
+         *  如果有多个文件同时映射到该页面
+         *  他们应该晋升到 活跃链表
+         */
 		if (referenced_page || referenced_ptes > 1)
-			return PAGEREF_ACTIVATE;
+			return PAGEREF_ACTIVATE;    /* 页面将会迁移到 活跃链表 */
 
 		/*
 		 * Activate file-backed executable pages after first usage.
@@ -1011,14 +1028,14 @@ static enum page_references page_check_references(struct page *page,
 		if ((vm_flags & VM_EXEC) && !PageSwapBacked(page))
 			return PAGEREF_ACTIVATE;
 
-		return PAGEREF_KEEP;
+		return PAGEREF_KEEP;    /* 页面位置不变 */
 	}
 
 	/* Reclaim if clean, defer dirty pages to writeback */
 	if (referenced_page && !PageSwapBacked(page))
-		return PAGEREF_RECLAIM_CLEAN;
+		return PAGEREF_RECLAIM_CLEAN;   /* 可以尝试回收页面 */
 
-	return PAGEREF_RECLAIM;
+	return PAGEREF_RECLAIM; /* 可以尝试回收页面 */
 }
 
 /* Check if a page is dirty or under writeback */
@@ -1898,6 +1915,8 @@ static int current_may_throttle(void)
 /*
  * shrink_inactive_list() is a helper for shrink_node().  It returns the number
  * of reclaimed pages
+ *
+ * 扫描不活跃链表
  */
 static noinline_for_stack unsigned long
 shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
@@ -1992,6 +2011,9 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	return nr_reclaimed;
 }
 
+/**
+ *  
+ */
 static void shrink_active_list(unsigned long nr_to_scan,
 			       struct lruvec *lruvec,
 			       struct scan_control *sc,

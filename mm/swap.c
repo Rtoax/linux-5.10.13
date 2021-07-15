@@ -368,6 +368,7 @@ static bool need_activate_page_drain(int cpu)
 	return pagevec_count(&per_cpu(lru_pvecs.activate_page, cpu)) != 0;
 }
 
+/* 加入活跃链表 */
 static void activate_page(struct page *page)
 {
 	page = compound_head(page);
@@ -384,21 +385,22 @@ static void activate_page(struct page *page)
 }
 
 #else
-static inline void activate_page_drain(int cpu)
-{
-}
-
-static void activate_page(struct page *page)
-{
-	pg_data_t *pgdat = page_pgdat(page);
-
-	page = compound_head(page);
-	spin_lock_irq(&pgdat->lru_lock);
-	__activate_page(page, mem_cgroup_page_lruvec(page, pgdat), NULL);
-	spin_unlock_irq(&pgdat->lru_lock);
-}
+//static inline void activate_page_drain(int cpu)
+//{
+//}
+//
+//static void activate_page(struct page *page)
+//{
+//	pg_data_t *pgdat = page_pgdat(page);
+//
+//	page = compound_head(page);
+//	spin_lock_irq(&pgdat->lru_lock);
+//	__activate_page(page, mem_cgroup_page_lruvec(page, pgdat), NULL);
+//	spin_unlock_irq(&pgdat->lru_lock);
+//}
 #endif
 
+/* 加入活跃链表 */
 static void __lru_cache_activate_page(struct page *page)
 {
 	struct pagevec *pvec;
@@ -445,7 +447,7 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 
 	if (!PageReferenced(page)) {    /* 引用 */
 		SetPageReferenced(page);
-	} else if (PageUnevictable(page)) { /* 不可定罪 */
+	} else if (PageUnevictable(page)) { /* 不可回收 */
 		/*
 		 * Unevictable pages are on the "LRU_UNEVICTABLE" list. But,
 		 * this list is never rotated or maintained, so marking an
@@ -459,12 +461,15 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 		 * LRU on the next drain.
 		 */
 		if (PageLRU(page))  /*  */
-			activate_page(page);
+			activate_page(page);     /* 加入活跃链表 */
 		else
-			__lru_cache_activate_page(page);
+			__lru_cache_activate_page(page);     /* 加入活跃链表 */
+
+        /* 清除   PG_referenced 位*/
 		ClearPageReferenced(page);
 		workingset_activation(page);
 	}
+    
 	if (page_is_idle(page)) /*  */
 		clear_page_idle(page);
 }

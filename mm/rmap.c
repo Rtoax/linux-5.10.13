@@ -872,18 +872,21 @@ static bool page_referenced_one(struct page *page, struct vm_area_struct *vma,
 	};
 	int referenced = 0;
 
+    /* 从虚拟地址 address 遍历页表，找出对应的 PTE */
 	while (page_vma_mapped_walk(&pvmw)) {
 		address = pvmw.address;
 
+        /* 如果是锁定的，直接返回 */
 		if (vma->vm_flags & VM_LOCKED) {
 			page_vma_mapped_walk_done(&pvmw);
 			pra->vm_flags |= VM_LOCKED;
 			return false; /* To break the loop */
 		}
 
+        /*  */
 		if (pvmw.pte) {
-			if (ptep_clear_flush_young_notify(vma, address,
-						pvmw.pte)) {
+            /* 判断 该 PTE 最近是否被访问过 */
+			if (ptep_clear_flush_young_notify(vma, address, pvmw.pte)) {
 				/*
 				 * Don't treat a reference through
 				 * a sequentially read mapping as such.
@@ -943,7 +946,14 @@ static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)
  *
  * Quick test_and_clear_referenced for all mappings to a page,
  * returns the number of ptes which referenced the page.
- */ /* Page Frame Reclaim Algorithm-PFRA 算法扫描一页调用一次该函数 */
+ *
+ *  检查该页面 访问、引用了多少个PTE
+ *
+ * 1. 利用 RMAP 遍历所有映射该页面的 PTE
+ * 2. 对每个PTE 如果 PTE_AF 置位，说明之前被访问过， referenced 计数+1，然后清零 PTE_AF
+ * 3. 返回 referenced 计数，标识该页面访问、引用多少个 PTE
+ */
+/* Page Frame Reclaim Algorithm-PFRA 算法扫描一页调用一次该函数 */
 int page_referenced(struct page *page,
 		    int is_locked,
 		    struct mem_cgroup *memcg,
@@ -954,8 +964,10 @@ int page_referenced(struct page *page,
 		.mapcount = total_mapcount(page),
 		.memcg = memcg,
 	};
+
+    /*  */
 	struct rmap_walk_control rwc = {
-		.rmap_one = page_referenced_one,
+		.rmap_one = page_referenced_one,    /*  */
 		.arg = (void *)&pra,
 		.anon_lock = page_lock_anon_vma_read,
 	};
@@ -964,6 +976,7 @@ int page_referenced(struct page *page,
 	if (!pra.mapcount)
 		return 0;
 
+    /*  */
 	if (!page_rmapping(page))
 		return 0;
 
@@ -982,7 +995,9 @@ int page_referenced(struct page *page,
 		rwc.invalid_vma = invalid_page_referenced_vma;
 	}
 
+    /* 利用 RMAP 遍历 */
 	rmap_walk(page, &rwc);
+    
 	*vm_flags = pra.vm_flags;
 
 	if (we_locked)
