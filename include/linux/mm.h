@@ -954,7 +954,7 @@ static inline void set_compound_order(struct page *page, unsigned int order)
 }
 
 /* Returns the number of pages in this potentially compound page. */
-static inline unsigned long compound_nr(struct page *page)
+static inline unsigned long compound_nr(struct page *page)  /* 复合页面中包含多少 标准page */
 {
 	if (!PageHead(page))
 		return 1;

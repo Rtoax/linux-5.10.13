@@ -2498,6 +2498,9 @@ static void __split_huge_page(struct page *page, struct list_head *list,
 	}
 }
 
+/**
+ *  获取 page->mapcount
+ */
 int total_mapcount(struct page *page)
 {
 	int i, compound, nr, ret;
@@ -2507,18 +2510,35 @@ int total_mapcount(struct page *page)
 	if (likely(!PageCompound(page)))
 		return atomic_read(&page->_mapcount) + 1;
 
-	compound = compound_mapcount(page);
-	nr = compound_nr(page);
+    /* 页面数 */
+	compound = compound_mapcount(page); /*  */
+	nr = compound_nr(page);             /* 复合页面中包含多少 标准 page */
+
+    /* 如果是大页，直接返回 */
 	if (PageHuge(page))
 		return compound;
+
+    /* 初始化 mapcount 为 复合页 个数 */
 	ret = compound;
+
+    /* 遍历 所有标准 page */
 	for (i = 0; i < nr; i++)
 		ret += atomic_read(&page[i]._mapcount) + 1;
-	/* File pages has compound_mapcount included in _mapcount */
+    
+	/**
+	 *  File pages has compound_mapcount included in _mapcount 
+	 *
+	 *  如果不是匿名映射，即为 文件映射
+	 *  文件page 在 _mapcount 中 已经包含了  compound_mapcount
+	 */
 	if (!PageAnon(page))
 		return ret - compound * nr;
+
+    /*  */
 	if (PageDoubleMap(page))
 		ret -= nr;
+
+    /*  */
 	return ret;
 }
 

@@ -834,6 +834,9 @@ void page_cache_async_ra(struct readahead_control *, struct file_ra_state *,
  * it will submit the read.  The readahead logic may decide to piggyback more
  * pages onto the read request if access patterns suggest it will improve
  * performance.
+ *
+ * 当缓存 miss 发生时被调用；
+ * 
  */
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
@@ -841,6 +844,10 @@ void page_cache_sync_readahead(struct address_space *mapping,
 		unsigned long req_count)
 {
 	DEFINE_READAHEAD(ractl, file, mapping, index);
+
+    /**
+     *  
+     */
 	page_cache_sync_ra(&ractl, ra, req_count);
 }
 

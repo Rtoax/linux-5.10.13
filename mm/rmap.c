@@ -852,11 +852,11 @@ out:
 	return pmd;
 }
 
-struct page_referenced_arg {
-	int mapcount;
-	int referenced;
-	unsigned long vm_flags;
-	struct mem_cgroup *memcg;
+struct page_referenced_arg {    /* page 引用 arg */
+	int mapcount;   /* mapcount: 和 page->_mapcount 相关 */
+	int referenced; /*  */
+	unsigned long vm_flags;     /*  */
+	struct mem_cgroup *memcg;   /*  */
 };
 /*
  * arg: page_referenced_arg will be passed
@@ -960,19 +960,24 @@ int page_referenced(struct page *page,
 		    unsigned long *vm_flags)
 {
 	int we_locked = 0;
-	struct page_referenced_arg pra = {
-		.mapcount = total_mapcount(page),
-		.memcg = memcg,
+
+    /* page 引用 arg */
+	struct page_referenced_arg pra = {  /*  */
+		pra.mapcount = total_mapcount(page),
+		pra.memcg = memcg,
 	};
 
-    /*  */
+    /* RMAP 遍历 控制结构 */
 	struct rmap_walk_control rwc = {
-		.rmap_one = page_referenced_one,    /*  */
-		.arg = (void *)&pra,
-		.anon_lock = page_lock_anon_vma_read,
+		rwc.rmap_one = page_referenced_one,    /*  */
+		rwc.arg = (void *)&pra,
+		rwc.anon_lock = page_lock_anon_vma_read,
 	};
 
+    /* 清理标志位 */
 	*vm_flags = 0;
+
+    /* 如果 mapcount == 0 */
 	if (!pra.mapcount)
 		return 0;
 
