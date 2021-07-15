@@ -69,13 +69,13 @@
 struct scan_control { 
     
 	/* How many pages shrink_list() should reclaim */
-	unsigned long nr_to_reclaim;
+	unsigned long nr_to_reclaim;    /* 要回收的页面数量 */
 
 	/*
 	 * Nodemask of nodes allowed by the caller. If NULL, all nodes
 	 * are scanned.
 	 */
-	nodemask_t	*nodemask;
+	nodemask_t	*nodemask;  /* 内存节点掩码 */
 
 	/*
 	 * The memory cgroup that hit its limit and as a result is the
@@ -97,13 +97,13 @@ struct scan_control {
 	unsigned int skipped_deactivate:1;
 
 	/* Writepage batching in laptop mode; RECLAIM_WRITE */
-	unsigned int may_writepage:1;
+	unsigned int may_writepage:1;   /* 批量写页面 */
 
 	/* Can mapped pages be reclaimed? */
-	unsigned int may_unmap:1;
+	unsigned int may_unmap:1;       /* 是否允许回收映射的页面 */
 
 	/* Can pages be swapped as part of reclaim? */
-	unsigned int may_swap:1;
+	unsigned int may_swap:1;        /* 是否允许写入交换分区来回收页面 */
 
 	/*
 	 * Cgroups are not reclaimed below their configured memory.low,
@@ -116,7 +116,7 @@ struct scan_control {
 	unsigned int hibernation_mode:1;
 
 	/* One of the zones is ready for compaction */
-	unsigned int compaction_ready:1;
+	unsigned int compaction_ready:1;    /* 内存规整已完成 */
 
 	/* There is easily reclaimable cold cache in the current node */
 	unsigned int cache_trim_mode:1;
@@ -127,20 +127,23 @@ struct scan_control {
 	/* Allocation order */
 	s8 order;
 
-	/* Scan (total_size >> priority) pages at once */
+	/**
+	 *  Scan (total_size >> priority) pages at once 
+	 *  页面扫描优先级，优先级数值越小，扫描的页面数量越大
+     */
 	s8 priority;
 
 	/* The highest zone to isolate pages for reclaim from */
-	s8 reclaim_idx;
+	s8 reclaim_idx; /* 最高允许页面回收的 ZONE */
 
 	/* This context's GFP mask */
-	gfp_t gfp_mask;
+	gfp_t gfp_mask; /* 分配掩码 */
 
 	/* Incremented by the number of inactive pages that were scanned */
-	unsigned long nr_scanned;
+	unsigned long nr_scanned;   /* 扫描不活跃页面的数量 */
 
 	/* Number of pages freed so far during a call to shrink_zones() */
-	unsigned long nr_reclaimed;
+	unsigned long nr_reclaimed; /* 已经回收页面的数量 */
 
 	struct {
 		unsigned int dirty;
@@ -150,7 +153,7 @@ struct scan_control {
 		unsigned int immediate;
 		unsigned int file_taken;
 		unsigned int taken;
-	} nr;
+	} nr;   /* 用于统计数量 */
 
 	/* for recording the reclaimed slab by now */
 	struct reclaim_state reclaim_state;
@@ -2560,6 +2563,9 @@ static bool in_reclaim_compaction(struct scan_control *sc)
  * true if more pages should be reclaimed such that when the page allocator
  * calls try_to_compact_pages() that it will have enough free pages to succeed.
  * It will give up earlier than that if there is difficulty reclaiming pages.
+ *
+ *  如果已回收 的页面数量 sc->nr_reclaimed 小于 (2<<sc->order)
+ *  且不活跃的页面总数 大于 (2<<sc->order) ， 那么需要继续回收
  */
 static inline bool should_continue_reclaim(struct pglist_data *pgdat,
 					unsigned long nr_reclaimed,
@@ -2592,6 +2598,11 @@ static inline bool should_continue_reclaim(struct pglist_data *pgdat,
 		if (!managed_zone(zone))
 			continue;
 
+        /**
+         *  判断是否做 内存规整 
+         *
+         *  如果适合，直接返回，稍后的内存规整机制有助于 释放大块内存
+         */
 		switch (compaction_suitable(zone, sc->order, 0, sc->reclaim_idx)) {
 		case COMPACT_SUCCESS:
 		case COMPACT_CONTINUE:
@@ -2614,6 +2625,9 @@ static inline bool should_continue_reclaim(struct pglist_data *pgdat,
 	return inactive_lru_pages > pages_for_compaction;
 }
 
+/**
+ *  基于内存节点的 内存回收
+ */
 static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 {
 	struct mem_cgroup *target_memcg = sc->target_mem_cgroup;
@@ -2671,6 +2685,9 @@ static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 	} while ((memcg = mem_cgroup_iter(target_memcg, memcg, NULL)));
 }
 
+/**
+ *  扫描内存节点中 所有 可回收页面
+ */
 static void shrink_node(pg_data_t *pgdat, struct scan_control *sc)
 {
 	struct reclaim_state *reclaim_state = current->reclaim_state;
@@ -2681,6 +2698,7 @@ static void shrink_node(pg_data_t *pgdat, struct scan_control *sc)
 
 	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
 
+/* 在 linux-5.0 中为 do{}while(should_continue_reclaim(..)); 循环 */
 again:
 	memset(&sc->nr, 0, sizeof(sc->nr));
 
@@ -2702,8 +2720,7 @@ again:
 	if (!sc->force_deactivate) {
 		unsigned long refaults;
 
-		refaults = lruvec_page_state(target_lruvec,
-				WORKINGSET_ACTIVATE_ANON);
+		refaults = lruvec_page_state(target_lruvec, WORKINGSET_ACTIVATE_ANON);
 		if (refaults != target_lruvec->refaults[0] ||
 			inactive_is_low(target_lruvec, LRU_INACTIVE_ANON))
 			sc->may_deactivate |= DEACTIVATE_ANON;
@@ -2775,6 +2792,7 @@ again:
 			anon >> sc->priority;
 	}
 
+    /* 回收页面 */
 	shrink_node_memcgs(pgdat, sc);
 
 	if (reclaim_state) {
@@ -2782,14 +2800,19 @@ again:
 		reclaim_state->reclaimed_slab = 0;
 	}
 
-	/* Record the subtree's reclaim efficiency */
+	/**
+	 *  Record the subtree's reclaim efficiency 
+	 *
+	 *  判断内存压力
+	 */
 	vmpressure(sc->gfp_mask, sc->target_mem_cgroup, true,
-		   sc->nr_scanned - nr_scanned,
-		   sc->nr_reclaimed - nr_reclaimed);
+    		   sc->nr_scanned - nr_scanned,
+    		   sc->nr_reclaimed - nr_reclaimed);
 
 	if (sc->nr_reclaimed - nr_reclaimed)
 		reclaimable = true;
 
+    /* 直接回收机制下 也会 使用，所以需要判断 是否为kswapd 线程 */
 	if (current_is_kswapd()) {
 		/*
 		 * If reclaim is isolating dirty pages under writeback,
@@ -2849,8 +2872,11 @@ again:
 	    test_bit(LRUVEC_CONGESTED, &target_lruvec->flags))
 		wait_iff_congested(BLK_RW_ASYNC, HZ/10);
 
-	if (should_continue_reclaim(pgdat, sc->nr_reclaimed - nr_reclaimed,
-				    sc))
+    /**
+     *  如果已回收 的页面数量 sc->nr_reclaimed 小于 (2<<sc->order)
+     *  且不活跃的页面总数 大于 (2<<sc->order) ， 那么需要继续回收
+     */
+	if (should_continue_reclaim(pgdat, sc->nr_reclaimed - nr_reclaimed, sc))
 		goto again;
 
 	/*
@@ -3364,6 +3390,9 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 }
 #endif
 
+/*
+ * 对 匿名页面的活跃 LRU 链表进行老化
+ */
 static void age_active_anon(struct pglist_data *pgdat,
 				struct scan_control *sc)
 {
@@ -3380,8 +3409,7 @@ static void age_active_anon(struct pglist_data *pgdat,
 	memcg = mem_cgroup_iter(NULL, NULL, NULL);
 	do {
 		lruvec = mem_cgroup_lruvec(memcg, pgdat);
-		shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
-				   sc, LRU_ACTIVE_ANON);
+		shrink_active_list(SWAP_CLUSTER_MAX, lruvec, sc, LRU_ACTIVE_ANON);
 		memcg = mem_cgroup_iter(NULL, memcg, NULL);
 	} while (memcg);
 }
@@ -3411,8 +3439,11 @@ static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)  /*  
 }
 
 /*
- * Returns true if there is an eligible zone balanced for the request order
+ * Returns true if there is an eligible(资格) zone balanced for the request order
  * and highest_zoneidx
+ *
+ * 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
+ * 分配出 2 的 sc.order 次幂 个连续的物理页面
  */
 static bool pgdat_balanced(pg_data_t *pgdat, int order, int highest_zoneidx)    /*  */
 {
@@ -3500,6 +3531,8 @@ static bool prepare_kswapd_sleep(pg_data_t *pgdat, int order,
  * Returns true if kswapd scanned at least the requested number of pages to
  * reclaim or if the lack of progress was due to pages under writeback.
  * This is used to determine if the scanning priority needs to be raised.
+ *
+ * 回收页面 的 核心函数
  */
 static bool kswapd_shrink_node(pg_data_t *pgdat,
 			       struct scan_control *sc)
@@ -3549,6 +3582,8 @@ static bool kswapd_shrink_node(pg_data_t *pgdat,
  * or lower is eligible for reclaim until at least one usable zone is
  * balanced.
  *
+ *  回收页面的主函数
+ *
  * kswapd 将横跨整个 node zone, 回收那些认为合适的 pages
  * 一旦 zone 被发现当 free_pages <= high_wmark_pages(zone) 将被回收
  */
@@ -3558,14 +3593,21 @@ static int balance_pgdat(pg_data_t *pgdat, int order, int highest_zoneidx)
 	unsigned long nr_soft_reclaimed;
 	unsigned long nr_soft_scanned;
 	unsigned long pflags;
+
+    /**
+     *  提升回收
+     *
+     *  用于优化外碎片化的机制
+     */
 	unsigned long nr_boost_reclaim;
 	unsigned long zone_boosts[MAX_NR_ZONES] = { 0, };
 	bool boosted;
 	struct zone *zone;
+    
 	struct scan_control sc = {
-		.gfp_mask = GFP_KERNEL,
-		.order = order,
-		.may_unmap = 1,
+		sc.gfp_mask = GFP_KERNEL,
+		sc.order = order,
+		sc.may_unmap = 1,
 	};
 
 	set_task_reclaim_state(current, &sc.reclaim_state);
@@ -3627,6 +3669,9 @@ restart:
 		 * zone watermarks will be still reset at the end of balancing
 		 * on the grounds that the normal reclaim should be enough to
 		 * re-evaluate if boosting is required when kswapd next wakes.
+		 *
+		 * 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
+		 * 分配出 2 的 sc.order 次幂 个连续的物理页面
 		 */
 		balanced = pgdat_balanced(pgdat, sc.order, highest_zoneidx);
 		if (!balanced && nr_boost_reclaim) {
@@ -3638,6 +3683,8 @@ restart:
 		 * If boosting is not active then only reclaim if there are no
 		 * eligible zones. Note that sc.reclaim_idx is not used as
 		 * buffer_heads_over_limit may have adjusted it.
+		 *
+		 * 若符合条件，跳转 out
 		 */
 		if (!nr_boost_reclaim && balanced)
 			goto out;
@@ -3660,6 +3707,8 @@ restart:
 		 * pages a chance to be referenced before reclaiming. All
 		 * pages are rotated regardless of classzone as this is
 		 * about consistent aging.
+		 *
+		 * 对 匿名页面的活跃 LRU 链表进行老化
 		 */
 		age_active_anon(pgdat, &sc);
 
@@ -3674,13 +3723,15 @@ restart:
 		sc.nr_scanned = 0;
 		nr_soft_scanned = 0;
 		nr_soft_reclaimed = mem_cgroup_soft_limit_reclaim(pgdat, sc.order,
-						sc.gfp_mask, &nr_soft_scanned);
+						        sc.gfp_mask, &nr_soft_scanned);
 		sc.nr_reclaimed += nr_soft_reclaimed;
 
 		/*
 		 * There should be no need to raise the scanning priority if
 		 * enough pages are already being scanned that that high
 		 * watermark would be met at 100% efficiency.
+		 *
+		 * 回收页面 的 核心函数
 		 */
 		if (kswapd_shrink_node(pgdat, &sc))
 			raise_priority = false;
@@ -3716,8 +3767,10 @@ restart:
 		if (nr_boost_reclaim && !nr_reclaimed)
 			break;
 
+        
 		if (raise_priority || !nr_reclaimed)
-			sc.priority--;
+			sc.priority--;  /* 不断加大扫描粒度(页 (total_size >> priority)) */
+        
 	} while (sc.priority >= 1);
 
 	if (!sc.nr_reclaimed)
@@ -3740,7 +3793,7 @@ out:
 		}
 
 		/*
-		 * As there is now likely space, wakeup kcompact to defragment
+		 * As there is now likely space, wakeup kcompact to defragment(解冻)
 		 * pageblocks.
 		 */
 		wakeup_kcompactd(pgdat, pageblock_order, highest_zoneidx);
@@ -3775,6 +3828,12 @@ static enum zone_type kswapd_highest_zoneidx(pg_data_t *pgdat,
 	return curr_idx == MAX_NR_ZONES ? prev_highest_zoneidx : curr_idx;
 }
 
+/**
+ *  系统启动时，会在该函数中睡眠并让出 CPU 控制权 
+ *
+ *  kswapd 睡眠于此(kswapd 唤醒点), 
+ *  唤醒方式 `wakeup_kswapd()`->`wake_up_interruptible(&pgdat->kswapd_wait)`
+ */
 static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_order,
 				unsigned int highest_zoneidx)
 {
@@ -3817,8 +3876,7 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 		 */
 		if (remaining) {
 			WRITE_ONCE(pgdat->kswapd_highest_zoneidx,
-					kswapd_highest_zoneidx(pgdat,
-							highest_zoneidx));
+					kswapd_highest_zoneidx(pgdat, highest_zoneidx));
 
 			if (READ_ONCE(pgdat->kswapd_order) < reclaim_order)
 				WRITE_ONCE(pgdat->kswapd_order, reclaim_order);
@@ -3902,6 +3960,11 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 	 * page out something else, and this flag essentially protects
 	 * us from recursively trying to free more memory as we're
 	 * trying to free the first piece of memory in the first place).
+	 *
+	 * 设置进程描述符中的 标志位
+	 * PF_MEMALLOC  标志进程可以使用 系统预留 内存，不关系ZONE水位
+	 * PF_SWAPWRITE 允许写交换分区
+	 * PF_KSWAPD    kswapd 线程
 	 */
 	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;   /* 我是 swap 进程 */
     
@@ -3911,26 +3974,38 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 	WRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);
 
     /**
-     *  
+     *  主循环
      */
 	for ( ; ; ) {   /* 开始回收 */
         
 		bool ret;
 
+        /* 要回收的页面数量 */
 		alloc_order = reclaim_order = READ_ONCE(pgdat->kswapd_order);
+
+        /* 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE */
 		highest_zoneidx = kswapd_highest_zoneidx(pgdat, highest_zoneidx);
 
 kswapd_try_sleep:
-		kswapd_try_to_sleep(pgdat, alloc_order, reclaim_order,
-					highest_zoneidx);
+
+        /**
+         *  系统启动时，会在该函数中睡眠并让出 CPU 控制权 
+         *
+         *  kswapd 睡眠于此(kswapd 唤醒点), 
+         *  唤醒方式 `wakeup_kswapd()`->`wake_up_interruptible(&pgdat->kswapd_wait)`
+         */
+		kswapd_try_to_sleep(pgdat, alloc_order, reclaim_order, highest_zoneidx);
 
 		/* Read the new order and highest_zoneidx */
 		alloc_order = reclaim_order = READ_ONCE(pgdat->kswapd_order);
-		highest_zoneidx = kswapd_highest_zoneidx(pgdat,
-							highest_zoneidx);
+
+        /* 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE */
+		highest_zoneidx = kswapd_highest_zoneidx(pgdat, highest_zoneidx);
+        
 		WRITE_ONCE(pgdat->kswapd_order, 0);
 		WRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);
 
+        
 		ret = try_to_freeze();  /* 冻结 */
 		if (kthread_should_stop())  /* 是否需要停止 */
 			break;
@@ -3951,7 +4026,13 @@ kswapd_try_sleep:
 		 * request (alloc_order).
 		 */
 		trace_mm_vmscan_kswapd_wake(pgdat->node_id, highest_zoneidx, alloc_order);
-        
+
+        /**
+         *  回收页面的主函数
+         *
+         * kswapd 将横跨整个 node zone, 回收那些认为合适的 pages
+         * 一旦 zone 被发现当 free_pages <= high_wmark_pages(zone) 将被回收
+         */
 		reclaim_order = balance_pgdat(pgdat, 
                                       alloc_order,   /* 进行 swap */
 						              highest_zoneidx);
@@ -3975,6 +4056,8 @@ kswapd_try_sleep:
  * 如果 kswapd 应该回收（直接回收被推迟），则为区域的 pgdat 唤醒它。 
  * 回收内存后会唤醒kcompactd。 
  * 如果 kswapd reclaim 失败或不需要，如果只需要压缩，仍然唤醒 kcompactd。
+ *
+ * 
  */
 void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		   enum zone_type highest_zoneidx)
@@ -4021,8 +4104,8 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		return;
 	}
 
-	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, highest_zoneidx, order,
-				      gfp_flags);
+	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, highest_zoneidx, order, gfp_flags);
+         
 	wake_up_interruptible(&pgdat->kswapd_wait);
 }
 

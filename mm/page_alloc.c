@@ -5069,7 +5069,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask)
 {
 	struct page *page;
-	unsigned int alloc_flags = ALLOC_WMARK_LOW; /*  */
+	unsigned int alloc_flags = ALLOC_WMARK_LOW; /* 初始化为低水位 */
 	gfp_t alloc_mask; /* The gfp_t that was actually used for allocation */
 
     /* 分配信息 */

@@ -236,6 +236,8 @@ static void vmpressure_work_fn(struct work_struct *work)
  * only in-kernel users are notified.
  *
  * This function does not return any value.
+ *
+ *  判断内存压力
  */
 void vmpressure(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
 		unsigned long scanned, unsigned long reclaimed)

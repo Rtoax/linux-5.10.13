@@ -153,6 +153,9 @@ struct alloc_context {  /* 分配 page 的信息 */
 	 * highest_zoneidx is also used by reclaim/compaction to limit
 	 * the target zone since higher zone than this index cannot be
 	 * usable for this allocation request.
+	 *
+	 * 标识 分配请求 最高 可用的 ZONE idx 。
+	 * 低 ZONE 相对于 highest_zoneidx 将被保护，通过 lowmem_reserve[highest_zoneidx]
 	 */
 	enum zone_type highest_zoneidx;
 	bool spread_dirty_pages;
@@ -545,7 +548,7 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
 					    struct list_head *page_list);
 /* The ALLOC_WMARK bits are used as an index to zone->watermark */
 #define ALLOC_WMARK_MIN		WMARK_MIN
-#define ALLOC_WMARK_LOW		WMARK_LOW
+#define ALLOC_WMARK_LOW		WMARK_LOW   /* 低水位, 唤醒 kswapd */
 #define ALLOC_WMARK_HIGH	WMARK_HIGH
 #define ALLOC_NO_WATERMARKS	0x04 /* don't check watermarks at all */
 

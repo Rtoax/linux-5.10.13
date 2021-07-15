@@ -325,7 +325,7 @@ enum zone_watermarks {  /* ZONE 的水位: 可用内存==水 */
 	WMARK_MIN,  /* 最低水位 */
 	WMARK_LOW,  /* 低水位 */
 	WMARK_HIGH, /* 高水位 */
-	NR_WMARK
+	NR_WMARK    /*  */
 };
 
 /*
@@ -835,11 +835,27 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	unsigned long node_spanned_pages; /* total size of physical page
 					     range, including holes *//* 物理页总大小，包括空洞 */
 	int node_id;
+
+    /**
+     *  等待队列
+     *
+     *  在`free_area_init_core()`中初始化
+     *  分配路径上的唤醒函数`wakeup_kswapd()`, 根据低水位标志`ALLOC_WMARK_LOW`
+     */
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 	struct task_struct *kswapd;	/* Protected by
 					   mem_hotplug_begin/end() */
+
+    /*  */                   
 	int kswapd_order;
+
+    /**
+     *  从 alloc_context.highest_zoneidx 传递过来
+     *  在 balance_pgdat() 中被使用
+     *
+     *  可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE
+     */
 	enum zone_type kswapd_highest_zoneidx;
 
 	int kswapd_failures;		/* Number of 'reclaimed == 0' runs */
