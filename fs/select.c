@@ -233,14 +233,25 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
 	add_wait_queue(wait_address, &entry->wait);
 }
 
+/**
+ *  
+ */
 static int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
 			  ktime_t *expires, unsigned long slack)    /* 轮询调度 */
 {
 	int rc = -EINTR;
 
 	set_current_state(state);
+
+    /**
+     *  
+     */
 	if (!pwq->triggered)
 		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
+
+    /**
+     *  
+     */
 	__set_current_state(TASK_RUNNING);
 
 	/*
@@ -416,6 +427,9 @@ void zero_fd_set(unsigned long nr, unsigned long *fdset)
 
 #define BITS(fds, n)	(*FDS_IN(fds, n)|*FDS_OUT(fds, n)|*FDS_EX(fds, n))
 
+/**
+ *  
+ */
 static int max_select_fd(unsigned long n, fd_set_bits *fds) /* 求最大的 fd */
 {
 	unsigned long *open_fds;
@@ -426,6 +440,10 @@ static int max_select_fd(unsigned long n, fd_set_bits *fds) /* 求最大的 fd *
 	/* handle last in-complete long-word first */
 	set = ~(~0UL << (n & (BITS_PER_LONG-1)));
 	n /= BITS_PER_LONG;
+
+    /**
+     *  
+     */
 	fdt = files_fdtable(current->files);    /* 获取 fdt */
 	open_fds = fdt->open_fds + n;   /*  */
 	max = 0;
@@ -437,6 +455,10 @@ static int max_select_fd(unsigned long n, fd_set_bits *fds) /* 求最大的 fd *
 			return -EBADF;
 		}
 	}
+
+    /**
+     *  
+     */
 	while (n) { /*  */
 		open_fds--;
 		n--;
@@ -458,6 +480,9 @@ get_max:
 	return max;
 }
 
+/**
+ *  
+ */
 #define POLLIN_SET (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN | EPOLLHUP | EPOLLERR)  /*  */
 #define POLLOUT_SET (EPOLLWRBAND | EPOLLWRNORM | EPOLLOUT | EPOLLERR)   /*  */
 #define POLLEX_SET (EPOLLPRI)   /*  */
@@ -473,6 +498,9 @@ static inline void wait_key_set(poll_table *wait, unsigned long in,
 		wait->_key |= POLLOUT_SET;  /* OUT */
 }
         /* select */
+/**
+ *  
+ */
 static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 {
 	ktime_t expire, *to = NULL;
@@ -483,6 +511,9 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 	__poll_t busy_flag = net_busy_loop_on() ? POLL_BUSY_LOOP : 0;
 	unsigned long busy_start = 0;
 
+    /**
+     *  
+     */
 	rcu_read_lock();
 	retval = max_select_fd(n, fds); /* 求最大的 fd */
 	rcu_read_unlock();
@@ -491,16 +522,26 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 		return retval;
 	n = retval;
 
+    /**
+     *  
+     */
 	poll_initwait(&table);  /* 初始化等待队列 */
 	wait = &table.pt;
 	if (end_time && !end_time->tv_sec && !end_time->tv_nsec) {
 		wait->_qproc = NULL;
 		timed_out = 1;
 	}
+
+    /**
+     *  
+     */
     /* 如果设置了超时 */
 	if (end_time && !timed_out)
 		slack = select_estimate_accuracy(end_time);
 
+    /**
+     *  
+     */
 	retval = 0;
 	for (;;) {  /* 循环 */
 		unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
@@ -509,6 +550,9 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 		inp = fds->in; outp = fds->out; exp = fds->ex;
 		rinp = fds->res_in; routp = fds->res_out; rexp = fds->res_ex;
 
+        /**
+         *  
+         */
         /* 遍历到最大 fd， select 的最大 fd */
 		for (i = 0; i < n; ++rinp, ++routp, ++rexp) {
 			unsigned long in, out, ex, all_bits, bit = 1, j;
@@ -521,20 +565,37 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 				i += BITS_PER_LONG;
 				continue;
 			}
+            
+            /**
+             *  
+             */
             /* 如果这一组 fd_set 不为空，进行遍历这个 8 位 fd */
 			for (j = 0; j < BITS_PER_LONG; ++j, ++i, bit <<= 1) {
+                
 				struct fd f;
 				if (i >= n)
 					break;
 				if (!(bit & all_bits))  /* 判断是否设置 */
 					continue;
+
+                /**
+                 *  
+                 */
 				f = fdget(i);   /* 从 int fd 到 struct fd */
 				if (f.file) {   /* 如果文件存在 */
 					wait_key_set(wait, in, out, bit,
 						     busy_flag);
+
+                    /**
+                     *  
+                     */
 					mask = vfs_poll(f.file, wait);  /* 文件系统 poll 函数*/
                             /* 如果是eventfd，将为-> eventfd_fops->eventfd_poll()  */
 					fdput(f);   
+
+                    /**
+                     *  
+                     */
 					if ((mask & POLLIN_SET) && (in & bit)) {
 						res_in |= bit;
 						retval++;
@@ -564,16 +625,31 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 
 				}
 			}
+
+            /**
+             *  
+             */
 			if (res_in) /*  */
 				*rinp = res_in;     /* 读 */
 			if (res_out)
 				*routp = res_out;   /* 写 */
 			if (res_ex)
 				*rexp = res_ex;     /* 异常 */
+
+            /**
+             *  
+             */
 			cond_resched(); /*  */
 		}
+        
+        /**
+         *  
+         */
 		wait->_qproc = NULL;
 
+        /**
+         *  
+         */
         /* 如果有fd准备好，超时 或者 有信号被挂起，则返回 */
 		if (retval || timed_out || signal_pending(current))
 			break;
@@ -582,6 +658,9 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 			break;
 		}
 
+        /**
+         *  
+         */
 		/* only if found POLL_BUSY_LOOP sockets && not out of time */
 		if (can_busy_loop && !need_resched()) { /* 可以忙等并且不需要重新调度 */
 			if (!busy_start) {
@@ -602,12 +681,19 @@ static int do_select(int n, fd_set_bits *fds, struct timespec64 *end_time)
 			expire = timespec64_to_ktime(*end_time);
 			to = &expire;   /* 到期时间 */
 		}
+
+        /**
+         *  
+         */
         /* 进行调度 */
 		if (!poll_schedule_timeout(&table, TASK_INTERRUPTIBLE,
 					   to, slack))
 			timed_out = 1;
 	}
 
+    /**
+     *  
+     */
 	poll_freewait(&table);
 
 	return retval;
@@ -662,6 +748,10 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 		if (!bits)
 			goto out_nofds;
 	}
+    
+    /**
+     *  
+     */
     /* 均衡地分配 fd 入参 */
 	fds.in      = bits;
 	fds.out     = bits +   size;
@@ -675,10 +765,17 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 	    (ret = get_fd_set(n, outp, fds.out)) ||
 	    (ret = get_fd_set(n, exp, fds.ex)))
 		goto out;
+
+    /**
+     *  
+     */
 	zero_fd_set(n, fds.res_in); /* 清理输出的返回的 fd_set，返回时将返回给用户态 */
 	zero_fd_set(n, fds.res_out);
 	zero_fd_set(n, fds.res_ex);
 
+    /**
+     *  执行 select
+     */
 	ret = do_select(n, &fds, end_time); /* 正经八百的 内核态 select 开始 */
 
 	if (ret < 0)    /* 失败了 */
@@ -702,6 +799,9 @@ out_nofds:
 	return ret;
 }
 
+/**
+ *  系统调用 select
+ */
 static int kern_select(int n, fd_set __user *inp, fd_set __user *outp,
 		       fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
 {
@@ -709,22 +809,40 @@ static int kern_select(int n, fd_set __user *inp, fd_set __user *outp,
 	struct __kernel_old_timeval tv;
 	int ret;
 
+    /**
+     *  超时配置
+     */
 	if (tvp) {  /* 超时选项 */
 		if (copy_from_user(&tv, tvp, sizeof(tv)))
 			return -EFAULT;
 
 		to = &end_time;
+
+        /**
+         *  计算超时时间
+         */
 		if (poll_select_set_timeout(to, /* 计算到时时间 */
-				tv.tv_sec + (tv.tv_usec / USEC_PER_SEC),
-				(tv.tv_usec % USEC_PER_SEC) * NSEC_PER_USEC))
+            				tv.tv_sec + (tv.tv_usec / USEC_PER_SEC),
+            				(tv.tv_usec % USEC_PER_SEC) * NSEC_PER_USEC))
 			return -EINVAL;
 	}
+    /**
+     *  
+     */
     /* select处理 */
 	ret = core_sys_select(n, inp, outp, exp, to);   /*  */
+
+    /**
+     *  
+     */
 	return poll_select_finish(&end_time, tvp, PT_TIMEVAL, ret); /* 拷贝 timeval 到用户态 */
 }
 
-/*  */
+/**
+ *
+ */
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+                 fd_set *exceptfds, struct timeval *timeout);
 SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
 		fd_set __user *, exp, struct __kernel_old_timeval __user *, tvp)
 {
@@ -794,6 +912,9 @@ Efault:
 	return -EFAULT;
 }
 
+int pselect(int nfds, fd_set *readfds, fd_set *writefds,
+            fd_set *exceptfds, const struct timespec *timeout,
+            const sigset_t *sigmask);
 SYSCALL_DEFINE6(pselect6, int, n, fd_set __user *, inp, fd_set __user *, outp,
 		fd_set __user *, exp, struct __kernel_timespec __user *, tsp,
 		void __user *, sig)
@@ -1102,6 +1223,9 @@ SYSCALL_DEFINE3(poll, struct pollfd __user *, ufds, unsigned int, nfds,
 	return ret;
 }
 
+
+int ppoll(struct pollfd *fds, nfds_t nfds,
+               const struct timespec *timeout_ts, const sigset_t *sigmask);
 SYSCALL_DEFINE5(ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
 		struct __kernel_timespec __user *, tsp, const sigset_t __user *, sigmask,
 		size_t, sigsetsize)
