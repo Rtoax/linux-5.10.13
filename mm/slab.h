@@ -504,6 +504,9 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 #endif
 }
 
+/**
+ *  
+ */
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct obj_cgroup **objcgp,
 						     size_t size, gfp_t flags)

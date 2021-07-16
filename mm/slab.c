@@ -2597,11 +2597,11 @@ static bool shuffle_freelist(struct kmem_cache *cachep, struct page *page)
 	return true;
 }
 #else
-static inline bool shuffle_freelist(struct kmem_cache *cachep,
-				struct page *page)
-{
-	return false;
-}
+//static inline bool shuffle_freelist(struct kmem_cache *cachep,
+//				struct page *page)
+//{
+//	return false;
+//}
 #endif /* CONFIG_SLAB_FREELIST_RANDOM */
 
 static void cache_init_objs(struct kmem_cache *cachep,
@@ -2791,74 +2791,74 @@ static void cache_grow_end(struct kmem_cache *cachep, struct page *page)
 }
 
 #if DEBUG
-
-/*
- * Perform extra freeing checks:
- * - detect bad pointers.
- * - POISON/RED_ZONE checking
- */
-static void kfree_debugcheck(const void *objp)
-{
-	if (!virt_addr_valid(objp)) {
-		pr_err("kfree_debugcheck: out of range ptr %lxh\n",
-		       (unsigned long)objp);
-		BUG();
-	}
-}
-
-static inline void verify_redzone_free(struct kmem_cache *cache, void *obj)
-{
-	unsigned long long redzone1, redzone2;
-
-	redzone1 = *dbg_redzone1(cache, obj);
-	redzone2 = *dbg_redzone2(cache, obj);
-
-	/*
-	 * Redzone is ok.
-	 */
-	if (redzone1 == RED_ACTIVE && redzone2 == RED_ACTIVE)
-		return;
-
-	if (redzone1 == RED_INACTIVE && redzone2 == RED_INACTIVE)
-		slab_error(cache, "double free detected");
-	else
-		slab_error(cache, "memory outside object was overwritten");
-
-	pr_err("%px: redzone 1:0x%llx, redzone 2:0x%llx\n",
-	       obj, redzone1, redzone2);
-}
-
-static void *cache_free_debugcheck(struct kmem_cache *cachep, void *objp,
-				   unsigned long caller)
-{
-	unsigned int objnr;
-	struct page *page;
-
-	BUG_ON(virt_to_cache(objp) != cachep);
-
-	objp -= obj_offset(cachep);
-	kfree_debugcheck(objp);
-	page = virt_to_head_page(objp);
-
-	if (cachep->flags & SLAB_RED_ZONE) {
-		verify_redzone_free(cachep, objp);
-		*dbg_redzone1(cachep, objp) = RED_INACTIVE;
-		*dbg_redzone2(cachep, objp) = RED_INACTIVE;
-	}
-	if (cachep->flags & SLAB_STORE_USER)
-		*dbg_userword(cachep, objp) = (void *)caller;
-
-	objnr = obj_to_index(cachep, page, objp);
-
-	BUG_ON(objnr >= cachep->num);
-	BUG_ON(objp != index_to_obj(cachep, page, objnr));
-
-	if (cachep->flags & SLAB_POISON) {
-		poison_obj(cachep, objp, POISON_FREE);
-		slab_kernel_map(cachep, objp, 0);
-	}
-	return objp;
-}
+//
+///*
+// * Perform extra freeing checks:
+// * - detect bad pointers.
+// * - POISON/RED_ZONE checking
+// */
+//static void kfree_debugcheck(const void *objp)
+//{
+//	if (!virt_addr_valid(objp)) {
+//		pr_err("kfree_debugcheck: out of range ptr %lxh\n",
+//		       (unsigned long)objp);
+//		BUG();
+//	}
+//}
+//
+//static inline void verify_redzone_free(struct kmem_cache *cache, void *obj)
+//{
+//	unsigned long long redzone1, redzone2;
+//
+//	redzone1 = *dbg_redzone1(cache, obj);
+//	redzone2 = *dbg_redzone2(cache, obj);
+//
+//	/*
+//	 * Redzone is ok.
+//	 */
+//	if (redzone1 == RED_ACTIVE && redzone2 == RED_ACTIVE)
+//		return;
+//
+//	if (redzone1 == RED_INACTIVE && redzone2 == RED_INACTIVE)
+//		slab_error(cache, "double free detected");
+//	else
+//		slab_error(cache, "memory outside object was overwritten");
+//
+//	pr_err("%px: redzone 1:0x%llx, redzone 2:0x%llx\n",
+//	       obj, redzone1, redzone2);
+//}
+//
+//static void *cache_free_debugcheck(struct kmem_cache *cachep, void *objp,
+//				   unsigned long caller)
+//{
+//	unsigned int objnr;
+//	struct page *page;
+//
+//	BUG_ON(virt_to_cache(objp) != cachep);
+//
+//	objp -= obj_offset(cachep);
+//	kfree_debugcheck(objp);
+//	page = virt_to_head_page(objp);
+//
+//	if (cachep->flags & SLAB_RED_ZONE) {
+//		verify_redzone_free(cachep, objp);
+//		*dbg_redzone1(cachep, objp) = RED_INACTIVE;
+//		*dbg_redzone2(cachep, objp) = RED_INACTIVE;
+//	}
+//	if (cachep->flags & SLAB_STORE_USER)
+//		*dbg_userword(cachep, objp) = (void *)caller;
+//
+//	objnr = obj_to_index(cachep, page, objp);
+//
+//	BUG_ON(objnr >= cachep->num);
+//	BUG_ON(objp != index_to_obj(cachep, page, objnr));
+//
+//	if (cachep->flags & SLAB_POISON) {
+//		poison_obj(cachep, objp, POISON_FREE);
+//		slab_kernel_map(cachep, objp, 0);
+//	}
+//	return objp;
+//}
 
 #else
 #define kfree_debugcheck(x) do { } while(0)
@@ -2869,38 +2869,51 @@ static inline void fixup_objfreelist_debug(struct kmem_cache *cachep,
 						void **list)
 {
 #if DEBUG
-	void *next = *list;
-	void *objp;
-
-	while (next) {
-		objp = next - obj_offset(cachep);
-		next = *(void **)next;
-		poison_obj(cachep, objp, POISON_FREE);
-	}
+//	void *next = *list;
+//	void *objp;
+//
+//	while (next) {
+//		objp = next - obj_offset(cachep);
+//		next = *(void **)next;
+//		poison_obj(cachep, objp, POISON_FREE);
+//	}
 #endif
 }
 
+/**
+ *  
+ */
 static inline void fixup_slab_list(struct kmem_cache *cachep,
 				struct kmem_cache_node *n, struct page *page,
 				void **list)
 {
 	/* move slabp to correct slabp list: */
 	list_del(&page->slab_list);
+
+    /**
+     *  
+     */
 	if (page->active == cachep->num) {
+        /**
+         *  已满
+         */
 		list_add(&page->slab_list, &n->slabs_full);
 		if (OBJFREELIST_SLAB(cachep)) {
 #if DEBUG
 			/* Poisoning will be done without holding the lock */
-			if (cachep->flags & SLAB_POISON) {
-				void **objp = page->freelist;
-
-				*objp = *list;
-				*list = objp;
-			}
+//			if (cachep->flags & SLAB_POISON) {
+//				void **objp = page->freelist;
+//
+//				*objp = *list;
+//				*list = objp;
+//			}
 #endif
 			page->freelist = NULL;
 		}
 	} else
+    	/**
+         *  未满
+         */
 		list_add(&page->slab_list, &n->slabs_partial);
 }
 
@@ -3020,6 +3033,9 @@ static __always_inline int alloc_block(struct kmem_cache *cachep,
 	return batchcount;
 }
 
+/**
+ *  ____cache_alloc() 中 当没有 可用的，将被 调用
+ */
 static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags) /*  */
 {
 	int batchcount;
@@ -3112,46 +3128,49 @@ static inline void cache_alloc_debugcheck_before(struct kmem_cache *cachep,
 }
 
 #if DEBUG
-static void *cache_alloc_debugcheck_after(struct kmem_cache *cachep,
-				gfp_t flags, void *objp, unsigned long caller)
-{
-	WARN_ON_ONCE(cachep->ctor && (flags & __GFP_ZERO));
-	if (!objp)
-		return objp;
-	if (cachep->flags & SLAB_POISON) {
-		check_poison_obj(cachep, objp);
-		slab_kernel_map(cachep, objp, 1);
-		poison_obj(cachep, objp, POISON_INUSE);
-	}
-	if (cachep->flags & SLAB_STORE_USER)
-		*dbg_userword(cachep, objp) = (void *)caller;
-
-	if (cachep->flags & SLAB_RED_ZONE) {
-		if (*dbg_redzone1(cachep, objp) != RED_INACTIVE ||
-				*dbg_redzone2(cachep, objp) != RED_INACTIVE) {
-			slab_error(cachep, "double free, or memory outside object was overwritten");
-			pr_err("%px: redzone 1:0x%llx, redzone 2:0x%llx\n",
-			       objp, *dbg_redzone1(cachep, objp),
-			       *dbg_redzone2(cachep, objp));
-		}
-		*dbg_redzone1(cachep, objp) = RED_ACTIVE;
-		*dbg_redzone2(cachep, objp) = RED_ACTIVE;
-	}
-
-	objp += obj_offset(cachep);
-	if (cachep->ctor && cachep->flags & SLAB_POISON)
-		cachep->ctor(objp);
-	if (ARCH_SLAB_MINALIGN &&
-	    ((unsigned long)objp & (ARCH_SLAB_MINALIGN-1))) {
-		pr_err("0x%px: not aligned to ARCH_SLAB_MINALIGN=%d\n",
-		       objp, (int)ARCH_SLAB_MINALIGN);
-	}
-	return objp;
-}
+//static void *cache_alloc_debugcheck_after(struct kmem_cache *cachep,
+//				gfp_t flags, void *objp, unsigned long caller)
+//{
+//	WARN_ON_ONCE(cachep->ctor && (flags & __GFP_ZERO));
+//	if (!objp)
+//		return objp;
+//	if (cachep->flags & SLAB_POISON) {
+//		check_poison_obj(cachep, objp);
+//		slab_kernel_map(cachep, objp, 1);
+//		poison_obj(cachep, objp, POISON_INUSE);
+//	}
+//	if (cachep->flags & SLAB_STORE_USER)
+//		*dbg_userword(cachep, objp) = (void *)caller;
+//
+//	if (cachep->flags & SLAB_RED_ZONE) {
+//		if (*dbg_redzone1(cachep, objp) != RED_INACTIVE ||
+//				*dbg_redzone2(cachep, objp) != RED_INACTIVE) {
+//			slab_error(cachep, "double free, or memory outside object was overwritten");
+//			pr_err("%px: redzone 1:0x%llx, redzone 2:0x%llx\n",
+//			       objp, *dbg_redzone1(cachep, objp),
+//			       *dbg_redzone2(cachep, objp));
+//		}
+//		*dbg_redzone1(cachep, objp) = RED_ACTIVE;
+//		*dbg_redzone2(cachep, objp) = RED_ACTIVE;
+//	}
+//
+//	objp += obj_offset(cachep);
+//	if (cachep->ctor && cachep->flags & SLAB_POISON)
+//		cachep->ctor(objp);
+//	if (ARCH_SLAB_MINALIGN &&
+//	    ((unsigned long)objp & (ARCH_SLAB_MINALIGN-1))) {
+//		pr_err("0x%px: not aligned to ARCH_SLAB_MINALIGN=%d\n",
+//		       objp, (int)ARCH_SLAB_MINALIGN);
+//	}
+//	return objp;
+//}
 #else
 #define cache_alloc_debugcheck_after(a,b,objp,d) (objp)
 #endif
 
+/**
+ *  
+ */
 static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags) /*  */
 {/*  */
 	void *objp;
@@ -3159,17 +3178,30 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags) /*  
 
 	check_irq_off();
 
+    /**
+     *  获取 array_cache
+     */
 	ac = cpu_cache_get(cachep);
 	if (likely(ac->avail)) {    /* 可用的 obj */
 		ac->touched = 1;
+        /**
+         *  获取 object
+         */
 		objp = ac->entry[--ac->avail];
 
 		STATS_INC_ALLOCHIT(cachep);
 		goto out;
 	}
 
+    /**
+     *  
+     */
     /* 如果没有可用的 */
 	STATS_INC_ALLOCMISS(cachep);
+
+    /**
+     *  
+     */
 	objp = cache_alloc_refill(cachep, flags);
 	/*
 	 * the 'ac' may be updated by cache_alloc_refill(),
@@ -3312,9 +3344,15 @@ static void *____cache_alloc_node(struct kmem_cache *cachep, gfp_t flags,
 
 	BUG_ON(page->active == cachep->num);
 
+    /**
+     *  
+     */
 	obj = slab_get_obj(cachep, page);
 	n->free_objects--;
 
+    /**
+     *  调整 full/partial/empty 之间
+     */
 	fixup_slab_list(cachep, n, page, &list);
 
 	spin_unlock(&n->list_lock);
@@ -3383,6 +3421,9 @@ slab_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
 	return ptr;
 }
 
+/**
+ *  
+ */
 static __always_inline void *
 __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 {/* 关闭中断的情况下被调用 */
@@ -3393,11 +3434,11 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 		if (objp)
 			goto out;
 	}
-
-    /* 
-        从 avail 中取 !!
-        或 分配新的 array_node??
-    */
+    
+    /**
+     *  从 avail 中取 !!
+     *  或 分配新的 array_node??
+     */
 	objp = ____cache_alloc(cache, flags);   /*  */
 
 	/*
@@ -3405,6 +3446,9 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 	 * ____cache_alloc_node() knows how to locate memory on other nodes
 	 */
 	if (!objp)
+        /**
+         *  上面 分配失败
+         */
 		objp = ____cache_alloc_node(cache, flags, numa_mem_id());
 
   out:
@@ -3420,6 +3464,9 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 
 #endif /* CONFIG_NUMA */
 
+/**
+ *  
+ */
 static __always_inline void *
 slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)    /*  */
 {
@@ -3428,14 +3475,23 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)    /*  
 	struct obj_cgroup *objcg = NULL;
 
 	flags &= gfp_allowed_mask;
+
+    /**
+     *  
+     */
 	cachep = slab_pre_alloc_hook(cachep, &objcg, 1, flags);
 	if (unlikely(!cachep))
 		return NULL;
 
 	cache_alloc_debugcheck_before(cachep, flags);
 
-    /* 禁止中断情况下分配 */
+    /**
+     *  禁止中断情况下分配
+     */
 	local_irq_save(save_flags); /* 关本地中断 */
+    /**
+     *  
+     */
 	objp = __do_cache_alloc(cachep, flags);
 	local_irq_restore(save_flags);  /* 开本地中断 */
     
@@ -3615,6 +3671,9 @@ void ___cache_free(struct kmem_cache *cachep, void *objp,
  */
 void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 {
+    /**
+     *  分配object
+     */
 	void *ret = slab_alloc(cachep, flags, _RET_IP_);
 
 	trace_kmem_cache_alloc(_RET_IP_, ret,

@@ -164,6 +164,9 @@ struct page {   /* 物理页 */
         
 		struct {	/* slab, slob and slub 被slab使用 */
 			union {
+                /**
+                 *  slab_list 是 full/partial/empty 链表头的节点
+                 */
 				struct list_head slab_list;
 				struct {	/* Partial pages(slub-16 bytes) */
 					struct page *next;
