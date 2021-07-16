@@ -85,6 +85,9 @@ unsigned int kmem_cache_size(struct kmem_cache *s)
 EXPORT_SYMBOL(kmem_cache_size);
 
 #ifdef CONFIG_DEBUG_VM
+/**
+ *  sanity: 理智
+ */
 static int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	if (!name || in_interrupt() || size < sizeof(void *) ||
@@ -182,6 +185,9 @@ int slab_unmergeable(struct kmem_cache *s)
 	return 0;
 }
 
+/**
+ *  
+ */
 struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 		slab_flags_t flags, const char *name, void (*ctor)(void *))
 {
@@ -201,6 +207,9 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 	if (flags & SLAB_NEVER_MERGE)
 		return NULL;
 
+    /**
+     *  遍历所有的 slab caches
+     */
 	list_for_each_entry_reverse(s, &slab_caches, list) {
 		if (slab_unmergeable(s))
 			continue;
@@ -224,11 +233,17 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 			(align > s->align || s->align % align))
 			continue;
 
+        /**
+         *  找到了，返回这个 slab
+         */
 		return s;
 	}
 	return NULL;
 }
                             /*  */
+/**
+ *  kmem_cache_create
+ */
 static struct kmem_cache *create_cache(const char *name,
 		unsigned int object_size, unsigned int align,
 		slab_flags_t flags, unsigned int useroffset,
@@ -242,10 +257,17 @@ static struct kmem_cache *create_cache(const char *name,
 		useroffset = usersize = 0;
 
 	err = -ENOMEM;
+
+    /**
+     *  分配句柄
+     */
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (!s)
 		goto out;
 
+    /**
+     *  赋值
+     */
 	s->name = name;
 	s->size = s->object_size = object_size;
 	s->align = align;
@@ -253,10 +275,16 @@ static struct kmem_cache *create_cache(const char *name,
 	s->useroffset = useroffset;
 	s->usersize = usersize;
 
+    /**
+     *  创建
+     */
 	err = __kmem_cache_create(s, flags);
 	if (err)
 		goto out_free_cache;
 
+    /**
+     *  引用计数 ，添加到 总链表
+     */
 	s->refcount = 1;
 	list_add(&s->list, &slab_caches);
 out:
@@ -301,18 +329,28 @@ struct kmem_cache * /* 创建一个 cache */
 kmem_cache_create_usercopy(const char *name,
 		  unsigned int size, unsigned int align,
 		  slab_flags_t flags,
-		  unsigned int useroffset, unsigned int usersize,
+         /**
+          *  user 可以使用的 区间
+          */
+		  unsigned int useroffset, 
+		  unsigned int usersize,
 		  void (*ctor)(void *))
 {
 	struct kmem_cache *s = NULL;
 	const char *cache_name;
 	int err;
 
+    /**
+     *  
+     */
 	get_online_cpus();  /*  */
 	get_online_mems();  /*  */
 
 	mutex_lock(&slab_mutex);
 
+    /**
+     *  sanity: 理智
+     */
 	err = kmem_cache_sanity_check(name, size);
 	if (err) {
 		goto out_unlock;
@@ -337,20 +375,35 @@ kmem_cache_create_usercopy(const char *name,
 	    WARN_ON(size < usersize || size - usersize < useroffset))
 		usersize = useroffset = 0;
 
+    /**
+     *  没有用户访问 的 区间
+     *
+     *  找一个 可以复用的cache 使用
+     */
 	if (!usersize)
 		s = __kmem_cache_alias(name, size, align, flags, ctor);
+
+    /**
+     *  找到了 可以 merge 的slab cache 分配成功，直接返回
+     */
 	if (s)
 		goto out_unlock;
 
+    /**
+     *  名字
+     */
 	cache_name = kstrdup_const(name, GFP_KERNEL);
 	if (!cache_name) {
 		err = -ENOMEM;
 		goto out_unlock;
 	}
 
+    /**
+     *  创建这个 cache
+     */
 	s = create_cache(cache_name, size,
-			 calculate_alignment(flags, align, size),
-			 flags, useroffset, usersize, ctor, NULL);
+        			 calculate_alignment(flags, align, size),
+        			 flags, useroffset, usersize, ctor, NULL);
 	if (IS_ERR(s)) {
 		err = PTR_ERR(s);
 		kfree_const(cache_name);
@@ -404,10 +457,9 @@ EXPORT_SYMBOL(kmem_cache_create_usercopy);
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, unsigned int size, unsigned int align,
-		slab_flags_t flags, void (*ctor)(void *))
+		            slab_flags_t flags, void (*ctor)(void *))
 {
-	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0,
-					  ctor);
+	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
 EXPORT_SYMBOL(kmem_cache_create);
 
@@ -588,8 +640,12 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,/* 申请 */
 }
 
 struct kmem_cache *__ro_after_init
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1]  =
-{ /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 *//*  */ };
+kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1]  = { 
+    /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 *//*  */ 
+    /**
+     *  see `create_kmalloc_caches()`
+     */
+};
 EXPORT_SYMBOL(kmalloc_caches);
 
 /*

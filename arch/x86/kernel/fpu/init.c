@@ -181,6 +181,9 @@ static void __init fpu__init_task_struct_size(void)
 	CHECK_MEMBER_AT_END_OF(struct thread_struct, fpu);
 	CHECK_MEMBER_AT_END_OF(struct task_struct, thread);
 
+    /**
+     *  task_struct 加入 fpu 单元的 大小
+     */
 	arch_task_struct_size = task_size;
 }
 

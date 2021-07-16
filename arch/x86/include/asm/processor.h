@@ -509,6 +509,9 @@ extern unsigned int fpu_user_xstate_size;
 
 struct perf_event;
 
+/**
+ *  X86 硬件上下文
+ */
 struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	/* Cached TLS descriptors: */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
@@ -575,6 +578,9 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 static inline void arch_thread_struct_whitelist(unsigned long *offset,
 						unsigned long *size)
 {
+    /**
+     *  FPU相关
+     */
 	*offset = offsetof(struct thread_struct, fpu.state);
 	*size = fpu_kernel_xstate_size;
 }

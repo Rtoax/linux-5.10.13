@@ -25,7 +25,7 @@
  */
 /* DEBUG: Perform (expensive) checks on alloc/free */
 #define SLAB_CONSISTENCY_CHECKS	((slab_flags_t __force)0x00000100U)
-/* DEBUG: Red zone objs in a cache */
+/* DEBUG: Red zone objs in a cache, like valgrind */
 #define SLAB_RED_ZONE		((slab_flags_t __force)0x00000400U)
 /* DEBUG: Poison objects */
 #define SLAB_POISON		((slab_flags_t __force)0x00000800U)
@@ -37,7 +37,8 @@
 #define SLAB_CACHE_DMA32	((slab_flags_t __force)0x00008000U)
 /* DEBUG: Store the last owner for bug hunting */
 #define SLAB_STORE_USER		((slab_flags_t __force)0x00010000U)
-/* Panic if kmem_cache_create() fails */
+
+/* Panic if kmem_cache_create() fails 出错的话我就吓一跳 */
 #define SLAB_PANIC		((slab_flags_t __force)0x00040000U) /*  */
 /*
  * SLAB_TYPESAFE_BY_RCU - **WARNING** READ THIS!
@@ -295,8 +296,8 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
  * If minimum size of kmalloc is less than 16, we use it as minimum object
  * size and give up to use byte sized index.
  */
-#define SLAB_OBJ_MIN_SIZE      (KMALLOC_MIN_SIZE < 16 ? \
-                               (KMALLOC_MIN_SIZE) : 16)
+#define SLAB_OBJ_MIN_SIZE /* 8 */     (KMALLOC_MIN_SIZE/* 8 */ < 16 ? \
+                               (KMALLOC_MIN_SIZE/* 8 */) : 16)
 
 /*
  * Whenever changing this, take care of that kmalloc_type() and

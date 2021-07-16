@@ -813,12 +813,21 @@ static void set_max_threads(unsigned int max_threads_suggested) /*  */
 
 #ifdef CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT
 /* Initialized by the architecture: */
+/**
+ *  
+ */
 int __read_mostly arch_task_struct_size ;/*  */
 #endif
 
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+/**
+ *  task_struct 结构中 user copy 白名单
+ */
 static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
 {
+    /**
+     *  x86 和 fpu 在硬件上下文 thread_struct 中的偏移相关
+     */
 	/* Fetch thread_struct whitelist for the architecture. */
 	arch_thread_struct_whitelist(offset, size);
 
@@ -844,14 +853,20 @@ void __init fork_init(void)/*  */
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
 	unsigned long useroffset, usersize;
 
+    /**
+     *  哪部分是 用户 可以 copy的
+     */
 	/* create a slab on which task_structs can be allocated */
 	task_struct_whitelist(&useroffset, &usersize);
 
+    /**
+     *  创建 task_struct 的 slab  缓存
+     */
     //sudo cat /proc/slabinfo | grep task
 	task_struct_cachep = kmem_cache_create_usercopy("task_struct",
-			arch_task_struct_size, align,
-			SLAB_PANIC|SLAB_ACCOUNT,
-			useroffset, usersize, NULL);
+                        			arch_task_struct_size, align,
+                        			SLAB_PANIC|SLAB_ACCOUNT,
+                        			useroffset, usersize, NULL);
 #endif
 
 	/* do the arch specific task caches init */

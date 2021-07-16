@@ -158,16 +158,20 @@
 #define ARCH_KMALLOC_FLAGS SLAB_HWCACHE_ALIGN
 #endif
 
-#define FREELIST_BYTE_INDEX (((PAGE_SIZE >> BITS_PER_BYTE) \
-				<= SLAB_OBJ_MIN_SIZE) ? 1 : 0)
+#define FREELIST_BYTE_INDEX /* 0 */ (((PAGE_SIZE/* 4K */ >> BITS_PER_BYTE/* 8 */) \
+				                    <= SLAB_OBJ_MIN_SIZE/* 8 */) ? 1 : 0)
 
-#if FREELIST_BYTE_INDEX
-typedef unsigned char freelist_idx_t;
+#if FREELIST_BYTE_INDEX /* 0 */
+//typedef unsigned char freelist_idx_t;
 #else
 typedef unsigned short freelist_idx_t;
 #endif
 
-#define SLAB_OBJ_MAX_NUM ((1 << sizeof(freelist_idx_t) * BITS_PER_BYTE) - 1)
+/**
+ *  * 优先级高于 << 
+ *  (1 << 16) - 1 = 0xFFFF = 65535
+ */
+#define SLAB_OBJ_MAX_NUM /* 65535 */ ((1 << sizeof(freelist_idx_t)/* 2 */ * BITS_PER_BYTE/* 8 */) - 1)
 
 /*
  * struct array_cache
@@ -260,8 +264,9 @@ static void kmem_cache_node_init(struct kmem_cache_node *parent)
  *
  *  
  */
-#define CFLGS_OBJFREELIST_SLAB	((slab_flags_t __force)0x40000000U)
-#define CFLGS_OFF_SLAB		((slab_flags_t __force)0x80000000U)
+#define CFLGS_OBJFREELIST_SLAB	/*  */ ((slab_flags_t __force)0x40000000U)
+#define CFLGS_OFF_SLAB	/*  */	((slab_flags_t __force)0x80000000U) //见 cache_estimate
+
 #define	OBJFREELIST_SLAB(x)	((x)->flags & CFLGS_OBJFREELIST_SLAB)
 #define	OFF_SLAB(x)	((x)->flags & CFLGS_OFF_SLAB)
 
@@ -405,11 +410,20 @@ static inline struct array_cache *cpu_cache_get(struct kmem_cache *cachep)
 
 /*
  * Calculate the number of objects and left-over bytes for a given buffer size.
+ *
+ * @buffer_size: object 大小
+ * @left_over: 剩余的字节数
+ *
+ * 计算 objects 的数量 和 剩下的 字节数
  */
 static unsigned int cache_estimate(unsigned long gfporder, size_t buffer_size,
-		slab_flags_t flags, size_t *left_over)
+		    slab_flags_t flags, size_t *left_over)
 {
 	unsigned int num;
+
+    /**
+     *  页数 * 4K = 总字节数
+     */
 	size_t slab_size = PAGE_SIZE/* 1<<12=4096 */ << gfporder;/* slab一共占几个page大小 */
 
 	/*
@@ -430,14 +444,26 @@ static unsigned int cache_estimate(unsigned long gfporder, size_t buffer_size,
 	 * correct alignment when allocated.
 	 */
 	if (flags & (CFLGS_OBJFREELIST_SLAB | CFLGS_OFF_SLAB)) {
+        /**
+         *  freelist 不在 object 内部
+         *  
+         *  
+         */
 		num = slab_size / buffer_size;
 		*left_over = slab_size % buffer_size;
 	} else {
+        /**
+         *  freelist 在 object 内部 (freelist_idx_t)
+         *  
+         *  
+         */
 		num = slab_size / (buffer_size + sizeof(freelist_idx_t));
-		*left_over = slab_size %
-			(buffer_size + sizeof(freelist_idx_t));
+		*left_over = slab_size % (buffer_size + sizeof(freelist_idx_t));
 	}
-
+    
+    /**
+     *  返回 object 数量
+     */
 	return num;
 }
 
@@ -1686,19 +1712,25 @@ static size_t calculate_slab_order(struct kmem_cache *cachep,
 	size_t left_over = 0;
 	int gfporder;
 
+    /**
+     *  
+     */
 	for (gfporder = 0; gfporder <= KMALLOC_MAX_ORDER/* 11 */; gfporder++) {
 		unsigned int num;
 		size_t remainder;
 
+        /**
+         *  计算 objects 数量 和  剩余的 字节数
+         */
 		num = cache_estimate(gfporder, size, flags, &remainder);
 		if (!num)
 			continue;
 
 		/* Can't handle number of objects more than SLAB_OBJ_MAX_NUM */
-		if (num > SLAB_OBJ_MAX_NUM)
+		if (num > SLAB_OBJ_MAX_NUM/* 65535 */)
 			break;
 
-		if (flags & CFLGS_OFF_SLAB) {
+		if (flags & CFLGS_OFF_SLAB/*  */) {
 			struct kmem_cache *freelist_cache;
 			size_t freelist_size;
 
@@ -1769,6 +1801,10 @@ static struct array_cache __percpu *alloc_kmem_cache_cpus(  /*  */
 	return cpu_cache;
 }
 
+
+/**
+ *  
+ */
 static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 {
 	if (slab_state >= FULL)
@@ -1778,12 +1814,16 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 	if (!cachep->cpu_cache)
 		return 1;
 
+    /**
+     *  
+     */
 	if (slab_state == DOWN) {
 		/* Creation of first cache (kmem_cache). */
 		set_up_node(kmem_cache, CACHE_CACHE);
 	} else if (slab_state == PARTIAL) {
 		/* For kmem_cache_node */
 		set_up_node(cachep, SIZE_NODE);
+        
 	} else {
 		int node;
 
@@ -1794,10 +1834,16 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 		}
 	}
 
+    /**
+     *  
+     */
 	cachep->node[numa_mem_id()]->next_reap =
-			jiffies + REAPTIMEOUT_NODE +
-			((unsigned long)cachep) % REAPTIMEOUT_NODE;
+            			jiffies + REAPTIMEOUT_NODE +
+            			((unsigned long)cachep) % REAPTIMEOUT_NODE;
 
+    /**
+     *  
+     */
 	cpu_cache_get(cachep)->avail = 0;
 	cpu_cache_get(cachep)->limit = BOOT_CPUCACHE_ENTRIES;
 	cpu_cache_get(cachep)->batchcount = 1;
@@ -1814,27 +1860,41 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 	return flags;
 }
 
+/**
+ *  usersize 字段 不为 0
+ */
 struct kmem_cache *
 __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 		   slab_flags_t flags, void (*ctor)(void *))
 {
 	struct kmem_cache *cachep;
 
+    /**
+     *  
+     */
 	cachep = find_mergeable(size, align, flags, name, ctor);
 	if (cachep) {
+        /**
+         *  引用计数++
+         */
 		cachep->refcount++;
 
 		/*
 		 * Adjust the object sizes so that we clear
 		 * the complete object on kzalloc.
+		 *
+		 * 目标大小
 		 */
 		cachep->object_size = max_t(int, cachep->object_size, size);
 	}
 	return cachep;
 }
 
+/**
+ *  
+ */
 static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
-			size_t size, slab_flags_t flags)
+			            size_t size, slab_flags_t flags)
 {
 	size_t left;
 
@@ -1851,19 +1911,28 @@ static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
 	if (cachep->ctor || flags & SLAB_TYPESAFE_BY_RCU)
 		return false;
 
-	left = calculate_slab_order(cachep, size,
-			flags | CFLGS_OBJFREELIST_SLAB);
+    /**
+     *  返回剩下的没使用的 字节数
+     */
+	left = calculate_slab_order(cachep, size, flags | CFLGS_OBJFREELIST_SLAB);
+    
 	if (!cachep->num)
 		return false;
 
 	if (cachep->num * sizeof(freelist_idx_t) > cachep->object_size)
 		return false;
 
+    /**
+     *  剩下的区域 用于着色区
+     */
 	cachep->colour = left / cachep->colour_off;
 
 	return true;
 }
 
+/**
+ *  
+ */
 static bool set_off_slab_cache(struct kmem_cache *cachep,   /*  */
 			size_t size, slab_flags_t flags)
 {
@@ -1938,6 +2007,8 @@ static bool set_on_slab_cache(struct kmem_cache *cachep,
  * as davem.
  *
  * Return: a pointer to the created cache or %NULL in case of error
+ *
+ * 创建 kmem_cache
  */
 int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 {
@@ -1969,6 +2040,9 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	 */
 	size = ALIGN(size, BYTES_PER_WORD);
 
+    /**
+     *  是否有红区，可参见 valgrind 的红区
+     */
 	if (flags & SLAB_RED_ZONE) {
 		ralign = REDZONE_ALIGN; /* 红区 对齐 */
 		/* If redzoning, ensure that the second redzone is suitably
@@ -1980,6 +2054,10 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	if (ralign < cachep->align) {
 		ralign = cachep->align;
 	}
+
+    /**
+     *  大于 0 ，就不使用 红区了
+     */
 	/* disable debug if necessary */
 	if (ralign > __alignof__(unsigned long long)/* 8 */)
 		flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
@@ -1987,11 +2065,19 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	 * 4) Store it.
 	 */
 	cachep->align = ralign; /*  */
+
+    /**
+     *  着色区 缓存行 大小，一级缓存
+     */
 	cachep->colour_off = cache_line_size();
+    
 	/* Offset must be a multiple of the alignment. */
 	if (cachep->colour_off < cachep->align)
 		cachep->colour_off = cachep->align;
 
+    /**
+     *  slab 使能?
+     */
 	if (slab_is_available())
 		gfp = GFP_KERNEL;
 	else
@@ -2020,6 +2106,9 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 //	}
 #endif
 
+    /**
+     *  
+     */
 	kasan_cache_create(cachep, &size, &flags);  /* 给监控 cache 设置红区 */
 
 	size = ALIGN(size, cachep->align);
@@ -2053,11 +2142,21 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 //	}
 #endif
 
+    /**
+     *  下面三种每种成功都可以
+     */
+
+    /**
+     *  设置 obj freelist
+     */
 	if (set_objfreelist_slab_cache(cachep, size, flags)) {
 		flags |= CFLGS_OBJFREELIST_SLAB;
 		goto done;
 	}
 
+    /**
+     *  
+     */
 	if (set_off_slab_cache(cachep, size, flags)) {
 		flags |= CFLGS_OFF_SLAB;
 		goto done;
@@ -2069,6 +2168,10 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	return -E2BIG;
 
 done:
+
+    /**
+     *  初始化
+     */
 	cachep->freelist_size = cachep->num * sizeof(freelist_idx_t);
 	cachep->flags = flags;
 	cachep->allocflags = __GFP_COMP;
@@ -2093,11 +2196,16 @@ done:
 //		cachep->flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
 #endif
 
+    /**
+     *  
+     */
 	if (OFF_SLAB(cachep)) {
-		cachep->freelist_cache =
-			kmalloc_slab(cachep->freelist_size, 0u);
+		cachep->freelist_cache = kmalloc_slab(cachep->freelist_size, 0u);
 	}
 
+    /**
+     *  cpu cache
+     */
 	err = setup_cpu_cache(cachep, gfp); /*  */
 	if (err) {
 		__kmem_cache_release(cachep);

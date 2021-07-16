@@ -35,7 +35,7 @@ struct kmem_cache { /* slab 句柄 */
     /**
      *  着色 
      *
-     *  
+     *  见 `set_objfreelist_slab_cache()` 中 color 的计算
      */
 	size_t colour;			/* cache colouring range */
 	unsigned int colour_off;	/* colour offset = cache_line_size() = 32 这是一级缓存大小 */
