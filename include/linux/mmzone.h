@@ -375,12 +375,31 @@ Page
 \________________________________________________________________________________> time
 
 */
+
+#if 0 //我把它们改成了 函数，便于阅读理解
 #define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
 #define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)
 #define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
+#else //对应上面的宏定义
 
-//static unsigned long min_wmark_pages()
+static inline unsigned long min_wmark_pages(struct zone *z)
+{
+    return (z->_watermark[WMARK_MIN] + z->watermark_boost);
+}
+static inline unsigned long low_wmark_pages(struct zone *z)
+{
+    return (z->_watermark[WMARK_LOW] + z->watermark_boost);
+}
+static inline unsigned long high_wmark_pages(struct zone *z)
+{
+    return (z->_watermark[WMARK_HIGH] + z->watermark_boost);
+}
+static inline unsigned long wmark_pages(struct zone *z, enum zone_watermarks i)
+{
+    return (z->_watermark[i] + z->watermark_boost);
+}
+#endif
 
 struct per_cpu_pages {
 	int count;		/* number of pages in the list */
