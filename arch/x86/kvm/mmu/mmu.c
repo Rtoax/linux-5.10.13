@@ -5778,9 +5778,9 @@ mmu_shrink_count(struct shrinker *shrink, struct shrink_control *sc)
 }
 
 static struct shrinker mmu_shrinker = {
-	.count_objects = mmu_shrink_count,
-	.scan_objects = mmu_shrink_scan,
-	.seeks = DEFAULT_SEEKS * 10,
+	mmu_shrinker.count_objects = mmu_shrink_count,
+	mmu_shrinker.scan_objects = mmu_shrink_scan,
+	mmu_shrinker.seeks = DEFAULT_SEEKS * 10,
 };
 
 static void mmu_destroy_caches(void)

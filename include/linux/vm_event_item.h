@@ -22,6 +22,9 @@
 
 #define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL, HIGHMEM_ZONE(xx) xx##_MOVABLE
 
+/**
+ *  可参考 vmstat
+ */
 enum vm_event_item { 
         PGPGIN, 
         PGPGOUT, 

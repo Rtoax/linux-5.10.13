@@ -119,12 +119,21 @@ static __always_inline enum lru_list page_lru(struct page *page)
 {
 	enum lru_list lru;
 
+    /**
+     *  不可驱逐的
+     */
 	if (PageUnevictable(page))
 		lru = LRU_UNEVICTABLE;
 	else {
+        /**
+         *  可驱逐
+         */
 		lru = page_lru_base_type(page);
+        /**
+         *  如果页面是活跃的，将 lru 转换为 active
+         */
 		if (PageActive(page))
-			lru += LRU_ACTIVE;
+			lru += LRU_ACTIVE;//+1
 	}
 	return lru;
 }

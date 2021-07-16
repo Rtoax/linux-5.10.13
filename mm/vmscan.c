@@ -123,6 +123,9 @@ struct scan_control {
 	/* There is easily reclaimable cold cache in the current node */
 	unsigned int cache_trim_mode:1;
 
+    /**
+     *  
+     */
 	/* The file pages on the current node are dangerously low */
 	unsigned int file_is_tiny:1;
 
@@ -192,8 +195,13 @@ static void set_task_reclaim_state(struct task_struct *task,
 	task->reclaim_state = rs;
 }
 
+/**
+ *  链表头节点为 struct shrinker
+ */
 static LIST_HEAD(shrinker_list);
 static DECLARE_RWSEM(shrinker_rwsem);
+static struct list_head shrinker_list; //++
+struct rw_semaphore shrinker_rwsem = __RWSEM_INITIALIZER(shrinker_rwsem);//++
 
 #ifdef CONFIG_MEMCG
 /*
@@ -365,10 +373,18 @@ void free_prealloced_shrinker(struct shrinker *shrinker)
 	shrinker->nr_deferred = NULL;
 }
 
+/**
+ *  注册 
+ */
 void register_shrinker_prepared(struct shrinker *shrinker)
 {
 	down_write(&shrinker_rwsem);
+
+    /**
+     *  添加到链表
+     */
 	list_add_tail(&shrinker->list, &shrinker_list);
+    
 #ifdef CONFIG_MEMCG
 	if (shrinker->flags & SHRINKER_MEMCG_AWARE)
 		idr_replace(&shrinker_idr, shrinker, shrinker->id);
@@ -376,6 +392,9 @@ void register_shrinker_prepared(struct shrinker *shrinker)
 	up_write(&shrinker_rwsem);
 }
 
+/**
+ *  注册
+ */
 int register_shrinker(struct shrinker *shrinker)
 {
 	int err = prealloc_shrinker(shrinker);
@@ -406,6 +425,9 @@ EXPORT_SYMBOL(unregister_shrinker);
 
 #define SHRINK_BATCH 128
 
+/**
+ *  
+ */
 static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 				    struct shrinker *shrinker, int priority)
 {
@@ -423,6 +445,9 @@ static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 	if (!(shrinker->flags & SHRINKER_NUMA_AWARE))
 		nid = 0;
 
+    /**
+     *  
+     */
 	freeable = shrinker->count_objects(shrinker, shrinkctl);
 	if (freeable == 0 || freeable == SHRINK_EMPTY)
 		return freeable;
@@ -636,10 +661,14 @@ unlock:
  * Returns the number of reclaimed slab objects.
  */ /*  */
 static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
-				 struct mem_cgroup *memcg,
-				 int priority)
+                				 struct mem_cgroup *memcg,
+                				 int priority)
 {
 	unsigned long ret, freed = 0;
+
+    /*
+     *  可以注册的回调，以便对可老化的缓存施加压力。
+     */
 	struct shrinker *shrinker;
 
 	/*
@@ -655,13 +684,19 @@ static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
 	if (!down_read_trylock(&shrinker_rwsem))
 		goto out;
 
+    /**
+     *  
+     */
 	list_for_each_entry(shrinker, &shrinker_list, list) {
 		struct shrink_control sc = {
-			.gfp_mask = gfp_mask,
-			.nid = nid,
-			.memcg = memcg,
+			sc.gfp_mask = gfp_mask,
+			sc.nid = nid,
+			sc.memcg = memcg,
 		};
 
+        /**
+         *  
+         */
 		ret = do_shrink_slab(&sc, shrinker, priority);  /* 收缩 slab ， 进行回收 */
 		if (ret == SHRINK_EMPTY)
 			ret = 0;
@@ -1285,7 +1320,11 @@ static unsigned int shrink_page_list(struct list_head *page_list,
 				/* Adding to swap updated mapping */
 				mapping = page_mapping(page);
 			}
-		} else if (unlikely(PageTransHuge(page))) {
+		} 
+        /**
+         *  
+         */
+        else if (unlikely(PageTransHuge(page))) {
 			/* Split file THP */
 			if (split_huge_page_to_list(page, page_list))
 				goto keep_locked;
@@ -1596,8 +1635,12 @@ int __isolate_lru_page(struct page *page, isolate_mode_t mode)
 			if (!trylock_page(page))
 				return ret;
 
+            /**
+             *  
+             */
 			mapping = page_mapping(page);
 			migrate_dirty = !mapping || mapping->a_ops->migratepage;
+            
 			unlock_page(page);
 			if (!migrate_dirty)
 				return ret;
@@ -1657,12 +1700,17 @@ static __always_inline void update_lru_sizes(struct lruvec *lruvec,
  * @lru:	LRU list id for isolating
  *
  * returns how many pages were moved onto *@dst.
+ *
+ * 将LRU 中的 page 移至 dst 链表中
  */
 static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
-		struct lruvec *lruvec, struct list_head *dst,
-		unsigned long *nr_scanned, struct scan_control *sc,
-		enum lru_list lru)
+        		struct lruvec *lruvec, struct list_head *dst,
+        		unsigned long *nr_scanned, struct scan_control *sc,
+        		enum lru_list lru)
 {
+    /**
+     *  
+     */
 	struct list_head *src = &lruvec->lists[lru];
 	unsigned long nr_taken = 0;
 	unsigned long nr_zone_taken[MAX_NR_ZONES] = { 0 };
@@ -1674,6 +1722,10 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 
 	total_scan = 0;
 	scan = 0;
+
+    /**
+     *  
+     */
 	while (scan < nr_to_scan && !list_empty(src)) {
 		struct page *page;
 
@@ -1702,10 +1754,18 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 		 * only when the page is being freed somewhere else.
 		 */
 		scan += nr_pages;
+
+        /**
+         *  
+         */
 		switch (__isolate_lru_page(page, mode)) {
 		case 0:
 			nr_taken += nr_pages;
 			nr_zone_taken[page_zonenum(page)] += nr_pages;
+
+            /**
+             *  移动到 dst 链表中
+             */
 			list_move(&page->lru, dst);
 			break;
 
@@ -1742,6 +1802,10 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
 	trace_mm_vmscan_lru_isolate(sc->reclaim_idx, sc->order, nr_to_scan,
 				    total_scan, skipped, nr_taken, mode, lru);
 	update_lru_sizes(lruvec, lru, nr_zone_taken);
+
+    /**
+     *  返回 转移的 page 数
+     */
 	return nr_taken;
 }
 
@@ -1852,9 +1916,7 @@ static int too_many_isolated(struct pglist_data *pgdat, int file,
  *
  * Returns the number of pages moved to the given lruvec.
  */
-
-static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec,
-						     struct list_head *list)
+static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec, struct list_head *list)
 {
 	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
 	int nr_pages, nr_moved = 0;
@@ -1862,9 +1924,16 @@ static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec,
 	struct page *page;
 	enum lru_list lru;
 
+    /**
+     *  遍历链表
+     */
 	while (!list_empty(list)) {
 		page = lru_to_page(list);
 		VM_BUG_ON_PAGE(PageLRU(page), page);
+
+        /**
+         *  可驱逐
+         */
 		if (unlikely(!page_evictable(page))) {
 			list_del(&page->lru);
 			spin_unlock_irq(&pgdat->lru_lock);
@@ -1872,18 +1941,40 @@ static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec,
 			spin_lock_irq(&pgdat->lru_lock);
 			continue;
 		}
+        
 		lruvec = mem_cgroup_page_lruvec(page, pgdat);
 
+        /**
+         *  设置标志位，求 lru 枚举值
+         */
 		SetPageLRU(page);
 		lru = page_lru(page);
 
 		nr_pages = thp_nr_pages(page);
+
+        /**
+         *  
+         */
 		update_lru_size(lruvec, lru, page_zonenum(page), nr_pages);
+
+        /**
+         *  移动到 lruvec 中
+         */
 		list_move(&page->lru, &lruvec->lists[lru]);
 
+        /**
+         *  如果引用计数 为0，返回true
+         */
 		if (put_page_testzero(page)) {
+            /**
+             *  清除标志位
+             */
 			__ClearPageLRU(page);
 			__ClearPageActive(page);
+        
+            /**
+             *  从 lru 删除这个页面
+             */
 			del_page_from_lru_list(page, lruvec, lru);
 
 			if (unlikely(PageCompound(page))) {
@@ -1891,8 +1982,15 @@ static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec,
 				destroy_compound_page(page);
 				spin_lock_irq(&pgdat->lru_lock);
 			} else
+                /**
+                 *  可直接添加到释放的链表中，释放
+                 */
 				list_add(&page->lru, &pages_to_free);
-		} else {
+		} 
+        /**
+         *  引用计数 不为 0，也就是有进程在用这个 page
+         */
+        else {
 			nr_moved += nr_pages;
 			if (PageActive(page))
 				workingset_age_nonresident(lruvec, nr_pages);
@@ -1930,11 +2028,17 @@ static noinline_for_stack unsigned long
 shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		     struct scan_control *sc, enum lru_list lru)
 {
-	LIST_HEAD(page_list);
+	LIST_HEAD(__page_list);
+    struct list_head __page_list; //+++
+    
 	unsigned long nr_scanned;
 	unsigned int nr_reclaimed = 0;
 	unsigned long nr_taken;
 	struct reclaim_stat stat;
+
+    /**
+     *  
+     */
 	bool file = is_file_lru(lru);
 	enum vm_event_item item;
 	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
@@ -1944,6 +2048,9 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		if (stalled)
 			return 0;
 
+        /**
+         *  这里睡眠是我没想到的
+         */
 		/* wait a bit for the reclaimer. */
 		msleep(100);
 		stalled = true;
@@ -1957,13 +2064,26 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 
 	spin_lock_irq(&pgdat->lru_lock);
 
-	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &page_list,
-				     &nr_scanned, sc, lru);
+    /**
+     *  移动到  __page_list 中
+     */
+	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &__page_list, &nr_scanned, sc, lru);
 
+    /**
+     *  vmstat
+     */
 	__mod_node_page_state(pgdat, NR_ISOLATED_ANON + file, nr_taken);
+
+    /**
+     *  直接回收还是使用 kswapd 回收
+     */
 	item = current_is_kswapd() ? PGSCAN_KSWAPD : PGSCAN_DIRECT;
 	if (!cgroup_reclaim(sc))
 		__count_vm_events(item, nr_scanned);
+
+    /**
+     *  vmstat
+     */
 	__count_memcg_events(lruvec_memcg(lruvec), item, nr_scanned);
 	__count_vm_events(PGSCAN_ANON + file, nr_scanned);
 
@@ -1972,12 +2092,21 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	if (nr_taken == 0)
 		return 0;
 
-	nr_reclaimed = shrink_page_list(&page_list, pgdat, sc, &stat, false);
+    /**
+     *  
+     */
+	nr_reclaimed = shrink_page_list(&__page_list, pgdat, sc, &stat, false);
 
 	spin_lock_irq(&pgdat->lru_lock);
 
-	move_pages_to_lru(lruvec, &page_list);
+    /**
+     *  将回收的  页面添加到 lruvec 中
+     */
+	move_pages_to_lru(lruvec, &__page_list);
 
+    /**
+     *  vmstat
+     */
 	__mod_node_page_state(pgdat, NR_ISOLATED_ANON + file, -nr_taken);
 	lru_note_cost(lruvec, file, stat.nr_pageout);
 	item = current_is_kswapd() ? PGSTEAL_KSWAPD : PGSTEAL_DIRECT;
@@ -1988,8 +2117,15 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 
 	spin_unlock_irq(&pgdat->lru_lock);
 
-	mem_cgroup_uncharge_list(&page_list);
-	free_unref_page_list(&page_list);
+    /**
+     *  
+     */
+	mem_cgroup_uncharge_list(&__page_list);
+
+    /**
+     *  尝试释放 引用计数 为 0 的页面
+     */
+	free_unref_page_list(&__page_list);
 
 	/*
 	 * If dirty pages are scanned that are not queued for IO, it
@@ -2005,6 +2141,9 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 	if (stat.nr_unqueued_dirty == nr_taken)
 		wakeup_flusher_threads(WB_REASON_VMSCAN);
 
+    /**
+     *  用于统计数据
+     */
 	sc->nr.dirty += stat.nr_dirty;
 	sc->nr.congested += stat.nr_congested;
 	sc->nr.unqueued_dirty += stat.nr_unqueued_dirty;
@@ -2023,40 +2162,71 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
  *  
  */
 static void shrink_active_list(unsigned long nr_to_scan,
-			       struct lruvec *lruvec,
-			       struct scan_control *sc,
-			       enum lru_list lru)
+              			       struct lruvec *lruvec,
+              			       struct scan_control *sc,
+              			       enum lru_list lru)
 {
 	unsigned long nr_taken;
 	unsigned long nr_scanned;
 	unsigned long vm_flags;
-	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+
+    LIST_HEAD(l_hold);	/* The pages which were snipped off */
 	LIST_HEAD(l_active);
 	LIST_HEAD(l_inactive);
+    
 	struct page *page;
 	unsigned nr_deactivate, nr_activate;
 	unsigned nr_rotated = 0;
+
+    /**
+     *  是文件 LRU 链表
+     */
 	int file = is_file_lru(lru);
+
+    /**
+     *  获取NODE
+     */
 	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
 
 	lru_add_drain();
 
 	spin_lock_irq(&pgdat->lru_lock);
 
-	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &l_hold,
-				     &nr_scanned, sc, lru);
+    /**
+     *  隔离 page
+     */
+	nr_taken = isolate_lru_pages(nr_to_scan, lruvec, &l_hold, &nr_scanned, sc, lru);
 
+    /**
+     *  vmstat
+     */
 	__mod_node_page_state(pgdat, NR_ISOLATED_ANON + file, nr_taken);
 
 	if (!cgroup_reclaim(sc))
 		__count_vm_events(PGREFILL, nr_scanned);
+
+    /**
+     *  
+     */
 	__count_memcg_events(lruvec_memcg(lruvec), PGREFILL, nr_scanned);
 
 	spin_unlock_irq(&pgdat->lru_lock);
 
+    /**
+     *  遍历这些 page
+     */
 	while (!list_empty(&l_hold)) {
+        
 		cond_resched();
+
+        /**
+         *  从 链表中 获取 page
+         */
 		page = lru_to_page(&l_hold);
+
+        /**
+         *  从 LRU 链表中删除，下面将根据情况添加到指定链表中
+         */
 		list_del(&page->lru);
 
 		if (unlikely(!page_evictable(page))) {
@@ -2072,9 +2242,10 @@ static void shrink_active_list(unsigned long nr_to_scan,
 			}
 		}
 
-        /*  */
-		if (page_referenced(page, 0, sc->target_mem_cgroup,
-				    &vm_flags)) {
+        /**
+         *  映射了 这个  page 的 PTE 数，使用 RMAP 机制
+         */
+		if (page_referenced(page, 0, sc->target_mem_cgroup, &vm_flags)) {
 			/*
 			 * Identify referenced, file-backed active pages and
 			 * give them one more trip around the active list. So
@@ -2083,14 +2254,23 @@ static void shrink_active_list(unsigned long nr_to_scan,
 			 * are not likely to be evicted by use-once streaming
 			 * IO, plus JVM can create lots of anon VM_EXEC pages,
 			 * so we ignore them here.
+			 *
+			 * 可执行 并且 是文件映射
 			 */
 			if ((vm_flags & VM_EXEC) && page_is_file_lru(page)) {
+
+                /**
+                 *  添加到激活 链表中，继续下一个页
+                 */
 				nr_rotated += thp_nr_pages(page);
 				list_add(&page->lru, &l_active);
 				continue;
 			}
 		}
 
+        /**
+         *  page 去激活，添加到 inactive 链表
+         */
 		ClearPageActive(page);	/* we are de-activating */
 		SetPageWorkingset(page);
 		list_add(&page->lru, &l_inactive);
@@ -2101,19 +2281,37 @@ static void shrink_active_list(unsigned long nr_to_scan,
 	 */
 	spin_lock_irq(&pgdat->lru_lock);
 
+    /**
+     *  l_active/l_inactive 中可能保存了 引用计数为 0 的页面
+     */
 	nr_activate = move_pages_to_lru(lruvec, &l_active);
 	nr_deactivate = move_pages_to_lru(lruvec, &l_inactive);
+
+    /**
+     *  都转到 active 里
+     */
 	/* Keep all free pages in l_active list */
 	list_splice(&l_inactive, &l_active);
 
+    /**
+     *  vmstat
+     */
 	__count_vm_events(PGDEACTIVATE, nr_deactivate);
 	__count_memcg_events(lruvec_memcg(lruvec), PGDEACTIVATE, nr_deactivate);
 
 	__mod_node_page_state(pgdat, NR_ISOLATED_ANON + file, -nr_taken);
 	spin_unlock_irq(&pgdat->lru_lock);
 
+    /**
+     *  
+     */
 	mem_cgroup_uncharge_list(&l_active);
+
+    /**
+     *  
+     */
 	free_unref_page_list(&l_active);
+    
 	trace_mm_vmscan_lru_shrink_active(pgdat->node_id, nr_taken, nr_activate,
 			nr_deactivate, nr_rotated, sc->priority, file);
 }
@@ -2172,10 +2370,19 @@ unsigned long reclaim_pages(struct list_head *page_list)
 	return nr_reclaimed;
 }
                     /*  */
+/**
+ *  
+ */
 static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 				 struct lruvec *lruvec, struct scan_control *sc)
 {
+    /**
+     *  活跃的 匿名 或 文件映射
+     */
 	if (is_active_lru(lru)) {
+        /**
+         *  可以 去激活 的文件映射
+         */
 		if (sc->may_deactivate & (1 << is_file_lru(lru)))
 			shrink_active_list(nr_to_scan, lruvec, sc, lru);
 		else
@@ -2183,6 +2390,9 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
 		return 0;
 	}
 
+    /**
+     *  
+     */
 	return shrink_inactive_list(nr_to_scan, lruvec, sc, lru);
 }
 
@@ -2336,7 +2546,11 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	fraction[0] = ap;
 	fraction[1] = fp;
 	denominator = ap + fp;
+    
 out:
+    /**
+     *  
+     */
 	for_each_evictable_lru(lru) {
 		int file = is_file_lru(lru);
 		unsigned long lruvec_size;
@@ -2437,6 +2651,9 @@ out:
 	}
 }
 
+/**
+ *  
+ */
 static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 {
 	unsigned long nr[NR_LRU_LISTS];
@@ -2448,6 +2665,9 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	struct blk_plug plug;
 	bool scan_adjusted;
 
+    /**
+     *  获取数据
+     */
 	get_scan_count(lruvec, sc, nr);
 
 	/* Record the original scan target for proportional adjustments later */
@@ -2464,25 +2684,40 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	 * abort proportional reclaim if either the file or anon lru has already
 	 * dropped to zero at the first pass.
 	 */
-	scan_adjusted = (!cgroup_reclaim(sc) && !current_is_kswapd() &&
-			 sc->priority == DEF_PRIORITY);
+	scan_adjusted = (!cgroup_reclaim(sc) && 
+	                 !current_is_kswapd() &&
+			         sc->priority == DEF_PRIORITY);
 
+    /**
+     *  
+     */
 	blk_start_plug(&plug);
-	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-					nr[LRU_INACTIVE_FILE]) {
+
+    /**
+     *  
+     */
+	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] || nr[LRU_INACTIVE_FILE]) {
 		unsigned long nr_anon, nr_file, percentage;
 		unsigned long nr_scanned;
 
+        /**
+         *  遍历 可驱逐 LRU
+         */
 		for_each_evictable_lru(lru) {
 			if (nr[lru]) {
 				nr_to_scan = min(nr[lru], SWAP_CLUSTER_MAX);
 				nr[lru] -= nr_to_scan;
 
-				nr_reclaimed += shrink_list(lru, nr_to_scan,
-							    lruvec, sc);
+                /**
+                 *  回收
+                 */
+				nr_reclaimed += shrink_list(lru, nr_to_scan, lruvec, sc);
 			}
 		}
-
+        
+        /**
+         *  
+         */
 		cond_resched();
 
 		if (nr_reclaimed < nr_to_reclaim || scan_adjusted)
@@ -2507,14 +2742,25 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 		if (!nr_file || !nr_anon)
 			break;
 
+        /**
+         *  文件映射 大于 匿名映射
+         */
 		if (nr_file > nr_anon) {
 			unsigned long scan_target = targets[LRU_INACTIVE_ANON] +
-						targets[LRU_ACTIVE_ANON] + 1;
+						                targets[LRU_ACTIVE_ANON] + 1;
 			lru = LRU_BASE;
+            /**
+             *  计算百分比
+             */
 			percentage = nr_anon * 100 / scan_target;
+
+        /**
+         *  文件映射 <= 匿名映射
+         */
 		} else {
+            
 			unsigned long scan_target = targets[LRU_INACTIVE_FILE] +
-						targets[LRU_ACTIVE_FILE] + 1;
+						                targets[LRU_ACTIVE_FILE] + 1;
 			lru = LRU_FILE;
 			percentage = nr_file * 100 / scan_target;
 		}
@@ -2539,6 +2785,10 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 
 		scan_adjusted = true;
 	}
+
+    /**
+     *  
+     */
 	blk_finish_plug(&plug);
 	sc->nr_reclaimed += nr_reclaimed;
 
@@ -2547,8 +2797,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	 * rebalance the anon lru active/inactive ratio.
 	 */
 	if (total_swap_pages && inactive_is_low(lruvec, LRU_INACTIVE_ANON))
-		shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
-				   sc, LRU_ACTIVE_ANON);
+		shrink_active_list(SWAP_CLUSTER_MAX, lruvec, sc, LRU_ACTIVE_ANON);
 }
 
 /* Use reclaim/compaction for costly allocs or under memory pressure */
@@ -2645,7 +2894,11 @@ static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
      *  
      */
 	memcg = mem_cgroup_iter(target_memcg, NULL, NULL);
+    
 	do {
+        /**
+         *  获取 LRU 向量
+         */
 		struct lruvec *lruvec = mem_cgroup_lruvec(memcg, pgdat);
 		unsigned long reclaimed;
 		unsigned long scanned;
@@ -2658,6 +2911,9 @@ static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 		 */
 		cond_resched();
 
+        /**
+         *  
+         */
 		mem_cgroup_calculate_protection(target_memcg, memcg);
 
 		if (mem_cgroup_below_min(memcg)) {
@@ -2680,20 +2936,33 @@ static void shrink_node_memcgs(pg_data_t *pgdat, struct scan_control *sc)
 			memcg_memory_event(memcg, MEMCG_LOW);
 		}
 
+        /**
+         *  扫描的 、 回收的
+         */
 		reclaimed = sc->nr_reclaimed;
 		scanned = sc->nr_scanned;
 
+        /**
+         *  lruvec 回收
+         */
 		shrink_lruvec(lruvec, sc);
-        /*  */
+
+        /**
+         *  slab收割
+         */
 		shrink_slab(sc->gfp_mask, pgdat->node_id, memcg,
 			    sc->priority);
 
+        /**
+         *  记录 group 的回收效率
+         */
 		/* Record the group's reclaim efficiency */
 		vmpressure(sc->gfp_mask, memcg, false,
-			   sc->nr_scanned - scanned,
-			   sc->nr_reclaimed - reclaimed);
+    			   sc->nr_scanned - scanned,
+    			   sc->nr_reclaimed - reclaimed);
 
-	} while ((memcg = mem_cgroup_iter(target_memcg, memcg, NULL)));
+	} 
+    while ((memcg = mem_cgroup_iter(target_memcg, memcg, NULL)));
 }
 
 /**
@@ -2767,6 +3036,9 @@ again:
 			sc->may_deactivate &= ~DEACTIVATE_FILE;
         
 	} 
+    /**
+     *  
+     */
     else
 		sc->may_deactivate = DEACTIVATE_ANON | DEACTIVATE_FILE;
 
@@ -2799,13 +3071,17 @@ again:
 		int z;
 
         /**
-         *  
+         *  计算当前节点的所有 zone 的 free 页面统计和
          */
 		free = sum_zone_node_page_state(pgdat->node_id, NR_FREE_PAGES);
+
+        /**
+         *  统计 文件映射的页面数量
+         */
 		file = node_page_state(pgdat, NR_ACTIVE_FILE) + node_page_state(pgdat, NR_INACTIVE_FILE);
 
         /**
-         *  遍历 NODE 的所有 ZONE
+         *  遍历 NODE 的所有 ZONE，计算ZONE  的所有高水位和
          */
 		for (z = 0; z < MAX_NR_ZONES; z++) {
             
@@ -2818,7 +3094,7 @@ again:
 				continue;
 
             /**
-             *  
+             *  返回 这个 ZONE 的 高水位，并计算 NODE 所有 ZONE 的 高水位和
              */
 			total_high_wmark += high_wmark_pages(zone);
 		}
@@ -2827,11 +3103,16 @@ again:
 		 * Consider anon: if that's low too, this isn't a
 		 * runaway file reclaim problem, but rather just
 		 * extreme pressure. Reclaim as per usual then.
+		 *
+		 * 未激活的 匿名页面 的统计值
 		 */
 		anon = node_page_state(pgdat, NR_INACTIVE_ANON);
 
         /**
          *  
+         *
+         * 1. 文件映射页面 + 空闲页面 <= NODE高水位(也就是低于高水位)
+         * 2. 
          */
 		sc->file_is_tiny =
     			file + free <= total_high_wmark &&
@@ -2839,6 +3120,9 @@ again:
     			anon >> sc->priority;
 	}
 
+    /**
+     *  
+     */
     /* 回收页面 */
 	shrink_node_memcgs(pgdat, sc);
 
@@ -3841,6 +4125,10 @@ out:
 			/* Increments are under the zone lock */
 			zone = pgdat->node_zones + i;
 			spin_lock_irqsave(&zone->lock, flags);
+
+            /**
+             *  计算水位提高
+             */
 			zone->watermark_boost -= min(zone->watermark_boost, zone_boosts[i]);
 			spin_unlock_irqrestore(&zone->lock, flags);
 		}

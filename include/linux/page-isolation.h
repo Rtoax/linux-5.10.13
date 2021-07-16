@@ -16,18 +16,7 @@ static inline bool is_migrate_isolate(int migratetype)/* 迁移隔离 */
 	return migratetype == MIGRATE_ISOLATE;
 }
 #else
-static inline bool has_isolate_pageblock(struct zone *zone)
-{
-	return false;
-}
-static inline bool is_migrate_isolate_page(struct page *page)
-{
-	return false;
-}
-static inline bool is_migrate_isolate(int migratetype)
-{
-	return false;
-}
+/*  */
 #endif
 
 #define MEMORY_OFFLINE	0x1

@@ -902,6 +902,8 @@ void mod_memcg_obj_state(void *p, int idx, int val)
  * @memcg: the memory cgroup
  * @idx: the event item
  * @count: the number of events that occured
+ *
+ * 统计 VM events 
  */
 void __count_memcg_events(struct mem_cgroup *memcg, enum vm_event_item idx,
 			  unsigned long count)
@@ -1127,7 +1129,7 @@ static __always_inline struct mem_cgroup *get_mem_cgroup_from_current(void)
 }
 
 /**
- * mem_cgroup_iter - iterate over memory cgroup hierarchy
+ * mem_cgroup_iter - iterate over memory cgroup hierarchy(等级制度)
  * @root: hierarchy root
  * @prev: previously returned memcg, NULL on first invocation
  * @reclaim: cookie for shared reclaim walks, NULL for full walks
@@ -1142,6 +1144,8 @@ static __always_inline struct mem_cgroup *get_mem_cgroup_from_current(void)
  * Reclaimers can specify a node in @reclaim to divide up the memcgs
  * in the hierarchy among all concurrent reclaimers operating on the
  * same node.
+ *
+ * 遍历 memcg 等级
  */
 struct mem_cgroup *mem_cgroup_iter(struct mem_cgroup *root,
 				   struct mem_cgroup *prev,
@@ -1152,6 +1156,9 @@ struct mem_cgroup *mem_cgroup_iter(struct mem_cgroup *root,
 	struct mem_cgroup *memcg = NULL;
 	struct mem_cgroup *pos = NULL;
 
+    /**
+     *  
+     */
 	if (mem_cgroup_disabled())
 		return NULL;
 
@@ -6878,6 +6885,9 @@ static void uncharge_batch(const struct uncharge_gather *ug)
 	css_put(&ug->memcg->css);
 }
 
+/**
+ *  
+ */
 static void uncharge_page(struct page *page, struct uncharge_gather *ug)
 {
 	unsigned long nr_pages;
@@ -6919,6 +6929,9 @@ static void uncharge_page(struct page *page, struct uncharge_gather *ug)
 	css_put(&ug->memcg->css);
 }
 
+/**
+ *  
+ */
 static void uncharge_list(struct list_head *page_list)
 {
 	struct uncharge_gather ug;

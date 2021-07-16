@@ -56,6 +56,11 @@ struct shrink_control {
  * context.
  *
  * @flags determine the shrinker abilities, like numa awareness
+ *
+ *  可以注册的回调，以便对可老化的缓存施加压力。
+ *
+ * 如下：
+ *  struct shrinker mmu_shrinker;
  */
 struct shrinker {
 	unsigned long (*count_objects)(struct shrinker *,
@@ -69,6 +74,7 @@ struct shrinker {
 
 	/* These are for internal use */
 	struct list_head list;
+    
 #ifdef CONFIG_MEMCG
 	/* ID in shrinker_idr */
 	int id;
@@ -76,6 +82,7 @@ struct shrinker {
 	/* objs pending delete, per node */
 	atomic_long_t *nr_deferred;
 };
+
 #define DEFAULT_SEEKS 2 /* A good number if you don't know better. */
 
 /* Flags */

@@ -975,9 +975,9 @@ buddy_merge_likely(unsigned long pfn, unsigned long buddy_pfn,
  */
     /* 伙伴系统的 页 释放 函数 */
 static inline void __free_one_page(struct page *page,
-		unsigned long pfn,
-		struct zone *zone, unsigned int order,
-		int migratetype, fpi_t fpi_flags)
+                             		unsigned long pfn,
+                             		struct zone *zone, unsigned int order,
+                             		int migratetype, fpi_t fpi_flags)
 {
 	struct capture_control *capc = task_capc(zone);/*  */
 	unsigned long buddy_pfn;
@@ -986,12 +986,19 @@ static inline void __free_one_page(struct page *page,
 	struct page *buddy;
 	bool to_tail;
 
+    /**
+     *  
+     */
 	max_order = min_t(unsigned int, MAX_ORDER/* 11 */, pageblock_order + 1);
 
 	VM_BUG_ON(!zone_is_initialized(zone));/* zone 已经初始化 */
 	VM_BUG_ON_PAGE(page->flags & PAGE_FLAGS_CHECK_AT_PREP, page);
 
 	VM_BUG_ON(migratetype == -1);
+
+    /**
+     *  
+     */
 	if (likely(!is_migrate_isolate(migratetype)))/* 可迁移的页面 */
 		__mod_zone_freepage_state(zone, 1 << order, migratetype);
 
@@ -999,15 +1006,23 @@ static inline void __free_one_page(struct page *page,
 	VM_BUG_ON_PAGE(bad_range(zone, page), page);
 
 continue_merging:
+    /**
+     *  
+     */
 	while (order < max_order - 1) {
 		if (compaction_capture(capc, page, order, migratetype)) {
-			__mod_zone_freepage_state(zone, -(1 << order),
-								migratetype);
+			__mod_zone_freepage_state(zone, -(1 << order), migratetype);
 			return;
 		}
+        /**
+         *  
+         */
 		buddy_pfn = __find_buddy_pfn(pfn, order);   /* 伙伴系统的帧号 */
 		buddy = page + (buddy_pfn - pfn);   /* 伙伴系统 page */
 
+        /**
+         *  
+         */
 		if (!pfn_valid_within(buddy_pfn))
 			goto done_merging;
 		if (!page_is_buddy(page, buddy, order))
@@ -1019,12 +1034,21 @@ continue_merging:
 		if (page_is_guard(buddy))   /* 调试 debug分支 */
 			clear_page_guard(zone, buddy, order, migratetype);
 		else
+            /**
+             *  
+             */
 			del_page_from_free_list(buddy, zone, order);    /* 普通 page */
+
+        
 		combined_pfn = buddy_pfn & pfn;     /* 合并  */
 		page = page + (combined_pfn - pfn); /* 合并的页 */
 		pfn = combined_pfn;
 		order++;
 	}
+
+    /**
+     *  
+     */
 	if (max_order < MAX_ORDER) {    /*  */
 		/* If we are here, it means order is >= pageblock_order.
 		 * We want to prevent merge between freepages on isolate
@@ -1051,8 +1075,15 @@ continue_merging:
 	}
 
 done_merging:   /* 合并 */
+
+    /**
+     *  
+     */
 	set_buddy_order(page, order);
 
+    /**
+     *  
+     */
 	if (fpi_flags & FPI_TO_TAIL)
 		to_tail = true;
 	else if (is_shuffle_order(order))
@@ -1060,6 +1091,9 @@ done_merging:   /* 合并 */
 	else
 		to_tail = buddy_merge_likely(pfn, buddy_pfn, page, order);
 
+    /**
+     *  
+     */
 	if (to_tail)
 		add_to_free_list_tail(page, zone, order, migratetype);
 	else
@@ -1395,17 +1429,22 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 	}
 	spin_unlock(&zone->lock);
 }
-    /* 向伙伴系统释放 */
+
+/**
+ *  向伙伴系统释放
+ */
 static void free_one_page(struct zone *zone,    /*  */
 				struct page *page, unsigned long pfn,
 				unsigned int order,
 				int migratetype, fpi_t fpi_flags)
 {
 	spin_lock(&zone->lock);
-	if (unlikely(has_isolate_pageblock(zone) ||
-		is_migrate_isolate(migratetype))) {
+	if (unlikely(has_isolate_pageblock(zone) || is_migrate_isolate(migratetype))) {
 		migratetype = get_pfnblock_migratetype(page, pfn);
 	}
+    /**
+     *  释放一个 page 到伙伴系统
+     */
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);    /* 释放一个 page */
 	spin_unlock(&zone->lock);
 }
@@ -3220,13 +3259,23 @@ static bool free_unref_page_prepare(struct page *page, unsigned long pfn)
 	return true;
 }
 
+/**
+ *  
+ */
 static void free_unref_page_commit(struct page *page, unsigned long pfn)
 {
 	struct zone *zone = page_zone(page);
 	struct per_cpu_pages *pcp;
 	int migratetype;
 
+    /**
+     *  迁移类型
+     */
 	migratetype = get_pcppage_migratetype(page);
+
+    /**
+     *  vmstat
+     */
 	__count_vm_event(PGFREE);
 
 	/*
@@ -3238,15 +3287,25 @@ static void free_unref_page_commit(struct page *page, unsigned long pfn)
 	 */
 	if (migratetype >= MIGRATE_PCPTYPES) {
 		if (unlikely(is_migrate_isolate(migratetype))) {
-			free_one_page(zone, page, pfn, 0, migratetype,
-				      FPI_NONE);
+            /**
+             *  回收过程中，遇到 引用计数为 0  的页面，直接释放了，直接返回
+             */
+			free_one_page(zone, page, pfn, 0, migratetype, FPI_NONE);
 			return;
 		}
 		migratetype = MIGRATE_MOVABLE;
 	}
 
 	pcp = &this_cpu_ptr(zone->pageset)->pcp;
+
+    /**
+     *  如果没有释放页面，将其添加到 lruvec 中
+     */
 	list_add(&page->lru, &pcp->lists[migratetype]);
+
+    /**
+     *  
+     */
 	pcp->count++;
 	if (pcp->count >= pcp->high) {
 		unsigned long batch = READ_ONCE(pcp->batch);
@@ -3281,6 +3340,10 @@ void free_unref_page_list(struct list_head *list)
 
 	/* Prepare pages for freeing */
 	list_for_each_entry_safe(page, next, list, lru) {
+
+        /**
+         *  
+         */
 		pfn = page_to_pfn(page);
 		if (!free_unref_page_prepare(page, pfn))
 			list_del(&page->lru);
@@ -3288,11 +3351,19 @@ void free_unref_page_list(struct list_head *list)
 	}
 
 	local_irq_save(flags);
+
+    /**
+     *  
+     */
 	list_for_each_entry_safe(page, next, list, lru) {
-		unsigned long pfn = page_private(page);
+		unsigned long pfn = page_private(page);//上面设置的
 
 		set_page_private(page, 0);
 		trace_mm_page_free_batched(page);
+
+        /**
+         *  根据迁移类型，选择性 释放 引用计数 为 0 的 page
+         */
 		free_unref_page_commit(page, pfn);
 
 		/*

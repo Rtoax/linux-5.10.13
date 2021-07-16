@@ -333,23 +333,34 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 }
 EXPORT_SYMBOL(__mod_zone_page_state);
 
-void __mod_node_page_state(struct pglist_data *pgdat, enum node_stat_item item,
-				long delta)
+/**
+ *  
+ */
+void __mod_node_page_state(struct pglist_data *pgdat, enum node_stat_item item, long delta)
 {
 	struct per_cpu_nodestat __percpu *pcp = pgdat->per_cpu_nodestats;
 	s8 __percpu *p = pcp->vm_node_stat_diff + item;
 	long x;
 	long t;
 
+    /**
+     *  vmstat
+     */
 	if (vmstat_item_in_bytes(item)) {
 		VM_WARN_ON_ONCE(delta & (PAGE_SIZE - 1));
 		delta >>= PAGE_SHIFT;
 	}
 
 	x = delta + __this_cpu_read(*p);
-
+    
+    /**
+     *  门限
+     */
 	t = __this_cpu_read(pcp->stat_threshold);
 
+    /**
+     *  
+     */
 	if (unlikely(abs(x) > t)) {
 		node_page_state_add(x, pgdat, item);
 		x = 0;
@@ -952,14 +963,18 @@ void __inc_numa_state(struct zone *zone,
  * Determine the per node value of a stat item. This function
  * is called frequently in a NUMA machine, so try to be as
  * frugal as possible.
+ *
+ * 计算 当前节点 所有 zone 的统计和
  */
-unsigned long sum_zone_node_page_state(int node,
-				 enum zone_stat_item item)
+unsigned long sum_zone_node_page_state(int node, enum zone_stat_item item)
 {
 	struct zone *zones = NODE_DATA(node)->node_zones;
 	int i;
 	unsigned long count = 0;
 
+    /**
+     *  统计和
+     */
 	for (i = 0; i < MAX_NR_ZONES; i++)
 		count += zone_page_state(zones + i, item);
 
@@ -970,8 +985,7 @@ unsigned long sum_zone_node_page_state(int node,
  * Determine the per node value of a numa stat item. To avoid deviation,
  * the per cpu stat number in vm_numa_stat_diff[] is also included.
  */
-unsigned long sum_zone_numa_state(int node,
-				 enum numa_stat_item item)
+unsigned long sum_zone_numa_state(int node, enum numa_stat_item item)
 {
 	struct zone *zones = NODE_DATA(node)->node_zones;
 	int i;
@@ -1004,7 +1018,7 @@ unsigned long node_page_state(struct pglist_data *pgdat, enum node_stat_item ite
 	VM_WARN_ON_ONCE(vmstat_item_in_bytes(item));
 
     /**
-     *  
+     *  统计NODE 对应 的 
      */
 	return node_page_state_pages(pgdat, item);
 }

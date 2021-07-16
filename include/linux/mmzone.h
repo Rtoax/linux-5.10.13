@@ -267,7 +267,7 @@ enum lru_list { /* 最近最少使用 list */
 	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,    /* 不可接受/不可驱逐, 见 AS_UNEVICTABLE */
+	LRU_UNEVICTABLE,    /* 不可驱逐, 见 AS_UNEVICTABLE */
 	NR_LRU_LISTS
 };
 
@@ -393,6 +393,9 @@ static inline unsigned long low_wmark_pages(struct zone *z)
 }
 static inline unsigned long high_wmark_pages(struct zone *z)
 {
+    /**
+     *  高水位
+     */
     return (z->_watermark[WMARK_HIGH] + z->watermark_boost);
 }
 static inline unsigned long wmark_pages(struct zone *z, enum zone_watermarks i)
@@ -547,6 +550,10 @@ struct zone {   /* 内存 ZONE */
     //WMARK_HIGH, /* 高水位 */
     //NR_WMARK
 	unsigned long _watermark[NR_WMARK]; /* 水位:每个zone都有自己独立的min, low和high三个档位的watermark值 */
+
+    /**
+     *  水位提高
+     */
 	unsigned long watermark_boost;      /*  */
 
 	unsigned long nr_reserved_highatomic;
