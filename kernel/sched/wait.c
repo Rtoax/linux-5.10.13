@@ -15,6 +15,9 @@ void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, st
 
 EXPORT_SYMBOL(__init_waitqueue_head);
 
+/**
+ *  
+ */
 void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	unsigned long flags;
@@ -26,6 +29,9 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 }
 EXPORT_SYMBOL(add_wait_queue);
 
+/**
+ *  
+ */
 void add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	unsigned long flags;

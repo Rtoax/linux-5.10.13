@@ -2104,6 +2104,9 @@ int __sched
 schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
 			       const enum hrtimer_mode mode, clockid_t clock_id)
 {
+    /**
+     *  睡眠 hrtimer
+     */
 	struct hrtimer_sleeper t;
 
 	/*
@@ -2123,6 +2126,9 @@ schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
 		return -EINTR;/* 返回错误 */
 	}
 
+    /**
+     *  更新到期时间
+     */
 	hrtimer_init_sleeper_on_stack(&t, clock_id, mode);
 	hrtimer_set_expires_range_ns(&t.timer, *expires, delta);
 	hrtimer_sleeper_start_expires(&t, mode);
@@ -2169,12 +2175,16 @@ schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
  * Returns 0 when the timer has expired. If the task was woken before the
  * timer expired by a signal (only possible in state TASK_INTERRUPTIBLE) or
  * by an explicit wakeup, it returns -EINTR.
+ *
+ * 睡眠直到超时
  */
 int __sched schedule_hrtimeout_range(ktime_t *expires, u64 delta,
 				     const enum hrtimer_mode mode)
 {
-	return schedule_hrtimeout_range_clock(expires, delta, mode,
-					      CLOCK_MONOTONIC);
+    /**
+     *  
+     */
+	return schedule_hrtimeout_range_clock(expires, delta, mode, CLOCK_MONOTONIC);
 }
 EXPORT_SYMBOL_GPL(schedule_hrtimeout_range);
 

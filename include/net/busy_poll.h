@@ -27,10 +27,14 @@
 
 struct napi_struct;
 extern unsigned int __read_mostly sysctl_net_busy_read ;
-extern unsigned int __read_mostly sysctl_net_busy_poll ;
+extern unsigned int __read_mostly sysctl_net_busy_poll ;//net.core.busy_poll
 
+/**
+ *  sysctl 是否开启
+ */
 static inline bool net_busy_loop_on(void)
 {
+    //net.core.busy_poll = 0
 	return sysctl_net_busy_poll;
 }
 
@@ -64,6 +68,9 @@ static inline bool busy_loop_timeout(unsigned long start_time)
 #ifdef CONFIG_NET_RX_BUSY_POLL
 	unsigned long bp_usec = READ_ONCE(sysctl_net_busy_poll);
 
+    /**
+     *  
+     */
 	if (bp_usec) {
 		unsigned long end_time = start_time + bp_usec;
 		unsigned long now = busy_loop_current_time();

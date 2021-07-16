@@ -482,6 +482,7 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 	},
 #endif /* CONFIG_NET_FLOW_LIMIT */
 #ifdef CONFIG_NET_RX_BUSY_POLL
+    //net.core.busy_poll = 0
 	{
 		.procname	= "busy_poll",  /* /proc/sys/net/core/busy_poll */
 		.data		= &sysctl_net_busy_poll,

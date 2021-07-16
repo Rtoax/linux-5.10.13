@@ -105,6 +105,7 @@ static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
     /**
      *  
      *  socket_file_ops.poll = sock_poll()
+     *  eventpoll_fops.poll = ep_eventpoll_poll()
      */
 	return file->f_op->poll(file, pt);
 }

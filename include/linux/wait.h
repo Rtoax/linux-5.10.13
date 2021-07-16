@@ -177,7 +177,14 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 static inline void
 __add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
+    /**
+     *  
+     */
 	wq_entry->flags |= WQ_FLAG_EXCLUSIVE/* 独占的 */;
+
+    /**
+     *  添加到链表
+     */
 	__add_wait_queue(wq_head, wq_entry);/* 添加到链表 */
 }
 
