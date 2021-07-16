@@ -83,6 +83,9 @@
 
 #define IPV4_BEET_PHMAXLEN 8
 
+/**
+ *  IP 头
+ */
 struct iphdr {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
 	__u8	ihl:4,

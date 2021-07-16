@@ -2011,6 +2011,9 @@ static inline void __skb_queue_after(struct sk_buff_head *list,
 void skb_append(struct sk_buff *old, struct sk_buff *newsk,
 		struct sk_buff_head *list);
 
+/**
+ *  
+ */
 static inline void __skb_queue_before(struct sk_buff_head *list,
 				      struct sk_buff *next,
 				      struct sk_buff *newsk)
@@ -2044,6 +2047,8 @@ void skb_queue_head(struct sk_buff_head *list, struct sk_buff *newsk);
  *	and you must therefore hold required locks before calling it.
  *
  *	A buffer cannot be placed on two lists at the same time.
+ *
+ *  片段 排入队列
  */
 static inline void __skb_queue_tail(struct sk_buff_head *list,
 				   struct sk_buff *newsk)

@@ -57,6 +57,9 @@
  */
 static const char ip_frag_cache_name[] = "ip4-frags";
 
+/**
+ *  
+ */
 /* Describe an entry in the "incomplete datagrams" queue. */
 struct ipq {
 	struct inet_frag_queue q;
@@ -470,6 +473,9 @@ out_fail:
 	return err;
 }
 
+/**
+ *  IP 分段 从新组包，在传递给 L4
+ */
 /* Process an incoming IP datagram fragment. */
 int ip_defrag(struct net *net, struct sk_buff *skb, u32 user)
 {

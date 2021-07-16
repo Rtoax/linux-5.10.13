@@ -234,6 +234,9 @@ struct sk_buff *ip_make_skb(struct sock *sk, struct flowi4 *fl4,
 
 int ip_queue_xmit(struct sock *sk, struct sk_buff *skb, struct flowi *fl);
 
+/**
+ *  
+ */
 static inline struct sk_buff *ip_finish_skb(struct sock *sk, struct flowi4 *fl4)
 {
 	return __ip_make_skb(sk, fl4, &sk->sk_write_queue, &inet_sk(sk)->cork.base);
@@ -451,6 +454,9 @@ static inline unsigned int ip_dst_mtu_maybe_forward(const struct dst_entry *dst,
 	return min(READ_ONCE(dst->dev->mtu), IP_MAX_MTU);
 }
 
+/**
+ *  
+ */
 static inline unsigned int ip_skb_dst_mtu(struct sock *sk,
 					  const struct sk_buff *skb)
 {

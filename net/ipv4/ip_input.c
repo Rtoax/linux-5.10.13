@@ -144,6 +144,8 @@
 
 /*
  *	Process Router Attention IP option (RFC 2113)
+ *
+ *  强迫路由器处理 处理该封包(IP头 Router Alert选项)
  */
 bool ip_call_ra_chain(struct sk_buff *skb)
 {
@@ -236,6 +238,8 @@ static int ip_local_deliver_finish(struct net *net, struct sock *sk, struct sk_b
 
 /*
  * 	Deliver IP Packets to the higher protocol layers.
+ *
+ *  IP 重组分段后 传递给 L4
  */
 int ip_local_deliver(struct sk_buff *skb)
 {

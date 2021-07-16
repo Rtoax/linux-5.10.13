@@ -973,6 +973,9 @@ int udp_push_pending_frames(struct sock *sk)
 	if (!skb)
 		goto out;
 
+    /**
+     *  
+     */
 	err = udp_send_skb(skb, fl4, &inet->cork.base);
 
 out:
@@ -1019,6 +1022,9 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 }
 EXPORT_SYMBOL_GPL(udp_cmsg_send);
 
+/**
+ *  
+ */
 int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 {
 	struct inet_sock *inet = inet_sk(sk);
@@ -1040,6 +1046,9 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 	struct sk_buff *skb;
 	struct ip_options_data opt_copy;
 
+    /**
+     *  
+     */
 	if (len > 0xFFFF)
 		return -EMSGSIZE;
 
@@ -1159,7 +1168,10 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 		tos |= RTO_ONLINK;
 		connected = 0;
 	}
-
+        
+    /**
+     *  
+     */
 	if (ipv4_is_multicast(daddr)) {
 		if (!ipc.oif || netif_index_is_l3_master(sock_net(sk), ipc.oif))
 			ipc.oif = inet->mc_index;

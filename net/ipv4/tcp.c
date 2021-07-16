@@ -964,6 +964,10 @@ static void tcp_remove_empty_skb(struct sock *sk, struct sk_buff *skb)
 	}
 }
 
+/**
+ *  
+ * 涉及到 零拷贝 sendfile 2021年7月16日08:38:33
+ */
 ssize_t do_tcp_sendpages(struct sock *sk, struct page *page, int offset,
 			 size_t size, int flags)
 {
@@ -991,6 +995,9 @@ ssize_t do_tcp_sendpages(struct sock *sk, struct page *page, int offset,
 
 	sk_clear_bit(SOCKWQ_ASYNC_NOSPACE, sk);
 
+    /**
+     *  
+     */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 	copied = 0;
 

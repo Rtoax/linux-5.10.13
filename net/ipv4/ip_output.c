@@ -302,6 +302,9 @@ static int __ip_finish_output(struct net *net, struct sock *sk, struct sk_buff *
 	if (skb_is_gso(skb))
 		return ip_finish_output_gso(net, sk, skb, mtu);
 
+    /**
+     *  
+     */
 	if (skb->len > mtu || IPCB(skb)->frag_max_size)
 		return ip_fragment(net, sk, skb, mtu, ip_finish_output2);
 
@@ -571,12 +574,21 @@ static void ip_copy_metadata(struct sk_buff *to, struct sk_buff *from)
 	skb_copy_secmark(to, from);
 }
 
+/**
+ *  IP 分段
+ *
+ *  @skb: 包含要被分段的 IP 封包
+ *  @output: 用于传输片段的函数 -> ip_finish_output2()
+ */
 static int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 		       unsigned int mtu,
 		       int (*output)(struct net *, struct sock *, struct sk_buff *))
 {
 	struct iphdr *iph = ip_hdr(skb);
 
+    /**
+     *  
+     */
 	if ((iph->frag_off & htons(IP_DF)) == 0)
 		return ip_do_fragment(net, sk, skb, output);
 
@@ -590,6 +602,9 @@ static int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 		return -EMSGSIZE;
 	}
 
+    /**
+     *  
+     */
 	return ip_do_fragment(net, sk, skb, output);
 }
 
@@ -768,7 +783,12 @@ EXPORT_SYMBOL(ip_frag_next);
  *	a block of the data of the original IP data part) that will yet fit in a
  *	single device frame, and queue such a frame for sending.
  */
-
+/**
+ *  IP 分段
+ *
+ *  @skb: 包含要被分段的 IP 封包
+ *  @output: 用于传输片段的函数 -> 可能为 ip_finish_output2()
+ */
 int ip_do_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 		   int (*output)(struct net *, struct sock *, struct sk_buff *))
 {
@@ -792,6 +812,9 @@ int ip_do_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 
 	iph = ip_hdr(skb);
 
+    /**
+     *   目标 MTU  大小
+     */
 	mtu = ip_skb_dst_mtu(sk, skb);
 	if (IPCB(skb)->frag_max_size && IPCB(skb)->frag_max_size < mtu)
 		mtu = IPCB(skb)->frag_max_size;
@@ -956,6 +979,9 @@ csum_page(struct page *page, int offset, int copy)
 	return csum;
 }
 
+/**
+ *  
+ */
 static int __ip_append_data(struct sock *sk,
 			    struct flowi4 *fl4,
 			    struct sk_buff_head *queue,
@@ -1300,6 +1326,8 @@ static int ip_setup_cork(struct sock *sk, struct inet_cork *cork,
  *	this interface potentially.
  *
  *	LATER: length must be adjusted by pad at tail, when it is required.
+ *
+ *  由该函数构建的 IP 包不会被分段
  */
 int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 		   int getfrag(void *from, char *to, int offset, int len,
@@ -1314,6 +1342,9 @@ int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 	if (flags&MSG_PROBE)
 		return 0;
 
+    /**
+     *  
+     */
 	if (skb_queue_empty(&sk->sk_write_queue)) {
 		err = ip_setup_cork(sk, &inet->cork.base, ipc, rtp);
 		if (err)
@@ -1322,11 +1353,19 @@ int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 		transhdrlen = 0;
 	}
 
+    /**
+     *  
+     */
 	return __ip_append_data(sk, fl4, &sk->sk_write_queue, &inet->cork.base,
-				sk_page_frag(sk), getfrag,
-				from, length, transhdrlen, flags);
+            				sk_page_frag(sk), getfrag,
+            				from, length, transhdrlen, flags);
 }
 
+/**
+ *  
+ * UDP 使用?!
+ * 涉及到 零拷贝 sendfile 2021年7月16日08:38:33
+ */
 ssize_t	ip_append_page(struct sock *sk, struct flowi4 *fl4, struct page *page,
 		       int offset, size_t size, int flags)
 {
@@ -1485,6 +1524,9 @@ struct sk_buff *__ip_make_skb(struct sock *sk,
 	__be16 df = 0;
 	__u8 ttl;
 
+    /**
+     *  
+     */
 	skb = __skb_dequeue(queue);
 	if (!skb)
 		goto out;
@@ -1578,6 +1620,9 @@ int ip_send_skb(struct net *net, struct sk_buff *skb)
 	return err;
 }
 
+/**
+ *  
+ */
 int ip_push_pending_frames(struct sock *sk, struct flowi4 *fl4)
 {
 	struct sk_buff *skb;

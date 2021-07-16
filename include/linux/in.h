@@ -35,11 +35,17 @@ static inline int proto_ports_offset(int proto)
 	}
 }
 
+/**
+ *  回环
+ */
 static inline bool ipv4_is_loopback(__be32 addr)
 {
 	return (addr & htonl(0xff000000)) == htonl(0x7f000000);
 }
 
+/**
+ *  多播
+ */
 static inline bool ipv4_is_multicast(__be32 addr)
 {
 	return (addr & htonl(0xf0000000)) == htonl(0xe0000000);

@@ -83,6 +83,9 @@ static int ip_forward_finish(struct net *net, struct sock *sk, struct sk_buff *s
 	return dst_output(net, sk, skb);
 }
 
+/**
+ *  
+ */
 int ip_forward(struct sk_buff *skb)
 {
 	u32 mtu;
@@ -104,6 +107,13 @@ int ip_forward(struct sk_buff *skb)
 	if (!xfrm4_policy_check(NULL, XFRM_POLICY_FWD, skb))
 		goto drop;
 
+    /**
+     *  ip_call_ra_chain
+     *
+     *	Process Router Attention IP option (RFC 2113)
+     *
+     *  强迫路由器处理 处理该封包(IP头 Router Alert选项)
+     */
 	if (IPCB(skb)->opt.router_alert && ip_call_ra_chain(skb))
 		return NET_RX_SUCCESS;
 
