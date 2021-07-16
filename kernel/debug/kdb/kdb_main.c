@@ -145,6 +145,9 @@ static const int __nkdb_err = ARRAY_SIZE(kdbmsgs);
  * to __env[] if required) and a fixed amount of heap (add more to
  * KDB_ENVBUFSIZE if required).
  */
+/**
+ *  内核的环境变量
+ */
 
 static char *__env[] = {
 #if defined(CONFIG_SMP)
@@ -224,6 +227,8 @@ static inline bool kdb_check_flags(kdb_cmdflags_t flags, int permissions,
  * Returns:
  *	NULL	No environment variable matches 'match'
  *	char*	Pointer to string value of environment variable.
+ *
+ * 遍历全局 环境变量数据 查找
  */
 char *kdbgetenv(const char *match)
 {
@@ -237,6 +242,9 @@ char *kdbgetenv(const char *match)
 		if (!e)
 			continue;
 
+        /**
+         *  字符串对比
+         */
 		if ((strncmp(match, e, matchlen) == 0)
 		 && ((e[matchlen] == '\0')
 		   || (e[matchlen] == '='))) {
@@ -291,6 +299,9 @@ static int kdbgetulenv(const char *match, unsigned long *value)
 {
 	char *ep;
 
+    /**
+     *  从 全局 __env 中 strncmp 查找
+     */
 	ep = kdbgetenv(match);
 	if (!ep)
 		return KDB_NOTENV;
@@ -317,6 +328,9 @@ int kdbgetintenv(const char *match, int *value)
 	unsigned long val;
 	int diag;
 
+    /**
+     *  
+     */
 	diag = kdbgetulenv(match, &val);
 	if (!diag)
 		*value = (int) val;

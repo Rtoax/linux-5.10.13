@@ -542,6 +542,9 @@ static int kdb_search_string(char *searched, char *searchfor)
 	return 0;
 }
 
+/**
+ *  
+ */
 static void kdb_msg_write(const char *msg, int msg_len)
 {
 	struct console *c;
@@ -554,11 +557,17 @@ static void kdb_msg_write(const char *msg, int msg_len)
 	cp = msg;
 	len = msg_len;
 
+    /**
+     *  遍历
+     */
 	while (len--) {
 		dbg_io_ops->write_char(*cp);
 		cp++;
 	}
 
+    /**
+     *  遍历终端
+     */
 	for_each_console(c) {
 		if (!(c->flags & CON_ENABLED))
 			continue;
@@ -574,12 +583,22 @@ static void kdb_msg_write(const char *msg, int msg_len)
 		 * for this calling context.
 		 */
 		++oops_in_progress;
+        /**
+         *  向 console 写
+         */
 		c->write(c, msg, msg_len);
 		--oops_in_progress;
+
+        /**
+         *  
+         */
 		touch_nmi_watchdog();
 	}
 }
 
+/**
+ *  kgdb 开启情况下的 printk
+ */
 int vkdb_printf(enum kdb_msgsrc src, const char *fmt, va_list ap)
 {
 	int diag;
@@ -599,6 +618,10 @@ int vkdb_printf(enum kdb_msgsrc src, const char *fmt, va_list ap)
 	 */
 	local_irq_save(flags);
 	this_cpu = smp_processor_id();
+
+    /**
+     *  相当于获取 锁吧，多核情况下很有用
+     */
 	for (;;) {
 		old_cpu = cmpxchg(&kdb_printf_cpu, -1, this_cpu);
 		if (old_cpu == -1 || old_cpu == this_cpu)
@@ -607,23 +630,39 @@ int vkdb_printf(enum kdb_msgsrc src, const char *fmt, va_list ap)
 		cpu_relax();
 	}
 
+    /**
+     *  行
+     */
 	diag = kdbgetintenv("LINES", &linecount);
 	if (diag || linecount <= 1)
 		linecount = 24;
 
+    /**
+     *  列
+     */
 	diag = kdbgetintenv("COLUMNS", &colcount);
 	if (diag || colcount <= 1)
 		colcount = 80;
 
+    /**
+     *  
+     */
 	diag = kdbgetintenv("LOGGING", &logging);
 	if (diag)
 		logging = 0;
 
+    /**
+     *  获取 buffer
+     */
 	if (!kdb_grepping_flag || suspend_grep) {
 		/* normally, every vsnprintf starts a new buffer */
 		next_avail = kdb_buffer;
 		size_avail = sizeof(kdb_buffer);
 	}
+
+    /**
+     *  写入 buffer 中
+     */
 	vsnprintf(next_avail, size_avail, fmt, ap);
 
 	/*
@@ -634,6 +673,9 @@ int vkdb_printf(enum kdb_msgsrc src, const char *fmt, va_list ap)
 	 * (vsnprintf does null-terminate the string that it generates)
 	 */
 
+    /**
+     *  
+     */
 	/* skip the search if prints are temporarily unconditional */
 	if (!suspend_grep && kdb_grepping_flag) {
 		cp = strchr(kdb_buffer, '\n');
@@ -856,6 +898,9 @@ kdb_print_out:
 	return retlen;
 }
 
+/**
+ *  
+ */
 int kdb_printf(const char *fmt, ...)
 {
 	va_list ap;

@@ -157,7 +157,7 @@ void raid6_dual_recov(int disks, size_t bytes, int faila, int failb,
 #ifndef __KERNEL__
 
 # define jiffies	raid6_jiffies()
-# define printk 	printf
+//# define printk 	printf
 # define pr_err(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
 # define pr_info(format, ...) fprintf(stdout, format, ## __VA_ARGS__)
 # define GFP_KERNEL	0

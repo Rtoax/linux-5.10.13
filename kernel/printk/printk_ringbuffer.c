@@ -1476,6 +1476,8 @@ static void desc_make_final(struct prb_desc_ring *desc_ring, unsigned long id)
  * Important: @info->text_len needs to be set correctly by the writer in
  *            order for data to be readable and/or extended. Its value
  *            is initialized to 0.
+ *
+ * 从 buffer 中预留
  */
 bool prb_reserve(struct prb_reserved_entry *e, struct printk_ringbuffer *rb,
 		 struct printk_record *r)
@@ -1630,6 +1632,9 @@ void prb_commit(struct prb_reserved_entry *e)
 	struct prb_desc_ring *desc_ring = &e->rb->desc_ring;
 	unsigned long head_id;
 
+    /**
+     *  printk 的 预留后的 提交，表明 buffer 可以进一步处理了
+     */
 	_prb_commit(e, desc_committed);
 
 	/*

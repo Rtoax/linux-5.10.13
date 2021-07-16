@@ -417,9 +417,13 @@ static u64 clear_seq;
 
 /* record buffer */
 #define LOG_ALIGN __alignof__(unsigned long)
-#define __LOG_BUF_LEN (1 << CONFIG_LOG_BUF_SHIFT)
+#define __LOG_BUF_LEN (1 << CONFIG_LOG_BUF_SHIFT)   //1MB
 #define LOG_BUF_LEN_MAX (u32)(1 << 31)
-static char __aligned(LOG_ALIGN) __log_buf[__LOG_BUF_LEN] ;
+
+/**
+ *  printk 的静态 buffer 是非常大的, 有 1MB
+ */
+static char __aligned(LOG_ALIGN) __log_buf[__LOG_BUF_LEN] ;//1MB
 static char *log_buf = __log_buf;
 static u32 log_buf_len = __LOG_BUF_LEN;
 
@@ -433,11 +437,17 @@ static u32 log_buf_len = __LOG_BUF_LEN;
 #if CONFIG_LOG_BUF_SHIFT <= PRB_AVGBITS
 #error CONFIG_LOG_BUF_SHIFT value too small.
 #endif
-_DEFINE_PRINTKRB(printk_rb_static, CONFIG_LOG_BUF_SHIFT - PRB_AVGBITS,
-		 PRB_AVGBITS, &__log_buf[0]);
+
+/**
+ *  printk 的静态 buffer
+ */
+_DEFINE_PRINTKRB(printk_rb_static, CONFIG_LOG_BUF_SHIFT - PRB_AVGBITS, PRB_AVGBITS, &__log_buf[0]);
 
 static struct printk_ringbuffer printk_rb_dynamic;
 
+/**
+ *  
+ */
 static struct printk_ringbuffer *prb = &printk_rb_static;
 
 /*
@@ -491,11 +501,14 @@ static void truncate_msg(u16 *text_len, u16 *trunc_msg_len)
 		*trunc_msg_len = 0;
 }
 
+/**
+ *  将记录 写入 buffer 中
+ */
 /* insert record into the buffer, discard old ones, update heads */
 static int log_store(u32 caller_id, int facility, int level,
-		     enum log_flags flags, u64 ts_nsec,
-		     const struct dev_printk_info *dev_info,
-		     const char *text, u16 text_len)
+         		     enum log_flags flags, u64 ts_nsec,
+         		     const struct dev_printk_info *dev_info,
+         		     const char *text, u16 text_len)
 {
 	struct prb_reserved_entry e;
 	struct printk_record r;
@@ -503,7 +516,14 @@ static int log_store(u32 caller_id, int facility, int level,
 
 	prb_rec_init_wr(&r, text_len);
 
+    /**
+     *  从 buffer 中预留
+     */
 	if (!prb_reserve(&e, prb, &r)) {
+
+        /**
+         *  太长就截断
+         */
 		/* truncate the message if it is too long for empty buffer */
 		truncate_msg(&text_len, &trunc_msg_len);
 		prb_rec_init_wr(&r, text_len + trunc_msg_len);
@@ -516,6 +536,10 @@ static int log_store(u32 caller_id, int facility, int level,
 	memcpy(&r.text_buf[0], text, text_len);
 	if (trunc_msg_len)
 		memcpy(&r.text_buf[text_len], trunc_msg, trunc_msg_len);
+
+    /**
+     *  
+     */
 	r.info->text_len = text_len + trunc_msg_len;
 	r.info->facility = facility;
 	r.info->level = level & 7;
@@ -528,6 +552,9 @@ static int log_store(u32 caller_id, int facility, int level,
 	if (dev_info)
 		memcpy(&r.info->dev_info, dev_info, sizeof(r.info->dev_info));
 
+    /**
+     *  写完就提交
+     */
 	/* A message without a trailing newline can be continued. */
 	if (!(flags & LOG_NEWLINE))
 		prb_commit(&e);
@@ -1933,6 +1960,9 @@ static inline u32 printk_caller_id(void)
 		0x80000000 + raw_smp_processor_id();
 }
 
+/**
+ *  
+ */
 static size_t log_output(int facility, int level, enum log_flags lflags,
 			 const struct dev_printk_info *dev_info,
 			 char *text, size_t text_len)
@@ -1957,16 +1987,25 @@ static size_t log_output(int facility, int level, enum log_flags lflags,
 		}
 	}
 
+    /**
+     *  
+     */
 	/* Store it in the record log */
 	return log_store(caller_id, facility, level, lflags, 0,
-			 dev_info, text, text_len);
+			         dev_info, text, text_len);
 }
 
+/**
+ *  
+ */
 /* Must be called under logbuf_lock. */
 int vprintk_store(int facility, int level,
 		  const struct dev_printk_info *dev_info,
 		  const char *fmt, va_list args)
 {
+    /**
+     *  静态字符串
+     */
 	static char textbuf[LOG_LINE_MAX];
 	char *text = textbuf;
 	size_t text_len;
@@ -2009,9 +2048,15 @@ int vprintk_store(int facility, int level,
 	if (dev_info)
 		lflags |= LOG_NEWLINE;
 
+    /**
+     *  输出这条 日志
+     */
 	return log_output(facility, level, lflags, dev_info, text, text_len);
 }
 
+/**
+ *  
+ */
 asmlinkage int vprintk_emit(int facility, int level,
 			    const struct dev_printk_info *dev_info,
 			    const char *fmt, va_list args)
@@ -2034,6 +2079,10 @@ asmlinkage int vprintk_emit(int facility, int level,
 
 	/* This stops the holder of console_sem just where we want him */
 	logbuf_lock_irqsave(flags);
+
+    /**
+     *  vprintk
+     */
 	printed_len = vprintk_store(facility, level, dev_info, fmt, args);
 	logbuf_unlock_irqrestore(flags);
 
@@ -2066,6 +2115,9 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 }
 EXPORT_SYMBOL(vprintk);
 
+/**
+ *  
+ */
 int vprintk_default(const char *fmt, va_list args)
 {
 	return vprintk_emit(0, LOGLEVEL_DEFAULT, NULL, fmt, args);
@@ -2092,6 +2144,8 @@ EXPORT_SYMBOL_GPL(vprintk_default);
  * printf(3)
  *
  * See the vsnprintf() documentation for format string extensions over C99.
+ *
+ * printk
  */
 asmlinkage __visible int printk(const char *fmt, ...)
 {
@@ -2099,6 +2153,9 @@ asmlinkage __visible int printk(const char *fmt, ...)
 	int r;
 
 	va_start(args, fmt);
+    /**
+     *  printk
+     */
 	r = vprintk_func(fmt, args);
 	va_end(args);
 

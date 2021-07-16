@@ -299,6 +299,9 @@ struct tty_operations { /*  */
 	int (*proc_show)(struct seq_file *, void *);
 } __randomize_layout;
 
+/**
+ *  
+ */
 struct tty_driver { /*  */
 	int	magic;		/* magic number for this structure */
 	struct kref kref;	/* Reference management */
