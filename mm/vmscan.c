@@ -151,14 +151,24 @@ struct scan_control {
 	/* Number of pages freed so far during a call to shrink_zones() */
 	unsigned long nr_reclaimed; /* 已经回收页面的数量 */
 
+    /**
+     *  在页面回收过程中，可能会遇到如下问题
+     **
+     *  1. 大量脏页
+     *  2. 大量正在回写的页面阻塞在块设备的IO通道上
+     *
+     **
+     *  以上的问题会严重影响页面回收机制的性能，设置应用程序的用户体验，
+     *  为了捕获这些信息，页面回收机制在 scan_control 的 nr 结构来统计信息
+     */
 	struct {
-		unsigned int dirty;
-		unsigned int unqueued_dirty;
-		unsigned int congested;
-		unsigned int writeback;
-		unsigned int immediate;
-		unsigned int file_taken;
-		unsigned int taken;
+		unsigned int dirty;         /* 脏页的数量 */
+		unsigned int unqueued_dirty;/* 还没有回写的脏页 */
+		unsigned int congested;     /* congested(拥挤) 块设备IO数据回写 */
+		unsigned int writeback;     /* 正在回写的数量 */
+		unsigned int immediate;     /* 立刻做出特殊处理 */
+		unsigned int file_taken;    /* 分离的文件页面数量 */  
+		unsigned int taken;         /* 分离的页面数量 */
 	} nr;   /* 用于统计数量 */
 
 	/* for recording the reclaimed slab by now */
@@ -2257,6 +2267,8 @@ static unsigned noinline_for_stack move_pages_to_lru(struct lruvec *lruvec, stru
  * a backing device by writing to the page cache it sets PF_LOCAL_THROTTLE.
  * In that case we should only throttle if the backing device it is
  * writing to is congested.  In other cases it is safe to throttle.
+ *
+ * 块设备IO需要节流
  */
 static int current_may_throttle(void)
 {
@@ -3403,7 +3415,7 @@ again:
 	}
 
     /**
-     *  
+     *  基于内存节点的 页面回收
      */
     /* 回收页面 */
 	shrink_node_memcgs(pgdat, sc);
@@ -3451,16 +3463,24 @@ again:
 		 * in the nr_immediate check below.
 		 */
 		/**
-         *  有大连该页面证等待 回写 到磁盘
+         *  如果有回写的页面，并且 回写页面==扫描数
+         *  
          */
 		if (sc->nr.writeback && sc->nr.writeback == sc->nr.taken)
+            /**
+             *  设置该节点 有大量该页面正等待 回写 到磁盘
+             */
 			set_bit(PGDAT_WRITEBACK, &pgdat->flags);
 
         /**
          *  发现有大量的脏文件页面
+         *  还没有回写的脏页数 == 扫描的文件映射数
          */
 		/* Allow kswapd to start writing pages during reclaim.*/
 		if (sc->nr.unqueued_dirty == sc->nr.file_taken)
+            /**
+             *  标记该节点 有大量的脏页面等待回写
+             */
 			set_bit(PGDAT_DIRTY, &pgdat->flags);
 
 		/*
@@ -3468,9 +3488,11 @@ again:
 		 * reclaim and under writeback (nr_immediate), it
 		 * implies that pages are cycling through the LRU
 		 * faster than they are written so also forcibly stall.
+		 *
+		 * 立刻做出处理
 		 */
 		if (sc->nr.immediate)
-			congestion_wait(BLK_RW_ASYNC, HZ/10);
+			congestion_wait(BLK_RW_ASYNC, HZ/10);//等待 100ms
 	}
 
 	/*
@@ -3491,11 +3513,13 @@ again:
 	 * and node is congested. Allow kswapd to continue until it
 	 * starts encountering unqueued dirty pages or cycling through
 	 * the LRU too quickly.
+	 *
+	 * current_may_throttle: 块设备IO需要节流
 	 */
 	if (!current_is_kswapd() && current_may_throttle() &&
 	    !sc->hibernation_mode &&
 	    test_bit(LRUVEC_CONGESTED, &target_lruvec->flags))
-		wait_iff_congested(BLK_RW_ASYNC, HZ/10);
+		wait_iff_congested(BLK_RW_ASYNC, HZ/10); //等待 100ms
 
     /**
      *  如果已回收 的页面数量 sc->nr_reclaimed 小于 (2<<sc->order)

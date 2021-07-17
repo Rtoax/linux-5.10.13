@@ -931,6 +931,8 @@ EXPORT_SYMBOL(set_bdi_congested);
  * Waits for up to @timeout jiffies for a backing_dev (any backing_dev) to exit
  * write congestion.  If no backing_devs are congested then just wait for the
  * next write to be completed.
+ *
+ * congestion(拥塞)
  */
 long congestion_wait(int sync, long timeout)
 {
@@ -940,6 +942,10 @@ long congestion_wait(int sync, long timeout)
 	wait_queue_head_t *wqh = &congestion_wqh[sync];
 
 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
+
+    /**
+     *  
+     */
 	ret = io_schedule_timeout(timeout);
 	finish_wait(wqh, &wait);
 
