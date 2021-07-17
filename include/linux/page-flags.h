@@ -1217,6 +1217,9 @@ static __always_inline void __SetPageReserved(struct page *page) {
     })->flags); 
     }
 
+/**
+ *  
+ */
 static __always_inline int PageSwapBacked(struct page *page) { 
     return test_bit(PG_swapbacked, &({ VM_BUG_ON_PGFLAGS(0 && PageTail(page), page); 
     ({ VM_BUG_ON_PGFLAGS(PagePoisoned(compound_head(page)), compound_head(page)); 
@@ -1464,6 +1467,9 @@ PAGEFLAG_FALSE(HighMem)
 {}
 
 #ifdef CONFIG_SWAP
+/**
+ *  已经为页面分配了 交换空间
+ */
 static __always_inline int PageSwapCache(struct page *page)
 {
 #ifdef CONFIG_THP_SWAP

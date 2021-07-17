@@ -137,6 +137,9 @@ static inline int page_ref_dec_return(struct page *page)
 	return ret;
 }
 
+/**
+ *  
+ */
 static inline int page_ref_add_unless(struct page *page, int nr, int u)
 {
 	int ret = atomic_add_unless(&page->_refcount, nr, u);
@@ -146,6 +149,9 @@ static inline int page_ref_add_unless(struct page *page, int nr, int u)
 	return ret;
 }
 
+/**
+ *  
+ */
 static inline int page_ref_freeze(struct page *page, int count)
 {
 	int ret = likely(atomic_cmpxchg(&page->_refcount, count, 0) == count);

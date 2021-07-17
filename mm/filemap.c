@@ -3500,7 +3500,7 @@ EXPORT_SYMBOL(generic_file_write_iter);
  *
  * Return: %1 if the release was successful, otherwise return zero.
  *
- * 释放缓冲区页
+ * 释放 页面用于块设备的 buffer_head 缓冲区页
  */
 int try_to_release_page(struct page *page, gfp_t gfp_mask)
 {
@@ -3512,6 +3512,10 @@ int try_to_release_page(struct page *page, gfp_t gfp_mask)
 
 	if (mapping && mapping->a_ops->releasepage)
 		return mapping->a_ops->releasepage(page, gfp_mask);
+
+    /**
+     *  释放 buffer_head 缓存
+     */
 	return try_to_free_buffers(page);
 }
 

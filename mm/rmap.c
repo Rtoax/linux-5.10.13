@@ -1942,7 +1942,7 @@ static int page_mapcount_is_zero(struct page *page)
  * If unmap is successful, return true. Otherwise, false.
  *
  * 试图 将 映射到这个 物理 页面 的 映射移除
- *
+ *  解除用户映射 PTE
  */
 bool try_to_unmap(struct page *page, enum ttu_flags flags)
 {

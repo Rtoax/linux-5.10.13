@@ -212,6 +212,8 @@ void __delete_from_swap_cache(struct page *page,
  *
  * Allocate swap space for the page and add the page to the
  * swap cache.  Caller needs to hold the page lock. 
+ *
+ * 分配交换空间
  */
 int add_to_swap(struct page *page)
 {
@@ -221,6 +223,9 @@ int add_to_swap(struct page *page)
 	VM_BUG_ON_PAGE(!PageLocked(page), page);
 	VM_BUG_ON_PAGE(!PageUptodate(page), page);
 
+    /**
+     *  
+     */
 	entry = get_swap_page(page);
 	if (!entry.val)
 		return 0;

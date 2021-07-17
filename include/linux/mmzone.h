@@ -267,7 +267,7 @@ enum lru_list { /* 最近最少使用 list */
 	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,    /* 不可驱逐, 见 AS_UNEVICTABLE */
+	LRU_UNEVICTABLE,    /* 不可驱逐/不可回收, 见 AS_UNEVICTABLE */
 	NR_LRU_LISTS
 };
 
@@ -324,11 +324,14 @@ struct lruvec {
 #endif
 };
 
-/* Isolate unmapped pages */
+/**
+ *  分离页面的类型
+ */
+/* Isolate unmapped pages 分离没有映射的页面 */
 #define ISOLATE_UNMAPPED	((__force isolate_mode_t)0x2)
-/* Isolate for asynchronous migration */
+/* Isolate for asynchronous migration 分离异步合并的页面 */
 #define ISOLATE_ASYNC_MIGRATE	((__force isolate_mode_t)0x4)
-/* Isolate unevictable pages */
+/* Isolate unevictable pages 分离不可回收的页面 */
 #define ISOLATE_UNEVICTABLE	((__force isolate_mode_t)0x8)
 
 /* LRU Isolation modes. */
@@ -704,15 +707,25 @@ struct zone {   /* 内存 ZONE */
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
+
 enum pgdat_flags {
+    /**
+	 *  有大量的的 脏页面
+	 */
 	PGDAT_DIRTY,	 /* reclaim scanning has recently found
 					 * many dirty file pages at the tail
 					 * of the LRU.
 					 */
+	/**
+	 *  有大量的的 页面 正在 回写
+	 */
 	PGDAT_WRITEBACK, /* reclaim scanning has recently found
 					 * many pages under writeback
 					 */
-	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
+	/**
+	 *  防止并发回收
+	 */
+	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim 防止并发回收 */
 };
 
 enum zone_flags {

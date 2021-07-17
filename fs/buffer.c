@@ -3224,6 +3224,9 @@ failed:
 	return 0;
 }
 
+/**
+ *  释放 页面用于块设备的 buffer_head 缓存
+ */
 int try_to_free_buffers(struct page *page)
 {
 	struct address_space * const mapping = page->mapping;

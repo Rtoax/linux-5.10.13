@@ -2793,9 +2793,14 @@ EXPORT_SYMBOL(__test_set_page_writeback);
 
 /*
  * Wait for a page to complete writeback
+ *
+ * 睡眠等待回写完成
  */
 void wait_on_page_writeback(struct page *page)
 {
+    /**
+     *  页面在回写，那么就 while(1)
+     */
 	while (PageWriteback(page)) {
 		trace_wait_on_page_writeback(page, page_mapping(page));
 		wait_on_page_bit(page, PG_writeback);
