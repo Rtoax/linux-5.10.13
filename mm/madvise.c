@@ -1158,6 +1158,11 @@ out:
 	return error;
 }
 
+/**
+ *  madvise(2) 系统调用
+ *
+ *  
+ */
 int madvise(void *addr, size_t length, int advice);
 SYSCALL_DEFINE3(madvise, unsigned long, start, size_t, len_in, int, behavior)
 {
