@@ -12,6 +12,9 @@
  *	callback and is likely using a DMA engine. See migrate_vma() and HMM
  *	(mm/hmm.c) for users of this mode.
  */
+/**
+ *  迁移模式
+ */
 enum migrate_mode {
 	MIGRATE_ASYNC,
 	MIGRATE_SYNC_LIGHT,

@@ -127,6 +127,9 @@ int PageMovable(struct page *page)
 }
 EXPORT_SYMBOL(PageMovable);
 
+/**
+ *  
+ */
 void __SetPageMovable(struct page *page, struct address_space *mapping)
 {
 	VM_BUG_ON_PAGE(!PageLocked(page), page);
@@ -135,6 +138,9 @@ void __SetPageMovable(struct page *page, struct address_space *mapping)
 }
 EXPORT_SYMBOL(__SetPageMovable);
 
+/**
+ *  
+ */
 void __ClearPageMovable(struct page *page)
 {
 	VM_BUG_ON_PAGE(!PageLocked(page), page);

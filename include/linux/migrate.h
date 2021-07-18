@@ -7,6 +7,11 @@
 #include <linux/migrate_mode.h>
 #include <linux/hugetlb.h>
 
+/**
+ *  页面迁移用到的函数 指针
+ *
+ *  分配和释放
+ */
 typedef struct page *new_page_t(struct page *page, unsigned long private);
 typedef void free_page_t(struct page *page, unsigned long private);
 

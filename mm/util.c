@@ -695,6 +695,11 @@ struct anon_vma *page_anon_vma(struct page *page)   /* 获取 anon_vma 结构 */
 
 /**
  *  返回 page->mapping 成员指向的地址空间
+ *
+ * @返回值：
+ *  1. 页面为 匿名页面 但是没有 分配交换缓存， 返回 NULL
+ *  2. 页面为 匿名页面 并且分配了交换缓存，那么 mapping 会指向 交换缓存
+ *  3. 页面为 文件映射 页面，那么 mapping 指向文件映射对应的地址空间
  */
 struct address_space *page_mapping(struct page *page)
 {

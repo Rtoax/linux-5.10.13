@@ -345,14 +345,18 @@ static inline void copy_user_highpage(struct page *to, struct page *from,   /*  
 #endif
 
 #ifndef __HAVE_ARCH_COPY_HIGHPAGE
-
+/**
+ *  复制 页面内容到新的页面，这里会使用两个 kmap 函数来映射这两个页面
+ */
 static inline void copy_highpage(struct page *to, struct page *from)
 {
 	char *vfrom, *vto;
 
 	vfrom = kmap_atomic(from);
 	vto = kmap_atomic(to);
+    
 	copy_page(vto, vfrom);
+    
 	kunmap_atomic(vto);
 	kunmap_atomic(vfrom);
 }

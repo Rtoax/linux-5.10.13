@@ -266,6 +266,9 @@ bool try_to_unmap(struct page *, enum ttu_flags flags);
 /* Look for migarion entries rather than present PTEs */
 #define PVMW_MIGRATION		(1 << 1)
 
+/**
+ *  
+ */
 struct page_vma_mapped_walk {
 	struct page *page;
 	struct vm_area_struct *vma;

@@ -157,6 +157,9 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	if (pvmw->pte)
 		goto next_pte;
 
+    /**
+     *  
+     */
 	if (unlikely(PageHuge(pvmw->page))) {
 		/* when pud is not present, pte will be NULL */
 		pvmw->pte = huge_pte_offset(mm, pvmw->address, page_size(page));
@@ -171,6 +174,9 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	}
     
 restart:
+    /**
+     *  
+     */
 	pgd = pgd_offset(mm, pvmw->address);
 	if (!pgd_present(*pgd))
 		return false;
@@ -187,8 +193,17 @@ restart:
 	 * subsequent update.
 	 */
 	pmde = READ_ONCE(*pvmw->pmd);
+
+    /**
+     *  
+     */
 	if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde)) {
+        
 		pvmw->ptl = pmd_lock(mm, pvmw->pmd);
+
+        /**
+         *  
+         */
 		if (likely(pmd_trans_huge(*pvmw->pmd))) {
 			if (pvmw->flags & PVMW_MIGRATION)
 				return not_found(pvmw);

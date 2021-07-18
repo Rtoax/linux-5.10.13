@@ -1242,8 +1242,7 @@ static struct page *new_page(struct page *page, unsigned long start)
 	/*
 	 * if !vma, alloc_page_vma() will use task or system default policy
 	 */
-	return alloc_page_vma(GFP_HIGHUSER_MOVABLE | __GFP_RETRY_MAYFAIL,
-			vma, address);
+	return alloc_page_vma(GFP_HIGHUSER_MOVABLE | __GFP_RETRY_MAYFAIL, vma, address);
 }
 #else
 /**/

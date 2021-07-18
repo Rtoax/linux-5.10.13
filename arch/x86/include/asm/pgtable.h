@@ -1035,6 +1035,12 @@ static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
 	return res;
 }
 
+/**
+ *  把 新生成的 PTE 的内容写回到 原来映射 的页表(ptep)中,
+ *
+ *  例如在页面迁移过程: 
+ *      完成 PTE 迁移，这样用户进程 地址空间就可以 通过原来的 PTE 访问新页面
+ */
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pte)   /*  */
 {

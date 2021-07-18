@@ -571,6 +571,8 @@ void __init anon_vma_init(void) /* 从 salb 分配 */
  * page_remove_rmap() that the anon_vma pointer from page->mapping is valid
  * if there is a mapcount, we can dereference the anon_vma after observing
  * those.
+ *
+ * 获取匿名页面 的 AV 结构
  */
 struct anon_vma *page_get_anon_vma(struct page *page)
 {
@@ -1946,11 +1948,15 @@ static int page_mapcount_is_zero(struct page *page)
  */
 bool try_to_unmap(struct page *page, enum ttu_flags flags)
 {
+    
+    /**
+     *  
+     */
 	struct rmap_walk_control rwc = {
-		.rmap_one = try_to_unmap_one,
-		.arg = (void *)flags,
-		.done = page_mapcount_is_zero,
-		.anon_lock = page_lock_anon_vma_read,
+		rwc.rmap_one = try_to_unmap_one,
+		rwc.arg = (void *)flags,
+		rwc.done = page_mapcount_is_zero,
+		rwc.anon_lock = page_lock_anon_vma_read,
 	};
 
 	/*

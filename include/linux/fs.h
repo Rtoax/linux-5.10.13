@@ -364,7 +364,13 @@ typedef struct {
 typedef int (*read_actor_t)(read_descriptor_t *, struct page *,
 		unsigned long, unsigned long);
 
+/**
+ *  交换缓存 地址空间 操作符 / 地址空间方法集
+ */
 struct address_space_operations {
+    /**
+     *  
+     */
 	int (*writepage)(struct page *page, struct writeback_control *wbc);
 	int (*readpage)(struct file *, struct page *);
 
@@ -379,15 +385,15 @@ struct address_space_operations {
 	 * PURELY used for read-ahead!.
 	 */
 	int (*readpages)(struct file *filp, struct address_space *mapping,
-			struct list_head *pages, unsigned nr_pages);
+			        struct list_head *pages, unsigned nr_pages);
 	void (*readahead)(struct readahead_control *);
 
 	int (*write_begin)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len, unsigned flags,
-				struct page **pagep, void **fsdata);
+        				loff_t pos, unsigned len, unsigned flags,
+        				struct page **pagep, void **fsdata);
 	int (*write_end)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len, unsigned copied,
-				struct page *page, void *fsdata);
+        				loff_t pos, unsigned len, unsigned copied,
+        				struct page *page, void *fsdata);
 
 	/* Unfortunately this kludge is needed for FIBMAP. Don't use it */
 	sector_t (*bmap)(struct address_space *, sector_t);
@@ -395,23 +401,37 @@ struct address_space_operations {
 	int (*releasepage) (struct page *, gfp_t);
 	void (*freepage)(struct page *);
 	ssize_t (*direct_IO)(struct kiocb *, struct iov_iter *iter);
+    
 	/*
 	 * migrate the contents of a page to the specified target. If
 	 * migrate_mode is MIGRATE_ASYNC, it must not block.
+	 *
+	 * 页面迁移
+	 *
+	 * 如果 一个驱动想支持 页面迁移，那么他必须在页面 地址空间方法集中实现下面三个函数
+	 *
+	 * 1. isolate_page 分离页面
+	 *      isolate_movable_page() 中将调用
+	 *
+	 * 2. migratepage 迁移页面
+	 *      
+	 * 3. putback_page 迁移失败时，将页面迁移回原来的地方。
+	 *  
 	 */
 	int (*migratepage) (struct address_space *,
-			struct page *, struct page *, enum migrate_mode);
+			            struct page *, struct page *, enum migrate_mode);
 	bool (*isolate_page)(struct page *, isolate_mode_t);
 	void (*putback_page)(struct page *);
+    
 	int (*launder_page) (struct page *);
 	int (*is_partially_uptodate) (struct page *, unsigned long,
-					unsigned long);
+					            unsigned long);
 	void (*is_dirty_writeback) (struct page *, bool *, bool *);
 	int (*error_remove_page)(struct address_space *, struct page *);
 
 	/* swapfile support */
 	int (*swap_activate)(struct swap_info_struct *sis, struct file *file,
-				sector_t *span);
+				        sector_t *span);
 	void (*swap_deactivate)(struct file *file);
 };
 

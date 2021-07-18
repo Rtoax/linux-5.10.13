@@ -186,6 +186,12 @@ enum pageflags {
 
 	/* Only valid for buddy pages. Used to track pages that are reported */
 	PG_reported = PG_uptodate,
+
+    /**
+     *  下面是我加的内容
+     */
+    PG_movable = /* page->mapping 低两位, see __PageMovable() */,
+    
 };
 
 #ifndef __GENERATING_BOUNDS_H
@@ -1343,7 +1349,9 @@ static __always_inline int TestClearPageOwnerPriv1(struct page *page) {
 
 
 
-
+/**
+ *   正在回写 页面
+ */
 static __always_inline int PageWriteback(struct page *page) { 
     return test_bit(PG_writeback, &({ VM_BUG_ON_PGFLAGS(0 && PageTail(page), page); 
     ({ VM_BUG_ON_PGFLAGS(PagePoisoned(compound_head(page)), compound_head(page)); 
@@ -1735,6 +1743,11 @@ static __always_inline int PageAnon(struct page *page)  /* 匿名页面: malloc/
 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
 }
 
+/**
+ *  页面是否 可 移动/迁移，也就是是否属于 LRU 页面
+ *
+ *  非 LRU 页面指代一些特殊页面，比如 zsmalloc 分配的页面
+ */
 static __always_inline int __PageMovable(struct page *page)
 {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) ==
