@@ -1411,10 +1411,23 @@ out:
  * or free list only if ret != 0.
  *
  * Returns the number of pages that were not migrated, or an error code.
+ *
+ * 页面迁移主函数
+ *
+ * 迁移一个进程的所有页面到制定内存节点上。
+ *
+ *  起初，页面迁移是为了适配 NUMA 架构，
+ *  现在，页面迁移也可以用于 内存规整，内存热插拔等。
+ *
+ * 注意此接口 和 系统调用接口区分
+ * ---------------------------------------------------------------------
+ * long migrate_pages(int pid, unsigned long maxnode,
+ *                        const unsigned long *old_nodes,
+ *                        const unsigned long *new_nodes);
  */
 int migrate_pages(struct list_head *from, new_page_t get_new_page,
-		free_page_t put_new_page, unsigned long private,
-		enum migrate_mode mode, int reason)
+            		free_page_t put_new_page, unsigned long private,
+            		enum migrate_mode mode, int reason)
 {
 	int retry = 1;
 	int thp_retry = 1;
@@ -1433,7 +1446,11 @@ int migrate_pages(struct list_head *from, new_page_t get_new_page,
 	if (!swapwrite)
 		current->flags |= PF_SWAPWRITE;
 
+    /**
+     *  
+     */
 	for (pass = 0; pass < 10 && (retry || thp_retry); pass++) {
+        
 		retry = 0;
 		thp_retry = 0;
 
