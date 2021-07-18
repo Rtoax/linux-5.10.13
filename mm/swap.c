@@ -440,6 +440,8 @@ static void __lru_cache_activate_page(struct page *page)
  *
  * When a newly allocated page is not yet visible, so safe for non-atomic ops,
  * __SetPageReferenced(page) may be substituted for mark_page_accessed(page).
+ *
+ * 当不活跃链表中的 page 被再次读取时，会调用
  */
 void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 {
@@ -467,6 +469,11 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 
         /* 清除   PG_referenced 位*/
 		ClearPageReferenced(page);
+
+        /**
+         *  第二次访问会调用此函数
+         *  
+         */
 		workingset_activation(page);
 	}
     

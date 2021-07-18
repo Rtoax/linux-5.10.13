@@ -431,6 +431,7 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
 
 /**
  * struct address_space - Contents of a cacheable, mappable object.
+ *
  * @host: Owner, either the inode or the block_device.
  * @i_pages: Cached pages.
  * @gfp_mask: Memory allocation flags to use for allocating pages.
@@ -452,6 +453,10 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
  */
 struct address_space {  
 	struct inode		*host;      /* owner: inode, block_device拥有它的节点 */
+
+    /**
+     *  cache pages
+     */
 	struct xarray		i_pages;
 	gfp_t			    gfp_mask;
 	atomic_t		    i_mmap_writable;

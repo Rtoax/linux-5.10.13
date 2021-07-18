@@ -18,6 +18,7 @@
 #include <linux/mm.h>
 
 /*
+ ********************************************************************
  *		Double CLOCK lists
  *
  * Per node, two clock lists are maintained for file pages: the
@@ -28,6 +29,11 @@
  * whereas active pages are demoted to the inactive list when the
  * active list grows too big.
  *
+ * 每个节点为文件页维护两个时钟列表：非活动列表 和 活动列表。 
+ * 新出现的 fault 页面从非活动列表的头部开始，页面回收从尾部开始扫描页面。 
+ * 在非活动列表上多次访问的页面被提升到活动列表，以保护它们不被回收，
+ * 而当活动列表增长过大时，活动页面被降级到非活动列表。
+ *
  *   fault ------------------------+
  *                                 |
  *              +--------------+   |            +-------------+
@@ -35,23 +41,33 @@
  *              +--------------+                +-------------+    |
  *                     |                                           |
  *                     +-------------- promotion ------------------+
+ *                                      (升级)
  *
- *
+ ********************************************************************
+ *      访问频率和 Refault 距离
  *		Access frequency and refault distance
  *
  * A workload is thrashing when its pages are frequently used but they
  * are evicted from the inactive list every time before another access
  * would have promoted them to the active list.
  *
+ * 当工作负载的页面被频繁使用时，工作负载正在##`抖动`##，
+ * 但每次在另一个访问将它们提升到活动列表之前，它们都会被从非活动列表中逐出。
+ *
  * In cases where the average access distance between thrashing pages
  * is bigger than the size of memory there is nothing that can be
  * done - the thrashing set could never fit into memory under any
  * circumstance.
  *
+ * 如果抖动页面之间的平均访问距离大于内存大小，则无能为力, 抖动集在任何情况下都无法放入内存。
+ *
  * However, the average access distance could be bigger than the
  * inactive list, yet smaller than the size of memory.  In this case,
  * the set could fit into memory if it weren't for the currently
  * active pages - which may be used more, hopefully less frequently:
+ *
+ * 然而，平均访问距离可能大于非活动列表，但小于内存大小。 
+ * 在这种情况下，如果不是用于当前活动的页面，则该集合可以适合内存 - 可能会使用更多，希望不那么频繁：
  *
  *      +-memory available to cache-+
  *      |                           |
@@ -64,12 +80,19 @@
  * thrashing on the inactive list, after which refaulting pages can be
  * activated optimistically to compete with the existing active pages.
  *
+ * 准确跟踪页面的访问频率是非常昂贵的。 但是可以做出合理的近似来衡量非活动列表上的抖动，
+ * 之后可以乐观地激活错误页面以与现有的活动页面竞争。
+ *
  * Approximating inactive page access frequency - Observations:
+ * 近似非活动页面访问频率 - 观察：
  *
  * 1. When a page is accessed for the first time, it is added to the
  *    head of the inactive list, slides every existing inactive page
  *    towards the tail by one slot, and pushes the current tail page
  *    out of memory.
+ *
+ * 1、当一个页面第一次被访问时，它被添加到非活动列表的头部，
+ *      将每个现有的非活动页面向尾滑动一个槽，并将当前尾页推出内存。
  *
  * 2. When a page is accessed for the second time, it is promoted to
  *    the active list, shrinking the inactive list by one slot.  This
@@ -77,6 +100,10 @@
  *    more recently than the activated page towards the tail of the
  *    inactive list.
  *
+ * 2. 当一个页面被第二次访问时，它被提升到活动列表中，将非活动列表缩小一个槽。
+ *      这也会将所有比激活页面更近出现故障的非活动页面滑向非活动列表的尾部。
+ *
+ ********************************************************************
  * Thus:
  *
  * 1. The sum of evictions and activations between any two points in
@@ -86,11 +113,18 @@
  * 2. Moving one inactive page N page slots towards the tail of the
  *    list requires at least N inactive page accesses.
  *
- * Combining these:
+ * 1. 任意两个时间点之间的驱逐和激活的总和表示在两者之间访问的非活动页面的最小数量。
+ *
+ * 2. 向列表尾部移动一个非活动页面 N 页槽至少需要 N 个非活动页面访问。
+ *
+ ********************************************************************
+ * Combining these: 结合上述内容
  *
  * 1. When a page is finally evicted from memory, the number of
  *    inactive pages accessed while the page was in cache is at least
  *    the number of page slots on the inactive list.
+ *
+ * 1. 当一个页面最终从内存中被逐出时，该页面在缓存中时访问的非活动页面的数量至少是非活动列表上的页面槽数。
  *
  * 2. In addition, measuring the sum of evictions and activations (E)
  *    at the time of a page's eviction, and comparing it to another
@@ -98,10 +132,23 @@
  *    the minimum number of accesses while the page was not cached.
  *    This is called the refault distance.
  *
+ *      +-memory available to cache-+
+ *      |                           |
+ *      +-inactive------+-active----+
+ *  a b | c d e f g h i | J K L M N |
+ *      +---------------+-----------+
+ *
+ * 2. 此外，在页面被驱逐时测量驱逐和激活的总和 (E)，
+ *      并将其与页面 fault 返回内存时的另一次读取 (R) 进行比较，
+ *      这表明该页面的最小访问次数 没有缓存。 这称为 refault distance 。
+ *
  * Because the first access of the page was the fault and the second
  * access the refault, we combine the in-cache distance with the
  * out-of-cache distance to get the complete minimum access distance
  * of this page:
+ *
+ * 因为页面第一次访问是 fault ，第二次访问是 refault ，
+ * 我们将缓存内距离和缓存外距离结合起来得到这个页面的完整最小访问距离：
  *
  *      NR_inactive + (R - E)
  *
@@ -121,8 +168,13 @@
  * in between accesses, but activated instead.  And on a full system,
  * the only thing eating into inactive list space is active pages.
  *
+ * 换句话说，refault distance（缓存外）可以看作是非活动列表空间（缓存内）的不足。 
+ * 如果非活动列表有 (R - E) 个更多的页槽，则该页不会在访问之间被逐出，而是被激活。 
+ * 在一个完整的系统上，唯一占用非活动列表空间的是活动页面。
  *
+ ********************************************************************
  *		Refaulting inactive pages
+ * ==================================================================
  *
  * All that is known about the active list is that the pages have been
  * accessed more than once in the past.  This means that at any given
@@ -146,6 +198,7 @@
  * But if this is right, the stale pages will be pushed out of memory
  * and the used pages get to stay in cache.
  *
+ ********************************************************************
  *		Refaulting active pages
  *
  * If on the other hand the refaulting pages have recently been
@@ -155,6 +208,7 @@
  * space allocated to the page cache.
  *
  *
+ ********************************************************************
  *		Implementation
  *
  * For each node's LRU lists, a counter for inactive evictions and
@@ -166,6 +220,7 @@
  *
  * On cache misses for which there are shadow entries, an eligible
  * refault distance will immediately activate the refaulting page.
+ ********************************************************************
  */
 
 #define EVICTION_SHIFT	((BITS_PER_LONG - BITS_PER_XA_VALUE) +	\
@@ -182,6 +237,9 @@
  */
 static unsigned int __read_mostly bucket_order ;
 
+/**
+ *  shadow 编码
+ */
 static void *pack_shadow(int memcgid, pg_data_t *pgdat, unsigned long eviction,
 			 bool workingset)
 {
@@ -238,6 +296,9 @@ void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages)
 	 * the root cgroup's, age as well.
 	 */
 	do {
+        /**
+         *  
+         */
 		atomic_long_add(nr_pages, &lruvec->nonresident_age);
 	} while ((lruvec = parent_lruvec(lruvec)));
 }
@@ -267,6 +328,10 @@ void *workingset_eviction(struct page *page, struct mem_cgroup *target_memcg)
 	/* XXX: target_memcg can be NULL, go through lruvec */
 	memcgid = mem_cgroup_id(lruvec_memcg(lruvec));
 	eviction = atomic_long_read(&lruvec->nonresident_age);
+
+    /**
+     *  
+     */
 	return pack_shadow(memcgid, pgdat, eviction, PageWorkingset(page));
 }
 
@@ -294,6 +359,9 @@ void workingset_refault(struct page *page, void *shadow)
 	bool workingset;
 	int memcgid;
 
+    /**
+     *  
+     */
 	unpack_shadow(shadow, &memcgid, &pgdat, &eviction, &workingset);
 
 	rcu_read_lock();
@@ -334,6 +402,8 @@ void workingset_refault(struct page *page, void *shadow)
 	 * unconditionally with *every* reclaim invocation for the
 	 * longest time, so the occasional inappropriate activation
 	 * leading to pressure on the active list is not a problem.
+	 *
+	 * 计算 refault distance
 	 */
 	refault_distance = (refault - eviction) & EVICTION_MASK;
 
@@ -391,7 +461,7 @@ out:
 }
 
 /**
- * workingset_activation - note a page activation
+ * workingset_activation - note a page activation 标记page活跃
  * @page: page that is being activated
  */
 void workingset_activation(struct page *page)
@@ -411,6 +481,10 @@ void workingset_activation(struct page *page)
 	if (!mem_cgroup_disabled() && !memcg)
 		goto out;
 	lruvec = mem_cgroup_page_lruvec(page, page_pgdat(page));
+
+    /**
+     *  
+     */
 	workingset_age_nonresident(lruvec, thp_nr_pages(page));
 out:
 	rcu_read_unlock();

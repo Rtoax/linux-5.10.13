@@ -295,6 +295,10 @@ enum lruvec_flags {
 
 /**
  *  最近最少使用 链表，用于页面回收
+ *
+ **
+ *  Refault Distance算法： 平衡active-inactive 链表长度的算法(针对页面高速缓存类型页面)
+ *
  */
 struct lruvec { 
     /**
@@ -308,7 +312,10 @@ struct lruvec {
 	 */
 	unsigned long			anon_cost;
 	unsigned long			file_cost;
-    
+
+    /**
+     *  5.0内核好像为 inactive_age
+     */
 	/* Non-resident age, driven by LRU movement */
 	atomic_long_t			nonresident_age;
     

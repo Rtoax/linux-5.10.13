@@ -949,14 +949,26 @@ static int __remove_mapping(struct address_space *mapping, struct page *page,
 		goto cannot_free;
 	}
 
+    /**
+     *  
+     */
 	if (PageSwapCache(page)) {
 		swp_entry_t swap = { .val = page_private(page) };
 		mem_cgroup_swapout(page, swap);
+
+        /**
+         *  
+         */
 		if (reclaimed && !mapping_exiting(mapping))
 			shadow = workingset_eviction(page, target_memcg);
-		__delete_from_swap_cache(page, swap, shadow);
+
+        __delete_from_swap_cache(page, swap, shadow);
 		xa_unlock_irqrestore(&mapping->i_pages, flags);
 		put_swap_page(page, swap);
+
+    /**
+     *  
+     */
 	} else {
 		void (*freepage)(struct page *);
 
@@ -979,7 +991,19 @@ static int __remove_mapping(struct address_space *mapping, struct page *page,
 		 */
 		if (reclaimed && page_is_file_lru(page) &&
 		    !mapping_exiting(mapping) && !dax_mapping(mapping))
+
+            /**
+             *  在 不活跃LRU链表末尾的页面会被
+             *  1. 移除 LRU 链表 -> workingset_eviction
+             *  2. 释放 -> __delete_from_page_cache
+             *
+             *  shadow 值是经过简单编码的
+             */
 			shadow = workingset_eviction(page, target_memcg);
+
+        /**
+         *  释放, 把当前的 lruvec inactive-age 保存在 该页面对应的radix tree 中
+         */
 		__delete_from_page_cache(page, shadow);
 		xa_unlock_irqrestore(&mapping->i_pages, flags);
 

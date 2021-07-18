@@ -154,6 +154,9 @@ static void page_cache_delete(struct address_space *mapping,
 	mapping->nrpages -= nr;
 }
 
+/**
+ *  
+ */
 static void unaccount_page_cache_page(struct address_space *mapping,
 				      struct page *page)
 {
@@ -228,6 +231,9 @@ static void unaccount_page_cache_page(struct address_space *mapping,
  * Delete a page from the page cache and free it. Caller has to make
  * sure the page is locked and that nobody else uses it - or that usage
  * is safe.  The caller must hold the i_pages lock.
+ *
+ * 从页缓存中删除一个page，并释放它
+ *  调用者必须确认 页处于锁定状态，并且 没有人在使用他
  */
 void __delete_from_page_cache(struct page *page, void *shadow)
 {
@@ -235,7 +241,14 @@ void __delete_from_page_cache(struct page *page, void *shadow)
 
 	trace_mm_filemap_delete_from_page_cache(page);
 
+    /**
+     *  
+     */
 	unaccount_page_cache_page(mapping, page);
+
+    /**
+     *  
+     */
 	page_cache_delete(mapping, page, shadow);
 }
 
@@ -827,12 +840,20 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 }
 EXPORT_SYMBOL_GPL(replace_page_cache_page);
 
+/**
+ *
+ */
 noinline int __add_to_page_cache_locked(struct page *page,
 					struct address_space *mapping,
 					pgoff_t offset, gfp_t gfp,
 					void **shadowp)
 {
+    /**
+     *
+     */
 	XA_STATE(xas, &mapping->i_pages, offset);
+    struct xa_state xas = __XA_STATE(&mapping->i_pages, offset, 0, 0); //++
+    
 	int huge = PageHuge(page);
 	int error;
 
@@ -857,11 +878,11 @@ noinline int __add_to_page_cache_locked(struct page *page,
 		void *entry, *old = NULL;
 
 		if (order > thp_order(page))
-			xas_split_alloc(&xas, xa_load(xas.xa, xas.xa_index),
-					order, gfp);
-    		xas_lock_irq(&xas);
-    		xas_for_each_conflict(&xas, entry) {
-			old = entry;
+			xas_split_alloc(&xas, xa_load(xas.xa, xas.xa_index), order, gfp);
+        
+		xas_lock_irq(&xas);
+		xas_for_each_conflict(&xas, entry) {
+		    old = entry;
 			if (!xa_is_value(entry)) {
 				xas_set_err(&xas, -EEXIST);
 				goto unlock;
@@ -929,6 +950,9 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 }
 EXPORT_SYMBOL(add_to_page_cache_locked);
 
+/**
+ *
+ */
 int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 				pgoff_t offset, gfp_t gfp_mask)
 {
@@ -936,8 +960,11 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 	int ret;
 
 	__SetPageLocked(page);
-	ret = __add_to_page_cache_locked(page, mapping, offset,
-					 gfp_mask, &shadow);
+
+    /**
+     *  使用 shadow 指向 inactive slot
+     */
+	ret = __add_to_page_cache_locked(page, mapping, offset, gfp_mask, &shadow);
 	if (unlikely(ret))
 		__ClearPageLocked(page);
 	else {
