@@ -168,6 +168,8 @@ void putback_movable_page(struct page *page)
  * This function shall be used whenever the isolated pageset has been
  * built from lru, balloon, hugetlbfs page. See isolate_migratepages_range()
  * and isolate_huge_page().
+ *
+ *  把已经 分离的页面 重新 添加到LRU 链表中
  */
 void putback_movable_pages(struct list_head *l)
 {
@@ -1622,7 +1624,7 @@ out:
  *
  * Returns the number of pages that were not migrated, or an error code.
  *
- * 页面迁移主函数
+ * 页面迁移 核心函数
  *
  * 迁移一个进程的所有页面到制定内存节点上。
  *

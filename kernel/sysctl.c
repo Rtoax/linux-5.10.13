@@ -2778,6 +2778,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	},
 #ifdef CONFIG_COMPACTION
 	{
+	    ///proc/sys/vm/compact_memory
 		.procname	= "compact_memory",
 		.data		= &sysctl_compact_memory,
 		.maxlen		= sizeof(int),
@@ -2803,6 +2804,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra2		= &max_extfrag_threshold,
 	},
 	{
+	    ///proc/sys/vm/compact_unevictable_allowed
 		.procname	= "compact_unevictable_allowed",
 		.data		= &sysctl_compact_unevictable_allowed,
 		.maxlen		= sizeof(int),

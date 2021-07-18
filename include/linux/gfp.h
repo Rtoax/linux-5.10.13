@@ -314,6 +314,8 @@ struct vm_area_struct;
 /**
  *  只剩下 __GFP_RECLAIMABLE 和 __GFP_MOVABLE, 
  *  将返回 enum migratetype 数据类型: MIGRATE_MOVABLE, MIGRATE_RECLAIMABLE
+ *
+ *  从分配掩码 获取 页面 迁移类型
  */
 static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类型 */
 {
@@ -623,6 +625,9 @@ extern void *page_frag_alloc(struct page_frag_cache *nc,
 			     unsigned int fragsz, gfp_t gfp_mask);
 extern void page_frag_free(void *addr);
 
+/**
+ *  归还给伙伴系统
+ */
 #define __free_page(page) __free_pages((page), 0)
 #define free_page(addr) free_pages((addr), 0)
 

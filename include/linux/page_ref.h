@@ -43,6 +43,12 @@ static inline int page_ref_count(struct page *page)
 	return atomic_read(&page->_refcount);
 }
 
+/**
+ *  引用计数
+ *
+ *  通常情况下，page_count(page) == page_mapcount(page) 
+ *          即   page->_refcount = page->_mapcount + 1
+ */
 static inline int page_count(struct page *page) /*  */
 {
 	return atomic_read(&compound_head(page)->_refcount);

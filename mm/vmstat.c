@@ -1011,7 +1011,7 @@ unsigned long node_page_state_pages(struct pglist_data *pgdat, enum node_stat_it
 }
 
 /**
- *  
+ *  ZONE 中 对应 `node_stat_item`的 页面数量
  */
 unsigned long node_page_state(struct pglist_data *pgdat, enum node_stat_item item)
 {

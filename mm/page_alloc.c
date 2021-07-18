@@ -973,7 +973,7 @@ buddy_merge_likely(unsigned long pfn, unsigned long buddy_pfn,
  *
  * -- nyc
  */
-    /* 伙伴系统的 页 释放 函数 */
+/* 伙伴系统的 页 释放 函数 */
 static inline void __free_one_page(struct page *page,
                              		unsigned long pfn,
                              		struct zone *zone, unsigned int order,
@@ -1531,7 +1531,11 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 		}
 	}
 }
-    /*  */
+
+
+/**
+ *  归还给伙伴系统
+ */
 static void __free_pages_ok(struct page *page, unsigned int order,
 			    fpi_t fpi_flags)
 {
@@ -1545,8 +1549,9 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	migratetype = get_pfnblock_migratetype(page, pfn);
 	local_irq_save(flags);
 	__count_vm_events(PGFREE, 1 << order);
-	free_one_page(page_zone(page), page, pfn, order, migratetype,
-		      fpi_flags);/* 向伙伴系统释放 */
+
+    /* 向伙伴系统释放 */
+	free_one_page(page_zone(page), page, pfn, order, migratetype, fpi_flags);
 	local_irq_restore(flags);
 }
 
@@ -2654,6 +2659,8 @@ single_page:
  * 检查请求的订单是否有合适的后备空闲页面。 如果 only_stealable 为真，
  * 则只有当我们可以一起窃取其他空闲页面时，此函数才返回 fallback_mt。 
  * 这将有助于减少由于在一个页面块中混合迁移类型页面而造成的碎片。
+ *
+ * 若对应 的迁移类型总的空闲链表没有空闲对象，那么假设 可以从其他迁移类型中"借"一些空闲页面过来
  */
 int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal)
@@ -4333,11 +4340,23 @@ out:
 #define MAX_COMPACT_RETRIES 16
 
 #ifdef CONFIG_COMPACTION
+
+/**
+ *  当分配大块物理内存，低水位 情况下分配失败时唤醒 kswapd 线程，但依然无法 分配出内存，
+ *  因此调用 此函数 来 压缩内存，并尝试分配出 所需要的内存
+ *
+ * @gfp_mask        传递给页面分配器的分配掩码
+ * @order           请求分配页面大小
+ * @alloc_flags     页面分配器内部使用的分配标志位   
+ * @ac              页面分配器内部使用的分配上下文
+ * @prio            内存规整优先级
+ * @compact_result  内存规整结果
+ */
 /* Try memory compaction for high-order allocations before reclaim */
 static struct page *
 __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
-		unsigned int alloc_flags, const struct alloc_context *ac,
-		enum compact_priority prio, enum compact_result *compact_result)
+                        		unsigned int alloc_flags, const struct alloc_context *ac,
+                        		enum compact_priority prio, enum compact_result *_compact_result)
 {
 	struct page *page = NULL;
 	unsigned long pflags;
@@ -4346,12 +4365,20 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	if (!order)
 		return NULL;
 
+    /**
+     *  
+     */
 	psi_memstall_enter(&pflags);
 	noreclaim_flag = memalloc_noreclaim_save();
 
-	*compact_result = try_to_compact_pages(gfp_mask, order, alloc_flags, ac,
-								prio, &page);
+    /**
+     *  尝试 规整页面
+     */
+	*_compact_result = try_to_compact_pages(gfp_mask, order, alloc_flags, ac, prio, &page);
 
+    /**
+     *  
+     */
 	memalloc_noreclaim_restore(noreclaim_flag);
 	psi_memstall_leave(&pflags);
 
@@ -4365,10 +4392,16 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	if (page)
 		prep_new_page(page, order, gfp_mask, alloc_flags);
 
+    /**
+     *  尝试分配
+     */
 	/* Try get a page from the freelist if available */
 	if (!page)
 		page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 
+    /**
+     *  
+     */
 	if (page) {
 		struct zone *zone = page_zone(page);
 
@@ -4384,14 +4417,19 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	 */
 	count_vm_event(COMPACTFAIL);
 
+    /**
+     *  
+     */
 	cond_resched();
 
 	return NULL;
 }
 
+
+
 static inline bool
 should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
-		     enum compact_result compact_result,
+		     enum compact_result _compact_result,
 		     enum compact_priority *compact_priority,
 		     int *compaction_retries)
 {
@@ -4404,7 +4442,7 @@ should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
 	if (!order)
 		return false;
 
-	if (compaction_made_progress(compact_result))
+	if (compaction_made_progress(_compact_result))
 		(*compaction_retries)++;
 
 	/*
@@ -4412,14 +4450,14 @@ should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
 	 * so it doesn't really make much sense to retry except when the
 	 * failure could be caused by insufficient priority
 	 */
-	if (compaction_failed(compact_result))
+	if (compaction_failed(_compact_result))
 		goto check_priority;
 
 	/*
 	 * compaction was skipped because there are not enough order-0 pages
 	 * to work with, so we retry only if it looks like reclaim can help.
 	 */
-	if (compaction_needs_reclaim(compact_result)) {
+	if (compaction_needs_reclaim(_compact_result)) {
 		ret = compaction_zonelist_suitable(ac, order, alloc_flags);
 		goto out;
 	}
@@ -4430,7 +4468,7 @@ should_compact_retry(struct alloc_context *ac, int order, int alloc_flags,
 	 * But the next retry should use a higher priority if allowed, so
 	 * we don't just keep bailing out endlessly.
 	 */
-	if (compaction_withdrawn(compact_result)) {
+	if (compaction_withdrawn(_compact_result)) {
 		goto check_priority;
 	}
 
@@ -4463,7 +4501,7 @@ check_priority:
 		ret = true;
 	}
 out:
-	trace_compact_retry(order, priority, compact_result, retries, max_retries, ret);
+	trace_compact_retry(order, priority, _compact_result, retries, max_retries, ret);
 	return ret;
 }
 #else
@@ -4858,7 +4896,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	unsigned int alloc_flags;
 	unsigned long did_some_progress;
 	enum compact_priority compact_priority;
-	enum compact_result compact_result;
+	enum compact_result _compact_result;
 	int compaction_retries;
 	int no_progress_loops;
 	unsigned int cpuset_mems_cookie;
@@ -4920,10 +4958,21 @@ retry_cpuset:
 			(costly_order ||
 			   (order > 0 && ac->migratetype != MIGRATE_MOVABLE))
 			&& !gfp_pfmemalloc_allowed(gfp_mask)) {
+	    /**
+         *  当分配大块物理内存，低水位 情况下分配失败时唤醒 kswapd 线程，但依然无法 分配出内存，
+         *  因此调用 此函数 来 压缩内存，并尝试分配出 所需要的内存
+         *
+         * @gfp_mask        传递给页面分配器的分配掩码
+         * @order           请求分配页面大小
+         * @alloc_flags     页面分配器内部使用的分配标志位   
+         * @ac              页面分配器内部使用的分配上下文
+         * @prio            内存规整优先级
+         * @compact_result  内存规整结果
+         */
 		page = __alloc_pages_direct_compact(gfp_mask, order,
-						alloc_flags, ac,
-						INIT_COMPACT_PRIORITY,
-						&compact_result);
+                    						alloc_flags, ac,
+                    						INIT_COMPACT_PRIORITY,
+                    						&_compact_result);
 		if (page)
 			goto got_pg;
 
@@ -4949,8 +4998,8 @@ retry_cpuset:
 			 *  - unlikely to make entire pageblocks free on its
 			 *    own.
 			 */
-			if (compact_result == COMPACT_SKIPPED ||
-			    compact_result == COMPACT_DEFERRED)
+			if (_compact_result == COMPACT_SKIPPED ||
+			    _compact_result == COMPACT_DEFERRED)
 				goto nopage;
 
 			/*
@@ -5003,7 +5052,7 @@ retry:
 
 	/* Try direct compaction and then allocating */
 	page = __alloc_pages_direct_compact(gfp_mask, order, alloc_flags, ac,
-					compact_priority, &compact_result);
+					compact_priority, &_compact_result);
 	if (page)
 		goto got_pg;
 
@@ -5030,8 +5079,8 @@ retry:
 	 */
 	if (did_some_progress > 0 &&
 			should_compact_retry(ac, order, alloc_flags,
-				compact_result, &compact_priority,
-				&compaction_retries))
+                				_compact_result, &compact_priority,
+                				&compaction_retries))
 		goto retry;
 
 
@@ -5304,6 +5353,9 @@ static inline void free_the_page(struct page *page, unsigned int order)
 		__free_pages_ok(page, order, FPI_NONE);
 }
 
+/**
+ *  归还给伙伴系统
+ */
 void __free_pages(struct page *page, unsigned int order)
 {
 	if (put_page_testzero(page))

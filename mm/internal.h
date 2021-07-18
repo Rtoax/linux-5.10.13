@@ -194,6 +194,9 @@ __find_buddy_pfn(unsigned long page_pfn, unsigned int order)
 extern struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
 				unsigned long end_pfn, struct zone *zone);
 
+/**
+ *  返回 这个页块 中第一个物理页面的 page 数据结构
+ */
 static inline struct page *pageblock_pfn_to_page(unsigned long start_pfn,
 				unsigned long end_pfn, struct zone *zone)
 {
@@ -228,25 +231,55 @@ extern void zone_pcp_reset(struct zone *zone);
  * at the end of a zone and migrate_pfn begins at the start. Movable pages
  * are moved to the end of a zone during a compaction run and the run
  * completes when free_pfn <= migrate_pfn
+ *
+ * 内存规整内部使用的描述符
  */
 struct compact_control {    /* 内存规整 */
+    /**
+     *  freepages       空闲页面链表
+     *  migratepages    可迁移页面链表
+     */
 	struct list_head freepages;	/* List of free pages to migrate to */
 	struct list_head migratepages;	/* List of pages being migrated */
+
+    /* 已经分离的空闲页面数量 */
 	unsigned int nr_freepages;	/* Number of isolated free pages */
+
+    /* 准备迁移的页面数量 */
 	unsigned int nr_migratepages;	/* Number of pages to migrate */
+
+    /* isolate_freepages() 扫描的起始页帧号 */
 	unsigned long free_pfn;		/* isolate_freepages search base */
+
+    /* 上一次做内存规整时停止扫描的页帧号 */
 	unsigned long migrate_pfn;	/* isolate_migratepages search base */
 	unsigned long fast_start_pfn;	/* a pfn to start linear scan from */
+
+    /* 扫描的 ZONE */
 	struct zone *zone;
+
+    /* 已经扫描并用于迁移的页面总数 */
 	unsigned long total_migrate_scanned;
+
+    /* 已经扫描并用于空闲页面总数 */
 	unsigned long total_free_scanned;
 	unsigned short fast_search_fail;/* failures to use free list searches */
 	short search_order;		/* order to start a fast search at */
+
+    /* 分配掩码 */
 	const gfp_t gfp_mask;		/* gfp mask of a direct compactor */
 	int order;			/* order a direct compactor needs */
+
+    /* 迁移类型 */
 	int migratetype;		/* migratetype of direct compactor */
+
+    /* 页面分配器内部使用的标志位 */
 	const unsigned int alloc_flags;	/* alloc flags of a direct compactor */
+
+    /* 页面分配器根据分配掩码计算出来的首选zone号 */
 	const int highest_zoneidx;	/* zone index of a direct compactor */
+
+    /* 页面迁移模式: 同步/异步 */
 	enum migrate_mode mode;		/* Async or sync migration mode */
 	bool ignore_skip_hint;		/* Scan blocks even if marked skip */
 	bool no_set_skip_hint;		/* Don't mark blocks for skipping */

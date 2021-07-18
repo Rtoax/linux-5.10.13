@@ -16,6 +16,9 @@ enum compact_priority {
 	INIT_COMPACT_PRIORITY = COMPACT_PRIO_ASYNC
 };
 
+/**
+ *  内存规整结果
+ */
 /* Return values for compact_zone() and try_to_compact_pages() */
 /* When adding new states, please adjust include/trace/events/compaction.h */
 enum compact_result {
@@ -24,33 +27,56 @@ enum compact_result {
 	/*
 	 * compaction didn't start as it was not possible or direct reclaim
 	 * was more suitable
+	 *
+	 * 内存规整不满足条件，退出
 	 */
 	COMPACT_SKIPPED,
+
+    /**
+     *  因为过去的一些错误导致内存规整退出
+     */
 	/* compaction didn't start as it was deferred due to past failures */
 	COMPACT_DEFERRED,
 
+    /**
+     *  
+     */
 	/* For more detailed tracepoint output - internal to compaction */
 	COMPACT_NO_SUITABLE_PAGE,
+
+    /**
+     *  标识可以再下一个页块中进行内存规整
+     */
 	/* compaction should continue to another pageblock */
 	COMPACT_CONTINUE,
 
 	/*
 	 * The full zone was compacted scanned but wasn't successfull to compact
 	 * suitable pages.
+	 *
+	 * 标识已经完成一轮 的页面扫描，但是没能满足页面分配请求的需求
 	 */
 	COMPACT_COMPLETE,
+	
 	/*
 	 * direct compaction has scanned part of the zone but wasn't successfull
 	 * to compact suitable pages.
+	 *
+	 * 标识根据直接页面回收机制，已经扫描了ZONE中部分的页面，但是没有找到可以进行内存规整的页面
 	 */
 	COMPACT_PARTIAL_SKIPPED,
 
+    /**
+     *  处于某些锁竞争的原因，退出内存规整
+     */
 	/* compaction terminated prematurely due to lock contentions */
 	COMPACT_CONTENDED,
 
 	/*
 	 * direct compaction terminated after concluding that the allocation
 	 * should now succeed
+	 *
+	 * 标识已经满足页面分配请求的续期，从而退出这次直接内存规整
 	 */
 	COMPACT_SUCCESS,
 };

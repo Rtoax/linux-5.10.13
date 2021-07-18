@@ -855,6 +855,10 @@ int __page_mapcount(struct page *page);
  * Result is undefined for pages which cannot be mapped into userspace.
  * For example SLAB or special types of pages. See function page_has_type().
  * They use this place in struct page differently.
+ *
+ *
+ *  通常情况下，page_count(page) == page_mapcount(page) 
+ *          即   page->_refcount = page->_mapcount + 1
  */
 static inline int page_mapcount(struct page *page)
 {

@@ -274,6 +274,9 @@ struct page {   /* 物理页 */
 		 * 内核通过判断该值是否为`PAGE_BUDDY_MAPCOUNT_VALUE`来确定该page是否属于伙伴系统。
          * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
          * 被映射了不一定在使用，但要使用必须先映射。
+         *
+         *  通常情况下，page_count(page) == page_mapcount(page) 
+         *          即   page->_refcount = page->_mapcount + 1
 		 */
 		atomic_t _mapcount;
 
@@ -302,6 +305,9 @@ struct page {   /* 物理页 */
 	 *  >0 该页面 已经被分配，且内核正在使用，暂时不会被释放
 	 *
 	 *  操作 _refcount 的函数 `get_page()`,`put_page()`
+     *
+     *  通常情况下，page_count(page) == page_mapcount(page) 
+     *          即   page->_refcount = page->_mapcount + 1
 	 */
 	atomic_t _refcount;
 

@@ -16,10 +16,40 @@
  *  迁移模式
  */
 enum migrate_mode {
-	MIGRATE_ASYNC,
-	MIGRATE_SYNC_LIGHT,
-	MIGRATE_SYNC,
-	MIGRATE_SYNC_NO_COPY,
+
+    /**
+     *  异步模式 
+     *
+     *  在判断内存规整是否完成时，若可以从其他迁移类型中挪用空闲页块，那么也算完成任务。
+     *
+
+     *  在分离页面时，若发现大量的临时页面(分离的页面大于LRU页面数量的一半)
+     *  也不会暂停扫描, 详见 `compact_should_abort()`(5.10.13中有`compact_unlock_should_abort()`)
+     */
+	MIGRATE_ASYNC,          
+
+    /**
+     *  同步模式，允许调用者被阻塞. kcompactd 内核线程采用的模式 
+     *
+     *  在分离页面时，若发现大量的临时页面(分离的页面大于LRU页面数量的一半)
+     *  会睡眠等待100ms, 详见 `too_many_isolated()`
+     */
+	MIGRATE_SYNC_LIGHT,  
+	
+	/**
+	 *  同步模式，在页面迁移时会被阻塞 
+	 *
+	 *  手工设置`/proc/sys/vm/compact_memory`后会采用这种模式,见`sysctl_compact_memory`。
+
+     *  在分离页面时，若发现大量的临时页面(分离的页面大于LRU页面数量的一半)
+     *  会睡眠等待100ms, 详见 `too_many_isolated()`
+	 */
+	MIGRATE_SYNC,     
+
+    /**
+     *  同步模式，迁移时不拷贝，有DMA引擎来复制 
+     */
+	MIGRATE_SYNC_NO_COPY,   
 };
 
 #endif		/* MIGRATE_MODE_H_INCLUDED */

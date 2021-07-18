@@ -92,6 +92,9 @@ extern int page_group_by_mobility_disabled;
 #define get_pageblock_migratetype(page)		/* 连续内存管理  */			\
 	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)/*  */
 
+/**
+ *  
+ */
 struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
 	struct list_head	free_list[MIGRATE_TYPES];   /*  page 链表头 */
 	unsigned long		nr_free;
@@ -549,6 +552,9 @@ enum zone_type {
 
 #ifndef __GENERATING_BOUNDS_H
 
+/**
+ *  标识同步和异步
+ */
 #define ASYNC_AND_SYNC 2
 
 struct zone {   /* 内存 ZONE */
@@ -679,11 +685,25 @@ struct zone {   /* 内存 ZONE */
 	 */
 	unsigned long percpu_drift_mark;
 
+    /**
+     *  页面规整
+     */
 #if defined CONFIG_COMPACTION || defined CONFIG_CMA
-	/* pfn where compaction free scanner should start */
+	/**
+	 *  pfn where compaction free scanner should start 
+	 *
+	 *  记录上一次扫描中空闲页面的位置, 见`compact_zone()`
+	 */
 	unsigned long		compact_cached_free_pfn;
-	/* pfn where compaction migration scanner should start */
-	unsigned long		compact_cached_migrate_pfn[ASYNC_AND_SYNC];
+
+	/**
+	 *  pfn where compaction migration scanner should start 
+	 *
+	 *  记录上一次扫描中可迁移页面的位置
+	 *
+	 *  两个变量分别标识同步异步
+	 */
+	unsigned long		compact_cached_migrate_pfn[ASYNC_AND_SYNC/*2*/];
 	unsigned long		compact_init_migrate_pfn;
 	unsigned long		compact_init_free_pfn;
 #endif
@@ -1654,6 +1674,9 @@ struct mminit_pfnnid_cache {/* 页帧号 到 NODE 的缓存 */
 #ifdef CONFIG_HOLES_IN_ZONE /* ZONE 中 有 空洞 */
 #define pfn_valid_within(pfn) pfn_valid(pfn)
 #else
+/**
+ *  判断当前页帧的页表项 是否有效
+ */
 #define pfn_valid_within(pfn) (1)
 #endif
 

@@ -212,6 +212,9 @@ static __always_inline int PageTail(struct page *page)  /* TODO */
 	return READ_ONCE(page->compound_head) & 1;
 }
 
+/**
+ *  混合页面
+ */
 static __always_inline int PageCompound(struct page *page)
 {
 	return test_bit(PG_head, &page->flags) || PageTail(page);
@@ -935,6 +938,9 @@ static __always_inline void __ClearPageDirty(struct page *page) {
     })->flags); 
     }
 
+/**
+ *  在 LRU 链表中
+ */
 static __always_inline int PageLRU(struct page *page) { 
     return test_bit(PG_lru, &({ VM_BUG_ON_PGFLAGS(PagePoisoned(compound_head(page)), compound_head(page)); 
     compound_head(page); 
