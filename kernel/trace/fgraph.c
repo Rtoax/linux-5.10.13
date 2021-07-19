@@ -543,14 +543,21 @@ void ftrace_graph_init_task(struct task_struct *t)
 	t->curr_ret_stack = -1;
 	t->curr_ret_depth = -1;
 
+    /**
+     *  是否激活
+     */
 	if (ftrace_graph_active) {
 		struct ftrace_ret_stack *ret_stack;
 
 		ret_stack = kmalloc_array(FTRACE_RETFUNC_DEPTH,
-					  sizeof(struct ftrace_ret_stack),
-					  GFP_KERNEL);
+            					  sizeof(struct ftrace_ret_stack),
+            					  GFP_KERNEL);
 		if (!ret_stack)
 			return;
+
+        /**
+         *  
+         */
 		graph_init_task(t, ret_stack);
 	}
 }

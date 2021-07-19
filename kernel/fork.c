@@ -375,6 +375,9 @@ void vm_area_free(struct vm_area_struct *vma)
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
+/**
+ *  
+ */
 static void account_kernel_stack(struct task_struct *tsk, int account)
 {   
 	void *stack = task_stack_page(tsk); /* tast_struct->stack */
@@ -919,7 +922,10 @@ void set_task_stack_end_magic(struct task_struct *tsk)/* 设置越界检测 以�
 	stackend = end_of_stack(tsk);   /*  */
 	*stackend = STACK_END_MAGIC;	/* for overflow detection 越界检测*/
 }
-                            /* 拷贝一个新的 task_struct */
+
+/**
+ *  拷贝一个新的 task_struct 
+ */
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
@@ -942,6 +948,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	stack_vm_area = task_stack_vm_area(tsk);    /* =NULL */
 
+    /**
+     *  
+     */
 	err = arch_dup_task_struct(tsk, orig);  /* 直接赋值 */
 
 	/*
@@ -974,12 +983,18 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->seccomp.filter = NULL;
 #endif
 
+    /**
+     *  
+     */
 	setup_thread_stack(tsk, orig);  /*  */
 	clear_user_return_notifier(tsk);/* 清理 标志位 */
 	clear_tsk_need_resched(tsk);    /* 清理 标志位 */
 	set_task_stack_end_magic(tsk);  /* 设置栈边界 magic */
 
 #ifdef CONFIG_STACKPROTECTOR
+    /**
+     *  金丝雀，栈保护
+     */
 	tsk->stack_canary = get_random_canary();    /* 随机金丝雀 */
 #endif
 	if (orig->cpus_ptr == &orig->cpus_mask) /* CPU亲和性 */
@@ -992,6 +1007,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 	/* One for the rcu users */
 	refcount_set(&tsk->usage, 1);
+    
 #ifdef CONFIG_BLK_DEV_IO_TRACE
 	tsk->btrace_seq = 0;    /* 块设备 IO trace */
 #endif
@@ -999,8 +1015,14 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->task_frag.page = NULL;
 	tsk->wake_q.next = NULL;
 
+    /**
+     *  
+     */
 	account_kernel_stack(tsk, 1);
 
+    /**
+     *  
+     */
 	kcov_task_init(tsk);    /* 覆盖检测 */
 
 #ifdef CONFIG_FAULT_INJECTION
@@ -1071,6 +1093,9 @@ static void mm_init_uprobes_state(struct mm_struct *mm)
 #endif
 }
 
+/**
+ *  
+ */
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	struct user_namespace *user_ns)
 {
@@ -1421,6 +1446,9 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	struct mm_struct *mm;
 	int err;
 
+    /**
+     *  分配 mm
+     */
 	mm = allocate_mm(); /* 分配 */
 	if (!mm)
 		goto fail_nomem;
@@ -1486,6 +1514,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	/* initialize the new vmacache entries */
 	vmacache_flush(tsk);    /*  */
 
+    /**
+     *  如果克隆了 VM ，直接指向 父进程 VM
+     */
 	if (clone_flags & CLONE_VM) {   /* 如果共享 VM 区，直接返回 */
 		mmget(oldmm);
 		mm = oldmm;
@@ -1494,7 +1525,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 
 	retval = -ENOMEM;
 
-    /* 复制 mm */
+    /**
+     *  复制 mm 
+     */
 	mm = dup_mm(tsk, current->mm);  /* dup */
 	if (!mm)
 		goto fail_nomem;
@@ -1581,26 +1614,47 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 	return 0;
 }
 
+
+/**
+ *  
+ */
 static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk) /*  */
 {
 	struct sighand_struct *sig;
 
+    /**
+     *  克隆父进程的 sighand
+     */
 	if (clone_flags & CLONE_SIGHAND) {
 		refcount_inc(&current->sighand->count); /* 添加引用计数 */
 		return 0;
 	}
+    
+    /**
+     *  分配一个结构
+     */
 	sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
 	RCU_INIT_POINTER(tsk->sighand, sig);
 	if (!sig)
 		return -ENOMEM;
 
+    /**
+     *  引用计数 =1
+     */
 	refcount_set(&sig->count, 1);
 	spin_lock_irq(&current->sighand->siglock);
+
+    /**
+     *  拷贝父进程的结构 给子进程
+     */
 	memcpy(sig->action, current->sighand->action, sizeof(sig->action));
 	spin_unlock_irq(&current->sighand->siglock);
 
 	/* Reset all signal handler not set to SIG_IGN to SIG_DFL. */
 	if (clone_flags & CLONE_CLEAR_SIGHAND)
+        /**
+         *  清理 默认值
+         */
 		flush_signal_handlers(tsk, 0);
 
 	return 0;
@@ -1630,6 +1684,10 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 	posix_cputimers_group_init(pct, cpu_limit);
 }
 
+
+/**
+ *  
+ */
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
@@ -1637,6 +1695,9 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	if (clone_flags & CLONE_THREAD)
 		return 0;
 
+    /**
+     *  分配
+     */
 	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
 	tsk->signal = sig;
 	if (!sig)
@@ -1681,6 +1742,9 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
+/**
+ *  
+ */
 static void copy_seccomp(struct task_struct *p)
 {
 #ifdef CONFIG_SECCOMP
@@ -1927,10 +1991,10 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
  * 
  */
 static __latent_entropy struct task_struct *copy_process(   /* 复制进程，并不运行 */
-					struct pid *pid,
-					int trace,
-					int node,
-					struct kernel_clone_args *args)
+                                					struct pid *pid,
+                                					int trace,
+                                					int node,
+                                					struct kernel_clone_args *args)
 {
 	int pidfd = -1, retval;
 	struct task_struct *p;
@@ -2038,6 +2102,10 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 		goto fork_out;
 
 	retval = -ENOMEM;
+
+    /**
+     *  拷贝 PCB
+     */
 	p = dup_task_struct(current, node); /* 拷贝一个 task_struct 结构 */
 	if (!p)
 		goto fork_out;
@@ -2054,14 +2122,19 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	 *//*  */
 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
+    /**
+     *  
+     */
 	ftrace_graph_init_task(p);  /* tracing */
 
 	rt_mutex_init_task(p);  /*  */
 
 	lockdep_assert_irqs_enabled();  /* 死锁检测 */
+    
 #ifdef CONFIG_PROVE_LOCKING
 //	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
 #endif
+    
 	retval = -EAGAIN;
 	if (atomic_read(&p->real_cred->user->processes) >=
 			task_rlimit(p, RLIMIT_NPROC)) { /* 用户进程数超限 */
@@ -2093,9 +2166,13 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock); /* 初始化spinlock */
 
+    /**
+     *  
+     */
 	init_sigpending(&p->pending);   /* 信号挂起链表初始化 */
 
 	p->utime = p->stime = p->gtime = 0; /* 时间清零 */
+    
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
 //	p->utimescaled = p->stimescaled = 0;
 #endif
@@ -2124,11 +2201,19 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	task_io_accounting_init(&p->ioac);  /* 清零 */
 	acct_clear_integrals(p);    /* 清零 */
 
+    /**
+     *  
+     */
 	posix_cputimers_init(&p->posix_cputimers);  /* 定时器初始化 */
 
 	p->io_context = NULL;
 	audit_set_context(p, NULL); /* 清 NULL */
-	cgroup_fork(p);     /* 控制组初始化 */
+
+    /**
+     *  
+     */
+    cgroup_fork(p);     /* 控制组初始化 */
+    
 #ifdef CONFIG_NUMA
 	p->mempolicy = mpol_dup(p->mempolicy);  /* 内存策略 numa 相关*/
 	if (IS_ERR(p->mempolicy)) {
@@ -2169,29 +2254,61 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
+    /**
+     *  
+     */
 	retval = perf_event_init_task(p);   /* perf_event */
 	if (retval)
 		goto bad_fork_cleanup_policy;
+
+    /**
+     *  
+     */
 	retval = audit_alloc(p);            /* 鉴权结构分配 */
 	if (retval)
 		goto bad_fork_cleanup_perf;
+    
 	/* copy all the process information */
+
+    /**
+     *  
+     */
 	shm_init_task(p);   /* System V 共享内存 */
 	retval = security_task_alloc(p, clone_flags);   /* lsm 安全模块 */
 	if (retval)
 		goto bad_fork_cleanup_audit;
+
+    /**
+     *  
+     */
 	retval = copy_semundo(clone_flags, p);  /* undo */
 	if (retval)
 		goto bad_fork_cleanup_security;
+
+    /**
+     *  
+     */
 	retval = copy_files(clone_flags, p);    /* 文件 */
 	if (retval)
 		goto bad_fork_cleanup_semundo;
+
+    /**
+     *  
+     */
 	retval = copy_fs(clone_flags, p);       /* 文件系统 */
 	if (retval)
 		goto bad_fork_cleanup_files;
+
+    /**
+     *  信号处理 sigaction
+     */
 	retval = copy_sighand(clone_flags, p);  /* 信号处理 */
 	if (retval)
 		goto bad_fork_cleanup_fs;
+
+    /**
+     *  信号
+     */
 	retval = copy_signal(clone_flags, p);   /* 信号 */
 	if (retval)
 		goto bad_fork_cleanup_sighand;
@@ -2203,13 +2320,23 @@ static __latent_entropy struct task_struct *copy_process(   /* 复制进程，�
 	if (retval)
 		goto bad_fork_cleanup_signal;
 
-    /*  */
+    /**
+     *  
+     */
 	retval = copy_namespaces(clone_flags, p);   /* 命名空间 */
 	if (retval)
 		goto bad_fork_cleanup_mm;
+
+    /**
+     *  
+     */
 	retval = copy_io(clone_flags, p);   /* IO */
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
+
+    /**
+     *  
+     */
 	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls); /* 线程 */
 	if (retval)
 		goto bad_fork_cleanup_io;
@@ -2623,28 +2750,35 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 }
 
 #ifdef __ARCH_WANT_SYS_FORK
+/**
+ *  fork
+ */
 pid_t fork(void); /* +++ */
 SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
 {
 #ifdef CONFIG_MMU
 	struct kernel_clone_args args = {
-		.exit_signal = SIGCHLD,
+		args.exit_signal = SIGCHLD,
 	};
 
 	return kernel_clone(&args); /*  */
 #else
 	/* can not support in nommu mode */
-	return -EINVAL;
+//	return -EINVAL;
 #endif
 }
 #endif
 
 #ifdef __ARCH_WANT_SYS_VFORK
+/**
+ *  vfork
+ */
+pid_t vfork(void);
 SYSCALL_DEFINE0(vfork)
 {
 	struct kernel_clone_args args = {
-		.flags		= CLONE_VFORK | CLONE_VM,
-		.exit_signal	= SIGCHLD,
+		args.flags		= CLONE_VFORK | CLONE_VM,
+		args.exit_signal	= SIGCHLD,
 	};
 
 	return kernel_clone(&args);
@@ -2654,22 +2788,25 @@ SYSCALL_DEFINE0(vfork)
 
 #ifdef __ARCH_WANT_SYS_CLONE
 #ifdef CONFIG_CLONE_BACKWARDS
-//SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
-//		 int __user *, parent_tidptr,
-//		 unsigned long, tls,
-//		 int __user *, child_tidptr)
 #elif defined(CONFIG_CLONE_BACKWARDS2)
-//SYSCALL_DEFINE5(clone, unsigned long, newsp, unsigned long, clone_flags,
-//		 int __user *, parent_tidptr,
-//		 int __user *, child_tidptr,
-//		 unsigned long, tls)
 #elif defined(CONFIG_CLONE_BACKWARDS3)
-//SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
-//		int, stack_size,
-//		int __user *, parent_tidptr,
-//		int __user *, child_tidptr,
-//		unsigned long, tls)
 #else
+/**
+ *  克隆
+ *
+ *  pthread_create 为
+ *  clone(child_stack=0x7f2c7ec71fb0, 
+ *          flags=CLONE_VM|
+                  CLONE_FS|
+                  CLONE_FILES|
+                  CLONE_SIGHAND|
+                  CLONE_THREAD|
+                  CLONE_SYSVSEM|
+                  CLONE_SETTLS|
+                  CLONE_PARENT_SETTID|
+                  CLONE_CHILD_CLEARTID, 
+        parent_tidptr=0x7f2c7ec729d0, tls=0x7f2c7ec72700, child_tidptr=0x7f2c7ec729d0)
+ */
 long clone(unsigned long flags, void *child_stack,
                  void *ptid, void *ctid,
                  struct pt_regs *regs);
@@ -2680,13 +2817,13 @@ SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
 #endif
 {
 	struct kernel_clone_args args = {
-		.flags		= (lower_32_bits(clone_flags) & ~CSIGNAL),
-		.pidfd		= parent_tidptr,
-		.child_tid	= child_tidptr,
-		.parent_tid	= parent_tidptr,
-		.exit_signal	= (lower_32_bits(clone_flags) & CSIGNAL),
-		.stack		= newsp,
-		.tls		= tls,
+		args.flags		= (lower_32_bits(clone_flags) & ~CSIGNAL),
+		args.pidfd		= parent_tidptr,
+		args.child_tid	= child_tidptr,
+		args.parent_tid	= parent_tidptr,
+		args.exit_signal	= (lower_32_bits(clone_flags) & CSIGNAL),
+		args.stack		= newsp,
+		args.tls		= tls,
 	};
 
 	return kernel_clone(&args);
@@ -2742,16 +2879,16 @@ noinline static int copy_clone_args_from_user(struct kernel_clone_args *kargs,
 		return -EINVAL;
 
 	*kargs = (struct kernel_clone_args){
-		.flags		= args.flags,
-		.pidfd		= u64_to_user_ptr(args.pidfd),
-		.child_tid	= u64_to_user_ptr(args.child_tid),
-		.parent_tid	= u64_to_user_ptr(args.parent_tid),
-		.exit_signal	= args.exit_signal,
-		.stack		= args.stack,
-		.stack_size	= args.stack_size,
-		.tls		= args.tls,
-		.set_tid_size	= args.set_tid_size,
-		.cgroup		= args.cgroup,
+		kargs.flags		= args.flags,
+		kargs.pidfd		= u64_to_user_ptr(args.pidfd),
+		kargs.child_tid	= u64_to_user_ptr(args.child_tid),
+		kargs.parent_tid	= u64_to_user_ptr(args.parent_tid),
+		kargs.exit_signal	= args.exit_signal,
+		kargs.stack		= args.stack,
+		kargs.stack_size	= args.stack_size,
+		kargs.tls		= args.tls,
+		kargs.set_tid_size	= args.set_tid_size,
+		kargs.cgroup		= args.cgroup,
 	};
 
 	if (args.set_tid &&
@@ -3135,6 +3272,10 @@ bad_unshare_out:
 	return err;
 }
 
+/**
+ *  
+ */
+int unshare(int flags);
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
 	return ksys_unshare(unshare_flags);

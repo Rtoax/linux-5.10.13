@@ -31,6 +31,9 @@
 #define VMACACHE_SIZE (1U << VMACACHE_BITS)/* =4 */
 #define VMACACHE_MASK (VMACACHE_SIZE - 1)/* 0x11 */
 
+/**
+ *  VMA  缓存
+ */
 struct vmacache {   /* vma 缓存， 见 find_vma() 局部性原理*/
 	u64 seqnum;
 	struct vm_area_struct *vmas[VMACACHE_SIZE/* 4 */];

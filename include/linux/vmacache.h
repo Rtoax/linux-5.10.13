@@ -5,6 +5,9 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 
+/**
+ *  
+ */
 static inline void vmacache_flush(struct task_struct *tsk)
 {
 	memset(tsk->vmacache.vmas, 0, sizeof(tsk->vmacache.vmas));

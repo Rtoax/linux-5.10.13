@@ -16,7 +16,9 @@
 /*
  * Types defining task->signal and task->sighand and APIs using them:
  */
-
+/**
+ *  不同的信号的处理函数
+ */
 struct sighand_struct { /*  */
 	spinlock_t		siglock;    /* 保护 task_struct->signal */
 	refcount_t		count;
@@ -78,6 +80,8 @@ struct multiprocess_signals {   /* 多进程信号 set 链表 */
  * implies a shared sighand_struct, so locking
  * sighand_struct is always a proper superset of
  * the locking of signal_struct.
+ *
+ * 信号
  */
 struct signal_struct {  /* 信号结构 */
 	refcount_t		sigcnt;

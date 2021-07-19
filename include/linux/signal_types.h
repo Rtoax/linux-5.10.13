@@ -27,6 +27,9 @@ struct sigqueue {   /*  */
 /* flags values. */
 #define SIGQUEUE_PREALLOC	1
 
+/**
+ *  信号挂起链表
+ */
 struct sigpending { /* 信号挂起链表 */
 	struct list_head list;
 	sigset_t signal;
@@ -37,8 +40,8 @@ struct sigaction {
 	__sighandler_t	sa_handler;
 	unsigned long	sa_flags;
 #else
-	unsigned int	sa_flags;
-	__sighandler_t	sa_handler;
+//	unsigned int	sa_flags;
+//	__sighandler_t	sa_handler;
 #endif
 #ifdef __ARCH_HAS_SA_RESTORER
 	__sigrestore_t sa_restorer;

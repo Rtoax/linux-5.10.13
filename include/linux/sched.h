@@ -1015,6 +1015,10 @@ struct task_struct {    /* PCB */
 	sigset_t			real_blocked;
 	/* Restored if set_restore_sigmask() was used: */
 	sigset_t			saved_sigmask;
+
+    /**
+     *  挂起的信号链表
+     */
 	struct sigpending		pending;
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;
