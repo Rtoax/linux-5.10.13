@@ -987,6 +987,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      */
 	mm_init();                  /* 内存初始化，slab，泄漏，页表初始化，大页等 */
 
+    /**
+     *  ftrace
+     */
 	ftrace_init();      /* 故障调试和性能分析 */
 
 	/* trace_printk can be enabled here */

@@ -1098,6 +1098,9 @@ bool is_ftrace_trampoline(unsigned long addr)
 	return ftrace_ops_trampoline(addr) != NULL;
 }
 
+/**
+ *  分配 ftrace page
+ */
 struct ftrace_page {    /*  */
 	struct ftrace_page	*next;
 	struct dyn_ftrace	*records;   /* 指向申请的内存页 = __get_free_pages() in `ftrace_allocate_records()` */
@@ -1108,6 +1111,10 @@ struct ftrace_page {    /*  */
 #define ENTRY_SIZE sizeof(struct dyn_ftrace)
 #define ENTRIES_PER_PAGE (PAGE_SIZE / ENTRY_SIZE)
 
+
+/**
+ *  地址
+ */
 static struct ftrace_page	*ftrace_pages_start;    /* ftrace 起始地址 */
                                                     /* 初始化位置 ftrace_process_locs() */
 static struct ftrace_page	*ftrace_pages;          /* 同上，用于定位链表中最后一个 pg */
@@ -3096,6 +3103,10 @@ ops_references_rec(struct ftrace_ops *ops, struct dyn_ftrace *rec)
 	return true;
 }
 
+
+/**
+ *  初始化后的更新 
+ */
 static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 {
 	struct ftrace_page *pg;
@@ -3135,9 +3146,10 @@ static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 			/*
 			 * Do the initial record conversion from mcount jump
 			 * to the NOP instructions.
+			 *
+			 * mcount 跳转到 NOP 地址
 			 */
-			if (!__is_defined(CC_USING_NOP_MCOUNT) &&
-			    !ftrace_nop_initialize(mod, p))
+			if (!__is_defined(CC_USING_NOP_MCOUNT) && !ftrace_nop_initialize(mod, p))
 				break;
 
 			update_cnt++;
@@ -3151,6 +3163,9 @@ static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 	return 0;
 }
 
+/**
+ *  为 ftrace 分配内存
+ */
 static int ftrace_allocate_records(struct ftrace_page *pg, int count)/*  */
 {
 	int order;
@@ -3193,8 +3208,11 @@ static int ftrace_allocate_records(struct ftrace_page *pg, int count)/*  */
 	return cnt;
 }
 
-static struct ftrace_page * /*  */
-ftrace_allocate_pages(unsigned long num_to_init)
+
+/**
+ *  为 ftrace 分配内存
+ */
+static struct ftrace_page *ftrace_allocate_pages(unsigned long num_to_init)
 {
 	struct ftrace_page *start_pg;
 	struct ftrace_page *pg;
@@ -5079,6 +5097,8 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  *  -EBUSY - Another direct function is already attached (there can be only one)
  *  -ENODEV - @ip does not point to a ftrace nop location (or not supported)
  *  -ENOMEM - There was an allocation failure.
+ *
+ * 直接调用一个蹦床
  */
 int register_ftrace_direct(unsigned long ip, unsigned long addr)
 {
@@ -6159,6 +6179,9 @@ static __init int ftrace_init_dyn_tracefs(struct dentry *d_tracer)
 	return 0;
 }
 
+/**
+ *  按地址排序
+ */
 static int ftrace_cmp_ips(const void *a, const void *b)
 {
 	const unsigned long *ipa = a;
@@ -6170,10 +6193,13 @@ static int ftrace_cmp_ips(const void *a, const void *b)
 		return -1;
 	return 0;
 }
-    /*  */
+
+/**
+ *  
+ */
 static int ftrace_process_locs(struct module *mod,
-			       unsigned long *start,
-			       unsigned long *end)
+                 			       unsigned long *start,
+                 			       unsigned long *end)
 {
 	struct ftrace_page *start_pg;
 	struct ftrace_page *pg;
@@ -6184,14 +6210,16 @@ static int ftrace_process_locs(struct module *mod,
 	unsigned long flags = 0; /* Shut up gcc */
 	int ret = -ENOMEM;
 
+    /**
+     *  数量
+     */
 	count = end - start;    /* 计算数量 */
 
 	if (!count)
 		return 0;
 
     /* 排序 */
-	sort(start, count, sizeof(*start),
-	     ftrace_cmp_ips, NULL);
+	sort(start, count, sizeof(*start), ftrace_cmp_ips, NULL);
 
     /* 分配 ftrace_page */
 	start_pg = ftrace_allocate_pages(count);    /* 分配pages */
@@ -6222,10 +6250,18 @@ static int ftrace_process_locs(struct module *mod,
 		ftrace_pages->next = start_pg;
 	}
 
+    /**
+     *  遍历整个 ftrace 区间
+     */
 	p = start;
 	pg = start_pg;
 	while (p < end) {   /* 遍历整个 ftrace mcount 区间 */
+
+        /**
+         *  x86: addr = *p++
+         */
 		addr = ftrace_call_adjust(*p++);
+        
 		/*
 		 * Some architecture linkers will pad between
 		 * the different mcount_loc sections of different
@@ -6242,6 +6278,9 @@ static int ftrace_process_locs(struct module *mod,
 			pg = pg->next;
 		}
 
+        /**
+         *  保存 function 地址
+         */
 		rec = &pg->records[pg->index++];
 		rec->ip = addr; /* 记录这个 addr */
 	}
@@ -6262,7 +6301,12 @@ static int ftrace_process_locs(struct module *mod,
 	 */
 	if (!mod)
 		local_irq_save(flags);
+
+    /**
+     *  更新 ftrace 
+     */
 	ftrace_update_code(mod, start_pg);
+    
 	if (!mod)
 		local_irq_restore(flags);
 	ret = 0;
@@ -6829,6 +6873,10 @@ void __init ftrace_free_init_mem(void)
 
 extern unsigned long __start_mcount_loc[];  /*  */
 extern unsigned long __stop_mcount_loc[];
+
+/**
+ *  ftrace 初始化
+ */
 void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 {
 	extern unsigned long __start_mcount_loc[];
@@ -6837,26 +6885,33 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	int ret;
 
 	local_irq_save(flags);
-	ret = ftrace_dyn_arch_init();   /* x86 为空 */
+	ret = ftrace_dyn_arch_init();   /* x86/arm64 为空 */
 	local_irq_restore(flags);
 	if (ret)
 		goto failed;
 
+    /**
+     *  个数
+     */
 	count = __stop_mcount_loc - __start_mcount_loc;
 	if (!count) {
 		pr_info("ftrace: No functions to be traced?\n");
 		goto failed;
 	}
 
+    //[rongtao@localhost src]$ dmesg | grep ftrace
+    //[    0.264225] ftrace: allocating 29538 entries in 116 pages
 	pr_info("ftrace: allocating %ld entries in %ld pages\n",
-		count, count / ENTRIES_PER_PAGE + 1);
+		    count, count / ENTRIES_PER_PAGE + 1);
 
 	last_ftrace_enabled = ftrace_enabled = 1;   /* 默认开启 */
 
-    /*  */
+    /**
+     *  进行处理
+     */
 	ret = ftrace_process_locs(NULL,
-				  __start_mcount_loc,
-				  __stop_mcount_loc);
+            				  __start_mcount_loc,
+            				  __stop_mcount_loc);
 
 	pr_info("ftrace: allocated %ld pages with %ld groups\n",
 		ftrace_number_of_pages, ftrace_number_of_groups);

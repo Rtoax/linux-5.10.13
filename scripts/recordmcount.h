@@ -546,14 +546,17 @@ static int find_secsym_ndx(unsigned const txtndx,
 
 /* Evade ISO C restriction: no declaration after statement in has_rel_mcount. */
 static char const * __has_rel_mcount(Elf_Shdr const *const relhdr, /* reltype */
-				     Elf_Shdr const *const shdr0,
-				     char const *const shstrtab,
-				     char const *const fname)
+                    				     Elf_Shdr const *const shdr0,
+                    				     char const *const shstrtab,
+                    				     char const *const fname)
 {
 	/* .sh_info depends on .sh_type == SHT_REL[,A] */
 	Elf_Shdr const *const txthdr = &shdr0[w(relhdr->sh_info)];
 	char const *const txtname = &shstrtab[w(txthdr->sh_name)];
 
+    /**
+     *  
+     */
 	if (strcmp("__mcount_loc", txtname) == 0) {
 		fprintf(stderr, "warning: __mcount_loc already exists: %s\n",
 			fname);

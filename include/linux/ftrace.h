@@ -409,9 +409,16 @@ enum {
 
 #define ftrace_rec_count(rec)	((rec)->flags & FTRACE_REF_MAX)
 
+/**
+ *  ftrace 
+ */
 struct dyn_ftrace { /*  */
 	unsigned long		ip; /* address of mcount call-site */
 	unsigned long		flags;
+
+    /**
+     *  x86 和 arm64 均为空
+     */
 	struct dyn_arch_ftrace	arch;
 };
 

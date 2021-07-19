@@ -170,6 +170,9 @@
  * 还需要使ftrace_stub_graph指向ftrace_stub，以便同一存根位置可能具有不
  * 同的协议，并且不会与C验证程序混淆。
  *//* ffffffff83dfa990 - ffffffff83e4a800 */
+/**
+ *  记录 ftrace mcount 节
+ */
 #define MCOUNT_REC()	. = ALIGN(8);	/*  */			\
 			__start_mcount_loc = .;		/* ffffffff83dfa990 */	\
 			KEEP(*(__mcount_loc))			\
