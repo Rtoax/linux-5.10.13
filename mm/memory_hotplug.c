@@ -777,6 +777,9 @@ struct zone * zone_for_pfn_range(int online_type, int nid, unsigned start_pfn,
 	return default_zone_for_pfn(nid, start_pfn, nr_pages);
 }
 
+/**
+ *  
+ */
 int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
 		       int online_type, int nid)
 {
@@ -849,6 +852,9 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
 
 	init_per_zone_wmark_min();
 
+    /**
+     *  启动
+     */
 	kswapd_run(nid);
 	kcompactd_run(nid); /*  */
 

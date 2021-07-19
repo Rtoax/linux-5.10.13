@@ -2973,6 +2973,9 @@ reflush:
 }
 EXPORT_SYMBOL_GPL(drain_workqueue);
 
+/**
+ *  
+ */
 static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 			     bool from_cancel)
 {
@@ -3029,6 +3032,9 @@ already_gone:
 	return false;
 }
 
+/**
+ *  
+ */
 static bool __flush_work(struct work_struct *work, bool from_cancel)
 {
 	struct wq_barrier barr;

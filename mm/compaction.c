@@ -36,8 +36,8 @@ static inline void count_compact_events(enum vm_event_item item, long delta)
 	count_vm_events(item, delta);
 }
 #else
-#define count_compact_event(item) do { } while (0)
-#define count_compact_events(item, delta) do { } while (0)
+//#define count_compact_event(item) do { } while (0)
+//#define count_compact_events(item, delta) do { } while (0)
 #endif
 
 #if defined CONFIG_COMPACTION || defined CONFIG_CMA
@@ -190,7 +190,11 @@ void defer_compaction(struct zone *zone, int order)
 	trace_mm_compaction_defer_compaction(zone, order);
 }
 
-/* Returns true if compaction should be skipped this time */
+/**
+ *  Returns true if compaction should be skipped this time 
+ *
+ *  如果 这次需要被跳过，返回 true
+ */
 bool compaction_deferred(struct zone *zone, int order)
 {
 	unsigned long defer_limit = 1UL << zone->compact_defer_shift;
@@ -213,6 +217,10 @@ bool compaction_deferred(struct zone *zone, int order)
  * Update defer tracking counters after successful compaction of given order,
  * which means an allocation either succeeded (alloc_success == true) or is
  * expected to succeed.
+ *
+ * defer: 推迟
+ *
+ * 
  */
 void compaction_defer_reset(struct zone *zone, int order,
 		bool alloc_success)
@@ -2983,6 +2991,9 @@ static bool kcompactd_node_suitable(pg_data_t *pgdat)   /*  */
 	return false;
 }
 
+/**
+ *  kcompactd 调用的函数
+ */
 static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 {
 	/*
@@ -2991,40 +3002,76 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 	 */
 	int zoneid;
 	struct zone *zone;
+
+    /**
+     *  控制结构
+     */
 	struct compact_control cc = {
-		.order = pgdat->kcompactd_max_order,
-		.search_order = pgdat->kcompactd_max_order,
-		.highest_zoneidx = pgdat->kcompactd_highest_zoneidx,
-		.mode = MIGRATE_SYNC_LIGHT,
-		.ignore_skip_hint = false,
-		.gfp_mask = GFP_KERNEL,
+		cc.order = pgdat->kcompactd_max_order,
+		cc.search_order = pgdat->kcompactd_max_order,
+		cc.highest_zoneidx = pgdat->kcompactd_highest_zoneidx,
+		cc.mode = MIGRATE_SYNC_LIGHT,
+		cc.ignore_skip_hint = false,
+		cc.gfp_mask = GFP_KERNEL,
 	};
-	trace_mm_compaction_kcompactd_wake(pgdat->node_id, cc.order,
-							cc.highest_zoneidx);
+	trace_mm_compaction_kcompactd_wake(pgdat->node_id, cc.order, cc.highest_zoneidx);
+
+    /**
+     *  记录
+     */
 	count_compact_event(KCOMPACTD_WAKE);
 
+    /**
+     *  从低到高 遍历  NODE 中所有的 zone
+     */
 	for (zoneid = 0; zoneid <= cc.highest_zoneidx; zoneid++) {
 		int status;
 
 		zone = &pgdat->node_zones[zoneid];
+
+        /**
+         *  zone 中没有内存，直接返回
+         */
 		if (!populated_zone(zone))
 			continue;
 
+        /**
+         *  需要跳过这次规整吗
+         */
 		if (compaction_deferred(zone, cc.order))
 			continue;
 
-		if (compaction_suitable(zone, cc.order, 0, zoneid) !=
-							COMPACT_CONTINUE)
+        /**
+         *  根据水位判断是否需要规整
+         */
+		if (compaction_suitable(zone, cc.order, 0, zoneid) != COMPACT_CONTINUE)
 			continue;
 
+        /**
+         *  停止吗
+         */
 		if (kthread_should_stop())  /* 需要停止 */
 			return;
 
+        /**
+         *  否则进行规整
+         */
 		cc.zone = zone;
+
+        /**
+         *  规整的核心函数
+         */
 		status = compact_zone(&cc, NULL);
 
 		if (status == COMPACT_SUCCESS) {
+            /**
+             *  
+             */
 			compaction_defer_reset(zone, cc.order, false);
+
+        /**
+         *  如果 没找到需要规整的页面， 或者 规整后仍不满足需求
+         */
 		} else if (status == COMPACT_PARTIAL_SKIPPED || status == COMPACT_COMPLETE) {
 			/*
 			 * Buddy pages may become stranded on pcps that could
@@ -3037,14 +3084,17 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 			/*
 			 * We use sync migration mode here, so we defer like
 			 * sync direct compaction does.
+			 *
+			 * 延迟 规整
 			 */
 			defer_compaction(zone, cc.order);   /*  */
 		}
 
-		count_compact_events(KCOMPACTD_MIGRATE_SCANNED,
-				     cc.total_migrate_scanned);
-		count_compact_events(KCOMPACTD_FREE_SCANNED,
-				     cc.total_free_scanned);
+        /**
+         *  计数
+         */
+		count_compact_events(KCOMPACTD_MIGRATE_SCANNED, cc.total_migrate_scanned);
+		count_compact_events(KCOMPACTD_FREE_SCANNED, cc.total_free_scanned);
 
 		VM_BUG_ON(!list_empty(&cc.freepages));
 		VM_BUG_ON(!list_empty(&cc.migratepages));
@@ -3090,7 +3140,9 @@ void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx)
 /*
  * The background compaction daemon, started as a kernel thread
  * from the init process.
- */ /* 内存规整线程回调函数 */
+ *
+ * 内存规整线程回调函数
+ */
 static int kcompactd(void *p/* 内存节点-所有的ZONE */)
 {
 	pg_data_t *pgdat = (pg_data_t*)p;
@@ -3102,20 +3154,34 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
 	if (!cpumask_empty(cpumask))
 		set_cpus_allowed_ptr(tsk, cpumask);
 
+    /**
+     *  设置进程可以冻结，和 kswapd 一样
+     */
 	set_freezable();
 
 	pgdat->kcompactd_max_order = 0;
 	pgdat->kcompactd_highest_zoneidx = pgdat->nr_zones - 1;
 
+    /**
+     *  是否需要停止
+     */
 	while (!kthread_should_stop()) {    /* 不应该停止 */
 		unsigned long pflags;
 
 		trace_mm_compaction_kcompactd_sleep(pgdat->node_id);
+
+        /**
+         *  
+         */
 		if (wait_event_freezable_timeout(pgdat->kcompactd_wait, /* 内存规整 */
-			kcompactd_work_requested(pgdat),
-			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
+        			kcompactd_work_requested(pgdat),
+        			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
 
 			psi_memstall_enter(&pflags);
+
+            /**
+             *  进行内存规整
+             */
 			kcompactd_do_work(pgdat);   /* 内存规整 */
 			psi_memstall_leave(&pflags);
 			continue;
@@ -3147,7 +3213,9 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
 /*
  * This kcompactd start function will be called by init and node-hot-add.
  * On node-hot-add, kcompactd will moved to proper cpus if cpus are hot-added.
- */ /* 内存规整线程 */
+ *
+ * 内存规整线程 启动
+ */
 int kcompactd_run(int nid)  /*  */
 {
 	pg_data_t *pgdat = NODE_DATA(nid);  /*  */
@@ -3156,6 +3224,9 @@ int kcompactd_run(int nid)  /*  */
 	if (pgdat->kcompactd)
 		return 0;
 
+    /**
+     *  启动线程
+     */
 	pgdat->kcompactd = kthread_run(kcompactd, pgdat/* 内存节点 */, "kcompactd%d", nid);
 	if (IS_ERR(pgdat->kcompactd)) {
 		pr_err("Failed to start kcompactd on node %d\n", nid);
@@ -3202,6 +3273,9 @@ static int kcompactd_cpu_online(unsigned int cpu)
 	return 0;
 }
 
+/**
+ *  启动内存规整线程，这属于 异步 的内存规整
+ */
 static int __init kcompactd_init(void)
 {
 	int nid;
@@ -3215,8 +3289,12 @@ static int __init kcompactd_init(void)
 		return ret;
 	}
 
+    /**
+     *  启动 NODE 的 kcompactd 线程
+     */
 	for_each_node_state(nid, N_MEMORY) {    /* 每个节点一个 kcompactd 规整进程 */
-		kcompactd_run(nid);}
+		kcompactd_run(nid);
+    }
 	return 0;
 }
 subsys_initcall(kcompactd_init) /* kcompactd 将专注于内存整理 */

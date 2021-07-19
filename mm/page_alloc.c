@@ -3064,6 +3064,9 @@ static void drain_pages_zone(unsigned int cpu, struct zone *zone)
 	local_irq_save(flags);
 	pset = per_cpu_ptr(zone->pageset, cpu);
 
+    /**
+     *  释放 用于快速分配的 page
+     */
 	pcp = &pset->pcp;
 	if (pcp->count)
 		free_pcppages_bulk(zone, pcp->count, pcp);
@@ -3102,6 +3105,9 @@ void drain_local_pages(struct zone *zone)
 		drain_pages(cpu);
 }
 
+/**
+ *  
+ */
 static void drain_local_pages_wq(struct work_struct *work)
 {
 	struct pcpu_drain *drain;
@@ -3116,6 +3122,10 @@ static void drain_local_pages_wq(struct work_struct *work)
 	 * a different one.
 	 */
 	preempt_disable();
+
+    /**
+     *  
+     */
 	drain_local_pages(drain->zone);
 	preempt_enable();
 }
@@ -3126,6 +3136,8 @@ static void drain_local_pages_wq(struct work_struct *work)
  * When zone parameter is non-NULL, spill just the single zone's pages.
  *
  * Note that this can be extremely slow as the draining happens in a workqueue.
+ *
+ * 将所有CPU中的所有每cpu页面都溢出回 伙伴 分配器中。
  */
 void drain_all_pages(struct zone *zone)
 {
@@ -3186,6 +3198,9 @@ void drain_all_pages(struct zone *zone)
 			cpumask_clear_cpu(cpu, &cpus_with_pcps);
 	}
 
+    /**
+     *  
+     */
 	for_each_cpu(cpu, &cpus_with_pcps) {
 		struct pcpu_drain *drain = per_cpu_ptr(&pcpu_drain, cpu);
 
@@ -3193,8 +3208,13 @@ void drain_all_pages(struct zone *zone)
 		INIT_WORK(&drain->work, drain_local_pages_wq);
 		queue_work_on(cpu, mm_percpu_wq, &drain->work);
 	}
-	for_each_cpu(cpu, &cpus_with_pcps)
+
+    /**
+     *  
+     */
+	for_each_cpu(cpu, &cpus_with_pcps) {
 		flush_work(&per_cpu_ptr(&pcpu_drain, cpu)->work);
+    }
 
 	mutex_unlock(&pcpu_drain_mutex);
 }

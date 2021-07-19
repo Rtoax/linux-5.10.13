@@ -959,6 +959,10 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	int kcompactd_max_order;
 	enum zone_type kcompactd_highest_zoneidx;
 	wait_queue_head_t kcompactd_wait;   /* 内存规整线程等待 */
+
+    /**
+     *  每个节点的  内存规整线程
+     */
 	struct task_struct *kcompactd;
 #endif
 
@@ -1118,7 +1122,11 @@ static inline bool managed_zone(struct zone *zone)
 	return zone_managed_pages(zone);
 }
 
-/* Returns true if a zone has memory */
+/**
+ *  Returns true if a zone has memory 
+ *
+ *  zone 中有内存就返回 true
+ */
 static inline bool populated_zone(struct zone *zone)
 {
 	return zone->present_pages;
