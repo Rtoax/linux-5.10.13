@@ -586,13 +586,17 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long);
 
 extern void set_pageblock_order(void);
-unsigned int reclaim_clean_pages_from_list(struct zone *zone,
-					    struct list_head *page_list);
+unsigned int reclaim_clean_pages_from_list(struct zone *zone, struct list_head *page_list);
+
+
+
+
+
 /* The ALLOC_WMARK bits are used as an index to zone->watermark */
-#define ALLOC_WMARK_MIN		WMARK_MIN
+#define ALLOC_WMARK_MIN		WMARK_MIN   /* 最低警戒水位 */
 #define ALLOC_WMARK_LOW		WMARK_LOW   /* 低水位, 唤醒 kswapd */
-#define ALLOC_WMARK_HIGH	WMARK_HIGH
-#define ALLOC_NO_WATERMARKS	0x04 /* don't check watermarks at all */
+#define ALLOC_WMARK_HIGH	WMARK_HIGH  /* 高水位 */
+#define ALLOC_NO_WATERMARKS	0x04 /* don't check watermarks at all 可以访问系统给所有内存 */
 
 /* Mask to get the watermark bits */
 #define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1) /* 0x04-1=0x03 = 0011 */
@@ -603,17 +607,18 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
  * !MMU
  */
 #ifdef CONFIG_MMU
-#define ALLOC_OOM		0x08
+#define ALLOC_OOM		0x08 /* 用于补偿 OOM 进程或者线程 */
 #else
 /*  */
 #endif
 
-#define ALLOC_HARDER		 0x10 /* try to alloc harder */
-#define ALLOC_HIGH		 0x20 /* __GFP_HIGH set */
-#define ALLOC_CPUSET		 0x40 /* check for correct cpuset */
-#define ALLOC_CMA		 0x80 /* allow allocations from CMA areas */
+#define ALLOC_HARDER    0x10 /* try to alloc harder 紧急情况下可以访问预留内存 */
+#define ALLOC_HIGH      0x20 /* __GFP_HIGH set 表示进程具有很高的优先级，允许访问预留内存 */
+#define ALLOC_CPUSET    0x40 /* check for correct cpuset */
+#define ALLOC_CMA       0x80 /* allow allocations from CMA areas */
+
 #ifdef CONFIG_ZONE_DMA32
-#define ALLOC_NOFRAGMENT	0x100 /* avoid mixing pageblock types 避免混合页面块类型 */
+#define ALLOC_NOFRAGMENT    0x100 /* avoid mixing pageblock types 避免混合页面块类型 */
 #else
 /*  */
 #endif

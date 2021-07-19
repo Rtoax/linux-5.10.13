@@ -4413,7 +4413,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 		prep_new_page(page, order, gfp_mask, alloc_flags);
 
     /**
-     *  尝试分配
+     *  内存规整后，尝试分配
      */
 	/* Try get a page from the freelist if available */
 	if (!page)
@@ -4688,9 +4688,15 @@ static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
 	}
 }
 
+/**
+ *  
+ */
 static inline unsigned int
 gfp_to_alloc_flags(gfp_t gfp_mask)
 {
+    /**
+     *  设置分配条件，即使用最低警戒水位来判断 是否满足分配条件
+     */
 	unsigned int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
 
 	/*
@@ -4710,6 +4716,9 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 	alloc_flags |= (__force int)
 		(gfp_mask & (__GFP_HIGH | __GFP_KSWAPD_RECLAIM));
 
+    /**
+     *  这次分配在中断上下文中进行，则需要设置 ALLOC_HARDER
+     */
 	if (gfp_mask & __GFP_ATOMIC) {
 		/*
 		 * Not worth trying to allocate harder for __GFP_NOMEMALLOC even
@@ -4722,9 +4731,16 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 		 * comment for __cpuset_node_allowed().
 		 */
 		alloc_flags &= ~ALLOC_CPUSET;
+
+    /**
+     *  实时进程，也要设置 ALLOC_HARDER
+     */
 	} else if (unlikely(rt_task(current)) && !in_interrupt())
 		alloc_flags |= ALLOC_HARDER;
 
+    /**
+     *  
+     */
 	alloc_flags = current_alloc_flags(gfp_mask, alloc_flags);
 
 	return alloc_flags;
@@ -4748,6 +4764,8 @@ static bool oom_reserves_allowed(struct task_struct *tsk)
 /*
  * Distinguish requests which really need access to full memory
  * reserves from oom victims which can live with a portion of it
+ *
+ *  是否允许访问系统预留的内存
  */
 static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
 {
@@ -4767,6 +4785,9 @@ static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
 	return 0;
 }
 
+/**
+ *  是否允许访问系统预留的内存
+ */
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 {
 	return !!__gfp_pfmemalloc_flags(gfp_mask);
@@ -4781,6 +4802,8 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
  * reclaimed all remaining pages on the LRU lists.
  *
  * Returns true if a retry is viable or false to enter the oom path.
+ *
+ *  是否需要重试 直接页面回收
  */
 static inline bool
 should_reclaim_retry(gfp_t gfp_mask, unsigned order,
@@ -4906,11 +4929,20 @@ check_retry_cpuset(int cpuset_mems_cookie, struct alloc_context *ac)
 	return false;
 }
 
+/**
+ *  慢速路径
+ */
 static inline struct page * /* 慢速分配页 */
-__alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
-						struct alloc_context *ac)
+__alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order, struct alloc_context *ac)
 {
+    /**
+     *  是否允许直接页面回收
+     */
 	bool can_direct_reclaim = gfp_mask & __GFP_DIRECT_RECLAIM;
+
+    /**
+     *  会形成一定的内存分配压力
+     */
 	const bool costly_order = order > PAGE_ALLOC_COSTLY_ORDER;
 	struct page *page = NULL;
 	unsigned int alloc_flags;
@@ -4925,11 +4957,19 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	/*
 	 * We also sanity check to catch abuse of atomic reserves being used by
 	 * callers that are not in atomic context.
+	 *
+	 * 检查是否在 非中断上下文中 滥用 __GFP_ATOMIC
 	 */
 	if (WARN_ON_ONCE((gfp_mask & (__GFP_ATOMIC|__GFP_DIRECT_RECLAIM)) ==
 				(__GFP_ATOMIC|__GFP_DIRECT_RECLAIM)))
+	    /**
+         *  去除 该位
+         */
 		gfp_mask &= ~__GFP_ATOMIC;
 
+    /**
+     *  
+     */
 retry_cpuset:
 	compaction_retries = 0;
 	no_progress_loops = 0;
@@ -4940,6 +4980,8 @@ retry_cpuset:
 	 * The fast path uses conservative alloc_flags to succeed only until
 	 * kswapd needs to be woken up, and to avoid the cost of setting up
 	 * alloc_flags precisely. So we do that now.
+	 *
+	 * 
 	 */
 	alloc_flags = gfp_to_alloc_flags(gfp_mask);
 
@@ -4948,23 +4990,33 @@ retry_cpuset:
 	 * because we might have used different nodemask in the fast path, or
 	 * there was a cpuset modification and we are retrying - otherwise we
 	 * could end up iterating over non-eligible zones endlessly.
+	 *
+	 * 重新计算首选推荐的 zone，因为可能在快速路径修改了内存节点掩码，或 使用 cpuset 机制做了修改
 	 */
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
-					ac->highest_zoneidx, ac->nodemask);
+					            ac->highest_zoneidx, ac->nodemask);
 	if (!ac->preferred_zoneref->zone)
 		goto nopage;
 
+    /**
+     *  唤醒 kswapd 线程
+     */
 	if (alloc_flags & ALLOC_KSWAPD)
 		wake_all_kswapds(order, gfp_mask, ac);
 
 	/*
 	 * The adjusted alloc_flags might result in immediate success, so try
 	 * that first
+	 *
+	 * 尝试以最低警戒水位 进行分配
 	 */
 	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 	if (page)
 		goto got_pg;
 
+    /**
+     *  如果分配不成功，继续往下看
+     */
 	/*
 	 * For costly allocations, try direct compaction first, as it's likely
 	 * that we have enough base pages and don't need to reclaim. For non-
@@ -4973,6 +5025,12 @@ retry_cpuset:
 	 * same migratetype.
 	 * Don't try this for allocations that are allowed to ignore
 	 * watermarks, as the ALLOC_NO_WATERMARKS attempt didn't yet happen.
+	 *
+	 * 如果 用 最低警戒水位 分配不成功，在三种情况下可以考虑调用直接 内存规整来解决
+	 *
+	 *  1. 允许调用直接内存 页面回收机制
+	 *  2. 高成本的分配需求 
+	 *  3. 不能访问系统预留内存
 	 */
 	if (can_direct_reclaim &&
 			(costly_order ||
@@ -5032,10 +5090,17 @@ retry_cpuset:
 	}
 
 retry:
+
+    /**
+     *  确保 kswapd 不会睡眠，再次唤醒他
+     */
 	/* Ensure kswapd doesn't accidentally go to sleep as long as we loop */
 	if (alloc_flags & ALLOC_KSWAPD)
 		wake_all_kswapds(order, gfp_mask, ac);
 
+    /**
+     *  是否允许访问系统预留的内存
+     */
 	reserve_flags = __gfp_pfmemalloc_flags(gfp_mask);
 	if (reserve_flags)
 		alloc_flags = current_alloc_flags(gfp_mask, reserve_flags);
@@ -5064,12 +5129,18 @@ retry:
 	if (current->flags & PF_MEMALLOC)
 		goto nopage;
 
+    /**
+     *  尝试直接回收
+     */
 	/* Try direct reclaim and then allocating */
 	page = __alloc_pages_direct_reclaim(gfp_mask, order, alloc_flags, ac,
 							&did_some_progress);
 	if (page)
 		goto got_pg;
 
+    /**
+     *  尝试直接规整
+     */
 	/* Try direct compaction and then allocating */
 	page = __alloc_pages_direct_compact(gfp_mask, order, alloc_flags, ac,
 					compact_priority, &_compact_result);
@@ -5087,6 +5158,9 @@ retry:
 	if (costly_order && !(gfp_mask & __GFP_RETRY_MAYFAIL))
 		goto nopage;
 
+    /**
+     *  是否需要重试 直接页面回收
+     */
 	if (should_reclaim_retry(gfp_mask, order, ac, alloc_flags,
 				 did_some_progress > 0, &no_progress_loops))
 		goto retry;
@@ -5324,7 +5398,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 
     /* 如果上面申请失败，则进入慢速路径 */
     /**
-     *  
+     *  慢速路径
      */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 

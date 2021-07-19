@@ -21,7 +21,7 @@ struct vm_area_struct;
 #define ___GFP_DMA32		0x04u
 #define ___GFP_MOVABLE		0x08u   /* 可移动 */
 #define ___GFP_RECLAIMABLE	0x10u   /* 可回收 */
-#define ___GFP_HIGH		0x20u
+#define ___GFP_HIGH		0x20u   //表示进程具有很高的优先级，允许访问预留内存
 #define ___GFP_IO		0x40u
 #define ___GFP_FS		0x80u
 #define ___GFP_ZERO		0x100u
@@ -119,8 +119,8 @@ struct vm_area_struct;
  * %__GFP_NOMEMALLOC is used to explicitly forbid access to emergency reserves.
  * This takes precedence over the %__GFP_MEMALLOC flag if both are set.
  */
-#define __GFP_ATOMIC	((__force gfp_t)___GFP_ATOMIC)
-#define __GFP_HIGH	((__force gfp_t)___GFP_HIGH)
+#define __GFP_ATOMIC	((__force gfp_t)___GFP_ATOMIC)  //不能直接回收页面或等待，调用者通常在中断上下文中
+#define __GFP_HIGH	((__force gfp_t)___GFP_HIGH)    //表示进程具有很高的优先级，允许访问预留内存
 #define __GFP_MEMALLOC	((__force gfp_t)___GFP_MEMALLOC)
 #define __GFP_NOMEMALLOC ((__force gfp_t)___GFP_NOMEMALLOC)
 
