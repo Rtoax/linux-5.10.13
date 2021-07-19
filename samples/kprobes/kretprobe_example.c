@@ -72,7 +72,7 @@ NOKPROBE_SYMBOL(ret_handler);
 
 static struct kretprobe my_kretprobe = {
 	my_kretprobe.handler		= ret_handler,
-	my_kretprobe.entry_handler		= entry_handler,
+	my_kretprobe.entry_handler	= entry_handler,
 	my_kretprobe.data_size		= sizeof(struct my_data),
 	/* Probe up to 20 instances concurrently. */
 	my_kretprobe.maxactive		= 20,
@@ -85,6 +85,9 @@ static int __init kretprobe_init(void)
 {
 	int ret;
 
+    /**
+     *  
+     */
 	my_kretprobe.kp.symbol_name = func_name;
 	ret = register_kretprobe(&my_kretprobe);
 	if (ret < 0) {

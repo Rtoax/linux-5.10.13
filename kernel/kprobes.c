@@ -1882,6 +1882,8 @@ static struct kprobe *__disable_kprobe(struct kprobe *p)
 
 /*
  * Unregister a kprobe without a scheduler synchronization.
+ *
+ * 注销
  */
 static int __unregister_kprobe_top(struct kprobe *p)
 {
@@ -1937,6 +1939,9 @@ disarmed:
 	return 0;
 }
 
+/**
+ *  注销
+ */
 static void __unregister_kprobe_bottom(struct kprobe *p)
 {
 	struct kprobe *ap;
@@ -1971,12 +1976,18 @@ int register_kprobes(struct kprobe **kps, int num)  //注册多个kprobe探测�
 }
 EXPORT_SYMBOL_GPL(register_kprobes);
 
+/**
+ *  注销
+ */
 void unregister_kprobe(struct kprobe *p)    //卸载kprobe探测点
 {
 	unregister_kprobes(&p, 1);
 }
 EXPORT_SYMBOL_GPL(unregister_kprobe);
 
+/**
+ *  注销 kprobe
+ */
 void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探测点
 {
 	int i;
@@ -1984,9 +1995,14 @@ void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探�
 	if (num <= 0)
 		return;
 	mutex_lock(&kprobe_mutex);
+
+    /**
+     *  
+     */
 	for (i = 0; i < num; i++)
 		if (__unregister_kprobe_top(kps[i]) < 0)
 			kps[i]->addr = NULL;
+        
 	mutex_unlock(&kprobe_mutex);
 
 	synchronize_rcu();
@@ -2108,6 +2124,8 @@ NOKPROBE_SYMBOL(__kretprobe_trampoline_handler);
 /*
  * This kprobe pre_handler is registered with every kretprobe. When probe
  * hits it will set up the return probe.
+ *
+ * kretprobe -> pre_handler
  */
 static int pre_handler_kretprobe(struct kprobe *p, struct pt_regs *regs)
 {
@@ -2124,8 +2142,7 @@ static int pre_handler_kretprobe(struct kprobe *p, struct pt_regs *regs)
 	 */
 	raw_spin_lock_irqsave_nested(&rp->lock, flags, 1);
 	if (!hlist_empty(&rp->free_instances)) {
-		ri = hlist_entry(rp->free_instances.first,
-				struct kretprobe_instance, hlist);
+		ri = hlist_entry(rp->free_instances.first, struct kretprobe_instance, hlist);
 		hlist_del(&ri->hlist);
 		raw_spin_unlock_irqrestore(&rp->lock, flags);
 
@@ -2144,6 +2161,10 @@ static int pre_handler_kretprobe(struct kprobe *p, struct pt_regs *regs)
 		/* XXX(hch): why is there no hlist_move_head? */
 		INIT_HLIST_NODE(&ri->hlist);
 		kretprobe_table_lock(hash, &flags);
+
+        /**
+         *  添加到哈希表
+         */
 		hlist_add_head(&ri->hlist, &kretprobe_inst_table[hash]);
 		kretprobe_table_unlock(hash, &flags);
 	} else {

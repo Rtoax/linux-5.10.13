@@ -166,6 +166,9 @@ static inline int kprobe_ftrace(struct kprobe *p)
  *
  */
 struct kretprobe {
+    /**
+     *  
+     */
 	struct kprobe kp;
 	kretprobe_handler_t handler;
 	kretprobe_handler_t entry_handler;

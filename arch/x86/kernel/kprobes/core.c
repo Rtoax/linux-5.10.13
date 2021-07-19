@@ -604,6 +604,9 @@ static nokprobe_inline void restore_btf(void)
 	}
 }
 
+/**
+ *  
+ */
 void arch_prepare_kretprobe(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
 	unsigned long *sara = stack_addr(regs);
