@@ -849,11 +849,25 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
 		hw_breakpoint_restore();
 }
 
+/**
+ *  为啥要用全局变量，因为，修改 内核 的代码段，是有保护的
+ */
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
 
+
+/**
+ *  修改 addr 处 的指令为 opcode 
+ */
 static void *__text_poke(void *addr, const void *opcode, size_t len)
 {
+    /**
+     *  是否在页的边界上
+     *
+     *       page1         page2
+     *  |--------------+-------------|
+     *              ^^^^^^^
+     */
 	bool cross_page_boundary = offset_in_page(addr) + len > PAGE_SIZE;
 	struct page *pages[2] = {NULL};
 	temp_mm_state_t prev;
@@ -868,11 +882,23 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	 */
 	BUG_ON(!after_bootmem);
 
+    /**
+     *  如果不是内核代码段 _stext ~ _etext
+     */
 	if (!core_kernel_text((unsigned long)addr)) {
+        /**
+         *  
+         */
 		pages[0] = vmalloc_to_page(addr);
 		if (cross_page_boundary)
 			pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
-	} else {
+    /**
+     *  是内核 代码段地址
+     */
+    } else {
+        /**
+         *  
+         */
 		pages[0] = virt_to_page(addr);
 		WARN_ON(!PageReserved(pages[0]));
 		if (cross_page_boundary)
@@ -887,6 +913,8 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	/*
 	 * Map the page without the global bit, as TLB flushing is done with
 	 * flush_tlb_mm_range(), which is intended for non-global PTEs.
+	 *
+	 * 属性
 	 */
 	pgprot = __pgprot(pgprot_val(PAGE_KERNEL) & ~_PAGE_GLOBAL);
 
@@ -917,7 +945,12 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	prev = use_temporary_mm(poking_mm);
 
 	kasan_disable_current();
+
+    /**
+     *  代码注入
+     */
 	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);  /*  */
+    
 	kasan_enable_current();
 
 	/*
@@ -942,8 +975,8 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	 * IRQs, but not if the mm is not used, as it is in this point.
 	 */
 	flush_tlb_mm_range(poking_mm, poking_addr, poking_addr +
-			   (cross_page_boundary ? 2 : 1) * PAGE_SIZE,
-			   PAGE_SHIFT, false);
+            			   (cross_page_boundary ? 2 : 1) * PAGE_SIZE,
+            			   PAGE_SHIFT, false);
 
 	/*
 	 * If the text does not match what we just wrote then something is
@@ -971,11 +1004,16 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
  * module, the module would not be removed during poking. This can be achieved
  * by registering a module notifier, and ordering module removal and patching
  * trough a mutex.
+ *
+ * 修改 addr 地址处的指令 为 opcode
  */
 void *text_poke(void *addr, const void *opcode, size_t len)
 {
 	lockdep_assert_held(&text_mutex);
 
+    /**
+     *  内部函数
+     */
 	return __text_poke(addr, opcode, len);
 }
 
@@ -998,11 +1036,17 @@ void *text_poke_kgdb(void *addr, const void *opcode, size_t len)
 	return __text_poke(addr, opcode, len);
 }
 
+/**
+ *  同步到所有 CPU 上
+ */
 static void do_sync_core(void *info)
 {
 	sync_core();
 }
 
+/**
+ *  同步到所有 CPU上
+ */
 void text_poke_sync(void)
 {
 	on_each_cpu(do_sync_core, NULL, 1);

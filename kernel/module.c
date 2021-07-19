@@ -4276,6 +4276,9 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 	unsigned int i;
 	struct mod_kallsyms *kallsyms = rcu_dereference_sched(mod->kallsyms);
 
+    /** 
+     *  
+     */
 	for (i = 0; i < kallsyms->num_symtab; i++) {
 		const Elf_Sym *sym = &kallsyms->symtab[i];
 
@@ -4295,7 +4298,14 @@ unsigned long module_kallsyms_lookup_name(const char *name)
 
 	/* Don't lock: we're in enough trouble already. */
 	preempt_disable();
+
+    /** 
+     *  从那么中查找 ":"
+     */
 	if ((colon = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
+        /** 
+         *  
+         */
 		if ((mod = find_module_all(name, colon - name, false)) != NULL)
 			ret = find_kallsyms_symbol_value(mod, colon+1);
 	} else {

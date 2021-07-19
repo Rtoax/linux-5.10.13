@@ -1621,6 +1621,9 @@ send_sig(int sig, struct task_struct *p, int priv)
 }
 EXPORT_SYMBOL(send_sig);
 
+/**
+ *  
+ */
 void force_sig(int sig) /*  */
 {
 	struct kernel_siginfo info;

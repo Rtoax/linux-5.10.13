@@ -46,6 +46,9 @@ extern void text_poke_bp(void *addr, const void *opcode, size_t len, const void 
 extern void text_poke_queue(void *addr, const void *opcode, size_t len, const void *emulate);
 extern void text_poke_finish(void);
 
+/**
+ *  INT3
+ */
 #define INT3_INSN_SIZE		1
 #define INT3_INSN_OPCODE	0xCC
 

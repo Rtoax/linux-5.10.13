@@ -152,6 +152,10 @@ static void show_signal(struct task_struct *tsk, int signr,
 	}
 }
 
+
+/**
+ *  
+ */
 static void
 do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 	long error_code, int sicode, void __user *addr)
@@ -626,6 +630,13 @@ exit:
 	cond_local_irq_disable(regs);
 }
 
+/**
+ *  内核中的 INT3 中断怎么用
+ *
+ *  1. kgdb
+ *  2. kprobe
+ *  3. 
+ */
 static bool do_int3(struct pt_regs *regs)
 {
 	int res;
@@ -636,24 +647,46 @@ static bool do_int3(struct pt_regs *regs)
 		return true;
 #endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
 
+    /**
+     *  调用 kprobe.pre_handler 和 原始指令
+     */
 #ifdef CONFIG_KPROBES
 	if (kprobe_int3_handler(regs))
 		return true;
 #endif
+
+    /**
+     *  
+     */
 	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 
 	return res == NOTIFY_STOP;
 }
 
+/**
+ *  INT3 处理
+ */
 static void do_int3_user(struct pt_regs *regs)
 {
 	if (do_int3(regs))
 		return;
 
+    /**
+     *  
+     */
 	cond_local_irq_enable(regs);
+
+    /**
+     *  处理 SIGTRAP
+     */
 	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
+    
 	cond_local_irq_disable(regs);
 }
+
+/**
+ *  处理 INT3 断点
+ */
 void exc_int3(struct pt_regs *regs){/* 我加的 */}
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
@@ -671,18 +704,33 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	 * be done before. If the entry came from kernel mode, then use
 	 * nmi_enter() because the INT3 could have been hit in any context
 	 * including NMI.
+	 *
+	 * 用户态
 	 */
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
 		instrumentation_begin();
+
+        /**
+         *  处理 int3
+         */
 		do_int3_user(regs);
 		instrumentation_end();
 		irqentry_exit_to_user_mode(regs);
+
+    /**
+     *  内核态
+     */
 	} else {
 		bool irq_state = idtentry_enter_nmi(regs);
 		instrumentation_begin();
+
+        /**
+         *  int3 中断
+         */
 		if (!do_int3(regs))
 			die("int3", regs, 0);
+        
 		instrumentation_end();
 		idtentry_exit_nmi(regs, irq_state);
 	}
@@ -909,6 +957,9 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	if ((dr6 & DR_STEP) && is_sysenter_singlestep(regs))
 		dr6 &= ~DR_STEP;
 
+    /**
+     *  
+     */
 	if (kprobe_debug_handler(regs))
 		goto out;
 
@@ -1010,11 +1061,18 @@ out:
 	irqentry_exit_to_user_mode(regs);
 }
 
+
+/**
+ *  
+ */
 #ifdef CONFIG_X86_64
 void exc_debug(struct pt_regs *regs){/* 我加的 */}
 /* IST stack entry */
 DEFINE_IDTENTRY_DEBUG(exc_debug)
 {
+    /**
+     *  
+     */
 	exc_debug_kernel(regs, debug_read_clear_dr6());
 }
 

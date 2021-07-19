@@ -344,6 +344,8 @@ int is_vmalloc_or_module_addr(const void *x)
 
 /*
  * Walk a vmap address to the struct page it maps.
+ *
+ *  
  */
 struct page *vmalloc_to_page(const void *vmalloc_addr)  /*  */
 {
@@ -386,9 +388,14 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)  /*  */
 
 	ptep = pte_offset_map(pmd, addr);
 	pte = *ptep;
+
+    /**
+     *  pte 存在
+     */
 	if (pte_present(pte))
 		page = pte_page(pte);
 	pte_unmap(ptep);
+    
 	return page;
     
 }

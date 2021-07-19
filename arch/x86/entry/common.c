@@ -232,6 +232,9 @@ noinstr bool idtentry_enter_nmi(struct pt_regs *regs)
 	return irq_state;
 }
 
+/**
+ *  
+ */
 noinstr void idtentry_exit_nmi(struct pt_regs *regs, bool restore)
 {
 	instrumentation_begin();
@@ -262,6 +265,7 @@ noinstr void idtentry_exit_nmi(struct pt_regs *regs, bool restore)
  * calls.
  */
 DEFINE_PER_CPU(bool, xen_in_preemptible_hcall);
+bool xen_in_preemptible_hcall; //++
 EXPORT_SYMBOL_GPL(xen_in_preemptible_hcall);
 
 /*

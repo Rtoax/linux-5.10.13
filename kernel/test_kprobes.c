@@ -101,9 +101,9 @@ static void kp_post_handler2(struct kprobe *p, struct pt_regs *regs,
 }
 
 static struct kprobe kp2 = {
-	.symbol_name = "kprobe_target2",
-	.pre_handler = kp_pre_handler2,
-	.post_handler = kp_post_handler2
+	kp2.symbol_name = "kprobe_target2",
+	kp2.pre_handler = kp_pre_handler2,
+	kp2.post_handler = kp_post_handler2
 };
 
 static int test_kprobes(void)
@@ -268,6 +268,9 @@ static int test_kretprobes(void)
 }
 #endif /* CONFIG_KRETPROBES */
 
+/**
+ *  
+ */
 int init_test_probes(void)
 {
 	int ret;

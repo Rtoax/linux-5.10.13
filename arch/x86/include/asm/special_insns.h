@@ -260,9 +260,12 @@ static inline void clwb(volatile void *__p)
 
 #define nop() asm volatile ("nop")
 
+/**
+ *  序列化
+ */
 static inline void serialize(void)
 {
-	/* Instruction opcode for SERIALIZE; supported in binutils >= 2.35. */
+	/* Instruction opcode for SERIALIZE(序列化); supported in binutils >= 2.35. */
 	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
 }
 

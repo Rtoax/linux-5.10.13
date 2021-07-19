@@ -122,20 +122,23 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
  *
  * On x86_64, vm86 mode is mercifully nonexistent, and we don't need
  * the extra check.
- *//*  */
+ */
 static __always_inline int user_mode(struct pt_regs *regs)
 {
 #ifdef CONFIG_X86_32
 //	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
 #else
-	return !!(regs->cs & 3);    /* 用户优先级是 3 */
+    /**
+     *  
+     */
+	return !!(regs->cs & 3);    /* 用户优先级是 3(好像不是这个3，错了) */
 #endif
 }
 
 static inline int v8086_mode(struct pt_regs *regs)
 {
 #ifdef CONFIG_X86_32
-	return (regs->flags & X86_VM_MASK);
+//	return (regs->flags & X86_VM_MASK);
 #else
 	return 0;	/* No V86 mode support in long mode */
 #endif
@@ -168,7 +171,7 @@ static inline bool any_64bit_mode(struct pt_regs *regs)
 #ifdef CONFIG_X86_64
 	return !user_mode(regs) || user_64bit_mode(regs);
 #else
-	return false;
+//	return false;
 #endif
 }
 
@@ -235,15 +238,15 @@ static inline unsigned long regs_get_register(struct pt_regs *regs,
 		return 0;
 #ifdef CONFIG_X86_32
 	/* The selector fields are 16-bit. */
-	if (offset == offsetof(struct pt_regs, cs) ||
-	    offset == offsetof(struct pt_regs, ss) ||
-	    offset == offsetof(struct pt_regs, ds) ||
-	    offset == offsetof(struct pt_regs, es) ||
-	    offset == offsetof(struct pt_regs, fs) ||
-	    offset == offsetof(struct pt_regs, gs)) {
-		return *(u16 *)((unsigned long)regs + offset);
-
-	}
+//	if (offset == offsetof(struct pt_regs, cs) ||
+//	    offset == offsetof(struct pt_regs, ss) ||
+//	    offset == offsetof(struct pt_regs, ds) ||
+//	    offset == offsetof(struct pt_regs, es) ||
+//	    offset == offsetof(struct pt_regs, fs) ||
+//	    offset == offsetof(struct pt_regs, gs)) {
+//		return *(u16 *)((unsigned long)regs + offset);
+//
+//	}
 #endif
 	return *(unsigned long *)((unsigned long)regs + offset);
 }

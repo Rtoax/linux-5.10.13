@@ -232,20 +232,22 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
 	return ret;
 }
 
+/**
+ *  
+ */
 int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 {
 	struct aarch64_insn_patch patch = {
-		.text_addrs = addrs,
-		.new_insns = insns,
-		.insn_cnt = cnt,
-		.cpu_count = ATOMIC_INIT(0),
+		patch.text_addrs = addrs,
+		patch.new_insns = insns,
+		patch.insn_cnt = cnt,
+		patch.cpu_count = ATOMIC_INIT(0),
 	};
 
 	if (cnt <= 0)
 		return -EINVAL;
 
-	return stop_machine_cpuslocked(aarch64_insn_patch_text_cb, &patch,
-				       cpu_online_mask);
+	return stop_machine_cpuslocked(aarch64_insn_patch_text_cb, &patch, cpu_online_mask);
 }
 
 static int __kprobes aarch64_get_imm_shift_mask(enum aarch64_insn_imm_type type,

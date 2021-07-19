@@ -53,8 +53,10 @@ asmlinkage void kretprobe_trampoline(void);
 
 extern void arch_kprobe_override_function(struct pt_regs *regs);
 
-/* Architecture specific copy of original instruction
-    被复制的被探测点的原始指令，用于单步执行，架构强相关。*/
+/**
+ *  Architecture specific copy of original instruction
+ *  被复制的被探测点的原始指令，用于单步执行，架构强相关。
+ */
 struct arch_specific_insn {
 	/* copy of the original instruction */
 	kprobe_opcode_t *insn;
@@ -104,12 +106,13 @@ struct kprobe_ctlblk {  /*  */
 extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
 extern int kprobe_exceptions_notify(struct notifier_block *self,
 				    unsigned long val, void *data);
+
 extern int kprobe_int3_handler(struct pt_regs *regs);
 extern int kprobe_debug_handler(struct pt_regs *regs);
 
 #else
-
-static inline int kprobe_debug_handler(struct pt_regs *regs) { return 0; }
-
+/**
+     *  
+     */
 #endif /* CONFIG_KPROBES */
 #endif /* _ASM_X86_KPROBES_H */

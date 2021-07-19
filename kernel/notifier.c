@@ -532,19 +532,24 @@ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
 
+/**
+ *  
+ */
 int notrace notify_die(enum die_val val, const char *str,
 	       struct pt_regs *regs, long err, int trap, int sig)
 {
+    /**
+     *  
+     */
 	struct die_args args = {
-		.regs	= regs,
-		.str	= str,
-		.err	= err,
-		.trapnr	= trap,
-		.signr	= sig,
-
+		args.regs	= regs,
+		args.str	= str,
+		args.err	= err,
+		args.trapnr	= trap,
+		args.signr	= sig,
 	};
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			   "notify_die called but RCU thinks we're quiescent");
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "notify_die called but RCU thinks we're quiescent");
+    
 	return atomic_notifier_call_chain(&die_chain, val, &args);
 }
 NOKPROBE_SYMBOL(notify_die);

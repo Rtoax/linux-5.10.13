@@ -71,13 +71,16 @@ static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 NOKPROBE_SYMBOL(ret_handler);
 
 static struct kretprobe my_kretprobe = {
-	.handler		= ret_handler,
-	.entry_handler		= entry_handler,
-	.data_size		= sizeof(struct my_data),
+	my_kretprobe.handler		= ret_handler,
+	my_kretprobe.entry_handler		= entry_handler,
+	my_kretprobe.data_size		= sizeof(struct my_data),
 	/* Probe up to 20 instances concurrently. */
-	.maxactive		= 20,
+	my_kretprobe.maxactive		= 20,
 };
 
+/** 
+ *  
+ */
 static int __init kretprobe_init(void)
 {
 	int ret;

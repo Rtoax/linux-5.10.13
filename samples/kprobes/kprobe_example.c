@@ -15,19 +15,22 @@
 #include <linux/kprobes.h>
 
 #define MAX_SYMBOL_LEN	64
-static char symbol[MAX_SYMBOL_LEN] = "kernel_clone";
-module_param_string(symbol, symbol, sizeof(symbol), 0644);
+static char ___symbol[MAX_SYMBOL_LEN] = "kernel_clone";
+module_param_string(___symbol, ___symbol, sizeof(___symbol), 0644);
 
+/** 
+ *  
+ */
 /* For each probe you need to allocate a kprobe structure */
-static struct kprobe kp = {
-	.symbol_name	= symbol,
+static struct kprobe ____kp = {
+	____kp.symbol_name	= ___symbol,
 };
 
 /* kprobe pre_handler: called just before the probed instruction is executed */
 static int __kprobes handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	pr_info("<%s> pre_handler: p->addr = 0x%p, ip = %lx, flags = 0x%lx\n",
-		p->symbol_name, p->addr, regs->ip, regs->flags);
+		    p->symbol_name, p->addr, regs->ip, regs->flags);
 	/* A dump_stack() here will give a stack backtrace */
 	return 0;
 }
@@ -37,7 +40,7 @@ static void __kprobes handler_post(struct kprobe *p, struct pt_regs *regs,
 				unsigned long flags)
 {
 	pr_info("<%s> post_handler: p->addr = 0x%p, flags = 0x%lx\n",
-		p->symbol_name, p->addr, regs->flags);
+		    p->symbol_name, p->addr, regs->flags);
 }
 
 /*
@@ -54,26 +57,32 @@ static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
 /* NOKPROBE_SYMBOL() is also available */
 NOKPROBE_SYMBOL(handler_fault);
 
+/** 
+ *  
+ */
 static int __init kprobe_init(void)
 {
 	int ret;
-	kp.pre_handler = handler_pre;
-	kp.post_handler = handler_post;
-	kp.fault_handler = handler_fault;
+	____kp.pre_handler = handler_pre;
+	____kp.post_handler = handler_post;
+	____kp.fault_handler = handler_fault;
 
-	ret = register_kprobe(&kp);
+    /** 
+     *  注册
+     */
+	ret = register_kprobe(&____kp);
 	if (ret < 0) {
 		pr_err("register_kprobe failed, returned %d\n", ret);
 		return ret;
 	}
-	pr_info("Planted kprobe at %p\n", kp.addr);
+	pr_info("Planted kprobe at %p\n", ____kp.addr);
 	return 0;
 }
 
 static void __exit kprobe_exit(void)
 {
-	unregister_kprobe(&kp);
-	pr_info("kprobe at %p unregistered\n", kp.addr);
+	unregister_kprobe(&____kp);
+	pr_info("kprobe at %p unregistered\n", ____kp.addr);
 }
 
 module_init(kprobe_init)

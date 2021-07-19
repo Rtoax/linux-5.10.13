@@ -38,11 +38,12 @@
 #define KPROBE_HIT_SSDONE	0x00000008
 
 #else /* CONFIG_KPROBES */
-#include <asm-generic/kprobes.h>
-typedef int kprobe_opcode_t;
-struct arch_specific_insn {
-	int dummy;
-};
+
+//#include <asm-generic/kprobes.h>
+//typedef int kprobe_opcode_t;
+//struct arch_specific_insn {
+//	int dummy;
+//};
 #endif /* CONFIG_KPROBES */
 
 struct kprobe;
@@ -57,6 +58,9 @@ typedef int (*kprobe_fault_handler_t) (struct kprobe *, struct pt_regs *,
 typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
 				    struct pt_regs *);
 
+/**
+ *  
+ */
 struct kprobe { /*  */
 	struct hlist_node hlist;    /* 被用于kprobe全局hash，索引值为被探测点的地址。 */
 
@@ -76,19 +80,19 @@ struct kprobe { /*  */
 	/* Offset into the symbol */
 	unsigned int offset;        /* 被探测点在函数内部的偏移，用于探测函数内核的指令，如果该值为0表示函数的入口。 */
 
-    /*
-     original        kprobe
-       code        registered
-    |        |     |        |
-    | instr1 |     | instr1 |      / call pre_handler
-    |        |     |        |>----/  single step instr2
-    | instr2 |     |  trap  |<---\   call post_handler
-    |        |     |        |     \  continue
-    | instr3 |     | instr3 |
-    |        |     |        |
-    | instr4 |     | instr4 |
-    |        |     |        |
-    */
+    /**
+     *   original        kprobe
+     *     code        registered        call pre_handler
+     *  |        |     |        |       /
+     *  | instr1 |     | instr1 |      / single step instr2
+     *  |        |     |        |>----+  
+     *  | instr2 |     |  trap  |<---+   call post_handler
+     *  |        |     |        |     \  
+     *  | instr3 |     | instr3 |      \ continue
+     *  |        |     |        |
+     *  | instr4 |     | instr4 |
+     *  |        |     |        |
+     */
 	/* Called before addr is executed. 在被探测指令被执行前回调*/
 	kprobe_pre_handler_t pre_handler;   
 
@@ -104,6 +108,9 @@ struct kprobe { /*  */
 	/* Saved opcode (which has been replaced with breakpoint) */
 	kprobe_opcode_t opcode; /* 保存的被探测点原始指令。 */
 
+    /**
+     *  
+     */
 	/* copy of the original instruction */
 	struct arch_specific_insn ainsn;    /* 被复制的被探测点的原始指令，用于单步执行，架构强相关。 */
 

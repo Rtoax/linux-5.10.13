@@ -19,6 +19,9 @@
 //		: ASM_CALL_CONSTRAINT : : "memory");
 //}
 #else
+/**
+ *  
+ */
 static inline void iret_to_self(void)
 {
 	unsigned int tmp;

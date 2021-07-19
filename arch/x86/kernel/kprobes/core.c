@@ -97,9 +97,12 @@ static volatile u32 twobyte_is_boostable[256 / 32] = {
 };
 #undef W
 
+/**
+ *  kretprobe 黑名单
+ */
 struct kretprobe_blackpoint kretprobe_blacklist[] = {
 	{"__switch_to", }, /* This function switches only current task, but
-			      doesn't switch kernel stack.*/
+			                doesn't switch kernel stack.*/
 	{NULL, NULL}	/* Terminator */
 };
 
@@ -482,6 +485,9 @@ static int arch_copy_kprobe(struct kprobe *p)
 	return 0;
 }
 
+/**
+ *  
+ */
 int arch_prepare_kprobe(struct kprobe *p)
 {
 	int ret;
@@ -505,12 +511,27 @@ int arch_prepare_kprobe(struct kprobe *p)
 	return ret;
 }
 
+
+/**
+ *  激活一个 kprobe 
+ */
 void arch_arm_kprobe(struct kprobe *p)
 {
 	u8 int3 = INT3_INSN_OPCODE;
 
+    /**
+     *  将地址addr 的 指令修改为 int3 断点
+     */
 	text_poke(p->addr, &int3, 1);
+
+    /**
+     *  
+     */
 	text_poke_sync();
+
+    /**
+     *  
+     */
 	perf_event_text_poke(p->addr, &p->opcode, 1, &int3, 1);
 }
 
@@ -595,6 +616,21 @@ void arch_prepare_kretprobe(struct kretprobe_instance *ri, struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(arch_prepare_kretprobe);
 
+
+
+/*
+ *   original        kprobe
+ *     code        registered        call pre_handler
+ *  |        |     |        |       /
+ *  | instr1 |     | instr1 |      / single step instr2
+ *  |        |     |        |>----+  
+ *  | instr2 |     |  trap  |<---+   call post_handler
+ *  |        |     |        |     \  
+ *  | instr3 |     | instr3 |      \ continue
+ *  |        |     |        |
+ *  | instr4 |     | instr4 |
+ *  |        |     |        |
+ */
 static void setup_singlestep(struct kprobe *p, struct pt_regs *regs,
 			     struct kprobe_ctlblk *kcb, int reenter)
 {
@@ -610,21 +646,45 @@ static void setup_singlestep(struct kprobe *p, struct pt_regs *regs,
 		 * Reentering boosted probe doesn't reset current_kprobe,
 		 * nor set current_kprobe, because it doesn't use single
 		 * stepping.
+		 *
+		 * 执行 原始的 指令
+         *   original        kprobe
+         *     code        registered        call pre_handler
+         *  |        |     |        |       /
+         *  | instr1 |     | instr1 |      / single step instr2 ######
+         *  |        |     |        |>----+  
+         *  | instr2 |     |  trap  |<---+   call post_handler
+         *  |        |     |        |     \  
+         *  | instr3 |     | instr3 |      \ continue
+         *  |        |     |        |
+         *  | instr4 |     | instr4 |
+         *  |        |     |        |
 		 */
 		regs->ip = (unsigned long)p->ainsn.insn;
 		return;
 	}
 #endif
+
+    /**
+     *  
+     */
 	if (reenter) {
 		save_previous_kprobe(kcb);
 		set_current_kprobe(p, regs, kcb);
 		kcb->kprobe_status = KPROBE_REENTER;
 	} else
 		kcb->kprobe_status = KPROBE_HIT_SS;
-	/* Prepare real single stepping */
+
+    /* Prepare real single stepping */
 	clear_btf();
+
+    /**
+     *  
+     */
 	regs->flags |= X86_EFLAGS_TF;
 	regs->flags &= ~X86_EFLAGS_IF;
+
+    
 	/* single step inline if the instruction is an int3 */
 	if (p->opcode == INT3_INSN_OPCODE)
 		regs->ip = (unsigned long)p->addr;
@@ -671,6 +731,8 @@ NOKPROBE_SYMBOL(reenter_kprobe);
 /*
  * Interrupts are disabled on entry as trap3 is an interrupt gate and they
  * remain disabled throughout this function.
+ *
+ * 处理 kprobe int3
  */
 int kprobe_int3_handler(struct pt_regs *regs)
 {
@@ -678,10 +740,17 @@ int kprobe_int3_handler(struct pt_regs *regs)
 	struct kprobe *p;
 	struct kprobe_ctlblk *kcb;
 
+    /**
+     *  不能是用户模式
+     */
 	if (user_mode(regs))
 		return 0;
 
+    /**
+     *  指令已经指向 int3 的下一条，找到 int3 地址
+     */
 	addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
+    
 	/*
 	 * We don't want to be preempted for the entire duration of kprobe
 	 * processing. Since int3 and debug trap disables irqs and we clear
@@ -689,13 +758,26 @@ int kprobe_int3_handler(struct pt_regs *regs)
 	 */
 
 	kcb = get_kprobe_ctlblk();
+
+    /**
+     *  从哈希表中 查找 kprobe 结构
+     */
 	p = get_kprobe(addr);
 
 	if (p) {
+        /**
+         *  检查当前 CPU 的 per 变量 kprobe
+         */
 		if (kprobe_running()) {
+            /**
+             *  已经在执行，重新执行
+             */
 			if (reenter_kprobe(p, regs, kcb))
 				return 1;
 		} else {
+		    /**
+             *  设置当前的 kprobe
+             */
 			set_current_kprobe(p, regs, kcb);
 			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
 
@@ -705,14 +787,33 @@ int kprobe_int3_handler(struct pt_regs *regs)
 			 * pre-handler and it returned non-zero, that means
 			 * user handler setup registers to exit to another
 			 * instruction, we must skip the single stepping.
+			 *
+			 * 执行 pre_handler
 			 */
 			if (!p->pre_handler || !p->pre_handler(p, regs))
+                /*
+                 *   original        kprobe
+                 *     code        registered        call pre_handler
+                 *  |        |     |        |       /
+                 *  | instr1 |     | instr1 |      / single step instr2
+                 *  |        |     |        |>----+  
+                 *  | instr2 |     |  trap  |<---+   call post_handler
+                 *  |        |     |        |     \  
+                 *  | instr3 |     | instr3 |      \ continue
+                 *  |        |     |        |
+                 *  | instr4 |     | instr4 |
+                 *  |        |     |        |
+                 */
 				setup_singlestep(p, regs, kcb, 0);
 			else
 				reset_current_kprobe();
 			return 1;
 		}
-	} else if (*addr != INT3_INSN_OPCODE) {
+	} 
+    /**
+     *  不是 int3 ， 那么就执行这条指令
+     */
+    else if (*addr != INT3_INSN_OPCODE) {
 		/*
 		 * The breakpoint instruction was removed right
 		 * after we hit it.  Another cpu has removed
@@ -878,6 +979,8 @@ NOKPROBE_SYMBOL(resume_execution);
 /*
  * Interrupts are disabled on entry as trap1 is an interrupt gate and they
  * remain disabled throughout this function.
+ *
+ * 
  */
 int kprobe_debug_handler(struct pt_regs *regs)
 {
@@ -890,6 +993,9 @@ int kprobe_debug_handler(struct pt_regs *regs)
 	resume_execution(cur, regs, kcb);
 	regs->flags |= kcb->kprobe_saved_flags;
 
+    /**
+     *  
+     */
 	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
 		kcb->kprobe_status = KPROBE_HIT_SSDONE;
 		cur->post_handler(cur, regs, 0);

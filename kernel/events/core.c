@@ -8593,6 +8593,10 @@ void perf_event_bpf_event(struct bpf_prog *prog,
 	perf_iterate_sb(perf_event_bpf_output, &bpf_event, NULL);
 }
 
+
+/**
+ *  修改代码段
+ */
 struct perf_text_poke_event {
 	const void		*old_bytes;
 	const void		*new_bytes;
@@ -8645,6 +8649,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	perf_output_end(&handle);
 }
 
+/**
+ *  
+ */
 void perf_event_text_poke(const void *addr, const void *old_bytes,
 			  size_t old_len, const void *new_bytes, size_t new_len)
 {
@@ -8658,6 +8665,9 @@ void perf_event_text_poke(const void *addr, const void *old_bytes,
 	tot += sizeof(text_poke_event.new_len) + new_len;
 	pad  = ALIGN(tot, sizeof(u64)) - tot;
 
+    /**
+     *  
+     */
 	text_poke_event = (struct perf_text_poke_event){
 		.old_bytes    = old_bytes,
 		.new_bytes    = new_bytes,

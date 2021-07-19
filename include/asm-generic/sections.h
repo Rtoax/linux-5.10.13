@@ -40,6 +40,10 @@ extern char _sinittext[], _einittext[];
 extern char __start_ro_after_init[], __end_ro_after_init[];
 extern char _end[];
 extern char __per_cpu_load[], __per_cpu_start[], __per_cpu_end[];
+
+/**
+ *  kprobes 代码段
+ */
 extern char __kprobes_text_start[], __kprobes_text_end[];   /*  */
 extern char __entry_text_start[], __entry_text_end[];   /*  */
 extern char __start_rodata[], __end_rodata[];

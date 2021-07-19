@@ -62,6 +62,9 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
 	return e;
 }
 
+/**
+ *  内核初始化 代码段
+ */
 int init_kernel_text(unsigned long addr)
 {
 	if (addr >= (unsigned long)_sinittext &&
@@ -70,14 +73,16 @@ int init_kernel_text(unsigned long addr)
 	return 0;
 }
 
+/**
+ *  是否属于内核代码段
+ */
 int notrace core_kernel_text(unsigned long addr)
 {
 	if (addr >= (unsigned long)_stext &&
 	    addr < (unsigned long)_etext)
 		return 1;
 
-	if (system_state < SYSTEM_RUNNING &&
-	    init_kernel_text(addr))
+	if (system_state < SYSTEM_RUNNING && init_kernel_text(addr))
 		return 1;
 	return 0;
 }

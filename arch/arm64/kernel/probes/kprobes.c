@@ -242,6 +242,10 @@ static int __kprobes reenter_kprobe(struct kprobe *p,
 	return 1;
 }
 
+
+/**
+ *  
+ */
 static void __kprobes
 post_kprobe_handler(struct kprobe_ctlblk *kcb, struct pt_regs *regs)
 {
@@ -321,6 +325,10 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, unsigned int fsr)
 	return 0;
 }
 
+
+/**
+ *  
+ */
 static void __kprobes kprobe_handler(struct pt_regs *regs)
 {
 	struct kprobe *p, *cur_kprobe;
@@ -394,10 +402,14 @@ kprobe_breakpoint_ss_handler(struct pt_regs *regs, unsigned int esr)
 }
 
 static struct break_hook kprobes_break_ss_hook = {
-	.imm = KPROBES_BRK_SS_IMM,
-	.fn = kprobe_breakpoint_ss_handler,
+	kprobes_break_ss_hook.imm = KPROBES_BRK_SS_IMM,
+	kprobes_break_ss_hook.fn = kprobe_breakpoint_ss_handler,
 };
 
+
+/**
+ *  
+ */
 static int __kprobes
 kprobe_breakpoint_handler(struct pt_regs *regs, unsigned int esr)
 {
@@ -406,8 +418,8 @@ kprobe_breakpoint_handler(struct pt_regs *regs, unsigned int esr)
 }
 
 static struct break_hook kprobes_break_hook = {
-	.imm = KPROBES_BRK_IMM,
-	.fn = kprobe_breakpoint_handler,
+	kprobes_break_hook.imm = KPROBES_BRK_IMM,
+	kprobes_break_hook.fn = kprobe_breakpoint_handler,
 };
 
 /*

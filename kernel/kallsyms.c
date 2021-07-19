@@ -144,6 +144,9 @@ static unsigned int get_symbol_offset(unsigned long pos)
 	return name - kallsyms_names;
 }
 
+/** 
+ *  返回符号地址
+ */
 static unsigned long kallsyms_sym_address(int idx)
 {
 	if (!IS_ENABLED(CONFIG_KALLSYMS_BASE_RELATIVE))
@@ -161,22 +164,39 @@ static unsigned long kallsyms_sym_address(int idx)
 	return kallsyms_relative_base - 1 - kallsyms_offsets[idx];
 }
 
-/* Lookup the address for this symbol. Returns 0 if not found. */
+/**
+ *  Lookup the address for this symbol. Returns 0 if not found. 
+ *
+ *  遍历 内核符号表， name 为函数名
+ */
 unsigned long kallsyms_lookup_name(const char *name)
 {
 	char namebuf[KSYM_NAME_LEN];
 	unsigned long i;
 	unsigned int off;
 
+    /** 
+     *  内核符号表个数
+     */
 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
 
+        /** 
+         *  和内核符号表的函数匹配上了
+         */
 		if (strcmp(namebuf, name) == 0)
 			return kallsyms_sym_address(i);
 	}
+
+    /** 
+     *  没匹配上，就从 外部模块查找
+     */
 	return module_kallsyms_lookup_name(name);
 }
 
+/** 
+ *  
+ */
 int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
 				      unsigned long),
 			    void *data)

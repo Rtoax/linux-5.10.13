@@ -553,15 +553,22 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
 	return NOTIFY_STOP;
 }
 
+
+/**
+ *  
+ */
 int kgdb_ll_trap(int cmd, const char *str,
 		 struct pt_regs *regs, long err, int trap, int sig)
 {
+    /**
+     *  
+     */
 	struct die_args args = {
-		.regs	= regs,
-		.str	= str,
-		.err	= err,
-		.trapnr	= trap,
-		.signr	= sig,
+		args.regs	= regs,
+		args.str	= str,
+		args.err	= err,
+		args.trapnr	= trap,
+		args.signr	= sig,
 
 	};
 

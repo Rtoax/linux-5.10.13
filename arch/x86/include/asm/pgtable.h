@@ -214,7 +214,9 @@ static inline int pte_special(pte_t pte)
 
 static inline u64 protnone_mask(u64 val);
 
-/*  */
+/**
+ *  PTE  转化为 PFN
+ */
 static inline unsigned long pte_pfn(pte_t pte)  /*  */
 {
 	phys_addr_t pfn = pte_val(pte); /* pte.pte */
@@ -253,6 +255,9 @@ static inline int p4d_large(p4d_t p4d)  /* 四级页表项就是大页 */
 	return 0;
 }
 
+/**
+ *  
+ */
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))   /* 页 */
 
 #define pmd_leaf	pmd_large
