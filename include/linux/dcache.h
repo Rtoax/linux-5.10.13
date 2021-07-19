@@ -120,6 +120,8 @@ struct dentry {
 	} d_u;
 } __randomize_layout;
 
+typedef struct dentry * p_dentry; //++
+
 /*
  * dentry->d_lock spinlock nesting subclasses:
  *

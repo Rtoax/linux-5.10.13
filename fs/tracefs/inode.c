@@ -301,11 +301,15 @@ static struct dentry *trace_mount(struct file_system_type *fs_type,
 	return mount_single(fs_type, flags, data, trace_fill_super);
 }
 
+
+/**
+ *  
+ */
 static struct file_system_type trace_fs_type = {
-	.owner =	THIS_MODULE,
-	.name =		"tracefs",
-	.mount =	trace_mount,
-	.kill_sb =	kill_litter_super,
+	trace_fs_type.owner =	THIS_MODULE,
+	trace_fs_type.name =	"tracefs",
+	trace_fs_type.mount =	trace_mount,
+	trace_fs_type.kill_sb =	kill_litter_super,
 };
 MODULE_ALIAS_FS("tracefs");
 
@@ -533,10 +537,14 @@ bool tracefs_initialized(void)
 	return tracefs_registered;
 }
 
+/**
+ *  
+ */
 static int __init tracefs_init(void)
 {
 	int retval;
 
+    ///sys/kernel/debug/tracing
 	retval = sysfs_create_mount_point(kernel_kobj, "tracing");
 	if (retval)
 		return -EINVAL;
