@@ -1046,12 +1046,15 @@ static const struct ftrace_hash empty_hash = {  /* 空 */
 };
 #define EMPTY_HASH	((struct ftrace_hash *)&empty_hash)
 
+/**
+ *  
+ */
 struct ftrace_ops global_ops = {
-	.func				= ftrace_stub,
-	.local_hash.notrace_hash	= EMPTY_HASH,
-	.local_hash.filter_hash		= EMPTY_HASH,
+	global_ops.func				= ftrace_stub,
+	global_ops.local_hash.notrace_hash	= EMPTY_HASH,
+	global_ops.local_hash.filter_hash		= EMPTY_HASH,
 	INIT_OPS_HASH(global_ops)
-	.flags				= FTRACE_OPS_FL_RECURSION_SAFE |
+	global_ops.flags = FTRACE_OPS_FL_RECURSION_SAFE |
 					  FTRACE_OPS_FL_INITIALIZED |
 					  FTRACE_OPS_FL_PID,
 };
@@ -5610,17 +5613,25 @@ ftrace_set_early_filter(struct ftrace_ops *ops, char *buf, int enable)
 	}
 }
 
+/**
+ *  
+ */
 static void __init set_ftrace_early_filters(void)   /* 过滤 */
 {
 	if (ftrace_filter_buf[0])
 		ftrace_set_early_filter(&global_ops, ftrace_filter_buf, 1);
-	if (ftrace_notrace_buf[0])
+
+    if (ftrace_notrace_buf[0])
 		ftrace_set_early_filter(&global_ops, ftrace_notrace_buf, 0);
+    
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-	if (ftrace_graph_buf[0])
+
+    if (ftrace_graph_buf[0])
 		set_ftrace_early_graph(ftrace_graph_buf, 1);
-	if (ftrace_graph_notrace_buf[0])
+
+    if (ftrace_graph_notrace_buf[0])
 		set_ftrace_early_graph(ftrace_graph_notrace_buf, 0);
+    
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 }
 
@@ -6916,6 +6927,9 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	pr_info("ftrace: allocated %ld pages with %ld groups\n",
 		ftrace_number_of_pages, ftrace_number_of_groups);
 
+    /**
+     *  
+     */
 	set_ftrace_early_filters();
 
 	return;
