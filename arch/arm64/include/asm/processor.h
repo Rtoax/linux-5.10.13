@@ -129,6 +129,9 @@ struct cpu_context {
 	unsigned long pc;
 };
 
+/**
+ *  硬件上下文
+ */
 struct thread_struct {
 	struct cpu_context	cpu_context;	/* cpu context */
 
@@ -184,7 +187,7 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 	__tls;								\
  })
 #else
-#define task_user_tls(t)	(&(t)->thread.uw.tp_value)
+//#define task_user_tls(t)	(&(t)->thread.uw.tp_value)
 #endif
 
 /* Sync TPIDR_EL0 back to thread_struct for current */

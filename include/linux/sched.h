@@ -1401,6 +1401,9 @@ struct task_struct {    /* PCB */
 	 */
 	randomized_struct_fields_end
 
+    /**
+     *  硬件上下文
+     */
 	/* CPU-specific state of this task: */
 	struct thread_struct		thread;/* 硬件上下文: 任务的 CPU 状态， 寄存器等信息 */
 

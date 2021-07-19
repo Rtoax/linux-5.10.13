@@ -339,6 +339,9 @@ static __always_inline void load_seg_legacy(unsigned short prev_index,
 	}
 }
 
+/**
+ *  
+ */
 static __always_inline void x86_fsgsbase_load(struct thread_struct *prev,
 					      struct thread_struct *next)
 {
@@ -529,14 +532,27 @@ void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp)
  *
  * Kprobes not supported here. Set the probe on schedule instead.
  * Function graph tracer not supported too.
+ *
+ * 
  */
 __visible __notrace_funcgraph struct task_struct *
 __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 {
+    /**
+     *  获取硬件上下文
+     */
 	struct thread_struct *prev = &prev_p->thread;
 	struct thread_struct *next = &next_p->thread;
+
+    /**
+     *  浮点运算单元
+     */
 	struct fpu *prev_fpu = &prev->fpu;
 	struct fpu *next_fpu = &next->fpu;
+
+    /**
+     *  当前 CPU
+     */
 	int cpu = smp_processor_id();
 
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_DEBUG_ENTRY) &&
@@ -555,6 +571,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	/*
 	 * Load TLS before restoring any segments so that segment loads
 	 * reference the correct GDT entries.
+	 *
+	 * 
 	 */
 	load_TLS(next, cpu);
 
@@ -562,6 +580,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 * Leave lazy mode, flushing any hypercalls made here.  This
 	 * must be done after loading TLS entries in the GDT but before
 	 * loading segments that might reference them.
+	 *
+	 * X86 真机 为空
+	 * X86 半虚拟化 不为空
 	 */
 	arch_end_context_switch(next_p);
 
@@ -578,6 +599,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 *
 	 * Note that we don't need to do anything for CS and SS, as
 	 * those are saved and restored as part of pt_regs.
+	 *
+	 * 保存 es / ds
 	 */
 	savesegment(es, prev->es);
 	if (unlikely(next->es | prev->es))
@@ -587,19 +610,27 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	if (unlikely(next->ds | prev->ds))
 		loadsegment(ds, next->ds);
 
+    /**
+     *  
+     */
 	x86_fsgsbase_load(prev, next);
 
 	/*
 	 * Switch the PDA and FPU contexts.
 	 *
-	 * 设置 线程
+	 * 设置 线程， 参见 宏 current
 	 */
 	this_cpu_write(current_task, next_p);
 	this_cpu_write(cpu_current_top_of_stack, task_top_of_stack(next_p));
 
+    /**
+     *  
+     */
 	switch_fpu_finish(next_fpu);
 
-	/* Reload sp0. */
+	/**
+	 *  Reload sp0. 
+	 */
 	update_task_stack(next_p);
 
 	switch_to_extra(prev_p, next_p);
@@ -638,6 +669,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	return prev_p;
 }
 
+/**
+ *  
+ */
 void set_personality_64bit(void)
 {
 	/* inherit personality from parent */

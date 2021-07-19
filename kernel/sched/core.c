@@ -3740,8 +3740,13 @@ context_switch(struct rq *rq, struct task_struct *prev,
 
 	prepare_lock_switch(rq, next, rf);
 
-	/* Here we just switch the register state and the stack. */
+	/**
+	 *  Here we just switch the register state and the stack. 
+	 *  
+	 *  
+	 */
 	switch_to(prev, next, prev);
+    
 	barrier();
 
 	return finish_task_switch(prev);

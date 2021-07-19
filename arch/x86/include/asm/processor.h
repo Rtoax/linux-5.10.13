@@ -513,8 +513,11 @@ struct perf_event;
  *  X86 硬件上下文
  */
 struct thread_struct {/* 硬件上下文存放: CPU 信息 */
-	/* Cached TLS descriptors: */
+	/**
+	 *  Cached TLS descriptors: 
+	 */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
+    
 #ifdef CONFIG_X86_32
 	unsigned long		sp0;
 #endif
@@ -800,6 +803,9 @@ static inline void spin_lock_prefetch(const void *x)
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
 			   TOP_OF_KERNEL_STACK_PADDING)
 
+/**
+ *  进程 栈顶
+ */
 #define task_top_of_stack(task) ((unsigned long)(task_pt_regs(task) + 1))
 
 #define task_pt_regs(task) \

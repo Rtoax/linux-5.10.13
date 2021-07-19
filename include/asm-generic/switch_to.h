@@ -15,9 +15,11 @@
 /*
  * Context switching is now performed out-of-line in switch_to.S
  */
-extern struct task_struct *__switch_to(struct task_struct *,
-				       struct task_struct *);
+extern struct task_struct *__switch_to(struct task_struct *prev, struct task_struct *next);
 
+/**
+ *  进程切换
+ */
 #define switch_to(prev, next, last)					\
 	do {								\
 		((last) = __switch_to((prev), (next)));			\
