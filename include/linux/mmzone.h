@@ -1381,7 +1381,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #endif
 
 #ifdef CONFIG_FLATMEM
-#define pfn_to_nid(pfn)		(0)
+//#define pfn_to_nid(pfn)		(0)
 #endif
 
 #ifdef CONFIG_SPARSEMEM
@@ -1648,13 +1648,13 @@ static inline unsigned long next_present_section_nr(unsigned long section_nr)
  * this restriction.
  */
 #ifdef CONFIG_NUMA
-#define pfn_to_nid(pfn)							\
-({									\
-	unsigned long __pfn_to_nid_pfn = (pfn);				\
-	page_to_nid(pfn_to_page(__pfn_to_nid_pfn));			\
-})
+#define pfn_to_nid(pfn)	({							    \
+    	unsigned long __pfn_to_nid_pfn = (pfn);			\
+    	page_to_nid(pfn_to_page(__pfn_to_nid_pfn));		\
+    })
+
 #else
-#define pfn_to_nid(pfn)		(0)
+//#define pfn_to_nid(pfn)		(0)
 #endif
 
 void sparse_init(void);

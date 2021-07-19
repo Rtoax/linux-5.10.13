@@ -400,15 +400,28 @@ static int ksm_nr_node_ids = 1;
 static unsigned long ksm_run = KSM_RUN_STOP;
 static void wait_while_offlining(void);
 
+/**
+ *  
+ */
 static DECLARE_WAIT_QUEUE_HEAD(ksm_thread_wait);
 static DECLARE_WAIT_QUEUE_HEAD(ksm_iter_wait);
 static DEFINE_MUTEX(ksm_thread_mutex);
 static DEFINE_SPINLOCK(ksm_mmlist_lock);
 
+static struct wait_queue_head ksm_thread_wait = __WAIT_QUEUE_HEAD_INITIALIZER(ksm_thread_wait);//+++
+static struct wait_queue_head ksm_iter_wait = __WAIT_QUEUE_HEAD_INITIALIZER(ksm_iter_wait);//+++
+static struct mutex ksm_thread_mutex = __MUTEX_INITIALIZER(ksm_thread_mutex);//+++
+static spinlock_t ksm_mmlist_lock = __SPIN_LOCK_UNLOCKED(ksm_mmlist_lock);//+++
+
+
+
 #define KSM_KMEM_CACHE(__struct, __flags) kmem_cache_create("ksm_"#__struct,\
 		sizeof(struct __struct), __alignof__(struct __struct),\
 		(__flags), NULL)
 
+/**
+ *  初始化 slab
+ */
 static int __init ksm_slab_init(void)
 {
 	rmap_item_cache = KSM_KMEM_CACHE(rmap_item, 0);
@@ -433,6 +446,9 @@ out:
 	return -ENOMEM;
 }
 
+/**
+ *  释放
+ */
 static void __init ksm_slab_free(void)
 {
 	kmem_cache_destroy(mm_slot_cache);
@@ -441,16 +457,25 @@ static void __init ksm_slab_free(void)
 	mm_slot_cache = NULL;
 }
 
+/**
+ *  是否为稳定节点
+ */
 static __always_inline bool is_stable_node_chain(struct stable_node *chain)
 {
 	return chain->rmap_hlist_len == STABLE_NODE_CHAIN;
 }
 
+/**
+ *  当 head == migrate_nodes 时，标识这是一个临时节点，主要用于 NUMA  系统
+ */
 static __always_inline bool is_stable_node_dup(struct stable_node *dup)
 {
 	return dup->head == STABLE_NODE_DUP_HEAD;
 }
 
+/**
+ *  
+ */
 static inline void stable_node_chain_add_dup(struct stable_node *dup,
 					     struct stable_node *chain)
 {
@@ -623,12 +648,19 @@ static int break_ksm(struct vm_area_struct *vma, unsigned long addr)
 	return (ret & VM_FAULT_OOM) ? -ENOMEM : 0;
 }
 
+/**
+ *  查找 VMA
+ */
 static struct vm_area_struct *find_mergeable_vma(struct mm_struct *mm,
-		unsigned long addr)
+		                                            unsigned long addr)
 {
 	struct vm_area_struct *vma;
 	if (ksm_test_exit(mm))
 		return NULL;
+
+    /**
+     *  
+     */
 	vma = find_vma(mm, addr);
 	if (!vma || vma->vm_start > addr)
 		return NULL;
@@ -637,6 +669,9 @@ static struct vm_area_struct *find_mergeable_vma(struct mm_struct *mm,
 	return vma;
 }
 
+/**
+ *  写时复制 -> 缺页
+ */
 static void break_cow(struct rmap_item *rmap_item)
 {
 	struct mm_struct *mm = rmap_item->mm;
@@ -650,6 +685,10 @@ static void break_cow(struct rmap_item *rmap_item)
 	put_anon_vma(rmap_item->anon_vma);
 
 	mmap_read_lock(mm);
+
+    /**
+     *  
+     */
 	vma = find_mergeable_vma(mm, addr);
 	if (vma)
 		break_ksm(vma, addr);
@@ -694,6 +733,9 @@ static inline int get_kpfn_nid(unsigned long kpfn)
 	return ksm_merge_across_nodes ? 0 : NUMA(pfn_to_nid(kpfn));
 }
 
+/**
+ *  
+ */
 static struct stable_node *alloc_stable_node_chain(struct stable_node *dup,
 						   struct rb_root *root)
 {
@@ -727,6 +769,9 @@ static struct stable_node *alloc_stable_node_chain(struct stable_node *dup,
 	return chain;
 }
 
+/**
+ *  
+ */
 static inline void free_stable_node_chain(struct stable_node *chain,
 					  struct rb_root *root)
 {
@@ -1142,6 +1187,9 @@ static u32 calc_checksum(struct page *page)
 	return checksum;
 }
 
+/**
+ *  
+ */
 static int write_protect_page(struct vm_area_struct *vma, struct page *page,
 			      pte_t *orig_pte)
 {
@@ -1249,8 +1297,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 	if (!pmd)
 		goto out;
 
-	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, mm, addr,
-				addr + PAGE_SIZE);
+	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, mm, addr, addr + PAGE_SIZE);
 	mmu_notifier_invalidate_range_start(&range);
 
 	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
@@ -1312,7 +1359,7 @@ out:
  * This function returns 0 if the pages were merged, -EFAULT otherwise.
  */
 static int try_to_merge_one_page(struct vm_area_struct *vma,
-				 struct page *page, struct page *kpage)
+				                    struct page *page, struct page *kpage)
 {
 	pte_t orig_pte = __pte(0);
 	int err = -EFAULT;
@@ -1424,16 +1471,18 @@ out:
  * is already a ksm page, try_to_merge_with_ksm_page should be used.
  */
 static struct page *try_to_merge_two_pages(struct rmap_item *rmap_item,
-					   struct page *page,
-					   struct rmap_item *tree_rmap_item,
-					   struct page *tree_page)
+                        					   struct page *page,
+                        					   struct rmap_item *tree_rmap_item,
+                        					   struct page *tree_page)
 {
 	int err;
 
+    /**
+     *  
+     */
 	err = try_to_merge_with_ksm_page(rmap_item, page, NULL);
 	if (!err) {
-		err = try_to_merge_with_ksm_page(tree_rmap_item,
-							tree_page, page);
+		err = try_to_merge_with_ksm_page(tree_rmap_item, tree_page, page);
 		/*
 		 * If that fails, we have a ksm page with only one pte
 		 * pointing to it: so break it.
@@ -1544,9 +1593,10 @@ static struct page *stable_node_dup(struct stable_node **_stable_node_dup,
 			 * There's just one entry and it is below the
 			 * deduplication limit so drop the chain.
 			 */
-			rb_replace_node(&stable_node->node, &found->node,
-					root);
+			rb_replace_node(&stable_node->node, &found->node, root);
+            
 			free_stable_node(stable_node);
+            
 			ksm_stable_node_chains--;
 			ksm_stable_node_dups--;
 			/*
@@ -1648,11 +1698,13 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 }
 
 /**
+ *  prune: 修剪
+ *
  *  
  */
 static __always_inline struct page *chain_prune(struct stable_node **s_n_d,
-						struct stable_node **s_n,
-						struct rb_root *root)
+                         						struct stable_node **s_n,
+                         						struct rb_root *root)
 {
     /**
      *  
@@ -1769,6 +1821,9 @@ again:
 			goto again;
 		}
 
+        /**
+         *  比较 page 内容
+         */
 		ret = memcmp_pages(page, tree_page);
 		put_page(tree_page);
 
@@ -1777,6 +1832,10 @@ again:
 			new = &parent->rb_left;
 		else if (ret > 0)
 			new = &parent->rb_right;
+
+        /**
+         *  两个 page 内容相同
+         */
 		else {
 			if (page_node) {
 				VM_BUG_ON(page_node->head != &migrate_nodes);
@@ -1813,8 +1872,7 @@ again:
 			 * It would be more elegant to return stable_node
 			 * than kpage, but that involves more changes.
 			 */
-			tree_page = get_ksm_page(stable_node_dup,
-						 GET_KSM_PAGE_TRYLOCK);
+			tree_page = get_ksm_page(stable_node_dup, GET_KSM_PAGE_TRYLOCK);
 
 			if (PTR_ERR(tree_page) == -EBUSY)
 				return ERR_PTR(-EBUSY);
@@ -1825,6 +1883,7 @@ again:
 				 * so re-evaluate parent and new.
 				 */
 				goto again;
+            
 			unlock_page(tree_page);
 
 			if (get_kpfn_nid(stable_node_dup->kpfn) !=
@@ -1839,6 +1898,9 @@ again:
 	if (!page_node)
 		return NULL;
 
+    /**
+     *  
+     */
 	list_del(&page_node->list);
 	DO_NUMA(page_node->nid = nid);
 	rb_link_node(&page_node->node, parent, new);
@@ -1868,8 +1930,8 @@ replace:
 			list_del(&page_node->list);
 			DO_NUMA(page_node->nid = nid);
 			rb_replace_node(&stable_node_dup->node,
-					&page_node->node,
-					root);
+        					&page_node->node,
+        					root);
 			if (is_page_sharing_candidate(page_node))
 				get_page(page);
 			else
@@ -1878,8 +1940,16 @@ replace:
 			rb_erase(&stable_node_dup->node, root);
 			page = NULL;
 		}
-	} else {
+	} 
+    /**
+     *  
+     */
+    else {
 		VM_BUG_ON(!is_stable_node_chain(stable_node));
+
+        /**
+         *  
+         */
 		__stable_node_dup_del(stable_node_dup);
 		if (page_node) {
 			VM_BUG_ON(page_node->head != &migrate_nodes);
@@ -1894,6 +1964,10 @@ replace:
 			page = NULL;
 		}
 	}
+
+    /**
+     *  
+     */
 	stable_node_dup->head = &migrate_nodes;
 	list_add(&stable_node_dup->list, stable_node_dup->head);
 	return page;
@@ -2597,8 +2671,14 @@ static void ksm_do_scan(unsigned int scan_npages)
 	}
 }
 
+/**
+ *  ksmd 是否该运行
+ */
 static int ksmd_should_run(void)    /* 是否该运行 */
 {
+    /**
+     *  如果启动标志被设置，并且 
+     */
 	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
 }
 
