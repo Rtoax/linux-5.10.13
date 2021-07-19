@@ -329,11 +329,16 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 	return len + old_addr - old_end;	/* how much done */
 }
 
+
+/**
+ *  
+ */
 static unsigned long move_vma(struct vm_area_struct *vma,
-		unsigned long old_addr, unsigned long old_len,
-		unsigned long new_len, unsigned long new_addr,
-		bool *locked, unsigned long flags,
-		struct vm_userfaultfd_ctx *uf, struct list_head *uf_unmap)
+                        		unsigned long old_addr, unsigned long old_len,
+                        		unsigned long new_len, unsigned long new_addr,
+                        		bool *locked, unsigned long flags,
+                        		struct vm_userfaultfd_ctx *uf, 
+                        		struct list_head *uf_unmap)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *new_vma;

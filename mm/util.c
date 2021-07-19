@@ -989,6 +989,9 @@ out:
 	return res;
 }
 
+/**
+ *  
+ */
 int __weak memcmp_pages(struct page *page1, struct page *page2)
 {
 	char *addr1, *addr2;
@@ -996,6 +999,11 @@ int __weak memcmp_pages(struct page *page1, struct page *page2)
 
 	addr1 = kmap_atomic(page1);
 	addr2 = kmap_atomic(page2);
+
+    /**
+     *  是比较 两个 page 结构??
+     *  为什么不是比较 page 对应的 物理页 PTE 里面的内容?
+     */
 	ret = memcmp(addr1, addr2, PAGE_SIZE);
 	kunmap_atomic(addr2);
 	kunmap_atomic(addr1);

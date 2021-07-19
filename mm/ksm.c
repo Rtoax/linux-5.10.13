@@ -116,10 +116,16 @@
  * @mm_list: link into the mm_slots list, rooted in ksm_mm_head
  * @rmap_list: head for this mm_slot's singly-linked list of rmap_items
  * @mm: the mm that this information is valid for
+ *
+ * KSM  哈希表
  */
 struct mm_slot {
 	struct hlist_node link;
 	struct list_head mm_list;
+
+    /**
+     *  rmap_item.rmap_list 的表头
+     */
 	struct rmap_item *rmap_list;
 	struct mm_struct *mm;
 };
@@ -152,31 +158,63 @@ struct ksm_scan {
  * @rmap_hlist_len: number of rmap_item entries in hlist or STABLE_NODE_CHAIN
  * @nid: NUMA node id of stable tree in which linked (may not match kpfn)
  *
- * KSM  页面 page->mapping 指向的地址
+ * KSM  页面 page->mapping 指向的地址，
+ *
+ *  用于描述稳定红黑树的节点，标识一个至少由两个页面合并而成的页面
  */
 struct stable_node {
 	union {
+        /**
+         *  用于加入 稳定的红黑树节点
+         */
 		struct rb_node node;	/* when node of stable tree */
 		struct {		/* when listed for migration */
+            /**
+             *  当 head == migrate_nodes 时，标识这是一个临时节点，主要用于 NUMA  系统
+             */
 			struct list_head *head;
+            
 			struct {
+                /**
+                 *  用于添加到链式稳定节点的 hlist 中
+                 */
 				struct hlist_node hlist_dup;
+
+                /**
+                 *  用于添加到 migrate_nodes 链表中，等待迁移到合适的内存节点的稳定红黑树中
+                 */
 				struct list_head list;
 			};
 		};
 	};
+
+    /**
+     *  链表头，共享 这个 KSM 页面的 rmap_item 都添加到这个 链表中
+     */
 	struct hlist_head hlist;
 	union {
+        /**
+         *  KSM 页面帧号
+         */
 		unsigned long kpfn;
+        /**
+         *  上一次垃圾回收的时间
+         */
 		unsigned long chain_prune_time;
 	};
 	/*
 	 * STABLE_NODE_CHAIN can be any negative number in
 	 * rmap_hlist_len negative range, but better not -1 to be able
 	 * to reliably detect underflows.
+	 *
+	 * hlist 链表成员的数量，数值为 STABLE_NODE_CHAIN 标识 一个链式的稳定节点
 	 */
 #define STABLE_NODE_CHAIN -1024
 	int rmap_hlist_len;
+
+    /**
+     *  内存节点编号 
+     */
 #ifdef CONFIG_NUMA
 	int nid;
 #endif
@@ -184,6 +222,7 @@ struct stable_node {
 
 /**
  * struct rmap_item - reverse mapping item for virtual addresses
+ *
  * @rmap_list: next rmap_item in mm_slot's singly-linked rmap_list
  * @anon_vma: pointer to anon_vma for this mm,address, when in stable tree
  * @nid: NUMA node id of unstable tree in which linked (may not match page)
@@ -198,20 +237,61 @@ struct stable_node {
  *  而 struct rmap_item 结构是 struct stable_node 结构中的一项(hlist)
  */
 struct rmap_item {  /* 虚拟地址的 反向映射项 */
+    /**
+     *  所有的 rmap_item 连接成一个链表，表头在 mm_slot.rmap_list 中
+     */
 	struct rmap_item *rmap_list;
+
+    /**
+     *  
+     */
 	union {
+	    /**
+         *  当加入到稳定的红黑树，指向 VMA 的 anon_vma 结构
+         */
 		struct anon_vma *anon_vma;	/* when stable */
+
+        /**
+         *  内存节点编号
+         */
 #ifdef CONFIG_NUMA
 		int nid;		/* when node of unstable tree */
 #endif
 	};
+
+    /**
+     *  进程 mm 描述符
+     */
 	struct mm_struct *mm;
+
+    /**
+     *  rmap_item 跟踪的用户空间虚拟地址
+     */
 	unsigned long address;		/* + low bits used for flags below */
+
+    /**
+     *  虚拟地址对应 物理页面的  旧的 校验和
+     */
 	unsigned int oldchecksum;	/* when unstable */
+
+    /**
+     *  在数中的结构
+     */
 	union {
+	    /**
+         *  不稳定的 红黑树 节点
+         */
 		struct rb_node node;	/* when node of unstable tree */
+
 		struct {		/* when listed from stable tree */
+            /**
+             *  稳定的 红黑树
+             */
 			struct stable_node *head;
+
+            /**
+             *  添加到 稳定节点的    hlist 中
+             */
 			struct hlist_node hlist;
 		};
 	};
@@ -231,41 +311,60 @@ static struct rb_root *root_unstable_tree = one_unstable_tree;
 
 /* Recently migrated nodes of stable tree, pending proper placement */
 static LIST_HEAD(migrate_nodes);
+static struct list_head migrate_nodes; //+++
+
 #define STABLE_NODE_DUP_HEAD ((struct list_head *)&migrate_nodes.prev)
 
 #define MM_SLOTS_HASH_BITS 10
 static DEFINE_HASHTABLE(mm_slots_hash, MM_SLOTS_HASH_BITS);
+struct hlist_head mm_slots_hash[1 << (MM_SLOTS_HASH_BITS)] = //+++
+        { [0 ... ((1 << (MM_SLOTS_HASH_BITS)) - 1)] = HLIST_HEAD_INIT };
 
+
+
+/**
+ *  
+ */
 static struct mm_slot ksm_mm_head = {
-	.mm_list = LIST_HEAD_INIT(ksm_mm_head.mm_list),
+	ksm_mm_head.mm_list = LIST_HEAD_INIT(ksm_mm_head.mm_list),
 };
+
+/**
+ *  
+ */
 static struct ksm_scan ksm_scan = {
-	.mm_slot = &ksm_mm_head,
+	ksm_scan.mm_slot = &ksm_mm_head,
 };
 
 static struct kmem_cache *rmap_item_cache;
 static struct kmem_cache *stable_node_cache;
 static struct kmem_cache *mm_slot_cache;
 
-/* The number of nodes in the stable tree */
+/* The number of nodes in the stable tree 
+  /sys/kernel/mm/ksm/pages_shared */
 static unsigned long ksm_pages_shared;
 
-/* The number of page slots additionally sharing those nodes */
+/* The number of page slots additionally sharing those nodes 
+  /sys/kernel/mm/ksm/pages_sharing */
 static unsigned long ksm_pages_sharing;
 
-/* The number of nodes in the unstable tree */
+/* The number of nodes in the unstable tree 
+  /sys/kernel/mm/ksm/pages_unshared */
 static unsigned long ksm_pages_unshared;
 
 /* The number of rmap_items in use: to calculate pages_volatile */
 static unsigned long ksm_rmap_items;
 
-/* The number of stable_node chains */
+/* The number of stable_node chains 
+  /sys/kernel/mm/ksm/stable_node_chains */
 static unsigned long ksm_stable_node_chains;
 
-/* The number of stable_node dups linked to the stable_node chains */
+/* The number of stable_node dups linked to the stable_node chains
+  /sys/kernel/mm/ksm/stable_node_dups */
 static unsigned long ksm_stable_node_dups;
 
-/* Delay in pruning stale stable_node_dups in the stable_node_chains */
+/* Delay in pruning stale stable_node_dups in the stable_node_chains 
+  /sys/kernel/mm/ksm/stable_node_chains_prune_millisecs */
 static int ksm_stable_node_chains_prune_millisecs = 2000;
 
 /* Maximum number of page slots sharing a stable node */
@@ -288,14 +387,16 @@ static bool __read_mostly ksm_use_zero_pages ;
 static unsigned int ksm_merge_across_nodes = 1;
 static int ksm_nr_node_ids = 1;
 #else
-#define ksm_merge_across_nodes	1U
-#define ksm_nr_node_ids		1
+//#define ksm_merge_across_nodes	1U
+//#define ksm_nr_node_ids		1
 #endif
 
 #define KSM_RUN_STOP	0   /*  */
 #define KSM_RUN_MERGE	1   /* 合并 */
 #define KSM_RUN_UNMERGE	2   /* 不合并 */
 #define KSM_RUN_OFFLINE	4   /*  */
+
+///sys/kernel/mm/ksm/run
 static unsigned long ksm_run = KSM_RUN_STOP;
 static void wait_while_offlining(void);
 
@@ -863,6 +964,9 @@ static int unmerge_ksm_pages(struct vm_area_struct *vma,
 	return err;
 }
 
+/**
+  *  
+  */
 static inline struct stable_node *page_stable_node(struct page *page)   /* 获取 page->mapping 结构 */
 {
 	return PageKsm(page) ? page_rmapping(page) : NULL;
@@ -1026,6 +1130,9 @@ error:
 }
 #endif /* CONFIG_SYSFS */
 
+/**
+ *  计算页面校验和
+ */
 static u32 calc_checksum(struct page *page)
 {
 	u32 checksum;
@@ -1337,6 +1444,9 @@ static struct page *try_to_merge_two_pages(struct rmap_item *rmap_item,
 	return err ? NULL : page;
 }
 
+/**
+ *  hlist 链表 的成员个数已经达到最大值，那么返回 空
+ */
 static __always_inline
 bool __is_page_sharing_candidate(struct stable_node *stable_node, int offset)
 {
@@ -1348,9 +1458,12 @@ bool __is_page_sharing_candidate(struct stable_node *stable_node, int offset)
 	 * sharer is going to be freed soon.
 	 */
 	return stable_node->rmap_hlist_len &&
-		stable_node->rmap_hlist_len + offset < ksm_max_page_sharing;
+		stable_node->rmap_hlist_len + offset < ksm_max_page_sharing/*256*/;
 }
 
+/**
+ *  hlist 链表 的成员个数已经达到最大值，那么返回 空
+ */
 static __always_inline
 bool is_page_sharing_candidate(struct stable_node *stable_node)
 {
@@ -1508,12 +1621,21 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 					struct rb_root *root,
 					bool prune_stale_stable_nodes)
 {
-	struct stable_node *stable_node = *_stable_node;
-	if (!is_stable_node_chain(stable_node)) {
-		if (is_page_sharing_candidate(stable_node)) {
-			*_stable_node_dup = stable_node;
-			return get_ksm_page(stable_node, GET_KSM_PAGE_NOLOCK);
+	struct stable_node *___stable_node = *_stable_node;
+
+    /**
+     *  
+     */
+	if (!is_stable_node_chain(___stable_node)) {
+
+        /**
+         *  hlist 链表 的成员个数已经达到最大值，那么返回 空
+         */
+		if (is_page_sharing_candidate(___stable_node)) {
+			*_stable_node_dup = ___stable_node;
+			return get_ksm_page(___stable_node, GET_KSM_PAGE_NOLOCK);
 		}
+        
 		/*
 		 * _stable_node_dup set to NULL means the stable_node
 		 * reached the ksm_max_page_sharing limit.
@@ -1522,13 +1644,19 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 		return NULL;
 	}
 	return stable_node_dup(_stable_node_dup, _stable_node, root,
-			       prune_stale_stable_nodes);
+			                prune_stale_stable_nodes);
 }
 
+/**
+ *  
+ */
 static __always_inline struct page *chain_prune(struct stable_node **s_n_d,
 						struct stable_node **s_n,
 						struct rb_root *root)
 {
+    /**
+     *  
+     */
 	return __stable_node_chain(s_n_d, s_n, root, true);
 }
 
@@ -1576,6 +1704,9 @@ again:
 	new = &root->rb_node;
 	parent = NULL;
 
+    /**
+     *  
+     */
 	while (*new) {
 		struct page *tree_page;
 		int ret;
@@ -1583,6 +1714,10 @@ again:
 		cond_resched();
 		stable_node = rb_entry(*new, struct stable_node, node);
 		stable_node_any = NULL;
+
+        /**
+         *  
+         */
 		tree_page = chain_prune(&stable_node_dup, &stable_node,	root);
 		/*
 		 * NOTE: stable_node may have been freed by
@@ -1939,6 +2074,9 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 	root = root_unstable_tree + nid;
 	new = &root->rb_node;
 
+    /**
+     *  
+     */
 	while (*new) {
 		struct rmap_item *tree_rmap_item;
 		struct page *tree_page;
@@ -1958,6 +2096,9 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 			return NULL;
 		}
 
+        /**
+         *  比较两个页面
+         */
 		ret = memcmp_pages(page, tree_page);
 
 		parent = *new;
@@ -1967,8 +2108,11 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 		} else if (ret > 0) {
 			put_page(tree_page);
 			new = &parent->rb_right;
-		} else if (!ksm_merge_across_nodes &&
-			   page_to_nid(tree_page) != nid) {
+
+        /**
+         *  
+         */
+		} else if (!ksm_merge_across_nodes && page_to_nid(tree_page) != nid) {
 			/*
 			 * If tree_page has been migrated to another NUMA node,
 			 * it will be flushed out and put in the right unstable
@@ -1976,12 +2120,19 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 			 */
 			put_page(tree_page);
 			return NULL;
+
+        /**
+         *  
+         */
 		} else {
 			*tree_pagep = tree_page;
 			return tree_rmap_item;
 		}
 	}
 
+    /**
+     *  
+     */
 	rmap_item->address |= UNSTABLE_FLAG;
 	rmap_item->address |= (ksm_scan.seqnr & SEQNR_MASK);
 	DO_NUMA(rmap_item->nid = nid);
@@ -2037,6 +2188,8 @@ static void stable_tree_append(struct rmap_item *rmap_item,
  *
  * @page: the page that we are searching identical page to.
  * @rmap_item: the reverse mapping into the virtual address of this page
+ *
+ *  在稳定和不稳定的红黑树中 查找是否由可合并的对象
  */
 static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 {
@@ -2049,6 +2202,9 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	int err;
 	bool max_page_sharing_bypass = false;
 
+    /**
+     *  
+     */
 	stable_node = page_stable_node(page);
 	if (stable_node) {
 		if (stable_node->head != &migrate_nodes &&
@@ -2069,6 +2225,9 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 			max_page_sharing_bypass = true;
 	}
 
+    /**
+     *  遍历稳定红黑树中每个稳定节点
+     */
 	/* We first start with searching the page inside the stable tree */
 	kpage = stable_tree_search(page);
 	if (kpage == page && rmap_item->head == stable_node) {
@@ -2076,6 +2235,9 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 		return;
 	}
 
+    /**
+     *  
+     */
 	remove_rmap_item_from_tree(rmap_item);
 
 	if (kpage) {
@@ -2102,8 +2264,15 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	 * we calculated it, this page is changing frequently: therefore we
 	 * don't want to insert it in the unstable tree, and we don't want
 	 * to waste our time searching for something identical to it there.
+	 *
+	 * 计算校验和
 	 */
 	checksum = calc_checksum(page);
+
+    
+    /**
+     *  
+     */
 	if (rmap_item->oldchecksum != checksum) {
 		rmap_item->oldchecksum = checksum;
 		return;
@@ -2112,6 +2281,8 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	/*
 	 * Same checksum as an empty page. We attempt to merge it with the
 	 * appropriate zero page if the user enabled this via sysfs.
+	 *
+	 * 零页
 	 */
 	if (ksm_use_zero_pages && (checksum == zero_checksum)) {
 		struct vm_area_struct *vma;
@@ -2119,8 +2290,7 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 		mmap_read_lock(mm);
 		vma = find_mergeable_vma(mm, rmap_item->address);
 		if (vma) {
-			err = try_to_merge_one_page(vma, page,
-					ZERO_PAGE(rmap_item->address));
+			err = try_to_merge_one_page(vma, page, ZERO_PAGE(rmap_item->address));
 		} else {
 			/*
 			 * If the vma is out of date, we do not need to
@@ -2136,13 +2306,19 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 		if (!err)
 			return;
 	}
-	tree_rmap_item =
-		unstable_tree_search_insert(rmap_item, page, &tree_page);
+
+    /**
+     *  
+     */
+	tree_rmap_item = unstable_tree_search_insert(rmap_item, page, &tree_page);
 	if (tree_rmap_item) {
 		bool split;
 
-		kpage = try_to_merge_two_pages(rmap_item, page,
-						tree_rmap_item, tree_page);
+        /**
+         *  
+         */
+		kpage = try_to_merge_two_pages(rmap_item, page, tree_rmap_item, tree_page);
+        
 		/*
 		 * If both pages we tried to merge belong to the same compound
 		 * page, then we actually ended up increasing the reference
@@ -2153,8 +2329,7 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 		 * afterwards, the reference count will be correct and
 		 * split_huge_page should succeed.
 		 */
-		split = PageTransCompound(page)
-			&& compound_head(page) == compound_head(tree_page);
+		split = PageTransCompound(page) && compound_head(page) == compound_head(tree_page);
 		put_page(tree_page);
 		if (kpage) {
 			/*
@@ -2227,6 +2402,9 @@ static struct rmap_item *get_next_rmap_item(struct mm_slot *mm_slot,
 	return rmap_item;
 }
 
+/**
+ *  
+ */
 static struct rmap_item *scan_get_next_rmap_item(struct page **page)
 {
 	struct mm_struct *mm;
@@ -2389,19 +2567,33 @@ next_mm:
 /**
  * ksm_do_scan  - the ksm scanner main worker function.
  * @scan_npages:  number of pages we want to scan before we return.
+ *
+ *  扫描，尝试贺词能够 scan_npages 个页面
  */
 static void ksm_do_scan(unsigned int scan_npages)
 {
-	struct rmap_item *rmap_item;
-	struct page *page;
+	struct rmap_item *_rmap_item;
+	struct page *_page;
 
+    /**
+     *  
+     */
 	while (scan_npages-- && likely(!freezing(current))) {
 		cond_resched(); /*  */
-		rmap_item = scan_get_next_rmap_item(&page);
-		if (!rmap_item)
+
+        /**
+         *  获取一个合适的匿名页面
+         */
+		_rmap_item = scan_get_next_rmap_item(&_page);
+		if (!_rmap_item)
 			return;
-		cmp_and_merge_page(page, rmap_item);    /* 比较并且合并 页 */
-		put_page(page);
+
+        /**
+         *  在稳定和不稳定的红黑树中 查找是否由可合并的对象
+         */
+		cmp_and_merge_page(_page, _rmap_item);    /* 比较并且合并 页 */
+        
+		put_page(_page);
 	}
 }
 
@@ -2410,18 +2602,38 @@ static int ksmd_should_run(void)    /* 是否该运行 */
 	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
 }
 
+/**
+ *  ksmd 线程 主任务
+ */
 static int ksm_scan_thread(void *nothing)   /* 扫描页表，同页合并 */
 {
 	unsigned int sleep_ms;
 
+    /**
+     *  设置可冻结
+     */
 	set_freezable();
+
+    /**
+     *  略 >0, 表明优先级略低于普通线程
+     */
 	set_user_nice(current, 5);
 
+    /**
+     *  
+     */
 	while (!kthread_should_stop()) {
+        
 		mutex_lock(&ksm_thread_mutex);
-		wait_while_offlining();
-		if (ksmd_should_run())
+
+        wait_while_offlining();
+
+        if (ksmd_should_run())
+            /**
+             *  扫描，尝试贺词能够 scan_npages 个页面
+             */
 			ksm_do_scan(ksm_thread_pages_to_scan);  /* 执行扫描 */
+        
 		mutex_unlock(&ksm_thread_mutex);
 
 		try_to_freeze();
@@ -2439,6 +2651,9 @@ static int ksm_scan_thread(void *nothing)   /* 扫描页表，同页合并 */
 	return 0;
 }
 
+/**
+ *  
+ */
 int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		unsigned long end, int advice, unsigned long *vm_flags)
 {
@@ -2467,6 +2682,9 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 			return 0;
 #endif
 
+        /**
+         *  
+         */
 		if (!test_bit(MMF_VM_MERGEABLE, &mm->flags)) {
 			err = __ksm_enter(mm);
 			if (err)
@@ -2494,11 +2712,17 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 }
 EXPORT_SYMBOL_GPL(ksm_madvise);
 
+/**
+ *  显式的将 进程地址空间添加到 KSM 系统中
+ */
 int __ksm_enter(struct mm_struct *mm)
 {
 	struct mm_slot *mm_slot;
 	int needs_wakeup;
 
+    /**
+     *  
+     */
 	mm_slot = alloc_mm_slot();
 	if (!mm_slot)
 		return -ENOMEM;
@@ -2508,6 +2732,7 @@ int __ksm_enter(struct mm_struct *mm)
 
 	spin_lock(&ksm_mmlist_lock);
 	insert_to_mm_slots_hash(mm, mm_slot);
+    
 	/*
 	 * When KSM_RUN_MERGE (or KSM_RUN_STOP),
 	 * insert just behind the scanning cursor, to let the area settle
@@ -2522,17 +2747,31 @@ int __ksm_enter(struct mm_struct *mm)
 		list_add_tail(&mm_slot->mm_list, &ksm_mm_head.mm_list);
 	else
 		list_add_tail(&mm_slot->mm_list, &ksm_scan.mm_slot->mm_list);
+    
 	spin_unlock(&ksm_mmlist_lock);
 
+    /**
+     *  进程已添加至 KSM 系统
+     */
 	set_bit(MMF_VM_MERGEABLE, &mm->flags);
+
+    /**
+     *  
+     */
 	mmgrab(mm);
 
+    /**
+     *  是否需要唤醒 ksmd
+     */
 	if (needs_wakeup)
 		wake_up_interruptible(&ksm_thread_wait);
 
 	return 0;
 }
 
+/**
+ *  将 进程地址空间从 KSM 系统 中删除
+ */
 void __ksm_exit(struct mm_struct *mm)
 {
 	struct mm_slot *mm_slot;
@@ -3066,6 +3305,7 @@ KSM_ATTR(max_page_sharing);
 static ssize_t pages_shared_show(struct kobject *kobj,
 				 struct kobj_attribute *attr, char *buf)
 {
+    ///sys/kernel/mm/ksm/pages_shared
 	return sprintf(buf, "%lu\n", ksm_pages_shared);
 }
 KSM_ATTR_RO(pages_shared);
@@ -3073,6 +3313,7 @@ KSM_ATTR_RO(pages_shared);
 static ssize_t pages_sharing_show(struct kobject *kobj,
 				  struct kobj_attribute *attr, char *buf)
 {
+    ///sys/kernel/mm/ksm/pages_sharing
 	return sprintf(buf, "%lu\n", ksm_pages_sharing);
 }
 KSM_ATTR_RO(pages_sharing);
@@ -3080,6 +3321,7 @@ KSM_ATTR_RO(pages_sharing);
 static ssize_t pages_unshared_show(struct kobject *kobj,
 				   struct kobj_attribute *attr, char *buf)
 {
+    ///sys/kernel/mm/ksm/pages_unshared
 	return sprintf(buf, "%lu\n", ksm_pages_unshared);
 }
 KSM_ATTR_RO(pages_unshared);
@@ -3168,6 +3410,9 @@ static struct attribute *ksm_attrs[] = {
 	NULL,
 };
 
+/**
+ *
+ */
 static const struct attribute_group ksm_attr_group = {
 	.attrs = ksm_attrs,
 	.name = "ksm",
@@ -3188,6 +3433,9 @@ static int __init ksm_init(void)    /* 同页合并 */
 	if (err)
 		goto out;
 
+    /**
+     *  ksmd 线程
+     */
 	ksm_thread = kthread_run(ksm_scan_thread, NULL, "ksmd");    /* 启动线程 */
 	if (IS_ERR(ksm_thread)) {
 		pr_err("ksm: creating kthread failed\n");

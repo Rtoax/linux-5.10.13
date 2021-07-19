@@ -4933,6 +4933,10 @@ static inline int rt_effective_prio(struct task_struct *p, int prio)
 }
 #endif
 
+
+/**
+ *  
+ */
 void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 {
 	bool queued, running;

@@ -63,10 +63,12 @@ static int madvise_need_mmap_write(int behavior)
 /*
  * We can potentially split a vm area into separate
  * areas, each area with its own behavior.
+ *
+ * 
  */
 static long madvise_behavior(struct vm_area_struct *vma,
-		     struct vm_area_struct **prev,
-		     unsigned long start, unsigned long end, int behavior)
+        		     struct vm_area_struct **prev,
+        		     unsigned long start, unsigned long end, int behavior)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	int error = 0;
@@ -923,6 +925,9 @@ static int madvise_inject_error(int behavior,
 }
 #endif
 
+/**
+ *  
+ */
 static long
 madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
 		unsigned long start, unsigned long end, int behavior)
@@ -1059,6 +1064,8 @@ process_madvise_behavior_valid(int behavior)
  *  -EIO    - an I/O error occurred while paging in data.
  *  -EBADF  - map exists, but area maps something that isn't a file.
  *  -EAGAIN - a kernel resource was temporarily unavailable.
+ *
+ * madvise(2)
  */
 int do_madvise(struct mm_struct *mm, unsigned long start, size_t len_in, int behavior)
 {

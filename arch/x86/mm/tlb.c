@@ -888,10 +888,13 @@ static inline void put_flush_tlb_info(void)
 #endif
 }
 
-/* 刷新 TLB */
+/**
+ *  刷新 TLB 
+ *
+ */
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
-				unsigned long end, unsigned int stride_shift,
-				bool freed_tables)
+            				unsigned long end, unsigned int stride_shift,
+            				bool freed_tables)
 {
 	struct flush_tlb_info *info;
 	u64 new_tlb_gen;
@@ -906,11 +909,16 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 		end = TLB_FLUSH_ALL;
 	}
 
+    /**
+     *  
+     */
 	/* This is also a barrier that synchronizes with switch_mm(). */
 	new_tlb_gen = inc_mm_tlb_gen(mm);   /*  */
 
-	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
-				  new_tlb_gen);
+    /**
+     *  
+     */
+	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables, new_tlb_gen);
 
 	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		lockdep_assert_irqs_enabled();
