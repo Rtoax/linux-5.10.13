@@ -3387,6 +3387,9 @@ early_enable_events(struct trace_array *tr, bool disable_first)
 	}
 }
 
+/**
+ *  
+ */
 static __init int event_trace_enable(void)
 {
 	struct trace_array *tr = top_trace_array();
@@ -3396,6 +3399,9 @@ static __init int event_trace_enable(void)
 	if (!tr)
 		return -ENODEV;
 
+    /**
+     *  
+     */
 	for_each_event(iter, __start_ftrace_events, __stop_ftrace_events) {
 
 		call = *iter;
@@ -3414,6 +3420,9 @@ static __init int event_trace_enable(void)
 
 	early_enable_events(tr, false);
 
+    /**
+     *  
+     */
 	trace_printk_start_comm();
 
 	register_event_cmds();

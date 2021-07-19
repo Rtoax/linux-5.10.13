@@ -1902,8 +1902,8 @@ int __weak kprobe_exceptions_notify(struct notifier_block *self,
 NOKPROBE_SYMBOL(kprobe_exceptions_notify);
 
 static struct notifier_block kprobe_exceptions_nb = {
-	.notifier_call = kprobe_exceptions_notify,
-	.priority = 0x7fffffff /* we need to be notified first */
+	kprobe_exceptions_nb.notifier_call = kprobe_exceptions_notify,
+	kprobe_exceptions_nb.priority = 0x7fffffff /* we need to be notified first */
 };
 
 unsigned long __weak arch_deref_entry_point(void *entry)
@@ -2001,7 +2001,7 @@ unsigned long __kretprobe_trampoline_handler(struct pt_regs *regs,
 
 	return (unsigned long)correct_ret_addr;
 }
-NOKPROBE_SYMBOL(__kretprobe_trampoline_handler)
+NOKPROBE_SYMBOL(__kretprobe_trampoline_handler);
 
 /*
  * This kprobe pre_handler is registered with every kretprobe. When probe

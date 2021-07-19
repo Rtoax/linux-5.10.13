@@ -3138,6 +3138,9 @@ void trace_printk_init_buffers(void)
 }
 EXPORT_SYMBOL_GPL(trace_printk_init_buffers);
 
+/**
+ *  
+ */
 void trace_printk_start_comm(void)
 {
 	/* Start tracing comms if trace printk is set */

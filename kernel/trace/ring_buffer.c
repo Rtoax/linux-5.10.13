@@ -134,8 +134,8 @@ int ring_buffer_print_entry_header(struct trace_seq *s)
 # define RB_FORCE_8BYTE_ALIGNMENT	0
 # define RB_ARCH_ALIGNMENT		RB_ALIGNMENT
 #else
-# define RB_FORCE_8BYTE_ALIGNMENT	1
-# define RB_ARCH_ALIGNMENT		8U
+//# define RB_FORCE_8BYTE_ALIGNMENT	1
+//# define RB_ARCH_ALIGNMENT		8U
 #endif
 
 #define RB_ALIGN_DATA		__aligned(RB_ARCH_ALIGNMENT)
@@ -312,6 +312,9 @@ u64 ring_buffer_event_time_stamp(struct ring_buffer_event *event)
 /* Missed count stored at end */
 #define RB_MISSED_STORED	(1 << 30)
 
+/**
+ *  
+ */
 struct buffer_data_page {
 	u64		 time_stamp;	/* page time stamp */
 	local_t		 commit;	/* write committed index */
@@ -442,7 +445,7 @@ struct rb_event_info {
 enum {
 	RB_ADD_STAMP_NONE		= 0,
 	RB_ADD_STAMP_EXTEND		= BIT(1),
-	RB_ADD_STAMP_ABSOLUTE		= BIT(2),
+	RB_ADD_STAMP_ABSOLUTE	= BIT(2),
 	RB_ADD_STAMP_FORCE		= BIT(3)
 };
 /*
@@ -469,11 +472,11 @@ enum {
 
 #ifdef RB_TIME_32
 
-struct rb_time_struct {
-	local_t		cnt;
-	local_t		top;
-	local_t		bottom;
-};
+//struct rb_time_struct {
+//	local_t		cnt;
+//	local_t		top;
+//	local_t		bottom;
+//};
 #else
 #include <asm/local64.h>
 struct rb_time_struct {
@@ -497,10 +500,15 @@ struct ring_buffer_per_cpu {    /*  */
 	unsigned long			nr_pages;
 	unsigned int			current_context;
 	struct list_head		*pages;
+
+    /**
+     *  
+     */
 	struct buffer_page		*head_page;	/* read from head */
 	struct buffer_page		*tail_page;	/* write to tail */
 	struct buffer_page		*commit_page;	/* committed pages */
 	struct buffer_page		*reader_page;
+    
 	unsigned long			lost_events;
 	unsigned long			last_overrun;
 	unsigned long			nest;
@@ -522,6 +530,10 @@ struct ring_buffer_per_cpu {    /*  */
 	u64				read_stamp;
 	/* ring buffer pages to update, > 0 to add, < 0 to remove */
 	long				nr_pages_to_update;
+
+    /**
+     *  
+     */
 	struct list_head		new_pages; /* new pages to add */
 	struct work_struct		update_pages_work;
 	struct completion		update_done;
@@ -529,6 +541,9 @@ struct ring_buffer_per_cpu {    /*  */
 	struct rb_irq_work		irq_work;
 };
 
+/**
+ *  
+ */
 struct trace_buffer {   /*  */
 	unsigned			flags;
 	int				cpus;

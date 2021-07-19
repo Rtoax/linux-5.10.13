@@ -179,6 +179,8 @@ struct list_head {  /* 双向链表 */
 	struct list_head *next, *prev;
 };
 
+typedef struct list_head	* p_list_head; //+++
+
 struct hlist_head {
 	struct hlist_node *first;
 };

@@ -601,6 +601,9 @@ out:
 	atomic_dec(&per_cpu_ptr(wakeup_trace->array_buffer.data, cpu)->disabled);
 }
 
+/**
+ *  
+ */
 static void start_wakeup_tracer(struct trace_array *tr)
 {
 	int ret;
@@ -668,6 +671,9 @@ static void stop_wakeup_tracer(struct trace_array *tr)
 
 static bool wakeup_busy;
 
+/**
+ *  
+ */
 static int __wakeup_tracer_init(struct trace_array *tr)
 {
 	save_flags = tr->trace_flags;
@@ -685,6 +691,9 @@ static int __wakeup_tracer_init(struct trace_array *tr)
 	return 0;
 }
 
+/**
+ *  
+ */
 static int wakeup_tracer_init(struct trace_array *tr)
 {
 	if (wakeup_busy)

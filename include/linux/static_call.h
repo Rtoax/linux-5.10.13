@@ -119,7 +119,7 @@ extern void arch_static_call_transform(void *site, void *tramp, void *func, bool
 })
 
 #else
-#define STATIC_CALL_TRAMP_ADDR(name) NULL
+//#define STATIC_CALL_TRAMP_ADDR(name) NULL
 #endif
 
 
@@ -138,12 +138,19 @@ extern void arch_static_call_transform(void *site, void *tramp, void *func, bool
 
 extern int __init static_call_init(void);
 
+
+/**
+ *  
+ */
 struct static_call_mod {
 	struct static_call_mod *next;
 	struct module *mod; /* for vmlinux, mod == NULL */
 	struct static_call_site *sites;
 };
 
+/**
+ *  static call key
+ */
 struct static_call_key {    /*  */
 	void *func;             /*  */
 	union {                 /*  */
@@ -154,10 +161,16 @@ struct static_call_key {    /*  */
 	};
 };
 
+/**
+ *  
+ */
 extern void __static_call_update(struct static_call_key *key, void *tramp, void *func);
 extern int static_call_mod_init(struct module *mod);
 extern int static_call_text_reserved(void *start, void *end);
 
+/**
+ *  
+ */
 #define DEFINE_STATIC_CALL(name, _func)					\
 	DECLARE_STATIC_CALL(name, _func);				\
 	struct static_call_key STATIC_CALL_KEY(name) = {		\

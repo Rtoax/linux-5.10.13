@@ -199,6 +199,9 @@ struct trace_event_fields {
 	};
 };
 
+/**
+ *  
+ */
 struct trace_event_class {
 	const char		*system;
 	void			*probe;
@@ -208,7 +211,7 @@ struct trace_event_class {
 	int			(*reg)(struct trace_event_call *event,
 				       enum trace_reg type, void *data);
 	struct trace_event_fields *fields_array;
-	struct list_head	*(*get_fields)(struct trace_event_call *);
+	p_list_head (*get_fields)(struct trace_event_call *);
 	struct list_head	fields;
 	int			(*raw_init)(struct trace_event_call *);
 };
@@ -216,6 +219,9 @@ struct trace_event_class {
 extern int trace_event_reg(struct trace_event_call *event,
 			    enum trace_reg type, void *data);
 
+/**
+ *  
+ */
 struct trace_event_buffer {
 	struct trace_buffer		*buffer;
 	struct ring_buffer_event	*event;
@@ -264,6 +270,9 @@ enum {
 
 #define TRACE_EVENT_FL_UKPROBE (TRACE_EVENT_FL_KPROBE | TRACE_EVENT_FL_UPROBE)
 
+/**
+ *  
+ */
 struct trace_event_call {   /*  */
 	struct list_head	list;
 	struct trace_event_class *class;

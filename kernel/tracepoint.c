@@ -125,6 +125,9 @@ static void debug_print_probes(struct tracepoint_func *funcs)
 		printk(KERN_DEBUG "Probe %d : %p\n", i, funcs[i].func);
 }
 
+/**
+ *  
+ */
 static struct tracepoint_func *
 func_add(struct tracepoint_func **funcs, struct tracepoint_func *tp_func,
 	 int prio)
@@ -253,14 +256,21 @@ static int tracepoint_add_func(struct tracepoint *tp,
 	struct tracepoint_func *old, *tp_funcs;
 	int ret;
 
+    /**
+     *  
+     */
 	if (tp->regfunc && !static_key_enabled(&tp->key)) {
 		ret = tp->regfunc();
 		if (ret < 0)
 			return ret;
 	}
 
+    /**
+     *  
+     */
 	tp_funcs = rcu_dereference_protected(tp->funcs,
 			lockdep_is_held(&tracepoints_mutex));
+    
 	old = func_add(&tp_funcs, func, prio);
 	if (IS_ERR(old)) {
 		WARN_ON_ONCE(PTR_ERR(old) != -ENOMEM);
@@ -275,6 +285,11 @@ static int tracepoint_add_func(struct tracepoint *tp,
 	 */
 	rcu_assign_pointer(tp->funcs, tp_funcs);
 	tracepoint_update_call(tp, tp_funcs, false);
+
+    
+    /**
+     *  使能 static key
+     */
 	static_key_enable(&tp->key);
 
 	release_probes(old);
@@ -335,6 +350,9 @@ int tracepoint_probe_register_prio(struct tracepoint *tp, void *probe,
 	struct tracepoint_func tp_func;
 	int ret;
 
+    /**
+     *  注册 回调函数
+     */
 	mutex_lock(&tracepoints_mutex);
 	tp_func.func = probe;
 	tp_func.data = data;

@@ -20,6 +20,9 @@ static int		sched_cmdline_ref;
 static int		sched_tgid_ref;
 static DEFINE_MUTEX(sched_register_mutex);
 
+/**
+ *  
+ */
 static void
 probe_sched_switch(void *ignore, bool preempt,
 		   struct task_struct *prev, struct task_struct *next)
@@ -47,6 +50,9 @@ probe_sched_wakeup(void *ignore, struct task_struct *wakee)
 	tracing_record_taskinfo(current, flags);
 }
 
+/**
+ *  注册调度 tracepoint
+ */
 static int tracing_sched_register(void)
 {
 	int ret;
@@ -65,6 +71,9 @@ static int tracing_sched_register(void)
 		goto fail_deprobe;
 	}
 
+    /**
+     *  
+     */
 	ret = register_trace_sched_switch(probe_sched_switch, NULL);
 	if (ret) {
 		pr_info("sched trace: Couldn't activate tracepoint"
@@ -87,6 +96,9 @@ static void tracing_sched_unregister(void)
 	unregister_trace_sched_wakeup(probe_sched_wakeup, NULL);
 }
 
+/**
+ *  
+ */
 static void tracing_start_sched_switch(int ops)
 {
 	bool sched_register;
@@ -104,6 +116,9 @@ static void tracing_start_sched_switch(int ops)
 		break;
 	}
 
+    /**
+     *  
+     */
 	if (sched_register && (sched_cmdline_ref || sched_tgid_ref))
 		tracing_sched_register();
 	mutex_unlock(&sched_register_mutex);
@@ -128,6 +143,9 @@ static void tracing_stop_sched_switch(int ops)
 	mutex_unlock(&sched_register_mutex);
 }
 
+/**
+ *  启动
+ */
 void tracing_start_cmdline_record(void)
 {
 	tracing_start_sched_switch(RECORD_CMDLINE);
