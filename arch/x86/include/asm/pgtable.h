@@ -315,6 +315,9 @@ static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 	return native_make_pte(v | set);
 }
 
+/**
+ *  
+ */
 static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 {
 	pteval_t v = native_pte_val(pte);
@@ -349,6 +352,9 @@ static inline pte_t pte_mkold(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_ACCESSED);
 }
 
+/**
+ *  
+ */
 static inline pte_t pte_wrprotect(pte_t pte)
 {
 	return pte_clear_flags(pte, _PAGE_RW);

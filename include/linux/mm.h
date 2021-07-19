@@ -2773,7 +2773,7 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 
 #define FOLL_WRITE	0x01	/* check pte is writable */
 #define FOLL_TOUCH	0x02	/* mark page accessed */
-#define FOLL_GET	0x04	/* do get_page on page */
+#define FOLL_GET	0x04	/* do get_page on page 增加页面的 _count 值 */
 #define FOLL_DUMP	0x08	/* give error on hole if it would be zero */
 #define FOLL_FORCE	0x10	/* get_user_pages read/write w/o permission */
 #define FOLL_NOWAIT	0x20	/* if a disk transfer is needed, start the IO
@@ -2782,7 +2782,7 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 #define FOLL_SPLIT	0x80	/* don't return transhuge pages, split them */
 #define FOLL_HWPOISON	0x100	/* check page is hwpoisoned */
 #define FOLL_NUMA	0x200	/* force NUMA hinting page fault */
-#define FOLL_MIGRATION	0x400	/* wait for page to replace migration entry */
+#define FOLL_MIGRATION	0x400	/* wait for page to replace migration entry 如果页面正在迁移，那等待迁移完成*/
 #define FOLL_TRIED	0x800	/* a retry, previous pass started an IO */
 #define FOLL_MLOCK	0x1000	/* lock present pages */
 #define FOLL_REMOTE	0x2000	/* we are working on non-current tsk/mm */
@@ -3119,6 +3119,9 @@ void __init setup_nr_node_ids(void);
 
 extern int memcmp_pages(struct page *page1, struct page *page2);
 
+/**
+ *  比较 page 和 kpage 内容是否一致
+ */
 static inline int pages_identical(struct page *page1, struct page *page2)
 {
 	return !memcmp_pages(page1, page2);

@@ -605,14 +605,24 @@ static int break_ksm(struct vm_area_struct *vma, unsigned long addr)
 
 	do {
 		cond_resched();
-		page = follow_page(vma, addr,
-				FOLL_GET | FOLL_MIGRATION | FOLL_REMOTE);
+
+        /**
+         *  获取普通映射的 page结构
+         */
+		page = follow_page(vma, addr, FOLL_GET | FOLL_MIGRATION | FOLL_REMOTE);
 		if (IS_ERR_OR_NULL(page))
 			break;
+
+        /**
+         *  
+         */
 		if (PageKsm(page))
+            /**
+             *  人为制造一个 写错误的 缺页
+             */
 			ret = handle_mm_fault(vma, addr,
-					      FAULT_FLAG_WRITE | FAULT_FLAG_REMOTE,
-					      NULL);
+        					      FAULT_FLAG_WRITE | FAULT_FLAG_REMOTE,
+        					      NULL);
 		else
 			ret = VM_FAULT_WRITE;
 		put_page(page);
@@ -671,6 +681,8 @@ static struct vm_area_struct *find_mergeable_vma(struct mm_struct *mm,
 
 /**
  *  写时复制 -> 缺页
+ *
+ * 处理已经把页面设置成写保护 的情况，并人为 制造一个 写错误 的缺页中断(即写时复制的场景)
  */
 static void break_cow(struct rmap_item *rmap_item)
 {
@@ -681,6 +693,8 @@ static void break_cow(struct rmap_item *rmap_item)
 	/*
 	 * It is not an accident that whenever we want to break COW
 	 * to undo, we also need to drop a reference to the anon_vma.
+	 *
+	 * 要中断写时复制并非偶然，我们还需要删除对 anon_vma 的引用
 	 */
 	put_anon_vma(rmap_item->anon_vma);
 
@@ -691,6 +705,9 @@ static void break_cow(struct rmap_item *rmap_item)
      */
 	vma = find_mergeable_vma(mm, addr);
 	if (vma)
+        /**
+         *  
+         */
 		break_ksm(vma, addr);
 	mmap_read_unlock(mm);
 }
@@ -1189,30 +1206,55 @@ static u32 calc_checksum(struct page *page)
 
 /**
  *  
+ * 对 vma 写保护操作，即 PTE 设置为 只读
+ *
+ * @vma         page 对应的vma
+ * @page        要被设置成写保护的 page
+ * @orig_pte    page 原来的 pte 的值
+ *
+ * 要对页面设置只读属性，需要满足两个条件：
+ *
+ * 1. 确认没有其他人获取该页面
+ * 2. 将指向该页面的 PTE 编程只读属性
  */
-static int write_protect_page(struct vm_area_struct *vma, struct page *page,
-			      pte_t *orig_pte)
+static int write_protect_page(struct vm_area_struct *vma, struct page *_page, pte_t *orig_pte)
 {
 	struct mm_struct *mm = vma->vm_mm;
+
+    /**
+     *  用于遍历页表
+     */
 	struct page_vma_mapped_walk pvmw = {
-		.page = page,
-		.vma = vma,
+		pvmw.page = _page,
+		pvmw.vma = vma,
 	};
 	int swapped;
 	int err = -EFAULT;
 	struct mmu_notifier_range range;
 
-	pvmw.address = page_address_in_vma(page, vma);
+    /**
+     *  找到对应的虚拟地址
+     */
+	pvmw.address = page_address_in_vma(_page, vma);
 	if (pvmw.address == -EFAULT)
 		goto out;
 
-	BUG_ON(PageTransCompound(page));
+	BUG_ON(PageTransCompound(_page));
 
+    /**
+     *  初始化 一个 mmu_notifier_range
+     */
 	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, mm,
-				pvmw.address,
-				pvmw.address + PAGE_SIZE);
-	mmu_notifier_invalidate_range_start(&range);
+            				pvmw.address,
+            				pvmw.address + PAGE_SIZE);
+    /**
+     *  通知所有注册了 invalidate_range_start 操作的 mmu_notifier
+     */
+    mmu_notifier_invalidate_range_start(&range);
 
+    /**
+     *  遍历页表，找到的页表存放在 pvmw.pte 里
+     */
 	if (!page_vma_mapped_walk(&pvmw))
 		goto out_mn;
 	if (WARN_ONCE(!pvmw.pte, "Unexpected PMD mapping?"))
@@ -1223,8 +1265,8 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *page,
 						mm_tlb_flush_pending(mm)) {
 		pte_t entry;
 
-		swapped = PageSwapCache(page);
-		flush_cache_page(vma, pvmw.address, page_to_pfn(page));
+		swapped = PageSwapCache(_page);
+		flush_cache_page(vma, pvmw.address, page_to_pfn(_page));
 		/*
 		 * Ok this is tricky, when get_user_pages_fast() run it doesn't
 		 * take any lock, therefore the check that we are going to make
@@ -1238,25 +1280,83 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *page,
 		 * only not changing it to point to a new page.
 		 *
 		 * See Documentation/vm/mmu_notifier.rst
+		 *
+		 * 清空PTE内容，并刷新响应的TLB 
 		 */
 		entry = ptep_clear_flush(vma, pvmw.address, pvmw.pte);
+        
 		/*
 		 * Check that no O_DIRECT or similar I/O is in progress on the
 		 * page
+		 *
+         * 要对页面设置只读属性，需要满足两个条件：
+         *
+         * 1. 确认没有其他人获取该页面
+         * 2. 将指向该页面的 PTE 编程只读属性
+		 * 
+         *  _refcount 有以下四种来源：
+         *  =============================================
+         *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
+         *  2. 被用户态 PTE 引用， _refcount 和 _mapcount 都会增加计数
+         *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
+         *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
+         *
+         * 假设 没有其他 内核路径操作该页面，并且该页面 不在交换缓存中，两个引用计数的关系为
+         *  page_mapcount(_page) = page->_mapcount + 1 = page->_refcount
+         *
+         * `swapped`标识页面是否为交换缓存页面，在 add_to_swap() 中增加 _refcount ,因此上式变为
+         *  page->_mapcount + 1 + PageSwapCache(_page) = page->_refcount
+         *
+         * 上式也有例外，如该页面发生 DIRECT_IO 读写的情况，调用关系如下：
+         *  generic_file_direct_write()
+         *    mapping->a_ops->direct_IO()
+         *      ext4_direct_IO()
+         *        __blockdev_direct_IO()
+         *          do_blockdev_direct_IO()
+         *            do_direct_IO()
+         *              dio_get_page()
+         *                dio_refill_pages()
+         *                  iov_iter_get_pages()
+         *                    get_user_pages_fast() --- 增加 page->_refcount, 
+         *
+         *  因此在没有 DIRECT_IO 情况，上述公式变为：
+         *   page->_mapcount + 1 + PageSwapCache(_page) == page->_refcount
+         *
+         *  那么 +1 是哪里来的呢？因为 
+         *
+         *  scan_get_next_rmap_item()
+         *    follow_page() --- 增加 page->_refcount, 
+         *  
+         *  综上，为了在当前场景下判断是否有 DIRECT_IO 读写的情况，上述公式变为 
+         *  page->_mapcount + 1 + 1 + PageSwapCache(_page) == page->_refcount
+         *
+         *  ==>>
+         *
+         *  page_mapcount(_page) + 1 + swapped != page_count(_page)
+         *
+         * 下式如果不相等，则证明有 DIRECT_IO 正在操作该页面，因此 write_protect_page() 返回 错误
 		 */
-		if (page_mapcount(page) + 1 + swapped != page_count(page)) {
+		if (page_mapcount(_page) + 1 + swapped != page_count(_page)) {
 			set_pte_at(mm, pvmw.address, pvmw.pte, entry);
 			goto out_unlock;
 		}
+        /**
+         *  脏页
+         */
 		if (pte_dirty(entry))
-			set_page_dirty(page);
+			set_page_dirty(_page);
 
+        /**
+         *  
+         */
 		if (pte_protnone(entry))
 			entry = pte_mkclean(pte_clear_savedwrite(entry));
 		else
 			entry = pte_mkclean(pte_wrprotect(entry));
+        
 		set_pte_at_notify(mm, pvmw.address, pvmw.pte, entry);
 	}
+                        
 	*orig_pte = *pvmw.pte;
 	err = 0;
 
@@ -1276,6 +1376,8 @@ out:
  * @orig_pte: the original value of the pte
  *
  * Returns 0 on success, -EFAULT on failure.
+ *
+ * 把页面 对应的PTE属性设置到 对应的 kpage 中
  */
 static int replace_page(struct vm_area_struct *vma, struct page *page,
 			struct page *kpage, pte_t orig_pte)
@@ -1293,6 +1395,9 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 	if (addr == -EFAULT)
 		goto out;
 
+    /**
+     *  
+     */
 	pmd = mm_find_pmd(mm, addr);
 	if (!pmd)
 		goto out;
@@ -1315,8 +1420,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 		page_add_anon_rmap(kpage, vma, addr, false);
 		newpte = mk_pte(kpage, vma->vm_page_prot);
 	} else {
-		newpte = pte_mkspecial(pfn_pte(page_to_pfn(kpage),
-					       vma->vm_page_prot));
+		newpte = pte_mkspecial(pfn_pte(page_to_pfn(kpage),  vma->vm_page_prot));
 		/*
 		 * We're replacing an anonymous page with a zero page, which is
 		 * not anonymous. We need to do proper accounting otherwise we
@@ -1334,6 +1438,10 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 	 * See Documentation/vm/mmu_notifier.rst
 	 */
 	ptep_clear_flush(vma, addr, ptep);
+
+    /**
+     *  
+     */
 	set_pte_at_notify(mm, addr, ptep, newpte);
 
 	page_remove_rmap(page, false);
@@ -1351,12 +1459,17 @@ out:
 
 /*
  * try_to_merge_one_page - take two pages and merge them into one
+ *
  * @vma: the vma that holds the pte pointing to page
- * @page: the PageAnon page that we want to replace with kpage
+ * @page: the PageAnon page that we want to replace with kpage - 
  * @kpage: the PageKsm page that we want to map instead of page,
  *         or NULL the first time when we want to use page as kpage.
  *
  * This function returns 0 if the pages were merged, -EFAULT otherwise.
+ *
+ * @vma         被扫描页面对应的vma
+ * @page        候选页面
+ * @kpage       稳定红黑树中的KSM页面，或者候选KSM页面
  */
 static int try_to_merge_one_page(struct vm_area_struct *vma,
 				                    struct page *page, struct page *kpage)
@@ -1364,9 +1477,15 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 	pte_t orig_pte = __pte(0);
 	int err = -EFAULT;
 
+    /**
+     *  是同一个页面，直接返回
+     */
 	if (page == kpage)			/* ksm page forked */
 		return 0;
 
+    /**
+     *  剔除不是匿名页面的候选页
+     */
 	if (!PageAnon(page))
 		goto out;
 
@@ -1376,10 +1495,18 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 	 * lock_page() because we don't want to wait here - we
 	 * prefer to continue scanning and merging different pages,
 	 * then come back to this page when it is unlocked.
+	 *
+	 * 尝试获取页锁，
+	 **
+	 * 为什么 try 而不是 lock_page 呢？
+	 * 
 	 */
 	if (!trylock_page(page))
 		goto out;
 
+    /**
+     *  剔除透明大页
+     */
 	if (PageTransCompound(page)) {
 		if (split_huge_page(page))
 			goto out_unlock;
@@ -1390,13 +1517,23 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 	 * to be write-protected.  If it's mapped elsewhere, all of its
 	 * ptes are necessarily already write-protected.  But in either
 	 * case, we need to lock and check page_count is not raised.
+	 *
+	 * 对 vma 写保护操作，即 PTE 设置为 只读
 	 */
 	if (write_protect_page(vma, page, &orig_pte) == 0) {
+
+        /**
+         *  在与不稳定的KSM页面合并时，参数 kpage 传过来的可能是 NULL，
+         *  主要作用是设置 page 为 稳定的节点
+         */
 		if (!kpage) {
 			/*
 			 * While we hold page lock, upgrade page from
 			 * PageAnon+anon_vma to PageKsm+NULL stable_node:
 			 * stable_tree_insert() will update stable_node.
+			 *
+			 * 设置 page 为稳定的节点
+			 * 设置 page 的活动情况
 			 */
 			set_page_stable_node(page, NULL);
 			mark_page_accessed(page);
@@ -1407,10 +1544,22 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 			if (!PageDirty(page))
 				SetPageDirty(page);
 			err = 0;
-		} else if (pages_identical(page, kpage))
+
+         
+		} 
+        /**
+         *  再次比较 page 和 kpage 内容是否一致
+         */
+        else if (pages_identical(page, kpage))
+            /**
+             *  如果一致，
+             */
 			err = replace_page(vma, page, kpage, orig_pte);
 	}
 
+    /**
+     *  
+     */
 	if ((vma->vm_flags & VM_LOCKED) && kpage && !err) {
 		munlock_vma_page(page);
 		if (!PageMlocked(kpage)) {
@@ -1432,6 +1581,14 @@ out:
  * but no new kernel page is allocated: kpage must already be a ksm page.
  *
  * This function returns 0 if the pages were merged, -EFAULT otherwise.
+ *
+ * 把两个内容完全相同的页面 合并成一个 KSM 页面
+ *
+ * @rmap_item   候选页面对应的 rmap_item 结构
+ * @page        候选页面
+ * @kpage       稳定红黑树中的KSM页面，或者候选KSM页面
+ *
+ *  尝试把 page 合并到 kpage 中去
  */
 static int try_to_merge_with_ksm_page(struct rmap_item *rmap_item,
 				      struct page *page, struct page *kpage)
@@ -1441,10 +1598,17 @@ static int try_to_merge_with_ksm_page(struct rmap_item *rmap_item,
 	int err = -EFAULT;
 
 	mmap_read_lock(mm);
+
+    /**
+     *  查找虚拟地址，找到对应的 vma
+     */
 	vma = find_mergeable_vma(mm, rmap_item->address);
 	if (!vma)
 		goto out;
 
+    /**
+     *  尝试合并 page 到 kpage
+     */
 	err = try_to_merge_one_page(vma, page, kpage);
 	if (err)
 		goto out;
@@ -2477,7 +2641,7 @@ static struct rmap_item *get_next_rmap_item(struct mm_slot *mm_slot,
 }
 
 /**
- *  
+ *  获取要扫描的页
  */
 static struct rmap_item *scan_get_next_rmap_item(struct page **page)
 {
@@ -2514,10 +2678,11 @@ static struct rmap_item *scan_get_next_rmap_item(struct page **page)
 			struct stable_node *stable_node, *next;
 			struct page *page;
 
-			list_for_each_entry_safe(stable_node, next,
-						 &migrate_nodes, list) {
-				page = get_ksm_page(stable_node,
-						    GET_KSM_PAGE_NOLOCK);
+            /**
+             *  
+             */
+			list_for_each_entry_safe(stable_node, next, &migrate_nodes, list) {
+				page = get_ksm_page(stable_node, GET_KSM_PAGE_NOLOCK);
 				if (page)
 					put_page(page);
 				cond_resched();
@@ -2560,6 +2725,10 @@ next_mm:
 		while (ksm_scan.address < vma->vm_end) {
 			if (ksm_test_exit(mm))
 				break;
+
+            /**
+             *  通过 VMA 和 虚拟地址 ksm_scan.address 来查找物理页面的 page 数据结构
+             */
 			*page = follow_page(vma, ksm_scan.address, FOLL_GET);
 			if (IS_ERR_OR_NULL(*page)) {
 				ksm_scan.address += PAGE_SIZE;
@@ -2741,13 +2910,17 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 	int err;
 
 	switch (advice) {
+
+    /**
+     *  设置 页面可以合并
+     */
 	case MADV_MERGEABLE:
 		/*
 		 * Be somewhat over-protective for now!
 		 */
 		if (*vm_flags & (VM_MERGEABLE | VM_SHARED  | VM_MAYSHARE   |
-				 VM_PFNMAP    | VM_IO      | VM_DONTEXPAND |
-				 VM_HUGETLB | VM_MIXEDMAP))
+        				 VM_PFNMAP    | VM_IO      | VM_DONTEXPAND |
+        				 VM_HUGETLB | VM_MIXEDMAP))
 			return 0;		/* just ignore the advice */
 
 		if (vma_is_dax(vma))
@@ -2774,6 +2947,9 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		*vm_flags |= VM_MERGEABLE;
 		break;
 
+    /**
+     *  不可合并
+     */
 	case MADV_UNMERGEABLE:
 		if (!(*vm_flags & VM_MERGEABLE))
 			return 0;		/* just ignore the advice */

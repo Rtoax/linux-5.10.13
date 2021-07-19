@@ -444,6 +444,9 @@ static inline void mmu_notifier_change_pte(struct mm_struct *mm,
 		__mmu_notifier_change_pte(mm, address, pte);
 }
 
+/**
+ *  通知所有注册了 invalidate_range_start 操作的 mmu_notifier
+ */
 static inline void
 mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {
@@ -507,6 +510,9 @@ static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 }
 
 
+/**
+ *  初始化 一个 mmu_notifier_range
+ */
 static inline void mmu_notifier_range_init(struct mmu_notifier_range *range,
 					   enum mmu_notifier_event event,
 					   unsigned flags,

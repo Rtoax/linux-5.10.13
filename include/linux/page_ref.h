@@ -48,6 +48,13 @@ static inline int page_ref_count(struct page *page)
  *
  *  通常情况下，page_count(page) == page_mapcount(page) 
  *          即   page->_refcount = page->_mapcount + 1
+ *
+ *  _refcount 有以下四种来源：
+ *  =============================================
+ *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
+ *  2. 被用户态 PTE 引用， _refcount 和 _mapcount 都会增加计数
+ *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
+ *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
  */
 static inline int page_count(struct page *page) /*  */
 {

@@ -140,8 +140,22 @@ struct page {   /* 物理页 */
 			struct address_space *mapping;
 
             /**
-             *  在映射的虚拟空间（vma_area）内的偏移；一个文件可能只映射一部分，假设映射了1M的空间，
+             *  在映射的虚拟空间（vma_area）内的偏移；
+             *  
+             *  一个文件可能只映射一部分，假设映射了1M的空间，
              *  index指的是在1M空间内的偏移，而不是在整个文件内的偏移。
+             *
+             *  如果多个VMA的虚拟页面同时映射了同一个匿名页面，那么 index 值为多少?
+             *  
+             *  1. 对于父子进程同时映射了一个 匿名页面， index 相同，见
+             *      rmap_walk_anon()
+             *        vma_address()
+             *          __vma_address()
+             *            page_to_pgoff()
+             * 
+             *  2. 对于KSM页面，由内容相同的两个匿名页面合并而成，他们可以使不相干的进程的VMA
+             *      也可以是 父子进程的 VMA
+             *      对于 KSM页面来说， index 等于 第一次 映射该页面 的 VMA 中的偏移量
              */
 			pgoff_t index;		/* Our offset within mapping. */
             
@@ -308,6 +322,13 @@ struct page {   /* 物理页 */
      *
      *  通常情况下，page_count(page) == page_mapcount(page) 
      *          即   page->_refcount = page->_mapcount + 1
+     *
+     *  _refcount 有以下四种来源：
+     *  =============================================
+     *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
+     *  2. 被用户态 PTE 引用， _refcount 和 _mapcount 都会增加计数
+     *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
+     *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
 	 */
 	atomic_t _refcount;
 

@@ -481,9 +481,12 @@ out_would_block:
 	return -EAGAIN;
 }
 
+/**
+ *  通知所有注册了 invalidate_range_start 操作的 mmu_notifier
+ */
 static int mn_hlist_invalidate_range_start(
-	struct mmu_notifier_subscriptions *subscriptions,
-	struct mmu_notifier_range *range)
+                    	struct mmu_notifier_subscriptions *subscriptions,
+                    	struct mmu_notifier_range *range)
 {
 	struct mmu_notifier *subscription;
 	int ret = 0;
@@ -519,6 +522,9 @@ static int mn_hlist_invalidate_range_start(
 	return ret;
 }
 
+/**
+ *  通知所有注册了 invalidate_range_start 操作的 mmu_notifier
+ */
 int __mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {
 	struct mmu_notifier_subscriptions *subscriptions =
