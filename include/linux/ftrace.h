@@ -761,9 +761,12 @@ static inline unsigned long get_lock_parent_ip(void)
 #endif
 
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+/**
+ *  
+ */
 extern void ftrace_init(void);
 #ifdef CC_USING_PATCHABLE_FUNCTION_ENTRY
-#define FTRACE_CALLSITE_SECTION	"__patchable_function_entries"
+//#define FTRACE_CALLSITE_SECTION	"__patchable_function_entries"
 #else
 #define FTRACE_CALLSITE_SECTION	"__mcount_loc"
 #endif

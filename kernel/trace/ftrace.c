@@ -4340,6 +4340,9 @@ static struct ftrace_func_command ftrace_mod_cmd = {
 	.func			= ftrace_mod_callback,
 };
 
+/**
+ *  
+ */
 static int __init ftrace_mod_cmd_init(void)
 {
 	return register_ftrace_command(&ftrace_mod_cmd);
@@ -4823,12 +4826,20 @@ void clear_ftrace_function_probes(struct trace_array *tr)
 		unregister_ftrace_function_probe_func(NULL, tr, probe->probe_ops);
 }
 
+/**
+ *  
+ */
 static LIST_HEAD(ftrace_commands);
 static DEFINE_MUTEX(ftrace_cmd_mutex);
+
+static struct list_head ftrace_commands; //+++
+static struct mutex ftrace_cmd_mutex = __MUTEX_INITIALIZER(ftrace_cmd_mutex); //+++
 
 /*
  * Currently we only register ftrace commands from __init, so mark this
  * __init too.
+ *
+ * 注册 一个  命令
  */
 __init int register_ftrace_command(struct ftrace_func_command *cmd)
 {
@@ -4872,6 +4883,9 @@ __init int unregister_ftrace_command(struct ftrace_func_command *cmd)
 	return ret;
 }
 
+/**
+ *  @buff 为用户输入的字符串 如 "*sched*"
+ */
 static int ftrace_process_regex(struct ftrace_iterator *iter,
 				char *buff, int len, int enable)
 {
@@ -4897,8 +4911,20 @@ static int ftrace_process_regex(struct ftrace_iterator *iter,
 	command = strsep(&next, ":");
 
 	mutex_lock(&ftrace_cmd_mutex);
+
+    /**
+     *  
+     */
 	list_for_each_entry(p, &ftrace_commands, list) {
+
+        /**
+         *  
+         */
 		if (strcmp(p->name, command) == 0) {
+
+            /**
+             *  
+             */
 			ret = p->func(tr, hash, func, command, next, enable);
 			goto out_unlock;
 		}
@@ -4909,6 +4935,12 @@ static int ftrace_process_regex(struct ftrace_iterator *iter,
 	return ret;
 }
 
+
+/**
+ *  ubuf  可能为 正则表达式 如 "*sched*"
+ *
+ *  echo "*sched*" > /sys/kernel/debug/tracing/set_ftrace_filter
+ */
 static ssize_t
 ftrace_regex_write(struct file *file, const char __user *ubuf,
 		   size_t cnt, loff_t *ppos, int enable)
@@ -4931,13 +4963,21 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
 
 	/* iter->hash is a local copy, so we don't need regex_lock */
 
+    /**
+     *  
+     */
 	parser = &iter->parser;
 	read = trace_get_user(parser, ubuf, cnt, ppos); /*  */
 
-	if (read >= 0 && trace_parser_loaded(parser) &&
-	    !trace_parser_cont(parser)) {
-		ret = ftrace_process_regex(iter, parser->buffer,
-					   parser->idx, enable);
+    /**
+     *  
+     */
+	if (read >= 0 && trace_parser_loaded(parser) && !trace_parser_cont(parser)) {
+
+        /**
+         *  
+         */
+		ret = ftrace_process_regex(iter, parser->buffer, parser->idx, enable);
 		trace_parser_clear(parser);
 		if (ret < 0)
 			goto out;
@@ -4948,13 +4988,23 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
 	return ret;
 }
 
-ssize_t /* echo schedule > set_ftrace_filter */
+
+/**
+ *  
+ */
+ssize_t /* echo "*sched*" > set_ftrace_filter */
 ftrace_filter_write(struct file *file, const char __user *ubuf,
 		    size_t cnt, loff_t *ppos)
 {
+    /**
+     *  /sys/kernel/debug/tracing/set_ftrace_filter
+     */
 	return ftrace_regex_write(file, ubuf, cnt, ppos, 1);
 }
 
+/**
+ *  
+ */
 ssize_t
 ftrace_notrace_write(struct file *file, const char __user *ubuf,
 		     size_t cnt, loff_t *ppos)
@@ -5701,6 +5751,9 @@ static const struct file_operations ftrace_enabled_fops = {
 	.release = seq_release_private,
 };
 
+/**
+ *  /sys/kernel/debug/tracing/set_ftrace_filter
+ */
 static const struct file_operations ftrace_filter_fops = {
 	.open = ftrace_filter_open,
 	.read = seq_read,
@@ -5709,6 +5762,9 @@ static const struct file_operations ftrace_filter_fops = {
 	.release = ftrace_regex_release,
 };
 
+/**
+ *  
+ */
 static const struct file_operations ftrace_notrace_fops = {
 	.open = ftrace_notrace_open,
 	.read = seq_read,
@@ -6124,24 +6180,24 @@ static const struct file_operations ftrace_graph_notrace_fops = {
 };
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 
-void ftrace_create_filter_files(struct ftrace_ops *ops,
-				struct dentry *parent)
+/**
+ *  
+ */
+void ftrace_create_filter_files(struct ftrace_ops *ops, struct dentry *parent)
 {
     /**
-    cd /sys/kernel/debug/tracing/
-    echo 1 > tracing_on
-    echo "schedule" > set_ftrace_filter
-    echo function_graph > current_tracer
-    cat trace
-    */
+     *  cd /sys/kernel/debug/tracing/
+     *  echo 1 > tracing_on
+     *  echo "*sched*" > set_ftrace_filter
+     *  echo function_graph > current_tracer
+     *  cat trace
+     */
 
     /* /sys/kernel/debug/tracing/set_ftrace_filter */
-	trace_create_file("set_ftrace_filter", 0644, parent,
-			  ops, &ftrace_filter_fops);
+	trace_create_file("set_ftrace_filter", 0644, parent, ops, &ftrace_filter_fops);
 
     /* /sys/kernel/debug/tracing/ftrace_notrace_fops */
-	trace_create_file("ftrace_notrace_fops", 0644, parent,
-			  ops, &ftrace_notrace_fops);
+	trace_create_file("ftrace_notrace_fops", 0644, parent, ops, &ftrace_notrace_fops);
 }
 
 /*

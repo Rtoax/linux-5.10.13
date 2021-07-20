@@ -1265,34 +1265,40 @@ func_graph_set_flag(struct trace_array *tr, u32 old_flags, u32 bit, int set)
 }
 
 static struct trace_event_functions graph_functions = {
-	.trace		= print_graph_function_event,
+	graph_functions.trace		= print_graph_function_event,
 };
 
 static struct trace_event graph_trace_entry_event = {
-	.type		= TRACE_GRAPH_ENT,
-	.funcs		= &graph_functions,
+	graph_trace_entry_event.type		= TRACE_GRAPH_ENT,
+	graph_trace_entry_event.funcs		= &graph_functions,
 };
 
+/**
+ *
+ */
 static struct trace_event graph_trace_ret_event = {
-	.type		= TRACE_GRAPH_RET,
-	.funcs		= &graph_functions
+	graph_trace_ret_event.type		= TRACE_GRAPH_RET,
+	graph_trace_ret_event.funcs		= &graph_functions
 };
 
+/**
+ *  echo function_graph > /sys/kernel/debug/tracing/current_tracer
+ */
 static struct tracer __tracer_data graph_trace  = {
-	.name		= "function_graph",
-	.update_thresh	= graph_trace_update_thresh,
-	.open		= graph_trace_open,
-	.pipe_open	= graph_trace_open,
-	.close		= graph_trace_close,
-	.pipe_close	= graph_trace_close,
-	.init		= graph_trace_init,
-	.reset		= graph_trace_reset,
-	.print_line	= print_graph_function,
-	.print_header	= print_graph_headers,
-	.flags		= &tracer_flags,
-	.set_flag	= func_graph_set_flag,
+	graph_trace.name		= "function_graph",
+	graph_trace.update_thresh	= graph_trace_update_thresh,
+	graph_trace.open		= graph_trace_open,
+	graph_trace.pipe_open	= graph_trace_open,
+	graph_trace.close		= graph_trace_close,
+	graph_trace.pipe_close	= graph_trace_close,
+	graph_trace.init		= graph_trace_init,
+	graph_trace.reset		= graph_trace_reset,
+	graph_trace.print_line	= print_graph_function,
+	graph_trace.print_header	= print_graph_headers,
+	graph_trace.flags		= &tracer_flags,
+	graph_trace.set_flag	= func_graph_set_flag,
 #ifdef CONFIG_FTRACE_SELFTEST
-	.selftest	= trace_selftest_startup_function_graph,
+	graph_trace.selftest	= trace_selftest_startup_function_graph,
 #endif
 };
 
@@ -1328,10 +1334,10 @@ graph_depth_read(struct file *filp, char __user *ubuf, size_t cnt,
 }
 
 static const struct file_operations graph_depth_fops = {
-	.open		= tracing_open_generic,
-	.write		= graph_depth_write,
-	.read		= graph_depth_read,
-	.llseek		= generic_file_llseek,
+	graph_depth_fops.open		= tracing_open_generic,
+	graph_depth_fops.write		= graph_depth_write,
+	graph_depth_fops.read		= graph_depth_read,
+	graph_depth_fops.llseek		= generic_file_llseek,
 };
 
 static __init int init_graph_tracefs(void)

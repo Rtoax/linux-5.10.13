@@ -944,6 +944,8 @@ void tracer_tracing_on(struct trace_array *tr)
  *
  * This function enables tracing buffers that may have been
  * disabled with tracing_off.
+ *
+ * 使能  tracing buffer
  */
 void tracing_on(void)
 {
@@ -4963,6 +4965,9 @@ static const struct file_operations tracing_iter_fops = {
 	.write		= tracing_trace_options_write,
 };
 
+/**
+ *  cat /sys/kernel/debug/tracing/README
+ */
 static const char readme_msg[] =
 	"tracing mini-HOWTO:\n\n"
 	"# echo 0 > tracing_on : quick way to disable tracing\n"
@@ -5220,14 +5225,20 @@ static const char readme_msg[] =
 #endif
 ;
 
+
+/**
+ *  /sys/kernel/debug/tracing/README
+ */
 static ssize_t
 tracing_readme_read(struct file *filp, char __user *ubuf,
 		       size_t cnt, loff_t *ppos)
 {
-	return simple_read_from_buffer(ubuf, cnt, ppos,
-					readme_msg, strlen(readme_msg));
+	return simple_read_from_buffer(ubuf, cnt, ppos, readme_msg, strlen(readme_msg));
 }
 
+/**
+ *  /sys/kernel/debug/tracing/README
+ */
 static const struct file_operations tracing_readme_fops = {
 	.open		= tracing_open_generic,
 	.read		= tracing_readme_read,
@@ -5379,6 +5390,10 @@ static int tracing_saved_cmdlines_open(struct inode *inode, struct file *filp)
 	return seq_open(filp, &tracing_saved_cmdlines_seq_ops);
 }
 
+
+/**
+ *  /sys/kernel/debug/tracing/saved_cmdlines
+ */
 static const struct file_operations tracing_saved_cmdlines_fops = {
 	.open		= tracing_saved_cmdlines_open,
 	.read		= seq_read,
@@ -5453,6 +5468,9 @@ tracing_saved_cmdlines_size_write(struct file *filp, const char __user *ubuf,
 	return cnt;
 }
 
+/**
+ *  /sys/kernel/debug/tracing/saved_cmdlines_size
+ */
 static const struct file_operations tracing_saved_cmdlines_size_fops = {
 	.open		= tracing_open_generic,
 	.read		= tracing_saved_cmdlines_size_read,
@@ -6213,6 +6231,9 @@ static int tracing_wait_pipe(struct file *filp)
 
 /*
  * Consumer reader.
+ */
+/**
+ *  /sys/kernel/debug/tracing/trace_pipe
  */
 static ssize_t
 tracing_read_pipe(struct file *filp, char __user *ubuf,
@@ -7076,20 +7097,28 @@ static const struct file_operations tracing_max_lat_fops = {
 };
 #endif
 
+/**
+ *  /sys/kernel/debug/tracing/current_tracer 
+ *
+ *  echo function > current_tracer
+ */
 static const struct file_operations set_tracer_fops = {
-	.open		= tracing_open_generic,
-	.read		= tracing_set_trace_read,
-	.write		= tracing_set_trace_write,
-	.llseek		= generic_file_llseek,
+	set_tracer_fops.open		= tracing_open_generic,
+	set_tracer_fops.read		= tracing_set_trace_read,
+	set_tracer_fops.write		= tracing_set_trace_write,
+	set_tracer_fops.llseek		= generic_file_llseek,
 };
 
+/**
+ *  /sys/kernel/debug/tracing/trace_pipe
+ */
 static const struct file_operations tracing_pipe_fops = {
-	.open		= tracing_open_pipe,
-	.poll		= tracing_poll_pipe,
-	.read		= tracing_read_pipe,
-	.splice_read	= tracing_splice_read_pipe,
-	.release	= tracing_release_pipe,
-	.llseek		= no_llseek,
+	tracing_pipe_fops.open		= tracing_open_pipe,
+	tracing_pipe_fops.poll		= tracing_poll_pipe,
+	tracing_pipe_fops.read		= tracing_read_pipe,
+	tracing_pipe_fops.splice_read	= tracing_splice_read_pipe,
+	tracing_pipe_fops.release	= tracing_release_pipe,
+	tracing_pipe_fops.llseek		= no_llseek,
 };
 
 static const struct file_operations tracing_entries_fops = {
@@ -8044,28 +8073,33 @@ tracing_init_tracefs_percpu(struct trace_array *tr, long cpu)
 	}
 
 	/* per cpu trace_pipe */
-	trace_create_cpu_file("trace_pipe", 0444, d_cpu,
-				tr, cpu, &tracing_pipe_fops);
+    /**
+     *  /sys/kernel/debug/tracing/trace_pipe
+     */
+	trace_create_cpu_file("trace_pipe", 0444, d_cpu, tr, cpu, &tracing_pipe_fops);
 
 	/* per cpu trace */
-	trace_create_cpu_file("trace", 0644, d_cpu,
-				tr, cpu, &tracing_fops);
+    /**
+     *  /sys/kernel/debug/tracing/trace
+     */
+	trace_create_cpu_file("trace", 0644, d_cpu, tr, cpu, &tracing_fops);
 
-	trace_create_cpu_file("trace_pipe_raw", 0444, d_cpu,
-				tr, cpu, &tracing_buffers_fops);
+    /**
+     *  /sys/kernel/debug/tracing/trace_pipe_raw
+     */
+	trace_create_cpu_file("trace_pipe_raw", 0444, d_cpu, tr, cpu, &tracing_buffers_fops);
 
-	trace_create_cpu_file("stats", 0444, d_cpu,
-				tr, cpu, &tracing_stats_fops);
+    /**
+     *  /sys/kernel/debug/tracing/stats
+     */
+	trace_create_cpu_file("stats", 0444, d_cpu, tr, cpu, &tracing_stats_fops);
 
-	trace_create_cpu_file("buffer_size_kb", 0444, d_cpu,
-				tr, cpu, &tracing_entries_fops);
+	trace_create_cpu_file("buffer_size_kb", 0444, d_cpu, tr, cpu, &tracing_entries_fops);
 
 #ifdef CONFIG_TRACER_SNAPSHOT
-	trace_create_cpu_file("snapshot", 0644, d_cpu,
-				tr, cpu, &snapshot_fops);
+	trace_create_cpu_file("snapshot", 0644, d_cpu, tr, cpu, &snapshot_fops);
 
-	trace_create_cpu_file("snapshot_raw", 0444, d_cpu,
-				tr, cpu, &snapshot_raw_fops);
+	trace_create_cpu_file("snapshot_raw", 0444, d_cpu, tr, cpu, &snapshot_raw_fops);
 #endif
 }
 
@@ -8869,69 +8903,58 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	int cpu;
 
     /**
-    cd /sys/kernel/debug/tracing/
-    echo 1 > tracing_on
-    echo "schedule" > set_ftrace_filter
-    echo function_graph > current_tracer
-    cat trace
-    */
+     *  cd /sys/kernel/debug/tracing/
+     *  echo 1 > tracing_on
+     *  echo "schedule" > set_ftrace_filter
+     *  echo function_graph > current_tracer
+     *  cat trace
+     */
+    
+    /* /sys/kernel/debug/tracing/available_tracers */
+	trace_create_file("available_tracers", 0444, d_tracer, tr, &show_traces_fops);
 
-	trace_create_file("available_tracers", 0444, d_tracer,  /* /sys/kernel/debug/tracing/available_tracers */
-			tr, &show_traces_fops);
+    /**
+     *  /sys/kernel/debug/tracing/current_tracer 
+     *
+     *  echo function > current_tracer
+     */
+	trace_create_file("current_tracer", 0644, d_tracer, tr, &set_tracer_fops);
 
-    /* /sys/kernel/debug/tracing/current_tracer */
-	trace_create_file("current_tracer", 0644, d_tracer,
-			tr, &set_tracer_fops);
+	trace_create_file("tracing_cpumask", 0644, d_tracer, tr, &tracing_cpumask_fops);
 
-	trace_create_file("tracing_cpumask", 0644, d_tracer,
-			  tr, &tracing_cpumask_fops);
-
-	trace_create_file("trace_options", 0644, d_tracer,
-			  tr, &tracing_iter_fops);
+	trace_create_file("trace_options", 0644, d_tracer, tr, &tracing_iter_fops);
 
     /* /sys/kernel/debug/tracing/trace */
-	trace_create_file("trace", 0644, d_tracer,
-			  tr, &tracing_fops);
+	trace_create_file("trace", 0644, d_tracer, tr, &tracing_fops);
 
-	trace_create_file("trace_pipe", 0444, d_tracer,
-			  tr, &tracing_pipe_fops);
+	trace_create_file("trace_pipe", 0444, d_tracer, tr, &tracing_pipe_fops);
 
-	trace_create_file("buffer_size_kb", 0644, d_tracer,
-			  tr, &tracing_entries_fops);
+	trace_create_file("buffer_size_kb", 0644, d_tracer, tr, &tracing_entries_fops);
 
-	trace_create_file("buffer_total_size_kb", 0444, d_tracer,
-			  tr, &tracing_total_entries_fops);
+	trace_create_file("buffer_total_size_kb", 0444, d_tracer, tr, &tracing_total_entries_fops);
 
     /* /sys/kernel/debug/tracing/free_buffer */
-	trace_create_file("free_buffer", 0200, d_tracer,
-			  tr, &tracing_free_buffer_fops);
+	trace_create_file("free_buffer", 0200, d_tracer, tr, &tracing_free_buffer_fops);
 
-	trace_create_file("trace_marker", 0220, d_tracer,
-			  tr, &tracing_mark_fops);
+	trace_create_file("trace_marker", 0220, d_tracer, tr, &tracing_mark_fops);
 
 	file = __find_event_file(tr, "ftrace", "print");
 	if (file && file->dir)
-		trace_create_file("trigger", 0644, file->dir, file,
-				  &event_trigger_fops);
+		trace_create_file("trigger", 0644, file->dir, file, &event_trigger_fops);
 	tr->trace_marker_file = file;
 
-	trace_create_file("trace_marker_raw", 0220, d_tracer,
-			  tr, &tracing_mark_raw_fops);
+	trace_create_file("trace_marker_raw", 0220, d_tracer, tr, &tracing_mark_raw_fops);
 
-	trace_create_file("trace_clock", 0644, d_tracer, tr,
-			  &trace_clock_fops);
+	trace_create_file("trace_clock", 0644, d_tracer, tr, &trace_clock_fops);
 
     /* /sys/kernel/debug/tracing/tracing_on */
-	trace_create_file("tracing_on", 0644, d_tracer,
-			  tr, &rb_simple_fops);
+	trace_create_file("tracing_on", 0644, d_tracer, tr, &rb_simple_fops);
 
-	trace_create_file("timestamp_mode", 0444, d_tracer, tr,
-			  &trace_time_stamp_mode_fops);
+	trace_create_file("timestamp_mode", 0444, d_tracer, tr, &trace_time_stamp_mode_fops);
 
 	tr->buffer_percent = 50;
 
-	trace_create_file("buffer_percent", 0444, d_tracer,
-			tr, &buffer_percent_fops);
+	trace_create_file("buffer_percent", 0444, d_tracer, tr, &buffer_percent_fops);
 
 	create_trace_options_dir(tr);
 
@@ -8943,16 +8966,15 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 		MEM_FAIL(1, "Could not allocate function filter files");
 
 #ifdef CONFIG_TRACER_SNAPSHOT
-	trace_create_file("snapshot", 0644, d_tracer,
-			  tr, &snapshot_fops);
+	trace_create_file("snapshot", 0644, d_tracer, tr, &snapshot_fops);
 #endif
 
-	trace_create_file("error_log", 0644, d_tracer,
-			  tr, &tracing_err_log_fops);
+	trace_create_file("error_log", 0644, d_tracer, tr, &tracing_err_log_fops);
 
-	for_each_tracing_cpu(cpu)
+	for_each_tracing_cpu(cpu) {
 		tracing_init_tracefs_percpu(tr, cpu);
-
+    }
+    
 	ftrace_init_tracefs(tr, d_tracer);
 }
 
@@ -9095,6 +9117,10 @@ static struct notifier_block trace_module_nb = {
 };
 #endif /* CONFIG_MODULES */
 
+
+/**
+ *  初始化
+ */
 static __init int tracer_init_tracefs(void) /*  */
 {
 	int ret;
@@ -9110,20 +9136,24 @@ static __init int tracer_init_tracefs(void) /*  */
 	init_tracer_tracefs(&global_trace, NULL);   /* /sys/kernel/debug/tracing/ */
 	ftrace_init_tracefs_toplevel(&global_trace, NULL);
 
-	trace_create_file("tracing_thresh", 0644, NULL,
-			&global_trace, &tracing_thresh_fops);
+	trace_create_file("tracing_thresh", 0644, NULL, &global_trace, &tracing_thresh_fops);
 
-	trace_create_file("README", 0444, NULL, /* /sys/kernel/debug/tracing/README */
-			NULL, &tracing_readme_fops);
+    /**
+     *  /sys/kernel/debug/tracing/README
+     */
+	trace_create_file("README", 0444, NULL, NULL, &tracing_readme_fops);
 
-	trace_create_file("saved_cmdlines", 0444, NULL,
-			NULL, &tracing_saved_cmdlines_fops);
+    /**
+     *  /sys/kernel/debug/tracing/saved_cmdlines
+     */
+	trace_create_file("saved_cmdlines", 0444, NULL, NULL, &tracing_saved_cmdlines_fops);
 
-	trace_create_file("saved_cmdlines_size", 0644, NULL,
-			  NULL, &tracing_saved_cmdlines_size_fops);
+    /**
+     *  /sys/kernel/debug/tracing/saved_cmdlines_size
+     */
+	trace_create_file("saved_cmdlines_size", 0644, NULL, NULL, &tracing_saved_cmdlines_size_fops);
 
-	trace_create_file("saved_tgids", 0444, NULL,
-			NULL, &tracing_saved_tgids_fops);
+	trace_create_file("saved_tgids", 0444, NULL, NULL, &tracing_saved_tgids_fops);
 
 	trace_eval_init();  /*  */
 

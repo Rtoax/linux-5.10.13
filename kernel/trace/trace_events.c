@@ -2994,6 +2994,10 @@ static struct ftrace_probe_ops event_disable_count_probe_ops = {
 	.free			= event_enable_free,
 };
 
+
+/**
+ *  
+ */
 static int
 event_enable_func(struct trace_array *tr, struct ftrace_hash *hash,
 		  char *glob, char *cmd, char *param, int enabled)
@@ -3114,6 +3118,9 @@ static struct ftrace_func_command event_disable_cmd = {
 	.func			= event_enable_func,
 };
 
+/**
+ *  注册
+ */
 static __init int register_event_cmds(void)
 {
 	int ret;

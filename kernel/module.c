@@ -3187,6 +3187,10 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 	return 0;
 }
 
+
+/**
+ *  
+ */
 static int find_module_sections(struct module *mod, struct load_info *info) /* 找到 module section */
 {
 	mod->kp = section_objs(info, "__param",
@@ -3302,6 +3306,9 @@ static int find_module_sections(struct module *mod, struct load_info *info) /* �
 	return 0;
 }
 
+/**
+ *  
+ */
 static int move_module(struct module *mod, struct load_info *info)
 {
 	int i;

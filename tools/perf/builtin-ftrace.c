@@ -254,8 +254,14 @@ static void reset_tracing_options(struct perf_ftrace *ftrace __maybe_unused)
 	write_tracing_option_file("irq-info", "0");
 }
 
-static int reset_tracing_files(struct perf_ftrace *ftrace __maybe_unused)
+/**
+ *  
+ */
+static int reset_tracing_files(struct perf_ftrace __maybe_unused *ftrace )
 {
+    /**
+     *  
+     */
 	if (write_tracing_file("tracing_on", "0") < 0)
 		return -1;
 
@@ -616,6 +622,7 @@ static int __cmd_ftrace(struct perf_ftrace *ftrace, int argc, const char **argv)
 
 	setup_pager();
 
+    ///sys/kernel/debug/tracing/trace_pipe
 	trace_file = get_tracing_file("trace_pipe");
 	if (!trace_file) {
 		pr_err("failed to open trace_pipe\n");

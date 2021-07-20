@@ -1117,6 +1117,9 @@ extern struct list_head ftrace_pids;
 #define FTRACE_PID_IGNORE	-1
 #define FTRACE_PID_TRACE	-2
 
+/**
+ *  ftrace 命令
+ */
 struct ftrace_func_command {
 	struct list_head	list;
 	char			*name;
@@ -1128,8 +1131,7 @@ struct ftrace_func_command {
 extern bool __initdata ftrace_filter_param ;
 static inline int ftrace_trace_task(struct trace_array *tr)
 {
-	return this_cpu_read(tr->array_buffer.data->ftrace_ignore_pid) !=
-		FTRACE_PID_IGNORE;
+	return this_cpu_read(tr->array_buffer.data->ftrace_ignore_pid) != FTRACE_PID_IGNORE;
 }
 extern int ftrace_is_dead(void);
 int ftrace_create_function_files(struct trace_array *tr,
@@ -1218,6 +1220,10 @@ bool ftrace_event_is_function(struct trace_event_call *call);
  */
 struct trace_parser {
 	bool		cont;
+
+    /**
+     *  存放用户输入的 字符串,如 "*sched*"
+     */
 	char		*buffer;
 	unsigned	idx;
 	unsigned	size;
