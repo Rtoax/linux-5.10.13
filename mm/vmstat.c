@@ -159,6 +159,8 @@ void vm_events_fold_cpu(int cpu)    /*  */
  * Manage combined zone based / global counters
  *
  * vm_stat contains the global counters
+ *
+ * 统计
  */
 atomic_long_t __cacheline_aligned_in_smp vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] ;
 atomic_long_t __cacheline_aligned_in_smp vm_numa_stat[NR_VM_NUMA_STAT_ITEMS] ;

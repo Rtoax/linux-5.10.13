@@ -77,6 +77,14 @@ static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
 #ifdef CONFIG_PROC_FS
 static unsigned long direct_pages_count[PG_LEVEL_NUM];
 
+/**
+ *  enum pg_level
+ *
+ *  PG_LEVEL_4K,
+ *  PG_LEVEL_2M,
+ *  PG_LEVEL_1G,
+ *  PG_LEVEL_512G,
+ */
 void update_page_count(int level, unsigned long pages)
 {
 	/* Protect against CPA */
@@ -94,20 +102,24 @@ static void split_page_count(int level)
 	direct_pages_count[level - 1] += PTRS_PER_PTE;
 }
 
+/**
+ *  cat /proc/meminfo
+ *
+ *  DirectMap4k:       83840 kB
+ *  DirectMap2M:      964608 kB
+ *  DirectMap1G:           0 kB
+ */
 void arch_report_meminfo(struct seq_file *m)
 {
-	seq_printf(m, "DirectMap4k:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_4K] << 2);
+	seq_printf(m, "DirectMap4k:    %8lu kB\n", direct_pages_count[PG_LEVEL_4K] << 2);
+    
 #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-	seq_printf(m, "DirectMap2M:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_2M] << 11);
+	seq_printf(m, "DirectMap2M:    %8lu kB\n", direct_pages_count[PG_LEVEL_2M] << 11);
 #else
-	seq_printf(m, "DirectMap4M:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_2M] << 12);
+//	seq_printf(m, "DirectMap4M:    %8lu kB\n", direct_pages_count[PG_LEVEL_2M] << 12);
 #endif
 	if (direct_gbpages)
-		seq_printf(m, "DirectMap1G:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_1G] << 20);
+		seq_printf(m, "DirectMap1G:    %8lu kB\n", direct_pages_count[PG_LEVEL_1G] << 20);
 }
 #else
 /*  */

@@ -175,6 +175,9 @@ static inline unsigned long zone_numa_state_snapshot(struct zone *zone,
 }
 #endif /* CONFIG_NUMA */
 
+/**
+ *  统计值
+ */
 static inline void zone_page_state_add(long x, struct zone *zone,
 				 enum zone_stat_item item)/* 增加计数 */
 {

@@ -3458,6 +3458,9 @@ out:
 
 #endif /* CONFIG_SYSCTL */
 
+/**
+ *  hugetlb
+ */
 void hugetlb_report_meminfo(struct seq_file *m)
 {
 	struct hstate *h;

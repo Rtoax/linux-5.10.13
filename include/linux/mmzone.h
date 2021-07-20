@@ -152,13 +152,19 @@ struct zone_padding {
 #endif
 
 #ifdef CONFIG_NUMA
+/**
+ *  NUMA 统计信息
+ *
+ *  node_page_state_add()
+ *  global_node_page_state()
+ */
 enum numa_stat_item {
-	NUMA_HIT,		/* allocated in intended node */
-	NUMA_MISS,		/* allocated in non intended node */
-	NUMA_FOREIGN,		/* was intended here, hit elsewhere */
-	NUMA_INTERLEAVE_HIT,	/* interleaver preferred this zone */
-	NUMA_LOCAL,		/* allocation from local node */
-	NUMA_OTHER,		/* allocation from other node */
+	NUMA_HIT,           /* 在预设的内存节点中分配的物理页面数量 allocated in intended node */
+	NUMA_MISS,          /* 在预设的内存节点中无法分配的物理页面数量 allocated in non intended node */
+	NUMA_FOREIGN,       /* 从其他节点分配内存 was intended here, hit elsewhere */
+	NUMA_INTERLEAVE_HIT,/* 交织地分配内存 interleaver preferred this zone */
+	NUMA_LOCAL,         /* 本地节点分配内存 allocation from local node */
+	NUMA_OTHER,         /* 除本地节点以外的节点分配的内存 allocation from other node */
 	NR_VM_NUMA_STAT_ITEMS
 };
 #else
@@ -166,33 +172,50 @@ enum numa_stat_item {
 #endif
 
 /**
- *  
+ *  ZONE 统计信息
+ *
+ *  zone_page_state()
+ *  zone_page_state_add()
+ *  global_zone_page_state()
  */
 enum zone_stat_item {   /* ZONE 状态 */
 	/* First 128 byte cacheline (assuming 64 bit words) */
-	NR_FREE_PAGES,      /*  */
+	NR_FREE_PAGES,      /* 空闲页面数量 */
 
     /**
-     *  
+     *  LRU_BASE 统计
+     *  LRU 链表是从 LRU_BASE 统计的
      */
     NR_ZONE_LRU_BASE, /* Used only for compaction and reclaim retry */
-	NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE,
-	NR_ZONE_ACTIVE_ANON,
-	NR_ZONE_INACTIVE_FILE,
-	NR_ZONE_ACTIVE_FILE,
-	NR_ZONE_UNEVICTABLE,
-	NR_ZONE_WRITE_PENDING,	/* Count of dirty, writeback and unstable pages */
+	NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE,   /* 不活跃匿名页 */
+	NR_ZONE_ACTIVE_ANON,    /* 活跃匿名页 */
+	NR_ZONE_INACTIVE_FILE,  /* 不活跃文件映射 */
+	NR_ZONE_ACTIVE_FILE,    /* 活跃文件映射 */
+	NR_ZONE_UNEVICTABLE,    /* 不可回收页面 */
+	NR_ZONE_WRITE_PENDING,	/* 脏页，正在回写和不稳定页面数量 Count of dirty, writeback and unstable pages */
 	
-	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
-	NR_PAGETABLE,		/* used for pagetables */
+	NR_MLOCK,               /* 使用mlock() 锁定的页面 mlock()ed pages found and moved off LRU */
+	NR_PAGETABLE,           /* 用于页表的页面数量 used for pagetables */
 	/* Second 128 byte cacheline */
-	NR_BOUNCE,
-#if IS_ENABLED(CONFIG_ZSMALLOC)
-	NR_ZSPAGES,		/* allocated in zsmalloc */
-#endif
-	NR_FREE_CMA_PAGES,  /* 连续内存管理 */
-	NR_VM_ZONE_STAT_ITEMS /* 所有的 ZONE stat */};
 
+    /**
+     *  在早期IA-32架构中，一些ISA总线的设备只能访问地段的16MB内存，
+     *  如DMA设备的源地址在16MB以下，而DMA设备的目标地址可能高于16MB
+     *  因此需要在 16MB 内存分配一个缓冲区作为跳板，这回明显增加一次复制的动作
+     *  这个缓冲区成为跳跃页面。
+     */
+	NR_BOUNCE,              /* 跳跃页面的数量 */
+#if IS_ENABLED(CONFIG_ZSMALLOC)
+	NR_ZSPAGES,             /* 用于zsmalloc 机制的页面数量 allocated in zsmalloc */
+#endif
+	NR_FREE_CMA_PAGES,      /* CMA中的空闲页面数量 - CMA-连续内存管理 */
+	NR_VM_ZONE_STAT_ITEMS   /* 所有的 ZONE stat */
+
+};
+
+/**
+ *  NODE 统计信息
+ */
 enum node_stat_item {
 	NR_LRU_BASE,
 	NR_INACTIVE_ANON = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */
@@ -788,6 +811,12 @@ struct zone {   /* 内存 ZONE */
 	ZONE_PADDING(_pad3_)
         
 	/* Zone statistics - 统计信息 */
+    /**
+     *  参见全局变量 mm/vmstat.c
+     *  vm_zone_stat
+     *  vm_numa_stat
+     *  vm_node_stat
+     */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
     
@@ -1100,6 +1129,11 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
     /**
      *  NODE 的统计信息
+     *
+     *  参见全局变量 mm/vmstat.c
+     *  vm_zone_stat
+     *  vm_numa_stat
+     *  vm_node_stat
      */
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
     

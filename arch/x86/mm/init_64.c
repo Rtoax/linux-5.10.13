@@ -497,6 +497,9 @@ phys_pte_init(pte_t *pte_page, unsigned long paddr, unsigned long paddr_end,
 		paddr_last = (paddr & PAGE_MASK) + PAGE_SIZE;
 	}
 
+    /**
+     *  统计 4K 页面
+     */
 	update_page_count(PG_LEVEL_4K, pages);
 
 	return paddr_last;
@@ -536,9 +539,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
 			if (!pmd_large(*pmd)) {
 				spin_lock(&init_mm.page_table_lock);
 				pte = (pte_t *)pmd_page_vaddr(*pmd);
-				paddr_last = phys_pte_init(pte, paddr,
-							   paddr_end, prot,
-							   init);
+				paddr_last = phys_pte_init(pte, paddr, paddr_end, prot, init);
 				spin_unlock(&init_mm.page_table_lock);
 				continue;
 			}
@@ -582,6 +583,10 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
 		pmd_populate_kernel_init(&init_mm, pmd, pte, init);
 		spin_unlock(&init_mm.page_table_lock);
 	}
+
+    /**
+     *  
+     */
 	update_page_count(PG_LEVEL_2M, pages);
 	return paddr_last;
 }
@@ -674,6 +679,9 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
 		spin_unlock(&init_mm.page_table_lock);
 	}
 
+    /**
+     *  
+     */
 	update_page_count(PG_LEVEL_1G, pages);
 
 	return paddr_last;

@@ -114,7 +114,11 @@
 #endif
 
 /* The following flags affect the page allocator grouping pages by mobility */
-/* Objects are reclaimable */
+/**
+ *  Objects are reclaimable 
+ *
+ *  表明 slab 分配物理页的行为是可回收的
+ */
 #define SLAB_RECLAIM_ACCOUNT	((slab_flags_t __force)0x00020000U)
 #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
 

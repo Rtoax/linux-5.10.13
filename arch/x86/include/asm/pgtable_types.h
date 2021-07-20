@@ -588,6 +588,9 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 struct seq_file;
 extern void arch_report_meminfo(struct seq_file *m);
 
+/**
+ *  不同页面大小
+ */
 enum pg_level { /* 页全局 级别 */
 	PG_LEVEL_NONE,
 	PG_LEVEL_4K,
