@@ -365,10 +365,20 @@ int user_min_free_kbytes = -1;
  * unsupported and the premature reclaim offsets the advantage of long-term
  * fragmentation avoidance.
  */
-int __read_mostly watermark_boost_factor ;
+//int __read_mostly watermark_boost_factor ;
 #else
+/**
+ *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+ *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+ *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+ *  的功能。
+ *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+ *
+ *  boost_watermark 函数及用于临时提高水位。
+ */
 int __read_mostly watermark_boost_factor  = 15000;
 #endif
+
 int watermark_scale_factor = 10;
 
 static unsigned long __initdata nr_kernel_pages ;/*  */
@@ -2468,8 +2478,35 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
  * the free lists for the desirable migrate type are depleted
  *
  * fallbacks - 后备，倒退
+ *
+ * 内存页挪用规则, 挪用页块主要是在
+ *  `__rmqueue_fallback()`
+ *      ->`find_suitable_fallback()` 中实现的。
+ *
+ *  enum migratetype
+ *
+ *  +----------------------+
+ *  | MIGRATE_UNMOVABLE    | 不可移动
+ *  +----------------------+ 
+ *  | MIGRATE_MOVABLE      | 可移动
+ *  +----------------------+
+ *  | MIGRATE_RECLAIMABLE  | 可回收
+ *  +----------------------+
+ *  | MIGRATE_PCPTYPES     | 
+ *  | MIGRATE_HIGHATOMIC   |
+ *  +----------------------+
+ *  | MIGRATE_CMA          | 
+ *  +----------------------+
+ *  | MIGRATE_ISOLATE      |
+ *  +----------------------+
+ *
  */
 static int fallbacks[MIGRATE_TYPES][3] = {
+    /**
+     *  以 MIGRATE_UNMOVABLE 为例
+     *
+     *  如果分配不可迁移类型的页面，根据 fallback后备数组，我们优先从可回收类型中挪用，然后才是可迁移类型
+     */
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },
 	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES },
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
@@ -2584,6 +2621,8 @@ static void change_pageblock_range(struct page *pageblock_page,
  * as fragmentation caused by those allocations polluting movable pageblocks
  * is worse than movable allocations stealing from unmovable and reclaimable
  * pageblocks.
+ *
+ * 判断后备 free_area 中 是否满足需求
  */
 static bool can_steal_fallback(unsigned int order, int start_mt)    /*  */
 {
@@ -2593,10 +2632,19 @@ static bool can_steal_fallback(unsigned int order, int start_mt)    /*  */
 	 * we can actually steal whole pageblock if this condition met,
 	 * but, below check doesn't guarantee it and that is just heuristic
 	 * so could be changed anytime.
+	 *
+	 * 离开此 order 检查是有意的，尽管在下一次检查中有宽松的 order 检查。 
+	 * 原因是如果满足这个条件，我们实际上可以窃取整个页面块，
+	 * 但是，下面的检查并不能保证它，这只是启发式的，因此可以随时更改。
+	 *
+	 * 还是没读懂啥意思 2021年7月20日21:28:41
 	 */
 	if (order >= pageblock_order)
 		return true;
 
+    /**
+     *  
+     */
 	if (order >= pageblock_order / 2 ||
 		start_mt == MIGRATE_RECLAIMABLE ||
 		start_mt == MIGRATE_UNMOVABLE ||
@@ -2606,6 +2654,15 @@ static bool can_steal_fallback(unsigned int order, int start_mt)    /*  */
 	return false;
 }
 
+/**
+ *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+ *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+ *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+ *  的功能。
+ *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+ *
+ *  boost_watermark 函数及用于临时提高水位。
+ */
 static inline bool boost_watermark(struct zone *zone)
 {
 	unsigned long max_boost;
@@ -2618,11 +2675,10 @@ static inline bool boost_watermark(struct zone *zone)
 	 * in a small area, boosting the watermark can cause an out of
 	 * memory situation immediately.
 	 */
-	if ((pageblock_nr_pages * 4) > zone_managed_pages(zone))
+	if ((pageblock_nr_pages/* 512 */ * 4) > zone_managed_pages(zone))
 		return false;
 
-	max_boost = mult_frac(zone->_watermark[WMARK_HIGH],
-			watermark_boost_factor, 10000);
+	max_boost = mult_frac(zone->_watermark[WMARK_HIGH], watermark_boost_factor, 10000);
 
 	/*
 	 * high watermark may be uninitialised if fragmentation occurs
@@ -2635,10 +2691,17 @@ static inline bool boost_watermark(struct zone *zone)
 	if (!max_boost)
 		return false;
 
-	max_boost = max(pageblock_nr_pages, max_boost);
+	max_boost = max(pageblock_nr_pages/* 512 */, max_boost);
 
-	zone->watermark_boost = min(zone->watermark_boost + pageblock_nr_pages,
-		max_boost);
+    /**
+     *  将水位提高
+     *
+     * 临时提高水位是发生在 使用后备 free_area 时，由 boost_watermark 提高的水位
+     * 在 rmqueue 中根据 标志位 ZONE_BOOSTED_WATERMARK 决定是否要唤醒 kswapd 线程。
+     *
+     * zone->watermark_boost 在 balance_pgdat() 中被恢复。
+     */
+	zone->watermark_boost = min(zone->watermark_boost + pageblock_nr_pages, max_boost);
 
 	return true;
 }
@@ -2650,6 +2713,8 @@ static inline bool boost_watermark(struct zone *zone)
  * are there in the pageblock with a compatible migratetype. If at least half
  * of pages are free or compatible, we can change migratetype of the pageblock
  * itself, so pages freed in the future will be put on the correct free list.
+ *
+ * 
  */
 static void steal_suitable_fallback(struct zone *zone, struct page *page,
 		unsigned int alloc_flags, int start_type, bool whole_block)
@@ -2677,8 +2742,19 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 	 * Boost watermarks to increase reclaim pressure to reduce the
 	 * likelihood of future fallbacks. Wake kswapd now as the node
 	 * may be balanced overall and kswapd will not wake naturally.
-	 */
+	 *
+     *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+     *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+     *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+     *  的功能。
+     *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+     *
+     *  boost_watermark 函数及用于临时提高水位。
+     */
 	if (boost_watermark(zone) && (alloc_flags & ALLOC_KSWAPD))
+        /**
+         *  设置临时水位 标志位
+         */
 		set_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
 
 	/* We are not allowed to try stealing from the whole block */
@@ -2738,9 +2814,26 @@ single_page:
  * 这将有助于减少由于在一个页面块中混合迁移类型页面而造成的碎片。
  *
  * 若对应 的迁移类型总的空闲链表没有空闲对象，那么假设 可以从其他迁移类型中"借"一些空闲页面过来
+ *
+ *  enum migratetype
+ *
+ *  +----------------------+
+ *  | MIGRATE_UNMOVABLE    | 不可移动
+ *  +----------------------+ 
+ *  | MIGRATE_MOVABLE      | 可移动
+ *  +----------------------+
+ *  | MIGRATE_RECLAIMABLE  | 可回收
+ *  +----------------------+
+ *  | MIGRATE_PCPTYPES     | 
+ *  | MIGRATE_HIGHATOMIC   |
+ *  +----------------------+
+ *  | MIGRATE_CMA          | 
+ *  +----------------------+
+ *  | MIGRATE_ISOLATE      |
+ *  +----------------------+
  */
 int find_suitable_fallback(struct free_area *area, unsigned int order,
-			int migratetype, bool only_stealable, bool *can_steal)
+			                    int migratetype, bool only_stealable, bool *can_steal)
 {
 	int i;
 	int fallback_mt;
@@ -2754,11 +2847,16 @@ int find_suitable_fallback(struct free_area *area, unsigned int order,
 		if (fallback_mt == MIGRATE_TYPES)
 			break;
 
-        /* 如果为空，继续找 */
+        /**
+         *  如果为空，继续找 
+         *  如果后备 free_area 中也为空
+         */
 		if (free_area_empty(area, fallback_mt))
 			continue;
 
-        /*  */
+        /**
+         *  如果后备 free_area 中不为空
+         */
 		if (can_steal_fallback(order, migratetype))
 			*can_steal = true;
 
@@ -2910,8 +3008,7 @@ static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
  * fallback - 倒退
  */
 static __always_inline bool
-__rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
-						unsigned int alloc_flags)
+__rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned int alloc_flags)
 {
 	struct free_area *area;
 	int current_order;
@@ -2936,11 +3033,14 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 	for (current_order = MAX_ORDER - 1; current_order >= min_order; --current_order) {
 
         /**
-         *  找到一个合适 的 fallback
+         *  找到一个合适 的 fallback后备 迁移类型链表
          */
 		area = &(zone->free_area[current_order]);
-		fallback_mt = find_suitable_fallback(area, current_order,
-				start_migratetype, false, &can_steal);
+
+        /**
+         *  
+         */
+		fallback_mt = find_suitable_fallback(area, current_order, start_migratetype, false, &can_steal);
 		if (fallback_mt == -1)
 			continue;
 
@@ -2962,12 +3062,15 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 	return false;
 
 find_smallest:
-    
+
+    /**
+     *  
+     */
 	for (current_order = order; current_order < MAX_ORDER; current_order++) {
         /*  */
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
-				start_migratetype, false, &can_steal);
+				            start_migratetype, false, &can_steal);
 		if (fallback_mt != -1)
 			break;
 	}
@@ -2979,11 +3082,19 @@ find_smallest:
 	VM_BUG_ON(current_order == MAX_ORDER);
 
 do_steal:
+    /**
+     *  
+     */
 	page = get_page_from_free_area(area, fallback_mt);
 
-	steal_suitable_fallback(zone, page, alloc_flags, start_migratetype,
-								can_steal);
+    /**
+     *  
+     */
+	steal_suitable_fallback(zone, page, alloc_flags, start_migratetype, can_steal);
 
+    /**
+     *  外碎片化事件
+     */
 	trace_mm_page_alloc_extfrag(page, order, current_order,
 		start_migratetype, fallback_mt);
 
@@ -3024,6 +3135,7 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 				goto out;
 		}
 	}
+    
 retry:
     /* 分配 */
 	page = __rmqueue_smallest(zone, order, migratetype);
@@ -3036,8 +3148,10 @@ retry:
 		if (alloc_flags & ALLOC_CMA) {
 			page = __rmqueue_cma_fallback(zone, order);
         }
-		if (!page && __rmqueue_fallback(zone, order, migratetype,
-								alloc_flags))
+        /**
+         *  将使用后备 free_area ，参见 fallbasks[][] 数组注释
+         */
+		if (!page && __rmqueue_fallback(zone, order, migratetype, alloc_flags))
 			goto retry;
 	}
     
@@ -3753,10 +3867,30 @@ struct page *rmqueue(struct zone *preferred_zone,
 
 out:
 	/* Separate test+clear to avoid unnecessary atomics 单独的测试+清除以避免不必要的原子 */
+    
+    /*
+     * Boost watermarks to increase reclaim pressure to reduce the
+     * likelihood of future fallbacks. Wake kswapd now as the node
+     * may be balanced overall and kswapd will not wake naturally.
+     *
+     *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+     *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+     *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+     *  的功能。
+     *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+     *
+     *  boost_watermark 函数及用于临时提高水位。
+     */
 	if (test_bit(ZONE_BOOSTED_WATERMARK, &zone->flags)) {
 		clear_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
 
-        /* 唤醒 kswapd 回收线程 TODO 2021年7月7日10:34:47*/
+        /**
+         *  唤醒 kswapd 回收线程 TODO 2021年7月7日10:34:47
+         *
+         *  DO 2021年7月20日21:42:43
+         *  boost watermark 临时提高水位，在发生后备 fallbasks free_area 使用时，唤醒，
+         *  详情参见 `boost_watermark`
+         */
 		wakeup_kswapd(zone, 0, 0, zone_idx(zone));
 	}
 
@@ -3979,7 +4113,20 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			continue;
 
         /**
-         *  可以提前分配的 PCP 页面还有，那当然好了
+         *  若在下面的类型中 有满足分配 的空闲页块，也算是 满足分配请求
+         *
+         *  enum migratetype
+         *
+         *  +----------------------+
+         *  | MIGRATE_UNMOVABLE    | 不可移动
+         *  +----------------------+ 
+         *  | MIGRATE_MOVABLE      | 可移动
+         *  +----------------------+
+         *  | MIGRATE_RECLAIMABLE  | 可回收
+         *  +----------------------+
+         *  | MIGRATE_PCPTYPES     | <--- 只遍历到这里
+         *  | MIGRATE_HIGHATOMIC   |
+         *  +----------------------+
          */
 		for (mt = 0; mt < MIGRATE_PCPTYPES; mt++) {
 			if (!free_area_empty(area, mt))

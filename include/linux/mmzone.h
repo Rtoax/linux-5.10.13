@@ -92,10 +92,31 @@ extern int page_group_by_mobility_disabled;
 #define get_pageblock_migratetype(page)		/* 连续内存管理  */			\
 	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)/*  */
 
+
 /**
- *  
+ *  伙伴系统 
  */
 struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
+    /**
+     *  迁移类型链表
+     *
+     *  enum migratetype
+     *
+     *  +----------------------+
+     *  | MIGRATE_UNMOVABLE    | 不可移动
+     *  +----------------------+ 
+     *  | MIGRATE_MOVABLE      | 可移动
+     *  +----------------------+
+     *  | MIGRATE_RECLAIMABLE  | 可回收
+     *  +----------------------+
+     *  | MIGRATE_PCPTYPES     | 
+     *  | MIGRATE_HIGHATOMIC   |
+     *  +----------------------+
+     *  | MIGRATE_CMA          | 
+     *  +----------------------+
+     *  | MIGRATE_ISOLATE      |
+     *  +----------------------+
+     */
 	struct list_head	free_list[MIGRATE_TYPES];   /*  page 链表头 */
 	unsigned long		nr_free;
 };
@@ -571,7 +592,16 @@ struct zone {   /* 内存 ZONE */
 	unsigned long _watermark[NR_WMARK]; /* 水位:每个zone都有自己独立的min, low和high三个档位的watermark值 */
 
     /**
-     *  水位提高
+     *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+     *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+     *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+     *  的功能。
+     *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+     *
+     *  boost_watermark 函数及用于临时提高水位。
+     *
+     *  zone->watermark_boost 在 boost_watermark() 中被提高。
+     *  zone->watermark_boost 在 balance_pgdat() 中被恢复。
      */
 	unsigned long watermark_boost;      /*  */
 
@@ -672,7 +702,21 @@ struct zone {   /* 内存 ZONE */
 	/* Write-intensive fields used from the page allocator */
 	ZONE_PADDING(_pad1_)    /*  */
 
-	/* free areas of different sizes */
+    /**
+     *  free areas of different sizes
+     *
+     *  +-----------+
+     *  |     0     |  / 不可移动的页面
+     *  +-----------+ /
+     *  |     1     |--- 可回收的页面
+     *  +-----------+ \
+     *  |     2     |  \ 可移动的页面
+     *  +-----------+
+     *  |    ...    |
+     *  +-----------+
+     *  |MAX_ORDER-1|
+     *  +-----------+
+     */
 	struct free_area	free_area[MAX_ORDER];   /*  */
 
 	/* zone flags, see below */
@@ -770,6 +814,19 @@ enum pgdat_flags {
 	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim 防止并发回收 */
 };
 
+/*
+ * Boost watermarks to increase reclaim pressure to reduce the
+ * likelihood of future fallbacks. Wake kswapd now as the node
+ * may be balanced overall and kswapd will not wake naturally.
+ *
+ *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
+ *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
+ *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+ *  的功能。
+ *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
+ *
+ *  boost_watermark 函数及用于临时提高水位。
+ */
 enum zone_flags {
     /* zone recently boosted(提升) watermarks. 
      * Cleared when kswapd is woken.

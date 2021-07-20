@@ -4463,7 +4463,12 @@ out:
 			spin_lock_irqsave(&zone->lock, flags);
 
             /**
-             *  计算水位提高
+             *  将水位恢复为原来的水位
+             *
+             * 临时提高水位是发生在 使用后备 free_area 时，由 boost_watermark 提高的水位
+             * 在 rmqueue 中根据 标志位 ZONE_BOOSTED_WATERMARK 决定是否要唤醒 kswapd 线程。
+             *
+             * zone->watermark_boost 在 boost_watermark() 中被提高。
              */
 			zone->watermark_boost -= min(zone->watermark_boost, zone_boosts[i]);
 			spin_unlock_irqrestore(&zone->lock, flags);
