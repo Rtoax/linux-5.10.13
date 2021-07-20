@@ -105,30 +105,33 @@ unsigned long long max_possible_pfn;
 static struct memblock_region __initdata_memblock memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] ;
 static struct memblock_region __initdata_memblock memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS] ;
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
-static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS];/*  */
+//static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS];/*  */
 #endif
 
+/**
+ *  
+ */
 struct memblock __initdata_memblock memblock  = {
-	.memory.regions		= memblock_memory_init_regions,
-	.memory.cnt		= 1,	/* empty dummy entry */
-	.memory.max		= INIT_MEMBLOCK_REGIONS,
-	.memory.name		= "memory",
+	memblock.memory.regions		= memblock_memory_init_regions,
+	memblock.memory.cnt		    = 1,	/* empty dummy entry */
+	memblock.memory.max		    = INIT_MEMBLOCK_REGIONS,
+	memblock.memory.name		= "memory",
 
-	.reserved.regions	= memblock_reserved_init_regions,
-	.reserved.cnt		= 1,	/* empty dummy entry */
-	.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,
-	.reserved.name		= "reserved",
+	memblock.reserved.regions	= memblock_reserved_init_regions,
+	memblock.reserved.cnt		= 1,	/* empty dummy entry */
+	memblock.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,
+	memblock.reserved.name		= "reserved",
 
-	.bottom_up		= false,
-	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
+	memblock.bottom_up		    = false,
+	memblock.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
 };
 
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
 struct memblock_type physmem = {/*  */
-	.regions		= memblock_physmem_init_regions,
-	.cnt			= 1,	/* empty dummy entry */
-	.max			= INIT_PHYSMEM_REGIONS,
-	.name			= "physmem",
+	physmem.regions		= memblock_physmem_init_regions,
+	physmem.cnt			= 1,	/* empty dummy entry */
+	physmem.max			= INIT_PHYSMEM_REGIONS,
+	physmem.name		= "physmem",
 };
 #endif
 
@@ -1297,24 +1300,45 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 				unsigned long *out_start_pfn,
 				unsigned long *out_end_pfn, int *out_nid)
 {
+    /**
+     *  从 memblock 接管内存
+     */
 	struct memblock_type *type = &memblock.memory;
 	struct memblock_region *r;
 	int r_nid;
 
+    /**
+     *  
+     */
 	while (++*idx < type->cnt) {
 		r = &type->regions[*idx];
+
+        /**
+         *  获取 node ID
+         */
 		r_nid = memblock_get_region_node(r);
 
+        /**
+         *  检查地址合理性
+         */
 		if (PFN_UP(r->base) >= PFN_DOWN(r->base + r->size))
 			continue;
+
+        /**
+         *  nid 合理性
+         */
 		if (nid == MAX_NUMNODES || nid == r_nid)
 			break;
 	}
+    
 	if (*idx >= type->cnt) {
 		*idx = -1;
 		return;
 	}
 
+    /**
+     *  返回这个 memblock region 的  物理帧号 范围
+     */
 	if (out_start_pfn)
 		*out_start_pfn = PFN_UP(r->base);
 	if (out_end_pfn)
@@ -1422,6 +1446,7 @@ __next_mem_pfn_range_in_zone(u64 *idx, struct zone *zone,
 
 /**
  * memblock_alloc_range_nid - allocate boot memory block
+ *
  * @size: size of memory block to be allocated in bytes
  * @align: alignment of the region and block's size
  * @start: the lower bound of the memory region to allocate (phys address)
@@ -1463,23 +1488,19 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 	}
 
 again:
-	found = memblock_find_in_range_node(size, align, start, end, nid,
-					    flags);
+	found = memblock_find_in_range_node(size, align, start, end, nid, flags);
 	if (found && !memblock_reserve(found, size))
 		goto done;
 
 	if (nid != NUMA_NO_NODE && !exact_nid) {
-		found = memblock_find_in_range_node(size, align, start,
-						    end, NUMA_NO_NODE,
-						    flags);
+		found = memblock_find_in_range_node(size, align, start, end, NUMA_NO_NODE, flags);
 		if (found && !memblock_reserve(found, size))
 			goto done;
 	}
 
 	if (flags & MEMBLOCK_MIRROR) {
 		flags &= ~MEMBLOCK_MIRROR;
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
-			&size);
+		pr_warn("Could not allocate %pap bytes of mirrored memory\n", &size);
 		goto again;
 	}
 
@@ -1577,13 +1598,14 @@ static void * __init memblock_alloc_internal(
 	if (max_addr > memblock.current_limit)
 		max_addr = memblock.current_limit;
 
-	alloc = memblock_alloc_range_nid(size, align, min_addr, max_addr, nid,
-					exact_nid);
+    /**
+     *  
+     */
+	alloc = memblock_alloc_range_nid(size, align, min_addr, max_addr, nid, exact_nid);
 
 	/* retry allocation without lower limit */
 	if (!alloc && min_addr)
-		alloc = memblock_alloc_range_nid(size, align, 0, max_addr, nid,
-						exact_nid);
+		alloc = memblock_alloc_range_nid(size, align, 0, max_addr, nid, exact_nid);
 
 	if (!alloc)
 		return NULL;
@@ -1668,6 +1690,7 @@ void * __init memblock_alloc_try_nid_raw(
 
 /**
  * memblock_alloc_try_nid - allocate boot memory block
+ *
  * @size: size of memory block to be allocated in bytes
  * @align: alignment of the region and block's size
  * @min_addr: the lower bound of the memory region from where the allocation
@@ -1695,8 +1718,11 @@ void * __init memblock_alloc_try_nid(/* 分配启动 内存 块 */
 	memblock_dbg("%s: %llu bytes align=0x%llx nid=%d from=%pa max_addr=%pa %pS\n",
 		     __func__, (u64)size, (u64)align, nid, &min_addr,
 		     &max_addr, (void *)_RET_IP_);
-	ptr = memblock_alloc_internal(size, align,
-					   min_addr, max_addr, nid, false);
+
+    /**
+     *  
+     */
+	ptr = memblock_alloc_internal(size, align, min_addr, max_addr, nid, false);
 	if (ptr)
 		memset(ptr, 0, size);
 
@@ -1749,6 +1775,9 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 	return memblock.memory.regions[0].base;
 }
 
+/**
+ *  DRAM 的终止 物理地址
+ */
 phys_addr_t __init_memblock memblock_end_of_DRAM(void)
 {
 	int idx = memblock.memory.cnt - 1;
@@ -2029,6 +2058,9 @@ static int __init early_memblock(char *p)
 }
 early_param("memblock", early_memblock);
 
+/**
+ *  
+ */
 static void __init __free_pages_memory(unsigned long start, unsigned long end)/* 释放 页 内存 */
 {
 	int order;
@@ -2039,12 +2071,18 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end)/*
 		while (start + (1UL << order) > end)
 			order--;
 
+        /**
+         *  从 memblock 中释放 page
+         */
 		memblock_free_pages(pfn_to_page(start)/* 页帧号 到 page */, start, order);
 
 		start += (1UL << order);
 	}
 }
 
+/**
+ *  
+ */
 static unsigned long __init __free_memory_core(phys_addr_t start,/* 从 start 到 end 有多少 pages */
 				 phys_addr_t end)
 {
@@ -2060,6 +2098,9 @@ static unsigned long __init __free_memory_core(phys_addr_t start,/* 从 start �
 	return end_pfn - start_pfn;
 }
 
+/**
+  *  
+  */
 static unsigned long __init free_low_memory_core_early(void)/*  */
 {
 	unsigned long count = 0;
@@ -2070,30 +2111,45 @@ static unsigned long __init free_low_memory_core_early(void)/*  */
 
     /* 遍历 memblock.reserved */
 	for_each_reserved_mem_range(i, &start, &end) {
-		reserve_bootmem_region(start, end); /*  */}
+	    /**
+         *  初始化 每个 page
+         */
+		reserve_bootmem_region(start, end);
+    }
 
 	/*
 	 * We need to use NUMA_NO_NODE instead of NODE_DATA(0)->node_id
 	 *  because in some case like Node0 doesn't have RAM installed
 	 *  low ram will be on Node1
 	 */
-	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
-				NULL)
+	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,NULL) {
+	    /**
+         *  
+         */
 		count += __free_memory_core(start, end);    /* 计算总页数 */
+    }
 
 	return count;
 }
 
 static int __initdata reset_managed_pages_done ;/*  */
 
+/**
+ *  所有 zone 管理 页  置零
+ */
 void reset_node_managed_pages(pg_data_t *pgdat)
 {
 	struct zone *z;
-
+    /**
+     *  遍历 node 中所有zone
+     */
 	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
 		atomic_long_set(&z->managed_pages, 0);  /* 伙伴系统管理的页数量清零 */
 }
 
+/**
+ *  
+ */
 void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页 */
 {
 	struct pglist_data *pgdat;
@@ -2101,8 +2157,16 @@ void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页
 	if (reset_managed_pages_done)/*  */
 		return;
 
-	for_each_online_pgdat(pgdat) { /* 遍历 每个在线 的 页表 */  
-		reset_node_managed_pages(pgdat);}/*  */
+    /**
+     *  遍历所有 NODE
+     */
+	for_each_online_pgdat(pgdat) { /* 遍历 每个在线 的 页表 */ 
+
+        /**
+         *  重置NODE管理页
+         */
+		reset_node_managed_pages(pgdat);
+    }
 
 	reset_managed_pages_done = 1;
 }
@@ -2121,8 +2185,14 @@ unsigned long __init memblock_free_all(void)/* 所有内存块都挂入 freelist
     //zone.managed_pages = 0
 	reset_all_zones_managed_pages();    /* 重置所有 的 ZONE 管理页 - 伙伴系统管理的页 清零 */
 
+    /**
+     *  释放 memblock 到伙伴系统
+     */
 	pages = free_low_memory_core_early();   /* 获取所有RAM 页 个数 */
-    
+
+    /**
+     *  ram 总  page 数量
+     */
 	totalram_pages_add(pages);  /* 添加至 RAM原子变量 */
 
 	return pages;

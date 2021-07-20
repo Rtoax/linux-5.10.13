@@ -50,6 +50,9 @@ struct var_mtrr_state {
 /* Should be related to MTRR_VAR_RANGES nums */
 #define RANGE_NUM				256
 
+/**
+ *  MTRR
+ */
 static struct range __initdata		range[RANGE_NUM];
 static int __initdata				nr_range;
 

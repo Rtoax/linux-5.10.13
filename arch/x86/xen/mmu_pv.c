@@ -788,6 +788,9 @@ static void __init xen_mark_pinned(struct mm_struct *mm, struct page *page,
  */
 static void __init xen_after_bootmem(void)
 {
+    /**
+     *  
+     */
 	static_branch_enable(&xen_struct_pages_ready);
 	SetPagePinned(virt_to_page(level3_user_vsyscall));
 	xen_pgd_walk(&init_mm, xen_mark_pinned, FIXADDR_TOP);

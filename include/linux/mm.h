@@ -1374,19 +1374,19 @@ static inline bool __cpupid_match_pid(pid_t task_pid, int cpupid)
 
 #define cpupid_match_pid(task, cpupid) __cpupid_match_pid(task->pid, cpupid)
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
-static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
-{
-	return xchg(&page->_last_cpupid, cpupid & LAST_CPUPID_MASK);
-}
-
-static inline int page_cpupid_last(struct page *page)
-{
-	return page->_last_cpupid;
-}
-static inline void page_cpupid_reset_last(struct page *page)
-{
-	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
-}
+//static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
+//{
+//	return xchg(&page->_last_cpupid, cpupid & LAST_CPUPID_MASK);
+//}
+//
+//static inline int page_cpupid_last(struct page *page)
+//{
+//	return page->_last_cpupid;
+//}
+//static inline void page_cpupid_reset_last(struct page *page)
+//{
+//	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
+//}
 #else
 static inline int page_cpupid_last(struct page *page)
 {
@@ -1424,6 +1424,9 @@ static inline void page_kasan_tag_reset(struct page *page)
 /*  */
 #endif
 
+/**
+ *  page 所在zone
+ */
 static inline struct zone *page_zone(const struct page *page)/* page所在的 ZONE */
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
@@ -2367,14 +2370,23 @@ static inline unsigned long free_initmem_default(int poison)
 				  poison, "unused kernel");
 }
 
+/**
+ *  
+ */
 static inline unsigned long get_num_physpages(void) /* 物理页面 */
 {
 	int nid;
 	unsigned long phys_pages = 0;
 
-	for_each_online_node(nid)
+    /**
+     *  遍历node
+     */
+	for_each_online_node(nid) {
+	    /**
+         *  每个 node 中的页面
+         */
 		phys_pages += node_present_pages(nid);
-
+    }
 	return phys_pages;
 }
 

@@ -442,7 +442,7 @@ struct per_cpu_pageset {    /* 每个CPU的pageset */
 };
 
 /**
- *  
+ *  每 CPU NODE 统计结果
  */
 struct per_cpu_nodestat {
 	s8 stat_threshold;
@@ -664,6 +664,9 @@ struct zone {   /* 内存 ZONE */
 	seqlock_t		span_seqlock;
 #endif
 
+    /**
+     *  在 `init_currently_empty_zone()` 设置 = 1
+     */
 	int initialized;/* 是否初始化 */
 
 	/* Write-intensive fields used from the page allocator */
@@ -801,13 +804,16 @@ static inline bool zone_is_empty(struct zone *zone)
 
 /*
  * Return true if [start_pfn, start_pfn + nr_pages) range has a non-empty
- * intersection with the given zone
+ * intersection(路口) with the given zone
  */
 static inline bool zone_intersects(struct zone *zone,
 		unsigned long start_pfn, unsigned long nr_pages)
 {
 	if (zone_is_empty(zone))
 		return false;
+    /**
+     *  
+     */
 	if (start_pfn >= zone_end_pfn(zone) ||
 	    start_pfn + nr_pages <= zone->zone_start_pfn)
 		return false;
@@ -1042,6 +1048,9 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
     
 } pg_data_t;
 
+/**
+ *  
+ */
 #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
 #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
 #ifdef CONFIG_FLAT_NODE_MEM_MAP
@@ -1459,6 +1468,10 @@ void subsection_map_init(unsigned long pfn, unsigned long nr_pages);
 
 struct page;
 struct page_ext;
+
+/**
+ *  
+ */
 struct mem_section {
 	/*
 	 * This is, logically, a pointer to an array of struct

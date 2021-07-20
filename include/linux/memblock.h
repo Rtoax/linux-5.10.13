@@ -53,6 +53,9 @@ struct memblock_region {/* 内存块 */
 	phys_addr_t size;   /* 大小 */
 	enum memblock_flags flags;  /* 类型 */
 #ifdef CONFIG_NEED_MULTIPLE_NODES
+    /**
+     *  NODE ID
+     */
 	int nid;
 #endif
 };
@@ -98,9 +101,9 @@ void memblock_discard(void);
 #else
 //`CONFIG_ARCH_DISCARD_MEMBLOCK`编译配置选项开启，内存块的代码会被放置在 `.init` 段，
 //  这样它就会在内核引导完毕后被释放掉
-#define __init_memblock
-#define __initdata_memblock
-static inline void memblock_discard(void) {}
+//#define __init_memblock
+//#define __initdata_memblock
+//static inline void memblock_discard(void) {}
 #endif
 
 phys_addr_t memblock_find_in_range(phys_addr_t start, phys_addr_t end,
@@ -432,6 +435,9 @@ static inline void * __init memblock_alloc_low(phys_addr_t size,
 				      ARCH_LOW_ADDRESS_LIMIT, NUMA_NO_NODE);
 }
 
+/**
+ *  
+ */
 static inline void * __init memblock_alloc_node(phys_addr_t size,
 						phys_addr_t align, int nid)
 {

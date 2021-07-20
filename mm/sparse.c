@@ -237,6 +237,9 @@ void __init subsection_map_init(unsigned long pfn, unsigned long nr_pages)
 /*  */
 #endif
 
+/**
+ *  
+ */
 /* Record a memory area against a node. */
 static void __init memory_present(int nid, unsigned long start, unsigned long end)
 {
@@ -257,7 +260,15 @@ static void __init memory_present(int nid, unsigned long start, unsigned long en
 
 	start &= PAGE_SECTION_MASK;
 	mminit_validate_memmodel_limits(&start, &end);
+
+    /**
+     *  
+     */
 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
+
+        /**
+         *  
+         */
 		unsigned long section = pfn_to_section_nr(pfn);
 		struct mem_section *ms;
 
@@ -266,8 +277,7 @@ static void __init memory_present(int nid, unsigned long start, unsigned long en
 
 		ms = __nr_to_section(section);
 		if (!ms->section_mem_map) {
-			ms->section_mem_map = sparse_encode_early_nid(nid) |
-							SECTION_IS_ONLINE;
+			ms->section_mem_map = sparse_encode_early_nid(nid) | SECTION_IS_ONLINE;
 			section_mark_present(ms);
 		}
 	}
@@ -283,8 +293,15 @@ static void __init memblocks_present(void)
 	unsigned long start, end;
 	int i, nid;
 
+    /**
+     *  遍历所有的 `memblock.memory`
+     */
 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid) {
-		memory_present(nid, start, end);}
+	    /**
+         *  
+         */
+		memory_present(nid, start, end);
+    }
 }
 
 /*
@@ -537,6 +554,9 @@ void __init sparse_init(void)
 	unsigned long pnum_end, pnum_begin, map_count = 1;
 	int nid_begin;
 
+    /**
+     *  
+     */
 	memblocks_present();
 
 	pnum_begin = first_present_section_nr();

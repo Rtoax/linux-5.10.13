@@ -228,6 +228,9 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
 }
 #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
 
+/**
+ *  
+ */
 void __init register_page_bootmem_info_node(struct pglist_data *pgdat)/*  */
 {
 	unsigned long i, pfn, end_pfn, nr_pages;
@@ -438,15 +441,20 @@ static void shrink_zone_span(struct zone *zone, unsigned long start_pfn,
 	zone_span_writeunlock(zone);
 }
 
+/**
+ *  
+ */
 static void update_pgdat_span(struct pglist_data *pgdat)
 {
 	unsigned long node_start_pfn = 0, node_end_pfn = 0;
 	struct zone *zone;
 
-	for (zone = pgdat->node_zones;
-	     zone < pgdat->node_zones + MAX_NR_ZONES; zone++) {
-		unsigned long zone_end_pfn = zone->zone_start_pfn +
-					     zone->spanned_pages;
+    /**
+     *  
+     */
+	for (zone = pgdat->node_zones; zone < pgdat->node_zones + MAX_NR_ZONES; zone++) {
+        
+		unsigned long zone_end_pfn = zone->zone_start_pfn + zone->spanned_pages;
 
 		/* No need to lock the zones, they can't change. */
 		if (!zone->spanned_pages)
@@ -462,7 +470,9 @@ static void update_pgdat_span(struct pglist_data *pgdat)
 		if (zone->zone_start_pfn < node_start_pfn)
 			node_start_pfn = zone->zone_start_pfn;
 	}
-
+    /**
+     *  更新 node page 的 pfn 范围
+     */
 	pgdat->node_start_pfn = node_start_pfn;
 	pgdat->node_spanned_pages = node_end_pfn - node_start_pfn;
 }
@@ -737,16 +747,21 @@ static struct zone *default_kernel_zone_for_pfn(int nid, unsigned long start_pfn
 		if (zone_intersects(zone, start_pfn, nr_pages))
 			return zone;
 	}
-
+    /**
+     *  
+     */
 	return &pgdat->node_zones[ZONE_NORMAL];
 }
 
 static inline struct zone *default_zone_for_pfn(int nid, unsigned long start_pfn,
 		unsigned long nr_pages)
 {
-	struct zone *kernel_zone = default_kernel_zone_for_pfn(nid, start_pfn,
-			nr_pages);
+	struct zone *kernel_zone = default_kernel_zone_for_pfn(nid, start_pfn, nr_pages);
 	struct zone *movable_zone = &NODE_DATA(nid)->node_zones[ZONE_MOVABLE];
+
+    /**
+     *  
+     */
 	bool in_kernel = zone_intersects(kernel_zone, start_pfn, nr_pages);
 	bool in_movable = zone_intersects(movable_zone, start_pfn, nr_pages);
 
@@ -875,6 +890,9 @@ failed_addition:
 }
 #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
 
+/**
+ *  初始化 zone page 数 = 0
+ */
 static void reset_node_present_pages(pg_data_t *pgdat)
 {
 	struct zone *z;
@@ -1401,6 +1419,10 @@ static void node_states_check_changes_offline(unsigned long nr_pages,
 	 */
 	for (zt = 0; zt <= ZONE_NORMAL; zt++)
 		present_pages += pgdat->node_zones[zt].present_pages;
+
+    /**
+     *  
+     */
 	if (zone_idx(zone) <= ZONE_NORMAL && nr_pages >= present_pages)
 		arg->status_change_nid_normal = zone_to_nid(zone);
 
@@ -1413,9 +1435,9 @@ static void node_states_check_changes_offline(unsigned long nr_pages,
 	 * we determine that the zones in that range become empty,
 	 * we need to clear the node for N_HIGH_MEMORY.
 	 */
-	present_pages += pgdat->node_zones[ZONE_HIGHMEM].present_pages;
-	if (zone_idx(zone) <= ZONE_HIGHMEM && nr_pages >= present_pages)
-		arg->status_change_nid_high = zone_to_nid(zone);
+//	present_pages += pgdat->node_zones[ZONE_HIGHMEM].present_pages;
+//	if (zone_idx(zone) <= ZONE_HIGHMEM && nr_pages >= present_pages)
+//		arg->status_change_nid_high = zone_to_nid(zone);
 #endif
 
 	/*

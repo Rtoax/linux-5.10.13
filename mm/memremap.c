@@ -182,10 +182,16 @@ static void dev_pagemap_percpu_release(struct percpu_ref *ref)
 	complete(&pgmap->done);
 }
 
+/**
+ *  
+ */
 static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
 		int range_id, int nid)
 {
-	struct range *range = &pgmap->ranges[range_id];
+    /**
+     *  
+     */
+	struct range *rtoax_range = &pgmap->ranges[range_id];
 	struct dev_pagemap *conflict_pgmap;
 	int error, is_ram;
 
@@ -193,40 +199,40 @@ static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
 				"altmap not supported for multiple ranges\n"))
 		return -EINVAL;
 
-	conflict_pgmap = get_dev_pagemap(PHYS_PFN(range->start), NULL);
+	conflict_pgmap = get_dev_pagemap(PHYS_PFN(rtoax_range->start), NULL);
 	if (conflict_pgmap) {
 		WARN(1, "Conflicting mapping in same section\n");
 		put_dev_pagemap(conflict_pgmap);
 		return -ENOMEM;
 	}
 
-	conflict_pgmap = get_dev_pagemap(PHYS_PFN(range->end), NULL);
+	conflict_pgmap = get_dev_pagemap(PHYS_PFN(rtoax_range->end), NULL);
 	if (conflict_pgmap) {
 		WARN(1, "Conflicting mapping in same section\n");
 		put_dev_pagemap(conflict_pgmap);
 		return -ENOMEM;
 	}
 
-	is_ram = region_intersects(range->start, range_len(range),
+	is_ram = region_intersects(rtoax_range->start, range_len(rtoax_range),
 		IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE);
 
 	if (is_ram != REGION_DISJOINT) {
 		WARN_ONCE(1, "attempted on %s region %#llx-%#llx\n",
 				is_ram == REGION_MIXED ? "mixed" : "ram",
-				range->start, range->end);
+				rtoax_range->start, rtoax_range->end);
 		return -ENXIO;
 	}
 
-	error = xa_err(xa_store_range(&pgmap_array, PHYS_PFN(range->start),
-				PHYS_PFN(range->end), pgmap, GFP_KERNEL));
+	error = xa_err(xa_store_range(&pgmap_array, PHYS_PFN(rtoax_range->start),
+				PHYS_PFN(rtoax_range->end), pgmap, GFP_KERNEL));
 	if (error)
 		return error;
 
 	if (nid < 0)
 		nid = numa_mem_id();
 
-	error = track_pfn_remap(NULL, &params->pgprot, PHYS_PFN(range->start), 0,
-			range_len(range));
+	error = track_pfn_remap(NULL, &params->pgprot, PHYS_PFN(rtoax_range->start), 0,
+			range_len(rtoax_range));
 	if (error)
 		goto err_pfn_remap;
 
@@ -244,16 +250,16 @@ static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
 	 * arch_add_memory().
 	 */
 	if (pgmap->type == MEMORY_DEVICE_PRIVATE) {
-		error = add_pages(nid, PHYS_PFN(range->start),
-				PHYS_PFN(range_len(range)), params);
+		error = add_pages(nid, PHYS_PFN(rtoax_range->start),
+				PHYS_PFN(range_len(rtoax_range)), params);
 	} else {
-		error = kasan_add_zero_shadow(__va(range->start), range_len(range));
+		error = kasan_add_zero_shadow(__va(rtoax_range->start), range_len(rtoax_range));
 		if (error) {
 			mem_hotplug_done();
 			goto err_kasan;
 		}
 
-		error = arch_add_memory(nid, range->start, range_len(range),
+		error = arch_add_memory(nid, rtoax_range->start, range_len(rtoax_range),
 					params);
 	}
 
@@ -261,9 +267,9 @@ static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
 		struct zone *zone;
 
 		zone = &NODE_DATA(nid)->node_zones[ZONE_DEVICE];
-		move_pfn_range_to_zone(zone, PHYS_PFN(range->start),
-				PHYS_PFN(range_len(range)), params->altmap,
-				MIGRATE_MOVABLE);
+		move_pfn_range_to_zone(zone, PHYS_PFN(rtoax_range->start),
+                				PHYS_PFN(range_len(rtoax_range)), params->altmap,
+                				MIGRATE_MOVABLE);
 	}
 
 	mem_hotplug_done();
@@ -275,18 +281,18 @@ static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
 	 * to allow us to do the work while not holding the hotplug lock.
 	 */
 	memmap_init_zone_device(&NODE_DATA(nid)->node_zones[ZONE_DEVICE],
-				PHYS_PFN(range->start),
-				PHYS_PFN(range_len(range)), pgmap);
+            				PHYS_PFN(rtoax_range->start),
+            				PHYS_PFN(range_len(rtoax_range)), pgmap);
 	percpu_ref_get_many(pgmap->ref, pfn_end(pgmap, range_id)
 			- pfn_first(pgmap, range_id));
 	return 0;
 
 err_add_memory:
-	kasan_remove_zero_shadow(__va(range->start), range_len(range));
+	kasan_remove_zero_shadow(__va(rtoax_range->start), range_len(rtoax_range));
 err_kasan:
-	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range));
+	untrack_pfn(NULL, PHYS_PFN(rtoax_range->start), range_len(rtoax_range));
 err_pfn_remap:
-	pgmap_array_delete(range);
+	pgmap_array_delete(rtoax_range);
 	return error;
 }
 
@@ -298,6 +304,9 @@ err_pfn_remap:
  */
 void *memremap_pages(struct dev_pagemap *pgmap, int nid)
 {
+    /**
+     *  
+     */
 	struct mhp_params params = {
 		.altmap = pgmap_altmap(pgmap),
 		.pgprot = PAGE_KERNEL,

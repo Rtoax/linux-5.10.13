@@ -413,6 +413,9 @@ static void __reset_isolation_suitable(struct zone *zone)
 	}
 }
 
+/**
+ *  
+ */
 void reset_isolation_suitable(pg_data_t *pgdat)
 {
 	int zoneid;
@@ -2154,7 +2157,9 @@ static unsigned int fragmentation_score_node(pg_data_t *pgdat)
 
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
 		struct zone *zone;
-
+        /**
+         *  
+         */
 		zone = &pgdat->node_zones[zoneid];
 		score += fragmentation_score_zone(zone);
 	}
@@ -3020,6 +3025,9 @@ static void proactive_compact_node(pg_data_t *pgdat)
 	};
 
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
+        /**
+         *  
+         */
 		zone = &pgdat->node_zones[zoneid];
 		if (!populated_zone(zone))
 			continue;
@@ -3049,7 +3057,9 @@ static void compact_node(int nid)
 
 
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
-
+        /**
+         *  
+         */
 		zone = &pgdat->node_zones[zoneid];
 		if (!populated_zone(zone))
 			continue;

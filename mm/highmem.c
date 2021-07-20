@@ -445,6 +445,9 @@ void set_page_address(struct page *page, void *virtual)
 	struct page_address_slot *pas;
 	struct page_address_map *pam;
 
+    /**
+     *  high memory - 64位系统不会使用这个函数
+     */
 	BUG_ON(!PageHighMem(page));
 
 	pas = page_slot(page);

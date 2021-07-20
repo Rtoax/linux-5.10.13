@@ -3,6 +3,9 @@
 #define _LINUX_RANGE_H
 #include <linux/types.h>
 
+/**
+ *  range
+ */
 struct range {
 	u64   start;
 	u64   end;

@@ -394,7 +394,7 @@ enum node_states {  /* NODE 状态 */
 	N_ONLINE,		/* The node is online */
 	N_NORMAL_MEMORY,	/* The node has regular memory */
 #ifdef CONFIG_HIGHMEM
-	N_HIGH_MEMORY,		/* The node has regular or high memory */
+//	N_HIGH_MEMORY,		/* The node has regular or high memory */
 #else
 	N_HIGH_MEMORY = N_NORMAL_MEMORY,
 #endif
@@ -427,6 +427,9 @@ static inline void node_clear_state(int node, enum node_states state)
 	__node_clear(node, &node_states[state]);
 }
 
+/**
+ *  
+ */
 static inline int num_node_state(enum node_states state)
 {
 	return nodes_weight(node_states[state]);

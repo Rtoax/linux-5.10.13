@@ -23,6 +23,9 @@ int __meminitdata mminit_loglevel;
 #define SECTIONS_SHIFT	0
 #endif
 
+/**
+ *  
+ */
 /* The zonelists are simply reported, validation is manual. */
 void __init mminit_verify_zonelist(void)
 {
@@ -31,7 +34,11 @@ void __init mminit_verify_zonelist(void)
 	if (mminit_loglevel < MMINIT_VERIFY)
 		return;
 
+    /**
+     *  遍历node
+     */
 	for_each_online_node(nid) {
+	
 		pg_data_t *pgdat = NODE_DATA(nid);
 		struct zone *zone;
 		struct zoneref *z;
@@ -39,24 +46,40 @@ void __init mminit_verify_zonelist(void)
 		int i, listid, zoneid;
 
 		BUILD_BUG_ON(MAX_ZONELISTS > 2);
+
+        /**
+         *  
+         */
 		for (i = 0; i < MAX_ZONELISTS * MAX_NR_ZONES; i++) {
 
 			/* Identify the zone and nodelist */
 			zoneid = i % MAX_NR_ZONES;
 			listid = i / MAX_NR_ZONES;
+
+            /**
+             *  所有zone 的列表
+             */
 			zonelist = &pgdat->node_zonelists[listid];
+
+            /**
+             *  本node 的zone
+             */
 			zone = &pgdat->node_zones[zoneid];
 			if (!populated_zone(zone))
 				continue;
 
 			/* Print information about the zonelist */
 			printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
-				listid > 0 ? "thisnode" : "general", nid,
-				zone->name);
+    				listid > 0 ? "thisnode" : "general", nid,
+    				zone->name);
 
+            /**
+             *  
+             */
 			/* Iterate the zonelist */
 			for_each_zone_zonelist(zone, z, zonelist, zoneid) {
-				pr_cont("%d:%s ", zone_to_nid(zone), zone->name);}
+				pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
+            }
 			pr_cont("\n");
 		}
 	}
@@ -71,41 +94,41 @@ void __init mminit_verify_pageflags_layout(void)
 	width = shift - SECTIONS_WIDTH - NODES_WIDTH - ZONES_WIDTH
 		- LAST_CPUPID_SHIFT - KASAN_TAG_WIDTH;
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_widths",
-		"Section %d Node %d Zone %d Lastcpupid %d Kasantag %d Flags %d\n",
-		SECTIONS_WIDTH,
-		NODES_WIDTH,
-		ZONES_WIDTH,
-		LAST_CPUPID_WIDTH,
-		KASAN_TAG_WIDTH,
-		NR_PAGEFLAGS);
+            		"Section %d Node %d Zone %d Lastcpupid %d Kasantag %d Flags %d\n",
+            		SECTIONS_WIDTH,
+            		NODES_WIDTH,
+            		ZONES_WIDTH,
+            		LAST_CPUPID_WIDTH,
+            		KASAN_TAG_WIDTH,
+            		NR_PAGEFLAGS);
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_shifts",
-		"Section %d Node %d Zone %d Lastcpupid %d Kasantag %d\n",
-		SECTIONS_SHIFT,
-		NODES_SHIFT,
-		ZONES_SHIFT,
-		LAST_CPUPID_SHIFT,
-		KASAN_TAG_WIDTH);
+            		"Section %d Node %d Zone %d Lastcpupid %d Kasantag %d\n",
+            		SECTIONS_SHIFT,
+            		NODES_SHIFT,
+            		ZONES_SHIFT,
+            		LAST_CPUPID_SHIFT,
+            		KASAN_TAG_WIDTH);
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_pgshifts",
-		"Section %lu Node %lu Zone %lu Lastcpupid %lu Kasantag %lu\n",
-		(unsigned long)SECTIONS_PGSHIFT,
-		(unsigned long)NODES_PGSHIFT,
-		(unsigned long)ZONES_PGSHIFT,
-		(unsigned long)LAST_CPUPID_PGSHIFT,
-		(unsigned long)KASAN_TAG_PGSHIFT);
+            		"Section %lu Node %lu Zone %lu Lastcpupid %lu Kasantag %lu\n",
+            		(unsigned long)SECTIONS_PGSHIFT,
+            		(unsigned long)NODES_PGSHIFT,
+            		(unsigned long)ZONES_PGSHIFT,
+            		(unsigned long)LAST_CPUPID_PGSHIFT,
+            		(unsigned long)KASAN_TAG_PGSHIFT);
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodezoneid",
-		"Node/Zone ID: %lu -> %lu\n",
-		(unsigned long)(ZONEID_PGOFF + ZONEID_SHIFT),
-		(unsigned long)ZONEID_PGOFF);
+            		"Node/Zone ID: %lu -> %lu\n",
+            		(unsigned long)(ZONEID_PGOFF + ZONEID_SHIFT),
+            		(unsigned long)ZONEID_PGOFF);
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_usage",
-		"location: %d -> %d layout %d -> %d unused %d -> %d page-flags\n",
-		shift, width, width, NR_PAGEFLAGS, NR_PAGEFLAGS, 0);
+            		"location: %d -> %d layout %d -> %d unused %d -> %d page-flags\n",
+            		shift, width, width, NR_PAGEFLAGS, NR_PAGEFLAGS, 0);
 #ifdef NODE_NOT_IN_PAGE_FLAGS
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
-		"Node not in page flags");
+		            "Node not in page flags");
 #endif
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
-		"Last cpupid not in page flags");
+		            "Last cpupid not in page flags");
 #endif
 
 	if (SECTIONS_WIDTH) {

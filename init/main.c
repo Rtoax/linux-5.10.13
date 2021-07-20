@@ -807,6 +807,9 @@ static void __init initcall_debug_enable(void);
 /*  */
 #endif
 
+/**
+ *  
+ */
 /* Report memory auto-initialization states for this boot. */
 static void __init report_meminit(void)
 {
@@ -834,6 +837,8 @@ static void __init report_meminit(void)
 
 /*
  * Set up kernel memory allocators
+ *
+ * 初始化 内核 内存分配器
  */
 static void __init mm_init(void)/* 内存管理初始化 */
 {
@@ -842,8 +847,20 @@ static void __init mm_init(void)/* 内存管理初始化 */
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
 	page_ext_init_flatmem();    /* 页扩展 */
+
+    /**
+     *  
+     */
 	init_debug_pagealloc();     /*  */
+
+    /**
+     *  
+     */
 	report_meminit();           /* 一些 LOG */
+
+    /**
+     *  
+     */
 	mem_init();                 /* 初始化: releases all `bootmem` */
 
     /**
@@ -886,6 +903,9 @@ void __init __weak arch_call_rest_init(void)    /*  */
     linux下的3个特殊的进程：idle进程（PID=0），init进程（PID=1）和kthreadd（PID=2） */
 }
 
+/**
+ *  内核入口
+ */
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启动内核 */
 {
 	char *command_line; //内核命令行的全局指针
@@ -921,8 +941,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 
     /**
      *  依赖于体系结构的初始化部分
+     *
+     *  可能的操作：
+     ***    
+     *  pgdat 内存节点初始化
+     *
      */    
 	setup_arch(&command_line);          /* 初始化 架构相关 */
+    
 	setup_boot_config(command_line);    /* 启动配置 */
 	setup_command_line(command_line);   /* 保存命令行参数 */
 	setup_nr_cpu_ids();                 /* 设置CPU数量: setting `nr_cpu_ids` */

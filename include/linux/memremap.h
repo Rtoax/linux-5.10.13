@@ -64,6 +64,9 @@ enum memory_type {
 	MEMORY_DEVICE_PCI_P2PDMA,
 };
 
+/**
+ *  
+ */
 struct dev_pagemap_ops {
 	/*
 	 * Called once the page refcount reaches 1.  (ZONE_DEVICE pages never
@@ -106,6 +109,8 @@ struct dev_pagemap_ops {
  * @nr_range: number of ranges to be mapped
  * @range: range to be mapped when nr_range == 1
  * @ranges: array of ranges to be mapped when nr_range > 1
+ *
+ * ZONE_DEVICE 映射的元数据
  */
 struct dev_pagemap {
 	struct vmem_altmap altmap;

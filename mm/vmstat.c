@@ -228,7 +228,7 @@ int calculate_normal_threshold(struct zone *zone)
 	 * 125		1024		10	16-32 GB	9
 	 */
 
-	mem = zone_managed_pages(zone) >> (27 - PAGE_SHIFT);
+	mem = zone_managed_pages(zone) >> (27 - PAGE_SHIFT/*12*/);
 
 	threshold = 2 * fls(num_online_cpus()) * (1 + fls(mem));
 
@@ -242,6 +242,8 @@ int calculate_normal_threshold(struct zone *zone)
 
 /*
  * Refresh the thresholds for each zone.
+ *
+ * 刷新每个 zone 的门限
  */
 void refresh_zone_stat_thresholds(void)
 {
@@ -250,27 +252,44 @@ void refresh_zone_stat_thresholds(void)
 	int cpu;
 	int threshold;
 
+    /**
+     *  遍历所有 NODE
+     */
 	/* Zero current pgdat thresholds */
 	for_each_online_pgdat(pgdat) {
+
+        /**
+         *  遍历所有 CPU
+         */
 		for_each_online_cpu(cpu) {
+
+            /**
+             *  统计值置零
+             */
 			per_cpu_ptr(pgdat->per_cpu_nodestats, cpu)->stat_threshold = 0;
 		}
 	}
 
+    /**
+     *  遍历 所有 zone
+     */
 	for_each_populated_zone(zone) {
 		struct pglist_data *pgdat = zone->zone_pgdat;
 		unsigned long max_drift, tolerate_drift;
 
+        /**
+         *  
+         */
 		threshold = calculate_normal_threshold(zone);
 
 		for_each_online_cpu(cpu) {
 			int pgdat_threshold;
 
-			per_cpu_ptr(zone->pageset, cpu)->stat_threshold
-							= threshold;
+			per_cpu_ptr(zone->pageset, cpu)->stat_threshold = threshold;
 
 			/* Base nodestat threshold on the largest populated zone. */
 			pgdat_threshold = per_cpu_ptr(pgdat->per_cpu_nodestats, cpu)->stat_threshold;
+            
 			per_cpu_ptr(pgdat->per_cpu_nodestats, cpu)->stat_threshold
 				= max(threshold, pgdat_threshold);
 		}
@@ -281,15 +300,14 @@ void refresh_zone_stat_thresholds(void)
 		 * the min watermark could be breached by an allocation
 		 */
 		tolerate_drift = low_wmark_pages(zone) - min_wmark_pages(zone);
+        
 		max_drift = num_online_cpus() * threshold;
 		if (max_drift > tolerate_drift)
-			zone->percpu_drift_mark = high_wmark_pages(zone) +
-					max_drift;
+			zone->percpu_drift_mark = high_wmark_pages(zone) + max_drift;
 	}
 }
 
-void set_pgdat_percpu_threshold(pg_data_t *pgdat,
-				int (*calculate_pressure)(struct zone *))
+void set_pgdat_percpu_threshold(pg_data_t *pgdat, int (*calculate_pressure)(struct zone *))
 {
 	struct zone *zone;
 	int cpu;
@@ -303,8 +321,7 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 
 		threshold = (*calculate_pressure)(zone);
 		for_each_online_cpu(cpu)
-			per_cpu_ptr(zone->pageset, cpu)->stat_threshold
-							= threshold;
+			per_cpu_ptr(zone->pageset, cpu)->stat_threshold = threshold;
 	}
 }
 

@@ -821,6 +821,9 @@ kernel_physical_mapping_change(unsigned long paddr_start,
 
 //x86_init.paging.pagetable_init();
 //The `paging_init` function initializes sparse(稀疏) memory and zone sizes
+/**
+ *  分页初始化
+ */
 void __init paging_init(void)
 {
     //allocates non-linear `mem_section` and `mem_map`
@@ -833,9 +836,15 @@ void __init paging_init(void)
 	 *	 will not set it back.
 	 */
 	//clear state of the movable memory nodes
+	/**
+     *  清空 统计值
+     */
 	node_clear_state(0, N_MEMORY);
 	node_clear_state(0, N_NORMAL_MEMORY);
 
+    /**
+     *  初始化 zone
+     */
     // initialize sizes of zones
 	zone_sizes_init();
 }
@@ -1241,8 +1250,12 @@ static void __init register_page_bootmem_info(void)/* 注册 boot page */
 #ifdef CONFIG_NUMA
 	int i;
 
+    /**
+     *  遍历node
+     */
 	for_each_online_node(i) {
-		register_page_bootmem_info_node(NODE_DATA(i));}
+		register_page_bootmem_info_node(NODE_DATA(i));
+    }
 #endif
 }
 
@@ -1296,12 +1309,21 @@ failed:
 	panic("Failed to pre-allocate %s pages for vmalloc area\n", lvl);
 }
 
+/**
+ *  初始化内存
+ */
 void __init mem_init(void)  /* 64bit 初始化 */
 {
+    /**
+     *  
+     */
 	pci_iommu_alloc();  /* __IOMMU_INIT */
 
 	/* clear_bss() already clear the empty_zero_page */
 
+    /**
+     *  将 memblock 的内存添加到伙伴系统
+     */
 	/* this will put all memory onto the freelists */
 	memblock_free_all();/* 统计总页数 */
     

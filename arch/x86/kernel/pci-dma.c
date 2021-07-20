@@ -36,6 +36,10 @@ int __read_mostly iommu_detected  = 0;
     /* arch/x86/kernel/vmlinux.lds.S:303 ; arch/x86/include/asm/iommu_table.h:54: __IOMMU_INIT *//*  */
 extern struct iommu_table_entry __iommu_table[], __iommu_table_end[];   /* IOMMU */
 
+
+/**
+ *  
+ */
 void __init pci_iommu_alloc(void)   /*IOMMU分配  *//*  */
 {
 	struct iommu_table_entry *p;

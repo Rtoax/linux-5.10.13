@@ -350,8 +350,8 @@ struct page {   /* 物理页 */
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
-	void *virtual;			/* page 的虚拟地址 *//* Kernel virtual address (NULL if
-					   not kmapped, ie. highmem) */
+	void *virtual;			
+    /* page 的虚拟地址 *//* Kernel virtual address (NULL if not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
 
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
