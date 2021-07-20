@@ -411,6 +411,9 @@ static inline unsigned long high_wmark_pages(struct zone *z)
      */
     return (z->_watermark[WMARK_HIGH] + z->watermark_boost);
 }
+/**
+ *  
+ */
 static inline unsigned long wmark_pages(struct zone *z, enum zone_watermarks i)
 {
     return (z->_watermark[i] + z->watermark_boost);
@@ -716,7 +719,15 @@ struct zone {   /* 内存 ZONE */
 	 * compact_order_failed is the minimum compaction failed order.
 	 */
 	unsigned int		compact_considered;
+
+    /**
+     *  规整跳过
+     */
 	unsigned int		compact_defer_shift;
+
+    /**
+     *  最小的规整 order
+     */
 	int			compact_order_failed;
 #endif
 
@@ -729,9 +740,10 @@ struct zone {   /* 内存 ZONE */
 
 	ZONE_PADDING(_pad3_)
         
-	/* Zone statistics - 溶剂信息 */
+	/* Zone statistics - 统计信息 */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
+    
 } ____cacheline_internodealigned_in_smp;
 
 

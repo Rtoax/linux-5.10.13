@@ -1026,6 +1026,15 @@ unsigned long node_page_state(struct pglist_data *pgdat, enum node_stat_item ite
 
 #ifdef CONFIG_COMPACTION
 
+/**
+ *  连续 pages 信息
+ *
+ * @free_pages              空闲页
+ * @free_blocks_total       空闲块
+ * @free_blocks_suitable    满足需求的 空闲块
+ *
+ * 见 `fill_contig_page_info()`
+ */
 struct contig_page_info {
 	unsigned long free_pages;
 	unsigned long free_blocks_total;
@@ -1039,6 +1048,9 @@ struct contig_page_info {
  * how many suitable free blocks there *might* be if MOVABLE pages were
  * migrated. Calculating that is possible, but expensive and can be
  * figured out from userspace
+ *
+ * 计算 ZONE 中 free 页数量、连续的free页、满足分配需求的页
+ * 
  */
 static void fill_contig_page_info(struct zone *zone,
 				unsigned int suitable_order,
@@ -1053,17 +1065,29 @@ static void fill_contig_page_info(struct zone *zone,
 	for (order = 0; order < MAX_ORDER; order++) {
 		unsigned long blocks;
 
+        /**
+         *  
+         */
 		/* Count number of free blocks */
 		blocks = zone->free_area[order].nr_free;
+
+        /**
+         *  空闲块
+         */
 		info->free_blocks_total += blocks;
 
+        /**
+         *  空闲页
+         */
 		/* Count free base pages */
 		info->free_pages += blocks << order;
 
+        /**
+         *  满足需求的 空闲块
+         */
 		/* Count the suitable free blocks */
 		if (order >= suitable_order)
-			info->free_blocks_suitable += blocks <<
-						(order - suitable_order);
+			info->free_blocks_suitable += blocks << (order - suitable_order);
 	}
 }
 
@@ -1076,14 +1100,23 @@ static void fill_contig_page_info(struct zone *zone,
  */
 static int __fragmentation_index(unsigned int order, struct contig_page_info *info)
 {
+    /**
+     *  请求页数
+     */
 	unsigned long requested = 1UL << order;
 
 	if (WARN_ON_ONCE(order >= MAX_ORDER))
 		return 0;
 
+    /**
+     *  没有 空闲页肯定不行
+     */
 	if (!info->free_blocks_total)
 		return 0;
 
+    /**
+     *  没有合适的空闲块 也不行
+     */
 	/* Fragmentation index only makes sense when a request would fail */
 	if (info->free_blocks_suitable)
 		return -1000;
@@ -1115,12 +1148,23 @@ unsigned int extfrag_for_order(struct zone *zone, unsigned int order)
 			info.free_pages);
 }
 
-/* Same as __fragmentation index but allocs contig_page_info on stack */
+/**
+ *  Same as __fragmentation index but allocs contig_page_info on stack 
+ *
+ *  
+ */
 int fragmentation_index(struct zone *zone, unsigned int order)
 {
 	struct contig_page_info info;
 
+    /**
+     *  计算 空闲页，空闲块和满足需求的空闲块
+     */
 	fill_contig_page_info(zone, order, &info);
+
+    /**
+     *  fragmentation: 破碎
+     */
 	return __fragmentation_index(order, &info);
 }
 #endif

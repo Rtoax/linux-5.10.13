@@ -3765,16 +3765,25 @@ noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 }
 ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
 
+/**
+ *  
+ */
 static inline long __zone_watermark_unusable_free(struct zone *z,
 				unsigned int order, unsigned int alloc_flags)
 {
+    /**
+     *  是否强制分配
+     */
 	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
+    
 	long unusable_free = (1 << order) - 1;
 
 	/*
 	 * If the caller does not have rights to ALLOC_HARDER then subtract
 	 * the high-atomic reserves. This will over-estimate the size of the
 	 * atomic reserve but it avoids a search.
+	 *
+	 * 如果不强制 申请，也就是不使用系统预留的 页面
 	 */
 	if (likely(!alloc_harder))
 		unusable_free += z->nr_reserved_highatomic;
@@ -3794,8 +3803,8 @@ static inline long __zone_watermark_unusable_free(struct zone *z,
  * one free page of a suitable size. Checking now avoids taking the zone lock
  * to check in the allocation paths if no pages are free.
  *
- * 如果免费基页高于“标记”，则返回 true。 
- * 对于高阶检查，如果达到 0 阶水印并且至少有一个合适大小的空闲页面，它将返回 true。 
+ * 如果 free 基页高于“标记”，则返回 true。 
+ * 对于高阶检查，如果达到 0 阶 水位 并且至少有一个合适大小的空闲页面，它将返回 true。 
  * 如果没有页面空闲，现在检查可避免使用区域锁来检查分配路径。
  *
  *  如果free 基 page 在 Mark 之上，返回 true
@@ -3834,9 +3843,15 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	int o;
 	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
 
+    /**
+     *  
+     */
 	/* free_pages may go negative - that's OK */
 	free_pages -= __zone_watermark_unusable_free(z, order, alloc_flags);
 
+    /**
+     *  允许使用 最低警戒水位的 1/2
+     */
 	if (alloc_flags & ALLOC_HIGH)
 		min -= min / 2;
 
@@ -3863,40 +3878,63 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	if (free_pages <= min + z->lowmem_reserve[highest_zoneidx])
 		return false;
 
-	/* If this is an order-0 request then the watermark is fine */
+	/**
+	 *  If this is an order-0 request then the watermark is fine 
+	 *
+	 *  如果就分配一个页面
+	 */
 	if (!order)
 		return true;
 
-	/* For a high-order request, check at least one suitable page is free */
+	/** 
+	 *  For a high-order request, check at least one suitable page is free 
+	 *
+	 *  遍历 所有order 的   free_area
+	 */
 	for (o = order; o < MAX_ORDER; o++) {
 		struct free_area *area = &z->free_area[o];
 		int mt;
 
+        /**
+         *  没有 free 页面了，找下一个
+         */
 		if (!area->nr_free)
 			continue;
 
+        /**
+         *  可以提前分配的 PCP 页面还有，那当然好了
+         */
 		for (mt = 0; mt < MIGRATE_PCPTYPES; mt++) {
 			if (!free_area_empty(area, mt))
 				return true;
 		}
 
 #ifdef CONFIG_CMA
-		if ((alloc_flags & ALLOC_CMA) &&
-		    !free_area_empty(area, MIGRATE_CMA)) {
+		if ((alloc_flags & ALLOC_CMA) && !free_area_empty(area, MIGRATE_CMA)) {
 			return true;
 		}
 #endif
 		if (alloc_harder && !free_area_empty(area, MIGRATE_HIGHATOMIC))
 			return true;
 	}
+
+    /**
+     *  如果上面的条件都不满足，水位出现问题了就
+     */
 	return false;
 }
 
+/**
+ *  水位是否合理
+ */
 bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 		      int highest_zoneidx, unsigned int alloc_flags)    /*  */
 {
+    /**
+     *  检查
+     */
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
-					zone_page_state(z, NR_FREE_PAGES));
+					            zone_page_state(z, NR_FREE_PAGES));
 }
 
 static inline bool zone_watermark_fast(struct zone *z, unsigned int order,

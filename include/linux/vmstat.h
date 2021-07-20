@@ -218,7 +218,7 @@ static inline unsigned long global_node_page_state(enum node_stat_item item)
 }
 
 /**
- *  返回统计值
+ *  返回统计值，返回 zone 中特定 状态的页面数量
  */
 static inline unsigned long zone_page_state(struct zone *zone, enum zone_stat_item item)
 {

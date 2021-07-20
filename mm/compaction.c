@@ -199,6 +199,9 @@ bool compaction_deferred(struct zone *zone, int order)
 {
 	unsigned long defer_limit = 1UL << zone->compact_defer_shift;
 
+    /**
+     *  需规整的order 小于 
+     */
 	if (order < zone->compact_order_failed)
 		return false;
 
@@ -2246,7 +2249,6 @@ static enum compact_result compact_finished(struct compact_control *cc)
  *  以 alloc_flags 内存分配掩码中指定的水位为条件判断是否可以再这个zone 中分配
  *  出 2 order 次幂 个物理页面，判断函数为 zone_watermark_ok()
  */
-
 static enum compact_result __compaction_suitable(struct zone *zone, int order,  /*  */
 					unsigned int alloc_flags,
 					int highest_zoneidx,
@@ -2258,16 +2260,19 @@ static enum compact_result __compaction_suitable(struct zone *zone, int order,  
 		return COMPACT_CONTINUE;
 
     /**
-     *  
+     *  当前 zone  的水位
      */
 	watermark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
+    
 	/*
 	 * If watermarks for high-order allocation are already met, there
 	 * should be no need for compaction at all.
+	 *
+	 * 检查 水位 
 	 */
 	if (zone_watermark_ok(zone, order, watermark, highest_zoneidx, alloc_flags))
         /**
-         *  不需要做内存规整
+         *  水位OK，那就不需要做内存规整
          */
 		return COMPACT_SUCCESS;
 
@@ -2286,18 +2291,31 @@ static enum compact_result __compaction_suitable(struct zone *zone, int order,  
 	 * suitable migration targets
 	 *
 	 * 若 order > 3, 还需要一个反碎片化的检测
+	 *
+	 *  order > 3 : 使用低水位
+	 *  order <=3 : 使用最低警戒水位
 	 */
 	watermark = (order > PAGE_ALLOC_COSTLY_ORDER/* 3 */) ?
 				low_wmark_pages(zone) : min_wmark_pages(zone);
 
     /**
-     *  
+     *  ?
      */
 	watermark += compact_gap(order);
+
+    /**
+     *  再次检查水位
+     */
 	if (!__zone_watermark_ok(zone, 0, watermark, highest_zoneidx,
 						ALLOC_CMA, wmark_target))
+		/**
+         *  不满足内存规整的条件
+         */
 		return COMPACT_SKIPPED;
 
+    /**
+     *  表示可以在下一个 页块中进行内存规整
+     */
 	return COMPACT_CONTINUE;
 }
 
@@ -2333,14 +2351,24 @@ enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
 	 * vm.extfrag_threshold sysctl is meant as a heuristic to prevent
 	 * excessive compaction for costly orders, but it should not be at the
 	 * expense of system stability.
+	 *
+	 * 
 	 */
-	if (ret == COMPACT_CONTINUE && (order > PAGE_ALLOC_COSTLY_ORDER)) {
+	if (ret == COMPACT_CONTINUE && (order > PAGE_ALLOC_COSTLY_ORDER/*3*/)) {
+
+        /**
+         *  
+         */
 		fragindex = fragmentation_index(zone, order);
 		if (fragindex >= 0 && fragindex <= sysctl_extfrag_threshold)
 			ret = COMPACT_NOT_SUITABLE_ZONE;
 	}
 
 	trace_mm_compaction_suitable(zone, order, ret);
+
+    /**
+     *  
+     */
 	if (ret == COMPACT_NOT_SUITABLE_ZONE)
 		ret = COMPACT_SKIPPED;
 
@@ -2382,6 +2410,9 @@ bool compaction_zonelist_suitable(struct alloc_context *ac, int order,
 
 /**
  *  内存规整的核心函数
+ *
+ * @cc      规整控制结构
+ * @capc    ？
  */
 static enum compact_result
 compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规整 ZONE */
@@ -2395,17 +2426,24 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	unsigned long end_pfn = zone_end_pfn(cc->zone);
     
 	unsigned long last_migrated_pfn;
+
+    /**
+     *  是否为同步规整，如果同步，将阻塞当前线程
+     */
 	const bool sync = cc->mode != MIGRATE_ASYNC;
 	bool update_cached;
 
 	/*
 	 * These counters track activities during zone compaction.  Initialize
 	 * them before compacting a new zone.
+	 *
+	 * 初始化 cc
 	 */
 	cc->total_migrate_scanned = 0;
 	cc->total_free_scanned = 0;
 	cc->nr_migratepages = 0;
 	cc->nr_freepages = 0;
+    
 	INIT_LIST_HEAD(&cc->freepages);
 	INIT_LIST_HEAD(&cc->migratepages);
 
@@ -3027,10 +3065,13 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 	for (zoneid = 0; zoneid <= cc.highest_zoneidx; zoneid++) {
 		int status;
 
+        /**
+         *  获取 zone
+         */
 		zone = &pgdat->node_zones[zoneid];
 
         /**
-         *  zone 中没有内存，直接返回
+         *  zone 中没有管理的内存，直接返回
          */
 		if (!populated_zone(zone))
 			continue;
@@ -3043,6 +3084,8 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 
         /**
          *  根据水位判断是否需要规整
+         *
+         * 如果返回 COMPACT_NOT_SUITABLE_ZONE(0), 继续下一个 ZONE
          */
 		if (compaction_suitable(zone, cc.order, 0, zoneid) != COMPACT_CONTINUE)
 			continue;
@@ -3059,13 +3102,16 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 		cc.zone = zone;
 
         /**
-         *  规整的核心函数
+         *  最这个 zone 进行规整 - 规整的核心函数
          */
 		status = compact_zone(&cc, NULL);
 
+        /**
+         *  规整成功
+         */
 		if (status == COMPACT_SUCCESS) {
             /**
-             *  
+             *  defer: 推迟
              */
 			compaction_defer_reset(zone, cc.order, false);
 
@@ -3078,6 +3124,8 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 			 * otherwise coalesce on the zone's free area for
 			 * order >= cc.order.  This is ratelimited by the
 			 * upcoming deferral.
+			 *
+			 * 缩水 这个 zone 的 所有 pages
 			 */
 			drain_all_pages(zone);
 
@@ -3173,16 +3221,22 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
         /**
          *  
          */
-		if (wait_event_freezable_timeout(pgdat->kcompactd_wait, /* 内存规整 */
-        			kcompactd_work_requested(pgdat),
-        			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
+		if (wait_event_freezable_timeout(pgdat->kcompactd_wait, 
+                        			kcompactd_work_requested(pgdat),
+                        			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
 
+            /**
+             *  评估系统资源压力
+             **    
+             *  暂且不看 2021年7月20日
+             */
 			psi_memstall_enter(&pflags);
 
             /**
              *  进行内存规整
              */
 			kcompactd_do_work(pgdat);   /* 内存规整 */
+            
 			psi_memstall_leave(&pflags);
 			continue;
 		}
