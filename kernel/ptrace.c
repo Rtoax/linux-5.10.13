@@ -1233,6 +1233,10 @@ int ptrace_request(struct task_struct *child, long request,
 #define arch_ptrace_attach(child)	do { } while (0)
 #endif
 
+/**
+ *  ptrace()
+ */
+long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);
 SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 		unsigned long, data)
 {
@@ -1380,6 +1384,10 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 	return ret;
 }
 
+/**
+*  ptrace()
+*/
+//long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);
 COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
 		       compat_long_t, addr, compat_long_t, data)
 {
