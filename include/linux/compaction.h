@@ -39,7 +39,7 @@ enum compact_result {
 	COMPACT_DEFERRED,
 
     /**
-     *  
+     *  没有合适的 规整页
      */
 	/* For more detailed tracepoint output - internal to compaction */
 	COMPACT_NO_SUITABLE_PAGE,

@@ -74,6 +74,10 @@ void set_pfnblock_flags_mask(struct page *page,
 #define clear_pageblock_skip(page) \
 	set_pfnblock_flags_mask(page, 0, page_to_pfn(page),	\
 			(1 << PB_migrate_skip))
+
+/**
+ *  
+ */
 #define set_pageblock_skip(page) \
 	set_pfnblock_flags_mask(page, (1 << PB_migrate_skip),	\
 			page_to_pfn(page),			\

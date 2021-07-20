@@ -320,7 +320,7 @@ struct vm_area_struct;
 static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类型 */
 {
 /* Convert GFP flags to their corresponding migrate type */
-#define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE/* 0x10 */|__GFP_MOVABLE/* 0x8 */)
+#define GFP_MOVABLE_MASK /* 0x18 */ (__GFP_RECLAIMABLE/* 0x10 */|__GFP_MOVABLE/* 0x8 */)
 #define GFP_MOVABLE_SHIFT 3
 
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);

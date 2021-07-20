@@ -786,15 +786,27 @@ static bool too_many_isolated(pg_data_t *pgdat)
 {
 	unsigned long active, inactive, isolated;
 
+    /**
+     *  不活跃
+     */
 	inactive = node_page_state(pgdat, NR_INACTIVE_FILE) +
 			node_page_state(pgdat, NR_INACTIVE_ANON);
-    
+
+    /**
+     *  活跃
+     */
 	active = node_page_state(pgdat, NR_ACTIVE_FILE) +
 			node_page_state(pgdat, NR_ACTIVE_ANON);
-    
+
+    /**
+     *  隔离
+     */ 
 	isolated = node_page_state(pgdat, NR_ISOLATED_FILE) +
 			node_page_state(pgdat, NR_ISOLATED_ANON);
 
+    /**
+     *  隔离 的页面数量大于 活跃和非活跃页面和的一半
+     */
 	return isolated > (inactive + active) / 2;
 }
 
@@ -822,6 +834,9 @@ static unsigned long
 isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			unsigned long end_pfn, isolate_mode_t isolate_mode)
 {
+    /**
+     *  NODE
+     */
 	pg_data_t *pgdat = cc->zone->zone_pgdat;
 	unsigned long nr_scanned = 0, nr_isolated = 0;
 	struct lruvec *lruvec;
@@ -852,6 +867,8 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 
         /**
          *  如果判断当前 zone 从 LRU 链表分离出来的 页面比较多，则最好等待 100ms
+         *
+         *  
          */
 		congestion_wait(BLK_RW_ASYNC, HZ/10);
 
@@ -1054,6 +1071,9 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			/* Try get exclusive access under lock */
 			if (!skip_updated) {
 				skip_updated = true;
+                /**
+                 *  
+                 */
 				if (test_and_set_skip(cc, page, low_pfn))
 					goto isolate_abort;
 			}
@@ -1332,15 +1352,39 @@ move_freelist_head(struct list_head *freelist, struct page *freepage)
  * when scanning forward. It's possible for these list operations to
  * move against each other if they search the free list exactly in
  * lockstep.
+ *
+ *  #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+ *          ^
+ *        /     \
+ *  #-#-#-#     #-#-#-#-#-#-#-#-#-#-#-#-#
+ *              ^
+ *
+ *              #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+ *              ^
+ *  
  */
 static void
 move_freelist_tail(struct list_head *freelist, struct page *freepage)
 {
 	LIST_HEAD(sublist);
 
+    /**
+     *  不是第一个 page
+     */
 	if (!list_is_first(freelist, &freepage->lru)) {
+
+        /**
+         *  切成两个
+         */
 		list_cut_position(&sublist, freelist, &freepage->lru);
+
+        /**
+         *  切完了 不为空
+         */
 		if (!list_empty(&sublist))
+            /**
+             *  加到链表末尾
+             */
 			list_splice_tail(&sublist, freelist);
 	}
 }
@@ -1819,29 +1863,56 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 	distance = (cc->free_pfn - cc->migrate_pfn) >> 1;
 	if (cc->migrate_pfn != cc->zone->zone_start_pfn)
 		distance >>= 2;
-	high_pfn = pageblock_start_pfn(cc->migrate_pfn + distance);
 
     /**
      *  
      */
+	high_pfn = pageblock_start_pfn(cc->migrate_pfn + distance);
+
+    /**
+     *  从 order 最大  开始
+     */
 	for (order = cc->order - 1;
 	     order >= PAGE_ALLOC_COSTLY_ORDER && pfn == cc->migrate_pfn && nr_scanned < limit;
 	     order--) {
+
+        /**
+         *  空闲 area
+         */
 		struct free_area *area = &cc->zone->free_area[order];
 		struct list_head *freelist;
 		unsigned long flags;
 		struct page *freepage;
 
+        /**
+         *  这个 area 没有  空闲页，直接退出
+         */
 		if (!area->nr_free)
 			continue;
 
 		spin_lock_irqsave(&cc->zone->lock, flags);
+
+        /**
+         *  可移动页 的 freelist
+         */
 		freelist = &area->free_list[MIGRATE_MOVABLE];
+
+        /**
+         *  遍历 freelist 链表
+         */
 		list_for_each_entry(freepage, freelist, lru) {
 			unsigned long free_pfn;
 
 			nr_scanned++;
+
+            /**
+             *  获取 pfn
+             */
 			free_pfn = page_to_pfn(freepage);
+
+            /**
+             *  
+             */
 			if (free_pfn < high_pfn) {
 				/*
 				 * Avoid if skipped recently. Ideally it would
@@ -1856,16 +1927,30 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 					continue;
 				}
 
-				/* Reorder to so a future search skips recent pages */
+				/**
+				 *  Reorder to so a future search skips recent pages 
+				 *
+				 *  
+				 */
 				move_freelist_tail(freelist, freepage);
 
+                /**
+                 *  
+                 */
 				update_fast_start_pfn(cc, free_pfn);
 				pfn = pageblock_start_pfn(free_pfn);
 				cc->fast_search_fail = 0;
+
+                /**
+                 *  
+                 */
 				set_pageblock_skip(freepage);
 				break;
 			}
 
+            /**
+             *  扫描的数量够了
+             */
 			if (nr_scanned >= limit) {
 				cc->fast_search_fail++;
 				move_freelist_tail(freelist, freepage);
@@ -1875,6 +1960,9 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 		spin_unlock_irqrestore(&cc->zone->lock, flags);
 	}
 
+    /**
+     *  记录迁移的 扫描页面 数量
+     */
 	cc->total_migrate_scanned += nr_scanned;
 
 	/*
@@ -1914,8 +2002,14 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	 * Start at where we last stopped, or beginning of the zone as
 	 * initialized by compact_zone(). The first failure will use
 	 * the lowest PFN as the starting point for linear scanning.
+	 *
+	 * 从上次 扫描的位置开始，或者从 zone 的起始点开始
 	 */
 	low_pfn = fast_find_migrateblock(cc);
+
+    /**
+     *  
+     */
 	block_start_pfn = pageblock_start_pfn(low_pfn);
     
 	if (block_start_pfn < cc->zone->zone_start_pfn)
@@ -2229,6 +2323,9 @@ static enum compact_result compact_finished(struct compact_control *cc)
 {
 	int ret;
 
+    /**
+     *  
+     */
 	ret = __compact_finished(cc);
 	trace_mm_compaction_finished(cc->zone, cc->order, ret);
 	if (ret == COMPACT_NO_SUITABLE_PAGE)
@@ -2492,11 +2589,21 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
      *  不扫描整个 zone
      */
 	} else {
+	    /**
+         *  从上次扫描的结束 的 地方继续扫描
+         */
 		cc->migrate_pfn = cc->zone->compact_cached_migrate_pfn[sync];
+
+        /**
+         *  上一次扫描 空闲页 的位置
+         */
 		cc->free_pfn = cc->zone->compact_cached_free_pfn;
 
         /**
-         *  
+         *  记录 的 free_pfn 越界了
+         *
+         *       +------------------------+
+         *  ^^^                             ^^^
          */
 		if (cc->free_pfn < start_pfn || cc->free_pfn >= end_pfn) {
 			cc->free_pfn = pageblock_start_pfn(end_pfn - 1);
@@ -2504,6 +2611,10 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 		}
         /**
          *  
+         *  记录 的 migrate_pfn 越界了
+         *
+         *       +------------------------+
+         *  ^^^                             ^^^
          */
 		if (cc->migrate_pfn < start_pfn || cc->migrate_pfn >= end_pfn) {
 			cc->migrate_pfn = start_pfn;
@@ -2513,11 +2624,19 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 
         /**
          *  
+         *  migrate_pfn < compact_init_migrate_pfn
+         *
+         *       +------------------------+
+         *   ^^^  
+         * ^^^
          */
 		if (cc->migrate_pfn <= cc->zone->compact_init_migrate_pfn)
 			cc->whole_zone = true;
 	}
 
+    /**
+     *  
+     */
 	last_migrated_pfn = 0;
 
 	/*
@@ -2527,6 +2646,10 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	 * no isolation candidates, then the sync state does not matter.
 	 * Until a pageblock with isolation candidates is found, keep the
 	 * cached PFNs in sync to avoid revisiting the same blocks.
+	 *
+	 * 是否更新缓存 
+	 *
+	 *  异步规整 并且 上一次同步异步的可迁移页面位置相同
 	 */
 	update_cached = !sync &&
 		cc->zone->compact_cached_migrate_pfn[0] == cc->zone->compact_cached_migrate_pfn[1];
@@ -2534,6 +2657,9 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	trace_mm_compaction_begin(start_pfn, cc->migrate_pfn,
 				cc->free_pfn, end_pfn, sync);
 
+    /**
+     *  
+     */
 	migrate_prep_local();
 
     /**
@@ -2552,8 +2678,10 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 		 * will proceed as normal.
 		 */
 		cc->rescan = false;
-		if (pageblock_start_pfn(last_migrated_pfn) ==
-		    pageblock_start_pfn(start_pfn)) {
+		if (pageblock_start_pfn(last_migrated_pfn) == pageblock_start_pfn(start_pfn)) {
+            /**
+             *  相等，则需要再扫描
+             */
 			cc->rescan = true;
 		}
 
