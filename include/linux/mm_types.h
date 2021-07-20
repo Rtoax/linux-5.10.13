@@ -732,6 +732,8 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		/*
 		 * Special counters, in some configurations protected by the
 		 * page_table_lock, in other configurations by being atomic.
+		 *
+		 * 用于记录进程的内存使用情况
 		 */
 		struct mm_rss_stat rss_stat;    /*  */
 

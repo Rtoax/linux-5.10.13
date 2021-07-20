@@ -698,8 +698,8 @@ struct zone {   /* 内存 ZONE */
 	 * present_pages should get_online_mems() to get a stable value.
 	 */
 	atomic_long_t		managed_pages;  /* 伙伴系统管理的 当前页 数量 */
-	unsigned long		spanned_pages;  /*  */
-	unsigned long		present_pages;  /* ZONE 中的 物理页 数量 */
+	unsigned long		spanned_pages;  /* 包含的页面数量 */
+	unsigned long		present_pages;  /* ZONE 中实际管理的 物理页 数量 */
 
 	const char		*name;
 

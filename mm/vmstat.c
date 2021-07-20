@@ -1651,6 +1651,12 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
 	return 0;
 }
 
+/**
+ *  /proc/buddyinfo
+ *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo 
+ *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0 
+ *  Node 0, zone    DMA32   1576   2437   1122    448     72      1      0      0      0      0      0
+ */
 static const struct seq_operations fragmentation_op = {
 	.start	= frag_start,
 	.next	= frag_next,
@@ -1658,6 +1664,9 @@ static const struct seq_operations fragmentation_op = {
 	.show	= frag_show,
 };
 
+/**
+ *  /proc/pagetypeinfo
+ */
 static const struct seq_operations pagetypeinfo_op = {
 	.start	= frag_start,
 	.next	= frag_next,
@@ -1770,6 +1779,9 @@ static int zoneinfo_show(struct seq_file *m, void *arg)
 	return 0;
 }
 
+/**
+ *  /proc/zoneinfo
+ */
 static const struct seq_operations zoneinfo_op = {
 	.start	= frag_start, /* iterate over all zones. The same as in
 			       * fragmentation. */
@@ -2108,9 +2120,51 @@ void __init init_mm_internals(void)/*  */
 	start_shepherd_timer();
 #endif
 #ifdef CONFIG_PROC_FS
+    /**
+     *  /proc/buddyinfo
+     *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo 
+     *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0 
+     *  Node 0, zone    DMA32   1576   2437   1122    448     72      1      0      0      0      0      0
+     */
 	proc_create_seq("buddyinfo", 0444, NULL, &fragmentation_op);    /* /proc/buddyinfo */
+    /**
+     *  /proc/pagetypeinfo
+    //[rongtao@toa linux-5.10.13]$ cat /proc/pagetypeinfo
+    //Page block order: 9
+    //Pages per block:  512
+    //
+    //Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10 
+    //Node    0, zone      DMA, type    Unmovable     37     26     13      2      2      1      1      0      1      0      0 
+    //Node    0, zone      DMA, type  Reclaimable      0      3      1      2      2      1      1      1      0      0      0 
+    //Node    0, zone      DMA, type      Movable     53     13      6      3      0      6      1      1      0      0      0 
+    //Node    0, zone      DMA, type      Reserve      0      0      0      0      0      0      0      0      0      0      0 
+    //Node    0, zone      DMA, type          CMA      0      0      0      0      0      0      0      0      0      0      0 
+    //Node    0, zone      DMA, type      Isolate      0      0      0      0      0      0      0      0      0      0      0 
+    //Node    0, zone    DMA32, type    Unmovable   1291   2174    977    226     55      5      0      0      0      0      0 
+    //Node    0, zone    DMA32, type  Reclaimable     14     86     47    312     31     18      3      1      0      0      0 
+    //Node    0, zone    DMA32, type      Movable   2234   1141    510    280    189     43      9      4      2      2      0 
+    //Node    0, zone    DMA32, type      Reserve      0      0      0      0      0      0      0      0      0      0      0 
+    //Node    0, zone    DMA32, type          CMA      0      0      0      0      0      0      0      0      0      0      0 
+    //Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0 
+    //
+    //Number of blocks type     Unmovable  Reclaimable      Movable      Reserve          CMA      Isolate 
+    //Node 0, zone      DMA            2            1            5            0            0            0 
+    //Node 0, zone    DMA32          128           74          302            0            0            0 
+     */
 	proc_create_seq("pagetypeinfo", 0400, NULL, &pagetypeinfo_op);
+    /**
+     *  /proc/vmstat
+    // [rongtao@toa linux-5.10.13]$ cat /proc/vmstat 
+    // nr_free_pages 33813
+    // nr_alloc_batch 2139
+    // nr_inactive_anon 19426
+    // nr_active_anon 9435
+    // nr_inactive_file 46375
+     */
 	proc_create_seq("vmstat", 0444, NULL, &vmstat_op);
+    /**
+     *  /proc/zoneinfo
+     */
 	proc_create_seq("zoneinfo", 0444, NULL, &zoneinfo_op);
 #endif
 }

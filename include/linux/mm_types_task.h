@@ -42,6 +42,8 @@ struct vmacache {   /* vma 缓存， 见 find_vma() 局部性原理*/
 /*
  * When updating this, please also update struct resident_page_types[] in
  * kernel/fork.c
+ *
+ * 用于 记录 进程的内存使用情况
  */
 enum {
 	MM_FILEPAGES,	/* 文件映射页面，Resident file mapping pages */
@@ -60,6 +62,9 @@ struct task_rss_stat {  /*  */
 };
 #endif /* USE_SPLIT_PTE_PTLOCKS */
 
+/**
+ *  记录进程内存使用情况
+ */
 struct mm_rss_stat {    /*  */
 	atomic_long_t count[NR_MM_COUNTERS];
 };
