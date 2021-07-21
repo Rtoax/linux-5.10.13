@@ -80,6 +80,7 @@ int tick_is_oneshot_available(void)
 
 /*
  * Periodic tick
+ *  滴答
  */
 static void tick_periodic(int cpu)
 {

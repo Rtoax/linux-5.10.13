@@ -4546,8 +4546,7 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 	/*
 	 * don't let the period tick interfere with the hrtick preemption
 	 */
-	if (!sched_feat(DOUBLE_TICK) &&
-			hrtimer_active(&rq_of(cfs_rq)->hrtick_timer))
+	if (!sched_feat(DOUBLE_TICK) && hrtimer_active(&rq_of(cfs_rq)->hrtick_timer))
 		return;
 #endif
 
@@ -10636,10 +10635,15 @@ static void rq_offline_fair(struct rq *rq)
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct cfs_rq *cfs_rq;
+
+    /**
+     *  调度类
+     */
 	struct sched_entity *se = &curr->se;
 
     /**
      *  遍历所有调度实体
+     *  for (; se; se = se->parent)
      */
 	for_each_sched_entity(se) {
 	    /**
@@ -10653,9 +10657,15 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 		entity_tick(cfs_rq, se, queued);
 	}
 
+    /**
+     *  
+     */
 	if (static_branch_unlikely(&sched_numa_balancing))
 		task_tick_numa(rq, curr);
 
+    /**
+     *  
+     */
 	update_misfit_status(curr, rq);
 	update_overutilized_status(task_rq(curr));
 }

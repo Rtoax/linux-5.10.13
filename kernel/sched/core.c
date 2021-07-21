@@ -4104,6 +4104,10 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 void scheduler_tick(void)
 {
 	int cpu = smp_processor_id();
+
+    /**
+     *  获取当前 CPU 上的队列
+     */
 	struct rq *rq = cpu_rq(cpu);
 
     /**
@@ -4113,7 +4117,14 @@ void scheduler_tick(void)
 	struct rq_flags rf;
 	unsigned long thermal_pressure;
 
+    /**
+     *  
+     */
 	arch_scale_freq_tick();
+
+    /**
+     *  
+     */
 	sched_clock_tick();
 
 	rq_lock(rq, &rf);
@@ -4124,10 +4135,22 @@ void scheduler_tick(void)
 
     /**
      *  当前调度类 的 任务 tick
+     *
+     *  task_tick_idle()
+     *  task_tick_fair()
+     *  task_tick_dl()
+     *  task_tick_stop()
      */
 	curr->sched_class->task_tick(rq, curr, 0);
-    
+
+    /**
+     *  
+     */
 	calc_global_load_tick(rq);
+
+    /**
+     *  
+     */
 	psi_task_tick(rq);
 
 	rq_unlock(rq, &rf);
