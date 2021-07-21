@@ -297,6 +297,21 @@ static void __free_pages_ok(struct page *page, unsigned int order,
  *
  * TBD: should special case ZONE_DMA32 machines here - in those we normally
  * don't need any ZONE_NORMAL reservation
+ *
+ * # cat /proc/zoneinfo
+ *
+ * Node 0, zone      DMA
+ *    pages free     1230
+ *    min      179
+ *    low      223
+ *    high     268
+ *    scanned  0
+ *    spanned  4095
+ *    present  3997
+ *    managed  3976
+ *      ...
+ *          protection: (0, 959, 959, 959)  此值即为   lowmem_reserve
+ * 
  */
 int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES] = {
 #ifdef CONFIG_ZONE_DMA
@@ -307,7 +322,7 @@ int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES] = {
 #endif
 	[ZONE_NORMAL] = 32,
 #ifdef CONFIG_HIGHMEM
-	[ZONE_HIGHMEM] = 0,
+//	[ZONE_HIGHMEM] = 0,
 #endif
 	[ZONE_MOVABLE] = 0,
 };
@@ -321,7 +336,7 @@ static char * const zone_names[MAX_NR_ZONES] = {
 #endif
 	 "Normal",
 #ifdef CONFIG_HIGHMEM
-	 "HighMem",
+//	 "HighMem",
 #endif
 	 "Movable",
 #ifdef CONFIG_ZONE_DEVICE
@@ -342,6 +357,9 @@ const char * const migratetype_names[MIGRATE_TYPES] = {
 #endif
 };
 
+/**
+ *  
+ */
 compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 	[NULL_COMPOUND_DTOR] = NULL,
 	[COMPOUND_PAGE_DTOR] = free_compound_page,
@@ -353,8 +371,15 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 #endif
 };
 
+/**
+ *  见 init_per_zone_wmark_min()
+ *
+ *  范围在 128KB - 64MB
+ */
 int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;
+
+
 #ifdef CONFIG_DISCONTIGMEM
 /*
  * DiscontigMem defines memory ranges as separate pg_data_t even if the ranges
@@ -375,10 +400,17 @@ int user_min_free_kbytes = -1;
  *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
  *
  *  boost_watermark 函数及用于临时提高水位。
+ *
+ *  15000 表示会把原来的高水位提高到原来的 150%
  */
 int __read_mostly watermark_boost_factor  = 15000;
 #endif
 
+/**
+ *  高水位和低水位之间的距离是 系统总内存的 10/10000 = 0.1%
+ *
+ *  该数值最大为 1000， 也就是 1000/10000 = 10%
+ */
 int watermark_scale_factor = 10;
 
 static unsigned long __initdata nr_kernel_pages ;/*  */
@@ -4085,6 +4117,11 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	 * even if a suitable page happened to be free.
 	 *
 	 * 如果 free pages 过少，返回 false
+	 *
+	 * @free_pages      z内存管理区的空闲内存
+	 * @min             z内存管理区中判断水位的条件
+	 * @z               当前扫描的 内存管理区
+	 * @highest_zoneidx 这次分配请求通过分配掩码计算出来的首选zone
 	 */
 	if (free_pages <= min + z->lowmem_reserve[highest_zoneidx])
 		return false;
@@ -8803,11 +8840,22 @@ static void setup_per_zone_lowmem_reserve(void)
 	struct pglist_data *pgdat;
 	enum zone_type j, idx;
 
+    /**
+     *  遍历节点
+     */
 	for_each_online_pgdat(pgdat) {
+
+        /**
+         *  遍历 zone
+         */
 		for (j = 0; j < MAX_NR_ZONES; j++) {
+            
 			struct zone *zone = pgdat->node_zones + j;
 			unsigned long managed_pages = zone_managed_pages(zone);
 
+            /**
+             *  
+             */
 			zone->lowmem_reserve[j] = 0;
 
 			idx = j;
@@ -8817,8 +8865,7 @@ static void setup_per_zone_lowmem_reserve(void)
 				idx--;
 				lower_zone = pgdat->node_zones + idx;
 
-				if (!sysctl_lowmem_reserve_ratio[idx] ||
-				    !zone_managed_pages(lower_zone)) {
+				if (!sysctl_lowmem_reserve_ratio[idx] || !zone_managed_pages(lower_zone)) {
 					lower_zone->lowmem_reserve[j] = 0;
 					continue;
 				} else {
@@ -8884,11 +8931,19 @@ static void __setup_per_zone_wmarks(void)
 		 * Set the kswapd watermarks distance according to the
 		 * scale factor in proportion to available memory, but
 		 * ensure a minimum size on small systems.
-		 */
-		tmp = max_t(u64, tmp >> 2,
-			    mult_frac(zone_managed_pages(zone),
-				      watermark_scale_factor, 10000));
+		 *
+		 *
+		 * watermark_scale_factor
+		 *
+         *  高水位和低水位之间的距离是 系统总内存的 10/10000 = 0.1%
+         *
+         *  该数值最大为 1000， 也就是 1000/10000 = 10%
+         */
+		tmp = max_t(u64, tmp >> 2, mult_frac(zone_managed_pages(zone), watermark_scale_factor, 10000));
 
+        /**
+         *  
+         */
 		zone->watermark_boost = 0;
 		zone->_watermark[WMARK_LOW]  = min_wmark_pages(zone) + tmp;
 		zone->_watermark[WMARK_HIGH] = min_wmark_pages(zone) + tmp * 2;
@@ -8942,21 +8997,35 @@ void setup_per_zone_wmarks(void)    /* 每个 zone 的 watermark */
  * 4096MB:	8192k
  * 8192MB:	11584k
  * 16384MB:	16384k
+ *
+ *
  */
 int __meminit init_per_zone_wmark_min(void) /*  */
 {
 	unsigned long lowmem_kbytes;
 	int new_min_free_kbytes;
 
+    /**
+     *  lowmem_kbytes = 超出高水位的 页数 * 4
+     */
 	lowmem_kbytes = nr_free_buffer_pages() * (PAGE_SIZE >> 10);
+
+    /**
+     *  计算 min_free_kbytes
+     */
 	new_min_free_kbytes = int_sqrt(lowmem_kbytes * 16);
 
 	if (new_min_free_kbytes > user_min_free_kbytes) {
+
+        /**
+         *  范围在 128KB - 64MB
+         */
 		min_free_kbytes = new_min_free_kbytes;
 		if (min_free_kbytes < 128)
 			min_free_kbytes = 128;
 		if (min_free_kbytes > 262144)
 			min_free_kbytes = 262144;
+        
 	} else {
 		pr_warn("min_free_kbytes is not updated to %d because user defined value %d is preferred\n",
 				new_min_free_kbytes, user_min_free_kbytes);
@@ -8986,7 +9055,7 @@ int __meminit init_per_zone_wmark_min(void) /*  */
 
 	return 0;
 }
-postcore_initcall(init_per_zone_wmark_min)  /* 初始化每个 ZONE 的最低水位 */
+postcore_initcall(init_per_zone_wmark_min)  /* 初始化每个 ZONE 的最低水位 */;
 
 /*
  * min_free_kbytes_sysctl_handler - just a wrapper around proc_dointvec() so

@@ -76,6 +76,8 @@ int dirty_background_ratio = 10;
 /*
  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
  * dirty_background_ratio * the amount of dirtyable memory
+ *
+ * 脏页数量超过这个数值，内核回写线程开始回写脏页
  */
 unsigned long dirty_background_bytes;
 
@@ -387,11 +389,9 @@ static void domain_dirty_limits(struct dirty_throttle_control *dtc)
 		 * number of pages.
 		 */
 		if (bytes)
-			ratio = min(DIV_ROUND_UP(bytes, global_avail),
-				    PAGE_SIZE);
+			ratio = min(DIV_ROUND_UP(bytes, global_avail), PAGE_SIZE);
 		if (bg_bytes)
-			bg_ratio = min(DIV_ROUND_UP(bg_bytes, global_avail),
-				       PAGE_SIZE);
+			bg_ratio = min(DIV_ROUND_UP(bg_bytes, global_avail), PAGE_SIZE);
 		bytes = bg_bytes = 0;
 	}
 

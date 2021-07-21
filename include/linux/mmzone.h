@@ -638,6 +638,23 @@ struct zone {   /* 内存 ZONE */
 	 * there being tons of freeable ram on the higher zones).  This array is
 	 * recalculated at runtime if the sysctl_lowmem_reserve_ratio sysctl
 	 * changes.
+	 *
+	 * # cat /proc/zoneinfo
+	 *
+	 * Node 0, zone      DMA
+	 *    pages free     1230
+     *    min      179
+     *    low      223
+     *    high     268
+     *    scanned  0
+     *    spanned  4095
+     *    present  3997
+     *    managed  3976
+     *      ...
+     *          protection: (0, 959, 959, 959)  此值即为  lowmem_reserve
+     *
+     * 该数组是为了防止进程过去使用低端内存管理区的内存，
+     *  使用 `setup_per_zone_lowmem_reserve()` 设置
 	 */
 	long lowmem_reserve[MAX_NR_ZONES];
 

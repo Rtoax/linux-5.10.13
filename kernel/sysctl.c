@@ -959,7 +959,7 @@ int proc_dointvec_minmax(struct ctl_table *table, int write,
 {
 	struct do_proc_dointvec_minmax_conv_param param = {
 		.min = (int *) table->extra1,
-		.max = (int *) table->extra2,
+		.max = (int *) table->extra2, //1000
 	};
 	return do_proc_dointvec(table, write, buffer, lenp, ppos,
 				do_proc_dointvec_minmax_conv, &param);
@@ -2600,6 +2600,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 
 static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	{
+	    ///proc/sys/vm/overcommit_memory
 		.procname	= "overcommit_memory",
 		.data		= &sysctl_overcommit_memory,
 		.maxlen		= sizeof(sysctl_overcommit_memory),
@@ -2609,6 +2610,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra2		= &two,
 	},
 	{
+	    ///proc/sys/vm/panic_on_oom
 		.procname	= "panic_on_oom",
 		.data		= &sysctl_panic_on_oom,
 		.maxlen		= sizeof(sysctl_panic_on_oom),
@@ -2832,13 +2834,18 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra1		= SYSCTL_ZERO,
 	},
 	{
+	    /**
+         *  高水位和低水位之间的距离是 系统总内存的 10/10000 = 0.1%
+         *
+         *  该数值最大为 1000， 也就是 1000/10000 = 10%
+         */
 		.procname	= "watermark_scale_factor",
 		.data		= &watermark_scale_factor,
 		.maxlen		= sizeof(watermark_scale_factor),
 		.mode		= 0644,
 		.proc_handler	= watermark_scale_factor_sysctl_handler,
 		.extra1		= SYSCTL_ONE,
-		.extra2		= &one_thousand,
+		.extra2		= &one_thousand, //最大值1000
 	},
 	{
 		.procname	= "percpu_pagelist_fraction",
@@ -2911,6 +2918,8 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 #endif
 #ifdef CONFIG_NUMA
     //vm.zone_reclaim_mode = 0
+    //   =0 表示可以从下一个内存管理区或下一个内存节点分配内存
+    //  !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
 	{
 		.procname	= "zone_reclaim_mode",
 		.data		= &node_reclaim_mode,

@@ -4887,6 +4887,9 @@ module_init(kswapd_init)
  * the watermarks.
  *
  * vm.zone_reclaim_mode = 0, see `struct ctl_table vm_table[]`
+ *
+ *  =0 表示可以从下一个内存管理区或下一个内存节点分配内存
+ * !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
  */
 int __read_mostly node_reclaim_mode ;
 
@@ -4947,6 +4950,10 @@ static unsigned long node_pagecache_reclaimable(struct pglist_data *pgdat)
 	 * a better estimate
 	 *
 	 * 如果 设置了 RECLAIM_UNMAP, 那么所有文件页都考虑被回收。
+	 *
+	 * node_reclaim_mode
+     *   =0 表示可以从下一个内存管理区或下一个内存节点分配内存
+     *  !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
 	 */
 	if (node_reclaim_mode & RECLAIM_UNMAP)
 		nr_pagecache_reclaimable = node_page_state(pgdat, NR_FILE_PAGES);
