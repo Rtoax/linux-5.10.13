@@ -1587,6 +1587,8 @@ out:
  * @arg: enum ttu_flags will be passed to this argument
  *
  * unmap 物理 page 对应的 vma
+ *
+ * 当一个页面被选为 候选交换页面后，需要调用此函数，来断开 所有和用户进程地址空间映射的PTE
  */
 static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, void *arg)
@@ -1612,8 +1614,7 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		return true;
 
 	if (flags & TTU_SPLIT_HUGE_PMD) {
-		split_huge_pmd_address(vma, address,
-				flags & TTU_SPLIT_FREEZE, page);
+		split_huge_pmd_address(vma, address, flags & TTU_SPLIT_FREEZE, page);
 	}
 
 	/*
@@ -1625,15 +1626,14 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	 * try_to_unmap() must hold a reference on the page.
 	 */
 	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, vma->vm_mm,
-				address,
-				min(vma->vm_end, address + page_size(page)));
+            				address,
+            				min(vma->vm_end, address + page_size(page)));
 	if (PageHuge(page)) {
 		/*
 		 * If sharing is possible, start and end will be adjusted
 		 * accordingly.
 		 */
-		adjust_range_if_pmd_sharing_possible(vma, &range.start,
-						     &range.end);
+		adjust_range_if_pmd_sharing_possible(vma, &range.start, &range.end);
 	}
 	mmu_notifier_invalidate_range_start(&range);
 
@@ -1820,8 +1820,7 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			 * pte. do_swap_page() will wait until the migration
 			 * pte is removed and then restart fault handling.
 			 */
-			entry = make_migration_entry(subpage,
-					pte_write(pteval));
+			entry = make_migration_entry(subpage, pte_write(pteval));
 			swp_pte = swp_entry_to_pte(entry);
 			if (pte_soft_dirty(pteval))
 				swp_pte = pte_swp_mksoft_dirty(swp_pte);
@@ -1832,7 +1831,11 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			 * No need to invalidate here it will synchronize on
 			 * against the special swap migration pte.
 			 */
-		} else if (PageAnon(page)) {
+		}
+        /**
+         *  匿名页面
+         */
+        else if (PageAnon(page)) {
 			swp_entry_t entry = { .val = page_private(subpage) };
 			pte_t swp_pte;
 			/*
@@ -1843,8 +1846,7 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 				WARN_ON_ONCE(1);
 				ret = false;
 				/* We have to invalidate as we cleared the pte */
-				mmu_notifier_invalidate_range(mm, address,
-							address + PAGE_SIZE);
+				mmu_notifier_invalidate_range(mm, address, address + PAGE_SIZE);
 				page_vma_mapped_walk_done(&pvmw);
 				break;
 			}
@@ -1853,8 +1855,7 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 			if (!PageSwapBacked(page)) {
 				if (!PageDirty(page)) {
 					/* Invalidate as we cleared the pte */
-					mmu_notifier_invalidate_range(mm,
-						address, address + PAGE_SIZE);
+					mmu_notifier_invalidate_range(mm, address, address + PAGE_SIZE);
 					dec_mm_counter(mm, MM_ANONPAGES);
 					goto discard;
 				}
@@ -1888,6 +1889,10 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 					list_add(&mm->mmlist, &init_mm.mmlist);
 				spin_unlock(&mmlist_lock);
 			}
+
+            /**
+             *  计数 - 匿名页面转换为 交换空间页面
+             */
 			dec_mm_counter(mm, MM_ANONPAGES);
 			inc_mm_counter(mm, MM_SWAPENTS);
 			swp_pte = swp_entry_to_pte(entry);
@@ -1897,8 +1902,8 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 				swp_pte = pte_swp_mkuffd_wp(swp_pte);
 			set_pte_at(mm, address, pvmw.pte, swp_pte);
 			/* Invalidate as we cleared the pte */
-			mmu_notifier_invalidate_range(mm, address,
-						      address + PAGE_SIZE);
+			mmu_notifier_invalidate_range(mm, address, address + PAGE_SIZE);
+            
 		} else {
 			/*
 			 * This is a locked file-backed page, thus it cannot

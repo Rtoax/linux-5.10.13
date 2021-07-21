@@ -850,6 +850,10 @@ static bool task_will_free_mem(struct task_struct *task)
 	return ret;
 }
 
+
+/**
+ *  
+ */
 static void __oom_kill_process(struct task_struct *victim, const char *message)
 {
 	struct task_struct *p;
@@ -902,6 +906,10 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	 * pending fatal signal.
 	 */
 	rcu_read_lock();
+
+    /**
+     *  
+     */
 	for_each_process(p) {
 		if (!process_shares_mm(p, mm))
 			continue;
@@ -928,6 +936,9 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	if (can_oom_reap)
 		wake_oom_reaper(victim);
 
+    /**
+     *  
+     */
 	mmdrop(mm);
 	put_task_struct(victim);
 }
@@ -947,6 +958,9 @@ static int oom_kill_memcg_member(struct task_struct *task, void *message)
 	return 0;
 }
 
+/**
+ *  
+ */
 static void oom_kill_process(struct oom_control *oc, const char *message)
 {
 	struct task_struct *victim = oc->chosen;
@@ -969,6 +983,9 @@ static void oom_kill_process(struct oom_control *oc, const char *message)
 	}
 	task_unlock(victim);
 
+    /**
+     *  
+     */
 	if (__ratelimit(&oom_rs))
 		dump_header(oc, victim);
 
@@ -986,8 +1003,7 @@ static void oom_kill_process(struct oom_control *oc, const char *message)
 	 */
 	if (oom_group) {
 		mem_cgroup_print_oom_group(oom_group);
-		mem_cgroup_scan_tasks(oom_group, oom_kill_memcg_member,
-				      (void*)message);
+		mem_cgroup_scan_tasks(oom_group, oom_kill_memcg_member, (void*)message);
 		mem_cgroup_put(oom_group);
 	}
 }
@@ -1011,6 +1027,10 @@ static void check_panic_on_oom(struct oom_control *oc)
 	/* Do not panic for oom kills triggered by sysrq */
 	if (is_sysrq_oom(oc))
 		return;
+
+    /**
+     *  
+     */
 	dump_header(oc, NULL);
 	panic("Out of memory: %s panic_on_oom is enabled\n",
 		sysctl_panic_on_oom == 2 ? "compulsory" : "system-wide");
@@ -1083,12 +1103,27 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 		oc->nodemask = NULL;
 	check_panic_on_oom(oc);
 
+    /**
+     *  
+     */
 	if (!is_memcg_oom(oc) && sysctl_oom_kill_allocating_task &&
 	    current->mm && !oom_unkillable_task(current) &&
 	    oom_cpuset_eligible(current, oc) &&
 	    current->signal->oom_score_adj != OOM_SCORE_ADJ_MIN) {
+
+        /**
+         *  引用计数+1
+         */
 		get_task_struct(current);
+
+        /**
+         *  选择这个进程
+         */
 		oc->chosen = current;
+
+        /**
+         *  开杀
+         */
 		oom_kill_process(oc, "Out of memory (oom_kill_allocating_task)");
 		return true;
 	}

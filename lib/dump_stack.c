@@ -53,8 +53,7 @@ void dump_stack_print_info(const char *log_lvl) /* 打印公共的 调试信息 
 	       init_utsname()->version);
 
 	if (dump_stack_arch_desc_str[0] != '\0')
-		printk("%sHardware name: %s\n",
-		       log_lvl, dump_stack_arch_desc_str);
+		printk("%sHardware name: %s\n", log_lvl, dump_stack_arch_desc_str);
 
 	print_worker_info(log_lvl, current);
 }
@@ -71,6 +70,9 @@ void show_regs_print_info(const char *log_lvl)
 	dump_stack_print_info(log_lvl);
 }
 
+/**
+ *  
+ */
 static void __dump_stack(void)  /*栈 dump 转储  */
 {
 	dump_stack_print_info(KERN_DEFAULT);    /*  */
@@ -85,6 +87,9 @@ static void __dump_stack(void)  /*栈 dump 转储  */
 #ifdef CONFIG_SMP
 static atomic_t dump_lock = ATOMIC_INIT(-1);
 
+/**
+ *  打印调用栈
+ */
 asmlinkage __visible void dump_stack(void)/* 打印栈信息 */
 {
 	unsigned long flags;
@@ -115,6 +120,9 @@ retry:
 		goto retry;
 	}
 
+    /**
+     *  
+     */
 	__dump_stack(); /*  */
 
 	if (!was_locked)

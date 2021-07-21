@@ -8,12 +8,19 @@
 #include <linux/mm.h>
 #include <linux/cma.h>
 
+/**
+ *  系统内存总体信息
+ */
 void show_mem(unsigned int filter, nodemask_t *nodemask)
 {
 	pg_data_t *pgdat;
 	unsigned long total = 0, reserved = 0, highmem = 0;
 
 	printk("Mem-Info:\n");
+
+    /**
+     *  输出内存节点信息
+     */
 	show_free_areas(filter, nodemask);
 
 	for_each_online_pgdat(pgdat) {

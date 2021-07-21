@@ -1791,9 +1791,9 @@ unlock:
  * otherwise they are NULL.
  */
 static int shmem_getpage_gfp(struct inode *inode, pgoff_t index,
-	struct page **pagep, enum sgp_type sgp, gfp_t gfp,
-	struct vm_area_struct *vma, struct vm_fault *vmf,
-			vm_fault_t *fault_type)
+                            	struct page **pagep, enum sgp_type sgp, gfp_t gfp,
+                            	struct vm_area_struct *vma, struct vm_fault *vmf,
+                            			vm_fault_t *fault_type)
 {
 	struct address_space *mapping = inode->i_mapping;
 	struct shmem_inode_info *info = SHMEM_I(inode);
@@ -1819,10 +1819,12 @@ repeat:
 	sbinfo = SHMEM_SB(inode->i_sb);
 	charge_mm = vma ? vma->vm_mm : current->mm;
 
+    /**
+     *  
+     */
 	page = find_lock_entry(mapping, index);
 	if (xa_is_value(page)) {
-		error = shmem_swapin_page(inode, index, &page,
-					  sgp, gfp, vma, fault_type);
+		error = shmem_swapin_page(inode, index, &page, sgp, gfp, vma, fault_type);
 		if (error == -EEXIST)
 			goto repeat;
 
@@ -2035,10 +2037,17 @@ static int synchronous_wake_function(wait_queue_entry_t *wait, unsigned mode, in
 	return ret;
 }
 
+/**
+ *  shmem 共享内存
+ */
 static vm_fault_t shmem_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct inode *inode = file_inode(vma->vm_file);
+
+    /**
+     *  
+     */
 	gfp_t gfp = mapping_gfp_mask(inode->i_mapping);
 	enum sgp_type sgp;
 	int err;
@@ -2070,6 +2079,7 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 		    shmem_falloc->waitq &&
 		    vmf->pgoff >= shmem_falloc->start &&
 		    vmf->pgoff < shmem_falloc->next) {
+		    
 			struct file *fpin;
 			wait_queue_head_t *shmem_falloc_waitq;
 			DEFINE_WAIT_FUNC(shmem_fault_wait, synchronous_wake_function);
@@ -2080,9 +2090,12 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 				ret = VM_FAULT_RETRY;
 
 			shmem_falloc_waitq = shmem_falloc->waitq;
-			prepare_to_wait(shmem_falloc_waitq, &shmem_fault_wait,
-					TASK_UNINTERRUPTIBLE);
+			prepare_to_wait(shmem_falloc_waitq, &shmem_fault_wait, TASK_UNINTERRUPTIBLE);
 			spin_unlock(&inode->i_lock);
+
+            /**
+             *  
+             */
 			schedule();
 
 			/*
@@ -2111,8 +2124,10 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 	else if (vma->vm_flags & VM_HUGEPAGE)
 		sgp = SGP_HUGE;
 
-	err = shmem_getpage_gfp(inode, vmf->pgoff, &vmf->page, sgp,
-				  gfp, vma, vmf, &ret);
+    /**
+     *  分配页
+     */
+	err = shmem_getpage_gfp(inode, vmf->pgoff, &vmf->page, sgp, gfp, vma, vmf, &ret);
 	if (err)
 		return vmf_error(err);
 	return ret;

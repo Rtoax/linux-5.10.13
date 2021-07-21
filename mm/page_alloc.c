@@ -4529,6 +4529,9 @@ __alloc_pages_cpuset_fallback(gfp_t gfp_mask, unsigned int order,
 	return page;
 }
 
+/**
+ *  慢速路径 回收失败 可能需要 OOM killer
+ */
 static inline struct page *
 __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	const struct alloc_context *ac, unsigned long *did_some_progress)
@@ -4561,9 +4564,8 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	 * attempt shall not depend on __GFP_DIRECT_RECLAIM && !__GFP_NORETRY
 	 * allocation which will never fail due to oom_lock already held.
 	 */
-	page = get_page_from_freelist((gfp_mask | __GFP_HARDWALL) &
-				      ~__GFP_DIRECT_RECLAIM, order,
-				      ALLOC_WMARK_HIGH|ALLOC_CPUSET, ac);
+	page = get_page_from_freelist((gfp_mask | __GFP_HARDWALL) & ~__GFP_DIRECT_RECLAIM, order,
+            				      ALLOC_WMARK_HIGH|ALLOC_CPUSET, ac);
 	if (page)
 		goto out;
 
@@ -5255,8 +5257,7 @@ retry_cpuset:
 	 *
 	 * 重新计算首选推荐的 zone，因为可能在快速路径修改了内存节点掩码，或 使用 cpuset 机制做了修改
 	 */
-	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
-					            ac->highest_zoneidx, ac->nodemask);
+	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist, ac->highest_zoneidx, ac->nodemask);
 	if (!ac->preferred_zoneref->zone)
 		goto nopage;
 
@@ -5405,7 +5406,7 @@ retry:
      */
 	/* Try direct compaction and then allocating */
 	page = __alloc_pages_direct_compact(gfp_mask, order, alloc_flags, ac,
-					compact_priority, &_compact_result);
+					                    compact_priority, &_compact_result);
 	if (page)
 		goto got_pg;
 
@@ -5444,7 +5445,10 @@ retry:
 	if (check_retry_cpuset(cpuset_mems_cookie, ac))
 		goto retry_cpuset;
 
-	/* Reclaim has failed us, start killing things */
+	/**
+	 *  Reclaim has failed us, start killing things 
+	 *  回收已经失败，开始 斩尽杀绝
+	 */
 	page = __alloc_pages_may_oom(gfp_mask, order, ac, &did_some_progress);
 	if (page)
 		goto got_pg;
@@ -6152,12 +6156,19 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 	struct zone *zone;
 	pg_data_t *pgdat;
 
+    /**
+     *  
+     */
 	for_each_populated_zone(zone) {
 		if (show_mem_node_skip(filter, zone_to_nid(zone), nodemask))
 			continue;
 
-		for_each_online_cpu(cpu)
+        /**
+         *  
+         */
+		for_each_online_cpu(cpu) {
 			free_pcp += per_cpu_ptr(zone->pageset, cpu)->pcp.count;
+        }
 	}
 
 	printk("active_anon:%lu inactive_anon:%lu isolated_anon:%lu\n"
@@ -6185,6 +6196,9 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 		free_pcp,
 		global_zone_page_state(NR_FREE_CMA_PAGES));
 
+    /**
+     *  遍历每个 NODE
+     */
 	for_each_online_pgdat(pgdat) {
 		if (show_mem_node_skip(filter, pgdat->node_id, nodemask))
 			continue;
@@ -6240,6 +6254,9 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 				"yes" : "no");
 	}
 
+    /**
+     *  zone 信息
+     */
 	for_each_populated_zone(zone) {
 		int i;
 
