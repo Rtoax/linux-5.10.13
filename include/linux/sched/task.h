@@ -33,6 +33,10 @@ struct kernel_clone_args {  /* kernel_clone()'s arguments */
      */
 	unsigned long stack;
 	unsigned long stack_size;
+
+    /**
+     *  Thread Local Storage
+     */
 	unsigned long tls;
 	pid_t *set_tid;
 	/* Number of elements in *set_tid */

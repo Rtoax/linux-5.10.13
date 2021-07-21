@@ -12,6 +12,9 @@ struct task_struct *__switch_to_asm(struct task_struct *prev,
 __visible struct task_struct *__switch_to(struct task_struct *prev,
 					  struct task_struct *next);
 
+/**
+ *  fork 返回
+ */
 asmlinkage void ret_from_fork(void);
 
 /*

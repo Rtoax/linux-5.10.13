@@ -21,6 +21,9 @@ static __always_inline struct task_struct *get_current(void)
 	return (struct task_struct *)sp_el0;
 }
 
+/**
+ *  sp 寄存器
+ */
 #define current get_current()
 
 #endif /* __ASSEMBLY__ */
