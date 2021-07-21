@@ -110,6 +110,13 @@ struct clone_args {
 
 /*
  * Scheduling policies
+ *
+ * SCHED_DEADLINE：使task选择Deadline调度器来调度运行
+ * SCHED_RR：时间片轮转，进程用完时间片后加入优先级对应运行队列的尾部，把CPU让给同优先级的其他进程；
+ * SCHED_FIFO：先进先出调度没有时间片，没有更高优先级的情况下，只能等待主动让出CPU；
+ * SCHED_NORMAL：使task选择CFS调度器来调度运行；
+ * SCHED_BATCH：批量处理，使task选择CFS调度器来调度运行；
+ * SCHED_IDLE：使task以最低优先级选择CFS调度器来调度运行；
  */
 #define SCHED_NORMAL		0
 #define SCHED_FIFO		1

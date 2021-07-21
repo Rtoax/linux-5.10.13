@@ -34,6 +34,8 @@
  *  run vmstat and monitor the context-switches (cs) field)
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
+ *
+ * 当进程数目小于(sched_nr_latency)8时，则调度周期等于6ms(sysctl_sched_latency)
  */
 unsigned int sysctl_sched_latency			= 6000000ULL;   /* 6ms */
 static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
@@ -55,12 +57,16 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
  * Minimal preemption granularity for CPU-bound tasks:
  *
  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
+ *
+ * 调度周期，使进程至少保证执行0.75ms。
  */
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
 
 /*
  * This value is kept at sysctl_sched_latency/sysctl_sched_min_granularity
+ *
+ * 当进程数目小于(sched_nr_latency)8时，则调度周期等于6ms(sysctl_sched_latency)
  */
 static unsigned int sched_nr_latency = 8;
 
@@ -472,6 +478,9 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 	return min_vruntime;
 }
 
+/**
+ *  CFS 红黑树使用 虚拟运行时间 排序
+ */
 static inline int entity_before(struct sched_entity *a,
 				struct sched_entity *b)
 {
@@ -512,6 +521,13 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 /*
  * Enqueue an entity into the rb-tree:
+ *
+ * 步骤：
+ * --------------------
+ * 1. 从红黑树中找到 se 所应该在的位置
+ * 2. 以 se->vruntime 值为键值进行红黑树结点的比较
+ * 3. 将新进程的节点加入到红黑树中
+ * 4. 为新插入的结点进行着色
  */
 static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 插入红黑树 */
 {
@@ -522,6 +538,8 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 
 	/*
 	 * Find the right place in the rbtree:
+	 *
+	 * vruntime少的调度实体sched_entity排列到红黑树的左边。
 	 */
 	while (*link) {
 		parent = *link;
@@ -538,9 +556,13 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 		}
 	}
 
+    /**
+     *  
+     * 3. 将新进程的节点加入到红黑树中
+     * 4. 为新插入的结点进行着色
+     */
 	rb_link_node(&se->run_node, parent, link);  /* 插入红黑树 */
-	rb_insert_color_cached(&se->run_node,
-			       &cfs_rq->tasks_timeline, leftmost);
+	rb_insert_color_cached(&se->run_node, &cfs_rq->tasks_timeline, leftmost);
 }
 
 static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 从红黑树中删除 */
@@ -624,12 +646,26 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
  * this period because otherwise the slices get too small.
  *
  * p = (nr <= nl) ? l : l*nr/nl
+ *
+ * 调度周期
+ * ==================
+ * 如果一个 CPU 上有 N 个优先级相同的进程，那么每个进程会得到 1/N 的执行机会，
+ * 每个进程执行一段时间后，就被调出，换下一个进程执行。如果这个 N 的数量太大，
+ * 导致每个进程执行的时间很短，就要调度出去，那么系统的资源就消耗在进程上下文切换上去了。
+ *
+ * 所以对于此问题在 CFS 中则引入了调度周期，使进程至少保证执行0.75ms。
  */
 static u64 __sched_period(unsigned long nr_running)
 {
+    /**
+     *  当进程数目大于8时，则调度周期等于进程的数目乘以0.75ms
+     */
 	if (unlikely(nr_running > sched_nr_latency))
-		return nr_running * sysctl_sched_min_granularity;
+		return nr_running * sysctl_sched_min_granularity/*0.75ms*/;
 	else
+        /**
+         * 当进程数目小于(sched_nr_latency)8时，则调度周期等于6ms(sysctl_sched_latency)
+         */
 		return sysctl_sched_latency;
 }
 
@@ -771,6 +807,16 @@ void post_init_entity_util_avg(struct task_struct *p)
 
 /*
  * Update the current task's runtime statistics.
+ *
+ * update_curr 函数用来更新当前进程的运行时间信息:
+ *
+ * 步骤:
+ *
+ * 1. delta_exec = now - curr->exec_start;  计算出当前CFS运行队列的进程，距离上次更新虚拟时间的差值
+ * 2. curr->exec_start = now;  更新exec_start的值
+ * 3. curr->sum_exec_runtime += delta_exec; 更新当前进程总共执行的时间
+ * 4. 通过 calc_delta_fair 计算当前进程虚拟时间
+ * 5. 通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
  */
 static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 {
@@ -781,20 +827,35 @@ static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 	if (unlikely(!curr))
 		return;
 
+    /**
+     *  计算出当前CFS运行队列的进程，距离上次更新虚拟时间的差值
+     */
 	delta_exec = now - curr->exec_start;
 	if (unlikely((s64)delta_exec <= 0))
 		return;
 
+    /**
+     *  更新exec_start的值
+     */
 	curr->exec_start = now;
 
-	schedstat_set(curr->statistics.exec_max,
-		      max(delta_exec, curr->statistics.exec_max));
+	schedstat_set(curr->statistics.exec_max, max(delta_exec, curr->statistics.exec_max));
 
+    /**
+     *  更新当前进程总共执行的时间
+     */
 	curr->sum_exec_runtime += delta_exec;
 	schedstat_add(cfs_rq->exec_clock, delta_exec);
 
+    /**
+     *  计算当前进程虚拟时间
+     */
 	curr->vruntime += calc_delta_fair(delta_exec, curr);    /* 计算虚拟时间增量 */
-	update_min_vruntime(cfs_rq);
+
+    /**
+     *  通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
+     */
+    update_min_vruntime(cfs_rq);
 
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
@@ -4069,6 +4130,9 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	if (renorm && curr)
 		se->vruntime += cfs_rq->min_vruntime;
 
+    /**
+     *  
+     */
 	update_curr(cfs_rq);
 
 	/*
@@ -4097,8 +4161,16 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 		place_entity(cfs_rq, se, 0);
 
 	check_schedstat_required();
+
+    /**
+     *  
+     */
 	update_stats_enqueue(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
+
+    /**
+     *  不在 调度队列中
+     */
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);   /*  */
 	se->on_rq = 1;
@@ -4227,6 +4299,10 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	ideal_runtime = sched_slice(cfs_rq, curr);
 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
 	if (delta_exec > ideal_runtime) {
+
+        /**
+         *  
+         */
 		resched_curr(rq_of(cfs_rq));
 		/*
 		 * The current task ran long enough, ensure it doesn't get
@@ -4254,6 +4330,10 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 		resched_curr(rq_of(cfs_rq));
 }
 
+/**
+ *  set_next_entity 会调用 __dequeue_entity 将下一个选择的进程从 CFS 队列的红黑树中删除，
+ *  然后将 CFS 队列的 curr 指向进程的调度实体。
+ */
 static void
 set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -4277,11 +4357,11 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	 * least twice that of our own weight (i.e. dont track it
 	 * when there are only lesser-weight tasks around):
 	 */
-	if (schedstat_enabled() &&
-	    rq_of(cfs_rq)->cfs.load.weight >= 2*se->load.weight) {
+	if (schedstat_enabled() && rq_of(cfs_rq)->cfs.load.weight >= 2*se->load.weight) {
+        
 		schedstat_set(se->statistics.slice_max,
-			max((u64)schedstat_val(se->statistics.slice_max),
-			    se->sum_exec_runtime - se->prev_sum_exec_runtime));
+            			max((u64)schedstat_val(se->statistics.slice_max),
+            			    se->sum_exec_runtime - se->prev_sum_exec_runtime));
 	}
 
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
@@ -4296,10 +4376,16 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
  * 2) pick the "next" process, since someone really wants that to run
  * 3) pick the "last" process, for cache locality
  * 4) do not run the "skip" process, if something else is available
+ *
+ *  pick_next_entity 函数会从就绪队列中选择最适合运行的调度实体（虚拟时间最小的调度实体），
+ *  即从 CFS 红黑树最左边节点获取一个调度实体。
  */
 static struct sched_entity *
 pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 {
+    /**
+     *  从树中挑选出最左边的节点
+     */
 	struct sched_entity *left = __pick_first_entity(cfs_rq);
 	struct sched_entity *se;
 
@@ -4320,8 +4406,14 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 		struct sched_entity *second;
 
 		if (se == curr) {
+            /**
+             *  选择最左的那个调度实体 left
+             */
 			second = __pick_first_entity(cfs_rq);
 		} else {
+		    /**
+             *  摘取红黑树上第二左的进程节点
+             */
 			second = __pick_next_entity(se);
 			if (!second || (curr && entity_before(curr, second)))
 				second = curr;
@@ -4350,6 +4442,10 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq);
 
+/**
+ *  put_prev_entity 会调用 __enqueue_entity 将prev进程(即current进程)加入到 CFS 队列 rq 上的红黑树，
+ *  然后将 cfs_rq->curr 设置为空。
+ */
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
 	/*
@@ -4366,7 +4462,10 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 
 	if (prev->on_rq) {
 		update_stats_wait_start(cfs_rq, prev);
-		/* Put 'current' back into the tree. */
+		/**
+		 *  Put 'current' back into the tree. 
+		 *  将prev进程(即current进程)加入到 CFS 队列 rq 上的红黑树
+		 */
 		__enqueue_entity(cfs_rq, prev);
 		/* in !on_rq case, update occurred at dequeue */
 		update_load_avg(cfs_rq, prev, 0);
@@ -4374,6 +4473,10 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	cfs_rq->curr = NULL;
 }
 
+
+/**
+ *  
+ */
 static void
 entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 {
@@ -6766,7 +6869,12 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 		return;
 
 	find_matching_se(&se, &pse);
+
+    /**
+     *  
+     */
 	update_curr(cfs_rq_of(se));
+    
 	BUG_ON(!pse);
 	if (wakeup_preempt_entity(se, pse) == 1) {
 		/*
@@ -10457,14 +10565,26 @@ static void rq_offline_fair(struct rq *rq)
  * goes along full dynticks. Therefore no local assumption can be made
  * and everything must be accessed through the @rq and @curr passed in
  * parameters.
+ *
+ * 公平调度器如何处理时钟中断的
  */
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &curr->se;
 
+    /**
+     *  遍历所有调度实体
+     */
 	for_each_sched_entity(se) {
+	    /**
+         *  获取运行队列
+         */
 		cfs_rq = cfs_rq_of(se);
+
+        /**
+         *  
+         */
 		entity_tick(cfs_rq, se, queued);
 	}
 

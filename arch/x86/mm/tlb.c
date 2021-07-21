@@ -145,6 +145,9 @@ static inline u16 user_pcid(u16 asid)
 	return ret;
 }
 
+/**
+ *  
+ */
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
 	if (static_cpu_has(X86_FEATURE_PCID)) {
@@ -265,6 +268,9 @@ static inline void invalidate_user_asid(u16 asid)
 		  (unsigned long *)this_cpu_ptr(&cpu_tlbstate.user_pcid_flush_mask));
 }
 
+/**
+ *  更新 CR3 寄存器
+ */
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 {
 	unsigned long new_mm_cr3;
@@ -420,12 +426,22 @@ void cr4_update_pce(void *ignored)
 /**/
 #endif
 
+/**
+ *  
+ */
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
 {
+    /**
+     *  
+     */
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
 	u16 prev_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
 	bool was_lazy = this_cpu_read(cpu_tlbstate.is_lazy);
+
+    /**
+     *  
+     */
 	unsigned cpu = smp_processor_id();
 	u64 next_tlb_gen;
 	bool need_flush;
@@ -512,9 +528,9 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 * the TLB shootdown code.
 		 */
 		smp_mb();
+        
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
-		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) ==
-				next_tlb_gen)
+		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) == next_tlb_gen)
 			return;
 
 		/*
@@ -523,6 +539,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 */
 		new_asid = prev_asid;
 		need_flush = true;
+        
 	} else {
 		/*
 		 * Avoid user/user BTB poisoning by flushing the branch
@@ -547,22 +564,32 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 */
 		if (next != &init_mm)
 			cpumask_set_cpu(cpu, mm_cpumask(next));
+        
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 
 		choose_new_asid(next, next_tlb_gen, &new_asid, &need_flush);
 
 		/* Let nmi_uaccess_okay() know that we're changing CR3. */
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
+
+        /**
+         *  
+         */
 		barrier();
 	}
 
 	if (need_flush) {
 		this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
 		this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen, next_tlb_gen);
+
+        /**
+         *  更新 cr3
+         */
 		load_new_mm_cr3(next->pgd, new_asid, true);
 
 		trace_tlb_flush(TLB_FLUSH_ON_TASK_SWITCH, TLB_FLUSH_ALL);
 	} else {
+        
 		/* The new ASID is already up to date. */
 		load_new_mm_cr3(next->pgd, new_asid, false);
 
@@ -575,8 +602,15 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	this_cpu_write(cpu_tlbstate.loaded_mm, next);
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, new_asid);
 
+    /**
+     *  
+     */
 	if (next != real_prev) {
 		cr4_update_pce_mm(next);
+
+        /**
+         *  
+         */
 		switch_ldt(real_prev, next);
 	}
 }

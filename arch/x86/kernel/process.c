@@ -604,6 +604,9 @@ static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 	}
 }
 
+/**
+ *  
+ */
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
 	unsigned long tifp, tifn;

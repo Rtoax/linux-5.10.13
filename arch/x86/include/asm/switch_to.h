@@ -45,7 +45,9 @@ struct fork_frame { /*  */
 };
 
 /**
- *  
+ *  在 context_switch() 中被调用，调用方式为
+ *
+ *  switch_to(prev, next, prev);
  */
 #define switch_to(prev, next, last)					\
 do {									\
@@ -69,10 +71,10 @@ static inline void update_task_stack(struct task_struct *task)
 {
 	/* sp0 always points to the entry trampoline stack, which is constant: */
 #ifdef CONFIG_X86_32
-	if (static_cpu_has(X86_FEATURE_XENPV))
-		load_sp0(task->thread.sp0);
-	else
-		this_cpu_write(cpu_tss_rw.x86_tss.sp1, task->thread.sp0);
+//	if (static_cpu_has(X86_FEATURE_XENPV))
+//		load_sp0(task->thread.sp0);
+//	else
+//		this_cpu_write(cpu_tss_rw.x86_tss.sp1, task->thread.sp0);
 #else
 	/*
 	 * x86-64 updates x86_tss.sp1 via cpu_current_top_of_stack. That

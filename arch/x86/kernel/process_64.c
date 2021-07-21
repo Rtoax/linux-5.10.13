@@ -633,8 +633,14 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 */
 	update_task_stack(next_p);
 
+    /**
+     *  
+     */
 	switch_to_extra(prev_p, next_p);
 
+    /**
+     *  
+     */
 	if (static_cpu_has_bug(X86_BUG_SYSRET_SS_ATTRS)) {
 		/*
 		 * AMD CPUs have a misfeature: SYSRET sets the SS selector but

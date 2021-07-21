@@ -243,6 +243,21 @@ dl_entity_preempt(struct sched_dl_entity *a, struct sched_dl_entity *b)
  */
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1); /* include 1 bit for delimiter */
+
+    /**
+     *  100 个优先级队列(0-99)
+     *
+     *  
+     *                  SCHED_FIFO                        SCHED_NORMAL
+     *                  SCHED_RR                          SCHED_BATCH
+     *                                                    SCHED_IDLE
+     *  +-------------------------------------------+---------------------+
+     *  |                  0 - 99                   |       100 - 139     |
+     *  |                                           |  nice(-20 ~ 19)     |
+     *  +-------------------------------------------+---------------------+
+     *  
+     *  
+     */
 	struct list_head queue[MAX_RT_PRIO];
 };
 
@@ -531,6 +546,9 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 	u64			min_vruntime_copy;
 #endif
 
+    /**
+     *  对应 sched_entity.run_node
+     */
 	struct rb_root_cached	tasks_timeline; /* 红黑树 */
 
 	/*
@@ -618,13 +636,21 @@ static inline int rt_bandwidth_enabled(void)
 # define HAVE_RT_PUSH_IPI
 #endif
 
-/* Real-Time classes' related field in a runqueue: 
-`SCHED_FIFO` and `SCHED_RR`
+/**
+ *  Real-Time classes' related field in a runqueue: 
+ *  `SCHED_FIFO`
+ *  `SCHED_RR`
 */
 struct rt_rq {  /* 实时运行队列 */
+
+    /**
+     *  优先级队列
+     */
 	struct rt_prio_array	active;
+    
 	unsigned int		rt_nr_running;
 	unsigned int		rr_nr_running;
+    
 #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
 	struct {
 		int		curr; /* highest queued rt task prio */
@@ -633,6 +659,7 @@ struct rt_rq {  /* 实时运行队列 */
 #endif
 	} highest_prio;
 #endif
+
 #ifdef CONFIG_SMP
 	unsigned long		rt_nr_migratory;
 	unsigned long		rt_nr_total;
@@ -661,9 +688,16 @@ static inline bool rt_rq_is_runnable(struct rt_rq *rt_rq)
 	return rt_rq->rt_queued && rt_rq->rt_nr_running;
 }
 
-/* Deadline class' related fields in a runqueue */
+/**
+ *  Deadline class' related fields in a runqueue 
+ */
 struct dl_rq {  /* deadline 运行队列 */
-	/* runqueue is an rbtree, ordered by deadline */
+
+	/**
+	 *  runqueue is an rbtree, ordered by deadline 
+	 *
+	 *  节点 sched_dl_entity.rb_node
+	 */
 	struct rb_root_cached	root;
 
 	unsigned long		dl_nr_running;
@@ -737,14 +771,14 @@ static inline long se_runnable(struct sched_entity *se)
 }
 
 #else
-#define entity_is_task(se)	1
-
-static inline void se_update_runnable(struct sched_entity *se) {}
-
-static inline long se_runnable(struct sched_entity *se)
-{
-	return !!se->on_rq;
-}
+//#define entity_is_task(se)	1
+//
+//static inline void se_update_runnable(struct sched_entity *se) {}
+//
+//static inline long se_runnable(struct sched_entity *se)
+//{
+//	return !!se->on_rq;
+//}
 #endif
 
 #ifdef CONFIG_SMP
@@ -896,7 +930,9 @@ DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
  * Locking rule: those places that want to lock multiple runqueues
  * (such as the load balancing or the thread migration code), lock
  * acquire operations must be ordered by ascending &runqueue.
- *//* 决定下一个该运行的进程 */
+ *
+ * 每个CPU一个运行队列，决定下一个该运行的进程
+ */
 struct rq { /* runqueue 运行队列 */
 	/* runqueue lock: */
 	raw_spinlock_t		lock;   /*  */
@@ -906,11 +942,13 @@ struct rq { /* runqueue 运行队列 */
 	 * remote CPUs use both these fields when doing load calculation.
 	 */
 	unsigned int		nr_running; /* 进程数 */
+
 #ifdef CONFIG_NUMA_BALANCING
 	unsigned int		nr_numa_running;
 	unsigned int		nr_preferred_running;
 	unsigned int		numa_migrate_on;
 #endif
+
 #ifdef CONFIG_NO_HZ_COMMON
 #ifdef CONFIG_SMP
 	unsigned long		last_blocked_load_update_tick;
@@ -924,6 +962,7 @@ struct rq { /* runqueue 运行队列 */
 #ifdef CONFIG_SMP
 	unsigned int		ttwu_pending;
 #endif
+
 	u64			nr_switches;    /*  */
 
 #ifdef CONFIG_UCLAMP_TASK   /* 任务利用率管制 */
@@ -933,6 +972,9 @@ struct rq { /* runqueue 运行队列 */
 #define UCLAMP_FLAG_IDLE 0x01
 #endif
 
+    /**
+     *  三种调度类型的 队列
+     */
 	struct cfs_rq		cfs;    /*  */
 	struct rt_rq		rt;     /*  */
 	struct dl_rq		dl;     /*  */
@@ -1065,10 +1107,10 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 
 #else
 
-static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
-{
-	return container_of(cfs_rq, struct rq, cfs);
-}
+//static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+//{
+//	return container_of(cfs_rq, struct rq, cfs);
+//}
 #endif
 
 static inline int cpu_of(struct rq *rq)
@@ -1076,7 +1118,7 @@ static inline int cpu_of(struct rq *rq)
 #ifdef CONFIG_SMP
 	return rq->cpu;
 #else
-	return 0;
+//	return 0;
 #endif
 }
 
@@ -1517,21 +1559,13 @@ void register_sched_domain_sysctl(void);
 void dirty_sched_domain_sysctl(int cpu);
 void unregister_sched_domain_sysctl(void);
 #else
-static inline void register_sched_domain_sysctl(void)
-{
-}
-static inline void dirty_sched_domain_sysctl(int cpu)
-{
-}
-static inline void unregister_sched_domain_sysctl(void)
-{
-}
+/*  */
 #endif
 
 extern void flush_smp_call_function_from_idle(void);
 
 #else /* !CONFIG_SMP: */
-static inline void flush_smp_call_function_from_idle(void) { }
+/*  */
 #endif
 
 #include "stats.h"
@@ -1599,7 +1633,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	WRITE_ONCE(p->cpu, cpu);
 #else
-	WRITE_ONCE(task_thread_info(p)->cpu, cpu);
+//	WRITE_ONCE(task_thread_info(p)->cpu, cpu);
 #endif
 	p->wake_cpu = cpu;
 #endif
@@ -1648,7 +1682,7 @@ extern struct static_key sched_feat_keys[__SCHED_FEAT_NR];
 
 #else /* !CONFIG_JUMP_LABEL */
 
-#define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
+//#define sched_feat(x) (sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
 #endif /* CONFIG_JUMP_LABEL */
 
@@ -1700,7 +1734,7 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
 #ifdef CONFIG_SMP
 	return p->on_cpu;
 #else
-	return task_current(rq, p);
+//	return task_current(rq, p);
 #endif
 }
 
@@ -1771,7 +1805,7 @@ extern const u32		sched_prio_to_wmult[40];
 #ifdef CONFIG_SMP
 #define ENQUEUE_MIGRATED	0x40
 #else
-#define ENQUEUE_MIGRATED	0x00
+//#define ENQUEUE_MIGRATED	0x00
 #endif
 
 #define RETRY_TASK		((void *)-1UL)
@@ -1787,9 +1821,15 @@ struct sched_class {    /* 调度类 *//*  */
 	void (*yield_task)   (struct rq *rq);
 	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
 
+    /**
+     *  check_preempt_curr_idle()
+     *  check_preempt_wakeup()
+     *  check_preempt_curr_dl()
+     *  check_preempt_curr_stop()
+     */
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 
-	struct task_struct *(*pick_next_task)(struct rq *rq);
+	p_task_struct (*pick_next_task)(struct rq *rq);
 
 	void (*put_prev_task)(struct rq *rq, struct task_struct *p);
 	void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first);
@@ -1808,6 +1848,12 @@ struct sched_class {    /* 调度类 *//*  */
 	void (*rq_offline)(struct rq *rq);
 #endif
 
+    /**
+     *  task_tick_idle()
+     *  task_tick_fair()
+     *  task_tick_dl()
+     *  task_tick_stop()
+     */
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
 	void (*task_fork)(struct task_struct *p);
 	void (*task_dead)(struct task_struct *p);
@@ -1927,15 +1973,15 @@ static inline struct cpuidle_state *idle_get_state(struct rq *rq)
 	return rq->idle_state;
 }
 #else
-static inline void idle_set_state(struct rq *rq,
-				  struct cpuidle_state *idle_state)
-{
-}
-
-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-{
-	return NULL;
-}
+//static inline void idle_set_state(struct rq *rq,
+//				  struct cpuidle_state *idle_state)
+//{
+//}
+//
+//static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+//{
+//	return NULL;
+//}
 #endif
 
 extern void schedule_idle(void);
@@ -2231,37 +2277,37 @@ extern void set_rq_offline(struct rq *rq);
 extern bool sched_smp_initialized;
 
 #else /* CONFIG_SMP */
-
-/*
- * double_rq_lock - safely lock two runqueues
- *
- * Note this does not disable interrupts like task_rq_lock,
- * you need to do so manually before calling.
- */
-static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
-	__acquires(rq1->lock)
-	__acquires(rq2->lock)
-{
-	BUG_ON(!irqs_disabled());
-	BUG_ON(rq1 != rq2);
-	raw_spin_lock(&rq1->lock);
-	__acquire(rq2->lock);	/* Fake it out ;) */
-}
-
-/*
- * double_rq_unlock - safely unlock two runqueues
- *
- * Note this does not restore interrupts like task_rq_unlock,
- * you need to do so manually after calling.
- */
-static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
-	__releases(rq1->lock)
-	__releases(rq2->lock)
-{
-	BUG_ON(rq1 != rq2);
-	raw_spin_unlock(&rq1->lock);
-	__release(rq2->lock);
-}
+//
+///*
+// * double_rq_lock - safely lock two runqueues
+// *
+// * Note this does not disable interrupts like task_rq_lock,
+// * you need to do so manually before calling.
+// */
+//static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
+//	__acquires(rq1->lock)
+//	__acquires(rq2->lock)
+//{
+//	BUG_ON(!irqs_disabled());
+//	BUG_ON(rq1 != rq2);
+//	raw_spin_lock(&rq1->lock);
+//	__acquire(rq2->lock);	/* Fake it out ;) */
+//}
+//
+///*
+// * double_rq_unlock - safely unlock two runqueues
+// *
+// * Note this does not restore interrupts like task_rq_unlock,
+// * you need to do so manually after calling.
+// */
+//static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
+//	__releases(rq1->lock)
+//	__releases(rq2->lock)
+//{
+//	BUG_ON(rq1 != rq2);
+//	raw_spin_unlock(&rq1->lock);
+//	__release(rq2->lock);
+//}
 
 #endif
 
@@ -2306,7 +2352,7 @@ extern void cfs_bandwidth_usage_dec(void);
 
 extern void nohz_balance_exit_idle(struct rq *rq);
 #else
-static inline void nohz_balance_exit_idle(struct rq *rq) { }
+//static inline void nohz_balance_exit_idle(struct rq *rq) { }
 #endif
 
 
@@ -2326,13 +2372,13 @@ void __dl_update(struct dl_bw *dl_b, s64 bw)
 	}
 }
 #else
-static inline
-void __dl_update(struct dl_bw *dl_b, s64 bw)
-{
-	struct dl_rq *dl = container_of(dl_b, struct dl_rq, dl_bw);
-
-	dl->extra_bw += bw;
-}
+//static inline
+//void __dl_update(struct dl_bw *dl_b, s64 bw)
+//{
+//	struct dl_rq *dl = container_of(dl_b, struct dl_rq, dl_bw);
+//
+//	dl->extra_bw += bw;
+//}
 #endif
 
 
@@ -2401,7 +2447,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags)
 		data->func(data, rq_clock(rq), flags);
 }
 #else
-static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+//static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #endif /* CONFIG_CPU_FREQ */
 
 #ifdef CONFIG_UCLAMP_TASK
@@ -2542,12 +2588,12 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
 	return READ_ONCE(rq->avg_rt.util_avg);
 }
 #else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
-static inline unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
-				 unsigned long max, enum schedutil_type type,
-				 struct task_struct *p)
-{
-	return 0;
-}
+//static inline unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+//				 unsigned long max, enum schedutil_type type,
+//				 struct task_struct *p)
+//{
+//	return 0;
+//}
 #endif /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
 
 #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
@@ -2566,16 +2612,16 @@ unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned
 
 }
 #else
-static inline unsigned long cpu_util_irq(struct rq *rq)
-{
-	return 0;
-}
-
-static inline
-unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned long max)
-{
-	return util;
-}
+//static inline unsigned long cpu_util_irq(struct rq *rq)
+//{
+//	return 0;
+//}
+//
+//static inline
+//unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned long max)
+//{
+//	return util;
+//}
 #endif
 
 #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
@@ -2591,8 +2637,8 @@ static inline bool sched_energy_enabled(void)
 
 #else /* ! (CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL) */
 
-#define perf_domain_span(pd) NULL
-static inline bool sched_energy_enabled(void) { return false; }
+//#define perf_domain_span(pd) NULL
+//static inline bool sched_energy_enabled(void) { return false; }
 
 #endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
 
@@ -2604,8 +2650,8 @@ static inline bool sched_energy_enabled(void) { return false; }
  * In the same way it provides those guarantees around store to rq->curr.
  */
 static inline void membarrier_switch_mm(struct rq *rq,
-					struct mm_struct *prev_mm,
-					struct mm_struct *next_mm)
+                        					struct mm_struct *prev_mm,
+                        					struct mm_struct *next_mm)
 {
 	int membarrier_state;
 
@@ -2619,11 +2665,11 @@ static inline void membarrier_switch_mm(struct rq *rq,
 	WRITE_ONCE(rq->membarrier_state, membarrier_state);
 }
 #else
-static inline void membarrier_switch_mm(struct rq *rq,
-					struct mm_struct *prev_mm,
-					struct mm_struct *next_mm)
-{
-}
+//static inline void membarrier_switch_mm(struct rq *rq,
+//					struct mm_struct *prev_mm,
+//					struct mm_struct *next_mm)
+//{
+//}
 #endif
 
 #ifdef CONFIG_SMP

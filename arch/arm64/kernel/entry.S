@@ -663,6 +663,9 @@ SYM_CODE_END(el1_irq)
 /*
  * EL0 mode handlers.
  */
+/**
+ *  异常处理 或 系统调用 el0_sync
+ */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el0_sync)
 	kernel_entry 0
@@ -692,6 +695,9 @@ SYM_CODE_START_LOCAL_NOALIGN(el0_error_compat)
 SYM_CODE_END(el0_error_compat)
 #endif
 
+/**
+ *  中断处理 el0_irq
+ */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el0_irq)
 	kernel_entry 0

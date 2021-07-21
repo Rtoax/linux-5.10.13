@@ -19,6 +19,10 @@ extern struct task_struct *__switch_to(struct task_struct *prev, struct task_str
 
 /**
  *  进程切换
+ *
+ *  在 context_switch() 中被调用，调用方式为
+ *
+ *  switch_to(prev, next, prev);
  */
 #define switch_to(prev, next, last)					\
 	do {								\

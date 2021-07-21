@@ -39,6 +39,9 @@ static inline void *ldt_slot_va(int slot)
 	return (void *)(LDT_BASE_ADDR + LDT_SLOT_STRIDE * slot);
 }
 
+/**
+ *  
+ */
 void load_mm_ldt(struct mm_struct *mm)
 {
 	struct ldt_struct *ldt;
@@ -87,6 +90,9 @@ void load_mm_ldt(struct mm_struct *mm)
 	}
 }
 
+/**
+ *  加载 LDT - 如果 perv 和 next 任意一方有 ldt，那就加载
+ */
 void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
 {
 	/*
@@ -106,8 +112,7 @@ void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
 	 *
 	 * This uses | instead of || because it generates better code.
 	 */
-	if (unlikely((unsigned long)prev->context.ldt |
-		     (unsigned long)next->context.ldt))
+	if (unlikely((unsigned long)prev->context.ldt | (unsigned long)next->context.ldt))
 		load_mm_ldt(next);
 
 	DEBUG_LOCKS_WARN_ON(preemptible());

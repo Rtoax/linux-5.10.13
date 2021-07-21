@@ -20,10 +20,27 @@
  */
 
 #define MAX_USER_RT_PRIO	100
+
+/**
+ *  100 个优先级队列，对应实时进程优先级
+ */
 #define MAX_RT_PRIO	/* 100 */	MAX_USER_RT_PRIO/* 100 */
 
 #define MAX_PRIO /* 140 */		(MAX_RT_PRIO/* 100 */ + NICE_WIDTH/* 40 */)
 #define DEFAULT_PRIO /* 120 */		(MAX_RT_PRIO/* 100 */ + NICE_WIDTH/* 40 */ / 2)
+
+/**
+ *  
+ *                  SCHED_FIFO                        SCHED_NORMAL
+ *                  SCHED_RR                          SCHED_BATCH
+ *                                                    SCHED_IDLE
+ *  +-------------------------------------------+---------------------+
+ *  |                  0 - 99                   |       100 - 139     |
+ *  |                                           |  nice(-20 ~ 19)     |
+ *  +-------------------------------------------+---------------------+
+ *  
+ *  
+ */
 
 /*
  * Convert user-nice values [ -20 ... 0 ... 19 ]

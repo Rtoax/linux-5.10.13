@@ -453,15 +453,35 @@ struct sched_statistics {   /* 调度统计 */
 #endif
 };
 
+/**
+ *  采用CFS算法调度的普通非实时进程的调度实体
+ */
 struct sched_entity {   /* 调度实体 */
 	/* For load-balancing: */
 	struct load_weight		load;       /*  */
+
+    /**
+     *  cfs_rq.tasks_timeline
+     */
 	struct rb_node			run_node;   /*  */
 	struct list_head		group_node; /*  */
 	unsigned int			on_rq;      /*  */
 
 	u64				exec_start;         /*  */
 	u64				sum_exec_runtime;   /*  */
+
+    /**
+     *  虚拟运行时间
+     *
+     *  权重不同的2个进程的实际执行时间是不相等的，但是 CFS 想保证每个进程运行时间相等，
+     *  因此 CFS 引入了虚拟时间的概念。虚拟时间(vriture_runtime)和实际时间(wall_time)转换公式如下：
+     *
+     *  vriture_runtime = (wall_time * NICE0_TO_weight) / weight
+     *
+     *  NICE0_TO_weight 代表的是 nice 值等于0对应的权重，即1024，weight 是该任务对应的权重。
+     *  权重越大的进程获得的虚拟运行时间越小，那么它将被调度器所调度的机会就越大，
+     *  所以，CFS 每次调度原则是：总是选择 vriture_runtime 最小的任务来调度。
+     */
 	u64				vruntime;           /* 虚拟时间 */
 	u64				prev_sum_exec_runtime;  /*  */
 
@@ -492,8 +512,16 @@ struct sched_entity {   /* 调度实体 */
 #endif
 };
 
+/**
+ *  采用Roound-Robin或者FIFO算法调度的实时调度实体。
+ */
 struct sched_rt_entity {
+
+    /**
+     *  链表头 rt_rq.active.queue[MAX_RT_PRIO] 
+     */
 	struct list_head		run_list;
+    
 	unsigned long			timeout;
 	unsigned long			watchdog_stamp;
 	unsigned int			time_slice;
@@ -501,6 +529,7 @@ struct sched_rt_entity {
 	unsigned short			on_list;
 
 	struct sched_rt_entity		*back;
+    
 #ifdef CONFIG_RT_GROUP_SCHED
 	struct sched_rt_entity		*parent;
 	/* rq on which this entity is (to be) queued: */
@@ -510,7 +539,14 @@ struct sched_rt_entity {
 #endif
 } __randomize_layout;
 
+/**
+ *  采用EDF算法调度的实时调度实体
+ */
 struct sched_dl_entity {
+
+    /**
+     *  树根为 dl_rq.root
+     */
 	struct rb_node			rb_node;
 
 	/*
@@ -792,8 +828,16 @@ struct task_struct {    /* PCB */
 	struct rb_node			pushable_dl_tasks;  /* deadline 任务 */
 #endif
 
-	struct mm_struct		*mm;        /* `mm` 指向进程地址空间 */
-	struct mm_struct		*active_mm; /* `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间 */
+    /**
+     *  `mm` 指向进程地址空间
+     */
+	struct mm_struct		*mm;        /*  */
+
+    /**
+     *  `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间
+     *  见 context_switch()
+     */
+	struct mm_struct		*active_mm; /*  */
 
 	/* Per-thread vma caching: */
 	struct vmacache			vmacache;   /* vma 缓存 */
@@ -1418,6 +1462,7 @@ struct task_struct {    /* PCB */
 	 * Do not put anything below here!
 	 */
 };
+typedef struct task_struct * p_task_struct;
 
 static inline struct pid *task_pid(struct task_struct *task)
 {
@@ -1880,6 +1925,9 @@ static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 	return test_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
+/**
+ *  设置 需要调度标志位
+ */
 static inline void set_tsk_need_resched(struct task_struct *tsk)
 {
 	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
