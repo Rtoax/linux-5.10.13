@@ -542,6 +542,9 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) /* TODO */
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp_mask & __GFP_THISNODE) && !node_online(nid));
 
+    /**
+     *  分配物理页
+     */
 	return __alloc_pages(gfp_mask, order, nid);
 }
 
@@ -550,12 +553,14 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) /* TODO */
  * prefer the current CPU's closest node. Otherwise node must be valid and
  * online.
  */
-static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
-						unsigned int order)
+static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 {
 	if (nid == NUMA_NO_NODE)
 		nid = numa_mem_id();
 
+    /**
+     *  内部分配函数
+     */
 	return __alloc_pages_node(nid, gfp_mask, order);
 }
 

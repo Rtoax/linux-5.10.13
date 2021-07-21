@@ -46,9 +46,9 @@ struct rt_mutex_waiter;
 struct hrtimer_sleeper;
 
 #ifdef CONFIG_DEBUG_RT_MUTEXES
- extern int rt_mutex_debug_check_no_locks_freed(const void *from,
-						unsigned long len);
- extern void rt_mutex_debug_check_no_locks_held(struct task_struct *task);
+// extern int rt_mutex_debug_check_no_locks_freed(const void *from,
+//						unsigned long len);
+// extern void rt_mutex_debug_check_no_locks_held(struct task_struct *task);
 #else
  static inline int rt_mutex_debug_check_no_locks_freed(const void *from,
 						       unsigned long len)
@@ -59,16 +59,16 @@ struct hrtimer_sleeper;
 #endif
 
 #ifdef CONFIG_DEBUG_RT_MUTEXES
-# define __DEBUG_RT_MUTEX_INITIALIZER(mutexname) \
-	, .name = #mutexname, .file = __FILE__, .line = __LINE__
-
-# define rt_mutex_init(mutex) \
-do { \
-	static struct lock_class_key __key; \
-	__rt_mutex_init(mutex, __func__, &__key); \
-} while (0)
-
- extern void rt_mutex_debug_task_free(struct task_struct *tsk);
+//# define __DEBUG_RT_MUTEX_INITIALIZER(mutexname) \
+//	, .name = #mutexname, .file = __FILE__, .line = __LINE__
+//
+//# define rt_mutex_init(mutex) \
+//do { \
+//	static struct lock_class_key __key; \
+//	__rt_mutex_init(mutex, __func__, &__key); \
+//} while (0)
+//
+// extern void rt_mutex_debug_task_free(struct task_struct *tsk);
 #else
 # define __DEBUG_RT_MUTEX_INITIALIZER(mutexname)
 # define rt_mutex_init(mutex)			__rt_mutex_init(mutex, NULL, NULL)

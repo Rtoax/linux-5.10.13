@@ -1538,11 +1538,17 @@ static void __init init_uclamp(void)
 /*  */
 #endif /* CONFIG_UCLAMP_TASK */
 
+/**
+ *  加入
+ */
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /* 入队 */
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
+    /**
+     *  
+     */
 	if (!(flags & ENQUEUE_RESTORE)) {
 		sched_info_queued(rq, p);
 		psi_enqueue(p, flags & ENQUEUE_WAKEUP);
@@ -1551,14 +1557,17 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	uclamp_rq_inc(rq, p);
 
     /* 
-    fair_sched_class.enqueue_task   = enqueue_task_fair
-    rt_sched_class.enqueue_task     = enqueue_task_rt
-    dl_sched_class.enqueue_task     = enqueue_task_dl
-    idle_sched_class.enqueue_task   = NULL
-    */
+     * fair_sched_class.enqueue_task   = enqueue_task_fair
+     * rt_sched_class.enqueue_task     = enqueue_task_rt
+     * dl_sched_class.enqueue_task     = enqueue_task_dl
+     * idle_sched_class.enqueue_task   = NULL
+     */
 	p->sched_class->enqueue_task(rq, p, flags); /* 调用调度类入队函数 *//* CFS->`enqueue_task_fair` */
 }
 
+/**
+ *  出队
+ */
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (!(flags & DEQUEUE_NOCLOCK))
@@ -1573,8 +1582,14 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
+/**
+ *  激活进程
+ */
 void activate_task(struct rq *rq, struct task_struct *p, int flags) /*  */
 {
+    /**
+     *  入队
+     */
 	enqueue_task(rq, p, flags); /* 入队 */
 
 	p->on_rq = TASK_ON_RQ_QUEUED;
@@ -3084,6 +3099,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  
 {
 	p->on_rq			= 0;
 
+    /**
+     *  调度实体初始化
+     */
 	p->se.on_rq			= 0;
 	p->se.exec_start		= 0;
 	p->se.sum_exec_runtime		= 0;
@@ -3097,18 +3115,30 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  
 #endif
 
 #ifdef CONFIG_SCHEDSTATS
+    /**
+     *  调度统计
+     */
 	/* Even if schedstat is disabled, there should not be garbage */
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
 
+    /**
+     *  
+     */
 	RB_CLEAR_NODE(&p->dl.rb_node);  /* 清空红黑树节点 */
 
     /* 为什么直接初始化 deadline???????????????????? */
 
+    /**
+     *  初始化 deadline 调度实体
+     */
 	init_dl_task_timer(&p->dl);     /* 初始化 deadline hrtimer */
 	init_dl_inactive_task_timer(&p->dl);    /*  */
 	__dl_clear_params(p);           /* 清理 deadline 参数 */
 
+    /**
+     *  初始化实时调度实体
+     */
 	INIT_LIST_HEAD(&p->rt.run_list);
 	p->rt.timeout		= 0;
 	p->rt.time_slice	= sched_rr_timeslice;   /* 100Hz */
@@ -3122,6 +3152,10 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  
 #ifdef CONFIG_COMPACTION    /* 紧致机制 */
 	p->capture_control = NULL;
 #endif
+
+    /**
+     *  
+     */
 	init_numa_balancing(clone_flags, p);    /*  */
 #ifdef CONFIG_SMP
 	p->wake_entry.u_flags = CSD_TYPE_TTWU;
@@ -3242,11 +3276,17 @@ int sysctl_schedstats(struct ctl_table *table, int write, void *buffer,
 
 /*
  * fork()/clone()-time setup:
+ *
+ * @clone_flags:    
+ * @p:      当前线程
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 {
 	unsigned long flags;
 
+    /**
+     *  
+     */
 	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
 	/*
 	 * We mark the process as NEW here. This guarantees that
@@ -3273,6 +3313,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		} else if (PRIO_TO_NICE(p->static_prio) < 0)
 			p->static_prio = NICE_TO_PRIO(0);
 
+        /**
+         *  
+         */
 		p->prio = p->normal_prio = __normal_prio(p);
 		set_load_weight(p, false);  /* 负载 */
 
@@ -3283,6 +3326,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		p->sched_reset_on_fork = 0;
 	}
 
+    /**
+     *  优先级判断 和 调度类选择
+     */
 	if (dl_prio(p->prio))       /* 如果 优先级   小于 0*/
 		return -EAGAIN;
 	else if (rt_prio(p->prio))  /* 如果 优先级小于 100 */
@@ -3290,6 +3336,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	else                        /* 如果 优先级大于 100 ***大概率****/
 		p->sched_class = &fair_sched_class; /* 使用公平调度类 */
 
+    /**
+     *  
+     */
 	init_entity_runnable_average(&p->se);   /* 清零 */
 
 	/*
@@ -3301,23 +3350,35 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	 */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 	rseq_migrate(p);
+    
 	/*
 	 * We're setting the CPU for the first time, we don't migrate,
 	 * so use __set_task_cpu().
 	 */
 	__set_task_cpu(p, smp_processor_id());
+
+    /**
+     *  
+     */
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);   /* ->task_fork_fair() */
+    
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 
 #ifdef CONFIG_SCHED_INFO
 	if (likely(sched_info_on()))
 		memset(&p->sched_info, 0, sizeof(p->sched_info));
 #endif
+
 #if defined(CONFIG_SMP)
 	p->on_cpu = 0;
 #endif
+
+    /**
+     *  x86 为 空
+     */
 	init_task_preempt_count(p); /*  */
+    
 #ifdef CONFIG_SMP
 	plist_node_init(&p->pushable_tasks, MAX_PRIO);
 	RB_CLEAR_NODE(&p->pushable_dl_tasks);
@@ -3360,6 +3421,7 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 
 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
 	p->state = TASK_RUNNING;
+    
 #ifdef CONFIG_SMP
 	/*
 	 * Fork balancing, do it here and not earlier because:
@@ -3373,13 +3435,20 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 	rseq_migrate(p);
 	__set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
 #endif
+    
 	rq = __task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 	post_init_entity_util_avg(p);
 
+    /**
+     *  激活 task，添加到运行队列
+     */
 	activate_task(rq, p, ENQUEUE_NOCLOCK);  /*  */
+    
 	trace_sched_wakeup_new(p);
+    
 	check_preempt_curr(rq, p, WF_FORK);
+    
 #ifdef CONFIG_SMP
 	if (p->sched_class->task_woken) {
 		/*

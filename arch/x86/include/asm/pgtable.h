@@ -1003,8 +1003,8 @@ static inline int pgd_none(pgd_t pgd)   /*  */
 
 #endif	/* __ASSEMBLY__ */
 
-#define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET)/*  */
-#define KERNEL_PGD_PTRS		(PTRS_PER_PGD - KERNEL_PGD_BOUNDARY)
+#define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET/*0xffff 8880 0000 0000*/)/*  */
+#define KERNEL_PGD_PTRS		(PTRS_PER_PGD/* 512 */ - KERNEL_PGD_BOUNDARY)
 
 #ifndef __ASSEMBLY__
 

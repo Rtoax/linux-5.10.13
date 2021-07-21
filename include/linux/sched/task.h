@@ -18,12 +18,19 @@ struct css_set;
 /* All the bits taken by the old clone syscall. */
 #define CLONE_LEGACY_FLAGS 0xffffffffULL
 
+/**
+ *  
+ */
 struct kernel_clone_args {  /* kernel_clone()'s arguments */
 	u64         flags;  /* 标志 */
 	int __user *pidfd;
 	int __user *child_tid;
 	int __user *parent_tid;
 	int exit_signal;
+
+    /**
+     *  栈 - 用作线程的回调函数
+     */
 	unsigned long stack;
 	unsigned long stack_size;
 	unsigned long tls;

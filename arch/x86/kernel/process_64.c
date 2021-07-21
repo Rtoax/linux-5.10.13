@@ -245,6 +245,9 @@ static __always_inline void save_base_legacy(struct task_struct *prev_p,
 	}
 }
 
+/**
+ *  
+ */
 static __always_inline void save_fsgs(struct task_struct *task)
 {
 	savesegment(fs, task->thread.fsindex);
@@ -273,6 +276,9 @@ void current_save_fsgs(void)
 
 	/* Interrupts need to be off for FSGSBASE */
 	local_irq_save(flags);
+    /**
+     *  
+     */
 	save_fsgs(current);
 	local_irq_restore(flags);
 }

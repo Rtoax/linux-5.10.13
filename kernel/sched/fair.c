@@ -487,6 +487,9 @@ static inline int entity_before(struct sched_entity *a,
 	return (s64)(a->vruntime - b->vruntime) < 0;    /* 红黑树使用虚拟时间进行排序 */
 }
 
+/**
+ *  通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
+ */
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
@@ -494,6 +497,9 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 	u64 vruntime = cfs_rq->min_vruntime;
 
+    /**
+     *  
+     */
 	if (curr) {
 		if (curr->on_rq)
 			vruntime = curr->vruntime;
@@ -501,6 +507,9 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 			curr = NULL;
 	}
 
+    /**
+     *  就绪队列中有 调度实体
+     */
 	if (leftmost) { /* non-empty tree */
 		struct sched_entity *se;
 		se = rb_entry(leftmost, struct sched_entity, run_node);
@@ -513,8 +522,13 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 	/* ensure we never gain time by being placed backwards. */
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
+    
 #ifndef CONFIG_64BIT
 	smp_wmb();
+
+    /**
+     *  
+     */
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 #endif
 }
@@ -717,6 +731,9 @@ static unsigned long capacity_of(int cpu);
 /* Give new sched_entity start runnable values to heavy its load in infant time */
 void init_entity_runnable_average(struct sched_entity *se)
 {
+    /**
+     *  平均负载
+     */
 	struct sched_avg *sa = &se->avg;
 
 	memset(sa, 0, sizeof(*sa));
@@ -821,6 +838,10 @@ void post_init_entity_util_avg(struct task_struct *p)
 static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 {
 	struct sched_entity *curr = cfs_rq->curr;
+
+    /**
+     *  
+     */
 	u64 now = rq_clock_task(rq_of(cfs_rq));
 	u64 delta_exec;
 
@@ -854,9 +875,14 @@ static void update_curr(struct cfs_rq *cfs_rq)  /*  */
 
     /**
      *  通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
+     *
+     *  更新最小时间
      */
     update_min_vruntime(cfs_rq);
 
+    /**
+     *  当前正在运行的进程
+     */
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
 
@@ -2846,6 +2872,9 @@ out:
 	}
 }
 
+/**
+ *  
+ */
 void init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 {
 	int mm_users = 0;
@@ -3740,7 +3769,11 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 #define SKIP_AGE_LOAD	0x2
 #define DO_ATTACH	0x4
 
-/* Update task and its cfs_rq load average */
+/**
+ *  Update task and its cfs_rq load average 
+ *
+ *  更新平均负载
+ */
 static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)   /*  */
 {
 	u64 now = cfs_rq_clock_pelt(cfs_rq);
@@ -3872,8 +3905,7 @@ static inline unsigned long uclamp_task_util(struct task_struct *p)
 /*  */
 #endif
 
-static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-				    struct task_struct *p)  /*  */
+static inline void util_est_enqueue(struct cfs_rq *cfs_rq, struct task_struct *p)  /*  */
 {
 	unsigned int enqueued;
 
@@ -4131,7 +4163,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 		se->vruntime += cfs_rq->min_vruntime;
 
     /**
-     *  
+     *  更新当前正在运行的进程
      */
 	update_curr(cfs_rq);
 
@@ -4153,6 +4185,10 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 *   - Add its new weight to cfs_rq->load.weight
 	 */
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
+
+    /**
+     *  
+     */
 	se_update_runnable(se);
 	update_cfs_group(se);
 	account_entity_enqueue(cfs_rq, se);
@@ -4169,10 +4205,17 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	check_spread(cfs_rq, se);
 
     /**
-     *  不在 调度队列中
+     *  不在 调度队列中(不是当前在运行的进程)
      */
 	if (!curr)
+        /**
+         *  插入到调度红黑树
+         */
 		__enqueue_entity(cfs_rq, se);   /*  */
+
+    /**
+     *  调度实体名花有主
+     */
 	se->on_rq = 1;
 
 	/*
@@ -5385,12 +5428,18 @@ static int sched_idle_cpu(int cpu)
  * The enqueue_task method is called before nr_running is
  * increased. Here we update the fair scheduling stats and
  * then put the task into the rbtree:
+ *
+ * 
  */
-static void /*  */
+static void
 enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;   /* 该进程的调度实体 */
+
+    /**
+     *  
+     */
 	int idle_h_nr_running = task_has_idle_policy(p);
 	int task_new = !(flags & ENQUEUE_WAKEUP);
 
@@ -5410,10 +5459,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 	if (p->in_iowait)
 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
 
+    /**
+     *  for (; se; se = se->parent)
+     */
 	for_each_sched_entity(se) { /* 遍历调度实体 */
 		if (se->on_rq)
 			break;
 		cfs_rq = cfs_rq_of(se);
+
+        /**
+         *  插入 队列
+         */
 		enqueue_entity(cfs_rq, se, flags);      /* 插入到红黑树中 */
 
 		cfs_rq->h_nr_running++;
@@ -5426,7 +5482,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 		flags = ENQUEUE_WAKEUP;
 	}
 
-	for_each_sched_entity(se) { /*  */
+    /**
+     *  
+     */
+	for_each_sched_entity(se) { /* for (; se; se = se->parent) */
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
@@ -5469,6 +5528,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 		update_overutilized_status(rq);
 
 enqueue_throttle:
+    /**
+     *  
+     */
 	if (cfs_bandwidth_used()) {
 		/*
 		 * When bandwidth control is enabled; the cfs_rq_throttled()
@@ -5486,6 +5548,9 @@ enqueue_throttle:
 
 	assert_list_leaf_cfs_rq(rq);
 
+    /**
+     *  
+     */
 	hrtick_update(rq);  /* 高精度定时器更新 */
 }
 
@@ -10610,6 +10675,9 @@ static void task_fork_fair(struct task_struct *p)   /*  */
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
 
+    /**
+     *  
+     */
 	cfs_rq = task_cfs_rq(current);
 	curr = cfs_rq->curr;    /* 获取当前 SE */
 	if (curr) {
@@ -11055,49 +11123,50 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
 
 /*
  * All the scheduling class methods:
- */const struct sched_class fair_sched_class, __fair_sched_class;/* 我加的 *//* CFS 调度类 */
+ */
+const struct sched_class fair_sched_class, __fair_sched_class;/* 我加的 *//* CFS 调度类 */
 const struct sched_class fair_sched_class
 	__section("__fair_sched_class") = {
-	.enqueue_task		= enqueue_task_fair,    /* 入队 */
-	.dequeue_task		= dequeue_task_fair,
-	.yield_task		= yield_task_fair,
-	.yield_to_task		= yield_to_task_fair,
+	fair_sched_class.enqueue_task		= enqueue_task_fair,    /* 入队 */
+	fair_sched_class.dequeue_task		= dequeue_task_fair,
+	fair_sched_class.yield_task		= yield_task_fair,
+	fair_sched_class.yield_to_task		= yield_to_task_fair,
 
-	.check_preempt_curr	= check_preempt_wakeup,
+	fair_sched_class.check_preempt_curr	= check_preempt_wakeup,
 
-	.pick_next_task		= __pick_next_task_fair,
-	.put_prev_task		= put_prev_task_fair,
-	.set_next_task          = set_next_task_fair,
+	fair_sched_class.pick_next_task		= __pick_next_task_fair,
+	fair_sched_class.put_prev_task		= put_prev_task_fair,
+	fair_sched_class.set_next_task          = set_next_task_fair,
 
 #ifdef CONFIG_SMP
-	.balance		= balance_fair,
-	.select_task_rq		= select_task_rq_fair,
-	.migrate_task_rq	= migrate_task_rq_fair,
+	fair_sched_class.balance		= balance_fair,
+	fair_sched_class.select_task_rq		= select_task_rq_fair,
+	fair_sched_class.migrate_task_rq	= migrate_task_rq_fair,
 
-	.rq_online		= rq_online_fair,
-	.rq_offline		= rq_offline_fair,
+	fair_sched_class.rq_online		= rq_online_fair,
+	fair_sched_class.rq_offline		= rq_offline_fair,
 
-	.task_dead		= task_dead_fair,
-	.set_cpus_allowed	= set_cpus_allowed_common,
+	fair_sched_class.task_dead		= task_dead_fair,
+	fair_sched_class.set_cpus_allowed	= set_cpus_allowed_common,
 #endif
 
-	.task_tick		= task_tick_fair,
-	.task_fork		= task_fork_fair,   /* fork 时候 会调用 */
+	fair_sched_class.task_tick		= task_tick_fair,
+	fair_sched_class.task_fork		= task_fork_fair,   /* fork 时候 会调用 */
 
-	.prio_changed		= prio_changed_fair,
-	.switched_from		= switched_from_fair,
-	.switched_to		= switched_to_fair,
+	fair_sched_class.prio_changed		= prio_changed_fair,
+	fair_sched_class.switched_from		= switched_from_fair,
+	fair_sched_class.switched_to		= switched_to_fair,
 
-	.get_rr_interval	= get_rr_interval_fair,
+	fair_sched_class.get_rr_interval	= get_rr_interval_fair,
 
-	.update_curr		= update_curr_fair,
+	fair_sched_class.update_curr		= update_curr_fair,
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
-	.task_change_group	= task_change_group_fair,
+	fair_sched_class.task_change_group	= task_change_group_fair,
 #endif
 
 #ifdef CONFIG_UCLAMP_TASK
-	.uclamp_enabled		= 1,
+	fair_sched_class.uclamp_enabled		= 1,
 #endif
 };
 

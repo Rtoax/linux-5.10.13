@@ -287,6 +287,9 @@ extern struct root_domain def_root_domain;
 extern struct mutex sched_domains_mutex;
 #endif
 
+/**
+ *  调度信息
+ */
 struct sched_info {
 #ifdef CONFIG_SCHED_INFO
 	/* Cumulative counters: */
@@ -465,7 +468,7 @@ struct sched_entity {   /* 调度实体 */
      */
 	struct rb_node			run_node;   /*  */
 	struct list_head		group_node; /*  */
-	unsigned int			on_rq;      /*  */
+	unsigned int			on_rq;      /* 是否在运行队列中 */
 
 	u64				exec_start;         /*  */
 	u64				sum_exec_runtime;   /*  */
@@ -487,8 +490,14 @@ struct sched_entity {   /* 调度实体 */
 
 	u64				nr_migrations;
 
+    /**
+     *  调度统计
+     */
 	struct sched_statistics		statistics;
 
+    /**
+     *  
+     */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int				depth;
 	struct sched_entity		*parent;    /*  */
@@ -730,6 +739,10 @@ struct task_struct {    /* PCB */
 	int				recent_used_cpu;
 	int				wake_cpu;
 #endif
+
+    /**
+     *  是否在运行队列里
+     */
 	int				on_rq;
 
     /**
@@ -762,13 +775,19 @@ struct task_struct {    /* PCB */
 	                                
 	unsigned int			rt_priority;
 
+    /**
+     *  操作函数
+     */
 	const struct sched_class	*sched_class;
+    
 	struct sched_entity		se;/* 调度实体 */
 	struct sched_rt_entity		rt;/* 实时调度实体 */
+    
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group		*sched_task_group;/* cgroup 调度 */
 #endif
-	struct sched_dl_entity		dl;
+
+    struct sched_dl_entity		dl;
 
 #ifdef CONFIG_UCLAMP_TASK 
 	/*
@@ -793,6 +812,10 @@ struct task_struct {    /* PCB */
 #endif
 
 	unsigned int			policy;
+
+    /**
+     *  CPU 亲和性
+     */
 	int				nr_cpus_allowed;    /* 个数 */
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			cpus_mask;  /* sched_getaffinity() */
@@ -820,9 +843,13 @@ struct task_struct {    /* PCB */
 	struct list_head		trc_holdout_list;
 #endif /* #ifdef CONFIG_TASKS_TRACE_RCU */
 
+    /**
+     *  
+     */
 	struct sched_info		sched_info;
 
 	struct list_head		tasks;/* 任务链表 */
+    
 #ifdef CONFIG_SMP
 	struct plist_node		pushable_tasks;     /* 优先级队列 */
 	struct rb_node			pushable_dl_tasks;  /* deadline 任务 */
@@ -865,6 +892,7 @@ struct task_struct {    /* PCB */
 	unsigned			sched_reset_on_fork:1;
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
+    
 #ifdef CONFIG_PSI   //PSI (Pressure Stall Information)评估系统资源压力
 	unsigned			sched_psi_wake_requeue:1;
 #endif
@@ -892,6 +920,7 @@ struct task_struct {    /* PCB */
 	/* Bit to tell LSMs we're in execve(): */
 	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
+    
 #ifndef TIF_RESTORE_SIGMASK /*  */
 	unsigned			restore_sigmask:1;
 #endif
@@ -956,6 +985,10 @@ struct task_struct {    /* PCB */
 
 	/* PID/PID hash table linkage. */
 	struct pid			*thread_pid;/* PID的哈希表 /include/linux/pid.h*/
+
+    /**
+     *  
+     */
 	struct hlist_node		pid_links[PIDTYPE_MAX];
 	struct list_head		thread_group;/* 组 */
 	struct list_head		thread_node;/*  */
@@ -1026,6 +1059,8 @@ struct task_struct {    /* PCB */
 	 * - normally initialized setup_new_exec()
 	 * - access it with [gs]et_task_comm()
 	 * - lock it with task_lock()
+	 *
+	 * 线程名
 	 */
 	char				comm[TASK_COMM_LEN];
 
@@ -1035,10 +1070,12 @@ struct task_struct {    /* PCB */
 	struct sysv_sem			sysvsem;    /* SysV 信号量 */
 	struct sysv_shm			sysvshm;    /* SysV 共享内存 */
 #endif
+
 #ifdef CONFIG_DETECT_HUNG_TASK
 	unsigned long			last_switch_count;
 	unsigned long			last_switch_time;
 #endif
+    
 	/* Filesystem information: */
 	struct fs_struct		*fs;/* 文件系统 */
 
@@ -1155,7 +1192,11 @@ struct task_struct {    /* PCB */
 	unsigned long			ptrace_message;
 	kernel_siginfo_t		*last_siginfo;
 
+    /**
+     *  IO统计信息
+     */
 	struct task_io_accounting	ioac;   /* IO 统计信息 */
+    
 #ifdef CONFIG_PSI
 	/* Pressure stall state */
 	unsigned int			psi_flags;
@@ -1331,7 +1372,10 @@ struct task_struct {    /* PCB */
 	int				curr_ret_stack;
 	int				curr_ret_depth;
 
-	/* Stack of return addresses for return function tracing: */
+	/**
+	 *  Stack of return addresses for return function tracing: 
+	 *  
+	 */
 	struct ftrace_ret_stack		*ret_stack; /* 在 alloc_retstack_tasklist() 中使用*/
 
 	/* Timestamp for last schedule: */

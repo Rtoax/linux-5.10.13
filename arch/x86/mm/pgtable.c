@@ -112,10 +112,8 @@ static inline void pgd_list_del(pgd_t *pgd)
 	list_del(&page->lru);
 }
 
-#define UNSHARED_PTRS_PER_PGD				\
-	(SHARED_KERNEL_PMD ? KERNEL_PGD_BOUNDARY : PTRS_PER_PGD)
-#define MAX_UNSHARED_PTRS_PER_PGD			\
-	max_t(size_t, KERNEL_PGD_BOUNDARY, PTRS_PER_PGD)
+#define UNSHARED_PTRS_PER_PGD       (SHARED_KERNEL_PMD/*0*/ ? KERNEL_PGD_BOUNDARY : PTRS_PER_PGD)
+#define MAX_UNSHARED_PTRS_PER_PGD   max_t(size_t, KERNEL_PGD_BOUNDARY, PTRS_PER_PGD)
 
 
 static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
@@ -128,6 +126,9 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 	return page->pt_mm;
 }
 
+/**
+ *  
+ */
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
 	/* If the pgd points to a shared pagetable level (either the
@@ -225,6 +226,9 @@ static void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
 		}
 }
 
+/**
+ *  分配 PMD
+ */
 static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
 {
 	int i;
@@ -296,6 +300,9 @@ static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
 #endif
 }
 
+/**
+ *  
+ */
 static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 {
 	p4d_t *p4d;
@@ -308,13 +315,18 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 	p4d = p4d_offset(pgd, 0);
 	pud = pud_offset(p4d, 0);
 
+    /**
+     *  
+     */
 	for (i = 0; i < PREALLOCATED_PMDS; i++, pud++) {
 		pmd_t *pmd = pmds[i];
 
 		if (i >= KERNEL_PGD_BOUNDARY)
-			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]),
-			       sizeof(pmd_t) * PTRS_PER_PMD);
+			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]), sizeof(pmd_t) * PTRS_PER_PMD);
 
+        /**
+         *  
+         */
 		pud_populate(mm, pud, pmd);
 	}
 }
@@ -383,15 +395,19 @@ void __init pgtable_cache_init(void)    /* 一级页表内存分配 */
 				      SLAB_PANIC, NULL);/* 一级页表内存 */
 }
 
+/**
+ *  分配全局页表
+ */
 static inline pgd_t *_pgd_alloc(void)   /*  */
 {
 	/*
 	 * If no SHARED_KERNEL_PMD, PAE kernel is running as a Xen domain.
 	 * We allocate one page for pgd.
+	 *
+	 * 占用两页
 	 */
 	if (!SHARED_KERNEL_PMD)
-		return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
-						 PGD_ALLOCATION_ORDER);
+		return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER, PGD_ALLOCATION_ORDER/*1*/);
 
 	/*
 	 * Now PAE kernel is not running as a Xen domain. We can allocate
@@ -421,12 +437,18 @@ static inline void _pgd_free(pgd_t *pgd)
 //}
 #endif /* CONFIG_X86_PAE Page Address Extension（PAE） */
 
+/**
+ *  分配全局页表
+ */
 pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 {
 	pgd_t *pgd;
 	pmd_t *u_pmds[MAX_PREALLOCATED_USER_PMDS];
 	pmd_t *pmds[MAX_PREALLOCATED_PMDS];
 
+    /**
+     *  分配 全局页表，这将占用 2个 page
+     */
 	pgd = _pgd_alloc(); /*  */
 
 	if (pgd == NULL)
@@ -434,12 +456,18 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 
 	mm->pgd = pgd;
 
+    /**
+     *  PMD
+     */
 	if (preallocate_pmds(mm, pmds, PREALLOCATED_PMDS) != 0)
 		goto out_free_pgd;
 
 	if (preallocate_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS) != 0)
 		goto out_free_pmds;
 
+    /**
+     *  
+     */
 	if (paravirt_pgd_alloc(mm) != 0)
 		goto out_free_user_pmds;
 
@@ -450,7 +478,14 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 	 */
 	spin_lock(&pgd_lock);
 
+    /**
+     *  
+     */
 	pgd_ctor(mm, pgd);
+
+    /**
+     *  
+     */
 	pgd_prepopulate_pmd(mm, pgd, pmds);
 	pgd_prepopulate_user_pmd(mm, pgd, u_pmds);
 

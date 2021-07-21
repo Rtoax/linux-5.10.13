@@ -555,9 +555,9 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 	 * 'curr' points to currently running entity on this cfs_rq.
 	 * It is set to NULL otherwise (i.e when none are currently running).
 	 */
-	struct sched_entity	*curr;
-	struct sched_entity	*next;
-	struct sched_entity	*last;
+	struct sched_entity	*curr;  /* 当前正在执行的 实体 */
+	struct sched_entity	*next;  /*  */
+	struct sched_entity	*last;  /*  */
 	struct sched_entity	*skip;  /* sched_yield */
 
 #ifdef	CONFIG_SCHED_DEBUG
@@ -1795,6 +1795,9 @@ extern const u32		sched_prio_to_wmult[40];
 #define DEQUEUE_MOVE		0x04 /* Matches ENQUEUE_MOVE */
 #define DEQUEUE_NOCLOCK		0x08 /* Matches ENQUEUE_NOCLOCK */
 
+/**
+ *  
+ */
 #define ENQUEUE_WAKEUP		0x01
 #define ENQUEUE_RESTORE		0x02
 #define ENQUEUE_MOVE		0x04
@@ -1810,12 +1813,21 @@ extern const u32		sched_prio_to_wmult[40];
 
 #define RETRY_TASK		((void *)-1UL)
 
+/**
+ *  
+ */
 struct sched_class {    /* 调度类 *//*  */
 
 #ifdef CONFIG_UCLAMP_TASK
 	int uclamp_enabled; /* 利用率管制 使能 */
 #endif
 
+    /* 
+     * fair_sched_class.enqueue_task   = enqueue_task_fair()
+     * rt_sched_class.enqueue_task     = enqueue_task_rt()
+     * dl_sched_class.enqueue_task     = enqueue_task_dl()
+     * idle_sched_class.enqueue_task   = NULL
+     */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*yield_task)   (struct rq *rq);

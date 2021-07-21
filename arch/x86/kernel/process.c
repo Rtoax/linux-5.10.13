@@ -88,11 +88,18 @@ EXPORT_PER_CPU_SYMBOL_GPL(__tss_limit_invalid);
  */
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
+    /**
+     *  直接拷贝
+     */
 	memcpy(dst, src, arch_task_struct_size);
+    
 #ifdef CONFIG_VM86
-	dst->thread.vm86 = NULL;
+//	dst->thread.vm86 = NULL;
 #endif
 
+    /**
+     *  
+     */
 	return fpu__copy(dst, src);
 }
 
@@ -122,44 +129,71 @@ static int set_new_tls(struct task_struct *p, unsigned long tls)    /*  */
 		return do_set_thread_area_64(p, ARCH_SET_FS, tls);
 }
 
+/**
+ *  
+ */
 int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
 		struct task_struct *p, unsigned long tls)   /*  */
 {
 	struct inactive_task_frame *frame;
-	struct fork_frame *fork_frame;
+	struct fork_frame *rtoax_fork_frame;
 	struct pt_regs *childregs;
 	int ret = 0;
 
+    /**
+     *  子进程的  寄存器文件
+     */
 	childregs = task_pt_regs(p);
-	fork_frame = container_of(childregs, struct fork_frame, regs);
-	frame = &fork_frame->frame;
+	rtoax_fork_frame = container_of(childregs, struct fork_frame, regs);
+	frame = &rtoax_fork_frame->frame;
 
+    /**
+     *  帧指针
+     */
 	frame->bp = encode_frame_pointer(childregs);
+
+    /**
+     *  返回地址
+     */
 	frame->ret_addr = (unsigned long) ret_from_fork;
-	p->thread.sp = (unsigned long) fork_frame;
+
+    /**
+     *  栈指针
+     */
+	p->thread.sp = (unsigned long) rtoax_fork_frame;
 	p->thread.io_bitmap = NULL;
 	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
 
 #ifdef CONFIG_X86_64
+    /**
+     *  
+     */
 	current_save_fsgs();
 	p->thread.fsindex = current->thread.fsindex;
 	p->thread.fsbase = current->thread.fsbase;
 	p->thread.gsindex = current->thread.gsindex;
 	p->thread.gsbase = current->thread.gsbase;
 
+    /**
+     *  把当前的寄存器保存到 子进程中
+     */
 	savesegment(es, p->thread.es);
 	savesegment(ds, p->thread.ds);
+    
 #else
-	p->thread.sp0 = (unsigned long) (childregs + 1);
-	/*
-	 * Clear all status flags including IF and set fixed bit. 64bit
-	 * does not have this initialization as the frame does not contain
-	 * flags. The flags consistency (especially vs. AC) is there
-	 * ensured via objtool, which lacks 32bit support.
-	 */
-	frame->flags = X86_EFLAGS_FIXED;
+//	p->thread.sp0 = (unsigned long) (childregs + 1);
+//	/*
+//	 * Clear all status flags including IF and set fixed bit. 64bit
+//	 * does not have this initialization as the frame does not contain
+//	 * flags. The flags consistency (especially vs. AC) is there
+//	 * ensured via objtool, which lacks 32bit support.
+//	 */
+//	frame->flags = X86_EFLAGS_FIXED;
 #endif
 
+    /**
+     *  内核线程
+     */
 	/* Kernel thread ? */
 	if (unlikely(p->flags & PF_KTHREAD)) {
 		memset(childregs, 0, sizeof(struct pt_regs));

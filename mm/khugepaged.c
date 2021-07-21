@@ -459,6 +459,9 @@ static bool hugepage_vma_check(struct vm_area_struct *vma,
 	return !(vm_flags & VM_NO_KHUGEPAGED);
 }
 
+/**
+*  
+*/
 int __khugepaged_enter(struct mm_struct *mm)
 {
 	struct mm_slot *mm_slot;

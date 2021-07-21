@@ -45,17 +45,20 @@
 #include <net/sock.h>
 #include <uapi/linux/pidfd.h>
 
+/**
+ *  
+ */
 struct pid init_struct_pid = {/* PID 的哈希表 */
-	.count		= REFCOUNT_INIT(1),/* 引用计数为 1 */
-	.tasks		= {
-		{ .first = NULL },
-		{ .first = NULL },
-		{ .first = NULL },
+	init_struct_pid.count		= REFCOUNT_INIT(1),/* 引用计数为 1 */
+	init_struct_pid.tasks		= {
+		{ init_struct_pid.tasks[0].first = NULL },
+		{ init_struct_pid.tasks[1].first = NULL },
+		{ init_struct_pid.tasks[2].first = NULL },
 	},
-	.level		= 0,
-	.numbers	= { {
-		.nr		= 0,
-		.ns		= &init_pid_ns,/* PID namespace */
+	init_struct_pid.level		= 0,
+	init_struct_pid.numbers	= { {
+		init_struct_pid.numbers.nr		= 0,
+		init_struct_pid.numbers.ns		= &init_pid_ns,/* PID namespace */
 	}, }
 };
 
@@ -73,15 +76,15 @@ int pid_max_max = PID_MAX_LIMIT;
  * the scheme scales to up to 4 million PIDs, runtime.
  */
 struct pid_namespace init_pid_ns = {/* 初始的 PID 命名空间(资源名称隔离) */
-	.kref = KREF_INIT(2),
-	.idr = IDR_INIT(init_pid_ns.idr),/*  */
-	.pid_allocated = PIDNS_ADDING,/*  */
-	.level = 0,
-	.child_reaper = &init_task,/*  */
-	.user_ns = &init_user_ns,/*  */
-	.ns.inum = PROC_PID_INIT_INO,
+	init_pid_ns.kref = KREF_INIT(2),
+	init_pid_ns.idr = IDR_INIT(init_pid_ns.idr),/*  */
+	init_pid_ns.pid_allocated = PIDNS_ADDING,/*  */
+	init_pid_ns.level = 0,
+	init_pid_ns.child_reaper = &init_task,/*  */
+	init_pid_ns.user_ns = &init_user_ns,/*  */
+	init_pid_ns.ns.inum = PROC_PID_INIT_INO,
 #ifdef CONFIG_PID_NS
-	.ns.ops = &pidns_operations,
+	init_pid_ns.ns.ops = &pidns_operations,
 #endif
 };
 EXPORT_SYMBOL_GPL(init_pid_ns);
@@ -156,6 +159,10 @@ void free_pid(struct pid *pid)
 	call_rcu(&pid->rcu, delayed_put_pid);
 }
 
+
+/**
+ *  分配新的 struct pid
+ */
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
 {
@@ -209,8 +216,7 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		spin_lock_irq(&pidmap_lock);
 
 		if (tid) {
-			nr = idr_alloc(&tmp->idr, NULL, tid,
-				       tid + 1, GFP_ATOMIC);
+			nr = idr_alloc(&tmp->idr, NULL, tid, tid + 1, GFP_ATOMIC);
 			/*
 			 * If ENOSPC is returned it means that the PID is
 			 * alreay in use. Return EEXIST in that case.
@@ -230,8 +236,7 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			 * Store a null pointer so find_pid_ns does not find
 			 * a partially initialized PID (see below).
 			 */
-			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min,
-					      pid_max, GFP_ATOMIC);
+			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min, pid_max, GFP_ATOMIC);
 		}
 		spin_unlock_irq(&pidmap_lock);
 		idr_preload_end();

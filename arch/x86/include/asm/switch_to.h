@@ -25,9 +25,9 @@ struct inactive_task_frame {    /* 任务 frame */
 	unsigned long r13;
 	unsigned long r12;
 #else
-	unsigned long flags;
-	unsigned long si;
-	unsigned long di;
+//	unsigned long flags;
+//	unsigned long si;
+//	unsigned long di;
 #endif
 	unsigned long bx;
 
@@ -92,7 +92,7 @@ static inline void kthread_frame_init(struct inactive_task_frame *frame,
 {
 	frame->bx = fun;
 #ifdef CONFIG_X86_32
-	frame->di = arg;
+//	frame->di = arg;
 #else
 	frame->r12 = arg;
 #endif

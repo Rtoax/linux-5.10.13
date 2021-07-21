@@ -82,6 +82,8 @@ extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 /*
  * Init a new mm.  Used on mm copies, like at fork()
  * and on mm's that are brand-new, like at execve().
+ *
+ * 初始化 新的 mm, 
  */
 static inline int init_new_context(struct task_struct *tsk,
 				   struct mm_struct *mm)
@@ -99,6 +101,10 @@ static inline int init_new_context(struct task_struct *tsk,
 		mm->context.execute_only_pkey = -1;
 	}
 #endif
+
+    /**
+     *  
+     */
 	init_new_context_ldt(mm);
 	return 0;
 }
@@ -146,10 +152,17 @@ static inline void arch_dup_pkeys(struct mm_struct *oldmm,
 #endif
 }
 
+/**
+ *  
+ */
 static inline int arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
 {
 	arch_dup_pkeys(oldmm, mm);
 	paravirt_arch_dup_mmap(oldmm, mm);
+
+    /**
+     *  拷贝局部描述符表
+     */
 	return ldt_dup_context(oldmm, mm);
 }
 

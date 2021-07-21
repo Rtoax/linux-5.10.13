@@ -500,6 +500,10 @@ void path_put(const struct path *path)
 EXPORT_SYMBOL(path_put);
 
 #define EMBEDDED_LEVELS 2
+
+/**
+ *  
+ */
 struct nameidata {
 	struct path	path;
 	struct qstr	last;
@@ -516,6 +520,7 @@ struct nameidata {
 		const char *name;
 		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];
+    
 	struct filename	*name;
 	struct nameidata *saved;
 	unsigned	root_seq;

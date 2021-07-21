@@ -7,6 +7,9 @@
 
 #include "pelt.h"
 
+/**
+ *  RR 调度策略 时间片
+ */
 int sched_rr_timeslice = RR_TIMESLICE;  /* 100Hz */
 int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
 /* More than 4 hours if BW_SHIFT equals 20. */
@@ -16,6 +19,9 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
 
 struct rt_bandwidth def_rt_bandwidth;   /* default values of bandwidths for `real-time` */
 
+/**
+ *  
+ */
 static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
 {
 	struct rt_bandwidth *rt_b =
@@ -2428,40 +2434,40 @@ static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
 	else
 		return 0;
 }
-    const struct sched_class rt_sched_class,__rt_sched_class;/*我加的*/
-const struct sched_class rt_sched_class
-	__section("__rt_sched_class") = {
-	.enqueue_task		= enqueue_task_rt,
-	.dequeue_task		= dequeue_task_rt,
-	.yield_task		= yield_task_rt,
 
-	.check_preempt_curr	= check_preempt_curr_rt,
+const struct sched_class rt_sched_class,__rt_sched_class;/*+++*/
+const struct sched_class __section("__rt_sched_class") rt_sched_class = {
+	rt_sched_class.enqueue_task		= enqueue_task_rt,
+	rt_sched_class.dequeue_task		= dequeue_task_rt,
+	rt_sched_class.yield_task		= yield_task_rt,
 
-	.pick_next_task		= pick_next_task_rt,
-	.put_prev_task		= put_prev_task_rt,
-	.set_next_task          = set_next_task_rt,
+	rt_sched_class.check_preempt_curr	= check_preempt_curr_rt,
+
+	rt_sched_class.pick_next_task		= pick_next_task_rt,
+	rt_sched_class.put_prev_task		= put_prev_task_rt,
+	rt_sched_class.set_next_task          = set_next_task_rt,
 
 #ifdef CONFIG_SMP
-	.balance		= balance_rt,
-	.select_task_rq		= select_task_rq_rt,
-	.set_cpus_allowed       = set_cpus_allowed_common,
-	.rq_online              = rq_online_rt,
-	.rq_offline             = rq_offline_rt,
-	.task_woken		= task_woken_rt,
-	.switched_from		= switched_from_rt,
+	rt_sched_class.balance		= balance_rt,
+	rt_sched_class.select_task_rq		= select_task_rq_rt,
+	rt_sched_class.set_cpus_allowed       = set_cpus_allowed_common,
+	rt_sched_class.rq_online              = rq_online_rt,
+	rt_sched_class.rq_offline             = rq_offline_rt,
+	rt_sched_class.task_woken		= task_woken_rt,
+	rt_sched_class.switched_from		= switched_from_rt,
 #endif
 
-	.task_tick		= task_tick_rt,
+	rt_sched_class.task_tick		= task_tick_rt,
 
-	.get_rr_interval	= get_rr_interval_rt,
+	rt_sched_class.get_rr_interval	= get_rr_interval_rt,
 
-	.prio_changed		= prio_changed_rt,
-	.switched_to		= switched_to_rt,
+	rt_sched_class.prio_changed		= prio_changed_rt,
+	rt_sched_class.switched_to		= switched_to_rt,
 
-	.update_curr		= update_curr_rt,
+	rt_sched_class.update_curr		= update_curr_rt,
 
 #ifdef CONFIG_UCLAMP_TASK
-	.uclamp_enabled		= 1,
+	rt_sched_class.uclamp_enabled		= 1,
 #endif
 };
 

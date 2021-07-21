@@ -301,8 +301,8 @@ vma_interval_tree_iter_next(struct vm_area_struct *node, unsigned long start, un
 
 /* Insert node immediately after prev in the interval tree */
 void vma_interval_tree_insert_after(struct vm_area_struct *node,
-				    struct vm_area_struct *prev,
-				    struct rb_root_cached *root)
+                    				    struct vm_area_struct *prev,
+                    				    struct rb_root_cached *root)
 {
 	struct rb_node **link;
 	struct vm_area_struct *parent;
@@ -314,13 +314,11 @@ void vma_interval_tree_insert_after(struct vm_area_struct *node,
 		parent = prev;
 		link = &prev->shared.rb.rb_right;
 	} else {
-		parent = rb_entry(prev->shared.rb.rb_right,
-				  struct vm_area_struct, shared.rb);
+		parent = rb_entry(prev->shared.rb.rb_right, struct vm_area_struct, shared.rb);
 		if (parent->shared.rb_subtree_last < last)
 			parent->shared.rb_subtree_last = last;
 		while (parent->shared.rb.rb_left) {
-			parent = rb_entry(parent->shared.rb.rb_left,
-				struct vm_area_struct, shared.rb);
+			parent = rb_entry(parent->shared.rb.rb_left, struct vm_area_struct, shared.rb);
 			if (parent->shared.rb_subtree_last < last)
 				parent->shared.rb_subtree_last = last;
 		}
@@ -329,8 +327,7 @@ void vma_interval_tree_insert_after(struct vm_area_struct *node,
 
 	node->shared.rb_subtree_last = last;
 	rb_link_node(&node->shared.rb, &parent->shared.rb, link);
-	rb_insert_augmented(&node->shared.rb, &root->rb_root,
-			    &vma_interval_tree_augment);
+	rb_insert_augmented(&node->shared.rb, &root->rb_root, &vma_interval_tree_augment);
 }
 
 static inline unsigned long avc_start_pgoff(struct anon_vma_chain *avc) /*  */

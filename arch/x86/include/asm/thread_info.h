@@ -53,6 +53,9 @@ struct task_struct;
 #include <asm/cpufeature.h>
 #include <linux/atomic.h>
 
+/**
+ *  线程信息
+ */
 struct thread_info {    /*  */
 	unsigned long		flags;		/* low level flags *//* TIF_XXX: maybe TIF_NEED_RESCHED */
 	u32			status;		/* thread synchronous flags */

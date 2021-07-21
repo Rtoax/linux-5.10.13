@@ -59,6 +59,9 @@ enum {
 	FUTEX_STATE_DEAD,
 };
 
+/**
+ *  
+ */
 static inline void futex_init_task(struct task_struct *tsk)
 {
 	tsk->robust_list = NULL;

@@ -31,7 +31,7 @@ extern gfp_t __userpte_alloc_gfp;
  */
 #define PGD_ALLOCATION_ORDER 1
 #else
-#define PGD_ALLOCATION_ORDER 0
+//#define PGD_ALLOCATION_ORDER 0
 #endif
 
 /*

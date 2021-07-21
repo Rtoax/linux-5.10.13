@@ -519,12 +519,15 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
     
 #ifdef CONFIG_X86_32
-	unsigned long		sp0;
+//	unsigned long		sp0;
 #endif
+
 	unsigned long		sp; /*  */
+
 #ifdef CONFIG_X86_32
-	unsigned long		sysenter_cs;
+//	unsigned long		sysenter_cs;
 #else
+
 	unsigned short		es;
 	unsigned short		ds;
 	unsigned short		fsindex;
@@ -539,23 +542,27 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	 * XXX: this could presumably be unsigned short.  Alternatively,
 	 * 32-bit kernels could be taught to use fsindex instead.
 	 */
-	unsigned long fs;
-	unsigned long gs;
+//	unsigned long fs;
+//	unsigned long gs;
 #endif
 
 	/* Save middle states of ptrace breakpoints */
 	struct perf_event	*ptrace_bps[HBP_NUM];
+
 	/* Debug status used for traps, single steps, etc... */
 	unsigned long           virtual_dr6;
+    
 	/* Keep track of the exact dr7 value set by the user */
 	unsigned long           ptrace_dr7;
+    
 	/* Fault info: */
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
+    
 #ifdef CONFIG_VM86
 	/* Virtual 86 mode info */
-	struct vm86		*vm86;
+//	struct vm86		*vm86;
 #endif
 	/* IO permissions: */
 	struct io_bitmap	*io_bitmap;

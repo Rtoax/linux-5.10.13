@@ -107,6 +107,9 @@ static inline void cpu_timer_setexpires(struct cpu_timer *ctmr, u64 exp)
  */
 struct posix_cputimer_base {    /*  */
 	u64			nextevt;
+    /**
+     *  红黑树
+     */
 	struct timerqueue_head	tqhead;
 };
 
@@ -136,6 +139,9 @@ struct posix_cputimers_work {   /* 任务工作的 容器 */
 	unsigned int		scheduled;
 };
 
+/**
+ *  
+ */
 static inline void posix_cputimers_init(struct posix_cputimers *pct)
 {
 	memset(pct, 0, sizeof(*pct));

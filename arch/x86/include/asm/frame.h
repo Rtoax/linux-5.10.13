@@ -35,6 +35,7 @@
 .macro ENCODE_FRAME_POINTER ptregs_offset=0
 	leaq 1+\ptregs_offset(%rsp), %rbp
 .endm
+
 #else /* !CONFIG_X86_64 */
 /*
  * This is a sneaky trick to help the unwinder find pt_regs on the stack.  The

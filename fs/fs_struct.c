@@ -109,6 +109,9 @@ void exit_fs(struct task_struct *tsk)
 	}
 }
 
+/**
+ *  
+ */
 struct fs_struct *copy_fs_struct(struct fs_struct *old)
 {
 	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);

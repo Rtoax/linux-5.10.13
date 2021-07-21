@@ -26,16 +26,15 @@ extern void add_bootloader_randomness(const void *, unsigned int);
 #if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
 static inline void add_latent_entropy(void) 
 {   /* latent:隐藏的; entropy:无序状态,熵;  */
-	add_device_randomness((const void *)&latent_entropy,
-			      sizeof(latent_entropy));
+	add_device_randomness((const void *)&latent_entropy, sizeof(latent_entropy));
 }
 #else
 /*  */
 #endif
 
-extern void add_input_randomness(unsigned int type, unsigned int code,
-				 unsigned int value) __latent_entropy;
-extern void add_interrupt_randomness(int irq, int irq_flags) __latent_entropy;
+extern void __latent_entropy add_input_randomness(unsigned int type, unsigned int code,
+				 unsigned int value) ;
+extern void __latent_entropy add_interrupt_randomness(int irq, int irq_flags) ;
 
 extern void get_random_bytes(void *buf, int nbytes);
 extern int wait_for_random_bytes(void);

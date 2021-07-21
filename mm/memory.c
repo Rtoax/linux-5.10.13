@@ -1128,8 +1128,7 @@ copy_pud_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 			int err;
 
 			VM_BUG_ON_VMA(next-addr != HPAGE_PUD_SIZE, src_vma);
-			err = copy_huge_pud(dst_mm, src_mm,
-					    dst_pud, src_pud, addr, src_vma);
+			err = copy_huge_pud(dst_mm, src_mm, dst_pud, src_pud, addr, src_vma);
 			if (err == -ENOMEM)
 				return -ENOMEM;
 			if (!err)
@@ -1138,10 +1137,10 @@ copy_pud_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 		}
 		if (pud_none_or_clear_bad(src_pud))
 			continue;
-		if (copy_pmd_range(dst_vma, src_vma, dst_pud, src_pud,
-				   addr, next))
+		if (copy_pmd_range(dst_vma, src_vma, dst_pud, src_pud, addr, next))
 			return -ENOMEM;
 	} while (dst_pud++, src_pud++, addr = next, addr != end);
+        
 	return 0;
 }
 
@@ -1162,8 +1161,7 @@ copy_p4d_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 		next = p4d_addr_end(addr, end);
 		if (p4d_none_or_clear_bad(src_p4d))
 			continue;
-		if (copy_pud_range(dst_vma, src_vma, dst_p4d, src_p4d,
-				   addr, next))
+		if (copy_pud_range(dst_vma, src_vma, dst_p4d, src_p4d, addr, next))
 			return -ENOMEM;
 	} while (dst_p4d++, src_p4d++, addr = next, addr != end);
 	return 0;
@@ -1231,12 +1229,12 @@ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 	ret = 0;
 	dst_pgd = pgd_offset(dst_mm, addr);
 	src_pgd = pgd_offset(src_mm, addr);
+    
 	do {
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(src_pgd))
 			continue;
-		if (unlikely(copy_p4d_range(dst_vma, src_vma, dst_pgd, src_pgd,
-					    addr, next))) {
+		if (unlikely(copy_p4d_range(dst_vma, src_vma, dst_pgd, src_pgd, addr, next))) {
 			ret = -ENOMEM;
 			break;
 		}

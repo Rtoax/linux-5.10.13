@@ -210,6 +210,9 @@ void fpstate_init(union fpregs_state *state)
 }
 EXPORT_SYMBOL_GPL(fpstate_init);
 
+/**
+ *  
+ */
 int fpu__copy(struct task_struct *dst, struct task_struct *src)
 {
 	struct fpu *dst_fpu = &dst->thread.fpu;

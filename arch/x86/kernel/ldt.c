@@ -435,6 +435,9 @@ static void free_ldt_struct(struct ldt_struct *ldt)
 /*
  * Called on fork from arch_dup_mmap(). Just copy the current LDT state,
  * the new task is not running, so nothing can be installed.
+ *
+ * 拷贝 当前进程的 LDT 状态
+ * 新的 task 没有运行，所以任何东西都没安装
  */
 int ldt_dup_context(struct mm_struct *old_mm, struct mm_struct *mm) /* 局部描述符表 */
 {
@@ -454,8 +457,10 @@ int ldt_dup_context(struct mm_struct *old_mm, struct mm_struct *mm) /* 局部描
 		goto out_unlock;
 	}
 
-	memcpy(new_ldt->entries, old_mm->context.ldt->entries,
-	       new_ldt->nr_entries * LDT_ENTRY_SIZE);
+    /**
+     *  拷贝
+     */
+	memcpy(new_ldt->entries, old_mm->context.ldt->entries, new_ldt->nr_entries * LDT_ENTRY_SIZE);
 	finalize_ldt_struct(new_ldt);
 
 	retval = map_ldt_struct(mm, new_ldt, 0);

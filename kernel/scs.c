@@ -50,7 +50,8 @@ void __init scs_init(void)  /*  */
 {
 	scs_cache = kmem_cache_create("scs_cache", SCS_SIZE, 0, 0, NULL);
 }
-    /* 目前只针对 aarch64 实现 */
+
+/* 目前只针对 aarch64 实现 */
 int scs_prepare(struct task_struct *tsk, int node)
 {
 	void *s = scs_alloc(node);
