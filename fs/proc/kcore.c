@@ -632,8 +632,13 @@ static void __init add_modules_range(void)
 /*  */
 #endif
 //    $ sudo objdump -a /proc/kcore
+///proc/kcore：     文件格式 elf64-x86-64
+///proc/kcore
 static int __init proc_kcore_init(void)
 {
+    /**
+     *  /proc/kcore
+     */
 	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &kcore_proc_ops);
 	if (!proc_root_kcore) {
 		pr_err("couldn't create /proc/kcore\n");
