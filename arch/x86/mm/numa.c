@@ -19,9 +19,15 @@
 
 #include "numa_internal.h"
 
+/**
+ *  NUMA 使能
+ */
 int numa_off;
 nodemask_t __initdata numa_nodes_parsed ;
 
+/**
+ *  NUMA 节点 描述符
+ */
 struct pglist_data __read_mostly *node_data[MAX_NUMNODES] ;
 EXPORT_SYMBOL(node_data);
 
@@ -31,6 +37,9 @@ static struct numa_meminfo __initdata_or_meminfo numa_reserved_meminfo ;
 static int numa_distance_cnt;
 static u8 *numa_distance;
 
+/**
+ *  
+ */
 static __init int numa_setup(char *opt)
 {
 	if (!opt)
@@ -60,6 +69,7 @@ int numa_cpu_node(int cpu)
 
 	if (apicid != BAD_APICID)
 		return __apicid_to_node[apicid];
+    
 	return NUMA_NO_NODE;
 }
 
@@ -72,6 +82,9 @@ EXPORT_SYMBOL(node_to_cpumask_map);
 DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
 EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
 
+/**
+ *  
+ */
 void numa_set_node(int cpu, int node)
 {
 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
@@ -145,6 +158,7 @@ static int __init numa_add_memblk_to(int nid, u64 start, u64 end,
 	mi->blk[mi->nr_blks].end = end;
 	mi->blk[mi->nr_blks].nid = nid;
 	mi->nr_blks++;
+    
 	return 0;
 }
 
@@ -159,8 +173,7 @@ static int __init numa_add_memblk_to(int nid, u64 start, u64 end,
 void __init numa_remove_memblk_from(int idx, struct numa_meminfo *mi)
 {
 	mi->nr_blks--;
-	memmove(&mi->blk[idx], &mi->blk[idx + 1],
-		(mi->nr_blks - idx) * sizeof(mi->blk[0]));
+	memmove(&mi->blk[idx], &mi->blk[idx + 1], (mi->nr_blks - idx) * sizeof(mi->blk[0]));
 }
 
 /**
@@ -332,8 +345,7 @@ static void __init numa_nodemask_from_meminfo(nodemask_t *nodemask,
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(mi->blk); i++)
-		if (mi->blk[i].start != mi->blk[i].end &&
-		    mi->blk[i].nid != NUMA_NO_NODE)
+		if (mi->blk[i].start != mi->blk[i].end && mi->blk[i].nid != NUMA_NO_NODE)
 			node_set(mi->blk[i].nid, *nodemask);
 }
 
@@ -367,11 +379,11 @@ static int __init numa_alloc_distance(void)
 
 	for_each_node_mask(i, nodes_parsed)
 		cnt = i;
+    
 	cnt++;
 	size = cnt * cnt * sizeof(numa_distance[0]);
 
-	phys = memblock_find_in_range(0, PFN_PHYS(max_pfn_mapped),
-				      size, PAGE_SIZE);
+	phys = memblock_find_in_range(0, PFN_PHYS(max_pfn_mapped), size, PAGE_SIZE);
 	if (!phys) {
 		pr_warn("Warning: can't allocate distance table!\n");
 		/* don't retry until explicitly reset */
@@ -386,8 +398,7 @@ static int __init numa_alloc_distance(void)
 	/* fill with the default distances */
 	for (i = 0; i < cnt; i++)
 		for (j = 0; j < cnt; j++)
-			numa_distance[i * cnt + j] = i == j ?
-				LOCAL_DISTANCE : REMOTE_DISTANCE;
+			numa_distance[i * cnt + j] = i == j ? LOCAL_DISTANCE : REMOTE_DISTANCE;
 	printk(KERN_DEBUG "NUMA: Initialized distance table, cnt=%d\n", cnt);
 
 	return 0;

@@ -590,10 +590,13 @@ enum zone_type {
 	 * there can be false negatives).
 	 */
 	ZONE_MOVABLE,   /* 用于适应大块连续内存的分配 */
+	
 #ifdef CONFIG_ZONE_DEVICE
 	ZONE_DEVICE,    /*  */
 #endif
-	__MAX_NR_ZONES,
+
+    __MAX_NR_ZONES,
+	
     MAX_NR_ZONES = __MAX_NR_ZONES, /* = 5 我加的 */
 };
 
@@ -934,8 +937,12 @@ static inline bool zone_intersects(struct zone *zone,
 /* Maximum number of zones on a zonelist */
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES/* NODE个数 */ * MAX_NR_ZONES/* ZONE个数 */)
 
+/**
+ *  
+ */
 enum {
 	ZONELIST_FALLBACK,	/* zonelist with fallback(倒退) */
+        
 #ifdef CONFIG_NUMA
 	/*
 	 * The NUMA zonelists are doubled because we need zonelists that
