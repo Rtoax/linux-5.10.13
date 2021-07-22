@@ -391,15 +391,19 @@ void __init pcibios_resource_survey(void)
 
 	DBG("PCI: Allocating resources\n");
 
-	list_for_each_entry(bus, &pci_root_buses, node)
+	list_for_each_entry(bus, &pci_root_buses, node) {
 		pcibios_allocate_bus_resources(bus);
+    }
 
-	list_for_each_entry(bus, &pci_root_buses, node)
+	list_for_each_entry(bus, &pci_root_buses, node) {
 		pcibios_allocate_resources(bus, 0);
-	list_for_each_entry(bus, &pci_root_buses, node)
+    }
+	list_for_each_entry(bus, &pci_root_buses, node) {
 		pcibios_allocate_resources(bus, 1);
+    }
 
 	e820__reserve_resources_late();
+    
 	/*
 	 * Insert the IO APIC resources after PCI initialization has
 	 * occurred to handle IO APICS that are mapped in on a BAR in

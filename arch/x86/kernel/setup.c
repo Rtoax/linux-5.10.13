@@ -220,6 +220,9 @@ void * __init extend_brk(size_t size, size_t align)
 //}
 #endif
 
+/**
+ *  
+ */
 static void __init reserve_brk(void)    /*  */
 {
 	if (_brk_end > _brk_start)
@@ -565,6 +568,9 @@ static void __init reserve_crashkernel(void)
 /*  */
 #endif
 
+/**
+ *  
+ */
 //reserve standard I/O resources like `DMA`, `TIMER`, `FPU`, etc
 static struct resource standard_io_resources[] = {
 	{ .name = "dma1", .start = 0x00, .end = 0x1f,
@@ -690,6 +696,9 @@ static void __init trim_platform_memory_ranges(void)
 	trim_snb_memory();
 }
 
+/**
+ *  从 e820 中移除 BIOS   的部分
+ */
 static void __init trim_bios_range(void)
 {
 	/*
@@ -699,12 +708,21 @@ static void __init trim_bios_range(void)
 	 */
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 
+    /**
+     *  更新一波
+     */
 	e820__update_table(e820_table);
 }
 
+/**
+ *  将内核映射到 RAM 中
+ */
 /* called before trim_bios_range() to spare extra sanitize */
 static void __init e820_add_kernel_range(void)
 {
+    /**
+     *  获取内核代码段 的起始地址 ~ 内核 结束
+     */
 	u64 start = __pa_symbol(_text);
 	u64 size = __pa_symbol(_end) - start;
 
@@ -714,11 +732,41 @@ static void __init e820_add_kernel_range(void)
 	 * or the user may have used memmap=exactmap or memmap=xxM$yyM to
 	 * exclude kernel range. If we really are running on top non-RAM,
 	 * we will crash later anyways.
-	 */
+	 *
+	 * 将 内核 镜像 映射到 物理内存（RAM）中
+     *  遍历整个 table *
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table
+     */
 	if (e820__mapped_all(start, start + size, E820_TYPE_RAM))
 		return;
 
 	pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
+
+    /**
+     *  出错流程
+     */
 	e820__range_remove(start, size, E820_TYPE_RAM, 0);
 	e820__range_add(start, size, E820_TYPE_RAM);
 }
@@ -807,8 +855,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 * separate memblock_reserve() or they will be discarded.
 	 *//* 在代码段 和 __end_of_kernel_reserve 之间预留内存，
 	    后面 的 kernel section 都需要调用此函数预留 */
-	memblock_reserve(__pa_symbol(_text),
-			 (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
+	memblock_reserve(__pa_symbol(_text), (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
 
 	/*
 	 * Make sure page 0 is always reserved because on systems with
@@ -933,6 +980,8 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 
     /**
      *  设置完根 `iomem` 的资源地址范围的结束地址后，下一步就是 设置内存映射
+     *
+     *  获取内存布局，从 BIOS 中拷贝一份新的 到 e802_table 中
      */
 	e820__memory_setup();   /* 设置内存映射 */
     
@@ -1114,9 +1163,14 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-    
+    /**
+     *  将内核 的 _text ~ _end 与 RAM 建立联系
+     */
 	e820_add_kernel_range(); /*  */
 
+    /**
+     *  从 e820 中移除 BIOS   的部分
+     */
     trim_bios_range();      /*  */
 
     
@@ -1129,6 +1183,9 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 //		e820__print_table("bad_ppro");
 //	}
 #else
+    /**
+     *  
+     */
 	early_gart_iommu_check();   /*  */
 #endif
 
@@ -1138,11 +1195,22 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 */
 	max_pfn = e820__end_of_ram_pfn();   /*  */
 
-	/* update e820 for memory not covered by WB MTRRs */
+	/**
+	 *  update e820 for memory not covered by WB MTRRs 
+	 *
+	 *  在 启动的 CPU 初始化 MTRR
+	 */
 	mtrr_bp_init(); /*  */
+
+    /**
+     *  
+     */
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();
 
+    /**
+     *  
+     */
 	max_possible_pfn = max_pfn; /*  */
 
 	/*
@@ -1156,7 +1224,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 * Define random base addresses for memory sections after max_pfn is
 	 * defined and before each memory section base is used.
 	 *
-	 * 随机化 内存 节 的 基址
+	 * 随机化 内存 节 的 基址 - ASLR 地址空间布局随机化
 	 */
 	kernel_randomize_memory();  /*  */
 
@@ -1166,7 +1234,7 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 #else
 
     /* 我估计这是 CPU 内部集成的APIC吧 - 荣涛 2021年7月1日 */
-	check_x2apic(); /*  */
+	check_x2apic(); /* APIC */
 
 	/* How many end-of-memory variables you have, grandma! */
 	/* need this before calling reserve_initrd */
@@ -1175,7 +1243,11 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	else
 		max_low_pfn = max_pfn;
 
+    /**
+     *  
+     */
 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
+    
 #endif
 
 	/*
@@ -1216,11 +1288,46 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
      *  这个界限可以是 `ISA_END_ADDRESS` 或者 `0x100000` 
      */
 	memblock_set_current_limit(ISA_END_ADDRESS);
-    
+
+    /**
+     *  将 e820 物理内存添加至 memblock
+     *
+     *  下面是 e820 table 格式
+     *
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table
+     */
 	e820__memblock_setup();
 
+    /**
+     *  
+     */
 	reserve_bios_regions(); /* 在这之后我们就在 `.meminit.data` 区段拥有了为扩展BIOS数据区域预留的第一个  `memblock` */
 
+    /**
+     *  
+     */
 	efi_fake_memmap();
 	efi_find_mirror();
 	efi_esrt_init();
@@ -1480,18 +1587,28 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	x86_init.hyper.guest_late_init();
 
     /**
-     *  E820 内存管理器
+     *  E820 内存管理器 
+     *  memblock 添加到 iomem_resource
      */
 	e820__reserve_resources();  /*  */
+
+    /**
+     *  
+     */
 	e820__register_nosave_regions(max_pfn);
 
     /**
      *  reserve standard I/O resources like `DMA`, `TIMER`, `FPU`, etc
      * 
      *  实际调用: reserve_standard_io_resources()
+     *
+     *  ioport_resource <=(添加)==- standard_io_resources 
      */
 	x86_init.resources.reserve_resources();
 
+    /**
+     *  
+     */
 	e820__setup_pci_gap();
 
 #ifdef CONFIG_VT
@@ -1500,8 +1617,15 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 		conswitchp = &vga_con;
 #endif
 #endif
+
+    /**
+     *  
+     */
 	x86_init.oem.banner();  /* 内核+编译器 版本 */
 
+    /**
+     *  
+     */
 	x86_init.timers.wallclock_init();
 
     //initializes `Machine check Exception`
@@ -1521,18 +1645,18 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 
 #ifdef CONFIG_X86_32
 
-static struct resource video_ram_resource = {
-	.name	= "Video RAM area",
-	.start	= 0xa0000,
-	.end	= 0xbffff,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-};
-
-void __init i386_reserve_resources(void)
-{
-	request_resource(&iomem_resource, &video_ram_resource);
-	reserve_standard_io_resources();
-}
+//static struct resource video_ram_resource = {
+//	.name	= "Video RAM area",
+//	.start	= 0xa0000,
+//	.end	= 0xbffff,
+//	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
+//};
+//
+//void __init i386_reserve_resources(void)
+//{
+//	request_resource(&iomem_resource, &video_ram_resource);
+//	reserve_standard_io_resources();
+//}
 
 #endif /* CONFIG_X86_32 */
 

@@ -227,8 +227,7 @@ static void __init_cache_modes(u64 pat)
 
 	pat_msg[32] = 0;
 	for (i = 7; i >= 0; i--) {
-		cache = pat_get_cache_mode((pat >> (i * 8)) & 7,
-					   pat_msg + 4 * i);
+		cache = pat_get_cache_mode((pat >> (i * 8)) & 7, pat_msg + 4 * i);
 		update_cache_mode_entry(i, cache);
 	}
 	pr_info("x86/PAT: Configuration [0-7]: %s\n", pat_msg);
@@ -272,6 +271,9 @@ static void pat_ap_init(u64 pat)
 	wrmsrl(MSR_IA32_CR_PAT, pat);
 }
 
+/**
+ *  
+ */
 void init_cache_modes(void)
 {
 	u64 pat = 0;
@@ -317,6 +319,9 @@ void init_cache_modes(void)
 		      PAT(4, WB) | PAT(5, WT) | PAT(6, UC_MINUS) | PAT(7, UC);
 	}
 
+    /**
+     *  
+     */
 	__init_cache_modes(pat);
 }
 

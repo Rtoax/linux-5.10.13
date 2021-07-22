@@ -389,11 +389,13 @@ phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
 				      phys_addr_t end, int nid, bool exact_nid);
 phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
 
-static inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
-					      phys_addr_t align)
+
+/**
+ *  
+ */
+static inline phys_addr_t memblock_phys_alloc(phys_addr_t size, phys_addr_t align)
 {
-	return memblock_phys_alloc_range(size, align, 0,
-					 MEMBLOCK_ALLOC_ACCESSIBLE);
+	return memblock_phys_alloc_range(size, align, 0, MEMBLOCK_ALLOC_ACCESSIBLE);
 }
 
 void *memblock_alloc_exact_nid_raw(phys_addr_t size, phys_addr_t align,
@@ -406,6 +408,9 @@ void *memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 			     phys_addr_t min_addr, phys_addr_t max_addr,
 			     int nid);
 
+/**
+  *  
+  */
 static inline void * __init memblock_alloc(phys_addr_t size,  phys_addr_t align)
 {
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,

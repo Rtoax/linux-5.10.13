@@ -674,7 +674,7 @@ extern int efi_reboot_quirk_mode;
 extern bool efi_poweroff_required(void);
 
 #ifdef CONFIG_EFI_FAKE_MEMMAP
-extern void __init efi_fake_memmap(void);
+//extern void __init efi_fake_memmap(void);
 #else
 static inline void efi_fake_memmap(void) { }
 #endif

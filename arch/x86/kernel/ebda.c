@@ -56,6 +56,9 @@
 #define BIOS_START_MIN		0x20000U	/* 128K, less than this is insane */
 #define BIOS_START_MAX		0x9f000U	/* 640K, absolute maximum */
 
+/**
+ *  
+ */
 void __init reserve_bios_regions(void)
 {
 	unsigned int bios_start, ebda_start;
@@ -80,6 +83,7 @@ void __init reserve_bios_regions(void)
 	 */
 	//首先我们得到了BIOS地地址内存的虚拟地址，以KB为单位
 	bios_start = *(unsigned short *)__va(BIOS_RAM_SIZE_KB_PTR);
+    
     //将其左移10位（即乘以1024）转换为以字节为单位
 	bios_start <<= 10;
 

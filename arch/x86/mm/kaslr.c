@@ -44,11 +44,15 @@ static const unsigned long vaddr_end = CPU_ENTRY_AREA_BASE;
  * Memory regions randomized by KASLR (except modules that use a separate logic
  * earlier during boot). The list is ordered based on virtual addresses. This
  * order is kept after randomization.
+ *
+ * ASLR - 地址空间布局随机化
  */
-static __initdata struct kaslr_memory_region {
+static  struct __initdata kaslr_memory_region {
 	unsigned long *base;
 	unsigned long size_tb;
+
 } kaslr_regions[] = {
+    
 	{ &page_offset_base, 0 },
 	{ &vmalloc_base, 0 },
 	{ &vmemmap_base, 0 },
@@ -113,8 +117,19 @@ void __init kernel_randomize_memory(void)
 	for (i = 0; i < ARRAY_SIZE(kaslr_regions); i++)
 		remain_entropy -= get_padding(&kaslr_regions[i]);
 
+    /**
+     *  
+     */
 	prandom_seed_state(&rand_state, kaslr_get_random_long("Memory"));
 
+    /**
+     *  KASLR - 地址空间布局随机化（ASLR）
+     *
+     * 数组中有三个项
+	 * { &page_offset_base, 0 },
+	 * { &vmalloc_base, 0 },
+	 * { &vmemmap_base, 0 },
+     */
 	for (i = 0; i < ARRAY_SIZE(kaslr_regions); i++) {
 		unsigned long entropy;
 

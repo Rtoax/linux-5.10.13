@@ -65,12 +65,26 @@ static struct e820_table __initdata e820_table_init		;
 static struct e820_table __initdata e820_table_kexec_init		;
 static struct e820_table __initdata e820_table_firmware_init	;
 
+/*
+ * The whole array of E820 entries:
+ *
+ * [    0.000000] e820: BIOS-provided physical RAM map:
+ * [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+ * [    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+ * [    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+ * [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000bff7ffff] usable
+ * [    0.000000] BIOS-e820: [mem 0x00000000bff80000-0x00000000bfffffff] reserved
+ * [    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+ * [    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+ * [    0.000000] BIOS-e820: [mem 0x0000000100000000-0x000000023fffffff] usable
+ */
 struct e820_table __refdata *e820_table 			= &e820_table_init;
 struct e820_table __refdata *e820_table_kexec 		= &e820_table_kexec_init;
 struct e820_table __refdata *e820_table_firmware 	= &e820_table_firmware_init;
 
 /* For PCI or other memory-mapped resources */
 unsigned long pci_mem_start = 0xaeedbabe;
+
 #ifdef CONFIG_PCI
 EXPORT_SYMBOL(pci_mem_start);
 #endif
@@ -114,12 +128,41 @@ EXPORT_SYMBOL_GPL(e820__mapped_any);
  * Note: this function only works correctly once the E820 table is sorted and
  * not-overlapping (at least for the range specified), which is the case normally.
  */
-static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
-					     enum e820_type type)
+static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type type)
 {
 	int i;
 
+    /**
+     *  遍历整个 table *
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table
+     */
 	for (i = 0; i < e820_table->nr_entries; i++) {
+
+        /**
+         *  
+         */
 		struct e820_entry *entry = &e820_table->entries[i];
 
 		if (type && entry->type != type)
@@ -132,6 +175,8 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 		/*
 		 * If the region is at the beginning of <start,end> we move
 		 * 'start' to the end of the region since it's ok until there
+		 *
+		 * 写小了，给他扩大
 		 */
 		if (entry->addr <= start)
 			start = entry->addr + entry->size;
@@ -152,6 +197,9 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
  */
 bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
 {
+    /**
+     *  映射
+     */
 	return __e820__mapped_all(start, end, type);
 }
 
@@ -178,14 +226,23 @@ static void __init __e820__range_add(struct e820_table *table, u64 start, u64 si
 		return;
 	}
 
+    /**
+     *  添加 到 e820_table
+     */
 	table->entries[x].addr = start;
 	table->entries[x].size = size;
 	table->entries[x].type = type;
 	table->nr_entries++;
 }
 
+/**
+ *  添加一块内存到 e820 中
+ */
 void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 {
+    /**
+     *  添加
+     */
 	__e820__range_add(e820_table, start, size, type);
 }
 
@@ -205,6 +262,9 @@ static void __init e820_print_type(enum e820_type type)
 	}
 }
 
+/**
+ *  打印BIOS 的 内存布局
+ */
 void __init e820__print_table(char *who)
 {
     //$ dmesg | grep e820
@@ -304,6 +364,9 @@ static struct change_member	__initdata *change_point[2*E820_MAX_ENTRIES]	;
 static struct e820_entry	__initdata *overlap_list[E820_MAX_ENTRIES]		;
 static struct e820_entry	__initdata new_entries[E820_MAX_ENTRIES]		;
 
+/**
+ *  
+ */
 static int __init cpcompare(const void *a, const void *b)
 {
 	struct change_member * const *app = a, * const *bpp = b;
@@ -335,6 +398,9 @@ static bool e820_nomerge(enum e820_type type)
 	return false;
 }
 
+/**
+ *  
+ */
 int __init e820__update_table(struct e820_table *table)
 {
 	struct e820_entry *entries = table->entries;
@@ -350,6 +416,9 @@ int __init e820__update_table(struct e820_table *table)
 
 	BUG_ON(table->nr_entries > max_nr_entries);
 
+    /**
+     *  检查
+     */
 	/* Bail out if we find any unreasonable addresses in the map: */
 	for (i = 0; i < table->nr_entries; i++) {
 		if (entries[i].addr + entries[i].size < entries[i].addr)
@@ -384,6 +453,9 @@ int __init e820__update_table(struct e820_table *table)
 	last_type = 0;		 /* Start with undefined memory type */
 	last_addr = 0;		 /* Start with 0 as last starting address */
 
+    /**
+     *  
+     */
 	/* Loop through change-points, determining effect on the new map: */
 	for (chg_idx = 0; chg_idx < chg_nr; chg_idx++) {
 		/* Keep track of all overlapping entries */
@@ -435,11 +507,21 @@ int __init e820__update_table(struct e820_table *table)
 	return 0;
 }
 
+/**
+ * 拷贝 BIOS E820 到一个安全的地方
+ */
 static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_entries)
 {
 	struct boot_e820_entry *entry = entries;
 
+    /**
+     *  遍历 e820 table
+     */
 	while (nr_entries) {
+
+        /**
+         *  获取这个内存块的描述
+         */
 		u64 start = entry->addr;
 		u64 size = entry->size;
 		u64 end = start + size - 1;
@@ -449,6 +531,9 @@ static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_en
 		if (start > end && likely(size))
 			return -1;
 
+        /**
+         *  添加 到 e820_table 全局变量中
+         */
 		e820__range_add(start, size, type);
 
 		entry++;
@@ -465,6 +550,8 @@ static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_en
  * If we're lucky and live on a modern system, the setup code
  * will have given us a memory map that we can use to properly
  * set up memory.  If we aren't, we'll fake a memory map.
+ *
+ * 拷贝 BIOS E820 到一个安全的地方
  */
 static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entries)
 {
@@ -472,6 +559,9 @@ static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entr
 	if (nr_entries < 2)
 		return -1;
 
+    /**
+     *  成功返回 0
+     */
 	return __append_e820_table(entries, nr_entries);
 }
 
@@ -835,11 +925,11 @@ u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 }
 
 #ifdef CONFIG_X86_32
-# ifdef CONFIG_X86_PAE
-#  define MAX_ARCH_PFN		(1ULL<<(36-PAGE_SHIFT))
-# else
-#  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
-# endif
+//# ifdef CONFIG_X86_PAE
+//#  define MAX_ARCH_PFN		(1ULL<<(36-PAGE_SHIFT))
+//# else
+//#  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
+//# endif
 #else /* CONFIG_X86_32 */
 # define MAX_ARCH_PFN MAXMEM>>PAGE_SHIFT
 #endif
@@ -866,6 +956,10 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 
 		if (start_pfn >= limit_pfn)
 			continue;
+
+        /**
+         *  找到
+         */
 		if (end_pfn > limit_pfn) {
 			last_pfn = limit_pfn;
 			break;
@@ -877,11 +971,13 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 	if (last_pfn > max_arch_pfn)
 		last_pfn = max_arch_pfn;
 
-	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n",
-		last_pfn, max_arch_pfn);
+	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n", last_pfn, max_arch_pfn);
 	return last_pfn;
 }
 
+/**
+ *  
+ */
 unsigned long __init e820__end_of_ram_pfn(void)
 {
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
@@ -1022,6 +1118,9 @@ void __init e820__reserve_setup_data(void)
 	if (!pa_data)
 		return;
 
+    /**
+     *  
+     */
 	while (pa_data) {
 		data = early_memremap(pa_data, sizeof(*data));
 		e820__range_update(pa_data, sizeof(*data)+data->len, E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
@@ -1072,6 +1171,9 @@ void __init e820__finish_early_params(void)
 	}
 }
 
+/**
+ *  
+ */
 static const char *__init e820_type_to_string(struct e820_entry *entry)
 {
 	switch (entry->type) {
@@ -1084,7 +1186,8 @@ static const char *__init e820_type_to_string(struct e820_entry *entry)
 	case E820_TYPE_PMEM:		return "Persistent Memory";
 	case E820_TYPE_RESERVED:	return "Reserved";
 	case E820_TYPE_SOFT_RESERVED:	return "Soft Reserved";
-	default:			return "Unknown E820 type";
+	default:			
+	    return "Unknown E820 type";
 	}
 }
 
@@ -1100,7 +1203,8 @@ static unsigned long __init e820_type_to_iomem_type(struct e820_entry *entry)
 	case E820_TYPE_PMEM:		/* Fall-through: */
 	case E820_TYPE_RESERVED:	/* Fall-through: */
 	case E820_TYPE_SOFT_RESERVED:	/* Fall-through: */
-	default:			return IORESOURCE_MEM;
+	default:			
+	    return IORESOURCE_MEM;
 	}
 }
 
@@ -1116,7 +1220,8 @@ static unsigned long __init e820_type_to_iores_desc(struct e820_entry *entry)
 	case E820_TYPE_RESERVED_KERN:	/* Fall-through: */
 	case E820_TYPE_RAM:		/* Fall-through: */
 	case E820_TYPE_UNUSABLE:	/* Fall-through: */
-	default:			return IORES_DESC_NONE;
+	default:			
+	    return IORES_DESC_NONE;
 	}
 }
 
@@ -1152,19 +1257,48 @@ static bool __init do_mark_busy(enum e820_type type, struct resource *res)
 
 static struct resource __initdata *e820_res;
 
+/**
+ *  将 memblock 内存添加至 iomem_resource
+ */
 void __init e820__reserve_resources(void)
 {
 	int i;
 	struct resource *res;
 	u64 end;
 
-	res = memblock_alloc(sizeof(*res) * e820_table->nr_entries,
-			     SMP_CACHE_BYTES);
+	res = memblock_alloc(sizeof(*res) * e820_table->nr_entries, SMP_CACHE_BYTES);
 	if (!res)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
-		      sizeof(*res) * e820_table->nr_entries);
+		            sizeof(*res) * e820_table->nr_entries);
 	e820_res = res;
 
+    /**
+     *  遍历 e820_table
+     *
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table
+     */
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = e820_table->entries + i;
 
@@ -1173,6 +1307,10 @@ void __init e820__reserve_resources(void)
 			res++;
 			continue;
 		}
+
+        /**
+         *  将所有的      memblock 添加到 resource
+         */
 		res->start = entry->addr;
 		res->end   = end;
 		res->name  = e820_type_to_string(entry);
@@ -1186,11 +1324,18 @@ void __init e820__reserve_resources(void)
 		 */
 		if (do_mark_busy(entry->type, res)) {
 			res->flags |= IORESOURCE_BUSY;
+
+            /**
+             *  添加至 系统 iomem 资源
+             */
 			insert_resource(&iomem_resource, res);
 		}
 		res++;
 	}
 
+    /**
+     *  固件
+     */
 	/* Expose the bootloader-provided memory layout to the sysfs. */
 	for (i = 0; i < e820_table_firmware->nr_entries; i++) {
 		struct e820_entry *entry = e820_table_firmware->entries + i;
@@ -1225,6 +1370,9 @@ void __init e820__reserve_resources_late(void)
 	int i;
 	struct resource *res;
 
+    /**
+     *  
+     */
 	res = e820_res;
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		if (!res->parent && res->end)
@@ -1235,7 +1383,33 @@ void __init e820__reserve_resources_late(void)
 	/*
 	 * Try to bump up RAM regions to reasonable boundaries, to
 	 * avoid stolen RAM:
-	 */
+	 *
+     *  遍历 e820_table
+     *
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table
+     */
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
 		u64 start, end;
@@ -1251,6 +1425,10 @@ void __init e820__reserve_resources_late(void)
 			continue;
 
 		printk(KERN_DEBUG "e820: reserve RAM buffer [mem %#010llx-%#010llx]\n", start, end);
+
+        /**
+         *  
+         */
 		reserve_region_with_split(&iomem_resource, start, end, "RAM buffer");
 	}
 }
@@ -1287,6 +1465,7 @@ char *__init e820__memory_setup_default(void)
 	 * the next section from 1mb->appropriate_mem_k
 	 */
 	if (append_e820_table(boot_params.e820_table, boot_params.e820_entries) < 0) {
+        
 		u64 mem_size;
 
 		/* Compare results from other methods and take the one that gives more RAM: */
@@ -1326,8 +1505,14 @@ void __init e820__memory_setup(void)
 	/* This is a firmware interface ABI - make sure we don't break it: */
 	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
 
+    /**
+     *  arch/x86/kernel/x86_init.c: .memory_setup = e820__memory_setup_default()
+     */
 	who = x86_init.resources.memory_setup();    /* 内存初始化 */
 
+    /**
+     *  将 内存布局拷贝到 零两个全局变量中
+     */
 	memcpy(e820_table_kexec, e820_table, sizeof(*e820_table_kexec));
 	memcpy(e820_table_firmware, e820_table, sizeof(*e820_table_firmware));
 
@@ -1373,24 +1558,64 @@ void __init e820__memblock_setup(void)
 	 */
 	memblock_allow_resize();
 
+    /**
+     *  
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table 遍历
+     */
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
 
 		end = entry->addr + entry->size;
+
+        /**
+         *  检测 地址类型
+         */
 		if (end != (resource_size_t)end)
 			continue;
 
+        /**
+         *  预留，这将添加至 memblock.reserved 中
+         */
 		if (entry->type == E820_TYPE_SOFT_RESERVED)
 			memblock_reserve(entry->addr, entry->size);
 
 		if (entry->type != E820_TYPE_RAM && entry->type != E820_TYPE_RESERVED_KERN)
 			continue;
 
+        /**
+         *  将 RAM 和 给 kernel 的 ram 添加至 memblock.memory 中
+         */
 		memblock_add(entry->addr, entry->size);
+        
 	}
 
 	/* Throw away partial pages: */
 	memblock_trim_memory(PAGE_SIZE);
 
+    /**
+     *  显示 一波
+     */
 	memblock_dump_all();
 }

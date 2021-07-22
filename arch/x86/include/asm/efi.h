@@ -357,25 +357,13 @@ extern bool efi_is_table_address(unsigned long phys_addr);
 extern void efi_find_mirror(void);
 extern void efi_reserve_boot_services(void);
 #else
-static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
-static inline bool efi_reboot_required(void)
-{
-	return false;
-}
-static inline  bool efi_is_table_address(unsigned long phys_addr)
-{
-	return false;
-}
-static inline void efi_find_mirror(void)
-{
-}
-static inline void efi_reserve_boot_services(void)
-{
-}
+/**
+     *  
+     */
 #endif /* CONFIG_EFI */
 
 #ifdef CONFIG_EFI_FAKE_MEMMAP
-extern void __init efi_fake_memmap_early(void);
+//extern void __init efi_fake_memmap_early(void);
 #else
 static inline void efi_fake_memmap_early(void)
 {

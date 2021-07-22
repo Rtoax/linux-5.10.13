@@ -26,25 +26,30 @@
 #include <linux/resource_ext.h>
 #include <asm/io.h>
 
-
+/**
+ *  
+ */
 struct resource ioport_resource = {
-	.name	= "PCI IO",
-	.start	= 0,
-	.end	= IO_SPACE_LIMIT,
-	.flags	= IORESOURCE_IO,
+	ioport_resource.name	= "PCI IO",
+	ioport_resource.start	= 0,
+	ioport_resource.end	= IO_SPACE_LIMIT,
+	ioport_resource.flags	= IORESOURCE_IO,
 };
 EXPORT_SYMBOL(ioport_resource);
 
-struct resource iomem_resource = {
-	.name	= "PCI mem",
-	.start	= 0,
-	.end	= -1,
-	.flags	= IORESOURCE_MEM,//0x00000200,定义了 `io` 内存的根地址范围
-};
-EXPORT_SYMBOL(iomem_resource);
+/**
+ *  PCI 上的 内存
 //`iomem_resource` 是通过 `EXPORT_SYMBOL` 宏传递的。
 //这个宏可以把指定的符号（例如 `iomem_resource`）做动态链接。
 //换句话说，它可以支持动态加载模块的时候访问对应符号。
+ */
+struct resource iomem_resource = {
+	iomem_resource.name	= "PCI mem",
+	iomem_resource.start	= 0,
+	iomem_resource.end	= -1,
+	iomem_resource.flags	= IORESOURCE_MEM,//0x00000200,定义了 `io` 内存的根地址范围
+};
+EXPORT_SYMBOL(iomem_resource);
 
 /* constraints to be met while allocating resources */
 struct resource_constraint {
@@ -783,52 +788,67 @@ struct resource *lookup_resource(struct resource *root, resource_size_t start)
 /*
  * Insert a resource into the resource tree. If successful, return NULL,
  * otherwise return the conflicting resource (compare to __request_resource())
+ *
+ * 
+//+-------------+      +-------------+
+//|    parent   |------|    sibling  |
+//+-------------+      +-------------+
+//       |
+//+-------------+
+//|    child    | 
+//+-------------+
  */
-static struct resource * __insert_resource(struct resource *parent, struct resource *new)
+static struct resource * __insert_resource(struct resource *parent, struct resource *rtoax_new)
 {
 	struct resource *first, *next;
 
+    /**
+     *  
+     */
 	for (;; parent = first) {
-		first = __request_resource(parent, new);
+		first = __request_resource(parent, rtoax_new);
 		if (!first)
 			return first;
 
 		if (first == parent)
 			return first;
-		if (WARN_ON(first == new))	/* duplicated insertion */
+		if (WARN_ON(first == rtoax_new))	/* duplicated insertion */
 			return first;
 
-		if ((first->start > new->start) || (first->end < new->end))
+		if ((first->start > rtoax_new->start) || (first->end < rtoax_new->end))
 			break;
-		if ((first->start == new->start) && (first->end == new->end))
+		if ((first->start == rtoax_new->start) && (first->end == rtoax_new->end))
 			break;
 	}
 
+    /**
+     *  
+     */
 	for (next = first; ; next = next->sibling) {
 		/* Partial overlap? Bad, and unfixable */
-		if (next->start < new->start || next->end > new->end)
+		if (next->start < rtoax_new->start || next->end > rtoax_new->end)
 			return next;
 		if (!next->sibling)
 			break;
-		if (next->sibling->start > new->end)
+		if (next->sibling->start > rtoax_new->end)
 			break;
 	}
 
-	new->parent = parent;
-	new->sibling = next->sibling;
-	new->child = first;
+	rtoax_new->parent = parent;
+	rtoax_new->sibling = next->sibling;
+	rtoax_new->child = first;
 
 	next->sibling = NULL;
 	for (next = first; next; next = next->sibling)
-		next->parent = new;
+		next->parent = rtoax_new;
 
 	if (parent->child == first) {
-		parent->child = new;
+		parent->child = rtoax_new;
 	} else {
 		next = parent->child;
 		while (next->sibling != first)
 			next = next->sibling;
-		next->sibling = new;
+		next->sibling = rtoax_new;
 	}
 	return NULL;
 }
@@ -854,6 +874,9 @@ struct resource *insert_resource_conflict(struct resource *parent, struct resour
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
+    /**
+     *  插入
+     */
 	conflict = __insert_resource(parent, new);
 	write_unlock(&resource_lock);
 	return conflict;
@@ -869,11 +892,14 @@ struct resource *insert_resource_conflict(struct resource *parent, struct resour
  * This function is intended for producers of resources, such as FW modules
  * and bus drivers.
  */
-int insert_resource(struct resource *parent, struct resource *new)
+int insert_resource(struct resource *parent, struct resource *_new)
 {
 	struct resource *conflict;
 
-	conflict = insert_resource_conflict(parent, new);
+    /**
+     *  
+     */
+	conflict = insert_resource_conflict(parent, _new);
 	return conflict ? -EBUSY : 0;
 }
 EXPORT_SYMBOL_GPL(insert_resource);

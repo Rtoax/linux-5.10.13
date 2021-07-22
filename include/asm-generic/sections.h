@@ -39,6 +39,7 @@ extern char __init_begin[], __init_end[];
 extern char _sinittext[], _einittext[];
 extern char __start_ro_after_init[], __end_ro_after_init[];
 extern char _end[];
+
 extern char __per_cpu_load[], __per_cpu_start[], __per_cpu_end[];
 
 /**
