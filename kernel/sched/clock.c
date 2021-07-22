@@ -386,6 +386,9 @@ u64 sched_clock_cpu(int cpu)
 }
 EXPORT_SYMBOL_GPL(sched_clock_cpu);
 
+/**
+ *  
+ */
 void sched_clock_tick(void)
 {
 	struct sched_clock_data *scd;

@@ -2080,6 +2080,9 @@ static DECLARE_WORK(disable_freq_invariance_work,
 
 DEFINE_PER_CPU(unsigned long, arch_freq_scale) = SCHED_CAPACITY_SCALE;
 
+/**
+ *  
+ */
 void arch_scale_freq_tick(void)
 {
 	u64 freq_scale = SCHED_CAPACITY_SCALE;
@@ -2119,7 +2122,5 @@ error:
 	schedule_work(&disable_freq_invariance_work);
 }
 #else
-static inline void init_freq_invariance(bool secondary)
-{
-}
+
 #endif /* CONFIG_X86_64 */
