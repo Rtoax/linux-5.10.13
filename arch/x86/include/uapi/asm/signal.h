@@ -27,6 +27,20 @@ typedef unsigned long sigset_t;
 #define SIGTRAP		 5
 #define SIGABRT		 6
 #define SIGIOT		 6
+/**
+ *  SIGBUS
+ *
+ *  1) 硬件故障，不用说，程序员最常碰上的肯定不是这种情形。
+ * 
+ *  2) Linux平台上执行malloc()，如果没有足够的RAM，Linux不是让malloc()失败返回，
+ *     而是向当前进程分发SIGBUS信号。
+ * 
+ *     注: 对该点执怀疑态度，有机会可自行测试确认当前系统反应。
+ * 
+ *  3) 某些架构上访问数据时有对齐的要求，比如只能从4字节边界上读取一个4字节的
+ *     数据类型。IA-32架构没有硬性要求对齐，尽管未对齐的访问降低执行效率。另外
+ *     一些架构，比如SPARC、m68k，要求对齐访问，否则向当前进程分发SIGBUS信号。
+ */
 #define SIGBUS		 7
 #define SIGFPE		 8
 #define SIGKILL		 9
