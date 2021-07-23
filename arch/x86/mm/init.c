@@ -1004,7 +1004,7 @@ void __init memblock_find_dma_reserve(void)
 }
 
 /**
- *  
+ *  初始化 zone 
  */
 // initialize sizes of zones 初始化 ZONE 大小
 void __init zone_sizes_init(void)
@@ -1042,6 +1042,10 @@ void __init zone_sizes_init(void)
 	free_area_init(max_zone_pfns);  /*  */
 }
 
+
+/**
+ *  
+ */
 __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.loaded_mm = &init_mm,
 	.next_asid = 1,

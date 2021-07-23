@@ -534,15 +534,18 @@ enum zone_type {
 #ifdef CONFIG_ZONE_DMA
 	ZONE_DMA,       /* DMA */
 #endif
+
 #ifdef CONFIG_ZONE_DMA32
 	ZONE_DMA32,     /*  */
 #endif
+
 	/*
 	 * Normal addressable memory is in ZONE_NORMAL. DMA operations can be
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
 	 */
 	ZONE_NORMAL,    /*  */
+	
 #ifdef CONFIG_HIGHMEM
 	/*
 	 * A memory area that is only addressable by the kernel through

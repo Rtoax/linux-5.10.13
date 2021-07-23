@@ -834,6 +834,9 @@ kernel_physical_mapping_change(unsigned long paddr_start,
  */
 void __init paging_init(void)
 {
+    /**
+     *  
+     */
     //allocates non-linear `mem_section` and `mem_map`
 	sparse_init();  
 

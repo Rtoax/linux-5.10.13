@@ -8197,6 +8197,7 @@ static void __init find_zone_movable_pfns_for_nodes(void)
          *  遍历 memblock 所有 memory.region
          */
 		for_each_mem_region(r) {
+		    
 			if (!memblock_is_hotpluggable(r))
 				continue;
 
@@ -8205,7 +8206,14 @@ static void __init find_zone_movable_pfns_for_nodes(void)
              */
 			nid = memblock_get_region_node(r);
 
+            /**
+             *  这个 region 起始 pfn
+             */
 			usable_startpfn = PFN_DOWN(r->base);
+
+            /**
+             *  
+             */
 			zone_movable_pfn[nid] = zone_movable_pfn[nid] ?
                     				min(usable_startpfn, zone_movable_pfn[nid]) : usable_startpfn;
 		}
@@ -8219,7 +8227,14 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 	if (mirrored_kernelcore) {
 		bool mem_below_4gb_not_mirrored = false;
 
+        /**
+         *  遍历
+         */
 		for_each_mem_region(r) {
+
+            /**
+             *  
+             */
 			if (memblock_is_mirror(r))
 				continue;
 
@@ -8233,8 +8248,8 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 			}
 
 			zone_movable_pfn[nid] = zone_movable_pfn[nid] ?
-				min(usable_startpfn, zone_movable_pfn[nid]) :
-				usable_startpfn;
+                    				min(usable_startpfn, zone_movable_pfn[nid]) :
+                    				usable_startpfn;
 		}
 
 		if (mem_below_4gb_not_mirrored)
@@ -8267,8 +8282,7 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 		 * Round-up so that ZONE_MOVABLE is at least as large as what
 		 * was requested by the user
 		 */
-		required_movablecore =
-			roundup(required_movablecore, MAX_ORDER_NR_PAGES);
+		required_movablecore = roundup(required_movablecore, MAX_ORDER_NR_PAGES);
 		required_movablecore = min(totalpages, required_movablecore);
 		corepages = totalpages - required_movablecore;
 
@@ -8424,6 +8438,8 @@ bool __weak arch_has_descending_max_zone_pfns(void)
  * at arch_max_dma_pfn.
  *
  * 初始化所有内存节点NODE，和 zone 数据，这是和架构无关的
+ *
+ * 数据类型 unsigned long max_zone_pfns[MAX_NR_ZONES];
  */
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
@@ -8439,20 +8455,30 @@ void __init free_area_init(unsigned long *max_zone_pfn)
      *  memblock 最小物理地址
      */
 	start_pfn = find_min_pfn_with_active_regions();
+
+    /**
+     *  空 函数 = false
+     */
 	descending = arch_has_descending_max_zone_pfns();//=false
 
     /**
      *  遍历所有 zone
      */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
-		if (descending)
+		if (descending/* =false */)
 			zone = MAX_NR_ZONES - i - 1;
 		else
 			zone = i;
 
+        /**
+         *  不考虑 MOVABLE 
+         */
 		if (zone == ZONE_MOVABLE)
 			continue;
 
+        /**
+         *  
+         */
 		end_pfn = max(max_zone_pfn[zone], start_pfn);
 		arch_zone_lowest_possible_pfn[zone] = start_pfn;
 		arch_zone_highest_possible_pfn[zone] = end_pfn;
@@ -8471,12 +8497,26 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	/* Print out the zone ranges */
 	pr_info("Zone ranges:\n");
     //[    0.000000] Zone ranges:
+    //[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]     = 15MB
+    //[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]     = 4079MB
+    //[    0.000000]   Normal   [mem 0x100000000-0x23fffffff]   = 5119MB
+    //
+    //下面是一个物理机的场景
+    //[root@localhost ~]# dmesg | grep Zone -A 5
+    //[    0.000000] Zone ranges:
     //[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]
     //[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]
-    //[    0.000000]   Normal   [mem 0x100000000-0x23fffffff]
+    //[    0.000000]   Normal   [mem 0x100000000-0x107fffffff]
+    //[    0.000000] Movable zone start for each node
+    //[    0.000000] Early memory node ranges
 	for (i = 0; i < MAX_NR_ZONES; i++) {
+
+        /**
+         *  跳过可移动
+         */
 		if (i == ZONE_MOVABLE)
 			continue;
+        
 		pr_info("  %-8s ", zone_names[i]);
 		if (arch_zone_lowest_possible_pfn[i] == arch_zone_highest_possible_pfn[i])
 			pr_cont("empty\n");
@@ -8486,9 +8526,19 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				((u64)arch_zone_highest_possible_pfn[i] << PAGE_SHIFT) - 1);
 	}
 
+    /**
+     *  
+     */
 	/* Print out the PFNs ZONE_MOVABLE begins at in each node */
 	pr_info("Movable zone start for each node\n");
 	for (i = 0; i < MAX_NUMNODES; i++) {
+
+        /**
+         *  这部分在物理服务器上是没有的
+         *  [root@localhost ~]# dmesg | grep Zone
+         *  [    0.000000] Movable zone start for each node
+         *  [    0.000000] Early memory node ranges
+         */
 		if (zone_movable_pfn[i])
 			pr_info("  Node %d: %#018Lx\n", i, (u64)zone_movable_pfn[i] << PAGE_SHIFT);
 	}
@@ -8498,6 +8548,20 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	 * subsection-map relative to active online memory ranges to
 	 * enable future "sub-section" extensions of the memory map.
 	 */
+    //物理机服务器如下
+    //[    0.000000] Early memory node ranges
+    //[    0.000000]   node   0: [mem 0x00001000-0x00099fff]
+    //[    0.000000]   node   0: [mem 0x00100000-0x5cdc3fff]
+    //[    0.000000]   node   0: [mem 0x5d1a1000-0x676f8fff]
+    //[    0.000000]   node   0: [mem 0x697f9000-0x69c43fff]
+    //[    0.000000]   node   0: [mem 0x6cf24000-0x6fffffff]
+    //[    0.000000]   node   0: [mem 0x100000000-0x87fffffff]
+    //[    0.000000]   node   1: [mem 0x880000000-0x107fffffff]
+    //我的虚拟机为
+    //[    0.000000] Early memory node ranges
+    //[    0.000000]   node   0: [mem 0x00001000-0x0009efff]
+    //[    0.000000]   node   0: [mem 0x00100000-0xbff7ffff]
+    //[    0.000000]   node   0: [mem 0x100000000-0x23fffffff]
 	pr_info("Early memory node ranges\n");
 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
         
@@ -8507,6 +8571,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		pr_info("  node %3d: [mem %#018Lx-%#018Lx]\n", nid,
         			(u64)start_pfn << PAGE_SHIFT,
         			((u64)end_pfn << PAGE_SHIFT) - 1);
+        
 		subsection_map_init(start_pfn, end_pfn - start_pfn);
 	}
 
