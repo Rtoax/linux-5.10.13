@@ -27,6 +27,7 @@ nodemask_t __initdata numa_nodes_parsed ;
 
 /**
  *  NUMA 节点 描述符
+ *  初始化 函数 `free_area_init_node()` 
  */
 struct pglist_data __read_mostly *node_data[MAX_NUMNODES] ;
 EXPORT_SYMBOL(node_data);

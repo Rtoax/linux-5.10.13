@@ -33,10 +33,17 @@ memblock ----------------------------> node/zone
 
 ```
 start_kernel
-    setup_arch
-        paging_init "x86_init.paging.pagetable_init()"
-            zone_sizes_init
-                free_area_init "初始化所有node和zone"
-                    free_area_init_node
-                        free_area_init_core
+  setup_arch
+    paging_init "x86_init.paging.pagetable_init()"
+      zone_sizes_init
+        free_area_init "初始化所有node和zone"
+          free_area_init_node
+            calculate_node_totalpages "初始化 NODE 和 ZONE 结构"
+            free_area_init_core
+              zone_init_internals
+                zone_pcp_init "per-CPU pages = PCP"
+              memmap_init_zone
+                __init_single_page
 ```
+
+

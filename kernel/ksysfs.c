@@ -208,6 +208,9 @@ static struct bin_attribute __ro_after_init notes_attr   = {/*  */
 struct kobject *kernel_kobj;    /*  */
 EXPORT_SYMBOL_GPL(kernel_kobj);
 
+/**
+ *  
+ */
 static struct attribute * kernel_attrs[] = {
 	&fscaps_attr.attr,
 	&uevent_seqnum_attr.attr,

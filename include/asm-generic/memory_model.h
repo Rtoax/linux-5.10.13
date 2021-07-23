@@ -50,9 +50,12 @@
 
 #elif defined(CONFIG_SPARSEMEM_VMEMMAP)
 
-/* memmap is virtually contiguous.  */
+/**
+ *  memmap is virtually contiguous.  
+ *
+ *  稀疏内存 SPARSEMEM中`__pfn_to_page`和`__page_to_pfn`的实现如下：
+ */
 #define __pfn_to_page(pfn)	(vmemmap/*VMEMMAP_START*/ + (pfn))   /*  */
-
 #define __page_to_pfn(page)	(unsigned long)((page) - vmemmap)   /*  */
 
 #elif defined(CONFIG_SPARSEMEM)

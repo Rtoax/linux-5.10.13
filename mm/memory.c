@@ -95,8 +95,15 @@
 unsigned long max_mapnr;
 EXPORT_SYMBOL(max_mapnr);
 
+/**
+ *# FLATMEM (flat memory model)
+ *  FLATMEM内存模型是Linux最早使用的内存模型，那时计算机的内存通常不大。
+ *  Linux会使用一个struct page mem_map[x]的数组根据PFN去依次存放所有的strcut page，
+ *  且mem_map也位于内核空间的线性映射区，所以根据PFN(页帧号)即可轻松的找到目标页帧的strcut page
+ */
 struct page *mem_map;
 EXPORT_SYMBOL(mem_map);
+
 #endif
 
 /*

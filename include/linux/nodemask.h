@@ -474,6 +474,9 @@ extern int node_random(const nodemask_t *maskp);
 /*  */
 #endif
 
+/**
+ *  
+ */
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]
 

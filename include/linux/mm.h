@@ -1109,12 +1109,12 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
  *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
  * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
  */
-#define ZONES_MASK		((1UL << ZONES_WIDTH/* 3 */) - 1)
-#define NODES_MASK		((1UL << NODES_WIDTH/* 10 */) - 1)
-#define SECTIONS_MASK		((1UL << SECTIONS_WIDTH/* 0 */) - 1)
-#define LAST_CPUPID_MASK	((1UL << LAST_CPUPID_SHIFT/* 21 */) - 1)
-#define KASAN_TAG_MASK		((1UL << KASAN_TAG_WIDTH) - 1)
-#define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
+#define ZONES_MASK          /* 0x7 */  ((1UL << ZONES_WIDTH/* 3 */) - 1)
+#define NODES_MASK          /* 0x1FF */  ((1UL << NODES_WIDTH/* 10 */) - 1)
+#define SECTIONS_MASK       /* 0x0 */	((1UL << SECTIONS_WIDTH/* 0 */) - 1)
+#define LAST_CPUPID_MASK    /* 0x */  ((1UL << LAST_CPUPID_SHIFT/* 21 */) - 1)
+#define KASAN_TAG_MASK      /*  */  ((1UL << KASAN_TAG_WIDTH) - 1)
+#define ZONEID_MASK         /*  */  ((1UL << ZONEID_SHIFT) - 1)
 
 static inline enum zone_type page_zonenum(const struct page *page)/* page 到 ZONE number */
 {
@@ -1471,6 +1471,11 @@ static inline unsigned long page_to_section(const struct page *page)
  *
  *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
  * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+ *
+ * 根据配置有不同的可能，大致的布局如下
+ * +----------+---------+----------+--------+----------+
+ * |  section |   node  |   zone   |  ...   |   flag   |
+ * +----------+---------+----------+--------+----------+
  */
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
@@ -1484,6 +1489,13 @@ static inline void set_page_node(struct page *page, unsigned long node)
 	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
 }
 
+
+/**
+ * page->flags
+ * +----------+---------+----------+--------+----------+
+ * |  section |   node  |   zone   |  ...   |   flag   |
+ * +----------+---------+----------+--------+----------+
+ */
 static inline void set_page_links(struct page *page, enum zone_type zone,
 	unsigned long node, unsigned long pfn)
 {

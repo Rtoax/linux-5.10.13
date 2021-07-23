@@ -1355,7 +1355,7 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 			continue;
 
         /**
-         *  nid 合理性
+         *  nid 合理性，找到了 nid，然后获取 pfn
          */
 		if (nid == MAX_NUMNODES || nid == r_nid)
 			break;

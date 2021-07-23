@@ -23,6 +23,14 @@
  * 1) mem_section	- memory sections, mem_map's for valid memory
  */
 #ifdef CONFIG_SPARSEMEM_EXTREME
+
+/**
+ *  内核中用了一个二级指针`struct mem_section **mem_section`去管理`section`，
+ *  我们可以简单理解为一个动态的二维数组。
+ *
+ *  所谓二维即内核又将`SECTIONS_PER_ROOT`个`section`划分为一个`ROOT`，
+ *  ROOT的个数不是固定的，根据系统实际的物理地址大小来分配。
+ */
 struct mem_section **mem_section;
 #else
 /*  */

@@ -610,6 +610,9 @@ enum zone_type {
  */
 #define ASYNC_AND_SYNC 2
 
+/**
+ *  内核初始化阶段，使用`zone_init_internals()`初始化
+ */
 struct zone {   /* 内存 ZONE */
 	/* Read-mostly fields */
 
@@ -668,10 +671,10 @@ struct zone {   /* 内存 ZONE */
 	int node;   /* 属于哪个 zone */
 #endif
 
-    /* 属于哪个node */
+    /* 属于哪个node, 在 `zone_init_internals()` 中赋值 */
 	struct pglist_data	*zone_pgdat;    /* node 信息 */
 
-    /*  */
+    /* `zone_pcp_init()` 中赋值 zone->pageset = &boot_pageset; */
 	struct per_cpu_pageset __percpu *pageset;   /* 每个CPU的pageset */
 
 #ifndef CONFIG_SPARSEMEM
@@ -719,11 +722,14 @@ struct zone {   /* 内存 ZONE */
 	 * Write access to present_pages at runtime should be protected by
 	 * mem_hotplug_begin/end(). Any reader who can't tolerant drift of
 	 * present_pages should get_online_mems() to get a stable value.
+	 *
+	 * 初始化 `calculate_node_totalpages()`
 	 */
 	atomic_long_t		managed_pages;  /* 伙伴系统管理的 当前页 数量 */
 	unsigned long		spanned_pages;  /* 包含的页面数量 */
 	unsigned long		present_pages;  /* ZONE 中实际管理的 物理页 数量 */
 
+    //`zone_init_internals`中设置 zone_names[idx]
 	const char		*name;
 
 #ifdef CONFIG_MEMORY_ISOLATION
@@ -1057,7 +1063,17 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
      *  
      */
 	unsigned long node_start_pfn;   /* 起始页帧号 */
+    
+    /**
+     *  等于所有 zone 的 zone->present_pages 数值
+     *  初始化`free_area_init_core()`
+     */
 	unsigned long node_present_pages; /* total number of physical pages *//* 物理页总个数 */
+
+    /**
+     *  等于所有 zone 的 zone->spanned_pages 数值
+     *  初始化`free_area_init_core()`
+     */
 	unsigned long node_spanned_pages; /* total size of physical page
 					     range, including holes *//* 物理页总大小，包括空洞 */
 	int node_id;
@@ -1151,7 +1167,11 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 
 	ZONE_PADDING(_pad2_)
 
-	/* Per-node vmstats */
+	/**
+	 *  Per-node vmstats  存放当前节点的统计信息
+	 *
+	 *  在 `free_area_init_core()` 中初始化 为 pgdat->per_cpu_nodestats = &boot_nodestats;
+	 */
 	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
 
     /**
@@ -1207,9 +1227,18 @@ bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 /*
  * Memory initialization context, use to differentiate memory added by
  * the platform statically or via memory hotplug interface.
+ *
+ * 内存初始化上下文，用于 区分 内存是通过 平台静态添加还是热插的
  */
 enum meminit_context {
+    /**
+     *  系统启动阶段，服务器上插的内存条
+     */
 	MEMINIT_EARLY,
+
+    /**
+     *  内存热插
+     */
 	MEMINIT_HOTPLUG,
 };
 
@@ -1588,7 +1617,13 @@ struct page;
 struct page_ext;
 
 /**
- *  
+ *  SPARSEMEM内存模型引入了section的概念，可以简单将它理解为struct page的集合(数组)。
+ *  内核使用 struct mem_section 去描述 section
+ *
+ *  SPARSEMEM将PFN差分成了三个level，
+ *  每个level分别对应：
+ *      ROOT编号、ROOT内的section偏移、section内的page偏移((可以类比多级页表来理解))
+ *
  */
 struct mem_section {
 	/*
@@ -1602,10 +1637,16 @@ struct mem_section {
 	 *
 	 * Making it a UL at least makes someone do a cast
 	 * before using it wrong.
+	 *
+	 * `section_mem_map`存放的是struct page数组的地址，
+	 *  每个section可容纳PFN_SECTION_SHIFT个struct page
+	 *
+	 * 
 	 */
 	unsigned long section_mem_map;
 
 	struct mem_section_usage *usage;
+    
 #ifdef CONFIG_PAGE_EXTENSION
 	/*
 	 * If SPARSEMEM, pgdat doesn't have page_ext pointer. We use
@@ -1621,9 +1662,9 @@ struct mem_section {
 };
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
-#define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section))
+#define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section)/*32*/)
 #else
-#define SECTIONS_PER_ROOT	1
+//#define SECTIONS_PER_ROOT	1
 #endif
 
 #define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT)
@@ -1631,9 +1672,16 @@ struct mem_section {
 #define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
+/**
+ *  内核中用了一个二级指针`struct mem_section **mem_section`去管理`section`，
+ *  我们可以简单理解为一个动态的二维数组。
+ *
+ *  所谓二维即内核又将`SECTIONS_PER_ROOT`个`section`划分为一个`ROOT`，
+ *  ROOT的个数不是固定的，根据系统实际的物理地址大小来分配。
+ */
 extern struct mem_section **mem_section;
 #else
-extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
+//extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 #endif
 
 static inline unsigned long *section_to_usemap(struct mem_section *ms)
@@ -1724,6 +1772,9 @@ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn);
 #endif
 #endif
 
+/**
+ *  稀疏内存
+ */
 static inline struct mem_section *__pfn_to_section(unsigned long pfn)
 {
 	return __nr_to_section(pfn_to_section_nr(pfn));
@@ -1744,10 +1795,10 @@ static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
 	return test_bit(idx, ms->usage->subsection_map);
 }
 #else
-static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
-{
-	return 1;
-}
+//static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
+//{
+//	return 1;
+//}
 #endif
 
 #ifndef CONFIG_HAVE_ARCH_PFN_VALID
@@ -1823,7 +1874,7 @@ struct mminit_pfnnid_cache {/* 页帧号 到 NODE 的缓存 */
  * when we have no holes within a MAX_ORDER_NR_PAGES block.
  */
 #ifdef CONFIG_HOLES_IN_ZONE /* ZONE 中 有 空洞 */
-#define pfn_valid_within(pfn) pfn_valid(pfn)
+//#define pfn_valid_within(pfn) pfn_valid(pfn)
 #else
 /**
  *  判断当前页帧的页表项 是否有效
@@ -1852,8 +1903,8 @@ struct mminit_pfnnid_cache {/* 页帧号 到 NODE 的缓存 */
  * the zone and PFN linkages are still valid. This is expensive, but walkers
  * of the full memmap are extremely rare.
  */
-bool memmap_valid_within(unsigned long pfn,
-					struct page *page, struct zone *zone);
+//bool memmap_valid_within(unsigned long pfn,
+//					struct page *page, struct zone *zone);
 #else
 static inline bool memmap_valid_within(unsigned long pfn,
 					struct page *page, struct zone *zone)

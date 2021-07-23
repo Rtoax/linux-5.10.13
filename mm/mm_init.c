@@ -85,6 +85,9 @@ void __init mminit_verify_zonelist(void)
 	}
 }
 
+/**
+ *  打印layout信息
+ */
 void __init mminit_verify_pageflags_layout(void)
 {
 	int shift, width;
@@ -122,13 +125,14 @@ void __init mminit_verify_pageflags_layout(void)
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_usage",
             		"location: %d -> %d layout %d -> %d unused %d -> %d page-flags\n",
             		shift, width, width, NR_PAGEFLAGS, NR_PAGEFLAGS, 0);
+    
 #ifdef NODE_NOT_IN_PAGE_FLAGS
-	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
-		            "Node not in page flags");
+//	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
+//		            "Node not in page flags");
 #endif
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
-	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
-		            "Last cpupid not in page flags");
+//	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
+//		            "Last cpupid not in page flags");
 #endif
 
 	if (SECTIONS_WIDTH) {
@@ -154,12 +158,16 @@ void __init mminit_verify_pageflags_layout(void)
 	BUG_ON(or_mask != add_mask);
 }
 
+/**
+ *  内存初始化的日志级别设置
+ */
 static __init int set_mminit_loglevel(char *str)
 {
 	get_option(&str, &mminit_loglevel);
 	return 0;
 }
 early_param("mminit_loglevel", set_mminit_loglevel);
+
 #endif /* CONFIG_DEBUG_MEMORY_INIT */
 
 struct kobject *mm_kobj;
@@ -207,9 +215,19 @@ static struct notifier_block __meminitdata compute_batch_nb  = {/*  */
 	.priority = IPC_CALLBACK_PRI, /* use lowest priority */
 };
 
+/**
+ *  
+ */
 static int __init mm_compute_batch_init(void)
 {
+    /**
+     *  过量提交
+     */
 	mm_compute_batch(sysctl_overcommit_memory);
+
+    /**
+     *  
+     */
 	register_hotmemory_notifier(&compute_batch_nb);
 
 	return 0;
@@ -219,6 +237,9 @@ __initcall(mm_compute_batch_init);
 
 #endif
 
+/**
+ *  
+ */
 static int __init mm_sysfs_init(void)
 {
 	mm_kobj = kobject_create_and_add("mm", kernel_kobj);

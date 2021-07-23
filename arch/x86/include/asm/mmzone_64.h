@@ -10,9 +10,12 @@
 #include <linux/mmdebug.h>
 #include <asm/smp.h>
 
+/**
+ *  初始化 函数 `free_area_init_node()` 
+ */
 extern struct pglist_data *node_data[];/* NUMA 页表 */
 
-//#define NODE_DATA(nid)		(node_data[nid])    /* 该 NUMA NODE 的全局页表 */
+#define NODE_DATA(nid)		(node_data[nid])    /* 该 NUMA NODE 的全局页表 */
 struct pglist_data *NODE_DATA(int nid) { /* 我把上面改写成这样 */
     return node_data[nid];
 }
