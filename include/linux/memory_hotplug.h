@@ -152,11 +152,11 @@ extern int __add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
 		       struct mhp_params *params);
 
 #ifndef CONFIG_ARCH_HAS_ADD_PAGES
-static inline int add_pages(int nid, unsigned long start_pfn,
-		unsigned long nr_pages, struct mhp_params *params)
-{
-	return __add_pages(nid, start_pfn, nr_pages, params);
-}
+//static inline int add_pages(int nid, unsigned long start_pfn,
+//		unsigned long nr_pages, struct mhp_params *params)
+//{
+//	return __add_pages(nid, start_pfn, nr_pages, params);
+//}
 #else /* ARCH_HAS_ADD_PAGES */
 int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
 	      struct mhp_params *params);

@@ -141,8 +141,10 @@ static void release_memory_resource(struct resource *res)
 }
 
 #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-void get_page_bootmem(unsigned long info,  struct page *page,
-		      unsigned long type)
+/**
+ *  
+ */
+void get_page_bootmem(unsigned long info,  struct page *page, unsigned long type)
 {
 	page->freelist = (void *)type;
 	SetPagePrivate(page);
@@ -211,18 +213,46 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
 	struct page *page, *memmap;
 	struct mem_section_usage *usage;
 
+    /**
+     *  稀疏内存
+     *
+     *  从 PFN  到 section 的转化
+     */
 	section_nr = pfn_to_section_nr(start_pfn);
+
+    /**
+     *  从 mem_section 中查出 section对应的结构
+     */
 	ms = __nr_to_section(section_nr);
 
+    /**
+     *  获取 对应的 page
+     */
 	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
 
-	register_page_bootmem_memmap(section_nr, memmap, PAGES_PER_SECTION);
+    /**
+     *  
+     */
+	register_page_bootmem_memmap(section_nr, memmap, PAGES_PER_SECTION/*x86-64=0x8000; arm64=0x40000*/);
 
+    /**
+     *  usage-> 内部为 bitmap
+     */
 	usage = ms->usage;
+
+    /**
+     *  这是啥操作?
+     */
 	page = virt_to_page(usage);
 
+    /**
+     *  
+     */
 	mapsize = PAGE_ALIGN(mem_section_usage_size()) >> PAGE_SHIFT;
 
+    /**
+     *  遍历 bitmap，对所有 page 初始化(置位和引用计数等)
+     */
 	for (i = 0; i < mapsize; i++, page++)
 		get_page_bootmem(section_nr, page, MIX_SECTION_INFO);
 }
@@ -516,6 +546,9 @@ void __ref remove_pfn_range_from_zone(struct zone *zone,
 	set_zone_contiguous(zone);
 }
 
+/**
+ *  
+ */
 static void __remove_section(unsigned long pfn, unsigned long nr_pages,
 			     unsigned long map_offset,
 			     struct vmem_altmap *altmap)
@@ -525,6 +558,9 @@ static void __remove_section(unsigned long pfn, unsigned long nr_pages,
 	if (WARN_ON_ONCE(!valid_section(ms)))
 		return;
 
+    /**
+     *  移除
+     */
 	sparse_remove_section(ms, pfn, nr_pages, map_offset, altmap);
 }
 

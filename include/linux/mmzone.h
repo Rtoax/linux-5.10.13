@@ -1559,22 +1559,37 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
  *
  * PA_SECTION_SHIFT		physical address to/from section number
  * PFN_SECTION_SHIFT		pfn to/from section number
+ *
+ *  SPARSEMEM将PFN差分成了三个level，
+ *  每个level分别对应：
+ *      ROOT编号、ROOT内的section偏移、section内的page偏移((可以类比多级页表来理解))
  */
-#define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
-#define PFN_SECTION_SHIFT	(SECTION_SIZE_BITS - PAGE_SHIFT)
+#define PA_SECTION_SHIFT	/*x86-64:27; arm64:30*/(SECTION_SIZE_BITS/*x86-64:27; arm64:30*/)
+#define PFN_SECTION_SHIFT	/*x86-64=15; arm64=18*/(SECTION_SIZE_BITS - PAGE_SHIFT/*12*/)
 
 #define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
 
-#define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)
+/**
+ *  
+ */
+#define PAGES_PER_SECTION    /*x86-64=0x8000; arm64=0x40000*/   (1UL << PFN_SECTION_SHIFT/*x86-64=15; arm64=18*/)
 #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
 
 #define SECTION_BLOCKFLAGS_BITS \
 	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
 
+
 #if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
 #error Allocator MAX_ORDER exceeds SECTION_SIZE
 #endif
 
+/**
+ *  稀疏内存
+ *
+ *  SPARSEMEM将PFN差分成了三个level，
+ *  每个level分别对应：
+ *      ROOT编号、ROOT内的section偏移、section内的page偏移((可以类比多级页表来理解))
+ */
 static inline unsigned long pfn_to_section_nr(unsigned long pfn)
 {
 	return pfn >> PFN_SECTION_SHIFT;
@@ -1603,9 +1618,14 @@ static inline unsigned long section_nr_to_pfn(unsigned long sec)
 #define SUBSECTION_ALIGN_UP(pfn) ALIGN((pfn), PAGES_PER_SUBSECTION)
 #define SUBSECTION_ALIGN_DOWN(pfn) ((pfn) & PAGE_SUBSECTION_MASK)
 
+
+/**
+ *  管理稀疏  section 的 bitmap
+ */
 struct mem_section_usage {
 #ifdef CONFIG_SPARSEMEM_VMEMMAP
 	DECLARE_BITMAP(subsection_map, SUBSECTIONS_PER_SECTION);
+    unsigned long subsection_map[BITS_TO_LONGS(SUBSECTIONS_PER_SECTION)]; //+++
 #endif
 	/* See declaration of similar field in struct zone */
 	unsigned long pageblock_flags[0];
@@ -1638,13 +1658,16 @@ struct mem_section {
 	 * Making it a UL at least makes someone do a cast
 	 * before using it wrong.
 	 *
-	 * `section_mem_map`存放的是struct page数组的地址，
+	 * `section_mem_map`存放的是struct page数组的地址，见`sparse_decode_mem_map()`
 	 *  每个section可容纳PFN_SECTION_SHIFT个struct page
 	 *
 	 * 
 	 */
 	unsigned long section_mem_map;
 
+    /**
+     *  管理  稀疏内存 section 的 bitmap
+     */
 	struct mem_section_usage *usage;
     
 #ifdef CONFIG_PAGE_EXTENSION
@@ -1662,11 +1685,17 @@ struct mem_section {
 };
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
-#define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section)/*32*/)
+/**
+ *  
+ */
+#define SECTIONS_PER_ROOT    /*128*/(PAGE_SIZE/*4096*/ / sizeof (struct mem_section)/*32*/)
 #else
 //#define SECTIONS_PER_ROOT	1
 #endif
 
+/**
+ *  稀疏内存
+ */
 #define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT)
 #define NR_SECTION_ROOTS	DIV_ROUND_UP(NR_MEM_SECTIONS, SECTIONS_PER_ROOT)
 #define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)
@@ -1689,6 +1718,9 @@ static inline unsigned long *section_to_usemap(struct mem_section *ms)
 	return ms->usage->pageblock_flags;
 }
 
+/**
+ *  从全局变量中查
+ */
 static inline struct mem_section *__nr_to_section(unsigned long nr)
 {
 #ifdef CONFIG_SPARSEMEM_EXTREME

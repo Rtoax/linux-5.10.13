@@ -1631,6 +1631,9 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
 }
 
 #if defined(CONFIG_MEMORY_HOTPLUG_SPARSE) && defined(CONFIG_HAVE_BOOTMEM_INFO_NODE)
+/**
+ *  
+ */
 void register_page_bootmem_memmap(unsigned long section_nr,
 				  struct page *start_page, unsigned long nr_pages)
 {
@@ -1644,6 +1647,9 @@ void register_page_bootmem_memmap(unsigned long section_nr,
 	unsigned int nr_pmd_pages;
 	struct page *page;
 
+    /**
+     *  遍历 稀疏 section
+     */
 	for (; addr < end; addr = next) {
 		pte_t *pte = NULL;
 
@@ -1652,6 +1658,9 @@ void register_page_bootmem_memmap(unsigned long section_nr,
 			next = (addr + PAGE_SIZE) & PAGE_MASK;
 			continue;
 		}
+        /**
+         *  
+         */
 		get_page_bootmem(section_nr, pgd_page(*pgd), MIX_SECTION_INFO);
 
 		p4d = p4d_offset(pgd, addr);
@@ -1659,6 +1668,9 @@ void register_page_bootmem_memmap(unsigned long section_nr,
 			next = (addr + PAGE_SIZE) & PAGE_MASK;
 			continue;
 		}
+        /**
+         *  
+         */
 		get_page_bootmem(section_nr, p4d_page(*p4d), MIX_SECTION_INFO);
 
 		pud = pud_offset(p4d, addr);

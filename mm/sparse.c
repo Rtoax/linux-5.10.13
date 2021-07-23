@@ -67,22 +67,25 @@ static void set_section_nid(unsigned long section_nr, int nid)
 static noinline struct mem_section __ref *sparse_index_alloc(int nid)
 {
 	struct mem_section *section = NULL;
-	unsigned long array_size = SECTIONS_PER_ROOT *
-				   sizeof(struct mem_section);
+	unsigned long array_size = SECTIONS_PER_ROOT/*128*/ * sizeof(struct mem_section);
 
 	if (slab_is_available()) {
 		section = kzalloc_node(array_size, GFP_KERNEL, nid);
 	} else {
-		section = memblock_alloc_node(array_size, SMP_CACHE_BYTES,
-					      nid);
+	    /**
+	     *  从 memblock 中分配 section 内存
+	     */
+		section = memblock_alloc_node(array_size, SMP_CACHE_BYTES, nid);
 		if (!section)
-			panic("%s: Failed to allocate %lu bytes nid=%d\n",
-			      __func__, array_size, nid);
+			panic("%s: Failed to allocate %lu bytes nid=%d\n", __func__, array_size, nid);
 	}
 
 	return section;
 }
 
+/**
+ *  
+ */
 static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 {
 	unsigned long root = SECTION_NR_TO_ROOT(section_nr);
@@ -98,10 +101,16 @@ static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 	if (mem_section[root])
 		return 0;
 
+    /**
+     *  分配
+     */
 	section = sparse_index_alloc(nid);
 	if (!section)
 		return -ENOMEM;
 
+    /**
+     *  赋值
+     */
 	mem_section[root] = section;
 
 	return 0;
@@ -334,6 +343,10 @@ struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pn
 {
 	/* mask off the extra low bits of information */
 	coded_mem_map &= SECTION_MAP_MASK;
+
+    /**
+     *  从 page 数组中取 page, 见 `struct mem_section`结构
+     */
 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
 }
 #endif /* CONFIG_MEMORY_HOTPLUG */
@@ -348,11 +361,17 @@ static void __meminit sparse_init_one_section(struct mem_section *ms,
 	ms->usage = usage;
 }
 
+/**
+ *  
+ */
 static unsigned long usemap_size(void)
 {
 	return BITS_TO_LONGS(SECTION_BLOCKFLAGS_BITS) * sizeof(unsigned long);
 }
 
+/**
+ *  获取这块 
+ */
 size_t mem_section_usage_size(void)
 {
 	return sizeof(struct mem_section_usage) + usemap_size();
@@ -892,12 +911,18 @@ static void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
 /*  */
 #endif
 
+/**
+ *  
+ */
 void sparse_remove_section(struct mem_section *ms, unsigned long pfn,
 		unsigned long nr_pages, unsigned long map_offset,
 		struct vmem_altmap *altmap)
 {
-	clear_hwpoisoned_pages(pfn_to_page(pfn) + map_offset,
-			nr_pages - map_offset);
+	clear_hwpoisoned_pages(pfn_to_page(pfn) + map_offset, nr_pages - map_offset);
+
+    /**
+     *  
+     */
 	section_deactivate(pfn, nr_pages, altmap);
 }
 #endif /* CONFIG_MEMORY_HOTPLUG */
