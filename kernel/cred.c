@@ -329,6 +329,8 @@ struct cred *prepare_exec_creds(void)
  *
  * The new process gets the current process's subjective credentials as its
  * objective and subjective credentials
+ *
+ * 复制父进程证书
  */
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {

@@ -147,6 +147,7 @@ out_ns:
 /*
  * called from clone.  This now handles copy for nsproxy and all
  * namespaces therein.
+ * 复制父进程的命名空间
  */
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 {

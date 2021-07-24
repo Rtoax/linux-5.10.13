@@ -181,6 +181,10 @@ static inline bool is_child_reaper(struct pid *pid)
  * see also task_xid_nr() etc in include/linux/sched.h
  */
 
+/**
+ *  分配一个全局的 PID
+ *  全局的PID 是从 init 进程的 命名空间的角度来看的。
+ */
 static inline pid_t pid_nr(struct pid *pid)
 {
 	pid_t nr = 0;

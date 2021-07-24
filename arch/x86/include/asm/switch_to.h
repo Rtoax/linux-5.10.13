@@ -14,6 +14,10 @@ __visible struct task_struct *__switch_to(struct task_struct *prev,
 
 /**
  *  fork 返回
+ *
+ *  arch/x86/entry/entry_64.S
+ *  arch/x86/entry/entry_32.S
+ *  arch/arm64/kernel/entry.S
  */
 asmlinkage void ret_from_fork(void);
 
@@ -39,6 +43,11 @@ struct inactive_task_frame {    /* 任务 frame */
 	 * needed by get_frame_pointer().
 	 */
 	unsigned long bp;
+
+    /**
+     *  在 copy_thread() 中被赋值为 `ret_from_fork()`
+     *  表示 子进程的入口地址
+     */
 	unsigned long ret_addr;
 };
 

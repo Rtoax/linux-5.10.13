@@ -366,6 +366,10 @@ extern pud_t pudp_huge_clear_flush(struct vm_area_struct *vma,
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
 struct mm_struct;
+/**
+ *  写时复制 时，设置 为只读
+ *  这是一个 架构相关 的 API
+ */
 static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
 {
 	pte_t old_pte = *ptep;

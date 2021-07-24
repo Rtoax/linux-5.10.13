@@ -929,6 +929,10 @@ copy_present_pte(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 	 * in the parent and the child
 	 */
 	if (is_cow_mapping(vm_flags) && pte_write(pte)) {
+        /**
+         *  写时复制 时，设置 为只读
+         *  这是一个 架构相关 的 API
+         */
 		ptep_set_wrprotect(src_mm, addr, src_pte);
 		pte = pte_wrprotect(pte);
 	}
@@ -938,7 +942,11 @@ copy_present_pte(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 	 * the child
 	 */
 	if (vm_flags & VM_SHARED)
+    	/**
+    	 *  清除 PTE 的 dirty 位
+    	 */
 		pte = pte_mkclean(pte);
+    
 	pte = pte_mkold(pte);
 
 	/*
@@ -972,8 +980,13 @@ page_copy_prealloc(struct mm_struct *src_mm, struct vm_area_struct *vma,
 	return new_page;
 }
 
-static int
-copy_pte_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
+/**
+ *  复制 父进程的进程地址空间相应页表的核心实现函数
+ *
+ * @addr VMA 起始地址
+ * @end  VMA 结束地址
+ */
+static int copy_pte_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 	       pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
 	       unsigned long end)
 {
@@ -1028,8 +1041,7 @@ again:
 			continue;
 		}
 		/* copy_present_pte() will clear `*prealloc' if consumed */
-		ret = copy_present_pte(dst_vma, src_vma, dst_pte, src_pte,
-				       addr, rss, &prealloc);
+		ret = copy_present_pte(dst_vma, src_vma, dst_pte, src_pte, addr, rss, &prealloc);
 		/*
 		 * If we need a pre-allocated page for this pte, drop the
 		 * locks, allocate, and try again.
@@ -1174,8 +1186,10 @@ copy_p4d_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 	return 0;
 }
 
-int
-copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
+/**
+ *  复制 父进程的进程地址空间相应页表的核心实现函数
+ */
+int copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 {
 	pgd_t *src_pgd, *dst_pgd;
 	unsigned long next;
@@ -1219,8 +1233,7 @@ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 	is_cow = is_cow_mapping(src_vma->vm_flags);
 
 	if (is_cow) {
-		mmu_notifier_range_init(&range, MMU_NOTIFY_PROTECTION_PAGE,
-					0, src_vma, src_mm, addr, end);
+		mmu_notifier_range_init(&range, MMU_NOTIFY_PROTECTION_PAGE, 0, src_vma, src_mm, addr, end);
 		mmu_notifier_invalidate_range_start(&range);
 		/*
 		 * Disabling preemption is not needed for the write side, as

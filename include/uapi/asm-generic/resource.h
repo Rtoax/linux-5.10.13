@@ -24,7 +24,7 @@
 #endif
 
 #ifndef RLIMIT_NPROC
-# define RLIMIT_NPROC		6	/* max number of processes */
+# define RLIMIT_NPROC		6	/* 限制rlimit 最大进程数 max number of processes */
 #endif
 
 #ifndef RLIMIT_NOFILE

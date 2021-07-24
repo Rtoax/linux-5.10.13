@@ -92,7 +92,7 @@ struct io_uring_task;
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
 #define TASK_NOLOAD			0x0400
-#define TASK_NEW			0x0800
+#define TASK_NEW			0x0800  /* linux-4.8添加 保证进程不会被运行 */
 #define TASK_STATE_MAX			0x1000
 
 /* Convenience macros for the sake of set_current_state: */
@@ -876,6 +876,10 @@ struct task_struct {    /* PCB */
     
 	int				exit_state;
 	int				exit_code;
+
+    /**
+     *  领头进程的判断标志，如`thread_group_leader()`
+     */
 	int				exit_signal;
 	/* The signal sent when the parent dies: */
 	int				pdeath_signal;
@@ -948,7 +952,14 @@ struct task_struct {    /* PCB */
 
 	struct restart_block		restart_block;/* system call restart block */
 
+    /**
+     * 实际上的 线程ID，top -Hp tgid 后显示的 pid
+     */
 	pid_t				pid;
+
+    /**
+     * 实际上的 进程ID， 线程组 ID， top -Hp tgid
+     */
 	pid_t				tgid;
 
 #ifdef CONFIG_STACKPROTECTOR
@@ -972,6 +983,8 @@ struct task_struct {    /* PCB */
 	 */
 	struct list_head		children;
 	struct list_head		sibling;
+
+    /* 线程组 领头 ,见`copy_process()` */
 	struct task_struct		*group_leader;
 
 	/*
@@ -1666,11 +1679,11 @@ extern struct pid *cad_pid;
  * Per process flags
  */
 #define PF_VCPU			0x00000001	/* I'm a virtual CPU */
-#define PF_IDLE			0x00000002	/* I am an IDLE thread */
+#define PF_IDLE			0x00000002	/* Linux-4.10引入，解决空闲注入驱动问题，I am an IDLE thread */
 #define PF_EXITING		0x00000004	/* Getting shut down */
 #define PF_IO_WORKER		0x00000010	/* Task is an IO worker */
-#define PF_WQ_WORKER		0x00000020	/* I'm a workqueue worker */
-#define PF_FORKNOEXEC		0x00000040	/* Forked but didn't exec */
+#define PF_WQ_WORKER		0x00000020	/* 是否为工作队列线程，只能由工作队列机制创建，I'm a workqueue worker */
+#define PF_FORKNOEXEC		0x00000040	/* 暂时还不能运行，Forked but didn't exec */
 #define PF_MCE_PROCESS		0x00000080      /* Process policy on mce errors */
 #define PF_SUPERPRIV		0x00000100	/* Used super-user privileges */
 #define PF_DUMPCORE		0x00000200	/* Dumped core */

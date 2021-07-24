@@ -3279,6 +3279,9 @@ int sysctl_schedstats(struct ctl_table *table, int write, void *buffer,
  *
  * @clone_flags:    
  * @p:      当前线程
+ *
+ *  Perform scheduler related setup. Assign this task to a CPU. 
+ *  调度 - 初始化与进程调度相关的数据结构 基本初始化
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 {
@@ -3288,6 +3291,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
      *  
      */
 	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
+    
 	/*
 	 * We mark the process as NEW here. This guarantees that
 	 * nobody will actually run it, and a signal or other external
@@ -3354,11 +3358,15 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	/*
 	 * We're setting the CPU for the first time, we don't migrate,
 	 * so use __set_task_cpu().
+	 *
+	 * 新进程会运行在这个 CPU 上
 	 */
 	__set_task_cpu(p, smp_processor_id());
 
     /**
      *  
+     *  task_fork_fair()
+     *  task_fork_dl()
      */
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);   /* ->task_fork_fair() */

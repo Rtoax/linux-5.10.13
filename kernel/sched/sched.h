@@ -1871,6 +1871,11 @@ struct sched_class {    /* 调度类 *//*  */
      *  task_tick_stop()
      */
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
+
+    /**
+     *  task_fork_fair()
+     *  task_fork_dl()
+     */ 
 	void (*task_fork)(struct task_struct *p);
 	void (*task_dead)(struct task_struct *p);
 

@@ -657,6 +657,9 @@ static inline int get_nr_threads(struct task_struct *task)
 	return task->signal->nr_threads;
 }
 
+/**
+ *  领头进程
+ */
 static inline bool thread_group_leader(struct task_struct *p)
 {
 	return p->exit_signal >= 0;

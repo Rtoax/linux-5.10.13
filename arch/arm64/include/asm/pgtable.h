@@ -93,7 +93,7 @@ extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
 /*
  * The following only work if pte_present(). Undefined behaviour otherwise.
  */
-#define pte_present(pte)	(!!(pte_val(pte) & (PTE_VALID | PTE_PROT_NONE)))
+#define pte_present(pte)	/* 该页面是否在内存中 */(!!(pte_val(pte) & (PTE_VALID | PTE_PROT_NONE)))
 #define pte_young(pte)		(!!(pte_val(pte) & PTE_AF))
 #define pte_special(pte)	(!!(pte_val(pte) & PTE_SPECIAL))
 #define pte_write(pte)		(!!(pte_val(pte) & PTE_WRITE))
@@ -195,6 +195,9 @@ static inline pte_t pte_mkdirty(pte_t pte)
 	return pte;
 }
 
+/**
+ *  写时复制时，需要设置写保护
+ */
 static inline pte_t pte_wrprotect(pte_t pte)
 {
 	/*
@@ -851,6 +854,10 @@ static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
  * dirty status (PTE_DBM && !PTE_RDONLY) to the software PTE_DIRTY bit.
  */
 #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+/**
+ *  写时复制 时，设置 为只读
+ *  这是一个 架构相关 的 API
+ */
 static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
 {
 	pte_t old_pte, pte;

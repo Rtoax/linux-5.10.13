@@ -12,17 +12,24 @@
  */
 struct user_struct {    /*  */
 	refcount_t __count;	/* reference count */
+
+    /**
+     *  该用户的进程数
+     */
 	atomic_t processes;	/* How many processes does this user have? */
 	atomic_t sigpending;	/* How many pending signals does this user have? */
+    
 #ifdef CONFIG_FANOTIFY
 	atomic_t fanotify_listeners;
 #endif
+    
 #ifdef CONFIG_EPOLL
     /**
      *  当前 watch 的文件描述符个数
      */
 	atomic_long_t epoll_watches; /* The number of file descriptors currently watched */
 #endif
+    
 #ifdef CONFIG_POSIX_MQUEUE
 	/* protected by mq_lock	*/
 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */

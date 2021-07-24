@@ -1119,6 +1119,10 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
 }
 
 #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+/**
+ *  写时复制 时，设置 为只读
+ *  这是一个 架构相关 的 API
+ */
 static inline void ptep_set_wrprotect(struct mm_struct *mm,
 				      unsigned long addr, pte_t *ptep)
 {

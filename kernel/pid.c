@@ -162,6 +162,7 @@ void free_pid(struct pid *pid)
 
 /**
  *  分配新的 struct pid
+ *  为进程分配 PID 结构和 pid
  */
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
@@ -332,6 +333,8 @@ static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 
 /*
  * attach_pid() must be called with the tasklist_lock write-held.
+ *
+ * 吧新进程添加到不同的 哈希表 中
  */
 void attach_pid(struct task_struct *task, enum pid_type type)
 {
@@ -488,6 +491,10 @@ pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 }
 EXPORT_SYMBOL_GPL(pid_nr_ns);
 
+/**
+ *  分配一个虚拟的 PID
+ *  虚拟的PID 是从 当前 进程的 命名空间的角度来看的。
+ */
 pid_t pid_vnr(struct pid *pid)  /*  */
 {
 	return pid_nr_ns(pid, task_active_pid_ns(current));

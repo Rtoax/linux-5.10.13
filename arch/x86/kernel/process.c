@@ -130,8 +130,11 @@ static int set_new_tls(struct task_struct *p, unsigned long tls)    /*  */
 }
 
 /**
- *  
+ *  寄存器 - 复制父进程的内核堆信息
+ *
+ *  复制父进程的 pt_regs 结构到子进程，描述寄存器全部信息
  */
+int copy_thread_tls(); /* +++ linux-5.0 */
 int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
 		struct task_struct *p, unsigned long tls)   /*  */
 {
@@ -153,7 +156,9 @@ int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
 	frame->bp = encode_frame_pointer(childregs);
 
     /**
-     *  返回地址
+     *  返回地址 - 子进程的入口地址
+     *
+     *  arch/x86/entry/entry_64.S
      */
 	frame->ret_addr = (unsigned long) ret_from_fork;
 

@@ -383,6 +383,9 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
  */
 asmlinkage void ret_from_fork(void) asm("ret_from_fork");
 
+/**
+ *  复制父进程的 pt_regs 结构到子进程，描述寄存器全部信息
+ */
 int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		unsigned long stk_sz, struct task_struct *p, unsigned long tls)
 {

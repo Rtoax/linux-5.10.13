@@ -124,6 +124,10 @@
 unsigned long total_forks;	/* Handle normal Linux uptimes. */
 int nr_threads;			/* The idle threads do not count.. */
 
+/**
+ *  当前可以拥有的最大进程数
+ *  set_max_threads()
+ */
 static int max_threads;		/* tunable limit on nr_threads */
 
 #define NAMED_ARRAY_INDEX(x)	[x] = __stringify(x)
@@ -684,6 +688,9 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 
 		mm->map_count++;
 		if (!(tmp->vm_flags & VM_WIPEONFORK))
+            /**
+             *  复制 父进程的进程地址空间相应页表的核心实现函数
+             */
 			retval = copy_page_range(tmp, mpnt);
 
 		if (tmp->vm_ops && tmp->vm_ops->open)
@@ -861,6 +868,8 @@ void __init __weak arch_task_cache_init(void) { }
 
 /*
  * set_max_threads
+ *
+ *  当前可以拥有的最大进程数
  */
 static void set_max_threads(unsigned int max_threads_suggested) /*  */
 {
@@ -945,6 +954,9 @@ void __init fork_init(void)/*  */
 	/* do the arch specific task caches init */
 	arch_task_cache_init(); /* x86 为空 */
 
+    /**
+     *  当前可以拥有的最大进程数
+     */
 	set_max_threads(MAX_THREADS);   /* 最大线程数 */
 
     //initialize [signal] handler
@@ -994,7 +1006,8 @@ void set_task_stack_end_magic(struct task_struct *tsk)/* 设置越界检测 以�
 }
 
 /**
- *  拷贝一个新的 task_struct 
+ *  拷贝一个新的 task_struct
+ *  为新进程分配一个进程描述符 和 内核栈
  */
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
@@ -1007,14 +1020,14 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 		node = tsk_fork_get_node(orig); /* kthreadd 的node */
 
     /**
-     *  
+     *  为新进程分配一个进程描述符
      */
 	tsk = alloc_task_struct_node(node); /* kmem_cache_alloc *//* 分配 task_struct 结构 */
 	if (!tsk)
 		return NULL;
     
     /**
-     *  分配进程栈 
+     *  为新进程分配一个  内核栈
      */
 	stack = alloc_thread_stack_node(tsk, node); /* task_struct->stack */
 	if (!stack)
@@ -1081,7 +1094,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
      */
 	clear_user_return_notifier(tsk);/* 清理 标志位 */
 	clear_tsk_need_resched(tsk);    /* 清理 标志位 */
-	set_task_stack_end_magic(tsk);  /* 设置栈边界 magic */
+	set_task_stack_end_magic(tsk);  /* 设置栈边界 magic，用于溢出监测 */
 
 #ifdef CONFIG_STACKPROTECTOR
     /**
@@ -1683,7 +1696,7 @@ fail_nomem:
 }
 
 /**
- *  
+ *  复制父进程的 fs_struct 数据结构信息
  */
 static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 {
@@ -1710,7 +1723,7 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 }
 
 /**
- *  
+ *  复制父进程打开的文件等信息
  */
 static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -1854,7 +1867,7 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 
 
 /**
- *  
+ *  信号 - 复制父进程的信号系统
  */
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -1966,6 +1979,10 @@ static void rt_mutex_init_task(struct task_struct *p)
 #endif
 }
 
+
+/**
+ *  把新进程添加到 进程管理 的流程里
+ */
 static inline void init_task_pid_links(struct task_struct *task)
 {
 	enum pid_type type;
@@ -2280,6 +2297,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 
     /**
      *  拷贝 PCB
+     *  为新进程分配一个进程描述符 和 内核栈
      */
 	p = dup_task_struct(current, node); /* 拷贝一个 task_struct 结构 */
 	if (!p)
@@ -2323,7 +2341,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	current->flags &= ~PF_NPROC_EXCEEDED;   /* 清理超出位 */
 
     /**
-     *  
+     *  复制父进程证书
      */
 	retval = copy_creds(p, clone_flags);
 	if (retval < 0)
@@ -2342,8 +2360,16 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
      *  
      */
 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
-	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);/* 清理超级用户，工作队列worker，空闲线程标志位 */
-	p->flags |= PF_FORKNOEXEC;  /* fork but didn't exec */
+
+    /**
+     *  清理超级用户，工作队列worker，空闲线程标志位 
+     */
+	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);
+	p->flags |= PF_FORKNOEXEC;  /* 暂时还不能运行， fork but didn't exec */
+
+    /**
+     *  初始化子进程和 兄弟进程链表
+     */
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
 	rcu_copy_process(p);    /*  */
@@ -2456,7 +2482,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 
 	/**
 	 *  Perform scheduler related setup. Assign this task to a CPU. 
-	 *  调度
+	 *  调度 - 初始化与进程调度相关的数据结构
 	 */
 	retval = sched_fork(clone_flags, p);    /* 调度 */
 	if (retval)
@@ -2498,14 +2524,14 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 		goto bad_fork_cleanup_security;
 
     /**
-     *  
+     *  复制父进程打开的文件等信息
      */
 	retval = copy_files(clone_flags, p);    /* 文件 */
 	if (retval)
 		goto bad_fork_cleanup_semundo;
 
     /**
-     *  
+     *  复制父进程的 fs_struct 数据结构信息
      */
 	retval = copy_fs(clone_flags, p);       /* 文件系统 */
 	if (retval)
@@ -2519,7 +2545,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 		goto bad_fork_cleanup_fs;
 
     /**
-     *  信号
+     *  信号 - 复制父进程的信号系统
      */
 	retval = copy_signal(clone_flags, p);   /* 信号 */
 	if (retval)
@@ -2534,22 +2560,27 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 
     /**
      *  TODO 2021年7月21日16:22:18
+     *
+     * 复制父进程的命名空间
      */
 	retval = copy_namespaces(clone_flags, p);   /* 命名空间 */
 	if (retval)
 		goto bad_fork_cleanup_mm;
 
     /**
-     *  
+     *  复制与 IO相关 的内容
      */
 	retval = copy_io(clone_flags, p);   /* IO */
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
 
     /**
-     *  寄存器
+     *  寄存器 - 复制父进程的内核堆信息
+     *
+     *  复制父进程的 pt_regs 结构到子进程，描述寄存器全部信息
      */
 	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls); /*  */
+    retval = copy_thread_tls(); /* +++ linux-5.0 */
 	if (retval)
 		goto bad_fork_cleanup_io;
 
@@ -2564,7 +2595,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	if (pid != &init_struct_pid) {
 
         /**
-         *  
+         *  为进程分配 PID 结构和 pid
          */
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid, args->set_tid_size);
 		if (IS_ERR(pid)) {
@@ -2626,12 +2657,22 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 #endif
 	clear_tsk_latency_tracing(p);
 
+    /**
+     *  设置group——leader 和TGID
+     */
 	/* ok, now we should be set up.. */
 	p->pid = pid_nr(pid);   /*  */
+    /**
+     *  子进程归属于父进程线程组
+     */
 	if (clone_flags & CLONE_THREAD) {
 		p->group_leader = current->group_leader;
 		p->tgid = current->tgid;
-	} else {
+	}
+    /**
+     *  子进程是线程组的领头线程
+     */
+    else {
 		p->group_leader = p;
 		p->tgid = p->pid;
 	}
@@ -2723,7 +2764,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 		fd_install(pidfd, pidfile);
 
     /**
-     *  
+     *  把新进程添加到 进程管理 的流程里
      */
 	init_task_pid_links(p); /*  */
 
@@ -2734,6 +2775,10 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
 
 		init_task_pid(p, PIDTYPE_PID, pid);
+
+        /**
+         *  领头进程
+         */
 		if (thread_group_leader(p)) {
 
             /**
@@ -2761,32 +2806,59 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 
             /**
              *  
+             * 吧新进程添加到不同的 哈希表 中
              */
 			attach_pid(p, PIDTYPE_TGID);
 			attach_pid(p, PIDTYPE_PGID);
 			attach_pid(p, PIDTYPE_SID);
+
+            /**
+             *  递增
+             */
 			__this_cpu_inc(process_counts);
             
 		} 
         /**
-         *  
+         *  不是领头进程
          */
         else {
 			current->signal->nr_threads++;
+            
+            /**
+             *  
+             */
 			atomic_inc(&current->signal->live);
 			refcount_inc(&current->signal->sigcnt);
 			task_join_group_stop(p);
+
+            /**
+             *  
+             */
 			list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
 			list_add_tail_rcu(&p->thread_node, &p->signal->thread_head);
 		}
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
-    
+
+    /**
+     *  
+     */
 	total_forks++;
+
+    /**
+     *  
+     */
 	hlist_del_init(&delayed.node);
+
+    /**
+     *  
+     */
 	spin_unlock(&current->sighand->siglock);
-    
+
+    /**
+     *  
+     */
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
@@ -2918,7 +2990,11 @@ struct mm_struct *copy_init_mm(void)    /*  */
  * it and waits for it to finish using the VM if required.
  *
  * args->exit_signal is expected to be checked for sanity by the caller.
+ *
+ * 老版本内核，这里为 _do_fork()
  */
+pid_t do_fork();    /* +++ linux-5.0 */
+pid_t _do_fork();   /* +++ linux-5.0 */
 pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...) */
 {
 	u64 clone_flags = args->flags;
