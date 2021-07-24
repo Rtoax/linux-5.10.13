@@ -119,7 +119,26 @@ struct clone_args {
  * SCHED_IDLE：使task以最低优先级选择CFS调度器来调度运行；
  */
 #define SCHED_NORMAL		0
+
+/**
+ *  先进先出调度没有时间片，没有更高优先级的情况下，只能等待主动让出CPU；
+ *  这个进程会一直运行下去，直到 下面的某个条件被满足：
+ *
+ *  1. 自愿放弃 CPU
+ *  2. 进程终止
+ *  3. 被更高优先级的进程抢占
+ */
 #define SCHED_FIFO		1
+
+/**
+ *  时间片轮转，进程用完时间片后加入优先级对应运行队列的尾部，把CPU让给同优先级的其他进程；
+ *  这个进程会一直运行下去，直到 下面的某个条件被满足：
+ *
+ *  1. 时间片用完
+ *  2. 自愿放弃 CPU
+ *  3. 进程终止
+ *  4. 被更高优先级的进程抢占
+ */
 #define SCHED_RR		2
 #define SCHED_BATCH		3
 /* SCHED_ISO: reserved but not implemented yet */

@@ -158,24 +158,41 @@ extern void call_trace_sched_update_nr_running(struct rq *rq, int count);
  */
 #define RUNTIME_INF		((u64)~0ULL)
 
+/**
+ *  空闲策略
+ */
 static inline int idle_policy(int policy)
 {
 	return policy == SCHED_IDLE;
 }
+
+/**
+ *  公平策略
+ */
 static inline int fair_policy(int policy)
 {
 	return policy == SCHED_NORMAL || policy == SCHED_BATCH;
 }
 
+/**
+ *  实时策略
+ */
 static inline int rt_policy(int policy)
 {
 	return policy == SCHED_FIFO || policy == SCHED_RR;
 }
 
+/**
+ *  deadline 策略
+ */
 static inline int dl_policy(int policy)
 {
 	return policy == SCHED_DEADLINE;
 }
+
+/**
+ *  可用
+ */
 static inline bool valid_policy(int policy)
 {
 	return idle_policy(policy) || fair_policy(policy) ||
