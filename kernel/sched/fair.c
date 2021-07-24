@@ -276,6 +276,9 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 #define for_each_sched_entity(se) \
 		for (; se; se = se->parent)
 
+/**
+ *  取出当前进程对应的 CFS 就绪队列
+ */
 static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 {
 	return p->se.cfs_rq;
@@ -4183,6 +4186,9 @@ static inline bool cfs_bandwidth_used(void);
  * CPU and an up-to-date min_vruntime on the destination CPU.
  */
 
+/**
+ *  进程进入就绪队列时(调用`enqueue_entity()`)
+ */
 static void
 enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -4336,6 +4342,10 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 	if (se != cfs_rq->curr)
 		__dequeue_entity(cfs_rq, se);
+
+    /**
+     *  见字段注释
+     */
 	se->on_rq = 0;
 	account_entity_dequeue(cfs_rq, se);
 

@@ -474,30 +474,55 @@ struct sched_entity {   /* 调度实体 */
 	struct load_weight		load;       /*  */
 
     /**
-     *  cfs_rq.tasks_timeline
+     *  cfs_rq.tasks_timeline , 标识该调度实体在红黑树中的节点
      */
 	struct rb_node			run_node;   /*  */
+
+    /**
+     *  在就绪队列中有个链表， rq.cfs_tasks
+     *  调度实体添加到就绪队列后，会添加到该链表中
+     */
 	struct list_head		group_node; /*  */
+
+    /**
+     *  进程进入就绪队列时(调用`enqueue_entity()`), on_rq 会被 设置为 1；
+     *  当该进程处于睡眠等原因退出就绪队列时(调用`dequeue_entity()`), on_rq 会被清 0
+     */
 	unsigned int			on_rq;      /* 是否在运行队列中 */
 
+    /**
+     *  计算 调度实体 虚拟时间 的起始时间
+     */
 	u64				exec_start;         /*  */
+    /**
+     *  调度实体的总运行时间，这是真实时间
+     */
 	u64				sum_exec_runtime;   /*  */
 
     /**
-     *  虚拟运行时间
+     *  调度实体的 虚拟运行时间
      *
      *  权重不同的2个进程的实际执行时间是不相等的，但是 CFS 想保证每个进程运行时间相等，
      *  因此 CFS 引入了虚拟时间的概念。虚拟时间(vriture_runtime)和实际时间(wall_time)转换公式如下：
      *
-     *  vriture_runtime = (wall_time * NICE0_TO_weight) / weight
+     *  vriturl_runtime = (wall_time * NICE0_TO_weight) / weight
      *
      *  NICE0_TO_weight 代表的是 nice 值等于0对应的权重，即1024，weight 是该任务对应的权重。
      *  权重越大的进程获得的虚拟运行时间越小，那么它将被调度器所调度的机会就越大，
      *  所以，CFS 每次调度原则是：总是选择 vriture_runtime 最小的任务来调度。
+     *
+     *  见 `calc_delta_fair()`
      */
 	u64				vruntime;           /* 虚拟时间 */
+
+    /**
+     *  上一次统计调度实体 运行的总时间
+     */
 	u64				prev_sum_exec_runtime;  /*  */
 
+    /**
+     *  该调度实体发生迁移的次数
+     */
 	u64				nr_migrations;
 
     /**
@@ -515,14 +540,20 @@ struct sched_entity {   /* 调度实体 */
 	struct cfs_rq			*cfs_rq;    /*  */
 	/* rq "owned" by this entity/group: */
 	struct cfs_rq			*my_q;      /*  */
-	/* cached value of my_q->h_nr_running */
+	/**
+	 *  cached value of my_q->h_nr_running 
+	 *
+	 *  标识 进程在可运行(runable)状态的权重，这个值等于进程的权重
+	 */
 	unsigned long			runnable_weight;
 #endif
 
 #ifdef CONFIG_SMP
-	/*
+	/**
+	 *  与负载相关的信息
+	 *
 	 * Per entity load average tracking.
-	 * 每个实体的平均负载跟踪。
+	 * 每个实体的平均负载跟踪
 	 * 
 	 * Put into separate cache line so it does not
 	 * collide with read-mostly values above.
@@ -729,14 +760,29 @@ struct task_struct {    /* PCB */
 	unsigned int			ptrace;
 
 #ifdef CONFIG_SMP
+    /**
+     *  标识进程正处于运行状态
+     */
 	int				on_cpu;
 	struct __call_single_node	wake_entry;
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* Current CPU: */
+    /**
+     *  正运行在哪个CPU上
+     */
 	unsigned int			cpu;
 #endif
+    /**
+     *  用于 wake affine 特性
+     */
 	unsigned int			wakee_flips;
+    /**
+     *  记录上一次 wakee_flips 的时间
+     */
 	unsigned long			wakee_flip_decay_ts;
+    /**
+     *  标识上一次唤醒哪个进程
+     */
 	struct task_struct		*last_wakee;
 
 	/*
@@ -747,11 +793,17 @@ struct task_struct {    /* PCB */
 	 * used CPU that may be idle.
 	 */
 	int				recent_used_cpu;
+    /**
+     *  表示进程上一次运行在哪个 CPU上
+     */
 	int				wake_cpu;
 #endif
 
     /**
-     *  是否在运行队列里
+     *  是否在运行队列里，用于设置进程的状态，支持的状态如下：
+     *
+     *  TASK_ON_RQ_QUEUED       进程正在就绪队列中运行
+     *  TASK_ON_RQ_MIGRATING    处于迁移过程中的进程，它可能不在就绪队列里
      */
 	int				on_rq;
 
@@ -803,10 +855,13 @@ struct task_struct {    /* PCB */
 	unsigned int			rt_priority;
 
     /**
-     *  操作函数
+     *  操作函数 - 调度类
      */
 	const struct sched_class	*sched_class;
-    
+
+    /**
+     *  调度实体
+     */
 	struct sched_entity		se;/* 调度实体 */
 	struct sched_rt_entity		rt;/* 实时调度实体 */
     
@@ -842,9 +897,13 @@ struct task_struct {    /* PCB */
 
     /**
      *  CPU 亲和性
+     *  进程允许运行 CPU 的个数
      */
 	int				nr_cpus_allowed;    /* 个数 */
 	const cpumask_t			*cpus_ptr;
+    /**
+     *  允许运行的 CPU 位图
+     */
 	cpumask_t			cpus_mask;  /* sched_getaffinity() */
 
 #ifdef CONFIG_PREEMPT_RCU
@@ -871,7 +930,7 @@ struct task_struct {    /* PCB */
 #endif /* #ifdef CONFIG_TASKS_TRACE_RCU */
 
     /**
-     *  
+     *  调度相关信息
      */
 	struct sched_info		sched_info;
 
