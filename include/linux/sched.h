@@ -746,33 +746,50 @@ struct task_struct {    /* PCB */
 	int				on_rq;
 
     /**
-     *  prio: 动态优先级：他不随时间改变,内核不会主动修改它,只能通过系统调用nice去修改static_prio
-     *                  取值范围: [0,MAX_PRIO-1],即[0,139]
-     *                  普通进程: [0,MAX_RT_PRIO-1]即[0,99]   
-     *                  实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
-     *
-     *  static_prio: 静态优先级 调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,调整后的优先级为动态优先级(prio)
-     *                          计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
-     *                          静态优先级与nice 关系  
-     *                          static_prio=MAX_RT_PRIO(100)+nice+20
-     *  normal_prio: 归一化优先级
-     *
-     *  rt_priority: 实时优先级 实时优先级只对实时进程有效
-     *                           实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
-     *                          也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
-     *  
      *  MAX_PRIO:140
      *  MAX_RT_PRIO:100  
      *  nice:[-20,19]
      */
     //The higher priority allows to get more time to run. 
+    /**
+     *  prio: 动态优先级：
+     *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
+     *        取值范围: [0,MAX_PRIO-1],即[0,139]
+     *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]   
+     *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
+     *
+     */
 	int				prio;   //`dynamic priority` which can't be changed during lifetime of 
 	                        //  a process based on its static priority and interactivity(交互性) of the process
+    /**
+     *  static_prio: 静态优先级 
+     *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
+     *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
+     *        调整后的优先级为动态优先级(prio)
+     *        计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
+     *        静态优先级与nice 关系  
+     *        static_prio=MAX_RT_PRIO(100)+nice+20
+     *
+     */
 	int				static_prio;    //initial priority most likely well-known to you `nice value`
 	                                //This value does not changed by the kernel if a user will not change it.
+    /**
+     *  normal_prio: 归一化优先级
+     *      根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的 normal_prio
+     *      对普通进程来说， normal_prio == static_prio
+     *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
+     *
+     */
 	int				normal_prio;    //based on the value of the `static_prio` too, 
 	                                //but also it depends on the scheduling policy of a process.
 	                                
+    /**
+     *  rt_priority: 实时优先级 
+     *      实时优先级只对实时进程有效
+     *        实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
+     *        也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
+     *  
+     */
 	unsigned int			rt_priority;
 
     /**
