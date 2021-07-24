@@ -328,9 +328,16 @@ struct sched_info {
 //represent actual load weight of a scheduler entity and its invariant(不变量) value
 //The higher priority allows to get more time to run. 
 //A `load weight` of a process is a relation between priority of this process and timeslices of this process.
+/**
+ *  记录调度实体的权重
+ *
+ * @weight      调度实体的权重
+ * @inv_weight  inverse weight，它是权重的一个中间计算结果
+ *              见`sched_prio_to_wmult[]`
+ */
 struct load_weight {    /* 负载权重 */
-	unsigned long			weight;
-	u32				inv_weight; //不变量
+	unsigned long   weight;
+	u32				inv_weight; //不变量 见`sched_prio_to_wmult[]`
 };
 
 /**
@@ -460,7 +467,10 @@ struct sched_statistics {   /* 调度统计 */
  *  采用CFS算法调度的普通非实时进程的调度实体
  */
 struct sched_entity {   /* 调度实体 */
-	/* For load-balancing: */
+    /**
+     *  For load-balancing:
+     *  记录调度实体的权重
+     */
 	struct load_weight		load;       /*  */
 
     /**

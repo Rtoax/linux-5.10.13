@@ -231,6 +231,8 @@ static void __update_inv_weight(struct load_weight *lw) /*  */
  *
  * Or, weight =< lw.weight (because lw.weight is the runqueue weight), thus
  * weight/lw.weight <= 1, and therefore our shift will also be positive.
+ *
+ * 见 `calc_delta_fair()` 函数注释
  */
 static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)   /*  */
 {
@@ -644,6 +646,38 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 
 /*
  * delta /= w
+ *
+ * 计算虚拟时间的核心函数
+ *  
+ *              delta_exec * nice_0_weight
+ *  vruntime = -----------------------------
+ *                       weight
+ *
+ *                实际运行时间 * 1024
+ *           = -----------------------------
+ *                       weight -------> sched_prio_to_weight[] 之一
+ *
+ *  假设 某个进程 的 nice 值为 1，权重 820， delta_exec=10ms, 代入上式
+ *
+ *                    10ms * 1024
+ *  vruntime = -----------------------------
+ *                       820
+ *
+ *  为了计算高效， 函数 calc_delta_fair 使用 的计算方式变为乘法和位移运算
+ *
+ *  vruntime = (delta_exec * nice_0_weight * inv_weight) >> shift
+ *
+ *  将 inv_weight 代入
+ *                  2^32
+ *  inv_weight = ------------
+ *                 weight  -------> sched_prio_to_weight[] 之一
+ *
+ *  
+ *              delta_exec * nice_0_weight * 2^32
+ *  vruntime = ------------------------------------ >> 32
+ *                           weight
+ *
+ *  使用 sched_prio_to_wmult[] 预先做了除法
  */
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
