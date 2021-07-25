@@ -44,7 +44,7 @@ struct vm86;
  */
 #define NET_IP_ALIGN	0
 
-#define HBP_NUM 4
+//#define HBP_NUM 4
 
 /*
  * These alignment constraints are for performance in the vSMP case,
@@ -510,7 +510,7 @@ extern unsigned int fpu_user_xstate_size;
 struct perf_event;
 
 /**
- *  X86 硬件上下文
+ *  X86 硬件上下文 - 存放和具体架构相关的信息
  */
 struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	/**

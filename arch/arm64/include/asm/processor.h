@@ -130,7 +130,7 @@ struct cpu_context {
 };
 
 /**
- *  硬件上下文
+ *  硬件上下文 - 存放和具体架构相关的信息
  */
 struct thread_struct {
 	struct cpu_context	cpu_context;	/* cpu context */

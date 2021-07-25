@@ -3595,6 +3595,9 @@ static inline void prepare_task(struct task_struct *next)
 #endif
 }
 
+/**
+ *  
+ */
 static inline void finish_task(struct task_struct *prev)
 {
 #ifdef CONFIG_SMP
@@ -3675,7 +3678,15 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 	perf_event_task_sched_out(prev, next);
 	rseq_preempt(prev);
 	fire_sched_out_preempt_notifiers(prev, next);
+
+    /**
+     *  设置下一个进程 next.on_cpu=1
+     */
 	prepare_task(next);
+
+    /**
+     *  空
+     */
 	prepare_arch_switch(next);
 }
 
@@ -3697,6 +3708,8 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
  * local variables which were saved when this task called schedule() in the
  * past. prev == current is still correct but we need to recalculate this_rq
  * because prev may have moved to another CPU.
+ *
+ * next 进程执行的代码， prev 为 switch_to() 返回的 last 值
  */
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
@@ -3737,7 +3750,15 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	prev_state = prev->state;
 	vtime_task_switch(prev);
 	perf_event_task_sched_in(prev, current);
+
+    /**
+     *  
+     */
 	finish_task(prev);
+
+    /**
+     *  
+     */
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
 	kcov_finish_switch(current);
@@ -3910,9 +3931,14 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 		 * The below provides this either through switch_mm(), or in
 		 * case 'prev->active_mm == next->mm' through
 		 * finish_task_switch()'s mmdrop().
+		 *
+		 * 做一些进程地址空间切换的处理
 		 */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
+        /**
+         *  上一个进程也是 内核进程
+         */
 		if (!prev->mm) {                        // from kernel
 			/* will mmdrop() in finish_task_switch(). */
 			rq->prev_mm = prev->active_mm;
@@ -3927,12 +3953,15 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 	/**
 	 *  Here we just switch the register state and the stack. 
 	 *  
-	 *  
+	 *  切换进程
 	 */
 	switch_to(prev, next, prev);
     
 	barrier();
 
+    /**
+     *  
+     */
 	return finish_task_switch(prev);
 }
 

@@ -60,11 +60,14 @@ struct fork_frame { /*  */
  *  在 context_switch() 中被调用，调用方式为
  *
  *  switch_to(prev, next, prev);
+ *
+ *  
  */
 #define switch_to(prev, next, last)					\
 do {									\
 	((last) = __switch_to_asm((prev), (next)));			\
 } while (0)
+
 
 #ifdef CONFIG_X86_32
 static inline void refresh_sysenter_cs(struct thread_struct *thread)

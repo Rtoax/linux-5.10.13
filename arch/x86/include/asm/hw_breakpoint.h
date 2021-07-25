@@ -41,7 +41,7 @@ struct arch_hw_breakpoint {
 /* trigger on memory read or write */
 #define X86_BREAKPOINT_RW	0x83
 
-/* Total number of available HW breakpoint registers */
+/* Total number of available HW breakpoint registers 4个硬件断点寄存器 */
 #define HBP_NUM 4
 
 static inline int hw_breakpoint_slots(int type)

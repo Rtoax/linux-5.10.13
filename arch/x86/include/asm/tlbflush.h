@@ -64,6 +64,9 @@ struct tlb_context {
 	u64 tlb_gen;
 };
 
+/**
+ *  
+ */
 struct tlb_state {
 	/*
 	 * cpu_tlbstate.loaded_mm should match CR3 whenever interrupts

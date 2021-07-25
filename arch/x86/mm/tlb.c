@@ -40,7 +40,12 @@
  *
  *	Implement flush IPI by CALL_FUNCTION_VECTOR, Alex Shi
  */
-
+/**
+ *  ASID - address space ID 地址空间ID
+ *  用于解决 进程切换前后 TLB miss 和 失效的问题，基于此机制
+ *  TLB 可以识别 哪些 TLB 项 是属于某个进程的。
+ *  因此有了 ASID 的支持，进程不需要 刷新整个 TLB，
+ */
 /*
  * Use bit 0 to mangle the TIF_SPEC_IB state into the mm pointer which is
  * stored in cpu_tlb_state.last_user_mm_ibpb.
@@ -99,6 +104,11 @@
 
 /*
  * Given @asid, compute kPCID
+ *
+ *  ASID - address space ID 地址空间ID
+ *  用于解决 进程切换前后 TLB miss 和 失效的问题，基于此机制
+ *  TLB 可以识别 哪些 TLB 项 是属于某个进程的。
+ *  因此有了 ASID 的支持，进程不需要 刷新整个 TLB，
  */
 static inline u16 kern_pcid(u16 asid)
 {
@@ -312,13 +322,19 @@ void leave_mm(int cpu)
 }
 EXPORT_SYMBOL_GPL(leave_mm);
 
-/*  */
+/**
+ *  把新进程 的页表地址 设置到页表基址寄存器中
+ */
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	       struct task_struct *tsk)
 {
 	unsigned long flags;
 
 	local_irq_save(flags);
+
+    /**
+     *  把新进程 的页表地址 设置到页表基址寄存器中
+     */
 	switch_mm_irqs_off(prev, next, tsk);
 	local_irq_restore(flags);
 }
@@ -427,7 +443,7 @@ void cr4_update_pce(void *ignored)
 #endif
 
 /**
- *  
+ *  把新进程 的页表地址 设置到页表基址寄存器中
  */
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
@@ -445,6 +461,13 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	unsigned cpu = smp_processor_id();
 	u64 next_tlb_gen;
 	bool need_flush;
+
+    /**
+     *  ASID - address space ID 地址空间ID
+     *  用于解决 进程切换前后 TLB miss 和 失效的问题，基于此机制
+     *  TLB 可以识别 哪些 TLB 项 是属于某个进程的。
+     *  因此有了 ASID 的支持，进程不需要 刷新整个 TLB，
+     */
 	u16 new_asid;
 
 	/*
@@ -482,6 +505,8 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 *  back into an incorrect ASID slot and leave it there
 		 *  to cause trouble down the road.  It's better than
 		 *  nothing, though.)
+		 *
+		 * 刷新 TLB
 		 */
 		__flush_tlb_all();
 	}
@@ -509,8 +534,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 * mm_cpumask. The TLB shootdown code can figure out from
 		 * from cpu_tlbstate.is_lazy whether or not to send an IPI.
 		 */
-		if (WARN_ON_ONCE(real_prev != &init_mm &&
-				 !cpumask_test_cpu(cpu, mm_cpumask(next))))
+		if (WARN_ON_ONCE(real_prev != &init_mm && !cpumask_test_cpu(cpu, mm_cpumask(next))))
 			cpumask_set_cpu(cpu, mm_cpumask(next));
 
 		/*
@@ -540,7 +564,11 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		new_asid = prev_asid;
 		need_flush = true;
         
-	} else {
+	}
+    /**
+     *  
+     */
+    else {
 		/*
 		 * Avoid user/user BTB poisoning by flushing the branch
 		 * predictor when switching between processes. This stops
