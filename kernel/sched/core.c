@@ -1542,7 +1542,7 @@ static void __init init_uclamp(void)
 #endif /* CONFIG_UCLAMP_TASK */
 
 /**
- *  加入
+ *  加入 - 把进程添加到就绪队列中
  */
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /* 入队 */
 {
@@ -1569,7 +1569,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 }
 
 /**
- *  出队
+ *  出队 - 把进程移除就绪队列
  */
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -1595,9 +1595,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags) /*  */
      */
 	enqueue_task(rq, p, flags); /* 入队 */
 
+    /**
+     *  //进程正在就绪队列中运行
+     */
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
+/**
+ *  把当前进程移除 就绪队列
+ */
 void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
@@ -2367,12 +2373,17 @@ out:
 
 /*
  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_ptr is stable.
+ *
+ * 选择最合适的调度域中最悠闲的 CPU
  */
 static inline   /*  */
 int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 {
 	lockdep_assert_held(&p->pi_lock);
 
+    /**
+     *  选择一个合适的 CPU
+     */
 	if (p->nr_cpus_allowed > 1) /* 使用调度类的 队列选择 接口 */
 		cpu = p->sched_class->select_task_rq(p, cpu, sd_flags, wake_flags);
 	else
@@ -2389,6 +2400,9 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 	 *   not worry about this generic constraint ]
 	 */
 	if (unlikely(!is_cpu_allowed(p, cpu)))
+        /**
+         *  
+         */
 		cpu = select_fallback_rq(task_cpu(p), p);
 
 	return cpu;
@@ -3291,7 +3305,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	unsigned long flags;
 
     /**
-     *  
+     *  调度相关的有些信息不能和 父进程共用，进行初始化为 0
      */
 	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
     
@@ -3344,7 +3358,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		p->sched_class = &fair_sched_class; /* 使用公平调度类 */
 
     /**
-     *  
+     *  初始化与子进程的调度实体 se 相关的成员
      */
 	init_entity_runnable_average(&p->se);   /* 清零 */
 
@@ -3362,12 +3376,12 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	 * We're setting the CPU for the first time, we don't migrate,
 	 * so use __set_task_cpu().
 	 *
-	 * 新进程会运行在这个 CPU 上
+	 * 新进程会运行在这个 CPU 上，之类只是暂时的预设
 	 */
 	__set_task_cpu(p, smp_processor_id());
 
     /**
-     *  
+     *  调用调度类的 初始化 
      *  task_fork_fair()
      *  task_fork_dl()
      */
@@ -3424,6 +3438,8 @@ unsigned long to_ratio(u64 period, u64 runtime)
  * This function will do some initial scheduler statistics housekeeping
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
+ *
+ * 添加到调度器中
  */
 void wake_up_new_task(struct task_struct *p)    /*  */
 {
@@ -3431,6 +3447,10 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 	struct rq *rq;
 
 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
+
+    /**
+     *  
+     */
 	p->state = TASK_RUNNING;
     
 #ifdef CONFIG_SMP
@@ -3444,15 +3464,25 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 	 */
 	p->recent_used_cpu = task_cpu(p);
 	rseq_migrate(p);
+
+    /**
+     *  为子进程 设置即将要运行的 CPU, 
+     */
 	__set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
-#endif
     
+#endif
+
+    /**
+     *  
+     */
 	rq = __task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 	post_init_entity_util_avg(p);
 
     /**
      *  激活 task，添加到运行队列
+     *
+     *  调用 `enqueue_task` 把子进程添加到 调度器中
      */
 	activate_task(rq, p, ENQUEUE_NOCLOCK);  /*  */
     
@@ -3473,6 +3503,7 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 #endif
 	task_rq_unlock(rq, p, &rf);
 }
+
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 
@@ -4434,6 +4465,10 @@ static noinline void __schedule_bug(struct task_struct *prev)
 
 /*
  * Various schedule()-time debugging checks and statistics:
+ *
+ *  判断当前进程是否处于 atomic 上下文中
+ *
+ *  如果处于，那么内核将告警
  */
 static inline void schedule_debug(struct task_struct *prev, bool preempt)
 {
@@ -4503,9 +4538,13 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	 * call that function directly, but only if the @prev task wasn't of a
 	 * higher scheduling class, because otherwise those loose the
 	 * opportunity to pull in more work from other CPUs.
+	 *
+	 * 优化
+	 * ---------------------------
+	 * 如果当前进程的调度类是 CFS 并且 CFS 就绪队列进程数量==该CPU就绪队列进程数量
+	 * 说明该 CPU 就绪队列只有普通进程，没有其他调度类进程，否则需要遍历整个调度类
 	 */
-	if (likely(prev->sched_class <= &fair_sched_class &&
-		   rq->nr_running == rq->cfs.h_nr_running)) {
+	if (likely(prev->sched_class <= &fair_sched_class && rq->nr_running == rq->cfs.h_nr_running)) {
 
 		p = pick_next_task_fair(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
@@ -4523,7 +4562,19 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 restart:
 	put_prev_task_balance(rq, prev, rf);
 
+    /**
+     *  遍历整个调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
+     */
 	for_each_class(rtoax_class) {
+    	/**
+         *  从就绪队列中选择一个最优进程来执行
+         *
+         * pick_next_task_idle
+         * pick_next_task_fair
+         * pick_next_task_rt
+         * pick_next_task_dl
+         * pick_next_task_stop
+         */
 		p = rtoax_class->pick_next_task(rq);
 		if (p)
 			return p;
@@ -4571,6 +4622,27 @@ restart:
  *          - return from interrupt-handler to user-space
  *
  * WARNING: must be called with preemption disabled!
+ *
+ * 调度器的核心函数
+ *
+ *  让调度器选择 和 千幻到一个合适的进程并运行，
+ *  调度器的时机有一下三种：
+ *  1. 阻塞操作: mutex, semaphore, waitqueue, etc.
+ *  2. 中断返回前 和 系统调用返回用户空间时，检查 TIF_NEED_RESCHED 标志位是否需要调度
+ *  3. 将要被唤醒的进程不会马上调用 schedule()，而是会被添加到 CFS 就绪队列中，
+ *      并且设置了 TIF_NEED_RESCHED 标志位
+ *     那么被唤醒的进程什么时候会被调度呢？ 这要根据内核是否支持 抢占 CONFIG_PREEMPTION=y
+ *
+ *     3.1 可抢占
+ *      
+ *      3.1.1 如果唤醒动作发生在系统调用或者异常处理上下文，在下一次调用 preempt_enable() 时
+ *              会检查是否需要调度
+ *      3.1.2 如果唤醒动作发生在硬件中断上下文，硬件中断处理返回前会检查是否要抢占当前进程；
+ *
+ *     3.2 不可抢占
+ *
+ *      3.2.1 当前进程调用 cond_resched() 时会检查是否要调度
+ *      3.2.2 主动调用 schedule()
  */
 static void __sched notrace __schedule(bool preempt)
 {
@@ -4581,15 +4653,34 @@ static void __sched notrace __schedule(bool preempt)
 	struct rq *rq;
 	int cpu;
 
+    /**
+     *  获取当前 CPU
+     */
 	cpu = smp_processor_id();
+
+    /**
+     *  获取当前 CPU 运行队列
+     */
 	rq = cpu_rq(cpu);
+
+    /**
+     *  prev 指向当前进程
+     */
 	prev = rq->curr;
 
+    /**
+     *  判断当前进程是否处于 atomic 上下文中
+     *
+     *  如果处于，那么内核将告警
+     */
 	schedule_debug(prev, preempt);
 
 	if (sched_feat(HRTICK))
 		hrtick_clear(rq);
 
+    /**
+     *  关闭 本地 CPU 中断
+     */
 	local_irq_disable();
 	rcu_note_context_switch(preempt);
 
@@ -4625,7 +4716,16 @@ static void __sched notrace __schedule(bool preempt)
 	 *  - ptrace_{,un}freeze_traced() can change ->state underneath us.
 	 */
 	prev_state = prev->state;
+
+    /**
+     *  是否为抢占调度，即 是否中断返回前夕或者 系统调用返回用户空间 前夕发生的抢占调度
+     *  如果发生了抢占调度，下面的 if 不执行
+     */
 	if (!preempt && prev_state) {
+
+        /**
+         *  
+         */
 		if (signal_pending_state(prev_state, prev)) {
 			prev->state = TASK_RUNNING;
 		} else {
@@ -4637,7 +4737,10 @@ static void __sched notrace __schedule(bool preempt)
 			if (prev->sched_contributes_to_load)
 				rq->nr_uninterruptible++;
 
-			/*
+			/**
+			 *  当前进程是否处于主动调度，若主动调用了 schedule()，
+			 *  则调用 deactivate_task 把当前进程移除 就绪队列
+			 *
 			 * __schedule()			ttwu()
 			 *   prev_state = prev->state;    if (p->on_rq && ...)
 			 *   if (prev_state)		    goto out;
@@ -4647,6 +4750,8 @@ static void __sched notrace __schedule(bool preempt)
 			 * Where __schedule() and ttwu() have matching control dependencies.
 			 *
 			 * After this, schedule() must not care about p->state any more.
+			 *
+			 * 把当前进程移除 就绪队列
 			 */
 			deactivate_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
@@ -4655,13 +4760,27 @@ static void __sched notrace __schedule(bool preempt)
 				delayacct_blkio_start();
 			}
 		}
+
+        /**
+         *  
+         */
 		switch_count = &prev->nvcsw;
 	}
 
+    /**
+     *  选择下一个合适的高优先级进程
+     */
 	next = pick_next_task(rq, prev, &rf);
+
+    /**
+     *  清除 TIF_NEED_RESCHED 标志位，表明接下来他不会被调度
+     */
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
+    /**
+     *  若选择出来的下一个进程和当前进程不是一个进程
+     */
 	if (likely(prev != next)) {
 		rq->nr_switches++;
 		/*
@@ -4687,11 +4806,22 @@ static void __sched notrace __schedule(bool preempt)
 
 		psi_sched_switch(prev, next, !task_on_rq_queued(prev));
 
+        /**
+         *  
+         */
 		trace_sched_switch(preempt, prev, next);
 
 		/* Also unlocks the rq: */
+
+        /**
+         *  切换到 next 进程
+         */
 		rq = context_switch(rq, prev, next, &rf);
-	} else {
+	} 
+    /**
+     *  
+     */
+    else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
 		rq_unlock_irq(rq, &rf);
 	}
@@ -4761,16 +4891,32 @@ static void sched_update_worker(struct task_struct *tsk)
 	}
 }
 
+/**
+ *  __schedule 的封装
+ */
 asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
 
 	sched_submit_work(tsk);
 	do {
+        /**
+         *  关闭抢占
+         */
 		preempt_disable();
+
+        /**
+         *  
+         */
 		__schedule(false);
+
+        /**
+         *  打开抢占
+         */
 		sched_preempt_enable_no_resched();
+        
 	} while (need_resched());
+    
 	sched_update_worker(tsk);
 }
 EXPORT_SYMBOL(schedule);
@@ -4868,6 +5014,8 @@ static void __sched notrace preempt_schedule_common(void)
 /*
  * This is the entry point to schedule() from in-kernel preemption
  * off of preempt_enable.
+ *
+ * 用于可抢占 内核 的调度
  */
 asmlinkage __visible void __sched notrace preempt_schedule(void)
 {
@@ -4942,6 +5090,8 @@ EXPORT_SYMBOL_GPL(preempt_schedule_notrace);
  * off of irq context.
  * Note, that this is called and return with irqs disabled. This will
  * protect us against recursive calling from irq.
+ *
+ * 用于可抢占 内核 的调度，从中断结束返回时调用该函数
  */
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {

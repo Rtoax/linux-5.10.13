@@ -1831,6 +1831,8 @@ static void process_timeout(struct timer_list *t)
  * Returns 0 when the timer has expired otherwise the remaining time in
  * jiffies will be returned. In all cases the return value is guaranteed
  * to be non-negative.
+ *
+ * 用于使进程睡眠，知道超时为止
  */
 signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超时 */
 {
@@ -1858,8 +1860,7 @@ signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超�
 		 * that will tell you if something is gone wrong and where.
 		 */
 		if (timeout < 0) {
-			printk(KERN_ERR "schedule_timeout: wrong timeout "
-				"value %lx\n", timeout);
+			printk(KERN_ERR "schedule_timeout: wrong timeout value %lx\n", timeout);
 			dump_stack();   /*  */
 			current->state = TASK_RUNNING;
 			goto out;

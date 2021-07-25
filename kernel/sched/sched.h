@@ -1327,6 +1327,9 @@ static inline u64 rq_clock(struct rq *rq)
 	return rq->clock;
 }
 
+/**
+ *  获取当前 就绪队列 保存的 clock_task 值
+ */
 static inline u64 rq_clock_task(struct rq *rq)
 {
 	lockdep_assert_held(&rq->lock);
@@ -1946,7 +1949,7 @@ extern const u32		sched_prio_to_wmult[40];
 #define RETRY_TASK		((void *)-1UL)
 
 /**
- *  
+ *  调度类方法集
  */
 struct sched_class {    /* 调度类 *//*  */
 
@@ -1954,7 +1957,7 @@ struct sched_class {    /* 调度类 *//*  */
 	int uclamp_enabled; /* 利用率管制 使能 */
 #endif
 
-    /* 
+    /* 添加 和 移除 就绪队列
      * fair_sched_class.enqueue_task   = enqueue_task_fair()
      * rt_sched_class.enqueue_task     = enqueue_task_rt()
      * dl_sched_class.enqueue_task     = enqueue_task_dl()
@@ -1962,10 +1965,15 @@ struct sched_class {    /* 调度类 *//*  */
      */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
+
+    /**
+     *  用于 sched_yield() 系统调用
+     */
 	void (*yield_task)   (struct rq *rq);
 	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
 
-    /**
+    /** 
+     * 检查是否需要抢占当前线程
      *  check_preempt_curr_idle()
      *  check_preempt_wakeup()
      *  check_preempt_curr_dl()
@@ -1973,26 +1981,66 @@ struct sched_class {    /* 调度类 *//*  */
      */
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 
+    /**
+     *  从就绪队列中选择一个最优进程来执行
+     *
+     * pick_next_task_idle
+     * pick_next_task_fair
+     * pick_next_task_rt
+     * pick_next_task_dl
+     * pick_next_task_stop
+     */
 	p_task_struct (*pick_next_task)(struct rq *rq);
 
+    /**
+     *  把 prev 进程重新添加到就绪队列中
+     */
 	void (*put_prev_task)(struct rq *rq, struct task_struct *p);
 	void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first);
 
 #ifdef CONFIG_SMP
 	int (*balance)(struct rq *rq, struct task_struct *prev, struct rq_flags *rf);
+
+    /**
+     *  为进程选择一个 最优的 CPU 就绪队列
+     *
+     *  select_task_rq_idle()
+     *  select_task_rq_fair()
+     *  select_task_rq_rt()
+     *  select_task_rq_dl()
+     *  select_task_rq_stop()
+     */
 	int  (*select_task_rq)(struct task_struct *p, int task_cpu, int sd_flag, int flags);
+
+    /**
+     *  迁移进程到一个新的就绪队列
+     */
 	void (*migrate_task_rq)(struct task_struct *p, int new_cpu);
 
+    /**
+     *  处理进程被唤醒的情况
+     */
 	void (*task_woken)(struct rq *this_rq, struct task_struct *task);
 
-	void (*set_cpus_allowed)(struct task_struct *p,
-				 const struct cpumask *newmask);
+    /**
+     *  设置进程可运行的CPU范围
+     */
+	void (*set_cpus_allowed)(struct task_struct *p, const struct cpumask *newmask);
 
+    /**
+     *  设置该 就绪队列 的状态为 online
+     */
 	void (*rq_online)(struct rq *rq);
+
+    /**
+     *  设置该 就绪队列 的状态为 offline
+     */
 	void (*rq_offline)(struct rq *rq);
 #endif
 
     /**
+     *  处理时钟节拍
+     *
      *  task_tick_idle()
      *  task_tick_fair()
      *  task_tick_dl()
@@ -2001,10 +2049,16 @@ struct sched_class {    /* 调度类 *//*  */
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
 
     /**
+     *  处理 fork 新进程与调度相关的一些初始化信息
+     *  
      *  task_fork_fair()
      *  task_fork_dl()
      */ 
 	void (*task_fork)(struct task_struct *p);
+
+    /**
+     *  处理进程已经终止的情况
+     */
 	void (*task_dead)(struct task_struct *p);
 
 	/*
@@ -2012,20 +2066,44 @@ struct sched_class {    /* 调度类 *//*  */
 	 * cannot assume the switched_from/switched_to pair is serliazed by
 	 * rq->lock. They are however serialized by p->pi_lock.
 	 */
+	/**
+     *  用于切换调度类
+     */
 	void (*switched_from)(struct rq *this_rq, struct task_struct *task);
+
+    /**
+     *  切换到下一个进程来运行
+     */
 	void (*switched_to)  (struct rq *this_rq, struct task_struct *task);
-	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
-			      int oldprio);
 
-	unsigned int (*get_rr_interval)(struct rq *rq,
-					struct task_struct *task);
+    /**
+     *  改变进程优先级
+     */
+	void (*prio_changed) (struct rq *this_rq, struct task_struct *task, int oldprio);
 
+    /**
+     *  
+     */
+	unsigned int (*get_rr_interval)(struct rq *rq, struct task_struct *task);
+
+    /**
+     *  更新就绪队列的运行时间，对于 CFS 的调度类，更新虚拟时间
+     *
+     *  update_curr_fair()
+     *  update_curr_rt()
+     *  update_curr_dl()
+     *  update_curr_stop()
+     *  update_curr_idle()
+     */
 	void (*update_curr)(struct rq *rq);
 
 #define TASK_SET_GROUP		0
 #define TASK_MOVE_GROUP		1
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+    /**
+     *  
+     */
 	void (*task_change_group)(struct task_struct *p, int type);
 #endif
 } __aligned(STRUCT_ALIGNMENT); /* STRUCT_ALIGN(), vmlinux.lds.h */
