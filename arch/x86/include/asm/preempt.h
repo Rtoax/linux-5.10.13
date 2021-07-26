@@ -6,7 +6,12 @@
 #include <asm/percpu.h>
 #include <linux/thread_info.h>
 
+/**
+ *  
+ */
 DECLARE_PER_CPU(int, __preempt_count);
+int __preempt_count; //+++
+
 
 /* We use the MSB mostly because its available */
 #define PREEMPT_NEED_RESCHED	0x80000000

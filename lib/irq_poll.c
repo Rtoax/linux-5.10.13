@@ -192,24 +192,32 @@ static int irq_poll_cpu_dead(unsigned int cpu)
 	 * and trigger a run of the softirq
 	 */
 	local_irq_disable();
-	list_splice_init(&per_cpu(blk_cpu_iopoll, cpu),
-			 this_cpu_ptr(&blk_cpu_iopoll));
+	list_splice_init(&per_cpu(blk_cpu_iopoll, cpu), this_cpu_ptr(&blk_cpu_iopoll));
 	__raise_softirq_irqoff(IRQ_POLL_SOFTIRQ);
 	local_irq_enable();
 
 	return 0;
 }
 
+/**
+ *  
+ */
 static __init int irq_poll_setup(void)
 {
 	int i;
 
+    /**
+     *  
+     */
 	for_each_possible_cpu(i) {
-		INIT_LIST_HEAD(&per_cpu(blk_cpu_iopoll, i));}
+		INIT_LIST_HEAD(&per_cpu(blk_cpu_iopoll, i));
+    }
 
+    /**
+     *  
+     */
 	open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
-	cpuhp_setup_state_nocalls(CPUHP_IRQ_POLL_DEAD, "irq_poll:dead", NULL,
-				  irq_poll_cpu_dead);
+	cpuhp_setup_state_nocalls(CPUHP_IRQ_POLL_DEAD, "irq_poll:dead", NULL, irq_poll_cpu_dead);
 	return 0;
 }
 subsys_initcall(irq_poll_setup);    /*  */

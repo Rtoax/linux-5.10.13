@@ -165,6 +165,9 @@ static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)
 {
+    /**
+     *  
+     */
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
@@ -511,6 +514,7 @@ extern bool force_irqthreads;
 #define local_softirq_pending_ref irq_stat.__softirq_pending
 #endif
 
+//pending: 待决的，待定的，即将发生的
 #define local_softirq_pending()	(__this_cpu_read(local_softirq_pending_ref))
 #define set_softirq_pending(x)	(__this_cpu_write(local_softirq_pending_ref, (x)))
 #define or_softirq_pending(x)	(__this_cpu_or(local_softirq_pending_ref, (x)))
@@ -562,6 +566,9 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
 
 struct softirq_action
 {
+    /**
+     *  在 __do_softirq 中执行
+     */
 	void	(*action)(struct softirq_action *);
 };
 
@@ -571,10 +578,10 @@ asmlinkage void __do_softirq(void);
 #ifdef __ARCH_HAS_DO_SOFTIRQ
 void do_softirq_own_stack(void);
 #else
-static inline void do_softirq_own_stack(void)
-{
-	__do_softirq();
-}
+//static inline void do_softirq_own_stack(void)
+//{
+//	__do_softirq();
+//}
 #endif
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
@@ -614,12 +621,21 @@ static inline struct task_struct *this_cpu_ksoftirqd(void)
      he makes it with spinlocks.
  */
 
+/**
+ *  tasklet - 中断后半部
+ *
+ *  运行在软件中断上下文中
+ */
 struct tasklet_struct   /* tasklet(TASKLET_SOFTIRQ,HI_SOFTIRQ) 隶属于 softirq */
 {
 	struct tasklet_struct *next;    /* 调度队列中的下一个 */
 	unsigned long state;    /* 状态 TASKLET_STATE_SCHED / TASKLET_STATE_RUN */
 	atomic_t count;         /* 当前 tasklet 的状态 */
 	bool use_callback;      /* 是否使用 callback */
+
+    /**
+     *  
+     */
 	union {
 		void (*func)(unsigned long data);
 		void (*callback)(struct tasklet_struct *t);

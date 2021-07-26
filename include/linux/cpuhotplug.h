@@ -248,8 +248,7 @@ static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
 					    int (*startup)(unsigned int cpu),
 					    int (*teardown)(unsigned int cpu))
 {
-	return __cpuhp_setup_state(state, name, false, startup, teardown,
-				   false);
+	return __cpuhp_setup_state(state, name, false, startup, teardown, false);
 }
 
 static inline int cpuhp_setup_state_nocalls_cpuslocked(enum cpuhp_state state,

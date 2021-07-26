@@ -99,10 +99,22 @@ enum {
 	WORKER_DESC_LEN		= 24,
 };
 
+/**
+ *  工作队列结构
+ */
 struct work_struct {    /* 工作队列 */
 	atomic_long_t data; /* func 的参数 */
+
+    /**
+     *  
+     */
 	struct list_head entry; /* worker_pool-> workers/... */
+
+    /**
+     *  
+     */
 	work_func_t func;   /* 回调 */
+    
 #ifdef CONFIG_LOCKDEP   /* 死锁检测 */
 	struct lockdep_map lockdep_map; /*  */
 #endif
@@ -112,7 +124,13 @@ struct work_struct {    /* 工作队列 */
 #define WORK_DATA_STATIC_INIT()	\
 	ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
+/**
+ *  
+ */
 struct delayed_work {
+    /**
+     *  
+     */
 	struct work_struct work;
 	struct timer_list timer;
 
@@ -223,16 +241,16 @@ static inline unsigned int work_static(struct work_struct *work)
  * to generate better code.
  */
 #ifdef CONFIG_LOCKDEP
-#define __INIT_WORK(_work, _func, _onstack)				\
-	do {								\
-		static struct lock_class_key __key;			\
-									\
-		__init_work((_work), _onstack);				\
-		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
-		lockdep_init_map(&(_work)->lockdep_map, "(work_completion)"#_work, &__key, 0); \
-		INIT_LIST_HEAD(&(_work)->entry);			\
-		(_work)->func = (_func);				\
-	} while (0)
+//#define __INIT_WORK(_work, _func, _onstack)				\
+//	do {								\
+//		static struct lock_class_key __key;			\
+//									\
+//		__init_work((_work), _onstack);				\
+//		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
+//		lockdep_init_map(&(_work)->lockdep_map, "(work_completion)"#_work, &__key, 0); \
+//		INIT_LIST_HEAD(&(_work)->entry);			\
+//		(_work)->func = (_func);				\
+//	} while (0)
 #else
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
@@ -243,6 +261,9 @@ static inline unsigned int work_static(struct work_struct *work)
 	} while (0)
 #endif
 
+/**
+ *  工作队列初始化
+ */
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
 

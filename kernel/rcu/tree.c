@@ -4527,6 +4527,9 @@ static void __init kfree_rcu_batch_init(void)
 		pr_err("Failed to register kfree_rcu() shrinker!\n");
 }
 
+/**
+ *  
+ */
 void __init rcu_init(void)
 {
 	int cpu;
@@ -4546,6 +4549,10 @@ void __init rcu_init(void)
 	rcu_init_one();
 	if (dump_tree)
 		rcu_dump_rcu_node_tree();
+
+    /**
+     *  
+     */
 	if (use_softirq)
 		open_softirq(RCU_SOFTIRQ, rcu_core_si);
 

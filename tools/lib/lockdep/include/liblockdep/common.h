@@ -11,9 +11,9 @@
 #define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
 #endif
 
-#ifndef _RET_IP_
-#define _RET_IP_ CALLER_ADDR0
-#endif
+//#ifndef _RET_IP_
+//#define _RET_IP_ CALLER_ADDR0
+//#endif
 
 #ifndef _THIS_IP_
 #define _THIS_IP_ ({ __label__ __here; __here: (unsigned long)&&__here; })

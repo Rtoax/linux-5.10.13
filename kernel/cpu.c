@@ -1885,8 +1885,7 @@ int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 
 	mutex_lock(&cpuhp_state_mutex);
 
-	ret = cpuhp_store_callbacks(state, name, startup, teardown,
-				    multi_instance);
+	ret = cpuhp_store_callbacks(state, name, startup, teardown, multi_instance);
 
 	dynstate = state == CPUHP_AP_ONLINE_DYN;
 	if (ret > 0 && dynstate) {

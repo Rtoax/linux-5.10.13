@@ -4130,6 +4130,9 @@ static void __init tcp_init_mem(void)
 	sysctl_tcp_mem[2] = sysctl_tcp_mem[0] * 2;	/* 9.37 % */
 }
 
+/**
+ *  TCP 初始化
+ */
 void __init tcp_init(void)
 {
 	int max_rshare, max_wshare, cnt;
@@ -4137,19 +4140,18 @@ void __init tcp_init(void)
 	unsigned int i;
 
 	BUILD_BUG_ON(TCP_MIN_SND_MSS <= MAX_TCP_OPTION_SPACE);
-	BUILD_BUG_ON(sizeof(struct tcp_skb_cb) >
-		     sizeof_field(struct sk_buff, cb));
+	BUILD_BUG_ON(sizeof(struct tcp_skb_cb) > sizeof_field(struct sk_buff, cb));
 
 	percpu_counter_init(&tcp_sockets_allocated, 0, GFP_KERNEL);
 	percpu_counter_init(&tcp_orphan_count, 0, GFP_KERNEL);
 	inet_hashinfo_init(&tcp_hashinfo);
 	inet_hashinfo2_init(&tcp_hashinfo, "tcp_listen_portaddr_hash",
-			    thash_entries, 21,  /* one slot per 2 MB*/
-			    0, 64 * 1024);
+            			    thash_entries, 21,  /* one slot per 2 MB*/
+            			    0, 64 * 1024);
 	tcp_hashinfo.bind_bucket_cachep =
-		kmem_cache_create("tcp_bind_bucket",
-				  sizeof(struct inet_bind_bucket), 0,
-				  SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+            		kmem_cache_create("tcp_bind_bucket",
+            				  sizeof(struct inet_bind_bucket), 0,
+            				  SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
 
 	/* Size and allocate the main established and bind bucket
 	 * hash tables.
@@ -4166,6 +4168,10 @@ void __init tcp_init(void)
 					&tcp_hashinfo.ehash_mask,
 					0,
 					thash_entries ? 0 : 512 * 1024);
+
+    /**
+     *  
+     */
 	for (i = 0; i <= tcp_hashinfo.ehash_mask; i++)
 		INIT_HLIST_NULLS_HEAD(&tcp_hashinfo.ehash[i].chain, i);
 
@@ -4208,9 +4214,17 @@ void __init tcp_init(void)
 	pr_info("Hash tables configured (established %u bind %u)\n",
 		tcp_hashinfo.ehash_mask + 1, tcp_hashinfo.bhash_size);
 
+    /**
+     *  
+     */
 	tcp_v4_init();      /*  */
 	tcp_metrics_init(); /*  */
 	BUG_ON(tcp_register_congestion_control(&tcp_reno) != 0);
+
+    /**
+     *  初始化 TCP tasklet
+     */
 	tcp_tasklet_init(); /*  */
+    
 	mptcp_init();       /*  */
 }

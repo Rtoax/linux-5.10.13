@@ -1001,10 +1001,22 @@ static unsigned int tcp_established_options(struct sock *sk, struct sk_buff *skb
  */
 struct tsq_tasklet {    /*  */
 	struct tasklet_struct	tasklet;
+
+    /**
+     *  节点为 tcp_sock.tsq_node
+     */
 	struct list_head	head; /* queue of tcp sockets */
 };
-static DEFINE_PER_CPU(struct tsq_tasklet, tsq_tasklet);
 
+/**
+ *  每个 CPU 一个 tasklet 链表
+ */
+static DEFINE_PER_CPU(struct tsq_tasklet, tsq_tasklet);
+struct tsq_tasklet tsq_tasklet; //++++
+
+/**
+ *  
+ */
 static void tcp_tsq_write(struct sock *sk)
 {
 	if ((1 << sk->sk_state) &
@@ -1012,24 +1024,30 @@ static void tcp_tsq_write(struct sock *sk)
 	     TCPF_CLOSE_WAIT  | TCPF_LAST_ACK)) {
 		struct tcp_sock *tp = tcp_sk(sk);
 
-		if (tp->lost_out > tp->retrans_out &&
-		    tp->snd_cwnd > tcp_packets_in_flight(tp)) {
+        /**
+         *  
+         */
+		if (tp->lost_out > tp->retrans_out && tp->snd_cwnd > tcp_packets_in_flight(tp)) {
 			tcp_mstamp_refresh(tp);
 			tcp_xmit_retransmit_queue(sk);
 		}
 
-		tcp_write_xmit(sk, tcp_current_mss(sk), tp->nonagle,
-			       0, GFP_ATOMIC);
+		tcp_write_xmit(sk, tcp_current_mss(sk), tp->nonagle, 0, GFP_ATOMIC);
 	}
 }
 
+/**
+ *  
+ */
 static void tcp_tsq_handler(struct sock *sk)
 {
 	bh_lock_sock(sk);
-	if (!sock_owned_by_user(sk))
+
+    if (!sock_owned_by_user(sk))
 		tcp_tsq_write(sk);
 	else if (!test_and_set_bit(TCP_TSQ_DEFERRED, &sk->sk_tsq_flags))
 		sock_hold(sk);
+    
 	bh_unlock_sock(sk);
 }
 /*
@@ -1037,28 +1055,56 @@ static void tcp_tsq_handler(struct sock *sk)
  * We run in tasklet context but need to disable irqs when
  * transferring tsq->head because tcp_wfree() might
  * interrupt us (non NAPI drivers)
+ *
+ * 尝试发送 更多的 skbs 结构
+ * 我们运行在 tasklet 上下文，但是需要关闭 中断
  */
 static void tcp_tasklet_func(unsigned long data)
 {
+    /**
+     *  
+     */
 	struct tsq_tasklet *tsq = (struct tsq_tasklet *)data;
 	LIST_HEAD(list);
+    struct list_head list; //+++
+    
 	unsigned long flags;
 	struct list_head *q, *n;
 	struct tcp_sock *tp;
 	struct sock *sk;
 
+    /**
+     *  
+     */
 	local_irq_save(flags);
+    /**
+     *  添加到临时链表中
+     */
 	list_splice_init(&tsq->head, &list);
 	local_irq_restore(flags);
 
+    /**
+     *  遍历链表
+     */
 	list_for_each_safe(q, n, &list) {
+
+        /**
+         *  获取链表中的 entry，并将其从链表中删除
+         */
 		tp = list_entry(q, struct tcp_sock, tsq_node);
 		list_del(&tp->tsq_node);
 
+        /**
+         *  因为结构体开头相同，这里可以强转
+         */
 		sk = (struct sock *)tp;
 		smp_mb__before_atomic();
+        
 		clear_bit(TSQ_QUEUED, &sk->sk_tsq_flags);
 
+        /**
+         *  
+         */
 		tcp_tsq_handler(sk);
 		sk_free(sk);
 	}
@@ -1117,17 +1163,25 @@ void tcp_release_cb(struct sock *sk)
 }
 EXPORT_SYMBOL(tcp_release_cb);
 
+/**
+ *  TCP 的 tasklet 初始化
+ */
 void __init tcp_tasklet_init(void)  /*  */
 {
 	int i;
 
+    /**
+     *  遍历 CPU
+     */
 	for_each_possible_cpu(i) {
 		struct tsq_tasklet *tsq = &per_cpu(tsq_tasklet, i);
 
 		INIT_LIST_HEAD(&tsq->head);
-		tasklet_init(&tsq->tasklet,
-			     tcp_tasklet_func,
-			     (unsigned long)tsq);
+
+        /**
+         *  初始化 CPU 对应的 tasklet 链表
+         */
+		tasklet_init(&tsq->tasklet, tcp_tasklet_func, (unsigned long)tsq);
 	}
 }
 

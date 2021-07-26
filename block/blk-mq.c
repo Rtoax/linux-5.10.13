@@ -3904,22 +3904,30 @@ unsigned int blk_mq_rq_cpu(struct request *rq)
 }
 EXPORT_SYMBOL(blk_mq_rq_cpu);
 
+/**
+ *  
+ */
 static int __init blk_mq_init(void)
 {
 	int i;
 
-	for_each_possible_cpu(i)
+	for_each_possible_cpu(i) {
 		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
+    }
+
+    /**
+     *  
+     */
 	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
 
 	cpuhp_setup_state_nocalls(CPUHP_BLOCK_SOFTIRQ_DEAD,
-				  "block/softirq:dead", NULL,
-				  blk_softirq_cpu_dead);
+            				  "block/softirq:dead", NULL,
+            				  blk_softirq_cpu_dead);
 	cpuhp_setup_state_multi(CPUHP_BLK_MQ_DEAD, "block/mq:dead", NULL,
-				blk_mq_hctx_notify_dead);
+				              blk_mq_hctx_notify_dead);
 	cpuhp_setup_state_multi(CPUHP_AP_BLK_MQ_ONLINE, "block/mq:online",
-				blk_mq_hctx_notify_online,
-				blk_mq_hctx_notify_offline);
+             				blk_mq_hctx_notify_online,
+             				blk_mq_hctx_notify_offline);
 	return 0;
 }
 subsys_initcall(blk_mq_init);

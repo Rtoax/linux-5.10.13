@@ -4856,6 +4856,9 @@ int netif_rx_any_context(struct sk_buff *skb)
 }
 EXPORT_SYMBOL(netif_rx_any_context);
 
+/**
+ *  
+ */
 static __latent_entropy void net_tx_action(struct softirq_action *h)    /*  */
 {
 	struct softnet_data *sd = this_cpu_ptr(&softnet_data);
@@ -11201,11 +11204,13 @@ static int __init net_dev_init(void)    /* 网络设备初始化 */
 	if (register_pernet_device(&default_device_ops))/*  */
 		goto out;
 
+    /**
+     *  
+     */
 	open_softirq(NET_TX_SOFTIRQ, net_tx_action);    /* 发 */
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action);    /* 收 */
 
-	rc = cpuhp_setup_state_nocalls(CPUHP_NET_DEV_DEAD, "net/dev:dead",
-				       NULL, dev_cpu_dead);
+	rc = cpuhp_setup_state_nocalls(CPUHP_NET_DEV_DEAD, "net/dev:dead", NULL, dev_cpu_dead);
 	WARN_ON(rc < 0);
 	rc = 0;
 out:

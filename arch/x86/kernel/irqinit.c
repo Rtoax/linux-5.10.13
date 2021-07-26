@@ -100,6 +100,9 @@ void __init init_IRQ(void)  /*  */
 
 	BUG_ON(irq_init_percpu_irqstack(smp_processor_id()));
 
+    /**
+     *  native_init_IRQ()
+     */
 	x86_init.irqs.intr_init(); /* = native_init_IRQ() */
 }
 

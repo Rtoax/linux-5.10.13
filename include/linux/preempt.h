@@ -35,19 +35,19 @@
 #define NMI_BITS	4
 
 #define PREEMPT_SHIFT	0
-#define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
-#define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-#define NMI_SHIFT	(HARDIRQ_SHIFT + HARDIRQ_BITS)
+#define SOFTIRQ_SHIFT	/* 8 */(PREEMPT_SHIFT/* 0 */ + PREEMPT_BITS/* 8 */)
+#define HARDIRQ_SHIFT	/* 16 */(SOFTIRQ_SHIFT/* 8 */ + SOFTIRQ_BITS/* 8 */)
+#define NMI_SHIFT	    /* 20 */(HARDIRQ_SHIFT/* 16 */ + HARDIRQ_BITS/* 4 */)
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
-#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT) /* 0x000000ff */
-#define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT) /* 0x0000ff00 */
-#define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT) /* 0x000f0000 */
-#define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)         /* 0x00f00000 */
+#define PREEMPT_MASK	/* 0x000000ff */(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT) /* 0x000000ff */
+#define SOFTIRQ_MASK	/* 0x0000ff00 */(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT) /* 0x0000ff00 */
+#define HARDIRQ_MASK	/* 0x000f0000 */(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT) /* 0x000f0000 */
+#define NMI_MASK	    /* 0x00f00000 */(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)         /* 0x00f00000 */
 
-#define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
-#define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
+#define PREEMPT_OFFSET	/* 1 */(1UL << PREEMPT_SHIFT/* 0 */)
+#define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT/* 8 */)
 #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
 #define NMI_OFFSET	(1UL << NMI_SHIFT)
 
@@ -81,10 +81,26 @@
 //*         HARDIRQ_MASK:    0x000f0000
 //*             NMI_MASK:    0x00f00000
 
+/**
+ * 31              24  23            16 15             8 7               0
+ *  +----------------+--------+--------+----------------+----------------+
+ *  |                | f00000 | f0000  |   0x0000ff00   |   0x000000ff   |
+ *  +----------------+--------+--------+----------------+----------------+
+ *                   |        |        |                |                |
+ *                   |        |        |                |                |
+ *                   |        |        |                |                +----
+ *                   |        |        |                |                   PREEMPT_MASK
+ *                   |        |        |                +---------------------
+ *                   |        |        |                                    SOFTIRQ_MASK
+ *                   |        |        +--------------------------------------
+ *                   |        |                                             HARDIRQ_MASK
+ *                   |        +-----------------------------------------------
+ *                   |                                                      NMI_MASK
+ *                   +--------------------------------------------------------
+ */
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
-#define irq_count()	(preempt_count() & /*0x00ffff00*/(HARDIRQ_MASK | SOFTIRQ_MASK \
-				 | NMI_MASK))
+#define irq_count()	(preempt_count() & /*0x00ffff00*/(HARDIRQ_MASK | SOFTIRQ_MASK | NMI_MASK))
 
 /*
  * Are we doing bottom half or hardware interrupt processing?
@@ -99,13 +115,12 @@
  * Note: due to the BH disabled confusion: in_softirq(),in_interrupt() really
  *       should not be used in new code.
  */
-#define in_irq()		(hardirq_count())
-#define in_softirq()		(softirq_count())
-#define in_interrupt()		(irq_count())   /*  */
-#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
-#define in_nmi()		(preempt_count() & NMI_MASK)
-#define in_task()		(!(preempt_count() & \
-				   (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET)))
+#define in_irq()		(hardirq_count())   /* 硬中断 */
+#define in_softirq()		(softirq_count()) /* 软中断 */
+#define in_interrupt()		(irq_count())   /* 在中断上下文中 */
+#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET) /*  */
+#define in_nmi()		(preempt_count() & NMI_MASK) /* 在 NMI 中 */
+#define in_task()		/* 在进程上下文中 */(!(preempt_count() &  (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET)))
 
 /*
  * The preempt_count offset after preempt_disable();

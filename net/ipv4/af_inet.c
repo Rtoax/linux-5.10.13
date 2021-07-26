@@ -1940,6 +1940,9 @@ static struct packet_type __read_mostly ip_packet_type  = {
 	.list_func = ip_list_rcv,
 };
 
+/**
+ *  INET 协议组初始化
+ */
 static int __init inet_init(void)   /* inet 初始化 */
 {
 	struct inet_protosw *q;

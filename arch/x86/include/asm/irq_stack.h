@@ -13,10 +13,8 @@ static __always_inline bool irqstack_active(void)
 }
 
 void asm_call_on_stack(void *sp, void (*func)(void), void *arg);
-void asm_call_sysvec_on_stack(void *sp, void (*func)(struct pt_regs *regs),
-			      struct pt_regs *regs);
-void asm_call_irq_on_stack(void *sp, void (*func)(struct irq_desc *desc),
-			   struct irq_desc *desc);
+void asm_call_sysvec_on_stack(void *sp, void (*func)(struct pt_regs *regs), struct pt_regs *regs);
+void asm_call_irq_on_stack(void *sp, void (*func)(struct irq_desc *desc), struct irq_desc *desc);
 
 static __always_inline void __run_on_irqstack(void (*func)(void))
 {
@@ -63,8 +61,10 @@ static __always_inline bool irq_needs_irq_stack(struct pt_regs *regs)
 }
 
 
-static __always_inline void run_on_irqstack_cond(void (*func)(void),
-						 struct pt_regs *regs)
+/**
+ *  
+ */
+static __always_inline void run_on_irqstack_cond(void (*func)(void), struct pt_regs *regs)
 {
 	lockdep_assert_irqs_disabled();
 

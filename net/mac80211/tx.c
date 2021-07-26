@@ -4437,6 +4437,9 @@ void ieee80211_tx_pending(unsigned long data)
 		    skb_queue_empty(&local->pending[i]))
 			continue;
 
+        /**
+         *  
+         */
 		while (!skb_queue_empty(&local->pending[i])) {
 			struct sk_buff *skb = __skb_dequeue(&local->pending[i]);
 			struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
@@ -4446,12 +4449,10 @@ void ieee80211_tx_pending(unsigned long data)
 				continue;
 			}
 
-			spin_unlock_irqrestore(&local->queue_stop_reason_lock,
-						flags);
+			spin_unlock_irqrestore(&local->queue_stop_reason_lock, flags);
 
 			txok = ieee80211_tx_pending_skb(local, skb);
-			spin_lock_irqsave(&local->queue_stop_reason_lock,
-					  flags);
+			spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
 			if (!txok)
 				break;
 		}
@@ -4525,7 +4526,8 @@ static void __ieee80211_beacon_add_tim(struct ieee80211_sub_if_data *sdata,
 		memcpy(pos, ps->tim + n1, n2 - n1 + 1);
 
 		tim[1] = n2 - n1 + 4;
-	} else {
+	} 
+    else {
 		*pos++ = aid0; /* Bitmap control */
 		*pos++ = 0; /* Part Virt Bitmap */
 	}

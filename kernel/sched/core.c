@@ -7465,6 +7465,9 @@ static struct kmem_cache __read_mostly *task_group_cache ;/*  */
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
 
+/**
+ *  
+ */
 void __init sched_init(void)    /* 调度初始化 */
 {
 	unsigned long ptr = 0;
@@ -7539,8 +7542,7 @@ void __init sched_init(void)    /* 调度初始化 */
 #endif
 
 #ifdef CONFIG_RT_GROUP_SCHED
-	init_rt_bandwidth(&root_task_group.rt_bandwidth,
-			                global_rt_period(), global_rt_runtime());
+	init_rt_bandwidth(&root_task_group.rt_bandwidth, global_rt_period(), global_rt_runtime());
 #endif /* CONFIG_RT_GROUP_SCHED */
 
     //allocate `slab` cache for `task_group(s)` and initialize the `siblings` and 

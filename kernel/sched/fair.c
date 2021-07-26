@@ -11340,6 +11340,9 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
 #endif /* CONFIG_NUMA_BALANCING */
 #endif /* CONFIG_SCHED_DEBUG */
 
+/**
+ *  
+ */
 __init void init_sched_fair_class(void) /*  */
 {
 #ifdef CONFIG_SMP
@@ -11365,7 +11368,7 @@ const struct sched_avg *sched_trace_cfs_rq_avg(struct cfs_rq *cfs_rq)
 #ifdef CONFIG_SMP
 	return cfs_rq ? &cfs_rq->avg : NULL;
 #else
-	return NULL;
+//	return NULL;
 #endif
 }
 EXPORT_SYMBOL_GPL(sched_trace_cfs_rq_avg);
@@ -11395,7 +11398,7 @@ const struct sched_avg *sched_trace_rq_avg_rt(struct rq *rq)
 #ifdef CONFIG_SMP
 	return rq ? &rq->avg_rt : NULL;
 #else
-	return NULL;
+//	return NULL;
 #endif
 }
 EXPORT_SYMBOL_GPL(sched_trace_rq_avg_rt);
@@ -11405,7 +11408,7 @@ const struct sched_avg *sched_trace_rq_avg_dl(struct rq *rq)
 #ifdef CONFIG_SMP
 	return rq ? &rq->avg_dl : NULL;
 #else
-	return NULL;
+//	return NULL;
 #endif
 }
 EXPORT_SYMBOL_GPL(sched_trace_rq_avg_dl);
@@ -11415,7 +11418,7 @@ const struct sched_avg *sched_trace_rq_avg_irq(struct rq *rq)
 #if defined(CONFIG_SMP) && defined(CONFIG_HAVE_SCHED_AVG_IRQ)
 	return rq ? &rq->avg_irq : NULL;
 #else
-	return NULL;
+//	return NULL;
 #endif
 }
 EXPORT_SYMBOL_GPL(sched_trace_rq_avg_irq);
@@ -11432,7 +11435,7 @@ int sched_trace_rq_cpu_capacity(struct rq *rq)
 #ifdef CONFIG_SMP
 		rq->cpu_capacity
 #else
-		SCHED_CAPACITY_SCALE
+//		SCHED_CAPACITY_SCALE
 #endif
 		: -1;
 }

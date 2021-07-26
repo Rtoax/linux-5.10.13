@@ -803,6 +803,9 @@ int xfrm_trans_queue(struct sk_buff *skb,
 }
 EXPORT_SYMBOL(xfrm_trans_queue);
 
+/**
+ *  
+ */
 void __init xfrm_input_init(void)
 {
 	int err;
@@ -813,12 +816,19 @@ void __init xfrm_input_init(void)
 	if (err)
 		gro_cells.cells = NULL;
 
+    /**
+     *  
+     */
 	for_each_possible_cpu(i) {
+	    
 		struct xfrm_trans_tasklet *trans;
 
 		trans = &per_cpu(xfrm_trans_tasklet, i);
 		__skb_queue_head_init(&trans->queue);
-		tasklet_init(&trans->tasklet, xfrm_trans_reinject,
-			     (unsigned long)trans);
+        
+        /**
+         *  
+         */
+		tasklet_init(&trans->tasklet, xfrm_trans_reinject,  (unsigned long)trans);
 	}
 }

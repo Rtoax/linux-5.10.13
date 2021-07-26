@@ -1081,6 +1081,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 
     rcu_init_nohz();        /*  */
 
+    /**
+     *  
+     */
     init_timers();          /*  */
 	hrtimers_init();        /* 高精度定时器 */
     

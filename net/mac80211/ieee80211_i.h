@@ -1272,6 +1272,10 @@ struct ieee80211_local {
 	int sta_generation;
 
 	struct sk_buff_head pending[IEEE80211_MAX_QUEUES];
+
+    /**
+     *  
+     */
 	struct tasklet_struct tx_pending_tasklet;
 	struct tasklet_struct wake_txqs_tasklet;
 

@@ -167,6 +167,10 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 						/* L: hash of busy workers */
 
 	struct worker		*manager;	/* L: purely informational */
+
+    /**
+     *  
+     */
 	struct list_head	workers;	/* A: attached workers */
 	struct completion	*detach_completion; /* all workers detached */
 
@@ -197,8 +201,13 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
  * number of flag bits.
  */
 struct pool_workqueue { /*  */
-	struct worker_pool	*pool;		/* I: the associated pool */
+
+    /**
+     *  
+     */
+    struct worker_pool	*pool;		/* I: the associated pool */
 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+    
 	int			work_color;	/* L: current color */
 	int			flush_color;	/* L: flushing color */
 	int			refcnt;		/* L: reference count */
@@ -206,6 +215,10 @@ struct pool_workqueue { /*  */
 						/* L: nr of in_flight works */
 	int			nr_active;	/* L: nr of active works */
 	int			max_active;	/* L: max active works */
+
+    /**
+     *  
+     */
 	struct list_head	delayed_works;	/* L: delayed works */
 	struct list_head	pwqs_node;	/* WR: node on wq->pwqs */
 	struct list_head	mayday_node;	/* MD: node on wq->maydays */
@@ -218,6 +231,7 @@ struct pool_workqueue { /*  */
 	 */
 	struct work_struct	unbound_release_work;
 	struct rcu_head		rcu;
+    
 } __aligned(1 << WORK_STRUCT_FLAG_BITS);
 
 /*
@@ -259,6 +273,7 @@ struct workqueue_struct {   /*  */
 #ifdef CONFIG_SYSFS
 	struct wq_device	*wq_dev;	/* I: for sysfs interface */
 #endif
+
 #ifdef CONFIG_LOCKDEP
 	char			*lock_name;
 	struct lock_class_key	key;
@@ -274,7 +289,7 @@ struct workqueue_struct {   /*  */
 	struct rcu_head		rcu;
 
 	/* hot fields used during command issue, aligned to cacheline */
-	unsigned int		flags ____cacheline_aligned; /* WQ: WQ_* flags */
+	unsigned int	____cacheline_aligned	flags ; /* WQ: WQ_* flags */
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* PWR: unbound pwqs indexed by node */
 };
@@ -312,6 +327,7 @@ static cpumask_var_t wq_unbound_cpumask;
 
 /* CPU where unbound work was last round robin scheduled from this CPU */
 static DEFINE_PER_CPU(int, wq_rr_cpu_last);
+int wq_rr_cpu_last;
 
 /*
  * Local execution of unbound work items is no longer guaranteed.  The

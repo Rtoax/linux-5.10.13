@@ -2087,9 +2087,16 @@ int hrtimers_dead_cpu(unsigned int scpu)
 
 #endif /* CONFIG_HOTPLUG_CPU */
 
+/**
+ *  
+ */
 void __init hrtimers_init(void) /* 高精度定时器初始化 */
 {
 	hrtimers_prepare_cpu(smp_processor_id());
+
+    /**
+     *  
+     */
 	open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq); /* 赋值 */
 }
 

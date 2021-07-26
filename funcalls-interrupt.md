@@ -7,7 +7,9 @@ early_idt_handler_array
 
 ```
 
-# 1. 系统启动初始化调用图谱
+# 1. 初始化
+
+## 1.1. 系统启动初始化调用图谱
 
 ```
 x86_64_start_kernel
@@ -24,9 +26,12 @@ x86_64_start_kernel
                     idt_setup_from_table(idt_table, early_pf_idts, ...); 缺页(14)
             trap_init
                 idt_setup_traps
-                    idt_setup_from_table(idt_table, def_idts, ...); 
+                    idt_setup_from_table(idt_table, def_idts, ...);
                 idt_setup_ist_traps
-                    idt_setup_from_table(idt_table, ist_idts, ...); 
+                    idt_setup_from_table(idt_table, ist_idts, ...);
+            sched_init
+                init_sched_fair_class
+                    open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
             early_irq_init()
                 arch_early_irq_init
                     arch_early_ioapic_init
@@ -34,9 +39,32 @@ x86_64_start_kernel
                 x86_init.irqs.intr_init() => native_init_IRQ()
                     idt_setup_apic_and_irq_gates
                         idt_setup_from_table(idt_table, apic_idts, ...);
+            hrtimers_init
+                open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
+            init_timers
+                open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+            softirq_init()
+                open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+                open_softirq(HI_SOFTIRQ, tasklet_hi_action);
 ```
 
-# 2. arch/x86/entry/entry_64.S
+* 子系统
+
+```
+net_dev_init
+    open_softirq(NET_TX_SOFTIRQ, net_tx_action);    /* 发 */
+    open_softirq(NET_RX_SOFTIRQ, net_rx_action);    /* 收 */
+
+blk_mq_init
+    open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
+
+inet_init
+    tcp_init
+        tcp_tasklet_init
+            tasklet_init(&tsq->tasklet, tcp_tasklet_func, (unsigned long)tsq);
+```
+
+## 1.2. arch/x86/entry/entry_64.S
 
 ```c
 	.align 16
@@ -50,9 +78,10 @@ __irqentry_text_start:
 __irqentry_text_end:
 ```
 
-# 3. arch\x86\include\asm\idtentry.h
+## 1.3. arch\x86\include\asm\idtentry.h
 
 展开请见源文件，分为 
+
 ```c
 #ifdef __ASSEMBLY__
 //在 arch/x86/entry/entry_64.S 中展开
@@ -61,5 +90,20 @@ __irqentry_text_end:
 #endif
 ```
 
+# 2. 中断后半部
+
+[《Linux内核深入理解中断和异常（7）：中断下半部：Softirq, Tasklets and Workqueues》](https://rtoax.blog.csdn.net/article/details/115213699)
+
+* `0x00-0x1f` architecture-defined exceptions and interrupts;
+* `0x30-0x3f` are used for ISA(Industry Standard Architecture) interrupts;
+* `softirqs`是静态分配的，这对内核模块来说是不可加载的，这就引出了tasklets；
+* `softirqs`实际上很少使用；
+* `workqueue`运行在内核进程上下文中；
+* `tasklets`运行在软件中断上下文中；
+* `ksoftirqd`调度 softirqs -> spawn_ksoftirqd
+* `kworker`调度workqueue
 
 
+```
+
+```
