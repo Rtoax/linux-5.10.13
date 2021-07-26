@@ -188,6 +188,9 @@ void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
 	INIT_LIST_HEAD(&rt_se->run_list);
 }
 
+/**
+ *  创建实时调度器 需要的组调度数据结构
+ */
 int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
 {
 	struct rt_rq *rt_rq;
@@ -230,38 +233,38 @@ err:
 
 #else /* CONFIG_RT_GROUP_SCHED */
 
-#define rt_entity_is_task(rt_se) (1)
-
-static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
-{
-	return container_of(rt_se, struct task_struct, rt);
-}
-
-static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-{
-	return container_of(rt_rq, struct rq, rt);
-}
-
-static inline struct rq *rq_of_rt_se(struct sched_rt_entity *rt_se)
-{
-	struct task_struct *p = rt_task_of(rt_se);
-
-	return task_rq(p);
-}
-
-static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-{
-	struct rq *rq = rq_of_rt_se(rt_se);
-
-	return &rq->rt;
-}
-
-void free_rt_sched_group(struct task_group *tg) { }
-
-int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
-{
-	return 1;
-}
+//#define rt_entity_is_task(rt_se) (1)
+//
+//static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
+//{
+//	return container_of(rt_se, struct task_struct, rt);
+//}
+//
+//static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
+//{
+//	return container_of(rt_rq, struct rq, rt);
+//}
+//
+//static inline struct rq *rq_of_rt_se(struct sched_rt_entity *rt_se)
+//{
+//	struct task_struct *p = rt_task_of(rt_se);
+//
+//	return task_rq(p);
+//}
+//
+//static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
+//{
+//	struct rq *rq = rq_of_rt_se(rt_se);
+//
+//	return &rq->rt;
+//}
+//
+//void free_rt_sched_group(struct task_group *tg) { }
+//
+//int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
+//{
+//	return 1;
+//}
 #endif /* CONFIG_RT_GROUP_SCHED */
 
 #ifdef CONFIG_SMP

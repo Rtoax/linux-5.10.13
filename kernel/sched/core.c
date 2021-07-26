@@ -298,6 +298,9 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
 	update_rq_clock_pelt(rq, delta);
 }
 
+/**
+ *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+ */
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
@@ -313,10 +316,21 @@ void update_rq_clock(struct rq *rq)
 	rq->clock_update_flags |= RQCF_UPDATED;
 #endif
 
+    /**
+     *  
+     */
 	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
 	if (delta < 0)
 		return;
+
+    /**
+     *  
+     */
 	rq->clock += delta;
+
+    /**
+     *  
+     */
 	update_rq_clock_task(rq, delta);
 }
 
@@ -588,6 +602,8 @@ void wake_up_q(struct wake_q_head *head)
  * On UP this means the setting of the need_resched flag, on SMP it
  * might also involve a cross-CPU call to trigger the scheduler on
  * the target CPU.
+ *
+ *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位
  */
 void resched_curr(struct rq *rq)    /*  */
 {
@@ -4200,8 +4216,19 @@ void scheduler_tick(void)
 
 	rq_lock(rq, &rf);
 
+    /**
+     *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+     */
 	update_rq_clock(rq);
+
+    /**
+     *  
+     */
 	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
+
+    /**
+     *  
+     */
 	update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure);
 
     /**
@@ -4230,6 +4257,10 @@ void scheduler_tick(void)
 
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
+
+    /**
+     *  触发 负载均衡机制
+     */
 	trigger_load_balance(rq);
 #endif
 }
@@ -7454,6 +7485,8 @@ int in_sched_functions(unsigned long addr)  /*  */
 /*
  * Default task group.
  * Every task in system belongs to this group at bootup.
+ *
+ * 组调度的根
  */
 struct task_group root_task_group;/* init_task.sched_task_group = &root_task_group; */
 LIST_HEAD(task_groups);
@@ -7875,21 +7908,39 @@ static void sched_free_group(struct task_group *tg)
 	kmem_cache_free(task_group_cache, tg);
 }
 
-/* allocate runqueue etc for a new task group */
+/**
+ * allocate runqueue etc for a new task group 
+ *
+ * 创建和组织一个组调度
+ *
+ * @parent: 上一级组调度节点，全局的 root根为: root_task_group
+ */
 struct task_group *sched_create_group(struct task_group *parent)
 {
 	struct task_group *tg;
 
+    /**
+     *  分配实例
+     */
 	tg = kmem_cache_alloc(task_group_cache, GFP_KERNEL | __GFP_ZERO);
 	if (!tg)
 		return ERR_PTR(-ENOMEM);
 
+    /**
+     *  创建CFS调度器 需要的组调度数据结构
+     */
 	if (!alloc_fair_sched_group(tg, parent))
 		goto err;
 
+    /**
+     *  创建实时调度器 需要的组调度数据结构
+     */
 	if (!alloc_rt_sched_group(tg, parent))
 		goto err;
 
+    /**
+     *  
+     */
 	alloc_uclamp_sched_group(tg, parent);
 
 	return tg;

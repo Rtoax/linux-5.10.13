@@ -413,8 +413,26 @@ struct cfs_bandwidth {
 #endif
 };
 
-/* Task group related information */
+/**
+ *  Task group related information 
+ *
+ *  为解决 多用户情况下，进程多的用户，获取的总 CPU 时间多，引入了组调度机制。
+ *
+ *  组调度属于 cgroup 架构的 CPU 子系统
+ *
+ *  全局变量
+ *  --------------------------
+ *  root_task_group: 组调度的根
+ *
+ *  接口
+ *  --------------------------
+ *  sched_create_group: 创建和组织一个组调度
+ */
 struct task_group {/* cgroup sched *//* cgroup调度 */
+
+    /**
+     *  
+     */
 	struct cgroup_subsys_state css;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED/* 公平组调度 */
@@ -435,12 +453,18 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 #endif
 
 #ifdef CONFIG_RT_GROUP_SCHED/* 实时组调度 */
+    /**
+     *  
+     */
 	struct sched_rt_entity	**rt_se;
 	struct rt_rq		**rt_rq;
 
 	struct rt_bandwidth	rt_bandwidth;
 #endif
 
+    /**
+     *  
+     */
 	struct rcu_head		rcu;
 	struct list_head	list;
 
@@ -452,6 +476,9 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	struct autogroup	*autogroup;
 #endif
 
+    /**
+     *  
+     */
 	struct cfs_bandwidth	cfs_bandwidth;
 
 #ifdef CONFIG_UCLAMP_TASK_GROUP /*  */
@@ -1081,7 +1108,7 @@ struct rq { /* runqueue 运行队列 */
 	unsigned int		clock_update_flags;
 
     /**
-     *  每次时钟 节拍到来时，会更新这个时钟
+     *  每次时钟 节拍到来时，会更新这个时钟，见`update_rq_clock()`
      */
 	u64			clock;
 

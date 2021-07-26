@@ -1617,6 +1617,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
 
 	raw_spin_lock_irqsave(&cpu_base->lock, flags);
 	entry_time = now = hrtimer_update_base(cpu_base);
+    
 retry:
 	cpu_base->in_hrtirq = 1;
 	/*
@@ -1691,6 +1692,10 @@ retry:
 		expires_next = ktime_add_ns(now, 100 * NSEC_PER_MSEC);
 	else
 		expires_next = ktime_add(now, delta);
+
+    /**
+     *  
+     */
 	tick_program_event(expires_next, 1);
 	pr_warn_once("hrtimer: interrupt took %llu ns\n", ktime_to_ns(delta));
 }

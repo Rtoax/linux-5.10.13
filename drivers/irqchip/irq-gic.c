@@ -113,34 +113,38 @@ static DEFINE_RAW_SPINLOCK(cpu_map_lock);
  * by the GIC itself.
  */
 #define NR_GIC_CPU_IF 8
-static u8 gic_cpu_map[NR_GIC_CPU_IF] __read_mostly;
+static u8 __read_mostly gic_cpu_map[NR_GIC_CPU_IF] ;
 
 static DEFINE_STATIC_KEY_TRUE(supports_deactivate_key);
 
-static struct gic_chip_data gic_data[CONFIG_ARM_GIC_MAX_NR] __read_mostly;
+/**
+ *  
+ */
+static struct gic_chip_data __read_mostly gic_data[CONFIG_ARM_GIC_MAX_NR] ;
 
 static struct gic_kvm_info gic_v2_kvm_info;
 
 static DEFINE_PER_CPU(u32, sgi_intid);
+static u32 sgi_intid; //++++
 
 #ifdef CONFIG_GIC_NON_BANKED
-static DEFINE_STATIC_KEY_FALSE(frankengic_key);
-
-static void enable_frankengic(void)
-{
-	static_branch_enable(&frankengic_key);
-}
-
-static inline void __iomem *__get_base(union gic_base *base)
-{
-	if (static_branch_unlikely(&frankengic_key))
-		return raw_cpu_read(*base->percpu_base);
-
-	return base->common_base;
-}
-
-#define gic_data_dist_base(d)	__get_base(&(d)->dist_base)
-#define gic_data_cpu_base(d)	__get_base(&(d)->cpu_base)
+//static DEFINE_STATIC_KEY_FALSE(frankengic_key);
+//
+//static void enable_frankengic(void)
+//{
+//	static_branch_enable(&frankengic_key);
+//}
+//
+//static inline void __iomem *__get_base(union gic_base *base)
+//{
+//	if (static_branch_unlikely(&frankengic_key))
+//		return raw_cpu_read(*base->percpu_base);
+//
+//	return base->common_base;
+//}
+//
+//#define gic_data_dist_base(d)	__get_base(&(d)->dist_base)
+//#define gic_data_cpu_base(d)	__get_base(&(d)->cpu_base)
 #else
 #define gic_data_dist_base(d)	((d)->dist_base.common_base)
 #define gic_data_cpu_base(d)	((d)->cpu_base.common_base)
@@ -331,6 +335,9 @@ static int gic_retrigger(struct irq_data *data)
 	return !gic_irq_set_irqchip_state(data, IRQCHIP_STATE_PENDING, true);
 }
 
+/**
+ *  
+ */
 static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 {
 	u32 irqstat, irqnr;
@@ -346,6 +353,7 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 
 		if (static_branch_likely(&supports_deactivate_key))
 			writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
+        
 		isb();
 
 		/*
@@ -414,8 +422,7 @@ static const struct irq_chip gic_chip = {
 void __init gic_cascade_irq(unsigned int gic_nr, unsigned int irq)
 {
 	BUG_ON(gic_nr >= CONFIG_ARM_GIC_MAX_NR);
-	irq_set_chained_handler_and_data(irq, gic_handle_cascade_irq,
-					 &gic_data[gic_nr]);
+	irq_set_chained_handler_and_data(irq, gic_handle_cascade_irq, &gic_data[gic_nr]);
 }
 
 static u8 gic_get_cpumask(struct gic_chip_data *gic)

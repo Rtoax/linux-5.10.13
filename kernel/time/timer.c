@@ -1712,9 +1712,10 @@ void update_process_times(int user_tick)
 		irq_work_tick();
 #endif
     /**
-     *  
+     *  调度器 时钟
      */
 	scheduler_tick();
+
 	if (IS_ENABLED(CONFIG_POSIX_TIMERS))
 		run_posix_cpu_timers();
 }

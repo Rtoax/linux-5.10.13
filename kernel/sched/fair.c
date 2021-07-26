@@ -59,6 +59,7 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
  *
  * 调度周期，使进程至少保证执行0.75ms。
+ * 如果该进程实际运行时间小于这个值，则不需要被调度, see `check_preempt_tick()`
  */
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
@@ -272,7 +273,12 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 	return container_of(se, struct task_struct, se);
 }
 
-/* Walk up scheduling entities hierarchy */
+/**
+ *  Walk up scheduling entities hierarchy 
+ *
+ *  如果 没有定义宏 CONFIG_FAIR_GROUP_SCHED(组调度) ，该宏定义为
+ *  for (; se; se = NULL)
+ */
 #define for_each_sched_entity(se) \
 		for (; se; se = se->parent)
 
@@ -589,6 +595,9 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
 }
 
+/**
+ *  选择红黑树最左子树
+ */
 struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 {
 	struct rb_node *left = rb_first_cached(&cfs_rq->tasks_timeline);
@@ -3839,6 +3848,7 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
  *  Update task and its cfs_rq load average 
  *
  *  更新平均负载
+ *  更新 该进程调度实体 的负载和就绪队列 的负载
  */
 static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)   /*  */
 {
@@ -4426,6 +4436,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 /*
  * Preempt the current task with a newly woken task if needed:
+ *
+ * 检查当前进程是否需要调度
  */
 static void
 check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
@@ -4434,12 +4446,23 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	struct sched_entity *se;
 	s64 delta;
 
+    /**
+     *  理论运行时间
+     */
 	ideal_runtime = sched_slice(cfs_rq, curr);
+
+    /**
+     *  实际运行时间
+     */
 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
+
+    /**
+     *  如果实际运行时间 > 理论运行时间 ： 该进程需要调度出去
+     */
 	if (delta_exec > ideal_runtime) {
 
         /**
-         *  
+         *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位
          */
 		resched_curr(rq_of(cfs_rq));
 		/*
@@ -4454,16 +4477,33 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	 * Ensure that a task that missed wakeup preemption by a
 	 * narrow margin doesn't have to wait for a full slice.
 	 * This also mitigates buddy induced latencies under load.
+	 *
+	 *  系统中使用 sysctl_sched_min_granularity 定义进程最短运行时间
+	 *  默认值为 0.75 ms，如果该进程实际运行时间小于这个值，则不需要被调度。
 	 */
 	if (delta_exec < sysctl_sched_min_granularity)
 		return;
 
+    /**
+     *  最左子树
+     */
 	se = __pick_first_entity(cfs_rq);
+
+    /**
+     *  最后，将该进程 的虚拟时间 和就绪队列红黑树中 最左边的调度实体的虚拟时间做比较
+     *  差值为 delta
+     */
 	delta = curr->vruntime - se->vruntime;
 
+    /**
+     *  curr->vruntime < se->vruntime
+     */
 	if (delta < 0)
 		return;
 
+    /**
+     *  差值 大于 理论运行时间，则会触发调度
+     */
 	if (delta > ideal_runtime)
 		resched_curr(rq_of(cfs_rq));
 }
@@ -4613,20 +4653,28 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 
 
 /**
- *  
+ *  检查是否需要调度
  */
 static void
 entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 {
 	/*
 	 * Update run-time statistics of the 'current'.
+	 *
+	 * 更新当前进程 的 vruntime 和就绪队列 的 min_vruntime
 	 */
 	update_curr(cfs_rq);
 
 	/*
 	 * Ensure that runnable average is periodically updated.
+	 *
+	 * 更新 该进程调度实体 的负载和就绪队列 的负载
 	 */
 	update_load_avg(cfs_rq, curr, UPDATE_TG);
+
+    /*
+	 * 
+	 */
 	update_cfs_group(curr);
 
 #ifdef CONFIG_SCHED_HRTICK
@@ -4646,6 +4694,9 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 #endif
 
 	if (cfs_rq->nr_running > 1)
+        /*
+    	 * 检查当前进程是否需要调度
+    	 */
 		check_preempt_tick(cfs_rq, curr);
 }
 
@@ -10752,7 +10803,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 		cfs_rq = cfs_rq_of(se);
 
         /**
-         *  
+         *  检查是否需要调度
          */
 		entity_tick(cfs_rq, se, queued);
 	}
@@ -11082,19 +11133,32 @@ void free_fair_sched_group(struct task_group *tg)
 	kfree(tg->se);
 }
 
+/**
+ *  创建CFS调度器 需要的组调度数据结构
+ */
 int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
 {
 	struct sched_entity *se;
 	struct cfs_rq *cfs_rq;
 	int i;
 
+    /**
+     *  
+     */
 	tg->cfs_rq = kcalloc(nr_cpu_ids, sizeof(cfs_rq), GFP_KERNEL);
 	if (!tg->cfs_rq)
 		goto err;
-	tg->se = kcalloc(nr_cpu_ids, sizeof(se), GFP_KERNEL);
+
+    /**
+     *  
+     */
+    tg->se = kcalloc(nr_cpu_ids, sizeof(se), GFP_KERNEL);
 	if (!tg->se)
 		goto err;
 
+    /**
+     *  
+     */
 	tg->shares = NICE_0_LOAD;
 
 	init_cfs_bandwidth(tg_cfs_bandwidth(tg));

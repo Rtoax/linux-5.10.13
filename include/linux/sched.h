@@ -866,6 +866,9 @@ struct task_struct {    /* PCB */
 	struct sched_rt_entity		rt;/* 实时调度实体 */
     
 #ifdef CONFIG_CGROUP_SCHED
+    /**
+     *  组调度
+     */
 	struct task_group		*sched_task_group;/* cgroup 调度 */
 #endif
 
