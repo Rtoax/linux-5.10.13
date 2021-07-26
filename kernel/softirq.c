@@ -829,18 +829,28 @@ static int ksoftirqd_should_run(unsigned int cpu)
 }
 
 /**
- *  
+ *  ksoftirqd 主任务
  */
-static void run_ksoftirqd(unsigned int cpu) /* ksoftirqd 主任务 */
+static void run_ksoftirqd(unsigned int cpu) /*  */
 {
 	local_irq_disable();    /* 关中断 */
+
+    /**
+     *  
+     */
 	if (local_softirq_pending()) {
 		/*
 		 * We can safely run softirq on inline stack, as we are not deep
 		 * in the task stack here.
+		 *
+		 * 
 		 */
 		__do_softirq();
 		local_irq_enable();
+
+        /**
+         *  
+         */
 		cond_resched();
 		return;
 	}
@@ -912,6 +922,9 @@ static int takeover_tasklets(unsigned int cpu)
 //#define takeover_tasklets	NULL
 #endif /* CONFIG_HOTPLUG_CPU */
 
+/**
+ *  ksoftirqd 线程
+ */
 static struct smp_hotplug_thread softirq_threads = {
 	softirq_threads.store			= &ksoftirqd,
 	softirq_threads.thread_should_run	= ksoftirqd_should_run,
