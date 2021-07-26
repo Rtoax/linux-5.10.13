@@ -819,11 +819,6 @@ asmlinkage void asm_exc_debug(void);
  __visible void exc_debug(struct pt_regs *regs);
 
 
-
-
-
-
-
 asmlinkage void asm_exc_double_fault(void);
  __visible void exc_double_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address);
 
@@ -842,8 +837,6 @@ asmlinkage void asm_sysvec_hyperv_reenlightenment(void);
 asmlinkage void asm_sysvec_hyperv_stimer0(void);
  asmlinkage void xen_asm_sysvec_hyperv_stimer0(void);
  __visible void sysvec_hyperv_stimer0(struct pt_regs *regs);
-
-
 
 
 asmlinkage void asm_sysvec_acrn_hv_callback(void);
