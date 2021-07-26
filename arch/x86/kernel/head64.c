@@ -408,6 +408,9 @@ static bool __init early_make_pgtable(unsigned long address)
 	return __early_make_pgtable(address, pmd);
 }
 
+/**
+ *  
+ */
 void __init do_early_exception(struct pt_regs *regs, int trapnr)
 {
 	if (trapnr == X86_TRAP_PF/*缺页中断（Page Fault）*/ &&
@@ -476,7 +479,10 @@ static void __init copy_bootdata(char *real_mode_data)
 	sme_unmap_bootdata(real_mode_data);
 }
 
-    //real_mode_data = boot_params
+/**
+ *  从汇编中跳转过来的 arch/x86/kernel/head_64.S
+ */
+//real_mode_data = boot_params
 asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 {
 	/*
@@ -540,9 +546,16 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 	/* set init_top_pgt kernel high mapping*/
 	init_top_pgt[511] = early_top_pgt[511];
 
+    /**
+     *  
+     */
 	x86_64_start_reservations(real_mode_data);  /*  */
 }
 
+
+/**
+ *  
+ */
 //real_mode_data = `boot_params` 结构体
 void __init x86_64_start_reservations(char *real_mode_data)
 {
@@ -552,8 +565,14 @@ void __init x86_64_start_reservations(char *real_mode_data)
 	if (!boot_params.hdr.version)
 		copy_bootdata(__va(real_mode_data));
 
+    /**
+     *  
+     */
 	x86_early_init_platform_quirks();
 
+    /**
+     *  
+     */
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_INTEL_MID:/* 手机网络设备 */
 		x86_intel_mid_early_setup();
@@ -562,6 +581,9 @@ void __init x86_64_start_reservations(char *real_mode_data)
 		break;
 	}
 
+    /**
+     *  
+     */
 	start_kernel();
 }
 

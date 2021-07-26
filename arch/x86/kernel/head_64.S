@@ -384,6 +384,10 @@ SYM_CODE_START(early_idt_handler_array) //这段代码自动生成为前 `32` �
 	.else
 		UNWIND_HINT_IRET_REGS offset=8
 	.endif
+
+    /**
+     *  
+     */
 	pushq $i		//# 72(%rsp) Vector number
 	jmp early_idt_handler_common
 	UNWIND_HINT_IRET_REGS
@@ -393,6 +397,9 @@ SYM_CODE_START(early_idt_handler_array) //这段代码自动生成为前 `32` �
 	UNWIND_HINT_IRET_REGS offset=16
 SYM_CODE_END(early_idt_handler_array)
 
+/**
+ *  
+ */
 SYM_CODE_START_LOCAL(early_idt_handler_common)
 	/*
 	 * The stack is the hardware frame, an error code or zero, and the
@@ -424,6 +431,10 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	UNWIND_HINT_REGS
 
 	movq %rsp,%rdi		/* RDI = pt_regs; RSI is already trapnr */
+
+    /**
+     *  
+     */
 	call do_early_exception
 
 	decl early_recursion_flag(%rip)

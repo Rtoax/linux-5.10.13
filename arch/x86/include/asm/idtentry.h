@@ -479,14 +479,14 @@ static __always_inline void __##func(struct pt_regs *regs)
 	idtentry_vc vector asm_##func func
 
 #else
-# define DECLARE_IDTENTRY_MCE(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
-/* No ASM emitted for DF as this goes through a C shim */
-# define DECLARE_IDTENTRY_DF(vector, func)
-
-/* No ASM emitted for XEN hypervisor callback */
-# define DECLARE_IDTENTRY_XENCB(vector, func)
+//# define DECLARE_IDTENTRY_MCE(vector, func)				\
+//	DECLARE_IDTENTRY(vector, func)
+//
+///* No ASM emitted for DF as this goes through a C shim */
+//# define DECLARE_IDTENTRY_DF(vector, func)
+//
+///* No ASM emitted for XEN hypervisor callback */
+//# define DECLARE_IDTENTRY_XENCB(vector, func)
 
 #endif
 
@@ -684,5 +684,175 @@ DECLARE_IDTENTRY_SYSVEC(HYPERVISOR_CALLBACK_VECTOR,	sysvec_kvm_asyncpf_interrupt
 #endif
 
 #undef X86_TRAP_OTHER
+
+#ifdef __rtoax______________________________________//<asm/idtentry.h> gcc -E 展开
+
+#ifdef __ASSEMBLY__
+
+ .align 8
+SYM_CODE_START(irq_entries_start)
+    vector=FIRST_EXTERNAL_VECTOR
+    .rept (FIRST_SYSTEM_VECTOR - FIRST_EXTERNAL_VECTOR)
+ UNWIND_HINT_IRET_REGS
+0 :
+ .byte 0x6a, vector
+ jmp asm_common_interrupt
+ nop
+
+ . = 0b + 8
+ vector = vector+1
+    .endr
+SYM_CODE_END(irq_entries_start)
+idtentry X86_TRAP_DE asm_exc_divide_error exc_divide_error has_error_code=0;
+idtentry X86_TRAP_OF asm_exc_overflow exc_overflow has_error_code=0;
+idtentry X86_TRAP_BR asm_exc_bounds exc_bounds has_error_code=0;
+idtentry X86_TRAP_NM asm_exc_device_not_available exc_device_not_available has_error_code=0;
+idtentry X86_TRAP_OLD_MF asm_exc_coproc_segment_overrun exc_coproc_segment_overrun has_error_code=0;
+idtentry X86_TRAP_SPURIOUS asm_exc_spurious_interrupt_bug exc_spurious_interrupt_bug has_error_code=0;
+idtentry X86_TRAP_MF asm_exc_coprocessor_error exc_coprocessor_error has_error_code=0;
+idtentry X86_TRAP_XF asm_exc_simd_coprocessor_error exc_simd_coprocessor_error has_error_code=0;
+
+
+idtentry X86_TRAP_TS asm_exc_invalid_tss exc_invalid_tss has_error_code=1;
+idtentry X86_TRAP_NP asm_exc_segment_not_present exc_segment_not_present has_error_code=1;
+idtentry X86_TRAP_SS asm_exc_stack_segment exc_stack_segment has_error_code=1;
+idtentry X86_TRAP_GP asm_exc_general_protection exc_general_protection has_error_code=1;
+idtentry X86_TRAP_AC asm_exc_alignment_check exc_alignment_check has_error_code=1;
+
+
+idtentry X86_TRAP_UD asm_exc_invalid_op exc_invalid_op has_error_code=0;
+idtentry X86_TRAP_BP asm_exc_int3 exc_int3 has_error_code=0;
+idtentry X86_TRAP_PF asm_exc_page_fault exc_page_fault has_error_code=1;
+idtentry X86_TRAP_DB asm_exc_debug exc_debug has_error_code=0;
+
+
+idtentry_irq 0xFFFF common_interrupt;
+idtentry_sysvec HYPERVISOR_CALLBACK_VECTOR sysvec_hyperv_callback;
+idtentry_sysvec HYPERV_REENLIGHTENMENT_VECTOR sysvec_hyperv_reenlightenment;
+idtentry_sysvec HYPERV_STIMER0_VECTOR sysvec_hyperv_stimer0;
+
+idtentry_sysvec HYPERVISOR_CALLBACK_VECTOR sysvec_acrn_hv_callback;
+
+#else //__ASSEMBLY__
+
+
+asmlinkage void asm_exc_divide_error(void);
+ asmlinkage void xen_asm_exc_divide_error(void);
+ __visible void exc_divide_error(struct pt_regs *regs);
+
+asmlinkage void asm_exc_overflow(void);
+ asmlinkage void xen_asm_exc_overflow(void);
+ __visible void exc_overflow(struct pt_regs *regs);
+
+asmlinkage void asm_exc_bounds(void);
+ asmlinkage void xen_asm_exc_bounds(void);
+ __visible void exc_bounds(struct pt_regs *regs);
+
+asmlinkage void asm_exc_device_not_available(void);
+ asmlinkage void xen_asm_exc_device_not_available(void);
+ __visible void exc_device_not_available(struct pt_regs *regs);
+
+asmlinkage void asm_exc_coproc_segment_overrun(void);
+ asmlinkage void xen_asm_exc_coproc_segment_overrun(void);
+ __visible void exc_coproc_segment_overrun(struct pt_regs *regs);
+
+asmlinkage void asm_exc_spurious_interrupt_bug(void);
+ asmlinkage void xen_asm_exc_spurious_interrupt_bug(void);
+ __visible void exc_spurious_interrupt_bug(struct pt_regs *regs);
+
+asmlinkage void asm_exc_coprocessor_error(void);
+ asmlinkage void xen_asm_exc_coprocessor_error(void);
+ __visible void exc_coprocessor_error(struct pt_regs *regs);
+
+asmlinkage void asm_exc_simd_coprocessor_error(void);
+ asmlinkage void xen_asm_exc_simd_coprocessor_error(void);
+ __visible void exc_simd_coprocessor_error(struct pt_regs *regs);
+
+
+
+asmlinkage void asm_iret_error(void);
+ asmlinkage void xen_asm_iret_error(void);
+ __visible void iret_error(struct pt_regs *regs);
+
+
+
+asmlinkage void asm_exc_invalid_tss(void);
+ asmlinkage void xen_asm_exc_invalid_tss(void);
+ __visible void exc_invalid_tss(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_exc_segment_not_present(void);
+ asmlinkage void xen_asm_exc_segment_not_present(void);
+ __visible void exc_segment_not_present(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_exc_stack_segment(void);
+ asmlinkage void xen_asm_exc_stack_segment(void);
+ __visible void exc_stack_segment(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_exc_general_protection(void);
+ asmlinkage void xen_asm_exc_general_protection(void);
+ __visible void exc_general_protection(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_exc_alignment_check(void);
+ asmlinkage void xen_asm_exc_alignment_check(void);
+ __visible void exc_alignment_check(struct pt_regs *regs, unsigned long error_code);
+
+
+
+asmlinkage void asm_exc_invalid_op(void);
+ asmlinkage void xen_asm_exc_invalid_op(void);
+ __visible void exc_invalid_op(struct pt_regs *regs);
+
+asmlinkage void asm_exc_int3(void);
+ asmlinkage void xen_asm_exc_int3(void);
+ __visible void exc_int3(struct pt_regs *regs);
+
+asmlinkage void asm_exc_page_fault(void);
+ asmlinkage void xen_asm_exc_page_fault(void);
+ __visible void exc_page_fault(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_exc_nmi(void);
+ asmlinkage void xen_asm_exc_nmi(void);
+ __visible void exc_nmi(struct pt_regs *regs);
+
+asmlinkage void asm_exc_debug(void);
+ asmlinkage void xen_asm_exc_debug(void);
+ __visible void exc_debug(struct pt_regs *regs);
+
+
+
+
+
+
+
+asmlinkage void asm_exc_double_fault(void);
+ __visible void exc_double_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address);
+
+asmlinkage void asm_common_interrupt(void);
+ asmlinkage void xen_asm_common_interrupt(void);
+ __visible void common_interrupt(struct pt_regs *regs, unsigned long error_code);
+
+asmlinkage void asm_sysvec_hyperv_callback(void);
+ asmlinkage void xen_asm_sysvec_hyperv_callback(void);
+ __visible void sysvec_hyperv_callback(struct pt_regs *regs);
+
+asmlinkage void asm_sysvec_hyperv_reenlightenment(void);
+ asmlinkage void xen_asm_sysvec_hyperv_reenlightenment(void);
+ __visible void sysvec_hyperv_reenlightenment(struct pt_regs *regs);
+
+asmlinkage void asm_sysvec_hyperv_stimer0(void);
+ asmlinkage void xen_asm_sysvec_hyperv_stimer0(void);
+ __visible void sysvec_hyperv_stimer0(struct pt_regs *regs);
+
+
+
+
+asmlinkage void asm_sysvec_acrn_hv_callback(void);
+ asmlinkage void xen_asm_sysvec_acrn_hv_callback(void);
+ __visible void sysvec_acrn_hv_callback(struct pt_regs *regs);
+
+
+#endif
+
+#endif
 
 #endif

@@ -27,13 +27,39 @@
 		.segment	= _segment,		\
 	}
 
-/* Interrupt gate */
+/**
+ *  中断门 - Interrupt gate 
+ */
 #define INTG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL0, __KERNEL_CS)
+    //{
+    //	.vector		= _vector,
+    //	.bits.ist	= DEFAULT_STACK,
+    //	.bits.type	= GATE_INTERRUPT,
+    //	.bits.dpl	= DPL0,
+    //	.bits.p		= 1,
+    //	.addr		= _addr,
+    //	.segment	= __KERNEL_CS,
+    //}
 
-/* System interrupt gate */
+
+/**
+ *  系统中断门 - System interrupt gate 
+ *  
+ */
 #define SYSG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL3, __KERNEL_CS)
+    //{
+    //  .vector     = _vector,
+    //  .bits.ist   = DEFAULT_STACK,
+    //  .bits.type  = GATE_INTERRUPT,
+    //  .bits.dpl   = DPL3,
+    //  .bits.p     = 1,
+    //  .addr       = _addr,
+    //  .segment    = __KERNEL_CS,
+    //}
+
+
 
 /*
  * Interrupt gate with interrupt stack. The _ist index is the index in
@@ -41,10 +67,28 @@
  */
 #define ISTG(_vector, _addr, _ist)			\
 	G(_vector, _addr, _ist + 1, GATE_INTERRUPT, DPL0, __KERNEL_CS)
+    //{
+    //  .vector     = _vector,
+    //  .bits.ist   = _ist + 1,
+    //  .bits.type  = GATE_INTERRUPT,
+    //  .bits.dpl   = DPL0,
+    //  .bits.p     = 1,
+    //  .addr       = _addr,
+    //  .segment    = __KERNEL_CS,
+    //}
 
 /* Task gate */
 #define TSKG(_vector, _gdt)				\
 	G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
+    //{
+    //  .vector     = _vector,
+    //  .bits.ist   = DEFAULT_STACK,
+    //  .bits.type  = GATE_TASK,
+    //  .bits.dpl   = DPL0,
+    //  .bits.p     = 1,
+    //  .addr       = NULL,
+    //  .segment    = _gdt << 3,
+    //}
 
 #define IDT_TABLE_SIZE		(IDT_ENTRIES * sizeof(gate_desc))
 
@@ -55,14 +99,43 @@ static bool __initdata idt_setup_done ;/*  */
  * stacks work only after cpu_init().
  */
 static const __initconst struct idt_data early_idts[] = {/* 中断描述符表 陷阱 trap */
+    /**
+     *  调试
+     */
 	INTG(X86_TRAP_DB,		asm_exc_debug),
+#ifdef __rtoax_ //上宏展开	
+    {
+      idt_data.vector     = X86_TRAP_DB,
+      idt_data.bits.ist   = DEFAULT_STACK,
+      idt_data.bits.type  = GATE_INTERRUPT,
+      idt_data.bits.dpl   = DPL0,
+      idt_data.bits.p     = 1,
+      idt_data.addr       = asm_exc_debug,
+      idt_data.segment    = __KERNEL_CS,
+    }
+#endif
+
+    /**
+     *  断点
+     */
 	SYSG(X86_TRAP_BP,		asm_exc_int3),
+#ifdef __rtoax_ //上宏展开	
+    {
+        idt_data.vector     = X86_TRAP_BP,
+        idt_data.bits.ist   = DEFAULT_STACK,
+        idt_data.bits.type  = GATE_INTERRUPT,
+        idt_data.bits.dpl   = DPL3,
+        idt_data.bits.p     = 1,
+        idt_data.addr       = asm_exc_int3,
+        idt_data.segment    = __KERNEL_CS,
+    }
+#endif
 
 #ifdef CONFIG_X86_32
 	/*
 	 * Not possible on 64-bit. See idt_setup_early_pf() for details.
 	 */
-	INTG(X86_TRAP_PF,		asm_exc_page_fault),
+//	INTG(X86_TRAP_PF,		asm_exc_page_fault),
 #endif
 };
 
@@ -148,11 +221,17 @@ static const __initconst struct idt_data apic_idts[] = {
 };
 
 /* Must be page-aligned because the real IDT is used in the cpu entry area */
+/**
+ *  中断描述符表
+ */
 static gate_desc __page_aligned_bss idt_table[IDT_ENTRIES/*256*/] ;    /* 中断描述符表, 所有中断 256 */
 
+/**
+ *  中断描述符表描述符
+ */
 static struct desc_ptr __ro_after_init idt_descr  = {
-	.size		= IDT_TABLE_SIZE - 1,
-	.address	= (unsigned long) idt_table,
+	idt_descr.size		= IDT_TABLE_SIZE - 1,
+	idt_descr.address	= (unsigned long) idt_table,
 };
 
 void load_current_idt(void)
@@ -162,12 +241,15 @@ void load_current_idt(void)
 }
 
 #ifdef CONFIG_X86_F00F_BUG
-bool idt_is_f00f_address(unsigned long address)
-{
-	return ((address - idt_descr.address) >> 3) == 6;
-}
+//bool idt_is_f00f_address(unsigned long address)
+//{
+//	return ((address - idt_descr.address) >> 3) == 6;
+//}
 #endif
 
+/**
+ *  拷贝中断描述符表
+ */
 static __init void
 idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size/* 个数 */, bool sys)/*  */
 {
@@ -175,7 +257,13 @@ idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size/* 个数
 	gate_desc desc;
 
 	for (; size > 0; t++, size--) {
+        /**
+         *  初始化
+         */
 		idt_init_desc(&desc, t);    /*  */
+        /**
+         *  将 desc 拷贝至 idt 对应 vector 中
+         */
 		write_idt_entry(idt, t->vector, &desc); /* 写入 CPU */
 		if (sys)
 			set_bit(t->vector, system_vectors);
@@ -206,8 +294,11 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
  */
 void __init idt_setup_early_traps(void)/* 中断描述符表 */
 {
-	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts),
-			     true);
+    /**
+     *  拷贝
+     */
+	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
+    
     //调用 `load_idt` 函数来执行 `ldtr` 指令来重新加载 `IDT` 表
 	load_idt(&idt_descr);/* 中断描述符 */
 }
@@ -263,8 +354,7 @@ static const __initconst struct idt_data ist_idts[] = { /* IST(Interrupt Stack T
  */
 void __init idt_setup_early_pf(void)    /* page fault */
 {
-	idt_setup_from_table(idt_table, early_pf_idts,
-			     ARRAY_SIZE(early_pf_idts), true);
+	idt_setup_from_table(idt_table, early_pf_idts, ARRAY_SIZE(early_pf_idts), true);
 }
 
 /**
@@ -333,13 +423,17 @@ void __init idt_setup_early_handler(void)
 	int i;
     //在整个初期设置阶段，中断是禁用的
     //`early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
-	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
+	for (i = 0; i < NUM_EXCEPTION_VECTORS/* 32 */; i++)
 		set_intr_gate(i, early_idt_handler_array[i]);
 #ifdef CONFIG_X86_32
     /* 忽略32 - 255 */
 //	for ( ; i < NR_VECTORS; i++)
 //		set_intr_gate(i, early_ignore_irq);
 #endif
+
+    /**
+     *  加载到lidt 寄存器
+     */
 	load_idt(&idt_descr);
 }
 

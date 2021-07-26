@@ -248,7 +248,8 @@ int __init arch_early_ioapic_init(void) /*  */
     //going through the all `I/O APICs`
 	for_each_ioapic(i){
 	    //allocate space for the registers
-		alloc_ioapic_saved_registers(i);}
+		alloc_ioapic_saved_registers(i);
+    }
 
 	return 0;
 }

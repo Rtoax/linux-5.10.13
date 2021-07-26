@@ -909,7 +909,14 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 */
 	olpc_ofw_detect();/* 专为低端机型设计 每个孩子应该有个自己的笔记本??? TODO */
 
+    /**
+     *  中断描述符表
+     */
 	idt_setup_early_traps();/* 中断描述符表 */
+
+    /**
+     *  
+     */
 	early_cpu_init();       /* 收集 `CPU` 和其供应商的信息 */
 	arch_init_ideal_nops(); /*  */
 	jump_label_init();      /*  */

@@ -6,6 +6,9 @@
 
 struct task_struct; /* one of the stranger aspects of C forward declarations */
 
+/**
+ *  arch/x86/entry/entry_64.S
+ */
 struct task_struct *__switch_to_asm(struct task_struct *prev,
 				    struct task_struct *next);
 

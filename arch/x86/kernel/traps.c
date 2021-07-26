@@ -1230,6 +1230,9 @@ DEFINE_IDTENTRY_SW(iret_error)
 }
 #endif
 
+/**
+ *  
+ */
 void __init trap_init(void) /* 陷阱初始化 : 执行 `non-early` 异常处理*/
 {
 	/* Init cpu_entry_area before IST entries are set up */
@@ -1246,5 +1249,8 @@ void __init trap_init(void) /* 陷阱初始化 : 执行 `non-early` 异常处理
 	 */
 	cpu_init(); /*  */
 
+    /**
+     *  
+     */
 	idt_setup_ist_traps();  /* 中断栈表 irq stack table */
 }

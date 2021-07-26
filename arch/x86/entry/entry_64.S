@@ -97,6 +97,9 @@ SYM_CODE_END(native_usergs_sysret64)
  * with them due to bugs in both AMD and Intel CPUs.
  */
 
+/**
+ *  系统调用入口
+ */
 SYM_CODE_START(entry_SYSCALL_64)    /* syscall_init() 调用 */
 	UNWIND_HINT_EMPTY
 
@@ -572,6 +575,56 @@ SYM_CODE_END(\asmsym)
 __irqentry_text_start:
 
 #include <asm/idtentry.h>
+
+#ifdef __rtoax______________________________________//<asm/idtentry.h> gcc -E 展开
+ .align 8
+SYM_CODE_START(irq_entries_start)
+    vector=FIRST_EXTERNAL_VECTOR
+    .rept (FIRST_SYSTEM_VECTOR - FIRST_EXTERNAL_VECTOR)
+ UNWIND_HINT_IRET_REGS
+0 :
+ .byte 0x6a, vector
+ jmp asm_common_interrupt
+ nop
+
+ . = 0b + 8
+ vector = vector+1
+    .endr
+SYM_CODE_END(irq_entries_start)
+idtentry X86_TRAP_DE asm_exc_divide_error exc_divide_error has_error_code=0;
+idtentry X86_TRAP_OF asm_exc_overflow exc_overflow has_error_code=0;
+idtentry X86_TRAP_BR asm_exc_bounds exc_bounds has_error_code=0;
+idtentry X86_TRAP_NM asm_exc_device_not_available exc_device_not_available has_error_code=0;
+idtentry X86_TRAP_OLD_MF asm_exc_coproc_segment_overrun exc_coproc_segment_overrun has_error_code=0;
+idtentry X86_TRAP_SPURIOUS asm_exc_spurious_interrupt_bug exc_spurious_interrupt_bug has_error_code=0;
+idtentry X86_TRAP_MF asm_exc_coprocessor_error exc_coprocessor_error has_error_code=0;
+idtentry X86_TRAP_XF asm_exc_simd_coprocessor_error exc_simd_coprocessor_error has_error_code=0;
+
+
+idtentry X86_TRAP_TS asm_exc_invalid_tss exc_invalid_tss has_error_code=1;
+idtentry X86_TRAP_NP asm_exc_segment_not_present exc_segment_not_present has_error_code=1;
+idtentry X86_TRAP_SS asm_exc_stack_segment exc_stack_segment has_error_code=1;
+idtentry X86_TRAP_GP asm_exc_general_protection exc_general_protection has_error_code=1;
+idtentry X86_TRAP_AC asm_exc_alignment_check exc_alignment_check has_error_code=1;
+
+
+idtentry X86_TRAP_UD asm_exc_invalid_op exc_invalid_op has_error_code=0;
+idtentry X86_TRAP_BP asm_exc_int3 exc_int3 has_error_code=0;
+idtentry X86_TRAP_PF asm_exc_page_fault exc_page_fault has_error_code=1;
+idtentry X86_TRAP_DB asm_exc_debug exc_debug has_error_code=0;
+
+
+idtentry_irq 0xFFFF common_interrupt;
+idtentry_sysvec HYPERVISOR_CALLBACK_VECTOR sysvec_hyperv_callback;
+idtentry_sysvec HYPERV_REENLIGHTENMENT_VECTOR sysvec_hyperv_reenlightenment;
+idtentry_sysvec HYPERV_STIMER0_VECTOR sysvec_hyperv_stimer0;
+
+idtentry_sysvec HYPERVISOR_CALLBACK_VECTOR sysvec_acrn_hv_callback;
+
+#endif //__rtoax______________________________________
+
+
+#endif
 
 	.align 16
 	.globl __irqentry_text_end

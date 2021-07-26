@@ -917,6 +917,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 
 	cgroup_init_early();    /* CGroup 初始化 TODO */
 
+    /**
+     *  关闭本地 中断
+     */
 	local_irq_disable();    /* 关本地中断 x86- cli(close irq)*/
 	early_boot_irqs_disabled = true;/* 置位 */
 
@@ -929,6 +932,10 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	 * enable them.
 	 */
 	boot_cpu_init();                    /* 启动第一个 CPU */
+
+    /**
+     *  
+     */
 	page_address_init();                /* 页地址初始化 (此函数不执行任何操作，因为只有当所有内存不能直接映射的时候才会执行)*/
 
     /**
@@ -937,6 +944,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 
     pr_notice("%s", linux_banner);      /* 版本信息: 内核的版本号以及编译环境信息 */
 
+    /**
+     *  
+     */
 	early_security_init();              /* 安全初始化 一些安全的 钩子函数*/
 
     /**

@@ -123,9 +123,9 @@ void __init native_init_IRQ(void)
 		/* IRQ2 is cascade interrupt to second interrupt controller */
 #ifdef rtoax_add
         static struct irqaction irq2 = {
-            .handler = no_action,
-            .name = "cascade",
-            .flags = IRQF_NO_THREAD,
+            irq2.handler = no_action,
+            irq2.name = "cascade",
+            irq2.flags = IRQF_NO_THREAD,
         };
 #endif            
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade"/* 级 联 */, NULL))
