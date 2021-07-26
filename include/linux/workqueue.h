@@ -18,6 +18,10 @@
 struct workqueue_struct;
 
 struct work_struct;
+
+/**
+ *  工作队列 - 回调函数
+ */
 typedef void (*work_func_t)(struct work_struct *work);  /*  */
 void delayed_work_timer_fn(struct timer_list *t);
 
@@ -27,6 +31,9 @@ void delayed_work_timer_fn(struct timer_list *t);
  */
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
+/**
+ *  
+ */
 enum {
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
 	WORK_STRUCT_DELAYED_BIT	= 1,	/* work item is delayed */
@@ -36,7 +43,7 @@ enum {
 	WORK_STRUCT_STATIC_BIT	= 4,	/* static initializer (debugobjects) */
 	WORK_STRUCT_COLOR_SHIFT	= 5,	/* color for workqueue flushing */
 #else
-	WORK_STRUCT_COLOR_SHIFT	= 4,	/* color for workqueue flushing */
+//	WORK_STRUCT_COLOR_SHIFT	= 4,	/* color for workqueue flushing */
 #endif
 
 	WORK_STRUCT_COLOR_BITS	= 4,
@@ -48,7 +55,7 @@ enum {
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
 #else
-	WORK_STRUCT_STATIC	= 0,
+//	WORK_STRUCT_STATIC	= 0,
 #endif
 
 	/*

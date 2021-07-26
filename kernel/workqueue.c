@@ -248,6 +248,8 @@ struct wq_device;
 /*
  * The externally visible workqueue.  It relays the issued work items to
  * the appropriate worker_pool through its pool_workqueues.
+ *
+ * 
  */
 struct workqueue_struct {   /*  */
 	struct list_head	pwqs;		/* WR: all pwqs of this wq *//* `worker_pools`的链表 */
@@ -279,6 +281,7 @@ struct workqueue_struct {   /*  */
 	struct lock_class_key	key;
 	struct lockdep_map	lockdep_map;
 #endif
+    
 	char			name[WQ_NAME_LEN]; /* I: workqueue name */
 
 	/*
@@ -802,8 +805,7 @@ static bool may_start_working(struct worker_pool *pool)
 /* Do I need to keep working?  Called from currently running workers. */
 static bool keep_working(struct worker_pool *pool)
 {
-	return !list_empty(&pool->worklist) &&
-		atomic_read(&pool->nr_running) <= 1;
+	return !list_empty(&pool->worklist) && atomic_read(&pool->nr_running) <= 1;
 }
 
 /* Do we need a new worker?  Called from manager. */
@@ -910,8 +912,7 @@ void wq_worker_sleeping(struct task_struct *task)
 	 * manipulating idle_list, so dereferencing idle_list without pool
 	 * lock is safe.
 	 */
-	if (atomic_dec_and_test(&pool->nr_running) &&
-	    !list_empty(&pool->worklist)) {
+	if (atomic_dec_and_test(&pool->nr_running) && !list_empty(&pool->worklist)) {
 		next = first_idle_worker(pool);
 		if (next)
 			wake_up_process(next->task);
@@ -967,8 +968,7 @@ static inline void worker_set_flags(struct worker *worker, unsigned int flags)
 	WARN_ON_ONCE(worker->task != current);
 
 	/* If transitioning into NOT_RUNNING, adjust nr_running. */
-	if ((flags & WORKER_NOT_RUNNING) &&
-	    !(worker->flags & WORKER_NOT_RUNNING)) {
+	if ((flags & WORKER_NOT_RUNNING) && !(worker->flags & WORKER_NOT_RUNNING)) {
 		atomic_dec(&pool->nr_running);
 	}
 
@@ -1042,12 +1042,10 @@ static struct worker *find_worker_executing_work(struct worker_pool *pool,
 {
 	struct worker *worker;
 
-	hash_for_each_possible(pool->busy_hash, worker, hentry,
-			       (unsigned long)work)
-		if (worker->current_work == work &&
-		    worker->current_func == work->func)
+	hash_for_each_possible(pool->busy_hash, worker, hentry, (unsigned long)work) {
+		if (worker->current_work == work && worker->current_func == work->func)
 			return worker;
-
+    }
 	return NULL;
 }
 
@@ -1164,8 +1162,7 @@ static void pwq_activate_delayed_work(struct work_struct *work)
 
 static void pwq_activate_first_delayed(struct pool_workqueue *pwq)
 {
-	struct work_struct *work = list_first_entry(&pwq->delayed_works,
-						    struct work_struct, entry);
+	struct work_struct *work = list_first_entry(&pwq->delayed_works, struct work_struct, entry);
 
 	pwq_activate_delayed_work(work);
 }
