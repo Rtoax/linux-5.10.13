@@ -55,6 +55,10 @@ struct pid init_struct_pid = {/* PID 的哈希表 */
 		{ init_struct_pid.tasks[1].first = NULL },
 		{ init_struct_pid.tasks[2].first = NULL },
 	},
+
+    /**
+     *  
+     */
 	init_struct_pid.level		= 0,
 	init_struct_pid.numbers	= { {
 		init_struct_pid.numbers.nr		= 0,
@@ -327,8 +331,8 @@ EXPORT_SYMBOL_GPL(find_vpid);
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
 	return (type == PIDTYPE_PID) ?
-		&task->thread_pid :
-		&task->signal->pids[type];
+        		&task->thread_pid :
+        		&task->signal->pids[type];
 }
 
 /*
@@ -425,6 +429,9 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 	return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
 }
 
+/**
+ *  从 pid 找到 task_struct
+ */
 struct task_struct *find_task_by_vpid(pid_t vnr)
 {
 	return find_task_by_pid_ns(vnr, task_active_pid_ns(current));
@@ -516,6 +523,9 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 }
 EXPORT_SYMBOL(__task_pid_nr_ns);
 
+/**
+ *  
+ */
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(task_pid(tsk));

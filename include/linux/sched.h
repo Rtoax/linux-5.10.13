@@ -1055,6 +1055,7 @@ struct task_struct {    /* PCB */
 	/* Canary(金丝雀) value for the -fstack-protector GCC feature: */
 	unsigned long			stack_canary;   /* 栈 金丝雀 保护 */
 #endif
+    
 	/*
 	 * Pointers to the (original) parent process, youngest child, younger sibling,
 	 * older sibling, respectively.  (p->father can be replaced with
@@ -1085,7 +1086,11 @@ struct task_struct {    /* PCB */
 	struct list_head		ptraced;/* 使用了 ptrace() 的 task */
 	struct list_head		ptrace_entry;/* 在 parent 中的 link */
 
-	/* PID/PID hash table linkage. */
+	/**
+	 *  PID/PID hash table linkage. 
+	 *
+	 *  init_task.thread_pid = &init_struct_pid
+	 */
 	struct pid			*thread_pid;/* PID的哈希表 /include/linux/pid.h*/
 
     /**
@@ -1610,6 +1615,9 @@ struct task_struct {    /* PCB */
 };
 typedef struct task_struct * p_task_struct;
 
+/**
+ *  保存所有 进程 pid 的哈希表
+ */
 static inline struct pid *task_pid(struct task_struct *task)
 {
 	return task->thread_pid;

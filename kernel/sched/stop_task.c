@@ -108,29 +108,30 @@ static void update_curr_stop(struct rq *rq)
 
 /*
  * Simple, special scheduling class for the per-CPU stop tasks:
- */const struct sched_class stop_sched_class,__stop_sched_class;/*我加的*/
+ */
+const struct sched_class stop_sched_class, __stop_sched_class;/*++++*/
 const struct sched_class stop_sched_class
 	__section("__stop_sched_class") = {
 
-	.enqueue_task		= enqueue_task_stop,
-	.dequeue_task		= dequeue_task_stop,
-	.yield_task		= yield_task_stop,
+	stop_sched_class.enqueue_task		= enqueue_task_stop,
+	stop_sched_class.dequeue_task		= dequeue_task_stop,
+	stop_sched_class.yield_task		= yield_task_stop,
 
-	.check_preempt_curr	= check_preempt_curr_stop,
+	stop_sched_class.check_preempt_curr	= check_preempt_curr_stop,
 
-	.pick_next_task		= pick_next_task_stop,
-	.put_prev_task		= put_prev_task_stop,
-	.set_next_task          = set_next_task_stop,
+	stop_sched_class.pick_next_task		= pick_next_task_stop,
+	stop_sched_class.put_prev_task		= put_prev_task_stop,
+	stop_sched_class.set_next_task          = set_next_task_stop,
 
 #ifdef CONFIG_SMP
-	.balance		= balance_stop,
-	.select_task_rq		= select_task_rq_stop,
-	.set_cpus_allowed	= set_cpus_allowed_common,
+	stop_sched_class.balance		= balance_stop,
+	stop_sched_class.select_task_rq		= select_task_rq_stop,
+	stop_sched_class.set_cpus_allowed	= set_cpus_allowed_common,
 #endif
 
-	.task_tick		= task_tick_stop,
+	stop_sched_class.task_tick		= task_tick_stop,
 
-	.prio_changed		= prio_changed_stop,
-	.switched_to		= switched_to_stop,
-	.update_curr		= update_curr_stop,
+	stop_sched_class.prio_changed		= prio_changed_stop,
+	stop_sched_class.switched_to		= switched_to_stop,
+	stop_sched_class.update_curr		= update_curr_stop,
 };

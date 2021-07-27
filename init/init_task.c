@@ -16,9 +16,9 @@
 #include <linux/uaccess.h>
 
 /**
- *  
+ *  init_task.signal
  */
-static struct signal_struct init_signals /* init_task.signal */= {
+static struct signal_struct init_signals = {
 	init_signals.nr_threads	= 1,
 	init_signals.thread_head	= LIST_HEAD_INIT(init_task.thread_node),
 	init_signals.wait_chldexit	= __WAIT_QUEUE_HEAD_INITIALIZER(init_signals.wait_chldexit),
@@ -161,8 +161,7 @@ struct task_struct init_task
 	init_task.trc_holdout_list = LIST_HEAD_INIT(init_task.trc_holdout_list),
 #endif
 #ifdef CONFIG_CPUSETS/*  */
-	init_task.mems_allowed_seq = SEQCNT_SPINLOCK_ZERO(init_task.mems_allowed_seq,
-						 &init_task.alloc_lock),
+	init_task.mems_allowed_seq = SEQCNT_SPINLOCK_ZERO(init_task.mems_allowed_seq, &init_task.alloc_lock),
 #endif
 #ifdef CONFIG_RT_MUTEXES/*  */
 	init_task.pi_waiters	= RB_ROOT_CACHED,

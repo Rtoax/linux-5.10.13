@@ -1802,6 +1802,9 @@ int security_task_setscheduler(struct task_struct *p)
 
 int security_task_getscheduler(struct task_struct *p)
 {
+    /**
+     *  
+     */
 	return call_int_hook(task_getscheduler, 0, p);
 }
 

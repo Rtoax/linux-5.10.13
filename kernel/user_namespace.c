@@ -25,8 +25,8 @@ static struct kmem_cache __read_mostly *user_ns_cachep ;
 static DEFINE_MUTEX(userns_state_mutex);
 
 static bool new_idmap_permitted(const struct file *file,
-				struct user_namespace *ns, int cap_setid,
-				struct uid_gid_map *map);
+                    				struct user_namespace *ns, int cap_setid,
+                    				struct uid_gid_map *map);
 static void free_user_ns(struct work_struct *work);
 
 static struct ucounts *inc_user_namespaces(struct user_namespace *ns, kuid_t uid)
@@ -97,8 +97,7 @@ int create_user_ns(struct cred *new)
 	 * created a user_namespace.
 	 */
 	ret = -EPERM;
-	if (!kuid_has_mapping(parent_ns, owner) ||
-	    !kgid_has_mapping(parent_ns, group))
+	if (!kuid_has_mapping(parent_ns, owner) || !kgid_has_mapping(parent_ns, group))
 		goto fail_dec;
 
 	ret = -ENOMEM;
@@ -259,8 +258,7 @@ map_id_range_down_max(unsigned extents, struct uid_gid_map *map, u32 id, u32 cou
 	key.count = count;
 	key.id = id;
 
-	return bsearch(&key, map->forward, extents,
-		       sizeof(struct uid_gid_extent), cmp_map_id);
+	return bsearch(&key, map->forward, extents, sizeof(struct uid_gid_extent), cmp_map_id);
 }
 
 /**
@@ -686,24 +684,24 @@ static void m_stop(struct seq_file *seq, void *v)
 }
 
 const struct seq_operations proc_uid_seq_operations = {
-	.start = uid_m_start,
-	.stop = m_stop,
-	.next = m_next,
-	.show = uid_m_show,
+	proc_uid_seq_operations.start = uid_m_start,
+	proc_uid_seq_operations.stop = m_stop,
+	proc_uid_seq_operations.next = m_next,
+	proc_uid_seq_operations.show = uid_m_show,
 };
 
 const struct seq_operations proc_gid_seq_operations = {
-	.start = gid_m_start,
-	.stop = m_stop,
-	.next = m_next,
-	.show = gid_m_show,
+	proc_gid_seq_operations.start = gid_m_start,
+	proc_gid_seq_operations.stop = m_stop,
+	proc_gid_seq_operations.next = m_next,
+	proc_gid_seq_operations.show = gid_m_show,
 };
 
 const struct seq_operations proc_projid_seq_operations = {
-	.start = projid_m_start,
-	.stop = m_stop,
-	.next = m_next,
-	.show = projid_m_show,
+	proc_projid_seq_operations.start = projid_m_start,
+	proc_projid_seq_operations.stop = m_stop,
+	proc_projid_seq_operations.next = m_next,
+	proc_projid_seq_operations.show = projid_m_show,
 };
 
 static bool mappings_overlap(struct uid_gid_map *new_map,
@@ -1307,16 +1305,22 @@ static struct user_namespace *userns_owner(struct ns_common *ns)
 	return to_user_ns(ns)->parent;
 }
 
+/**
+ *  
+ */
 const struct proc_ns_operations userns_operations /*  namespace 操作 */= {
-	.name		= "user",
-	.type		= CLONE_NEWUSER,
-	.get		= userns_get,
-	.put		= userns_put,
-	.install	= userns_install,
-	.owner		= userns_owner,
-	.get_parent	= ns_get_owner,
+	userns_operations.name		= "user",
+	userns_operations.type		= CLONE_NEWUSER,
+	userns_operations.get		= userns_get,
+	userns_operations.put		= userns_put,
+	userns_operations.install	= userns_install,
+	userns_operations.owner		= userns_owner,
+	userns_operations.get_parent	= ns_get_owner,
 };
 
+/**
+ *  
+ */
 static __init int user_namespaces_init(void)
 {
 	user_ns_cachep = KMEM_CACHE(user_namespace, SLAB_PANIC);

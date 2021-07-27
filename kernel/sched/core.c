@@ -2426,7 +2426,7 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 
 void sched_set_stop_task(int cpu, struct task_struct *stop)
 {
-	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
+	struct sched_param param = { param.sched_priority = MAX_RT_PRIO - 1 };
 	struct task_struct *old_stop = cpu_rq(cpu)->stop;
 
 	if (stop) {
@@ -2469,6 +2469,7 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 	rq = this_rq();
 
 #ifdef CONFIG_SMP
+    
 	if (cpu == rq->cpu) {
 		__schedstat_inc(rq->ttwu_local);
 		__schedstat_inc(p->se.statistics.nr_wakeups_local);
@@ -2488,6 +2489,7 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 
 	if (wake_flags & WF_MIGRATED)
 		__schedstat_inc(p->se.statistics.nr_wakeups_migrate);
+    
 #endif /* CONFIG_SMP */
 
 	__schedstat_inc(rq->ttwu_count);
@@ -5538,8 +5540,11 @@ static struct task_struct *find_process_by_pid(pid_t pid)
  */
 #define SETPARAM_POLICY	-1
 
+/**
+ *  
+ */
 static void __setscheduler_params(struct task_struct *p,
-		const struct sched_attr *attr)
+		                            const struct sched_attr *attr)
 {
 	int policy = attr->sched_policy;
 
@@ -5548,8 +5553,15 @@ static void __setscheduler_params(struct task_struct *p,
 
 	p->policy = policy;
 
+    /**
+     *  
+     */
 	if (dl_policy(policy))
 		__setparam_dl(p, attr);
+
+    /**
+     *  
+     */
 	else if (fair_policy(policy))
 		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
 
@@ -5574,6 +5586,9 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)
 		return;
 
+    /**
+     *  
+     */
 	__setscheduler_params(p, attr);
 
 	/*
@@ -5584,6 +5599,9 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (keep_boost)
 		p->prio = rt_effective_prio(p, p->prio);
 
+    /**
+     *  
+     */
 	if (dl_prio(p->prio))   /* 优先级 < 0 */
 		p->sched_class = &dl_sched_class;   /* deadline */
 	else if (rt_prio(p->prio))  /* 0-99 */
@@ -5608,9 +5626,12 @@ static bool check_same_owner(struct task_struct *p)
 	return match;
 }
 
+/**
+ *  
+ */
 static int __sched_setscheduler(struct task_struct *p,
-				const struct sched_attr *attr,
-				bool user, bool pi)
+                    				const struct sched_attr *attr,
+                    				bool user, bool pi)
 {
     /* 
         deadline:   -1
@@ -5628,7 +5649,9 @@ static int __sched_setscheduler(struct task_struct *p,
 
 	/* The pi code expects interrupts enabled */
 	BUG_ON(pi && in_interrupt());
+
 recheck:
+    
 	/* Double check policy once rq lock held: */
 	if (policy < 0) {
 		reset_on_fork = p->sched_reset_on_fork;
@@ -5844,6 +5867,9 @@ change:
 
 	prev_class = p->sched_class;
 
+    /**
+     *  
+     */
 	__setscheduler(rq, p, attr, pi);    /* 根据优先级设置调度类 */
 	__setscheduler_uclamp(p, attr);     /* 利用率管制 */
 
@@ -5884,13 +5910,19 @@ unlock:
 	return retval;
 }
 
+/**
+ *  
+ */
 static int _sched_setscheduler(struct task_struct *p, int policy,
 			       const struct sched_param *param, bool check)
 {
+    /**
+     *  
+     */
 	struct sched_attr attr = {  /*  */
-		.sched_policy   = policy,
-		.sched_priority = param->sched_priority,
-		.sched_nice	= PRIO_TO_NICE(p->static_prio),
+		attr.sched_policy   = policy,
+		attr.sched_priority = param->sched_priority,
+		attr.sched_nice	= PRIO_TO_NICE(p->static_prio),
 	};
 
 	/* Fixup the legacy SCHED_RESET_ON_FORK hack. */
@@ -5900,6 +5932,9 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 		attr.sched_policy = policy;
 	}
 
+    /**
+     *  
+     */
 	return __sched_setscheduler(p, &attr, check, true);
 }
 /**
@@ -5915,8 +5950,11 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
  * NOTE that the task may be already dead.
  */
 int sched_setscheduler(struct task_struct *p, int policy,
-		       const struct sched_param *param)
+		                const struct sched_param *param)
 {
+    /**
+     *  
+     */
 	return _sched_setscheduler(p, policy, param, true);
 }
 
@@ -5969,7 +6007,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
  */
 void sched_set_fifo(struct task_struct *p)
 {
-	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
+	struct sched_param sp = { sp.sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
 EXPORT_SYMBOL_GPL(sched_set_fifo);
@@ -5979,7 +6017,7 @@ EXPORT_SYMBOL_GPL(sched_set_fifo);
  */
 void sched_set_fifo_low(struct task_struct *p)
 {
-	struct sched_param sp = { .sched_priority = 1 };
+	struct sched_param sp = { sp.sched_priority = 1 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
 EXPORT_SYMBOL_GPL(sched_set_fifo_low);
@@ -5987,13 +6025,16 @@ EXPORT_SYMBOL_GPL(sched_set_fifo_low);
 void sched_set_normal(struct task_struct *p, int nice)
 {
 	struct sched_attr attr = {
-		.sched_policy = SCHED_NORMAL,
-		.sched_nice = nice,
+		attr.sched_policy = SCHED_NORMAL,
+		attr.sched_nice = nice,
 	};
 	WARN_ON_ONCE(sched_setattr_nocheck(p, &attr) != 0);
 }
 EXPORT_SYMBOL_GPL(sched_set_normal);
 
+/**
+ *  
+ */
 static int
 do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 {
@@ -6003,12 +6044,18 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 
 	if (!param || pid < 0)
 		return -EINVAL;
-	if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
+
+    if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
 		return -EFAULT;
 
 	rcu_read_lock();
+    
 	retval = -ESRCH;
-	p = find_process_by_pid(pid);   /* 获取进程 PCB */
+
+    /**
+     *  
+     */
+    p = find_process_by_pid(pid);   /* 获取进程 PCB */
 	if (likely(p))
 		get_task_struct(p); /* 引用计数 */
 	rcu_read_unlock();
@@ -6082,6 +6129,9 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 	if (policy < 0)
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	return do_sched_setscheduler(pid, policy, param);
 }
 
@@ -6097,6 +6147,9 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 int sched_setparam(pid_t pid, const struct sched_param *param);
 SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 {
+    /**
+     *  
+     */
 	return do_sched_setscheduler(pid, SETPARAM_POLICY, param);
 }
 
@@ -6105,6 +6158,8 @@ SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
  * @pid: the pid in question.
  * @uattr: structure containing the extended parameters.
  * @flags: for future extension.
+ *
+ * glibc 并没有 这个 wrapper
  */
 SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
 			       unsigned int, flags)
@@ -6160,13 +6215,17 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 
 	retval = -ESRCH;
 	rcu_read_lock();
+
+    /**
+     *  
+     */
 	p = find_process_by_pid(pid);
 	if (p) {
 		retval = security_task_getscheduler(p);
 		if (!retval)
-			retval = p->policy
-				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
+			retval = p->policy | (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
 	}
+    
 	rcu_read_unlock();
 	return retval;
 }
@@ -6195,12 +6254,19 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 	if (!p)
 		goto out_unlock;
 
+    /**
+     *  
+     */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
 
+    /**
+     *  
+     */
 	if (task_has_rt_policy(p))
 		lp.sched_priority = p->rt_priority;
+    
 	rcu_read_unlock();
 
 	/*
@@ -6273,11 +6339,18 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 		return -EINVAL;
 
 	rcu_read_lock();
+
+    /**
+     *  
+     */
 	p = find_process_by_pid(pid);
 	retval = -ESRCH;
 	if (!p)
 		goto out_unlock;
 
+    /**
+     *  
+     */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
@@ -6285,6 +6358,10 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 	kattr.sched_policy = p->policy;
 	if (p->sched_reset_on_fork)
 		kattr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
+
+    /**
+     *  
+     */
 	if (task_has_dl_policy(p))
 		__getparam_dl(p, &kattr);
 	else if (task_has_rt_policy(p))
@@ -6304,6 +6381,9 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 
 	rcu_read_unlock();
 
+    /**
+     *  
+     */
 	return sched_attr_copy_to_user(uattr, &kattr, usize);
 
 out_unlock:
@@ -6311,6 +6391,9 @@ out_unlock:
 	return retval;
 }
 
+/**
+ *  
+ */
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)    /*  */
 {
 	cpumask_var_t cpus_allowed, new_mask;
@@ -6427,8 +6510,9 @@ static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
  *
  * int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
  */
+int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
 SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
+		                unsigned long __user *, user_mask_ptr)
 {
 	cpumask_var_t new_mask;
 	int retval;
@@ -6436,13 +6520,23 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
 		return -ENOMEM;
 
+    /**
+     *  
+     */
 	retval = get_user_cpu_mask(user_mask_ptr, len, new_mask);
 	if (retval == 0)
 		retval = sched_setaffinity(pid, new_mask);  /* 设置 */
-	free_cpumask_var(new_mask);
+
+    /**
+     *  
+     */
+    free_cpumask_var(new_mask);
 	return retval;
 }
 
+/**
+ *  
+ */
 long sched_getaffinity(pid_t pid, struct cpumask *mask) /*  */
 {
 	struct task_struct *p;
@@ -6452,10 +6546,17 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask) /*  */
 	rcu_read_lock();
 
 	retval = -ESRCH;
+
+    /**
+     *  
+     */
 	p = find_process_by_pid(pid);   /* 查找PID */
 	if (!p)
 		goto out_unlock;
 
+    /**
+     *  
+     */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
@@ -6481,6 +6582,7 @@ out_unlock:
  *
  * int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
  */
+int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
 SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
 {
@@ -6495,6 +6597,9 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
 		return -ENOMEM;
 
+    /**
+     *  
+     */
 	ret = sched_getaffinity(pid, mask); /*  */
 	if (ret == 0) {
 		unsigned int retlen = min(len, cpumask_size());
@@ -6543,6 +6648,7 @@ static void do_sched_yield(void)
  *  放弃CPU
  *  int sched_yield(void);
  */
+int sched_yield(void);
 SYSCALL_DEFINE0(sched_yield)    /*  */
 {
 	do_sched_yield();
@@ -6725,6 +6831,9 @@ long __sched io_schedule_timeout(long timeout)
 }
 EXPORT_SYMBOL(io_schedule_timeout);
 
+/**
+ *  
+ */
 void __sched io_schedule(void)
 {
 	int token;
@@ -6743,6 +6852,7 @@ EXPORT_SYMBOL(io_schedule);
  * rt_priority that can be used by a given scheduling class.
  * On failure, a negative error code is returned.
  */
+int sched_get_priority_max(int policy);
 SYSCALL_DEFINE1(sched_get_priority_max, int, policy)    /* 获取 */
 {
 	int ret = -EINVAL;
@@ -6770,6 +6880,7 @@ SYSCALL_DEFINE1(sched_get_priority_max, int, policy)    /* 获取 */
  * rt_priority that can be used by a given scheduling class.
  * On failure, a negative error code is returned.
  */
+int sched_get_priority_min(int policy);
 SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 {
 	int ret = -EINVAL;
@@ -6788,6 +6899,9 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	return ret;
 }
 
+/**
+ *  
+ */
 static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)   /*  */
 {
 	struct task_struct *p;
@@ -6818,11 +6932,20 @@ static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)   /*  */
         dl_sched_class.get_rr_interval   = NULL
         stop_sched_class.get_rr_interval = NULL
     */
-	if (p->sched_class->get_rr_interval)
+	if (p->sched_class->get_rr_interval) {
+        /**
+         *  
+         */
 		time_slice = p->sched_class->get_rr_interval(rq, p);
+    }
+    
 	task_rq_unlock(rq, p, &rf);
 
 	rcu_read_unlock();
+
+    /**
+     *  
+     */
 	jiffies_to_timespec64(time_slice, t);   /*  */
 	return 0;
 
@@ -6842,10 +6965,15 @@ out_unlock:
  * Return: On success, 0 and the timeslice is in @interval. Otherwise,
  * an error code.
  */
+int sched_rr_get_interval(pid_t pid, struct timespec * tp);
 SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 		struct __kernel_timespec __user *, interval)
 {
 	struct timespec64 t;
+
+    /**
+     *  
+     */
 	int retval = sched_rr_get_interval(pid, &t);    /*  */
 
 	if (retval == 0)
@@ -6855,6 +6983,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 }
 
 #ifdef CONFIG_COMPAT_32BIT_TIME
+int sched_rr_get_interval_time32(pid_t pid, struct timespec * tp);
 SYSCALL_DEFINE2(sched_rr_get_interval_time32, pid_t, pid,
 		struct old_timespec32 __user *, interval)
 {

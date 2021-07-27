@@ -17,15 +17,27 @@
 
 struct fs_pin;
 
+/**
+ *  
+ */
 struct pid_namespace {  /* pid 隔离 namespace */
 	struct kref kref;
 	struct idr idr; /* ID to Pointer */
 	struct rcu_head rcu;
 	unsigned int pid_allocated;
+
+    /**
+     *  
+     */
 	struct task_struct *child_reaper;   /*  */
 	struct kmem_cache *pid_cachep;
+
+    /**
+     *  
+     */
 	unsigned int level;
 	struct pid_namespace *parent;
+    
 #ifdef CONFIG_BSD_PROCESS_ACCT
 	struct fs_pin *bacct;
 #endif

@@ -4364,6 +4364,9 @@ static void __clear_buddies_skip(struct sched_entity *se)
 	}
 }
 
+/**
+ *  
+ */
 static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)   /* 清理 */
 {
 	if (cfs_rq->last == se)
@@ -7021,10 +7024,14 @@ static void set_next_buddy(struct sched_entity *se)
 	}
 }
 
+/**
+ *  
+ */
 static void set_skip_buddy(struct sched_entity *se)
 {
 	for_each_sched_entity(se) {
-		cfs_rq_of(se)->skip = se;}  /* 队列中的 skip   = 当前调度实体*/
+		cfs_rq_of(se)->skip = se;
+    }  /* 队列中的 skip   = 当前调度实体*/
 }
 
 /*
@@ -7303,6 +7310,9 @@ static void yield_task_fair(struct rq *rq)  /*  */
 
 	clear_buddies(cfs_rq, se);  /*  */
 
+    /**
+     *  
+     */
 	if (curr->policy != SCHED_BATCH) {
 		update_rq_clock(rq);
 		/*
@@ -11303,7 +11313,9 @@ done:
 /*  */
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
-
+/**
+ *  
+ */
 static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
 {
 	struct sched_entity *se = &task->se;

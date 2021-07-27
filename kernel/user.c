@@ -55,6 +55,10 @@ struct user_namespace init_user_ns/* 资源的隔离 */ = {
 			},
 		},
 	},
+
+    /**
+     *  
+     */
 	init_user_ns.count = ATOMIC_INIT(3),
 	init_user_ns.owner = GLOBAL_ROOT_UID,
 	init_user_ns.group = GLOBAL_ROOT_GID,

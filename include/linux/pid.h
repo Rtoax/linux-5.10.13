@@ -151,11 +151,11 @@ extern void disable_pid_allocation(struct pid_namespace *ns);
  * 	is expected to be non-NULL. If @pid is NULL, caller should handle
  * 	the resulting NULL pid-ns.
  */
-static inline struct pid_namespace *ns_of_pid(struct pid *pid)  /*  */
+static inline struct pid_namespace *ns_of_pid(struct pid *_pid)  /*  */
 {
 	struct pid_namespace *ns = NULL;
-	if (pid)
-		ns = pid->numbers[pid->level].ns;
+	if (_pid)
+		ns = _pid->numbers[_pid->level].ns;
 	return ns;
 }
 
@@ -165,9 +165,12 @@ static inline struct pid_namespace *ns_of_pid(struct pid *pid)  /*  */
  * pid_ns->child_reaper is assigned in copy_process, we check
  * with the pid number.
  */
-static inline bool is_child_reaper(struct pid *pid)
+static inline bool is_child_reaper(struct pid *_pid)
 {
-	return pid->numbers[pid->level].nr == 1;
+    /**
+     *  
+     */
+	return _pid->numbers[_pid->level].nr == 1;
 }
 
 /*
