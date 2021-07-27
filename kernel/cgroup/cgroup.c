@@ -217,13 +217,16 @@ static u16 __read_mostly have_exit_callback ;
 static u16 __read_mostly have_release_callback ;
 static u16 __read_mostly have_canfork_callback ;
 
+/**
+ *  
+ */
 /* cgroup namespace for init task */
 struct cgroup_namespace init_cgroup_ns = {
-	.count		= REFCOUNT_INIT(2),
-	.user_ns	= &init_user_ns,
-	.ns.ops		= &cgroupns_operations,
-	.ns.inum	= PROC_CGROUP_INIT_INO,
-	.root_cset	= &init_css_set,
+	init_cgroup_ns.count		= REFCOUNT_INIT(2),
+	init_cgroup_ns.user_ns	= &init_user_ns,
+	init_cgroup_ns.ns.ops		= &cgroupns_operations,
+	init_cgroup_ns.ns.inum	= PROC_CGROUP_INIT_INO,
+	init_cgroup_ns.root_cset	= &init_css_set,
 };
 
 static struct file_system_type cgroup2_fs_type;

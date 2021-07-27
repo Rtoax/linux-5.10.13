@@ -29,23 +29,27 @@
 
 static struct kmem_cache *nsproxy_cachep;
 
+
+/**
+ *  
+ */
 struct nsproxy init_nsproxy /* init_task 的命名空间代理， namespace-资源隔离 */= {
-	.count			= ATOMIC_INIT(1),
-	.uts_ns			= &init_uts_ns,/*  */
+	init_nsproxy.count			= ATOMIC_INIT(1),
+	init_nsproxy.uts_ns			= &init_uts_ns,/*  */
 #if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
-	.ipc_ns			= &init_ipc_ns,/* IPC 相关 */
+	init_nsproxy.ipc_ns			= &init_ipc_ns,/* IPC 相关 */
 #endif
-	.mnt_ns			= NULL,
-	.pid_ns_for_children	= &init_pid_ns,/*  */
+	init_nsproxy.mnt_ns			= NULL,
+	init_nsproxy.pid_ns_for_children	= &init_pid_ns,/*  */
 #ifdef CONFIG_NET
-	.net_ns			= &init_net,/*  */
+	init_nsproxy.net_ns			= &init_net,/*  */
 #endif
 #ifdef CONFIG_CGROUPS
-	.cgroup_ns		= &init_cgroup_ns,/*  */
+	init_nsproxy.cgroup_ns		= &init_cgroup_ns,/*  */
 #endif
 #ifdef CONFIG_TIME_NS
-	.time_ns		= &init_time_ns,/*  */
-	.time_ns_for_children	= &init_time_ns,/*  */
+	init_nsproxy.time_ns		= &init_time_ns,/*  */
+	init_nsproxy.time_ns_for_children	= &init_time_ns,/*  */
 #endif
 };
 
