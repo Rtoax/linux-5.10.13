@@ -145,8 +145,8 @@ struct dentry_operations {
 	void (*d_release)(struct dentry *);
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
-	char *(*d_dname)(struct dentry *, char *, int);
-	struct vfsmount *(*d_automount)(struct path *);
+	pchar_t (*d_dname)(struct dentry *, char *, int);
+	vfsmount_t (*d_automount)(struct path *);
 	int (*d_manage)(const struct path *, bool);
 	struct dentry *(*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;

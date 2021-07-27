@@ -243,8 +243,10 @@ static struct file *aio_private_file(struct kioctx *ctx, loff_t nr_pages)
 	inode->i_mapping->private_data = ctx;
 	inode->i_size = PAGE_SIZE * nr_pages;
 
-	file = alloc_file_pseudo(inode, aio_mnt, "[aio]",
-				O_RDWR, &aio_ring_fops);
+    /**
+     *  
+     */
+	file = alloc_file_pseudo(inode, aio_mnt, "[aio]", O_RDWR, &aio_ring_fops);
 	if (IS_ERR(file))
 		iput(inode);
 	return file;

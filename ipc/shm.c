@@ -552,12 +552,12 @@ static unsigned long shm_get_unmapped_area(struct file *file,
 }
 
 static const struct file_operations shm_file_operations = {
-	.mmap		= shm_mmap,
-	.fsync		= shm_fsync,
-	.release	= shm_release,
-	.get_unmapped_area	= shm_get_unmapped_area,
-	.llseek		= noop_llseek,
-	.fallocate	= shm_fallocate,
+	shm_file_operations.mmap		= shm_mmap,
+	shm_file_operations.fsync		= shm_fsync,
+	shm_file_operations.release	= shm_release,
+	shm_file_operations.get_unmapped_area	= shm_get_unmapped_area,
+	shm_file_operations.llseek		= noop_llseek,
+	shm_file_operations.fallocate	= shm_fallocate,
 };
 
 /*
@@ -565,12 +565,12 @@ static const struct file_operations shm_file_operations = {
  * but we keep it distinct for the sake of is_file_shm_hugepages().
  */
 static const struct file_operations shm_file_operations_huge = {    /* 共享内存 */
-	.mmap		= shm_mmap,
-	.fsync		= shm_fsync,
-	.release	= shm_release,
-	.get_unmapped_area	= shm_get_unmapped_area,
-	.llseek		= noop_llseek,
-	.fallocate	= shm_fallocate,
+	shm_file_operations_huge.mmap		= shm_mmap,
+	shm_file_operations_huge.fsync		= shm_fsync,
+	shm_file_operations_huge.release	= shm_release,
+	shm_file_operations_huge.get_unmapped_area	= shm_get_unmapped_area,
+	shm_file_operations_huge.llseek		= noop_llseek,
+	shm_file_operations_huge.fallocate	= shm_fallocate,
 };
 
 bool is_file_shm_hugepages(struct file *file)   /* 共享内存 */
@@ -579,14 +579,14 @@ bool is_file_shm_hugepages(struct file *file)   /* 共享内存 */
 }
 
 static const struct vm_operations_struct shm_vm_ops = {
-	.open	= shm_open,	/* callback for a new vm-area open */
-	.close	= shm_close,	/* callback for when the vm-area is released */
-	.fault	= shm_fault,
-	.split	= shm_split,
-	.pagesize = shm_pagesize,
+	shm_vm_ops.open	= shm_open,	/* callback for a new vm-area open */
+	shm_vm_ops.close	= shm_close,	/* callback for when the vm-area is released */
+	shm_vm_ops.fault	= shm_fault,
+	shm_vm_ops.split	= shm_split,
+	shm_vm_ops.pagesize = shm_pagesize,
 #if defined(CONFIG_NUMA)
-	.set_policy = shm_set_policy,
-	.get_policy = shm_get_policy,
+	shm_vm_ops.set_policy = shm_set_policy,
+	shm_vm_ops.get_policy = shm_get_policy,
 #endif
 };
 
@@ -1521,6 +1521,9 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 		goto out_nattch;
 	}
 
+    /**
+     *  
+     */
 	file = alloc_file_clone(base, f_flags,
 			  is_file_hugepages(base) ?
 				&shm_file_operations_huge :

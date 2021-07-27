@@ -25,11 +25,15 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 
+
+/**
+ *  
+ */
 const struct file_operations generic_ro_fops = {
-	.llseek		= generic_file_llseek,
-	.read_iter	= generic_file_read_iter,
-	.mmap		= generic_file_readonly_mmap,
-	.splice_read	= generic_file_splice_read,
+	generic_ro_fops.llseek		= generic_file_llseek,
+	generic_ro_fops.read_iter	= generic_file_read_iter,
+	generic_ro_fops.mmap		= generic_file_readonly_mmap,
+	generic_ro_fops.splice_read	= generic_file_splice_read,
 };
 
 EXPORT_SYMBOL(generic_ro_fops);
@@ -582,6 +586,9 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 }
 EXPORT_SYMBOL(kernel_write);
 
+/**
+ *  
+ */
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
@@ -599,18 +606,33 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
 	file_start_write(file);
+
+    /**
+     *  看下打开文件的位置 对应的 f_op
+     */
 	if (file->f_op->write)  /* 首先查看 write() 操作 */
 		ret = file->f_op->write(file, buf, count, pos); /* 调用具体的 write */
-	else if (file->f_op->write_iter)    /*  */
+    /**
+     *  
+     */
+    else if (file->f_op->write_iter)    /*  */
         /* pipe() -> pipe_write() */
 		ret = new_sync_write(file, buf, count, pos);
 	else
 		ret = -EINVAL;
-	if (ret > 0) {
+
+    /**
+     *  
+     */
+    if (ret > 0) {
 		fsnotify_modify(file);  /* notify通知 */
 		add_wchar(current, ret);
 	}
-	inc_syscw(current);
+
+    /**
+     *  
+     */
+    inc_syscw(current);
 	file_end_write(file);
 	return ret;
 }
@@ -645,29 +667,55 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 	return ksys_read(fd, buf, count);
 }
 
+/**
+ *  
+ */
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* write系统调用 */
 {
+    /**
+     *  获取 fd
+     */
 	struct fd f = fdget_pos(fd);    /* fd 专为 struct fd{struct file; flags} */
 	ssize_t ret = -EBADF;
 
+    /**
+     *  如果文件已打开，fd 有效
+     */
 	if (f.file) {
+        /**
+         *  获取打开文件当前位置
+         */
 		loff_t pos, *ppos = file_ppos(f.file);
 		if (ppos) {
 			pos = *ppos;
 			ppos = &pos;
 		}
+
+        /**
+         *  调用 vfs 层 api
+         */
 		ret = vfs_write(f.file, buf, count, ppos);  /* vfs_write->  */
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
+
+        /**
+         *  
+         */
 		fdput_pos(f);
 	}
 
 	return ret;
 }
-    /* write 系统调用 */
-SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
-		size_t, count)
+
+/**
+ *  write 系统调用
+ */
+ssize_t write(int fd, const void *buf, size_t count);
+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count)
 {
+    /**
+     *  
+     */
 	return ksys_write(fd, buf, count);
 }
 

@@ -352,8 +352,10 @@ static struct file *__nfs42_ssc_open(struct vfsmount *ss_mnt,
 		goto out_free_name;
 	}
 
-	filep = alloc_file_pseudo(r_ino, ss_mnt, read_name, FMODE_READ,
-				     r_ino->i_fop);
+    /**
+     *  
+     */
+	filep = alloc_file_pseudo(r_ino, ss_mnt, read_name, FMODE_READ, r_ino->i_fop);
 	if (IS_ERR(filep)) {
 		res = ERR_CAST(filep);
 		goto out_free_name;

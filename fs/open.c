@@ -745,7 +745,11 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 {
 	return ksys_fchown(fd, user, group);
 }
-            /*  */
+
+
+/**
+ *  
+ */
 static int do_dentry_open(struct file *f,
 			  struct inode *inode,
 			  int (*open)(struct inode *, struct file *))
@@ -781,6 +785,9 @@ static int do_dentry_open(struct file *f,
 	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
 		f->f_mode |= FMODE_ATOMIC_POS;
 
+    /**
+     *  
+     */
 	f->f_op = fops_get(inode->i_fop);
 	if (WARN_ON(!f->f_op)) {
 		error = -ENODEV;
@@ -1157,8 +1164,10 @@ struct file *file_open_root(struct dentry *dentry, struct vfsmount *mnt,
 }
 EXPORT_SYMBOL(file_open_root);
 
-static long do_sys_openat2(int dfd, const char __user *filename,
-			   struct open_how *how)
+/**
+ *  open
+ */
+static long do_sys_openat2(int dfd, const char __user *str_filename, struct open_how *how)
 {
 	struct open_flags op;
 	int fd = build_open_flags(how, &op);
@@ -1168,14 +1177,18 @@ static long do_sys_openat2(int dfd, const char __user *filename,
 		return fd;
 
     //得到 `filename` 结构体
-	tmp = getname(filename);
+	tmp = getname(str_filename);
 	if (IS_ERR(tmp))
 		return PTR_ERR(tmp);
 
     //获取当前程序打开文件的（文件描述符）表
 	fd = get_unused_fd_flags(how->flags);
+
+    /**
+     *  
+     */
 	if (fd >= 0) {
-                        //解析给定的文件路径名到 `file` 结构体
+        //解析给定的文件路径名到 `file` 结构体
 		struct file *f = do_filp_open(dfd, tmp, &op);
 		if (IS_ERR(f)) {
             //释放文件描述符
@@ -1190,6 +1203,10 @@ static long do_sys_openat2(int dfd, const char __user *filename,
 	return fd;
 }
 
+
+/**
+ *  
+ */
 long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
 	struct open_how how = build_open_how(flags, mode);
@@ -1197,13 +1214,27 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 }
 
 
+/**
+ *  
+ */
+int open(const char *pathname, int flags);
+int open(const char *pathname, int flags, mode_t mode);
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
 	if (force_o_largefile()) /* x86_64 恒定为 true */
 		flags |= O_LARGEFILE;
+
+    /**
+     *  
+     */
 	return do_sys_open(AT_FDCWD, filename, flags, mode);
 }
 
+/**
+ *  
+ */
+int openat(int dirfd, const char *pathname, int flags);
+int openat(int dirfd, const char *pathname, int flags, mode_t mode);
 SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
 		umode_t, mode)
 {

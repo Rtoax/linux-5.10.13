@@ -1154,41 +1154,53 @@ static void init_once(void *foo)
 	inode_init_once(&ei->vfs_inode);
 }
 
+/**
+ *  
+ */
 const struct file_operations hugetlbfs_file_operations = {  /* 大页内存 hugetlbfs 文件操作符 */
-	.read_iter		= hugetlbfs_read_iter,
-	.mmap			= hugetlbfs_file_mmap,
-	.fsync			= noop_fsync,
-	.get_unmapped_area	= hugetlb_get_unmapped_area,
-	.llseek			= default_llseek,
-	.fallocate		= hugetlbfs_fallocate,
+	hugetlbfs_file_operations.read_iter		= hugetlbfs_read_iter,
+	hugetlbfs_file_operations.mmap			= hugetlbfs_file_mmap,
+	hugetlbfs_file_operations.fsync			= noop_fsync,
+	hugetlbfs_file_operations.get_unmapped_area	= hugetlb_get_unmapped_area,
+	hugetlbfs_file_operations.llseek			= default_llseek,
+	hugetlbfs_file_operations.fallocate		= hugetlbfs_fallocate,
 };
 
+/**
+ *  
+ */
 static const struct inode_operations hugetlbfs_dir_inode_operations = {
-	.create		= hugetlbfs_create,
-	.lookup		= simple_lookup,
-	.link		= simple_link,
-	.unlink		= simple_unlink,
-	.symlink	= hugetlbfs_symlink,
-	.mkdir		= hugetlbfs_mkdir,
-	.rmdir		= simple_rmdir,
-	.mknod		= hugetlbfs_mknod,
-	.rename		= simple_rename,
-	.setattr	= hugetlbfs_setattr,
-	.tmpfile	= hugetlbfs_tmpfile,
+	hugetlbfs_dir_inode_operations.create		= hugetlbfs_create,
+	hugetlbfs_dir_inode_operations.lookup		= simple_lookup,
+	hugetlbfs_dir_inode_operations.link		= simple_link,
+	hugetlbfs_dir_inode_operations.unlink		= simple_unlink,
+	hugetlbfs_dir_inode_operations.symlink	= hugetlbfs_symlink,
+	hugetlbfs_dir_inode_operations.mkdir		= hugetlbfs_mkdir,
+	hugetlbfs_dir_inode_operations.rmdir		= simple_rmdir,
+	hugetlbfs_dir_inode_operations.mknod		= hugetlbfs_mknod,
+	hugetlbfs_dir_inode_operations.rename		= simple_rename,
+	hugetlbfs_dir_inode_operations.setattr	= hugetlbfs_setattr,
+	hugetlbfs_dir_inode_operations.tmpfile	= hugetlbfs_tmpfile,
 };
 
+/**
+ *  
+ */
 static const struct inode_operations hugetlbfs_inode_operations = {
-	.setattr	= hugetlbfs_setattr,
+	hugetlbfs_inode_operations.setattr	= hugetlbfs_setattr,
 };
 
+/**
+ *  
+ */
 static const struct super_operations hugetlbfs_ops = {
-	.alloc_inode    = hugetlbfs_alloc_inode,
-	.free_inode     = hugetlbfs_free_inode,
-	.destroy_inode  = hugetlbfs_destroy_inode,
-	.evict_inode	= hugetlbfs_evict_inode,
-	.statfs		= hugetlbfs_statfs,
-	.put_super	= hugetlbfs_put_super,
-	.show_options	= hugetlbfs_show_options,
+	hugetlbfs_ops.alloc_inode    = hugetlbfs_alloc_inode,
+	hugetlbfs_ops.free_inode     = hugetlbfs_free_inode,
+	hugetlbfs_ops.destroy_inode  = hugetlbfs_destroy_inode,
+	hugetlbfs_ops.evict_inode	= hugetlbfs_evict_inode,
+	hugetlbfs_ops.statfs		= hugetlbfs_statfs,
+	hugetlbfs_ops.put_super	= hugetlbfs_put_super,
+	hugetlbfs_ops.show_options	= hugetlbfs_show_options,
 };
 
 /*
@@ -1489,8 +1501,7 @@ struct file *hugetlb_file_setup(const char *name, size_t size,
 			acctflag))
 		file = ERR_PTR(-ENOMEM);
 	else
-		file = alloc_file_pseudo(inode, mnt, name, O_RDWR,
-					&hugetlbfs_file_operations);
+		file = alloc_file_pseudo(inode, mnt, name, O_RDWR, &hugetlbfs_file_operations);
 	if (!IS_ERR(file))
 		return file;
 

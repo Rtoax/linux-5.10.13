@@ -72,8 +72,8 @@ static struct file_system_type anon_inode_fs_type = {/* 匿名挂载点文件系
  * setup.  Returns the newly created file* or an error pointer.
  */
 struct file *anon_inode_getfile(const char *name,
-				const struct file_operations *fops,
-				void *priv/* 私有数据 */, int flags)
+                				const struct file_operations *fops,
+                				void *priv/* 私有数据 */, int flags)
 {
 	struct file *file;
 
@@ -88,11 +88,18 @@ struct file *anon_inode_getfile(const char *name,
 	 * so ihold() is safe.
 	 */
 	ihold(anon_inode_inode);
-	file = alloc_file_pseudo/* 分配一个假的 file */(anon_inode_inode, anon_inode_mnt, name,
-				 flags & (O_ACCMODE | O_NONBLOCK), fops);
+
+    /**
+     *  分配一个假的 file
+     */
+	file = alloc_file_pseudo(anon_inode_inode, anon_inode_mnt, name,
+				             flags & (O_ACCMODE | O_NONBLOCK), fops);
 	if (IS_ERR(file))
 		goto err;
 
+    /**
+     *  
+     */
 	file->f_mapping = anon_inode_inode->i_mapping;
 
 	file->private_data = priv;/* 私有数据，可能为 epoll  */

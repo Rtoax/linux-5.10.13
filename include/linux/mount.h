@@ -73,6 +73,7 @@ struct vfsmount {   /* 挂载点 */
 	struct super_block *mnt_sb;	/* pointer to superblock */
 	int mnt_flags;
 } __randomize_layout;
+typedef struct vfsmount * vfsmount_t; //+++
 
 struct file; /* forward dec */
 struct path;

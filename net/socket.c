@@ -160,6 +160,7 @@ static const struct file_operations socket_file_ops = { /* socket */
      */
 	socket_file_ops.poll =		sock_poll,
 	socket_file_ops.unlocked_ioctl = sock_ioctl,
+	
 #ifdef CONFIG_COMPAT
 	socket_file_ops.compat_ioctl = compat_sock_ioctl,
 #endif
@@ -433,8 +434,8 @@ struct file *sock_alloc_file(struct socket *sock, int flags, const char *dname)
      *  创建文件
      */
 	file = alloc_file_pseudo(SOCK_INODE(sock), sock_mnt, dname,
-				O_RDWR | (flags & O_NONBLOCK),
-				&socket_file_ops);
+            				O_RDWR | (flags & O_NONBLOCK),
+            				&socket_file_ops);
 	if (IS_ERR(file)) {
 		sock_release(sock);
 		return file;

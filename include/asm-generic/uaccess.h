@@ -258,6 +258,9 @@ __strncpy_from_user(char *dst, const char __user *src, long count)
 }
 #endif
 
+/**
+ *  
+ */
 static inline long
 strncpy_from_user(char *dst, const char __user *src, long count)
 {

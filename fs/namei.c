@@ -124,14 +124,16 @@
 
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 
-struct filename *   /* 从用户空间复制文件路径到内核空间 */
-getname_flags(const char __user *filename, int flags, int *empty)   /*  */
+/**
+ *  从用户空间复制文件路径到内核空间
+ */
+struct filename *getname_flags(const char __user *str_filename, int flags, int *empty)   /*  */
 {
 	struct filename *result;
 	char *kname;
 	int len;
 
-	result = audit_reusename(filename); 
+	result = audit_reusename(str_filename); 
 	if (result)
 		return result;
 
@@ -147,7 +149,7 @@ getname_flags(const char __user *filename, int flags, int *empty)   /*  */
 	result->name = kname;
 
     //复制传递给 `open` 系统调用的用户空间的文件名到内核空间
-	len = strncpy_from_user(kname, filename, EMBEDDED_NAME_MAX);
+	len = strncpy_from_user(kname, str_filename, EMBEDDED_NAME_MAX);
 	if (unlikely(len < 0)) {
 		__putname(result);
 		return ERR_PTR(len);
@@ -173,8 +175,16 @@ getname_flags(const char __user *filename, int flags, int *empty)   /*  */
 			__putname(kname);
 			return ERR_PTR(-ENOMEM);
 		}
+
+        /**
+         *  
+         */
 		result->name = kname;
-		len = strncpy_from_user(kname, filename, PATH_MAX);
+
+        /**
+         *  
+         */
+		len = strncpy_from_user(kname, str_filename, PATH_MAX);
 		if (unlikely(len < 0)) {
 			__putname(kname);
 			kfree(result);
@@ -198,20 +208,21 @@ getname_flags(const char __user *filename, int flags, int *empty)   /*  */
 		}
 	}
 
-	result->uptr = filename;
+	result->uptr = str_filename;
 	result->aname = NULL;
 	audit_getname(result);
 	return result;
 }
 
-struct filename *   /*得到 `filename` 结构体*/
-getname(const char __user * filename)
+/**
+ *  得到 `filename` 结构体
+ */
+struct filename *   getname(const char __user * filename)
 {
 	return getname_flags(filename, 0, NULL);
 }
 
-struct filename *
-getname_kernel(const char * filename)
+struct filename *getname_kernel(const char * filename)
 {
 	struct filename *result;
 	int len = strlen(filename) + 1;
@@ -246,6 +257,9 @@ getname_kernel(const char * filename)
 	return result;
 }
 
+/**
+ *  
+ */
 void putname(struct filename *name)
 {
 	BUG_ON(name->refcnt <= 0);
@@ -260,6 +274,9 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
+/**
+ *  
+ */
 static int check_acl(struct inode *inode, int mask)
 {
 #ifdef CONFIG_FS_POSIX_ACL
@@ -3216,23 +3233,25 @@ finish_lookup:
 /*
  * Handle the last step of open()
  *//*  */
-static int do_open(struct nameidata *nd,
-		   struct file *file, const struct open_flags *op)
+static int do_open(struct nameidata *nd, struct file *rtoax_file, const struct open_flags *op)
 {
+    /**
+     *  
+     */
 	int open_flag = op->open_flag;
 	bool do_truncate;
 	int acc_mode;
 	int error;
 
-	if (!(file->f_mode & (FMODE_OPENED | FMODE_CREATED))) {
+	if (!(rtoax_file->f_mode & (FMODE_OPENED | FMODE_CREATED))) {
 		error = complete_walk(nd);
 		if (error)
 			return error;
 	}
-	if (!(file->f_mode & FMODE_CREATED))
+	if (!(rtoax_file->f_mode & FMODE_CREATED))
 		audit_inode(nd->name, nd->path.dentry, 0);
 	if (open_flag & O_CREAT) {
-		if ((open_flag & O_EXCL) && !(file->f_mode & FMODE_CREATED))
+		if ((open_flag & O_EXCL) && !(rtoax_file->f_mode & FMODE_CREATED))
 			return -EEXIST;
 		if (d_is_dir(nd->path.dentry))
 			return -EISDIR;
@@ -3246,7 +3265,7 @@ static int do_open(struct nameidata *nd,
 
 	do_truncate = false;
 	acc_mode = op->acc_mode;
-	if (file->f_mode & FMODE_CREATED) {
+	if (rtoax_file->f_mode & FMODE_CREATED) {
 		/* Don't check for write permission, don't truncate */
 		open_flag &= ~O_TRUNC;
 		acc_mode = 0;
@@ -3256,13 +3275,20 @@ static int do_open(struct nameidata *nd,
 			return error;
 		do_truncate = true;
 	}
+
+    /**
+     *  
+     */
 	error = may_open(&nd->path, acc_mode, open_flag);
-	if (!error && !(file->f_mode & FMODE_OPENED))
-		error = vfs_open(&nd->path, file);  /*  */
+	if (!error && !(rtoax_file->f_mode & FMODE_OPENED))
+        /**
+         *  
+         */
+		error = vfs_open(&nd->path, rtoax_file);  /*  */
 	if (!error)
-		error = ima_file_check(file, op->acc_mode);
+		error = ima_file_check(rtoax_file, op->acc_mode);
 	if (!error && do_truncate)
-		error = handle_truncate(file);
+		error = handle_truncate(rtoax_file);
 	if (unlikely(error > 0)) {
 		WARN_ON(1);
 		error = -EINVAL;
@@ -3355,37 +3381,52 @@ static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 	return error;
 }
 
-static struct file *path_openat(struct nameidata *nd,
-			const struct open_flags *op, unsigned flags)
+/**
+ *  
+ */
+static struct file *path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
 {
-	struct file *file;
+	struct file *rtoax_file;
 	int error;
 
     //分配 file 结构
-	file = alloc_empty_file(op->open_flag, current_cred());
-	if (IS_ERR(file))
-		return file;
+	rtoax_file = alloc_empty_file(op->open_flag, current_cred());
+	if (IS_ERR(rtoax_file))
+		return rtoax_file;
 
-	if (unlikely(file->f_flags & __O_TMPFILE)) {
-		error = do_tmpfile(nd, flags, op, file);
-	} else if (unlikely(file->f_flags & O_PATH)) {
-		error = do_o_path(nd, flags, file);
+    /**
+     *  
+     */
+	if (unlikely(rtoax_file->f_flags & __O_TMPFILE)) {
+		error = do_tmpfile(nd, flags, op, rtoax_file);
+
+    /**
+     *  
+     */
+	} else if (unlikely(rtoax_file->f_flags & O_PATH)) {
+		error = do_o_path(nd, flags, rtoax_file);
+
+    /**
+     *  
+     */
 	} else {
 		const char *s = path_init(nd, flags);
-		while (!(error = link_path_walk(s, nd)) &&
-		       (s = open_last_lookups(nd, file, op)) != NULL)
-			;
+		while (!(error = link_path_walk(s, nd)) && (s = open_last_lookups(nd, rtoax_file, op)) != NULL);
+
+        /**
+         *  
+         */
 		if (!error)
-			error = do_open(nd, file, op);  /* vfs_open() */
+			error = do_open(nd, rtoax_file, op);  /* vfs_open() */
 		terminate_walk(nd);
 	}
 	if (likely(!error)) {
-		if (likely(file->f_mode & FMODE_OPENED))
-			return file;
+		if (likely(rtoax_file->f_mode & FMODE_OPENED))
+			return rtoax_file;
 		WARN_ON(1);
 		error = -EINVAL;
 	}
-	fput(file);
+	fput(rtoax_file);
 	if (error == -EOPENSTALE) {
 		if (flags & LOOKUP_RCU)
 			error = -ECHILD;
@@ -3396,8 +3437,7 @@ static struct file *path_openat(struct nameidata *nd,
 }
 
 //解析给定的文件路径名到 `file` 结构体
-struct file *do_filp_open(int dfd, struct filename *pathname,
-		const struct open_flags *op)
+struct file *do_filp_open(int dfd, struct filename *pathname, const struct open_flags *op)
 {
 	struct nameidata nd;
 	int flags = op->lookup_flags;
@@ -3406,12 +3446,22 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
     //Linux 内核会以 [RCU]模式打开文件
     //如果打开失败，内核进入正常模式
 	set_nameidata(&nd, dfd, pathname);
+
+    /**
+     *  
+     */
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
+
+    /**
+     *  
+     */
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);
 	if (unlikely(filp == ERR_PTR(-ESTALE)))
 		filp = path_openat(&nd, op, flags | LOOKUP_REVAL);
+    
 	restore_nameidata();
+    
 	return filp;
 }
 

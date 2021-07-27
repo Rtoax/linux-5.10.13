@@ -3883,97 +3883,118 @@ static void shmem_destroy_inodecache(void)
 	kmem_cache_destroy(shmem_inode_cachep);
 }
 
+/**
+ *  
+ */
 static const struct address_space_operations shmem_aops = {
-	.writepage	= shmem_writepage,
-	.set_page_dirty	= __set_page_dirty_no_writeback,
+	shmem_aops.writepage	= shmem_writepage,
+	shmem_aops.set_page_dirty	= __set_page_dirty_no_writeback,
 #ifdef CONFIG_TMPFS
-	.write_begin	= shmem_write_begin,
-	.write_end	= shmem_write_end,
+	shmem_aops.write_begin	= shmem_write_begin,
+	shmem_aops.write_end	= shmem_write_end,
 #endif
 #ifdef CONFIG_MIGRATION
-	.migratepage	= migrate_page,
+	shmem_aops.migratepage	= migrate_page,
 #endif
-	.error_remove_page = generic_error_remove_page,
+	shmem_aops.error_remove_page = generic_error_remove_page,
 };
 
+/**
+ *  
+ */
 static const struct file_operations shmem_file_operations = {
-	.mmap		= shmem_mmap,
-	.get_unmapped_area = shmem_get_unmapped_area,
+	shmem_file_operations.mmap		= shmem_mmap,
+	shmem_file_operations.get_unmapped_area = shmem_get_unmapped_area,
 #ifdef CONFIG_TMPFS
-	.llseek		= shmem_file_llseek,
-	.read_iter	= shmem_file_read_iter,
-	.write_iter	= generic_file_write_iter,
-	.fsync		= noop_fsync,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
-	.fallocate	= shmem_fallocate,
+	shmem_file_operations.llseek		= shmem_file_llseek,
+	shmem_file_operations.read_iter	= shmem_file_read_iter,
+	shmem_file_operations.write_iter	= generic_file_write_iter,
+	shmem_file_operations.fsync		= noop_fsync,
+	shmem_file_operations.splice_read	= generic_file_splice_read,
+	shmem_file_operations.splice_write	= iter_file_splice_write,
+	shmem_file_operations.fallocate	= shmem_fallocate,
 #endif
 };
 
+/**
+ *  
+ */
 static const struct inode_operations shmem_inode_operations = {
-	.getattr	= shmem_getattr,
-	.setattr	= shmem_setattr,
+	shmem_inode_operations.getattr	= shmem_getattr,
+	shmem_inode_operations.setattr	= shmem_setattr,
 #ifdef CONFIG_TMPFS_XATTR
-	.listxattr	= shmem_listxattr,
-	.set_acl	= simple_set_acl,
+	shmem_inode_operations.listxattr	= shmem_listxattr,
+	shmem_inode_operations.set_acl	= simple_set_acl,
 #endif
 };
 
+/**
+ *  
+ */
 static const struct inode_operations shmem_dir_inode_operations = {
 #ifdef CONFIG_TMPFS
-	.create		= shmem_create,
-	.lookup		= simple_lookup,
-	.link		= shmem_link,
-	.unlink		= shmem_unlink,
-	.symlink	= shmem_symlink,
-	.mkdir		= shmem_mkdir,
-	.rmdir		= shmem_rmdir,
-	.mknod		= shmem_mknod,
-	.rename		= shmem_rename2,
-	.tmpfile	= shmem_tmpfile,
+	shmem_dir_inode_operations.create		= shmem_create,
+	shmem_dir_inode_operations.lookup		= simple_lookup,
+	shmem_dir_inode_operations.link		= shmem_link,
+	shmem_dir_inode_operations.unlink		= shmem_unlink,
+	shmem_dir_inode_operations.symlink	= shmem_symlink,
+	shmem_dir_inode_operations.mkdir		= shmem_mkdir,
+	shmem_dir_inode_operations.rmdir		= shmem_rmdir,
+	shmem_dir_inode_operations.mknod		= shmem_mknod,
+	shmem_dir_inode_operations.rename		= shmem_rename2,
+	shmem_dir_inode_operations.tmpfile	= shmem_tmpfile,
 #endif
 #ifdef CONFIG_TMPFS_XATTR
-	.listxattr	= shmem_listxattr,
+	shmem_dir_inode_operations.listxattr	= shmem_listxattr,
 #endif
 #ifdef CONFIG_TMPFS_POSIX_ACL
-	.setattr	= shmem_setattr,
-	.set_acl	= simple_set_acl,
+	shmem_dir_inode_operations.setattr	= shmem_setattr,
+	shmem_dir_inode_operations.set_acl	= simple_set_acl,
 #endif
 };
 
+/**
+ *  
+ */
 static const struct inode_operations shmem_special_inode_operations = {
 #ifdef CONFIG_TMPFS_XATTR
-	.listxattr	= shmem_listxattr,
+	shmem_special_inode_operations.listxattr	= shmem_listxattr,
 #endif
 #ifdef CONFIG_TMPFS_POSIX_ACL
-	.setattr	= shmem_setattr,
-	.set_acl	= simple_set_acl,
+	shmem_special_inode_operations.setattr	= shmem_setattr,
+	shmem_special_inode_operations.set_acl	= simple_set_acl,
 #endif
 };
 
+/**
+ *  
+ */
 static const struct super_operations shmem_ops = {
-	.alloc_inode	= shmem_alloc_inode,
-	.free_inode	= shmem_free_in_core_inode,
-	.destroy_inode	= shmem_destroy_inode,
+	shmem_ops.alloc_inode	= shmem_alloc_inode,
+	shmem_ops.free_inode	= shmem_free_in_core_inode,
+	shmem_ops.destroy_inode	= shmem_destroy_inode,
 #ifdef CONFIG_TMPFS
-	.statfs		= shmem_statfs,
-	.show_options	= shmem_show_options,
+	shmem_ops.statfs		= shmem_statfs,
+	shmem_ops.show_options	= shmem_show_options,
 #endif
-	.evict_inode	= shmem_evict_inode,
-	.drop_inode	= generic_delete_inode,
-	.put_super	= shmem_put_super,
+	shmem_ops.evict_inode	= shmem_evict_inode,
+	shmem_ops.drop_inode	= generic_delete_inode,
+	shmem_ops.put_super	= shmem_put_super,
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	.nr_cached_objects	= shmem_unused_huge_count,
-	.free_cached_objects	= shmem_unused_huge_scan,
+	shmem_ops.nr_cached_objects	= shmem_unused_huge_count,
+	shmem_ops.free_cached_objects	= shmem_unused_huge_scan,
 #endif
 };
 
+/**
+ *  
+ */
 static const struct vm_operations_struct shmem_vm_ops = {
-	.fault		= shmem_fault,
-	.map_pages	= filemap_map_pages,
+	shmem_vm_ops.fault		= shmem_fault,
+	shmem_vm_ops.map_pages	= filemap_map_pages,
 #ifdef CONFIG_NUMA
-	.set_policy     = shmem_set_policy,
-	.get_policy     = shmem_get_policy,
+	shmem_vm_ops.set_policy     = shmem_set_policy,
+	shmem_vm_ops.get_policy     = shmem_get_policy,
 #endif
 };
 
@@ -3994,17 +4015,23 @@ int shmem_init_fs_context(struct fs_context *fc)    /*  初始化*/
 	return 0;
 }
 
+/**
+ *  
+ */
 static struct file_system_type shmem_fs_type = {    /* tmpfs 文件系统 /dev/shm 就是 tmpfs */
-	.owner		= THIS_MODULE,
-	.name		= "tmpfs",  /*  */
-	.init_fs_context = shmem_init_fs_context,   /*  */
+	shmem_fs_type.owner		= THIS_MODULE,
+	shmem_fs_type.name		= "tmpfs",  /*  */
+	shmem_fs_type.init_fs_context = shmem_init_fs_context,   /*  */
 #ifdef CONFIG_TMPFS
-	.parameters	= shmem_fs_parameters,
+	shmem_fs_type.parameters	= shmem_fs_parameters,
 #endif
-	.kill_sb	= kill_litter_super,
-	.fs_flags	= FS_USERNS_MOUNT | FS_THP_SUPPORT,
+	shmem_fs_type.kill_sb	= kill_litter_super,
+	shmem_fs_type.fs_flags	= FS_USERNS_MOUNT | FS_THP_SUPPORT,
 };
 
+/**
+ *  
+ */
 int __init shmem_init(void) /* 共享内存 */
 {
 	int error;
@@ -4163,8 +4190,10 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, l
 	clear_nlink(inode);	/* It is unlinked */
 	res = ERR_PTR(ramfs_nommu_expand_for_mapping(inode, size));
 	if (!IS_ERR(res))
-		res = alloc_file_pseudo(inode, mnt, name, O_RDWR,
-				&shmem_file_operations);
+        /**
+         *  
+         */
+		res = alloc_file_pseudo(inode, mnt, name, O_RDWR, &shmem_file_operations);
 	if (IS_ERR(res))
 		iput(inode);
 	return res;

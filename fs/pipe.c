@@ -877,7 +877,7 @@ static char *pipefs_dname(struct dentry *dentry, char *buffer, int buflen)
 }
 
 static const struct dentry_operations pipefs_dentry_operations = {
-	.d_dname	= pipefs_dname,
+	pipefs_dentry_operations.d_dname	= pipefs_dname,
 };
 
 static struct inode * get_pipe_inode(void)
@@ -938,10 +938,14 @@ int create_pipe_files(struct file **res, int flags) /* 分配pipe file 结构 */
 			return error;
 		}
 	}
+
+    /**
+     *  
+     */
     /* 分配 file 写端 */
 	f = alloc_file_pseudo(inode, pipe_mnt, "",
-				O_WRONLY | (flags & (O_NONBLOCK | O_DIRECT)),
-				&pipefifo_fops);    /*  */
+            				O_WRONLY | (flags & (O_NONBLOCK | O_DIRECT)),
+            				&pipefifo_fops);    /*  */
 	if (IS_ERR(f)) {
 		free_pipe_info(inode->i_pipe);
 		iput(inode);
@@ -950,8 +954,7 @@ int create_pipe_files(struct file **res, int flags) /* 分配pipe file 结构 */
 
 	f->private_data = inode->i_pipe;    /* file的私有数据为 inode pipe */
     /* 分配 file 读端 */
-	res[0] = alloc_file_clone(f, O_RDONLY | (flags & O_NONBLOCK),
-				  &pipefifo_fops);
+	res[0] = alloc_file_clone(f, O_RDONLY | (flags & O_NONBLOCK), &pipefifo_fops);
 	if (IS_ERR(res[0])) {
 		put_pipe_info(inode, inode->i_pipe);
 		fput(f);
@@ -1236,16 +1239,19 @@ err:
 	return ret;
 }
 
+/**
+ *  
+ */
 const struct file_operations pipefifo_fops = {  /* pipe 管道 操作符 */
-	.open		= fifo_open,    /* 打开管道 */
-	.llseek		= no_llseek,    /*  */
-	.read_iter	= pipe_read,    /* 读 */
-	.write_iter	= pipe_write,   /* 写 */
-	.poll		= pipe_poll,    /*  */
-	.unlocked_ioctl	= pipe_ioctl,   /*  */
-	.release	= pipe_release,     /*  */
-	.fasync		= pipe_fasync,      /*  */
-	.splice_write	= iter_file_splice_write,   /*  */
+	pipefifo_fops.open		= fifo_open,    /* 打开管道 */
+	pipefifo_fops.llseek		= no_llseek,    /*  */
+	pipefifo_fops.read_iter	= pipe_read,    /* 读 */
+	pipefifo_fops.write_iter	= pipe_write,   /* 写 */
+	pipefifo_fops.poll		= pipe_poll,    /*  */
+	pipefifo_fops.unlocked_ioctl	= pipe_ioctl,   /*  */
+	pipefifo_fops.release	= pipe_release,     /*  */
+	pipefifo_fops.fasync		= pipe_fasync,      /*  */
+	pipefifo_fops.splice_write	= iter_file_splice_write,   /*  */
 };
 
 /*

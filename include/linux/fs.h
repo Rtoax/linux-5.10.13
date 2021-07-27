@@ -716,6 +716,9 @@ struct inode {
 	atomic_t		i_readcount; /* struct files open RO */
 #endif
 	union {
+	    /**
+         *  
+         */
 		const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 		void (*free_inode)(struct inode *);
 	};
@@ -1719,10 +1722,21 @@ struct dir_context {
 
 struct iov_iter;
 
+/**
+ *  
+ */
 struct file_operations {    /* 文件操作符 */
 	struct module *owner;
 	loff_t (*llseek) (struct file *, loff_t, int);
+
+    /**
+     *  
+     */
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
+
+    /**
+     *  
+     */
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
@@ -2383,6 +2397,10 @@ static inline int break_layout(struct inode *inode, bool wait)
 
 /* fs/open.c */
 struct audit_names;
+
+/**
+ *  
+ */
 struct filename {   /*  */
 	const char		*name;	    /* 指向内核空间的文件路径指针 pointer to actual string */
 	const __user char	*uptr;	/* 用户空间的原始指针 original userland pointer */

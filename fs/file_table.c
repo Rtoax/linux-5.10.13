@@ -86,13 +86,16 @@ int proc_nr_files(struct ctl_table *table, int write,
 	return proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
 }
 #else
-int proc_nr_files(struct ctl_table *table, int write,
-                     void *buffer, size_t *lenp, loff_t *ppos)
-{
-	return -ENOSYS;
-}
+//int proc_nr_files(struct ctl_table *table, int write,
+//                     void *buffer, size_t *lenp, loff_t *ppos)
+//{
+//	return -ENOSYS;
+//}
 #endif
 
+/**
+ *  
+ */
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {
 	struct file *f;
@@ -109,10 +112,17 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 		return ERR_PTR(error);
 	}
 
+    /**
+     *  初始化
+     */
 	atomic_long_set(&f->f_count, 1);
 	rwlock_init(&f->f_owner.lock);
 	spin_lock_init(&f->f_lock);
 	mutex_init(&f->f_pos_lock);
+
+    /**
+     *  epoll 相关
+     */
 	eventpoll_init_file(f);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
@@ -148,6 +158,9 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 			goto over;
 	}
 
+    /**
+     *  
+     */
 	f = __alloc_file(flags, cred);
 	if (!IS_ERR(f))
 		percpu_counter_inc(&nr_files);
@@ -206,18 +219,26 @@ static struct file *alloc_file(const struct path *path, int flags,
 	     likely(fop->write || fop->write_iter))
 		file->f_mode |= FMODE_CAN_WRITE;
 	file->f_mode |= FMODE_OPENED;
+
+    /**
+     *  
+     */
 	file->f_op = fop;
 	if ((file->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_inc(path->dentry->d_inode);
 	return file;
 }
 
+
+/**
+ *  
+ */
 struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
-				const char *name, int flags,
-				const struct file_operations *fops) /* 分配一个 file */
+                				const char *name, int flags,
+                				const struct file_operations *fops) /* 分配一个 file */
 {
 	static const struct dentry_operations anon_ops = {
-		.d_dname = simple_dname
+		anon_ops.d_dname = simple_dname
 	};
 	struct qstr this = QSTR_INIT(name, strlen(name));
 	struct path path;
@@ -230,6 +251,10 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 		d_set_d_op(path.dentry, &anon_ops);
 	path.mnt = mntget(mnt);
 	d_instantiate(path.dentry, inode);
+
+    /**
+     *  
+     */
 	file = alloc_file(&path, flags, fops);
 	if (IS_ERR(file)) {
 		ihold(inode);
@@ -239,9 +264,15 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 }
 EXPORT_SYMBOL(alloc_file_pseudo);
 
-struct file *alloc_file_clone(struct file *base, int flags,
-				const struct file_operations *fops) /* 克隆，使用同一个文件生成的 file 结构 */
+
+/**
+ *  克隆，使用同一个文件生成的 file 结构
+ */
+struct file *alloc_file_clone(struct file *base, int flags, const struct file_operations *fops) /*  */
 {
+    /**
+     *  
+     */
 	struct file *f = alloc_file(&base->f_path, flags, fops);
 	if (!IS_ERR(f)) {
 		path_get(&f->f_path);
