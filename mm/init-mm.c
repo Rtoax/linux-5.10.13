@@ -27,16 +27,16 @@
  * and size this cpu_bitmask to NR_CPUS.
  */
 struct mm_struct init_mm = {/* 初始的 mm_struct 结构 */
-	.mm_rb		= RB_ROOT,/* 红黑树 */
-	.pgd		= swapper_pg_dir,/* 一级页表 */
-	.mm_users	= ATOMIC_INIT(2),/* 用户空间使用的用户数 */
-	.mm_count	= ATOMIC_INIT(1),/* 内存引用次数 */
-	.write_protect_seq = SEQCNT_ZERO(init_mm.write_protect_seq),/* 写被保护的 pages 强制后期 COW */
+	init_mm.mm_rb		= RB_ROOT,/* 红黑树 */
+	init_mm.pgd		= swapper_pg_dir,/* 一级页表 */
+	init_mm.mm_users	= ATOMIC_INIT(2),/* 用户空间使用的用户数 */
+	init_mm.mm_count	= ATOMIC_INIT(1),/* 内存引用次数 */
+	init_mm.write_protect_seq = SEQCNT_ZERO(init_mm.write_protect_seq),/* 写被保护的 pages 强制后期 COW */
 	MMAP_LOCK_INITIALIZER(init_mm)/* 读写锁 */
-	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),/* 保护页表和一些计数器 */
-	.arg_lock	=  __SPIN_LOCK_UNLOCKED(init_mm.arg_lock),/* 保护 mm_struct 中的一些参数 */
-	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),/* 保存可能被 swap 的链表 */
-	.user_ns	= &init_user_ns,/* namespace 资源的隔离， cgroup=资源的限制*/
-	.cpu_bitmap	= CPU_BITS_NONE,/*  */
+	init_mm.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),/* 保护页表和一些计数器 */
+	init_mm.arg_lock	=  __SPIN_LOCK_UNLOCKED(init_mm.arg_lock),/* 保护 mm_struct 中的一些参数 */
+	init_mm.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),/* 保存可能被 swap 的链表 */
+	init_mm.user_ns	= &init_user_ns,/* namespace 资源的隔离， cgroup=资源的限制*/
+	init_mm.cpu_bitmap	= CPU_BITS_NONE,/*  */
 	INIT_MM_CONTEXT(init_mm)/* TODO */
 };

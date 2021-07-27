@@ -25,8 +25,18 @@
  * and 1 for... ?
  */
 struct user_namespace init_user_ns/* 资源的隔离 */ = {
-	.uid_map = {/* TODO */
-		.nr_extents = 1,
+	init_user_ns.uid_map = {/* TODO */
+		init_user_ns.uid_map.nr_extents = 1,
+		{
+			init_user_ns.uid_map.nr_extents.extent[0] = {
+				.first = 0,
+				.lower_first = 0,
+				.count = 4294967295U,
+			},
+		},
+	},
+	init_user_ns.gid_map = {
+		init_user_ns.gid_map.nr_extents = 1,
 		{
 			.extent[0] = {
 				.first = 0,
@@ -35,8 +45,8 @@ struct user_namespace init_user_ns/* 资源的隔离 */ = {
 			},
 		},
 	},
-	.gid_map = {
-		.nr_extents = 1,
+	init_user_ns.projid_map = {
+		init_user_ns.projid_map.nr_extents = 1,
 		{
 			.extent[0] = {
 				.first = 0,
@@ -45,27 +55,17 @@ struct user_namespace init_user_ns/* 资源的隔离 */ = {
 			},
 		},
 	},
-	.projid_map = {
-		.nr_extents = 1,
-		{
-			.extent[0] = {
-				.first = 0,
-				.lower_first = 0,
-				.count = 4294967295U,
-			},
-		},
-	},
-	.count = ATOMIC_INIT(3),
-	.owner = GLOBAL_ROOT_UID,
-	.group = GLOBAL_ROOT_GID,
-	.ns.inum = PROC_USER_INIT_INO,
+	init_user_ns.count = ATOMIC_INIT(3),
+	init_user_ns.owner = GLOBAL_ROOT_UID,
+	init_user_ns.group = GLOBAL_ROOT_GID,
+	init_user_ns.ns.inum = PROC_USER_INIT_INO,
 #ifdef CONFIG_USER_NS
-	.ns.ops = &userns_operations,
+	init_user_ns.ns.ops = &userns_operations,
 #endif
-	.flags = USERNS_INIT_FLAGS,
+	init_user_ns.flags = USERNS_INIT_FLAGS,
 #ifdef CONFIG_KEYS
-	.keyring_name_list = LIST_HEAD_INIT(init_user_ns.keyring_name_list),
-	.keyring_sem = __RWSEM_INITIALIZER(init_user_ns.keyring_sem),
+	init_user_ns.keyring_name_list = LIST_HEAD_INIT(init_user_ns.keyring_name_list),
+	init_user_ns.keyring_sem = __RWSEM_INITIALIZER(init_user_ns.keyring_sem),
 #endif
 };
 EXPORT_SYMBOL_GPL(init_user_ns);
@@ -97,12 +97,12 @@ static DEFINE_SPINLOCK(uidhash_lock);
 
 /* root_user.__count is 1, for init task cred */
 struct user_struct root_user = {
-	.__count	= REFCOUNT_INIT(1),
-	.processes	= ATOMIC_INIT(1),
-	.sigpending	= ATOMIC_INIT(0),
-	.locked_shm     = 0,
-	.uid		= GLOBAL_ROOT_UID,
-	.ratelimit	= RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
+	root_user.__count	= REFCOUNT_INIT(1),
+	root_user.processes	= ATOMIC_INIT(1),
+	root_user.sigpending	= ATOMIC_INIT(0),
+	root_user.locked_shm     = 0,
+	root_user.uid		= GLOBAL_ROOT_UID,
+	root_user.ratelimit	= RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
 /*

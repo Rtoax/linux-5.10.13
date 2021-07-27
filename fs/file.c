@@ -460,17 +460,17 @@ void exit_files(struct task_struct *tsk)
 }
 
 struct files_struct init_files /* init_task.files 打开的文件 */= {
-	.count		= ATOMIC_INIT(1),/*  */
-	.fdt		= &init_files.fdtab,
-	.fdtab		= {
+	init_files.count		= ATOMIC_INIT(1),/*  */
+	init_files.fdt		= &init_files.fdtab,
+	init_files.fdtab		= {
 		.max_fds	= NR_OPEN_DEFAULT,
 		.fd		= &init_files.fd_array[0],
 		.close_on_exec	= init_files.close_on_exec_init,
 		.open_fds	= init_files.open_fds_init,
 		.full_fds_bits	= init_files.full_fds_bits_init,
 	},
-	.file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock),
-	.resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait),
+	init_files.file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock),
+	init_files.resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait),
 };
 
 static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)

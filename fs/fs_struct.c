@@ -164,8 +164,8 @@ EXPORT_SYMBOL(current_umask);
 
 /* to be mentioned only in INIT_TASK */
 struct fs_struct init_fs = {/* swapper 的 fs */
-	.users		= 1,/* 一个用户 */
-	.lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock),/* 自旋锁 */
-	.seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),/* 顺序锁 */
-	.umask		= 0022,/* 权限 */
+	init_fs.users		= 1,/* 一个用户 */
+	init_fs.lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock),/* 自旋锁 */
+	init_fs.seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),/* 顺序锁 */
+	init_fs.umask		= 0022,/* 权限 */
 };
