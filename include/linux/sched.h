@@ -811,6 +811,8 @@ struct task_struct {    /* PCB */
      *  MAX_PRIO:140
      *  MAX_RT_PRIO:100  
      *  nice:[-20,19]
+     *
+     *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
      */
     //The higher priority allows to get more time to run. 
     /**
@@ -856,6 +858,9 @@ struct task_struct {    /* PCB */
 
     /**
      *  操作函数 - 调度类
+     *
+     *  rt_sched_class
+     *  fair_sched_class
      */
 	const struct sched_class	*sched_class;
 

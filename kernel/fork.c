@@ -2233,8 +2233,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	 *
 	 * 如果 和当前进程共享父进程，但是 当前进程 不可 kill，返回错误
 	 */
-	if ((clone_flags & CLONE_PARENT) &&
-				current->signal->flags & SIGNAL_UNKILLABLE)
+	if ((clone_flags & CLONE_PARENT) && current->signal->flags & SIGNAL_UNKILLABLE)
 		return ERR_PTR(-EINVAL);
 
 	/*
@@ -2287,6 +2286,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	spin_lock_irq(&current->sighand->siglock);/* 保护 task_struct->signal */
 	if (!(clone_flags & CLONE_THREAD))  /* 如果不属于一个线程组，需要保存信号 */
 		hlist_add_head(&delayed.node, &current->signal->multiprocess);
+    
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
