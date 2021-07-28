@@ -8,11 +8,11 @@
 #include <linux/in6.h>
 
 /* Responses from hook functions. */
-#define NF_DROP 0
-#define NF_ACCEPT 1
-#define NF_STOLEN 2
-#define NF_QUEUE 3
-#define NF_REPEAT 4
+#define NF_DROP 0   /* 丢弃数据包 */
+#define NF_ACCEPT 1 /* 数据包像通常那样继续在内核网络栈中传输 */
+#define NF_STOLEN 2 /* 数据包不继续传输，由钩子方法进行处理 */
+#define NF_QUEUE 3  /* 数据包将排序，供用户空间使用 */
+#define NF_REPEAT 4 /* 再次调用钩子函数 */
 #define NF_STOP 5	/* Deprecated, for userspace nf_queue compatibility. */
 #define NF_MAX_VERDICT NF_STOP
 
@@ -40,12 +40,43 @@
 #endif
 
 enum nf_inet_hooks {
+    /**
+     *  在 IPv4 中，这个挂接点位于 方法 ip_rcv() 中，而在 IPv6中，它位于方法 ipv6_rcv() 中。
+     *  所有入栈数据包遇到的第一个挂载点，它处于路由子系统查找之前
+     */
 	NF_INET_PRE_ROUTING,
+    /**
+     *  在 IPv4 中，这个挂载点位于 ip_local_deliver(),IPv6 位于 ip6_input()
+     *  对于 所有发送给当前主机的入栈数据包，经过挂接点 NF_INET_PRE_ROUTING 并执行路由子系统查找后
+     *  都将到达这个挂接点
+     */
 	NF_INET_LOCAL_IN,
+    /**
+     *  IPv4 中，这个挂接点位于 ip_forward() ,IPv6 位于 ip6_forward()
+     *  对于所有要转发的数据包，经过挂接点 NF_INET_PRE_ROUTING 并执行路由选择子系统查找后，
+     *  都将到达这个挂接点
+     */
 	NF_INET_FORWARD,
+    /**
+     *  
+     *  
+     */
 	NF_INET_LOCAL_OUT,
+    /**
+     *  在 IPv4 中，这个关节点位于 ip_output() 中，IPv6 中位于方法 ip6_finish_output2() 中，
+     *  所有要转发的数据包都在经过挂接点 NF_INET_FORWARD 后到达这个挂接点，
+     *  另外，当前主机生成的数据包经过挂接点 NF_INET_LOCAL_OUT 后将到达这个挂接点。
+     */
 	NF_INET_POST_ROUTING,
+    /**
+     *  
+     *  
+     */
 	NF_INET_NUMHOOKS,
+    /**
+     *  
+     *  
+     */
 	NF_INET_INGRESS = NF_INET_NUMHOOKS,
 };
 

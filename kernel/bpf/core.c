@@ -2196,31 +2196,31 @@ BPF_CALL_0(bpf_get_raw_cpu_id)
 }
 
 /* Weak definitions of helper functions in case we don't have bpf syscall. */
-const struct bpf_func_proto bpf_map_lookup_elem_proto __weak;
-const struct bpf_func_proto bpf_map_update_elem_proto __weak;
-const struct bpf_func_proto bpf_map_delete_elem_proto __weak;
-const struct bpf_func_proto bpf_map_push_elem_proto __weak;
-const struct bpf_func_proto bpf_map_pop_elem_proto __weak;
-const struct bpf_func_proto bpf_map_peek_elem_proto __weak;
-const struct bpf_func_proto bpf_spin_lock_proto __weak;
-const struct bpf_func_proto bpf_spin_unlock_proto __weak;
-const struct bpf_func_proto bpf_jiffies64_proto __weak;
+const struct bpf_func_proto __weak bpf_map_lookup_elem_proto ;
+const struct bpf_func_proto __weak bpf_map_update_elem_proto ;
+const struct bpf_func_proto __weak bpf_map_delete_elem_proto ;
+const struct bpf_func_proto __weak bpf_map_push_elem_proto ;
+const struct bpf_func_proto __weak bpf_map_pop_elem_proto ;
+const struct bpf_func_proto __weak bpf_map_peek_elem_proto ;
+const struct bpf_func_proto __weak bpf_spin_lock_proto ;
+const struct bpf_func_proto __weak bpf_spin_unlock_proto ;
+const struct bpf_func_proto __weak bpf_jiffies64_proto ;
 
-const struct bpf_func_proto bpf_get_prandom_u32_proto __weak;
-const struct bpf_func_proto bpf_get_smp_processor_id_proto __weak;
-const struct bpf_func_proto bpf_get_numa_node_id_proto __weak;
-const struct bpf_func_proto bpf_ktime_get_ns_proto __weak;
-const struct bpf_func_proto bpf_ktime_get_boot_ns_proto __weak;
+const struct bpf_func_proto __weak bpf_get_prandom_u32_proto ;
+const struct bpf_func_proto __weak bpf_get_smp_processor_id_proto ;
+const struct bpf_func_proto __weak bpf_get_numa_node_id_proto ;
+const struct bpf_func_proto __weak bpf_ktime_get_ns_proto ;
+const struct bpf_func_proto __weak bpf_ktime_get_boot_ns_proto ;
 
-const struct bpf_func_proto bpf_get_current_pid_tgid_proto __weak;
-const struct bpf_func_proto bpf_get_current_uid_gid_proto __weak;
-const struct bpf_func_proto bpf_get_current_comm_proto __weak;
-const struct bpf_func_proto bpf_get_current_cgroup_id_proto __weak;
-const struct bpf_func_proto bpf_get_current_ancestor_cgroup_id_proto __weak;
-const struct bpf_func_proto bpf_get_local_storage_proto __weak;
-const struct bpf_func_proto bpf_get_ns_current_pid_tgid_proto __weak;
-const struct bpf_func_proto bpf_snprintf_btf_proto __weak;
-const struct bpf_func_proto bpf_seq_printf_btf_proto __weak;
+const struct bpf_func_proto __weak bpf_get_current_pid_tgid_proto ;
+const struct bpf_func_proto __weak bpf_get_current_uid_gid_proto ;
+const struct bpf_func_proto __weak bpf_get_current_comm_proto ;
+const struct bpf_func_proto __weak bpf_get_current_cgroup_id_proto ;
+const struct bpf_func_proto __weak bpf_get_current_ancestor_cgroup_id_proto ;
+const struct bpf_func_proto __weak bpf_get_local_storage_proto ;
+const struct bpf_func_proto __weak bpf_get_ns_current_pid_tgid_proto ;
+const struct bpf_func_proto __weak bpf_snprintf_btf_proto ;
+const struct bpf_func_proto __weak bpf_seq_printf_btf_proto ;
 
 const struct bpf_func_proto * __weak bpf_get_trace_printk_proto(void)
 {

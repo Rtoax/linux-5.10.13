@@ -3631,8 +3631,7 @@ __skb_header_pointer(const struct sk_buff *skb, int offset,
 static inline void * __must_check
 skb_header_pointer(const struct sk_buff *skb, int offset, int len, void *buffer)
 {
-	return __skb_header_pointer(skb, offset, len, skb->data,
-				    skb_headlen(skb), buffer);
+	return __skb_header_pointer(skb, offset, len, skb->data, skb_headlen(skb), buffer);
 }
 
 /**

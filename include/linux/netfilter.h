@@ -77,6 +77,10 @@ struct nf_hook_state {
 typedef unsigned int nf_hookfn(void *priv,
 			       struct sk_buff *skb,
 			       const struct nf_hook_state *state);
+
+/**
+ *  
+ */
 struct nf_hook_ops {
 	/* User fills in from here down. */
 	nf_hookfn		*hook;

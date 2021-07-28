@@ -1842,14 +1842,14 @@ static struct xt_target __read_mostly ipt_builtin_tg[]  = {
 };
 
 static struct nf_sockopt_ops ipt_sockopts = {
-	.pf		= PF_INET,
-	.set_optmin	= IPT_BASE_CTL,
-	.set_optmax	= IPT_SO_SET_MAX+1,
-	.set		= do_ipt_set_ctl,
-	.get_optmin	= IPT_BASE_CTL,
-	.get_optmax	= IPT_SO_GET_MAX+1,
-	.get		= do_ipt_get_ctl,
-	.owner		= THIS_MODULE,
+	ipt_sockopts.pf		= PF_INET,
+	ipt_sockopts.set_optmin	= IPT_BASE_CTL,
+	ipt_sockopts.set_optmax	= IPT_SO_SET_MAX+1,
+	ipt_sockopts.set		= do_ipt_set_ctl,
+	ipt_sockopts.get_optmin	= IPT_BASE_CTL,
+	ipt_sockopts.get_optmax	= IPT_SO_GET_MAX+1,
+	ipt_sockopts.get		= do_ipt_get_ctl,
+	ipt_sockopts.owner		= THIS_MODULE,
 };
 
 static struct xt_match __read_mostly ipt_builtin_mt[]  = {
@@ -1875,10 +1875,13 @@ static void __net_exit ip_tables_net_exit(struct net *net)
 }
 
 static struct pernet_operations ip_tables_net_ops = {
-	.init = ip_tables_net_init,
-	.exit = ip_tables_net_exit,
+	ip_tables_net_ops.init = ip_tables_net_init,
+	ip_tables_net_ops.exit = ip_tables_net_exit,
 };
 
+/**
+ *  
+ */
 static int __init ip_tables_init(void)
 {
 	int ret;
