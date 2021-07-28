@@ -1912,13 +1912,13 @@ static struct nf_sockopt_ops ipt_sockopts = {
 
 static struct xt_match __read_mostly ipt_builtin_mt[]  = {
 	{
-		.name       = "icmp",
-		.match      = icmp_match,
-		.matchsize  = sizeof(struct ipt_icmp),
-		.checkentry = icmp_checkentry,
-		.proto      = IPPROTO_ICMP,
-		.family     = NFPROTO_IPV4,
-		.me	    = THIS_MODULE,
+		ipt_builtin_mt[].name       = "icmp",
+		ipt_builtin_mt[].match      = icmp_match,
+		ipt_builtin_mt[].matchsize  = sizeof(struct ipt_icmp),
+		ipt_builtin_mt[].checkentry = icmp_checkentry,
+		ipt_builtin_mt[].proto      = IPPROTO_ICMP,
+		ipt_builtin_mt[].family     = NFPROTO_IPV4,
+		ipt_builtin_mt[].me	    = THIS_MODULE,
 	},
 };
 
@@ -1952,6 +1952,7 @@ static int __init ip_tables_init(void)
 	ret = xt_register_targets(ipt_builtin_tg, ARRAY_SIZE(ipt_builtin_tg));
 	if (ret < 0)
 		goto err2;
+    
 	ret = xt_register_matches(ipt_builtin_mt, ARRAY_SIZE(ipt_builtin_mt));
 	if (ret < 0)
 		goto err4;
@@ -1987,5 +1988,9 @@ EXPORT_SYMBOL(ipt_unregister_table);
 EXPORT_SYMBOL(ipt_unregister_table_pre_exit);
 EXPORT_SYMBOL(ipt_unregister_table_exit);
 EXPORT_SYMBOL(ipt_do_table);
+
+/**
+ *  
+ */
 module_init(ip_tables_init);
 module_exit(ip_tables_fini);

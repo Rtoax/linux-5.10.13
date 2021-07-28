@@ -57,9 +57,17 @@ struct xt_af {
 
 static struct xt_af *xt;
 
+/**
+ *  
+ */
 static const char *const xt_prefix[NFPROTO_NUMPROTO] = {
 	[NFPROTO_UNSPEC] = "x",
+
+    // /proc/net/ip_tables_names
+    // /proc/net/ip_tables_matches
+    // /proc/net/ip_tables_targets
 	[NFPROTO_IPV4]   = "ip",
+	
 	[NFPROTO_ARP]    = "arp",
 	[NFPROTO_BRIDGE] = "eb",
 	[NFPROTO_IPV6]   = "ip6",
@@ -1664,15 +1672,18 @@ static int xt_target_seq_show(struct seq_file *seq, void *v)
 }
 
 static const struct seq_operations xt_target_seq_ops = {
-	.start	= xt_target_seq_start,
-	.next	= xt_target_seq_next,
-	.stop	= xt_mttg_seq_stop,
-	.show	= xt_target_seq_show,
+	xt_target_seq_ops.start	= xt_target_seq_start,
+	xt_target_seq_ops.next	= xt_target_seq_next,
+	xt_target_seq_ops.stop	= xt_mttg_seq_stop,
+	xt_target_seq_ops.show	= xt_target_seq_show,
 };
-
-#define FORMAT_TABLES	"_tables_names"
-#define	FORMAT_MATCHES	"_tables_matches"
-#define FORMAT_TARGETS 	"_tables_targets"
+    
+// /proc/net/ip_tables_names
+// /proc/net/ip_tables_matches
+// /proc/net/ip_tables_targets
+#define FORMAT_TABLES	"_tables_names"     
+#define	FORMAT_MATCHES	"_tables_matches"   
+#define FORMAT_TARGETS 	"_tables_targets"   
 
 #endif /* CONFIG_PROC_FS */
 
@@ -1732,30 +1743,35 @@ int xt_proto_init(struct net *net, u_int8_t af)
 	root_gid = make_kgid(net->user_ns, 0);
 
 	strlcpy(buf, xt_prefix[af], sizeof(buf));
+
+    // /proc/net/ip_tables_names
 	strlcat(buf, FORMAT_TABLES, sizeof(buf));
 	proc = proc_create_net_data(buf, 0440, net->proc_net, &xt_table_seq_ops,
-			sizeof(struct seq_net_private),
-			(void *)(unsigned long)af);
+                    			sizeof(struct seq_net_private),
+                    			(void *)(unsigned long)af);
 	if (!proc)
 		goto out;
 	if (uid_valid(root_uid) && gid_valid(root_gid))
 		proc_set_user(proc, root_uid, root_gid);
 
 	strlcpy(buf, xt_prefix[af], sizeof(buf));
+    
+    // /proc/net/ip_tables_matches
 	strlcat(buf, FORMAT_MATCHES, sizeof(buf));
 	proc = proc_create_seq_private(buf, 0440, net->proc_net,
-			&xt_match_seq_ops, sizeof(struct nf_mttg_trav),
-			(void *)(unsigned long)af);
+                        			&xt_match_seq_ops, sizeof(struct nf_mttg_trav),
+                        			(void *)(unsigned long)af);
 	if (!proc)
 		goto out_remove_tables;
 	if (uid_valid(root_uid) && gid_valid(root_gid))
 		proc_set_user(proc, root_uid, root_gid);
 
 	strlcpy(buf, xt_prefix[af], sizeof(buf));
+    // /proc/net/ip_tables_targets
 	strlcat(buf, FORMAT_TARGETS, sizeof(buf));
 	proc = proc_create_seq_private(buf, 0440, net->proc_net,
-			 &xt_target_seq_ops, sizeof(struct nf_mttg_trav),
-			 (void *)(unsigned long)af);
+                        			 &xt_target_seq_ops, sizeof(struct nf_mttg_trav),
+                        			 (void *)(unsigned long)af);
 	if (!proc)
 		goto out_remove_matches;
 	if (uid_valid(root_uid) && gid_valid(root_gid))
