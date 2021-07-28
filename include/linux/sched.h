@@ -77,15 +77,59 @@ struct io_uring_task;
  */
 
 /* Used in tsk->state: */
+/**
+ *  正在运行或处于就绪状态
+ *  就绪状态是指进程申请到了CPU以外的其他所有资源，正所谓：万事俱备，只欠东风;
+ *  提醒：一般的操作系统教科书将正在CPU上执 行的进程定义为RUNNING状态、
+ *      而将可执行但是尚未被调度执行的进程定义为READY状态，这两种状态在Linux下统一为 TASK_RUNNING状态.
+ */
 #define TASK_RUNNING			0x0000
+
+/**
+ *  处于等待队伍中，等待资源有效时唤醒（比如等待键盘输入、socket连接、信号等等），但可以被中断唤醒;
+ *  一般情况下，进程列表中的绝大多数进程都处于 TASK_INTERRUPTIBLE状态.
+ *  毕竟皇帝只有一个（单个CPU时），后宫佳丽几千；如果不是绝大多数进程都在睡眠，CPU又怎么响应得过来.
+ *  TASK_INTERRUPTIBLE 是可以被信号和 wake_up() 唤醒的，当信号到来时，进程会被设置为可运行。
+ */
 #define TASK_INTERRUPTIBLE		0x0001
+
+/**
+ *  TASK_UNINTERRUPTIBLE状态是一种不可中断的睡眠状态，不可以被信号打断，必须等到等待的条件满足时才被唤醒。
+ *  这个状态通常在进程必须等待时不受干扰或所等待的事件很快发生时使用。
+ *  
+ *  处于等待队伍中，等待资源有效时唤醒（比如等待键盘输入、socket连接、信号等等），但不可以被中断唤醒.
+ *  TASK_UNINTERRUPTIBLE只能被 wake_up() 唤醒.
+ *
+ *  在终端中输入命令：
+ *  ```
+ *  $ ps aux
+ *  ```
+ *  在出来的信息中有一列STAT状态，如果出现D状态就是TASK_UNINTERRUPTIBLE，出现这种状态时，
+ *  你会发现你杀不死这种进程，但是linux内核已经想好了办法，对于这种情况，内核有专门的内核
+ *  线程来过一段时间来处理一次这种状态的进程，所以当出现这种状态的进程时，我们只需等待一会
+ *  就会由内核线程来处理掉这种进程。
+ */
 #define TASK_UNINTERRUPTIBLE		0x0002
+
+/**
+ *  进程被外部程序暂停（如收到SIGSTOP信号，进程会进入到TASK_STOPPED状态）
+ *  当再次允许时继续执行（进程收到SIGCONT信号，进入TASK_RUNNING状态）
+ *  因此处于这一状态的进程可以被唤醒.
+ */
 #define __TASK_STOPPED			0x0004
+
+/**
+ *  
+ *  
+ */
 #define __TASK_TRACED			0x0008
+
+
 /* Used in tsk->exit_state: */
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020
 #define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
+
 /* Used in tsk->state again: */
 #define TASK_PARKED			0x0040  /*  */
 #define TASK_DEAD			0x0080

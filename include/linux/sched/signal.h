@@ -358,6 +358,9 @@ static inline int restart_syscall(void)
 	return -ERESTARTNOINTR;
 }
 
+/**
+ *  检查当前进程是否有信号处理，返回不为0表示有信号需要处理
+ */
 static inline int signal_pending(struct task_struct *p) //检测当前任务是否有一个挂起信号
 {
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
