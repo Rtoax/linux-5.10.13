@@ -14,26 +14,35 @@
 
 static int __net_init iptable_raw_table_init(struct net *net);
 
+/**
+ *  
+ */
 static bool __read_mostly raw_before_defrag ;
 MODULE_PARM_DESC(raw_before_defrag, "Enable raw table before defrag");
 module_param(raw_before_defrag, bool, 0000);
 
+/**
+ *  
+ */
 static const struct xt_table packet_raw = {
-	.name = "raw",
-	.valid_hooks =  RAW_VALID_HOOKS,
-	.me = THIS_MODULE,
-	.af = NFPROTO_IPV4,
-	.priority = NF_IP_PRI_RAW,
-	.table_init = iptable_raw_table_init,
+	packet_raw.name = "raw",
+	packet_raw.valid_hooks =  RAW_VALID_HOOKS,
+	packet_raw.me = THIS_MODULE,
+	packet_raw.af = NFPROTO_IPV4,
+	packet_raw.priority = NF_IP_PRI_RAW,
+	packet_raw.table_init = iptable_raw_table_init,
 };
 
+/**
+ *  
+ */
 static const struct xt_table packet_raw_before_defrag = {
-	.name = "raw",
-	.valid_hooks =  RAW_VALID_HOOKS,
-	.me = THIS_MODULE,
-	.af = NFPROTO_IPV4,
-	.priority = NF_IP_PRI_RAW_BEFORE_DEFRAG,
-	.table_init = iptable_raw_table_init,
+	packet_raw_before_defrag.name = "raw",
+	packet_raw_before_defrag.valid_hooks =  RAW_VALID_HOOKS,
+	packet_raw_before_defrag.me = THIS_MODULE,
+	packet_raw_before_defrag.af = NFPROTO_IPV4,
+	packet_raw_before_defrag.priority = NF_IP_PRI_RAW_BEFORE_DEFRAG,
+	packet_raw_before_defrag.table_init = iptable_raw_table_init,
 };
 
 /* The work comes in here from netfilter.c. */
@@ -46,6 +55,9 @@ iptable_raw_hook(void *priv, struct sk_buff *skb,
 
 static struct nf_hook_ops __read_mostly *rawtable_ops ;
 
+/**
+ *  
+ */
 static int __net_init iptable_raw_table_init(struct net *net)
 {
 	struct ipt_replace *repl;
@@ -67,6 +79,9 @@ static int __net_init iptable_raw_table_init(struct net *net)
 	return ret;
 }
 
+/**
+ *  
+ */
 static void __net_exit iptable_raw_net_pre_exit(struct net *net)
 {
 	if (net->ipv4.iptable_raw)
@@ -74,6 +89,9 @@ static void __net_exit iptable_raw_net_pre_exit(struct net *net)
 					      rawtable_ops);
 }
 
+/**
+ *  
+ */
 static void __net_exit iptable_raw_net_exit(struct net *net)
 {
 	if (!net->ipv4.iptable_raw)
@@ -82,11 +100,17 @@ static void __net_exit iptable_raw_net_exit(struct net *net)
 	net->ipv4.iptable_raw = NULL;
 }
 
+/**
+ *  
+ */
 static struct pernet_operations iptable_raw_net_ops = {
-	.pre_exit = iptable_raw_net_pre_exit,
-	.exit = iptable_raw_net_exit,
+	iptable_raw_net_ops.pre_exit = iptable_raw_net_pre_exit,
+	iptable_raw_net_ops.exit = iptable_raw_net_exit,
 };
 
+/**
+ *  
+ */
 static int __init iptable_raw_init(void)
 {
 	int ret;
@@ -98,6 +122,9 @@ static int __init iptable_raw_init(void)
 		pr_info("Enabling raw table before defrag\n");
 	}
 
+    /**
+     *  
+     */
 	rawtable_ops = xt_hook_ops_alloc(table, iptable_raw_hook);
 	if (IS_ERR(rawtable_ops))
 		return PTR_ERR(rawtable_ops);
@@ -108,6 +135,9 @@ static int __init iptable_raw_init(void)
 		return ret;
 	}
 
+    /**
+     *  
+     */
 	ret = iptable_raw_table_init(&init_net);
 	if (ret) {
 		unregister_pernet_subsys(&iptable_raw_net_ops);
@@ -122,6 +152,17 @@ static void __exit iptable_raw_fini(void)
 	unregister_pernet_subsys(&iptable_raw_net_ops);
 	kfree(rawtable_ops);
 }
+
+/**
+ *  [rongtao@localhost src]$ lsmod | grep iptab
+ *  iptable_nat            12875  1 
+ *  nf_nat_ipv4            14115  1 iptable_nat
+ *  iptable_mangle         12695  1 
+ *  iptable_security       12705  1 
+ *  iptable_raw            12678  1 
+ *  iptable_filter         12810  1
+ */
+
 
 module_init(iptable_raw_init);
 module_exit(iptable_raw_fini);

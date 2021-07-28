@@ -44,11 +44,14 @@ EXPORT_SYMBOL_GPL(net_rwsem);
 static struct key_tag init_net_key_domain = { .usage = REFCOUNT_INIT(1) };
 #endif
 
+/**
+ *  
+ */
 struct net init_net = { /*  */
-	.count		= REFCOUNT_INIT(1),
-	.dev_base_head	= LIST_HEAD_INIT(init_net.dev_base_head),
+	init_net.count		= REFCOUNT_INIT(1),
+	init_net.dev_base_head	= LIST_HEAD_INIT(init_net.dev_base_head),
 #ifdef CONFIG_KEYS
-	.key_domain	= &init_net_key_domain,
+	init_net.key_domain	= &init_net_key_domain,
 #endif
 };
 EXPORT_SYMBOL(init_net);

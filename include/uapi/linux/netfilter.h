@@ -42,40 +42,79 @@
 enum nf_inet_hooks {
     /**
      *  在 IPv4 中，这个挂接点位于 方法 ip_rcv() 中，而在 IPv6中，它位于方法 ipv6_rcv() 中。
-     *  所有入栈数据包遇到的第一个挂载点，它处于路由子系统查找之前
+     *  所有入栈数据包遇到的第一个挂载点，它处于路由子系统查找之前.
+     *
+     *  br_nf_pre_routing()
+     *  br_nf_pre_routing_ipv6()
+     *  ipv6_rcv()
+     *  ip_rcv()
+     *  ip6_sublist_rcv()
+     *  ip_sublist_rcv()
+     *  xfrm4_transport_finish()
+     *  xfrm6_transport_finish()
      */
 	NF_INET_PRE_ROUTING,
+	
     /**
      *  在 IPv4 中，这个挂载点位于 ip_local_deliver(),IPv6 位于 ip6_input()
      *  对于 所有发送给当前主机的入栈数据包，经过挂接点 NF_INET_PRE_ROUTING 并执行路由子系统查找后
      *  都将到达这个挂接点
+     *
+     *  ip6_input()
+     *  ip_local_deliver()
+     *  
      */
 	NF_INET_LOCAL_IN,
+	
     /**
      *  IPv4 中，这个挂接点位于 ip_forward() ,IPv6 位于 ip6_forward()
      *  对于所有要转发的数据包，经过挂接点 NF_INET_PRE_ROUTING 并执行路由选择子系统查找后，
-     *  都将到达这个挂接点
+     *  都将到达这个挂接点.
+     *
+     *  br_nf_forward_ip()
+     *  ip6mr_forward2()
+     *  ipmr_queue_xmit()
+     *  ip6_forward()
+     *  ip_forward()
      */
 	NF_INET_FORWARD,
+	
     /**
      *  
-     *  
+     *  ip_vs_nat_send_or_cont()
+     *  ip_vs_send_or_cont()
+     *  mld_sendpack()
+     *  igmp6_send()
+     *  ndisc_send_skb()
+     *  raw_send_hdrinc()
+     *  rawv6_send_hdrinc()
      */
 	NF_INET_LOCAL_OUT,
+	
     /**
      *  在 IPv4 中，这个关节点位于 ip_output() 中，IPv6 中位于方法 ip6_finish_output2() 中，
      *  所有要转发的数据包都在经过挂接点 NF_INET_FORWARD 后到达这个挂接点，
      *  另外，当前主机生成的数据包经过挂接点 NF_INET_LOCAL_OUT 后将到达这个挂接点。
+     *
+     *  br_nf_post_routing()
+     *  ip_mc_output()
+     *  xfrm4_output()
+     *  xfrm6_output()
+     *  ip6_finish_output2()
+     *  ip6_output()
+     *  ip_output()
      */
 	NF_INET_POST_ROUTING,
+	
     /**
      *  
      *  
      */
 	NF_INET_NUMHOOKS,
+	
     /**
      *  
-     *  
+     *  ingress: 入口
      */
 	NF_INET_INGRESS = NF_INET_NUMHOOKS,
 };

@@ -37,7 +37,43 @@ MODULE_DESCRIPTION("arptables core");
 
 void *arpt_alloc_initial_table(const struct xt_table *info)
 {
+#if _rtoax_____________________________
+
 	return xt_alloc_initial_table(arpt, ARPT);
+    
+#else //展开 
+
+    unsigned int hook_mask = info->valid_hooks; 
+    unsigned int nhooks = hweight32(hook_mask); 
+    unsigned int bytes = 0, hooknum = 0, i = 0; 
+    struct { 
+        struct arpt_replace repl; 
+        struct arpt_standard entries[]; 
+    } *tbl; 
+    struct arpt_error *term; 
+    size_t term_offset = (offsetof(typeof(*tbl), entries[nhooks]) + 
+        __alignof__(*term) - 1) & ~(__alignof__(*term) - 1); 
+    tbl = kzalloc(term_offset + sizeof(*term), GFP_KERNEL); 
+    if (tbl == NULL) 
+        return NULL; 
+    term = (struct arpt_error *)&(((char *)tbl)[term_offset]); 
+    strncpy(tbl->repl.name, info->name, sizeof(tbl->repl.name)); 
+    *term = (struct arpt_error)ARPT_ERROR_INIT;  
+    tbl->repl.valid_hooks = hook_mask; 
+    tbl->repl.num_entries = nhooks + 1; 
+    tbl->repl.size = nhooks * sizeof(struct arpt_standard) + 
+             sizeof(struct arpt_error); 
+    for (; hook_mask != 0; hook_mask >>= 1, ++hooknum) { 
+        if (!(hook_mask & 1)) 
+            continue; 
+        tbl->repl.hook_entry[hooknum] = bytes; 
+        tbl->repl.underflow[hooknum]  = bytes; 
+        tbl->entries[i++] = (struct arpt_standard) 
+            ARPT_STANDARD_INIT(NF_ACCEPT); 
+        bytes += sizeof(struct arpt_standard); 
+    } 
+    return tbl; 
+#endif //_rtoax_____________________________
 }
 EXPORT_SYMBOL_GPL(arpt_alloc_initial_table);
 

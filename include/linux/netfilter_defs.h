@@ -12,7 +12,7 @@
 
 #if IS_ENABLED(CONFIG_DECNET)
 /* Largest hook number + 1, see uapi/linux/netfilter_decnet.h */
-#define NF_MAX_HOOKS	NF_DN_NUMHOOKS
+//#define NF_MAX_HOOKS	NF_DN_NUMHOOKS
 #else
 #define NF_MAX_HOOKS	NF_INET_NUMHOOKS
 #endif

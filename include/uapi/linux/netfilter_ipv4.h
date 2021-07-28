@@ -50,6 +50,9 @@
 
 #endif /* ! __KERNEL__ */
 
+/**
+ *  
+ */
 enum nf_ip_hook_priorities {
 	NF_IP_PRI_FIRST = INT_MIN,
 	NF_IP_PRI_RAW_BEFORE_DEFRAG = -450,

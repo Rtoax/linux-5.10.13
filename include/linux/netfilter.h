@@ -64,6 +64,9 @@ struct nf_hook_ops;
 
 struct sock;
 
+/**
+ *  
+ */
 struct nf_hook_state {
 	unsigned int hook;
 	u_int8_t pf;
@@ -83,6 +86,10 @@ typedef unsigned int nf_hookfn(void *priv,
  */
 struct nf_hook_ops {
 	/* User fills in from here down. */
+
+    /**
+     *  钩子
+     */
 	nf_hookfn		*hook;
 	struct net_device	*dev;
 	void			*priv;
@@ -92,16 +99,25 @@ struct nf_hook_ops {
 	int			priority;
 };
 
+/**
+ *  
+ */
 struct nf_hook_entry {
 	nf_hookfn			*hook;
 	void				*priv;
 };
 
+/**
+ *  
+ */
 struct nf_hook_entries_rcu_head {
 	struct rcu_head head;
 	void	*allocation;
 };
 
+/**
+ *  
+ */
 struct nf_hook_entries {
 	u16				num_hook_entries;
 	/* padding */
@@ -214,6 +230,9 @@ static inline int nf_hook(u_int8_t pf, unsigned int hook, struct net *net,
 	struct nf_hook_entries *hook_head = NULL;
 	int ret = 1;
 
+    /**
+     *  
+     */
 #ifdef CONFIG_JUMP_LABEL
 	if (__builtin_constant_p(pf) &&
 	    __builtin_constant_p(hook) &&
@@ -222,6 +241,10 @@ static inline int nf_hook(u_int8_t pf, unsigned int hook, struct net *net,
 #endif
 
 	rcu_read_lock();
+
+    /**
+     *  
+     */
 	switch (pf) {
 	case NFPROTO_IPV4:
 		hook_head = rcu_dereference(net->nf.hooks_ipv4[hook]);
@@ -251,11 +274,13 @@ static inline int nf_hook(u_int8_t pf, unsigned int hook, struct net *net,
 		break;
 	}
 
+    /**
+     *  
+     */
 	if (hook_head) {
 		struct nf_hook_state state;
 
-		nf_hook_state_init(&state, hook, pf, indev, outdev,
-				   sk, net, okfn);
+		nf_hook_state_init(&state, hook, pf, indev, outdev, sk, net, okfn);
 
 		ret = nf_hook_slow(skb, &state, hook_head, 0);
 	}
@@ -396,43 +421,43 @@ nf_nat_decode_session(struct sk_buff *skb, struct flowi *fl, u_int8_t family)
 }
 
 #else /* !CONFIG_NETFILTER */
-static inline int
-NF_HOOK_COND(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
-	     struct sk_buff *skb, struct net_device *in, struct net_device *out,
-	     int (*okfn)(struct net *, struct sock *, struct sk_buff *),
-	     bool cond)
-{
-	return okfn(net, sk, skb);
-}
-
-static inline int
-NF_HOOK(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
-	struct sk_buff *skb, struct net_device *in, struct net_device *out,
-	int (*okfn)(struct net *, struct sock *, struct sk_buff *))
-{
-	return okfn(net, sk, skb);
-}
-
-static inline void
-NF_HOOK_LIST(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
-	     struct list_head *head, struct net_device *in, struct net_device *out,
-	     int (*okfn)(struct net *, struct sock *, struct sk_buff *))
-{
-	/* nothing to do */
-}
-
-static inline int nf_hook(u_int8_t pf, unsigned int hook, struct net *net,
-			  struct sock *sk, struct sk_buff *skb,
-			  struct net_device *indev, struct net_device *outdev,
-			  int (*okfn)(struct net *, struct sock *, struct sk_buff *))
-{
-	return 1;
-}
-struct flowi;
-static inline void
-nf_nat_decode_session(struct sk_buff *skb, struct flowi *fl, u_int8_t family)
-{
-}
+//static inline int
+//NF_HOOK_COND(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
+//	     struct sk_buff *skb, struct net_device *in, struct net_device *out,
+//	     int (*okfn)(struct net *, struct sock *, struct sk_buff *),
+//	     bool cond)
+//{
+//	return okfn(net, sk, skb);
+//}
+//
+//static inline int
+//NF_HOOK(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
+//	struct sk_buff *skb, struct net_device *in, struct net_device *out,
+//	int (*okfn)(struct net *, struct sock *, struct sk_buff *))
+//{
+//	return okfn(net, sk, skb);
+//}
+//
+//static inline void
+//NF_HOOK_LIST(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
+//	     struct list_head *head, struct net_device *in, struct net_device *out,
+//	     int (*okfn)(struct net *, struct sock *, struct sk_buff *))
+//{
+//	/* nothing to do */
+//}
+//
+//static inline int nf_hook(u_int8_t pf, unsigned int hook, struct net *net,
+//			  struct sock *sk, struct sk_buff *skb,
+//			  struct net_device *indev, struct net_device *outdev,
+//			  int (*okfn)(struct net *, struct sock *, struct sk_buff *))
+//{
+//	return 1;
+//}
+//struct flowi;
+//static inline void
+//nf_nat_decode_session(struct sk_buff *skb, struct flowi *fl, u_int8_t family)
+//{
+//}
 #endif /*CONFIG_NETFILTER*/
 
 #if IS_ENABLED(CONFIG_NF_CONNTRACK)

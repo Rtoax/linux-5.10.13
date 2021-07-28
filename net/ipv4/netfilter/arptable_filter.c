@@ -20,13 +20,16 @@ MODULE_DESCRIPTION("arptables filter table");
 
 static int __net_init arptable_filter_table_init(struct net *net);
 
-static const struct xt_table packet_filter = {
-	.name		= "filter",
-	.valid_hooks	= FILTER_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_ARP,
-	.priority	= NF_IP_PRI_FILTER,
-	.table_init	= arptable_filter_table_init,
+/**
+ *  packet_filter 改为了 arp_packet_filter
+ */
+static const struct xt_table arp_packet_filter = {
+	arp_packet_filter.name		= "filter",
+	arp_packet_filter.valid_hooks	= FILTER_VALID_HOOKS,
+	arp_packet_filter.me		= THIS_MODULE,
+	arp_packet_filter.af		= NFPROTO_ARP,
+	arp_packet_filter.priority	= NF_IP_PRI_FILTER,
+	arp_packet_filter.table_init	= arptable_filter_table_init,
 };
 
 /* The work comes in here from netfilter.c */
@@ -47,10 +50,10 @@ static int __net_init arptable_filter_table_init(struct net *net)
 	if (net->ipv4.arptable_filter)
 		return 0;
 
-	repl = arpt_alloc_initial_table(&packet_filter);
+	repl = arpt_alloc_initial_table(&arp_packet_filter);
 	if (repl == NULL)
 		return -ENOMEM;
-	err = arpt_register_table(net, &packet_filter, repl, arpfilter_ops,
+	err = arpt_register_table(net, &arp_packet_filter, repl, arpfilter_ops,
 				  &net->ipv4.arptable_filter);
 	kfree(repl);
 	return err;
@@ -65,14 +68,14 @@ static void __net_exit arptable_filter_net_exit(struct net *net)
 }
 
 static struct pernet_operations arptable_filter_net_ops = {
-	.exit = arptable_filter_net_exit,
+	arptable_filter_net_ops.exit = arptable_filter_net_exit,
 };
 
 static int __init arptable_filter_init(void)
 {
 	int ret;
 
-	arpfilter_ops = xt_hook_ops_alloc(&packet_filter, arptable_filter_hook);
+	arpfilter_ops = xt_hook_ops_alloc(&arp_packet_filter, arptable_filter_hook);
 	if (IS_ERR(arpfilter_ops))
 		return PTR_ERR(arpfilter_ops);
 

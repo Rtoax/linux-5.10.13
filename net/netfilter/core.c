@@ -35,6 +35,9 @@ DEFINE_PER_CPU(bool, nf_skb_duplicated);
 EXPORT_SYMBOL_GPL(nf_skb_duplicated);
 
 #ifdef CONFIG_JUMP_LABEL
+/**
+ *  决定 hook 是否生效
+ */
 struct static_key nf_hooks_needed[NFPROTO_NUMPROTO][NF_MAX_HOOKS];
 EXPORT_SYMBOL(nf_hooks_needed);
 #endif
@@ -95,24 +98,33 @@ static unsigned int accept_all(void *priv,
 	return NF_ACCEPT; /* ACCEPT makes nf_hook_slow call next hook */
 }
 
+/**
+ *  
+ */
 static const struct nf_hook_ops dummy_ops = {
-	.hook = accept_all,
-	.priority = INT_MIN,
+	dummy_ops.hook = accept_all,
+	dummy_ops.priority = INT_MIN,
 };
 
+/**
+ *  
+ */
 static struct nf_hook_entries *
 nf_hook_entries_grow(const struct nf_hook_entries *old,
-		     const struct nf_hook_ops *reg)
+		                const struct nf_hook_ops *reg)
 {
 	unsigned int i, alloc_entries, nhooks, old_entries;
 	struct nf_hook_ops **orig_ops = NULL;
 	struct nf_hook_ops **new_ops;
-	struct nf_hook_entries *new;
+	struct nf_hook_entries *rtoax_new;
 	bool inserted = false;
 
 	alloc_entries = 1;
 	old_entries = old ? old->num_hook_entries : 0;
 
+    /**
+     *  
+     */
 	if (old) {
 		orig_ops = nf_hook_entries_get_hook_ops(old);
 
@@ -122,14 +134,23 @@ nf_hook_entries_grow(const struct nf_hook_entries *old,
 		}
 	}
 
+    /**
+     *  
+     */
 	if (alloc_entries > MAX_HOOK_COUNT)
 		return ERR_PTR(-E2BIG);
 
-	new = allocate_hook_entries_size(alloc_entries);
-	if (!new)
+    /**
+     *  
+     */
+	rtoax_new = allocate_hook_entries_size(alloc_entries);
+	if (!rtoax_new)
 		return ERR_PTR(-ENOMEM);
 
-	new_ops = nf_hook_entries_get_hook_ops(new);
+    /**
+     *  
+     */
+	new_ops = nf_hook_entries_get_hook_ops(rtoax_new);
 
 	i = 0;
 	nhooks = 0;
@@ -141,12 +162,12 @@ nf_hook_entries_grow(const struct nf_hook_entries *old,
 
 		if (inserted || reg->priority > orig_ops[i]->priority) {
 			new_ops[nhooks] = (void *)orig_ops[i];
-			new->hooks[nhooks] = old->hooks[i];
+			rtoax_new->hooks[nhooks] = old->hooks[i];
 			i++;
 		} else {
 			new_ops[nhooks] = (void *)reg;
-			new->hooks[nhooks].hook = reg->hook;
-			new->hooks[nhooks].priv = reg->priv;
+			rtoax_new->hooks[nhooks].hook = reg->hook;
+			rtoax_new->hooks[nhooks].priv = reg->priv;
 			inserted = true;
 		}
 		nhooks++;
@@ -154,11 +175,11 @@ nf_hook_entries_grow(const struct nf_hook_entries *old,
 
 	if (!inserted) {
 		new_ops[nhooks] = (void *)reg;
-		new->hooks[nhooks].hook = reg->hook;
-		new->hooks[nhooks].priv = reg->priv;
+		rtoax_new->hooks[nhooks].hook = reg->hook;
+		rtoax_new->hooks[nhooks].priv = reg->priv;
 	}
 
-	return new;
+	return rtoax_new;
 }
 
 static void hooks_validate(const struct nf_hook_entries *hooks)
@@ -335,6 +356,9 @@ static int nf_ingress_check(struct net *net, const struct nf_hook_ops *reg,
 	return 0;
 }
 
+/**
+ *  
+ */
 static inline bool nf_ingress_hook(const struct nf_hook_ops *reg, int pf)
 {
 	if ((pf == NFPROTO_NETDEV && reg->hooknum == NF_NETDEV_INGRESS) ||
@@ -344,6 +368,9 @@ static inline bool nf_ingress_hook(const struct nf_hook_ops *reg, int pf)
 	return false;
 }
 
+/**
+ *  
+ */
 static void nf_static_key_inc(const struct nf_hook_ops *reg, int pf)
 {
 #ifdef CONFIG_JUMP_LABEL
@@ -359,6 +386,9 @@ static void nf_static_key_inc(const struct nf_hook_ops *reg, int pf)
 #endif
 }
 
+/**
+ *  
+ */
 static void nf_static_key_dec(const struct nf_hook_ops *reg, int pf)
 {
 #ifdef CONFIG_JUMP_LABEL
@@ -374,13 +404,18 @@ static void nf_static_key_dec(const struct nf_hook_ops *reg, int pf)
 #endif
 }
 
-static int __nf_register_net_hook(struct net *net, int pf,
-				  const struct nf_hook_ops *reg)
+/**
+ *  注册
+ */
+static int __nf_register_net_hook(struct net *net, int pf, const struct nf_hook_ops *reg)
 {
 	struct nf_hook_entries *p, *new_hooks;
 	struct nf_hook_entries __rcu **pp;
 	int err;
 
+    /**
+     *  
+     */
 	switch (pf) {
 	case NFPROTO_NETDEV:
 		err = nf_ingress_check(net, reg, NF_NETDEV_INGRESS);
@@ -397,6 +432,9 @@ static int __nf_register_net_hook(struct net *net, int pf,
 		break;
 	}
 
+    /**
+     *  
+     */
 	pp = nf_hook_entry_head(net, pf, reg->hooknum, reg->dev);
 	if (!pp)
 		return -EINVAL;
@@ -404,6 +442,10 @@ static int __nf_register_net_hook(struct net *net, int pf,
 	mutex_lock(&nf_hook_mutex);
 
 	p = nf_entry_dereference(*pp);
+
+    /**
+     *  
+     */
 	new_hooks = nf_hook_entries_grow(p, reg);
 
 	if (!IS_ERR(new_hooks))
@@ -414,10 +456,15 @@ static int __nf_register_net_hook(struct net *net, int pf,
 		return PTR_ERR(new_hooks);
 
 	hooks_validate(new_hooks);
+    
 #ifdef CONFIG_NETFILTER_INGRESS
 	if (nf_ingress_hook(reg, pf))
 		net_inc_ingress_queue();
 #endif
+    
+    /**
+     *  
+     */
 	nf_static_key_inc(reg, pf);
 
 	BUG_ON(p == new_hooks);
@@ -517,11 +564,18 @@ void nf_hook_entries_delete_raw(struct nf_hook_entries __rcu **pp,
 }
 EXPORT_SYMBOL_GPL(nf_hook_entries_delete_raw);
 
+
+/**
+ *  
+ */
 int nf_register_net_hook(struct net *net, const struct nf_hook_ops *reg)
 {
 	int err;
 
 	if (reg->pf == NFPROTO_INET) {
+        /**
+         *  
+         */
 		if (reg->hooknum == NF_INET_INGRESS) {
 			err = __nf_register_net_hook(net, NFPROTO_INET, reg);
 			if (err < 0)
@@ -537,7 +591,11 @@ int nf_register_net_hook(struct net *net, const struct nf_hook_ops *reg)
 				return err;
 			}
 		}
-	} else {
+	} 
+    /**
+     *  
+     */
+    else {
 		err = __nf_register_net_hook(net, reg->pf, reg);
 		if (err < 0)
 			return err;
@@ -547,6 +605,9 @@ int nf_register_net_hook(struct net *net, const struct nf_hook_ops *reg)
 }
 EXPORT_SYMBOL(nf_register_net_hook);
 
+/**
+ *  
+ */
 int nf_register_net_hooks(struct net *net, const struct nf_hook_ops *reg,
 			  unsigned int n)
 {

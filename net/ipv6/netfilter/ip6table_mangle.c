@@ -15,22 +15,28 @@ MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
 MODULE_DESCRIPTION("ip6tables mangle table");
 
 #define MANGLE_VALID_HOOKS ((1 << NF_INET_PRE_ROUTING) | \
-			    (1 << NF_INET_LOCAL_IN) | \
-			    (1 << NF_INET_FORWARD) | \
-			    (1 << NF_INET_LOCAL_OUT) | \
-			    (1 << NF_INET_POST_ROUTING))
+            			    (1 << NF_INET_LOCAL_IN) | \
+            			    (1 << NF_INET_FORWARD) | \
+            			    (1 << NF_INET_LOCAL_OUT) | \
+            			    (1 << NF_INET_POST_ROUTING))
 
 static int __net_init ip6table_mangle_table_init(struct net *net);
 
-static const struct xt_table packet_mangler = {
-	.name		= "mangle",
-	.valid_hooks	= MANGLE_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_IPV6,
-	.priority	= NF_IP6_PRI_MANGLE,
-	.table_init	= ip6table_mangle_table_init,
+/**
+ *  
+ */
+static const struct xt_table packet6_mangler = {
+	packet6_mangler.name		= "mangle",
+	packet6_mangler.valid_hooks	= MANGLE_VALID_HOOKS,
+	packet6_mangler.me		= THIS_MODULE,
+	packet6_mangler.af		= NFPROTO_IPV6,
+	packet6_mangler.priority	= NF_IP6_PRI_MANGLE,
+	packet6_mangler.table_init	= ip6table_mangle_table_init,
 };
 
+/**
+ *  
+ */
 static unsigned int
 ip6t_mangle_out(struct sk_buff *skb, const struct nf_hook_state *state)
 {
@@ -65,6 +71,9 @@ ip6t_mangle_out(struct sk_buff *skb, const struct nf_hook_state *state)
 	return ret;
 }
 
+/**
+ *  
+ */
 /* The work comes in here from netfilter.c. */
 static unsigned int
 ip6table_mangle_hook(void *priv, struct sk_buff *skb,
@@ -75,7 +84,10 @@ ip6table_mangle_hook(void *priv, struct sk_buff *skb,
 	return ip6t_do_table(skb, state, state->net->ipv6.ip6table_mangle);
 }
 
-static struct nf_hook_ops __read_mostly *mangle_ops ;
+/**
+ *  
+ */
+static struct nf_hook_ops __read_mostly *mangle6_ops ;
 static int __net_init ip6table_mangle_table_init(struct net *net)
 {
 	struct ip6t_replace *repl;
@@ -84,10 +96,10 @@ static int __net_init ip6table_mangle_table_init(struct net *net)
 	if (net->ipv6.ip6table_mangle)
 		return 0;
 
-	repl = ip6t_alloc_initial_table(&packet_mangler);
+	repl = ip6t_alloc_initial_table(&packet6_mangler);
 	if (repl == NULL)
 		return -ENOMEM;
-	ret = ip6t_register_table(net, &packet_mangler, repl, mangle_ops,
+	ret = ip6t_register_table(net, &packet6_mangler, repl, mangle6_ops,
 				  &net->ipv6.ip6table_mangle);
 	kfree(repl);
 	return ret;
@@ -96,8 +108,7 @@ static int __net_init ip6table_mangle_table_init(struct net *net)
 static void __net_exit ip6table_mangle_net_pre_exit(struct net *net)
 {
 	if (net->ipv6.ip6table_mangle)
-		ip6t_unregister_table_pre_exit(net, net->ipv6.ip6table_mangle,
-					       mangle_ops);
+		ip6t_unregister_table_pre_exit(net, net->ipv6.ip6table_mangle, mangle6_ops);
 }
 
 static void __net_exit ip6table_mangle_net_exit(struct net *net)
@@ -109,29 +120,32 @@ static void __net_exit ip6table_mangle_net_exit(struct net *net)
 	net->ipv6.ip6table_mangle = NULL;
 }
 
+/**
+ *  
+ */
 static struct pernet_operations ip6table_mangle_net_ops = {
-	.pre_exit = ip6table_mangle_net_pre_exit,
-	.exit = ip6table_mangle_net_exit,
+	ip6table_mangle_net_ops.pre_exit = ip6table_mangle_net_pre_exit,
+	ip6table_mangle_net_ops.exit = ip6table_mangle_net_exit,
 };
 
 static int __init ip6table_mangle_init(void)
 {
 	int ret;
 
-	mangle_ops = xt_hook_ops_alloc(&packet_mangler, ip6table_mangle_hook);
-	if (IS_ERR(mangle_ops))
-		return PTR_ERR(mangle_ops);
+	mangle6_ops = xt_hook_ops_alloc(&packet6_mangler, ip6table_mangle_hook);
+	if (IS_ERR(mangle6_ops))
+		return PTR_ERR(mangle6_ops);
 
 	ret = register_pernet_subsys(&ip6table_mangle_net_ops);
 	if (ret < 0) {
-		kfree(mangle_ops);
+		kfree(mangle6_ops);
 		return ret;
 	}
 
 	ret = ip6table_mangle_table_init(&init_net);
 	if (ret) {
 		unregister_pernet_subsys(&ip6table_mangle_net_ops);
-		kfree(mangle_ops);
+		kfree(mangle6_ops);
 	}
 	return ret;
 }
@@ -139,7 +153,7 @@ static int __init ip6table_mangle_init(void)
 static void __exit ip6table_mangle_fini(void)
 {
 	unregister_pernet_subsys(&ip6table_mangle_net_ops);
-	kfree(mangle_ops);
+	kfree(mangle6_ops);
 }
 
 module_init(ip6table_mangle_init);

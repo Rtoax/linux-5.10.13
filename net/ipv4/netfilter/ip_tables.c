@@ -33,9 +33,55 @@ MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
 MODULE_DESCRIPTION("IPv4 packet filter");
 MODULE_ALIAS("ipt_icmp");
 
+/**
+ *  
+ */
 void *ipt_alloc_initial_table(const struct xt_table *info)
 {
+#if _rtoax_____________________________
+
 	return xt_alloc_initial_table(ipt, IPT);
+
+#else //展开 
+
+	unsigned int hook_mask = info->valid_hooks; 
+	unsigned int nhooks = hweight32(hook_mask); 
+	unsigned int bytes = 0, hooknum = 0, i = 0; 
+    
+	struct { 
+		struct ipt_replace repl; 
+		struct ipt_standard entries[]; 
+	} *tbl; 
+    
+	struct ipt_error *term; 
+	size_t term_offset = (offsetof(typeof(*tbl), entries[nhooks]) + 
+		__alignof__(*term) - 1) & ~(__alignof__(*term) - 1); 
+    
+	tbl = kzalloc(term_offset + sizeof(*term), GFP_KERNEL); 
+	if (tbl == NULL) 
+		return NULL; 
+    
+	term = (struct ipt_error *)&(((char *)tbl)[term_offset]); 
+	strncpy(tbl->repl.name, info->name, sizeof(tbl->repl.name)); 
+	*term = (struct ipt_error)IPT_ERROR_INIT;  
+	tbl->repl.valid_hooks = hook_mask; 
+	tbl->repl.num_entries = nhooks + 1; 
+	tbl->repl.size = nhooks * sizeof(struct ipt_standard) + 
+			 sizeof(struct ipt_error); 
+
+    /**
+     *  
+     */
+	for (; hook_mask != 0; hook_mask >>= 1, ++hooknum) { 
+		if (!(hook_mask & 1)) 
+			continue; 
+		tbl->repl.hook_entry[hooknum] = bytes; 
+		tbl->repl.underflow[hooknum]  = bytes; 
+		tbl->entries[i++] = (struct ipt_standard)IPT_STANDARD_INIT(NF_ACCEPT); 
+		bytes += sizeof(struct ipt_standard); 
+	} 
+	return tbl; 
+#endif //_rtoax_____________________________
 }
 EXPORT_SYMBOL_GPL(ipt_alloc_initial_table);
 
@@ -1712,6 +1758,9 @@ static void __ipt_unregister_table(struct net *net, struct xt_table *table)
 	xt_free_table_info(private);
 }
 
+/**
+ *  
+ */
 int ipt_register_table(struct net *net, const struct xt_table *table,
 		       const struct ipt_replace *repl,
 		       const struct nf_hook_ops *ops, struct xt_table **res)
@@ -1729,10 +1778,16 @@ int ipt_register_table(struct net *net, const struct xt_table *table,
 	loc_cpu_entry = newinfo->entries;
 	memcpy(loc_cpu_entry, repl->entries, repl->size);
 
+    /**
+     *  
+     */
 	ret = translate_table(net, newinfo, loc_cpu_entry, repl);
 	if (ret != 0)
 		goto out_free;
 
+    /**
+     *  
+     */
 	new_table = xt_register_table(net, table, &bootstrap, newinfo);
 	if (IS_ERR(new_table)) {
 		ret = PTR_ERR(new_table);
@@ -1744,6 +1799,9 @@ int ipt_register_table(struct net *net, const struct xt_table *table,
 	if (!ops)
 		return 0;
 
+    /**
+     *  
+     */
 	ret = nf_register_net_hooks(net, ops, hweight32(table->valid_hooks));
 	if (ret != 0) {
 		__ipt_unregister_table(net, new_table);

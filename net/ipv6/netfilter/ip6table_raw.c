@@ -17,22 +17,29 @@ static bool __read_mostly raw_before_defrag ;
 MODULE_PARM_DESC(raw_before_defrag, "Enable raw table before defrag");
 module_param(raw_before_defrag, bool, 0000);
 
-static const struct xt_table packet_raw = {
-	.name = "raw",
-	.valid_hooks = RAW_VALID_HOOKS,
-	.me = THIS_MODULE,
-	.af = NFPROTO_IPV6,
-	.priority = NF_IP6_PRI_RAW,
-	.table_init = ip6table_raw_table_init,
+/**
+ *  
+ *  我把他从 `packet_raw` 改为 `packet6_raw`
+ */
+static const struct xt_table packet6_raw = {
+	packet6_raw.name = "raw",
+	packet6_raw.valid_hooks = RAW_VALID_HOOKS,
+	packet6_raw.me = THIS_MODULE,
+	packet6_raw.af = NFPROTO_IPV6,
+	packet6_raw.priority = NF_IP6_PRI_RAW,
+	packet6_raw.table_init = ip6table_raw_table_init,
 };
 
-static const struct xt_table packet_raw_before_defrag = {
-	.name = "raw",
-	.valid_hooks = RAW_VALID_HOOKS,
-	.me = THIS_MODULE,
-	.af = NFPROTO_IPV6,
-	.priority = NF_IP6_PRI_RAW_BEFORE_DEFRAG,
-	.table_init = ip6table_raw_table_init,
+/**
+ *  我把他从 `packet_raw_before_defrag` 改为 `packet6_raw_before_defrag`
+ */
+static const struct xt_table packet6_raw_before_defrag = {
+	packet6_raw_before_defrag.name = "raw",
+	packet6_raw_before_defrag.valid_hooks = RAW_VALID_HOOKS,
+	packet6_raw_before_defrag.me = THIS_MODULE,
+	packet6_raw_before_defrag.af = NFPROTO_IPV6,
+	packet6_raw_before_defrag.priority = NF_IP6_PRI_RAW_BEFORE_DEFRAG,
+	packet6_raw_before_defrag.table_init = ip6table_raw_table_init,
 };
 
 /* The work comes in here from netfilter.c. */
@@ -48,11 +55,11 @@ static struct nf_hook_ops __read_mostly *rawtable_ops ;
 static int __net_init ip6table_raw_table_init(struct net *net)
 {
 	struct ip6t_replace *repl;
-	const struct xt_table *table = &packet_raw;
+	const struct xt_table *table = &packet6_raw;
 	int ret;
 
 	if (raw_before_defrag)
-		table = &packet_raw_before_defrag;
+		table = &packet6_raw_before_defrag;
 
 	if (net->ipv6.ip6table_raw)
 		return 0;
@@ -82,17 +89,17 @@ static void __net_exit ip6table_raw_net_exit(struct net *net)
 }
 
 static struct pernet_operations ip6table_raw_net_ops = {
-	.pre_exit = ip6table_raw_net_pre_exit,
-	.exit = ip6table_raw_net_exit,
+	ip6table_raw_net_ops.pre_exit = ip6table_raw_net_pre_exit,
+	ip6table_raw_net_ops.exit = ip6table_raw_net_exit,
 };
 
 static int __init ip6table_raw_init(void)
 {
 	int ret;
-	const struct xt_table *table = &packet_raw;
+	const struct xt_table *table = &packet6_raw;
 
 	if (raw_before_defrag) {
-		table = &packet_raw_before_defrag;
+		table = &packet6_raw_before_defrag;
 
 		pr_info("Enabling raw table before defrag\n");
 	}

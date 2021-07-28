@@ -26,13 +26,13 @@ MODULE_DESCRIPTION("ip6tables security table, for MAC rules");
 
 static int __net_init ip6table_security_table_init(struct net *net);
 
-static const struct xt_table security_table = {
-	.name		= "security",
-	.valid_hooks	= SECURITY_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_IPV6,
-	.priority	= NF_IP6_PRI_SECURITY,
-	.table_init     = ip6table_security_table_init,
+static const struct xt_table security6_table = {
+	security6_table.name		= "security",
+	security6_table.valid_hooks	= SECURITY_VALID_HOOKS,
+	security6_table.me		= THIS_MODULE,
+	security6_table.af		= NFPROTO_IPV6,
+	security6_table.priority	= NF_IP6_PRI_SECURITY,
+	security6_table.table_init     = ip6table_security_table_init,
 };
 
 static unsigned int
@@ -42,7 +42,7 @@ ip6table_security_hook(void *priv, struct sk_buff *skb,
 	return ip6t_do_table(skb, state, state->net->ipv6.ip6table_security);
 }
 
-static struct nf_hook_ops __read_mostly *sectbl_ops ;
+static struct nf_hook_ops __read_mostly *sectbl6_ops ;
 
 static int __net_init ip6table_security_table_init(struct net *net)
 {
@@ -52,10 +52,10 @@ static int __net_init ip6table_security_table_init(struct net *net)
 	if (net->ipv6.ip6table_security)
 		return 0;
 
-	repl = ip6t_alloc_initial_table(&security_table);
+	repl = ip6t_alloc_initial_table(&security6_table);
 	if (repl == NULL)
 		return -ENOMEM;
-	ret = ip6t_register_table(net, &security_table, repl, sectbl_ops,
+	ret = ip6t_register_table(net, &security6_table, repl, sectbl6_ops,
 				  &net->ipv6.ip6table_security);
 	kfree(repl);
 	return ret;
@@ -65,7 +65,7 @@ static void __net_exit ip6table_security_net_pre_exit(struct net *net)
 {
 	if (net->ipv6.ip6table_security)
 		ip6t_unregister_table_pre_exit(net, net->ipv6.ip6table_security,
-					       sectbl_ops);
+					       sectbl6_ops);
 }
 
 static void __net_exit ip6table_security_net_exit(struct net *net)
@@ -85,20 +85,20 @@ static int __init ip6table_security_init(void)
 {
 	int ret;
 
-	sectbl_ops = xt_hook_ops_alloc(&security_table, ip6table_security_hook);
-	if (IS_ERR(sectbl_ops))
-		return PTR_ERR(sectbl_ops);
+	sectbl6_ops = xt_hook_ops_alloc(&security6_table, ip6table_security_hook);
+	if (IS_ERR(sectbl6_ops))
+		return PTR_ERR(sectbl6_ops);
 
 	ret = register_pernet_subsys(&ip6table_security_net_ops);
 	if (ret < 0) {
-		kfree(sectbl_ops);
+		kfree(sectbl6_ops);
 		return ret;
 	}
 
 	ret = ip6table_security_table_init(&init_net);
 	if (ret) {
 		unregister_pernet_subsys(&ip6table_security_net_ops);
-		kfree(sectbl_ops);
+		kfree(sectbl6_ops);
 	}
 	return ret;
 }
@@ -106,7 +106,7 @@ static int __init ip6table_security_init(void)
 static void __exit ip6table_security_fini(void)
 {
 	unregister_pernet_subsys(&ip6table_security_net_ops);
-	kfree(sectbl_ops);
+	kfree(sectbl6_ops);
 }
 
 module_init(ip6table_security_init);

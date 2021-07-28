@@ -17,17 +17,21 @@ MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
 MODULE_DESCRIPTION("iptables filter table");
 
 #define FILTER_VALID_HOOKS ((1 << NF_INET_LOCAL_IN) | \
-			    (1 << NF_INET_FORWARD) | \
-			    (1 << NF_INET_LOCAL_OUT))
+            			    (1 << NF_INET_FORWARD) | \
+            			    (1 << NF_INET_LOCAL_OUT))
+            			    
 static int __net_init iptable_filter_table_init(struct net *net);
 
+/**
+ *  
+ */
 static const struct xt_table packet_filter = {
-	.name		= "filter",
-	.valid_hooks	= FILTER_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_IPV4,
-	.priority	= NF_IP_PRI_FILTER,
-	.table_init	= iptable_filter_table_init,
+	packet_filter.name		= "filter",
+	packet_filter.valid_hooks	= FILTER_VALID_HOOKS,
+	packet_filter.me		= THIS_MODULE,
+	packet_filter.af		= NFPROTO_IPV4,
+	packet_filter.priority	= NF_IP_PRI_FILTER,
+	packet_filter.table_init	= iptable_filter_table_init,
 };
 
 static unsigned int
@@ -43,6 +47,9 @@ static struct nf_hook_ops __read_mostly *filter_ops ;
 static bool __read_mostly forward  = true;
 module_param(forward, bool, 0000);
 
+/**
+ *  
+ */
 static int __net_init iptable_filter_table_init(struct net *net)
 {
 	struct ipt_replace *repl;
@@ -58,14 +65,23 @@ static int __net_init iptable_filter_table_init(struct net *net)
 	((struct ipt_standard *)repl->entries)[1].target.verdict =
 		forward ? -NF_ACCEPT - 1 : -NF_DROP - 1;
 
+    /**
+     *  
+     */
 	err = ipt_register_table(net, &packet_filter, repl, filter_ops,
 				 &net->ipv4.iptable_filter);
 	kfree(repl);
 	return err;
 }
 
+/**
+ *  
+ */
 static int __net_init iptable_filter_net_init(struct net *net)
 {
+    /**
+     *  
+     */
 	if (net == &init_net || !forward)
 		return iptable_filter_table_init(net);
 
@@ -87,12 +103,18 @@ static void __net_exit iptable_filter_net_exit(struct net *net)
 	net->ipv4.iptable_filter = NULL;
 }
 
+/**
+ *  
+ */
 static struct pernet_operations iptable_filter_net_ops = {
-	.init = iptable_filter_net_init,
-	.pre_exit = iptable_filter_net_pre_exit,
-	.exit = iptable_filter_net_exit,
+	iptable_filter_net_ops.init = iptable_filter_net_init,
+	iptable_filter_net_ops.pre_exit = iptable_filter_net_pre_exit,
+	iptable_filter_net_ops.exit = iptable_filter_net_exit,
 };
 
+/**
+ *  
+ */
 static int __init iptable_filter_init(void)
 {
 	int ret;
@@ -101,6 +123,9 @@ static int __init iptable_filter_init(void)
 	if (IS_ERR(filter_ops))
 		return PTR_ERR(filter_ops);
 
+    /**
+     *  
+     */
 	ret = register_pernet_subsys(&iptable_filter_net_ops);
 	if (ret < 0)
 		kfree(filter_ops);
@@ -108,11 +133,24 @@ static int __init iptable_filter_init(void)
 	return ret;
 }
 
+/**
+ *  
+ */
 static void __exit iptable_filter_fini(void)
 {
 	unregister_pernet_subsys(&iptable_filter_net_ops);
 	kfree(filter_ops);
 }
+
+/**
+ *  [rongtao@localhost src]$ lsmod | grep iptab
+ *  iptable_nat            12875  1 
+ *  nf_nat_ipv4            14115  1 iptable_nat
+ *  iptable_mangle         12695  1 
+ *  iptable_security       12705  1 
+ *  iptable_raw            12678  1 
+ *  iptable_filter         12810  1
+ */
 
 module_init(iptable_filter_init);
 module_exit(iptable_filter_fini);

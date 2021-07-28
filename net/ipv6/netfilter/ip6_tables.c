@@ -39,7 +39,43 @@ MODULE_ALIAS("ip6t_icmp6");
 
 void *ip6t_alloc_initial_table(const struct xt_table *info)
 {
+#if _rtoax_____________________________
+    
 	return xt_alloc_initial_table(ip6t, IP6T);
+
+#else //展开 
+
+	unsigned int hook_mask = info->valid_hooks; 
+	unsigned int nhooks = hweight32(hook_mask); 
+	unsigned int bytes = 0, hooknum = 0, i = 0; 
+	struct { 
+		struct ip6t_replace repl; 
+		struct ip6t_standard entries[]; 
+	} *tbl; 
+	struct ip6t_error *term; 
+	size_t term_offset = (offsetof(typeof(*tbl), entries[nhooks]) + 
+		__alignof__(*term) - 1) & ~(__alignof__(*term) - 1); 
+	tbl = kzalloc(term_offset + sizeof(*term), GFP_KERNEL); 
+	if (tbl == NULL) 
+		return NULL; 
+	term = (struct ip6t_error *)&(((char *)tbl)[term_offset]); 
+	strncpy(tbl->repl.name, info->name, sizeof(tbl->repl.name)); 
+	*term = (struct ip6t_error)IP6T_ERROR_INIT;  
+	tbl->repl.valid_hooks = hook_mask; 
+	tbl->repl.num_entries = nhooks + 1; 
+	tbl->repl.size = nhooks * sizeof(struct ip6t_standard) + 
+			 sizeof(struct ip6t_error); 
+	for (; hook_mask != 0; hook_mask >>= 1, ++hooknum) { 
+		if (!(hook_mask & 1)) 
+			continue; 
+		tbl->repl.hook_entry[hooknum] = bytes; 
+		tbl->repl.underflow[hooknum]  = bytes; 
+		tbl->entries[i++] = (struct ip6t_standard) 
+			IP6T_STANDARD_INIT(NF_ACCEPT); 
+		bytes += sizeof(struct ip6t_standard); 
+	} 
+	return tbl; 
+#endif //_rtoax_____________________________
 }
 EXPORT_SYMBOL_GPL(ip6t_alloc_initial_table);
 

@@ -219,7 +219,11 @@ struct xt_target {
 	unsigned short family;
 };
 
-/* Furniture shopping... */
+/**
+ *  Furniture shopping... 
+ *
+ *  
+ */
 struct xt_table {
 	struct list_head list;
 
@@ -232,6 +236,7 @@ struct xt_table {
 	/* Set this to THIS_MODULE if you are a module, otherwise NULL */
 	struct module *me;
 
+    /* one of NFPROTO_IPV4, etc. */
 	u_int8_t af;		/* address/protocol family */
 	int priority;		/* hook order */
 
@@ -244,6 +249,10 @@ struct xt_table {
 
 #include <linux/netfilter_ipv4.h>
 
+
+/**
+ *  
+ */
 /* The table itself */
 struct xt_table_info {
 	/* Size per table */
@@ -264,7 +273,7 @@ struct xt_table_info {
 	unsigned int stacksize;
 	void ***jumpstack;
 
-	unsigned char entries[] __aligned(8);
+	unsigned char __aligned(8) entries[] ;
 };
 
 int xt_register_target(struct xt_target *target);

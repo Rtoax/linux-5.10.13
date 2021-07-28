@@ -329,6 +329,10 @@ int peernet2id(const struct net *net, struct net *peer);
 bool peernet_has_id(const struct net *net, struct net *peer);
 struct net *get_net_ns_by_id(const struct net *net, int id);
 
+/**
+ *  pernet_operations包含init和exit函数，
+ *  init函数在创建netnamespace时调用，exit在销毁netnamespace时调用
+ */
 struct pernet_operations {  /*  */
 	struct list_head list;
 	/*
@@ -357,6 +361,7 @@ struct pernet_operations {  /*  */
 	void (*pre_exit)(struct net *net);
 	void (*exit)(struct net *net);
 	void (*exit_batch)(struct list_head *net_exit_list);
+    
 	unsigned int *id;
 	size_t size;
 };

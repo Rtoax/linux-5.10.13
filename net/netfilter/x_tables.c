@@ -1357,13 +1357,16 @@ struct xt_table_info
 }
 EXPORT_SYMBOL(xt_table_get_private_protected);
 
-struct xt_table_info *
-xt_replace_table(struct xt_table *table,
-	      unsigned int num_counters,
-	      struct xt_table_info *newinfo,
-	      int *error)
+
+/**
+ *  
+ */
+struct xt_table_info *xt_replace_table(struct xt_table *table,
+                                	      unsigned int num_counters,
+                                	      struct xt_table_info *newinfo,
+                                	      int *error)
 {
-	struct xt_table_info *private;
+	struct xt_table_info *_private;
 	int ret;
 
 	ret = xt_jumpstack_alloc(newinfo);
@@ -1373,36 +1376,37 @@ xt_replace_table(struct xt_table *table,
 	}
 
 	/* Do the substitution. */
-	private = xt_table_get_private_protected(table);
+	_private = xt_table_get_private_protected(table);
 
 	/* Check inside lock: is the old number correct? */
-	if (num_counters != private->number) {
+	if (num_counters != _private->number) {
 		pr_debug("num_counters != table->private->number (%u/%u)\n",
-			 num_counters, private->number);
+			 num_counters, _private->number);
 		*error = -EAGAIN;
 		return NULL;
 	}
 
-	newinfo->initial_entries = private->initial_entries;
+	newinfo->initial_entries = _private->initial_entries;
 
 	rcu_assign_pointer(table->private, newinfo);
 	synchronize_rcu();
 
-	audit_log_nfcfg(table->name, table->af, private->number,
-			!private->number ? AUDIT_XT_OP_REGISTER :
-					   AUDIT_XT_OP_REPLACE,
-			GFP_KERNEL);
-	return private;
+	audit_log_nfcfg(table->name, table->af, _private->number,
+			!_private->number ? AUDIT_XT_OP_REGISTER : AUDIT_XT_OP_REPLACE, GFP_KERNEL);
+	return _private;
 }
 EXPORT_SYMBOL_GPL(xt_replace_table);
 
+/**
+ *  
+ */
 struct xt_table *xt_register_table(struct net *net,
-				   const struct xt_table *input_table,
-				   struct xt_table_info *bootstrap,
-				   struct xt_table_info *newinfo)
+                    				   const struct xt_table *input_table,
+                    				   struct xt_table_info *bootstrap,
+                    				   struct xt_table_info *newinfo)
 {
 	int ret;
-	struct xt_table_info *private;
+	struct xt_table_info *_private;
 	struct xt_table *t, *table;
 
 	/* Don't add one object to multiple lists. */
@@ -1413,6 +1417,10 @@ struct xt_table *xt_register_table(struct net *net,
 	}
 
 	mutex_lock(&xt[table->af].mutex);
+
+    /**
+     *  
+     */
 	/* Don't autoload: we'd eat our tail... */
 	list_for_each_entry(t, &net->xt.tables[table->af], list) {
 		if (strcmp(t->name, table->name) == 0) {
@@ -1427,12 +1435,18 @@ struct xt_table *xt_register_table(struct net *net,
 	if (!xt_replace_table(table, 0, newinfo, &ret))
 		goto unlock;
 
-	private = xt_table_get_private_protected(table);
-	pr_debug("table->private->number = %u\n", private->number);
+    /**
+     *  
+     */
+	_private = xt_table_get_private_protected(table);
+	pr_debug("table->private->number = %u\n", _private->number);
 
 	/* save number of initial entries */
-	private->initial_entries = private->number;
+	_private->initial_entries = _private->number;
 
+    /**
+     *  
+     */
 	list_add(&table->list, &net->xt.tables[table->af]);
 	mutex_unlock(&xt[table->af].mutex);
 	return table;

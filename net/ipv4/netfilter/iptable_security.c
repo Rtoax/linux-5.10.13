@@ -22,18 +22,21 @@ MODULE_AUTHOR("James Morris <jmorris <at> redhat.com>");
 MODULE_DESCRIPTION("iptables security table, for MAC rules");
 
 #define SECURITY_VALID_HOOKS	(1 << NF_INET_LOCAL_IN) | \
-				(1 << NF_INET_FORWARD) | \
-				(1 << NF_INET_LOCAL_OUT)
+                				(1 << NF_INET_FORWARD) | \
+                				(1 << NF_INET_LOCAL_OUT)
 
 static int __net_init iptable_security_table_init(struct net *net);
 
+/**
+ *  
+ */
 static const struct xt_table security_table = {
-	.name		= "security",
-	.valid_hooks	= SECURITY_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_IPV4,
-	.priority	= NF_IP_PRI_SECURITY,
-	.table_init	= iptable_security_table_init,
+	security_table.name		= "security",
+	security_table.valid_hooks	= SECURITY_VALID_HOOKS,
+	security_table.me		= THIS_MODULE,
+	security_table.af		= NFPROTO_IPV4,
+	security_table.priority	= NF_IP_PRI_SECURITY,
+	security_table.table_init	= iptable_security_table_init,
 };
 
 static unsigned int
@@ -45,6 +48,9 @@ iptable_security_hook(void *priv, struct sk_buff *skb,
 
 static struct nf_hook_ops __read_mostly *sectbl_ops ;
 
+/**
+ *  
+ */
 static int __net_init iptable_security_table_init(struct net *net)
 {
 	struct ipt_replace *repl;
@@ -56,17 +62,23 @@ static int __net_init iptable_security_table_init(struct net *net)
 	repl = ipt_alloc_initial_table(&security_table);
 	if (repl == NULL)
 		return -ENOMEM;
+
+    /**
+     *  
+     */
 	ret = ipt_register_table(net, &security_table, repl, sectbl_ops,
 				 &net->ipv4.iptable_security);
 	kfree(repl);
 	return ret;
 }
 
+/**
+ *  
+ */
 static void __net_exit iptable_security_net_pre_exit(struct net *net)
 {
 	if (net->ipv4.iptable_security)
-		ipt_unregister_table_pre_exit(net, net->ipv4.iptable_security,
-					      sectbl_ops);
+		ipt_unregister_table_pre_exit(net, net->ipv4.iptable_security, sectbl_ops);
 }
 
 static void __net_exit iptable_security_net_exit(struct net *net)
@@ -78,10 +90,13 @@ static void __net_exit iptable_security_net_exit(struct net *net)
 }
 
 static struct pernet_operations iptable_security_net_ops = {
-	.pre_exit = iptable_security_net_pre_exit,
-	.exit = iptable_security_net_exit,
+	iptable_security_net_ops.pre_exit = iptable_security_net_pre_exit,
+	iptable_security_net_ops.exit = iptable_security_net_exit,
 };
 
+/**
+ *  
+ */
 static int __init iptable_security_init(void)
 {
 	int ret;
@@ -90,6 +105,9 @@ static int __init iptable_security_init(void)
 	if (IS_ERR(sectbl_ops))
 		return PTR_ERR(sectbl_ops);
 
+    /**
+     *  
+     */
 	ret = register_pernet_subsys(&iptable_security_net_ops);
 	if (ret < 0) {
 		kfree(sectbl_ops);
@@ -105,11 +123,25 @@ static int __init iptable_security_init(void)
 	return ret;
 }
 
+/**
+ *  
+ */
 static void __exit iptable_security_fini(void)
 {
 	unregister_pernet_subsys(&iptable_security_net_ops);
 	kfree(sectbl_ops);
 }
+
+/**
+ *  [rongtao@localhost src]$ lsmod | grep iptab
+ *  iptable_nat            12875  1 
+ *  nf_nat_ipv4            14115  1 iptable_nat
+ *  iptable_mangle         12695  1 
+ *  iptable_security       12705  1 
+ *  iptable_raw            12678  1 
+ *  iptable_filter         12810  1
+ */
+
 
 module_init(iptable_security_init);
 module_exit(iptable_security_fini);

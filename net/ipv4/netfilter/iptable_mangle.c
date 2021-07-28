@@ -19,21 +19,28 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
 MODULE_DESCRIPTION("iptables mangle table");
 
+/**
+ *  mangle表的主要功能是根据规则修改数据包的一些标志位，
+ *  以便其他规则或程序可以利用这种标志对数据包进行过滤或策略路由。
+ */
 #define MANGLE_VALID_HOOKS ((1 << NF_INET_PRE_ROUTING) | \
-			    (1 << NF_INET_LOCAL_IN) | \
-			    (1 << NF_INET_FORWARD) | \
-			    (1 << NF_INET_LOCAL_OUT) | \
-			    (1 << NF_INET_POST_ROUTING))
+            			    (1 << NF_INET_LOCAL_IN) | \
+            			    (1 << NF_INET_FORWARD) | \
+            			    (1 << NF_INET_LOCAL_OUT) | \
+            			    (1 << NF_INET_POST_ROUTING))
 
 static int __net_init iptable_mangle_table_init(struct net *net);
 
+/**
+ *  
+ */
 static const struct xt_table packet_mangler = {
-	.name		= "mangle",
-	.valid_hooks	= MANGLE_VALID_HOOKS,
-	.me		= THIS_MODULE,
-	.af		= NFPROTO_IPV4,
-	.priority	= NF_IP_PRI_MANGLE,
-	.table_init	= iptable_mangle_table_init,
+	packet_mangler.name		= "mangle",
+	packet_mangler.valid_hooks	= MANGLE_VALID_HOOKS,
+	packet_mangler.me		= THIS_MODULE,
+	packet_mangler.af		= NFPROTO_IPV4,
+	packet_mangler.priority	= NF_IP_PRI_MANGLE,
+	packet_mangler.table_init	= iptable_mangle_table_init,
 };
 
 static unsigned int
@@ -82,6 +89,9 @@ iptable_mangle_hook(void *priv,
 	return ipt_do_table(skb, state, state->net->ipv4.iptable_mangle);
 }
 
+/**
+ *  
+ */
 static struct nf_hook_ops __read_mostly *mangle_ops ;
 static int __net_init iptable_mangle_table_init(struct net *net)
 {
@@ -91,22 +101,34 @@ static int __net_init iptable_mangle_table_init(struct net *net)
 	if (net->ipv4.iptable_mangle)
 		return 0;
 
+    /**
+     *  
+     */
 	repl = ipt_alloc_initial_table(&packet_mangler);
 	if (repl == NULL)
 		return -ENOMEM;
+
+    /**
+     *  
+     */
 	ret = ipt_register_table(net, &packet_mangler, repl, mangle_ops,
-				 &net->ipv4.iptable_mangle);
+				                &net->ipv4.iptable_mangle);
 	kfree(repl);
 	return ret;
 }
 
+/**
+ *  
+ */
 static void __net_exit iptable_mangle_net_pre_exit(struct net *net)
 {
 	if (net->ipv4.iptable_mangle)
-		ipt_unregister_table_pre_exit(net, net->ipv4.iptable_mangle,
-					      mangle_ops);
+		ipt_unregister_table_pre_exit(net, net->ipv4.iptable_mangle, mangle_ops);
 }
 
+/**
+ *  
+ */
 static void __net_exit iptable_mangle_net_exit(struct net *net)
 {
 	if (!net->ipv4.iptable_mangle)
@@ -115,11 +137,18 @@ static void __net_exit iptable_mangle_net_exit(struct net *net)
 	net->ipv4.iptable_mangle = NULL;
 }
 
+/**
+ *  
+ */
 static struct pernet_operations iptable_mangle_net_ops = {
-	.pre_exit = iptable_mangle_net_pre_exit,
-	.exit = iptable_mangle_net_exit,
+	iptable_mangle_net_ops.pre_exit = iptable_mangle_net_pre_exit,
+	iptable_mangle_net_ops.exit = iptable_mangle_net_exit,
 };
 
+/**
+ *  mangle表的主要功能是根据规则修改数据包的一些标志位，
+ *  以便其他规则或程序可以利用这种标志对数据包进行过滤或策略路由。
+ */
 static int __init iptable_mangle_init(void)
 {
 	int ret;
@@ -145,11 +174,26 @@ static int __init iptable_mangle_init(void)
 	return ret;
 }
 
+/**
+ *  mangle表的主要功能是根据规则修改数据包的一些标志位，
+ *  以便其他规则或程序可以利用这种标志对数据包进行过滤或策略路由。
+ */
 static void __exit iptable_mangle_fini(void)
 {
 	unregister_pernet_subsys(&iptable_mangle_net_ops);
 	kfree(mangle_ops);
 }
+
+/**
+ *  [rongtao@localhost src]$ lsmod | grep iptab
+ *  iptable_nat            12875  1 
+ *  nf_nat_ipv4            14115  1 iptable_nat
+ *  iptable_mangle         12695  1 
+ *  iptable_security       12705  1 
+ *  iptable_raw            12678  1 
+ *  iptable_filter         12810  1
+ */
+
 
 module_init(iptable_mangle_init);
 module_exit(iptable_mangle_fini);
