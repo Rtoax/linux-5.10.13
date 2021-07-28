@@ -160,12 +160,18 @@ do {						\
  */
 #ifdef CONFIG_TRACE_IRQFLAGS/* trace  */
 
+/**
+ *  sti 指令开启本地CPU中断
+ */
 #define local_irq_enable()				\
 	do {						\
 		trace_hardirqs_on();			\
 		raw_local_irq_enable();			\
 	} while (0)
 
+/**
+ *  cli 指令关闭本地CPU中断
+ */
 #define local_irq_disable()	/* 关中断 */			\
 	do {						\
 		bool was_disabled = raw_irqs_disabled();\
@@ -174,6 +180,9 @@ do {						\
 			trace_hardirqs_off();		\
 	} while (0)
 
+/**
+ *  保存 eflags
+ */
 #define local_irq_save(flags)				\
 	do {						\
 		raw_local_irq_save(flags);		\
@@ -181,6 +190,9 @@ do {						\
 			trace_hardirqs_off();		\
 	} while (0)
 
+/**
+ *  恢复 eflags
+ */
 #define local_irq_restore(flags)			\
 	do {						\
 		if (!raw_irqs_disabled_flags(flags))	\
@@ -188,6 +200,9 @@ do {						\
 		raw_local_irq_restore(flags);		\
 	} while (0)
 
+/**
+ *  
+ */
 #define safe_halt()				\
 	do {					\
 		trace_hardirqs_on();		\
@@ -213,6 +228,9 @@ do {						\
  * to avoid build issues.
  */
 #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+/**
+ *  查看本地中断传递是否被禁止.
+ */
 #define irqs_disabled()					\
 	({						\
 		unsigned long _flags;			\
@@ -220,7 +238,7 @@ do {						\
 		raw_irqs_disabled_flags(_flags);	\
 	})
 #else /* !CONFIG_TRACE_IRQFLAGS_SUPPORT */
-//#define irqs_disabled()	raw_irqs_disabled()
+#define irqs_disabled()	raw_irqs_disabled()
 #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
 
 #define irqs_disabled_flags(flags) raw_irqs_disabled_flags(flags)

@@ -321,7 +321,9 @@ static __always_inline raw_spinlock_t *spinlock_check(spinlock_t *lock)
 }
 
 #ifdef CONFIG_DEBUG_SPINLOCK
-
+/**
+ *  该宏用于初始化自旋锁x。自旋锁在真正使用前必须先初始化。该宏用于动态初始化。
+ */
 # define spin_lock_init(lock)					\
 do {								\
 	static struct lock_class_key __key;			\
@@ -332,6 +334,9 @@ do {								\
 
 #else
 
+/**
+ *  该宏用于初始化自旋锁x。自旋锁在真正使用前必须先初始化。该宏用于动态初始化。
+ */
 # define spin_lock_init(_lock)			\
 do {						\
 	spinlock_check(_lock);			\
@@ -340,16 +345,35 @@ do {						\
 
 #endif
 
+/**
+ *  该宏用于获得自旋锁lock，如果能够立即获得锁，它就马上返回，否则，它将自旋在那里，直到该自旋锁的保持者释放
+ *
+ *  使用：进程上下文与进程上下文之间；
+ *        中段下半部与中断下半部之间：
+ *           1) 软中断与软中断之间  (同类型或不同类型的软中断可以同时运行在一个系统的多个处理器上,在同一个核上当然不能同时运行)
+ *           2) 不同类型的tasklet之间（此处只写明是不同类型的tasklet之间，因为同类型的tasklet不可能同时运行）
+ */
 static __always_inline void spin_lock(spinlock_t *lock)
 {
 	raw_spin_lock(&lock->rlock);
 }
 
+
+/**
+ *  该宏在得到自旋锁的同时失效本地软中断。
+ *
+ *  使用：
+ */
 static __always_inline void spin_lock_bh(spinlock_t *lock)
 {
 	raw_spin_lock_bh(&lock->rlock);
 }
 
+/**
+ *  该宏尽力获得自旋锁lock，如果能立即获得锁，它获得锁并返回真，否则不能立即获得锁，立即返回假。
+ *
+ *  使用：
+ */
 static __always_inline int spin_trylock(spinlock_t *lock)
 {
 	return raw_spin_trylock(&lock->rlock);
@@ -365,51 +389,108 @@ do {									\
 	raw_spin_lock_nest_lock(spinlock_check(lock), nest_lock);	\
 } while (0)
 
+/**
+ *  该宏类似于spin_lock_irqsave，只是该宏不保存标志寄存器的值。
+ *
+ *  使用：进程上下文与中断上半部之间：中断上半部与中断上半部之间：中断上半部与中断下半部之间：
+ */
 static __always_inline void spin_lock_irq(spinlock_t *lock)
 {
 	raw_spin_lock_irq(&lock->rlock);
 }
 
+/**
+ *  该宏获得自旋锁的同时把标志寄存器的值保存到变量flags中并失效本地中断。
+ *
+ *  使用：进程上下文与中断上半部之间：中断上半部与中断上半部之间：中断上半部与中断下半部之间：
+ */
 #define spin_lock_irqsave(lock, flags)				\
 do {								\
 	raw_spin_lock_irqsave(spinlock_check(lock), flags);	\
 } while (0)
 
+/**
+ *  
+ *
+ *  使用：
+ */
 #define spin_lock_irqsave_nested(lock, flags, subclass)			\
 do {									\
 	raw_spin_lock_irqsave_nested(spinlock_check(lock), flags, subclass); \
 } while (0)
 
+/**
+ *  该宏释放自旋锁lock，它与spin_trylock或spin_lock配对使用。
+ *
+ *  使用：
+ */
 static __always_inline void spin_unlock(spinlock_t *lock)
 {
 	raw_spin_unlock(&lock->rlock);
 }
 
+/**
+ *  该宏释放自旋锁lock的同时，也使能本地的软中断。它与spin_lock_bh配对使用。
+ *
+ *  使用：进程上下文与中断下半部之间：
+ */
 static __always_inline void spin_unlock_bh(spinlock_t *lock)
 {
 	raw_spin_unlock_bh(&lock->rlock);
 }
 
+/**
+ *  该宏释放自旋锁lock的同时，也使能本地中断。它与spin_lock_irq配对应用。
+ *
+ *  使用：
+ */
 static __always_inline void spin_unlock_irq(spinlock_t *lock)
 {
 	raw_spin_unlock_irq(&lock->rlock);
 }
 
+/**
+ *  该宏释放自旋锁lock的同时，也恢复标志寄存器的值为变量flags保存的值。它与spin_lock_irqsave配对使用。
+ *
+ *  使用：
+ */
 static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 {
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
+/**
+ *  该宏如果获得了自旋锁，它也将失效本地软中断。如果得不到锁，它什么也不做。
+ *  因此，如果得到了锁，它等同于spin_lock_bh，如果得不到锁，它等同于spin_trylock。
+ *  如果该宏得到了自旋锁，需要使用spin_unlock_bh来释放。
+ *
+ *  使用：
+ */
 static __always_inline int spin_trylock_bh(spinlock_t *lock)
 {
 	return raw_spin_trylock_bh(&lock->rlock);
 }
 
+/**
+ *  该宏类似于spin_trylock_irqsave，只是该宏不保存标志寄存器。
+ *  如果该宏获得自旋锁lock，需要使用spin_unlock_irq来释放。
+ *
+ *  使用：
+ */
 static __always_inline int spin_trylock_irq(spinlock_t *lock)
 {
 	return raw_spin_trylock_irq(&lock->rlock);
 }
 
+/**
+ *  该宏如果获得自旋锁lock，它也将保存标志寄存器的值到变量flags中，并且失效本地中断，
+ *  如果没有获得锁，它什么也不做。
+ *
+ *  因此如果能够立即获得锁，它等同于spin_lock_irqsave，如果不能获得锁，它等同于spin_trylock。
+ *  如果该宏获得自旋锁lock，那需要使用spin_unlock_irqrestore来释放。
+ *
+ *  使用：
+ */
 #define spin_trylock_irqsave(lock, flags)			\
 ({								\
 	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \
@@ -432,6 +513,8 @@ static __always_inline int spin_trylock_irq(spinlock_t *lock)
  * Further, on CONFIG_SMP=n builds with CONFIG_DEBUG_SPINLOCK=n,
  * the return value is always 0 (see include/linux/spinlock_up.h).
  * Therefore you should not rely heavily on the return value.
+ *
+ *  使用：
  */
 static __always_inline int spin_is_locked(spinlock_t *lock)
 {
