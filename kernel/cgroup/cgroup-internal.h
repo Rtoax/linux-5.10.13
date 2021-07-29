@@ -85,7 +85,11 @@ struct cgrp_cset_link {
 	struct list_head	cgrp_link;
 };
 
-/* used to track tasks and csets during migration */
+/**
+ *  used to track tasks and csets during migration 
+ *
+ *  组调度的进程集合
+ */
 struct cgroup_taskset {
 	/* the src and dst cset list running through cset->mg_node */
 	struct list_head	src_csets;

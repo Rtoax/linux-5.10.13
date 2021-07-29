@@ -8123,6 +8123,9 @@ void sched_offline_group(struct task_group *tg)
 	spin_unlock_irqrestore(&task_group_lock, flags);
 }
 
+/**
+ *  
+ */
 static void sched_change_group(struct task_struct *tsk, int type)
 {
 	struct task_group *tg;
@@ -8132,16 +8135,26 @@ static void sched_change_group(struct task_struct *tsk, int type)
 	 * which is pointless here. Thus, we pass "true" to task_css_check()
 	 * to prevent lockdep warnings.
 	 */
-	tg = container_of(task_css_check(tsk, cpu_cgrp_id, true),
-			  struct task_group, css);
-	tg = autogroup_task_group(tsk, tg);
+	tg = container_of(task_css_check(tsk, cpu_cgrp_id, true), struct task_group, css);
+
+    /**
+     *  
+     */
+    tg = autogroup_task_group(tsk, tg);
+    
 	tsk->sched_task_group = tg;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+    /**
+     *  task_change_group_fair()
+     */
 	if (tsk->sched_class->task_change_group)
 		tsk->sched_class->task_change_group(tsk, type);
 	else
 #endif
+        /**
+         *  
+         */
 		set_task_rq(tsk, task_cpu(tsk));
 }
 
@@ -8151,6 +8164,9 @@ static void sched_change_group(struct task_struct *tsk, int type)
  * The caller of this function should have put the task in its new group by
  * now. This function just updates tsk->se.cfs_rq and tsk->se.parent to reflect
  * its new group.
+ *
+ * 修改 task 运行队列，当 task 在两个 cgroup 之间移动时
+ * 将进程迁移到 组调度中
  */
 void sched_move_task(struct task_struct *tsk)
 {
@@ -8162,14 +8178,31 @@ void sched_move_task(struct task_struct *tsk)
 	rq = task_rq_lock(tsk, &rf);
 	update_rq_clock(rq);
 
+    /**
+     *  进程是否正在运行
+     */
 	running = task_current(rq, tsk);
+
+    /**
+     *  是否在就绪队列里或者正在运行
+     */
 	queued = task_on_rq_queued(tsk);
 
+    /**
+     *  如果进程处于就绪态，暂时先退出就绪队列
+     */
 	if (queued)
 		dequeue_task(rq, tsk, queue_flags);
+
+    /**
+     *  如果进程正在运行，刚才已经调度 dequeue_task 将其移出就绪队列，在把他添加入就绪队列
+     */
 	if (running)
 		put_prev_task(rq, tsk);
 
+    /**
+     *  
+     */
 	sched_change_group(tsk, TASK_MOVE_GROUP);
 
 	if (queued)
@@ -8292,13 +8325,23 @@ static int cpu_cgroup_can_attach(struct cgroup_taskset *tset)
 	return ret;
 }
 
+/**
+ *  添加到 组调度
+ */
 static void cpu_cgroup_attach(struct cgroup_taskset *tset)
 {
 	struct task_struct *task;
 	struct cgroup_subsys_state *css;
 
-	cgroup_taskset_for_each(task, css, tset)
+    /**
+     *  
+     */
+	cgroup_taskset_for_each(task, css, tset) {
+	    /**
+         *  将进程迁移到组调度中
+         */
 		sched_move_task(task);
+    }
 }
 
 #ifdef CONFIG_UCLAMP_TASK_GROUP

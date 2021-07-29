@@ -471,6 +471,10 @@ struct sched_avg {  /*  */
 	struct util_est			util_est;   /* 评估利用率 */
 } ____cacheline_aligned;
 
+
+/**
+ *  
+ */
 struct sched_statistics {   /* 调度统计 */
 #ifdef CONFIG_SCHEDSTATS
 	u64				wait_start;
@@ -808,6 +812,7 @@ struct task_struct {    /* PCB */
      *  标识进程正处于运行状态
      */
 	int				on_cpu;
+    
 	struct __call_single_node	wake_entry;
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* Current CPU: */
@@ -844,7 +849,8 @@ struct task_struct {    /* PCB */
 #endif
 
     /**
-     *  是否在运行队列里，用于设置进程的状态，支持的状态如下：
+     *  是否在运行队列里，用于设置进程的状态，标识调度实体是否在就绪队列中接收调度。
+     *  支持的状态如下：
      *
      *  TASK_ON_RQ_QUEUED       进程正在就绪队列中运行
      *  TASK_ON_RQ_MIGRATING    处于迁移过程中的进程，它可能不在就绪队列里
@@ -1373,12 +1379,19 @@ struct task_struct {    /* PCB */
 	int				cpuset_mem_spread_rotor;
 	int				cpuset_slab_spread_rotor;
 #endif
+
 #ifdef CONFIG_CGROUPS
 	/* Control Group info protected by css_set_lock: 
 	    通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup` */
 	struct css_set __rcu		*cgroups;   //cgroup subsys state
-	/* cg_list protected by css_set_lock and tsk->alloc_lock: */
+
+    /**
+	 *  cg_list protected by css_set_lock and tsk->alloc_lock: 
+	 *
+	 *  该链表的头为 struct css_set.mg_tasks
+	 */
 	struct list_head		cg_list;
+    
 #endif
 #ifdef CONFIG_X86_CPU_RESCTRL
 	u32				closid;
@@ -2214,6 +2227,9 @@ static __always_inline bool need_resched(void)
  */
 #ifdef CONFIG_SMP
 
+/**
+ *  
+ */
 static inline unsigned int task_cpu(const struct task_struct *p)
 {
 #ifdef CONFIG_THREAD_INFO_IN_TASK

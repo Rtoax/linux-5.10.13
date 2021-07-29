@@ -1298,6 +1298,10 @@ struct rq __percpu runqueues; //+++
  *  
  */
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
+
+/**
+ *  每CPU 的 就绪队列
+ */
 #define this_rq()		this_cpu_ptr(&runqueues)
 #define task_rq(p)		cpu_rq(task_cpu(p))
 #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
@@ -1886,6 +1890,9 @@ static inline u64 global_rt_runtime(void)
 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
 }
 
+/**
+ *  进程是否正在运行
+ */
 static inline int task_current(struct rq *rq, struct task_struct *p)
 {
 	return rq->curr == p;
@@ -1900,11 +1907,17 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
 #endif
 }
 
+/**
+ *  是否在就绪队列里或者正在运行
+ */
 static inline int task_on_rq_queued(struct task_struct *p)
 {
 	return p->on_rq == TASK_ON_RQ_QUEUED;
 }
 
+/**
+ *  进程正在迁移中
+ */
 static inline int task_on_rq_migrating(struct task_struct *p)
 {
 	return READ_ONCE(p->on_rq) == TASK_ON_RQ_MIGRATING;
@@ -2129,7 +2142,7 @@ struct sched_class {    /* 调度类 *//*  */
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
     /**
-     *  
+     *  task_change_group_fair()
      */
 	void (*task_change_group)(struct task_struct *p, int type);
 #endif
