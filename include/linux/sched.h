@@ -367,6 +367,10 @@ struct sched_info {
 
 /* Increase resolution of cpu_capacity calculations */
 # define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
+
+/**
+ *  处理器的额定算力 默认值 1024
+ */
 # define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
 
 //represent actual load weight of a scheduler entity and its invariant(不变量) value
@@ -457,16 +461,58 @@ struct util_est {   /* 评估利用率 */
  * Then it is the load_weight's responsibility to consider overflow
  * issues.
  *
- * 抽象一个se或者cfs rq的平均负载
+ * 抽象一个se或者cfs rq的平均负载信息
  */
 struct sched_avg {  /*  */
+
+    /**
+     *  上一次 更新 时间点，用于计算时间间隔
+     */
 	u64				last_update_time;   /*  */
+
+    /**
+     *  对于调度实体和调度队列来说，这个数值是有区别的
+     *  对于调度实体：它统计的仅仅是时间；
+     *  对于调度队列：它统计的是工作负载，即 时间 * 权重
+     */
 	u64				load_sum;           /*  */
+
+    /**
+     *  对于调度实体：它是在就绪队列里可运行状态下的累计衰减总时间
+     *  对于调度队列：它统计就绪队列里所有可运行状态下进程的累计工作总负载
+     */
 	u64				runnable_sum;       /*  */
+
+    /**
+     *  调度实体：正在运行状态下的累计衰减总时间，使用 cfs_rq->curr == se 判断当前进程是否正在运行
+     *  调度队列：整个就绪队列中所有处于运行状态进程的累计衰减总时间，
+     *              只要就绪队列里有正在运行的进程，他就会计算和累加
+     */
 	u32				util_sum;           /*  */
+
+    /**
+     *  存放 上一次时间采样时，不能凑成一个 周期 1024us 的剩余时间
+     */
 	u32				period_contrib;     /*  */
+
+    /**
+     *  对于调度实体来说：它是可运行状态下的量化负载。在负载均衡算法中，使用该成员来衡量一个进程的负载共享值
+     *                      如衡量迁移进程的负载量
+     *  对于调度队列来说：它是调度队列中总的量化负载
+     */
 	unsigned long			load_avg;       /* runnable% * scale_load_down(load) */
+
+    /**
+     *  对于调度实体来说：它是可运行状态下的量化负载，等于 load_avg
+     *  对于调度队列来说：它统计就绪队列里所有可运行状态下进程的总量化负载，在 SMP 负载均衡算法中，该成员来
+     *                      比较CPU 的负载大小(用于衡量 CPU 是否繁忙)
+     */
 	unsigned long			runnable_avg;   /* runnable% * SCHED_CAPACITY_SCALE */
+
+    /**
+     *  实际算力
+     *  通常用于体现一个调度实体或者 CPU 的实际算力需求，类似于 CPU 使用率的概念。
+     */
 	unsigned long			util_avg;       /* running% * SCHED_CAPACITY_SCALE */
 	struct util_est			util_est;   /* 评估利用率 */
 } ____cacheline_aligned;

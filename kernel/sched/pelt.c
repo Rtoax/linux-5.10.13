@@ -31,12 +31,17 @@
 /*
  * Approximate:
  *   val * y^n,    where y^32 ~= 0.5 (~1 scheduling period)
+ *
+ * 计算第 n 个周期的衰减值
  */
 static u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
-	if (unlikely(n > LOAD_AVG_PERIOD * 63))
+    /**
+     *  如果时间 > 2016ms
+     */
+	if (unlikely(n > LOAD_AVG_PERIOD * 63/* 63*32ms = 2016ms */))
 		return 0;
 
 	/* after bounds checking we can collapse to 32-bit */
@@ -48,12 +53,23 @@ static u64 decay_load(u64 val, u64 n)
 	 * With a look-up table which covers y^n (n<PERIOD)
 	 *
 	 * To achieve constant time decay_load.
+	 *
+	 * 如果在 32ms - 2016ms 之间，每增加 32ms 就要 衰减 1/2 (右移)
 	 */
-	if (unlikely(local_n >= LOAD_AVG_PERIOD)) {
+	if (unlikely(local_n >= LOAD_AVG_PERIOD/*32*/)) {
 		val >>= local_n / LOAD_AVG_PERIOD;
 		local_n %= LOAD_AVG_PERIOD;
 	}
 
+    /**
+     *  此时 val < 32
+     */
+    /**
+     *  val = (val*runnable_avg_yN_inv[local_n]>>32)
+     *
+     *  例
+     *  (100*runnable_avg_yN_inv[31]>>32) = 51
+     */
 	val = mul_u64_u32_shr(val, runnable_avg_yN_inv[local_n], 32);
 	return val;
 }
@@ -64,7 +80,9 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 
 	/*
 	 * c1 = d1 y^p
-	 */
+     *
+     * 计算第 n 个周期的衰减值
+     */
 	c1 = decay_load((u64)d1, periods);
 
 	/*
@@ -116,9 +134,11 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	 * Step 1: decay old *_sum if we crossed period boundaries.
 	 */
 	if (periods) {
+        /**
+         * 计算第 n 个周期的衰减值
+         */
 		sa->load_sum = decay_load(sa->load_sum, periods);
-		sa->runnable_sum =
-			decay_load(sa->runnable_sum, periods);
+		sa->runnable_sum = decay_load(sa->runnable_sum, periods);
 		sa->util_sum = decay_load((u64)(sa->util_sum), periods);
 
 		/*
@@ -199,11 +219,16 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	/*
 	 * Use 1024ns as the unit of measurement since it's a reasonable
 	 * approximation of 1us and fast to compute.
+	 *
+	 * 计算有多少个 1024ns 周期 
 	 */
 	delta >>= 10;
 	if (!delta)
 		return 0;
 
+    /**
+	 *  
+	 */
 	sa->last_update_time += delta << 10;
 
 	/*
