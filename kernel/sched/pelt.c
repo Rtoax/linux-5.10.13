@@ -104,10 +104,10 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
  * of the last (incomplete) period, d2 the span of full periods and d3
  * the remainder of the (incomplete) current period.
  *
- *           d1          d2           d3
- *           ^           ^            ^
- *           |           |            |
- *         |<->|<----------------->|<--->|
+ *      d0   d1          d2           d3
+ *       ^   ^           ^            ^
+ *       |   |           |            |
+ *     |<->|<->|<----------------->|<--->|
  * ... |---x---|------| ... |------|-----x (now)
  *
  *                           p-1
@@ -119,6 +119,8 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
  *                     p-1
  *      d1 y^p + 1024 \Sum y^n + d3 y^0		(Step 2)
  *                     n=1
+ *
+ * 计算工作负载
  */
 static __always_inline u32
 accumulate_sum(u64 delta, struct sched_avg *sa,
@@ -127,7 +129,14 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	u32 contrib = (u32)delta; /* p == 0 -> delta < 1024 */
 	u64 periods;
 
+    /**
+	 *  d0
+	 */
 	delta += sa->period_contrib;
+
+    /**
+	 *  periods 表示有多少个完整的周期
+	 */
 	periods = delta / 1024; /* A period is 1024us (~1ms) */
 
 	/*
@@ -162,10 +171,21 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	}
 	sa->period_contrib = delta;
 
+    /**
+	 *  
+	 */
 	if (load)
 		sa->load_sum += load * contrib;
+
+    /**
+	 *  
+	 */
 	if (runnable)
 		sa->runnable_sum += runnable * contrib << SCHED_CAPACITY_SHIFT;
+
+    /**
+	 *  
+	 */
 	if (running)
 		sa->util_sum += contrib << SCHED_CAPACITY_SHIFT;
 
@@ -210,6 +230,8 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	/*
 	 * This should only happen when time goes backwards, which it
 	 * unfortunately does during sched clock init when we swap over to TSC.
+	 *
+	 * 判断 TSC 时钟发生溢出
 	 */
 	if ((s64)delta < 0) {
 		sa->last_update_time = now;
@@ -220,7 +242,8 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 * Use 1024ns as the unit of measurement since it's a reasonable
 	 * approximation of 1us and fast to compute.
 	 *
-	 * 计算有多少个 1024ns 周期 
+	 * 计算有多少个 1024ns 周期 ，
+	 * 用 1024ns 近似为 1us ，使用 移位操作加快计算
 	 */
 	delta >>= 10;
 	if (!delta)
@@ -251,6 +274,8 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 *
 	 * Step 1: accumulate *_sum since last_update_time. If we haven't
 	 * crossed period boundaries, finish.
+	 *
+	 * 计算 工作负载
 	 */
 	if (!accumulate_sum(delta, sa, load, runnable, running))
 		return 0;
