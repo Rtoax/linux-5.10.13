@@ -7527,6 +7527,9 @@ enum migration_type {
 #define LBF_NOHZ_STATS	0x10
 #define LBF_NOHZ_AGAIN	0x20
 
+/**
+ *  负载均衡环境变量，在`load_balance()`内部使用，用于传递参数
+ */ 
 struct lb_env {
 	struct sched_domain	*sd;
 
@@ -7546,7 +7549,7 @@ struct lb_env {
 	unsigned int		flags;
 
 	unsigned int		loop;
-	unsigned int		loop_break;
+	unsigned int		loop_break; /* 表示最多迁移多少个进程 */
 	unsigned int		loop_max;
 
 	enum fbq_type		fbq_type;
@@ -7770,13 +7773,16 @@ static struct task_struct *detach_one_task(struct lb_env *env)
 	return NULL;
 }
 
-static const unsigned int sched_nr_migrate_break = 32;
+static const unsigned int sched_nr_migrate_break = 32;  /* 负载均衡最多迁移的进程数 */
 
 /*
  * detach_tasks() -- tries to detach up to imbalance load/util/tasks from
  * busiest_rq, as part of a balancing operation within domain "sd".
  *
  * Returns number of detached tasks if successful and 0 otherwise.
+ *
+ * 遍历最繁忙的就绪队列中所有的进程，找出是和被迁移的进程，然后让这些进程退出就绪队列
+ * 返回值为 已经迁移的多少个进程
  */
 static int detach_tasks(struct lb_env *env)
 {
@@ -7931,6 +7937,8 @@ static void attach_one_task(struct rq *rq, struct task_struct *p)
 /*
  * attach_tasks() -- attaches all tasks detached by detach_tasks() to their
  * new rq.
+ *
+ *  把刚才 最繁忙的就绪队列中迁出的进程都迁入当前的CPU就绪队列中
  */
 static void attach_tasks(struct lb_env *env)
 {
@@ -9292,6 +9300,8 @@ static inline void calculate_imbalance(struct lb_env *env, struct sd_lb_stats *s
  * @env: The load balancing environment.
  *
  * Return:	- The busiest group if imbalance exists.
+ *
+ *  查找调度域中最繁忙的调度组
  */
 static struct sched_group *find_busiest_group(struct lb_env *env)
 {
@@ -9605,6 +9615,9 @@ static int need_active_balance(struct lb_env *env)
 
 static int active_load_balance_cpu_stop(void *data);
 
+/**
+ *  判断当前CPU是否需要做负载均衡
+ */
 static int should_we_balance(struct lb_env *env)
 {
 	struct sched_group *sg = env->sd->groups;
@@ -9642,10 +9655,16 @@ static int should_we_balance(struct lb_env *env)
  * tasks if there is an imbalance.
  *
  * 负载均衡
+ *
+ * @this_cpu    当前正在运行的 cpu
+ * @this_rq     当前的就绪队列
+ * @sd          当前正在做负载均衡的调度域
+ * @idle        当前CPU 是否处于 IDLE 状态
+ * @continue_balancing      是否需要继续做负载均衡
  */
 static int load_balance(int this_cpu, struct rq *this_rq,
-			struct sched_domain *sd, enum cpu_idle_type idle,
-			int *continue_balancing)
+                			struct sched_domain *sd, enum cpu_idle_type idle,
+                			int *continue_balancing)
 {
 	int ld_moved, cur_ld_moved, active_balance = 0;
 	struct sched_domain *sd_parent = sd->parent;
@@ -9654,34 +9673,49 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 	struct rq_flags rf;
 	struct cpumask *cpus = this_cpu_cpumask_var_ptr(load_balance_mask);
 
+    /**
+     *  负载均衡环境变量，在`load_balance()`内部使用，用于传递参数
+     */
 	struct lb_env env = {
-		.sd		= sd,
-		.dst_cpu	= this_cpu,
-		.dst_rq		= this_rq,
-		.dst_grpmask    = sched_group_span(sd->groups),
-		.idle		= idle,
-		.loop_break	= sched_nr_migrate_break,
-		.cpus		= cpus,
-		.fbq_type	= all,
-		.tasks		= LIST_HEAD_INIT(env.tasks),
+		env.sd		= sd,
+		env.dst_cpu	= this_cpu,
+		env.dst_rq		= this_rq,
+		env.dst_grpmask    = sched_group_span(sd->groups),
+		env.idle		= idle,
+		env.loop_break	= sched_nr_migrate_break,   /* 最多迁移 32 个进程 */
+		env.cpus		= cpus,
+		env.fbq_type	= all,
+		env.tasks		= LIST_HEAD_INIT(env.tasks),
 	};
 
+    /**
+     *  复制当前 调度域管辖的 CPU 位图
+     */
 	cpumask_and(cpus, sched_domain_span(sd), cpu_active_mask);
 
 	schedstat_inc(sd->lb_count[idle]);
 
 redo:
+    /**
+     *  判断当前CPU是否需要做负载均衡
+     */
 	if (!should_we_balance(&env)) {
 		*continue_balancing = 0;
 		goto out_balanced;
 	}
 
+    /**
+     *  查找调度域中最繁忙的调度组
+     */
 	group = find_busiest_group(&env);
 	if (!group) {
 		schedstat_inc(sd->lb_nobusyg[idle]);
 		goto out_balanced;
 	}
 
+    /**
+     *  在最繁忙的调度组中查找最繁忙的继续队列
+     */
 	busiest = find_busiest_queue(&env, group);
 	if (!busiest) {
 		schedstat_inc(sd->lb_nobusyq[idle]);
@@ -9692,7 +9726,14 @@ redo:
 
 	schedstat_add(sd->lb_imbalance[idle], env.imbalance);
 
+    /**
+     *  最繁忙的就绪队列中的 CPU
+     */
 	env.src_cpu = busiest->cpu;
+
+    /**
+     *  最繁忙的继续队列
+     */
 	env.src_rq = busiest;
 
 	ld_moved = 0;
@@ -9713,6 +9754,10 @@ more_balance:
 		/*
 		 * cur_ld_moved - load moved in current iteration
 		 * ld_moved     - cumulative load moved across iterations
+		 *
+		 * 遍历最繁忙的就绪队列中所有的进程，找出是和被迁移的进程，然后让这些进程退出就绪队列
+		 *
+		 * cur_ld_moved 表示已经迁移的多少个进程
 		 */
 		cur_ld_moved = detach_tasks(&env);
 
@@ -9726,11 +9771,19 @@ more_balance:
 
 		rq_unlock(busiest, &rf);
 
+        /*
+		 * cur_ld_moved 表示已经迁移的多少个进程
+		 */
 		if (cur_ld_moved) {
+            /**
+             *  把刚才 最繁忙的就绪队列中迁出的进程都迁入当前的CPU就绪队列中
+             */
 			attach_tasks(&env);
 			ld_moved += cur_ld_moved;
 		}
-
+        /**
+         *  
+         */
 		local_irq_restore(rf.flags);
 
 		if (env.flags & LBF_NEED_BREAK) {
@@ -10060,6 +10113,8 @@ void update_max_interval(void)
  * and initiates a balancing operation if so.
  *
  * Balancing parameters are set up in init_sched_domains.
+ *
+ * 负载均衡的核心入口
  */
 static void rebalance_domains(struct rq *rq, enum cpu_idle_type idle)
 {
@@ -10075,6 +10130,10 @@ static void rebalance_domains(struct rq *rq, enum cpu_idle_type idle)
 	u64 max_cost = 0;
 
 	rcu_read_lock();
+
+    /**
+     *  遍历所有调度域
+     */
 	for_each_domain(cpu, sd) {
 		/*
 		 * Decay the newidle max times here because this is a regular
@@ -10107,7 +10166,14 @@ static void rebalance_domains(struct rq *rq, enum cpu_idle_type idle)
 				goto out;
 		}
 
+        /**
+         *  
+         */
 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
+
+            /**
+             *  
+             */
 			if (load_balance(cpu, rq, sd, idle, &continue_balancing)) {
 				/*
 				 * The LBF_DST_PINNED logic could have changed
@@ -10734,12 +10800,14 @@ out:
 /*
  * run_rebalance_domains is triggered when needed from the scheduler tick.
  * Also triggered for nohz idle balancing (with nohz_balancing_kick set).
- */ /*  */
+ *
+ * 负载均衡的核心入口，见 `init_sched_fair_class()`
+ */
 static __latent_entropy void run_rebalance_domains(struct softirq_action *h)
 {
 	struct rq *this_rq = this_rq();
-	enum cpu_idle_type idle = this_rq->idle_balance ?
-						CPU_IDLE : CPU_NOT_IDLE;
+    
+	enum cpu_idle_type idle = this_rq->idle_balance ? CPU_IDLE : CPU_NOT_IDLE;
 
 	/*
 	 * If this CPU has a pending nohz_balance_kick, then do the
@@ -10754,6 +10822,10 @@ static __latent_entropy void run_rebalance_domains(struct softirq_action *h)
 
 	/* normal load balance */
 	update_blocked_averages(this_rq->cpu);
+
+    /**
+     *  负载均衡的核心入口
+     */
 	rebalance_domains(this_rq, idle);
 }
 
@@ -11430,6 +11502,7 @@ __init void init_sched_fair_class(void) /*  */
 #ifdef CONFIG_SMP
     //注册一个 softirq
     // 当 `SCHED_SOFTIRQ` 被触发, the `run_rebalance_domains` 被调用 平衡CPU的运行队列
+    // 这是负载均衡 机制 从软中断开始
 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
 
 #ifdef CONFIG_NO_HZ_COMMON
