@@ -3800,13 +3800,11 @@
 #define CONFIG_SCHED_DEBUG 1    /*  */
 #define CONFIG_SCHED_HRTICK 1   /*  */
 #define CONFIG_SCHED_INFO 1     /*  */
-#define CONFIG_SCHED_MC 1       /*  */
+#define CONFIG_SCHED_MC 1       /* Multi-Core 多核 */
 #define CONFIG_SCHED_MC_PRIO 1
 #define CONFIG_SCHED_OMIT_FRAME_POINTER 1
-#define CONFIG_SCHED_SMT 1
-#define CONFIG_SCHED_SMT        /* Simultaneous Multithreading 同时多线程 */
-#define CONFIG_SCHED_STACK_END_CHECK    /*  */
-#define CONFIG_SCHED_STACK_END_CHECK 1
+#define CONFIG_SCHED_SMT 1      /* Simultaneous Multithreading 同时多线程-超线程 */
+#define CONFIG_SCHED_STACK_END_CHECK 1  /*  */
 #define CONFIG_SCHEDSTATS       /*  */
 #define CONFIG_SCHEDSTATS 1
 #define CONFIG_SCHED_THERMAL_PRESSURE   /*  */

@@ -45,6 +45,9 @@ static inline int cpu_smt_flags(void)
 #ifdef CONFIG_SCHED_MC
 static inline int cpu_core_flags(void)
 {
+    /**
+     *  共享高速缓存
+     */
 	return SD_SHARE_PKG_RESOURCES;
 }
 #endif
@@ -76,11 +79,56 @@ struct sched_domain_shared {
 	int		has_idle_cores;
 };
 
+/**
+ *  描述调度层级
+ *
+ *
+ *  荣涛 rtoax 2021年7月31日
+ *
+ *  +---------------+   +---------------+   +---------------+   +---------------+
+ *  |     +---+---+ |   |     +---+---+ |   |     +---+---+ |   |     +---+---+ |
+ *  | SMT | 0 | 1 | |   | SMT | 2 | 3 | |   | SMT | 4 | 5 | |   | SMT | 6 | 7 | |   超线程
+ *  |     +---+---+ |   |     +---+---+ |   |     +---+---+ |   |     +---+---+ |
+ *  +---------------+   +---------------+   +---------------+   +---------------+
+ *          |                   |                   |                   |
+ *          +---------+---------+                   +---------+---------+
+ *                    |                                       |
+ *  +-----------------------------------+   +-----------------------------------+
+ *  |      +---+---+        +---+---+   |   |      +---+---+        +---+---+   |
+ *  |  MC  | 0 | 1 |        | 2 | 3 |   |   | MC   | 4 | 5 |        | 6 | 7 |   |   多核
+ *  |      +---+---+        +---+---+   |   |      +---+---+        +---+---+   |
+ *  +-----------------------------------+   +-----------------------------------+
+ *                    |                                       |
+ *                    +-------------------+-------------------+
+ *                                        |
+ *  +---------------------------------------------------------------------------+
+ *  |                 +--------------+              +--------------+            |
+ *  |   DIE           |     0 ~ 3    |              |      4 ~ 7   |            |   处理器
+ *  |                 +--------------+              +--------------+            |
+ *  +---------------------------------------------------------------------------+           OtherNUMA
+ *                                        |                                                   |
+ *                                        +-------------------------+-------------------------+
+ *                                                                  |
+ *  +-----------------------------------------------------------------------------------------+
+ *  |           +--------------------------+               +--------------------------+       |
+ *  |   NUMA    |           0 ~ 7          |               |           8 ~ 15         |       |
+ *  |           +--------------------------+               +--------------------------+       |
+ *  +-----------------------------------------------------------------------------------------+
+ *
+ */
 struct sched_domain {
 	/* These fields must be setup */
 	struct sched_domain __rcu *parent;	/* top domain must be null terminated */
 	struct sched_domain __rcu *child;	/* bottom domain must be null terminated */
+
+    /**
+     *  调度组
+     */
 	struct sched_group *groups;	/* the balancing groups of the domain */
+
+    /**
+     *  
+     */
 	unsigned long min_interval;	/* Minimum balance interval ms */
 	unsigned long max_interval;	/* Maximum balance interval ms */
 	unsigned int busy_factor;	/* less balancing by factor if busy */
@@ -176,6 +224,11 @@ typedef int (*sched_domain_flags_f)(void);
 
 #define SDTL_OVERLAP	0x01
 
+/**
+ *  调度域
+ *
+ *  因为 调度域 数据会被频繁访问，所以会被申请为 percpu 变量
+ */
 struct sd_data {    /* 调度域 数据 */
 	struct sched_domain *__percpu *sd;
 	struct sched_domain_shared *__percpu *sds;
@@ -183,12 +236,32 @@ struct sd_data {    /* 调度域 数据 */
 	struct sched_group_capacity *__percpu *sgc;
 };
 
+/**
+ *  描述 CPU 的层次关系 - SDTL
+ */
 struct sched_domain_topology_level {    /* 调度域拓扑 级别 */
+
+    /**
+     *  函数指针，用于指定某个 SDTL 的 cpumask 位图
+     */
 	sched_domain_mask_f mask;   /*  */
+
+    /**
+     *  函数指针，用于指定某个 SDTL 的标志位
+     */
 	sched_domain_flags_f sd_flags;
+
+    /**
+     *  
+     */
 	int		    flags;
 	int		    numa_level;
+
+    /**
+     *  
+     */
 	struct sd_data      data;
+    
 #ifdef CONFIG_SCHED_DEBUG
 	char                *name;
 #endif

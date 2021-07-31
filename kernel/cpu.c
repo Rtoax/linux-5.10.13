@@ -1209,6 +1209,9 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen, enum cpuhp_state target)
 		}
 	}
 
+    /**
+     *  
+     */
 	cpuhp_tasks_frozen = tasks_frozen;
 
 	cpuhp_set_state(st, target);
@@ -1239,6 +1242,9 @@ out:
 	return ret;
 }
 
+/**
+ *  
+ */
 static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
 {
 	int err = 0;
@@ -1267,6 +1273,9 @@ static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
 		goto out;
 	}
 
+    /**
+     *  
+     */
 	err = _cpu_up(cpu, 0, target);
 out:
 	cpu_maps_update_done();
@@ -2412,23 +2421,37 @@ EXPORT_SYMBOL_GPL(cpu_bit_bitmap);
 const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
 EXPORT_SYMBOL(cpu_all_bits);
 
+/**
+ *  系统中有多少个 可以运行
+ */
 #ifdef CONFIG_INIT_ALL_POSSIBLE
-struct cpumask __read_mostly __cpu_possible_mask 
-	= {CPU_BITS_ALL};
+struct cpumask __read_mostly __cpu_possible_mask = {CPU_BITS_ALL};
 #else
 /*  */
 #endif
 EXPORT_SYMBOL(__cpu_possible_mask);
 
+/**
+ *  正在运行状态的 CPU
+ */
 struct cpumask __read_mostly __cpu_online_mask ;
 EXPORT_SYMBOL(__cpu_online_mask);
 
+/**
+ *  系统中有多少个可处于运行状态的 CPU
+ */
 struct cpumask __read_mostly __cpu_present_mask ;
 EXPORT_SYMBOL(__cpu_present_mask);
 
+/**
+ *  系统中有多少个活跃 的 CPU 内核
+ */
 struct cpumask __read_mostly __cpu_active_mask ;
 EXPORT_SYMBOL(__cpu_active_mask);
 
+/**
+ *  
+ */
 atomic_t __read_mostly __num_online_cpus ;
 EXPORT_SYMBOL(__num_online_cpus);
 

@@ -49,7 +49,7 @@
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_BALANCE_NEWIDLE, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_BALANCE_NEWIDLE
+
 /*
  * Balance on exec
  *
@@ -57,7 +57,7 @@ SD_FLAG(SD_BALANCE_NEWIDLE, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_BALANCE_EXEC, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_BALANCE_EXEC
+
 /*
  * Balance on fork, clone
  *
@@ -65,7 +65,7 @@ SD_FLAG(SD_BALANCE_EXEC, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_BALANCE_FORK, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_BALANCE_FORK
+
 /*
  * Balance on wakeup
  *
@@ -73,14 +73,14 @@ SD_FLAG(SD_BALANCE_FORK, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_BALANCE_WAKE, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_BALANCE_WAKE
+
 /*
  * Consider waking task on waking CPU.
  *
  * SHARED_CHILD: Set from the base domain up to the NUMA reclaim level.
  */
 SD_FLAG(SD_WAKE_AFFINE, SDF_SHARED_CHILD)
-/*我加的*/#define SD_WAKE_AFFINE
+
 /*
  * Domain members have different CPU capacities
  *
@@ -89,7 +89,7 @@ SD_FLAG(SD_WAKE_AFFINE, SDF_SHARED_CHILD)
  * NEEDS_GROUPS: Per-CPU capacity is asymmetric between groups.
  */
 SD_FLAG(SD_ASYM_CPUCAPACITY, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_ASYM_CPUCAPACITY
+
 /*
  * Domain members share CPU capacity (i.e. SMT)
  *
@@ -98,7 +98,7 @@ SD_FLAG(SD_ASYM_CPUCAPACITY, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Capacity is shared between groups.
  */
 SD_FLAG(SD_SHARE_CPUCAPACITY, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_SHARE_CPUCAPACITY
+
 /*
  * Domain members share CPU package resources (i.e. caches)
  *
@@ -107,7 +107,7 @@ SD_FLAG(SD_SHARE_CPUCAPACITY, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Caches are shared between groups.
  */
 SD_FLAG(SD_SHARE_PKG_RESOURCES, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_SHARE_PKG_RESOURCES
+
 /*
  * Only a single load balancing instance
  *
@@ -118,7 +118,7 @@ SD_FLAG(SD_SHARE_PKG_RESOURCES, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: No point in preserving domain if it has a single group.
  */
 SD_FLAG(SD_SERIALIZE, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_SERIALIZE
+
 /*
  * Place busy tasks earlier in the domain
  *
@@ -128,7 +128,7 @@ SD_FLAG(SD_SERIALIZE, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_ASYM_PACKING, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_ASYM_PACKING
+
 /*
  * Prefer to place tasks in a sibling domain
  *
@@ -138,7 +138,7 @@ SD_FLAG(SD_ASYM_PACKING, SDF_SHARED_CHILD | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Load balancing flag.
  */
 SD_FLAG(SD_PREFER_SIBLING, SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_PREFER_SIBLING
+
 /*
  * sched_groups of this level overlap
  *
@@ -146,7 +146,7 @@ SD_FLAG(SD_PREFER_SIBLING, SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: Overlaps can only exist with more than one group.
  */
 SD_FLAG(SD_OVERLAP, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_OVERLAP
+
 /*
  * Cross-node balancing
  *
@@ -154,5 +154,28 @@ SD_FLAG(SD_OVERLAP, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
  * NEEDS_GROUPS: No point in preserving domain if it has a single group.
  */
 SD_FLAG(SD_NUMA, SDF_SHARED_PARENT | SDF_NEEDS_GROUPS)
-/*我加的*/#define SD_NUMA
 
+
+
+#if __rtoax__add_______________________________________
+/**
+ *  调度域 标志位
+ */
+
+
+#define SD_LOAD_BALANCE         /*  */ 
+#define SD_BALANCE_NEWIDLE      /* 表示该调度域运行后做负载均衡调度 */ 
+#define SD_BALANCE_EXEC         /* 一个 进程调用 exec 时会选择最优的 CPU 来执行，见`sched_exec()` */
+#define SD_BALANCE_FORK         /* fork 新进程时，选择最优的 CPU 运行新进程，详见 wake_up_new_task() */
+#define SD_BALANCE_WAKE         /* 唤醒进程时，选择最优的 CPU 运行新进程，详见 wake_up_process() */
+#define SD_WAKE_AFFINE          /* 支持 亲和性 */
+#define SD_ASYM_CPUCAPACITY     /* 表示该调度域有不同架构的 CPU，如 大小核 */
+#define SD_SHARE_CPUCAPACITY    /* 表示该调度域中的CPU都是可以共享CPU资源的，主要用于描述SMT调度层级 */
+#define SD_SHARE_PKG_RESOURCES  /* 该调度域的CPU，可以共享高速缓存 */
+#define SD_SERIALIZE            /*  */
+#define SD_ASYM_PACKING         /* 用于描述与 SMT 调度层级相关的一些例外 */
+#define SD_PREFER_SIBLING       /* 表示可以在兄弟调度域中迁移进程 */
+#define SD_OVERLAP              /*  */
+#define SD_NUMA                 /* 描述NUMA 调度层级 */
+
+#endif //__rtoax__add_______________________________________

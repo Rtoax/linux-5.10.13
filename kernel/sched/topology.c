@@ -630,6 +630,16 @@ DEFINE_PER_CPU(struct sched_domain __rcu *, sd_asym_packing);
 DEFINE_PER_CPU(struct sched_domain __rcu *, sd_asym_cpucapacity);
 DEFINE_STATIC_KEY_FALSE(sched_asym_cpucapacity);
 
+#if RTOAX /*+++*/
+struct sched_domain __rcu * sd_llc; /* 指向 LLC 调度域 */
+int sd_llc_size;    /* LLC 调度域包含多少个 CPU */
+int sd_llc_id;      /* LLC 调度域第一个CPU的编号 */
+struct sched_domain_shared __rcu * sd_llc_shared;
+struct sched_domain __rcu * sd_numa;
+struct sched_domain __rcu * sd_asym_packing;    
+struct sched_domain __rcu * sd_asym_cpucapacity;    /* 指向第一个包含不同CPU架构的调度域 如 big.LITTLE */
+#endif //RTOAX
+
 static void update_top_cache_domain(int cpu)
 {
 	struct sched_domain_shared *sds = NULL;
@@ -710,7 +720,13 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 	update_top_cache_domain(cpu);
 }
 
+/**
+ *  
+ */
 struct s_data {
+    /**
+     *  因为大型系统中该结构会被频繁调用，所以使用 percpu 变量
+     */
 	struct sched_domain * __percpu *sd;
 	struct root_domain	*rd;
 };
@@ -1103,12 +1119,17 @@ static struct sched_group *get_group(int cpu, struct sd_data *sdd)
  * and will initialize their ->sgc.
  *
  * Assumes the sched_domain tree is fully constructed
+ *
+ * 创建调度组
  */
-static int
-build_sched_groups(struct sched_domain *sd, int cpu)
+static int build_sched_groups(struct sched_domain *sd, int cpu)
 {
 	struct sched_group *first = NULL, *last = NULL;
 	struct sd_data *sdd = sd->private;
+
+    /**
+     *  span 标识调度域锁管辖的 CPU 的位图
+     */
 	const struct cpumask *span = sched_domain_span(sd);
 	struct cpumask *covered;
 	int i;
@@ -1118,12 +1139,18 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 
 	cpumask_clear(covered);
 
+    /**
+     *  从指定的 cpu处开始遍历
+     */
 	for_each_cpu_wrap(i, span, cpu) {
 		struct sched_group *sg;
 
 		if (cpumask_test_cpu(i, covered))
 			continue;
 
+        /**
+         *  获取指定 CPU的调度组
+         */
 		sg = get_group(i, sdd);
 
 		cpumask_or(covered, covered, sched_group_span(sg));
@@ -1134,6 +1161,10 @@ build_sched_groups(struct sched_domain *sd, int cpu)
 			last->next = sg;
 		last = sg;
 	}
+
+    /**
+     *  
+     */
 	last->next = first;
 	sd->groups = first;
 
@@ -1239,16 +1270,30 @@ static void __free_domain_allocs(struct s_data *d, enum s_alloc what,
 	}
 }
 
+/**
+ *  分配调度域等数据结构
+ */
 static enum s_alloc
 __visit_domain_allocation_hell(struct s_data *d, const struct cpumask *cpu_map)
 {
 	memset(d, 0, sizeof(*d));
 
+    /**
+     *  创建调度域等数据结构
+     */
 	if (__sdt_alloc(cpu_map))
 		return sa_sd_storage;
+
+    /**
+     *  
+     */
 	d->sd = alloc_percpu(struct sched_domain *);
 	if (!d->sd)
 		return sa_sd_storage;
+
+    /**
+     *  
+     */
 	d->rd = alloc_rootdomain();
 	if (!d->rd)
 		return sa_sd;
@@ -1312,8 +1357,11 @@ int __read_mostly		node_reclaim_distance = RECLAIM_DISTANCE;   /*  */
 	 SD_NUMA		|	\
 	 SD_ASYM_PACKING)
 
-static struct sched_domain *    /* 调度域初始化 */
-            sd_init(struct sched_domain_topology_level *tl,
+
+/**
+ *  调度域初始化
+ */
+static struct sched_domain *sd_init(struct sched_domain_topology_level *tl,
                 	const struct cpumask *cpu_map,
                 	struct sched_domain *child, int dflags, int cpu)
 {
@@ -1422,21 +1470,73 @@ static struct sched_domain *    /* 调度域初始化 */
 
 /*
  * Topology list, bottom-up.
+ *
+ * 默认的调度域拓扑级别
+ *
+ *  描述调度层级
+ *
+ *
+ *  荣涛 rtoax 2021年7月31日
+ *
+ *  +---------------+   +---------------+   +---------------+   +---------------+
+ *  |     +---+---+ |   |     +---+---+ |   |     +---+---+ |   |     +---+---+ |
+ *  | SMT | 0 | 1 | |   | SMT | 2 | 3 | |   | SMT | 4 | 5 | |   | SMT | 6 | 7 | |   超线程
+ *  |     +---+---+ |   |     +---+---+ |   |     +---+---+ |   |     +---+---+ |
+ *  +---------------+   +---------------+   +---------------+   +---------------+
+ *          |                   |                   |                   |
+ *          +---------+---------+                   +---------+---------+
+ *                    |                                       |
+ *  +-----------------------------------+   +-----------------------------------+
+ *  |      +---+---+        +---+---+   |   |      +---+---+        +---+---+   |
+ *  |  MC  | 0 | 1 |        | 2 | 3 |   |   | MC   | 4 | 5 |        | 6 | 7 |   |   多核
+ *  |      +---+---+        +---+---+   |   |      +---+---+        +---+---+   |
+ *  +-----------------------------------+   +-----------------------------------+
+ *                    |                                       |
+ *                    +-------------------+-------------------+
+ *                                        |
+ *  +---------------------------------------------------------------------------+
+ *  |                 +--------------+              +--------------+            |
+ *  |   DIE           |     0 ~ 3    |              |      4 ~ 7   |            |   处理器
+ *  |                 +--------------+              +--------------+            |
+ *  +---------------------------------------------------------------------------+           OtherNUMA
+ *                                        |                                                   |
+ *                                        +-------------------------+-------------------------+
+ *                                                                  |
+ *  +-----------------------------------------------------------------------------------------+
+ *  |           +--------------------------+               +--------------------------+       |
+ *  |   NUMA    |           0 ~ 7          |               |           8 ~ 15         |       |
+ *  |           +--------------------------+               +--------------------------+       |
+ *  +-----------------------------------------------------------------------------------------+
+ *
  */
 static struct sched_domain_topology_level default_topology[] = {    /* 默认的调度域 */
 #ifdef CONFIG_SCHED_SMT /* 同时多线程 */
+    /**
+     *  超线程
+     */
 	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
 #endif
 #ifdef CONFIG_SCHED_MC  /* 多核 */
+    /**
+     *  多核
+     */
 	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
 #endif
+    /**
+     *  处理器
+     */
 	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
 	{ NULL, },
 };
 
-static struct sched_domain_topology_level *sched_domain_topology =
-	default_topology;
+/**
+ *  调度域拓扑
+ */
+static struct sched_domain_topology_level *sched_domain_topology = default_topology;
 
+/**
+ *  遍历
+ */
 #define for_each_sd_topology(tl)			\
 	for (tl = sched_domain_topology; tl->mask; tl++)
 
@@ -1738,14 +1838,23 @@ int sched_numa_find_closest(const struct cpumask *cpus, int cpu)
 
 #endif /* CONFIG_NUMA */
 
+/**
+ *  创建调度域等数据结构
+ */
 static int __sdt_alloc(const struct cpumask *cpu_map)
 {
 	struct sched_domain_topology_level *tl;
 	int j;
 
+    /**
+     *  遍历所有调度域
+     */
 	for_each_sd_topology(tl) {
 		struct sd_data *sdd = &tl->data;
 
+        /**
+         *  分配 percpu 变量
+         */
 		sdd->sd = alloc_percpu(struct sched_domain *);
 		if (!sdd->sd)
 			return -ENOMEM;
@@ -1762,6 +1871,9 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
 		if (!sdd->sgc)
 			return -ENOMEM;
 
+        /**
+         *  
+         */
 		for_each_cpu(j, cpu_map) {
 			struct sched_domain *sd;
 			struct sched_domain_shared *sds;
@@ -1843,10 +1955,16 @@ static void __sdt_free(const struct cpumask *cpu_map)
 	}
 }
 
+/**
+ *  创建调度域 和调度组
+ */
 static struct sched_domain *build_sched_domain(struct sched_domain_topology_level *tl,
-		const struct cpumask *cpu_map, struct sched_domain_attr *attr,
-		struct sched_domain *child, int dflags, int cpu)
+                                    		const struct cpumask *cpu_map, struct sched_domain_attr *attr,
+                                    		struct sched_domain *child, int dflags, int cpu)
 {
+    /**
+     *  
+     */
 	struct sched_domain *sd = sd_init(tl, cpu_map, child, dflags, cpu);
 
 	if (child) {
@@ -1854,8 +1972,7 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
 		sched_domain_level_max = max(sched_domain_level_max, sd->level);
 		child->parent = sd;
 
-		if (!cpumask_subset(sched_domain_span(child),
-				    sched_domain_span(sd))) {
+		if (!cpumask_subset(sched_domain_span(child), sched_domain_span(sd))) {
 			pr_err("BUG: arch topology borken\n");
 #ifdef CONFIG_SCHED_DEBUG
 			pr_err("     the %s domain not a subset of the %s domain\n",
@@ -1863,8 +1980,8 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
 #endif
 			/* Fixup, ensure @sd has at least @child CPUs. */
 			cpumask_or(sched_domain_span(sd),
-				   sched_domain_span(sd),
-				   sched_domain_span(child));
+    				   sched_domain_span(sd),
+    				   sched_domain_span(child));
 		}
 
 	}
@@ -1986,18 +2103,31 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 	if (WARN_ON(cpumask_empty(cpu_map)))
 		goto error;
 
+    /**
+     *  分配调度域等数据结构
+     */
 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
 	if (alloc_state != sa_rootdomain)
 		goto error;
 
+    /**
+     *  
+     */
 	tl_asym = asym_cpu_capacity_level(cpu_map);
 
+    /**
+     *  遍历所有活跃的 CPU
+     */
 	/* Set up domains for CPUs specified by the cpu_map: */
 	for_each_cpu(i, cpu_map) {
 		struct sched_domain_topology_level *tl;
 		int dflags = 0;
 
 		sd = NULL;
+
+        /**
+         *  遍历所有调度域
+         */
 		for_each_sd_topology(tl) {
 			if (tl == tl_asym) {
 				dflags |= SD_ASYM_CPUCAPACITY;
@@ -2007,6 +2137,9 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 			if (WARN_ON(!topology_span_sane(tl, cpu_map, i)))
 				goto error;
 
+            /**
+             *  建立一套调度域和调度组
+             */
 			sd = build_sched_domain(tl, cpu_map, attr, sd, dflags, i);
 
 			if (tl == sched_domain_topology)
@@ -2026,6 +2159,9 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 				if (build_overlap_sched_groups(sd, i))
 					goto error;
 			} else {
+			    /**
+                 *  创建调度组
+                 */
 				if (build_sched_groups(sd, i))
 					goto error;
 			}
@@ -2141,6 +2277,10 @@ int sched_init_domains(const struct cpumask *cpu_map)   /*  */
 	if (!doms_cur)
 		doms_cur = &fallback_doms;
 	cpumask_and(doms_cur[0], cpu_map, housekeeping_cpumask(HK_FLAG_DOMAIN));
+
+    /**
+     *  
+     */
 	err = build_sched_domains(doms_cur[0], NULL);
 	register_sched_domain_sysctl();
 

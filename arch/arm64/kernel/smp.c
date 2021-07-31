@@ -527,7 +527,10 @@ static int __init smp_cpu_setup(int cpu)
 	return 0;
 }
 
-static bool bootcpu_valid __initdata;
+/**
+ *  
+ */
+static bool __initdata bootcpu_valid ;
 static unsigned int cpu_count = 1;
 
 #ifdef CONFIG_ACPI
@@ -641,7 +644,7 @@ static void __init acpi_parse_and_init_cpus(void)
 		early_map_cpu_to_node(i, acpi_numa_get_nid(i));
 }
 #else
-#define acpi_parse_and_init_cpus(...)	do { } while (0)
+//#define acpi_parse_and_init_cpus(...)	do { } while (0)
 #endif
 
 /*
@@ -706,16 +709,24 @@ next:
  * Enumerate the possible CPU set from the device tree or ACPI and build the
  * cpu logical map array containing MPIDR values related to logical
  * cpus. Assumes that cpu_logical_map(0) has already been initialized.
+ *
+ * 可以运行 的 CPU
  */
 void __init smp_init_cpus(void)
 {
 	int i;
 
+    /**
+     *  
+     */
 	if (acpi_disabled)
 		of_parse_and_init_cpus();
 	else
 		acpi_parse_and_init_cpus();
 
+    /**
+     *  
+     */
 	if (cpu_count > nr_cpu_ids)
 		pr_warn("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
 			cpu_count, nr_cpu_ids);
@@ -734,12 +745,19 @@ void __init smp_init_cpus(void)
 	 */
 	for (i = 1; i < nr_cpu_ids; i++) {
 		if (cpu_logical_map(i) != INVALID_HWID) {
+
+            /**
+             *  
+             */
 			if (smp_cpu_setup(i))
 				set_cpu_logical_map(i, INVALID_HWID);
 		}
 	}
 }
 
+/**
+ *  
+ */
 void __init smp_prepare_cpus(unsigned int max_cpus)
 {
 	const struct cpu_operations *ops;
@@ -747,6 +765,9 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 	unsigned int cpu;
 	unsigned int this_cpu;
 
+    /**
+     *  
+     */
 	init_cpu_topology();
 
 	this_cpu = smp_processor_id();
@@ -777,16 +798,27 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 		if (!ops)
 			continue;
 
+        /**
+         *  arch/x86/events/intel/core.c intel_pmu_cpu_prepare()
+         *  arch/x86/events/amd/core.c   amd_pmu_cpu_prepare()
+         */
 		err = ops->cpu_prepare(cpu);
 		if (err)
 			continue;
 
+        /**
+         *  
+         */
 		set_cpu_present(cpu, true);
+
+        /**
+         *  
+         */
 		numa_store_cpu_info(cpu);
 	}
 }
 
-static const char *ipi_types[NR_IPI] __tracepoint_string = {
+static const char __tracepoint_string *ipi_types[NR_IPI]  = {
 #define S(x,s)	[x] = s
 	S(IPI_RESCHEDULE, "Rescheduling interrupts"),
 	S(IPI_CALL_FUNC, "Function call interrupts"),

@@ -797,7 +797,11 @@ void __init setup_nr_cpu_ids(void)  /*  */
 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
 }
 
-/* Called by boot processor to activate the rest. */
+/**
+ *  Called by boot processor to activate the rest. 
+ *
+ *  
+ */
 void __init smp_init(void)
 {
 	int num_nodes, num_cpus;
@@ -809,11 +813,17 @@ void __init smp_init(void)
 
 	bringup_nonboot_cpus(setup_max_cpus);   /*  */
 
+    /**
+     *  
+     */
 	num_nodes = num_online_nodes(); /* NODE 数 */
 	num_cpus  = num_online_cpus();  /* CPU 数 */
+
+    //[rongtao@toa linux-5.10.13]$ dmesg | grep Bro
+    //[    0.181324] Brought up 2 CPUs
 	pr_info("Brought up %d node%s, %d CPU%s\n",
-		num_nodes, (num_nodes > 1 ? "s" : ""),
-		num_cpus,  (num_cpus  > 1 ? "s" : ""));
+    		num_nodes, (num_nodes > 1 ? "s" : ""),
+    		num_cpus,  (num_cpus  > 1 ? "s" : ""));
 
 	/* Any cleanup work */
 	smp_cpus_done(setup_max_cpus);

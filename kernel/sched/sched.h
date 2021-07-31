@@ -1678,6 +1678,9 @@ struct sched_group_capacity {
 	unsigned long		cpumask[];		/* Balance mask */
 };
 
+/**
+ *  调度组 - 负载均衡调度的最小单位
+ */
 struct sched_group {
 	struct sched_group	*next;			/* Must be a circular list */
 	atomic_t		ref;
