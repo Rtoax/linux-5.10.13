@@ -74,6 +74,25 @@ static u64 decay_load(u64 val, u64 n)
 	return val;
 }
 
+/**
+ *      d0   d1          d2           d3
+ *       ^   ^           ^            ^
+ *       |   |           |            |
+ *     |<->|<->|<----------------->|<--->|
+ * ... |---x---|------| ... |------|-----x (now)
+ *
+ *                           p-1
+ * u' = (u + d1) y^p + 1024 \Sum y^n + d3 y^0
+ *                           n=1
+ *
+ *    = u y^p +					(Step 1)
+ *
+ *                     p-1
+ *      d1 y^p + 1024 \Sum y^n + d3 y^0		(Step 2)
+ *                     n=1
+ *
+ * 计算工作负载
+ */
 static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 {
 	u32 c1, c2, c3 = d3; /* y^0 == 1 */
@@ -147,7 +166,15 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
          * 计算第 n 个周期的衰减值
          */
 		sa->load_sum = decay_load(sa->load_sum, periods);
+
+        /**
+         * 
+         */
 		sa->runnable_sum = decay_load(sa->runnable_sum, periods);
+    
+        /**
+         * 总算力
+         */
 		sa->util_sum = decay_load((u64)(sa->util_sum), periods);
 
 		/*
@@ -164,9 +191,11 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 			 * clause from ___update_load_sum(); this results in
 			 * the below usage of @contrib to dissapear entirely,
 			 * so no point in calculating it.
+			 *
+			 * 
+			 *
 			 */
-			contrib = __accumulate_pelt_segments(periods,
-					1024 - sa->period_contrib, delta);
+			contrib = __accumulate_pelt_segments(periods, 1024 - sa->period_contrib, delta);
 		}
 	}
 	sa->period_contrib = delta;
@@ -219,6 +248,8 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
  * sum again by y is sufficient to update:
  *   load_avg = u_0` + y*(u_0 + u_1*y + u_2*y^2 + ... )
  *            = u_0 + u_1*y + u_2*y^2 + ... [re-labeling u_i --> u_{i+1}]
+ *
+ * 计算 工作 负载 之和
  */
 static __always_inline int
 ___update_load_sum(u64 now, struct sched_avg *sa,
@@ -226,7 +257,11 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 {
 	u64 delta;
 
+    /**
+     *  
+     */
 	delta = now - sa->last_update_time;
+    
 	/*
 	 * This should only happen when time goes backwards, which it
 	 * unfortunately does during sched clock init when we swap over to TSC.
@@ -346,6 +381,9 @@ ___update_load_avg(struct sched_avg *sa, unsigned long load)
  *   load_avg = \Sum se->avg.load_avg
  */
 
+/**
+ *  更新 一个调度实体在阻塞状态下 的负载信息
+ */
 int __update_load_avg_blocked_se(u64 now, struct sched_entity *se)
 {
 	if (___update_load_sum(now, &se->avg, 0, 0, 0)) {
@@ -357,6 +395,9 @@ int __update_load_avg_blocked_se(u64 now, struct sched_entity *se)
 	return 0;
 }
 
+/**
+ *  更新调度实体 se 的负载信息
+ */
 int __update_load_avg_se(u64 now, struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	if (___update_load_sum(now, &se->avg, !!se->on_rq, se_runnable(se),
@@ -371,6 +412,9 @@ int __update_load_avg_se(u64 now, struct cfs_rq *cfs_rq, struct sched_entity *se
 	return 0;
 }
 
+/**
+ *  更新 CFS 就绪队列负载信息
+ */
 int __update_load_avg_cfs_rq(u64 now, struct cfs_rq *cfs_rq)
 {
 	if (___update_load_sum(now, &cfs_rq->avg,
