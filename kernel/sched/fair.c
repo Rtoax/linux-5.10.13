@@ -5859,6 +5859,9 @@ static unsigned long capacity_of(int cpu)
 	return cpu_rq(cpu)->cpu_capacity;
 }
 
+/**
+ *  
+ */
 static void record_wakee(struct task_struct *p)
 {
 	/*
@@ -5870,8 +5873,18 @@ static void record_wakee(struct task_struct *p)
 		current->wakee_flip_decay_ts = jiffies;
 	}
 
+    /**
+     *  当前进程上次唤醒的 进程 不是 p
+     */
 	if (current->last_wakee != p) {
+
+        /**
+         *  
+         */
 		current->last_wakee = p;
+        /**
+         *  记录翻转次数
+         */
 		current->wakee_flips++;
 	}
 }
@@ -5985,6 +5998,10 @@ wake_affine_weight(struct sched_domain *sd, struct task_struct *p,
 	return this_eff_load < prev_eff_load ? this_cpu : nr_cpumask_bits;
 }
 
+/**
+ *  
+ *
+ */
 static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 		       int this_cpu, int prev_cpu, int sync)
 {
@@ -6010,6 +6027,8 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p, int this_cpu);
 
 /*
  * find_idlest_group_cpu - find the idlest CPU among the CPUs in the group.
+ *
+ *  从 调度组中找出一个 负载值最小的 CPU 作为最佳候选者
  */
 static int
 find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
@@ -6025,6 +6044,9 @@ find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this
 	if (group->group_weight == 1)
 		return cpumask_first(sched_group_span(group));
 
+    /**
+     *  
+     */
 	/* Traverse only the allowed CPUs */
 	for_each_cpu_and(i, sched_group_span(group), p->cpus_ptr) {
 		if (sched_idle_cpu(i))
@@ -6064,21 +6086,43 @@ find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this
 	return shallowest_idle_cpu != -1 ? shallowest_idle_cpu : least_loaded_cpu;
 }
 
+
+/**
+ *  找到一个悠闲的 CPU 来运行 唤醒的进程 - 慢速路径
+ *
+ * @sd        从此调度域中查找候选 CPU
+ * @p          将要唤醒的进程
+ * @cpu        表示 wakeup_cpu
+ * @prev_cpu   进程上次运行在哪
+ * @sd_flag    调度域 标志
+ *  
+ */
 static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p,
 				  int cpu, int prev_cpu, int sd_flag)
 {
 	int new_cpu = cpu;
 
+    /**
+     *  调度域内的 CPU 都不在进程允许的 CPU 位图里，直接返回上次运行的 CPU
+     */
 	if (!cpumask_intersects(sched_domain_span(sd), p->cpus_ptr))
 		return prev_cpu;
 
 	/*
 	 * We need task's util for cpu_util_without, sync it up to
 	 * prev_cpu's last_update_time.
+	 *
+	 * 不是因为 fork(2) 
 	 */
 	if (!(sd_flag & SD_BALANCE_FORK))
+        /**
+         *  更新系统负载信息
+         */
 		sync_entity_load_avg(&p->se);
 
+    /**
+     *  从 sd 开始，自上而下 的遍历 调度域
+     */
 	while (sd) {
 		struct sched_group *group;
 		struct sched_domain *tmp;
@@ -6089,12 +6133,18 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 			continue;
 		}
 
+        /**
+         *  查找最空闲的一个调度组
+         */
 		group = find_idlest_group(sd, p, cpu);
 		if (!group) {
 			sd = sd->child;
 			continue;
 		}
 
+        /**
+         *  从上述 调度组中找出一个 负载值最小的 CPU 作为最佳候选者
+         */
 		new_cpu = find_idlest_group_cpu(group, p, cpu);
 		if (new_cpu == cpu) {
 			/* Now try balancing at a lower domain level of 'cpu': */
@@ -6106,6 +6156,10 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 		cpu = new_cpu;
 		weight = sd->span_weight;
 		sd = NULL;
+
+        /**
+         *  
+         */
 		for_each_domain(cpu, tmp) {
 			if (weight <= tmp->span_weight)
 				break;
@@ -6114,6 +6168,9 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 		}
 	}
 
+    /**
+     *  
+     */
 	return new_cpu;
 }
 
@@ -6333,6 +6390,12 @@ static inline bool asym_fits_capacity(int task_util, int cpu)
 
 /*
  * Try and locate an idle core/thread in the LLC cache domain.
+ *
+ * 快速路径 - 选择一个 合适的 CPU，唤醒进程
+ *
+ * @p       将要唤醒的进程
+ * @prev    标识要被唤醒的进程上次跑在那个 CPU 上
+ * @target  标识通过计算，推荐的 CPU
  */
 static int select_idle_sibling(struct task_struct *p, int prev, int target)
 {
@@ -6349,16 +6412,30 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 		task_util = uclamp_task_util(p);
 	}
 
+    /**
+     *  检查 target 指向的 CPU 是否为 空闲 CPU
+     */
 	if ((available_idle_cpu(target) || sched_idle_cpu(target)) &&
 	    asym_fits_capacity(task_util, target))
 		return target;
 
 	/*
 	 * If the previous CPU is cache affine and idle, don't be stupid:
+	 *
+	 * cpus_share_cache - 判断两个CPU 是否具有高速缓存的亲和性
+	 *                      若他们同属一个 SMT 或 MC 调度域，则共享 高速缓存
 	 */
 	if (prev != target && cpus_share_cache(prev, target) &&
 	    (available_idle_cpu(prev) || sched_idle_cpu(prev)) &&
 	    asym_fits_capacity(task_util, prev))
+
+        /**
+         *  1. 若 上一次 和 推荐 CPU 不是同一个；
+         *  2. 但是他们具有高速缓存共享
+         *  3. 并且 prev 现在是空闲 CPU，
+         *
+         *  那么直接使用上次运行的 CPU就行了
+         */
 		return prev;
 
 	/*
@@ -6375,8 +6452,15 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 		return prev;
 	}
 
+    /**
+     *  
+     */
 	/* Check a recently used CPU as a potential idle candidate: */
 	recent_used_cpu = p->recent_used_cpu;
+
+    /**
+     *  最常用的 CPU 和 之前的 CPU 和推荐的CPU 都 不是同一个 CPU
+     */
 	if (recent_used_cpu != prev &&
 	    recent_used_cpu != target &&
 	    cpus_share_cache(recent_used_cpu, target) &&
@@ -6818,16 +6902,41 @@ fail:
  * preempt must be disabled.
  *
  * 选择最合适的调度域中最悠闲的 CPU
+ *
+ * @p           将要唤醒的进程
+ * @prev_cpu    该进程上一次调度的 CPU
+ * @sd_flag     调度域的标志位(唤醒新进程为`SD_BALANCE_WAKE`)
+ * @wake_flags  唤醒标志位
+ *
+ *
  */
 static int
 select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_flags)
 {
+    /**
+     *  
+     */
 	struct sched_domain *tmp, *sd = NULL;
+
+    /**
+     *  唤醒的CPU
+     */
 	int cpu = smp_processor_id();
+
+    /**
+     *  该进程上一次调度的 CPU
+     */
 	int new_cpu = prev_cpu;
 	int want_affine = 0;
+
+    /**
+     *  是否需要同步
+     */
 	int sync = (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
 
+    /**
+     *  如果是唤醒操作，当然也可能是 exec fork 等
+     */
 	if (sd_flag & SD_BALANCE_WAKE) {
 		record_wakee(p);
 
@@ -6838,20 +6947,47 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 			new_cpu = prev_cpu;
 		}
 
+        /**
+         *  标识有机会 采用 wakeup_cpu 或者 prev_cpu 来唤醒这个进程，这是一个快速优化路径。
+         */
 		want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
 	}
 
 	rcu_read_lock();
+
+    /**
+     *  从 cpu 开始，从下到上，遍历调度域
+     */
 	for_each_domain(cpu, tmp) {
 		/*
 		 * If both 'cpu' and 'prev_cpu' are part of this domain,
 		 * cpu is a valid SD_WAKE_AFFINE target.
+		 *
+		 * 判断符合优化路径的 三个条件
+		 *
+		 *  1. 这是一个唤醒的动作，
+		 *  2. wakeup_cpu 和 prev_cpu 在同一个调度域
+		 *  3. 调度域包含 SD_WAKE_AFFINE 标志位，标识运行唤醒进程的CPU 可以运行这个被唤醒的进程
 		 */
 		if (want_affine && (tmp->flags & SD_WAKE_AFFINE) &&
 		    cpumask_test_cpu(prev_cpu, sched_domain_span(tmp))) {
+
+            /**
+             *  满足上面的三个条件， 进入快速路径
+             */
+
+            /**
+             *  
+             */
 			if (cpu != prev_cpu)
+                /**
+                 *  重新计算 wakeup_cpu 和 prev_cpu CPU 的负载情况，并比较用哪个CPU唤醒最合适
+                 */
 				new_cpu = wake_affine(tmp, p, cpu, prev_cpu, sync);
 
+            /**
+             *  找到合适 CPU 来唤醒进程时候，设置 sd = NULL， 并退出 for 循环
+             */
 			sd = NULL; /* Prefer wake_affine over balance flags */
 			break;
 		}
@@ -6862,12 +6998,29 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 			break;
 	}
 
+    /**
+     *  没有找到合适的 调度域，进入慢速路径
+     */
 	if (unlikely(sd)) {
-		/* Slow path */
+        /**
+         *  慢速路径
+         */
+		/* Slow path - 找到一个 悠闲的 CPU */
 		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
+
+    /**
+     *  上面找到了合适的 调度域，
+     */
 	} else if (sd_flag & SD_BALANCE_WAKE) { /* XXX always ? */
+
+        /**
+         *  快速路径
+         */
 		/* Fast path */
 
+        /**
+         *  选择一个合适的 CPU
+         */
 		new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
 
 		if (want_affine)
@@ -8993,7 +9146,7 @@ static bool update_pick_idlest(struct sched_group *idlest,
  * find_idlest_group() finds and returns the least busy CPU group within the
  * domain.
  *
- * Assumes p is allowed on at least one CPU in sd.
+ * Assumes p is allowed on at least one CPU in sd. 查找调度域中最空闲的调度组
  */
 static struct sched_group *
 find_idlest_group(struct sched_domain *sd, struct task_struct *p, int this_cpu)
@@ -9002,24 +9155,25 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p, int this_cpu)
 	struct sg_lb_stats local_sgs, tmp_sgs;
 	struct sg_lb_stats *sgs;
 	unsigned long imbalance;
+
+    /**
+     *  
+     */
 	struct sg_lb_stats idlest_sgs = {
-			.avg_load = UINT_MAX,
-			.group_type = group_overloaded,
+			idlest_sgs.avg_load = UINT_MAX,
+			idlest_sgs.group_type = group_overloaded,
 	};
 
-	imbalance = scale_load_down(NICE_0_LOAD) *
-				(sd->imbalance_pct-100) / 100;
+	imbalance = scale_load_down(NICE_0_LOAD) * (sd->imbalance_pct-100) / 100;
 
 	do {
 		int local_group;
 
 		/* Skip over this group if it has no CPUs allowed */
-		if (!cpumask_intersects(sched_group_span(group),
-					p->cpus_ptr))
+		if (!cpumask_intersects(sched_group_span(group), p->cpus_ptr))
 			continue;
 
-		local_group = cpumask_test_cpu(this_cpu,
-					       sched_group_span(group));
+		local_group = cpumask_test_cpu(this_cpu, sched_group_span(group));
 
 		if (local_group) {
 			sgs = &local_sgs;

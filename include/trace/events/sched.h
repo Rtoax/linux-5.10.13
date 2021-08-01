@@ -373,8 +373,10 @@ trace_sched_switch_enabled(void)
 #endif //
 
 /*
- * Tracepoint for a task being migrated:
+ * Tracepoint for a task being migrated: 
+ * 跟踪 一个进程从 一个 CPU 迁移到 另一个 CPU 上
  */
+void trace_sched_migrate_task(struct task_struct *p, int new_cpu);
 TRACE_EVENT(sched_migrate_task,
 
 	TP_PROTO(struct task_struct *p, int dest_cpu),

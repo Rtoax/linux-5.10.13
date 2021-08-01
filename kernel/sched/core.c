@@ -2033,6 +2033,9 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 	WARN_ON_ONCE(!cpu_online(new_cpu));
 #endif
 
+    /**
+     *  
+     */
 	trace_sched_migrate_task(p, new_cpu);
 
 	if (task_cpu(p) != new_cpu) {
@@ -2401,6 +2404,13 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
      *  选择一个合适的 CPU
      */
 	if (p->nr_cpus_allowed > 1) /* 使用调度类的 队列选择 接口 */
+        /**
+         *  select_task_rq_idle()
+         *  select_task_rq_fair()
+         *  select_task_rq_rt()
+         *  select_task_rq_dl()
+         *  select_task_rq_stop()
+         */
 		cpu = p->sched_class->select_task_rq(p, cpu, sd_flags, wake_flags);
 	else
 		cpu = cpumask_any(p->cpus_ptr);
@@ -2881,6 +2891,8 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
  *
  * Return: %true if @p->state changes (an actual wakeup was done),
  *	   %false otherwise.
+ *
+ * 唤醒进程
  */
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
@@ -2889,6 +2901,10 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	int cpu, success = 0;
 
 	preempt_disable();  /* 禁止抢占 */
+
+    /**
+     *  
+     */
 	if (p == current) {/* 当前线程 */
 		/*
 		 * We're waking current, this means 'p->on_rq' and 'task_cpu(p)
@@ -3023,7 +3039,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	smp_cond_load_acquire(&p->on_cpu, !VAL);
     /*  */
     /**
-     *  
+     *  调用调度类的 select_task_rq()
      */
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags);
 	if (task_cpu(p) != cpu) {
@@ -3115,6 +3131,9 @@ bool try_invoke_on_locked_down_task(struct task_struct *p, bool (*func)(struct t
  */
 int wake_up_process(struct task_struct *p)
 {
+    /**
+     *  唤醒进程
+     */
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
 EXPORT_SYMBOL(wake_up_process);

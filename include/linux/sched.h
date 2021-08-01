@@ -876,7 +876,9 @@ struct task_struct {    /* PCB */
 	unsigned int			cpu;
 #endif
     /**
-     *  用于 wake affine 特性
+     *  flips: 翻转
+     *
+     *  用于 wake affine 特性 , 见 `record_wakee()`
      */
 	unsigned int			wakee_flips;
     /**
@@ -894,6 +896,8 @@ struct task_struct {    /* PCB */
 	 * push tasks around a CPU where each wakeup moves to the next one.
 	 * Tracking a recently used CPU allows a quick search for a recently
 	 * used CPU that may be idle.
+	 *
+	 * 记录进程最长运行的 CPU，见 `select_idle_sibling()`
 	 */
 	int				recent_used_cpu;
     /**
