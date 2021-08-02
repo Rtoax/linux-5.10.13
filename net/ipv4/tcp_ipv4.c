@@ -1887,6 +1887,9 @@ static void tcp_v4_restore_cb(struct sk_buff *skb)
 		sizeof(struct inet_skb_parm));
 }
 
+/**
+ *  见 struct tcp_skb_cb 结构体注释
+ */
 static void tcp_v4_fill_cb(struct sk_buff *skb, const struct iphdr *iph,
 			   const struct tcphdr *th)
 {

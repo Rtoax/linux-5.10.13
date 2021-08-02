@@ -22,16 +22,18 @@ struct sockaddr_ll {
 
 /* Packet types */
 
-#define PACKET_HOST		0		/* To us		*/
-#define PACKET_BROADCAST	1		/* To all		*/
-#define PACKET_MULTICAST	2		/* To group		*/
-#define PACKET_OTHERHOST	3		/* To someone else 	*/
-#define PACKET_OUTGOING		4		/* Outgoing of any type */
-#define PACKET_LOOPBACK		5		/* MC/BRD frame looped back */
+#define PACKET_HOST		0		/* To us	接收到的帧的目的地址就是当前接收接口。也就是说，数据包已到达其目的地	*/
+#define PACKET_BROADCAST	1		/* To all	接收帧的目的地址是接收接口的广播地址	*/
+#define PACKET_MULTICAST	2		/* To group	接收到的帧的目标地址是当前接收接口已注册过的的多播地址之一	*/
+#define PACKET_OTHERHOST	3		/* To someone else 接收帧的目的地址不属于与接口关联的目的地址（单播，组播和广播）；
+                                                    因此，如果启用了转发，则必须转发该帧，否则将其丢弃	*/
+#define PACKET_OUTGOING		4		/* Outgoing of any type 表示数据包正在发送 */
+#define PACKET_LOOPBACK		5		/* MC/BRD frame looped back 数据包被发送到回环设备。
+                                        多亏了此标志，内核在处理回环设备时，可以跳过某些实际设备所需的操作 */
 #define PACKET_USER		6		/* To user space	*/
 #define PACKET_KERNEL		7		/* To kernel space	*/
 /* Unused, PACKET_FASTROUTE and PACKET_LOOPBACK are invisible to user space */
-#define PACKET_FASTROUTE	6		/* Fastrouted frame	*/
+#define PACKET_FASTROUTE	6		/* Fastrouted frame	数据包正在使用快速路由功能进行路由 */
 
 /* Packet socket options */
 

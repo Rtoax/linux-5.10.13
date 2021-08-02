@@ -288,11 +288,20 @@ struct tc_skb_ext {
 };
 #endif
 
+/**
+ *  
+ */
 struct sk_buff_head {
 	/* These two members must be first. */
+    /**
+     *  用于串联内核中所有的 sk_buff 结构
+     */
 	struct sk_buff	*next;
 	struct sk_buff	*prev;
 
+    /**
+     *  
+     */
 	__u32		qlen;
 	spinlock_t	lock;
 };
@@ -307,10 +316,11 @@ struct sk_buff;
  * size.
  */
 #if (65536/PAGE_SIZE + 1) < 16
-#define MAX_SKB_FRAGS 16UL
+//#define MAX_SKB_FRAGS 16UL
 #else
-#define MAX_SKB_FRAGS (65536/PAGE_SIZE + 1)
+#define MAX_SKB_FRAGS /* 17 */ (65536/PAGE_SIZE + 1)
 #endif
+
 extern int sysctl_max_skb_frags;
 
 /* Set skb_shinfo(skb)->gso_size to this in case you want skb_segment to
@@ -517,6 +527,10 @@ struct skb_shared_info {
 	unsigned short	gso_size;
 	/* Warning: this field is not always filled in (UFO)! */
 	unsigned short	gso_segs;
+
+    /**
+     *  这是一个数组
+     */
 	struct sk_buff	*frag_list;
 	struct skb_shared_hwtstamps hwtstamps;
 	unsigned int	gso_type;
@@ -605,7 +619,7 @@ enum {
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 typedef unsigned int sk_buff_data_t;
 #else
-typedef unsigned char *sk_buff_data_t;
+//typedef unsigned char *sk_buff_data_t;
 #endif
 
 /**
@@ -712,14 +726,46 @@ typedef unsigned char *sk_buff_data_t;
 typedef struct sk_buff* psk_buff_t; //我加的
 #define __aligned8 __aligned(8) //我加的
 
+/**
+ *  常用 API
+ *
+ *  alloc_skb       内存分配
+ *  dev_alloc_skb   内存分配
+ *  
+ *  kfree_skb       内存释放
+ *  dev_kfree_skb   内存释放
+ */
 struct sk_buff {    /* 网络协议栈 包结构 */
+    /**
+     *  
+     */
 	union {
 		struct {    /*  */
 			/* These two members must be first. */
+            /**
+             *  见 sk_buff_head 的 next 和 prev 组成双向链表
+             */
+            /**
+             *  sk_buff 链表中的下一个缓冲区
+             */
 			struct sk_buff		*next;
+
+            /**
+             *  sk_buff 链表中的下一个缓冲区，这两个变量将 sk_buff 链接到一个双向链表中
+             */
 			struct sk_buff		*prev;
 
+            /**
+             *  
+             */
 			union {
+                /**
+                 *  收到此报文的网络设备
+                 *  dev代表的设备的作用取决于缓冲区中存储的数据包是要发送还是刚刚被接收。
+                 *  
+                 *  1. 当收到数据包后，设备驱动程序会使用指向接收数据接口的指针来更新此字段。
+                 *  2. 当要发送数据包时，此参数表示将通过其发送出去的设备。
+                 */
 				struct net_device	*dev;
 				/* Some protocols might use this space to store information,
 				 * while device pointer would be NULL.
@@ -732,12 +778,25 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 		struct list_head	list;
 	};
 
+    /**
+     *  
+     */
 	union {
+        /**
+         *  本网络 报文所属的 sock 结构
+         *  此值 仅在本机发出的报文中有效，从网络收到的报文此值为空
+         */
 		struct sock		*sk;
 		int			ip_defrag_offset;
 	};
 
+    /**
+     *  
+     */
 	union {
+        /**
+         *  报文收到的时间戳
+         */
 		ktime_t		tstamp;
 		u64		skb_mstamp_ns; /* earliest departure time */
 	};
@@ -746,12 +805,29 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	 * layer. Please put your private variables there. If you
 	 * want to keep them across layers you have to do a skb_clone()
 	 * first. This is owned by whoever has the skb queued ATM.
+	 *
+	 * control buffer 的简称，或存储一些私有信息，由各层维护以供内部使用。
+	 * 它是在 sk_buff 结构中静态分配的（当前大小为48个字节），并且足够大以容纳每一层所需的任何私有数据
+	 * 在每一层的代码中，访问都是通过宏进行的，以使代码更具可读性。
+	 * 例如，TCP使用该空间存储 tcp_skb_cb 数据结构，该数据结构在 include/net/tcp.h 中定义：
+	 *      其中的一个宏 TCP_SKB_CB(), 其中 TCP 模块在收到分段后填写 cb 结构：`tcp_v4_fill_cb()`
 	 */
 	char		__aligned8	cb[48] ;
 
+    /**
+     *  
+     */
 	union {
 		struct {
 			unsigned long	_skb_refdst;
+
+            /**
+             *  这个函数指针能够在运行时被赋值，从而在一个 buffer 被移除时，执行一些操作。
+             *
+             *  1. 当一个 buffer 不属于一个 socket 时，这个函数指针通常为空。
+             *  2. 当一个 buffer 属于一个 socket 时，这个函数指针通常被设置为 sock_rfree 或 sock_wfree
+             *      两个 sock_xxx 函数用于更新 socket 在它的队列中持有的大量内存。
+             */
 			void		(*destructor)(struct sk_buff *skb);
 		};
 		struct list_head	tcp_tsorted_anchor;
@@ -760,10 +836,22 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
 	unsigned long		 _nfct;
 #endif
-	unsigned int		len,
-				data_len;
-	__u16			mac_len,
-				hdr_len;
+
+    /**
+     *  len     表示在 buffer 中数据区域的大小。
+     *          该长度既包括主缓冲区的数据长度，也包括片段中的数据。
+     *          因为协议头在向上传递中会被丢弃，在向下传递中会被添加，
+     *          所以它的值会随着 buffer 在各层间传递而改变。
+     *
+     *  data_len    和 len 不同的是，data_len 只记录分段中的数据大小。
+     */
+	unsigned int		len, data_len;
+
+    /**
+     *  mac_len MAC 头部的长度
+     *  hdr_len 
+     */
+	__u16			mac_len, hdr_len;
 
 	/* Following fields are _not_ copied in __copy_skb_header()
 	 * Note that queue_mapping is here mostly to fill a hole.
@@ -772,7 +860,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 
 /* if you move cloned around you also must adapt those constants */
 #ifdef __BIG_ENDIAN_BITFIELD
-#define CLONED_MASK	(1 << 7)
+//#define CLONED_MASK	(1 << 7)
 #else
 #define CLONED_MASK	1
 #endif
@@ -780,7 +868,11 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 
 	/* private: */
 	__u8			__cloned_offset[0];
+    
 	/* public: */
+    /**
+     *  
+     */
 	__u8			cloned:1,
 				nohdr:1,
 				fclone:2,
@@ -799,7 +891,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 
 /* if you move pkt_type around you also must adapt those constants */
 #ifdef __BIG_ENDIAN_BITFIELD
-#define PKT_TYPE_MAX	(7 << 5)
+//#define PKT_TYPE_MAX	(7 << 5)
 #else
 #define PKT_TYPE_MAX	7
 #endif
@@ -808,12 +900,24 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	/* private: */
 	__u8			__pkt_type_offset[0];
 	/* public: */
+    /**
+     *  该字段根据 L2 目的地址对帧的类型进行分类。
+     *  可能的值在 include/linux/if_packet.h 中列出。对于以太网设备，此参数由函数 eth_type_trans 初始化。
+     *
+     *  主要的一些值：
+     *
+     *  1. PACKET_HOST: 接收到的帧的目的地址就是当前接收接口。也就是说，数据包已到达其目的地
+     *  2. PACKET_MULTICAST: 接收到的帧的目标地址是当前接收接口已注册过的的多播地址之一
+     */
 	__u8			pkt_type:3;
 	__u8			ignore_df:1;
 	__u8			nf_trace:1;
 	__u8			ip_summed:2;
 	__u8			ooo_okay:1;
 
+    /**
+     *  
+     */
 	__u8			l4_hash:1;
 	__u8			sw_hash:1;
 	__u8			wifi_acked_valid:1;
@@ -825,7 +929,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u8			csum_valid:1;
 
 #ifdef __BIG_ENDIAN_BITFIELD
-#define PKT_VLAN_PRESENT_BIT	7
+//#define PKT_VLAN_PRESENT_BIT	7
 #else
 #define PKT_VLAN_PRESENT_BIT	0
 #endif
@@ -865,6 +969,9 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u16			tc_index;	/* traffic control index */
 #endif
 
+    /**
+     *  校验和
+     */
 	union { /* 校验和 */
 		__wsum		csum;
 		struct {    /*  */
@@ -877,12 +984,14 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u32			hash;
 	__be16			vlan_proto;
 	__u16			vlan_tci;
+    
 #if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
 	union {
 		unsigned int	napi_id;
 		unsigned int	sender_cpu;
 	};
 #endif
+
 #ifdef CONFIG_NETWORK_SECMARK
 	__u32		secmark;
 #endif
@@ -901,9 +1010,28 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u16			inner_network_header;
 	__u16			inner_mac_header;
 
+    /**
+     *  从 L2 处的网卡设备驱动程序的角度来看，这是在更高层次上使用的协议。
+     *  典型协议有 IP，IPv6和ARP。
+     *  完整列表可在 include/linux/if_ether.h 中找到。
+     *  由于每个协议都有其自己的处理传入数据包的处理函数，因此驱动程序使用此字段来通知其上一层使用什么处理函数。
+     *  每个驱动程序都调用 netif_rx 来调用上层网络层的处理函数，因此必须在调用该函数之前初始化协议字段。
+     */
 	__be16			protocol;
+
+    /**
+     *  传输层头部
+     */
 	__u16			transport_header;
+
+    /**
+     *  网络层头部
+     */
 	__u16			network_header;
+
+    /**
+     *  链路层头部
+     */
 	__u16			mac_header;
 
 	/* private: */
@@ -911,11 +1039,45 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	/* public: */
 
 	/* These elements must be at the end, see alloc_skb() for details.  */
+    /**
+     *  用来表示 buffer 中数据域的边界。
+     *  当每一层为了任务而准备 buffer 时，为了协议头或数据，可能会分配更多的空间。 
+     *  head 和 end 指向了 buffer 被分配的内存区域的开始和结束， 
+     *  data 和 tail 指向其中实际数据域的开始和结束。
+     *  每一层能够在 head 和 data 之间的区域填充协议头，或者在 tail 和 end 之间的区域填充新的数据。
+     *
+     *                      +------------>+----------+
+     *                      |             | headroom |
+     *  +-------+           |  +--------->+----------+
+     *  |  ...  |           |  |          |          |
+     *  +-------+           |  |          |          |
+     *  |  head |-----------+  |          |   data   |
+     *  +-------+              |          |          |
+     *  |  data |--------------+          |          |
+     *  +-------+                         |          |
+     *  |  tail |------------------------>+----------+
+     *  +-------+                         | tailroot |
+     *  |  end  |------------------------>+----------+
+     *  +-------+
+     *  |  ...  |
+     *  +-------+
+     */
 	sk_buff_data_t		tail;
 	sk_buff_data_t		end;
-	unsigned char		*head,
-				*data;
+	unsigned char		*head, *data;
+
+    /**
+     *  这个字段表示 buffer 的总大小，包括了 sk_buff 自己的占用。在执行 alloc_skb 函数时该字段被初始化。
+     *  `SKB_TRUESIZE()`
+     */
 	unsigned int		truesize;
+
+    /**
+     *  users   sk_buff 的引用计数，或引用了此 sk_buff 缓冲区的对象数。 
+     *          主要用途是避免在有人还在使用时就释放了 sk_buff。
+     *          users的值可以通过 atomic_inc 和 atomic_dec直接增加和减少，
+     *          但更多的时候是通过`skb_get`和`kfree_skb` 函数进行。
+     */
 	refcount_t		users;
 
 #ifdef CONFIG_SKB_EXTENSIONS
@@ -1089,10 +1251,19 @@ struct sk_buff *build_skb_around(struct sk_buff *skb,
  * @priority: allocation mask
  *
  * This function is a convenient wrapper around __alloc_skb().
+ *
+ * 是分配缓冲区的主要函数
+ * 由于数据缓冲区（由 sk_buff 的 head end data tail 指针维护的内存区域）
+ *  和链表（sk_buff 自身）是两个不同的结构，
+ * 所以创建单个缓冲区涉及两个内存分配（一个分配给数据缓冲区，另一个分配给 sk_buff 自身结构）。
  */
 static inline struct sk_buff *alloc_skb(unsigned int size,
 					gfp_t priority)
 {
+    /**
+     *  alloc_skb 通过调用函数 kmem_cache_alloc 从缓存中获取 sk_buff 数据结构，
+     *  并通过调用 kmalloc 获取数据缓冲区，而 kmalloc 也会使用缓存的内存（如果可用）
+     */
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 

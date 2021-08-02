@@ -79,11 +79,17 @@
 
 #include "datagram.h"
 
+/**
+ *  
+ */
 struct kmem_cache __ro_after_init*skbuff_head_cache ;
 static struct kmem_cache __ro_after_init*skbuff_fclone_cache ;
 #ifdef CONFIG_SKB_EXTENSIONS
 static struct kmem_cache __ro_after_init*skbuff_ext_cache ;
 #endif
+/**
+ *  
+ */
 int __read_mostly sysctl_max_skb_frags  = MAX_SKB_FRAGS;
 EXPORT_SYMBOL(sysctl_max_skb_frags);
 
@@ -178,6 +184,9 @@ out:
  *
  *	Buffers may only be allocated from interrupts using a @gfp_mask of
  *	%GFP_ATOMIC.
+ *
+ *  alloc_skb 通过调用函数 kmem_cache_alloc 从缓存中获取 sk_buff 数据结构，
+ *  并通过调用 kmalloc 获取数据缓冲区，而 kmalloc 也会使用缓存的内存（如果可用）
  */
 struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
 			    int flags, int node)
@@ -204,6 +213,8 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
 	 * line. It usually works because kmalloc(X > SMP_CACHE_BYTES) gives
 	 * aligned memory blocks, unless SLUB/SLAB debug is enabled.
 	 * Both skb->head and skb_shared_info are cache line aligned.
+	 *
+	 * 在调用 kmalloc 之前，使用宏 SKB_DATA_ALIGN 调整了大小参数以强制对齐。
 	 */
 	size = SKB_DATA_ALIGN(size);
 	size += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));

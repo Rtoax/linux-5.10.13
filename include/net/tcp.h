@@ -823,6 +823,9 @@ static inline u64 tcp_skb_timestamp_us(const struct sk_buff *skb)
  * We also store the host-order sequence numbers in here too.
  * This is 44 bytes if IPV6 is enabled.
  * If this grows please adjust skbuff.h:skbuff->cb[xxx] size appropriately.
+ *
+ * 这实际上对应 sk_buff.cb 私有数据, 见宏 `TCP_SKB_CB()`, 
+ *  其中 TCP 模块在收到分段后填写 cb 结构：`tcp_v4_fill_cb()`
  */
 struct tcp_skb_cb {
 	__u32		seq;		/* Starting sequence number	*/

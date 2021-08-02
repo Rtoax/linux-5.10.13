@@ -26,9 +26,8 @@
 #include <linux/libc-compat.h>
 
 /*
- *	IPv6 address structure
+ *	IPv6 address structure (128bit)
  */
-
 #if __UAPI_DEF_IN6_ADDR
 struct in6_addr {
 	union {

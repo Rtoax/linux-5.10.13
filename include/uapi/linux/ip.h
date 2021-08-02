@@ -91,18 +91,44 @@ struct iphdr {
 	__u8	ihl:4,
 		version:4;
 #elif defined (__BIG_ENDIAN_BITFIELD)
-	__u8	version:4,
-  		ihl:4;
+//	__u8	version:4,
+//  		ihl:4;
 #else
 #error	"Please fix <asm/byteorder.h>"
 #endif
+    /**
+     *  服务类型
+     */
 	__u8	tos;
+
+    /**
+     *  总长
+     */
 	__be16	tot_len;
+
+    /**
+     *  分段标志 ID
+     */
 	__be16	id;
+
+    /**
+     *  分段偏移
+     */
 	__be16	frag_off;
+    /**
+     *  TTL 生存时间
+     */
 	__u8	ttl;
 	__u8	protocol;
+
+    /**
+     *  校验和
+     */
 	__sum16	check;
+
+    /**
+     *  地址
+     */
 	__be32	saddr;
 	__be32	daddr;
 	/*The options start here. */

@@ -112,15 +112,16 @@ struct ipv6_destopt_hao {
  *
  *	BEWARE, it is incorrect. The first 4 bits of flow_lbl
  *	are glued to priority now, forming "class".
+ *
+ *  
  */
-
 struct ipv6hdr {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
 	__u8			priority:4,
 				version:4;
 #elif defined(__BIG_ENDIAN_BITFIELD)
-	__u8			version:4,
-				priority:4;
+//	__u8			version:4,
+//				priority:4;
 #else
 #error	"Please fix <asm/byteorder.h>"
 #endif
