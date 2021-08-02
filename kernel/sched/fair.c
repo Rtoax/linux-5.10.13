@@ -36,6 +36,13 @@
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  *
  * 当进程数目小于(sched_nr_latency)8时，则调度周期等于6ms(sysctl_sched_latency)
+ *
+ *  /proc/sys/kernel/sched_latency_ns
+ *
+ *  设置 CFS 就绪队列调度的总时间片，默认值为 6ms
+ *  sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，它与运行队列的进程数有关，
+ *  如果进程数超过 sysctl_nr_latency(默认值 为 8)，那么调度周期就是 sched_min_granularity_ns 乘以
+ *  运行队列中的进程数，否则就是 sched_latency_ns.
  */
 unsigned int sysctl_sched_latency			= 6000000ULL;   /* 6ms */
 static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
@@ -60,6 +67,10 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
  *
  * 调度周期，使进程至少保证执行0.75ms。
  * 如果该进程实际运行时间小于这个值，则不需要被调度, see `check_preempt_tick()`
+ *
+ *  /proc/sys/kernel/sched_min_granularity_ns
+ *
+ *  设置 CPU 密集型 进程最小时间片，默认值为 0.75 ms
  */
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
@@ -74,6 +85,10 @@ static unsigned int sched_nr_latency = 8;
 /*
  * After fork, child runs first. If set to 0 (default) then
  * parent will (try to) run first.
+ *
+ *  /proc/sys/kernel/sched_child_runs_first
+ *
+ *  控制 fork 后，父进程先运行还是子进程先运行，默认 值为 0 -> 父进程先运行
  */
 unsigned int __read_mostly sysctl_sched_child_runs_first ;
 
@@ -85,10 +100,24 @@ unsigned int __read_mostly sysctl_sched_child_runs_first ;
  * have immediate wakeup/sleep latencies.
  *
  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
+ *
+ *  /proc/sys/kernel/sched_wakeup_granularity_ns
+ *
+ *  待唤醒进程会检查是否需要抢占当前进程，若 待唤醒进程的睡眠时间 小于 sched_wakeup_granularity_ns
+ *  ，那么不会抢占当前进程。
+ *  增加该值会减小待唤醒进程的抢占概率。
+ *  减小该值，那么发生抢占的概率就会越大。默认值为 1ms
  */
 unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
 static unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
+/**
+ *  /proc/sys/kernel/sched_migration_cost_ns
+ *
+ *  判断一个进程是否可以利用高速缓存的热度。
+ *  如果进程的运行时间(now - p->se.exec_start) 小于他，那么内核认为他的数据还在高速缓存里
+ *  所以，该进程可以利用高速缓存的认读，在迁移的时候不会考虑它。
+ */
 const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
 
 int sched_thermal_decay_shift;
@@ -132,6 +161,10 @@ int __weak arch_asym_cpu_priority(int cpu)
  * we will always only issue the remaining available time.
  *
  * (default: 5 msec, units: microseconds)
+ *
+ *  /proc/sys/kernel/sched_cfs_bandwidth_slice_us
+ *
+ *  用于 CFS 的 带宽限制，默认值为 5ms
  */
 unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
 #endif
@@ -11800,8 +11833,9 @@ void print_cfs_stats(struct seq_file *m, int cpu)
 	struct cfs_rq *cfs_rq, *pos;
 
 	rcu_read_lock();
-	for_each_leaf_cfs_rq_safe(cpu_rq(cpu), cfs_rq, pos)
+	for_each_leaf_cfs_rq_safe(cpu_rq(cpu), cfs_rq, pos) {
 		print_cfs_rq(m, cpu, cfs_rq);
+    }
 	rcu_read_unlock();
 }
 

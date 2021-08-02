@@ -1585,8 +1585,19 @@ int proc_do_static_key(struct ctl_table *table, int write,
 	return ret;
 }
 
+
+/**
+ *  /proc/sys/kernel/
+ *
+ *  
+ */
 static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	{
+	    /**
+         *  /proc/sys/kernel/sched_child_runs_first
+         *
+         *  控制 fork 后，父进程先运行还是子进程先运行，默认 值为 0 -> 父进程先运行
+         */
 		.procname	= "sched_child_runs_first",
 		.data		= &sysctl_sched_child_runs_first,
 		.maxlen		= sizeof(unsigned int),
@@ -1595,6 +1606,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SCHED_DEBUG
 	{
+	    /**
+         *  /proc/sys/kernel/sched_min_granularity_ns
+         *
+         *  设置 CPU 密集型 进程最小时间片，默认值为 0.75 ms
+         */
 		.procname	= "sched_min_granularity_ns",
 		.data		= &sysctl_sched_min_granularity,
 		.maxlen		= sizeof(unsigned int),
@@ -1604,6 +1620,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_granularity_ns,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/sched_latency_ns
+         *
+         *  设置 CFS 就绪队列调度的总时间片，默认值为 6ms
+         *  sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，它与运行队列的进程数有关，
+         *  如果进程数超过 sysctl_nr_latency(默认值 为 8)，那么调度周期就是 sched_min_granularity_ns 乘以
+         *  运行队列中的进程数，否则就是 sched_latency_ns.
+         */
 		.procname	= "sched_latency_ns",
 		.data		= &sysctl_sched_latency,
 		.maxlen		= sizeof(unsigned int),
@@ -1613,6 +1637,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_granularity_ns,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/sched_wakeup_granularity_ns
+         *
+         *  待唤醒进程会检查是否需要抢占当前进程，若 待唤醒进程的睡眠时间 小于 sched_wakeup_granularity_ns
+         *  ，那么不会抢占当前进程。
+         *  增加该值会减小待唤醒进程的抢占概率。
+         *  减小该值，那么发生抢占的概率就会越大。默认值为 1ms
+         */
 		.procname	= "sched_wakeup_granularity_ns",
 		.data		= &sysctl_sched_wakeup_granularity,
 		.maxlen		= sizeof(unsigned int),
@@ -1623,6 +1655,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SMP
 	{
+	    /**
+         *  /proc/sys/kernel/sched_tunable_scaling
+         *
+         *  
+         */
 		.procname	= "sched_tunable_scaling",
 		.data		= &sysctl_sched_tunable_scaling,
 		.maxlen		= sizeof(enum sched_tunable_scaling),
@@ -1632,6 +1669,13 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_tunable_scaling,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/sched_migration_cost_ns
+         *
+         *  判断一个进程是否可以利用高速缓存的热度。
+         *  如果进程的运行时间(now - p->se.exec_start) 小于他，那么内核认为他的数据还在高速缓存里
+         *  所以，该进程可以利用高速缓存的认读，在迁移的时候不会考虑它。
+         */
 		.procname	= "sched_migration_cost_ns",
 		.data		= &sysctl_sched_migration_cost,
 		.maxlen		= sizeof(unsigned int),
@@ -1639,6 +1683,13 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/sched_nr_migrate
+         *
+         *  设置在 SMP 负载均衡机制里每次最多可以从目标 CPU 迁移多少个 进程到 源 CPU 里。
+         *  在迁移过程中 关闭了中断，包括 软中断机制，因此 增大该值会导致中断延迟，
+         *  同时，也增大了实时进程的延迟。 默认值为 32
+         */
 		.procname	= "sched_nr_migrate",
 		.data		= &sysctl_sched_nr_migrate,
 		.maxlen		= sizeof(unsigned int),
@@ -1647,6 +1698,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SCHEDSTATS
 	{
+	    /**
+         *  /proc/sys/kernel/sched_schedstats
+         *
+         *  用于打开调度统计信息
+         */
 		.procname	= "sched_schedstats",
 		.data		= NULL,
 		.maxlen		= sizeof(unsigned int),
@@ -1659,6 +1715,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif /* CONFIG_SMP */
 #ifdef CONFIG_NUMA_BALANCING
 	{
+	    /**
+         *  /proc/sys/kernel/numa_balancing_scan_delay_ms
+         *
+         *  
+         */
 		.procname	= "numa_balancing_scan_delay_ms",
 		.data		= &sysctl_numa_balancing_scan_delay,
 		.maxlen		= sizeof(unsigned int),
@@ -1666,6 +1727,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "numa_balancing_scan_period_min_ms",
 		.data		= &sysctl_numa_balancing_scan_period_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1673,6 +1739,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "numa_balancing_scan_period_max_ms",
 		.data		= &sysctl_numa_balancing_scan_period_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1680,6 +1751,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "numa_balancing_scan_size_mb",
 		.data		= &sysctl_numa_balancing_scan_size,
 		.maxlen		= sizeof(unsigned int),
@@ -1688,6 +1764,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= SYSCTL_ONE,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "numa_balancing",
 		.data		= NULL, /* filled in by handler */
 		.maxlen		= sizeof(unsigned int),
@@ -1699,6 +1780,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif /* CONFIG_NUMA_BALANCING */
 #endif /* CONFIG_SCHED_DEBUG */
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_rt_period_us",
 		.data		= &sysctl_sched_rt_period,
 		.maxlen		= sizeof(unsigned int),
@@ -1706,6 +1792,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sched_rt_handler,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_rt_runtime_us",
 		.data		= &sysctl_sched_rt_runtime,
 		.maxlen		= sizeof(int),
@@ -1713,6 +1804,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sched_rt_handler,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_deadline_period_max_us",
 		.data		= &sysctl_sched_dl_period_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1720,6 +1816,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_deadline_period_min_us",
 		.data		= &sysctl_sched_dl_period_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1727,6 +1828,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_rr_timeslice_ms",
 		.data		= &sysctl_sched_rr_timeslice,
 		.maxlen		= sizeof(int),
@@ -1735,6 +1841,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_UCLAMP_TASK
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_util_clamp_min",
 		.data		= &sysctl_sched_uclamp_util_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1742,6 +1853,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sysctl_sched_uclamp_handler,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_util_clamp_max",
 		.data		= &sysctl_sched_uclamp_util_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1749,6 +1865,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sysctl_sched_uclamp_handler,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_util_clamp_min_rt_default",
 		.data		= &sysctl_sched_uclamp_util_min_rt_default,
 		.maxlen		= sizeof(unsigned int),
@@ -1758,6 +1879,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_SCHED_AUTOGROUP
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sched_autogroup_enabled",
 		.data		= &sysctl_sched_autogroup_enabled,
 		.maxlen		= sizeof(unsigned int),
@@ -1769,6 +1895,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_CFS_BANDWIDTH
 	{
+	    /**
+         *  /proc/sys/kernel/sched_cfs_bandwidth_slice_us
+         *
+         *  用于 CFS 的 带宽限制，默认值为 5ms
+         */
 		.procname	= "sched_cfs_bandwidth_slice_us",
 		.data		= &sysctl_sched_cfs_bandwidth_slice,
 		.maxlen		= sizeof(unsigned int),
@@ -1779,6 +1910,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
 	{
+	    /**
+         *  /proc/sys/kernel/sched_energy_aware
+         *
+         *  
+         */
 		.procname	= "sched_energy_aware",
 		.data		= &sysctl_sched_energy_aware,
 		.maxlen		= sizeof(unsigned int),
@@ -1790,6 +1926,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_PROVE_LOCKING
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "prove_locking",
 		.data		= &prove_locking,
 		.maxlen		= sizeof(int),
@@ -1799,6 +1940,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_LOCK_STAT
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "lock_stat",
 		.data		= &lock_stat,
 		.maxlen		= sizeof(int),
@@ -1807,6 +1953,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "panic",
 		.data		= &panic_timeout,
 		.maxlen		= sizeof(int),
@@ -1815,13 +1966,23 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_COREDUMP
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "core_uses_pid",
 		.data		= &core_uses_pid,
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{   // /proc/sys/kernel/core_pattern
+	{   
+	    /**
+         *  /proc/sys/kernel/core_pattern
+         *
+         *  
+         */
 		.procname	= "core_pattern",
 		.data		= core_pattern,
 		.maxlen		= CORENAME_MAX_SIZE,
@@ -1829,6 +1990,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dostring_coredump,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "core_pipe_limit",
 		.data		= &core_pipe_limit,
 		.maxlen		= sizeof(unsigned int),
@@ -1838,12 +2004,22 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_PROC_SYSCTL
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "tainted",
 		.maxlen 	= sizeof(long),
 		.mode		= 0644,
 		.proc_handler	= proc_taint,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "sysctl_writes_strict",
 		.data		= &sysctl_writes_strict,
 		.maxlen		= sizeof(int),
@@ -1855,6 +2031,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_LATENCYTOP
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "latencytop",
 		.data		= &latencytop_enabled,
 		.maxlen		= sizeof(int),
@@ -1864,6 +2045,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_BLK_DEV_INITRD
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "real-root-dev",
 		.data		= &real_root_dev,
 		.maxlen		= sizeof(int),
@@ -1872,6 +2058,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "print-fatal-signals",
 		.data		= &print_fatal_signals,
 		.maxlen		= sizeof(int),
@@ -1880,6 +2071,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SPARC
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "reboot-cmd",
 		.data		= reboot_command,
 		.maxlen		= 256,
@@ -1887,6 +2083,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dostring,
 	},
 	{
+	    /**
+         *  /proc/sys/kernel/
+         *
+         *  
+         */
 		.procname	= "stop-a",
 		.data		= &stop_a_enabled,
 		.maxlen		= sizeof (int),

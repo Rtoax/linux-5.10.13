@@ -1874,6 +1874,8 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #endif /* SCHED_DEBUG */
 
 extern struct static_key_false sched_numa_balancing;
+
+//echo 1 > /proc/sys/kernel/sched_schedstats
 extern struct static_key_false sched_schedstats;
 
 //* `sched_rt_period_us`: represents a period

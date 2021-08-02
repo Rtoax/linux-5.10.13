@@ -63,6 +63,12 @@ const_debug unsigned int sysctl_sched_features =
 /*
  * Number of tasks to iterate in a single balance run.
  * Limited because this is done with IRQs disabled.
+ *
+ *  /proc/sys/kernel/sched_nr_migrate
+ *
+ *  设置在 SMP 负载均衡机制里每次最多可以从目标 CPU 迁移多少个 进程到 源 CPU 里。
+ *  在迁移过程中 关闭了中断，包括 软中断机制，因此 增大该值会导致中断延迟，
+ *  同时，也增大了实时进程的延迟。 默认值为 32
  */
 const_debug unsigned int sysctl_sched_nr_migrate = 32;
 
@@ -3253,7 +3259,9 @@ int sysctl_numa_balancing(struct ctl_table *table, int write,
 
 #ifdef CONFIG_SCHEDSTATS
 
+//echo 1 > /proc/sys/kernel/sched_schedstats
 DEFINE_STATIC_KEY_FALSE(sched_schedstats);
+
 static bool __initdata __sched_schedstats = false;
 
 static void set_schedstats(bool enabled)
@@ -3304,6 +3312,11 @@ static void __init init_schedstats(void)/*  */
 }
 
 #ifdef CONFIG_PROC_SYSCTL
+/**
+ *  /proc/sys/kernel/sched_schedstats
+ *
+ *  用于打开调度统计信息
+ */
 int sysctl_schedstats(struct ctl_table *table, int write, void *buffer,
 		size_t *lenp, loff_t *ppos)
 {

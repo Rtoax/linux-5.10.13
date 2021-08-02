@@ -30,7 +30,9 @@ rq_sched_info_dequeued(struct rq *rq, unsigned long long delta)
 	if (rq)
 		rq->rq_sched_info.run_delay += delta;
 }
+//echo 1 > /proc/sys/kernel/sched_schedstats
 #define   schedstat_enabled()		static_branch_unlikely(&sched_schedstats)
+
 #define __schedstat_inc(var)		do { var++; } while (0)
 #define   schedstat_inc(var)		do { if (schedstat_enabled()) { var++; } } while (0)
 #define __schedstat_add(var, amt)	do { var += (amt); } while (0)

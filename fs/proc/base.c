@@ -1433,6 +1433,8 @@ static const struct file_operations proc_fail_nth_operations = {
 #ifdef CONFIG_SCHED_DEBUG
 /*
  * Print out various scheduling related per-task fields:
+ *
+ *  cat /proc/self/sched
  */
 static int sched_show(struct seq_file *m, void *v)
 {
@@ -1443,6 +1445,10 @@ static int sched_show(struct seq_file *m, void *v)
 	p = get_proc_task(inode);
 	if (!p)
 		return -ESRCH;
+
+    /**
+     *  cat /proc/self/sched
+     */
 	proc_sched_show_task(p, ns, m);
 
 	put_task_struct(p);
@@ -1469,15 +1475,21 @@ sched_write(struct file *file, const char __user *buf,
 
 static int sched_open(struct inode *inode, struct file *filp)
 {
+    /**
+     *  cat /proc/self/sched
+     */
 	return single_open(filp, sched_show, inode);
 }
 
+/**
+ *  cat /proc/self/sched
+ */
 static const struct file_operations proc_pid_sched_operations = {
-	.open		= sched_open,
-	.read		= seq_read,
-	.write		= sched_write,
-	.llseek		= seq_lseek,
-	.release	= single_release,
+	proc_pid_sched_operations.open		= sched_open,
+	proc_pid_sched_operations.read		= seq_read,
+	proc_pid_sched_operations.write		= sched_write,
+	proc_pid_sched_operations.llseek		= seq_lseek,
+	proc_pid_sched_operations.release	= single_release,
 };
 
 #endif
@@ -3156,6 +3168,9 @@ static int proc_stack_depth(struct seq_file *m, struct pid_namespace *ns,
 static const struct file_operations proc_task_operations;
 static const struct inode_operations proc_task_inode_operations;
 
+/**
+ *  /proc/PID/*
+ */
 static const struct pid_entry tgid_base_stuff[] = {
 	DIR("task",       S_IRUGO|S_IXUGO, proc_task_inode_operations, proc_task_operations),
 	DIR("fd",         S_IRUSR|S_IXUSR, proc_fd_inode_operations, proc_fd_operations), /* /proc/PID/fd/ */
@@ -3171,6 +3186,9 @@ static const struct pid_entry tgid_base_stuff[] = {
 	ONE("personality", S_IRUSR, proc_pid_personality),
 	ONE("limits",	  S_IRUGO, proc_pid_limits),
 #ifdef CONFIG_SCHED_DEBUG
+    /**
+     *  cat /proc/self/sched
+     */
 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
 #endif
 #ifdef CONFIG_SCHED_AUTOGROUP
@@ -3274,9 +3292,9 @@ static int proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)
 }
 
 static const struct file_operations proc_tgid_base_operations = {
-	.read		= generic_read_dir,
-	.iterate_shared	= proc_tgid_base_readdir,
-	.llseek		= generic_file_llseek,
+	proc_tgid_base_operations.read		= generic_read_dir,
+	proc_tgid_base_operations.iterate_shared	= proc_tgid_base_readdir,
+	proc_tgid_base_operations.llseek		= generic_file_llseek,
 };
 
 struct pid *tgid_pidfd_to_pid(const struct file *file)
@@ -3295,10 +3313,10 @@ static struct dentry *proc_tgid_base_lookup(struct inode *dir, struct dentry *de
 }
 
 static const struct inode_operations proc_tgid_base_inode_operations = {
-	.lookup		= proc_tgid_base_lookup,
-	.getattr	= pid_getattr,
-	.setattr	= proc_setattr,
-	.permission	= proc_pid_permission,
+	proc_tgid_base_inode_operations.lookup		= proc_tgid_base_lookup,
+	proc_tgid_base_inode_operations.getattr	= pid_getattr,
+	proc_tgid_base_inode_operations.setattr	= proc_setattr,
+	proc_tgid_base_inode_operations.permission	= proc_pid_permission,
 };
 
 /**

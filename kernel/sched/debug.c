@@ -9,6 +9,7 @@
 #include "sched.h"
 
 static DEFINE_SPINLOCK(sched_debug_lock);
+static spinlock_t sched_debug_lock = __SPIN_LOCK_UNLOCKED(sched_debug_lock); //+++
 
 /*
  * This allows printing both to /proc/sched_debug and
@@ -52,6 +53,32 @@ static unsigned long nsec_low(unsigned long long nsec)
 
 static const char * const sched_feat_names[] = {
 #include "features.h"
+#if _RTOAX________
+    "GENTLE_FAIR_SLEEPERS" ,
+    "START_DEBIT" ,
+    "NEXT_BUDDY" ,    
+    "LAST_BUDDY" ,
+    "CACHE_HOT_BUDDY" ,
+    "WAKEUP_PREEMPTION" ,
+    
+    "HRTICK" ,
+    "DOUBLE_TICK" ,
+    "NONTASK_CAPACITY" ,
+    "TTWU_QUEUE" ,
+    "SIS_AVG_CPU" ,
+    "SIS_PROP" ,
+    
+    "WARN_DOUBLE_CLOCK" ,
+    "RT_RUNTIME_SHARE" ,
+    "LB_MIN" ,
+    "ATTACH_AGE_LOAD" ,
+    
+    "WA_IDLE" ,
+    "WA_WEIGHT" ,
+    "WA_BIAS" ,
+    "UTIL_EST" ,
+    "UTIL_EST_FASTUP" ,
+#endif//_RTOAX________
 };
 
 #undef SCHED_FEAT
@@ -80,6 +107,36 @@ static int sched_feat_show(struct seq_file *m, void *v)
 
 struct static_key sched_feat_keys[__SCHED_FEAT_NR] = {
 #include "features.h"
+#if _RTOAX________
+    jump_label_key__true ,
+    jump_label_key__true ,
+    jump_label_key__false ,
+    jump_label_key__true ,
+    jump_label_key__true ,
+    jump_label_key__true ,
+    
+    jump_label_key__false ,
+    jump_label_key__false ,
+    jump_label_key__true ,
+    
+    jump_label_key__true ,
+    
+    jump_label_key__false ,
+    jump_label_key__true ,
+    
+    jump_label_key__false ,
+    jump_label_key__false ,
+    jump_label_key__false ,
+    jump_label_key__true ,
+    
+    jump_label_key__true ,
+    jump_label_key__true ,
+    jump_label_key__true ,
+    
+    jump_label_key__true ,
+    jump_label_key__true ,
+
+#endif//_RTOAX________
 };
 
 #undef SCHED_FEAT
@@ -94,8 +151,8 @@ static void sched_feat_enable(int i)
 	static_key_enable_cpuslocked(&sched_feat_keys[i]);
 }
 #else
-static void sched_feat_disable(int i) { };
-static void sched_feat_enable(int i) { };
+//static void sched_feat_disable(int i) { };
+//static void sched_feat_enable(int i) { };
 #endif /* CONFIG_JUMP_LABEL */
 
 static int sched_feat_set(char *cmp)
@@ -162,22 +219,40 @@ static int sched_feat_open(struct inode *inode, struct file *filp)
 }
 
 static const struct file_operations sched_feat_fops = {
-	.open		= sched_feat_open,
-	.write		= sched_feat_write,
-	.read		= seq_read,
-	.llseek		= seq_lseek,
-	.release	= single_release,
+	sched_feat_fops.open		= sched_feat_open,
+	sched_feat_fops.write		= sched_feat_write,
+	sched_feat_fops.read		= seq_read,
+	sched_feat_fops.llseek		= seq_lseek,
+	sched_feat_fops.release	= single_release,
 };
 
+/**
+ *  /sys/kernel/debug/sched_debug 
+ *
+ *  调度器 的调试信息的开关。该值仅仅控制 sched_debug_enabled ， 不会影响 /proc/sched_debug
+ */
 __read_mostly bool sched_debug_enabled;
 
+/**
+ *  
+ */
 static __init int sched_init_debug(void)
-{   /* /sys/kernel/debug/sched_features */
-	debugfs_create_file("sched_features", 0644, NULL, NULL,
-			&sched_feat_fops);
-    /* /sys/kernel/debug/sched_debug */
-	debugfs_create_bool("sched_debug", 0644, NULL,
-			&sched_debug_enabled);
+{   
+    /**
+     *  /sys/kernel/debug/sched_features 
+     *
+     *  表示 调度器支持的特性， 如 
+     *      1. START_DEBIT(新进程尽量早调度) 
+     *      2. WAKEUP_PREEMPT(唤醒的进程是否可以抢占当前运行的进程)
+     */
+	debugfs_create_file("sched_features", 0644, NULL, NULL, &sched_feat_fops);
+    
+    /**
+     *  /sys/kernel/debug/sched_debug 
+     *
+     *  调度器 的调试信息的开关。该值仅仅控制 sched_debug_enabled ， 不会影响 /proc/sched_debug
+     */
+	debugfs_create_bool("sched_debug", 0644, NULL, &sched_debug_enabled);
 
 	return 0;
 }
@@ -187,27 +262,31 @@ late_initcall(sched_init_debug);    /*  */
 
 #ifdef CONFIG_SYSCTL
 
+/**
+ *  /proc/sys/kernel/sched_domain/
+ *
+ *  与调度域相关的目录
+ */
 static struct ctl_table sd_ctl_dir[] = {
 	{
-		.procname	= "sched_domain",   /* /proc/sys/kernel/sched_domain/ */
-		.mode		= 0555,
+		sd_ctl_dir[0].procname	= "sched_domain",   /*  */
+		sd_ctl_dir[0].mode		= 0555,
 	},
 	{}
 };
 
 static struct ctl_table sd_ctl_root[] = {
 	{
-		.procname	= "kernel", /* /proc/sys/kernel/ */
-		.mode		= 0555,
-		.child		= sd_ctl_dir,
+		sd_ctl_root[0].procname	= "kernel", /* /proc/sys/kernel/ */
+		sd_ctl_root[0].mode		= 0555,
+		sd_ctl_root[0].child		= sd_ctl_dir,
 	},
 	{}
 };
 
 static struct ctl_table *sd_alloc_ctl_entry(int n)
 {
-	struct ctl_table *entry =
-		kcalloc(n, sizeof(struct ctl_table), GFP_KERNEL);
+	struct ctl_table *entry = kcalloc(n, sizeof(struct ctl_table), GFP_KERNEL);
 
 	return entry;
 }
@@ -515,6 +594,17 @@ print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
 static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
 {
 	struct task_struct *g, *p;
+//runnable tasks:
+//            task   PID         tree-key  switches  prio     wait-time             sum-exec        sum-sleep
+//----------------------------------------------------------------------------------------------------------
+//     ksoftirqd/0     3    335950.987417      8831   120         0.000000       194.326388         0.000000 0 /
+//    kworker/0:0H     5      2810.335932         9   100         0.000000         0.051571         0.000000 0 /
+//     migration/0     7         0.000000      4800     0         0.000000       171.009506         0.000000 0 /
+//          rcu_bh     8        45.994615         2   120         0.000000         0.001183         0.000000 0 /
+//       rcu_sched     9    335974.387143    312972   120         0.000000      1926.772693         0.000000 0 /
+//      watchdog/0    10         0.000000      5420     0         0.000000        82.990072         0.000000 0 /
+//      khungtaskd    19    335833.309597       182   120         0.000000         8.379051         0.000000 0 /
+//           [...]
 
 	SEQ_printf(m, "\n");
 	SEQ_printf(m, "runnable tasks:\n");
@@ -540,6 +630,28 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 	struct rq *rq = cpu_rq(cpu);
 	struct sched_entity *last;
 	unsigned long flags;
+
+//    cfs_rq[0]:/
+//      .exec_clock                    : 2842.098208
+//      .MIN_vruntime                  : 335975.926951
+//      .min_vruntime                  : 335981.926951
+//      .max_vruntime                  : 335975.926951
+//      .spread                        : 0.000000
+//      .spread0                       : 0.000000
+//      .nr_spread_over                : 143
+//      .nr_running                    : 2
+//      .load                          : 2048
+//      .runnable_load_avg             : 1030
+//      .blocked_load_avg              : 0
+//      .tg_load_avg                   : 0
+//      .tg_load_contrib               : 0
+//      .tg_runnable_contrib           : 0
+//      .tg->runnable_avg              : 0
+//      .tg->cfs_bandwidth.timer_active: 0
+//      .throttled                     : 0
+//      .throttle_count                : 0
+//      .avg->runnable_avg_sum         : 2034
+//      .avg->runnable_avg_period      : 47561
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	SEQ_printf(m, "\n");
@@ -612,6 +724,13 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 
 void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
 {
+//    rt_rq[0]:/
+//      .rt_nr_running                 : 0
+//      .rt_throttled                  : 0
+//      .rt_time                       : 0.000000
+//      .rt_runtime                    : 950.000000
+
+
 #ifdef CONFIG_RT_GROUP_SCHED
 	SEQ_printf(m, "\n");
 	SEQ_printf(m, "rt_rq[%d]:%s\n", cpu, task_group_path(rt_rq->tg));
@@ -663,6 +782,9 @@ void print_dl_rq(struct seq_file *m, int cpu, struct dl_rq *dl_rq)
 #undef PU
 }
 
+/**
+ *  cat /proc/sched_debug 的每个 CPU 部分
+ */
 static void print_cpu(struct seq_file *m, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -678,6 +800,23 @@ static void print_cpu(struct seq_file *m, int cpu)
 #else
 	SEQ_printf(m, "cpu#%d\n", cpu);
 #endif
+
+//    cpu#0, 3192.002 MHz
+//      .nr_running                    : 2
+//      .load                          : 2048
+//      .nr_switches                   : 1834274
+//      .nr_load_updates               : 1015994
+//      .nr_uninterruptible            : -2
+//      .next_balance                  : 4316.337172
+//      .curr->pid                     : 15307
+//      .clock                         : 21670596.078492
+//      .cpu_load[0]                   : 1024
+//      .cpu_load[1]                   : 768
+//      .cpu_load[2]                   : 448
+//      .cpu_load[3]                   : 240
+//      .cpu_load[4]                   : 124
+//      .avg_idle                      : 892820
+//      .max_idle_balance_cost         : 500000
 
 #define P(x)								\
 do {									\
@@ -718,6 +857,7 @@ do {									\
 #undef P
 
 	spin_lock_irqsave(&sched_debug_lock, flags);
+    
 	print_cfs_stats(m, cpu);
 	print_rt_stats(m, cpu);
 	print_dl_stats(m, cpu);
@@ -733,6 +873,7 @@ static const char *sched_tunable_scaling_names[] = {
 	"linear"
 };
 
+//cat /proc/sched_debug
 static void sched_debug_header(struct seq_file *m)
 {
 	u64 ktime, sched_clk, cpu_clk;
@@ -753,11 +894,18 @@ static void sched_debug_header(struct seq_file *m)
 	SEQ_printf(m, "%-40s: %Ld\n", #x, (long long)(x))
 #define PN(x) \
 	SEQ_printf(m, "%-40s: %Ld.%06ld\n", #x, SPLIT_NS(x))
+
+//    ktime                                   : 21669848.775045
+//    sched_clk                               : 21670595.184523
+//    cpu_clk                                 : 21670595.184648
+//    jiffies                                 : 4316337144
 	PN(ktime);
 	PN(sched_clk);
 	PN(cpu_clk);
 	P(jiffies);
+    
 #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+//    sched_clock_stable()                    : 1
 	P(sched_clock_stable());
 #endif
 #undef PN
@@ -765,7 +913,12 @@ static void sched_debug_header(struct seq_file *m)
 
 	SEQ_printf(m, "\n");
 	SEQ_printf(m, "sysctl_sched\n");
-
+//    sysctl_sched
+//      .sysctl_sched_latency                    : 12.000000
+//      .sysctl_sched_min_granularity            : 10.000000
+//      .sysctl_sched_wakeup_granularity         : 15.000000
+//      .sysctl_sched_child_runs_first           : 0
+//      .sysctl_sched_features                   : 77435
 #define P(x) \
 	SEQ_printf(m, "  .%-40s: %Ld\n", #x, (long long)(x))
 #define PN(x) \
@@ -778,13 +931,17 @@ static void sched_debug_header(struct seq_file *m)
 #undef PN
 #undef P
 
+//    .sysctl_sched_tunable_scaling            : 1 (logaritmic)
 	SEQ_printf(m, "  .%-40s: %d (%s)\n",
-		"sysctl_sched_tunable_scaling",
-		sysctl_sched_tunable_scaling,
-		sched_tunable_scaling_names[sysctl_sched_tunable_scaling]);
+         		"sysctl_sched_tunable_scaling",
+         		sysctl_sched_tunable_scaling,
+         		sched_tunable_scaling_names[sysctl_sched_tunable_scaling]);
 	SEQ_printf(m, "\n");
 }
 
+/**
+ *  cat /proc/sched_debug
+ */
 static int sched_debug_show(struct seq_file *m, void *v)
 {
 	int cpu = (unsigned long)(v - 2);
@@ -792,6 +949,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
 	if (cpu != -1)
 		print_cpu(m, cpu);
 	else
+        //cat /proc/sched_debug
 		sched_debug_header(m);
 
 	return 0;
@@ -853,15 +1011,21 @@ static void sched_debug_stop(struct seq_file *file, void *data)
 {
 }
 
+/**
+ *  cat /proc/sched_debug
+ */
 static const struct seq_operations sched_debug_sops = {
-	.start		= sched_debug_start,
-	.next		= sched_debug_next,
-	.stop		= sched_debug_stop,
-	.show		= sched_debug_show,
+	sched_debug_sops.start		= sched_debug_start,
+	sched_debug_sops.next		= sched_debug_next,
+	sched_debug_sops.stop		= sched_debug_stop,
+	sched_debug_sops.show		= sched_debug_show,
 };
 
 static int __init init_sched_debug_procfs(void)
 {
+    /**
+     *  cat /proc/sched_debug
+     */
 	if (!proc_create_seq("sched_debug", 0444, NULL, &sched_debug_sops))
 		return -ENOMEM;
 	return 0;
@@ -913,10 +1077,32 @@ static void sched_show_numa(struct task_struct *p, struct seq_file *m)
 #endif
 }
 
+/**
+ *  cat /proc/self/sched
+ */
 void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 						  struct seq_file *m)
 {
 	unsigned long nr_switches;
+
+    //[rongtao@toa ~]$ cat /proc/self/sched
+    //cat (14954, #threads: 1)
+    //-------------------------------------------------------------------
+    //se.exec_start                                :      21075286.430420
+    //se.vruntime                                  :        368051.620235
+    //se.sum_exec_runtime                          :             2.591090
+    //se.nr_migrations                             :                    2
+    //nr_switches                                  :                    1
+    //nr_voluntary_switches                        :                    0
+    //nr_involuntary_switches                      :                    1
+    //se.load.weight                               :                 1024
+    //policy                                       :                    0
+    //prio                                         :                  120
+    //clock-delta                                  :                   11
+    //mm->numa_scan_seq                            :                    0
+    //numa_migrations, 0
+    //numa_faults_memory, 0, 0, 1, 0, -1
+    //numa_faults_memory, 1, 0, 0, 0, -1
 
 	SEQ_printf(m, "%s (%d, #threads: %d)\n", p->comm, task_pid_nr_ns(p, ns),
 						get_nr_threads(p));
@@ -927,16 +1113,50 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 #define P_SCHEDSTAT(F)  __PS(#F, schedstat_val(p->F))
 #define PN_SCHEDSTAT(F) __PSN(#F, schedstat_val(p->F))
 
+    //se.exec_start                                :      21075286.430420
+    //se.vruntime                                  :        368051.620235
+    //se.sum_exec_runtime                          :             2.591090
 	PN(se.exec_start);
 	PN(se.vruntime);
 	PN(se.sum_exec_runtime);
 
 	nr_switches = p->nvcsw + p->nivcsw;
 
+    //se.nr_migrations                             :                    2
 	P(se.nr_migrations);
 
+    //echo 1 > /proc/sys/kernel/sched_schedstats
 	if (schedstat_enabled()) {
 		u64 avg_atom, avg_per_cpu;
+        
+        //[rongtao@toa ~]$ cat /proc/self/sched
+        //se.statistics->sum_sleep_runtime             :             0.031775
+        //se.statistics->wait_start                    :             0.000000
+        //se.statistics->sleep_start                   :             0.000000
+        //se.statistics->block_start                   :             0.000000
+        //se.statistics->sleep_max                     :             0.031775
+        //se.statistics->block_max                     :             0.000000
+        //se.statistics->exec_max                      :             0.556908
+        //se.statistics->slice_max                     :             0.000000
+        //se.statistics->wait_max                      :             0.099543
+        //se.statistics->wait_sum                      :             0.101735
+        //se.statistics->wait_count                    :                    4
+        //se.statistics->iowait_sum                    :             0.000000
+        //se.statistics->iowait_count                  :                    0
+        //se.statistics->nr_migrations_cold            :                    0
+        //se.statistics->nr_failed_migrations_affine   :                    0
+        //se.statistics->nr_failed_migrations_running  :                    0
+        //se.statistics->nr_failed_migrations_hot      :                    0
+        //se.statistics->nr_forced_migrations          :                    0
+        //se.statistics->nr_wakeups                    :                    1
+        //se.statistics->nr_wakeups_sync               :                    1
+        //se.statistics->nr_wakeups_migrate            :                    0
+        //se.statistics->nr_wakeups_local              :                    0
+        //se.statistics->nr_wakeups_remote             :                    1
+        //se.statistics->nr_wakeups_affine             :                    0
+        //se.statistics->nr_wakeups_affine_attempts    :                    1
+        //se.statistics->nr_wakeups_passive            :                    0
+        //se.statistics->nr_wakeups_idle               :                    0
 
 		PN_SCHEDSTAT(se.statistics.sum_sleep_runtime);
 		PN_SCHEDSTAT(se.statistics.wait_start);
@@ -985,10 +1205,14 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 	}
 
 	__P(nr_switches);
+    //nr_voluntary_switches                        :                    0
+    //nr_involuntary_switches                      :                    1
 	__PS("nr_voluntary_switches", p->nvcsw);
 	__PS("nr_involuntary_switches", p->nivcsw);
 
+    //se.load.weight                               :                 1024
 	P(se.load.weight);
+    
 #ifdef CONFIG_SMP
 	P(se.avg.load_sum);
 	P(se.avg.runnable_sum);
