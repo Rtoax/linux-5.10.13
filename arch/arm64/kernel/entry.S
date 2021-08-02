@@ -927,11 +927,28 @@ NOKPROBE(cpu_switch_to)
  * This is how we return from a fork.
  */
 SYM_CODE_START(ret_from_fork)
+    /**
+     *  对 prev 进程进行收尾操作
+     */
 	bl	schedule_tail
+
+    /**
+     *  指向 内核线程的回调函数 , 见 copy_thread 中 x19 = stack_start;
+     *  如果为内核线程， x19 不为 0， 如果为 0，则为 用户线程，直接跳转到 1: 处
+     */
 	cbz	x19, 1f				// not a kernel thread
+
+    /**
+     *  如果是内核线程，直接跳转到 内核线程对应的回调函数里
+     */
 	mov	x0, x20
 	blr	x19
+	
 1:	get_current_task tsk
+
+    /**
+     *  转向 用户态 线程
+     */
 	b	ret_to_user
 SYM_CODE_END(ret_from_fork)
 NOKPROBE(ret_from_fork)

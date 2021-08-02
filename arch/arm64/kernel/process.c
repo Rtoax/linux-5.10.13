@@ -404,7 +404,14 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 
 	ptrauth_thread_init_kernel(p);
 
+    /**
+     *  如果不是 内核线程
+     */
 	if (likely(!(p->flags & PF_KTHREAD))) {
+
+        /**
+         *  栈框 赋值
+         */
 		*childregs = *current_pt_regs();
 		childregs->regs[0] = 0;
 
@@ -427,11 +434,19 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		 */
 		if (clone_flags & CLONE_SETTLS)
 			p->thread.uw.tp_value = tls;
-	} else {
+        
+	} 
+    /**
+     *  如果是内核线程
+     */
+    else {
 		memset(childregs, 0, sizeof(struct pt_regs));
 		childregs->pstate = PSR_MODE_EL1h;
-		if (IS_ENABLED(CONFIG_ARM64_UAO) &&
-		    cpus_have_const_cap(ARM64_HAS_UAO))
+
+        /**
+         *  
+         */
+		if (IS_ENABLED(CONFIG_ARM64_UAO) && cpus_have_const_cap(ARM64_HAS_UAO))
 			childregs->pstate |= PSR_UAO_BIT;
 
 		spectre_v4_enable_task_mitigation(p);
@@ -439,13 +454,22 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		if (system_uses_irq_prio_masking())
 			childregs->pmr_save = GIC_PRIO_IRQON;
 
+        /**
+         *  stack_start 线程回调函数 
+         *  stk_sz      回调函数的参数
+         */
 		p->thread.cpu_context.x19 = stack_start;
 		p->thread.cpu_context.x20 = stk_sz;
 	}
+    
     /**
      *  
      */
 	p->thread.cpu_context.pc = (unsigned long)ret_from_fork;
+
+    /**
+     *  栈框
+     */
 	p->thread.cpu_context.sp = (unsigned long)childregs;
 
 	ptrace_hw_copy_thread(p);

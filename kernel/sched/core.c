@@ -3901,7 +3901,14 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 	 * PREEMPT_COUNT kernels).
 	 */
 
+    /**
+     *  打开本地中断
+     */
 	rq = finish_task_switch(prev);
+
+    /**
+     *  
+     */
 	balance_callback(rq);
 	preempt_enable();
 
