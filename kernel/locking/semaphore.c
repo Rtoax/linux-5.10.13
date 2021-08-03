@@ -49,6 +49,8 @@ static noinline void __up(struct semaphore *sem);
  *
  * Use of this function is deprecated, please use down_interruptible() or
  * down_killable() instead.
+ *
+ * 函数在征用信号量失败时，进入不可中断的睡眠状态
  */
 void down(struct semaphore *sem)
 {
@@ -71,16 +73,27 @@ EXPORT_SYMBOL(down);
  * acquire the semaphore, calling this function will put the task to sleep.
  * If the sleep is interrupted by a signal, this function will return -EINTR.
  * If the semaphore is successfully acquired, this function returns 0.
+ *
+ * 函数在征用信号量失败时，进入可中断的睡眠状态
  */
 int down_interruptible(struct semaphore *sem)
 {
 	unsigned long flags;
 	int result = 0;
 
+    /**
+     *  自旋锁临界区
+     */
 	raw_spin_lock_irqsave(&sem->lock, flags);
+    /**
+     *  down -P操作成功
+     */
 	if (likely(sem->count > 0))
 		sem->count--;
 	else
+        /**
+         *  count == 0
+         */
 		result = __down_interruptible(sem);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 
@@ -174,22 +187,33 @@ EXPORT_SYMBOL(down_timeout);
  *
  * Release the semaphore.  Unlike mutexes, up() may be called from any
  * context and even by tasks which have never called down().
+ *
+ * 释放信号量
  */
 void up(struct semaphore *sem)
 {
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&sem->lock, flags);
+
+    /**
+     *  链表为空，没有等待这个信号量的进程
+     */
 	if (likely(list_empty(&sem->wait_list)))
 		sem->count++;
 	else
+        /**
+         *  释放信号量，唤醒等待链表中的进程
+         */
 		__up(sem);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 EXPORT_SYMBOL(up);
 
 /* Functions for the contended case */
-
+/**
+ *  
+ */
 struct semaphore_waiter {
 	struct list_head list;
 	struct task_struct *task;
@@ -206,18 +230,44 @@ static inline int __sched __down_common(struct semaphore *sem, long state,
 {
 	struct semaphore_waiter waiter;
 
+    /**
+     *  添加到 信号量的 等待链表
+     */
 	list_add_tail(&waiter.list, &sem->wait_list);//将当前进程加入到 `wait_list`
 	waiter.task = current;
 	waiter.up = false;
 
 	for (;;) {
+        /**
+         *  被其他CPU发送的 信号 唤醒
+         */
 		if (signal_pending_state(state, current)) //pending:待定
 			goto interrupted;   //检测当前任务有一个挂起信号
+
+        /**
+         *  超时
+         */
 		if (unlikely(timeout <= 0))
 			goto timed_out;
+
+        /**
+         *  
+         */
 		__set_current_state(state);
+
+        /**
+         *  先释放自旋锁，因为马上要调度出去了，将下面的函数
+         */
 		raw_spin_unlock_irq(&sem->lock);
+
+        /**
+         *  主动让出 CPU，当前进程睡眠
+         */
 		timeout = schedule_timeout(timeout); //将当前的任务置为休眠到设置的超时为止
+
+        /**
+         *  进程调度回来，先申请自旋锁
+         */
 		raw_spin_lock_irq(&sem->lock);
 		if (waiter.up)
 			return 0;
@@ -237,6 +287,9 @@ static noinline void __sched __down(struct semaphore *sem)
 	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
+/**
+ *  
+ */
 static noinline int __sched __down_interruptible(struct semaphore *sem)
 {
 	return __down_common(sem, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
@@ -252,11 +305,25 @@ static noinline int __sched __down_timeout(struct semaphore *sem, long timeout)
 	return __down_common(sem, TASK_UNINTERRUPTIBLE, timeout);
 }
 
+/**
+ *  释放信号量
+ */
 static noinline void __sched __up(struct semaphore *sem)
 {
+    /**
+     *  等待这个信号量的第一个 进程
+     */
 	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
 						struct semaphore_waiter, list);
-	list_del(&waiter->list);
+
+    /**
+     *  从链表中删除
+     */
+    list_del(&waiter->list);
 	waiter->up = true;
+
+    /**
+     *  唤醒这个线程
+     */
 	wake_up_process(waiter->task);
 }
