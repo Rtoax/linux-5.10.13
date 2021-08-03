@@ -90,6 +90,10 @@ static inline void __list_add_rcu(struct list_head *new,
 
 	new->next = next;
 	new->prev = prev;
+
+    /**
+     *  
+     */
 	rcu_assign_pointer(list_next_rcu(prev), new);
 	next->prev = new;
 }

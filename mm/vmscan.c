@@ -2496,6 +2496,9 @@ static void shrink_active_list(unsigned long nr_to_scan,
 
 	lru_add_drain();
 
+    /**
+     *  
+     */
 	spin_lock_irq(&pgdat->lru_lock);
 
     /**

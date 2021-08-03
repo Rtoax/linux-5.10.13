@@ -416,6 +416,10 @@ static inline void rcu_preempt_sleep_check(void) { }
  * macros, this execute-arguments-only-once property is important, so
  * please be careful when making changes to rcu_assign_pointer() and the
  * other macros that it invokes.
+ *
+ * 通常用于 写者线程。
+ * 在写者线程完成新数据的修改后，调用该函数，可以让被 RCU 保护的指针 指向新
+ * 创建的数据，用 RCU 的术语是发布了更新后的数据。
  */
 #define rcu_assign_pointer(p, v)					      \
 do {									      \
@@ -558,6 +562,9 @@ do {									      \
  * @p: The pointer to read, prior to dereferencing
  *
  * This is a simple wrapper around rcu_dereference_check().
+ *
+ * 用于获取 被 RCU 保护的指针，读者线程要访问 RCU保护的 共享数据，
+ *  需要 使用该函数 创建一个 新指针， 并且指向被 RCU 保护的指针
  */
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
@@ -639,6 +646,8 @@ do {									      \
  * implementations in real-time (with -rt patchset) kernel builds, RCU
  * read-side critical sections may be preempted and they may also block, but
  * only when acquiring spinlocks that are subject to priority inheritance.
+ *
+ * 和 rcu_read_unlock 组成一个 RCU 读者 临界区
  */
 static __always_inline void rcu_read_lock(void)
 {
@@ -691,6 +700,8 @@ static __always_inline void rcu_read_lock(void)
  * rt_mutex_unlock().
  *
  * See rcu_read_lock() for more information.
+ *
+ * 和 rcu_read_lock 组成一个 RCU 读者 临界区
  */
 static inline void rcu_read_unlock(void)
 {
@@ -712,6 +723,8 @@ static inline void rcu_read_unlock(void)
  * must occur in the same context, for example, it is illegal to invoke
  * rcu_read_unlock_bh() from one task if the matching rcu_read_lock_bh()
  * was invoked from some other task.
+ *
+ * 和 rcu_read_unlock_bh 组成一个 RCU 读者 临界区
  */
 static inline void rcu_read_lock_bh(void)
 {
@@ -726,6 +739,8 @@ static inline void rcu_read_lock_bh(void)
  * rcu_read_unlock_bh() - marks the end of a softirq-only RCU critical section
  *
  * See rcu_read_lock_bh() for more information.
+ *
+ * 和 rcu_read_unlock_bh 组成一个 RCU 读者 临界区
  */
 static inline void rcu_read_unlock_bh(void)
 {

@@ -419,11 +419,14 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
 
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
+
 /* Export for kexec only */
 static struct list_head vmap_area_list; /* +++ */
 LIST_HEAD(vmap_area_list);
+
 static struct llist_node vmap_purge_list; /* +++ */
 static LLIST_HEAD(vmap_purge_list);
+
 static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
 static bool __read_mostly vmap_initialized ; /* 根 */
 
@@ -1550,6 +1553,9 @@ static unsigned long addr_to_vb_idx(unsigned long addr)
 	return addr;
 }
 
+/**
+ *  
+ */
 static void *vmap_block_vaddr(unsigned long va_start, unsigned long pages_off)
 {
 	unsigned long addr;
@@ -1583,9 +1589,12 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 	if (unlikely(!vb))
 		return ERR_PTR(-ENOMEM);
 
+    /**
+     *  
+     */
 	va = alloc_vmap_area(VMAP_BLOCK_SIZE, VMAP_BLOCK_SIZE,
-					VMALLOC_START, VMALLOC_END,
-					node, gfp_mask);
+        					VMALLOC_START, VMALLOC_END,
+        					node, gfp_mask);
 	if (IS_ERR(va)) {
 		kfree(vb);
 		return ERR_CAST(va);
@@ -1612,6 +1621,10 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 
 	vbq = &get_cpu_var(vmap_block_queue);
 	spin_lock(&vbq->lock);
+
+    /**
+     *  
+     */
 	list_add_tail_rcu(&vb->free_list, &vbq->free);
 	spin_unlock(&vbq->lock);
 	put_cpu_var(vmap_block_queue);

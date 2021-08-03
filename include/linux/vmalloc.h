@@ -64,11 +64,21 @@ struct vm_struct {  /*  */
 	const void		*caller;
 };
 
+/**
+ *  
+ */
 struct vmap_area {  /* vmalloc 管理区 */
 	unsigned long va_start;
 	unsigned long va_end;
 
+    /**
+     *  红黑树的根为 `vmap_area_root`
+     */
 	struct rb_node rb_node;         /* address sorted rbtree 使用 start和end排序*/
+
+    /**
+     *  链表头为 `vmap_area_list`
+     */
 	struct list_head list;          /* address sorted list */
 
 	/*

@@ -1134,7 +1134,9 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	ZONE_PADDING(_pad1_)
 
     /**
-     *  
+     *  用于保护 zone
+     *
+     *  如 `shrink_active_list()` 中 的 `spin_lock_irq()`
      */
 	spinlock_t		lru_lock;   /* 最近最少使用 */
 

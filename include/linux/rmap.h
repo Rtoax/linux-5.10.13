@@ -57,7 +57,13 @@ struct anon_vma {   /* 匿名 VMA */
     /* 指向 根节点 */
 	struct anon_vma *root;		/* Root of this anon_vma tree */
 
-    /* 保护链表 */
+    /**
+     *  保护链表 
+     *
+     *  写保护见 `anon_vma_fork()` 函数中的 `anon_vma_lock_write()``anon_vma_unlock_write()`
+     *  读保护见 `try_to_unmap()` 函数中的 `page_lock_anon_vma_read()`回调函数
+     *                                      `down_read_trylock()``anon_vma_unlock_read()`
+     */
 	struct rw_semaphore rwsem;	/* W: modification, R: walking the list */
 	/*
 	 * The refcount is taken on an anon_vma when there is no

@@ -702,9 +702,18 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 #endif
 		int map_count;			/* number of VMAs */
 
+        /**
+         *  用于保护进程页表
+         */
 		spinlock_t page_table_lock; /* Protects page tables and some
 					     * counters 保护页表和一些计数器
 					     */
+		/**
+		 *  在 linux-5.0 中为 struct rw_semaphore mmap_sem;
+		 *  用户保护进程地址空间
+		 *
+		 *  brk, mmap, mprotect, mremap, msync  都会使用 down_write(&mm->mmap_sem)
+		 */
 		struct rw_semaphore mmap_lock;  /* 读写锁,内存区域信号量 */
 
 		struct list_head mmlist; /* List of maybe swapped mm's.	These 可能被 swap 的 mm 

@@ -7,8 +7,13 @@
  *
  * portions Copyright 2005, Red Hat, Inc., Ingo Molnar
  * Released under the General Public License (GPL).
+ *
+ * 读写信号量
  */
 typedef struct {
+    /**
+     *  
+     */
 	arch_rwlock_t raw_lock;
 #ifdef CONFIG_DEBUG_SPINLOCK
 	unsigned int magic, owner_cpu;

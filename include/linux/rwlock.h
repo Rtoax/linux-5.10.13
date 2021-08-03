@@ -17,6 +17,10 @@
 #ifdef CONFIG_DEBUG_SPINLOCK
   extern void __rwlock_init(rwlock_t *lock, const char *name,
 			    struct lock_class_key *key);
+
+/**
+ *  初始化读写锁
+ */
 # define rwlock_init(lock)					\
 do {								\
 	static struct lock_class_key __key;			\
@@ -67,6 +71,9 @@ do {								\
 #define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
 #define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
 
+/**
+ *  
+ */
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 

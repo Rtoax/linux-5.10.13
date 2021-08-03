@@ -483,6 +483,9 @@ int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
 	return -ENOMEM;
 }
 
+/**
+ *  删除 AV 结果
+ */
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
 	struct anon_vma_chain *avc, *next;
@@ -574,16 +577,20 @@ void __init anon_vma_init(void) /* 从 salb 分配 */
  *
  * 获取匿名页面 的 AV 结构
  */
-struct anon_vma *page_get_anon_vma(struct page *page)
+struct anon_vma *page_get_anon_vma(struct page *__page)
 {
 	struct anon_vma *anon_vma = NULL;
 	unsigned long anon_mapping;
 
+    /**
+     *  
+     */
 	rcu_read_lock();
-	anon_mapping = (unsigned long)READ_ONCE(page->mapping);
+    
+	anon_mapping = (unsigned long)READ_ONCE(__page->mapping);
 	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
 		goto out;
-	if (!page_mapped(page))
+	if (!page_mapped(__page))
 		goto out;
 
 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
@@ -599,12 +606,15 @@ struct anon_vma *page_get_anon_vma(struct page *page)
 	 * SLAB_TYPESAFE_BY_RCU guarantees that - so the atomic_inc_not_zero()
 	 * above cannot corrupt).
 	 */
-	if (!page_mapped(page)) {
+	if (!page_mapped(__page)) {
 		rcu_read_unlock();
 		put_anon_vma(anon_vma);
 		return NULL;
 	}
 out:
+    /**
+     *  
+     */
 	rcu_read_unlock();
 
 	return anon_vma;

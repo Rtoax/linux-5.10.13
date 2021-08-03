@@ -3024,6 +3024,8 @@ __call_rcu(struct rcu_head *head, rcu_callback_t func)
  * between the call to call_rcu() and the invocation of "func()" -- even
  * if CPU A and CPU B are the same CPU (but again only if the system has
  * more than one CPU).
+ *
+ * 注册一个回调函数，当所有现存的读访问完成后，调用这个回调函数销毁旧数据。
  */
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
@@ -3656,6 +3658,8 @@ static int rcu_blocking_is_gp(void)
  * to have executed a full memory barrier during the execution of
  * synchronize_rcu() -- even if CPU A and CPU B are the same CPU (but
  * again only if the system has more than one CPU).
+ *
+ * 同步等待 所有现存的读访问完成。
  */
 void synchronize_rcu(void)
 {

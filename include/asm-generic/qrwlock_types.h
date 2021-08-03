@@ -11,6 +11,9 @@
  */
 
 typedef struct qrwlock {
+    /**
+     *  
+     */
 	union {
 		atomic_t cnts;
 		struct {
@@ -18,11 +21,14 @@ typedef struct qrwlock {
 			u8 wlocked;	/* Locked for write? */
 			u8 __lstate[3];
 #else
-			u8 __lstate[3];
-			u8 wlocked;	/* Locked for write? */
+//			u8 __lstate[3];
+//			u8 wlocked;	/* Locked for write? */
 #endif
 		};
 	};
+    /**
+     *  
+     */
 	arch_spinlock_t		wait_lock;
 } arch_rwlock_t;
 

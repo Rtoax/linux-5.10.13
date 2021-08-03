@@ -142,6 +142,8 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
  * to reduce latency.)
  *
  * Cool, huh?  (Due to Josh Triplett.)
+ *
+ * 同步等待 所有现存的读访问完成。
  */
 void synchronize_rcu(void)
 {
@@ -156,6 +158,8 @@ EXPORT_SYMBOL_GPL(synchronize_rcu);
  * Post an RCU callback to be invoked after the end of an RCU grace
  * period.  But since we have but one CPU, that would be after any
  * quiescent state.
+ *
+ * 注册一个回调函数，当所有现存的读访问完成后，调用这个回调函数销毁旧数据。
  */
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {

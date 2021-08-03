@@ -46,13 +46,24 @@ struct rw_semaphore {   /* 读写信号量 */
 	 * Write owner or one of the read owners as well flags regarding
 	 * the current state of the rwsem. Can be used as a speculative
 	 * check to see if the write owner is running on the cpu.
+	 *
+	 * 当写者成功获取锁时，owner 指向 持有者 的 task_struct 数据结构
 	 */
 	atomic_long_t owner;
+    
 #ifdef CONFIG_RWSEM_SPIN_ON_OWNER
+    /**
+     *  MCS 锁
+     */
 	struct optimistic_spin_queue osq; /* spinner MCS lock 乐观锁 see also struct mutex; */
 #endif
+
+    /**
+     *  等待链表的 自旋锁
+     */
 	raw_spinlock_t wait_lock;
 	struct list_head wait_list; /* 等待链表 */
+    
 #ifdef CONFIG_DEBUG_RWSEMS
 	void *magic;
 #endif
@@ -67,6 +78,9 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 	return atomic_long_read(&sem->count) != 0;
 }
 
+/**
+ *  
+ */
 #define RWSEM_UNLOCKED_VALUE		0L
 #define __RWSEM_COUNT_INIT(name)	.count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE)
 
