@@ -49,18 +49,41 @@ struct ww_acquire_ctx;
  * - detects self-recursing locks and prints out all relevant info
  * - detects multi-task circular deadlocks and prints out all affected
  *   locks and tasks (and only those tasks)
+ *
+ * 互斥锁
  */
 struct mutex {
+    /**
+     *  0 - 标识没有被持有
+     *  非0 - 表示锁持有者的 task_struct 指针的值
+     *
+     *  另外 低 3bit 有特殊的含义
+     *  MUTEX_FLAG_WAITERS
+     *  MUTEX_FLAG_HANDOFF
+     *  MUTEX_FLAG_PICKUP
+     */
 	atomic_long_t		owner;  //代表请求锁的进程
+
+    /**
+     *  用于保护 wait_list 队列
+     */
 	spinlock_t		wait_lock;  //保护本结构
+	
 #ifdef CONFIG_MUTEX_SPIN_ON_OWNER
-    /* optimistic spinning，乐观自旋，到底有多乐观呢？
+    /**
+     *  optimistic spinning，乐观自旋，到底有多乐观呢？
      *  当发现锁被持有时，optimistic spinning相信持有者很快就能把锁释放，
      *  因此它选择自旋等待，而不是睡眠等待，这样也就能减少进程切换带来的开销了。
      */
 	struct optimistic_spin_queue osq; /* Spinner MCS lock 乐观自旋 */
 #endif
+
+    /**
+     *  所有互斥锁在 上睡眠的进程
+     *  没有成功获取锁的进程，会在此链表上睡眠
+     */
 	struct list_head	wait_list;
+
 #ifdef CONFIG_DEBUG_MUTEXES
 	void			*magic;
 #endif

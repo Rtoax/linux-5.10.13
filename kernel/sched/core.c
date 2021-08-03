@@ -515,6 +515,9 @@ static bool set_nr_if_polling(struct task_struct *p)
 /*  */
 #endif
 
+/**
+ *  
+ */
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {
 	struct wake_q_node *node = &task->wake_q;
@@ -587,6 +590,9 @@ void wake_up_q(struct wake_q_head *head)
 	while (node != WAKE_Q_TAIL) {
 		struct task_struct *task;
 
+        /**
+         *  获取 task_struct 结构
+         */
 		task = container_of(node, struct task_struct, wake_q);
 		BUG_ON(!task);
 		/* Task can safely be re-inserted now: */

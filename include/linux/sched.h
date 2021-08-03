@@ -1346,6 +1346,9 @@ struct task_struct {    /* PCB */
 	/* Protection of the PI data structures: */
 	raw_spinlock_t			pi_lock;
 
+    /**
+     *  mutex 中 unlock 时会用到
+     */
 	struct wake_q_node		wake_q;
 
 #ifdef CONFIG_RT_MUTEXES
