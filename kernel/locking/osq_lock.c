@@ -19,6 +19,9 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(struct optimistic_spin_node, osq_node);
  */
 static inline int encode_cpu(int cpu_nr)
 {
+    /**
+     *  CPU0 = 1
+     */
 	return cpu_nr + 1;
 }
 
@@ -92,6 +95,9 @@ osq_wait_next(struct optimistic_spin_queue *lock,
  *//* Spinner MCS lock 乐观自旋 */
 bool osq_lock(struct optimistic_spin_queue *lock)   
 {
+    /**
+     *  指向当前CPU node
+     */
 	struct optimistic_spin_node *node = this_cpu_ptr(&osq_node);
 	struct optimistic_spin_node *prev, *next;
 	int curr = encode_cpu(smp_processor_id());
@@ -99,6 +105,10 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 
 	node->locked = 0;
 	node->next = NULL;
+
+    /**
+     *  CPU 编号 CPU0 = 1
+     */
 	node->cpu = curr;
 
 	/*
@@ -106,11 +116,20 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 	 * unlock() uncontended, or fastpath) and RELEASE (to publish
 	 * the node fields we just initialised) semantics when updating
 	 * the lock tail.
+	 *
+	 * 交换 tail 和 CPU 编号
 	 */
 	old = atomic_xchg(&lock->tail, curr);
+
+    /**
+     *  如果 旧值 == 初始化(0), 说明还没有 CPU 持有锁
+     */
 	if (old == OSQ_UNLOCKED_VAL)
 		return true;
 
+    /**
+     *  中速申请通道 - 已经有人持有锁
+     */
 	prev = decode_cpu(old);
 	node->prev = prev;
 
@@ -169,6 +188,8 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 		 * We can only fail the cmpxchg() racing against an unlock(),
 		 * in which case we should observe @node->locked becomming
 		 * true.
+		 *
+		 * 判断当前节点是否持有了锁
 		 */
 		if (smp_load_acquire(&node->locked))
 			return true;
@@ -207,6 +228,9 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 	return false;
 }
 
+/**
+ *  释放 MCS 锁
+ */
 void osq_unlock(struct optimistic_spin_queue *lock)
 {
 	struct optimistic_spin_node *node, *next;
@@ -214,13 +238,15 @@ void osq_unlock(struct optimistic_spin_queue *lock)
 
 	/*
 	 * Fast path for the uncontended case.
+	 * 快速通道
 	 */
 	if (likely(atomic_cmpxchg_release(&lock->tail, curr,
 					  OSQ_UNLOCKED_VAL) == curr))
 		return;
 
 	/*
-	 * Second most likely case.
+	 * Second most likely case. 
+	 * 慢速通道
 	 */
 	node = this_cpu_ptr(&osq_node);
 	next = xchg(&node->next, NULL);

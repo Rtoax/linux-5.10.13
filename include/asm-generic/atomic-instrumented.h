@@ -57,6 +57,9 @@ atomic_set_release(atomic_t *v, int i)
 #define atomic_set_release atomic_set_release
 #endif
 
+/**
+ *  
+ */
 static __always_inline void
 atomic_add(int i, atomic_t *v)
 {
@@ -66,6 +69,9 @@ atomic_add(int i, atomic_t *v)
 #define atomic_add atomic_add
 
 #if !defined(arch_atomic_add_return_relaxed) || defined(arch_atomic_add_return)
+/**
+ *  
+ */
 static __always_inline int
 atomic_add_return(int i, atomic_t *v)
 {
@@ -106,6 +112,9 @@ atomic_add_return_relaxed(int i, atomic_t *v)
 #endif
 
 #if !defined(arch_atomic_fetch_add_relaxed) || defined(arch_atomic_fetch_add)
+/**
+ *  +1 并取 旧值
+ */
 static __always_inline int
 atomic_fetch_add(int i, atomic_t *v)
 {
@@ -658,6 +667,9 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 #endif
 
 #if defined(arch_atomic_cmpxchg_acquire)
+/**
+ *  内置 加载-获取 内存屏障原语
+ */
 static __always_inline int
 atomic_cmpxchg_acquire(atomic_t *v, int old, int new)
 {
@@ -668,6 +680,9 @@ atomic_cmpxchg_acquire(atomic_t *v, int old, int new)
 #endif
 
 #if defined(arch_atomic_cmpxchg_release)
+/**
+ *  内置 存储-释放 内存屏障原语
+ */
 static __always_inline int
 atomic_cmpxchg_release(atomic_t *v, int old, int new)
 {
@@ -782,6 +797,9 @@ atomic_fetch_add_unless(atomic_t *v, int a, int u)
 #endif
 
 #if defined(arch_atomic_add_unless)
+/**
+ *  比较 v 的值是否等于 u
+ */
 static __always_inline bool
 atomic_add_unless(atomic_t *v, int a, int u)
 {
@@ -1642,6 +1660,9 @@ atomic64_dec_if_positive(atomic64_t *v)
 #endif
 
 #if !defined(arch_xchg_relaxed) || defined(arch_xchg)
+/**
+ *  
+ */
 #define xchg(ptr, ...)						\
 ({									\
 	typeof(ptr) __ai_ptr = (ptr);					\

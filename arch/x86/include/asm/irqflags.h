@@ -75,6 +75,9 @@ static inline __cpuidle void native_halt(void)
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
 
+/**
+ *  
+ */
 static __always_inline unsigned long arch_local_save_flags(void)
 {
 	return native_save_fl();

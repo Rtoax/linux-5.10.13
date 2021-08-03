@@ -88,7 +88,7 @@ void wait_for_call(void);
 extern unsigned ring_size;
 
 /* Compiler barrier - similar to what Linux uses */
-#define barrier() asm volatile("" ::: "memory")
+//#define barrier() asm volatile("" ::: "memory")
 
 /* Is there a portable way to do this? */
 #if defined(__x86_64__) || defined(__i386__)
@@ -141,6 +141,9 @@ static inline void busy_wait(void)
 #endif
 
 #ifdef __alpha__
+/**
+ *  读依赖屏障
+ */
 #define smp_read_barrier_depends() smp_acquire()
 #else
 #define smp_read_barrier_depends() do {} while(0)

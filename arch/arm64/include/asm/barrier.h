@@ -18,8 +18,19 @@
 #define wfe()		asm volatile("wfe" : : : "memory")
 #define wfi()		asm volatile("wfi" : : : "memory")
 
+
+/**
+ *  指令同步屏障 - Instruction Synchronization Barrier
+ */
 #define isb()		asm volatile("isb" : : : "memory")
+/**
+ *  数据存储屏障 - Data Memory Barrier
+ */
 #define dmb(opt)	asm volatile("dmb " #opt : : : "memory")
+
+/**
+ *  数据同步屏障 - Data Synchronization Barrier
+ */
 #define dsb(opt)	asm volatile("dsb " #opt : : : "memory")
 
 #define psb_csync()	asm volatile("hint #17" : : : "memory")
@@ -41,8 +52,19 @@
 #define pmr_sync()	do {} while (0)
 #endif
 
+/**
+ *  读写内存屏障 - 用于 SMP 和 UP
+ */
 #define mb()		dsb(sy)
+
+/**
+ *  读内存屏障 - 用于 SMP 和 UP
+ */
 #define rmb()		dsb(ld)
+
+/**
+ *  写内存屏障 - 用于 SMP 和 UP
+ */
 #define wmb()		dsb(st)
 
 #define dma_mb()	dmb(osh)
@@ -140,6 +162,9 @@ do {									\
 	(typeof(*p))__u.__val;						\
 })
 
+/**
+ *  自旋等待
+ */
 #define smp_cond_load_relaxed(ptr, cond_expr)				\
 ({									\
 	typeof(ptr) __PTR = (ptr);					\
@@ -153,6 +178,9 @@ do {									\
 	(typeof(*ptr))VAL;						\
 })
 
+/**
+ *  自旋等待
+ */
 #define smp_cond_load_acquire(ptr, cond_expr)				\
 ({									\
 	typeof(ptr) __PTR = (ptr);					\

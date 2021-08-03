@@ -38,6 +38,8 @@ extern void __add_wrong_size(void)
 /* 
  * An exchange-type operation, which takes a value and a pointer, and
  * returns the old value.
+ *
+ * 1. op = xchg
  */
 #define __xchg_op(ptr, arg, op, lock)					\
 	({								\
@@ -130,6 +132,9 @@ extern void __add_wrong_size(void)
 	__ret;								\
 })
 
+/**
+ *  cmpxchg
+ */
 #define __cmpxchg(ptr, old, new, size)					\
 	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
 
@@ -140,11 +145,14 @@ extern void __add_wrong_size(void)
 	__raw_cmpxchg((ptr), (old), (new), (size), "")
 
 #ifdef CONFIG_X86_32
-# include <asm/cmpxchg_32.h>
+//# include <asm/cmpxchg_32.h>
 #else
 # include <asm/cmpxchg_64.h>
 #endif
 
+/**
+ *  CAS - cmpxchg
+ */
 #define arch_cmpxchg(ptr, old, new)					\
 	__cmpxchg(ptr, old, new, sizeof(*(ptr)))
 
@@ -154,7 +162,9 @@ extern void __add_wrong_size(void)
 #define arch_cmpxchg_local(ptr, old, new)				\
 	__cmpxchg_local(ptr, old, new, sizeof(*(ptr)))
 
-
+/**
+ *  compare and exchange
+ */
 #define __raw_try_cmpxchg(_ptr, _pold, _new, size, lock)		\
 ({									\
 	bool success;							\
@@ -229,6 +239,8 @@ extern void __add_wrong_size(void)
  * value of "*ptr".
  *
  * xadd() is locked when multiple CPUs are online
+ *
+ * 原子操作  
  */
 #define __xadd(ptr, inc, lock)	__xchg_op((ptr), (inc), xadd, lock)
 #define xadd(ptr, inc)		__xadd((ptr), (inc), LOCK_PREFIX)

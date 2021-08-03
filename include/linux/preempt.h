@@ -186,7 +186,7 @@ extern void preempt_count_sub(int val);
 #ifdef CONFIG_PREEMPT_COUNT/*  */
 
 /**
- *  
+ *  禁止抢占
  */
 #define preempt_disable() \
 do { \

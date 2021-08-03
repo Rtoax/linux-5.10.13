@@ -45,14 +45,14 @@ struct thread_data {
 static unsigned int nwakes = 1;
 
 /* all threads will block on the same futex -- hash bucket chaos ;) */
-static u_int32_t futex = 0;
+static u_int32_t __futex = 0;
 
 static pthread_t *blocked_worker;
 static bool done = false, silent = false, fshared = false;
 static unsigned int nblocked_threads = 0, nwaking_threads = 0;
 static pthread_mutex_t thread_lock;
 static pthread_cond_t thread_parent, thread_worker;
-static pthread_barrier_t barrier;
+static pthread_barrier_t __barrier;
 static struct stats waketime_stats, wakeup_stats;
 static unsigned int threads_starting;
 static int futex_flag = 0;
@@ -75,11 +75,11 @@ static void *waking_workerfn(void *arg)
 	struct thread_data *waker = (struct thread_data *) arg;
 	struct timeval start, end;
 
-	pthread_barrier_wait(&barrier);
+	pthread_barrier_wait(&__barrier);
 
 	gettimeofday(&start, NULL);
 
-	waker->nwoken = futex_wake(&futex, nwakes, futex_flag);
+	waker->nwoken = futex_wake(&__futex, nwakes, futex_flag);
 	if (waker->nwoken != nwakes)
 		warnx("couldn't wakeup all tasks (%d/%d)",
 		      waker->nwoken, nwakes);
@@ -97,7 +97,7 @@ static void wakeup_threads(struct thread_data *td, pthread_attr_t thread_attr)
 
 	pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_JOINABLE);
 
-	pthread_barrier_init(&barrier, NULL, nwaking_threads + 1);
+	pthread_barrier_init(&__barrier, NULL, nwaking_threads + 1);
 
 	/* create and block all threads */
 	for (i = 0; i < nwaking_threads; i++) {
@@ -111,13 +111,13 @@ static void wakeup_threads(struct thread_data *td, pthread_attr_t thread_attr)
 			err(EXIT_FAILURE, "pthread_create");
 	}
 
-	pthread_barrier_wait(&barrier);
+	pthread_barrier_wait(&__barrier);
 
 	for (i = 0; i < nwaking_threads; i++)
 		if (pthread_join(td[i].worker, NULL))
 			err(EXIT_FAILURE, "pthread_join");
 
-	pthread_barrier_destroy(&barrier);
+	pthread_barrier_destroy(&__barrier);
 }
 
 static void *blocked_workerfn(void *arg __maybe_unused)
@@ -130,7 +130,7 @@ static void *blocked_workerfn(void *arg __maybe_unused)
 	pthread_mutex_unlock(&thread_lock);
 
 	while (1) { /* handle spurious wakeups */
-		if (futex_wait(&futex, 0, NULL, futex_flag) != EINTR)
+		if (futex_wait(&__futex, 0, NULL, futex_flag) != EINTR)
 			break;
 	}
 
@@ -268,7 +268,7 @@ int bench_futex_wake_parallel(int argc, const char **argv)
 	printf("Run summary [PID %d]: blocking on %d threads (at [%s] "
 	       "futex %p), %d threads waking up %d at a time.\n\n",
 	       getpid(), nblocked_threads, fshared ? "shared":"private",
-	       &futex, nwaking_threads, nwakes);
+	       &__futex, nwaking_threads, nwakes);
 
 	init_stats(&wakeup_stats);
 	init_stats(&waketime_stats);

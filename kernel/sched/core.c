@@ -2970,7 +2970,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * __schedule().  See the comment for smp_mb__after_spinlock().
 	 *
 	 * A similar smb_rmb() lives in try_invoke_on_locked_down_task().
-	 */
+	 *
+     *  
+     */
 	smp_rmb();
     
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
@@ -3071,6 +3073,10 @@ unlock:
 out:
 	if (success)
 		ttwu_stat(p, task_cpu(p), wake_flags);
+
+    /**
+     *  
+     */
 	preempt_enable();
 
 	return success;
@@ -4465,6 +4471,9 @@ static inline void preempt_latency_start(int val)
 	}
 }
 
+/**
+ *  
+ */
 void preempt_count_add(int val) /*  */
 {
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -4474,6 +4483,10 @@ void preempt_count_add(int val) /*  */
 	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
 		return;
 #endif
+
+    /**
+     *  
+     */
 	__preempt_count_add(val);
 
 #ifdef CONFIG_DEBUG_PREEMPT

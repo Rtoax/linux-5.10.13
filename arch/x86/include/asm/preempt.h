@@ -99,6 +99,9 @@ static __always_inline bool test_preempt_need_resched(void)
 
 static __always_inline void __preempt_count_add(int val)
 {
+    /**
+     *  禁止抢占
+     */
 	raw_cpu_add_4(__preempt_count, val);
 }
 

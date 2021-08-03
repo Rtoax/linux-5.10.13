@@ -36,12 +36,16 @@
 # include "mutex.h"
 #endif
 
+/**
+ *  
+ */
 void
 __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 {
 	atomic_long_set(&lock->owner, 0);
 	spin_lock_init(&lock->wait_lock);
 	INIT_LIST_HEAD(&lock->wait_list);
+    
 #ifdef CONFIG_MUTEX_SPIN_ON_OWNER
 	osq_lock_init(&lock->osq);  ///* Spinner MCS lock 乐观自旋 */
 #endif

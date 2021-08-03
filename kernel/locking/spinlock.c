@@ -156,6 +156,9 @@ EXPORT_SYMBOL(_raw_spin_lock);
 #ifndef CONFIG_INLINE_SPIN_LOCK_IRQSAVE
 unsigned long __lockfunc _raw_spin_lock_irqsave(raw_spinlock_t *lock)
 {
+    /**
+     *  
+     */
 	return __raw_spin_lock_irqsave(lock);
 }
 EXPORT_SYMBOL(_raw_spin_lock_irqsave);
@@ -170,6 +173,11 @@ EXPORT_SYMBOL(_raw_spin_lock_irq);
 #endif
 
 #ifndef CONFIG_INLINE_SPIN_LOCK_BH
+/**
+ *  该宏在得到自旋锁的同时失效本地软中断。
+ *
+ *  使用：用于处理进程和延迟处理机制导致的并发访问的互斥问题
+ */
 void __lockfunc _raw_spin_lock_bh(raw_spinlock_t *lock)
 {
 	__raw_spin_lock_bh(lock);

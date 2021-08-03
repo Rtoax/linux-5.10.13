@@ -19,8 +19,17 @@
 //#define wmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "sfence", \
 //				       X86_FEATURE_XMM2) ::: "memory", "cc")
 #else
+/**
+ *  读写内存屏障 - 用于 SMP 和 UP
+ */
 #define mb() 	asm volatile("mfence":::"memory")
+/**
+ *  读内存屏障 - 用于 SMP 和 UP
+ */
 #define rmb()	asm volatile("lfence":::"memory")
+/**
+ *  写内存屏障 - 用于 SMP 和 UP
+ */
 #define wmb()	asm volatile("sfence" ::: "memory")
 #endif
 

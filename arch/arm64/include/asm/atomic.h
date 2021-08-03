@@ -153,8 +153,16 @@ static __always_inline long arch_atomic64_dec_if_positive(atomic64_t *v)
 
 #define arch_atomic_cmpxchg_relaxed(v, old, new) \
 	arch_cmpxchg_relaxed(&((v)->counter), (old), (new))
+
+/**
+ *  内置 加载-获取 内存屏障原语
+ */
 #define arch_atomic_cmpxchg_acquire(v, old, new) \
 	arch_cmpxchg_acquire(&((v)->counter), (old), (new))
+
+/**
+ *  内置 存储-释放 内存屏障原语
+ */
 #define arch_atomic_cmpxchg_release(v, old, new) \
 	arch_cmpxchg_release(&((v)->counter), (old), (new))
 #define arch_atomic_cmpxchg(v, old, new) \

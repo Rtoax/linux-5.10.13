@@ -37,12 +37,14 @@
 		".long 671f - .\n" /* offset */		\
 		".popsection\n"				\
 		"671:"
-
+/**
+ *  LOCK 指令，用于 atomic 操作
+ */
 #define LOCK_PREFIX LOCK_PREFIX_HERE "\n\tlock; "
 
 #else /* ! CONFIG_SMP */
-#define LOCK_PREFIX_HERE ""
-#define LOCK_PREFIX ""
+//#define LOCK_PREFIX_HERE ""
+//#define LOCK_PREFIX ""
 #endif
 
 /*

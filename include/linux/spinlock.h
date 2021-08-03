@@ -222,6 +222,10 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
  */
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 
+/**
+ *  在绝对不允许抢占和睡眠的临界区，应该使用此函数，否则使用 spin_lock(lock)
+ *  这对 RT-patch 上有差异
+ */
 #define raw_spin_lock(lock)	_raw_spin_lock(lock)
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
@@ -246,6 +250,9 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 
 #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
 
+/**
+ *  保存本地CPU当前的 irq 状态，并且关闭本地CPU中断，然后获取锁
+ */
 #define raw_spin_lock_irqsave(lock, flags)			\
 	do {						\
 		typecheck(unsigned long, flags);	\
@@ -270,6 +277,9 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 /*  */
 #endif
 
+/**
+ *  
+ */
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_lock_bh(lock)		_raw_spin_lock_bh(lock)
 #define raw_spin_unlock(lock)		_raw_spin_unlock(lock)
@@ -346,15 +356,22 @@ do {						\
 #endif
 
 /**
- *  该宏用于获得自旋锁lock，如果能够立即获得锁，它就马上返回，否则，它将自旋在那里，直到该自旋锁的保持者释放
+ *  该宏用于获得自旋锁lock，如果能够立即获得锁，它就马上返回，
+ *  否则，它将自旋在那里，直到该自旋锁的保持者释放
  *
  *  使用：进程上下文与进程上下文之间；
  *        中段下半部与中断下半部之间：
- *           1) 软中断与软中断之间  (同类型或不同类型的软中断可以同时运行在一个系统的多个处理器上,在同一个核上当然不能同时运行)
- *           2) 不同类型的tasklet之间（此处只写明是不同类型的tasklet之间，因为同类型的tasklet不可能同时运行）
+ *           1) 软中断与软中断之间  (同类型或不同类型的软中断可以同时运行在一个
+ *              系统的多个处理器上,在同一个核上当然不能同时运行)
+ *           2) 不同类型的tasklet之间（此处只写明是不同类型的tasklet之间，
+ *              因为同类型的tasklet不可能同时运行）
  */
 static __always_inline void spin_lock(spinlock_t *lock)
 {
+    /**
+     *  在实时内核中 spin_lock 和 raw_spin_lock 是存在差异的
+     *  RT-patch 的内核中 spin_lock 会变成可抢占和睡眠的锁。
+     */
 	raw_spin_lock(&lock->rlock);
 }
 
@@ -362,7 +379,7 @@ static __always_inline void spin_lock(spinlock_t *lock)
 /**
  *  该宏在得到自旋锁的同时失效本地软中断。
  *
- *  使用：
+ *  使用：用于处理进程和延迟处理机制导致的并发访问的互斥问题
  */
 static __always_inline void spin_lock_bh(spinlock_t *lock)
 {

@@ -105,6 +105,9 @@ static inline unsigned long __raw_spin_lock_irqsave(raw_spinlock_t *lock)
 {
 	unsigned long flags;
 
+    /**
+     *  保存 CPU irq 状态
+     */
 	local_irq_save(flags);
 	preempt_disable();
 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
@@ -121,8 +124,14 @@ static inline unsigned long __raw_spin_lock_irqsave(raw_spinlock_t *lock)
 	return flags;
 }
 
+/**
+ *  关闭本地中断 和 抢占
+ */
 static inline void __raw_spin_lock_irq(raw_spinlock_t *lock)
 {
+    /**
+     *  关闭本地中断和抢占
+     */
 	local_irq_disable();
 	preempt_disable();
 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
@@ -139,9 +148,22 @@ static inline void __raw_spin_lock_bh(raw_spinlock_t *lock)
 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
 }
 
+/**
+ *  
+ */
 static inline void __raw_spin_lock(raw_spinlock_t *lock)
 {
+    /**
+     *  自旋锁需要禁止抢占
+     *
+     *  1. 抢占调度 会导致 持有锁的进程睡眠，这违背了自旋锁不能睡眠和快速执行完成的语义
+     *  2. 抢占调度进程也可能会申请自旋锁，会发生死锁；
+     */
 	preempt_disable(); //禁用了[抢占]
+
+    /**
+     *  
+     */
 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
 }

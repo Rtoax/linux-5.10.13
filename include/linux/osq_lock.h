@@ -5,10 +5,25 @@
 /*
  * An MCS like lock especially tailored for optimistic spinning for sleeping
  * lock implementations (mutex, rwsem, etc).
+ *
+ * MSC 锁 - Mellor-Crummey 和 Scott 的名字来命名
+ *
+ * optimistic_spin_node 标识本地CPU 上的节点
  */
 struct optimistic_spin_node {
+    /**
+     *  本地 CPU 上的节点
+     */
 	struct optimistic_spin_node *next, *prev;
+
+    /**
+     *  加锁状态
+     */
 	int locked; /* 1 if lock acquired */
+
+    /**
+     *  重新编码CPU 编号，标识该节点在哪个 CPU 上
+     */
 	int cpu; /* encoded CPU # + 1 value */
 };
 
