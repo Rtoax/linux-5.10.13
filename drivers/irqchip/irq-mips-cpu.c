@@ -34,7 +34,7 @@
 #include <asm/mipsmtregs.h>
 #include <asm/setup.h>
 
-static struct irq_domain *irq_domain;
+static struct irq_domain *rtoax_irq_domain;
 static struct irq_domain *ipi_domain;
 
 static inline void unmask_mips_irq(struct irq_data *d)
@@ -141,7 +141,7 @@ asmlinkage void __weak plat_irq_dispatch(void)
 		if (IS_ENABLED(CONFIG_GENERIC_IRQ_IPI) && irq < 2)
 			virq = irq_linear_revmap(ipi_domain, irq);
 		else
-			virq = irq_linear_revmap(irq_domain, irq);
+			virq = irq_linear_revmap(rtoax_irq_domain, irq);
 		do_IRQ(virq);
 		pending &= ~BIT(irq);
 	}
@@ -236,7 +236,7 @@ static void mips_cpu_register_ipi_domain(struct device_node *of_node)
 	struct cpu_ipi_domain_state *ipi_domain_state;
 
 	ipi_domain_state = kzalloc(sizeof(*ipi_domain_state), GFP_KERNEL);
-	ipi_domain = irq_domain_add_hierarchy(irq_domain,
+	ipi_domain = irq_domain_add_hierarchy(rtoax_irq_domain,
 					      IRQ_DOMAIN_FLAG_IPI_SINGLE,
 					      2, of_node,
 					      &mips_cpu_ipi_chip_ops,
@@ -258,10 +258,10 @@ static void __init __mips_cpu_irq_init(struct device_node *of_node)
 	clear_c0_status(ST0_IM);
 	clear_c0_cause(CAUSEF_IP);
 
-	irq_domain = irq_domain_add_legacy(of_node, 8, MIPS_CPU_IRQ_BASE, 0,
+	rtoax_irq_domain = irq_domain_add_legacy(of_node, 8, MIPS_CPU_IRQ_BASE, 0,
 					   &mips_cpu_intc_irq_domain_ops,
 					   NULL);
-	if (!irq_domain)
+	if (!rtoax_irq_domain)
 		panic("Failed to add irqdomain for MIPS CPU");
 
 	/*

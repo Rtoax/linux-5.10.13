@@ -199,17 +199,23 @@ int pci_msi_prepare(struct irq_domain *domain, struct device *dev, int nvec,
 }
 EXPORT_SYMBOL_GPL(pci_msi_prepare);
 
+/**
+ *  
+ */
 static struct msi_domain_ops pci_msi_domain_ops = {
-	.msi_prepare	= pci_msi_prepare,
+	pci_msi_domain_ops.msi_prepare	= pci_msi_prepare,
 };
 
+/**
+ *  
+ */
 static struct msi_domain_info pci_msi_domain_info = {
-	.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
+	pci_msi_domain_info.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
 			  MSI_FLAG_PCI_MSIX,
-	.ops		= &pci_msi_domain_ops,
-	.chip		= &pci_msi_controller,
-	.handler	= handle_edge_irq,
-	.handler_name	= "edge",
+	pci_msi_domain_info.ops		= &pci_msi_domain_ops,
+	pci_msi_domain_info.chip		= &pci_msi_controller,
+	pci_msi_domain_info.handler	= handle_edge_irq,
+	pci_msi_domain_info.handler_name	= "edge",
 };
 
 struct irq_domain * __init native_create_pci_msi_domain(void)
@@ -241,22 +247,28 @@ void __init x86_create_pci_msi_domain(void) /*  */
 }
 
 #ifdef CONFIG_IRQ_REMAP /*  */
+/**
+ *  
+ */
 static struct irq_chip pci_msi_ir_controller = {
-	.name			= "IR-PCI-MSI",
-	.irq_unmask		= pci_msi_unmask_irq,
-	.irq_mask		= pci_msi_mask_irq,
-	.irq_ack		= irq_chip_ack_parent,
-	.irq_retrigger		= irq_chip_retrigger_hierarchy,
-	.flags			= IRQCHIP_SKIP_SET_WAKE,
+	pci_msi_ir_controller.name			= "IR-PCI-MSI",
+	pci_msi_ir_controller.irq_unmask		= pci_msi_unmask_irq,
+	pci_msi_ir_controller.irq_mask		= pci_msi_mask_irq,
+	pci_msi_ir_controller.irq_ack		= irq_chip_ack_parent,
+	pci_msi_ir_controller.irq_retrigger		= irq_chip_retrigger_hierarchy,
+	pci_msi_ir_controller.flags			= IRQCHIP_SKIP_SET_WAKE,
 };
-
+    
+/**
+ *  
+ */
 static struct msi_domain_info pci_msi_ir_domain_info = {
-	.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
+	pci_msi_ir_domain_info.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
 			  MSI_FLAG_MULTI_PCI_MSI | MSI_FLAG_PCI_MSIX,
-	.ops		= &pci_msi_domain_ops,
-	.chip		= &pci_msi_ir_controller,
-	.handler	= handle_edge_irq,
-	.handler_name	= "edge",
+	pci_msi_ir_domain_info.ops		= &pci_msi_domain_ops,
+	pci_msi_ir_domain_info.chip		= &pci_msi_ir_controller,
+	pci_msi_ir_domain_info.handler	= handle_edge_irq,
+	pci_msi_ir_domain_info.handler_name	= "edge",
 };
 
 struct irq_domain *arch_create_remap_msi_irq_domain(struct irq_domain *parent,
@@ -282,14 +294,14 @@ static void dmar_msi_write_msg(struct irq_data *data, struct msi_msg *msg)
 }
 
 static struct irq_chip dmar_msi_controller = {
-	.name			= "DMAR-MSI",
-	.irq_unmask		= dmar_msi_unmask,
-	.irq_mask		= dmar_msi_mask,
-	.irq_ack		= irq_chip_ack_parent,
-	.irq_set_affinity	= msi_domain_set_affinity,
-	.irq_retrigger		= irq_chip_retrigger_hierarchy,
-	.irq_write_msi_msg	= dmar_msi_write_msg,
-	.flags			= IRQCHIP_SKIP_SET_WAKE,
+	dmar_msi_controller.name			= "DMAR-MSI",
+	dmar_msi_controller.irq_unmask		= dmar_msi_unmask,
+	dmar_msi_controller.irq_mask		= dmar_msi_mask,
+	dmar_msi_controller.irq_ack		= irq_chip_ack_parent,
+	dmar_msi_controller.irq_set_affinity	= msi_domain_set_affinity,
+	dmar_msi_controller.irq_retrigger		= irq_chip_retrigger_hierarchy,
+	dmar_msi_controller.irq_write_msi_msg	= dmar_msi_write_msg,
+	dmar_msi_controller.flags			= IRQCHIP_SKIP_SET_WAKE,
 };
 
 static int dmar_msi_init(struct irq_domain *domain,
@@ -384,6 +396,9 @@ static struct irq_chip __ro_after_init hpet_msi_controller  = {
 	.flags = IRQCHIP_SKIP_SET_WAKE,
 };
 
+/**
+ *  
+ */
 static int hpet_msi_init(struct irq_domain *domain,
 			 struct msi_domain_info *info, unsigned int virq,
 			 irq_hw_number_t hwirq, msi_alloc_info_t *arg)

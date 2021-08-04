@@ -20,13 +20,21 @@
 #include <linux/smp.h>
 #include <linux/fs.h>
 
+/**
+ *  链表头 节点为 irq_domain.link
+ */
 static LIST_HEAD(irq_domain_list);
 static DEFINE_MUTEX(irq_domain_mutex);
+static struct list_head irq_domain_list = LIST_HEAD_INIT(irq_domain_list); //+++
+static struct mutex irq_domain_mutex = __MUTEX_INITIALIZER(irq_domain_mutex); //+++
 
 static struct irq_domain *irq_default_domain;
 
 static void irq_domain_check_hierarchy(struct irq_domain *domain);
 
+/**
+ *  
+ */
 struct irqchip_fwid {
 	struct fwnode_handle	fwnode;
 	unsigned int		type;
@@ -126,22 +134,32 @@ EXPORT_SYMBOL_GPL(irq_domain_free_fwnode);
  *
  * Allocates and initializes an irq_domain structure.
  * Returns pointer to IRQ domain, or NULL on failure.
+ *
+ * 初始化一个 irq_domain 结构
  */
 struct irq_domain *__irq_domain_add(struct fwnode_handle *fwnode, int size,
-				    irq_hw_number_t hwirq_max, int direct_max,
-				    const struct irq_domain_ops *ops,
-				    void *host_data)
+                    				    irq_hw_number_t hwirq_max, int direct_max,
+                    				    const struct irq_domain_ops *ops,
+                    				    void *host_data)
 {
 	struct irqchip_fwid *fwid;
 	struct irq_domain *domain;
 
 	static atomic_t unknown_domains;
 
+    /**
+     *  分配 内存
+     *
+     * 注意数据空间 大小 ， 多了 (sizeof(unsigned int) * size 大小用于 linear_revmap[]; 成员
+     */
 	domain = kzalloc_node(sizeof(*domain) + (sizeof(unsigned int) * size),
 			      GFP_KERNEL, of_node_to_nid(to_of_node(fwnode)));
 	if (!domain)
 		return NULL;
 
+    /**
+     *  
+     */
 	if (is_fwnode_irqchip(fwnode)) {
 		fwid = container_of(fwnode, struct irqchip_fwid, fwnode);
 
@@ -161,7 +179,11 @@ struct irq_domain *__irq_domain_add(struct fwnode_handle *fwnode, int size,
 			domain->name = fwid->name;
 			break;
 		}
-	} else if (is_of_node(fwnode) || is_acpi_device_node(fwnode) ||
+	} 
+    /**
+     *  
+     */
+    else if (is_of_node(fwnode) || is_acpi_device_node(fwnode) ||
 		   is_software_node(fwnode)) {
 		char *name;
 
@@ -209,6 +231,9 @@ struct irq_domain *__irq_domain_add(struct fwnode_handle *fwnode, int size,
 
 	mutex_lock(&irq_domain_mutex);
 	debugfs_add_domain_dir(domain);
+    /**
+     *  添加入 全局链表
+     */
 	list_add(&domain->link, &irq_domain_list);
 	mutex_unlock(&irq_domain_mutex);
 
@@ -878,6 +903,8 @@ EXPORT_SYMBOL_GPL(irq_dispose_mapping);
  * irq_find_mapping() - Find a linux irq from a hw irq number.
  * @domain: domain owning this hardware interrupt
  * @hwirq: hardware irq number in that domain space
+ *
+ * 找到映射后 的软件中断号
  */
 unsigned int irq_find_mapping(struct irq_domain *domain,
 			      irq_hw_number_t hwirq)
@@ -890,6 +917,9 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
 	if (domain == NULL)
 		return 0;
 
+    /**
+     *  
+     */
 	if (hwirq < domain->revmap_direct_max_irq) {
 		data = irq_domain_get_irq_data(domain, hwirq);
 		if (data && data->hwirq == hwirq)
@@ -901,6 +931,9 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
 		return domain->linear_revmap[hwirq];
 
 	rcu_read_lock();
+    /**
+     *  基数树中查找
+     */
 	data = radix_tree_lookup(&domain->revmap_tree, hwirq);
 	rcu_read_unlock();
 	return data ? data->irq : 0;
@@ -1013,23 +1046,26 @@ int irq_domain_translate_twocell(struct irq_domain *d,
 }
 EXPORT_SYMBOL_GPL(irq_domain_translate_twocell);
 
+/**
+ *  
+ */
 int irq_domain_alloc_descs(int virq, unsigned int cnt, irq_hw_number_t hwirq,
-			   int node, const struct irq_affinity_desc *affinity)
+			                    int node, const struct irq_affinity_desc *affinity)
 {
 	unsigned int hint;
 
+    /**
+     *  从 allocated_irqs 查找第一个空闲位
+     */
 	if (virq >= 0) {
-		virq = __irq_alloc_descs(virq, virq, cnt, node, THIS_MODULE,
-					 affinity);
+		virq = __irq_alloc_descs(virq, virq, cnt, node, THIS_MODULE, affinity);
 	} else {
 		hint = hwirq % nr_irqs;
 		if (hint == 0)
 			hint++;
-		virq = __irq_alloc_descs(-1, hint, cnt, node, THIS_MODULE,
-					 affinity);
+		virq = __irq_alloc_descs(-1, hint, cnt, node, THIS_MODULE, affinity);
 		if (virq <= 0 && hint > 1) {
-			virq = __irq_alloc_descs(-1, 1, cnt, node, THIS_MODULE,
-						 affinity);
+			virq = __irq_alloc_descs(-1, 1, cnt, node, THIS_MODULE, affinity);
 		}
 	}
 
@@ -1295,11 +1331,17 @@ int irq_domain_set_hwirq_and_chip(struct irq_domain *domain, unsigned int virq,
 				  irq_hw_number_t hwirq, struct irq_chip *chip,
 				  void *chip_data)
 {
+    /**
+     *  通过软件中断号获取 中断 数据结构
+     */
 	struct irq_data *irq_data = irq_domain_get_irq_data(domain, virq);
 
 	if (!irq_data)
 		return -ENOENT;
 
+    /**
+     *  设置硬件中断号
+     */
 	irq_data->hwirq = hwirq;
 	irq_data->chip = chip ? chip : &no_irq_chip;
 	irq_data->chip_data = chip_data;
@@ -1318,14 +1360,27 @@ EXPORT_SYMBOL_GPL(irq_domain_set_hwirq_and_chip);
  * @handler:		The interrupt flow handler
  * @handler_data:	The interrupt flow handler data
  * @handler_name:	The interrupt handler name
+ *
+ * 设置重要的参数到中断描述符中
  */
 void irq_domain_set_info(struct irq_domain *domain, unsigned int virq,
-			 irq_hw_number_t hwirq, struct irq_chip *chip,
-			 void *chip_data, irq_flow_handler_t handler,
-			 void *handler_data, const char *handler_name)
+                			 irq_hw_number_t hwirq, struct irq_chip *chip,
+                			 void *chip_data, irq_flow_handler_t handler,
+                			 void *handler_data, const char *handler_name)
 {
+    /**
+     *  将 virq 软件中断号 和 hwirq 硬件中断号 设置到 对应的 irq_data 中
+     */
 	irq_domain_set_hwirq_and_chip(domain, virq, hwirq, chip, chip_data);
+
+    /**
+     *  设置 desc->handle_irq 的回调函数
+     */
 	__irq_set_handler(virq, handler, 0, handler_name);
+
+    /**
+     *  
+     */
 	irq_set_handler_data(virq, handler_data);
 }
 EXPORT_SYMBOL(irq_domain_set_info);
@@ -1417,6 +1472,8 @@ int irq_domain_alloc_irqs_hierarchy(struct irq_domain *domain,
  * irq_domain_activate_irq(), is to program hardwares with preallocated
  * resources. In this way, it's easier to rollback when failing to
  * allocate resources.
+ *
+ *  映射 终端号的核心函数
  */
 int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
 			    unsigned int nr_irqs, int node, void *arg,
@@ -1433,8 +1490,7 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
 	if (realloc && irq_base >= 0) {
 		virq = irq_base;
 	} else {
-		virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node,
-					      affinity);
+		virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node, affinity);
 		if (virq < 0) {
 			pr_debug("cannot allocate IRQ(base %d, count %d)\n",
 				 irq_base, nr_irqs);
@@ -1803,14 +1859,14 @@ bool irq_domain_hierarchical_is_msi_remap(struct irq_domain *domain)
  * @domain:	domain to match
  * @virq:	IRQ number to get irq_data
  */
-struct irq_data *irq_domain_get_irq_data(struct irq_domain *domain,
-					 unsigned int virq)
-{
-	struct irq_data *irq_data = irq_get_irq_data(virq);
-
-	return (irq_data && irq_data->domain == domain) ? irq_data : NULL;
-}
-EXPORT_SYMBOL_GPL(irq_domain_get_irq_data);
+//struct irq_data *irq_domain_get_irq_data(struct irq_domain *domain,
+//					 unsigned int virq)
+//{
+//	struct irq_data *irq_data = irq_get_irq_data(virq);
+//
+//	return (irq_data && irq_data->domain == domain) ? irq_data : NULL;
+//}
+//EXPORT_SYMBOL_GPL(irq_domain_get_irq_data);
 
 /**
  * irq_domain_set_info - Set the complete data for a @virq in @domain
@@ -1823,19 +1879,19 @@ EXPORT_SYMBOL_GPL(irq_domain_get_irq_data);
  * @handler_data:	The interrupt flow handler data
  * @handler_name:	The interrupt handler name
  */
-void irq_domain_set_info(struct irq_domain *domain, unsigned int virq,
-			 irq_hw_number_t hwirq, struct irq_chip *chip,
-			 void *chip_data, irq_flow_handler_t handler,
-			 void *handler_data, const char *handler_name)
-{
-	irq_set_chip_and_handler_name(virq, chip, handler, handler_name);
-	irq_set_chip_data(virq, chip_data);
-	irq_set_handler_data(virq, handler_data);
-}
-
-static void irq_domain_check_hierarchy(struct irq_domain *domain)
-{
-}
+//void irq_domain_set_info(struct irq_domain *domain, unsigned int virq,
+//			 irq_hw_number_t hwirq, struct irq_chip *chip,
+//			 void *chip_data, irq_flow_handler_t handler,
+//			 void *handler_data, const char *handler_name)
+//{
+//	irq_set_chip_and_handler_name(virq, chip, handler, handler_name);
+//	irq_set_chip_data(virq, chip_data);
+//	irq_set_handler_data(virq, handler_data);
+//}
+//
+//static void irq_domain_check_hierarchy(struct irq_domain *domain)
+//{
+//}
 #endif	/* CONFIG_IRQ_DOMAIN_HIERARCHY */
 
 #ifdef CONFIG_GENERIC_IRQ_DEBUGFS

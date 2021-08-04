@@ -94,7 +94,7 @@ extern void unmask_threaded_irq(struct irq_desc *desc);
 #ifdef CONFIG_SPARSE_IRQ
 static inline void irq_mark_irq(unsigned int irq) { }
 #else
-extern void irq_mark_irq(unsigned int irq);
+//extern void irq_mark_irq(unsigned int irq);
 #endif
 
 extern int __irq_get_irqchip_state(struct irq_data *data,

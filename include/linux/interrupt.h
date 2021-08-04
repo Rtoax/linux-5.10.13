@@ -155,7 +155,7 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
  *
  * 注册一个中断处理程序，然后激活一条给定的中断线
  *
- * `irq` - 被请求的中断号
+ * `irq` - 被请求的中断号, IRQ 号 或 中断线，这是一个内核管理的虚拟中断号，并不是硬件的中断号
  * `handler` - 中断处理程序指针
  * `flags` - 掩码选项
  * `name` - 中断拥有者的名称

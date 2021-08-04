@@ -106,12 +106,15 @@
 
 #define LOCAL_TIMER_VECTOR		0xec
 
+/**
+ *  
+ */
 #define NR_VECTORS			 256
 
 #ifdef CONFIG_X86_LOCAL_APIC
 #define FIRST_SYSTEM_VECTOR		LOCAL_TIMER_VECTOR
 #else
-#define FIRST_SYSTEM_VECTOR		NR_VECTORS
+//#define FIRST_SYSTEM_VECTOR		NR_VECTORS
 #endif
 
 /*
@@ -131,6 +134,10 @@
 #define IO_APIC_VECTOR_LIMIT		(32 * MAX_IO_APICS)
 
 #if defined(CONFIG_X86_IO_APIC) && defined(CONFIG_PCI_MSI)
+
+/**
+ *  系统支持中断数量的最大值
+ */
 #define NR_IRQS						\
 	(CPU_VECTOR_LIMIT > IO_APIC_VECTOR_LIMIT ?	\
 		(NR_VECTORS + CPU_VECTOR_LIMIT)  :	\

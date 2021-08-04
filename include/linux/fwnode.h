@@ -14,6 +14,9 @@
 struct fwnode_operations;
 struct device;
 
+/**
+ *  
+ */
 struct fwnode_handle {
 	struct fwnode_handle *secondary;
 	const struct fwnode_operations *ops;

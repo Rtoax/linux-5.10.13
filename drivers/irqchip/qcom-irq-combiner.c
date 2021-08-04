@@ -96,16 +96,16 @@ static void combiner_irq_chip_unmask_irq(struct irq_data *data)
 	set_bit(data->hwirq % REG_SIZE, &reg->enabled);
 }
 
-static struct irq_chip irq_chip = {
-	.irq_mask = combiner_irq_chip_mask_irq,
-	.irq_unmask = combiner_irq_chip_unmask_irq,
-	.name = "qcom-irq-combiner"
+static struct irq_chip rtoax_irq_chip = {
+	rtoax_irq_chip.irq_mask = combiner_irq_chip_mask_irq,
+	rtoax_irq_chip.irq_unmask = combiner_irq_chip_unmask_irq,
+	rtoax_irq_chip.name = "qcom-irq-combiner"
 };
 
 static int combiner_irq_map(struct irq_domain *domain, unsigned int irq,
 				   irq_hw_number_t hwirq)
 {
-	irq_set_chip_and_handler(irq, &irq_chip, handle_level_irq);
+	irq_set_chip_and_handler(irq, &rtoax_irq_chip, handle_level_irq);
 	irq_set_chip_data(irq, domain->host_data);
 	irq_set_noprobe(irq);
 	return 0;
@@ -137,9 +137,9 @@ static int combiner_irq_translate(struct irq_domain *d, struct irq_fwspec *fws,
 }
 
 static const struct irq_domain_ops domain_ops = {
-	.map = combiner_irq_map,
-	.unmap = combiner_irq_unmap,
-	.translate = combiner_irq_translate
+	domain_ops.map = combiner_irq_map,
+	domain_ops.unmap = combiner_irq_unmap,
+	domain_ops.translate = combiner_irq_translate
 };
 
 static acpi_status count_registers_cb(struct acpi_resource *ares, void *context)
@@ -271,10 +271,10 @@ static const struct acpi_device_id qcom_irq_combiner_ids[] = {
 };
 
 static struct platform_driver qcom_irq_combiner_probe = {
-	.driver = {
-		.name = "qcom-irq-combiner",
-		.acpi_match_table = ACPI_PTR(qcom_irq_combiner_ids),
+	qcom_irq_combiner_probe.driver = {
+		qcom_irq_combiner_probe.driver.name = "qcom-irq-combiner",
+		qcom_irq_combiner_probe.driver.acpi_match_table = ACPI_PTR(qcom_irq_combiner_ids),
 	},
-	.probe = combiner_probe,
+	qcom_irq_combiner_probe.probe = combiner_probe,
 };
 builtin_platform_driver(qcom_irq_combiner_probe);

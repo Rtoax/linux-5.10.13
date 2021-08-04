@@ -51,11 +51,24 @@ struct pt_regs;
  * @dir:		/proc/irq/ procfs entry
  * @debugfs_file:	dentry for the debugfs file
  * @name:		flow handler name for /proc/interrupts output
+ *
+ * 内核会采用两种方式存储 irq_desc 数据结构
+ *  1. 基数树，见 CONFIG_SPARSE_IRQ 部分代码
+ *  2. 数组，见 kernel/irq/irqdesc.c: irq_desc[]
  */
 struct irq_desc {   /* 中断描述符 */
+    /**
+     *  
+     */
 	struct irq_common_data	irq_common_data;
 	struct irq_data		irq_data;
 	unsigned int __percpu	*kstat_irqs;    /* IRQs 状态 */
+
+    /**
+     *  在 __irq_do_set_handler() 中设置
+     *
+     *  x86 hpet 对应 handle_edge_irq()
+     */
 	irq_flow_handler_t	handle_irq; /* 处理函数 */
 	struct irqaction	*action;	/* IRQ action list */
 	unsigned int		status_use_accessors;

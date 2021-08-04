@@ -1254,6 +1254,9 @@ static void gic_cpu_pm_init(void)
 static inline void gic_cpu_pm_init(void) { }
 #endif /* CONFIG_CPU_PM */
 
+/**
+ *  ARM gic 通用中断控制器 
+ */
 static struct irq_chip gic_chip = {
 	.name			= "GICv3",
 	.irq_mask		= gic_mask_irq,
@@ -1419,6 +1422,9 @@ static int gic_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
 		return ret;
 
 	for (i = 0; i < nr_irqs; i++) {
+        /**
+         *  映射工作
+         */
 		ret = gic_irq_domain_map(domain, virq + i, hwirq + i);
 		if (ret)
 			return ret;

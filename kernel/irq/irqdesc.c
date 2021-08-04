@@ -135,7 +135,15 @@ int nr_irqs = NR_IRQS;/*  */
 EXPORT_SYMBOL_GPL(nr_irqs);
 
 static DEFINE_MUTEX(sparse_irq_lock);
+
+/**
+ *  管理中断号的 位图
+ *
+ *  软件中断号
+ */
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
+unsigned long allocated_irqs[BITS_TO_LONGS(IRQ_BITMAP_BITS)];//+++
+
 
 #ifdef CONFIG_SPARSE_IRQ/* 稀少的 IRQ */
 
@@ -339,6 +347,7 @@ postcore_initcall(irq_sysfs_init);
 #endif /* CONFIG_SYSFS */
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);   /* 中断向量表 radix tree */
+static struct radix_tree_root irq_desc_tree = RADIX_TREE_INIT(irq_desc_tree, GFP_KERNEL);//+++
 
             /*  */
 static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)/*  */
@@ -463,9 +472,12 @@ static void free_desc(unsigned int irq)
 	call_rcu(&desc->rcu, delayed_free_desc);
 }
 
+/**
+ *  分配 
+ */
 static int alloc_descs(unsigned int start, unsigned int cnt, int node,
-		       const struct irq_affinity_desc *affinity,
-		       struct module *owner)
+            		       const struct irq_affinity_desc *affinity,
+            		       struct module *owner)
 {
 	struct irq_desc *desc;
 	int i;
@@ -492,13 +504,21 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 			affinity++;
 		}
 
+        /**
+         *  
+         */
 		desc = alloc_desc(start + i, node, flags, mask, owner);
 		if (!desc)
 			goto err;
+        
 		irq_insert_desc(start + i, desc);
 		irq_sysfs_add(start + i, desc);
 		irq_add_debugfs_entry(start + i, desc);
 	}
+
+    /**
+     *  置位
+     */
 	bitmap_set(allocated_irqs, start, cnt);
 	return start;
 
@@ -550,87 +570,90 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 
 #else /* !CONFIG_SPARSE_IRQ */
 /* 不使用静态 的中断向量表 定义了 CONFIG_SPARSE_IRQ 稀疏IRQs */
-//
-//struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
-//	[0 ... NR_IRQS-1] = {
-//		.handle_irq	= handle_bad_irq,
-//		.depth		= 1,
-//		.lock		= __RAW_SPIN_LOCK_UNLOCKED(irq_desc->lock),
-//	}
-//};
-//
-//int __init early_irq_init(void)
-//{
-//	int count, i, node = first_online_node;
-//	struct irq_desc *desc;
-//
-//	init_irq_default_affinity();
-//
-//	printk(KERN_INFO "NR_IRQS: %d\n", NR_IRQS);
-//
-//	desc = irq_desc;
-//	count = ARRAY_SIZE(irq_desc);
-//
-//	for (i = 0; i < count; i++) {
-//		desc[i].kstat_irqs = alloc_percpu(unsigned int);
-//		alloc_masks(&desc[i], node);
-//		raw_spin_lock_init(&desc[i].lock);
-//		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
-//		mutex_init(&desc[i].request_mutex);
-//		desc_set_defaults(i, &desc[i], node, NULL, NULL);
-//	}
-//	return arch_early_irq_init();
-//}
-//
-//struct irq_desc *irq_to_desc(unsigned int irq)
-//{
-//	return (irq < NR_IRQS) ? irq_desc + irq : NULL;
-//}
-//EXPORT_SYMBOL(irq_to_desc);
-//
-//static void free_desc(unsigned int irq)
-//{
-//	struct irq_desc *desc = irq_to_desc(irq);
-//	unsigned long flags;
-//
-//	raw_spin_lock_irqsave(&desc->lock, flags);
-//	desc_set_defaults(irq, desc, irq_desc_get_node(desc), NULL, NULL);
-//	raw_spin_unlock_irqrestore(&desc->lock, flags);
-//}
-//
-//static inline int alloc_descs(unsigned int start, unsigned int cnt, int node,
-//			      const struct irq_affinity_desc *affinity,
-//			      struct module *owner)
-//{
-//	u32 i;
-//
-//	for (i = 0; i < cnt; i++) {
-//		struct irq_desc *desc = irq_to_desc(start + i);
-//
-//		desc->owner = owner;
-//	}
-//	bitmap_set(allocated_irqs, start, cnt);
-//	return start;
-//}
-//
-//static int irq_expand_nr_irqs(unsigned int nr)
-//{
-//	return -ENOMEM;
-//}
-//
-//void irq_mark_irq(unsigned int irq)
-//{
-//	mutex_lock(&sparse_irq_lock);
-//	bitmap_set(allocated_irqs, irq, 1);
-//	mutex_unlock(&sparse_irq_lock);
-//}
-//
-//#ifdef CONFIG_GENERIC_IRQ_LEGACY
-//void irq_init_desc(unsigned int irq)
-//{
-//	free_desc(irq);
-//}
-//#endif
+
+struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
+	[0 ... NR_IRQS-1] = {
+		.handle_irq	= handle_bad_irq,
+		.depth		= 1,
+		.lock		= __RAW_SPIN_LOCK_UNLOCKED(irq_desc->lock),
+	}
+};
+
+int __init early_irq_init(void)
+{
+	int count, i, node = first_online_node;
+	struct irq_desc *desc;
+
+	init_irq_default_affinity();
+
+	printk(KERN_INFO "NR_IRQS: %d\n", NR_IRQS);
+
+	desc = irq_desc;
+	count = ARRAY_SIZE(irq_desc);
+
+	for (i = 0; i < count; i++) {
+		desc[i].kstat_irqs = alloc_percpu(unsigned int);
+		alloc_masks(&desc[i], node);
+		raw_spin_lock_init(&desc[i].lock);
+		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+		mutex_init(&desc[i].request_mutex);
+		desc_set_defaults(i, &desc[i], node, NULL, NULL);
+	}
+	return arch_early_irq_init();
+}
+
+/**
+ *  
+ */
+struct irq_desc *irq_to_desc(unsigned int irq)
+{
+	return (irq < NR_IRQS) ? irq_desc + irq : NULL;
+}
+EXPORT_SYMBOL(irq_to_desc);
+
+static void free_desc(unsigned int irq)
+{
+	struct irq_desc *desc = irq_to_desc(irq);
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&desc->lock, flags);
+	desc_set_defaults(irq, desc, irq_desc_get_node(desc), NULL, NULL);
+	raw_spin_unlock_irqrestore(&desc->lock, flags);
+}
+
+static inline int alloc_descs(unsigned int start, unsigned int cnt, int node,
+			      const struct irq_affinity_desc *affinity,
+			      struct module *owner)
+{
+	u32 i;
+
+	for (i = 0; i < cnt; i++) {
+		struct irq_desc *desc = irq_to_desc(start + i);
+
+		desc->owner = owner;
+	}
+	bitmap_set(allocated_irqs, start, cnt);
+	return start;
+}
+
+static int irq_expand_nr_irqs(unsigned int nr)
+{
+	return -ENOMEM;
+}
+
+void irq_mark_irq(unsigned int irq)
+{
+	mutex_lock(&sparse_irq_lock);
+	bitmap_set(allocated_irqs, irq, 1);
+	mutex_unlock(&sparse_irq_lock);
+}
+
+#ifdef CONFIG_GENERIC_IRQ_LEGACY
+void irq_init_desc(unsigned int irq)
+{
+	free_desc(irq);
+}
+#endif
 
 #endif /* !CONFIG_SPARSE_IRQ */
 
@@ -796,8 +819,10 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 
 	mutex_lock(&sparse_irq_lock);
 
-	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS,
-					   from, cnt, 0);
+    /**
+     *  查找第一个空间位
+     */
+	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS, from, cnt, 0);
 	ret = -EEXIST;
 	if (irq >=0 && start != irq)
 		goto unlock;
@@ -807,7 +832,11 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		if (ret)
 			goto unlock;
 	}
+    /**
+     *  分配 irq_desc 数据结构(中断描述符)
+     */
 	ret = alloc_descs(start, cnt, node, affinity, owner);
+    
 unlock:
 	mutex_unlock(&sparse_irq_lock);
 	return ret;

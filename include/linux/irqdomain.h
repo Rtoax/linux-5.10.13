@@ -120,6 +120,11 @@ struct irq_domain_ops { /*  */
 		     unsigned int nr_irqs);
 	int (*activate)(struct irq_domain *d, struct irq_data *irqd, bool reserve);
 	void (*deactivate)(struct irq_domain *d, struct irq_data *irq_data);
+
+    /**
+     *  通过设备节点和DTS(device tree script)中的中断信息 解码出硬件的中断号
+     *  与中断触发类型，这些中断信息 包括 DTS 中描述符 的外设的 interrupts 域等
+     */
 	int (*translate)(struct irq_domain *d, struct irq_fwspec *fwspec,
 			 unsigned long *out_hwirq, unsigned int *out_type);
 #endif
@@ -158,10 +163,30 @@ struct irq_domain_chip_generic;
  * @revmap_size: Size of the linear map table @linear_revmap[]
  * @revmap_tree: Radix map tree for hwirqs that don't fit in the linear map
  * @linear_revmap: Linear table of hwirq->virq reverse mappings
+ *
+ * 随着芯片技术的发展，通常一个 SoC 内部有多个 中断控制器， 并且每个中断控制器管理的中断源
+ * 的数量越来越多。
+ * 在一些复杂的 SoC中 多个中断控制器还可以级联成一个树状结构。
+ * 面对如此复杂的硬件，原来 Linux 内核 的中断管理 机制捉襟见肘，
+ * 因此 Linux-3.1 引入了 irq_domain 结构的管理框架。
+ *
+ * 1. irq_domain 可以支持多个中断控制器，
+ * 2. 并且完美的支持设备树机制，
+ * 3. 解决硬件中断号映射到 Linux 内核 IRQ 号的问题
  */
 struct irq_domain { /*  */
+    /**
+     *  链表头为 irq_domain_list
+     */
 	struct list_head link;
+    /**
+     *  irq_domain 的名称
+     */
 	const char *name;
+
+    /**
+     *  操作方法集
+     */
 	const struct irq_domain_ops *ops;
 	void *host_data;
 	unsigned int flags;
@@ -179,11 +204,26 @@ struct irq_domain { /*  */
 #endif
 
 	/* reverse map data. The linear map gets appended to the irq_domain */
+    /**
+     *  该 irq_domain 支持中断数量的最大值
+     */
 	irq_hw_number_t hwirq_max;
 	unsigned int revmap_direct_max_irq;
+
+    /**
+     *  线性映射的大小
+     */
 	unsigned int revmap_size;
+
+    /**
+     *  基数树 映射的根节点
+     */
 	struct radix_tree_root revmap_tree;
 	struct mutex revmap_tree_mutex;
+
+    /**
+     *  线性映射用到的查找表
+     */
 	unsigned int linear_revmap[];
 };
 
@@ -359,11 +399,17 @@ static inline struct irq_domain *irq_domain_add_tree(struct device_node *of_node
 	return __irq_domain_add(of_node_to_fwnode(of_node), 0, ~0, 0, ops, host_data);
 }
 
+/**
+ *  注册一个 struct irq_domain 结构
+ */
 static inline struct irq_domain *irq_domain_create_linear(struct fwnode_handle *fwnode,
 					 unsigned int size,
 					 const struct irq_domain_ops *ops,
 					 void *host_data)
 {
+    /**
+     *  初始化 一个 irq_domain 结构
+     */
 	return __irq_domain_add(fwnode, size, size, 0, ops, host_data);
 }
 
@@ -486,11 +532,16 @@ extern void irq_domain_free_irqs(unsigned int virq, unsigned int nr_irqs);
 extern int irq_domain_activate_irq(struct irq_data *irq_data, bool early);
 extern void irq_domain_deactivate_irq(struct irq_data *irq_data);
 
+/**
+ *  映射 终端号的核心函数
+ */
 static inline int irq_domain_alloc_irqs(struct irq_domain *domain,
 			unsigned int nr_irqs, int node, void *arg)
 {
-	return __irq_domain_alloc_irqs(domain, -1, nr_irqs, node, arg, false,
-				       NULL);
+    /**
+     *  
+     */
+	return __irq_domain_alloc_irqs(domain, -1, nr_irqs, node, arg, false, NULL);
 }
 
 extern int irq_domain_alloc_irqs_hierarchy(struct irq_domain *domain,

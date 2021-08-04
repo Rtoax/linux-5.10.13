@@ -53,7 +53,7 @@ extern struct platform_device *of_device_alloc(struct device_node *np,
 					 const char *bus_id,
 					 struct device *parent);
 #ifdef CONFIG_OF
-extern struct platform_device *of_find_device_by_node(struct device_node *np);
+//extern struct platform_device *of_find_device_by_node(struct device_node *np);
 #else
 static inline struct platform_device *of_find_device_by_node(struct device_node *np)
 {
@@ -108,7 +108,7 @@ static inline void devm_of_platform_depopulate(struct device *dev) { }
 #endif
 
 #if defined(CONFIG_OF_DYNAMIC) && defined(CONFIG_OF_ADDRESS)
-extern void of_platform_register_reconfig_notifier(void);
+//extern void of_platform_register_reconfig_notifier(void);
 #else
 static inline void of_platform_register_reconfig_notifier(void) { }
 #endif

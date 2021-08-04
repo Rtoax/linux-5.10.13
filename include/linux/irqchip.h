@@ -25,6 +25,9 @@
  * same file.
  * @compstr: compatible string of the irqchip driver
  * @fn: initialization function
+ *
+ * 不同的 irqchip 驱动程序必须使用这个宏来声明它们的 DT 兼容字符串和
+ * 它们的初始化函数之间的关联。
  */
 #define IRQCHIP_DECLARE(name, compat, fn) OF_DECLARE_2(irqchip, name, compat, fn)
 

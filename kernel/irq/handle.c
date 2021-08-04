@@ -134,6 +134,9 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	wake_up_process(action->thread);
 }
 
+/**
+ *  
+ */
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags)
 {
 	irqreturn_t retval = IRQ_NONE;
@@ -142,6 +145,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 
 	record_irq_time(desc);
 
+    /**
+     *  
+     */
 	for_each_action_of_desc(desc, action) {
 		irqreturn_t res;
 
@@ -153,6 +159,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 			lockdep_hardirq_threaded();
 
 		trace_irq_handler_entry(irq, action);
+        /**
+         *  调用该中断所有的 action handler
+         */
 		res = action->handler(irq, action->dev_id);
 		trace_irq_handler_exit(irq, action, res);
 
@@ -160,6 +169,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 			      irq, action->handler))
 			local_irq_disable();
 
+        /**
+         *  
+         */
 		switch (res) {
 		case IRQ_WAKE_THREAD:
 			/*
@@ -188,6 +200,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 	return retval;
 }
 
+/**
+ *  
+ */
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 {
 	irqreturn_t retval;
@@ -210,6 +225,9 @@ irqreturn_t handle_irq_event(struct irq_desc *desc) /*  */
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	raw_spin_unlock(&desc->lock);
 
+    /**
+     *  
+     */
 	ret = handle_irq_event_percpu(desc);
 
 	raw_spin_lock(&desc->lock);

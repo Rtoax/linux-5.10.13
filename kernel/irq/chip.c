@@ -155,6 +155,9 @@ int irq_set_chip_data(unsigned int irq, void *data)
 }
 EXPORT_SYMBOL(irq_set_chip_data);
 
+/**
+ *  
+ */
 struct irq_data *irq_get_irq_data(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -816,6 +819,9 @@ void handle_edge_irq(struct irq_desc *desc)
 				unmask_irq(desc);
 		}
 
+        /**
+         *  
+         */
 		handle_irq_event(desc);
 
 	} while ((desc->istate & IRQS_PENDING) &&
@@ -996,6 +1002,9 @@ void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 }
 
+/**
+ *  设置 desc->handle_irq 的回调函数
+ */
 static void
 __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		     int is_chained, const char *name)
@@ -1039,6 +1048,10 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 			desc->action = NULL;
 		desc->depth = 1;
 	}
+
+    /**
+     *  
+     */
 	desc->handle_irq = handle;
 	desc->name = name;
 
@@ -1066,6 +1079,9 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 	}
 }
 
+/**
+ *  设置 desc->handle_irq 的回调函数
+ */
 void
 __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name)
@@ -1075,7 +1091,9 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 	if (!desc)
 		return;
-
+    /**
+     *  设置 desc->handle_irq 的回调函数
+     */
 	__irq_do_set_handler(desc, handle, is_chained, name);
 	irq_put_desc_busunlock(desc, flags);
 }
