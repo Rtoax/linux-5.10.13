@@ -2009,9 +2009,15 @@ const void *free_nmi(unsigned int irq, void *dev_id)
  *
  * * 注册一个中断处理程序，然后激活一条给定的中断线
  *
+ *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq() 
+ *  目的是降低中断处理对系统实时延迟的影响。
+ *  中断线程化的目的在于：把中断处理中一些繁重的任务作为 内核线程来运行，
+ *   实时进程可以比中断线程有更高的优先级。
+ *
  * `irq` - 被请求的中断号, IRQ 号 或 中断线，这是一个内核管理的虚拟中断号，并不是硬件的中断号
  * `handler` - 中断处理程序指针
- * `irqflags` - 掩码选项
+ * `thread_fn` - 中断线程化的处理程序，如果不为 NULL，将创建内核线程
+ * `irqflags` - 掩码选项，如 `IRQF_SHARED`
  * `devname` - 中断拥有者的名称
  * `dev_id` - 用于共享中断线的指针
  */
@@ -2019,6 +2025,9 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
 			 const char *devname, void *dev_id)
 {
+    /**
+     *  
+     */
 	struct irqaction *action;   /* 中断动作描述符 */
 	struct irq_desc *desc;  /* 中断描述符 */
 	int retval;

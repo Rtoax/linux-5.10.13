@@ -14,9 +14,12 @@
 #ifdef CONFIG_SPARSE_IRQ
 # define IRQ_BITMAP_BITS	(NR_IRQS + 8196)
 #else
-# define IRQ_BITMAP_BITS	NR_IRQS
+//# define IRQ_BITMAP_BITS	NR_IRQS
 #endif
 
+/**
+ *  
+ */
 #define istate core_internal_state__do_not_mess_with_it
 
 extern bool noirqdebug;
@@ -50,17 +53,29 @@ enum {
  * IRQS_PENDING			- irq is pending and replayed later
  * IRQS_SUSPENDED		- irq is suspended
  * IRQS_NMI			- irq line is used to deliver NMIs
+ *
+ * 中断状态, irq_desc.istate 或 irq_desc.core_internal_state__do_not_mess_with_it
  */
 enum {
+    /* 表示某个 irq_desc 处于自动侦测状态 */
 	IRQS_AUTODETECT		= 0x00000001,
+    /* 表示某个 irq_desc 被视为 '伪中断'并被禁用 */
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
+    /* 表示某个 irq_desc 正轮询调用 action */
 	IRQS_POLL_INPROGRESS	= 0x00000008,
+    /* 表示只执行一次 */
 	IRQS_ONESHOT		= 0x00000020,
+    /* 重新发一次中断 */
 	IRQS_REPLAY		= 0x00000040,
+    /* 表示某个 irq_desc 处于等待状态 */
 	IRQS_WAITING		= 0x00000080,
+    /* 表示该中断比挂起 */
 	IRQS_PENDING		= 0x00000200,
+    /* 表示该中断被暂停 */
 	IRQS_SUSPENDED		= 0x00000800,
+    /*  */
 	IRQS_TIMINGS		= 0x00001000,
+    /*  */
 	IRQS_NMI		= 0x00002000,
 };
 

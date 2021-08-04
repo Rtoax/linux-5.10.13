@@ -145,6 +145,10 @@ struct irq_domain;
  * @ipi_offset:		Offset of first IPI target cpu in @affinity. Optional.
  */
 struct irq_common_data {    /*  */
+
+    /**
+     *  state_use_accessors
+     */
 	unsigned int		__private state_use_accessors;
 #ifdef CONFIG_NUMA
 	unsigned int		node;
@@ -184,6 +188,10 @@ struct irq_data {   /* 每个 irq 芯片数据传递到芯片功能 */
      *  硬件中断号
      */
 	unsigned long		hwirq;  /* 硬件中断号 */
+
+    /**
+     *  
+     */
 	struct irq_common_data	*common;    /*  */
 
     /**
@@ -235,8 +243,14 @@ struct irq_data {   /* 每个 irq 芯片数据传递到芯片功能 */
  *				  irq_chip::irq_set_affinity() when deactivated.
  * IRQD_IRQ_ENABLED_ON_SUSPEND	- Interrupt is enabled on suspend by irq pm if
  *				  irqchip have flag IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND set.
+ *
+ * 对应字段 `irq_data.irq_common_data.state_use_accessors`
  */
 enum {
+    /** 
+     *  表示中断触发类型，如上升沿触发，或者下降沿触发 
+     *  
+     */
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
 	IRQD_ACTIVATED			= (1 <<  9),
@@ -246,8 +260,10 @@ enum {
 	IRQD_LEVEL			= (1 << 13),
 	IRQD_WAKEUP_STATE		= (1 << 14),
 	IRQD_MOVE_PCNTXT		= (1 << 15),
+	/* 表示中断处于关闭状态 */
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
+	/* 表示该中断正在处理中 */
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
 	IRQD_FORWARDED_TO_VCPU		= (1 << 20),

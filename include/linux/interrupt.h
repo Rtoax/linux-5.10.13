@@ -25,6 +25,9 @@
  * requesting an interrupt without specifying a IRQF_TRIGGER, the
  * setting should be assumed to be "as already configured", which
  * may be as per machine or firmware initialisation.
+ *
+ * 中断触发类型
+ * IRQF_XXX 用于申请中断时描述该中断的特性
  */
 #define IRQF_TRIGGER_NONE	0x00000000  //不配置任何水平触发或边缘触发的中断行为
 #define IRQF_TRIGGER_RISING	0x00000001
@@ -32,7 +35,7 @@
 #define IRQF_TRIGGER_HIGH	0x00000004
 #define IRQF_TRIGGER_LOW	0x00000008
 #define IRQF_TRIGGER_MASK	(IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW | \
-				 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING)
+				             IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING)
 #define IRQF_TRIGGER_PROBE	0x00000010
 
 /*
@@ -61,20 +64,25 @@
  *                interrupt handler after suspending interrupts. For system
  *                wakeup devices users need to implement wakeup detection in
  *                their interrupt handlers.
+ **
+ * IRQF_XXX 用于申请中断时描述该中断的特性， irqaction.flags
  */
-#define IRQF_SHARED		0x00000080  //允许多个设备共享此中断号
-#define IRQF_PROBE_SHARED	0x00000100
-#define __IRQF_TIMER		0x00000200
-#define IRQF_PERCPU		0x00000400  //此中断号属于单独cpu的(per cpu)
-#define IRQF_NOBALANCING	0x00000800  //此中断步参与irq平衡时
+#define IRQF_SHARED		    0x00000080  //允许多个设备共享此中断号
+#define IRQF_PROBE_SHARED	0x00000100  //中断处理程序允许出现共享中断不匹配的情况
+#define __IRQF_TIMER		0x00000200  //
+#define IRQF_PERCPU		    0x00000400  //此中断号属于单独特定的cpu的(per cpu)
+#define IRQF_NOBALANCING	0x00000800  //此中断不参与irq 多 CPU 负载均衡
 #define IRQF_IRQPOLL		0x00001000  //此中断用于轮询
-#define IRQF_ONESHOT		0x00002000
-#define IRQF_NO_SUSPEND		0x00004000
-#define IRQF_FORCE_RESUME	0x00008000
+#define IRQF_ONESHOT		0x00002000  //表示一次触发的中断，不能嵌套
+#define IRQF_NO_SUSPEND		0x00004000  //在系统睡眠过程中不要关闭该中断
+#define IRQF_FORCE_RESUME	0x00008000  //在系统唤醒过程中必须强制打开该中断
 #define IRQF_NO_THREAD		0x00010000  //中断不能线程化
-#define IRQF_EARLY_RESUME	0x00020000
+#define IRQF_EARLY_RESUME	0x00020000  //
 #define IRQF_COND_SUSPEND	0x00040000  //对共享中断生效
 
+/**
+ *  标记一个时钟中断
+ */
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
 /*
@@ -108,19 +116,61 @@ typedef irqreturn_t (*irq_handler_t)(int, void *);
  * @dir:	pointer to the proc/irq/NN/name entry
  */
 struct irqaction {  /* 中断动作描述符 */
+    /**
+     *  主处理程序
+     */
 	irq_handler_t		handler;    /* 中断程序 */
+
+    /**
+     *  传递给中断处理程序的参数
+     */
 	void			    *dev_id;
 	void __percpu		*percpu_dev_id;
+
+    /**
+     *  指向下一个中断 irqaction 的描述符
+     */
 	struct irqaction	*next;
+
+    /**
+     *  中断 线程处理程序
+     */
 	irq_handler_t		thread_fn;  /* 不为 NULL 时，`request_irq`将创建线程 */
+
+    /**
+     *  中断线程化 的 task_struct 结构
+     */
 	struct task_struct	*thread;
 	struct irqaction	*secondary;
+
+    /**
+     *  软中断号
+     */
 	unsigned int		irq;    /* 中断号 */
+    /**
+     * 注册中断时用的 中断标志位
+     * IRQF_XXX 用于申请中断时描述该中断的特性,如`IRQF_SHARED`
+     */
 	unsigned int		flags;
+
+    /**
+     *  与中断 线程相关的标志位
+     */
 	unsigned long		thread_flags;
+    /**
+     *  用于跟踪中断线程活动的位图
+     */
 	unsigned long		thread_mask;
+
+    /**
+     *  注册中断的名称
+     */
 	const char		    *name;  /* 设备名称 */
+    /**
+     *  
+     */
 	struct proc_dir_entry	*dir;   /* /proc/ 文件系统 */
+    
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
@@ -155,9 +205,14 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
  *
  * 注册一个中断处理程序，然后激活一条给定的中断线
  *
+ *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq() 
+ *  目的是降低中断处理对系统实时延迟的影响。
+ *  中断线程化的目的在于：把中断处理中一些繁重的任务作为 内核线程来运行，
+ *   实时进程可以比中断线程有更高的优先级。
+ *
  * `irq` - 被请求的中断号, IRQ 号 或 中断线，这是一个内核管理的虚拟中断号，并不是硬件的中断号
  * `handler` - 中断处理程序指针
- * `flags` - 掩码选项
+ * `flags` - 掩码选项，如 `IRQF_SHARED`
  * `name` - 中断拥有者的名称
  * `dev` - 用于共享中断线的指针
  */

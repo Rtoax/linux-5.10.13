@@ -72,7 +72,16 @@ struct irq_desc {   /* 中断描述符 */
 	irq_flow_handler_t	handle_irq; /* 处理函数 */
 	struct irqaction	*action;	/* IRQ action list */
 	unsigned int		status_use_accessors;
+
+    /**
+     *  宏定义为 #define istate core_internal_state__do_not_mess_with_it
+     *
+     *  `IRQS_XXX` 例如 `IRQS_NMI`
+     */
+    union {
 	unsigned int		core_internal_state__do_not_mess_with_it;
+    unsigned int        istate;//+++, 实际上为宏定义 
+    };
 	unsigned int		depth;		/* nested irq disables */
 	unsigned int		wake_depth;	/* nested wake enables */
 	unsigned int		tot_count;
