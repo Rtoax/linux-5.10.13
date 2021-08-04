@@ -25,9 +25,15 @@
 #include "internals.h"
 
 #if defined(CONFIG_IRQ_FORCED_THREADING) && !defined(CONFIG_PREEMPT_RT)
+/**
+ *  系统支持强制中断线程化与否
+ */
 __read_mostly bool force_irqthreads;
 EXPORT_SYMBOL_GPL(force_irqthreads);
 
+/**
+ *  设置内核参数
+ */
 static int __init setup_forced_irqthreads(char *arg)
 {
 	force_irqthreads = true;
@@ -1056,8 +1062,8 @@ irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
 	free_cpumask_var(mask);
 }
 #else
-static inline void
-irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action) { }
+//static inline void
+//irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action) { }
 #endif
 
 /*
@@ -1215,20 +1221,32 @@ void irq_wake_thread(unsigned int irq, void *dev_id)
 }
 EXPORT_SYMBOL_GPL(irq_wake_thread);
 
+/**
+ *  强制中断线程化
+ */
 static int irq_setup_forced_threading(struct irqaction *new)
 {
 	if (!force_irqthreads)
 		return 0;
+
+    /**
+     *  这些参数不符合强制中断线程化要求
+     */
 	if (new->flags & (IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT))
 		return 0;
 
 	/*
 	 * No further action required for interrupts which are requested as
 	 * threaded interrupts already
+	 *
+	 * 已经是 中断线程化
 	 */
 	if (new->handler == irq_default_primary_handler)
 		return 0;
 
+    /**
+     *  中断不会嵌套，所有线程化后的 thread_fn 运行完成之后才打开中断源
+     */
 	new->flags |= IRQF_ONESHOT;
 
 	/*
@@ -1249,7 +1267,15 @@ static int irq_setup_forced_threading(struct irqaction *new)
 	}
 	/* Deal with the primary handler */
 	set_bit(IRQTF_FORCED_THREAD, &new->thread_flags);
+
+    /**
+     *  原来的处理函数 当做 线程回调使用
+     */
 	new->thread_fn = new->handler;
+
+    /**
+     *  处理函数要做的就是唤醒 中断线程
+     */
 	new->handler = irq_default_primary_handler;
 	return 0;
 }
@@ -1304,6 +1330,9 @@ static void irq_nmi_teardown(struct irq_desc *desc)
 		c->irq_nmi_teardown(d);
 }
 
+/**
+ *  创建一个 实时线程，优先级是 50，调度策略是 FIFO
+ */
 static int  /* 创建一个中断处理线程 */
 setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 {
@@ -1311,16 +1340,17 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 
     /* 创建内核线程 */
 	if (!secondary) {
-		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
-				   new->name);
+		t = kthread_create(irq_thread, new, "irq/%d-%s", irq, new->name);
 	} else {
-		t = kthread_create(irq_thread, new, "irq/%d-s-%s", irq,
-				   new->name);
+		t = kthread_create(irq_thread, new, "irq/%d-s-%s", irq, new->name);
 	}
 
 	if (IS_ERR(t))
 		return PTR_ERR(t);
 
+    /**
+     *  设置为 FIFO 实时调度
+     */
 	sched_set_fifo(t);
 
 	/*
@@ -1355,6 +1385,8 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
  * chip_bus_lock and desc->lock are sufficient for all other management and
  * interrupt related functions. desc->request_mutex solely serializes
  * request/free_irq().
+ *
+ * 
  */
 static int /*  */
 __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqaction)
@@ -1403,6 +1435,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 		new_irqaction->handler = irq_nested_primary_handler;
 	} else {
 		if (irq_settings_can_thread(desc)) {
+            /**
+             *  强制中断线程化 
+             */
 			ret = irq_setup_forced_threading(new_irqaction);
 			if (ret)
 				goto out_mput;
@@ -1415,11 +1450,20 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	 * thread.
 	 */
 	//给定的中断不是嵌套的，并且 `thread_fn` 不为空
+	/**
+     *  对于没有嵌套的 线程化中断，创建一个内核线程
+     */
 	if (new_irqaction->thread_fn && !nested) {
-        //创建了一个中断处理线程
+        /** 
+         *  创建了一个中断处理线程
+         */
 		ret = setup_irq_thread(new_irqaction, irq, false);
 		if (ret)
 			goto out_mput;
+
+        /**
+         *  
+         */
 		if (new_irqaction->secondary) {
 			ret = setup_irq_thread(new_irqaction->secondary, irq, true);
 			if (ret)
@@ -1435,6 +1479,8 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	 * MSI based interrupts are per se one shot safe. Check the
 	 * chip flags, so we can avoid the unmask dance at the end of
 	 * the threaded handler for those.
+	 *
+	 * 标志位表示该中断控制器 不支持嵌套，只支持 ONESHOT，如基于 MSI 的中断
 	 */
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
 		new_irqaction->flags &= ~IRQF_ONESHOT;
@@ -1472,6 +1518,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	 * desc->request_mutex or the optional bus lock.
 	 */
 	raw_spin_lock_irqsave(&desc->lock, flags);
+
+    /**
+     *  
+     */
 	old_ptr = &desc->action;
 	old = *old_ptr;
 	if (old) {
@@ -1564,7 +1614,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 		new_irqaction->thread_mask = 1UL << ffz(thread_mask);
 
 	} 
-
+    /**
+     *  
+     */
     else if (new_irqaction->handler == irq_default_primary_handler &&
 		   !(desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)) {
 		/*
@@ -1588,6 +1640,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 		goto out_unlock;
 	}
 
+    /**
+     *  
+     */
 	if (!shared) {
 		init_waitqueue_head(&desc->wait_for_threads);
 
@@ -2043,6 +2098,8 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	 *
 	 * Also IRQF_COND_SUSPEND only makes sense for shared interrupts and
 	 * it cannot be set along with IRQF_NO_SUSPEND.
+	 *
+	 * 例行检查
 	 */
 	if (((irqflags & IRQF_SHARED) && !dev_id) ||    /* 确保共享中断时传入了`dev_id` */
 	    (!(irqflags & IRQF_SHARED) && (irqflags & IRQF_COND_SUSPEND)) ||    /* `IRQF_COND_SUSPEND`仅对共享中断生效 */
@@ -2062,7 +2119,11 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
     //检查给定的中断处理程序
 	if (!handler) {
 		if (!thread_fn)
+            /**
+             *  二者同时为空，直接参数错误
+             */
 			return -EINVAL;
+        
         //如果 中断处理程序 为空，并且设置了 线程回调，默认将 中断处理程序设置为唤醒 线程
 		handler = irq_default_primary_handler;
 	}
@@ -2072,6 +2133,9 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (!action)
 		return -ENOMEM;
 
+    /**
+     *  赋值
+     */
 	action->handler = handler;
 	action->thread_fn = thread_fn;
 	action->flags = irqflags;
@@ -2084,6 +2148,10 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		kfree(action);
 		return retval;
 	}
+
+    /**
+     *  注册中断
+     */
     //the interrupt descriptor is locked during `__setup_irq` function, 内部有锁
 	retval = __setup_irq(irq, desc, action);
 

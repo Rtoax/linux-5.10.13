@@ -169,6 +169,8 @@ static inline unsigned long pstate_to_compat_psr(const unsigned long pstate)
  * This struct defines the way the registers are stored on the stack during an
  * exception. Note that sizeof(struct pt_regs) has to be a multiple of 16 (for
  * stack alignment). struct user_pt_regs must form a prefix of struct pt_regs.
+ *
+ * 栈框：描述内核栈上寄存器的排列信息
  */
 struct pt_regs {
 	union {

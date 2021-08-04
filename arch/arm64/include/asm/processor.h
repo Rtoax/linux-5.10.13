@@ -255,6 +255,9 @@ extern void release_thread(struct task_struct *);
 unsigned long get_wchan(struct task_struct *p);
 
 /* Thread switching */
+/**
+ *  arch/arm64/kernel/entry.S
+ */
 extern struct task_struct *cpu_switch_to(struct task_struct *prev,
 					 struct task_struct *next);
 

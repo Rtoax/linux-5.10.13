@@ -51,6 +51,9 @@ static inline bool irq_settings_is_per_cpu(struct irq_desc *desc)
 
 static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 {
+    /**
+     *  
+     */
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
@@ -99,6 +102,9 @@ static inline void irq_settings_set_level(struct irq_desc *desc)
 //检查描述符的状态，确保我们可以请求中断
 static inline bool irq_settings_can_request(struct irq_desc *desc)
 {
+    /**
+     *  不可以是系统预留的中断描述符
+     */
 	return !(desc->status_use_accessors & _IRQ_NOREQUEST);
 }
 

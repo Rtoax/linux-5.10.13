@@ -71,6 +71,10 @@ struct irq_desc {   /* 中断描述符 */
      */
 	irq_flow_handler_t	handle_irq; /* 处理函数 */
 	struct irqaction	*action;	/* IRQ action list */
+
+    /**
+     *  
+     */
 	unsigned int		status_use_accessors;
 
     /**

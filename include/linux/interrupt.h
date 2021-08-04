@@ -557,6 +557,9 @@ extern int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 # ifdef CONFIG_PREEMPT_RT
 #  define force_irqthreads	(true)
 # else
+/**
+ *  系统支持强制中断线程化与否
+ */
 extern bool force_irqthreads;
 # endif
 #else

@@ -6065,6 +6065,9 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
  */
 void sched_set_fifo(struct task_struct *p)
 {
+    /**
+     *  优先级为 50
+     */
 	struct sched_param sp = { sp.sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }

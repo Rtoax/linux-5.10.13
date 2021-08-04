@@ -59,7 +59,9 @@
 #define BAD_IRQ		1
 #define BAD_FIQ		2
 #define BAD_ERROR	3
-
+    /**
+     *  
+     */
 	.macro kernel_ventry, el, label, regsize = 64
 	.align 7
 #ifdef CONFIG_UNMAP_KERNEL_AT_EL0
@@ -87,6 +89,9 @@ alternative_else_nop_endif
 	tbnz	x0, #THREAD_SHIFT, 0f
 	sub	x0, sp, x0			// x0'' = sp' - x0' = (sp + x0) - sp = x0
 	sub	sp, sp, x0			// sp'' = sp' - x0 = (sp + x0) - x0 = sp
+	/**
+     *  
+     */
 	b	el\()\el\()_\label
 
 0:
@@ -173,6 +178,9 @@ alternative_else_nop_endif
 #endif
 	.endm
 
+    /**
+     *  宏 kernel_entry 用来保存中断上下文
+     */
 	.macro	kernel_entry, el, regsize = 64
 	.if	\regsize == 32
 	mov	w0, w0				// zero upper 32 bits of x0
@@ -462,6 +470,9 @@ tsk	.req	x28		// current thread_info
 /*
  * Interrupt handling.
  */
+    /**
+     *  宏， 中断处理 irq 处理
+     */
 	.macro	irq_handler
 	ldr_l	x1, handle_arch_irq
 	mov	x0, sp
@@ -506,6 +517,7 @@ alternative_endif
 
 /*
  * Exception vectors.
+ * 异常向量表
  */
 	.pushsection ".entry.text", "ax"
 
@@ -517,6 +529,11 @@ SYM_CODE_START(vectors)
 	kernel_ventry	1, error_invalid		// Error EL1t
 
 	kernel_ventry	1, sync				// Synchronous EL1h
+	/**
+     *  当 IRQ 发生在内核态，CPU 会根据异常向量表跳转到对应表项中，
+     *  它对应的表项为 kernel_ventry 1, irq 
+     *  然后跳转到 el1_irq 标签处
+     */
 	kernel_ventry	1, irq				// IRQ EL1h
 	kernel_ventry	1, fiq_invalid			// FIQ EL1h
 	kernel_ventry	1, error			// Error EL1h
@@ -532,10 +549,10 @@ SYM_CODE_START(vectors)
 	kernel_ventry	0, fiq_invalid_compat, 32	// FIQ 32-bit EL0
 	kernel_ventry	0, error_compat, 32		// Error 32-bit EL0
 #else
-	kernel_ventry	0, sync_invalid, 32		// Synchronous 32-bit EL0
-	kernel_ventry	0, irq_invalid, 32		// IRQ 32-bit EL0
-	kernel_ventry	0, fiq_invalid, 32		// FIQ 32-bit EL0
-	kernel_ventry	0, error_invalid, 32		// Error 32-bit EL0
+//	kernel_ventry	0, sync_invalid, 32		// Synchronous 32-bit EL0
+//	kernel_ventry	0, irq_invalid, 32		// IRQ 32-bit EL0
+//	kernel_ventry	0, fiq_invalid, 32		// FIQ 32-bit EL0
+//	kernel_ventry	0, error_invalid, 32		// Error 32-bit EL0
 #endif
 SYM_CODE_END(vectors)
 
@@ -628,17 +645,35 @@ SYM_CODE_START_LOCAL_NOALIGN(el1_sync)
 	kernel_exit 1
 SYM_CODE_END(el1_sync)
 
+/**
+ *  当 IRQ 发生在内核态，CPU 会根据异常向量表跳转到对应表项中，
+ *  它对应的表项为 kernel_ventry 1, irq 
+ *  然后跳转到 el1_irq 标签处
+ */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el1_irq)
+    /**
+     *  宏，用来保存中断上下文
+     */
 	kernel_entry 1
 	gic_prio_irq_setup pmr=x20, tmp=x1
+
+    /**
+     *  宏
+     */
 	enable_da_f
 
 	mov	x0, sp
 	bl	enter_el1_irq_or_nmi
 
+    /**
+     *  宏
+     */
 	irq_handler
 
+    /**
+     *  如果内核支持抢占
+     */
 #ifdef CONFIG_PREEMPTION
 	ldr	x24, [tsk, #TSK_TI_PREEMPT]	// get preempt count
 alternative_if ARM64_HAS_IRQ_PRIO_MASKING
@@ -657,6 +692,9 @@ alternative_else_nop_endif
 	mov	x0, sp
 	bl	exit_el1_irq_or_nmi
 
+    /**
+     *  用来恢复中断上下文
+     */
 	kernel_exit 1
 SYM_CODE_END(el1_irq)
 
