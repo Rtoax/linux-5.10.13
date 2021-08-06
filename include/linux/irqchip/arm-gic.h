@@ -35,6 +35,9 @@
 #define GIC_CPU_CTRL_EOImodeNS_SHIFT	9
 #define GIC_CPU_CTRL_EOImodeNS		(1 << GIC_CPU_CTRL_EOImodeNS_SHIFT)
 
+/**
+ *  Interrupt ID 域
+ */
 #define GICC_IAR_INT_ID_MASK		0x3ff
 #define GICC_INT_SPURIOUS		1023
 #define GICC_DIS_BYPASS_MASK		0x1e0

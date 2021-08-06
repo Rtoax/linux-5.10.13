@@ -481,11 +481,16 @@ void irq_enter_rcu(void)
         
 		_local_bh_enable();
 	}
+    /**
+     *  
+     */
 	__irq_enter();
 }
 
 /**
  * irq_enter - Enter an interrupt context including RCU update
+ *
+ * 显示告诉内核，现在需要 进入中断上下文了
  */
 void irq_enter(void)
 {
@@ -549,6 +554,9 @@ static inline void tick_irq_exit(void)
 #endif
 }
 
+/**
+ *  
+ */
 static inline void __irq_exit_rcu(void)
 {
 #ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
@@ -557,7 +565,15 @@ static inline void __irq_exit_rcu(void)
 	lockdep_assert_irqs_disabled();
 #endif
 	account_irq_exit_time(current);
+
+    /**
+     *  
+     */
 	preempt_count_sub(HARDIRQ_OFFSET);
+
+    /**
+     *  
+     */
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();
 
@@ -568,6 +584,8 @@ static inline void __irq_exit_rcu(void)
  * irq_exit_rcu() - Exit an interrupt context without updating RCU
  *
  * Also processes softirqs if needed and possible.
+ *
+ * 退出中断上下文
  */
 void irq_exit_rcu(void)
 {

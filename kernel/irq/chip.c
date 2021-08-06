@@ -429,17 +429,26 @@ void mask_irq(struct irq_desc *desc)
 	}
 }
 
+/**
+ *  
+ */
 void unmask_irq(struct irq_desc *desc)
 {
 	if (!irqd_irq_masked(&desc->irq_data))
 		return;
 
 	if (desc->irq_data.chip->irq_unmask) {
+        /**
+         *  解除屏蔽
+         */
 		desc->irq_data.chip->irq_unmask(&desc->irq_data);
 		irq_state_clr_masked(desc);
 	}
 }
 
+/**
+ *  
+ */
 void unmask_threaded_irq(struct irq_desc *desc)
 {
 	struct irq_chip *chip = desc->irq_data.chip;
@@ -714,8 +723,14 @@ void handle_fasteoi_irq(struct irq_desc *desc)
 	if (desc->istate & IRQS_ONESHOT)
 		mask_irq(desc);
 
+    /**
+     *  中断处理的核心函数
+     */
 	handle_irq_event(desc);
 
+    /**
+     *  
+     */
 	cond_unmask_eoi_irq(desc, chip);
 
 	raw_spin_unlock(&desc->lock);
@@ -824,8 +839,8 @@ void handle_edge_irq(struct irq_desc *desc)
          */
 		handle_irq_event(desc);
 
-	} while ((desc->istate & IRQS_PENDING) &&
-		 !irqd_irq_disabled(&desc->irq_data));
+	} 
+    while ((desc->istate & IRQS_PENDING) && !irqd_irq_disabled(&desc->irq_data));
 
 out_unlock:
 	raw_spin_unlock(&desc->lock);

@@ -263,7 +263,7 @@ enum {
 	/* 表示中断处于关闭状态 */
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
-	/* 表示该中断正在处理中 */
+	/* 表示中断处理程序正在处理硬件中断 */
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
 	IRQD_FORWARDED_TO_VCPU		= (1 << 20),
@@ -381,8 +381,14 @@ static inline bool irqd_irq_masked(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_IRQ_MASKED;
 }
 
+/**
+ *  
+ */
 static inline bool irqd_irq_inprogress(struct irq_data *d)
 {
+    /**
+     *  表示中断处理程序正在处理硬件中断
+     */
 	return __irqd_to_state(d) & IRQD_IRQ_INPROGRESS;
 }
 
@@ -537,7 +543,11 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  *  硬件中断控制器底层操作相关的方法集
  */
 struct irq_chip {   /* 硬件中断 chip 描述符 */
+    /**
+     *  
+     */
 	struct device	*parent_device;
+    
 	const char	*name;  /* 设备名称， 用作 /proc/interrupts 中 */
 
     /**
@@ -579,6 +589,8 @@ struct irq_chip {   /* 硬件中断 chip 描述符 */
 
     /**
      *  发送 EOI 信号被中断控制器，标识硬件中断处理已经完成
+     *
+     *
      */
 	void		(*irq_eoi)(struct irq_data *data);
 

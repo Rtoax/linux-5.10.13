@@ -670,11 +670,27 @@ int generic_handle_irq(unsigned int irq)
 	if (!desc)
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	data = irq_desc_get_irq_data(desc);
+
+    /**
+     *  
+     */
 	if (WARN_ON_ONCE(!in_irq() && handle_enforce_irqctx(data)))
 		return -EPERM;
 
+    /**
+     *  调用回调函数
+     *
+     *  handle_irq 在 __irq_do_set_handler() 中设置
+     *
+     *  x86 hpet 对应 handle_edge_irq()
+     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+     */
 	generic_handle_irq_desc(desc);
+    
 	return 0;
 }
 EXPORT_SYMBOL_GPL(generic_handle_irq);
@@ -688,33 +704,60 @@ EXPORT_SYMBOL_GPL(generic_handle_irq);
  * @regs:	Register file coming from the low-level handling code
  *
  * Returns:	0 on success, or -EINVAL if conversion has failed
+ *
+ * 调用 硬件中断所属的 domain 的处理函数
  */
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
+    /**
+     *  保存终端前的 栈框
+     */
 	struct pt_regs *old_regs = set_irq_regs(regs);
+
+    /**
+     *  如果没有中断域的话， 软中断号 == 硬中断号
+     */
 	unsigned int irq = hwirq;
 	int ret = 0;
 
+    /**
+     *  
+     */
 	irq_enter();
 
 #ifdef CONFIG_IRQ_DOMAIN
 	if (lookup)
+        /**
+         *  查找 软中断号
+         */
 		irq = irq_find_mapping(domain, hwirq);
 #endif
 
 	/*
 	 * Some hardware gives randomly wrong interrupts.  Rather
 	 * than crashing, do something sensible.
-	 */
+	 *
+     *  中断号 错误
+     */
 	if (unlikely(!irq || irq >= nr_irqs)) {
 		ack_bad_irq(irq);
 		ret = -EINVAL;
 	} else {
+        /**
+         *  中断号处理
+         */
 		generic_handle_irq(irq);
 	}
 
+    /**
+     *  
+     */
 	irq_exit();
+
+    /**
+     *  设置，这里不需要old 值
+     */
 	set_irq_regs(old_regs);
 	return ret;
 }

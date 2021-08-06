@@ -19,6 +19,12 @@
 #include "internals.h"
 
 #ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
+/**
+ *  在 set_handle_irq 中设置
+ *  根据不同的 SOC 类型，会被设置成各种不同的回调函数。
+ *
+ *  以 GIC-V2 为例， 指向 `gic_handle_irq()`, set_handle_irq(gic_handle_irq);
+ */
 void __ro_after_init (*handle_arch_irq)(struct pt_regs *) ;
 #endif
 
@@ -56,6 +62,9 @@ static void warn_no_thread(unsigned int irq, struct irqaction *action)
 	       "but no thread function available.", irq, action->name);
 }
 
+/**
+ *  唤醒内核中断线程
+ */
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 {
 	/*
@@ -69,6 +78,8 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	/*
 	 * Wake up the handler thread for this action. If the
 	 * RUNTHREAD bit is already set, nothing to do.
+	 *
+	 * 表示已经唤醒了，直接返回
 	 */
 	if (test_and_set_bit(IRQTF_RUNTHREAD, &action->thread_flags))
 		return;
@@ -87,7 +98,7 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 * each other and they are serialized against this code by
 	 * IRQS_INPROGRESS.
 	 *
-	 * Hard irq handler:
+	 * Hard irq handler: 硬中断处理函数
 	 *
 	 *	spin_lock(desc->lock);
 	 *	desc->state |= IRQS_INPROGRESS;
@@ -98,7 +109,7 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 *	desc->state &= ~IRQS_INPROGRESS;
 	 *	spin_unlock(desc->lock);
 	 *
-	 * irq thread:
+	 * irq thread: 中断线程
 	 *
 	 * again:
 	 *	spin_lock(desc->lock);
@@ -117,6 +128,15 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 * released before we reach this point. The thread also checks
 	 * IRQTF_RUNTHREAD under desc->lock. If set it leaves
 	 * threads_oneshot untouched and runs the thread another time.
+	 * 翻译：
+	 * 所以要么线程等待我们清除 IRQS_INPROGRESS 要么我们在流处理程序
+	 * 中等待 desc->lock 在我们到达这一点之前被释放。
+	 * 该线程还在 desc->lock 下检查 IRQTF_RUNTHREAD。 
+	 * 如果设置，它会保持 threads_oneshot 不变并再次运行线程。
+	 *
+	 * -------------------------------------------------------------
+	 * 有两种方式可能会并发的修改 threads_oneshot 此变量
+	 * 一个是 硬件中断处理，另一个是 中断线程
 	 */
 	desc->threads_oneshot |= action->thread_mask;
 
@@ -128,9 +148,14 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 * active count becomes zero. synchronize_irq() is serialized
 	 * against this code (hard irq handler) via IRQS_INPROGRESS
 	 * like the finalize_oneshot() code. See comment above.
+	 *
+	 * 增加线程个数计数
 	 */
 	atomic_inc(&desc->threads_active);
 
+    /**
+     *  唤醒中断线程
+     */
 	wake_up_process(action->thread);
 }
 
@@ -146,7 +171,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 	record_irq_time(desc);
 
     /**
-     *  
+     *  遍历此中断的 action 链表
      */
 	for_each_action_of_desc(desc, action) {
 		irqreturn_t res;
@@ -173,6 +198,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
          *  
          */
 		switch (res) {
+        /**
+         *  需要唤醒内核的中断线程
+         */
 		case IRQ_WAKE_THREAD:
 			/*
 			 * Catch drivers which return WAKE_THREAD but
@@ -183,10 +211,16 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 				break;
 			}
 
+            /**
+             *  唤醒
+             */
 			__irq_wake_thread(desc, action);
 
 			fallthrough;	/* to add to randomness */
-		case IRQ_HANDLED:
+        /**
+         *  中断已经处理完毕
+         */
+        case IRQ_HANDLED:
 			*flags |= action->flags;
 			break;
 
@@ -208,8 +242,14 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 	irqreturn_t retval;
 	unsigned int flags = 0;
 
+    /**
+     *  
+     */
 	retval = __handle_irq_event_percpu(desc, &flags);
 
+    /**
+     *  
+     */
 	add_interrupt_randomness(desc->irq_data.irq, flags);
 
 	if (!noirqdebug)
@@ -217,11 +257,21 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 	return retval;
 }
 
+/**
+ *  中断处理的核心函数
+ */
 irqreturn_t handle_irq_event(struct irq_desc *desc) /*  */
 {
 	irqreturn_t ret;
 
+    /**
+     *  pending 标志位清零
+     */
 	desc->istate &= ~IRQS_PENDING;
+
+    /**
+     *  设置标志位，表示该中断正在处理
+     */
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	raw_spin_unlock(&desc->lock);
 
@@ -231,6 +281,10 @@ irqreturn_t handle_irq_event(struct irq_desc *desc) /*  */
 	ret = handle_irq_event_percpu(desc);
 
 	raw_spin_lock(&desc->lock);
+    
+    /**
+     *  清除标记位
+     */
 	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	return ret;
 }

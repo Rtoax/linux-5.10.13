@@ -1551,6 +1551,10 @@ void __init setup_arch(char **cmdline_p)/* 初始化 */
 	 */
 	acpi_boot_init();
 	sfi_init();
+
+    /**
+     *  设备树
+     */
 	x86_dtb_init();
 
 	/*

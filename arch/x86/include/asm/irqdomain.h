@@ -31,6 +31,9 @@ enum ioapic_domain_type {
 	IOAPIC_DOMAIN_DYNAMIC,
 };
 
+/**
+ *  
+ */
 struct ioapic_domain_cfg {
 	enum ioapic_domain_type		type;
 	const struct irq_domain_ops	*ops;

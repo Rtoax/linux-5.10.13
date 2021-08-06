@@ -152,6 +152,9 @@ static void __init dtb_cpu_setup(void)
 	}
 }
 
+/**
+ *  local APIC 初始化
+ */
 static void __init dtb_lapic_setup(void)
 {
 	struct device_node *dn;
@@ -212,6 +215,9 @@ static struct of_ioapic_type of_ioapic_type[] =
 	},
 };
 
+/**
+ *  
+ */
 static int dt_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 			      unsigned int nr_irqs, void *arg)
 {
@@ -235,37 +241,66 @@ static int dt_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 	return mp_irqdomain_alloc(domain, virq, nr_irqs, &tmp);
 }
 
+/**
+ *  
+ */
 static const struct irq_domain_ops ioapic_irq_domain_ops = {
-	.alloc		= dt_irqdomain_alloc,
-	.free		= mp_irqdomain_free,
-	.activate	= mp_irqdomain_activate,
-	.deactivate	= mp_irqdomain_deactivate,
+    /**
+     *  
+     */
+	ioapic_irq_domain_ops.alloc		= dt_irqdomain_alloc,
+	ioapic_irq_domain_ops.free		= mp_irqdomain_free,
+	ioapic_irq_domain_ops.activate	= mp_irqdomain_activate,
+	ioapic_irq_domain_ops.deactivate	= mp_irqdomain_deactivate,
 };
 
+/**
+ *  
+ */
 static void __init dtb_add_ioapic(struct device_node *dn)
 {
 	struct resource r;
 	int ret;
+
+    /**
+     *  
+     */
 	struct ioapic_domain_cfg cfg = {
-		.type = IOAPIC_DOMAIN_DYNAMIC,
-		.ops = &ioapic_irq_domain_ops,
-		.dev = dn,
+		cfg.type = IOAPIC_DOMAIN_DYNAMIC,
+		cfg.ops = &ioapic_irq_domain_ops,
+		cfg.dev = dn,
 	};
 
+    /**
+     *  
+     */
 	ret = of_address_to_resource(dn, 0, &r);
 	if (ret) {
 		printk(KERN_ERR "Can't obtain address from device node %pOF.\n", dn);
 		return;
 	}
+    /**
+     *  
+     */
 	mp_register_ioapic(++ioapic_id, r.start, gsi_top, &cfg);
 }
 
+/**
+ *  
+ */
 static void __init dtb_ioapic_setup(void)
 {
 	struct device_node *dn;
 
-	for_each_compatible_node(dn, NULL, "intel,ce4100-ioapic")
+    /**
+     *  
+     */
+	for_each_compatible_node(dn, NULL, "intel,ce4100-ioapic") {
+	    /**
+         *  
+         */
 		dtb_add_ioapic(dn);
+    }
 
 	if (nr_ioapics) {
 		of_ioapic = 1;
@@ -274,15 +309,27 @@ static void __init dtb_ioapic_setup(void)
 	printk(KERN_ERR "Error: No information about IO-APIC in OF.\n");
 }
 #else
-static void __init dtb_ioapic_setup(void) {}
+//static void __init dtb_ioapic_setup(void) {}
 #endif
 
+/**
+ *  APIC 初始化
+ */
 static void __init dtb_apic_setup(void)
 {
 #ifdef CONFIG_X86_LOCAL_APIC
+    /**
+     *  
+     */
 	dtb_lapic_setup();
+    /**
+     *  
+     */
 	dtb_cpu_setup();
 #endif
+    /**
+     *  
+     */
 	dtb_ioapic_setup();
 }
 
@@ -313,6 +360,9 @@ static void __init x86_flattree_get_config(void)
 static inline void x86_flattree_get_config(void) { }
 #endif
 
+/**
+ *  
+ */
 void __init x86_dtb_init(void)
 {
 	x86_flattree_get_config();
@@ -320,6 +370,13 @@ void __init x86_dtb_init(void)
 	if (!of_have_populated_dt())
 		return;
 
+    /**
+     *  
+     */
 	dtb_setup_hpet();
+
+    /**
+     *  APIC 初始化
+     */
 	dtb_apic_setup();
 }

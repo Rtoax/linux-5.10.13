@@ -180,6 +180,9 @@ alternative_else_nop_endif
 
     /**
      *  宏 kernel_entry 用来保存中断上下文
+     *  该宏有一个参数，
+     *      =1, 表示用来保存发生在 EL1(内核) 的异常
+     *      =0, 表示用来保存发生在 EL0(用户) 的异常
      */
 	.macro	kernel_entry, el, regsize = 64
 	.if	\regsize == 32
@@ -474,9 +477,9 @@ tsk	.req	x28		// current thread_info
      *  宏， 中断处理 irq 处理
      */
 	.macro	irq_handler
-	ldr_l	x1, handle_arch_irq
+	ldr_l	x1, handle_arch_irq //设置函数地址
 	mov	x0, sp
-	irq_stack_entry
+	irq_stack_entry //设置栈地址
 	blr	x1
 	irq_stack_exit
 	.endm
@@ -561,6 +564,8 @@ SYM_CODE_END(vectors)
 	 * We detected an overflow in kernel_ventry, which switched to the
 	 * overflow stack. Stash the exception regs, and head to our overflow
 	 * handler.
+	 *
+	 * 检测到溢出
 	 */
 __bad_stack:
 	/* Restore the original x0 value */
@@ -571,7 +576,10 @@ __bad_stack:
 	 * S_FRAME_SIZE) was stashed in tpidr_el0 by kernel_ventry.
 	 */
 	sub	sp, sp, #S_FRAME_SIZE
-	kernel_entry 1
+	/**
+	 *  保存中断上下文
+	 */
+	kernel_entry 1//1: 内核
 	mrs	x0, tpidr_el0
 	add	x0, x0, #S_FRAME_SIZE
 	str	x0, [sp, #S_SP]
@@ -588,6 +596,9 @@ __bad_stack:
  * Invalid mode handlers
  */
 	.macro	inv_entry, el, reason, regsize = 64
+	/**
+	 *  保存中断上下文
+	 */
 	kernel_entry \el, \regsize
 	mov	x0, sp
 	mov	x1, #\reason
@@ -639,9 +650,15 @@ SYM_CODE_END(el1_error_invalid)
  */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el1_sync)
+    /**
+	 *  保存中断上下文
+	 */
 	kernel_entry 1
 	mov	x0, sp
 	bl	el1_sync_handler
+	/**
+	 *  恢复中断上下文
+	 */
 	kernel_exit 1
 SYM_CODE_END(el1_sync)
 
@@ -706,6 +723,9 @@ SYM_CODE_END(el1_irq)
  */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el0_sync)
+    /**
+	 *  保存中断上下文
+	 */
 	kernel_entry 0
 	mov	x0, sp
 	bl	el0_sync_handler

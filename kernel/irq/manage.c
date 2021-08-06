@@ -140,6 +140,8 @@ void synchronize_irq(unsigned int irq)
 		 * We made sure that no hardirq handler is
 		 * running. Now verify that no threaded handlers are
 		 * active.
+		 *
+		 * 唤醒请见 `wake_threads_waitq()`
 		 */
 		wait_event(desc->wait_for_threads,
 			   !atomic_read(&desc->threads_active));
@@ -623,6 +625,8 @@ EXPORT_SYMBOL(disable_irq_nosync);
  *	holding a resource the IRQ handler may need you will deadlock.
  *
  *	This function may be called - with care - from IRQ context.
+ *
+ *  等待 一个 irq 并且等待完成
  */
 void disable_irq(unsigned int irq)
 {
@@ -940,15 +944,26 @@ static irqreturn_t irq_forced_secondary_handler(int irq, void *dev_id)
 	return IRQ_NONE;
 }
 
+/**
+ *  irq_thread 中断线程的
+ */
 static int irq_wait_for_interrupt(struct irqaction *action)
 {
+    /**
+     *  
+     */
 	for (;;) {
+        /**
+         *  设置程序状态
+         */
 		set_current_state(TASK_INTERRUPTIBLE);
 
+        /**
+         *  
+         */
 		if (kthread_should_stop()) {
 			/* may need to run one last time */
-			if (test_and_clear_bit(IRQTF_RUNTHREAD,
-					       &action->thread_flags)) {
+			if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags)) {
 				__set_current_state(TASK_RUNNING);
 				return 0;
 			}
@@ -956,11 +971,16 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 			return -1;
 		}
 
-		if (test_and_clear_bit(IRQTF_RUNTHREAD,
-				       &action->thread_flags)) {
+        /**
+         *  
+         */
+		if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags)) {
 			__set_current_state(TASK_RUNNING);
 			return 0;
 		}
+        /**
+         *  调度出去
+         */
 		schedule();
 	}
 }
@@ -973,9 +993,13 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 static void irq_finalize_oneshot(struct irq_desc *desc,
 				 struct irqaction *action)
 {
+    /**
+     *  不是 oneshot 直接返回
+     */
 	if (!(desc->istate & IRQS_ONESHOT) ||
 	    action->handler == irq_forced_secondary_handler)
 		return;
+    
 again:
 	chip_bus_lock(desc);
 	raw_spin_lock_irq(&desc->lock);
@@ -993,7 +1017,9 @@ again:
 	 * versus "desc->threads_onehsot |= action->thread_mask;" in
 	 * irq_wake_thread(). See the comment there which explains the
 	 * serialization.
-	 */
+	 *
+     *  是否正在处理硬件中断
+     */
 	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
 		raw_spin_unlock_irq(&desc->lock);
 		chip_bus_sync_unlock(desc);
@@ -1011,8 +1037,14 @@ again:
 
 	desc->threads_oneshot &= ~action->thread_mask;
 
+    /**
+     *  当 该中断源 的所有 action 都执行完成时，desc->threads_oneshot 应为 0
+     */
 	if (!desc->threads_oneshot && !irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data))
+	        irqd_irq_masked(&desc->irq_data))
+	    /**
+         *  
+         */
 		unmask_threaded_irq(desc);
 
 out_unlock:
@@ -1071,6 +1103,8 @@ irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
  * interrupts rely on the implicit bh/preempt disable of the hard irq
  * context. So we need to disable bh here to avoid deadlocks and other
  * side effects.
+ *
+ * 强制中断线程化的回调函数， 见 `irq_thread()` 中另一函数 `irq_thread_fn()`
  */
 static irqreturn_t
 irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
@@ -1078,10 +1112,17 @@ irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
 	irqreturn_t ret;
 
 	local_bh_disable();
+
+    /**
+     *  调用
+     */
 	ret = action->thread_fn(action->irq, action->dev_id);
 	if (ret == IRQ_HANDLED)
 		atomic_inc(&desc->threads_handled);
 
+    /**
+     *  
+     */
 	irq_finalize_oneshot(desc, action);
 	local_bh_enable();
 	return ret;
@@ -1091,23 +1132,47 @@ irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
  * Interrupts explicitly requested as threaded interrupts want to be
  * preemtible - many of them need to sleep and wait for slow busses to
  * complete.
+ *
+ * 见 `irq_thread()` 中另一函数 `irq_forced_thread_fn()`
+ *
+ * 唤醒中断线程后执行的函数，见 `irq_thread()`
  */
-static irqreturn_t irq_thread_fn(struct irq_desc *desc,
-		struct irqaction *action)
+static irqreturn_t irq_thread_fn(struct irq_desc *desc, struct irqaction *action)
 {
 	irqreturn_t ret;
 
+    /**
+     *  调用
+     */
 	ret = action->thread_fn(action->irq, action->dev_id);
 	if (ret == IRQ_HANDLED)
 		atomic_inc(&desc->threads_handled);
 
+    /**
+     *  
+     */
 	irq_finalize_oneshot(desc, action);
 	return ret;
 }
 
+/**
+ *  
+ */
 static void wake_threads_waitq(struct irq_desc *desc)
 {
+    /**
+     *  每次执行完，都递减，等于 0 的时候 才为 真
+     */
 	if (atomic_dec_and_test(&desc->threads_active))
+        /**
+         *  如果没有正在运行的中断线程，唤醒在 wait_for_threads 中睡眠的线程
+         *  有哪些进程会睡眠在此呢？
+         *
+         *  disable_irq()->synchronize_irq()->wait_event(desc->wait_for_threads,...)
+         *
+         *  disable_irq 函数会调用 synchronize_irq 函数等待所有被唤醒的
+         *      中断线程执行完毕，然后才真正的关闭中断。
+         */
 		wake_up(&desc->wait_for_threads);
 }
 
@@ -1152,35 +1217,63 @@ static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
 
 /*
  * Interrupt handler thread
- *//*  */
+ *
+ * 中断线程
+ */
 static int irq_thread(void *data)
 {
+    /**
+     *  
+     */
 	struct callback_head on_exit_work;
 	struct irqaction *action = data;
 	struct irq_desc *desc = irq_to_desc(action->irq);
-	irqreturn_t (*handler_fn)(struct irq_desc *desc,
-			struct irqaction *action);
+	irqreturn_t (*handler_fn)(struct irq_desc *desc, struct irqaction *action);
 
-	if (force_irqthreads && test_bit(IRQTF_FORCED_THREAD,
-					&action->thread_flags))
+    /**
+     *  设置回调函数
+     */
+    /**
+     *  如果强制 中断线程化
+     */
+	if (force_irqthreads && test_bit(IRQTF_FORCED_THREAD, &action->thread_flags))
+        /**
+         *  强制中断线程化 - 回调函数
+         */
 		handler_fn = irq_forced_thread_fn;
 	else
 		handler_fn = irq_thread_fn;
 
+    /**
+     *  
+     */
 	init_task_work(&on_exit_work, irq_thread_dtor);
 	task_work_add(current, &on_exit_work, TWA_NONE);
 
 	irq_thread_check_affinity(desc, action);
 
+    /**
+     *  唤醒中断线程
+     */
 	while (!irq_wait_for_interrupt(action)) {
+        
 		irqreturn_t action_ret;
 
 		irq_thread_check_affinity(desc, action);
 
+        /**
+         *  调用 thread_fn
+         */
 		action_ret = handler_fn(desc, action);
 		if (action_ret == IRQ_WAKE_THREAD)
+            /**
+             *  再次 唤醒
+             */
 			irq_wake_secondary(desc, action);
 
+        /**
+         *  
+         */
 		wake_threads_waitq(desc);
 	}
 
@@ -1340,6 +1433,9 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 
     /* 创建内核线程 */
 	if (!secondary) {
+        /**
+         *  中断线程
+         */
 		t = kthread_create(irq_thread, new, "irq/%d-%s", irq, new->name);
 	} else {
 		t = kthread_create(irq_thread, new, "irq/%d-s-%s", irq, new->name);

@@ -65,6 +65,9 @@ union gic_base {
 	void __percpu * __iomem *percpu_base;
 };
 
+/**
+ *  
+ */
 struct gic_chip_data {
 	struct irq_chip chip;
 	union gic_base dist_base;
@@ -128,23 +131,23 @@ static DEFINE_PER_CPU(u32, sgi_intid);
 static u32 sgi_intid; //++++
 
 #ifdef CONFIG_GIC_NON_BANKED
-//static DEFINE_STATIC_KEY_FALSE(frankengic_key);
-//
-//static void enable_frankengic(void)
-//{
-//	static_branch_enable(&frankengic_key);
-//}
-//
-//static inline void __iomem *__get_base(union gic_base *base)
-//{
-//	if (static_branch_unlikely(&frankengic_key))
-//		return raw_cpu_read(*base->percpu_base);
-//
-//	return base->common_base;
-//}
-//
-//#define gic_data_dist_base(d)	__get_base(&(d)->dist_base)
-//#define gic_data_cpu_base(d)	__get_base(&(d)->cpu_base)
+static DEFINE_STATIC_KEY_FALSE(frankengic_key);
+
+static void enable_frankengic(void)
+{
+	static_branch_enable(&frankengic_key);
+}
+
+static inline void __iomem *__get_base(union gic_base *base)
+{
+	if (static_branch_unlikely(&frankengic_key))
+		return raw_cpu_read(*base->percpu_base);
+
+	return base->common_base;
+}
+
+#define gic_data_dist_base(d)	__get_base(&(d)->dist_base)
+#define gic_data_cpu_base(d)	__get_base(&(d)->cpu_base)
 #else
 #define gic_data_dist_base(d)	((d)->dist_base.common_base)
 #define gic_data_cpu_base(d)	((d)->cpu_base.common_base)
@@ -342,6 +345,10 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 {
 	u32 irqstat, irqnr;
 	struct gic_chip_data *gic = &gic_data[0];
+
+    /**
+     *  
+     */
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 
 	do {
@@ -375,6 +382,9 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 			this_cpu_write(sgi_intid, irqstat);
 		}
 
+        /**
+         *  
+         */
 		handle_domain_irq(gic->domain, irqnr, regs);
 	} while (1);
 }

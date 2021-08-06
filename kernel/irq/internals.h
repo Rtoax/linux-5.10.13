@@ -34,9 +34,15 @@ extern struct irqaction chained_action;
  * IRQTF_FORCED_THREAD  - irq action is force threaded
  */
 enum {
+    /**
+     *  中断处理线程应该运行
+     */
 	IRQTF_RUNTHREAD,
 	IRQTF_WARNED,
 	IRQTF_AFFINITY,
+	/**
+     *  强制 中断线程化
+     */
 	IRQTF_FORCED_THREAD,
 };
 

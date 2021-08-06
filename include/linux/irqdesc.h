@@ -68,6 +68,7 @@ struct irq_desc {   /* 中断描述符 */
      *  在 __irq_do_set_handler() 中设置
      *
      *  x86 hpet 对应 handle_edge_irq()
+     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
      */
 	irq_flow_handler_t	handle_irq; /* 处理函数 */
 	struct irqaction	*action;	/* IRQ action list */
@@ -104,9 +105,30 @@ struct irq_desc {   /* 中断描述符 */
 	cpumask_var_t		pending_mask;
 #endif
 #endif
+
+    /**
+     *  位图，
+     *  每位表示正在处理 的共享 ONESHOT 类型中断的中断线程
+     *
+     *  当 该中断源 的所有 action 都执行完成时，desc->threads_oneshot 应为 0
+     */
 	unsigned long		threads_oneshot;
+
+    /**
+     *  表示正在运行的 中断线程 的个数
+     */
 	atomic_t		threads_active;
+
+    /**
+     *  见函数 `wake_threads_waitq()`, 有哪些进程会睡眠在此呢？
+     *
+     *  disable_irq()->synchronize_irq()->wait_event(desc->wait_for_threads,...)
+     *
+     *  disable_irq 函数会调用 synchronize_irq 函数等待所有被唤醒的
+     *      中断线程执行完毕，然后才真正的关闭中断。
+     */
 	wait_queue_head_t       wait_for_threads;
+    
 #ifdef CONFIG_PM_SLEEP  /*  */
 	unsigned int		nr_actions;
 	unsigned int		no_suspend_depth;
@@ -175,6 +197,12 @@ static inline void *irq_desc_get_handler_data(struct irq_desc *desc)
  */
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
+    /**
+     *  handle_irq 在 __irq_do_set_handler() 中设置
+     *
+     *  x86 hpet 对应 handle_edge_irq()
+     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+     */
 	desc->handle_irq(desc);
 }
 
@@ -190,6 +218,9 @@ int generic_handle_irq(unsigned int irq);
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs);
 
+/**
+ *  外设中断
+ */
 static inline int handle_domain_irq(struct irq_domain *domain,
 				    unsigned int hwirq, struct pt_regs *regs)
 {

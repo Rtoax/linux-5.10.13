@@ -64,6 +64,9 @@ union IO_APIC_reg_03 {
 	} __attribute__ ((packed)) bits;
 };
 
+/**
+ *  
+ */
 struct IO_APIC_route_entry {    /*  */
 	__u32	vector		:  8,
 		delivery_mode	:  3,	/* 000: FIXED
@@ -82,6 +85,9 @@ struct IO_APIC_route_entry {    /*  */
 		dest		:  8;
 } __attribute__ ((packed));
 
+/**
+ *  
+ */
 struct IR_IO_APIC_route_entry {
 	__u64	vector		: 8,
 		zero		: 3,

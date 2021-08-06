@@ -134,6 +134,10 @@ struct irqaction {  /* 中断动作描述符 */
 
     /**
      *  中断 线程处理程序
+     *      在`request_threaded_irq`中赋值
+     *      在`irq_forced_thread_fn`,`irq_thread_fn`,`handle_nested_irq`中被调用
+     *
+     *  
      */
 	irq_handler_t		thread_fn;  /* 不为 NULL 时，`request_irq`将创建线程 */
 
@@ -166,6 +170,7 @@ struct irqaction {  /* 中断动作描述符 */
      *  注册中断的名称
      */
 	const char		    *name;  /* 设备名称 */
+    
     /**
      *  
      */

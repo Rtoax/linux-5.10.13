@@ -49,6 +49,10 @@ int main(void)
   DEFINE(THREAD_KEYS_KERNEL,	offsetof(struct task_struct, thread.keys_kernel));
 #endif
   BLANK();
+  /**
+   *    内核中定义了 很多宏 来访问 pt_regs 数据结构对应的栈框
+   *    
+   */
   DEFINE(S_X0,			offsetof(struct pt_regs, regs[0]));
   DEFINE(S_X2,			offsetof(struct pt_regs, regs[2]));
   DEFINE(S_X4,			offsetof(struct pt_regs, regs[4]));
@@ -65,15 +69,15 @@ int main(void)
   DEFINE(S_X26,			offsetof(struct pt_regs, regs[26]));
   DEFINE(S_X28,			offsetof(struct pt_regs, regs[28]));
   DEFINE(S_FP,			offsetof(struct pt_regs, regs[29]));
-  DEFINE(S_LR,			offsetof(struct pt_regs, regs[30]));
+  DEFINE(S_LR,			offsetof(struct pt_regs, regs[30]));//pt_regs regs[30] 对应的字段
   DEFINE(S_SP,			offsetof(struct pt_regs, sp));
-  DEFINE(S_PSTATE,		offsetof(struct pt_regs, pstate));
-  DEFINE(S_PC,			offsetof(struct pt_regs, pc));
+  DEFINE(S_PSTATE,		offsetof(struct pt_regs, pstate));  //pt_regs 中 pstate 字段
+  DEFINE(S_PC,			offsetof(struct pt_regs, pc));      //pc 字段
   DEFINE(S_SYSCALLNO,		offsetof(struct pt_regs, syscallno));
   DEFINE(S_ORIG_ADDR_LIMIT,	offsetof(struct pt_regs, orig_addr_limit));
   DEFINE(S_PMR_SAVE,		offsetof(struct pt_regs, pmr_save));
   DEFINE(S_STACKFRAME,		offsetof(struct pt_regs, stackframe));
-  DEFINE(S_FRAME_SIZE,		sizeof(struct pt_regs));
+  DEFINE(S_FRAME_SIZE,		sizeof(struct pt_regs));    //栈框大小
   BLANK();
 #ifdef CONFIG_COMPAT
   DEFINE(COMPAT_SIGFRAME_REGS_OFFSET,		offsetof(struct compat_sigframe, uc.uc_mcontext.arm_r0));

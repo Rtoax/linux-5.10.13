@@ -102,6 +102,9 @@ struct mp_ioapic_gsi {
 	u32 gsi_end;
 };
 
+/**
+ *  
+ */
 static struct ioapic {
 	/*
 	 * # of IRQ routing registers
@@ -910,6 +913,9 @@ static int ioapic_alloc_attr_node(struct irq_alloc_info *info)
 	return (info && info->ioapic.valid) ? info->ioapic.node : NUMA_NO_NODE;
 }
 
+/**
+ *  
+ */
 static void mp_register_handler(unsigned int irq, unsigned long trigger)
 {
 	irq_flow_handler_t hdl;
@@ -923,6 +929,9 @@ static void mp_register_handler(unsigned int irq, unsigned long trigger)
 		fasteoi = false;
 	}
 
+    /**
+     *  
+     */
 	hdl = fasteoi ? handle_fasteoi_irq : handle_edge_irq;
 	__irq_set_handler(irq, hdl, 0, fasteoi ? "fasteoi" : "edge");
 }
@@ -2849,6 +2858,9 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
 	gsi_cfg->gsi_base = gsi_base;
 	gsi_cfg->gsi_end = gsi_end;
 
+    /**
+     *  
+     */
 	ioapics[idx].irqdomain = NULL;
 	ioapics[idx].irqdomain_cfg = *cfg;
 
@@ -2874,9 +2886,9 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
 	ioapics[idx].nr_registers = entries;
 
 	pr_info("IOAPIC[%d]: apic_id %d, version %d, address 0x%x, GSI %d-%d\n",
-		idx, mpc_ioapic_id(idx),
-		mpc_ioapic_ver(idx), mpc_ioapic_addr(idx),
-		gsi_cfg->gsi_base, gsi_cfg->gsi_end);
+    		idx, mpc_ioapic_id(idx),
+    		mpc_ioapic_ver(idx), mpc_ioapic_addr(idx),
+    		gsi_cfg->gsi_base, gsi_cfg->gsi_end);
 
 	return 0;
 }
@@ -2968,6 +2980,9 @@ static void mp_setup_entry(struct irq_cfg *cfg, struct mp_chip_data *data,
 		entry->mask = IOAPIC_UNMASKED;
 }
 
+/**
+ *  
+ */
 int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 		       unsigned int nr_irqs, void *arg)
 {
@@ -3013,6 +3028,10 @@ int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 	local_irq_save(flags);
 	if (info->ioapic.entry)
 		mp_setup_entry(cfg, data, info->ioapic.entry);
+
+    /**
+     *  
+     */
 	mp_register_handler(virq, data->trigger);
 	if (virq < nr_legacy_irqs())
 		legacy_pic->mask(virq);
