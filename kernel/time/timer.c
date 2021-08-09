@@ -196,6 +196,9 @@ EXPORT_SYMBOL(jiffies_64);
 //# define BASE_DEF	0
 #endif
 
+/**
+ *  
+ */
 struct timer_base { /*  */
 	raw_spinlock_t		lock;
 	struct timer_list	*running_timer; //currently running timer for the certain processor
@@ -212,7 +215,12 @@ struct timer_base { /*  */
 	struct hlist_head	vectors[WHEEL_SIZE];
 } ____cacheline_aligned;
 
+/**
+ *  
+ */
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);    /*  */
+static struct timer_base __percpu timer_bases[NR_BASES];//++++
+
 
 #ifdef CONFIG_NO_HZ_COMMON
 
@@ -1705,7 +1713,12 @@ void update_process_times(int user_tick)
 
 	/* Note: this timer irq context must be accounted for as well. */
 	account_process_tick(p, user_tick);
+
+    /**
+     *  本地定时器
+     */
 	run_local_timers();
+    
 	rcu_sched_clock_irq(user_tick);
 #ifdef CONFIG_IRQ_WORK
 	if (in_irq())
@@ -1774,15 +1787,21 @@ void run_local_timers(void)
 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
 
 	hrtimer_run_queues();
+    
 	/* Raise the softirq only if required. */
 	if (time_before(jiffies, base->next_expiry)) {
 		if (!IS_ENABLED(CONFIG_NO_HZ_COMMON))
 			return;
+        
 		/* CPU is awake, so check the deferrable base. */
 		base++;
+        
 		if (time_before(jiffies, base->next_expiry))
 			return;
 	}
+    /**
+     *  触发定时器软中断
+     */
 	raise_softirq(TIMER_SOFTIRQ);
 }
 

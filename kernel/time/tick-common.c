@@ -97,6 +97,9 @@ static void tick_periodic(int cpu)
 		update_wall_time();
 	}
 
+    /**
+     *  
+     */
 	update_process_times(user_mode(get_irq_regs()));
 	profile_tick(CPU_PROFILING);
 }
@@ -109,6 +112,9 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	int cpu = smp_processor_id();
 	ktime_t next = dev->next_event;
 
+    /**
+     *  滴答
+     */
 	tick_periodic(cpu);
 
 #if defined(CONFIG_HIGH_RES_TIMERS) || defined(CONFIG_NO_HZ_COMMON)
@@ -151,6 +157,9 @@ void tick_handle_periodic(struct clock_event_device *dev)
  */
 void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
+    /**
+     *  设置时钟滴答 回调函数
+     */
 	tick_set_periodic_handler(dev, broadcast);
 
 	/* Broadcast setup ? */
@@ -275,6 +284,9 @@ static void tick_setup_device(struct tick_device *td,
 		tick_setup_oneshot(newdev, handler, next_event);
 }
 
+/**
+ *  
+ */
 void tick_install_replacement(struct clock_event_device *newdev)
 {
 	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);

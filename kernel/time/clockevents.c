@@ -381,6 +381,9 @@ static int clockevents_replace(struct clock_event_device *ced)
 		newdev = dev;
 	}
 	if (newdev) {
+        /**
+         *  
+         */
 		tick_install_replacement(newdev);
 		list_del_init(&ced->list);
 	}

@@ -13,6 +13,9 @@
 #include <asm/kvm_arm.h>
 #include <asm/sysreg.h>
 
+/**
+ *  通过一个 `irq_cpustat_t` 结构描述软中断状态信息
+ */
 typedef struct {
 	unsigned int __softirq_pending;
 } ____cacheline_aligned irq_cpustat_t;

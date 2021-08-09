@@ -69,6 +69,9 @@ static __always_inline void run_on_irqstack_cond(void (*func)(void), struct pt_r
 	lockdep_assert_irqs_disabled();
 
 	if (irq_needs_irq_stack(regs))
+        /**
+         *  
+         */
 		__run_on_irqstack(func);
 	else
 		func();

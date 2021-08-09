@@ -573,13 +573,22 @@ extern bool force_irqthreads;
 
 #ifndef local_softirq_pending
 
+/**
+ *  
+ */
 #ifndef local_softirq_pending_ref
 #define local_softirq_pending_ref irq_stat.__softirq_pending
 #endif
 
 //pending: 待决的，待定的，即将发生的
+/**
+ *  是否有等待的软中断
+ */
 #define local_softirq_pending()	(__this_cpu_read(local_softirq_pending_ref))
 #define set_softirq_pending(x)	(__this_cpu_write(local_softirq_pending_ref, (x)))
+/**
+ *  置位
+ */
 #define or_softirq_pending(x)	(__this_cpu_or(local_softirq_pending_ref, (x)))
 
 #endif /* local_softirq_pending */
@@ -600,16 +609,25 @@ extern bool force_irqthreads;
    al. should be converted to tasklets, not to softirqs.
  */
 
+/**
+ *  软中断类型
+ *  数值越小，优先级越高
+ *
+ *  这将是一个数组 `softirq_vec[NR_SOFTIRQS]`
+ *  此外，通过一个 `irq_cpustat_t` 结构描述软中断状态信息
+ *
+ *  通过 open_softirq() 注册软中断
+ */
 enum    /* softirq 软中断 */
 {
 	HI_SOFTIRQ=0,   /* HI:high-priority tasklets 高优先级 tasklet */
 	TIMER_SOFTIRQ,  /* 定时器 TIMER */
 	NET_TX_SOFTIRQ, /* 网络发包 */
 	NET_RX_SOFTIRQ, /* 网络收包 */
-	BLOCK_SOFTIRQ,      /* BLOCK */
+	BLOCK_SOFTIRQ,      /* BLOCK - 用于块设备的软中断 */
 	IRQ_POLL_SOFTIRQ,   /* IRQ_POLL */
 	TASKLET_SOFTIRQ,/* tasklet */
-	SCHED_SOFTIRQ,  /* 调度软中断 */
+	SCHED_SOFTIRQ,  /* 调度软中断 和 负载均衡软中断 */
 	HRTIMER_SOFTIRQ,/* 高精度定时器 */
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
@@ -627,6 +645,9 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
  * asm/hardirq.h to get better cache usage.  KAO
  */
 
+/**
+ *  软中断数据结构
+ */
 struct softirq_action
 {
     /**

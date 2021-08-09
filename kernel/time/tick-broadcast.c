@@ -436,6 +436,9 @@ EXPORT_SYMBOL_GPL(tick_broadcast_control);
  */
 void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
 {
+    /**
+     *  
+     */
 	if (!broadcast)
 		dev->event_handler = tick_handle_periodic;
 	else

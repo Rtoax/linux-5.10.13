@@ -9,6 +9,9 @@ extern void __local_bh_disable_ip(unsigned long ip, unsigned int cnt);
 #else
 static __always_inline void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
 {
+    /**
+     *  增加 irq 计数
+     */
 	preempt_count_add(cnt);
 	barrier();
 }

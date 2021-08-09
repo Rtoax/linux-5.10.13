@@ -4,8 +4,15 @@
 
 #include <linux/threads.h>
 
+/**
+ *  通过一个 `irq_cpustat_t` 结构描述软中断状态信息
+ */
 typedef struct {
+    /**
+     *  
+     */
 	u16	     __softirq_pending;
+    
 #if IS_ENABLED(CONFIG_KVM_INTEL)
 	u8	     kvm_cpu_l1tf_flush_l1d;
 #endif
