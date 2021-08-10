@@ -18,5 +18,9 @@ start_kernel
 
 # 创建工作队列
 
-
+* alloc_workqueue: 
+* alloc_ordered_workqueue: 
+* create_workqueue:
+* create_freezable_workqueue: 
+* create_singlethread_workqueue: 
 

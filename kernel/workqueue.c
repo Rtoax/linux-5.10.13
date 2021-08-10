@@ -160,6 +160,30 @@ enum {
  *
  *  CMWQ 提出了工作线程池的概念
  *  准确的说，每个 CPU 有两个工作线程池，一个用于普通优先级，一个用于高优先级的工作线程
+ *  
+ *  几个数据结构之间的关系
+ *  ------------------------------------
+ *          BOUND 类型工作队列
+ *
+ *  system_wq   system_highpri_wq
+ *  +-------+       +-------+
+ *  |       |       |       |       workqueue_struct
+ *  +-------+       +-------+
+ *      |               |
+ *  ----+---------------+----
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       pool_workqueue
+ *  +-------+       +-------+
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       worker_pool
+ *  +-------+       +-------+
+ *      \_______________/
+ *               |
+ *             CPU0
  */
 struct worker_pool {    /* 中断下半部, 工作队列 */
     /**
@@ -272,7 +296,31 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
  * point to the pwq; thus, pwqs need to be aligned at two's power of the
  * number of flag bits.
  *
- * 链接 工作队列 和 工作线程的枢纽
+ * 链接 工作队列 和 工作线程池 的枢纽
+ *  
+ *  几个数据结构之间的关系
+ *  ------------------------------------
+ *          BOUND 类型工作队列
+ *
+ *  system_wq   system_highpri_wq
+ *  +-------+       +-------+
+ *  |       |       |       |       workqueue_struct
+ *  +-------+       +-------+
+ *      |               |
+ *  ----+---------------+----
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       pool_workqueue
+ *  +-------+       +-------+
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       worker_pool
+ *  +-------+       +-------+
+ *      \_______________/
+ *               |
+ *             CPU0
  */
 struct pool_workqueue { /*  */
 
@@ -356,6 +404,29 @@ struct wq_device;
  *  system_power_efficient_wq
  *  system_freezable_power_efficient_wq
  *  
+ *  几个数据结构之间的关系
+ *  ------------------------------------
+ *          BOUND 类型工作队列
+ *
+ *  system_wq   system_highpri_wq
+ *  +-------+       +-------+
+ *  |       |       |       |       workqueue_struct
+ *  +-------+       +-------+
+ *      |               |
+ *  ----+---------------+----
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       pool_workqueue
+ *  +-------+       +-------+
+ *      |               |
+ *      v               v
+ *  +-------+       +-------+
+ *  |       |       |       |       worker_pool
+ *  +-------+       +-------+
+ *      \_______________/
+ *               |
+ *             CPU0
  */
 struct workqueue_struct {   /*  */
     /**
@@ -442,6 +513,10 @@ struct workqueue_struct {   /*  */
      *  
      */
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
+
+    /**
+     *  变长数组
+     */
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* PWR: unbound pwqs indexed by node */
 };
 
@@ -496,13 +571,24 @@ static bool wq_debug_force_rr_cpu = false;
 #endif
 module_param_named(debug_force_rr_cpu, wq_debug_force_rr_cpu, bool, 0644);
 
+/**
+ *  每个 CPU 两个 worker_pool (普通优先级和高优先级)
+ */
 /* the per-cpu worker pools */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct worker_pool [NR_STD_WORKER_POOLS], cpu_worker_pools);
+struct worker_pool __percpu cpu_worker_pools[NR_STD_WORKER_POOLS];//++++
+
 
 static DEFINE_IDR(worker_pool_idr);	/* PR: idr of all pools */
+static struct idr worker_pool_idr = IDR_INIT(worker_pool_idr);//+++
 
+/**
+ *  管理系统中所有的 UNBOUND 类型的 worker_pool 
+ */
 /* PL: hash of all unbound pools keyed by pool->attrs */
 static DEFINE_HASHTABLE(unbound_pool_hash, UNBOUND_POOL_HASH_ORDER);
+static struct hlist_head unbound_pool_hash[1 << (UNBOUND_POOL_HASH_ORDER)] =     //+++
+    { [0 ... ((1 << (UNBOUND_POOL_HASH_ORDER)) - 1)] = HLIST_HEAD_INIT };//+++
 
 /* I: attributes used when instantiating standard unbound pools on demand */
 static struct workqueue_attrs *unbound_std_wq_attrs[NR_STD_WORKER_POOLS];
@@ -3656,8 +3742,15 @@ static u32 wqattrs_hash(const struct workqueue_attrs *attrs)
 static bool wqattrs_equal(const struct workqueue_attrs *a,
 			  const struct workqueue_attrs *b)
 {
+    /**
+     *  比较 nice 值
+     */
 	if (a->nice != b->nice)
 		return false;
+
+    /**
+     *  cpu 掩码
+     */
 	if (!cpumask_equal(a->cpumask, b->cpumask))
 		return false;
 	return true;
@@ -3857,6 +3950,9 @@ static void put_unbound_pool(struct worker_pool *pool)
  */
 static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 {
+    /**
+     *  计算哈希值
+     */
 	u32 hash = wqattrs_hash(attrs);
 	struct worker_pool *pool;
 	int node;
@@ -3864,8 +3960,15 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 
 	lockdep_assert_held(&wq_pool_mutex);
 
+    /**
+     *  遍历哈希值相同的 pool 结构
+     */
 	/* do we already have a matching pool? */
 	hash_for_each_possible(unbound_pool_hash, pool, hash_node, hash) {
+	    /**
+         *  是否已经有了 类型相关的 worker_pool 
+         *  如果 attr 相等，就可以直接返回其对应的 pool 了
+         */
 		if (wqattrs_equal(pool->attrs, attrs)) {
 			pool->refcnt++;
 			return pool;
@@ -3875,14 +3978,16 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 	/* if cpumask is contained inside a NUMA node, we belong to that node */
 	if (wq_numa_enabled) {
 		for_each_node(node) {
-			if (cpumask_subset(attrs->cpumask,
-					   wq_numa_possible_cpumask[node])) {
+			if (cpumask_subset(attrs->cpumask, wq_numa_possible_cpumask[node])) {
 				target_node = node;
 				break;
 			}
 		}
 	}
 
+    /**
+     *  分配新的 pool
+     */
 	/* nope, create a new one */
 	pool = kzalloc_node(sizeof(*pool), GFP_KERNEL, target_node);
 	if (!pool || init_worker_pool(pool) < 0)
@@ -3905,6 +4010,9 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 	if (wq_online && !create_worker(pool))
 		goto fail;
 
+    /**
+     *  将这个 pool 添加到 哈希表中
+     */
 	/* install */
 	hash_add(unbound_pool_hash, &pool->hash_node, hash);
 
@@ -4020,6 +4128,33 @@ static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 
 	memset(pwq, 0, sizeof(*pwq));
 
+    /**
+     *  
+     *  
+     *  几个数据结构之间的关系
+     *  ------------------------------------
+     *          BOUND 类型工作队列
+     *
+     *  system_wq   system_highpri_wq
+     *  +-------+       +-------+
+     *  |       |       |       |       workqueue_struct
+     *  +-------+       +-------+
+     *      |               |
+     *  ----+---------------+----
+     *      |               |
+     *      v               v
+     *  +-------+       +-------+
+     *  |       |       |       |       pool_workqueue
+     *  +-------+       +-------+
+     *      |               |
+     *      v               v
+     *  +-------+       +-------+
+     *  |       |       |       |       worker_pool
+     *  +-------+       +-------+
+     *      \_______________/
+     *               |
+     *             CPU0
+     */
 	pwq->pool = pool;
 	pwq->wq = wq;
 	pwq->flush_color = -1;
@@ -4030,7 +4165,12 @@ static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 	INIT_WORK(&pwq->unbound_release_work, pwq_unbound_release_workfn);
 }
 
-/* sync @pwq with the current state of its associated wq and link it */
+/** 
+ *   sync @pwq with the current state of its associated wq and link it 
+ *
+ *  将 pool_workqueue 添加到 workqueue_struct->pwqs
+ *  一个 work 可以属于多个 pool_workqueue
+ */
 static void link_pwq(struct pool_workqueue *pwq)
 {
 	struct workqueue_struct *wq = pwq->wq;
@@ -4060,6 +4200,9 @@ static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 
 	lockdep_assert_held(&wq_pool_mutex);
 
+    /**
+     *  获取 worker_pool
+     */
 	pool = get_unbound_pool(attrs);
 	if (!pool)
 		return NULL;
@@ -4070,6 +4213,9 @@ static struct pool_workqueue *alloc_unbound_pwq(struct workqueue_struct *wq,
 		return NULL;
 	}
 
+    /**
+     *  串联 worker_pool 和 workqueue_struct
+     */
 	init_pwq(pwq, wq, pool);
 	return pwq;
 }
@@ -4139,6 +4285,10 @@ static struct pool_workqueue *numa_pwq_tbl_install(struct workqueue_struct *wq,
 	/* link_pwq() can handle duplicate calls */
 	link_pwq(pwq);
 
+    /**
+     *  RCU 机制保护 pool_workqueue 数据结构
+     *  
+     */
 	old_pwq = rcu_access_pointer(wq->numa_pwq_tbl[node]);
 	rcu_assign_pointer(wq->numa_pwq_tbl[node], pwq);
 	return old_pwq;
@@ -4156,11 +4306,18 @@ struct apply_wqattrs_ctx {
 /* free the resources after success or abort */
 static void apply_wqattrs_cleanup(struct apply_wqattrs_ctx *ctx)
 {
+    /**
+     *  
+     */
 	if (ctx) {
 		int node;
 
-		for_each_node(node)
+		for_each_node(node) {
+		    /**
+             *  
+             */
 			put_pwq_unlocked(ctx->pwq_tbl[node]);
+        }
 		put_pwq_unlocked(ctx->dfl_pwq);
 
 		free_workqueue_attrs(ctx->attrs);
@@ -4180,8 +4337,14 @@ apply_wqattrs_prepare(struct workqueue_struct *wq,
 
 	lockdep_assert_held(&wq_pool_mutex);
 
+    /**
+     *  分配
+     */
 	ctx = kzalloc(struct_size(ctx, pwq_tbl, nr_node_ids), GFP_KERNEL);
 
+    /**
+     *  分配两个 attr 结构
+     */
 	new_attrs = alloc_workqueue_attrs();
 	tmp_attrs = alloc_workqueue_attrs();
 	if (!ctx || !new_attrs || !tmp_attrs)
@@ -4192,7 +4355,14 @@ apply_wqattrs_prepare(struct workqueue_struct *wq,
 	 * If the user configured cpumask doesn't overlap with the
 	 * wq_unbound_cpumask, we fallback to the wq_unbound_cpumask.
 	 */
+	/**
+     *  赋值 属性到新分配的属性中
+     */
 	copy_workqueue_attrs(new_attrs, attrs);
+
+    /**
+     *  
+     */
 	cpumask_and(new_attrs->cpumask, new_attrs->cpumask, wq_unbound_cpumask);
 	if (unlikely(cpumask_empty(new_attrs->cpumask)))
 		cpumask_copy(new_attrs->cpumask, wq_unbound_cpumask);
@@ -4208,11 +4378,16 @@ apply_wqattrs_prepare(struct workqueue_struct *wq,
 	 * If something goes wrong during CPU up/down, we'll fall back to
 	 * the default pwq covering whole @attrs->cpumask.  Always create
 	 * it even if we don't use it immediately.
+	 *
+	 * 查找或者新建一个 pool_workqueue
 	 */
 	ctx->dfl_pwq = alloc_unbound_pwq(wq, new_attrs);
 	if (!ctx->dfl_pwq)
 		goto out_free;
 
+    /**
+     *  
+     */
 	for_each_node(node) {
 		if (wq_calc_node_cpumask(new_attrs, node, -1, tmp_attrs->cpumask)) {
 			ctx->pwq_tbl[node] = alloc_unbound_pwq(wq, tmp_attrs);
@@ -4248,13 +4423,22 @@ static void apply_wqattrs_commit(struct apply_wqattrs_ctx *ctx)
 	/* all pwqs have been created successfully, let's install'em */
 	mutex_lock(&ctx->wq->mutex);
 
+    /**
+     *  
+     */
 	copy_workqueue_attrs(ctx->wq->unbound_attrs, ctx->attrs);
 
+    /**
+     *  遍历所有节点 node
+     */
 	/* save the previous pwq and install the new one */
-	for_each_node(node)
+	for_each_node(node) {
+	    /**
+         *  安装
+         */ 
 		ctx->pwq_tbl[node] = numa_pwq_tbl_install(ctx->wq, node,
 							  ctx->pwq_tbl[node]);
-
+    }
 	/* @dfl_pwq might not have been used, ensure it's linked */
 	link_pwq(ctx->dfl_pwq);
 	swap(ctx->wq->dfl_pwq, ctx->dfl_pwq);
@@ -4275,9 +4459,15 @@ static void apply_wqattrs_unlock(void)
 	put_online_cpus();
 }
 
+/**
+ *  设置 unbound 工作队列 属性
+ */
 static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 					const struct workqueue_attrs *attrs)
 {
+    /**
+     *  
+     */
 	struct apply_wqattrs_ctx *ctx;
 
 	/* only unbound workqueues can change attributes */
@@ -4292,12 +4482,22 @@ static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 		wq->flags &= ~__WQ_ORDERED;
 	}
 
+    /**
+     *  
+     */
 	ctx = apply_wqattrs_prepare(wq, attrs);
 	if (!ctx)
 		return -ENOMEM;
 
 	/* the ctx has been prepared successfully, let's commit it */
+    /**
+     *  提交刚才分配好的 pool_workqueue
+     */
 	apply_wqattrs_commit(ctx);
+
+    /**
+     *  
+     */
 	apply_wqattrs_cleanup(ctx);
 
 	return 0;
@@ -4420,39 +4620,99 @@ out_unlock:
 	put_pwq_unlocked(old_pwq);
 }
 
+/**
+ *  分配并初始化 pool_workqueue 数据结构
+ */
 static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 {
 	bool highpri = wq->flags & WQ_HIGHPRI;
 	int cpu, ret;
 
+    /**
+     *  处理 BOUND 类型的工作队列
+     */
 	if (!(wq->flags & WQ_UNBOUND)) {
+
+        /**
+         *  为每个 CPU 分配一个 pool_workqueue 结构
+         */
 		wq->cpu_pwqs = alloc_percpu(struct pool_workqueue);
 		if (!wq->cpu_pwqs)
 			return -ENOMEM;
 
+        /**
+         *  遍历所有可能的 CPU
+         */
 		for_each_possible_cpu(cpu) {
-			struct pool_workqueue *pwq =
-				per_cpu_ptr(wq->cpu_pwqs, cpu);
-			struct worker_pool *cpu_pools =
-				per_cpu(cpu_worker_pools, cpu);
+		    /**
+             *  获取 每 CPU pool_workqueue 结构
+             */
+			struct pool_workqueue *pwq = per_cpu_ptr(wq->cpu_pwqs, cpu);
 
+            /**
+             *  从静态变量中获取 每 CPU worker_pool 结构
+             */
+			struct worker_pool *cpu_pools = per_cpu(cpu_worker_pools, cpu);
+
+            /**
+             *  将上面的两个结构联系起来
+             *  几个数据结构之间的关系
+             *  ------------------------------------
+             *          BOUND 类型工作队列
+             *
+             *  system_wq   system_highpri_wq
+             *  +-------+       +-------+
+             *  |       |       |       |       workqueue_struct
+             *  +-------+       +-------+
+             *      |               |
+             *  ----+---------------+----
+             *      |               |
+             *      v               v
+             *  +-------+       +-------+
+             *  |       |       |       |       pool_workqueue
+             *  +-------+       +-------+
+             *      |               |
+             *      v               v
+             *  +-------+       +-------+
+             *  |       |       |       |       worker_pool
+             *  +-------+       +-------+
+             *      \_______________/
+             *               |
+             *             CPU0
+             */
 			init_pwq(pwq, wq, &cpu_pools[highpri]);
 
 			mutex_lock(&wq->mutex);
+            /**
+             *  一个 work 可以属于多个 pool_workqueue
+             */
 			link_pwq(pwq);
 			mutex_unlock(&wq->mutex);
 		}
 		return 0;
 	}
 
+    /**
+     *  
+     */
 	get_online_cpus();
+
+    /**
+     *  处理 ordered 类型
+     */
 	if (wq->flags & __WQ_ORDERED) {
+        /**
+         *  更新 wq 属性
+         */
 		ret = apply_workqueue_attrs(wq, ordered_wq_attrs[highpri]);
 		/* there should only be single pwq for ordering guarantee */
 		WARN(!ret && (wq->pwqs.next != &wq->dfl_pwq->pwqs_node ||
 			      wq->pwqs.prev != &wq->dfl_pwq->pwqs_node),
 		     "ordering guarantee broken for workqueue %s\n", wq->name);
-	} else {
+    /**
+     *  处理 UNBOUND 类型
+     */
+    } else {
 		ret = apply_workqueue_attrs(wq, unbound_std_wq_attrs[highpri]);
 	}
 	put_online_cpus();
@@ -4517,7 +4777,21 @@ static int init_rescuer(struct workqueue_struct *wq)
 	return 0;
 }
 
-/*  */
+/**
+ * alloc_workqueue - allocate a workqueue
+ * @fmt: printf format for the name of the workqueue
+ * @flags: WQ_* flags 例如: WQ_UNBOUND
+ * @max_active: max in-flight work items, 0 for default
+ *              决定每个 CPU 最多可以把多少个 work 挂入一个工作队列
+ * remaining args: args for @fmt
+ *
+ * Allocate a workqueue with the specified parameters.  For detailed
+ * information on WQ_* flags, please refer to
+ * Documentation/core-api/workqueue.rst.
+ *
+ * RETURNS:
+ * Pointer to the allocated workqueue on success, %NULL on failure.
+ */
 struct workqueue_struct *alloc_workqueue(const char *fmt,
 					 unsigned int flags,
 					 int max_active, ...)
@@ -4533,10 +4807,15 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 	 * alloc_ordered_workqueue() is the right way to create an ordered
 	 * workqueue, keep the previous behavior to avoid subtle breakages
 	 * on NUMA.
+	 *
+	 * 有些驱动开发者希望使用一个严格串行执行的工作队列
 	 */
 	if ((flags & WQ_UNBOUND) && max_active == 1)
 		flags |= __WQ_ORDERED;
 
+    /**
+     *  功耗问题
+     */
 	/* see the comment above the definition of WQ_POWER_EFFICIENT */
 	if ((flags & WQ_POWER_EFFICIENT) && wq_power_efficient)
 		flags |= WQ_UNBOUND;
@@ -4545,23 +4824,41 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 	if (flags & WQ_UNBOUND)
 		tbl_size = nr_node_ids * sizeof(wq->numa_pwq_tbl[0]);
 
+    /**
+     *  分配
+     */
 	wq = kzalloc(sizeof(*wq) + tbl_size, GFP_KERNEL);
 	if (!wq)
 		return NULL;
 
+    /**
+     *  不绑定 CPU的话，需要设置 属性
+     */
 	if (flags & WQ_UNBOUND) {
+        /**
+         *  分配一个属性
+         */
 		wq->unbound_attrs = alloc_workqueue_attrs();
 		if (!wq->unbound_attrs)
 			goto err_free_wq;
 	}
 
+    /**
+     *  工作队列名字
+     */
 	va_start(args, max_active);
 	vsnprintf(wq->name, sizeof(wq->name), fmt, args);
 	va_end(args);
 
+    /**
+     *  如果为0，使用默认值 256
+     */
 	max_active = max_active ?: WQ_DFL_ACTIVE;
 	max_active = wq_clamp_max_active(max_active, flags, wq->name);
 
+    /**
+     *  初始化数据结构
+     */
 	/* init wq */
 	wq->flags = flags;
 	wq->saved_max_active = max_active;
@@ -4575,9 +4872,15 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 	wq_init_lockdep(wq);
 	INIT_LIST_HEAD(&wq->list);
 
+    /**
+     *  分配并初始化 pool_workqueue 数据结构
+     */
 	if (alloc_and_link_pwqs(wq) < 0)
 		goto err_unreg_lockdep;
 
+    /**
+     *  为每个 工作队列初始化一个 rescuer 工作线程
+     */
 	if (wq_online && init_rescuer(wq) < 0)
 		goto err_destroy;
 
@@ -4591,11 +4894,18 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 	 */
 	mutex_lock(&wq_pool_mutex);
 
+    /**
+     *  
+     */
 	mutex_lock(&wq->mutex);
-	for_each_pwq(pwq, wq)
+	for_each_pwq(pwq, wq) {
 		pwq_adjust_max_active(pwq);
+    }
 	mutex_unlock(&wq->mutex);
 
+    /**
+     *  添加至全局链表中
+     */
 	list_add_tail_rcu(&wq->list, &workqueues);
 
 	mutex_unlock(&wq_pool_mutex);

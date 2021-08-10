@@ -165,6 +165,10 @@ struct rcu_work {
  * struct workqueue_attrs - A struct for workqueue attributes.
  *
  * This can be used to change attributes of an unbound workqueue.
+ *
+ * 相关接口
+ * -----------------------------
+ * `wqattrs_equal()`: 比较两个 结构 
  */
 struct workqueue_attrs {
 	/**
@@ -338,16 +342,44 @@ static inline unsigned int work_static(struct work_struct *work)
  * Documentation/core-api/workqueue.rst.
  */
 enum {
+    /**
+     *  没有绑定到 CPU上，
+     *  work 会加入 UNBOUND 工作队列中。
+     *  
+     *  虽然根据局部性原理会丧失一部分性能，但是比较适合下面的场景
+     *  -------------------------------
+     *  1. 一些应用会在不同的CPU上交叉执行，若使用BOUND 类型的工作队列，
+     *      会创建很多没用的工作线程；
+     *  2. 长时间运行的 CPU 消耗类型的应用通常会创建 UNBOUND 类型 的工作队列，
+     *      进程调度器会管理这类工作线程在哪个CPU上运行。
+     */
 	WQ_UNBOUND		= 1 << 1, /* not bound to any cpu */
+
+    /**
+     *  此标记会让工作队列参与到 系统的 suspend 过程中，
+     *  这会让工作线程处理完当前所有的 work 才完成进程冻结。
+     *  并且这个过程中不会再新开始一个 work 的执行，知道进程被冻结。
+     */
 	WQ_FREEZABLE		= 1 << 2, /* freeze during suspend */
+	
 	/*
      *  为每一个 工作队列创建一个 rescuer 线程(见`workqueue_init()`)。
      *  内存紧张时，创建新的工作线程可能会失败，如果创建工作队列时设置了
      *  WQ_MEM_RECLAIM 标志位，那么 rescuer 线程会接管这种情况。
      */
 	WQ_MEM_RECLAIM		= 1 << 3, /* may be used for memory reclaim */
+
+    /**
+     *  属于高优先级的工作线程池，即 nice 值比较低
+     */
 	WQ_HIGHPRI		= 1 << 4, /* high priority */
-	WQ_CPU_INTENSIVE	= 1 << 5, /* cpu intensive workqueue */
+
+    /**
+     *  CPU密集型 - 属于特别消耗 CPU 资源的一类 work
+     *  这类 work 的执行会得到系统进程调度器的监管。
+     *  排在 这类 work 后面的 non-CPU-intensive 类型 的 work 可能会推迟执行。
+     */
+	WQ_CPU_INTENSIVE	= 1 << 5, /* cpu intensive(密集的) workqueue */
 	WQ_SYSFS		= 1 << 6, /* visible in sysfs, see wq_sysfs_register() */
 
 	/*
@@ -378,13 +410,22 @@ enum {
 	WQ_POWER_EFFICIENT	= 1 << 7,
 
 	__WQ_DRAINING		= 1 << 16, /* internal: workqueue is draining */
+
+    /**
+     *  表示同一时间只能执行一个 work
+     */
 	__WQ_ORDERED		= 1 << 17, /* internal: workqueue is ordered */
 	__WQ_LEGACY		= 1 << 18, /* internal: create*_workqueue() */
 	__WQ_ORDERED_EXPLICIT	= 1 << 19, /* internal: alloc_ordered_workqueue() */
 
 	WQ_MAX_ACTIVE		= 512,	  /* I like 512, better ideas? */
 	WQ_MAX_UNBOUND_PER_CPU	= 4,	  /* 4 * #cpus for unbound wq */
-	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
+
+    /**
+     *  决定每个 CPU 最多可以把多少个 work 挂入一个工作队列
+     *  见 `alloc_workqueue(..., max_active, ...)`
+     */
+	WQ_DFL_ACTIVE		/*256*/= WQ_MAX_ACTIVE / 2,
 };
 
 /* unbound wq's aren't per-cpu, scale max_active according to #cpus */
@@ -430,7 +471,7 @@ extern struct workqueue_struct *system_freezable_power_efficient_wq;
 /**
  * alloc_workqueue - allocate a workqueue
  * @fmt: printf format for the name of the workqueue
- * @flags: WQ_* flags
+ * @flags: WQ_* flags 例如: WQ_UNBOUND
  * @max_active: max in-flight work items, 0 for default
  * remaining args: args for @fmt
  *
@@ -440,7 +481,7 @@ extern struct workqueue_struct *system_freezable_power_efficient_wq;
  *
  * RETURNS:
  * Pointer to the allocated workqueue on success, %NULL on failure.
- */ /*  */
+ */
 struct workqueue_struct *alloc_workqueue(const char *fmt,
 					 unsigned int flags,
 					 int max_active, ...);
@@ -457,11 +498,16 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
  *
  * RETURNS:
  * Pointer to the allocated workqueue on success, %NULL on failure.
+ *
+ * 严格串行执行的工作队列
  */
 #define alloc_ordered_workqueue(fmt, flags, args...)			\
 	alloc_workqueue(fmt, WQ_UNBOUND | __WQ_ORDERED |		\
 			__WQ_ORDERED_EXPLICIT | (flags), 1, ##args)
 
+/**
+ *  
+ */
 #define create_workqueue(name)						\
 	alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, (name))
 #define create_freezable_workqueue(name)				\
