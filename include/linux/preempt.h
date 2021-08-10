@@ -47,11 +47,11 @@
 #define NMI_MASK	    /* 0x00f00000 */(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)         /* 0x00f00000 */
 
 #define PREEMPT_OFFSET	/* 1 */(1UL << PREEMPT_SHIFT/* 0 */)
-#define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT/* 8 */)
-#define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
-#define NMI_OFFSET	(1UL << NMI_SHIFT)
+#define SOFTIRQ_OFFSET	/* 1<<8 */(1UL << SOFTIRQ_SHIFT/* 8 */)
+#define HARDIRQ_OFFSET	/* 1<<16 */(1UL << HARDIRQ_SHIFT/* 16 */)
+#define NMI_OFFSET	    /* 1<<20 */(1UL << NMI_SHIFT/* 20 */)
 
-#define SOFTIRQ_DISABLE_OFFSET	(2 * SOFTIRQ_OFFSET)
+#define SOFTIRQ_DISABLE_OFFSET	/* 1<<9 */(2 * SOFTIRQ_OFFSET/* 1<<8 */)
 
 #define PREEMPT_DISABLED	(PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
@@ -115,8 +115,8 @@
  * Note: due to the BH disabled confusion: in_softirq(),in_interrupt() really
  *       should not be used in new code.
  */
-#define in_irq()		(hardirq_count())   /* 硬中断 */
-#define in_softirq()		(softirq_count()) /* 软中断 */
+#define in_irq()		(hardirq_count())   /* 硬中断上下文中 */
+#define in_softirq()		(softirq_count()) /* 软中断上下文中 */
 #define in_interrupt()		(irq_count())   /* 在中断上下文中 */
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET) /*  */
 #define in_nmi()		(preempt_count() & NMI_MASK) /* 在 NMI 中 */

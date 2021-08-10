@@ -227,10 +227,19 @@ void _local_bh_enable(void)
 }
 EXPORT_SYMBOL(_local_bh_enable);
 
+/**
+ *  
+ */
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
+    /**
+     *  警告条件
+     *  如果在硬件上下文中，处于关中断的情况，没有必要再调用关 BH 
+     */
 	WARN_ON_ONCE(in_irq());
+    
 	lockdep_assert_irqs_enabled();
+    
 #ifdef CONFIG_TRACE_IRQFLAGS
 	local_irq_disable();
 #endif
@@ -242,9 +251,17 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	/*
 	 * Keep preemption disabled until we are done with
 	 * softirq processing:
+	 *
+	 * 为什么还留 1 呢？
+	 * 表示关闭本地CPU的抢占，由于下面执行 do_softirq 函数时，
+	 * 不希望其他高优先级任务抢占 CPU 或者当前任务呗迁移到其他
+	 * CPU上。
 	 */
 	preempt_count_sub(cnt - 1);
 
+    /**
+     *  在非中断上下文环境下执行软中断处理
+     */
 	if (unlikely(!in_interrupt() && local_softirq_pending())) {
 		/*
 		 * Run softirq if any pending. And do it in its own stack
@@ -253,10 +270,19 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 		do_softirq();
 	}
 
+    /**
+     *  打开抢占，和上面的 留 1 呼应
+     */
 	preempt_count_dec();
+    
 #ifdef CONFIG_TRACE_IRQFLAGS
 	local_irq_enable();
 #endif
+
+    /**
+     *  之前执行软中断处理时，可能会漏掉一些高优先级任务的抢占需求，
+     *  这里重新检查。
+     */
 	preempt_check_resched();
 }
 EXPORT_SYMBOL(__local_bh_enable_ip);
@@ -857,7 +883,7 @@ static void tasklet_action_common(struct softirq_action *a,
 		list = list->next;
         
         /**
-         *  
+         *  检测并设置 TASKLET_STATE_RUN 标志位
          */
 		if (tasklet_trylock(t)) {
             /**
@@ -865,7 +891,7 @@ static void tasklet_action_common(struct softirq_action *a,
              */
 			if (!atomic_read(&t->count)) {
                 /**
-                 *  是否已经被调度
+                 *  是否已经被调度，清除标记为
                  */
 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
 					BUG();
@@ -884,6 +910,9 @@ static void tasklet_action_common(struct softirq_action *a,
 				tasklet_unlock(t);
 				continue;
 			}
+            /**
+             *  清除 TASKLET_STATE_RUN 标志位
+             */
 			tasklet_unlock(t);
 		}
 
@@ -1004,8 +1033,14 @@ void __init softirq_init(void)  /*  */
 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);    /* high-priority tasklets 高优先级 tasklet */
 }
 
+/**
+ *  ksoftirqd 是否该运行
+ */
 static int ksoftirqd_should_run(unsigned int cpu)
 {
+    /**
+     *  是否有软中断挂起
+     */
 	return local_softirq_pending();
 }
 
@@ -1105,11 +1140,21 @@ static int takeover_tasklets(unsigned int cpu)
 
 /**
  *  ksoftirqd 线程
+ *  软中断线程化
  */
 static struct smp_hotplug_thread softirq_threads = {
 	softirq_threads.store			= &ksoftirqd,
+    /**
+     *  
+     */
 	softirq_threads.thread_should_run	= ksoftirqd_should_run,
+	/**
+     *  回调函数
+     */
 	softirq_threads.thread_fn		= run_ksoftirqd,
+	/**
+     *  进程名
+     */
 	softirq_threads.thread_comm		= "ksoftirqd/%u",
 };
 
