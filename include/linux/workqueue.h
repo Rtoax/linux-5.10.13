@@ -43,7 +43,7 @@ enum {
 	WORK_STRUCT_STATIC_BIT	= 4,	/* static initializer (debugobjects) */
 	WORK_STRUCT_COLOR_SHIFT	= 5,	/* color for workqueue flushing */
 #else
-//	WORK_STRUCT_COLOR_SHIFT	= 4,	/* color for workqueue flushing */
+	WORK_STRUCT_COLOR_SHIFT	= 4,	/* color for workqueue flushing */
 #endif
 
 	WORK_STRUCT_COLOR_BITS	= 4,
@@ -55,7 +55,7 @@ enum {
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
 #else
-//	WORK_STRUCT_STATIC	= 0,
+	WORK_STRUCT_STATIC	= 0,
 #endif
 
 	/*
@@ -110,18 +110,25 @@ enum {
  *  工作队列结构
  */
 struct work_struct {    /* 工作队列 */
-	atomic_long_t data; /* func 的参数 */
+    /**
+     *  分为两部分
+     *  1. 低8位部分是 work 的标志位, 见`set_work_pwq()`
+     *  2. 剩余位通常用于存放一次运行的 work_poll 的 ID 或 pool_workqueue 的指针
+     */
+	atomic_long_t data; 
 
     /**
-     *  
+     *  用于把work挂到队列上
      */
 	struct list_head entry; /* worker_pool-> workers/... */
 
     /**
-     *  
+     *  处理函数
      */
 	work_func_t func;   /* 回调 */
-    
+    /**
+     *  
+     */
 #ifdef CONFIG_LOCKDEP   /* 死锁检测 */
 	struct lockdep_map lockdep_map; /*  */
 #endif
@@ -333,6 +340,11 @@ static inline unsigned int work_static(struct work_struct *work)
 enum {
 	WQ_UNBOUND		= 1 << 1, /* not bound to any cpu */
 	WQ_FREEZABLE		= 1 << 2, /* freeze during suspend */
+	/*
+     *  为每一个 工作队列创建一个 rescuer 线程(见`workqueue_init()`)。
+     *  内存紧张时，创建新的工作线程可能会失败，如果创建工作队列时设置了
+     *  WQ_MEM_RECLAIM 标志位，那么 rescuer 线程会接管这种情况。
+     */
 	WQ_MEM_RECLAIM		= 1 << 3, /* may be used for memory reclaim */
 	WQ_HIGHPRI		= 1 << 4, /* high priority */
 	WQ_CPU_INTENSIVE	= 1 << 5, /* cpu intensive workqueue */

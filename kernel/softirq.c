@@ -1049,6 +1049,9 @@ static int ksoftirqd_should_run(unsigned int cpu)
  */
 static void run_ksoftirqd(unsigned int cpu) /*  */
 {
+    /**
+     *  ksoftirqd
+     */
 	local_irq_disable();    /* 关中断 */
 
     /**

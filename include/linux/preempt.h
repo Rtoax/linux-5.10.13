@@ -118,7 +118,7 @@
 #define in_irq()		(hardirq_count())   /* 硬中断上下文中 */
 #define in_softirq()		(softirq_count()) /* 软中断上下文中 */
 #define in_interrupt()		(irq_count())   /* 在中断上下文中 */
-#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET) /*  */
+#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET) /* 是否在软中断处理中 */
 #define in_nmi()		(preempt_count() & NMI_MASK) /* 在 NMI 中 */
 #define in_task()		/* 在进程上下文中 */(!(preempt_count() &  (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET)))
 

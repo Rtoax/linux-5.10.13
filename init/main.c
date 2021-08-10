@@ -672,6 +672,9 @@ static void __init setup_command_line(char *command_line)
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
+/**
+ *  
+ */
 //[rongtao@localhost src]$ ps -ef | grep -e kthread -e systemd
 //root          1      0  0 3月02 ?       00:05:39 systemd --switched-root --system --deserialize 21
 //root          2      0  0 3月02 ?       00:00:00 [kthreadd]
@@ -896,8 +899,14 @@ static void __init mm_init(void)/* 内存管理初始化 */
 	pti_init(); /*  页表隔离 */
 }
 
+/**
+ *  
+ */
 void __init __weak arch_call_rest_init(void)    /*  */
 {
+    /**
+     *  
+     */
 	rest_init();    /* 在linux启动的阶段start_kernel()的最后，
 	rest_init()会开启两个进程：kernel_init，kthreadd，之后主线程变成idle线程，init/main.c。
     linux下的3个特殊的进程：idle进程（PID=0），init进程（PID=1）和kthreadd（PID=2） */
@@ -1201,6 +1210,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	sfi_init_late();    /*  */
 	kcsan_init();       /* Kernel Concurrency Sanitizer,并发性检测 */
 
+    /**
+     *  
+     */
 	/* Do the rest non-__init'ed, we're now alive */
 	arch_call_rest_init();  /* 开启线程 init/systed[PID=1] kthreadd[PID=2] */
 
@@ -1527,6 +1539,9 @@ void __weak free_initmem(void)
 	free_initmem_default(POISON_FREE_INITMEM);
 }
 
+/**
+ *  
+ */
 static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个线程 */
 {
 	int ret;
@@ -1626,6 +1641,9 @@ void __init console_on_rootfs(void)
 	fput(file);
 }
 
+/**
+ *  
+ */
 static noinline void __init kernel_init_freeable(void)  /*  */
 {   /* 由 init[PID=1] 进程调用 */
 	/*
@@ -1649,6 +1667,9 @@ static noinline void __init kernel_init_freeable(void)  /*  */
 
 	smp_prepare_cpus(setup_max_cpus);
 
+    /**
+     *  创建工作队列
+     */
 	workqueue_init();
 
 	init_mm_internals();    /*  */

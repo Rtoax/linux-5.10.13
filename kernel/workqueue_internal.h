@@ -20,6 +20,10 @@ struct worker_pool;
  * details on the locking annotation (L, I, X...), refer to workqueue.c.
  *
  * Only to be used in workqueue and async.
+ *
+ * 工作队列内核线程
+ *
+ * worker 类似于流水线的工人，work 类似于工人的工作
  */
 struct worker { /*  */
 	/* on idle list while idle, on busy hash table while busy */
@@ -28,22 +32,51 @@ struct worker { /*  */
 		struct hlist_node	hentry;	/* L: while busy */
 	};
 
+    /**
+     *  正在处理的 work
+     */
 	struct work_struct	*current_work;	/* L: work being processed */
+
+    /**
+     *  正在执行的 work 回调函数
+     */
 	work_func_t		current_func;	/* L: current_work's fn */
+
+    /**
+     *  当前 work 所属的 pool_workqueue
+     */
 	struct pool_workqueue	*current_pwq; /* L: current_work's pwq */
+
+    /**
+     *  所有被调度并正准备 执行的 work 都挂入该链表中
+     */
 	struct list_head	scheduled;	/* L: scheduled works */
 
 	/* 64 bytes boundary on 64bit, 32 on 32bit */
 
+    /**
+     *  该工作线程 的 task
+     */
 	struct task_struct	*task;		/* I: worker task */
+
+    /**
+     *  该 工作线程所属的 worker_pool
+     */
 	struct worker_pool	*pool;		/* A: the associated pool */
 						/* L: for rescuers */
+    /**
+     *  可以把该工作线程挂在到 worker_pool->workers 中
+     */
 	struct list_head	node;		/* A: anchored at pool->workers */
 						/* A: runs through worker->node */
 
 	unsigned long		last_active;	/* L: last active timestamp */
 	unsigned int		flags;		/* X: flags */
-	int			id;		/* I: worker id */
+
+    /**
+     *  工作线程的 ID
+     */
+    int			id;		/* I: worker id */
 	int			sleeping;	/* None */
 
 	/*

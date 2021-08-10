@@ -1,0 +1,22 @@
+Workqueue 工作队列 (中断下半部)
+===========================
+
+
+# 初始化
+
+```
+start_kernel
+  workqueue_init_early	初始化系统默认工作队列
+  ...
+  arch_call_rest_init
+    rest_init
+      kernel_thread(kernel_init	==`PID = 1` for `init`
+        kernel_init
+          kernel_init_freeable
+            workqueue_init	创建工作线程
+```
+
+# 创建工作队列
+
+
+

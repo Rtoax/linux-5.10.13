@@ -241,6 +241,9 @@ struct ida_bitmap {
 	unsigned long		bitmap[IDA_BITMAP_LONGS];
 };
 
+/**
+ *  IDA(ID Allocator) 机制用于生成 ID
+ */
 struct ida {
 	struct xarray xa;
 };
