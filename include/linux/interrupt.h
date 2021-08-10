@@ -709,24 +709,43 @@ static inline struct task_struct *this_cpu_ksoftirqd(void)
  *  tasklet - 中断后半部
  *
  *  运行在软件中断上下文中
+ *
+ *  API:
+ *  ----------------------------------
+ *  初始化 `tasklet_init`
  */
 struct tasklet_struct   /* tasklet(TASKLET_SOFTIRQ,HI_SOFTIRQ) 隶属于 softirq */
 {
+    /**
+     *  tasklet 是一个链表
+     */
 	struct tasklet_struct *next;    /* 调度队列中的下一个 */
-	unsigned long state;    /* 状态 TASKLET_STATE_SCHED / TASKLET_STATE_RUN */
+	unsigned long state;    /* 状态 TASKLET_STATE_SCHED , TASKLET_STATE_RUN */
+
+    /**
+     *  =0,  tasklet 处于激活状态, 见 `DECLARE_TASKLET()`
+     *  !=0, 表示 该 tasklet 被禁止，不允许执行, 见 `DECLARE_TASKLET_DISABLED()`
+     */
 	atomic_t count;         /* 当前 tasklet 的状态 */
 	bool use_callback;      /* 是否使用 callback */
 
     /**
-     *  
+     *  处理函数
      */
 	union {
 		void (*func)(unsigned long data);
 		void (*callback)(struct tasklet_struct *t);
 	};
+
+    /**
+     *  传递给 处理函数 func
+     */
 	unsigned long data; /* callback 的参数 */
 };
 
+/**
+ *  
+ */
 #define DECLARE_TASKLET(name, _callback)		\
 struct tasklet_struct name = {				\
 	.count = ATOMIC_INIT(0),			\
@@ -734,6 +753,9 @@ struct tasklet_struct name = {				\
 	.use_callback = true,				\
 }
 
+/**
+ *  
+ */
 #define DECLARE_TASKLET_DISABLED(name, _callback)	\
 struct tasklet_struct name = {				\
 	.count = ATOMIC_INIT(1),			\
@@ -758,7 +780,14 @@ struct tasklet_struct name = {				\
 
 enum
 {
+    /**
+     *  已经被调度，正准备运行
+     */
 	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
+
+    /**
+     *  tasklet正在运行
+     */
 	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
 };
 
@@ -784,16 +813,26 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
-/* 普通优先级 来调度 tasklet */
+/**
+ *  普通优先级 来调度 tasklet
+ */
 static inline void tasklet_schedule(struct tasklet_struct *t)   /*  */
 {
+    /**
+     *  设置 已被调度，正准备运行 标志位
+     */
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
+        /**
+         *  
+         */
 		__tasklet_schedule(t);
 }
 
 extern void __tasklet_hi_schedule(struct tasklet_struct *t);
 
-/* 高优先级 调度 tasklet */
+/**
+ *  高优先级 调度 tasklet
+ */
 static inline void tasklet_hi_schedule(struct tasklet_struct *t)    /*  */
 {
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))

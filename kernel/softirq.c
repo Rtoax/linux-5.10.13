@@ -733,6 +733,10 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))/* 赋值 */
 
 /*
  * Tasklets
+ *
+ * 每个 CPU 有两个链表：
+ *  1. 一个 普通优先级 `tasklet_vec` ->  TASKLET_SOFTIRQ(优先级=6)
+ *  2. 一个 高优先级  `tasklet_hi_vec`-> HI_SOFTIRQ(优先级=0)
  */
 struct tasklet_head {   /*  */
 	struct tasklet_struct *head;
@@ -741,6 +745,17 @@ struct tasklet_head {   /*  */
 
 /**
  *  小任务机制 - 只能发生在中断上下文中
+ *
+ * 每个 CPU 有两个链表：
+ *  1. 一个 普通优先级 `tasklet_vec` ->  TASKLET_SOFTIRQ(优先级=6)
+ *  2. 一个 高优先级  `tasklet_hi_vec`-> HI_SOFTIRQ(优先级=0)
+ *
+ *  普通优先级调度 `tasklet_schedule()`
+ *  普通优先级action `tasklet_action()`
+ *  高优先级调度 `tasklet_hi_schedule()`
+ *  高优先级action `tasklet_hi_action()`
+ *
+ * 两个链表的初始化见 `softirq_init()`
  */
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
@@ -748,7 +763,7 @@ static struct tasklet_head __percpu tasklet_vec;    /* +++++ */
 static struct tasklet_head __percpu tasklet_hi_vec; /* +++++ */
 
 /**
- *  
+ *  tasklet 调度
  */
 static void __tasklet_schedule_common(struct tasklet_struct *t,
                     				      struct tasklet_head __percpu *headp,
@@ -757,23 +772,32 @@ static void __tasklet_schedule_common(struct tasklet_struct *t,
 	struct tasklet_head *head;
 	unsigned long flags;
 
+    /**
+     *  关闭本地中断
+     */
 	local_irq_save(flags);
 
+    /**
+     *  添加到链表
+     */
     head = this_cpu_ptr(headp);
 	t->next = NULL;
 	*head->tail = t;
 	head->tail = &(t->next);
 
     /**
-     *  
+     *  触发软中断
      */
 	raise_softirq_irqoff(softirq_nr);
-    
+
+    /**
+     *  开启本地中断
+     */
 	local_irq_restore(flags);
 }
 
 /**
- *  
+ *  普通优先级 tasklet
  */
 void __tasklet_schedule(struct tasklet_struct *t)
 {
@@ -782,7 +806,7 @@ void __tasklet_schedule(struct tasklet_struct *t)
 EXPORT_SYMBOL(__tasklet_schedule);
 
 /**
- *  
+ *  高优先级 tasklet
  */
 void __tasklet_hi_schedule(struct tasklet_struct *t)
 {
@@ -791,7 +815,8 @@ void __tasklet_hi_schedule(struct tasklet_struct *t)
 EXPORT_SYMBOL(__tasklet_hi_schedule);
 
 /**
- *  
+ *  tasklet 在 softirq 中的 action
+ *  TASKLET_SOFTIRQ 和 HI_SOFTIRQ 都会调用这个函数
  */
 static void tasklet_action_common(struct softirq_action *a,
                     				  struct tasklet_head *tl_head,
@@ -799,51 +824,103 @@ static void tasklet_action_common(struct softirq_action *a,
 {
 	struct tasklet_struct *list;
 
+    /**
+     *  禁止本地中断
+     *  因为 tl_head 为 percpu 变量，所以不用加锁，
+     *  但是需要 关闭 本地中断，防止再往这个链表添加
+     */
 	local_irq_disable();    /* 禁止本地中断 */
+
+    /**
+     *  获取链表头
+     */
 	list = tl_head->head;
+
+    /**
+     *  清空 cpu 的 tasklet 链表头
+     */
 	tl_head->head = NULL;
 	tl_head->tail = &tl_head->head;
+
+    /**
+     *  使能中断
+     */
 	local_irq_enable();
 
+    /**
+     *  执行链表，此过程，没有关闭中断
+     */
 	while (list) {
+        
 		struct tasklet_struct *t = list;
 
 		list = list->next;
-
+        
+        /**
+         *  
+         */
 		if (tasklet_trylock(t)) {
+            /**
+             *  是否为激活状态，如果为激活状态，进入 if 分支
+             */
 			if (!atomic_read(&t->count)) {
-				if (!test_and_clear_bit(TASKLET_STATE_SCHED,
-							&t->state))
+                /**
+                 *  是否已经被调度
+                 */
+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
 					BUG();
+
+                /**
+                 *  执行回调函数
+                 */
 				if (t->use_callback)
 					t->callback(t); /* 首先选用 callback */
 				else
 					t->func(t->data);   /* 回调函数 */
+
+                /**
+                 *  执行完回调函数，直接解锁，继续下一个
+                 */
 				tasklet_unlock(t);
 				continue;
 			}
 			tasklet_unlock(t);
 		}
 
+        /**
+         *  如果 
+         *  获取 tasklet 锁失败，
+         *  tasklet 未激活
+         *  那么再将 这个 tasklet 添加到 链表中，期间当然要关中断
+         */
 		local_irq_disable();/* 禁止本地中断 */
 		t->next = NULL;
 		*tl_head->tail = t;
 		tl_head->tail = &t->next;
+
+        /**
+         *  触发这个软中断
+         */
 		__raise_softirq_irqoff(softirq_nr);
 		local_irq_enable();
 	}
 }
 
 /**
- *  
+ *  普通优先级 tasklet
+ *  软中断 TASKLET_SOFTIRQ 触发 action 时候，对应此函数
  */
 static __latent_entropy void tasklet_action(struct softirq_action *a)
 {
+    /**
+     *  
+     */
 	tasklet_action_common(a, this_cpu_ptr(&tasklet_vec), TASKLET_SOFTIRQ);
 }
 
 /**
- *  
+ *  高优先级 tasklet
+ *  软中断 HI_SOFTIRQ 触发 action 时候，对应此函数
  */
 static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 {
@@ -870,6 +947,9 @@ EXPORT_SYMBOL(tasklet_setup);
  */
 void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigned long data)
 {
+    /**
+     *  
+     */
 	t->next = NULL;
 	t->state = 0;
 	atomic_set(&t->count, 0);
@@ -906,13 +986,19 @@ void __init softirq_init(void)  /*  */
 {
 	int cpu;
 
+    /**
+     *  
+     * 每个 CPU 有两个链表：
+     *  1. 一个 普通优先级 `tasklet_vec` ->  TASKLET_SOFTIRQ(优先级=6)
+     *  2. 一个 高优先级  `tasklet_hi_vec`-> HI_SOFTIRQ(优先级=0)
+     */
 	for_each_possible_cpu(cpu) { /* 初始化 tasklet 链表 */
 		per_cpu(tasklet_vec, cpu).tail    = &per_cpu(tasklet_vec, cpu).head;
 		per_cpu(tasklet_hi_vec, cpu).tail = &per_cpu(tasklet_hi_vec, cpu).head;
 	}
 
     /**
-     *  
+     *  为 tasklet 注册 softirq
      */
 	open_softirq(TASKLET_SOFTIRQ, tasklet_action);  /*  */
 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);    /* high-priority tasklets 高优先级 tasklet */
