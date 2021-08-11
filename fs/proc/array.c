@@ -102,6 +102,9 @@ void proc_task_name(struct seq_file *m, struct task_struct *p, bool escape)
 	char tcomm[64];
 	int ret;
 
+    /**
+     *  工作队列线程
+     */
 	if (p->flags & PF_WQ_WORKER)
 		wq_worker_comm(tcomm, sizeof(tcomm), p);
 	else

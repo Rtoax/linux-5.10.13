@@ -37,8 +37,21 @@ void delayed_work_timer_fn(struct timer_list *t);
 enum {
     /**
      *  表示该 work 正在延迟执行
+     *
+     *  关于 PENDING 位何时被清零和设置(设置和清零都是在 关闭本地中断情况下执行的)
+     *  ---------------------------------------------
+     *  1. 设置 pending 位：如果一个 work 已经添加到工作队列中，
+     *                      调用 schedule_work()
+     *                            ->queue_work()
+     *                              ->queue_work_on()
+     *
+     *  2. pending 位清零：如果一个 work 在工作线程里并且马上要执行，
+     *                      调用 worker_thread()
+     *                            ->process_one_work()
+     *                              ->set_work_pool_and_clear_pending()
      */
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+	
 	/**
      *  表示该 work 被延迟执行了
      */
@@ -102,6 +115,10 @@ enum {
 	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
 
 	__WORK_OFFQ_CANCELING	= WORK_OFFQ_FLAG_BASE,
+
+    /**
+     *  
+     */
 	WORK_OFFQ_CANCELING	= (1 << __WORK_OFFQ_CANCELING),
 
 	/*
@@ -152,6 +169,7 @@ struct work_struct {    /* 工作队列 */
      *  处理函数
      *
      *  将在 `process_one_work()` 被执行
+     *  实际上，使用 `worker->current_func` 执行
      *  
      */
 	work_func_t func;   /* 回调 */

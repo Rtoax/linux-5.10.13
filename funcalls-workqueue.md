@@ -27,7 +27,21 @@ start_kernel
 # 添加和调度一个 work
 
 * INIT_WORK:		初始化work
-* schedule_work:	挂入 系统的默认工作队列中
+* schedule_work:	挂入 系统的默认工作队列中，通常使用本地CPU提高局部性性能
+  * queue_work_on:	可以指定 CPU
 
 # 处理一个 work
 
+* worker_thread
+
+# 取消一个 work
+
+* cancel_work_sync
+
+
+# 和调度器 的交互
+
+schedule()
+  sched_submit_work()
+    wq_worker_sleeping()
+  

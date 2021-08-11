@@ -22,6 +22,8 @@
  * _interruptible, _interruptible_timeout, and _killable), init_completion(),
  * reinit_completion(), and macros DECLARE_COMPLETION(),
  * DECLARE_COMPLETION_ONSTACK().
+ *
+ * 完成量
  */
 struct completion { /* Completions is a code synchronization mechanism */
 	unsigned int done;

@@ -290,6 +290,11 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 	 * 在进程调度器中唤醒进程(调用`try_to_wake_up()`)时，其他CPU 可能会同时访问该成员，
 	 * 该成员频繁在多核之间读写，因此`独占缓存行`，避免多核CPU 在读写该成员是引发的缓存颠簸线程
 	 * 
+	 * API
+	 * --------------------------
+	 * worker_thread()->worker_clr_flags()
+	 * worker_thread()->worker_set_flags()
+	 * 
 	 */
 	atomic_t	____cacheline_aligned_in_smp	nr_running ;/*  */
 
@@ -933,16 +938,24 @@ static void set_work_pool_and_keep_pending(struct work_struct *work,
 		      WORK_STRUCT_PENDING);
 }
 
-static void set_work_pool_and_clear_pending(struct work_struct *work,
-					    int pool_id)
+/**
+ * 清除 worker.data 成员的 pending 标志
+ */
+static void set_work_pool_and_clear_pending(struct work_struct *work, int pool_id)
 {
 	/*
 	 * The following wmb is paired with the implied mb in
 	 * test_and_set_bit(PENDING) and ensures all updates to @work made
 	 * here are visible to and precede any updates by the next PENDING
 	 * owner.
+	 *
+	 * 保证 work 所有的修改完成后，才会清除 pending 标志位
 	 */
 	smp_wmb();
+
+    /**
+     *  
+     */
 	set_work_data(work, (unsigned long)pool_id << WORK_OFFQ_POOL_SHIFT, 0);
 	/*
 	 * The following mb guarantees that previous clear of a PENDING bit
@@ -1053,6 +1066,9 @@ static int get_work_pool_id(struct work_struct *work)
 	return data >> WORK_OFFQ_POOL_SHIFT;
 }
 
+/**
+ *  设置 WORK_OFFQ_CANCELING 标志位
+ */
 static void mark_work_canceling(struct work_struct *work)
 {
 	unsigned long pool_id = get_work_pool_id(work);
@@ -1110,11 +1126,18 @@ static bool may_start_working(struct worker_pool *pool)
 }
 
 /**
- *  keep_working 用来控制线程数量
+ *  keep_working 用来控制活跃工作线程数量
+ *  此功能可以防止线程泛滥
  */
 /* Do I need to keep working?  Called from currently running workers. */
 static bool keep_working(struct worker_pool *pool)
 {
+    /**
+     *  保证当前线程继续工作的条件：
+     *
+     *  是否还有工作需要处理
+     *  并且，工作线程池中活跃的线程数<=1
+     */
 	return !list_empty(&pool->worklist) && atomic_read(&pool->nr_running) <= 1;
 }
 
@@ -1191,6 +1214,9 @@ void wq_worker_running(struct task_struct *task)
  */
 void wq_worker_sleeping(struct task_struct *task)
 {
+    /**
+     *  
+     */
 	struct worker *next, *worker = kthread_data(task);
 	struct worker_pool *pool;
 
@@ -1221,9 +1247,21 @@ void wq_worker_sleeping(struct task_struct *task)
 	 * disabled, which in turn means that none else could be
 	 * manipulating idle_list, so dereferencing idle_list without pool
 	 * lock is safe.
+	 *
+	 * 当前的工作线程马上就要被换出(睡眠)，因此先把 nr_running-1, 然后判断该数值是否为 0
+	 * 若 为 0，说明当前工作线程池也没有活跃的工作线程。
+	 * 
+	 * 
 	 */
 	if (atomic_dec_and_test(&pool->nr_running) && !list_empty(&pool->worklist)) {
+        /**
+         *  那么就需要从 空闲线程中取一个
+         */
 		next = first_idle_worker(pool);
+
+        /**
+         *  如果有空闲线程，直接唤醒
+         */
 		if (next)
 			wake_up_process(next->task);
 	}
@@ -1558,6 +1596,9 @@ out_put:
  * responsible for releasing it using local_irq_restore(*@flags).
  *
  * This function is safe to call from any context including IRQ handler.
+ *
+ *  让调用 此函数的 线程变成偷窃者
+ *  类似于 互斥锁机制中的 偷窃和，尝试从工作线程池中把 work 偷回来
  */
 static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 			       unsigned long *flags)
@@ -1565,6 +1606,9 @@ static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 	struct worker_pool *pool;
 	struct pool_workqueue *pwq;
 
+    /**
+     *  关闭本地中断
+     */
 	local_irq_save(*flags);
 
 	/* try to steal the timer if it exists */
@@ -1580,14 +1624,26 @@ static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 			return 1;
 	}
 
+    /**
+     *  该 work 处于空闲状态，那么就可轻松的将 work 取回来(偷窃)
+     */
 	/* try to claim PENDING the normal way */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
 		return 0;
 
+    /**
+     *  如果 PENDING 位 不是 0，说明 work 还在 工作线程池的等待中
+     */
+
+    /**
+     *  
+     */
 	rcu_read_lock();
 	/*
 	 * The queueing is in progress, or it is already queued. Try to
 	 * steal it from ->worklist without clearing WORK_STRUCT_PENDING.
+	 *
+	 * 
 	 */
 	pool = get_work_pool(work);
 	if (!pool)
@@ -2781,7 +2837,7 @@ __acquires(&pool->lock)
 	 */
 	if (unlikely(cpu_intensive))
         /**
-         *  设置
+         *  设置标志位
          */
 		worker_set_flags(worker, WORKER_CPU_INTENSIVE);
 
@@ -2805,6 +2861,8 @@ __acquires(&pool->lock)
 	 * update to @work.  Also, do this inside @pool->lock so that
 	 * PENDING and queued state changes happen together while IRQ is
 	 * disabled.
+	 *
+	 * 清除 worker.data 成员的 pending 标志
 	 */
 	set_work_pool_and_clear_pending(work, pool->id);
 
@@ -2849,6 +2907,9 @@ __acquires(&pool->lock)
 	lock_map_release(&lockdep_map);
 	lock_map_release(&pwq->wq->lockdep_map);
 
+    /**
+     *  
+     */
 	if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
 		pr_err("BUG: workqueue leaked lock or atomic: %s/0x%08x/%d\n"
 		       "     last function: %ps\n",
@@ -3258,8 +3319,17 @@ static void check_flush_dependency(struct workqueue_struct *target_wq,
 		  target_wq->name, target_func);
 }
 
+/**
+ *  
+ */
 struct wq_barrier {
+    /**
+     *  
+     */
 	struct work_struct	work;
+    /**
+     *  完成量
+     */
 	struct completion	done;
 	struct task_struct	*task;	/* purely informational */
 };
@@ -3310,6 +3380,9 @@ static void insert_wq_barrier(struct pool_workqueue *pwq,
 	INIT_WORK_ONSTACK(&barr->work, wq_barrier_func);
 	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
 
+    /**
+     *  
+     */
 	init_completion_map(&barr->done, &target->lockdep_map);
 
 	barr->task = current;
@@ -3619,7 +3692,7 @@ reflush:
 EXPORT_SYMBOL_GPL(drain_workqueue);
 
 /**
- *  
+ *  初始化 并把 一个新的 work 插入当前 work 的等待队列中
  */
 static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 			     bool from_cancel)
@@ -3628,6 +3701,9 @@ static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 	struct worker_pool *pool;
 	struct pool_workqueue *pwq;
 
+    /**
+     *  
+     */
 	might_sleep();
 
 	rcu_read_lock();
@@ -3652,6 +3728,9 @@ static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 
 	check_flush_dependency(pwq->wq, work);
 
+    /**
+     *  
+     */
 	insert_wq_barrier(pwq, barr, work, worker);
 	raw_spin_unlock_irq(&pool->lock);
 
@@ -3678,7 +3757,7 @@ already_gone:
 }
 
 /**
- *  
+ *  等待 work 执行完
  */
 static bool __flush_work(struct work_struct *work, bool from_cancel)
 {
@@ -3690,12 +3769,21 @@ static bool __flush_work(struct work_struct *work, bool from_cancel)
 	if (WARN_ON(!work->func))
 		return false;
 
+    /**
+     *  是否为取消 work 操作
+     */
 	if (!from_cancel) {
 		lock_map_acquire(&work->lockdep_map);
 		lock_map_release(&work->lockdep_map);
 	}
 
+    /**
+     *  初始化 并把 一个新的 work 插入当前 work 的等待队列中
+     */
 	if (start_flush_work(work, &barr, from_cancel)) {
+        /**
+         *  等待这个新的 work 执行完
+         */
 		wait_for_completion(&barr.done);
 		destroy_work_on_stack(&barr.work);
 		return true;
@@ -3717,10 +3805,16 @@ static bool __flush_work(struct work_struct *work, bool from_cancel)
  */
 bool flush_work(struct work_struct *work)
 {
+    /**
+     *  
+     */
 	return __flush_work(work, false);
 }
 EXPORT_SYMBOL_GPL(flush_work);
 
+/**
+ *  
+ */
 struct cwt_wait {
 	wait_queue_entry_t		wait;
 	struct work_struct	*work;
@@ -3735,13 +3829,34 @@ static int cwt_wakefn(wait_queue_entry_t *wait, unsigned mode, int sync, void *k
 	return autoremove_wake_function(wait, mode, sync, key);
 }
 
+/**
+ *  取消一个 work, 但会等待 work 执行完毕
+ *
+ * @work:       
+ * @is_dwork:   Delay Work, 工作队列的一种变体
+ *
+ *
+ */
 static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 {
+    /**
+     *  初始化一个等待队列
+     */
 	static DECLARE_WAIT_QUEUE_HEAD(cancel_waitq);
+    struct wait_queue_head cancel_waitq = __WAIT_QUEUE_HEAD_INITIALIZER(cancel_waitq);//+++
 	unsigned long flags;
 	int ret;
 
+    /**
+     *  实现一个 忙等待 pending 位的过程
+     */
 	do {
+        /**
+         *  steal work item from worklist and disable irq
+         *
+         *  让调用 此函数的 线程变成偷窃者
+         *  类似于 互斥锁机制中的 偷窃和，尝试从工作线程池中把 work 偷回来
+         */
 		ret = try_to_grab_pending(work, is_dwork, &flags);
 		/*
 		 * If someone else is already canceling, wait for it to
@@ -3758,24 +3873,43 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 		 * may lead to the thundering herd problem, use a custom
 		 * wake function which matches @work along with exclusive
 		 * wait and wakeup.
+		 *
+		 * 在 偷窃 过程中，这个 work 可能正在推出的状态，此时返回 -ENOENT
+		 * 那么就会继续等待并继续尝试 偷窃
 		 */
 		if (unlikely(ret == -ENOENT)) {
+            /**
+             *  
+             */
 			struct cwt_wait cwait;
 
+            /**
+             *  
+             */
 			init_wait(&cwait.wait);
 			cwait.wait.func = cwt_wakefn;
 			cwait.work = work;
 
-			prepare_to_wait_exclusive(&cancel_waitq, &cwait.wait,
-						  TASK_UNINTERRUPTIBLE);
+			prepare_to_wait_exclusive(&cancel_waitq, &cwait.wait, TASK_UNINTERRUPTIBLE);
 			if (work_is_canceling(work))
 				schedule();
 			finish_wait(&cancel_waitq, &cwait.wait);
 		}
 	} while (unlikely(ret < 0));
 
+    /**
+     *  如果上面 偷窃 work 成功，执行下面的代码
+     */
+
+    /**
+     *  设置 
+     */
 	/* tell other tasks trying to grab @work to back off */
 	mark_work_canceling(work);
+
+    /**
+     *  
+     */
 	local_irq_restore(flags);
 
 	/*
@@ -3783,8 +3917,14 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 	 * isn't executing.
 	 */
 	if (wq_online)
+        /**
+         *  等待 work 执行完
+         */
 		__flush_work(work, true);
 
+    /**
+     *  
+     */
 	clear_work_data(work);
 
 	/*
@@ -3793,6 +3933,10 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 	 * visible there.
 	 */
 	smp_mb();
+
+    /**
+     *  
+     */
 	if (waitqueue_active(&cancel_waitq))
 		__wake_up(&cancel_waitq, TASK_NORMAL, 1, work);
 
@@ -3816,9 +3960,14 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
  *
  * Return:
  * %true if @work was pending, %false otherwise.
+ *
+ * 取消一个 work, 但会等待 work 执行完毕
  */
 bool cancel_work_sync(struct work_struct *work)
 {
+    /**
+     *  
+     */
 	return __cancel_work_timer(work, false);
 }
 EXPORT_SYMBOL_GPL(cancel_work_sync);
@@ -5740,6 +5889,9 @@ void wq_worker_comm(char *buf, size_t size, struct task_struct *task)
 	/* stabilize PF_WQ_WORKER and worker pool association */
 	mutex_lock(&wq_pool_attach_mutex);
 
+    /**
+     *  工作队列线程
+     */
 	if (task->flags & PF_WQ_WORKER) {
 		struct worker *worker = kthread_data(task);
 		struct worker_pool *pool = worker->pool;

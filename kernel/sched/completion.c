@@ -67,10 +67,16 @@ void complete_all(struct completion *x)
 }
 EXPORT_SYMBOL(complete_all);
 
+/**
+ *  
+ */
 static inline long __sched
 do_wait_for_common(struct completion *x,
 		   long (*action)(long), long timeout, int state)
 {
+    /**
+     *  done != 说明有些操作完成了，没必要进入了
+     */
 	if (!x->done) {
 		DECLARE_SWAITQUEUE(wait);
 
@@ -85,6 +91,7 @@ do_wait_for_common(struct completion *x,
 			timeout = action(timeout);
 			raw_spin_lock_irq(&x->wait.lock);
 		} while (!x->done && timeout);
+        
 		__finish_swait(&x->wait, &wait);
 		if (!x->done)
 			return timeout;
@@ -103,6 +110,9 @@ __wait_for_common(struct completion *x,
 	complete_acquire(x);
 
 	raw_spin_lock_irq(&x->wait.lock);
+    /**
+     *  
+     */
 	timeout = do_wait_for_common(x, action, timeout, state);
 	raw_spin_unlock_irq(&x->wait.lock);
 

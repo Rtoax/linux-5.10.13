@@ -143,12 +143,12 @@ struct task_struct *io_wq_get_task(struct io_wq *wq);
 extern void io_wq_worker_sleeping(struct task_struct *);
 extern void io_wq_worker_running(struct task_struct *);
 #else
-static inline void io_wq_worker_sleeping(struct task_struct *tsk)
-{
-}
-static inline void io_wq_worker_running(struct task_struct *tsk)
-{
-}
+//static inline void io_wq_worker_sleeping(struct task_struct *tsk)
+//{
+//}
+//static inline void io_wq_worker_running(struct task_struct *tsk)
+//{
+//}
 #endif
 
 static inline bool io_wq_current_is_worker(void)

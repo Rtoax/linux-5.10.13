@@ -13,10 +13,20 @@
 * 删除或注释 `CONFIG_X86_32` 部分代码, 保留 `CONFIG_X86_64`
 * 具体配置请参见 `config.h` 或 `config`
 
+# 注释来源
+
+1. 我的个人理解
+2. 《奔跑吧，Linux内核》系列图书
+3. 《深入理解Linux内核》
+4. 《Linux设备驱动程序》
+5. 《Linux内核网络协议》
+
+
 ## 配置
 
 * CONFIG_SMP
 * CONFIG_X86_64
+* 具体见 `./config` 文件
 
 # 原 README
 

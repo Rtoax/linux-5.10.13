@@ -55,6 +55,10 @@ asynchronous and synchronous parts of the kernel.
 
 #include "workqueue_internal.h"
 
+/**
+ *  异步函数调用 - 用于提高 启动 性能
+ */
+
 static async_cookie_t next_cookie = 1;
 
 #define MAX_WORK		32768

@@ -2542,10 +2542,16 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 		 * drop the rq->lock, hereafter rq is only used for statistics.
 		 */
 		rq_unpin_lock(rq, rf);
+        /**
+         *  
+         */
 		p->sched_class->task_woken(rq, p);
 		rq_repin_lock(rq, rf);
 	}
 
+    /**
+     *  
+     */
 	if (rq->idle_stamp) {
 		u64 delta = rq_clock(rq) - rq->idle_stamp;
 		u64 max = 2*rq->max_idle_balance_cost;
@@ -2584,6 +2590,9 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 		atomic_dec(&task_rq(p)->nr_iowait);
 	}
 
+    /**
+     *  
+     */
 	activate_task(rq, p, en_flags);
 
     /**
@@ -2946,7 +2955,15 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * in set_current_state() that the waiting thread does.
 	 */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+
+    /**
+     *  
+     */
 	smp_mb__after_spinlock();
+
+    /**
+     *  
+     */
 	if (!(p->state & state))
 		goto unlock;
 
@@ -4964,6 +4981,9 @@ void __noreturn do_task_dead(void)
 		cpu_relax();
 }
 
+/**
+ *  tsk - 当前线程
+ */
 static inline void sched_submit_work(struct task_struct *tsk)
 {
 	unsigned int task_flags;
@@ -4979,9 +4999,14 @@ static inline void sched_submit_work(struct task_struct *tsk)
 	 * we disable preemption to avoid it calling schedule() again
 	 * in the possible wakeup of a kworker and because wq_worker_sleeping()
 	 * requires it.
+	 *
+	 * 是 工作队列线程 或者 IO 工作者
 	 */
 	if (task_flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
 		preempt_disable();
+        /**
+         *  工作队列线程
+         */
 		if (task_flags & PF_WQ_WORKER)
 			wq_worker_sleeping(tsk);
 		else
@@ -5017,7 +5042,14 @@ asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
 
+    /**
+     *  
+     */
 	sched_submit_work(tsk);
+
+    /**
+     *  
+     */
 	do {
         /**
          *  关闭抢占

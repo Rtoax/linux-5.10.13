@@ -5208,6 +5208,8 @@ out:
 	 * recognize that a particular WQ is congested if the worker thread is
 	 * looping without ever sleeping. Therefore we have to do a short sleep
 	 * here rather than calling cond_resched().
+	 *
+	 * 工作队列线程
 	 */
 	if (current->flags & PF_WQ_WORKER)
 		schedule_timeout_uninterruptible(1);
