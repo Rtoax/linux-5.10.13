@@ -1101,7 +1101,7 @@ static void show_summary(double runtime_ns_max, int l, double *convergence)
 		fflush(stdout);
 }
 
-static void *worker_thread(void *__tdata)
+static void *perf_bench_numa_worker_thread(void *__tdata)
 {
 	struct thread_data *td = __tdata;
 	struct timeval start0, start, stop, diff;
@@ -1340,7 +1340,7 @@ static void worker_process(int process_nr)
 		td->curr_cpu	 = -1;
 		td->process_lock = &process_lock;
 
-		ret = pthread_create(pthreads + t, NULL, worker_thread, td);
+		ret = pthread_create(pthreads + t, NULL, perf_bench_numa_worker_thread, td);
 		BUG_ON(ret);
 	}
 

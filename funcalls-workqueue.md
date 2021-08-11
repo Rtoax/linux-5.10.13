@@ -28,3 +28,6 @@ start_kernel
 
 * INIT_WORK:		初始化work
 * schedule_work:	挂入 系统的默认工作队列中
+
+# 处理一个 work
+

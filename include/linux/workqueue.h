@@ -53,6 +53,10 @@ enum {
      *                  低 5 位用于存放标志位，见`get_work_pool()`
      */
 	WORK_STRUCT_PWQ_BIT	= 2,	/* data points to pwq */
+
+    /**
+     *  表示后面还有 work工作
+     */
 	WORK_STRUCT_LINKED_BIT	= 3,	/* next work is linked to this one */
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC_BIT	= 4,	/* static initializer (debugobjects) */
@@ -66,6 +70,10 @@ enum {
 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
 	WORK_STRUCT_DELAYED	= 1 << WORK_STRUCT_DELAYED_BIT,
 	WORK_STRUCT_PWQ		= 1 << WORK_STRUCT_PWQ_BIT,
+
+    /**
+     *  表示后面还有 work工作
+     */
 	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
@@ -136,11 +144,15 @@ struct work_struct {    /* 工作队列 */
 
     /**
      *  用于把work挂到队列上
+     *  函数 `insert_work()`
      */
 	struct list_head entry; /* worker_pool-> workers/... */
 
     /**
      *  处理函数
+     *
+     *  将在 `process_one_work()` 被执行
+     *  
      */
 	work_func_t func;   /* 回调 */
     /**

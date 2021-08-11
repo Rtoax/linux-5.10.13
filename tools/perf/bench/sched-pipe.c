@@ -51,7 +51,7 @@ static const char * const bench_sched_pipe_usage[] = {
 	NULL
 };
 
-static void *worker_thread(void *__tdata)
+static void *perf_bench_sched_pipe_worker_thread(void *__tdata)
 {
 	struct thread_data *td = __tdata;
 	int m = 0, i;
@@ -118,7 +118,7 @@ int bench_sched_pipe(int argc, const char **argv)
 		for (t = 0; t < nr_threads; t++) {
 			td = threads + t;
 
-			ret = pthread_create(&td->pthread, NULL, worker_thread, td);
+			ret = pthread_create(&td->pthread, NULL, perf_bench_sched_pipe_worker_thread, td);
 			BUG_ON(ret);
 		}
 
@@ -134,10 +134,10 @@ int bench_sched_pipe(int argc, const char **argv)
 		assert(pid >= 0);
 
 		if (!pid) {
-			worker_thread(threads + 0);
+			perf_bench_sched_pipe_worker_thread(threads + 0);
 			exit(0);
 		} else {
-			worker_thread(threads + 1);
+			perf_bench_sched_pipe_worker_thread(threads + 1);
 		}
 
 		retpid = waitpid(pid, &wait_stat, 0);

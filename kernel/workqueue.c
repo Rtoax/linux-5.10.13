@@ -83,10 +83,16 @@ enum {
 	POOL_DISASSOCIATED	= 1 << 2,	/* cpu can't serve workers */
 
 	/* worker flags */
+    /**
+     *  是指工作线程要被销毁的情况
+     */
 	WORKER_DIE		= 1 << 1,	/* die die die */
 	WORKER_IDLE		= 1 << 2,	/* is idle */
 	WORKER_PREP		= 1 << 3,	/* preparing to run works */
-	WORKER_CPU_INTENSIVE	= 1 << 6,	/* cpu intensive */
+	/**
+     *  CPU 密集型
+     */
+	WORKER_CPU_INTENSIVE	= 1 << 6,	/* cpu intensive密集的 */
 	WORKER_UNBOUND		= 1 << 7,	/* worker is unbound */
 	WORKER_REBOUND		= 1 << 8,	/* worker was rebound */
 
@@ -216,6 +222,9 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 
     /**
      *  处于 pending 状态的 work 会挂入 该链表中
+     *  见 `__queue_work()`, 在 `insert_work()` 函数中添加
+     *  在 `worker_thread()`, 从这个链表中取 work 并执行
+     *  在 `process_one_work()`, 中删除 work(当然删除操作不使用 worklist 字段而已)
      */
 	struct list_head	worklist;	/* L: list of pending works */
 
@@ -229,6 +238,8 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 
     /**
      *  处于空闲状态的工作线程的数量
+     *  接口：
+     *  may_start_working():    判断工作线程池中是否有空闲状态的工作线程
      */
     int			nr_idle;	/* L: currently idle workers */
 
@@ -340,6 +351,15 @@ struct pool_workqueue { /*  */
      */
 	int			work_color;	/* L: current color */
 	int			flush_color;	/* L: flushing color */
+
+    /**
+     *  引用计数
+	 * 对 UNBOUND 类型的释放是异步的，所以有个引用计数
+	 * 当引用计数为 0，说明 pool_workqueue 已经被释放，
+	 * 那么就需要跳转到 retry 位置重新选择 pool_workqueue
+	 *
+	 * 见`get_pwq()`
+     */
 	int			refcnt;		/* L: reference count */
 	int			nr_in_flight[WORK_NR_COLORS];
 						/* L: nr of in_flight works */
@@ -355,6 +375,7 @@ struct pool_workqueue { /*  */
 
     /**
      *  链表头，延迟执行的 work 可以挂入该链表
+     *  见 `__queue_work()`, 在 `insert_work()` 函数中添加
      */
 	struct list_head	delayed_works;	/* L: delayed works */
 	struct list_head	pwqs_node;	/* WR: node on wq->pwqs */
@@ -894,6 +915,10 @@ static inline void set_work_data(struct work_struct *work, unsigned long data,
 	atomic_long_set(&work->data, data | flags | work_static(work));
 }
 
+/**
+ *  设置 work_struct 的 data 成员
+ *  下一次调用 queue_work 函数重新加入该 work 时，可以方便地知道本次使用哪个 pool_workqueue
+ */
 static void set_work_pwq(struct work_struct *work, struct pool_workqueue *pwq,
 			 unsigned long extra_flags)
 {
@@ -1061,18 +1086,32 @@ static bool __need_more_worker(struct worker_pool *pool)
  * Note that, because unbound workers never contribute to nr_running, this
  * function will always return %true for unbound pools as long as the
  * worklist isn't empty.
+ *
+ * 判断是否需要唤醒一些工作线程
+ *
+ * 因为 UNBOUND 类型的工作线程，不适用 nr_runing 成员，因此一直返回 true
  */
 static bool need_more_worker(struct worker_pool *pool)
 {
+    /**
+     *  如果当前 worker_pool 的等待队列中有等待的任务，
+     *  并且当前工作线程池中也没有正在运行的线程
+     */
 	return !list_empty(&pool->worklist) && __need_more_worker(pool);
 }
 
 /* Can I start working?  Called from busy but !running workers. */
+/**
+ *  may_start_working 判断工作线程池中是否有空闲状态的工作线程
+ */
 static bool may_start_working(struct worker_pool *pool)
 {
 	return pool->nr_idle;
 }
 
+/**
+ *  keep_working 用来控制线程数量
+ */
 /* Do I need to keep working?  Called from currently running workers. */
 static bool keep_working(struct worker_pool *pool)
 {
@@ -1315,6 +1354,9 @@ static struct worker *find_worker_executing_work(struct worker_pool *pool,
 {
 	struct worker *worker;
 
+    /**
+     *  
+     */
 	hash_for_each_possible(pool->busy_hash, worker, hentry, (unsigned long)work) {
 		if (worker->current_work == work && worker->current_func == work->func)
 			return worker;
@@ -1606,24 +1648,49 @@ fail:
  *
  * CONTEXT:
  * raw_spin_lock_irq(pool->lock).
+ *
+ *  把 work 添加到 worker_pool 里
  */
 static void insert_work(struct pool_workqueue *pwq, struct work_struct *work,
 			struct list_head *head, unsigned int extra_flags)
 {
 	struct worker_pool *pool = pwq->pool;
 
+    /**
+     *  
+     */
 	/* we own @work, set data and link */
+    /**
+     *  设置 work_struct 的 data 成员
+     *  下一次调用 queue_work 函数重新加入该 work 时，可以方便地知道本次使用哪个 pool_workqueue
+     */
 	set_work_pwq(work, pwq, extra_flags);
+
+    /**
+     *  将 work 加入 worker_pool 相应的链表
+     */
 	list_add_tail(&work->entry, head);
+
+    /**
+     *  引用计数+1
+     */
 	get_pwq(pwq);
 
 	/*
 	 * Ensure either wq_worker_sleeping() sees the above
 	 * list_add_tail() or we see zero nr_running to avoid workers lying
 	 * around lazily while there are works to be processed.
+	 *
+	 * 内存屏障指令保证，
+	 * wake_up_worker() 函数唤醒 worker 时，
+	 * 在 __schedule()->wq_worker_sleeping() 函数看到这里的 list_add_tail() 函数添加链表已经完成。
+	 * 另外，也保证下面的 __need_more_worker() 函数读取 worker_pool->nr_running 成员时，链表已添加完成。
 	 */
 	smp_mb();
 
+    /**
+     *  
+     */
 	if (__need_more_worker(pool))
 		wake_up_worker(pool);
 }
@@ -1680,8 +1747,7 @@ static int wq_select_unbound_cpu(int cpu)
 /**
  *  调度一个 work 的核心实现
  */
-static void __queue_work(int cpu, struct workqueue_struct *wq,
-			 struct work_struct *work)
+static void __queue_work(int cpu, struct workqueue_struct *wq, struct work_struct *work)
 {
 	struct pool_workqueue *pwq;
 	struct worker_pool *last_pool;
@@ -1784,8 +1850,15 @@ retry:
 	 * without another pwq replacing it in the numa_pwq_tbl or while
 	 * work items are executing on it, so the retrying is guaranteed to
 	 * make forward-progress.
+	 *
+	 * 对 UNBOUND 类型的释放是异步的，所以有个引用计数
+	 * 当引用计数为 0，说明 pool_workqueue 已经被释放，
+	 * 那么就需要跳转到 retry 位置重新选择 pool_workqueue
 	 */
 	if (unlikely(!pwq->refcnt)) {
+        /**
+         *  UNBOUND 类型
+         */
 		if (wq->flags & WQ_UNBOUND) {
 			raw_spin_unlock(&pwq->pool->lock);
 			cpu_relax();
@@ -1811,17 +1884,30 @@ retry:
 	pwq->nr_in_flight[pwq->work_color]++;
 	work_flags = work_color_to_flags(pwq->work_color);
 
+    /**
+     *  活跃 work 的数量是否 小于 最大数量限制
+     */
 	if (likely(pwq->nr_active < pwq->max_active)) {
 		trace_workqueue_activate_work(work);
+        /**
+         *  加入到等待链表中
+         */
 		pwq->nr_active++;
 		worklist = &pwq->pool->worklist;
 		if (list_empty(worklist))
 			pwq->pool->watchdog_ts = jiffies;
+        
 	} else {
+	    /**
+         *  加入延迟链表
+         */
 		work_flags |= WORK_STRUCT_DELAYED;
 		worklist = &pwq->delayed_works;
 	}
 
+    /**
+     *  把 work 添加到 worker_pool 里
+     */
 	insert_work(pwq, work, worklist, work_flags);
 
 out:
@@ -2144,6 +2230,8 @@ static void worker_enter_idle(struct worker *worker)
  *
  * LOCKING:
  * raw_spin_lock_irq(pool->lock).
+ *
+ * 状态设置成非空闲
  */
 static void worker_leave_idle(struct worker *worker)
 {
@@ -2351,6 +2439,9 @@ static struct worker *create_worker(struct worker_pool *pool)
 
     /**
      *  让该线程进入空闲状态
+     *
+     *  工作线程在创建时，状态设置成空闲，见 `create_worker()`
+     *  在执行线程时，应该退出空闲状态，见 `worker_thread()`
      */
 	worker_enter_idle(worker);
 
@@ -2496,6 +2587,8 @@ static void pool_mayday_timeout(struct timer_list *t)
  * raw_spin_lock_irq(pool->lock) which may be released and regrabbed
  * multiple times.  Does GFP_KERNEL allocations.  Called only from
  * manager.
+ *
+ *  
  */
 static void maybe_create_worker(struct worker_pool *pool)
 __releases(&pool->lock)
@@ -2507,16 +2600,31 @@ restart:
 	/* if we don't make progress in MAYDAY_INITIAL_TIMEOUT, call for help */
 	mod_timer(&pool->mayday_timer, jiffies + MAYDAY_INITIAL_TIMEOUT);
 
+    /**
+     *  循环
+     */
 	while (true) {
+        /**
+         *  创建新线程，并判断是否需要再创建
+         */
 		if (create_worker(pool) || !need_to_create_worker(pool))
 			break;
 
+        /**
+         *  
+         */
 		schedule_timeout_interruptible(CREATE_COOLDOWN);
 
+        /**
+         *  是否需要继续创建新的线程
+         */
 		if (!need_to_create_worker(pool))
 			break;
 	}
 
+    /**
+     *  
+     */
 	del_timer_sync(&pool->mayday_timer);
 	raw_spin_lock_irq(&pool->lock);
 	/*
@@ -2549,6 +2657,8 @@ restart:
  * start processing works, %true if management function was performed and
  * the conditions that the caller verified before calling the function may
  * no longer be true.
+ *
+ * 动态管理，分配，创建工作线程
  */
 static bool manage_workers(struct worker *worker)
 {
@@ -2560,6 +2670,9 @@ static bool manage_workers(struct worker *worker)
 	pool->flags |= POOL_MANAGER_ACTIVE;
 	pool->manager = worker;
 
+    /**
+     *  
+     */
 	maybe_create_worker(pool);
 
 	pool->manager = NULL;
@@ -2586,11 +2699,19 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
 __releases(&pool->lock)
 __acquires(&pool->lock)
 {
+    /**
+     *  
+     */
 	struct pool_workqueue *pwq = get_work_pwq(work);
 	struct worker_pool *pool = worker->pool;
+
+    /**
+     *  CPU 密集型
+     */
 	bool cpu_intensive = pwq->wq->flags & WQ_CPU_INTENSIVE;
 	int work_color;
 	struct worker *collision;
+    
 #ifdef CONFIG_LOCKDEP
 	/*
 	 * It is permissible to free the struct work_struct from
@@ -2612,15 +2733,27 @@ __acquires(&pool->lock)
 	 * multiple workers on a single cpu.  Check whether anyone is
 	 * already processing the work.  If so, defer the work to the
 	 * currently executing one.
+	 *
+	 * 查询一个work 是否正在 worker_pool->busy_hash 哈希表中运行
+	 *
+	 * collision: 碰撞
 	 */
 	collision = find_worker_executing_work(pool, work);
 	if (unlikely(collision)) {
+        /**
+         *  如果 一个 work 可能在同一个 cpu 上不同的工作线程中运行，
+         *  该 work 只能退出当前处理
+         */
 		move_linked_works(work, &collision->scheduled, NULL);
 		return;
 	}
 
 	/* claim and dequeue */
 	debug_work_deactivate(work);
+
+    /**
+     *  把当前 工作线程 添加到 哈希表中 pool->busy_hash
+     */
 	hash_add(pool->busy_hash, &worker->hentry, (unsigned long)work);
 	worker->current_work = work;
 	worker->current_func = work->func;
@@ -2633,6 +2766,9 @@ __acquires(&pool->lock)
 	 */
 	strscpy(worker->desc, pwq->wq->name, WORKER_DESC_LEN);
 
+    /**
+     *  从 worklist 中删除
+     */
 	list_del_init(&work->entry);
 
 	/*
@@ -2640,8 +2776,13 @@ __acquires(&pool->lock)
 	 * They're the scheduler's responsibility.  This takes @worker out
 	 * of concurrency management and the next code block will chain
 	 * execution of the pending work items.
+	 *
+	 * CPU 密集型
 	 */
 	if (unlikely(cpu_intensive))
+        /**
+         *  设置
+         */
 		worker_set_flags(worker, WORKER_CPU_INTENSIVE);
 
 	/*
@@ -2650,6 +2791,11 @@ __acquires(&pool->lock)
 	 * be >= 1 at this point.  This is used to chain execution of the
 	 * pending work items for WORKER_NOT_RUNNING workers such as the
 	 * UNBOUND and CPU_INTENSIVE ones.
+	 *
+	 * 继续判断是否需要创建更多线程
+	 *
+	 * 对于 BOUND 类型， 这里 nr_running=1，所以 if 不成立；
+	 * 
 	 */
 	if (need_more_worker(pool))
 		wake_up_worker(pool);
@@ -2689,7 +2835,12 @@ __acquires(&pool->lock)
 	 */
 	lockdep_invariant_state(true);
 	trace_workqueue_execute_start(work);
+
+    /**
+     *  正在执行的 work 函数
+     */
 	worker->current_func(work);
+    
 	/*
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
@@ -2755,6 +2906,9 @@ static void process_scheduled_works(struct worker *worker)
 	}
 }
 
+/**
+ *  是否为工作队列线程
+ */
 static void set_pf_worker(bool val)
 {
 	mutex_lock(&wq_pool_attach_mutex);
@@ -2782,12 +2936,22 @@ static int worker_thread(void *__worker)
 	struct worker *worker = __worker;
 	struct worker_pool *pool = worker->pool;
 
-	/* tell the scheduler that this is a workqueue worker */
+    /**
+     *  
+     */
+	/** 
+	 *  tell the scheduler that this is a workqueue worker 
+	 *  这是一个 worker 线程
+	 */
 	set_pf_worker(true);
+    
 woke_up:
 	raw_spin_lock_irq(&pool->lock);
 
-	/* am I supposed to die? */
+	/**
+	 *  am I supposed to die? 
+	 *  是指工作线程要被销毁的情况
+	 */
 	if (unlikely(worker->flags & WORKER_DIE)) {
 		raw_spin_unlock_irq(&pool->lock);
 		WARN_ON_ONCE(!list_empty(&worker->entry));
@@ -2800,20 +2964,37 @@ woke_up:
 		return 0;
 	}
 
+    /**
+     *  工作线程在创建时，状态设置成空闲，见 `create_worker()`
+     *  现在执行线程时，应该退出空闲状态，见 `worker_thread()`,here
+     */
 	worker_leave_idle(worker);
+    
 recheck:
 	/* no more worker necessary? */
+    /**
+     *  如果没有工作要做，就 sleep
+     */
 	if (!need_more_worker(pool))
 		goto sleep;
 
 	/* do we need to manage? */
+    /**
+     *  may_start_working 判断工作线程池中是否有空闲状态的工作线程
+     *  manage_workers    是动态管理创建工作线程的函数
+     */
 	if (unlikely(!may_start_working(pool)) && manage_workers(worker))
+        /**
+         *  创建完空闲线程后，再次检查
+         */
 		goto recheck;
 
 	/*
 	 * ->scheduled list can only be filled while a worker is
 	 * preparing to process a work or actually processing it.
 	 * Make sure nobody diddled with it while I was sleeping.
+	 *
+	 * 表示工作线程准备处理一个 work 或正在执行一个 work
 	 */
 	WARN_ON_ONCE(!list_empty(&worker->scheduled));
 
@@ -2823,28 +3004,62 @@ recheck:
 	 * role.  This is where @worker starts participating in concurrency
 	 * management if applicable and concurrency management is restored
 	 * after being rebound.  See rebind_workers() for details.
+	 *
+	 * 清除标志位，因为马上快要执行 work 回调函数了
 	 */
 	worker_clr_flags(worker, WORKER_PREP | WORKER_REBOUND);
 
+    /**
+     *  依次处理
+     */
 	do {
-		struct work_struct *work =
-			list_first_entry(&pool->worklist,
-					 struct work_struct, entry);
+        /**
+         *  从 worklist 中取一个 work
+         */
+		struct work_struct *work = list_first_entry(&pool->worklist,
+					                        struct work_struct, entry);
 
+        /**
+         *  
+         */
 		pool->watchdog_ts = jiffies;
 
+        /**
+         *  WORK_STRUCT_LINKED 表示本 work 后面还有 work
+         */
 		if (likely(!(*work_data_bits(work) & WORK_STRUCT_LINKED))) {
+
+            /**
+             *  执行一个 work
+             */
 			/* optimization path, not strictly necessary */
 			process_one_work(worker, work);
+
+            /**
+             *  
+             */
 			if (unlikely(!list_empty(&worker->scheduled)))
 				process_scheduled_works(worker);
+        /**
+         *  这是 worklist中 最后一个 work
+         */
 		} else {
+		    /**
+             *  
+             */
 			move_linked_works(work, &worker->scheduled, NULL);
+            /**
+             *  
+             */
 			process_scheduled_works(worker);
 		}
+    /**
+     *  keep_working 用来控制线程数量
+     */
 	} while (keep_working(pool));
 
 	worker_set_flags(worker, WORKER_PREP);
+    
 sleep:
 	/*
 	 * pool->lock is held and there's no work to process and no need to
@@ -2854,8 +3069,17 @@ sleep:
 	 * event.
 	 */
 	worker_enter_idle(worker);
+
+    /**
+     *  
+     */
 	__set_current_state(TASK_IDLE);
+    
 	raw_spin_unlock_irq(&pool->lock);
+
+    /**
+     *  
+     */
 	schedule();
 	goto woke_up;
 }

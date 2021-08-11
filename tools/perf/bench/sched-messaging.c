@@ -134,7 +134,7 @@ again:
 	return NULL;
 }
 
-static pthread_t create_worker(void *ctx, void *(*func)(void *))
+static pthread_t perf_bench_sched_msg_create_worker(void *ctx, void *(*func)(void *))
 {
 	pthread_attr_t attr;
 	pthread_t childid;
@@ -218,7 +218,7 @@ static unsigned int group(pthread_t *pth,
 		ctx->ready_out = ready_out;
 		ctx->wakefd = wakefd;
 
-		pth[i] = create_worker(ctx, (void *)receiver);
+		pth[i] = perf_bench_sched_msg_create_worker(ctx, (void *)receiver);
 
 		snd_ctx->out_fds[i] = fds[1];
 		if (!thread_mode)
@@ -231,7 +231,7 @@ static unsigned int group(pthread_t *pth,
 		snd_ctx->wakefd = wakefd;
 		snd_ctx->num_fds = num_fds;
 
-		pth[num_fds+i] = create_worker(snd_ctx, (void *)sender);
+		pth[num_fds+i] = perf_bench_sched_msg_create_worker(snd_ctx, (void *)sender);
 	}
 
 	/* Close the fds we have left */

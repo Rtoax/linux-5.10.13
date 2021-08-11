@@ -29,6 +29,9 @@ struct worker { /*  */
 	/* on idle list while idle, on busy hash table while busy */
 	union {
 		struct list_head	entry;	/* L: while idle */
+        /**
+         *  在 `process_one_work()` 中添加到 `worker_poll.busy_hash` 中
+         */
 		struct hlist_node	hentry;	/* L: while busy */
 	};
 
@@ -39,6 +42,8 @@ struct worker { /*  */
 
     /**
      *  正在执行的 work 回调函数
+     *
+     *  将在 `process_one_work()` 中被从 work_struct.func 赋值并执行
      */
 	work_func_t		current_func;	/* L: current_work's fn */
 
@@ -49,6 +54,10 @@ struct worker { /*  */
 
     /**
      *  所有被调度并正准备 执行的 work 都挂入该链表中
+     *
+     *  API
+     *  在 `worker_thread()` 中判断；
+     *  
      */
 	struct list_head	scheduled;	/* L: scheduled works */
 
