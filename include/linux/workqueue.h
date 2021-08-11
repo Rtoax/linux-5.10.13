@@ -35,8 +35,23 @@ void delayed_work_timer_fn(struct timer_list *t);
  *  
  */
 enum {
+    /**
+     *  表示该 work 正在延迟执行
+     */
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+	/**
+     *  表示该 work 被延迟执行了
+     */
 	WORK_STRUCT_DELAYED_BIT	= 1,	/* work item is delayed */
+
+    /**
+     *  work_struct.data 字段中
+     *
+     *  包含了此位标志：表示高位用于保存 pool_workqueue 数据结构中上次的指针
+     *                  低 8 位用于存放标志位，见`get_work_pool()`
+     *  不报案此位标志：表示高位用于存放 上一次执行该 work 的 worker_pool 的ID
+     *                  低 5 位用于存放标志位，见`get_work_pool()`
+     */
 	WORK_STRUCT_PWQ_BIT	= 2,	/* data points to pwq */
 	WORK_STRUCT_LINKED_BIT	= 3,	/* next work is linked to this one */
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
@@ -73,8 +88,7 @@ enum {
 	 * This makes pwqs aligned to 256 bytes and allows 15 workqueue
 	 * flush colors.
 	 */
-	WORK_STRUCT_FLAG_BITS	= WORK_STRUCT_COLOR_SHIFT +
-				  WORK_STRUCT_COLOR_BITS,
+	WORK_STRUCT_FLAG_BITS	= WORK_STRUCT_COLOR_SHIFT + WORK_STRUCT_COLOR_BITS,
 
 	/* data contains off-queue information when !WORK_STRUCT_PWQ */
 	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
@@ -112,8 +126,11 @@ enum {
 struct work_struct {    /* 工作队列 */
     /**
      *  分为两部分
-     *  1. 低8位部分是 work 的标志位, 见`set_work_pwq()`
-     *  2. 剩余位通常用于存放一次运行的 work_poll 的 ID 或 pool_workqueue 的指针
+     *  1. 低8位(或者5位，见`WORK_STRUCT_PWQ_BIT`)部分是 work 的标志位, 
+     *          见`set_work_pwq()`，`get_work_pool()`
+     *  
+     *  2. 剩余位通常用于存放一次运行的 work_poll 的 ID 或 pool_workqueue 的指针，
+     *      上面二者用 `WORK_STRUCT_PWQ_BIT` 进行区分
      */
 	atomic_long_t data; 
 
@@ -270,6 +287,9 @@ static inline unsigned int work_static(struct work_struct *work)
 //		(_work)->func = (_func);				\
 //	} while (0)
 #else
+/**
+ *  
+ */
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		__init_work((_work), _onstack);				\
@@ -280,11 +300,14 @@ static inline unsigned int work_static(struct work_struct *work)
 #endif
 
 /**
- *  工作队列初始化
+ *  工作队列初始化 work
  */
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
 
+/**
+ *  
+ */
 #define INIT_WORK_ONSTACK(_work, _func)					\
 	__INIT_WORK((_work), (_func), 1)
 
@@ -409,6 +432,9 @@ enum {
 	 */
 	WQ_POWER_EFFICIENT	= 1 << 7,
 
+    /**
+     *  __WQ_DRAINING 标志位表示要销毁工作队列
+     */
 	__WQ_DRAINING		= 1 << 16, /* internal: workqueue is draining */
 
     /**
@@ -583,7 +609,9 @@ extern void wq_worker_comm(char *buf, size_t size, struct task_struct *task);
  *   r0 = queue_work(wq, work);		  r1 = READ_ONCE(x);
  *
  * Forbids: r0 == true && r1 == 0
- *//* 让 work 排队 */
+ *
+ * 让 work 排队 
+ */
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {
@@ -645,9 +673,15 @@ static inline bool schedule_work_on(int cpu, struct work_struct *work)
  *
  * Shares the same memory-ordering properties of queue_work(), cf. the
  * DocBook header of queue_work().
+ *
+ * 挂入 系统的默认工作队列中
  */
 static inline bool schedule_work(struct work_struct *work)
 {
+    /**
+     *  把 work 挂入系统默认 BOUND 类型的工作队列 system_wq 中
+     *  该工作队列是在 
+     */
 	return queue_work(system_wq, work);
 }
 

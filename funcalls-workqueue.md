@@ -24,3 +24,7 @@ start_kernel
 * create_freezable_workqueue: 
 * create_singlethread_workqueue: 
 
+# 添加和调度一个 work
+
+* INIT_WORK:		初始化work
+* schedule_work:	挂入 系统的默认工作队列中

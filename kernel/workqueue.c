@@ -245,6 +245,7 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 
 	/* a workers is either on busy_hash or idle_list, or the manager */
 	DECLARE_HASHTABLE(busy_hash, BUSY_WORKER_HASH_ORDER);
+    struct hlist_head busy_hash[1 << (BUSY_WORKER_HASH_ORDER)];//+++
 						/* L: hash of busy workers */
 
 	struct worker		*manager;	/* L: purely informational */
@@ -374,6 +375,8 @@ struct pool_workqueue { /*  */
 
     /**
      *  256 字节对齐(8 或者 9，具体看 枚举值)
+     *  因为 是 256对齐，所以 低8 位可以自由使用，
+     *  见 `WORK_STRUCT_PWQ_BIT`,`get_work_pool()`
      */
 } __aligned(1 << WORK_STRUCT_FLAG_BITS);
 
@@ -516,6 +519,8 @@ struct workqueue_struct {   /*  */
 
     /**
      *  变长数组
+     *  对于 unbound 类型的工作队列，
+     *  该结构存放每个系统节点对应的 unbound 类型的 pool_workqueue
      */
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* PWR: unbound pwqs indexed by node */
 };
@@ -759,6 +764,9 @@ static inline void debug_work_deactivate(struct work_struct *work)
 	debug_object_deactivate(work, &work_debug_descr);
 }
 
+/**
+ *  
+ */
 void __init_work(struct work_struct *work, int onstack)
 {
 	if (onstack)
@@ -818,9 +826,10 @@ static int worker_pool_assign_id(struct worker_pool *pool)
  * responsible for guaranteeing that the pwq stays online.
  *
  * Return: The unbound pool_workqueue for @node.
+ *
+ *  寻找 节点node 对应的 pool_workqueue
  */
-static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq,
-						  int node)
+static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq, int node)
 {
 	assert_rcu_or_wq_mutex_or_pool_mutex(wq);
 
@@ -833,6 +842,12 @@ static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq,
 	if (unlikely(node == NUMA_NO_NODE))
 		return wq->dfl_pwq;
 
+    
+    /**
+     *  变长数组
+     *  对于 unbound 类型的工作队列，
+     *  该结构存放每个系统节点对应的 unbound 类型的 pool_workqueue
+     */
 	return rcu_dereference_raw(wq->numa_pwq_tbl[node]);
 }
 
@@ -965,6 +980,8 @@ static struct pool_workqueue *get_work_pwq(struct work_struct *work)
  * returned pool is and stays online.
  *
  * Return: The worker_pool @work was last associated with.  %NULL if none.
+ *
+ * 查询 该 work 上一次是在哪个 worker_pool 中运行的
  */
 static struct worker_pool *get_work_pool(struct work_struct *work)
 {
@@ -973,14 +990,23 @@ static struct worker_pool *get_work_pool(struct work_struct *work)
 
 	assert_rcu_or_pool_mutex();
 
+    /**
+     *  见`WORK_STRUCT_PWQ_BIT`注释
+     *  
+     */
 	if (data & WORK_STRUCT_PWQ)
-		return ((struct pool_workqueue *)
-			(data & WORK_STRUCT_WQ_DATA_MASK))->pool;
+		return ((struct pool_workqueue *)(data & WORK_STRUCT_WQ_DATA_MASK))->pool;
 
+    /**
+     *  
+     */
 	pool_id = data >> WORK_OFFQ_POOL_SHIFT;
 	if (pool_id == WORK_OFFQ_POOL_NONE)
 		return NULL;
 
+    /**
+     *  
+     */
 	return idr_find(&worker_pool_idr, pool_id);
 }
 
@@ -1281,6 +1307,8 @@ static inline void worker_clr_flags(struct worker *worker, unsigned int flags)
  * Return:
  * Pointer to worker which is executing @work if found, %NULL
  * otherwise.
+ *
+ *  判断 一个 work 是否在 某个 worker_pool 上执行
  */
 static struct worker *find_worker_executing_work(struct worker_pool *pool,
 						 struct work_struct *work)
@@ -1649,6 +1677,9 @@ static int wq_select_unbound_cpu(int cpu)
 	return new_cpu;
 }
 
+/**
+ *  调度一个 work 的核心实现
+ */
 static void __queue_work(int cpu, struct workqueue_struct *wq,
 			 struct work_struct *work)
 {
@@ -1669,16 +1700,35 @@ static void __queue_work(int cpu, struct workqueue_struct *wq,
 	debug_work_activate(work);
 
 	/* if draining, only works from the same workqueue are allowed */
-	if (unlikely(wq->flags & __WQ_DRAINING) &&
-	    WARN_ON_ONCE(!is_chained_work(wq)))
+    /**
+     *  __WQ_DRAINING 标志位表示要销毁工作队列
+     *  正在销毁过程中，一般不允许再有新的 work 加入队列，
+     *  特例是正在 清空 work 时又触发了一个工作入队操作，这种操作称为链式操作。
+     */
+	if (unlikely(wq->flags & __WQ_DRAINING) && WARN_ON_ONCE(!is_chained_work(wq)))
 		return;
+    
 	rcu_read_lock();
 retry:
+    /**
+     *  pool_workqueue 是桥梁枢纽
+     */
 	/* pwq which will be used unless @work is executing elsewhere */
+    /**
+     *  UNBOUND 类型
+     */
 	if (wq->flags & WQ_UNBOUND) {
 		if (req_cpu == WORK_CPU_UNBOUND)
 			cpu = wq_select_unbound_cpu(raw_smp_processor_id());
+
+        /**
+         *  寻找本地节点node 对应的 pool_workqueue
+         */
 		pwq = unbound_pwq_by_node(wq, cpu_to_node(cpu));
+
+    /**
+     *  BOUND 类型，直接用本地 CPU 对应的 pool_workqueue 
+     */
 	} else {
 		if (req_cpu == WORK_CPU_UNBOUND)
 			cpu = raw_smp_processor_id();
@@ -1689,22 +1739,40 @@ retry:
 	 * If @work was previously on a different pool, it might still be
 	 * running there, in which case the work needs to be queued on that
 	 * pool to guarantee non-reentrancy.
+	 *
+	 * 查询 该 work 上一次是在哪个 worker_pool 中运行的，
+	 * 实际上使用的 work_struct.data 字段
 	 */
 	last_pool = get_work_pool(work);
+    /**
+     *  如果上次运行的 pool_workqueue 和 这次的不一样
+     *  就需要考察 work 是不是正运行在 之前 CPU 的 worker_pool 中的某个工作线程里
+     *  如果是，那么这次 work 应该继续添加到 之前 的CPU 的 worker_pool 上执行
+     */
 	if (last_pool && last_pool != pwq->pool) {
-		struct worker *worker;
+		struct worker *_worker;
 
 		raw_spin_lock(&last_pool->lock);
 
-		worker = find_worker_executing_work(last_pool, work);
+        /**
+         *  判断 一个 work 是否在 某个 worker_pool 上执行
+         */
+		_worker = find_worker_executing_work(last_pool, work);
 
-		if (worker && worker->current_pwq->wq == wq) {
-			pwq = worker->current_pwq;
+        /**
+         *  
+         */
+		if (_worker && _worker->current_pwq->wq == wq) {
+			pwq = _worker->current_pwq;
 		} else {
 			/* meh... not running there, queue here */
 			raw_spin_unlock(&last_pool->lock);
 			raw_spin_lock(&pwq->pool->lock);
 		}
+
+    /**
+     *  上次和这次的 pool_workqueue 相同
+     */
 	} else {
 		raw_spin_lock(&pwq->pool->lock);
 	}
@@ -1731,9 +1799,15 @@ retry:
 	/* pwq determined, queue */
 	trace_workqueue_queue_work(req_cpu, pwq, work);
 
+    /**
+     *  
+     */
 	if (WARN_ON(!list_empty(&work->entry)))
 		goto out;
 
+    /**
+     *  
+     */
 	pwq->nr_in_flight[pwq->work_color]++;
 	work_flags = work_color_to_flags(pwq->work_color);
 
@@ -1772,9 +1846,18 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 	bool ret = false;
 	unsigned long flags;
 
+    /**
+     *  关本地中断
+     */
 	local_irq_save(flags);
 
+    /**
+     *  如果已经在 工作队列中，不需要重复添加
+     */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+        /**
+         *  
+         */
 		__queue_work(cpu, wq, work);
 		ret = true;
 	}

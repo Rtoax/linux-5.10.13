@@ -548,6 +548,9 @@ static void debug_object_is_on_stack(void *addr, int onstack)
 	WARN_ON(1);
 }
 
+/**
+ *  
+ */
 static void
 __debug_object_init(void *addr, const struct debug_obj_descr *descr, int onstack)
 {
