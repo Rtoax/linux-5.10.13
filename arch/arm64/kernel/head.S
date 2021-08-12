@@ -792,6 +792,8 @@ SYM_FUNC_END(__secondary_too_slow)
  *
  * Checks if the selected granule size is supported by the CPU.
  * If it isn't, park the CPU
+ *
+ * 使能 MMU
  */
 SYM_FUNC_START(__enable_mmu)
 	mrs	x2, ID_AA64MMFR0_EL1
@@ -955,13 +957,21 @@ SYM_FUNC_START_LOCAL(__relocate_kernel)
 SYM_FUNC_END(__relocate_kernel)
 #endif
 
+/**
+ *  内核启动代码重定位
+ */
 SYM_FUNC_START_LOCAL(__primary_switch)
 #ifdef CONFIG_RANDOMIZE_BASE
 	mov	x19, x0				// preserve new SCTLR_EL1 value
 	mrs	x20, sctlr_el1			// preserve old SCTLR_EL1 value
 #endif
-
+    /**
+     *  
+     */
 	adrp	x1, init_pg_dir
+	/**
+     *  使能 MMU
+     */
 	bl	__enable_mmu
 #ifdef CONFIG_RELOCATABLE
 #ifdef CONFIG_RELR
@@ -969,6 +979,7 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 #endif
 	bl	__relocate_kernel
 #ifdef CONFIG_RANDOMIZE_BASE
+    
 	ldr	x8, =__primary_switched
 	adrp	x0, __PHYS_OFFSET
 	blr	x8
@@ -997,5 +1008,8 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 #endif
 	ldr	x8, =__primary_switched
 	adrp	x0, __PHYS_OFFSET
+	/**
+     *  跳转到 __primary_switched
+     */
 	br	x8
 SYM_FUNC_END(__primary_switch)
