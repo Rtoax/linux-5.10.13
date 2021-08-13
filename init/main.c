@@ -1237,6 +1237,8 @@ struct blacklist_entry {
 };
 
 static __initdata_or_module LIST_HEAD(blacklisted_initcalls);
+static __initdata_or_module struct list_head blacklisted_initcalls;//++++
+
 
 static int __init initcall_blacklist(char *str)
 {
@@ -1247,6 +1249,8 @@ static int __init initcall_blacklist(char *str)
 	do {
 		str_entry = strsep(&str, ",");
 		if (str_entry) {
+            //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep main.c| grep black
+            //init/main.c:714 [main]initcall_blacklist =p "blacklisting initcall %s\012"            
 			pr_debug("blacklisting initcall %s\n", str_entry);
 			entry = memblock_alloc(sizeof(*entry),
 					       SMP_CACHE_BYTES);
@@ -1286,6 +1290,9 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 
 	list_for_each_entry(entry, &blacklisted_initcalls, next) {
 		if (!strcmp(fn_name, entry->buf)) {
+            
+            //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep main.c
+            //init/main.c:738 [main]initcall_blacklisted =p "initcall %s blacklisted\012"
 			pr_debug("initcall %s blacklisted\n", fn_name);
 			return true;
 		}
@@ -1317,6 +1324,15 @@ trace_initcall_finish_cb(void *data, initcall_t fn, int ret)
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, *calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
+
+    /**
+     *  cat /sys/kernel/debug/dynamic_debug/control
+     *
+     *  # filename:lineno [module]function flags format
+     *  init/main.c:774 [main]do_one_initcall_debug =p "initcall %pF returned %d after %lld usecs\012"
+     *  init/main.c:767 [main]do_one_initcall_debug =p "calling  %pF @ %i\012"
+     *  [...]
+     */
 	printk(KERN_DEBUG "initcall %pS returned %d after %lld usecs\n",
 		 fn, ret, duration);
 }

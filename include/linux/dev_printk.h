@@ -84,14 +84,14 @@ void _dev_info(const struct device *dev, const char *fmt, ...);
 #define dev_dbg(dev, fmt, ...)						\
 	dynamic_dev_dbg(dev, dev_fmt(fmt), ##__VA_ARGS__)
 #elif defined(DEBUG)
-#define dev_dbg(dev, fmt, ...)						\
-	dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
+//#define dev_dbg(dev, fmt, ...)						\
+//	dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__)
 #else
-#define dev_dbg(dev, fmt, ...)						\
-({									\
-	if (0)								\
-		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
-})
+//#define dev_dbg(dev, fmt, ...)						\
+//({									\
+//	if (0)								\
+//		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
+//})
 #endif
 
 #ifdef CONFIG_PRINTK
@@ -167,20 +167,20 @@ do {									\
 				  ##__VA_ARGS__);			\
 } while (0)
 #elif defined(DEBUG)
-#define dev_dbg_ratelimited(dev, fmt, ...)				\
-do {									\
-	static DEFINE_RATELIMIT_STATE(_rs,				\
-				      DEFAULT_RATELIMIT_INTERVAL,	\
-				      DEFAULT_RATELIMIT_BURST);		\
-	if (__ratelimit(&_rs))						\
-		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
-} while (0)
+//#define dev_dbg_ratelimited(dev, fmt, ...)				\
+//do {									\
+//	static DEFINE_RATELIMIT_STATE(_rs,				\
+//				      DEFAULT_RATELIMIT_INTERVAL,	\
+//				      DEFAULT_RATELIMIT_BURST);		\
+//	if (__ratelimit(&_rs))						\
+//		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
+//} while (0)
 #else
-#define dev_dbg_ratelimited(dev, fmt, ...)				\
-do {									\
-	if (0)								\
-		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
-} while (0)
+//#define dev_dbg_ratelimited(dev, fmt, ...)				\
+//do {									\
+//	if (0)								\
+//		dev_printk(KERN_DEBUG, dev, dev_fmt(fmt), ##__VA_ARGS__); \
+//} while (0)
 #endif
 
 #ifdef VERBOSE_DEBUG

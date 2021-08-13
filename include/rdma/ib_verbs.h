@@ -79,9 +79,9 @@ void ibdev_info(const struct ib_device *ibdev, const char *format, ...);
 #define ibdev_dbg(__dev, format, args...)                       \
 	dynamic_ibdev_dbg(__dev, format, ##args)
 #else
- __cold
-static inline
-void ibdev_dbg(const struct ib_device *ibdev, const char *format, ...) {}
+// __cold
+//static inline
+//void ibdev_dbg(const struct ib_device *ibdev, const char *format, ...) {}
 #endif
 
 #define ibdev_level_ratelimited(ibdev_level, ibdev, fmt, ...)           \
@@ -122,9 +122,9 @@ do {                                                                    \
 				    ##__VA_ARGS__);                     \
 } while (0)
 #else
- __cold
-static inline
-void ibdev_dbg_ratelimited(const struct ib_device *ibdev, const char *format, ...) {}
+// __cold
+//static inline
+//void ibdev_dbg_ratelimited(const struct ib_device *ibdev, const char *format, ...) {}
 #endif
 
 union ib_gid {

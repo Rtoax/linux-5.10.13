@@ -270,6 +270,8 @@ static struct mempolicy *mpol_new(unsigned short mode, unsigned short flags,
 {
 	struct mempolicy *policy;
 
+    //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep "^mm"
+    //mm/mempolicy.c:262 [mempolicy]mpol_new =_ "setting mode %d flags %d nodes[0] %lx\012"
 	pr_debug("setting mode %d flags %d nodes[0] %lx\n",
 		 mode, flags, nodes ? nodes_addr(*nodes)[0] : NUMA_NO_NODE);
 
@@ -773,10 +775,12 @@ static int vma_replace_policy(struct vm_area_struct *vma,
 	struct mempolicy *old;
 	struct mempolicy *new;
 
+    //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep "^mm"
+    //mm/mempolicy.c:727 [mempolicy]vma_replace_policy =_ "vma %lx-%lx/%lx vm_ops %p vm_file %p set_policy %p\012"
 	pr_debug("vma %lx-%lx/%lx vm_ops %p vm_file %p set_policy %p\n",
-		 vma->vm_start, vma->vm_end, vma->vm_pgoff,
-		 vma->vm_ops, vma->vm_file,
-		 vma->vm_ops ? vma->vm_ops->set_policy : NULL);
+    		 vma->vm_start, vma->vm_end, vma->vm_pgoff,
+    		 vma->vm_ops, vma->vm_file,
+    		 vma->vm_ops ? vma->vm_ops->set_policy : NULL);
 
 	new = mpol_dup(pol);
 	if (IS_ERR(new))

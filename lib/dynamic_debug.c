@@ -920,6 +920,15 @@ static int ddebug_proc_open(struct inode *inode, struct file *file)
 				sizeof(struct ddebug_iter));
 }
 
+
+/**
+ *  cat /sys/kernel/debug/dynamic_debug/control
+ *
+ *  # filename:lineno [module]function flags format
+ *  init/main.c:774 [main]do_one_initcall_debug =p "initcall %pF returned %d after %lld usecs\012"
+ *  init/main.c:767 [main]do_one_initcall_debug =p "calling  %pF @ %i\012"
+ *  [...]
+ */
 static const struct file_operations ddebug_proc_fops = {
 	.owner = THIS_MODULE,
 	.open = ddebug_proc_open,
@@ -1060,11 +1069,23 @@ static int __init dynamic_debug_init_control(void)
 	if (!ddebug_init_success)
 		return -ENODEV;
 
-	/* Create the control file in debugfs if it is enabled */
+	/**
+	 *  Create the control file in debugfs if it is enabled 
+	 *
+	 *  /sys/kernel/debug/dynamic_debug/
+	 */
 	if (debugfs_initialized()) {
 		debugfs_dir = debugfs_create_dir("dynamic_debug", NULL);
-		debugfs_create_file("control", 0644, debugfs_dir, NULL,
-				    &ddebug_proc_fops);
+        
+        /**
+         *  cat /sys/kernel/debug/dynamic_debug/control
+         *
+         *  # filename:lineno [module]function flags format
+         *  init/main.c:774 [main]do_one_initcall_debug =p "initcall %pF returned %d after %lld usecs\012"
+         *  init/main.c:767 [main]do_one_initcall_debug =p "calling  %pF @ %i\012"
+         *  [...]
+         */
+		debugfs_create_file("control", 0644, debugfs_dir, NULL, &ddebug_proc_fops);
 	}
 
 	/* Also create the control file in procfs */

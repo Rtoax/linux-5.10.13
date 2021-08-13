@@ -5069,14 +5069,14 @@ do {								\
 	dynamic_netdev_dbg(__dev, format, ##args);		\
 } while (0)
 #elif defined(DEBUG)
-#define netdev_dbg(__dev, format, args...)			\
-	netdev_printk(KERN_DEBUG, __dev, format, ##args)
+//#define netdev_dbg(__dev, format, args...)			\
+//	netdev_printk(KERN_DEBUG, __dev, format, ##args)
 #else
-#define netdev_dbg(__dev, format, args...)			\
-({								\
-	if (0)							\
-		netdev_printk(KERN_DEBUG, __dev, format, ##args); \
-})
+//#define netdev_dbg(__dev, format, args...)			\
+//({								\
+//	if (0)							\
+//		netdev_printk(KERN_DEBUG, __dev, format, ##args); \
+//})
 #endif
 
 #if defined(VERBOSE_DEBUG)
@@ -5141,15 +5141,15 @@ do {								\
 		dynamic_netdev_dbg(netdev, format, ##args);	\
 } while (0)
 #elif defined(DEBUG)
-#define netif_dbg(priv, type, dev, format, args...)		\
-	netif_printk(priv, type, KERN_DEBUG, dev, format, ##args)
+//#define netif_dbg(priv, type, dev, format, args...)		\
+//	netif_printk(priv, type, KERN_DEBUG, dev, format, ##args)
 #else
-#define netif_dbg(priv, type, dev, format, args...)			\
-({									\
-	if (0)								\
-		netif_printk(priv, type, KERN_DEBUG, dev, format, ##args); \
-	0;								\
-})
+//#define netif_dbg(priv, type, dev, format, args...)			\
+//({									\
+//	if (0)								\
+//		netif_printk(priv, type, KERN_DEBUG, dev, format, ##args); \
+//	0;								\
+//})
 #endif
 
 /* if @cond then downgrade to debug, else print at @level */

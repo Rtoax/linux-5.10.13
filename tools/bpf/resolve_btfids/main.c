@@ -128,17 +128,17 @@ int eprintf(int level, int var, const char *fmt, ...)
 	return ret;
 }
 
-#ifndef pr_fmt
-#define pr_fmt(fmt) fmt
-#endif
+//#ifndef pr_fmt
+//#define pr_fmt(fmt) fmt
+//#endif
 
-#define pr_debug(fmt, ...) \
-	eprintf(1, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_debugN(n, fmt, ...) \
-	eprintf(n, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_err(fmt, ...) \
-	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug(fmt, ...) \
+//	eprintf(1, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debugN(n, fmt, ...) \
+//	eprintf(n, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_err(fmt, ...) \
+//	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
 
 static bool is_btf_id(const char *name)
 {

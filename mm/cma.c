@@ -422,6 +422,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 	if (!cma || !cma->count || !cma->bitmap)
 		return NULL;
 
+    //cat /sys/kernel/debug/dynamic_debug/control | grep cma_alloc
 	pr_debug("%s(cma %p, count %zu, align %d)\n", __func__, (void *)cma,
 		 count, align);
 

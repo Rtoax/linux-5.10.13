@@ -13,18 +13,18 @@ extern bool quiet, dump_trace;
 extern int debug_ordered_events;
 extern int debug_data_convert;
 
-#ifndef pr_fmt
-#define pr_fmt(fmt) fmt
-#endif
+//#ifndef pr_fmt
+//#define pr_fmt(fmt) fmt
+//#endif
 
-#define pr_err(fmt, ...) \
-	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_warning(fmt, ...) \
-	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_info(fmt, ...) \
-	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_debug(fmt, ...) \
-	eprintf(1, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_err(fmt, ...) \
+//	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_warning(fmt, ...) \
+//	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_info(fmt, ...) \
+//	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug(fmt, ...) \
+//	eprintf(1, verbose, pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_debugN(n, fmt, ...) \
 	eprintf(n, verbose, pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)

@@ -14,18 +14,18 @@
  * the extra function call at each call site.
  */
 
-# if defined(DEBUG) || defined(CONFIG_DYNAMIC_DEBUG)
-#  define dout(fmt, ...)						\
-	pr_debug("%.*s %12.12s:%-4d : " fmt,				\
-		 8 - (int)sizeof(KBUILD_MODNAME), "    ",		\
-		 kbasename(__FILE__), __LINE__, ##__VA_ARGS__)
-# else
+//# if defined(DEBUG) || defined(CONFIG_DYNAMIC_DEBUG)
+//#  define dout(fmt, ...)						\
+//	pr_debug("%.*s %12.12s:%-4d : " fmt,				\
+//		 8 - (int)sizeof(KBUILD_MODNAME), "    ",		\
+//		 kbasename(__FILE__), __LINE__, ##__VA_ARGS__)
+//# else
 /* faux printk call just to see any compiler warnings. */
-#  define dout(fmt, ...)	do {				\
-		if (0)						\
-			printk(KERN_DEBUG fmt, ##__VA_ARGS__);	\
-	} while (0)
-# endif
+//#  define dout(fmt, ...)	do {				\
+//		if (0)						\
+//			printk(KERN_DEBUG fmt, ##__VA_ARGS__);	\
+//	} while (0)
+//# endif
 
 #else
 

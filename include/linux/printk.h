@@ -423,11 +423,11 @@ extern int kptr_restrict;
 #define pr_debug(fmt, ...)			\
 	dynamic_pr_debug(fmt, ##__VA_ARGS__)
 #elif defined(DEBUG)
-#define pr_debug(fmt, ...) \
-	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug(fmt, ...) \
+//	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define pr_debug(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug(fmt, ...) \
+//	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 /*
@@ -555,11 +555,11 @@ do {									\
 		__dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS__);	\
 } while (0)
 #elif defined(DEBUG)
-#define pr_debug_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug_ratelimited(fmt, ...)					\
+//	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define pr_debug_ratelimited(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+//#define pr_debug_ratelimited(fmt, ...) \
+//	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 extern const struct file_operations kmsg_fops;
@@ -596,16 +596,16 @@ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
 	dynamic_hex_dump(prefix_str, prefix_type, rowsize,	\
 			 groupsize, buf, len, ascii)
 #elif defined(DEBUG)
-#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
-			     groupsize, buf, len, ascii)		\
-	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
-		       groupsize, buf, len, ascii)
+//#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
+//			     groupsize, buf, len, ascii)		\
+//	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
+//		       groupsize, buf, len, ascii)
 #else
-static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
-					int rowsize, int groupsize,
-					const void *buf, size_t len, bool ascii)
-{
-}
+//static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
+//					int rowsize, int groupsize,
+//					const void *buf, size_t len, bool ascii)
+//{
+//}
 #endif
 
 /**

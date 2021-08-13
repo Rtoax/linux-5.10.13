@@ -798,12 +798,12 @@ void __acpi_handle_debug(struct _ddebug *descriptor, acpi_handle handle, const c
 	_dynamic_func_call(fmt, __acpi_handle_debug,			\
 			   handle, pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define acpi_handle_debug(handle, fmt, ...)				\
-({									\
-	if (0)								\
-		acpi_handle_printk(KERN_DEBUG, handle, fmt, ##__VA_ARGS__); \
-	0;								\
-})
+//#define acpi_handle_debug(handle, fmt, ...)				\
+//({									\
+//	if (0)								\
+//		acpi_handle_printk(KERN_DEBUG, handle, fmt, ##__VA_ARGS__); \
+//	0;								\
+//})
 #endif
 #endif
 

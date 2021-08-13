@@ -328,7 +328,7 @@ static const char *acpi_ec_cmd_string(u8 cmd)
 	return "UNKNOWN";
 }
 #else
-#define acpi_ec_cmd_string(cmd)		"UNDEF"
+//#define acpi_ec_cmd_string(cmd)		"UNDEF"
 #endif
 
 /* --------------------------------------------------------------------------
