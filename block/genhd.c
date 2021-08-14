@@ -436,6 +436,8 @@ void blkdev_show(struct seq_file *seqf, off_t offset)
  *
  * See Documentation/admin-guide/devices.txt for the list of allocated
  * major numbers.
+ *
+ * 注册块设备驱动
  */
 int register_blkdev(unsigned int major, const char *name)
 {
@@ -501,6 +503,9 @@ out:
 
 EXPORT_SYMBOL(register_blkdev);
 
+/**
+ *  注销块设备驱动
+ */
 void unregister_blkdev(unsigned int major, const char *name)
 {
 	struct blk_major_name **n;
@@ -520,7 +525,6 @@ void unregister_blkdev(unsigned int major, const char *name)
 	mutex_unlock(&block_class_lock);
 	kfree(p);
 }
-
 EXPORT_SYMBOL(unregister_blkdev);
 
 static struct kobj_map *bdev_map;
@@ -541,18 +545,18 @@ static struct kobj_map *bdev_map;
 static int blk_mangle_minor(int minor)
 {
 #ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
-	int i;
-
-	for (i = 0; i < MINORBITS / 2; i++) {
-		int low = minor & (1 << i);
-		int high = minor & (1 << (MINORBITS - 1 - i));
-		int distance = MINORBITS - 1 - 2 * i;
-
-		minor ^= low | high;	/* clear both bits */
-		low <<= distance;	/* swap the positions */
-		high >>= distance;
-		minor |= low | high;	/* and set */
-	}
+//	int i;
+//
+//	for (i = 0; i < MINORBITS / 2; i++) {
+//		int low = minor & (1 << i);
+//		int high = minor & (1 << (MINORBITS - 1 - i));
+//		int distance = MINORBITS - 1 - 2 * i;
+//
+//		minor ^= low | high;	/* clear both bits */
+//		low <<= distance;	/* swap the positions */
+//		high >>= distance;
+//		minor |= low | high;	/* and set */
+//	}
 #endif
 	return minor;
 }
@@ -1569,8 +1573,12 @@ static void disk_release(struct device *dev)
 		blk_put_queue(disk->queue);
 	kfree(disk);
 }
+
+/**
+ *  
+ */
 struct class block_class = {
-	.name		= "block",
+	block_class.name		= "block",
 };
 
 static char *block_devnode(struct device *dev, umode_t *mode,
@@ -1714,6 +1722,9 @@ dev_t blk_lookup_devt(const char *name, int partno)
 	return devt;
 }
 
+/**
+ *  
+ */
 struct gendisk *__alloc_disk_node(int minors, int node_id)
 {
 	struct gendisk *disk;
@@ -1757,8 +1768,15 @@ struct gendisk *__alloc_disk_node(int minors, int node_id)
 	if (hd_ref_init(&disk->part0))
 		goto out_free_part0;
 
+    /**
+     *  
+     */
 	disk->minors = minors;
 	rand_initialize_disk(disk);
+
+    /**
+     *  
+     */
 	disk_to_dev(disk)->class = &block_class;
 	disk_to_dev(disk)->type = &disk_type;
 	device_initialize(disk_to_dev(disk));

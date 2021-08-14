@@ -50,6 +50,8 @@ struct fwnode_handle;
  * at the class level, they are all simply disks. Classes allow user space
  * to work with devices based on what they do, rather than how they are
  * connected or how they work.
+ *
+ * 
  */
 struct class {  /* 设备类 */
 	const char		*name;
@@ -57,10 +59,17 @@ struct class {  /* 设备类 */
 
 	const struct attribute_group	**class_groups;
 	const struct attribute_group	**dev_groups;
+
+    /**
+     *  
+     */
 	struct kobject			*dev_kobj;
 
+    /**
+     *  
+     */
 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
-	char *(*devnode)(struct device *dev, umode_t *mode);
+	pchar_t (*devnode)(struct device *dev, umode_t *mode);
 
 	void (*class_release)(struct class *class);
 	void (*dev_release)(struct device *dev);
@@ -68,7 +77,7 @@ struct class {  /* 设备类 */
 	int (*shutdown_pre)(struct device *dev);
 
 	const struct kobj_ns_type_operations *ns_type;
-	const void *(*namespace)(struct device *dev);
+	const pvoid_t (*namespace)(struct device *dev);
 
 	void (*get_ownership)(struct device *dev, kuid_t *uid, kgid_t *gid);
 

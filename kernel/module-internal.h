@@ -8,6 +8,9 @@
 #include <linux/elf.h>
 #include <asm/module.h>
 
+/**
+ *  模块加载信息
+ */
 struct load_info {  /*  */
 	const char *name;
 	/* pointer to module in temporary copy, freed at end of load_module() */

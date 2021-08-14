@@ -960,6 +960,7 @@ long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 	return do_msgsnd(msqid, mtype, msgp->mtext, msgsz, msgflg);
 }
 
+int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 SYSCALL_DEFINE4(msgsnd, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
 		int, msgflg)
 {
@@ -1053,14 +1054,14 @@ static inline void free_copy(struct msg_msg *copy)
 		free_msg(copy);
 }
 #else
-static inline struct msg_msg *prepare_copy(void __user *buf, size_t bufsz)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline void free_copy(struct msg_msg *copy)
-{
-}
+//static inline struct msg_msg *prepare_copy(void __user *buf, size_t bufsz)
+//{
+//	return ERR_PTR(-ENOSYS);
+//}
+//
+//static inline void free_copy(struct msg_msg *copy)
+//{
+//}
 #endif
 
 static struct msg_msg *find_msg(struct msg_queue *msq, long *msgtyp, int mode)
@@ -1259,6 +1260,8 @@ long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 	return do_msgrcv(msqid, msgp, msgsz, msgtyp, msgflg, do_msg_fill);
 }
 
+
+ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 SYSCALL_DEFINE5(msgrcv, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
 		long, msgtyp, int, msgflg)
 {

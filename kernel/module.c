@@ -3723,6 +3723,9 @@ fail:
 	return ret;
 }
 
+/**
+ *  是否支持模块
+ */
 static int may_init_module(void)
 {
 	if (!capable(CAP_SYS_MODULE) || modules_disabled)
@@ -4036,6 +4039,10 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	return err;
 }
 
+/**
+ *  insmod - 插入内核模块
+ */
+int init_module(void *module_image, unsigned long len, const char *param_values);
 SYSCALL_DEFINE3(init_module, void __user *, umod,
 		unsigned long, len, const char __user *, uargs)
 {
@@ -4053,9 +4060,16 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	if (err)
 		return err;
 
+    /**
+     *  
+     */
 	return load_module(&info, uargs, 0);
 }
 
+/**
+ *  insmod - 插入内核模块
+ */
+int finit_module(int fd, const char *param_values, int flags);
 SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 {
 	struct load_info info = { };
@@ -4072,6 +4086,9 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 		      |MODULE_INIT_IGNORE_VERMAGIC))
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	err = kernel_read_file_from_fd(fd, 0, &hdr, INT_MAX, NULL,
 				       READING_MODULE);
 	if (err < 0)
@@ -4079,6 +4096,9 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 	info.hdr = hdr;
 	info.len = err;
 
+    /**
+     *  
+     */
 	return load_module(&info, uargs, flags);
 }
 

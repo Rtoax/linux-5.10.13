@@ -121,13 +121,15 @@ struct hd_struct {
  * Implies ``GENHD_FL_SUPPRESS_PARTITION_INFO`` and
  * ``GENHD_FL_NO_PART_SCAN``.
  * Used for multipath devices.
+ *
+ * struct gendisk.flags
  */
-#define GENHD_FL_REMOVABLE			0x0001
+#define GENHD_FL_REMOVABLE			0x0001  //可移动介质
 /* 2 is unused (used to be GENHD_FL_DRIVERFS) */
 /* 4 is unused (used to be GENHD_FL_MEDIA_CHANGE_NOTIFY) */
-#define GENHD_FL_CD				0x0008
+#define GENHD_FL_CD				0x0008  //CD_ROM
 #define GENHD_FL_UP				0x0010
-#define GENHD_FL_SUPPRESS_PARTITION_INFO	0x0020
+#define GENHD_FL_SUPPRESS_PARTITION_INFO	0x0020  //
 #define GENHD_FL_EXT_DEVT			0x0040
 #define GENHD_FL_NATIVE_CAPACITY		0x0080
 #define GENHD_FL_BLOCK_EVENTS_ON_EXCL_WRITE	0x0100
@@ -164,47 +166,110 @@ struct blk_integrity {
 	unsigned char				tag_size;
 };
 
+/**
+ *  磁盘设备或分区
+ *
+ *  块设备驱动程序的设计主要就是围绕gendisk这个数据结构展开的
+ *  一个简单的块设备驱动程序框架如下：
+ *  1. 在init函数中分配、设置、添加一个gendisk;
+ *  2. 设计gendisk结构体fops成员包含的操作函数；
+ *  3. 设计gendisk结构体queue(请求队列)成员的请求处理函数。
+ *
+ *  操作函数
+ *  ------------------------
+ *  alloc_disk  分配gendisk
+ *  del_gendisk 删除gendisk
+ *  add_disk    增加gendisk
+ */
 struct gendisk {
 	/* major, first_minor and minors are input parameters only,
 	 * don't use directly.  Use disk_devt() and disk_max_parts().
+	 *
+	 * 主设备号
 	 */
 	int major;			/* major number of driver */
+    /**
+     *  次设备号 
+     *  如果有分区，每个分区都需要一个次设备号
+     */
 	int first_minor;
+    /**
+     *  次设备的最大数目，未分区则 = 1
+     */
 	int minors;                     /* maximum number of minors, =1 for
                                          * disks that can't be partitioned. */
-
+    /**
+     *  磁盘名字
+     */
 	char disk_name[DISK_NAME_LEN];	/* name of major driver */
 
+    /**
+     *  
+     */
 	unsigned short events;		/* supported events */
+
+    /**
+     *  
+     */
 	unsigned short event_flags;	/* flags related to event processing */
 
 	/* Array of pointers to partitions indexed by partno.
 	 * Protected with matching bdev lock but stat and other
 	 * non-critical accesses use RCU.  Always access through
 	 * helpers.
+	 *
+	 * 
 	 */
 	struct disk_part_tbl __rcu *part_tbl;
+    /**
+     *  
+     */
 	struct hd_struct part0;
-
+    /**
+     *  块设备操作函数集合,类似字符设备驱动的file_operation结构体
+     */
 	const struct block_device_operations *fops;
+    /**
+     *  请求队列
+     *  用来管理该设备的I/O请求，请求队列的相关函数：
+     */
 	struct request_queue *queue;
+    /**
+     *  指向私有数据的指针
+     */
 	void *private_data;
 
+    /**
+     *  描述驱动器状态的标志
+     *  
+     *  GENHD_FL_REMOVABLE: 可移动介质
+     *  ...
+     */
 	int flags;
+    
 	unsigned long state;
 #define GD_NEED_PART_SCAN		0
 	struct rw_semaphore lookup_sem;
+
+    /**
+     *  
+     */
 	struct kobject *slave_dir;
 
 	struct timer_rand_state *random;
 	atomic_t sync_io;		/* RAID */
 	struct disk_events *ev;
+
 #ifdef  CONFIG_BLK_DEV_INTEGRITY
 	struct kobject integrity_kobj;
 #endif	/* CONFIG_BLK_DEV_INTEGRITY */
+
 #if IS_ENABLED(CONFIG_CDROM)
 	struct cdrom_device_info *cdi;
 #endif
+    /**
+     *  
+     */
 	int node_id;
 	struct badblocks *bb;
 	struct lockdep_map lockdep_map;
@@ -350,6 +415,9 @@ extern void blk_register_region(dev_t devt, unsigned long range,
 			void *data);
 extern void blk_unregister_region(dev_t devt, unsigned long range);
 
+/**
+ *  
+ */
 #define alloc_disk_node(minors, node_id)				\
 ({									\
 	static struct lock_class_key __key;				\
@@ -366,6 +434,9 @@ extern void blk_unregister_region(dev_t devt, unsigned long range);
 	__disk;								\
 })
 
+/**
+ *  
+ */
 #define alloc_disk(minors) alloc_disk_node(minors, NUMA_NO_NODE)
 
 int register_blkdev(unsigned int major, const char *name);
@@ -384,15 +455,7 @@ long compat_blkdev_ioctl(struct file *, unsigned, unsigned long);
 int bd_link_disk_holder(struct block_device *bdev, struct gendisk *disk);
 void bd_unlink_disk_holder(struct block_device *bdev, struct gendisk *disk);
 #else
-static inline int bd_link_disk_holder(struct block_device *bdev,
-				      struct gendisk *disk)
-{
-	return 0;
-}
-static inline void bd_unlink_disk_holder(struct block_device *bdev,
-					 struct gendisk *disk)
-{
-}
+//
 #endif /* CONFIG_SYSFS */
 
 #ifdef CONFIG_BLOCK

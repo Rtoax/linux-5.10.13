@@ -374,6 +374,11 @@ extern int blkdev_zone_mgmt_ioctl(struct block_device *bdev, fmode_t mode,
 /*  */
 #endif /* CONFIG_BLK_DEV_ZONED */
 
+/**
+ *  
+ *  请求队列
+ *  用来管理该设备的I/O请求，请求队列的相关函数：
+ */
 struct request_queue {  /*  */
 	struct request		*last_merge;
 	struct elevator_queue	*elevator;
@@ -1733,76 +1738,76 @@ static inline struct bio_vec *rq_integrity_vec(struct request *rq)
 }
 
 #else /* CONFIG_BLK_DEV_INTEGRITY */
-
-struct bio;
-struct block_device;
-struct gendisk;
-struct blk_integrity;
-
-static inline int blk_integrity_rq(struct request *rq)
-{
-	return 0;
-}
-static inline int blk_rq_count_integrity_sg(struct request_queue *q,
-					    struct bio *b)
-{
-	return 0;
-}
-static inline int blk_rq_map_integrity_sg(struct request_queue *q,
-					  struct bio *b,
-					  struct scatterlist *s)
-{
-	return 0;
-}
-static inline struct blk_integrity *bdev_get_integrity(struct block_device *b)
-{
-	return NULL;
-}
-static inline struct blk_integrity *blk_get_integrity(struct gendisk *disk)
-{
-	return NULL;
-}
-static inline bool
-blk_integrity_queue_supports_integrity(struct request_queue *q)
-{
-	return false;
-}
-static inline int blk_integrity_compare(struct gendisk *a, struct gendisk *b)
-{
-	return 0;
-}
-static inline void blk_integrity_register(struct gendisk *d,
-					 struct blk_integrity *b)
-{
-}
-static inline void blk_integrity_unregister(struct gendisk *d)
-{
-}
-static inline void blk_queue_max_integrity_segments(struct request_queue *q,
-						    unsigned int segs)
-{
-}
-static inline unsigned short queue_max_integrity_segments(const struct request_queue *q)
-{
-	return 0;
-}
-
-static inline unsigned int bio_integrity_intervals(struct blk_integrity *bi,
-						   unsigned int sectors)
-{
-	return 0;
-}
-
-static inline unsigned int bio_integrity_bytes(struct blk_integrity *bi,
-					       unsigned int sectors)
-{
-	return 0;
-}
-
-static inline struct bio_vec *rq_integrity_vec(struct request *rq)
-{
-	return NULL;
-}
+//
+//struct bio;
+//struct block_device;
+//struct gendisk;
+//struct blk_integrity;
+//
+//static inline int blk_integrity_rq(struct request *rq)
+//{
+//	return 0;
+//}
+//static inline int blk_rq_count_integrity_sg(struct request_queue *q,
+//					    struct bio *b)
+//{
+//	return 0;
+//}
+//static inline int blk_rq_map_integrity_sg(struct request_queue *q,
+//					  struct bio *b,
+//					  struct scatterlist *s)
+//{
+//	return 0;
+//}
+//static inline struct blk_integrity *bdev_get_integrity(struct block_device *b)
+//{
+//	return NULL;
+//}
+//static inline struct blk_integrity *blk_get_integrity(struct gendisk *disk)
+//{
+//	return NULL;
+//}
+//static inline bool
+//blk_integrity_queue_supports_integrity(struct request_queue *q)
+//{
+//	return false;
+//}
+//static inline int blk_integrity_compare(struct gendisk *a, struct gendisk *b)
+//{
+//	return 0;
+//}
+//static inline void blk_integrity_register(struct gendisk *d,
+//					 struct blk_integrity *b)
+//{
+//}
+//static inline void blk_integrity_unregister(struct gendisk *d)
+//{
+//}
+//static inline void blk_queue_max_integrity_segments(struct request_queue *q,
+//						    unsigned int segs)
+//{
+//}
+//static inline unsigned short queue_max_integrity_segments(const struct request_queue *q)
+//{
+//	return 0;
+//}
+//
+//static inline unsigned int bio_integrity_intervals(struct blk_integrity *bi,
+//						   unsigned int sectors)
+//{
+//	return 0;
+//}
+//
+//static inline unsigned int bio_integrity_bytes(struct blk_integrity *bi,
+//					       unsigned int sectors)
+//{
+//	return 0;
+//}
+//
+//static inline struct bio_vec *rq_integrity_vec(struct request *rq)
+//{
+//	return NULL;
+//}
 
 #endif /* CONFIG_BLK_DEV_INTEGRITY */
 
@@ -1824,7 +1829,9 @@ static inline void blk_ksm_unregister(struct request_queue *q) { }
 
 #endif /* CONFIG_BLK_INLINE_ENCRYPTION */
 
-
+/**
+ *  
+ */
 struct block_device_operations {
 	blk_qc_t (*submit_bio) (struct bio *bio);
 	int (*open) (struct block_device *, fmode_t);
@@ -1841,7 +1848,7 @@ struct block_device_operations {
 	void (*swap_slot_free_notify) (struct block_device *, unsigned long);
 	int (*report_zones)(struct gendisk *, sector_t sector,
 			unsigned int nr_zones, report_zones_cb cb, void *data);
-	char *(*devnode)(struct gendisk *disk, umode_t *mode);
+	pchar_t (*devnode)(struct gendisk *disk, umode_t *mode);
 	struct module *owner;
 	const struct pr_ops *pr_ops;
 };
@@ -1850,7 +1857,7 @@ struct block_device_operations {
 extern int blkdev_compat_ptr_ioctl(struct block_device *, fmode_t,
 				      unsigned int, unsigned long);
 #else
-#define blkdev_compat_ptr_ioctl NULL
+//#define blkdev_compat_ptr_ioctl NULL
 #endif
 
 extern int __blkdev_driver_ioctl(struct block_device *, fmode_t, unsigned int,
@@ -1890,27 +1897,27 @@ static inline bool blk_req_can_dispatch_to_zone(struct request *rq)
 	return !blk_req_zone_is_write_locked(rq);
 }
 #else
-static inline bool blk_req_needs_zone_write_lock(struct request *rq)
-{
-	return false;
-}
-
-static inline void blk_req_zone_write_lock(struct request *rq)
-{
-}
-
-static inline void blk_req_zone_write_unlock(struct request *rq)
-{
-}
-static inline bool blk_req_zone_is_write_locked(struct request *rq)
-{
-	return false;
-}
-
-static inline bool blk_req_can_dispatch_to_zone(struct request *rq)
-{
-	return true;
-}
+//static inline bool blk_req_needs_zone_write_lock(struct request *rq)
+//{
+//	return false;
+//}
+//
+//static inline void blk_req_zone_write_lock(struct request *rq)
+//{
+//}
+//
+//static inline void blk_req_zone_write_unlock(struct request *rq)
+//{
+//}
+//static inline bool blk_req_zone_is_write_locked(struct request *rq)
+//{
+//	return false;
+//}
+//
+//static inline bool blk_req_can_dispatch_to_zone(struct request *rq)
+//{
+//	return true;
+//}
 #endif /* CONFIG_BLK_DEV_ZONED */
 
 static inline void blk_wake_io_task(struct task_struct *waiter)
@@ -1970,7 +1977,7 @@ void blkdev_show(struct seq_file *seqf, off_t offset);
 #ifdef CONFIG_BLOCK
 #define BLKDEV_MAJOR_MAX	512
 #else
-#define BLKDEV_MAJOR_MAX	0
+//#define BLKDEV_MAJOR_MAX	0
 #endif
 
 struct block_device *blkdev_get_by_path(const char *path, fmode_t mode,
@@ -1993,18 +2000,18 @@ int truncate_bdev_range(struct block_device *bdev, fmode_t mode, loff_t lstart,
 			loff_t lend);
 int sync_blockdev(struct block_device *bdev);
 #else
-static inline void invalidate_bdev(struct block_device *bdev)
-{
-}
-static inline int truncate_bdev_range(struct block_device *bdev, fmode_t mode,
-				      loff_t lstart, loff_t lend)
-{
-	return 0;
-}
-static inline int sync_blockdev(struct block_device *bdev)
-{
-	return 0;
-}
+//static inline void invalidate_bdev(struct block_device *bdev)
+//{
+//}
+//static inline int truncate_bdev_range(struct block_device *bdev, fmode_t mode,
+//				      loff_t lstart, loff_t lend)
+//{
+//	return 0;
+//}
+//static inline int sync_blockdev(struct block_device *bdev)
+//{
+//	return 0;
+//}
 #endif
 int fsync_bdev(struct block_device *bdev);
 

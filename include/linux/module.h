@@ -35,6 +35,9 @@
 
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN    /*  */
 
+/**
+ *  
+ */
 struct modversion_info {
 	unsigned long crc;
 	char name[MODULE_NAME_LEN];
@@ -43,6 +46,9 @@ struct modversion_info {
 struct module;
 struct exception_table_entry;
 
+/**
+ *  
+ */
 struct module_kobject {
 	struct kobject kobj;
 	struct module *mod;
@@ -51,6 +57,9 @@ struct module_kobject {
 	struct completion *kobj_completion;
 } __randomize_layout;
 
+/**
+ *  
+ */
 struct module_attribute {
 	struct attribute attr;
 	ssize_t (*show)(struct module_attribute *, struct module_kobject *,
@@ -62,6 +71,9 @@ struct module_attribute {
 	void (*free)(struct module *);
 };
 
+/**
+ *  
+ */
 struct module_version_attribute {
 	struct module_attribute mattr;
 	const char *module_name;
@@ -353,6 +365,9 @@ struct klp_modinfo {
 };
 #endif
 
+/**
+ *  
+ */
 struct module { /* 模块 */
 	enum module_state state;
 

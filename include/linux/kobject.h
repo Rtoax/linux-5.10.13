@@ -60,7 +60,11 @@ enum kobject_action {
 	KOBJ_BIND,
 	KOBJ_UNBIND,
 };
-        /* /sys/fs 中的一个 dentry */
+
+/**
+ *
+ *  /sys/fs 中的一个 dentry 
+ */
 struct kobject {    /* 驱动设备的 父类 */
 	const char		*name;
 	struct list_head	entry;  /* 在 kset->list 链表中的节点 */
@@ -188,11 +192,19 @@ struct sock;
  * called whenever a kobject has something happen to it so that the kset
  * can add new environment variables, or filter out the uevents if so
  * desired.
+ *
+ *  kobject 的集合
  */
-struct kset {   /* kobject 的集合 */
+struct kset {   
 	struct list_head list;  /* 串联所有 kobject 的链表头*/
 	spinlock_t list_lock;   /* 保护 list 链表 */
+    /**
+     *  
+     */
 	struct kobject kobj;
+    /**
+     *  
+     */
 	const struct kset_uevent_ops *uevent_ops;
 } __randomize_layout;
 
