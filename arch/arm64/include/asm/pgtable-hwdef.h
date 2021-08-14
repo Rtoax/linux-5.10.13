@@ -140,7 +140,13 @@
 #define PTE_RDONLY		(_AT(pteval_t, 1) << 7)		/* AP[2] */
 #define PTE_SHARED		(_AT(pteval_t, 3) << 8)		/* SH[1:0], inner shareable */
 #define PTE_AF			(_AT(pteval_t, 1) << 10)	/* Access Flag 被访问过 */
-#define PTE_NG			(_AT(pteval_t, 1) << 11)	/* nG */
+
+/**
+ *  nG 位
+ *  ==1: 页表对应TLB表项是进程独有的，需要使用 ASID 来识别
+ *  ==0: 页表对应TLB表项是全局的
+ */
+#define PTE_NG			(_AT(pteval_t, 1) << 11)	/* nG -  */
 #define PTE_GP			(_AT(pteval_t, 1) << 50)	/* BTI guarded */
 #define PTE_DBM			(_AT(pteval_t, 1) << 51)	/* Dirty Bit Management */
 #define PTE_CONT		(_AT(pteval_t, 1) << 52)	/* Contiguous range */

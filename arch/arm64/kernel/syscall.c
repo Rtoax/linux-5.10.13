@@ -36,6 +36,9 @@ static long __invoke_syscall(struct pt_regs *regs, syscall_fn_t syscall_fn)
 	return syscall_fn(regs);
 }
 
+/**
+ *  调用系统调用
+ */
 static void invoke_syscall(struct pt_regs *regs, unsigned int scno,
 			   unsigned int sc_nr,
 			   const syscall_fn_t syscall_table[])
@@ -44,12 +47,18 @@ static void invoke_syscall(struct pt_regs *regs, unsigned int scno,
 
 	if (scno < sc_nr) {
 		syscall_fn_t syscall_fn;
+        /**
+         *  array_index_nospec 防止分支预取导致的 scno 超出数组范围
+         */
 		syscall_fn = syscall_table[array_index_nospec(scno, sc_nr)];
 		ret = __invoke_syscall(regs, syscall_fn);
 	} else {
 		ret = do_ni_syscall(regs, scno);
 	}
 
+    /**
+     *  
+     */
 	if (is_compat_task())
 		ret = lower_32_bits(ret);
 
@@ -155,6 +164,9 @@ static void el0_svc_common(struct pt_regs *regs, int scno, int sc_nr,
 			goto trace_exit;
 	}
 
+    /**
+     *  调用系统调用
+     */
 	invoke_syscall(regs, scno, sc_nr, syscall_table);
 
 	/*

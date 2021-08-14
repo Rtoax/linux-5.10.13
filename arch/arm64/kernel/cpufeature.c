@@ -1319,6 +1319,12 @@ bool kaslr_requires_kpti(void)
 }
 
 static bool __meltdown_safe = true;
+
+/**
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ *  
+ *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
+ */
 static int __kpti_forced; /* 0: not forced, >0: forced on, <0: forced off */
 
 static bool unmap_kernel_at_el0(const struct arm64_cpu_capabilities *entry,
@@ -1394,6 +1400,9 @@ static bool unmap_kernel_at_el0(const struct arm64_cpu_capabilities *entry,
 }
 
 #ifdef CONFIG_UNMAP_KERNEL_AT_EL0
+/**
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ */
 static void
 kpti_install_ng_mappings(const struct arm64_cpu_capabilities *__unused)
 {
@@ -1429,6 +1438,9 @@ kpti_install_ng_mappings(const struct arm64_cpu_capabilities *__unused)
 }
 #endif	/* CONFIG_UNMAP_KERNEL_AT_EL0 */
 
+/**
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ */
 static int __init parse_kpti(char *str)
 {
 	bool enabled;

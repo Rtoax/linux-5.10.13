@@ -19,6 +19,27 @@ struct task_struct;
  * When @index is out of bounds (@index >= @size), the sign bit will be
  * set.  Extend the sign bit to all bits and invert, giving a result of
  * zero for an out of bounds index, or ~0 if within bounds [0, @size).
+ *
+ * 下面是 array_index_nospec 函数的注释
+ * -------------------------------------------------------------------------
+ * array_index_nospec - sanitize an array index after a bounds check
+ *                      在边界检查后清理数组索引
+ * For a code sequence(顺序) like:
+ *
+ *     if (index < size) {
+ *         index = array_index_nospec(index, size);
+ *         val = array[index];
+ *     }
+ *
+ * ...if the CPU speculates past the bounds check then
+ * array_index_nospec() will clamp the index within the range of [0,
+ * size).
+ *
+ * 如果 CPU 推测超出边界检查，则 array_index_nospec() 会将索引限制在 [0,size) 的范围内。
+ *
+ * array_index_nospec 是如何避免幽灵漏洞的? 在边界检查后清理数组索引
+ *  软件角度只能 减缓 或 局部修复 熔断漏洞
+ *  该函数可以确保即使在分支预取的情况下，也不会发生边界越界情况。
  */
 #ifndef array_index_mask_nospec
 static inline unsigned long array_index_mask_nospec(unsigned long index,
@@ -36,8 +57,8 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 /*
  * array_index_nospec - sanitize an array index after a bounds check
- *
- * For a code sequence like:
+ *                      在边界检查后清理数组索引
+ * For a code sequence(顺序) like:
  *
  *     if (index < size) {
  *         index = array_index_nospec(index, size);
@@ -47,6 +68,22 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
  * ...if the CPU speculates past the bounds check then
  * array_index_nospec() will clamp the index within the range of [0,
  * size).
+ *
+ * 如果 CPU 推测超出边界检查，则 array_index_nospec() 会将索引限制在 [0,size) 的范围内。
+ *
+ * array_index_nospec 是如何避免幽灵漏洞的? 在边界检查后清理数组索引
+ *  软件角度只能 减缓 或 局部修复 熔断漏洞
+ *  该函数可以确保即使在分支预取的情况下，也不会发生边界越界情况。
+ *
+ *
+ * gcc 对此的优化,`type __builtin_speculation_safe_value(type val, type failval)`, 例：
+ *  ---------------------------------
+ *  int load_array(unsigned untrusted_index) {
+ *      if(untrusted_index < MAX_ARRAY_ELEMS) {
+ *          return array[__builtin_speculation_safe_value(untrusted_index)];
+ *      }
+ *      return 0;
+ *  }
  */
 #define array_index_nospec(index, size)					\
 ({									\

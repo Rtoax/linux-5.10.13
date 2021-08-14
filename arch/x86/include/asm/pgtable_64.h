@@ -29,6 +29,11 @@ extern pmd_t level2_ident_pgt[512];
 extern pte_t level1_fixmap_pgt[512 * FIXMAP_PMD_NUM];
 extern pgd_t init_top_pgt[];/*  */
 
+/**
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ *  
+ *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
+ */
 #define swapper_pg_dir init_top_pgt/* CR3 - 一级页表 arch/x86/kernel/head_64.S */
 
 extern void paging_init(void);

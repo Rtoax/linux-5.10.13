@@ -31,9 +31,16 @@ static unsigned long max_pinned_asids;
 static unsigned long nr_pinned_asids;
 static unsigned long *pinned_asid_map;
 
-#define ASID_MASK		(~GENMASK(asid_bits - 1, 0))
+#define ASID_MASK		(~ GENMASK(asid_bits - 1, 0))
 #define ASID_FIRST_VERSION	(1UL << asid_bits)
 
+/**
+ *  NUM_USER_ASIDS 表示系统支持 ASID 的进程数量
+ *  asid=0,1 留给 init_mm 使用
+ *  分配的 asid 从 2开始， 2,3 是一对
+ *      asid=2 - 给内核页表使用
+ *      asid=3 - 给用户页表使用
+ */
 #define NUM_USER_ASIDS		ASID_FIRST_VERSION
 #define asid2idx(asid)		((asid) & ~ASID_MASK)
 #define idx2asid(idx)		asid2idx(idx)
@@ -76,6 +83,9 @@ void verify_cpu_asid_bits(void)
 	}
 }
 
+/**
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ */
 static void set_kpti_asid_bits(unsigned long *map)
 {
 	unsigned int len = BITS_TO_LONGS(NUM_USER_ASIDS) * sizeof(unsigned long);
@@ -155,9 +165,16 @@ static bool check_update_reserved_asid(u64 asid, u64 newasid)
 	return hit;
 }
 
+/**
+ *  分配一对 ASID, ASID 见 ARM 的 swapper_pg_dir 注释
+ */
 static u64 new_context(struct mm_struct *mm)
 {
 	static u32 cur_idx = 1;
+
+    /**
+     *  
+     */
 	u64 asid = atomic64_read(&mm->context.id);
 	u64 generation = atomic64_read(&asid_generation);
 
@@ -182,6 +199,8 @@ static u64 new_context(struct mm_struct *mm)
 		/*
 		 * We had a valid ASID in a previous life, so try to re-use
 		 * it if possible.
+		 *
+		 * 
 		 */
 		if (!__test_and_set_bit(asid2idx(asid), asid_map))
 			return newasid;
@@ -346,6 +365,9 @@ asmlinkage void post_ttbr_update_workaround(void)
 			ARM64_WORKAROUND_CAVIUM_27456));
 }
 
+/**
+ *  
+ */
 void cpu_do_switch_mm(phys_addr_t pgd_phys, struct mm_struct *mm)
 {
 	unsigned long ttbr1 = read_sysreg(ttbr1_el1);

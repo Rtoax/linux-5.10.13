@@ -531,9 +531,24 @@ static inline bool pud_table(pud_t pud) { return true; }
 
 extern pgd_t init_pg_dir[PTRS_PER_PGD];
 extern pgd_t init_pg_end[];
+
+/**
+ *  KPTI 在 arm64 中已经使用了两套页表的方案
+ *  用户空间: TTBR0 寄存器获取 用户页表的基地址(mm->pgd)
+ *  内核空间: TTBR1 寄存器获取 内核页表的基地址(swapper_pg_dir)
+ *
+ *  KPTI - Kernel Page-Table Isolation 内核页表隔离
+ *  
+ *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
+ */
 extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 extern pgd_t idmap_pg_dir[PTRS_PER_PGD];
 extern pgd_t idmap_pg_end[];
+
+/**
+ *  跳板页表
+ *  用户态访问内核态地址
+ */
 extern pgd_t tramp_pg_dir[PTRS_PER_PGD];
 
 extern void set_swapper_pgd(pgd_t *pgdp, pgd_t pgd);

@@ -48,10 +48,17 @@ static inline void cpu_set_reserved_ttbr0(void)
 
 void cpu_do_switch_mm(phys_addr_t pgd_phys, struct mm_struct *mm);
 
+/**
+ *  切换页表
+ */
 static inline void cpu_switch_mm(pgd_t *pgd, struct mm_struct *mm)
 {
 	BUG_ON(pgd == swapper_pg_dir);
 	cpu_set_reserved_ttbr0();
+
+    /**
+     *  
+     */
 	cpu_do_switch_mm(virt_to_phys(pgd),mm);
 }
 

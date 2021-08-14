@@ -646,7 +646,8 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		unsigned long highest_vm_end;	/* highest vma end address */
 
         /**
-         *  CR3
+         *  x86 - CR3
+         *  Arm64 - TTBR0
          */
 		pgd_t * pgd;    /* `pgd` 是全局页目录的指针 */
 
