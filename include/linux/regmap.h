@@ -460,7 +460,9 @@ typedef int (*regmap_hw_reg_write)(void *context, unsigned int reg,
 				   unsigned int val);
 typedef int (*regmap_hw_reg_update_bits)(void *context, unsigned int reg,
 					 unsigned int mask, unsigned int val);
-typedef struct regmap_async *(*regmap_hw_async_alloc)(void);
+typedef struct regmap_async *regmap_async_t;//+++
+
+typedef struct regmap_async_t (*regmap_hw_async_alloc)(void);
 typedef void (*regmap_hw_free_context)(void *context);
 
 /**
@@ -497,6 +499,8 @@ typedef void (*regmap_hw_free_context)(void *context);
  *     DEFAULT, BIG is assumed.
  * @max_raw_read: Max raw read size that can be used on the bus.
  * @max_raw_write: Max raw write size that can be used on the bus.
+ *
+ * 硬件bus 寄存器map基础架构 描述符
  */
 struct regmap_bus {
 	bool fast_io;
@@ -843,6 +847,8 @@ bool regmap_ac97_default_volatile(struct device *dev, unsigned int reg);
  * to a struct regmap.  This function should generally not be called
  * directly, it should be called by bus-specific init functions.  The
  * map will be automatically freed by the device management code.
+ *
+ * 初始化 管理 寄存器映射 regmap机制
  */
 #define devm_regmap_init(dev, bus, bus_context, config)			\
 	__regmap_lockdep_wrapper(__devm_regmap_init, #config,		\

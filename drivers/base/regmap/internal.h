@@ -46,6 +46,16 @@ struct regmap_async {
 	void *work_buf;
 };
 
+/**
+ *  在编写设备驱动过程中，需要和寄存器打交道
+ *  在早期 Linux 内核中，每个驱动需要编写代码来访问寄存器，造成大量冗余代码
+ *  linux-3.1 版本引入的 regmap 机制来抽象 和管理 设备寄存器。
+ *
+ *  API
+ *  --------------------------------
+ *  `devm_regmap_init()`,`__devm_regmap_init()`: 初始化
+ *  
+ */
 struct regmap {
 	union {
 		struct mutex mutex;

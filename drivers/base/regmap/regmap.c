@@ -1207,6 +1207,14 @@ static void devm_regmap_release(struct device *dev, void *res)
 	regmap_exit(*(struct regmap **)res);
 }
 
+/**
+ *  注册 register map
+ *
+ *  @dev:   设备指针
+ *  @bus:   regmap 机制特定的总线
+ *  @bus_context:   传递给 regmap 的参数，通常传递寄存器的基地址
+ *  @config:   传递给 regmap 的配置参数，如寄存器的位宽
+ */
 struct regmap *__devm_regmap_init(struct device *dev,
 				  const struct regmap_bus *bus,
 				  void *bus_context,
