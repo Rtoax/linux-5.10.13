@@ -2358,6 +2358,9 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 }
 
 #ifdef CONFIG_POSIX_TIMERS
+/**
+ *  
+ */
 static void watchdog(struct rq *rq, struct task_struct *p)
 {
 	unsigned long soft, hard;
@@ -2400,6 +2403,9 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 	update_curr_rt(rq);
 	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, 1);
 
+    /**
+     *  
+     */
 	watchdog(rq, p);
 
 	/*

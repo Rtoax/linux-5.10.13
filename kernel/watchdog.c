@@ -33,8 +33,8 @@ static DEFINE_MUTEX(watchdog_mutex);
 # define WATCHDOG_DEFAULT	(SOFT_WATCHDOG_ENABLED | NMI_WATCHDOG_ENABLED)
 # define NMI_WATCHDOG_DEFAULT	1
 #else
-# define WATCHDOG_DEFAULT	(SOFT_WATCHDOG_ENABLED)
-# define NMI_WATCHDOG_DEFAULT	0
+//# define WATCHDOG_DEFAULT	(SOFT_WATCHDOG_ENABLED)
+//# define NMI_WATCHDOG_DEFAULT	0
 #endif
 
 unsigned long __read_mostly watchdog_enabled;
@@ -576,18 +576,18 @@ static __init void lockup_detector_setup(void)
 }
 
 #else /* CONFIG_SOFTLOCKUP_DETECTOR */
-static void lockup_detector_reconfigure(void)
-{
-	cpus_read_lock();
-	watchdog_nmi_stop();
-	lockup_detector_update_enable();
-	watchdog_nmi_start();
-	cpus_read_unlock();
-}
-static inline void lockup_detector_setup(void)
-{
-	lockup_detector_reconfigure();
-}
+//static void lockup_detector_reconfigure(void)
+//{
+//	cpus_read_lock();
+//	watchdog_nmi_stop();
+//	lockup_detector_update_enable();
+//	watchdog_nmi_start();
+//	cpus_read_unlock();
+//}
+//static inline void lockup_detector_setup(void)
+//{
+//	lockup_detector_reconfigure();
+//}
 #endif /* !CONFIG_SOFTLOCKUP_DETECTOR */
 
 static void __lockup_detector_cleanup(void)

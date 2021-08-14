@@ -40,6 +40,12 @@ int __read_mostly sysctl_hung_task_check_count = PID_MAX_LIMIT;
 
 /*
  * Zero means infinite timeout - no checking done:
+ *
+ * /proc/sys/kernel/hung_task_timeout_secs
+ *
+ * [rongtao@toa linux-5.10.13]$ sudo sysctl -a | grep hung
+ * [sudo] rongtao 的密码：
+ * kernel.hung_task_timeout_secs = 120
  */
 unsigned long __read_mostly sysctl_hung_task_timeout_secs = CONFIG_DEFAULT_HUNG_TASK_TIMEOUT;
 
@@ -55,6 +61,9 @@ static bool hung_task_show_lock;
 static bool hung_task_call_panic;
 static bool hung_task_show_all_bt;
 
+/**
+ *  
+ */
 static struct task_struct *watchdog_task;
 
 #ifdef CONFIG_SMP
@@ -68,6 +77,10 @@ unsigned int __read_mostly sysctl_hung_task_all_cpu_backtrace;
 /*
  * Should we panic (and reboot, if panic_timeout= is set) when a
  * hung task is detected:
+ *
+ * [rongtao@toa linux-5.10.13]$ sudo sysctl -a | grep hung
+ * [sudo] rongtao 的密码：
+ * kernel.hung_task_panic = 0
  */
 unsigned int __read_mostly sysctl_hung_task_panic =
 				CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE;
@@ -171,6 +184,12 @@ static bool rcu_lock_break(struct task_struct *g, struct task_struct *t)
  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
  * a really long time (120 seconds). If that happens, print out
  * a warning.
+ *
+ *  hung task
+ *  长时间处于不可中断状态`TASK_UNINTERRUPTIBLE`的进程，也就是 D状态的进程。
+ *  hungtask 实现原理是，创建一个普通优先级内核线程，定时扫描所有的进程和线程。
+ *   如果有 D 状态线程，则检查最近是否有调度切换。
+ *   如果没有切换，则说明发生了 hung task
  */
 static void check_hung_uninterruptible_tasks(unsigned long timeout)
 {
@@ -272,6 +291,12 @@ static int hungtask_pm_notify(struct notifier_block *self,
 
 /*
  * kthread which checks for tasks stuck in D state
+ *
+ *  hung task
+ *  长时间处于不可中断状态`TASK_UNINTERRUPTIBLE`的进程，也就是 D状态的进程。
+ *  hungtask 实现原理是，创建一个普通优先级内核线程，定时扫描所有的进程和线程。
+ *   如果有 D 状态线程，则检查最近是否有调度切换。
+ *   如果没有切换，则说明发生了 hung task
  */
 static int watchdog(void *dummy)    /* watchdog */
 {
@@ -280,6 +305,9 @@ static int watchdog(void *dummy)    /* watchdog */
 	set_user_nice(current, 0);  /* 设置 nice */
 
 	for ( ; ; ) {
+
+        //kernel.hung_task_timeout_secs = 120
+        // /proc/sys/kernel/hung_task_timeout_secs
 		unsigned long timeout = sysctl_hung_task_timeout_secs;
 		unsigned long interval = sysctl_hung_task_check_interval_secs;
 		long t;
@@ -301,6 +329,13 @@ static int watchdog(void *dummy)    /* watchdog */
 	return 0;
 }
 
+/**
+ *  hung task
+ *  长时间处于不可中断状态`TASK_UNINTERRUPTIBLE`的进程，也就是 D状态的进程。
+ *  hungtask 实现原理是，创建一个普通优先级内核线程，定时扫描所有的进程和线程。
+ *   如果有 D 状态线程，则检查最近是否有调度切换。
+ *   如果没有切换，则说明发生了 hung task
+ */
 static int __init hung_task_init(void)  /*  */
 {
 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block); /* 通知链 */
@@ -308,6 +343,9 @@ static int __init hung_task_init(void)  /*  */
 	/* Disable hung task detector on suspend */
 	pm_notifier(hungtask_pm_notify, 0); /* 电源管理 */
 
+    /**
+     *  
+     */
 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");  /*  */
 
 	return 0;
