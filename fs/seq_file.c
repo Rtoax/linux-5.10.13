@@ -356,7 +356,7 @@ int seq_release(struct inode *inode, struct file *file)
 EXPORT_SYMBOL(seq_release);
 
 /**
- *	seq_escape -	print string into buffer, escaping some characters
+ *	seq_escape -	print string into buffer, escaping some characters(转义一些字符)
  *	@m:	target buffer
  *	@s:	string
  *	@esc:	set of characters that need escaping
@@ -376,6 +376,9 @@ void seq_escape(struct seq_file *m, const char *s, const char *esc)
 }
 EXPORT_SYMBOL(seq_escape);
 
+/**
+ *  
+ */
 void seq_escape_mem_ascii(struct seq_file *m, const char *src, size_t isz)
 {
 	char *buf;
@@ -387,6 +390,9 @@ void seq_escape_mem_ascii(struct seq_file *m, const char *src, size_t isz)
 }
 EXPORT_SYMBOL(seq_escape_mem_ascii);
 
+/**
+ *  
+ */
 void seq_vprintf(struct seq_file *m, const char *f, va_list args)   /*  */
 {
 	int len;
@@ -403,6 +409,9 @@ void seq_vprintf(struct seq_file *m, const char *f, va_list args)   /*  */
 }
 EXPORT_SYMBOL(seq_vprintf);
 
+/**
+ *  
+ */
 void seq_printf(struct seq_file *m, const char *f, ...) /*  */
 {
 	va_list args;
@@ -414,7 +423,7 @@ void seq_printf(struct seq_file *m, const char *f, ...) /*  */
 EXPORT_SYMBOL(seq_printf);
 
 /**
- *	mangle_path -	mangle and copy path to buffer beginning
+ *	mangle_path -	mangle(碾压) and copy path to buffer beginning
  *	@s: buffer start
  *	@p: beginning of path in above buffer
  *	@esc: set of characters that need escaping

@@ -566,26 +566,39 @@ static inline void pde_set_flags(struct proc_dir_entry *pde)
 		pde->flags |= PROC_ENTRY_PERMANENT;
 }
 
+/**
+ *  
+ */
 struct proc_dir_entry *proc_create_data(const char *name, umode_t mode,
-		struct proc_dir_entry *parent,
-		const struct proc_ops *proc_ops, void *data)
+                                		struct proc_dir_entry *parent,
+                                		const struct proc_ops *_proc_ops, void *data)
 {
 	struct proc_dir_entry *p;
 
 	p = proc_create_reg(name, mode, &parent, data);
 	if (!p)
 		return NULL;
-	p->proc_ops = proc_ops;
+	p->proc_ops = _proc_ops;
 	pde_set_flags(p);
+
+    /**
+     *  
+     */
 	return proc_register(parent, p);
 }
 EXPORT_SYMBOL(proc_create_data);
- 
+
+/**
+ *  创建 /proc 文件
+ */
 struct proc_dir_entry *proc_create(const char *name, umode_t mode,
-				   struct proc_dir_entry *parent,
-				   const struct proc_ops *proc_ops)
+                    				   struct proc_dir_entry *parent,
+                    				   const struct proc_ops *_proc_ops)
 {
-	return proc_create_data(name, mode, parent, proc_ops, NULL);
+    /**
+     *  
+     */
+	return proc_create_data(name, mode, parent, _proc_ops, NULL);
 }
 EXPORT_SYMBOL(proc_create);
 
@@ -684,6 +697,8 @@ void pde_put(struct proc_dir_entry *pde)
 
 /*
  * Remove a /proc entry and free it if it's not currently in use.
+ *
+ * 删除 /proc 文件
  */
 void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
 {
@@ -789,6 +804,9 @@ void *proc_get_parent_data(const struct inode *inode)
 }
 EXPORT_SYMBOL_GPL(proc_get_parent_data);
 
+/**
+ *  移除 /proc 中的文件
+ */
 void proc_remove(struct proc_dir_entry *de)
 {
 	if (de)

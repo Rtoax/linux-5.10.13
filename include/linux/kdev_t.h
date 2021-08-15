@@ -25,6 +25,9 @@
  */
 #define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
 
+/**
+ *  打印设备编号
+ */
 #define print_dev_t(buffer, dev)					\
 	sprintf((buffer), "%u:%u\n", MAJOR(dev), MINOR(dev))
 

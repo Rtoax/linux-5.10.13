@@ -35,9 +35,23 @@ struct seq_file {
 };
 typedef void * ptr_t;
 
+/**
+ *  
+ */
 struct seq_operations {
+    /**
+     *  
+     */
 	ptr_t (*start) (struct seq_file *m, loff_t *pos);
+
+    /**
+     *  
+     */
 	void (*stop) (struct seq_file *m, void *v);
+
+    /**
+     *  将迭代器移动到下一个位置
+     */
 	ptr_t (*next) (struct seq_file *m, void *v, loff_t *pos);
 	int (*show) (struct seq_file *m, void *v);
 };

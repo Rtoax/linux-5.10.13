@@ -184,6 +184,9 @@ int printk(const char *fmt, ...);
  * Please don't use printk_ratelimit(), because it shares ratelimiting state
  * with all other unrelated printk_ratelimit() callsites.  Instead use
  * printk_ratelimited() or plain old __ratelimit().
+ *
+ * 当驱动程序产生错误，停止运行，可能使用 printk 会一直循环打印错误信息。
+ *  我们不希望这样， `printk_ratelimit()` 解决了这个问题
  */
 extern int __printk_ratelimit(const char *func);
 #define printk_ratelimit() __printk_ratelimit(__func__)

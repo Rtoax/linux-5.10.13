@@ -518,11 +518,14 @@ static ssize_t write_profile(struct file *file, const char __user *buf,
 }
 
 static const struct proc_ops profile_proc_ops = {
-	.proc_read	= read_profile,
-	.proc_write	= write_profile,
-	.proc_lseek	= default_llseek,
+	profile_proc_ops.proc_read	= read_profile,
+	profile_proc_ops.proc_write	= write_profile,
+	profile_proc_ops.proc_lseek	= default_llseek,
 };
 
+/**
+ *  
+ */
 int __ref create_proc_profile(void)
 {
 	struct proc_dir_entry *entry;

@@ -1438,6 +1438,9 @@ int get_nfsdfs(struct net *net)
 }
 
 #ifdef CONFIG_PROC_FS
+/**
+ *  
+ */
 static int create_proc_exports_entry(void)
 {
 	struct proc_dir_entry *entry;
@@ -1453,10 +1456,10 @@ static int create_proc_exports_entry(void)
 	return 0;
 }
 #else /* CONFIG_PROC_FS */
-static int create_proc_exports_entry(void)
-{
-	return 0;
-}
+//static int create_proc_exports_entry(void)
+//{
+//	return 0;
+//}
 #endif
 
 unsigned int nfsd_net_id;

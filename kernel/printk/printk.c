@@ -3136,6 +3136,9 @@ int printk_deferred(const char *fmt, ...)
  */
 DEFINE_RATELIMIT_STATE(printk_ratelimit_state, 5 * HZ, 10);
 
+/**
+ *  对循环打印有限制作用
+ */
 int __printk_ratelimit(const char *func)
 {
 	return ___ratelimit(&printk_ratelimit_state, func);
