@@ -12,20 +12,40 @@
  *  模块加载信息
  */
 struct load_info {  /*  */
+    /**
+     *  
+     */
 	const char *name;
+    
 	/* pointer to module in temporary copy, freed at end of load_module() */
 	struct module *mod;
+
+    /**
+     *  
+     */
 	Elf_Ehdr *hdr;
 	unsigned long len;
+
+    /**
+     *  
+     */
 	Elf_Shdr *sechdrs;
 	char *secstrings, *strtab;
 	unsigned long symoffs, stroffs, init_typeoffs, core_typeoffs;
+
+    /**
+     *  
+     */
 	struct _ddebug *debug;
 	unsigned int num_debug;
 	bool sig_ok;
+    
 #ifdef CONFIG_KALLSYMS
 	unsigned long mod_kallsyms_init_off;
 #endif
+    /**
+     *  
+     */
 	struct {
 		unsigned int sym, str, mod, vers, info, pcpu;
 	} index;

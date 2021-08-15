@@ -75,7 +75,7 @@
 #ifdef CONFIG_ARCH_HAS_STRICT_MODULE_RWX
 # define debug_align(X) ALIGN(X, PAGE_SIZE)
 #else
-# define debug_align(X) (X)
+//# define debug_align(X) (X)
 #endif
 
 /* If this is set, the section belongs in the init part of the module */
@@ -400,7 +400,7 @@ extern const s32 __start___kcrctab_unused_gpl[];
 #endif
 
 #ifndef CONFIG_MODVERSIONS
-#define symversion(base, idx) NULL
+//#define symversion(base, idx) NULL
 #else
 #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
 #endif
@@ -742,39 +742,39 @@ bool is_module_percpu_address(unsigned long addr)
 
 #else /* ... !CONFIG_SMP */
 
-static inline void __percpu *mod_percpu(struct module *mod)
-{
-	return NULL;
-}
-static int percpu_modalloc(struct module *mod, struct load_info *info)
-{
-	/* UP modules shouldn't have this section: ENOMEM isn't quite right */
-	if (info->sechdrs[info->index.pcpu].sh_size != 0)
-		return -ENOMEM;
-	return 0;
-}
-static inline void percpu_modfree(struct module *mod)
-{
-}
-static unsigned int find_pcpusec(struct load_info *info)
-{
-	return 0;
-}
-static inline void percpu_modcopy(struct module *mod,
-				  const void *from, unsigned long size)
-{
-	/* pcpusec should be 0, and size of that section should be 0. */
-	BUG_ON(size != 0);
-}
-bool is_module_percpu_address(unsigned long addr)
-{
-	return false;
-}
-
-bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
-{
-	return false;
-}
+//static inline void __percpu *mod_percpu(struct module *mod)
+//{
+//	return NULL;
+//}
+//static int percpu_modalloc(struct module *mod, struct load_info *info)
+//{
+//	/* UP modules shouldn't have this section: ENOMEM isn't quite right */
+//	if (info->sechdrs[info->index.pcpu].sh_size != 0)
+//		return -ENOMEM;
+//	return 0;
+//}
+//static inline void percpu_modfree(struct module *mod)
+//{
+//}
+//static unsigned int find_pcpusec(struct load_info *info)
+//{
+//	return 0;
+//}
+//static inline void percpu_modcopy(struct module *mod,
+//				  const void *from, unsigned long size)
+//{
+//	/* pcpusec should be 0, and size of that section should be 0. */
+//	BUG_ON(size != 0);
+//}
+//bool is_module_percpu_address(unsigned long addr)
+//{
+//	return false;
+//}
+//
+//bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
+//{
+//	return false;
+//}
 
 #endif /* CONFIG_SMP */
 
@@ -1164,25 +1164,25 @@ void module_put(struct module *module)
 EXPORT_SYMBOL(module_put);
 
 #else /* !CONFIG_MODULE_UNLOAD */
-static inline void print_unload_info(struct seq_file *m, struct module *mod)
-{
-	/* We don't know the usage count, or what modules are using. */
-	seq_puts(m, " - -");
-}
-
-static inline void module_unload_free(struct module *mod)
-{
-}
-
-static int ref_module(struct module *a, struct module *b)
-{
-	return strong_try_module_get(b);
-}
-
-static inline int module_unload_init(struct module *mod)
-{
-	return 0;
-}
+//static inline void print_unload_info(struct seq_file *m, struct module *mod)
+//{
+//	/* We don't know the usage count, or what modules are using. */
+//	seq_puts(m, " - -");
+//}
+//
+//static inline void module_unload_free(struct module *mod)
+//{
+//}
+//
+//static int ref_module(struct module *a, struct module *b)
+//{
+//	return strong_try_module_get(b);
+//}
+//
+//static inline int module_unload_init(struct module *mod)
+//{
+//	return 0;
+//}
 #endif /* CONFIG_MODULE_UNLOAD */
 
 static size_t module_flags_taint(struct module *mod, char *buf)
@@ -1379,25 +1379,25 @@ static inline int same_magic(const char *amagic, const char *bmagic,
 	return strcmp(amagic, bmagic) == 0;
 }
 #else
-static inline int check_version(const struct load_info *info,
-				const char *symname,
-				struct module *mod,
-				const s32 *crc)
-{
-	return 1;
-}
-
-static inline int check_modstruct_version(const struct load_info *info,
-					  struct module *mod)
-{
-	return 1;
-}
-
-static inline int same_magic(const char *amagic, const char *bmagic,
-			     bool has_crcs)
-{
-	return strcmp(amagic, bmagic) == 0;
-}
+//static inline int check_version(const struct load_info *info,
+//				const char *symname,
+//				struct module *mod,
+//				const s32 *crc)
+//{
+//	return 1;
+//}
+//
+//static inline int check_modstruct_version(const struct load_info *info,
+//					  struct module *mod)
+//{
+//	return 1;
+//}
+//
+//static inline int same_magic(const char *amagic, const char *bmagic,
+//			     bool has_crcs)
+//{
+//	return strcmp(amagic, bmagic) == 0;
+//}
 #endif /* CONFIG_MODVERSIONS */
 
 static char *get_modinfo(const struct load_info *info, const char *tag);
@@ -1753,23 +1753,23 @@ static void remove_notes_attrs(struct module *mod)
 
 #else
 
-static inline void add_sect_attrs(struct module *mod,
-				  const struct load_info *info)
-{
-}
-
-static inline void remove_sect_attrs(struct module *mod)
-{
-}
-
-static inline void add_notes_attrs(struct module *mod,
-				   const struct load_info *info)
-{
-}
-
-static inline void remove_notes_attrs(struct module *mod)
-{
-}
+//static inline void add_sect_attrs(struct module *mod,
+//				  const struct load_info *info)
+//{
+//}
+//
+//static inline void remove_sect_attrs(struct module *mod)
+//{
+//}
+//
+//static inline void add_notes_attrs(struct module *mod,
+//				   const struct load_info *info)
+//{
+//}
+//
+//static inline void remove_notes_attrs(struct module *mod)
+//{
+//}
 #endif /* CONFIG_KALLSYMS */
 
 static void del_usage_links(struct module *mod)
@@ -1959,29 +1959,29 @@ static void init_param_lock(struct module *mod)
 }
 #else /* !CONFIG_SYSFS */
 
-static int mod_sysfs_setup(struct module *mod,
-			   const struct load_info *info,
-			   struct kernel_param *kparam,
-			   unsigned int num_params)
-{
-	return 0;
-}
-
-static void mod_sysfs_fini(struct module *mod)
-{
-}
-
-static void module_remove_modinfo_attrs(struct module *mod, int end)
-{
-}
-
-static void del_usage_links(struct module *mod)
-{
-}
-
-static void init_param_lock(struct module *mod)
-{
-}
+//static int mod_sysfs_setup(struct module *mod,
+//			   const struct load_info *info,
+//			   struct kernel_param *kparam,
+//			   unsigned int num_params)
+//{
+//	return 0;
+//}
+//
+//static void mod_sysfs_fini(struct module *mod)
+//{
+//}
+//
+//static void module_remove_modinfo_attrs(struct module *mod, int end)
+//{
+//}
+//
+//static void del_usage_links(struct module *mod)
+//{
+//}
+//
+//static void init_param_lock(struct module *mod)
+//{
+//}
 #endif /* CONFIG_SYSFS */
 
 static void mod_sysfs_teardown(struct module *mod)
@@ -2030,7 +2030,7 @@ static void module_enable_x(const struct module *mod)
 	frob_text(&mod->init_layout, set_memory_x);
 }
 #else /* !CONFIG_ARCH_HAS_STRICT_MODULE_RWX */
-static void module_enable_x(const struct module *mod) { }
+//static void module_enable_x(const struct module *mod) { }
 #endif /* CONFIG_ARCH_HAS_STRICT_MODULE_RWX */
 
 #ifdef CONFIG_STRICT_MODULE_RWX
@@ -2108,13 +2108,13 @@ static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 }
 
 #else /* !CONFIG_STRICT_MODULE_RWX */
-static void module_enable_nx(const struct module *mod) { }
-static void module_enable_ro(const struct module *mod, bool after_init) {}
-static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
-				       char *secstrings, struct module *mod)
-{
-	return 0;
-}
+//static void module_enable_nx(const struct module *mod) { }
+//static void module_enable_ro(const struct module *mod, bool after_init) {}
+//static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
+//				       char *secstrings, struct module *mod)
+//{
+//	return 0;
+//}
 #endif /*  CONFIG_STRICT_MODULE_RWX */
 
 #ifdef CONFIG_LIVEPATCH
@@ -2182,14 +2182,14 @@ static void free_module_elf(struct module *mod)
 	kfree(mod->klp_info);
 }
 #else /* !CONFIG_LIVEPATCH */
-static int copy_module_elf(struct module *mod, struct load_info *info)
-{
-	return 0;
-}
-
-static void free_module_elf(struct module *mod)
-{
-}
+//static int copy_module_elf(struct module *mod, struct load_info *info)
+//{
+//	return 0;
+//}
+//
+//static void free_module_elf(struct module *mod)
+//{
+//}
 #endif /* CONFIG_LIVEPATCH */
 
 void __weak module_memfree(void *module_region)
@@ -2810,13 +2810,13 @@ static void add_kallsyms(struct module *mod, const struct load_info *info)
 	mod->core_kallsyms.num_symtab = ndst;
 }
 #else
-static inline void layout_symtab(struct module *mod, struct load_info *info)
-{
-}
-
-static void add_kallsyms(struct module *mod, const struct load_info *info)
-{
-}
+//static inline void layout_symtab(struct module *mod, struct load_info *info)
+//{
+//}
+//
+//static void add_kallsyms(struct module *mod, const struct load_info *info)
+//{
+//}
 #endif /* CONFIG_KALLSYMS */
 
 static void dynamic_debug_setup(struct module *mod, struct _ddebug *debug, unsigned int num)
@@ -2870,13 +2870,16 @@ static void kmemleak_load_module(const struct module *mod,
 	}
 }
 #else
-static inline void kmemleak_load_module(const struct module *mod,
-					const struct load_info *info)
-{
-}
+//static inline void kmemleak_load_module(const struct module *mod,
+//					const struct load_info *info)
+//{
+//}
 #endif
 
 #ifdef CONFIG_MODULE_SIG
+/**
+ *  
+ */
 static int module_sig_check(struct load_info *info, int flags)
 {
 	int err = -ENODATA;
@@ -2929,11 +2932,12 @@ static int module_sig_check(struct load_info *info, int flags)
 		return err;
 	}
 }
+
 #else /* !CONFIG_MODULE_SIG */
-static int module_sig_check(struct load_info *info, int flags)
-{
-	return 0;
-}
+//static int module_sig_check(struct load_info *info, int flags)
+//{
+//	return 0;
+//}
 #endif /* !CONFIG_MODULE_SIG */
 
 /* Sanity checks against invalid binaries, wrong arch, weird elf version. */
@@ -2942,6 +2946,9 @@ static int elf_header_check(struct load_info *info)
 	if (info->len < sizeof(*(info->hdr)))
 		return -ENOEXEC;
 
+    /**
+     *  ELF 文件开头有个 "ELF" 字符串
+     */
 	if (memcmp(info->hdr->e_ident, ELFMAG, SELFMAG) != 0
 	    || info->hdr->e_type != ET_REL
 	    || !elf_check_arch(info->hdr)
@@ -2958,44 +2965,58 @@ static int elf_header_check(struct load_info *info)
 
 #define COPY_CHUNK_SIZE (16*PAGE_SIZE)
 
+/**
+ *  
+ */
 static int copy_chunked_from_user(void *dst, const void __user *usrc, unsigned long len)
 {
+    /**
+     *  
+     */
 	do {
 		unsigned long n = min(len, COPY_CHUNK_SIZE);
 
+        /**
+         *  
+         */
 		if (copy_from_user(dst, usrc, n) != 0)
 			return -EFAULT;
+        
 		cond_resched();
 		dst += n;
 		usrc += n;
 		len -= n;
+        
 	} while (len);
+    
 	return 0;
 }
 
 #ifdef CONFIG_LIVEPATCH
+/**
+ *  
+ */
 static int check_modinfo_livepatch(struct module *mod, struct load_info *info)
 {
 	if (get_modinfo(info, "livepatch")) {
 		mod->klp = true;
 		add_taint_module(mod, TAINT_LIVEPATCH, LOCKDEP_STILL_OK);
-		pr_notice_once("%s: tainting kernel with TAINT_LIVEPATCH\n",
-			       mod->name);
+		pr_notice_once("%s: tainting kernel with TAINT_LIVEPATCH\n", mod->name);
 	}
 
 	return 0;
 }
 #else /* !CONFIG_LIVEPATCH */
-static int check_modinfo_livepatch(struct module *mod, struct load_info *info)
-{
-	if (get_modinfo(info, "livepatch")) {
-		pr_err("%s: module is marked as livepatch module, but livepatch support is disabled",
-		       mod->name);
-		return -ENOEXEC;
-	}
-
-	return 0;
-}
+//static int check_modinfo_livepatch(struct module *mod, struct load_info *info)
+//{
+//	if (get_modinfo(info, "livepatch")) {
+//		pr_err("%s: module is marked as livepatch module, but livepatch support is disabled",
+//		       mod->name);
+//		return -ENOEXEC;
+//	}
+//
+//	return 0;
+//}
 #endif /* CONFIG_LIVEPATCH */
 
 static void check_modinfo_retpoline(struct module *mod, struct load_info *info)
@@ -3007,7 +3028,13 @@ static void check_modinfo_retpoline(struct module *mod, struct load_info *info)
 		mod->name);
 }
 
-/* Sets info->hdr and info->len. */
+/**
+ *  Sets info->hdr and info->len. 
+ *
+ *  @umod:  用户空间传入的 .ko 文件
+ *  @len:   
+ *  @info:  
+ */
 static int copy_module_from_user(const void __user *umod, unsigned long len,
 				  struct load_info *info)
 {
@@ -3026,11 +3053,17 @@ static int copy_module_from_user(const void __user *umod, unsigned long len,
 	if (!info->hdr)
 		return -ENOMEM;
 
+    /**
+     *  
+     */
 	if (copy_chunked_from_user(info->hdr, umod, info->len) != 0) {
 		err = -EFAULT;
 		goto out;
 	}
 
+    /**
+     *  
+     */
 	err = security_kernel_post_load_data((char *)info->hdr, info->len,
 					     LOADING_MODULE, "init_module");
 out:
@@ -3606,6 +3639,8 @@ static void do_free_init(struct work_struct *w)
  *
  * Keep it uninlined to provide a reliable breakpoint target, e.g. for the gdb
  * helper command 'lx-symbols'.
+ * 
+ * 
  */
 static noinline int do_init_module(struct module *mod)
 {
@@ -3626,6 +3661,7 @@ static noinline int do_init_module(struct module *mod)
 	current->flags &= ~PF_USED_ASYNC;
 
 	do_mod_ctors(mod);
+    
 	/* Start the module */
 	if (mod->init != NULL)
 		ret = do_one_initcall(mod->init);
@@ -3839,35 +3875,57 @@ static int unknown_module_param_cb(char *param, char *val, const char *modname,
 	return 0;
 }
 
-/* Allocate and load the module: note that size of section 0 is always
-   zero, and we rely on this for optional sections. */
-static int load_module(struct load_info *info, const char __user *uargs,
-		       int flags)
+/**
+ *  Allocate and load the module: note that size of section 0 is always
+ *  zero, and we rely on this for optional sections. 
+ *
+ *  加载一个 ko 模块到内核
+ *  
+ *  @info:  
+ *  @uargs: 
+ *  @flags: 
+ */
+static int load_module(struct load_info *info, const char __user *uargs, int flags)
 {
 	struct module *mod;
 	long err = 0;
 	char *after_dashes;
 
+    /**
+     *  
+     */
 	err = elf_header_check(info);
 	if (err) {
 		pr_err("Module has invalid ELF header\n");
 		goto free_copy;
 	}
 
+    /**
+     *  
+     */
 	err = setup_load_info(info, flags);
 	if (err)
 		goto free_copy;
 
+    /**
+     *  黑名单
+     */
 	if (blacklisted(info->name)) {
 		err = -EPERM;
 		pr_err("Module %s is blacklisted\n", info->name);
 		goto free_copy;
 	}
 
+    /**
+     *  
+     */
 	err = module_sig_check(info, flags);
 	if (err)
 		goto free_copy;
 
+    /**
+     *  
+     */
 	err = rewrite_section_headers(info, flags);
 	if (err)
 		goto free_copy;
@@ -3912,6 +3970,9 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	if (err)
 		goto unlink_mod;
 
+    /**
+     *  
+     */
 	init_param_lock(mod);
 
 	/* Now we've got everything in the final locations, we can
@@ -3932,10 +3993,16 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	if (err < 0)
 		goto free_modinfo;
 
+    /**
+     *  
+     */
 	err = apply_relocations(mod, info);
 	if (err < 0)
 		goto free_modinfo;
 
+    /**
+     *  
+     */
 	err = post_relocation(mod, info);
 	if (err < 0)
 		goto free_modinfo;
@@ -3949,11 +4016,17 @@ static int load_module(struct load_info *info, const char __user *uargs,
 		goto free_arch_cleanup;
 	}
 
+    /**
+     *  
+     */
 	dynamic_debug_setup(mod, info->debug, info->num_debug);
 
 	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
 	ftrace_module_init(mod);
 
+    /**
+     *  
+     */
 	/* Finally it's fully formed, ready to start executing. */
 	err = complete_formation(mod, info);
 	if (err)
@@ -3965,8 +4038,8 @@ static int load_module(struct load_info *info, const char __user *uargs,
 
 	/* Module is ready to execute: parsing args may do that. */
 	after_dashes = parse_args(mod->name, mod->args, mod->kp, mod->num_kp,
-				  -32768, 32767, mod,
-				  unknown_module_param_cb);
+            				  -32768, 32767, mod,
+            				  unknown_module_param_cb);
 	if (IS_ERR(after_dashes)) {
 		err = PTR_ERR(after_dashes);
 		goto coming_cleanup;
@@ -3992,6 +4065,9 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	/* Done! */
 	trace_module_load(mod);
 
+    /**
+     *  
+     */
 	return do_init_module(mod);
 
  sysfs_cleanup:
@@ -4042,13 +4118,16 @@ static int load_module(struct load_info *info, const char __user *uargs,
 /**
  *  insmod - 插入内核模块
  */
-int init_module(void *module_image, unsigned long len, const char *param_values);
+int init_module(void *umod, unsigned long len, const char *uargs);
 SYSCALL_DEFINE3(init_module, void __user *, umod,
 		unsigned long, len, const char __user *, uargs)
 {
 	int err;
 	struct load_info info = { };
 
+    /**
+     *  
+     */
 	err = may_init_module();
 	if (err)
 		return err;
@@ -4056,6 +4135,9 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	pr_debug("init_module: umod=%p, len=%lu, uargs=%p\n",
 	       umod, len, uargs);
 
+    /**
+     *  
+     */
 	err = copy_module_from_user(umod, len, &info);
 	if (err)
 		return err;
@@ -4076,23 +4158,28 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 	void *hdr = NULL;
 	int err;
 
+    /**
+     *  
+     */
 	err = may_init_module();
 	if (err)
 		return err;
 
 	pr_debug("finit_module: fd=%d, uargs=%p, flags=%i\n", fd, uargs, flags);
 
-	if (flags & ~(MODULE_INIT_IGNORE_MODVERSIONS
-		      |MODULE_INIT_IGNORE_VERMAGIC))
+	if (flags & ~(MODULE_INIT_IGNORE_MODVERSIONS|MODULE_INIT_IGNORE_VERMAGIC))
 		return -EINVAL;
 
     /**
      *  
      */
-	err = kernel_read_file_from_fd(fd, 0, &hdr, INT_MAX, NULL,
-				       READING_MODULE);
+	err = kernel_read_file_from_fd(fd, 0, &hdr, INT_MAX, NULL, READING_MODULE);
 	if (err < 0)
 		return err;
+
+    /**
+     *  
+     */
 	info.hdr = hdr;
 	info.len = err;
 

@@ -171,9 +171,12 @@ int kernel_read_file_from_path_initns(const char *path, loff_t offset,
 }
 EXPORT_SYMBOL_GPL(kernel_read_file_from_path_initns);
 
+/**
+ *  
+ */
 int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
-			     size_t buf_size, size_t *file_size,
-			     enum kernel_read_file_id id)
+                			     size_t buf_size, size_t *file_size,
+                			     enum kernel_read_file_id id)
 {
 	struct fd f = fdget(fd);
 	int ret = -EBADF;

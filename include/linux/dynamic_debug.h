@@ -38,6 +38,10 @@ struct _ddebug {    /*  */
 #define _DPRINTK_FLAGS_DEFAULT 0
 #endif
 	unsigned int flags:8;
+
+    /**
+     *  
+     */
 #ifdef CONFIG_JUMP_LABEL
 	union {
 		struct static_key_true dd_key_true;

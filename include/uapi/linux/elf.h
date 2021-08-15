@@ -341,6 +341,9 @@ typedef struct elf64_shdr {
 #define	ELFMAG1		'E'
 #define	ELFMAG2		'L'
 #define	ELFMAG3		'F'
+/**
+ *  ELF 文件开头有个 "ELF" 字符串
+ */
 #define	ELFMAG		"\177ELF"
 #define	SELFMAG		4
 
