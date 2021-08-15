@@ -11,6 +11,16 @@ struct file_operations;
 struct inode;
 struct module;
 
+/**
+ *  字符设备
+ *
+ * 接口
+ *  ------------------------
+ *  cdev_alloc()
+ *  cdev_init()
+ *  cdev_add()
+ *  cdev_del()
+ */
 struct cdev {
 	struct kobject kobj;
 	struct module *owner;

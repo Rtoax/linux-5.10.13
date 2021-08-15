@@ -1,1 +1,1 @@
-#define check_copy_size(A, B, C) (1)
+//#define check_copy_size(A, B, C) (1)

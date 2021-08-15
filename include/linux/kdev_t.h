@@ -4,11 +4,25 @@
 
 #include <uapi/linux/kdev_t.h>
 
+/**
+ * 31           20 19                      0
+ *  +-------------+------------------------+ 
+ *  |   MAJOR     |         MINOR          |
+ *  +-------------+------------------------+ 
+ */
 #define MINORBITS	20
 #define MINORMASK	((1U << MINORBITS) - 1)
 
+/**
+ *  major: 主设备号
+ *  minor: 次设备号
+ */
 #define MAJOR(dev)	((unsigned int) ((dev) >> MINORBITS))
 #define MINOR(dev)	((unsigned int) ((dev) & MINORMASK))
+
+/**
+ *  将 主次设备号 转换为 dev_t 类型
+ */
 #define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
 
 #define print_dev_t(buffer, dev)					\

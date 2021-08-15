@@ -12,11 +12,17 @@
 struct page;
 struct pipe_inode_info;
 
+/**
+ *  
+ */
 struct kvec {
 	void *iov_base; /* and that should *never* hold a userland pointer */
 	size_t iov_len;
 };
 
+/**
+ *  
+ */
 enum iter_type {
 	/* iter types */
 	ITER_IOVEC = 4,
@@ -26,6 +32,9 @@ enum iter_type {
 	ITER_DISCARD = 64,
 };
 
+/**
+ *  
+ */
 struct iov_iter {
 	/*
 	 * Bit 0 is the read/write bit, set if we're writing.

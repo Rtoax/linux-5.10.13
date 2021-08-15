@@ -131,19 +131,19 @@ __copy_to_user(void __user *to, const void *from, unsigned long n)
 }
 
 #ifdef INLINE_COPY_FROM_USER
-static inline __must_check unsigned long
-_copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	unsigned long res = n;
-	might_fault();
-	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
-		instrument_copy_from_user(to, from, n);
-		res = raw_copy_from_user(to, from, n);
-	}
-	if (unlikely(res))
-		memset(to + (n - res), 0, res);
-	return res;
-}
+//static inline __must_check unsigned long
+//_copy_from_user(void *to, const void __user *from, unsigned long n)
+//{
+//	unsigned long res = n;
+//	might_fault();
+//	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
+//		instrument_copy_from_user(to, from, n);
+//		res = raw_copy_from_user(to, from, n);
+//	}
+//	if (unlikely(res))
+//		memset(to + (n - res), 0, res);
+//	return res;
+//}
 #else
 extern __must_check unsigned long
 _copy_from_user(void *, const void __user *, unsigned long);
@@ -167,6 +167,9 @@ extern __must_check unsigned long
 _copy_to_user(void __user *, const void *, unsigned long);
 #endif
 
+/**
+ *  
+ */
 static __always_inline unsigned long __must_check
 copy_from_user(void *to, const void __user *from, unsigned long n)
 {/* 从用户态向内核态拷贝数据 */
@@ -175,6 +178,9 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
 	return n;
 }
 
+/**
+ *  
+ */
 static __always_inline unsigned long __must_check
 copy_to_user(void __user *to, const void *from, unsigned long n)    /*  */
 {

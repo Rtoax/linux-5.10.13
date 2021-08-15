@@ -29,3 +29,13 @@ blk_peek_request: 提取请求
 blk_start_request: 启动请求
 blk_end_request_all: 报告完成
 __blk_end_request_all: 在持有队列锁的场景下调用
+
+## proc
+
+/proc/devices
+Block devices:
+259 blkext
+  8 sd
+  9 md
+ 11 sr
+ 65 sd

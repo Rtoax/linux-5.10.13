@@ -5,6 +5,9 @@
 struct dentry;
 struct vfsmount;
 
+/**
+ *  
+ */
 struct path {   /* 路径 */
 	struct vfsmount *mnt;
 	struct dentry *dentry;  /*  */

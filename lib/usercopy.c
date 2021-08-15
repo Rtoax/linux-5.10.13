@@ -6,6 +6,9 @@
 
 /* out-of-line parts */
 
+/**
+ *  
+ */
 #ifndef INLINE_COPY_FROM_USER
 unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
 {
@@ -13,6 +16,9 @@ unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n
 	might_fault();
 	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
 		instrument_copy_from_user(to, from, n);
+        /**
+         *  
+         */
 		res = raw_copy_from_user(to, from, n);
 	}
 	if (unlikely(res))

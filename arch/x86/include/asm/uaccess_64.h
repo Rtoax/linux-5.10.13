@@ -24,6 +24,9 @@ copy_user_generic_string(void *to, const void *from, unsigned len);
 __must_check unsigned long
 copy_user_generic_unrolled(void *to, const void *from, unsigned len);
 
+/**
+ *  
+ */
 static __always_inline __must_check unsigned long
 copy_user_generic(void *to, const void *from, unsigned len)
 {
@@ -46,9 +49,15 @@ copy_user_generic(void *to, const void *from, unsigned len)
 	return ret;
 }
 
+/**
+ *  
+ */
 static __always_inline __must_check unsigned long
 raw_copy_from_user(void *dst, const void __user *src, unsigned long size)
 {
+    /**
+     *  
+     */
 	return copy_user_generic(dst, (__force void *)src, size);
 }
 

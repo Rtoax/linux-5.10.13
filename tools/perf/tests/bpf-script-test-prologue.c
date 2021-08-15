@@ -20,8 +20,8 @@
 # undef if
 #endif
 
-#define FMODE_READ		0x1
-#define FMODE_WRITE		0x2
+//#define FMODE_READ		0x1
+//#define FMODE_WRITE		0x2
 
 static void (*bpf_trace_printk)(const char *fmt, int fmt_size, ...) =
 	(void *) 6;

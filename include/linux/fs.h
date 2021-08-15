@@ -634,6 +634,8 @@ struct fsnotify_mark_connector;
  * Keep mostly read-only and often accessed (especially for
  * the RCU path lookup and 'stat' data) fields at the beginning
  * of the 'struct inode'
+ *
+ * 表示文件
  */
 struct inode {
 	umode_t			i_mode;
@@ -668,6 +670,13 @@ struct inode {
 		const unsigned int i_nlink;
 		unsigned int __i_nlink;
 	};
+
+    /**
+     *  表示设备文件的 inode 结构，该字段包含了真正的设备编号
+     *
+     *  imajor() 主 inode 号
+     *  iminor() 次 inode 号
+     */
 	dev_t			i_rdev;
 	loff_t			i_size;
 	struct timespec64	i_atime;
@@ -725,9 +734,17 @@ struct inode {
 	struct file_lock_context	*i_flctx;
 	struct address_space	i_data;
 	struct list_head	i_devices;
+
+    /**
+     *  
+     */
 	union {
 		struct pipe_inode_info	*i_pipe;    /* pipe info */
 		struct block_device	*i_bdev;
+
+        /**
+         *  字符设备
+         */
 		struct cdev		*i_cdev;
 		char			*i_link;
 		unsigned		i_dir_seq;
@@ -908,6 +925,9 @@ static inline unsigned iminor(const struct inode *inode)
 	return MINOR(inode->i_rdev);
 }
 
+/**
+ *  
+ */
 static inline unsigned imajor(const struct inode *inode)
 {
 	return MAJOR(inode->i_rdev);
@@ -945,14 +965,22 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 }
 
 /**
- *  打开的文件结构
+ *  打开的文件结构，在 open 时创建
  */
 struct file {   /*  */
 	union {
 		struct llist_node	fu_llist;   /* 单链表 */
 		struct rcu_head 	fu_rcuhead; /* 单链表+回调函数 */
 	} f_u;
+
+    /**
+     *  
+     */
 	struct path		f_path;         /* 文件路径 */
+
+    /**
+     *  
+     */
 	struct inode		*f_inode;	/* cached value */
 	const struct file_operations	*f_op;  /* 文件操作符 */
 
@@ -963,9 +991,27 @@ struct file {   /*  */
 	spinlock_t		f_lock;         /* 文件锁 */
 	enum rw_hint	f_write_hint;   /*  */
 	atomic_long_t	f_count;
+
+    /**
+     *  文件标志
+     *  O_RDONLY - 只读
+     *  O_NONBLOCK - 检查是否非阻塞
+     *  O_SYNC - 
+     *  [...]
+     */
 	unsigned int 	f_flags;
+    /**
+     *  文件模式， 
+     *  FMODE_READ - 文件可读
+     *  FMODE_WRITE - 文件可写
+     *  [...]
+     */
 	fmode_t			f_mode;
 	struct mutex	f_pos_lock;
+
+    /**
+     *  当前的读写位置
+     */
 	loff_t			f_pos;
 	struct fown_struct	f_owner;    /* 文件拥有者 */
 	const struct cred	*f_cred;    /* 文件安全上下文 */
@@ -979,6 +1025,8 @@ struct file {   /*  */
 
     /**
      *  epoll 中对应 struct eventpoll 结构
+     *
+     *  [...]
      */
 	void			*private_data;
 
@@ -992,6 +1040,9 @@ struct file {   /*  */
 
 #endif /* #ifdef CONFIG_EPOLL */
 
+    /**
+     *  
+     */
 	struct address_space	*f_mapping; /* 文件缓存 */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
@@ -1726,7 +1777,14 @@ struct iov_iter;
  *  
  */
 struct file_operations {    /* 文件操作符 */
+    /**
+     *  
+     */
 	struct module *owner;
+
+    /**
+     *  修改文件当前读写位置
+     */
 	loff_t (*llseek) (struct file *, loff_t, int);
 
     /**
@@ -1738,28 +1796,65 @@ struct file_operations {    /* 文件操作符 */
      *  
      */
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
+
+    /**
+     *  原来叫做 readv/writev
+     */
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
+
+    /**
+     *  
+     */
 	int (*iopoll)(struct kiocb *kiocb, bool spin);
 	int (*iterate) (struct file *, struct dir_context *);
 	int (*iterate_shared) (struct file *, struct dir_context *);
+
+    /**
+     *  poll, select, epoll 的后端实现
+     *  如果 该poll 指针=NULL，则设备会被认为即可读也可写，并且不会被阻塞
+     */
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
+
+    /**
+     *  
+     */
 	int (*mmap) (struct file *, struct vm_area_struct *);
 
     unsigned long mmap_supported_flags;
     
 	int (*open) (struct inode *, struct file *);
+
+    /**
+     *  发生在进程关闭设备文件描述符的时候
+     */
 	int (*flush) (struct file *, fl_owner_t id);
+
+    /**
+     *  struct file 结构被释放，将调用这个函数
+     */
 	int (*release) (struct inode *, struct file *);
+
+    /**
+     *  fsync 系统调用的后端实现
+     */
 	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
 	int (*fasync) (int, struct file *, int);
+
+    /**
+     *  用于实现文件锁定
+     */
 	int (*lock) (struct file *, int, struct file_lock *);
-	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 
     /**
      *  
+     */
+	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
+
+    /**
+     *  该方法的目的是为了在进程的地址空间中找到一个合适的位置，以便将底层设备中的内存段映射到这个位置。
      *  
      *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
      *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
@@ -1769,6 +1864,10 @@ struct file_operations {    /* 文件操作符 */
      *  proc_reg_file_ops->get_unmapped_area        = proc_reg_get_unmapped_area,
      */
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+
+    /**
+     *  该方法允许模块检查传递给 fcntl(F_SETFL, ...)调用的标志
+     */
 	int (*check_flags)(int);
 	int (*flock) (struct file *, int, struct file_lock *);
 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
@@ -1777,9 +1876,13 @@ struct file_operations {    /* 文件操作符 */
 	long (*fallocate)(struct file *file, int mode, loff_t offset,
 			  loff_t len);
 	void (*show_fdinfo)(struct seq_file *m, struct file *f);
+    
 #ifndef CONFIG_MMU
-//	unsigned (*mmap_capabilities)(struct file *);
+	unsigned (*mmap_capabilities)(struct file *);
 #endif
+    /**
+     *  
+     */
 	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
 			loff_t, size_t, unsigned int);
 	loff_t (*remap_file_range)(struct file *file_in, loff_t pos_in,
@@ -2478,12 +2581,18 @@ extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
 extern void unregister_chrdev_region(dev_t, unsigned);
 extern void chrdev_show(struct seq_file *,off_t);
 
+/**
+ *  注册一个字符设备驱动程序
+ */
 static inline int register_chrdev(unsigned int major, const char *name,
 				  const struct file_operations *fops)
 {
 	return __register_chrdev(major, 0, 256, name, fops);
 }
 
+/**
+ *  注销一个字符设备驱动程序
+ */
 static inline void unregister_chrdev(unsigned int major, const char *name)
 {
 	__unregister_chrdev(major, 0, 256, name);

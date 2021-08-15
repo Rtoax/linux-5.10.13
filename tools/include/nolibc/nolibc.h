@@ -433,16 +433,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_CREAT          0x40
-#define O_EXCL           0x80
-#define O_NOCTTY        0x100
-#define O_TRUNC         0x200
-#define O_APPEND        0x400
-#define O_NONBLOCK      0x800
-#define O_DIRECTORY   0x10000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_CREAT          0x40
+//#define O_EXCL           0x80
+//#define O_NOCTTY        0x100
+//#define O_TRUNC         0x200
+//#define O_APPEND        0x400
+//#define O_NONBLOCK      0x800
+//#define O_DIRECTORY   0x10000
 
 /* The struct returned by the stat() syscall, equivalent to stat64(). The
  * syscall returns 116 bytes and stops in the middle of __unused.
@@ -613,16 +613,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_CREAT          0x40
-#define O_EXCL           0x80
-#define O_NOCTTY        0x100
-#define O_TRUNC         0x200
-#define O_APPEND        0x400
-#define O_NONBLOCK      0x800
-#define O_DIRECTORY   0x10000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_CREAT          0x40
+//#define O_EXCL           0x80
+//#define O_NOCTTY        0x100
+//#define O_TRUNC         0x200
+//#define O_APPEND        0x400
+//#define O_NONBLOCK      0x800
+//#define O_DIRECTORY   0x10000
 
 /* The struct returned by the stat() syscall, 32-bit only, the syscall returns
  * exactly 56 bytes (stops before the unused array).
@@ -798,16 +798,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_CREAT          0x40
-#define O_EXCL           0x80
-#define O_NOCTTY        0x100
-#define O_TRUNC         0x200
-#define O_APPEND        0x400
-#define O_NONBLOCK      0x800
-#define O_DIRECTORY    0x4000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_CREAT          0x40
+//#define O_EXCL           0x80
+//#define O_NOCTTY        0x100
+//#define O_TRUNC         0x200
+//#define O_APPEND        0x400
+//#define O_NONBLOCK      0x800
+//#define O_DIRECTORY    0x4000
 
 /* The struct returned by the stat() syscall, 32-bit only, the syscall returns
  * exactly 56 bytes (stops before the unused array). In big endian, the format
@@ -995,16 +995,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_CREAT          0x40
-#define O_EXCL           0x80
-#define O_NOCTTY        0x100
-#define O_TRUNC         0x200
-#define O_APPEND        0x400
-#define O_NONBLOCK      0x800
-#define O_DIRECTORY    0x4000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_CREAT          0x40
+//#define O_EXCL           0x80
+//#define O_NOCTTY        0x100
+//#define O_TRUNC         0x200
+//#define O_APPEND        0x400
+//#define O_NONBLOCK      0x800
+//#define O_DIRECTORY    0x4000
 
 /* The struct returned by the newfstatat() syscall. Differs slightly from the
  * x86_64's stat one by field ordering, so be careful.
@@ -1201,16 +1201,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_APPEND       0x0008
-#define O_NONBLOCK     0x0080
-#define O_CREAT        0x0100
-#define O_TRUNC        0x0200
-#define O_EXCL         0x0400
-#define O_NOCTTY       0x0800
-#define O_DIRECTORY   0x10000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_APPEND       0x0008
+//#define O_NONBLOCK     0x0080
+//#define O_CREAT        0x0100
+//#define O_TRUNC        0x0200
+//#define O_EXCL         0x0400
+//#define O_NOCTTY       0x0800
+//#define O_DIRECTORY   0x10000
 
 /* The struct returned by the stat() syscall. 88 bytes are returned by the
  * syscall.
@@ -1398,16 +1398,16 @@ asm(".section .text\n"
     "");
 
 /* fcntl / open */
-#define O_RDONLY            0
-#define O_WRONLY            1
-#define O_RDWR              2
-#define O_CREAT         0x100
-#define O_EXCL          0x200
-#define O_NOCTTY        0x400
-#define O_TRUNC        0x1000
-#define O_APPEND       0x2000
-#define O_NONBLOCK     0x4000
-#define O_DIRECTORY  0x200000
+//#define O_RDONLY            0
+//#define O_WRONLY            1
+//#define O_RDWR              2
+//#define O_CREAT         0x100
+//#define O_EXCL          0x200
+//#define O_NOCTTY        0x400
+//#define O_TRUNC        0x1000
+//#define O_APPEND       0x2000
+//#define O_NONBLOCK     0x4000
+//#define O_DIRECTORY  0x200000
 
 struct sys_stat_struct {
 	unsigned long	st_dev;		/* Device.  */
