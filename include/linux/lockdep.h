@@ -195,6 +195,9 @@ lockdep_init_map_wait(struct lockdep_map *lock, const char *name,
 	lockdep_init_map_waits(lock, name, key, subclass, inner, LD_WAIT_INV);
 }
 
+/**
+ *  
+ */
 static inline void lockdep_init_map(struct lockdep_map *lock, const char *name,
 			     struct lock_class_key *key, int subclass)
 {

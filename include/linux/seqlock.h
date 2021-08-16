@@ -279,6 +279,139 @@ SEQCOUNT_LOCKNAME(rwlock,       rwlock_t,        __SEQ_RT, s->lock,        read,
 SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex,    mutex_lock(s->lock))
 SEQCOUNT_LOCKNAME(ww_mutex,     struct ww_mutex, true,     &s->lock->base, ww_mutex, ww_mutex_lock(s->lock, NULL))
 
+{}
+
+#ifdef _rtoax_GCC_E________________________________
+
+typedef struct seqcount_raw_spinlock { 
+    seqcount_t seqcount; 
+    __SEQ_LOCK(raw_spinlock_t *lock); 
+} seqcount_raw_spinlock_t; 
+
+static __always_inline seqcount_t * __seqprop_raw_spinlock_ptr(seqcount_raw_spinlock_t *s) { 
+    return &s->seqcount; 
+} 
+static __always_inline unsigned __seqprop_raw_spinlock_sequence(const seqcount_raw_spinlock_t *s) { 
+    unsigned seq = READ_ONCE(s->seqcount.sequence); 
+    if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return seq; 
+    if (false && unlikely(seq & 1)) { 
+        __SEQ_LOCK(raw_spin_lock(s->lock)); 
+        __SEQ_LOCK(raw_spin_unlock(s->lock)); 
+        seq = READ_ONCE(s->seqcount.sequence); 
+    } return seq; 
+} 
+static __always_inline bool __seqprop_raw_spinlock_preemptible(const seqcount_raw_spinlock_t *s) { 
+    if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return false; 
+    return false; 
+} 
+static __always_inline void __seqprop_raw_spinlock_assert(const seqcount_raw_spinlock_t *s) { 
+    __SEQ_LOCK(lockdep_assert_held(s->lock)); 
+}
+
+
+typedef struct seqcount_spinlock { 
+    seqcount_t seqcount; 
+    __SEQ_LOCK(spinlock_t *lock); 
+} seqcount_spinlock_t; 
+
+static __always_inline seqcount_t * __seqprop_spinlock_ptr(seqcount_spinlock_t *s) { 
+    return &s->seqcount; 
+} 
+static __always_inline unsigned __seqprop_spinlock_sequence(const seqcount_spinlock_t *s) { 
+    unsigned seq = READ_ONCE(s->seqcount.sequence); 
+    if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return seq; 
+    if (__SEQ_RT && unlikely(seq & 1)) { 
+        __SEQ_LOCK(spin_lock(s->lock)); 
+        __SEQ_LOCK(spin_unlock(s->lock)); 
+        seq = READ_ONCE(s->seqcount.sequence); 
+    } 
+    return seq; 
+} 
+static __always_inline bool __seqprop_spinlock_preemptible(const seqcount_spinlock_t *s) { 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return __SEQ_RT; 
+return false; 
+} 
+static __always_inline void __seqprop_spinlock_assert(const seqcount_spinlock_t *s) { 
+__SEQ_LOCK(lockdep_assert_held(s->lock)); 
+}
+typedef struct seqcount_rwlock { 
+seqcount_t seqcount; 
+__SEQ_LOCK(rwlock_t *lock); 
+} seqcount_rwlock_t; 
+
+static __always_inline seqcount_t * __seqprop_rwlock_ptr(seqcount_rwlock_t *s) { 
+return &s->seqcount; 
+} 
+static __always_inline unsigned __seqprop_rwlock_sequence(const seqcount_rwlock_t *s) { 
+unsigned seq = READ_ONCE(s->seqcount.sequence); 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return seq; 
+if (__SEQ_RT && unlikely(seq & 1)) { 
+__SEQ_LOCK(read_lock(s->lock)); 
+__SEQ_LOCK(read_unlock(s->lock)); 
+seq = READ_ONCE(s->seqcount.sequence); 
+} return seq; 
+} 
+static __always_inline bool __seqprop_rwlock_preemptible(const seqcount_rwlock_t *s) { 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return __SEQ_RT; 
+return false; 
+} 
+static __always_inline void __seqprop_rwlock_assert(const seqcount_rwlock_t *s) { 
+__SEQ_LOCK(lockdep_assert_held(s->lock)); 
+}
+typedef struct seqcount_mutex { 
+seqcount_t seqcount; 
+__SEQ_LOCK(struct mutex *lock); 
+} seqcount_mutex_t; 
+
+static __always_inline seqcount_t * __seqprop_mutex_ptr(seqcount_mutex_t *s) { 
+return &s->seqcount; 
+} 
+static __always_inline unsigned __seqprop_mutex_sequence(const seqcount_mutex_t *s) { 
+unsigned seq = READ_ONCE(s->seqcount.sequence); 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return seq; 
+if (true && unlikely(seq & 1)) { 
+__SEQ_LOCK(mutex_lock(s->lock)); 
+__SEQ_LOCK(mutex_unlock(s->lock)); 
+seq = READ_ONCE(s->seqcount.sequence); 
+} return seq; 
+} 
+static __always_inline bool __seqprop_mutex_preemptible(const seqcount_mutex_t *s) { 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return true; 
+return false; 
+} 
+static __always_inline void __seqprop_mutex_assert(const seqcount_mutex_t *s) { 
+__SEQ_LOCK(lockdep_assert_held(s->lock)); 
+}
+typedef struct seqcount_ww_mutex { 
+seqcount_t seqcount; 
+__SEQ_LOCK(struct ww_mutex *lock); 
+} seqcount_ww_mutex_t; 
+
+static __always_inline seqcount_t * __seqprop_ww_mutex_ptr(seqcount_ww_mutex_t *s) { 
+return &s->seqcount; 
+} 
+static __always_inline unsigned __seqprop_ww_mutex_sequence(const seqcount_ww_mutex_t *s) { 
+unsigned seq = READ_ONCE(s->seqcount.sequence); 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return seq; 
+if (true && unlikely(seq & 1)) { 
+__SEQ_LOCK(ww_mutex_lock(s->lock, NULL)); 
+__SEQ_LOCK(ww_mutex_unlock(s->lock)); 
+seq = READ_ONCE(s->seqcount.sequence); 
+} return seq; 
+} 
+static __always_inline bool __seqprop_ww_mutex_preemptible(const seqcount_ww_mutex_t *s) { 
+if (!IS_ENABLED(CONFIG_PREEMPT_RT)) return true; 
+return false; 
+} 
+static __always_inline void __seqprop_ww_mutex_assert(const seqcount_ww_mutex_t *s) { 
+__SEQ_LOCK(lockdep_assert_held(&s->lock->base)); 
+}
+
+
+#endif //_rtoax_GCC_E________________________________
+
+{}
+
 /*
  * SEQCNT_LOCKNAME_ZERO - static initializer for seqcount_LOCKNAME_t
  * @name:	Name of the seqcount_LOCKNAME_t instance
@@ -796,6 +929,12 @@ static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
  *    - Documentation/locking/seqlock.rst
  *
  * 写锁不会被读锁阻塞，读锁也不会被写锁阻塞。写锁会被写锁阻塞
+ *
+ * seqlock 会允许读者对资源的自由访问，但需要读取者检查是否和写入者发生冲突
+ * 当这种冲突发生时，就需要重试对资源的访问。
+ *
+ * seqlock 不能用于保护包含有指针的数据结构，因为在写入者修改该数据结构的同时，
+ * 读取这可能会追随一个无效的指针。
  */
 typedef struct {
 	/*
