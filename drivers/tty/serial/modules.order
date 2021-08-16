@@ -1,0 +1,2 @@
+drivers/tty/serial/jsm/jsm.ko
+drivers/tty/serial/arc_uart.ko

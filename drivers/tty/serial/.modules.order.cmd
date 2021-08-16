@@ -1,0 +1,1 @@
+cmd_drivers/tty/serial/modules.order := {   cat drivers/tty/serial/8250/modules.order;   cat drivers/tty/serial/jsm/modules.order;   echo drivers/tty/serial/arc_uart.ko; :; } | awk '!x[$$0]++' - > drivers/tty/serial/modules.order

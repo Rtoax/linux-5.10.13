@@ -3,8 +3,6 @@
  * Driver for the serial port on the 21285 StrongArm-110 core logic chip.
  *
  * Based on drivers/char/serial.c
- *
- * [StringARM** SA-100/21285 评估板]串行驱动(http://netwinder.osuosl.org/pub/netwinder/docs/intel/datashts/27813501.pdf)
  */
 #include <linux/module.h>
 #include <linux/tty.h>
@@ -218,16 +216,13 @@ static void serial21285_break_ctl(struct uart_port *port, int break_state)
 	spin_unlock_irqrestore(&port->lock, flags);
 }
 
-static int serial21285_startup(struct uart_port *port/*serial21285_port*/)
+static int serial21285_startup(struct uart_port *port)
 {
 	int ret;
 
-    //设备的串行总线仅由两条线组成：一条用于发送数据，另一条用于接收数据
-    //与此对应，串行设备应该有两个串行引脚：接收器 - `RX` 和发送器 - `TX`
 	tx_enable(port);
 	rx_enable(port);
 
-    //注册了一个中断处理程序，然后激活一条给定的中断线
 	ret = request_irq(IRQ_CONRX, serial21285_rx_chars, 0,
 			  serial21285_name, port);
 	if (ret == 0) {
@@ -242,12 +237,6 @@ static int serial21285_startup(struct uart_port *port/*serial21285_port*/)
 
 static void serial21285_shutdown(struct uart_port *port)
 {
-#ifdef rtoax_debug
-#define IRQ_CONRX               _DC21285_IRQ(0)
-#define IRQ_CONTX               _DC21285_IRQ(1)
-//...
-#define _DC21285_IRQ(x)         (16 + (x))
-#endif
 	free_irq(IRQ_CONTX, port);
 	free_irq(IRQ_CONRX, port);
 }
@@ -408,9 +397,6 @@ static struct uart_port serial21285_port = {
 	.flags		= UPF_BOOT_AUTOCONF,
 };
 
-
-//设置了 `serial21285_port` 设备的基本[uart]时钟
-// [uart](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver/transmitter) 
 static void serial21285_setup_ports(void)
 {
 	serial21285_port.uartclk = mem_fclk_21285 / 4;
@@ -521,8 +507,8 @@ static struct uart_driver serial21285_reg = {
 	.owner			= THIS_MODULE,
 	.driver_name		= "ttyFB",
 	.dev_name		= "ttyFB",
-	.major			= SERIAL_21285_MAJOR,   /* 主设备号 */
-	.minor			= SERIAL_21285_MINOR,   /* 次设备号 */
+	.major			= SERIAL_21285_MAJOR,
+	.minor			= SERIAL_21285_MINOR,
 	.nr			= 1,
 	.cons			= SERIAL_21285_CONSOLE,
 };
@@ -533,14 +519,10 @@ static int __init serial21285_init(void)
 
 	printk(KERN_INFO "Serial: 21285 driver\n");
 
-    //设置了 `serial21285_port` 设备的基本[uart]时钟
-    // [uart](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver/transmitter) 
 	serial21285_setup_ports();
 
-    //注册驱动
 	ret = uart_register_driver(&serial21285_reg);
 	if (ret == 0)
-        //添加由驱动程序定义的端口 `serial21285_port` 结构体
 		uart_add_one_port(&serial21285_reg, &serial21285_port);
 
 	return ret;

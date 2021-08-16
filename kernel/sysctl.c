@@ -1096,6 +1096,16 @@ static int proc_dostring_coredump(struct ctl_table *table, int write,
 #endif
 
 #ifdef CONFIG_MAGIC_SYSRQ
+/**
+ *  Linux Magic System Request Key Hacks
+ *
+ *  /proc/sys/kernel/sysrq
+ *
+ *  SysRq 魔法键
+ *
+ *  echo 1 > /proc/sys/kernel/sysrq 打开功能
+ *  
+ */
 static int sysrq_sysctl_handler(struct ctl_table *table, int write,
 				void *buffer, size_t *lenp, loff_t *ppos)
 {
@@ -1104,7 +1114,7 @@ static int sysrq_sysctl_handler(struct ctl_table *table, int write,
 	tmp = sysrq_mask();
 
 	ret = __do_proc_dointvec(&tmp, table, write, buffer,
-			       lenp, ppos, NULL, NULL);
+			                    lenp, ppos, NULL, NULL);
 	if (ret || !write)
 		return ret;
 
@@ -2236,6 +2246,19 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 #ifdef CONFIG_MAGIC_SYSRQ
+    /**
+     *  Linux Magic System Request Key Hacks
+     *
+     *  /proc/sys/kernel/sysrq
+     *
+     *  SysRq 魔法键
+     *
+     *  echo 1 > /proc/sys/kernel/sysrq 打开功能
+     *  
+     *  -------------------------------------------
+     *  /proc/sysrq-trigger - 见 `sysrq_init_procfs()`
+     *  
+     */
 	{
 		.procname	= "sysrq",
 		.data		= NULL,

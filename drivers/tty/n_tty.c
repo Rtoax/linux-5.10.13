@@ -2495,7 +2495,7 @@ void n_tty_inherit_ops(struct tty_ldisc_ops *ops)
 }
 EXPORT_SYMBOL_GPL(n_tty_inherit_ops);
 
-void __init n_tty_init(void)    n_tty_init
+void __init n_tty_init(void)
 {
 	tty_register_ldisc(N_TTY, &n_tty_ops);
 }
