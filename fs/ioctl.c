@@ -736,8 +736,11 @@ static int do_vfs_ioctl(struct file *filp, unsigned int fd,
 	return -ENOIOCTLCMD;
 }
 
-//#include <sys/ioctl.h>
-//int ioctl(int d, int request, ...);
+/**
+ *  
+ */
+#include <sys/ioctl.h>
+int ioctl(int d, int request, ...);
 SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 {
 	struct fd f = fdget(fd);
@@ -792,8 +795,11 @@ long compat_ptr_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 }
 EXPORT_SYMBOL(compat_ptr_ioctl);
 
-//#include <sys/ioctl.h>
-//int ioctl(int d, int request, ...);
+/**
+ *  
+ */
+#include <sys/ioctl.h>
+int ioctl(int d, int request, ...);
 COMPAT_SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd,
 		       compat_ulong_t, arg)
 {
