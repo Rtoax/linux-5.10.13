@@ -11,7 +11,7 @@
 /*
  * Simple waitqueues are semantically very different to regular wait queues
  * (wait.h). The most important difference is that the simple waitqueue allows
- * for deterministic behaviour -- IOW it has strictly bounded IRQ and lock hold
+ * for deterministic behaviour(确定性行为) -- IOW it has strictly bounded IRQ and lock hold
  * times.
  *
  * Mainly, this is accomplished by two things. Firstly not allowing swake_up_all
@@ -40,11 +40,17 @@
 
 struct task_struct;
 
+/**
+ *  Simple wait
+ */
 struct swait_queue_head {
 	raw_spinlock_t		lock;
 	struct list_head	task_list;
 };
 
+/**
+ *  
+ */
 struct swait_queue {
 	struct task_struct	*task;
 	struct list_head	task_list;

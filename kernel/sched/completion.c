@@ -24,6 +24,8 @@
  *
  * If this function wakes up a task, it executes a full memory barrier before
  * accessing the task state.
+ *
+ *  唤醒一个等待线程
  */
 void complete(struct completion *x)
 {
@@ -53,6 +55,8 @@ EXPORT_SYMBOL(complete);
  * sure that all waiters have woken and finished before reinitializing
  * @x. Also note that the function completion_done() can not be used
  * to know if there are still waiters after complete_all() has been called.
+ *
+ * 唤醒所有等待线程
  */
 void complete_all(struct completion *x)
 {
@@ -121,6 +125,9 @@ __wait_for_common(struct completion *x,
 	return timeout;
 }
 
+/**
+ *  等待完成
+ */
 static long __sched
 wait_for_common(struct completion *x, long timeout, int state)
 {
@@ -145,6 +152,9 @@ wait_for_common_io(struct completion *x, long timeout, int state)
  */
 void __sched wait_for_completion(struct completion *x)
 {
+    /**
+     *  
+     */
 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 }
 EXPORT_SYMBOL(wait_for_completion);

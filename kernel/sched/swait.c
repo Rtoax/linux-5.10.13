@@ -27,6 +27,10 @@ void swake_up_locked(struct swait_queue_head *q)
 		return;
 
 	curr = list_first_entry(&q->task_list, typeof(*curr), task_list);
+
+    /**
+     *  唤醒线程
+     */
 	wake_up_process(curr->task);
 	list_del_init(&curr->task_list);
 }
@@ -41,6 +45,9 @@ EXPORT_SYMBOL(swake_up_locked);
  */
 void swake_up_all_locked(struct swait_queue_head *q)
 {
+    /**
+     *  遍历链表
+     */
 	while (!list_empty(&q->task_list))
 		swake_up_locked(q);
 }

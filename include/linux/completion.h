@@ -30,8 +30,19 @@ struct completion { /* Completions is a code synchronization mechanism */
 	struct swait_queue_head wait;   /* 等待队列 */
 };
 
+/**
+ *  
+ */
 #define init_completion_map(x, m) __init_completion(x)
+
+/**
+ *  初始化 completion
+ */
 #define init_completion(x) __init_completion(x)
+
+/**
+ *  
+ */
 static inline void complete_acquire(struct completion *x) {}
 static inline void complete_release(struct completion *x) {}
 
