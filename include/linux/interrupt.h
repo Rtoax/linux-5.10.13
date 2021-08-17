@@ -744,7 +744,7 @@ struct tasklet_struct   /* tasklet(TASKLET_SOFTIRQ,HI_SOFTIRQ) 隶属于 softirq
 };
 
 /**
- *  
+ *  声明一个激活的 tasklet
  */
 #define DECLARE_TASKLET(name, _callback)		\
 struct tasklet_struct name = {				\
@@ -754,7 +754,7 @@ struct tasklet_struct name = {				\
 }
 
 /**
- *  
+ *  声明一个未激活的 tasklet
  */
 #define DECLARE_TASKLET_DISABLED(name, _callback)	\
 struct tasklet_struct name = {				\
@@ -803,6 +803,9 @@ static inline void tasklet_unlock(struct tasklet_struct *t)
 	clear_bit(TASKLET_STATE_RUN, &(t)->state);
 }
 
+/**
+ *  等待当前的运行结束
+ */
 static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 {
 	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
@@ -814,7 +817,7 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
 /**
- *  普通优先级 来调度 tasklet
+ *  普通优先级 来调度执行 tasklet，
  */
 static inline void tasklet_schedule(struct tasklet_struct *t)   /*  */
 {
@@ -831,7 +834,7 @@ static inline void tasklet_schedule(struct tasklet_struct *t)   /*  */
 extern void __tasklet_hi_schedule(struct tasklet_struct *t);
 
 /**
- *  高优先级 调度 tasklet
+ *  高优先级 调度执行 tasklet
  */
 static inline void tasklet_hi_schedule(struct tasklet_struct *t)    /*  */
 {
@@ -839,19 +842,42 @@ static inline void tasklet_hi_schedule(struct tasklet_struct *t)    /*  */
 		__tasklet_hi_schedule(t);
 }
 
+/**
+ *  禁用 tasklet
+ */
 static inline void tasklet_disable_nosync(struct tasklet_struct *t)
 {
+    /**
+     *  count>0 时， tasklet 未激活
+     */
 	atomic_inc(&t->count);
 	smp_mb__after_atomic();
 }
 
+/**
+ *  禁用指定的 tasklet
+ */
 static inline void tasklet_disable(struct tasklet_struct *t)
 {
+    /**
+     *  count++
+     */
 	tasklet_disable_nosync(t);
+
+    /**
+     *  如果正在运行，那等待运行结束
+     */
 	tasklet_unlock_wait(t);
+
+    /**
+     *  
+     */
 	smp_mb();
 }
 
+/**
+ *  激活 tasklet
+ */
 static inline void tasklet_enable(struct tasklet_struct *t)
 {
 	smp_mb__before_atomic();

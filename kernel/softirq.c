@@ -823,7 +823,7 @@ static void __tasklet_schedule_common(struct tasklet_struct *t,
 }
 
 /**
- *  普通优先级 tasklet
+ *  普通优先级 tasklet 调度执行
  */
 void __tasklet_schedule(struct tasklet_struct *t)
 {
@@ -832,7 +832,7 @@ void __tasklet_schedule(struct tasklet_struct *t)
 EXPORT_SYMBOL(__tasklet_schedule);
 
 /**
- *  高优先级 tasklet
+ *  高优先级 tasklet 调度执行
  */
 void __tasklet_hi_schedule(struct tasklet_struct *t)
 {
@@ -972,7 +972,7 @@ void tasklet_setup(struct tasklet_struct *t, void (*callback)(struct tasklet_str
 EXPORT_SYMBOL(tasklet_setup);
 
 /**
- *  初始化 tasklet
+ *  初始化 一个激活的 tasklet
  */
 void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigned long data)
 {
@@ -981,6 +981,9 @@ void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigne
      */
 	t->next = NULL;
 	t->state = 0;
+    /**
+     *  count=0 : 激活状态
+     */
 	atomic_set(&t->count, 0);
 	t->func = func;
 	t->use_callback = false;
@@ -989,19 +992,33 @@ void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigne
 EXPORT_SYMBOL(tasklet_init);
 
 /**
- *  
+ *  该函数确保指定的 tasklet 不会再次运行
+ *  当设备关闭或者移除时，通常调用这个函数
  */
 void tasklet_kill(struct tasklet_struct *t)
 {
+    /**
+     *  如果在中断上下文中
+     */
 	if (in_interrupt())
 		pr_notice("Attempt to kill tasklet from interrupt\n");
 
+    /**
+     *  如果正在调度，那么等待调度结束
+     */
 	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
 		do {
 			yield();
 		} while (test_bit(TASKLET_STATE_SCHED, &t->state));
 	}
+    /**
+     *  如果正在执行，等待执行结束
+     */
 	tasklet_unlock_wait(t);
+
+    /**
+     *  清除调度位
+     */
 	clear_bit(TASKLET_STATE_SCHED, &t->state);
 }
 EXPORT_SYMBOL(tasklet_kill);
