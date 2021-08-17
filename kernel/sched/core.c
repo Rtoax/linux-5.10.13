@@ -5266,11 +5266,18 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 
 	exception_exit(prev_state);
 }
-    /*  */
+
+/**
+ *  默认的等待队列唤醒
+ */
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,
 			  void *key)
 {
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
+
+    /**
+     *  private 在 init_waitqueue_entry() 设置为 current
+     */
 	return try_to_wake_up(curr->private/* 进程信息 */, mode, wake_flags);
 }
 EXPORT_SYMBOL(default_wake_function);

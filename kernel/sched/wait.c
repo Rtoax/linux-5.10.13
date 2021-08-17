@@ -240,21 +240,33 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
  * one way (it only protects stuff inside the critical region and
  * stops them from bleeding out - it would still allow subsequent
  * loads to move into the critical region).
+ *
+ *  将等待队列 entry 添加到 队列中，并设置 进程的状态
  */
 void
 prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
 {
 	unsigned long flags;
 
+    /**
+     *  等待队列 独占
+     */
 	wq_entry->flags &= ~WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&wq_head->lock, flags);
 	if (list_empty(&wq_entry->entry))
+        /**
+         *  
+         */
 		__add_wait_queue(wq_head, wq_entry);
 	set_current_state(state);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 EXPORT_SYMBOL(prepare_to_wait);
 
+/*
+ *  将等待队列 entry 添加到 队列中，并设置 进程的状态
+ *  设置独占位，防止 唤醒时惊群
+ */
 void
 prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
 {
@@ -263,6 +275,9 @@ prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_ent
 	wq_entry->flags |= WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&wq_head->lock, flags);
 	if (list_empty(&wq_entry->entry))
+        /**
+         *  添加到链表尾
+         */
 		__add_wait_queue_entry_tail(wq_head, wq_entry);
 	set_current_state(state);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
@@ -363,6 +378,8 @@ EXPORT_SYMBOL(do_wait_intr_irq);
  * Sets current thread back to running state and removes
  * the wait descriptor from the given waitqueue if still
  * queued.
+ *
+ * 清理
  */
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {

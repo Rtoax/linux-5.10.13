@@ -35,6 +35,11 @@
 #ifndef O_APPEND
 #define O_APPEND	00002000
 #endif
+
+/**
+ *  非阻塞
+ *  struct file.f_flags
+ */
 #ifndef O_NONBLOCK
 #define O_NONBLOCK	00004000
 #endif
@@ -108,6 +113,9 @@
 #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
 #define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
 
+/**
+ *  System V 对 O_NONBLOCK 的兼容性
+ */
 #ifndef O_NDELAY
 #define O_NDELAY	O_NONBLOCK
 #endif

@@ -160,6 +160,10 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
 	__pu_err;						\
 })
 
+/**
+ *  
+ * 将一个简单的值写入 用户态，而不使用 copy_to_user()
+ */
 #define put_user(x, ptr)					\
 ({								\
 	void __user *__p = (ptr);				\

@@ -17,6 +17,14 @@ typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mod
 int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
 
 /* wait_queue_entry::flags */
+/**
+ *  等待队列 独占等待
+ *
+ *  有这个标志的 entry 将会被添加到等待队列的尾部(见 prepare_to_wait_exclusive)，
+ *  没有这个标志，将被添加到头部(见 prepare_to_wait)
+ *  当调用 wakeup 时，会唤醒第一个具有 该标志 的进程之后，停止唤醒其他进程。
+ *  但是，内核还是会每次唤醒所有带有 该标志 的进程。
+ */
 #define WQ_FLAG_EXCLUSIVE	0x01/* 独占的 */
 #define WQ_FLAG_WOKEN		0x02/*  */
 #define WQ_FLAG_BOOKMARK	0x04/*  */
@@ -25,16 +33,65 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
 
 /*
  * A single wait-queue entry structure:
+ *
+ *
+ * 接口
+ * ---------
+ *  DEFINE_WAIT     静态初始化
+ *  init_wait       初始化
+ *  prepare_to_wait 添加到队列中()
+ *  finish_wait     清理
+ *   上面两个API，一般的使用方法如下
+ *      prepare_to_wait()
+ *      if(exp)
+ *          schedule()
+ *      finish_wait()
+ *
+ *  init_waitqueue_entry    初始化
  */
 struct wait_queue_entry {   /* 等待队列 */
 	unsigned int		flags;  /* 标志位 */
+
+    /**
+     *  init_waitqueue_entry() => private = current;
+     */
 	void			*private;   /* 私有数据 */
+
+    /**
+     *  默认的 唤醒 函数 `default_wake_function()`
+     *  在 `init_waitqueue_entry()` 赋值
+     */
 	wait_queue_func_t	func;   /* 回调函数 */
+
+    /**
+     *  
+     */
 	struct list_head	entry;  /* wait_queue_head->head 中的 链表节点 */
 };
 
+/**
+ *  
+ *
+ * API
+ * ---------------
+ *  wait_event() 非中断休眠
+ *  wait_event_timeout() 非中断休眠-超时机制
+ *  wait_event_interruptible() 中断休眠
+ *  wait_event_interruptible_timeout() 中断休眠-超时机制
+ *  
+ *  上面的睡眠，分别使用下面的唤醒函数
+ *  wake_up()
+ *  wake_up_interruptible()
+ */
 struct wait_queue_head {    /*  */
+    /**
+     *  保护链表的锁
+     */
 	spinlock_t		lock;
+    /**
+     *  等待链表
+     *  节点为 struct wait_queue_entry.entry
+     */
 	struct list_head	head;   /* wait_queue_entry 为 节点的链表 */
 };
 typedef struct wait_queue_head wait_queue_head_t;
@@ -217,16 +274,37 @@ void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode);
 
 /**
  *  唤醒线程
+ *  唤醒使用下面函数的休眠的进程
+ *  ----------------------------------------
+ *  wait_event() 非中断休眠
+ *  wait_event_timeout() 非中断休眠-超时机制
  */
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
+/**
+ *  唤醒 nr 个独占等待的进程，而不是一个
+ */
 #define wake_up_nr(x, nr)		__wake_up(x, TASK_NORMAL, nr, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
 #define wake_up_locked(x)		__wake_up_locked((x), TASK_NORMAL, 1)
 #define wake_up_all_locked(x)		__wake_up_locked((x), TASK_NORMAL, 0)
 
+/**
+ *  
+ *  唤醒使用下面函数的休眠的进程
+ *  ----------------------------------------
+ *  wait_event_interruptible() 中断休眠
+ *  wait_event_interruptible_timeout() 中断休眠-超时机制
+ */
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
+/**
+ *  
+ */
 #define wake_up_interruptible_nr(x, nr)	__wake_up(x, TASK_INTERRUPTIBLE, nr, NULL)
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
+
+/**
+ *  
+ */
 #define wake_up_interruptible_sync(x)	__wake_up_sync((x), TASK_INTERRUPTIBLE)
 
 /*
@@ -310,6 +388,9 @@ __out:	__ret;									\
  *
  * wake_up() has to be called after changing any variable that could
  * change the result of the wait condition.
+ *
+ * 非中断休眠(TASK_UNINTERRUPTIBLE)，也就是此休眠不能为中断打断
+ *  see also wait_event_interruptible()
  */
 #define wait_event(wq_head, condition)						\
 do {										\
@@ -319,6 +400,9 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
+/**
+ *  
+ */
 #define __io_wait_event(wq_head, condition)					\
 	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
 			    io_schedule())
@@ -382,6 +466,8 @@ do {										\
  * 1 if the @condition evaluated to %true after the @timeout elapsed,
  * or the remaining jiffies (at least 1) if the @condition evaluated
  * to %true before the @timeout elapsed.
+ *
+ * 非中断休眠-超时机制
  */
 #define wait_event_timeout(wq_head, condition, timeout)				\
 ({										\
@@ -466,6 +552,9 @@ do {										\
  *
  * The function will return -ERESTARTSYS if it was interrupted by a
  * signal and 0 if @condition evaluated to true.
+ *
+ * 中断休眠(TASK_INTERRUPTIBLE)，可以被中断打断
+ *  see also wait_event()
  */
 #define wait_event_interruptible(wq_head, condition)				\
 ({										\
@@ -500,6 +589,8 @@ do {										\
  * the remaining jiffies (at least 1) if the @condition evaluated
  * to %true before the @timeout elapsed, or -%ERESTARTSYS if it was
  * interrupted by a signal.
+ *
+ * 中断休眠-超时机制
  */
 #define wait_event_interruptible_timeout(wq_head, condition, timeout)		\
 ({										\
@@ -1150,8 +1241,14 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 		.entry		= LIST_HEAD_INIT((name).entry),			\
 	}
 
+/**
+ *  
+ */
 #define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
 
+/**
+ *  
+ */
 #define init_wait(wait)								\
 	do {									\
 		(wait)->private = current;					\

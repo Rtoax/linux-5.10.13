@@ -116,6 +116,9 @@ struct vfs_ns_cap_data {
    [_POSIX_ACL] is defined. Excluding DAC access covered by
    CAP_LINUX_IMMUTABLE. */
 
+/**
+ *  超过文件或目录的访问限制
+ */
 #define CAP_DAC_OVERRIDE     1
 
 /* Overrides all DAC restrictions regarding read and search on files
@@ -200,6 +203,9 @@ struct vfs_ns_cap_data {
 /* Allow read/write of device-specific registers */
 /* Allow activation of ATM control sockets */
 
+/**
+ *  执行网络管理任务的能力，包括影响网络接口的任务
+ */
 #define CAP_NET_ADMIN        12
 
 /* Allow use of RAW sockets */
@@ -218,12 +224,20 @@ struct vfs_ns_cap_data {
 
 #define CAP_IPC_OWNER        15
 
-/* Insert and remove kernel modules - modify kernel without limit */
+/**
+ *  Insert and remove kernel modules - modify kernel without limit 
+ *
+ *  加载或移除模块的能力
+ */
 #define CAP_SYS_MODULE       16
 
 /* Allow ioperm/iopl access */
 /* Allow sending USB messages to any device via /dev/bus/usb */
 
+/**
+ *  执行 裸 IO 操作的能力，
+ *  例如访问设备端口和直接与USB设备通信
+ */
 #define CAP_SYS_RAWIO        17
 
 /* Allow use of chroot() */
@@ -317,6 +331,9 @@ struct vfs_ns_cap_data {
 /* Allow configuration of tty devices */
 /* Allow vhangup() of tty */
 
+/**
+ *  执行 tty 配置任务的能力
+ */
 #define CAP_SYS_TTY_CONFIG   26
 
 /* Allow the privileged aspects of mknod() */

@@ -145,6 +145,7 @@ static inline int cap_get_target_pid(pid_t pid, kernel_cap_t *pEp,
  *
  * Returns 0 on success and < 0 on error.
  */
+int capget(cap_user_header_t hdrp, cap_user_data_t datap);
 SYSCALL_DEFINE2(capget, cap_user_header_t, header, cap_user_data_t, dataptr)
 {
 	int ret = 0;
@@ -219,6 +220,7 @@ SYSCALL_DEFINE2(capget, cap_user_header_t, header, cap_user_data_t, dataptr)
  *
  * Returns 0 on success and < 0 on error.
  */
+int capset(cap_user_header_t hdrp, const cap_user_data_t datap);
 SYSCALL_DEFINE2(capset, cap_user_header_t, header, const cap_user_data_t, data)
 {
 	struct __user_cap_data_struct kdata[_KERNEL_CAPABILITY_U32S];
@@ -443,6 +445,8 @@ EXPORT_SYMBOL(ns_capable_setid);
  *
  * This sets PF_SUPERPRIV on the task if the capability is available on the
  * assumption that it's about to be used.
+ *
+ * 权能的检查
  */
 bool capable(int cap)
 {

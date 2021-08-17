@@ -248,6 +248,8 @@ extern void __put_user_nocheck_8(void);
  * to the result of dereferencing @ptr.
  *
  * Return: zero on success, or -EFAULT on error.
+ *
+ * 将一个简单的值写入 用户态，而不使用 copy_to_user()
  */
 #define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
 
@@ -270,6 +272,8 @@ extern void __put_user_nocheck_8(void);
  * function.
  *
  * Return: zero on success, or -EFAULT on error.
+ *
+ * 将一个简单的值写入 用户态，而不使用 copy_to_user()
  */
 #define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)
 

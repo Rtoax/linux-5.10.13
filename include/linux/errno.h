@@ -11,7 +11,12 @@
  * at syscall exit tracing, but they will never be left for the debugged user
  * process to see.
  */
-#define ERESTARTSYS	512 //表示信号函数处理完毕后重新执行信号函数前的某个系统调用
+/**
+ *  表示信号函数处理完毕后重新执行信号函数前的某个系统调用*
+ *
+ *  这个值由VFS内部使用，它或者重启系统调用，或者给用户空间返回 -EINTR
+ */
+#define ERESTARTSYS	512 //
 #define ERESTARTNOINTR	513
 #define ERESTARTNOHAND	514	/* restart if no handler.. */
 #define ENOIOCTLCMD	515	/* No ioctl command */

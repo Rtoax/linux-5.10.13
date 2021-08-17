@@ -50,6 +50,9 @@
 #define TIOCGSERIAL	0x541E
 #define TIOCSSERIAL	0x541F
 #define TIOCPKT		0x5420
+/**
+ *  File IOctl Non-Block IO - 非阻塞IO
+ */
 #define FIONBIO		0x5421
 #define TIOCNOTTY	0x5422
 #define TIOCSETD	0x5423
@@ -82,8 +85,21 @@
 #define TIOCGISO7816	_IOR('T', 0x42, struct serial_iso7816)
 #define TIOCSISO7816	_IOWR('T', 0x43, struct serial_iso7816)
 
+/**
+ *  清除执行时关闭标志 -    File IOctl CLose on EXec
+ *  
+ */
 #define FIONCLEX	0x5450
-#define FIOCLEX		0x5451
+/**
+ *  设置执行时关闭标志 -    File IOctl CLose on EXec
+ *  
+ */
+#define FIOCLEX		0x5451  
+
+/**
+ *  设置或复位文件异步通知
+ *  
+ */
 #define FIOASYNC	0x5452
 #define TIOCSERCONFIG	0x5453
 #define TIOCSERGWILD	0x5454
@@ -101,6 +117,8 @@
 /*
  * Some arches already define FIOQSIZE due to a historical
  * conflict with a Hayes modem-specific ioctl value.
+ *
+ * 返回 文件 或目录的大小
  */
 #ifndef FIOQSIZE
 # define FIOQSIZE	0x5460

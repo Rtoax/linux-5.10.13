@@ -1050,6 +1050,9 @@ struct task_struct {    /* PCB */
      */
 	struct sched_info		sched_info;
 
+    /**
+     *  
+     */
 	struct list_head		tasks;/* 任务链表 */
     
 #ifdef CONFIG_SMP

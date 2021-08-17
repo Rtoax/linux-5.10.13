@@ -176,6 +176,9 @@ struct mad_migration_cap {
 	__be32 ecl;
 };
 
+/**
+ *  权能
+ */
 struct capabilities {
 	__be32 flags;
 	char name[SRP_MAX_LOC_LEN];

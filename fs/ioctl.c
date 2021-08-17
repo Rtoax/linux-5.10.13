@@ -45,6 +45,9 @@ long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	if (!filp->f_op->unlocked_ioctl)
 		goto out;
 
+    /**
+     *  
+     */
 	error = filp->f_op->unlocked_ioctl(filp, cmd, arg);
 	if (error == -ENOIOCTLCMD)
 		error = -ENOTTY;
@@ -753,6 +756,9 @@ SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 	if (error)
 		goto out;
 
+    /**
+     *  
+     */
 	error = do_vfs_ioctl(f.file, fd, cmd, arg);
 	if (error == -ENOIOCTLCMD)
 		error = vfs_ioctl(f.file, cmd, arg);
