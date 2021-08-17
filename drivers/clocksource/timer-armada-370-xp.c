@@ -76,7 +76,7 @@
 /*
  * SoC-specific data.
  */
-static void __iomem *timer_base, *local_base;
+static void __iomem *_rtoax_timer_base, *local_base;
 static unsigned int timer_clk;
 static bool timer25Mhz = true;
 static u32 enable_mask;
@@ -96,7 +96,7 @@ static void local_timer_ctrl_clrset(u32 clr, u32 set)
 
 static u64 notrace armada_370_xp_read_sched_clock(void)
 {
-	return ~readl(timer_base + TIMER0_VAL_OFF);
+	return ~readl(_rtoax_timer_base + TIMER0_VAL_OFF);
 }
 
 /*
@@ -213,16 +213,16 @@ static u32 timer0_ctrl_reg, timer0_local_ctrl_reg;
 
 static int armada_370_xp_timer_suspend(void)
 {
-	timer0_ctrl_reg = readl(timer_base + TIMER_CTRL_OFF);
+	timer0_ctrl_reg = readl(_rtoax_timer_base + TIMER_CTRL_OFF);
 	timer0_local_ctrl_reg = readl(local_base + TIMER_CTRL_OFF);
 	return 0;
 }
 
 static void armada_370_xp_timer_resume(void)
 {
-	writel(0xffffffff, timer_base + TIMER0_VAL_OFF);
-	writel(0xffffffff, timer_base + TIMER0_RELOAD_OFF);
-	writel(timer0_ctrl_reg, timer_base + TIMER_CTRL_OFF);
+	writel(0xffffffff, _rtoax_timer_base + TIMER0_VAL_OFF);
+	writel(0xffffffff, _rtoax_timer_base + TIMER0_RELOAD_OFF);
+	writel(timer0_ctrl_reg, _rtoax_timer_base + TIMER_CTRL_OFF);
 	writel(timer0_local_ctrl_reg, local_base + TIMER_CTRL_OFF);
 }
 
@@ -233,7 +233,7 @@ static struct syscore_ops armada_370_xp_timer_syscore_ops = {
 
 static unsigned long armada_370_delay_timer_read(void)
 {
-	return ~readl(timer_base + TIMER0_VAL_OFF);
+	return ~readl(_rtoax_timer_base + TIMER0_VAL_OFF);
 }
 
 static struct delay_timer armada_370_delay_timer = {
@@ -245,8 +245,8 @@ static int __init armada_370_xp_timer_common_init(struct device_node *np)
 	u32 clr = 0, set = 0;
 	int res;
 
-	timer_base = of_iomap(np, 0);
-	if (!timer_base) {
+	_rtoax_timer_base = of_iomap(np, 0);
+	if (!_rtoax_timer_base) {
 		pr_err("Failed to iomap\n");
 		return -ENXIO;
 	}
@@ -264,7 +264,7 @@ static int __init armada_370_xp_timer_common_init(struct device_node *np)
 		clr = TIMER0_25MHZ;
 		enable_mask = TIMER0_EN | TIMER0_DIV(TIMER_DIVIDER_SHIFT);
 	}
-	atomic_io_modify(timer_base + TIMER_CTRL_OFF, clr | set, set);
+	atomic_io_modify(_rtoax_timer_base + TIMER_CTRL_OFF, clr | set, set);
 	local_timer_ctrl_clrset(clr, set);
 
 	/*
@@ -279,10 +279,10 @@ static int __init armada_370_xp_timer_common_init(struct device_node *np)
 	 * Setup free-running clocksource timer (interrupts
 	 * disabled).
 	 */
-	writel(0xffffffff, timer_base + TIMER0_VAL_OFF);
-	writel(0xffffffff, timer_base + TIMER0_RELOAD_OFF);
+	writel(0xffffffff, _rtoax_timer_base + TIMER0_VAL_OFF);
+	writel(0xffffffff, _rtoax_timer_base + TIMER0_RELOAD_OFF);
 
-	atomic_io_modify(timer_base + TIMER_CTRL_OFF,
+	atomic_io_modify(_rtoax_timer_base + TIMER_CTRL_OFF,
 		TIMER0_RELOAD_EN | enable_mask,
 		TIMER0_RELOAD_EN | enable_mask);
 
@@ -294,7 +294,7 @@ static int __init armada_370_xp_timer_common_init(struct device_node *np)
 	 */
 	sched_clock_register(armada_370_xp_read_sched_clock, 32, timer_clk);
 
-	res = clocksource_mmio_init(timer_base + TIMER0_VAL_OFF,
+	res = clocksource_mmio_init(_rtoax_timer_base + TIMER0_VAL_OFF,
 				    "armada_370_xp_clocksource",
 				    timer_clk, 300, 32, clocksource_mmio_readl_down);
 	if (res) {

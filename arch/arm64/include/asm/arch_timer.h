@@ -213,7 +213,9 @@ static __always_inline u64 __arch_counter_get_cntvct_stable(void)
 	arch_counter_enforce_ordering(cnt);
 	return cnt;
 }
-
+/**
+ *  和 x86 rdtsc 同样的功能
+ */
 static __always_inline u64 __arch_counter_get_cntvct(void)
 {
 	u64 cnt;

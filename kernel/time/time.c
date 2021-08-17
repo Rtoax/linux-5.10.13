@@ -59,11 +59,18 @@ EXPORT_SYMBOL(sys_tz);
  * why not move it into the appropriate arch directory (for those
  * architectures that need it).
  */
+time_t time(time_t *t);
 SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
 {
+    /**
+     *  获取当前时间
+     */
 	__kernel_old_time_t i = (__kernel_old_time_t)ktime_get_real_seconds();
 
 	if (tloc) {
+        /**
+         *  拷贝数据
+         */
 		if (put_user(i,tloc))
 			return -EFAULT;
 	}
@@ -77,12 +84,15 @@ SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
  * why not move it into the appropriate arch directory (for those
  * architectures that need it).
  */
-
+int stime(time_t *t);
 SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 {
 	struct timespec64 tv;
 	int err;
 
+    /**
+     *  拷贝到内核
+     */
 	if (get_user(tv.tv_sec, tptr))
 		return -EFAULT;
 
@@ -92,6 +102,9 @@ SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 	if (err)
 		return err;
 
+    /**
+     *  
+     */
 	do_settimeofday64(&tv);
 	return 0;
 }
@@ -137,12 +150,19 @@ SYSCALL_DEFINE1(stime32, old_time32_t __user *, tptr)
 #endif /* __ARCH_WANT_SYS_TIME32 */
 #endif
 
+/**
+ *  
+ */
+int gettimeofday(struct timeval *tv, struct timezone *tz);
 SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {
 	if (likely(tv != NULL)) {
 		struct timespec64 ts;
 
+        /**
+         *  
+         */
 		ktime_get_real_ts64(&ts);
 		if (put_user(ts.tv_sec, &tv->tv_sec) ||
 		    put_user(ts.tv_nsec / 1000, &tv->tv_usec))
@@ -418,6 +438,8 @@ EXPORT_SYMBOL(jiffies_to_usecs);
  *
  * An encoding of midnight at the end of the day as 24:00:00 - ie. midnight
  * tomorrow - (allowable under ISO 8601) is supported.
+ *
+ * 墙上时间
  */
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		const unsigned int day, const unsigned int hour,
@@ -430,7 +452,9 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		mon += 12;	/* Puts Feb last since it has leap day */
 		year -= 1;
 	}
-
+    /**
+     *  
+     */
 	return ((((time64_t)
 		  (year/4 - year/100 + year/400 + 367*mon/12 + day) +
 		  year*365 - 719499
@@ -573,8 +597,9 @@ EXPORT_SYMBOL(__usecs_to_jiffies);
  *
  * The >> (NSEC_JIFFIE_SC - SEC_JIFFIE_SC) converts the scaled nsec
  * value to a scaled second value.
+ *
+ * 
  */
-
 unsigned long
 timespec64_to_jiffies(const struct timespec64 *value)
 {

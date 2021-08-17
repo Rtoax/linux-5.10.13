@@ -35,11 +35,11 @@
 #define ORION_ONESHOT_MIN	1
 #define ORION_ONESHOT_MAX	0xfffffffe
 
-static void __iomem *timer_base;
+static void __iomem *clocksource_timer_base;
 
 static unsigned long notrace orion_read_timer(void)
 {
-	return ~readl(timer_base + TIMER0_VAL);
+	return ~readl(clocksource_timer_base + TIMER0_VAL);
 }
 
 static struct delay_timer orion_delay_timer = {
@@ -57,7 +57,7 @@ static void orion_delay_timer_init(unsigned long rate)
  */
 static u64 notrace orion_read_sched_clock(void)
 {
-	return ~readl(timer_base + TIMER0_VAL);
+	return ~readl(clocksource_timer_base + TIMER0_VAL);
 }
 
 /*
@@ -69,8 +69,8 @@ static int orion_clkevt_next_event(unsigned long delta,
 				   struct clock_event_device *dev)
 {
 	/* setup and enable one-shot timer */
-	writel(delta, timer_base + TIMER1_VAL);
-	atomic_io_modify(timer_base + TIMER_CTRL,
+	writel(delta, clocksource_timer_base + TIMER1_VAL);
+	atomic_io_modify(clocksource_timer_base + TIMER_CTRL,
 		TIMER1_RELOAD_EN | TIMER1_EN, TIMER1_EN);
 
 	return 0;
@@ -79,7 +79,7 @@ static int orion_clkevt_next_event(unsigned long delta,
 static int orion_clkevt_shutdown(struct clock_event_device *dev)
 {
 	/* disable timer */
-	atomic_io_modify(timer_base + TIMER_CTRL,
+	atomic_io_modify(clocksource_timer_base + TIMER_CTRL,
 			 TIMER1_RELOAD_EN | TIMER1_EN, 0);
 	return 0;
 }
@@ -87,9 +87,9 @@ static int orion_clkevt_shutdown(struct clock_event_device *dev)
 static int orion_clkevt_set_periodic(struct clock_event_device *dev)
 {
 	/* setup and enable periodic timer at 1/HZ intervals */
-	writel(ticks_per_jiffy - 1, timer_base + TIMER1_RELOAD);
-	writel(ticks_per_jiffy - 1, timer_base + TIMER1_VAL);
-	atomic_io_modify(timer_base + TIMER_CTRL,
+	writel(ticks_per_jiffy - 1, clocksource_timer_base + TIMER1_RELOAD);
+	writel(ticks_per_jiffy - 1, clocksource_timer_base + TIMER1_VAL);
+	atomic_io_modify(clocksource_timer_base + TIMER_CTRL,
 			 TIMER1_RELOAD_EN | TIMER1_EN,
 			 TIMER1_RELOAD_EN | TIMER1_EN);
 	return 0;
@@ -121,8 +121,8 @@ static int __init orion_timer_init(struct device_node *np)
 	int irq, ret;
 
 	/* timer registers are shared with watchdog timer */
-	timer_base = of_iomap(np, 0);
-	if (!timer_base) {
+	clocksource_timer_base = of_iomap(np, 0);
+	if (!clocksource_timer_base) {
 		pr_err("%pOFn: unable to map resource\n", np);
 		return -ENXIO;
 	}
@@ -150,13 +150,13 @@ static int __init orion_timer_init(struct device_node *np)
 	rate = clk_get_rate(clk);
 
 	/* setup timer0 as free-running clocksource */
-	writel(~0, timer_base + TIMER0_VAL);
-	writel(~0, timer_base + TIMER0_RELOAD);
-	atomic_io_modify(timer_base + TIMER_CTRL,
+	writel(~0, clocksource_timer_base + TIMER0_VAL);
+	writel(~0, clocksource_timer_base + TIMER0_RELOAD);
+	atomic_io_modify(clocksource_timer_base + TIMER_CTRL,
 		TIMER0_RELOAD_EN | TIMER0_EN,
 		TIMER0_RELOAD_EN | TIMER0_EN);
 
-	ret = clocksource_mmio_init(timer_base + TIMER0_VAL,
+	ret = clocksource_mmio_init(clocksource_timer_base + TIMER0_VAL,
 				    "orion_clocksource", rate, 300, 32,
 				    clocksource_mmio_readl_down);
 	if (ret) {

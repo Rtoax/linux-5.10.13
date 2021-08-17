@@ -55,9 +55,9 @@ struct saved_msrs {
 #define EAX_EDX_VAL(val, low, high)	((low) | (high) << 32)
 #define EAX_EDX_RET(val, low, high)	"=a" (low), "=d" (high)
 #else
-#define DECLARE_ARGS(val, low, high)	unsigned long long val
-#define EAX_EDX_VAL(val, low, high)	(val)
-#define EAX_EDX_RET(val, low, high)	"=A" (val)
+//#define DECLARE_ARGS(val, low, high)	unsigned long long val
+//#define EAX_EDX_VAL(val, low, high)	(val)
+//#define EAX_EDX_RET(val, low, high)	"=A" (val)
 #endif
 
 /*
@@ -199,11 +199,15 @@ extern int wrmsr_safe_regs(u32 regs[8]);
  * results can be non-monotonic if compared on different CPUs.
  *
  * 随机数和随机池产生 [TSC
+ *  记录 CPU 时钟周期数
  */
 static __always_inline unsigned long long rdtsc(void)
 {
 	DECLARE_ARGS(val, low, high);
 
+    /**
+     *  read tsc 
+     */
 	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
 
 	return EAX_EDX_VAL(val, low, high);

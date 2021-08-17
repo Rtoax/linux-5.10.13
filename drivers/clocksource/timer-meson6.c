@@ -53,12 +53,12 @@
 #define MESON_ISA_TIMERD					0x10
 #define MESON_ISA_TIMERE					0x14
 
-static void __iomem *timer_base;
+static void __iomem *clocksource_meson6_timer_base;
 
 #ifdef CONFIG_ARM
 static unsigned long meson6_read_current_timer(void)
 {
-	return readl_relaxed(timer_base + MESON_ISA_TIMERE);
+	return readl_relaxed(clocksource_meson6_timer_base + MESON_ISA_TIMERE);
 }
 
 static struct delay_timer meson6_delay_timer = {
@@ -69,25 +69,25 @@ static struct delay_timer meson6_delay_timer = {
 
 static u64 notrace meson6_timer_sched_read(void)
 {
-	return (u64)readl(timer_base + MESON_ISA_TIMERE);
+	return (u64)readl(clocksource_meson6_timer_base + MESON_ISA_TIMERE);
 }
 
 static void meson6_clkevt_time_stop(void)
 {
-	u32 val = readl(timer_base + MESON_ISA_TIMER_MUX);
+	u32 val = readl(clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 
 	writel(val & ~MESON_ISA_TIMER_MUX_TIMERA_EN,
-	       timer_base + MESON_ISA_TIMER_MUX);
+	       clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 }
 
 static void meson6_clkevt_time_setup(unsigned long delay)
 {
-	writel(delay, timer_base + MESON_ISA_TIMERA);
+	writel(delay, clocksource_meson6_timer_base + MESON_ISA_TIMERA);
 }
 
 static void meson6_clkevt_time_start(bool periodic)
 {
-	u32 val = readl(timer_base + MESON_ISA_TIMER_MUX);
+	u32 val = readl(clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 
 	if (periodic)
 		val |= MESON_ISA_TIMER_MUX_TIMERA_MODE;
@@ -95,7 +95,7 @@ static void meson6_clkevt_time_start(bool periodic)
 		val &= ~MESON_ISA_TIMER_MUX_TIMERA_MODE;
 
 	writel(val | MESON_ISA_TIMER_MUX_TIMERA_EN,
-	       timer_base + MESON_ISA_TIMER_MUX);
+	       clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 }
 
 static int meson6_shutdown(struct clock_event_device *evt)
@@ -155,8 +155,8 @@ static int __init meson6_timer_init(struct device_node *node)
 	u32 val;
 	int ret, irq;
 
-	timer_base = of_io_request_and_map(node, 0, "meson6-timer");
-	if (IS_ERR(timer_base)) {
+	clocksource_meson6_timer_base = of_io_request_and_map(node, 0, "meson6-timer");
+	if (IS_ERR(clocksource_meson6_timer_base)) {
 		pr_err("Can't map registers\n");
 		return -ENXIO;
 	}
@@ -168,21 +168,21 @@ static int __init meson6_timer_init(struct device_node *node)
 	}
 
 	/* Set 1us for timer E */
-	val = readl(timer_base + MESON_ISA_TIMER_MUX);
+	val = readl(clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 	val &= ~MESON_ISA_TIMER_MUX_TIMERE_INPUT_CLOCK_MASK;
 	val |= FIELD_PREP(MESON_ISA_TIMER_MUX_TIMERE_INPUT_CLOCK_MASK,
 			  MESON_ISA_TIMER_MUX_TIMERE_INPUT_CLOCK_1US);
-	writel(val, timer_base + MESON_ISA_TIMER_MUX);
+	writel(val, clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 
 	sched_clock_register(meson6_timer_sched_read, 32, USEC_PER_SEC);
-	clocksource_mmio_init(timer_base + MESON_ISA_TIMERE, node->name,
+	clocksource_mmio_init(clocksource_meson6_timer_base + MESON_ISA_TIMERE, node->name,
 			      1000 * 1000, 300, 32, clocksource_mmio_readl_up);
 
 	/* Timer A base 1us */
 	val &= ~MESON_ISA_TIMER_MUX_TIMERA_INPUT_CLOCK_MASK;
 	val |= FIELD_PREP(MESON_ISA_TIMER_MUX_TIMERA_INPUT_CLOCK_MASK,
 			  MESON_ISA_TIMER_MUX_TIMERABCD_INPUT_CLOCK_1US);
-	writel(val, timer_base + MESON_ISA_TIMER_MUX);
+	writel(val, clocksource_meson6_timer_base + MESON_ISA_TIMER_MUX);
 
 	/* Stop the timer A */
 	meson6_clkevt_time_stop();

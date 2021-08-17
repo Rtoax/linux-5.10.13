@@ -48,8 +48,12 @@ DEFINE_RAW_SPINLOCK(timekeeper_lock);
 static struct {
 	seqcount_raw_spinlock_t	seq;    /*  */
 	struct timekeeper	timekeeper; /*  */
+
+    /**
+     *  
+     */
 } ____cacheline_aligned tk_core  = {/*  */
-	.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
+	tk_core.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
 
 static struct timekeeper shadow_timekeeper;

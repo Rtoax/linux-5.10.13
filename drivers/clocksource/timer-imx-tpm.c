@@ -33,16 +33,16 @@
 #define TPM_C0V				0x24
 
 static int counter_width;
-static void __iomem *timer_base;
+static void __iomem *rtoax_timer_base;
 
 static inline void tpm_timer_disable(void)
 {
 	unsigned int val;
 
 	/* channel disable */
-	val = readl(timer_base + TPM_C0SC);
+	val = readl(rtoax_timer_base + TPM_C0SC);
 	val &= ~(TPM_C0SC_MODE_MASK | TPM_C0SC_CHIE);
-	writel(val, timer_base + TPM_C0SC);
+	writel(val, rtoax_timer_base + TPM_C0SC);
 }
 
 static inline void tpm_timer_enable(void)
@@ -50,20 +50,20 @@ static inline void tpm_timer_enable(void)
 	unsigned int val;
 
 	/* channel enabled in sw compare mode */
-	val = readl(timer_base + TPM_C0SC);
+	val = readl(rtoax_timer_base + TPM_C0SC);
 	val |= (TPM_C0SC_MODE_SW_COMPARE << TPM_C0SC_MODE_SHIFT) |
 	       TPM_C0SC_CHIE;
-	writel(val, timer_base + TPM_C0SC);
+	writel(val, rtoax_timer_base + TPM_C0SC);
 }
 
 static inline void tpm_irq_acknowledge(void)
 {
-	writel(TPM_STATUS_CH0F, timer_base + TPM_STATUS);
+	writel(TPM_STATUS_CH0F, rtoax_timer_base + TPM_STATUS);
 }
 
 static inline unsigned long tpm_read_counter(void)
 {
-	return readl(timer_base + TPM_CNT);
+	return readl(rtoax_timer_base + TPM_CNT);
 }
 
 #if defined(CONFIG_ARM)
@@ -87,7 +87,7 @@ static int tpm_set_next_event(unsigned long delta,
 
 	next = tpm_read_counter();
 	next += delta;
-	writel(next, timer_base + TPM_C0V);
+	writel(next, rtoax_timer_base + TPM_C0V);
 	now = tpm_read_counter();
 
 	/*
@@ -155,7 +155,7 @@ static int __init tpm_clocksource_init(void)
 	sched_clock_register(tpm_read_sched_clock, counter_width,
 			     timer_of_rate(&to_tpm) >> 3);
 
-	return clocksource_mmio_init(timer_base + TPM_CNT,
+	return clocksource_mmio_init(rtoax_timer_base + TPM_CNT,
 				     "imx-tpm",
 				     timer_of_rate(&to_tpm) >> 3,
 				     to_tpm.clkevt.rating,
@@ -194,9 +194,9 @@ static int __init tpm_timer_init(struct device_node *np)
 	if (ret)
 		return ret;
 
-	timer_base = timer_of_base(&to_tpm);
+	rtoax_timer_base = timer_of_base(&to_tpm);
 
-	counter_width = (readl(timer_base + TPM_PARAM)
+	counter_width = (readl(rtoax_timer_base + TPM_PARAM)
 		& TPM_PARAM_WIDTH_MASK) >> TPM_PARAM_WIDTH_SHIFT;
 	/* use rating 200 for 32-bit counter and 150 for 16-bit counter */
 	to_tpm.clkevt.rating = counter_width == 0x20 ? 200 : 150;
@@ -210,12 +210,12 @@ static int __init tpm_timer_init(struct device_node *np)
 	 * 5) DMA transfers disabled
 	 */
 	/* make sure counter is disabled */
-	writel(0, timer_base + TPM_SC);
+	writel(0, rtoax_timer_base + TPM_SC);
 	/* TOF is W1C */
-	writel(TPM_SC_TOF_MASK, timer_base + TPM_SC);
-	writel(0, timer_base + TPM_CNT);
+	writel(TPM_SC_TOF_MASK, rtoax_timer_base + TPM_SC);
+	writel(0, rtoax_timer_base + TPM_CNT);
 	/* CHF is W1C */
-	writel(TPM_C0SC_CHF_MASK, timer_base + TPM_C0SC);
+	writel(TPM_C0SC_CHF_MASK, rtoax_timer_base + TPM_C0SC);
 
 	/*
 	 * increase per cnt,
@@ -224,10 +224,10 @@ static int __init tpm_timer_init(struct device_node *np)
 	writel(TPM_SC_CMOD_INC_PER_CNT |
 		(counter_width == 0x20 ?
 		TPM_SC_CMOD_DIV_DEFAULT : TPM_SC_CMOD_DIV_MAX),
-		timer_base + TPM_SC);
+		rtoax_timer_base + TPM_SC);
 
 	/* set MOD register to maximum for free running mode */
-	writel(GENMASK(counter_width - 1, 0), timer_base + TPM_MOD);
+	writel(GENMASK(counter_width - 1, 0), rtoax_timer_base + TPM_MOD);
 
 	tpm_clockevent_init();
 

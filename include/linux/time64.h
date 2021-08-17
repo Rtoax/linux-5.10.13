@@ -10,6 +10,9 @@ typedef __u64 timeu64_t;
 
 #include <uapi/linux/time.h>
 
+/**
+ *  
+ */	
 struct timespec64 {
 	time64_t	tv_sec;			/* seconds */
 	long		tv_nsec;		/* nanoseconds */

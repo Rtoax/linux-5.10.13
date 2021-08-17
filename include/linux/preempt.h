@@ -157,6 +157,8 @@
  * held spinlocks in non-preemptible kernels.  Thus it should not be
  * used in the general case to determine whether sleeping is possible.
  * Do not use in_atomic() in driver code.
+ *
+ * 是否在原子上下文
  */
 #define in_atomic()	(preempt_count() != 0)
 

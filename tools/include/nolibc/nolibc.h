@@ -146,29 +146,29 @@ typedef   signed long      blkcnt_t;
 typedef   signed long        time_t;
 
 /* for poll() */
-struct pollfd {
-	int fd;
-	short int events;
-	short int revents;
-};
+//struct pollfd {
+//	int fd;
+//	short int events;
+//	short int revents;
+//};
 
 /* for select() */
-struct timeval {
-	long    tv_sec;
-	long    tv_usec;
-};
+//struct timeval {
+//	long    tv_sec;
+//	long    tv_usec;
+//};
 
 /* for pselect() */
-struct timespec {
-	long    tv_sec;
-	long    tv_nsec;
-};
+//struct timespec {
+//	long    tv_sec;
+//	long    tv_nsec;
+//};
 
 /* for gettimeofday() */
-struct timezone {
-	int tz_minuteswest;
-	int tz_dsttime;
-};
+//struct timezone {
+//	int tz_minuteswest;
+//	int tz_dsttime;
+//};
 
 /* for getdents64() */
 struct linux_dirent64 {

@@ -15,7 +15,9 @@ extern void __delay(unsigned long loops);
  * The weird n/20000 thing suppresses a "comparison is always false due to
  * limited range of data type" warning with non-const 8-bit arguments.
  */
-
+/**
+ *  短延迟 微妙
+ */
 /* 0x10c7 is 2**32 / 1000000 (rounded up) */
 #define udelay(n)							\
 	({								\
@@ -28,7 +30,10 @@ extern void __delay(unsigned long loops);
 			__udelay(n);					\
 		}							\
 	})
-
+	
+/**
+ *  短延迟 纳秒
+ */
 /* 0x5 is 2**32 / 1000000000 (rounded up) */
 #define ndelay(n)							\
 	({								\

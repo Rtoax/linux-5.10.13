@@ -28,10 +28,10 @@ struct itimerval {
 	struct timeval it_value;	/* current value */
 };
 
-struct timezone {
-	int	tz_minuteswest;	/* minutes west of Greenwich */
-	int	tz_dsttime;	/* type of dst correction */
-};
+//struct timezone {
+//	int	tz_minuteswest;	/* minutes west of Greenwich */
+//	int	tz_dsttime;	/* type of dst correction */
+//};
 
 /*
  * Names of the interval timers, and structure

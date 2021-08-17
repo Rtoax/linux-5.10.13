@@ -8,13 +8,43 @@
 #include <linux/debugobjects.h>
 #include <linux/stringify.h>
 
+/**
+ *  定时器
+ *
+ *  每次运行之前，都会被从 链表中移走(expire_timers() call detach_timer())
+ *
+ * API
+ * -----------------------
+ * DEFINE_TIMER()
+ * add_timer()
+ * add_timer_on()
+ * del_timer()
+ * mod_timer()
+ *
+ * 软中断定时器 
+ * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+ *  run_timer_softirq 调用 __run_timers()
+ */
 struct timer_list { /* 定时器哈希表 */
 	/*
 	 * All fields that change during normal runtime grouped to the
 	 * same cacheline
+	 *
+	 * timer_pending - timer 是否在运行，会使用这个 字段
 	 */
 	struct hlist_node	entry;
+
+    /**
+     *  
+     */
 	unsigned long		expires;
+
+    /**
+     *  定时器回调函数
+     *
+     *  do_init_timer 中赋值
+     *  call_timer_fn 中执行
+     */
 	void			(*function)(struct timer_list *);
 	u32			flags;
 
@@ -73,6 +103,9 @@ struct timer_list { /* 定时器哈希表 */
 
 #define TIMER_TRACE_FLAGMASK	(TIMER_MIGRATING | TIMER_DEFERRABLE | TIMER_PINNED | TIMER_IRQSAFE)
 
+/**
+ *  初始化定时器
+ */
 #define __TIMER_INITIALIZER(_function, _flags) {		\
 		.entry = { .next = TIMER_ENTRY_STATIC },	\
 		.function = (_function),			\
@@ -81,6 +114,9 @@ struct timer_list { /* 定时器哈希表 */
 			__FILE__ ":" __stringify(__LINE__))	\
 	}
 
+/**
+ *  定义 定时器
+ */
 #define DEFINE_TIMER(_name, _function)				\
 	struct timer_list _name =				\
 		__TIMER_INITIALIZER(_function, 0)
@@ -109,6 +145,9 @@ extern void init_timer_on_stack_key(struct timer_list *timer,
 #endif
 
 #ifdef CONFIG_LOCKDEP/* 死锁检测 */
+/**
+ *  初始化定时器
+ */
 #define __init_timer(_timer, _fn, _flags)				\
 	do {								\
 		static struct lock_class_key __key;			\
@@ -159,6 +198,8 @@ extern void destroy_timer_on_stack(struct timer_list *timer);
  * to this timer, eg. interrupt contexts, or other CPUs on SMP.
  *
  * return value: 1 if the timer is pending, 0 if not.
+ *
+ * 当前定时器是否被调度运行
  */
 static inline int timer_pending(const struct timer_list * timer)
 {

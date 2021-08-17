@@ -107,6 +107,9 @@ static double timeval2double(struct timeval *ts)
 			printf(" %14lf GB/sec\n", x / K / K / K);	\
 	} while (0)
 
+/**
+ *  
+ */
 struct bench_mem_info {
 	const struct function *functions;
 	u64 (*do_cycles)(const struct function *r, size_t size, void *src, void *dst);

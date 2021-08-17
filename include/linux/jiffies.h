@@ -75,6 +75,9 @@ extern int register_refined_jiffies(long clock_tick_rate);
  * The 64-bit value is not atomic - you MUST NOT read it
  * without sampling the sequence number in jiffies_lock.
  * get_jiffies_64() will do this for you as appropriate.
+ *
+ *  每次时钟中断发生， jiffies 值就增加 1
+ *  这个数在系统引导时被初始化为 0, 数值等于自上次引导以来的时钟滴答数
  */
 extern u64 __cacheline_aligned_in_smp jiffies_64;
 extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
@@ -100,17 +103,28 @@ static inline u64 get_jiffies_64(void)
  * Do this with "<0" and ">=0" to only test the sign of the result. A
  * good compiler would generate better code (and a really good compiler
  * wouldn't care). Gcc is currently neither.
+ *
+ * a>b, true
  */
 #define time_after(a,b)		\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((b) - (a)) < 0))
+/**
+ * a<b, true
+ */	 
 #define time_before(a,b)	time_after(b,a)
 
+/**
+ * a>=b, true
+ */ 
 #define time_after_eq(a,b)	\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((a) - (b)) >= 0))
+/**
+ * a<=b, true
+ */	
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
 /*
@@ -265,6 +279,9 @@ extern unsigned long preset_lpj;
 #define SEC_JIFFIE_SC (32 - SHIFT_HZ)
 #endif
 #define NSEC_JIFFIE_SC (SEC_JIFFIE_SC + 29)
+/**
+ *  
+ */ 
 #define SEC_CONVERSION ((unsigned long)((((u64)NSEC_PER_SEC << SEC_JIFFIE_SC) +\
                                 TICK_NSEC -1) / (u64)TICK_NSEC))
 

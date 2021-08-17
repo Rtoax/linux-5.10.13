@@ -621,7 +621,7 @@ extern bool force_irqthreads;
 enum    /* softirq 软中断 */
 {
 	HI_SOFTIRQ=0,   /* HI:high-priority tasklets 高优先级 tasklet */
-	TIMER_SOFTIRQ,  /* 定时器 TIMER */
+	TIMER_SOFTIRQ,  /* 定时器 TIMER, 数据结构`timer_list` */
 	NET_TX_SOFTIRQ, /* 网络发包 */
 	NET_RX_SOFTIRQ, /* 网络收包 */
 	BLOCK_SOFTIRQ,      /* BLOCK - 用于块设备的软中断 */

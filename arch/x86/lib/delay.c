@@ -204,6 +204,9 @@ void __delay(unsigned long loops)
 }
 EXPORT_SYMBOL(__delay);
 
+/**
+ *  
+ */
 noinline void __const_udelay(unsigned long xloops)
 {
 	unsigned long lpj = this_cpu_read(cpu_info.loops_per_jiffy) ? : loops_per_jiffy;
@@ -224,6 +227,9 @@ void __udelay(unsigned long usecs)
 }
 EXPORT_SYMBOL(__udelay);
 
+/**
+ *  短延迟 纳秒
+ */
 void __ndelay(unsigned long nsecs)
 {
 	__const_udelay(nsecs * 0x00005); /* 2**32 / 1000000000 (rounded up) */

@@ -64,6 +64,9 @@ static struct clocksource clocksource_jiffies = {
 __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_t jiffies_seq;
 
+/**
+ *  
+ */	
 #if (BITS_PER_LONG < 64)
 u64 get_jiffies_64(void)
 {

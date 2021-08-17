@@ -49,10 +49,10 @@
  * calls to sched_clock() which should always be the case in practice.
  */
 
-#define timer_readl(reg) readl_relaxed(timer_base + (reg))
-#define timer_writel(val, reg) writel_relaxed((val), timer_base + (reg))
+#define timer_readl(reg) readl_relaxed(clocksource_pxa_timer_base + (reg))
+#define timer_writel(val, reg) writel_relaxed((val), clocksource_pxa_timer_base + (reg))
 
-static void __iomem *timer_base;
+static void __iomem *clocksource_pxa_timer_base;
 
 static u64 notrace pxa_read_sched_clock(void)
 {
@@ -161,7 +161,7 @@ static int __init pxa_timer_common_init(int irq, unsigned long clock_tick_rate)
 		return ret;
 	}
 
-	ret = clocksource_mmio_init(timer_base + OSCR, "oscr0", clock_tick_rate, 200,
+	ret = clocksource_mmio_init(clocksource_pxa_timer_base + OSCR, "oscr0", clock_tick_rate, 200,
 				    32, clocksource_mmio_readl_up);
 	if (ret) {
 		pr_err("Failed to init clocksource\n");
@@ -180,8 +180,8 @@ static int __init pxa_timer_dt_init(struct device_node *np)
 	int irq, ret;
 
 	/* timer registers are shared with watchdog timer */
-	timer_base = of_iomap(np, 0);
-	if (!timer_base) {
+	clocksource_pxa_timer_base = of_iomap(np, 0);
+	if (!clocksource_pxa_timer_base) {
 		pr_err("%pOFn: unable to map resource\n", np);
 		return -ENXIO;
 	}
@@ -216,7 +216,7 @@ void __init pxa_timer_nodt_init(int irq, void __iomem *base)
 {
 	struct clk *clk;
 
-	timer_base = base;
+	clocksource_pxa_timer_base = base;
 	clk = clk_get(NULL, "OSTIMER0");
 	if (clk && !IS_ERR(clk)) {
 		clk_prepare_enable(clk);
