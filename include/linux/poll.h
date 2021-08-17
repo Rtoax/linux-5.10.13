@@ -128,9 +128,18 @@ static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
 	return file->f_op->poll(file, pt);
 }
 
+/**
+ *  
+ */
 struct poll_table_entry {   /* 轮询表项 */
+    /**
+     *  打开的文件
+     */
 	struct file *filp;      /* 文件指针 */
 	__poll_t key;           /* key */
+    /**
+     *  
+     */
 	wait_queue_entry_t wait;/* 等待队列 entry */
 	wait_queue_head_t *wait_address;    /* 等待队列 */
 };

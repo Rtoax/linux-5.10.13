@@ -1265,6 +1265,14 @@ static inline int locks_lock_file_wait(struct file *filp, struct file_lock *fl)
 	return locks_lock_inode_wait(locks_inode(filp), fl);
 }
 
+/**
+ *  异步信号
+ *
+ *  驱动程序怎样实现异步信号
+ *  ---------------------
+ *   fasync_helper()    
+ *   kill_fasync()      
+ */
 struct fasync_struct {
 	rwlock_t		fa_lock;
 	int			magic;

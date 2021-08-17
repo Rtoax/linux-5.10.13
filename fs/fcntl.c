@@ -84,6 +84,9 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
 	return error;
 }
 
+/**
+ *  修改打开文件的属主
+ */
 static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
                      int force)
 {
@@ -381,6 +384,9 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
 		force_successful_syscall_return();
 		break;
 	case F_SETOWN:
+        /**
+         *  设置打开文件的属主
+         */
 		err = f_setown(filp, arg, 1);
 		break;
 	case F_GETOWN_EX:
@@ -928,6 +934,8 @@ static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fa
  * to set up the fasync queue, and for regular files by the file
  * lease code. It returns negative on error, 0 if it did no changes
  * and positive if it added/deleted the entry.
+ *
+ * 从相关的进程列表中增加或删除文件
  */
 int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
 {
@@ -965,6 +973,9 @@ static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 	}
 }
 
+/**
+ *  当有数据到达时，通知所有的相关进程
+ */
 void kill_fasync(struct fasync_struct **fp, int sig, int band)
 {
 	/* First a quick test without locking: usually

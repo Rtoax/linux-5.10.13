@@ -46,9 +46,13 @@
 #ifndef O_DSYNC
 #define O_DSYNC		00010000	/* used to be O_SYNC, see below */
 #endif
+/**
+ *  异步通知机制，可以是引用     `fcntl(fd, F_SETFL, FASYNC)` 设置
+ */
 #ifndef FASYNC
 #define FASYNC		00020000	/* fcntl, for BSD compatibility */
 #endif
+
 #ifndef O_DIRECT
 #define O_DIRECT	00040000	/* direct disk access hint */
 #endif
@@ -130,6 +134,9 @@
 #define F_SETLK		6
 #define F_SETLKW	7
 #endif
+/**
+ *  设置 文件的属主 进程
+ */
 #ifndef F_SETOWN
 #define F_SETOWN	8	/* for sockets. */
 #define F_GETOWN	9	/* for sockets. */
