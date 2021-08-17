@@ -120,6 +120,7 @@ void ksys_sync(void)
 		laptop_sync_completion();
 }
 
+void sync(void);
 SYSCALL_DEFINE0(sync)
 {
 	ksys_sync();
@@ -158,6 +159,7 @@ void emergency_sync(void)
 /*
  * sync a single super
  */
+int syncfs(int fd);
 SYSCALL_DEFINE1(syncfs, int, fd)
 {
 	struct fd f = fdget(fd);
@@ -193,10 +195,21 @@ int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
 
+    /**
+     *  
+     */
 	if (!file->f_op->fsync)
 		return -EINVAL;
+
+    /**
+     *  
+     */
 	if (!datasync && (inode->i_state & I_DIRTY_TIME))
 		mark_inode_dirty_sync(inode);
+
+    /**
+     *  fsync 回调
+     */
 	return file->f_op->fsync(file, start, end, datasync);
 }
 EXPORT_SYMBOL(vfs_fsync_range);
@@ -211,10 +224,16 @@ EXPORT_SYMBOL(vfs_fsync_range);
  */
 int vfs_fsync(struct file *file, int datasync)
 {
+    /**
+     *  
+     */
 	return vfs_fsync_range(file, 0, LLONG_MAX, datasync);
 }
 EXPORT_SYMBOL(vfs_fsync);
 
+/**
+ *  fsync & fdatasync 系统调用
+ */
 static int do_fsync(unsigned int fd, int datasync)
 {
 	struct fd f = fdget(fd);
@@ -227,11 +246,19 @@ static int do_fsync(unsigned int fd, int datasync)
 	return ret;
 }
 
+/**
+ *  
+ */
+int fsync(int fd);
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
 	return do_fsync(fd, 0);
 }
 
+/**
+ *  
+ */
+int fdatasync(int fd);
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
 	return do_fsync(fd, 1);

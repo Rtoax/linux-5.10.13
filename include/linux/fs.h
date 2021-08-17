@@ -1855,6 +1855,10 @@ struct file_operations {    /* 文件操作符 */
 
     /**
      *  fsync 系统调用的后端实现
+     *
+     *  @datasync: 用于区分 是 fsync 还是 fdatasync
+     *
+     *  在  `vfs_fsync_range()` 中调用
      */
 	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
 	int (*fasync) (int, struct file *, int);
