@@ -1295,7 +1295,7 @@ out_release:
 EXPORT_SYMBOL(sock_create_lite);
 
 /**
- *  
+ *  struct file_operation socket_file_ops.poll = sock_poll()
  */
 /* No kernel lock held - perfect */
 static __poll_t sock_poll(struct file *file, poll_table *wait)
@@ -1323,6 +1323,8 @@ static __poll_t sock_poll(struct file *file, poll_table *wait)
 
     /**
      *  TODO 2021年7月15日22:45:30
+     *
+     *  
      */
 	return sock->ops->poll(file, sock, wait) | flag;
 }

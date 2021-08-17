@@ -1812,10 +1812,26 @@ struct file_operations {    /* 文件操作符 */
 
     /**
      *  poll, select, epoll 的后端实现
+     *  select - BSD Unix 引入
+     *  poll - System V 引入
+     *  epoll - 2.5.45 引入
+     *
      *  如果 该poll 指针=NULL，则设备会被认为即可读也可写，并且不会被阻塞
+     *
+     *  该函数指针在 `vfs_poll()` 中被调用，可能的 函数如下：
+     *  -----------------------------------------------------
+     *  socket_file_ops.poll = sock_poll()
+     *  eventpoll_fops.poll = ep_eventpoll_poll()
      */
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
+
+    /**
+     *  
+     */
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+    /**
+     *  
+     */
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 
     /**

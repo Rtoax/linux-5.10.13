@@ -39,14 +39,32 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
 /*
  * Do not touch the structure directly, use the access functions
  * poll_does_not_wait() and poll_requested_events() instead.
+ * 
+ *  一般是在 设备驱动的 (*poll) 回调中使用 poll_wait
  */
 typedef struct poll_table_struct {  /* 轮询表 */
+    /**
+     *  使用 `init_poll_funcptr()` 赋值
+     *  --------------
+     *  epoll - ep_ptable_queue_proc() 在 `ep_insert()` 中添加
+     *  poll,select - __pollwait() 在 `poll_initwait()` 中添加
+     */
 	poll_queue_proc _qproc; /* 回调 */
 	__poll_t _key;          /* key */
 } poll_table;
 
+/**
+ *  通过 poll_wait 向 poll_table 中添加一个等待队列
+ */
 static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
 {
+    /**
+     *  
+     *  _qproc 使用 `init_poll_funcptr()` 赋值
+     *  --------------
+     *  epoll - ep_ptable_queue_proc() 在 `ep_insert()` 中添加
+     *  poll,select - __pollwait() 在 `poll_initwait()` 中添加
+     */
 	if (p && p->_qproc && wait_address)
 		p->_qproc(filp, wait_address, p);
 }

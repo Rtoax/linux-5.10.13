@@ -134,6 +134,9 @@ struct sk_buff;
 typedef int (*sk_read_actor_t)(read_descriptor_t *, struct sk_buff *,
 			       unsigned int, size_t);
 
+/**
+ *  
+ */
 struct proto_ops {  /* struct socket 操作 */
 	int		family;
 	unsigned int	flags;
@@ -152,6 +155,9 @@ struct proto_ops {  /* struct socket 操作 */
 	int		(*getname)   (struct socket *sock,
 				      struct sockaddr *addr,
 				      int peer);
+    /**
+     *  
+     */
 	__poll_t	(*poll)	     (struct file *file, struct socket *sock,
 				      struct poll_table_struct *wait);
 	int		(*ioctl)     (struct socket *sock, unsigned int cmd,

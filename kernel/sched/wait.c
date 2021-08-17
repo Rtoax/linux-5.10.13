@@ -22,8 +22,14 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 {
 	unsigned long flags;
 
+    /**
+     *  非 独占
+     */
 	wq_entry->flags &= ~WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&wq_head->lock, flags);
+    /**
+     *  添加到链表
+     */
 	__add_wait_queue(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
@@ -36,8 +42,14 @@ void add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue
 {
 	unsigned long flags;
 
+    /**
+     *  独占
+     */
 	wq_entry->flags |= WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&wq_head->lock, flags);
+    /**
+     *  添加到链表尾
+     */
 	__add_wait_queue_entry_tail(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }

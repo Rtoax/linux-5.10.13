@@ -1502,6 +1502,9 @@ static ssize_t do_read(struct file *fp, char __user *buf, size_t count, loff_t *
 	return 0;
 }
 
+/**
+ *  
+ */
 static __poll_t do_poll(struct file *fp, poll_table *wait)
 {
 	struct apm_user *as;
@@ -1509,6 +1512,10 @@ static __poll_t do_poll(struct file *fp, poll_table *wait)
 	as = fp->private_data;
 	if (check_apm_user(as, "poll"))
 		return 0;
+
+    /**
+     *  
+     */
 	poll_wait(fp, &apm_waitqueue, wait);
 	if (!queue_empty(as))
 		return EPOLLIN | EPOLLRDNORM;

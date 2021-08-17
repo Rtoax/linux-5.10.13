@@ -313,6 +313,9 @@ struct eppoll_entry {   /*  */
  */
 /* Wrapper struct used by poll queueing */
 struct ep_pqueue {
+    /**
+     *  
+     */
 	poll_table pt;
 	struct epitem *epi;
 };
@@ -1035,6 +1038,9 @@ static __poll_t ep_item_poll(const struct epitem *epi, poll_table *pt, int depth
     
 	locked = pt && (pt->_qproc == ep_ptable_queue_proc);
 
+    /**
+     *  扫描就绪链表
+     */
 	return ep_scan_ready_list(epi->ffd.file->private_data,/* 这里解决嵌套 epoll 问题 */
             				  ep_read_events_proc/* 嵌套的回调函数 */, &depth, depth,
             				  locked) & epi->event.events;
@@ -1578,7 +1584,7 @@ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
 		pwq->base = epi;
 
         /**
-         *  
+         *  独占
          */
 		if (epi->event.events & EPOLLEXCLUSIVE)
 			add_wait_queue_exclusive(whead, &pwq->wait);
@@ -2996,7 +3002,7 @@ SYSCALL_DEFINE4(epoll_wait, int, epfd, struct epoll_event __user *, events,
 		int, maxevents, int, timeout)
 {/* 系统调用 */
     /**
-     *  
+     *  等待轮询
      */
 	return do_epoll_wait(epfd, events, maxevents, timeout);
 }
