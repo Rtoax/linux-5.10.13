@@ -7,6 +7,9 @@
 #include <net/ip_fib.h>
 #include <net/nexthop.h>
 
+/**
+ *  转发信息库 (FIB) 信息
+ */
 struct fib_alias {
 	struct hlist_node	fa_list;
 	struct fib_info		*fa_info;

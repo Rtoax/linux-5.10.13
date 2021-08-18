@@ -173,6 +173,11 @@ struct ucred {
 };
 
 /* Supported address families. */
+/**
+ *  AF_INET:    不能返回任何IPV6相关的地址信息
+ *  AF_INET6:   不能返回任何IPV4地址信息
+ *  AF_UNSPEC:  意味着函数返回的是适用于指定主机名和服务名且适合任何协议族的地址
+ */
 #define AF_UNSPEC	0
 #define AF_UNIX		1	/* Unix domain sockets 		*/
 #define AF_LOCAL	1	/* POSIX name for AF_UNIX	*/

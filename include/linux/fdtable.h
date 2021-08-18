@@ -24,8 +24,14 @@
 #define NR_OPEN_DEFAULT BITS_PER_LONG
 #define NR_OPEN_MAX ~0U
 
+/**
+ *  存放 fd 文件描述符的表
+ */
 struct fdtable {    /*  */
 	unsigned int max_fds;
+    /**
+     *  这是一个数组
+     */
 	struct file __rcu **fd;      /* current fd array */
 	unsigned long *close_on_exec;
 	unsigned long *open_fds;
@@ -54,11 +60,15 @@ struct files_struct {/* 打开的文件 */
 	bool resize_in_progress;
 	wait_queue_head_t resize_wait;
 
+    /**
+     *  
+     */
 	struct fdtable __rcu *fdt;
 	struct fdtable fdtab;
-  /*
-   * written part on a separate cache line in SMP
-   */
+    
+    /*
+     * written part on a separate cache line in SMP
+     */
 	spinlock_t ____cacheline_aligned_in_smp file_lock ;
 	unsigned int next_fd;
 	unsigned long close_on_exec_init[1];

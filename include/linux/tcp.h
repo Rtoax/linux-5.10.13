@@ -142,6 +142,9 @@ static inline struct tcp_request_sock *tcp_rsk(const struct request_sock *req)
 	return (struct tcp_request_sock *)req;
 }
 
+/**
+ *  
+ */
 struct tcp_sock {
 	/* inet_connection_sock has to be the first member of tcp_sock */
 	struct inet_connection_sock	inet_conn;
@@ -437,6 +440,9 @@ enum tsq_flags {
 	TCPF_MTU_REDUCED_DEFERRED	= (1UL << TCP_MTU_REDUCED_DEFERRED),
 };
 
+/**
+ *  
+ */
 static inline struct tcp_sock *tcp_sk(const struct sock *sk)
 {
 	return (struct tcp_sock *)sk;

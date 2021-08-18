@@ -688,36 +688,67 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 	 * __inet_stream_connect().
 	 */
 	if (uaddr) {
+        /**
+         *  地址长度检查
+         */
 		if (addr_len < sizeof(uaddr->sa_family))
 			return -EINVAL;
 
+        /**
+         *  
+         *  AF_INET:    不能返回任何IPV6相关的地址信息
+         *  AF_INET6:   不能返回任何IPV4地址信息
+         *  AF_UNSPEC:  意味着函数返回的是适用于指定主机名和服务名且适合任何协议族的地址
+         */
 		if (uaddr->sa_family == AF_UNSPEC) {
+            /**
+             *  tcp_prot.tcp_disconnect
+             *  [...]
+             */
 			err = sk->sk_prot->disconnect(sk, flags);
 			__socket->state = err ? SS_DISCONNECTING : SS_UNCONNECTED;
 			goto out;
 		}
 	}
-
+    /**
+     *  
+     */
 	switch (__socket->state) {
 	default:
 		err = -EINVAL;
 		goto out;
+    /**
+     *  已连接 - 那么直接返回已连接错误
+     */
 	case SS_CONNECTED:
 		err = -EISCONN;
 		goto out;
-	case SS_CONNECTING:
+    /**
+     *  正在连接
+     */
+    case SS_CONNECTING:
 		if (inet_sk(sk)->defer_connect)
 			err = is_sendmsg ? -EINPROGRESS : -EISCONN;
 		else
 			err = -EALREADY;
 		/* Fall out of switch with err, set for this state */
 		break;
-	case SS_UNCONNECTED:
+    /**
+     *  未连接
+     */
+    case SS_UNCONNECTED:
 		err = -EISCONN;
 		if (sk->sk_state != TCP_CLOSE)
 			goto out;
 
+        /**
+         *  
+         */
 		if (BPF_CGROUP_PRE_CONNECT_ENABLED(sk)) {
+            /**
+             * tcp_prot.tcp_v4_pre_connect
+             *  [...]
+             */
 			err = sk->sk_prot->pre_connect(sk, uaddr, addr_len);
 			if (err)
 				goto out;
@@ -734,6 +765,9 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 		if (err < 0)
 			goto out;
 
+        /**
+         *  状态改为正在连接
+         */
 		__socket->state = SS_CONNECTING;
 
 		if (!err && inet_sk(sk)->defer_connect)

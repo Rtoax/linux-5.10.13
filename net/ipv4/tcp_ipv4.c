@@ -202,6 +202,10 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 {
 	struct sockaddr_in *usin = (struct sockaddr_in *)uaddr;
 	struct inet_sock *inet = inet_sk(sk);
+
+    /**
+     *  
+     */
 	struct tcp_sock *tp = tcp_sk(sk);
 	__be16 orig_sport, orig_dport;
 	__be32 daddr, nexthop;
@@ -221,6 +225,10 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
      *  目的地址 - 服务器地址
      */
 	nexthop = daddr = usin->sin_addr.s_addr;
+
+    /**
+     *  
+     */
 	inet_opt = rcu_dereference_protected(inet->inet_opt, lockdep_sock_is_held(sk));
 	if (inet_opt && inet_opt->opt.srr) {
 		if (!daddr)

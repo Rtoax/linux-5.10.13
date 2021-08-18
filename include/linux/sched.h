@@ -1302,6 +1302,9 @@ struct task_struct {    /* PCB */
 	/* Filesystem information: */
 	struct fs_struct		*fs;/* 文件系统 */
 
+    /**
+     *  打开的文件
+     */
 	/* Open file information: */
 	struct files_struct		*files;/* 打开的文件 */
 

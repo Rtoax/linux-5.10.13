@@ -298,9 +298,12 @@ static inline void ip_route_connect_init(struct flowi4 *fl4, __be32 dst, __be32 
 	if (inet_sk(sk)->transparent)
 		flow_flags |= FLOWI_FLAG_ANYSRC;
 
+    /**
+     *  
+     */
 	flowi4_init_output(fl4, oif, sk->sk_mark, tos, RT_SCOPE_UNIVERSE,
-			   protocol, flow_flags, dst, src, dport, sport,
-			   sk->sk_uid);
+        			   protocol, flow_flags, dst, src, dport, sport,
+        			   sk->sk_uid);
 }
 
 /**

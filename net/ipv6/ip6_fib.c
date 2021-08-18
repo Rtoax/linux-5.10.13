@@ -37,6 +37,9 @@
 
 static struct kmem_cache __read_mostly *fib6_node_kmem ;
 
+/**
+ *  转发信息库 (FIB) 信息
+ */
 struct fib6_cleaner {
 	struct fib6_walker w;
 	struct net *net;

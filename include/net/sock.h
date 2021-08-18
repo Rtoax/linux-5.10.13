@@ -1617,6 +1617,9 @@ static inline bool lockdep_sock_is_held(const struct sock *sk)
 
 void lock_sock_nested(struct sock *sk, int subclass);
 
+/**
+ *  
+ */
 static inline void lock_sock(struct sock *sk)
 {
 	lock_sock_nested(sk, 0);

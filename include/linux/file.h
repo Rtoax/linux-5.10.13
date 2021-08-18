@@ -63,6 +63,9 @@ static inline struct fd __to_fd(unsigned long v)
 	return (struct fd){(struct file *)(v & ~3),v & 3};
 }
 
+/**
+ *  
+ */
 static inline struct fd fdget(unsigned int fd)/* fd -> struct fd */
 {
 	return __to_fd(__fdget(fd));

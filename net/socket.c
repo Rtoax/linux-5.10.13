@@ -212,7 +212,9 @@ static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO]  
  *	too long an error code of -EINVAL is returned. If the copy gives
  *	invalid addresses -EFAULT is returned. On a success 0 is returned.
  */
-
+/**
+ *  拷贝数据到内核
+ */
 int move_addr_to_kernel(void __user *uaddr, int ulen, struct sockaddr_storage *kaddr)
 {
 	if (ulen < 0 || ulen > sizeof(struct sockaddr_storage))
@@ -2042,8 +2044,10 @@ int __sys_connect_file(struct file *_file, struct sockaddr_storage *address,
 	if (!sock)
 		goto out;
 
-	err =
-	    security_socket_connect(sock, (struct sockaddr *)address, addrlen);
+    /**
+     *  安全检查
+     */
+	err = security_socket_connect(sock, (struct sockaddr *)address, addrlen);
 	if (err)
 		goto out;
 
@@ -2063,17 +2067,26 @@ out:
 /**
  *  connect(2)
  */
-int __sys_connect(int fd, struct sockaddr __user *uservaddr, int addrlen)
+int __sys_connect(int __fd, struct sockaddr __user *uservaddr, int addrlen)
 {
 	int ret = -EBADF;
 	struct fd f;
 
-	f = fdget(fd);
+    /**
+     *  从 fd 获取 fd 结构
+     */
+	f = fdget(__fd);
 	if (f.file) {
 		struct sockaddr_storage address;
 
+        /**
+         *  拷贝数据到 kernel
+         */
 		ret = move_addr_to_kernel(uservaddr, addrlen, &address);
 		if (!ret)
+            /**
+             *  
+             */
 			ret = __sys_connect_file(f.file, &address, addrlen, 0);
 		fdput(f);
 	}
@@ -2085,12 +2098,12 @@ int __sys_connect(int fd, struct sockaddr __user *uservaddr, int addrlen)
  *  connect(2)
  */
 int connect(int sockfd, const struct sockaddr *uservaddr, socklen_t addrlen);
-SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr, int, addrlen)
+SYSCALL_DEFINE3(connect, int, __fd, struct sockaddr __user *, uservaddr, int, addrlen)
 {
     /**
      *  
      */
-	return __sys_connect(fd, uservaddr, addrlen);
+	return __sys_connect(__fd, uservaddr, addrlen);
 }
 
 /*

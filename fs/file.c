@@ -911,20 +911,30 @@ struct file *fget_task(struct task_struct *task, unsigned int fd)
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
 	struct files_struct *files = current->files;
-	struct file *file;
+	struct file *_file;
 
+    /**
+     *  
+     */
 	if (atomic_read(&files->count) == 1) {/* 第一次使用这个 fd */
-		file = __fcheck_files(files, fd);
-		if (!file || unlikely(file->f_mode & mask))
+        /**
+         *  
+         */
+		_file = __fcheck_files(files, fd);
+		if (!_file || unlikely(_file->f_mode & mask))
 			return 0;
-		return (unsigned long)file;
+		return (unsigned long)_file;
 	} else {
-		file = __fget(fd, mask, 1);
-		if (!file)
+		_file = __fget(fd, mask, 1);
+		if (!_file)
 			return 0;
-		return FDPUT_FPUT | (unsigned long)file;
+		return FDPUT_FPUT | (unsigned long)_file;
 	}
 }
+
+/**
+ *  
+ */
 unsigned long __fdget(unsigned int fd)
 {
 	return __fget_light(fd, FMODE_PATH);

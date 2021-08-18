@@ -74,9 +74,14 @@ union flowi_uli {
 };
 
 /**
- *  
+ *  flowi4 对象由对 IPv4 路由查找过程很重要的字段组成，包括目标地址、源地址、服务类型 (TOS) 等
+ *  事实上，flowi4 对象定义了路由表中查找的键，并且应该在使用 fib_lookup() 方法执行查找之前进行初始化；
+ *  对于 IPv6，有一个名为 flowi6 的并行对象
  */
 struct flowi4 {
+    /**
+     *  
+     */
 	struct flowi_common	__fl_common;
 #define flowi4_oif		__fl_common.flowic_oif
 #define flowi4_iif		__fl_common.flowic_iif
@@ -104,6 +109,9 @@ struct flowi4 {
 #define fl4_gre_key		uli.gre_key
 } __attribute__((__aligned__(BITS_PER_LONG/8)));
 
+/**
+ *  
+ */
 static inline void flowi4_init_output(struct flowi4 *fl4, int oif,
                     				      __u32 mark, __u8 tos, __u8 scope,
                     				      __u8 proto, __u8 flags,
@@ -138,7 +146,11 @@ static inline void flowi4_update_output(struct flowi4 *fl4, int oif, __u8 tos,
 	fl4->saddr = saddr;
 }
 
-
+/**
+ *  flowi4 对象由对 IPv4 路由查找过程很重要的字段组成，包括目标地址、源地址、服务类型 (TOS) 等
+ *  事实上，flowi4 对象定义了路由表中查找的键，并且应该在使用 fib_lookup() 方法执行查找之前进行初始化；
+ *  对于 IPv6，有一个名为 flowi6 的并行对象
+ */
 struct flowi6 {
 	struct flowi_common	__fl_common;
 #define flowi6_oif		__fl_common.flowic_oif

@@ -128,7 +128,13 @@ struct fib_nh {
 
 struct nexthop;
 
+/**
+ *  转发信息库 (FIB) 信息
+ */
 struct fib_info {
+    /**
+     *  FIB 哈希表
+     */
 	struct hlist_node	fib_hash;
 	struct hlist_node	fib_lhash;
 	struct list_head	nh_list;
@@ -302,6 +308,9 @@ static inline struct fib_table *fib_new_table(struct net *net, u32 id)
 	return fib_get_table(net, id);
 }
 
+/**
+ *  
+ */
 static inline int fib_lookup(struct net *net, const struct flowi4 *flp,
 			     struct fib_result *res, unsigned int flags)
 {

@@ -31,6 +31,9 @@
 #include <net/fib_rules.h>
 #include <linux/indirect_call_wrapper.h>
 
+/**
+ *  转发信息库 (FIB) 信息
+ */
 struct fib4_rule {
 	struct fib_rule		common;
 	u8			dst_len;
