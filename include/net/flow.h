@@ -26,6 +26,9 @@ struct flowi_tunnel {
 	__be64			tun_id;
 };
 
+/**
+ *  
+ */
 struct flowi_common {
 	int	flowic_oif;
 	int	flowic_iif;
@@ -43,6 +46,9 @@ struct flowi_common {
 	__u32		flowic_multipath_hash;
 };
 
+/**
+ *  
+ */
 union flowi_uli {
 	struct {
 		__be16	dport;
@@ -67,6 +73,9 @@ union flowi_uli {
 	} mht;
 };
 
+/**
+ *  
+ */
 struct flowi4 {
 	struct flowi_common	__fl_common;
 #define flowi4_oif		__fl_common.flowic_oif
@@ -96,11 +105,11 @@ struct flowi4 {
 } __attribute__((__aligned__(BITS_PER_LONG/8)));
 
 static inline void flowi4_init_output(struct flowi4 *fl4, int oif,
-				      __u32 mark, __u8 tos, __u8 scope,
-				      __u8 proto, __u8 flags,
-				      __be32 daddr, __be32 saddr,
-				      __be16 dport, __be16 sport,
-				      kuid_t uid)
+                    				      __u32 mark, __u8 tos, __u8 scope,
+                    				      __u8 proto, __u8 flags,
+                    				      __be32 daddr, __be32 saddr,
+                    				      __be16 dport, __be16 sport,
+                    				      kuid_t uid)
 {
 	fl4->flowi4_oif = oif;
 	fl4->flowi4_iif = LOOPBACK_IFINDEX;

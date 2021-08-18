@@ -196,6 +196,10 @@ struct sock_common {    /* 网络层 */
 	};
     /**
      *  
+     * tcp_prot
+     * udp_prot
+     * raw_prot
+     * ping_prot
      */
 	struct proto		*skc_prot;
 	possible_net_t		skc_net;
@@ -444,6 +448,9 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	unsigned long		sk_tsq_flags;
 	union {
 		struct sk_buff	*sk_send_head;
+        /**
+         *  tcp_rbtree_insert()
+         */
 		struct rb_root	tcp_rtx_queue;
 	};
 	struct sk_buff		*sk_tx_skb_cache;

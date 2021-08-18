@@ -175,7 +175,14 @@ struct proto_ops {  /* struct socket 操作 */
 	int		(*bind)	     (struct socket *sock,
 				      struct sockaddr *myaddr,
 				      int sockaddr_len);
-	int		(*connect)   (struct socket *sock,
+    /**
+     *  
+     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
+     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_dgram_connect()
+     */
+    int		(*connect)   (struct socket *sock,
 				      struct sockaddr *vaddr,
 				      int sockaddr_len, int flags);
 	int		(*socketpair)(struct socket *sock1,
@@ -183,9 +190,9 @@ struct proto_ops {  /* struct socket 操作 */
     /**
      *  
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_accept()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> sock_no_accept()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_accept()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> sock_no_accept()
      */
     int		(*accept)    (struct socket *sock,
 				      struct socket *newsock, int flags, bool kern);

@@ -671,10 +671,10 @@ static long inet_wait_for_connect(struct sock *sk, long timeo, int writebias)
  *	Connect to a remote host. There is regrettably still a little
  *	TCP 'magic' in here.
  */
-int __inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
+int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 			  int addr_len, int flags, int is_sendmsg)
 {
-	struct sock *sk = sock->sk;
+	struct sock *sk = __socket->sk;
 	int err;
 	long timeo;
 
@@ -693,12 +693,12 @@ int __inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 
 		if (uaddr->sa_family == AF_UNSPEC) {
 			err = sk->sk_prot->disconnect(sk, flags);
-			sock->state = err ? SS_DISCONNECTING : SS_UNCONNECTED;
+			__socket->state = err ? SS_DISCONNECTING : SS_UNCONNECTED;
 			goto out;
 		}
 	}
 
-	switch (sock->state) {
+	switch (__socket->state) {
 	default:
 		err = -EINVAL;
 		goto out;
@@ -723,11 +723,18 @@ int __inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 				goto out;
 		}
 
+        /**
+         *  
+         * tcp_prot.tcp_v4_connect()
+         * udp_prot.ip4_datagram_connect()
+         * raw_prot.ip4_datagram_connect()
+         * ping_prot.ip4_datagram_connect()
+         */
 		err = sk->sk_prot->connect(sk, uaddr, addr_len);
 		if (err < 0)
 			goto out;
 
-		sock->state = SS_CONNECTING;
+		__socket->state = SS_CONNECTING;
 
 		if (!err && inet_sk(sk)->defer_connect)
 			goto out;
@@ -767,26 +774,32 @@ int __inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 	 * Hence, it is handled normally after connect() return successfully.
 	 */
 
-	sock->state = SS_CONNECTED;
+	__socket->state = SS_CONNECTED;
 	err = 0;
 out:
 	return err;
 
 sock_error:
 	err = sock_error(sk) ? : -ECONNABORTED;
-	sock->state = SS_UNCONNECTED;
+	__socket->state = SS_UNCONNECTED;
 	if (sk->sk_prot->disconnect(sk, flags))
-		sock->state = SS_DISCONNECTING;
+		__socket->state = SS_DISCONNECTING;
 	goto out;
 }
 EXPORT_SYMBOL(__inet_stream_connect);
 
+/**
+ *  connect(2)
+ */
 int inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 			int addr_len, int flags)
 {
 	int err;
 
 	lock_sock(sock->sk);
+    /**
+     *  
+     */
 	err = __inet_stream_connect(sock, uaddr, addr_len, flags, 0);
 	release_sock(sock->sk);
 	return err;

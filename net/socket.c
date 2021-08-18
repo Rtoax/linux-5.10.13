@@ -2029,13 +2029,16 @@ SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
  *	include the -EINPROGRESS status for such sockets.
  */
 
-int __sys_connect_file(struct file *file, struct sockaddr_storage *address,
+int __sys_connect_file(struct file *_file, struct sockaddr_storage *address,
 		       int addrlen, int file_flags)
 {
 	struct socket *sock;
 	int err;
 
-	sock = sock_from_file(file, &err);
+    /**
+     *  file 到 socket
+     */
+	sock = sock_from_file(_file, &err);
 	if (!sock)
 		goto out;
 
@@ -2044,12 +2047,22 @@ int __sys_connect_file(struct file *file, struct sockaddr_storage *address,
 	if (err)
 		goto out;
 
+    /**
+     *  
+     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
+     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_dgram_connect()
+     */
 	err = sock->ops->connect(sock, (struct sockaddr *)address, addrlen,
 				 sock->file->f_flags | file_flags);
 out:
 	return err;
 }
 
+/**
+ *  connect(2)
+ */
 int __sys_connect(int fd, struct sockaddr __user *uservaddr, int addrlen)
 {
 	int ret = -EBADF;
@@ -2068,9 +2081,15 @@ int __sys_connect(int fd, struct sockaddr __user *uservaddr, int addrlen)
 	return ret;
 }
 
-SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr,
-		int, addrlen)
+/**
+ *  connect(2)
+ */
+int connect(int sockfd, const struct sockaddr *uservaddr, socklen_t addrlen);
+SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr, int, addrlen)
 {
+    /**
+     *  
+     */
 	return __sys_connect(fd, uservaddr, addrlen);
 }
 

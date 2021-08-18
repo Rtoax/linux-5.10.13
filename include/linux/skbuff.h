@@ -774,6 +774,10 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 				unsigned long		dev_scratch;
 			};
 		};
+        /**
+         *  红黑树的根为 `struct sock->tcp_rtx_queue`
+         *  在 `tcp_rbtree_insert()` 插入
+         */
 		struct rb_node		rbnode; /* used in netem, ip4 defrag, and tcp stack */
 		struct list_head	list;
 	};
