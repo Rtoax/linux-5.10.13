@@ -1,6 +1,15 @@
 Workqueue 工作队列 (中断下半部)
 ===========================
 
+# 数据结构
+
+struct work_struct:	工作队列结构
+
+
+## 声明
+
+DECLARE_WORK():	声明 work_struct
+
 
 # 初始化
 
@@ -29,6 +38,12 @@ start_kernel
 * INIT_WORK:		初始化work
 * schedule_work:	挂入 系统的默认工作队列中，通常使用本地CPU提高局部性性能
   * queue_work_on:	可以指定 CPU
+
+* schedule_delayed_work:
+  * queue_delayed_work:
+    * queue_delayed_work_on:
+
+* PREPARE_WORK:		
 
 # 处理一个 work
 

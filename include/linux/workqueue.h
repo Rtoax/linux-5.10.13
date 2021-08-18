@@ -187,12 +187,19 @@ struct work_struct {    /* 工作队列 */
 
 /**
  *  
+ * queue_work 会将制定的工作添加到工作队列，但是如果使用 queue_delayed_work
+ * 则实际上，工作会在经过制定的 jiffies(由delay参数计算) 之后才会执行
  */
 struct delayed_work {
     /**
-     *  
+     *  工作
      */
 	struct work_struct work;
+
+    /**
+     *  定时器
+     *  在 `__queue_delayed_work()` 中计算 超时时间
+     */
 	struct timer_list timer;
 
 	/* target workqueue and CPU ->timer uses to queue ->work */
@@ -277,12 +284,21 @@ struct execute_work {
 				     (tflags) | TIMER_IRQSAFE),		\
 	}
 
+/**
+ *  声明一个 工作队列
+ */
 #define DECLARE_WORK(n, f)						\
 	struct work_struct n = __WORK_INITIALIZER(n, f)
 
+/**
+ *  
+ */
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
+/**
+ *  
+ */
 #define DECLARE_DEFERRABLE_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, TIMER_DEFERRABLE)
 
@@ -562,13 +578,17 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 			__WQ_ORDERED_EXPLICIT | (flags), 1, ##args)
 
 /**
- *  
+ *  创建工作队列
  */
 #define create_workqueue(name)						\
 	alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, (name))
 #define create_freezable_workqueue(name)				\
 	alloc_workqueue("%s", __WQ_LEGACY | WQ_FREEZABLE | WQ_UNBOUND |	\
 			WQ_MEM_RECLAIM, 1, (name))
+
+/**
+ *  
+ */
 #define create_singlethread_workqueue(name)				\
 	alloc_ordered_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, name)
 
@@ -640,7 +660,7 @@ extern void wq_worker_comm(char *buf, size_t size, struct task_struct *task);
  *
  * Forbids: r0 == true && r1 == 0
  *
- * 让 work 排队 
+ * 让 work 排队 , 将工作提交到工作队列
  */
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
@@ -655,6 +675,11 @@ static inline bool queue_work(struct workqueue_struct *wq,
  * @delay: number of jiffies to wait before queueing
  *
  * Equivalent to queue_delayed_work_on() but tries to use the local CPU.
+ *
+ * 让 work 排队 , 将工作提交到工作队列
+ *
+ * queue_work 会将制定的工作添加到工作队列，但是如果使用 queue_delayed_work
+ * 则实际上，工作会在经过制定的 jiffies(由delay参数计算) 之后才会执行
  */
 static inline bool queue_delayed_work(struct workqueue_struct *wq,
 				      struct delayed_work *dwork,

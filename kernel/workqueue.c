@@ -408,6 +408,8 @@ struct pool_workqueue { /*  */
 
 /*
  * Structure used to wait for workqueue flush.
+ *
+ * 在 `flush_workqueue()` 中使用
  */
 struct wq_flusher {
 	struct list_head	list;		/* WQ: list of flushers */
@@ -476,6 +478,10 @@ struct workqueue_struct {   /*  */
 	int			flush_color;	/* WQ: current flush color */
 	atomic_t		nr_pwqs_to_flush; /* flush in progress */
 	struct wq_flusher	*first_flusher;	/* WQ: first flusher */
+
+    /**
+     *  
+     */
 	struct list_head	flusher_queue;	/* WQ: flush waiters */
 	struct list_head	flusher_overflow; /* WQ: flush overflow list */
 
@@ -1598,7 +1604,7 @@ out_put:
  * This function is safe to call from any context including IRQ handler.
  *
  *  让调用 此函数的 线程变成偷窃者
- *  类似于 互斥锁机制中的 偷窃和，尝试从工作线程池中把 work 偷回来
+ *  类似于 互斥锁机制中的 偷窃者，尝试从工作线程池中把 work 偷回来
  */
 static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 			       unsigned long *flags)
@@ -1672,6 +1678,9 @@ static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
 		if (*work_data_bits(work) & WORK_STRUCT_DELAYED)
 			pwq_activate_delayed_work(work);
 
+        /**
+         *  删除
+         */
 		list_del_init(&work->entry);
 		pwq_dec_nr_in_flight(pwq, get_work_color(work));
 
@@ -2102,6 +2111,9 @@ void delayed_work_timer_fn(struct timer_list *t)
 }
 EXPORT_SYMBOL(delayed_work_timer_fn);
 
+/**
+ *  
+ */
 static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 				struct delayed_work *dwork, unsigned long delay)
 {
@@ -2126,9 +2138,19 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 
 	dwork->wq = wq;
 	dwork->cpu = cpu;
+
+    /**
+     *  计算延期时间，并将其添加到定时器
+     */
 	timer->expires = jiffies + delay;
 
+    /**
+     *  定时器了解一下
+     */
 	if (unlikely(cpu != WORK_CPU_UNBOUND))
+        /**
+         *  需要绑定 CPU
+         */
 		add_timer_on(timer, cpu);
 	else
 		add_timer(timer);
@@ -2155,7 +2177,13 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 	/* read the comment in __queue_work() */
 	local_irq_save(flags);
 
+    /**
+     *  
+     */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+        /**
+         *  
+         */
 		__queue_delayed_work(cpu, wq, dwork, delay);
 		ret = true;
 	}
@@ -3484,13 +3512,19 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
  *
  * This function sleeps until all work items which were queued on entry
  * have finished execution, but it is not livelocked by new incoming ones.
+ *
+ * 为了确保 work 函数不会再 cancel_delayed_work 返回 0 之后任何地方运行，
+ * 使用 flush_workqueue 
  */
 void flush_workqueue(struct workqueue_struct *wq)
 {
+    /**
+     *  
+     */
 	struct wq_flusher this_flusher = {
-		.list = LIST_HEAD_INIT(this_flusher.list),
-		.flush_color = -1,
-		.done = COMPLETION_INITIALIZER_ONSTACK_MAP(this_flusher.done, wq->lockdep_map),
+		this_flusher.list = LIST_HEAD_INIT(this_flusher.list),
+		this_flusher.flush_color = -1,
+		this_flusher.done = COMPLETION_INITIALIZER_ONSTACK_MAP(this_flusher.done, wq->lockdep_map),
 	};
 	int next_color;
 
@@ -3549,6 +3583,9 @@ void flush_workqueue(struct workqueue_struct *wq)
 
 	mutex_unlock(&wq->mutex);
 
+    /**
+     *  
+     */
 	wait_for_completion(&this_flusher.done);
 
 	/*
@@ -3661,7 +3698,11 @@ void drain_workqueue(struct workqueue_struct *wq)
 	if (!wq->nr_drainers++)
 		wq->flags |= __WQ_DRAINING;
 	mutex_unlock(&wq->mutex);
+    
 reflush:
+    /**
+     *  
+     */
 	flush_workqueue(wq);
 
 	mutex_lock(&wq->mutex);
@@ -4014,6 +4055,9 @@ bool flush_rcu_work(struct rcu_work *rwork)
 }
 EXPORT_SYMBOL(flush_rcu_work);
 
+/**
+ *  
+ */
 static bool __cancel_work(struct work_struct *work, bool is_dwork)
 {
 	unsigned long flags;
@@ -4026,6 +4070,9 @@ static bool __cancel_work(struct work_struct *work, bool is_dwork)
 	if (unlikely(ret < 0))
 		return false;
 
+    /**
+     *  
+     */
 	set_work_pool_and_clear_pending(work, get_work_pool_id(work));
 	local_irq_restore(flags);
 	return ret;
@@ -4046,9 +4093,14 @@ static bool __cancel_work(struct work_struct *work, bool is_dwork)
  * use cancel_delayed_work_sync() to wait on it.
  *
  * This function is safe to call from any context including IRQ handler.
+ *
+ * 取消挂起的工作队列
  */
 bool cancel_delayed_work(struct delayed_work *dwork)
 {
+    /**
+     *  
+     */
 	return __cancel_work(&dwork->work, true);
 }
 EXPORT_SYMBOL(cancel_delayed_work);
@@ -5354,6 +5406,9 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
      *  
      */
 	mutex_lock(&wq->mutex);
+    /**
+     *  
+     */
 	for_each_pwq(pwq, wq) {
 		pwq_adjust_max_active(pwq);
     }
@@ -5402,6 +5457,8 @@ static bool pwq_busy(struct pool_workqueue *pwq)
  * @wq: target workqueue
  *
  * Safely destroy a workqueue. All work currently pending will be done first.
+ *
+ * 结束对工作队列的使用后，释放资源
  */
 void destroy_workqueue(struct workqueue_struct *wq)
 {
