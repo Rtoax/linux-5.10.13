@@ -535,6 +535,9 @@ struct socket *sockfd_lookup(int fd, int *err)
 }
 EXPORT_SYMBOL(sockfd_lookup);
 
+/**
+ *  根据 fd 获取 socket 结构
+ */
 static struct socket *sockfd_lookup_light(int fd, int *err, int *fput_needed)
 {
 	struct fd f = fdget(fd);    /* 获取fd结构 */
@@ -542,6 +545,9 @@ static struct socket *sockfd_lookup_light(int fd, int *err, int *fput_needed)
 
 	*err = -EBADF;
 	if (f.file) {
+        /**
+         *  获取 socket
+         */
 		sock = sock_from_file(f.file, err);
 		if (likely(sock)) {
 			*fput_needed = f.flags & FDPUT_FPUT;
@@ -1737,29 +1743,40 @@ SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
  *
  *	We move the socket address to kernel space before we call
  *	the protocol layer (having also checked the address is ok).
+ *
+ *  系统调用 bind(2)
  */
-
 int __sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
 {
 	struct socket *sock;
 	struct sockaddr_storage address;
 	int err, fput_needed;
 
+    /**
+     *  根据 fd 找到 socket 结构
+     */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (sock) {
+        /**
+         *  将用户态地址拷贝到 内核态
+         */
 		err = move_addr_to_kernel(umyaddr, addrlen, &address);
 		if (!err) {
+            /**
+             *  绑定
+             */
 			err = security_socket_bind(sock,
-						   (struct sockaddr *)&address,
-						   addrlen);
+            						   (struct sockaddr *)&address,
+            						   addrlen);
 			if (!err) {
                 /**
+                 *  
+                 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_bind()
+                 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_bind()
                  *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
                  *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_bind()
                  */
-				err = sock->ops->bind(sock,
-						      (struct sockaddr *)
-						      &address, addrlen);
+				err = sock->ops->bind(sock, (struct sockaddr *)&address, addrlen);
             }
 		}
 		fput_light(sock->file, fput_needed);
@@ -1767,9 +1784,15 @@ int __sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
 	return err;
 }
 
-int bind(int socket, const struct sockaddr *address, socklen_t address_len);
+/**
+ *  bind(2) 系统调用
+ */
+int bind(int socket, const struct sockaddr *umyaddr, socklen_t addrlen);
 SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
 {
+    /**
+     *  
+     */
 	return __sys_bind(fd, umyaddr, addrlen);
 }
 

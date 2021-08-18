@@ -194,6 +194,9 @@ struct sock_common {    /* 网络层 */
 		struct hlist_node	skc_bind_node;
 		struct hlist_node	skc_portaddr_node;
 	};
+    /**
+     *  
+     */
 	struct proto		*skc_prot;
 	possible_net_t		skc_net;
 

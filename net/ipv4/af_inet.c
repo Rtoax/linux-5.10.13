@@ -453,11 +453,18 @@ int inet_release(struct socket *sock)
 }
 EXPORT_SYMBOL(inet_release);
 
-int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
+
+/**
+ *  bind(2) - INET: stream, dgram
+ */
+int inet_bind(struct socket *__socket, struct sockaddr *uaddr, int addr_len)
 {
-	struct sock *sk = sock->sk;
+	struct sock *sk = __socket->sk;
 	int err;
 
+    /**
+     *  
+     */
 	/* If the socket has its own bind function then use it. (RAW) */
 	if (sk->sk_prot->bind) {
 		return sk->sk_prot->bind(sk, uaddr, addr_len);
@@ -1034,6 +1041,9 @@ static int inet_compat_ioctl(struct socket *sock, unsigned int cmd, unsigned lon
 }
 #endif /* CONFIG_COMPAT */
 
+/**
+ *  INET - IPv4 - TCP
+ */
 const struct proto_ops inet_stream_ops = {
 	.family		   = PF_INET,
 	.flags		   = PROTO_CMSG_DATA_ONLY,
@@ -1069,6 +1079,9 @@ const struct proto_ops inet_stream_ops = {
 };
 EXPORT_SYMBOL(inet_stream_ops);
 
+/**
+ *  INET - IPv4 - UDP
+ */
 const struct proto_ops inet_dgram_ops = {
 	.family		   = PF_INET,
 	.owner		   = THIS_MODULE,
