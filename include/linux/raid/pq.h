@@ -160,7 +160,7 @@ void raid6_dual_recov(int disks, size_t bytes, int faila, int failb,
 //# define printk 	printf
 # define pr_err(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
 # define pr_info(format, ...) fprintf(stdout, format, ## __VA_ARGS__)
-# define GFP_KERNEL	0
+//# define GFP_KERNEL	0
 # define __get_free_pages(x, y)	((unsigned long)mmap(NULL, PAGE_SIZE << (y), \
 						     PROT_READ|PROT_WRITE,   \
 						     MAP_PRIVATE|MAP_ANONYMOUS,\

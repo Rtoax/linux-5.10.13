@@ -53,7 +53,13 @@ struct vm_area_struct;
  * without the underscores and use them consistently. The definitions here may
  * be used in bit comparisons.
  */
+/**
+ *  该标志请求分配发生在可进程 DMA 的内存区段中
+ */
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA) /*  */
+/**
+ *  分配的内存可位于高端内存
+ */
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
 #define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)
 #define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)  /* ZONE_MOVABLE allowed */
@@ -201,7 +207,14 @@ struct vm_area_struct;
 #define __GFP_KSWAPD_RECLAIM	((__force gfp_t)___GFP_KSWAPD_RECLAIM) /* kswapd can wake */
 #define __GFP_RECLAIM ((__force gfp_t)(___GFP_DIRECT_RECLAIM|___GFP_KSWAPD_RECLAIM))
 #define __GFP_RETRY_MAYFAIL	((__force gfp_t)___GFP_RETRY_MAYFAIL)
+/**
+ *  努力满足分配请求，不允许失败
+ *  不鼓励使用这个标志
+ */
 #define __GFP_NOFAIL	((__force gfp_t)___GFP_NOFAIL)
+/**
+ *  如果所请求的内存不可获得，就立即返回
+ */
 #define __GFP_NORETRY	((__force gfp_t)___GFP_NORETRY)
 
 /**
@@ -216,8 +229,18 @@ struct vm_area_struct;
  *
  * %__GFP_ZERO returns a zeroed page on success.
  */
+/**
+ *  该标志很少使用
+ *  它可以避免内核在无法满足分配请求时产生警告。
+ */
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
+/**
+ *  
+ */
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
+/**
+ *  
+ */
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
 
 /* Disable lockdep for GFP context tracking */
@@ -295,15 +318,44 @@ struct vm_area_struct;
  * version does not attempt reclaim/compaction at all and is by default used
  * in page fault path, while the non-light is used by khugepaged.
  */
+/**
+ *  用于在中断例程或其他运行与进程上下文之外的代码中分配内存，不会休眠
+ */
 #define GFP_ATOMIC	/* 不睡眠, 必须分配成功 */(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)  
+
+/**
+ *  内核内存的通常分配方式，可能睡眠
+ */
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
+
+/**
+ *  分配过程，禁止任何的 IO 初始化
+ *  主要在文件系统和虚拟内存代码中使用，内存分配可休眠，但不应该发生递归的文件系统调用
+ */
 #define GFP_NOIO	(__GFP_RECLAIM)
+
+/**
+ *  具有此标志的分配不允许执行任何文件系统调用
+ *  主要在文件系统和虚拟内存代码中使用，内存分配可休眠，但不应该发生递归的文件系统调用
+ */
 #define GFP_NOFS	(__GFP_RECLAIM | __GFP_IO)
+
+/**
+ *  用于为用户空间页分配内存，可能会休眠
+ */
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
+
+/**
+ *  该标志请求分配发生在可进程 DMA 的内存区段中
+ */
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
+
+/**
+ *  类似于 GFP_USER ，不过如果有高端内存的话，就从那里分配
+ */
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
 #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
 #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \

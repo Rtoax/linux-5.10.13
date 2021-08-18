@@ -503,6 +503,8 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  * %__GFP_RETRY_MAYFAIL
  *	Try really hard to succeed the allocation but fail
  *	eventually.
+ *
+ * 
  */
 static __always_inline void *kmalloc(size_t size, gfp_t flags)  /*  */
 {
