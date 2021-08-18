@@ -117,7 +117,7 @@ struct socket_wq {
  */
 struct socket { /* 套接字结构 */
 	socket_state		state;      /* socket 状态 如 SS_CONNECTING */
-	short			type;           /*  */
+	short			type;           /* 字节流、数据报 */
 	unsigned long		flags;      /* 标志位 */
 	struct file		*file;          /* 打开的文件 */
 	struct sock		*sk;            /* 网络层 sock */
@@ -212,10 +212,18 @@ struct proto_ops {  /* struct socket 操作 */
 #define DECLARE_SOCKADDR(type, dst, src)	\
 	type dst = ({ __sockaddr_check_size(sizeof(*dst)); (type) src; })
 
+/**
+ *  协议族
+ */
 struct net_proto_family {   /*  */
 	int		family;
+    /**
+     *  
+     *  AF_INET->inet_create() 
+     *  AF_UNIX->unix_create()
+     */
 	int		(*create)(struct net *net, struct socket *sock,
-				  int protocol, int kern);
+				        int protocol, int kern);
 	struct module	*owner;
 };
 

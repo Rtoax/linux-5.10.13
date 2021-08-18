@@ -1211,6 +1211,9 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 	int			max_header;
 	bool			no_autobind;
 
+    /**
+     *  可能为空
+     */
 	struct kmem_cache	*slab;
 	unsigned int		obj_size;
 	slab_flags_t		slab_flags;

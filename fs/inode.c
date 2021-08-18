@@ -890,7 +890,11 @@ repeat:
  */
 #define LAST_INO_BATCH 1024
 static DEFINE_PER_CPU(unsigned int, last_ino);
+static unsigned int __percpu last_ino;//+++
 
+/**
+ *  获取一个 inode 
+ */
 unsigned int get_next_ino(void)
 {
 	unsigned int *p = &get_cpu_var(last_ino);

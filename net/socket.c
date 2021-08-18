@@ -181,6 +181,9 @@ static const struct file_operations socket_file_ops = { /* socket */
  */
 
 static DEFINE_SPINLOCK(net_family_lock);
+/**
+ *  协议族
+ */
 static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO]  = {
     /* 以下 填充部分是我+的 */
     [PF_INET]       = &inet_family_ops,
@@ -469,6 +472,9 @@ static int sock_map_fd(struct socket *sock, int flags)
      */
 	newfile = sock_alloc_file(sock, flags, NULL);
 	if (!IS_ERR(newfile)) {
+        /**
+         *  绑定打开的文件 和 fd
+         */
 		fd_install(fd, newfile);
 		return fd;
 	}
@@ -590,6 +596,9 @@ static int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
 	return err;
 }
 
+/**
+ *  socket(2) inode operation
+ */
 static const struct inode_operations sockfs_inode_ops = {   /*  */
 	.listxattr = sockfs_listxattr,
 	.setattr = sockfs_setattr,
@@ -616,6 +625,9 @@ struct socket *sock_alloc(void) /* 分配 inode */
     /* sock 什么时候分配的？ */
 	sock = SOCKET_I(inode); /* container_of */
 
+    /**
+     *  
+     */
 	inode->i_ino = get_next_ino();
 	inode->i_mode = S_IFSOCK | S_IRWXUGO;
 	inode->i_uid = current_fsuid();
@@ -1437,8 +1449,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	   deadlock in module load.
 	 */
 	if (family == PF_INET && type == SOCK_PACKET) {
-		pr_info_once("%s uses obsolete (PF_INET,SOCK_PACKET)\n",
-			     current->comm);
+		pr_info_once("%s uses obsolete (PF_INET,SOCK_PACKET)\n", current->comm);
 		family = PF_PACKET;
 	}
     /* 安全钩子 是否 有权限*/
@@ -1458,6 +1469,9 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 				   closest posix thing */
 	}
 
+    /**
+     *  类型： 字节流、数据报等
+     */
 	sock->type = type;  /* 如 SOCK_STREAM */
 
 #ifdef CONFIG_MODULES
@@ -1566,7 +1580,9 @@ int sock_create_kern(struct net *net, int family, int type, int protocol, struct
 }
 EXPORT_SYMBOL(sock_create_kern);
 
-/*  */
+/**
+ *  socket(2) syscall
+ */
 int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 {
 	int retval;
@@ -1582,7 +1598,9 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 	flags = type & ~SOCK_TYPE_MASK;
 	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
 		return -EINVAL;
+    
 	type &= SOCK_TYPE_MASK;
+    
     /* 标志位 */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
@@ -1592,6 +1610,9 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 	if (retval < 0)
 		return retval;
 
+    /**
+     *  分配一个 fd
+     */
 	return sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
 }
 
@@ -1602,6 +1623,9 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 int socket(int domain, int type, int protocol){ /* ++ */ }
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
+    /**
+     *  
+     */
 	return __sys_socket(family, type, protocol);
 }
 

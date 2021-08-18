@@ -265,6 +265,10 @@ static int inet_create(struct net *net, struct socket *sock, int protocol,
 lookup_protocol:
 	err = -ESOCKTNOSUPPORT;
 	rcu_read_lock();
+
+    /**
+     *  
+     */
 	list_for_each_entry_rcu(answer, &inetsw[sock->type], list) {
 
 		err = 0;
@@ -292,15 +296,13 @@ lookup_protocol:
 			 * (net-pf-PF_INET-proto-IPPROTO_SCTP-type-SOCK_STREAM)
 			 */
 			if (++try_loading_module == 1)
-				request_module("net-pf-%d-proto-%d-type-%d",
-					       PF_INET, protocol, sock->type);
+				request_module("net-pf-%d-proto-%d-type-%d", PF_INET, protocol, sock->type);
 			/*
 			 * Fall back to generic, e.g. net-pf-2-proto-132
 			 * (net-pf-PF_INET-proto-IPPROTO_SCTP)
 			 */
 			else
-				request_module("net-pf-%d-proto-%d",
-					       PF_INET, protocol);
+				request_module("net-pf-%d-proto-%d", PF_INET, protocol);
 			goto lookup_protocol;
 		} else
 			goto out_rcu_unlock;
@@ -320,7 +322,9 @@ lookup_protocol:
 
 	err = -ENOBUFS;
 
-    /* 申请 sk_buff */
+    /**
+     *  申请 sock 
+     */
 	sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot, kern); /* 申请 struct sock */
 	if (!sk)
 		goto out;
@@ -329,7 +333,9 @@ lookup_protocol:
 	if (INET_PROTOSW_REUSE & answer_flags)
 		sk->sk_reuse = SK_CAN_REUSE;
 
-    /*  */
+    /**
+     *  强转
+     */
 	inet = inet_sk(sk); /*  */
 	inet->is_icsk = (INET_PROTOSW_ICSK & answer_flags) != 0;
 
@@ -348,13 +354,21 @@ lookup_protocol:
 
 	inet->inet_id = 0;
 
-    /*  */
+    /**
+     *  
+     */
 	sock_init_data(sock, sk);
 
+    /**
+     *  
+     */
 	sk->sk_destruct	   = inet_sock_destruct;
 	sk->sk_protocol	   = protocol;
 	sk->sk_backlog_rcv = sk->sk_prot->backlog_rcv;
 
+    /**
+     *  
+     */
 	inet->uc_ttl	= -1;
 	inet->mc_loop	= 1;
 	inet->mc_ttl	= 1;
@@ -1111,6 +1125,9 @@ static const struct proto_ops inet_sockraw_ops = {
 #endif
 };
 
+/**
+ *  IPv4 协议族
+ */
 static const struct net_proto_family inet_family_ops = {    /* IPv4 */
 	.family = PF_INET,
 	.create = inet_create,  /* inet_create() */

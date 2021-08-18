@@ -6481,6 +6481,9 @@ void cgroup_sk_alloc_disable(void)
 
 #endif
 
+/**
+ *  
+ */
 void cgroup_sk_alloc(struct sock_cgroup_data *skcd)
 {
 	if (cgroup_sk_alloc_disabled) {

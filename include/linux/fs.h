@@ -649,6 +649,9 @@ struct inode {
 	struct posix_acl	*i_default_acl;
 #endif
 
+    /**
+     *  socket(2) => sockfs_inode_ops
+     */
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;          /* inode指向的 superblock */
 	struct address_space	*i_mapping; /* 文件缓存 */
