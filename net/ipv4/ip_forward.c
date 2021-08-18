@@ -84,7 +84,7 @@ static int ip_forward_finish(struct net *net, struct sock *sk, struct sk_buff *s
 }
 
 /**
- *  
+ *  ip_forward - 对于应转发的传入单播数据包
  */
 int ip_forward(struct sk_buff *skb)
 {

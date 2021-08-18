@@ -46,17 +46,61 @@
 struct fib_nh;
 struct fib_info;
 struct uncached_list;
+
+/**
+ *  rtable 对象代表一个路由条目，它可以与一个 SKB 相关联
+ */
 struct rtable {
+    /**
+     *  
+     */
 	struct dst_entry	dst;
 
+    /**
+     *  
+     */
 	int			rt_genid;
+
+    /**
+     *  rtable 对象标志；这里提到了一些重要的标志：
+     *
+     *  RTCF_BROADCAST: 设置后，目的地址为广播地址。
+     *                  此标志在 __mkroute_output() 方法和 ip_route_input_slow() 方法中设置。
+     *  RTCF_MULTICAST: 设置后，目的地址为多播地址。
+     *                  此标志在 ip_route_input_mc() 方法和 __mkroute_output() 方法中设置。
+     *  RTCF_DOREDIRECT: 设置后，应发送ICMPv4重定向消息作为对传入数据包的响应。
+     *                  设置这个标志需要满足几个条件，包括输入设备和输出设备相同，
+     *                  并且设置了相应的procfs send_redirects条目。
+     *                  还有更多的条件，你将在本章后面看到。此标志在 __mkroute_input() 方法中设置。
+     *  [...]
+     */
 	unsigned int		rt_flags;
+
+    /**
+     *  
+     */
 	__u16			rt_type;
+
+    /**
+     *  当这是一个输入路由时设置为1的标志。
+     */
 	__u8			rt_is_input;
+
+    /**
+     *  根据以下内容获取一个值：
+     *  1.当nexthop为网关时，rt_uses_gateway为1。
+     *  2.当nexthop为直连路由时，rt_uses_gateway为0。
+     */
 	__u8			rt_uses_gateway;
 
+    /**
+     *  传入接口的ifindex
+     */
 	int			rt_iif;
 
+    /**
+     *  
+     */
 	u8			rt_gw_family;
 	/* Info on neighbour */
 	union {
@@ -64,8 +108,14 @@ struct rtable {
 		struct in6_addr	rt_gw6;
 	};
 
+    /**
+     *  
+     */
 	/* Miscellaneous cached information */
 	u32			rt_mtu_locked:1,
+	/**
+     *  rt_pmtu：路径MTU（沿路由的最小MTU）。
+     */
 				rt_pmtu:31;
 
 	struct list_head	rt_uncached;

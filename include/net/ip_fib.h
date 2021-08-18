@@ -129,11 +129,24 @@ struct fib_nh {
 struct nexthop;
 
 /**
- *  转发信息库 (FIB) 信息
+ *  转发信息库 (FIB) 信息 - 表示路由条目
+ *  fib_info 对象持有对下一跳 (fib_nh) 的引用
+ *  存储最重要的路由条目参数
+ *
+ *  PS: https://apprize.best/linux/kernel/6.html
+ *
+ *  API
+ *  ----------------------
+ *  fib_create_info() 创建
+ *  fib_info_hash   所有 路由条目参数 保存在这个哈希表中
+ *  fib_info_cnt    全局计数
+ *  
  */
+static struct hlist_head *;
 struct fib_info {
     /**
      *  FIB 哈希表
+     *  表头为 `fib_info_hash[]`-所有 路由条目参数 保存在这个哈希表中
      */
 	struct hlist_node	fib_hash;
 	struct hlist_node	fib_lhash;
@@ -168,16 +181,52 @@ struct fib_rule;
 #endif
 
 struct fib_table;
+
+/**
+ *  fib_result 对象是在 IPv4 查找过程中构建的
+ */
 struct fib_result {
+    /**
+     *  子网掩码?
+     */
 	__be32			prefix;
+    /**
+     *  前缀长度，代表网络掩码
+     *  例如：192.168.2.0/24 dev eth0，prefixlen 为 24
+     */
 	unsigned char		prefixlen;
+    /**
+     *  下一跳数
+     */
 	unsigned char		nh_sel;
+
+    /**
+     *  fib_result对象的类型是最重要的字段，因为它实际上决定了如何处理数据包:
+     *  是否将其转发到不同的机器，本地传递，静默丢弃，丢弃并回复ICMPv4消息， 等等
+     *
+     *  RTN_UNICAST 
+     *  RTN_LOCAL
+     *  [...]
+     */
 	unsigned char		type;
 	unsigned char		scope;
 	u32			tclassid;
 	struct fib_nh_common	*nhc;
+
+    /**
+     *  表示路由条目
+     */
 	struct fib_info		*fi;
+
+    /**
+     *  指向完成查找的 FIB 表的指针
+     */
 	struct fib_table	*table;
+
+    /**
+     *  与该路由关联的fib_alias对象列表
+     *  路由条目的优化在使用 fib_alias 对象时完成
+     */
 	struct hlist_head	*fa_head;
 };
 
@@ -250,6 +299,13 @@ void fib_info_notify_update(struct net *net, struct nl_info *info);
 int fib_notify(struct net *net, struct notifier_block *nb,
 	       struct netlink_ext_ack *extack);
 
+/**
+ *  转发信息库 (FIB) 信息 表 - 路由表
+ *
+ *  路由表可以用某种简化的方式描述为一个条目表，
+ *  其中每个条目确定应为目的地为子网（或特定 IPv4 目的地地址）的流量选择哪个下一跳。
+ *  每个路由条目都包含一个 fib_info 对象
+ */
 struct fib_table {
 	struct hlist_node	tb_hlist;
 	u32			tb_id;
@@ -286,79 +342,87 @@ void fib_free_table(struct fib_table *tb);
 
 #ifndef CONFIG_IP_MULTIPLE_TABLES
 
-#define TABLE_LOCAL_INDEX	(RT_TABLE_LOCAL & (FIB_TABLE_HASHSZ - 1))
-#define TABLE_MAIN_INDEX	(RT_TABLE_MAIN  & (FIB_TABLE_HASHSZ - 1))
-
-static inline struct fib_table *fib_get_table(struct net *net, u32 id)
-{
-	struct hlist_node *tb_hlist;
-	struct hlist_head *ptr;
-
-	ptr = id == RT_TABLE_LOCAL ?
-		&net->ipv4.fib_table_hash[TABLE_LOCAL_INDEX] :
-		&net->ipv4.fib_table_hash[TABLE_MAIN_INDEX];
-
-	tb_hlist = rcu_dereference_rtnl(hlist_first_rcu(ptr));
-
-	return hlist_entry(tb_hlist, struct fib_table, tb_hlist);
-}
-
-static inline struct fib_table *fib_new_table(struct net *net, u32 id)
-{
-	return fib_get_table(net, id);
-}
-
-/**
- *  
- */
-static inline int fib_lookup(struct net *net, const struct flowi4 *flp,
-			     struct fib_result *res, unsigned int flags)
-{
-	struct fib_table *tb;
-	int err = -ENETUNREACH;
-
-	rcu_read_lock();
-
-	tb = fib_get_table(net, RT_TABLE_MAIN);
-	if (tb)
-		err = fib_table_lookup(tb, flp, res, flags | FIB_LOOKUP_NOREF);
-
-	if (err == -EAGAIN)
-		err = -ENETUNREACH;
-
-	rcu_read_unlock();
-
-	return err;
-}
-
-static inline bool fib4_has_custom_rules(const struct net *net)
-{
-	return false;
-}
-
-static inline bool fib4_rule_default(const struct fib_rule *rule)
-{
-	return true;
-}
-
-static inline int fib4_rules_dump(struct net *net, struct notifier_block *nb,
-				  struct netlink_ext_ack *extack)
-{
-	return 0;
-}
-
-static inline unsigned int fib4_rules_seq_read(struct net *net)
-{
-	return 0;
-}
-
-static inline bool fib4_rules_early_flow_dissect(struct net *net,
-						 struct sk_buff *skb,
-						 struct flowi4 *fl4,
-						 struct flow_keys *flkeys)
-{
-	return false;
-}
+//#define TABLE_LOCAL_INDEX	(RT_TABLE_LOCAL & (FIB_TABLE_HASHSZ - 1))
+//#define TABLE_MAIN_INDEX	(RT_TABLE_MAIN  & (FIB_TABLE_HASHSZ - 1))
+//
+//static inline struct fib_table *fib_get_table(struct net *net, u32 id)
+//{
+//	struct hlist_node *tb_hlist;
+//	struct hlist_head *ptr;
+//
+//	ptr = id == RT_TABLE_LOCAL ?
+//		&net->ipv4.fib_table_hash[TABLE_LOCAL_INDEX] :
+//		&net->ipv4.fib_table_hash[TABLE_MAIN_INDEX];
+//
+//	tb_hlist = rcu_dereference_rtnl(hlist_first_rcu(ptr));
+//
+//	return hlist_entry(tb_hlist, struct fib_table, tb_hlist);
+//}
+//
+//static inline struct fib_table *fib_new_table(struct net *_net, u32 id)
+//{
+//	return fib_get_table(_net, id);
+//}
+//
+///**
+// *  在 Rx 路径和 Tx 路径中为每个数据包在路由子系统中进行查找
+// *  在 Rx 路径和 Tx 路径中的每次查找都由两个阶段组成：
+// *  1. 在路由缓存中查找，
+// *  2. 如果缓存未命中，则在路由表中查找
+// *
+// *   fib_lookup() 方法在路由子系统中找到合适的条目
+// */
+//static inline int fib_lookup(struct net *_net, const struct flowi4 *flp,
+//			     struct fib_result *res, unsigned int flags)
+//{
+//	struct fib_table *tb;
+//	int err = -ENETUNREACH;
+//
+//	rcu_read_lock();
+//
+//    /**
+//     *  
+//     */
+//	tb = fib_get_table(_net, RT_TABLE_MAIN);
+//	if (tb)
+//		err = fib_table_lookup(tb, flp, res, flags | FIB_LOOKUP_NOREF);
+//
+//	if (err == -EAGAIN)
+//		err = -ENETUNREACH;
+//
+//	rcu_read_unlock();
+//
+//	return err;
+//}
+//
+//static inline bool fib4_has_custom_rules(const struct net *_net)
+//{
+//	return false;
+//}
+//
+//static inline bool fib4_rule_default(const struct fib_rule *rule)
+//{
+//	return true;
+//}
+//
+//static inline int fib4_rules_dump(struct net *_net, struct notifier_block *nb,
+//				  struct netlink_ext_ack *extack)
+//{
+//	return 0;
+//}
+//
+//static inline unsigned int fib4_rules_seq_read(struct net *_net)
+//{
+//	return 0;
+//}
+//
+//static inline bool fib4_rules_early_flow_dissect(struct net *_net,
+//						 struct sk_buff *skb,
+//						 struct flowi4 *fl4,
+//						 struct flow_keys *flkeys)
+//{
+//	return false;
+//}
 #else /* CONFIG_IP_MULTIPLE_TABLES */
 int __net_init fib4_rules_init(struct net *net);
 void __net_exit fib4_rules_exit(struct net *net);
@@ -369,6 +433,14 @@ struct fib_table *fib_get_table(struct net *net, u32 id);
 int __fib_lookup(struct net *net, struct flowi4 *flp,
 		 struct fib_result *res, unsigned int flags);
 
+/**
+ *  在 Rx 路径和 Tx 路径中为每个数据包在路由子系统中进行查找
+ *  在 Rx 路径和 Tx 路径中的每次查找都由两个阶段组成：
+ *  1. 在路由缓存中查找，
+ *  2. 如果缓存未命中，则在路由表中查找
+ *
+ *   fib_lookup() 方法在路由子系统中找到合适的条目
+ */
 static inline int fib_lookup(struct net *net, struct flowi4 *flp,
 			     struct fib_result *res, unsigned int flags)
 {
@@ -376,6 +448,10 @@ static inline int fib_lookup(struct net *net, struct flowi4 *flp,
 	int err = -ENETUNREACH;
 
 	flags |= FIB_LOOKUP_NOREF;
+
+    /**
+     *  
+     */
 	if (net->ipv4.fib_has_custom_rules)
 		return __fib_lookup(net, flp, res, flags);
 
@@ -383,6 +459,9 @@ static inline int fib_lookup(struct net *net, struct flowi4 *flp,
 
 	res->tclassid = 0;
 
+    /**
+     *  如果查找失败，它会在主 FIB 表中执行查找
+     */
 	tb = rcu_dereference_rtnl(net->ipv4.fib_main);
 	if (tb)
 		err = fib_table_lookup(tb, flp, res, flags);
@@ -390,6 +469,9 @@ static inline int fib_lookup(struct net *net, struct flowi4 *flp,
 	if (!err)
 		goto out;
 
+    /**
+     *  
+     */
 	tb = rcu_dereference_rtnl(net->ipv4.fib_default);
 	if (tb)
 		err = fib_table_lookup(tb, flp, res, flags);

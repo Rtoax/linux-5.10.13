@@ -48,9 +48,18 @@
 #include "fib_lookup.h"
 
 static DEFINE_SPINLOCK(fib_info_lock);
+
+/**
+ *  所有 路由条目参数 保存在这个哈希表中
+ *  节点 `struct fib_info.fib_hash`
+ */
 static struct hlist_head *fib_info_hash;
 static struct hlist_head *fib_info_laddrhash;
 static unsigned int fib_info_hash_size;
+
+/**
+ *  全局计数器
+ */
 static unsigned int fib_info_cnt;
 
 #define DEVINDEX_HASHBITS 8
@@ -1343,6 +1352,9 @@ static bool fib_valid_prefsrc(struct fib_config *cfg, __be32 fib_prefsrc)
 	return true;
 }
 
+/**
+ *  转发信息库 (FIB) 信息 - 路由条目创建
+ */
 struct fib_info *fib_create_info(struct fib_config *cfg,
 				 struct netlink_ext_ack *extack)
 {

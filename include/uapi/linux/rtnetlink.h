@@ -236,15 +236,33 @@ struct rtmsg {
 
 enum {
 	RTN_UNSPEC,
+    /**
+     *  当数据包通过网关或直接路由转发时设置
+     */
 	RTN_UNICAST,		/* Gateway or direct route	*/
+
+    /**
+     *  当数据包用于本地主机时设置
+     */
 	RTN_LOCAL,		/* Accept locally		*/
+
+    /**
+     *  对于应该在本地接受为广播的数据包
+     */
 	RTN_BROADCAST,		/* Accept locally as broadcast,
 				   send as broadcast */
 	RTN_ANYCAST,		/* Accept locally as broadcast,
 				   but send as unicast */
-	RTN_MULTICAST,		/* Multicast route		*/
+    /**
+     *  对于多播路由
+     */
+    RTN_MULTICAST,		/* Multicast route		*/
 	RTN_BLACKHOLE,		/* Drop				*/
-	RTN_UNREACHABLE,	/* Destination is unreachable   */
+
+    /**
+     *  对于触发发送回 ICMPv4“目标不可达”消息的数据包
+     */
+    RTN_UNREACHABLE,	/* Destination is unreachable   */
 	RTN_PROHIBIT,		/* Administratively prohibited	*/
 	RTN_THROW,		/* Not in this table		*/
 	RTN_NAT,		/* Translate this address	*/

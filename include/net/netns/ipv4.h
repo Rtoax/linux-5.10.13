@@ -56,6 +56,10 @@ struct netns_ipv4 {
 	struct fib_rules_ops	*rules_ops;
 	bool			fib_has_custom_rules;
 	unsigned int		fib_rules_require_fldissect;
+
+    /**
+     *  
+     */
 	struct fib_table __rcu	*fib_main;
 	struct fib_table __rcu	*fib_default;
 #endif

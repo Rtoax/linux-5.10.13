@@ -240,6 +240,7 @@ static int ip_local_deliver_finish(struct net *net, struct sock *sk, struct sk_b
  * 	Deliver IP Packets to the higher protocol layers.
  *
  *  IP 重组分段后 传递给 L4
+ *  发往本地主机的传入单播数据包
  */
 int ip_local_deliver(struct sk_buff *skb)
 {
