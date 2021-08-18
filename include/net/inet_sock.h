@@ -204,6 +204,9 @@ struct inet_sock {  /* AF_INET sock 结构 */
 #define inet_dport		sk.__sk_common.skc_dport
 #define inet_num		sk.__sk_common.skc_num
 
+    /**
+     *  绑定的 源 IP 地址
+     */
 	__be32			inet_saddr;
 	__s16			uc_ttl;
 	__u16			cmsg_flags;

@@ -422,9 +422,12 @@ out_rcu_unlock:
  *	function we are destroying the object and from then on nobody
  *	should refer to it.
  */
-int inet_release(struct socket *sock)
+int inet_release(struct socket *__socket)
 {
-	struct sock *sk = sock->sk;
+    /**
+     *  
+     */
+	struct sock *sk = __socket->sk;
 
 	if (sk) {
 		long timeout;
@@ -447,7 +450,7 @@ int inet_release(struct socket *sock)
 		    !(current->flags & PF_EXITING))
 			timeout = sk->sk_lingertime;
 		sk->sk_prot->close(sk, timeout);
-		sock->sk = NULL;
+		__socket->sk = NULL;
 	}
 	return 0;
 }
@@ -479,14 +482,23 @@ int inet_bind(struct socket *__socket, struct sockaddr *uaddr, int addr_len)
 	if (err)
 		return err;
 
+    /**
+     *  
+     */
 	return __inet_bind(sk, uaddr, addr_len, BIND_WITH_LOCK);
 }
 EXPORT_SYMBOL(inet_bind);
 
-int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len,
-		u32 flags)
+/**
+ *  
+ */
+int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len, u32 flags)
 {
 	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
+
+    /**
+     *  
+     */
 	struct inet_sock *inet = inet_sk(sk);
 	struct net *net = sock_net(sk);
 	unsigned short snum;
@@ -543,11 +555,16 @@ int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len,
 	if (sk->sk_state != TCP_CLOSE || inet->inet_num)
 		goto out_release_sock;
 
+    /**
+     *  
+     */
 	inet->inet_rcv_saddr = inet->inet_saddr = addr->sin_addr.s_addr;
 	if (chk_addr_ret == RTN_MULTICAST || chk_addr_ret == RTN_BROADCAST)
 		inet->inet_saddr = 0;  /* Use device */
 
-	/* Make sure we are allowed to bind here. */
+	/**
+	 *  Make sure we are allowed to bind here. 
+	 */
 	if (snum || !(inet->bind_address_no_port ||
 		      (flags & BIND_FORCE_ADDRESS_NO_PORT))) {
 		if (sk->sk_prot->get_port(sk, snum)) {
@@ -564,11 +581,18 @@ int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len,
 		}
 	}
 
+    /**
+     *  
+     */
 	if (inet->inet_rcv_saddr)
 		sk->sk_userlocks |= SOCK_BINDADDR_LOCK;
 	if (snum)
 		sk->sk_userlocks |= SOCK_BINDPORT_LOCK;
-	inet->inet_sport = htons(inet->inet_num);
+
+    /**
+     *  
+     */
+    inet->inet_sport = htons(inet->inet_num);
 	inet->inet_daddr = 0;
 	inet->inet_dport = 0;
 	sk_dst_reset(sk);
