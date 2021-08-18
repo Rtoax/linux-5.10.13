@@ -1808,6 +1808,9 @@ int __sys_listen(int fd, int backlog)
 	int err, fput_needed;
 	int somaxconn;
 
+    /**
+     *  用 fd 找到 socket 结构
+     */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (sock) {
 		somaxconn = sock_net(sock->sk)->core.sysctl_somaxconn;
@@ -1816,6 +1819,13 @@ int __sys_listen(int fd, int backlog)
 
 		err = security_socket_listen(sock, backlog);
 		if (!err)
+            /**
+             *  
+             *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
+             *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
+             *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
+             *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_listen()
+             */
 			err = sock->ops->listen(sock, backlog);
 
 		fput_light(sock->file, fput_needed);
@@ -1823,8 +1833,16 @@ int __sys_listen(int fd, int backlog)
 	return err;
 }
 
+
+/**
+ *  listen(2)
+ */
+int listen(int s, int backlog);
 SYSCALL_DEFINE2(listen, int, fd, int, backlog)
 {
+    /**
+     *  
+     */
 	return __sys_listen(fd, backlog);
 }
 

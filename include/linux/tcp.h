@@ -471,11 +471,18 @@ static inline bool tcp_passive_fastopen(const struct sock *sk)
 	       rcu_access_pointer(tcp_sk(sk)->fastopen_rsk) != NULL;
 }
 
+/**
+ *  
+ */
 static inline void fastopen_queue_tune(struct sock *sk, int backlog)
 {
 	struct request_sock_queue *queue = &inet_csk(sk)->icsk_accept_queue;
 	int somaxconn = READ_ONCE(sock_net(sk)->core.sysctl_somaxconn);
 
+    /**
+     *  积压队列
+     *  https://rtoax.blog.csdn.net/article/details/116932152
+     */
 	queue->fastopenq.max_qlen = min_t(unsigned int, backlog, somaxconn);
 }
 

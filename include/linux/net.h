@@ -194,7 +194,14 @@ struct proto_ops {  /* struct socket 操作 */
 #endif
 	int		(*gettstamp) (struct socket *sock, void __user *userstamp,
 				      bool timeval, bool time32);
-	int		(*listen)    (struct socket *sock, int len);
+    /**
+     *  
+     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
+     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_listen()
+     */
+    int		(*listen)    (struct socket *sock, int len);
 	int		(*shutdown)  (struct socket *sock, int flags);
 	int		(*setsockopt)(struct socket *sock, int level,
 				      int optname, sockptr_t optval,

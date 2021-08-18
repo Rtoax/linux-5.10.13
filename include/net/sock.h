@@ -412,6 +412,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 		struct sk_buff	*head;
 		struct sk_buff	*tail;
 	} sk_backlog;
+    
 #define sk_rmem_alloc sk_backlog.rmem_alloc
 
 	int			sk_forward_alloc;
@@ -485,15 +486,21 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	int			sk_err,
 				sk_err_soft;
 	u32			sk_ack_backlog;
+
+    /**
+     *  ack backlog
+     */
 	u32			sk_max_ack_backlog;
 	kuid_t			sk_uid;
 	struct pid		*sk_peer_pid;
 	const struct cred	*sk_peer_cred;
 	long			sk_rcvtimeo;
 	ktime_t			sk_stamp;
+    
 #if BITS_PER_LONG==32
-//	seqlock_t		sk_stamp_seq;
+	seqlock_t		sk_stamp_seq;
 #endif
+
 	u16			sk_tsflags;
 	u8			sk_shutdown;
 	u32			sk_tskey;

@@ -9,6 +9,9 @@
 #ifndef _LINUX_TCP_STATES_H
 #define _LINUX_TCP_STATES_H
 
+/**
+ *  TCP  状态机的状态
+ */
 enum {
 	TCP_ESTABLISHED = 1,
 	TCP_SYN_SENT,
@@ -19,6 +22,9 @@ enum {
 	TCP_CLOSE,
 	TCP_CLOSE_WAIT,
 	TCP_LAST_ACK,
+	/**
+     *  listen(2)
+     */
 	TCP_LISTEN,
 	TCP_CLOSING,	/* Now a valid state */
 	TCP_NEW_SYN_RECV,

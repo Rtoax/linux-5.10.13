@@ -158,6 +158,11 @@ struct fastopen_queue {
 						 */
 	spinlock_t	lock;
 	int		qlen;		/* # of pending (TCP_SYN_RECV) reqs */
+
+    /**
+     *  积压队列
+     *  https://rtoax.blog.csdn.net/article/details/116932152
+     */
 	int		max_qlen;	/* != 0 iff TFO is currently enabled */
 
 	struct tcp_fastopen_context __rcu *ctx; /* cipher context for cookie */
@@ -169,6 +174,7 @@ struct fastopen_queue {
  * @rskq_accept_tail - FIFO tail of established children
  * @rskq_defer_accept - User waits for some data after accept()
  *
+ * 请求队列
  */
 struct request_sock_queue {
 	spinlock_t		rskq_lock;
@@ -178,8 +184,15 @@ struct request_sock_queue {
 	atomic_t		qlen;
 	atomic_t		young;
 
+    /**
+     *  
+     */
 	struct request_sock	*rskq_accept_head;
 	struct request_sock	*rskq_accept_tail;
+
+    /**
+     *  
+     */
 	struct fastopen_queue	fastopenq;  /* Check max_qlen != 0 to determine
 					     * if TFO is enabled.
 					     */

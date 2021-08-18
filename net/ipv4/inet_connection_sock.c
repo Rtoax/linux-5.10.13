@@ -909,14 +909,23 @@ void inet_csk_prepare_forced_close(struct sock *sk)
 }
 EXPORT_SYMBOL(inet_csk_prepare_forced_close);
 
+/**
+ *  
+ */
 int inet_csk_listen_start(struct sock *sk, int backlog)
 {
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct inet_sock *inet = inet_sk(sk);
 	int err = -EADDRINUSE;
 
+    /**
+     *  分配 请求队列
+     */
 	reqsk_queue_alloc(&icsk->icsk_accept_queue);
 
+    /**
+     *  
+     */
 	sk->sk_ack_backlog = 0;
 	inet_csk_delack_init(sk);
 
@@ -944,6 +953,9 @@ EXPORT_SYMBOL_GPL(inet_csk_listen_start);
 static void inet_child_forget(struct sock *sk, struct request_sock *req,
 			      struct sock *child)
 {
+    /**
+     *  
+     */
 	sk->sk_prot->disconnect(child, O_NONBLOCK);
 
 	sock_orphan(child);

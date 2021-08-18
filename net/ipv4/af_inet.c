@@ -193,16 +193,16 @@ static int inet_autobind(struct sock *sk)
 /*
  *	Move a socket into listening state.
  */
-int inet_listen(struct socket *sock, int backlog)   /*  */
+int inet_listen(struct socket *__socket, int backlog)   /*  */
 {
-	struct sock *sk = sock->sk;
+	struct sock *sk = __socket->sk;
 	unsigned char old_state;
 	int err, tcp_fastopen;
 
 	lock_sock(sk);
 
 	err = -EINVAL;
-	if (sock->state != SS_UNCONNECTED || sock->type != SOCK_STREAM)
+	if (__socket->state != SS_UNCONNECTED || __socket->type != SOCK_STREAM)
 		goto out;
 
 	old_state = sk->sk_state;
@@ -224,13 +224,23 @@ int inet_listen(struct socket *sock, int backlog)   /*  */
 		if ((tcp_fastopen & TFO_SERVER_WO_SOCKOPT1) &&
 		    (tcp_fastopen & TFO_SERVER_ENABLE) &&
 		    !inet_csk(sk)->icsk_accept_queue.fastopenq.max_qlen) {
+		    /**
+             *  
+             */
 			fastopen_queue_tune(sk, backlog);
 			tcp_fastopen_init_key_once(sock_net(sk));
 		}
 
+        /**
+         *  
+         */
 		err = inet_csk_listen_start(sk, backlog);
 		if (err)
 			goto out;
+
+        /**
+         *  
+         */
 		tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_LISTEN_CB, 0, NULL);
 	}
 	err = 0;
