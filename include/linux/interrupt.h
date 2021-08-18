@@ -617,6 +617,18 @@ extern bool force_irqthreads;
  *  此外，通过一个 `irq_cpustat_t` 结构描述软中断状态信息
  *
  *  通过 open_softirq() 注册软中断
+ * ---------------------------------------------
+ * open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
+ * open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+ * open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+ * open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+ * open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ * open_softirq(RCU_SOFTIRQ, rcu_core_si);
+ * open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
+ * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+ * open_softirq(NET_TX_SOFTIRQ, net_tx_action);
+ * open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+ * open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
  */
 enum    /* softirq 软中断 */
 {
@@ -651,7 +663,20 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
 struct softirq_action
 {
     /**
+     *  在 open_softirq 中设置
      *  在 __do_softirq 中执行
+     *
+     * open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
+     * open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+     * open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+     * open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+     * open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+     * open_softirq(RCU_SOFTIRQ, rcu_core_si);
+     * open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
+     * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+     * open_softirq(NET_TX_SOFTIRQ, net_tx_action);
+     * open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+     * open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
      */
 	void	(*action)(struct softirq_action *);
 };

@@ -195,7 +195,12 @@ struct irq_domain { /*  */
 	/* Optional data */
 	struct fwnode_handle *fwnode;
 	enum irq_domain_bus_token bus_token;
+
+    /**
+     *  
+     */
 	struct irq_domain_chip_generic *gc;
+    
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
 	struct irq_domain *parent;
 #endif

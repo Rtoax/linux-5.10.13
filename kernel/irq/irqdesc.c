@@ -711,7 +711,7 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
     /**
-     *  保存终端前的 栈框
+     *  保存中断前的 栈框
      */
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
@@ -722,7 +722,7 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	int ret = 0;
 
     /**
-     *  
+     *  进入中断上下文
      */
 	irq_enter();
 

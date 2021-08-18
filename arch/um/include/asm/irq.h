@@ -2,6 +2,9 @@
 #ifndef __UM_IRQ_H
 #define __UM_IRQ_H
 
+/**
+ *  定时器洪端
+ */
 #define TIMER_IRQ		0
 #define UMN_IRQ			1
 #define CONSOLE_IRQ		2

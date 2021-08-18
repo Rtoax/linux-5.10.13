@@ -4495,7 +4495,7 @@ static inline void preempt_latency_start(int val)
 }
 
 /**
- *  
+ *  增加 preempt 计数
  */
 void preempt_count_add(int val) /*  */
 {
@@ -5228,6 +5228,10 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
 		 * an infinite recursion.
 		 */
 		prev_ctx = exception_enter();
+
+        /**
+         *  
+         */
 		__schedule(true);
 		exception_exit(prev_ctx);
 
@@ -6758,6 +6762,9 @@ SYSCALL_DEFINE0(sched_yield)    /*  */
 }
 
 #ifndef CONFIG_PREEMPTION
+/**
+ *  
+ */
 int __sched _cond_resched(void) /* 重新调度 */
 {
 	if (should_resched(0)) {    /*  */

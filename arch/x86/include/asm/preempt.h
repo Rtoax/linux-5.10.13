@@ -43,12 +43,17 @@ int __percpu __preempt_count; //+++
 /*
  * We mask the PREEMPT_NEED_RESCHED bit so as not to confuse all current users
  * that think a non-zero value indicates we cannot preempt.
+ *
+ *   
  */
 static __always_inline int preempt_count(void)/* 可抢占？ */
 {
 	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED;
 }
 
+/**
+ *  设置
+ */
 static __always_inline void preempt_count_set(int pc)
 {
 	int old, new;
@@ -96,7 +101,9 @@ static __always_inline bool test_preempt_need_resched(void)
 /*
  * The various preempt_count add/sub methods
  */
-
+/**
+ *  给preempt 增加 val 
+ */
 static __always_inline void __preempt_count_add(int val)
 {
     /**

@@ -499,6 +499,9 @@ extern u64 time_travel_ext_req(u32 op, u64 time);
 #define time_travel_del_event(e) do { } while (0)
 #endif
 
+/**
+ *  定时器中断
+ */
 void timer_handler(int sig, struct siginfo *unused_si, struct uml_pt_regs *regs)
 {
 	unsigned long flags;
@@ -515,6 +518,10 @@ void timer_handler(int sig, struct siginfo *unused_si, struct uml_pt_regs *regs)
 		time_travel_handle_real_alarm();
 
 	local_irq_save(flags);
+
+    /**
+     *  
+     */
 	do_IRQ(TIMER_IRQ, regs);
 	local_irq_restore(flags);
 }

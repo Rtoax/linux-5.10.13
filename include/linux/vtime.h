@@ -103,6 +103,9 @@ extern void irqtime_account_irq(struct task_struct *tsk);
 static inline void irqtime_account_irq(struct task_struct *tsk) { }
 #endif
 
+/**
+ *  
+ */
 static inline void account_irq_enter_time(struct task_struct *tsk)
 {
 	vtime_account_irq_enter(tsk);

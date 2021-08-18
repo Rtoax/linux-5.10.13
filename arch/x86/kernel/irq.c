@@ -274,6 +274,8 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
  * handlers).
  *
  * https://elixir.bootlin.com/linux/v5.7/source/arch/x86/kernel/irq.c#L233
+ *
+ * 这是我添加的，源 5.10.13 代码中没有这个函数
  */
 __visible void __irq_entry rtoax_do_IRQ(struct pt_regs *regs)
 {

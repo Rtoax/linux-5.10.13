@@ -410,6 +410,8 @@ int deactivate_all_fds(void)
  * do_IRQ handles all normal device IRQs (the special
  * SMP cross-CPU interrupts have their own specific
  * handlers).
+ *
+ * 处理所有 normal 设备的 IRQs 中断
  */
 unsigned int do_IRQ(int irq, struct uml_pt_regs *regs)
 {
