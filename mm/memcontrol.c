@@ -7048,6 +7048,9 @@ void mem_cgroup_migrate(struct page *oldpage, struct page *newpage)
 DEFINE_STATIC_KEY_FALSE(memcg_sockets_enabled_key);
 EXPORT_SYMBOL(memcg_sockets_enabled_key);
 
+/**
+ *  
+ */
 void mem_cgroup_sk_alloc(struct sock *sk)
 {
 	struct mem_cgroup *memcg;

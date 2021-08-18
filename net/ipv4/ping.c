@@ -977,24 +977,27 @@ bool ping_rcv(struct sk_buff *skb)
 }
 EXPORT_SYMBOL_GPL(ping_rcv);
 
+/**
+ *  
+ */
 struct proto ping_prot = {
-	.name =		"PING",
-	.owner =	THIS_MODULE,
-	.init =		ping_init_sock,
-	.close =	ping_close,
-	.connect =	ip4_datagram_connect,
-	.disconnect =	__udp_disconnect,
-	.setsockopt =	ip_setsockopt,
-	.getsockopt =	ip_getsockopt,
-	.sendmsg =	ping_v4_sendmsg,
-	.recvmsg =	ping_recvmsg,
-	.bind =		ping_bind,
-	.backlog_rcv =	ping_queue_rcv_skb,
-	.release_cb =	ip4_datagram_release_cb,
-	.hash =		ping_hash,
-	.unhash =	ping_unhash,
-	.get_port =	ping_get_port,
-	.obj_size =	sizeof(struct inet_sock),
+	ping_prot.name =		"PING",
+	ping_prot.owner =	THIS_MODULE,
+	ping_prot.init =		ping_init_sock,
+	ping_prot.close =	ping_close,
+	ping_prot.connect =	ip4_datagram_connect,
+	ping_prot.disconnect =	__udp_disconnect,
+	ping_prot.setsockopt =	ip_setsockopt,
+	ping_prot.getsockopt =	ip_getsockopt,
+	ping_prot.sendmsg =	ping_v4_sendmsg,
+	ping_prot.recvmsg =	ping_recvmsg,
+	ping_prot.bind =		ping_bind,
+	ping_prot.backlog_rcv =	ping_queue_rcv_skb,
+	ping_prot.release_cb =	ip4_datagram_release_cb,
+	ping_prot.hash =		ping_hash,
+	ping_prot.unhash =	ping_unhash,
+	ping_prot.get_port =	ping_get_port,
+	ping_prot.obj_size =	sizeof(struct inet_sock),
 };
 EXPORT_SYMBOL(ping_prot);
 

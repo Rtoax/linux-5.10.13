@@ -433,19 +433,41 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 	 * having to remove and re-insert us on the wait queue.
 	 */
 	for (;;) {
-		prepare_to_wait_exclusive(sk_sleep(sk), &wait,
-					  TASK_INTERRUPTIBLE);
+        /**
+         *  等待队列
+         *  accept(2) 阻塞于此
+         */
+		prepare_to_wait_exclusive(sk_sleep(sk), &wait, TASK_INTERRUPTIBLE);
+
+        /**
+         *  
+         */
 		release_sock(sk);
+        /**
+         *  请求队列为空
+         */
 		if (reqsk_queue_empty(&icsk->icsk_accept_queue))
 			timeo = schedule_timeout(timeo);
+
+        /**
+         *  
+         */
 		sched_annotate_sleep();
 		lock_sock(sk);
 		err = 0;
 		if (!reqsk_queue_empty(&icsk->icsk_accept_queue))
 			break;
 		err = -EINVAL;
+
+        /**
+         *  状态机的状态
+         */
 		if (sk->sk_state != TCP_LISTEN)
 			break;
+
+        /**
+         *  
+         */
 		err = sock_intr_errno(timeo);
 		if (signal_pending(current))
 			break;
@@ -459,6 +481,8 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 
 /*
  * This will accept the next outstanding connection.
+ *  
+ *  accept(2)
  */
 struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
 {
@@ -477,8 +501,14 @@ struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
 	if (sk->sk_state != TCP_LISTEN)
 		goto out_err;
 
+    /**
+     *  请求队列为空
+     */
 	/* Find already established connection */
 	if (reqsk_queue_empty(queue)) {
+        /**
+         *  超时接受时间
+         */
 		long timeo = sock_rcvtimeo(sk, flags & O_NONBLOCK);
 
 		/* If this is a non blocking socket don't sleep */
@@ -486,15 +516,24 @@ struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
 		if (!timeo)
 			goto out_err;
 
+        /**
+         *  
+         */
 		error = inet_csk_wait_for_connect(sk, timeo);
 		if (error)
 			goto out_err;
 	}
+    /**
+     *  从 请求队列 中获取一个队列
+     */
 	req = reqsk_queue_remove(queue, sk);
+
+    /**
+     *  这个 sock 给客户端
+     */
 	newsk = req->sk;
 
-	if (sk->sk_protocol == IPPROTO_TCP &&
-	    tcp_rsk(req)->tfo_listener) {
+	if (sk->sk_protocol == IPPROTO_TCP && tcp_rsk(req)->tfo_listener) {
 		spin_lock_bh(&queue->fastopenq.lock);
 		if (tcp_rsk(req)->tfo_listener) {
 			/* We are still waiting for the final ACK from 3WHS
@@ -522,8 +561,10 @@ out:
 		/* The socket has not been accepted yet, no need to look at
 		 * newsk->sk_wmem_queued.
 		 */
-		amt = sk_mem_pages(newsk->sk_forward_alloc +
-				   atomic_read(&newsk->sk_rmem_alloc));
+		amt = sk_mem_pages(newsk->sk_forward_alloc + atomic_read(&newsk->sk_rmem_alloc));
+        /**
+         *  
+         */
 		mem_cgroup_sk_alloc(newsk);
 		if (newsk->sk_memcg && amt)
 			mem_cgroup_charge_skmem(newsk->sk_memcg, amt);
@@ -532,6 +573,7 @@ out:
 	}
 	if (req)
 		reqsk_put(req);
+    
 	return newsk;
 out_err:
 	newsk = NULL;

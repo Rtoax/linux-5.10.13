@@ -494,6 +494,10 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	kuid_t			sk_uid;
 	struct pid		*sk_peer_pid;
 	const struct cred	*sk_peer_cred;
+
+    /**
+     *  超时接收时间
+     */
 	long			sk_rcvtimeo;
 	ktime_t			sk_stamp;
     
@@ -536,6 +540,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 #endif
 	struct rcu_head		sk_rcu;
 };
+typedef struct sock *sock_t;//+++
 
 enum sk_pacing {
 	SK_PACING_NONE		= 0,
@@ -1045,6 +1050,9 @@ static inline void sock_rps_record_flow_hash(__u32 hash)
 #endif
 }
 
+/**
+ *  
+ */
 static inline void sock_rps_record_flow(const struct sock *sk)
 {
 #ifdef CONFIG_RPS
@@ -1138,6 +1146,14 @@ static inline void sk_prot_clear_nulls(struct sock *sk, int size)
 
 /* Networking protocol blocks we attach to sockets.
  * socket layer -> transport layer interface
+ *
+ * 一些全局变量
+ * -----------------
+ * tcp_prot
+ * udp_prot
+ * raw_prot
+ * ping_prot
+ * 
  */
 struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输层的接口)*/
 	void			(*close)(struct sock *sk,
@@ -1150,7 +1166,7 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 					int addr_len);
 	int			(*disconnect)(struct sock *sk, int flags);
 
-	struct sock *		(*accept)(struct sock *sk, int flags, int *err,
+	sock_t		(*accept)(struct sock *sk, int flags, int *err,
 					  bool kern);
 
 	int			(*ioctl)(struct sock *sk, int cmd,
@@ -1889,14 +1905,31 @@ static inline void sock_orphan(struct sock *sk)
 	write_unlock_bh(&sk->sk_callback_lock);
 }
 
+/**
+ *  graft: 接枝,贪污,搂
+ */
 static inline void sock_graft(struct sock *sk, struct socket *parent)
 {
 	WARN_ON(parent->sk);
+    
 	write_lock_bh(&sk->sk_callback_lock);
+    
 	rcu_assign_pointer(sk->sk_wq, &parent->wq);
+    
+    /**
+     *  
+     */
 	parent->sk = sk;
+    
+    /**
+     *  
+     */
 	sk_set_socket(sk, parent);
 	sk->sk_uid = SOCK_INODE(parent)->i_uid;
+    
+    /**
+     *  
+     */
 	security_sock_graft(sk, parent);
 	write_unlock_bh(&sk->sk_callback_lock);
 }

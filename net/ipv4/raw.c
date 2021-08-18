@@ -938,32 +938,35 @@ int raw_abort(struct sock *sk, int err)
 }
 EXPORT_SYMBOL_GPL(raw_abort);
 
+/**
+ *  
+ */
 struct proto raw_prot = {   /* 原始套接字 */
-	.name		   = "RAW",
-	.owner		   = THIS_MODULE,
-	.close		   = raw_close,
-	.destroy	   = raw_destroy,
-	.connect	   = ip4_datagram_connect,
-	.disconnect	   = __udp_disconnect,
-	.ioctl		   = raw_ioctl,
-	.init		   = raw_sk_init,
-	.setsockopt	   = raw_setsockopt,
-	.getsockopt	   = raw_getsockopt,
-	.sendmsg	   = raw_sendmsg,
-	.recvmsg	   = raw_recvmsg,
-	.bind		   = raw_bind,
-	.backlog_rcv	   = raw_rcv_skb,
-	.release_cb	   = ip4_datagram_release_cb,
-	.hash		   = raw_hash_sk,
-	.unhash		   = raw_unhash_sk,
-	.obj_size	   = sizeof(struct raw_sock),
-	.useroffset	   = offsetof(struct raw_sock, filter),
-	.usersize	   = sizeof_field(struct raw_sock, filter),
-	.h.raw_hash	   = &raw_v4_hashinfo,
+	raw_prot.name		   = "RAW",
+	raw_prot.owner		   = THIS_MODULE,
+	raw_prot.close		   = raw_close,
+	raw_prot.destroy	   = raw_destroy,
+	raw_prot.connect	   = ip4_datagram_connect,
+	raw_prot.disconnect	   = __udp_disconnect,
+	raw_prot.ioctl		   = raw_ioctl,
+	raw_prot.init		   = raw_sk_init,
+	raw_prot.setsockopt	   = raw_setsockopt,
+	raw_prot.getsockopt	   = raw_getsockopt,
+	raw_prot.sendmsg	   = raw_sendmsg,
+	raw_prot.recvmsg	   = raw_recvmsg,
+	raw_prot.bind		   = raw_bind,
+	raw_prot.backlog_rcv	   = raw_rcv_skb,
+	raw_prot.release_cb	   = ip4_datagram_release_cb,
+	raw_prot.hash		   = raw_hash_sk,
+	raw_prot.unhash		   = raw_unhash_sk,
+	raw_prot.obj_size	   = sizeof(struct raw_sock),
+	raw_prot.useroffset	   = offsetof(struct raw_sock, filter),
+	raw_prot.usersize	   = sizeof_field(struct raw_sock, filter),
+	raw_prot.h.raw_hash	   = &raw_v4_hashinfo,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	   = compat_raw_ioctl,
+	raw_prot.compat_ioctl	   = compat_raw_ioctl,
 #endif
-	.diag_destroy	   = raw_abort,
+	raw_prot.diag_destroy	   = raw_abort,
 };
 
 #ifdef CONFIG_PROC_FS

@@ -45,6 +45,9 @@
 #define SYS_RECVMMSG	19		/* sys_recvmmsg(2)		*/
 #define SYS_SENDMMSG	20		/* sys_sendmmsg(2)		*/
 
+/**
+ *  
+ */
 typedef enum {  /* socket 状态 */
 	SS_FREE = 0,			/* not allocated		*/
 	SS_UNCONNECTED,			/* unconnected to any socket	*/

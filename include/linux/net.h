@@ -79,6 +79,10 @@ enum sock_type {
 
 /* Flags for socket, socketpair, accept4 */
 #define SOCK_CLOEXEC	O_CLOEXEC
+
+/**
+ *  非阻塞
+ */
 #ifndef SOCK_NONBLOCK
 #define SOCK_NONBLOCK	O_NONBLOCK
 #endif
@@ -176,7 +180,14 @@ struct proto_ops {  /* struct socket 操作 */
 				      int sockaddr_len, int flags);
 	int		(*socketpair)(struct socket *sock1,
 				      struct socket *sock2);
-	int		(*accept)    (struct socket *sock,
+    /**
+     *  
+     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_accept()
+     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_accept()
+     */
+    int		(*accept)    (struct socket *sock,
 				      struct socket *newsock, int flags, bool kern);
 	int		(*getname)   (struct socket *sock,
 				      struct sockaddr *addr,
@@ -247,6 +258,11 @@ struct proto_ops {  /* struct socket 操作 */
 
 /**
  *  协议族
+ *
+ *  全局变量
+ *  ----------
+ *  inet_family_ops
+ *  
  */
 struct net_proto_family {   /*  */
 	int		family;

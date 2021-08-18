@@ -227,6 +227,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  */
 # define cant_sleep() \
 	do { __cant_sleep(__FILE__, __LINE__, 0); } while (0)
+
+/**
+ *  
+ */
 # define sched_annotate_sleep()	(current->task_state_change = 0)
 /**
  * non_block_start - annotate the start of section where sleeping is prohibited

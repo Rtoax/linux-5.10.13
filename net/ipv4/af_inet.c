@@ -122,6 +122,9 @@
 
 /* The inetsw table contains everything that inet_create needs to
  * build a new socket.
+ *
+ *  链表节点为 `struct inet_protosw.list`
+ *  初始化 `inet_init()`
  */
 static struct list_head inetsw[SOCK_MAX];
 static DEFINE_SPINLOCK(inetsw_lock);
@@ -323,6 +326,9 @@ lookup_protocol:
 	    !ns_capable(net->user_ns, CAP_NET_RAW))
 		goto out_rcu_unlock;
 
+    /**
+     *  
+     */
 	sock->ops = answer->ops;
 	answer_prot = answer->prot;
 	answer_flags = answer->flags;
@@ -790,12 +796,21 @@ EXPORT_SYMBOL(inet_stream_connect);
 /*
  *	Accept a pending connection. The TCP layer now gives BSD semantics.
  */
-
-int inet_accept(struct socket *sock, struct socket *newsock, int flags,
+/**
+ *  INET accept(2)
+ */
+int inet_accept(struct socket *__socket, struct socket *newsock, int flags,
 		bool kern)
 {
-	struct sock *sk1 = sock->sk;
+	struct sock *sk1 = __socket->sk;
 	int err = -EINVAL;
+
+    /**
+     *  accept(2) 阻塞于此
+     *
+     *  tcp_prot.inet_csk_accept()
+     *  udp_prot.NULL
+     */
 	struct sock *sk2 = sk1->sk_prot->accept(sk1, flags, &err, kern);
 
 	if (!sk2)
@@ -803,16 +818,34 @@ int inet_accept(struct socket *sock, struct socket *newsock, int flags,
 
 	lock_sock(sk2);
 
+    /**
+     *  
+     */
 	sock_rps_record_flow(sk2);
-	WARN_ON(!((1 << sk2->sk_state) &
-		  (TCPF_ESTABLISHED | TCPF_SYN_RECV |
-		  TCPF_CLOSE_WAIT | TCPF_CLOSE)));
 
+    /**
+     *  
+     */
+	WARN_ON(!((1 << sk2->sk_state) &
+    		  (TCPF_ESTABLISHED | TCPF_SYN_RECV |
+    		  TCPF_CLOSE_WAIT | TCPF_CLOSE)));
+
+    /**
+     *  
+     */
 	sock_graft(sk2, newsock);
 
+    /**
+     *  
+     */
 	newsock->state = SS_CONNECTED;
 	err = 0;
+    
+    /**
+     *  
+     */
 	release_sock(sk2);
+    
 do_err:
 	return err;
 }
@@ -1079,37 +1112,37 @@ static int inet_compat_ioctl(struct socket *sock, unsigned int cmd, unsigned lon
  *  INET - IPv4 - TCP
  */
 const struct proto_ops inet_stream_ops = {
-	.family		   = PF_INET,
-	.flags		   = PROTO_CMSG_DATA_ONLY,
-	.owner		   = THIS_MODULE,
-	.release	   = inet_release,
-	.bind		   = inet_bind,
-	.connect	   = inet_stream_connect,
-	.socketpair	   = sock_no_socketpair,
-	.accept		   = inet_accept,
-	.getname	   = inet_getname,
-	.poll		   = tcp_poll,
-	.ioctl		   = inet_ioctl,
-	.gettstamp	   = sock_gettstamp,
-	.listen		   = inet_listen,
-	.shutdown	   = inet_shutdown,
-	.setsockopt	   = sock_common_setsockopt,
-	.getsockopt	   = sock_common_getsockopt,
-	.sendmsg	   = inet_sendmsg,
-	.recvmsg	   = inet_recvmsg,
+	inet_stream_ops.family		   = PF_INET,
+	inet_stream_ops.flags		   = PROTO_CMSG_DATA_ONLY,
+	inet_stream_ops.owner		   = THIS_MODULE,
+	inet_stream_ops.release	   = inet_release,
+	inet_stream_ops.bind		   = inet_bind,
+	inet_stream_ops.connect	   = inet_stream_connect,
+	inet_stream_ops.socketpair	   = sock_no_socketpair,
+	inet_stream_ops.accept		   = inet_accept,
+	inet_stream_ops.getname	   = inet_getname,
+	inet_stream_ops.poll		   = tcp_poll,
+	inet_stream_ops.ioctl		   = inet_ioctl,
+	inet_stream_ops.gettstamp	   = sock_gettstamp,
+	inet_stream_ops.listen		   = inet_listen,
+	inet_stream_ops.shutdown	   = inet_shutdown,
+	inet_stream_ops.setsockopt	   = sock_common_setsockopt,
+	inet_stream_ops.getsockopt	   = sock_common_getsockopt,
+	inet_stream_ops.sendmsg	   = inet_sendmsg,
+	inet_stream_ops.recvmsg	   = inet_recvmsg,
 #ifdef CONFIG_MMU
-	.mmap		   = tcp_mmap,
+	inet_stream_ops.mmap		   = tcp_mmap,
 #endif
-	.sendpage	   = inet_sendpage,
-	.splice_read	   = tcp_splice_read,
-	.read_sock	   = tcp_read_sock,
-	.sendmsg_locked    = tcp_sendmsg_locked,
-	.sendpage_locked   = tcp_sendpage_locked,
-	.peek_len	   = tcp_peek_len,
+	inet_stream_ops.sendpage	   = inet_sendpage,
+	inet_stream_ops.splice_read	   = tcp_splice_read,
+	inet_stream_ops.read_sock	   = tcp_read_sock,
+	inet_stream_ops.sendmsg_locked    = tcp_sendmsg_locked,
+	inet_stream_ops.sendpage_locked   = tcp_sendpage_locked,
+	inet_stream_ops.peek_len	   = tcp_peek_len,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	   = inet_compat_ioctl,
+	inet_stream_ops.compat_ioctl	   = inet_compat_ioctl,
 #endif
-	.set_rcvlowat	   = tcp_set_rcvlowat,
+	inet_stream_ops.set_rcvlowat	   = tcp_set_rcvlowat,
 };
 EXPORT_SYMBOL(inet_stream_ops);
 
@@ -1117,28 +1150,28 @@ EXPORT_SYMBOL(inet_stream_ops);
  *  INET - IPv4 - UDP
  */
 const struct proto_ops inet_dgram_ops = {
-	.family		   = PF_INET,
-	.owner		   = THIS_MODULE,
-	.release	   = inet_release,
-	.bind		   = inet_bind,
-	.connect	   = inet_dgram_connect,
-	.socketpair	   = sock_no_socketpair,
-	.accept		   = sock_no_accept,
-	.getname	   = inet_getname,
-	.poll		   = udp_poll,
-	.ioctl		   = inet_ioctl,
-	.gettstamp	   = sock_gettstamp,
-	.listen		   = sock_no_listen,
-	.shutdown	   = inet_shutdown,
-	.setsockopt	   = sock_common_setsockopt,
-	.getsockopt	   = sock_common_getsockopt,
-	.sendmsg	   = inet_sendmsg,
-	.recvmsg	   = inet_recvmsg,
-	.mmap		   = sock_no_mmap,
-	.sendpage	   = inet_sendpage,
-	.set_peek_off	   = sk_set_peek_off,
+	inet_dgram_ops.family		   = PF_INET,
+	inet_dgram_ops.owner		   = THIS_MODULE,
+	inet_dgram_ops.release	   = inet_release,
+	inet_dgram_ops.bind		   = inet_bind,
+	inet_dgram_ops.connect	   = inet_dgram_connect,
+	inet_dgram_ops.socketpair	   = sock_no_socketpair,
+	inet_dgram_ops.accept		   = sock_no_accept,
+	inet_dgram_ops.getname	   = inet_getname,
+	inet_dgram_ops.poll		   = udp_poll,
+	inet_dgram_ops.ioctl		   = inet_ioctl,
+	inet_dgram_ops.gettstamp	   = sock_gettstamp,
+	inet_dgram_ops.listen		   = sock_no_listen,
+	inet_dgram_ops.shutdown	   = inet_shutdown,
+	inet_dgram_ops.setsockopt	   = sock_common_setsockopt,
+	inet_dgram_ops.getsockopt	   = sock_common_getsockopt,
+	inet_dgram_ops.sendmsg	   = inet_sendmsg,
+	inet_dgram_ops.recvmsg	   = inet_recvmsg,
+	inet_dgram_ops.mmap		   = sock_no_mmap,
+	inet_dgram_ops.sendpage	   = inet_sendpage,
+	inet_dgram_ops.set_peek_off	   = sk_set_peek_off,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	   = inet_compat_ioctl,
+	inet_dgram_ops.compat_ioctl	   = inet_compat_ioctl,
 #endif
 };
 EXPORT_SYMBOL(inet_dgram_ops);
@@ -1148,27 +1181,27 @@ EXPORT_SYMBOL(inet_dgram_ops);
  * udp_poll
  */
 static const struct proto_ops inet_sockraw_ops = {
-	.family		   = PF_INET,
-	.owner		   = THIS_MODULE,
-	.release	   = inet_release,
-	.bind		   = inet_bind,
-	.connect	   = inet_dgram_connect,
-	.socketpair	   = sock_no_socketpair,
-	.accept		   = sock_no_accept,
-	.getname	   = inet_getname,
-	.poll		   = datagram_poll,
-	.ioctl		   = inet_ioctl,
-	.gettstamp	   = sock_gettstamp,
-	.listen		   = sock_no_listen,
-	.shutdown	   = inet_shutdown,
-	.setsockopt	   = sock_common_setsockopt,
-	.getsockopt	   = sock_common_getsockopt,
-	.sendmsg	   = inet_sendmsg,
-	.recvmsg	   = inet_recvmsg,
-	.mmap		   = sock_no_mmap,
-	.sendpage	   = inet_sendpage,
+	inet_sockraw_ops.family		   = PF_INET,
+	inet_sockraw_ops.owner		   = THIS_MODULE,
+	inet_sockraw_ops.release	   = inet_release,
+	inet_sockraw_ops.bind		   = inet_bind,
+	inet_sockraw_ops.connect	   = inet_dgram_connect,
+	inet_sockraw_ops.socketpair	   = sock_no_socketpair,
+	inet_sockraw_ops.accept		   = sock_no_accept,
+	inet_sockraw_ops.getname	   = inet_getname,
+	inet_sockraw_ops.poll		   = datagram_poll,
+	inet_sockraw_ops.ioctl		   = inet_ioctl,
+	inet_sockraw_ops.gettstamp	   = sock_gettstamp,
+	inet_sockraw_ops.listen		   = sock_no_listen,
+	inet_sockraw_ops.shutdown	   = inet_shutdown,
+	inet_sockraw_ops.setsockopt	   = sock_common_setsockopt,
+	inet_sockraw_ops.getsockopt	   = sock_common_getsockopt,
+	inet_sockraw_ops.sendmsg	   = inet_sendmsg,
+	inet_sockraw_ops.recvmsg	   = inet_recvmsg,
+	inet_sockraw_ops.mmap		   = sock_no_mmap,
+	inet_sockraw_ops.sendpage	   = inet_sendpage,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	   = inet_compat_ioctl,
+	inet_sockraw_ops.compat_ioctl	   = inet_compat_ioctl,
 #endif
 };
 
@@ -1176,52 +1209,56 @@ static const struct proto_ops inet_sockraw_ops = {
  *  IPv4 协议族
  */
 static const struct net_proto_family inet_family_ops = {    /* IPv4 */
-	.family = PF_INET,
-	.create = inet_create,  /* inet_create() */
-	.owner	= THIS_MODULE,
+	inet_family_ops.family = PF_INET,
+	inet_family_ops.create = inet_create,  /* inet_create() */
+	inet_family_ops.owner	= THIS_MODULE,
 };
 
 /* Upon startup we insert all the elements in inetsw_array[] into
  * the linked list inetsw.
+ *
+ * 协议 
  */
 static struct inet_protosw inetsw_array[] = /*  */
 {
-	{
-		.type =       SOCK_STREAM,
-		.protocol =   IPPROTO_TCP,  /* TCP */
-		.prot =       &tcp_prot,
-		.ops =        &inet_stream_ops,
-		.flags =      INET_PROTOSW_PERMANENT |
-			      INET_PROTOSW_ICSK,
-	},
+    {
+        inetsw_array[].type =       SOCK_STREAM,
+        inetsw_array[].protocol =   IPPROTO_TCP,  /* TCP */
+        inetsw_array[].prot =       &tcp_prot,
+        inetsw_array[].ops =        &inet_stream_ops,
+        inetsw_array[].flags =      INET_PROTOSW_PERMANENT | INET_PROTOSW_ICSK,
+    },
 
-	{
-		.type =       SOCK_DGRAM,
-		.protocol =   IPPROTO_UDP,  /* UDP */
-		.prot =       &udp_prot,
-		.ops =        &inet_dgram_ops,
-		.flags =      INET_PROTOSW_PERMANENT,
-       },
+    {
+        inetsw_array[].type =       SOCK_DGRAM,
+        inetsw_array[].protocol =   IPPROTO_UDP,  /* UDP */
+        inetsw_array[].prot =       &udp_prot,
+        inetsw_array[].ops =        &inet_dgram_ops,
+        inetsw_array[].flags =      INET_PROTOSW_PERMANENT,
+    },
 
-       {
-		.type =       SOCK_DGRAM,
-		.protocol =   IPPROTO_ICMP, /* ICMP */
-		.prot =       &ping_prot,
-		.ops =        &inet_sockraw_ops,
-		.flags =      INET_PROTOSW_REUSE,
-       },
+    {
+        inetsw_array[].type =       SOCK_DGRAM,
+        inetsw_array[].protocol =   IPPROTO_ICMP, /* ICMP */
+        inetsw_array[].prot =       &ping_prot,
+        inetsw_array[].ops =        &inet_sockraw_ops,
+        inetsw_array[].flags =      INET_PROTOSW_REUSE,
+    },
 
-       {
-	       .type =       SOCK_RAW,
-	       .protocol =   IPPROTO_IP,	/* wild card */
-	       .prot =       &raw_prot,
-	       .ops =        &inet_sockraw_ops,
-	       .flags =      INET_PROTOSW_REUSE,
-       }
+    {
+        inetsw_array[].type =       SOCK_RAW,
+        inetsw_array[].protocol =   IPPROTO_IP,	/* wild card */
+        inetsw_array[].prot =       &raw_prot,
+        inetsw_array[].ops =        &inet_sockraw_ops,
+        inetsw_array[].flags =      INET_PROTOSW_REUSE,
+    }
 };
 
 #define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)
 
+/**
+ *  
+ */
 void inet_register_protosw(struct inet_protosw *p)  /*  */
 {
 	struct list_head *lh;

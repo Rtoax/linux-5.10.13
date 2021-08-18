@@ -1846,10 +1846,13 @@ SYSCALL_DEFINE2(listen, int, fd, int, backlog)
 	return __sys_listen(fd, backlog);
 }
 
+/**
+ *  accept(2)
+ */
 int __sys_accept4_file(struct file *file, unsigned file_flags,
-		       struct sockaddr __user *upeer_sockaddr,
-		       int __user *upeer_addrlen, int flags,
-		       unsigned long nofile)
+            		       struct sockaddr __user *upeer_sockaddr,
+            		       int __user *upeer_addrlen, int flags,
+            		       unsigned long nofile)
 {
 	struct socket *sock, *newsock;
 	struct file *newfile;
@@ -1859,33 +1862,56 @@ int __sys_accept4_file(struct file *file, unsigned file_flags,
 	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
 		return -EINVAL;
 
+    /**
+     *  非  阻塞 accept
+     *  为了统一 file 和 socket 的 非阻塞操作
+     */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
 
+    /**
+     *  获取 socket 数据结构
+     */
 	sock = sock_from_file(file, &err);
 	if (!sock)
 		goto out;
 
 	err = -ENFILE;
+
+    /**
+     *  分配一个 socket 结构，合适新连接上的客户端
+     */
 	newsock = sock_alloc();
 	if (!newsock)
 		goto out;
 
+    /**
+     *  类型和操作符和 服务端相同
+     */
 	newsock->type = sock->type;
 	newsock->ops = sock->ops;
 
 	/*
 	 * We don't need try_module_get here, as the listening socket (sock)
 	 * has the protocol module (sock->ops->owner) held.
+	 *
+	 * 模块的引用计数 +1
 	 */
 	__module_get(newsock->ops->owner);
 
+    /**
+     *  获取没有使用的 fd
+     */
 	newfd = __get_unused_fd_flags(flags, nofile);
 	if (unlikely(newfd < 0)) {
 		err = newfd;
 		sock_release(newsock);
 		goto out;
 	}
+
+    /**
+     *  分配一个打开的文件
+     */
 	newfile = sock_alloc_file(newsock, flags, sock->sk->sk_prot_creator->name);
 	if (IS_ERR(newfile)) {
 		err = PTR_ERR(newfile);
@@ -1897,8 +1923,15 @@ int __sys_accept4_file(struct file *file, unsigned file_flags,
 	if (err)
 		goto out_fd;
 
-	err = sock->ops->accept(sock, newsock, sock->file->f_flags | file_flags,
-					false);
+    /**
+     *  调用 accept
+     *
+     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
+     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_accept()
+     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
+     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_accept()
+     */
+	err = sock->ops->accept(sock, newsock, sock->file->f_flags | file_flags, false);
 	if (err < 0)
 		goto out_fd;
 
@@ -1939,18 +1972,26 @@ out_fd:
  *	status to recvmsg. We need to add that support in a way thats
  *	clean when we restructure accept also.
  */
-
+/**
+ *  accept(2)
+ */
 int __sys_accept4(int fd, struct sockaddr __user *upeer_sockaddr,
 		  int __user *upeer_addrlen, int flags)
 {
 	int ret = -EBADF;
 	struct fd f;
 
+    /**
+     *  
+     */
 	f = fdget(fd);
 	if (f.file) {
+        /**
+         *  accept
+         */
 		ret = __sys_accept4_file(f.file, 0, upeer_sockaddr,
-						upeer_addrlen, flags,
-						rlimit(RLIMIT_NOFILE));
+        						upeer_addrlen, flags,
+        						rlimit(RLIMIT_NOFILE));
 		fdput(f);
 	}
 
@@ -1963,9 +2004,16 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
 	return __sys_accept4(fd, upeer_sockaddr, upeer_addrlen, flags);
 }
 
+/**
+ *  accept(2)
+ */
+int accept(int s, struct sockaddr *upeer_sockaddr, socklen_t *upeer_addrlen);
 SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
 		int __user *, upeer_addrlen)
 {
+    /**
+     *  
+     */
 	return __sys_accept4(fd, upeer_sockaddr, upeer_addrlen, 0);
 }
 

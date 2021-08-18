@@ -1721,7 +1721,7 @@ static void sk_prot_free(struct proto *prot, struct sock *sk)
  *	@kern: is this to be a kernel socket?
  */ /*  */
 struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
-		      struct proto *prot, int kern)
+		                struct proto *prot, int kern)
 {
 	struct sock *sk;
     /**
@@ -1733,7 +1733,9 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		/*
 		 * See comment in struct sock definition to understand
 		 * why we need sk_prot_creator -acme
-		 */
+		 *
+         *  
+         */
 		sk->sk_prot = sk->sk_prot_creator = prot;
 		sk->sk_kern_sock = kern;
         
@@ -3068,6 +3070,9 @@ void lock_sock_nested(struct sock *sk, int subclass)
 }
 EXPORT_SYMBOL(lock_sock_nested);
 
+/**
+ *  
+ */
 void release_sock(struct sock *sk)
 {
 	spin_lock_bh(&sk->sk_lock.slock);

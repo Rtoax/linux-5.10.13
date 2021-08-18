@@ -77,15 +77,31 @@ struct net_offload {    /*  */
 /* This should be set for any extension header which is compatible with GSO. */
 #define INET6_PROTO_GSO_EXTHDR	0x1
 
+/**
+ *  
+ *  在 `inet_register_protosw()` 挂入链表 `inetsw[]`
+ *  在 `inet_init()` 中初始化 链表 `inetsw[]`
+ *  有个静态变量 `inetsw_array[]`
+ */
 /* This is used to register socket interfaces for IP protocols.  */
 struct inet_protosw {   /* IP 协议网络接口 */
+    /**
+     *  链表头为 `inetsw[]`
+     */
 	struct list_head list;
 
         /* These two fields form the lookup key.  */
 	unsigned short	 type;	   /* This is the 2nd argument to socket(2). */
 	unsigned short	 protocol; /* This is the L4 protocol number.  */
 
+    /**
+     *  
+     */
 	struct proto	 *prot;
+
+    /**
+     *  
+     */
 	const struct proto_ops *ops;
   
 	unsigned char	 flags;      /* See INET_PROTOSW_* below.  */

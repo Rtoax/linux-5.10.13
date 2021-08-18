@@ -48,7 +48,10 @@ struct saved_syn {
 	u8 data[];
 };
 
-/* struct request_sock - mini sock to represent a connection request
+/**
+ *  struct request_sock - mini sock to represent a connection request
+ *
+ *  
  */
 struct request_sock {
 	struct sock_common		__req_common;
@@ -208,15 +211,29 @@ static inline bool reqsk_queue_empty(const struct request_sock_queue *queue)
 	return READ_ONCE(queue->rskq_accept_head) == NULL;
 }
 
+/**
+ *  accept(2)
+ */
 static inline struct request_sock *reqsk_queue_remove(struct request_sock_queue *queue,
 						      struct sock *parent)
 {
 	struct request_sock *req;
 
+    /**
+     *  
+     */
 	spin_lock_bh(&queue->rskq_lock);
+    
+    /**
+     *  从请求队列中取一个
+     */
 	req = queue->rskq_accept_head;
 	if (req) {
+        /**
+         *  backlog--
+         */
 		sk_acceptq_removed(parent);
+        
 		WRITE_ONCE(queue->rskq_accept_head, req->dl_next);
 		if (queue->rskq_accept_head == NULL)
 			queue->rskq_accept_tail = NULL;
