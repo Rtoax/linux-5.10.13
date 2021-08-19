@@ -142,21 +142,23 @@ static inline bool pcpu_is_memcg_chunk(enum pcpu_chunk_type chunk_type)
 }
 
 #else
-static inline enum pcpu_chunk_type pcpu_chunk_type(struct pcpu_chunk *chunk)
-{
-	return PCPU_CHUNK_ROOT;
-}
-
-static inline bool pcpu_is_memcg_chunk(enum pcpu_chunk_type chunk_type)
-{
-	return false;
-}
+//static inline enum pcpu_chunk_type pcpu_chunk_type(struct pcpu_chunk *chunk)
+//{
+//	return PCPU_CHUNK_ROOT;
+//}
+//
+//static inline bool pcpu_is_memcg_chunk(enum pcpu_chunk_type chunk_type)
+//{
+//	return false;
+//}
 #endif
 
+/**
+ *  
+ */
 static inline struct list_head *pcpu_chunk_list(enum pcpu_chunk_type chunk_type)
 {
-	return &pcpu_chunk_lists[pcpu_nr_slots *
-				 pcpu_is_memcg_chunk(chunk_type)];
+	return &pcpu_chunk_lists[pcpu_nr_slots * pcpu_is_memcg_chunk(chunk_type)];
 }
 
 #ifdef CONFIG_PERCPU_STATS

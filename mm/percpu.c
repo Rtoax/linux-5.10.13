@@ -1202,9 +1202,9 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 	/* update first free bit */
 	if (bit_off == chunk_md->first_free)
 		chunk_md->first_free = find_next_zero_bit(
-					chunk->alloc_map,
-					pcpu_chunk_map_bits(chunk),
-					bit_off + alloc_bits);
+                					chunk->alloc_map,
+                					pcpu_chunk_map_bits(chunk),
+                					bit_off + alloc_bits);
 
 	pcpu_block_update_hint_alloc(chunk, bit_off, alloc_bits);
 
@@ -1672,7 +1672,9 @@ static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
  *
  * RETURNS:
  * Percpu pointer to the allocated area on success, NULL on failure.
- */ /*  */
+ *
+ *  动态分配 per-CPU 变量  
+ */
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t gfp)
 {
 	gfp_t pcpu_gfp;
@@ -1718,6 +1720,10 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t
 	type = pcpu_memcg_pre_alloc_hook(size, gfp, &objcg);
 	if (unlikely(type == PCPU_FAIL_ALLOC))
 		return NULL;
+
+    /**
+     *  
+     */
 	pcpu_slot = pcpu_chunk_list(type);
 
 	if (!is_atomic) {
@@ -1757,15 +1763,24 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t
 restart:
 	/* search through normal chunks */
 	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
+
+        /**
+         *  
+         */
 		list_for_each_entry_safe(chunk, next, &pcpu_slot[slot], list) {
-			off = pcpu_find_block_fit(chunk, bits, bit_align,
-						  is_atomic);
+		    /**
+             *  
+             */
+			off = pcpu_find_block_fit(chunk, bits, bit_align, is_atomic);
 			if (off < 0) {
 				if (slot < PCPU_SLOT_FAIL_THRESHOLD)
 					pcpu_chunk_move(chunk, 0);
 				continue;
 			}
 
+            /**
+             *  
+             */
 			off = pcpu_alloc_area(chunk, bits, bit_align, off);
 			if (off >= 0)
 				goto area_found;
@@ -1899,6 +1914,8 @@ EXPORT_SYMBOL_GPL(__alloc_percpu_gfp);
  * @align: alignment of area (max PAGE_SIZE)
  *
  * Equivalent to __alloc_percpu_gfp(size, align, %GFP_KERNEL).
+ *
+ *  动态分配 per-CPU 变量  
  */
 void __percpu *__alloc_percpu(size_t size, size_t align)    /*  */
 {

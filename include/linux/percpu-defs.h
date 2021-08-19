@@ -270,6 +270,9 @@ do {									\
 
 #endif	/* CONFIG_SMP */
 
+/**
+ *  访问其他 CPU  的变量
+ */
 #define per_cpu(var, cpu)	(*per_cpu_ptr(&(var), cpu))
 
 /*
@@ -295,12 +298,18 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
+/**
+ *  
+ */
 #define get_cpu_ptr(var)						\
 ({									\
 	preempt_disable();						\
 	this_cpu_ptr(var);						\
 })
 
+/**
+ *  
+ */
 #define put_cpu_ptr(var)						\
 do {									\
 	(void)(var);							\
