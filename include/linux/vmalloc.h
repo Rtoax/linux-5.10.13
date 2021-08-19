@@ -66,7 +66,14 @@ struct vm_struct {  /*  */
      *  在 `__vmalloc_area_node()` 中分配
      */
 	struct page		**pages;
+    /**
+     *  页数
+     */
 	unsigned int		nr_pages;
+
+    /**
+     *  
+     */
 	phys_addr_t		phys_addr;
 	const void		*caller;
 };

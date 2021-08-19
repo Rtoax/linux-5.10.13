@@ -421,12 +421,18 @@ static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
 
 /* Export for kexec only */
+/**
+ *  
+ */
 static struct list_head vmap_area_list; /* +++ */
 LIST_HEAD(vmap_area_list);
 
 static struct llist_node vmap_purge_list; /* +++ */
 static LLIST_HEAD(vmap_purge_list);
 
+/**
+ *  vmalloc 管理区的 红黑树 
+ */
 static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
 static bool __read_mostly vmap_initialized ; /* 根 */
 
@@ -1177,7 +1183,9 @@ static void free_vmap_area(struct vmap_area *va)
 /*
  * Allocate a region of KVA of the specified size and alignment, within the
  * vstart and vend.
- *//*  */
+ *
+ *   
+ */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long align,
 				unsigned long vstart, unsigned long vend,
@@ -1198,6 +1206,9 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	might_sleep();
 	gfp_mask = gfp_mask & GFP_RECLAIM_MASK;
 
+    /**
+     *  
+     */
 	va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
@@ -1260,6 +1271,10 @@ retry:
 
     /* 插入到红黑树和链表中 */
 	spin_lock(&vmap_area_lock);
+
+    /**
+     *  
+     */
 	insert_vmap_area(va, &vmap_area_root, &vmap_area_list); /* 插入到红黑树和链表 */
 	spin_unlock(&vmap_area_lock);
 
@@ -2127,7 +2142,9 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 		align = 1ul << clamp_t(int, get_count_order_long(size),
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 
-    /* 分配一个 area 结构 */
+    /**
+     *  分配一个 area 结构 
+     */
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
 		return NULL;
@@ -2135,13 +2152,18 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	if (!(flags & VM_NO_GUARD))
 		size += PAGE_SIZE;
 
-    /* 从 vmalloc 区间分配 */
+    /**
+     *  从 vmalloc 区间分配 
+     */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {
 		kfree(area);
 		return NULL;
 	}
 
+    /**
+     *  
+     */
     /* kasan： 设置 redzone */
 	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
 
@@ -2621,12 +2643,17 @@ fail:
  * kernel virtual space, using a pagetable protection of @prot.
  *
  * Return: the address of the area or %NULL on failure
+ *
+ * 分配虚拟地址连续的空间
  */
 void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
 			pgprot_t prot, unsigned long vm_flags, int node,
 			const void *caller)
 {
+    /**
+     *  
+     */
 	struct vm_struct *area;
 	void *addr;
 	unsigned long real_size = size;
@@ -2635,7 +2662,9 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages())
 		goto fail;
 
-    /*  */
+    /**
+     *  
+     */
 	area = __get_vm_area_node(real_size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);
 	if (!area)
@@ -2681,11 +2710,15 @@ fail:
  * with mm people.
  *
  * Return: pointer to the allocated memory or %NULL on error
+ *
+ * 分配虚拟地址连续的内存
  */
 void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, int node, const void *caller)
 {
-    /* 区域 */
+    /**
+     *  
+     */
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
 				gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
@@ -2739,8 +2772,10 @@ EXPORT_SYMBOL(__vmalloc);
  */
 void *vmalloc(unsigned long size)   /* 从 vmalloc 区分配内存 */
 {
-	return __vmalloc_node(size, 1/* 单字节对齐? */, GFP_KERNEL, NUMA_NO_NODE,
-				__builtin_return_address(0));
+    /**
+     *  
+     */
+	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE, __builtin_return_address(0));
 }
 EXPORT_SYMBOL(vmalloc);
 
