@@ -175,6 +175,9 @@ void mempool_destroy(mempool_t *pool)
 }
 EXPORT_SYMBOL(mempool_destroy);
 
+/**
+ *  
+ */
 int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 		      mempool_free_t *free_fn, void *pool_data,
 		      gfp_t gfp_mask, int node_id)
@@ -186,6 +189,9 @@ int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 	pool->free	= free_fn;
 	init_waitqueue_head(&pool->wait);
 
+    /**
+     *  
+     */
 	pool->elements = kmalloc_array_node(min_nr, sizeof(void *),
 					    gfp_mask, node_id);
 	if (!pool->elements)
@@ -226,6 +232,9 @@ EXPORT_SYMBOL(mempool_init_node);
 int mempool_init(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 		 mempool_free_t *free_fn, void *pool_data)
 {
+    /**
+     *  
+     */
 	return mempool_init_node(pool, min_nr, alloc_fn, free_fn,
 				 pool_data, GFP_KERNEL, NUMA_NO_NODE);
 
@@ -247,6 +256,9 @@ EXPORT_SYMBOL(mempool_init);
  * from IRQ contexts.
  *
  * Return: pointer to the created memory pool object or %NULL on error.
+ *
+ *  @min_nr 内存池应始终保持的已分配对象的最少数目
+ *  
  */
 mempool_t *mempool_create(int min_nr, mempool_alloc_t *alloc_fn,
 				mempool_free_t *free_fn, void *pool_data)

@@ -10,18 +10,42 @@
 
 struct kmem_cache;
 
-typedef void * (mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
-typedef void (mempool_free_t)(void *element, void *pool_data);
+/**
+ *  我改动了一下，原来的样子
+ *  typedef void * (mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
+ *  typedef void (mempool_free_t)(void *element, void *pool_data);
+ *
+ *  其中比较典型的如
+ *  mempool_alloc_slab()
+ *  mempool_free_slab()
+ */
+typedef pvoid_t (*mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
+typedef void (*mempool_free_t)(void *element, void *pool_data);
 
+/**
+ *  
+ */
 typedef struct mempool_s {
 	spinlock_t lock;
 	int min_nr;		/* nr of elements at *elements */
 	int curr_nr;		/* Current nr of elements at *elements */
+
+    /**
+     *  
+     */
 	void **elements;
 
 	void *pool_data;
+
+    /**
+     *  
+     */
 	mempool_alloc_t *alloc;
 	mempool_free_t *free;
+
+    /**
+     *  
+     */
 	wait_queue_head_t wait;
 } mempool_t;
 
@@ -45,7 +69,7 @@ extern mempool_t *mempool_create_node(int min_nr, mempool_alloc_t *alloc_fn,
 
 extern int mempool_resize(mempool_t *pool, int new_min_nr);
 extern void mempool_destroy(mempool_t *pool);
-extern void *mempool_alloc(mempool_t *pool, gfp_t gfp_mask) __malloc;
+extern void  *__malloc mempool_alloc(mempool_t *pool, gfp_t gfp_mask) ;
 extern void mempool_free(void *element, mempool_t *pool);
 
 /*
