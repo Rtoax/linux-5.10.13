@@ -604,6 +604,9 @@ call:
 }
 EXPORT_SYMBOL_GPL(smp_call_function_any);
 
+/**
+ *  
+ */
 static void smp_call_function_many_cond(const struct cpumask *mask,
 					smp_call_func_t func, void *info,
 					bool wait, smp_cond_func_t cond_func)
@@ -659,6 +662,10 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
 		return;
 
 	cpumask_clear(cfd->cpumask_ipi);
+
+    /**
+     *  
+     */
 	for_each_cpu(cpu, cfd->cpumask) {
 		call_single_data_t *csd = per_cpu_ptr(cfd->csd, cpu);
 
@@ -668,12 +675,19 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
 		csd_lock(csd);
 		if (wait)
 			csd->flags |= CSD_TYPE_SYNC;
+
+        /**
+         *  回调函数
+         */
 		csd->func = func;
 		csd->info = info;
 #ifdef CONFIG_CSD_LOCK_WAIT_DEBUG
 		csd->src = smp_processor_id();
 		csd->dst = cpu;
 #endif
+        /**
+         *  
+         */
 		if (llist_add(&csd->llist, &per_cpu(call_single_queue, cpu)))
 			__cpumask_set_cpu(cpu, cfd->cpumask_ipi);
 	}
@@ -708,6 +722,9 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
 void smp_call_function_many(const struct cpumask *mask,
 			    smp_call_func_t func, void *info, bool wait)
 {
+    /**
+     *  在每个 CPU 上都执行 func 函数
+     */
 	smp_call_function_many_cond(mask, func, info, wait, NULL);
 }
 EXPORT_SYMBOL(smp_call_function_many);
@@ -730,6 +747,9 @@ EXPORT_SYMBOL(smp_call_function_many);
 void smp_call_function(smp_call_func_t func, void *info, int wait)
 {
 	preempt_disable();
+    /**
+     *  在每个 CPU  调用函数
+     */
 	smp_call_function_many(cpu_online_mask, func, info, wait);
 	preempt_enable();
 }
@@ -833,12 +853,18 @@ void __init smp_init(void)
  * Call a function on all processors.  May be used during early boot while
  * early_boot_irqs_disabled is set.  Use local_irq_save/restore() instead
  * of local_irq_disable/enable().
+ *
+ * 对称多处理器
  */
 void on_each_cpu(smp_call_func_t func, void *info, int wait)
 {
 	unsigned long flags;
 
 	preempt_disable();
+
+    /**
+     *  在每个 CPU 上调用函数
+     */
 	smp_call_function(func, info, wait);
 	local_irq_save(flags);
 	func(info);

@@ -187,6 +187,8 @@ extern void initialize_tlbstate_and_flush(void);
  *
  * ..but the i386 has somewhat limited tlb flushing capabilities,
  * and page-granular flushes are available only on i486 and up.
+ *
+ * TLB 信息
  */
 struct flush_tlb_info { /*  */
 	/*

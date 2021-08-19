@@ -14,7 +14,7 @@ vmalloc
 
 # 接口API
 
-## vmalloc
+## vmalloc 函数调用栈
 
 ```
 vmalloc
@@ -27,7 +27,7 @@ vmalloc
       __vmalloc_area_node
         pages = kmalloc_node
         for (i = 0; i < area->nr_pages; i++) {
-          page = alloc_page|alloc_pages_node
+          page = alloc_page|alloc_pages_node	## 从伙伴系统申请
           area->pages[i] = page;
         }
         map_kernel_range((unsigned long)area->addr, get_vm_area_size(area), prot, pages)
@@ -40,6 +40,29 @@ vmalloc
                       set_pte
 ```
 
-## 
+## vfree 函数调用栈
+
+```
+vfree
+  __vfree
+    __vunmap
+      area = find_vm_area(addr);
+      vm_remove_mappings(area, ...)
+        remove_vm_area
+          va = __find_vmap_area
+          free_unmap_vmap_area(va);
+            unmap_kernel_range_noflush
+              pgd = pgd_offset_k(addr);
+              vunmap_p4d_range
+                vunmap_pud_range
+                  vunmap_pmd_range
+                    vunmap_pte_range
+                      ptep_get_and_clear
+        _vm_unmap_aliases
+      for (i = 0; i < area->nr_pages; i++) {
+        struct page *page = area->pages[i];
+        __free_pages(page, 0);	## 归还给伙伴系统
+      }
+```
 
 

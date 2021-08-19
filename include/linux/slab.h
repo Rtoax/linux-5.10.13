@@ -656,6 +656,9 @@ static inline void *kzalloc(size_t size, gfp_t flags)   /* 分配 0 内存区 */
  */
 static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
 {
+    /**
+     *  分配 初始化为 0 的数据
+     */
 	return kmalloc_node(size, flags | __GFP_ZERO, node);
 }
 

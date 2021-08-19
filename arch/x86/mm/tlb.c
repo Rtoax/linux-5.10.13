@@ -23,6 +23,10 @@
 # define STATIC_NOPV			static
 # define __flush_tlb_local		native_flush_tlb_local
 # define __flush_tlb_global		native_flush_tlb_global
+
+/**
+ *  刷新一个 page 的 TLB
+ */
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
 # define __flush_tlb_others(msk, info)	native_flush_tlb_others(msk, info)
 #endif
@@ -907,19 +911,28 @@ void flush_tlb_others(const struct cpumask *cpumask,
  */
 unsigned long __read_mostly tlb_single_page_flush_ceiling  = 33;    /*  */
 
+/**
+ *  每个 CPU 一个 TLB info 结构
+ */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
-struct flush_tlb_info flush_tlb_info;/* +++ */
+static struct flush_tlb_info flush_tlb_info;/* +++ */
 
 #ifdef CONFIG_DEBUG_VM
 static DEFINE_PER_CPU(unsigned int, flush_tlb_info_idx);
 unsigned int flush_tlb_info_idx;/* +++ */
 #endif
 
+/**
+ *  获取一个 地址范围内的 tlb 信息
+ */
 static inline struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
 			unsigned long start, unsigned long end,
 			unsigned int stride_shift, bool freed_tables,
 			u64 new_tlb_gen)
 {
+    /**
+     *  每 CPU 变量
+     */
 	struct flush_tlb_info *info = this_cpu_ptr(&flush_tlb_info);
 
 #ifdef CONFIG_DEBUG_VM
@@ -1009,16 +1022,29 @@ void flush_tlb_all(void)    /*  */
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
 }
 
+/**
+ *  刷新 TLB 结构
+ */
 static void do_kernel_range_flush(void *info)
 {
 	struct flush_tlb_info *f = info;
 	unsigned long addr;
 
+    /**
+     *  
+     */
 	/* flush range by one by one 'invlpg' */
-	for (addr = f->start; addr < f->end; addr += PAGE_SIZE)
+	for (addr = f->start; addr < f->end; addr += PAGE_SIZE) {
+        /**
+         *  
+         */
 		flush_tlb_one_kernel(addr);
+    }
 }
 
+/**
+ *  刷新 TLB
+ */
 void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 {
 	/* Balance as user space task's flush, a bit conservative */
@@ -1026,13 +1052,26 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 	    (end - start) > tlb_single_page_flush_ceiling << PAGE_SHIFT) {
 		on_each_cpu(do_flush_tlb_all, NULL, 1);
 	} else {
+        /**
+         *  tlb info 
+         */
 		struct flush_tlb_info *info;
 
 		preempt_disable();
+
+        /**
+         *  
+         */
 		info = get_flush_tlb_info(NULL, start, end, 0, false, 0);
 
+        /**
+         *  在 每个 CPU 上执行 这个函数
+         */
 		on_each_cpu(do_kernel_range_flush, info, 1);
 
+        /**
+         *  
+         */
 		put_flush_tlb_info();
 		preempt_enable();
 	}
@@ -1060,6 +1099,8 @@ EXPORT_SYMBOL_GPL(__get_current_cr3_fast);
 
 /*
  * Flush one page in the kernel mapping
+ *
+ * 刷新 一个 page 对应的 TLB
  */
 void flush_tlb_one_kernel(unsigned long addr)
 {
@@ -1092,14 +1133,22 @@ void flush_tlb_one_kernel(unsigned long addr)
 
 /*
  * Flush one page in the user mapping
+ *
+ * 
  */
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
 	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
 
-    //使用 `invlpg` 命令来使 `TLB` 入口失效
+    /**
+     *  使用 `invlpg` 命令来使 `TLB` 入口失效
+     *  
+     */
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 
+    /**
+     *  
+     */
 	if (!static_cpu_has(X86_FEATURE_PTI))
 		return;
 
@@ -1113,6 +1162,9 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 		invpcid_flush_one(user_pcid(loaded_mm_asid), addr);
 }
 
+/**
+ *  刷新 一个 page 的 TLB
+ */
 void flush_tlb_one_user(unsigned long addr)
 {
 	__flush_tlb_one_user(addr);
