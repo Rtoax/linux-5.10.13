@@ -5745,11 +5745,16 @@ EXPORT_SYMBOL(__alloc_pages_nodemask);
  * Common helper functions. Never use with __GFP_HIGHMEM because the returned
  * address cannot represent highmem pages. Use alloc_pages and then kmap if
  * you need to access high mem.
+ *
+ *  返回指向新页面的指针
  */
 unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)  /* 获取物理页 */
 {
 	struct page *page;
 
+    /**
+     *  
+     */
 	page = alloc_pages(gfp_mask & ~__GFP_HIGHMEM, order);   /* 不是 高端内存 */
 	if (!page)
 		return 0;
@@ -5757,8 +5762,14 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)  /* 获取物
 }
 EXPORT_SYMBOL(__get_free_pages);
 
+/**
+ *  返回指向新页面的指针，并将页面清零
+ */
 unsigned long get_zeroed_page(gfp_t gfp_mask)   /* 获取一个零页 */
 {
+    /**
+     *  
+     */
 	return __get_free_pages(gfp_mask | __GFP_ZERO, 0);  /* 被填充为 0 */
 }
 EXPORT_SYMBOL(get_zeroed_page);

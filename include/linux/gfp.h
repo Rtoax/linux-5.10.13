@@ -604,6 +604,9 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) /* TODO */
  * Allocate pages, preferring the node given as nid. When nid == NUMA_NO_NODE,
  * prefer the current CPU's closest node. Otherwise node must be valid and
  * online.
+ *
+ *  页分配器的核心函数
+ *  更多的时候我们使用 `alloc_pages()`, `alloc_page()`
  */
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 {
@@ -665,6 +668,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
 void free_pages_exact(void *virt, size_t size);
 void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask);
 
+/**
+ *  获取一页
+ */
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
