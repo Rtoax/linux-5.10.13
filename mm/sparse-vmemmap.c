@@ -35,7 +35,9 @@
  * or to back the page tables that are used to create the mapping.
  * Uses the main allocators if they are available, else bootmem.
  */
-
+/**
+ *  
+ */
 static void * __ref __earlyonly_bootmem_alloc(int node,
 				unsigned long size,
 				unsigned long align,
