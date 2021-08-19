@@ -2086,6 +2086,9 @@ static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
 	va->vm = vm;
 }
 
+/**
+ *  
+ */
 static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 			      unsigned long flags, const void *caller)  /*  */
 {
@@ -2148,6 +2151,9 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	return area;    /*  */
 }
 
+/**
+ *  
+ */
 struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
 				       unsigned long start, unsigned long end,
 				       const void *caller)
@@ -2516,6 +2522,9 @@ void *vmap_pfn(unsigned long *pfns, unsigned int count, pgprot_t prot)
 EXPORT_SYMBOL_GPL(vmap_pfn);
 #endif /* CONFIG_VMAP_PFN */
 
+/**
+ *  vmalloc()
+ */
 static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 				 pgprot_t prot, int node)
 {
@@ -2528,10 +2537,12 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	if (!(gfp_mask & (GFP_DMA | GFP_DMA32)))
 		gfp_mask |= __GFP_HIGHMEM;
 
+    /**
+     *  分配 page 数据结构
+     */
 	/* Please note that the recursion is strictly bounded. */
 	if (array_size > PAGE_SIZE) {
-		pages = __vmalloc_node(array_size, 1, nested_gfp, node,
-					area->caller);
+		pages = __vmalloc_node(array_size, 1, nested_gfp, node, area->caller);
 	} else {
 		pages = kmalloc_node(array_size, nested_gfp, node);
 	}
@@ -2542,9 +2553,15 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		return NULL;
 	}
 
+    /**
+     *  赋值
+     */
 	area->pages = pages;
 	area->nr_pages = nr_pages;
 
+    /**
+     *  具体需要申请多少个页
+     */
 	for (i = 0; i < area->nr_pages; i++) {
 		struct page *page;
 
@@ -2559,11 +2576,19 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 			atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 			goto fail;
 		}
+        /**
+         *  页面放到管理区
+         */
 		area->pages[i] = page;
+        
 		if (gfpflags_allow_blocking(gfp_mask))
 			cond_resched();
 	}
-	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
+
+    /**
+     *  
+     */
+    atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 
 	if (map_kernel_range((unsigned long)area->addr, get_vm_area_size(area),
 			prot, pages) < 0)
@@ -2673,6 +2698,9 @@ void *__vmalloc_node(unsigned long size, unsigned long align,
 EXPORT_SYMBOL_GPL(__vmalloc_node);
 #endif
 
+/**
+ *  加载 ko 模块时候，使用 __vmalloc() 申请内存
+ */
 void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 {
 	return __vmalloc_node(size, 1, gfp_mask, NUMA_NO_NODE,
@@ -2693,6 +2721,21 @@ EXPORT_SYMBOL(__vmalloc);
  * Return: pointer to the allocated memory or %NULL on error
  *
  * vmalloc的核心是在vmalloc区域中找到合适的hole，hole是虚拟地址连续的；然后逐页分配内存来从物理上填充hole。
+ *
+ * -----------------------------------
+ * 1. 分配的内存 虚拟地址连续，物理地址可能不连续
+ * 2. 要访问其中的每个页面都必须独立得调用函数`alloc_page()`
+ * 3. 内核认为他们在地址上是连续的。
+ * 4. 分配的内存在`VMALLOC_START`-`VMALLOC_END` 之间
+ *
+ * -----------------------------------
+ * 不鼓励使用 vmalloc：
+ *  1. 内存使用效率不高；
+ *  2. 在某些架构上，用于 vmalloc 的地址空间总量相对较少
+ *
+ * -----------------------------------
+ * vmalloc() 和 ioremap() 使用的地址范围完全是虚拟的，
+ *  每次分配都要通过对页表的适当设置来建立(虚拟)内存区域
  */
 void *vmalloc(unsigned long size)   /* 从 vmalloc 区分配内存 */
 {

@@ -53,11 +53,18 @@ struct notifier_block;		/* in notifier.h */
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	/* 128 pages */
 #endif
 
+/**
+ *  vmalloc() 区域
+ */
 struct vm_struct {  /*  */
 	struct vm_struct	*next;
 	void			*addr;
 	unsigned long		size;
 	unsigned long		flags;
+    /**
+     *  分配的离散页
+     *  在 `__vmalloc_area_node()` 中分配
+     */
 	struct page		**pages;
 	unsigned int		nr_pages;
 	phys_addr_t		phys_addr;
