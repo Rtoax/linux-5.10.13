@@ -146,6 +146,10 @@ typedef u64 dma_addr_t;
 #endif
 
 typedef unsigned int __bitwise gfp_t;
+
+/**
+ *  SLAB_POISON,SLAB_RED_ZONE,SLAB_HWCACHE_ALIGN,...
+ */
 typedef unsigned int __bitwise slab_flags_t;
 typedef unsigned int __bitwise fmode_t;
 

@@ -454,11 +454,20 @@ EXPORT_SYMBOL(kmem_cache_create_usercopy);
  * as davem.
  *
  * Return: a pointer to the cache on success, NULL on failure.
+ *
+ * @flags: 
+ *  SLAB_POISON,    
+ *  SLAB_RED_ZONE,  检测 overruns 越界情况
+ *  SLAB_HWCACHE_ALIGN,
+ *  
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 		            slab_flags_t flags, void (*ctor)(void *))
 {
+    /**
+     *  
+     */
 	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
 EXPORT_SYMBOL(kmem_cache_create);
@@ -530,6 +539,9 @@ void slab_kmem_cache_release(struct kmem_cache *s)
 	kmem_cache_free(kmem_cache, s);
 }
 
+/**
+ *  销毁 一个 kmem_cache 
+ */
 void kmem_cache_destroy(struct kmem_cache *s)
 {
 	int err;
@@ -537,6 +549,9 @@ void kmem_cache_destroy(struct kmem_cache *s)
 	if (unlikely(!s))
 		return;
 
+    /**
+     *  
+     */
 	get_online_cpus();
 	get_online_mems();
 
@@ -546,10 +561,12 @@ void kmem_cache_destroy(struct kmem_cache *s)
 	if (s->refcount)
 		goto out_unlock;
 
+    /**
+     *  
+     */
 	err = shutdown_cache(s);
 	if (err) {
-		pr_err("kmem_cache_destroy %s: Slab cache still has objects\n",
-		       s->name);
+		pr_err("kmem_cache_destroy %s: Slab cache still has objects\n", s->name);
 		dump_stack();
 	}
 out_unlock:

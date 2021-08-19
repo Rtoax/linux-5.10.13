@@ -320,6 +320,9 @@ enum kmalloc_cache_type {   /*  */
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1/* 14 */];   /*  */
 
+/**
+ *  
+ */
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
 #ifdef CONFIG_ZONE_DMA
@@ -535,6 +538,9 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)  /*  */
 	return __kmalloc(size, flags);  /*  */
 }
 
+/**
+ *  
+ */
 static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
 {
 #ifndef CONFIG_SLOB
