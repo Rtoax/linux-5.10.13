@@ -39,9 +39,9 @@ EXPORT_SYMBOL(ioport_resource);
 
 /**
  *  PCI 上的 内存
-//`iomem_resource` 是通过 `EXPORT_SYMBOL` 宏传递的。
-//这个宏可以把指定的符号（例如 `iomem_resource`）做动态链接。
-//换句话说，它可以支持动态加载模块的时候访问对应符号。
+ *  `iomem_resource` 是通过 `EXPORT_SYMBOL` 宏传递的。
+ *  这个宏可以把指定的符号（例如 `iomem_resource`）做动态链接。
+ *  换句话说，它可以支持动态加载模块的时候访问对应符号。
  */
 struct resource iomem_resource = {
 	iomem_resource.name	= "PCI mem",

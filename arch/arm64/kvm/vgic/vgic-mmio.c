@@ -893,6 +893,9 @@ struct vgic_io_device *kvm_to_vgic_iodev(const struct kvm_io_device *dev)
 	return container_of(dev, struct vgic_io_device, dev);
 }
 
+/**
+ *  
+ */
 static bool check_region(const struct kvm *kvm,
 			 const struct vgic_register_region *region,
 			 gpa_t addr, int len)

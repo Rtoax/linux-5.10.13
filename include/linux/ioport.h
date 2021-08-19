@@ -21,7 +21,10 @@
  *  linux 内核提供了用来管理所有资源的一种通用 API。
  *  全局资源（比如 PICs 或者 I/O 端口）可以划分为与硬件总线插槽有关的子集
  *  
- *  
+ *  一些全局变量
+ *  --------------------
+ *  ioport_resource : "PCI IO"
+ *  iomem_resource  : "PCI mem"
  */
 struct resource {
 	resource_size_t start;
@@ -262,6 +265,9 @@ extern struct resource * __request_region(struct resource *,
 					const char *name, int flags);
 
 /* Compatibility cruft */
+/**
+ *  释放 端口 范围内的端口
+ */                    
 #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
 #define release_mem_region(start,n)	__release_region(&iomem_resource, (start), (n))
 
