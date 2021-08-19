@@ -82,6 +82,9 @@ struct vm_struct {  /*  */
  *  
  */
 struct vmap_area {  /* vmalloc 管理区 */
+    /**
+     *  
+     */
 	unsigned long va_start;
 	unsigned long va_end;
 
@@ -212,18 +215,18 @@ static inline void set_vm_flush_reset_perms(void *addr)
 		vm->flags |= VM_FLUSH_RESET_PERMS;
 }
 #else
-static inline int
-map_kernel_range_noflush(unsigned long start, unsigned long size,
-			pgprot_t prot, struct page **pages)
-{
-	return size >> PAGE_SHIFT;
-}
-#define map_kernel_range map_kernel_range_noflush
+//static inline int
+//map_kernel_range_noflush(unsigned long start, unsigned long size,
+//			pgprot_t prot, struct page **pages)
+//{
+//	return size >> PAGE_SHIFT;
+//}
+//#define map_kernel_range map_kernel_range_noflush
 //static inline void
 //unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
 //{
 //}
-#define unmap_kernel_range unmap_kernel_range_noflush
+//#define unmap_kernel_range unmap_kernel_range_noflush
 //static inline void set_vm_flush_reset_perms(void *addr)
 //{
 //}

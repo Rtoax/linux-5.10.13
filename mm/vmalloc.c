@@ -189,34 +189,53 @@ void unmap_kernel_range_noflush(unsigned long start, unsigned long size)
 		arch_sync_kernel_mappings(start, end);
 }
 
+
+/**
+ *  vmalloc pages 到 虚拟地址的映射
+ */
 static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
-		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
-		pgtbl_mod_mask *mask)
+                    		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
+                    		pgtbl_mod_mask *mask)
 {
 	pte_t *pte;
 
 	/*
 	 * nr is a running index into the array which helps higher level
 	 * callers keep track of where we're up to.
+	 * 
 	 */
-
 	pte = pte_alloc_kernel_track(pmd, addr, mask);
 	if (!pte)
 		return -ENOMEM;
-	do {
-		struct page *page = pages[*nr];
+
+    /**
+     *  
+     */
+    do {
+		struct page *__page = pages[*nr];
 
 		if (WARN_ON(!pte_none(*pte)))
 			return -EBUSY;
-		if (WARN_ON(!page))
+		if (WARN_ON(!__page))
 			return -ENOMEM;
-		set_pte_at(&init_mm, addr, pte, mk_pte(page, prot));
+
+        /**
+         *  设置 PTE value
+         */
+		set_pte_at(&init_mm, addr, pte, mk_pte(__page, prot));
 		(*nr)++;
 	} while (pte++, addr += PAGE_SIZE, addr != end);
+
+    /**
+     *  
+     */
 	*mask |= PGTBL_PTE_MODIFIED;
 	return 0;
 }
 
+/**
+ *  
+ */
 static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
@@ -227,14 +246,24 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
 	if (!pmd)
 		return -ENOMEM;
-	do {
+
+    /**
+     *  
+     */
+    do {
 		next = pmd_addr_end(addr, end);
+        /**
+         *  
+         */
 		if (vmap_pte_range(pmd, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (pmd++, addr = next, addr != end);
 	return 0;
 }
 
+/**
+ *  vmalloc pages 到 虚拟地址的
+ */
 static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
@@ -242,17 +271,26 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
 	pud_t *pud;
 	unsigned long next;
 
+    /**
+     *  
+     */
 	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
 	if (!pud)
 		return -ENOMEM;
 	do {
 		next = pud_addr_end(addr, end);
+        /**
+         *  
+         */
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (pud++, addr = next, addr != end);
 	return 0;
 }
 
+/**
+ *  vmalloc pages 到 虚拟地址的映射
+ */
 static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
@@ -260,14 +298,29 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
 	p4d_t *p4d;
 	unsigned long next;
 
+    /**
+     *  
+     */
 	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
 	if (!p4d)
 		return -ENOMEM;
+
+    /**
+     *  
+     */
 	do {
 		next = p4d_addr_end(addr, end);
+
+        /**
+         *  
+         */
 		if (vmap_pud_range(p4d, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (p4d++, addr = next, addr != end);
+
+    /**
+     *  
+     */
 	return 0;
 }
 
@@ -301,28 +354,58 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
 	pgtbl_mod_mask mask = 0;
 
 	BUG_ON(addr >= end);
+
+    /**
+     *  获取内核态 - pgd
+     *  pgd = pgd_offset(&init_mm, (address))
+     */
 	pgd = pgd_offset_k(addr);
 	do {
+        /**
+         *  vmalloc 内存块 虚拟地址的结束地址
+         */
 		next = pgd_addr_end(addr, end);
 		if (pgd_bad(*pgd))
 			mask |= PGTBL_PGD_MODIFIED;
+
+        /**
+         *  映射 p4d 
+         */
 		err = vmap_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
 		if (err)
 			return err;
+
+    /**
+     *  
+     */
 	} while (pgd++, addr = next, addr != end);
 
+    /**
+     *  
+     */
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
 		arch_sync_kernel_mappings(start, end);
 
 	return 0;
 }
 
+/**
+ *  将 vmalloc 的 虚拟地址 与 pages 进行映射
+ */
 int map_kernel_range(unsigned long start, unsigned long size, pgprot_t prot,
 		struct page **pages)
 {
 	int ret;
 
+    /**
+     *  映射
+     *  start ~ start+size
+     */
 	ret = map_kernel_range_noflush(start, size, prot, pages);
+
+    /**
+     *  
+     */
 	flush_cache_vmap(start, start + size);
 	return ret;
 }
@@ -719,6 +802,10 @@ augment_tree_propagate_from(struct vmap_area *va)
 #endif
 }
 
+/**
+ *  插入到红黑树和链表中
+ *  &vmap_area_root, &vmap_area_list
+ */
 static void /* 插入 */
 insert_vmap_area(struct vmap_area *va,
 	struct rb_root *root, struct list_head *head)
@@ -726,11 +813,17 @@ insert_vmap_area(struct vmap_area *va,
 	struct rb_node **link;
 	struct rb_node *parent;
 
+    /**
+     *  
+     */
 	link = find_va_links(va, root, NULL, &parent);  /* 找到对应的红黑树节点 */
 	if (link)
 		link_va(va, root, parent, link, head);  /* 插入到红黑树和链表 */
 }
 
+/**
+ *  
+ */
 static void
 insert_vmap_area_augment(struct vmap_area *va,
 	struct rb_node *from, struct rb_root *root,
@@ -739,11 +832,17 @@ insert_vmap_area_augment(struct vmap_area *va,
 	struct rb_node **link;
 	struct rb_node *parent;
 
+    /**
+     *  
+     */
 	if (from)
 		link = find_va_links(va, NULL, from, &parent);
 	else
 		link = find_va_links(va, root, NULL, &parent);
 
+    /**
+     *  
+     */
 	if (link) {
 		link_va(va, root, parent, link, head);
 		augment_tree_propagate_from(va);
@@ -849,6 +948,9 @@ insert:
 	return va;
 }
 
+/**
+ *  
+ */
 static __always_inline bool
 is_within_this_va(struct vmap_area *va, unsigned long size,
 	unsigned long align, unsigned long vstart)  /*  */
@@ -866,6 +968,9 @@ is_within_this_va(struct vmap_area *va, unsigned long size,
 			nva_start_addr < vstart)
 		return false;
 
+    /**
+     *  
+     */
 	return (nva_start_addr + size <= va->va_end);   /* 在 VA 区间内 */
 }
 
@@ -890,10 +995,15 @@ find_vmap_lowest_match(unsigned long size,
 	/* Adjust the search size for alignment overhead. */
 	length = size + align - 1;
 
+    /**
+     *  
+     */
 	while (node) {
 		va = rb_entry(node, struct vmap_area, rb_node);
 
-        /* 左子树的大小的和 */
+        /**
+         *  左子树的大小的和 
+         */
 		if (get_subtree_max_size(node->rb_left) >= length && vstart < va->va_start) {
 
             /*  */
@@ -901,7 +1011,9 @@ find_vmap_lowest_match(unsigned long size,
             
 		} else {
             
-            /* 在这个区间内 */
+            /**
+             *  在这个区间内 
+             */
 			if (is_within_this_va(va, size, align, vstart))
 				return va;
 
@@ -926,9 +1038,16 @@ find_vmap_lowest_match(unsigned long size,
 			 */
 			while ((node = rb_parent(node))) {
 				va = rb_entry(node, struct vmap_area, rb_node);
+
+                /**
+                 *  
+                 */
 				if (is_within_this_va(va, size, align, vstart))
 					return va;
 
+                /**
+                 *  
+                 */
 				if (get_subtree_max_size(node->rb_right) >= length &&
 						vstart <= va->va_start) {
 					node = node->rb_right;
@@ -1118,7 +1237,7 @@ adjust_va_to_fit_type(struct vmap_area *va,
  * Otherwise a vend is returned that indicates failure.
  *
  * 从 vmalloc 区域查找一块空闲 size 大小
- */ /*  */
+ */
 static __always_inline unsigned long
 __alloc_vmap_area(unsigned long size, unsigned long align,
 	unsigned long vstart, unsigned long vend)
@@ -1128,18 +1247,24 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 	enum fit_type type;
 	int ret;
 
-    /*  */
+    /**
+     *  
+     */
 	va = find_vmap_lowest_match(size, align, vstart);   /*  */
 	if (unlikely(!va))
 		return vend;
 
-    /* 对齐 */
+    /**
+     *  对齐 
+     */
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
 	else
 		nva_start_addr = ALIGN(vstart, align);
 
-	/* Check the "vend" restriction. */
+	/**
+	 *  Check the "vend" restriction. 
+	 */
 	if (nva_start_addr + size > vend)
 		return vend;
 
@@ -1207,7 +1332,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	gfp_mask = gfp_mask & GFP_RECLAIM_MASK;
 
     /**
-     *  
+     *  分配 va 结构
      */
 	va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 	if (unlikely(!va))
@@ -1242,9 +1367,14 @@ retry:
 		 * Even if it fails we do not really care about that.
 		 * Just proceed as it is. If needed "overflow" path
 		 * will refill the cache we allocate from.
+		 *
+		 * 
 		 */
 		pva = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 
+    /**
+     *  
+     */
 	spin_lock(&free_vmap_area_lock);
 
 	if (pva && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, pva))
@@ -1273,15 +1403,18 @@ retry:
 	spin_lock(&vmap_area_lock);
 
     /**
-     *  
+     *  插入到红黑树和链表
      */
-	insert_vmap_area(va, &vmap_area_root, &vmap_area_list); /* 插入到红黑树和链表 */
+	insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
 	spin_unlock(&vmap_area_lock);
 
 	BUG_ON(!IS_ALIGNED(va->va_start, align));
 	BUG_ON(va->va_start < vstart);
 	BUG_ON(va->va_end > vend);
 
+    /**
+     *  
+     */
     /* kasan overflow监控 */
 	ret = kasan_populate_vmalloc(addr, size);
 	if (ret) {
@@ -2108,6 +2241,9 @@ static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 			      unsigned long flags, const void *caller)  /*  */
 {
 	spin_lock(&vmap_area_lock);
+    /**
+     *  
+     */
 	setup_vmalloc_vm_locked(vm, va, flags, caller); /*  */
 	spin_unlock(&vmap_area_lock);
 }
@@ -2123,7 +2259,9 @@ static void clear_vm_uninitialized_flag(struct vm_struct *vm)
 	vm->flags &= ~VM_UNINITIALIZED;
 }
 
-/*  */
+/**
+ *  
+ */
 static struct vm_struct *__get_vm_area_node(unsigned long size,
 		unsigned long align, unsigned long flags, unsigned long start,
 		unsigned long end, int node, gfp_t gfp_mask, const void *caller)
@@ -2167,7 +2305,9 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
     /* kasan： 设置 redzone */
 	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
 
-    /*  */
+    /**
+     *  
+     */
 	setup_vmalloc_vm(area, va, flags, caller);
 
 	return area;    /*  */
@@ -2562,13 +2702,22 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
     /**
      *  分配 page 数据结构
      */
-	/* Please note that the recursion is strictly bounded. */
+	/**
+	 *  Please note that the recursion is strictly bounded. 
+	 *  请注意，递归是严格有界的
+	 */
 	if (array_size > PAGE_SIZE) {
 		pages = __vmalloc_node(array_size, 1, nested_gfp, node, area->caller);
 	} else {
+	    /**
+	     *  分配 页 二维指针 数据结构
+	     */
 		pages = kmalloc_node(array_size, nested_gfp, node);
 	}
 
+    /**
+     *  
+     */
 	if (!pages) {
 		remove_vm_area(area->addr);
 		kfree(area);
@@ -2612,10 +2761,15 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
      */
     atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 
-	if (map_kernel_range((unsigned long)area->addr, get_vm_area_size(area),
-			prot, pages) < 0)
+    /**
+     *  映射到虚拟地址空间
+     */
+	if (map_kernel_range((unsigned long)area->addr, get_vm_area_size(area), prot, pages) < 0)
 		goto fail;
 
+    /**
+     *  返回虚拟地址
+     */
 	return area->addr;
 
 fail:
@@ -2652,7 +2806,7 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			const void *caller)
 {
     /**
-     *  
+     *  vmalloc 管理区的一个节点
      */
 	struct vm_struct *area;
 	void *addr;

@@ -17,8 +17,12 @@
  * Resources are tree-like, allowing
  * nesting etc..
  */
-//linux 内核提供了用来管理所有资源的一种通用 API。
-//全局资源（比如 PICs 或者 I/O 端口）可以划分为与硬件总线插槽有关的子集
+/**
+ *  linux 内核提供了用来管理所有资源的一种通用 API。
+ *  全局资源（比如 PICs 或者 I/O 端口）可以划分为与硬件总线插槽有关的子集
+ *  
+ *  
+ */
 struct resource {
 	resource_size_t start;
 	resource_size_t end;
@@ -240,6 +244,10 @@ static inline bool resource_contains(struct resource *r1, struct resource *r2)
 
 
 /* Convenience shorthand with allocation */
+/**
+ * 这个函数告诉内核，我们要使用 起始于 first 的 n 个 端口，
+ * 
+ */
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
 #define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
 #define __request_mem_region(start,n,name, excl) __request_region(&iomem_resource, (start), (n), (name), excl)

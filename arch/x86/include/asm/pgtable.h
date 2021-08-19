@@ -66,6 +66,10 @@ extern pmdval_t early_pmd_flags;
 #ifdef CONFIG_PARAVIRT_XXL
 #include <asm/paravirt.h>
 #else  /* !CONFIG_PARAVIRT_XXL */
+
+/**
+ *  
+ */
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)   /*  */
 
 #define set_pte_atomic(ptep, pte)					\
@@ -858,6 +862,8 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)   /* PMD 的虚拟地址 *
  *
  * (Currently stuck as a macro because of indirect forward reference
  * to linux/mm.h:page_to_nid())
+ *
+ *  
  */
 #define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot)) /* TODO */
 

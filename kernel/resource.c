@@ -1151,6 +1151,9 @@ static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
  * @n: resource region size
  * @name: reserving caller's ID string
  * @flags: IO resource flags
+ *
+ * 这个函数告诉内核，我们要使用 起始于 first 的 n 个 端口，
+ * 
  */
 struct resource * __request_region(struct resource *parent,
 				   resource_size_t start, resource_size_t n,
