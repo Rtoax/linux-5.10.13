@@ -1260,6 +1260,9 @@ struct resource * __request_region(struct resource *parent,
 	}
 	write_unlock(&resource_lock);
 
+    /**
+     *  
+     */
 	if (res && orig_parent == &iomem_resource)
 		revoke_devmem(res);
 

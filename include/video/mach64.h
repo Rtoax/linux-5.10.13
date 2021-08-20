@@ -860,6 +860,9 @@
 /* CNFG_STAT0 register constants (CT, ET, VT) */
 #define CFG_MEM_TYPE_xT		0x00000007
 
+/**
+ *  Instruction Set Architecture?????
+ */
 #define ISA			0
 #define EISA			1
 #define LOCAL_BUS		6

@@ -319,6 +319,8 @@ void memset_io(volatile void __iomem *, int, size_t);
  * are physical addresses. The following constant pointer can be
  * used as the IO-area pointer (it can be iounmapped as well, so the
  * analogy with PCI is quite large):
+ *
+ *  
  */
 #define __ISA_IO_base ((char __iomem *)(PAGE_OFFSET))
 

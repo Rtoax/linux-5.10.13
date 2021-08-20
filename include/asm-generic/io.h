@@ -926,20 +926,20 @@ static inline void iowrite64_rep(volatile void __iomem *addr,
  * are not implemented we fall back to plain ioremap.
  */
 #ifndef CONFIG_MMU
-#ifndef ioremap
-#define ioremap ioremap
-static inline void __iomem *ioremap(phys_addr_t offset, size_t size)
-{
-	return (void __iomem *)(unsigned long)offset;
-}
-#endif
-
-#ifndef iounmap
-#define iounmap iounmap
-static inline void iounmap(void __iomem *addr)
-{
-}
-#endif
+//#ifndef ioremap
+//#define ioremap ioremap
+//static inline void __iomem *ioremap(phys_addr_t offset, size_t size)
+//{
+//	return (void __iomem *)(unsigned long)offset;
+//}
+//#endif
+//
+//#ifndef iounmap
+//#define iounmap iounmap
+//static inline void iounmap(void __iomem *addr)
+//{
+//}
+//#endif
 #elif defined(CONFIG_GENERIC_IOREMAP)
 #include <linux/pgtable.h>
 
@@ -978,31 +978,31 @@ static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
 
 #ifdef CONFIG_HAS_IOPORT_MAP
 #ifndef CONFIG_GENERIC_IOMAP
-#ifndef ioport_map
-#define ioport_map ioport_map
-static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
-{
-	port &= IO_SPACE_LIMIT;
-	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
-}
-#define __pci_ioport_unmap __pci_ioport_unmap
-static inline void __pci_ioport_unmap(void __iomem *p)
-{
-	uintptr_t start = (uintptr_t) PCI_IOBASE;
-	uintptr_t addr = (uintptr_t) p;
-
-	if (addr >= start && addr < start + IO_SPACE_LIMIT)
-		return;
-	iounmap(p);
-}
-#endif
-
-#ifndef ioport_unmap
-#define ioport_unmap ioport_unmap
-static inline void ioport_unmap(void __iomem *p)
-{
-}
-#endif
+//#ifndef ioport_map
+//#define ioport_map ioport_map
+//static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
+//{
+//	port &= IO_SPACE_LIMIT;
+//	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
+//}
+//#define __pci_ioport_unmap __pci_ioport_unmap
+//static inline void __pci_ioport_unmap(void __iomem *p)
+//{
+//	uintptr_t start = (uintptr_t) PCI_IOBASE;
+//	uintptr_t addr = (uintptr_t) p;
+//
+//	if (addr >= start && addr < start + IO_SPACE_LIMIT)
+//		return;
+//	iounmap(p);
+//}
+//#endif
+//
+//#ifndef ioport_unmap
+//#define ioport_unmap ioport_unmap
+//static inline void ioport_unmap(void __iomem *p)
+//{
+//}
+//#endif
 #else /* CONFIG_GENERIC_IOMAP */
 extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
 extern void ioport_unmap(void __iomem *p);
