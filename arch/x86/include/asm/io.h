@@ -54,21 +54,82 @@ static inline void name(type val, volatile void __iomem *addr) \
 { asm volatile("mov" size " %0,%1": :reg (val), \
 "m" (*(volatile type __force *)addr) barrier); }
 
-build_mmio_read(readb, "b", unsigned char, "=q", :"memory")
-build_mmio_read(readw, "w", unsigned short, "=r", :"memory")
-build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
+build_mmio_read(readb, "b", unsigned char, "=q", :"memory");
+build_mmio_read(readw, "w", unsigned short, "=r", :"memory");
+build_mmio_read(readl, "l", unsigned int, "=r", :"memory");
 
-build_mmio_read(__readb, "b", unsigned char, "=q", )
-build_mmio_read(__readw, "w", unsigned short, "=r", )
-build_mmio_read(__readl, "l", unsigned int, "=r", )
+build_mmio_read(__readb, "b", unsigned char, "=q", );
+build_mmio_read(__readw, "w", unsigned short, "=r", );
+build_mmio_read(__readl, "l", unsigned int, "=r", );
 
-build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
-build_mmio_write(writew, "w", unsigned short, "r", :"memory")
-build_mmio_write(writel, "l", unsigned int, "r", :"memory")
+build_mmio_write(writeb, "b", unsigned char, "q", :"memory");
+build_mmio_write(writew, "w", unsigned short, "r", :"memory");
+build_mmio_write(writel, "l", unsigned int, "r", :"memory");
 
-build_mmio_write(__writeb, "b", unsigned char, "q", )
-build_mmio_write(__writew, "w", unsigned short, "r", )
-build_mmio_write(__writel, "l", unsigned int, "r", )
+build_mmio_write(__writeb, "b", unsigned char, "q", );
+build_mmio_write(__writew, "w", unsigned short, "r", );
+build_mmio_write(__writel, "l", unsigned int, "r", );
+
+#if __RTOAX____
+/**
+ *  对上面宏的展开
+ *  2021年8月20日13:07:43
+ */
+
+static inline unsigned char readb(const volatile void __iomem *addr) { 
+unsigned char ret; 
+asm volatile("mov" "b" " %1,%0":"=q" (ret) :"m" (*(volatile unsigned char __force *)addr) :"memory"); 
+return ret; 
+}
+static inline unsigned short readw(const volatile void __iomem *addr) { 
+unsigned short ret; 
+asm volatile("mov" "w" " %1,%0":"=r" (ret) :"m" (*(volatile unsigned short __force *)addr) :"memory"); 
+return ret; 
+}
+static inline unsigned int readl(const volatile void __iomem *addr) { 
+unsigned int ret; 
+asm volatile("mov" "l" " %1,%0":"=r" (ret) :"m" (*(volatile unsigned int __force *)addr) :"memory"); 
+return ret; 
+}
+
+static inline unsigned char __readb(const volatile void __iomem *addr) { 
+unsigned char ret; 
+asm volatile("mov" "b" " %1,%0":"=q" (ret) :"m" (*(volatile unsigned char __force *)addr) ); 
+return ret; 
+}
+static inline unsigned short __readw(const volatile void __iomem *addr) { 
+unsigned short ret; 
+asm volatile("mov" "w" " %1,%0":"=r" (ret) :"m" (*(volatile unsigned short __force *)addr) ); 
+return ret; 
+}
+static inline unsigned int __readl(const volatile void __iomem *addr) { 
+unsigned int ret; 
+asm volatile("mov" "l" " %1,%0":"=r" (ret) :"m" (*(volatile unsigned int __force *)addr) ); 
+return ret; 
+}
+
+static inline void writeb(unsigned char val, volatile void __iomem *addr) { 
+asm volatile("mov" "b" " %0,%1": :"q" (val), "m" (*(volatile unsigned char __force *)addr) :"memory"); 
+}
+static inline void writew(unsigned short val, volatile void __iomem *addr) { 
+asm volatile("mov" "w" " %0,%1": :"r" (val), "m" (*(volatile unsigned short __force *)addr) :"memory"); 
+}
+static inline void writel(unsigned int val, volatile void __iomem *addr) { 
+asm volatile("mov" "l" " %0,%1": :"r" (val), "m" (*(volatile unsigned int __force *)addr) :"memory"); 
+}
+
+static inline void __writeb(unsigned char val, volatile void __iomem *addr) { 
+asm volatile("mov" "b" " %0,%1": :"q" (val), "m" (*(volatile unsigned char __force *)addr) ); 
+}
+static inline void __writew(unsigned short val, volatile void __iomem *addr) { 
+asm volatile("mov" "w" " %0,%1": :"r" (val), "m" (*(volatile unsigned short __force *)addr) ); 
+}
+static inline void __writel(unsigned int val, volatile void __iomem *addr) { 
+asm volatile("mov" "l" " %0,%1": :"r" (val), "m" (*(volatile unsigned int __force *)addr) ); 
+}
+
+#endif
+
 
 #define readb readb
 #define readw readw
@@ -92,13 +153,41 @@ build_mmio_write(__writel, "l", unsigned int, "r", )
 
 #ifdef CONFIG_X86_64
 
-build_mmio_read(readq, "q", u64, "=r", :"memory")
-build_mmio_read(__readq, "q", u64, "=r", )
-build_mmio_write(writeq, "q", u64, "r", :"memory")
-build_mmio_write(__writeq, "q", u64, "r", )
+build_mmio_read(readq, "q", u64, "=r", :"memory");
+build_mmio_read(__readq, "q", u64, "=r", );
+build_mmio_write(writeq, "q", u64, "r", :"memory");
+build_mmio_write(__writeq, "q", u64, "r", );
+
+#if __RTOAX____
+
+/**
+ *  对上面宏的展开
+ *  2021年8月20日13:07:35
+ */
+
+
+static  inline u64 readq(const volatile void __iomem *addr) { 
+u64 ret;
+ asm volatile("mov" "q" " %1,%0":"=r" (ret) :"m" (*(volatile u64 __force *)addr) :"memory");
+ return ret;
+ }
+static  inline u64 __readq(const volatile void __iomem *addr) { 
+u64 ret;
+ asm volatile("mov" "q" " %1,%0":"=r" (ret) :"m" (*(volatile u64 __force *)addr) );
+ return ret;
+ }
+static  inline void writeq(u64 val, volatile void __iomem *addr) { 
+asm volatile("mov" "q" " %0,%1": :"r" (val), "m" (*(volatile u64 __force *)addr) :"memory");
+ }
+static  inline void __writeq(u64 val, volatile void __iomem *addr) { 
+asm volatile("mov" "q" " %0,%1": :"r" (val), "m" (*(volatile u64 __force *)addr) );
+ }
+
+#endif
 
 #define readq_relaxed(a)	__readq(a)
 #define writeq_relaxed(v, a)	__writeq(v, a)
+
 
 #define __raw_readq		__readq
 #define __raw_writeq		__writeq
@@ -331,9 +420,181 @@ static inline void ins##bwl(int port, void *addr, unsigned long count)	\
 	}								\
 }
 
-BUILDIO(b, b, char)
-BUILDIO(w, w, short)
-BUILDIO(l, , int)
+BUILDIO(b, b, char);
+BUILDIO(w, w, short);
+BUILDIO(l, , int);
+
+#if __RTOAX____
+
+/**
+ *  对上面宏的展开
+ *  2021年8月20日13:12:36
+ */
+
+
+
+static inline void outb(unsigned char value, int port) { 
+    asm volatile("out" "b" " %" "b" "0, %w1" : : "a"(value), "Nd"(port)); 
+} 
+
+static inline unsigned char inb(int port) { 
+    unsigned char value; 
+
+    asm volatile("in" "b" " %w1, %" "b" "0" : "=a"(value) : "Nd"(port)); 
+    return value; 
+} 
+
+static inline void outb_p(unsigned char value, int port) { 
+    outb(value, port); 
+    slow_down_io(); 
+} 
+
+static inline unsigned char inb_p(int port) { 
+    unsigned char value = inb(port); 
+    slow_down_io(); 
+    return value; 
+} 
+
+static inline void outsb(int port, const void *addr, unsigned long count) { 
+    if (sev_key_active()) { 
+    unsigned char *value = (unsigned char *)addr; 
+    while (count) { 
+    outb(*value, port); 
+    value++; 
+    count--; 
+    } 
+    } else { 
+
+    asm volatile("rep;     outs" "b" : "+S"(addr), "+c"(count) : "d"(port) : "memory"); 
+    }
+} 
+
+static inline void insb(int port, void *addr, unsigned long count) { 
+if (sev_key_active()) { 
+unsigned char *value = (unsigned char *)addr; 
+while (count) { 
+*value = inb(port); 
+value++; 
+count--; 
+} 
+} else { 
+
+asm volatile("rep; 
+ins" "b" : "+D"(addr), "+c"(count) : "d"(port) : "memory"); 
+}
+}
+
+
+static inline void outw(unsigned short value, int port) { 
+
+asm volatile("out" "w" " %" "w" "0, %w1" : : "a"(value), "Nd"(port)); 
+} 
+
+static inline unsigned short inw(int port) { 
+unsigned short value; 
+
+asm volatile("in" "w" " %w1, %" "w" "0" : "=a"(value) : "Nd"(port)); 
+return value; 
+} 
+
+static inline void outw_p(unsigned short value, int port) { 
+outw(value, port); 
+slow_down_io(); 
+} 
+
+static inline unsigned short inw_p(int port) { 
+unsigned short value = inw(port); 
+slow_down_io(); 
+return value; 
+} 
+
+static inline void outsw(int port, const void *addr, unsigned long count) { 
+if (sev_key_active()) { 
+unsigned short *value = (unsigned short *)addr; 
+while (count) { 
+outw(*value, port); 
+value++; 
+count--; 
+} 
+} else { 
+
+asm volatile("rep; 
+outs" "w" : "+S"(addr), "+c"(count) : "d"(port) : "memory"); 
+}
+ } 
+
+static inline void insw(int port, void *addr, unsigned long count) { 
+if (sev_key_active()) { 
+unsigned short *value = (unsigned short *)addr; 
+while (count) { 
+*value = inw(port); 
+value++; 
+count--; 
+} 
+} else { 
+
+asm volatile("rep; ins" "w" : "+D"(addr), "+c"(count) : "d"(port) : "memory"); 
+}
+}
+
+
+static inline void outl(unsigned int value, int port) { 
+
+asm volatile("out" "l" " %" "" "0, %w1" : : "a"(value), "Nd"(port)); 
+} 
+
+static inline unsigned int inl(int port) { 
+unsigned int value; 
+
+asm volatile("in" "l" " %w1, %" "" "0" : "=a"(value) : "Nd"(port)); 
+return value; 
+} 
+
+static inline void outl_p(unsigned int value, int port) { 
+outl(value, port); 
+slow_down_io(); 
+} 
+
+static inline unsigned int inl_p(int port) { 
+unsigned int value = inl(port); 
+slow_down_io(); 
+return value; 
+} 
+
+static inline void outsl(int port, const void *addr, unsigned long count) { 
+if (sev_key_active()) { 
+unsigned int *value = (unsigned int *)addr; 
+while (count) { 
+outl(*value, port); 
+value++; 
+count--; 
+} 
+} else { 
+
+asm volatile("rep; 
+outs" "l" : "+S"(addr), "+c"(count) : "d"(port) : "memory"); 
+}
+ } 
+
+static inline void insl(int port, void *addr, unsigned long count) { 
+if (sev_key_active()) { 
+unsigned int *value = (unsigned int *)addr; 
+while (count) { 
+*value = inl(port); 
+value++; 
+count--; 
+} 
+} else { 
+
+asm volatile("rep; 
+ins" "l" : "+D"(addr), "+c"(count) : "d"(port) : "memory"); 
+}
+ }
+
+
+
+#endif //__RTOAX____
+
 
 #define inb inb
 #define inw inw
