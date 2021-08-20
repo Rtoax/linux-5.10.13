@@ -27,15 +27,27 @@ static void int_seq_stop(struct seq_file *f, void *v)
 	/* Nothing to do */
 }
 
+/**
+ *  
+ */
 static const struct seq_operations int_seq_ops = {
-	.start = int_seq_start,
-	.next  = int_seq_next,
-	.stop  = int_seq_stop,
-	.show  = show_interrupts
+	int_seq_ops.start = int_seq_start,
+	int_seq_ops.next  = int_seq_next,
+	int_seq_ops.stop  = int_seq_stop,
+	/**
+     *  
+     */
+	int_seq_ops.show  = show_interrupts
 };
 
+/**
+ *  
+ */
 static int __init proc_interrupts_init(void)
 {
+    /**
+     *  /proc/interrupts
+     */
 	proc_create_seq("interrupts", 0, NULL, &int_seq_ops);
 	return 0;
 }

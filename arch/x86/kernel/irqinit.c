@@ -104,10 +104,15 @@ void __init init_IRQ(void)  /*  */
      *  native_init_IRQ()
      */
 	x86_init.irqs.intr_init(); /* = native_init_IRQ() */
+#if __rtoax_
+    native_init_IRQ(); //+++ 为了看起来方便
+#endif
 }
 
-//`native_` prefix means that architecture-specific
-//初始化本地 [APIC]
+/**
+ *  `native_` prefix means that architecture-specific
+ *  初始化本地 [APIC]
+ */
 void __init native_init_IRQ(void)
 {
 	/* Execute any quirks before the call gates are initialised: */
@@ -124,13 +129,16 @@ void __init native_init_IRQ(void)
     //`nr_legacy_irqs()` checks that we do not use legacy interrupt controller
 	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
 		/* IRQ2 is cascade interrupt to second interrupt controller */
-#ifdef rtoax_add
+#ifdef rtoax_add //++++
         static struct irqaction irq2 = {
             irq2.handler = no_action,
             irq2.name = "cascade",
             irq2.flags = IRQF_NO_THREAD,
         };
 #endif            
+        /**
+         *  
+         */
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade"/* 级 联 */, NULL))
 			pr_err("%s: request_irq() failed\n", "cascade");
 	}

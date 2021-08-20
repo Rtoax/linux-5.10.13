@@ -427,6 +427,10 @@ static void register_default_affinity_proc(void)
 #endif
 }
 
+/**
+ *  Initialize /proc/irq/ 
+ *  
+ */
 void init_irq_proc(void)
 {
 	unsigned int irq;
@@ -442,8 +446,9 @@ void init_irq_proc(void)
 	/*
 	 * Create entries for all existing IRQs.
 	 */
-	for_each_irq_desc(irq, desc)
+	for_each_irq_desc(irq, desc) {
 		register_irq_proc(irq, desc);
+    }
 }
 
 #ifdef CONFIG_GENERIC_IRQ_SHOW
@@ -457,11 +462,27 @@ int __weak arch_show_interrupts(struct seq_file *p, int prec)
 # define ACTUAL_NR_IRQS nr_irqs
 #endif
 
+
+/**
+ *  该文件只会显示 已经安装了中断处理例程的中断
+ *
+ *  cat /proc/interrupts
+ *             CPU0       CPU1       CPU2       CPU3       
+ *    0:         56          0          0          0   IO-APIC-edge      timer
+ *    1:         10          0          0          0   IO-APIC-edge      i8042
+ *    6:          3          0          0          0   IO-APIC-edge      floppy
+ *    8:          0          0          0          0   IO-APIC-edge      rtc0
+ *  [...]
+ */
 int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 {
 	static int prec;
 
 	unsigned long flags, any_count = 0;
+
+    /**
+     *  
+     */
 	int i = *(loff_t *) v, j;
 	struct irqaction *action;
 	struct irq_desc *desc;
@@ -469,7 +490,22 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 	if (i > ACTUAL_NR_IRQS)
 		return 0;
 
+    /**
+     *  
+     */
 	if (i == ACTUAL_NR_IRQS)
+        /**
+         *  
+         *  NMI:      28669      17014         51         53   Non-maskable interrupts
+         *  LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
+         *  SPU:          0          0          0          0   Spurious interrupts
+         *  PMI:      28663      17014         51         52   Performance monitoring interrupts
+         *  IWI:   20805501    6476678      11182     680442   IRQ work interrupts
+         *  RTR:          0          0          0          0   APIC ICR read retries
+         *  RES:   38245114   85428815      56773    5361991   Rescheduling interrupts
+         *  CAL:     332272    3971016     646975     646934   Function call interrupts
+         *  [...]
+         */
 		return arch_show_interrupts(p, prec);
 
 	/* print header and calculate the width of the first column */
@@ -489,8 +525,12 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 		goto outsparse;
 
 	if (desc->kstat_irqs)
+        /**
+         *  
+         */
 		for_each_online_cpu(j){
-			any_count |= *per_cpu_ptr(desc->kstat_irqs, j);}
+			any_count |= *per_cpu_ptr(desc->kstat_irqs, j);
+        }
 
 	if ((!desc->action || irq_desc_is_chained(desc)) && !any_count)
 		goto outsparse;
@@ -498,7 +538,8 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 	seq_printf(p, "%*d: ", prec, i);
 	for_each_online_cpu(j) {
 		seq_printf(p, "%10u ", desc->kstat_irqs ?
-					*per_cpu_ptr(desc->kstat_irqs, j) : 0);}
+					*per_cpu_ptr(desc->kstat_irqs, j) : 0);
+    }
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 	if (desc->irq_data.chip) {

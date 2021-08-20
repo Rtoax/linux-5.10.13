@@ -827,6 +827,8 @@ EXPORT_SYMBOL(irq_set_irq_wake);
  * Internal function that tells the architecture code whether a
  * particular irq has been exclusively allocated or is available
  * for driver use.
+ *
+ * 查询某个中断线是否可用
  */
 int can_request_irq(unsigned int irq, unsigned long irqflags)
 {
@@ -837,6 +839,9 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
 	if (!desc)
 		return 0;
 
+    /**
+     *  
+     */
 	if (irq_settings_can_request(desc)) {
 		if (!desc->action ||
 		    irqflags & desc->action->flags & IRQF_SHARED)
@@ -2038,6 +2043,8 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
  *	This function must not be called from interrupt context.
  *
  *	Returns the devname argument passed to request_irq.
+ *
+ *  调用`free_irq()`的位置应该在最后一次关闭设备、硬件被告知不在中断处理之后；
  */
 const void *free_irq(unsigned int irq, void *dev_id)
 {

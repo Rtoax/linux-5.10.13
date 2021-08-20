@@ -209,6 +209,8 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
  * the documentation for request_threaded_irq() for details.
  *
  * 注册一个中断处理程序，然后激活一条给定的中断线
+ * 调用`request_irq()`的正确位置应该是在设备第一次打开、硬件被告知产生中断之前；
+ * 对应的释放函数`free_irq()`
  *
  *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq() 
  *  目的是降低中断处理对系统实时延迟的影响。

@@ -26,6 +26,13 @@ static DEFINE_MUTEX(probing_active);
  *	Commence probing for an interrupt. The interrupts are scanned
  *	and a mask of potential interrupt lines is returned.
  *
+ *  返回一个 未分配中断 的位掩码
+ *  驱动程序必须保存返回的位掩码，并将它传递给后面的`probe_irq_off()`函数
+ *  调用该函数后，驱动程序要安排设备产生至少一次中断。
+ *
+ *  在调用`probe_irq_on()`函数后，要启用设备上的中断，
+ *  并在调用`probe_irq_off()`函数前禁用中断。
+ *  在`probe_irq_off()`之后，需要处理设备上待处理的中断。
  */
 unsigned long probe_irq_on(void)
 {
@@ -153,6 +160,17 @@ EXPORT_SYMBOL(probe_irq_mask);
  *	BUGS: When used in a module (which arguably shouldn't happen)
  *	nothing prevents two IRQ probe callers from overlapping. The
  *	results of this are non-optimal.
+ *
+ *  在请求设备产生中断之后，驱动程序调用这个函数
+ *  并将前面 probe_irq_on() 返回 的位掩码作为参数 传递给 该函数。
+ *  probe_irq_off() 返回 probe_irq_on() 之后发生的中断编号。
+ *
+ *  如果没有中断发生，就返回0.
+ *  如果产生了多次中断，就返回一个 负值。
+ *
+ *  在调用`probe_irq_on()`函数后，要启用设备上的中断，
+ *  并在调用`probe_irq_off()`函数前禁用中断。
+ *  在`probe_irq_off()`之后，需要处理设备上待处理的中断。
  */
 int probe_irq_off(unsigned long val)
 {
