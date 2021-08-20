@@ -73,3 +73,8 @@ IO 端口
 # /dev/port
 
 访问IO端口
+
+# /proc
+
+* /proc/ioports
+* /proc/iomem

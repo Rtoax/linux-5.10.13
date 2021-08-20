@@ -28,6 +28,7 @@
 
 /**
  *  
+ *  可用 /proc/ioports 查看
  */
 struct resource ioport_resource = {
 	ioport_resource.name	= "PCI IO",
@@ -42,6 +43,8 @@ EXPORT_SYMBOL(ioport_resource);
  *  `iomem_resource` 是通过 `EXPORT_SYMBOL` 宏传递的。
  *  这个宏可以把指定的符号（例如 `iomem_resource`）做动态链接。
  *  换句话说，它可以支持动态加载模块的时候访问对应符号。
+ *
+ *  可用 /proc/iomem 查看
  */
 struct resource iomem_resource = {
 	iomem_resource.name	= "PCI mem",
@@ -138,17 +141,38 @@ static int r_show(struct seq_file *m, void *v)
 }
 
 static const struct seq_operations resource_op = {
-	.start	= r_start,
-	.next	= r_next,
-	.stop	= r_stop,
-	.show	= r_show,
+	resource_op.start	= r_start,
+	resource_op.next	= r_next,
+	resource_op.stop	= r_stop,
+	resource_op.show	= r_show,
 };
 
+/**
+ *  
+ */
 static int __init ioresources_init(void)
 {
-	proc_create_seq_data("ioports", 0, NULL, &resource_op,
-			&ioport_resource);
-	proc_create_seq_data("iomem", 0, NULL, &resource_op, &iomem_resource);
+    /**
+     *  cat /proc/ioports
+     *  0000-0cf7 : PCI Bus 0000:00
+     *    0000-001f : dma1
+     *    0020-0021 : pic1
+     *    0040-0043 : timer0
+     *    0050-0053 : timer1
+     *    0060-0060 : keyboard
+     *  [...]
+     */
+	proc_create_seq_data("ioports", 0, NULL, &resource_op,&ioport_resource);
+
+    /**
+     *  cat /proc/iomem
+     *  00000000-00000fff : reserved
+     *  00001000-0009fbff : System RAM
+     *  0009fc00-0009ffff : reserved
+     *  000a0000-000bffff : PCI Bus 0000:00
+     *  [...]
+     */
+    proc_create_seq_data("iomem", 0, NULL, &resource_op, &iomem_resource);
 	return 0;
 }
 __initcall(ioresources_init);
