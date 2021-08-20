@@ -149,6 +149,10 @@ long ksys_ioperm(unsigned long from, unsigned long num, int turn_on)
 	return 0;
 }
 
+/**
+ *  获取对 IO 端口进行IO操作权限
+ */
+int ioperm(unsigned long from, unsigned long num, int turn_on);
 SYSCALL_DEFINE3(ioperm, unsigned long, from, unsigned long, num, int, turn_on)
 {
 	return ksys_ioperm(from, num, turn_on);
@@ -169,7 +173,10 @@ SYSCALL_DEFINE3(ioperm, unsigned long, from, unsigned long, num, int, turn_on)
  * 3 enables them.
  *
  * IOPL is strictly per thread and inherited on fork.
+ *
+ * 获取对整个 IO 空间的操作权限
  */
+int iopl(int level);
 SYSCALL_DEFINE1(iopl, unsigned int, level)
 {
 	struct thread_struct *t = &current->thread;
@@ -199,17 +206,17 @@ SYSCALL_DEFINE1(iopl, unsigned int, level)
 
 #else /* CONFIG_X86_IOPL_IOPERM */
 
-long ksys_ioperm(unsigned long from, unsigned long num, int turn_on)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE3(ioperm, unsigned long, from, unsigned long, num, int, turn_on)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(iopl, unsigned int, level)
-{
-	return -ENOSYS;
-}
+//long ksys_ioperm(unsigned long from, unsigned long num, int turn_on)
+//{
+//	return -ENOSYS;
+//}
+//SYSCALL_DEFINE3(ioperm, unsigned long, from, unsigned long, num, int, turn_on)
+//{
+//	return -ENOSYS;
+//}
+//
+//SYSCALL_DEFINE1(iopl, unsigned int, level)
+//{
+//	return -ENOSYS;
+//}
 #endif

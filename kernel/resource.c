@@ -170,6 +170,9 @@ static void free_resource(struct resource *res)
 	}
 }
 
+/**
+ *  
+ */
 static struct resource *alloc_resource(gfp_t flags)
 {
 	struct resource *res = NULL;
@@ -189,13 +192,19 @@ static struct resource *alloc_resource(gfp_t flags)
 	return res;
 }
 
+/**
+ *  
+ */
 /* Return the conflict entry if you can't request it */
-static struct resource * __request_resource(struct resource *root, struct resource *new)
+static struct resource * __request_resource(struct resource *root, struct resource *_new)
 {
-	resource_size_t start = new->start;
-	resource_size_t end = new->end;
+	resource_size_t start = _new->start;
+	resource_size_t end = _new->end;
 	struct resource *tmp, **p;
 
+    /**
+     *  
+     */
 	if (end < start)
 		return root;
 	if (start < root->start)
@@ -203,12 +212,16 @@ static struct resource * __request_resource(struct resource *root, struct resour
 	if (end > root->end)
 		return root;
 	p = &root->child;
+
+    /**
+     *  
+     */
 	for (;;) {
 		tmp = *p;
 		if (!tmp || tmp->start > end) {
-			new->sibling = tmp;
-			*p = new;
-			new->parent = root;
+			_new->sibling = tmp;
+			*p = _new;
+			_new->parent = root;
 			return NULL;
 		}
 		p = &tmp->sibling;
@@ -1160,12 +1173,19 @@ struct resource * __request_region(struct resource *parent,
 				   const char *name, int flags)
 {
 	DECLARE_WAITQUEUE(wait, current);
+
+    /**
+     *  分配
+     */
 	struct resource *res = alloc_resource(GFP_KERNEL);
 	struct resource *orig_parent = parent;
 
 	if (!res)
 		return NULL;
 
+    /**
+     *  
+     */
 	res->name = name;
 	res->start = start;
 	res->end = start + n - 1;
@@ -1179,6 +1199,9 @@ struct resource * __request_region(struct resource *parent,
 		res->flags |= IORESOURCE_BUSY | flags;
 		res->desc = parent->desc;
 
+        /**
+         *  
+         */
 		conflict = __request_resource(parent, res);
 		if (!conflict)
 			break;
