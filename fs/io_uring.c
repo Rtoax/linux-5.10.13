@@ -9069,6 +9069,11 @@ out:
 	return ret;
 }
 
+/**
+ *  
+ */
+int io_uring_enter(int fd, unsigned int to_submit, unsigned int min_complete,
+		   unsigned int flags, sigset_t *sig);
 SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 		u32, min_complete, u32, flags, const sigset_t __user *, sig,
 		size_t, sigsz)
@@ -9570,6 +9575,10 @@ static long io_uring_setup(u32 entries, struct io_uring_params __user *params)
 	return  io_uring_create(entries, &p, params);
 }
 
+/**
+ *  
+ */
+int io_uring_setup(unsigned int entries, struct io_uring_params *p);
 SYSCALL_DEFINE2(io_uring_setup, u32, entries,
 		struct io_uring_params __user *, params)
 {
@@ -9888,6 +9897,12 @@ out_quiesce:
 	return ret;
 }
 
+/**
+ *  
+ *
+ * https://rtoax.blog.csdn.net/article/details/114180559
+ */
+int io_uring_register(int fd, unsigned int opcode, void *arg, unsigned int nr_args);
 SYSCALL_DEFINE4(io_uring_register, unsigned int, fd, unsigned int, opcode,
 		void __user *, arg, unsigned int, nr_args)
 {
@@ -9915,6 +9930,9 @@ out_fput:
 	return ret;
 }
 
+/**
+ *  io_uring 初始化
+ */
 static int __init io_uring_init(void)
 {
 #define __BUILD_BUG_VERIFY_ELEMENT(stype, eoffset, etype, ename) do { \
@@ -9924,6 +9942,7 @@ static int __init io_uring_init(void)
 
 #define BUILD_BUG_SQE_ELEM(eoffset, etype, ename) \
 	__BUILD_BUG_VERIFY_ELEMENT(struct io_uring_sqe, eoffset, etype, ename)
+	
 	BUILD_BUG_ON(sizeof(struct io_uring_sqe) != 64);
 	BUILD_BUG_SQE_ELEM(0,  __u8,   opcode);
 	BUILD_BUG_SQE_ELEM(1,  __u8,   flags);
