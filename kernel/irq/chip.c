@@ -347,6 +347,9 @@ void irq_enable(struct irq_desc *desc)
 	}
 }
 
+/**
+ *  
+ */
 static void __irq_disable(struct irq_desc *desc, bool mask)
 {
 	if (irqd_irq_disabled(&desc->irq_data)) {
@@ -382,6 +385,8 @@ static void __irq_disable(struct irq_desc *desc, bool mask)
  * be used for devices which cannot disable the interrupt at the
  * device level under certain circumstances and have to use
  * disable_irq[_nosync] instead.
+ *
+ * 
  */
 void irq_disable(struct irq_desc *desc)
 {
@@ -418,6 +423,9 @@ static inline void mask_ack_irq(struct irq_desc *desc)
 	}
 }
 
+/**
+ *  
+ */
 void mask_irq(struct irq_desc *desc)
 {
 	if (irqd_irq_masked(&desc->irq_data))
@@ -659,6 +667,10 @@ void handle_level_irq(struct irq_desc *desc)    /*  */
 	}
 
 	kstat_incr_irqs_this_cpu(desc);
+
+    /**
+     *  如果设备有一个已注册的处理例程，并法身了中断，这个函数将被调用
+     */
 	handle_irq_event(desc); /*  */
 
 	cond_unmask_irq(desc);

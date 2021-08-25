@@ -73,7 +73,12 @@ enum {
 	IRQS_ONESHOT		= 0x00000020,
     /* 重新发一次中断 */
 	IRQS_REPLAY		= 0x00000040,
-    /* 表示某个 irq_desc 处于等待状态 */
+    /**
+     *  表示某个 irq_desc 处于等待状态 
+     *  IRQ 探测是通过为每个缺少中断处理例程的 IRQ 设置 IRQS_WAITING 状态位 来完成的
+     *  当中断产生时，因为没有注册处理例程， do_IRQ 清除该标志位后返回。
+     *  当 probe_irq_off() 被一个驱动程序调用的时候，只需要搜索那些 没有设置 IRQS_WAITING 位的 IRQ
+     */
 	IRQS_WAITING		= 0x00000080,
     /* 表示该中断比挂起 */
 	IRQS_PENDING		= 0x00000200,
@@ -182,6 +187,10 @@ __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 		    unsigned int check);
 void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus);
 
+
+/**
+ *  
+ */
 static inline struct irq_desc *
 irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
 {

@@ -97,7 +97,20 @@ enum {
 	IRQC_IS_NESTED,
 };
 
-typedef irqreturn_t (*irq_handler_t)(int, void *);
+/**
+ *  中断处理例程 - 函数类型
+ *
+ *  @irq    中断号
+ *  @dev_id 一个指针，通常，会为 dev_id 传递一个纸箱自己设备的数据结构指针
+ *  @pt_regs    在老版本的内核中，是有这个字段的
+ *              保存了处理器进入中断代码之前的处理器上下文快照
+ *
+ *  返回值 - 用来指明是否真正处理了一个中断
+ *              如果处理例程发现其设备的确需要处理，应该返回 IRQ_HANDLED
+ *              否则，返回值应该是 IRQ_NONE
+ *              请使用宏 IRQ_RETVAL
+ */
+typedef irqreturn_t (*irq_handler_t)(int irq, void *dev_id);
 
 /**
  * struct irqaction - per interrupt action descriptor

@@ -87,6 +87,15 @@ struct irq_desc {   /* 中断描述符 */
 	unsigned int		core_internal_state__do_not_mess_with_it;
     unsigned int        istate;//+++, 实际上为宏定义 
     };
+
+    /**
+     *  嵌套的深度， 
+     *      disable
+     *        disable
+     *        [...]
+     *        enable
+     *      enable
+     */
 	unsigned int		depth;		/* nested irq disables */
 	unsigned int		wake_depth;	/* nested wake enables */
 	unsigned int		tot_count;

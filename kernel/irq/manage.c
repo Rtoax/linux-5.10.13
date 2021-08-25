@@ -579,19 +579,33 @@ int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 }
 EXPORT_SYMBOL_GPL(irq_set_vcpu_affinity);
 
+/**
+ *  
+ */
 void __disable_irq(struct irq_desc *desc)
 {
 	if (!desc->depth++)
 		irq_disable(desc);
 }
 
+/**
+ *  禁用 一个 irq 中断线的中断产生 并且 不等待完成
+ */
 static int __disable_irq_nosync(unsigned int irq)
 {
 	unsigned long flags;
+
+    /**
+     *  
+     */
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
 
 	if (!desc)
 		return -EINVAL;
+
+    /**
+     *  
+     */
 	__disable_irq(desc);
 	irq_put_desc_busunlock(desc, flags);
 	return 0;
@@ -607,6 +621,8 @@ static int __disable_irq_nosync(unsigned int irq)
  *	instances of the IRQ handler have completed before returning.
  *
  *	This function may be called from IRQ context.
+ *
+ *  禁用 一个 irq 中断线的中断产生 并且 不等待完成
  */
 void disable_irq_nosync(unsigned int irq)
 {
@@ -626,7 +642,7 @@ EXPORT_SYMBOL(disable_irq_nosync);
  *
  *	This function may be called - with care - from IRQ context.
  *
- *  等待 一个 irq 并且等待完成
+ *  禁用 一个 irq 中断线的中断产生 并且等待完成
  */
 void disable_irq(unsigned int irq)
 {

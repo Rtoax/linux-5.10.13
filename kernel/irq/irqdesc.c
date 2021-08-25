@@ -948,10 +948,16 @@ unsigned int irq_get_next_irq(unsigned int offset)
 	return find_next_bit(allocated_irqs, nr_irqs, offset);
 }
 
+/**
+ *  
+ */
 struct irq_desc *
 __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 		    unsigned int check)
 {
+    /**
+     *  从 radix 树中查找
+     */
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
