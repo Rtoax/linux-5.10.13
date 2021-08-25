@@ -45,7 +45,7 @@
  *
  * (these are usually mapped into the 0x30-0xff vector range)
  */
-    vector_irq_t vector_irq;/* 我加的 */
+vector_irq_t vector_irq;/* 我加的 */
 //`vector_irq` will be used during the first steps of an external hardware interrupt handling 
 //in the `do_IRQ` function from the [arch/x86/kernel/irq.c]
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {

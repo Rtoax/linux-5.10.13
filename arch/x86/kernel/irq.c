@@ -255,12 +255,21 @@ u64 arch_irq_stat(void)
 	return sum;
 }
 
+/**
+ *  
+ */
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
 {
+    /**
+     *  
+     */
 	if (IS_ENABLED(CONFIG_X86_64))
 		run_irq_on_irqstack_cond(desc->handle_irq, desc, regs);
 	else
+        /**
+         *  
+         */
 		__handle_irq(desc, regs);
 }
 
@@ -272,15 +281,32 @@ __visible void __irq_entry do_IRQ(struct pt_regs *regs){/* 这是老版本的 do
 void common_interrupt(struct pt_regs *regs, u8 vector){/* 这是新版本的 do_IRQ(); */}
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
+    /**
+     *  
+     */
 	struct pt_regs *old_regs = set_irq_regs(regs);//返回被保存的 `per-cpu` 中断寄存器指针
 	struct irq_desc *desc;
 
 	/* entry code tells RCU that we're not quiescent.  Check it. */
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "IRQ failed to wake up RCU");
 
+    /**
+     *  
+     */
 	desc = __this_cpu_read(vector_irq[vector]);
+
+    /**
+     *  
+     */
 	if (likely(!IS_ERR_OR_NULL(desc))) {
+        /**
+         *  
+         */
 		handle_irq(desc, regs);
+
+    /**
+     *  
+     */
 	} else {
 		ack_APIC_irq();
 
@@ -293,6 +319,9 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 		}
 	}
 
+    /**
+     *  
+     */
 	set_irq_regs(old_regs);
 }
 /*
