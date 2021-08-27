@@ -642,7 +642,7 @@ EXPORT_SYMBOL(disable_irq_nosync);
  *
  *	This function may be called - with care - from IRQ context.
  *
- *  禁用 一个 irq 中断线的中断产生 并且等待完成
+ *  禁用 一个 irq 中断线的中断产生 并且会等待当前正在运行的中断服务例程执行完成
  */
 void disable_irq(unsigned int irq)
 {

@@ -165,7 +165,7 @@ do {						\
 #ifdef CONFIG_TRACE_IRQFLAGS/* trace  */
 
 /**
- *  sti 指令开启本地CPU中断
+ *  打开所有中断，sti 指令开启本地CPU中断
  */
 #define local_irq_enable()				\
 	do {						\
@@ -174,7 +174,7 @@ do {						\
 	} while (0)
 
 /**
- *  cli 指令关闭本地CPU中断
+ *  禁用所有中断，cli 指令关闭本地CPU中断
  */
 #define local_irq_disable()	/* 关中断 */			\
 	do {						\
@@ -185,7 +185,7 @@ do {						\
 	} while (0)
 
 /**
- *  保存 eflags
+ *  禁用所有中断，并保存 eflags
  */
 #define local_irq_save(flags)				\
 	do {						\
@@ -195,7 +195,7 @@ do {						\
 	} while (0)
 
 /**
- *  恢复 eflags
+ *  打开中断，恢复 eflags
  */
 #define local_irq_restore(flags)			\
 	do {						\

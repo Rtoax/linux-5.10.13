@@ -67,12 +67,21 @@
  **
  * IRQF_XXX 用于申请中断时描述该中断的特性， irqaction.flags
  */
+/**
+ *  Linux 内核支持所有总线的中断共享
+ */
 #define IRQF_SHARED		    0x00000080  //允许多个设备共享此中断号
+/**
+ *  
+ */
 #define IRQF_PROBE_SHARED	0x00000100  //中断处理程序允许出现共享中断不匹配的情况
 #define __IRQF_TIMER		0x00000200  //
 #define IRQF_PERCPU		    0x00000400  //此中断号属于单独特定的cpu的(per cpu)
 #define IRQF_NOBALANCING	0x00000800  //此中断不参与irq 多 CPU 负载均衡
 #define IRQF_IRQPOLL		0x00001000  //此中断用于轮询
+/**
+ *  
+ */
 #define IRQF_ONESHOT		0x00002000  //表示一次触发的中断，不能嵌套
 #define IRQF_NO_SUSPEND		0x00004000  //在系统睡眠过程中不要关闭该中断
 #define IRQF_FORCE_RESUME	0x00008000  //在系统唤醒过程中必须强制打开该中断
