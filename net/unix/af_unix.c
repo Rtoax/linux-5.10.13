@@ -696,6 +696,9 @@ static void unix_show_fdinfo(struct seq_file *m, struct socket *sock)
 #define unix_show_fdinfo NULL
 #endif
 
+/**
+ *  UNIX 套接字 字节流 协议操作符
+ */
 static const struct proto_ops unix_stream_ops = {
 	.family =	PF_UNIX,
 	.owner =	THIS_MODULE,
@@ -721,6 +724,9 @@ static const struct proto_ops unix_stream_ops = {
 	.show_fdinfo =	unix_show_fdinfo,
 };
 
+/**
+ *  UNIX 套接字 数据报 协议操作符
+ */
 static const struct proto_ops unix_dgram_ops = {
 	.family =	PF_UNIX,
 	.owner =	THIS_MODULE,
@@ -1224,6 +1230,9 @@ static long unix_wait_for_peer(struct sock *other, long timeo)
 	return timeo;
 }
 
+/**
+ *  
+ */
 static int unix_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 			       int addr_len, int flags)
 {
