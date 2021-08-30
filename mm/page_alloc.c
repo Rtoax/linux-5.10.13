@@ -5747,6 +5747,8 @@ EXPORT_SYMBOL(__alloc_pages_nodemask);
  * you need to access high mem.
  *
  *  返回指向新页面的指针
+ *
+ *  可以使用 `get_order()` 计算 order
  */
 unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)  /* 获取物理页 */
 {
@@ -5784,6 +5786,8 @@ static inline void free_the_page(struct page *page, unsigned int order)
 
 /**
  *  归还给伙伴系统
+ *
+ *  可以使用 `get_order()` 计算 order
  */
 void __free_pages(struct page *page, unsigned int order)
 {
