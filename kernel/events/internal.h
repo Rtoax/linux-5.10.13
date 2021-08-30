@@ -10,6 +10,9 @@
 
 #define RING_BUFFER_WRITABLE		0x01
 
+/**
+ *  
+ */
 struct perf_buffer {
 	refcount_t			refcount;
 	struct rcu_head			rcu_head;
@@ -39,6 +42,9 @@ struct perf_buffer {
 	unsigned long			mmap_locked;
 	struct user_struct		*mmap_user;
 
+    /**
+     *  辅助数据
+     */
 	/* AUX area */
 	long				aux_head;
 	unsigned int			aux_nest;
@@ -54,6 +60,9 @@ struct perf_buffer {
 	void				**aux_pages;
 	void				*aux_priv;
 
+    /**
+     *  
+     */
 	struct perf_event_mmap_page	*user_page;
 	void				*data_pages[];
 };

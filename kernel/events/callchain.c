@@ -14,11 +14,18 @@
 
 #include "internal.h"
 
+/**
+ *  
+ */
 struct callchain_cpus_entries {
 	struct rcu_head			rcu_head;
 	struct perf_callchain_entry	*cpu_entries[];
 };
 
+/**
+ * @sample_max_stack: Max number of frame pointers in a callchain,
+ *		      should be < /proc/sys/kernel/perf_event_max_stack
+ */
 int __read_mostly sysctl_perf_event_max_stack  = PERF_MAX_STACK_DEPTH;
 int __read_mostly sysctl_perf_event_max_contexts_per_stack  = PERF_MAX_CONTEXTS_PER_STACK;
 
@@ -67,10 +74,17 @@ static void release_callchain_buffers(void)
 	call_rcu(&entries->rcu_head, release_callchain_buffers_rcu);
 }
 
+/**
+ *  
+ */
 static int alloc_callchain_buffers(void)
 {
 	int cpu;
 	int size;
+
+    /**
+     *  
+     */
 	struct callchain_cpus_entries *entries;
 
 	/*
@@ -86,9 +100,14 @@ static int alloc_callchain_buffers(void)
 
 	size = perf_callchain_entry__sizeof() * PERF_NR_CONTEXTS;
 
+    /**
+     *  
+     */
 	for_each_possible_cpu(cpu) {
-		entries->cpu_entries[cpu] = kmalloc_node(size, GFP_KERNEL,
-							 cpu_to_node(cpu));
+	    /**
+         *  分配
+         */
+		entries->cpu_entries[cpu] = kmalloc_node(size, GFP_KERNEL, cpu_to_node(cpu));
 		if (!entries->cpu_entries[cpu])
 			goto fail;
 	}
@@ -98,13 +117,17 @@ static int alloc_callchain_buffers(void)
 	return 0;
 
 fail:
-	for_each_possible_cpu(cpu)
+	for_each_possible_cpu(cpu) {
 		kfree(entries->cpu_entries[cpu]);
+    }
 	kfree(entries);
 
 	return -ENOMEM;
 }
 
+/**
+ *  
+ */
 int get_callchain_buffers(int event_max_stack)
 {
 	int err = 0;

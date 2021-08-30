@@ -2460,33 +2460,36 @@ static int x86_pmu_aux_output_match(struct perf_event *event)
 	return 0;
 }
 
+/**
+ *  
+ */
 static struct pmu pmu /* 性能监控单元 */= {
-	.pmu_enable		= x86_pmu_enable,
-	.pmu_disable		= x86_pmu_disable,
+	pmu.pmu_enable		= x86_pmu_enable,
+	pmu.pmu_disable		= x86_pmu_disable,
 
-	.attr_groups		= x86_pmu_attr_groups,
+	pmu.attr_groups		= x86_pmu_attr_groups,
 
-	.event_init		= x86_pmu_event_init,
+	pmu.event_init		= x86_pmu_event_init,
 
-	.event_mapped		= x86_pmu_event_mapped,
-	.event_unmapped		= x86_pmu_event_unmapped,
+	pmu.event_mapped		= x86_pmu_event_mapped,
+	pmu.event_unmapped		= x86_pmu_event_unmapped,
 
-	.add			= x86_pmu_add,
-	.del			= x86_pmu_del,
-	.start			= x86_pmu_start,
-	.stop			= x86_pmu_stop,
-	.read			= x86_pmu_read,
+	pmu.add			= x86_pmu_add,
+	pmu.del			= x86_pmu_del,
+	pmu.start			= x86_pmu_start,
+	pmu.stop			= x86_pmu_stop,
+	pmu.read			= x86_pmu_read,
 
-	.start_txn		= x86_pmu_start_txn,
-	.cancel_txn		= x86_pmu_cancel_txn,
-	.commit_txn		= x86_pmu_commit_txn,
+	pmu.start_txn		= x86_pmu_start_txn,
+	pmu.cancel_txn		= x86_pmu_cancel_txn,
+	pmu.commit_txn		= x86_pmu_commit_txn,
 
-	.event_idx		= x86_pmu_event_idx,
-	.sched_task		= x86_pmu_sched_task,
-	.swap_task_ctx		= x86_pmu_swap_task_ctx,
-	.check_period		= x86_pmu_check_period,
+	pmu.event_idx		= x86_pmu_event_idx,
+	pmu.sched_task		= x86_pmu_sched_task,
+	pmu.swap_task_ctx		= x86_pmu_swap_task_ctx,
+	pmu.check_period		= x86_pmu_check_period,
 
-	.aux_output_match	= x86_pmu_aux_output_match,
+	pmu.aux_output_match	= x86_pmu_aux_output_match,
 };
 
 void arch_perf_update_userpage(struct perf_event *event,

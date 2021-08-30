@@ -41,6 +41,8 @@ enum perf_type_id { /* perf 类型 */
  * Generalized performance event event_id types, used by the
  * attr.event_id parameter of the sys_perf_event_open()
  * syscall:
+ *
+ * 通用性能事件类型，被 系统调用`perf_event_open()`过程中  attr.event_id 使用
  */
 enum perf_hw_id {
 	/*
@@ -63,11 +65,16 @@ enum perf_hw_id {
 /*
  * Generalized hardware cache events:
  *
+ * 通用硬件缓存事件
+ *
  *       { L1-D, L1-I, LLC, ITLB, DTLB, BPU, NODE } x
  *       { read, write, prefetch } x
  *       { accesses, misses }
  */
 enum perf_hw_cache_id {
+    /**
+     *  
+     */
 	PERF_COUNT_HW_CACHE_L1D			= 0,
 	PERF_COUNT_HW_CACHE_L1I			= 1,
 	PERF_COUNT_HW_CACHE_LL			= 2,
@@ -79,14 +86,30 @@ enum perf_hw_cache_id {
 	PERF_COUNT_HW_CACHE_MAX,		/* non-ABI */
 };
 
+/**
+ *  硬件缓存操作
+ */
 enum perf_hw_cache_op_id {
+    /**
+     *  读
+     */
 	PERF_COUNT_HW_CACHE_OP_READ		= 0,
+	/**
+     *  写
+     */
 	PERF_COUNT_HW_CACHE_OP_WRITE		= 1,
+	/**
+     *  预取
+     */
 	PERF_COUNT_HW_CACHE_OP_PREFETCH		= 2,
 
 	PERF_COUNT_HW_CACHE_OP_MAX,		/* non-ABI */
 };
 
+/**
+ *  硬件缓存操作结果
+ *  成功 和 miss
+ */
 enum perf_hw_cache_op_result_id {
 	PERF_COUNT_HW_CACHE_RESULT_ACCESS	= 0,
 	PERF_COUNT_HW_CACHE_RESULT_MISS		= 1,
@@ -99,18 +122,51 @@ enum perf_hw_cache_op_result_id {
  * does not support performance events. These events measure various
  * physical and sw events of the kernel (and allow the profiling of them as
  * well):
+ *
+ * 软件事件  
  */
 enum perf_sw_ids {
+    /**
+     *  CPU时钟
+     */
 	PERF_COUNT_SW_CPU_CLOCK			= 0,
+	/**
+     *  任务时钟
+     */
 	PERF_COUNT_SW_TASK_CLOCK		= 1,
+	/**
+     *  page fault
+     */
 	PERF_COUNT_SW_PAGE_FAULTS		= 2,
+	/**
+     *  上下文切换
+     */
 	PERF_COUNT_SW_CONTEXT_SWITCHES		= 3,
+	/**
+     *  CPU迁移
+     */
 	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
+	/**
+     *  
+     */
 	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
+
+    /**
+     *  对齐错误
+     */
 	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
+	/**
+     *  模拟错误
+     */
 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
+	/**
+     *  
+     */
 	PERF_COUNT_SW_DUMMY			= 9,
+	/**
+     *  BPF 输出
+     */
 	PERF_COUNT_SW_BPF_OUTPUT		= 10,
 
 	PERF_COUNT_SW_MAX,			/* non-ABI */
@@ -187,6 +243,9 @@ enum perf_branch_sample_type_shift {
 	PERF_SAMPLE_BRANCH_MAX_SHIFT		/* non-ABI */
 };
 
+/**
+ *  
+ */
 enum perf_branch_sample_type {
 	PERF_SAMPLE_BRANCH_USER		= 1U << PERF_SAMPLE_BRANCH_USER_SHIFT,
 	PERF_SAMPLE_BRANCH_KERNEL	= 1U << PERF_SAMPLE_BRANCH_KERNEL_SHIFT,
@@ -291,6 +350,9 @@ enum {
  * };
  */
 enum perf_event_read_format {
+    /**
+     *  
+     */
 	PERF_FORMAT_TOTAL_TIME_ENABLED		= 1U << 0,
 	PERF_FORMAT_TOTAL_TIME_RUNNING		= 1U << 1,
 	PERF_FORMAT_ID				= 1U << 2,
@@ -386,7 +448,10 @@ struct perf_event_attr {
 				text_poke      :  1, /* include text poke events */
 				__reserved_1   : 30;
 
-	union {
+    /**
+     *  
+     */
+    union {
 		__u32		wakeup_events;	  /* wakeup every n events */
 		__u32		wakeup_watermark; /* bytes before wakeup   */
 	};
@@ -432,6 +497,13 @@ struct perf_event_attr {
 	 * Wakeup watermark for AUX area
 	 */
 	__u32	aux_watermark;
+
+    /**
+     * @sample_max_stack: Max number of frame pointers in a callchain,
+     *		      should be < /proc/sys/kernel/perf_event_max_stack
+     *
+     *          see also `sysctl_perf_event_max_stack`
+     */
 	__u16	sample_max_stack;
 	__u16	__reserved_2;
 	__u32	aux_sample_size;
@@ -461,6 +533,8 @@ struct perf_event_query_bpf {
 
 /*
  * Ioctls that can be done on a perf event fd:
+ *
+ * 实际上，当 perf 命令运行过程中，会设置当前进程的大部分 fd  
  */
 #define PERF_EVENT_IOC_ENABLE			_IO ('$', 0)
 #define PERF_EVENT_IOC_DISABLE			_IO ('$', 1)
@@ -481,6 +555,8 @@ enum perf_event_ioc_flags {
 
 /*
  * Structure of the page that can be mapped via mmap
+ *
+ *  
  */
 struct perf_event_mmap_page {   /*  */
 	__u32	version;		/* version number of this structure */
@@ -526,6 +602,10 @@ struct perf_event_mmap_page {   /*  */
 	__s64	offset;			/* add to hardware event value */
 	__u64	time_enabled;		/* time event active */
 	__u64	time_running;		/* time event on cpu */
+
+    /**
+     *  
+     */
 	union {
 		__u64	capabilities;
 		struct {
@@ -657,6 +737,9 @@ struct perf_event_mmap_page {   /*  */
 	__u64	aux_size;
 };
 
+/**
+ *  
+ */
 #define PERF_RECORD_MISC_CPUMODE_MASK		(7 << 0)
 #define PERF_RECORD_MISC_CPUMODE_UNKNOWN	(0 << 0)
 #define PERF_RECORD_MISC_KERNEL			(1 << 0)
@@ -705,17 +788,26 @@ struct perf_event_mmap_page {   /*  */
  */
 #define PERF_RECORD_MISC_EXT_RESERVED		(1 << 15)
 
+/**
+ *  
+ */
 struct perf_event_header {  /*  */
 	__u32	type;
 	__u16	misc;
 	__u16	size;
 };
 
+/**
+ *  
+ */
 struct perf_ns_link_info {
 	__u64	dev;
 	__u64	ino;
 };
 
+/**
+ *  Namespace
+ */
 enum {
 	NET_NS_INDEX		= 0,
 	UTS_NS_INDEX		= 1,
@@ -728,6 +820,9 @@ enum {
 	NR_NAMESPACES,		/* number of available namespaces */
 };
 
+/**
+ *  
+ */
 enum perf_event_type {
 
 	/*
@@ -1063,7 +1158,13 @@ enum perf_event_type {
 	PERF_RECORD_MAX,			/* non-ABI */
 };
 
+/**
+ *  
+ */
 enum perf_record_ksymbol_type {
+    /**
+     *  
+     */
 	PERF_RECORD_KSYMBOL_TYPE_UNKNOWN	= 0,
 	PERF_RECORD_KSYMBOL_TYPE_BPF		= 1,
 	/*
@@ -1076,9 +1177,19 @@ enum perf_record_ksymbol_type {
 
 #define PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER	(1 << 0)
 
+/**
+ *  
+ */
 enum perf_bpf_event_type {
 	PERF_BPF_EVENT_UNKNOWN		= 0,
+    /**
+     *  BPF 程序加载
+     */
 	PERF_BPF_EVENT_PROG_LOAD	= 1,
+
+    /**
+     *  BPF 程序卸载
+     */
 	PERF_BPF_EVENT_PROG_UNLOAD	= 2,
 	PERF_BPF_EVENT_MAX,		/* non-ABI */
 };
@@ -1106,12 +1217,18 @@ enum perf_callchain_context {
 #define PERF_AUX_FLAG_PARTIAL		0x04	/* record contains gaps */
 #define PERF_AUX_FLAG_COLLISION		0x08	/* sample collided with another */
 
+/**
+ *  
+ */
 #define PERF_FLAG_FD_NO_GROUP		(1UL << 0)
 #define PERF_FLAG_FD_OUTPUT		(1UL << 1)
 #define PERF_FLAG_PID_CGROUP		(1UL << 2) /* pid=cgroup id, per-cpu mode only */
 #define PERF_FLAG_FD_CLOEXEC		(1UL << 3) /* O_CLOEXEC */
 
 #if defined(__LITTLE_ENDIAN_BITFIELD)
+/**
+ *  
+ */
 union perf_mem_data_src {
 	__u64 val;
 	struct {
@@ -1127,20 +1244,20 @@ union perf_mem_data_src {
 	};
 };
 #elif defined(__BIG_ENDIAN_BITFIELD)
-union perf_mem_data_src {
-	__u64 val;
-	struct {
-		__u64	mem_rsvd:24,
-			mem_snoopx:2,	/* snoop mode, ext */
-			mem_remote:1,   /* remote */
-			mem_lvl_num:4,	/* memory hierarchy level number */
-			mem_dtlb:7,	/* tlb access */
-			mem_lock:2,	/* lock instr */
-			mem_snoop:5,	/* snoop mode */
-			mem_lvl:14,	/* memory hierarchy level */
-			mem_op:5;	/* type of opcode */
-	};
-};
+//union perf_mem_data_src {
+//	__u64 val;
+//	struct {
+//		__u64	mem_rsvd:24,
+//			mem_snoopx:2,	/* snoop mode, ext */
+//			mem_remote:1,   /* remote */
+//			mem_lvl_num:4,	/* memory hierarchy level number */
+//			mem_dtlb:7,	/* tlb access */
+//			mem_lock:2,	/* lock instr */
+//			mem_snoop:5,	/* snoop mode */
+//			mem_lvl:14,	/* memory hierarchy level */
+//			mem_op:5;	/* type of opcode */
+//	};
+//};
 #else
 #error "Unknown endianness"
 #endif
@@ -1186,6 +1303,9 @@ union perf_mem_data_src {
 
 #define PERF_MEM_LVLNUM_SHIFT	33
 
+/**
+ *  窥探模式
+ */
 /* snoop mode */
 #define PERF_MEM_SNOOP_NA	0x01 /* not available */
 #define PERF_MEM_SNOOP_NONE	0x02 /* no snoop */
@@ -1203,6 +1323,9 @@ union perf_mem_data_src {
 #define PERF_MEM_LOCK_LOCKED	0x02 /* locked transaction */
 #define PERF_MEM_LOCK_SHIFT	24
 
+/**
+ *  TLB
+ */
 /* TLB access */
 #define PERF_MEM_TLB_NA		0x01 /* not available */
 #define PERF_MEM_TLB_HIT	0x02 /* hit level */
@@ -1231,6 +1354,8 @@ union perf_mem_data_src {
  *     abort: aborting a hardware transaction
  *    cycles: cycles from last branch (or 0 if not supported)
  *      type: branch type
+ * 
+ *  
  */
 struct perf_branch_entry {
 	__u64	from;

@@ -1027,8 +1027,9 @@ struct file {   /*  */
 	/* needed for tty driver, and maybe others */
 
     /**
-     *  epoll 中对应 struct eventpoll 结构
+     *  epoll(2) 中对应 struct eventpoll 结构
      *  socket(2) 中对应 struct socket 结构
+     *  perf_event_open(2) 中对应 struct perf_event *group_leader 结构
      *  [...]
      */
 	void			*private_data;
@@ -1786,6 +1787,10 @@ struct iov_iter;
 
 /**
  *  
+ *
+ *  典型的例子
+ *  -----------
+ *  perf:   perf_fops;
  */
 struct file_operations {    /* 文件操作符 */
     /**
@@ -1833,6 +1838,8 @@ struct file_operations {    /* 文件操作符 */
      *  -----------------------------------------------------
      *  socket_file_ops.poll = sock_poll()
      *  eventpoll_fops.poll = ep_eventpoll_poll()
+     *  perf_fops.poll = perf_poll()
+     *  [...]
      */
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
 

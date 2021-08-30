@@ -1476,7 +1476,13 @@ struct task_struct {    /* PCB */
 #endif
 #ifdef CONFIG_PERF_EVENTS
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];    /* 软件+硬件 perf_event */
+    /* 保护链表 `perf_event_list` */
 	struct mutex			perf_event_mutex;
+
+    /**
+     *  链表头，链表节点为 `perf_event.owner_entry`
+     *  该链表使用 `perf_event_mutex` 保护
+     */
 	struct list_head		perf_event_list;    /* perf_event_open: perf_event->->owner_entry 链表头 */
 #endif
 #ifdef CONFIG_DEBUG_PREEMPT

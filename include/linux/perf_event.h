@@ -59,8 +59,17 @@ struct perf_guest_info_callbacks {
 #include <linux/security.h>
 #include <asm/local.h>
 
+/**
+ *  
+ */
 struct perf_callchain_entry {
+    /**
+     *  
+     */
 	__u64				nr;
+    /**
+     *  
+     */
 	__u64				ip[]; /* /proc/sys/kernel/perf_event_max_stack */
 };
 
@@ -274,6 +283,9 @@ struct perf_output_handle;
 
 /**
  * struct pmu - generic performance monitoring unit
+ *
+ *  全局变量
+ *  struct pmu pmu;
  */
 struct pmu {    /* 性能监控单元 */
 	struct list_head		entry;      /* 链表节点 */
@@ -386,6 +398,9 @@ struct pmu {    /* 性能监控单元 */
 	 *
 	 * For sampling capable PMUs this will also update the software period
 	 * hw_perf_event::period_left field.
+	 *
+	 * 体系结构相关，
+	 *  x86 -> x86_pmu_read()
 	 */
 	void (*read)			(struct perf_event *event);
 
@@ -398,6 +413,8 @@ struct pmu {    /* 性能监控单元 */
 	 * do schedulability tests.
 	 *
 	 * Optional.
+	 *
+	 * 体系结构相关，x86 平台为 x86_pmu_start_txn()
 	 */
 	void (*start_txn)		(struct pmu *pmu, unsigned int txn_flags);
 	/*
@@ -407,6 +424,8 @@ struct pmu {    /* 性能监控单元 */
 	 * open until ->cancel_txn() is called.
 	 *
 	 * Optional.
+	 *
+	 * 体系结构相关，x86 平台为 x86_pmu_commit_txn()
 	 */
 	int  (*commit_txn)		(struct pmu *pmu);
 	/*
@@ -562,6 +581,8 @@ struct perf_addr_filter_range {
 
 /**
  * enum perf_event_state - the states of an event:
+ *
+ *   
  */
 enum perf_event_state {
 	PERF_EVENT_STATE_DEAD		= -4,
@@ -610,6 +631,9 @@ struct swevent_hlist {
 struct perf_cgroup;
 struct perf_buffer;
 
+/**
+ *  
+ */
 struct pmu_event_list {
 	raw_spinlock_t		lock;
 	struct list_head	list;
@@ -621,6 +645,8 @@ struct pmu_event_list {
 
 /**
  * struct perf_event - performance event kernel representation:
+ *
+ *  性能事件
  */
 struct perf_event { /*  */
 #ifdef CONFIG_PERF_EVENTS
@@ -713,7 +739,14 @@ struct perf_event { /*  */
 	int				oncpu;
 	int				cpu;
 
+    /**
+     *  链表节点，链表头为 `task_struct.perf_event_list`
+     */
 	struct list_head		owner_entry;
+
+    /**
+     *  属于哪个进程
+     */
 	struct task_struct		*owner;
 
 	/* mmap bits */
@@ -780,6 +813,9 @@ struct perf_event { /*  */
 };
 
 
+/**
+ *  
+ */
 struct perf_event_groups {  /* 红黑树 */
 	struct rb_root	tree;
 	u64		index;
@@ -804,6 +840,9 @@ struct perf_event_context { /* perf event上下文 */
 	 */
 	struct mutex			mutex;
 
+    /**
+     *  
+     */
 	struct list_head		active_ctx_list;
 	struct perf_event_groups	pinned_groups;      /*  */
 	struct perf_event_groups	flexible_groups;
@@ -837,12 +876,21 @@ struct perf_event_context { /* perf event上下文 */
 	 * been cloned (inherited) from a common ancestor.
 	 */
 	struct perf_event_context	*parent_ctx;
+
+    /**
+     *  
+     */
 	u64				parent_gen;
 	u64				generation;
 	int				pin_count;
+    
 #ifdef CONFIG_CGROUP_PERF
 	int				nr_cgroups;	 /* cgroup evts */
 #endif
+
+    /**
+     *  
+     */
 	void				*task_ctx_data; /* pmu specific data */
 	struct rcu_head			rcu_head;
 };
@@ -1115,6 +1163,9 @@ static inline bool is_sampling_event(struct perf_event *event)
  */
 static inline int is_software_event(struct perf_event *event)
 {
+    /**
+     *  软件事件
+     */
 	return event->event_caps & PERF_EV_CAP_SOFTWARE;
 }
 
