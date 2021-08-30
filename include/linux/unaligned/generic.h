@@ -10,6 +10,9 @@
  */
 extern void __bad_unaligned_access_size(void);
 
+/**
+ *  访问未对齐的数据
+ */
 #define __get_unaligned_le(ptr) ((__force typeof(*(ptr)))({			\
 	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
 	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_le16((ptr)),	\
@@ -18,6 +21,9 @@ extern void __bad_unaligned_access_size(void);
 	__bad_unaligned_access_size()))));					\
 	}))
 
+/**
+ *  访问未对齐的数据
+ */
 #define __get_unaligned_be(ptr) ((__force typeof(*(ptr)))({			\
 	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
 	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_be16((ptr)),	\
@@ -26,6 +32,9 @@ extern void __bad_unaligned_access_size(void);
 	__bad_unaligned_access_size()))));					\
 	}))
 
+/**
+ *  保存未对齐的数据
+ */
 #define __put_unaligned_le(val, ptr) ({					\
 	void *__gu_p = (ptr);						\
 	switch (sizeof(*(ptr))) {					\
@@ -47,6 +56,9 @@ extern void __bad_unaligned_access_size(void);
 	}								\
 	(void)0; })
 
+/**
+ *  保存未对齐的数据
+ */
 #define __put_unaligned_be(val, ptr) ({					\
 	void *__gu_p = (ptr);						\
 	switch (sizeof(*(ptr))) {					\

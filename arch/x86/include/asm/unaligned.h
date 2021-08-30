@@ -9,6 +9,9 @@
 #include <linux/unaligned/access_ok.h>
 #include <linux/unaligned/generic.h>
 
+/**
+ *  访问未对齐的数据
+ */
 #define get_unaligned __get_unaligned_le
 #define put_unaligned __put_unaligned_le
 

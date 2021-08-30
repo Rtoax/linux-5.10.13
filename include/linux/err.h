@@ -21,11 +21,17 @@
 
 #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
 
+/**
+ *  
+ */
 static inline void * __must_check ERR_PTR(long error)
 {
 	return (void *) error;
 }
 
+/**
+ *  
+ */
 static inline long __must_check PTR_ERR(__force const void *ptr)
 {
 	return (long) ptr;

@@ -19,29 +19,29 @@
 #define PERF_ALIGN(x, a)	__PERF_ALIGN_MASK(x, (typeof(x))(a)-1)
 #define __PERF_ALIGN_MASK(x, mask)	(((x)+(mask))&~(mask))
 
-#ifndef roundup
-#define roundup(x, y) (                                \
-{                                                      \
-	const typeof(y) __y = y;		       \
-	(((x) + (__y - 1)) / __y) * __y;	       \
-}                                                      \
-)
-#endif
+//#ifndef roundup
+//#define roundup(x, y) (                                \
+//{                                                      \
+//	const typeof(y) __y = y;		       \
+//	(((x) + (__y - 1)) / __y) * __y;	       \
+//}                                                      \
+//)
+//#endif
 
-#define BUG()	BUG_ON(1)
+//#define BUG()	BUG_ON(1)
 
-#define cpu_to_le16
-#define cpu_to_le32
-#define cpu_to_le64
-#define le16_to_cpu
-#define le32_to_cpu
-#define le64_to_cpu
-#define cpu_to_be16 bswap_16
-#define cpu_to_be32 bswap_32
-#define cpu_to_be64 bswap_64
-#define be16_to_cpu bswap_16
-#define be32_to_cpu bswap_32
-#define be64_to_cpu bswap_64
+//#define cpu_to_le16
+//#define cpu_to_le32
+//#define cpu_to_le64
+//#define le16_to_cpu
+//#define le32_to_cpu
+//#define le64_to_cpu
+//#define cpu_to_be16 bswap_16
+//#define cpu_to_be32 bswap_32
+//#define cpu_to_be64 bswap_64
+//#define be16_to_cpu bswap_16
+//#define be32_to_cpu bswap_32
+//#define be64_to_cpu bswap_64
 
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int scnprintf(char * buf, size_t size, const char * fmt, ...);
