@@ -36,6 +36,11 @@ struct perf_buffer {
 	long				aux_watermark;
 	/* poll crap */
 	spinlock_t			event_lock;
+    /**
+     *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
+     *  使用 `perf_buffer.event_lock` 保护这个链表
+     *  在 `ring_buffer_attach()` 中删除或添加至链表
+     */
 	struct list_head		event_list;
 
 	atomic_t			mmap_count;

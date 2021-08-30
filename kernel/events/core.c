@@ -2960,6 +2960,9 @@ out:
 	}
 	raw_spin_unlock_irq(&ctx->lock);
 
+    /**
+     *  
+     */
 	event_function_call(event, __perf_event_enable, NULL);
 }
 
@@ -3000,6 +3003,9 @@ static int __perf_event_stop(void *info)
 	if (READ_ONCE(event->oncpu) != smp_processor_id())
 		return -EAGAIN;
 
+    /**
+     *  x86 -> x86_pmu_stop()
+     */
 	event->pmu->stop(event, PERF_EF_UPDATE);
 
 	/*
@@ -3012,6 +3018,9 @@ static int __perf_event_stop(void *info)
 	 * while restarting.
 	 */
 	if (sd->restart)
+        /**
+         *  x86 -> x86_pmu_start()
+         */
 		event->pmu->start(event, 0);
 
 	return 0;
@@ -5283,12 +5292,18 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	return ret;
 }
 
+/**
+ *  
+ */
 static __poll_t perf_poll(struct file *file, poll_table *wait)
 {
 	struct perf_event *event = file->private_data;
 	struct perf_buffer *rb;
 	__poll_t events = EPOLLHUP;
 
+    /**
+     *  
+     */
 	poll_wait(file, &event->waitq, wait);
 
 	if (is_event_hup(event))
@@ -5466,11 +5481,17 @@ static int perf_event_set_bpf_prog(struct perf_event *event, u32 prog_fd);
 static int perf_copy_attr(struct perf_event_attr __user *uattr,
 			  struct perf_event_attr *attr);
 
+/**
+ *  
+ */
 static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned long arg)
 {
 	void (*func)(struct perf_event *);
 	u32 flags = arg;
 
+    /**
+     *  
+     */
 	switch (cmd) {
 	case PERF_EVENT_IOC_ENABLE:
 		func = _perf_event_enable;
@@ -5558,6 +5579,9 @@ static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned lon
 		return -ENOTTY;
 	}
 
+    /**
+     *  调用
+     */
 	if (flags & PERF_IOC_FLAG_GROUP)
 		perf_event_for_each(event, func);
 	else
@@ -5566,6 +5590,9 @@ static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned lon
 	return 0;
 }
 
+/**
+ *  
+ */
 static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct perf_event *event = file->private_data;
@@ -5578,6 +5605,9 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return ret;
 
 	ctx = perf_event_ctx_lock(event);
+    /**
+     *  
+     */
 	ret = _perf_ioctl(event, cmd, arg);
 	perf_event_ctx_unlock(event, ctx);
 
@@ -5661,6 +5691,9 @@ static void calc_timer_values(struct perf_event *event,
 	__perf_update_times(event, ctx_time, enabled, running);
 }
 
+/**
+ *  
+ */
 static void perf_event_init_userpage(struct perf_event *event)
 {
 	struct perf_event_mmap_page *userpg;
@@ -5775,8 +5808,10 @@ unlock:
 	return ret;
 }
 
-static void ring_buffer_attach(struct perf_event *event,
-			       struct perf_buffer *rb)
+/**
+ *  
+ */
+static void ring_buffer_attach(struct perf_event *event, struct perf_buffer *rb)
 {
 	struct perf_buffer *old_rb = NULL;
 	unsigned long flags;
@@ -5804,6 +5839,10 @@ static void ring_buffer_attach(struct perf_event *event,
 		}
 
 		spin_lock_irqsave(&rb->event_lock, flags);
+        /**
+         *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
+         *  在 `ring_buffer_attach()` 中删除或添加至链表
+         */
 		list_add_rcu(&event->rb_entry, &rb->event_list);
 		spin_unlock_irqrestore(&rb->event_lock, flags);
 	}
@@ -5819,6 +5858,9 @@ static void ring_buffer_attach(struct perf_event *event,
 	 * not in for the data anyway.
 	 */
 	if (has_aux(event))
+        /**
+         *  
+         */
 		perf_event_stop(event, 0);
 
 	rcu_assign_pointer(event->rb, rb);
@@ -6007,19 +6049,28 @@ out_put:
 	ring_buffer_put(rb); /* could be last */
 }
 
+/**
+ *  
+ */
 static const struct vm_operations_struct perf_mmap_vmops = {
-	.open		= perf_mmap_open,
-	.close		= perf_mmap_close, /* non mergeable */
-	.fault		= perf_mmap_fault,
-	.page_mkwrite	= perf_mmap_fault,
+	perf_mmap_vmops.open		= perf_mmap_open,
+	perf_mmap_vmops.close		= perf_mmap_close, /* non mergeable */
+	perf_mmap_vmops.fault		= perf_mmap_fault,
+	perf_mmap_vmops.page_mkwrite	= perf_mmap_fault,
 };
 
-
+/**
+ *  
+ */
 static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	struct perf_event *event = file->private_data;
 	unsigned long user_locked, user_lock_limit;
 	struct user_struct *user = current_user();
+
+    /**
+     *  
+     */
 	struct perf_buffer *rb = NULL;
 	unsigned long locked, lock_limit;
 	unsigned long vma_size;
@@ -6042,6 +6093,9 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 	if (ret)
 		return ret;
 
+    /**
+     *  
+     */
 	vma_size = vma->vm_end - vma->vm_start;
 
 	if (vma->vm_pgoff == 0) {
@@ -6111,6 +6165,9 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 	if (nr_pages != 0 && !is_power_of_2(nr_pages))
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	if (vma_size != PAGE_SIZE * (1 + nr_pages))
 		return -EINVAL;
 
@@ -6180,6 +6237,9 @@ accounting:
 	if (vma->vm_flags & VM_WRITE)
 		flags |= RING_BUFFER_WRITABLE;
 
+    /**
+     *  
+     */
 	if (!rb) {
 		rb = rb_alloc(nr_pages,
 			      event->attr.watermark ? event->attr.wakeup_watermark : 0,
@@ -6194,11 +6254,24 @@ accounting:
 		rb->mmap_user = get_current_user();
 		rb->mmap_locked = extra;
 
+        /**
+         *  ring buffer 绑定 event
+         */
 		ring_buffer_attach(event, rb);
 
+        /**
+         *  
+         */
 		perf_event_init_userpage(event);
 		perf_event_update_userpage(event);
-	} else {
+	}
+    /**
+     *  
+     */
+    else {
+        /**
+         *  
+         */
 		ret = rb_alloc_aux(rb, event, vma->vm_pgoff, nr_pages,
 				   event->attr.aux_watermark, flags);
 		if (!ret)
@@ -6252,10 +6325,19 @@ static int perf_fasync(int fd, struct file *filp, int on)
 static const struct file_operations perf_fops = {
 	perf_fops.llseek			= no_llseek,
 	perf_fops.release		= perf_release,
+	/**
+     *  
+     */
 	perf_fops.read			= perf_read,
 	perf_fops.poll			= perf_poll,
+	/**
+     *  
+     */
 	perf_fops.unlocked_ioctl		= perf_ioctl,
 	perf_fops.compat_ioctl		= perf_compat_ioctl,
+	/**
+     *  映射 perf ring buffer
+     */
 	perf_fops.mmap			= perf_mmap,
 	perf_fops.fasync			= perf_fasync,
 };

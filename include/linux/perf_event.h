@@ -389,7 +389,10 @@ struct pmu {    /* 性能监控单元 */
 	 *
 	 * ->start() with PERF_EF_RELOAD will reprogram the counter
 	 *  value, must be preceded by a ->stop() with PERF_EF_UPDATE.
-	 */
+	 *  
+	 *  x86 -> x86_pmu_start()
+     *  x86 -> x86_pmu_stop()
+     */
 	void (*start)			(struct perf_event *event, int flags);
 	void (*stop)			(struct perf_event *event, int flags);
 
@@ -754,11 +757,19 @@ struct perf_event { /*  */
 	atomic_t			mmap_count;
 
 	struct perf_buffer		*rb;
+    /**
+     *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
+     *  使用 `perf_buffer.event_lock` 保护这个链表
+     *  在 `ring_buffer_attach()` 中删除或添加至链表
+     */
 	struct list_head		rb_entry;
 	unsigned long			rcu_batches;
 	int				rcu_pending;
 
-	/* poll related */
+	/**
+	 *  poll related 
+	 *  在 `perf_poll()` 中使用
+	 */
 	wait_queue_head_t		waitq;
 	struct fasync_struct		*fasync;
 

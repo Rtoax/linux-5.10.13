@@ -1531,6 +1531,9 @@ void perf_event_print_debug(void)
 	local_irq_restore(flags);
 }
 
+/**
+ *  
+ */
 void x86_pmu_stop(struct perf_event *event, int flags)
 {
 	struct cpu_hw_events *cpuc = this_cpu_ptr(&cpu_hw_events);

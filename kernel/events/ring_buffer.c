@@ -302,6 +302,9 @@ void perf_output_end(struct perf_output_handle *handle)
 	rcu_read_unlock();
 }
 
+/**
+ *  
+ */
 static void
 ring_buffer_init(struct perf_buffer *rb, long watermark, int flags)
 {
@@ -901,6 +904,9 @@ void rb_free(struct perf_buffer *rb)
 	schedule_work(&rb->work);
 }
 
+/**
+ *  
+ */
 struct perf_buffer *rb_alloc(int nr_pages, long watermark, int cpu, int flags)
 {
 	struct perf_buffer *rb;
@@ -916,6 +922,9 @@ struct perf_buffer *rb_alloc(int nr_pages, long watermark, int cpu, int flags)
 
 	INIT_WORK(&rb->work, rb_free_work);
 
+    /**
+     *  分配 页
+     */
 	all_buf = vmalloc_user((nr_pages + 1) * PAGE_SIZE);
 	if (!all_buf)
 		goto fail_all_buf;
@@ -927,6 +936,9 @@ struct perf_buffer *rb_alloc(int nr_pages, long watermark, int cpu, int flags)
 		rb->page_order = ilog2(nr_pages);
 	}
 
+    /**
+     *  初始化 ring buffer
+     */
 	ring_buffer_init(rb, watermark, flags);
 
 	return rb;
