@@ -65,6 +65,12 @@ static inline bool pagefault_disabled(void);
  *
  * Return: true (nonzero) if the memory block may be valid, false (zero)
  * if it is definitely invalid.
+ *
+ *  检测 用户空间 指针是否可用
+ *
+ *  access_ok(buf, len)是确保从buf开始的len长的区间，一定是位于用户空间的，
+ *  应用程序不能传入一个内核空间的地址来传给系统调用，这样用户可以通过系统调用，
+ *  让内核写坏内核本身，造成一系列内核安全漏洞。
  */
 #define access_ok(addr, size)					\
 ({									\
@@ -151,6 +157,8 @@ extern int __get_user_bad(void);
  *
  * Return: zero on success, or -EFAULT on error.
  * On error, the variable @x is set to zero.
+ *
+ * 
  */
 #define get_user(x,ptr) ({ might_fault(); do_get_user_call(get_user,x,ptr); })
 
@@ -179,14 +187,14 @@ extern int __get_user_bad(void);
 
 
 #ifdef CONFIG_X86_32
-#define __put_user_goto_u64(x, addr, label)			\
-	asm_volatile_goto("\n"					\
-		     "1:	movl %%eax,0(%1)\n"		\
-		     "2:	movl %%edx,4(%1)\n"		\
-		     _ASM_EXTABLE_UA(1b, %l2)			\
-		     _ASM_EXTABLE_UA(2b, %l2)			\
-		     : : "A" (x), "r" (addr)			\
-		     : : label)
+//#define __put_user_goto_u64(x, addr, label)			\
+//	asm_volatile_goto("\n"					\
+//		     "1:	movl %%eax,0(%1)\n"		\
+//		     "2:	movl %%edx,4(%1)\n"		\
+//		     _ASM_EXTABLE_UA(1b, %l2)			\
+//		     _ASM_EXTABLE_UA(2b, %l2)			\
+//		     : : "A" (x), "r" (addr)			\
+//		     : : label)
 
 #else
 #define __put_user_goto_u64(x, ptr, label) \
@@ -301,14 +309,14 @@ do {									\
 #ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 #ifdef CONFIG_X86_32
-#define __get_user_asm_u64(x, ptr, label) do {				\
-	unsigned int __gu_low, __gu_high;				\
-	const unsigned int __user *__gu_ptr;				\
-	__gu_ptr = (const void __user *)(ptr);				\
-	__get_user_asm(__gu_low, ptr, "l", "=r", label);		\
-	__get_user_asm(__gu_high, ptr+1, "l", "=r", label);		\
-	(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		\
-} while (0)
+//#define __get_user_asm_u64(x, ptr, label) do {				\
+//	unsigned int __gu_low, __gu_high;				\
+//	const unsigned int __user *__gu_ptr;				\
+//	__gu_ptr = (const void __user *)(ptr);				\
+//	__get_user_asm(__gu_low, ptr, "l", "=r", label);		\
+//	__get_user_asm(__gu_high, ptr+1, "l", "=r", label);		\
+//	(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		\
+//} while (0)
 #else
 #define __get_user_asm_u64(x, ptr, label)				\
 	__get_user_asm(x, ptr, "q", "=r", label)
@@ -348,27 +356,27 @@ do {									\
 #else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 #ifdef CONFIG_X86_32
-#define __get_user_asm_u64(x, ptr, retval)				\
-({									\
-	__typeof__(ptr) __ptr = (ptr);					\
-	asm volatile("\n"						\
-		     "1:	movl %[lowbits],%%eax\n"		\
-		     "2:	movl %[highbits],%%edx\n"		\
-		     "3:\n"						\
-		     ".section .fixup,\"ax\"\n"				\
-		     "4:	mov %[efault],%[errout]\n"		\
-		     "	xorl %%eax,%%eax\n"				\
-		     "	xorl %%edx,%%edx\n"				\
-		     "	jmp 3b\n"					\
-		     ".previous\n"					\
-		     _ASM_EXTABLE_UA(1b, 4b)				\
-		     _ASM_EXTABLE_UA(2b, 4b)				\
-		     : [errout] "=r" (retval),				\
-		       [output] "=&A"(x)				\
-		     : [lowbits] "m" (__m(__ptr)),			\
-		       [highbits] "m" __m(((u32 __user *)(__ptr)) + 1),	\
-		       [efault] "i" (-EFAULT), "0" (retval));		\
-})
+//#define __get_user_asm_u64(x, ptr, retval)				\
+//({									\
+//	__typeof__(ptr) __ptr = (ptr);					\
+//	asm volatile("\n"						\
+//		     "1:	movl %[lowbits],%%eax\n"		\
+//		     "2:	movl %[highbits],%%edx\n"		\
+//		     "3:\n"						\
+//		     ".section .fixup,\"ax\"\n"				\
+//		     "4:	mov %[efault],%[errout]\n"		\
+//		     "	xorl %%eax,%%eax\n"				\
+//		     "	xorl %%edx,%%edx\n"				\
+//		     "	jmp 3b\n"					\
+//		     ".previous\n"					\
+//		     _ASM_EXTABLE_UA(1b, 4b)				\
+//		     _ASM_EXTABLE_UA(2b, 4b)				\
+//		     : [errout] "=r" (retval),				\
+//		       [output] "=&A"(x)				\
+//		     : [lowbits] "m" (__m(__ptr)),			\
+//		       [highbits] "m" __m(((u32 __user *)(__ptr)) + 1),	\
+//		       [efault] "i" (-EFAULT), "0" (retval));		\
+//})
 
 #else
 #define __get_user_asm_u64(x, ptr, retval) \

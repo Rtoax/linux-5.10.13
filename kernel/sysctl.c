@@ -2347,6 +2347,9 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= &pid_max_min,
 		.extra2		= &pid_max_max,
 	},
+	/**
+	 *  /proc/sys/kernel/panic_on_oops
+	 */
 	{
 		.procname	= "panic_on_oops",
 		.data		= &panic_on_oops,

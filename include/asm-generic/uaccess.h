@@ -121,6 +121,9 @@ static inline void set_fs(mm_segment_t fs)
 #endif
 #endif /* CONFIG_SET_FS */
 
+/**
+ *  检测 用户空间 指针是否可用
+ */
 #define access_ok(addr, size) __access_ok((unsigned long)(addr),(size))
 
 /*

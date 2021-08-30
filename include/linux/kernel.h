@@ -526,6 +526,8 @@ extern unsigned int sysctl_oops_all_cpu_backtrace;
 extern void bust_spinlocks(int yes);
 extern int panic_timeout;
 extern unsigned long panic_print;
+
+
 extern int panic_on_oops;
 extern int panic_on_unrecovered_nmi;
 extern int panic_on_io_nmi;

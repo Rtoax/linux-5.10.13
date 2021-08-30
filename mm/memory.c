@@ -5492,6 +5492,9 @@ void print_vma_addr(char *prefix, unsigned long ip)
 }
 
 #if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP)
+/**
+ *  可能发生 page fault
+ */
 void __might_fault(const char *file, int line)
 {
 	/*
@@ -5502,9 +5505,18 @@ void __might_fault(const char *file, int line)
 	 */
 	if (uaccess_kernel())
 		return;
+
+    /**
+     *  当前进程是否允许缺页发生
+     */
 	if (pagefault_disabled())
 		return;
+
+    /**
+     *  
+     */
 	__might_sleep(file, line, 0);
+    
 #if defined(CONFIG_DEBUG_ATOMIC_SLEEP)
 	if (current->mm)
 		might_lock_read(&current->mm->mmap_lock);

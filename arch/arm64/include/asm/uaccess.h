@@ -93,6 +93,13 @@ static inline unsigned long __range_ok(const void __user *addr, unsigned long si
 	return ret;
 }
 
+/**
+ *  检测 用户空间 指针是否可用
+ *
+ *  access_ok(buf, len)是确保从buf开始的len长的区间，一定是位于用户空间的，
+ *  应用程序不能传入一个内核空间的地址来传给系统调用，这样用户可以通过系统调用，
+ *  让内核写坏内核本身，造成一系列内核安全漏洞。
+ */
 #define access_ok(addr, size)	__range_ok(addr, size)
 #define user_addr_max			get_fs
 

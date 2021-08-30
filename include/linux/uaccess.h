@@ -168,12 +168,16 @@ _copy_to_user(void __user *, const void *, unsigned long);
 #endif
 
 /**
- *  
+ *  从用户空间拷贝数据到内核空间
  */
 static __always_inline unsigned long __must_check
 copy_from_user(void *to, const void __user *from, unsigned long n)
-{/* 从用户态向内核态拷贝数据 */
+{
+    /* 从用户态向内核态拷贝数据 */
 	if (likely(check_copy_size(to, n, false)))
+        /**
+         *  
+         */
 		n = _copy_from_user(to, from, n);
 	return n;
 }

@@ -44,7 +44,11 @@
 unsigned int __read_mostly sysctl_oops_all_cpu_backtrace;
 #endif /* CONFIG_SMP */
 
+/**
+ *  /proc/sys/kernel/panic_on_oops
+ */
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
+
 static unsigned long tainted_mask =
 	IS_ENABLED(CONFIG_GCC_PLUGIN_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
 static int pause_on_oops;
@@ -698,6 +702,9 @@ core_param(pause_on_oops, pause_on_oops, int, 0644);
 core_param(panic_on_warn, panic_on_warn, int, 0644);
 core_param(crash_kexec_post_notifiers, crash_kexec_post_notifiers, bool, 0644);
 
+/**
+ *  可以通过 调节`  /proc/sys/kernel/panic_on_oops`
+ */
 static int __init oops_setup(char *s)
 {
 	if (!s)

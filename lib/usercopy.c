@@ -7,13 +7,17 @@
 /* out-of-line parts */
 
 /**
- *  
+ *  把buf拷贝到一个跨中断、跨进程、跨workqueue、跨内核线程的长期有效的内存里面
  */
 #ifndef INLINE_COPY_FROM_USER
 unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
 {
 	unsigned long res = n;
 	might_fault();
+
+    /**
+     *  
+     */
 	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
 		instrument_copy_from_user(to, from, n);
         /**

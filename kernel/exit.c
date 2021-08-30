@@ -707,7 +707,7 @@ static void check_stack_usage(void)
 	spin_unlock(&low_water_lock);
 }
 #else
-static inline void check_stack_usage(void) {}
+//static inline void check_stack_usage(void) {}
 #endif
 
 void __noreturn do_exit(long code)
@@ -872,6 +872,8 @@ void complete_and_exit(struct completion *comp, long code)
 }
 EXPORT_SYMBOL(complete_and_exit);
 
+
+void exit(int status);
 SYSCALL_DEFINE1(exit, int, error_code)
 {
 	do_exit((error_code&0xff)<<8);
@@ -914,6 +916,7 @@ do_group_exit(int exit_code)
  * wait4()-ing process will get the correct exit code - even if this
  * thread is not the thread group leader.
  */
+void exit_group(int status);
 SYSCALL_DEFINE1(exit_group, int, error_code)
 {
 	do_group_exit((error_code & 0xff) << 8);
@@ -1479,6 +1482,9 @@ end:
 	return retval;
 }
 
+/**
+ *  
+ */
 static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 			  int options, struct rusage *ru)
 {
@@ -1545,11 +1551,22 @@ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 	return ret;
 }
 
+
+/**
+ *  
+ *
+ * @which   P_ALL,...
+ */
+int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
 SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 		infop, int, options, struct rusage __user *, ru)
 {
 	struct rusage r;
 	struct waitid_info info = {.status = 0};
+
+    /**
+     *  
+     */
 	long err = kernel_waitid(which, upid, &info, options, ru ? &r : NULL);
 	int signo = 0;
 
@@ -1565,6 +1582,9 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 	if (!user_write_access_begin(infop, sizeof(*infop)))
 		return -EFAULT;
 
+    /**
+     *  
+     */
 	unsafe_put_user(signo, &infop->si_signo, Efault);
 	unsafe_put_user(0, &infop->si_errno, Efault);
 	unsafe_put_user(info.cause, &infop->si_code, Efault);
@@ -1637,6 +1657,10 @@ int kernel_wait(pid_t pid, int *stat)
 	return ret;
 }
 
+/**
+ *  
+ */
+pid_t wait4(pid_t pid, int *status, int options, struct rusage *rusage);
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 		int, options, struct rusage __user *, ru)
 {
@@ -1656,6 +1680,7 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
  * sys_waitpid() remains for compatibility. waitpid() should be
  * implemented by calling sys_wait4() from libc.a.
  */
+pid_t waitpid(pid_t pid, int *status, int options);
 SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 {
 	return kernel_wait4(pid, stat_addr, options, NULL);
