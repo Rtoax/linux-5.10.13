@@ -4144,6 +4144,9 @@ struct perf_read_data {
 	int ret;
 };
 
+/**
+ *  
+ */
 static int __perf_event_read_cpu(struct perf_event *event, int event_cpu)
 {
 	u16 local_pkg, event_pkg;
@@ -4194,6 +4197,10 @@ static void __perf_event_read(void *info)
      *  
      */
 	perf_event_update_time(event);
+
+    /**
+     *  
+     */
 	if (data->group)
 		perf_event_update_sibling_time(event);
 
@@ -5075,6 +5082,9 @@ static u64 __perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *
      *  
      */
 	list_for_each_entry(child, &event->child_list, child_list) {
+	    /**
+         *  
+         */
 		(void)perf_event_read(child, false);
 		total += perf_event_count(child);
 		*enabled += child->total_time_enabled;

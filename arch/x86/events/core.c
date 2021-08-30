@@ -2050,8 +2050,15 @@ out:
 }
 early_initcall(init_hw_perf_events);
 
+/**
+ *  
+ */
 static void x86_pmu_read(struct perf_event *event)
 {
+    /**
+     *  ??? 2021年8月30日18:02:21
+     *  
+     */
 	static_call(x86_pmu_read)(event);
 }
 
