@@ -74,6 +74,10 @@ static struct {
 kprobe_opcode_t * __weak kprobe_lookup_name(const char *name,
 					unsigned int __unused)
 {
+    /**
+     *  @name - 函数名
+     *  return - 指令地址
+     */
 	return ((kprobe_opcode_t *)(kallsyms_lookup_name(name)));
 }
 
@@ -126,6 +130,9 @@ void __weak free_insn_page(void *page)
 	module_memfree(page);
 }
 
+/**
+ *  
+ */
 struct kprobe_insn_cache kprobe_insn_slots = {
 	.mutex = __MUTEX_INITIALIZER(kprobe_insn_slots.mutex),
 	.alloc = alloc_insn_page,
@@ -516,9 +523,14 @@ static struct kprobe *get_optimized_kprobe(unsigned long addr)
 static LIST_HEAD(optimizing_list);
 static LIST_HEAD(unoptimizing_list);
 static LIST_HEAD(freeing_list);
+static struct list_head optimizing_list; //+++
+static struct list_head unoptimizing_list; //+++
+static struct list_head freeing_list; //+++
 
 static void kprobe_optimizer(struct work_struct *work);
 static DECLARE_DELAYED_WORK(optimizing_work, kprobe_optimizer);
+struct delayed_work optimizing_work = __DELAYED_WORK_INITIALIZER(optimizing_work, kprobe_optimizer, 0); //+++
+
 #define OPTIMIZE_DELAY 5
 
 /*
@@ -993,7 +1005,7 @@ static void __arm_kprobe(struct kprobe *p)
 	arch_arm_kprobe(p);
 
     /**
-     *  
+     *  优化 kprobe
      */
 	optimize_kprobe(p);	/* Try to optimize (add kprobe to a list) */
 }
@@ -1037,9 +1049,15 @@ static int kprobe_ftrace_enabled;
 /* Must ensure p->addr is really on ftrace */
 static int prepare_kprobe(struct kprobe *p)
 {
+    /**
+     *  kprobe 没有使用 ftrace
+     */
 	if (!kprobe_ftrace(p))
 		return arch_prepare_kprobe(p);
 
+    /**
+     *  
+     */
 	return arch_prepare_kprobe_ftrace(p);
 }
 
@@ -1455,7 +1473,9 @@ static int register_aggr_kprobe(struct kprobe *orig_p, struct kprobe *p)
 	jump_label_lock();
 	mutex_lock(&text_mutex);
 
-    /* 聚合探针 */
+    /**
+     *  聚合探针 
+     */
 	if (!kprobe_aggrprobe(orig_p)) {
 		/* If orig_p is not an aggr_kprobe, create new aggr_kprobe. */
 		ap = alloc_aggr_kprobe(orig_p);
@@ -1591,6 +1611,9 @@ static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
 			return ERR_PTR(-ENOENT);
 	}
 
+    /**
+     *  函数地址 + 偏移(这个偏移量是用户定义的)
+     */
 	addr = (kprobe_opcode_t *)(((char *)addr) + offset);
 	if (addr)
 		return addr;
@@ -1670,17 +1693,34 @@ int __weak arch_check_ftrace_location(struct kprobe *p)
 	return 0;
 }
 
-static int check_kprobe_address_safe(struct kprobe *p,
-				     struct module **probed_mod)
+/**
+ *  检测挂载点地址是否合法
+ */
+static int check_kprobe_address_safe(struct kprobe *p, struct module **probed_mod)
 {
 	int ret;
 
 	ret = arch_check_ftrace_location(p);
 	if (ret)
 		return ret;
+
+    /**
+     *  
+     */
 	jump_label_lock();
+
+    /**
+     *  关闭抢占，为什么?（2021年8月31日17:15:39）
+     */
 	preempt_disable();
 
+    /**
+     *  需要满足的条件
+     *  1. 必须为内核代码段
+     *  2. 不在 kprobe 黑名单中
+     *  3. 不是jump label 代码预留的
+     *  4. 不是 static key 预留的
+     */
 	/* Ensure it is not in reserved area nor out of text */
 	if (!kernel_text_address((unsigned long) p->addr) ||
 	    within_kprobe_blacklist((unsigned long) p->addr) ||
@@ -1691,8 +1731,14 @@ static int check_kprobe_address_safe(struct kprobe *p,
 		goto out;
 	}
 
+    /**
+     *  从 模块中查找
+     */
 	/* Check if are we probing a module */
 	*probed_mod = __module_text_address((unsigned long) p->addr);
+    /**
+     *  如果这个地址是 module 中的代码
+     */
 	if (*probed_mod) {
 		/*
 		 * We must hold a refcount of the probed module while updating
@@ -1752,8 +1798,15 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 		return ret;
 
 	/* User can pass only KPROBE_FLAG_DISABLED to register_kprobe */
+    /**
+     *  先暂时将这个      kprobe 关闭
+     */
 	p->flags &= KPROBE_FLAG_DISABLED;
 	p->nmissed = 0;
+
+    /**
+     *  在同一个挂载点的 多个 kprobe
+     */
 	INIT_LIST_HEAD(&p->list);
 
     /** 
@@ -1767,12 +1820,17 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 
     /**
      *  获取旧的probe，
+     *  也就是这个地址是否已经存在 kprobe
      */
 	old_p = get_kprobe(p->addr);
+    /**
+     *  如果已经存在
+     */
 	if (old_p) {
 		/**
 		 *  Since this may unoptimize old_p, locking text_mutex. 
          *  这是该地址上的第二个或后续kprobe-处理复杂情况
+         *  TODO 2021年8月31日17:17:33
          */
 		ret = register_aggr_kprobe(old_p, p);
 		goto out;
@@ -1803,7 +1861,7 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	if (!kprobes_all_disarmed && !kprobe_disabled(p)) {
 
         /**
-         *  处理一个   kprobe，用 int3  替换原有指令
+         *  处理一个   kprobe，用 int3   替换原有指令
          */
 		ret = arm_kprobe(p);
 		if (ret) {
@@ -1958,13 +2016,23 @@ static void __unregister_kprobe_bottom(struct kprobe *p)
 	/* Otherwise, do nothing. */
 }
 
+/**
+ *  注册 多个 kprobe
+ */
 int register_kprobes(struct kprobe **kps, int num)  //注册多个kprobe探测点
 {
 	int i, ret = 0;
 
 	if (num <= 0)
 		return -EINVAL;
+
+    /**
+     *  遍历
+     */
 	for (i = 0; i < num; i++) {
+        /**
+         *  注册一个 kprobe
+         */
 		ret = register_kprobe(kps[i]);
 		if (ret < 0) {
 			if (i > 0)
@@ -2006,6 +2074,10 @@ void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探�
 	mutex_unlock(&kprobe_mutex);
 
 	synchronize_rcu();
+    
+    /**
+     *  无需持有 mutex 
+     */
 	for (i = 0; i < num; i++)
 		if (kps[i]->addr)
 			__unregister_kprobe_bottom(kps[i]);

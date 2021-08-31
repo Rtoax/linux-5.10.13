@@ -850,7 +850,8 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
 }
 
 /**
- *  为啥要用全局变量，因为，修改 内核 的代码段，是有保护的
+ *  为啥要用全局变量？ 因为，修改 内核 的代码段，是有保护的
+ *
  */
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
@@ -887,15 +888,26 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
      */
 	if (!core_kernel_text((unsigned long)addr)) {
         /**
-         *  
+         *  不是内核代码段，加上通过前面注册时候的判断，这里肯定是 module模块内部的代码
+         *  所以可以使用 vmalloc 的API 查找对应的 page
          */
 		pages[0] = vmalloc_to_page(addr);
+        /**
+         *  
+         *  是否在页的边界上
+         *
+         *       page1         page2
+         *  |--------------+-------------|
+         *              ^^^^^^^
+         */
 		if (cross_page_boundary)
 			pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+    }
     /**
      *  是内核 代码段地址
      */
-    } else {
+    else {
+    
         /**
          *  
          */
@@ -960,6 +972,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	barrier();
 
 	pte_clear(poking_mm, poking_addr, ptep);
+    
 	if (cross_page_boundary)
 		pte_clear(poking_mm, poking_addr + PAGE_SIZE, ptep + 1);
 
@@ -973,6 +986,8 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	/*
 	 * Flushing the TLB might involve IPIs, which would require enabled
 	 * IRQs, but not if the mm is not used, as it is in this point.
+	 *
+	 * 刷新 TLB 指令缓存
 	 */
 	flush_tlb_mm_range(poking_mm, poking_addr, poking_addr +
             			   (cross_page_boundary ? 2 : 1) * PAGE_SIZE,
@@ -981,6 +996,8 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	/*
 	 * If the text does not match what we just wrote then something is
 	 * fundamentally screwy; there's nothing we can really do about that.
+	 *
+	 * 
 	 */
 	BUG_ON(memcmp(addr, opcode, len));
 

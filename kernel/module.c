@@ -4403,6 +4403,9 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 	return 0;
 }
 
+/**
+ *  kprobe 可以通过这个函数，从 模块的函数名中查找要挂载的  模块名 对应的 opcode 地址
+ */
 /* Look for this name: can be of form module:name. */
 unsigned long module_kallsyms_lookup_name(const char *name)
 {

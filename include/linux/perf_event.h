@@ -639,6 +639,9 @@ struct perf_buffer;
  */
 struct pmu_event_list {
 	raw_spinlock_t		lock;
+    /**
+     *  perf_event.sb_list 为链表节点
+     */
 	struct list_head	list;
 };
 
@@ -819,6 +822,9 @@ struct perf_event { /*  */
 #ifdef CONFIG_SECURITY
 	void *security;
 #endif
+    /**
+     *  pmu_event_list.list 为链表头
+     */
 	struct list_head		sb_list;
 #endif /* CONFIG_PERF_EVENTS */
 };
@@ -944,6 +950,9 @@ struct perf_cpu_context {   /* CPU perf 上下文 */
 	struct perf_event		*heap_default[2];   /* 默认2个 */
 };
 
+/**
+ *  
+ */
 struct perf_output_handle {
 	struct perf_event		*event;
 	struct perf_buffer		*rb;

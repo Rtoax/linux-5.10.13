@@ -7373,7 +7373,7 @@ perf_event_read_event(struct perf_event *event,
 	perf_output_end(&handle);
 }
 
-typedef void (perf_iterate_f)(struct perf_event *event, void *data);
+typedef void (*perf_iterate_f)(struct perf_event *event, void *data);//+++*++
 
 static void
 perf_iterate_ctx(struct perf_event_context *ctx,
@@ -7394,11 +7394,17 @@ perf_iterate_ctx(struct perf_event_context *ctx,
 	}
 }
 
+/**
+ *  
+ */
 static void perf_iterate_sb_cpu(perf_iterate_f output, void *data)
 {
 	struct pmu_event_list *pel = this_cpu_ptr(&pmu_sb_events);
 	struct perf_event *event;
 
+    /**
+     *  
+     */
 	list_for_each_entry_rcu(event, &pel->list, sb_list) {
 		/*
 		 * Skip events that are not fully formed yet; ensure that
@@ -7442,8 +7448,14 @@ perf_iterate_sb(perf_iterate_f output, void *data,
 		goto done;
 	}
 
+    /**
+     *  
+     */
 	perf_iterate_sb_cpu(output, data);
 
+    /**
+     *  
+     */
 	for_each_task_context_nr(ctxn) {
 		ctx = rcu_dereference(current->perf_event_ctxp[ctxn]);
 		if (ctx)
@@ -8794,6 +8806,9 @@ static int perf_event_text_poke_match(struct perf_event *event)
 	return event->attr.text_poke;
 }
 
+/**
+ *  
+ */
 static void perf_event_text_poke_output(struct perf_event *event, void *data)
 {
 	struct perf_text_poke_event *text_poke_event = data;
@@ -8805,6 +8820,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	if (!perf_event_text_poke_match(event))
 		return;
 
+    /**
+     *  
+     */
 	perf_event_header__init_id(&text_poke_event->event_id.header, &sample, event);
 
 	ret = perf_output_begin(&handle, &sample, event,
@@ -8812,6 +8830,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	if (ret)
 		return;
 
+    /**
+     *  
+     */
 	perf_output_put(&handle, text_poke_event->event_id);
 	perf_output_put(&handle, text_poke_event->old_len);
 	perf_output_put(&handle, text_poke_event->new_len);
@@ -8824,6 +8845,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 
 	perf_event__output_id_sample(event, &handle, &sample);
 
+    /**
+     *  
+     */
 	perf_output_end(&handle);
 }
 

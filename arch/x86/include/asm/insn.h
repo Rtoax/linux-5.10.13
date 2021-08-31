@@ -10,6 +10,9 @@
 /* insn_attr_t is defined in inat.h */
 #include <asm/inat.h>
 
+/**
+ *  
+ */
 struct insn_field {
 	union {
 		insn_value_t value;
@@ -20,6 +23,9 @@ struct insn_field {
 	unsigned char nbytes;
 };
 
+/**
+ *  指令 - instruction
+ */
 struct insn {
 	struct insn_field prefixes;	/*
 					 * Prefixes

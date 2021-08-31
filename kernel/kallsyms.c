@@ -149,6 +149,9 @@ static unsigned int get_symbol_offset(unsigned long pos)
  */
 static unsigned long kallsyms_sym_address(int idx)
 {
+    /**
+     *  该 结构体保存了所有 内核函数的地址
+     */
 	if (!IS_ENABLED(CONFIG_KALLSYMS_BASE_RELATIVE))
 		return kallsyms_addresses[idx];
 
@@ -179,12 +182,19 @@ unsigned long kallsyms_lookup_name(const char *name)
      *  内核符号表个数
      */
 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
+        /**
+         *  从内核符号表中查找这个 函数名
+         *  并获取 
+         */
 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
 
         /** 
          *  和内核符号表的函数匹配上了
          */
 		if (strcmp(namebuf, name) == 0)
+            /**
+             *  
+             */
 			return kallsyms_sym_address(i);
 	}
 
@@ -215,6 +225,9 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
 	return module_kallsyms_on_each_symbol(fn, data);
 }
 
+/**
+ *  
+ */
 static unsigned long get_symbol_pos(unsigned long addr,
 				    unsigned long *symbolsize,
 				    unsigned long *offset)
@@ -283,6 +296,9 @@ int kallsyms_lookup_size_offset(unsigned long addr, unsigned long *symbolsize,
 {
 	char namebuf[KSYM_NAME_LEN];
 
+    /**
+     *  是否位于 _stext - _etext 之间
+     */
 	if (is_ksym_addr(addr)) {
 		get_symbol_pos(addr, symbolsize, offset);
 		return 1;

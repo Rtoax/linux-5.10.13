@@ -235,6 +235,9 @@ static __always_inline void pagefault_disabled_dec(void)    /*打开缺页  */
  */
 static inline void pagefault_disable(void)
 {
+    /**
+     *  关闭 pagefault
+     */
 	pagefault_disabled_inc();
 	/*
 	 * make sure to have issued the store before a pagefault

@@ -47,6 +47,9 @@ static void perf_output_get_handle(struct perf_output_handle *handle)
 	handle->wakeup = local_read(&rb->wakeup);
 }
 
+/**
+ *  
+ */
 static void perf_output_put_handle(struct perf_output_handle *handle)
 {
 	struct perf_buffer *rb = handle->rb;
@@ -296,6 +299,9 @@ unsigned int perf_output_skip(struct perf_output_handle *handle,
 	return __output_skip(handle, NULL, len);
 }
 
+/**
+ *  
+ */
 void perf_output_end(struct perf_output_handle *handle)
 {
 	perf_output_put_handle(handle);

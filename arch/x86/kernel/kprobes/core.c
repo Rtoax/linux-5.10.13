@@ -275,13 +275,19 @@ unsigned long recover_probed_instruction(kprobe_opcode_t *buf, unsigned long add
 	return __recover_probed_insn(buf, addr);
 }
 
-/* Check if paddr is at an instruction boundary */
+/**
+ *  Check if paddr is at an instruction boundary 
+ *  检测 paddr 是否为 指令边界
+ */
 static int can_probe(unsigned long paddr)
 {
 	unsigned long addr, __addr, offset = 0;
 	struct insn insn;
 	kprobe_opcode_t buf[MAX_INSN_SIZE];
 
+    /**
+     *  
+     */
 	if (!kallsyms_lookup_size_offset(paddr, NULL, &offset))
 		return 0;
 
@@ -311,6 +317,9 @@ static int can_probe(unsigned long paddr)
 		addr += insn.length;
 	}
 
+    /**
+     *  
+     */
 	return (addr == paddr);
 }
 
@@ -453,6 +462,9 @@ void free_insn_page(void *page)
 	module_memfree(page);
 }
 
+/**
+ *  
+ */
 static int arch_copy_kprobe(struct kprobe *p)
 {
 	struct insn insn;
@@ -495,13 +507,24 @@ int arch_prepare_kprobe(struct kprobe *p)
 	if (alternatives_text_reserved(p->addr, p->addr))
 		return -EINVAL;
 
+    /**
+     *  可以探测
+     */
 	if (!can_probe((unsigned long)p->addr))
 		return -EILSEQ;
-	/* insn: must be on special executable page on x86. */
+    
+	/**
+	 *  insn: must be on special executable page on x86. 
+	 *
+	 *  在 x86 中必须为 可执行的 page
+	 */
 	p->ainsn.insn = get_insn_slot();
 	if (!p->ainsn.insn)
 		return -ENOMEM;
 
+    /**
+     *  
+     */
 	ret = arch_copy_kprobe(p);
 	if (ret) {
 		free_insn_slot(p->ainsn.insn, 0);
@@ -525,7 +548,7 @@ void arch_arm_kprobe(struct kprobe *p)
 	text_poke(p->addr, &int3, 1);
 
     /**
-     *  
+     *  同步到所有的 CPU上
      */
 	text_poke_sync();
 

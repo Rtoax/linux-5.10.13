@@ -59,26 +59,53 @@ typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
 				    struct pt_regs *);
 
 /**
- *  
+ *  kprobe 结构体
+ *
+ *   original        kprobe
+ *     code        registered        call pre_handler
+ *  |        |     |        |       /
+ *  | instr1 |     | instr1 |      / single step instr2
+ *  |        |     |        |>----+  
+ *  | instr2 |     |  trap  |<---+   call post_handler
+ *  |        |     |        |     \  
+ *  | instr3 |     | instr3 |      \ continue
+ *  |        |     |        |
+ *  | instr4 |     | instr4 |
+ *  |        |     |        |
  */
 struct kprobe { /*  */
-	struct hlist_node hlist;    /* 被用于kprobe全局hash，索引值为被探测点的地址。 */
+    /**
+     *  被用于kprobe全局hash，索引值为被探测点的地址。
+     */
+	struct hlist_node hlist;    /*  */
 
-	/* list of kprobes for multi-handler support */
-	struct list_head list;      /* 用于链接同一被探测点的不同探测kprobe。 */
+	/**
+	 *  list of kprobes for multi-handler support 
+	 *
+	 *  用于链接同一被探测点的不同探测kprobe。
+	 */
+	struct list_head list;      /*  */
 
-	/*count the number of times this probe was temporarily disarmed 
-     如果 kprobe 嵌套，增加nmissed字段的数值*/
+	/**
+	 *  count the number of times this probe was temporarily disarmed 
+     *  如果 kprobe 嵌套，增加nmissed字段的数值
+     */
 	unsigned long nmissed;      /*  */
 
-	/* location of the probe point */
-	kprobe_opcode_t *addr;      /* 被探测点的地址。 */
+	/**
+	 *  location of the probe point 
+	 *  被探测点的地址。
+	 */
+	kprobe_opcode_t *addr;      /*  */
 
 	/* Allow user to indicate symbol name of the probe point */
 	const char *symbol_name;    /* 被探测函数的名称。 */
 
-	/* Offset into the symbol */
-	unsigned int offset;        /* 被探测点在函数内部的偏移，用于探测函数内核的指令，如果该值为0表示函数的入口。 */
+	/**
+	 *  Offset into the symbol 
+	 *  被探测点在函数内部的偏移，用于探测函数内核的指令，如果该值为0表示函数的入口。
+	 */
+	unsigned int offset;        /*  */
 
     /**
      *   original        kprobe
@@ -93,32 +120,44 @@ struct kprobe { /*  */
      *  | instr4 |     | instr4 |
      *  |        |     |        |
      */
-	/* Called before addr is executed. 在被探测指令被执行前回调*/
+	/**
+	 *  Called before addr is executed. 在被探测指令被执行前回调
+	 */
 	kprobe_pre_handler_t pre_handler;   
 
-	/* Called after addr is executed, unless... 在被探测指令执行完毕后回调（注意不是被探测函数）*/
+	/**
+	 *  Called after addr is executed, unless... 
+	 *  在被探测指令执行完毕后回调（注意不是被探测函数）
+	 */
 	kprobe_post_handler_t post_handler;
 
 	/*
 	 * ... called if executing addr causes a fault (eg. page fault).
 	 * Return 1 if it handled fault, otherwise kernel will see it.
+	 *
+	 * 在内存访问出错时被调用
 	 */
-	kprobe_fault_handler_t fault_handler;   /* 在内存访问出错时被调用 */
+	kprobe_fault_handler_t fault_handler;   /*  */
 
-	/* Saved opcode (which has been replaced with breakpoint) */
-	kprobe_opcode_t opcode; /* 保存的被探测点原始指令。 */
+	/**
+	 *  Saved opcode (which has been replaced with breakpoint) 
+	 *  保存的被探测点原始指令。
+	 */
+	kprobe_opcode_t opcode; /*  */
 
     /**
-     *  
+     *  被复制的被探测点的原始指令，用于单步执行，架构强相关。
      */
 	/* copy of the original instruction */
-	struct arch_specific_insn ainsn;    /* 被复制的被探测点的原始指令，用于单步执行，架构强相关。 */
+	struct arch_specific_insn ainsn;    /*  */
 
 	/*
 	 * Indicates various status flags.
 	 * Protected by kprobe_mutex after this kprobe is registered.
+	 *
+	 * 状态标记。
 	 */
-	u32 flags;  /* 状态标记。 */
+	u32 flags;  /*  */
 };
 
 /* Kprobe status flags */
@@ -149,7 +188,10 @@ static inline int kprobe_optimized(struct kprobe *p)
 	return p->flags & KPROBE_FLAG_OPTIMIZED;
 }
 
-/* Is this kprobe uses ftrace ? */
+/**
+ *  Is this kprobe uses ftrace ? 
+ *  这个 kprobe 是否使用了 ftrace
+ */
 static inline int kprobe_ftrace(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_FTRACE;
@@ -274,9 +316,12 @@ extern bool within_kprobe_blacklist(unsigned long addr);
 extern int kprobe_add_ksym_blacklist(unsigned long entry);
 extern int kprobe_add_area_blacklist(unsigned long start, unsigned long end);
 
+/**
+ *  
+ */
 struct kprobe_insn_cache {
 	struct mutex mutex;
-	void *(*alloc)(void);	/* allocate insn page */
+	pvoid_t (*alloc)(void);	/* allocate insn page */
 	void (*free)(void *);	/* free insn page */
 	const char *sym;	/* symbol for insn pages */
 	struct list_head pages; /* list of kprobe_insn_page */
@@ -314,14 +359,39 @@ static inline bool is_kprobe_##__name##_slot(unsigned long addr)	\
 int kprobe_cache_get_kallsym(struct kprobe_insn_cache *c, unsigned int *symnum,
 			     unsigned long *value, char *type, char *sym);
 #else /* __ARCH_WANT_KPROBES_INSN_SLOT */
-#define DEFINE_INSN_CACHE_OPS(__name)					\
-static inline bool is_kprobe_##__name##_slot(unsigned long addr)	\
-{									\
-	return 0;							\
-}
+//#define DEFINE_INSN_CACHE_OPS(__name)					\
+//static inline bool is_kprobe_##__name##_slot(unsigned long addr)	\
+//{									\
+//	return 0;							\
+//}
 #endif
 
 DEFINE_INSN_CACHE_OPS(insn);
+/* DEFINE_INSN_CACHE_OPS(insn); 展开为 */
+#ifdef __rtoax____________________________________________
+int kprobe_cache_get_kallsym(struct kprobe_insn_cache *c, unsigned int *symnum,
+          unsigned long *value, char *type, char *sym);
+
+extern struct kprobe_insn_cache kprobe_insn_slots; 
+
+static inline kprobe_opcode_t *get_insn_slot(void) 
+{
+ return __get_insn_slot(&kprobe_insn_slots); 
+} 
+
+static inline void free_insn_slot(kprobe_opcode_t *slot, int dirty)
+{
+ __free_insn_slot(&kprobe_insn_slots, slot, dirty); 
+} 
+
+static inline bool is_kprobe_insn_slot(unsigned long addr) 
+{
+ return __is_insn_slot_addr(&kprobe_insn_slots, addr); 
+};
+
+
+#endif
+
 
 #ifdef CONFIG_OPTPROBES
 /*

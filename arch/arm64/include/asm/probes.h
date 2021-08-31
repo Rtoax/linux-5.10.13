@@ -10,7 +10,7 @@
 #include <asm/insn.h>
 
 typedef u32 probe_opcode_t;
-typedef void (probes_handler_t) (u32 opcode, long addr, struct pt_regs *);
+typedef void (*probes_handler_t) (u32 opcode, long addr, struct pt_regs *);//+++*+
 
 /* architecture specific copy of original instruction */
 struct arch_probe_insn {
@@ -22,6 +22,10 @@ struct arch_probe_insn {
 };
 #ifdef CONFIG_KPROBES
 typedef u32 kprobe_opcode_t;
+
+/**
+ *  被复制的被探测点的原始指令，用于单步执行，架构强相关。
+ */
 struct arch_specific_insn {
 	struct arch_probe_insn api;
 };

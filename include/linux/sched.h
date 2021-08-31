@@ -1693,8 +1693,15 @@ struct task_struct {    /* PCB */
 	unsigned long			task_state_change;
 #endif
 
-    /* 关闭缺页 */
-    int				pagefault_disabled; //pagefault_disabled_inc() or  pagefault_disabled_dec()
+    /**
+     *  当前进程是否能触发 page-fault，使用这个变量
+     *  接口函数为 
+     *  pagefault_disable()
+     *      -> pagefault_disabled_inc()
+     *  pagefault_enable()
+     *      -> pagefault_disabled_dec()
+     */
+    int				pagefault_disabled; //
 	
 #ifdef CONFIG_MMU
 	struct task_struct		*oom_reaper_list;

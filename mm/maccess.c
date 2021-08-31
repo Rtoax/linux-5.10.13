@@ -111,9 +111,12 @@ long copy_from_kernel_nofault(void *dst, const void *src, size_t size)
 		return -ERANGE;
 
 	set_fs(KERNEL_DS);
+
+    /**
+     *  关闭 当前进程的 pagefault
+     */
 	pagefault_disable();
-	ret = __copy_from_user_inatomic(dst, (__force const void __user *)src,
-			size);
+	ret = __copy_from_user_inatomic(dst, (__force const void __user *)src, size);
 	pagefault_enable();
 	set_fs(old_fs);
 
