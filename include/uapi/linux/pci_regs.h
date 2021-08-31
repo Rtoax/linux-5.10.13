@@ -114,6 +114,8 @@
  * Decoded size can be determined by writing a value of
  * 0xffffffff to the register, and reading it back.  Only
  * 1 bits are decoded.
+ *
+ * 一个接口板通过配置寄存器报告其区域的大小和当前位置
  */
 #define PCI_BASE_ADDRESS_0	0x10	/* 32 bits */
 #define PCI_BASE_ADDRESS_1	0x14	/* 32 bits [htype 0,1 only] */
@@ -144,8 +146,11 @@
 #define PCI_CAPABILITY_LIST	0x34	/* Offset of first capability list entry */
 
 /* 0x35-0x3b are reserved */
-#define PCI_INTERRUPT_LINE	0x3c	/* 8 bits */
-#define PCI_INTERRUPT_PIN	0x3d	/* 8 bits */
+#define PCI_INTERRUPT_LINE	0x3c	/* 8 bits =60 */
+/**
+ *  如果设备不支持中断，寄存器`  PCI_INTERRUPT_PIN(60)` 为0；否则为非0
+ */
+#define PCI_INTERRUPT_PIN	0x3d	/* 8 bits =61 */
 #define PCI_MIN_GNT		0x3e	/* 8 bits */
 #define PCI_MAX_LAT		0x3f	/* 8 bits */
 

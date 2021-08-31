@@ -346,6 +346,14 @@ struct pci_p2pdma;
  * pci_write_config_byte() -  
  * pci_write_config_word() - 
  * pci_write_config_dword() - 
+ * -------IO区域---------
+ * PCI 设备的IO区域已经被集成到通用资源管理
+ * pci_resource_start() - 
+ * pci_resource_end() - 
+ * pci_resource_flags() - 
+ *  资源标志用来定义单个资源的某些特性
+ *  IORESOURCE_IO
+ *  IORESOURCE_MEM
  */
 struct pci_dev {
 	struct list_head bus_list;	/* Node in per-bus list */
@@ -456,6 +464,16 @@ struct pci_dev {
 	 * directly, use the values stored here. They might be different!
 	 */
 	unsigned int	irq;
+
+    /**
+     * PCI 设备的IO区域已经被集成到通用资源管理
+     * pci_resource_start() - 
+     * pci_resource_end() - 
+     * pci_resource_flags() - 
+     *  资源标志用来定义单个资源的某些特性
+     *  IORESOURCE_IO
+     *  IORESOURCE_MEM
+     */
 	struct resource resource[DEVICE_COUNT_RESOURCE]; /* I/O and memory regions + expansion ROMs */
 
 	bool		match_driver;		/* Skip attaching driver */
