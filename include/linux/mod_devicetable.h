@@ -34,11 +34,32 @@ typedef unsigned long kernel_ulong_t;
  *			Best practice is to use driver_data as an index
  *			into a static list of equivalent device types,
  *			instead of using it as a pointer.
+ *
+ * 用于定义该驱动程序支持的不同类型的 PCI 设备列表。见`struct pci_dev`
+ * 使用下面的宏定义修改该结构体
+ * -----------------------------------------
+ *  PCI_DEVICE
+ *  PCI_DEVICE_CLASS
+ *  MODULE_DEVICE_TABLE
  */
 struct pci_device_id {
+    /**
+     *  指定设备的 PCI 厂商和 设备 ID，
+     *  如果驱动程序可以处理任何厂商或者设备ID，该字段填 `PCI_ANY_ID`
+     */
 	__u32 vendor, device;		/* Vendor and device ID or PCI_ANY_ID*/
+    /**
+     *  PCI 子系统厂商ID 和 子系统设备 ID
+     */
 	__u32 subvendor, subdevice;	/* Subsystem ID's or PCI_ANY_ID */
+    /**
+     *  指定驱动程序支持一种 PCI 类class设备
+     *  
+     */
 	__u32 class, class_mask;	/* (class,subclass,prog-if) triplet */
+    /**
+     *  
+     */
 	kernel_ulong_t driver_data;	/* Data private to the driver */
 };
 

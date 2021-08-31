@@ -35,6 +35,26 @@
  */
 #define PCI_STD_HEADER_SIZEOF	64
 #define PCI_STD_NUM_BARS	6	/* Number of standard BARs */
+
+/**
+ *
+ *   0x0  0x1  0x2  0x3   0x4  0x5  0x6  0x7  0x8  0x9 0xa 0xb   0xc  0xd  0xe  0xf
+ *  +---------+---------+---------+---------+----+-------------+----+----+----+----+
+ *  |  vender |  device |   cmd   |  state  |ver |    class    |    |    |    |BIST|
+ *  |    ID   |    ID   |register | register| ID |    NO       |    |    |    |    |  0x00
+ *  +---------+---------+---------+---------+----+-------------+----+----+----+----+
+ *  |     base Addr0    |     base Addr1    |     base Addr2   |     base Addr3    |
+ *  |                   |                   |                  |                   |  0x10
+ *  +-------------------+-------------------+------------------+---------+---------+
+ *  |     base Addr4    |     base Addr5    |     Cardbus      | subsys  |  subsys |
+ *  |                   |                   |     CIS pointer  |venderID |venderID |  0x20
+ *  +-------------------+-------------------+------------------+----+----+----+----+
+ *  |     extend ROM    |               reserved               |irq |irq | Min| Max|
+ *  |     base Addr     |                                      |Line|pin | Gnt| Lat|  0x30
+ *  +-------------------+-------------------+------------------+----+----+----+----+
+ *
+ *  荣涛 2021年8月31日15:14:58
+ */
 #define PCI_VENDOR_ID		0x00	/* 16 bits */
 #define PCI_DEVICE_ID		0x02	/* 16 bits */
 #define PCI_COMMAND		0x04	/* 16 bits */
@@ -69,6 +89,9 @@
 #define  PCI_STATUS_DETECTED_PARITY	0x8000 /* Set on parity error */
 
 #define PCI_CLASS_REVISION	0x08	/* High 24 bits are class, low 8 revision */
+/**
+ *  
+ */
 #define PCI_REVISION_ID		0x08	/* Revision ID */
 #define PCI_CLASS_PROG		0x09	/* Reg. Level Programming Interface */
 #define PCI_CLASS_DEVICE	0x0a	/* Device class */

@@ -243,12 +243,17 @@ extern void cleanup_module(void);
 #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
 
 #ifdef MODULE
-/* Creates an alias so file2alias.c can find device table. */
+/**
+ *  Creates an alias so file2alias.c can find device table. 
+ *
+ *  struct pci_device_id 结构需要被导出到用户空间，
+ *  使热插拔和模块装载系统知道什么模块针对什么硬件设备
+ */
 #define MODULE_DEVICE_TABLE(type, name)					\
 extern typeof(name) __mod_##type##__##name##_device_table		\
   __attribute__ ((unused, alias(__stringify(name))))
 #else  /* !MODULE */
-#define MODULE_DEVICE_TABLE(type, name)
+//#define MODULE_DEVICE_TABLE(type, name)
 #endif
 
 /* Version of form [<epoch>:]<version>[-<extra-version>].

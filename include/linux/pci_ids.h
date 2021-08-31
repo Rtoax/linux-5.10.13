@@ -12,6 +12,11 @@
 
 /* Device classes and subclasses */
 
+/**
+ *  驱动程序可通过查询外设的特定 ID 来识别其设备
+ *
+ *  
+ */
 #define PCI_CLASS_NOT_DEFINED		0x0000
 #define PCI_CLASS_NOT_DEFINED_VGA	0x0001
 
@@ -2650,6 +2655,9 @@
 #define PCI_DEVICE_ID_DCI_PCCOM8	0x0002
 #define PCI_DEVICE_ID_DCI_PCCOM2	0x0004
 
+/**
+ *  厂商
+ */
 #define PCI_VENDOR_ID_INTEL		0x8086
 #define PCI_DEVICE_ID_INTEL_EESSC	0x0008
 #define PCI_DEVICE_ID_INTEL_PXHD_0	0x0320
@@ -2690,6 +2698,12 @@
 #define PCI_DEVICE_ID_INTEL_82371FB_0	0x122e
 #define PCI_DEVICE_ID_INTEL_82371FB_1	0x1230
 #define PCI_DEVICE_ID_INTEL_82371MX	0x1234
+
+/**
+ *  设备ID，如我的环境
+ *  [rongtao@localhost src]$ more /sys/bus/pci/devices/0000\:00\:00.0/device 
+ *  0x1237
+ */
 #define PCI_DEVICE_ID_INTEL_82441	0x1237
 #define PCI_DEVICE_ID_INTEL_82380FB	0x124b
 #define PCI_DEVICE_ID_INTEL_82439	0x1250

@@ -304,7 +304,49 @@ struct pci_vpd;
 struct pci_sriov;
 struct pci_p2pdma;
 
-/* The pci_dev structure describes PCI devices */
+/**
+ *  The pci_dev structure describes PCI devices 
+ *  
+ *  每个 PCI 外设由一个总线编号，一个设备编号，一个功能编号来标识
+ *  0000:00:14.0 -> 0x00a0
+ *  域 16位
+ *  总线 8位
+ *  设备 5位
+ *  功能 3位
+ *
+ *  每个 PCI 要求至少有 256字节的地址空间，前64bit是标准化的，其他属于设备相关的
+ *  前64bit标准化的PCI配置寄存器如下：
+ *
+ *   0x0  0x1  0x2  0x3   0x4  0x5  0x6  0x7  0x8  0x9 0xa 0xb   0xc  0xd  0xe  0xf
+ *  +---------+---------+---------+---------+----+-------------+----+----+----+----+
+ *  |  vender |  device |   cmd   |  state  |ver |    class    |    |    |    |BIST|
+ *  |    ID   |    ID   |register | register| ID |    NO       |    |    |    |    |  0x00
+ *  +---------+---------+---------+---------+----+-------------+----+----+----+----+
+ *  |     base Addr0    |     base Addr1    |     base Addr2   |     base Addr3    |
+ *  |                   |                   |                  |                   |  0x10
+ *  +-------------------+-------------------+------------------+---------+---------+
+ *  |     base Addr4    |     base Addr5    |     Cardbus      | subsys  |  subsys |
+ *  |                   |                   |     CIS pointer  |venderID |venderID |  0x20
+ *  +-------------------+-------------------+------------------+----+----+----+----+
+ *  |     extend ROM    |               reserved               |irq |irq | Min| Max|
+ *  |     base Addr     |                                      |Line|pin | Gnt| Lat|  0x30
+ *  +-------------------+-------------------+------------------+----+----+----+----+
+ *
+ * 接口API
+ * -------查找---------
+ * pci_get_device() - 查找特定 PCI 设备
+ * pci_get_subsys() - 同上，不同在于入参
+ * pci_get_slot() - 
+ * -------使能---------
+ * pci_enable_device() - 激活 PCI  设备
+ * -------配置---------
+ * pci_read_config_byte() -  
+ * pci_read_config_word() - 
+ * pci_read_config_dword() - 
+ * pci_write_config_byte() -  
+ * pci_write_config_word() - 
+ * pci_write_config_dword() - 
+ */
 struct pci_dev {
 	struct list_head bus_list;	/* Node in per-bus list */
 	struct pci_bus	*bus;		/* Bus this device is on */
@@ -315,11 +357,32 @@ struct pci_dev {
 	struct pci_slot	*slot;		/* Physical slot this device is in */
 
 	unsigned int	devfn;		/* Encoded device & function index */
+
+    /**
+     *  用于标识硬件制造厂商，
+     *  如 `PCI_VENDOR_ID_LOONGSON`
+     *     `PCI_VENDOR_ID_INTEL` = 0x8086
+     */
 	unsigned short	vendor;
+    /**
+     *  通常与 venderID 组成 32bit 设备标识符
+     *  设备驱动程序通常依靠于该 "设备标识符" 识别设备
+     */
 	unsigned short	device;
+    /**
+     *  有时候，相同厂商使用 子码 来进一步区分相似的设备
+     */
 	unsigned short	subsystem_vendor;
 	unsigned short	subsystem_device;
+    /**
+     *  每个外部设备属于某个类
+     */
 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
+
+    /**
+     *  修订 版本 ID，
+     *  见 `PCI_REVISION_ID`
+     */
 	u8		revision;	/* PCI revision, low byte of class word */
 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
 #ifdef CONFIG_PCIEAER
@@ -853,15 +916,45 @@ struct module;
  * @groups:	Sysfs attribute groups.
  * @driver:	Driver model structure.
  * @dynids:	List of dynamically added device IDs.
+ *
+ * PCI 驱动程序
+ *
+ * 接口API
+ * --------------
+ * pci_register_driver() - 注册
+ * pci_unregister_driver() - 注销
  */
 struct pci_driver {
 	struct list_head	node;
+    /**
+     *  驱动程序名字
+     */
 	const char		*name;
+
+    /**
+     *  
+     */
 	const struct pci_device_id *id_table;	/* Must be non-NULL for probe to be called */
+
+    /**
+     *  探测函数的指针
+     */
 	int  (*probe)(struct pci_dev *dev, const struct pci_device_id *id);	/* New device inserted */
+    /**
+     *  移除函数
+     */
 	void (*remove)(struct pci_dev *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
+    /**
+     *  挂起函数
+     */
 	int  (*suspend)(struct pci_dev *dev, pm_message_t state);	/* Device suspended */
+    /**
+     *  恢复函数
+     */
 	int  (*resume)(struct pci_dev *dev);	/* Device woken up */
+    /**
+     *  
+     */
 	void (*shutdown)(struct pci_dev *dev);
 	int  (*sriov_configure)(struct pci_dev *dev, int num_vfs); /* On PF */
 	const struct pci_error_handlers *err_handler;
@@ -1372,7 +1465,13 @@ static inline pci_bus_addr_t pci_bus_address(struct pci_dev *pdev, int bar)
 int __must_check __pci_register_driver(struct pci_driver *, struct module *,
 				       const char *mod_name);
 
-/* pci_register_driver() must be a macro so KBUILD_MODNAME can be expanded */
+/**
+ *  pci_register_driver() must be a macro so KBUILD_MODNAME can be expanded 
+ *
+ *  PCI 驱动程序 注册函数
+ *  成功 - 返回0
+ *  失败 - 返回错误编号
+ */
 #define pci_register_driver(driver)		\
 	__pci_register_driver(driver, THIS_MODULE, KBUILD_MODNAME)
 
