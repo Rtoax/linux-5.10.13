@@ -88,6 +88,9 @@ static __init int release_early_probes(void)
 /* SRCU is initialized at core_initcall */
 postcore_initcall(release_early_probes);
 
+/**
+ *  
+ */
 static inline void release_probes(struct tracepoint_func *old)
 {
 	if (old) {
@@ -129,10 +132,9 @@ static void debug_print_probes(struct tracepoint_func *funcs)
  *  
  */
 static struct tracepoint_func *
-func_add(struct tracepoint_func **funcs, struct tracepoint_func *tp_func,
-	 int prio)
+func_add(struct tracepoint_func **funcs, struct tracepoint_func *tp_func, int prio)
 {
-	struct tracepoint_func *old, *new;
+	struct tracepoint_func *old, *_new;
 	int nr_probes = 0;
 	int pos = -1;
 
@@ -152,26 +154,33 @@ func_add(struct tracepoint_func **funcs, struct tracepoint_func *tp_func,
 				return ERR_PTR(-EEXIST);
 		}
 	}
-	/* + 2 : one for new probe, one for NULL func */
-	new = allocate_probes(nr_probes + 2);
-	if (new == NULL)
+	/**
+	 *  + 2 : one for new probe, one for NULL func 
+	 *  
+	 */
+	_new = allocate_probes(nr_probes + 2);
+	if (_new == NULL)
 		return ERR_PTR(-ENOMEM);
+
+    /**
+     *  
+     */
 	if (old) {
 		if (pos < 0) {
 			pos = nr_probes;
-			memcpy(new, old, nr_probes * sizeof(struct tracepoint_func));
+			memcpy(_new, old, nr_probes * sizeof(struct tracepoint_func));
 		} else {
 			/* Copy higher priority probes ahead of the new probe */
-			memcpy(new, old, pos * sizeof(struct tracepoint_func));
+			memcpy(_new, old, pos * sizeof(struct tracepoint_func));
 			/* Copy the rest after it. */
-			memcpy(new + pos + 1, old + pos,
+			memcpy(_new + pos + 1, old + pos,
 			       (nr_probes - pos) * sizeof(struct tracepoint_func));
 		}
 	} else
 		pos = 0;
-	new[pos] = *tp_func;
-	new[nr_probes + 1].func = NULL;
-	*funcs = new;
+	_new[pos] = *tp_func;
+	_new[nr_probes + 1].func = NULL;
+	*funcs = _new;
 	debug_print_probes(*funcs);
 	return old;
 }
@@ -180,7 +189,7 @@ static void *func_remove(struct tracepoint_func **funcs,
 		struct tracepoint_func *tp_func)
 {
 	int nr_probes = 0, nr_del = 0, i;
-	struct tracepoint_func *old, *new;
+	struct tracepoint_func *old, *_new;
 
 	old = *funcs;
 
@@ -210,20 +219,23 @@ static void *func_remove(struct tracepoint_func **funcs,
 		int j = 0;
 		/* N -> M, (N > 1, M > 0) */
 		/* + 1 for NULL */
-		new = allocate_probes(nr_probes - nr_del + 1);
-		if (new == NULL)
+		_new = allocate_probes(nr_probes - nr_del + 1);
+		if (_new == NULL)
 			return ERR_PTR(-ENOMEM);
 		for (i = 0; old[i].func; i++)
 			if (old[i].func != tp_func->func
 					|| old[i].data != tp_func->data)
-				new[j++] = old[i];
-		new[nr_probes - nr_del].func = NULL;
-		*funcs = new;
+				_new[j++] = old[i];
+		_new[nr_probes - nr_del].func = NULL;
+		*funcs = _new;
 	}
 	debug_print_probes(*funcs);
 	return old;
 }
 
+/**
+ *  
+ */
 static void tracepoint_update_call(struct tracepoint *tp, struct tracepoint_func *tp_funcs, bool sync)
 {
 	void *func = tp->iterator;
@@ -266,11 +278,13 @@ static int tracepoint_add_func(struct tracepoint *tp,
 	}
 
     /**
+     *  获取原来是的  func
+     */
+	tp_funcs = rcu_dereference_protected(tp->funcs, lockdep_is_held(&tracepoints_mutex));
+
+    /**
      *  
      */
-	tp_funcs = rcu_dereference_protected(tp->funcs,
-			lockdep_is_held(&tracepoints_mutex));
-    
 	old = func_add(&tp_funcs, func, prio);
 	if (IS_ERR(old)) {
 		WARN_ON_ONCE(PTR_ERR(old) != -ENOMEM);
@@ -284,6 +298,10 @@ static int tracepoint_add_func(struct tracepoint *tp,
 	 * include/linux/tracepoint.h using rcu_dereference_sched().
 	 */
 	rcu_assign_pointer(tp->funcs, tp_funcs);
+
+    /**
+     *  
+     */
 	tracepoint_update_call(tp, tp_funcs, false);
 
     
@@ -308,8 +326,12 @@ static int tracepoint_remove_func(struct tracepoint *tp,
 	struct tracepoint_func *old, *tp_funcs;
 
 	tp_funcs = rcu_dereference_protected(tp->funcs,
-			lockdep_is_held(&tracepoints_mutex));
-	old = func_remove(&tp_funcs, func);
+			            lockdep_is_held(&tracepoints_mutex));
+
+    /**
+     *  移除
+     */
+    old = func_remove(&tp_funcs, func);
 	if (IS_ERR(old)) {
 		WARN_ON_ONCE(PTR_ERR(old) != -ENOMEM);
 		return PTR_ERR(old);
@@ -320,6 +342,9 @@ static int tracepoint_remove_func(struct tracepoint *tp,
 		if (tp->unregfunc && static_key_enabled(&tp->key))
 			tp->unregfunc();
 
+        /**
+         *  
+         */
 		static_key_disable(&tp->key);
 		rcu_assign_pointer(tp->funcs, tp_funcs);
 	} else {
@@ -357,6 +382,10 @@ int tracepoint_probe_register_prio(struct tracepoint *tp, void *probe,
 	tp_func.func = probe;
 	tp_func.data = data;
 	tp_func.prio = prio;
+
+    /**
+     *  将 tracepoint_func 添加到 tracepoint 中
+     */
 	ret = tracepoint_add_func(tp, &tp_func, prio);
 	mutex_unlock(&tracepoints_mutex);
 	return ret;
@@ -397,6 +426,10 @@ int tracepoint_probe_unregister(struct tracepoint *tp, void *probe, void *data)
 	mutex_lock(&tracepoints_mutex);
 	tp_func.func = probe;
 	tp_func.data = data;
+
+    /**
+     *  
+     */
 	ret = tracepoint_remove_func(tp, &tp_func);
 	mutex_unlock(&tracepoints_mutex);
 	return ret;

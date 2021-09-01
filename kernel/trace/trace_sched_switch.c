@@ -19,6 +19,7 @@
 static int		sched_cmdline_ref;
 static int		sched_tgid_ref;
 static DEFINE_MUTEX(sched_register_mutex);
+struct mutex sched_register_mutex = __MUTEX_INITIALIZER(sched_register_mutex);//++++
 
 /**
  *  
@@ -72,7 +73,7 @@ static int tracing_sched_register(void)
 	}
 
     /**
-     *  
+     *  sched_switch
      */
 	ret = register_trace_sched_switch(probe_sched_switch, NULL);
 	if (ret) {
@@ -97,7 +98,7 @@ static void tracing_sched_unregister(void)
 }
 
 /**
- *  
+ *  启动 sched_switch tracing
  */
 static void tracing_start_sched_switch(int ops)
 {
@@ -121,6 +122,7 @@ static void tracing_start_sched_switch(int ops)
      */
 	if (sched_register && (sched_cmdline_ref || sched_tgid_ref))
 		tracing_sched_register();
+    
 	mutex_unlock(&sched_register_mutex);
 }
 

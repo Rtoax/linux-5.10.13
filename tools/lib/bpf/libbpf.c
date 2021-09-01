@@ -8973,6 +8973,9 @@ long libbpf_get_error(const void *ptr)
 	return PTR_ERR_OR_ZERO(ptr);
 }
 
+/**
+ *  加载 bpf elf 程序到内核
+ */
 int bpf_prog_load(const char *file, enum bpf_prog_type type,
 		  struct bpf_object **pobj, int *prog_fd)
 {
@@ -9046,6 +9049,9 @@ int bpf_prog_load_xattr(const struct bpf_prog_load_attr *attr,
 		return -ENOENT;
 	}
 
+    /**
+     *  加载
+     */
 	err = bpf_object__load(obj);
 	if (err) {
 		bpf_object__close(obj);

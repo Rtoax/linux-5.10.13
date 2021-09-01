@@ -32,6 +32,9 @@ struct btf_header {
 	__u32   str_len;
 };
 
+/**
+ *  BPF type Format
+ */
 struct btf {
 	const char *strings;
 	struct btf_type **types;

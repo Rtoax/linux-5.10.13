@@ -436,6 +436,9 @@ static void sched_wakeup(struct timechart *tchart, int cpu, u64 timestamp,
 	}
 }
 
+/**
+ *  
+ */
 static void sched_switch(struct timechart *tchart, int cpu, u64 timestamp,
 			 int prev_pid, int next_pid, u64 prev_state,
 			 const char *backtrace)

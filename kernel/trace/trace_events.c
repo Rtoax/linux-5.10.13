@@ -343,6 +343,9 @@ void trace_event_enable_cmd_record(bool enable)
 	} while_for_each_event_file();
 }
 
+/**
+ *  
+ */
 void trace_event_enable_tgid_record(bool enable)
 {
 	struct trace_event_file *file;

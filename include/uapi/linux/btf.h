@@ -5,9 +5,15 @@
 
 #include <linux/types.h>
 
+/**
+ *  识别码
+ */
 #define BTF_MAGIC	0xeB9F
 #define BTF_VERSION	1
 
+/**
+ *  BTF  头
+ */
 struct btf_header {
 	__u16	magic;
 	__u8	version;
@@ -28,6 +34,9 @@ struct btf_header {
 /* Max # of struct/union/enum members or func args */
 #define BTF_MAX_VLEN	0xffff
 
+/**
+ *  
+ */
 struct btf_type {
 	__u32 name_off;
 	/* "info" bits arrangement
