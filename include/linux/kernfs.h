@@ -177,6 +177,9 @@ struct kernfs_syscall_ops { /*  */
 			 struct kernfs_root *root);
 };
 
+/**
+ *  
+ */
 struct kernfs_root {
 	/* published fields */
 	struct kernfs_node	*kn;

@@ -213,8 +213,13 @@ struct obj_cgroup {
  * page cache and RSS per cgroup. We would eventually like to provide
  * statistics based on the statistics developed by Rik Van Riel for clock-pro,
  * to help the administrator determine what knobs to tune.
+ * 
+ *  内存子系统 的资源控制统计信息结构
  */
 struct mem_cgroup {
+    /**
+     *  
+     */
 	struct cgroup_subsys_state css;
 
 	/* Private memcg ID. Used to ID objects that outlive the cgroup */
@@ -223,6 +228,9 @@ struct mem_cgroup {
 	/* Accounted resources */
 	struct page_counter memory;		/* Both v1 & v2 */
 
+    /**
+     *  
+     */
 	union {
 		struct page_counter swap;	/* v2 only */
 		struct page_counter memsw;	/* v1 only */
@@ -232,9 +240,15 @@ struct mem_cgroup {
 	struct page_counter kmem;		/* v1 only */
 	struct page_counter tcpmem;		/* v1 only */
 
+    /**
+     *  
+     */
 	/* Range enforcement for interrupt charges */
 	struct work_struct high_work;
 
+    /**
+     *  
+     */
 	unsigned long soft_limit;
 
 	/* vmpressure notifications */

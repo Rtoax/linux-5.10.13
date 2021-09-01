@@ -6,12 +6,22 @@
 #include <linux/kernel.h>
 #include <asm/page.h>
 
+/**
+ *  
+ */
 struct page_counter {
+    /**
+     *  
+     */
 	atomic_long_t usage;
 	unsigned long min;
 	unsigned long low;
 	unsigned long high;
 	unsigned long max;
+
+    /**
+     *  
+     */
 	struct page_counter *parent;
 
 	/* effective memory.min and memory.min usage tracking */

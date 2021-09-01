@@ -38,10 +38,30 @@ struct poll_table_struct;
 #define MAX_CGROUP_ROOT_NAMELEN 64
 #define MAX_CFTYPE_NAME		64
 
+/**
+ *  
+ */
 /* define the enumeration of all cgroup subsystems */
 #define SUBSYS(_x) _x ## _cgrp_id,
 enum cgroup_subsys_id {  /*  */
 #include <linux/cgroup_subsys.h>
+    /**
+     *  展开
+     */
+    cpuset_cgrp_id,
+    cpu_cgrp_id,
+    cpuacct_cgrp_id,
+    io_cgrp_id,
+    memory_cgrp_id,
+    devices_cgrp_id,
+    freezer_cgrp_id,
+    net_cls_cgrp_id,
+    perf_event_cgrp_id,
+    net_prio_cgrp_id,
+    hugetlb_cgrp_id,
+    pids_cgrp_id,
+    rdma_cgrp_id,
+    debug_cgrp_id,
 	CGROUP_SUBSYS_COUNT,
 };
 #undef SUBSYS
@@ -184,6 +204,7 @@ struct cgroup_subsys_state {
 	 */
 	struct cgroup_subsys_state *parent;
 };
+typedef struct cgroup_subsys_state * cgroup_subsys_state_t; //++++
 
 /*
  * A css_set is a structure holding pointers to a set of
@@ -191,6 +212,8 @@ struct cgroup_subsys_state {
  * object and speeds up fork()/exit(), since a single inc/dec and a
  * list_add()/del() can bump the reference count on the entire cgroup
  * set for a task.
+ *
+ * cgroup subsys state 集合
  */
 struct css_set {    /* cgroup subsys state */
 	/*
@@ -255,6 +278,8 @@ struct css_set {    /* cgroup subsys state */
 	/*
 	 * List of cgrp_cset_links pointing at cgroups referenced from this
 	 * css_set.  Protected by css_set_lock.
+	 *
+	 * 
 	 */
 	struct list_head cgrp_links;
 
@@ -276,9 +301,15 @@ struct css_set {    /* cgroup subsys state */
 	struct cgroup *mg_dst_cgrp;
 	struct css_set *mg_dst_cset;
 
+    /**
+     *  
+     */
 	/* dead and being drained, ignore for migration */
 	bool dead;
 
+    /**
+     *  
+     */
 	/* For RCU-protected deletion */
 	struct rcu_head rcu_head;
 };
@@ -355,10 +386,16 @@ struct cgroup_freezer_state {
 	int nr_frozen_tasks;
 };
 
+/**
+ *  
+ */
 struct cgroup {
 	/* self css with NULL ->ss, points back to this cgroup */
 	struct cgroup_subsys_state self;
 
+    /**
+     *  
+     */
 	unsigned long flags;		/* "unsigned long" so bitops work */
 
 	/*
@@ -420,9 +457,15 @@ struct cgroup {
 	u16 old_subtree_control;
 	u16 old_subtree_ss_mask;
 
+    /**
+     *  
+     */
 	/* Private pointers for each registered subsystem */
 	struct cgroup_subsys_state __rcu *subsys[CGROUP_SUBSYS_COUNT];
 
+    /**
+     *  
+     */
 	struct cgroup_root *root;
 
 	/*
@@ -452,6 +495,10 @@ struct cgroup {
 
 	/* per-cpu recursive resource statistics */
 	struct cgroup_rstat_cpu __percpu *rstat_cpu;/* 再次资源统计 */
+
+    /**
+     *  
+     */
 	struct list_head rstat_css_list;
 
 	/* cgroup basic resource statistics */
@@ -494,6 +541,9 @@ struct cgroup {
  * internal to cgroup core.  Don't access directly from controllers.
  */
 struct cgroup_root {/*  */
+    /**
+     *  
+     */
 	struct kernfs_root *kf_root;
 
 	/* The bitmask of subsystems attached to this hierarchy */
@@ -517,6 +567,9 @@ struct cgroup_root {/*  */
 	/* Hierarchy-specific flags */
 	unsigned int flags;
 
+    /**
+     *  
+     */
 	/* The path to use for release notifications. */
 	char release_agent_path[PATH_MAX];
 
@@ -619,9 +672,14 @@ struct cftype {  /*  */
 /*
  * Control Group subsystem type.
  * See Documentation/admin-guide/cgroup-v1/cgroups.rst for details
- *//* CSS 控制子系统 */
+ *
+ * CSS(cgroup subsys state) 控制子系统 
+ */
 struct cgroup_subsys {
-	struct cgroup_subsys_state *(*css_alloc)(struct cgroup_subsys_state *parent_css);
+    /**
+     *  
+     */
+	cgroup_subsys_state_t (*css_alloc)(struct cgroup_subsys_state *parent_css);
 	int (*css_online)(struct cgroup_subsys_state *css); //在 cgroup 成功完成所有分配之后调用
 	void (*css_offline)(struct cgroup_subsys_state *css);//在 cgroup 成功释放之前调用
 	void (*css_released)(struct cgroup_subsys_state *css);
@@ -643,6 +701,9 @@ struct cgroup_subsys {
 	void (*release)(struct task_struct *task);
 	void (*bind)(struct cgroup_subsys_state *root_css);
 
+    /**
+     *  
+     */
 	bool early_init:1;  //标记子系统是否要提前初始化
 
 	/*
@@ -685,15 +746,26 @@ struct cgroup_subsys {
 	bool broken_hierarchy:1;
 	bool warned_broken_hierarchy:1;
 
+    
 	/* the following two fields are initialized automtically during boot */
-	int id; //在 cgroup 中已注册的子系统的唯一标识
-	const char *name;   //子系统的”名称“
+    /**
+     *  在 cgroup 中已注册的子系统的唯一标识
+     */
+	int id; //
+
+    /**
+     *  子系统的”名称“
+     */
+	const char *name;   //
 
 	/* optional, initialized automatically during boot if not set */
 	const char *legacy_name;
 
+    /**
+     *  `root` 字段指向 cgroup 层级结构的根
+     */
 	/* link to parent, protected by cgroup_lock() */
-	struct cgroup_root *root;   //`root` 字段指向 cgroup 层级结构的根
+	struct cgroup_root *root;   //
 
 	/* idr for css->id */
 	struct idr css_idr;
