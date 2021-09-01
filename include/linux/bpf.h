@@ -692,33 +692,7 @@ void bpf_image_ksym_del(struct bpf_ksym *ksym);
 void bpf_ksym_add(struct bpf_ksym *ksym);
 void bpf_ksym_del(struct bpf_ksym *ksym);
 #else
-static inline int bpf_trampoline_link_prog(struct bpf_prog *prog,
-					   struct bpf_trampoline *tr)
-{
-	return -ENOTSUPP;
-}
-static inline int bpf_trampoline_unlink_prog(struct bpf_prog *prog,
-					     struct bpf_trampoline *tr)
-{
-	return -ENOTSUPP;
-}
-static inline struct bpf_trampoline *bpf_trampoline_get(u64 key,
-							struct bpf_attach_target_info *tgt_info)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-static inline void bpf_trampoline_put(struct bpf_trampoline *tr) {}
-#define DEFINE_BPF_DISPATCHER(name)
-#define DECLARE_BPF_DISPATCHER(name)
-#define BPF_DISPATCHER_FUNC(name) bpf_dispatcher_nop_func
-#define BPF_DISPATCHER_PTR(name) NULL
-static inline void bpf_dispatcher_change_prog(struct bpf_dispatcher *d,
-					      struct bpf_prog *from,
-					      struct bpf_prog *to) {}
-static inline bool is_bpf_image_address(unsigned long address)
-{
-	return false;
-}
+/*  */
 #endif
 
 struct bpf_func_info_aux {
@@ -925,28 +899,8 @@ static inline void bpf_module_put(const void *data, struct module *owner)
 		module_put(owner);
 }
 #else
-static inline const struct bpf_struct_ops *bpf_struct_ops_find(u32 type_id)
-{
-	return NULL;
-}
-static inline void bpf_struct_ops_init(struct btf *btf,
-				       struct bpf_verifier_log *log)
-{
-}
-static inline bool bpf_try_module_get(const void *data, struct module *owner)
-{
-	return try_module_get(owner);
-}
-static inline void bpf_module_put(const void *data, struct module *owner)
-{
-	module_put(owner);
-}
-static inline int bpf_struct_ops_map_sys_lookup_elem(struct bpf_map *map,
-						     void *key,
-						     void *value)
-{
-	return -EINVAL;
-}
+/*  */
+
 #endif
 
 struct bpf_array {
@@ -1448,199 +1402,7 @@ struct bpf_link *bpf_link_by_id(u32 id);
 
 const struct bpf_func_proto *bpf_base_func_proto(enum bpf_func_id func_id);
 #else /* !CONFIG_BPF_SYSCALL */
-static inline struct bpf_prog *bpf_prog_get(u32 ufd)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-
-static inline struct bpf_prog *bpf_prog_get_type_dev(u32 ufd,
-						     enum bpf_prog_type type,
-						     bool attach_drv)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-
-static inline void bpf_prog_add(struct bpf_prog *prog, int i)
-{
-}
-
-static inline void bpf_prog_sub(struct bpf_prog *prog, int i)
-{
-}
-
-static inline void bpf_prog_put(struct bpf_prog *prog)
-{
-}
-
-static inline void bpf_prog_inc(struct bpf_prog *prog)
-{
-}
-
-static inline struct bpf_prog *__must_check
-bpf_prog_inc_not_zero(struct bpf_prog *prog)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-
-static inline int __bpf_prog_charge(struct user_struct *user, u32 pages)
-{
-	return 0;
-}
-
-static inline void __bpf_prog_uncharge(struct user_struct *user, u32 pages)
-{
-}
-
-static inline void bpf_link_init(struct bpf_link *link, enum bpf_link_type type,
-				 const struct bpf_link_ops *ops,
-				 struct bpf_prog *prog)
-{
-}
-
-static inline int bpf_link_prime(struct bpf_link *link,
-				 struct bpf_link_primer *primer)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline int bpf_link_settle(struct bpf_link_primer *primer)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline void bpf_link_cleanup(struct bpf_link_primer *primer)
-{
-}
-
-static inline void bpf_link_inc(struct bpf_link *link)
-{
-}
-
-static inline void bpf_link_put(struct bpf_link *link)
-{
-}
-
-static inline int bpf_obj_get_user(const char __user *pathname, int flags)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline struct net_device  *__dev_map_lookup_elem(struct bpf_map *map,
-						       u32 key)
-{
-	return NULL;
-}
-
-static inline struct net_device  *__dev_map_hash_lookup_elem(struct bpf_map *map,
-							     u32 key)
-{
-	return NULL;
-}
-static inline bool dev_map_can_have_prog(struct bpf_map *map)
-{
-	return false;
-}
-
-static inline void __dev_flush(void)
-{
-}
-
-struct xdp_buff;
-struct bpf_dtab_netdev;
-
-static inline
-int dev_xdp_enqueue(struct net_device *dev, struct xdp_buff *xdp,
-		    struct net_device *dev_rx)
-{
-	return 0;
-}
-
-static inline
-int dev_map_enqueue(struct bpf_dtab_netdev *dst, struct xdp_buff *xdp,
-		    struct net_device *dev_rx)
-{
-	return 0;
-}
-
-struct sk_buff;
-
-static inline int dev_map_generic_redirect(struct bpf_dtab_netdev *dst,
-					   struct sk_buff *skb,
-					   struct bpf_prog *xdp_prog)
-{
-	return 0;
-}
-
-static inline
-struct bpf_cpu_map_entry *__cpu_map_lookup_elem(struct bpf_map *map, u32 key)
-{
-	return NULL;
-}
-
-static inline void __cpu_map_flush(void)
-{
-}
-
-static inline int cpu_map_enqueue(struct bpf_cpu_map_entry *rcpu,
-				  struct xdp_buff *xdp,
-				  struct net_device *dev_rx)
-{
-	return 0;
-}
-
-static inline bool cpu_map_prog_allowed(struct bpf_map *map)
-{
-	return false;
-}
-
-static inline struct bpf_prog *bpf_prog_get_type_path(const char *name,
-				enum bpf_prog_type type)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-
-static inline int bpf_prog_test_run_xdp(struct bpf_prog *prog,
-					const union bpf_attr *kattr,
-					union bpf_attr __user *uattr)
-{
-	return -ENOTSUPP;
-}
-
-static inline int bpf_prog_test_run_skb(struct bpf_prog *prog,
-					const union bpf_attr *kattr,
-					union bpf_attr __user *uattr)
-{
-	return -ENOTSUPP;
-}
-
-static inline int bpf_prog_test_run_tracing(struct bpf_prog *prog,
-					    const union bpf_attr *kattr,
-					    union bpf_attr __user *uattr)
-{
-	return -ENOTSUPP;
-}
-
-static inline int bpf_prog_test_run_flow_dissector(struct bpf_prog *prog,
-						   const union bpf_attr *kattr,
-						   union bpf_attr __user *uattr)
-{
-	return -ENOTSUPP;
-}
-
-static inline void bpf_map_put(struct bpf_map *map)
-{
-}
-
-static inline struct bpf_prog *bpf_prog_by_id(u32 id)
-{
-	return ERR_PTR(-ENOTSUPP);
-}
-
-static inline const struct bpf_func_proto *
-bpf_base_func_proto(enum bpf_func_id func_id)
-{
-	return NULL;
-}
+/*  */
 #endif /* CONFIG_BPF_SYSCALL */
 
 static inline struct bpf_prog *bpf_prog_get_type(u32 ufd,
@@ -1693,30 +1455,8 @@ static inline bool bpf_map_is_dev_bound(struct bpf_map *map)
 struct bpf_map *bpf_map_offload_map_alloc(union bpf_attr *attr);
 void bpf_map_offload_map_free(struct bpf_map *map);
 #else
-static inline int bpf_prog_offload_init(struct bpf_prog *prog,
-					union bpf_attr *attr)
-{
-	return -EOPNOTSUPP;
-}
+/*  */
 
-static inline bool bpf_prog_is_dev_bound(struct bpf_prog_aux *aux)
-{
-	return false;
-}
-
-static inline bool bpf_map_is_dev_bound(struct bpf_map *map)
-{
-	return false;
-}
-
-static inline struct bpf_map *bpf_map_offload_map_alloc(union bpf_attr *attr)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
-
-static inline void bpf_map_offload_map_free(struct bpf_map *map)
-{
-}
 #endif /* CONFIG_NET && CONFIG_BPF_SYSCALL */
 
 #if defined(CONFIG_BPF_STREAM_PARSER)
@@ -1761,23 +1501,8 @@ int bpf_fd_reuseport_array_lookup_elem(struct bpf_map *map, void *key,
 int bpf_fd_reuseport_array_update_elem(struct bpf_map *map, void *key,
 				       void *value, u64 map_flags);
 #else
-static inline void bpf_sk_reuseport_detach(struct sock *sk)
-{
-}
+/*  */
 
-#ifdef CONFIG_BPF_SYSCALL
-static inline int bpf_fd_reuseport_array_lookup_elem(struct bpf_map *map,
-						     void *key, void *value)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline int bpf_fd_reuseport_array_update_elem(struct bpf_map *map,
-						     void *key, void *value,
-						     u64 map_flags)
-{
-	return -EOPNOTSUPP;
-}
 #endif /* CONFIG_BPF_SYSCALL */
 #endif /* defined(CONFIG_INET) && defined(CONFIG_BPF_SYSCALL) */
 
@@ -1858,26 +1583,8 @@ u32 bpf_sock_convert_ctx_access(enum bpf_access_type type,
 				struct bpf_prog *prog,
 				u32 *target_size);
 #else
-static inline bool bpf_sock_common_is_valid_access(int off, int size,
-						   enum bpf_access_type type,
-						   struct bpf_insn_access_aux *info)
-{
-	return false;
-}
-static inline bool bpf_sock_is_valid_access(int off, int size,
-					    enum bpf_access_type type,
-					    struct bpf_insn_access_aux *info)
-{
-	return false;
-}
-static inline u32 bpf_sock_convert_ctx_access(enum bpf_access_type type,
-					      const struct bpf_insn *si,
-					      struct bpf_insn *insn_buf,
-					      struct bpf_prog *prog,
-					      u32 *target_size)
-{
-	return 0;
-}
+/*  */
+
 #endif
 
 #ifdef CONFIG_INET
@@ -1908,36 +1615,8 @@ u32 bpf_xdp_sock_convert_ctx_access(enum bpf_access_type type,
 				    struct bpf_prog *prog,
 				    u32 *target_size);
 #else
-static inline bool bpf_tcp_sock_is_valid_access(int off, int size,
-						enum bpf_access_type type,
-						struct bpf_insn_access_aux *info)
-{
-	return false;
-}
+/*  */
 
-static inline u32 bpf_tcp_sock_convert_ctx_access(enum bpf_access_type type,
-						  const struct bpf_insn *si,
-						  struct bpf_insn *insn_buf,
-						  struct bpf_prog *prog,
-						  u32 *target_size)
-{
-	return 0;
-}
-static inline bool bpf_xdp_sock_is_valid_access(int off, int size,
-						enum bpf_access_type type,
-						struct bpf_insn_access_aux *info)
-{
-	return false;
-}
-
-static inline u32 bpf_xdp_sock_convert_ctx_access(enum bpf_access_type type,
-						  const struct bpf_insn *si,
-						  struct bpf_insn *insn_buf,
-						  struct bpf_prog *prog,
-						  u32 *target_size)
-{
-	return 0;
-}
 #endif /* CONFIG_INET */
 
 enum bpf_text_poke_type {

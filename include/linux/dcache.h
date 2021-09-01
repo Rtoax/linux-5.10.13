@@ -86,16 +86,39 @@ extern struct dentry_stat_t dentry_stat;
 
 #define d_lock	d_lockref.lock
 
+/**
+ *  
+ */
 struct dentry {
 	/* RCU lookup touched fields */
 	unsigned int d_flags;		/* protected by d_lock */
 	seqcount_spinlock_t d_seq;	/* per dentry seqlock */
+
+    /**
+     *  
+     */
 	struct hlist_bl_node d_hash;	/* lookup hash list */
+
+    /**
+     *  父节点
+     */
 	struct dentry *d_parent;	/* parent directory */
+
+    /**
+     *  
+     */
 	struct qstr d_name;
+
+    /**
+     *  
+     */
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */
-	unsigned char d_iname[DNAME_INLINE_LEN];	/* small names */
+
+    /**
+     *  
+     */
+    unsigned char d_iname[DNAME_INLINE_LEN];	/* small names */
 
 	/* Ref lookup also touches following */
 	struct lockref d_lockref;	/* per-dentry lock and refcount */
@@ -134,12 +157,15 @@ enum dentry_d_lock_class
 	DENTRY_D_LOCK_NESTED
 };
 
+/**
+ *  
+ */
 struct dentry_operations {
 	int (*d_revalidate)(struct dentry *, unsigned int);
 	int (*d_weak_revalidate)(struct dentry *, unsigned int);
 	int (*d_hash)(const struct dentry *, struct qstr *);
 	int (*d_compare)(const struct dentry *,
-			unsigned int, const char *, const struct qstr *);
+			        unsigned int, const char *, const struct qstr *);
 	int (*d_delete)(const struct dentry *);
 	int (*d_init)(struct dentry *);
 	void (*d_release)(struct dentry *);
@@ -148,7 +174,7 @@ struct dentry_operations {
 	pchar_t (*d_dname)(struct dentry *, char *, int);
 	vfsmount_t (*d_automount)(struct path *);
 	int (*d_manage)(const struct path *, bool);
-	struct dentry *(*d_real)(struct dentry *, const struct inode *);
+	p_dentry (*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;
 
 /*
