@@ -403,14 +403,42 @@ struct usb_interface_descriptor {
 
 /*-------------------------------------------------------------------------*/
 
-/* USB_DT_ENDPOINT: Endpoint descriptor */
+/**
+ *  USB_DT_ENDPOINT: Endpoint descriptor 
+ *
+ * USB 端点 信息 - 包含了所有 USB 特定的数据
+ */
 struct usb_endpoint_descriptor {
 	__u8  bLength;
 	__u8  bDescriptorType;
 
+    /**
+     *  特定端点的 USB 地址
+     *  这 8bit 中包含了端点的方向，该字段可以结合位掩码 USB_DIR_OUT 和 USB_DIR_IN 来使用
+     *  用来确定该端点的数据的传向设备还是主机
+     */
 	__u8  bEndpointAddress;
+
+    /**
+     *  端点的类型
+     *  该值可以结合位掩码 USB_ENDPOINT_XFERTYPE_MASK 使用
+     *  来确定此断点的类型哪一种
+     *      USB_ENDPOINT_XFER_CONTROL   控制端点
+     *      USB_ENDPOINT_XFER_ISOC      等时端点
+     *      USB_ENDPOINT_XFER_BULK      批量端点
+     *      USB_ENDPOINT_XFER_INT       中断端点
+     */
 	__u8  bmAttributes;
+    /**
+     *  该端点一次可以处理的最大字节数量
+     *  虽然可以接收比这个数值大的数据，但是会被分割成 这个数值大小
+     */
 	__le16 wMaxPacketSize;
+
+    /**
+     *  如果端点是中断类型(USB_ENDPOINT_XFER_INT),该值为端点的间隔设置
+     *  也就是说，端点的中断请求间隔时间。
+     */
 	__u8  bInterval;
 
 	/* NOTE:  these two are _only_ in audio endpoints. */
@@ -430,10 +458,10 @@ struct usb_endpoint_descriptor {
 #define USB_ENDPOINT_DIR_MASK		0x80
 
 #define USB_ENDPOINT_XFERTYPE_MASK	0x03	/* in bmAttributes */
-#define USB_ENDPOINT_XFER_CONTROL	0
-#define USB_ENDPOINT_XFER_ISOC		1
-#define USB_ENDPOINT_XFER_BULK		2
-#define USB_ENDPOINT_XFER_INT		3
+#define USB_ENDPOINT_XFER_CONTROL	0   /* 控制端点 */
+#define USB_ENDPOINT_XFER_ISOC		1   /* 等时端点 */
+#define USB_ENDPOINT_XFER_BULK		2   /* 批量端点 */
+#define USB_ENDPOINT_XFER_INT		3   /* 中断端点 */
 #define USB_ENDPOINT_MAX_ADJUSTABLE	0x80
 
 #define USB_ENDPOINT_MAXP_MASK	0x07ff

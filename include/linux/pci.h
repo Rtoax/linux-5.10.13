@@ -808,13 +808,18 @@ static inline int pcibios_err_to_errno(int err)
 
 /* Low-level architecture-dependent routines */
 
+/**
+ *  
+ *  参见 `pci_raw_ops`
+ */
 struct pci_ops {
 	int (*add_bus)(struct pci_bus *bus);
 	void (*remove_bus)(struct pci_bus *bus);
-	void __iomem *(*map_bus)(struct pci_bus *bus, unsigned int devfn, int where);
+	pvoid__iomem_t (*map_bus)(struct pci_bus *bus, unsigned int devfn, int where);
 	int (*read)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *val);
 	int (*write)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 val);
 };
+typedef void __iomem * pvoid__iomem_t;//+++
 
 /*
  * ACPI needs to be able to access PCI config space before we've done a

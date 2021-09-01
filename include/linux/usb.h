@@ -63,8 +63,13 @@ struct ep_device;
  *
  * USB requests are always queued to a given endpoint, identified by a
  * descriptor within an active interface in a given USB configuration.
+ *
+ * USB 端点
  */
 struct usb_host_endpoint {
+    /**
+     * USB 端点 信息
+     */
 	struct usb_endpoint_descriptor		desc;
 	struct usb_ss_ep_comp_descriptor	ss_ep_comp;
 	struct usb_ssp_isoc_ep_comp_descriptor	ssp_isoc_ep_comp;
@@ -78,7 +83,11 @@ struct usb_host_endpoint {
 	int streams;
 };
 
-/* host-side wrapper for one interface setting's parsed descriptors */
+/**
+ *  host-side wrapper for one interface setting's parsed descriptors 
+ *
+ *  用于 USB 接口的可选设置
+ */
 struct usb_host_interface {
 	struct usb_interface_descriptor	desc;
 
@@ -228,14 +237,25 @@ usb_find_last_int_out_endpoint(struct usb_host_interface *alt,
  * devices manage to mess this up, and the structures aren't necessarily
  * stored in numerical order anyhow.  Use usb_altnum_to_altsetting() to
  * look up an alternate setting in the altsetting array based on its number.
+ *
+ * USB 接口
+ *  USB 端点被捆绑为接口
  */
 struct usb_interface {
 	/* array of alternate settings for this interface,
-	 * stored in no particular order */
+	 * stored in no particular order
+	 *
+	 * 一个接口结构体数组，包含了所有可能用于该接口的可选设置
+	 * 数量为 `num_altsetting`
+	 */
 	struct usb_host_interface *altsetting;
 
 	struct usb_host_interface *cur_altsetting;	/* the currently
 					 * active alternate setting */
+
+    /**
+     *  altsetting 的数量
+     */
 	unsigned num_altsetting;	/* number of alternate settings */
 
 	/* If there is an interface association descriptor then it will list

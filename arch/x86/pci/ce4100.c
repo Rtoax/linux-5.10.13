@@ -315,6 +315,9 @@ static const struct pci_raw_ops ce4100_pci_conf = {
 	.write	= ce4100_conf_write,
 };
 
+/**
+ *  
+ */
 int __init ce4100_pci_init(void)
 {
 	init_sim_regs();

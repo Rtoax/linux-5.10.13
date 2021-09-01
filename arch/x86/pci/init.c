@@ -21,6 +21,9 @@ static __init int pci_arch_init(void)
 	if (x86_init.pci.arch_init && !x86_init.pci.arch_init())
 		return 0;
 
+    /**
+     *  
+     */
 	pci_pcbios_init();
 
 	/*

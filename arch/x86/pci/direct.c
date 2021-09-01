@@ -176,6 +176,9 @@ static int pci_conf2_write(unsigned int seg, unsigned int bus,
 
 #undef PCI_CONF2_ADDRESS
 
+/**
+ *  
+ */
 static const struct pci_raw_ops pci_direct_conf2 = {
 	.read =		pci_conf2_read,
 	.write =	pci_conf2_write,
@@ -264,8 +267,11 @@ void __init pci_direct_init(int type)
 {
 	if (type == 0)
 		return;
-	printk(KERN_INFO "PCI: Using configuration type %d for base access\n",
-		 type);
+	printk(KERN_INFO "PCI: Using configuration type %d for base access\n", type);
+
+    /**
+     *  
+     */
 	if (type == 1) {
 		raw_pci_ops = &pci_direct_conf1;
 		if (raw_pci_ext_ops)
@@ -277,6 +283,10 @@ void __init pci_direct_init(int type)
 		raw_pci_ext_ops = &pci_direct_conf1;
 		return;
 	}
+
+    /**
+     *  
+     */
 	raw_pci_ops = &pci_direct_conf2;
 }
 
