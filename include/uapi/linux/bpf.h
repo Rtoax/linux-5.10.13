@@ -169,28 +169,127 @@ enum bpf_map_type {
  */
 enum bpf_prog_type {
 	BPF_PROG_TYPE_UNSPEC,
+    /**
+     *  套接字过滤器
+     */
 	BPF_PROG_TYPE_SOCKET_FILTER,
+
+    /**
+     *  kprobe 程序
+     */
 	BPF_PROG_TYPE_KPROBE,
+
+    /**
+     *  网络分类程序
+     */
 	BPF_PROG_TYPE_SCHED_CLS,
 	BPF_PROG_TYPE_SCHED_ACT,
+
+    /**
+     *  tracepoint 跟踪点
+     *  bpf 也宣告了自己的跟踪点 /sys/kernel/debug/tracing/events/bpf
+     */
 	BPF_PROG_TYPE_TRACEPOINT,
+
+    /**
+     *  XDP 程序 - eXpress Data Path
+     *  XDP 的操作, 见 `enum xdp_action;`
+     *      XDP_PASS, XDP_DROP, XDP_TX
+     */
 	BPF_PROG_TYPE_XDP,
+
+    /**
+     *  perf_event
+     *  当BPF程序附加到 perf 时间上时，每次perf产生分析数据时，程序代码都将被执行
+     */
 	BPF_PROG_TYPE_PERF_EVENT,
+
+    /**
+     *  cgroup套接字程序
+     *  可以将 BPF 逻辑附加到 控制组 cgroup 上，
+     *  类似于 BPF_PROG_TYPE_SOCKET_FILTER ，区别在于，附加到 cgroup 的所有进程上
+     */
 	BPF_PROG_TYPE_CGROUP_SKB,
+
+    /**
+     *  对打开套集资的程序组提供安全性和访问控制，而不必单独限制每个进程的功能
+     */
 	BPF_PROG_TYPE_CGROUP_SOCK,
+
+    /**
+     *  轻量级隧道程序
+     */
 	BPF_PROG_TYPE_LWT_IN,
 	BPF_PROG_TYPE_LWT_OUT,
 	BPF_PROG_TYPE_LWT_XMIT,
+
+    /**
+     *  允许运行时，修改套接字链接选项，可以在套接字生命周期多次调用
+     *  
+     */
 	BPF_PROG_TYPE_SOCK_OPS,
+
+    /**
+     *  访问套接字映射和套接字重定向
+     *  可实现 负载均衡 
+     */
 	BPF_PROG_TYPE_SK_SKB,
+
+    /**
+     *  决定是否能在给定设备上执行 cgroup 中的操作
+     */
 	BPF_PROG_TYPE_CGROUP_DEVICE,
+
+    /**
+     *  决定是否将消息发送到套接字
+     *  这种类型的程序有两种可能的返回值： 见`enum sk_action`
+     *      SK_PASS - 发送到套接字
+     *      SK_DROP - 丢弃消息
+     */
 	BPF_PROG_TYPE_SK_MSG,
+
+    /**
+     *  原始跟踪，和 BPF_PROG_TYPE_TRACEPOINT 的差异是
+     *  1. 提供内核在执行过程中更多的信息
+     *  2. 有一定的性能损失
+     */
 	BPF_PROG_TYPE_RAW_TRACEPOINT,
+
+    /**
+     *  cgroup 套接字地址程序
+     *  允许操作cgroup控制的用户空间的 IP地址和 端口号
+     */
 	BPF_PROG_TYPE_CGROUP_SOCK_ADDR,
+
+    /**
+     *  
+     */
 	BPF_PROG_TYPE_LWT_SEG6LOCAL,
+
+    /**
+     *  红外设备程序
+     */
 	BPF_PROG_TYPE_LIRC_MODE2,
+
+    /**
+     *  套接字重用端口程序
+     *  类似 SO_REUSEPORT - 允许多个进程公用相同的端口，
+     *  BPF 程序返回值为
+     *      SK_PASS - 通知内核启动端口重用
+     *      SK_DROP - 防止程序重复使用端口
+     */
 	BPF_PROG_TYPE_SK_REUSEPORT,
+
+    /**
+     *  流量解析程序
+     *  流量解析器(Flower分类器)是一个内核组件，被防火墙和其他过滤设备使用，用来决定如何处理特定数据包
+     *  BPF_PROG_TYPE_FLOW_DISSECTOR 即将程序挂钩在 流量解析器路径上，提供了内核解析器没有的安全功能等
+     */
 	BPF_PROG_TYPE_FLOW_DISSECTOR,
+
+    /**
+     *  
+     */
 	BPF_PROG_TYPE_CGROUP_SYSCTL,
 	BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
 	BPF_PROG_TYPE_CGROUP_SOCKOPT,
@@ -4259,6 +4358,8 @@ struct bpf_xdp_sock {
  * A valid XDP program must return one of these defined values. All other
  * return codes are reserved for future use. Unknown return codes will
  * result in packet drops and a warning via bpf_warn_invalid_xdp_action().
+ *
+ * XDP 操作
  */
 enum xdp_action {
 	XDP_ABORTED = 0,
