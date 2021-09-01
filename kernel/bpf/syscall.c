@@ -49,6 +49,15 @@ static DEFINE_IDR(map_idr);
 static DEFINE_SPINLOCK(map_idr_lock);
 static DEFINE_IDR(link_idr);
 static DEFINE_SPINLOCK(link_idr_lock);
+#ifdef __RTOAX__________//+++
+int __percpu bpf_prog_active;//+++
+static struct idr prog_idr = IDR_INIT(prog_idr);//+++
+static spinlock_t prog_idr_lock = __SPIN_LOCK_UNLOCKED(prog_idr_lock);//+++
+static struct idr map_idr = IDR_INIT(map_idr);//+++
+static spinlock_t map_idr_lock = __SPIN_LOCK_UNLOCKED(map_idr_lock);//+++
+static struct idr link_idr = IDR_INIT(link_idr);//+++
+static spinlock_t link_idr_lock = __SPIN_LOCK_UNLOCKED(link_idr_lock);//+++
+#endif//__RTOAX__________
 
 int __read_mostly sysctl_unprivileged_bpf_disabled ;
 
@@ -59,7 +68,7 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
 #define BPF_LINK_TYPE(_id, _name)
 #include <linux/bpf_types.h>
 
-#ifdef __rtoax_debug /*++++*/
+#ifdef __rtoax_debug______________________________________________________ /*+展开+++*/
     [BPF_MAP_TYPE_ARRAY] = &array_map_ops,
     [BPF_MAP_TYPE_PERCPU_ARRAY] = &percpu_array_map_ops,
     [BPF_MAP_TYPE_PROG_ARRAY] = &prog_array_map_ops,
@@ -106,7 +115,7 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
     [BPF_MAP_TYPE_STRUCT_OPS] = &bpf_struct_ops_map_ops,
 #endif
     [BPF_MAP_TYPE_RINGBUF] = &ringbuf_map_ops,
-#endif /*__rtoax_debug*/
+#endif /*__rtoax_debug______________________________________________________*/
 
 #undef BPF_PROG_TYPE
 #undef BPF_MAP_TYPE
@@ -148,6 +157,9 @@ const struct bpf_map_ops bpf_map_offload_ops = {
 	.map_check_btf = map_check_no_btf,
 };
 
+/**
+ *  
+ */
 static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 {
 	const struct bpf_map_ops *ops;
@@ -842,6 +854,10 @@ static int map_check_btf(struct bpf_map *map, const struct btf *btf,
 
 #define BPF_MAP_CREATE_LAST_FIELD btf_vmlinux_value_type_id
 /* called via syscall */
+
+/**
+ *  创建 映射
+ */
 static int map_create(union bpf_attr *attr)
 {
 	int numa_node = bpf_map_attr_numa_node(attr);
@@ -4453,34 +4469,52 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	union bpf_attr attr;    /* 存放 用户 uattr */
 	int err;
 
+    /**
+     *  检查 权限能力
+     */
 	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
 		return -EPERM;
-    /* 检查attr个数是否太多了 */
+    
+    /**
+     *  检查attr个数是否太多了 
+     */
 	err = bpf_check_uarg_tail_zero(uattr, sizeof(attr), size);
 	if (err)
 		return err;
+
+    /**
+     *  
+     */
 	size = min_t(u32, size, sizeof(attr));  /* 取 一个 bpf_attr 大小 */
 
 	/* copy attributes from user space, may be less than sizeof(bpf_attr) */
 	memset(&attr, 0, sizeof(attr));
+
+    /**
+     *  拷贝
+     */
 	if (copy_from_user(&attr, uattr, size) != 0)
 		return -EFAULT;
+    
     /* 安全的系统调用 */
 	err = security_bpf(cmd, &attr, size);
 	if (err < 0)
 		return err;
 
+    /**
+     *  命令，见`enum bpf_cmd;`
+     */
 	switch (cmd) {
-	case BPF_MAP_CREATE:        /* 创建 */
+	case BPF_MAP_CREATE:        /* 创建 映射 */
 		err = map_create(&attr);
 		break;
-	case BPF_MAP_LOOKUP_ELEM:   /*  */
+	case BPF_MAP_LOOKUP_ELEM:   /* 映射查找元素 */
 		err = map_lookup_elem(&attr);
 		break;
-	case BPF_MAP_UPDATE_ELEM:   /*  */
+	case BPF_MAP_UPDATE_ELEM:   /* 映射更新元素 */
 		err = map_update_elem(&attr);
 		break;
-	case BPF_MAP_DELETE_ELEM:   /*  */
+	case BPF_MAP_DELETE_ELEM:   /* 映射删除元素 */
 		err = map_delete_elem(&attr);
 		break;
 	case BPF_MAP_GET_NEXT_KEY:  /*  */
@@ -4489,7 +4523,7 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	case BPF_MAP_FREEZE:        /*  */
 		err = map_freeze(&attr);
 		break;
-	case BPF_PROG_LOAD:         /*  */
+	case BPF_PROG_LOAD:         /* 加载程序 */
 		err = bpf_prog_load(&attr, uattr);
 		break;
 	case BPF_OBJ_PIN:           /*  */
@@ -4498,29 +4532,26 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	case BPF_OBJ_GET:           /*  */
 		err = bpf_obj_get(&attr);
 		break;
-	case BPF_PROG_ATTACH:       /*  */
+	case BPF_PROG_ATTACH:       /* attach 程序 */
 		err = bpf_prog_attach(&attr);
 		break;
-	case BPF_PROG_DETACH:       /*  */
+	case BPF_PROG_DETACH:       /* detach 程序 */
 		err = bpf_prog_detach(&attr);
 		break;
-	case BPF_PROG_QUERY:        /*  */
+	case BPF_PROG_QUERY:        /* 查询程序 */
 		err = bpf_prog_query(&attr, uattr);
 		break;
 	case BPF_PROG_TEST_RUN:
 		err = bpf_prog_test_run(&attr, uattr);
 		break;
 	case BPF_PROG_GET_NEXT_ID:
-		err = bpf_obj_get_next_id(&attr, uattr,
-					  &prog_idr, &prog_idr_lock);
+		err = bpf_obj_get_next_id(&attr, uattr, &prog_idr, &prog_idr_lock);
 		break;
 	case BPF_MAP_GET_NEXT_ID:
-		err = bpf_obj_get_next_id(&attr, uattr,
-					  &map_idr, &map_idr_lock);
+		err = bpf_obj_get_next_id(&attr, uattr, &map_idr, &map_idr_lock);
 		break;
 	case BPF_BTF_GET_NEXT_ID:
-		err = bpf_obj_get_next_id(&attr, uattr,
-					  &btf_idr, &btf_idr_lock);
+		err = bpf_obj_get_next_id(&attr, uattr, &btf_idr, &btf_idr_lock);
 		break;
 	case BPF_PROG_GET_FD_BY_ID:
 		err = bpf_prog_get_fd_by_id(&attr);
@@ -4550,8 +4581,7 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 		err = bpf_map_do_batch(&attr, uattr, BPF_MAP_LOOKUP_BATCH);
 		break;
 	case BPF_MAP_LOOKUP_AND_DELETE_BATCH:
-		err = bpf_map_do_batch(&attr, uattr,
-				       BPF_MAP_LOOKUP_AND_DELETE_BATCH);
+		err = bpf_map_do_batch(&attr, uattr, BPF_MAP_LOOKUP_AND_DELETE_BATCH);
 		break;
 	case BPF_MAP_UPDATE_BATCH:
 		err = bpf_map_do_batch(&attr, uattr, BPF_MAP_UPDATE_BATCH);

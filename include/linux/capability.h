@@ -224,8 +224,14 @@ static inline bool perfmon_capable(void)
 	return capable(CAP_PERFMON) || capable(CAP_SYS_ADMIN);
 }
 
+/**
+ *  
+ */
 static inline bool bpf_capable(void)
 {
+    /**
+     *  bpf 必须 root 用户？
+     */
 	return capable(CAP_BPF) || capable(CAP_SYS_ADMIN);
 }
 

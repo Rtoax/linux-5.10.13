@@ -13,6 +13,9 @@
 
 /* Extended instruction set based on top of classic BPF */
 
+/**
+ *  BPF 指令
+ */
 /* instruction classes */
 #define BPF_JMP32	0x06	/* jmp mode in word width */
 #define BPF_ALU64	0x07	/* alu mode in double word width */
@@ -43,7 +46,9 @@
 #define BPF_CALL	0x80	/* function call */
 #define BPF_EXIT	0x90	/* function return */
 
-/* Register numbers */
+/**
+ *  Register numbers - BPF 寄存器
+ */
 enum {
 	BPF_REG_0 = 0,
 	BPF_REG_1,
@@ -62,6 +67,9 @@ enum {
 /* BPF has 10 general purpose 64-bit registers and stack frame. */
 #define MAX_BPF_REG	__MAX_BPF_REG
 
+/**
+ *  bpf 指令
+ */
 struct bpf_insn {
 	__u8	code;		/* opcode */
 	__u8	dst_reg:4;	/* dest register */
@@ -89,6 +97,9 @@ union bpf_iter_link_info {
 
 /* BPF syscall commands, see bpf(2) man-page for details. */
 enum bpf_cmd {
+    /**
+     *  创建映射
+     */
 	BPF_MAP_CREATE,
 	BPF_MAP_LOOKUP_ELEM,
 	BPF_MAP_UPDATE_ELEM,
@@ -127,8 +138,15 @@ enum bpf_cmd {
 	BPF_PROG_BIND_MAP,
 };
 
+
+/**
+ *  BPF 映射 类型
+ */
 enum bpf_map_type {
 	BPF_MAP_TYPE_UNSPEC,
+    /**
+     *  
+     */
 	BPF_MAP_TYPE_HASH,
 	BPF_MAP_TYPE_ARRAY,
 	BPF_MAP_TYPE_PROG_ARRAY,
