@@ -159,6 +159,17 @@ static const struct bpf_verifier_ops * const bpf_verifier_ops[] = {
  * bpf_sk_release(). When a reference type passes into the release function,
  * the verifier also releases the reference. If any unchecked or unreleased
  * reference remains at the end of the program, the verifier rejects it.
+ *
+ *  eBPF 验证器 2021年9月1日
+ *
+ *  第一项检查 - 静态分析
+ *      创建 有向无环图(DAG) ，并执行深度优先搜索(DFS) 确保程序不包含危险路径
+ *      1. 程序不包含控制循环
+ *      2. 程序不会执行超过内核允许的最大指令数
+ *      3. 程序不包含永远无法到达的指令
+ *      4. 程序不会超出程序界限
+ *  第二项检查 - 预运行
+ *      
  */
 
 /* verifier_state + insn_idx are pushed to stack when branch is encountered */

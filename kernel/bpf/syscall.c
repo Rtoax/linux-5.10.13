@@ -2276,7 +2276,18 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	/**
 	 *  run eBPF verifier 
 	 *  运行 eBPF 验证器
-	 */
+	 *
+     *  eBPF 验证器 - 2021年9月1日17:48:33
+     *
+     *  第一项检查 - 静态分析
+     *      创建 有向无环图(DAG) ，并执行深度优先搜索(DFS) 确保程序不包含危险路径
+     *      1. 程序不包含控制循环
+     *      2. 程序不会执行超过内核允许的最大指令数
+     *      3. 程序不包含永远无法到达的指令
+     *      4. 程序不会超出程序界限
+     *  第二项检查 - 预运行
+     *      
+     */
 	err = bpf_check(&prog, attr, uattr);
 	if (err < 0)
 		goto free_used_maps;
@@ -3083,6 +3094,9 @@ static int bpf_prog_attach(const union bpf_attr *attr)
 	case BPF_PROG_TYPE_CGROUP_SOCKOPT:
 	case BPF_PROG_TYPE_CGROUP_SYSCTL:
 	case BPF_PROG_TYPE_SOCK_OPS:
+        /**
+         *  控制组类型 bpf
+         */
 		ret = cgroup_bpf_prog_attach(attr, ptype, prog);
 		break;
 	default:
