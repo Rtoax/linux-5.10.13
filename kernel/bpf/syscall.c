@@ -2146,6 +2146,9 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
 /* last field in 'union bpf_attr' used by this command */
 #define	BPF_PROG_LOAD_LAST_FIELD attach_prog_fd
 
+/**
+ *  
+ */
 static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 {
 	enum bpf_prog_type type = attr->prog_type;
@@ -2191,7 +2194,14 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	if (is_perfmon_prog_type(type) && !perfmon_capable())
 		return -EPERM;
 
+    /**
+     *  
+     */
 	bpf_prog_load_fixup_attach_type(attr);
+
+    /**
+     *  
+     */
 	if (bpf_prog_load_check_attach(type, attr->expected_attach_type,
 				       attr->attach_btf_id,
 				       attr->attach_prog_fd))
@@ -2218,6 +2228,9 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	prog->aux->offload_requested = !!attr->prog_ifindex;
 	prog->aux->sleepable = attr->prog_flags & BPF_F_SLEEPABLE;
 
+    /**
+     *  
+     */
 	err = security_bpf_prog_alloc(prog->aux);
 	if (err)
 		goto free_prog_nouncharge;
@@ -2229,6 +2242,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	prog->len = attr->insn_cnt;
 
 	err = -EFAULT;
+
+    /**
+     *  
+     */
 	if (copy_from_user(prog->insns, u64_to_user_ptr(attr->insns),
 			   bpf_prog_insn_size(prog)) != 0)
 		goto free_prog;
@@ -2252,15 +2269,21 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 
 	prog->aux->load_time = ktime_get_boottime_ns();
 	err = bpf_obj_name_cpy(prog->aux->name, attr->prog_name,
-			       sizeof(attr->prog_name));
+			                sizeof(attr->prog_name));
 	if (err < 0)
 		goto free_prog;
 
-	/* run eBPF verifier */
+	/**
+	 *  run eBPF verifier 
+	 *  运行 eBPF 验证器
+	 */
 	err = bpf_check(&prog, attr, uattr);
 	if (err < 0)
 		goto free_used_maps;
 
+    /**
+     *  
+     */
 	prog = bpf_prog_select_runtime(prog, &err);
 	if (err < 0)
 		goto free_used_maps;
@@ -4406,7 +4429,11 @@ out_prog_put:
 	return ret;
 }
 
-/* bpf syscall */
+
+/**
+ *  bpf 系统调用
+ */
+int bpf(int cmd, union bpf_attr *attr, unsigned int size);
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
 {
 	union bpf_attr attr;    /* 存放 用户 uattr */

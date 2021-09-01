@@ -579,6 +579,9 @@ struct bpf_stack_build_id {
 
 #define BPF_OBJ_NAME_LEN 16U
 
+/**
+ *  
+ */
 union bpf_attr {    /*  */
 	struct { /* anonymous struct used by BPF_MAP_CREATE command */
 		__u32	map_type;	/* one of enum bpf_map_type */
@@ -635,6 +638,11 @@ union bpf_attr {    /*  */
 		__u32		insn_cnt;
 		__aligned_u64	insns;
 		__aligned_u64	license;
+        /**
+         *  是否打印日志
+         *  1 - 打印日志
+         *  0 - 不打印日志
+         */
 		__u32		log_level;	/* verbosity level of verifier */
 		__u32		log_size;	/* size of user buffer */
 		__aligned_u64	log_buf;	/* user supplied buffer */
