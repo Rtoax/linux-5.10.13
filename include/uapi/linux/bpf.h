@@ -95,17 +95,59 @@ union bpf_iter_link_info {
 	} map;
 };
 
-/* BPF syscall commands, see bpf(2) man-page for details. */
+/**
+ *  BPF syscall commands, see bpf(2) man-page for details. 
+ *
+ *  不同的数据结构请见 `union bpf_attr;`
+ */
 enum bpf_cmd {
     /**
-     *  创建映射
+     *  创建映射 bpf - 
+     *
+     *  映射 `struct bpf_map`
+     *  映射类型 `enum bpf_map_type;`
+     *
+     *  - map_create() 内核函数
+     *  - bpf_create_map() 用户API封装
+     *  
      */
 	BPF_MAP_CREATE,
+	/**
+	 *  读取 BPF 映射元素
+	 * 
+     *  - map_lookup_elem() 内核系统调用
+     *  - bpf_map_lookup_elem() 用户态 API
+     */
 	BPF_MAP_LOOKUP_ELEM,
+	/**
+	 *  更新 BPF 映射元素
+	 *
+     *  - map_update_elem() 内核系统调用
+     *  - bpf_map_update_elem() 用户态 API
+     */
 	BPF_MAP_UPDATE_ELEM,
+	/**
+     *  
+	 *  删除 BPF 映射元素
+	 *
+     *  - map_delete_elem() 内核系统调用
+     *  - bpf_map_delete_elem() 用户态 API
+     */
 	BPF_MAP_DELETE_ELEM,
+	/**
+     *  迭代 BPF 映射元素
+     *      在 BPF 程序中查找任意元素
+     *
+     *
+     *  - map_get_next_key()
+     *  - bpf_map_get_next_key() 用户态 API
+     */
 	BPF_MAP_GET_NEXT_KEY,
+	/**
+     *  - bpf_prog_load()
+     */
 	BPF_PROG_LOAD,
+	
 	BPF_OBJ_PIN,
 	BPF_OBJ_GET,
 	BPF_PROG_ATTACH,
@@ -121,6 +163,13 @@ enum bpf_cmd {
 	BPF_BTF_LOAD,
 	BPF_BTF_GET_FD_BY_ID,
 	BPF_TASK_FD_QUERY,
+
+    /**
+	 *  查找和删除 BPF 映射元素
+	 * 
+     *  - map_lookup_and_delete_elem() 内核系统调用
+     *  - bpf_map_lookup_and_delete_elem() 用户态 API
+     */
 	BPF_MAP_LOOKUP_AND_DELETE_ELEM,
 	BPF_MAP_FREEZE,
 	BPF_BTF_GET_NEXT_ID,
@@ -509,12 +558,19 @@ enum bpf_link_type {
  */
 #define BPF_PSEUDO_CALL		1
 
-/* flags for BPF_MAP_UPDATE_ELEM command */
+/**
+ *  flags for BPF_MAP_UPDATE_ELEM command 
+ *  参见函数 `bpf_map_update_elem()` 入参 `flags`
+ */
 enum {
-	BPF_ANY		= 0, /* create new element or update existing */
-	BPF_NOEXIST	= 1, /* create new element if it didn't exist */
-	BPF_EXIST	= 2, /* update existing element */
-	BPF_F_LOCK	= 4, /* spin_lock-ed map_lookup/map_update */
+	BPF_ANY		= 0, /* 如果元素存在，将更新元素，如果不存在，则在映射中创建元素
+	                    create new element or update existing */
+	BPF_NOEXIST	= 1, /* 尽在元素不存在时，创建元素
+	                    create new element if it didn't exist */
+	BPF_EXIST	= 2, /* 仅在元素存在时，更新元素
+	                    update existing element */
+	BPF_F_LOCK	= 4, /* 不允许修改?
+	                    spin_lock-ed map_lookup/map_update */
 };
 
 /* flags for BPF_MAP_CREATE command */
@@ -601,6 +657,9 @@ struct bpf_stack_build_id {
  *  
  */
 union bpf_attr {    /*  */
+    /**
+     *  BPF_MAP_CREATE
+     */
 	struct { /* anonymous struct used by BPF_MAP_CREATE command */
 		__u32	map_type;	/* one of enum bpf_map_type */
 		__u32	key_size;	/* size of key in bytes */
@@ -624,6 +683,9 @@ union bpf_attr {    /*  */
 						   */
 	};
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_MAP_*_ELEM commands */
 		__u32		map_fd;
 		__aligned_u64	key;
@@ -634,6 +696,9 @@ union bpf_attr {    /*  */
 		__u64		flags;
 	};
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_MAP_*_BATCH commands */
 		__aligned_u64	in_batch;	/* start batch,
 						 * NULL to start from beginning
@@ -651,6 +716,9 @@ union bpf_attr {    /*  */
 		__u64		flags;
 	} batch;
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_PROG_LOAD command */
 		__u32		prog_type;	/* one of enum bpf_prog_type */
 		__u32		insn_cnt;
@@ -684,12 +752,18 @@ union bpf_attr {    /*  */
 		__u32		attach_prog_fd; /* 0 to attach to vmlinux */
 	};
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_OBJ_* commands */
 		__aligned_u64	pathname;
 		__u32		bpf_fd;
 		__u32		file_flags;
 	};
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_PROG_ATTACH/DETACH commands */
 		__u32		target_fd;	/* container object to attach to */
 		__u32		attach_bpf_fd;	/* eBPF program to attach */
@@ -701,6 +775,9 @@ union bpf_attr {    /*  */
 						 */
 	};
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_PROG_TEST_RUN command */
 		__u32		prog_fd;
 		__u32		retval;
@@ -724,6 +801,9 @@ union bpf_attr {    /*  */
 		__u32		cpu;
 	} test;
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_*_GET_*_ID */
 		union {
 			__u32		start_id;
@@ -736,12 +816,18 @@ union bpf_attr {    /*  */
 		__u32		open_flags;
 	};
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_OBJ_GET_INFO_BY_FD */
 		__u32		bpf_fd;
 		__u32		info_len;
 		__aligned_u64	info;
 	} info;
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_PROG_QUERY command */
 		__u32		target_fd;	/* container object to query */
 		__u32		attach_type;
@@ -751,11 +837,17 @@ union bpf_attr {    /*  */
 		__u32		prog_cnt;
 	} query;
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct used by BPF_RAW_TRACEPOINT_OPEN command */
 		__u64 name;
 		__u32 prog_fd;
 	} raw_tracepoint;
 
+    /**
+     *  
+     */
 	struct { /* anonymous struct for BPF_BTF_LOAD */
 		__aligned_u64	btf;
 		__aligned_u64	btf_log_buf;
@@ -764,6 +856,9 @@ union bpf_attr {    /*  */
 		__u32		btf_log_level;
 	};
 
+    /**
+     *  
+     */
 	struct {
 		__u32		pid;		/* input: pid */
 		__u32		fd;		/* input: fd */
@@ -780,6 +875,9 @@ union bpf_attr {    /*  */
 		__u64		probe_addr;	/* output: probe_addr */
 	} task_fd_query;
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_LINK_CREATE command */
 		__u32		prog_fd;	/* eBPF program to attach */
 		union {
@@ -797,6 +895,9 @@ union bpf_attr {    /*  */
 		};
 	} link_create;
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_LINK_UPDATE command */
 		__u32		link_fd;	/* link fd */
 		/* new program fd to update link with */
@@ -807,19 +908,31 @@ union bpf_attr {    /*  */
 		__u32		old_prog_fd;
 	} link_update;
 
+    /**
+     *  
+     */
 	struct {
 		__u32		link_fd;
 	} link_detach;
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_ENABLE_STATS command */
 		__u32		type;
 	} enable_stats;
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_ITER_CREATE command */
 		__u32		link_fd;
 		__u32		flags;
 	} iter_create;
 
+    /**
+     *  
+     */
 	struct { /* struct used by BPF_PROG_BIND_MAP command */
 		__u32		prog_fd;
 		__u32		map_fd;

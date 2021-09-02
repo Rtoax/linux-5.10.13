@@ -474,6 +474,10 @@ static int sock_map_get_next_key(struct bpf_map *map, void *key, void *next)
 
 static bool sock_map_redirect_allowed(const struct sock *sk);
 
+
+/**
+ *  
+ */
 static int sock_map_update_common(struct bpf_map *map, u32 idx,
 				  struct sock *sk, u64 flags)
 {
@@ -574,8 +578,10 @@ static bool sock_map_sk_state_allowed(const struct sock *sk)
 static int sock_hash_update_common(struct bpf_map *map, void *key,
 				   struct sock *sk, u64 flags);
 
-int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value,
-			     u64 flags)
+/**
+ *  
+ */
+int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value, u64 flags)
 {
 	struct socket *sock;
 	struct sock *sk;
@@ -589,6 +595,9 @@ int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value,
 	if (ufd > S32_MAX)
 		return -EINVAL;
 
+    /**
+     *  查找 到 socket 结构
+     */
 	sock = sockfd_lookup(ufd, &ret);
 	if (!sock)
 		return ret;
@@ -603,8 +612,16 @@ int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value,
 	}
 
 	sock_map_sk_acquire(sk);
+
+    /**
+     *  
+     */
 	if (!sock_map_sk_state_allowed(sk))
 		ret = -EOPNOTSUPP;
+
+    /**
+     *  
+     */
 	else if (map->map_type == BPF_MAP_TYPE_SOCKMAP)
 		ret = sock_map_update_common(map, *(u32 *)key, sk, flags);
 	else

@@ -59,6 +59,9 @@ static inline __u64 ptr_to_u64(const void *ptr)
 	return (__u64) (unsigned long) ptr;
 }
 
+/**
+ *  系统调用
+ */
 static inline int sys_bpf(enum bpf_cmd cmd, union bpf_attr *attr,
 			  unsigned int size)
 {
@@ -76,31 +79,52 @@ static inline int sys_bpf_prog_load(union bpf_attr *attr, unsigned int size)
 	return fd;
 }
 
+/**
+ *  
+ */
 int bpf_create_map_xattr(const struct bpf_create_map_attr *create_attr)
 {
 	union bpf_attr attr;
 
 	memset(&attr, '\0', sizeof(attr));
 
+    /**
+     *  映射类型
+     */
 	attr.map_type = create_attr->map_type;
 	attr.key_size = create_attr->key_size;
 	attr.value_size = create_attr->value_size;
 	attr.max_entries = create_attr->max_entries;
 	attr.map_flags = create_attr->map_flags;
+
+    /**
+     *  
+     */
 	if (create_attr->name)
 		memcpy(attr.map_name, create_attr->name,
 		       min(strlen(create_attr->name), BPF_OBJ_NAME_LEN - 1));
-	attr.numa_node = create_attr->numa_node;
+
+    /**
+     *  
+     */
+    attr.numa_node = create_attr->numa_node;
 	attr.btf_fd = create_attr->btf_fd;
 	attr.btf_key_type_id = create_attr->btf_key_type_id;
 	attr.btf_value_type_id = create_attr->btf_value_type_id;
 	attr.map_ifindex = create_attr->map_ifindex;
+
+    /**
+     *  
+     */
 	if (attr.map_type == BPF_MAP_TYPE_STRUCT_OPS)
 		attr.btf_vmlinux_value_type_id =
 			create_attr->btf_vmlinux_value_type_id;
 	else
 		attr.inner_map_fd = create_attr->inner_map_fd;
 
+    /**
+     *  系统调用
+     */
 	return sys_bpf(BPF_MAP_CREATE, &attr, sizeof(attr));
 }
 
@@ -124,6 +148,9 @@ int bpf_create_map_node(enum bpf_map_type map_type, const char *name,
 	return bpf_create_map_xattr(&map_attr);
 }
 
+/**
+ *  创建映射 - BPF_MAP_CREATE
+ */
 int bpf_create_map(enum bpf_map_type map_type, int key_size,
 		   int value_size, int max_entries, __u32 map_flags)
 {
@@ -135,6 +162,9 @@ int bpf_create_map(enum bpf_map_type map_type, int key_size,
 	map_attr.value_size = value_size;
 	map_attr.max_entries = max_entries;
 
+    /**
+     *  
+     */
 	return bpf_create_map_xattr(&map_attr);
 }
 
@@ -367,24 +397,50 @@ int bpf_verify_program(enum bpf_prog_type type, const struct bpf_insn *insns,
 	return sys_bpf_prog_load(&attr, sizeof(attr));
 }
 
-int bpf_map_update_elem(int fd, const void *key, const void *value,
-			__u64 flags)
+/**
+ *  更新 BPF 映射元素
+ *
+ * @fd - 指向已定义映射
+ * @key - 要更新键的指针
+ * @value - 存入的值
+ * @flags - 更新映射的方式
+ *      BPF_ANY - 
+ *      BPF_NOEXIST
+ *      BPF_EXIST   
+ */
+int bpf_map_update_elem(int fd, const void *key, const void *value, __u64 flags)
 {
 	union bpf_attr attr;
 
+    /**
+     *  
+     */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
 	attr.key = ptr_to_u64(key);
 	attr.value = ptr_to_u64(value);
 	attr.flags = flags;
 
+    /**
+     *  
+     */
 	return sys_bpf(BPF_MAP_UPDATE_ELEM, &attr, sizeof(attr));
 }
 
+/**
+ *  读取 BPF 映射元素
+ *
+ * @fd - 指向已定义映射
+ * @key - 要更新键的指针
+ * @value - 存入的值 
+ */
 int bpf_map_lookup_elem(int fd, const void *key, void *value)
 {
 	union bpf_attr attr;
 
+    /**
+     *  
+     */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
 	attr.key = ptr_to_u64(key);
@@ -393,6 +449,17 @@ int bpf_map_lookup_elem(int fd, const void *key, void *value)
 	return sys_bpf(BPF_MAP_LOOKUP_ELEM, &attr, sizeof(attr));
 }
 
+/**
+ *  读取 BPF 映射元素
+ *
+ * @fd - 指向已定义映射
+ * @key - 要更新键的指针
+ * @value - 存入的值 
+ * @flags - 更新映射的方式?
+ *      BPF_ANY - 
+ *      BPF_NOEXIST
+ *      BPF_EXIST   
+ */
 int bpf_map_lookup_elem_flags(int fd, const void *key, void *value, __u64 flags)
 {
 	union bpf_attr attr;
@@ -406,6 +473,13 @@ int bpf_map_lookup_elem_flags(int fd, const void *key, void *value, __u64 flags)
 	return sys_bpf(BPF_MAP_LOOKUP_ELEM, &attr, sizeof(attr));
 }
 
+/**
+ *  查找和删除 BPF 映射元素
+ *
+ * @fd - 指向已定义映射
+ * @key - 键的指针
+ * @value - 查找的值  
+ */
 int bpf_map_lookup_and_delete_elem(int fd, const void *key, void *value)
 {
 	union bpf_attr attr;
@@ -418,10 +492,20 @@ int bpf_map_lookup_and_delete_elem(int fd, const void *key, void *value)
 	return sys_bpf(BPF_MAP_LOOKUP_AND_DELETE_ELEM, &attr, sizeof(attr));
 }
 
+/**
+ *  
+ *  删除 BPF 映射元素
+ *
+ * @fd - 指向已定义映射
+ * @key - 要更新键的指针
+ */
 int bpf_map_delete_elem(int fd, const void *key)
 {
 	union bpf_attr attr;
 
+    /**
+     *  
+     */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
 	attr.key = ptr_to_u64(key);
@@ -429,6 +513,14 @@ int bpf_map_delete_elem(int fd, const void *key)
 	return sys_bpf(BPF_MAP_DELETE_ELEM, &attr, sizeof(attr));
 }
 
+/**
+ *  迭代 BPF 映射元素
+ *      在 BPF 程序中查找任意元素
+ *  
+ * @fd - 指向已定义映射
+ * @key - 
+ * @next_key - 
+ */
 int bpf_map_get_next_key(int fd, const void *key, void *next_key)
 {
 	union bpf_attr attr;

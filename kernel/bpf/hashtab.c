@@ -1886,6 +1886,9 @@ static void *htab_lru_percpu_map_lookup_elem(struct bpf_map *map, void *key)
 	return NULL;
 }
 
+/**
+ *  
+ */
 int bpf_percpu_hash_copy(struct bpf_map *map, void *key, void *value)
 {
 	struct htab_elem *l;
@@ -1900,6 +1903,10 @@ int bpf_percpu_hash_copy(struct bpf_map *map, void *key, void *value)
 	 */
 	size = round_up(map->value_size, 8);
 	rcu_read_lock();
+
+    /**
+     *  查找元素
+     */
 	l = __htab_map_lookup_elem(map, key);
 	if (!l)
 		goto out;
@@ -1907,9 +1914,12 @@ int bpf_percpu_hash_copy(struct bpf_map *map, void *key, void *value)
 	 * eviction heuristics when user space does a map walk.
 	 */
 	pptr = htab_elem_get_ptr(l, map->key_size);
+
+    /**
+     *  
+     */
 	for_each_possible_cpu(cpu) {
-		bpf_long_memcpy(value + off,
-				per_cpu_ptr(pptr, cpu), size);
+		bpf_long_memcpy(value + off, per_cpu_ptr(pptr, cpu), size);
 		off += size;
 	}
 	ret = 0;

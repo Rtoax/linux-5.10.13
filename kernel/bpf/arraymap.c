@@ -729,7 +729,10 @@ int bpf_fd_array_map_lookup_elem(struct bpf_map *map, void *key, u32 *value)
 	return ret;
 }
 
-/* only called from syscall */
+/**
+ *  only called from syscall 
+ *  
+ */
 int bpf_fd_array_map_update_elem(struct bpf_map *map, struct file *map_file,
 				 void *key, void *value, u64 map_flags)
 {
@@ -744,10 +747,17 @@ int bpf_fd_array_map_update_elem(struct bpf_map *map, struct file *map_file,
 		return -E2BIG;
 
 	ufd = *(u32 *)value;
+
+    /**
+     *  
+     */
 	new_ptr = map->ops->map_fd_get_ptr(map, map_file, ufd);
 	if (IS_ERR(new_ptr))
 		return PTR_ERR(new_ptr);
 
+    /**
+     *  
+     */
 	if (map->ops->map_poke_run) {
 		mutex_lock(&array->aux->poke_mutex);
 		old_ptr = xchg(array->ptrs + index, new_ptr);
@@ -757,6 +767,9 @@ int bpf_fd_array_map_update_elem(struct bpf_map *map, struct file *map_file,
 		old_ptr = xchg(array->ptrs + index, new_ptr);
 	}
 
+    /**
+     *  
+     */
 	if (old_ptr)
 		map->ops->map_fd_put_ptr(old_ptr);
 	return 0;

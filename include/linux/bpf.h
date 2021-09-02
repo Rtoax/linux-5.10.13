@@ -133,11 +133,17 @@ struct bpf_map_ops {
 	const struct bpf_iter_seq_info *iter_seq_info;
 };
 
+/**
+ *  
+ */
 struct bpf_map_memory { /*  */
 	u32 pages;
 	struct user_struct *user;
 };
 
+/**
+ *  
+ */
 struct bpf_map {    /*  */
 	/* The first two cachelines with read-mostly members of which some
 	 * are also accessed in fast-path (e.g. ops, max_entries).
@@ -147,17 +153,28 @@ struct bpf_map {    /*  */
 #ifdef CONFIG_SECURITY
 	void *security;
 #endif
+
+    /**
+     *  映射类型
+     */
 	enum bpf_map_type map_type;
 	u32 key_size;
 	u32 value_size;
 	u32 max_entries;
 	u32 map_flags;
 	int spin_lock_off; /* >=0 valid offset, <0 error */
+    /**
+     *  bpf_map_alloc_id()
+     */
 	u32 id;
 	int numa_node;
 	u32 btf_key_type_id;
 	u32 btf_value_type_id;
 	struct btf *btf;
+
+    /**
+     *  
+     */
 	struct bpf_map_memory memory;
 	char name[BPF_OBJ_NAME_LEN];
 	u32 btf_vmlinux_value_type_id;
@@ -209,14 +226,20 @@ int bpf_obj_name_cpy(char *dst, const char *src, unsigned int size);
 struct bpf_offload_dev;
 struct bpf_offloaded_map;
 
+/**
+ *  
+ */
 struct bpf_map_dev_ops {
 	int (*map_get_next_key)(struct bpf_offloaded_map *map,
-				void *key, void *next_key);
+				            void *key, void *next_key);
 	int (*map_lookup_elem)(struct bpf_offloaded_map *map,
-			       void *key, void *value);
+			                void *key, void *value);
 	int (*map_update_elem)(struct bpf_offloaded_map *map,
-			       void *key, void *value, u64 flags);
-	int (*map_delete_elem)(struct bpf_offloaded_map *map, void *key);
+			                void *key, void *value, u64 flags);
+    /**
+     *  
+     */
+    int (*map_delete_elem)(struct bpf_offloaded_map *map, void *key);
 };
 
 struct bpf_offloaded_map {
