@@ -262,6 +262,9 @@ struct usb_interface {
 	 * the associated interfaces */
 	struct usb_interface_assoc_descriptor *intf_assoc;
 
+    /**
+     *  如果捆绑到这个USB驱动程序使用USB主设备号，这个变量包含USB核心分配给该接口的次设备号
+     */
 	int minor;			/* minor number this interface is
 					 * bound to */
 	enum usb_interface_condition condition;		/* state of binding */
@@ -390,8 +393,13 @@ struct usb_interface_cache {
  * desires (expressed through userspace tools).  However, drivers can call
  * usb_reset_configuration() to reinitialize the current configuration and
  * all its interfaces.
+ *
+ * 描述 USB 配置
  */
 struct usb_host_config {
+    /**
+     *  
+     */
 	struct usb_config_descriptor	desc;
 
 	char *string;		/* iConfiguration string, if present */
@@ -647,8 +655,17 @@ struct usb3_lpm_parameters {
  * Notes:
  * Usbcore drivers should not set usbdev->state directly.  Instead use
  * usb_set_device_state().
+ *
+ * 描述整个USB设备
+ * 表示为目录树中的 /sys/devices/pci0000:00/0000:00:01.2/usb2/2-1
+ * 鼠标的USB接口位于/sys/devices/pci0000:00/0000:00:01.2/usb2/2-1/2-1:1.0 见`usb_interface_descriptor`
+ *
+ *  USB sysfs 设备命名方案为: 根集线器-集线器端口号:配置.接口 (如 2-1:1.0)
  */
 struct usb_device {
+    /**
+     *  
+     */
 	int		devnum;
 	char		devpath[16];
 	u32		route;
@@ -657,6 +674,9 @@ struct usb_device {
 	unsigned int		rx_lanes;
 	unsigned int		tx_lanes;
 
+    /**
+     *  
+     */
 	struct usb_tt	*tt;
 	int		ttport;
 
@@ -672,6 +692,9 @@ struct usb_device {
 	struct usb_host_bos *bos;
 	struct usb_host_config *config;
 
+    /**
+     *  
+     */
 	struct usb_host_config *actconfig;
 	struct usb_host_endpoint *ep_in[16];
 	struct usb_host_endpoint *ep_out[16];
@@ -1577,9 +1600,19 @@ typedef void (*usb_complete_t)(struct urb *);
  * Note that even fields marked "public" should not be touched by the driver
  * when the urb is owned by the hcd, that is, since the call to
  * usb_submit_urb() till the entry into the completion routine.
+ *
+ * urb(USB请求块)
+ *
+ * USB 代码通过一个称为 urb(USB请求块)的东西和所有的USB 设备通信
+ * urb被用来以一种异步的方式往\特定的USB设备上的特定USB端点发送\接收数据
+ * 他的使用和文件系统异步IO代码中的 kiocb 结构体，网络代码中的  sk_buff 结构体很类似
  */
 struct urb {
 	/* private: usb core and host controller only fields in the urb */
+
+    /**
+     *  
+     */
 	struct kref kref;		/* reference count of the URB */
 	int unlinked;			/* unlink error code */
 	void *hcpriv;			/* private data for host controller */
@@ -1591,17 +1624,58 @@ struct urb {
 					 * current owner */
 	struct list_head anchor_list;	/* the URB may be anchored */
 	struct usb_anchor *anchor;
+
+    /**
+     *  urb 所发送的目标 usb_device 指针
+     *  该变量在 urb 可以被发送到 usb 核心之前，必须有 USB 驱动程序初始化
+     */
 	struct usb_device *dev;		/* (in) pointer to associated device */
 	struct usb_host_endpoint *ep;	/* (internal) pointer to endpoint */
+
+    /**
+     *  urb 所发送的特定目标 usb_device 的端点信息
+     *  该变量在 urb 可以被发送到 usb 核心之前，必须有 USB 驱动程序初始化
+     *
+     *  usb_sndctrlpipe - 把指定USB设备的指定端点号设置为一个控制 OUT 端点
+     *  usb_rcvctrlpipe - 把指定USB设备的指定端点号设置为一个控制 IN 端点
+     *  usb_sndbulkpipe - 把指定USB设备的指定端点号设置为一个批量 OUT 端点
+     *  usb_rcvbulkpipe - 把指定USB设备的指定端点号设置为一个批量 IN 端点
+     *  usb_sndintpipe - 把指定USB设备的指定端点号设置为一个中断 OUT 端点
+     *  usb_rcvintpipe - 把指定USB设备的指定端点号设置为一个中断 IN 端点
+     *  usb_sndisocpipe - 把指定USB设备的指定端点号设置为一个等时 OUT 端点
+     *  usb_rcvisocpipe - 把指定USB设备的指定端点号设置为一个等时 IN 端点
+     */
 	unsigned int pipe;		/* (in) pipe information */
 	unsigned int stream_id;		/* (in) stream ID */
+
+    /**
+     *  
+     */
 	int status;			/* (return) non-ISO status */
+
+    /**
+     *  取决于 USB 驱动程序对 urb 的具体操作
+     *  URB_SHORT_NOT_OK - 
+     *  URB_ISO_ASAP - 
+     *  [...]
+     */
 	unsigned int transfer_flags;	/* (in) URB_SHORT_NOT_OK | ...*/
+
+    /**
+     *  缓冲区指针
+     */
 	void *transfer_buffer;		/* (in) associated data buffer */
+
+    /**
+     *  用于以DMA方式传输数据到 USB 设备的缓冲区
+     */
 	dma_addr_t transfer_dma;	/* (in) dma addr for transfer_buffer */
 	struct scatterlist *sg;		/* (in) scatter gather buffer list */
 	int num_mapped_sgs;		/* (internal) mapped sg entries */
 	int num_sgs;			/* (in) number of entries in the sg list */
+    /**
+     *  
+     */
 	u32 transfer_buffer_length;	/* (in) data buffer length */
 	u32 actual_length;		/* (return) actual transfer length */
 	unsigned char *setup_packet;	/* (in) setup packet (control only) */
@@ -1968,6 +2042,18 @@ static inline unsigned int __create_pipe(struct usb_device *dev,
 	return (dev->devnum << 8) | (endpoint << 15);
 }
 
+/**
+ *  见 struct urb.pipe
+ *
+ *  usb_sndctrlpipe - 把指定USB设备的指定端点号设置为一个控制 OUT 端点
+ *  usb_rcvctrlpipe - 把指定USB设备的指定端点号设置为一个控制 IN 端点
+ *  usb_sndbulkpipe - 把指定USB设备的指定端点号设置为一个批量 OUT 端点
+ *  usb_rcvbulkpipe - 把指定USB设备的指定端点号设置为一个批量 IN 端点
+ *  usb_sndintpipe - 把指定USB设备的指定端点号设置为一个中断 OUT 端点
+ *  usb_rcvintpipe - 把指定USB设备的指定端点号设置为一个中断 IN 端点
+ *  usb_sndisocpipe - 把指定USB设备的指定端点号设置为一个等时 OUT 端点
+ *  usb_rcvisocpipe - 把指定USB设备的指定端点号设置为一个等时 IN 端点
+ */
 /* Create various pipes... */
 #define usb_sndctrlpipe(dev, endpoint)	\
 	((PIPE_CONTROL << 30) | __create_pipe(dev, endpoint))

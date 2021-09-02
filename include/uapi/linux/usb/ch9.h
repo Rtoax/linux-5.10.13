@@ -385,7 +385,20 @@ struct usb_string_descriptor {
 
 /*-------------------------------------------------------------------------*/
 
-/* USB_DT_INTERFACE: Interface descriptor */
+/**
+ *  USB_DT_INTERFACE: Interface descriptor 
+ *  鼠标的USB接口位于/sys/devices/pci0000:00/0000:00:01.2/usb2/2-1/2-1:1.0 见`usb_device`
+ *
+ *  USB sysfs 设备命名方案为: 根集线器-集线器端口号:配置.接口 (如 2-1:1.0)
+ *
+ *  [rongtao@localhost 2-1:1.0]$ pwd
+ *  /sys/devices/pci0000:00/0000:00:01.2/usb2/2-1/2-1:1.0
+ *
+ *  [rongtao@localhost 2-1:1.0]$ ls
+ *  0003:0627:0001.0001  bInterfaceClass     bInterfaceSubClass  ep_81     power                 uevent
+ *  authorized           bInterfaceNumber    bNumEndpoints       input     subsystem
+ *  bAlternateSetting    bInterfaceProtocol  driver              modalias  supports_autosuspend
+ */
 struct usb_interface_descriptor {
 	__u8  bLength;
 	__u8  bDescriptorType;
