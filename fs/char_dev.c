@@ -361,6 +361,9 @@ void __unregister_chrdev(unsigned int major, unsigned int baseminor,
 
 static DEFINE_SPINLOCK(cdev_lock);
 
+/**
+ *  增加引用计数
+ */
 static struct kobject *cdev_get(struct cdev *p)
 {
 	struct module *owner = p->owner;
@@ -368,6 +371,10 @@ static struct kobject *cdev_get(struct cdev *p)
 
 	if (owner && !try_module_get(owner))
 		return NULL;
+
+    /**
+     *  
+     */
 	kobj = kobject_get_unless_zero(&p->kobj);
 	if (!kobj)
 		module_put(owner);

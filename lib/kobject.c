@@ -209,10 +209,17 @@ static void kobj_kset_leave(struct kobject *kobj)
 	kset_put(kobj->kset);
 }
 
+/**
+ *  清零
+ */
 static void kobject_init_internal(struct kobject *kobj)
 {
 	if (!kobj)
 		return;
+
+    /**
+     *  引用计数 = 1
+     */
 	kref_init(&kobj->kref);
 	INIT_LIST_HEAD(&kobj->entry);
 	kobj->state_in_sysfs = 0;
@@ -277,7 +284,9 @@ static int kobject_add_internal(struct kobject *kobj)
  * @kobj: struct kobject to set the name of
  * @fmt: format string used to build the name
  * @vargs: vargs to format the string.
- */ /*  */
+ *
+ * 设置名字
+ */
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 				  va_list vargs)
 {
@@ -286,6 +295,9 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 	if (kobj->name && !fmt)
 		return 0;
 
+    /**
+     *  strdup
+     */
 	s = kvasprintf_const(GFP_KERNEL, fmt, vargs);
 	if (!s)
 		return -ENOMEM;
@@ -306,7 +318,14 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 		strreplace(t, '/', '!');
 		s = t;
 	}
+    /**
+     *  先把原来的释放了
+     */
 	kfree_const(kobj->name);
+
+    /**
+     *  赋值
+     */
 	kobj->name = s;
 
 	return 0;
@@ -320,6 +339,8 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
  * This sets the name of the kobject.  If you have already added the
  * kobject to the system, you must call kobject_rename() in order to
  * change the name of the kobject.
+ *
+ * 设置名字
  */
 int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 {
@@ -345,6 +366,8 @@ EXPORT_SYMBOL(kobject_set_name);
  * After this function is called, the kobject MUST be cleaned up by a call
  * to kobject_put(), not by a call to kfree directly to ensure that all of
  * the memory is cleaned up properly.
+ *
+ * 
  */
 void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 {
@@ -365,6 +388,9 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 		dump_stack();
 	}
 
+    /**
+     *  内部函数 - 清零
+     */
 	kobject_init_internal(kobj);
 	kobj->ktype = ktype;
 	return;
@@ -374,8 +400,13 @@ error:
 	dump_stack();
 }
 EXPORT_SYMBOL(kobject_init);
-                                /*  */
-/*static  */int kobject_add_varg(struct kobject *kobj,
+
+
+/**
+ *  
+ */
+/*static ?  */
+int kobject_add_varg(struct kobject *kobj,
 					   struct kobject *parent,
 					   const char *fmt, va_list vargs)
 {
@@ -648,6 +679,8 @@ EXPORT_SYMBOL(kobject_del);
 /**
  * kobject_get() - Increment refcount for object.
  * @kobj: object.
+ *
+ *  引用计数
  */
 struct kobject *kobject_get(struct kobject *kobj)
 {
@@ -656,7 +689,10 @@ struct kobject *kobject_get(struct kobject *kobj)
 			WARN(1, KERN_WARNING
 				"kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n",
 			     kobject_name(kobj), kobj);
-		kref_get(&kobj->kref);
+        /**
+         *  引用计数+1
+         */
+        kref_get(&kobj->kref);
 	}
 	return kobj;
 }
@@ -722,8 +758,14 @@ static void kobject_delayed_cleanup(struct work_struct *work)
 }
 #endif
 
+/**
+ *  释放
+ */
 static void kobject_release(struct kref *kref)
 {
+    /**
+     *  
+     */
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
 	unsigned long delay = HZ + HZ * (get_random_int() & 0x3);
@@ -733,6 +775,9 @@ static void kobject_release(struct kref *kref)
 
 	schedule_delayed_work(&kobj->release, delay);
 #else
+    /**
+     *  释放
+     */
 	kobject_cleanup(kobj);
 #endif
 }
@@ -742,6 +787,8 @@ static void kobject_release(struct kref *kref)
  * @kobj: object.
  *
  * Decrement the refcount, and if 0, call kobject_cleanup().
+ *
+ *  引用计数-1
  */
 void kobject_put(struct kobject *kobj)
 {
@@ -750,6 +797,9 @@ void kobject_put(struct kobject *kobj)
 			WARN(1, KERN_WARNING
 				"kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n",
 			     kobject_name(kobj), kobj);
+        /**
+         *  引用计数-1，如果为零，释放了
+         */
 		kref_put(&kobj->kref, kobject_release);
 	}
 }

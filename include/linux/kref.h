@@ -16,6 +16,9 @@
 #include <linux/spinlock.h>
 #include <linux/refcount.h>
 
+/**
+ *  kobject 等 的引用计数
+ */
 struct kref {   /* 引用计数 */
 	refcount_t refcount;
 };
@@ -61,6 +64,9 @@ static inline void kref_get(struct kref *kref)
  */
 static inline int kref_put(struct kref *kref, void (*release)(struct kref *kref))
 {
+    /**
+     *  -1
+     */
 	if (refcount_dec_and_test(&kref->refcount)) {
 		release(kref);
 		return 1;

@@ -62,20 +62,63 @@ enum kobject_action {
 };
 
 /**
+ *  kobject 是组成设备模型的基本结构
+ *  kobject 对自身不感兴趣，它存在的意义是，把高级对象连接到设备模型上
+ *  
+ *  起初他只是被理解为一个简单的引用计数，但是随着发展，他的任务越来越多，因此有许多成员
+ *  其中包括：
+ *      1. 对象的引用计数
+ *      2. sysfs 表述
+ *          sysfs 中显示的每一个对象，都对应一个 kobject，被用来与内核交互并创建它的可见表述。
+ *          /sys/fs 中的一个 dentry 
+ *      3. 数据结构关联
+ *      4. 热插拔事件处理
  *
  *  /sys/fs 中的一个 dentry 
  */
 struct kobject {    /* 驱动设备的 父类 */
+    /**
+     *  
+     */
 	const char		*name;
-	struct list_head	entry;  /* 在 kset->list 链表中的节点 */
+
+    /**
+     *  在 `kset->list` 链表中的节点
+     */
+	struct list_head	entry;  /*  */
+
+    /**
+     *  父节点
+     */
 	struct kobject		*parent;
+
+    /**
+     *  
+     */
 	struct kset		*kset;
+
+    /**
+     *  get_ktype() - 获取
+     */
 	struct kobj_type	*ktype; /*  */
+
+    /**
+     *  
+     */
 	struct kernfs_node	*sd; /* sysfs directory entry */
+
+    /**
+     *  引用计数
+     */
 	struct kref		kref;
+    
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
 	struct delayed_work	release;
 #endif
+
+    /**
+     *  
+     */
 	unsigned int state_initialized:1;
 	unsigned int state_in_sysfs:1;
 	unsigned int state_add_uevent_sent:1;
@@ -139,9 +182,23 @@ static inline bool kobject_has_children(struct kobject *kobj)
 	return kobj->sd && kobj->sd->dir.subdirs;
 }
 
+/**
+ *  
+ */
 struct kobj_type {  /*  */
+    /**
+     *  
+     */
 	void (*release)(struct kobject *kobj);
+
+    /**
+     *  
+     */
 	const struct sysfs_ops *sysfs_ops;
+
+    /**
+     *  
+     */
 	struct attribute **default_attrs;	/* use default_groups instead */
 	const struct attribute_group **default_groups;
 	const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj);
@@ -149,6 +206,9 @@ struct kobj_type {  /*  */
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
+/**
+ *  
+ */
 struct kobj_uevent_env {
 	char *argv[3];
 	char *envp[UEVENT_NUM_ENVP];
@@ -157,6 +217,9 @@ struct kobj_uevent_env {
 	int buflen;
 };
 
+/**
+ *  
+ */
 struct kset_uevent_ops {
 	int (* const filter)(struct kset *kset, struct kobject *kobj);
 	const char *(* const name)(struct kset *kset, struct kobject *kobj);
@@ -196,7 +259,13 @@ struct sock;
  *  kobject 的集合
  */
 struct kset {   
-	struct list_head list;  /* 串联所有 kobject 的链表头*/
+    /**
+     *  串联所有 `kobject.entry` 的链表头
+     */
+	struct list_head list;  /* */
+    /**
+     *  
+     */
 	spinlock_t list_lock;   /* 保护 list 链表 */
     /**
      *  
@@ -230,6 +299,9 @@ static inline void kset_put(struct kset *k)
 	kobject_put(&k->kobj);
 }
 
+/**
+ *  
+ */
 static inline struct kobj_type *get_ktype(struct kobject *kobj)
 {
 	return kobj->ktype;

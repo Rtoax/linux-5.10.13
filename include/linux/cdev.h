@@ -22,6 +22,9 @@ struct module;
  *  cdev_del()
  */
 struct cdev {
+    /**
+     *  
+     */
 	struct kobject kobj;
 	struct module *owner;
 	const struct file_operations *ops;
