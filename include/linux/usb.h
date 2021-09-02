@@ -1391,6 +1391,9 @@ extern int usb_disabled(void);
 #define URB_DMA_SG_COMBINED	0x00400000	/* S-G entries were combined */
 #define URB_ALIGNED_TEMP_BUFFER	0x00800000	/* Temp buffer was alloc'd */
 
+/**
+ *  
+ */
 struct usb_iso_packet_descriptor {
 	unsigned int offset;
 	unsigned int length;		/* expected length */
@@ -1649,7 +1652,7 @@ struct urb {
 	unsigned int stream_id;		/* (in) stream ID */
 
     /**
-     *  
+     *  urb 当前的状态
      */
 	int status;			/* (return) non-ISO status */
 
@@ -1674,19 +1677,47 @@ struct urb {
 	int num_mapped_sgs;		/* (internal) mapped sg entries */
 	int num_sgs;			/* (in) number of entries in the sg list */
     /**
-     *  
+     *  缓冲区的大小
      */
 	u32 transfer_buffer_length;	/* (in) data buffer length */
+
+    /**
+     *  当 urb 结束后，该变量被设置为 urb 所发送的数据(OUT urb)或者 urb 接收的数据(IN urb)的实际长度
+     */
 	u32 actual_length;		/* (return) actual transfer length */
 	unsigned char *setup_packet;	/* (in) setup packet (control only) */
 	dma_addr_t setup_dma;		/* (in) dma addr for setup_packet */
+
+    /**
+     *  设置或者返回初始的帧数量，用于等时传输
+     */
 	int start_frame;		/* (modify) start frame (ISO) */
+    /**
+     *  仅对等时 urb 有效
+     *  指定 该 urb 所处理的等时传输缓冲区的数量
+     */
 	int number_of_packets;		/* (in) number of ISO packets */
+    /**
+     *  urb 被轮询的时间间隔
+     */
 	int interval;			/* (modify) transfer interval
 					 * (INT/ISO) */
+    /**
+     *  由 usb 核心设置，仅用于等时urb 结束之后，
+     *  它标识报告了任何一种类型错误的等时传输数量
+     */                    
 	int error_count;		/* (return) number of ISO errors */
+
+    /**
+     *  指向一个可以被USB驱动程序设置的数据块
+     */
 	void *context;			/* (in) context for completion */
 	usb_complete_t complete;	/* (in) completion routine */
+
+    /**
+     *  一次定义许多等时传输
+     *  它还用于手机每个单独传输的传输状态
+     */
 	struct usb_iso_packet_descriptor iso_frame_desc[];
 					/* (in) ISO ONLY */
 };
@@ -1706,6 +1737,8 @@ struct urb {
  *
  * Initializes a control urb with the proper information needed to submit
  * it to a device.
+ *
+ * 控制 urb
  */
 static inline void usb_fill_control_urb(struct urb *urb,
 					struct usb_device *dev,
@@ -1737,6 +1770,8 @@ static inline void usb_fill_control_urb(struct urb *urb,
  *
  * Initializes a bulk urb with the proper information needed to submit it
  * to a device.
+ *
+ * 批量 urb
  */
 static inline void usb_fill_bulk_urb(struct urb *urb,
 				     struct usb_device *dev,
@@ -1778,6 +1813,8 @@ static inline void usb_fill_bulk_urb(struct urb *urb,
  * 128us instead of 125us.  For Wireless USB devices, the interval is passed
  * through to the host controller, rather than being translated into microframe
  * units.
+ *
+ * 中断 urb
  */
 static inline void usb_fill_int_urb(struct urb *urb,
 				    struct usb_device *dev,
@@ -1808,6 +1845,9 @@ static inline void usb_fill_int_urb(struct urb *urb,
 }
 
 extern void usb_init_urb(struct urb *urb);
+/**
+ *  创建和销毁 urb
+ */                    
 extern struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags);
 extern void usb_free_urb(struct urb *urb);
 #define usb_put_urb usb_free_urb
