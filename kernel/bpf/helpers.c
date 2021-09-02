@@ -26,6 +26,7 @@
  * if program is allowed to access maps, so check rcu_read_lock_held in
  * all three functions.
  */
+void *bpf_map_lookup_elem(struct bpf_map *map, const void *key);//+++
 BPF_CALL_2(bpf_map_lookup_elem, struct bpf_map *, map, void *, key)
 {
 	WARN_ON_ONCE(!rcu_read_lock_held());
@@ -41,6 +42,7 @@ const struct bpf_func_proto bpf_map_lookup_elem_proto = {
 	.arg2_type	= ARG_PTR_TO_MAP_KEY,
 };
 
+long bpf_map_update_elem(struct bpf_map *map, const void *key, const void *value, u64 flags);//+++
 BPF_CALL_4(bpf_map_update_elem, struct bpf_map *, map, void *, key,
 	   void *, value, u64, flags)
 {
@@ -59,6 +61,7 @@ const struct bpf_func_proto bpf_map_update_elem_proto = {
 	.arg4_type	= ARG_ANYTHING,
 };
 
+long bpf_map_delete_elem(struct bpf_map *map, const void *key);//+++
 BPF_CALL_2(bpf_map_delete_elem, struct bpf_map *, map, void *, key)
 {
 	WARN_ON_ONCE(!rcu_read_lock_held());
@@ -74,6 +77,7 @@ const struct bpf_func_proto bpf_map_delete_elem_proto = {
 	.arg2_type	= ARG_PTR_TO_MAP_KEY,
 };
 
+long bpf_map_push_elem(struct bpf_map *map, const void *value, u64 flags);//+++
 BPF_CALL_3(bpf_map_push_elem, struct bpf_map *, map, void *, value, u64, flags)
 {
 	return map->ops->map_push_elem(map, value, flags);
@@ -89,6 +93,7 @@ const struct bpf_func_proto bpf_map_push_elem_proto = {
 	.arg3_type	= ARG_ANYTHING,
 };
 
+long bpf_map_pop_elem(struct bpf_map *map, void *value);//+++
 BPF_CALL_2(bpf_map_pop_elem, struct bpf_map *, map, void *, value)
 {
 	return map->ops->map_pop_elem(map, value);
@@ -102,6 +107,7 @@ const struct bpf_func_proto bpf_map_pop_elem_proto = {
 	.arg2_type	= ARG_PTR_TO_UNINIT_MAP_VALUE,
 };
 
+long bpf_map_peek_elem(struct bpf_map *map, void *value);//+++
 BPF_CALL_2(bpf_map_peek_elem, struct bpf_map *, map, void *, value)
 {
 	return map->ops->map_peek_elem(map, value);
@@ -121,6 +127,7 @@ const struct bpf_func_proto bpf_get_prandom_u32_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+u32 bpf_get_smp_processor_id(void);//+++
 BPF_CALL_0(bpf_get_smp_processor_id)
 {
 	return smp_processor_id();
@@ -132,6 +139,7 @@ const struct bpf_func_proto bpf_get_smp_processor_id_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+long bpf_get_numa_node_id(void);//+++
 BPF_CALL_0(bpf_get_numa_node_id)
 {
 	return numa_node_id();
@@ -143,6 +151,7 @@ const struct bpf_func_proto bpf_get_numa_node_id_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+u64 bpf_ktime_get_ns(void);//+++
 BPF_CALL_0(bpf_ktime_get_ns)
 {
 	/* NMI safe access to clock monotonic */
@@ -155,6 +164,7 @@ const struct bpf_func_proto bpf_ktime_get_ns_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+u64 bpf_ktime_get_boot_ns(void);//+++
 BPF_CALL_0(bpf_ktime_get_boot_ns)
 {
 	/* NMI safe access to clock boottime */
@@ -167,6 +177,7 @@ const struct bpf_func_proto bpf_ktime_get_boot_ns_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+u64 bpf_get_current_pid_tgid(void);//+++
 BPF_CALL_0(bpf_get_current_pid_tgid)
 {
 	struct task_struct *task = current;
@@ -183,6 +194,7 @@ const struct bpf_func_proto bpf_get_current_pid_tgid_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+u64 bpf_get_current_uid_gid(void);//+++
 BPF_CALL_0(bpf_get_current_uid_gid)
 {
 	struct task_struct *task = current;
@@ -203,6 +215,7 @@ const struct bpf_func_proto bpf_get_current_uid_gid_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+long bpf_get_current_comm(void *buf, u32 size_of_buf);//+++
 BPF_CALL_2(bpf_get_current_comm, char *, buf, u32, size)
 {
 	struct task_struct *task = current;
@@ -256,22 +269,22 @@ static inline void __bpf_spin_unlock(struct bpf_spin_lock *lock)
 
 #else
 
-static inline void __bpf_spin_lock(struct bpf_spin_lock *lock)
-{
-	atomic_t *l = (void *)lock;
-
-	BUILD_BUG_ON(sizeof(*l) != sizeof(*lock));
-	do {
-		atomic_cond_read_relaxed(l, !VAL);
-	} while (atomic_xchg(l, 1));
-}
-
-static inline void __bpf_spin_unlock(struct bpf_spin_lock *lock)
-{
-	atomic_t *l = (void *)lock;
-
-	atomic_set_release(l, 0);
-}
+//static inline void __bpf_spin_lock(struct bpf_spin_lock *lock)
+//{
+//	atomic_t *l = (void *)lock;
+//
+//	BUILD_BUG_ON(sizeof(*l) != sizeof(*lock));
+//	do {
+//		atomic_cond_read_relaxed(l, !VAL);
+//	} while (atomic_xchg(l, 1));
+//}
+//
+//static inline void __bpf_spin_unlock(struct bpf_spin_lock *lock)
+//{
+//	atomic_t *l = (void *)lock;
+//
+//	atomic_set_release(l, 0);
+//}
 
 #endif
 
@@ -330,6 +343,7 @@ void copy_map_value_locked(struct bpf_map *map, void *dst, void *src,
 	preempt_enable();
 }
 
+u64 bpf_jiffies64(void);//++
 BPF_CALL_0(bpf_jiffies64)
 {
 	return get_jiffies_64();
