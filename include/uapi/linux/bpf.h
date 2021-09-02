@@ -108,7 +108,7 @@ enum bpf_cmd {
      *  映射类型 `enum bpf_map_type;`
      *
      *  - map_create() 内核函数
-     *  - bpf_create_map() 用户API封装
+     *  - bpf_create_map() libbpf API
      *  
      */
 	BPF_MAP_CREATE,
@@ -116,14 +116,14 @@ enum bpf_cmd {
 	 *  读取 BPF 映射元素
 	 * 
      *  - map_lookup_elem() 内核系统调用
-     *  - bpf_map_lookup_elem() 用户态 API
+     *  - bpf_map_lookup_elem() libbpf API
      */
 	BPF_MAP_LOOKUP_ELEM,
 	/**
 	 *  更新 BPF 映射元素
 	 *
      *  - map_update_elem() 内核系统调用
-     *  - bpf_map_update_elem() 用户态 API
+     *  - bpf_map_update_elem() libbpf API
      */
 	BPF_MAP_UPDATE_ELEM,
 	/**
@@ -131,7 +131,7 @@ enum bpf_cmd {
 	 *  删除 BPF 映射元素
 	 *
      *  - map_delete_elem() 内核系统调用
-     *  - bpf_map_delete_elem() 用户态 API
+     *  - bpf_map_delete_elem() libbpf API
      */
 	BPF_MAP_DELETE_ELEM,
 	/**
@@ -140,7 +140,7 @@ enum bpf_cmd {
      *
      *
      *  - map_get_next_key()
-     *  - bpf_map_get_next_key() 用户态 API
+     *  - bpf_map_get_next_key() libbpf API
      */
 	BPF_MAP_GET_NEXT_KEY,
 	/**
@@ -569,7 +569,12 @@ enum {
 	                    create new element if it didn't exist */
 	BPF_EXIST	= 2, /* 仅在元素存在时，更新元素
 	                    update existing element */
-	BPF_F_LOCK	= 4, /* 不允许修改?
+    /**
+     *  `bpf_spin_lock` 为了解决 BPF 映射的竞态
+     *
+     *  同时，BPF 引入了 BPF_F_LOCK 标志，用户程序可以使用这个标志修改该锁的状态
+     */
+    BPF_F_LOCK	= 4, /* 
 	                    spin_lock-ed map_lookup/map_update */
 };
 
@@ -5215,6 +5220,11 @@ struct bpf_line_info {
 	__u32	line_col;
 };
 
+/**
+ *  `bpf_spin_lock` 为了解决 BPF 映射的竞态
+ *
+ *  同时，BPF 引入了 BPF_F_LOCK 标志，用户程序可以使用这个标志修改该锁的状态
+ */
 struct bpf_spin_lock {
 	__u32	val;
 };
