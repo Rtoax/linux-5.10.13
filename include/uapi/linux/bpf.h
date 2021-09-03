@@ -406,6 +406,9 @@ enum bpf_prog_type {
 	BPF_PROG_TYPE_UNSPEC,
     /**
      *  套接字过滤器
+     *  1. 实时流量丢弃：只限UDP
+     *  2. 实时观测：tcpdump
+     *  3. 后续分析：pcap/tcpdump
      */
 	BPF_PROG_TYPE_SOCKET_FILTER,
 

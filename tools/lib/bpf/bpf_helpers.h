@@ -90,6 +90,8 @@ bpf_tail_call_static(void *ctx, const void *map, const __u32 slot)
 /*
  * Helper structure used by eBPF C program
  * to describe BPF map attributes to libbpf loader
+ *
+ * 映射定义
  */
 struct bpf_map_def {
 	unsigned int type;

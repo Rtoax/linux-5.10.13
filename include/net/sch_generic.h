@@ -54,11 +54,19 @@ struct qdisc_skb_head {
 	spinlock_t	lock;
 };
 
-struct Qdisc {  /* 排队规则 queueing disciplining，流量控制的基础 */
+/**
+ *  排队规则 queueing disciplining，流量控制的基础
+ *
+ *  定义调度对象，该对象通过更改数据包的发送方式使进入接口的数据包排队
+ *
+ *  默认排队方式 `default_qdisc_ops = &pfifo_fast_ops`
+ *                              还有 `fq_codel_qdisc_ops`
+ */
+struct Qdisc {  /*  */
 	int 			(*enqueue)(struct sk_buff *skb,
-					   struct Qdisc *sch,
-					   struct sk_buff **to_free);
-	struct sk_buff *	(*dequeue)(struct Qdisc *sch);
+        					   struct Qdisc *sch,
+        					   struct sk_buff **to_free);
+	psk_buff_t	(*dequeue)(struct Qdisc *sch);
 	unsigned int		flags;
 #define TCQ_F_BUILTIN		1
 #define TCQ_F_INGRESS		2
@@ -235,36 +243,37 @@ enum qdisc_class_ops_flags {
 	QDISC_CLASS_OPS_DOIT_UNLOCKED = 1,
 };
 
+/**
+ *  
+ */
 struct Qdisc_ops {  /* 排队规则 queueing disciplining，流量控制的基础 */
 	struct Qdisc_ops	*next;
 	const struct Qdisc_class_ops	*cl_ops;
-	char			id[IFNAMSIZ];
+	char		id[IFNAMSIZ];
 	int			priv_size;
 	unsigned int		static_flags;
 
-	int 			(*enqueue)(struct sk_buff *skb,
-					   struct Qdisc *sch,
-					   struct sk_buff **to_free);
-	struct sk_buff *	(*dequeue)(struct Qdisc *);
-	struct sk_buff *	(*peek)(struct Qdisc *);
+	int 		(*enqueue)(struct sk_buff *skb,
+        					   struct Qdisc *sch,
+        					   struct sk_buff **to_free);
+	psk_buff_t	(*dequeue)(struct Qdisc *);
+	psk_buff_t	(*peek)(struct Qdisc *);
 
 	int			(*init)(struct Qdisc *sch, struct nlattr *arg,
-					struct netlink_ext_ack *extack);
-	void			(*reset)(struct Qdisc *);
-	void			(*destroy)(struct Qdisc *);
+					    struct netlink_ext_ack *extack);
+	void		(*reset)(struct Qdisc *);
+	void		(*destroy)(struct Qdisc *);
 	int			(*change)(struct Qdisc *sch,
-					  struct nlattr *arg,
-					  struct netlink_ext_ack *extack);
-	void			(*attach)(struct Qdisc *sch);
+    					  struct nlattr *arg,
+    					  struct netlink_ext_ack *extack);
+	void		(*attach)(struct Qdisc *sch);
 	int			(*change_tx_queue_len)(struct Qdisc *, unsigned int);
 
 	int			(*dump)(struct Qdisc *, struct sk_buff *);
 	int			(*dump_stats)(struct Qdisc *, struct gnet_dump *);
 
-	void			(*ingress_block_set)(struct Qdisc *sch,
-						     u32 block_index);
-	void			(*egress_block_set)(struct Qdisc *sch,
-						    u32 block_index);
+	void		(*ingress_block_set)(struct Qdisc *sch, u32 block_index);
+	void		(*egress_block_set)(struct Qdisc *sch, u32 block_index);
 	u32			(*ingress_block_get)(struct Qdisc *sch);
 	u32			(*egress_block_get)(struct Qdisc *sch);
 

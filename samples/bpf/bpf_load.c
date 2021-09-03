@@ -74,7 +74,10 @@ static int write_kprobe_events(const char *val)
 }
 
 static int load_and_attach(const char *event, struct bpf_insn *prog, int size)
-{
+{   
+    /**
+     *  识别 ELF 头
+     */
 	bool is_socket = strncmp(event, "socket", 6) == 0;
 	bool is_kprobe = strncmp(event, "kprobe/", 7) == 0;
 	bool is_kretprobe = strncmp(event, "kretprobe/", 10) == 0;
@@ -99,6 +102,9 @@ static int load_and_attach(const char *event, struct bpf_insn *prog, int size)
 	attr.wakeup_events = 1;
 
 	if (is_socket) {
+        /**
+         *  
+         */
 		prog_type = BPF_PROG_TYPE_SOCKET_FILTER;
 	} else if (is_kprobe || is_kretprobe) {
 		prog_type = BPF_PROG_TYPE_KPROBE;
@@ -128,6 +134,9 @@ static int load_and_attach(const char *event, struct bpf_insn *prog, int size)
 	if (prog_cnt == MAX_PROGS)
 		return -1;
 
+    /**
+     *  加载 bpf 程序
+     */
 	fd = bpf_load_program(prog_type, prog, insns_cnt, license, kern_version,
 			      bpf_log_buf, BPF_LOG_BUF_SIZE);
 	if (fd < 0) {

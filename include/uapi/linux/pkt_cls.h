@@ -56,6 +56,15 @@ enum {
 #define TCA_ACT_REPLACE		1
 #define TCA_ACT_NOREPLACE	0
 
+/**
+ *  Traffic Control - 流量控制 返回码
+ *
+ *  TC_ACT_OK - 终止数据包处理流程，允许处理数据包
+ *  TC_ACT_SHOT - 终止数据包处理流程，丢弃数据包
+ *  TC_ACT_UNSPEC - 使用 tc 配置的默认操作，类似于一个分配器返回-1
+ *  TC_ACT_PIPE - 如果有下一个动作，迭代到下一个动作
+ *  TC_ACT_RECLASSIFY - 终止数据包处理流程，从头开始分类
+ */
 #define TC_ACT_UNSPEC	(-1)
 #define TC_ACT_OK		0
 #define TC_ACT_RECLASSIFY	1

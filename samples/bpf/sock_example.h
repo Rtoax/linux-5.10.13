@@ -10,6 +10,9 @@
 #include <linux/if_packet.h>
 #include <arpa/inet.h>
 
+/**
+ *  打开网口
+ */
 static inline int open_raw_sock(const char *name)
 {
 	struct sockaddr_ll sll;

@@ -691,6 +691,10 @@ static const struct Qdisc_class_ops fq_codel_class_ops = {
 	.walk		=	fq_codel_walk,
 };
 
+/**
+ *  公平队列控制延迟 - 流量控制
+ *  是一种无分配排队规则
+ */
 static struct Qdisc_ops __read_mostly fq_codel_qdisc_ops  = {
 	.cl_ops		=	&fq_codel_class_ops,
 	.id		=	"fq_codel",

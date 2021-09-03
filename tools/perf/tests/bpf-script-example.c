@@ -17,12 +17,12 @@ static void *(*bpf_map_lookup_elem)(void *map, void *key) =
 static void *(*bpf_map_update_elem)(void *map, void *key, void *value, int flags) =
 	(void *) BPF_FUNC_map_update_elem;
 
-struct bpf_map_def {
-	unsigned int type;
-	unsigned int key_size;
-	unsigned int value_size;
-	unsigned int max_entries;
-};
+//struct bpf_map_def {
+//	unsigned int type;
+//	unsigned int key_size;
+//	unsigned int value_size;
+//	unsigned int max_entries;
+//};
 
 #define SEC(NAME) __attribute__((section(NAME), used))
 struct bpf_map_def SEC("maps") flip_table = {

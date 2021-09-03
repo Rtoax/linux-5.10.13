@@ -1031,6 +1031,7 @@ struct file {   /*  */
      *  socket(2) 中对应 struct socket 结构
      *  perf_event_open(2) 中对应 struct perf_event *group_leader 结构
      *  __bpf_map_get() 中对应 struct bpf_map * 结构
+     *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
      *  [...]
      */
 	void			*private_data;

@@ -2156,6 +2156,9 @@ static struct bpf_prog *____bpf_prog_get(struct fd f)
 		return ERR_PTR(-EINVAL);
 	}
 
+    /**
+     *  
+     */
 	return f.file->private_data;
 }
 
@@ -2217,6 +2220,9 @@ static struct bpf_prog *__bpf_prog_get(u32 ufd, enum bpf_prog_type *attach_type,
 	struct fd f = fdget(ufd);
 	struct bpf_prog *prog;
 
+    /**
+     *  
+     */
 	prog = ____bpf_prog_get(f);
 	if (IS_ERR(prog))
 		return prog;

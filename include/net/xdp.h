@@ -65,6 +65,12 @@ struct xdp_txq_info {
 	struct net_device *dev;
 };
 
+/**
+ *  XDP 程序在入口数据路径的焦躁阶段执行，且在进入内核网络栈之前执行，
+ *  因此XDP 程序无法像 tc 一样访问 sk_buff 结构，而使用 xdp_buff 结构
+ *
+ *  该数据结构是数据包的早期表示，不带元数据
+ */
 struct xdp_buff {
 	void *data;
 	void *data_end;

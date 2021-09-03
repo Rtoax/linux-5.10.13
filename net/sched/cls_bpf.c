@@ -34,6 +34,10 @@ struct cls_bpf_head {
 	struct rcu_head rcu;
 };
 
+/**
+ *  流量控制配置 - 可编程分配器程序
+ *  以钩子形式进入调度操作的不同级别
+ */
 struct cls_bpf_prog {
 	struct bpf_prog *filter;
 	struct list_head link;
