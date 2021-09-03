@@ -13,13 +13,16 @@
 #define QUEUE_STACK_CREATE_FLAG_MASK \
 	(BPF_F_NUMA_NODE | BPF_F_ACCESS_MASK)
 
+/**
+ *  
+ */
 struct bpf_queue_stack {
 	struct bpf_map map;
 	raw_spinlock_t lock;
 	u32 head, tail;
 	u32 size; /* max_entries + 1 */
 
-	char elements[] __aligned(8);
+	char __aligned(8) elements[] ;
 };
 
 static struct bpf_queue_stack *bpf_queue_stack(struct bpf_map *map)
@@ -104,7 +107,10 @@ static void queue_stack_map_free(struct bpf_map *map)
 	bpf_map_area_free(qs);
 }
 
-static int __queue_map_get(struct bpf_map *map, void *value, bool delete)
+/**
+ *  
+ */
+static int __queue_map_get(struct bpf_map *map, void *_value, bool delete)
 {
 	struct bpf_queue_stack *qs = bpf_queue_stack(map);
 	unsigned long flags;
@@ -114,13 +120,13 @@ static int __queue_map_get(struct bpf_map *map, void *value, bool delete)
 	raw_spin_lock_irqsave(&qs->lock, flags);
 
 	if (queue_stack_map_is_empty(qs)) {
-		memset(value, 0, qs->map.value_size);
+		memset(_value, 0, qs->map.value_size);
 		err = -ENOENT;
 		goto out;
 	}
 
 	ptr = &qs->elements[qs->tail * qs->map.value_size];
-	memcpy(value, ptr, qs->map.value_size);
+	memcpy(_value, ptr, qs->map.value_size);
 
 	if (delete) {
 		if (unlikely(++qs->tail >= qs->size))
@@ -133,7 +139,7 @@ out:
 }
 
 
-static int __stack_map_get(struct bpf_map *map, void *value, bool delete)
+static int __stack_map_get(struct bpf_map *map, void *_value, bool delete)
 {
 	struct bpf_queue_stack *qs = bpf_queue_stack(map);
 	unsigned long flags;
@@ -144,7 +150,7 @@ static int __stack_map_get(struct bpf_map *map, void *value, bool delete)
 	raw_spin_lock_irqsave(&qs->lock, flags);
 
 	if (queue_stack_map_is_empty(qs)) {
-		memset(value, 0, qs->map.value_size);
+		memset(_value, 0, qs->map.value_size);
 		err = -ENOENT;
 		goto out;
 	}
@@ -154,7 +160,7 @@ static int __stack_map_get(struct bpf_map *map, void *value, bool delete)
 		index = qs->size - 1;
 
 	ptr = &qs->elements[index * qs->map.value_size];
-	memcpy(value, ptr, qs->map.value_size);
+	memcpy(_value, ptr, qs->map.value_size);
 
 	if (delete)
 		qs->head = index;
@@ -255,6 +261,10 @@ static int queue_stack_map_get_next_key(struct bpf_map *map, void *key,
 	return -EINVAL;
 }
 
+
+/**
+ *  
+ */
 static int queue_map_btf_id;
 const struct bpf_map_ops queue_map_ops = {
 	.map_meta_equal = bpf_map_meta_equal,
@@ -272,6 +282,9 @@ const struct bpf_map_ops queue_map_ops = {
 	.map_btf_id = &queue_map_btf_id,
 };
 
+/**
+ *  
+ */
 static int stack_map_btf_id;
 const struct bpf_map_ops stack_map_ops = {
 	.map_meta_equal = bpf_map_meta_equal,

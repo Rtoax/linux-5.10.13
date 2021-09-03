@@ -329,17 +329,61 @@ enum bpf_map_type {
      *  2. 不能从该映射中删除元素
      */
 	BPF_MAP_TYPE_CGROUP_STORAGE,
+	/**
+     *  重用端口套接字映射
+     *
+     *  需要与 `BPF_PROG_TYPE_SK_REUSEPORT` 一起使用，可以决定如何过滤和处理网络设备的传入数据包
+     */
 	BPF_MAP_TYPE_REUSEPORT_SOCKARRAY,
 	/**
      *  见`BPF_MAP_TYPE_CGROUP_STORAGE`
      */
 	BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE,
+	/**
+     *  队列映射 - FIFO
+     *  
+     *  bpf_map_lookup_elem() - 获取最旧的元素
+     *  bpf_map_update_elem() - 将元素添加到末尾
+     *  
+     *  也可以使用帮助函数 `bpf_map_lookup_and_delete_elem()`
+     *
+     *  `BPF_MAP_TYPE_QUEUE` 操作符 `queue_map_ops`
+     */
 	BPF_MAP_TYPE_QUEUE,
+	/**
+     *  栈映射 - 
+     *  
+     *  bpf_map_lookup_elem() - 获取最新的元素
+     *  bpf_map_update_elem() - 将元素添加到栈顶
+     *
+     *  `bpf_map_lookup_and_delete_elem()` 将返回一个负数， errno 被设置为 ENOENT
+     *
+     *  `BPF_MAP_TYPE_STACK` 操作符 `stack_map_ops`
+     */
 	BPF_MAP_TYPE_STACK,
+	/**
+     *  
+     */
 	BPF_MAP_TYPE_SK_STORAGE,
+	/**
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_DEVMAP_HASH,
+	/**
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_STRUCT_OPS,
+	/**
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_RINGBUF,
+	/**
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_INODE_STORAGE,
 };
 
@@ -463,6 +507,8 @@ enum bpf_prog_type {
      *  BPF 程序返回值为
      *      SK_PASS - 通知内核启动端口重用
      *      SK_DROP - 防止程序重复使用端口
+     *
+     *  与 `BPF_MAP_TYPE_REUSEPORT_SOCKARRAY` 一起使用，可以决定如何过滤和处理网络设备的传入数据包
      */
 	BPF_PROG_TYPE_SK_REUSEPORT,
 

@@ -9883,9 +9883,16 @@ struct sock *bpf_run_sk_reuseport(struct sock_reuseport *reuse, struct sock *sk,
 		return ERR_PTR(-ECONNREFUSED);
 }
 
+
+long bpf_sk_select_reuseport(struct sk_reuseport_md *reuse, struct bpf_map *map, void *key, u64 flags){}//+++
 BPF_CALL_4(sk_select_reuseport, struct sk_reuseport_kern *, reuse_kern,
 	   struct bpf_map *, map, void *, key, u32, flags)
 {
+    struct sk_reuseport_kern *reuse_kern;//+++
+    struct bpf_map * map;//+++
+    void *key;//+++
+    u32 flags;//+++
+
 	bool is_sockarray = map->map_type == BPF_MAP_TYPE_REUSEPORT_SOCKARRAY;
 	struct sock_reuseport *reuse;
 	struct sock *selected_sk;

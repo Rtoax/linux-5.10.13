@@ -50,7 +50,15 @@ struct bpf_iter_seq_info {
 	u32 seq_priv_size;
 };
 typedef struct bpf_map * p_bpf_map_t;/* 我加的 */
-/* map is generic key/value storage optionally accesible by eBPF programs */
+
+
+/**
+ *  map is generic key/value storage optionally accesible by eBPF programs 
+ *
+ *  
+ *  `BPF_MAP_TYPE_QUEUE` 操作符 `queue_map_ops`
+ *  `BPF_MAP_TYPE_STACK` 操作符 `stack_map_ops`
+ */
 struct bpf_map_ops {
 	/* funcs callable from userspace (via syscall) */
 	int (*map_alloc_check)(union bpf_attr *attr);
@@ -75,7 +83,10 @@ struct bpf_map_ops {
 	int (*map_update_elem)(struct bpf_map *map, void *key, void *value, u64 flags);
 	int (*map_delete_elem)(struct bpf_map *map, void *key);
 	int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags);
-	int (*map_pop_elem)(struct bpf_map *map, void *value);
+    /**
+     *  
+     */
+    int (*map_pop_elem)(struct bpf_map *map, void *value);
 	int (*map_peek_elem)(struct bpf_map *map, void *value);
 
 	/* funcs called by prog_array and perf_event_array map */

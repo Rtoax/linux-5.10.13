@@ -1765,7 +1765,7 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	void __user *uvalue = u64_to_user_ptr(attr->value);
 	int ufd = attr->map_fd;
 	struct bpf_map *map;
-	void *key, *value;
+	void *key, *_value;
 	u32 value_size;
 	struct fd f;
 	int err;
@@ -1774,6 +1774,10 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 		return -EINVAL;
 
 	f = fdget(ufd);
+
+    /**
+     *  获取
+     */
 	map = __bpf_map_get(f);
 	if (IS_ERR(map))
 		return PTR_ERR(map);
@@ -1783,6 +1787,9 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 		goto err_put;
 	}
 
+    /**
+     *  
+     */
 	key = __bpf_copy_key(ukey, map->key_size);
 	if (IS_ERR(key)) {
 		err = PTR_ERR(key);
@@ -1792,13 +1799,16 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	value_size = map->value_size;
 
 	err = -ENOMEM;
-	value = kmalloc(value_size, GFP_USER | __GFP_NOWARN);
-	if (!value)
+	_value = kmalloc(value_size, GFP_USER | __GFP_NOWARN);
+	if (!_value)
 		goto free_key;
 
 	if (map->map_type == BPF_MAP_TYPE_QUEUE ||
 	    map->map_type == BPF_MAP_TYPE_STACK) {
-		err = map->ops->map_pop_elem(map, value);
+	    /**
+         *  
+         */
+		err = map->ops->map_pop_elem(map, _value);
 	} else {
 		err = -ENOTSUPP;
 	}
@@ -1806,7 +1816,7 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	if (err)
 		goto free_value;
 
-	if (copy_to_user(uvalue, value, value_size) != 0) {
+	if (copy_to_user(uvalue, _value, value_size) != 0) {
 		err = -EFAULT;
 		goto free_value;
 	}
@@ -1814,7 +1824,7 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	err = 0;
 
 free_value:
-	kfree(value);
+	kfree(_value);
 free_key:
 	kfree(key);
 err_put:
