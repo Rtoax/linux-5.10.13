@@ -380,6 +380,9 @@ err_close:
 	return err;
 }
 
+/**
+ *  bpftool 是一个用于检查BPF程序和映射的内核工具
+ */
 int main(int argc, char **argv)
 {
 	static const struct option options[] = {

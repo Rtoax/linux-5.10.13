@@ -101,7 +101,7 @@ void  p_info(const char *fmt, ...);
 bool is_prefix(const char *pfx, const char *str);
 int detect_common_prefix(const char *arg, ...);
 void fprint_hex(FILE *f, void *arg, unsigned int n, const char *sep);
-void usage(void) __noreturn;
+void __noreturn usage(void) ;
 
 void set_max_rlimit(void);
 
@@ -171,17 +171,17 @@ int do_gen(int argc, char **argv);
 int do_btf(int argc, char **argv);
 
 /* non-bootstrap only commands */
-int do_prog(int argc, char **arg) __weak;
-int do_map(int argc, char **arg) __weak;
-int do_link(int argc, char **arg) __weak;
-int do_event_pipe(int argc, char **argv) __weak;
-int do_cgroup(int argc, char **arg) __weak;
-int do_perf(int argc, char **arg) __weak;
-int do_net(int argc, char **arg) __weak;
-int do_tracelog(int argc, char **arg) __weak;
-int do_feature(int argc, char **argv) __weak;
-int do_struct_ops(int argc, char **argv) __weak;
-int do_iter(int argc, char **argv) __weak;
+int __weak do_prog(int argc, char **arg) ;
+int __weak do_map(int argc, char **arg) ;
+int __weak do_link(int argc, char **arg) ;
+int __weak do_event_pipe(int argc, char **argv) ;
+int __weak do_cgroup(int argc, char **arg) ;
+int __weak do_perf(int argc, char **arg) ;
+int __weak do_net(int argc, char **arg) ;
+int __weak do_tracelog(int argc, char **arg) ;
+int __weak do_feature(int argc, char **argv) ;
+int __weak do_struct_ops(int argc, char **argv) ;
+int __weak do_iter(int argc, char **argv) ;
 
 int parse_u32_arg(int *argc, char ***argv, __u32 *val, const char *what);
 int prog_parse_fd(int *argc, char ***argv);
