@@ -434,6 +434,9 @@ static int bpf_iter_link_pin_kernel(struct dentry *parent,
 	return ret;
 }
 
+/**
+ *  
+ */
 static int bpf_obj_do_pin(const char __user *pathname, void *raw,
 			  enum bpf_type type)
 {
@@ -477,6 +480,9 @@ out:
 	return ret;
 }
 
+/**
+ *  
+ */
 int bpf_obj_pin_user(u32 ufd, const char __user *pathname)
 {
 	enum bpf_type type;
@@ -487,6 +493,9 @@ int bpf_obj_pin_user(u32 ufd, const char __user *pathname)
 	if (IS_ERR(raw))
 		return PTR_ERR(raw);
 
+    /**
+     *  
+     */
 	ret = bpf_obj_do_pin(pathname, raw, type);
 	if (ret != 0)
 		bpf_any_put(raw, type);

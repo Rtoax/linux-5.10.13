@@ -2601,6 +2601,9 @@ free_prog_nouncharge:
 
 #define BPF_OBJ_LAST_FIELD file_flags
 
+/**
+ *  将 bpf 对象保存到文件系统 
+ */
 static int bpf_obj_pin(const union bpf_attr *attr)
 {
 	if (CHECK_ATTR(BPF_OBJ) || attr->file_flags != 0)
@@ -4779,10 +4782,10 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	case BPF_PROG_LOAD:         /* 加载程序 */
 		err = bpf_prog_load(&attr, uattr);
 		break;
-	case BPF_OBJ_PIN:           /*  */
+	case BPF_OBJ_PIN:           /* 将 bpf 对象保存到文件系统 */
 		err = bpf_obj_pin(&attr);
 		break;
-	case BPF_OBJ_GET:           /*  */
+	case BPF_OBJ_GET:           /* 从文件系统获取 bpf 对象 */
 		err = bpf_obj_get(&attr);
 		break;
 	case BPF_PROG_ATTACH:       /* attach 程序 */

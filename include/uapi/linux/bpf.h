@@ -152,8 +152,15 @@ enum bpf_cmd {
      *  - bpf_prog_load()
      */
 	BPF_PROG_LOAD,
-	
+
+    /**
+     *  将 BPF 对象保存到文件系统的命令(文件系统默认为 `/sys/fs/bpf`)
+     */
 	BPF_OBJ_PIN,
+
+    /**
+     *  获取已固定到文件系统 BPF 对象的命令(文件系统默认为 `/sys/fs/bpf`)
+     */
 	BPF_OBJ_GET,
 	BPF_PROG_ATTACH,
 	BPF_PROG_DETACH,
