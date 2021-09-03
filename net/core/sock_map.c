@@ -657,6 +657,10 @@ static int sock_map_update_elem(struct bpf_map *map, void *key,
 	return ret;
 }
 
+/**
+ *  
+ */
+long bpf_sock_map_update(struct bpf_sock_ops *skops, struct bpf_map *map, void *key, u64 flags){}//++++
 BPF_CALL_4(bpf_sock_map_update, struct bpf_sock_ops_kern *, sops,
 	   struct bpf_map *, map, void *, key, u64, flags)
 {
@@ -680,6 +684,10 @@ const struct bpf_func_proto bpf_sock_map_update_proto = {
 	.arg4_type	= ARG_ANYTHING,
 };
 
+/**
+ *  
+ */
+long bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags){}//+++
 BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 	   struct bpf_map *, map, u32, key, u64, flags)
 {
@@ -689,6 +697,9 @@ BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 	if (unlikely(flags & ~(BPF_F_INGRESS)))
 		return SK_DROP;
 
+    /**
+     *  
+     */
 	sk = __sock_map_lookup_elem(map, key);
 	if (unlikely(!sk || !sock_map_redirect_allowed(sk)))
 		return SK_DROP;
@@ -708,6 +719,10 @@ const struct bpf_func_proto bpf_sk_redirect_map_proto = {
 	.arg4_type      = ARG_ANYTHING,
 };
 
+/**
+ *  
+ */
+long bpf_msg_redirect_map(struct sk_msg_buff *msg, struct bpf_map *map, u32 key, u64 flags){}//+++
 BPF_CALL_4(bpf_msg_redirect_map, struct sk_msg *, msg,
 	   struct bpf_map *, map, u32, key, u64, flags)
 {

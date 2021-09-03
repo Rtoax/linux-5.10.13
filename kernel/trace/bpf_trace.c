@@ -888,6 +888,9 @@ static const struct bpf_func_proto bpf_perf_event_read_value_proto = {
 	.arg4_type	= ARG_CONST_SIZE,
 };
 
+/**
+ *  
+ */
 static __always_inline u64
 __bpf_perf_event_output(struct pt_regs *regs, struct bpf_map *map,
 			u64 flags, struct perf_sample_data *sd)
@@ -928,6 +931,13 @@ struct bpf_trace_sample_data {
 
 static DEFINE_PER_CPU(struct bpf_trace_sample_data, bpf_trace_sds);
 static DEFINE_PER_CPU(int, bpf_trace_nest_level);
+static struct bpf_trace_sample_data __percpu bpf_trace_sds;//+++
+static int __percpu bpf_trace_nest_level;//+++
+
+/**
+ *  将 data附加到映射上
+ */
+long bpf_perf_event_output(void *ctx, struct bpf_map *map, u64 flags, void *data, u64 size){}//+++
 BPF_CALL_5(bpf_perf_event_output, struct pt_regs *, regs, struct bpf_map *, map,
 	   u64, flags, void *, data, u64, size)
 {

@@ -197,6 +197,9 @@ static int load_local_storage_btf(void)
 				     strs, sizeof(strs));
 }
 
+/**
+ *  
+ */
 bool bpf_probe_map_type(enum bpf_map_type map_type, __u32 ifindex)
 {
 	int key_size, value_size, max_entries, map_flags;

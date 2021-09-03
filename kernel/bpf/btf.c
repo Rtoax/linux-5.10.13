@@ -4197,35 +4197,193 @@ extern char __weak __start_BTF[];
 extern char __weak __stop_BTF[];
 extern struct btf *btf_vmlinux;
 
-#define BPF_MAP_TYPE(_id, _ops)
-#define BPF_LINK_TYPE(_id, _name)
+//#define BPF_MAP_TYPE(_id, _ops)
+//#define BPF_LINK_TYPE(_id, _name)
 static union {
 	struct bpf_ctx_convert {
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
-	prog_ctx_type _id##_prog; \
-	kern_ctx_type _id##_kern;
-#include <linux/bpf_types.h>
-#undef BPF_PROG_TYPE
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
+//	prog_ctx_type _id##_prog; \
+//	kern_ctx_type _id##_kern;
+//#include <linux/bpf_types.h>
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
+#ifdef __RTOAX_______________________________________________
+        struct __sk_buff BPF_PROG_TYPE_SOCKET_FILTER_prog;
+        struct sk_buff BPF_PROG_TYPE_SOCKET_FILTER_kern;
+        struct __sk_buff BPF_PROG_TYPE_SCHED_CLS_prog;
+        struct sk_buff BPF_PROG_TYPE_SCHED_CLS_kern;
+        struct __sk_buff BPF_PROG_TYPE_SCHED_ACT_prog;
+        struct sk_buff BPF_PROG_TYPE_SCHED_ACT_kern;
+        struct xdp_md BPF_PROG_TYPE_XDP_prog;
+        struct xdp_buff BPF_PROG_TYPE_XDP_kern;
+
+        struct __sk_buff BPF_PROG_TYPE_CGROUP_SKB_prog;
+        struct sk_buff BPF_PROG_TYPE_CGROUP_SKB_kern;
+        struct bpf_sock BPF_PROG_TYPE_CGROUP_SOCK_prog;
+        struct sock BPF_PROG_TYPE_CGROUP_SOCK_kern;
+        struct bpf_sock_addr BPF_PROG_TYPE_CGROUP_SOCK_ADDR_prog;
+        struct bpf_sock_addr_kern BPF_PROG_TYPE_CGROUP_SOCK_ADDR_kern;
+
+        struct __sk_buff BPF_PROG_TYPE_LWT_IN_prog;
+        struct sk_buff BPF_PROG_TYPE_LWT_IN_kern;
+        struct __sk_buff BPF_PROG_TYPE_LWT_OUT_prog;
+        struct sk_buff BPF_PROG_TYPE_LWT_OUT_kern;
+        struct __sk_buff BPF_PROG_TYPE_LWT_XMIT_prog;
+        struct sk_buff BPF_PROG_TYPE_LWT_XMIT_kern;
+        struct __sk_buff BPF_PROG_TYPE_LWT_SEG6LOCAL_prog;
+        struct sk_buff BPF_PROG_TYPE_LWT_SEG6LOCAL_kern;
+        struct bpf_sock_ops BPF_PROG_TYPE_SOCK_OPS_prog;
+        struct bpf_sock_ops_kern BPF_PROG_TYPE_SOCK_OPS_kern;
+        struct __sk_buff BPF_PROG_TYPE_SK_SKB_prog;
+        struct sk_buff BPF_PROG_TYPE_SK_SKB_kern;
+        struct sk_msg_md BPF_PROG_TYPE_SK_MSG_prog;
+        struct sk_msg BPF_PROG_TYPE_SK_MSG_kern;
+        struct __sk_buff BPF_PROG_TYPE_FLOW_DISSECTOR_prog;
+        struct bpf_flow_dissector BPF_PROG_TYPE_FLOW_DISSECTOR_kern;
+
+
+        bpf_user_pt_regs_t BPF_PROG_TYPE_KPROBE_prog;
+        struct pt_regs BPF_PROG_TYPE_KPROBE_kern;
+        __u64 BPF_PROG_TYPE_TRACEPOINT_prog; 
+        u64 BPF_PROG_TYPE_TRACEPOINT_kern;
+        struct bpf_perf_event_data BPF_PROG_TYPE_PERF_EVENT_prog;
+        struct bpf_perf_event_data_kern BPF_PROG_TYPE_PERF_EVENT_kern;
+        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_prog; 
+        u64 BPF_PROG_TYPE_RAW_TRACEPOINT_kern;
+        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE_prog; 
+        u64 BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE_kern;
+        void * BPF_PROG_TYPE_TRACING_prog;
+        void * BPF_PROG_TYPE_TRACING_kern;
+
+
+        struct bpf_cgroup_dev_ctx BPF_PROG_TYPE_CGROUP_DEVICE_prog;
+        struct bpf_cgroup_dev_ctx BPF_PROG_TYPE_CGROUP_DEVICE_kern;
+        struct bpf_sysctl BPF_PROG_TYPE_CGROUP_SYSCTL_prog;
+        struct bpf_sysctl_kern BPF_PROG_TYPE_CGROUP_SYSCTL_kern;
+        struct bpf_sockopt BPF_PROG_TYPE_CGROUP_SOCKOPT_prog;
+        struct bpf_sockopt_kern BPF_PROG_TYPE_CGROUP_SOCKOPT_kern;
+
+
+        __u32 BPF_PROG_TYPE_LIRC_MODE2_prog; 
+        u32 BPF_PROG_TYPE_LIRC_MODE2_kern;
+
+
+        struct sk_reuseport_md BPF_PROG_TYPE_SK_REUSEPORT_prog;
+        struct sk_reuseport_kern BPF_PROG_TYPE_SK_REUSEPORT_kern;
+        struct bpf_sk_lookup BPF_PROG_TYPE_SK_LOOKUP_prog;
+        struct bpf_sk_lookup_kern BPF_PROG_TYPE_SK_LOOKUP_kern;
+
+
+        void * BPF_PROG_TYPE_STRUCT_OPS_prog;
+        void * BPF_PROG_TYPE_STRUCT_OPS_kern;
+        void * BPF_PROG_TYPE_EXT_prog;
+        void * BPF_PROG_TYPE_EXT_kern;
+
+        void * BPF_PROG_TYPE_LSM_prog;
+        void * BPF_PROG_TYPE_LSM_kern;
+
+#endif //__RTOAX_______________________________________________
+
+//#undef BPF_PROG_TYPE
 	} *__t;
 	/* 't' is written once under lock. Read many times. */
 	const struct btf_type *t;
 } bpf_ctx_convert;
+
+
 enum {
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
-	__ctx_convert##_id,
-#include <linux/bpf_types.h>
-#undef BPF_PROG_TYPE
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
+//	__ctx_convert##_id,
+//#include <linux/bpf_types.h>
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
+#ifdef __RTOAX_______________________________________________
+    __ctx_convertBPF_PROG_TYPE_SOCKET_FILTER,
+    __ctx_convertBPF_PROG_TYPE_SCHED_CLS,
+    __ctx_convertBPF_PROG_TYPE_SCHED_ACT,
+    __ctx_convertBPF_PROG_TYPE_XDP,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_SKB,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_SOCK,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_SOCK_ADDR,
+    __ctx_convertBPF_PROG_TYPE_LWT_IN,
+    __ctx_convertBPF_PROG_TYPE_LWT_OUT,
+    __ctx_convertBPF_PROG_TYPE_LWT_XMIT,
+    __ctx_convertBPF_PROG_TYPE_LWT_SEG6LOCAL,
+    __ctx_convertBPF_PROG_TYPE_SOCK_OPS,
+    __ctx_convertBPF_PROG_TYPE_SK_SKB,
+    __ctx_convertBPF_PROG_TYPE_SK_MSG,
+    __ctx_convertBPF_PROG_TYPE_FLOW_DISSECTOR,
+    __ctx_convertBPF_PROG_TYPE_KPROBE,
+    __ctx_convertBPF_PROG_TYPE_TRACEPOINT,
+    __ctx_convertBPF_PROG_TYPE_PERF_EVENT,
+    __ctx_convertBPF_PROG_TYPE_RAW_TRACEPOINT,
+    __ctx_convertBPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
+    __ctx_convertBPF_PROG_TYPE_TRACING,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_DEVICE,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_SYSCTL,
+    __ctx_convertBPF_PROG_TYPE_CGROUP_SOCKOPT,
+    __ctx_convertBPF_PROG_TYPE_LIRC_MODE2,
+    __ctx_convertBPF_PROG_TYPE_SK_REUSEPORT,
+    __ctx_convertBPF_PROG_TYPE_SK_LOOKUP,
+    __ctx_convertBPF_PROG_TYPE_STRUCT_OPS,
+    __ctx_convertBPF_PROG_TYPE_EXT,
+    __ctx_convertBPF_PROG_TYPE_LSM,
+
+#endif //__RTOAX_______________________________________________
+
+//#undef BPF_PROG_TYPE
 	__ctx_convert_unused, /* to avoid empty enum in extreme .config */
 };
 static u8 bpf_ctx_convert_map[] = {
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
-	[_id] = __ctx_convert##_id,
-#include <linux/bpf_types.h>
-#undef BPF_PROG_TYPE
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
+//	[_id] = __ctx_convert##_id,
+//#include <linux/bpf_types.h>
+
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
+#ifdef __RTOAX_______________________________________________
+    [BPF_PROG_TYPE_SOCKET_FILTER] = __ctx_convertBPF_PROG_TYPE_SOCKET_FILTER,
+    [BPF_PROG_TYPE_SCHED_CLS] = __ctx_convertBPF_PROG_TYPE_SCHED_CLS,
+    [BPF_PROG_TYPE_SCHED_ACT] = __ctx_convertBPF_PROG_TYPE_SCHED_ACT,
+    [BPF_PROG_TYPE_XDP] = __ctx_convertBPF_PROG_TYPE_XDP,
+    [BPF_PROG_TYPE_CGROUP_SKB] = __ctx_convertBPF_PROG_TYPE_CGROUP_SKB,
+    [BPF_PROG_TYPE_CGROUP_SOCK] = __ctx_convertBPF_PROG_TYPE_CGROUP_SOCK,
+    [BPF_PROG_TYPE_CGROUP_SOCK_ADDR] = __ctx_convertBPF_PROG_TYPE_CGROUP_SOCK_ADDR,
+    [BPF_PROG_TYPE_LWT_IN] = __ctx_convertBPF_PROG_TYPE_LWT_IN,
+    [BPF_PROG_TYPE_LWT_OUT] = __ctx_convertBPF_PROG_TYPE_LWT_OUT,
+    [BPF_PROG_TYPE_LWT_XMIT] = __ctx_convertBPF_PROG_TYPE_LWT_XMIT,
+    [BPF_PROG_TYPE_LWT_SEG6LOCAL] = __ctx_convertBPF_PROG_TYPE_LWT_SEG6LOCAL,
+    [BPF_PROG_TYPE_SOCK_OPS] = __ctx_convertBPF_PROG_TYPE_SOCK_OPS,
+    [BPF_PROG_TYPE_SK_SKB] = __ctx_convertBPF_PROG_TYPE_SK_SKB,
+    [BPF_PROG_TYPE_SK_MSG] = __ctx_convertBPF_PROG_TYPE_SK_MSG,
+    [BPF_PROG_TYPE_FLOW_DISSECTOR] = __ctx_convertBPF_PROG_TYPE_FLOW_DISSECTOR,
+    [BPF_PROG_TYPE_KPROBE] = __ctx_convertBPF_PROG_TYPE_KPROBE,
+    [BPF_PROG_TYPE_TRACEPOINT] = __ctx_convertBPF_PROG_TYPE_TRACEPOINT,
+    [BPF_PROG_TYPE_PERF_EVENT] = __ctx_convertBPF_PROG_TYPE_PERF_EVENT,
+    [BPF_PROG_TYPE_RAW_TRACEPOINT] = __ctx_convertBPF_PROG_TYPE_RAW_TRACEPOINT,
+    [BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE] = __ctx_convertBPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
+    [BPF_PROG_TYPE_TRACING] = __ctx_convertBPF_PROG_TYPE_TRACING,
+    [BPF_PROG_TYPE_CGROUP_DEVICE] = __ctx_convertBPF_PROG_TYPE_CGROUP_DEVICE,
+    [BPF_PROG_TYPE_CGROUP_SYSCTL] = __ctx_convertBPF_PROG_TYPE_CGROUP_SYSCTL,
+    [BPF_PROG_TYPE_CGROUP_SOCKOPT] = __ctx_convertBPF_PROG_TYPE_CGROUP_SOCKOPT,
+    [BPF_PROG_TYPE_LIRC_MODE2] = __ctx_convertBPF_PROG_TYPE_LIRC_MODE2,
+    [BPF_PROG_TYPE_SK_REUSEPORT] = __ctx_convertBPF_PROG_TYPE_SK_REUSEPORT,
+    [BPF_PROG_TYPE_SK_LOOKUP] = __ctx_convertBPF_PROG_TYPE_SK_LOOKUP,
+    [BPF_PROG_TYPE_STRUCT_OPS] = __ctx_convertBPF_PROG_TYPE_STRUCT_OPS,
+    [BPF_PROG_TYPE_EXT] = __ctx_convertBPF_PROG_TYPE_EXT,
+    [BPF_PROG_TYPE_LSM] = __ctx_convertBPF_PROG_TYPE_LSM,
+
+#endif //__RTOAX_______________________________________________
+
+//#undef BPF_PROG_TYPE
 	0, /* avoid empty array */
 };
-#undef BPF_MAP_TYPE
-#undef BPF_LINK_TYPE
+//#undef BPF_MAP_TYPE
+//#undef BPF_LINK_TYPE
+
 
 static const struct btf_member *
 btf_get_prog_ctx_type(struct bpf_verifier_log *log, struct btf *btf,

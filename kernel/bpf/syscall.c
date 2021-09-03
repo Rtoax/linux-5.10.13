@@ -2694,16 +2694,28 @@ static int bpf_link_release(struct inode *inode, struct file *filp)
 }
 
 #ifdef CONFIG_PROC_FS
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
-#define BPF_MAP_TYPE(_id, _ops)
-#define BPF_LINK_TYPE(_id, _name) [_id] = #_name,
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
+//#define BPF_MAP_TYPE(_id, _ops)
+//#define BPF_LINK_TYPE(_id, _name) [_id] = #_name,
+
 static const char *bpf_link_type_strs[] = {
 	[BPF_LINK_TYPE_UNSPEC] = "<invalid>",
 #include <linux/bpf_types.h>
+
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
+#ifdef __RTOAX_______________________________________________
+    [BPF_LINK_TYPE_RAW_TRACEPOINT] = "raw_tracepoint",
+    [BPF_LINK_TYPE_TRACING] = "tracing",
+    [BPF_LINK_TYPE_CGROUP] = "cgroup",
+    [BPF_LINK_TYPE_ITER] = "iter",
+    [BPF_LINK_TYPE_NETNS] = "netns",
+#endif //__RTOAX_______________________________________________
 };
-#undef BPF_PROG_TYPE
-#undef BPF_MAP_TYPE
-#undef BPF_LINK_TYPE
+//#undef BPF_PROG_TYPE
+//#undef BPF_MAP_TYPE
+//#undef BPF_LINK_TYPE
 
 static void bpf_link_show_fdinfo(struct seq_file *m, struct file *filp)
 {
@@ -2728,11 +2740,11 @@ static void bpf_link_show_fdinfo(struct seq_file *m, struct file *filp)
 
 static const struct file_operations bpf_link_fops = {
 #ifdef CONFIG_PROC_FS
-	.show_fdinfo	= bpf_link_show_fdinfo,
+	bpf_link_fops.show_fdinfo	= bpf_link_show_fdinfo,
 #endif
-	.release	= bpf_link_release,
-	.read		= bpf_dummy_read,
-	.write		= bpf_dummy_write,
+	bpf_link_fops.release	= bpf_link_release,
+	bpf_link_fops.read		= bpf_dummy_read,
+	bpf_link_fops.write		= bpf_dummy_write,
 };
 
 static int bpf_link_alloc_id(struct bpf_link *link)

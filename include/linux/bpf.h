@@ -1153,16 +1153,147 @@ extern const struct file_operations bpf_map_fops;
 extern const struct file_operations bpf_prog_fops;
 extern const struct file_operations bpf_iter_fops;
 
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
-	extern const struct bpf_prog_ops _name ## _prog_ops; \
-	extern const struct bpf_verifier_ops _name ## _verifier_ops;
-#define BPF_MAP_TYPE(_id, _ops) \
-	extern const struct bpf_map_ops _ops;
-#define BPF_LINK_TYPE(_id, _name)
-#include <linux/bpf_types.h>
-#undef BPF_PROG_TYPE
-#undef BPF_MAP_TYPE
-#undef BPF_LINK_TYPE
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
+//	extern const struct bpf_prog_ops _name ## _prog_ops; \
+//	extern const struct bpf_verifier_ops _name ## _verifier_ops;
+//#define BPF_MAP_TYPE(_id, _ops) \
+//	extern const struct bpf_map_ops _ops;
+//#define BPF_LINK_TYPE(_id, _name)
+//#include <linux/bpf_types.h>
+
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
+#ifdef __RTOAX_______________________________________________
+
+extern const struct bpf_prog_ops sk_filter_prog_ops;
+extern const struct bpf_verifier_ops sk_filter_verifier_ops;
+extern const struct bpf_prog_ops tc_cls_act_prog_ops;
+extern const struct bpf_verifier_ops tc_cls_act_verifier_ops;
+extern const struct bpf_prog_ops tc_cls_act_prog_ops;
+extern const struct bpf_verifier_ops tc_cls_act_verifier_ops;
+extern const struct bpf_prog_ops xdp_prog_ops;
+extern const struct bpf_verifier_ops xdp_verifier_ops;
+
+extern const struct bpf_prog_ops cg_skb_prog_ops;
+extern const struct bpf_verifier_ops cg_skb_verifier_ops;
+extern const struct bpf_prog_ops cg_sock_prog_ops;
+extern const struct bpf_verifier_ops cg_sock_verifier_ops;
+extern const struct bpf_prog_ops cg_sock_addr_prog_ops;
+extern const struct bpf_verifier_ops cg_sock_addr_verifier_ops;
+
+extern const struct bpf_prog_ops lwt_in_prog_ops;
+extern const struct bpf_verifier_ops lwt_in_verifier_ops;
+extern const struct bpf_prog_ops lwt_out_prog_ops;
+extern const struct bpf_verifier_ops lwt_out_verifier_ops;
+extern const struct bpf_prog_ops lwt_xmit_prog_ops;
+extern const struct bpf_verifier_ops lwt_xmit_verifier_ops;
+extern const struct bpf_prog_ops lwt_seg6local_prog_ops;
+extern const struct bpf_verifier_ops lwt_seg6local_verifier_ops;
+extern const struct bpf_prog_ops sock_ops_prog_ops;
+extern const struct bpf_verifier_ops sock_ops_verifier_ops;
+extern const struct bpf_prog_ops sk_skb_prog_ops;
+extern const struct bpf_verifier_ops sk_skb_verifier_ops;
+extern const struct bpf_prog_ops sk_msg_prog_ops;
+extern const struct bpf_verifier_ops sk_msg_verifier_ops;
+extern const struct bpf_prog_ops flow_dissector_prog_ops;
+extern const struct bpf_verifier_ops flow_dissector_verifier_ops;
+
+
+extern const struct bpf_prog_ops kprobe_prog_ops;
+extern const struct bpf_verifier_ops kprobe_verifier_ops;
+extern const struct bpf_prog_ops tracepoint_prog_ops;
+extern const struct bpf_verifier_ops tracepoint_verifier_ops;
+extern const struct bpf_prog_ops perf_event_prog_ops;
+extern const struct bpf_verifier_ops perf_event_verifier_ops;
+extern const struct bpf_prog_ops raw_tracepoint_prog_ops;
+extern const struct bpf_verifier_ops raw_tracepoint_verifier_ops;
+extern const struct bpf_prog_ops raw_tracepoint_writable_prog_ops;
+extern const struct bpf_verifier_ops raw_tracepoint_writable_verifier_ops;
+extern const struct bpf_prog_ops tracing_prog_ops;
+extern const struct bpf_verifier_ops tracing_verifier_ops;
+
+
+extern const struct bpf_prog_ops cg_dev_prog_ops;
+extern const struct bpf_verifier_ops cg_dev_verifier_ops;
+extern const struct bpf_prog_ops cg_sysctl_prog_ops;
+extern const struct bpf_verifier_ops cg_sysctl_verifier_ops;
+extern const struct bpf_prog_ops cg_sockopt_prog_ops;
+extern const struct bpf_verifier_ops cg_sockopt_verifier_ops;
+
+
+extern const struct bpf_prog_ops lirc_mode2_prog_ops;
+extern const struct bpf_verifier_ops lirc_mode2_verifier_ops;
+
+
+extern const struct bpf_prog_ops sk_reuseport_prog_ops;
+extern const struct bpf_verifier_ops sk_reuseport_verifier_ops;
+extern const struct bpf_prog_ops sk_lookup_prog_ops;
+extern const struct bpf_verifier_ops sk_lookup_verifier_ops;
+
+
+extern const struct bpf_prog_ops bpf_struct_ops_prog_ops;
+extern const struct bpf_verifier_ops bpf_struct_ops_verifier_ops;
+extern const struct bpf_prog_ops bpf_extension_prog_ops;
+extern const struct bpf_verifier_ops bpf_extension_verifier_ops;
+
+extern const struct bpf_prog_ops lsm_prog_ops;
+extern const struct bpf_verifier_ops lsm_verifier_ops;
+
+
+
+extern const struct bpf_map_ops array_map_ops;
+extern const struct bpf_map_ops percpu_array_map_ops;
+extern const struct bpf_map_ops prog_array_map_ops;
+extern const struct bpf_map_ops perf_event_array_map_ops;
+
+extern const struct bpf_map_ops cgroup_array_map_ops;
+
+
+extern const struct bpf_map_ops cgroup_storage_map_ops;
+extern const struct bpf_map_ops cgroup_storage_map_ops;
+
+extern const struct bpf_map_ops htab_map_ops;
+extern const struct bpf_map_ops htab_percpu_map_ops;
+extern const struct bpf_map_ops htab_lru_map_ops;
+extern const struct bpf_map_ops htab_lru_percpu_map_ops;
+extern const struct bpf_map_ops trie_map_ops;
+
+extern const struct bpf_map_ops stack_trace_map_ops;
+
+extern const struct bpf_map_ops array_of_maps_map_ops;
+extern const struct bpf_map_ops htab_of_maps_map_ops;
+
+extern const struct bpf_map_ops dev_map_ops;
+extern const struct bpf_map_ops dev_map_hash_ops;
+extern const struct bpf_map_ops sk_storage_map_ops;
+
+extern const struct bpf_map_ops sock_map_ops;
+extern const struct bpf_map_ops sock_hash_ops;
+
+
+extern const struct bpf_map_ops inode_storage_map_ops;
+
+extern const struct bpf_map_ops cpu_map_ops;
+
+extern const struct bpf_map_ops xsk_map_ops;
+
+
+extern const struct bpf_map_ops reuseport_array_ops;
+
+
+extern const struct bpf_map_ops queue_map_ops;
+extern const struct bpf_map_ops stack_map_ops;
+
+extern const struct bpf_map_ops bpf_struct_ops_map_ops;
+
+extern const struct bpf_map_ops ringbuf_map_ops;
+
+#endif //__RTOAX_______________________________________________
+
+//#undef BPF_PROG_TYPE
+//#undef BPF_MAP_TYPE
+//#undef BPF_LINK_TYPE
 
 extern const struct bpf_prog_ops bpf_offload_prog_ops;
 extern const struct bpf_verifier_ops tc_cls_act_analyzer_ops;

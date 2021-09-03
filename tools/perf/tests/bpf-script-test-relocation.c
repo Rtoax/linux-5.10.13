@@ -8,9 +8,9 @@
 # error Example: for 4.2 kernel, put 'clang-opt="-DLINUX_VERSION_CODE=0x40200" into llvm section of ~/.perfconfig'
 #endif
 //#define BPF_ANY 0
-#define BPF_MAP_TYPE_ARRAY 2
-#define BPF_FUNC_map_lookup_elem 1
-#define BPF_FUNC_map_update_elem 2
+//#define BPF_MAP_TYPE_ARRAY 2
+//#define BPF_FUNC_map_lookup_elem 1
+//#define BPF_FUNC_map_update_elem 2
 
 static void *(*bpf_map_lookup_elem)(void *map, void *key) =
 	(void *) BPF_FUNC_map_lookup_elem;

@@ -65,8 +65,14 @@ static int map_fd, prog_fd;
 
 static bool test_finish;
 
+/**
+ *  
+ */
 static void maps_create(void)
 {
+    /**
+     *  创建 哈希映射
+     */
 	map_fd = bpf_create_map(BPF_MAP_TYPE_HASH, sizeof(uint32_t),
 				sizeof(struct stats), 100, 0);
 	if (map_fd < 0)

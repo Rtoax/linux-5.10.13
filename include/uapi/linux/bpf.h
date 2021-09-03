@@ -78,12 +78,17 @@ struct bpf_insn {
 	__s32	imm;		/* signed immediate constant */
 };
 
-/* Key of an a BPF_MAP_TYPE_LPM_TRIE entry */
+/**
+ *  Key of an a BPF_MAP_TYPE_LPM_TRIE entry - 最长前缀匹配
+ */
 struct bpf_lpm_trie_key {
 	__u32	prefixlen;	/* up to 32 for AF_INET, 128 for AF_INET6 */
 	__u8	data[0];	/* Arbitrary size */
 };
 
+/**
+ *  见`BPF_MAP_TYPE_CGROUP_STORAGE`
+ */
 struct bpf_cgroup_storage_key {
 	__u64	cgroup_inode_id;	/* cgroup inode id */
 	__u32	attach_type;		/* program attach type */
@@ -190,32 +195,144 @@ enum bpf_cmd {
 
 /**
  *  BPF 映射 类型
+ *
+ *  创建映射 BPF_MAP_CREATE
+ *
+ *  - bpf_create_map() 
  */
 enum bpf_map_type {
 	BPF_MAP_TYPE_UNSPEC,
     /**
+     *  哈希表映射
      *  
      */
 	BPF_MAP_TYPE_HASH,
+    /**
+     *  数组映射
+     *  1. 不能删除
+     *  2. 数组映射上 使用 的 bpf_map_update_elem() 不是原子性的，
+     *     如果将计数器保存在数组中，可以使用内核的内置函数 __sync_fetch_and_add() 执行
+     */
 	BPF_MAP_TYPE_ARRAY,
+    /**
+     *  程序数组映射 - 是添加到内核的第一个专用映射，保存对BPF程序的映射(BPF程序的文件描述符)
+     *
+     *  这种数据映射类型可以与帮助函数 bpf_tail_call() 结合使用,实现程序之间跳转，突破单个BPF程序
+     *  最大指令的限制，并且可以降低实现复杂性
+     *  
+     */
 	BPF_MAP_TYPE_PROG_ARRAY,
+    /**
+     *  perf 事件 数组映射
+     *  它是很多可观测工具的基础
+     *
+     *  - bpf_probe_map_type()
+     *  - bpf_perf_event_output()
+     */
 	BPF_MAP_TYPE_PERF_EVENT_ARRAY,
+	
+    /**
+     *  perCPU 哈希表映射 - 是 BPF_MAP_TYPE_HASH 的改进版
+     *  
+     */
 	BPF_MAP_TYPE_PERCPU_HASH,
+    /**
+     *  perCPU 数组映射 - 是 BPF_MAP_TYPE_ARRAY 的改进版
+     *  
+     */
 	BPF_MAP_TYPE_PERCPU_ARRAY,
+    /**
+     *  栈跟踪映射
+     *
+     *  - bpf_get_stackid()  
+     */
 	BPF_MAP_TYPE_STACK_TRACE,
+    /**
+     *  cgroup 数组映射
+     *  当需要在 BPF 映射之间共享 cgroup 引用控制流量、调试和测试时，这种类型非常有用
+     *  - ()  
+     */
 	BPF_MAP_TYPE_CGROUP_ARRAY,
+	
+    /**
+     *  perCPU LRU哈希映射 - 最近最少使用
+     *  如果映射已满，则会删除映射中不经常使用的元素
+     */
 	BPF_MAP_TYPE_LRU_HASH,
 	BPF_MAP_TYPE_LRU_PERCPU_HASH,
+    /**
+     *  LPM Tire 映射 - 使用 最长前缀匹配(LPM)算法来查找映射元素
+     *
+     *  此算法用于路由器和其他设备的流量转发表上，用来匹配IP地址到特定的路由表项上
+     *  该映射要求键大小为 8的倍，范围(8-2048),
+     *
+     *  如果想实现自己的 键，内核提供了 `bpf_lpm_trie_key`数据结构
+     */
 	BPF_MAP_TYPE_LPM_TRIE,
+    /**
+     *  映射数组 和 映射哈希 - 用来保存其他映射的引用
+     *
+     *  仅支持间接级别的引用，不能保存映射的映射的映射(不支持多级)，确保不会存储无限连接的映射
+     */
 	BPF_MAP_TYPE_ARRAY_OF_MAPS,
 	BPF_MAP_TYPE_HASH_OF_MAPS,
+
+    /**
+     *  设备映射的映射 - 保存对网络设备的引用
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_DEVMAP,
+
+    /**
+     *  BPF_MAP_TYPE_SOCKMAP 和 BPF_MAP_TYPE_SOCKHASH
+     *  两种 保存内核中打开套接字引用的专用映射
+     *  这种类型映射可与帮助函数 `bpf_redirect_map()` 一起使用
+     *  在当前 XDP   程序到其他套接字的缓冲区之间转发套接字。
+     *
+     *  - bpf_redirect_map()
+     *  - bpf_sk_redirect_map()
+     *  - bpf_msg_redirect_map()
+     *  - bpf_xdp_redirect_map()
+     */
 	BPF_MAP_TYPE_SOCKMAP,
+
+    /**
+     *  可以转发网络通信的映射类型 - 保存宿主机中不同 CPU 的引用
+     *
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_CPUMAP,
+
+    /**
+     *  用于保存打开套接字引用的映射类型
+     *  该映射对 在套接字之间转发数据包很有用的
+     *  
+     *  
+     */
 	BPF_MAP_TYPE_XSKMAP,
+	/**
+     *  见`BPF_MAP_TYPE_SOCKMAP`
+     *  
+     */
 	BPF_MAP_TYPE_SOCKHASH,
+	/**
+     *  BPF_MAP_TYPE_CGROUP_STORAGE 和 BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE
+     *  cgroup 存储 - 将 BPF 程序附加到 cgroup 上
+     *
+     *  属于 `BPF_PROG_TYPE_CGROUP_SKB` BPF程序类
+     *  `bpf_cgroup_storage_key` 为该映射生成包括cgroup节点标识和附件类型信息的键
+     *  
+     *  限制
+     *  1. 不能从用户空间创建映射中的新元素
+     *  2. 不能从该映射中删除元素
+     */
 	BPF_MAP_TYPE_CGROUP_STORAGE,
 	BPF_MAP_TYPE_REUSEPORT_SOCKARRAY,
+	/**
+     *  见`BPF_MAP_TYPE_CGROUP_STORAGE`
+     */
 	BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE,
 	BPF_MAP_TYPE_QUEUE,
 	BPF_MAP_TYPE_STACK,
@@ -275,6 +392,8 @@ enum bpf_prog_type {
      *  cgroup套接字程序
      *  可以将 BPF 逻辑附加到 控制组 cgroup 上，
      *  类似于 BPF_PROG_TYPE_SOCKET_FILTER ，区别在于，附加到 cgroup 的所有进程上
+     *
+     *  参见:   BPF_MAP_TYPE_CGROUP_STORAGE 和 BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE
      */
 	BPF_PROG_TYPE_CGROUP_SKB,
 
@@ -4150,7 +4269,170 @@ union bpf_attr {    /*  */
  */
 #define __BPF_ENUM_FN(x) BPF_FUNC_ ## x
 enum bpf_func_id {
+#if 0
 	__BPF_FUNC_MAPPER(__BPF_ENUM_FN)
+/**
+ *  展开 __BPF_FUNC_MAPPER(__BPF_ENUM_FN)
+ */
+#elif __RTOAX_______________________________
+    BPF_FUNC_unspec, 
+    BPF_FUNC_map_lookup_elem, 
+    BPF_FUNC_map_update_elem, 
+    BPF_FUNC_map_delete_elem, 
+    BPF_FUNC_probe_read, 
+    BPF_FUNC_ktime_get_ns, 
+    BPF_FUNC_trace_printk, 
+    BPF_FUNC_get_prandom_u32, 
+    BPF_FUNC_get_smp_processor_id, 
+    BPF_FUNC_skb_store_bytes, 
+    BPF_FUNC_l3_csum_replace, 
+    BPF_FUNC_l4_csum_replace, 
+    BPF_FUNC_tail_call, 
+    BPF_FUNC_clone_redirect, 
+    BPF_FUNC_get_current_pid_tgid, 
+    BPF_FUNC_get_current_uid_gid, 
+    BPF_FUNC_get_current_comm, 
+    BPF_FUNC_get_cgroup_classid, 
+    BPF_FUNC_skb_vlan_push, 
+    BPF_FUNC_skb_vlan_pop, 
+    BPF_FUNC_skb_get_tunnel_key, 
+    BPF_FUNC_skb_set_tunnel_key, 
+    BPF_FUNC_perf_event_read, 
+    BPF_FUNC_redirect, 
+    BPF_FUNC_get_route_realm, 
+    BPF_FUNC_perf_event_output, 
+    BPF_FUNC_skb_load_bytes, 
+    BPF_FUNC_get_stackid, 
+    BPF_FUNC_csum_diff, 
+    BPF_FUNC_skb_get_tunnel_opt, 
+    BPF_FUNC_skb_set_tunnel_opt, 
+    BPF_FUNC_skb_change_proto, 
+    BPF_FUNC_skb_change_type, 
+    BPF_FUNC_skb_under_cgroup, 
+    BPF_FUNC_get_hash_recalc, 
+    BPF_FUNC_get_current_task, 
+    BPF_FUNC_probe_write_user, 
+    BPF_FUNC_current_task_under_cgroup, 
+    BPF_FUNC_skb_change_tail, 
+    BPF_FUNC_skb_pull_data, 
+    BPF_FUNC_csum_update, 
+    BPF_FUNC_set_hash_invalid, 
+    BPF_FUNC_get_numa_node_id, 
+    BPF_FUNC_skb_change_head, 
+    BPF_FUNC_xdp_adjust_head, 
+    BPF_FUNC_probe_read_str, 
+    BPF_FUNC_get_socket_cookie, 
+    BPF_FUNC_get_socket_uid, 
+    BPF_FUNC_set_hash, 
+    BPF_FUNC_setsockopt, 
+    BPF_FUNC_skb_adjust_room, 
+    BPF_FUNC_redirect_map, 
+    BPF_FUNC_sk_redirect_map, 
+    BPF_FUNC_sock_map_update, 
+    BPF_FUNC_xdp_adjust_meta, 
+    BPF_FUNC_perf_event_read_value, 
+    BPF_FUNC_perf_prog_read_value, 
+    BPF_FUNC_getsockopt, 
+    BPF_FUNC_override_return, 
+    BPF_FUNC_sock_ops_cb_flags_set, 
+    BPF_FUNC_msg_redirect_map, 
+    BPF_FUNC_msg_apply_bytes, 
+    BPF_FUNC_msg_cork_bytes, 
+    BPF_FUNC_msg_pull_data, 
+    BPF_FUNC_bind, 
+    BPF_FUNC_xdp_adjust_tail, 
+    BPF_FUNC_skb_get_xfrm_state, 
+    BPF_FUNC_get_stack, 
+    BPF_FUNC_skb_load_bytes_relative, 
+    BPF_FUNC_fib_lookup, 
+    BPF_FUNC_sock_hash_update, 
+    BPF_FUNC_msg_redirect_hash, 
+    BPF_FUNC_sk_redirect_hash, 
+    BPF_FUNC_lwt_push_encap, 
+    BPF_FUNC_lwt_seg6_store_bytes, 
+    BPF_FUNC_lwt_seg6_adjust_srh, 
+    BPF_FUNC_lwt_seg6_action, 
+    BPF_FUNC_rc_repeat, 
+    BPF_FUNC_rc_keydown, 
+    BPF_FUNC_skb_cgroup_id, 
+    BPF_FUNC_get_current_cgroup_id, 
+    BPF_FUNC_get_local_storage, 
+    BPF_FUNC_sk_select_reuseport, 
+    BPF_FUNC_skb_ancestor_cgroup_id, 
+    BPF_FUNC_sk_lookup_tcp, 
+    BPF_FUNC_sk_lookup_udp, 
+    BPF_FUNC_sk_release, 
+    BPF_FUNC_map_push_elem, 
+    BPF_FUNC_map_pop_elem, 
+    BPF_FUNC_map_peek_elem, 
+    BPF_FUNC_msg_push_data, 
+    BPF_FUNC_msg_pop_data, 
+    BPF_FUNC_rc_pointer_rel, 
+    BPF_FUNC_spin_lock, 
+    BPF_FUNC_spin_unlock, 
+    BPF_FUNC_sk_fullsock, 
+    BPF_FUNC_tcp_sock, 
+    BPF_FUNC_skb_ecn_set_ce, 
+    BPF_FUNC_get_listener_sock, 
+    BPF_FUNC_skc_lookup_tcp, 
+    BPF_FUNC_tcp_check_syncookie, 
+    BPF_FUNC_sysctl_get_name, 
+    BPF_FUNC_sysctl_get_current_value, 
+    BPF_FUNC_sysctl_get_new_value, 
+    BPF_FUNC_sysctl_set_new_value, 
+    BPF_FUNC_strtol, 
+    BPF_FUNC_strtoul, 
+    BPF_FUNC_sk_storage_get, 
+    BPF_FUNC_sk_storage_delete, 
+    BPF_FUNC_send_signal, 
+    BPF_FUNC_tcp_gen_syncookie, 
+    BPF_FUNC_skb_output, 
+    BPF_FUNC_probe_read_user, 
+    BPF_FUNC_probe_read_kernel, 
+    BPF_FUNC_probe_read_user_str, 
+    BPF_FUNC_probe_read_kernel_str, 
+    BPF_FUNC_tcp_send_ack, 
+    BPF_FUNC_send_signal_thread, 
+    BPF_FUNC_jiffies64, 
+    BPF_FUNC_read_branch_records, 
+    BPF_FUNC_get_ns_current_pid_tgid, 
+    BPF_FUNC_xdp_output, 
+    BPF_FUNC_get_netns_cookie, 
+    BPF_FUNC_get_current_ancestor_cgroup_id, 
+    BPF_FUNC_sk_assign, 
+    BPF_FUNC_ktime_get_boot_ns, 
+    BPF_FUNC_seq_printf, 
+    BPF_FUNC_seq_write, 
+    BPF_FUNC_sk_cgroup_id, 
+    BPF_FUNC_sk_ancestor_cgroup_id, 
+    BPF_FUNC_ringbuf_output, 
+    BPF_FUNC_ringbuf_reserve, 
+    BPF_FUNC_ringbuf_submit, 
+    BPF_FUNC_ringbuf_discard, 
+    BPF_FUNC_ringbuf_query, 
+    BPF_FUNC_csum_level, 
+    BPF_FUNC_skc_to_tcp6_sock, 
+    BPF_FUNC_skc_to_tcp_sock, 
+    BPF_FUNC_skc_to_tcp_timewait_sock, 
+    BPF_FUNC_skc_to_tcp_request_sock, 
+    BPF_FUNC_skc_to_udp6_sock, 
+    BPF_FUNC_get_task_stack, 
+    BPF_FUNC_load_hdr_opt, 
+    BPF_FUNC_store_hdr_opt, 
+    BPF_FUNC_reserve_hdr_opt, 
+    BPF_FUNC_inode_storage_get, 
+    BPF_FUNC_inode_storage_delete, 
+    BPF_FUNC_d_path, 
+    BPF_FUNC_copy_from_user, 
+    BPF_FUNC_snprintf_btf, 
+    BPF_FUNC_seq_printf_btf, 
+    BPF_FUNC_skb_cgroup_classid, 
+    BPF_FUNC_redirect_neigh, 
+    BPF_FUNC_per_cpu_ptr, 
+    BPF_FUNC_this_cpu_ptr, 
+    BPF_FUNC_redirect_peer, 
+
+#endif //#elif __RTOAX_______________________________
 	__BPF_FUNC_MAX_ID,
 };
 #undef __BPF_ENUM_FN

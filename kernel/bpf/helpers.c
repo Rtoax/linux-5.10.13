@@ -668,11 +668,11 @@ const struct bpf_func_proto bpf_this_cpu_ptr_proto = {
 	.arg1_type	= ARG_PTR_TO_PERCPU_BTF_ID,
 };
 
-const struct bpf_func_proto bpf_get_current_task_proto __weak;
-const struct bpf_func_proto bpf_probe_read_user_proto __weak;
-const struct bpf_func_proto bpf_probe_read_user_str_proto __weak;
-const struct bpf_func_proto bpf_probe_read_kernel_proto __weak;
-const struct bpf_func_proto bpf_probe_read_kernel_str_proto __weak;
+const struct bpf_func_proto __weak bpf_get_current_task_proto ;
+const struct bpf_func_proto __weak bpf_probe_read_user_proto ;
+const struct bpf_func_proto __weak bpf_probe_read_user_str_proto ;
+const struct bpf_func_proto __weak bpf_probe_read_kernel_proto ;
+const struct bpf_func_proto __weak bpf_probe_read_kernel_str_proto ;
 
 const struct bpf_func_proto *
 bpf_base_func_proto(enum bpf_func_id func_id)
@@ -696,6 +696,10 @@ bpf_base_func_proto(enum bpf_func_id func_id)
 		return &bpf_get_raw_smp_processor_id_proto;
 	case BPF_FUNC_get_numa_node_id:
 		return &bpf_get_numa_node_id_proto;
+
+    /**
+     *  long bpf_tail_call(void *ctx, struct bpf_map *prog_array_map, u32 index)
+     */
 	case BPF_FUNC_tail_call:
 		return &bpf_tail_call_proto;
 	case BPF_FUNC_ktime_get_ns:
