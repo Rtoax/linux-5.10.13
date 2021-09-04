@@ -856,6 +856,8 @@ enum tc_setup_type {
 
 /* These structures hold the attributes of bpf state that are being passed
  * to the netdevice through the bpf op.
+ *
+ * 
  */
 enum bpf_netdev_command {
 	/* Set or clear a bpf program used in the earliest stages of packet
@@ -865,7 +867,14 @@ enum bpf_netdev_command {
 	 * reference, but on success it takes ownership and must bpf_prog_put
 	 * when it is no longer used.
 	 */
+	/**
+	 *  原生 XDP
+	 */
 	XDP_SETUP_PROG,
+
+    /**
+	 *  硬件卸载 XDP
+	 */
 	XDP_SETUP_PROG_HW,
 	/* BPF program for offload callbacks, invoked at program load time. */
 	BPF_OFFLOAD_MAP_ALLOC,

@@ -433,6 +433,8 @@ enum bpf_prog_type {
      *  XDP 程序 - eXpress Data Path
      *  XDP 的操作, 见 `enum xdp_action;`
      *      XDP_PASS, XDP_DROP, XDP_TX
+     *
+     *  见 `enum bpf_netdev_command;`
      */
 	BPF_PROG_TYPE_XDP,
 
@@ -586,6 +588,9 @@ enum bpf_attach_type {
 
 #define MAX_BPF_ATTACH_TYPE __MAX_BPF_ATTACH_TYPE
 
+/**
+ *  
+ */
 enum bpf_link_type {
 	BPF_LINK_TYPE_UNSPEC = 0,
 	BPF_LINK_TYPE_RAW_TRACEPOINT = 1,
@@ -4844,17 +4849,44 @@ struct bpf_xdp_sock {
  * XDP 操作
  */
 enum xdp_action {
+    /**
+	 *  错误
+	 */
 	XDP_ABORTED = 0,
+    /**
+	 *  丢弃
+	 */
 	XDP_DROP,
+	/**
+	 *  传递 - 将数据包传递到普通网络栈处理
+	 *
+	 *  分为两种
+	 *  1. 正常方式接受数据包
+	 *  2. 通用接收卸载(GRO)
+	 */
 	XDP_PASS,
+	/**
+	 *  转发数据包
+	 *  将接收到的数据包发送回数据包到达的同一网卡
+	 */
 	XDP_TX,
+	/**
+	 *  重定向，与 XDP_TX 相似
+	 *  但是，重定向是通过另一个网卡传输或者传入到 BPF 的 cpumap 中
+	 */
 	XDP_REDIRECT,
 };
 
-/* user accessible metadata for XDP packet hook
+/**
+ * user accessible metadata for XDP packet hook
  * new fields must be added to the end of this structure
+ *
+ * xdp 元数据
  */
 struct xdp_md {
+    /**
+     *  包含以太网帧，可以从中抽取 IPv4 层
+     */
 	__u32 data;
 	__u32 data_end;
 	__u32 data_meta;
