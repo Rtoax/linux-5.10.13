@@ -164,6 +164,13 @@ enum bpf_cmd {
 	BPF_OBJ_GET,
 	BPF_PROG_ATTACH,
 	BPF_PROG_DETACH,
+
+    /**
+     *  使 XDP 程序可以与设定的输入数据包和输出数据包一起执行
+     *  执行程序时，将填充输出数据包变量，并返回 XDP 代码。
+     *
+     *  系统调用 `bpf_prog_test_run()`
+     */
 	BPF_PROG_TEST_RUN,
 	BPF_PROG_GET_NEXT_ID,
 	BPF_MAP_GET_NEXT_ID,

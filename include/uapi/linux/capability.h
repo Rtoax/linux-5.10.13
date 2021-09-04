@@ -183,6 +183,9 @@ struct vfs_ns_cap_data {
 /* Allows binding to TCP/UDP sockets below 1024 */
 /* Allows binding to ATM VCIs below 32 */
 
+/**
+ *  若程序需要打开一个特权端口，只需要赋予 CAP_NET_BIND_SERVICE 能力即可，无需 root 用户身份运行
+ */
 #define CAP_NET_BIND_SERVICE 10
 
 /* Allow broadcasting, listen to multicast */
