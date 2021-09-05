@@ -9,7 +9,7 @@
 #include <linux/types.h>
 
 enum __ptrace_request {
-#if 0/* +++ 对应下面的宏定义 */
+#if 1/* +++ 对应下面的宏定义 */
 /* Type of the REQUEST argument to `ptrace.'  */
   /* Indicate that the process making this request should be traced.
      All signals received by this process can be intercepted by its

@@ -4,6 +4,9 @@
 
 /* Instruction classes */
 #define BPF_CLASS(code) ((code) & 0x07)
+/**
+ *  表示将数据存入累加器
+ */
 #define		BPF_LD		0x00
 #define		BPF_LDX		0x01
 #define		BPF_ST		0x02
@@ -15,12 +18,18 @@
 
 /* ld/ldx fields */
 #define BPF_SIZE(code)  ((code) & 0x18)
+/**
+ *  表示传双字节
+ */
 #define		BPF_W		0x00 /* 32-bit */
 #define		BPF_H		0x08 /* 16-bit */
 #define		BPF_B		0x10 /*  8-bit */
 /* eBPF		BPF_DW		0x18    64-bit */
 #define BPF_MODE(code)  ((code) & 0xe0)
 #define		BPF_IMM		0x00
+/**
+ *  
+ */
 #define		BPF_ABS		0x20
 #define		BPF_IND		0x40
 #define		BPF_MEM		0x60
@@ -42,7 +51,13 @@
 #define		BPF_XOR		0xa0
 
 #define		BPF_JA		0x00
+/**
+ *  相等则跳转
+ */
 #define		BPF_JEQ		0x10
+/**
+ *  大于则跳转
+ */
 #define		BPF_JGT		0x20
 #define		BPF_JGE		0x30
 #define		BPF_JSET        0x40

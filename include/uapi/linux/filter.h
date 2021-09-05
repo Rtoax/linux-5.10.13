@@ -20,7 +20,20 @@
  *	Try and keep these values and structures similar to BSD, especially
  *	the BPF code definitions which need to match so you can share filters
  */
- 
+/**
+ *  socket filter
+ *
+ *  像下面这样定义程序：
+ *  struct sock_filter filter[] = {
+ *      BPF_STMT(...),
+ *      ...
+ *  };
+ *  然后将其加到 struct sock_fprog 中
+ *  struct sock_fprog prog = {
+ *      .len = (unsigned short)(sizeof(filter)/sizeof(filter[0])),
+ *      .filter = filter,
+ *  };
+ */
 struct sock_filter {	/* Filter block */
 	__u16	code;   /* Actual filter code */
 	__u8	jt;	/* Jump true */
@@ -28,6 +41,10 @@ struct sock_filter {	/* Filter block */
 	__u32	k;      /* Generic multiuse field */
 };
 
+/**
+ *  socket filter program
+ *  见 `struct sock_filter`
+ */
 struct sock_fprog {	/* Required for SO_ATTACH_FILTER. */
 	unsigned short		len;	/* Number of filter blocks */
 	struct sock_filter __user *filter;

@@ -61,6 +61,8 @@ static void warn_setuid_and_fcaps_mixed(const char *fname)
  * and has_capability() functions.  That is, it has the reverse semantics:
  * cap_has_capability() returns 0 when a task has a capability, but the
  * kernel's capable() and has_capability() returns 1 for this case.
+ *
+ * 能力
  */
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, unsigned int opts)

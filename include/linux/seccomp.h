@@ -31,6 +31,12 @@ struct seccomp_filter;
  *
  *          @filter must only be accessed from the context of current as there
  *          is no read locking.
+ *
+ * 过滤特定的系统调用
+ * 经常和 能力 一起使用
+ *
+ * 可以使用 `prctl(2)` 的 `PR_SET_SECCOMP` 操作加载 seccomp 过滤器(BPF程序)
+ *  该程序将在每个 seccomp 数据包上执行(数据包`struct seccomp_data`结构表示)
  */
 struct seccomp {    /* 限制系统调用 */
 	int mode;

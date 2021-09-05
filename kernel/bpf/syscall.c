@@ -640,6 +640,10 @@ static void bpf_map_free_deferred(struct work_struct *work)
 	struct bpf_map_memory mem;
 
 	bpf_map_charge_move(&mem, &map->memory);
+
+    /**
+     *  清除 BPF 映射中的安全字段
+     */
 	security_bpf_map_free(map);
 	/* implementation dependent freeing */
 	map->ops->map_free(map);
@@ -866,6 +870,9 @@ int bpf_map_new_fd(struct bpf_map *map, int flags)
 {
 	int ret;
 
+    /**
+     *  当内核返回一个映射文件描述符时进行检查
+     */
 	ret = security_bpf_map(map, OPEN_FMODE(flags));
 	if (ret < 0)
 		return ret;
@@ -1083,6 +1090,9 @@ static int map_create(union bpf_attr *attr)
     /**
      *  
      */
+    /**
+     *  初始化 BPF 映射中的安全字段
+     */
 	err = security_bpf_map_alloc(map);  /*  */
 	if (err)
 		goto free_map;
@@ -1112,6 +1122,9 @@ static int map_create(union bpf_attr *attr)
 	return err;
 
 free_map_sec:
+    /**
+     *  清除 BPF 映射中的安全字段
+     */
 	security_bpf_map_free(map);
 free_map:
 	btf_put(map->btf);
@@ -2030,6 +2043,9 @@ static void __bpf_prog_put_rcu(struct rcu_head *rcu)
 	kvfree(aux->func_info);
 	kfree(aux->func_info_aux);
 	bpf_prog_uncharge_memlock(aux->prog);
+    /**
+     *  清除 BPF 程序中的安全字段
+     */
 	security_bpf_prog_free(aux);
 	bpf_prog_free(aux->prog);
 }
@@ -2139,6 +2155,9 @@ int bpf_prog_new_fd(struct bpf_prog *prog)
 {
 	int ret;
 
+    /**
+     *  当内核返回一个 eBPF 程序的文件描述符时进行检查
+     */
 	ret = security_bpf_prog(prog);
 	if (ret < 0)
 		return ret;
@@ -2497,6 +2516,9 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
     /**
      *  
      */
+    /**
+     *  初始化 BPF 程序中的安全字段
+     */
 	err = security_bpf_prog_alloc(prog->aux);
 	if (err)
 		goto free_prog_nouncharge;
@@ -2602,6 +2624,9 @@ free_used_maps:
 free_prog:
 	bpf_prog_uncharge_memlock(prog);
 free_prog_sec:
+    /**
+     *  清除 BPF 程序中的安全字段
+     */
 	security_bpf_prog_free(prog->aux);
 free_prog_nouncharge:
 	bpf_prog_free(prog);
@@ -4771,6 +4796,9 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 		return -EFAULT;
     
     /* 安全的系统调用 */
+    /**
+     *  对执行的BPF系统调用进行初始检查
+     */
 	err = security_bpf(cmd, &attr, size);
 	if (err < 0)
 		return err;

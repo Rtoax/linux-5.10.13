@@ -8,7 +8,15 @@
 
 /* Valid values for seccomp.mode and prctl(PR_SET_SECCOMP, <mode>) */
 #define SECCOMP_MODE_DISABLED	0 /* seccomp is not in use. */
+/**
+ *  
+ */
 #define SECCOMP_MODE_STRICT	1 /* uses hard-coded filter. */
+/**
+ *  如果 seccomp 采用 SECCOMP_MODE_FILTER 方式
+ *  那么 seccomp 过滤将采用 基于 BPF 过滤器的方式对系统调用进行过滤
+ *  系统调用过滤的方式与数据包的过滤方式相同
+ */
 #define SECCOMP_MODE_FILTER	2 /* uses user-supplied filter. */
 
 /* Valid operations for seccomp syscall. */
@@ -32,15 +40,47 @@
  *
  * The ordering ensures that a min_t() over composed return values always
  * selects the least permissive choice.
+ *
+ * Seccomp 返回值
+ * 在接收到 seccomp 数据包后(`seccomp_data`),过滤器负责对该数据包进行处理并做出决策
+ *  告知内核下一步的动作。告知由返回值区分：
+ */
+/**
+ *  系统调用后终止进程
  */
 #define SECCOMP_RET_KILL_PROCESS 0x80000000U /* kill the process */
+/**
+ *  系统调用后终止线程
+ */
 #define SECCOMP_RET_KILL_THREAD	 0x00000000U /* kill the thread */
+/**
+ *  版本兼容问题
+ */
 #define SECCOMP_RET_KILL	 SECCOMP_RET_KILL_THREAD
+/**
+ *  系统调用被禁止，并且发送 `SIGSYS` 信号给调用的任务
+ */
 #define SECCOMP_RET_TRAP	 0x00030000U /* disallow and force a SIGSYS */
+/**
+ *  系统调用不会被执行，并且过滤器返回值中的 `SECCOMP_RET_DATA` 部分将作为 errno 值传递到用户空间
+ */
 #define SECCOMP_RET_ERRNO	 0x00050000U /* returns an errno */
+/**
+ *  
+ */
 #define SECCOMP_RET_USER_NOTIF	 0x7fc00000U /* notifies userspace */
+/**
+ *  调用 ptrace(2) 并指定 PTRACE_O_TRACESECCOMP 选项，通知
+ *   ptrace(2) 跟踪程序对系统调用进行拦截，以观测和控制系统调用的执行
+ */
 #define SECCOMP_RET_TRACE	 0x7ff00000U /* pass to a tracer or disallow */
+/**
+ *  系统调用语序执行，并且被记录
+ */
 #define SECCOMP_RET_LOG		 0x7ffc0000U /* allow after logging */
+/**
+ *  系统调用允许执行
+ */
 #define SECCOMP_RET_ALLOW	 0x7fff0000U /* allow */
 
 /* Masks for the return value sections. */
@@ -56,11 +96,23 @@
  * @instruction_pointer: at the time of the system call.
  * @args: up to 6 system call arguments always stored as 64-bit values
  *        regardless of the architecture.
+ *
+ * 可以使用 `prctl(2)` 的 `PR_SET_SECCOMP` 操作加载 seccomp 过滤器(BPF程序)
+ *  该程序将在每个 seccomp 数据包上执行(数据包`struct seccomp_data`结构表示)
  */
 struct seccomp_data {
+    /**
+     *  系统调用号
+     */
 	int nr;
+    /**
+     *  
+     */
 	__u32 arch;
 	__u64 instruction_pointer;
+    /**
+     *  函数参数 - 最多 6 个
+     */
 	__u64 args[6];
 };
 

@@ -580,6 +580,9 @@ static struct bpf_prog *__get_prog_inode(struct inode *inode, enum bpf_prog_type
 
 	prog = inode->i_private;
 
+    /**
+     *  当内核返回一个 eBPF 程序的文件描述符时进行检查
+     */
 	ret = security_bpf_prog(prog);
 	if (ret < 0)
 		return ERR_PTR(ret);

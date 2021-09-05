@@ -2516,30 +2516,55 @@ int security_audit_rule_match(u32 secid, u32 field, u32 op, void *lsmrule)
 #endif /* CONFIG_AUDIT */
 
 #ifdef CONFIG_BPF_SYSCALL
+/**
+ *  LSM - 安全模块， 提供了方便使用的抽象层 
+ *  一共 7 个钩子
+ */
+/**
+ *  对执行的BPF系统调用进行初始检查
+ */
 int security_bpf(int cmd, union bpf_attr *attr, unsigned int size)
 {
 	return call_int_hook(bpf, 0, cmd, attr, size);
 }
+/**
+ *  当内核返回一个映射文件描述符时进行检查
+ */
 int security_bpf_map(struct bpf_map *map, fmode_t fmode)
 {
 	return call_int_hook(bpf_map, 0, map, fmode);
 }
+/**
+ *  当内核返回一个 eBPF 程序的文件描述符时进行检查
+ */
 int security_bpf_prog(struct bpf_prog *prog)
 {
 	return call_int_hook(bpf_prog, 0, prog);
 }
+/**
+ *  初始化 BPF 映射中的安全字段
+ */
 int security_bpf_map_alloc(struct bpf_map *map) /*  */
 {
 	return call_int_hook(bpf_map_alloc_security, 0, map);
 }
+/**
+ *  初始化 BPF 程序中的安全字段
+ */
 int security_bpf_prog_alloc(struct bpf_prog_aux *aux)
 {
 	return call_int_hook(bpf_prog_alloc_security, 0, aux);
 }
+/**
+ *  清除 BPF 映射中的安全字段
+ */
 void security_bpf_map_free(struct bpf_map *map)
 {
 	call_void_hook(bpf_map_free_security, map);
 }
+/**
+ *  清除 BPF 程序中的安全字段
+ */
 void security_bpf_prog_free(struct bpf_prog_aux *aux)
 {
 	call_void_hook(bpf_prog_free_security, aux);
