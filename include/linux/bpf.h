@@ -58,9 +58,15 @@ typedef struct bpf_map * p_bpf_map_t;/* 我加的 */
  *  
  *  `BPF_MAP_TYPE_QUEUE` 操作符 `queue_map_ops`
  *  `BPF_MAP_TYPE_STACK` 操作符 `stack_map_ops`
+ *
+ *  特殊的网络映射 操作符 `bpf_map_offload_ops`
+ *  更多信息查看 `bpf_map_types`
  */
 struct bpf_map_ops {
 	/* funcs callable from userspace (via syscall) */
+    /**
+     *  array_map_alloc_check
+     */
 	int (*map_alloc_check)(union bpf_attr *attr);
 	p_bpf_map_t (*map_alloc)(union bpf_attr *attr);
 	void (*map_release)(struct bpf_map *map, struct file *map_file);
@@ -145,7 +151,7 @@ struct bpf_map_ops {
 };
 
 /**
- *  
+ *  bpf 映射的内存
  */
 struct bpf_map_memory { /*  */
 	u32 pages;
@@ -937,15 +943,27 @@ static inline void bpf_module_put(const void *data, struct module *owner)
 
 #endif
 
+/**
+ *  bpf array 映射时候的管理结构
+ */
 struct bpf_array {
 	struct bpf_map map;
+    /**
+     *  元素大小
+     */
 	u32 elem_size;
 	u32 index_mask;
+    /**
+     *  辅助信息
+     */
 	struct bpf_array_aux *aux;
+    /**
+     *  
+     */
 	union {
-		char value[0] __aligned(8);
-		void *ptrs[0] __aligned(8);
-		void __percpu *pptrs[0] __aligned(8);
+		char __aligned(8) value[0] ;
+		void __aligned(8) *ptrs[0] ;
+		void __aligned(8) __percpu *pptrs[0] ;
 	};
 };
 

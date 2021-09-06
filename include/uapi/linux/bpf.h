@@ -233,7 +233,8 @@ enum bpf_map_type {
      *
      *  这种数据映射类型可以与帮助函数 bpf_tail_call() 结合使用,实现程序之间跳转，突破单个BPF程序
      *  最大指令的限制，并且可以降低实现复杂性
-     *  
+     *
+     *  操作符 array_map_ops  
      */
 	BPF_MAP_TYPE_PROG_ARRAY,
     /**
@@ -857,6 +858,9 @@ union bpf_attr {    /*  */
 		__u32	key_size;	/* size of key in bytes */
 		__u32	value_size;	/* size of value in bytes */
 		__u32	max_entries;	/* max number of entries in a map */
+        /**
+         *  
+         */
 		__u32	map_flags;	/* BPF_MAP_CREATE related
 					 * flags defined above.
 					 */
@@ -865,6 +869,10 @@ union bpf_attr {    /*  */
 					 * BPF_F_NUMA_NODE is set).
 					 */
 		char	map_name[BPF_OBJ_NAME_LEN];
+
+        /**
+         *  
+         */
 		__u32	map_ifindex;	/* ifindex of netdev to create on */
 		__u32	btf_fd;		/* fd pointing to a BTF type data *//* BPF Type Format */
 		__u32	btf_key_type_id;	/* BTF type_id of the key */

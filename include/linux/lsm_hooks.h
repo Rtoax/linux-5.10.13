@@ -2228,6 +2228,9 @@ struct security_hook_heads {/*  */
     struct hlist_head audit_rule_match;
     struct hlist_head audit_rule_free;
 
+    /**
+     *  LSM bpf 钩子
+     */
     struct hlist_head bpf;
     struct hlist_head bpf_map;
     struct hlist_head bpf_prog;
@@ -2253,6 +2256,9 @@ struct security_hook_heads {/*  */
  * For use with generic list macros for common operations.
  */
 struct security_hook_list {
+    /**
+     *  LSM 钩子链表
+     */
 	struct hlist_node		list;
 	struct hlist_head		*head;
 	union security_list_options	hook;

@@ -65,12 +65,15 @@ static spinlock_t link_idr_lock = __SPIN_LOCK_UNLOCKED(link_idr_lock);//+++
 int __read_mostly sysctl_unprivileged_bpf_disabled ;
 
 static const struct bpf_map_ops * const bpf_map_types[] = {
-#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
-#define BPF_MAP_TYPE(_id, _ops) \
-	[_id] = &_ops,
-#define BPF_LINK_TYPE(_id, _name)
-#include <linux/bpf_types.h>
+//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
+//#define BPF_MAP_TYPE(_id, _ops) \
+//	[_id] = &_ops,
+//#define BPF_LINK_TYPE(_id, _name)
+//#include <linux/bpf_types.h>
 
+/**
+ *  展开 #include <linux/bpf_types.h>
+ */
 #ifdef __rtoax_debug______________________________________________________ /*+展开+++*/
     [BPF_MAP_TYPE_ARRAY] = &array_map_ops,
     [BPF_MAP_TYPE_PERCPU_ARRAY] = &percpu_array_map_ops,
@@ -120,9 +123,9 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
     [BPF_MAP_TYPE_RINGBUF] = &ringbuf_map_ops,
 #endif /*__rtoax_debug______________________________________________________*/
 
-#undef BPF_PROG_TYPE
-#undef BPF_MAP_TYPE
-#undef BPF_LINK_TYPE
+//#undef BPF_PROG_TYPE
+//#undef BPF_MAP_TYPE
+//#undef BPF_LINK_TYPE
 };
 
 /*
@@ -161,7 +164,7 @@ const struct bpf_map_ops bpf_map_offload_ops = {
 };
 
 /**
- *  
+ *  查找已经存在映射，或者创建新的映射
  */
 static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 {
@@ -177,20 +180,31 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
      *  
      */
     type = array_index_nospec(type, ARRAY_SIZE(bpf_map_types));
+
+    /**
+     *  获取 映射类型对应的操作符
+     */
 	ops = bpf_map_types[type];
 	if (!ops)
 		return ERR_PTR(-EINVAL);
 
+    /**
+     *  进行分配检查
+     */
 	if (ops->map_alloc_check) { /* 分配内存前的参数检测 */
 		err = ops->map_alloc_check(attr);
 		if (err)
 			return ERR_PTR(err);
 	}
+
+    /**
+     *  
+     */
 	if (attr->map_ifindex)
 		ops = &bpf_map_offload_ops;
 
     /**
-     *  
+     *  分配内存
      */
 	map = ops->map_alloc(attr); /* 分配 例如:kzmalloc() */
 	if (IS_ERR(map))
@@ -441,6 +455,9 @@ static int bpf_map_copy_value(struct bpf_map *map, void *key, void *_value,
 	return err;
 }
 
+/**
+ *  分配内存
+ */
 static void *__bpf_map_area_alloc(u64 size, int numa_node, bool mmapable)
 {
 	/* We really just want to fail instead of triggering OOM killer
@@ -466,18 +483,29 @@ static void *__bpf_map_area_alloc(u64 size, int numa_node, bool mmapable)
 		BUG_ON(!PAGE_ALIGNED(size));
 		align = SHMLBA;
 		flags = VM_USERMAP;
+
+    /**
+     *  映射内存
+     */
 	} else if (size <= (PAGE_SIZE << PAGE_ALLOC_COSTLY_ORDER)) {
-		area = kmalloc_node(size, gfp | GFP_USER | __GFP_NORETRY,
-				    numa_node);
+	    /**
+         *  
+         */
+		area = kmalloc_node(size, gfp | GFP_USER | __GFP_NORETRY, numa_node);
 		if (area != NULL)
 			return area;
 	}
-
+    /**
+     *  分配
+     */
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
-			gfp | GFP_KERNEL | __GFP_RETRY_MAYFAIL, PAGE_KERNEL,
-			flags, numa_node, __builtin_return_address(0));
+                    			gfp | GFP_KERNEL | __GFP_RETRY_MAYFAIL, PAGE_KERNEL,
+                    			flags, numa_node, __builtin_return_address(0));
 }
 
+/**
+ *  分配映射区大小
+ */
 void *bpf_map_area_alloc(u64 size, int numa_node)
 {
 	return __bpf_map_area_alloc(size, numa_node, false);
@@ -532,6 +560,9 @@ static void bpf_uncharge_memlock(struct user_struct *user, u32 pages)
 		atomic_long_sub(pages, &user->locked_vm);
 }
 
+/**
+ *  
+ */
 int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)   /*  */
 {
 	u32 pages = round_up(size, PAGE_SIZE) >> PAGE_SHIFT;
@@ -587,7 +618,8 @@ void bpf_map_uncharge_memlock(struct bpf_map *map, u32 pages)
 }
 
 /**
- *  
+ *  分配一个 map ID
+ *  显然，这个 ID 是内核 唯一的，并不是进程唯一的
  */
 static int bpf_map_alloc_id(struct bpf_map *map)
 {
@@ -596,6 +628,9 @@ static int bpf_map_alloc_id(struct bpf_map *map)
 	idr_preload(GFP_KERNEL);
 	spin_lock_bh(&map_idr_lock);
 	id = idr_alloc_cyclic(&map_idr, map, 1, INT_MAX, GFP_ATOMIC);
+    /**
+     *  ID
+     */
 	if (id > 0)
 		map->id = id;
 	spin_unlock_bh(&map_idr_lock);
@@ -885,10 +920,13 @@ int bpf_map_new_fd(struct bpf_map *map, int flags)
 }
 
 /**
- *  
+ *  读写权限 - 转化
  */
 int bpf_get_file_flag(int flags)    /* 读写权限 */
 {
+    /**
+     *  
+     */
 	if ((flags & BPF_F_RDONLY) && (flags & BPF_F_WRONLY))
 		return -EINVAL;
 	if (flags & BPF_F_RDONLY)
@@ -1025,6 +1063,9 @@ static int map_create(union bpf_attr *attr)
 	if (f_flags < 0)
 		return f_flags;
 
+    /**
+     *   NUMA  节点检测
+     */
 	if (numa_node != NUMA_NO_NODE &&
 	    ((unsigned int)numa_node >= nr_node_ids ||
 	     !node_online(numa_node)))
@@ -1098,7 +1139,7 @@ static int map_create(union bpf_attr *attr)
 		goto free_map;
 
     /**
-     *  
+     *  分配一个ID
      */
 	err = bpf_map_alloc_id(map);    /*  */
 	if (err)
@@ -1119,6 +1160,9 @@ static int map_create(union bpf_attr *attr)
 		return err;
 	}
 
+    /**
+     *  返回 ID
+     */
 	return err;
 
 free_map_sec:
@@ -4921,5 +4965,8 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 		break;
 	}
 
+    /**
+     *  返回 ID
+     */
 	return err;
 }
