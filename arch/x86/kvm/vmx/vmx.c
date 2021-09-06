@@ -83,6 +83,10 @@ module_param_named(vnmi, enable_vnmi, bool, S_IRUGO);
 bool __read_mostly flexpriority_enabled = 1;
 module_param_named(flexpriority, flexpriority_enabled, bool, S_IRUGO);
 
+/**
+ *  EPT - 扩展页表 - 
+ *  由 模块加载时传入参数
+ */
 bool __read_mostly enable_ept = 1;
 module_param_named(ept, enable_ept, bool, S_IRUGO);
 
@@ -409,7 +413,10 @@ noinline void invept_error(unsigned long ext, u64 eptp, gpa_t gpa)
 }
 
 static DEFINE_PER_CPU(struct vmcs *, vmxarea);
+static struct vmcs *__percpu vmxarea;//+++
 DEFINE_PER_CPU(struct vmcs *, current_vmcs);
+struct vmcs *__percpu current_vmcs;//+++
+
 /*
  * We maintain a per-CPU linked-list of VMCS loaded on that CPU. This is needed
  * when a CPU is brought down, and we need to VMCLEAR all VMCSs loaded on it.
@@ -725,6 +732,10 @@ static void __loaded_vmcs_clear(void *arg)
 
 	if (loaded_vmcs->cpu != cpu)
 		return; /* vcpu migration can race with cpu offline */
+
+    /**
+     *  
+     */
 	if (per_cpu(current_vmcs, cpu) == loaded_vmcs->vmcs)
 		per_cpu(current_vmcs, cpu) = NULL;
 
@@ -1346,8 +1357,14 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 		local_irq_enable();
 	}
 
+    /**
+     *  
+     */
 	prev = per_cpu(current_vmcs, cpu);
 	if (prev != vmx->loaded_vmcs->vmcs) {
+        /**
+         *  赋值
+         */
 		per_cpu(current_vmcs, cpu) = vmx->loaded_vmcs->vmcs;
 		vmcs_load(vmx->loaded_vmcs->vmcs);
 
@@ -1390,9 +1407,11 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 		decache_tsc_multiplier(vmx);
 }
 
-/*
+/**
  * Switches to specified vcpu, until a matching vcpu_put(), but assumes
  * vcpu mutex is already taken.
+ *
+ * 
  */
 static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
 {
@@ -4761,6 +4780,9 @@ static inline bool guest_inject_ac(struct kvm_vcpu *vcpu)
 	       (kvm_get_rflags(vcpu) & X86_EFLAGS_AC);
 }
 
+/**
+ *  
+ */
 static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -4814,8 +4836,14 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 		return 0;
 	}
 
+    /**
+     *  缺页中断
+     */
 	if (is_page_fault(intr_info)) {
 		cr2 = vmx_get_exit_qual(vcpu);
+        /**
+         *  EPT 扩展页表
+         */
 		if (enable_ept && !vcpu->arch.apf.host_apf_flags) {
 			/*
 			 * EPT will cause page fault only if we need to
@@ -5202,8 +5230,17 @@ static int handle_xsetbv(struct kvm_vcpu *vcpu)
 	return 1;
 }
 
+/**
+ *  鉴于 LAPIC 寄存器的访问非常频繁，所以 Intel 从硬件层面做出了很多支持
+ *  比如 为 访问 LAPIC 寄存器增加了专门退出的原因，这样就不必首先进入缺页
+ *  异常函数来尝试处理，当缺页异常函数无法处理后再进入指令模拟函数，而是
+ *  直接进入 LAPIC 的处理函数
+ */
 static int handle_apic_access(struct kvm_vcpu *vcpu)
 {
+    /**
+     *  
+     */
 	if (likely(fasteoi)) {
 		unsigned long exit_qualification = vmx_get_exit_qual(vcpu);
 		int access_type, offset;
@@ -5624,6 +5661,11 @@ static int handle_encls(struct kvm_vcpu *vcpu)
  * The exit handlers return 1 if the exit was handled fully and guest execution
  * may resume.  Otherwise they set the kvm_run parameter to indicate what needs
  * to be done to userspace and return 0.
+ *
+ *  鉴于 LAPIC 寄存器的访问非常频繁，所以 Intel 从硬件层面做出了很多支持
+ *  比如 为 访问 LAPIC 寄存器增加了专门退出的原因，这样就不必首先进入缺页
+ *  异常函数来尝试处理，当缺页异常函数无法处理后再进入指令模拟函数，而是
+ *  直接进入 LAPIC 的处理函数
  */
 static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_EXCEPTION_NMI]           = handle_exception_nmi,
@@ -5652,6 +5694,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_VMOFF]		      = handle_vmx_instruction,
 	[EXIT_REASON_VMON]		      = handle_vmx_instruction,
 	[EXIT_REASON_TPR_BELOW_THRESHOLD]     = handle_tpr_below_threshold,
+	/**
+     *  
+     */
 	[EXIT_REASON_APIC_ACCESS]             = handle_apic_access,
 	[EXIT_REASON_APIC_WRITE]              = handle_apic_write,
 	[EXIT_REASON_EOI_INDUCED]             = handle_apic_eoi_induced,
@@ -6573,6 +6618,9 @@ static void vmx_update_hv_timer(struct kvm_vcpu *vcpu)
 	}
 }
 
+/**
+ *  
+ */
 void noinstr vmx_update_host_rsp(struct vcpu_vmx *vmx, unsigned long host_rsp)
 {
 	if (unlikely(host_rsp != vmx->loaded_vmcs->host_state.rsp)) {
@@ -6583,6 +6631,9 @@ void noinstr vmx_update_host_rsp(struct vcpu_vmx *vmx, unsigned long host_rsp)
 
 static fastpath_t vmx_exit_handlers_fastpath(struct kvm_vcpu *vcpu)
 {
+    /**
+     *  
+     */
 	switch (to_vmx(vcpu)->exit_reason) {
 	case EXIT_REASON_MSR_WRITE:
 		return handle_fastpath_set_msr_irqoff(vcpu);
@@ -6593,8 +6644,14 @@ static fastpath_t vmx_exit_handlers_fastpath(struct kvm_vcpu *vcpu)
 	}
 }
 
+/**
+ *  arch/x86/kvm/vmx/vmenter.S - 汇编函数
+ */
 bool __vmx_vcpu_run(struct vcpu_vmx *vmx, unsigned long *regs, bool launched);
 
+/**
+ *  
+ */
 static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 					struct vcpu_vmx *vmx)
 {
@@ -6627,9 +6684,15 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 	if (vcpu->arch.cr2 != native_read_cr2())
 		native_write_cr2(vcpu->arch.cr2);
 
+    /**
+     *  
+     */
 	vmx->fail = __vmx_vcpu_run(vmx, (unsigned long *)&vcpu->arch.regs,
 				   vmx->loaded_vmcs->launched);
 
+    /**
+     *  读取 CR2 - page-fault linear addr
+     */
 	vcpu->arch.cr2 = native_read_cr2();
 
 	/*
@@ -6652,12 +6715,18 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 	instrumentation_end();
 }
 
+/**
+ *  
+ */
 static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
 {
 	fastpath_t exit_fastpath;
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	unsigned long cr3, cr4;
 
+/**
+ *  
+ */
 reenter_guest:
 	/* Record the guest's net vcpu time for enforced NMI injections. */
 	if (unlikely(!enable_vnmi &&
@@ -6685,12 +6754,18 @@ reenter_guest:
 	if (kvm_register_is_dirty(vcpu, VCPU_REGS_RIP))
 		vmcs_writel(GUEST_RIP, vcpu->arch.regs[VCPU_REGS_RIP]);
 
+    /**
+     *  获取 CR3 页表 快速路径
+     */
 	cr3 = __get_current_cr3_fast();
 	if (unlikely(cr3 != vmx->loaded_vmcs->host_state.cr3)) {
 		vmcs_writel(HOST_CR3, cr3);
 		vmx->loaded_vmcs->host_state.cr3 = cr3;
 	}
 
+    /**
+     *  
+     */
 	cr4 = cr4_read_shadow();
 	if (unlikely(cr4 != vmx->loaded_vmcs->host_state.cr4)) {
 		vmcs_writel(HOST_CR4, cr4);
@@ -6707,6 +6782,9 @@ reenter_guest:
 
 	kvm_load_guest_xsave_state(vcpu);
 
+    /**
+     *  进入 guest
+     */
 	pt_guest_enter(vmx);
 
 	atomic_switch_perf_msrs(vmx);
@@ -6714,6 +6792,9 @@ reenter_guest:
 	if (enable_preemption_timer)
 		vmx_update_hv_timer(vcpu);
 
+    /**
+     *  
+     */
 	kvm_wait_lapic_expire(vcpu);
 
 	/*
@@ -6772,8 +6853,14 @@ reenter_guest:
 	loadsegment(es, __USER_DS);
 #endif
 
+    /**
+     *  
+     */
 	vmx_register_cache_reset(vcpu);
 
+    /**
+     *  
+     */
 	pt_guest_exit(vmx);
 
 	kvm_load_host_xsave_state(vcpu);
@@ -6790,6 +6877,9 @@ reenter_guest:
 	if (unlikely((u16)vmx->exit_reason == EXIT_REASON_MCE_DURING_VMENTRY))
 		kvm_machine_check();
 
+    /**
+     *  KVM 退出追踪
+     */
 	trace_kvm_exit(vmx->exit_reason, vcpu, KVM_ISA_VMX);
 
 	if (unlikely(vmx->exit_reason & VMX_EXIT_REASONS_FAILED_VMENTRY))
@@ -6804,6 +6894,9 @@ reenter_guest:
 	if (is_guest_mode(vcpu))
 		return EXIT_FASTPATH_NONE;
 
+    /**
+     *  
+     */
 	exit_fastpath = vmx_exit_handlers_fastpath(vcpu);
 	if (exit_fastpath == EXIT_FASTPATH_REENTER_GUEST) {
 		if (!kvm_vcpu_exit_request(vcpu)) {
@@ -7587,6 +7680,9 @@ static bool vmx_check_apicv_inhibit_reasons(ulong bit)
 	return supported & BIT(bit);
 }
 
+/**
+ *  
+ */
 static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.hardware_unsetup = hardware_unsetup,
 
@@ -7633,8 +7729,12 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.tlb_flush_gva = vmx_flush_tlb_gva,
 	.tlb_flush_guest = vmx_flush_tlb_guest,
 
-	.run = vmx_vcpu_run,
+    /**
+     *  
+     */
+	vmx_x86_ops.run = vmx_vcpu_run,
 	.handle_exit = vmx_handle_exit,
+	
 	.skip_emulated_instruction = vmx_skip_emulated_instruction,
 	.update_emulated_instruction = vmx_update_emulated_instruction,
 	.set_interrupt_shadow = vmx_set_interrupt_shadow,

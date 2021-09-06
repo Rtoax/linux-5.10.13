@@ -16,13 +16,27 @@ struct vmcs_hdr {
 	u32 shadow_vmcs:1;
 };
 
+/**
+ *  1. 每个任务有自己的上下文
+ *  2. 不同模式(Guest,Host)也需要保存自己的上下文
+ *
+ *  VMX 设计了一个保存上下文的数据结构
+ *
+ *  vmcs 保存了两大类数据
+ *  1. Host的状态和 Guest 的状态
+ *  2. 控制Guest 运行时的行为
+ */
 struct vmcs {
 	struct vmcs_hdr hdr;
 	u32 abort;
+    /**
+     *  
+     */
 	char data[];
 };
 
 DECLARE_PER_CPU(struct vmcs *, current_vmcs);
+
 
 /*
  * vmcs_host_state tracks registers that are loaded from the VMCS on VMEXIT
@@ -30,6 +44,9 @@ DECLARE_PER_CPU(struct vmcs *, current_vmcs);
  * used as a write-through cache of the corresponding VMCS fields.
  */
 struct vmcs_host_state {
+    /**
+     *  
+     */
 	unsigned long cr3;	/* May not match real cr3 */
 	unsigned long cr4;	/* May not match real cr4 */
 	unsigned long gs_base;

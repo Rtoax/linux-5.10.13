@@ -628,6 +628,9 @@ int kvm_complete_insn_gp(struct kvm_vcpu *vcpu, int err)
 }
 EXPORT_SYMBOL_GPL(kvm_complete_insn_gp);
 
+/**
+ *  Host 可能修改 CR2 的值(page-fault-linear -address)
+ */
 void kvm_inject_page_fault(struct kvm_vcpu *vcpu, struct x86_exception *fault)
 {
 	++vcpu->stat.pf_guest;
@@ -637,8 +640,7 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, struct x86_exception *fault)
 		vcpu->arch.apf.nested_apf_token = fault->address;
 		kvm_queue_exception_e(vcpu, PF_VECTOR, fault->error_code);
 	} else {
-		kvm_queue_exception_e_p(vcpu, PF_VECTOR, fault->error_code,
-					fault->address);
+		kvm_queue_exception_e_p(vcpu, PF_VECTOR, fault->error_code, fault->address);
 	}
 }
 EXPORT_SYMBOL_GPL(kvm_inject_page_fault);
@@ -6251,6 +6253,9 @@ static int emulator_read_write_onepage(unsigned long addr, void *val,
 	return X86EMUL_CONTINUE;
 }
 
+/**
+ *  
+ */
 static int emulator_read_write(struct x86_emulate_ctxt *ctxt,
 			unsigned long addr,
 			void *val, unsigned int bytes,
@@ -6302,6 +6307,9 @@ static int emulator_read_write(struct x86_emulate_ctxt *ctxt,
 	vcpu->run->exit_reason = KVM_EXIT_MMIO;
 	vcpu->run->mmio.phys_addr = gpa;
 
+    /**
+     *  
+     */
 	return ops->read_write_exit_mmio(vcpu, gpa, val, bytes);
 }
 
@@ -6315,6 +6323,9 @@ static int emulator_read_emulated(struct x86_emulate_ctxt *ctxt,
 				   exception, &read_emultor);
 }
 
+/**
+ *  
+ */
 static int emulator_write_emulated(struct x86_emulate_ctxt *ctxt,
 			    unsigned long addr,
 			    const void *val,
@@ -7279,6 +7290,9 @@ static bool is_vmware_backdoor_opcode(struct x86_emulate_ctxt *ctxt)
 	return false;
 }
 
+/**
+ *  
+ */
 int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 			    int emulation_type, void *insn, int insn_len)
 {
@@ -7320,10 +7334,20 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 
 		ctxt->ud = emulation_type & EMULTYPE_TRAP_UD;
 
+        /**
+         *  
+         */
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
+        /**
+         *  
+         */
 		trace_kvm_emulate_insn_start(vcpu);
 		++vcpu->stat.insn_emulation;
+
+        /**
+         *  
+         */
 		if (r != EMULATION_OK)  {
 			if ((emulation_type & EMULTYPE_TRAP_UD) ||
 			    (emulation_type & EMULTYPE_TRAP_UD_FORCED)) {
@@ -7348,6 +7372,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 		}
 	}
 
+    /**
+     *  
+     */
 	if ((emulation_type & EMULTYPE_VMWARE_GP) &&
 	    !is_vmware_backdoor_opcode(ctxt)) {
 		kvm_queue_exception_e(vcpu, GP_VECTOR, 0);
@@ -7360,6 +7387,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	 * updating interruptibility state and injecting single-step #DBs.
 	 */
 	if (emulation_type & EMULTYPE_SKIP) {
+        /**
+         *  更新指令指针
+         */
 		kvm_rip_write(vcpu, ctxt->_eip);
 		if (ctxt->eflags & X86_EFLAGS_RF)
 			kvm_set_rflags(vcpu, ctxt->eflags & ~X86_EFLAGS_RF);
@@ -7391,6 +7421,9 @@ restart:
 		ctxt->exception.address = 0;
 	}
 
+    /**
+     *  模拟 指令
+     */
 	r = x86_emulate_insn(ctxt);
 
 	if (r == EMULATION_INTERCEPTED)
@@ -8883,6 +8916,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		}
 	}
 
+    /**
+     *  
+     */
 	r = kvm_mmu_reload(vcpu);
 	if (unlikely(r)) {
 		goto cancel_injection;
@@ -8954,6 +8990,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		vcpu->arch.switch_db_regs &= ~KVM_DEBUGREG_RELOAD;
 	}
 
+    /**
+     *  运行
+     */
 	exit_fastpath = kvm_x86_ops.run(vcpu);
 
 	/*
@@ -9028,6 +9067,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	if (vcpu->arch.apic_attention)
 		kvm_lapic_sync_from_vapic(vcpu);
 
+    /**
+     *  
+     */
 	r = kvm_x86_ops.handle_exit(vcpu, exit_fastpath);
 	return r;
 

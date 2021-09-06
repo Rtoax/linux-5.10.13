@@ -18,11 +18,17 @@ struct x86_emulate_ctxt;
 enum x86_intercept;
 enum x86_intercept_stage;
 
+/**
+ *  x86 异常
+ */
 struct x86_exception {
 	u8 vector;
 	bool error_code_valid;
 	u16 error_code;
 	bool nested_page_fault;
+    /**
+     *  缺页中断地址
+     */
 	u64 address; /* cr2 or nested page fault gpa */
 	u8 async_page_fault;
 };
@@ -238,7 +244,25 @@ struct x86_emulate_ops {
 
 typedef u32 __attribute__((vector_size(16))) sse128_t;
 
+/**
+ *  x86 指令格式
+ *
+ *  +----------+----------+----------+----------+----------+----------+
+ *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+ *  +----------+----------+----------+----------+----------+----------+
+ *  
+ *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
+ *  opcode - 操作码
+ *  ModR/M, SIB - 操作数
+ *  Displacement - 偏移
+ *  Immediate - 立即数
+ *  
+ */
+
 /* Type, address-of, and value of an instruction's operand. */
+/**
+ *  操作数
+ */
 struct operand {
 	enum { OP_REG, OP_MEM, OP_MEM_STR, OP_IMM, OP_XMM, OP_MM, OP_NONE } type;
 	unsigned int bytes;
@@ -300,6 +324,22 @@ struct fastop;
 
 typedef void (*fastop_t)(struct fastop *);
 
+/**
+ *  
+ *
+ *  x86 指令格式
+ *
+ *  +----------+----------+----------+----------+----------+----------+
+ *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+ *  +----------+----------+----------+----------+----------+----------+
+ *  
+ *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
+ *  opcode - 操作码
+ *  ModR/M, SIB - 操作数
+ *  Displacement - 偏移
+ *  Immediate - 立即数
+ *  
+ */
 struct x86_emulate_ctxt {
 	void *vcpu;
 	const struct x86_emulate_ops *ops;
@@ -363,8 +403,15 @@ struct x86_emulate_ctxt {
 	unsigned long _eip;
 
 	/* Here begins the usercopy section. */
+    /**
+     *  源操作数
+     */
 	struct operand src;
 	struct operand src2;
+
+    /**
+     *  目的操作数
+     */
 	struct operand dst;
 	struct operand memop;
 	unsigned long _regs[NR_VCPU_REGS];

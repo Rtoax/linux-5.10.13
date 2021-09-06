@@ -104,14 +104,18 @@ SYM_FUNC_END(vmx_vmexit)
 SYM_FUNC_START(__vmx_vcpu_run)
 	push %_ASM_BP
 	mov  %_ASM_SP, %_ASM_BP
+
+    /**
+     *  保存通用寄存器
+     */
 #ifdef CONFIG_X86_64
 	push %r15
 	push %r14
 	push %r13
 	push %r12
 #else
-	push %edi
-	push %esi
+//	push %edi
+//	push %esi
 #endif
 	push %_ASM_BX
 
@@ -224,8 +228,8 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	pop %r14
 	pop %r15
 #else
-	pop %esi
-	pop %edi
+//	pop %esi
+//	pop %edi
 #endif
 	pop %_ASM_BP
 	ret

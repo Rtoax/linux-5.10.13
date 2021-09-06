@@ -249,6 +249,9 @@ static inline void vmcs_load(struct vmcs *vmcs)
 	if (static_branch_unlikely(&enable_evmcs))
 		return evmcs_load(phys_addr);
 
+    /**
+     *  
+     */
 	vmx_asm1(vmptrld, "m"(phys_addr), vmcs, phys_addr);
 }
 

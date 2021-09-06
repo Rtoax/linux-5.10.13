@@ -1400,6 +1400,9 @@ void __init native_smp_prepare_boot_cpu(void)
 	/* already set me in cpu_online_mask in boot_cpu_init() */
 	cpumask_set_cpu(me, cpu_callout_mask);  /* 设置当前 CPU mask */
 	cpu_set_state_online(me);   /* 设置 ONLINE */
+    /**
+     *  
+     */
 	native_pv_lock_init();      /* 半虚拟化时， 才不为空 */
 }
 

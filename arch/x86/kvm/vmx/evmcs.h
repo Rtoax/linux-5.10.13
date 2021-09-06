@@ -16,7 +16,12 @@ struct vmcs_config;
 
 DECLARE_STATIC_KEY_FALSE(enable_evmcs);
 
-#define current_evmcs ((struct hv_enlightened_vmcs *)this_cpu_read(current_vmcs))
+/**
+ *  
+ */
+//#define current_evmcs ((struct hv_enlightened_vmcs *)this_cpu_read(current_vmcs))
+struct hv_enlightened_vmcs *current_evmcs;//+++实际数据类型为 `struct vmcs *`
+
 
 #define KVM_EVMCS_VERSION 1
 

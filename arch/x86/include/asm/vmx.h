@@ -152,7 +152,11 @@ static inline int vmx_misc_mseg_revid(u64 vmx_misc)
 	return (vmx_misc & GENMASK_ULL(63, 32)) >> 32;
 }
 
-/* VMCS Encodings */
+/**
+ *  VMCS Encodings 
+ *
+ *  VM 上下文(vmcs) field
+ */
 enum vmcs_field {
 	VIRTUAL_PROCESSOR_ID            = 0x00000000,
 	POSTED_INTR_NV                  = 0x00000002,
@@ -338,6 +342,9 @@ enum vmcs_field {
 	HOST_IDTR_BASE                  = 0x00006c0e,   /* `IDT` 基址存储寄存器 - IDTR */
 	HOST_IA32_SYSENTER_ESP          = 0x00006c10,
 	HOST_IA32_SYSENTER_EIP          = 0x00006c12,
+	/**
+     *  
+     */
 	HOST_RSP                        = 0x00006c14,
 	HOST_RIP                        = 0x00006c16,
 };

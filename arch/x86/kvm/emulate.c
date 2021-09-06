@@ -4697,6 +4697,9 @@ static const struct mode_dual mode_dual_63 = {
 	N, I(DstReg | SrcMem32 | ModRM | Mov, em_movsxd)
 };
 
+/**
+ *  根据操作码判断指令操作数的寻址方式
+ */
 static const struct opcode opcode_table[256] = {
 	/* 0x00 - 0x07 */
 	F6ALU(Lock, em_add),
@@ -5017,6 +5020,9 @@ done:
 	return rc;
 }
 
+/**
+ *  解析 源/目的 操作数
+ */
 static int decode_operand(struct x86_emulate_ctxt *ctxt, struct operand *op,
 			  unsigned d)
 {
@@ -5183,6 +5189,20 @@ done:
 	return rc;
 }
 
+/**
+ *  x86 指令格式
+ *
+ *  +----------+----------+----------+----------+----------+----------+
+ *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+ *  +----------+----------+----------+----------+----------+----------+
+ *  
+ *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
+ *  opcode - 操作码
+ *  ModR/M, SIB - 操作数
+ *  Displacement - 偏移
+ *  Immediate - 立即数
+ *  
+ */
 int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 {
 	int rc = X86EMUL_CONTINUE;
@@ -5209,6 +5229,9 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 			goto done;
 	}
 
+    /**
+     *  
+     */
 	switch (mode) {
 	case X86EMUL_MODE_REAL:
 	case X86EMUL_MODE_VM86:
@@ -5236,6 +5259,9 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	ctxt->op_bytes = def_op_bytes;
 	ctxt->ad_bytes = def_ad_bytes;
 
+    /**
+     *  解析代码前缀
+     */
 	/* Legacy prefixes. */
 	for (;;) {
 		switch (ctxt->b = insn_fetch(u8, ctxt)) {
@@ -5303,6 +5329,9 @@ done_prefixes:
 	if (ctxt->rex_prefix & 8)
 		ctxt->op_bytes = 8;	/* REX.W */
 
+    /**
+     *  根据操作码判断指令操作数的寻址方式
+     */
 	/* Opcode byte(s). */
 	opcode = opcode_table[ctxt->b];
 	/* Two-byte opcode? */
@@ -5320,6 +5349,9 @@ done_prefixes:
 	}
 	ctxt->d = opcode.flags;
 
+    /**
+     *  
+     */
 	if (ctxt->d & ModRM)
 		ctxt->modrm = insn_fetch(u8, ctxt);
 
@@ -5329,6 +5361,9 @@ done_prefixes:
 		ctxt->d = NotImpl;
 	}
 
+    /**
+     *  
+     */
 	while (ctxt->d & GroupMask) {
 		switch (ctxt->d & GroupMask) {
 		case Group:
@@ -5450,6 +5485,9 @@ done_prefixes:
 
 	ctxt->memop.addr.mem.seg = ctxt->seg_override;
 
+    /**
+     *  解析源操作数
+     */
 	/*
 	 * Decode and fetch the source operand: register, memory
 	 * or immediate.
@@ -5466,9 +5504,15 @@ done_prefixes:
 	if (rc != X86EMUL_CONTINUE)
 		goto done;
 
+    /**
+     *  解析目的操作数
+     */
 	/* Decode and fetch the destination operand: register or memory. */
 	rc = decode_operand(ctxt, &ctxt->dst, (ctxt->d >> DstShift) & OpMask);
 
+    /**
+     *  
+     */
 	if (ctxt->rip_relative && likely(ctxt->memopp))
 		ctxt->memopp->addr.mem.ea = address_mask(ctxt,
 					ctxt->memopp->addr.mem.ea + ctxt->_eip);
@@ -5552,6 +5596,9 @@ void init_decode_cache(struct x86_emulate_ctxt *ctxt)
 	ctxt->mem_read.end = 0;
 }
 
+/**
+ *  
+ */
 int x86_emulate_insn(struct x86_emulate_ctxt *ctxt)
 {
 	const struct x86_emulate_ops *ops = ctxt->ops;

@@ -157,7 +157,10 @@ enum kvm_reg {
 	VCPU_REGS_R13 = __VCPU_REGS_R13,
 	VCPU_REGS_R14 = __VCPU_REGS_R14,
 	VCPU_REGS_R15 = __VCPU_REGS_R15,
-#endif
+#endif  
+    /**
+     *  指令指针
+     */
 	VCPU_REGS_RIP,
 	NR_VCPU_REGS,
 
@@ -182,9 +185,19 @@ enum {
 	VCPU_SREG_LDTR,
 };
 
+/**
+ *  
+ */
 enum exit_fastpath_completion {
 	EXIT_FASTPATH_NONE,
+    /**
+     *  从 Host 内核空间，再次进入 Guest
+     *  
+     */
 	EXIT_FASTPATH_REENTER_GUEST,
+	/**
+     *  退出到 Host 用户空间进行处理
+     */
 	EXIT_FASTPATH_EXIT_HANDLED,
 };
 typedef enum exit_fastpath_completion fastpath_t;
@@ -520,6 +533,9 @@ struct kvm_vcpu_hv {
 	cpumask_t tlb_flush;
 };
 
+/**
+ *  
+ */
 struct kvm_vcpu_arch {
 	/*
 	 * rip and regs accesses must go through
@@ -1083,6 +1099,9 @@ static inline u16 kvm_lapic_irq_dest_mode(bool dest_mode_logical)
 	return dest_mode_logical ? APIC_DEST_LOGICAL : APIC_DEST_PHYSICAL;
 }
 
+/**
+ *  
+ */
 struct kvm_x86_ops {
 	int (*hardware_enable)(void);
 	void (*hardware_disable)(void);
@@ -1147,9 +1166,11 @@ struct kvm_x86_ops {
 	 */
 	void (*tlb_flush_guest)(struct kvm_vcpu *vcpu);
 
+    /**
+     *  运行
+     */
 	enum exit_fastpath_completion (*run)(struct kvm_vcpu *vcpu);
-	int (*handle_exit)(struct kvm_vcpu *vcpu,
-		enum exit_fastpath_completion exit_fastpath);
+	int (*handle_exit)(struct kvm_vcpu *vcpu, enum exit_fastpath_completion exit_fastpath);
 	int (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
 	void (*update_emulated_instruction)(struct kvm_vcpu *vcpu);
 	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);

@@ -3741,6 +3741,9 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa,
 				 PG_LEVEL_2M, false);
 }
 
+/**
+ *  KVM 处理一个缺页
+ */
 int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 				u64 fault_address, char *insn, int insn_len)
 {
@@ -3755,12 +3758,21 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 
 	vcpu->arch.l1tf_flush_l1d = true;
 	if (!flags) {
+        /**
+         *  trace
+         */
 		trace_kvm_page_fault(fault_address, error_code);
 
 		if (kvm_event_needs_reinjection(vcpu))
 			kvm_mmu_unprotect_page_virt(vcpu, fault_address);
-		r = kvm_mmu_page_fault(vcpu, fault_address, error_code, insn,
-				insn_len);
+        /**
+         *  
+         */
+		r = kvm_mmu_page_fault(vcpu, fault_address, error_code, insn, insn_len);
+        
+    /**
+     *  
+     */
 	} else if (flags & KVM_PV_REASON_PAGE_NOT_PRESENT) {
 		vcpu->arch.apf.host_apf_flags = 0;
 		local_irq_disable();
@@ -5058,8 +5070,7 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	}
 
 	if (r == RET_PF_INVALID) {
-		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa,
-					  lower_32_bits(error_code), false);
+		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa, lower_32_bits(error_code), false);
 		if (WARN_ON_ONCE(r == RET_PF_INVALID))
 			return -EIO;
 	}
@@ -5096,8 +5107,10 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	if (!mmio_info_in_cache(vcpu, cr2_or_gpa, direct) && !is_guest_mode(vcpu))
 		emulation_type |= EMULTYPE_ALLOW_RETRY_PF;
 emulate:
-	return x86_emulate_instruction(vcpu, cr2_or_gpa, emulation_type, insn,
-				       insn_len);
+    /**
+     *  模拟 指令
+     */
+	return x86_emulate_instruction(vcpu, cr2_or_gpa, emulation_type, insn, insn_len);
 }
 EXPORT_SYMBOL_GPL(kvm_mmu_page_fault);
 

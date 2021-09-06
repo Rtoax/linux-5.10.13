@@ -28,6 +28,15 @@
 
 #define VMX_EXIT_REASONS_FAILED_VMENTRY         0x80000000
 
+    
+/**
+ *  鉴于 LAPIC 寄存器的访问非常频繁，所以 Intel 从硬件层面做出了很多支持
+ *  比如 为 访问 LAPIC 寄存器增加了专门退出的原因，这样就不必首先进入缺页
+ *  异常函数来尝试处理，当缺页异常函数无法处理后再进入指令模拟函数，而是
+ *  直接进入 LAPIC 的处理函数
+ */
+
+
 #define EXIT_REASON_EXCEPTION_NMI       0
 #define EXIT_REASON_EXTERNAL_INTERRUPT  1
 #define EXIT_REASON_TRIPLE_FAULT        2

@@ -71,6 +71,9 @@ static inline int kvm_mmu_reload(struct kvm_vcpu *vcpu)
 	if (likely(vcpu->arch.mmu->root_hpa != INVALID_PAGE))
 		return 0;
 
+    /**
+     *  
+     */
 	return kvm_mmu_load(vcpu);
 }
 

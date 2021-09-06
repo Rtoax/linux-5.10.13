@@ -177,6 +177,9 @@ struct nested_vmx {
 	struct hv_enlightened_vmcs *hv_evmcs;
 };
 
+/**
+ *  
+ */
 struct vcpu_vmx {
 	struct kvm_vcpu       vcpu;
 	u8                    fail;

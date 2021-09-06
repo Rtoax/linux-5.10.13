@@ -49,6 +49,9 @@ struct nested_vmx_msrs {
 	u64 vmfunc_controls;
 };
 
+/**
+ *  
+ */
 struct vmcs_config {
 	int size;
 	int order;

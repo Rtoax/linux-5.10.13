@@ -2024,9 +2024,15 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 		}
 		break;
 	}
+    /**
+     *  IPI：由CPU通过写入APIC的Interrupt Control Register (ICR)而主动发起，接收不需要额外配置
+     */
 	case APIC_ICR:
 		/* No delay here, so we always clear the pending bit */
 		val &= ~(1 << 12);
+        /**
+         *  向其他 CPU发送 IPI
+         */
 		kvm_apic_send_ipi(apic, val, kvm_lapic_get_reg(apic, APIC_ICR2));
 		kvm_lapic_set_reg(apic, APIC_ICR, val);
 		break;
@@ -2111,6 +2117,9 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 }
 EXPORT_SYMBOL_GPL(kvm_lapic_reg_write);
 
+/**
+ *  
+ */
 static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 			    gpa_t address, int len, const void *data)
 {
@@ -2139,6 +2148,9 @@ static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 
 	val = *(u32*)data;
 
+    /**
+     *  
+     */
 	kvm_lapic_reg_write(apic, offset & 0xff0, val);
 
 	return 0;

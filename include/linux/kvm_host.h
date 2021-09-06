@@ -259,12 +259,22 @@ struct kvm_mmio_fragment {
 	unsigned len;
 };
 
+/**
+ *  VMM 使用一个线程来代表 VCPU 这个实体
+ */
 struct kvm_vcpu {
 	struct kvm *kvm;
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	struct preempt_notifier preempt_notifier;
 #endif
+    /**
+     *  
+     */
 	int cpu;
+
+    /**
+     *  
+     */
 	int vcpu_id; /* id given by userspace at creation */
 	int vcpu_idx; /* index in kvm->vcpus array */
 	int srcu_idx;
@@ -443,6 +453,9 @@ struct kvm_memslots {
 	struct kvm_memory_slot memslots[];
 };
 
+/**
+ *  KVM 虚拟机
+ */
 struct kvm {
 	spinlock_t mmu_lock;
 	struct mutex slots_lock;
