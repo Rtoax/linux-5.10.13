@@ -225,18 +225,25 @@
 
 /*
  * Segment selector values corresponding to the above entries:
+ *  
+ * 段选择子的格式：
+ *
+ * 15                               3  2   1  0
+ * +---------------------------------+---+------+
+ * |            Index                |TI | RPL  |
+ * +---------------------------------+---+------+
  *
  * Note, selectors also need to have a correct RPL,
  * expressed with the +3 value for user-space selectors:
  */
-#define __KERNEL32_CS			(GDT_ENTRY_KERNEL32_CS*8)
-#define __KERNEL_CS			(GDT_ENTRY_KERNEL_CS*8)
-#define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
-#define __USER32_CS			(GDT_ENTRY_DEFAULT_USER32_CS*8 + 3)
-#define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
-#define __USER32_DS			__USER_DS
-#define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-#define __CPUNODE_SEG			(GDT_ENTRY_CPUNODE*8 + 3)
+#define __KERNEL32_CS   /* 0x08 */(GDT_ENTRY_KERNEL32_CS/* 1 */*8)
+#define __KERNEL_CS     /* 0x10 */(GDT_ENTRY_KERNEL_CS/* 2 */*8)
+#define __KERNEL_DS     /* 0x18 */(GDT_ENTRY_KERNEL_DS/* 3 */*8)
+#define __USER32_CS     /* 0x23 */(GDT_ENTRY_DEFAULT_USER32_CS/* 4 */*8 + 3)
+#define __USER_DS       /* 0x2B */(GDT_ENTRY_DEFAULT_USER_DS/* 5 */*8 + 3)
+#define __USER32_DS     /* 0x2B */__USER_DS/*  */
+#define __USER_CS       /* 0x33 */(GDT_ENTRY_DEFAULT_USER_CS/* 6 */*8 + 3)
+#define __CPUNODE_SEG   /* 0x7B */(GDT_ENTRY_CPUNODE/* 15 */*8 + 3)
 
 #endif
 
