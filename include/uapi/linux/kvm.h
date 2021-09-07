@@ -93,12 +93,33 @@ struct kvm_memory_region {
 	__u64 memory_size; /* bytes */
 };
 
-/* for KVM_SET_USER_MEMORY_REGION */
+/**
+ *  for KVM_SET_USER_MEMORY_REGION 
+ *
+ *  描述一块 虚拟 内存条
+ */
 struct kvm_userspace_memory_region {
+    /**
+     *  内存槽 
+     *  如果这个插槽没有插入内存，那么相当于安装一个内存条
+     */
 	__u32 slot;
+    /**
+     *  内存类型 ， 如 `KVM_MEM_READONLY`
+     */
 	__u32 flags;
+    /**
+     *  这块内存条映射到虚拟机的物理内存地址空间的起始地址
+     */
 	__u64 guest_phys_addr;
+    /**
+     *  内存发小
+     */
 	__u64 memory_size; /* bytes */
+    /**
+     *  宿主机需要分配一块内存用于Guest的物理内存
+     *  这段内存在 Host 中的起始地址(HVA) 由该字段告知 KVM 子系统
+     */
 	__u64 userspace_addr; /* start of the userspace allocated memory */
 };
 
@@ -835,6 +856,7 @@ struct kvm_ppc_resize_hpt {
  * ioctls for /dev/kvm fds:
  */
 #define KVM_GET_API_VERSION       _IO(KVMIO,   0x00)
+/* 创建虚拟机 */
 #define KVM_CREATE_VM             _IO(KVMIO,   0x01) /* returns a VM fd */
 #define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 0x02, struct kvm_msr_list)
 
@@ -1309,6 +1331,8 @@ struct kvm_vfio_spapr_tce {
 /*
  * KVM_CREATE_VCPU receives as a parameter the vcpu slot, and returns
  * a vcpu fd.
+ *
+ * 为 Guest 创建一个 VCPU
  */
 #define KVM_CREATE_VCPU           _IO(KVMIO,   0x41)
 #define KVM_GET_DIRTY_LOG         _IOW(KVMIO,  0x42, struct kvm_dirty_log)
@@ -1316,8 +1340,10 @@ struct kvm_vfio_spapr_tce {
 #define KVM_SET_MEMORY_ALIAS      _IOW(KVMIO,  0x43, struct kvm_memory_alias)
 #define KVM_SET_NR_MMU_PAGES      _IO(KVMIO,   0x44)
 #define KVM_GET_NR_MMU_PAGES      _IO(KVMIO,   0x45)
-#define KVM_SET_USER_MEMORY_REGION _IOW(KVMIO, 0x46, \
-					struct kvm_userspace_memory_region)
+/**
+ *  为 KVM  Guest 创建一个内存条
+ */
+#define KVM_SET_USER_MEMORY_REGION _IOW(KVMIO, 0x46, struct kvm_userspace_memory_region)
 #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
 #define KVM_SET_IDENTITY_MAP_ADDR _IOW(KVMIO,  0x48, __u64)
 
@@ -1416,12 +1442,19 @@ struct kvm_s390_ucas_mapping {
 
 /*
  * ioctls for vcpu fds
- *
- *  
+ */
+/**
+ *  运行一个虚拟机
  */
 #define KVM_RUN                   _IO(KVMIO,   0x80)
+/**
+ *  结构 struct kvm_regs
+ */
 #define KVM_GET_REGS              _IOR(KVMIO,  0x81, struct kvm_regs)
 #define KVM_SET_REGS              _IOW(KVMIO,  0x82, struct kvm_regs)
+/**
+ *  结构 struct kvm_sregs
+ */
 #define KVM_GET_SREGS             _IOR(KVMIO,  0x83, struct kvm_sregs)
 #define KVM_SET_SREGS             _IOW(KVMIO,  0x84, struct kvm_sregs)
 #define KVM_TRANSLATE             _IOWR(KVMIO, 0x85, struct kvm_translation)

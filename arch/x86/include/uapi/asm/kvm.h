@@ -112,7 +112,11 @@ struct kvm_ioapic_state {
 
 #define KVM_RUN_X86_SMM		 (1 << 0)
 
-/* for KVM_GET_REGS and KVM_SET_REGS */
+/**
+ *  for KVM_GET_REGS and KVM_SET_REGS 
+ *
+ *  通用寄存器、标志寄存器
+ */
 struct kvm_regs {
 	/* out (KVM_GET_REGS) / in (KVM_SET_REGS) */
 	__u64 rax, rbx, rcx, rdx;
@@ -132,8 +136,17 @@ struct kvm_lapic_state {
  *  
  */
 struct kvm_segment {
+    /**
+     *  实模式下
+     *  addr = (cs << 4) + offset
+     *  为了简化计算
+     *  base = (cs << 4) 
+     */
 	__u64 base;
 	__u32 limit;
+    /**
+     *  段选择子
+     */
 	__u16 selector;
 	__u8  type;
 	__u8  present, dpl, db, s, l, g, avl;
@@ -148,7 +161,11 @@ struct kvm_dtable {
 };
 
 
-/* for KVM_GET_SREGS and KVM_SET_SREGS */
+/**
+ *  for KVM_GET_SREGS and KVM_SET_SREGS 
+ *
+ *  段寄存器、控制寄存器等
+ */
 struct kvm_sregs {
 	/* out (KVM_GET_SREGS) / in (KVM_SET_SREGS) */
 	struct kvm_segment cs, ds, es, fs, gs, ss;
