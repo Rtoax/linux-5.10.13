@@ -1023,6 +1023,9 @@ int kvm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
 }
 EXPORT_SYMBOL_GPL(kvm_set_cr4);
 
+/**
+ *  
+ */
 int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 {
 	bool skip_tlb_flush = false;
@@ -1035,6 +1038,9 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 	}
 #endif
 
+    /**
+     *  
+     */
 	if (cr3 == kvm_read_cr3(vcpu) && !pdptrs_changed(vcpu)) {
 		if (!skip_tlb_flush) {
 			kvm_mmu_sync_roots(vcpu);
@@ -1043,6 +1049,9 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 		return 0;
 	}
 
+    /**
+     *  
+     */
 	if (is_long_mode(vcpu) &&
 	    (cr3 & vcpu->arch.cr3_lm_rsvd_bits))
 		return 1;
@@ -1050,6 +1059,9 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 		 !load_pdptrs(vcpu, vcpu->arch.walk_mmu, cr3))
 		return 1;
 
+    /**
+     *  
+     */
 	kvm_mmu_new_pgd(vcpu, cr3, skip_tlb_flush, skip_tlb_flush);
 	vcpu->arch.cr3 = cr3;
 	kvm_register_mark_available(vcpu, VCPU_EXREG_CR3);
@@ -4629,6 +4641,9 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
 	}
 }
 
+/**
+ *  
+ */
 long kvm_arch_vcpu_ioctl(struct file *filp,
 			 unsigned int ioctl, unsigned long arg)
 {
@@ -4695,16 +4710,29 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
 		r = kvm_vcpu_ioctl_smi(vcpu);
 		break;
 	}
+    /**
+     *  cpuid
+     */
 	case KVM_SET_CPUID: {
 		struct kvm_cpuid __user *cpuid_arg = argp;
 		struct kvm_cpuid cpuid;
 
 		r = -EFAULT;
+        /**
+         *  复制
+         */
 		if (copy_from_user(&cpuid, cpuid_arg, sizeof(cpuid)))
 			goto out;
+        /**
+         *  
+         */
 		r = kvm_vcpu_ioctl_set_cpuid(vcpu, &cpuid, cpuid_arg->entries);
 		break;
 	}
+    /**
+     *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
+     *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
+     */
 	case KVM_SET_CPUID2: {
 		struct kvm_cpuid2 __user *cpuid_arg = argp;
 		struct kvm_cpuid2 cpuid;
@@ -7204,6 +7232,9 @@ int kvm_skip_emulated_instruction(struct kvm_vcpu *vcpu)
 	unsigned long rflags = kvm_x86_ops.get_rflags(vcpu);
 	int r;
 
+    /**
+     *  
+     */
 	r = kvm_x86_ops.skip_emulated_instruction(vcpu);
 	if (unlikely(!r))
 		return 0;
@@ -7490,6 +7521,9 @@ restart:
 	return r;
 }
 
+/**
+ *  模拟 指令
+ */
 int kvm_emulate_instruction(struct kvm_vcpu *vcpu, int emulation_type)
 {
 	return x86_emulate_instruction(vcpu, 0, emulation_type, NULL, 0);
@@ -7590,6 +7624,9 @@ static int kvm_fast_pio_in(struct kvm_vcpu *vcpu, int size,
 	return 0;
 }
 
+/**
+ *  programmed IO (in,out,ins,outs)
+ */
 int kvm_fast_pio(struct kvm_vcpu *vcpu, int size, unsigned short port, int in)
 {
 	int ret;
@@ -7990,6 +8027,9 @@ void kvm_arch_exit(void)
 	kmem_cache_destroy(x86_fpu_cache);
 }
 
+/**
+ *  
+ */
 int kvm_vcpu_halt(struct kvm_vcpu *vcpu)
 {
 	++vcpu->stat.halt_exits;
@@ -8003,6 +8043,9 @@ int kvm_vcpu_halt(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(kvm_vcpu_halt);
 
+/**
+ *  hlt 指令
+ */
 int kvm_emulate_halt(struct kvm_vcpu *vcpu)
 {
 	int ret = kvm_skip_emulated_instruction(vcpu);

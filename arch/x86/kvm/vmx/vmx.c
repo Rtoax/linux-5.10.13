@@ -4924,6 +4924,9 @@ static int handle_triple_fault(struct kvm_vcpu *vcpu)
 	return 0;
 }
 
+/**
+ *  
+ */
 static int handle_io(struct kvm_vcpu *vcpu)
 {
 	unsigned long exit_qualification;
@@ -4935,6 +4938,9 @@ static int handle_io(struct kvm_vcpu *vcpu)
 
 	++vcpu->stat.io_exits;
 
+    /**
+     *  String IO
+     */
 	if (string)
 		return kvm_emulate_instruction(vcpu, 0);
 
@@ -4942,6 +4948,9 @@ static int handle_io(struct kvm_vcpu *vcpu)
 	size = (exit_qualification & 7) + 1;
 	in = (exit_qualification & 8) != 0;
 
+    /**
+     *  
+     */
 	return kvm_fast_pio(vcpu, size, port, in);
 }
 
@@ -5013,6 +5022,9 @@ static int handle_desc(struct kvm_vcpu *vcpu)
 	return kvm_emulate_instruction(vcpu, 0);
 }
 
+/**
+ *  
+ */
 static int handle_cr(struct kvm_vcpu *vcpu)
 {
 	unsigned long exit_qualification, val;
@@ -5022,24 +5034,43 @@ static int handle_cr(struct kvm_vcpu *vcpu)
 	int ret;
 
 	exit_qualification = vmx_get_exit_qual(vcpu);
+    /**
+     *  
+     */
 	cr = exit_qualification & 15;
 	reg = (exit_qualification >> 8) & 15;
+
+    /**
+     *  
+     */
 	switch ((exit_qualification >> 4) & 3) {
 	case 0: /* mov to cr */
 		val = kvm_register_readl(vcpu, reg);
 		trace_kvm_cr_write(cr, val);
 		switch (cr) {
+        /**
+         *  
+         */    
 		case 0:
 			err = handle_set_cr0(vcpu, val);
 			return kvm_complete_insn_gp(vcpu, err);
+        /**
+         *  CR3
+         */
 		case 3:
 			WARN_ON_ONCE(enable_unrestricted_guest);
 			err = kvm_set_cr3(vcpu, val);
 			return kvm_complete_insn_gp(vcpu, err);
-		case 4:
+        /**
+         *  
+         */
+        case 4:
 			err = handle_set_cr4(vcpu, val);
 			return kvm_complete_insn_gp(vcpu, err);
-		case 8: {
+        /**
+         *  CR8
+         */
+        case 8: {
 				u8 cr8_prev = kvm_get_cr8(vcpu);
 				u8 cr8 = (u8)val;
 				err = kvm_set_cr8(vcpu, cr8);

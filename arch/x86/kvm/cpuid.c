@@ -60,6 +60,9 @@ static inline struct kvm_cpuid_entry2 *cpuid_entry2_find(
 	struct kvm_cpuid_entry2 *e;
 	int i;
 
+    /**
+     *  遍历查找 - 有点暴力，能不能优化? (荣涛 2021年9月7日)
+     */
 	for (i = 0; i < nent; i++) {
 		e = &entries[i];
 
@@ -234,6 +237,9 @@ int kvm_vcpu_ioctl_set_cpuid(struct kvm_vcpu *vcpu,
 	if (cpuid->nent > KVM_MAX_CPUID_ENTRIES)
 		return -E2BIG;
 
+    /**
+     *  
+     */
 	if (cpuid->nent) {
 		e = vmemdup_user(entries, array_size(sizeof(*e), cpuid->nent));
 		if (IS_ERR(e))
@@ -258,6 +264,9 @@ int kvm_vcpu_ioctl_set_cpuid(struct kvm_vcpu *vcpu,
 		e2[i].padding[2] = 0;
 	}
 
+    /**
+     *  
+     */
 	r = kvm_check_cpuid(e2, cpuid->nent);
 	if (r) {
 		kvfree(e2);
@@ -990,6 +999,9 @@ out_free:
 struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
 					      u32 function, u32 index)
 {
+    /**
+     *  
+     */
 	return cpuid_entry2_find(vcpu->arch.cpuid_entries, vcpu->arch.cpuid_nent,
 				 function, index);
 }
@@ -1063,6 +1075,9 @@ get_out_of_range_cpuid_entry(struct kvm_vcpu *vcpu, u32 *fn_ptr, u32 index)
 	return kvm_find_cpuid_entry(vcpu, basic->eax, index);
 }
 
+/**
+ *  
+ */
 bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 	       u32 *ecx, u32 *edx, bool exact_only)
 {
@@ -1070,6 +1085,9 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 	struct kvm_cpuid_entry2 *entry;
 	bool exact, used_max_basic = false;
 
+    /**
+     *  查找 entry
+     */
 	entry = kvm_find_cpuid_entry(vcpu, function, index);
 	exact = !!entry;
 
@@ -1078,6 +1096,9 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 		used_max_basic = !!entry;
 	}
 
+    /**
+     *  
+     */
 	if (entry) {
 		*eax = entry->eax;
 		*ebx = entry->ebx;
@@ -1106,12 +1127,17 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 			}
 		}
 	}
-	trace_kvm_cpuid(orig_function, index, *eax, *ebx, *ecx, *edx, exact,
-			used_max_basic);
+    /**
+     *  tracepoint
+     */
+	trace_kvm_cpuid(orig_function, index, *eax, *ebx, *ecx, *edx, exact, used_max_basic);
 	return exact;
 }
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 
+/**
+ *  
+ */
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
@@ -1121,6 +1147,10 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
+
+    /**
+     *  
+     */
 	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	kvm_rax_write(vcpu, eax);
 	kvm_rbx_write(vcpu, ebx);

@@ -11,7 +11,13 @@
 
 #include "capabilities.h"
 
+/**
+ *  
+ */
 struct vmcs_hdr {
+    /**
+     *  
+     */
 	u32 revision_id:31;
 	u32 shadow_vmcs:1;
 };

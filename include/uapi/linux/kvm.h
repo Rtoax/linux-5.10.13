@@ -261,14 +261,23 @@ struct kvm_hyperv_exit {
 /* Encounter unexpected vm-exit reason */
 #define KVM_INTERNAL_ERROR_UNEXPECTED_EXIT_REASON	4
 
-/* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
+/**
+ *  for KVM_RUN, returned by mmap(vcpu_fd, offset=0) 
+ *  
+ */
 struct kvm_run {
 	/* in */
+    /**
+     *  
+     */
 	__u8 request_interrupt_window;
 	__u8 immediate_exit;
 	__u8 padding1[6];
 
 	/* out */
+    /**
+     *  
+     */
 	__u32 exit_reason;
 	__u8 ready_for_interrupt_injection;
 	__u8 if_flag;
@@ -283,6 +292,9 @@ struct kvm_run {
 	__u64 psw_mask; /* psw upper half */
 	__u64 psw_addr; /* psw lower half */
 #endif
+    /**
+     *  
+     */
 	union {
 		/* KVM_EXIT_UNKNOWN */
 		struct {
@@ -1424,6 +1436,10 @@ struct kvm_s390_ucas_mapping {
 #define KVM_SET_FPU               _IOW(KVMIO,  0x8d, struct kvm_fpu)
 #define KVM_GET_LAPIC             _IOR(KVMIO,  0x8e, struct kvm_lapic_state)
 #define KVM_SET_LAPIC             _IOW(KVMIO,  0x8f, struct kvm_lapic_state)
+/**
+ *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
+ *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
+ */
 #define KVM_SET_CPUID2            _IOW(KVMIO,  0x90, struct kvm_cpuid2)
 #define KVM_GET_CPUID2            _IOWR(KVMIO, 0x91, struct kvm_cpuid2)
 /* Available with KVM_CAP_VAPIC */

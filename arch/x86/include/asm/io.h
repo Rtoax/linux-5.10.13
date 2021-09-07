@@ -426,7 +426,7 @@ BUILDIO(b, b, char);
 BUILDIO(w, w, short);
 BUILDIO(l, , int);
 
-#if __RTOAX____
+#if __RTOAX_________________________________
 
 /**
  *  对上面宏的展开
@@ -434,7 +434,9 @@ BUILDIO(l, , int);
  */
 
 
-
+/**
+ *  
+ */
 static inline void outb(unsigned char value, int port) { 
     asm volatile("out" "b" " %" "b" "0, %w1" : : "a"(value), "Nd"(port)); 
 } 
@@ -595,7 +597,7 @@ ins" "l" : "+D"(addr), "+c"(count) : "d"(port) : "memory");
 
 
 
-#endif //__RTOAX____
+#endif //__RTOAX_________________________________
 
 
 #define inb inb

@@ -3185,6 +3185,9 @@ static int kvm_vcpu_ioctl_set_sigmask(struct kvm_vcpu *vcpu, sigset_t *sigset)
 	return 0;
 }
 
+/**
+ *  
+ */
 static long kvm_vcpu_ioctl(struct file *filp,
 			   unsigned int ioctl, unsigned long arg)
 {
@@ -3382,6 +3385,9 @@ out_free1:
 		r = kvm_arch_vcpu_ioctl_set_fpu(vcpu, fpu);
 		break;
 	}
+    /**
+     *  架构相关
+     */
 	default:
 		r = kvm_arch_vcpu_ioctl(filp, ioctl, arg);
 	}

@@ -27,11 +27,20 @@ struct logic_pio_hwaddr {
 	const struct logic_pio_host_ops *ops;
 };
 
+/**
+ *  分为两种： 1. 普通IO； 2. string IO
+ */
 struct logic_pio_host_ops {
+    /**
+     *  普通 IO - 一次传输一个值
+     */
 	u32 (*in)(void *hostdata, unsigned long addr, size_t dwidth);
 	void (*out)(void *hostdata, unsigned long addr, u32 val,
 		    size_t dwidth);
-	u32 (*ins)(void *hostdata, unsigned long addr, void *buffer,
+    /**
+     *  string IO - 一次传递多个值
+     */
+    u32 (*ins)(void *hostdata, unsigned long addr, void *buffer,
 		   size_t dwidth, unsigned int count);
 	void (*outs)(void *hostdata, unsigned long addr, const void *buffer,
 		     size_t dwidth, unsigned int count);
