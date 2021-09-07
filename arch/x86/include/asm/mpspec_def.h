@@ -11,17 +11,38 @@
  * This tag identifies where the SMP configuration
  * information is.
  */
-
+/**
+ *  "_MP_"
+ */
 #define SMP_MAGIC_IDENT	(('_'<<24) | ('P'<<16) | ('M'<<8) | '_')
 
 #ifdef CONFIG_X86_32
 # define MAX_MPC_ENTRY 1024
 #endif
 
-/* Intel MP Floating Pointer Structure 多处理器配置数据结构 */
+/**
+ *  Intel MP Floating Pointer Structure 多处理器配置数据结构 
+ *
+ *  MultiProcessor Specification - MP Spec 约定的核心数据结构包括两部分
+ *  MP Floating Pointer Structure(MPF) 和 MP Configuration Table(MP Table) 
+ *
+ *  MP 标准约定 MPF 可以放在下面的几个地方
+ *  1. BIOS 扩展数据区的前 1KB  内
+ *  2. 系统基础内存最高的 1KB 内
+ *  3. 存放在主板 BIOS 区域 即 0xF000 - 0xFFFF 之间
+ *
+ *  API
+ *  `update_mp_table()` 由 `late_initcall()` 调用
+ */
 struct mpf_intel {
+    /**
+     *  MP Spec 约定， MPF 的其实的 4字节为 "_MP_"
+     */
 	char signature[4];		/* "_MP_"			*/
-	unsigned int physptr;		/* Configuration table address	多处理器配置表的物理地址*/
+    /**
+     *  多处理器配置表的物理地址
+     */
+	unsigned int physptr;		/* Configuration table address	*/
 	unsigned char length;		/* Our length (paragraphs)	*/
 	unsigned char specification;	/* Specification version	*/
 	unsigned char checksum;		/* Checksum (makes sum 0)	*/
@@ -32,13 +53,34 @@ struct mpf_intel {
 	unsigned char feature5;		/* Unused (0)			*/
 };
 
+/**
+ *  struct mpc_table.signature
+ */
 #define MPC_SIGNATURE "PCMP"
 
+/**
+ *
+ *  MultiProcessor Specification - MP Spec 约定的核心数据结构包括两部分
+ *  MP Floating Pointer Structure(MPF) 和 MP Configuration Table(MP Table) 
+ *
+ *  API
+ *  `update_mp_table()` 由 `late_initcall()` 调用
+ *  `smp_read_mpc()` - 遍历 MP Table
+ */
 struct mpc_table {
+    /**
+     *  MPC_SIGNATURE
+     */
 	char signature[4];
 	unsigned short length;		/* Size of table */
 	char spec;			/* 0x01 */
+    /**
+     *  
+     */
 	char checksum;
+    /**
+     *  
+     */
 	char oem[8];
 	char productid[12];
 	unsigned int oemptr;		/* 0 if not present */
@@ -65,8 +107,15 @@ struct mpc_table {
 #define CPU_MODEL_MASK		0x00F0
 #define CPU_FAMILY_MASK		0x0F00
 
+/**
+ *  MP_PROCESSOR
+ */
 struct mpc_cpu {
 	unsigned char type;
+    /**
+     *  MP Spec 规定 处理器类型的 entry 中需要提供处理器对应的LAPIC ID
+     *  作为发送 核间中断时的目的地址
+     */
 	unsigned char apicid;		/* Local APIC number */
 	unsigned char apicver;		/* Its versions */
 	unsigned char cpuflag;
@@ -75,6 +124,9 @@ struct mpc_cpu {
 	unsigned int reserved[2];
 };
 
+/**
+ *  MP_BUS
+ */
 struct mpc_bus {
 	unsigned char type;
 	unsigned char busid;
@@ -103,6 +155,9 @@ struct mpc_bus {
 
 #define MPC_APIC_USABLE		0x01
 
+/**
+ *  MP_IOAPIC
+ */
 struct mpc_ioapic {
 	unsigned char type;
 	unsigned char apicid;
@@ -111,6 +166,9 @@ struct mpc_ioapic {
 	unsigned int apicaddr;
 };
 
+/**
+ *  MP_INTSRC
+ */
 struct mpc_intsrc {
 	unsigned char type;
 	unsigned char irqtype;
@@ -121,6 +179,9 @@ struct mpc_intsrc {
 	unsigned char dstirq;
 };
 
+/**
+ *  
+ */
 enum mp_irq_source_types {
 	mp_INT = 0,
 	mp_NMI = 1,
@@ -142,6 +203,9 @@ enum mp_irq_source_types {
 
 #define MP_APIC_ALL	0xFF
 
+/**
+ *  MP_LINTSRC
+ */
 struct mpc_lintsrc {
 	unsigned char type;
 	unsigned char irqtype;
@@ -154,6 +218,9 @@ struct mpc_lintsrc {
 
 #define MPC_OEM_SIGNATURE "_OEM"
 
+/**
+ *  
+ */
 struct mpc_oemtable {
 	char signature[4];
 	unsigned short length;		/* Size of table */

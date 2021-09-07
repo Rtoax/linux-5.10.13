@@ -98,6 +98,9 @@ static inline bool apic_from_smp_config(void)
 
 extern int setup_profiling_timer(unsigned int);
 
+/**
+ *  
+ */
 static inline void native_apic_mem_write(u32 reg, u32 v)
 {
 	volatile u32 *addr = (volatile u32 *)(APIC_BASE + reg);
@@ -314,6 +317,9 @@ struct apic {   /* 高级可编程中断控制器 */
 	u32	(*get_apic_id)(unsigned long x);
 	u32	(*set_apic_id)(unsigned int id);
 
+    /**
+     *  
+     */
 	/* wakeup_secondary_cpu */
 	int	(*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
 
@@ -395,6 +401,9 @@ static inline u64 apic_icr_read(void)
 	return apic->icr_read();
 }
 
+/**
+ *  native_apic_icr_write
+ */
 static inline void apic_icr_write(u32 low, u32 high)
 {
 	apic->icr_write(low, high);

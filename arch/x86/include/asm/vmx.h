@@ -316,6 +316,9 @@ enum vmcs_field {
 	GUEST_CR3                       = 0x00006802,
 	GUEST_CR4                       = 0x00006804,
 	GUEST_ES_BASE                   = 0x00006806,
+	/**
+     *  
+     */
 	GUEST_CS_BASE                   = 0x00006808,
 	GUEST_SS_BASE                   = 0x0000680a,
 	GUEST_DS_BASE                   = 0x0000680c,

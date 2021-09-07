@@ -69,7 +69,10 @@ SYM_CODE_START(trampoline_start)
 
 	movw	$__KERNEL_DS, %dx	# Data segment descriptor
 
-	# Enable protected mode
+    /**
+     *  使能保护模式
+     */
+	# Enable protected mode 
 	movl	$X86_CR0_PE, %eax	# protected mode (PE) bit
 	movl	%eax, %cr0		# into protected mode
 

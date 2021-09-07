@@ -15,15 +15,15 @@ extern int pic_mode;
  * Summit or generic (i.e. installer) kernels need lots of bus entries.
  * Maximum 256 PCI busses, plus 1 ISA bus in each of 4 cabinets.
  */
-#if CONFIG_BASE_SMALL == 0
-# define MAX_MP_BUSSES		260
-#else
-# define MAX_MP_BUSSES		32
-#endif
-
-#define MAX_IRQ_SOURCES		256
-
-extern unsigned int def_to_bigsmp;
+//#if CONFIG_BASE_SMALL == 0
+//# define MAX_MP_BUSSES		260
+//#else
+////# define MAX_MP_BUSSES		32
+//#endif
+//
+//#define MAX_IRQ_SOURCES		256
+//
+//extern unsigned int def_to_bigsmp;
 
 #else /* CONFIG_X86_64: */
 

@@ -111,6 +111,11 @@ static void __kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags);
 static void store_regs(struct kvm_vcpu *vcpu);
 static int sync_regs(struct kvm_vcpu *vcpu);
 
+/**
+ *  可能等于 
+ *  1. `vmx_x86_ops`
+ *  2. `svm_x86_ops`
+ */
 struct kvm_x86_ops __read_mostly kvm_x86_ops ;
 EXPORT_SYMBOL_GPL(kvm_x86_ops);
 
@@ -9338,6 +9343,9 @@ static void kvm_put_guest_fpu(struct kvm_vcpu *vcpu)
 	trace_kvm_fpu(0);
 }
 
+/**
+ *  
+ */
 int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 {
 	struct kvm_run *kvm_run = vcpu->run;
@@ -9352,7 +9360,13 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 			r = -EINTR;
 			goto out;
 		}
+        /**
+         *  for(;;) schedule();
+         */
 		kvm_vcpu_block(vcpu);
+        /**
+         *  
+         */
 		kvm_apic_accept_events(vcpu);
 		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
 		r = -EAGAIN;
@@ -9931,6 +9945,9 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
 	return 0;
 }
 
+/**
+ *  创建 vcpu
+ */
 int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 {
 	struct page *page;
@@ -9941,8 +9958,14 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 	else
 		vcpu->arch.mp_state = KVM_MP_STATE_UNINITIALIZED;
 
+    /**
+     *  设置 tsc
+     */
 	kvm_set_tsc_khz(vcpu, max_tsc_khz);
 
+    /**
+     *  创建 mmu
+     */
 	r = kvm_mmu_create(vcpu);
 	if (r < 0)
 		return r;
@@ -9958,11 +9981,21 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 
 	r = -ENOMEM;
 
+    /**
+     *  申请 page
+     */
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!page)
 		goto fail_free_lapic;
+
+    /**
+     *  programmed IO
+     */
 	vcpu->arch.pio_data = page_address(page);
 
+    /**
+     *  
+     */
 	vcpu->arch.mce_banks = kzalloc(KVM_MAX_MCE_BANKS * sizeof(u64) * 4,
 				       GFP_KERNEL_ACCOUNT);
 	if (!vcpu->arch.mce_banks)
@@ -10003,6 +10036,13 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 
 	kvm_hv_vcpu_init(vcpu);
 
+    /**
+     *  调用具体体系结构的 vcpu 创建 回调函数
+     *
+     *  VMX - vmx_create_vcpu
+     *  SVM - svm_create_vcpu
+     *  [...]
+     */
 	r = kvm_x86_ops.vcpu_create(vcpu);
 	if (r)
 		goto free_guest_fpu;
@@ -10158,6 +10198,9 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 	kvm_x86_ops.vcpu_reset(vcpu, init_event);
 }
 
+/**
+ *  
+ */
 void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
 {
 	struct kvm_segment cs;
@@ -10165,6 +10208,9 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
 	kvm_get_segment(vcpu, &cs, VCPU_SREG_CS);
 	cs.selector = vector << 8;
 	cs.base = vector << 12;
+    /**
+     *  
+     */
 	kvm_set_segment(vcpu, &cs, VCPU_SREG_CS);
 	kvm_rip_write(vcpu, 0);
 }
@@ -10332,6 +10378,10 @@ bool kvm_vcpu_is_reset_bsp(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(kvm_vcpu_is_reset_bsp);
 
+/**
+ *  是 bootstrap Processor 处理器 - 
+ *  PS: 只能有一个处理器用于启动 内核
+ */
 bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
 {
 	return (vcpu->arch.apic_base & MSR_IA32_APICBASE_BSP) != 0;

@@ -196,6 +196,9 @@ void xen_vcpu_info_reset(int cpu)
 	}
 }
 
+/**
+ *  
+ */
 int xen_vcpu_setup(int cpu)
 {
 	struct vcpu_register_vcpu_info info;

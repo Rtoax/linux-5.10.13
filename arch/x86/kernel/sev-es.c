@@ -491,9 +491,11 @@ int sev_es_setup_ap_jump_table(struct real_mode_header *rmh)
 
 	jump_table_pa = jump_table_addr & PAGE_MASK;
 
+    /**
+     *  
+     */
 	startup_cs = (u16)(rmh->trampoline_start >> 4);
-	startup_ip = (u16)(rmh->sev_es_trampoline_start -
-			   rmh->trampoline_start);
+	startup_ip = (u16)(rmh->sev_es_trampoline_start - rmh->trampoline_start);
 
 	jump_table = ioremap_encrypted(jump_table_pa, PAGE_SIZE);
 	if (!jump_table)

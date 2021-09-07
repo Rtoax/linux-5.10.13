@@ -267,6 +267,9 @@ u32 native_safe_apic_wait_icr_idle(void)
 	return send_status;
 }
 
+/**
+ *  
+ */
 void native_apic_icr_write(u32 low, u32 id)
 {
 	unsigned long flags;
@@ -2443,7 +2446,11 @@ int generic_processor_info(int apicid, int version)
 
 		/* Logical cpuid 0 is reserved for BSP. */
 		cpuid_to_apicid[0] = apicid;
+    
 	} else {
+        /**
+         *  
+         */
 		cpu = allocate_logical_cpuid(apicid);
 		if (cpu < 0) {
 			disabled_cpus++;

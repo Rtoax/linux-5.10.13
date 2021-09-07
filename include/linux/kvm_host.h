@@ -286,6 +286,10 @@ struct kvm_vcpu {
 	struct list_head blocked_vcpu_list;
 
 	struct mutex mutex;
+
+    /**
+     *  kvm_vm_ioctl_create_vcpu() 中赋值
+     */
 	struct kvm_run *run;
 
 	struct rcuwait wait;
@@ -328,6 +332,10 @@ struct kvm_vcpu {
 #endif
 	bool preempted;
 	bool ready;
+
+    /**
+     *  在 `kvm_arch_vcpu_create()` 中赋值
+     */
 	struct kvm_vcpu_arch arch;
 };
 

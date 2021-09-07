@@ -85,20 +85,26 @@
 /* representing HT siblings of each logical CPU */
 DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
 EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+cpumask_var_t __percpu __read_mostly cpu_sibling_map;//+++
+
 
 /* representing HT and core siblings of each logical CPU */
 DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_core_map);
 EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+cpumask_var_t __percpu __read_mostly cpu_core_map;//+++
 
 /* representing HT, core, and die siblings of each logical CPU */
 DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_die_map);
 EXPORT_PER_CPU_SYMBOL(cpu_die_map);
+cpumask_var_t __percpu __read_mostly cpu_die_map;//+++
 
 DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_llc_shared_map);
+cpumask_var_t __percpu __read_mostly cpu_llc_shared_map;//+++
 
 /* Per CPU bogomips and other parameters */
 DEFINE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
 EXPORT_PER_CPU_SYMBOL(cpu_info);
+struct cpuinfo_x86 __percpu __read_mostly cpu_info;//+++
 
 /* Logical package management. We might want to allocate that dynamically */
 unsigned int __read_mostly __max_logical_packages ;
@@ -801,10 +807,10 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 	 * Turn INIT on target chip
 	 */
 	/*
-	 * Send IPI
+	 * Send IPI - 第一次 INIT IPI
+	 *  水平触发， assert， INIT IPI
 	 */
-	apic_icr_write(APIC_INT_LEVELTRIG | APIC_INT_ASSERT | APIC_DM_INIT,
-		       phys_apicid);
+	apic_icr_write(APIC_INT_LEVELTRIG | APIC_INT_ASSERT | APIC_DM_INIT, phys_apicid);
 
 	pr_debug("Waiting for send to finish...\n");
 	send_status = safe_apic_wait_icr_idle();
@@ -814,7 +820,10 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 	pr_debug("Deasserting INIT\n");
 
 	/* Target chip */
-	/* Send IPI */
+	/**
+	 *  Send IPI - 第二次 INIT IPI（第二次：因为 APIC_INT_ASSERT 没有置位）
+	 *  水平触发， INIT IPI
+	 */
 	apic_icr_write(APIC_INT_LEVELTRIG | APIC_DM_INIT, phys_apicid);
 
 	pr_debug("Waiting for send to finish...\n");
@@ -827,10 +836,19 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 	 *
 	 * Determine this based on the APIC version.
 	 * If we don't have an integrated APIC, don't send the STARTUP IPIs.
+	 *
+	 * 判断 LAPIC 是集成到 CPU 内部还是独立的
 	 */
 	if (APIC_INTEGRATED(boot_cpu_apic_version))
+        /**
+         *  集成的 LAPIC 支持 startup IPI
+         *  MP Spec 约定需要发送两次 Startup IPI
+         */
 		num_starts = 2;
 	else
+        /**
+         *  独立的 LAPIC 不支持 startup IPI，所以为 0
+         */
 		num_starts = 0;
 
 	/*
@@ -838,6 +856,9 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 	 */
 	pr_debug("#startup loops: %d\n", num_starts);
 
+    /**
+     *  发送 Startup IPI
+     */
 	for (j = 1; j <= num_starts; j++) {
 		pr_debug("Sending STARTUP #%d\n", j);
 		if (maxlvt > 3)		/* Due to the Pentium erratum 3AP.  */
@@ -852,8 +873,13 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 		/* Target chip */
 		/* Boot on the stack */
 		/* Kick the second */
-		apic_icr_write(APIC_DM_STARTUP | (start_eip >> 12),
-			       phys_apicid);
+        /**
+         *  start_eip 是为 AP(ApplicationProcessor)准备的运行地址
+         *  Startup IPI 支持设置AP的其实运行地址，其使用中断控制
+         *  寄存器的vector 字段存储，该地址要求4KB对齐。
+         *  当 vector=VV，那么 AP的运行起始地址为 0xVV0000
+         */
+		apic_icr_write(APIC_DM_STARTUP | (start_eip >> 12), phys_apicid);
 
 		/*
 		 * Give the other CPU some time to accept the IPI.
@@ -866,6 +892,9 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 		pr_debug("Startup point 1\n");
 
 		pr_debug("Waiting for send to finish...\n");
+        /**
+         *  
+         */
 		send_status = safe_apic_wait_icr_idle();
 
 		/*
@@ -951,6 +980,8 @@ static int wakeup_cpu0_nmi(unsigned int cmd, struct pt_regs *regs)
  * (i.e. physically hot removed and then hot added), NMI won't wake it up.
  * We'll change this code in the future to wake up hard offlined CPU0 if
  * real platform and request are available.
+ *
+ *  
  */
 static int
 wakeup_cpu_via_init_nmi(int cpu, unsigned long start_ip, int apicid,
@@ -974,8 +1005,7 @@ wakeup_cpu_via_init_nmi(int cpu, unsigned long start_ip, int apicid,
 	 *
 	 * Register a NMI handler to help wake up CPU0.
 	 */
-	boot_error = register_nmi_handler(NMI_LOCAL,
-					  wakeup_cpu0_nmi, 0, "wake_cpu0");
+	boot_error = register_nmi_handler(NMI_LOCAL, wakeup_cpu0_nmi, 0, "wake_cpu0");
 
 	if (!boot_error) {
 		enable_start_cpu0 = 1;
@@ -984,6 +1014,9 @@ wakeup_cpu_via_init_nmi(int cpu, unsigned long start_ip, int apicid,
 			id = cpu0_logical_apicid;
 		else
 			id = apicid;
+        /**
+         *  
+         */
 		boot_error = wakeup_secondary_cpu_via_nmi(id, start_ip);
 	}
 
@@ -1022,18 +1055,34 @@ int common_cpu_up(unsigned int cpu, struct task_struct *idle)
  * (ie clustered apic addressing mode), this is a LOGICAL apic ID.
  * Returns zero if CPU booted OK, else error code from
  * ->wakeup_secondary_cpu.
+ *
+ * 启动 CPU
  */
 static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 		       int *cpu0_nmi_registered)
 {
-	/* start_ip had better be page-aligned! */
+	/**
+	 *  start_ip had better be page-aligned! 
+	 *  参见  ：arch/x86/realmode/rm/trampoline_64.S
+	 */
 	unsigned long start_ip = real_mode_header->trampoline_start;
 
 	unsigned long boot_error = 0;
 	unsigned long timeout;
 
+    /**
+     *  
+     */
 	idle->thread.sp = (unsigned long)task_pt_regs(idle);
+
+    /**
+     *  
+     */
 	early_gdt_descr.address = (unsigned long)get_cpu_gdt_rw(cpu);
+
+    /**
+     *  初始代码
+     */
 	initial_code = (unsigned long)start_secondary;
 	initial_stack  = idle->thread.sp;
 
@@ -1076,13 +1125,23 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 	 * - Use the method in the APIC driver if it's defined
 	 * Otherwise,
 	 * - Use an INIT boot APIC message for APs or NMI for BSP.
-	 */
+	 *
+     *  
+     */
 	if (apic->wakeup_secondary_cpu)
+        /**
+         *  
+         */
 		boot_error = apic->wakeup_secondary_cpu(apicid, start_ip);
 	else
+        /**
+         *  
+         */
 		boot_error = wakeup_cpu_via_init_nmi(cpu, start_ip, apicid,
 						     cpu0_nmi_registered);
-
+    /**
+     *  
+     */
 	if (!boot_error) {
 		/*
 		 * Wait 10s total for first sign of life from AP
@@ -1127,6 +1186,9 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 	return boot_error;
 }
 
+/**
+ *  
+ */
 int native_cpu_up(unsigned int cpu, struct task_struct *tidle)
 {
 	int apicid = apic->cpu_present_to_apicid(cpu);
@@ -1171,6 +1233,9 @@ int native_cpu_up(unsigned int cpu, struct task_struct *tidle)
 	if (err)
 		return err;
 
+    /**
+     *  
+     */
 	err = do_boot_cpu(apicid, cpu, tidle, &cpu0_nmi_registered);
 	if (err) {
 		pr_err("do_boot_cpu failed(%d) to wakeup CPU#%u\n", err, cpu);
@@ -1397,8 +1462,12 @@ void __init native_smp_prepare_boot_cpu(void)
 
     //reload [Global Descriptor Table]
 	switch_to_new_gdt(me);
+    
 	/* already set me in cpu_online_mask in boot_cpu_init() */
 	cpumask_set_cpu(me, cpu_callout_mask);  /* 设置当前 CPU mask */
+    /**
+     *  
+     */
 	cpu_set_state_online(me);   /* 设置 ONLINE */
     /**
      *  

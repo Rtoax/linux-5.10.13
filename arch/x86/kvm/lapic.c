@@ -1052,6 +1052,8 @@ bool kvm_intr_is_single_vcpu_fast(struct kvm *kvm, struct kvm_lapic_irq *irq,
 /*
  * Add a pending IRQ into lapic.
  * Return 1 if successfully added and 0 if discarded.
+ *
+ * 向目的 CPU 发送核间中断
  */
 static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 			     int vector, int level, int trig_mode,
@@ -1060,13 +1062,22 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 	int result = 0;
 	struct kvm_vcpu *vcpu = apic->vcpu;
 
-	trace_kvm_apic_accept_irq(vcpu->vcpu_id, delivery_mode,
-				  trig_mode, vector);
+    /**
+     *  跟踪点
+     */
+	trace_kvm_apic_accept_irq(vcpu->vcpu_id, delivery_mode, trig_mode, vector);
+    
 	switch (delivery_mode) {
+    /**
+     *  
+     */
 	case APIC_DM_LOWEST:
 		vcpu->arch.apic_arb_prio++;
 		fallthrough;
-	case APIC_DM_FIXED:
+    /**
+     *  
+     */
+    case APIC_DM_FIXED:
 		if (unlikely(trig_mode && !level))
 			break;
 
@@ -1115,7 +1126,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 		kvm_inject_nmi(vcpu);
 		kvm_vcpu_kick(vcpu);
 		break;
-
+    /**
+     *  INIT IPI
+     */
 	case APIC_DM_INIT:
 		if (!trig_mode || level) {
 			result = 1;
@@ -1126,11 +1139,17 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 		}
 		break;
 
+    /**
+     *  Startup IPI
+     */
 	case APIC_DM_STARTUP:
 		result = 1;
 		apic->sipi_vector = vector;
 		/* make sure sipi_vector is visible for the receiver */
 		smp_wmb();
+        /**
+         *  置位
+         */
 		set_bit(KVM_APIC_SIPI, &apic->pending_events);
 		kvm_make_request(KVM_REQ_EVENT, vcpu);
 		kvm_vcpu_kick(vcpu);
@@ -1966,6 +1985,9 @@ static void apic_manage_nmi_watchdog(struct kvm_lapic *apic, u32 lvt0_val)
 	}
 }
 
+/**
+ *  
+ */
 int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 {
 	int ret = 0;
@@ -1973,36 +1995,49 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 	trace_kvm_apic_write(reg, val);
 
 	switch (reg) {
+    /**
+     *  
+     */
 	case APIC_ID:		/* Local APIC ID */
 		if (!apic_x2apic_mode(apic))
 			kvm_apic_set_xapic_id(apic, val >> 24);
 		else
 			ret = 1;
 		break;
-
+    /**
+     *  
+     */
 	case APIC_TASKPRI:
 		report_tpr_access(apic, true);
 		apic_set_tpr(apic, val & 0xff);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_EOI:
 		apic_set_eoi(apic);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_LDR:
 		if (!apic_x2apic_mode(apic))
 			kvm_apic_set_ldr(apic, val & APIC_LDR_MASK);
 		else
 			ret = 1;
 		break;
-
+    /**
+     *  
+     */
 	case APIC_DFR:
 		if (!apic_x2apic_mode(apic))
 			kvm_apic_set_dfr(apic, val | 0x0FFFFFFF);
 		else
 			ret = 1;
 		break;
-
+    /**
+     *  
+     */
 	case APIC_SPIV: {
 		u32 mask = 0x3ff;
 		if (kvm_lapic_get_reg(apic, APIC_LVR) & APIC_LVR_DIRECTED_EOI)
@@ -2036,13 +2071,17 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 		kvm_apic_send_ipi(apic, val, kvm_lapic_get_reg(apic, APIC_ICR2));
 		kvm_lapic_set_reg(apic, APIC_ICR, val);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_ICR2:
 		if (!apic_x2apic_mode(apic))
 			val &= 0xff000000;
 		kvm_lapic_set_reg(apic, APIC_ICR2, val);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_LVT0:
 		apic_manage_nmi_watchdog(apic, val);
 		fallthrough;
@@ -2118,7 +2157,8 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 EXPORT_SYMBOL_GPL(kvm_lapic_reg_write);
 
 /**
- *  
+ *  APIC MMIO 
+ *  中断控制器被映射到页面中
  */
 static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 			    gpa_t address, int len, const void *data)
@@ -2127,9 +2167,15 @@ static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 	unsigned int offset = address - apic->base_address;
 	u32 val;
 
+    /**
+     *  
+     */
 	if (!apic_mmio_in_range(apic, address))
 		return -EOPNOTSUPP;
 
+    /**
+     *  
+     */
 	if (!kvm_apic_hw_enabled(apic) || apic_x2apic_mode(apic)) {
 		if (!kvm_check_has_quirk(vcpu->kvm,
 					 KVM_X86_QUIRK_LAPIC_MMIO_HOLE))
@@ -2851,6 +2897,9 @@ int kvm_lapic_enable_pv_eoi(struct kvm_vcpu *vcpu, u64 data, unsigned long len)
 	return kvm_gfn_to_hva_cache_init(vcpu->kvm, ghc, addr, new_len);
 }
 
+/**
+ *  
+ */
 void kvm_apic_accept_events(struct kvm_vcpu *vcpu)
 {
 	struct kvm_lapic *apic = vcpu->arch.apic;
@@ -2875,19 +2924,42 @@ void kvm_apic_accept_events(struct kvm_vcpu *vcpu)
 		return;
 	}
 
+    /**
+     *  获取挂起的事件
+     */
 	pe = xchg(&apic->pending_events, 0);
+
+    /**
+     *  初始化
+     */
 	if (test_bit(KVM_APIC_INIT, &pe)) {
 		kvm_vcpu_reset(vcpu, true);
+
+        /**
+         *  是 bootstrap Processor 处理器 - 
+         *  PS: 只能有一个处理器用于启动 内核
+         */
 		if (kvm_vcpu_is_bsp(apic->vcpu))
 			vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
 		else
+            /**
+             *  是 AP (Application Processor)
+             */
 			vcpu->arch.mp_state = KVM_MP_STATE_INIT_RECEIVED;
 	}
+
+    /**
+     *  IPI 消息
+     *  BSP(Bootstrap Processor) 启动之后，需要唤醒其他所有 AP(Application Processor)
+     */
 	if (test_bit(KVM_APIC_SIPI, &pe) &&
 	    vcpu->arch.mp_state == KVM_MP_STATE_INIT_RECEIVED) {
 		/* evaluate pending_events before reading the vector */
 		smp_rmb();
 		sipi_vector = apic->sipi_vector;
+        /**
+         *  
+         */
 		kvm_vcpu_deliver_sipi_vector(vcpu, sipi_vector);
 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
 	}

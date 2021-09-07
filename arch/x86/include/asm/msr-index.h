@@ -619,6 +619,10 @@
 #define MSR_IA32_XSS			0x00000da0
 
 #define MSR_IA32_APICBASE		0x0000001b
+/**
+ *  是 bootstrap Processor 处理器 标志位
+ *  PS: 只能有一个处理器用于启动 内核
+ */
 #define MSR_IA32_APICBASE_BSP		(1<<8)
 #define MSR_IA32_APICBASE_ENABLE	(1<<11)
 #define MSR_IA32_APICBASE_BASE		(0xfffff<<12)

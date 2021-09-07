@@ -4180,6 +4180,9 @@ static int svm_vm_init(struct kvm *kvm)
 	return 0;
 }
 
+/**
+ *  
+ */
 static struct kvm_x86_ops __initdata svm_x86_ops  = {
 	.hardware_unsetup = svm_hardware_teardown,
 	.hardware_enable = svm_hardware_enable,

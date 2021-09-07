@@ -6,7 +6,13 @@
 
 #include <linux/kvm_host.h>
 
+/**
+ *  INIT IPI
+ */
 #define KVM_APIC_INIT		0
+/**
+ *  Startup IPI - 更高级
+ */
 #define KVM_APIC_SIPI		1
 #define KVM_APIC_LVT_NUM	6
 
@@ -27,6 +33,9 @@ enum lapic_mode {
 	LAPIC_MODE_X2APIC = MSR_IA32_APICBASE_ENABLE | X2APIC_ENABLE,
 };
 
+/**
+ *  
+ */
 struct kvm_timer {
 	struct hrtimer timer;
 	s64 period; 				/* unit: ns */
@@ -41,6 +50,9 @@ struct kvm_timer {
 	bool hv_timer_in_use;
 };
 
+/**
+ *  
+ */
 struct kvm_lapic {
 	unsigned long base_address;
 	struct kvm_io_device dev;

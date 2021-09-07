@@ -78,6 +78,9 @@ static void __init setup_real_mode(void)
 	u64 efer;
 #endif
 
+    /**
+     *  
+     */
 	base = (unsigned char *)real_mode_header;
 
 	/*

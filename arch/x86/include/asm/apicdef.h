@@ -28,6 +28,9 @@
 #ifdef CONFIG_X86_32
 //#  define	APIC_INTEGRATED(x)	((x) & 0xF0u)
 #else
+/**
+ * 判断 LAPIC 是集成到 CPU 内部还是独立的
+ */
 #define	APIC_INTEGRATED(x)	(1)
 #endif
 #define	APIC_XAPIC(x)		((x) >= 0x14)
@@ -76,18 +79,38 @@
 #define	APIC_ICR_RR_INVALID	0x00000
 #define	APIC_ICR_RR_INPROG	0x10000
 #define	APIC_ICR_RR_VALID	0x20000
+/**
+ *  水平触发 还是 边沿触发
+ *  0: edge
+ *  1: level
+ */
 #define	APIC_INT_LEVELTRIG	0x08000
+/**
+ *   Level
+ *  0: de-assert(第二次 INIT IPI)
+ *  1: assert(第一次 INIT IPI)
+ */
 #define	APIC_INT_ASSERT		0x04000
 #define	APIC_ICR_BUSY		0x01000
 #define	APIC_DEST_LOGICAL	0x00800
 #define	APIC_DEST_PHYSICAL	0x00000
+/**
+ *  中断控制器 寄存器格式
+ *  DM - Delivery Mode
+ */
 #define	APIC_DM_FIXED		0x00000
 #define	APIC_DM_FIXED_MASK	0x00700
 #define	APIC_DM_LOWEST		0x00100
 #define	APIC_DM_SMI		0x00200
 #define	APIC_DM_REMRD		0x00300
 #define	APIC_DM_NMI		0x00400 /*  */
+/**
+ *  INIT IPI
+ */
 #define	APIC_DM_INIT		0x00500
+/**
+ *  Startup IPI 
+ */
 #define	APIC_DM_STARTUP		0x00600
 #define	APIC_DM_EXTINT		0x00700
 #define	APIC_VECTOR_MASK	0x000FF

@@ -393,6 +393,9 @@ void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
 }
 #endif
 
+/**
+ *  
+ */
 static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
 {
 	mutex_init(&vcpu->mutex);
@@ -401,6 +404,10 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
 	vcpu->vcpu_id = id;
 	vcpu->pid = NULL;
 	rcuwait_init(&vcpu->wait);
+
+    /**
+     *  
+     */
 	kvm_async_pf_vcpu_init(vcpu);
 
 	vcpu->pre_pcpu = -1;
@@ -410,6 +417,10 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
 	kvm_vcpu_set_dy_eligible(vcpu, false);
 	vcpu->preempted = false;
 	vcpu->ready = false;
+
+    /**
+     *  
+     */
 	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
 }
 
@@ -612,12 +623,7 @@ static int kvm_init_mmu_notifier(struct kvm *kvm)
 }
 
 #else  /* !(CONFIG_MMU_NOTIFIER && KVM_ARCH_WANT_MMU_NOTIFIER) */
-
-static int kvm_init_mmu_notifier(struct kvm *kvm)
-{
-	return 0;
-}
-
+/*  */
 #endif /* CONFIG_MMU_NOTIFIER && KVM_ARCH_WANT_MMU_NOTIFIER */
 
 static struct kvm_memslots *kvm_alloc_memslots(void)
@@ -2731,17 +2737,31 @@ static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
 	trace_kvm_halt_poll_ns_shrink(vcpu->vcpu_id, val, old);
 }
 
+/**
+ *  检测 vcpu 是否还继续挂起
+ */
 static int kvm_vcpu_check_block(struct kvm_vcpu *vcpu)
 {
 	int ret = -EINTR;
 	int idx = srcu_read_lock(&vcpu->kvm->srcu);
 
+    /**
+     *  
+     */
 	if (kvm_arch_vcpu_runnable(vcpu)) {
 		kvm_make_request(KVM_REQ_UNHALT, vcpu);
 		goto out;
 	}
+
+    /**
+     *  
+     */
 	if (kvm_cpu_has_pending_timer(vcpu))
 		goto out;
+
+    /**
+     *  
+     */
 	if (signal_pending(current))
 		goto out;
 
@@ -2762,6 +2782,8 @@ update_halt_poll_stats(struct kvm_vcpu *vcpu, u64 poll_ns, bool waited)
 
 /*
  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
+ *
+ *  
  */
 void kvm_vcpu_block(struct kvm_vcpu *vcpu)
 {
@@ -2792,18 +2814,30 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
 	}
 
 	prepare_to_rcuwait(&vcpu->wait);
+
+    /**
+     *  死循环
+     */
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
-
+        /**
+         *  退出条件
+         */
 		if (kvm_vcpu_check_block(vcpu) < 0)
 			break;
 
 		waited = true;
+        /**
+         *  调度
+         */
 		schedule();
 	}
 	finish_rcuwait(&vcpu->wait);
 	cur = ktime_get();
 out:
+    /**
+     *  
+     */
 	kvm_arch_vcpu_unblocking(vcpu);
 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
 
@@ -2829,6 +2863,9 @@ out:
 		}
 	}
 
+    /**
+     *  唤醒 vcpu 跟踪
+     */
 	trace_kvm_vcpu_wakeup(block_ns, waited, vcpu_valid_wakeup(vcpu));
 	kvm_arch_vcpu_block_finish(vcpu);
 }
@@ -2858,6 +2895,9 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
 	int me;
 	int cpu = vcpu->cpu;
 
+    /**
+     *  唤醒
+     */
 	if (kvm_vcpu_wake_up(vcpu))
 		return;
 
@@ -3086,6 +3126,8 @@ static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
 
 /*
  * Creates some virtual cpus.  Good luck creating more than one.
+ *
+ * 创建 vcpu
  */
 static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 {
@@ -3105,10 +3147,16 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 	kvm->created_vcpus++;
 	mutex_unlock(&kvm->lock);
 
+    /**
+     *  预处理 - 架构相关
+     */
 	r = kvm_arch_vcpu_precreate(kvm, id);
 	if (r)
 		goto vcpu_decrement;
 
+    /**
+     *  分配数据结构
+     */
 	vcpu = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
 	if (!vcpu) {
 		r = -ENOMEM;
@@ -3116,15 +3164,29 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 	}
 
 	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
+
+    /**
+     *  分配 一个 page
+     */
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!page) {
 		r = -ENOMEM;
 		goto vcpu_free;
 	}
+
+    /**
+     *  
+     */
 	vcpu->run = page_address(page);
 
+    /**
+     *  初始化数据结构
+     */
 	kvm_vcpu_init(vcpu, kvm, id);
 
+    /**
+     *  架构相关 - 创建
+     */
 	r = kvm_arch_vcpu_create(vcpu);
 	if (r)
 		goto vcpu_free_run_page;
@@ -3681,6 +3743,9 @@ static int kvm_vm_ioctl_enable_cap_generic(struct kvm *kvm,
 	}
 }
 
+/**
+ *  ioctl
+ */
 static long kvm_vm_ioctl(struct file *filp,
 			   unsigned int ioctl, unsigned long arg)
 {
@@ -3691,9 +3756,15 @@ static long kvm_vm_ioctl(struct file *filp,
 	if (kvm->mm != current->mm)
 		return -EIO;
 	switch (ioctl) {
+    /**
+     *  创建 vcpu
+     */
 	case KVM_CREATE_VCPU:
 		r = kvm_vm_ioctl_create_vcpu(kvm, arg);
 		break;
+    /**
+     *  使能能力
+     */
 	case KVM_ENABLE_CAP: {
 		struct kvm_enable_cap cap;
 

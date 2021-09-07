@@ -128,6 +128,9 @@ struct kvm_lapic_state {
 	char regs[KVM_APIC_REG_SIZE];
 };
 
+/**
+ *  
+ */
 struct kvm_segment {
 	__u64 base;
 	__u32 limit;

@@ -564,6 +564,9 @@ struct kvm_vcpu_arch {
 	DECLARE_BITMAP(ioapic_handled_vectors, 256);
 	unsigned long apic_attention;
 	int32_t apic_arb_prio;
+    /**
+     *  KVM_MP_STATE_XXX 如 `KVM_MP_STATE_UNINITIALIZED`
+     */
 	int mp_state;
 	u64 ia32_misc_enable_msr;
 	u64 smbase;
@@ -629,6 +632,10 @@ struct kvm_vcpu_arch {
 	u64 guest_supported_xcr0;
 
 	struct kvm_pio_request pio;
+
+    /**
+     *  在 `kvm_arch_vcpu_create()` 中赋值
+     */
 	void *pio_data;
 
 	u8 event_exit_inst_len;

@@ -4401,6 +4401,9 @@ static void init_vmcs(struct vcpu_vmx *vmx)
 	}
 }
 
+/**
+ *  
+ */
 static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -6957,6 +6960,9 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
 	free_loaded_vmcs(vmx->loaded_vmcs);
 }
 
+/**
+ *  
+ */
 static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx;
@@ -7725,6 +7731,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.vm_size = sizeof(struct kvm_vmx),
 	.vm_init = vmx_vm_init,
 
+    /**
+     *  
+     */
 	.vcpu_create = vmx_create_vcpu,
 	.vcpu_free = vmx_free_vcpu,
 	.vcpu_reset = vmx_vcpu_reset,
