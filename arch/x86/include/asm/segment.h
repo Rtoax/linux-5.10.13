@@ -232,6 +232,7 @@
  * +---------------------------------+---+------+
  * |            Index                |TI | RPL  |
  * +---------------------------------+---+------+
+ *  TI: Table Indicator
  *
  * Note, selectors also need to have a correct RPL,
  * expressed with the +3 value for user-space selectors:
