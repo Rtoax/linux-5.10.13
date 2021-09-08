@@ -356,12 +356,36 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
  */
 #define KVM_MEM_MAX_NR_PAGES ((1UL << 31) - 1)
 
+/**
+ *  KVM 内存条实例
+ *
+ *  
+ */
 struct kvm_memory_slot {
+    /**
+     *  用页帧号描述内存条的起始地址 kvm_memory_region.guest_phys_addr
+     */
 	gfn_t base_gfn;
+    /**
+     *  
+     */
 	unsigned long npages;
+    /**
+     *  
+     */
 	unsigned long *dirty_bitmap;
+    /**
+     *  
+     */
 	struct kvm_arch_memory_slot arch;
+    /**
+     *  内存分配的方式，由原来的在内核中分配 page改为在用户空间分配
+     *  这样，KVM Guest 就可以使用 Host 的虚拟内存机制，
+     */
 	unsigned long userspace_addr;
+    /**
+     *  
+     */
 	u32 flags;
 	short id;
 	u16 as_id;
@@ -1116,15 +1140,24 @@ search_memslots(struct kvm_memslots *slots, gfn_t gfn)
 	return NULL;
 }
 
+/**
+ *  
+ */
 static inline struct kvm_memory_slot *
 __gfn_to_memslot(struct kvm_memslots *slots, gfn_t gfn)
 {
 	return search_memslots(slots, gfn);
 }
 
+/**
+ *  
+ */
 static inline unsigned long
 __gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn)
 {
+    /**
+     *  获取 用户态虚拟地址 
+     */
 	return slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE;
 }
 

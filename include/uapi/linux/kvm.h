@@ -85,11 +85,28 @@ struct kvm_debug_guest {
 /* *** End of deprecated interfaces *** */
 
 
-/* for KVM_CREATE_MEMORY_REGION */
+/**
+ *  for KVM_CREATE_MEMORY_REGION 
+ *
+ *  供用户空间描述申请创建的内存条信息
+ *  VMM 需要为虚拟机分配内存条
+ */
 struct kvm_memory_region {
+    /**
+     *  第几个内存条
+     */
 	__u32 slot;
+    /**
+     *  
+     */
 	__u32 flags;
+    /**
+     *  表示这块内存条在Guest物理地址空间中的起始地址
+     */
 	__u64 guest_phys_addr;
+    /**
+     *  内存条大小
+     */
 	__u64 memory_size; /* bytes */
 };
 
@@ -100,7 +117,7 @@ struct kvm_memory_region {
  */
 struct kvm_userspace_memory_region {
     /**
-     *  内存槽 
+     *  内存槽 - 第几个内存条
      *  如果这个插槽没有插入内存，那么相当于安装一个内存条
      */
 	__u32 slot;

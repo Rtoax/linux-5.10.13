@@ -35,6 +35,9 @@ enum kvm_mr_change;
 
 typedef unsigned long  gva_t;
 typedef u64            gpa_t;
+/**
+ *  Guest Frame Number
+ */
 typedef u64            gfn_t;
 
 #define GPA_INVALID	(~(gpa_t)0)

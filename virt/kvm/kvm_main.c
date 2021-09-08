@@ -1179,6 +1179,9 @@ static struct kvm_memslots *kvm_dup_memslots(struct kvm_memslots *old,
 	return slots;
 }
 
+/**
+ *  
+ */
 static int kvm_set_memslot(struct kvm *kvm,
 			   const struct kvm_userspace_memory_region *mem,
 			   struct kvm_memory_slot *old,
@@ -1223,9 +1226,19 @@ static int kvm_set_memslot(struct kvm *kvm,
 	if (r)
 		goto out_slots;
 
+    /**
+     *  
+     */
 	update_memslots(slots, new, change);
+
+    /**
+     *  
+     */
 	slots = install_new_memslots(kvm, as_id, slots);
 
+    /**
+     *  
+     */
 	kvm_arch_commit_memory_region(kvm, mem, old, new, change);
 
 	kvfree(slots);
@@ -1271,11 +1284,13 @@ static int kvm_delete_memslot(struct kvm *kvm,
  * Discontiguous memory is allowed, mostly for framebuffers.
  *
  * Must be called holding kvm->slots_lock for write.
+ *
+ * 给 KVM Guest 设置 内存条
  */
 int __kvm_set_memory_region(struct kvm *kvm,
 			    const struct kvm_userspace_memory_region *mem)
 {
-	struct kvm_memory_slot old, new;
+	struct kvm_memory_slot old, new_slot;
 	struct kvm_memory_slot *tmp;
 	enum kvm_mr_change change;
 	int as_id, id;
@@ -1288,11 +1303,18 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	as_id = mem->slot >> 16;
 	id = (u16)mem->slot;
 
+    /**
+     *  检查数值
+     */
 	/* General sanity checks */
 	if (mem->memory_size & (PAGE_SIZE - 1))
 		return -EINVAL;
 	if (mem->guest_phys_addr & (PAGE_SIZE - 1))
 		return -EINVAL;
+
+    /**
+     *  
+     */
 	/* We can read the guest memory with __xxx_user() later on. */
 	if ((mem->userspace_addr & (PAGE_SIZE - 1)) ||
 	    (mem->userspace_addr != untagged_addr(mem->userspace_addr)) ||
@@ -1309,89 +1331,147 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	 * when the memslots are re-sorted by update_memslots(), and the old
 	 * memslot needs to be referenced after calling update_memslots(), e.g.
 	 * to free its resources and for arch specific behavior.
+	 *
+	 * 这个槽位上是否已经有内存调了呢？
 	 */
 	tmp = id_to_memslot(__kvm_memslots(kvm, as_id), id);
+    /**
+     *  该槽位已经有内存条了
+     */
 	if (tmp) {
 		old = *tmp;
 		tmp = NULL;
+    /**
+     *  当前slot没有内存条
+     */
 	} else {
 		memset(&old, 0, sizeof(old));
 		old.id = id;
 	}
 
+    /**
+     *  内存大小为0，表示 删除 内存条
+     */
 	if (!mem->memory_size)
 		return kvm_delete_memslot(kvm, mem, &old, as_id);
 
-	new.as_id = as_id;
-	new.id = id;
-	new.base_gfn = mem->guest_phys_addr >> PAGE_SHIFT;
-	new.npages = mem->memory_size >> PAGE_SHIFT;
-	new.flags = mem->flags;
-	new.userspace_addr = mem->userspace_addr;
+    /**
+     *  赋值
+     */
+	new_slot.as_id = as_id;
+	new_slot.id = id;
+    /**
+     *   pfn
+     */
+	new_slot.base_gfn = mem->guest_phys_addr >> PAGE_SHIFT;
+    /**
+     *  页数
+     */
+	new_slot.npages = mem->memory_size >> PAGE_SHIFT;
+	new_slot.flags = mem->flags;
+	new_slot.userspace_addr = mem->userspace_addr;
 
-	if (new.npages > KVM_MEM_MAX_NR_PAGES)
+	if (new_slot.npages > KVM_MEM_MAX_NR_PAGES)
 		return -EINVAL;
 
+    /**
+     *  老 内存条 没有 page
+     */
 	if (!old.npages) {
+        /**
+         *  创建新的
+         */
 		change = KVM_MR_CREATE;
-		new.dirty_bitmap = NULL;
-		memset(&new.arch, 0, sizeof(new.arch));
-	} else { /* Modify an existing slot. */
-		if ((new.userspace_addr != old.userspace_addr) ||
-		    (new.npages != old.npages) ||
-		    ((new.flags ^ old.flags) & KVM_MEM_READONLY))
+        /**
+         *  因为是创建，不是更新，所以 dirty 为空
+         */
+		new_slot.dirty_bitmap = NULL;
+		memset(&new_slot.arch, 0, sizeof(new_slot.arch));
+
+    /**
+     *  老 内存条中有 pages，那么就需要更新现有的 内存条了
+     */
+    } else { /* Modify an existing slot. */
+		if ((new_slot.userspace_addr != old.userspace_addr) ||
+		    (new_slot.npages != old.npages) ||
+		    ((new_slot.flags ^ old.flags) & KVM_MEM_READONLY))
 			return -EINVAL;
 
-		if (new.base_gfn != old.base_gfn)
+        /**
+         *  内存条起始页帧号不一样，那么标记为移动
+         */
+		if (new_slot.base_gfn != old.base_gfn)
 			change = KVM_MR_MOVE;
-		else if (new.flags != old.flags)
+        /**
+         *  页帧号相同， flags 标志不一样，那么
+         */
+		else if (new_slot.flags != old.flags)
 			change = KVM_MR_FLAGS_ONLY;
+        /**
+         *  否则就是 创建已经存在的一模一样的内存条，直接返回成功
+         */
 		else /* Nothing to change. */
 			return 0;
 
 		/* Copy dirty_bitmap and arch from the current memslot. */
-		new.dirty_bitmap = old.dirty_bitmap;
-		memcpy(&new.arch, &old.arch, sizeof(new.arch));
+		new_slot.dirty_bitmap = old.dirty_bitmap;
+		memcpy(&new_slot.arch, &old.arch, sizeof(new_slot.arch));
 	}
 
+    /**
+     *  如果是创建新的，或者是需要移动旧的到新的里
+     */
 	if ((change == KVM_MR_CREATE) || (change == KVM_MR_MOVE)) {
-		/* Check for overlaps */
+		/* Check for overlaps(重叠) */
+        /**
+         *  遍历所有 内存条，检查 地址是不是 重叠
+         */
 		kvm_for_each_memslot(tmp, __kvm_memslots(kvm, as_id)) {
 			if (tmp->id == id)
 				continue;
-			if (!((new.base_gfn + new.npages <= tmp->base_gfn) ||
-			      (new.base_gfn >= tmp->base_gfn + tmp->npages)))
+			if (!((new_slot.base_gfn + new_slot.npages <= tmp->base_gfn) ||
+			      (new_slot.base_gfn >= tmp->base_gfn + tmp->npages)))
 				return -EEXIST;
 		}
 	}
 
 	/* Allocate/free page dirty bitmap as needed */
-	if (!(new.flags & KVM_MEM_LOG_DIRTY_PAGES))
-		new.dirty_bitmap = NULL;
-	else if (!new.dirty_bitmap) {
-		r = kvm_alloc_dirty_bitmap(&new);
+	if (!(new_slot.flags & KVM_MEM_LOG_DIRTY_PAGES))
+		new_slot.dirty_bitmap = NULL;
+
+    /**
+     *  
+     */
+	else if (!new_slot.dirty_bitmap) {
+		r = kvm_alloc_dirty_bitmap(&new_slot);
 		if (r)
 			return r;
 
 		if (kvm_dirty_log_manual_protect_and_init_set(kvm))
-			bitmap_set(new.dirty_bitmap, 0, new.npages);
+			bitmap_set(new_slot.dirty_bitmap, 0, new_slot.npages);
 	}
 
-	r = kvm_set_memslot(kvm, mem, &old, &new, as_id, change);
+    /**
+     *  
+     */
+	r = kvm_set_memslot(kvm, mem, &old, &new_slot, as_id, change);
 	if (r)
 		goto out_bitmap;
 
-	if (old.dirty_bitmap && !new.dirty_bitmap)
+	if (old.dirty_bitmap && !new_slot.dirty_bitmap)
 		kvm_destroy_dirty_bitmap(&old);
 	return 0;
 
 out_bitmap:
-	if (new.dirty_bitmap && !old.dirty_bitmap)
-		kvm_destroy_dirty_bitmap(&new);
+	if (new_slot.dirty_bitmap && !old.dirty_bitmap)
+		kvm_destroy_dirty_bitmap(&new_slot);
 	return r;
 }
 EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
 
+/**
+ *  给 KVM 设置内存条
+ */
 int kvm_set_memory_region(struct kvm *kvm,
 			  const struct kvm_userspace_memory_region *mem)
 {
@@ -1404,6 +1484,9 @@ int kvm_set_memory_region(struct kvm *kvm,
 }
 EXPORT_SYMBOL_GPL(kvm_set_memory_region);
 
+/**
+ *  
+ */
 static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
 					  struct kvm_userspace_memory_region *mem)
 {
@@ -1672,6 +1755,9 @@ static int kvm_vm_ioctl_clear_dirty_log(struct kvm *kvm,
 }
 #endif /* CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT */
 
+/**
+ *  从 GFN 
+ */
 struct kvm_memory_slot *gfn_to_memslot(struct kvm *kvm, gfn_t gfn)
 {
 	return __gfn_to_memslot(kvm_memslots(kvm), gfn);
@@ -1729,6 +1815,9 @@ static bool memslot_is_readonly(struct kvm_memory_slot *slot)
 	return slot->flags & KVM_MEM_READONLY;
 }
 
+/**
+ *  Guest Frame NUmber 转化为 Host Virtual Address
+ */
 static unsigned long __gfn_to_hva_many(struct kvm_memory_slot *slot, gfn_t gfn,
 				       gfn_t *nr_pages, bool write)
 {
@@ -1741,6 +1830,9 @@ static unsigned long __gfn_to_hva_many(struct kvm_memory_slot *slot, gfn_t gfn,
 	if (nr_pages)
 		*nr_pages = slot->npages - (gfn - slot->base_gfn);
 
+    /**
+     *  
+     */
 	return __gfn_to_hva_memslot(slot, gfn);
 }
 
@@ -2000,10 +2092,16 @@ exit:
 	return pfn;
 }
 
+/**
+ *  
+ */
 kvm_pfn_t __gfn_to_pfn_memslot(struct kvm_memory_slot *slot, gfn_t gfn,
 			       bool atomic, bool *async, bool write_fault,
 			       bool *writable)
 {
+    /**
+     *  
+     */
 	unsigned long addr = __gfn_to_hva_many(slot, gfn, NULL, write_fault);
 
 	if (addr == KVM_HVA_ERR_RO_BAD) {
@@ -2024,8 +2122,10 @@ kvm_pfn_t __gfn_to_pfn_memslot(struct kvm_memory_slot *slot, gfn_t gfn,
 		writable = NULL;
 	}
 
-	return hva_to_pfn(addr, atomic, async, write_fault,
-			  writable);
+    /**
+     *  
+     */
+	return hva_to_pfn(addr, atomic, async, write_fault, writable);
 }
 EXPORT_SYMBOL_GPL(__gfn_to_pfn_memslot);
 
@@ -2037,6 +2137,9 @@ kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
 }
 EXPORT_SYMBOL_GPL(gfn_to_pfn_prot);
 
+/**
+ *  从 KVM 内存条中查找 pfn
+ */
 kvm_pfn_t gfn_to_pfn_memslot(struct kvm_memory_slot *slot, gfn_t gfn)
 {
 	return __gfn_to_pfn_memslot(slot, gfn, false, NULL, true, NULL);
@@ -2055,8 +2158,14 @@ kvm_pfn_t kvm_vcpu_gfn_to_pfn_atomic(struct kvm_vcpu *vcpu, gfn_t gfn)
 }
 EXPORT_SYMBOL_GPL(kvm_vcpu_gfn_to_pfn_atomic);
 
+/**
+ *  从 GuestFrameNumber -> HostFrameNumber
+ */
 kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
 {
+    /**
+     *  
+     */
 	return gfn_to_pfn_memslot(gfn_to_memslot(kvm, gfn), gfn);
 }
 EXPORT_SYMBOL_GPL(gfn_to_pfn);
@@ -2084,25 +2193,43 @@ int gfn_to_page_many_atomic(struct kvm_memory_slot *slot, gfn_t gfn,
 }
 EXPORT_SYMBOL_GPL(gfn_to_page_many_atomic);
 
+/**
+ *  
+ */
 static struct page *kvm_pfn_to_page(kvm_pfn_t pfn)
 {
 	if (is_error_noslot_pfn(pfn))
 		return KVM_ERR_PTR_BAD_PAGE;
 
+    /**
+     *  
+     */
 	if (kvm_is_reserved_pfn(pfn)) {
 		WARN_ON(1);
 		return KVM_ERR_PTR_BAD_PAGE;
 	}
 
+    /**
+     *  转为page
+     */
 	return pfn_to_page(pfn);
 }
 
+/**
+ *  将 GPA 转换为 HVA -> HPA
+ */
 struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
 {
 	kvm_pfn_t pfn;
 
+    /**
+     *  gfn to pfn（物理页帧号）
+     */
 	pfn = gfn_to_pfn(kvm, gfn);
 
+    /**
+     *  
+     */
 	return kvm_pfn_to_page(pfn);
 }
 EXPORT_SYMBOL_GPL(gfn_to_page);
@@ -3774,12 +3901,14 @@ static long kvm_vm_ioctl(struct file *filp,
 		r = kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
 		break;
 	}
+    /**
+     *  设置 KVM 内存条
+     */
 	case KVM_SET_USER_MEMORY_REGION: {
 		struct kvm_userspace_memory_region kvm_userspace_mem;
 
 		r = -EFAULT;
-		if (copy_from_user(&kvm_userspace_mem, argp,
-						sizeof(kvm_userspace_mem)))
+		if (copy_from_user(&kvm_userspace_mem, argp, sizeof(kvm_userspace_mem)))
 			goto out;
 
 		r = kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_mem);

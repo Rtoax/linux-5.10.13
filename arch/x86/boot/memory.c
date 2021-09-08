@@ -90,7 +90,7 @@ static void detect_memory_e820(void)
          *  为了获得下一行，我们需要再次调用此中断（在循环中进行此操作）
          *
          *  Q&A?
-         *  1. 0x15 中断的处理函数是谁？
+         *  1. 0x15 中断的处理函数是谁？ 这个中断处理函数由 BIOS 实现，存储在 BIOS ROM 中
          */
 		intcall(0x15, &ireg, &oreg);
 

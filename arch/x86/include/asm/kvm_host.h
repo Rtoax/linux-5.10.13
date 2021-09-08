@@ -834,6 +834,9 @@ struct kvm_lpage_info {
 	int disallow_lpage;
 };
 
+/**
+ *  
+ */
 struct kvm_arch_memory_slot {
 	struct kvm_rmap_head *rmap[KVM_NR_PAGE_SIZES];
 	struct kvm_lpage_info *lpage_info[KVM_NR_PAGE_SIZES - 1];
