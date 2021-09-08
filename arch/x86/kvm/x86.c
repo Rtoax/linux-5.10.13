@@ -1041,7 +1041,7 @@ int kvm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
 EXPORT_SYMBOL_GPL(kvm_set_cr4);
 
 /**
- *  
+ *  写 CR3 寄存器
  */
 int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 {
@@ -1069,18 +1069,26 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
     /**
      *  
      */
-	if (is_long_mode(vcpu) &&
-	    (cr3 & vcpu->arch.cr3_lm_rsvd_bits))
+	if (is_long_mode(vcpu) && (cr3 & vcpu->arch.cr3_lm_rsvd_bits))
 		return 1;
-	else if (is_pae_paging(vcpu) &&
-		 !load_pdptrs(vcpu, vcpu->arch.walk_mmu, cr3))
+    /**
+     *  
+     */
+    else if (is_pae_paging(vcpu) && !load_pdptrs(vcpu, vcpu->arch.walk_mmu, cr3))
 		return 1;
+
+    /**
+     *  创建新的 PGD
+     */
+	kvm_mmu_new_pgd(vcpu, cr3, skip_tlb_flush, skip_tlb_flush);
+    /**
+     *  KVM 记录Guest 的根页目表地址
+     */
+	vcpu->arch.cr3 = cr3;
 
     /**
      *  
      */
-	kvm_mmu_new_pgd(vcpu, cr3, skip_tlb_flush, skip_tlb_flush);
-	vcpu->arch.cr3 = cr3;
 	kvm_register_mark_available(vcpu, VCPU_EXREG_CR3);
 
 	return 0;
@@ -9143,6 +9151,9 @@ out:
 	return r;
 }
 
+/**
+ *  
+ */
 static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 {
 	if (!kvm_arch_vcpu_runnable(vcpu) &&
@@ -9151,6 +9162,10 @@ static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 		kvm_vcpu_block(vcpu);
 		vcpu->srcu_idx = srcu_read_lock(&kvm->srcu);
 
+        /**
+         *  vmx_x86_ops->vmx_post_block()
+         *  svm_x86_ops->svm_post_block()
+         */
 		if (kvm_x86_ops.post_block)
 			kvm_x86_ops.post_block(vcpu);
 
@@ -9158,6 +9173,9 @@ static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 			return 1;
 	}
 
+    /**
+     *  
+     */
 	kvm_apic_accept_events(vcpu);
 	switch(vcpu->arch.mp_state) {
 	case KVM_MP_STATE_HALTED:
@@ -9185,6 +9203,9 @@ static inline bool kvm_vcpu_running(struct kvm_vcpu *vcpu)
 		!vcpu->arch.apf.halted);
 }
 
+/**
+ *  
+ */
 static int vcpu_run(struct kvm_vcpu *vcpu)
 {
 	int r;
@@ -9193,10 +9214,22 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
 	vcpu->srcu_idx = srcu_read_lock(&kvm->srcu);
 	vcpu->arch.l1tf_flush_l1d = true;
 
+    /**
+     *  
+     */
 	for (;;) {
+        /**
+         *  正在运行
+         */
 		if (kvm_vcpu_running(vcpu)) {
+            /**
+             *  enter Guest
+             */
 			r = vcpu_enter_guest(vcpu);
 		} else {
+		    /**
+             *  
+             */
 			r = vcpu_block(kvm, vcpu);
 		}
 
@@ -9418,9 +9451,15 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 	} else
 		WARN_ON(vcpu->arch.pio.count || vcpu->mmio_needed);
 
+    /**
+     *  
+     */
 	if (kvm_run->immediate_exit)
 		r = -EINTR;
 	else
+        /**
+         *  
+         */
 		r = vcpu_run(vcpu);
 
 out:

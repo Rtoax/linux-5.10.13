@@ -944,16 +944,33 @@ enum kvm_irqchip_mode {
 #define APICV_INHIBIT_REASON_PIT_REINJ  4
 #define APICV_INHIBIT_REASON_X2APIC	5
 
+/**
+ *  
+ */
 struct kvm_arch {
 	unsigned long n_used_mmu_pages;
 	unsigned long n_requested_mmu_pages;
 	unsigned long n_max_mmu_pages;
 	unsigned int indirect_shadow_pages;
 	u8 mmu_valid_gen;
+
+    /**
+     *  对于多任务的 Guest来说，多个任务分时轮转运行，某个暂时被换出的页表会再次被载入
+     *  如果每次都释放然后重建影子页表，性能开销太大。因此，KVM设计了 cache机制，除了首次
+     *  创建的影子页表需要从0开始构建，替他都是从cache中获取。
+     *
+     *  Guest 页表的根页面的帧号作为 hash 表的key。
+     *  
+     *  见 `kvm_mmu_get_page()`
+     */
 	struct hlist_head mmu_page_hash[KVM_NUM_MMU_PAGES];
 	/*
 	 * Hash table of struct kvm_mmu_page.
 	 */
+	/**
+     *  链表节点 `struct kvm_mmu_page.link`
+     *  在 `kvm_mmu_alloc_page()` 中添加
+     */
 	struct list_head active_mmu_pages;
 	struct list_head zapped_obsolete_pages;
 	struct list_head lpage_disallowed_mmu_pages;

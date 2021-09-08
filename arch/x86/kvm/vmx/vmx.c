@@ -2387,6 +2387,9 @@ static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
 	return 0;
 }
 
+/**
+ *  配置 VMCS(VM上下文)
+ */
 static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 				    struct vmx_capability *vmx_cap)
 {
@@ -2404,6 +2407,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	      CPU_BASED_CR8_LOAD_EXITING |
 	      CPU_BASED_CR8_STORE_EXITING |
 #endif
+          /**
+           *  
+           */
 	      CPU_BASED_CR3_LOAD_EXITING |
 	      CPU_BASED_CR3_STORE_EXITING |
 	      CPU_BASED_UNCOND_IO_EXITING |
@@ -2417,9 +2423,14 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	opt = CPU_BASED_TPR_SHADOW |
 	      CPU_BASED_USE_MSR_BITMAPS |
 	      CPU_BASED_ACTIVATE_SECONDARY_CONTROLS;
+
+    /**
+     *  
+     */
 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_PROCBASED_CTLS,
 				&_cpu_based_exec_control) < 0)
 		return -EIO;
+    
 #ifdef CONFIG_X86_64
 	if ((_cpu_based_exec_control & CPU_BASED_TPR_SHADOW))
 		_cpu_based_exec_control &= ~CPU_BASED_CR8_LOAD_EXITING &
@@ -2468,8 +2479,10 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 				SECONDARY_EXEC_VIRTUALIZE_X2APIC_MODE |
 				SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY);
 
-	rdmsr_safe(MSR_IA32_VMX_EPT_VPID_CAP,
-		&vmx_cap->ept, &vmx_cap->vpid);
+    /**
+     *  
+     */
+	rdmsr_safe(MSR_IA32_VMX_EPT_VPID_CAP, &vmx_cap->ept, &vmx_cap->vpid);
 
 	if (_cpu_based_2nd_exec_control & SECONDARY_EXEC_ENABLE_EPT) {
 		/* CR3 accesses and invlpg don't need to cause VM Exits when EPT
@@ -2550,7 +2563,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 		}
 	}
 
-
+    /**
+     *  
+     */
 	rdmsr(MSR_IA32_VMX_BASIC, vmx_msr_low, vmx_msr_high);
 
 	/* IA-32 SDM Vol 3B: VMCS size is never greater than 4kB. */
@@ -2587,6 +2602,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	return 0;
 }
 
+/**
+ *  
+ */
 struct vmcs *alloc_vmcs_cpu(bool shadow, int cpu, gfp_t flags)
 {
 	int node = cpu_to_node(cpu);
@@ -4805,7 +4823,7 @@ static inline bool guest_inject_ac(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *  处理 异常
  */
 static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 {
@@ -4818,9 +4836,15 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	vect_info = vmx->idt_vectoring_info;
 	intr_info = vmx_get_intr_info(vcpu);
 
+    /**
+     *  及其检测
+     */
 	if (is_machine_check(intr_info) || is_nmi(intr_info))
 		return 1; /* handled by handle_exception_nmi_irqoff() */
 
+    /**
+     *  不可用的操作符
+     */
 	if (is_invalid_opcode(intr_info))
 		return handle_ud(vcpu);
 
@@ -4849,7 +4873,12 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	 * See the comments in vmx_handle_exit.
 	 */
 	if ((vect_info & VECTORING_INFO_VALID_MASK) &&
-	    !(is_page_fault(intr_info) && !(error_code & PFERR_RSVD_MASK))) {
+        /**
+         *  不是缺页异常
+         */
+	    !(is_page_fault(intr_info) && 
+	    !(error_code & PFERR_RSVD_MASK))) {
+	    
 		vcpu->run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
 		vcpu->run->internal.suberror = KVM_INTERNAL_ERROR_SIMUL_EX;
 		vcpu->run->internal.ndata = 4;
@@ -4861,12 +4890,16 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	}
 
     /**
-     *  缺页中断
+     *  缺页中断 - 
      */
 	if (is_page_fault(intr_info)) {
+        /**
+         *  获取缺页地址
+         */
 		cr2 = vmx_get_exit_qual(vcpu);
         /**
          *  EPT 扩展页表
+         *  TODO - 荣涛 2021年9月8日14:42:14
          */
 		if (enable_ept && !vcpu->arch.apf.host_apf_flags) {
 			/*
@@ -4876,15 +4909,25 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 			WARN_ON_ONCE(!allow_smaller_maxphyaddr);
 			kvm_fixup_and_inject_pf_error(vcpu, cr2, error_code);
 			return 1;
+            
 		} else
+            /**
+             *  处理缺页异常
+             */
 			return kvm_handle_page_fault(vcpu, error_code, cr2, NULL, 0);
 	}
 
+    /**
+     *  
+     */
 	ex_no = intr_info & INTR_INFO_VECTOR_MASK;
 
 	if (vmx->rmode.vm86_active && rmode_exception(vcpu, ex_no))
 		return handle_rmode_exception(vcpu, ex_no, error_code);
 
+    /**
+     *  
+     */
 	switch (ex_no) {
 	case DB_VECTOR:
 		dr6 = vmx_get_exit_qual(vcpu);
@@ -5051,7 +5094,7 @@ static int handle_desc(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *  处理 CR0 - CR8 ...
  */
 static int handle_cr(struct kvm_vcpu *vcpu)
 {
@@ -5062,16 +5105,34 @@ static int handle_cr(struct kvm_vcpu *vcpu)
 	int ret;
 
 	exit_qualification = vmx_get_exit_qual(vcpu);
+    
     /**
+     *  在 Guest 写入 CR3 寄存器触发 虚拟机退出时
+     *  KVM需要记录下Guest准备向 CR3 寄存器写入的 Guest 的根页表，
+     *  在发生虚拟机退出前，CPU将这些信息写入了 VMCS的字段 exit_qualification 中
+     *  的 8-11 位中，如
+     *      3:0 - 指示Guest访问的是哪个控制寄存器
+     *      5:4 - 访问类型：0-写控制寄存器，1-读控制寄存器
+     *      11:8 - 写入时的源操作数，读取时为目的操作数(0-rax,1-rcx,2-rdx,3-rbx,...)
      *  
+     *  下面的操作时为了获取 3:0 - 指示Guest访问的是哪个控制寄存器.
+     *  
+     *  数据结构见 `struct vcpu_vmx->exit_qualification`
      */
 	cr = exit_qualification & 15;
+
+    /**
+     *  11:8 - 写入时的源操作数，读取时为目的操作数(0-rax,1-rcx,2-rdx,3-rbx,...)
+     */
 	reg = (exit_qualification >> 8) & 15;
 
     /**
-     *  
+     *  5:4 - 访问类型：0-写控制寄存器，1-读控制寄存器
      */
 	switch ((exit_qualification >> 4) & 3) {
+    /**
+     *  0-写控制寄存器
+     */
 	case 0: /* mov to cr */
 		val = kvm_register_readl(vcpu, reg);
 		trace_kvm_cr_write(cr, val);
@@ -5087,10 +5148,13 @@ static int handle_cr(struct kvm_vcpu *vcpu)
          */
 		case 3:
 			WARN_ON_ONCE(enable_unrestricted_guest);
+            /**
+             *  
+             */
 			err = kvm_set_cr3(vcpu, val);
 			return kvm_complete_insn_gp(vcpu, err);
         /**
-         *  
+         *  CR4
          */
         case 4:
 			err = handle_set_cr4(vcpu, val);
@@ -5117,11 +5181,17 @@ static int handle_cr(struct kvm_vcpu *vcpu)
 			}
 		}
 		break;
+    /**
+     *  
+     */
 	case 2: /* clts */
 		WARN_ONCE(1, "Guest should always own CR0.TS");
 		vmx_set_cr0(vcpu, kvm_read_cr0_bits(vcpu, ~X86_CR0_TS));
 		trace_kvm_cr_write(0, kvm_read_cr0(vcpu));
 		return kvm_skip_emulated_instruction(vcpu);
+    /**
+     *  1-读控制寄存器
+     */
 	case 1: /*mov from cr*/
 		switch (cr) {
 		case 3:
@@ -5137,7 +5207,10 @@ static int handle_cr(struct kvm_vcpu *vcpu)
 			return kvm_skip_emulated_instruction(vcpu);
 		}
 		break;
-	case 3: /* lmsw */
+    /**
+     *  
+     */
+    case 3: /* lmsw */
 		val = (exit_qualification >> LMSW_SOURCE_DATA_SHIFT) & 0x0f;
 		trace_kvm_cr_write(0, (kvm_read_cr0(vcpu) & ~0xful) | val);
 		kvm_lmsw(vcpu, val);
@@ -6823,7 +6896,7 @@ reenter_guest:
 	}
 
     /**
-     *  
+     *  读影子页表
      */
 	cr4 = cr4_read_shadow();
 	if (unlikely(cr4 != vmx->loaded_vmcs->host_state.cr4)) {
@@ -7646,6 +7719,9 @@ static int vmx_pre_block(struct kvm_vcpu *vcpu)
 	return 0;
 }
 
+/**
+ *  
+ */
 static void vmx_post_block(struct kvm_vcpu *vcpu)
 {
 	if (kvm_x86_ops.set_hv_timer)

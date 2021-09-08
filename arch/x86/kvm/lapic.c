@@ -2898,7 +2898,7 @@ int kvm_lapic_enable_pv_eoi(struct kvm_vcpu *vcpu, u64 data, unsigned long len)
 }
 
 /**
- *  
+ *  APIC 接收 event
  */
 void kvm_apic_accept_events(struct kvm_vcpu *vcpu)
 {

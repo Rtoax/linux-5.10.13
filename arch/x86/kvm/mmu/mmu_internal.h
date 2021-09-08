@@ -21,11 +21,15 @@
 #endif
 
 /**
- *  
+ *  为了更好的管理用于页表的物理页面
+ *  该结构代表每个页表页
+ *
+ *  kvm_mmu_alloc_page() - 创建页表页
  */
 struct kvm_mmu_page {
     /**
-     *  
+     *  链表头为 `struct kvm_arch.active_mmu_pages`
+     *  在 `kvm_mmu_alloc_page()` 中添加
      */
 	struct list_head link;
 	struct hlist_node hash_link;

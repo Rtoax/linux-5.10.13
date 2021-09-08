@@ -46,6 +46,12 @@
  *  的 第 15 位 
  *  见 `handle_cr()`
  */
+/**
+ *  Intel 全面支持了 EPT，无需再截获Guest 访问CR3 的操作，
+ *  因此为了启用EPT的情况下避免无谓的虚拟机退出(VM Exit),
+ *  Intel 在硬件层面提出了一个开关，虚拟化软甲你可以通过这个开关
+ *  决定当Guest 设置CR3 寄存器时，是否触发虚拟机退出。
+ */
 #define VMX_FEATURE_CR3_LOAD_EXITING	( 1*32+ 15) /* "" VM-Exit on writes to CR3 */
 #define VMX_FEATURE_CR3_STORE_EXITING	( 1*32+ 16) /* "" VM-Exit on reads from CR3 */
 #define VMX_FEATURE_CR8_LOAD_EXITING	( 1*32+ 19) /* "" VM-Exit on writes to CR8 */

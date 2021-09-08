@@ -86,6 +86,9 @@ static inline struct kvm_mmu_page *tdp_mmu_next_root(struct kvm *kvm,
 #define for_each_tdp_mmu_root(_kvm, _root)				\
 	list_for_each_entry(_root, &_kvm->arch.tdp_mmu_roots, link)
 
+/**
+ *  
+ */
 bool is_tdp_mmu_root(struct kvm *kvm, hpa_t hpa)
 {
 	struct kvm_mmu_page *sp;

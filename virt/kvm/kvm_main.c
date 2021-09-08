@@ -339,6 +339,9 @@ void kvm_reload_remote_mmus(struct kvm *kvm)
 }
 
 #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
+/**
+ *  
+ */
 static inline void *mmu_memory_cache_alloc_obj(struct kvm_mmu_memory_cache *mc,
 					       gfp_t gfp_flags)
 {
@@ -1830,6 +1833,9 @@ static unsigned long __gfn_to_hva_many(struct kvm_memory_slot *slot, gfn_t gfn,
 	if (memslot_is_readonly(slot) && write)
 		return KVM_HVA_ERR_RO_BAD;
 
+    /**
+     *  
+     */
 	if (nr_pages)
 		*nr_pages = slot->npages - (gfn - slot->base_gfn);
 
