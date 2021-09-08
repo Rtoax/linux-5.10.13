@@ -13,8 +13,14 @@
 
 #include "boot.h"
 
+/**
+ *  
+ */
 #define SMAP	0x534d4150	/* ASCII "SMAP" */
 
+/**
+ *  
+ */
 static void detect_memory_e820(void)
 {
 	int count = 0;
@@ -22,18 +28,31 @@ static void detect_memory_e820(void)
 	struct boot_e820_entry *desc = boot_params.e820_table;
 	static struct boot_e820_entry buf; /* static so it is zeroed */
 
-    //初始化biosregs
+    /**
+     *  初始化biosregs
+     */
 	initregs(&ireg);
 
-    //为0xe820调用填充特殊值的寄存器
-    //ax 包含函数的编号（本例中为0xe820）
-    //cx 包含缓冲区的大小，该缓冲区将包含有关内存的数据
-    //edx 必须包含SMAP幻数
-    //es:di 必须包含将包含内存数据的缓冲区的地址
-    //ebx 必须为零。
+    /**
+     *  为0xe820调用填充特殊值的寄存器
+     *  ax 包含函数的编号（本例中为0xe820）
+     *  cx 包含缓冲区的大小，该缓冲区将包含有关内存的数据
+     *  edx 必须包含SMAP幻数
+     *  es:di 必须包含将包含内存数据的缓冲区的地址
+     *  ebx 必须为零。
+     */
 	ireg.ax  = 0xe820;
+    /**
+     *  cx 存放每个 e820 记录的大小
+     */
 	ireg.cx  = sizeof(buf);
+    /**
+     *  按照 0x15 号中断的约定，将 edx 寄存器设置为 魔数 
+     */
 	ireg.edx = SMAP;
+    /**
+     *  存储 e820 记录的内存地址
+     */
 	ireg.di  = (size_t)&buf;
 
 	/*
@@ -48,14 +67,36 @@ static void detect_memory_e820(void)
 	 * all ranges, and we don't currently make any use of the
 	 * other attribute bits.  Revisit this if we see the extended
 	 * attribute bits deployed in a meaningful way in the future.
-	 */
-    //接下来是一个循环，收集有关内存的数据
+	 *
+	 * 接下来是一个循环，收集有关内存的数据
+	 *
+     *  从地址分配表中收集数据，并将此数据写入e820_entry数组
+     *  内存段的开始
+     *  内存段的大小
+     *  内存段的类型（特定段是可用的还是保留的）
+     *  $ sudo cat /var/log/messages | grep BIOS-e820
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000000100000-0x00000000bff7ffff] usable
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000bff80000-0x00000000bfffffff] reserved
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+     *  Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000100000000-0x000000023fffffff] usable
+     */
 	do {
-        //它始于对 0x15 BIOS中断的调用，该中断从地址分配表中写入一行。
-        //为了获得下一行，我们需要再次调用此中断（在循环中进行此操作）
+        /**
+         *  它始于对 0x15 BIOS中断的调用，该中断从地址分配表中写入一行。
+         *  为了获得下一行，我们需要再次调用此中断（在循环中进行此操作）
+         *
+         *  Q&A?
+         *  1. 0x15 中断的处理函数是谁？
+         */
 		intcall(0x15, &ireg, &oreg);
 
-        //在下一次调用之前，ebx必须包含先前返回的值
+        /**
+         *  在下一次调用之前，ebx必须包含先前返回的值
+         */
 		ireg.ebx = oreg.ebx; /* for next iteration... */
 
 		/* BIOSes which terminate the chain with CF = 1 as opposed
@@ -74,23 +115,14 @@ static void detect_memory_e820(void)
 			break;
 		}
 
+        /**
+         *  探测到的一个内存段
+         */
 		*desc++ = buf;
 		count++;
 	} while (ireg.ebx && count < ARRAY_SIZE(boot_params.e820_table));
 
-    //从地址分配表中收集数据，并将此数据写入e820_entry数组
-    //内存段的开始
-    //内存段的大小
-    //内存段的类型（特定段是可用的还是保留的）
-    //$ sudo cat /var/log/messages | grep BIOS-e820
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000000100000-0x00000000bff7ffff] usable
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000bff80000-0x00000000bfffffff] reserved
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
-    //Mar  2 08:58:32 localhost kernel: BIOS-e820: [mem 0x0000000100000000-0x000000023fffffff] usable
+    
 	boot_params.e820_entries = count;
 }
 
@@ -144,6 +176,9 @@ static void detect_memory_88(void)
 //它使用的内存检测喜欢不同的编程接口 0xe820 ， 0xe801 和 0x88
 void detect_memory(void)
 {
+    /**
+     *  
+     */
 	detect_memory_e820();   //arch/x86/boot/memory.c 获取全部内存分配
 
 	detect_memory_e801();

@@ -56,9 +56,35 @@
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
+/**
+ *  对于使用 E820 方式获取内存而言，0x15 号中断处理函数使用结构体e820entry 描述每个段
+ *  包括 内存段的其实地址、内存段的大小以及内存段的类型
+ *
+ *  [    0.000000] BIOS-provided physical RAM map:
+ *  [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009e7ff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x000000000009e800-0x000000000009ffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000000dc000-0x00000000000fffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000007fedffff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x000000007fee0000-0x000000007fefefff] ACPI data
+ *  [    0.000000] BIOS-e820: [mem 0x000000007feff000-0x000000007fefffff] ACPI NVS
+ *  [    0.000000] BIOS-e820: [mem 0x000000007ff00000-0x000000007fffffff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x00000000f0000000-0x00000000f7ffffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fec00000-0x00000000fec0ffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fffe0000-0x00000000ffffffff] reserved
+ */ 
 struct e820entry {
+    /**
+     *  内存段的起始地址
+     */
 	__u64 addr;	/* start of memory segment */
+    /**
+     *  内存段的大小
+     */
 	__u64 size;	/* size of memory segment */
+    /**
+     *  内存段的类型
+     */
 	__u32 type;	/* type of memory segment */
 } __attribute__((packed));
 
@@ -67,14 +93,14 @@ struct e820map {
 	struct e820entry map[E820_X_MAX];
 };
 
-//#define ISA_START_ADDRESS	0xa0000
-//#define ISA_END_ADDRESS		0x100000
-//
-//#define BIOS_BEGIN		0x000a0000
-//#define BIOS_END		0x00100000
-//
-//#define BIOS_ROM_BASE		0xffe00000
-//#define BIOS_ROM_END		0xffffffff
+#define ISA_START_ADDRESS	0xa0000
+#define ISA_END_ADDRESS		0x100000
+
+#define BIOS_BEGIN		0x000a0000
+#define BIOS_END		0x00100000
+
+#define BIOS_ROM_BASE		0xffe00000
+#define BIOS_ROM_END		0xffffffff
 
 #endif /* __ASSEMBLY__ */
 

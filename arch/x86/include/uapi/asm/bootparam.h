@@ -153,6 +153,18 @@ struct efi_info {
  * 内存段的起始地址
  * 内存段的大小
  * 内存段的类型（类型可以是reserved, usable等等)。
+ *  [    0.000000] BIOS-provided physical RAM map:
+ *  [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009e7ff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x000000000009e800-0x000000000009ffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000000dc000-0x00000000000fffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000007fedffff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x000000007fee0000-0x000000007fefefff] ACPI data
+ *  [    0.000000] BIOS-e820: [mem 0x000000007feff000-0x000000007fefffff] ACPI NVS
+ *  [    0.000000] BIOS-e820: [mem 0x000000007ff00000-0x000000007fffffff] usable
+ *  [    0.000000] BIOS-e820: [mem 0x00000000f0000000-0x00000000f7ffffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fec00000-0x00000000fec0ffff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
+ *  [    0.000000] BIOS-e820: [mem 0x00000000fffe0000-0x00000000ffffffff] reserved
  */
 struct boot_e820_entry {
 	__u64 addr;
@@ -211,6 +223,9 @@ struct boot_parameters {/* 所谓的零 页 page0 */
 	struct efi_info efi_info;			/* 0x1c0 */
 	__u32 alt_mem_k;				/* 0x1e0 */
 	__u32 scratch;		/* Scratch field! */	/* 0x1e4 = BP_scratch */ 
+    /**
+     *  e820_table 的个数， 在 detect_memory_e820() 中被初始化
+     */
 	__u8  e820_entries;				/* 0x1e8 */
 	__u8  eddbuf_entries;				/* 0x1e9 */
 	__u8  edd_mbr_sig_buf_entries;			/* 0x1ea */
@@ -235,7 +250,33 @@ struct boot_parameters {/* 所谓的零 页 page0 */
 	__u32 edd_mbr_sig_buffer[EDD_MBR_SIG_MAX];	/* 0x290 */
 
     /**
-     *  启动 bios 获取 的  e820 table
+     *  启动 bios 获取 的  e820 table，个数用 `e820_entries`记录
+     *  将在 detect_memory_e820() 中被初始化
+     *
+     *  
+     *  Physic Memory
+     *
+     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  |          |                         |     |                 |             |                |
+     *  |          |                         | ... |                 |             |                |
+     *  |          |                         |     |                 |             |                |
+     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+     *  ^          ^                               ^                 ^             ^
+     *  |          |                               |                 |             |
+     *  | +--------+                               |                 |             |
+     *  | |     +----------------------------------+                 |             |
+     *  | |     | +--------------------------------------------------+             |
+     *  | |     | | +--------------------------------------------------------------+
+     *  | |     | | |
+     *  | |     | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     * | | |   | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | | . | | | | | | | | |
+     * | | |   | | | | | | | | |
+     * +-+-+---+-+-+-+-+-+-+-+-+
+     *      e820_table 遍历
      */
 	struct boot_e820_entry e820_table[E820_MAX_ENTRIES_ZEROPAGE/*128*/]; /* 0x2d0 */
     
