@@ -90,6 +90,8 @@ module_param_named(flush_on_reuse, force_flush_and_sync_on_reuse, bool, 0644);
  * 1. the guest-virtual to guest-physical
  * 2. while doing 1. it walks guest-physical to host-physical
  * If the hardware supports that we don't need to do shadow paging.
+ *
+ * Two-Dimensional-Paging
  */
 bool tdp_enabled = false;
 
@@ -3851,6 +3853,9 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 				 max_level, true);
 }
 
+/**
+ *  实模式下的 kvm_mmu 上下文初始化
+ */
 static void nonpaging_init_context(struct kvm_vcpu *vcpu,
 				   struct kvm_mmu *context)
 {
@@ -4618,29 +4623,51 @@ kvm_calc_shadow_mmu_root_page_role(struct kvm_vcpu *vcpu, bool base_only)
 	return role;
 }
 
+/**
+ *  
+ */
 static void shadow_mmu_init_context(struct kvm_vcpu *vcpu, struct kvm_mmu *context,
 				    u32 cr0, u32 cr4, u32 efer,
 				    union kvm_mmu_role new_role)
 {
+    /**
+     *  如果没有开启分页，说明 CPU现在处于 实模式
+     */
 	if (!(cr0 & X86_CR0_PG))
 		nonpaging_init_context(vcpu, context);
-	else if (efer & EFER_LMA)
+    /**
+     *  
+     */
+    else if (efer & EFER_LMA)
 		paging64_init_context(vcpu, context);
-	else if (cr4 & X86_CR4_PAE)
+    /**
+     *  
+     */
+    else if (cr4 & X86_CR4_PAE)
 		paging32E_init_context(vcpu, context);
-	else
+    /**
+     *  
+     */
+    else
 		paging32_init_context(vcpu, context);
 
 	context->mmu_role.as_u64 = new_role.as_u64;
 	reset_shadow_zero_bits_mask(vcpu, context);
 }
 
+/**
+ *  
+ *  @cr0 - 可以判断是否开启分页
+ */
 static void kvm_init_shadow_mmu(struct kvm_vcpu *vcpu, u32 cr0, u32 cr4, u32 efer)
 {
 	struct kvm_mmu *context = &vcpu->arch.root_mmu;
 	union kvm_mmu_role new_role =
 		kvm_calc_shadow_mmu_root_page_role(vcpu, false);
 
+    /**
+     *  
+     */
 	if (new_role.as_u64 != context->mmu_role.as_u64)
 		shadow_mmu_init_context(vcpu, context, cr0, cr4, efer, new_role);
 }
@@ -4736,10 +4763,16 @@ void kvm_init_shadow_ept_mmu(struct kvm_vcpu *vcpu, bool execonly,
 }
 EXPORT_SYMBOL_GPL(kvm_init_shadow_ept_mmu);
 
+/**
+ *  
+ */
 static void init_kvm_softmmu(struct kvm_vcpu *vcpu)
 {
 	struct kvm_mmu *context = &vcpu->arch.root_mmu;
 
+    /**
+     *  
+     */
 	kvm_init_shadow_mmu(vcpu,
 			    kvm_read_cr0_bits(vcpu, X86_CR0_PG),
 			    kvm_read_cr4_bits(vcpu, X86_CR4_PAE),
@@ -4804,6 +4837,9 @@ static void init_kvm_nested_mmu(struct kvm_vcpu *vcpu)
 	update_last_nonleaf_level(vcpu, g_context);
 }
 
+/**
+ *  重置 VCPU 对应的虚拟 MMU
+ */
 void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 {
 	if (reset_roots) {
@@ -4815,11 +4851,20 @@ void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 			vcpu->arch.mmu->prev_roots[i] = KVM_MMU_ROOT_INFO_INVALID;
 	}
 
+    /**
+     *  
+     */
 	if (mmu_is_nested(vcpu))
 		init_kvm_nested_mmu(vcpu);
+    /**
+     *  Two-Dimensional-Paging
+     */
 	else if (tdp_enabled)
 		init_kvm_tdp_mmu(vcpu);
-	else
+    /**
+     *  
+     */
+    else
 		init_kvm_softmmu(vcpu);
 }
 EXPORT_SYMBOL_GPL(kvm_init_mmu);
@@ -4837,6 +4882,9 @@ kvm_mmu_calc_root_page_role(struct kvm_vcpu *vcpu)
 	return role.base;
 }
 
+/**
+ *  
+ */
 void kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
 {
 	kvm_mmu_unload(vcpu);
@@ -5936,6 +5984,9 @@ static int set_nx_huge_pages(const char *val, const struct kernel_param *kp)
 	return 0;
 }
 
+/**
+ *  
+ */
 int kvm_mmu_module_init(void)
 {
 	int ret = -ENOMEM;

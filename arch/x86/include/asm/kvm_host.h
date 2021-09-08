@@ -356,8 +356,13 @@ struct kvm_mmu_page;
  * x86 supports 4 paging modes (5-level 64-bit, 4-level 64-bit, 3-level 32-bit,
  * and 2-level 32-bit).  The kvm_mmu structure abstracts the details of the
  * current mmu mode.
+ *
+ *  
  */
 struct kvm_mmu {
+    /**
+     *  实模式下，初始化 `nonpaging_init_context()`
+     */
 	unsigned long (*get_guest_pgd)(struct kvm_vcpu *vcpu);
 	u64 (*get_pdptr)(struct kvm_vcpu *vcpu, int index);
 	int (*page_fault)(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u32 err,

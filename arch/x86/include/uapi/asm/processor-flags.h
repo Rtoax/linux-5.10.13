@@ -73,6 +73,9 @@
 #define X86_CR0_NW		_BITUL(X86_CR0_NW_BIT)
 #define X86_CR0_CD_BIT		30 /* Cache Disable */
 #define X86_CR0_CD		_BITUL(X86_CR0_CD_BIT)
+/**
+ *  是否开启分页，通过设置 cr0 寄存器这个标志开启分页
+ */
 #define X86_CR0_PG_BIT		31 /* Paging */
 #define X86_CR0_PG		_BITUL(X86_CR0_PG_BIT)
 

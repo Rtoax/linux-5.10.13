@@ -812,10 +812,16 @@ bool pdptrs_changed(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(pdptrs_changed);
 
+/**
+ *  
+ */
 int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
 {
 	unsigned long old_cr0 = kvm_read_cr0(vcpu);
 	unsigned long pdptr_bits = X86_CR0_CD | X86_CR0_NW | X86_CR0_PG;
+    /**
+     *  分页 + 写保护
+     */
 	unsigned long update_bits = X86_CR0_PG | X86_CR0_WP;
 
 	cr0 |= X86_CR0_ET;
@@ -860,7 +866,13 @@ int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
 		kvm_async_pf_hash_reset(vcpu);
 	}
 
+    /**
+     *  CR0 有变化： 分页标志 和 写保护标志 是否有变化
+     */
 	if ((cr0 ^ old_cr0) & update_bits)
+        /**
+         *  有变化 则进行调用
+         */
 		kvm_mmu_reset_context(vcpu);
 
 	if (((cr0 ^ old_cr0) & X86_CR0_CD) &&

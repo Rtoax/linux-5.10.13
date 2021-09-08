@@ -4989,7 +4989,11 @@ vmx_patch_hypercall(struct kvm_vcpu *vcpu, unsigned char *hypercall)
 	hypercall[2] = 0xc1;
 }
 
-/* called to set cr0 as appropriate for a mov-to-cr0 exit. */
+/**
+ *  called to set cr0 as appropriate for a mov-to-cr0 exit. 
+ *
+ *  设置 CR0
+ */
 static int handle_set_cr0(struct kvm_vcpu *vcpu, unsigned long val)
 {
 	if (is_guest_mode(vcpu)) {
@@ -5073,7 +5077,7 @@ static int handle_cr(struct kvm_vcpu *vcpu)
 		trace_kvm_cr_write(cr, val);
 		switch (cr) {
         /**
-         *  
+         *  设置 CR0
          */    
 		case 0:
 			err = handle_set_cr0(vcpu, val);

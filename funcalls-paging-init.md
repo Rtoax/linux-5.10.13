@@ -46,4 +46,6 @@ start_kernel
                 __init_single_page
 ```
 
+# 开启分页方式
 
+* X86 是通过 设置 CR0 寄存器开启分页的。
