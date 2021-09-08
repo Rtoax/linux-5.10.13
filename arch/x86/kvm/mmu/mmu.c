@@ -1663,10 +1663,16 @@ static void drop_parent_pte(struct kvm_mmu_page *sp,
 	mmu_spte_clear_no_track(parent_pte);
 }
 
+/**
+ *  
+ */
 static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct)
 {
 	struct kvm_mmu_page *sp;
 
+    /**
+     *  
+     */
 	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
 	if (!direct)
@@ -2028,6 +2034,9 @@ static void clear_sp_write_flooding_count(u64 *spte)
 	__clear_sp_write_flooding_count(sptep_to_sp(spte));
 }
 
+/**
+ *  
+ */
 static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
 					     gfn_t gfn,
 					     gva_t gaddr,
@@ -2096,6 +2105,9 @@ trace_get_page:
 
 	++vcpu->kvm->stat.mmu_cache_miss;
 
+    /**
+     *  
+     */
 	sp = kvm_mmu_alloc_page(vcpu, direct);
 
 	sp->gfn = gfn;
@@ -2114,6 +2126,9 @@ trace_get_page:
 		if (level > PG_LEVEL_4K && need_sync)
 			flush |= kvm_sync_pages(vcpu, gfn, &invalid_list);
 	}
+    /**
+     *  
+     */
 	trace_kvm_mmu_get_page(sp, true);
 
 	kvm_mmu_flush_or_zap(vcpu, &invalid_list, false, flush);
@@ -3223,6 +3238,9 @@ static int mmu_check_root(struct kvm_vcpu *vcpu, gfn_t root_gfn)
 	return ret;
 }
 
+/**
+ *  
+ */
 static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 			    u8 level, bool direct)
 {
@@ -3234,6 +3252,9 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 		spin_unlock(&vcpu->kvm->mmu_lock);
 		return INVALID_PAGE;
 	}
+    /**
+     *  
+     */
 	sp = kvm_mmu_get_page(vcpu, gfn, gva, level, direct, ACC_ALL);
 	++sp->root_count;
 
@@ -3241,26 +3262,44 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 	return __pa(sp->spt);
 }
 
+/**
+ *  
+ */
 static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 {
 	u8 shadow_root_level = vcpu->arch.mmu->shadow_root_level;
 	hpa_t root;
 	unsigned i;
 
+    /**
+     *  
+     */
 	if (vcpu->kvm->arch.tdp_mmu_enabled) {
 		root = kvm_tdp_mmu_get_vcpu_root_hpa(vcpu);
 
 		if (!VALID_PAGE(root))
 			return -ENOSPC;
+        /**
+         *  ROOT Host Pysical Address
+         *  KVM 为 Guest 分配的专用页表的根页面的地址
+         *
+         *  在 `mmu_alloc_roots()` 中分配
+         *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
+         */
 		vcpu->arch.mmu->root_hpa = root;
+    /**
+     *  
+     */
 	} else if (shadow_root_level >= PT64_ROOT_4LEVEL) {
-		root = mmu_alloc_root(vcpu, 0, 0, shadow_root_level,
-				      true);
+		root = mmu_alloc_root(vcpu, 0, 0, shadow_root_level, true);
 
 		if (!VALID_PAGE(root))
 			return -ENOSPC;
 		vcpu->arch.mmu->root_hpa = root;
-	} else if (shadow_root_level == PT32E_ROOT_LEVEL) {
+    /**
+     *  
+     */
+    } else if (shadow_root_level == PT32E_ROOT_LEVEL) {
 		for (i = 0; i < 4; ++i) {
 			MMU_WARN_ON(VALID_PAGE(vcpu->arch.mmu->pae_root[i]));
 
@@ -3271,7 +3310,8 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 			vcpu->arch.mmu->pae_root[i] = root | PT_PRESENT_MASK;
 		}
 		vcpu->arch.mmu->root_hpa = __pa(vcpu->arch.mmu->pae_root);
-	} else
+
+    } else
 		BUG();
 
 	/* root_pgd is ignored for direct MMUs. */
@@ -3369,8 +3409,14 @@ set_root_pgd:
 	return 0;
 }
 
+/**
+ *  
+ */
 static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 {
+    /**
+     *  
+     */
 	if (vcpu->arch.mmu->direct_map)
 		return mmu_alloc_direct_roots(vcpu);
 	else
@@ -4798,18 +4844,41 @@ void kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(kvm_mmu_reset_context);
 
+/**
+ *  
+ */
 int kvm_mmu_load(struct kvm_vcpu *vcpu)
 {
 	int r;
 
+    /**
+     *  
+     */
 	r = mmu_topup_memory_caches(vcpu, !vcpu->arch.mmu->direct_map);
 	if (r)
 		goto out;
+
+    /**
+     *  
+     */
 	r = mmu_alloc_roots(vcpu);
+
+    /**
+     *  
+     */
 	kvm_mmu_sync_roots(vcpu);
 	if (r)
 		goto out;
-	kvm_mmu_load_pgd(vcpu);
+
+    /**
+     *  
+     */
+    kvm_mmu_load_pgd(vcpu);
+
+    /**
+     *  vmx_flush_tlb_current()
+     *  svm_flush_tlb_current()
+     */
 	kvm_x86_ops.tlb_flush_current(vcpu);
 out:
 	return r;

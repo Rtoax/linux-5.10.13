@@ -380,6 +380,9 @@ void kvm_mmu_free_memory_cache(struct kvm_mmu_memory_cache *mc)
 	}
 }
 
+/**
+ *  
+ */
 void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
 {
 	void *p;

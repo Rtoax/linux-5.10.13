@@ -9,18 +9,24 @@
 #undef MMU_DEBUG
 
 #ifdef MMU_DEBUG
-extern bool dbg;
-
-#define pgprintk(x...) do { if (dbg) printk(x); } while (0)
-#define rmap_printk(x...) do { if (dbg) printk(x); } while (0)
-#define MMU_WARN_ON(x) WARN_ON(x)
+//extern bool dbg;
+//
+//#define pgprintk(x...) do { if (dbg) printk(x); } while (0)
+//#define rmap_printk(x...) do { if (dbg) printk(x); } while (0)
+//#define MMU_WARN_ON(x) WARN_ON(x)
 #else
 #define pgprintk(x...) do { } while (0)
 #define rmap_printk(x...) do { } while (0)
 #define MMU_WARN_ON(x) do { } while (0)
 #endif
 
+/**
+ *  
+ */
 struct kvm_mmu_page {
+    /**
+     *  
+     */
 	struct list_head link;
 	struct hlist_node hash_link;
 	struct list_head lpage_disallowed_link;
@@ -43,7 +49,9 @@ struct kvm_mmu_page {
 	int root_count;          /* Currently serving as active root */
 	unsigned int unsync_children;
 	struct kvm_rmap_head parent_ptes; /* rmap pointers to parent sptes */
+    
 	DECLARE_BITMAP(unsync_child_bitmap, 512);
+    unsigned long unsync_child_bitmap[BITS_TO_LONGS(512)];//++++
 
 #ifdef CONFIG_X86_32
 	/*

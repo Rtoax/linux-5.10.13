@@ -66,6 +66,9 @@ bool kvm_can_do_async_pf(struct kvm_vcpu *vcpu);
 int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 				u64 fault_address, char *insn, int insn_len);
 
+/**
+ *  
+ */
 static inline int kvm_mmu_reload(struct kvm_vcpu *vcpu)
 {
 	if (likely(vcpu->arch.mmu->root_hpa != INVALID_PAGE))
@@ -91,13 +94,23 @@ static inline unsigned long kvm_get_active_pcid(struct kvm_vcpu *vcpu)
 	return kvm_get_pcid(vcpu, kvm_read_cr3(vcpu));
 }
 
+/**
+ *  
+ */
 static inline void kvm_mmu_load_pgd(struct kvm_vcpu *vcpu)
 {
+    /**
+     *  root_hpa 是 KVM 为 Guest 分配的专用页表的根页面的地址
+     */
 	u64 root_hpa = vcpu->arch.mmu->root_hpa;
 
 	if (!VALID_PAGE(root_hpa))
 		return;
 
+    /**
+     *  vmx_load_mmu_pgd()
+     *  svm_load_mmu_pgd()
+     */
 	kvm_x86_ops.load_mmu_pgd(vcpu, root_hpa | kvm_get_active_pcid(vcpu),
 				 vcpu->arch.mmu->shadow_root_level);
 }

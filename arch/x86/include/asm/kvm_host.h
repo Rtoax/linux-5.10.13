@@ -373,12 +373,25 @@ struct kvm_mmu {
 	void (*invlpg)(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa);
 	void (*update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
 			   u64 *spte, const void *pte);
-	hpa_t root_hpa;
+    /**
+     *  ROOT Host Pysical Address
+     *  KVM 为 Guest 分配的专用页表的根页面的地址
+     *
+     *  在 `mmu_alloc_roots()` 中分配
+     *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
+     */
+    hpa_t root_hpa;
+    /**
+     *  ROOT Page Global Directory
+     */
 	gpa_t root_pgd;
 	union kvm_mmu_role mmu_role;
 	u8 root_level;
 	u8 shadow_root_level;
 	u8 ept_ad;
+    /**
+     *  
+     */
 	bool direct_map;
 	struct kvm_mmu_root_info prev_roots[KVM_MMU_NUM_PREV_ROOTS];
 
