@@ -2802,6 +2802,9 @@ static void fix_rmode_seg(int seg, struct kvm_segment *save)
 	vmcs_write32(sf->ar_bytes, vmx_segment_access_rights(&var));
 }
 
+/**
+ *  
+ */
 static void enter_rmode(struct kvm_vcpu *vcpu)
 {
 	unsigned long flags;
@@ -2835,8 +2838,14 @@ static void enter_rmode(struct kvm_vcpu *vcpu)
 	flags = vmcs_readl(GUEST_RFLAGS);
 	vmx->rmode.save_rflags = flags;
 
+    /**
+     *  开启 VM(Virtual 8086) 模式
+     */
 	flags |= X86_EFLAGS_IOPL | X86_EFLAGS_VM;
 
+    /**
+     *  
+     */
 	vmcs_writel(GUEST_RFLAGS, flags);
 	vmcs_writel(GUEST_CR4, vmcs_readl(GUEST_CR4) | X86_CR4_VME);
 	update_exception_bitmap(vcpu);
@@ -3018,6 +3027,9 @@ static void ept_update_paging_mode_cr0(unsigned long *hw_cr0,
 		*hw_cr0 &= ~X86_CR0_WP;
 }
 
+/**
+ *  
+ */
 void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -4488,6 +4500,10 @@ static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	cr0 = X86_CR0_NW | X86_CR0_CD | X86_CR0_ET;
 	vmx->vcpu.arch.cr0 = cr0;
+
+    /**
+     *  设置 cr0
+     */
 	vmx_set_cr0(vcpu, cr0); /* enter rmode */
 	vmx_set_cr4(vcpu, 0);
 	vmx_set_efer(vcpu, 0);

@@ -545,6 +545,9 @@ struct kvm_vcpu_arch {
 	u32 regs_avail;
 	u32 regs_dirty;
 
+    /**
+     *  
+     */
 	unsigned long cr0;
 	unsigned long cr0_guest_owned_bits;
 	unsigned long cr2;

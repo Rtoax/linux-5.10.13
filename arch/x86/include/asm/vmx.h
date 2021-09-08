@@ -331,6 +331,9 @@ enum vmcs_field {
 	GUEST_DR7                       = 0x0000681a,
 	GUEST_RSP                       = 0x0000681c,
 	GUEST_RIP                       = 0x0000681e,
+	/**
+     *  对应 EFLAGS
+     */
 	GUEST_RFLAGS                    = 0x00006820,
 	GUEST_PENDING_DBG_EXCEPTIONS    = 0x00006822,
 	GUEST_SYSENTER_ESP              = 0x00006824,

@@ -34,6 +34,11 @@
 #define X86_EFLAGS_NT		_BITUL(X86_EFLAGS_NT_BIT)
 #define X86_EFLAGS_RF_BIT	16 /* Resume Flag */
 #define X86_EFLAGS_RF		_BITUL(X86_EFLAGS_RF_BIT)
+
+/**
+ *  Virtual 8086 模式
+ *  在 保护模式 下 执行 实模式 代码
+ */
 #define X86_EFLAGS_VM_BIT	17 /* Virtual Mode */
 #define X86_EFLAGS_VM		_BITUL(X86_EFLAGS_VM_BIT)
 #define X86_EFLAGS_AC_BIT	18 /* Alignment Check/Access Control */

@@ -10051,6 +10051,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 	vcpu->arch.msr_platform_info = MSR_PLATFORM_INFO_CPUID_FAULT;
 	kvm_vcpu_mtrr_init(vcpu);
 	vcpu_load(vcpu);
+    /**
+     *  
+     */
 	kvm_vcpu_reset(vcpu, false);
 	kvm_init_mmu(vcpu, false);
 	vcpu_put(vcpu);
@@ -10126,6 +10129,9 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
 		static_key_slow_dec(&kvm_no_apic_vcpu);
 }
 
+/**
+ *  刚进入 Guest 内核时，需要进行 reset vcpu
+ */
 void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 {
 	kvm_lapic_reset(vcpu, init_event);
@@ -10137,6 +10143,10 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 	atomic_set(&vcpu->arch.nmi_queued, 0);
 	vcpu->arch.nmi_pending = 0;
 	vcpu->arch.nmi_injected = false;
+
+    /**
+     *  
+     */
 	kvm_clear_interrupt_queue(vcpu);
 	kvm_clear_exception_queue(vcpu);
 
@@ -10148,6 +10158,9 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	vcpu->arch.cr2 = 0;
 
+    /**
+     *  
+     */
 	kvm_make_request(KVM_REQ_EVENT, vcpu);
 	vcpu->arch.apf.msr_en_val = 0;
 	vcpu->arch.apf.msr_int_val = 0;
@@ -10195,6 +10208,11 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	vcpu->arch.ia32_xss = 0;
 
+    /**
+     *  vmx_vcpu_reset()
+     *  svm_vcpu_reset()
+     *  
+     */
 	kvm_x86_ops.vcpu_reset(vcpu, init_event);
 }
 
