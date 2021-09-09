@@ -520,6 +520,9 @@ void kvm_deliver_exception_payload(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(kvm_deliver_exception_payload);
 
+/**
+ *  
+ */
 static void kvm_multiple_exception(struct kvm_vcpu *vcpu,
 		unsigned nr, bool has_error, u32 error_code,
 	        bool has_payload, unsigned long payload, bool reinject)
@@ -641,6 +644,10 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, struct x86_exception *fault)
 	++vcpu->stat.pf_guest;
 	vcpu->arch.exception.nested_apf =
 		is_guest_mode(vcpu) && fault->async_page_fault;
+
+    /**
+     *  
+     */
 	if (vcpu->arch.exception.nested_apf) {
 		vcpu->arch.apf.nested_apf_token = fault->address;
 		kvm_queue_exception_e(vcpu, PF_VECTOR, fault->error_code);
@@ -650,6 +657,9 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, struct x86_exception *fault)
 }
 EXPORT_SYMBOL_GPL(kvm_inject_page_fault);
 
+/**
+ *  向 Guest 内核注入 缺页异常
+ */
 bool kvm_inject_emulated_page_fault(struct kvm_vcpu *vcpu,
 				    struct x86_exception *fault)
 {
@@ -666,8 +676,14 @@ bool kvm_inject_emulated_page_fault(struct kvm_vcpu *vcpu,
 	if ((fault->error_code & PFERR_PRESENT_MASK) &&
 	    !(fault->error_code & PFERR_RSVD_MASK))
 		kvm_mmu_invalidate_gva(vcpu, fault_mmu, fault->address,
-				       fault_mmu->root_hpa);
+				            fault_mmu->root_hpa);
 
+    /**
+     *  注入
+     *  可能为：
+     *  kvm_inject_page_fault()
+     *  vmx_inject_page_fault_nested()
+     */
 	fault_mmu->inject_page_fault(vcpu, fault);
 	return fault->nested_page_fault;
 }
@@ -5907,6 +5923,9 @@ void kvm_get_segment(struct kvm_vcpu *vcpu,
 	kvm_x86_ops.get_segment(vcpu, var, seg);
 }
 
+/**
+ *  
+ */
 gpa_t translate_nested_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 			   struct x86_exception *exception)
 {
@@ -5916,6 +5935,17 @@ gpa_t translate_nested_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 
 	/* NPT walks are always user-walks */
 	access |= PFERR_USER_MASK;
+
+    /**
+     *  可能为
+     *  nonpaging_gva_to_gpa()
+     *  paging64_gva_to_gpa()
+     *  paging32_gva_to_gpa()
+     *  ept_gva_to_gpa()
+     *  nonpaging_gva_to_gpa_nested()
+     *  paging64_gva_to_gpa_nested()
+     *  paging32_gva_to_gpa_nested()
+     */
 	t_gpa  = vcpu->arch.mmu->gva_to_gpa(vcpu, gpa, access, exception);
 
 	return t_gpa;

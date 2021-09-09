@@ -362,16 +362,40 @@ struct kvm_mmu_page;
 struct kvm_mmu {
     /**
      *  实模式下，初始化 `nonpaging_init_context()`
+     *  保护模式下，这将是 `get_cr3()`
      */
 	unsigned long (*get_guest_pgd)(struct kvm_vcpu *vcpu);
 	u64 (*get_pdptr)(struct kvm_vcpu *vcpu, int index);
 	int (*page_fault)(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u32 err,
 			  bool prefault);
-	void (*inject_page_fault)(struct kvm_vcpu *vcpu,
+    /**
+     *  向 Guest 注入 缺页异常
+     *
+     *  可能为：
+     *  kvm_inject_page_fault()
+     *  vmx_inject_page_fault_nested()
+     */
+    void (*inject_page_fault)(struct kvm_vcpu *vcpu,
 				  struct x86_exception *fault);
-	gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gpa_t gva_or_gpa,
+
+    /**
+     *  可能为
+     *  nonpaging_gva_to_gpa()
+     *  paging64_gva_to_gpa()
+     *  paging32_gva_to_gpa()
+     *  ept_gva_to_gpa()
+     *  nonpaging_gva_to_gpa_nested()
+     *  paging64_gva_to_gpa_nested()
+     *  paging32_gva_to_gpa_nested()
+     */
+    gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gpa_t gva_or_gpa,
 			    u32 access, struct x86_exception *exception);
-	gpa_t (*translate_gpa)(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
+    /**
+     *  可能为
+     *  translate_gpa()
+     *  translate_nested_gpa()
+     */
+    gpa_t (*translate_gpa)(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 			       struct x86_exception *exception);
 	int (*sync_page)(struct kvm_vcpu *vcpu,
 			 struct kvm_mmu_page *sp);
@@ -391,6 +415,9 @@ struct kvm_mmu {
      */
 	gpa_t root_pgd;
 	union kvm_mmu_role mmu_role;
+    /**
+     *  页表级别-几级页表
+     */
 	u8 root_level;
 	u8 shadow_root_level;
 	u8 ept_ad;
