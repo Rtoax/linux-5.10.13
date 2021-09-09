@@ -273,6 +273,9 @@ static int print_exit_reason(struct trace_seq *s, struct tep_record *record,
 	return 0;
 }
 
+/**
+ *  
+ */
 static int kvm_exit_handler(struct trace_seq *s, struct tep_record *record,
 			    struct tep_event *event, void *context)
 {

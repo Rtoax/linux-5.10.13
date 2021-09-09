@@ -118,13 +118,22 @@ static inline void kvm_mmu_load_pgd(struct kvm_vcpu *vcpu)
 int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		       bool prefault);
 
+/**
+ *  
+ */
 static inline int kvm_mmu_do_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 					u32 err, bool prefault)
 {
 #ifdef CONFIG_RETPOLINE
+    /**
+     *  
+     */
 	if (likely(vcpu->arch.mmu->page_fault == kvm_tdp_page_fault))
 		return kvm_tdp_page_fault(vcpu, cr2_or_gpa, err, prefault);
 #endif
+    /**
+     *  
+     */
 	return vcpu->arch.mmu->page_fault(vcpu, cr2_or_gpa, err, prefault);
 }
 

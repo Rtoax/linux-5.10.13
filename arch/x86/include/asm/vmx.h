@@ -207,6 +207,10 @@ enum vmcs_field {
 	POSTED_INTR_DESC_ADDR_HIGH      = 0x00002017,
 	VM_FUNCTION_CONTROL             = 0x00002018,
 	VM_FUNCTION_CONTROL_HIGH        = 0x00002019,
+	/**
+     *  如果启用了 EPT ，root_hpa 不再加载进 CR3 了，而是
+     *  加载进寄存器 EPT pointer 中
+     */
 	EPT_POINTER                     = 0x0000201a,
 	EPT_POINTER_HIGH                = 0x0000201b,
 	EOI_EXIT_BITMAP0                = 0x0000201c,
@@ -535,6 +539,9 @@ static inline u8 vmx_eptp_page_walk_level(u64 eptp)
 #define VMX_EPT_MISCONFIG_WX_VALUE		(VMX_EPT_WRITABLE_MASK |       \
 						 VMX_EPT_EXECUTABLE_MASK)
 
+/**
+ *  
+ */
 #define VMX_EPT_IDENTITY_PAGETABLE_ADDR		0xfffbc000ul
 
 struct vmx_msr_entry {

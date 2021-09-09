@@ -3096,21 +3096,34 @@ static int vmx_get_max_tdp_level(void)
 	return 4;
 }
 
+/**
+ *  构建 EPT Pointer
+ */
 u64 construct_eptp(struct kvm_vcpu *vcpu, unsigned long root_hpa,
 		   int root_level)
 {
 	u64 eptp = VMX_EPTP_MT_WB;
 
+    /**
+     *  几级页表
+     */
 	eptp |= (root_level == 5) ? VMX_EPTP_PWL_5 : VMX_EPTP_PWL_4;
 
 	if (enable_ept_ad_bits &&
 	    (!is_guest_mode(vcpu) || nested_ept_ad_enabled(vcpu)))
 		eptp |= VMX_EPTP_AD_ENABLE_BIT;
+
+    /**
+     *  
+     */
 	eptp |= (root_hpa & PAGE_MASK);
 
 	return eptp;
 }
 
+/**
+ *  vmx_x86_ops.load_mmu_pgd()
+ */
 static void vmx_load_mmu_pgd(struct kvm_vcpu *vcpu, unsigned long pgd,
 			     int pgd_level)
 {
@@ -3119,8 +3132,17 @@ static void vmx_load_mmu_pgd(struct kvm_vcpu *vcpu, unsigned long pgd,
 	unsigned long guest_cr3;
 	u64 eptp;
 
+    /**
+     *  使能 EPT
+     */
 	if (enable_ept) {
+        /**
+         *  构建 EPT pointer
+         */
 		eptp = construct_eptp(vcpu, pgd, pgd_level);
+        /**
+         *  
+         */
 		vmcs_write64(EPT_POINTER, eptp);
 
 		if (kvm_x86_ops.tlb_remote_flush) {
@@ -3131,6 +3153,9 @@ static void vmx_load_mmu_pgd(struct kvm_vcpu *vcpu, unsigned long pgd,
 			spin_unlock(&to_kvm_vmx(kvm)->ept_pointer_lock);
 		}
 
+        /**
+         *  CR3 寄存器指向 Guest 自己的页表
+         */
 		if (!enable_unrestricted_guest && !is_paging(vcpu))
 			guest_cr3 = to_kvm_vmx(kvm)->ept_identity_map_addr;
 		else if (test_bit(VCPU_EXREG_CR3, (ulong *)&vcpu->arch.regs_avail))
@@ -3138,6 +3163,10 @@ static void vmx_load_mmu_pgd(struct kvm_vcpu *vcpu, unsigned long pgd,
 		else /* vmcs01.GUEST_CR3 is already up-to-date. */
 			update_guest_cr3 = false;
 		vmx_ept_load_pdptrs(vcpu);
+
+    /**
+     *  位使能 EPT，那么 CR3 寄存器依旧保存页根目录
+     */
 	} else {
 		guest_cr3 = pgd;
 	}
@@ -3600,6 +3629,9 @@ out:
 	return r;
 }
 
+/**
+ *  
+ */
 static int init_rmode_identity_map(struct kvm *kvm)
 {
 	struct kvm_vmx *kvm_vmx = to_kvm_vmx(kvm);
@@ -3613,8 +3645,15 @@ static int init_rmode_identity_map(struct kvm *kvm)
 	if (likely(kvm_vmx->ept_identity_pagetable_done))
 		goto out;
 
+    /**
+     *  
+     */
 	if (!kvm_vmx->ept_identity_map_addr)
 		kvm_vmx->ept_identity_map_addr = VMX_EPT_IDENTITY_PAGETABLE_ADDR;
+
+    /**
+     *  
+     */
 	identity_map_pfn = kvm_vmx->ept_identity_map_addr >> PAGE_SHIFT;
 
 	r = __x86_set_memory_region(kvm, IDENTITY_PAGETABLE_PRIVATE_MEMSLOT,
@@ -5470,12 +5509,27 @@ static int handle_task_switch(struct kvm_vcpu *vcpu)
 			       reason, has_error_code, error_code);
 }
 
+/**
+ *  处理 EPT 异常
+ */
 static int handle_ept_violation(struct kvm_vcpu *vcpu)
 {
 	unsigned long exit_qualification;
 	gpa_t gpa;
 	u64 error_code;
 
+    /**
+     *  在 Guest 写入 CR3 寄存器触发 虚拟机退出时
+     *  KVM需要记录下Guest准备向 CR3 寄存器写入的 Guest 的根页表，
+     *  在发生虚拟机退出前，CPU将这些信息写入了 VMCS的字段 exit_qualification 中
+     *  的 8-11 位中，如
+     *      3:0 - 指示Guest访问的是哪个控制寄存器，见 `handle_cr()`
+     *      5:4 - 访问类型：0-写控制寄存器，1-读控制寄存器
+     *      11:8 - 写入时的源操作数，读取时为目的操作数(0-rax,1-rcx,2-rdx,3-rbx,...)
+     *  
+     *  可能会保存缺页异常的地址 cr2
+     *
+     */
 	exit_qualification = vmx_get_exit_qual(vcpu);
 
 	/*
@@ -5489,7 +5543,14 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 			(exit_qualification & INTR_INFO_UNBLOCK_NMI))
 		vmcs_set_bits(GUEST_INTERRUPTIBILITY_INFO, GUEST_INTR_STATE_NMI);
 
+    /**
+     *  从 VMCS 中的 guest physical address 字段中读出引发缺页异常的 GPA
+     */
 	gpa = vmcs_read64(GUEST_PHYSICAL_ADDRESS);
+
+    /**
+     *  追踪 KVM 缺页
+     */
 	trace_kvm_page_fault(gpa, exit_qualification);
 
 	/* Is it a read fault? */
@@ -5523,6 +5584,9 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 	if (unlikely(allow_smaller_maxphyaddr && kvm_vcpu_is_illegal_gpa(vcpu, gpa)))
 		return kvm_emulate_instruction(vcpu, 0);
 
+    /**
+     *  缺页异常
+     */
 	return kvm_mmu_page_fault(vcpu, gpa, error_code, NULL, 0);
 }
 
@@ -5838,6 +5902,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_MCE_DURING_VMENTRY]      = handle_machine_check,
 	[EXIT_REASON_GDTR_IDTR]		      = handle_desc,
 	[EXIT_REASON_LDTR_TR]		      = handle_desc,
+	/**
+     *  EPT 缺页处理函数
+     */
 	[EXIT_REASON_EPT_VIOLATION]	      = handle_ept_violation,
 	[EXIT_REASON_EPT_MISCONFIG]           = handle_ept_misconfig,
 	[EXIT_REASON_PAUSE_INSTRUCTION]       = handle_pause,
@@ -6104,6 +6171,8 @@ void dump_vmcs(void)
 /*
  * The guest has exited.  See if we can fix it or if we need userspace
  * assistance.
+ *
+ *  VM Exit 处理  
  */
 static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 {
@@ -6242,6 +6311,9 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	if (!kvm_vmx_exit_handlers[exit_reason])
 		goto unexpected_vmexit;
 
+    /**
+     *  处理
+     */
 	return kvm_vmx_exit_handlers[exit_reason](vcpu);
 
 unexpected_vmexit:
@@ -7151,6 +7223,9 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 			goto free_vmcs;
 	}
 
+    /**
+     *  
+     */
 	if (enable_ept && !enable_unrestricted_guest) {
 		err = init_rmode_identity_map(vcpu->kvm);
 		if (err)

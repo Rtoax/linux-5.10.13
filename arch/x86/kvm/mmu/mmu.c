@@ -2989,6 +2989,9 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			sp = kvm_mmu_get_page(vcpu, base_gfn, it.addr,
 					      it.level - 1, true, ACC_ALL);
 
+            /**
+             *  
+             */
 			link_shadow_page(vcpu, it.sptep, sp);
 			if (is_tdp && huge_page_disallowed &&
 			    req_level >= it.level)
@@ -3525,6 +3528,9 @@ static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 		return mmu_alloc_shadow_roots(vcpu);
 }
 
+/**
+ *  
+ */
 void kvm_mmu_sync_roots(struct kvm_vcpu *vcpu)
 {
 	int i;
@@ -3906,7 +3912,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
      */
     else
 		r = __direct_map(vcpu, gpa, error_code, map_writable, max_level, pfn,
-				        prefault, is_tdp);
+				         prefault, is_tdp);
 
 out_unlock:
 	spin_unlock(&vcpu->kvm->mmu_lock);
@@ -3975,6 +3981,9 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 }
 EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 
+/**
+ *  
+ */
 int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		       bool prefault)
 {
@@ -3989,7 +3998,9 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		if (kvm_mtrr_check_gfn_range_consistency(vcpu, base, page_num))
 			break;
 	}
-
+    /**
+     *  
+     */
 	return direct_page_fault(vcpu, gpa, error_code, prefault,
 				 max_level, true);
 }
@@ -5751,6 +5762,9 @@ int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva)
 }
 EXPORT_SYMBOL_GPL(kvm_mmu_unprotect_page_virt);
 
+/**
+ *  EPT 缺页处理
+ */
 int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 		       void *insn, int insn_len)
 {
@@ -5761,13 +5775,23 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 		return RET_PF_RETRY;
 
 	r = RET_PF_INVALID;
+
+    /**
+     *  
+     */
 	if (unlikely(error_code & PFERR_RSVD_MASK)) {
 		r = handle_mmio_page_fault(vcpu, cr2_or_gpa, direct);
 		if (r == RET_PF_EMULATE)
 			goto emulate;
 	}
 
+    /**
+     *  
+     */
 	if (r == RET_PF_INVALID) {
+        /**
+         *  
+         */
 		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa, lower_32_bits(error_code), false);
 		if (WARN_ON_ONCE(r == RET_PF_INVALID))
 			return -EIO;

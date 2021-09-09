@@ -117,6 +117,9 @@ static __always_inline u32 vmcs_read32(unsigned long field)
 	return __vmcs_readl(field);
 }
 
+/**
+ *  
+ */
 static __always_inline u64 vmcs_read64(unsigned long field)
 {
 	vmcs_check64(field);
@@ -125,7 +128,7 @@ static __always_inline u64 vmcs_read64(unsigned long field)
 #ifdef CONFIG_X86_64
 	return __vmcs_readl(field);
 #else
-	return __vmcs_readl(field) | ((u64)__vmcs_readl(field+1) << 32);
+//	return __vmcs_readl(field) | ((u64)__vmcs_readl(field+1) << 32);
 #endif
 }
 
@@ -194,6 +197,9 @@ static __always_inline void vmcs_write32(unsigned long field, u32 value)
 	__vmcs_writel(field, value);
 }
 
+/**
+ *  
+ */
 static __always_inline void vmcs_write64(unsigned long field, u64 value)
 {
 	vmcs_check64(field);

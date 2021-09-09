@@ -36,7 +36,7 @@ struct vmcs {
 	struct vmcs_hdr hdr;
 	u32 abort;
     /**
-     *  
+     *  见 `enum vmcs_field` 和 `vmcs_read64()`
      */
 	char data[];
 };

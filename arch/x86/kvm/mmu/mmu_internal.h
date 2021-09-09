@@ -135,6 +135,9 @@ static inline bool kvm_mmu_put_root(struct kvm *kvm, struct kvm_mmu_page *sp)
 enum {
 	RET_PF_RETRY = 0,
 	RET_PF_EMULATE,
+	/**
+     *  
+     */
 	RET_PF_INVALID,
 	RET_PF_FIXED,
 	RET_PF_SPURIOUS,

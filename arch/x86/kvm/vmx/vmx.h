@@ -448,6 +448,18 @@ static inline unsigned long vmx_get_exit_qual(struct kvm_vcpu *vcpu)
 		kvm_register_mark_available(vcpu, VCPU_EXREG_EXIT_INFO_1);
 		vmx->exit_qualification = vmcs_readl(EXIT_QUALIFICATION);
 	}
+    /**
+     *  在 Guest 写入 CR3 寄存器触发 虚拟机退出时
+     *  KVM需要记录下Guest准备向 CR3 寄存器写入的 Guest 的根页表，
+     *  在发生虚拟机退出前，CPU将这些信息写入了 VMCS的字段 exit_qualification 中
+     *  的 8-11 位中，如
+     *      3:0 - 指示Guest访问的是哪个控制寄存器，见 `handle_cr()`
+     *      5:4 - 访问类型：0-写控制寄存器，1-读控制寄存器
+     *      11:8 - 写入时的源操作数，读取时为目的操作数(0-rax,1-rcx,2-rdx,3-rbx,...)
+     *  
+     *  可能会保存缺页异常的地址 cr2
+     *
+     */
 	return vmx->exit_qualification;
 }
 

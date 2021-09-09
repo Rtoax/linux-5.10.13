@@ -141,6 +141,9 @@ static inline int is_pse(struct kvm_vcpu *vcpu)
 	return kvm_read_cr4_bits(vcpu, X86_CR4_PSE);
 }
 
+/**
+ *  是否开启了分页
+ */
 static inline int is_paging(struct kvm_vcpu *vcpu)
 {
 	return likely(kvm_read_cr0_bits(vcpu, X86_CR0_PG));
