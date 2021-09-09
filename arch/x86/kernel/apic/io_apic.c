@@ -257,6 +257,9 @@ int __init arch_early_ioapic_init(void) /*  */
 	return 0;
 }
 
+/**
+ *  IOAPIC
+ */
 struct io_apic {
 	unsigned int index;
 	unsigned int unused[3];
@@ -277,10 +280,19 @@ static inline void io_apic_eoi(unsigned int apic, unsigned int vector)
 	writel(vector, &io_apic->eoi);
 }
 
+/**
+ *  
+ */
 unsigned int native_io_apic_read(unsigned int apic, unsigned int reg)
 {
 	struct io_apic __iomem *io_apic = io_apic_base(apic);
+    /**
+	 *  先写 
+	 */
 	writel(reg, &io_apic->index);
+    /**
+	 *  再 读
+	 */
 	return readl(&io_apic->data);
 }
 

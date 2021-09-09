@@ -176,6 +176,9 @@ fault:									\
 
 static __always_inline void __vmcs_writel(unsigned long field, unsigned long value)
 {
+    /**
+     *  注入
+     */
 	vmx_asm2(vmwrite, "r"(field), "rm"(value), field, value);
 }
 
@@ -188,6 +191,9 @@ static __always_inline void vmcs_write16(unsigned long field, u16 value)
 	__vmcs_writel(field, value);
 }
 
+/**
+ *  
+ */
 static __always_inline void vmcs_write32(unsigned long field, u32 value)
 {
 	vmcs_check32(field);

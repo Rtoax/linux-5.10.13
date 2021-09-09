@@ -1145,6 +1145,9 @@ static inline void pt_save_msr(struct pt_ctx *ctx, u32 addr_range)
 	}
 }
 
+/**
+ *  Guest VM-enter
+ */
 static void pt_guest_enter(struct vcpu_vmx *vmx)
 {
 	if (vmx_pt_mode_is_system())
@@ -1162,6 +1165,9 @@ static void pt_guest_enter(struct vcpu_vmx *vmx)
 	}
 }
 
+/**
+ *  Guest VM-exit
+ */
 static void pt_guest_exit(struct vcpu_vmx *vmx)
 {
 	if (vmx_pt_mode_is_system())
@@ -4593,15 +4599,24 @@ static void enable_nmi_window(struct kvm_vcpu *vcpu)
 	exec_controls_setbit(to_vmx(vcpu), CPU_BASED_NMI_WINDOW_EXITING);
 }
 
+/**
+ *  注入中断
+ */
 static void vmx_inject_irq(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	uint32_t intr;
 	int irq = vcpu->arch.interrupt.nr;
 
+    /**
+     *  
+     */
 	trace_kvm_inj_virq(irq);
 
 	++vcpu->stat.irq_injections;
+    /**
+     *  
+     */
 	if (vmx->rmode.vm86_active) {
 		int inc_eip = 0;
 		if (vcpu->arch.interrupt.soft)
@@ -4610,12 +4625,22 @@ static void vmx_inject_irq(struct kvm_vcpu *vcpu)
 		return;
 	}
 	intr = irq | INTR_INFO_VALID_MASK;
+    /**
+     *  软件中断
+     */
 	if (vcpu->arch.interrupt.soft) {
 		intr |= INTR_TYPE_SOFT_INTR;
 		vmcs_write32(VM_ENTRY_INSTRUCTION_LEN,
 			     vmx->vcpu.arch.event_exit_inst_len);
-	} else
+    /**
+     *  外部中断
+     */
+    } else
 		intr |= INTR_TYPE_EXT_INTR;
+
+    /**
+     *  注入中断
+     */
 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD, intr);
 
 	vmx_clear_hlt(vcpu);
@@ -6953,6 +6978,9 @@ reenter_guest:
 	 */
 	WARN_ON_ONCE(vmx->nested.need_vmcs12_to_shadow_sync);
 
+    /**
+	 *  
+	 */
 	if (kvm_register_is_dirty(vcpu, VCPU_REGS_RSP))
 		vmcs_writel(GUEST_RSP, vcpu->arch.regs[VCPU_REGS_RSP]);
 	if (kvm_register_is_dirty(vcpu, VCPU_REGS_RIP))

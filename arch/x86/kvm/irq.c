@@ -39,6 +39,8 @@ static int pending_userspace_extint(struct kvm_vcpu *v)
 /*
  * check if there is pending interrupt from
  * non-APIC source without intack.
+ *
+ * 检查是否有 挂起的中断 - non-APIC 源
  */
 int kvm_cpu_has_extint(struct kvm_vcpu *v)
 {
@@ -62,6 +64,9 @@ int kvm_cpu_has_extint(struct kvm_vcpu *v)
 	if (irqchip_split(v->kvm))
 		return pending_userspace_extint(v);
 	else
+        /**
+         *  非 0 表示外部中断等待处理
+         */
 		return v->kvm->arch.vpic->output;
 }
 
@@ -121,13 +126,21 @@ static int kvm_cpu_get_extint(struct kvm_vcpu *v)
 
 /*
  * Read pending interrupt vector and intack.
+ *
+ * 
  */
 int kvm_cpu_get_interrupt(struct kvm_vcpu *v)
 {
+    /**
+     *  
+     */
 	int vector = kvm_cpu_get_extint(v);
 	if (vector != -1)
 		return vector;			/* PIC */
 
+    /**
+     *  
+     */
 	return kvm_get_apic_interrupt(v);	/* APIC */
 }
 EXPORT_SYMBOL_GPL(kvm_cpu_get_interrupt);

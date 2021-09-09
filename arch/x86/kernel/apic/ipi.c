@@ -68,6 +68,9 @@ void native_smp_send_reschedule(int cpu)    /*  */
 		WARN(1, "sched: Unexpected reschedule of offline CPU#%d!\n", cpu);
 		return;
 	}
+    /**
+     *  Internal Processor Interrupt
+     */
 	apic->send_IPI(cpu, RESCHEDULE_VECTOR);
 }
 

@@ -5260,12 +5260,18 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
 		kvm_x86_ops.flush_log_dirty(kvm);
 }
 
+/**
+ *  
+ */
 int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_event,
 			bool line_status)
 {
 	if (!irqchip_in_kernel(kvm))
 		return -ENXIO;
 
+    /**
+	 *  向 8259A 发送 中断请求
+	 */
 	irq_event->status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
 					irq_event->irq, irq_event->level,
 					line_status);
@@ -5458,6 +5464,9 @@ static int kvm_vm_ioctl_set_msr_filter(struct kvm *kvm, void __user *argp)
 	return r;
 }
 
+/**
+ *  
+ */
 long kvm_arch_vm_ioctl(struct file *filp,
 		       unsigned int ioctl, unsigned long arg)
 {
@@ -10914,6 +10923,9 @@ static inline bool kvm_guest_apic_has_interrupt(struct kvm_vcpu *vcpu)
 			kvm_x86_ops.guest_apic_has_interrupt(vcpu));
 }
 
+/**
+ *  
+ */
 static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 {
 	if (!list_empty_careful(&vcpu->async_pf.done))
@@ -10938,7 +10950,13 @@ static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 	     kvm_x86_ops.smi_allowed(vcpu, false)))
 		return true;
 
+    /**
+	 *  
+	 */
 	if (kvm_arch_interrupt_allowed(vcpu) &&
+        /**
+    	 *  
+    	 */
 	    (kvm_cpu_has_interrupt(vcpu) ||
 	    kvm_guest_apic_has_interrupt(vcpu)))
 		return true;
@@ -10954,6 +10972,9 @@ static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 	return false;
 }
 
+/**
+ *  
+ */
 int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 {
 	return kvm_vcpu_running(vcpu) || kvm_vcpu_has_events(vcpu);

@@ -108,8 +108,15 @@ static inline void play_dead(void)
 	smp_ops.play_dead();
 }
 
+/**
+ *  
+ */
 static inline void smp_send_reschedule(int cpu)
 {
+    /**
+     *  native_smp_send_reschedule()
+     *  这是 发送 IPI(核间中断) 消息
+     */
 	smp_ops.smp_send_reschedule(cpu);
 }
 

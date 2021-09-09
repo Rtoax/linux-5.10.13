@@ -274,6 +274,26 @@ enum vmcs_field {
 	VM_EXIT_MSR_LOAD_COUNT          = 0x00004010,
 	VM_ENTRY_CONTROLS               = 0x00004012,
 	VM_ENTRY_MSR_LOAD_COUNT         = 0x00004014,
+	/**
+	 *  如果 KVM发现虚拟中断芯片有中断请求，则向 VMCS 中VM-entry control 部分的
+	 *  VM-entry interrupt information field 字符安写入中断信息，在切入 Guest 模式的一刻，
+	 *  CPU 将检查这个字段，就如同检查CPU引脚，如果有中断，则进入 中断处理执行过程
+	 *
+	 *  见 `vmx_inject_irq()`
+	 *
+	 *  字段
+	 *  7:0 中断或异常向量
+	 *  10:8 中断类型
+	 *      0 外部中断
+	 *      1 保留
+	 *      2 不可屏蔽中断 NMI
+	 *      3 硬件异常
+	 *      4 软件中断
+	 *      5 特权异常
+	 *      6 软件异常
+	 *      7 其他
+	 *  31 是否有效
+	 */
 	VM_ENTRY_INTR_INFO_FIELD        = 0x00004016,
 	VM_ENTRY_EXCEPTION_ERROR_CODE   = 0x00004018,
 	VM_ENTRY_INSTRUCTION_LEN        = 0x0000401a,
@@ -366,7 +386,20 @@ enum vmcs_field {
 };
 
 /*
- * Interruption-information format
+ * Interruption-information format - VM_ENTRY_INTR_INFO_FIELD
+ *
+ *  字段
+ *  7:0 中断或异常向量
+ *  10:8 中断类型
+ *      0 外部中断
+ *      1 保留
+ *      2 不可屏蔽中断 NMI
+ *      3 硬件异常
+ *      4 软件中断
+ *      5 特权异常
+ *      6 软件异常
+ *      7 其他
+ *  31 是否有效
  */
 #define INTR_INFO_VECTOR_MASK           0xff            /* 7:0 */
 #define INTR_INFO_INTR_TYPE_MASK        0x700           /* 10:8 */
@@ -380,6 +413,22 @@ enum vmcs_field {
 #define VECTORING_INFO_DELIVER_CODE_MASK    	INTR_INFO_DELIVER_CODE_MASK
 #define VECTORING_INFO_VALID_MASK       	INTR_INFO_VALID_MASK
 
+/*
+ * Interruption-information format - VM_ENTRY_INTR_INFO_FIELD
+ *
+ *  字段
+ *  7:0 中断或异常向量
+ *  10:8 中断类型
+ *      0 外部中断
+ *      1 保留
+ *      2 不可屏蔽中断 NMI
+ *      3 硬件异常
+ *      4 软件中断
+ *      5 特权异常
+ *      6 软件异常
+ *      7 其他
+ *  31 是否有效
+ */
 #define INTR_TYPE_EXT_INTR              (0 << 8) /* external interrupt */
 #define INTR_TYPE_RESERVED              (1 << 8) /* reserved */
 #define INTR_TYPE_NMI_INTR		(2 << 8) /* NMI */

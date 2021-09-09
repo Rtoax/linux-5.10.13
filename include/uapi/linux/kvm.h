@@ -148,7 +148,10 @@ struct kvm_userspace_memory_region {
 #define KVM_MEM_LOG_DIRTY_PAGES	(1UL << 0)
 #define KVM_MEM_READONLY	(1UL << 1)
 
-/* for KVM_IRQ_LINE */
+/**
+ *  for KVM_IRQ_LINE 
+ *  管脚号 和 管脚电平信息
+ */
 struct kvm_irq_level {
 	/*
 	 * ACPI gsi notion of irq.
@@ -157,13 +160,22 @@ struct kvm_irq_level {
 	 * For ARM: See Documentation/virt/kvm/api.rst
 	 */
 	union {
+	    /**
+    	 *  管脚号
+    	 */
 		__u32 irq;
 		__s32 status;
 	};
+    /**
+	 *  管脚电平
+	 *  1 - 高电平
+	 */
 	__u32 level;
 };
 
-
+/**
+ *  
+ */
 struct kvm_irqchip {
 	__u32 chip_id;
 	__u32 pad;

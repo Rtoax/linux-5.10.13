@@ -27,6 +27,9 @@
 #include "hyperv.h"
 #include "x86.h"
 
+/**
+ *  
+ */
 static int kvm_set_pic_irq(struct kvm_kernel_irq_routing_entry *e,
 			   struct kvm *kvm, int irq_source_id, int level,
 			   bool line_status)

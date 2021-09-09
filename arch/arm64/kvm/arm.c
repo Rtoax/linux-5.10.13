@@ -858,6 +858,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 	return ret;
 }
 
+/**
+ *  
+ */
 static int vcpu_interrupt_line(struct kvm_vcpu *vcpu, int number, bool level)
 {
 	int bit_index;
@@ -887,11 +890,18 @@ static int vcpu_interrupt_line(struct kvm_vcpu *vcpu, int number, bool level)
 	 * virtual IRQ/FIQ fields in the HCR appropriately.
 	 */
 	kvm_make_request(KVM_REQ_IRQ_PENDING, vcpu);
+
+    /**
+     *  
+     */
 	kvm_vcpu_kick(vcpu);
 
 	return 0;
 }
 
+/**
+ *  
+ */
 int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_level,
 			  bool line_status)
 {
@@ -908,6 +918,9 @@ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_level,
 
 	trace_kvm_irq_line(irq_type, vcpu_idx, irq_num, irq_level->level);
 
+    /**
+     *  
+     */
 	switch (irq_type) {
 	case KVM_ARM_IRQ_TYPE_CPU:
 		if (irqchip_in_kernel(kvm))
@@ -923,6 +936,9 @@ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_level,
 		if (irq_num > KVM_ARM_IRQ_CPU_FIQ)
 			return -EINVAL;
 
+        /**
+         *  
+         */
 		return vcpu_interrupt_line(vcpu, irq_num, level);
 	case KVM_ARM_IRQ_TYPE_PPI:
 		if (!irqchip_in_kernel(kvm))

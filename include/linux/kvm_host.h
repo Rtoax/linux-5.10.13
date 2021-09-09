@@ -278,6 +278,9 @@ struct kvm_vcpu {
 	int vcpu_id; /* id given by userspace at creation */
 	int vcpu_idx; /* index in kvm->vcpus array */
 	int srcu_idx;
+    /**
+     *  IN_GUEST_MODE 等
+     */
 	int mode;
 	u64 requests;
 	unsigned long guest_debug;
@@ -420,9 +423,17 @@ struct kvm_hv_sint {
 	u32 sint;
 };
 
+/**
+ *  
+ */
 struct kvm_kernel_irq_routing_entry {
 	u32 gsi;
 	u32 type;
+    /**
+     *  kvm_set_pic_irq()
+     *  kvm_set_ioapic_irq()
+     *  vgic_irqfd_set_irq()
+     */
 	int (*set)(struct kvm_kernel_irq_routing_entry *e,
 		   struct kvm *kvm, int irq_source_id, int level,
 		   bool line_status);
@@ -1072,6 +1083,9 @@ bool kvm_is_reserved_pfn(kvm_pfn_t pfn);
 bool kvm_is_zone_device_pfn(kvm_pfn_t pfn);
 bool kvm_is_transparent_hugepage(kvm_pfn_t pfn);
 
+/**
+ *  
+ */
 struct kvm_irq_ack_notifier {
 	struct hlist_node link;
 	unsigned gsi;

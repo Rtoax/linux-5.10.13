@@ -67,6 +67,9 @@ static void pic_unlock(struct kvm_pic *s)
 	}
 }
 
+/**
+ *  清理 正在处理的中断
+ */
 static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
 {
 	s->isr &= ~(1 << irq);
@@ -85,28 +88,48 @@ static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
 
 /*
  * set irq level. If an edge is detected, then the IRR is set to 1
+ * 
+ * 记录中断 到 IRR(中断请求寄存器)
  */
 static inline int pic_set_irq1(struct kvm_kpic_state *s, int irq, int level)
 {
 	int mask, ret = 1;
 	mask = 1 << irq;
+    /**
+	 *  水平触发
+	 */
 	if (s->elcr & mask)	/* level triggered */
+        /**
+    	 *  高电平
+    	 */
 		if (level) {
 			ret = !(s->irr & mask);
 			s->irr |= mask;
 			s->last_irr |= mask;
+        /**
+    	 *  低电平
+    	 */
 		} else {
 			s->irr &= ~mask;
 			s->last_irr &= ~mask;
 		}
-	else	/* edge triggered */
+    /**
+	 *  边沿触发
+	 */
+    else	/* edge triggered */
+        /**
+    	 *  高电平
+    	 */
 		if (level) {
 			if ((s->last_irr & mask) == 0) {
 				ret = !(s->irr & mask);
 				s->irr |= mask;
 			}
 			s->last_irr |= mask;
-		} else
+        /**
+    	 *  低电平
+    	 */
+        } else
 			s->last_irr &= ~mask;
 
 	return (s->imr & mask) ? -1 : ret;
@@ -115,6 +138,13 @@ static inline int pic_set_irq1(struct kvm_kpic_state *s, int irq, int level)
 /*
  * return the highest priority found in mask (highest = smallest
  * number). Return 8 if no irq
+ *
+ * 典型的有两种优先级模式
+ *  1. 固定优先级(fixed prio) - 优先级是固定的，从IR0到IR7一次降低
+ *  2. 循环优先级(rotating prio) - 即当前处理完的IRn 优先级调整为最低
+ *                      当前处理的下一个调整为最高。
+ *
+ * 该函数为 循环优先级算法
  */
 static inline int get_priority(struct kvm_kpic_state *s, int mask)
 {
@@ -122,19 +152,35 @@ static inline int get_priority(struct kvm_kpic_state *s, int mask)
 	if (mask == 0)
 		return 8;
 	priority = 0;
+    /**
+     *  从当前管脚开始，一次检查后面的管脚是否有 pending 的中断
+     */
 	while ((mask & (1 << ((priority + s->priority_add) & 7))) == 0)
 		priority++;
+    /**
+     *  
+     */
 	return priority;
 }
 
 /*
  * return the pic wanted interrupt. return -1 if none
+ *
+ * 进行中断评估
+ *  1. 待处理的中断有没有被屏蔽
+ *  2. 待处理的中断优先级是否比正在处理的中断优先级高
  */
 static int pic_get_irq(struct kvm_kpic_state *s)
 {
 	int mask, cur_priority, priority;
 
+    /**
+     *  过滤掉被屏蔽的中断
+     */
 	mask = s->irr & ~s->imr;
+    /**
+     *  获得优先级最高的中断
+     */
 	priority = get_priority(s, mask);
 	if (priority == 8)
 		return -1;
@@ -146,7 +192,13 @@ static int pic_get_irq(struct kvm_kpic_state *s)
 	mask = s->isr;
 	if (s->special_fully_nested_mode && s == &s->pics_state->pics[0])
 		mask &= ~(1 << 2);
+    /**
+     *  获取正在被 CPU 处理的中断的优先级
+     */
 	cur_priority = get_priority(s, mask);
+    /**
+     *  优先级小于当前CPU处理中断的优先级
+     */
 	if (priority < cur_priority)
 		/*
 		 * higher priority found: an irq should be generated
@@ -159,6 +211,8 @@ static int pic_get_irq(struct kvm_kpic_state *s)
 /*
  * raise irq to CPU if necessary. must be called every time the active
  * irq may change
+ *
+ * 告知 CPU 中断发生
  */
 static void pic_update_irq(struct kvm_pic *s)
 {
@@ -173,6 +227,10 @@ static void pic_update_irq(struct kvm_pic *s)
 		pic_set_irq1(&s->pics[0], 2, 0);
 	}
 	irq = pic_get_irq(&s->pics[0]);
+
+    /**
+	 *  
+	 */
 	pic_irq_request(s->kvm, irq >= 0);
 }
 
@@ -183,6 +241,9 @@ void kvm_pic_update_irq(struct kvm_pic *s)
 	pic_unlock(s);
 }
 
+/**
+ *  
+ */
 int kvm_pic_set_irq(struct kvm_pic *s, int irq, int irq_source_id, int level)
 {
 	int ret, irq_level;
@@ -192,7 +253,15 @@ int kvm_pic_set_irq(struct kvm_pic *s, int irq, int irq_source_id, int level)
 	pic_lock(s);
 	irq_level = __kvm_irq_line_state(&s->irq_states[irq],
 					 irq_source_id, level);
-	ret = pic_set_irq1(&s->pics[irq >> 3], irq & 7, irq_level);
+
+    /**
+	 *  
+	 */
+    ret = pic_set_irq1(&s->pics[irq >> 3], irq & 7, irq_level);
+
+    /**
+	 *  
+	 */
 	pic_update_irq(s);
 	trace_kvm_pic_set_irq(irq >> 3, irq & 7, s->pics[irq >> 3].elcr,
 			      s->pics[irq >> 3].imr, ret == 0);
@@ -213,6 +282,9 @@ void kvm_pic_clear_all(struct kvm_pic *s, int irq_source_id)
 
 /*
  * acknowledge interrupt 'irq'
+ *  确认中断
+ *         INTA
+ *  CPU ----------> 8259A
  */
 static inline void pic_intack(struct kvm_kpic_state *s, int irq)
 {
@@ -221,8 +293,14 @@ static inline void pic_intack(struct kvm_kpic_state *s, int irq)
 	 * We don't clear a level sensitive interrupt here
 	 */
 	if (!(s->elcr & (1 << irq)))
+        /**
+         *  从 IRR 中清除等待服务的请求
+         */
 		s->irr &= ~(1 << irq);
 
+    /**
+     *  如果工作在 aeoi 模式，无需设置 ISR
+     */
 	if (s->auto_eoi) {
 		if (s->rotate_on_auto_eoi)
 			s->priority_add = (irq + 1) & 7;
@@ -231,6 +309,9 @@ static inline void pic_intack(struct kvm_kpic_state *s, int irq)
 
 }
 
+/**
+ *  
+ */
 int kvm_pic_read_irq(struct kvm *kvm)
 {
 	int irq, irq2, intno;
@@ -239,8 +320,18 @@ int kvm_pic_read_irq(struct kvm *kvm)
 	s->output = 0;
 
 	pic_lock(s);
+    /**
+     *  获取评估后的中断
+     */
 	irq = pic_get_irq(&s->pics[0]);
+
+    /**
+     *  评估过滤中断后，仍旧有挂起的中断
+     */
 	if (irq >= 0) {
+        /**
+         *  完成中断确认后的动作
+         */
 		pic_intack(&s->pics[0], irq);
 		if (irq == 2) {
 			irq2 = pic_get_irq(&s->pics[1]);
@@ -251,6 +342,9 @@ int kvm_pic_read_irq(struct kvm *kvm)
 				 * spurious IRQ on slave controller
 				 */
 				irq2 = 7;
+            /**
+             *  中断向量在中断管脚的基础上叠加了一个 irq_base 
+             */
 			intno = s->pics[1].irq_base + irq2;
 			irq = irq2 + 8;
 		} else
@@ -302,12 +396,18 @@ static void kvm_pic_reset(struct kvm_kpic_state *s)
 			pic_clear_isr(s, irq);
 }
 
+/**
+ *  
+ */
 static void pic_ioport_write(void *opaque, u32 addr, u32 val)
 {
 	struct kvm_kpic_state *s = opaque;
 	int priority, cmd, irq;
 
 	addr &= 1;
+    /**
+	 *  
+	 */
 	if (addr == 0) {
 		if (val & 0x10) {
 			s->init4 = val & 1;
@@ -331,12 +431,18 @@ static void pic_ioport_write(void *opaque, u32 addr, u32 val)
 			case 4:
 				s->rotate_on_auto_eoi = cmd >> 2;
 				break;
+            /**
+             *  EOI
+             */
 			case 1:	/* end of interrupt */
 			case 5:
 				priority = get_priority(s, s->isr);
 				if (priority != 8) {
 					irq = (priority + s->priority_add) & 7;
 					if (cmd == 5)
+                        /**
+                         *  指向 当前处理 IRn 的下一个
+                         */
 						s->priority_add = (irq + 1) & 7;
 					pic_clear_isr(s, irq);
 					pic_update_irq(s->pics_state);
@@ -361,7 +467,12 @@ static void pic_ioport_write(void *opaque, u32 addr, u32 val)
 				break;	/* no operation */
 			}
 		}
-	} else
+	}
+    /**
+	 *  
+	 */
+    else
+	
 		switch (s->init_state) {
 		case 0: { /* normal mode */
 			u8 imr_diff = s->imr ^ val,
@@ -377,6 +488,9 @@ static void pic_ioport_write(void *opaque, u32 addr, u32 val)
 			pic_update_irq(s->pics_state);
 			break;
 		}
+        /**
+    	 *  
+    	 */
 		case 1:
 			s->irq_base = val & 0xf8;
 			s->init_state = 2;
@@ -561,9 +675,16 @@ static int picdev_eclr_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
 static void pic_irq_request(struct kvm *kvm, int level)
 {
 	struct kvm_pic *s = kvm->arch.vpic;
-
+    /**
+	 *  
+	 */
 	if (!s->output)
 		s->wakeup_needed = true;
+
+    /**
+	 *  模拟 8259A 在将受到的中断请求记录到 IRR 后，将设置一个变量 output
+	 *  后面在 切入 Guest 前 KVM 会查询这个变量
+	 */
 	s->output = level;
 }
 

@@ -464,14 +464,20 @@ bool kvm_irq_has_notifier(struct kvm *kvm, unsigned irqchip, unsigned pin)
 }
 EXPORT_SYMBOL_GPL(kvm_irq_has_notifier);
 
+/**
+ *  
+ */
 void kvm_notify_acked_gsi(struct kvm *kvm, int gsi)
 {
 	struct kvm_irq_ack_notifier *kian;
 
-	hlist_for_each_entry_rcu(kian, &kvm->irq_ack_notifier_list,
-				 link)
+	hlist_for_each_entry_rcu(kian, &kvm->irq_ack_notifier_list, link) {
 		if (kian->gsi == gsi)
+            /**
+             *  
+             */
 			kian->irq_acked(kian);
+    }
 }
 
 void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)

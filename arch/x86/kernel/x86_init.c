@@ -130,6 +130,9 @@ struct x86_cpuinit_ops x86_cpuinit = {
 
 static void default_nmi_init(void) { };
 
+/**
+ *  
+ */
 struct x86_platform_ops __ro_after_init x86_platform  = {
 	.calibrate_cpu			= native_calibrate_cpu_early,
 	.calibrate_tsc			= native_calibrate_tsc,
@@ -158,6 +161,9 @@ void arch_restore_msi_irqs(struct pci_dev *dev)
 }
 #endif
 
+/**
+ *  APIC 
+ */
 struct x86_apic_ops __ro_after_init x86_apic_ops  = {
 	.io_apic_read	= native_io_apic_read,
 	.restore	= native_restore_boot_irq_mode,

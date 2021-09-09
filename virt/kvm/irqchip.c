@@ -19,6 +19,9 @@
 #include <trace/events/kvm.h>
 #include "irq.h"
 
+/**
+ *  
+ */
 int kvm_irq_map_gsi(struct kvm *kvm,
 		    struct kvm_kernel_irq_routing_entry *entries, int gsi)
 {
@@ -62,7 +65,9 @@ int kvm_send_userspace_msi(struct kvm *kvm, struct kvm_msi *msi)
 	return kvm_set_msi(&route, kvm, KVM_USERSPACE_IRQ_SOURCE_ID, 1, false);
 }
 
-/*
+/**
+ * 记录中断
+ *
  * Return value:
  *  < 0   Interrupt was ignored (masked or not delivered for other reasons)
  *  = 0   Interrupt was coalesced (previous irq is still pending)
@@ -71,9 +76,15 @@ int kvm_send_userspace_msi(struct kvm *kvm, struct kvm_msi *msi)
 int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level,
 		bool line_status)
 {
+    /**
+	 *  
+	 */
 	struct kvm_kernel_irq_routing_entry irq_set[KVM_NR_IRQCHIPS];
 	int ret = -1, i, idx;
 
+    /**
+	 *  追踪点
+	 */
 	trace_kvm_set_irq(irq, level, irq_source_id);
 
 	/* Not possible to detect if the guest uses the PIC or the
@@ -81,13 +92,23 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level,
 	 * writes to the unused one.
 	 */
 	idx = srcu_read_lock(&kvm->irq_srcu);
+    /**
+	 *  
+	 */
 	i = kvm_irq_map_gsi(kvm, irq_set, irq);
 	srcu_read_unlock(&kvm->irq_srcu, idx);
 
+    /**
+	 *  
+	 */
 	while (i--) {
 		int r;
-		r = irq_set[i].set(&irq_set[i], kvm, irq_source_id, level,
-				   line_status);
+        /**
+         *  kvm_set_pic_irq()
+         *  kvm_set_ioapic_irq()
+         *  vgic_irqfd_set_irq()
+         */
+		r = irq_set[i].set(&irq_set[i], kvm, irq_source_id, level, line_status);
 		if (r < 0)
 			continue;
 

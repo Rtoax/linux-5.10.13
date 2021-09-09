@@ -3007,10 +3007,16 @@ out:
 }
 EXPORT_SYMBOL_GPL(kvm_vcpu_block);
 
+/**
+ *  
+ */
 bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
 {
 	struct rcuwait *waitp;
 
+    /**
+     *  
+     */
 	waitp = kvm_arch_vcpu_get_wait(vcpu);
 	if (rcuwait_wake_up(waitp)) {
 		WRITE_ONCE(vcpu->ready, true);
@@ -3025,6 +3031,8 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_wake_up);
 #ifndef CONFIG_S390
 /*
  * Kick a sleeping VCPU, or a guest VCPU in guest mode, into host kernel mode.
+ *
+ * 当 有中断请求时，虚拟中断芯片 将主动 kick 一下目标 CPU
  */
 void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
 {
@@ -3032,14 +3040,25 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
 	int cpu = vcpu->cpu;
 
     /**
-     *  唤醒
+     *  唤醒 - 
+     *  如果 VCPU 睡眠在等待队列上，则唤醒使其进入 CPU 的就绪任务队列
      */
 	if (kvm_vcpu_wake_up(vcpu))
 		return;
 
 	me = get_cpu();
+    /**
+     *  
+     */
 	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
+        /**
+         *  在 Guest 模式中，那么需要发送 IPI 核间中断，将 Guest VM-exit
+         *  在下一次 VM-Enter 完成中断注入
+         */
 		if (kvm_arch_vcpu_should_kick(vcpu))
+            /**
+             *  发送核间中断
+             */
 			smp_send_reschedule(cpu);
 	put_cpu();
 }
@@ -3993,6 +4012,9 @@ static long kvm_vm_ioctl(struct file *filp,
 	}
 #endif
 #ifdef __KVM_HAVE_IRQ_LINE
+    /**
+	 *  管脚号 和 管脚电平
+	 */
 	case KVM_IRQ_LINE_STATUS:
 	case KVM_IRQ_LINE: {
 		struct kvm_irq_level irq_event;
@@ -4001,6 +4023,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		if (copy_from_user(&irq_event, argp, sizeof(irq_event)))
 			goto out;
 
+        /**
+    	 *  
+    	 */
 		r = kvm_vm_ioctl_irq_line(kvm, &irq_event,
 					ioctl == KVM_IRQ_LINE_STATUS);
 		if (r)
@@ -4069,6 +4094,9 @@ static long kvm_vm_ioctl(struct file *filp,
 	case KVM_CHECK_EXTENSION:
 		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
 		break;
+    /**
+	 *  
+	 */
 	default:
 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
 	}
