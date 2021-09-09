@@ -366,6 +366,9 @@ int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
 		irq_copy_pending(desc, mask);
 	}
 
+    /**
+     *  
+     */
 	if (desc->affinity_notify) {
 		kref_get(&desc->affinity_notify->kref);
 		if (!schedule_work(&desc->affinity_notify->work)) {

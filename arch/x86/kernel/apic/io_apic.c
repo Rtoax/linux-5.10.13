@@ -261,8 +261,21 @@ int __init arch_early_ioapic_init(void) /*  */
  *  IOAPIC
  */
 struct io_apic {
+    /**
+     *  内存映射 的 IOREGSEL(IO register Select) IOAPIC 寄存器 
+     *  IOAPIC_REG_SELECT
+     *
+     *  见《深度探索Linux系统虚拟化》 P119
+     */
 	unsigned int index;
 	unsigned int unused[3];
+    
+    /**
+     *  内存映射 的 IOWIN(IO Window) IOAPIC 寄存器
+     *  IOAPIC_REG_WINDOW
+     *
+     *  见《深度探索Linux系统虚拟化》 P119
+     */
 	unsigned int data;
 	unsigned int unused2[11];
 	unsigned int eoi;
@@ -296,11 +309,19 @@ unsigned int native_io_apic_read(unsigned int apic, unsigned int reg)
 	return readl(&io_apic->data);
 }
 
+/**
+ *  
+ *  @reg    寄存器地址(相对于基址的偏移)
+ *  @value  写入的内容
+ */
 static void io_apic_write(unsigned int apic, unsigned int reg,
 			  unsigned int value)
 {
 	struct io_apic __iomem *io_apic = io_apic_base(apic);
 
+    /**
+     *  写 port
+     */
 	writel(reg, &io_apic->index);
 	writel(value, &io_apic->data);
 }
@@ -310,6 +331,9 @@ union entry_union {
 	struct IO_APIC_route_entry entry;
 };
 
+/**
+ *  
+ */
 static struct IO_APIC_route_entry __ioapic_read_entry(int apic, int pin)
 {
 	union entry_union eu;
@@ -337,16 +361,25 @@ static struct IO_APIC_route_entry ioapic_read_entry(int apic, int pin)
  * word first! If the mask bit in the low word is clear, we will enable
  * the interrupt, and we need to make sure the entry is fully populated
  * before that happens.
+ *
+ * 填充 中断重定向表
  */
 static void __ioapic_write_entry(int apic, int pin, struct IO_APIC_route_entry e)
 {
 	union entry_union eu = {{0, 0}};
 
 	eu.entry = e;
+    /**
+     *  0x10 0x11 恰好是第一个 entry
+     *  0x12 0x13 是第二个 entry
+     */
 	io_apic_write(apic, 0x11 + 2*pin, eu.w2);
 	io_apic_write(apic, 0x10 + 2*pin, eu.w1);
 }
 
+/**
+ *  
+ */
 static void ioapic_write_entry(int apic, int pin, struct IO_APIC_route_entry e)
 {
 	unsigned long flags;

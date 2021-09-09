@@ -268,8 +268,10 @@ struct irq_data;
  * Hacked for x86-64 by James Cleverdon from i386 architecture code by
  * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
  * James Cleverdon.
+ *
+ * 高级可编程中断控制器
  */
-struct apic {   /* 高级可编程中断控制器 */
+struct apic {   /*  */
 	/* Hotpath functions first */
 	void	(*eoi_write)(u32 reg, u32 v);
 	void	(*native_eoi_write)(u32 reg, u32 v);
@@ -338,6 +340,9 @@ struct apic {   /* 高级可编程中断控制器 */
 	 */
 	int (*x86_32_early_logical_apicid)(int cpu);
 #endif
+    /**
+     *  
+     */
 	char	*name;
 };
 

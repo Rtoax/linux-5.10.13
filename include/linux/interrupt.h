@@ -423,6 +423,9 @@ extern int __irq_set_affinity(unsigned int irq, const struct cpumask *cpumask,
 static inline int
 irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
 {
+    /**
+     *  /proc/irq/<irq>/smp_affinity_list
+     */
 	return __irq_set_affinity(irq, cpumask, false);
 }
 
@@ -458,49 +461,7 @@ unsigned int irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
 				       const struct irq_affinity *affd);
 
 #else /* CONFIG_SMP */
-
-static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-static inline int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask)
-{
-	return 0;
-}
-
-static inline int irq_can_set_affinity(unsigned int irq)
-{
-	return 0;
-}
-
-static inline int irq_select_affinity(unsigned int irq)  { return 0; }
-
-static inline int irq_set_affinity_hint(unsigned int irq,
-					const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-static inline int
-irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
-{
-	return 0;
-}
-
-static inline struct irq_affinity_desc *
-irq_create_affinity_masks(unsigned int nvec, struct irq_affinity *affd)
-{
-	return NULL;
-}
-
-static inline unsigned int
-irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
-			  const struct irq_affinity *affd)
-{
-	return maxvec;
-}
-
+/**/
 #endif /* CONFIG_SMP */
 
 /*

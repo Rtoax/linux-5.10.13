@@ -587,6 +587,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 			     int vector, int level, int trig_mode,
 			     struct dest_map *dest_map);
 
+/**
+ *  
+ */
 int kvm_apic_set_irq(struct kvm_vcpu *vcpu, struct kvm_lapic_irq *irq,
 		     struct dest_map *dest_map)
 {
@@ -1066,7 +1069,10 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
      *  跟踪点
      */
 	trace_kvm_apic_accept_irq(vcpu->vcpu_id, delivery_mode, trig_mode, vector);
-    
+
+    /**
+     *  发送模式
+     */
 	switch (delivery_mode) {
     /**
      *  

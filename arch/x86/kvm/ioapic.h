@@ -9,8 +9,8 @@
 struct kvm;
 struct kvm_vcpu;
 
-#define IOAPIC_NUM_PINS  KVM_IOAPIC_NUM_PINS
-#define MAX_NR_RESERVED_IOAPIC_PINS KVM_MAX_IRQ_ROUTES
+#define IOAPIC_NUM_PINS  /*24*/KVM_IOAPIC_NUM_PINS/*24*/
+#define MAX_NR_RESERVED_IOAPIC_PINS /*4096*/ KVM_MAX_IRQ_ROUTES/*4096*/
 #define IOAPIC_VERSION_ID 0x11	/* IOAPIC version */
 #define IOAPIC_EDGE_TRIG  0
 #define IOAPIC_LEVEL_TRIG 1
@@ -44,7 +44,8 @@ struct kvm_vcpu;
 struct dest_map {
 	/* vcpu bitmap where IRQ has been sent */
 	DECLARE_BITMAP(map, KVM_MAX_VCPU_ID);
-
+    unsigned long map[BITS_TO_LONGS(KVM_MAX_VCPU_ID)];//+++
+    
 	/*
 	 * Vector sent to a given vcpu, only valid when
 	 * the vcpu's bit in map is set
@@ -58,6 +59,12 @@ struct rtc_status {
 	struct dest_map dest_map;
 };
 
+/**
+ * 中断重定向表
+ *
+ * 相关数据结构
+ *  struct IO_APIC_route_entry
+ */
 union kvm_ioapic_redirect_entry {
 	u64 bits;
 	struct {
@@ -75,12 +82,18 @@ union kvm_ioapic_redirect_entry {
 	} fields;
 };
 
+/**
+ *  
+ */
 struct kvm_ioapic {
 	u64 base_address;
 	u32 ioregsel;
 	u32 id;
 	u32 irr;
 	u32 pad;
+    /**
+     *  中断重定向表
+     */
 	union kvm_ioapic_redirect_entry redirtbl[IOAPIC_NUM_PINS];
 	unsigned long irq_states[IOAPIC_NUM_PINS];
 	struct kvm_io_device dev;

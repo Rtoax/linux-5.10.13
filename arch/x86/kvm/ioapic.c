@@ -204,6 +204,9 @@ static void ioapic_lazy_update_eoi(struct kvm_ioapic *ioapic, int irq)
 	}
 }
 
+/**
+ *  
+ */
 static int ioapic_set_irq(struct kvm_ioapic *ioapic, unsigned int irq,
 		int irq_level, bool line_status)
 {
@@ -257,6 +260,9 @@ static int ioapic_set_irq(struct kvm_ioapic *ioapic, unsigned int irq,
 		}
 	}
 
+    /**
+     *  
+     */
 	ret = ioapic_service(ioapic, irq, line_status);
 
 out:
@@ -314,6 +320,9 @@ void kvm_arch_post_irq_ack_notifier_list_update(struct kvm *kvm)
 	kvm_make_scan_ioapic_request(kvm);
 }
 
+/**
+ *  
+ */
 static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
 {
 	unsigned index;
@@ -333,13 +342,19 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
 
 	case IOAPIC_REG_ARB_ID:
 		break;
-
+    /**
+     *  
+     */
 	default:
 		index = (ioapic->ioregsel - 0x10) >> 1;
 
 		if (index >= IOAPIC_NUM_PINS)
 			return;
 		index = array_index_nospec(index, IOAPIC_NUM_PINS);
+
+        /**
+         *  中断重定向表
+         */
 		e = &ioapic->redirtbl[index];
 		mask_before = e->fields.mask;
 		/* Preserve read-only fields */
@@ -347,8 +362,14 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
 		old_delivery_status = e->fields.delivery_status;
 		old_dest_id = e->fields.dest_id;
 		old_dest_mode = e->fields.dest_mode;
+        /**
+         *  IO register select
+         */
 		if (ioapic->ioregsel & 1) {
 			e->bits &= 0xffffffff;
+            /**
+             *  
+             */
 			e->bits |= (u64) val << 32;
 		} else {
 			e->bits &= ~0xffffffffULL;
@@ -410,6 +431,9 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
 	}
 }
 
+/**
+ *  
+ */
 static int ioapic_service(struct kvm_ioapic *ioapic, int irq, bool line_status)
 {
 	union kvm_ioapic_redirect_entry *entry = &ioapic->redirtbl[irq];
@@ -421,6 +445,9 @@ static int ioapic_service(struct kvm_ioapic *ioapic, int irq, bool line_status)
 	    entry->fields.remote_irr))
 		return -1;
 
+    /**
+     *  
+     */
 	irqe.dest_id = entry->fields.dest_id;
 	irqe.vector = entry->fields.vector;
 	irqe.dest_mode = kvm_lapic_irq_dest_mode(!!entry->fields.dest_mode);
@@ -453,6 +480,9 @@ static int ioapic_service(struct kvm_ioapic *ioapic, int irq, bool line_status)
 	return ret;
 }
 
+/**
+ *  
+ */
 int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int irq_source_id,
 		       int level, bool line_status)
 {
@@ -463,6 +493,9 @@ int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int irq_source_id,
 	spin_lock(&ioapic->lock);
 	irq_level = __kvm_irq_line_state(&ioapic->irq_states[irq],
 					 irq_source_id, level);
+    /**
+     *  
+     */
 	ret = ioapic_set_irq(ioapic, irq, irq_level, line_status);
 
 	spin_unlock(&ioapic->lock);
@@ -617,6 +650,9 @@ static int ioapic_mmio_read(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 	return 0;
 }
 
+/**
+ *  
+ */
 static int ioapic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 				 gpa_t addr, int len, const void *val)
 {
@@ -645,6 +681,9 @@ static int ioapic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 
 	addr &= 0xff;
 	spin_lock(&ioapic->lock);
+    /**
+     *  
+     */
 	switch (addr) {
 	case IOAPIC_REG_SELECT:
 		ioapic->ioregsel = data & 0xFF; /* 8-bit register */
@@ -677,9 +716,12 @@ static void kvm_ioapic_reset(struct kvm_ioapic *ioapic)
 	rtc_irq_eoi_tracking_reset(ioapic);
 }
 
+/**
+ *  
+ */
 static const struct kvm_io_device_ops ioapic_mmio_ops = {
-	.read     = ioapic_mmio_read,
-	.write    = ioapic_mmio_write,
+	ioapic_mmio_ops.read     = ioapic_mmio_read,
+	ioapic_mmio_ops.write    = ioapic_mmio_write,
 };
 
 int kvm_ioapic_init(struct kvm *kvm)

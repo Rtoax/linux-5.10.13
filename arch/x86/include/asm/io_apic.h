@@ -65,7 +65,13 @@ union IO_APIC_reg_03 {
 };
 
 /**
- *  
+ *  中断重定向表项格式
+ *
+ *  相关数据结构
+ *  union kvm_ioapic_redirect_entry
+ *
+ *  接口
+ *  __ioapic_write_entry() - 添加 重定向表的 entry
  */
 struct IO_APIC_route_entry {    /*  */
 	__u32	vector		:  8,
@@ -190,6 +196,9 @@ extern void __init io_apic_init_mappings(void);
 extern unsigned int native_io_apic_read(unsigned int apic, unsigned int reg);
 extern void native_restore_boot_irq_mode(void);
 
+/**
+ *  
+ */
 static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
 {
 	return x86_apic_ops.io_apic_read(apic, reg);

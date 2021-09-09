@@ -5524,6 +5524,9 @@ set_identity_unlock:
 		if (r)
 			goto create_irqchip_unlock;
 
+        /**
+         *  
+         */
 		r = kvm_ioapic_init(kvm);
 		if (r) {
 			kvm_pic_destroy(kvm);

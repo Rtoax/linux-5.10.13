@@ -38,13 +38,18 @@ static int kvm_set_pic_irq(struct kvm_kernel_irq_routing_entry *e,
 	return kvm_pic_set_irq(pic, e->irqchip.pin, irq_source_id, level);
 }
 
+/**
+ *  
+ */
 static int kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
 			      struct kvm *kvm, int irq_source_id, int level,
 			      bool line_status)
 {
 	struct kvm_ioapic *ioapic = kvm->arch.vioapic;
-	return kvm_ioapic_set_irq(ioapic, e->irqchip.pin, irq_source_id, level,
-				line_status);
+    /**
+     *  
+     */
+	return kvm_ioapic_set_irq(ioapic, e->irqchip.pin, irq_source_id, level, line_status);
 }
 
 /**

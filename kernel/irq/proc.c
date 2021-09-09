@@ -134,6 +134,9 @@ static inline int irq_select_affinity_usr(unsigned int irq)
 }
 #endif
 
+/**
+ *  /proc/irq/<irq>/smp_affinity_list
+ */
 static ssize_t write_irq_affinity(int type, struct file *file,
 		const char __user *buffer, size_t count, loff_t *pos)
 {
@@ -182,6 +185,9 @@ static ssize_t irq_affinity_proc_write(struct file *file,
 	return write_irq_affinity(0, file, buffer, count, pos);
 }
 
+/**
+ *  /proc/irq/<irq>/smp_affinity_list
+ */
 static ssize_t irq_affinity_list_proc_write(struct file *file,
 		const char __user *buffer, size_t count, loff_t *pos)
 {
@@ -198,6 +204,9 @@ static int irq_affinity_list_proc_open(struct inode *inode, struct file *file)
 	return single_open(file, irq_affinity_list_proc_show, PDE_DATA(inode));
 }
 
+/**
+ *  /proc/irq/<irq>/smp_affinity
+ */
 static const struct proc_ops irq_affinity_proc_ops = {
 	.proc_open	= irq_affinity_proc_open,
 	.proc_read	= seq_read,
@@ -206,6 +215,9 @@ static const struct proc_ops irq_affinity_proc_ops = {
 	.proc_write	= irq_affinity_proc_write,
 };
 
+/**
+ *  /proc/irq/<irq>/smp_affinity_list
+ */
 static const struct proc_ops irq_affinity_list_proc_ops = {
 	.proc_open	= irq_affinity_list_proc_open,
 	.proc_read	= seq_read,
