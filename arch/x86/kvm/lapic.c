@@ -55,6 +55,9 @@
 
 /* 14 is the version for Xeon and Pentium 8.4.8*/
 #define APIC_VERSION			(0x14UL | ((KVM_APIC_LVT_NUM - 1) << 16))
+/**
+ *  LAPIC 有一个页面 4KB 大小的页面，Intel称之为 APIC page ，LAPIC 所有寄存器都存储在这个页面上
+ */
 #define LAPIC_MMIO_LENGTH		(1 << 12)
 /* followed define is not in apicdef.h */
 #define MAX_APIC_VECTOR			256
@@ -594,7 +597,9 @@ int kvm_apic_set_irq(struct kvm_vcpu *vcpu, struct kvm_lapic_irq *irq,
 		     struct dest_map *dest_map)
 {
 	struct kvm_lapic *apic = vcpu->arch.apic;
-
+    /**
+     *  
+     */
 	return __apic_accept_irq(apic, irq->delivery_mode, irq->vector,
 			irq->level, irq->trig_mode, dest_map);
 }
@@ -835,6 +840,9 @@ static u32 kvm_apic_mda(struct kvm_vcpu *vcpu, unsigned int dest_id,
 	return dest_id;
 }
 
+/**
+ *  
+ */
 bool kvm_apic_match_dest(struct kvm_vcpu *vcpu, struct kvm_lapic *source,
 			   int shorthand, unsigned int dest, int dest_mode)
 {
@@ -1100,33 +1108,43 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 
 		if (apic_test_vector(vector, apic->regs + APIC_TMR) != !!trig_mode) {
 			if (trig_mode)
-				kvm_lapic_set_vector(vector,
-						     apic->regs + APIC_TMR);
+				kvm_lapic_set_vector(vector, apic->regs + APIC_TMR);
 			else
-				kvm_lapic_clear_vector(vector,
-						       apic->regs + APIC_TMR);
+				kvm_lapic_clear_vector(vector, apic->regs + APIC_TMR);
 		}
 
 		if (kvm_x86_ops.deliver_posted_interrupt(vcpu, vector)) {
+            /**
+             *  在 IRR 中记录中断信息
+             */
 			kvm_lapic_set_irr(vector, apic);
 			kvm_make_request(KVM_REQ_EVENT, vcpu);
+            /**
+             *  踢一下 目标 vCPU
+             */
 			kvm_vcpu_kick(vcpu);
 		}
 		break;
-
+    /**
+     *  
+     */
 	case APIC_DM_REMRD:
 		result = 1;
 		vcpu->arch.pv.pv_unhalted = 1;
 		kvm_make_request(KVM_REQ_EVENT, vcpu);
 		kvm_vcpu_kick(vcpu);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_DM_SMI:
 		result = 1;
 		kvm_make_request(KVM_REQ_SMI, vcpu);
 		kvm_vcpu_kick(vcpu);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_DM_NMI:
 		result = 1;
 		kvm_inject_nmi(vcpu);
@@ -1160,7 +1178,9 @@ static int __apic_accept_irq(struct kvm_lapic *apic, int delivery_mode,
 		kvm_make_request(KVM_REQ_EVENT, vcpu);
 		kvm_vcpu_kick(vcpu);
 		break;
-
+    /**
+     *  
+     */
 	case APIC_DM_EXTINT:
 		/*
 		 * Should only be called by kvm_apic_local_deliver() with LVT0,
@@ -1293,8 +1313,14 @@ void kvm_apic_set_eoi_accelerated(struct kvm_vcpu *vcpu, int vector)
 }
 EXPORT_SYMBOL_GPL(kvm_apic_set_eoi_accelerated);
 
+/**
+ *  发送核间中断 IPI
+ */
 void kvm_apic_send_ipi(struct kvm_lapic *apic, u32 icr_low, u32 icr_high)
 {
+    /**
+     *  
+     */
 	struct kvm_lapic_irq irq;
 
 	irq.vector = icr_low & APIC_VECTOR_MASK;
@@ -1304,13 +1330,23 @@ void kvm_apic_send_ipi(struct kvm_lapic *apic, u32 icr_low, u32 icr_high)
 	irq.trig_mode = icr_low & APIC_INT_LEVELTRIG;
 	irq.shorthand = icr_low & APIC_SHORT_MASK;
 	irq.msi_redir_hint = false;
+
+    /**
+     *  目标 ID
+     */
 	if (apic_x2apic_mode(apic))
 		irq.dest_id = icr_high;
 	else
 		irq.dest_id = GET_APIC_DEST_FIELD(icr_high);
 
+    /**
+     *  追踪点
+     */
 	trace_kvm_apic_ipi(icr_low, irq.dest_id);
 
+    /**
+     *  传递
+     */
 	kvm_irq_delivery_to_apic(apic->vcpu->kvm, apic, &irq, NULL);
 }
 
@@ -1452,6 +1488,9 @@ int kvm_lapic_reg_read(struct kvm_lapic *apic, u32 offset, int len,
 }
 EXPORT_SYMBOL_GPL(kvm_lapic_reg_read);
 
+/**
+ *  判断 写入的地址是否在 LAPIC 寄存器 MMIO映射的区域内
+ */
 static int apic_mmio_in_range(struct kvm_lapic *apic, gpa_t addr)
 {
 	return addr >= apic->base_address &&
@@ -1992,7 +2031,7 @@ static void apic_manage_nmi_watchdog(struct kvm_lapic *apic, u32 lvt0_val)
 }
 
 /**
- *  
+ *  写 LAPIC 寄存器
  */
 int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 {
@@ -2075,6 +2114,9 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
          *  向其他 CPU发送 IPI
          */
 		kvm_apic_send_ipi(apic, val, kvm_lapic_get_reg(apic, APIC_ICR2));
+        /**
+         *  
+         */
 		kvm_lapic_set_reg(apic, APIC_ICR, val);
 		break;
     /**
@@ -2165,6 +2207,8 @@ EXPORT_SYMBOL_GPL(kvm_lapic_reg_write);
 /**
  *  APIC MMIO 
  *  中断控制器被映射到页面中
+ *  当Guest通过MMIO方式写LAPIC的寄存器时，将导致 VM-Exit，从而进入KVM 的虚拟LAPIC
+ *  虚拟LAPIC 的处理函数为此函数。
  */
 static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 			    gpa_t address, int len, const void *data)
@@ -2174,7 +2218,7 @@ static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
 	u32 val;
 
     /**
-     *  
+     *  判断 address 是否处于 APIC 寄存器 MMIO 4KB页面内
      */
 	if (!apic_mmio_in_range(apic, address))
 		return -EOPNOTSUPP;

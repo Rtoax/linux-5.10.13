@@ -5509,6 +5509,9 @@ set_identity_unlock:
 	case KVM_GET_NR_MMU_PAGES:
 		r = kvm_vm_ioctl_get_nr_mmu_pages(kvm);
 		break;
+    /**
+     *  
+     */
 	case KVM_CREATE_IRQCHIP: {
 		mutex_lock(&kvm->lock);
 
@@ -5566,6 +5569,9 @@ set_identity_unlock:
 	create_pit_unlock:
 		mutex_unlock(&kvm->lock);
 		break;
+    /**
+     *  
+     */
 	case KVM_GET_IRQCHIP: {
 		/* 0: PIC master, 1: PIC slave, 2: IOAPIC */
 		struct kvm_irqchip *chip;
@@ -5590,6 +5596,9 @@ set_identity_unlock:
 		kfree(chip);
 		break;
 	}
+    /**
+     *  
+     */
 	case KVM_SET_IRQCHIP: {
 		/* 0: PIC master, 1: PIC slave, 2: IOAPIC */
 		struct kvm_irqchip *chip;

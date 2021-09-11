@@ -53,7 +53,7 @@ static int kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
 }
 
 /**
- *  
+ *  传递给 APIC
  */
 int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 		struct kvm_lapic_irq *irq, struct dest_map *dest_map)
@@ -75,20 +75,31 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 	memset(dest_vcpu_bitmap, 0, sizeof(dest_vcpu_bitmap));
 
     /**
-     *  
+     *  遍历所有 vCPU
      */
 	kvm_for_each_vcpu(i, vcpu, kvm) {
+	    /**
+         *  如果 VCPU 没有 lapic ，继续遍历
+         */
 		if (!kvm_apic_present(vcpu))
 			continue;
 
+        /**
+         *  传送方向
+         */
 		if (!kvm_apic_match_dest(vcpu, src, irq->shorthand,
 					irq->dest_id, irq->dest_mode))
 			continue;
-
+        /**
+         *  
+         */
 		if (!kvm_lowest_prio_delivery(irq)) {
 			if (r < 0)
 				r = 0;
 			r += kvm_apic_set_irq(vcpu, irq, dest_map);
+        /**
+         *  
+         */
 		} else if (kvm_apic_sw_enabled(vcpu->arch.apic)) {
 			if (!kvm_vector_hashing_enabled()) {
 				if (!lowest)
@@ -377,7 +388,15 @@ EXPORT_SYMBOL_GPL(kvm_intr_is_single_vcpu);
 #define ROUTING_ENTRY2(irq) \
 	IOAPIC_ROUTING_ENTRY(irq), PIC_ROUTING_ENTRY(irq)
 
+/**
+ *  
+ */
 static const struct kvm_irq_routing_entry default_routing[] = {
+    /**
+     *  管脚号 < 16 ，每个管脚创建了两个表项
+     *  1. 一个是 APIC 表项
+     *  2. 一个是 PIC 表项(8295A)
+     */
 	ROUTING_ENTRY2(0), ROUTING_ENTRY2(1),
 	ROUTING_ENTRY2(2), ROUTING_ENTRY2(3),
 	ROUTING_ENTRY2(4), ROUTING_ENTRY2(5),
@@ -386,10 +405,334 @@ static const struct kvm_irq_routing_entry default_routing[] = {
 	ROUTING_ENTRY2(10), ROUTING_ENTRY2(11),
 	ROUTING_ENTRY2(12), ROUTING_ENTRY2(13),
 	ROUTING_ENTRY2(14), ROUTING_ENTRY2(15),
+	/**
+     *  管脚号 > 16 ，值创建一个 表项
+     */
 	ROUTING_ENTRY1(16), ROUTING_ENTRY1(17),
 	ROUTING_ENTRY1(18), ROUTING_ENTRY1(19),
 	ROUTING_ENTRY1(20), ROUTING_ENTRY1(21),
 	ROUTING_ENTRY1(22), ROUTING_ENTRY1(23),
+#ifdef __RTOAX___________________________________
+    
+     { 
+    .gsi = 0,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (0)
+     } 
+    },
+    { 
+    .gsi = 0,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(0),
+     .pin = (0) % 8
+     } 
+    },
+     { 
+    .gsi = 1,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (1)
+     } 
+    }, 
+    { 
+    .gsi = 1,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(1),
+     .pin = (1) % 8
+     } 
+    },
+     { 
+    .gsi = 2,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (2)
+     } 
+    }, 
+    { 
+    .gsi = 2,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(2),
+     .pin = (2) % 8
+     } 
+    },
+     { 
+    .gsi = 3,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (3)
+     } 
+    },
+    { 
+    .gsi = 3,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(3),
+     .pin = (3) % 8
+     } 
+    },
+     { 
+    .gsi = 4,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (4)
+     } 
+    },
+    { 
+    .gsi = 4,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(4),
+     .pin = (4) % 8
+     } 
+    },
+     { 
+    .gsi = 5,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (5)
+     } 
+    }, 
+    { 
+    .gsi = 5,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(5),
+     .pin = (5) % 8
+     } 
+    },
+     { 
+    .gsi = 6,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (6)
+     } 
+    }, 
+    { 
+    .gsi = 6,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(6),
+     .pin = (6) % 8
+     } 
+    },
+     { 
+    .gsi = 7,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (7)
+     } 
+    }, 
+    { 
+    .gsi = 7,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(7),
+     .pin = (7) % 8
+     } 
+    },
+     { 
+    .gsi = 8,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (8)
+     } 
+    }, 
+    { 
+    .gsi = 8,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(8),
+     .pin = (8) % 8
+     } 
+    },
+     { 
+    .gsi = 9,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (9)
+     } 
+    }, { 
+    .gsi = 9,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(9),
+     .pin = (9) % 8
+     } 
+    },
+     { 
+    .gsi = 10,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (10)
+     } 
+    }, { 
+    .gsi = 10,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(10),
+     .pin = (10) % 8
+     } 
+    },
+     { 
+    .gsi = 11,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (11)
+     } 
+    }, { 
+    .gsi = 11,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(11),
+     .pin = (11) % 8
+     } 
+    },
+     { 
+    .gsi = 12,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (12)
+     } 
+    },
+    { 
+    .gsi = 12,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(12),
+     .pin = (12) % 8
+     } 
+    },
+     { 
+    .gsi = 13,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (13)
+     } 
+    },
+    { 
+    .gsi = 13,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(13),
+     .pin = (13) % 8
+     } 
+    },
+     { 
+    .gsi = 14,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (14)
+     } 
+    },
+    { 
+    .gsi = 14,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(14),
+     .pin = (14) % 8
+     } 
+    },
+     { 
+    .gsi = 15,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (15)
+     } 
+    }, 
+    { 
+    .gsi = 15,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = SELECT_PIC(15),
+     .pin = (15) % 8
+     } 
+    },
+     { 
+    .gsi = 16,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (16)
+     } 
+    },
+     { 
+    .gsi = 17,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (17)
+     } 
+    },
+     { 
+    .gsi = 18,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (18)
+     } 
+    },
+     { 
+    .gsi = 19,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (19)
+     } 
+    },
+     { 
+    .gsi = 20,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (20)
+     } 
+    },
+     { 
+    .gsi = 21,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (21)
+     } 
+    },
+     { 
+    .gsi = 22,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (22)
+     } 
+    },
+     { 
+    .gsi = 23,
+     .type = KVM_IRQ_ROUTING_IRQCHIP,
+     .u.irqchip = { 
+    .irqchip = KVM_IRQCHIP_IOAPIC,
+     .pin = (23)
+     } 
+    },
+
+#endif//__RTOAX___________________________________
 };
 
 int kvm_setup_default_irq_routing(struct kvm *kvm)

@@ -51,9 +51,13 @@ struct kvm_timer {
 };
 
 /**
- *  
+ *  vLAPIC
  */
 struct kvm_lapic {
+    /**
+     *  LAPIC 的 4KB 页面 MMIO 的基址
+     *  大小为 LAPIC_MMIO_LENGTH
+     */
 	unsigned long base_address;
 	struct kvm_io_device dev;
 	struct kvm_timer lapic_timer;

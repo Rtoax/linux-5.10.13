@@ -427,17 +427,28 @@ struct kvm_hv_sint {
  *  
  */
 struct kvm_kernel_irq_routing_entry {
+    /**
+     *  理解为管脚号，如 IR0，IR1 等。。。
+     */
 	u32 gsi;
 	u32 type;
     /**
-     *  kvm_set_pic_irq()
-     *  kvm_set_ioapic_irq()
+     *  当一个外设请求到来，KVM遍历这个表，匹配 GSI，如果匹配成功
+     *  调用这个回调函数。该函数如则注入中断
+     *
+     *  调用统一的接口 kvm_set_irq()
+     *
+     *  kvm_set_pic_irq() - 对应 8295A
+     *  kvm_set_ioapic_irq() - 对应 ioapic
      *  vgic_irqfd_set_irq()
      */
 	int (*set)(struct kvm_kernel_irq_routing_entry *e,
-		   struct kvm *kvm, int irq_source_id, int level,
-		   bool line_status);
-	union {
+    		   struct kvm *kvm, int irq_source_id, int level,
+    		   bool line_status);
+    /**
+     *  
+     */
+    union {
 		struct {
 			unsigned irqchip;
 			unsigned pin;
@@ -452,6 +463,9 @@ struct kvm_kernel_irq_routing_entry {
 		struct kvm_s390_adapter_int adapter;
 		struct kvm_hv_sint hv_sint;
 	};
+    /**
+     *  头为 `struct kvm_irq_routing_table.map`
+     */
 	struct hlist_node link;
 };
 
@@ -462,6 +476,8 @@ struct kvm_irq_routing_table {
 	/*
 	 * Array indexed by gsi. Each entry contains list of irq chips
 	 * the gsi is connected to.
+	 *
+	 * 节点为 `struct kvm_kernel_irq_routing_entry.link`
 	 */
 	struct hlist_head map[];
 };
@@ -1282,7 +1298,7 @@ void kvm_free_irq_routing(struct kvm *kvm);
 
 #else
 
-static inline void kvm_free_irq_routing(struct kvm *kvm) {}
+//static inline void kvm_free_irq_routing(struct kvm *kvm) {}
 
 #endif
 
@@ -1298,35 +1314,35 @@ int kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args);
 void kvm_irqfd_release(struct kvm *kvm);
 void kvm_irq_routing_update(struct kvm *);
 #else
-static inline int kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
-{
-	return -EINVAL;
-}
-
-static inline void kvm_irqfd_release(struct kvm *kvm) {}
+//static inline int kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
+//{
+//	return -EINVAL;
+//}
+//
+//static inline void kvm_irqfd_release(struct kvm *kvm) {}
 #endif
 
 #else
 
-static inline void kvm_eventfd_init(struct kvm *kvm) {}
+//static inline void kvm_eventfd_init(struct kvm *kvm) {}
+//
+//static inline int kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
+//{
+//	return -EINVAL;
+//}
 
-static inline int kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
-{
-	return -EINVAL;
-}
+//static inline void kvm_irqfd_release(struct kvm *kvm) {}
 
-static inline void kvm_irqfd_release(struct kvm *kvm) {}
+//#ifdef CONFIG_HAVE_KVM_IRQCHIP
+//static inline void kvm_irq_routing_update(struct kvm *kvm)
+//{
+//}
+//#endif
 
-#ifdef CONFIG_HAVE_KVM_IRQCHIP
-static inline void kvm_irq_routing_update(struct kvm *kvm)
-{
-}
-#endif
-
-static inline int kvm_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
-{
-	return -ENOSYS;
-}
+//static inline int kvm_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
+//{
+//	return -ENOSYS;
+//}
 
 #endif /* CONFIG_HAVE_KVM_EVENTFD */
 

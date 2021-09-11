@@ -20,7 +20,7 @@
 #include "irq.h"
 
 /**
- *  
+ *  匹配
  */
 int kvm_irq_map_gsi(struct kvm *kvm,
 		    struct kvm_kernel_irq_routing_entry *entries, int gsi)
@@ -31,7 +31,13 @@ int kvm_irq_map_gsi(struct kvm *kvm,
 
 	irq_rt = srcu_dereference_check(kvm->irq_routing, &kvm->irq_srcu,
 					lockdep_is_held(&kvm->irq_lock));
+    /**
+     *  
+     */
 	if (irq_rt && gsi < irq_rt->nr_rt_entries) {
+        /**
+         *  
+         */
 		hlist_for_each_entry(e, &irq_rt->map[gsi], link) {
 			entries[n] = *e;
 			++n;

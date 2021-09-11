@@ -1158,6 +1158,11 @@ struct msr_data {
 	u64 data;
 };
 
+/**
+ *  LAPIC 中断
+ *
+ *  例如 kvm_apic_send_ipi() 中发送核间中断
+ */
 struct kvm_lapic_irq {
 	u32 vector;
 	u16 delivery_mode;

@@ -3033,6 +3033,8 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_wake_up);
  * Kick a sleeping VCPU, or a guest VCPU in guest mode, into host kernel mode.
  *
  * 当 有中断请求时，虚拟中断芯片 将主动 kick 一下目标 CPU
+ *  1. 将其从 Guest 模式踢出到 Host 模式
+ *  2. 要么唤醒挂起的 vCPU 线程
  */
 void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
 {
@@ -3991,6 +3993,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		r = kvm_irqfd(kvm, &data);
 		break;
 	}
+    /**
+     *  
+     */
 	case KVM_IOEVENTFD: {
 		struct kvm_ioeventfd data;
 
