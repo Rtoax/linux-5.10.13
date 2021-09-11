@@ -157,6 +157,11 @@
 static DEFINE_SPINLOCK(ptype_lock);
 static DEFINE_SPINLOCK(offload_lock);
 struct list_head __read_mostly ptype_base[PTYPE_HASH_SIZE] ;
+/**
+ *  链表头
+ *  函数 
+ *  ptype_head() 返回这个链表头
+ */
 struct list_head __read_mostly ptype_all ;	/* Taps */
 static struct list_head __read_mostly offload_base ;
 
@@ -510,6 +515,9 @@ static inline void netdev_set_addr_lockdep_class(struct net_device *dev)
 
 static inline struct list_head *ptype_head(const struct packet_type *pt)
 {
+    /**
+     *  every packet
+     */
 	if (pt->type == htons(ETH_P_ALL))
 		return pt->dev ? &pt->dev->ptype_all : &ptype_all;
 	else
@@ -2245,6 +2253,9 @@ int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
 }
 EXPORT_SYMBOL_GPL(dev_forward_skb);
 
+/**
+ *  
+ */
 static inline int deliver_skb(struct sk_buff *skb,
 			      struct packet_type *pt_prev,
 			      struct net_device *orig_dev)
@@ -2252,6 +2263,10 @@ static inline int deliver_skb(struct sk_buff *skb,
 	if (unlikely(skb_orphan_frags_rx(skb, GFP_ATOMIC)))
 		return -ENOMEM;
 	refcount_inc(&skb->users);
+    /**
+     *  调用协议中的回调函数
+     *  packet_rcv(): tcpdump 等
+     */
 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
 }
 
@@ -2311,6 +2326,9 @@ void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
 
 	rcu_read_lock();
 again:
+    /**
+     *  遍历  ptype_all 中的协议，并依次调用 deliver_skb
+     */
 	list_for_each_entry_rcu(ptype, ptype_list, list) {
 		if (ptype->ignore_outgoing)
 			continue;
@@ -3567,6 +3585,9 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
 	return rc;
 }
 
+/**
+ *  
+ */
 struct sk_buff *dev_hard_start_xmit(struct sk_buff *first, struct net_device *dev,
 				    struct netdev_queue *txq, int *ret)
 {
@@ -5099,6 +5120,9 @@ static inline int nf_ingress(struct sk_buff *skb, struct packet_type **pt_prev,
 	return 0;
 }
 
+/**
+ *  
+ */
 static int __netif_receive_skb_core(struct sk_buff **pskb, bool pfmemalloc,
 				    struct packet_type **ppt_prev)
 {
@@ -5155,12 +5179,18 @@ another_round:
 	if (pfmemalloc)
 		goto skip_taps;
 
+    /**
+     *  遍历 ptype_all （tcpdump 在这里挂了虚拟协议）
+     */
 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
 		if (pt_prev)
 			ret = deliver_skb(skb, pt_prev, orig_dev);
 		pt_prev = ptype;
 	}
 
+    /**
+     *  
+     */
 	list_for_each_entry_rcu(ptype, &skb->dev->ptype_all, list) {
 		if (pt_prev)
 			ret = deliver_skb(skb, pt_prev, orig_dev);

@@ -1512,8 +1512,9 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	rcu_read_unlock();
 
     /* 如 
-     *  AF_INET->inet_create() 
-     *  AF_UNIX->unix_create()
+     *  AF_INET->inet_family_ops->inet_create() 
+     *  AF_UNIX->unix_family_ops->unix_create()
+     *  AF_PACKET->packet_family_ops->packet_create()
      */
 	err = pf->create(net, sock, protocol, kern);    /* create */
 	if (err < 0)

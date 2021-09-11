@@ -301,6 +301,9 @@ static void __register_prot_hook(struct sock *sk)
 {
 	struct packet_sock *po = pkt_sk(sk);
 
+    /**
+     *  
+     */
 	if (!po->running) {
 		if (po->fanout)
 			__fanout_link(sk, po);
@@ -2045,8 +2048,10 @@ static int packet_rcv_vnet(struct msghdr *msg, const struct sk_buff *skb,
  * by dev_queue_xmit_nit(), input packets are processed by net_bh
  * sequencially, so that if we return skb to original state on exit,
  * we will not harm anyone.
+ *
+ *  把收到的 skb 放到了当前 packet socket 的接收队列里，
+ *  这样后面调用 recvfrom 的时候就可以获取到所抓到的包
  */
-
 static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 		      struct packet_type *pt, struct net_device *orig_dev)
 {
@@ -2087,6 +2092,9 @@ static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 
 	snaplen = skb->len;
 
+    /**
+     *  
+     */
 	res = run_filter(skb, sk, snaplen);
 	if (!res)
 		goto drop_n_restore;
@@ -2109,6 +2117,9 @@ static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 		skb = nskb;
 	}
 
+    /**
+     *  
+     */
 	sock_skb_cb_check_size(sizeof(*PACKET_SKB_CB(skb)) + MAX_ADDR_LEN - 8);
 
 	sll = &PACKET_SKB_CB(skb)->sa.ll;
@@ -3241,8 +3252,9 @@ static struct proto packet_proto = {
 
 /*
  *	Create a packet of type SOCK_PACKET.
+ *
+ *  
  */
-
 static int packet_create(struct net *net, struct socket *sock, int protocol,
 			 int kern)
 {
@@ -3292,6 +3304,10 @@ static int packet_create(struct net *net, struct socket *sock, int protocol,
 	spin_lock_init(&po->bind_lock);
 	mutex_init(&po->pg_vec_lock);
 	po->rollover = NULL;
+    /**
+     *  设置回调函数为 packet_rcv
+     *  再通过 register_prot_hook => dev_add_pack 完成注册
+     */
 	po->prot_hook.func = packet_rcv;
 
 	if (sock->type == SOCK_PACKET)

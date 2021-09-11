@@ -81,11 +81,7 @@
 #define SOCK_DEBUG(sk, msg...) do { if ((sk) && sock_flag((sk), SOCK_DBG)) \
 					printk(KERN_DEBUG msg); } while (0)
 #else
-/* Validate arguments and do nothing */
-static inline 
-void SOCK_DEBUG(const struct sock *sk, const char *msg, ...)
-{
-}
+/**/
 #endif
 
 /* This is the per-socket lock.  The spinlock provides a synchronization
@@ -930,14 +926,7 @@ static inline int sk_memalloc_socks(void)
 
 void __receive_sock(struct file *file);
 #else
-
-static inline int sk_memalloc_socks(void)
-{
-	return 0;
-}
-
-static inline void __receive_sock(struct file *file)
-{ }
+/**/
 #endif
 
 static inline gfp_t sk_gfp_mask(const struct sock *sk, gfp_t gfp_mask)
@@ -1419,10 +1408,7 @@ void sock_prot_inuse_add(struct net *net, struct proto *prot, int inc);
 int sock_prot_inuse_get(struct net *net, struct proto *proto);
 int sock_inuse_get(struct net *net);
 #else
-static inline void sock_prot_inuse_add(struct net *net, struct proto *prot,
-		int inc)
-{
-}
+/**/
 #endif
 
 
