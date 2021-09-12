@@ -34,6 +34,9 @@
 #define VMX_FEATURE_EPTP_SWITCHING	( 0*32+ 28) /* EPTP switching (in guest) */
 
 /* Primary Processor-Based VM-Execution Controls, word 1 */
+/**
+ *  
+ */
 #define VMX_FEATURE_INTR_WINDOW_EXITING ( 1*32+  2) /* "" VM-Exit if INTRs are unblocked in guest */
 #define VMX_FEATURE_USE_TSC_OFFSETTING	( 1*32+  3) /* "tsc_offset" Offset hardware TSC when read in guest */
 #define VMX_FEATURE_HLT_EXITING		( 1*32+  7) /* "" VM-Exit on HLT */

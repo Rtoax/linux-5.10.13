@@ -22,6 +22,14 @@
 /*
  * Definitions of Primary Processor-Based VM-Execution Controls.
  */
+/**
+ *  如果设置为 1，那么当 RFLAGS 中的 IF 设置为 1，即 Guest 打开中断时，如果
+ *  没有其他阻碍 中断指令在执行，则 CPU 触发 VM Exit
+ *
+ *  这个特定表示，在任何指令执行前，如果 RFLAGS 寄存器中的 IF 为设置了，即 Guest
+ *  能处理中断，并且Guest没有运行任何阻止中断的操作，那么如果 Interrupt0window exiting
+ *  被设置为1，则一旦有中断在等待注入，则Guest模式下的CPU主要触发VM exit。
+ */
 #define CPU_BASED_INTR_WINDOW_EXITING   VMCS_CONTROL_BIT(INTR_WINDOW_EXITING)
 #define CPU_BASED_USE_TSC_OFFSETTING    VMCS_CONTROL_BIT(USE_TSC_OFFSETTING)
 #define CPU_BASED_HLT_EXITING           VMCS_CONTROL_BIT(HLT_EXITING)

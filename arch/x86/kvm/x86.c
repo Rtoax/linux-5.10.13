@@ -8893,6 +8893,8 @@ EXPORT_SYMBOL_GPL(__kvm_request_immediate_exit);
  * Returns 1 to let vcpu_run() continue the guest execution loop without
  * exiting to the userspace.  Otherwise, the value will be returned to the
  * userspace.
+ *
+ *  
  */
 static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 {
@@ -9045,6 +9047,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	preempt_disable();
 
+    /**
+     *  
+     */
 	kvm_x86_ops.prepare_guest_switch(vcpu);
 
 	/*
@@ -9144,6 +9149,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	vcpu->mode = OUTSIDE_GUEST_MODE;
 	smp_wmb();
 
+    /**
+     *  
+     */
 	kvm_x86_ops.handle_exit_irqoff(vcpu);
 
 	/*
