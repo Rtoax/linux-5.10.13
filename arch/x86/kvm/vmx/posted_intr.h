@@ -5,7 +5,17 @@
 #define POSTED_INTR_ON  0
 #define POSTED_INTR_SN  1
 
-/* Posted-Interrupt Descriptor */
+/**
+ *  Posted-Interrupt Descriptor 
+ *
+ *  格式
+ *  0-255 bits - posted-interrupt request
+ *              每1bit对应一个中断向量，如果对应为设为1，表示有中断请求
+ *  256 bit - outstanding notification
+ *              是否有中断需要通知
+ *  511-257 - reserved for software and other agents
+ *              保留位 - 但从 5.10.13代码看，显然不是全都保留
+ */
 struct pi_desc {
 	u32 pir[8];     /* Posted interrupt requested */
 	union {

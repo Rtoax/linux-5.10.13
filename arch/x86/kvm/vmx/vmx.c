@@ -4015,6 +4015,9 @@ static void vmx_msr_filter_changed(struct kvm_vcpu *vcpu)
 	vmx_update_msr_bitmap_x2apic(vcpu, vmx_msr_bitmap_mode(vcpu));
 }
 
+/**
+ *  
+ */
 static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
 						     bool nested)
 {
@@ -4046,7 +4049,9 @@ static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
 		 * interrupts in PIR, and sending a notification event
 		 * which has no effect is safe here.
 		 */
-
+        /**
+         *  
+         */
 		apic->send_IPI_mask(get_cpu_mask(vcpu->cpu), pi_vec);
 		return true;
 	}
@@ -4093,6 +4098,9 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
 	if (!vcpu->arch.apicv_active)
 		return -1;
 
+    /**
+     *  向posted-interrupt descriptor 中写入中断信息
+     */
 	if (pi_test_and_set_pir(vector, &vmx->pi_desc))
 		return 0;
 
@@ -4100,6 +4108,9 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
 	if (pi_test_and_set_on(&vmx->pi_desc))
 		return 0;
 
+    /**
+     *  通知 CPU 去处理 posted-interrupt descriptor 中的中断
+     */
 	if (vcpu != kvm_get_running_vcpu() &&
 	    !kvm_vcpu_trigger_posted_interrupt(vcpu, false))
 		kvm_vcpu_kick(vcpu);
@@ -8020,6 +8031,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.hwapic_isr_update = vmx_hwapic_isr_update,
 	.guest_apic_has_interrupt = vmx_guest_apic_has_interrupt,
 	.sync_pir_to_irr = vmx_sync_pir_to_irr,
+	/**
+     *  
+     */
 	.deliver_posted_interrupt = vmx_deliver_posted_interrupt,
 	.dy_apicv_has_pending_interrupt = pi_has_pending_interrupt,
 
