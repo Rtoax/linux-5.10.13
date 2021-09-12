@@ -672,6 +672,33 @@ static int msi_capability_init(struct pci_dev *dev, int nvec,
 	return 0;
 }
 
+/**
+ *      MSI-X Capability Structure
+ *
+ *  +---------------------------+---------------+---------------+
+ *  |       Message Control     | Next Pointer  | Capability ID |
+ *  +---------------------------+---------------+---------------+
+ *  |                   Message Address                         |
+ *  +-----------------------------------------------+-----------+
+ *  |               Table Offset                    |  BIR      | BIR: BAR Indicator Register
+ *  +-----------------------------------------------+-----------+
+ *                          |                               |
+ *                          |                               |
+ *                          +------------------------------(+)
+ *                                                          |
+ *                                                          |
+ *          +-------------------+-------------------+<------+
+ *  Entry 0 |   Message Address |   Message Data    |
+ *          +-------------------+-------------------+
+ *  Entry 1 |   Message Address |   Message Data    |
+ *          +-------------------+-------------------+
+ *          |        ....       |        ....       |
+ *          +-------------------+-------------------+
+ *  Entry N |   Message Address |   Message Data    |
+ *          +-------------------+-------------------+
+ *
+ *  Rong Tao(RToax) 2021年9月12日
+ */
 static void __iomem *msix_map_region(struct pci_dev *dev, unsigned nr_entries)
 {
 	resource_size_t phys_addr;
@@ -679,16 +706,22 @@ static void __iomem *msix_map_region(struct pci_dev *dev, unsigned nr_entries)
 	unsigned long flags;
 	u8 bir;
 
-	pci_read_config_dword(dev, dev->msix_cap + PCI_MSIX_TABLE,
-			      &table_offset);
+	pci_read_config_dword(dev, dev->msix_cap + PCI_MSIX_TABLE, &table_offset);
 	bir = (u8)(table_offset & PCI_MSIX_TABLE_BIR);
 	flags = pci_resource_flags(dev, bir);
 	if (!flags || (flags & IORESOURCE_UNSET))
 		return NULL;
 
+    /**
+     *  计算出 table 的位置
+     */
 	table_offset &= PCI_MSIX_TABLE_OFFSET;
 	phys_addr = pci_resource_start(dev, bir) + table_offset;
 
+    /**
+     *  通过 iomap 方式，映射到 CPU 的地址空间
+     *  后面就可以向访问内存一样访问 这个 table 了
+     */
 	return ioremap(phys_addr, nr_entries * PCI_MSIX_ENTRY_SIZE);
 }
 
@@ -739,6 +772,9 @@ out:
 	return ret;
 }
 
+/**
+ *  
+ */
 static void msix_program_entries(struct pci_dev *dev,
 				 struct msix_entry *entries)
 {
@@ -771,7 +807,8 @@ static void msix_program_entries(struct pci_dev *dev,
  * Setup the MSI-X capability structure of device function with a
  * single MSI-X IRQ. A return of zero indicates the successful setup of
  * requested MSI-X entries with allocated IRQs or non-zero for otherwise.
- **/
+ *
+ */
 static int msix_capability_init(struct pci_dev *dev, struct msix_entry *entries,
 				int nvec, struct irq_affinity *affd)
 {
@@ -782,16 +819,52 @@ static int msix_capability_init(struct pci_dev *dev, struct msix_entry *entries,
 	/* Ensure MSI-X is disabled while it is set up */
 	pci_msix_clear_and_set_ctrl(dev, PCI_MSIX_FLAGS_ENABLE, 0);
 
+    /**
+     *  
+     */
 	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
+    
 	/* Request & Map MSI-X table region */
+    /**
+     *      MSI-X Capability Structure
+     *
+     *  +---------------------------+---------------+---------------+
+     *  |       Message Control     | Next Pointer  | Capability ID |
+     *  +---------------------------+---------------+---------------+
+     *  |                   Message Address                         |
+     *  +-----------------------------------------------+-----------+
+     *  |               Table Offset                    |  BIR      | BIR: BAR Indicator Register
+     *  +-----------------------------------------------+-----------+
+     *                          |                               |
+     *                          |                               |
+     *                          +------------------------------(+)
+     *                                                          |
+     *                                                          |
+     *          +-------------------+-------------------+<------+
+     *  Entry 0 |   Message Address |   Message Data    |
+     *          +-------------------+-------------------+
+     *  Entry 1 |   Message Address |   Message Data    |
+     *          +-------------------+-------------------+
+     *          |        ....       |        ....       |
+     *          +-------------------+-------------------+
+     *  Entry N |   Message Address |   Message Data    |
+     *          +-------------------+-------------------+
+     *
+     *  Rong Tao(RToax) 2021年9月12日
+     */
 	base = msix_map_region(dev, msix_table_size(control));
 	if (!base)
 		return -ENOMEM;
 
+    /**
+     *  
+     */
 	ret = msix_setup_entries(dev, base, entries, nvec, affd);
 	if (ret)
 		return ret;
-
+    /**
+     *  
+     */
 	ret = pci_msi_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
 	if (ret)
 		goto out_avail;
@@ -809,6 +882,9 @@ static int msix_capability_init(struct pci_dev *dev, struct msix_entry *entries,
 	pci_msix_clear_and_set_ctrl(dev, 0,
 				PCI_MSIX_FLAGS_MASKALL | PCI_MSIX_FLAGS_ENABLE);
 
+    /**
+     *  
+     */
 	msix_program_entries(dev, entries);
 
 	ret = populate_msi_sysfs(dev);
@@ -968,6 +1044,11 @@ int pci_msix_vec_count(struct pci_dev *dev)
 }
 EXPORT_SYMBOL(pci_msix_vec_count);
 
+/**
+ *  配置 MSI Capability 数据结构
+ *
+ *  
+ */
 static int __pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries,
 			     int nvec, struct irq_affinity *affd, int flags)
 {
@@ -976,13 +1057,17 @@ static int __pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries,
 
 	if (!pci_msi_supported(dev, nvec) || dev->current_state != PCI_D0)
 		return -EINVAL;
-
+    /**
+     *  
+     */
 	nr_entries = pci_msix_vec_count(dev);
 	if (nr_entries < 0)
 		return nr_entries;
 	if (nvec > nr_entries && !(flags & PCI_IRQ_VIRTUAL))
 		return nr_entries;
-
+    /**
+     *  
+     */
 	if (entries) {
 		/* Check for any invalid entries */
 		for (i = 0; i < nvec; i++) {
@@ -1000,6 +1085,9 @@ static int __pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries,
 		pci_info(dev, "can't enable MSI-X (MSI IRQ already assigned)\n");
 		return -EINVAL;
 	}
+    /**
+     *  
+     */
 	return msix_capability_init(dev, entries, nvec, affd);
 }
 
@@ -1104,7 +1192,7 @@ static int __pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec,
 	}
 }
 
-/* deprecated, don't use */
+/* deprecated, don't use - 已弃用 */
 int pci_enable_msi(struct pci_dev *dev)
 {
 	int rc = __pci_enable_msi_range(dev, 1, 1, NULL);
@@ -1133,7 +1221,9 @@ static int __pci_enable_msix_range(struct pci_dev *dev,
 			if (nvec < minvec)
 				return -ENOSPC;
 		}
-
+        /**
+         *  
+         */
 		rc = __pci_enable_msix(dev, entries, nvec, affd, flags);
 		if (rc == 0)
 			return nvec;

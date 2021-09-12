@@ -1571,6 +1571,11 @@ int pci_set_vga_state(struct pci_dev *pdev, bool decode,
 		dma_pool_zalloc(pool, flags, handle)
 #define	pci_pool_free(pool, vaddr, addr) dma_pool_free(pool, vaddr, addr)
 
+/**
+ *  MSI - Message Signal Interrupt
+ *  
+ *  
+ */
 struct msix_entry {
 	u32	vector;	/* Kernel uses to write allocated vector */
 	u16	entry;	/* Driver uses to specify entry, OS writes */
@@ -1603,46 +1608,46 @@ int pci_irq_vector(struct pci_dev *dev, unsigned int nr);
 const struct cpumask *pci_irq_get_affinity(struct pci_dev *pdev, int vec);
 
 #else
-static inline int pci_msi_vec_count(struct pci_dev *dev) { return -ENOSYS; }
-static inline void pci_disable_msi(struct pci_dev *dev) { }
-static inline int pci_msix_vec_count(struct pci_dev *dev) { return -ENOSYS; }
-static inline void pci_disable_msix(struct pci_dev *dev) { }
-static inline void pci_restore_msi_state(struct pci_dev *dev) { }
-static inline int pci_msi_enabled(void) { return 0; }
-static inline int pci_enable_msi(struct pci_dev *dev)
-{ return -ENOSYS; }
-static inline int pci_enable_msix_range(struct pci_dev *dev,
-			struct msix_entry *entries, int minvec, int maxvec)
-{ return -ENOSYS; }
-static inline int pci_enable_msix_exact(struct pci_dev *dev,
-			struct msix_entry *entries, int nvec)
-{ return -ENOSYS; }
-
-static inline int
-pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
-			       unsigned int max_vecs, unsigned int flags,
-			       struct irq_affinity *aff_desc)
-{
-	if ((flags & PCI_IRQ_LEGACY) && min_vecs == 1 && dev->irq)
-		return 1;
-	return -ENOSPC;
-}
-
-static inline void pci_free_irq_vectors(struct pci_dev *dev)
-{
-}
-
-static inline int pci_irq_vector(struct pci_dev *dev, unsigned int nr)
-{
-	if (WARN_ON_ONCE(nr > 0))
-		return -EINVAL;
-	return dev->irq;
-}
-static inline const struct cpumask *pci_irq_get_affinity(struct pci_dev *pdev,
-		int vec)
-{
-	return cpu_possible_mask;
-}
+//static inline int pci_msi_vec_count(struct pci_dev *dev) { return -ENOSYS; }
+//static inline void pci_disable_msi(struct pci_dev *dev) { }
+//static inline int pci_msix_vec_count(struct pci_dev *dev) { return -ENOSYS; }
+//static inline void pci_disable_msix(struct pci_dev *dev) { }
+//static inline void pci_restore_msi_state(struct pci_dev *dev) { }
+//static inline int pci_msi_enabled(void) { return 0; }
+//static inline int pci_enable_msi(struct pci_dev *dev)
+//{ return -ENOSYS; }
+//static inline int pci_enable_msix_range(struct pci_dev *dev,
+//			struct msix_entry *entries, int minvec, int maxvec)
+//{ return -ENOSYS; }
+//static inline int pci_enable_msix_exact(struct pci_dev *dev,
+//			struct msix_entry *entries, int nvec)
+//{ return -ENOSYS; }
+//
+//static inline int
+//pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+//			       unsigned int max_vecs, unsigned int flags,
+//			       struct irq_affinity *aff_desc)
+//{
+//	if ((flags & PCI_IRQ_LEGACY) && min_vecs == 1 && dev->irq)
+//		return 1;
+//	return -ENOSPC;
+//}
+//
+//static inline void pci_free_irq_vectors(struct pci_dev *dev)
+//{
+//}
+//
+//static inline int pci_irq_vector(struct pci_dev *dev, unsigned int nr)
+//{
+//	if (WARN_ON_ONCE(nr > 0))
+//		return -EINVAL;
+//	return dev->irq;
+//}
+//static inline const struct cpumask *pci_irq_get_affinity(struct pci_dev *pdev,
+//		int vec)
+//{
+//	return cpu_possible_mask;
+//}
 #endif
 
 /**
@@ -1681,8 +1686,8 @@ static inline int pci_irqd_intx_xlate(struct irq_domain *d,
 extern bool pcie_ports_disabled;
 extern bool pcie_ports_native;
 #else
-#define pcie_ports_disabled	true
-#define pcie_ports_native	false
+//#define pcie_ports_disabled	true
+//#define pcie_ports_native	false
 #endif
 
 #define PCIE_LINK_STATE_L0S		BIT(0)
@@ -1700,19 +1705,19 @@ void pcie_no_aspm(void);
 bool pcie_aspm_support_enabled(void);
 bool pcie_aspm_enabled(struct pci_dev *pdev);
 #else
-static inline int pci_disable_link_state(struct pci_dev *pdev, int state)
-{ return 0; }
-static inline int pci_disable_link_state_locked(struct pci_dev *pdev, int state)
-{ return 0; }
-static inline void pcie_no_aspm(void) { }
-static inline bool pcie_aspm_support_enabled(void) { return false; }
-static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return false; }
+//static inline int pci_disable_link_state(struct pci_dev *pdev, int state)
+//{ return 0; }
+//static inline int pci_disable_link_state_locked(struct pci_dev *pdev, int state)
+//{ return 0; }
+//static inline void pcie_no_aspm(void) { }
+//static inline bool pcie_aspm_support_enabled(void) { return false; }
+//static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return false; }
 #endif
 
 #ifdef CONFIG_PCIEAER
 bool pci_aer_available(void);
 #else
-static inline bool pci_aer_available(void) { return false; }
+//static inline bool pci_aer_available(void) { return false; }
 #endif
 
 bool pci_ats_disabled(void);
@@ -1729,9 +1734,9 @@ void pci_cfg_access_unlock(struct pci_dev *dev);
 #ifdef CONFIG_PCI_DOMAINS
 extern int pci_domains_supported;
 #else
-enum { pci_domains_supported = 0 };
-static inline int pci_domain_nr(struct pci_bus *bus) { return 0; }
-static inline int pci_proc_domain(struct pci_bus *bus) { return 0; }
+//enum { pci_domains_supported = 0 };
+//static inline int pci_domain_nr(struct pci_bus *bus) { return 0; }
+//static inline int pci_proc_domain(struct pci_bus *bus) { return 0; }
 #endif /* CONFIG_PCI_DOMAINS */
 
 /*
@@ -1747,8 +1752,8 @@ static inline int pci_domain_nr(struct pci_bus *bus)
 #ifdef CONFIG_ACPI
 int acpi_pci_bus_find_domain_nr(struct pci_bus *bus);
 #else
-static inline int acpi_pci_bus_find_domain_nr(struct pci_bus *bus)
-{ return 0; }
+//static inline int acpi_pci_bus_find_domain_nr(struct pci_bus *bus)
+//{ return 0; }
 #endif
 int pci_bus_find_domain_nr(struct pci_bus *bus, struct device *parent);
 #endif
@@ -2024,7 +2029,7 @@ void pcibios_release_device(struct pci_dev *dev);
 #ifdef CONFIG_PCI
 void pcibios_penalize_isa_irq(int irq, int active);
 #else
-static inline void pcibios_penalize_isa_irq(int irq, int active) {}
+//static inline void pcibios_penalize_isa_irq(int irq, int active) {}
 #endif
 int pcibios_alloc_irq(struct pci_dev *dev);
 void pcibios_free_irq(struct pci_dev *dev);

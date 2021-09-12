@@ -303,7 +303,9 @@ static u16 vp_config_vector(struct virtio_pci_device *vp_dev, u16 vector)
 	/* Will also flush the write out to device */
 	return vp_ioread16(&vp_dev->common->msix_config);
 }
-
+/**
+ *  
+ */
 static struct virtqueue *setup_vq(struct virtio_pci_device *vp_dev,
 				  struct virtio_pci_vq_info *info,
 				  unsigned index,

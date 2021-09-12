@@ -123,6 +123,9 @@ static struct virtqueue *setup_vq(struct virtio_pci_device *vp_dev,
 	int err;
 	u64 q_pfn;
 
+    /**
+     *  通过虚拟设备监理 IRQ routing 表项
+     */
 	/* Select the queue we're interested in */
 	iowrite16(index, vp_dev->ioaddr + VIRTIO_PCI_QUEUE_SEL);
 
@@ -131,6 +134,9 @@ static struct virtqueue *setup_vq(struct virtio_pci_device *vp_dev,
 	if (!num || ioread32(vp_dev->ioaddr + VIRTIO_PCI_QUEUE_PFN))
 		return ERR_PTR(-ENOENT);
 
+    /**
+     *  
+     */
 	info->msix_vector = msix_vec;
 
 	/* create the vring */

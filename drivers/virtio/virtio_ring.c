@@ -2131,6 +2131,9 @@ struct virtqueue *__vring_new_virtqueue(unsigned int index,
 }
 EXPORT_SYMBOL_GPL(__vring_new_virtqueue);
 
+/**
+ *  
+ */
 struct virtqueue *vring_create_virtqueue(
 	unsigned int index,
 	unsigned int num,
@@ -2149,6 +2152,9 @@ struct virtqueue *vring_create_virtqueue(
 				vdev, weak_barriers, may_reduce_num,
 				context, notify, callback, name);
 
+    /**
+     *  
+     */
 	return vring_create_virtqueue_split(index, num, vring_align,
 			vdev, weak_barriers, may_reduce_num,
 			context, notify, callback, name);

@@ -1401,6 +1401,9 @@ struct kvm_s390_ucas_mapping {
 			_IOW(KVMIO,  0x68, struct kvm_coalesced_mmio_zone)
 #define KVM_ASSIGN_PCI_DEVICE     _IOR(KVMIO,  0x69, \
 				       struct kvm_assigned_pci_dev)
+/**
+ *  建立 IRQ routing 表项
+ */
 #define KVM_SET_GSI_ROUTING       _IOW(KVMIO,  0x6a, struct kvm_irq_routing)
 /* deprecated, replaced by KVM_ASSIGN_DEV_IRQ */
 #define KVM_ASSIGN_IRQ            __KVM_DEPRECATED_VM_R_0x70

@@ -14,15 +14,15 @@ struct virtio_device {
 	struct list_head vqs;
 };
 
-struct virtqueue {
-	struct list_head list;
-	void (*callback)(struct virtqueue *vq);
-	const char *name;
-	struct virtio_device *vdev;
-        unsigned int index;
-        unsigned int num_free;
-	void *priv;
-};
+//struct virtqueue {
+//	struct list_head list;
+//	void (*callback)(struct virtqueue *vq);
+//	const char *name;
+//	struct virtio_device *vdev;
+//    unsigned int index;
+//    unsigned int num_free;
+//	void *priv;
+//};
 
 /* Interfaces exported by virtio_ring. */
 int virtqueue_add_sgs(struct virtqueue *vq,

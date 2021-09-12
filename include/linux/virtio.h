@@ -33,6 +33,7 @@ struct virtqueue {  /* virtio 队列 */
 	unsigned int num_free;
 	void *priv;
 };
+typedef struct virtqueue * virtqueue_t;//+++
 
 int virtqueue_add_outbuf(struct virtqueue *vq,
 			 struct scatterlist sg[], unsigned int num,
