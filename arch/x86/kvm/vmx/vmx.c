@@ -2454,6 +2454,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 			SECONDARY_EXEC_DESC |
 			SECONDARY_EXEC_ENABLE_RDTSCP |
 			SECONDARY_EXEC_ENABLE_INVPCID |
+			/**
+             *  见 VIRTUAL_APIC_PAGE_ADDR
+             */
 			SECONDARY_EXEC_APIC_REGISTER_VIRT |
 			SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY |
 			SECONDARY_EXEC_SHADOW_VMCS |
@@ -4556,9 +4559,15 @@ static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD, 0);  /* 22.2.1 */
 
+    /**
+     *  
+     */
 	if (cpu_has_vmx_tpr_shadow() && !init_event) {
 		vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, 0);
 		if (cpu_need_tpr_shadow(vcpu))
+            /**
+             *  for virtual-APIC  page
+             */
 			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR,
 				     __pa(vcpu->arch.apic->regs));
 		vmcs_write32(TPR_THRESHOLD, 0);
@@ -5919,6 +5928,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
      *  
      */
 	[EXIT_REASON_APIC_ACCESS]             = handle_apic_access,
+	/**
+     *  
+     */
 	[EXIT_REASON_APIC_WRITE]              = handle_apic_write,
 	[EXIT_REASON_EOI_INDUCED]             = handle_apic_eoi_induced,
 	[EXIT_REASON_WBINVD]                  = handle_wbinvd,

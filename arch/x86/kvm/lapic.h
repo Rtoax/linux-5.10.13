@@ -74,7 +74,18 @@ struct kvm_lapic {
 	 * APIC register page.  The layout matches the register layout seen by
 	 * the guest 1:1, because it is accessed by the vmx microcode.
 	 * Note: Only one register, the TPR, is used by the microcode.
-	 */
+	 *
+     *  在 APIC 中，物理 LAPIC 有一个页面大小的内存用来存放个寄存器的值，
+     *  Intel 称这个页面为 APIC-access page, CPU 采用 mmap 的方式访问这些寄存器
+     *  起初，一旦 Guest 访问这个页面，CPU将从Guest 模式切换到Host模式，KVM负责完成模拟，
+     *  将Guest 写给 LAPIC 的值写入虚拟 LAPIC的 APIC page，或者从虚拟LAPIC的APIC page读入值
+     *  给 Guest。
+     *  那么频繁的访问寄存器，就需要导致Guest和Host之间频繁的切换，而这些大量的切换带来很大的性能损失
+     *  为了减少VMexit，Intel设计了一个所谓 Virtual-APIC page替代 APIC-access page。就不需要 Guest和
+     *  Host之间的切换了.
+     *
+     *  CPU 从 VMCS 的 VIRTUAL_APIC_PAGE_ADDR 字段找到 virtual-APIC page
+     */
 	void *regs;
 	gpa_t vapic_addr;
 	struct gfn_to_hva_cache vapic_cache;
