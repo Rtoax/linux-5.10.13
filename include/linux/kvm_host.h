@@ -438,8 +438,11 @@ struct kvm_kernel_irq_routing_entry {
      *
      *  调用统一的接口 kvm_set_irq()
      *
+     *  设置函数 `kvm_set_routing_entry()`
      *  kvm_set_pic_irq() - 对应 8295A
      *  kvm_set_ioapic_irq() - 对应 ioapic
+     *  kvm_set_msi() - 对应 MSI-X
+     *  kvm_hv_set_sint()
      *  vgic_irqfd_set_irq()
      */
 	int (*set)(struct kvm_kernel_irq_routing_entry *e,

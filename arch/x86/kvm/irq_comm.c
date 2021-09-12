@@ -121,7 +121,7 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 	}
 
     /**
-     *  
+     *  向 Guest 注入中断
      */
 	if (lowest)
 		r = kvm_apic_set_irq(lowest, irq, dest_map);
@@ -129,6 +129,9 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 	return r;
 }
 
+/** 
+ *  设置 MSI 中断
+ */
 void kvm_set_msi_irq(struct kvm *kvm, struct kvm_kernel_irq_routing_entry *e,
 		     struct kvm_lapic_irq *irq)
 {
@@ -136,12 +139,19 @@ void kvm_set_msi_irq(struct kvm *kvm, struct kvm_kernel_irq_routing_entry *e,
 	                                     (u64)e->msi.address_hi << 32 : 0),
 	                      e->msi.data);
 
+    /** 
+     *  
+     */
 	irq->dest_id = (e->msi.address_lo &
 			MSI_ADDR_DEST_ID_MASK) >> MSI_ADDR_DEST_ID_SHIFT;
 	if (kvm->arch.x2apic_format)
 		irq->dest_id |= MSI_ADDR_EXT_DEST_ID(e->msi.address_hi);
 	irq->vector = (e->msi.data &
 			MSI_DATA_VECTOR_MASK) >> MSI_DATA_VECTOR_SHIFT;
+
+    /** 
+     *  
+     */        
 	irq->dest_mode = kvm_lapic_irq_dest_mode(
 	    !!((1 << MSI_ADDR_DEST_MODE_SHIFT) & e->msi.address_lo));
 	irq->trig_mode = (1 << MSI_DATA_TRIGGER_SHIFT) & e->msi.data;
@@ -159,19 +169,31 @@ static inline bool kvm_msi_route_invalid(struct kvm *kvm,
 	return kvm->arch.x2apic_format && (e->msi.address_hi & 0xff);
 }
 
+/** 
+ *  MSI(-X)
+ */
 int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
 		struct kvm *kvm, int irq_source_id, int level, bool line_status)
 {
 	struct kvm_lapic_irq irq;
 
+    /** 
+     *  
+     */
 	if (kvm_msi_route_invalid(kvm, e))
 		return -EINVAL;
 
 	if (!level)
 		return -1;
 
+    /** 
+     *  
+     */
 	kvm_set_msi_irq(kvm, e, &irq);
 
+    /** 
+     *  
+     */
 	return kvm_irq_delivery_to_apic(kvm, NULL, &irq, NULL);
 }
 
@@ -297,6 +319,9 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
 	return irqchip_in_kernel(kvm);
 }
 
+/** 
+ *  
+ */
 int kvm_set_routing_entry(struct kvm *kvm,
 			  struct kvm_kernel_irq_routing_entry *e,
 			  const struct kvm_irq_routing_entry *ue)
@@ -314,11 +339,17 @@ int kvm_set_routing_entry(struct kvm *kvm,
 		case KVM_IRQCHIP_PIC_SLAVE:
 			e->irqchip.pin += PIC_NUM_PINS / 2;
 			fallthrough;
+        /** 
+         *  8259A
+         */
 		case KVM_IRQCHIP_PIC_MASTER:
 			if (ue->u.irqchip.pin >= PIC_NUM_PINS / 2)
 				return -EINVAL;
 			e->set = kvm_set_pic_irq;
 			break;
+        /** 
+         *  IOAPIC
+         */
 		case KVM_IRQCHIP_IOAPIC:
 			if (ue->u.irqchip.pin >= KVM_IOAPIC_NUM_PINS)
 				return -EINVAL;
@@ -329,6 +360,9 @@ int kvm_set_routing_entry(struct kvm *kvm,
 		}
 		e->irqchip.irqchip = ue->u.irqchip.irqchip;
 		break;
+    /** 
+     *  MSI(-X)
+     */
 	case KVM_IRQ_ROUTING_MSI:
 		e->set = kvm_set_msi;
 		e->msi.address_lo = ue->u.msi.address_lo;
