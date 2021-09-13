@@ -394,6 +394,15 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 	},
 # ifdef CONFIG_HAVE_EBPF_JIT
 	{
+	    /**
+	     *  /proc/sys/net/core/bpf_jit_harden
+	     *
+	     *  设置为 1 会为非特权用户（ unprivileged users）的 JIT 
+	     *  编译做一些额外的加固工作。这些额外加固会稍微降低程序
+	     *  的性能，但在有非受信用户在系统上进行操作的情况下，
+	     *  能够有效地减小（潜在的）受攻击 面。但与完全切换到解释器相比，
+	     *  这些性能损失还是比较小的。
+	     */
 		.procname	= "bpf_jit_harden", /* /proc/sys/net/core/ */
 		.data		= &bpf_jit_harden,
 		.maxlen		= sizeof(int),

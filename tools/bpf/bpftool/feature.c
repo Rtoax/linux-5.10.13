@@ -166,7 +166,7 @@ static void probe_unprivileged_disabled(void)
 
 	/* No support for C-style ouptut */
     /**
-     *  
+     *  禁止非特权用户使用 bpf(2) 系统调用
      */
 	res = read_procfs("/proc/sys/kernel/unprivileged_bpf_disabled");
 	if (json_output) {
