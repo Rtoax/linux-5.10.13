@@ -165,7 +165,9 @@ static void probe_unprivileged_disabled(void)
 	int res;
 
 	/* No support for C-style ouptut */
-
+    /**
+     *  
+     */
 	res = read_procfs("/proc/sys/kernel/unprivileged_bpf_disabled");
 	if (json_output) {
 		jsonw_int_field(json_wtr, "unprivileged_bpf_disabled", res);

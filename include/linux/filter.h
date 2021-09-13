@@ -513,11 +513,18 @@ struct sock_fprog_kern {
 /* Some arches need doubleword alignment for their instructions and/or data */
 #define BPF_IMAGE_ALIGNMENT 8
 
+
+/**
+ *  JIT 编译之后的镜像
+ */
 struct bpf_binary_header {
 	u32 pages;
-	u8 image[] __aligned(BPF_IMAGE_ALIGNMENT);
+	u8 __aligned(BPF_IMAGE_ALIGNMENT) image[] ;
 };
 
+/**
+ *  经过 BPF 解释器解释（翻译）之后的整个镜像
+ */
 struct bpf_prog {   /*  */
 	u16			pages;		/* Number of allocated pages */
 	u16			jited:1,	/* Is our filter JIT'ed? */
