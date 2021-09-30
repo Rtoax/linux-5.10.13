@@ -18,10 +18,15 @@
  * @node:	node for the global klp_ops list
  * @func_stack:	list head for the stack of klp_func's (active func is on top)
  * @fops:	registered ftrace ops struct
+ *
+ *  
  */
 struct klp_ops {
 	struct list_head node;
 	struct list_head func_stack;
+    /**
+     *  
+     */
 	struct ftrace_ops fops;
 };
 

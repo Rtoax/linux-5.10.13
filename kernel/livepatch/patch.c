@@ -257,6 +257,9 @@ void klp_unpatch_object(struct klp_object *obj)
 	__klp_unpatch_object(obj, false);
 }
 
+/**
+ *  
+ */
 int klp_patch_object(struct klp_object *obj)
 {
 	struct klp_func *func;
@@ -266,6 +269,9 @@ int klp_patch_object(struct klp_object *obj)
 		return -EINVAL;
 
 	klp_for_each_func(obj, func) {
+	    /**
+         *  
+         */
 		ret = klp_patch_func(func);
 		if (ret) {
 			klp_unpatch_object(obj);

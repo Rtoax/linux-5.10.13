@@ -123,6 +123,9 @@ struct klp_object {
 
 	/* internal */
 	struct kobject kobj;
+    /**
+     *  patching 函数列表
+     */
 	struct list_head func_list;
 	struct list_head node;
 	struct module *mod;
