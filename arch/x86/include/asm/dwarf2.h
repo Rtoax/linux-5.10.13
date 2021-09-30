@@ -6,6 +6,10 @@
 #warning "asm/dwarf2.h should be only included in pure assembly files"
 #endif
 
+/**
+ *  Call Frame Information - CFI
+ *  用于栈回溯 功能
+ */
 #define CFI_STARTPROC		.cfi_startproc
 #define CFI_ENDPROC		.cfi_endproc
 #define CFI_DEF_CFA		.cfi_def_cfa
