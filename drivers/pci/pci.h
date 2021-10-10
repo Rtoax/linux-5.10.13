@@ -22,10 +22,10 @@ bool pcie_cap_has_rtctl(const struct pci_dev *dev);
 int pci_create_sysfs_dev_files(struct pci_dev *pdev);
 void pci_remove_sysfs_dev_files(struct pci_dev *pdev);
 #if !defined(CONFIG_DMI) && !defined(CONFIG_ACPI)
-static inline void pci_create_firmware_label_files(struct pci_dev *pdev)
-{ return; }
-static inline void pci_remove_firmware_label_files(struct pci_dev *pdev)
-{ return; }
+//static inline void pci_create_firmware_label_files(struct pci_dev *pdev)
+//{ return; }
+//static inline void pci_remove_firmware_label_files(struct pci_dev *pdev)
+//{ return; }
 #else
 void pci_create_firmware_label_files(struct pci_dev *pdev);
 void pci_remove_firmware_label_files(struct pci_dev *pdev);

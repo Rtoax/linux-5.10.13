@@ -783,6 +783,9 @@ enum {
 	VFIO_PCI_BAR4_REGION_INDEX,
 	VFIO_PCI_BAR5_REGION_INDEX,
 	VFIO_PCI_ROM_REGION_INDEX,
+	/**
+	 *  
+	 */
 	VFIO_PCI_CONFIG_REGION_INDEX,
 	/*
 	 * Expose VGA regions defined for PCI base class 03, subclass 00.

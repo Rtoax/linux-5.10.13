@@ -161,6 +161,9 @@ int driver_register(struct device_driver *drv)
 		pr_warn("Driver '%s' needs updating - please use "
 			"bus_type methods\n", drv->name);
 
+    /**
+     *  
+     */
 	other = driver_find(drv->name, drv->bus);
 	if (other) {
 		pr_err("Error: Driver '%s' is already registered, "
@@ -213,6 +216,9 @@ EXPORT_SYMBOL_GPL(driver_unregister);
  */
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {
+    /**
+     *  
+     */
 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
 	struct driver_private *priv;
 

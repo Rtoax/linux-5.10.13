@@ -962,6 +962,9 @@ struct kobject *kset_find_obj(struct kset *kset, const char *name)
 
 	spin_lock(&kset->list_lock);
 
+    /**
+     *  
+     */
 	list_for_each_entry(k, &kset->list, entry) {
 		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
 			ret = kobject_get_unless_zero(k);
