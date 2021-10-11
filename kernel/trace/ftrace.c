@@ -2869,6 +2869,9 @@ static void ftrace_startup_all(int command)
 	update_all_ops = false;
 }
 
+/**
+ *  启动
+ */
 int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 {
 	int ret;
@@ -2876,6 +2879,9 @@ int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 	if (unlikely(ftrace_disabled))
 		return -ENODEV;
 
+    /**
+     *  
+     */
 	ret = __register_ftrace_function(ops);  /*  */
 	if (ret)
 		return ret;
@@ -2906,6 +2912,9 @@ int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 	if (ftrace_hash_rec_enable(ops, 1))
 		command |= FTRACE_UPDATE_CALLS;
 
+    /**
+     *  
+     */
 	ftrace_startup_enable(command);
 
 	ops->flags &= ~FTRACE_OPS_FL_ADDING;
@@ -7635,6 +7644,9 @@ int register_ftrace_function(struct ftrace_ops *ops)    /*  注册 ftrace*/
 
 	mutex_lock(&ftrace_lock);
 
+    /**
+     *  
+     */
 	ret = ftrace_startup(ops, 0);   /* 启动这个 ftrace */
 
 	mutex_unlock(&ftrace_lock);

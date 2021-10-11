@@ -36,6 +36,9 @@ static int livepatch_cmdline_proc_show(struct seq_file *m, void *v)
 	return 0;
 }
 
+/**
+ *  补丁函数
+ */
 static struct klp_func funcs[] = {
 	{
 		.old_name = "cmdline_proc_show",
@@ -57,6 +60,9 @@ static struct klp_patch patch = {
 
 static int livepatch_init(void)
 {
+    /**
+     *  使能补丁
+     */
 	return klp_enable_patch(&patch);
 }
 

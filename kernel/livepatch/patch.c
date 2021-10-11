@@ -148,8 +148,7 @@ static void klp_unpatch_func(struct klp_func *func)
 	if (list_is_singular(&ops->func_stack)) {
 		unsigned long ftrace_loc;
 
-		ftrace_loc =
-			klp_get_ftrace_location((unsigned long)func->old_func);
+		ftrace_loc = klp_get_ftrace_location((unsigned long)func->old_func);
 		if (WARN_ON(!ftrace_loc))
 			return;
 
@@ -166,6 +165,9 @@ static void klp_unpatch_func(struct klp_func *func)
 	func->patched = false;
 }
 
+/**
+ *  热补丁核心函数
+ */
 static int klp_patch_func(struct klp_func *func)
 {
 	struct klp_ops *ops;
@@ -181,18 +183,26 @@ static int klp_patch_func(struct klp_func *func)
 	if (!ops) {
 		unsigned long ftrace_loc;
 
-		ftrace_loc =
-			klp_get_ftrace_location((unsigned long)func->old_func);
+        /**
+         *  获取 ftrace 位置
+         */
+		ftrace_loc = klp_get_ftrace_location((unsigned long)func->old_func);
 		if (!ftrace_loc) {
 			pr_err("failed to find location for function '%s'\n",
 				func->old_name);
 			return -EINVAL;
 		}
 
+        /**
+         *  
+         */
 		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
 		if (!ops)
 			return -ENOMEM;
 
+        /**
+         *  
+         */
 		ops->fops.func = klp_ftrace_handler;
 		ops->fops.flags = FTRACE_OPS_FL_SAVE_REGS |
 				  FTRACE_OPS_FL_DYNAMIC |
@@ -204,6 +214,9 @@ static int klp_patch_func(struct klp_func *func)
 		INIT_LIST_HEAD(&ops->func_stack);
 		list_add_rcu(&func->stack_node, &ops->func_stack);
 
+        /**
+         *  
+         */
 		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
 		if (ret) {
 			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
@@ -211,6 +224,9 @@ static int klp_patch_func(struct klp_func *func)
 			goto err;
 		}
 
+        /**
+         *  
+         */
 		ret = register_ftrace_function(&ops->fops);
 		if (ret) {
 			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
@@ -220,7 +236,8 @@ static int klp_patch_func(struct klp_func *func)
 		}
 
 
-	} else {
+	} 
+    else {
 		list_add_rcu(&func->stack_node, &ops->func_stack);
 	}
 
@@ -268,9 +285,12 @@ int klp_patch_object(struct klp_object *obj)
 	if (WARN_ON(obj->patched))
 		return -EINVAL;
 
+    /**
+     *  遍历所有函数
+     */
 	klp_for_each_func(obj, func) {
 	    /**
-         *  
+         *  patch
          */
 		ret = klp_patch_func(func);
 		if (ret) {

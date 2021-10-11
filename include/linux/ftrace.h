@@ -189,6 +189,9 @@ void ftrace_free_mem(struct module *mod, void *start, void *end);
  * ftrace_ops must perform a schedule_on_each_cpu() before freeing it.
  */
 struct ftrace_ops {
+    /**
+     *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
+     */
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */

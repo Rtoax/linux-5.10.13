@@ -56,7 +56,13 @@
  */
 struct klp_func {
 	/* external */
+    /**
+     *  内核函数字符串
+     */
 	const char *old_name;
+    /**
+     *  新的函数指针
+     */
 	void *new_func;
 	/*
 	 * The old_sympos field is optional and can be used to resolve
@@ -164,6 +170,9 @@ struct klp_patch {
 	struct module *mod;
 	struct klp_object *objs;
 	struct klp_state *states;
+    /**
+     *  替换已存在的补丁
+     */
 	bool replace;
 
 	/* internal */
@@ -176,6 +185,9 @@ struct klp_patch {
 	struct completion finish;
 };
 
+/**
+ *  遍历所有 objects - 这个 obj 是在 ko 中静态声明的
+ */
 #define klp_for_each_object_static(patch, obj) \
 	for (obj = patch->objs; obj->funcs || obj->name; obj++)
 

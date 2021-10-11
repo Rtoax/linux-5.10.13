@@ -82,12 +82,21 @@ static bool klp_initialized(void)
 	return !!klp_root_kobj;
 }
 
+/**
+ *  从 kallsym中查找 livepatch的函数名
+ */
 static struct klp_func *klp_find_func(struct klp_object *obj,
 				      struct klp_func *old_func)
 {
 	struct klp_func *func;
 
+    /**
+     *  遍历链表
+     */
 	klp_for_each_func(obj, func) {
+	    /**
+         *  比较字符串
+         */
 		if ((strcmp(old_func->old_name, func->old_name) == 0) &&
 		    (old_func->old_sympos == func->old_sympos)) {
 			return func;
@@ -500,12 +509,18 @@ static struct klp_func *klp_alloc_func_nop(struct klp_func *old_func,
 	return func;
 }
 
+/**
+ *  
+ */
 static int klp_add_object_nops(struct klp_patch *patch,
 			       struct klp_object *old_obj)
 {
 	struct klp_object *obj;
 	struct klp_func *func, *old_func;
 
+    /**
+     *  
+     */
 	obj = klp_find_object(patch, old_obj);
 
 	if (!obj) {
@@ -514,11 +529,20 @@ static int klp_add_object_nops(struct klp_patch *patch,
 			return -ENOMEM;
 	}
 
+    /**
+     *  
+     */
 	klp_for_each_func(old_obj, old_func) {
+	    /**
+         *  查找函数
+         */
 		func = klp_find_func(obj, old_func);
 		if (func)
 			continue;
 
+        /**
+         *  
+         */
 		func = klp_alloc_func_nop(old_func, obj);
 		if (!func)
 			return -ENOMEM;
@@ -537,10 +561,19 @@ static int klp_add_nops(struct klp_patch *patch)
 	struct klp_patch *old_patch;
 	struct klp_object *old_obj;
 
+    /**
+     *  遍历所有补丁
+     */
 	klp_for_each_patch(old_patch) {
+	    /**
+         *  遍历补丁中所有 object
+         */
 		klp_for_each_object(old_patch, old_obj) {
 			int err;
 
+            /**
+             *  
+             */
 			err = klp_add_object_nops(patch, old_obj);
 			if (err)
 				return err;
@@ -863,6 +896,9 @@ static void klp_init_object_early(struct klp_patch *patch,
 	list_add_tail(&obj->node, &patch->obj_list);
 }
 
+/**
+ *  初始化补丁
+ */
 static int klp_init_patch_early(struct klp_patch *patch)
 {
 	struct klp_object *obj;
@@ -879,13 +915,28 @@ static int klp_init_patch_early(struct klp_patch *patch)
 	INIT_WORK(&patch->free_work, klp_free_patch_work_fn);
 	init_completion(&patch->finish);
 
+    /**
+     *  遍历所有 object - 
+     */
 	klp_for_each_object_static(patch, obj) {
+	    /**
+         *  这个 object 必须有 function
+         */
 		if (!obj->funcs)
 			return -EINVAL;
 
+        /**
+         *  初始化
+         */
 		klp_init_object_early(patch, obj);
 
+        /**
+         *  遍历这个 obj 里面的所有 functions - 这些 funcs 是静态分配的
+         */
 		klp_for_each_func_static(obj, func) {
+		    /**
+             *  
+             */
 			klp_init_func_early(obj, func);
 		}
 	}
@@ -896,6 +947,9 @@ static int klp_init_patch_early(struct klp_patch *patch)
 	return 0;
 }
 
+/**
+ *  初始化补丁
+ */
 static int klp_init_patch(struct klp_patch *patch)
 {
 	struct klp_object *obj;
@@ -905,18 +959,33 @@ static int klp_init_patch(struct klp_patch *patch)
 	if (ret)
 		return ret;
 
+    /**
+     *  替换
+     */
 	if (patch->replace) {
+        /**
+         *  
+         */
 		ret = klp_add_nops(patch);
 		if (ret)
 			return ret;
 	}
 
+    /**
+     *  
+     */
 	klp_for_each_object(patch, obj) {
+	    /**
+         *  
+         */
 		ret = klp_init_object(patch, obj);
 		if (ret)
 			return ret;
 	}
 
+    /**
+     *  添加到 全局链表中
+     */
 	list_add_tail(&patch->list, &klp_patches);
 
 	return 0;
@@ -954,6 +1023,9 @@ static int __klp_disable_patch(struct klp_patch *patch)
 	return 0;
 }
 
+/**
+ *  使能
+ */
 static int __klp_enable_patch(struct klp_patch *patch)
 {
 	struct klp_object *obj;
@@ -978,10 +1050,16 @@ static int __klp_enable_patch(struct klp_patch *patch)
 	 */
 	smp_wmb();
 
+    /**
+     *  遍历所有 object
+     */
 	klp_for_each_object(patch, obj) {
 		if (!klp_is_object_loaded(obj))
 			continue;
 
+        /**
+         *  执行 pre patch 函数
+         */
 		ret = klp_pre_patch_callback(obj);
 		if (ret) {
 			pr_warn("pre-patch callback failed for object '%s'\n",
@@ -989,6 +1067,9 @@ static int __klp_enable_patch(struct klp_patch *patch)
 			goto err;
 		}
 
+        /**
+         *  
+         */
 		ret = klp_patch_object(obj);
 		if (ret) {
 			pr_warn("failed to patch object '%s'\n",
@@ -1021,6 +1102,8 @@ err:
  * callback.
  *
  * Return: 0 on success, otherwise error
+ *
+ * 使能一个热补丁
  */
 int klp_enable_patch(struct klp_patch *patch)
 {
@@ -1052,16 +1135,25 @@ int klp_enable_patch(struct klp_patch *patch)
 		return -EINVAL;
 	}
 
+    /**
+     *  初始化所有的 object 中的 所有 functions
+     */
 	ret = klp_init_patch_early(patch);
 	if (ret) {
 		mutex_unlock(&klp_mutex);
 		return ret;
 	}
 
+    /**
+     *  初始化
+     */
 	ret = klp_init_patch(patch);
 	if (ret)
 		goto err;
 
+    /**
+     *  使能
+     */
 	ret = __klp_enable_patch(patch);
 	if (ret)
 		goto err;
