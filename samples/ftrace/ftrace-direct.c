@@ -30,6 +30,9 @@ asm (
 
 static int __init ftrace_direct_init(void)
 {
+    /**
+     *  
+     */
 	return register_ftrace_direct((unsigned long)wake_up_process,
 				     (unsigned long)my_tramp);
 }

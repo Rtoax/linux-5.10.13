@@ -41,6 +41,9 @@
 #ifndef __ASSEMBLY__
 #include <linux/compat.h>
 
+/**
+ *  arch/arm64/kernel/entry-ftrace.S
+ */
 extern void _mcount(unsigned long);
 extern void *return_address(unsigned int);
 

@@ -17,7 +17,14 @@
 
 #ifndef __ASSEMBLY__
 extern atomic_t modifying_ftrace_code;
+/**
+ *  arch/x86/kernel/ftrace_64.S
+ *      SYM_FUNC_START(__fentry__)
+ *  	    retq
+ *      SYM_FUNC_END(__fentry__)
+ */
 extern void __fentry__(void);
+
 
 static inline unsigned long ftrace_call_adjust(unsigned long addr)
 {

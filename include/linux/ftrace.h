@@ -138,25 +138,87 @@ ftrace_func_t ftrace_ops_get_func(struct ftrace_ops *ops);
  *             ftrace_enabled.
  * DIRECT - Used by the direct ftrace_ops helper for direct functions
  *            (internal ftrace only, should not be used by others)
+ *
+ * -------------------------------
+ * struct ftrace_ops.flags
  */
 enum {
+    /**
+     *  set by ftrace, when ops is recording
+     */
 	FTRACE_OPS_FL_ENABLED			= BIT(0),
+	/**
+     *  set by ftrace when ops is dynamically allocated
+     */
 	FTRACE_OPS_FL_DYNAMIC			= BIT(1),
+    /**
+     *  set by caller, to record regs
+     *  fails if saving regs is not supported
+     */
 	FTRACE_OPS_FL_SAVE_REGS			= BIT(2),
+    /**
+     *  set by caller, save regs if supported
+     *  doesn’t fail register if not supported
+     */
 	FTRACE_OPS_FL_SAVE_REGS_IF_SUPPORTED	= BIT(3),
+    /**
+     *  If ftrace_ops.func handles recursion
+     *  Otherwise, ftrace will handle it
+     */
 	FTRACE_OPS_FL_RECURSION_SAFE		= BIT(4),
+    /**
+     *  used by ftrace for stub functions
+     *  ftrace 用于存根函数
+     */
 	FTRACE_OPS_FL_STUB			= BIT(5),
+    /**
+     *  used by ftrace when ftrace_ops is first used
+     */
 	FTRACE_OPS_FL_INITIALIZED		= BIT(6),
+    /**
+     *  ftrace_ops has been deleted
+     *  used by ftrace buffer instances
+     */
 	FTRACE_OPS_FL_DELETED			= BIT(7),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_ADDING			= BIT(8),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_REMOVING			= BIT(9),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_MODIFYING			= BIT(10),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_ALLOC_TRAMP		= BIT(11),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_IPMODIFY			= BIT(12),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_PID			= BIT(13),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_RCU			= BIT(14),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_TRACE_ARRAY		= BIT(15),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_PERMANENT                 = BIT(16),
+    /**
+     *  
+     */
 	FTRACE_OPS_FL_DIRECT			= BIT(17),
 };
 
@@ -187,13 +249,43 @@ void ftrace_free_mem(struct module *mod, void *start, void *end);
  * Any private data added must also take care not to be freed and if private
  * data is added to a ftrace_ops that is in core code, the user of the
  * ftrace_ops must perform a schedule_on_each_cpu() before freeing it.
+ *
+ * Static ftrace_ops
+ * ------------------------
+ * 1. function and function_graph
+ * 2. function probes (schedule:traceoff)
+ * 3. stack tracer
+ * 4. latency tracers
+ *
+ * Dynamic ftrace_ops
+ * -------------------------
+ * 1. perf
+ * 2. kprobes
  */
 struct ftrace_ops {
     /**
+     *  将替换 `ftrace_stub()`
+     *  ------------------------
+     *  schedule
+     *    push %rbp
+     *    mov %rsp,%rbp
+     *    call ftrace_caller -----> ftrace_caller:
+     *                                save regs
+     *                                load args
+     *                              ftrace_call:
+     *                                call ftrace_stub <--> ftrace_ops.func
+     *                                restore regs
+     *                              ftrace_stub:
+     *                                retq
+     *    
+     *
      *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
      */
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
+    /**
+     *  
+     */
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
 	void				*private;
     /**
@@ -260,23 +352,18 @@ extern enum ftrace_tracing_type_t ftrace_tracing_type;
 int register_ftrace_function(struct ftrace_ops *ops);
 int unregister_ftrace_function(struct ftrace_ops *ops);
 
-extern void ftrace_stub(unsigned long a0, unsigned long a1,
-			struct ftrace_ops *op, struct pt_regs *regs);
 /**
  *  arch/x86/kernel/ftrace_64.S
- *      [...]
+ *      SYM_INNER_LABEL(ftrace_stub, SYM_L_GLOBAL)
+ *      	retq
  *  arch/arm64/kernel/entry-ftrace.S
  *      SYM_FUNC_START(ftrace_stub)
  *      	ret
  *      SYM_FUNC_END(ftrace_stub)
  *      
  */
-#if __RTOAX__________________
-void ftrace_stub(unsigned long a0, unsigned long a1,
-			struct ftrace_ops *op, struct pt_regs *regs){return;}
-
-#endif
-
+extern void ftrace_stub(unsigned long a0, unsigned long a1,
+			struct ftrace_ops *op, struct pt_regs *regs);
 
 #else /* !CONFIG_FUNCTION_TRACER */
 /*  */
@@ -559,8 +646,38 @@ extern int ftrace_dyn_arch_init(void);
 extern void ftrace_replace_code(int enable);
 extern int ftrace_update_ftrace_func(ftrace_func_t func);
 extern void ftrace_caller(void);    /* arch/x86/kernel/ftrace_64.S */
+#if RTOAX/* arch/x86/kernel/ftrace_64.S */
+SYM_FUNC_START(ftrace_caller)
+	/* save_mcount_regs fills in first two parameters */
+	save_mcount_regs
+
+SYM_INNER_LABEL(ftrace_caller_op_ptr, SYM_L_GLOBAL)
+	/* Load the ftrace_ops into the 3rd parameter */
+	movq function_trace_op(%rip), %rdx
+
+	/* regs go into 4th parameter (but make it NULL) */
+	movq $0, %rcx
+
+SYM_INNER_LABEL(ftrace_call, SYM_L_GLOBAL)
+    /**
+     *  ftrace注册后，这个函数将被替换为 ftrace_ops.func
+     */
+	call ftrace_stub
+
+	restore_mcount_regs
+
+	/*
+	 * The code up to this label is copied into trampolines so
+	 * think twice before adding any new code or changing the
+	 * layout here.
+	 */
+SYM_INNER_LABEL(ftrace_caller_end, SYM_L_GLOBAL)
+
+	jmp ftrace_epilogue
+SYM_FUNC_END(ftrace_caller);
+#endif
 extern void ftrace_regs_caller(void);   /* arch/x86/kernel/ftrace_64.S */
-extern void ftrace_call(void);  /* arch/x86/kernel/ftrace_64.S */
+extern void ftrace_call(void);  /* arch/x86/kernel/ftrace_64.S, is inner label */
 extern void ftrace_regs_call(void); /* arch/x86/kernel/ftrace_64.S */
 extern void mcount_call(void);
 

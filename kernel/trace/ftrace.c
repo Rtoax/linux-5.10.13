@@ -1141,6 +1141,9 @@ struct ftrace_page {    /*  */
  */
 static struct ftrace_page	*ftrace_pages_start;    /* ftrace 起始地址 */
                                                     /* 初始化位置 ftrace_process_locs() */
+/**
+ *  
+ */
 static struct ftrace_page	*ftrace_pages;          /* 同上，用于定位链表中最后一个 pg */
 
 static __always_inline unsigned long
@@ -1194,7 +1197,9 @@ ftrace_lookup_ip(struct ftrace_hash *hash, unsigned long ip)
 
 	return __ftrace_lookup_ip(hash, ip);    /* 查找 */
 }
-
+/**
+ *  
+ */
 static void __add_hash_entry(struct ftrace_hash *hash,
 			     struct ftrace_func_entry *entry)
 {
@@ -1202,7 +1207,14 @@ static void __add_hash_entry(struct ftrace_hash *hash,
 	unsigned long key;
 
 	key = ftrace_hash_key(hash, entry->ip);
+
+    /**
+     *  根据 key 获取 hash 桶
+     */
 	hhd = &hash->buckets[key];  /* 哈希桶 */
+    /**
+     *  添加到链表
+     */
 	hlist_add_head(&entry->hlist, hhd);
 	hash->count++;
 }
@@ -2711,6 +2723,9 @@ struct dyn_ftrace *ftrace_rec_iter_record(struct ftrace_rec_iter *iter)
 	return &iter->pg->records[iter->index];
 }
 
+/**
+ *  
+ */
 static int
 ftrace_nop_initialize(struct module *mod, struct dyn_ftrace *rec)
 {
@@ -2719,6 +2734,9 @@ ftrace_nop_initialize(struct module *mod, struct dyn_ftrace *rec)
 	if (unlikely(ftrace_disabled))
 		return 0;
 
+    /**
+     *  
+     */
 	ret = ftrace_init_nop(mod, rec);
 	if (ret) {
 		ftrace_bug_type = FTRACE_BUG_INIT;
@@ -5167,11 +5185,20 @@ ftrace_set_addr(struct ftrace_ops *ops, unsigned long ip, int remove,
 
 struct ftrace_direct_func {
 	struct list_head	next;
+    /**
+     *  ftrace 的回调函数
+     */
 	unsigned long		addr;
+    /**
+     *  
+     */
 	int			count;
 };
-
+/**
+ *  保存所有 ftrace 会掉函数
+ */
 static LIST_HEAD(ftrace_direct_funcs);
+static struct list_head ftrace_direct_funcs; //+++
 
 /**
  * ftrace_find_direct_func - test an address if it is a registered direct caller
@@ -5228,6 +5255,9 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  * 	return register_ftrace_direct((unsigned long)wake_up_process,
  * 				     (unsigned long)my_tramp);
  * }
+ *
+ * @ip - 内核函数
+ * @addr - ftrace 回调
  */
 int register_ftrace_direct(unsigned long ip, unsigned long addr)
 {
@@ -5308,6 +5338,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
      */
 	direct = ftrace_find_direct_func(addr);
 	if (!direct) {
+        /**
+         *  如果没找到，那么就分配一个
+         */
 		direct = kmalloc(sizeof(*direct), GFP_KERNEL);
 		if (!direct) {
 			kfree(entry);
@@ -5354,6 +5387,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
 	if (ret) {
 		kfree(entry);
+        /**
+         *  没人用这个 direct
+         */
 		if (!direct->count) {
 			list_del_rcu(&direct->next);
 			synchronize_rcu_tasks();
@@ -5364,6 +5400,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 			ftrace_direct_func_count--;
 		}
 	} else {
+	    /**
+         *  计数+1
+         */
 		direct->count++;
 	}
  out_unlock:
@@ -6404,6 +6443,9 @@ static int ftrace_process_locs(struct module *mod,
     /* 排序 */
 	sort(start, count, sizeof(*start), ftrace_cmp_ips, NULL);
 
+    /**
+     *  为 ftrace 分配 页
+     */
     /* 分配 ftrace_page */
 	start_pg = ftrace_allocate_pages(count);    /* 分配pages */
 	if (!start_pg)
@@ -6419,7 +6461,7 @@ static int ftrace_process_locs(struct module *mod,
 	if (!mod) { /* 不在模块中 */
 		WARN_ON(ftrace_pages || ftrace_pages_start);
 		/* First initialization */
-		ftrace_pages = ftrace_pages_start = start_pg;   
+		ftrace_pages = ftrace_pages_start = start_pg;
 	} else {    /* 在模块中 */
 		if (!ftrace_pages)
 			goto out;
@@ -6463,6 +6505,7 @@ static int ftrace_process_locs(struct module *mod,
 
         /**
          *  保存 function 地址
+         *  index 计数
          */
 		rec = &pg->records[pg->index++];
 		rec->ip = addr; /* 记录这个 addr */
@@ -7059,6 +7102,7 @@ extern unsigned long __stop_mcount_loc[];
 
 /**
  *  ftrace 初始化
+ *  called in start_kernel()
  */
 void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 {

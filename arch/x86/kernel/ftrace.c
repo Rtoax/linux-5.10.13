@@ -66,6 +66,9 @@ int ftrace_arch_code_modify_post_process(void)
 
 static const char *ftrace_nop_replace(void) /*  */
 {
+    /**
+     *  nop 指令
+     */
 	return ideal_nops[NOP_ATOMIC5]; /* 0x0f,0x1f,0x44,0x00,0 */
 }
 /**
@@ -77,6 +80,9 @@ static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)    
 	return text_gen_insn(CALL_INSN_OPCODE, (void *)ip, (void *)addr);
 }
 
+/**
+ *  
+ */
 static int ftrace_verify_code(unsigned long ip, const char *old_code)   /* 确认 */
 {
 	char cur_code[MCOUNT_INSN_SIZE];    /* mcount */
@@ -124,11 +130,17 @@ ftrace_modify_code_direct(unsigned long ip, const char *old_code,
 	return 0;
 }
 
+/**
+ *  
+ */
 int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long addr)
 {
 	unsigned long ip = rec->ip;
 	const char *new, *old;
 
+    /**
+     *  
+     */
 	old = ftrace_call_replace(ip, addr);
 	new = ftrace_nop_replace();
 
