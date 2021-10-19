@@ -186,7 +186,7 @@ static void direct_print_vi(struct virtual_item *vi)
 			 vi->vi_index, vi->vi_type, vi->vi_ih);
 }
 
-static struct item_operations direct_ops = {
+static struct item_operations reiserfs_direct_ops = {
 	.bytes_number = direct_bytes_number,
 	.decrement_key = direct_decrement_key,
 	.is_left_mergeable = direct_is_left_mergeable,
@@ -716,18 +716,18 @@ static void errcatch_print_vi(struct virtual_item *vi)
 }
 
 static struct item_operations errcatch_ops = {
-	.bytes_number = errcatch_bytes_number,
-	.decrement_key = errcatch_decrement_key,
-	.is_left_mergeable = errcatch_is_left_mergeable,
-	.print_item = errcatch_print_item,
-	.check_item = errcatch_check_item,
+	errcatch_ops.bytes_number = errcatch_bytes_number,
+	errcatch_ops.decrement_key = errcatch_decrement_key,
+	errcatch_ops.is_left_mergeable = errcatch_is_left_mergeable,
+	errcatch_ops.print_item = errcatch_print_item,
+	errcatch_ops.check_item = errcatch_check_item,
 
-	.create_vi = errcatch_create_vi,
-	.check_left = errcatch_check_left,
-	.check_right = errcatch_check_right,
-	.part_size = errcatch_part_size,
-	.unit_num = errcatch_unit_num,
-	.print_vi = errcatch_print_vi
+	errcatch_ops.create_vi = errcatch_create_vi,
+	errcatch_ops.check_left = errcatch_check_left,
+	errcatch_ops.check_right = errcatch_check_right,
+	errcatch_ops.part_size = errcatch_part_size,
+	errcatch_ops.unit_num = errcatch_unit_num,
+	errcatch_ops.print_vi = errcatch_print_vi
 };
 
 #if ! (TYPE_STAT_DATA == 0 && TYPE_INDIRECT == 1 && TYPE_DIRECT == 2 && TYPE_DIRENTRY == 3)
@@ -737,7 +737,7 @@ static struct item_operations errcatch_ops = {
 struct item_operations *item_ops[TYPE_ANY + 1] = {
 	&stat_data_ops,
 	&indirect_ops,
-	&direct_ops,
+	&reiserfs_direct_ops,
 	&direntry_ops,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	&errcatch_ops		/* This is to catch errors with invalid type (15th entry for TYPE_ANY) */

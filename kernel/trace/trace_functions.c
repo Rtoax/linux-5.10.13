@@ -34,6 +34,9 @@ enum {
 	TRACE_FUNC_OPT_STACK	= 0x1,
 };
 
+/**
+ *  
+ */
 int ftrace_allocate_ftrace_ops(struct trace_array *tr)
 {
 	struct ftrace_ops *ops;

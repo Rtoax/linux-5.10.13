@@ -117,6 +117,9 @@ static int __read_mostly ftrace_disabled ;/* =0 默认开启 */
 
 DEFINE_MUTEX(ftrace_lock);
 
+/**
+ *  
+ */
 struct ftrace_ops __rcu __read_mostly *ftrace_ops_list  = &ftrace_list_end; /*  */
 ftrace_func_t __read_mostly ftrace_trace_function  = ftrace_stub;
 struct ftrace_ops global_ops;
@@ -349,6 +352,9 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 	/* Always save the function, and reset at unregistering */
 	ops->saved_func = ops->func;
 
+    /**
+     *  
+     */
 	if (ftrace_pids_enabled(ops))
 		ops->func = ftrace_pid_func;
 
@@ -1114,7 +1120,14 @@ bool is_ftrace_trampoline(unsigned long addr)
  */
 struct ftrace_page {    /*  */
 	struct ftrace_page	*next;
-	struct dyn_ftrace	*records;   /* 指向申请的内存页 = __get_free_pages() in `ftrace_allocate_records()` */
+    /**
+     *  ftrace pages
+     *  指向申请的内存页 = __get_free_pages() in `ftrace_allocate_records()`
+     */
+	struct dyn_ftrace	*records;   
+    /**
+     *  records 的个数
+     */
 	int			index;  /*  */
 	int			size;   /* records 中有多少 struct dyn_ftrace */
 };
@@ -1147,9 +1160,15 @@ __ftrace_lookup_ip(struct ftrace_hash *hash, unsigned long ip)
 	struct ftrace_func_entry *entry;
 	struct hlist_head *hhd;
 
+    /**
+     *  计算key
+     */
 	key = ftrace_hash_key(hash, ip);
 	hhd = &hash->buckets[key];  /* 哈希链表 */
 
+    /**
+     *  遍历
+     */
 	hlist_for_each_entry_rcu_notrace(entry, hhd, hlist) {
 		if (entry->ip == ip)    /*  找到了 */
 			return entry;
@@ -1198,6 +1217,10 @@ static int add_hash_entry(struct ftrace_hash *hash, unsigned long ip)   /* 添�
 		return -ENOMEM;
 
 	entry->ip = ip; /*  */
+
+    /**
+     *  添加到 hash
+     */
 	__add_hash_entry(hash, entry);
 
 	return 0;
@@ -1554,6 +1577,9 @@ static int ftrace_cmp_recs(const void *a, const void *b)    /* 比较函数 */
 	const struct dyn_ftrace *key = a;
 	const struct dyn_ftrace *rec = b;
 
+    /**
+     *  
+     */
 	if (key->flags < rec->ip)
 		return -1;
 	if (key->ip >= rec->ip + MCOUNT_INSN_SIZE)
@@ -1561,6 +1587,9 @@ static int ftrace_cmp_recs(const void *a, const void *b)    /* 比较函数 */
 	return 0;
 }
 
+/**
+ *  
+ */
 static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 {
 	struct ftrace_page *pg;
@@ -1570,14 +1599,18 @@ static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 	key.ip = start;
 	key.flags = end;	/* overload flags, as it is unsigned long */
 
-    /* 遍历 pg 链表 */
+    /**
+     *  遍历 pg 单链表 
+     */
 	for (pg = ftrace_pages_start; pg; pg = pg->next) {
 
         /* start-end 不在这个 pg 内 */
 		if (end < pg->records[0].ip ||
-		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE/* x86下=5 */))
+		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE/* x86下=5, AArch64=4 */))
 			continue;
-        /* 二分查找 */
+        /**
+         *  二分查找 
+         */
 		rec = bsearch(&key, pg->records, pg->index,
 			      sizeof(struct dyn_ftrace),
 			      ftrace_cmp_recs);
@@ -2421,6 +2454,9 @@ unsigned long ftrace_find_rec_direct(unsigned long ip)  /*  */
 {
 	struct ftrace_func_entry *entry;
 
+    /**
+     *  查找一个 函数对应的entry
+     */
 	entry = __ftrace_lookup_ip(direct_functions, ip);
 	if (!entry)
 		return 0;
@@ -2439,10 +2475,12 @@ static void call_direct_funcs(unsigned long ip, unsigned long pip,
 
 	arch_ftrace_set_direct_caller(regs, addr);
 }
-
+/**
+ *  
+ */
 struct ftrace_ops direct_ops = {
-	.func		= call_direct_funcs,
-	.flags		= FTRACE_OPS_FL_IPMODIFY | FTRACE_OPS_FL_RECURSION_SAFE
+	direct_ops.func		= call_direct_funcs,
+	direct_ops.flags		= FTRACE_OPS_FL_IPMODIFY | FTRACE_OPS_FL_RECURSION_SAFE
 			  | FTRACE_OPS_FL_DIRECT | FTRACE_OPS_FL_SAVE_REGS
 			  | FTRACE_OPS_FL_PERMANENT,
 	/*
@@ -2452,7 +2490,7 @@ struct ftrace_ops direct_ops = {
 	 * The direct_ops should only be called by the builtin
 	 * ftrace_regs_caller trampoline.
 	 */
-	.trampoline	= FTRACE_REGS_ADDR,
+	direct_ops.trampoline	= FTRACE_REGS_ADDR,
 };
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
@@ -5040,6 +5078,9 @@ ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)   /*  
 	if (!ftrace_location(ip))   /* 检测是否存在 */
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	if (remove) {   /*  */
 		entry = ftrace_lookup_ip(hash, ip); /* 找到 hash backets 中的 entry */
 		if (!entry)
@@ -5050,7 +5091,9 @@ ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)   /*  
 
 	return add_hash_entry(hash, ip);    /* 添加 */
 }
-
+/**
+ *  
+ */
 static int
 ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 		unsigned long ip, int remove, int reset, int enable)
@@ -5070,6 +5113,9 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 	else
 		orig_hash = &ops->func_hash->notrace_hash;  /* 不追踪函数的 hash */
 
+    /**
+     *  
+     */
 	if (reset)  /* 重置 */
 		hash = alloc_ftrace_hash(FTRACE_HASH_DEFAULT_BITS/* 10 */);
 	else    /* 不重置，使用原来的 */
@@ -5080,6 +5126,9 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 		goto out_regex_unlock;
 	}
 
+    /**
+     *  
+     */
 	if (buf && !ftrace_match_records(hash, buf, len)) {
 		ret = -EINVAL;
 		goto out_regex_unlock;
@@ -5095,7 +5144,8 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 
     /*  */
 	mutex_lock(&ftrace_lock);
-                                         /* ftrace_ops, filter_hash|notrace_hash, new ftrace_hash, 0|1  */
+    
+    /* ftrace_ops, filter_hash|notrace_hash, new ftrace_hash, 0|1  */
 	ret = ftrace_hash_move_and_update_ops(ops, orig_hash, hash, enable);
 	mutex_unlock(&ftrace_lock);
 
@@ -5171,7 +5221,13 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  *  -ENODEV - @ip does not point to a ftrace nop location (or not supported)
  *  -ENOMEM - There was an allocation failure.
  *
- * 直接调用一个蹦床
+ * 直接调用一个蹦床，调用方法可参考 sample/ftrace/ftrace-direct.c
+ *
+ * static int __init ftrace_direct_init(void)
+ * {
+ * 	return register_ftrace_direct((unsigned long)wake_up_process,
+ * 				     (unsigned long)my_tramp);
+ * }
  */
 int register_ftrace_direct(unsigned long ip, unsigned long addr)
 {
@@ -5188,6 +5244,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 		goto out_unlock;
 
 	ret = -ENODEV;
+    /**
+     *  查找这个 函数
+     */
 	rec = lookup_rec(ip, ip);
 	if (!rec)
 		goto out_unlock;
@@ -5199,6 +5258,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	if (WARN_ON(rec->flags & FTRACE_FL_DIRECT))
 		goto out_unlock;
 
+    /**
+     *  确保 IP 在准确的位置
+     */
 	/* Make sure the ip points to the exact record */
 	if (ip != rec->ip) {
 		ip = rec->ip;
@@ -5208,6 +5270,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	}
 
 	ret = -ENOMEM;
+    /**
+     *  如果为空，赋值一个 hash 表
+     */
 	if (ftrace_hash_empty(direct_functions) ||
 	    direct_functions->count > 2 * (1 << direct_functions->size_bits)) {
 		struct ftrace_hash *new_hash;
@@ -5217,18 +5282,30 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 		if (size < 32)
 			size = 32;
 
+        /**
+         *  创建新的 hash 表
+         */
 		new_hash = dup_hash(direct_functions, size);
 		if (!new_hash)
 			goto out_unlock;
 
+        /**
+         *  
+         */
 		free_hash = direct_functions;
 		direct_functions = new_hash;
 	}
 
+    /**
+     *  分配 entry
+     */
 	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
 	if (!entry)
 		goto out_unlock;
 
+    /**
+     *  查找 direct 函数，也就是 ftrace 的回调函数
+     */
 	direct = ftrace_find_direct_func(addr);
 	if (!direct) {
 		direct = kmalloc(sizeof(*direct), GFP_KERNEL);
@@ -5238,19 +5315,38 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 		}
 		direct->addr = addr;
 		direct->count = 0;
+        /**
+         *  添加到链表
+         */
 		list_add_rcu(&direct->next, &ftrace_direct_funcs);
 		ftrace_direct_func_count++;
 	}
 
+    /**
+     *  初始化 entry
+     */
 	entry->ip = ip;
 	entry->direct = addr;
+
+    /**
+     *  添加到hash表
+     */
 	__add_hash_entry(direct_functions, entry);
 
+    /**
+     *  
+     */
 	ret = ftrace_set_filter_ip(&direct_ops, ip, 0, 0);
 	if (ret)
 		remove_hash_entry(direct_functions, entry);
 
+    /**
+     *  
+     */
 	if (!ret && !(direct_ops.flags & FTRACE_OPS_FL_ENABLED)) {
+        /**
+         *  注册 ftrace
+         */
 		ret = register_ftrace_function(&direct_ops);
 		if (ret)
 			ftrace_set_filter_ip(&direct_ops, ip, 1, 0);

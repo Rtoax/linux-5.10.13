@@ -196,7 +196,13 @@ struct ftrace_ops {
 	struct ftrace_ops __rcu		*next;
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
 	void				*private;
+    /**
+     *  
+     */
 	ftrace_func_t			saved_func;
+    /**
+     *  
+     */
 #ifdef CONFIG_DYNAMIC_FTRACE
 	struct ftrace_ops_hash		local_hash;
 	struct ftrace_ops_hash		*func_hash;
@@ -256,13 +262,28 @@ int unregister_ftrace_function(struct ftrace_ops *ops);
 
 extern void ftrace_stub(unsigned long a0, unsigned long a1,
 			struct ftrace_ops *op, struct pt_regs *regs);
+/**
+ *  arch/x86/kernel/ftrace_64.S
+ *      [...]
+ *  arch/arm64/kernel/entry-ftrace.S
+ *      SYM_FUNC_START(ftrace_stub)
+ *      	ret
+ *      SYM_FUNC_END(ftrace_stub)
+ *      
+ */
+#if __RTOAX__________________
+void ftrace_stub(unsigned long a0, unsigned long a1,
+			struct ftrace_ops *op, struct pt_regs *regs){return;}
+
+#endif
+
 
 #else /* !CONFIG_FUNCTION_TRACER */
 /*  */
 #endif /* CONFIG_FUNCTION_TRACER */
 
 struct ftrace_func_entry {
-	struct hlist_node hlist;
+	struct hlist_node hlist;/* hash table 为`struct ftrace_hash` */
 	unsigned long ip;
 	unsigned long direct; /* for direct lookup only */
 };
@@ -397,10 +418,21 @@ bool is_ftrace_trampoline(unsigned long addr);
  * set up to save regs, the REG_EN flag is set. Once a function
  * starts saving regs it will do so until all ftrace_ops are removed
  * from tracing that function.
+ *
+ * struct dyn_ftrace.flags
  */
 enum {
+    /**
+     *  函数 正在被追踪
+     */
 	FTRACE_FL_ENABLED	= (1UL << 31),
+    /**
+     *  
+     */
 	FTRACE_FL_REGS		= (1UL << 30),
+	/**
+     *  
+     */
 	FTRACE_FL_REGS_EN	= (1UL << 29),
 	FTRACE_FL_TRAMP		= (1UL << 28),
 	FTRACE_FL_TRAMP_EN	= (1UL << 27),
@@ -419,7 +451,13 @@ enum {
  *  ftrace 
  */
 struct dyn_ftrace { /*  */
+    /**
+     *  指向 函数地址
+     */
 	unsigned long		ip; /* address of mcount call-site */
+    /**
+     *  FTRACE_FL_XXX
+     */
 	unsigned long		flags;
 
     /**

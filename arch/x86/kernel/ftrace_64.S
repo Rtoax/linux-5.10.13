@@ -163,6 +163,9 @@ SYM_INNER_LABEL(ftrace_caller_end, SYM_L_GLOBAL)
 	jmp ftrace_epilogue
 SYM_FUNC_END(ftrace_caller);
 
+	/**
+	 *	epilogue: 结语
+	 */
 SYM_FUNC_START(ftrace_epilogue)
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 SYM_INNER_LABEL(ftrace_graph_call, SYM_L_GLOBAL)

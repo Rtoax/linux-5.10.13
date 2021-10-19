@@ -19,7 +19,7 @@
 #endif
 
 /* The BL at the callsite's adjusted rec->ip */
-#define MCOUNT_INSN_SIZE	AARCH64_INSN_SIZE
+#define MCOUNT_INSN_SIZE	/*4*/AARCH64_INSN_SIZE
 
 #define FTRACE_PLT_IDX		0
 #define FTRACE_REGS_PLT_IDX	1

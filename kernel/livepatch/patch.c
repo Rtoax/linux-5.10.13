@@ -36,7 +36,9 @@ struct klp_ops *klp_find_ops(void *old_func)
 
 	return NULL;
 }
-
+/**
+ *  livepatch 中 注册给 ftrace 的函数
+ */
 static void notrace klp_ftrace_handler(unsigned long ip,
 				       unsigned long parent_ip,
 				       struct ftrace_ops *fops,
@@ -113,6 +115,9 @@ static void notrace klp_ftrace_handler(unsigned long ip,
 	if (func->nop)
 		goto unlock;
 
+    /**
+     *  设置 PC， 执行新的 函数
+     */
 	klp_arch_set_pc(regs, (unsigned long)func->new_func);
 
 unlock:
