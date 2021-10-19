@@ -108,7 +108,13 @@ bool klp_is_patch_compatible(struct klp_patch *patch)
 	struct klp_patch *old_patch;
 	struct klp_state *old_state;
 
+    /**
+     *  遍历所有补丁
+     */
 	klp_for_each_patch(old_patch) {
+	    /**
+         *  遍历该补丁的状态、版本等信息
+         */
 		klp_for_each_state(old_patch, old_state) {
 			if (!klp_is_state_compatible(patch, old_state))
 				return false;

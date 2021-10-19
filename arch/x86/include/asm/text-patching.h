@@ -65,7 +65,9 @@ extern void text_poke_finish(void);
 #define JMP8_INSN_OPCODE	0xEB
 
 #define DISP32_SIZE		4
-
+/**
+ *  获取指令大小
+ */
 static __always_inline int text_opcode_size(u8 opcode)
 {
 	int size = 0;
@@ -82,10 +84,25 @@ static __always_inline int text_opcode_size(u8 opcode)
 	}
 #else    
 	switch(opcode) {
+    /**
+     *  int3
+     */
     case INT3_INSN_OPCODE:  size = INT3_INSN_SIZE; break;
+    /**
+     *  ret
+     */
     case RET_INSN_OPCODE:   size = RET_INSN_SIZE; break;
+    /**
+     *  call
+     */
     case CALL_INSN_OPCODE:  size = CALL_INSN_SIZE; break;
+    /**
+     *  jmp32
+     */
     case JMP32_INSN_OPCODE: size = JMP32_INSN_SIZE; break;
+    /**
+     *  jmp8
+     */
     case JMP8_INSN_OPCODE:  size = JMP8_INSN_SIZE; break;
 	}
 #endif
@@ -93,11 +110,19 @@ static __always_inline int text_opcode_size(u8 opcode)
 
 	return size;
 }
-
+/**
+ *  一条 x86 指令
+ */
 union text_poke_insn {  /*  */
 	u8 text[POKE_MAX_OPCODE_SIZE];
 	struct {
+        /**
+         *  操作 指令
+         */
 		u8 opcode;
+        /**
+         *  
+         */
 		s32 disp;
 	} __attribute__((packed));
 };
@@ -105,6 +130,9 @@ union text_poke_insn {  /*  */
 static __always_inline
 void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数不可重入?? */
 {
+    /**
+     *  为什么时 static 变量
+     */
 	static union text_poke_insn insn; /* per instance */
 	int size = text_opcode_size(opcode);    /*  */
 
@@ -116,7 +144,14 @@ void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数
     */
 	insn.opcode = opcode;   /* 操作码-指令 */
 
+    /**
+     *  
+     */
 	if (size > 1) {
+        /**
+         *  给立即数赋值？？
+         *  
+         */
 		insn.disp = (long)dest - (long)(addr + size);   /*  */
 		if (size == 2) {
 			/*

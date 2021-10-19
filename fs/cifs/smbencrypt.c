@@ -26,12 +26,12 @@
 #include "cifs_debug.h"
 #include "cifsproto.h"
 
-#ifndef false
-#define false 0
-#endif
-#ifndef true
-#define true 1
-#endif
+//#ifndef false
+//#define false 0
+//#endif
+//#ifndef true
+//#define true 1
+//#endif
 
 /* following came from the other byteorder.h to avoid include conflicts */
 #define CVAL(buf,pos) (((unsigned char *)(buf))[pos])

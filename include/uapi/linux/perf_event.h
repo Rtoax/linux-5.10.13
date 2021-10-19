@@ -738,15 +738,15 @@ struct perf_event_mmap_page {   /*  */
 };
 
 /**
- *  
+ *  struct perf_event_header.misc
  */
 #define PERF_RECORD_MISC_CPUMODE_MASK		(7 << 0)
-#define PERF_RECORD_MISC_CPUMODE_UNKNOWN	(0 << 0)
-#define PERF_RECORD_MISC_KERNEL			(1 << 0)
-#define PERF_RECORD_MISC_USER			(2 << 0)
-#define PERF_RECORD_MISC_HYPERVISOR		(3 << 0)
-#define PERF_RECORD_MISC_GUEST_KERNEL		(4 << 0)
-#define PERF_RECORD_MISC_GUEST_USER		(5 << 0)
+#define PERF_RECORD_MISC_CPUMODE_UNKNOWN	(0 << 0)//未知的 CPU 模式
+#define PERF_RECORD_MISC_KERNEL			(1 << 0)    //样本发生在内核中
+#define PERF_RECORD_MISC_USER			(2 << 0)    //示例发生在用户代码中
+#define PERF_RECORD_MISC_HYPERVISOR		(3 << 0)    //示例发生在VM管理程序中
+#define PERF_RECORD_MISC_GUEST_KERNEL		(4 << 0)//示例发生在来宾内核中
+#define PERF_RECORD_MISC_GUEST_USER		(5 << 0)    //示例发生在访客用户代码中
 
 /*
  * Indicates that /proc/PID/maps parsing are truncated by time out.
@@ -761,8 +761,9 @@ struct perf_event_mmap_page {   /*  */
  *   PERF_RECORD_MISC_FORK_EXEC  - PERF_RECORD_FORK event (perf internal)
  *   PERF_RECORD_MISC_SWITCH_OUT - PERF_RECORD_SWITCH* events
  */
-#define PERF_RECORD_MISC_MMAP_DATA		(1 << 13)
-#define PERF_RECORD_MISC_COMM_EXEC		(1 << 13)
+#define PERF_RECORD_MISC_MMAP_DATA		(1 << 13)   //当映射不可执行时设置；
+                                                    // 否则映射是可执行的
+#define PERF_RECORD_MISC_COMM_EXEC		(1 << 13)   //上下文切换已离开从当前进程
 #define PERF_RECORD_MISC_FORK_EXEC		(1 << 13)
 #define PERF_RECORD_MISC_SWITCH_OUT		(1 << 13)
 /*
@@ -781,7 +782,7 @@ struct perf_event_mmap_page {   /*  */
  * PERF_RECORD_MISC_SWITCH_OUT_PREEMPT:
  *   Indicates that thread was preempted in TASK_RUNNING state.
  */
-#define PERF_RECORD_MISC_EXACT_IP		(1 << 14)
+#define PERF_RECORD_MISC_EXACT_IP		(1 << 14)   //
 #define PERF_RECORD_MISC_SWITCH_OUT_PREEMPT	(1 << 14)
 /*
  * Reserve the last bit to indicate some extended misc field
@@ -792,9 +793,15 @@ struct perf_event_mmap_page {   /*  */
  *  
  */
 struct perf_event_header {  /*  */
-	__u32	type;
-	__u16	misc;
-	__u16	size;
+    /**
+     *  
+     */
+	__u32	type;   //
+	/**
+     *  
+     */
+	__u16	misc;   //其他信息，如`PERF_RECORD_MISC_CPUMODE_MASK`
+	__u16	size;   //标记记录的大小
 };
 
 /**

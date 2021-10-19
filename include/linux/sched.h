@@ -1475,6 +1475,9 @@ struct task_struct {    /* PCB */
 	unsigned int			futex_state;
 #endif
 #ifdef CONFIG_PERF_EVENTS
+    /**
+     *  perf events 上下文
+     */
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];    /* 软件+硬件 perf_event */
     /* 保护链表 `perf_event_list` */
 	struct mutex			perf_event_mutex;

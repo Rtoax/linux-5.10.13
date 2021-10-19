@@ -331,7 +331,9 @@ unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
 	return task->ret_stack[task_idx].ret;
 }
 #endif /* HAVE_FUNCTION_GRAPH_RET_ADDR_PTR */
-
+/**
+ *  
+ */
 static struct ftrace_ops graph_ops = {
 	.func			= ftrace_stub,
 	.flags			= FTRACE_OPS_FL_RECURSION_SAFE |

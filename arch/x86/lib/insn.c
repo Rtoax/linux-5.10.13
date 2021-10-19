@@ -39,7 +39,7 @@
  * @kaddr:	address (in kernel memory) of instruction (or copy thereof)
  * @x86_64:	!0 for 64-bit kernel or 64-bit app
  */
-void insn_init(struct insn *insn, const void *kaddr, int buf_len, int x86_64)
+void insn_init(struct insn *_insn, const void *kaddr, int buf_len, int x86_64)
 {
 	/*
 	 * Instructions longer than MAX_INSN_SIZE (15 bytes) are invalid
@@ -47,17 +47,19 @@ void insn_init(struct insn *insn, const void *kaddr, int buf_len, int x86_64)
 	 */
 	if (buf_len > MAX_INSN_SIZE)
 		buf_len = MAX_INSN_SIZE;
-
-	memset(insn, 0, sizeof(*insn));
-	insn->kaddr = kaddr;
-	insn->end_kaddr = kaddr + buf_len;
-	insn->next_byte = kaddr;
-	insn->x86_64 = x86_64 ? 1 : 0;
-	insn->opnd_bytes = 4;
+    /**
+     *  
+     */
+	memset(_insn, 0, sizeof(*_insn));
+	_insn->kaddr = kaddr;
+	_insn->end_kaddr = kaddr + buf_len;
+	_insn->next_byte = kaddr;
+	_insn->x86_64 = x86_64 ? 1 : 0;
+	_insn->opnd_bytes = 4;
 	if (x86_64)
-		insn->addr_bytes = 8;
+		_insn->addr_bytes = 8;
 	else
-		insn->addr_bytes = 4;
+		_insn->addr_bytes = 4;
 }
 
 static const insn_byte_t xen_prefix[] = { __XEN_EMULATE_PREFIX };
@@ -546,64 +548,70 @@ err_out:
  * Basically, most of immediates are sign-expanded. Unsigned-value can be
  * get by bit masking with ((1 << (nbytes * 8)) - 1)
  */
-void insn_get_immediate(struct insn *insn)
+void insn_get_immediate(struct insn *_insn)
 {
-	if (insn->immediate.got)
+    /**
+     *  
+     */
+	if (_insn->immediate.got)
 		return;
-	if (!insn->displacement.got)
-		insn_get_displacement(insn);
+	if (!_insn->displacement.got)
+		insn_get_displacement(_insn);
 
-	if (inat_has_moffset(insn->attr)) {
-		if (!__get_moffset(insn))
+	if (inat_has_moffset(_insn->attr)) {
+		if (!__get_moffset(_insn))
 			goto err_out;
 		goto done;
 	}
 
-	if (!inat_has_immediate(insn->attr))
+	if (!inat_has_immediate(_insn->attr))
 		/* no immediates */
 		goto done;
 
-	switch (inat_immediate_size(insn->attr)) {
+    /**
+     *  
+     */
+	switch (inat_immediate_size(_insn->attr)) {
 	case INAT_IMM_BYTE:
-		insn->immediate.value = get_next(signed char, insn);
-		insn->immediate.nbytes = 1;
+		_insn->immediate.value = get_next(signed char, _insn);
+		_insn->immediate.nbytes = 1;
 		break;
 	case INAT_IMM_WORD:
-		insn->immediate.value = get_next(short, insn);
-		insn->immediate.nbytes = 2;
+		_insn->immediate.value = get_next(short, _insn);
+		_insn->immediate.nbytes = 2;
 		break;
 	case INAT_IMM_DWORD:
-		insn->immediate.value = get_next(int, insn);
-		insn->immediate.nbytes = 4;
+		_insn->immediate.value = get_next(int, _insn);
+		_insn->immediate.nbytes = 4;
 		break;
 	case INAT_IMM_QWORD:
-		insn->immediate1.value = get_next(int, insn);
-		insn->immediate1.nbytes = 4;
-		insn->immediate2.value = get_next(int, insn);
-		insn->immediate2.nbytes = 4;
+		_insn->immediate1.value = get_next(int, _insn);
+		_insn->immediate1.nbytes = 4;
+		_insn->immediate2.value = get_next(int, _insn);
+		_insn->immediate2.nbytes = 4;
 		break;
 	case INAT_IMM_PTR:
-		if (!__get_immptr(insn))
+		if (!__get_immptr(_insn))
 			goto err_out;
 		break;
 	case INAT_IMM_VWORD32:
-		if (!__get_immv32(insn))
+		if (!__get_immv32(_insn))
 			goto err_out;
 		break;
 	case INAT_IMM_VWORD:
-		if (!__get_immv(insn))
+		if (!__get_immv(_insn))
 			goto err_out;
 		break;
 	default:
 		/* Here, insn must have an immediate, but failed */
 		goto err_out;
 	}
-	if (inat_has_second_immediate(insn->attr)) {
-		insn->immediate2.value = get_next(signed char, insn);
-		insn->immediate2.nbytes = 1;
+	if (inat_has_second_immediate(_insn->attr)) {
+		_insn->immediate2.value = get_next(signed char, _insn);
+		_insn->immediate2.nbytes = 1;
 	}
 done:
-	insn->immediate.got = 1;
+	_insn->immediate.got = 1;
 
 err_out:
 	return;
@@ -616,12 +624,19 @@ err_out:
  * If necessary, first collects the instruction up to and including the
  * immediates bytes.
  */
-void insn_get_length(struct insn *insn)
+void insn_get_length(struct insn *_insn)
 {
-	if (insn->length)
+	if (_insn->length)
 		return;
-	if (!insn->immediate.got)
-		insn_get_immediate(insn);
-	insn->length = (unsigned char)((unsigned long)insn->next_byte
-				     - (unsigned long)insn->kaddr);
+
+    /**
+     *  如果还没有立即数
+     */
+	if (!_insn->immediate.got) //无用的判断
+		insn_get_immediate(_insn);
+    /**
+     *  
+     */
+	_insn->length = (unsigned char)((unsigned long)_insn->next_byte
+				     - (unsigned long)_insn->kaddr);
 }

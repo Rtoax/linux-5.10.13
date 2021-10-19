@@ -77,7 +77,9 @@ enum {
 	FTRACE_MODIFY_ENABLE_FL		= (1 << 0),
 	FTRACE_MODIFY_MAY_SLEEP_FL	= (1 << 1),
 };
-
+/**
+ *  
+ */
 struct ftrace_ops __read_mostly ftrace_list_end  = {
 	.func		= ftrace_stub,
 	.flags		= FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_STUB,
@@ -299,6 +301,9 @@ static int remove_ftrace_ops(struct ftrace_ops __rcu **list,
 
 static void ftrace_update_trampoline(struct ftrace_ops *ops);
 
+/**
+ *  
+ */
 int __register_ftrace_function(struct ftrace_ops *ops)
 {
 	if (ops->flags & FTRACE_OPS_FL_DELETED)
@@ -347,6 +352,9 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 	if (ftrace_pids_enabled(ops))
 		ops->func = ftrace_pid_func;
 
+    /**
+     *  
+     */
 	ftrace_update_trampoline(ops);  /* 更新蹦床 */
 
 	if (ftrace_enabled)
@@ -2880,7 +2888,7 @@ int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 		return -ENODEV;
 
     /**
-     *  
+     *  注册 ftrace 函数
      */
 	ret = __register_ftrace_function(ops);  /*  */
 	if (ret)
@@ -2909,6 +2917,9 @@ int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 		return ret;
 	}
 
+    /**
+     *  
+     */
 	if (ftrace_hash_rec_enable(ops, 1))
 		command |= FTRACE_UPDATE_CALLS;
 
@@ -7011,11 +7022,18 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops)    /*  */
 {
 	unsigned long trampoline = ops->trampoline;
 
+    /**
+     *  
+     */
 	arch_ftrace_update_trampoline(ops);
 	if (ops->trampoline && ops->trampoline != trampoline &&
 	    (ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP)) {
 		/* Add to kallsyms before the perf events */
 		ftrace_add_trampoline_to_kallsyms(ops); /*  */
+        
+        /**
+         *  
+         */
 		perf_event_ksymbol(PERF_RECORD_KSYMBOL_TYPE_OOL,
 				   ops->trampoline, ops->trampoline_size, false,
 				   FTRACE_TRAMPOLINE_SYM);

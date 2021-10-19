@@ -68,7 +68,10 @@ static const char *ftrace_nop_replace(void) /*  */
 {
 	return ideal_nops[NOP_ATOMIC5]; /* 0x0f,0x1f,0x44,0x00,0 */
 }
-
+/**
+ *  Do a safe modify in case the trampoline is executing 
+ *  这是如何保证安全性的，libcareplus  借鉴
+ */
 static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)    /* 更新 指令 */
 {
 	return text_gen_insn(CALL_INSN_OPCODE, (void *)ip, (void *)addr);
@@ -485,14 +488,16 @@ static unsigned long calc_trampoline_call_offset(bool save_regs)
 
 	return call_offset - start_offset;
 }
-
+/**
+ *  
+ */
 void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 {
 	ftrace_func_t func;
 	unsigned long offset;
 	unsigned long ip;
 	unsigned int size;
-	const char *new;
+	const char *_new;
 
 	if (!ops->trampoline) {
 		ops->trampoline = create_trampoline(ops, &size);    /* 创建蹦床 */
@@ -508,15 +513,26 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	 */
 	if (!(ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP))
 		return;
-
+    /**
+     *  
+     */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);
 	ip = ops->trampoline + offset;
 	func = ftrace_ops_get_func(ops);
 
 	mutex_lock(&text_mutex);
-	/* Do a safe modify in case the trampoline is executing */
-	new = ftrace_call_replace(ip, (unsigned long)func);     /*  */
-	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
+    
+	/**
+	 *  Do a safe modify in case the trampoline is executing 
+	 *  这是如何保证安全性的，libcareplus  借鉴
+	 *
+	 *  new 为生成的新的指令
+	 */
+	_new = ftrace_call_replace(ip, (unsigned long)func);     /*  */
+    /**
+     *  下面时如何进行替换的？
+     */
+	text_poke_bp((void *)ip, _new, MCOUNT_INSN_SIZE, NULL);
 	mutex_unlock(&text_mutex);
 }
 

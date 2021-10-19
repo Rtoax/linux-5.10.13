@@ -1070,10 +1070,16 @@ void text_poke_sync(void)
 }
 
 struct text_poke_loc {
-	s32 rel_addr; /* addr := _stext + rel_addr */
+    /**
+     *  相对地址
+     */
+	s32 rel_addr; /* addr := _stext + rel_addr, in `text_poke_loc_init()` */
 	s32 rel32;
 	u8 opcode;
 	const u8 text[POKE_MAX_OPCODE_SIZE];
+    /**
+     *  原来的指令
+     */
 	u8 old;
 };
 
@@ -1196,8 +1202,13 @@ out_put:
 	put_desc(desc);
 	return ret;
 }
-
+/**
+ *  
+ */
 #define TP_VEC_MAX (PAGE_SIZE / sizeof(struct text_poke_loc))
+/**
+ *  
+ */
 static struct text_poke_loc tp_vec[TP_VEC_MAX];
 static int tp_vec_nr;
 
@@ -1224,6 +1235,9 @@ static int tp_vec_nr;
  */
 static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries)
 {
+    /**
+     *  
+     */
 	struct bp_patching_desc desc = {
 		.vec = tp,
 		.nr_entries = nr_entries,
@@ -1245,12 +1259,15 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 
 	/*
 	 * First step: add a int3 trap to the address that will be patched.
+	 * 1. 添加一个 int3 trap 到 目的地址 
 	 */
 	for (i = 0; i < nr_entries; i++) {
 		tp[i].old = *(u8 *)text_poke_addr(&tp[i]);
 		text_poke(text_poke_addr(&tp[i]), &int3, INT3_INSN_SIZE);
 	}
-
+    /**
+     *  
+     */
 	text_poke_sync();
 
 	/*
@@ -1260,6 +1277,9 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 		u8 old[POKE_MAX_OPCODE_SIZE] = { tp[i].old, };
 		int len = text_opcode_size(tp[i].opcode);
 
+        /**
+         *  
+         */
 		if (len - INT3_INSN_SIZE > 0) {
 			memcpy(old + INT3_INSN_SIZE,
 			       text_poke_addr(&tp[i]) + INT3_INSN_SIZE,
@@ -1298,6 +1318,9 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 				     tp[i].text, len);
 	}
 
+    /**
+     *  
+     */
 	if (do_sync) {
 		/*
 		 * According to Intel, this core syncing is very likely
@@ -1330,44 +1353,81 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 	if (!atomic_dec_and_test(&desc.refs))
 		atomic_cond_read_acquire(&desc.refs, !VAL);
 }
-            /*  */
+/**
+ * @addr:	address to patch
+ * @opcode:	opcode of new instruction
+ * @len:	length to copy
+ * @emulate:	instruction to be emulated
+ *
+ * 例如
+ * 0f 1f 44 00 00 nop
+ * cc 1f 44 00 00 <bp>nop
+ * cc 37 2e 00 00 <bp>callq ffffffff810f7430 <ftrace_caller>
+ * e8 37 2e 00 00 callq ffffffff810f7430 <ftrace_caller>
+ */
 static void text_poke_loc_init(struct text_poke_loc *tp, void *addr,
 			       const void *opcode, size_t len, const void *emulate)
 {
-	struct insn insn;
+	struct insn _insn;
 
 	memcpy((void *)tp->text, opcode, len);
 	if (!emulate)
 		emulate = opcode;
+    /**
+     *  
+     */
+	kernel_insn_init(&_insn, emulate, MAX_INSN_SIZE);
+    /**
+     *  
+     */
+	insn_get_length(&_insn);
 
-	kernel_insn_init(&insn, emulate, MAX_INSN_SIZE);
-	insn_get_length(&insn);
+    /**
+     *  指令组建 是否完成
+     */
+	BUG_ON(!insn_complete(&_insn));
+	BUG_ON(len != _insn.length);
 
-	BUG_ON(!insn_complete(&insn));
-	BUG_ON(len != insn.length);
-
+    /**
+     *  要被替换的地址转换为相对地址（偏移）
+     */
 	tp->rel_addr = addr - (void *)_stext;
-	tp->opcode = insn.opcode.bytes[0];
-
+	tp->opcode = _insn.opcode.bytes[0];// 如 int3, call, jmp
+    /**
+     *  int3 ret
+     */
 	switch (tp->opcode) {
 	case INT3_INSN_OPCODE:
 	case RET_INSN_OPCODE:
 		break;
-
+    /**
+     *  jmp call
+     */
 	case CALL_INSN_OPCODE:
 	case JMP32_INSN_OPCODE:
 	case JMP8_INSN_OPCODE:
-		tp->rel32 = insn.immediate.value;
+        /**
+         *  立即数
+         */
+		tp->rel32 = _insn.immediate.value;
 		break;
 
+    /**
+     *  其他情况，认为是 nop
+     */
 	default: /* assume NOP */
 		switch (len) {
+        /**
+         *  使用 jmp8+0 模拟
+         */
 		case 2: /* NOP2 -- emulate as JMP8+0 */
 			BUG_ON(memcmp(emulate, ideal_nops[len], len));
 			tp->opcode = JMP8_INSN_OPCODE;
 			tp->rel32 = 0;
 			break;
-
+        /**
+         *  使用 jmp32+0 模拟
+         */
 		case 5: /* NOP5 -- emulate as JMP32+0 */
 			BUG_ON(memcmp(emulate, ideal_nops[NOP_ATOMIC5], len));
 			tp->opcode = JMP32_INSN_OPCODE;
@@ -1435,7 +1495,7 @@ void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const voi
  * @addr:	address to patch
  * @opcode:	opcode of new instruction
  * @len:	length to copy
- * @handler:	address to jump to when the temporary breakpoint is hit
+ * @emulate:	instruction to be emulated
  *
  * Update a single instruction with the vector in the stack, avoiding
  * dynamically allocated memory. This function should be used when it is
@@ -1451,11 +1511,20 @@ void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *
 {
 	struct text_poke_loc tp;
 
+    /**
+     *  启动阶段
+     */
 	if (unlikely(system_state == SYSTEM_BOOTING)) { /* 系统启动阶段 */
 		text_poke_early(addr, opcode, len);
 		return;
 	}
 
+    /**
+     *  
+     */
 	text_poke_loc_init(&tp, addr, opcode, len, emulate);
+    /**
+     *  批处理，这里只处理 1 个
+     */
 	text_poke_bp_batch(&tp, 1);
 }

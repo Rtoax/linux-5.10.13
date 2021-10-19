@@ -7499,21 +7499,30 @@ static void perf_event_addr_filters_exec(struct perf_event *event, void *data)
 		perf_event_stop(event, 1);
 }
 
+/**
+ *  
+ */
 void perf_event_exec(void)  /*  */
 {
 	struct perf_event_context *ctx;
 	int ctxn;
 
 	rcu_read_lock();
+    /**
+     *  遍历硬件、软件
+     */
 	for_each_task_context_nr(ctxn) {
 		ctx = current->perf_event_ctxp[ctxn];
 		if (!ctx)
 			continue;
-
+        /**
+         *  
+         */
 		perf_event_enable_on_exec(ctxn);    /*  */
-
-		perf_iterate_ctx(ctx, perf_event_addr_filters_exec, NULL,
-				   true);
+        /**
+         *  
+         */
+		perf_iterate_ctx(ctx, perf_event_addr_filters_exec, NULL, true);
 	}
 	rcu_read_unlock();
 }
@@ -8628,6 +8637,9 @@ static void perf_event_ksymbol_output(struct perf_event *event, void *data)
 	perf_output_end(&handle);
 }
 
+/**
+ *  
+ */
 void perf_event_ksymbol(u16 ksym_type, u64 addr, u32 len, bool unregister,
 			const char *sym)
 {
@@ -8652,6 +8664,9 @@ void perf_event_ksymbol(u16 ksym_type, u64 addr, u32 len, bool unregister,
 	if (unregister)
 		flags |= PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER;
 
+    /**
+     *  
+     */
 	ksymbol_event = (struct perf_ksymbol_event){
 		.name = name,
 		.name_len = name_len,

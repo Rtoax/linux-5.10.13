@@ -1118,6 +1118,9 @@ int klp_enable_patch(struct klp_patch *patch)
 		return -EINVAL;
 	}
 
+    /**
+     *  root 没初始化
+     */
 	if (!klp_initialized())
 		return -ENODEV;
 
@@ -1128,6 +1131,9 @@ int klp_enable_patch(struct klp_patch *patch)
 
 	mutex_lock(&klp_mutex);
 
+    /**
+     *  是否和已经存在的补丁兼容
+     */
 	if (!klp_is_patch_compatible(patch)) {
 		pr_err("Livepatch patch (%s) is not compatible with the already installed livepatches.\n",
 			patch->mod->name);

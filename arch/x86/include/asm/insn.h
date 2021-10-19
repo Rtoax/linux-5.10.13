@@ -42,6 +42,9 @@ struct insn {
 	struct insn_field sib;
 	struct insn_field displacement;
 	union {
+        /**
+         *  jmp, call 对应立即数
+         */
 		struct insn_field immediate;
 		struct insn_field moffset1;	/* for 64bit MOV */
 		struct insn_field immediate1;	/* for 64bit imm or off16/32 */
@@ -111,13 +114,13 @@ static inline void insn_get_attribute(struct insn *insn)
 extern int insn_rip_relative(struct insn *insn);
 
 /* Init insn for kernel text */
-static inline void kernel_insn_init(struct insn *insn,
+static inline void kernel_insn_init(struct insn *_insn,
 				    const void *kaddr, int buf_len)
 {
 #ifdef CONFIG_X86_64
-	insn_init(insn, kaddr, buf_len, 1);
+	insn_init(_insn, kaddr, buf_len, 1);
 #else /* CONFIG_X86_32 */
-	insn_init(insn, kaddr, buf_len, 0);
+//	insn_init(insn, kaddr, buf_len, 0);
 #endif
 }
 

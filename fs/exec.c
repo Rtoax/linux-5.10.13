@@ -1275,7 +1275,9 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
 
-    /*  */
+    /**
+     *  
+     */
 	perf_event_exec();
 
     /* 设置程序名 */
