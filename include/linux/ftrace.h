@@ -539,7 +539,7 @@ enum {
  */
 struct dyn_ftrace { /*  */
     /**
-     *  指向 函数地址
+     *  指向 函数地址 address of mcount call-site
      */
 	unsigned long		ip; /* address of mcount call-site */
     /**

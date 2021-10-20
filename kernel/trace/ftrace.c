@@ -81,8 +81,8 @@ enum {
  *  
  */
 struct ftrace_ops __read_mostly ftrace_list_end  = {
-	.func		= ftrace_stub,
-	.flags		= FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_STUB,
+	ftrace_list_end.func		= ftrace_stub,
+	ftrace_list_end.flags		= FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_STUB,
 	INIT_OPS_HASH(ftrace_list_end)
 };
 
@@ -168,6 +168,9 @@ static void ftrace_sync_ipi(void *data)
 	smp_rmb();
 }
 
+/**
+ *  
+ */
 static ftrace_func_t ftrace_ops_get_list_func(struct ftrace_ops *ops)
 {
 	/*
@@ -180,7 +183,9 @@ static ftrace_func_t ftrace_ops_get_list_func(struct ftrace_ops *ops)
 
 	return ftrace_ops_get_func(ops);
 }
-
+/**
+ *  
+ */
 static void update_ftrace_function(void)
 {
 	ftrace_func_t func;
@@ -333,7 +338,9 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 
 	if (!core_kernel_data((unsigned long)ops))
 		ops->flags |= FTRACE_OPS_FL_DYNAMIC;
-
+    /**
+     *  
+     */
 	add_ftrace_ops(&ftrace_ops_list, ops);  /*  */
 
     /*
@@ -363,6 +370,9 @@ int __register_ftrace_function(struct ftrace_ops *ops)
      */
 	ftrace_update_trampoline(ops);  /* 更新蹦床 */
 
+    /**
+     *  更新
+     */
 	if (ftrace_enabled)
 		update_ftrace_function();   /* 更新函数 */
 
@@ -380,7 +390,9 @@ int __unregister_ftrace_function(struct ftrace_ops *ops)
 
 	if (ret < 0)
 		return ret;
-
+    /**
+     *  更新
+     */
 	if (ftrace_enabled)
 		update_ftrace_function();
 
@@ -404,7 +416,9 @@ static void ftrace_update_pid_func(void)
 			ftrace_update_trampoline(op);
 		}
 	} while_for_each_ftrace_op(op);
-
+    /**
+     *  
+     */
 	update_ftrace_function();
 }
 
@@ -1043,6 +1057,9 @@ struct ftrace_func_probe {
 	struct ftrace_probe_ops	*probe_ops;
 	struct ftrace_ops	ops;
 	struct trace_array	*tr;
+    /**
+     *  链表头 `struct trace_array.func_probes`
+     */
 	struct list_head	list;
 	void			*data;
 	int			ref;
@@ -2961,7 +2978,9 @@ int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 	 * between adding and updating probes.
 	 */
 	ops->flags |= FTRACE_OPS_FL_ENABLED | FTRACE_OPS_FL_ADDING;
-
+    /**
+     *  
+     */
 	ret = ftrace_hash_ipmodify_enable(ops);
 	if (ret < 0) {
 		/* Rollback registration process */
@@ -4425,6 +4444,9 @@ static int __init ftrace_mod_cmd_init(void)
 }
 core_initcall(ftrace_mod_cmd_init);
 
+/**
+ *  
+ */
 static void function_trace_probe_call(unsigned long ip, unsigned long parent_ip,
 				      struct ftrace_ops *op, struct pt_regs *pt_regs)
 {
@@ -4440,6 +4462,9 @@ static void function_trace_probe_call(unsigned long ip, unsigned long parent_ip,
 	 * on the hash. rcu_read_lock is too dangerous here.
 	 */
 	preempt_disable_notrace();
+    /**
+     *  执行 回调 函数
+     */
 	probe_ops->func(ip, parent_ip, probe->tr, probe_ops, probe->data);
 	preempt_enable_notrace();
 }
@@ -5892,6 +5917,9 @@ int ftrace_regex_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+/**
+ *  /sys/kernel/debug/tracing/available_filter_functions 
+ */
 static const struct file_operations ftrace_avail_fops = {
 	.open = ftrace_avail_open,
 	.read = seq_read,
@@ -7140,6 +7168,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
             				  __start_mcount_loc,
             				  __stop_mcount_loc);
 
+    //[    0.000000] ftrace: allocated 151 pages with 5 groups
 	pr_info("ftrace: allocated %ld pages with %ld groups\n",
 		ftrace_number_of_pages, ftrace_number_of_groups);
 
@@ -7220,14 +7249,18 @@ void ftrace_reset_array_ops(struct trace_array *tr)
 {
 	tr->ops->func = ftrace_stub;
 }
-
+/**
+ *  
+ */
 static nokprobe_inline void
 __ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 		       struct ftrace_ops *ignored, struct pt_regs *regs)
 {
 	struct ftrace_ops *op;
 	int bit;
-
+    /**
+     *  
+     */
 	bit = trace_test_and_set_recursion(TRACE_LIST_START, TRACE_LIST_MAX);
 	if (bit < 0)
 		return;
@@ -7238,6 +7271,9 @@ __ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 	 */
 	preempt_disable_notrace();
 
+    /**
+     *  
+     */
 	do_for_each_ftrace_op(op, ftrace_ops_list) {
 		/* Stub functions don't need to be called nor tested */
 		if (op->flags & FTRACE_OPS_FL_STUB)
@@ -7257,6 +7293,10 @@ __ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 				pr_warn("op=%p %pS\n", op, op);
 				goto out;
 			}
+            /**
+             *  执行的 trace 回调函数
+             *  这个函数是用户注册上来的
+             */
 			op->func(ip, parent_ip, op, regs);  /* 正经的调用 */
 		}
 	} while_for_each_ftrace_op(op);

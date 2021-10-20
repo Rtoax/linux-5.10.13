@@ -364,6 +364,9 @@ struct trace_array {    /*  */
 	struct trace_pid_list	__rcu *function_no_pids;
 #ifdef CONFIG_DYNAMIC_FTRACE
 	/* All of these are protected by the ftrace_lock */
+    /**
+     *  链表节点 `struct ftrace_func_probe.list`
+     */
 	struct list_head	func_probes;
 	struct list_head	mod_trace;
 	struct list_head	mod_notrace;
