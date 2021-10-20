@@ -14,6 +14,9 @@
 
 static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
 {
+    /**
+     *  修改当前 IP ，用以执行新的函数
+     */
 	regs->ip = ip;
 }
 

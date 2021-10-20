@@ -20,14 +20,15 @@
 #include "patch.h"
 #include "transition.h"
 
-static LIST_HEAD(klp_ops);
+static LIST_HEAD(klp_ops_list_head);
+static struct list_head klp_ops_list_head;//+++
 
 struct klp_ops *klp_find_ops(void *old_func)
 {
 	struct klp_ops *ops;
 	struct klp_func *func;
 
-	list_for_each_entry(ops, &klp_ops, node) {
+	list_for_each_entry(ops, &klp_ops_list_head, node) {
 		func = list_first_entry(&ops->func_stack, struct klp_func,
 					stack_node);
 		if (func->old_func == old_func)
@@ -38,6 +39,7 @@ struct klp_ops *klp_find_ops(void *old_func)
 }
 /**
  *  livepatch 中 注册给 ftrace 的函数
+ *  当执行 一个内核函数时，将跳转到 这个函数，从而执行补丁函数
  */
 static void notrace klp_ftrace_handler(unsigned long ip,
 				       unsigned long parent_ip,
@@ -48,6 +50,9 @@ static void notrace klp_ftrace_handler(unsigned long ip,
 	struct klp_func *func;
 	int patch_state;
 
+    /**
+     *  获取livepatch 结构体
+     */
 	ops = container_of(fops, struct klp_ops, fops);
 
 	/*
@@ -56,6 +61,9 @@ static void notrace klp_ftrace_handler(unsigned long ip,
 	 */
 	preempt_disable_notrace();
 
+    /**
+     *  只要一个？
+     */
 	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
 				      stack_node);
 
@@ -117,6 +125,7 @@ static void notrace klp_ftrace_handler(unsigned long ip,
 
     /**
      *  设置 PC， 执行新的 函数
+     *  x86 => regs->ip = ip;
      */
 	klp_arch_set_pc(regs, (unsigned long)func->new_func);
 
@@ -183,7 +192,9 @@ static int klp_patch_func(struct klp_func *func)
 
 	if (WARN_ON(func->patched))
 		return -EINVAL;
-
+    /**
+     *  
+     */
 	ops = klp_find_ops(func->old_func);
 	if (!ops) {
 		unsigned long ftrace_loc;
@@ -206,15 +217,21 @@ static int klp_patch_func(struct klp_func *func)
 			return -ENOMEM;
 
         /**
-         *  
+         *  ftrace 发生时，将被回调的函数
          */
 		ops->fops.func = klp_ftrace_handler;
+        /**
+         *  
+         */
 		ops->fops.flags = FTRACE_OPS_FL_SAVE_REGS |
 				  FTRACE_OPS_FL_DYNAMIC |
 				  FTRACE_OPS_FL_IPMODIFY |
 				  FTRACE_OPS_FL_PERMANENT;
 
-		list_add(&ops->node, &klp_ops);
+        /**
+         *  
+         */
+		list_add(&ops->node, &klp_ops_list_head);
 
 		INIT_LIST_HEAD(&ops->func_stack);
 		list_add_rcu(&func->stack_node, &ops->func_stack);
@@ -230,7 +247,7 @@ static int klp_patch_func(struct klp_func *func)
 		}
 
         /**
-         *  
+         *  注册这个 ftrace
          */
 		ret = register_ftrace_function(&ops->fops);
 		if (ret) {
