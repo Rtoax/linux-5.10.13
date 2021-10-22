@@ -516,31 +516,48 @@ out:
 	return error;
 }
 
+/**
+ *  
+ */
+int chroot(const char *path){}//+++
 SYSCALL_DEFINE1(chroot, const char __user *, filename)
 {
-	struct path path;
+    /**
+     *  
+     */
+	struct path _path;
 	int error;
 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
 retry:
-	error = user_path_at(AT_FDCWD, filename, lookup_flags, &path);
+	error = user_path_at(AT_FDCWD, filename, lookup_flags, &_path);
 	if (error)
 		goto out;
 
-	error = inode_permission(path.dentry->d_inode, MAY_EXEC | MAY_CHDIR);
+    /**
+     *  
+     */
+	error = inode_permission(_path.dentry->d_inode, MAY_EXEC | MAY_CHDIR);
 	if (error)
 		goto dput_and_out;
 
 	error = -EPERM;
 	if (!ns_capable(current_user_ns(), CAP_SYS_CHROOT))
 		goto dput_and_out;
-	error = security_path_chroot(&path);
+
+    /**
+     *  
+     */
+	error = security_path_chroot(&_path);
 	if (error)
 		goto dput_and_out;
 
-	set_fs_root(current->fs, &path);
+    /**
+     *  
+     */
+	set_fs_root(current->fs, &_path);
 	error = 0;
 dput_and_out:
-	path_put(&path);
+	path_put(&_path);
 	if (retry_estale(error, lookup_flags)) {
 		lookup_flags |= LOOKUP_REVAL;
 		goto retry;
@@ -549,24 +566,24 @@ out:
 	return error;
 }
 
-int chmod_common(const struct path *path, umode_t mode)
+int chmod_common(const struct path *_path, umode_t mode)
 {
-	struct inode *inode = path->dentry->d_inode;
+	struct inode *inode = _path->dentry->d_inode;
 	struct inode *delegated_inode = NULL;
 	struct iattr newattrs;
 	int error;
 
-	error = mnt_want_write(path->mnt);
+	error = mnt_want_write(_path->mnt);
 	if (error)
 		return error;
 retry_deleg:
 	inode_lock(inode);
-	error = security_path_chmod(path, mode);
+	error = security_path_chmod(_path, mode);
 	if (error)
 		goto out_unlock;
 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-	error = notify_change(path->dentry, &newattrs, &delegated_inode);
+	error = notify_change(_path->dentry, &newattrs, &delegated_inode);
 out_unlock:
 	inode_unlock(inode);
 	if (delegated_inode) {
@@ -574,7 +591,7 @@ out_unlock:
 		if (!error)
 			goto retry_deleg;
 	}
-	mnt_drop_write(path->mnt);
+	mnt_drop_write(_path->mnt);
 	return error;
 }
 
@@ -584,6 +601,7 @@ int vfs_fchmod(struct file *file, umode_t mode)
 	return chmod_common(&file->f_path, mode);
 }
 
+int fchmod(int fd, mode_t mode){}//+++
 SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
 {
 	struct fd f = fdget(fd);
@@ -614,12 +632,14 @@ retry:
 	return error;
 }
 
+int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags){}//+++
 SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename,
 		umode_t, mode)
 {
 	return do_fchmodat(dfd, filename, mode);
 }
 
+int chmod(const char *pathname, mode_t mode){}//+++
 SYSCALL_DEFINE2(chmod, const char __user *, filename, umode_t, mode)
 {
 	return do_fchmodat(AT_FDCWD, filename, mode);
@@ -699,17 +719,21 @@ out:
 	return error;
 }
 
+int fchownat(int dirfd, const char *pathname,
+                    uid_t owner, gid_t group, int flags){}//+++
 SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
 		gid_t, group, int, flag)
 {
 	return do_fchownat(dfd, filename, user, group, flag);
 }
 
+int chown(const char *pathname, uid_t owner, gid_t group){}//+++
 SYSCALL_DEFINE3(chown, const char __user *, filename, uid_t, user, gid_t, group)
 {
 	return do_fchownat(AT_FDCWD, filename, user, group, 0);
 }
 
+int lchown(const char *pathname, uid_t owner, gid_t group){}//+++
 SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t, group)
 {
 	return do_fchownat(AT_FDCWD, filename, user, group,
@@ -740,7 +764,7 @@ int ksys_fchown(unsigned int fd, uid_t user, gid_t group)
 	}
 	return error;
 }
-
+int fchown(int fd, uid_t owner, gid_t group){}//+++
 SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 {
 	return ksys_fchown(fd, user, group);
