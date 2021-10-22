@@ -29,7 +29,7 @@ static int reader_finish;
 static DECLARE_COMPLETION(read_start);
 static DECLARE_COMPLETION(read_done);
 
-static struct trace_buffer *buffer;
+static struct trace_buffer *my_trace_buffer;
 static struct task_struct *producer;
 static struct task_struct *consumer;
 static unsigned long read;
@@ -88,7 +88,10 @@ static enum event_status read_event(int cpu)
 	int *entry;
 	u64 ts;
 
-	event = ring_buffer_consume(buffer, cpu, &ts, NULL);
+    /**
+     *  
+     */
+	event = ring_buffer_consume(my_trace_buffer, cpu, &ts, NULL);
 	if (!event)
 		return EVENT_DROPPED;
 
@@ -113,11 +116,11 @@ static enum event_status read_page(int cpu)
 	int inc;
 	int i;
 
-	bpage = ring_buffer_alloc_read_page(buffer, cpu);
+	bpage = ring_buffer_alloc_read_page(my_trace_buffer, cpu);
 	if (IS_ERR(bpage))
 		return EVENT_DROPPED;
 
-	ret = ring_buffer_read_page(buffer, &bpage, PAGE_SIZE, cpu, 1);
+	ret = ring_buffer_read_page(my_trace_buffer, &bpage, PAGE_SIZE, cpu, 1);
 	if (ret >= 0) {
 		rpage = bpage;
 		/* The commit may have missed event flags set, clear them */
@@ -172,7 +175,7 @@ static enum event_status read_page(int cpu)
 			}
 		}
 	}
-	ring_buffer_free_read_page(buffer, cpu, bpage);
+	ring_buffer_free_read_page(my_trace_buffer, cpu, bpage);
 
 	if (ret < 0)
 		return EVENT_DROPPED;
@@ -227,6 +230,9 @@ static void ring_buffer_consumer(void)
 	complete(&read_done);
 }
 
+/** 
+ *  生产者生产数据
+ */
 static void ring_buffer_producer(void)
 {
 	ktime_t start_time, end_time, timeout;
@@ -249,16 +255,30 @@ static void ring_buffer_producer(void)
 		struct ring_buffer_event *event;
 		int *entry;
 		int i;
-
+        /**
+         *  
+         */
 		for (i = 0; i < write_iteration; i++) {
-			event = ring_buffer_lock_reserve(buffer, 10);
+            /**
+             *  从buffer中预留 10字节
+             */
+			event = ring_buffer_lock_reserve(my_trace_buffer, 10);
 			if (!event) {
 				missed++;
 			} else {
 				hit++;
+                /**
+                 *  获取数据
+                 */
 				entry = ring_buffer_event_data(event);
+                /**
+                 *  写入数据
+                 */
 				*entry = smp_processor_id();
-				ring_buffer_unlock_commit(buffer, event);
+                /**
+                 *  提交这个修改，表示别人可以生产了（或者消费者可消费？）
+                 */
+				ring_buffer_unlock_commit(my_trace_buffer, event);
 			}
 		}
 		end_time = ktime_get();
@@ -281,7 +301,7 @@ static void ring_buffer_producer(void)
 			cond_resched();
 #endif
 	} while (ktime_before(end_time, timeout) && !break_test());
-	trace_printk("End ring buffer hammer\n");
+	trace_printk("End ring my_trace_buffer hammer\n");
 
 	if (consumer) {
 		/* Init both completions here to avoid races */
@@ -296,8 +316,8 @@ static void ring_buffer_producer(void)
 
 	time = ktime_us_delta(end_time, start_time);
 
-	entries = ring_buffer_entries(buffer);
-	overruns = ring_buffer_overruns(buffer);
+	entries = ring_buffer_entries(my_trace_buffer);
+	overruns = ring_buffer_overruns(my_trace_buffer);
 
 	if (test_error)
 		trace_printk("ERROR!\n");
@@ -381,8 +401,14 @@ static void wait_to_die(void)
 static int ring_buffer_consumer_thread(void *arg)
 {
 	while (!break_test()) {
+        /**
+         *  读完了， 见 生产者  线程
+         */
 		complete(&read_start);
 
+        /**
+         *  消费就完了
+         */
 		ring_buffer_consumer();
 
 		set_current_state(TASK_INTERRUPTIBLE);
@@ -397,17 +423,31 @@ static int ring_buffer_consumer_thread(void *arg)
 
 	return 0;
 }
-
+/** 
+ *  生产者线程  
+ */
 static int ring_buffer_producer_thread(void *arg)
 {
 	while (!break_test()) {
-		ring_buffer_reset(buffer);
+        /**
+         *  
+         */
+		ring_buffer_reset(my_trace_buffer);
 
+        /**
+         *  如果有消费者
+         */
 		if (consumer) {
+            /**
+             *  唤醒消费者
+             */
 			wake_up_process(consumer);
 			wait_for_completion(&read_start);
 		}
 
+        /** 
+         *  生产数据
+         */
 		ring_buffer_producer();
 		if (break_test())
 			goto out_kill;
@@ -431,11 +471,17 @@ static int __init ring_buffer_benchmark_init(void)
 {
 	int ret;
 
+    /** 
+     *  创建buffer
+     */
 	/* make a one meg buffer in overwite mode */
-	buffer = ring_buffer_alloc(1000000, RB_FL_OVERWRITE);
-	if (!buffer)
+	my_trace_buffer = ring_buffer_alloc(1000000, RB_FL_OVERWRITE);
+	if (!my_trace_buffer)
 		return -ENOMEM;
 
+    /** 
+     *  创建消费者线程
+     */
 	if (!disable_reader) {
 		consumer = kthread_create(ring_buffer_consumer_thread,
 					  NULL, "rb_consumer");
@@ -443,7 +489,9 @@ static int __init ring_buffer_benchmark_init(void)
 		if (IS_ERR(consumer))
 			goto out_fail;
 	}
-
+    /** 
+     *  创建生产者线程
+     */
 	producer = kthread_run(ring_buffer_producer_thread,
 			       NULL, "rb_producer");
 	ret = PTR_ERR(producer);
@@ -477,7 +525,7 @@ static int __init ring_buffer_benchmark_init(void)
 		kthread_stop(consumer);
 
  out_fail:
-	ring_buffer_free(buffer);
+	ring_buffer_free(my_trace_buffer);
 	return ret;
 }
 
@@ -486,7 +534,7 @@ static void __exit ring_buffer_benchmark_exit(void)
 	kthread_stop(producer);
 	if (consumer)
 		kthread_stop(consumer);
-	ring_buffer_free(buffer);
+	ring_buffer_free(my_trace_buffer);
 }
 
 module_init(ring_buffer_benchmark_init);

@@ -39,6 +39,9 @@ u64 notrace trace_clock_local(void)
 	 * CPUs, nor across CPU idle events.
 	 */
 	preempt_disable_notrace();
+    /** 
+     *  
+     */
 	clock = sched_clock();
 	preempt_enable_notrace();
 

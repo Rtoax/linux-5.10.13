@@ -316,8 +316,14 @@ u64 ring_buffer_event_time_stamp(struct ring_buffer_event *event)
  *  
  */
 struct buffer_data_page {
+    /** 
+     *  时间戳
+     */
 	u64		 time_stamp;	/* page time stamp */
 	local_t		 commit;	/* write committed index */
+    /** 
+     *  数据
+     */
 	unsigned char	RB_ALIGN_DATA data[] ;	/* data of buffer page */
 };
 
@@ -330,11 +336,17 @@ struct buffer_data_page {
  * lockless.
  */
 struct buffer_page {
+    /**
+     * 分配时，在 `__rb_allocate_pages()` 中添加到临时链表
+     */
 	struct list_head list;		/* list of buffer pages */
 	local_t		 write;		/* index for next write */
 	unsigned	 read;		/* index for next read */
 	local_t		 entries;	/* entries on this page */
 	unsigned long	 real_end;	/* real end of data */
+    /** 
+     *  可能在 `rb_allocate_cpu_buffer()` 分配了一个 page - order=0
+     */
 	struct buffer_data_page *page;	/* Actual data page */
 };
 
@@ -496,6 +508,10 @@ struct ring_buffer_per_cpu {    /*  */
 	raw_spinlock_t			reader_lock;	/* serialize readers */
 	arch_spinlock_t			lock;
 	struct lock_class_key		lock_key;
+
+    /** 
+     *  
+     */
 	struct buffer_data_page		*free_page;
 	unsigned long			nr_pages;
 	unsigned int			current_context;
@@ -542,7 +558,9 @@ struct ring_buffer_per_cpu {    /*  */
 };
 
 /**
- *  
+ *  trace buffer
+ *  1. ftrace
+ *  2. 
  */
 struct trace_buffer {   /*  */
 	unsigned			flags;
@@ -554,9 +572,18 @@ struct trace_buffer {   /*  */
 
 	struct mutex			mutex;
 
+    /** 
+     *  
+     */
 	struct ring_buffer_per_cpu	**buffers;
 
 	struct hlist_node		node;
+
+    /** 
+     *  时钟
+     *  trace_clock_local() in __ring_buffer_alloc()
+     *  or set by ring_buffer_set_clock()
+     */
 	u64				(*clock)(void);
 
 	struct rb_irq_work		irq_work;
@@ -1441,7 +1468,9 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 {
 	struct buffer_page *bpage, *tmp;
@@ -1481,16 +1510,28 @@ static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 	for (i = 0; i < nr_pages; i++) {
 		struct page *page;
 
+        /** 
+         *  分配一个 buffer page
+         */
 		bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
 				    mflags, cpu_to_node(cpu));
 		if (!bpage)
 			goto free_pages;
 
+        /** 
+         *  添加到临时链表
+         */
 		list_add(&bpage->list, pages);
 
+        /**
+         *  分配一个物理页
+         */
 		page = alloc_pages_node(cpu_to_node(cpu), mflags, 0);
 		if (!page)
 			goto free_pages;
+        /**
+         *  获取这个 page 的虚拟地址
+         */
 		bpage->page = page_address(page);
 		rb_init_page(bpage->page);
 
@@ -1516,11 +1557,14 @@ free_pages:
 static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
 			     unsigned long nr_pages)
 {
-	LIST_HEAD(pages);
+	LIST_HEAD(tmp_list_pages);
 
 	WARN_ON(!nr_pages);
 
-	if (__rb_allocate_pages(nr_pages, &pages, cpu_buffer->cpu))
+    /** 
+     *  分配
+     */
+	if (__rb_allocate_pages(nr_pages, &tmp_list_pages, cpu_buffer->cpu))
 		return -ENOMEM;
 
 	/*
@@ -1528,8 +1572,11 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
 	 * start and end with a list head. All page list items point to
 	 * other pages.
 	 */
-	cpu_buffer->pages = pages.next;
-	list_del(&pages);
+	cpu_buffer->pages = tmp_list_pages.next;
+    /** 
+     *  清空链表
+     */
+	list_del(&tmp_list_pages);
 
 	cpu_buffer->nr_pages = nr_pages;
 
@@ -1570,15 +1617,26 @@ rb_allocate_cpu_buffer(struct trace_buffer *buffer, long nr_pages, int cpu)
 	rb_check_bpage(cpu_buffer, bpage);
 
 	cpu_buffer->reader_page = bpage;
+
+    /** 
+     *  分配一个页？
+     */
 	page = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, 0);
 	if (!page)
 		goto fail_free_reader;
+
+    /** 
+     *  转为虚拟地址
+     */
 	bpage->page = page_address(page);
 	rb_init_page(bpage->page);
 
 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
 	INIT_LIST_HEAD(&cpu_buffer->new_pages);
 
+    /** 
+     *  分配 pages
+     */
 	ret = rb_allocate_pages(cpu_buffer, nr_pages);
 	if (ret < 0)
 		goto fail_free_reader;
@@ -1587,6 +1645,9 @@ rb_allocate_cpu_buffer(struct trace_buffer *buffer, long nr_pages, int cpu)
 		= list_entry(cpu_buffer->pages, struct buffer_page, list);
 	cpu_buffer->tail_page = cpu_buffer->commit_page = cpu_buffer->head_page;
 
+    /**
+     *  
+     */
 	rb_head_page_activate(cpu_buffer);
 
 	return cpu_buffer;
@@ -1649,11 +1710,17 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 	if (!zalloc_cpumask_var(&buffer->cpumask, GFP_KERNEL))
 		goto fail_free_buffer;
 
+    /** 
+     *  需要分配多少个 page
+     */
 	nr_pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
 	buffer->flags = flags;
 	buffer->clock = trace_clock_local;
 	buffer->reader_lock_key = key;
 
+    /** 
+     *  
+     */
 	init_irq_work(&buffer->irq_work.work, rb_wake_up_waiters);
 	init_waitqueue_head(&buffer->irq_work.waiters);
 
@@ -1663,6 +1730,9 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 
 	buffer->cpus = nr_cpu_ids;
 
+    /** 
+     *  分配指针
+     */
 	bsize = sizeof(void *) * nr_cpu_ids;
 	buffer->buffers = kzalloc(ALIGN(bsize, cache_line_size()),
 				  GFP_KERNEL);
@@ -1671,6 +1741,10 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 
 	cpu = raw_smp_processor_id();
 	cpumask_set_cpu(cpu, buffer->cpumask);
+
+    /** 
+     *  
+     */
 	buffer->buffers[cpu] = rb_allocate_cpu_buffer(buffer, nr_pages, cpu);
 	if (!buffer->buffers[cpu])
 		goto fail_free_buffers;
@@ -2745,20 +2819,31 @@ rb_update_event(struct ring_buffer_per_cpu *cpu_buffer,
 	} else
 		event->type_len = DIV_ROUND_UP(length, RB_ALIGNMENT);
 }
-
+/**
+ *  计算每次 生产数据的长度
+ */
 static unsigned rb_calculate_event_length(unsigned length)
 {
 	struct ring_buffer_event event; /* Used only for sizeof array */
 
+    /**
+     *  最少一个字节
+     */
 	/* zero length can cause confusions */
 	if (!length)
 		length++;
 
+    /**
+     *  
+     */
 	if (length > RB_MAX_SMALL_DATA || RB_FORCE_8BYTE_ALIGNMENT)
 		length += sizeof(event.array[0]);
 
+    /**
+     *  头预留
+     */
 	length += RB_EVNT_HDR_SIZE;
-	length = ALIGN(length, RB_ARCH_ALIGNMENT);
+	length = ALIGN(length, RB_ARCH_ALIGNMENT/*4*/);
 
 	/*
 	 * In case the time delta is larger than the 27 bits for it
@@ -3197,12 +3282,18 @@ int ring_buffer_unlock_commit(struct trace_buffer *buffer,
 
 	trace_recursive_unlock(cpu_buffer);
 
+    /**
+     *  
+     */
 	preempt_enable_notrace();
 
 	return 0;
 }
 EXPORT_SYMBOL_GPL(ring_buffer_unlock_commit);
 
+/**
+ *  生产者预留数据
+ */
 static struct ring_buffer_event *
 __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
 		  struct rb_event_info *info)
@@ -3381,8 +3472,14 @@ rb_reserve_next_event(struct trace_buffer *buffer,
 	}
 #endif
 
+    /**
+     *  计算实际需要的长度（头...）
+     */
 	info.length = rb_calculate_event_length(length);
 
+    /**
+     *  时间戳
+     */
 	if (ring_buffer_time_stamp_abs(cpu_buffer->buffer)) {
 		add_ts_default = RB_ADD_STAMP_ABSOLUTE;
 		info.length += RB_LEN_TIME_EXTEND;
@@ -3406,6 +3503,9 @@ rb_reserve_next_event(struct trace_buffer *buffer,
 	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 1000))
 		goto out_fail;
 
+    /**
+     *  从buffer中预留
+     */
 	event = __rb_reserve_next(cpu_buffer, &info);
 
 	if (unlikely(PTR_ERR(event) == -EAGAIN)) {
@@ -3439,6 +3539,9 @@ rb_reserve_next_event(struct trace_buffer *buffer,
 struct ring_buffer_event *
 ring_buffer_lock_reserve(struct trace_buffer *buffer, unsigned long length)
 {
+    /** 
+     *  
+     */
 	struct ring_buffer_per_cpu *cpu_buffer;
 	struct ring_buffer_event *event;
 	int cpu;
@@ -3465,6 +3568,9 @@ ring_buffer_lock_reserve(struct trace_buffer *buffer, unsigned long length)
 	if (unlikely(trace_recursive_lock(cpu_buffer)))
 		goto out;
 
+    /**
+     *  
+     */
 	event = rb_reserve_next_event(buffer, cpu_buffer, length);
 	if (!event)
 		goto out_unlock;
@@ -4656,14 +4762,24 @@ ring_buffer_consume(struct trace_buffer *buffer, int cpu, u64 *ts,
 
 	cpu_buffer = buffer->buffers[cpu];
 	local_irq_save(flags);
+
+    /**
+     *  lock =========================================
+     */
 	dolock = rb_reader_lock(cpu_buffer);
 
+    /**
+     *  取数据
+     */
 	event = rb_buffer_peek(cpu_buffer, ts, lost_events);
 	if (event) {
 		cpu_buffer->lost_events = 0;
 		rb_advance_reader(cpu_buffer);
 	}
 
+    /**
+     *  unlock =======================================
+     */
 	rb_reader_unlock(cpu_buffer, dolock);
 	local_irq_restore(flags);
 
@@ -4980,9 +5096,17 @@ void ring_buffer_reset(struct trace_buffer *buffer)
 	struct ring_buffer_per_cpu *cpu_buffer;
 	int cpu;
 
+    /**
+     *  
+     */
 	for_each_buffer_cpu(buffer, cpu) {
 		cpu_buffer = buffer->buffers[cpu];
 
+        /**
+         *  计数，表示
+         *  不能修改大小
+         *  不能记录
+         */
 		atomic_inc(&cpu_buffer->resize_disabled);
 		atomic_inc(&cpu_buffer->record_disabled);
 	}
@@ -4990,6 +5114,9 @@ void ring_buffer_reset(struct trace_buffer *buffer)
 	/* Make sure all commits have finished */
 	synchronize_rcu();
 
+    /**
+     *  
+     */
 	for_each_buffer_cpu(buffer, cpu) {
 		cpu_buffer = buffer->buffers[cpu];
 
