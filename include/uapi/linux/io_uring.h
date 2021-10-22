@@ -17,18 +17,39 @@
  *  
  */
 struct io_uring_sqe {
+    /**
+     *  选定我们要执行的系统调用，readv, 对应一个 opcode叫 IORING_OP_READV
+     */
 	__u8	opcode;		/* type of operation for this sqe */
+    /**
+     *  参数,可以用来调整 io_uring 的各种行为
+     */
 	__u8	flags;		/* IOSQE_ flags */
+    /**
+     *  
+     */
 	__u16	ioprio;		/* ioprio for the request */
+    /**
+     *  涉及到的文件
+     */
 	__s32	fd;		/* file descriptor to do IO on */
+    /**
+     *  对于读取文件来说，这里指的是读取到的数据将要存放的目标地址
+     */
 	union {
 		__u64	off;	/* offset into file */
 		__u64	addr2;
 	};
+    /**
+     *  对于读取文件来说，这里指的是读取到的数据将要存放的目标地址
+     */
 	union {
 		__u64	addr;	/* pointer to buffer or iovecs */
 		__u64	splice_off_in;
 	};
+    /**
+     *  数据的长度
+     */
 	__u32	len;		/* buffer size or number of iovecs */
 	union {
 		__kernel_rwf_t	rw_flags;
@@ -45,6 +66,9 @@ struct io_uring_sqe {
 		__u32		fadvise_advice;
 		__u32		splice_flags;
 	};
+    /**
+     *  一个用户将 SQE 和 CQE(completion queue entry)关联起来的标识符。
+     */
 	__u64	user_data;	/* data to be passed back at completion time */
 	union {
 		struct {
