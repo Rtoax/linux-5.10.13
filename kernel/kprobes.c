@@ -54,6 +54,10 @@ static int kprobes_initialized;
  * - RCU hlist traversal under disabling preempt (breakpoint handlers)
  *
  * kprobe_table 保存了 所有 内核支持的   kprobe 符号表
+ *              Used to lookup kprobes
+ * kretprobe_inst_table 
+ *      1. 存放 可执行 指令的 pages 链表
+ *
  */
 static struct hlist_head kprobe_table[KPROBE_TABLE_SIZE];
 static struct hlist_head kretprobe_inst_table[KPROBE_TABLE_SIZE];
@@ -918,8 +922,9 @@ static void optimize_all_kprobes(void)
 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
 		head = &kprobe_table[i];
 		hlist_for_each_entry(p, head, hlist)
-			if (!kprobe_disabled(p))
+			if (!kprobe_disabled(p)) {
 				optimize_kprobe(p);
+            }
 	}
 	cpus_read_unlock();
 	printk(KERN_INFO "Kprobes globally optimized\n");
@@ -1858,10 +1863,14 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
      */
 	hlist_add_head_rcu(&p->hlist, &kprobe_table[hash_ptr(p->addr, KPROBE_HASH_BITS)]);
 
+    /**
+     *  如果 kprobe 现在使能， 直接使用 text_poke()  替换指令
+     */
 	if (!kprobes_all_disarmed && !kprobe_disabled(p)) {
 
         /**
          *  处理一个   kprobe，用 int3   替换原有指令
+         *  enable_kprobe() 中将使用这个函数
          */
 		ret = arm_kprobe(p);
 		if (ret) {
@@ -2428,7 +2437,10 @@ int disable_kprobe(struct kprobe *kp)   //暂停指定定kprobe探测点
 }
 EXPORT_SYMBOL_GPL(disable_kprobe);
 
-/* Enable one kprobe */
+/**
+ *  Enable one kprobe 
+ *  使用 text_poke() 替换断点
+ */
 int enable_kprobe(struct kprobe *kp)    //恢复指定kprobe探测点
 {
 	int ret = 0;

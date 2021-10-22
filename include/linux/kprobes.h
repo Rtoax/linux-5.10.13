@@ -76,6 +76,7 @@ typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
 struct kprobe { /*  */
     /**
      *  被用于kprobe全局hash，索引值为被探测点的地址。
+     *  头为 `kprobe_table[x]`
      */
 	struct hlist_node hlist;    /*  */
 
@@ -103,7 +104,8 @@ struct kprobe { /*  */
 
 	/**
 	 *  Offset into the symbol 
-	 *  被探测点在函数内部的偏移，用于探测函数内核的指令，如果该值为0表示函数的入口。
+	 *  被探测点在函数内部的偏移，用于探测函数内核的指令，
+	 *  如果该值为0表示函数的入口。
 	 */
 	unsigned int offset;        /*  */
 

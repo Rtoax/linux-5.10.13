@@ -663,6 +663,9 @@ int3_exception_notify(struct notifier_block *self, unsigned long val, void *data
 	if (regs->ip - INT3_INSN_SIZE != int3_selftest_ip)
 		return NOTIFY_DONE;
 
+    /**
+     *  
+     */
 	int3_emulate_call(regs, (unsigned long)&int3_magic);
 	return NOTIFY_STOP;
 }

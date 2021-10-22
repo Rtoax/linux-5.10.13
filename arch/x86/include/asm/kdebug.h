@@ -9,7 +9,7 @@ struct pt_regs;
 /* Grossly misnamed. */
 enum die_val {  /*  */
 	DIE_OOPS = 1,   /* Oops */
-	DIE_INT3,
+	DIE_INT3,   /* int3 =0xcc int3_selftest() */
 	DIE_DEBUG,
 	DIE_PANIC,
 	DIE_NMI,    /* 不可屏蔽中断 */

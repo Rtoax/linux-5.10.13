@@ -143,8 +143,14 @@ static int __kprobes __aarch64_insn_write(void *addr, __le32 insn)
 	int ret;
 
 	raw_spin_lock_irqsave(&patch_lock, flags);
+    /**
+     *  
+     */
 	waddr = patch_map(addr, FIX_TEXT_POKE0);
 
+    /**
+     *  
+     */
 	ret = copy_to_kernel_nofault(waddr, &insn, AARCH64_INSN_SIZE);
 
 	patch_unmap(FIX_TEXT_POKE0);
@@ -196,6 +202,9 @@ int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 	if ((uintptr_t)tp & 0x3)
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	ret = aarch64_insn_write(tp, insn);
 	if (ret == 0)
 		__flush_icache_range((uintptr_t)tp,
@@ -218,6 +227,9 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
 
 	/* The first CPU becomes master */
 	if (atomic_inc_return(&pp->cpu_count) == 1) {
+        /**
+         *  
+         */
 		for (i = 0; ret == 0 && i < pp->insn_cnt; i++)
 			ret = aarch64_insn_patch_text_nosync(pp->text_addrs[i],
 							     pp->new_insns[i]);
@@ -237,6 +249,9 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
  */
 int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 {
+    /**
+     *  
+     */
 	struct aarch64_insn_patch patch = {
 		patch.text_addrs = addrs,
 		patch.new_insns = insns,
@@ -247,6 +262,9 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 	if (cnt <= 0)
 		return -EINVAL;
 
+    /**
+     *  
+     */
 	return stop_machine_cpuslocked(aarch64_insn_patch_text_cb, &patch, cpu_online_mask);
 }
 

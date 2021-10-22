@@ -122,6 +122,9 @@ void __kprobes arch_arm_kprobe(struct kprobe *p)
 	void *addr = p->addr;
 	u32 insn = BRK64_OPCODE_KPROBES;
 
+    /**
+     *  补丁 text
+     */
 	aarch64_insn_patch_text(&addr, &insn, 1);
 }
 

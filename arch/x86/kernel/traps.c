@@ -635,6 +635,15 @@ exit:
  *
  *  1. kgdb
  *  2. kprobe
+ *      83 c0 04    add eax, 0x4
+ *      cc c0 04    
+ *      ^^
+ *      text_poke() `0xcc = breakpoint instruction (int3)`
+ *      do_int3() 
+ *      -> notify_die()
+ *          ...
+ *          kprobe_exceptions_nb
+ *        
  *  3. 
  */
 static bool do_int3(struct pt_regs *regs)
@@ -656,7 +665,7 @@ static bool do_int3(struct pt_regs *regs)
 #endif
 
     /**
-     *  
+     *  int3_exception_notify()
      */
 	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 

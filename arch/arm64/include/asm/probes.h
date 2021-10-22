@@ -14,6 +14,9 @@ typedef void (*probes_handler_t) (u32 opcode, long addr, struct pt_regs *);//+++
 
 /* architecture specific copy of original instruction */
 struct arch_probe_insn {
+    /**
+     *  
+     */
 	probe_opcode_t *insn;
 	pstate_check_t *pstate_cc;
 	probes_handler_t *handler;

@@ -80,6 +80,9 @@ static int notifier_call_chain(struct notifier_block **nl,
 			continue;
 		}
 #endif
+        /**
+         *  
+         */
 		ret = nb->notifier_call(nb, val, v);
 
 		if (nr_calls)
@@ -531,7 +534,8 @@ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
 #endif /* CONFIG_SRCU */
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
-
+static struct atomic_notifier_head die_chain = \
+		ATOMIC_NOTIFIER_INIT(die_chain);//+++
 /**
  *  
  */

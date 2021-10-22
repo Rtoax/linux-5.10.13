@@ -68,8 +68,13 @@ struct arch_specific_insn {
 	 * a post_handler).
 	 */
 	bool boostable;
+    /**
+     *  
+     */
 	bool if_modifier;
-	/* Number of bytes of text poked */
+	/**
+	 *  Number of bytes of text poked 
+	 */
 	int tp_len;
 };
 

@@ -408,6 +408,9 @@ static int __stop_cpus(const struct cpumask *cpumask,
 	struct cpu_stop_done done;
 
 	cpu_stop_init_done(&done, cpumask_weight(cpumask));
+    /**
+     *  
+     */
 	if (!queue_stop_cpus_work(cpumask, fn, arg, &done))
 		return -ENOENT;
 	wait_for_completion(&done.completion);
@@ -563,6 +566,9 @@ static int __init cpu_stop_init(void)
 }
 early_initcall(cpu_stop_init);
 
+/**
+ *  
+ */
 int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 			    const struct cpumask *cpus)
 {
