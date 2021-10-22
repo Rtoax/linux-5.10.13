@@ -6031,6 +6031,9 @@ tracing_nsecs_write(unsigned long *ptr, const char __user *ubuf,
 	return cnt;
 }
 
+/**
+ *  
+ */
 static ssize_t
 tracing_thresh_read(struct file *filp, char __user *ubuf,
 		    size_t cnt, loff_t *ppos)
@@ -8922,6 +8925,14 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 
 	trace_create_file("tracing_cpumask", 0644, d_tracer, tr, &tracing_cpumask_fops);
 
+    /**
+     *  /sys/kernel/debug/tracing/trace_options
+     *
+     *  function-trace
+     *  nofunction-fork
+     *  nodisplay-graph
+     *  [...]
+     */
 	trace_create_file("trace_options", 0644, d_tracer, tr, &tracing_iter_fops);
 
     /* /sys/kernel/debug/tracing/trace */

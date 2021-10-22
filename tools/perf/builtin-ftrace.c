@@ -33,6 +33,9 @@
 
 #define DEFAULT_TRACER  "function_graph"
 
+/**
+ *  
+ */
 struct perf_ftrace {
 	struct evlist		*evlist;
 	struct target		target;
@@ -49,6 +52,10 @@ struct perf_ftrace {
 	int			graph_nosleep_time;
 	int			graph_noirqs;
 	int			graph_verbose;
+    /**
+     *  tracing thresh
+     *  /sys/kernel/debug/tracing/tracing_thresh
+     */
 	int			graph_thresh;
 	unsigned int		initial_delay;
 };
@@ -61,7 +68,7 @@ struct filter_entry {
 static volatile int workload_exec_errno;
 static bool done;
 
-static void sig_handler(int sig __maybe_unused)
+static void sig_handler(int __maybe_unused sig )
 {
 	done = true;
 }
@@ -73,9 +80,9 @@ static void sig_handler(int sig __maybe_unused)
  *
  * XXX We need to handle this more appropriately, emitting an error, etc.
  */
-static void ftrace__workload_exec_failed_signal(int signo __maybe_unused,
-						siginfo_t *info __maybe_unused,
-						void *ucontext __maybe_unused)
+static void ftrace__workload_exec_failed_signal(int __maybe_unused signo ,
+						siginfo_t __maybe_unused*info ,
+						void __maybe_unused*ucontext )
 {
 	workload_exec_errno = info->si_value.sival_int;
 	done = true;
@@ -498,7 +505,10 @@ static int set_tracing_thresh(struct perf_ftrace *ftrace)
 
 	if (ftrace->graph_thresh == 0)
 		return 0;
-
+    /**
+     *  tracing thresh
+     *  /sys/kernel/debug/tracing/tracing_thresh
+     */
 	ret = write_tracing_file_int("tracing_thresh", ftrace->graph_thresh);
 	if (ret < 0)
 		return ret;
@@ -848,6 +858,10 @@ static int parse_graph_tracer_opts(const struct option *opt,
 		{ .name = "nosleep-time",	.value_ptr = &ftrace->graph_nosleep_time },
 		{ .name = "noirqs",		.value_ptr = &ftrace->graph_noirqs },
 		{ .name = "verbose",		.value_ptr = &ftrace->graph_verbose },
+		/**
+         *  tracing thresh
+         *  /sys/kernel/debug/tracing/tracing_thresh
+         */
 		{ .name = "thresh",		.value_ptr = &ftrace->graph_thresh },
 		{ .name = "depth",		.value_ptr = &ftrace->graph_depth },
 		{ .name = NULL, }
