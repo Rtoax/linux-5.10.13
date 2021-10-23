@@ -137,7 +137,9 @@ int __init init_stat(const char *filename, struct kstat *stat, int flags)
 	path_put(&path);
 	return error;
 }
-
+/**
+ *  
+ */
 int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 {
 	struct dentry *dentry;
@@ -149,6 +151,9 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 	else if (!(S_ISBLK(mode) || S_ISCHR(mode)))
 		return -EINVAL;
 
+    /**
+     *  filename 可能为 /dev/root
+     */
 	dentry = kern_path_create(AT_FDCWD, filename, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);

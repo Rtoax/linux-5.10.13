@@ -640,6 +640,9 @@ EXPORT_SYMBOL(filemap_fdatawait_keep_errors);
 /* Returns true if writeback might be needed or already in progress. */
 static bool mapping_needs_writeback(struct address_space *mapping)
 {
+    /**
+     *  
+     */
 	if (dax_mapping(mapping))
 		return mapping->nrexceptional;
 
@@ -768,15 +771,28 @@ EXPORT_SYMBOL(file_check_and_advance_wb_err);
 int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
 {
 	int err = 0, err2;
+    /**
+     *  
+     */
 	struct address_space *mapping = file->f_mapping;
 
+    /**
+     *  需要写回
+     */
 	if (mapping_needs_writeback(mapping)) {
+        /**
+         *  
+         */
 		err = __filemap_fdatawrite_range(mapping, lstart, lend,
 						 WB_SYNC_ALL);
 		/* See comment of filemap_write_and_wait() */
 		if (err != -EIO)
 			__filemap_fdatawait_range(mapping, lstart, lend);
 	}
+
+    /**
+     *  
+     */
 	err2 = file_check_and_advance_wb_err(file);
 	if (!err)
 		err = err2;
@@ -986,6 +1002,9 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
 
 #ifdef CONFIG_NUMA
+/**
+ *  
+ */
 struct page *__page_cache_alloc(gfp_t gfp)
 {
 	int n;
@@ -1001,6 +1020,9 @@ struct page *__page_cache_alloc(gfp_t gfp)
 
 		return page;
 	}
+    /**
+     *  
+     */
 	return alloc_pages(gfp, 0);
 }
 EXPORT_SYMBOL(__page_cache_alloc);
@@ -1858,6 +1880,9 @@ no_page:
 		if (fgp_flags & FGP_NOFS)
 			gfp_mask &= ~__GFP_FS;
 
+        /**
+         *  
+         */
 		page = __page_cache_alloc(gfp_mask);
 		if (!page)
 			return NULL;

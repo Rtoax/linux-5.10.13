@@ -1501,6 +1501,8 @@ unsigned long ext4_count_dirs(struct super_block * sb)
  * thread, so we do not need any special locks, however we have to prevent
  * inode allocation from the current group, so we take alloc_sem lock, to
  * block ext4_new_inode() until we are finished.
+ *
+ *  
  */
 int ext4_init_inode_table(struct super_block *sb, ext4_group_t group,
 				 int barrier)

@@ -33,6 +33,9 @@ static char * __initdata root_device_name;
 static char __initdata saved_root_name[64];
 static int root_wait;
 
+/**
+ *  /dev/root
+ */
 dev_t ROOT_DEV;
 
 static int __init load_ramdisk(char *str)
@@ -551,6 +554,9 @@ static int __init mount_cifs_root(void)
 }
 #endif
 
+/**
+ *  
+ */
 void __init mount_root(void)
 {
 #ifdef CONFIG_ROOT_NFS
@@ -567,6 +573,9 @@ void __init mount_root(void)
 		return;
 	}
 #endif
+    /**
+     *  
+     */
 #ifdef CONFIG_BLOCK
 	{
 		int err = create_dev("/dev/root", ROOT_DEV);
@@ -626,6 +635,9 @@ void __init prepare_namespace(void)
 		async_synchronize_full();
 	}
 
+    /**
+     *  
+     */
 	mount_root();
 out:
 	devtmpfs_mount();

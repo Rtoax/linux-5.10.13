@@ -59,7 +59,7 @@ struct blk_keyslot_manager;
  */
 #define BLKCG_MAX_POLS		5
 
-typedef void (rq_end_io_fn)(struct request *, blk_status_t);
+typedef void (*rq_end_io_fn)(struct request *, blk_status_t);//add *
 
 /*
  * request flags */
@@ -123,6 +123,8 @@ enum mq_rq_state {
  *
  * If you modify this structure, make sure to update blk_rq_init() and
  * especially blk_mq_rq_ctx_init() to take care of the added fields.
+ *
+ *  块设备驱动层接收从 通用块层的 请求格式 结构体
  */
 struct request {
 	struct request_queue *q;
@@ -137,6 +139,9 @@ struct request {
 
 	/* the following two fields are internal, NEVER access directly */
 	unsigned int __data_len;	/* total data len */
+    /**
+     *  
+     */
 	sector_t __sector;		/* sector cursor */
 
 	struct bio *bio;
@@ -684,10 +689,10 @@ static inline enum rpm_status queue_rpm_status(struct request_queue *q)
 	return q->rpm_status;
 }
 #else
-static inline enum rpm_status queue_rpm_status(struct request_queue *q)
-{
-	return RPM_ACTIVE;
-}
+//static inline enum rpm_status queue_rpm_status(struct request_queue *q)
+//{
+//	return RPM_ACTIVE;
+//}
 #endif
 
 static inline enum blk_zoned_model
@@ -760,28 +765,9 @@ static inline unsigned int queue_max_active_zones(const struct request_queue *q)
 	return q->max_active_zones;
 }
 #else /* CONFIG_BLK_DEV_ZONED */
-static inline unsigned int blk_queue_nr_zones(struct request_queue *q)
-{
-	return 0;
-}
-static inline bool blk_queue_zone_is_seq(struct request_queue *q,
-					 sector_t sector)
-{
-	return false;
-}
-static inline unsigned int blk_queue_zone_no(struct request_queue *q,
-					     sector_t sector)
-{
-	return 0;
-}
-static inline unsigned int queue_max_open_zones(const struct request_queue *q)
-{
-	return 0;
-}
-static inline unsigned int queue_max_active_zones(const struct request_queue *q)
-{
-	return 0;
-}
+/**
+ *  
+ */
 #endif /* CONFIG_BLK_DEV_ZONED */
 
 static inline bool rq_is_sync(struct request *rq)
@@ -886,9 +872,9 @@ struct req_iterator {
 #if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
 extern void rq_flush_dcache_pages(struct request *rq);
 #else
-static inline void rq_flush_dcache_pages(struct request *rq)
-{
-}
+/**
+ *  
+ */
 #endif
 
 extern int blk_register_queue(struct gendisk *disk);
@@ -896,6 +882,9 @@ extern void blk_unregister_queue(struct gendisk *disk);
 blk_qc_t submit_bio_noacct(struct bio *bio);
 extern void blk_rq_init(struct request_queue *q, struct request *rq);
 extern void blk_put_request(struct request *);
+/**
+ *  
+ */
 extern struct request *blk_get_request(struct request_queue *, unsigned int op,
 				       blk_mq_req_flags_t flags);
 extern int blk_lld_busy(struct request_queue *q);
@@ -1273,40 +1262,9 @@ static inline bool blk_needs_flush_plug(struct task_struct *tsk)
 int blkdev_issue_flush(struct block_device *, gfp_t);
 long nr_blockdev_pages(void);
 #else /* CONFIG_BLOCK */
-struct blk_plug {
-};
-
-static inline void blk_start_plug(struct blk_plug *plug)
-{
-}
-
-static inline void blk_finish_plug(struct blk_plug *plug)
-{
-}
-
-static inline void blk_flush_plug(struct task_struct *task)
-{
-}
-
-static inline void blk_schedule_flush_plug(struct task_struct *task)
-{
-}
-
-
-static inline bool blk_needs_flush_plug(struct task_struct *tsk)
-{
-	return false;
-}
-
-static inline int blkdev_issue_flush(struct block_device *bdev, gfp_t gfp_mask)
-{
-	return 0;
-}
-
-static inline long nr_blockdev_pages(void)
-{
-	return 0;
-}
+/**
+ *  
+ */
 #endif /* CONFIG_BLOCK */
 
 extern void blk_io_schedule(void);
@@ -1818,15 +1776,9 @@ bool blk_ksm_register(struct blk_keyslot_manager *ksm, struct request_queue *q);
 void blk_ksm_unregister(struct request_queue *q);
 
 #else /* CONFIG_BLK_INLINE_ENCRYPTION */
-
-static inline bool blk_ksm_register(struct blk_keyslot_manager *ksm,
-				    struct request_queue *q)
-{
-	return true;
-}
-
-static inline void blk_ksm_unregister(struct request_queue *q) { }
-
+/**
+ *  
+ */
 #endif /* CONFIG_BLK_INLINE_ENCRYPTION */
 
 /**

@@ -1725,6 +1725,9 @@ static noinline void __init kernel_init_freeable(void)  /*  */
 	if (init_eaccess(ramdisk_execute_command) != 0) {
 		ramdisk_execute_command = NULL;
 
+        /**
+         *  
+         */
         //checks and mounts the [initrd]
 		prepare_namespace();
 	}

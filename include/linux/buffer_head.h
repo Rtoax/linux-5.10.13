@@ -67,14 +67,22 @@ typedef void (bh_end_io_t)(struct buffer_head *bh, int uptodate);
  * 一般一个buffer_head也表征4K大小，这样一个buffer_head正好对应一个page。某些文件
  * 系统可能采用更小的block size，例如1K，或者512字节。这样一个page最多可以用4或者
  * 8个buffer_head结构体来描述其内存对应的物理磁盘位置。
+ *
+ * 文件系统的块
  */
 struct buffer_head {    /* 块缓冲区首部 */
 	unsigned long        b_state;		/* 缓冲区状态标志 buffer state bitmap (see above) */
 	struct buffer_head  *b_this_page;   /* 缓冲区链表的下一个元素 circular list of page's buffers */
 	struct page         *b_page;		/* 拥有该块的缓冲区页的描述符指针 the page this bh is mapped to */
 
+    /**
+     *  block 起始的扇区号
+     */
 	sector_t             b_blocknr;		/* 与块设备相关的块号 start block number */
 	size_t               b_size;	    /* 块大小 size of mapping */
+    /**
+     *  存储数据的内存块
+     */
 	char                *b_data;		/* 块在缓冲区页的位置 pointer to data within the page */
 
 	struct block_device *b_bdev;        /* 包含块的块设备 */
@@ -394,16 +402,21 @@ static inline struct buffer_head *__getblk(struct block_device *bdev,
 /**
  *  __bread() - reads a specified block and returns the bh
  *  @bdev: the block_device to read from
- *  @block: number of block
+ *  @block: number of block 需要读取的块号
  *  @size: size (in bytes) to read
  *
  *  Reads a specified block, and returns buffer head that contains it.
  *  The page cache is allocated from movable area so that it can be migrated.
  *  It returns NULL if the block was unreadable.
+ *
+ *  Block Read  - 通用块层提供的功能
  */
 static inline struct buffer_head *
 __bread(struct block_device *bdev, sector_t block, unsigned size)
 {
+    /**
+     *  
+     */
 	return __bread_gfp(bdev, block, size, __GFP_MOVABLE);
 }
 

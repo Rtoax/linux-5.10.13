@@ -5613,6 +5613,9 @@ static int btrfs_opendir(struct inode *inode, struct file *file)
 	return 0;
 }
 
+/**
+ *  
+ */
 struct dir_entry {
 	u64 ino;
 	u64 offset;

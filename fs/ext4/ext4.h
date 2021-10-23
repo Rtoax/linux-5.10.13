@@ -625,6 +625,9 @@ struct ext4_new_group_data {
 enum {
 	BLOCK_BITMAP = 0,	/* block bitmap */
 	INODE_BITMAP,		/* inode bitmap */
+	/**
+     *  
+     */
 	INODE_TABLE,		/* inode tables */
 	GROUP_TABLE_COUNT,
 };

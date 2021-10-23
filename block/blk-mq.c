@@ -396,6 +396,9 @@ retry:
 	return blk_mq_rq_ctx_init(data, tag, alloc_time_ns);
 }
 
+/**
+ *  申请一个 request 结构
+ */
 struct request *blk_mq_alloc_request(struct request_queue *q, unsigned int op,
 		blk_mq_req_flags_t flags)
 {
@@ -407,10 +410,16 @@ struct request *blk_mq_alloc_request(struct request_queue *q, unsigned int op,
 	struct request *rq;
 	int ret;
 
+    /**
+     *  
+     */
 	ret = blk_queue_enter(q, flags);
 	if (ret)
 		return ERR_PTR(ret);
 
+    /**
+     *  
+     */
 	rq = __blk_mq_alloc_request(&data);
 	if (!rq)
 		goto out_queue_exit;

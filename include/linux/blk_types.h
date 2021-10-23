@@ -19,6 +19,9 @@ struct cgroup_subsys_state;
 typedef void (bio_end_io_t) (struct bio *);
 struct bio_crypt_ctx;
 
+/**
+ *  
+ */
 struct block_device {   /* 块设备 */
 	dev_t			bd_dev;
 	int			bd_openers;

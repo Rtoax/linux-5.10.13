@@ -628,6 +628,9 @@ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
 static inline struct page *
 alloc_pages(gfp_t gfp_mask, unsigned int order)/* 分配 pages */
 {
+    /**
+     *  
+     */
 	return alloc_pages_current(gfp_mask, order);    /*  */
 }
 

@@ -14,6 +14,9 @@ void  mount_block_root(char *name, int flags);
 void  mount_root(void);
 extern int root_mountflags;
 
+/**
+ *  
+ */
 static inline __init int create_dev(char *name, dev_t dev)
 {
 	init_unlink(name);
@@ -26,10 +29,9 @@ int __init rd_load_disk(int n);
 int __init rd_load_image(char *from);
 
 #else
-
-static inline int rd_load_disk(int n) { return 0; }
-static inline int rd_load_image(char *from) { return 0; }
-
+/**
+ *  
+ */
 #endif
 
 #ifdef CONFIG_BLK_DEV_INITRD
@@ -37,7 +39,7 @@ static inline int rd_load_image(char *from) { return 0; }
 bool __init initrd_load(void);
 
 #else
-
-static inline bool initrd_load(void) { return false; }
-
+/**
+ *  
+ */
 #endif

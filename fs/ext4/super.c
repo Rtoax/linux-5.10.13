@@ -3465,6 +3465,9 @@ static int ext4_run_li_request(struct ext4_li_request *elr)
 
 	if (!ret) {
 		timeout = jiffies;
+        /**
+         *  
+         */
 		ret = ext4_init_inode_table(sb, group,
 					    elr->lr_timeout ? 0 : 1);
 		trace_ext4_lazy_itable_init(sb, group);

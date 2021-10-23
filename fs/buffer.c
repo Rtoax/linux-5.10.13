@@ -971,6 +971,9 @@ grow_dev_page(struct block_device *bdev, sector_t block,
 	 */
 	gfp_mask |= __GFP_NOFAIL;
 
+    /**
+     *  
+     */
 	page = find_or_create_page(inode->i_mapping, index, gfp_mask);
 
 	BUG_ON(!PageLocked(page));
@@ -1015,6 +1018,7 @@ failed:
  * that page was dirty, the buffers are set dirty also.
  *
  * 把 块设备缓冲区页 添加到 页高速缓存 中
+ *  这在获取块过程中，慢速路径会调用
  */
 static int
 grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
@@ -1041,10 +1045,15 @@ grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
 		return -EIO;
 	}
 
+    /**
+     *  
+     */
 	/* Create a page with the proper size buffers.. */
 	return grow_dev_page(bdev, block, index, size, sizebits, gfp);
 }
-
+/**
+ *  
+ */
 static struct buffer_head *
 __getblk_slow(struct block_device *bdev, sector_t block,
 	     unsigned size, gfp_t gfp)
@@ -1069,6 +1078,9 @@ __getblk_slow(struct block_device *bdev, sector_t block,
 		if (bh)
 			return bh;
 
+        /**
+         *  增大 缓存
+         */
 		ret = grow_buffers(bdev, block, size, gfp);
 		if (ret < 0)
 			return NULL;
@@ -1243,8 +1255,8 @@ static DEFINE_PER_CPU(struct bh_lru, bh_lrus) = {{ NULL }};
 #define bh_lru_lock()	local_irq_disable()
 #define bh_lru_unlock()	local_irq_enable()
 #else
-#define bh_lru_lock()	preempt_disable()
-#define bh_lru_unlock()	preempt_enable()
+//#define bh_lru_lock()	preempt_disable()
+//#define bh_lru_unlock()	preempt_enable()
 #endif
 
 static inline void check_irqs_on(void)
@@ -1323,6 +1335,9 @@ lookup_bh_lru(struct block_device *bdev, sector_t block, unsigned size)
 struct buffer_head *
 __find_get_block(struct block_device *bdev, sector_t block, unsigned size)
 {
+    /**
+     *  
+     */
 	struct buffer_head *bh = lookup_bh_lru(bdev, block, size);
 
 	if (bh == NULL) {
@@ -1349,10 +1364,20 @@ struct buffer_head *
 __getblk_gfp(struct block_device *bdev, sector_t block,
 	     unsigned size, gfp_t gfp)
 {
+    /**
+     *  先总从缓存中寻找块是否已经存在，
+     *  如果存在，直接返回指向块的指针
+     */
 	struct buffer_head *bh = __find_get_block(bdev, block, size);
 
 	might_sleep();
+    /**
+     *  如果不存在
+     */
 	if (bh == NULL)
+        /**
+         *  进入慢速路径
+         */
 		bh = __getblk_slow(bdev, block, size, gfp);
 	return bh;
 }
@@ -1398,6 +1423,9 @@ struct buffer_head *
 __bread_gfp(struct block_device *bdev, sector_t block,
 		   unsigned size, gfp_t gfp)
 {
+    /**
+     *  从 缓存中
+     */
 	struct buffer_head *bh = __getblk_gfp(bdev, block, size, gfp);
 
 	if (likely(bh) && !buffer_uptodate(bh))
@@ -3007,7 +3035,9 @@ static void end_bio_bh_io_sync(struct bio *bio)
 	bh->b_end_io(bh, !bio->bi_status);
 	bio_put(bio);
 }
-
+/**
+ *  
+ */
 static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 			 enum rw_hint write_hint, struct writeback_control *wbc)
 {
@@ -3025,6 +3055,9 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 	if (test_set_buffer_req(bh) && (op == REQ_OP_WRITE))
 		clear_buffer_write_io_error(bh);
 
+    /**
+     *  
+     */
 	bio = bio_alloc(GFP_NOIO, 1);
 
 	fscrypt_set_bio_crypt_ctx_bh(bio, bh, GFP_NOIO);
@@ -3033,6 +3066,9 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 	bio_set_dev(bio, bh->b_bdev);
 	bio->bi_write_hint = write_hint;
 
+    /**
+     *  
+     */
 	bio_add_page(bio, bh->b_page, bh->b_size, bh_offset(bh));
 	BUG_ON(bio->bi_iter.bi_size != bh->b_size);
 
@@ -3088,23 +3124,37 @@ EXPORT_SYMBOL(submit_bh);
  *
  * All of the buffers must be for the same device, and must also be a
  * multiple of the current approved size for the device.
+ *
+ * 从硬盘读取数据到块中  
  */
 void ll_rw_block(int op, int op_flags,  int nr, struct buffer_head *bhs[])
 {
 	int i;
 
+    /**
+     *  遍历所有 bhs
+     */
 	for (i = 0; i < nr; i++) {
 		struct buffer_head *bh = bhs[i];
 
 		if (!trylock_buffer(bh))
 			continue;
+        /**
+         *  写
+         */
 		if (op == WRITE) {
 			if (test_clear_buffer_dirty(bh)) {
 				bh->b_end_io = end_buffer_write_sync;
 				get_bh(bh);
+                /**
+                 *  
+                 */
 				submit_bh(op, op_flags, bh);
 				continue;
 			}
+        /**
+         *  读
+         */
 		} else {
 			if (!buffer_uptodate(bh)) {
 				bh->b_end_io = end_buffer_read_sync;
