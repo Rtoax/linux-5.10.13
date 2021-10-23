@@ -110,7 +110,9 @@ static ssize_t ext4_dax_read_iter(struct kiocb *iocb, struct iov_iter *to)
 	return ret;
 }
 #endif
-
+/**
+ *  
+ */
 static ssize_t ext4_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 {
 	struct inode *inode = file_inode(iocb->ki_filp);
@@ -128,6 +130,9 @@ static ssize_t ext4_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 	if (iocb->ki_flags & IOCB_DIRECT)
 		return ext4_dio_read_iter(iocb, to);
 
+    /**
+     *  
+     */
 	return generic_file_read_iter(iocb, to);
 }
 
@@ -736,7 +741,7 @@ static const struct vm_operations_struct ext4_dax_vm_ops = {
 	.pfn_mkwrite	= ext4_dax_fault,
 };
 #else
-#define ext4_dax_vm_ops	ext4_file_vm_ops
+//#define ext4_dax_vm_ops	ext4_file_vm_ops
 #endif
 
 static const struct vm_operations_struct ext4_file_vm_ops = {
@@ -890,6 +895,9 @@ loff_t ext4_llseek(struct file *file, loff_t offset, int whence)
 	return vfs_setpos(file, offset, maxbytes);
 }
 
+/**
+ *  
+ */
 const struct file_operations ext4_file_operations = {
 	.llseek		= ext4_llseek,
 	.read_iter	= ext4_file_read_iter,
@@ -909,7 +917,9 @@ const struct file_operations ext4_file_operations = {
 	.splice_write	= iter_file_splice_write,
 	.fallocate	= ext4_fallocate,
 };
-
+/**
+ *  
+ */
 const struct inode_operations ext4_file_inode_operations = {
 	.setattr	= ext4_setattr,
 	.getattr	= ext4_file_getattr,

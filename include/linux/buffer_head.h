@@ -82,6 +82,7 @@ struct buffer_head {    /* 块缓冲区首部 */
 	size_t               b_size;	    /* 块大小 size of mapping */
     /**
      *  存储数据的内存块
+     *  块和页面之间通过数据结构 buffer_head 的字段 b_data 关联
      */
 	char                *b_data;		/* 块在缓冲区页的位置 pointer to data within the page */
 
@@ -153,6 +154,228 @@ BUFFER_FNS(Unwritten, unwritten)
 BUFFER_FNS(Meta, meta)
 BUFFER_FNS(Prio, prio)
 BUFFER_FNS(Defer_Completion, defer_completion)
+
+/**
+ * 上面宏展开的结果 荣涛 2021年10月23日18:59:52
+ */
+#ifdef RTOAX_________________
+{}
+static __always_inline void set_buffer_uptodate(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Uptodate, &(bh)->b_state)) set_bit(BH_Uptodate, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_uptodate(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Uptodate, &(bh)->b_state); 
+}
+static __always_inline int buffer_uptodate(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Uptodate, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_dirty(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Dirty, &(bh)->b_state)) set_bit(BH_Dirty, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_dirty(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Dirty, &(bh)->b_state); 
+}
+static __always_inline int buffer_dirty(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Dirty, &(bh)->b_state); 
+}
+
+static __always_inline int test_set_buffer_dirty(struct buffer_head *bh) 
+{ 
+    return test_and_set_bit(BH_Dirty, &(bh)->b_state); 
+}
+static __always_inline int test_clear_buffer_dirty(struct buffer_head *bh) 
+{ 
+    return test_and_   clear_bit(BH_Dirty, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_locked(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Lock, &(bh)->b_state)) set_bit(BH_Lock, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_locked(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Lock, &(bh)->b_state); 
+}
+static __always_inline int buffer_locked(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Lock, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_req(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Req, &(bh)->b_state)) set_bit(BH_Req, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_req(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Req, &(bh)->b_state); 
+}
+static __always_inline int buffer_req(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Req, &(bh)->b_state); 
+}
+
+static __always_inline int test_set_buffer_req(struct buffer_head *bh) 
+{ 
+    return test_and_set_bit(BH_Req, &(bh)->b_state); 
+}
+static __always_inline int test_clear_buffer_req(struct buffer_head *bh) 
+{ 
+    return test_and_   clear_bit(BH_Req, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_mapped(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Mapped, &(bh)->b_state)) set_bit(BH_Mapped, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_mapped(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Mapped, &(bh)->b_state); 
+}
+static __always_inline int buffer_mapped(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Mapped, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_new(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_New, &(bh)->b_state)) set_bit(BH_New, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_new(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_New, &(bh)->b_state); 
+}
+static __always_inline int buffer_new(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_New, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_async_read(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Async_Read, &(bh)->b_state)) set_bit(BH_Async_Read, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_async_read(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Async_Read, &(bh)->b_state); 
+}
+static __always_inline int buffer_async_read(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Async_Read, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_async_write(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Async_Write, &(bh)->b_state)) set_bit(BH_Async_Write, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_async_write(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Async_Write, &(bh)->b_state); 
+}
+static __always_inline int buffer_async_write(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Async_Write, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_delay(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Delay, &(bh)->b_state)) set_bit(BH_Delay, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_delay(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Delay, &(bh)->b_state); 
+}
+static __always_inline int buffer_delay(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Delay, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_boundary(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Boundary, &(bh)->b_state)) set_bit(BH_Boundary, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_boundary(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Boundary, &(bh)->b_state); 
+}
+static __always_inline int buffer_boundary(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Boundary, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_write_io_error(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Write_EIO, &(bh)->b_state)) set_bit(BH_Write_EIO, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_write_io_error(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Write_EIO, &(bh)->b_state); 
+}
+static __always_inline int buffer_write_io_error(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Write_EIO, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_unwritten(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Unwritten, &(bh)->b_state)) set_bit(BH_Unwritten, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_unwritten(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Unwritten, &(bh)->b_state); 
+}
+static __always_inline int buffer_unwritten(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Unwritten, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_meta(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Meta, &(bh)->b_state)) set_bit(BH_Meta, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_meta(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Meta, &(bh)->b_state); 
+}
+static __always_inline int buffer_meta(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Meta, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_prio(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Prio, &(bh)->b_state)) set_bit(BH_Prio, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_prio(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Prio, &(bh)->b_state); 
+}
+static __always_inline int buffer_prio(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Prio, &(bh)->b_state); 
+}
+
+static __always_inline void set_buffer_defer_completion(struct buffer_head *bh) 
+{ 
+   if (!test_bit(BH_Defer_Completion, &(bh)->b_state)) set_bit(BH_Defer_Completion, &(bh)->b_state); 
+}
+static __always_inline void clear_buffer_defer_completion(struct buffer_head *bh) 
+{ 
+   clear_bit(BH_Defer_Completion, &(bh)->b_state); 
+}
+static __always_inline int buffer_defer_completion(const struct buffer_head *bh) 
+{ 
+    return test_bit(BH_Defer_Completion, &(bh)->b_state); 
+}
+
+
+
+#endif 
 
 #define bh_offset(bh)		((unsigned long)(bh)->b_data & ~PAGE_MASK)
 

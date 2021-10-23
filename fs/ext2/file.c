@@ -136,7 +136,7 @@ static int ext2_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return 0;
 }
 #else
-#define ext2_file_mmap	generic_file_mmap
+//#define ext2_file_mmap	generic_file_mmap
 #endif
 
 /*
@@ -184,7 +184,9 @@ static ssize_t ext2_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 #endif
 	return generic_file_write_iter(iocb, from);
 }
-
+/**
+ *  
+ */
 const struct file_operations ext2_file_operations = {
 	.llseek		= generic_file_llseek,
 	.read_iter	= ext2_file_read_iter,

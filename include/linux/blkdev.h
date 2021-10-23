@@ -144,6 +144,14 @@ struct request {
      */
 	sector_t __sector;		/* sector cursor */
 
+    /**
+     *  linux最初使用 buffer_head 作为基本的IO单元，但是随着 rawIO directIO
+     *  的出现，尤其是后来又出现了LVM、MD、RAID，设置是基于网络的跨设备，
+     *  这时，linux需要一个更加灵活的IO数据结构，可以在这些负载的块设备的不同
+     *  层次之间传递、分割、合并IO数据等。所以，bio被引入。
+     *
+     *  bio 表示一段连续的扇区 
+     */
 	struct bio *bio;
 	struct bio *biotail;
 
@@ -248,6 +256,7 @@ struct request {
 	rq_end_io_fn *end_io;
 	void *end_io_data;
 };
+typedef struct request * request_t;//+++
 
 static inline bool blk_op_is_scsi(unsigned int op)
 {

@@ -68,6 +68,9 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, uns
 			return ERR_PTR(res);
 		inode = NULL;
 	} else {
+        /**
+         *  根据 ino 号获取 inode 结构
+         */
 		inode = ext2_iget(dir->i_sb, ino);
 		if (inode == ERR_PTR(-ESTALE)) {
 			ext2_error(dir->i_sb, __func__,
@@ -100,7 +103,7 @@ struct dentry *ext2_get_parent(struct dentry *child)
  * If the create succeeds, we fill in the inode information
  * with d_instantiate(). 
  */
-static int ext2_create (struct inode * dir, struct dentry * dentry, umode_t mode, bool excl)
+static int ext2_create(struct inode * dir, struct dentry * dentry, umode_t mode, bool excl)
 {
 	struct inode *inode;
 	int err;
@@ -113,6 +116,9 @@ static int ext2_create (struct inode * dir, struct dentry * dentry, umode_t mode
 	if (IS_ERR(inode))
 		return PTR_ERR(inode);
 
+    /**
+     *  设置 ops
+     */
 	ext2_set_file_ops(inode);
 	mark_inode_dirty(inode);
 	return ext2_add_nondir(dentry, inode);
@@ -410,6 +416,9 @@ out:
 	return err;
 }
 
+/**
+ *  
+ */
 const struct inode_operations ext2_dir_inode_operations = {
 	.create		= ext2_create,
 	.lookup		= ext2_lookup,
@@ -428,6 +437,9 @@ const struct inode_operations ext2_dir_inode_operations = {
 	.tmpfile	= ext2_tmpfile,
 };
 
+/**
+ *  
+ */
 const struct inode_operations ext2_special_inode_operations = {
 	.listxattr	= ext2_listxattr,
 	.getattr	= ext2_getattr,

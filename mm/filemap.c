@@ -1837,6 +1837,9 @@ struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 	struct page *page;
 
 repeat:
+    /**
+     *  
+     */
 	page = find_get_entry(mapping, index);
 	if (xa_is_value(page))
 		page = NULL;
@@ -2235,8 +2238,17 @@ static void shrink_readahead_size_eio(struct file_ra_state *ra)
 ssize_t generic_file_buffered_read(struct kiocb *iocb,
 		struct iov_iter *iter, ssize_t written)
 {
+    /**
+     *  
+     */
 	struct file *filp = iocb->ki_filp;
+    /**
+     *  获取缓冲
+     */
 	struct address_space *mapping = filp->f_mapping;
+    /**
+     *  获取 inode
+     */
 	struct inode *inode = mapping->host;
 	struct file_ra_state *ra = &filp->f_ra;
 	loff_t *ppos = &iocb->ki_pos;
@@ -2265,6 +2277,9 @@ ssize_t generic_file_buffered_read(struct kiocb *iocb,
 	if (written && (iocb->ki_flags & IOCB_WAITQ))
 		iocb->ki_flags |= IOCB_NOWAIT;
 
+    /**
+     *  
+     */
 	for (;;) {
 		struct page *page;
 		pgoff_t end_index;
@@ -2278,6 +2293,9 @@ find_page:
 			goto out;
 		}
 
+        /**
+         *  
+         */
 		page = find_get_page(mapping, index);
 		if (!page) {
 			if (iocb->ki_flags & IOCB_NOIO)
@@ -2566,6 +2584,9 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 		size = i_size_read(inode);
 		if (iocb->ki_flags & IOCB_NOWAIT) {
+            /**
+             *  
+             */
 			if (filemap_range_has_page(mapping, iocb->ki_pos,
 						   iocb->ki_pos + count - 1))
 				return -EAGAIN;
@@ -2579,6 +2600,9 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 		file_accessed(file);
 
+        /**
+         *  
+         */
 		retval = mapping->a_ops->direct_IO(iocb, iter);
 		if (retval >= 0) {
 			iocb->ki_pos += retval;
@@ -2600,6 +2624,9 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 			goto out;
 	}
 
+    /**
+     *  
+     */
 	retval = generic_file_buffered_read(iocb, iter, retval);
 out:
 	return retval;

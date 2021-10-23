@@ -228,6 +228,9 @@ static struct bio *do_mpage_readpage(struct mpage_readpage_args *args)
 
 		if (block_in_file < last_block) {
 			map_bh->b_size = (last_block-block_in_file) << blkbits;
+            /**
+             *  
+             */
 			if (args->get_block(inode, block_in_file, map_bh, 0))
 				goto confused;
 			args->first_logical_block = block_in_file;
@@ -407,6 +410,9 @@ int mpage_readpage(struct page *page, get_block_t get_block)
 		.get_block = get_block,
 	};
 
+    /**
+     *  
+     */
 	args.bio = do_mpage_readpage(&args);
 	if (args.bio)
 		mpage_bio_submit(REQ_OP_READ, 0, args.bio);

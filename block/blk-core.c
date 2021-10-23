@@ -928,12 +928,18 @@ end_io:
 
 static blk_qc_t __submit_bio(struct bio *bio)
 {
+    /**
+     *  获取磁盘设备
+     */
 	struct gendisk *disk = bio->bi_disk;
 	blk_qc_t ret = BLK_QC_T_NONE;
 
 	if (blk_crypto_bio_prep(&bio)) {
 		if (!disk->fops->submit_bio)
 			return blk_mq_submit_bio(bio);
+        /**
+         *  调用提交bio 函数
+         */
 		ret = disk->fops->submit_bio(bio);
 	}
 	blk_queue_exit(disk->queue);
@@ -969,6 +975,9 @@ static blk_qc_t __submit_bio_noacct(struct bio *bio)
 	bio_list_init(&bio_list_on_stack[0]);
 	current->bio_list = bio_list_on_stack;
 
+    /**
+     *  提交
+     */
 	do {
 		struct request_queue *q = bio->bi_disk->queue;
 		struct bio_list lower, same;
@@ -982,6 +991,9 @@ static blk_qc_t __submit_bio_noacct(struct bio *bio)
 		bio_list_on_stack[1] = bio_list_on_stack[0];
 		bio_list_init(&bio_list_on_stack[0]);
 
+        /**
+         *  提交
+         */
 		ret = __submit_bio(bio);
 
 		/*
@@ -1061,6 +1073,9 @@ blk_qc_t submit_bio_noacct(struct bio *bio)
 
 	if (!bio->bi_disk->fops->submit_bio)
 		return __submit_bio_noacct_mq(bio);
+    /**
+     *  提交
+     */
 	return __submit_bio_noacct(bio);
 }
 EXPORT_SYMBOL(submit_bio_noacct);
@@ -1095,8 +1110,14 @@ blk_qc_t submit_bio(struct bio *bio)
 		else
 			count = bio_sectors(bio);
 
+        /**
+         *  写
+         */
 		if (op_is_write(bio_op(bio))) {
 			count_vm_events(PGPGOUT, count);
+        /**
+         *  读
+         */
 		} else {
 			task_io_account_read(bio->bi_iter.bi_size);
 			count_vm_events(PGPGIN, count);
@@ -1130,6 +1151,9 @@ blk_qc_t submit_bio(struct bio *bio)
 		return ret;
 	}
 
+    /**
+     *  提交
+     */
 	return submit_bio_noacct(bio);
 }
 EXPORT_SYMBOL(submit_bio);

@@ -342,7 +342,9 @@ static const struct quotactl_ops ext2_quotactl_ops = {
 	.get_nextdqblk	= dquot_get_next_dqblk,
 };
 #endif
-
+/**
+ *  
+ */
 static const struct super_operations ext2_sops = {
 	.alloc_inode	= ext2_alloc_inode,
 	.free_inode	= ext2_free_in_core_inode,

@@ -86,10 +86,13 @@ extern int sysctl_protected_regular;
 
 typedef __kernel_rwf_t rwf_t;
 
+/**
+ *  add * for 回调函数
+ */
 struct buffer_head;
-typedef int (get_block_t)(struct inode *inode, sector_t iblock,
+typedef int (*get_block_t)(struct inode *inode, sector_t iblock,
 			struct buffer_head *bh_result, int create);
-typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
+typedef int (*dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 			ssize_t bytes, void *private);
 
 #define MAY_EXEC		0x00000001
@@ -1047,9 +1050,13 @@ struct file {   /*  */
 #endif /* #ifdef CONFIG_EPOLL */
 
     /**
-     *  
+     *  文件缓存
      */
 	struct address_space	*f_mapping; /* 文件缓存 */
+
+    /**
+     *  
+     */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
 } __randomize_layout
@@ -2022,6 +2029,9 @@ extern loff_t vfs_dedupe_file_range_one(struct file *src_file, loff_t src_pos,
 typedef struct inode * pinode_t;
 typedef struct dquot ** ppdquot_t;
 
+/**
+ *  
+ */
 struct super_operations {   /* 超级块操作符 */
    	pinode_t (*alloc_inode)(struct super_block *sb);
 	void (*destroy_inode)(struct inode *);

@@ -1107,7 +1107,9 @@ bool blk_mq_sched_try_merge(struct request_queue *q, struct bio *bio,
 		unsigned int nr_segs, struct request **merged_request)
 {
 	struct request *rq;
-
+    /**
+     *  
+     */
 	switch (elv_merge(q, &rq, bio)) {
 	case ELEVATOR_BACK_MERGE:
 		if (!blk_mq_sched_allow_merge(q, rq, bio))

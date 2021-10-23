@@ -165,12 +165,19 @@ static int ext2_block_to_path(struct inode *inode,
 {
 	int ptrs = EXT2_ADDR_PER_BLOCK(inode->i_sb);
 	int ptrs_bits = EXT2_ADDR_PER_BLOCK_BITS(inode->i_sb);
+
+    /**
+     *  
+     */
 	const long direct_blocks = EXT2_NDIR_BLOCKS,
 		indirect_blocks = ptrs,
 		double_blocks = (1 << (ptrs_bits * 2));
 	int n = 0;
 	int final = 0;
 
+    /**
+     *  
+     */
 	if (i_block < 0) {
 		ext2_msg(inode->i_sb, KERN_WARNING,
 			"warning: %s: block < 0", __func__);
@@ -636,6 +643,9 @@ static int ext2_get_blocks(struct inode *inode,
 
 	BUG_ON(maxblocks == 0);
 
+    /**
+     *  
+     */
 	depth = ext2_block_to_path(inode,iblock,offsets,&blocks_to_boundary);
 
 	if (depth == 0)
@@ -726,7 +736,9 @@ static int ext2_get_blocks(struct inode *inode,
 					maxblocks, blocks_to_boundary);
 	/*
 	 * XXX ???? Block out ext2_truncate while we alter the tree
-	 */
+	 *//**
+     *  
+     */
 	err = ext2_alloc_branch(inode, indirect_blks, &count, goal,
 				offsets + (partial - chain), partial);
 
@@ -775,7 +787,10 @@ cleanup:
 		*bno = le32_to_cpu(chain[depth-1].key);
 	return err;
 }
-
+               
+/**
+ *  ext2 文件系统从 硬盘读取一个页面到 page cache 
+ */
 int ext2_get_block(struct inode *inode, sector_t iblock,
 		struct buffer_head *bh_result, int create)
 {
@@ -784,6 +799,9 @@ int ext2_get_block(struct inode *inode, sector_t iblock,
 	u32 bno;
 	int ret;
 
+    /**
+     *  
+     */
 	ret = ext2_get_blocks(inode, iblock, max_blocks, &bno, &new, &boundary,
 			create);
 	if (ret <= 0)
@@ -869,8 +887,14 @@ static int ext2_writepage(struct page *page, struct writeback_control *wbc)
 	return block_write_full_page(page, ext2_get_block, wbc);
 }
 
+/**
+ *  ext2 文件系统从 硬盘读取一个页面到 page cache 
+ */
 static int ext2_readpage(struct file *file, struct page *page)
 {
+    /**
+     *  
+     */
 	return mpage_readpage(page, ext2_get_block);
 }
 
@@ -924,7 +948,9 @@ static int ext2_nobh_writepage(struct page *page,
 {
 	return nobh_writepage(page, ext2_get_block, wbc);
 }
-
+/**
+ *  
+ */
 static sector_t ext2_bmap(struct address_space *mapping, sector_t block)
 {
 	return generic_block_bmap(mapping,block,ext2_get_block);
@@ -1386,6 +1412,9 @@ void ext2_set_inode_flags(struct inode *inode)
 
 void ext2_set_file_ops(struct inode *inode)
 {
+    /**
+     *  
+     */
 	inode->i_op = &ext2_file_inode_operations;
 	inode->i_fop = &ext2_file_operations;
 	if (IS_DAX(inode))
@@ -1396,6 +1425,9 @@ void ext2_set_file_ops(struct inode *inode)
 		inode->i_mapping->a_ops = &ext2_aops;
 }
 
+/**
+ *  
+ */
 struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
 {
 	struct ext2_inode_info *ei;
@@ -1407,6 +1439,9 @@ struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
 	uid_t i_uid;
 	gid_t i_gid;
 
+    /**
+     *  
+     */
 	inode = iget_locked(sb, ino);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
@@ -1489,6 +1524,9 @@ struct inode *ext2_iget (struct super_block *sb, unsigned long ino)
 	if (S_ISREG(inode->i_mode)) {
 		ext2_set_file_ops(inode);
 	} else if (S_ISDIR(inode->i_mode)) {
+	    /**
+         *  
+         */
 		inode->i_op = &ext2_dir_inode_operations;
 		inode->i_fop = &ext2_dir_operations;
 		if (test_opt(inode->i_sb, NOBH))

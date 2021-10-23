@@ -1699,14 +1699,24 @@ static inline int block_size_bits(unsigned int blocksize)
 {
 	return ilog2(blocksize);
 }
-
-static struct buffer_head *create_page_buffers(struct page *page, struct inode *inode, unsigned int b_state)
+/**
+ *  
+ */
+static struct buffer_head *create_page_buffers(struct page *page, 
+            struct inode *inode, unsigned int b_state)
 {
 	BUG_ON(!PageLocked(page));
 
+    /**
+     *  
+     */
 	if (!page_has_buffers(page))
 		create_empty_buffers(page, 1 << READ_ONCE(inode->i_blkbits),
 				     b_state);
+
+    /**
+     *  创建缓存
+     */                 
 	return page_buffers(page);
 }
 
@@ -2288,6 +2298,9 @@ EXPORT_SYMBOL(block_is_partially_uptodate);
  */
 int block_read_full_page(struct page *page, get_block_t *get_block)
 {
+    /**
+     *  
+     */
 	struct inode *inode = page->mapping->host;
 	sector_t iblock, lblock;
 	struct buffer_head *bh, *head, *arr[MAX_BUF_PER_PAGE];
@@ -2295,6 +2308,9 @@ int block_read_full_page(struct page *page, get_block_t *get_block)
 	int nr, i;
 	int fully_mapped = 1;
 
+    /**
+     *  
+     */
 	head = create_page_buffers(page, inode, 0);
 	blocksize = head->b_size;
 	bbits = block_size_bits(blocksize);
@@ -3056,7 +3072,7 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 		clear_buffer_write_io_error(bh);
 
     /**
-     *  
+     *  分配一个 bio
      */
 	bio = bio_alloc(GFP_NOIO, 1);
 
@@ -3067,7 +3083,7 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 	bio->bi_write_hint = write_hint;
 
     /**
-     *  
+     *  添加一个page 到 bio
      */
 	bio_add_page(bio, bh->b_page, bh->b_size, bh_offset(bh));
 	BUG_ON(bio->bi_iter.bi_size != bh->b_size);
@@ -3075,6 +3091,9 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 	bio->bi_end_io = end_bio_bh_io_sync;
 	bio->bi_private = bh;
 
+    /**
+     *  
+     */
 	if (buffer_meta(bh))
 		op_flags |= REQ_META;
 	if (buffer_prio(bh))
@@ -3089,10 +3108,16 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
 		wbc_account_cgroup_owner(wbc, bh->b_page, bh->b_size);
 	}
 
+    /**
+     *  提交一个 bio
+     */
 	submit_bio(bio);
 	return 0;
 }
 
+/**
+ *  
+ */
 int submit_bh(int op, int op_flags, struct buffer_head *bh)
 {
 	return submit_bh_wbc(op, op_flags, bh, 0, NULL);

@@ -27,6 +27,8 @@ struct page;
  *   nth_page(@bv_page, n) == @bv_page + n
  *
  * This holds because page_is_mergeable() checks the above property.
+ *
+ *  存储多个不连续的内存段
  */
 struct bio_vec {
 	struct page	*bv_page;
@@ -35,6 +37,9 @@ struct bio_vec {
 };
 
 struct bvec_iter {
+    /**
+     *  扇区号
+     */
 	sector_t		bi_sector;	/* device address in 512 byte
 						   sectors */
 	unsigned int		bi_size;	/* residual I/O count */
