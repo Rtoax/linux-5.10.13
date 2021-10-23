@@ -200,6 +200,9 @@ static const struct virtio_device_id id_table[] = {
 	{ 0 },
 };
 
+/**
+ *  virtio 熵设备为访客使用提供高质量的随机性。
+ */
 static struct virtio_driver virtio_rng_driver = {
 	.driver.name =	KBUILD_MODNAME,
 	.driver.owner =	THIS_MODULE,

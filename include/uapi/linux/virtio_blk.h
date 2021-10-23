@@ -55,6 +55,9 @@
 
 #define VIRTIO_BLK_ID_BYTES	20	/* ID string length */
 
+/**
+ *  virtio 块设备是一个简单的虚拟块设备（即磁盘）
+ */
 struct virtio_blk_config {
 	/* The capacity (in 512-byte sectors). */
 	__virtio64 capacity;

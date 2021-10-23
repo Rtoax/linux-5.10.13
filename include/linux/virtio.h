@@ -23,14 +23,39 @@
  * A note on @num_free: with indirect buffers, each buffer needs one
  * element in the queue, otherwise a buffer will need one element per
  * sg element.
+ *
+ * struct vring_virtqueue;
+ * 
  */
 struct virtqueue {  /* virtio 队列 */
+    /**
+     *  这个设备的 virtqueues 的链表
+     */
 	struct list_head list;
+    /**
+     *  当buffers 被消费，这个函数将被调用
+     */
 	void (*callback)(struct virtqueue *vq);
+    /**
+     *  这个 virtqueue 的名称
+     */
 	const char *name;
+    /**
+     *  virtio 设备
+     */
 	struct virtio_device *vdev;
+    /**
+     *  从0开始的 索引
+     */
 	unsigned int index;
+    
+    /**
+     *  期望能匹配的 元素个数
+     */
 	unsigned int num_free;
+    /**
+     *  要使用的 virtqueue 实现的指针。 
+     */
 	void *priv;
 };
 typedef struct virtqueue * virtqueue_t;//+++
@@ -104,14 +129,28 @@ dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq);
  * @vqs: the list of virtqueues for this device.
  * @features: the features supported by both driver and device.
  * @priv: private pointer for the driver's use.
+ *
+ * 一个使用 virtio 的设备  
  */
 struct virtio_device {  /*  */
+    /**
+     *  在 virtio bus总线上的唯一位置
+     */
 	int index;
+    /**
+     *  
+     */
 	bool failed;
 	bool config_enabled;
 	bool config_change_pending;
 	spinlock_t config_lock;
+    /**
+     *  底层设备
+     */
 	struct device dev;
+    /**
+     *  设备标识
+     */
 	struct virtio_device_id id; /* 设备，厂商 */
 	const struct virtio_config_ops *config; /* 配置 virtio 的操作 */
 	const struct vringh_config_ops *vringh_config;  /* host VRing */

@@ -59,6 +59,11 @@ enum virtio_balloon_config_read {
 	VIRTIO_BALLOON_CONFIG_READ_CMD_ID = 0,
 };
 
+/**
+ *  virtio 内存气球设备是用于管理客户内存的原始设备
+ *  它允许来宾适应底层物理内存容量的变化。
+ *  该设备还可用于将客户内存统计信息传达给主机。
+ */
 struct virtio_balloon {
 	struct virtio_device *vdev;
 	struct virtqueue *inflate_vq, *deflate_vq, *stats_vq, *free_page_vq;

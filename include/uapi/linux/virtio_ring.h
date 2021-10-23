@@ -94,6 +94,9 @@
 #define VRING_DESC_ALIGN_SIZE 16
 
 /* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
+/**
+ *  
+ */
 struct vring_desc {
 	/* Address (guest-physical). */
 	__virtio64 addr;
@@ -104,7 +107,9 @@ struct vring_desc {
 	/* We chain unused descriptors via this, too */
 	__virtio16 next;
 };
-
+/**
+ *  
+ */
 struct vring_avail {
 	__virtio16 flags;
 	__virtio16 idx;
@@ -122,6 +127,9 @@ struct vring_used_elem {
 typedef struct vring_used_elem __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_elem_t;
 
+/**
+ *  
+ */
 struct vring_used {
 	__virtio16 flags;
 	__virtio16 idx;
@@ -149,6 +157,9 @@ typedef struct vring_avail __attribute__((aligned(VRING_AVAIL_ALIGN_SIZE)))
 typedef struct vring_used __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_t;
 
+/**
+ *  
+ */
 struct vring {
 	unsigned int num;
 

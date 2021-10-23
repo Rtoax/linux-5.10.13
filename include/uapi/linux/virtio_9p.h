@@ -34,6 +34,9 @@
 /* The mount point is specified in a config variable */
 #define VIRTIO_9P_MOUNT_TAG 0
 
+/**
+ *  该设备用作 9p 文件系统的传输层。
+ */
 struct virtio_9p_config {
 	/* length of the tag name */
 	__virtio16 tag_len;

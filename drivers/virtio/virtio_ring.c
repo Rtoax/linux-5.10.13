@@ -84,6 +84,9 @@ struct vring_desc_extra_packed {
 	u16 flags;			/* Descriptor flags. */
 };
 
+/**
+ *  
+ */
 struct vring_virtqueue {
 	struct virtqueue vq;
 

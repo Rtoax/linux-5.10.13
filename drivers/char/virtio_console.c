@@ -2222,6 +2222,12 @@ static struct virtio_driver virtio_console = {
 #endif
 };
 
+/**
+ *  virtio 控制台设备是一个简单的数据输入和输出设备。
+ *  一台设备可能有一个或多个端口。
+ *  每个端口都有一对输入和输出虚拟队列。
+ *  此外，设备具有一对控制 IO virtqueue。
+ */
 static struct virtio_driver virtio_rproc_serial = {
 	.feature_table = rproc_serial_features,
 	.feature_table_size = ARRAY_SIZE(rproc_serial_features),
