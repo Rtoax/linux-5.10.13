@@ -7685,15 +7685,24 @@ static int kvm_fast_pio_in(struct kvm_vcpu *vcpu, int size,
 	unsigned long val;
 	int ret;
 
+    /**
+     *  
+     */
 	/* For size less than 4 we merge, else we zero extend */
 	val = (size < 4) ? kvm_rax_read(vcpu) : 0;
 
+    /**
+     *  
+     */
 	ret = emulator_pio_in(vcpu, size, port, &val, 1);
 	if (ret) {
 		kvm_rax_write(vcpu, val);
 		return ret;
 	}
 
+    /**
+     *  
+     */
 	vcpu->arch.pio.linear_rip = kvm_get_linear_rip(vcpu);
 	vcpu->arch.complete_userspace_io = complete_fast_pio_in;
 
@@ -7707,10 +7716,17 @@ int kvm_fast_pio(struct kvm_vcpu *vcpu, int size, unsigned short port, int in)
 {
 	int ret;
 
+    /**
+     *  输入还是输出
+     */
 	if (in)
 		ret = kvm_fast_pio_in(vcpu, size, port);
 	else
 		ret = kvm_fast_pio_out(vcpu, size, port);
+
+    /**
+     *  
+     */
 	return ret && kvm_skip_emulated_instruction(vcpu);
 }
 EXPORT_SYMBOL_GPL(kvm_fast_pio);

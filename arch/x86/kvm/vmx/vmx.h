@@ -205,6 +205,12 @@ struct vcpu_vmx {
      *  
      *  可能会保存缺页异常的地址 cr2
      *
+     *  深度探索Linux系统虚拟化 P170 见`handle_io()`
+     *  ---------------------
+     *  0-2 表示读写数据的宽度，0-1字节，1-2字节，3-4字节
+     *  3   表示读还是写
+     *  4   是普通的IO还是 stringIO
+     *  16-31   访问的IO地址
      */
 	unsigned long         exit_qualification;
 	u32                   exit_intr_info;
@@ -458,7 +464,14 @@ static inline unsigned long vmx_get_exit_qual(struct kvm_vcpu *vcpu)
      *      11:8 - 写入时的源操作数，读取时为目的操作数(0-rax,1-rcx,2-rdx,3-rbx,...)
      *  
      *  可能会保存缺页异常的地址 cr2
-     *
+     *      
+     *  深度探索Linux系统虚拟化 P170
+     *  ---------------------
+     *  0-2 表示读写数据的宽度，0-1字节，1-2字节，3-4字节
+     *  3   表示读还是写
+     *  4   是普通的IO还是 stringIO
+     *  16-31   访问的IO地址
+     *  
      */
 	return vmx->exit_qualification;
 }

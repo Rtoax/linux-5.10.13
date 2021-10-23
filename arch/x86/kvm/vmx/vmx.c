@@ -5079,7 +5079,7 @@ static int handle_triple_fault(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *  Guest 发生 IO 导致 VM exit 
  */
 static int handle_io(struct kvm_vcpu *vcpu)
 {
@@ -5087,6 +5087,9 @@ static int handle_io(struct kvm_vcpu *vcpu)
 	int size, in, string;
 	unsigned port;
 
+    /**
+     *  读取字段
+     */
 	exit_qualification = vmx_get_exit_qual(vcpu);
 	string = (exit_qualification & 16) != 0;
 
@@ -5098,6 +5101,15 @@ static int handle_io(struct kvm_vcpu *vcpu)
 	if (string)
 		return kvm_emulate_instruction(vcpu, 0);
 
+    /**
+     *  深度探索Linux系统虚拟化 P170
+     *  ---------------------
+     *  0-2 表示读写数据的宽度，0-1字节，1-2字节，3-4字节
+     *  3   表示读还是写
+     *  4   是普通的IO还是 stringIO
+     *  16-31   访问的IO地址
+     *  
+     */
 	port = exit_qualification >> 16;
 	size = (exit_qualification & 7) + 1;
 	in = (exit_qualification & 8) != 0;
@@ -5916,6 +5928,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_EXTERNAL_INTERRUPT]      = handle_external_interrupt,
 	[EXIT_REASON_TRIPLE_FAULT]            = handle_triple_fault,
 	[EXIT_REASON_NMI_WINDOW]	      = handle_nmi_window,
+	/**
+	 *  Guest 发生 IO 导致 VM exit 
+	 */
 	[EXIT_REASON_IO_INSTRUCTION]          = handle_io,
 	[EXIT_REASON_CR_ACCESS]               = handle_cr,
 	[EXIT_REASON_DR_ACCESS]               = handle_dr,

@@ -22,6 +22,11 @@ extern unsigned int cached_irq_mask;
 
 /* i8259A PIC related value */
 #define PIC_CASCADE_IR		2
+/**
+ *  ICW - Initialization Command Word 初始化命令字
+ *      用于初始化 8259A芯片
+ *  OCW - OperationCommand Word 操作命令字
+ */
 #define MASTER_ICW4_DEFAULT	0x01
 #define SLAVE_ICW4_DEFAULT	0x01
 #define PIC_ICW4_AEOI		2

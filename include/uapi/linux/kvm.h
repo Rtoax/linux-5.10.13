@@ -151,6 +151,7 @@ struct kvm_userspace_memory_region {
 /**
  *  for KVM_IRQ_LINE 
  *  管脚号 和 管脚电平信息
+ *  承载模拟设备和模拟中断芯片之间的中断信息的传递
  */
 struct kvm_irq_level {
 	/*
@@ -164,6 +165,9 @@ struct kvm_irq_level {
     	 *  管脚号
     	 */
 		__u32 irq;
+        /**
+    	 *  中断注入状态
+    	 */
 		__s32 status;
 	};
     /**
@@ -360,14 +364,30 @@ struct kvm_run {
 			__u32 exception;
 			__u32 error_code;
 		} ex;
+
+        /**
+         *  
+         */
 		/* KVM_EXIT_IO */
 		struct {
 #define KVM_EXIT_IO_IN  0
 #define KVM_EXIT_IO_OUT 1
+            /**
+             *  表示读写
+             */
 			__u8 direction;
+            /**
+             *  读写宽度 1,2,4字节
+             */
 			__u8 size; /* bytes */
 			__u16 port;
 			__u32 count;
+            /**
+             *  深入探索Linux虚拟化 P172
+             *  run_size = ioctl(kvm_fd, KVM_GET_VCPU_MAP_SIZE, 0)
+             *  vcpu->run = mmap(...,)
+             *  void *data = vcpu->run + vcpu->run->data_offset
+             */
 			__u64 data_offset; /* relative to kvm_run start */
 		} io;
 		/* KVM_EXIT_DEBUG */
@@ -1387,6 +1407,9 @@ struct kvm_s390_ucas_mapping {
 #define KVM_S390_VCPU_FAULT	 _IOW(KVMIO, 0x52, unsigned long)
 
 /* Device model IOC */
+/**
+ *  
+ */
 #define KVM_CREATE_IRQCHIP        _IO(KVMIO,   0x60)
 #define KVM_IRQ_LINE              _IOW(KVMIO,  0x61, struct kvm_irq_level)
 #define KVM_GET_IRQCHIP           _IOWR(KVMIO, 0x62, struct kvm_irqchip)
