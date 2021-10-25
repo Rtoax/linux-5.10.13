@@ -233,6 +233,16 @@ static inline int kexec_load_check(unsigned long nr_segments,
 	return 0;
 }
 
+/**
+ *	long kexec_load(unsigned long entry, unsigned long nr_segments,
+ *	               struct kexec_segment *segments, unsigned long flags);
+ *
+ *  long kexec_file_load(int kernel_fd, int initrd_fd,
+ *                       unsigned long cmdline_len, const char *cmdline,
+ *                       unsigned long flags);
+ */
+long kexec_load(unsigned long entry, unsigned long nr_segments,
+				struct kexec_segment *segments, unsigned long flags);
 SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
 		struct kexec_segment __user *, segments, unsigned long, flags)
 {
