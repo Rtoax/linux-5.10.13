@@ -1309,6 +1309,9 @@ struct task_struct {    /* PCB */
 	struct files_struct		*files;/* 打开的文件 */
 
 #ifdef CONFIG_IO_URING
+    /**
+     *  io_uring_setup(2)
+     */
 	struct io_uring_task		*io_uring;  /* AIO 异步IO */
 #endif
 
@@ -1331,6 +1334,9 @@ struct task_struct {    /* PCB */
 	size_t				sas_ss_size;
 	unsigned int			sas_ss_flags;
 
+    /**
+     *  
+     */
 	struct callback_head		*task_works;
 
 #ifdef CONFIG_AUDIT

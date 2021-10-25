@@ -22,6 +22,9 @@ struct io_identity {    /*  */
 	refcount_t			count;
 };
 
+/**
+ *  struct task_struct.io_uring
+ */
 struct io_uring_task {  /*  */
 	/* submission side */
 	struct xarray		xa;

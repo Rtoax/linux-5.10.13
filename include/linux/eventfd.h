@@ -55,33 +55,9 @@ static inline bool eventfd_signal_count(void)
  * Ugly ugly ugly error layer to support modules that uses eventfd but
  * pretend to work in !CONFIG_EVENTFD configurations. Namely, AIO.
  */
-
-static inline struct eventfd_ctx *eventfd_ctx_fdget(int fd)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline int eventfd_signal(struct eventfd_ctx *ctx, int n)
-{
-	return -ENOSYS;
-}
-
-static inline void eventfd_ctx_put(struct eventfd_ctx *ctx)
-{
-
-}
-
-static inline int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx,
-						wait_queue_entry_t *wait, __u64 *cnt)
-{
-	return -ENOSYS;
-}
-
-static inline bool eventfd_signal_count(void)
-{
-	return false;
-}
-
+    /**
+         *  
+         */
 #endif
 
 #endif /* _LINUX_EVENTFD_H */
