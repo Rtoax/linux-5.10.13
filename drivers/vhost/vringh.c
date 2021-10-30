@@ -909,6 +909,9 @@ int vringh_init_kern(struct vringh *vrh, u64 features,
 	vrh->last_avail_idx = 0;
 	vrh->last_used_idx = 0;
 	vrh->vring.num = num;
+    /**
+     *  三个描述符
+     */
 	vrh->vring.desc = desc;
 	vrh->vring.avail = avail;
 	vrh->vring.used = used;
@@ -1252,6 +1255,9 @@ int vringh_init_iotlb(struct vringh *vrh, u64 features,
 		      struct vring_avail *avail,
 		      struct vring_used *used)
 {
+    /**
+     *  
+     */
 	return vringh_init_kern(vrh, features, num, weak_barriers,
 				desc, avail, used);
 }

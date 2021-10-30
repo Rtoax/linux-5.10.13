@@ -37,6 +37,9 @@
 #include <linux/types.h>
 #include <linux/virtio_types.h>
 
+/**
+ *  struct vring_desc.flags
+ */
 /* This marks a buffer as continuing via the next field. */
 #define VRING_DESC_F_NEXT	1
 /* This marks a buffer as write-only (otherwise read-only). */
@@ -98,21 +101,46 @@
  *  
  */
 struct vring_desc {
+    /**
+     *  指向存储数据的存储块的首地址
+     *  填充时，需要将 GVA 转化为 GPA
+     */
 	/* Address (guest-physical). */
 	__virtio64 addr;
 	/* Length. */
 	__virtio32 len;
+
+    /**
+     *  属性，如 `VRING_DESC_F_WRITE`
+     */
 	/* The flags as indicated above. */
 	__virtio16 flags;
+
+    /**
+     *  如果 flags 标志有 `VRING_DESC_F_NEXT`, 则该字段有效
+     */
 	/* We chain unused descriptors via this, too */
 	__virtio16 next;
 };
 /**
- *  
+ *  可用描述符区域
+ *  在 CPU 从 guest 切换到 host模式后，模拟设备将检查可用描述符区域，
+ *  如果有可用的描述符，就一次进行消费
  */
 struct vring_avail {
+    /**
+     *  
+     */
 	__virtio16 flags;
+    /**
+     *  记录 ring 中的位置
+     */
 	__virtio16 idx;
+    /**
+     *  驱动每次将IO request 转换为一个可用的 描述符链后，
+     *  就会向 数组 ring 中 追加一个元素 
+     *  最初，ring 是空的
+     */
 	__virtio16 ring[];
 };
 
@@ -128,7 +156,9 @@ typedef struct vring_used_elem __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_elem_t;
 
 /**
- *  
+ *  已用描述符
+ *  设备将已经处理的描述符记录起来，反馈给驱动
+ *  这个“已用”也是相对于驱动而言的
  */
 struct vring_used {
 	__virtio16 flags;

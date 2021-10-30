@@ -20,6 +20,9 @@
 #endif
 #include <asm/barrier.h>
 
+/**
+ *  
+ */
 /* virtio_ring with information needed for host access. */
 struct vringh {
 	/* Everything is little endian */
