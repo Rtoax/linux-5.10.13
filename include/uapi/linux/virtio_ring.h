@@ -189,6 +189,8 @@ typedef struct vring_used __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 
 /**
  *  
+ *
+ *  初始化 `vring_init()`
  */
 struct vring {
 	unsigned int num;
@@ -230,12 +232,36 @@ struct vring {
  * versa. They are at the end for backwards compatibility. */
 #define vring_used_event(vr) ((vr)->avail->ring[(vr)->num])
 #define vring_avail_event(vr) (*(__virtio16 *)&(vr)->used->ring[(vr)->num])
-
+/**
+ *  
+ */
 static inline void vring_init(struct vring *vr, unsigned int num, void *p,
 			      unsigned long align)
 {
+    /**
+     *  +-------+ <- p <- vr->desc
+     *  |       | \
+     *  +-------+ |
+     *  |       | |
+     *  +-------+ |
+     *  |       | +- num
+     *  +-------+ |
+     *  |       | |
+     *  +-------+ |
+     *  |       | /
+     *  +-------+ <- vr->avail
+     *  |       |
+     *  +-------+
+     *  |       |
+     *  +-------+
+     *
+     *  
+     */
 	vr->num = num;
 	vr->desc = p;
+    /**
+     *  可用
+     */
 	vr->avail = (struct vring_avail *)((char *)p + num * sizeof(struct vring_desc));
 	vr->used = (void *)(((uintptr_t)&vr->avail->ring[num] + sizeof(__virtio16)
 		+ align-1) & ~(align - 1));

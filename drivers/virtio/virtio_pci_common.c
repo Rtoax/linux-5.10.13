@@ -515,6 +515,9 @@ static void virtio_pci_release_dev(struct device *_d)
 	kfree(vp_dev);
 }
 
+/**
+ *  
+ */
 static int virtio_pci_probe(struct pci_dev *pci_dev,
 			    const struct pci_device_id *id)
 {
@@ -533,6 +536,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	INIT_LIST_HEAD(&vp_dev->virtqueues);
 	spin_lock_init(&vp_dev->lock);
 
+    /**
+     *  
+     */
 	/* enable the device */
 	rc = pci_enable_device(pci_dev);
 	if (rc)
@@ -555,6 +561,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 
 	pci_set_master(pci_dev);
 
+    /**
+     *  
+     */
 	rc = register_virtio_device(&vp_dev->vdev);
 	reg_dev = vp_dev;
 	if (rc)
