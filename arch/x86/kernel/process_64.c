@@ -485,7 +485,9 @@ void x86_gsbase_write_task(struct task_struct *task, unsigned long gsbase)
 
 	task->thread.gsbase = gsbase;
 }
-
+/**
+ *  执行程序
+ */
 static void /*  */
 start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 		    unsigned long new_sp,
@@ -493,12 +495,18 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 {
 	WARN_ON_ONCE(regs != current_pt_regs());
 
+    /**
+     *  
+     */
 	if (static_cpu_has(X86_BUG_NULL_SEG)) {
 		/* Loading zero below won't clear the base. */
 		loadsegment(fs, __USER_DS);
 		load_gs_index(__USER_DS);
 	}
 
+    /**
+     *  
+     */
 	loadsegment(fs, 0);
 	loadsegment(es, _ds);
 	loadsegment(ds, _ds);
@@ -510,10 +518,15 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 	regs->ss		= _ss;
 	regs->flags		= X86_EFLAGS_IF;
 }
-
-void /* exec??类系统调用 */
+/**
+ *  执行 execv(2)
+ */
+void /* execv(2)类系统调用 */
 start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 {
+    /**
+     *  
+     */
 	start_thread_common(regs, new_ip, new_sp,
 			    __USER_CS, __USER_DS, 0);
 }

@@ -167,7 +167,10 @@ static int padzero(unsigned long elf_bss)
  */
 #define ELF_BASE_PLATFORM NULL
 #endif
-
+/**
+ *  设置辅助向量
+ *  hexdump -x /proc/self/auxv
+ */
 static int
 create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		unsigned long load_addr, unsigned long interp_load_addr,
@@ -253,6 +256,9 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	 */
 	ARCH_DLINFO;
 #endif
+    /**
+     *  hexdump -x /proc/self/auxv
+     */
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
@@ -413,11 +419,16 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
 				ELF_PAGESTART(cmds[first_idx].p_vaddr);
 }
-
+/**
+ *  
+ */
 static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 {
 	ssize_t rv;
 
+    /**
+     *  读
+     */
 	rv = kernel_read(file, buf, len, &pos);
 	if (unlikely(rv != len)) {
 		return (rv < 0) ? rv : -EIO;
@@ -478,6 +489,9 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	if (!elf_phdata)
 		goto out;
 
+    /**
+     *  加载程序头
+     */
 	/* Read in the program headers */
 	retval = elf_read(elf_file, elf_phdata, size, elf_ex->e_phoff);
 	if (retval < 0) {
@@ -759,7 +773,9 @@ static int parse_elf_property(const char *data, size_t *off, size_t datasz,
 #define NOTE_DATA_SZ SZ_1K
 #define GNU_PROPERTY_TYPE_0_NAME "GNU"
 #define NOTE_NAME_SZ (sizeof(GNU_PROPERTY_TYPE_0_NAME))
-
+/**
+ *  读取属性信息
+ */
 static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 				struct arch_elf_state *arch)
 {
@@ -816,8 +832,10 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 
 	return ret == -ENOENT ? 0 : ret;
 }
-
-static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制文件，见 `execve`系统调用 */
+/**
+ *  ELF 加载二进制文件，见 `execve`系统调用
+ */
+static int load_elf_binary(struct linux_binprm *bprm)   /*  */
 {
 	struct file *interpreter = NULL; /* to shut gcc up */
  	unsigned long load_addr = 0, load_bias = 0;
@@ -854,11 +872,17 @@ static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制�
 	if (!bprm->file->f_op->mmap)    /*  */
 		goto out;
 
+    /**
+     *  加载 elf 头
+     */
 	elf_phdata = load_elf_phdrs(elf_ex, bprm->file);
 	if (!elf_phdata)
 		goto out;
 
 	elf_ppnt = elf_phdata;
+    /**
+     *  遍历 elf 头信息
+     */
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		char *elf_interpreter;
 
@@ -879,6 +903,9 @@ static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制�
 			goto out_free_ph;
 
 		retval = -ENOMEM;
+        /**
+         *  解释器
+         */
 		elf_interpreter = kmalloc(elf_ppnt->p_filesz, GFP_KERNEL);
 		if (!elf_interpreter)
 			goto out_free_ph;
@@ -893,7 +920,9 @@ static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制�
 		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 			goto out_free_interp;
 
-        /* 打开 */
+        /**
+         *  打开 解释器
+         */
 		interpreter = open_exec(elf_interpreter);
         
 		kfree(elf_interpreter);
@@ -907,6 +936,9 @@ static int load_elf_binary(struct linux_binprm *bprm)   /* ELF 加载二进制�
 		 */
 		would_dump(bprm, interpreter);
 
+        /**
+         *  
+         */
 		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
 		if (!interp_elf_ex) {
 			retval = -ENOMEM;
@@ -936,6 +968,9 @@ out_free_interp:
 				executable_stack = EXSTACK_DISABLE_X;
 			break;
 
+        /**
+         *  
+         */
 		case PT_LOPROC ... PT_HIPROC:
 			retval = arch_elf_pt_proc(elf_ex, elf_ppnt,
 						  bprm->file, false,
@@ -945,6 +980,9 @@ out_free_interp:
 			break;
 		}
 
+    /**
+     *  解释器可用
+     */
 	/* Some simple consistency checks for the interpreter */
 	if (interpreter) {
 		retval = -ELIBBAD;
@@ -965,6 +1003,9 @@ out_free_interp:
 		/* Pass PT_LOPROC..PT_HIPROC headers to arch code */
 		elf_property_phdata = NULL;
 		elf_ppnt = interp_elf_phdata;
+        /**
+         *  
+         */
 		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
 			switch (elf_ppnt->p_type) {
 			case PT_GNU_PROPERTY:
@@ -1142,7 +1183,9 @@ out_free_interp:
 			}
 		}
 
-        /* 正经的映射 二进制可执行文件 */
+        /**
+         *  正经的映射 二进制可执行文件 
+         */
         /* 映射 起始地址需要注意 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
@@ -1262,12 +1305,18 @@ out_free_interp:
 		goto out;
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
+    /**
+     *  设置辅助向量
+     */
     /* 创建 elf table TODO */
 	retval = create_elf_tables(bprm, elf_ex,
 			  load_addr, interp_load_addr, e_entry);
 	if (retval < 0)
 		goto out;
 
+    /**
+     *  程序被加载进内存，辅助向量被填充号之后，控制权就交给了动态连接器
+     */
 	mm = current->mm;
 	mm->end_code = end_code;
 	mm->start_code = start_code;
@@ -1275,6 +1324,9 @@ out_free_interp:
 	mm->end_data = end_data;
 	mm->start_stack = bprm->p;
 
+    /**
+     *  
+     */
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
 		/*
 		 * For architectures with ELF randomization, when executing
@@ -1294,6 +1346,9 @@ out_free_interp:
 #endif
 	}
 
+    /**
+     *  
+     */
 	if (current->personality & MMAP_PAGE_ZERO) {
 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
 		   and some applications "depend" upon this behavior.
@@ -1303,6 +1358,9 @@ out_free_interp:
 				MAP_FIXED | MAP_PRIVATE, 0);
 	}
 
+    /**
+     *  
+     */
 	regs = current_pt_regs();   /* 当前的寄存器 */
 #ifdef ELF_PLAT_INIT
 	/*
@@ -1318,9 +1376,18 @@ out_free_interp:
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
 
+    /**
+     *  
+     */
 	finalize_exec(bprm);    /*  */
 
-    /* 当前进程的程序计数器 ip=elf_entry 也就是定位到了客户自行ELF文件中 */
+    /**
+     *  这个函数时架构相关的
+     *  当前进程的程序计数器 ip=elf_entry 也就是定位到了客户自行ELF文件中 
+     *
+     *  从当前的位置开始执行新的程序
+     *  需要填入：当前寄存器的值，程序elf入口点，
+     */
 	start_thread(regs, elf_entry, bprm->p); /* 给寄存器赋值 */
 	retval = 0;
 out:

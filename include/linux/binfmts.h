@@ -13,6 +13,8 @@ struct filename;
 
 /*
  * This structure is used to hold the arguments that are used when loading binaries.
+ *
+ * 加载二进制时候，用来保存 arguments 的结构体  
  */
 struct linux_binprm {   /*  */
 #ifdef CONFIG_MMU
@@ -47,13 +49,19 @@ struct linux_binprm {   /*  */
 #endif
 	struct file *executable; /* Executable to pass to the interpreter */
 	struct file *interpreter;
+    /**
+     *  打开的可执行文件句柄
+     */
 	struct file *file;
 	struct cred *cred;	/* new credentials */
 	int unsafe;		/* how unsafe this exec is (mask of LSM_UNSAFE_*) */
 	unsigned int per_clear;	/* bits to clear in current->personality */
 	int argc, envc;
 	const char *filename;	/* Name of binary as seen by procps */
-	const char *interp;	/* Name of the binary really executed. Most
+    /**
+     *  可执行文件名
+     */
+    const char *interp;	/* Name of the binary really executed. Most
 				   of the time same as filename, but could be
 				   different for binfmt_{misc,script} */
 	const char *fdpath;	/* generated filename for execveat */

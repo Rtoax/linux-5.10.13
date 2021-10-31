@@ -3448,7 +3448,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname, const struct open_
 	set_nameidata(&nd, dfd, pathname);
 
     /**
-     *  
+     *  打开这个文件
      */
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 
