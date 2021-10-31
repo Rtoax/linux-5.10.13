@@ -554,6 +554,9 @@ netdev_features_t br_features_recompute(struct net_bridge *br,
 	return features;
 }
 
+/**
+ *  
+ */
 /* called with RTNL */
 int br_add_if(struct net_bridge *br, struct net_device *dev,
 	      struct netlink_ext_ack *extack)
@@ -611,6 +614,9 @@ int br_add_if(struct net_bridge *br, struct net_device *dev,
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
+    /**
+     *  
+     */
 	call_netdevice_notifiers(NETDEV_JOIN, dev);
 
 	err = dev_set_allmulti(dev, 1);

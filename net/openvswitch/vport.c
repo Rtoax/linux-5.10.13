@@ -120,7 +120,10 @@ struct vport *ovs_vport_locate(const struct net *net, const char *name)
 struct vport *ovs_vport_alloc(int priv_size, const struct vport_ops *ops,
 			      const struct vport_parms *parms)
 {
-	struct vport *vport;
+    /**
+     *  
+     */
+	struct vport *_vport;
 	size_t alloc_size;
 
 	alloc_size = sizeof(struct vport);
@@ -129,21 +132,27 @@ struct vport *ovs_vport_alloc(int priv_size, const struct vport_ops *ops,
 		alloc_size += priv_size;
 	}
 
-	vport = kzalloc(alloc_size, GFP_KERNEL);
-	if (!vport)
+    /**
+     *  
+     */
+	_vport = kzalloc(alloc_size, GFP_KERNEL);
+	if (!_vport)
 		return ERR_PTR(-ENOMEM);
 
-	vport->dp = parms->dp;
-	vport->port_no = parms->port_no;
-	vport->ops = ops;
-	INIT_HLIST_NODE(&vport->dp_hash_node);
+	_vport->dp = parms->dp;
+	_vport->port_no = parms->port_no;
+	_vport->ops = ops;
+	INIT_HLIST_NODE(&_vport->dp_hash_node);
 
-	if (ovs_vport_set_upcall_portids(vport, parms->upcall_portids)) {
-		kfree(vport);
+    /**
+     *  
+     */
+	if (ovs_vport_set_upcall_portids(_vport, parms->upcall_portids)) {
+		kfree(_vport);
 		return ERR_PTR(-EINVAL);
 	}
 
-	return vport;
+	return _vport;
 }
 EXPORT_SYMBOL_GPL(ovs_vport_alloc);
 
