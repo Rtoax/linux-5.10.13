@@ -319,12 +319,17 @@ NF_HOOK_COND(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
 		ret = okfn(net, sk, skb);
 	return ret;
 }
-
+/**
+ *  
+ */
 static inline int
 NF_HOOK(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk, struct sk_buff *skb,
 	struct net_device *in, struct net_device *out,
 	int (*okfn)(struct net *, struct sock *, struct sk_buff *))
 {
+    /**
+     *  
+     */
 	int ret = nf_hook(pf, hook, net, sk, skb, in, out, okfn);
 	if (ret == 1)
 		ret = okfn(net, sk, skb);

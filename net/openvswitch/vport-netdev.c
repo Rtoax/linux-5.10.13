@@ -48,6 +48,10 @@ static void netdev_port_receive(struct sk_buff *skb)
 		skb_push(skb, ETH_HLEN);
 		skb_postpush_rcsum(skb, skb->data, ETH_HLEN);
 	}
+
+    /**
+     *  
+     */
 	ovs_vport_receive(vport, skb, skb_tunnel_info(skb));
 	return;
 error:
@@ -62,6 +66,9 @@ static rx_handler_result_t netdev_frame_hook(struct sk_buff **pskb)
 	if (unlikely(skb->pkt_type == PACKET_LOOPBACK))
 		return RX_HANDLER_PASS;
 
+    /**
+     *  
+     */
 	netdev_port_receive(skb);
 	return RX_HANDLER_CONSUMED;
 }
@@ -99,6 +106,9 @@ struct vport *ovs_netdev_link(struct vport *vport, const char *name)
 	if (err)
 		goto error_unlock;
 
+    /**
+     *  
+     */
 	err = netdev_rx_handler_register(vport->dev, netdev_frame_hook,
 					 vport);
 	if (err)
@@ -123,44 +133,56 @@ error_free_vport:
 }
 EXPORT_SYMBOL_GPL(ovs_netdev_link);
 
+/**
+ *  
+ */
 static struct vport *netdev_create(const struct vport_parms *parms)
 {
-	struct vport *vport;
+    /**
+     *  
+     */
+	struct vport *_vport;
 
-	vport = ovs_vport_alloc(0, &ovs_netdev_vport_ops, parms);
-	if (IS_ERR(vport))
-		return vport;
+    /**
+     *  
+     */
+	_vport = ovs_vport_alloc(0, &ovs_netdev_vport_ops, parms);
+	if (IS_ERR(_vport))
+		return _vport;
 
-	return ovs_netdev_link(vport, parms->name);
+    /**
+     *  
+     */
+	return ovs_netdev_link(_vport, parms->name);
 }
 
 static void vport_netdev_free(struct rcu_head *rcu)
 {
-	struct vport *vport = container_of(rcu, struct vport, rcu);
+	struct vport *_vport = container_of(rcu, struct vport, rcu);
 
-	if (vport->dev)
-		dev_put(vport->dev);
-	ovs_vport_free(vport);
+	if (_vport->dev)
+		dev_put(_vport->dev);
+	ovs_vport_free(_vport);
 }
 
-void ovs_netdev_detach_dev(struct vport *vport)
+void ovs_netdev_detach_dev(struct vport *_vport)
 {
 	ASSERT_RTNL();
-	vport->dev->priv_flags &= ~IFF_OVS_DATAPATH;
-	netdev_rx_handler_unregister(vport->dev);
-	netdev_upper_dev_unlink(vport->dev,
-				netdev_master_upper_dev_get(vport->dev));
-	dev_set_promiscuity(vport->dev, -1);
+	_vport->dev->priv_flags &= ~IFF_OVS_DATAPATH;
+	netdev_rx_handler_unregister(_vport->dev);
+	netdev_upper_dev_unlink(_vport->dev,
+				netdev_master_upper_dev_get(_vport->dev));
+	dev_set_promiscuity(_vport->dev, -1);
 }
 
-static void netdev_destroy(struct vport *vport)
+static void netdev_destroy(struct vport *_vport)
 {
 	rtnl_lock();
-	if (netif_is_ovs_port(vport->dev))
-		ovs_netdev_detach_dev(vport);
+	if (netif_is_ovs_port(_vport->dev))
+		ovs_netdev_detach_dev(_vport);
 	rtnl_unlock();
 
-	call_rcu(&vport->rcu, vport_netdev_free);
+	call_rcu(&_vport->rcu, vport_netdev_free);
 }
 
 void ovs_netdev_tunnel_destroy(struct vport *vport)
@@ -192,7 +214,9 @@ struct vport *ovs_netdev_get_vport(struct net_device *dev)
 	else
 		return NULL;
 }
-
+/**
+ *  
+ */
 static struct vport_ops ovs_netdev_vport_ops = {
 	.type		= OVS_VPORT_TYPE_NETDEV,
 	.create		= netdev_create,

@@ -256,7 +256,9 @@ static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
 {
 	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
 }
-
+/**
+ *  
+ */
 static int __bprm_mm_init(struct linux_binprm *bprm)    /*  */
 {
 	int err;
@@ -285,7 +287,9 @@ static int __bprm_mm_init(struct linux_binprm *bprm)    /*  */
 	vma->vm_start = vma->vm_end - PAGE_SIZE;    /* VMA底部 */
 	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-
+    /**
+     *  
+     */
 	err = insert_vm_struct(mm, vma);
 	if (err)
 		goto err;
@@ -329,9 +333,15 @@ static int bprm_mm_init(struct linux_binprm *bprm)  /*  */
 
 	/* Save current stack limit for all calculations made during exec. */
 	task_lock(current->group_leader);
+    /**
+     *  从父亲继承 stack 限制
+     */
 	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
 	task_unlock(current->group_leader);
 
+    /**
+     *  分配vma，并将其加入 mm中
+     */
 	err = __bprm_mm_init(bprm); /*  */
 	if (err)
 		goto err;
@@ -425,7 +435,9 @@ static int count_strings_kernel(const char *const *argv)
 	}
 	return i;
 }
-
+/**
+ *  stack 限制
+ */
 static int bprm_stack_limits(struct linux_binprm *bprm)
 {
 	unsigned long limit, ptr_size;
@@ -816,7 +828,9 @@ EXPORT_SYMBOL(setup_arg_pages);
 #else
 /*  */
 #endif /* CONFIG_MMU */
-
+/**
+ *  execv 过程打开可执行文件
+ */
 static struct file *do_open_execat(int fd, struct filename *name, int flags)
 {
 	struct file *file;
@@ -850,6 +864,9 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 			 path_noexec(&file->f_path)))
 		goto exit;
 
+    /**
+     *  
+     */
 	err = deny_write_access(file);
 	if (err)
 		goto exit;
@@ -1421,7 +1438,9 @@ static void free_bprm(struct linux_binprm *bprm)
 	kfree(bprm->fdpath);
 	kfree(bprm);
 }
-
+/**
+ *  分配用于保存 args 的数据结构
+ */
 static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)   /*  */
 {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
@@ -1443,7 +1462,9 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)   /*  
 		bprm->filename = bprm->fdpath;
 	}
 	bprm->interp = bprm->filename;  /* 二进制文件名 */
-
+    /**
+     *  mm 初始化
+     */
 	retval = bprm_mm_init(bprm);    /* mm 初始化 */
 	if (retval)
 		goto out_free;
@@ -1668,7 +1689,9 @@ static int search_binary_handler(struct linux_binprm *bprm) /*  */
 
 	return retval;
 }
-
+/**
+ *  
+ */
 static int exec_binprm(struct linux_binprm *bprm)
 {
 	pid_t old_pid, old_vpid;
@@ -1734,17 +1757,31 @@ static int bprm_execve(struct linux_binprm *bprm,
 	 */
 	io_uring_task_cancel(); /*  */
 
+    /**
+     *  
+     */
 	retval = unshare_files(&displaced); /*  */
 	if (retval)
 		return retval;
 
+    /**
+     *  
+     */
 	retval = prepare_bprm_creds(bprm);  /*  */
 	if (retval)
 		goto out_files;
 
+    /**
+     *  
+     */
 	check_unsafe_exec(bprm);    /*  */
+
+    /**
+     *  标记父进程正在 execv
+     */
 	current->in_execve = 1;
 
+    
     /* 打开二进制文件 */
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
@@ -1754,6 +1791,9 @@ static int bprm_execve(struct linux_binprm *bprm,
     /* 调度执行 */
 	sched_exec();
 
+    /**
+     *  
+     */
 	bprm->file = file;
 	/*
 	 * Record that a name derived from an O_CLOEXEC fd will be
@@ -1769,7 +1809,9 @@ static int bprm_execve(struct linux_binprm *bprm,
 	if (retval)
 		goto out;
 
-    /*  */
+    /**
+     *  
+     */
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;
@@ -1805,7 +1847,9 @@ out_files:
 	return retval;
 }
 
-               /*  */
+/**
+ *  execv(2)
+ */
 static int do_execveat_common(int fd, struct filename *filename,
 			      struct user_arg_ptr argv,
 			      struct user_arg_ptr envp,
@@ -1833,31 +1877,48 @@ static int do_execveat_common(int fd, struct filename *filename,
 	 * further execve() calls fail. */
 	current->flags &= ~PF_NPROC_EXCEEDED;/*  */
 
+    /**
+     *  分配
+     */
 	bprm = alloc_bprm(fd, filename);    /*  */
 	if (IS_ERR(bprm)) {
 		retval = PTR_ERR(bprm);
 		goto out_ret;
 	}
 
+    /**
+     *  多少个参数
+     */
 	retval = count(argv, MAX_ARG_STRINGS);
 	if (retval < 0)
 		goto out_free;
 	bprm->argc = retval;
-
+    /**
+     *  多少个环境变量
+     */
 	retval = count(envp, MAX_ARG_STRINGS);
 	if (retval < 0)
 		goto out_free;
 	bprm->envc = retval;
 
+    /**
+     *  栈限制
+     */
 	retval = bprm_stack_limits(bprm);
 	if (retval < 0)
 		goto out_free;
 
+    /**
+     *  
+     */
 	retval = copy_string_kernel(bprm->filename, bprm);
 	if (retval < 0)
 		goto out_free;
 	bprm->exec = bprm->p;
 
+    /**
+     *  拷贝 
+     */
 	retval = copy_strings(bprm->envc, envp, bprm);
 	if (retval < 0)
 		goto out_free;
@@ -1866,6 +1927,9 @@ static int do_execveat_common(int fd, struct filename *filename,
 	if (retval < 0)
 		goto out_free;
 
+    /**
+     *  执行
+     */
 	retval = bprm_execve(bprm, fd, filename, flags);    /* 执行 */
 out_free:
 	free_bprm(bprm);
@@ -1927,13 +1991,18 @@ out_ret:
 	putname(filename);
 	return retval;
 }
-
+/**
+ *  execv(2)
+ */
 static int do_execve(struct filename *filename,
 	const char __user *const __user *__argv,
 	const char __user *const __user *__envp)/*  */
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
+    /**
+     *  execv(2)
+     */
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
 
@@ -2012,6 +2081,9 @@ SYSCALL_DEFINE3(execve, /*  */
 		const char __user *const __user *, argv,
 		const char __user *const __user *, envp)
 {
+    /**
+     *  加载运行二进制文件
+     */
 	return do_execve(getname(filename), argv, envp);    /*  */
 }
 

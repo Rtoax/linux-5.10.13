@@ -740,6 +740,10 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		unsigned long start_brk, brk, start_stack;
 		unsigned long arg_start, arg_end, env_start, env_end;
 
+        /**
+         *  辅助向量
+         *  /proc/PID/auxv
+         */
 		unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv *//*  */
 
 		/*

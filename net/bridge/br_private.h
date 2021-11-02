@@ -279,7 +279,9 @@ struct net_bridge_mdb_entry {
 	struct net_bridge_mcast_gc	mcast_gc;
 	struct rcu_head			rcu;
 };
-
+/**
+ *  
+ */
 struct net_bridge_port {
 	struct net_bridge		*br;
 	struct net_device		*dev;

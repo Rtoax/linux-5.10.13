@@ -2176,13 +2176,17 @@ struct virtqueue *vring_new_virtqueue(unsigned int index,
 				      void (*callback)(struct virtqueue *vq),
 				      const char *name)
 {
-	struct vring vring;
+	struct vring _vring;
 
 	if (virtio_has_feature(vdev, VIRTIO_F_RING_PACKED))
 		return NULL;
 
-	vring_init(&vring, num, pages, vring_align);
-	return __vring_new_virtqueue(index, vring, vdev, weak_barriers, context,
+	vring_init(&_vring, num, pages, vring_align);
+
+    /**
+     *  
+     */
+	return __vring_new_virtqueue(index, _vring, vdev, weak_barriers, context,
 				     notify, callback, name);
 }
 EXPORT_SYMBOL_GPL(vring_new_virtqueue);

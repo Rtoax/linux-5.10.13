@@ -333,7 +333,9 @@ static rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 		 *   - returns < 0 (drop/error)
 		 *   - returns = 0 (stolen/nf_queue)
 		 * Thus return 1 from the okfn() to signal the skb is ok to pass
-		 */
+		 * 
+         *  
+         */
 		if (NF_HOOK(NFPROTO_BRIDGE, NF_BR_LOCAL_IN,
 			    dev_net(skb->dev), NULL, skb, skb->dev, NULL,
 			    br_handle_local_finish) == 1) {
