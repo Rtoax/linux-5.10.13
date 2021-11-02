@@ -252,7 +252,9 @@ static int reloc_insn_adrp(struct module *mod, Elf64_Shdr *sechdrs,
 	*place = cpu_to_le32(insn);
 	return 0;
 }
-
+/**
+ *  
+ */
 int apply_relocate_add(Elf64_Shdr *sechdrs,
 		       const char *strtab,
 		       unsigned int symindex,

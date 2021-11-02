@@ -2441,13 +2441,13 @@ static int apply_relocations(struct module *mod, const struct load_info *info)
 						       info->index.sym, i,
 						       NULL);
         /**
-         *  
+         *  32位采用 rel
          */
         else if (info->sechdrs[i].sh_type == SHT_REL)
 			err = apply_relocate(info->sechdrs, info->strtab,
 					     info->index.sym, i, mod);
         /**
-         *  
+         *  重定位
          */
         else if (info->sechdrs[i].sh_type == SHT_RELA)
 			err = apply_relocate_add(info->sechdrs, info->strtab,

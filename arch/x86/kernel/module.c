@@ -109,10 +109,12 @@ int apply_relocate(Elf32_Shdr *sechdrs,
 			+ ELF32_R_SYM(rel[i].r_info);
 
 		switch (ELF32_R_TYPE(rel[i].r_info)) {
+        //R_386_32	1	word32	S+A
 		case R_386_32:
 			/* We add the value into the location given */
 			*location += sym->st_value;
 			break;
+        //R_386_PC32	2	word32	S+A-P
 		case R_386_PC32:
 			/* Add the value, subtract its position */
 			*location += sym->st_value - (uint32_t)location;
@@ -126,6 +128,9 @@ int apply_relocate(Elf32_Shdr *sechdrs,
 	return 0;
 }
 #else /*X86_64*/
+/**
+ *  
+ */
 static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,
 		   unsigned int symindex,
@@ -141,7 +146,13 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 
 	DEBUGP("Applying relocate section %u to %u\n",
 	       relsec, sechdrs[relsec].sh_info);
-	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
+    /**
+     *  节头表中有多少 项，也就是 .rela 中有多少个
+     */
+    for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
+        /**
+         *  位置
+         */
 		/* This is where to make the change */
 		loc = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
 			+ rel[i].r_offset;
@@ -154,7 +165,9 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		DEBUGP("type %d st_value %Lx r_addend %Lx loc %Lx\n",
 		       (int)ELF64_R_TYPE(rel[i].r_info),
 		       sym->st_value, rel[i].r_addend, (u64)loc);
-
+        /**
+         *  
+         */
 		val = sym->st_value + rel[i].r_addend;
 
 		switch (ELF64_R_TYPE(rel[i].r_info)) {
@@ -218,7 +231,7 @@ overflow:
 }
 
 /**
- *  
+ *  rela 重定位
  */
 int apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,
@@ -234,7 +247,9 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 		write = text_poke;
 		mutex_lock(&text_mutex);
 	}
-
+    /**
+     *  
+     */
 	ret = __apply_relocate_add(sechdrs, strtab, symindex, relsec, me,
 				   write);
 
