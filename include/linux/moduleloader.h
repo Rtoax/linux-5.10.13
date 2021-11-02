@@ -73,16 +73,16 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 		       unsigned int relsec,
 		       struct module *mod);
 #else
-static inline int apply_relocate_add(Elf_Shdr *sechdrs,
-				     const char *strtab,
-				     unsigned int symindex,
-				     unsigned int relsec,
-				     struct module *me)
-{
-	printk(KERN_ERR "module %s: REL relocation unsupported\n",
-	       module_name(me));
-	return -ENOEXEC;
-}
+//static inline int apply_relocate_add(Elf_Shdr *sechdrs,
+//				     const char *strtab,
+//				     unsigned int symindex,
+//				     unsigned int relsec,
+//				     struct module *me)
+//{
+//	printk(KERN_ERR "module %s: REL relocation unsupported\n",
+//	       module_name(me));
+//	return -ENOEXEC;
+//}
 #endif
 
 /* Any final processing of module before access.  Return -error or 0. */

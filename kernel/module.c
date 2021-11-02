@@ -663,7 +663,9 @@ static int percpu_modalloc(struct module *mod, struct load_info *info)
 			mod->name, align, PAGE_SIZE);
 		align = PAGE_SIZE;
 	}
-
+    /**
+     *  分配 percpu 变量
+     */
 	mod->percpu = __alloc_reserved_percpu(pcpusec->sh_size, align);
 	if (!mod->percpu) {
 		pr_warn("%s: Could not allocate %lu bytes percpu data\n",
@@ -1265,7 +1267,9 @@ static ssize_t show_taint(struct module_attribute *mattr,
 
 static struct module_attribute modinfo_taint =
 	__ATTR(taint, 0444, show_taint, NULL);
-
+/**
+ *  
+ */
 static struct module_attribute *modinfo_attrs[] = {
 	&module_uevent,
 	&modinfo_version,
@@ -1349,7 +1353,9 @@ bad_version:
 	       info->name, symname);
 	return 0;
 }
-
+/**
+ *  
+ */
 static inline int check_modstruct_version(const struct load_info *info,
 					  struct module *mod)
 {
@@ -2089,14 +2095,21 @@ static void module_enable_nx(const struct module *mod)
 	frob_rodata(&mod->init_layout, set_memory_nx);
 	frob_writable_data(&mod->init_layout, set_memory_nx);
 }
-
+/**
+ *  
+ */
 static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 				       char *secstrings, struct module *mod)
 {
 	const unsigned long shf_wx = SHF_WRITE|SHF_EXECINSTR;
 	int i;
-
+    /**
+     *  遍历
+     */
 	for (i = 0; i < hdr->e_shnum; i++) {
+        /**
+         *  不可以即可执行又可写
+         */
 		if ((sechdrs[i].sh_flags & shf_wx) == shf_wx) {
 			pr_err("%s: section %s (index %d) has invalid WRITE|EXEC flags\n",
 				mod->name, secstrings + sechdrs[i].sh_name, i);
@@ -2319,16 +2332,23 @@ static int verify_exported_symbols(struct module *mod)
 /* Change all symbols so that st_value encodes the pointer directly. */
 static int simplify_symbols(struct module *mod, const struct load_info *info)
 {
+    /**
+     *  获取符号表
+     */
 	Elf_Shdr *symsec = &info->sechdrs[info->index.sym];
 	Elf_Sym *sym = (void *)symsec->sh_addr;
 	unsigned long secbase;
 	unsigned int i;
 	int ret = 0;
 	const struct kernel_symbol *ksym;
-
+    /**
+     *  遍历符号表
+     */
 	for (i = 1; i < symsec->sh_size / sizeof(Elf_Sym); i++) {
 		const char *name = info->strtab + sym[i].st_name;
-
+        /**
+         *  
+         */
 		switch (sym[i].st_shndx) {
 		case SHN_COMMON:
 			/* Ignore common symbols */
@@ -2352,8 +2372,13 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 		case SHN_LIVEPATCH:
 			/* Livepatch symbols are resolved by livepatch */
 			break;
-
+        /**
+         *  未定义
+         */
 		case SHN_UNDEF:
+            /**
+             *  从内核中查找这个 symbol
+             */
 			ksym = resolve_symbol_wait(mod, info, name);
 			/* Ok if resolved.  */
 			if (ksym && !IS_ERR(ksym)) {
@@ -2383,12 +2408,17 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 
 	return ret;
 }
-
+/**
+ *  
+ */
 static int apply_relocations(struct module *mod, const struct load_info *info)
 {
 	unsigned int i;
 	int err = 0;
 
+    /**
+     *  遍历所有 section
+     */
 	/* Now do relocations. */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
 		unsigned int infosec = info->sechdrs[i].sh_info;
@@ -2401,16 +2431,25 @@ static int apply_relocations(struct module *mod, const struct load_info *info)
 		if (!(info->sechdrs[infosec].sh_flags & SHF_ALLOC))
 			continue;
 
+        /**
+         *  
+         */
 		if (info->sechdrs[i].sh_flags & SHF_RELA_LIVEPATCH)
 			err = klp_apply_section_relocs(mod, info->sechdrs,
 						       info->secstrings,
 						       info->strtab,
 						       info->index.sym, i,
 						       NULL);
-		else if (info->sechdrs[i].sh_type == SHT_REL)
+        /**
+         *  
+         */
+        else if (info->sechdrs[i].sh_type == SHT_REL)
 			err = apply_relocate(info->sechdrs, info->strtab,
 					     info->index.sym, i, mod);
-		else if (info->sechdrs[i].sh_type == SHT_RELA)
+        /**
+         *  
+         */
+        else if (info->sechdrs[i].sh_type == SHT_RELA)
 			err = apply_relocate_add(info->sechdrs, info->strtab,
 						 info->index.sym, i, mod);
 		if (err < 0)
@@ -2594,12 +2633,16 @@ static char *get_modinfo(const struct load_info *info, const char *tag)
 {
 	return get_next_modinfo(info, tag, NULL);
 }
-
+/**
+ *  
+ */
 static void setup_modinfo(struct module *mod, struct load_info *info)
 {
 	struct module_attribute *attr;
 	int i;
-
+    /**
+     *  
+     */
 	for (i = 0; (attr = modinfo_attrs[i]); i++) {
 		if (attr->setup)
 			attr->setup(mod, get_modinfo(info, attr->attr.name));
@@ -2878,7 +2921,7 @@ static void kmemleak_load_module(const struct module *mod,
 
 #ifdef CONFIG_MODULE_SIG
 /**
- *  
+ *  检测 sig 签名
  */
 static int module_sig_check(struct load_info *info, int flags)
 {
@@ -2955,6 +2998,9 @@ static int elf_header_check(struct load_info *info)
 	    || info->hdr->e_shentsize != sizeof(Elf_Shdr))
 		return -ENOEXEC;
 
+    /**
+     *  长度检测
+     */
 	if (info->hdr->e_shoff >= info->len
 	    || (info->hdr->e_shnum * sizeof(Elf_Shdr) >
 		info->len - info->hdr->e_shoff))
@@ -3077,7 +3123,9 @@ static void free_copy(struct load_info *info)
 {
 	vfree(info->hdr);
 }
-
+/**
+ *  
+ */
 static int rewrite_section_headers(struct load_info *info, int flags)
 {
 	unsigned int i;
@@ -3085,10 +3133,16 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 	/* This should always be true, but let's be sure. */
 	info->sechdrs[0].sh_addr = 0;
 
+    /**
+     *  遍历所有 section header
+     */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
 		Elf_Shdr *shdr = &info->sechdrs[i];
 		if (shdr->sh_type != SHT_NOBITS
 		    && info->len < shdr->sh_offset + shdr->sh_size) {
+		    /**
+             *  这个文件被 截断 过，不能用，返回不可执行
+             */
 			pr_err("Module len %lu truncated\n", info->len);
 			return -ENOEXEC;
 		}
@@ -3104,6 +3158,10 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 #endif
 	}
 
+    /**
+     *  不保留 modinfo 和 version 的 section
+     *  SHF_ALLOC +SHF_WRITE 包含将出现在程序的内存映像中的为初始化数据
+     */
 	/* Track but don't keep modinfo and version sections. */
 	info->sechdrs[info->index.vers].sh_flags &= ~(unsigned long)SHF_ALLOC;
 	info->sechdrs[info->index.info].sh_flags &= ~(unsigned long)SHF_ALLOC;
@@ -3128,6 +3186,10 @@ static int setup_load_info(struct load_info *info, int flags)
 	info->secstrings = (void *)info->hdr
 		+ info->sechdrs[info->hdr->e_shstrndx].sh_offset;
 
+    /**
+     *  查找 modinfo section
+     *  并获取 模块 名字
+     */
 	/* Try to find a name early so we can log errors with a module name */
 	info->index.info = find_sec(info, ".modinfo");
 	if (info->index.info)
@@ -3135,6 +3197,9 @@ static int setup_load_info(struct load_info *info, int flags)
 
 	/* Find internal symbols and strings. */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
+        /**
+         *  查找到符号表
+         */
 		if (info->sechdrs[i].sh_type == SHT_SYMTAB) {
 			info->index.sym = i;
 			info->index.str = info->sechdrs[i].sh_link;
@@ -3144,12 +3209,18 @@ static int setup_load_info(struct load_info *info, int flags)
 		}
 	}
 
+    /**
+     *  必须要有 symbol section
+     */
 	if (info->index.sym == 0) {
 		pr_warn("%s: module has no symbols (stripped?)\n",
 			info->name ?: "(missing .modinfo section or name field)");
 		return -ENOEXEC;
 	}
 
+    /**
+     *  查找这个段
+     */
 	info->index.mod = find_sec(info, ".gnu.linkonce.this_module");
 	if (!info->index.mod) {
 		pr_warn("%s: No module found in object\n",
@@ -3171,11 +3242,27 @@ static int setup_load_info(struct load_info *info, int flags)
 	else
 		info->index.vers = find_sec(info, "__versions");
 
+    /**
+     *  
+     */
 	info->index.pcpu = find_pcpusec(info);
 
 	return 0;
 }
-
+/**
+ *  $ modinfo hello.ko
+     filename:       /home/rongtao/test/linux/module/HelloWorld/hello.ko
+     version:        0.1
+     description:    A Simple Hello World module
+     author:         Derek Molloy [ReCode by RToax]
+     license:        GPL
+     srcversion:     70BB318F7BEC3B86CB1BBAC
+     depends:        
+     retpoline:      Y
+     name:           hello
+     vermagic:       5.14.0 SMP mod_unload modversions 
+     parm:           name:[RToax]The name to display in /var/log/kern.log (charp)
+ */
 static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 {
 	const char *modmagic = get_modinfo(info, "vermagic");
@@ -3214,6 +3301,9 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 	if (err)
 		return err;
 
+    /**
+     *  设置 license
+     */
 	/* Set up license info based on the info section */
 	set_license(mod, get_modinfo(info, "license"));
 
@@ -3222,7 +3312,7 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 
 
 /**
- *  
+ *  搜索 module section
  */
 static int find_module_sections(struct module *mod, struct load_info *info) /* 找到 module section */
 {
@@ -3340,13 +3430,15 @@ static int find_module_sections(struct module *mod, struct load_info *info) /* �
 }
 
 /**
- *  
+ *  分配内存并将 elf section 拷贝到对应的 内存中
  */
 static int move_module(struct module *mod, struct load_info *info)
 {
 	int i;
 	void *ptr;
-
+    /**
+     *  分配s
+     */
 	/* Do the allocs. */
 	ptr = module_alloc(mod->core_layout.size);
 	/*
@@ -3384,7 +3476,9 @@ static int move_module(struct module *mod, struct load_info *info)
 	for (i = 0; i < info->hdr->e_shnum; i++) {
 		void *dest;
 		Elf_Shdr *shdr = &info->sechdrs[i];
-
+        /**
+         *  跳过不需要分配的
+         */
 		if (!(shdr->sh_flags & SHF_ALLOC))
 			continue;
 
@@ -3393,10 +3487,15 @@ static int move_module(struct module *mod, struct load_info *info)
 				+ (shdr->sh_entsize & ~INIT_OFFSET_MASK);
 		else
 			dest = mod->core_layout.base + shdr->sh_entsize;
-
+        /**
+         *  进行拷贝
+         */
 		if (shdr->sh_type != SHT_NOBITS)
 			memcpy(dest, (void *)shdr->sh_addr, shdr->sh_size);
-		/* Update sh_addr to point to copy in image. */
+        /**
+         *  
+         */
+        /* Update sh_addr to point to copy in image. */
 		shdr->sh_addr = (unsigned long)dest;
 		pr_debug("\t0x%lx %s\n",
 			 (long)shdr->sh_addr, info->secstrings + shdr->sh_name);
@@ -3404,7 +3503,9 @@ static int move_module(struct module *mod, struct load_info *info)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 static int check_module_license_and_versions(struct module *mod)
 {
 	int prev_taint = test_taint(TAINT_PROPRIETARY_MODULE);
@@ -3489,28 +3590,40 @@ static bool blacklisted(const char *module_name)
 	return false;
 }
 core_param(module_blacklist, module_blacklist, charp, 0400);
-
+/**
+ *  
+ */
 static struct module *layout_and_allocate(struct load_info *info, int flags)
 {
 	struct module *mod;
 	unsigned int ndx;
 	int err;
-
+    /**
+     *  
+     */
 	err = check_modinfo(info->mod, info, flags);
 	if (err)
 		return ERR_PTR(err);
 
+    /**
+     *  x86 此函数为空，arm64 不为空
+     */
 	/* Allow arches to frob section contents and sizes.  */
 	err = module_frob_arch_sections(info->hdr, info->sechdrs,
 					info->secstrings, info->mod);
 	if (err < 0)
 		return ERR_PTR(err);
-
+    /**
+     *  不能同时 wx
+     */
 	err = module_enforce_rwx_sections(info->hdr, info->sechdrs,
 					  info->secstrings, info->mod);
 	if (err < 0)
 		return ERR_PTR(err);
 
+    /**
+     *  每 CPU 变量将进行特殊的申请，这里不进行申请
+     */
 	/* We will do a special allocation for per-cpu sections later. */
 	info->sechdrs[info->index.pcpu].sh_flags &= ~(unsigned long)SHF_ALLOC;
 
@@ -3538,6 +3651,9 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	layout_sections(info->mod, info);
 	layout_symtab(info->mod, info);
 
+    /**
+     *  分配内存并将 elf section 拷贝到对应的 内存中
+     */
 	/* Allocate and move to the final place */
 	err = move_module(info->mod, info);
 	if (err)
@@ -3892,7 +4008,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	char *after_dashes;
 
     /**
-     *  
+     *  检测elf 头
      */
 	err = elf_header_check(info);
 	if (err) {
@@ -3901,14 +4017,14 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 
     /**
-     *  
+     *  加载各个 section(指针) 到 info 中
      */
 	err = setup_load_info(info, flags);
 	if (err)
 		goto free_copy;
 
     /**
-     *  黑名单
+     *  模块是否在黑名单
      */
 	if (blacklisted(info->name)) {
 		err = -EPERM;
@@ -3917,14 +4033,14 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 
     /**
-     *  
+     *  签名检测
      */
 	err = module_sig_check(info, flags);
 	if (err)
 		goto free_copy;
 
     /**
-     *  
+     *  重写 section 头
      */
 	err = rewrite_section_headers(info, flags);
 	if (err)
@@ -3936,6 +4052,9 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_copy;
 	}
 
+    /**
+     *  分配内存
+     */
 	/* Figure out module layout, and allocate all the memory. */
 	mod = layout_and_allocate(info, flags);
 	if (IS_ERR(mod)) {
@@ -3943,6 +4062,9 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_copy;
 	}
 
+    /**
+     *  
+     */
 	audit_log_kern_module(mod->name);
 
 	/* Reserve our place in the list. */
@@ -3950,6 +4072,9 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	if (err)
 		goto free_module;
 
+    /**
+     *  签名
+     */
 #ifdef CONFIG_MODULE_SIG
 	mod->sig_ok = info->sig_ok;
 	if (!mod->sig_ok) {
@@ -3971,7 +4096,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto unlink_mod;
 
     /**
-     *  
+     *  锁定
      */
 	init_param_lock(mod);
 
@@ -3981,6 +4106,9 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	if (err)
 		goto free_unload;
 
+    /**
+     *  
+     */
 	err = check_module_license_and_versions(mod);
 	if (err)
 		goto free_unload;
@@ -3994,7 +4122,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_modinfo;
 
     /**
-     *  
+     *  重定向
      */
 	err = apply_relocations(mod, info);
 	if (err < 0)
@@ -4126,7 +4254,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	struct load_info info = { };
 
     /**
-     *  
+     *  是否支持模块加载
      */
 	err = may_init_module();
 	if (err)
@@ -4136,14 +4264,14 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	       umod, len, uargs);
 
     /**
-     *  
+     *  从用户态拷贝数据
      */
 	err = copy_module_from_user(umod, len, &info);
 	if (err)
 		return err;
 
     /**
-     *  
+     *  加载模块
      */
 	return load_module(&info, uargs, 0);
 }
@@ -4722,6 +4850,9 @@ void print_modules(void)
 }
 
 #ifdef CONFIG_MODVERSIONS
+/**
+ *  
+ */
 /* Generate the signature for all relevant module structures here.
  * If these change, we don't want to try to parse the module. */
 void module_layout(struct module *mod,

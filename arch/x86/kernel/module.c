@@ -59,10 +59,10 @@ static unsigned long int get_module_load_offset(void)
 	return module_load_offset;
 }
 #else
-static unsigned long int get_module_load_offset(void)
-{
-	return 0;
-}
+//static unsigned long int get_module_load_offset(void)
+//{
+//	return 0;
+//}
 #endif
 
 void *module_alloc(unsigned long size)
@@ -217,6 +217,9 @@ overflow:
 	return -ENOEXEC;
 }
 
+/**
+ *  
+ */
 int apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,
 		   unsigned int symindex,

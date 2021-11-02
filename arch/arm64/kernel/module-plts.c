@@ -286,7 +286,9 @@ static int partition_branch_plt_relas(Elf64_Sym *syms, Elf64_Rela *rela,
 
 	return i;
 }
-
+/**
+ *  
+ */
 int module_frob_arch_sections(Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
 			      char *secstrings, struct module *mod)
 {
@@ -320,7 +322,9 @@ int module_frob_arch_sections(Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
 		pr_err("%s: module symtab section missing\n", mod->name);
 		return -ENOEXEC;
 	}
-
+    /**
+     *  可重定位s
+     */
 	for (i = 0; i < ehdr->e_shnum; i++) {
 		Elf64_Rela *rels = (void *)ehdr + sechdrs[i].sh_offset;
 		int nents, numrels = sechdrs[i].sh_size / sizeof(Elf64_Rela);
@@ -349,7 +353,9 @@ int module_frob_arch_sections(Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
 			init_plts += count_plts(syms, rels, numrels,
 						sechdrs[i].sh_info, dstsec);
 	}
-
+    /**
+     *  为什么需要 置为 NOBITS 呢？
+     */
 	pltsec = sechdrs + mod->arch.core.plt_shndx;
 	pltsec->sh_type = SHT_NOBITS;
 	pltsec->sh_flags = SHF_EXECINSTR | SHF_ALLOC;
