@@ -646,6 +646,9 @@ static __modinit int add_sysfs_param(struct module_kobject *mk,
 
 	/* Tack new one on the end. */
 	memset(&mk->mp->attrs[mk->mp->num], 0, sizeof(mk->mp->attrs[0]));
+    /**
+     *  创建
+     */
 	sysfs_attr_init(&mk->mp->attrs[mk->mp->num].mattr.attr);
 	mk->mp->attrs[mk->mp->num].param = kp;
 	mk->mp->attrs[mk->mp->num].mattr.show = param_attr_show;
@@ -689,7 +692,9 @@ int module_param_sysfs_setup(struct module *mod,
 {
 	int i, err;
 	bool params = false;
-
+    /**
+     *  
+     */
 	for (i = 0; i < num_params; i++) {
 		if (kparam[i].perm == 0)
 			continue;
@@ -703,7 +708,9 @@ int module_param_sysfs_setup(struct module *mod,
 
 	if (!params)
 		return 0;
-
+    /**
+     *  
+     */
 	/* Create the param group. */
 	err = sysfs_create_group(&mod->mkobj.kobj, &mod->mkobj.mp->grp);
 	if (err)
@@ -878,7 +885,9 @@ static ssize_t module_attr_show(struct kobject *kobj,
 
 	if (!attribute->show)
 		return -EIO;
-
+    /**
+     *  
+     */
 	ret = attribute->show(attribute, mk, buf);
 
 	return ret;
@@ -902,7 +911,9 @@ static ssize_t module_attr_store(struct kobject *kobj,
 
 	return ret;
 }
-
+/**
+ *  
+ */
 static const struct sysfs_ops module_sysfs_ops = {
 	.show = module_attr_show,
 	.store = module_attr_store,
@@ -920,7 +931,9 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
 static const struct kset_uevent_ops module_uevent_ops = {
 	.filter = uevent_filter,
 };
-
+/**
+ *  所有模块的 kset 根
+ */
 struct kset *module_kset;
 int module_sysfs_initialized;
 
@@ -929,7 +942,9 @@ static void module_kobj_release(struct kobject *kobj)
 	struct module_kobject *mk = to_module_kobject(kobj);
 	complete(mk->kobj_completion);
 }
-
+/**
+ *  
+ */
 struct kobj_type module_ktype = {
 	.release   =	module_kobj_release,
 	.sysfs_ops =	&module_sysfs_ops,
@@ -940,6 +955,9 @@ struct kobj_type module_ktype = {
  */
 static int __init param_sysfs_init(void)
 {
+    /**
+     *  新建模块 的 sysfs
+     */
 	module_kset = kset_create_and_add("module", &module_uevent_ops, NULL);
 	if (!module_kset) {
 		printk(KERN_WARNING "%s (%d): error creating kset\n",

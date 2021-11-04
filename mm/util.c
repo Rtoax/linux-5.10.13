@@ -229,6 +229,9 @@ char *strndup_user(const char __user *s, long n)
 	if (length > n)
 		return ERR_PTR(-EINVAL);
 
+    /**
+     *  
+     */
 	p = memdup_user(s, length);
 
 	if (IS_ERR(p))

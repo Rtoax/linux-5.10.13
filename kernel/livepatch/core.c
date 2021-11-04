@@ -322,7 +322,9 @@ int klp_apply_section_relocs(struct module *pmod, Elf_Shdr *sechdrs,
 	ret = klp_resolve_symbols(sechdrs, strtab, symndx, sec, sec_objname);
 	if (ret)
 		return ret;
-
+    /**
+     *  
+     */
 	return apply_relocate_add(sechdrs, strtab, symndx, secndx, pmod);
 }
 

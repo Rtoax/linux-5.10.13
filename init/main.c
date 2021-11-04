@@ -1366,6 +1366,9 @@ int __init_or_module do_one_initcall(initcall_t fn)
 		return -EPERM;
 
 	do_trace_initcall_start(fn);
+    /**
+     *  模块 执行 init 函数
+     */
 	ret = fn();
 	do_trace_initcall_finish(fn, ret);
 

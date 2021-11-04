@@ -129,7 +129,7 @@ int apply_relocate(Elf32_Shdr *sechdrs,
 }
 #else /*X86_64*/
 /**
- *  
+ *  rela
  */
 static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,

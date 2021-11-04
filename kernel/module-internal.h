@@ -47,7 +47,13 @@ struct load_info {  /*  */
      *  
      */
 	struct {
-		unsigned int sym, str, mod, vers, info, pcpu;
+		unsigned int 
+            sym,    /* SHT_SYMTAB */
+            str,    /* SHT_SYMTAB */
+            mod,    /* ".gnu.linkonce.this_module" */
+            vers,   /* "__versions" */
+            info,   /* ".modinfo" */
+            pcpu;   /* ".data..percpu" */
 	} index;
 };
 

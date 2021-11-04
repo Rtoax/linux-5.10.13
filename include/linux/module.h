@@ -62,6 +62,9 @@ struct module_kobject {
  */
 struct module_attribute {
 	struct attribute attr;
+    /**
+     *  在 sysfs 中的 show 会调用这个函数
+     */
 	ssize_t (*show)(struct module_attribute *, struct module_kobject *,
 			char *);
 	ssize_t (*store)(struct module_attribute *, struct module_kobject *,

@@ -70,9 +70,14 @@ extern void __clean_dcache_area_pop(void *addr, size_t len);
 extern void __clean_dcache_area_pou(void *addr, size_t len);
 extern long __flush_cache_user_range(unsigned long start, unsigned long end);
 extern void sync_icache_aliases(void *kaddr, unsigned long len);
-
+/**
+ *  
+ */
 static inline void flush_icache_range(unsigned long start, unsigned long end)
 {
+    /**
+     *  
+     */
 	__flush_icache_range(start, end);
 
 	/*

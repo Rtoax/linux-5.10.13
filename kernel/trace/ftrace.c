@@ -6833,12 +6833,16 @@ void ftrace_module_enable(struct module *mod)
 
 	process_cached_mods(mod->name);
 }
-
+/**
+ *  
+ */
 void ftrace_module_init(struct module *mod)
 {
 	if (ftrace_disabled || !mod->num_ftrace_callsites)
 		return;
-
+    /**
+     *  
+     */
 	ftrace_process_locs(mod, mod->ftrace_callsites,
 			    mod->ftrace_callsites + mod->num_ftrace_callsites);
 }

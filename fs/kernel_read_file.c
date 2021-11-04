@@ -31,6 +31,8 @@
  * Returns number of bytes read (no single read will be bigger
  * than INT_MAX), or negative on error.
  *
+ * 可以验证： 
+ *  sudo bpftrace -e 'kprobe:kernel_read_file {printf("read file\n");}'
  */
 int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		     size_t buf_size, size_t *file_size,
@@ -41,10 +43,14 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	void *allocated = NULL;
 	bool whole_file;
 	int ret;
-
+    /**
+     *  参数有效
+     */
 	if (offset != 0 && (!*buf || !file_size))
 		return -EINVAL;
-
+    /**
+     *  
+     */
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return -EINVAL;
 
@@ -52,6 +58,9 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	if (ret)
 		return ret;
 
+    /**
+     *  文件大小
+     */
 	i_size = i_size_read(file_inode(file));
 	if (i_size <= 0) {
 		ret = -EINVAL;
@@ -76,6 +85,9 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	if (file_size)
 		*file_size = i_size;
 
+    /**
+     *  分配
+     */
 	if (!*buf)
 		*buf = allocated = vmalloc(i_size);
 	if (!*buf) {
@@ -90,6 +102,9 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		size_t wanted = min_t(size_t, buf_size - copied,
 					      i_size - pos);
 
+        /**
+         *  读取
+         */
 		bytes = kernel_read(file, *buf + copied, wanted, &pos);
 		if (bytes < 0) {
 			ret = bytes;
@@ -172,7 +187,7 @@ int kernel_read_file_from_path_initns(const char *path, loff_t offset,
 EXPORT_SYMBOL_GPL(kernel_read_file_from_path_initns);
 
 /**
- *  
+ *  从 fd中加载文件
  */
 int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
                 			     size_t buf_size, size_t *file_size,
@@ -183,7 +198,9 @@ int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
 
 	if (!f.file)
 		goto out;
-
+    /**
+     *  
+     */
 	ret = kernel_read_file(f.file, offset, buf, buf_size, file_size, id);
 out:
 	fdput(f);

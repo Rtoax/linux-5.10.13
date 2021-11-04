@@ -599,15 +599,9 @@ extern int module_param_sysfs_setup(struct module *mod,
 
 extern void module_param_sysfs_remove(struct module *mod);
 #else
-static inline int module_param_sysfs_setup(struct module *mod,
-			     const struct kernel_param *kparam,
-			     unsigned int num_params)
-{
-	return 0;
-}
-
-static inline void module_param_sysfs_remove(struct module *mod)
-{ }
+/**
+     *  
+     */
 #endif
 
 #endif /* _LINUX_MODULE_PARAMS_H */
