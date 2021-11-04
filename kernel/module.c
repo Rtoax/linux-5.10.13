@@ -639,7 +639,9 @@ static struct module *find_module_all(const char *name, size_t len,
 	struct module *mod;
 
 	module_assert_mutex_or_preempt();
-
+    /**
+     *  竟然用链表
+     */
 	list_for_each_entry_rcu(mod, &modules, list,
 				lockdep_is_held(&module_mutex)) {
 		if (!even_unformed && mod->state == MODULE_STATE_UNFORMED)
@@ -653,6 +655,9 @@ static struct module *find_module_all(const char *name, size_t len,
 struct module *find_module(const char *name)
 {
 	module_assert_mutex();
+    /**
+     *  
+     */
 	return find_module_all(name, strlen(name), false);
 }
 EXPORT_SYMBOL_GPL(find_module);
@@ -1027,7 +1032,9 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
 
 	if (mutex_lock_interruptible(&module_mutex) != 0)
 		return -EINTR;
-
+    /**
+     *  查找
+     */
 	mod = find_module(name);
 	if (!mod) {
 		ret = -ENOENT;
