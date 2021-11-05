@@ -177,11 +177,15 @@ static void detect_memory_88(void)
 void detect_memory(void)
 {
     /**
-     *  
+     *  先试试从 e820 协议从 BIOS 中获取内存布局
      */
 	detect_memory_e820();   //arch/x86/boot/memory.c 获取全部内存分配
-
+    /**
+     *  不成功的话试试e801，再试88。一般而言都是e820就可以了
+     */
 	detect_memory_e801();
-
+    /**
+     *  
+     */
 	detect_memory_88(); //获取临近内存大小
 }

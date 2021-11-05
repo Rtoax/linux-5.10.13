@@ -603,6 +603,7 @@ static int pidfd_create(struct pid *pid, unsigned int flags)
  * Return: On success, a cloexec pidfd is returned.
  *         On error, a negative errno number will be returned.
  */
+int pidfd_open(pid_t pid, unsigned int flags){} ///+++
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {
 	int fd;
@@ -701,6 +702,7 @@ static int pidfd_getfd(struct pid *pid, int fd)
  * Return: On success, a cloexec file descriptor is returned.
  *         On error, a negative errno number will be returned.
  */
+int pidfd_getfd(int pidfd, int fd, unsigned int flags){} ///++++
 SYSCALL_DEFINE3(pidfd_getfd, int, pidfd, int, fd,
 		unsigned int, flags)
 {

@@ -1036,6 +1036,7 @@ struct file {   /*  */
      *  io_uring(2) 中对应 struct io_ring_ctx * 结构
      *  __bpf_map_get() 中对应 struct bpf_map * 结构
      *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
+     *  seq_release() 中对应 struct seq_file * 结构
      *
      *  [...]
      */

@@ -31,6 +31,9 @@ typedef struct {
 	unsigned int apic_perf_irqs;
 	unsigned int apic_irq_work_irqs;
 #ifdef CONFIG_SMP
+    /**
+     * re-调度中断
+     */
 	unsigned int irq_resched_count;
 	unsigned int irq_call_count;
 #endif

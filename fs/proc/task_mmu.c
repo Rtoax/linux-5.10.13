@@ -1543,7 +1543,7 @@ static int pagemap_hugetlb_range(pte_t *ptep, unsigned long hmask,
 	return err;
 }
 #else
-#define pagemap_hugetlb_range	NULL
+//#define pagemap_hugetlb_range	NULL
 #endif /* HUGETLB_PAGE */
 
 static const struct mm_walk_ops pagemap_ops = {

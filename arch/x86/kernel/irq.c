@@ -120,6 +120,9 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
     }
+    /**
+     *  re-调度中断
+     */
 	seq_puts(p, "  Rescheduling interrupts\n");
 	seq_printf(p, "%*s: ", prec, "CAL");
 	for_each_online_cpu(j){

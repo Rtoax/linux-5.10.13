@@ -515,8 +515,8 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
          *  do mmap 
          *  
          */
-		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate,
-			      &uf);
+		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate, &uf);
+        
 		mmap_write_unlock(mm);  /* 信号量 up */
 		userfaultfd_unmap_complete(mm, &uf);
 
