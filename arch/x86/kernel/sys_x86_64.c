@@ -86,7 +86,9 @@ static int __init control_va_addr_alignment(char *str)
 }
 __setup("align_va_addr", control_va_addr_alignment);
 
-/*  */
+/**
+ *  
+ */
 long mmap(unsigned long addr, unsigned long len,
                         unsigned long prot, unsigned long flags,
                         unsigned long fd, unsigned long pgoff){/* +++ */}
@@ -98,7 +100,9 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
 	error = -EINVAL;
 	if (off & ~PAGE_MASK)
 		goto out;
-
+    /**
+     *  
+     */
 	error = ksys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
 out:
 	return error;

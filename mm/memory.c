@@ -3778,7 +3778,9 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	 */
 	if (!(vmf->flags & FAULT_FLAG_WRITE)/* 没有写标志 */ && 
         !mm_forbids_zeropage(vma->vm_mm)/* 没有禁止 零页 */) {
-
+        /**
+         *  鸡贼的内核，直接返回零页
+         */
         /* 设置 特殊标志位，标志是个 系统零页 */
 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address), vma->vm_page_prot));
 
@@ -3852,14 +3854,18 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)   /* 匿名页 */
 	entry = pte_sw_mkyoung(entry);
 	if (vma->vm_flags & VM_WRITE)   /* 可写属性 */
 		entry = pte_mkwrite(pte_mkdirty(entry));
-
+    /**
+     *  
+     */
     /* TODO */
 	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 	if (!pte_none(*vmf->pte)) {
 		update_mmu_cache(vma, vmf->address, vmf->pte);
 		goto release;
 	}
-
+    /**
+     *  
+     */
 	ret = check_stable_address_space(vma->vm_mm);
 	if (ret)
 		goto release;
@@ -4971,7 +4977,9 @@ retry_pud:
 		}
 	}
 
-    /* PTE */
+    /**
+     *  处理 页表 项
+     */
 	return handle_pte_fault(&vmf);  /* 处理页表项的 pagefault */
 }
 
@@ -5049,6 +5057,9 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 {
 	vm_fault_t ret;
 
+    /**
+     *  当前进程状态
+     */
 	__set_current_state(TASK_RUNNING);  /* 当前进程就绪 */
 
     /* 计数 */

@@ -2137,6 +2137,9 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
  *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
  *
  *  在 do_mmap() 中调用
+ *
+ *  用 bpftrace kprobe 追踪 
+ *  >> sudo bpftrace -e 'kprobe:mmap_region {printf(">>>>>\n");}'
  */
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
@@ -2314,6 +2317,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		if (error)
 			goto free_vma;
 	} else {
+	    /**
+	     *  匿名
+	     */
 		vma_set_anonymous(vma); 
 	}
 
@@ -2347,6 +2353,9 @@ unmap_writable:
 	file = vma->vm_file;    /*  */
     
 out:
+    /**
+     *  
+     */
 	perf_event_mmap(vma);   /*  */
 
 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
@@ -2371,7 +2380,9 @@ out:
 	 * a completely new data area).
 	 */
 	vma->vm_flags |= VM_SOFTDIRTY;
-
+    /**
+     *  
+     */
 	vma_set_page_prot(vma);
 
 	return addr;
@@ -3994,6 +4005,9 @@ SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
 	}
 
 	file = get_file(vma->vm_file);
+    /**
+     *  映射
+     */
 	ret = do_mmap(vma->vm_file, start, size,
 			prot, flags, pgoff, &populate, NULL);
 	fput(file);

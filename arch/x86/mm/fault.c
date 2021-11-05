@@ -1232,6 +1232,9 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 }
 NOKPROBE_SYMBOL(do_kern_addr_fault);
 
+/**
+ *  
+ */
 /* Handle faults in the user portion of the address space */
 static inline   /* 用户态缺页 */
 void do_user_addr_fault(struct pt_regs *regs,
@@ -1244,6 +1247,9 @@ void do_user_addr_fault(struct pt_regs *regs,
 	vm_fault_t fault;
 	unsigned int flags = FAULT_FLAG_DEFAULT;
 
+    /**
+     *  当前进程处理自己的缺页异常
+     */
 	tsk = current;
 	mm = tsk->mm;   /* 获取 mm 结构 */
 
@@ -1492,8 +1498,14 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
        `kmemcheck` fault, spurious fault, [kprobes] fault and etc 
     */
 	if (unlikely(fault_in_kernel_space(address))) { /* 内核小概率 才会发生缺页 */
+        /**
+         *  内核中的缺页，是不可能事件
+         */
 		do_kern_addr_fault(regs, error_code, address);
 	} else {
+	    /**
+         *  用户态的缺页异常
+         */
 		do_user_addr_fault(regs, error_code, address);  /* 用户态发生缺页 */
 		/*
 		 * User address page fault handling might have reenabled
@@ -1515,7 +1527,9 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 {
     struct pt_regs *regs/* 我加的 */;
     int error_code/* 我加的 */;
-    
+    /**
+     *  读取缺页地址
+     */
 	unsigned long address = read_cr2(); /* cr2 = 引发缺页中断的 线性地址 */
 	irqentry_state_t state;
 
