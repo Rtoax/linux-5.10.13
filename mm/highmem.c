@@ -403,7 +403,8 @@ static struct page_address_slot *page_slot(const struct page *page)
  * page_address - get the mapped virtual address of a page
  * @page: &struct page to get the virtual address of
  *
- * Returns the page's virtual address. 返回 page 的虚拟地址(x86-64没有高端内存的概念)
+ * Returns the page's virtual address. 
+ * 返回 page 的虚拟地址(x86-64没有高端内存的概念)
  */
 void *page_address(const struct page *page)
 {
@@ -413,7 +414,9 @@ void *page_address(const struct page *page)
 
 	if (!PageHighMem(page))
 		return lowmem_page_address(page);
-
+    /**
+     *  
+     */
 	pas = page_slot(page);
 	ret = NULL;
 	spin_lock_irqsave(&pas->lock, flags);
