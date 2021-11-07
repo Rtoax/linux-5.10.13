@@ -133,6 +133,9 @@ enum {
 	NFPROTO_BRIDGE =  7,
 	NFPROTO_IPV6   = 10,
 	NFPROTO_DECNET = 12,
+	/**
+     *  最大
+     */
 	NFPROTO_NUMPROTO,
 };
 

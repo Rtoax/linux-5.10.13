@@ -40,7 +40,9 @@ MODULE_DESCRIPTION("Netfilter messages via netlink socket");
 				  lockdep_nfnl_is_held((id)))
 
 #define NFNL_MAX_ATTR_COUNT	32
-
+/**
+ *  
+ */
 static struct {
 	struct mutex				mutex;
 	const struct nfnetlink_subsystem __rcu	*subsys;
@@ -103,7 +105,9 @@ int nfnetlink_subsys_register(const struct nfnetlink_subsystem *n)
 	for (cb_id = 0; cb_id < n->cb_count; cb_id++)
 		if (WARN_ON(n->cb[cb_id].attr_count > NFNL_MAX_ATTR_COUNT))
 			return -EINVAL;
-
+    /**
+     *  
+     */
 	nfnl_lock(n->subsys_id);
 	if (table[n->subsys_id].subsys) {
 		nfnl_unlock(n->subsys_id);

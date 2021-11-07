@@ -37,6 +37,9 @@ struct mountpoint {
 	int m_count;
 };
 
+/**
+ *  
+ */
 struct mount {  /* 挂载点信息 */
 	struct hlist_node mnt_hash;
 	struct mount *mnt_parent;

@@ -570,7 +570,9 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 
 #else /* !CONFIG_SPARSE_IRQ */
 /* 不使用静态 的中断向量表 定义了 CONFIG_SPARSE_IRQ 稀疏IRQs */
-
+/**
+ *  
+ */
 struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
 	[0 ... NR_IRQS-1] = {
 		.handle_irq	= handle_bad_irq,

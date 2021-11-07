@@ -76,7 +76,9 @@ struct nf_hook_state {
 	struct net *net;
 	int (*okfn)(struct net *, struct sock *, struct sk_buff *);
 };
-
+/**
+ *  netfilter 钩子函数
+ */
 typedef unsigned int nf_hookfn(void *priv,
 			       struct sk_buff *skb,
 			       const struct nf_hook_state *state);
@@ -100,7 +102,7 @@ struct nf_hook_ops {
 };
 
 /**
- *  
+ *  netfilter 钩子
  */
 struct nf_hook_entry {
 	nf_hookfn			*hook;
@@ -116,7 +118,7 @@ struct nf_hook_entries_rcu_head {
 };
 
 /**
- *  
+ *  netfilter 钩子函数
  */
 struct nf_hook_entries {
 	u16				num_hook_entries;
@@ -320,7 +322,7 @@ NF_HOOK_COND(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk,
 	return ret;
 }
 /**
- *  
+ *  netfilter 钩子
  */
 static inline int
 NF_HOOK(uint8_t pf, unsigned int hook, struct net *net, struct sock *sk, struct sk_buff *skb,
