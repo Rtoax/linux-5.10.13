@@ -57,7 +57,9 @@ struct crypto_instance {
 
 	void *__ctx[] CRYPTO_MINALIGN_ATTR;
 };
-
+/**
+ *  用于描述模式算法
+ */
 struct crypto_template {
 	struct list_head list;
 	struct hlist_head instances;
