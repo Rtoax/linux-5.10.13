@@ -114,6 +114,7 @@ EXPORT_SYMBOL(atomic64_fetch_##op);
 
 ATOMIC64_OPS(add, +=)
 ATOMIC64_OPS(sub, -=)
+{}//+++
 
 #undef ATOMIC64_OPS
 #define ATOMIC64_OPS(op, c_op)						\
@@ -129,6 +130,7 @@ ATOMIC64_OPS(xor, ^=)
 #undef ATOMIC64_FETCH_OP
 #undef ATOMIC64_OP_RETURN
 #undef ATOMIC64_OP
+{}//+++
 
 s64 atomic64_dec_if_positive(atomic64_t *v)
 {

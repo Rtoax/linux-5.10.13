@@ -1,6 +1,58 @@
 /**
  *  一些配置，阅读代码过程中会注释掉所有不属于此配置的代码
  */
+/* 一些 ARM 相关 配置 */
+#define CONFIG_ARM64  1 /* y */
+#define CONFIG_ARM64_PAGE_SHIFT  1 /* 16 */
+#define CONFIG_ARM64_CONT_SHIFT  1 /* 5 */
+#define CONFIG_ARM64_WORKAROUND_CLEAN_CACHE  1 /* y */
+#define CONFIG_ARM64_ERRATUM_826319  1 /* y */
+#define CONFIG_ARM64_ERRATUM_827319  1 /* y */
+#define CONFIG_ARM64_ERRATUM_824069  1 /* y */
+#define CONFIG_ARM64_ERRATUM_819472  1 /* y */
+#define CONFIG_ARM64_ERRATUM_832075  1 /* y */
+#define CONFIG_ARM64_ERRATUM_834220  1 /* y */
+#define CONFIG_ARM64_ERRATUM_843419  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1024718  1 /* y */
+#define CONFIG_ARM64_WORKAROUND_SPECULATIVE_AT  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1165522  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1319367  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1530923  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1286807  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1463225  1 /* y */
+#define CONFIG_ARM64_ERRATUM_1542419  1 /* y */
+#define CONFIG_ARM64_WORKAROUND_REPEAT_TLBI  1 /* y */
+#define CONFIG_ARM64_64K_PAGES  1 /* y */
+#define CONFIG_ARM64_USER_VA_BITS_52  1 /* y */
+#define CONFIG_ARM64_VA_BITS  1 /* 48 */
+#define CONFIG_ARM64_PA_BITS_52  1 /* y */
+#define CONFIG_ARM64_PA_BITS  1 /* 52 */
+#define CONFIG_ARM64_SSBD  1 /* y */
+#define CONFIG_ARM64_HW_AFDBM  1 /* y */
+#define CONFIG_ARM64_PAN  1 /* y */
+#define CONFIG_ARM64_LSE_ATOMICS  1 /* y */
+#define CONFIG_ARM64_VHE  1 /* y */
+#define CONFIG_ARM64_UAO  1 /* y */
+#define CONFIG_ARM64_PMEM  1 /* y */
+#define CONFIG_ARM64_RAS_EXTN  1 /* y */
+#define CONFIG_ARM64_SVE  1 /* y */
+#define CONFIG_ARM64_MODULE_PLTS  1 /* y */
+#define CONFIG_ARM64_ACPI_PARKING_PROTOCOL  1 /* y */
+#define CONFIG_ARM64_ERRATUM_858921  1 /* y */
+#define CONFIG_ARM64_CRYPTO  1 /* y */
+#define CONFIG_CRYPTO_SHA256_ARM64  1 /* m */
+#define CONFIG_CRYPTO_SHA1_ARM64_CE  1 /* m */
+#define CONFIG_CRYPTO_SHA2_ARM64_CE  1 /* m */
+#define CONFIG_CRYPTO_SM4_ARM64_CE  1 /* m */
+#define CONFIG_CRYPTO_GHASH_ARM64_CE  1 /* m */
+#define CONFIG_CRYPTO_CRCT10DIF_ARM64_CE  1 /* m */
+#define CONFIG_CRYPTO_AES_ARM64  1 /* y */
+#define CONFIG_CRYPTO_AES_ARM64_CE  1 /* y */
+#define CONFIG_CRYPTO_AES_ARM64_CE_CCM  1 /* y */
+#define CONFIG_CRYPTO_AES_ARM64_CE_BLK  1 /* y */
+#define CONFIG_CRYPTO_AES_ARM64_NEON_BLK  1 /* y */
+#define CONFIG_CRYPTO_AES_ARM64_BS  1 /* m */
+
 #define CONFIG_64BIT            /*  */
 #define CONFIG_64BIT 1
 #define CONFIG_6LOWPAN_MODULE 1
