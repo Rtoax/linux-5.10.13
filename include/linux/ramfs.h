@@ -15,7 +15,7 @@ ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
 	return 0;
 }
 #else
-extern int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize);
+//extern int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize);
 #endif
 
 extern const struct fs_parameter_spec ramfs_fs_parameters[];

@@ -103,6 +103,9 @@ struct inode *ramfs_get_inode(struct super_block *sb,
 static int
 ramfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 {
+    /**
+     *  
+     */
 	struct inode * inode = ramfs_get_inode(dir->i_sb, dir, mode, dev);
 	int error = -ENOSPC;
 
@@ -280,6 +283,9 @@ static struct file_system_type ramfs_fs_type = {    /*  */
 
 static int __init init_ramfs_fs(void)
 {
+    /**
+     *  注册 ramfs 文件系统
+     */
 	return register_filesystem(&ramfs_fs_type);
 }
 fs_initcall(init_ramfs_fs);/*初始化 ram 文件系统  */
