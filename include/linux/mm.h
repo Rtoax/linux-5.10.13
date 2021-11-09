@@ -573,6 +573,9 @@ enum page_entry_size {
  */ /* vma操作符 */
 typedef struct mempolicy * pmempolicy_t; /* 我加的 */
 
+/**
+ *  
+ */
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
