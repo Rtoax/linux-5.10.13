@@ -386,9 +386,11 @@ struct static_key_false {   /* jump label */
 	}
 
 extern bool ____wrong_branch_error(void);
-
+/**
+ *  是否使能
+ */
 #define static_key_enabled(x)							\
-({										\
+({	/* 先进行类型检查 */									\
 	if (!__builtin_types_compatible_p(typeof(*x), struct static_key) &&	\
 	    !__builtin_types_compatible_p(typeof(*x), struct static_key_true) &&\
 	    !__builtin_types_compatible_p(typeof(*x), struct static_key_false))	\

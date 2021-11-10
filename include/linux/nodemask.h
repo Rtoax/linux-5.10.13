@@ -437,7 +437,9 @@ static inline int num_node_state(enum node_states state)
 
 #define for_each_node_state(__node, __state) \
 	for_each_node_mask((__node), node_states[__state])  /*  */
-
+/**
+ *  
+ */
 #define first_online_node	first_node(node_states[N_ONLINE])   /* 第一个 NUMA NODE */
 #define first_memory_node	first_node(node_states[N_MEMORY])   /*  */
 static inline int next_online_node(int nid) /*  */
@@ -484,7 +486,9 @@ extern int node_random(const nodemask_t *maskp);
 #define num_possible_nodes()	num_node_state(N_POSSIBLE)
 #define node_online(node)	node_state((node), N_ONLINE)    /* NODE 是否在线 */
 #define node_possible(node)	node_state((node), N_POSSIBLE)
-
+/**
+ *  
+ */
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
 
@@ -498,8 +502,8 @@ extern int node_random(const nodemask_t *maskp);
 			type *name = kmalloc(sizeof(*name), gfp_flags)
 #define NODEMASK_FREE(m)			kfree(m)
 #else
-#define NODEMASK_ALLOC(type, name, gfp_flags)	type _##name, *name = &_##name
-#define NODEMASK_FREE(m)			do {} while (0)
+//#define NODEMASK_ALLOC(type, name, gfp_flags)	type _##name, *name = &_##name
+//#define NODEMASK_FREE(m)			do {} while (0)
 #endif
 
 /* A example struture for using NODEMASK_ALLOC, used in mempolicy. */

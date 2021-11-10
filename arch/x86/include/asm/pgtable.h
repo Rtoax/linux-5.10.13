@@ -947,7 +947,9 @@ static inline int p4d_bad(p4d_t p4d)
 	return (p4d_flags(p4d) & ~ignore_flags) != 0;
 }
 #endif  /* CONFIG_PGTABLE_LEVELS > 3 */
-
+/**
+ *  
+ */
 static inline unsigned long p4d_index(unsigned long address)
 {
 	return (address >> P4D_SHIFT) & (PTRS_PER_P4D - 1);
@@ -977,6 +979,9 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 {
 	if (!pgtable_l5_enabled())
 		return (p4d_t *)pgd;
+    /**
+     *  获取对那个的 p4d
+     */
 	return (p4d_t *)pgd_page_vaddr(*pgd) + p4d_index(address);
 }
 

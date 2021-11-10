@@ -270,6 +270,8 @@ static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
  * This function gets called on a break in a continuous series
  * of PTE entries; the next one is different so we need to
  * print what we collected so far.
+ *
+ *  
  */
 static void note_page(struct ptdump_state *pt_st, unsigned long addr, int level,
 		      u64 val)
@@ -361,7 +363,9 @@ static void note_page(struct ptdump_state *pt_st, unsigned long addr, int level,
 		st->level = level;
 	}
 }
-
+/**
+ *  
+ */
 static void ptdump_walk_pgd_level_core(struct seq_file *m,
 				       struct mm_struct *mm, pgd_t *pgd,
 				       bool checkwx, bool dmesg)
@@ -388,6 +392,9 @@ static void ptdump_walk_pgd_level_core(struct seq_file *m,
 		.seq		= m
 	};
 
+    /**
+     *  
+     */
 	ptdump_walk_pgd(&st.ptdump, mm, pgd);
 
 	if (!checkwx)
@@ -407,11 +414,17 @@ void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm)
 void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
 				   bool user)
 {
+    /**
+     *  获取 pgd
+     */
 	pgd_t *pgd = mm->pgd;
 #ifdef CONFIG_PAGE_TABLE_ISOLATION
 	if (user && boot_cpu_has(X86_FEATURE_PTI))
 		pgd = kernel_to_user_pgdp(pgd);
 #endif
+    /**
+     *  walk
+     */
 	ptdump_walk_pgd_level_core(m, mm, pgd, false, false);
 }
 EXPORT_SYMBOL_GPL(ptdump_walk_pgd_level_debugfs);

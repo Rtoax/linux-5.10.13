@@ -144,7 +144,7 @@ EXPORT_SYMBOL(latent_entropy);
 /*
  * Array of node states.
  *
- * NODE 状态
+ * NODE 状态 掩码
  */
 nodemask_t __read_mostly node_states[NR_NODE_STATES]  = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
@@ -187,12 +187,16 @@ DEFINE_STATIC_KEY_FALSE(init_on_free);
 struct static_key_false init_on_free = STATIC_KEY_FALSE_INIT;
 #endif
 EXPORT_SYMBOL(init_on_free);
-
+/**
+ *  
+ */
 static int __init early_init_on_alloc(char *buf)
 {
 	int ret;
 	bool bool_result;
-
+    /**
+     *  
+     */
 	ret = kstrtobool(buf, &bool_result);
 	if (ret)
 		return ret;

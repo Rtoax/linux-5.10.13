@@ -329,7 +329,9 @@ int kstrtobool(const char *s, bool *res)
 {
 	if (!s)
 		return -EINVAL;
-
+    /**
+     *  Yes, yes, 1 都是 true
+     */
 	switch (s[0]) {
 	case 'y':
 	case 'Y':

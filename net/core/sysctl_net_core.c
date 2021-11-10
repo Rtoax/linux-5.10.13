@@ -27,8 +27,8 @@ static int three = 3;
 static int min_sndbuf = SOCK_MIN_SNDBUF;
 static int min_rcvbuf = SOCK_MIN_RCVBUF;
 static int max_skb_frags = MAX_SKB_FRAGS;
-static long long_one __maybe_unused = 1;
-static long long_max __maybe_unused = LONG_MAX;
+static long __maybe_unused long_one  = 1;
+static long __maybe_unused long_max  = LONG_MAX;
 
 static int net_msg_warn;	/* Unused, but still a sysctl */
 

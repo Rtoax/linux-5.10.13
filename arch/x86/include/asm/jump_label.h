@@ -9,7 +9,7 @@
 #ifdef CONFIG_X86_64
 # define STATIC_KEY_INIT_NOP P6_NOP5_ATOMIC
 #else
-# define STATIC_KEY_INIT_NOP GENERIC_NOP5_ATOMIC
+//# define STATIC_KEY_INIT_NOP GENERIC_NOP5_ATOMIC
 #endif
 
 #include <asm/asm.h>
@@ -19,7 +19,9 @@
 
 #include <linux/stringify.h>
 #include <linux/types.h>
-
+/**
+ *  
+ */
 static __always_inline bool arch_static_branch(struct static_key *key, bool branch) /*  */
 {
 	asm_volatile_goto("1:"
@@ -35,7 +37,9 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
 l_yes:
 	return true;
 }
-
+/**
+ *  
+ */
 static __always_inline bool arch_static_branch_jump(struct static_key *key, bool branch)    /*  */
 {
 	asm_volatile_goto("1:"
