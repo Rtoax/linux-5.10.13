@@ -25,7 +25,9 @@ struct ipc_ids {
 #endif
 	struct rhashtable key_ht;
 };
-
+/**
+ *  
+ */
 struct ipc_namespace {  /*  */
 	refcount_t	count;
 	struct ipc_ids	ids[3]; /* IPC_SEM_IDS IPC_MSG_IDS IPC_SHM_IDS */

@@ -1702,11 +1702,11 @@ static inline bool may_mandlock(void)
 	return capable(CAP_SYS_ADMIN);
 }
 #else
-static inline bool may_mandlock(void)
-{
-	pr_warn("VFS: \"mand\" mount option not supported");
-	return false;
-}
+//static inline bool may_mandlock(void)
+//{
+//	pr_warn("VFS: \"mand\" mount option not supported");
+//	return false;
+//}
 #endif
 
 static int can_umount(const struct path *path, int flags)
@@ -1760,6 +1760,7 @@ static int ksys_umount(char __user *name, int flags)
 	return path_umount(&path, flags);
 }
 
+int umount2(const char *target, int flags){}
 SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 {
 	return ksys_umount(name, flags);
@@ -1770,6 +1771,8 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 /*
  *	The 2.0 compatible umount. No flags.
  */
+int umount(const char *target){}
+int oldumount(const char *target){}
 SYSCALL_DEFINE1(oldumount, char __user *, name)
 {
 	return ksys_umount(name, 0);
@@ -3406,7 +3409,10 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
 }
 EXPORT_SYMBOL(mount_subtree);
 
-SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
+int mount(const char *source, const char *target,
+                 const char *filesystemtype, unsigned long mountflags,
+                 const void *data){}
+SYSCALL_DEFINE5(mount, char __user *, source, char __user *, target,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
 	int ret;
@@ -3419,7 +3425,7 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 	if (IS_ERR(kernel_type))
 		goto out_type;
 
-	kernel_dev = copy_mount_string(dev_name);
+	kernel_dev = copy_mount_string(source);
 	ret = PTR_ERR(kernel_dev);
 	if (IS_ERR(kernel_dev))
 		goto out_dev;
@@ -3429,7 +3435,7 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 	if (IS_ERR(options))
 		goto out_data;
 
-	ret = do_mount(kernel_dev, dir_name, kernel_type, flags, options);
+	ret = do_mount(kernel_dev, target, kernel_type, flags, options);
 
 	kfree(options);
 out_data:
@@ -3688,6 +3694,7 @@ EXPORT_SYMBOL(path_is_under);
  *    though, so you may need to say mount --bind /nfs/my_root /nfs/my_root
  *    first.
  */
+int pivot_root(const char *new_root, const char *put_old){}
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 		const char __user *, put_old)
 {

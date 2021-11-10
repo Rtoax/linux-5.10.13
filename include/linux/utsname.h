@@ -21,6 +21,9 @@ enum uts_proc {
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 
+/**
+ *  hostname / domainname
+ */
 struct uts_namespace {  /* 用来隔离系统 hostname 和 domain */
 	struct kref kref;
 	struct new_utsname name;    /* 新的 UTS */

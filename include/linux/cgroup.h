@@ -795,7 +795,9 @@ static inline struct cgroup *sock_cgroup_ptr(struct sock_cgroup_data *skcd)
 #else	/* CONFIG_CGROUP_DATA */
 /*  */
 #endif	/* CONFIG_CGROUP_DATA */
-
+/**
+ *  
+ */
 struct cgroup_namespace {
 	refcount_t		count;
 	struct ns_common	ns;

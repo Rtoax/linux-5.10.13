@@ -21,7 +21,9 @@ struct old_utsname {
 	char version[65];
 	char machine[65];
 };
-
+/**
+ *  
+ */
 struct new_utsname {
 	char sysname[__NEW_UTS_LEN + 1];
 	char nodename[__NEW_UTS_LEN + 1];

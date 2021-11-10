@@ -30,6 +30,9 @@ struct fs_struct;
  */
 struct nsproxy {/* 命名空间代理 */
 	atomic_t count;
+    /**
+     *  
+     */
 	struct uts_namespace *uts_ns;
 	struct ipc_namespace *ipc_ns;
 	struct mnt_namespace *mnt_ns;

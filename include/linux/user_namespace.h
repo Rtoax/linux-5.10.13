@@ -88,7 +88,10 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 	struct ucounts		*ucounts;
 	int ucount_max[UCOUNT_COUNTS];  /*  */
 } __randomize_layout;
-
+typedef struct user_namespace * user_namespace_t;//+++
+/**
+ *  
+ */
 struct ucounts {
 	struct hlist_node node;
 	struct user_namespace *ns;
