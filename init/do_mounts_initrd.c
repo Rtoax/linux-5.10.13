@@ -11,12 +11,16 @@
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
-
+/**
+ *  initrd 的始末地址
+ */
 unsigned long initrd_start, initrd_end;
 int initrd_below_start_ok;
 unsigned int real_root_dev;	/* do_proc_dointvec cannot handle kdev_t */
 static int __initdata mount_initrd = 1;
-
+/**
+ *  
+ */
 phys_addr_t __initdata phys_initrd_start ;
 unsigned long __initdata phys_initrd_size ;
 
@@ -34,6 +38,9 @@ static int __init early_initrdmem(char *p)
 	unsigned long size;
 	char *endp;
 
+    /**
+     *  
+     */
 	start = memparse(p, &endp);
 	if (*endp == ',') {
 		size = memparse(endp + 1, NULL);
@@ -45,8 +52,14 @@ static int __init early_initrdmem(char *p)
 }
 early_param("initrdmem", early_initrdmem);
 
+/**
+ *  initrd=/boot/initrd.img ...
+ */
 static int __init early_initrd(char *p)
 {
+    /**
+     *  加载 initrd
+     */
 	return early_initrdmem(p);
 }
 early_param("initrd", early_initrd);

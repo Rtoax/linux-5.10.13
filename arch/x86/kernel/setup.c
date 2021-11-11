@@ -238,16 +238,24 @@ static void __init reserve_brk(void)    /*  */
 u64 relocated_ramdisk;
 
 #ifdef CONFIG_BLK_DEV_INITRD
-
+/**
+ *  get initrd 物理地址
+ */
 static u64 __init get_ramdisk_image(void)   /* RAM */
 {
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
 
+    /**
+     *  initrd
+     */
 	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
 
 	if (ramdisk_image == 0)
 		ramdisk_image = phys_initrd_start;  /*  */
 
+    /**
+     *  initrd
+     */
 	return ramdisk_image;
 }
 static u64 __init get_ramdisk_size(void)
@@ -261,7 +269,9 @@ static u64 __init get_ramdisk_size(void)
 
 	return ramdisk_size;
 }
-
+/**
+ *  
+ */
 static void __init relocate_initrd(void)
 {
 	/* Assume only end is not page aligned */
@@ -326,6 +336,8 @@ static void __init early_reserve_initrd(void)
  *  根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移
  *
  *  Ram Disk - initRD - initrd
+ *
+ *  
  */
 static void __init reserve_initrd(void)
 {
@@ -344,6 +356,9 @@ static void __init reserve_initrd(void)
 	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
 			ramdisk_end - 1);
 
+    /**
+     *  
+     */
 	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
 				PFN_DOWN(ramdisk_end))) {
 		/* All are mapped, easy case */
@@ -352,6 +367,9 @@ static void __init reserve_initrd(void)
 		return;
 	}
 
+    /**
+     *  
+     */
     /* see early_reserve_initrd() */
 	relocate_initrd();
 
