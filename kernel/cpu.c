@@ -2523,6 +2523,8 @@ void __init boot_cpu_hotplug_init(void)
 /*
  * These are used for a global "mitigations=" cmdline option for toggling
  * optional CPU mitigations.
+ *
+ * 缓解措施
  */
 enum cpu_mitigations {
 	CPU_MITIGATIONS_OFF,
@@ -2532,7 +2534,9 @@ enum cpu_mitigations {
 
 static enum cpu_mitigations __ro_after_init cpu_mitigations  =
 	CPU_MITIGATIONS_AUTO;
-
+/**
+ *  mitigations - 缓解措施
+ */
 static int __init mitigations_parse_cmdline(char *arg)
 {
 	if (!strcmp(arg, "off"))
