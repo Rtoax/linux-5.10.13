@@ -1662,7 +1662,13 @@ int __ref offline_pages(unsigned long start_pfn, unsigned long nr_pages)
 
 	node_states_clear_node(node, &arg);
 	if (arg.status_change_nid >= 0) {
+        /**
+         *  
+         */
 		kswapd_stop(node);
+        /**
+         *  
+         */
 		kcompactd_stop(node);
 	}
 
