@@ -87,6 +87,9 @@ extern int selinux_enabled_boot;
 struct selinux_avc;
 struct selinux_policy;
 
+/**
+ *  
+ */
 struct selinux_state {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
 	bool disabled;
