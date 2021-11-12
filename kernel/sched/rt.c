@@ -2807,8 +2807,9 @@ void print_rt_stats(struct seq_file *m, int cpu)
 	struct rt_rq *rt_rq;
 
 	rcu_read_lock();
-	for_each_rt_rq(rt_rq, iter, cpu_rq(cpu))
+	for_each_rt_rq(rt_rq, iter, cpu_rq(cpu)) {
 		print_rt_rq(m, cpu, rt_rq);
+    }
 	rcu_read_unlock();
 }
 #endif /* CONFIG_SCHED_DEBUG */

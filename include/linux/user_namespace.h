@@ -36,7 +36,9 @@ struct uid_gid_map { /* 64 bytes -- 1 cache line */
 #define USERNS_INIT_FLAGS USERNS_SETGROUPS_ALLOWED
 
 struct ucounts;
-
+/**
+ *  每个命名空间的计数
+ */
 enum ucount_type {  /*  */
 	UCOUNT_USER_NAMESPACES,
 	UCOUNT_PID_NAMESPACES,
@@ -53,11 +55,17 @@ enum ucount_type {  /*  */
 	UCOUNT_COUNTS,
 };
 
+/**
+ *  user 命名空间
+ */
 struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 	struct uid_gid_map	uid_map;
 	struct uid_gid_map	gid_map;
 	struct uid_gid_map	projid_map;
 	atomic_t		count;
+    /**
+     *  指向父亲
+     */
 	struct user_namespace	*parent;
 	int			level;
 	kuid_t			owner;
@@ -85,6 +93,9 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 	struct ctl_table_set	set;
 	struct ctl_table_header *sysctls;
 #endif
+    /**
+     *  计数
+     */
 	struct ucounts		*ucounts;
 	int ucount_max[UCOUNT_COUNTS];  /*  */
 } __randomize_layout;
@@ -97,6 +108,9 @@ struct ucounts {
 	struct user_namespace *ns;
 	kuid_t uid;
 	int count;
+    /**
+     *  计数
+     */
 	atomic_t ucount[UCOUNT_COUNTS];
 };
 
@@ -141,49 +155,7 @@ extern bool in_userns(const struct user_namespace *ancestor,
 extern bool current_in_userns(const struct user_namespace *target_ns);
 struct ns_common *ns_get_owner(struct ns_common *ns);
 #else
-
-//static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
-//{
-//	return &init_user_ns;
-//}
-//
-//static inline int create_user_ns(struct cred *new)
-//{
-//	return -EINVAL;
-//}
-//
-//static inline int unshare_userns(unsigned long unshare_flags,
-//				 struct cred **new_cred)
-//{
-//	if (unshare_flags & CLONE_NEWUSER)
-//		return -EINVAL;
-//	return 0;
-//}
-//
-//static inline void put_user_ns(struct user_namespace *ns)
-//{
-//}
-//
-//static inline bool userns_may_setgroups(const struct user_namespace *ns)
-//{
-//	return true;
-//}
-//
-//static inline bool in_userns(const struct user_namespace *ancestor,
-//			     const struct user_namespace *child)
-//{
-//	return true;
-//}
-//
-//static inline bool current_in_userns(const struct user_namespace *target_ns)
-//{
-//	return true;
-//}
-//
-//static inline struct ns_common *ns_get_owner(struct ns_common *ns)
-//{
-//	return ERR_PTR(-EPERM);
-//}
+/*  */
 #endif
 
 #endif /* _LINUX_USER_H */
