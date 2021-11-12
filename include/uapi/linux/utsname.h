@@ -22,7 +22,7 @@ struct old_utsname {
 	char machine[65];
 };
 /**
- *  
+ *  新的比旧的多了一个 domainname
  */
 struct new_utsname {
 	char sysname[__NEW_UTS_LEN + 1];

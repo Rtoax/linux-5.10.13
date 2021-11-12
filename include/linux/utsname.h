@@ -26,7 +26,13 @@ extern struct user_namespace init_user_ns;
  */
 struct uts_namespace {  /* 用来隔离系统 hostname 和 domain */
 	struct kref kref;
+    /**
+     *  新的 uts
+     */
 	struct new_utsname name;    /* 新的 UTS */
+    /**
+     *  UTS 
+     */
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;
 	struct ns_common ns;

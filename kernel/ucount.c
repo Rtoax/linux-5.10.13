@@ -61,6 +61,15 @@ static struct ctl_table_root set_root = {
 		.extra1		= SYSCTL_ZERO,		\
 		.extra2		= SYSCTL_INT_MAX,	\
 	}
+///proc/sys/user/max_xxxxxx
+//user.max_cgroup_namespaces = 26287
+//user.max_ipc_namespaces = 26287
+//user.max_mnt_namespaces = 26287
+//user.max_net_namespaces = 26287
+//user.max_pid_namespaces = 26287
+//user.max_time_namespaces = 26287
+//user.max_user_namespaces = 26287
+//user.max_uts_namespaces = 26287
 static struct ctl_table user_table[] = {
 	UCOUNT_ENTRY("max_user_namespaces"),
 	UCOUNT_ENTRY("max_pid_namespaces"),
