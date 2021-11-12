@@ -186,15 +186,7 @@ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
 struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
 void cpufreq_cpu_put(struct cpufreq_policy *policy);
 #else
-static inline struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-{
-	return NULL;
-}
-static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
-{
-	return NULL;
-}
-static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
+/*  */
 #endif
 
 static inline bool policy_is_inactive(struct cpufreq_policy *policy)
@@ -228,27 +220,7 @@ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
 void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
 void cpufreq_disable_fast_switch(struct cpufreq_policy *policy);
 #else
-static inline unsigned int cpufreq_get(unsigned int cpu)
-{
-	return 0;
-}
-static inline unsigned int cpufreq_quick_get(unsigned int cpu)
-{
-	return 0;
-}
-static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
-{
-	return 0;
-}
-static inline unsigned int cpufreq_get_hw_max_freq(unsigned int cpu)
-{
-	return 0;
-}
-static inline bool cpufreq_supports_freq_invariance(void)
-{
-	return false;
-}
-static inline void disable_cpufreq(void) { }
+/*  */
 #endif
 
 #ifdef CONFIG_CPU_FREQ_STAT
@@ -257,10 +229,7 @@ void cpufreq_stats_free_table(struct cpufreq_policy *policy);
 void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
 				     unsigned int new_freq);
 #else
-static inline void cpufreq_stats_create_table(struct cpufreq_policy *policy) { }
-static inline void cpufreq_stats_free_table(struct cpufreq_policy *policy) { }
-static inline void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
-						   unsigned int new_freq) { }
+/*  */
 #endif /* CONFIG_CPU_FREQ_STAT */
 
 /*********************************************************************
@@ -478,8 +447,7 @@ void cpufreq_suspend(void);
 void cpufreq_resume(void);
 int cpufreq_generic_suspend(struct cpufreq_policy *policy);
 #else
-static inline void cpufreq_suspend(void) {}
-static inline void cpufreq_resume(void) {}
+/*  */
 #endif
 
 /*********************************************************************
@@ -507,16 +475,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
 		struct cpufreq_freqs *freqs, int transition_failed);
 
 #else /* CONFIG_CPU_FREQ */
-static inline int cpufreq_register_notifier(struct notifier_block *nb,
-						unsigned int list)
-{
-	return 0;
-}
-static inline int cpufreq_unregister_notifier(struct notifier_block *nb,
-						unsigned int list)
-{
-	return 0;
-}
+/*  */
 #endif /* !CONFIG_CPU_FREQ */
 
 /**
@@ -671,18 +630,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
 void dev_pm_opp_free_cpufreq_table(struct device *dev,
 				   struct cpufreq_frequency_table **table);
 #else
-static inline int dev_pm_opp_init_cpufreq_table(struct device *dev,
-						struct cpufreq_frequency_table
-						**table)
-{
-	return -EINVAL;
-}
-
-static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
-						 struct cpufreq_frequency_table
-						 **table)
-{
-}
+/*  */
 #endif
 
 /*
@@ -996,38 +944,20 @@ static inline int cpufreq_table_count_valid_entries(const struct cpufreq_policy 
 	return count;
 }
 #else
-static inline int cpufreq_boost_trigger_state(int state)
-{
-	return 0;
-}
-static inline int cpufreq_boost_enabled(void)
-{
-	return 0;
-}
-
-static inline int cpufreq_enable_boost_support(void)
-{
-	return -EINVAL;
-}
-
-static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
-{
-	return false;
-}
+/*  */
 #endif
 
 #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
 void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
 			struct cpufreq_governor *old_gov);
 #else
-static inline void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
-			struct cpufreq_governor *old_gov) { }
+/*  */
 #endif
 
 extern void arch_freq_prepare_all(void);
 extern unsigned int arch_freq_get_on_cpu(int cpu);
 
-#ifndef arch_set_freq_scale
+#ifndef arch_set_freq_scales
 static __always_inline
 void arch_set_freq_scale(const struct cpumask *cpus,
 			 unsigned long cur_freq,

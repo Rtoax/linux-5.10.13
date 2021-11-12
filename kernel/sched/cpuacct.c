@@ -275,6 +275,9 @@ static int cpuacct_stats_show(struct seq_file *sf, void *v)
 	int stat;
 
 	memset(val, 0, sizeof(val));
+    /**
+     *  
+     */
 	for_each_possible_cpu(cpu) {
 		u64 *cpustat = per_cpu_ptr(ca->cpustat, cpu)->cpustat;
 
@@ -325,6 +328,9 @@ static struct cftype files[] = {
 		.seq_show = cpuacct_all_seq_show,
 	},
 	{
+	    /**
+	     *  
+	     */
 		.name = "stat",
 		.seq_show = cpuacct_stats_show,
 	},

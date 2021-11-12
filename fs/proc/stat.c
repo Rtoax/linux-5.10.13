@@ -95,7 +95,9 @@ static void show_irq_gap(struct seq_file *p, unsigned int gap)
 static void show_all_irqs(struct seq_file *p)
 {
 	unsigned int i, next = 0;
-
+    /**
+     *  
+     */
 	for_each_active_irq(i) {
 		show_irq_gap(p, i - next);
 		seq_put_decimal_ull(p, " ", kstat_irqs_usr(i));
@@ -103,7 +105,30 @@ static void show_all_irqs(struct seq_file *p)
 	}
 	show_irq_gap(p, nr_irqs - next);
 }
-
+/**
+ *  
+ * $ cat /proc/stat | sed 's/^/ * /g'
+ * cpu  15691 821 58028 36979803 1407 11576 11927 0 0 0
+ * cpu0 3004 375 8256 3075792 103 890 641 0 0 0
+ * cpu1 1766 154 5253 3081507 33 766 497 0 0 0
+ * cpu2 1507 3 5613 3081482 38 781 528 0 0 0
+ * cpu3 1251 29 3959 3083403 33 763 530 0 0 0
+ * cpu4 1007 11 5041 3081851 64 1434 1328 0 0 0
+ * cpu5 850 1 4758 3082933 144 745 701 0 0 0
+ * cpu6 2303 6 5438 3080576 300 960 520 0 0 0
+ * cpu7 847 2 4313 3076065 129 2473 5336 0 0 0
+ * cpu8 833 214 4309 3083573 161 692 393 0 0 0
+ * cpu9 774 3 3775 3084242 126 714 479 0 0 0
+ * cpu10 781 10 3295 3084742 144 682 413 0 0 0
+ * cpu11 762 8 4013 3083633 127 671 555 0 0 0
+ * intr 7828171 158 0 0 0 0 0 0 0 0 15 0 0 0 0 0 0 ......
+ * ctxt 7282788
+ * btime 1636676847
+ * processes 13235
+ * procs_running 2
+ * procs_blocked 0
+ * softirq 6796511 563 1243106 5801 753646 72 0 21906 2552119 22 2219276
+ */
 static int show_stat(struct seq_file *p, void *v)
 {
 	int i, j;
@@ -118,11 +143,15 @@ static int show_stat(struct seq_file *p, void *v)
 		irq = softirq = steal = 0;
 	guest = guest_nice = 0;
 	getboottime64(&boottime);
-
+    /**
+     *  
+     */
 	for_each_possible_cpu(i) {
 		struct kernel_cpustat kcpustat;
 		u64 *cpustat = kcpustat.cpustat;
-
+        /**
+         *  获取 CPU 的 stat 统计
+         */
 		kcpustat_cpu_fetch(&kcpustat, i);
 
 		user		+= cpustat[CPUTIME_USER];
@@ -140,13 +169,20 @@ static int show_stat(struct seq_file *p, void *v)
 
 		for (j = 0; j < NR_SOFTIRQS; j++) {
 			unsigned int softirq_stat = kstat_softirqs_cpu(j, i);
-
+            /**
+             *  统计
+             */
 			per_softirq_sums[j] += softirq_stat;
 			sum_softirq += softirq_stat;
 		}
 	}
 	sum += arch_irq_stat();
 
+    /**
+     *  打印
+     *  
+     * cpu  15691 821 58028 36979803 1407 11576 11927 0 0 0
+     */
 	seq_put_decimal_ull(p, "cpu  ", nsec_to_clock_t(user));
 	seq_put_decimal_ull(p, " ", nsec_to_clock_t(nice));
 	seq_put_decimal_ull(p, " ", nsec_to_clock_t(system));
@@ -159,6 +195,11 @@ static int show_stat(struct seq_file *p, void *v)
 	seq_put_decimal_ull(p, " ", nsec_to_clock_t(guest_nice));
 	seq_putc(p, '\n');
 
+    /**
+     *  打印
+     * cpu0 3004 375 8256 3075792 103 890 641 0 0 0
+     *  ...
+     */
 	for_each_online_cpu(i) {
 		struct kernel_cpustat kcpustat;
 		u64 *cpustat = kcpustat.cpustat;
@@ -189,10 +230,16 @@ static int show_stat(struct seq_file *p, void *v)
 		seq_put_decimal_ull(p, " ", nsec_to_clock_t(guest_nice));
 		seq_putc(p, '\n');
 	}
-	seq_put_decimal_ull(p, "intr ", (unsigned long long)sum);
 
+    /**
+     *  显示所有 中断
+     */
+	seq_put_decimal_ull(p, "intr ", (unsigned long long)sum);    
 	show_all_irqs(p);
 
+    /**
+     *  
+     */
 	seq_printf(p,
 		"\nctxt %llu\n"
 		"btime %llu\n"
@@ -205,6 +252,9 @@ static int show_stat(struct seq_file *p, void *v)
 		nr_running(),
 		nr_iowait());
 
+    /**
+     *  打印所有softirqs
+     */
 	seq_put_decimal_ull(p, "softirq ", (unsigned long long)sum_softirq);
 
 	for (i = 0; i < NR_SOFTIRQS; i++)
@@ -231,6 +281,9 @@ static const struct proc_ops stat_proc_ops = {
 	.proc_release	= single_release,
 };
 
+/**
+ *  /proc/stat
+ */
 static int __init proc_stat_init(void)
 {
 	proc_create("stat", 0, NULL, &stat_proc_ops);

@@ -18,19 +18,51 @@
  */
 
 enum cpu_usage_stat {
+    /**
+     *  用户空间占用CPU时间
+     */
 	CPUTIME_USER,
+	/**
+     *  高nice进程(低优先级)用户空间占用时间
+     */
 	CPUTIME_NICE,
+	/**
+     *  内核态占用CPU时间
+     */
 	CPUTIME_SYSTEM,
+	/**
+     *  软件中断占用CPU时间
+     */
 	CPUTIME_SOFTIRQ,
+	/**
+     *  硬中断占用CPU时间
+     */
 	CPUTIME_IRQ,
+	/**
+     *  CPU空闲时间
+     */
 	CPUTIME_IDLE,
+	/**
+     *  CPU等待IO时间
+     */
 	CPUTIME_IOWAIT,
+	/**
+     *  Guest OS 等待 real CPU 的时间
+     */
 	CPUTIME_STEAL,
+	/**
+     *  Guest OS 消耗时间
+     */
 	CPUTIME_GUEST,
+	/**
+     *  高nice进程(低优先级)，Guest OS 消耗的时间
+     */
 	CPUTIME_GUEST_NICE,
 	NR_STATS,
 };
-
+/**
+ *  CPU 时间统计值
+ */
 struct kernel_cpustat {
 	u64 cpustat[NR_STATS];
 };
@@ -42,6 +74,8 @@ struct kernel_stat {
 
 DECLARE_PER_CPU(struct kernel_stat, kstat);
 DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
+struct kernel_stat __percpu kstat;//++++
+struct kernel_cpustat __percpu kernel_cpustat;//++++
 
 /* Must have preemption disabled for this to be meaningful. */
 #define kstat_this_cpu this_cpu_ptr(&kstat)
@@ -91,6 +125,9 @@ static inline u64 kcpustat_field(struct kernel_cpustat *kcpustat,
 
 static inline void kcpustat_cpu_fetch(struct kernel_cpustat *dst, int cpu)
 {
+    /**
+     *  获取
+     */
 	*dst = kcpustat_cpu(cpu);
 }
 
