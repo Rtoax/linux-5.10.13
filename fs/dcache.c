@@ -96,6 +96,12 @@ EXPORT_SYMBOL(slash_name);
 
 static unsigned int __read_mostly d_hash_shift ;/*  */
 
+/**
+ *  struct dentry.d_hash 为 hash 节点
+ *  系统为 dentry 结构的hash表，
+ *  利用 文件路径快速查 hash 表 dentry_hashtable 
+ *  可以快速找到与之对应的 inode 结构
+ */
 static struct hlist_bl_head __read_mostly*dentry_hashtable ;/* 目录的哈希表 */
 
 static inline struct hlist_bl_head *d_hash(unsigned int hash)
@@ -487,6 +493,9 @@ static void ___d_drop(struct dentry *dentry)
 		b = d_hash(dentry->d_name.hash);
 
 	hlist_bl_lock(b);
+    /**
+     *  从 dentry_hashtable 中删除
+     */
 	__hlist_bl_del(&dentry->d_hash);
 	hlist_bl_unlock(b);
 }
@@ -2014,7 +2023,9 @@ struct dentry *d_make_root(struct inode *root_inode)
 	return res;
 }
 EXPORT_SYMBOL(d_make_root);
-
+/**
+ *  
+ */
 static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 					   struct inode *inode,
 					   bool disconnected)
@@ -2038,6 +2049,9 @@ static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 		add_flags |= DCACHE_DISCONNECTED;
 
 	spin_lock(&dentry->d_lock);
+    /**
+     *  
+     */
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 	if (!disconnected) {
@@ -3157,7 +3171,9 @@ static int __init set_dhash_entries(char *str)
 	return 1;
 }
 __setup("dhash_entries=", set_dhash_entries);
-
+/**
+ *  初始化 dentry hash表
+ */
 static void __init dcache_init_early(void)  /*  */
 {
 	/* If hashes are distributed across NUMA nodes, defer
@@ -3166,6 +3182,10 @@ static void __init dcache_init_early(void)  /*  */
 	if (hashdist)
 		return;
 
+    /**
+     *  每个文件都有 dentry 结构，所以说也不能叫做 目录哈希表
+     *      荣涛 2021年11月13日21:41:03
+     */
 	dentry_hashtable /* 目录哈希表 */=
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
@@ -3178,7 +3198,9 @@ static void __init dcache_init_early(void)  /*  */
 					0);
 	d_hash_shift = 32 - d_hash_shift;
 }
-
+/**
+ *  
+ */
 static void __init dcache_init(void)    /*文件目录缓存  */
 {
 	/*

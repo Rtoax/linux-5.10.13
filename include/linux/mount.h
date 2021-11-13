@@ -67,7 +67,9 @@ struct fs_context;
 #define MNT_MARKED		0x4000000
 #define MNT_UMOUNT		0x8000000
 #define MNT_CURSOR		0x10000000
-
+/**
+ *  
+ */
 struct vfsmount {   /* 挂载点 */
     /**
      *  

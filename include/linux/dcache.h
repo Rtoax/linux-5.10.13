@@ -77,17 +77,20 @@ extern struct dentry_stat_t dentry_stat;
 #ifdef CONFIG_64BIT
 # define DNAME_INLINE_LEN 32 /* 192 bytes */
 #else
-# ifdef CONFIG_SMP
-#  define DNAME_INLINE_LEN 36 /* 128 bytes */
-# else
-#  define DNAME_INLINE_LEN 40 /* 128 bytes */
-# endif
+//# ifdef CONFIG_SMP
+//#  define DNAME_INLINE_LEN 36 /* 128 bytes */
+//# else
+//#  define DNAME_INLINE_LEN 40 /* 128 bytes */
+//# endif
 #endif
 
 #define d_lock	d_lockref.lock
 
 /**
- *  
+ *  每个文件实体都有一个dentry结构
+ *  1. 建立文件名和 inode 之间的联系
+ *  2. 建立文件实体见的关联关系
+ *  3. 描述文件实体的关联属性
  */
 struct dentry {
 	/* RCU lookup touched fields */
@@ -95,7 +98,9 @@ struct dentry {
 	seqcount_spinlock_t d_seq;	/* per dentry seqlock */
 
     /**
-     *  
+     *  系统为 dentry 结构的hash表，
+     *  利用 文件路径快速查 hash 表 dentry_hashtable 
+     *  可以快速找到与之对应的 inode 结构
      */
 	struct hlist_bl_node d_hash;	/* lookup hash list */
 

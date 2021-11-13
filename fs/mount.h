@@ -40,10 +40,13 @@ struct mountpoint {
 };
 
 /**
- *  
+ *  挂载点
  */
 struct mount {  /* 挂载点信息 */
 	struct hlist_node mnt_hash;
+    /**
+     *  
+     */
 	struct mount *mnt_parent;
 	struct dentry *mnt_mountpoint;
 	struct vfsmount mnt;

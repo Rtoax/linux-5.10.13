@@ -55,7 +55,7 @@ struct crypto_instance {
 		struct crypto_spawn *spawns;
 	};
 
-	void *__ctx[] CRYPTO_MINALIGN_ATTR;
+	void CRYPTO_MINALIGN_ATTR *__ctx[] ;
 };
 /**
  *  用于描述模式算法
