@@ -22,7 +22,7 @@
 #include <linux/lsm_hooks.h>
 #include <linux/magic.h>
 
-static struct vfsmount *mount;
+static struct vfsmount *vfs_mount; //修改了名字 mount -> vfs_mount
 static int mount_count;
 
 static void securityfs_free_inode(struct inode *inode)
@@ -118,12 +118,12 @@ static struct dentry *securityfs_create_dentry(const char *name, umode_t mode,
 
 	pr_debug("securityfs: creating file '%s'\n",name);
 
-	error = simple_pin_fs(&fs_type, &mount, &mount_count);
+	error = simple_pin_fs(&fs_type, &vfs_mount, &mount_count);
 	if (error)
 		return ERR_PTR(error);
 
 	if (!parent)
-		parent = mount->mnt_root;
+		parent = vfs_mount->mnt_root;
 
 	dir = d_inode(parent);
 
@@ -168,7 +168,7 @@ out1:
 	dentry = ERR_PTR(error);
 out:
 	inode_unlock(dir);
-	simple_release_fs(&mount, &mount_count);
+	simple_release_fs(&vfs_mount, &mount_count);
 	return dentry;
 }
 
@@ -309,7 +309,7 @@ void securityfs_remove(struct dentry *dentry)
 		dput(dentry);
 	}
 	inode_unlock(dir);
-	simple_release_fs(&mount, &mount_count);
+	simple_release_fs(&vfs_mount, &mount_count);
 }
 EXPORT_SYMBOL_GPL(securityfs_remove);
 

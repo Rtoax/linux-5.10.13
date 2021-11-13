@@ -65,8 +65,13 @@ __setup("mphash_entries=", set_mphash_entries);
 static u64 event;
 static DEFINE_IDA(mnt_id_ida);
 static DEFINE_IDA(mnt_group_ida);
-
+/**
+ *  节点为 struct mount.mnt_hash
+ */
 static struct hlist_head __read_mostly *mount_hashtable ;    /*  */
+/**
+ *  节点为 struct mountpoint.m_hash
+ */
 static struct hlist_head __read_mostly *mountpoint_hashtable ;
 static struct kmem_cache __read_mostly *mnt_cache ;
 static DECLARE_RWSEM(namespace_sem);
@@ -86,12 +91,17 @@ EXPORT_SYMBOL_GPL(fs_kobj);
  * tree or hash is modified or when a vfsmount structure is modified.
  */
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
-
+/**
+ *  
+ */
 static inline struct hlist_head *m_hash(struct vfsmount *mnt, struct dentry *dentry)
 {
 	unsigned long tmp = ((unsigned long)mnt / L1_CACHE_BYTES);
 	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
 	tmp = tmp + (tmp >> m_hash_shift);
+    /**
+     *  
+     */
 	return &mount_hashtable[tmp & m_hash_mask];
 }
 
@@ -610,6 +620,9 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 	struct hlist_head *head = m_hash(mnt, dentry);
 	struct mount *p;
 
+    /**
+     *  
+     */
 	hlist_for_each_entry_rcu(p, head, mnt_hash)
 		if (&p->mnt_parent->mnt == mnt && p->mnt_mountpoint == dentry)
 			return p;
@@ -1809,7 +1822,9 @@ static bool mnt_ns_loop(struct dentry *dentry)
 	mnt_ns = to_mnt_ns(get_proc_ns(dentry->d_inode));
 	return current->nsproxy->mnt_ns->seq >= mnt_ns->seq;
 }
-
+/**
+ *  拷贝安装树
+ */
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)
 {
@@ -3291,7 +3306,9 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 	new_ns->ucounts = ucounts;
 	return new_ns;
 }
-
+/**
+ *  拷贝 mnt namespace
+ */
 __latent_entropy
 struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 		struct user_namespace *user_ns, struct fs_struct *new_fs)
@@ -3305,6 +3322,10 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 
 	BUG_ON(!ns);
 
+    /**
+     *  一定要有这个哦，没有的话，直接返回原来的哦
+     *  荣涛 2021年11月13日23:44:19
+     */
 	if (likely(!(flags & CLONE_NEWNS))) {
 		get_mnt_ns(ns);
 		return ns;
@@ -3312,6 +3333,9 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 
 	old = ns->root;
 
+    /**
+     *  分配这个结构
+     */
 	new_ns = alloc_mnt_ns(user_ns, false);
 	if (IS_ERR(new_ns))
 		return new_ns;
@@ -3321,6 +3345,9 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	copy_flags = CL_COPY_UNBINDABLE | CL_EXPIRE;
 	if (user_ns != ns->user_ns)
 		copy_flags |= CL_SHARED_TO_SLAVE;
+    /**
+     *  拷贝 tree
+     */
 	new = copy_tree(old, old->mnt.mnt_root, copy_flags);
 	if (IS_ERR(new)) {
 		namespace_unlock();
@@ -3342,6 +3369,10 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	 */
 	p = old;
 	q = new;
+
+    /**
+     *  
+     */
 	while (p) {
 		q->mnt_ns = new_ns;
 		new_ns->mounts++;
@@ -3364,6 +3395,9 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	}
 	namespace_unlock();
 
+    /**
+     *  
+     */
 	if (rootmnt)
 		mntput(rootmnt);
 	if (pwdmnt)
@@ -3823,20 +3857,31 @@ static void __init init_mount_tree(void)    /*  */
 	set_fs_pwd(current->fs, &root);
 	set_fs_root(current->fs, &root);
 }
-
+/**
+ *  
+ */
 void __init mnt_init(void)  /* 挂载 */
 {
 	int err;
 
+    /**
+     *  为 mount 结构创建 slab
+     */
 	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount),
 			0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
 
+    /**
+     *  分配hash表
+     */
 	mount_hashtable = alloc_large_system_hash("Mount-cache",
 				sizeof(struct hlist_head),
 				mhash_entries, 19,
 				HASH_ZERO,
 				&m_hash_shift, &m_hash_mask, 0, 0);
-	mountpoint_hashtable = alloc_large_system_hash("Mountpoint-cache",
+    /**
+     *  
+     */
+    mountpoint_hashtable = alloc_large_system_hash("Mountpoint-cache",
 				sizeof(struct hlist_head),
 				mphash_entries, 19,
 				HASH_ZERO,
@@ -3845,12 +3890,22 @@ void __init mnt_init(void)  /* 挂载 */
 	if (!mount_hashtable || !mountpoint_hashtable)
 		panic("Failed to allocate mount hash table\n");
 
+    /**
+     *  
+     */
 	kernfs_init();  /* kernfd 缓存 */
 
+    /**
+     *  
+     */
 	err = sysfs_init(); /* sysfs 缓存申请与 文件系统注册 */
 	if (err)
 		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
 			__func__, err);
+
+    /**
+     *  /sys/fs
+     */
 	fs_kobj = kobject_create_and_add("fs"/* /sys/fs */, NULL/* 为空标识 /sys */);
 	if (!fs_kobj)
 		printk(KERN_WARNING "%s: kobj create error\n", __func__);

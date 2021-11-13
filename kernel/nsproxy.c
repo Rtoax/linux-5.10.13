@@ -31,7 +31,7 @@ static struct kmem_cache *nsproxy_cachep;
 
 
 /**
- *  
+ *  总要有第一个，所以静态分配
  */
 struct nsproxy init_nsproxy /* init_task 的命名空间代理， namespace-资源隔离 */= {
 	init_nsproxy.count			= ATOMIC_INIT(1),
@@ -42,6 +42,9 @@ struct nsproxy init_nsproxy /* init_task 的命名空间代理， namespace-资�
 	init_nsproxy.mnt_ns			= NULL,
 	init_nsproxy.pid_ns_for_children	= &init_pid_ns,/*  */
 #ifdef CONFIG_NET
+    /**
+     *  网络的这个比较神奇
+     */
 	init_nsproxy.net_ns			= &init_net,/*  */
 #endif
 #ifdef CONFIG_CGROUPS
@@ -67,7 +70,7 @@ static inline struct nsproxy *create_nsproxy(void)  /*  */
  * Create new nsproxy and all of its the associated namespaces.
  * Return the newly created nsproxy.  Do not attach this to the task,
  * leave it to the caller to do proper locking and attach it to task.
- */ /*  */
+ */
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct task_struct *tsk, struct user_namespace *user_ns,
 	struct fs_struct *new_fs)
@@ -75,48 +78,69 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct nsproxy *new_nsp;
 	int err;
 
+    /**
+     *  nsproxy 一定是要有的，所以没有 flags 传入
+     */
 	new_nsp = create_nsproxy(); /* 分配内存 */
 	if (!new_nsp)
 		return ERR_PTR(-ENOMEM);
 
+    /**
+     *  mnt namespace
+     */
 	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);    /* 挂载 */
 	if (IS_ERR(new_nsp->mnt_ns)) {
 		err = PTR_ERR(new_nsp->mnt_ns);
 		goto out_ns;
 	}
 
+    /**
+     *  UTS namespace
+     */
 	new_nsp->uts_ns = copy_utsname(flags, user_ns, tsk->nsproxy->uts_ns);   /* UTS */
 	if (IS_ERR(new_nsp->uts_ns)) {
 		err = PTR_ERR(new_nsp->uts_ns);
 		goto out_uts;
 	}
 
+    /**
+     *  IPC namespace
+     */
 	new_nsp->ipc_ns = copy_ipcs(flags, user_ns, tsk->nsproxy->ipc_ns);  /* IPC */
 	if (IS_ERR(new_nsp->ipc_ns)) {
 		err = PTR_ERR(new_nsp->ipc_ns);
 		goto out_ipc;
 	}
 
+    /**
+     *  PID namespace
+     */
 	new_nsp->pid_ns_for_children =
 		copy_pid_ns(flags, user_ns, tsk->nsproxy->pid_ns_for_children); /* PID */
 	if (IS_ERR(new_nsp->pid_ns_for_children)) {
 		err = PTR_ERR(new_nsp->pid_ns_for_children);
 		goto out_pid;
 	}
-
+    /**
+     *  cgroup namespace
+     */
 	new_nsp->cgroup_ns = copy_cgroup_ns(flags, user_ns, /* CGroup */
 					    tsk->nsproxy->cgroup_ns);
 	if (IS_ERR(new_nsp->cgroup_ns)) {
 		err = PTR_ERR(new_nsp->cgroup_ns);
 		goto out_cgroup;
 	}
-
+    /**
+     *  网络名字空间
+     */
 	new_nsp->net_ns = copy_net_ns(flags, user_ns, tsk->nsproxy->net_ns);    /* 网络 ** */
 	if (IS_ERR(new_nsp->net_ns)) {
 		err = PTR_ERR(new_nsp->net_ns);
 		goto out_net;
 	}
-
+    /**
+     *  时间名字空间
+     */
 	new_nsp->time_ns_for_children = copy_time_ns(flags, user_ns,    /* time */
 					tsk->nsproxy->time_ns_for_children);
 	if (IS_ERR(new_nsp->time_ns_for_children)) {
@@ -181,10 +205,16 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 		(CLONE_NEWIPC | CLONE_SYSVSEM)) 
 		return -EINVAL;
 
+    /**
+     *  根据 CLONE_xxx 判定创建哪些 namespace
+     */
 	new_ns = create_new_namespaces(flags, tsk, user_ns, tsk->fs);   /*  */
 	if (IS_ERR(new_ns))
 		return  PTR_ERR(new_ns);
 
+    /**
+     *  
+     */
 	ret = timens_on_fork(new_ns, tsk);
 	if (ret) {
 		free_nsproxy(new_ns);
@@ -223,7 +253,10 @@ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 {
 	struct user_namespace *user_ns;
 	int err = 0;
-
+    
+    /**
+     *  
+     */
 	if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
 			       CLONE_NEWNET | CLONE_NEWPID | CLONE_NEWCGROUP |
 			       CLONE_NEWTIME)))
@@ -233,6 +266,9 @@ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 	if (!ns_capable(user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
+    /**
+     *  
+     */
 	*new_nsp = create_new_namespaces(unshare_flags, current, user_ns,
 					 new_fs ? new_fs : current->fs);
 	if (IS_ERR(*new_nsp)) {

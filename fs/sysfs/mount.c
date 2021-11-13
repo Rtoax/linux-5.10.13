@@ -93,7 +93,9 @@ static struct file_system_type sysfs_fs_type = {    /*  */
 	.kill_sb		= sysfs_kill_sb,
 	.fs_flags		= FS_USERNS_MOUNT,
 };
-
+/**
+ *  
+ */
 int __init sysfs_init(void) /* sysfs 缓存 */
 {
 	int err;
@@ -105,6 +107,9 @@ int __init sysfs_init(void) /* sysfs 缓存 */
 
 	sysfs_root_kn = sysfs_root->kn;
 
+    /**
+     *  注册 sysfs 文件系统
+     */
 	err = register_filesystem(&sysfs_fs_type);  /* 注册文件系统 sysfs - 插入到全局链表*/
 	if (err) {
 		kernfs_destroy_root(sysfs_root);

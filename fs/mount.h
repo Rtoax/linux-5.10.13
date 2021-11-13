@@ -66,8 +66,13 @@ struct mnt_pcp {
 	int mnt_count;
 	int mnt_writers;
 };
-
+/**
+ *  
+ */
 struct mountpoint {
+    /**
+     *  全局变量 mountpoint_hashtable 的节点
+     */
 	struct hlist_node m_hash;
 	struct dentry *m_dentry;
 	struct hlist_head m_list;
@@ -78,6 +83,9 @@ struct mountpoint {
  *  挂载点
  */
 struct mount {  /* 挂载点信息 */
+    /**
+     *  全局变量 mount_hashtable 中的节点
+     */
 	struct hlist_node mnt_hash;
     /**
      *  
@@ -100,7 +108,8 @@ struct mount {  /* 挂载点信息 */
      */
 	struct list_head mnt_mounts;	/* list of children, anchored here */
 	struct list_head mnt_child;	/* and going through their mnt_child */
-	struct list_head mnt_instance;	/* mount instance on sb->s_mounts */    /* 在 super_block->s_mounts 链表的 节点 */
+	struct list_head mnt_instance;	/* mount instance on sb->s_mounts */ 
+                                /* 在 super_block->s_mounts 链表的 节点 */
 	const char *mnt_devname;	/* Name of device e.g. /dev/dsk/hda1 */
 	struct list_head mnt_list;
 	struct list_head mnt_expire;	/* link in fs-specific expiry list */
