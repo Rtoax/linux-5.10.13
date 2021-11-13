@@ -104,7 +104,7 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 } __randomize_layout;
 typedef struct user_namespace * user_namespace_t;//+++
 /**
- *  
+ *  各类 名字空间的实际数量
  */
 struct ucounts {
 	struct hlist_node node;

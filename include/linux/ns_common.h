@@ -4,7 +4,7 @@
 
 struct proc_ns_operations;
 /**
- *  
+ *  名字空间超类
  */
 struct ns_common {  /* namespace 公共信息 */
 	atomic_long_t stashed;

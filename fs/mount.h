@@ -5,25 +5,60 @@
 #include <linux/ns_common.h>
 #include <linux/fs_pin.h>
 /**
- *  
+ *  mount 名字空间
  */
 struct mnt_namespace {
+    /**
+     *  引用计数
+     */
 	atomic_t		count;
+    /**
+     *  名字空间超类
+     */
 	struct ns_common	ns;
+    /**
+     *  安装树的根
+     */
 	struct mount *	root;
 	/*
 	 * Traversal and modification of .list is protected by either
 	 * - taking namespace_sem for write, OR
 	 * - taking namespace_sem for read AND taking .ns_lock.
+	 *
+	 * 名字空间的所有 mount 结构
 	 */
 	struct list_head	list;
+    /**
+     *  用于保证 list 结构的安全
+     */
 	spinlock_t		ns_lock;
+    /**
+     *  创建者的 USER 名字空间
+     */
 	struct user_namespace	*user_ns;
+    /**
+     *  用户空间的各类名字空间的实际数量
+     */
 	struct ucounts		*ucounts;
+    /**
+     *  序列号，用于确定名字空间的创建顺序
+     */
 	u64			seq;	/* Sequence number to prevent loops */
+    /**
+     *  等待名字空间变化的进程队列
+     */
 	wait_queue_head_t poll;
+    /**
+     *  等待的事件
+     */
 	u64 event;
+    /**
+     *  名字空间中的 mount 结构数量
+     */
 	unsigned int		mounts; /* # of mounts in the namespace */
+    /**
+     *  名字空间中正在安装的 mount 结构数量
+     */
 	unsigned int		pending_mounts;
 } __randomize_layout;
 
@@ -60,6 +95,9 @@ struct mount {  /* 挂载点信息 */
 	int mnt_count;
 	int mnt_writers;
 #endif
+    /**
+     *  
+     */
 	struct list_head mnt_mounts;	/* list of children, anchored here */
 	struct list_head mnt_child;	/* and going through their mnt_child */
 	struct list_head mnt_instance;	/* mount instance on sb->s_mounts */    /* 在 super_block->s_mounts 链表的 节点 */
