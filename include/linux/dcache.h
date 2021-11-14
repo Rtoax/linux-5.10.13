@@ -127,6 +127,9 @@ struct dentry {
 
 	/* Ref lookup also touches following */
 	struct lockref d_lockref;	/* per-dentry lock and refcount */
+    /**
+     *  
+     */
 	const struct dentry_operations *d_op;
 	struct super_block *d_sb;	/* The root of the dentry tree */
 	unsigned long d_time;		/* used by d_revalidate */
@@ -176,6 +179,9 @@ struct dentry_operations {
 	void (*d_release)(struct dentry *);
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
+    /**
+     *  
+     */
 	pchar_t (*d_dname)(struct dentry *, char *, int);
 	vfsmount_t (*d_automount)(struct path *);
 	int (*d_manage)(const struct path *, bool);

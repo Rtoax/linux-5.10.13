@@ -988,6 +988,10 @@ struct file {   /*  */
      *  
      */
 	struct inode		*f_inode;	/* cached value */
+    /**
+     *  文件描述符操作符
+     *  namespace -> ns_file_operations, see proc_ns_file()
+     */
 	const struct file_operations	*f_op;  /* 文件操作符 */
 
 	/*
@@ -1037,7 +1041,7 @@ struct file {   /*  */
      *  __bpf_map_get() 中对应 struct bpf_map * 结构
      *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
      *  seq_release() 中对应 struct seq_file * 结构
-     *
+     *  pid 中对应 struct pid * 结构
      *  [...]
      */
 	void			*private_data;

@@ -570,17 +570,23 @@ static void commit_nsset(struct nsset *nsset)
 	nsset->nsproxy = NULL;
 }
 
+/**
+ *  
+ */
+int setns(int fd, int nstype){}//+++++
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {
 	struct file *file;
 	struct ns_common *ns = NULL;
-	struct nsset nsset = {};
+	struct nsset __nsset = {};
 	int err = 0;
 
 	file = fget(fd);
 	if (!file)
 		return -EBADF;
-
+    /**
+     *  是否为ns
+     */
 	if (proc_ns_file(file)) {
 		ns = get_proc_ns(file_inode(file));
 		if (flags && (ns->ops->type != flags))
@@ -594,19 +600,25 @@ SYSCALL_DEFINE2(setns, int, fd, int, flags)
 	if (err)
 		goto out;
 
-	err = prepare_nsset(flags, &nsset);
+    /**
+     *  
+     */
+	err = prepare_nsset(flags, &__nsset);
 	if (err)
 		goto out;
-
+    /**
+     *  why again?
+     */
 	if (proc_ns_file(file))
-		err = validate_ns(&nsset, ns);
+		err = validate_ns(&__nsset, ns);
 	else
-		err = validate_nsset(&nsset, file->private_data);
+		err = validate_nsset(&__nsset, file->private_data);
+    
 	if (!err) {
-		commit_nsset(&nsset);
+		commit_nsset(&__nsset);
 		perf_event_namespaces(current);
 	}
-	put_nsset(&nsset);
+	put_nsset(&__nsset);
 out:
 	fput(file);
 	return err;

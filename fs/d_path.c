@@ -224,7 +224,9 @@ static int path_with_deleted(const struct path *path,
 		if (error)
 			return error;
 	}
-
+    /**
+     *  
+     */
 	return prepend_path(path, root, buf, buflen);
 }
 
@@ -232,7 +234,9 @@ static int prepend_unreachable(char **buffer, int *buflen)
 {
 	return prepend(buffer, buflen, "(unreachable)", 13);
 }
-
+/**
+ *  
+ */
 static void get_fs_root_rcu(struct fs_struct *fs, struct path *root)
 {
 	unsigned seq;
@@ -259,7 +263,7 @@ static void get_fs_root_rcu(struct fs_struct *fs, struct path *root)
  *
  * "buflen" should be positive.
  */
-char *d_path(const struct path *path, char *buf, int buflen)
+char *d_path(const struct path *_path, char *buf, int buflen)
 {
 	char *res = buf + buflen;
 	struct path root;
@@ -276,13 +280,19 @@ char *d_path(const struct path *path, char *buf, int buflen)
 	 * path->dentry == path->mnt->mnt_root.  In that case don't call d_dname
 	 * and instead have d_path return the mounted path.
 	 */
-	if (path->dentry->d_op && path->dentry->d_op->d_dname &&
-	    (!IS_ROOT(path->dentry) || path->dentry != path->mnt->mnt_root))
-		return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
+	if (_path->dentry->d_op && _path->dentry->d_op->d_dname &&
+	    (!IS_ROOT(_path->dentry) || _path->dentry != _path->mnt->mnt_root))
+		return _path->dentry->d_op->d_dname(_path->dentry, buf, buflen);
 
+    /**
+     *  
+     */
 	rcu_read_lock();
 	get_fs_root_rcu(current->fs, &root);
-	error = path_with_deleted(path, &root, &res, &buflen);
+    /**
+     *  
+     */
+	error = path_with_deleted(_path, &root, &res, &buflen);
 	rcu_read_unlock();
 
 	if (error < 0)

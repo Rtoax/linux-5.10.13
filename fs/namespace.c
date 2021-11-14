@@ -3739,27 +3739,37 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 
 	if (!may_mount())
 		return -EPERM;
-
+    /**
+     *  
+     */
 	error = user_path_at(AT_FDCWD, new_root,
 			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &new);
 	if (error)
 		goto out0;
-
+    /**
+     *  
+     */
 	error = user_path_at(AT_FDCWD, put_old,
 			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &old);
 	if (error)
 		goto out1;
-
+    /**
+     *  
+     */
 	error = security_sb_pivotroot(&old, &new);
 	if (error)
 		goto out2;
-
+    /**
+     *  
+     */
 	get_fs_root(current->fs, &root);
 	old_mp = lock_mount(&old);
 	error = PTR_ERR(old_mp);
 	if (IS_ERR(old_mp))
 		goto out3;
-
+    /**
+     *  
+     */
 	error = -EINVAL;
 	new_mnt = real_mount(new.mnt);
 	root_mnt = real_mount(root.mnt);

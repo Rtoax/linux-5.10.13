@@ -2377,7 +2377,9 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 	terminate_walk(nd);
 	return err;
 }
-
+/**
+ *  
+ */
 int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		    struct path *path, struct path *root)
 {
@@ -2666,10 +2668,15 @@ int path_pts(struct path *path)
 	return 0;
 }
 #endif
-
+/**
+ *  
+ */
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)
 {
+    /**
+     *  
+     */
 	return filename_lookup(dfd, getname_flags(name, flags, empty),
 			       flags, path, NULL);
 }

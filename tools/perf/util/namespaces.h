@@ -14,7 +14,7 @@
 #include <linux/types.h>
 
 #ifndef HAVE_SETNS_SUPPORT
-int setns(int fd, int nstype);
+//int setns(int fd, int nstype);
 #endif
 
 struct perf_record_namespaces;

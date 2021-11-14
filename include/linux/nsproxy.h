@@ -52,6 +52,8 @@ extern struct nsproxy init_nsproxy;
  * point to a modifiable set of credentials. If a pointer
  * to a modifiable set is needed nsset_cred() must be
  * used and tested.
+ *
+ * 
  */
 struct nsset {  /*  */
 	unsigned flags;
