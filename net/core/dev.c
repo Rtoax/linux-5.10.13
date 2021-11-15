@@ -4263,6 +4263,9 @@ static inline void ____napi_schedule(struct softnet_data *sd,
 				     struct napi_struct *napi)
 {
 	list_add_tail(&napi->poll_list, &sd->poll_list);
+    /**
+     *  raise 一个 softirq
+     */
 	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
 }
 
@@ -4554,10 +4557,16 @@ static int enqueue_to_backlog(struct sk_buff *skb, int cpu,
 	rps_lock(sd);
 	if (!netif_running(skb->dev))
 		goto drop;
+    /**
+     *  
+     */
 	qlen = skb_queue_len(&sd->input_pkt_queue);
 	if (qlen <= netdev_max_backlog && !skb_flow_limit(skb, qlen)) {
 		if (qlen) {
 enqueue:
+            /**
+             *  添加到队列
+             */
 			__skb_queue_tail(&sd->input_pkt_queue, skb);
 			input_queue_tail_incr_save(sd, qtail);
 			rps_unlock(sd);
@@ -4570,6 +4579,9 @@ enqueue:
 		 */
 		if (!__test_and_set_bit(NAPI_STATE_SCHED, &sd->backlog.state)) {
 			if (!rps_ipi_queued(sd))
+                /**
+                 *  NAPI 调度
+                 */
 				____napi_schedule(sd, &sd->backlog);
 		}
 		goto enqueue;
@@ -4781,11 +4793,16 @@ out_redir:
 	return XDP_DROP;
 }
 EXPORT_SYMBOL_GPL(do_xdp_generic);
-
+/**
+ *  
+ */
 static int netif_rx_internal(struct sk_buff *skb)
 {
 	int ret;
 
+    /**
+     *  时间戳检测
+     */
 	net_timestamp_check(netdev_tstamp_prequeue, skb);
 
 	trace_netif_rx(skb);
@@ -4810,7 +4827,9 @@ static int netif_rx_internal(struct sk_buff *skb)
 #endif
 	{
 		unsigned int qtail;
-
+        /**
+         *  入队挤压队列
+         */
 		ret = enqueue_to_backlog(skb, get_cpu(), &qtail);
 		put_cpu();
 	}
@@ -4853,6 +4872,9 @@ int netif_rx_ni(struct sk_buff *skb)
 
 	preempt_disable();
 	err = netif_rx_internal(skb);
+    /**
+     *  
+     */
 	if (local_softirq_pending())
 		do_softirq();
 	preempt_enable();
