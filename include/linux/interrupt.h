@@ -68,7 +68,8 @@
  * IRQF_XXX 用于申请中断时描述该中断的特性， irqaction.flags
  */
 /**
- *  Linux 内核支持所有总线的中断共享
+ *  Linux 内核支持所有总线的中断共享, 例如可以在 /proc/interrupts 对应的允许共享的中断线 
+ *  进行 request_irq() 就可以添加该终端线的处理函数。
  */
 #define IRQF_SHARED		    0x00000080  //允许多个设备共享此中断号
 /**
