@@ -18,6 +18,7 @@ typedef struct {
 #endif
 	unsigned int __nmi_count;	/* arch dependent */
 #ifdef CONFIG_X86_LOCAL_APIC
+    //Local timer interrupts
 	unsigned int apic_timer_irqs;	/* arch dependent */
 	unsigned int irq_spurious_count;
 	unsigned int icr_read_retry_count;
@@ -32,7 +33,7 @@ typedef struct {
 	unsigned int apic_irq_work_irqs;
 #ifdef CONFIG_SMP
     /**
-     * re-调度中断
+     * re-调度中断 Rescheduling interrupts
      */
 	unsigned int irq_resched_count;
 	unsigned int irq_call_count;

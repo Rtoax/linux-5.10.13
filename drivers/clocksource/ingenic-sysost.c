@@ -338,6 +338,9 @@ static int __init ingenic_ost_percpu_timer_init(struct device_node *np,
 
 	snprintf(ost->name, sizeof(ost->name), "OST percpu timer");
 
+    /**
+     *  中断，timer是不共享的
+     */
 	err = request_irq(timer_virq, ingenic_ost_cevt_cb, IRQF_TIMER,
 			  ost->name, &ost->cevt);
 	if (err)

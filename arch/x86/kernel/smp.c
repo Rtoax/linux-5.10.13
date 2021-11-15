@@ -226,7 +226,11 @@ DEFINE_IDTENTRY_SYSVEC_SIMPLE(sysvec_reschedule_ipi)
 {
 	ack_APIC_irq();
 	trace_reschedule_entry(RESCHEDULE_VECTOR);
+    //Rescheduling interrupts
 	inc_irq_stat(irq_resched_count);
+    /**
+     *  
+     */
 	scheduler_ipi();
 	trace_reschedule_exit(RESCHEDULE_VECTOR);
 }

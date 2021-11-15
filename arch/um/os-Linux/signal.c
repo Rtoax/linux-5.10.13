@@ -91,6 +91,9 @@ static void timer_real_alarm_handler(mcontext_t *mc)
 		get_regs_from_mc(&regs, mc);
 	else
 		memset(&regs, 0, sizeof(regs));
+    /**
+     *  
+     */
 	timer_handler(SIGALRM, NULL, &regs);
 }
 

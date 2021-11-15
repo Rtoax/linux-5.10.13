@@ -638,7 +638,7 @@ static bool arch_timer_counter_has_wa(void)
 /**
  *  
  */
-static __always_inline irqreturn_t timer_handler(const int access,
+static __always_inline irqreturn_t rtoax_timer_handler(const int access,
 					struct clock_event_device *evt)
 {
 	unsigned long ctrl;
@@ -665,28 +665,28 @@ static irqreturn_t arch_timer_handler_virt(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = dev_id;
 
-	return timer_handler(ARCH_TIMER_VIRT_ACCESS, evt);
+	return rtoax_timer_handler(ARCH_TIMER_VIRT_ACCESS, evt);
 }
 
 static irqreturn_t arch_timer_handler_phys(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = dev_id;
 
-	return timer_handler(ARCH_TIMER_PHYS_ACCESS, evt);
+	return rtoax_timer_handler(ARCH_TIMER_PHYS_ACCESS, evt);
 }
 
 static irqreturn_t arch_timer_handler_phys_mem(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = dev_id;
 
-	return timer_handler(ARCH_TIMER_MEM_PHYS_ACCESS, evt);
+	return rtoax_timer_handler(ARCH_TIMER_MEM_PHYS_ACCESS, evt);
 }
 
 static irqreturn_t arch_timer_handler_virt_mem(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = dev_id;
 
-	return timer_handler(ARCH_TIMER_MEM_VIRT_ACCESS, evt);
+	return rtoax_timer_handler(ARCH_TIMER_MEM_VIRT_ACCESS, evt);
 }
 
 static __always_inline int timer_shutdown(const int access,

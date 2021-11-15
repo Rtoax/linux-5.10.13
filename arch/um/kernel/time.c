@@ -520,7 +520,7 @@ void timer_handler(int sig, struct siginfo *unused_si, struct uml_pt_regs *regs)
 	local_irq_save(flags);
 
     /**
-     *  
+     *  执行一个 irq
      */
 	do_IRQ(TIMER_IRQ, regs);
 	local_irq_restore(flags);

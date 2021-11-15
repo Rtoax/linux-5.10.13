@@ -81,6 +81,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
     }
 	seq_puts(p, "  Non-maskable interrupts\n");
 #ifdef CONFIG_X86_LOCAL_APIC
+    //LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
 	seq_printf(p, "%*s: ", prec, "LOC");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
@@ -116,6 +117,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
 	}
 #endif
 #ifdef CONFIG_SMP
+    //Rescheduling interrupts
 	seq_printf(p, "%*s: ", prec, "RES");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
@@ -124,6 +126,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
      *  re-调度中断
      */
 	seq_puts(p, "  Rescheduling interrupts\n");
+    
 	seq_printf(p, "%*s: ", prec, "CAL");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);

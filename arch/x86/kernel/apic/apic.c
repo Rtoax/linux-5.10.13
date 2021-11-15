@@ -1077,9 +1077,14 @@ static void local_apic_timer_interrupt(void)
 
 	/*
 	 * the NMI deadlock-detector uses this.
+	 * 
+	 * /proc/interrupts: LOC xxx Local timer interrupts
 	 */
 	inc_irq_stat(apic_timer_irqs);
 
+    /**
+     *  回调
+     */
 	evt->event_handler(evt);
 }
 
@@ -1091,15 +1096,36 @@ static void local_apic_timer_interrupt(void)
  * [ if a single-CPU system runs an SMP kernel then we call the local
  *   interrupt as well. Thus we cannot inline the local irq ... ]
  */
+__visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
+{
+    irqentry_state_t state = irqentry_enter(regs);
+
+    instrumentation_begin();
+    __irq_enter_raw();
+    kvm_set_cpu_l1tf_flush_l1d();
+    /**
+     *  
+     */
+    __sysvec_apic_timer_interrupt(regs);
+    __irq_exit_raw();
+    instrumentation_end();
+    irqentry_exit(regs, state);
+}
+static __always_inline void __sysvec_apic_timer_interrupt(struct pt_regs *regs);//++++
 DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
 {
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
 	ack_APIC_irq();
 	trace_local_timer_entry(LOCAL_TIMER_VECTOR);
+    /**
+     *  Local timer entry
+     */
 	local_apic_timer_interrupt();
 	trace_local_timer_exit(LOCAL_TIMER_VECTOR);
-
+    /**
+     *  
+     */
 	set_irq_regs(old_regs);
 }
 

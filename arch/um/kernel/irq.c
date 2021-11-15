@@ -417,6 +417,9 @@ unsigned int do_IRQ(int irq, struct uml_pt_regs *regs)
 {
 	struct pt_regs *old_regs = set_irq_regs((struct pt_regs *)regs);
 	irq_enter();
+    /**
+     *  
+     */
 	generic_handle_irq(irq);
 	irq_exit();
 	set_irq_regs(old_regs);
