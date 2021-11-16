@@ -4125,13 +4125,18 @@ static void mntns_put(struct ns_common *ns)
 {
 	put_mnt_ns(to_mnt_ns(ns));
 }
-
-static int mntns_install(struct nsset *nsset, struct ns_common *ns)
+/**
+ *  
+ */
+static int mntns_install(struct nsset *_nsset, struct ns_common *ns)
 {
-	struct nsproxy *nsproxy = nsset->nsproxy;
-	struct fs_struct *fs = nsset->fs;
+	struct nsproxy *nsproxy = _nsset->nsproxy;
+	struct fs_struct *fs = _nsset->fs;
+    /**
+     *  
+     */
 	struct mnt_namespace *mnt_ns = to_mnt_ns(ns), *old_mnt_ns;
-	struct user_namespace *user_ns = nsset->cred->user_ns;
+	struct user_namespace *user_ns = _nsset->cred->user_ns;
 	struct path root;
 	int err;
 
@@ -4145,9 +4150,19 @@ static int mntns_install(struct nsset *nsset, struct ns_common *ns)
 
 	if (fs->users != 1)
 		return -EINVAL;
-
+    /**
+     *  引用计数
+     */
 	get_mnt_ns(mnt_ns);
+
+    /**
+     *  保存旧的
+     */
 	old_mnt_ns = nsproxy->mnt_ns;
+
+    /**
+     *  安装
+     */
 	nsproxy->mnt_ns = mnt_ns;
 
 	/* Find the root */
@@ -4159,7 +4174,9 @@ static int mntns_install(struct nsset *nsset, struct ns_common *ns)
 		put_mnt_ns(mnt_ns);
 		return err;
 	}
-
+    /**
+     *  
+     */
 	put_mnt_ns(old_mnt_ns);
 
 	/* Update the pwd and root */
