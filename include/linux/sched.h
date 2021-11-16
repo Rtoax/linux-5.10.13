@@ -859,6 +859,9 @@ struct task_struct {    /* PCB */
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: 例如: PF_IDLE */
 	unsigned int			flags;  
+    /**
+     *  
+     */
 	unsigned int			ptrace;
 
 #ifdef CONFIG_SMP
@@ -866,8 +869,11 @@ struct task_struct {    /* PCB */
      *  标识进程正处于运行状态
      */
 	int				on_cpu;
-    
+    /**
+     *  
+     */
 	struct __call_single_node	wake_entry;
+    
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* Current CPU: */
     /**
@@ -984,7 +990,9 @@ struct task_struct {    /* PCB */
      */
 	struct task_group		*sched_task_group;/* cgroup 调度 */
 #endif
-
+    /**
+     *  
+     */
     struct sched_dl_entity		dl;
 
 #ifdef CONFIG_UCLAMP_TASK 
@@ -1008,7 +1016,9 @@ struct task_struct {    /* PCB */
 #ifdef CONFIG_BLK_DEV_IO_TRACE
 	unsigned int			btrace_seq;
 #endif
-
+    /**
+     *  
+     */
 	unsigned int			policy;
 
     /**
@@ -1078,8 +1088,13 @@ struct task_struct {    /* PCB */
     /* 对不同页面的统计计数 */
 	struct task_rss_stat		rss_stat;   /* 文件映射、匿名映射、交换 */
 #endif
-    
+    /**
+     *  
+     */
 	int				exit_state;
+    /**
+     *  
+     */
 	int				exit_code;
 
     /**
@@ -1215,7 +1230,9 @@ struct task_struct {    /* PCB */
 	struct hlist_node		pid_links[PIDTYPE_MAX];
 	struct list_head		thread_group;/* 组 */
 	struct list_head		thread_node;/*  */
-
+    /**
+     *  vfork()
+     */
 	struct completion		*vfork_done;/* 等待vfork系统调用结束 */
 
 	/* CLONE_CHILD_SETTID: */
@@ -1223,7 +1240,9 @@ struct task_struct {    /* PCB */
 
 	/* CLONE_CHILD_CLEARTID: */
 	int __user			*clear_child_tid;
-
+    /**
+     *  
+     */
 	u64				utime;
 	u64				stime;
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
@@ -1260,7 +1279,9 @@ struct task_struct {    /* PCB */
 	struct posix_cputimers_work	posix_cputimers_work;   /* 任务工作 */
 #endif
 
-	/* Process credentials: */
+	/**
+	 *  Process credentials: 
+	 */
 
 	/* Tracer's credentials at attach: */
 	const struct cred __rcu		*ptracer_cred;
@@ -1286,7 +1307,9 @@ struct task_struct {    /* PCB */
 	 * 线程名
 	 */
 	char				comm[TASK_COMM_LEN];
-
+    /**
+     *  
+     */
 	struct nameidata		*nameidata;
 
 #ifdef CONFIG_SYSVIPC
@@ -1315,12 +1338,18 @@ struct task_struct {    /* PCB */
 	struct io_uring_task		*io_uring;  /* AIO 异步IO */
 #endif
 
-	/* Namespaces: */
+	/**
+	 *  Namespaces: 
+	 */
 	struct nsproxy			*nsproxy;   /*  */
 
 	/* Signal handlers: */
 	struct signal_struct		*signal;/* 进程信号 */
 	struct sighand_struct __rcu		*sighand;
+
+    /**
+     *  
+     */
 	sigset_t			blocked;
 	sigset_t			real_blocked;
 	/* Restored if set_restore_sigmask() was used: */
@@ -1330,6 +1359,9 @@ struct task_struct {    /* PCB */
      *  挂起的信号链表
      */
 	struct sigpending		pending;
+    /**
+     *  
+     */
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;
 	unsigned int			sas_ss_flags;
@@ -1346,6 +1378,9 @@ struct task_struct {    /* PCB */
 	kuid_t				loginuid;
 	unsigned int			sessionid;
 #endif
+    /**
+     *  
+     */
 	struct seccomp			seccomp;    /* 限制系统调用 */
 
 	/* Thread group tracking: */

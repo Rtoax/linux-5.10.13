@@ -5,7 +5,9 @@
 #include <linux/path.h>
 #include <linux/spinlock.h>
 #include <linux/seqlock.h>
-
+/**
+ *  
+ */
 struct fs_struct {/* 文件系统 */
 	int users;
 	spinlock_t lock;

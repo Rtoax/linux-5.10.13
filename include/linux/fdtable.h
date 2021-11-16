@@ -74,6 +74,9 @@ struct files_struct {/* 打开的文件 */
 	unsigned long close_on_exec_init[1];
 	unsigned long open_fds_init[1];
 	unsigned long full_fds_bits_init[1];
+    /**
+     *  
+     */
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
 
