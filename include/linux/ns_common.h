@@ -8,6 +8,9 @@ struct proc_ns_operations;
  */
 struct ns_common {  /* namespace 公共信息 */
 	atomic_long_t stashed;
+    /**
+     *  
+     */
 	const struct proc_ns_operations *ops;
     /**
      *  namespace 的 编号

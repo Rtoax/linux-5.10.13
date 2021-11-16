@@ -443,7 +443,9 @@ out:
 
 	return err;
 }
-
+/**
+ *  /proc/PID/ns/time
+ */
 const struct proc_ns_operations timens_operations = {
 	.name		= "time",
 	.type		= CLONE_NEWTIME,
@@ -452,7 +454,9 @@ const struct proc_ns_operations timens_operations = {
 	.install	= timens_install,
 	.owner		= timens_owner,
 };
-
+/**
+ *  /proc/PID/ns/time_for_children
+ */
 const struct proc_ns_operations timens_for_children_operations = {
 	.name		= "time_for_children",
 	.real_ns_name	= "time",

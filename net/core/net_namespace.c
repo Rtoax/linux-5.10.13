@@ -1375,7 +1375,9 @@ static struct user_namespace *netns_owner(struct ns_common *ns)
 {
 	return to_net_ns(ns)->user_ns;
 }
-
+/**
+ *  /proc/PID/ns/net
+ */
 const struct proc_ns_operations netns_operations = {
 	.name		= "net",
 	.type		= CLONE_NEWNET,

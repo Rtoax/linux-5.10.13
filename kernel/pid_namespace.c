@@ -432,7 +432,9 @@ static struct user_namespace *pidns_owner(struct ns_common *ns)
 {
 	return to_pid_ns(ns)->user_ns;
 }
-
+/**
+ *  /proc/PID/ns/pid
+ */
 const struct proc_ns_operations pidns_operations = {
 	.name		= "pid",
 	.type		= CLONE_NEWPID,
@@ -442,7 +444,9 @@ const struct proc_ns_operations pidns_operations = {
 	.owner		= pidns_owner,
 	.get_parent	= pidns_get_parent,
 };
-
+/**
+ *  /proc/PID/ns/pid_for_children
+ */
 const struct proc_ns_operations pidns_for_children_operations = {
 	.name		= "pid_for_children",
 	.real_ns_name	= "pid",

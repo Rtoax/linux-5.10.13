@@ -140,7 +140,9 @@ static struct user_namespace *cgroupns_owner(struct ns_common *ns)
 {
 	return to_cg_ns(ns)->user_ns;
 }
-
+/**
+ *  /proc/PID/ns/cgroup
+ */
 const struct proc_ns_operations cgroupns_operations = {
 	.name		= "cgroup",
 	.type		= CLONE_NEWCGROUP,

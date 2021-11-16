@@ -9,6 +9,7 @@
 
 /*
  * Some day this will be a full-fledged user tracking system..
+ * really? rongtao
  */
 struct user_struct {    /*  */
 	refcount_t __count;	/* reference count */

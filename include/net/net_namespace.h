@@ -88,7 +88,9 @@ struct net {    /* 网络命名空间 */
 	struct user_namespace   *user_ns;	/* Owning user namespace */
 	struct ucounts		*ucounts;
 	struct idr		netns_ids;
-
+    /**
+     *  netns_get()
+     */
 	struct ns_common	ns;
 
 	struct list_head 	dev_base_head;

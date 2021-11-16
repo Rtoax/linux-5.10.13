@@ -7873,7 +7873,9 @@ static void perf_event_namespaces_output(struct perf_event *event,
 out:
 	namespaces_event->event_id.header.size = header_size;
 }
-
+/**
+ *  
+ */
 static void perf_fill_ns_link_info(struct perf_ns_link_info *ns_link_info,
 				   struct task_struct *task,
 				   const struct proc_ns_operations *ns_ops)
@@ -7916,6 +7918,9 @@ void perf_event_namespaces(struct task_struct *task)
 
 	ns_link_info = namespaces_event.event_id.link_info;
 
+    /**
+     *  
+     */
 	perf_fill_ns_link_info(&ns_link_info[MNT_NS_INDEX],
 			       task, &mntns_operations);
 

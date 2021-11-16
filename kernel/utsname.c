@@ -159,7 +159,9 @@ static struct user_namespace *utsns_owner(struct ns_common *ns)
 {
 	return to_uts_ns(ns)->user_ns;
 }
-
+/**
+ *  /proc/PID/ns/uts
+ */
 const struct proc_ns_operations utsns_operations = {
 	.name		= "uts",
 	.type		= CLONE_NEWUTS,

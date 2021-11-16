@@ -16,16 +16,40 @@ struct inode;
  *  
  */
 struct proc_ns_operations { /* namespace 操作 */
+    /**
+     *  
+     */
 	const char *name;
 	const char *real_ns_name;
+    
+    /**
+     *  CLONE_NEWUTS, ...
+     */
 	int type;
+    /**
+     *  
+     */
 	ns_common_t (*get)(struct task_struct *task);
+    /**
+     *  
+     */
 	void (*put)(struct ns_common *ns);
+    /**
+     *  
+     */
 	int (*install)(struct nsset *nsset, struct ns_common *ns);
+    /**
+     *  
+     */
 	user_namespace_t (*owner)(struct ns_common *ns);
+    /**
+     *  
+     */
 	ns_common_t (*get_parent)(struct ns_common *ns);
 } __randomize_layout;
-
+/**
+ *  /proc/PID/ns/xxx
+ */
 extern const struct proc_ns_operations netns_operations;
 extern const struct proc_ns_operations utsns_operations;
 extern const struct proc_ns_operations ipcns_operations;

@@ -394,6 +394,7 @@ void memcg_put_cache_ids(void)
  * kmem_cache_alloc and the such to see this symbol as well
  */
 DEFINE_STATIC_KEY_FALSE(memcg_kmem_enabled_key);
+struct static_key_false memcg_kmem_enabled_key = STATIC_KEY_FALSE_INIT;//+++
 EXPORT_SYMBOL(memcg_kmem_enabled_key);
 #endif
 
@@ -1042,6 +1043,9 @@ struct mem_cgroup *get_mem_cgroup_from_mm(struct mm_struct *mm)
 		if (unlikely(!mm))
 			memcg = root_mem_cgroup;
 		else {
+            /**
+             *  
+             */
 			memcg = mem_cgroup_from_task(rcu_dereference(mm->owner));
 			if (unlikely(!memcg))
 				memcg = root_mem_cgroup;
@@ -1124,7 +1128,9 @@ static __always_inline struct mem_cgroup *get_mem_cgroup_from_current(void)
 
 	if (unlikely(active_memcg()))
 		return get_active_memcg();
-
+    /**
+     *  
+     */
 	return get_mem_cgroup_from_mm(current->mm);
 }
 
@@ -2239,6 +2245,7 @@ struct memcg_stock_pcp {
 #define FLUSHING_CACHED_CHARGE	0
 };
 static DEFINE_PER_CPU(struct memcg_stock_pcp, memcg_stock);
+static struct memcg_stock_pcp __percpu memcg_stock;//++++s
 static DEFINE_MUTEX(percpu_charge_mutex);
 
 #ifdef CONFIG_MEMCG_KMEM
@@ -2247,14 +2254,7 @@ static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
 				     struct mem_cgroup *root_memcg);
 
 #else
-static inline void drain_obj_stock(struct memcg_stock_pcp *stock)
-{
-}
-static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
-				     struct mem_cgroup *root_memcg)
-{
-	return false;
-}
+/*  */
 #endif
 
 /**
@@ -2281,6 +2281,9 @@ static bool consume_stock(struct mem_cgroup *memcg, unsigned int nr_pages)
 
 	stock = this_cpu_ptr(&memcg_stock);
 	if (memcg == stock->cached && stock->nr_pages >= nr_pages) {
+        /**
+         *  减去
+         */
 		stock->nr_pages -= nr_pages;
 		ret = true;
 	}
@@ -2716,6 +2719,9 @@ static int try_charge(struct mem_cgroup *memcg, gfp_t gfp_mask,
 	if (mem_cgroup_is_root(memcg))
 		return 0;
 retry:
+    /**
+     *  
+     */
 	if (consume_stock(memcg, nr_pages))
 		return 0;
 
@@ -3072,7 +3078,9 @@ int __memcg_kmem_charge(struct mem_cgroup *memcg, gfp_t gfp,
 {
 	struct page_counter *counter;
 	int ret;
-
+    /**
+     *  
+     */
 	ret = try_charge(memcg, gfp, nr_pages);
 	if (ret)
 		return ret;
@@ -3110,6 +3118,7 @@ void __memcg_kmem_uncharge(struct mem_cgroup *memcg, unsigned int nr_pages)
 
 /**
  * __memcg_kmem_charge_page: charge a kmem page to the current memory cgroup
+ *                          为当前内存 cgroup 充一个 kmem page
  * @page: page to charge
  * @gfp: reclaim mode
  * @order: allocation order
@@ -3120,9 +3129,14 @@ int __memcg_kmem_charge_page(struct page *page, gfp_t gfp, int order)
 {
 	struct mem_cgroup *memcg;
 	int ret = 0;
-
+    /**
+     *  
+     */
 	memcg = get_mem_cgroup_from_current();
 	if (memcg && !mem_cgroup_is_root(memcg)) {
+        /**
+         *  统计
+         */
 		ret = __memcg_kmem_charge(memcg, gfp, 1 << order);
 		if (!ret) {
 			page->mem_cgroup = memcg;

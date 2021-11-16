@@ -4174,7 +4174,9 @@ static struct user_namespace *mntns_owner(struct ns_common *ns)
 {
 	return to_mnt_ns(ns)->user_ns;
 }
-
+/**
+ *  /proc/PID/ns/mnt
+ */
 const struct proc_ns_operations mntns_operations = {
 	.name		= "mnt",
 	.type		= CLONE_NEWNS,

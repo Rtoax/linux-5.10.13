@@ -20,7 +20,9 @@
 #include <linux/fs_struct.h>
 #include <linux/bsearch.h>
 #include <linux/sort.h>
-
+/**
+ *  user_namespace structure slab
+ */
 static struct kmem_cache __read_mostly *user_ns_cachep ;
 static DEFINE_MUTEX(userns_state_mutex);
 
@@ -1306,7 +1308,7 @@ static struct user_namespace *userns_owner(struct ns_common *ns)
 }
 
 /**
- *  
+ *  /proc/PID/ns/user
  */
 const struct proc_ns_operations userns_operations /*  namespace 操作 */= {
 	userns_operations.name		= "user",
@@ -1319,7 +1321,7 @@ const struct proc_ns_operations userns_operations /*  namespace 操作 */= {
 };
 
 /**
- *  
+ *  user namespace init
  */
 static __init int user_namespaces_init(void)
 {

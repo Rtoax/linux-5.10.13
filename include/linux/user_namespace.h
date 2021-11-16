@@ -19,7 +19,9 @@ struct uid_gid_extent {
 	u32 lower_first;
 	u32 count;
 };
-
+/**
+ *  
+ */
 struct uid_gid_map { /* 64 bytes -- 1 cache line */
 	u32 nr_extents;
 	union {
@@ -59,6 +61,9 @@ enum ucount_type {  /*  */
  *  user 命名空间
  */
 struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
+    /**
+     *  
+     */
 	struct uid_gid_map	uid_map;
 	struct uid_gid_map	gid_map;
 	struct uid_gid_map	projid_map;
@@ -88,6 +93,9 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 #ifdef CONFIG_PERSISTENT_KEYRINGS
 	struct key		*persistent_keyring_register;
 #endif
+    /**
+     *  
+     */
 	struct work_struct	work;
 #ifdef CONFIG_SYSCTL
 	struct ctl_table_set	set;

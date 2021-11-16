@@ -1454,8 +1454,10 @@ struct task_struct {    /* PCB */
 #endif
 
 #ifdef CONFIG_CGROUPS
-	/* Control Group info protected by css_set_lock: 
-	    通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup` */
+	/**
+	 *  Control Group info protected by css_set_lock: 
+	 *  通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup` 
+	 */
 	struct css_set __rcu		*cgroups;   //cgroup subsys state
 
     /**

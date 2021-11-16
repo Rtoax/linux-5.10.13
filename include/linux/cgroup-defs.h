@@ -46,12 +46,15 @@ struct poll_table_struct;
 enum cgroup_subsys_id {  /*  */
 #include <linux/cgroup_subsys.h>
     /**
-     *  展开
+     *  展开 #include <linux/cgroup_subsys.h>
      */
     cpuset_cgrp_id,
     cpu_cgrp_id,
     cpuacct_cgrp_id,
     io_cgrp_id,
+    /**
+     *  内存
+     */
     memory_cgrp_id,
     devices_cgrp_id,
     freezer_cgrp_id,

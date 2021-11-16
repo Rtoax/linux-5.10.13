@@ -5731,14 +5731,22 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 
 out:
+    /**
+     *  memory control(cgroup)
+     */
 	if (memcg_kmem_enabled()/* memory cgroup */ && 
         (gfp_mask & __GFP_ACCOUNT) && 
         page &&
 	    unlikely(__memcg_kmem_charge_page(page, gfp_mask, order) != 0)) {
+	    /**
+         *  释放这个页
+         */
 		__free_pages(page, order);
 		page = NULL;
 	}
-
+    /**
+     *  分配页
+     */
 	trace_mm_page_alloc(page, order, alloc_mask, ac.migratetype);
 
 	return page;

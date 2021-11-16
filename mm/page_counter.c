@@ -50,7 +50,9 @@ static void propagate_protected_usage(struct page_counter *c,
 void page_counter_cancel(struct page_counter *counter, unsigned long nr_pages)
 {
 	long new;
-
+    /**
+     *  
+     */
 	new = atomic_long_sub_return(nr_pages, &counter->usage);
 	propagate_protected_usage(counter, new);
 	/* More uncharges than charges? */
@@ -67,7 +69,9 @@ void page_counter_cancel(struct page_counter *counter, unsigned long nr_pages)
 void page_counter_charge(struct page_counter *counter, unsigned long nr_pages)
 {
 	struct page_counter *c;
-
+    /**
+     *  
+     */
 	for (c = counter; c; c = c->parent) {
 		long new;
 
