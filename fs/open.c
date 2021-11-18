@@ -457,22 +457,26 @@ out:
 	return res;
 }
 
+int faccessat(int dirfd, const char *pathname, int mode, int flags){}//+++
 SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
 {
 	return do_faccessat(dfd, filename, mode, 0);
 }
 
+int faccessat2(int dirfd, const char *pathname, int mode, int flags){}//+++
 SYSCALL_DEFINE4(faccessat2, int, dfd, const char __user *, filename, int, mode,
 		int, flags)
 {
 	return do_faccessat(dfd, filename, mode, flags);
 }
 
+int access(const char *pathname, int mode){}//++++
 SYSCALL_DEFINE2(access, const char __user *, filename, int, mode)
 {
 	return do_faccessat(AT_FDCWD, filename, mode, 0);
 }
 
+int chdir(const char *path){}//+++
 SYSCALL_DEFINE1(chdir, const char __user *, filename)
 {
 	struct path path;
@@ -499,6 +503,7 @@ out:
 	return error;
 }
 
+int fchdir(int fd){}//+++
 SYSCALL_DEFINE1(fchdir, unsigned int, fd)
 {
 	struct fd f = fdget_raw(fd);
