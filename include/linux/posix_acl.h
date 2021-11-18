@@ -30,6 +30,7 @@ struct posix_acl {
 	unsigned int		a_count;
 	struct posix_acl_entry	a_entries[];
 };
+typedef struct posix_acl * pposix_acl_t;//++++
 
 #define FOREACH_ACL_ENTRY(pa, acl, pe) \
 	for(pa=(acl)->a_entries, pe=pa+(acl)->a_count; pa<pe; pa++)

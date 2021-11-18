@@ -289,6 +289,9 @@ static inline struct filename *audit_reusename(const __user char *name)
 		return __audit_reusename(name);
 	return NULL;
 }
+/**
+ *  
+ */
 static inline void audit_getname(struct filename *name)
 {
 	if (unlikely(!audit_dummy_context()))

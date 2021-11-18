@@ -1948,10 +1948,18 @@ struct file_operations {    /* 文件操作符 */
 	int (*fadvise)(struct file *, loff_t, loff_t, int);
 } __randomize_layout;
 
-/* 我加的 */
-typedef struct dentry * pdentry_t;
-typedef struct posix_acl * pposix_acl_t;
-
+/**
+ *
+ *  可能的数值
+ *  -------------------------
+ *  ext2_file_inode_operations
+ *  ext2_dir_inode_operations
+ *  ext2_symlink_inode_operations
+ *  ext4_file_inode_operations
+ *  ext4_dir_inode_operations
+ *  ext4_symlink_inode_operations
+ *  ext4_special_inode_operations
+ */
 struct inode_operations {   /* inode 操作符 */
 	pdentry_t (*lookup) (struct inode *,struct dentry *, unsigned int);
 	const pchar_t (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
@@ -1970,6 +1978,15 @@ struct inode_operations {   /* inode 操作符 */
 	int (*rename) (struct inode *, struct dentry *,
 			struct inode *, struct dentry *, unsigned int);
 	int (*setattr) (struct dentry *, struct iattr *);
+    /**
+     * 可能的值
+     * ----------------------
+     *
+     *
+     * 调用
+     * ----------------------
+     * vfs_getattr_nosec()
+     */
 	int (*getattr) (const struct path *, struct kstat *, u32, unsigned int);
 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
 	int (*fiemap)(struct inode *, struct fiemap_extent_info *, u64 start,
@@ -2569,6 +2586,9 @@ struct filename {   /*  */
 	const __user char	*uptr;	/* 用户空间的原始指针 original userland pointer */
 	int			refcnt;         /* 引用计数 */
 	struct audit_names	*aname; /* 来自 audit 上下文的文件名 */
+    /**
+     *  用户态 stat(2) 时候传入的字符串
+     */
 	const char		iname[];    /* 文件名，长度小于 `PATH_MAX` */
 };
 
@@ -3167,7 +3187,9 @@ extern int iterate_dir(struct file *, struct dir_context *);
 int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
 		int flags);
 int vfs_fstat(int fd, struct kstat *stat);
-
+/**
+ *  VFS 接口
+ */
 static inline int vfs_stat(const char __user *filename, struct kstat *stat)
 {
 	return vfs_fstatat(AT_FDCWD, filename, stat, 0);

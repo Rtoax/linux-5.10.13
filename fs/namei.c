@@ -137,6 +137,9 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 	if (result)
 		return result;
 
+    /**
+     *  分配
+     */
 	result = __getname();   /* kmem_alloc */
 	if (unlikely(!result))
 		return ERR_PTR(-ENOMEM);
@@ -525,19 +528,27 @@ struct nameidata {
 	struct path	path;
 	struct qstr	last;
 	struct path	root;
+    /**
+     *  
+     */
 	struct inode	*inode; /* path.dentry.d_inode */
 	unsigned int	flags;
 	unsigned	seq, m_seq, r_seq;
 	int		last_type;
 	unsigned	depth;
 	int		total_link_count;
+    /**
+     *  
+     */
 	struct saved {
 		struct path link;
 		struct delayed_call done;
 		const char *name;
 		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];
-    
+    /**
+     *  
+     */
 	struct filename	*name;
 	struct nameidata *saved;
 	unsigned	root_seq;
@@ -2355,7 +2366,9 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		if (unlikely(err < 0))
 			s = ERR_PTR(err);
 	}
-
+    /**
+     *  
+     */
 	while (!(err = link_path_walk(s, nd)) &&
 	       (s = lookup_last(nd)) != NULL)
 		;
@@ -2374,6 +2387,9 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		nd->path.mnt = NULL;
 		nd->path.dentry = NULL;
 	}
+    /**
+     *  
+     */
 	terminate_walk(nd);
 	return err;
 }
@@ -2384,14 +2400,25 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		    struct path *path, struct path *root)
 {
 	int retval;
+    /**
+     *  
+     */
 	struct nameidata nd;
+    
 	if (IS_ERR(name))
 		return PTR_ERR(name);
 	if (unlikely(root)) {
 		nd.root = *root;
 		flags |= LOOKUP_ROOT;
 	}
+    /**
+     *  
+     */
 	set_nameidata(&nd, dfd, name);
+
+    /**
+     *  查找
+     */
 	retval = path_lookupat(&nd, flags | LOOKUP_RCU, path);
 	if (unlikely(retval == -ECHILD))
 		retval = path_lookupat(&nd, flags, path);

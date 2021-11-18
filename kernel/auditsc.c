@@ -1931,7 +1931,9 @@ void __audit_getname(struct filename *name)
 	n->name_len = AUDIT_NAME_FULL;
 	name->aname = n;
 	name->refcnt++;
-
+    /**
+     *  
+     */
 	_audit_getcwd(context);
 }
 
