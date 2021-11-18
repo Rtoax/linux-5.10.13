@@ -1001,7 +1001,9 @@ EXPORT_SYMBOL(open_with_fake_path);
 
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
-
+/**
+ *  文件如何打开
+ */
 inline struct open_how build_open_how(int flags, umode_t mode)
 {
 	struct open_how how = {
@@ -1199,7 +1201,7 @@ struct file *file_open_root(struct dentry *dentry, struct vfsmount *mnt,
 EXPORT_SYMBOL(file_open_root);
 
 /**
- *  open
+ *  open(2)
  */
 static long do_sys_openat2(int dfd, const char __user *str_filename, struct open_how *how)
 {
@@ -1239,11 +1241,17 @@ static long do_sys_openat2(int dfd, const char __user *str_filename, struct open
 
 
 /**
- *  
+ *  open(2)
  */
 long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
+    /**
+     *  如何打开
+     */
 	struct open_how how = build_open_how(flags, mode);
+    /**
+     *  
+     */
 	return do_sys_openat2(dfd, filename, &how);
 }
 
