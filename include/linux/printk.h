@@ -155,10 +155,10 @@ extern void printk_nmi_exit(void);
 extern void printk_nmi_direct_enter(void);
 extern void printk_nmi_direct_exit(void);
 #else
-static inline void printk_nmi_enter(void) { }
-static inline void printk_nmi_exit(void) { }
-static inline void printk_nmi_direct_enter(void) { }
-static inline void printk_nmi_direct_exit(void) { }
+//static inline void printk_nmi_enter(void) { }
+//static inline void printk_nmi_exit(void) { }
+//static inline void printk_nmi_direct_enter(void) { }
+//static inline void printk_nmi_direct_exit(void) { }
 #endif /* PRINTK_NMI */
 
 struct dev_printk_info;
@@ -213,76 +213,7 @@ extern asmlinkage void dump_stack(void) __cold;
 extern void printk_safe_flush(void);
 extern void printk_safe_flush_on_panic(void);
 #else
-//static inline 
-//int vprintk(const char *s, va_list args)
-//{
-//	return 0;
-//}
-//static inline  __cold
-//int printk(const char *s, ...)
-//{
-//	return 0;
-//}
-//static inline  __cold
-//int printk_deferred(const char *s, ...)
-//{
-//	return 0;
-//}
-//static inline int printk_ratelimit(void)
-//{
-//	return 0;
-//}
-//static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-//					  unsigned int interval_msec)
-//{
-//	return false;
-//}
-//
-//static inline void wake_up_klogd(void)
-//{
-//}
-//
-//static inline char *log_buf_addr_get(void)
-//{
-//	return NULL;
-//}
-//
-//static inline u32 log_buf_len_get(void)
-//{
-//	return 0;
-//}
-//
-//static inline void log_buf_vmcoreinfo_setup(void)
-//{
-//}
-//
-//static inline void setup_log_buf(int early)
-//{
-//}
-//
-//static inline  void dump_stack_set_arch_desc(const char *fmt, ...)
-//{
-//}
-//
-//static inline void dump_stack_print_info(const char *log_lvl)
-//{
-//}
-//
-//static inline void show_regs_print_info(const char *log_lvl)
-//{
-//}
-//
-//static inline void dump_stack(void)
-//{
-//}
-//
-//static inline void printk_safe_flush(void)
-//{
-//}
-//
-//static inline void printk_safe_flush_on_panic(void)
-//{
-//}
+/*  */
 #endif
 
 extern int kptr_restrict;
@@ -580,16 +511,7 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
 			   int prefix_type, int rowsize, int groupsize,
 			   const void *buf, size_t len, bool ascii);
 #else
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-				  int prefix_type, int rowsize, int groupsize,
-				  const void *buf, size_t len, bool ascii)
-{
-}
-static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-					const void *buf, size_t len)
-{
-}
-
+/*  */
 #endif
 
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
@@ -604,11 +526,7 @@ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
 //	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
 //		       groupsize, buf, len, ascii)
 #else
-//static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
-//					int rowsize, int groupsize,
-//					const void *buf, size_t len, bool ascii)
-//{
-//}
+/*  */
 #endif
 
 /**
