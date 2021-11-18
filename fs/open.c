@@ -140,12 +140,14 @@ retry:
 	return error;
 }
 
+int truncate(const char *path, off_t length){}//+++++
 SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 {
 	return do_sys_truncate(path, length);
 }
 
 #ifdef CONFIG_COMPAT
+int truncate(const char *path, compat_off_t length){}//+++++
 COMPAT_SYSCALL_DEFINE2(truncate, const char __user *, path, compat_off_t, length)
 {
 	return do_sys_truncate(path, length);
@@ -200,12 +202,14 @@ out:
 	return error;
 }
 
+int ftruncate(int fd, off_t length){} //+++++
 SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 {
 	return do_sys_ftruncate(fd, length, 1);
 }
 
 #ifdef CONFIG_COMPAT
+int ftruncate(int fd, compat_ulong_t length){} //+++++
 COMPAT_SYSCALL_DEFINE2(ftruncate, unsigned int, fd, compat_ulong_t, length)
 {
 	return do_sys_ftruncate(fd, length, 1);
@@ -321,6 +325,7 @@ int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 	return error;
 }
 
+int fallocate(int fd, int mode, off_t offset, off_t len){}//++++
 SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 {
 	return ksys_fallocate(fd, mode, offset, len);
