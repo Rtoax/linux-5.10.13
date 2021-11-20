@@ -706,7 +706,9 @@ void __init lapic_assign_system_vectors(void)
 			irq_matrix_assign(vector_matrix, ISA_IRQ_VECTOR(i));
 	}
 }
-
+/**
+ *  
+ */
 int __init arch_early_irq_init(void)    /*  */
 {
 	struct fwnode_handle *fn;
@@ -725,7 +727,9 @@ int __init arch_early_irq_init(void)    /*  */
 	 */
 	vector_matrix = irq_alloc_matrix(NR_VECTORS, FIRST_EXTERNAL_VECTOR, FIRST_SYSTEM_VECTOR);
 	BUG_ON(!vector_matrix);
-
+    /**
+     *  IOAPIC
+     */
 	return arch_early_ioapic_init();    /* 中断控制器 */
 }
 

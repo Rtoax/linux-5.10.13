@@ -155,10 +155,7 @@ extern void printk_nmi_exit(void);
 extern void printk_nmi_direct_enter(void);
 extern void printk_nmi_direct_exit(void);
 #else
-//static inline void printk_nmi_enter(void) { }
-//static inline void printk_nmi_exit(void) { }
-//static inline void printk_nmi_direct_enter(void) { }
-//static inline void printk_nmi_direct_exit(void) { }
+//
 #endif /* PRINTK_NMI */
 
 struct dev_printk_info;

@@ -872,6 +872,9 @@ static void __init mm_init(void)/* 内存管理初始化 */
      *  sudo cat /proc/slabinfo | grep kmalloc
      */
 	kmem_cache_init();          /* 初始化 slab slob slub */
+    /**
+     *  
+     */
 	kmemleak_init();            /* 泄漏检测 提前分配 */
 
     /**
@@ -885,7 +888,9 @@ static void __init mm_init(void)/* 内存管理初始化 */
      *  然后逐页分配内存来从物理上填充hole。
      */
 	vmalloc_init();             /* vmalloc虚拟内存连续的内存 */
-    
+    /**
+     *  
+     */
 	ioremap_huge_init();        /* 大页内存   */
     
 	/**
@@ -1083,11 +1088,28 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	context_tracking_init();    /*  */
     
 	/* init some links before init_ISA_irqs() */
-	early_irq_init();       /*  */
-	init_IRQ();             /* 架构相关 */
-    
-	tick_init();            /*  */
 
+    /**
+     *  
+     */
+	early_irq_init();       /*  */
+    /**
+     *  
+     */
+	init_IRQ();             /* 架构相关 */
+    /**
+     *  
+     */
+	tick_init();            /*  */
+    
+    /**
+     *  这么漫无目的的看肯定不行
+     *  荣涛 2021年11月20日17:14:38
+     */
+
+    /**
+     *  
+     */
     rcu_init_nohz();        /*  */
 
     /**

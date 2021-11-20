@@ -38,8 +38,17 @@ void handle_bad_irq(struct irq_desc *desc)
 {
 	unsigned int irq = irq_desc_get_irq(desc);
 
+    /**
+     *  打印
+     */
 	print_irq_desc(irq, desc);
+    /**
+     *  统计
+     */
 	kstat_incr_irqs_this_cpu(desc);
+    /**
+     *  ACK 就 tm 神奇
+     */
 	ack_bad_irq(irq);
 }
 EXPORT_SYMBOL_GPL(handle_bad_irq);

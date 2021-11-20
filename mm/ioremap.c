@@ -56,9 +56,9 @@ static inline int ioremap_pmd_enabled(void)
 }
 
 #else	/* !CONFIG_HAVE_ARCH_HUGE_VMAP */
-static inline int ioremap_p4d_enabled(void) { return 0; }
-static inline int ioremap_pud_enabled(void) { return 0; }
-static inline int ioremap_pmd_enabled(void) { return 0; }
+//static inline int ioremap_p4d_enabled(void) { return 0; }
+//static inline int ioremap_pud_enabled(void) { return 0; }
+//static inline int ioremap_pmd_enabled(void) { return 0; }
 #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
 static int ioremap_pte_range(pmd_t *pmd, unsigned long addr,

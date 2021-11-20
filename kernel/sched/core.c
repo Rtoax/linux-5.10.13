@@ -7741,7 +7741,7 @@ DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
 
 /**
- *  
+ *  调度初始化
  */
 void __init sched_init(void)    /* 调度初始化 */
 {

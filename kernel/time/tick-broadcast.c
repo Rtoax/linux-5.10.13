@@ -1000,7 +1000,9 @@ bool tick_broadcast_oneshot_available(void)
 #else
 /*  */
 #endif
-
+/**
+ *  
+ */
 void __init tick_broadcast_init(void)   /*  */
 {
 	zalloc_cpumask_var(&tick_broadcast_mask, GFP_NOWAIT);   /*  */

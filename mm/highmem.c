@@ -476,7 +476,9 @@ void set_page_address(struct page *page, void *virtual)
 done:
 	return;
 }
-
+/**
+ *  
+ */
 void __init page_address_init(void)/* start_kernel() */
 {
 	int i;

@@ -571,7 +571,8 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 #else /* !CONFIG_SPARSE_IRQ */
 /* 不使用静态 的中断向量表 定义了 CONFIG_SPARSE_IRQ 稀疏IRQs */
 /**
- *  
+ *  这个静态结构如此之大
+ *  我在 Ubuntu 20.04 linux-5.11.0 打印的 NR_IRQS is 524544
  */
 struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
 	[0 ... NR_IRQS-1] = {
@@ -580,7 +581,9 @@ struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
 		.lock		= __RAW_SPIN_LOCK_UNLOCKED(irq_desc->lock),
 	}
 };
-
+/**
+ *  
+ */
 int __init early_irq_init(void)
 {
 	int count, i, node = first_online_node;
@@ -592,7 +595,9 @@ int __init early_irq_init(void)
 
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);
-
+    /**
+     *  初始化
+     */
 	for (i = 0; i < count; i++) {
 		desc[i].kstat_irqs = alloc_percpu(unsigned int);
 		alloc_masks(&desc[i], node);
@@ -601,6 +606,9 @@ int __init early_irq_init(void)
 		mutex_init(&desc[i].request_mutex);
 		desc_set_defaults(i, &desc[i], node, NULL, NULL);
 	}
+    /**
+     *  
+     */
 	return arch_early_irq_init();
 }
 

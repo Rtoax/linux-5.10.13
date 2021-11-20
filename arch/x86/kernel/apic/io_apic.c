@@ -220,7 +220,9 @@ void mp_save_irq(struct mpc_intsrc *m)
 	if (++mp_irq_entries == MAX_IRQ_SOURCES)
 		panic("Max # of irq sources exceeded!!\n");
 }
-
+/**
+ *  
+ */
 static void alloc_ioapic_saved_registers(int idx)   /*  */
 {
 	size_t size;

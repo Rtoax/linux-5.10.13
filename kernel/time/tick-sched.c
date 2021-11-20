@@ -445,7 +445,9 @@ static int tick_nohz_cpu_down(unsigned int cpu)
 		return -EBUSY;
 	return 0;
 }
-
+/**
+ *  
+ */
 void __init tick_nohz_init(void)    /* no-hz 减少时钟中断 */
 {
 	int cpu, ret;
