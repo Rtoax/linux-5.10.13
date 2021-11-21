@@ -1148,7 +1148,9 @@ inline int avc_has_perm_noaudit(struct selinux_state *state,
 		return -EACCES;
 
 	rcu_read_lock();
-
+    /**
+     *  
+     */
 	node = avc_lookup(state->avc, ssid, tsid, tclass);
 	if (unlikely(!node))
 		node = avc_compute_av(state, ssid, tsid, tclass, avd, &xp_node);
@@ -1185,10 +1187,14 @@ int avc_has_perm(struct selinux_state *state, u32 ssid, u32 tsid, u16 tclass,
 {
 	struct av_decision avd;
 	int rc, rc2;
-
+    /**
+     *  
+     */
 	rc = avc_has_perm_noaudit(state, ssid, tsid, tclass, requested, 0,
 				  &avd);
-
+    /**
+     *  
+     */
 	rc2 = avc_audit(state, ssid, tsid, tclass, requested, &avd, rc,
 			auditdata, 0);
 	if (rc2)

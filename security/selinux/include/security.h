@@ -88,7 +88,7 @@ struct selinux_avc;
 struct selinux_policy;
 
 /**
- *  
+ *  SELinux 状态
  */
 struct selinux_state {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
@@ -161,16 +161,15 @@ static inline bool selinux_disabled(struct selinux_state *state)
 {
 	return READ_ONCE(state->disabled);
 }
-
+/**
+ *  使能??
+ */
 static inline void selinux_mark_disabled(struct selinux_state *state)
 {
 	WRITE_ONCE(state->disabled, true);
 }
 #else
-static inline bool selinux_disabled(struct selinux_state *state)
-{
-	return false;
-}
+//
 #endif
 
 static inline bool selinux_policycap_netpeer(void)

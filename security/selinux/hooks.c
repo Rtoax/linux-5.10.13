@@ -224,7 +224,9 @@ static void cred_init_security(void)
 static inline u32 cred_sid(const struct cred *cred)
 {
 	const struct task_security_struct *tsec;
-
+    /**
+     *  
+     */
 	tsec = selinux_cred(cred);
 	return tsec->sid;
 }
@@ -1641,10 +1643,15 @@ static int inode_has_perm(const struct cred *cred,
     /* 如果是私有的 inode，直接返回没有权限 */
 	if (unlikely(IS_PRIVATE(inode)))    /* 是否为私有的 */
 		return 0;
-
+    /**
+     *  证书的 sid
+     */
 	sid = cred_sid(cred);
 	isec = selinux_inode(inode);
-
+    /**
+     *  access vector
+     *  当然，需要判断 selinux 当前是否使能等条件
+     */
 	return avc_has_perm(&selinux_state,
 			    sid, isec->sid, isec->sclass, perms, adp);
 }
@@ -1681,7 +1688,10 @@ static inline int path_has_perm(const struct cred *cred,
 	return inode_has_perm(cred, inode, av, &ad);
 }
 
-/* Same as path_has_perm, but uses the inode from the file struct. */
+/**
+ *  Same as path_has_perm, but uses the inode from the file struct. 
+ *  根据证书、file、access vector 三个结构判定文件是否有权限
+ */
 static inline int file_path_has_perm(const struct cred *cred,
 				     struct file *file,
 				     u32 av)
@@ -1690,6 +1700,9 @@ static inline int file_path_has_perm(const struct cred *cred,
 
 	ad.type = LSM_AUDIT_DATA_FILE;
 	ad.u.file = file;
+    /**
+     *  是否有权限访问这个inode
+     */
 	return inode_has_perm(cred, file_inode(file), av, &ad);
 }
 
@@ -1965,7 +1978,10 @@ static inline u32 file_mask_to_av(int mode, int mask)
 	return av;
 }
 
-/* Convert a Linux file to an access vector. */
+/**
+ *  Convert a Linux file to an access vector. 
+ *  访问向量
+ */
 static inline u32 file_to_av(struct file *file)
 {
 	u32 av = 0;
@@ -1994,9 +2010,14 @@ static inline u32 file_to_av(struct file *file)
  */
 static inline u32 open_file_to_av(struct file *file)
 {
+    /**
+     *  访问向量，读写等。。
+     */
 	u32 av = file_to_av(file);
 	struct inode *inode = file_inode(file);
-
+    /**
+     *  
+     */
 	if (selinux_policycap_openperm() &&
 	    inode->i_sb->s_magic != SOCKFS_MAGIC)
 		av |= FILE__OPEN;
@@ -3853,12 +3874,16 @@ static int selinux_file_receive(struct file *file)
 
 	return file_has_perm(cred, file, file_to_av(file));
 }
-
+/**
+ *  call in security_file_open()
+ */
 static int selinux_file_open(struct file *file)
 {
 	struct file_security_struct *fsec;
 	struct inode_security_struct *isec;
-
+    /**
+     *  获取结构
+     */
 	fsec = selinux_file(file);
 	isec = inode_security(file_inode(file));
 	/*
@@ -6959,7 +6984,7 @@ static int selinux_perf_event_write(struct perf_event *event)
  * safely. Breaking the ordering rules above might lead to NULL pointer derefs
  * when disabling SELinux at runtime.
  */
-static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
+static struct security_hook_list __lsm_ro_after_init selinux_hooks[]  = {
 	LSM_HOOK_INIT(binder_set_context_mgr, selinux_binder_set_context_mgr),
 	LSM_HOOK_INIT(binder_transaction, selinux_binder_transaction),
 	LSM_HOOK_INIT(binder_transfer_binder, selinux_binder_transfer_binder),
@@ -7384,11 +7409,7 @@ static void selinux_nf_ip_exit(void)
 #endif
 
 #else /* CONFIG_NETFILTER */
-
-#ifdef CONFIG_SECURITY_SELINUX_DISABLE
-#define selinux_nf_ip_exit()
-#endif
-
+//
 #endif /* CONFIG_NETFILTER */
 
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
@@ -7403,7 +7424,9 @@ int selinux_disable(struct selinux_state *state)
 		/* Only do this once. */
 		return -EINVAL;
 	}
-
+    /**
+     *  
+     */
 	selinux_mark_disabled(state);
 
 	pr_info("SELinux:  Disabled at runtime.\n");

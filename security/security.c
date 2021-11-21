@@ -1588,11 +1588,19 @@ int security_file_receive(struct file *file)
 int security_file_open(struct file *file)
 {
 	int ret;
-
+    /**
+     *  可能为如下函数
+     *  selinux_file_open()
+     *  apparmor_file_open()
+     *  smack_file_open()
+     *  tomoyo_file_open
+     */
 	ret = call_int_hook(file_open, 0, file);
 	if (ret)
 		return ret;
-
+    /**
+     *  
+     */
 	return fsnotify_perm(file, MAY_OPEN);
 }
 

@@ -827,7 +827,9 @@ static int do_dentry_open(struct file *f,
 		error = -ENODEV;
 		goto cleanup_all;
 	}
-
+    /**
+     *  安全打开
+     */
 	error = security_file_open(f);
 	if (error)
 		goto cleanup_all;
@@ -1257,7 +1259,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 
 
 /**
- *  
+ *  open(2)
  */
 int open(const char *pathname, int flags);
 int open(const char *pathname, int flags, mode_t mode);

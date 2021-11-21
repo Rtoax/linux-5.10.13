@@ -133,6 +133,9 @@ struct cred {   /* 任务的安全上下文 */
 	struct key	*request_key_auth; /* assumed request_key authority */
 #endif
 #ifdef CONFIG_SECURITY
+    /**
+     *  see selinux_cred()
+     */
 	void		*security;	/* subjective LSM security */
 #endif
     /**

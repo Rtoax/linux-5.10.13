@@ -2038,6 +2038,15 @@ struct security_hook_heads {/*  */
     struct hlist_head file_send_sigiotask;
 
     struct hlist_head file_receive;
+    /**
+     *  打开文件过程需要调用这个 链 open(2)
+     *
+     *  可能为如下函数
+     *  selinux_file_open()
+     *  apparmor_file_open()
+     *  smack_file_open()
+     *  tomoyo_file_open
+     */
     struct hlist_head file_open;
     struct hlist_head task_alloc;
 

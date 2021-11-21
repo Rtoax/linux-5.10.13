@@ -660,6 +660,9 @@ struct inode {
 	struct address_space	*i_mapping; /* 文件缓存 */
 
 #ifdef CONFIG_SECURITY
+    /**
+     *  见 `selinux_inode()`
+     */
 	void			*i_security;
 #endif
 
@@ -1029,6 +1032,11 @@ struct file {   /*  */
 
 	u64			f_version;          /*  */
 #ifdef CONFIG_SECURITY
+    /**
+     *  存储安全数据用的
+     *  参见函数
+     *  selinux_file()
+     */
 	void			*f_security;
 #endif
 	/* needed for tty driver, and maybe others */
