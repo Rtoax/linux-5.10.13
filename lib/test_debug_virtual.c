@@ -27,7 +27,12 @@ static int __init test_debug_virtual_init(void)
 	va = (void *)VMALLOC_START;
 	pa = virt_to_phys(va);
 
-	pr_info("PA: %pa for VA: 0x%lx\n", &pa, (unsigned long)va);
+	pr_info("PA: %pa for VA: 0x%lx(VMALLOC_START)\n", &pa, (unsigned long)va);
+    
+	va = (void *)VMALLOC_END;
+	pa = virt_to_phys(va);
+
+	pr_info("PA: %pa for VA: 0x%lx(VMALLOC_END)\n", &pa, (unsigned long)va);
 
 	foo = kzalloc(sizeof(*foo), GFP_KERNEL);
 	if (!foo)
