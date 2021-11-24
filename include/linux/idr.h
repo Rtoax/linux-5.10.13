@@ -15,7 +15,9 @@
 #include <linux/radix-tree.h>
 #include <linux/gfp.h>
 #include <linux/percpu.h>
-
+/**
+ *  ID to Pointer
+ */
 struct idr {    /* ID  to Pointer */
 	struct radix_tree_root	idr_rt;
 	unsigned int		idr_base;

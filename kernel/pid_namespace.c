@@ -71,6 +71,9 @@ static struct pid_namespace *create_pid_namespace(struct user_namespace *user_ns
 	struct pid_namespace *parent_pid_ns)
 {
 	struct pid_namespace *ns;
+    /**
+     *  level = parent +1
+     */
 	unsigned int level = parent_pid_ns->level + 1;
 	struct ucounts *ucounts;
 	int err;
@@ -93,6 +96,9 @@ static struct pid_namespace *create_pid_namespace(struct user_namespace *user_ns
 
 	idr_init(&ns->idr);
 
+    /**
+     *  根据不同的level cache 的item 大小不同
+     */
 	ns->pid_cachep = create_pid_cachep(level);
 	if (ns->pid_cachep == NULL)
 		goto out_free_idr;
@@ -377,15 +383,17 @@ static void pidns_put(struct ns_common *ns)
 {
 	put_pid_ns(to_pid_ns(ns));
 }
-
-static int pidns_install(struct nsset *nsset, struct ns_common *ns)
+/**
+ *  
+ */
+static int pidns_install(struct nsset *_nsset, struct ns_common *ns)
 {
-	struct nsproxy *nsproxy = nsset->nsproxy;
+	struct nsproxy *nsproxy = _nsset->nsproxy;
 	struct pid_namespace *active = task_active_pid_ns(current);
 	struct pid_namespace *ancestor, *new = to_pid_ns(ns);
 
 	if (!ns_capable(new->user_ns, CAP_SYS_ADMIN) ||
-	    !ns_capable(nsset->cred->user_ns, CAP_SYS_ADMIN))
+	    !ns_capable(_nsset->cred->user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
 	/*

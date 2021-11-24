@@ -627,7 +627,9 @@ SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 	put_pid(p);
 	return fd;
 }
-
+/**
+ *  
+ */
 void __init pid_idr_init(void)  /*   */
 {
 	/* Verify no one has done anything silly: */
@@ -639,9 +641,14 @@ void __init pid_idr_init(void)  /*   */
 	pid_max_min = max_t(int, pid_max_min,
 				PIDS_PER_CPU_MIN * num_possible_cpus());
 	pr_info("pid_max: default: %u minimum: %u\n", pid_max, pid_max_min);
-
+    /**
+     *  
+     */
 	idr_init(&init_pid_ns.idr); /* ID to pointer */
 
+    /**
+     *  初始分配
+     */
 	init_pid_ns.pid_cachep = /* 分配缓存 */KMEM_CACHE(pid,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }

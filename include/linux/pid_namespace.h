@@ -19,31 +19,51 @@ struct fs_pin;
 
 /**
  *  
+ *  全局静态变量: `init_pid_ns`
  */
 struct pid_namespace {  /* pid 隔离 namespace */
+    /**
+     *  引用计数
+     */
 	struct kref kref;
 	struct idr idr; /* ID to Pointer */
 	struct rcu_head rcu;
 	unsigned int pid_allocated;
 
     /**
-     *  
+     *  收割者
      */
 	struct task_struct *child_reaper;   /*  */
+    /**
+     *  created in `create_pid_namespace()`
+     *  init_pid_ns 分配 `pid_idr_init()`
+     */
 	struct kmem_cache *pid_cachep;
 
     /**
-     *  
+     *  级别，在 `create_pid_namespace()` 中会用
      */
 	unsigned int level;
+    /**
+     *  父亲
+     */
 	struct pid_namespace *parent;
     
 #ifdef CONFIG_BSD_PROCESS_ACCT
 	struct fs_pin *bacct;
 #endif
+    /**
+     *  
+     */
 	struct user_namespace *user_ns;
+    /**
+     *  计数
+     */
 	struct ucounts *ucounts;
 	int reboot;	/* group exit code if this pidns was rebooted */
+    /**
+     *  超类
+     */
 	struct ns_common ns;
 } __randomize_layout;
 

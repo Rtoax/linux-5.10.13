@@ -57,6 +57,9 @@ extern struct nsproxy init_nsproxy;
  */
 struct nsset {  /*  */
 	unsigned flags;
+    /**
+     *  
+     */
 	struct nsproxy *nsproxy;
 	struct fs_struct *fs;
 	const struct cred *cred;
