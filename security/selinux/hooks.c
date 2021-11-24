@@ -3728,7 +3728,9 @@ static int selinux_mmap_addr(unsigned long addr)
 
 	return rc;
 }
-
+/**
+ *  sudo bpftrace -e 'kprobe:selinux_mmap_file {printf("prot = 0x%lx\n", arg2);}'
+ */
 static int selinux_mmap_file(struct file *file, unsigned long reqprot,
 			     unsigned long prot, unsigned long flags)
 {
@@ -4168,7 +4170,12 @@ static int selinux_task_movememory(struct task_struct *p)
 			    current_sid(), task_sid(p), SECCLASS_PROCESS,
 			    PROCESS__SETSCHED, NULL);
 }
-
+/**
+ *  kill 执行会调用这个函数， 
+ *  尝试 kill 1
+ *  在另一个终端进行tracing
+ *  sudo bpftrace -e 'kprobe:selinux_task_kill {printf("selinux_task_kill\n");}'
+ */
 static int selinux_task_kill(struct task_struct *p, struct kernel_siginfo *info,
 				int sig, const struct cred *cred)
 {
@@ -4183,6 +4190,9 @@ static int selinux_task_kill(struct task_struct *p, struct kernel_siginfo *info,
 		secid = current_sid();
 	else
 		secid = cred_sid(cred);
+    /**
+     *  
+     */
 	return avc_has_perm(&selinux_state,
 			    secid, task_sid(p), SECCLASS_PROCESS, perm, NULL);
 }
