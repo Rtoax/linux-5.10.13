@@ -249,13 +249,17 @@ static ssize_t ext4_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	count = ext4_generic_write_checks(iocb, from);
 	if (count <= 0)
 		return count;
-
+    /**
+     *  修改了
+     */
 	ret = file_modified(iocb->ki_filp);
 	if (ret)
 		return ret;
 	return count;
 }
-
+/**
+ *  ext4 write(2) will invokes this function
+ */
 static ssize_t ext4_buffered_write_iter(struct kiocb *iocb,
 					struct iov_iter *from)
 {
@@ -266,12 +270,21 @@ static ssize_t ext4_buffered_write_iter(struct kiocb *iocb,
 		return -EOPNOTSUPP;
 
 	ext4_fc_start_update(inode);
+    /**
+     *  锁定
+     */
 	inode_lock(inode);
 	ret = ext4_write_checks(iocb, from);
 	if (ret <= 0)
 		goto out;
 
+    /**
+     *  
+     */
 	current->backing_dev_info = inode_to_bdi(inode);
+    /**
+     *  
+     */
 	ret = generic_perform_write(iocb->ki_filp, from, iocb->ki_pos);
 	current->backing_dev_info = NULL;
 
@@ -456,7 +469,9 @@ out:
 		inode_unlock(inode);
 	return ret;
 }
-
+/**
+ *  write(2) 直接写 IOCB_DIRECT
+ */
 static ssize_t ext4_dio_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	ssize_t ret;
@@ -483,7 +498,9 @@ static ssize_t ext4_dio_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	 */
 	if (offset + count > i_size_read(inode))
 		ilock_shared = false;
-
+    /**
+     *  
+     */
 	if (iocb->ki_flags & IOCB_NOWAIT) {
 		if (ilock_shared) {
 			if (!inode_trylock_shared(inode))
@@ -507,7 +524,9 @@ static ssize_t ext4_dio_write_iter(struct kiocb *iocb, struct iov_iter *from)
 			inode_unlock(inode);
 		return ext4_buffered_write_iter(iocb, from);
 	}
-
+    /**
+     *  检测
+     */
 	ret = ext4_dio_write_checks(iocb, from, &ilock_shared, &extend);
 	if (ret <= 0)
 		return ret;
@@ -554,6 +573,10 @@ static ssize_t ext4_dio_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 	if (ilock_shared)
 		iomap_ops = &ext4_iomap_overwrite_ops;
+
+    /**
+     *  
+     */
 	ret = iomap_dio_rw(iocb, from, iomap_ops, &ext4_dio_write_ops,
 			   is_sync_kiocb(iocb) || unaligned_io || extend);
 	if (ret == -ENOTBLK)
@@ -650,7 +673,9 @@ out:
 	return ret;
 }
 #endif
-
+/**
+ *  ext4  write(2)
+ */
 static ssize_t
 ext4_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
@@ -663,9 +688,15 @@ ext4_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	if (IS_DAX(inode))
 		return ext4_dax_write_iter(iocb, from);
 #endif
+    /**
+     *  不适用缓存 buffer
+     */
 	if (iocb->ki_flags & IOCB_DIRECT)
 		return ext4_dio_write_iter(iocb, from);
 	else
+    /**
+     *  使用 buffer
+     */
 		return ext4_buffered_write_iter(iocb, from);
 }
 

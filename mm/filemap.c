@@ -3350,11 +3350,16 @@ struct page *grab_cache_page_write_begin(struct address_space *mapping,
 	return page;
 }
 EXPORT_SYMBOL(grab_cache_page_write_begin);
-
+/**
+ *  
+ */
 ssize_t generic_perform_write(struct file *file,
 				struct iov_iter *i, loff_t pos)
 {
 	struct address_space *mapping = file->f_mapping;
+    /**
+     *  使用缓存对应的 ops
+     */
 	const struct address_space_operations *a_ops = mapping->a_ops;
 	long status = 0;
 	ssize_t written = 0;
@@ -3391,18 +3396,29 @@ again:
 			status = -EINTR;
 			break;
 		}
-
+        /**
+         *  
+         */
 		status = a_ops->write_begin(file, mapping, pos, bytes, flags,
 						&page, &fsdata);
 		if (unlikely(status < 0))
 			break;
-
+        /**
+         *  
+         */
 		if (mapping_writably_mapped(mapping))
 			flush_dcache_page(page);
-
+        /**
+         *  
+         */
 		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
+        /**
+         *  
+         */
 		flush_dcache_page(page);
-
+        /**
+         *  结束
+         */
 		status = a_ops->write_end(file, mapping, pos, bytes, copied,
 						page, fsdata);
 		if (unlikely(status < 0))

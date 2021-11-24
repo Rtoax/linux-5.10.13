@@ -323,6 +323,7 @@ static off_t ksys_lseek(unsigned int fd, off_t offset, unsigned int whence)
 	return retval;
 }
 
+off_t lseek(int fd, off_t offset, int whence){}//+++
 SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 {
 	return ksys_lseek(fd, offset, whence);
@@ -518,7 +519,9 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	init_sync_kiocb(&kiocb, filp);
 	kiocb.ki_pos = (ppos ? *ppos : 0);
 	iov_iter_init(&iter, WRITE, &iov, 1, len);
-
+    /**
+     *  
+     */
 	ret = call_write_iter(filp, &kiocb, &iter);
 	BUG_ON(ret == -EIOCBQUEUED);
 	if (ret > 0 && ppos)
@@ -609,11 +612,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 
     /**
      *  看下打开文件的位置 对应的 f_op
+     *  ext4_file_operations 没有 write
      */
 	if (file->f_op->write)  /* 首先查看 write() 操作 */
 		ret = file->f_op->write(file, buf, count, pos); /* 调用具体的 write */
     /**
-     *  
+     *  ext4_file_operations 有 ext4_file_write_iter()
      */
     else if (file->f_op->write_iter)    /*  */
         /* pipe() -> pipe_write() */
@@ -668,7 +672,7 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 }
 
 /**
- *  
+ *  write(2)
  */
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* write系统调用 */
 {

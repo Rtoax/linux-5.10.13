@@ -1066,6 +1066,7 @@ struct file {   /*  */
 
     /**
      *  文件缓存
+     *  函数 `generic_perform_write()` 中 write(2) 会 调用
      */
 	struct address_space	*f_mapping; /* 文件缓存 */
 
@@ -1836,6 +1837,7 @@ struct file_operations {    /* 文件操作符 */
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 
     /**
+     *  可能是谁？
      *  
      */
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
@@ -2021,8 +2023,10 @@ static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 				      struct iov_iter *iter)
 {
-    /*  */
-    /* pipe() -> pipefifo_fops.pipe_write() */
+    /**
+     *  pipe() -> pipefifo_fops.pipe_write()
+     *  ext4 -> ext4_file_operations.ext4_file_write_iter()
+     */
 	return file->f_op->write_iter(kio, iter);   /*  */
 }
 
