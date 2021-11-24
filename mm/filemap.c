@@ -2578,6 +2578,9 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 	if (iocb->ki_flags & IOCB_DIRECT) {
 		struct file *file = iocb->ki_filp;
+        /**
+         *  文件缓存
+         */
 		struct address_space *mapping = file->f_mapping;
 		struct inode *inode = mapping->host;
 		loff_t size;

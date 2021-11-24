@@ -48,7 +48,9 @@ static bool ext4_dio_supported(struct inode *inode)
 		return false;
 	return true;
 }
-
+/**
+ *  
+ */
 static ssize_t ext4_dio_read_iter(struct kiocb *iocb, struct iov_iter *to)
 {
 	ssize_t ret;
@@ -73,7 +75,9 @@ static ssize_t ext4_dio_read_iter(struct kiocb *iocb, struct iov_iter *to)
 		iocb->ki_flags &= ~IOCB_DIRECT;
 		return generic_file_read_iter(iocb, to);
 	}
-
+    /**
+     *  
+     */
 	ret = iomap_dio_rw(iocb, to, &ext4_iomap_ops, NULL,
 			   is_sync_kiocb(iocb));
 	inode_unlock_shared(inode);
@@ -127,6 +131,9 @@ static ssize_t ext4_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 	if (IS_DAX(inode))
 		return ext4_dax_read_iter(iocb, to);
 #endif
+    /**
+     *  直接从文件中读取
+     */
 	if (iocb->ki_flags & IOCB_DIRECT)
 		return ext4_dio_read_iter(iocb, to);
 

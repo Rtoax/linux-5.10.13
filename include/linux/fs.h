@@ -1833,17 +1833,22 @@ struct file_operations {    /* 文件操作符 */
 
     /**
      *  
+     *  可能是谁？
+     *  ext4 为空
      */
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 
     /**
      *  可能是谁？
-     *  
+     *  ext4 为空
      */
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 
     /**
      *  原来叫做 readv/writev
+     *  
+     *  ext4_file_operations.ext4_file_read_iter()
+     *  ext4_file_operations.ext4_file_write_iter()
      */
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
@@ -2017,6 +2022,10 @@ struct inode_operations {   /* inode 操作符 */
 static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
 				     struct iov_iter *iter)
 {
+    /**
+     *  
+     *  ext4_file_operations.ext4_file_read_iter()
+     */
 	return file->f_op->read_iter(kio, iter);
 }
 
