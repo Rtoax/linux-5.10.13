@@ -1152,11 +1152,13 @@ out_unlock:
 	return err;
 }
 
+int dup3(int oldfd, int newfd, int flags){} //++++
 SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 {
 	return ksys_dup3(oldfd, newfd, flags);
 }
 
+int dup2(int oldfd, int newfd){} //++++
 SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 {
 	if (unlikely(newfd == oldfd)) { /* corner case */
@@ -1171,7 +1173,7 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 	}
 	return ksys_dup3(oldfd, newfd, 0);
 }
-
+int dup(int oldfd){} //++++
 SYSCALL_DEFINE1(dup, unsigned int, fildes)
 {
 	int ret = -EBADF;
