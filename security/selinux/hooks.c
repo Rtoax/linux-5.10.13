@@ -110,6 +110,9 @@ struct selinux_state selinux_state;
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+/**
+ *  默认为非强制 =0
+ */
 static int __initdata selinux_enforcing_boot ;
 
 static int __init enforcing_setup(char *str)
@@ -124,6 +127,9 @@ __setup("enforcing=", enforcing_setup);
 /**/
 #endif
 
+/**
+ *  默认开启
+ */
 int __initdata selinux_enabled_boot  = 1;
 #ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
 static int __init selinux_enabled_setup(char *str)

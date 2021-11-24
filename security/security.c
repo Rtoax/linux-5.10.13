@@ -2148,6 +2148,10 @@ EXPORT_SYMBOL(security_socket_socketpair);
 
 int security_socket_bind(struct socket *sock, struct sockaddr *address, int addrlen)
 {
+    /**
+     *  selinux_socket_bind()
+     *  ...
+     */
 	return call_int_hook(socket_bind, 0, sock, address, addrlen);
 }
 
