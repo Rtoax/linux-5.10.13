@@ -838,7 +838,10 @@ do_confirm:
 	err = 0;
 	goto out;
 }
-
+/**
+ *  sudo bpftrace -e 'kprobe:ping_recvmsg {printf("ping recv\n");}' 
+ *  上述命令用 ping 命令，并没有任何反应 TODO 荣涛
+ */
 int ping_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int noblock,
 		 int flags, int *addr_len)
 {
@@ -1139,6 +1142,9 @@ static const struct seq_operations ping_v4_seq_ops = {
 
 static int __net_init ping_v4_proc_init_net(struct net *net)
 {
+    /**
+     *  
+     */
 	if (!proc_create_net("icmp", 0444, net->proc_net, &ping_v4_seq_ops,
 			sizeof(struct ping_iter_state)))
 		return -ENOMEM;
