@@ -1328,10 +1328,15 @@ xfs_filemap_map_pages(
 	struct inode		*inode = file_inode(vmf->vma->vm_file);
 
 	xfs_ilock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
+    /**
+     *  
+     */
 	filemap_map_pages(vmf, start_pgoff, end_pgoff);
 	xfs_iunlock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
 }
-
+/**
+ *  mmap
+ */
 static const struct vm_operations_struct xfs_file_vm_ops = {
 	.fault		= xfs_filemap_fault,
 	.huge_fault	= xfs_filemap_huge_fault,
@@ -1354,14 +1359,18 @@ xfs_file_mmap(
 	 */
 	if (!daxdev_mapping_supported(vma, target->bt_daxdev))
 		return -EOPNOTSUPP;
-
+    /**
+     *  
+     */
 	file_accessed(file);
 	vma->vm_ops = &xfs_file_vm_ops;
 	if (IS_DAX(inode))
 		vma->vm_flags |= VM_HUGEPAGE;
 	return 0;
 }
-
+/**
+ *  
+ */
 const struct file_operations xfs_file_operations = {
 	.llseek		= xfs_file_llseek,
 	.read_iter	= xfs_file_read_iter,
@@ -1383,7 +1392,9 @@ const struct file_operations xfs_file_operations = {
 	.fadvise	= xfs_file_fadvise,
 	.remap_file_range = xfs_file_remap_range,
 };
-
+/**
+ *  
+ */
 const struct file_operations xfs_dir_file_operations = {
 	.open		= xfs_dir_open,
 	.read		= generic_read_dir,
