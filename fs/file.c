@@ -653,7 +653,9 @@ void fd_install(unsigned int fd, struct file *file)
 }
 
 EXPORT_SYMBOL(fd_install);
-
+/**
+ *  int fd -> struct file
+ */
 static struct file *pick_file(struct files_struct *files, unsigned fd)
 {
 	struct file *file = NULL;
@@ -680,11 +682,15 @@ out_unlock:
 int __close_fd(struct files_struct *files, unsigned fd)
 {
 	struct file *file;
-
+    /**
+     *  find file
+     */
 	file = pick_file(files, fd);
 	if (!file)
 		return -EBADF;
-
+    /**
+     *  关闭文件
+     */
 	return filp_close(file, files);
 }
 EXPORT_SYMBOL(__close_fd); /* for ksys_close() */

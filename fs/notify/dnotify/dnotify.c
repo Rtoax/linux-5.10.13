@@ -144,7 +144,9 @@ void dnotify_flush(struct file *filp, fl_owner_t id)
 	inode = file_inode(filp);
 	if (!S_ISDIR(inode->i_mode))
 		return;
-
+    /**
+     *  通知结构
+     */
 	fsn_mark = fsnotify_find_mark(&inode->i_fsnotify_marks, dnotify_group);
 	if (!fsn_mark)
 		return;

@@ -1890,6 +1890,10 @@ struct file_operations {    /* 文件操作符 */
 
     /**
      *  发生在进程关闭设备文件描述符的时候
+     **
+     *  xfs_file_operations->flush      = NULL
+     *  ext2_file_operations->flush     = NULL
+     *  ext4_file_operations->flush     = NULL
      */
 	int (*flush) (struct file *, fl_owner_t id);
 
@@ -1921,6 +1925,7 @@ struct file_operations {    /* 文件操作符 */
     /**
      *  该方法的目的是为了在进程的地址空间中找到一个合适的位置，以便将底层设备中的内存段映射到这个位置。
      *  
+     *  xfs_file_operations->get_unmapped_area      = thp_get_unmapped_area
      *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
      *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
      *  ext2_file_operations->get_unmapped_area     = thp_get_unmapped_area

@@ -1359,9 +1359,16 @@ int filp_close(struct file *filp, fl_owner_t id)
 		return 0;
 	}
 
+    /**
+     *  flush file
+     *  5.10.13 ext4, xfs is NULL
+     */
 	if (filp->f_op->flush)
 		retval = filp->f_op->flush(filp, id);
 
+    /**
+     *  
+     */
 	if (likely(!(filp->f_mode & FMODE_PATH))) {
 		dnotify_flush(filp, id);
 		locks_remove_posix(filp, id);
@@ -1377,8 +1384,12 @@ EXPORT_SYMBOL(filp_close);
  * releasing the fd. This ensures that one clone task can't release
  * an fd while another clone is opening it.
  */
+int close(int fd){}//+++
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
+    /**
+     *  
+     */
 	int retval = __close_fd(current->files, fd);
 
 	/* can't restart close syscall because file table entry was cleared */

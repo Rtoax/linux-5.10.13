@@ -34,16 +34,7 @@ extern void dnotify_flush(struct file *, fl_owner_t);
 extern int fcntl_dirnotify(int, struct file *, unsigned long);
 
 #else
-
-static inline void dnotify_flush(struct file *filp, fl_owner_t id)
-{
-}
-
-static inline int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)
-{
-	return -EINVAL;
-}
-
+//
 #endif /* CONFIG_DNOTIFY */
 
 #endif /* __KERNEL __ */
