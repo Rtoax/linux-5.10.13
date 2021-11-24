@@ -491,7 +491,9 @@ static vm_fault_t sel_mmap_policy_fault(struct vm_fault *vmf)   /*  */
 
 	return 0;
 }
-
+/**
+ *  
+ */
 static const struct vm_operations_struct sel_mmap_policy_ops = {
 	sel_mmap_policy_ops.fault = sel_mmap_policy_fault,
 	sel_mmap_policy_ops.page_mkwrite = sel_mmap_policy_fault,
@@ -512,7 +514,9 @@ static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_policy_ops = {
 	.open		= sel_open_policy,
 	.read		= sel_read_policy,
@@ -668,7 +672,9 @@ out:
 	vfree(data);
 	return length;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_load_ops = {
 	.write		= sel_write_load,
 	.llseek		= generic_file_llseek,
@@ -766,6 +772,10 @@ out:
 	kfree(page);
 	return length;
 }
+
+/**
+ *  
+ */
 static const struct file_operations sel_checkreqprot_ops = {
 	.read		= sel_read_checkreqprot,
 	.write		= sel_write_checkreqprot,
@@ -845,7 +855,9 @@ out:
 	kfree(taskcon);
 	return rc;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_transition_ops = {
 	.write		= sel_write_validatetrans,
 	.llseek		= generic_file_llseek,
@@ -1350,7 +1362,9 @@ out:
 	kfree(page);
 	return length;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_bool_ops = {
 	.read		= sel_read_bool,
 	.write		= sel_write_bool,
@@ -1403,7 +1417,9 @@ out:
 	kfree(page);
 	return length;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_commit_bools_ops = {
 	.write		= sel_commit_bools_write,
 	.llseek		= generic_file_llseek,
@@ -1760,7 +1776,9 @@ static ssize_t sel_read_initcon(struct file *file, char __user *buf,
 	kfree(con);
 	return ret;
 }
-
+/**
+ *  
+ */
 static const struct file_operations sel_initcon_ops = {
 	.read		= sel_read_initcon,
 	.llseek		= generic_file_llseek,
@@ -2181,7 +2199,9 @@ static int sel_get_tree(struct fs_context *fc)
 {
 	return get_tree_single(fc, sel_fill_super);
 }
-
+/**
+ *  
+ */
 static const struct fs_context_operations sel_context_ops = {
 	.get_tree	= sel_get_tree,
 };
@@ -2197,7 +2217,9 @@ static void sel_kill_sb(struct super_block *sb)
 	selinux_fs_info_free(sb);
 	kill_litter_super(sb);
 }
-
+/**
+ *  
+ */
 static struct file_system_type sel_fs_type = {
 	.name		= "selinuxfs",
 	.init_fs_context = sel_init_fs_context,
@@ -2206,7 +2228,9 @@ static struct file_system_type sel_fs_type = {
 
 struct vfsmount *selinuxfs_mount;
 struct path selinux_null;
-
+/**
+ *  
+ */
 static int __init init_sel_fs(void)
 {
 	struct qstr null_name = QSTR_INIT(NULL_FILE_NAME,
@@ -2215,23 +2239,32 @@ static int __init init_sel_fs(void)
 
 	if (!selinux_enabled_boot)
 		return 0;
-
+    /**
+     *  /sys/fs/selinux
+     */
 	err = sysfs_create_mount_point(fs_kobj, "selinux");
 	if (err)
 		return err;
-
+    /**
+     *  
+     */
 	err = register_filesystem(&sel_fs_type);
 	if (err) {
 		sysfs_remove_mount_point(fs_kobj, "selinux");
 		return err;
 	}
-
+    /**
+     *  
+     */
 	selinux_null.mnt = selinuxfs_mount = kern_mount(&sel_fs_type);
 	if (IS_ERR(selinuxfs_mount)) {
 		pr_err("selinuxfs:  could not mount!\n");
 		err = PTR_ERR(selinuxfs_mount);
 		selinuxfs_mount = NULL;
 	}
+    /**
+     *  
+     */
 	selinux_null.dentry = d_hash_and_lookup(selinux_null.mnt->mnt_root,
 						&null_name);
 	if (IS_ERR(selinux_null.dentry)) {
