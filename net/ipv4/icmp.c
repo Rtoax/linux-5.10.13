@@ -979,6 +979,10 @@ static bool icmp_redirect(struct sk_buff *skb)
  *	RFC 1812: 4.3.3.6 SHOULD have a config option for silently ignoring
  *		  echo requests, MUST have default=NOT.
  *	See also WRT handling of options once they are done and working.
+ *
+ *      A           B
+ *  ping B          icmp_echo
+ *  sudo bpftrace -e 'kprobe:icmp_echo {printf("icmp_echo\n");}'
  */
 
 static bool icmp_echo(struct sk_buff *skb)
@@ -1048,6 +1052,9 @@ static bool icmp_discard(struct sk_buff *skb)
 
 /*
  *	Deal with incoming ICMP packets.
+ *  
+ *  两个方向都会调用这个函数 
+ *  sudo bpftrace -e 'kprobe:icmp_rcv {printf("icmp_rcv\n");}'
  */
 int icmp_rcv(struct sk_buff *skb)
 {
@@ -1121,6 +1128,9 @@ int icmp_rcv(struct sk_buff *skb)
 		}
 	}
 
+    /**
+     *  处理函数
+     */
 	success = icmp_pointers[icmph->type].handler(skb);
 
 	if (success)  {
@@ -1301,8 +1311,9 @@ static void __net_exit icmp_sk_exit(struct net *net)
 {
 	int i;
 
-	for_each_possible_cpu(i)
+	for_each_possible_cpu(i) {
 		inet_ctl_sock_destroy(*per_cpu_ptr(net->ipv4.icmp_sk, i));
+    }
 	free_percpu(net->ipv4.icmp_sk);
 	net->ipv4.icmp_sk = NULL;
 }
@@ -1314,7 +1325,9 @@ static int __net_init icmp_sk_init(struct net *net)
 	net->ipv4.icmp_sk = alloc_percpu(struct sock *);
 	if (!net->ipv4.icmp_sk)
 		return -ENOMEM;
-
+    /**
+     *  
+     */
 	for_each_possible_cpu(i) {
 		struct sock *sk;
 
@@ -1371,7 +1384,9 @@ static struct pernet_operations __net_initdata icmp_sk_ops = {
        .init = icmp_sk_init,
        .exit = icmp_sk_exit,
 };
-
+/**
+ *  
+ */
 int __init icmp_init(void)
 {
 	return register_pernet_subsys(&icmp_sk_ops);
