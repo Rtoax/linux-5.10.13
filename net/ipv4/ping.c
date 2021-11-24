@@ -949,7 +949,9 @@ EXPORT_SYMBOL_GPL(ping_queue_rcv_skb);
 /*
  *	All we need to do is get the socket.
  */
-
+/**
+ *  sudo bpftrace -e 'kprobe:ping_rcv {printf("ping\n");}'
+ */
 bool ping_rcv(struct sk_buff *skb)
 {
 	struct sock *sk;
