@@ -752,7 +752,7 @@ static ssize_t read_zero(struct file *file, char __user *buf,
 static int mmap_zero(struct file *file, struct vm_area_struct *vma)
 {
 #ifndef CONFIG_MMU
-	return -ENOSYS;
+//	return -ENOSYS;
 #endif
 	if (vma->vm_flags & VM_SHARED)
 		return shmem_zero_setup(vma);
@@ -971,13 +971,17 @@ static const struct memdev {
 #ifdef CONFIG_DEVKMEM   /* /dev/kmem */
 	 [2] = { "kmem", 0, &kmem_fops, FMODE_UNSIGNED_OFFSET },
 #endif
+     /* /dev/null */
 	 [3] = { "null", 0666, &null_fops, 0 },
 #ifdef CONFIG_DEVPORT   /* /dev/port */
 	 [4] = { "port", 0, &port_fops, 0 },
 #endif
+    /* /dev/zero */
 	 [5] = { "zero", 0666, &zero_fops, 0 },
 	 [7] = { "full", 0666, &full_fops, 0 },
+	 /* /dev/random */
 	 [8] = { "random", 0666, &random_fops, 0 },
+	 /* /dev/urandom */
 	 [9] = { "urandom", 0666, &urandom_fops, 0 },
 #ifdef CONFIG_PRINTK    /* /dev/kmsg */
 	[11] = { "kmsg", 0644, &kmsg_fops, 0 },
