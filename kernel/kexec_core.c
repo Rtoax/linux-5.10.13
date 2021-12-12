@@ -250,7 +250,9 @@ int sanity_check_segment_list(struct kimage *image)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 struct kimage *do_kimage_alloc_init(void)
 {
 	struct kimage *image;

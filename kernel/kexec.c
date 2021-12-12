@@ -35,7 +35,9 @@ static int copy_user_segment_list(struct kimage *image,
 
 	return ret;
 }
-
+/**
+ *  
+ */
 static int kimage_alloc_init(struct kimage **rimage, unsigned long entry,
 			     unsigned long nr_segments,
 			     struct kexec_segment __user *segments,
@@ -58,17 +60,23 @@ static int kimage_alloc_init(struct kimage **rimage, unsigned long entry,
 		return -ENOMEM;
 
 	image->start = entry;
-
+    /**
+     *  
+     */
 	ret = copy_user_segment_list(image, nr_segments, segments);
 	if (ret)
 		goto out_free_image;
-
+    /**
+     *  
+     */
 	if (kexec_on_panic) {
 		/* Enable special crash kernel control page alloc policy. */
 		image->control_page = crashk_res.start;
 		image->type = KEXEC_TYPE_CRASH;
 	}
-
+    /**
+     *  
+     */
 	ret = sanity_check_segment_list(image);
 	if (ret)
 		goto out_free_image;
@@ -102,14 +110,18 @@ out_free_image:
 	kfree(image);
 	return ret;
 }
-
+/**
+ *  
+ */
 static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		struct kexec_segment __user *segments, unsigned long flags)
 {
 	struct kimage **dest_image, *image;
 	unsigned long i;
 	int ret;
-
+    /**
+     *  
+     */
 	if (flags & KEXEC_ON_CRASH) {
 		dest_image = &kexec_crash_image;
 		if (kexec_crash_image)
@@ -131,14 +143,18 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		 */
 		kimage_free(xchg(&kexec_crash_image, NULL));
 	}
-
+    /**
+     *  
+     */
 	ret = kimage_alloc_init(&image, entry, nr_segments, segments, flags);
 	if (ret)
 		return ret;
 
 	if (flags & KEXEC_PRESERVE_CONTEXT)
 		image->preserve_context = 1;
-
+    /**
+     *  
+     */
 	ret = machine_kexec_prepare(image);
 	if (ret)
 		goto out;
@@ -156,7 +172,9 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		if (ret)
 			goto out;
 	}
-
+    /**
+     *  
+     */
 	kimage_terminate(image);
 
 	ret = machine_kexec_post_load(image);
@@ -247,7 +265,9 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
 		struct kexec_segment __user *, segments, unsigned long, flags)
 {
 	int result;
-
+    /**
+     *  
+     */
 	result = kexec_load_check(nr_segments, flags);
 	if (result)
 		return result;
@@ -267,7 +287,9 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
 	 */
 	if (!mutex_trylock(&kexec_mutex))
 		return -EBUSY;
-
+    /**
+     *  
+     */
 	result = do_kexec_load(entry, nr_segments, segments, flags);
 
 	mutex_unlock(&kexec_mutex);

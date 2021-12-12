@@ -248,6 +248,9 @@ int kexec_elf_load(struct kimage *image, struct elfhdr *ehdr,
 void kexec_free_elf_info(struct kexec_elf_info *elf_info);
 int kexec_elf_probe(const char *buf, unsigned long len);
 #endif
+/**
+ *  
+ */
 struct kimage {
 	kimage_entry_t head;
 	kimage_entry_t *entry;
