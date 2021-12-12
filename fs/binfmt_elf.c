@@ -1238,7 +1238,9 @@ out_free_interp:
 			elf_brk = k;
 		}
 	}
-
+    /**
+     *  
+     */
 	e_entry = elf_ex->e_entry + load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;

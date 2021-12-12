@@ -881,7 +881,9 @@ exit:
 	fput(file);
 	return ERR_PTR(err);
 }
-
+/**
+ *  
+ */
 struct file *open_exec(const char *name)
 {
 	struct filename *filename = getname_kernel(name);
@@ -1719,7 +1721,9 @@ static int exec_binprm(struct linux_binprm *bprm)
 		exec = bprm->file;
 		bprm->file = bprm->interpreter;
 		bprm->interpreter = NULL;
-
+        /**
+         *  
+         */
 		allow_write_access(exec);
 		if (unlikely(bprm->have_execfd)) {
 			if (bprm->executable) {
@@ -1810,7 +1814,7 @@ static int bprm_execve(struct linux_binprm *bprm,
 		goto out;
 
     /**
-     *  
+     *  执行
      */
 	retval = exec_binprm(bprm);
 	if (retval < 0)
@@ -2074,7 +2078,9 @@ void set_dumpable(struct mm_struct *mm, int value)
 	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
 }
 
-/* int execve (const char *filename, char *const argv [], char *const envp[]); */
+/**
+ *  execve(2)
+ */
 int execve(const char *filename, char *const argv [], char *const envp[]); /* +++ */
 SYSCALL_DEFINE3(execve, /*  */
 		const char __user *, filename,
