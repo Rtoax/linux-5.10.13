@@ -1777,6 +1777,9 @@ static inline struct sk_buff *tcp_write_queue_head(const struct sock *sk)
 
 static inline struct sk_buff *tcp_write_queue_tail(const struct sock *sk)
 {
+    /**
+     *  添加到队尾
+     */
 	return skb_peek_tail(&sk->sk_write_queue);
 }
 

@@ -221,6 +221,9 @@ int move_addr_to_kernel(void __user *uaddr, int ulen, struct sockaddr_storage *k
 		return -EINVAL;
 	if (ulen == 0)
 		return 0;
+    /**
+     *  拷贝到内核 - 这将造成一次数据拷贝，拷贝的IP地址
+     */
 	if (copy_from_user(kaddr, uaddr, ulen))
 		return -EFAULT;
 	return audit_sockaddr(ulen, kaddr);
@@ -733,6 +736,10 @@ static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
  */
 int sock_sendmsg(struct socket *sock, struct msghdr *msg)
 {
+    /**
+     *  安全发送
+     *  selinux 的 回调钩子将在这里调用
+     */
 	int err = security_socket_sendmsg(sock, msg,
 					  msg_data_left(msg));
 
@@ -2190,6 +2197,9 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		 struct sockaddr __user *addr,  int addr_len)
 {
 	struct socket *sock;
+    /**
+     *  目的  数据结构
+     */
 	struct sockaddr_storage address;
 	int err;
 	struct msghdr msg;
@@ -2219,6 +2229,9 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		msg.msg_name = (struct sockaddr *)&address;
 		msg.msg_namelen = addr_len;
 	}
+    /**
+     *  根据用户设置的flag设置 DONTWAIT 位
+     */
 	if (sock->file->f_flags & O_NONBLOCK)   /* 是否阻塞 */
 		flags |= MSG_DONTWAIT;  /* 根据是否阻塞，设定 MSG_DONTWAIT 标志位 */
 	msg.msg_flags = flags;
@@ -2232,9 +2245,11 @@ out:
 	return err;
 }
 
-/*  */
+/**
+ *  sendto(2) 发送数据包
+ */
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
-                   const struct sockaddr *dest_addr, socklen_t addrlen);
+                   const struct sockaddr *dest_addr, socklen_t addrlen){}//+++
 SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
 		unsigned int, flags, struct sockaddr __user *, addr,
 		int, addr_len)

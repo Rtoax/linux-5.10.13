@@ -945,7 +945,9 @@ int inet_send_prepare(struct sock *sk)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(inet_send_prepare);
-
+/**
+ *  发送
+ */
 int inet_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 {
 	struct sock *sk = sock->sk;

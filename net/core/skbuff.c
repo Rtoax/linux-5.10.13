@@ -1286,7 +1286,9 @@ int skb_zerocopy_iter_dgram(struct sk_buff *skb, struct msghdr *msg, int len)   
 	return __zerocopy_sg_from_iter(skb->sk, skb, &msg->msg_iter, len);
 }
 EXPORT_SYMBOL_GPL(skb_zerocopy_iter_dgram);
-
+/**
+ *  零拷贝
+ */
 int skb_zerocopy_iter_stream(struct sock *sk, struct sk_buff *skb,
 			     struct msghdr *msg, int len,
 			     struct ubuf_info *uarg)
@@ -1300,7 +1302,9 @@ int skb_zerocopy_iter_stream(struct sock *sk, struct sk_buff *skb,
 	 */
 	if (orig_uarg && uarg != orig_uarg)
 		return -EEXIST;
-
+    /**
+     *  
+     */
 	err = __zerocopy_sg_from_iter(sk, skb, &msg->msg_iter, len);
 	if (err == -EFAULT || (err == -EMSGSIZE && skb->len == orig_len)) {
 		struct sock *save_sk = skb->sk;

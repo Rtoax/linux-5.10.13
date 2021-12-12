@@ -937,7 +937,9 @@ static unsigned int tcp_xmit_size_goal(struct sock *sk, u32 mss_now,
 
 	return max(size_goal, mss_now);
 }
-
+/**
+ *  
+ */
 int tcp_send_mss(struct sock *sk, int *size_goal, int flags)
 {
 	int mss_now;
@@ -1192,7 +1194,9 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 	}
 	return err;
 }
-
+/**
+ *  
+ */
 int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -1206,9 +1210,17 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	long timeo;
 
 	flags = msg->msg_flags;
-
+    /**
+     *  零拷贝
+     */
 	if (flags & MSG_ZEROCOPY && size && sock_flag(sk, SOCK_ZEROCOPY)) {
+        /**
+         *  
+         */
 		skb = tcp_write_queue_tail(sk);
+        /**
+         *  
+         */
 		uarg = sock_zerocopy_realloc(sk, size, skb_zcopy(skb));
 		if (!uarg) {
 			err = -ENOBUFS;
@@ -1219,7 +1231,9 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 		if (!zc)
 			uarg->zerocopy = 0;
 	}
-
+    /**
+     *  
+     */
 	if (unlikely(flags & MSG_FASTOPEN || inet_sk(sk)->defer_connect) &&
 	    !tp->repair) {
 		err = tcp_sendmsg_fastopen(sk, msg, &copied_syn, size, uarg);
@@ -1228,9 +1242,13 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 		else if (err)
 			goto out_err;
 	}
-
+    /**
+     *  发送
+     */
 	timeo = sock_sndtimeo(sk, flags & MSG_DONTWAIT);
-
+    /**
+     *  
+     */
 	tcp_rate_check_app_limited(sk);  /* is sending application-limited? */
 
 	/* Wait for a connection to finish. One exception is TCP Fast Open
@@ -1256,7 +1274,9 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 
 		/* 'common' sending to sendq */
 	}
-
+    /**
+     *  
+     */
 	sockcm_init(&sockc, sk);
 	if (msg->msg_controllen) {
 		err = sock_cmsg_send(sk, msg, &sockc);
@@ -1273,15 +1293,22 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	copied = 0;
 
 restart:
+    /**
+     *  
+     */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 
 	err = -EPIPE;
 	if (sk->sk_err || (sk->sk_shutdown & SEND_SHUTDOWN))
 		goto do_error;
-
+    /**
+     *  
+     */
 	while (msg_data_left(msg)) {
 		int copy = 0;
-
+        /**
+         *  
+         */
 		skb = tcp_write_queue_tail(sk);
 		if (skb)
 			copy = size_goal - skb->len;
@@ -1350,7 +1377,9 @@ new_segment:
 
 			if (!sk_wmem_schedule(sk, copy))
 				goto wait_for_space;
-
+            /**
+             *  拷贝数据
+             */
 			err = skb_copy_to_page_nocache(sk, &msg->msg_iter, skb,
 						       pfrag->page,
 						       pfrag->offset,
@@ -1367,7 +1396,11 @@ new_segment:
 				page_ref_inc(pfrag->page);
 			}
 			pfrag->offset += copy;
+            
 		} else {
+            /**
+             *  
+             */
 			err = skb_zerocopy_iter_stream(sk, skb, msg, copy, uarg);
 			if (err == -EMSGSIZE || err == -EEXIST) {
 				tcp_mark_push(tp, skb);
@@ -1442,12 +1475,17 @@ out_err:
 	return err;
 }
 EXPORT_SYMBOL_GPL(tcp_sendmsg_locked);
-
+/**
+ *  发送数据 TCP
+ */
 int tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
 {
 	int ret;
 
 	lock_sock(sk);
+    /**
+     *  
+     */
 	ret = tcp_sendmsg_locked(sk, msg, size);
 	release_sock(sk);
 
@@ -1990,7 +2028,9 @@ static void tcp_recv_timestamp(struct msghdr *msg, const struct sock *sk,
 			put_cmsg_scm_timestamping(msg, tss);
 	}
 }
-
+/**
+ *  
+ */
 static int tcp_inq_hint(struct sock *sk)
 {
 	const struct tcp_sock *tp = tcp_sk(sk);

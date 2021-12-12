@@ -238,7 +238,9 @@ void ip_cmsg_recv_offset(struct msghdr *msg, struct sock *sk,
 		ip_cmsg_recv_fragsize(msg, skb);
 }
 EXPORT_SYMBOL(ip_cmsg_recv_offset);
-
+/**
+ *  
+ */
 int ip_cmsg_send(struct sock *sk, struct msghdr *msg, struct ipcm_cookie *ipc,
 		 bool allow_ipv6)
 {
@@ -267,6 +269,9 @@ int ip_cmsg_send(struct sock *sk, struct msghdr *msg, struct ipcm_cookie *ipc,
 		}
 #endif
 		if (cmsg->cmsg_level == SOL_SOCKET) {
+            /**
+             *  发送
+             */
 			err = __sock_cmsg_send(sk, msg, cmsg, &ipc->sockc);
 			if (err)
 				return err;

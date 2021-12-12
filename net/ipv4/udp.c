@@ -984,7 +984,9 @@ out:
 	return err;
 }
 EXPORT_SYMBOL(udp_push_pending_frames);
-
+/**
+ *  
+ */
 static int __udp_cmsg_send(struct cmsghdr *cmsg, u16 *gso_size) /*  */
 {
 	switch (cmsg->cmsg_type) {
@@ -1003,7 +1005,9 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 	struct cmsghdr *cmsg;
 	bool need_ip = false;
 	int err;
-
+    /**
+     *  遍历
+     */
 	for_each_cmsghdr(cmsg, msg) {
 		if (!CMSG_OK(msg, cmsg))
 			return -EINVAL;
@@ -1012,7 +1016,9 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 			need_ip = true;
 			continue;
 		}
-
+        /**
+         *  
+         */
 		err = __udp_cmsg_send(cmsg, gso_size);
 		if (err)
 			return err;
@@ -1023,7 +1029,7 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 EXPORT_SYMBOL_GPL(udp_cmsg_send);
 
 /**
- *  
+ *  UDP 发送数据
  */
 int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 {
@@ -1055,12 +1061,16 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 	/*
 	 *	Check the flags.
 	 */
-
+    /**
+     *  Out of Bound 带外数据
+     */
 	if (msg->msg_flags & MSG_OOB) /* Mirror BSD error message compatibility */
 		return -EOPNOTSUPP;
 
 	getfrag = is_udplite ? udplite_getfrag : ip_generic_getfrag;
-
+    /**
+     *  
+     */
 	fl4 = &inet->cork.fl.u.ip4;
 	if (up->pending) {
 		/*
@@ -1107,7 +1117,9 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 
 	ipcm_init_sk(&ipc, inet);
 	ipc.gso_size = up->gso_size;
-
+    /**
+     *  
+     */
 	if (msg->msg_controllen) {
 		err = udp_cmsg_send(sk, msg, &ipc.gso_size);
 		if (err > 0)

@@ -68,15 +68,17 @@ struct task_rss_stat {  /*  */
 struct mm_rss_stat {    /*  */
 	atomic_long_t count[NR_MM_COUNTERS];
 };
-
+/**
+ *  数据 page fragment
+ */
 struct page_frag {
 	struct page *page;
 #if (BITS_PER_LONG > 32) || (PAGE_SIZE >= 65536)
 	__u32 offset;
 	__u32 size;
 #else
-	__u16 offset;
-	__u16 size;
+//	__u16 offset;
+//	__u16 size;
 #endif
 };
 
