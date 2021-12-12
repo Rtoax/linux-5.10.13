@@ -723,23 +723,23 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	unsigned long rlim_stack;
 
 #ifdef CONFIG_STACK_GROWSUP
-	/* Limit stack size */
-	stack_base = bprm->rlim_stack.rlim_max;
-	if (stack_base > STACK_SIZE_MAX)
-		stack_base = STACK_SIZE_MAX;
-
-	/* Add space for stack randomization. */
-	stack_base += (STACK_RND_MASK << PAGE_SHIFT);
-
-	/* Make sure we didn't let the argument array grow too large. */
-	if (vma->vm_end - vma->vm_start > stack_base)
-		return -ENOMEM;
-
-	stack_base = PAGE_ALIGN(stack_top - stack_base);
-
-	stack_shift = vma->vm_start - stack_base;
-	mm->arg_start = bprm->p - stack_shift;
-	bprm->p = vma->vm_end - stack_shift;
+//	/* Limit stack size */
+//	stack_base = bprm->rlim_stack.rlim_max;
+//	if (stack_base > STACK_SIZE_MAX)
+//		stack_base = STACK_SIZE_MAX;
+//
+//	/* Add space for stack randomization. */
+//	stack_base += (STACK_RND_MASK << PAGE_SHIFT);
+//
+//	/* Make sure we didn't let the argument array grow too large. */
+//	if (vma->vm_end - vma->vm_start > stack_base)
+//		return -ENOMEM;
+//
+//	stack_base = PAGE_ALIGN(stack_top - stack_base);
+//
+//	stack_shift = vma->vm_start - stack_base;
+//	mm->arg_start = bprm->p - stack_shift;
+//	bprm->p = vma->vm_end - stack_shift;
 #else
 	stack_top = arch_align_stack(stack_top);
 	stack_top = PAGE_ALIGN(stack_top);

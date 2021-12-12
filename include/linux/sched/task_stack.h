@@ -89,14 +89,14 @@ static inline unsigned long stack_not_used(struct task_struct *p)
 
 	do { 	/* Skip over canary */
 # ifdef CONFIG_STACK_GROWSUP
-		n--;
+//		n--;
 # else
 		n++;
 # endif
 	} while (!*n);
 
 # ifdef CONFIG_STACK_GROWSUP
-	return (unsigned long)end_of_stack(p) - (unsigned long)n;
+//	return (unsigned long)end_of_stack(p) - (unsigned long)n;
 # else
 	return (unsigned long)n - (unsigned long)end_of_stack(p);
 # endif

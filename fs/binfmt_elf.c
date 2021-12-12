@@ -146,12 +146,12 @@ static int padzero(unsigned long elf_bss)
 
 /* Let's use some macros to make this stack manipulation a little clearer */
 #ifdef CONFIG_STACK_GROWSUP
-#define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) + (items))
-#define STACK_ROUND(sp, items) \
-	((15 + (unsigned long) ((sp) + (items))) &~ 15UL)
-#define STACK_ALLOC(sp, len) ({ \
-	elf_addr_t __user *old_sp = (elf_addr_t __user *)sp; sp += len; \
-	old_sp; })
+//#define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) + (items))
+//#define STACK_ROUND(sp, items) \
+//	((15 + (unsigned long) ((sp) + (items))) &~ 15UL)
+//#define STACK_ALLOC(sp, len) ({ \
+//	elf_addr_t __user *old_sp = (elf_addr_t __user *)sp; sp += len; \
+//	old_sp; })
 #else
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) \

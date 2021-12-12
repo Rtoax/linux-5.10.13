@@ -328,7 +328,7 @@ unsigned long randomize_stack_top(unsigned long stack_top)
 		random_variable <<= PAGE_SHIFT;
 	}
 #ifdef CONFIG_STACK_GROWSUP
-	return PAGE_ALIGN(stack_top) + random_variable;
+//	return PAGE_ALIGN(stack_top) + random_variable;
 #else
 	return PAGE_ALIGN(stack_top) - random_variable;
 #endif
