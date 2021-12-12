@@ -42,7 +42,9 @@ static void elf_hash_init(struct hlist_head *table)
 
 #define elf_hash_for_each_possible(name, obj, member, key)			\
 	hlist_for_each_entry(obj, &name[hash_min(key, elf_hash_bits())], member)
-
+/**
+ *  添加到红黑树
+ */
 static void rb_add(struct rb_root *tree, struct rb_node *node,
 		   int (*cmp)(struct rb_node *, const struct rb_node *))
 {
@@ -93,7 +95,9 @@ static struct rb_node *rb_next_match(struct rb_node *node, const void *key,
 #define rb_for_each(tree, node, key, cmp) \
 	for ((node) = rb_find_first((tree), (key), (cmp)); \
 	     (node); (node) = rb_next_match((node), (key), (cmp)))
-
+/**
+ *  
+ */
 static int symbol_to_offset(struct rb_node *a, const struct rb_node *b)
 {
 	struct symbol *sa = rb_entry(a, struct symbol, node);
@@ -130,7 +134,9 @@ static int symbol_by_offset(const void *key, const struct rb_node *node)
 struct section *find_section_by_name(const struct elf *elf, const char *name)
 {
 	struct section *sec;
-
+    /**
+     *  
+     */
 	elf_hash_for_each_possible(elf->section_name_hash, sec, name_hash, str_hash(name))
 		if (!strcmp(sec->name, name))
 			return sec;
@@ -238,7 +244,9 @@ struct reloc *find_reloc_by_dest_range(const struct elf *elf, struct section *se
 		return NULL;
 
 	sec = sec->reloc;
-
+    /**
+     *  
+     */
 	for_offset_range(o, offset, offset + len) {
 		elf_hash_for_each_possible(elf->reloc_hash, reloc, hash,
 				       sec_offset_hash(sec, o)) {
@@ -261,7 +269,9 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
 {
 	return find_reloc_by_dest_range(elf, sec, offset, 1);
 }
-
+/**
+ *  读取 elf
+ */
 static int read_sections(struct elf *elf)
 {
 	Elf_Scn *s = NULL;
@@ -340,7 +350,9 @@ static int read_sections(struct elf *elf)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 static int read_symbols(struct elf *elf)
 {
 	struct section *symtab, *symtab_shndx, *sec;
@@ -490,7 +502,9 @@ err:
 	free(sym);
 	return -1;
 }
-
+/**
+ *  链表 + 哈希表
+ */
 void elf_add_reloc(struct elf *elf, struct reloc *reloc)
 {
 	struct section *sec = reloc->sec;
@@ -498,7 +512,9 @@ void elf_add_reloc(struct elf *elf, struct reloc *reloc)
 	list_add_tail(&reloc->list, &sec->reloc_list);
 	elf_hash_add(elf->reloc_hash, &reloc->hash, reloc_hash(reloc));
 }
-
+/**
+ *  读取 重定向
+ */
 static int read_rel_reloc(struct section *sec, int i, struct reloc *reloc, unsigned int *symndx)
 {
 	if (!gelf_getrel(sec->data, i, &reloc->rel)) {
@@ -511,7 +527,9 @@ static int read_rel_reloc(struct section *sec, int i, struct reloc *reloc, unsig
 	*symndx = GELF_R_SYM(reloc->rel.r_info);
 	return 0;
 }
-
+/**
+ *  读取重定向
+ */
 static int read_rela_reloc(struct section *sec, int i, struct reloc *reloc, unsigned int *symndx)
 {
 	if (!gelf_getrela(sec->data, i, &reloc->rela)) {
@@ -524,7 +542,9 @@ static int read_rela_reloc(struct section *sec, int i, struct reloc *reloc, unsi
 	*symndx = GELF_R_SYM(reloc->rela.r_info);
 	return 0;
 }
-
+/**
+ *  
+ */
 static int read_relocs(struct elf *elf)
 {
 	struct section *sec;
@@ -532,7 +552,9 @@ static int read_relocs(struct elf *elf)
 	int i;
 	unsigned int symndx;
 	unsigned long nr_reloc, max_reloc = 0, tot_reloc = 0;
-
+    /**
+     *  
+     */
 	list_for_each_entry(sec, &elf->sections, list) {
 		if ((sec->sh.sh_type != SHT_RELA) &&
 		    (sec->sh.sh_type != SHT_REL))
@@ -548,6 +570,9 @@ static int read_relocs(struct elf *elf)
 		sec->base->reloc = sec;
 
 		nr_reloc = 0;
+        /**
+         *  
+         */
 		for (i = 0; i < sec->sh.sh_size / sec->sh.sh_entsize; i++) {
 			reloc = malloc(sizeof(*reloc));
 			if (!reloc) {
@@ -556,10 +581,16 @@ static int read_relocs(struct elf *elf)
 			}
 			memset(reloc, 0, sizeof(*reloc));
 			switch (sec->sh.sh_type) {
+            /**
+             *  
+             */    
 			case SHT_REL:
 				if (read_rel_reloc(sec, i, reloc, &symndx))
 					return -1;
 				break;
+            /**
+             *  
+             */
 			case SHT_RELA:
 				if (read_rela_reloc(sec, i, reloc, &symndx))
 					return -1;
@@ -575,7 +606,9 @@ static int read_relocs(struct elf *elf)
 				     symndx, sec->name);
 				return -1;
 			}
-
+            /**
+             *  
+             */
 			elf_add_reloc(elf, reloc);
 			nr_reloc++;
 		}
@@ -590,7 +623,9 @@ static int read_relocs(struct elf *elf)
 
 	return 0;
 }
-
+/**
+ *  
+ */
 struct elf *elf_open_read(const char *name, int flags)
 {
 	struct elf *elf;
@@ -637,13 +672,19 @@ struct elf *elf_open_read(const char *name, int flags)
 		WARN_ELF("gelf_getehdr");
 		goto err;
 	}
-
+    /**
+     *  
+     */
 	if (read_sections(elf))
 		goto err;
-
+    /**
+     *  
+     */
 	if (read_symbols(elf))
 		goto err;
-
+    /**
+     *  
+     */
 	if (read_relocs(elf))
 		goto err;
 
@@ -756,7 +797,9 @@ struct section *elf_create_section(struct elf *elf, const char *name,
 
 	return sec;
 }
-
+/**
+ *  
+ */
 static struct section *elf_create_rel_reloc_section(struct elf *elf, struct section *base)
 {
 	char *relocname;
@@ -799,7 +842,9 @@ static struct section *elf_create_rela_reloc_section(struct elf *elf, struct sec
 	}
 	strcpy(relocname, ".rela");
 	strcat(relocname, base->name);
-
+    /**
+     *  
+     */
 	sec = elf_create_section(elf, relocname, 0, sizeof(GElf_Rela), 0);
 	free(relocname);
 	if (!sec)
@@ -807,7 +852,9 @@ static struct section *elf_create_rela_reloc_section(struct elf *elf, struct sec
 
 	base->reloc = sec;
 	sec->base = base;
-
+    /**
+     *  
+     */
 	sec->sh.sh_type = SHT_RELA;
 	sec->sh.sh_addralign = 8;
 	sec->sh.sh_link = find_section_by_name(elf, ".symtab")->idx;
@@ -1000,8 +1047,13 @@ void elf_close(struct elf *elf)
 
 	if (elf->fd > 0)
 		close(elf->fd);
-
+    /**
+     *  
+     */
 	list_for_each_entry_safe(sec, tmpsec, &elf->sections, list) {
+    	/**
+         *  
+         */
 		list_for_each_entry_safe(sym, tmpsym, &sec->symbol_list, list) {
 			list_del(&sym->list);
 			hash_del(&sym->hash);

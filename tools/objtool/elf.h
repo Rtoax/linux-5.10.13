@@ -24,7 +24,9 @@
 #ifndef ELF_C_READ_MMAP
 #define ELF_C_READ_MMAP ELF_C_READ
 #endif
-
+/**
+ *  节
+ */
 struct section {
 	struct list_head list;
 	struct hlist_node hash;
@@ -41,7 +43,9 @@ struct section {
 	unsigned int len;
 	bool changed, text, rodata, noinstr;
 };
-
+/**
+ *  符号
+ */
 struct symbol {
 	struct list_head list;
 	struct rb_node node;
@@ -58,7 +62,9 @@ struct symbol {
 	bool uaccess_safe;
 	bool static_call_tramp;
 };
-
+/**
+ *  重定位
+ */
 struct reloc {
 	struct list_head list;
 	struct hlist_node hash;
@@ -76,7 +82,9 @@ struct reloc {
 };
 
 #define ELF_HASH_BITS	20
-
+/**
+ *  
+ */
 struct elf {
 	Elf *elf;
 	GElf_Ehdr ehdr;
@@ -84,6 +92,9 @@ struct elf {
 	bool changed;
 	char *name;
 	struct list_head sections;
+    /**
+     *  哈希
+     */
 	DECLARE_HASHTABLE(symbol_hash, ELF_HASH_BITS);
 	DECLARE_HASHTABLE(symbol_name_hash, ELF_HASH_BITS);
 	DECLARE_HASHTABLE(section_hash, ELF_HASH_BITS);
