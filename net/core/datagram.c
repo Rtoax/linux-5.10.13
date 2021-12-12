@@ -134,7 +134,9 @@ out_noerr:
 	goto out;
 }
 EXPORT_SYMBOL(__skb_wait_for_more_packets);
-
+/**
+ *  
+ */
 static struct sk_buff *skb_set_peeked(struct sk_buff *skb)
 {
 	struct sk_buff *nskb;
@@ -145,7 +147,9 @@ static struct sk_buff *skb_set_peeked(struct sk_buff *skb)
 	/* We have to unshare an skb before modifying it. */
 	if (!skb_shared(skb))
 		goto done;
-
+    /**
+     *  
+     */
 	nskb = skb_clone(skb, GFP_ATOMIC);
 	if (!nskb)
 		return ERR_PTR(-ENOMEM);
@@ -163,7 +167,9 @@ done:
 
 	return skb;
 }
-                /*  */
+/**
+ *  
+ */
 struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,  /*  */
 					  struct sk_buff_head *queue,   /*  */
 					  unsigned int flags,       /*  */
@@ -180,6 +186,9 @@ struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,  /*  */
 	}
 
 	*last = queue->prev;
+    /**
+     *  遍历
+     */
 	skb_queue_walk(queue, skb) {
 		if (flags & MSG_PEEK) {
 			if (peek_at_off && _off >= skb->len &&
@@ -188,6 +197,9 @@ struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,  /*  */
 				continue;
 			}
 			if (!skb->len) {
+                /**
+                 *  
+                 */
 				skb = skb_set_peeked(skb);
 				if (IS_ERR(skb)) {
 					*err = PTR_ERR(skb);

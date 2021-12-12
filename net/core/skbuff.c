@@ -1469,7 +1469,9 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
 
 		n->fclone = SKB_FCLONE_UNAVAILABLE;
 	}
-
+    /**
+     *  
+     */
 	return __skb_clone(n, skb);
 }
 EXPORT_SYMBOL(skb_clone);

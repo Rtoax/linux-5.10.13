@@ -1624,7 +1624,9 @@ int udp_init_sock(struct sock *sk)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(udp_init_sock);
-
+/**
+ *  消费
+ */
 void skb_consume_udp(struct sock *sk, struct sk_buff *skb, int len)
 {
 	if (unlikely(READ_ONCE(sk->sk_peek_off) >= 0)) {
@@ -1729,7 +1731,9 @@ int udp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 	return 0;
 }
 EXPORT_SYMBOL(udp_ioctl);
-
+/**
+ *  
+ */
 struct sk_buff *__skb_recv_udp(struct sock *sk, unsigned int flags,
 			       int noblock, int *off, int *err)
 {
@@ -1752,6 +1756,9 @@ struct sk_buff *__skb_recv_udp(struct sock *sk, unsigned int flags,
 		error = -EAGAIN;
 		do {
 			spin_lock_bh(&queue->lock);
+            /**
+             *  从队列中接收
+             */
 			skb = __skb_try_recv_from_queue(sk, queue, flags, off,
 							err, &last);
 			if (skb) {
@@ -1773,9 +1780,14 @@ struct sk_buff *__skb_recv_udp(struct sock *sk, unsigned int flags,
 			 */
 			spin_lock(&sk_queue->lock);
 			skb_queue_splice_tail_init(sk_queue, queue);
-
+            /**
+             *  
+             */
 			skb = __skb_try_recv_from_queue(sk, queue, flags, off,
 							err, &last);
+            /**
+             *  
+             */
 			if (skb && !(flags & MSG_PEEK))
 				udp_skb_dtor_locked(sk, skb);
 			spin_unlock(&sk_queue->lock);
@@ -1821,11 +1833,19 @@ int udp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int noblock,
 		return ip_recv_error(sk, msg, len, addr_len);
 
 try_again:
+    /**
+     *  
+     */
 	off = sk_peek_offset(sk, flags);
+    /**
+     *  
+     */
 	skb = __skb_recv_udp(sk, flags, noblock, &off, &err);
 	if (!skb)
 		return err;
-
+    /**
+     *  
+     */
 	ulen = udp_skb_len(skb);
 	copied = len;
 	if (copied > ulen - off)
@@ -1872,7 +1892,9 @@ try_again:
 	if (!peeking)
 		UDP_INC_STATS(sock_net(sk),
 			      UDP_MIB_INDATAGRAMS, is_udplite);
-
+    /**
+     *  
+     */
 	sock_recv_ts_and_drops(msg, sk, skb);
 
 	/* Copy the address. */
@@ -1887,7 +1909,9 @@ try_again:
 			BPF_CGROUP_RUN_PROG_UDP4_RECVMSG_LOCK(sk,
 							(struct sockaddr *)sin);
 	}
-
+    /**
+     *  
+     */
 	if (udp_sk(sk)->gro_enabled)
 		udp_cmsg_recv(msg, sk, skb);
 
@@ -1897,7 +1921,9 @@ try_again:
 	err = copied;
 	if (flags & MSG_TRUNC)
 		err = ulen;
-
+    /**
+     *  消费
+     */
 	skb_consume_udp(sk, skb, peeking ? -err : err);
 	return err;
 

@@ -1497,7 +1497,9 @@ EXPORT_SYMBOL(tcp_sendmsg);
  *	Handle reading urgent data. BSD has very simple semantics for
  *	this, no blocking and very strange errors 8)
  */
-
+/**
+ *  
+ */
 static int tcp_recv_urg(struct sock *sk, struct msghdr *msg, int len, int flags)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -2059,7 +2061,9 @@ static int tcp_inq_hint(struct sock *sk)
  *	tricks with *seq access order and skb->users are not required.
  *	Probably, code can be easily improved even more.
  */
-
+/**
+ *  
+ */
 int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		int flags, int *addr_len)
 {
@@ -2078,7 +2082,9 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 
 	if (unlikely(flags & MSG_ERRQUEUE))
 		return inet_recv_error(sk, msg, len, addr_len);
-
+    /**
+     *  
+     */
 	if (sk_can_busy_loop(sk) && skb_queue_empty_lockless(&sk->sk_receive_queue) &&
 	    (sk->sk_state == TCP_ESTABLISHED))
 		sk_busy_loop(sk, nonblock);
@@ -2116,7 +2122,9 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		peek_seq = tp->copied_seq;
 		seq = &peek_seq;
 	}
-
+    /**
+     *  
+     */
 	target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
 
 	do {
@@ -2315,6 +2323,9 @@ out:
 	return err;
 
 recv_urg:
+    /**
+     *  紧急？
+     */
 	err = tcp_recv_urg(sk, msg, len, flags);
 	goto out;
 

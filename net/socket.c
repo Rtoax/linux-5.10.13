@@ -956,6 +956,9 @@ INDIRECT_CALLABLE_DECLARE(int inet_recvmsg(struct socket *, struct msghdr *,
 					   size_t, int));
 INDIRECT_CALLABLE_DECLARE(int inet6_recvmsg(struct socket *, struct msghdr *,
 					    size_t, int));
+/**
+ *  
+ */
 static inline int sock_recvmsg_nosec(struct socket *sock, struct msghdr *msg,
 				     int flags)
 {
@@ -975,8 +978,13 @@ static inline int sock_recvmsg_nosec(struct socket *sock, struct msghdr *msg,
  */
 int sock_recvmsg(struct socket *sock, struct msghdr *msg, int flags)
 {
+    /**
+     *  安全接收
+     */
 	int err = security_socket_recvmsg(sock, msg, msg_data_left(msg), flags);
-
+    /**
+     *  
+     */
 	return err ?: sock_recvmsg_nosec(sock, msg, flags);
 }
 EXPORT_SYMBOL(sock_recvmsg);
@@ -2281,14 +2289,21 @@ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
 	struct sockaddr_storage address;
 	int err, err2;
 	int fput_needed;
-
+    /**
+     *  
+     */
 	err = import_single_range(READ, ubuf, size, &iov, &msg.msg_iter);
 	if (unlikely(err))
 		return err;
+    /**
+     *  
+     */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
-
+    /**
+     *  
+     */
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
 	/* Save some cycles and don't copy the address if not needed */
@@ -2299,8 +2314,13 @@ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
 	msg.msg_flags = 0;
 	if (sock->file->f_flags & O_NONBLOCK)
 		flags |= MSG_DONTWAIT;
-	err = sock_recvmsg(sock, &msg, flags);
-
+    /**
+     *  接受数据
+     */
+    err = sock_recvmsg(sock, &msg, flags);
+    /**
+     *  
+     */
 	if (err >= 0 && addr != NULL) {
 		err2 = move_addr_to_user(&address,
 					 msg.msg_namelen, addr, addr_len);
@@ -2313,6 +2333,9 @@ out:
 	return err;
 }
 
+/**
+ *  recvfrom(2)
+ */
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
                        struct sockaddr *src_addr, socklen_t *addrlen);
 SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,

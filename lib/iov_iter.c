@@ -1840,7 +1840,9 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
 			      in_compat_syscall());
 }
 EXPORT_SYMBOL(import_iovec);
-
+/**
+ *  
+ */
 int import_single_range(int rw, void __user *buf, size_t len,
 		 struct iovec *iov, struct iov_iter *i)
 {
