@@ -2222,7 +2222,9 @@ static bool khugepaged_should_wakeup(void)
 	return kthread_should_stop() ||
 	       time_after_eq(jiffies, khugepaged_sleep_expire);
 }
-
+/**
+ *  
+ */
 static void khugepaged_wait_work(void)
 {
 	if (khugepaged_has_work()) {
@@ -2243,6 +2245,9 @@ static void khugepaged_wait_work(void)
 		wait_event_freezable(khugepaged_wait, khugepaged_wait_event());
 }
 
+/**
+ *  
+ */
 static int khugepaged(void *none)
 {
 	struct mm_slot *mm_slot;
@@ -2251,7 +2256,13 @@ static int khugepaged(void *none)
 	set_user_nice(current, MAX_NICE);
 
 	while (!kthread_should_stop()) {
+        /**
+         *  
+         */
 		khugepaged_do_scan();
+        /**
+         *  
+         */
 		khugepaged_wait_work();
 	}
 
