@@ -3022,7 +3022,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 		unsigned long nr_scanned;
 
         /**
-         *  遍历 可驱逐 LRU
+         *  遍历 可回收 LRU
          */
 		for_each_evictable_lru(lru) {
 			if (nr[lru]) {
@@ -3114,7 +3114,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	sc->nr_reclaimed += nr_reclaimed;
 
 	/*
-	 * Even if we did not try to evict anon pages at all, we want to
+	 * Even if we did not try to evict(回收) anon pages at all, we want to
 	 * rebalance the anon lru active/inactive ratio.
 	 */
 	if (total_swap_pages && inactive_is_low(lruvec, LRU_INACTIVE_ANON))

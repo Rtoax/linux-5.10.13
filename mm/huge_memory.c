@@ -356,14 +356,7 @@ static void __init hugepage_exit_sysfs(struct kobject *hugepage_kobj)
 	kobject_put(hugepage_kobj);
 }
 #else
-static inline int hugepage_init_sysfs(struct kobject **hugepage_kobj)
-{
-	return 0;
-}
-
-static inline void hugepage_exit_sysfs(struct kobject *hugepage_kobj)
-{
-}
+/*  */
 #endif /* CONFIG_SYSFS */
 
 static int __init hugepage_init(void)
@@ -523,7 +516,9 @@ static unsigned long __thp_get_unmapped_area(struct file *filp,
 	len_pad = len + size;
 	if (len_pad < len || (off + len_pad) < off)
 		return 0;
-
+    /**
+     *  
+     */
 	ret = current->mm->get_unmapped_area(filp, addr, len_pad,
 					      off >> PAGE_SHIFT, flags);
 
