@@ -181,7 +181,9 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)    /*  
 		return -ENOMEM;
 	td->cpu = cpu;
 	td->ht = ht;
-
+    /**
+     *  
+     */
 	tsk = kthread_create_on_cpu(smpboot_thread_fn, td, cpu,
 				    ht->thread_comm);
 	if (IS_ERR(tsk)) {
