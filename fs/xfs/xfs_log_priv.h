@@ -370,7 +370,7 @@ struct xfs_cil {
  * as these are quite hot and can be operated on concurrently.
  */
 struct xlog_grant_head {
-	spinlock_t		lock ____cacheline_aligned_in_smp;
+	spinlock_t		____cacheline_aligned_in_smp lock ;
 	struct list_head	waiters;
 	atomic64_t		grant;
 };
@@ -402,7 +402,7 @@ struct xlog {
 	int			l_logBBsize;    /* size of log in BB chunks */
 
 	/* The following block of fields are changed while holding icloglock */
-	wait_queue_head_t	l_flush_wait ____cacheline_aligned_in_smp;
+	wait_queue_head_t ____cacheline_aligned_in_smp	l_flush_wait ;
 						/* waiting for iclog flush */
 	int			l_covered_state;/* state of "covering disk
 						 * log entries" */
@@ -421,9 +421,9 @@ struct xlog {
 	 * cacheline.
 	 */
 	/* lsn of last LR on disk */
-	atomic64_t		l_last_sync_lsn ____cacheline_aligned_in_smp;
+	atomic64_t	____cacheline_aligned_in_smp	l_last_sync_lsn ;
 	/* lsn of 1st LR with unflushed * buffers */
-	atomic64_t		l_tail_lsn ____cacheline_aligned_in_smp;
+	atomic64_t	____cacheline_aligned_in_smp	l_tail_lsn ;
 
 	struct xlog_grant_head	l_reserve_head;
 	struct xlog_grant_head	l_write_head;
