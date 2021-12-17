@@ -100,10 +100,14 @@ struct selinux_state {
 	bool checkreqprot;
 	bool initialized;
 	bool policycap[__POLICYDB_CAPABILITY_MAX];
-
+    /**
+     *  
+     */
 	struct page *status_page;
 	struct mutex status_lock;
-
+    /**
+     *  
+     */
 	struct selinux_avc *avc;
 	struct selinux_policy __rcu *policy;
 	struct mutex policy_mutex;

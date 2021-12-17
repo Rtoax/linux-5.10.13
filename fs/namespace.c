@@ -2865,7 +2865,9 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 
 	if (!fstype)
 		return -EINVAL;
-
+    /**
+     *  
+     */
 	type = get_fs_type(fstype);
 	if (!type)
 		return -ENODEV;
@@ -3150,6 +3152,8 @@ static char *copy_mount_string(const void __user *data)
  * to have the magic value 0xC0ED, and this remained so until 2.4.0-test9.
  * Therefore, if this magic number is present, it carries no information
  * and must be discarded.
+ *
+ *  
  */
 int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page)
@@ -3167,7 +3171,9 @@ int path_mount(const char *dev_name, struct path *path,
 
 	if (flags & MS_NOUSER)
 		return -EINVAL;
-
+    /**
+     *  sudo bpftrace -e 'kprobe:security_sb_mount{@[kstack] = count();}'
+     */
 	ret = security_sb_mount(dev_name, path, type_page, flags, data_page);
 	if (ret)
 		return ret;
@@ -3214,22 +3220,31 @@ int path_mount(const char *dev_name, struct path *path,
 			    SB_POSIXACL |
 			    SB_LAZYTIME |
 			    SB_I_VERSION);
-
+    /**
+     *  
+     */
 	if ((flags & (MS_REMOUNT | MS_BIND)) == (MS_REMOUNT | MS_BIND))
 		return do_reconfigure_mnt(path, mnt_flags);
 	if (flags & MS_REMOUNT)
 		return do_remount(path, flags, sb_flags, mnt_flags, data_page);
-	if (flags & MS_BIND)
+    /**
+     *  
+     */
+    if (flags & MS_BIND)
 		return do_loopback(path, dev_name, flags & MS_REC);
 	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
 		return do_change_type(path, flags);
 	if (flags & MS_MOVE)
 		return do_move_mount_old(path, dev_name);
-
+    /**
+     *  
+     */
 	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
 			    data_page);
 }
-
+/**
+ *  mount(2)
+ */
 long do_mount(const char *dev_name, const char __user *dir_name,
 		const char *type_page, unsigned long flags, void *data_page)
 {
@@ -3239,6 +3254,16 @@ long do_mount(const char *dev_name, const char __user *dir_name,
 	ret = user_path_at(AT_FDCWD, dir_name, LOOKUP_FOLLOW, &path);
 	if (ret)
 		return ret;
+    /**
+     *  sudo bpftrace -e 'kprobe:path_mount{@[kstack] = count();}'
+        @[
+            path_mount+1
+            do_mount+203
+            __x64_sys_mount+354
+            do_syscall_64+55
+            entry_SYSCALL_64_after_hwframe+68
+        ]: 2
+     */
 	ret = path_mount(dev_name, &path, type_page, flags, data_page);
 	path_put(&path);
 	return ret;
@@ -3442,10 +3467,12 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
 	return path.dentry;
 }
 EXPORT_SYMBOL(mount_subtree);
-
+/**
+ *  mount(2)
+ */
 int mount(const char *source, const char *target,
                  const char *filesystemtype, unsigned long mountflags,
-                 const void *data){}
+                 const void *data){}//+++
 SYSCALL_DEFINE5(mount, char __user *, source, char __user *, target,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
@@ -3453,22 +3480,30 @@ SYSCALL_DEFINE5(mount, char __user *, source, char __user *, target,
 	char *kernel_type;
 	char *kernel_dev;
 	void *options;
-
+    /**
+     *  
+     */
 	kernel_type = copy_mount_string(type);
 	ret = PTR_ERR(kernel_type);
 	if (IS_ERR(kernel_type))
 		goto out_type;
-
+    /**
+     *  
+     */
 	kernel_dev = copy_mount_string(source);
 	ret = PTR_ERR(kernel_dev);
 	if (IS_ERR(kernel_dev))
 		goto out_dev;
-
+    /**
+     *  
+     */
 	options = copy_mount_options(data);
 	ret = PTR_ERR(options);
 	if (IS_ERR(options))
 		goto out_data;
-
+    /**
+     *  
+     */
 	ret = do_mount(kernel_dev, target, kernel_type, flags, options);
 
 	kfree(options);

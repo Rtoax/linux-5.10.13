@@ -1691,6 +1691,9 @@ static inline int path_has_perm(const struct cred *cred,
 	ad.type = LSM_AUDIT_DATA_PATH;
 	ad.u.path = *path;
 	__inode_security_revalidate(inode, path->dentry, true);
+    /**
+     *  sudo bpftrace -e 'kprobe:inode_has_perm{@[kstack] = count();}'
+     */
 	return inode_has_perm(cred, inode, av, &ad);
 }
 
@@ -1952,6 +1955,9 @@ static int superblock_has_perm(const struct cred *cred,
 	u32 sid = cred_sid(cred);
 
 	sbsec = sb->s_security;
+    /**
+     *  
+     */
 	return avc_has_perm(&selinux_state,
 			    sid, sbsec->sid, SECCLASS_FILESYSTEM, perms, ad);
 }
@@ -2757,19 +2763,41 @@ static int selinux_sb_statfs(struct dentry *dentry)
 	ad.u.dentry = dentry->d_sb->s_root;
 	return superblock_has_perm(cred, dentry->d_sb, FILESYSTEM__GETATTR, &ad);
 }
+/**
+ *  sudo bpftrace -e 'kprobe:selinux_mount{@[kstack] = count();}'
+    Attaching 1 probe...
+    ^C
 
+    @[
+        selinux_mount+1
+        security_sb_mount+96
+        path_mount+244
+        do_mount+203
+        __x64_sys_mount+354
+        do_syscall_64+55
+        entry_SYSCALL_64_after_hwframe+68
+    ]: 2
+ */
 static int selinux_mount(const char *dev_name,
 			 const struct path *path,
 			 const char *type,
 			 unsigned long flags,
 			 void *data)
 {
+    /**
+     *  当前进程的证书
+     */
 	const struct cred *cred = current_cred();
-
+    /**
+     *  重新挂载
+     */
 	if (flags & MS_REMOUNT)
 		return superblock_has_perm(cred, path->dentry->d_sb,
 					   FILESYSTEM__REMOUNT, NULL);
 	else
+        /**
+     *  
+     */
 		return path_has_perm(cred, path, FILE__MOUNTON);
 }
 

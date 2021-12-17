@@ -916,6 +916,11 @@ int security_sb_statfs(struct dentry *dentry)
 int security_sb_mount(const char *dev_name, const struct path *path,
                        const char *type, unsigned long flags, void *data)
 {
+    /**
+     *
+     *  one of:
+     *  selinux_mount()
+     */
 	return call_int_hook(sb_mount, 0, dev_name, path, type, flags, data);
 }
 
