@@ -238,6 +238,9 @@ int security_read_policy(struct selinux_state *state,
 
 int security_policycap_supported(struct selinux_state *state,
 				 unsigned int req_cap);
+/**
+ *  access vector cache (AVC)
+ */
 
 #define SEL_VEC_MAX 32
 struct av_decision {

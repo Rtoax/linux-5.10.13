@@ -6,12 +6,17 @@
 #include "internal.h"
 
 /*
- * /proc/thread_self:
+ * /proc/thread_self: /proc/thread-self -> /proc/[pid]/task/[TID]/
+ *  每次访问 /proc/thread-self 都会 调用这个函数 
+ *  sudo bpftrace -e 'kprobe:proc_thread_self_get_link{printf("%-8d %-16s\n", pid, comm);}'
  */
 static const char *proc_thread_self_get_link(struct dentry *dentry,
 					     struct inode *inode,
 					     struct delayed_call *done)
 {
+    /**
+     *  
+     */
 	struct pid_namespace *ns = proc_pid_ns(inode->i_sb);
 	pid_t tgid = task_tgid_nr_ns(current, ns);
 	pid_t pid = task_pid_nr_ns(current, ns);
@@ -19,20 +24,38 @@ static const char *proc_thread_self_get_link(struct dentry *dentry,
 
 	if (!pid)
 		return ERR_PTR(-ENOENT);
+    /**
+     *  [PID] + '/task/' + [PID] + '\0'
+     */
 	name = kmalloc(10 + 6 + 10 + 1, dentry ? GFP_KERNEL : GFP_ATOMIC);
 	if (unlikely(!name))
 		return dentry ? ERR_PTR(-ENOMEM) : ERR_PTR(-ECHILD);
-	sprintf(name, "%u/task/%u", tgid, pid);
+    /**
+     *  /proc/[pid]/task/[TGID]/
+     */
+    sprintf(name, "%u/task/%u", tgid, pid);
+
+    /**
+     *  创建 /proc/thread-self -> /proc/[pid]/task/[TID]/
+     */
 	set_delayed_call(done, kfree_link, name);
 	return name;
 }
 
+/**
+ * /proc/thread_self
+ */
 static const struct inode_operations proc_thread_self_inode_operations = {
 	.get_link	= proc_thread_self_get_link,
 };
 
 static unsigned __ro_after_init thread_self_inum ;/*  */
 
+/**
+ *  sudo bpftrace -e 'kprobe:proc_setup_thread_self{printf("%-8d %-16s\n", pid, comm);}'
+ *  
+ *  这只会在 proc_fill_super() 中调用
+ */
 int proc_setup_thread_self(struct super_block *s)
 {
 	struct inode *root_inode = d_inode(s->s_root);
@@ -41,6 +64,10 @@ int proc_setup_thread_self(struct super_block *s)
 	int ret = -ENOMEM;
 
 	inode_lock(root_inode);
+    /*
+     * /proc/thread_self:
+     * /proc/thread-self -> /proc/[pid]/task/[TGID]/
+     */
 	thread_self = d_alloc_name(s->s_root, "thread-self");
 	if (thread_self) {
 		struct inode *inode = new_inode(s);

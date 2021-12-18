@@ -44,6 +44,9 @@
 #define avc_cache_stats_incr(field)	do {} while (0)
 #endif
 
+/**
+ *  access vector cache (AVC)
+ */
 struct avc_entry {
 	u32			ssid;
 	u32			tsid;
@@ -52,6 +55,9 @@ struct avc_entry {
 	struct avc_xperms_node	*xp_node;
 };
 
+/**
+ *  access vector cache (AVC)
+ */
 struct avc_node {
 	struct avc_entry	ae;
 	struct hlist_node	list; /* anchored in avc_cache->slots[i] */
