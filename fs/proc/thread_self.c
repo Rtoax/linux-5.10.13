@@ -55,6 +55,8 @@ static unsigned __ro_after_init thread_self_inum ;/*  */
  *  sudo bpftrace -e 'kprobe:proc_setup_thread_self{printf("%-8d %-16s\n", pid, comm);}'
  *  
  *  这只会在 proc_fill_super() 中调用
+ *
+ *  https://github.com/opencontainers/selinux/blob/main/go-selinux/selinux_linux.go#L454
  */
 int proc_setup_thread_self(struct super_block *s)
 {
