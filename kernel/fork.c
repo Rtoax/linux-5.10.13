@@ -1714,7 +1714,7 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 	}
 
     /**
-     *  
+     *  拷贝文件系统
      */
 	tsk->fs = copy_fs_struct(fs);   /*  */
 	if (!tsk->fs)

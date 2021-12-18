@@ -725,7 +725,15 @@ static bool has_pid_permissions(struct proc_fs_info *fs_info,
 	return ptrace_may_access(task, PTRACE_MODE_READ_FSCREDS);
 }
 
-
+/**
+ *  sudo bpftrace -e 'kprobe:proc_pid_permission{printf("%-8d %-16s %-16s\n", pid, comm, probe);}'
+    Attaching 1 probe...
+    1994     sssd_kcm         kprobe:proc_pid_permission
+    2470     gnome-terminal-  kprobe:proc_pid_permission
+    2470     gnome-terminal-  kprobe:proc_pid_permission
+    2470     gnome-terminal-  kprobe:proc_pid_permission
+    2470     gnome-terminal-  kprobe:proc_pid_permission
+ */
 static int proc_pid_permission(struct inode *inode, int mask)
 {
 	struct proc_fs_info *fs_info = proc_sb_info(inode->i_sb);
@@ -2842,6 +2850,19 @@ static const struct file_operations proc_attr_dir_operations = {
 	.llseek		= generic_file_llseek,
 };
 
+/*
+    sudo bpftrace -e 'kprobe:proc_attr_dir_lookup{printf("%-8d %-16s %-16s\n", pid, comm, probe);}'
+    Attaching 1 probe...
+    75508    cat              kprobe:proc_attr_dir_lookup
+    75514    cat              kprobe:proc_attr_dir_lookup
+    75519    cat              kprobe:proc_attr_dir_lookup
+    75524    cat              kprobe:proc_attr_dir_lookup
+    75529    cat              kprobe:proc_attr_dir_lookup
+    75534    cat              kprobe:proc_attr_dir_lookup
+    75539    cat              kprobe:proc_attr_dir_lookup
+
+    PS 在另一个终端 cat /proc/thread-self/attr/prev
+*/
 static struct dentry *proc_attr_dir_lookup(struct inode *dir,
 				struct dentry *dentry, unsigned int flags)
 {
@@ -2849,7 +2870,9 @@ static struct dentry *proc_attr_dir_lookup(struct inode *dir,
 				  attr_dir_stuff,
 				  attr_dir_stuff + ARRAY_SIZE(attr_dir_stuff));
 }
-
+/**
+ *  
+ */
 static const struct inode_operations proc_attr_dir_inode_operations = {
 	.lookup		= proc_attr_dir_lookup,
 	.getattr	= pid_getattr,
@@ -3172,6 +3195,9 @@ static const struct inode_operations proc_task_inode_operations;
  *  /proc/PID/*
  */
 static const struct pid_entry tgid_base_stuff[] = {
+    /**
+     *  /proc/TGID/task
+     */
 	DIR("task",       S_IRUGO|S_IXUGO, proc_task_inode_operations, proc_task_operations),
 	DIR("fd",         S_IRUSR|S_IXUSR, proc_fd_inode_operations, proc_fd_operations), /* /proc/PID/fd/ */
 	DIR("map_files",  S_IRUSR|S_IXUSR, proc_map_files_inode_operations, proc_map_files_operations),
@@ -3224,6 +3250,9 @@ static const struct pid_entry tgid_base_stuff[] = {
 	REG("pagemap",    S_IRUSR, proc_pagemap_operations),
 #endif
 #ifdef CONFIG_SECURITY
+    /**
+     *  
+     */
 	DIR("attr",       S_IRUGO|S_IXUGO, proc_attr_dir_inode_operations, proc_attr_dir_operations),
 #endif
 #ifdef CONFIG_KALLSYMS
@@ -3658,6 +3687,9 @@ static struct dentry *proc_task_instantiate(struct dentry *dentry,
 	return d_splice_alias(inode, dentry);
 }
 
+/**
+ *  sudo bpftrace -e 'kprobe:proc_task_lookup{printf("%-8d %-16s %-16s\n", pid, comm, probe);}'
+ */
 static struct dentry *proc_task_lookup(struct inode *dir, struct dentry * dentry, unsigned int flags)
 {
 	struct task_struct *task;
@@ -3827,13 +3859,18 @@ static int proc_task_getattr(const struct path *path, struct kstat *stat,
 	return 0;
 }
 
+/**
+ *  /proc/TGID/task
+ */
 static const struct inode_operations proc_task_inode_operations = {
 	.lookup		= proc_task_lookup,
 	.getattr	= proc_task_getattr,
 	.setattr	= proc_setattr,
 	.permission	= proc_pid_permission,
 };
-
+/**
+ *  /proc/TGID/task
+ */
 static const struct file_operations proc_task_operations = {
 	.read		= generic_read_dir,
 	.iterate_shared	= proc_task_readdir,
