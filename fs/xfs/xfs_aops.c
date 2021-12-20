@@ -631,6 +631,9 @@ out_invalidate:
  */
 static const struct iomap_writeback_ops xfs_writeback_ops = {
 	.map_blocks		= xfs_map_blocks,
+    /**
+     *  
+     */
 	.prepare_ioend		= xfs_prepare_ioend,
 	.discard_page		= xfs_discard_page,
 };
@@ -644,7 +647,10 @@ xfs_vm_writepage(
 
 	return iomap_writepage(page, wbc, &wpc.ctx, &xfs_writeback_ops);
 }
-
+    
+/**
+ *  
+ */
 STATIC int
 xfs_vm_writepages(
 	struct address_space	*mapping,
@@ -653,6 +659,9 @@ xfs_vm_writepages(
 	struct xfs_writepage_ctx wpc = { };
 
 	xfs_iflags_clear(XFS_I(mapping->host), XFS_ITRUNCATED);
+    /**
+     *  
+     */
 	return iomap_writepages(mapping, wbc, &wpc.ctx, &xfs_writeback_ops);
 }
 
