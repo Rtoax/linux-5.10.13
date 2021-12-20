@@ -229,6 +229,9 @@ struct bio {    /*  */
 
 	bio_end_io_t		*bi_end_io;
 
+    /**
+     *  xfs_end_bio() = struct iomap_ioend
+     */
 	void			*bi_private;
 #ifdef CONFIG_BLK_CGROUP
 	/*

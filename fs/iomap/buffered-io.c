@@ -1122,6 +1122,9 @@ iomap_ioend_can_merge(struct iomap_ioend *ioend, struct iomap_ioend *next)
 {
 	if (ioend->io_bio->bi_status != next->io_bio->bi_status)
 		return false;
+    /**
+     *  
+     */
 	if ((ioend->io_flags & IOMAP_F_SHARED) ^
 	    (next->io_flags & IOMAP_F_SHARED))
 		return false;
@@ -1132,7 +1135,9 @@ iomap_ioend_can_merge(struct iomap_ioend *ioend, struct iomap_ioend *next)
 		return false;
 	return true;
 }
-
+/**
+ *  
+ */
 void
 iomap_ioend_try_merge(struct iomap_ioend *ioend, struct list_head *more_ioends,
 		void (*merge_private)(struct iomap_ioend *ioend,
@@ -1141,13 +1146,26 @@ iomap_ioend_try_merge(struct iomap_ioend *ioend, struct list_head *more_ioends,
 	struct iomap_ioend *next;
 
 	INIT_LIST_HEAD(&ioend->io_list);
-
+    /**
+     *  
+     */
 	while ((next = list_first_entry_or_null(more_ioends, struct iomap_ioend,
 			io_list))) {
-		if (!iomap_ioend_can_merge(ioend, next))
+
+        /**
+         *  ioend 是否可以合并
+         */
+        if (!iomap_ioend_can_merge(ioend, next))
 			break;
+        /**
+         *  
+         */
 		list_move_tail(&next->io_list, &ioend->io_list);
+        /**
+         *  
+         */
 		ioend->io_size += next->io_size;
+        
 		if (next->io_private && merge_private)
 			merge_private(ioend, next);
 	}

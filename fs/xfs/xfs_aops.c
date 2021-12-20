@@ -39,6 +39,9 @@ static inline bool xfs_ioend_is_append(struct iomap_ioend *ioend)
 		XFS_I(ioend->io_inode)->i_d.di_size;
 }
 
+/**
+ *  
+ */
 STATIC int
 xfs_setfilesize_trans_alloc(
 	struct iomap_ioend	*ioend)
@@ -46,11 +49,15 @@ xfs_setfilesize_trans_alloc(
 	struct xfs_mount	*mp = XFS_I(ioend->io_inode)->i_mount;
 	struct xfs_trans	*tp;
 	int			error;
-
+    /**
+     *  
+     */
 	error = xfs_trans_alloc(mp, &M_RES(mp)->tr_fsyncts, 0, 0, 0, &tp);
 	if (error)
 		return error;
-
+    /**
+     *  
+     */
 	ioend->io_private = tp;
 
 	/*
@@ -86,6 +93,7 @@ __xfs_setfilesize(
 		return 0;
 	}
 
+    //sudo bpftrace -e 'tracepoint:xfs:xfs_setfilesize{printf("%d %s\n", pid, comm);}'
 	trace_xfs_setfilesize(ip, offset, size);
 
 	ip->i_d.di_size = isize;
@@ -126,6 +134,10 @@ xfs_setfilesize_ioend(
 	 * Similarly for freeze protection.
 	 */
 	current_set_flags_nested(&tp->t_pflags, PF_MEMALLOC_NOFS);
+
+    /**
+     *  
+     */
 	__sb_writers_acquired(VFS_I(ip)->i_sb, SB_FREEZE_FS);
 
 	/* we abort the update if there was an IO error */
@@ -139,6 +151,7 @@ xfs_setfilesize_ioend(
 
 /*
  * IO write completion.
+ * 
  */
 STATIC void
 xfs_end_ioend(
@@ -182,12 +195,17 @@ xfs_end_ioend(
 		error = xfs_reflink_end_cow(ip, offset, size);
 	else if (ioend->io_type == IOMAP_UNWRITTEN)
 		error = xfs_iomap_write_unwritten(ip, offset, size, false);
-	else
-		ASSERT(!xfs_ioend_is_append(ioend) || ioend->io_private);
+    //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+//	else
+//		ASSERT(!xfs_ioend_is_append(ioend) || ioend->io_private);
 
 done:
-	if (ioend->io_private)
-		error = xfs_setfilesize_ioend(ioend, error);
+    //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+//	if (ioend->io_private)
+//		error = xfs_setfilesize_ioend(ioend, error);
+    if (!error && xfs_ioend_is_append(ioend)) //+++
+    	error = xfs_setfilesize(ip, ioend->io_offset, ioend->io_size);//+++
+    
 	iomap_finish_ioends(ioend, error);
 	memalloc_nofs_restore(nofs_flag);
 }
@@ -212,36 +230,63 @@ xfs_ioend_merge_private(
 }
 
 /* Finish all pending io completions. */
+/**
+ *  workqueue
+ *
+ * https://lore.kernel.org/linux-xfs/YF4AOto30pC%2F0FYW@bfoster/
+ */
 void
 xfs_end_io(
 	struct work_struct	*work)
 {
+    /**
+     *  XFS 文件系统 inode
+     */
 	struct xfs_inode	*ip =
 		container_of(work, struct xfs_inode, i_ioend_work);
 	struct iomap_ioend	*ioend;
 	struct list_head	tmp;
 	unsigned long		flags;
 
+    /**
+     *  tmp 为了提早释放 spinlock
+     */
 	spin_lock_irqsave(&ip->i_ioend_lock, flags);
 	list_replace_init(&ip->i_ioend_list, &tmp);
 	spin_unlock_irqrestore(&ip->i_ioend_lock, flags);
 
+    /**
+     *  
+     */
 	iomap_sort_ioends(&tmp);
-	while ((ioend = list_first_entry_or_null(&tmp, struct iomap_ioend,
-			io_list))) {
+    
+    /**
+     *  循环这个链表
+     */
+	while ((ioend = list_first_entry_or_null(&tmp, struct iomap_ioend, io_list))) {
 		list_del_init(&ioend->io_list);
+        /**
+         *  
+         */
 		iomap_ioend_try_merge(ioend, &tmp, xfs_ioend_merge_private);
+        /**
+         *  
+         */
 		xfs_end_ioend(ioend);
 	}
 }
 
 static inline bool xfs_ioend_needs_workqueue(struct iomap_ioend *ioend)
 {
-	return ioend->io_private ||
+    //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+//	return ioend->io_private ||
+    return xfs_ioend_is_append(ioend) ||    
 		ioend->io_type == IOMAP_UNWRITTEN ||
 		(ioend->io_flags & IOMAP_F_SHARED);
 }
-
+/**
+ *  
+ */
 STATIC void
 xfs_end_bio(
 	struct bio		*bio)
@@ -250,13 +295,20 @@ xfs_end_bio(
 	struct xfs_inode	*ip = XFS_I(ioend->io_inode);
 	unsigned long		flags;
 
-	ASSERT(xfs_ioend_needs_workqueue(ioend));
+    //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+//	ASSERT(xfs_ioend_needs_workqueue(ioend));
 
 	spin_lock_irqsave(&ip->i_ioend_lock, flags);
+    /**
+     *  为空，将工作提交到工作队列
+     */
 	if (list_empty(&ip->i_ioend_list))
 		WARN_ON_ONCE(!queue_work(ip->i_mount->m_unwritten_workqueue,
 					 &ip->i_ioend_work));
-	list_add_tail(&ioend->io_list, &ip->i_ioend_list);
+    /**
+     *  将 ioend 添加到 工作队列 要处理的链表
+     */
+    list_add_tail(&ioend->io_list, &ip->i_ioend_list);
 	spin_unlock_irqrestore(&ip->i_ioend_lock, flags);
 }
 
@@ -481,6 +533,9 @@ allocate_blocks:
 	return 0;
 }
 
+/**
+ *  
+ */
 static int
 xfs_prepare_ioend(
 	struct iomap_ioend	*ioend,
@@ -501,18 +556,34 @@ xfs_prepare_ioend(
 				ioend->io_offset, ioend->io_size);
 	}
 
-	/* Reserve log space if we might write beyond the on-disk inode size. */
-	if (!status &&
-	    ((ioend->io_flags & IOMAP_F_SHARED) ||
-	     ioend->io_type != IOMAP_UNWRITTEN) &&
-	    xfs_ioend_is_append(ioend) &&
-	    !ioend->io_private)
-		status = xfs_setfilesize_trans_alloc(ioend);
+    //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+//	/**
+//	 *  Reserve log space if we might write beyond the on-disk inode size. 
+//	 *  预留 log space，如果 可能写超出 on-disk inode 大小
+//	 */
+//	if (!status &&
+//	    ((ioend->io_flags & IOMAP_F_SHARED) ||
+//	     ioend->io_type != IOMAP_UNWRITTEN) &&
+//	    xfs_ioend_is_append(ioend) &&
+//	    !ioend->io_private)
+//	    /**
+//	     *  https://lore.kernel.org/linux-xfs/YF4AOto30pC%2F0FYW@bfoster/
+//	     *  https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/ 
+//	     *  这几行已经被删除了，函数`xfs_setfilesize_trans_alloc()`也被删除
+//	     */
+//		status = xfs_setfilesize_trans_alloc(ioend);
 
+    /**
+     *  
+     */
 	memalloc_nofs_restore(nofs_flag);
 
+    /**
+     *  
+     */
 	if (xfs_ioend_needs_workqueue(ioend))
 		ioend->io_bio->bi_end_io = xfs_end_bio;
+    
 	return status;
 }
 
@@ -555,6 +626,9 @@ out_invalidate:
 	iomap_invalidatepage(page, pageoff, PAGE_SIZE - pageoff);
 }
 
+/**
+ *  
+ */
 static const struct iomap_writeback_ops xfs_writeback_ops = {
 	.map_blocks		= xfs_map_blocks,
 	.prepare_ioend		= xfs_prepare_ioend,

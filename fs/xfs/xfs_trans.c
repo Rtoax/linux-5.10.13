@@ -189,10 +189,16 @@ xfs_trans_reserve(
 			ASSERT(!(tp->t_flags & XFS_TRANS_PERM_LOG_RES));
 		}
 
+        /**
+         *  
+         */
 		if (tp->t_ticket != NULL) {
 			ASSERT(resp->tr_logflags & XFS_TRANS_PERM_LOG_RES);
 			error = xfs_log_regrant(mp, tp->t_ticket);
 		} else {
+            /**
+             *  
+             */
 			error = xfs_log_reserve(mp,
 						resp->tr_logres,
 						resp->tr_logcount,
@@ -284,6 +290,9 @@ xfs_trans_alloc(
 	INIT_LIST_HEAD(&tp->t_dfops);
 	tp->t_firstblock = NULLFSBLOCK;
 
+    /**
+     *  预留
+     */
 	error = xfs_trans_reserve(tp, resp, blocks, rtextents);
 	if (error) {
 		xfs_trans_cancel(tp);

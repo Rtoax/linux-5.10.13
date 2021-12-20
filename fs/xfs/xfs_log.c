@@ -167,12 +167,18 @@ xlog_grant_head_wake_all(
 	spin_unlock(&head->lock);
 }
 
+/**
+ *  
+ */
 static inline int
 xlog_ticket_reservation(
 	struct xlog		*log,
 	struct xlog_grant_head	*head,
 	struct xlog_ticket	*tic)
 {
+    /**
+     *  
+     */
 	if (head == &log->l_write_head) {
 		ASSERT(tic->t_flags & XLOG_TIC_PERM_RESERV);
 		return tic->t_unit_res;
@@ -285,6 +291,9 @@ shutdown:
  * and sleep. We can avoid taking the lock if the ticket was never added to
  * head->waiters because the t_queue list head will be empty and we hold the
  * only reference to it so it can safely be checked unlocked.
+ *
+ * sudo bpftrace -e 'kprobe:xlog_grant_head_check{printf("%d %s\n", pid, comm);}'
+ *  新建文件，打开文件等 都会调用这个函数
  */
 STATIC int
 xlog_grant_head_check(
@@ -306,14 +315,25 @@ xlog_grant_head_check(
 	 */
 	*need_bytes = xlog_ticket_reservation(log, head, tic);
 	free_bytes = xlog_space_left(log, &head->grant);
+
+    /**
+     *  
+     */
 	if (!list_empty_careful(&head->waiters)) {
 		spin_lock(&head->lock);
 		if (!xlog_grant_head_wake(log, head, &free_bytes) ||
 		    free_bytes < *need_bytes) {
+		    /**
+             *  
+             */
 			error = xlog_grant_head_wait(log, head, tic,
 						     *need_bytes);
 		}
 		spin_unlock(&head->lock);
+
+    /**
+     *  
+     */
 	} else if (free_bytes < *need_bytes) {
 		spin_lock(&head->lock);
 		error = xlog_grant_head_wait(log, head, tic, *need_bytes);
@@ -441,6 +461,9 @@ xfs_log_reserve(
 
 	trace_xfs_log_reserve(log, tic);
 
+    /**
+     *  
+     */
 	error = xlog_grant_head_check(log, &log->l_reserve_head, tic,
 				      &need_bytes);
 	if (error)
