@@ -1054,8 +1054,15 @@ xfs_log_commit_cil(
 	 * inodes and EFIs.
 	 */
 	trace_xfs_trans_commit_items(tp, _RET_IP_);
+
+    /**
+     *  
+     */
 	list_for_each_entry_safe(lip, next, &tp->t_items, li_trans) {
 		xfs_trans_del_item(lip);
+        /**
+         *  提交
+         */
 		if (lip->li_ops->iop_committing)
 			lip->li_ops->iop_committing(lip, xc_commit_lsn);
 	}

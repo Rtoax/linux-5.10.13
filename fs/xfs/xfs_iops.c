@@ -1116,7 +1116,10 @@ xfs_vn_update_time(
 		/* Capture the iversion update that just occurred */
 		log_flags |= XFS_ILOG_CORE;
 	}
-
+    
+    /**
+     *  分配一个 xfs 事务
+     */
 	error = xfs_trans_alloc(mp, &M_RES(mp)->tr_fsyncts, 0, 0, 0, &tp);
 	if (error)
 		return error;
@@ -1131,6 +1134,10 @@ xfs_vn_update_time(
 
 	xfs_trans_ijoin(tp, ip, XFS_ILOCK_EXCL);
 	xfs_trans_log_inode(tp, ip, log_flags);
+
+    /**
+     *  提交 事务
+     */
 	return xfs_trans_commit(tp);
 }
 

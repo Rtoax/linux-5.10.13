@@ -109,46 +109,46 @@ extern void xfs_qm_unmount(struct xfs_mount *);
 extern void xfs_qm_unmount_quotas(struct xfs_mount *);
 
 #else
-static inline int
-xfs_qm_vop_dqalloc(struct xfs_inode *ip, kuid_t kuid, kgid_t kgid,
-		prid_t prid, uint flags, struct xfs_dquot **udqp,
-		struct xfs_dquot **gdqp, struct xfs_dquot **pdqp)
-{
-	*udqp = NULL;
-	*gdqp = NULL;
-	*pdqp = NULL;
-	return 0;
-}
-#define xfs_trans_dup_dqinfo(tp, tp2)
-#define xfs_trans_free_dqinfo(tp)
-#define xfs_trans_mod_dquot_byino(tp, ip, fields, delta)
-#define xfs_trans_apply_dquot_deltas(tp)
-#define xfs_trans_unreserve_and_mod_dquots(tp)
-static inline int xfs_trans_reserve_quota_nblks(struct xfs_trans *tp,
-		struct xfs_inode *ip, int64_t nblks, long ninos, uint flags)
-{
-	return 0;
-}
-static inline int xfs_trans_reserve_quota_bydquots(struct xfs_trans *tp,
-		struct xfs_mount *mp, struct xfs_dquot *udqp,
-		struct xfs_dquot *gdqp, struct xfs_dquot *pdqp,
-		int64_t nblks, long nions, uint flags)
-{
-	return 0;
-}
-#define xfs_qm_vop_create_dqattach(tp, ip, u, g, p)
-#define xfs_qm_vop_rename_dqattach(it)					(0)
-#define xfs_qm_vop_chown(tp, ip, old, new)				(NULL)
-#define xfs_qm_vop_chown_reserve(tp, ip, u, g, p, fl)			(0)
-#define xfs_qm_dqattach(ip)						(0)
-#define xfs_qm_dqattach_locked(ip, fl)					(0)
-#define xfs_qm_dqdetach(ip)
-#define xfs_qm_dqrele(d)
-#define xfs_qm_statvfs(ip, s)
-#define xfs_qm_newmount(mp, a, b)					(0)
-#define xfs_qm_mount_quotas(mp)
-#define xfs_qm_unmount(mp)
-#define xfs_qm_unmount_quotas(mp)
+//static inline int
+//xfs_qm_vop_dqalloc(struct xfs_inode *ip, kuid_t kuid, kgid_t kgid,
+//		prid_t prid, uint flags, struct xfs_dquot **udqp,
+//		struct xfs_dquot **gdqp, struct xfs_dquot **pdqp)
+//{
+//	*udqp = NULL;
+//	*gdqp = NULL;
+//	*pdqp = NULL;
+//	return 0;
+//}
+//#define xfs_trans_dup_dqinfo(tp, tp2)
+//#define xfs_trans_free_dqinfo(tp)
+//#define xfs_trans_mod_dquot_byino(tp, ip, fields, delta)
+//#define xfs_trans_apply_dquot_deltas(tp)
+//#define xfs_trans_unreserve_and_mod_dquots(tp)
+//static inline int xfs_trans_reserve_quota_nblks(struct xfs_trans *tp,
+//		struct xfs_inode *ip, int64_t nblks, long ninos, uint flags)
+//{
+//	return 0;
+//}
+//static inline int xfs_trans_reserve_quota_bydquots(struct xfs_trans *tp,
+//		struct xfs_mount *mp, struct xfs_dquot *udqp,
+//		struct xfs_dquot *gdqp, struct xfs_dquot *pdqp,
+//		int64_t nblks, long nions, uint flags)
+//{
+//	return 0;
+//}
+//#define xfs_qm_vop_create_dqattach(tp, ip, u, g, p)
+//#define xfs_qm_vop_rename_dqattach(it)					(0)
+//#define xfs_qm_vop_chown(tp, ip, old, new)				(NULL)
+//#define xfs_qm_vop_chown_reserve(tp, ip, u, g, p, fl)			(0)
+//#define xfs_qm_dqattach(ip)						(0)
+//#define xfs_qm_dqattach_locked(ip, fl)					(0)
+//#define xfs_qm_dqdetach(ip)
+//#define xfs_qm_dqrele(d)
+//#define xfs_qm_statvfs(ip, s)
+//#define xfs_qm_newmount(mp, a, b)					(0)
+//#define xfs_qm_mount_quotas(mp)
+//#define xfs_qm_unmount(mp)
+//#define xfs_qm_unmount_quotas(mp)
 #endif /* CONFIG_XFS_QUOTA */
 
 #define xfs_trans_unreserve_quota_nblks(tp, ip, nblks, ninos, flags) \

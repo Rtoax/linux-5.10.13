@@ -199,12 +199,20 @@ xfs_end_ioend(
 //	else
 //		ASSERT(!xfs_ioend_is_append(ioend) || ioend->io_private);
 
+    ////git show 7cd3099f4925d7c15887d1940ebd65acd66100f5
+    if (!error && xfs_ioend_is_append(ioend)) //+++
+        /**
+         *  更新 xfs_inode 文件大小
+         */
+    	error = xfs_setfilesize(ip, ioend->io_offset, ioend->io_size);//+++
+
 done:
+    //讨论 https://lore.kernel.org/linux-xfs/YF4kQWXqwCgAh4vW@bfoster/
     //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
+    //git show 281627df3eb5 
+    //git show 7cd3099f4925d7c15887d1940ebd65acd66100f5
 //	if (ioend->io_private)
 //		error = xfs_setfilesize_ioend(ioend, error);
-    if (!error && xfs_ioend_is_append(ioend)) //+++
-    	error = xfs_setfilesize(ip, ioend->io_offset, ioend->io_size);//+++
     
 	iomap_finish_ioends(ioend, error);
 	memalloc_nofs_restore(nofs_flag);

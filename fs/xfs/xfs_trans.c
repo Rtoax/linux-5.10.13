@@ -20,7 +20,12 @@
 #include "xfs_trace.h"
 #include "xfs_error.h"
 #include "xfs_defer.h"
-
+/**
+ *  xfs 事务 slab
+ *  xfs_init_zones() - 初始化
+ *  xfs_trans_free() - 释放
+ *  xfs_trans_alloc()- 申请
+ */
 kmem_zone_t	*xfs_trans_zone;
 
 #if defined(CONFIG_TRACEPOINTS)
@@ -41,7 +46,7 @@ xfs_trans_trace_reservations(
 	trace_xfs_trans_resv_calc(mp, -1, &resv);
 }
 #else
-# define xfs_trans_trace_reservations(mp)
+//# define xfs_trans_trace_reservations(mp)
 #endif
 
 /*
@@ -251,7 +256,9 @@ undo_blocks:
 
 	return error;
 }
-
+/**
+ *  分配 xfs 事务
+ */
 int
 xfs_trans_alloc(
 	struct xfs_mount	*mp,
@@ -886,8 +893,15 @@ __xfs_trans_commit(
 	 */
 	if (tp->t_flags & XFS_TRANS_SB_DIRTY)
 		xfs_trans_apply_sb_deltas(tp);
+
+    /**
+     *  
+     */
 	xfs_trans_apply_dquot_deltas(tp);
 
+    /**
+     *  提交
+     */
 	xfs_log_commit_cil(mp, tp, &commit_lsn, regrant);
 
 	current_restore_flags_nested(&tp->t_pflags, PF_MEMALLOC_NOFS);
@@ -930,6 +944,31 @@ out_unreserve:
 	return error;
 }
 
+/**
+    可能的调用栈，也就是说，重命名或者写文件都会调用这个函数
+    xfs_trans_commit+1
+    xfs_vn_update_time+845
+    file_update_time+526
+    xfs_file_write_checks+1126
+    xfs_file_buffered_write+361
+    new_sync_write+943
+    vfs_write+1205
+    ksys_write+241
+    do_syscall_64+55
+    entry_SYSCALL_64_after_hwframe+68
+
+    xfs_trans_commit+1
+    xfs_inactive_ifree+491
+    xfs_inactive+997
+    xfs_fs_destroy_inode+820
+    destroy_inode+185
+    __dentry_kill+730
+    dput.part.30+1118
+    do_renameat2+1598
+    __x64_sys_rename+122
+    do_syscall_64+55
+    entry_SYSCALL_64_after_hwframe+68
+*/
 int
 xfs_trans_commit(
 	struct xfs_trans	*tp)
