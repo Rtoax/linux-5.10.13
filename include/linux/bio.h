@@ -495,12 +495,7 @@ void bio_associate_blkg_from_css(struct bio *bio,
 				 struct cgroup_subsys_state *css);
 void bio_clone_blkg_association(struct bio *dst, struct bio *src);
 #else	/* CONFIG_BLK_CGROUP */
-static inline void bio_associate_blkg(struct bio *bio) { }
-static inline void bio_associate_blkg_from_css(struct bio *bio,
-					       struct cgroup_subsys_state *css)
-{ }
-static inline void bio_clone_blkg_association(struct bio *dst,
-					      struct bio *src) { }
+/*  */
 #endif	/* CONFIG_BLK_CGROUP */
 
 #ifdef CONFIG_HIGHMEM
@@ -508,29 +503,29 @@ static inline void bio_clone_blkg_association(struct bio *dst,
  * remember never ever reenable interrupts between a bvec_kmap_irq and
  * bvec_kunmap_irq!
  */
-static inline char *bvec_kmap_irq(struct bio_vec *bvec, unsigned long *flags)
-{
-	unsigned long addr;
+//static inline char *bvec_kmap_irq(struct bio_vec *bvec, unsigned long *flags)
+//{
+//	unsigned long addr;
+//
+//	/*
+//	 * might not be a highmem page, but the preempt/irq count
+//	 * balancing is a lot nicer this way
+//	 */
+//	local_irq_save(*flags);
+//	addr = (unsigned long) kmap_atomic(bvec->bv_page);
+//
+//	BUG_ON(addr & ~PAGE_MASK);
+//
+//	return (char *) addr + bvec->bv_offset;
+//}
 
-	/*
-	 * might not be a highmem page, but the preempt/irq count
-	 * balancing is a lot nicer this way
-	 */
-	local_irq_save(*flags);
-	addr = (unsigned long) kmap_atomic(bvec->bv_page);
-
-	BUG_ON(addr & ~PAGE_MASK);
-
-	return (char *) addr + bvec->bv_offset;
-}
-
-static inline void bvec_kunmap_irq(char *buffer, unsigned long *flags)
-{
-	unsigned long ptr = (unsigned long) buffer & PAGE_MASK;
-
-	kunmap_atomic((void *) ptr);
-	local_irq_restore(*flags);
-}
+//static inline void bvec_kunmap_irq(char *buffer, unsigned long *flags)
+//{
+//	unsigned long ptr = (unsigned long) buffer & PAGE_MASK;
+//
+//	kunmap_atomic((void *) ptr);
+//	local_irq_restore(*flags);
+//}
 
 #else
 static inline char *bvec_kmap_irq(struct bio_vec *bvec, unsigned long *flags)
@@ -679,7 +674,13 @@ static inline void bio_inc_remaining(struct bio *bio)
  */
 #define BIO_POOL_SIZE 2
 
+/**
+ *  
+ */
 struct bio_set {    /*  */
+    /**
+     *  
+     */
 	struct kmem_cache *bio_slab;
 	unsigned int front_pad;
 
@@ -737,66 +738,7 @@ extern void bioset_integrity_free(struct bio_set *);
 extern void bio_integrity_init(void);
 
 #else /* CONFIG_BLK_DEV_INTEGRITY */
-
-static inline void *bio_integrity(struct bio *bio)
-{
-	return NULL;
-}
-
-static inline int bioset_integrity_create(struct bio_set *bs, int pool_size)
-{
-	return 0;
-}
-
-static inline void bioset_integrity_free (struct bio_set *bs)
-{
-	return;
-}
-
-static inline bool bio_integrity_prep(struct bio *bio)
-{
-	return true;
-}
-
-static inline int bio_integrity_clone(struct bio *bio, struct bio *bio_src,
-				      gfp_t gfp_mask)
-{
-	return 0;
-}
-
-static inline void bio_integrity_advance(struct bio *bio,
-					 unsigned int bytes_done)
-{
-	return;
-}
-
-static inline void bio_integrity_trim(struct bio *bio)
-{
-	return;
-}
-
-static inline void bio_integrity_init(void)
-{
-	return;
-}
-
-static inline bool bio_integrity_flagged(struct bio *bio, enum bip_flags flag)
-{
-	return false;
-}
-
-static inline void *bio_integrity_alloc(struct bio * bio, gfp_t gfp,
-								unsigned int nr)
-{
-	return ERR_PTR(-EINVAL);
-}
-
-static inline int bio_integrity_add_page(struct bio *bio, struct page *page,
-					unsigned int len, unsigned int offset)
-{
-	return 0;
-}
-
+/*  */
 #endif /* CONFIG_BLK_DEV_INTEGRITY */
 
 /*
