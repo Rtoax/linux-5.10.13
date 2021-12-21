@@ -63,6 +63,9 @@ typedef struct xfs_inode {
 	/* pending io completions */
 	spinlock_t		i_ioend_lock;
 	struct work_struct	i_ioend_work;
+    /**
+     *  we're putting both unwritten conversion and size updates onto the same queue
+     */
 	struct list_head	i_ioend_list;
 } xfs_inode_t;
 

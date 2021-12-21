@@ -282,6 +282,9 @@ xfs_trans_alloc(
 	ASSERT(!(flags & XFS_TRANS_RES_FDBLKS) ||
 	       xfs_sb_version_haslazysbcount(&mp->m_sb));
 
+    /**
+     *  
+     */
 	tp->t_magic = XFS_TRANS_HEADER_MAGIC;
 	tp->t_flags = flags;
 	tp->t_mountp = mp;

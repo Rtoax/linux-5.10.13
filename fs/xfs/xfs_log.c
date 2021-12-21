@@ -238,7 +238,9 @@ xlog_grant_head_wake(
 
 	return true;
 }
-
+/**
+ *  
+ */
 STATIC int
 xlog_grant_head_wait(
 	struct xlog		*log,
@@ -247,6 +249,9 @@ xlog_grant_head_wait(
 	int			need_bytes) __releases(&head->lock)
 					    __acquires(&head->lock)
 {
+    /**
+     *  
+     */
 	list_add_tail(&tic->t_queue, &head->waiters);
 
 	do {
@@ -259,6 +264,9 @@ xlog_grant_head_wait(
 
 		XFS_STATS_INC(log->l_mp, xs_sleep_logspace);
 
+        /**
+         *  因为分配失败导致的开始睡眠
+         */
 		trace_xfs_log_grant_sleep(log, tic);
 		schedule();
 		trace_xfs_log_grant_wake(log, tic);
@@ -268,6 +276,9 @@ xlog_grant_head_wait(
 			goto shutdown;
 	} while (xlog_space_left(log, &head->grant) < need_bytes);
 
+    /**
+     *  
+     */
 	list_del_init(&tic->t_queue);
 	return 0;
 shutdown:
@@ -332,7 +343,7 @@ xlog_grant_head_check(
 		spin_unlock(&head->lock);
 
     /**
-     *  
+     *  很难被调用，如果调用了，基本上就死锁了
      */
 	} else if (free_bytes < *need_bytes) {
 		spin_lock(&head->lock);
@@ -459,6 +470,9 @@ xfs_log_reserve(
 	xlog_grant_push_ail(log, tic->t_cnt ? tic->t_unit_res * tic->t_cnt
 					    : tic->t_unit_res);
 
+    /**
+     *  
+     */
 	trace_xfs_log_reserve(log, tic);
 
     /**
@@ -1165,6 +1179,9 @@ xlog_space_left(
 	int		head_cycle;
 	int		head_bytes;
 
+    /**
+     *  
+     */
 	xlog_crack_grant_head(head, &head_cycle, &head_bytes);
 	xlog_crack_atomic_lsn(&log->l_tail_lsn, &tail_cycle, &tail_bytes);
 	tail_bytes = BBTOB(tail_bytes);

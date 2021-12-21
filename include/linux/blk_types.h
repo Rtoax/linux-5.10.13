@@ -227,6 +227,7 @@ struct bio {    /*  */
 
 	struct bvec_iter	bi_iter;
 
+    void (*bi_end_io)(struct bio		*bio); //++++
 	bio_end_io_t		*bi_end_io;
 
     /**

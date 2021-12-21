@@ -256,7 +256,7 @@ xfs_end_io(
 	spin_unlock_irqrestore(&ip->i_ioend_lock, flags);
 
     /**
-     *  
+     *  先排序
      */
 	iomap_sort_ioends(&tmp);
     
@@ -557,21 +557,23 @@ xfs_prepare_ioend(
 	}
 
     //PATCH https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/
-//	/**
-//	 *  Reserve log space if we might write beyond the on-disk inode size. 
-//	 *  预留 log space，如果 可能写超出 on-disk inode 大小
-//	 */
-//	if (!status &&
-//	    ((ioend->io_flags & IOMAP_F_SHARED) ||
-//	     ioend->io_type != IOMAP_UNWRITTEN) &&
-//	    xfs_ioend_is_append(ioend) &&
-//	    !ioend->io_private)
-//	    /**
-//	     *  https://lore.kernel.org/linux-xfs/YF4AOto30pC%2F0FYW@bfoster/
-//	     *  https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/ 
-//	     *  这几行已经被删除了，函数`xfs_setfilesize_trans_alloc()`也被删除
-//	     */
-//		status = xfs_setfilesize_trans_alloc(ioend);
+    // 该补丁将 整个 if 分支删掉，并删除了 xfs_setfilesize_trans_alloc() 函数
+	/**
+	 *  Reserve log space if we might write beyond the on-disk inode size. 
+	 *  预留 log space，如果 可能写超出 on-disk inode 大小
+     *  
+	 */
+	if (!status &&
+	    ((ioend->io_flags & IOMAP_F_SHARED) ||
+	     ioend->io_type != IOMAP_UNWRITTEN) &&
+	    xfs_ioend_is_append(ioend) &&
+	    !ioend->io_private)
+	    /**
+	     *  https://lore.kernel.org/linux-xfs/YF4AOto30pC%2F0FYW@bfoster/
+	     *  https://lore.kernel.org/all/20210405145903.629152-2-bfoster@redhat.com/ 
+	     *  这几行已经被删除了，函数`xfs_setfilesize_trans_alloc()`也被删除
+	     */
+		status = xfs_setfilesize_trans_alloc(ioend);
 
     /**
      *  
@@ -644,7 +646,9 @@ xfs_vm_writepage(
 	struct writeback_control *wbc)
 {
 	struct xfs_writepage_ctx wpc = { };
-
+    /**
+     *  
+     */
 	return iomap_writepage(page, wbc, &wpc.ctx, &xfs_writeback_ops);
 }
     

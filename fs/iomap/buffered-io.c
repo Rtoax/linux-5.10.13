@@ -1177,7 +1177,9 @@ iomap_ioend_compare(void *priv, struct list_head *a, struct list_head *b)
 {
 	struct iomap_ioend *ia = container_of(a, struct iomap_ioend, io_list);
 	struct iomap_ioend *ib = container_of(b, struct iomap_ioend, io_list);
-
+    /**
+     *  
+     */
 	if (ia->io_offset < ib->io_offset)
 		return -1;
 	if (ia->io_offset > ib->io_offset)
@@ -1214,6 +1216,9 @@ iomap_submit_ioend(struct iomap_writepage_ctx *wpc, struct iomap_ioend *ioend,
 	ioend->io_bio->bi_private = ioend;
 	ioend->io_bio->bi_end_io = iomap_writepage_end_bio;
 
+    /**
+     *  
+     */
 	if (wpc->ops->prepare_ioend)
 		error = wpc->ops->prepare_ioend(ioend, error);
 	if (error) {
@@ -1227,7 +1232,9 @@ iomap_submit_ioend(struct iomap_writepage_ctx *wpc, struct iomap_ioend *ioend,
 		bio_endio(ioend->io_bio);
 		return error;
 	}
-
+    /**
+     *  
+     */
 	submit_bio(ioend->io_bio);
 	return 0;
 }
@@ -1568,6 +1575,9 @@ iomap_writepage(struct page *page, struct writeback_control *wbc,
 	ret = iomap_do_writepage(page, wbc, wpc);
 	if (!wpc->ioend)
 		return ret;
+    /**
+     *  
+     */
 	return iomap_submit_ioend(wpc, wpc->ioend, ret);
 }
 EXPORT_SYMBOL_GPL(iomap_writepage);
