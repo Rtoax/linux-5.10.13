@@ -1805,6 +1805,8 @@ static inline void audit_get_stamp(struct audit_context *ctx,
  * syscall, then the syscall is marked as auditable and an audit record
  * will be written at syscall exit.  If there is no associated task, then
  * task context (ctx) should be NULL.
+ *
+ * sudo bpftrace -e 'kprobe:audit_log_start{printf("%-8d %-16s\n", pid, comm);}'
  */
 struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask,
 				     int type)
