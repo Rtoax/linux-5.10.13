@@ -1096,14 +1096,7 @@ static void __init arch_timer_cpu_pm_deinit(void)
 }
 
 #else
-static int __init arch_timer_cpu_pm_init(void)
-{
-	return 0;
-}
-
-static void __init arch_timer_cpu_pm_deinit(void)
-{
-}
+/*  */
 #endif
 
 static int __init arch_timer_register(void)

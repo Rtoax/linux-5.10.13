@@ -281,6 +281,9 @@ u64 cpu_logical_map(int cpu)
 	return __cpu_logical_map[cpu];
 }
 
+/**
+ *  
+ */
 void __init __no_sanitize_address setup_arch(char **cmdline_p)
 {
 	init_mm.start_code = (unsigned long) _text;

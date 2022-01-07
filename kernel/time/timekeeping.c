@@ -193,7 +193,9 @@ static inline void tk_update_sleep_time(struct timekeeper *tk, ktime_t delta)
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
 	struct clocksource *clock = READ_ONCE(tkr->clock);
-
+    /**
+     *  从时钟源读取数据
+     */
 	return clock->read(clock);
 }
 
@@ -260,6 +262,9 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 		max = tkr->clock->max_cycles;
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
+    /**
+     *  
+     */
 	delta = clocksource_delta(now, last, mask);
 
 	/*

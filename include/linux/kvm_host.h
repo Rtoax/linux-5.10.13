@@ -685,14 +685,7 @@ static inline void kvm_arch_post_irq_routing_update(struct kvm *kvm)
 int kvm_irqfd_init(void);
 void kvm_irqfd_exit(void);
 #else
-static inline int kvm_irqfd_init(void)
-{
-	return 0;
-}
-
-static inline void kvm_irqfd_exit(void)
-{
-}
+/*  */
 #endif
 int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 		  struct module *module);

@@ -40,6 +40,7 @@ x86_64_start_kernel()
             ... 
             start_kernel() 
             ...
+            // x86
             setup_arch() ...
                 x86_init.timers.wallclock_init() = intel_mid_rtc_init() ...
                 register_refined_jiffies(CLOCK_TICK_RATE) 
@@ -51,7 +52,8 @@ x86_64_start_kernel()
                     tick_nohz_init() 
                 init_timers()
                 ...
-                time_init() late_time_init = x86_late_time_init; 
+                time_init() 
+                	late_time_init = x86_late_time_init; 
                 ...
                 if (late_time_init) 
                     late_time_init(); -> x86_late_time_init() 
@@ -59,6 +61,10 @@ x86_64_start_kernel()
                         x86_init.timers.timer_init() -> hpet_time_init() 
                         x86_init.irqs.intr_mode_init() -> apic_intr_mode_init()
                         tsc_init()
+
+			//arm
+			setup_arch()
+				TODO
 2. 使用
 ------------------------------------------------------- 
 get_jiffies_64() `human` time units. 
