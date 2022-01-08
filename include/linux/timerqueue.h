@@ -7,6 +7,9 @@
 
 
 struct timerqueue_node {    /* 定时器队列 节点 */
+    /**
+     *  is `struct hrtimer *`
+     */
 	struct rb_node node;    /* 红黑树节点 */
 	ktime_t expires;        /* 过期时间 */
 };
