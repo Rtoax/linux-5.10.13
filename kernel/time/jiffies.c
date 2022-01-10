@@ -96,9 +96,14 @@ struct clocksource * __init __weak clocksource_default_clock(void)
 	return &clocksource_jiffies;
 }
 
+/**
+ *  s
+ */
 static struct clocksource refined_jiffies;
 
-//Main point of the `register_refined_jiffies` is registration of the jiffy `clocksource`
+/**
+ *  Main point of the `register_refined_jiffies` is registration of the jiffy `clocksource`
+ */
 int register_refined_jiffies(long cycles_per_second/*=CLOCK_TICK_RATE The clock frequency of the i8253/i8254 PIT */)
 {   
     /* The clock frequency of the i8253/i8254 PIT */

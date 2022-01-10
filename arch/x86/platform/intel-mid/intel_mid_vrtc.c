@@ -114,6 +114,7 @@ int vrtc_set_mmss(const struct timespec64 *now)
 }
 
 //after this a device based on `Intel MID` will be able to get time from the hardware clock
+//x86_init.timers.wallclock_init() = intel_mid_rtc_init()
 void __init intel_mid_rtc_init(void)
 {
 	unsigned long vrtc_paddr;
@@ -121,6 +122,9 @@ void __init intel_mid_rtc_init(void)
     //解析[Simple Firmware Interface] M-Real-Time-Clock table
 	sfi_table_parse(SFI_SIG_MRTC, NULL, NULL, sfi_parse_mrtc);
 
+    /**
+     *  RTC 的物理地址
+     */
 	vrtc_paddr = sfi_mrtc_array[0].phys_addr;
 	if (!sfi_mrtc_num || !vrtc_paddr)
 		return;

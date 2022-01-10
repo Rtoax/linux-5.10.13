@@ -91,7 +91,9 @@ static u64 kvm_clock_read(void)
 	preempt_enable_notrace();
 	return ret;
 }
-
+/**
+ *  kvm-clock GuestOS 时钟源
+ */
 static u64 kvm_clock_get_cycles(struct clocksource *cs)
 {
 	return kvm_clock_read();
@@ -165,13 +167,19 @@ static int kvm_cs_enable(struct clocksource *cs)
 	return 0;
 }
 
+/**
+ *  kvm-clock GuestOS 时钟源
+ */
 struct clocksource kvm_clock = {
-	.name	= "kvm-clock",
-	.read	= kvm_clock_get_cycles,
-	.rating	= 400,
-	.mask	= CLOCKSOURCE_MASK(64),
-	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
-	.enable	= kvm_cs_enable,
+	kvm_clock.name	= "kvm-clock",
+    /**
+     *  这个函数可能只调用一次
+     */
+	kvm_clock.read	= kvm_clock_get_cycles,
+	kvm_clock.rating	= 400,
+	kvm_clock.mask	= CLOCKSOURCE_MASK(64),
+	kvm_clock.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
+	kvm_clock.enable	= kvm_cs_enable,
 };
 EXPORT_SYMBOL_GPL(kvm_clock);
 
@@ -312,6 +320,9 @@ static int kvmclock_setup_percpu(unsigned int cpu)
 	return p ? 0 : -ENOMEM;
 }
 
+/**
+ *  kvm-clock 初始化
+ */
 void __init kvmclock_init(void)
 {
 	u8 flags;
@@ -344,6 +355,9 @@ void __init kvmclock_init(void)
 	flags = pvclock_read_flags(&hv_clock_boot[0].pvti);
 	kvm_sched_clock_init(flags & PVCLOCK_TSC_STABLE_BIT);
 
+    /**
+     *  
+     */
 	x86_platform.calibrate_tsc = kvm_get_tsc_khz;
 	x86_platform.calibrate_cpu = kvm_get_tsc_khz;
 	x86_platform.get_wallclock = kvm_get_wallclock;
@@ -372,6 +386,9 @@ void __init kvmclock_init(void)
 	    !check_tsc_unstable())
 		kvm_clock.rating = 299;
 
+    /**
+     *  
+     */
 	clocksource_register_hz(&kvm_clock, NSEC_PER_SEC);
 	pv_info.name = "KVM";
 }

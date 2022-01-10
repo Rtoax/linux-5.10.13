@@ -73,6 +73,9 @@ u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src)
 
 	do {
 		version = pvclock_read_begin(src);
+        /**
+         *  kvm-clock GuestOS 时钟源 会调用这里
+         */
 		ret = __pvclock_read_cycles(src, rdtsc_ordered());
 		flags = src->flags;
 	} while (pvclock_read_retry(src, version));

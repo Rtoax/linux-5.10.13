@@ -1100,6 +1100,9 @@ __visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
 {
     irqentry_state_t state = irqentry_enter(regs);
 
+    /**
+     *  
+     */
     instrumentation_begin();
     __irq_enter_raw();
     kvm_set_cpu_l1tf_flush_l1d();
@@ -1117,6 +1120,8 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
 	ack_APIC_irq();
+    //tracepoint:irq_vectors:local_timer_entry
+    //tracepoint:irq_vectors:local_timer_exit
 	trace_local_timer_entry(LOCAL_TIMER_VECTOR);
     /**
      *  Local timer entry

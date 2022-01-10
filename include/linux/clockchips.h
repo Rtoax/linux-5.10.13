@@ -101,6 +101,9 @@ enum clock_event_state {
  * @owner:		module reference
  */
 struct clock_event_device { /*  */
+    /**
+     *  时钟处理函数
+     */
 	void			(*event_handler)(struct clock_event_device *);
 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
 	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);

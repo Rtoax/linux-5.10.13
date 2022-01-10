@@ -97,10 +97,10 @@ struct pvclock_vsyscall_time_info {
 void pvclock_set_pvti_cpu0_va(struct pvclock_vsyscall_time_info *pvti);
 struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void);
 #else
-static inline struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void)
-{
-	return NULL;
-}
+//static inline struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void)
+//{
+//	return NULL;
+//}
 #endif
 
 #endif /* _ASM_X86_PVCLOCK_H */

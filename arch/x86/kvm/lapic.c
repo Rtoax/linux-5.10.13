@@ -2593,6 +2593,7 @@ int kvm_apic_accept_pic_intr(struct kvm_vcpu *vcpu)
 	return 0;
 }
 
+//sudo bpftrace -e 'kprobe:kvm_inject_apic_timer_irqs {printf("comm = %s\n", comm);}'
 void kvm_inject_apic_timer_irqs(struct kvm_vcpu *vcpu)
 {
 	struct kvm_lapic *apic = vcpu->arch.apic;
