@@ -107,3 +107,26 @@ __irqentry_text_end:
 ```
 
 ```
+
+# /proc/interrupts
+
+## LOC xxx Local timer interrupts
+
+```c
+//arch/x86/include/asm/idtentry.h:632
+DECLARE_IDTENTRY_SYSVEC(LOCAL_TIMER_VECTOR,		sysvec_apic_timer_interrupt);
+//arch/x86/kernel/idt.c:208:
+INTG(LOCAL_TIMER_VECTOR,		asm_sysvec_apic_timer_interrupt),
+```
+
+
+
+```bash
+sysvec_apic_timer_interrupt
+	__sysvec_apic_timer_interrupt
+		trace_local_timer_entry(LOCAL_TIMER_VECTOR)
+		local_apic_timer_interrupt
+			inc_irq_stat(apic_timer_irqs)
+			evt->event_handler(evt)
+		trace_local_timer_exit(LOCAL_TIMER_VECTOR)
+```

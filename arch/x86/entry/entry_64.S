@@ -576,7 +576,7 @@ __irqentry_text_start:
 
 #include <asm/idtentry.h>
 
-#ifdef __rtoax______________________________________//<asm/idtentry.h> gcc -E 展开
+#ifdef __rtoax_________________________________________________________________________________//<asm/idtentry.h> gcc -E 展开
  .align 8
 SYM_CODE_START(irq_entries_start)
     vector=FIRST_EXTERNAL_VECTOR
@@ -621,7 +621,7 @@ idtentry_sysvec HYPERV_STIMER0_VECTOR sysvec_hyperv_stimer0;
 
 idtentry_sysvec HYPERVISOR_CALLBACK_VECTOR sysvec_acrn_hv_callback;
 
-#endif //__rtoax______________________________________
+#endif //__rtoax___________________________________________________________________________________________
 
 
 #endif

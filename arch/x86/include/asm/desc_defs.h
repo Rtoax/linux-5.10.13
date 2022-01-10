@@ -153,10 +153,19 @@ struct idt_bits {/* 中断 索引 */
 			p	: 1;    //* `P` - 当前段标志；段存在标志；
 } __attribute__((packed));
 
+/**
+ *  见 `arch/x86/kernel/idt.c`
+ */
 struct idt_data {/* 中断描述符表 数据 */
+    /**
+     *  中断向量号, 如 `LOCAL_TIMER_VECTOR`
+     */
 	unsigned int	vector;
 	unsigned int	segment;
 	struct idt_bits	bits;
+    /**
+     *  处理函数地址, 如 `asm_sysvec_apic_timer_interrupt()`
+     */
 	const void	*addr;  /*  */
 };
 
