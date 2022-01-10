@@ -103,6 +103,8 @@ enum clock_event_state {
 struct clock_event_device { /*  */
     /**
      *  时钟处理函数
+     *  可能等于的值
+     *  `hrtimer_interrupt()`
      */
 	void			(*event_handler)(struct clock_event_device *);
 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);

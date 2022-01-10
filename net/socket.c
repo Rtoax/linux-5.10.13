@@ -1333,6 +1333,19 @@ EXPORT_SYMBOL(sock_create_lite);
  *  struct file_operation socket_file_ops.poll = sock_poll()
  */
 /* No kernel lock held - perfect */
+//一个可能的调用栈
+//     __hrtimer_run_queues+1
+//    hrtimer_interrupt+711
+//    __sysvec_apic_timer_interrupt+318
+//    sysvec_apic_timer_interrupt+102
+//    asm_sysvec_apic_timer_interrupt+18
+//    unix_poll+139
+//    sock_poll+306
+//    ep_item_poll.isra.17+202
+//    do_epoll_wait+1637
+//    __x64_sys_epoll_wait+274
+//    do_syscall_64+55
+//    entry_SYSCALL_64_after_hwframe+68
 static __poll_t sock_poll(struct file *file, poll_table *wait)
 {
 	struct socket *sock = file->private_data;

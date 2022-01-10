@@ -371,6 +371,7 @@ static void init_8259A(int auto_eoi/*=0和=1各调用一次*/)    /*  */
 	/* (slave's support for AEOI in flat mode is to be investigated) */
 	outb_pic(SLAVE_ICW4_DEFAULT, PIC_SLAVE_IMR);
 
+    /*=0和=1各调用一次*/
 	if (auto_eoi)
 		/*
 		 * In AEOI mode we just have to mask the interrupt

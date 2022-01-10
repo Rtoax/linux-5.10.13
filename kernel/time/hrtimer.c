@@ -1651,7 +1651,24 @@ static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)  /*  
  * High resolution timer interrupt
  * Called with interrupts disabled
  *
- * 这是高精度定时器
+ * 高精度定时器
+ *  调用栈 
+     __sysvec_apic_timer_interrupt+318
+     sysvec_apic_timer_interrupt+102
+     asm_sysvec_apic_timer_interrupt+18
+ *  一个完整的调用栈
+     __hrtimer_run_queues+1
+    hrtimer_interrupt+711
+    __sysvec_apic_timer_interrupt+318
+    sysvec_apic_timer_interrupt+102
+    asm_sysvec_apic_timer_interrupt+18
+    unix_poll+139
+    sock_poll+306
+    ep_item_poll.isra.17+202
+    do_epoll_wait+1637
+    __x64_sys_epoll_wait+274
+    do_syscall_64+55
+    entry_SYSCALL_64_after_hwframe+68
  */
 void hrtimer_interrupt(struct clock_event_device *dev)
 {

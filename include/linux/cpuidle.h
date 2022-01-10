@@ -173,64 +173,7 @@ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
 static inline struct cpuidle_device *cpuidle_get_device(void)
 {return __this_cpu_read(cpuidle_devices); }
 #else
-static inline void disable_cpuidle(void) { }
-static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
-					 struct cpuidle_device *dev)
-{return true; }
-static inline int cpuidle_select(struct cpuidle_driver *drv,
-				 struct cpuidle_device *dev, bool *stop_tick)
-{return -ENODEV; }
-static inline int cpuidle_enter(struct cpuidle_driver *drv,
-				struct cpuidle_device *dev, int index)
-{return -ENODEV; }
-static inline void cpuidle_reflect(struct cpuidle_device *dev, int index) { }
-static inline u64 cpuidle_poll_time(struct cpuidle_driver *drv,
-			     struct cpuidle_device *dev)
-{return 0; }
-static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
-{return -ENODEV; }
-static inline struct cpuidle_driver *cpuidle_get_driver(void) {return NULL; }
-static inline void cpuidle_driver_state_disabled(struct cpuidle_driver *drv,
-					       int idx, bool disable) { }
-static inline void cpuidle_unregister_driver(struct cpuidle_driver *drv) { }
-static inline int cpuidle_register_device(struct cpuidle_device *dev)
-{return -ENODEV; }
-static inline void cpuidle_unregister_device(struct cpuidle_device *dev) { }
-static inline int cpuidle_register(struct cpuidle_driver *drv,
-				   const struct cpumask *const coupled_cpus)
-{return -ENODEV; }
-static inline void cpuidle_unregister(struct cpuidle_driver *drv) { }
-static inline void cpuidle_pause_and_lock(void) { }
-static inline void cpuidle_resume_and_unlock(void) { }
-static inline void cpuidle_pause(void) { }
-static inline void cpuidle_resume(void) { }
-static inline int cpuidle_enable_device(struct cpuidle_device *dev)
-{return -ENODEV; }
-static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
-static inline int cpuidle_play_dead(void) {return -ENODEV; }
-static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
-	struct cpuidle_device *dev) {return NULL; }
-static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
-#endif
-
-#ifdef CONFIG_CPU_IDLE
-extern int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
-				      struct cpuidle_device *dev,
-				      u64 latency_limit_ns);
-extern int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
-				struct cpuidle_device *dev);
-extern void cpuidle_use_deepest_state(u64 latency_limit_ns);
-#else
-static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
-					     struct cpuidle_device *dev,
-					     u64 latency_limit_ns)
-{return -ENODEV; }
-static inline int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
-				       struct cpuidle_device *dev)
-{return -ENODEV; }
-static inline void cpuidle_use_deepest_state(u64 latency_limit_ns)
-{
-}
+/*  */
 #endif
 
 /* kernel/sched/idle.c */
@@ -248,7 +191,7 @@ static inline void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, 
 #if defined(CONFIG_CPU_IDLE) && defined(CONFIG_ARCH_HAS_CPU_RELAX)
 void cpuidle_poll_state_init(struct cpuidle_driver *drv);
 #else
-static inline void cpuidle_poll_state_init(struct cpuidle_driver *drv) {}
+/*  */
 #endif
 
 /******************************

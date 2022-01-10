@@ -196,6 +196,19 @@ int cpuidle_enter_s2idle(struct cpuidle_driver *drv, struct cpuidle_device *dev)
  * @dev: cpuidle device for this cpu
  * @drv: cpuidle driver for this cpu
  * @index: index into the states table in @drv of the state to enter
+ *
+ * 可能的调用栈
+    __hrtimer_run_queues+1s
+    hrtimer_interrupt+711
+    __sysvec_apic_timer_interrupt+318
+    sysvec_apic_timer_interrupt+102
+    asm_sysvec_apic_timer_interrupt+18
+    cpuidle_enter_state+624
+    cpuidle_enter+74
+    do_idle+1225
+    cpu_startup_entry+25
+    start_secondary+659
+    secondary_startup_64_no_verify+194
  */
 int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 			int index)

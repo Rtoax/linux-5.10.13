@@ -1083,7 +1083,8 @@ static void local_apic_timer_interrupt(void)
 	inc_irq_stat(apic_timer_irqs);
 
     /**
-     *  回调
+     *  回调 
+     *  可能 = `hrtimer_interrupt()`
      */
 	evt->event_handler(evt);
 }
@@ -1096,6 +1097,7 @@ static void local_apic_timer_interrupt(void)
  * [ if a single-CPU system runs an SMP kernel then we call the local
  *   interrupt as well. Thus we cannot inline the local irq ... ]
  */
+#if 1
 __visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
 {
     irqentry_state_t state = irqentry_enter(regs);
@@ -1107,15 +1109,17 @@ __visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
     __irq_enter_raw();
     kvm_set_cpu_l1tf_flush_l1d();
     /**
-     *  
+     *  它将调用 hrtimer_interrupt()
      */
     __sysvec_apic_timer_interrupt(regs);
     __irq_exit_raw();
     instrumentation_end();
     irqentry_exit(regs, state);
 }
-static __always_inline void __sysvec_apic_timer_interrupt(struct pt_regs *regs);//++++
+static __always_inline void __sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
+#else
 DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
+#endif
 {
 	struct pt_regs *old_regs = set_irq_regs(regs);
 

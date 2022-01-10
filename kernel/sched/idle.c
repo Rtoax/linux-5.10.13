@@ -261,6 +261,7 @@ exit_idle:
  * Rong Tao RToax
  * 1. works as process with `PID = 0` and works in the background
  * 2. to consume the idle CPU cycles
+ * 3. task name is `swapper/[CPU]`
  */
 static void do_idle(void)
 {
