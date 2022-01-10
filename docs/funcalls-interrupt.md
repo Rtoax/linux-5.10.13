@@ -120,6 +120,7 @@ INTG(LOCAL_TIMER_VECTOR,		asm_sysvec_apic_timer_interrupt),
 ```
 
 
+处理侧
 
 ```bash
 sysvec_apic_timer_interrupt

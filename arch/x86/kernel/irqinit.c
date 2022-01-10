@@ -71,6 +71,9 @@ void __init init_ISA_irqs(void)
 
 	legacy_pic->init(0);    /* default is init=&`init_8259A()` */
 
+    /**
+     *  
+     */
 	for (i = 0; i < nr_legacy_irqs(); i++)
 		irq_set_chip_and_handler(i, chip, handle_level_irq);
 }
@@ -117,7 +120,8 @@ void __init native_init_IRQ(void)
 {
 	/* Execute any quirks before the call gates are initialised: */
 	x86_init.irqs.pre_vector_init(); /* = init_ISA_irqs() */
-
+    init_ISA_irqs();//+++ = x86_init.irqs.pre_vector_init();
+    
     //初始化本地 [APIC],executes general initialization of the [Local APIC]
 	idt_setup_apic_and_irq_gates();
 

@@ -1119,6 +1119,9 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
 {
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
+    /**
+     *  给 APIC 回复 ack
+     */
 	ack_APIC_irq();
     //tracepoint:irq_vectors:local_timer_entry
     //tracepoint:irq_vectors:local_timer_exit

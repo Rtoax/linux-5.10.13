@@ -298,6 +298,9 @@ static void unmask_8259A(void)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
+/**
+ *  sudo bpftrace -e 'kprobe:probe_8259A{printf("--\n");}'
+ */
 static int probe_8259A(void)    /*  */
 {
 	unsigned long flags;
@@ -324,7 +327,16 @@ static int probe_8259A(void)    /*  */
 	return nr_legacy_irqs();
 }
 
-static void init_8259A(int auto_eoi)    /*  */
+/**
+ *  (gdb) bt
+#0  init_8259A (auto_eoi=0) at arch/x86/kernel/i8259.c:328
+#1  0xffffffff858d1c92 in init_ISA_irqs () at arch/x86/kernel/irqinit.c:66
+#2  0xffffffff858d1d1f in native_init_IRQ () at arch/x86/kernel/irqinit.c:95
+#3  0xffffffff858bf17f in start_kernel () at init/main.c:1032
+#4  0xffffffff81000107 in secondary_startup_64 () at arch/x86/kernel/head_64.S:283
+#5  0x0000000000000000 in ?? ()
+ */
+static void init_8259A(int auto_eoi/*=0和=1各调用一次*/)    /*  */
 {
 	unsigned long flags;
 

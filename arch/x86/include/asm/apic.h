@@ -272,7 +272,19 @@ struct irq_data;
  * 高级可编程中断控制器
  */
 struct apic {   /*  */
-	/* Hotpath functions first */
+	/**
+	 *  Hotpath functions first 
+        arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
+        arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
+	 */
 	void	(*eoi_write)(u32 reg, u32 v);
 	void	(*native_eoi_write)(u32 reg, u32 v);
 	void	(*write)(u32 reg, u32 v);
@@ -398,6 +410,18 @@ static inline void apic_write(u32 reg, u32 val)
 
 static inline void apic_eoi(void)
 {
+    /**
+        arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
+        arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
+        arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
+        arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
+	 */
 	apic->eoi_write(APIC_EOI, APIC_EOI_ACK);
 }
 

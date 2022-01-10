@@ -361,6 +361,8 @@ SYM_CODE_END(ret_from_fork)
  *
  * The macro emits code to set up the kernel context for straight forward
  * and simple IDT entries. No IST stack, no paranoid entry checks.
+ *
+ * 宏 `idtentry` 完成异常处理被执行前的所需准备，
  */
 .macro idtentry vector asmsym cfunc has_error_code:req
 SYM_CODE_START(\asmsym)

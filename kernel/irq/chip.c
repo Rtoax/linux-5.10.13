@@ -669,7 +669,7 @@ void handle_level_irq(struct irq_desc *desc)    /*  */
 	kstat_incr_irqs_this_cpu(desc);
 
     /**
-     *  如果设备有一个已注册的处理例程，并法身了中断，这个函数将被调用
+     *  如果设备有一个已注册的处理例程，并发生了中断，这个函数将被调用
      */
 	handle_irq_event(desc); /*  */
 
