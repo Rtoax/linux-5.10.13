@@ -1571,6 +1571,23 @@ static void __init init_uclamp(void)
 
 /**
  *  加入 - 把进程添加到就绪队列中
+ *
+ *	一个 kstack 示例:
+ *       enqueue_entity+1
+ *       enqueue_task_fair+529
+ *       enqueue_task+172
+ *       ttwu_do_activate+339
+ *       try_to_wake_up+1018
+ *       __queue_work+1077
+ *       queue_work_on+125
+ *       pty_write+338
+ *       n_tty_write+1206
+ *       file_tty_write.isra.27+1128
+ *       new_sync_write+943
+ *       vfs_write+1205
+ *       ksys_write+241
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
  */
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /* 入队 */
 {

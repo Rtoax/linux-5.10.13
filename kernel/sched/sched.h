@@ -590,6 +590,8 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 
     /**
      *  可运行状态的进程总数
+     *  在 `account_entity_dequeue()` 中 -1
+     *  在 `account_entity_enqueue()` 中 +1
      */
 	unsigned int		nr_running;
 

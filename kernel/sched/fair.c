@@ -4279,6 +4279,23 @@ static inline bool cfs_bandwidth_used(void);
 
 /**
  *  进程进入就绪队列时(调用`enqueue_entity()`)
+ *
+ *	一个 kstack 示例:
+ *       enqueue_entity+1
+ *       enqueue_task_fair+529
+ *       enqueue_task+172
+ *       ttwu_do_activate+339
+ *       try_to_wake_up+1018
+ *       __queue_work+1077
+ *       queue_work_on+125
+ *       pty_write+338
+ *       n_tty_write+1206
+ *       file_tty_write.isra.27+1128
+ *       new_sync_write+943
+ *       vfs_write+1205
+ *       ksys_write+241
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
  */
 static void
 enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
@@ -4420,6 +4437,21 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)   /* �
 
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
 
+/**
+ *  一个示例: kstack
+ *       dequeue_entity+1
+ *       dequeue_task_fair+583
+ *       __sched_text_start+942
+ *       schedule+201
+ *       schedule_hrtimeout_range_clock+651
+ *       poll_schedule_timeout.constprop.19+166
+ *       do_select+3580
+ *       core_sys_select+807
+ *       kern_select+261
+ *       __x64_sys_select+186
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
+ */
 static void
 dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -5616,7 +5648,22 @@ static int sched_idle_cpu(int cpu)
  * increased. Here we update the fair scheduling stats and
  * then put the task into the rbtree:
  *
- * 
+ *	一个 kstack 示例:
+ *       enqueue_entity+1
+ *       enqueue_task_fair+529
+ *       enqueue_task+172
+ *       ttwu_do_activate+339
+ *       try_to_wake_up+1018
+ *       __queue_work+1077
+ *       queue_work_on+125
+ *       pty_write+338
+ *       n_tty_write+1206
+ *       file_tty_write.isra.27+1128
+ *       new_sync_write+943
+ *       vfs_write+1205
+ *       ksys_write+241
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
  */
 static void
 enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
@@ -5747,6 +5794,20 @@ static void set_next_buddy(struct sched_entity *se);
  * The dequeue_task method is called before nr_running is
  * decreased. We remove the task from the rbtree and
  * update the fair scheduling stats:
+ *
+ *  一个示例: kstack
+ *       dequeue_entity+1
+ *       dequeue_task_fair+583
+ *       __sched_text_start+942
+ *       schedule+201
+ *       schedule_hrtimeout_range_clock+651
+ *       poll_schedule_timeout.constprop.19+166
+ *       do_select+3580
+ *       core_sys_select+807
+ *       kern_select+261
+ *       __x64_sys_select+186
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
  */
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {

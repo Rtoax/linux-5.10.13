@@ -2179,6 +2179,20 @@ void __init hrtimers_init(void) /* 高精度定时器初始化 */
  * @delta:	slack in expires timeout (ktime_t)
  * @mode:	timer mode
  * @clock_id:	timer clock to be used
+ *
+ *  一个示例: kstack
+ *       dequeue_entity+1
+ *       dequeue_task_fair+583
+ *       __sched_text_start+942
+ *       schedule+201
+ *       schedule_hrtimeout_range_clock+651
+ *       poll_schedule_timeout.constprop.19+166
+ *       do_select+3580
+ *       core_sys_select+807
+ *       kern_select+261
+ *       __x64_sys_select+186
+ *       do_syscall_64+55
+ *       entry_SYSCALL_64_after_hwframe+68
  */
 int __sched
 schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
@@ -2213,6 +2227,21 @@ schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
 	hrtimer_set_expires_range_ns(&t.timer, *expires, delta);
 	hrtimer_sleeper_start_expires(&t, mode);
 
+    /**
+     *  一个示例: kstack
+     *       dequeue_entity+1
+     *       dequeue_task_fair+583
+     *       __sched_text_start+942
+     *       schedule+201
+     *       schedule_hrtimeout_range_clock+651
+     *       poll_schedule_timeout.constprop.19+166
+     *       do_select+3580
+     *       core_sys_select+807
+     *       kern_select+261
+     *       __x64_sys_select+186
+     *       do_syscall_64+55
+     *       entry_SYSCALL_64_after_hwframe+68
+     */
 	if (likely(t.task))/* 有被唤醒的 task_struct task */
 		schedule();/* 重新调度 */
 

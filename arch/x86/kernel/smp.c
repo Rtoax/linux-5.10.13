@@ -225,6 +225,7 @@ static void native_stop_other_cpus(int wait)
 DEFINE_IDTENTRY_SYSVEC_SIMPLE(sysvec_reschedule_ipi)
 {
 	ack_APIC_irq();
+    //tracepoint:irq_vectors:reschedule_entry
 	trace_reschedule_entry(RESCHEDULE_VECTOR);
     //Rescheduling interrupts
 	inc_irq_stat(irq_resched_count);
