@@ -686,6 +686,9 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 
 #ifdef CONFIG_CFS_BANDWIDTH
 	int			runtime_enabled;
+    /**
+     *  剩余
+     */
 	s64			runtime_remaining;
 
 	u64			throttled_clock;

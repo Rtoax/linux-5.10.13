@@ -5032,6 +5032,9 @@ static bool throttle_cfs_rq(struct cfs_rq *cfs_rq)
 	return true;
 }
 
+/**
+ *  unthrottle: 放开
+ */
 void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	struct rq *rq = rq_of(cfs_rq);
@@ -5058,6 +5061,11 @@ void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
 
 	task_delta = cfs_rq->h_nr_running;
 	idle_task_delta = cfs_rq->idle_h_nr_running;
+
+    /**
+     *  遍历 父亲
+     *  for (; se; se = se->parent)
+     */
 	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
@@ -5555,6 +5563,9 @@ static void __maybe_unused unthrottle_offline_cfs_rqs(struct rq *rq)
 		 */
 		cfs_rq->runtime_enabled = 0;
 
+        /**
+         *  
+         */
 		if (cfs_rq_throttled(cfs_rq))
 			unthrottle_cfs_rq(cfs_rq);
 	}
