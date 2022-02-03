@@ -636,42 +636,9 @@ static __always_inline void __free_one(struct array_cache *ac, void *objp)
 }
 
 #ifndef CONFIG_NUMA
-
-//#define drain_alien_cache(cachep, alien) do { } while (0)
-//#define reap_alien(cachep, n) do { } while (0)
-//
-//static inline struct alien_cache **alloc_alien_cache(int node,
-//						int limit, gfp_t gfp)
-//{
-//	return NULL;
-//}
-//
-//static inline void free_alien_cache(struct alien_cache **ac_ptr)
-//{
-//}
-//
-//static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
-//{
-//	return 0;
-//}
-//
-//static inline void *alternate_node_alloc(struct kmem_cache *cachep,
-//		gfp_t flags)
-//{
-//	return NULL;
-//}
-//
-//static inline void *____cache_alloc_node(struct kmem_cache *cachep,
-//		 gfp_t flags, int nodeid)
-//{
-//	return NULL;
-//}
-//
-//static inline gfp_t gfp_exact_node(gfp_t flags)
-//{
-//	return flags & ~__GFP_NOFAIL;
-//}
-
+/**
+ * 
+ */
 #else	/* CONFIG_NUMA */
 
 static void *____cache_alloc_node(struct kmem_cache *, gfp_t, int);
