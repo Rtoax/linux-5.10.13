@@ -78,38 +78,7 @@ out:
 	return l;
 }
 #else
-static void list_lru_register(struct list_lru *lru)
-{
-}
-
-static void list_lru_unregister(struct list_lru *lru)
-{
-}
-
-static int lru_shrinker_id(struct list_lru *lru)
-{
-	return -1;
-}
-
-static inline bool list_lru_memcg_aware(struct list_lru *lru)
-{
-	return false;
-}
-
-static inline struct list_lru_one *
-list_lru_from_memcg_idx(struct list_lru_node *nlru, int idx)
-{
-	return &nlru->lru;
-}
-
-static inline struct list_lru_one *
-list_lru_from_kmem(struct list_lru_node *nlru, void *ptr,
-		   struct mem_cgroup **memcg_ptr)
-{
-	if (memcg_ptr)
-		*memcg_ptr = NULL;
-	return &nlru->lru;
-}
+/*  */
 #endif /* CONFIG_MEMCG_KMEM */
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item)
@@ -577,14 +546,7 @@ void memcg_drain_all_list_lrus(int src_idx, struct mem_cgroup *dst_memcg)
 	mutex_unlock(&list_lrus_mutex);
 }
 #else
-static int memcg_init_list_lru(struct list_lru *lru, bool memcg_aware)
-{
-	return 0;
-}
-
-static void memcg_destroy_list_lru(struct list_lru *lru)
-{
-}
+/*  */
 #endif /* CONFIG_MEMCG_KMEM */
 
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,

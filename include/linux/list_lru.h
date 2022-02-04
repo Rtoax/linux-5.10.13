@@ -49,6 +49,11 @@ struct list_lru_node {
 	long nr_items;
 } ____cacheline_aligned_in_smp;
 
+/**
+ * @brief Long time rarely use
+ * 
+ * 
+ */
 struct list_lru {
 	struct list_lru_node	*node;
 #ifdef CONFIG_MEMCG_KMEM
