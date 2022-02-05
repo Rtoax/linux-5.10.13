@@ -3879,7 +3879,8 @@ struct page *rmqueue(struct zone *preferred_zone,
 	WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
 
     /**
-     * 如果申请多个页
+     *
+ 如果申请多个页
      */
     
 	spin_lock_irqsave(&zone->lock, flags);  /* 首先获取 zone 的锁 */
@@ -5501,7 +5502,6 @@ retry:
                 				_compact_result, &compact_priority,
                 				&compaction_retries))
 		goto retry;
-
 
 	/* Deal with possible cpuset update races before we start OOM killing */
 	if (check_retry_cpuset(cpuset_mems_cookie, ac))

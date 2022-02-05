@@ -38,6 +38,15 @@ static int walk_pte_range_inner(pte_t *pte, unsigned long addr,
 	return err;
 }
 
+/**
+ * @brief Walk PTE range
+ * 
+ * @param pmd 
+ * @param addr 
+ * @param end 
+ * @param walk 
+ * @return int 
+ */
 static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
 {
@@ -58,6 +67,15 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	return err;
 }
 
+/**
+ * @brief Walk PMD range
+ * 
+ * @param pud 
+ * @param addr 
+ * @param end 
+ * @param walk 
+ * @return int 
+ */
 static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
 {
@@ -108,6 +126,10 @@ again:
 				goto again;
 		}
 
+		/**
+		 * @brief 
+		 * 
+		 */
 		err = walk_pte_range(pmd, addr, next, walk);
 		if (err)
 			break;
@@ -157,6 +179,10 @@ static int walk_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 		if (pud_none(*pud))
 			goto again;
 
+		/**
+		 * @brief PMD range
+		 * 
+		 */
 		err = walk_pmd_range(pud, addr, next, walk);
 		if (err)
 			break;
@@ -427,6 +453,9 @@ int walk_page_range(struct mm_struct *mm, unsigned long start,
 
 	mmap_assert_locked(walk.mm);
 
+	/**
+	 *  查找对应 vma
+	 */
 	vma = find_vma(walk.mm, start);
 	do {
 		if (!vma) { /* after the last vma */
