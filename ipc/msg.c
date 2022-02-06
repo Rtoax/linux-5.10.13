@@ -111,6 +111,10 @@ static inline struct msg_queue *msq_obtain_object(struct ipc_namespace *ns, int 
 static inline struct msg_queue *msq_obtain_object_check(struct ipc_namespace *ns,
 							int id)
 {
+	/**
+	 * @brief 从idr(radix树)中获取
+	 * 
+	 */
 	struct kern_ipc_perm *ipcp = ipc_obtain_object_check(&msg_ids(ns), id);
 
 	if (IS_ERR(ipcp))
@@ -863,6 +867,16 @@ static inline int pipelined_send(struct msg_queue *msq, struct msg_msg *msg,
 	return 0;
 }
 
+/**
+ * @brief 发送消息
+ * 
+ * @param msqid 
+ * @param mtype 
+ * @param mtext 
+ * @param msgsz 
+ * @param msgflg 
+ * @return long 
+ */
 static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 		size_t msgsz, int msgflg)
 {
@@ -879,6 +893,10 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 	if (mtype < 1)
 		return -EINVAL;
 
+	/**
+	 * @brief 加载，从用户台拷贝数据
+	 * 
+	 */
 	msg = load_msg(mtext, msgsz);
 	if (IS_ERR(msg))
 		return PTR_ERR(msg);
@@ -887,6 +905,10 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 	msg->m_ts = msgsz;
 
 	rcu_read_lock();
+	/**
+	 * @brief 从id获取msq句柄（实际上id保存在idr（radix树）中）
+	 * 
+	 */
 	msq = msq_obtain_object_check(ns, msqid);
 	if (IS_ERR(msq)) {
 		err = PTR_ERR(msq);
@@ -908,6 +930,10 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 			goto out_unlock0;
 		}
 
+		/**
+		 * @brief selinux等...
+		 * 
+		 */
 		err = security_msg_queue_msgsnd(&msq->q_perm, msg, msgflg);
 		if (err)
 			goto out_unlock0;
@@ -931,6 +957,11 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 
 		ipc_unlock_object(&msq->q_perm);
 		rcu_read_unlock();
+
+		/**
+		 * @brief 这难道是睡眠的吗？
+		 * 
+		 */
 		schedule();
 
 		rcu_read_lock();
@@ -954,6 +985,10 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 	ipc_update_pid(&msq->q_lspid, task_tgid(current));
 	msq->q_stime = ktime_get_real_seconds();
 
+	/**
+	 * @brief 管道发送
+	 * 
+	 */
 	if (!pipelined_send(msq, msg, &wake_q)) {
 		/* no one is waiting for this message, enqueue it */
 		list_add_tail(&msg->m_list, &msq->q_messages);
@@ -976,6 +1011,15 @@ out_unlock1:
 	return err;
 }
 
+/**
+ * @brief 发送消息
+ * 
+ * @param msqid 
+ * @param msgp 
+ * @param msgsz 
+ * @param msgflg 
+ * @return long 
+ */
 long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 		 int msgflg)
 {
@@ -987,7 +1031,7 @@ long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 }
 
 /**
- * @brief 
+ * @brief 发送消息
  * 
  * @param msqid 
  * @param msgp 
@@ -1051,6 +1095,14 @@ static inline int convert_mode(long *msgtyp, int msgflg)
 	return SEARCH_EQUAL;
 }
 
+/**
+ * @brief 填充
+ * 
+ * @param dest 
+ * @param msg 
+ * @param bufsz 
+ * @return long 
+ */
 static long do_msg_fill(void __user *dest, struct msg_msg *msg, size_t bufsz)
 {
 	struct msgbuf __user *msgp = dest;
@@ -1089,14 +1141,10 @@ static inline void free_copy(struct msg_msg *copy)
 		free_msg(copy);
 }
 #else
-//static inline struct msg_msg *prepare_copy(void __user *buf, size_t bufsz)
-//{
-//	return ERR_PTR(-ENOSYS);
-//}
-//
-//static inline void free_copy(struct msg_msg *copy)
-//{
-//}
+/**
+ * @brief 
+ * 
+ */
 #endif
 
 static struct msg_msg *find_msg(struct msg_queue *msq, long *msgtyp, int mode)
@@ -1123,6 +1171,17 @@ static struct msg_msg *find_msg(struct msg_queue *msq, long *msgtyp, int mode)
 	return found ?: ERR_PTR(-EAGAIN);
 }
 
+/**
+ * @brief 发送
+ * 
+ * @param msqid 
+ * @param buf 
+ * @param bufsz 
+ * @param msgtyp 
+ * @param msgflg 
+ * @param msg_handler 最后被调用
+ * @return long 
+ */
 static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, int msgflg,
 	       long (*msg_handler)(void __user *, struct msg_msg *, size_t))
 {
@@ -1147,6 +1206,10 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 	mode = convert_mode(&msgtyp, msgflg);
 
 	rcu_read_lock();
+	/**
+	 * @brief 从 id 获取 句柄
+	 * 
+	 */
 	msq = msq_obtain_object_check(ns, msqid);
 	if (IS_ERR(msq)) {
 		rcu_read_unlock();
@@ -1168,8 +1231,15 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 			msg = ERR_PTR(-EIDRM);
 			goto out_unlock0;
 		}
-
+		/**
+		 * @brief 查找一个消息
+		 * 
+		 */
 		msg = find_msg(msq, &msgtyp, mode);
+		/**
+		 * @brief 有消息就要处理
+		 * 
+		 */
 		if (!IS_ERR(msg)) {
 			/*
 			 * Found a suitable message.
@@ -1200,12 +1270,20 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 			goto out_unlock0;
 		}
 
+		/**
+		 * @brief 不等待
+		 * 
+		 */
 		/* No message waiting. Wait for a message */
 		if (msgflg & IPC_NOWAIT) {
 			msg = ERR_PTR(-ENOMSG);
 			goto out_unlock0;
 		}
 
+		/**
+		 * @brief 
+		 * 
+		 */
 		list_add_tail(&msr_d.r_list, &msq->q_receivers);
 		msr_d.r_tsk = current;
 		msr_d.r_msgtype = msgtyp;
@@ -1223,6 +1301,11 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 
 		ipc_unlock_object(&msq->q_perm);
 		rcu_read_unlock();
+
+		/**
+		 * @brief 调度一波
+		 * 
+		 */
 		schedule();
 
 		/*
@@ -1283,12 +1366,26 @@ out_unlock1:
 		return PTR_ERR(msg);
 	}
 
+	/**
+	 * @brief ~= do_msg_fill()
+	 * 
+	 */
 	bufsz = msg_handler(buf, msg, bufsz);
 	free_msg(msg);
 
 	return bufsz;
 }
 
+/**
+ * @brief 接收
+ * 
+ * @param msqid 
+ * @param msgp 
+ * @param msgsz 
+ * @param msgtyp 
+ * @param msgflg 
+ * @return long 
+ */
 long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 		 long msgtyp, int msgflg)
 {
@@ -1296,7 +1393,7 @@ long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 }
 
 /**
- * @brief 
+ * @brief 接收消息队列
  * 
  * @param msqid 
  * @param msgp 
