@@ -88,6 +88,10 @@ struct msg_msg *load_msg(const void __user *src, size_t len)
 	int err = -EFAULT;
 	size_t alen;
 
+	/**
+	 * @brief 在内核中分配内存，所以需要内存拷贝
+	 * 
+	 */
 	msg = alloc_msg(len);
 	if (msg == NULL)
 		return ERR_PTR(-ENOMEM);
@@ -100,6 +104,10 @@ struct msg_msg *load_msg(const void __user *src, size_t len)
 		len -= alen;
 		src = (char __user *)src + alen;
 		alen = min(len, DATALEN_SEG);
+		/**
+		 * @brief 从用户台到内核台的数据拷贝
+		 * 
+		 */
 		if (copy_from_user(seg + 1, src, alen))
 			goto out_err;
 	}

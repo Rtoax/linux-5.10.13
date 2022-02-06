@@ -645,6 +645,11 @@ static void __init mtrr_print_out_one_result(int i)
 	chunk_base = to_size_factor(result[i].chunk_sizek, &chunk_factor);
 	lose_base = to_size_factor(result[i].lose_cover_sizek, &lose_factor);
 
+	/**
+	 * @brief 
+	 * 打印 
+	 * kernel:  gran_size: 2G         chunk_size: 2G         num_reg: 8          lose cover RAM: 1984M
+	 */
 	pr_info("%sgran_size: %ld%c \tchunk_size: %ld%c \t",
 		result[i].bad ? "*BAD*" : " ",
 		gran_base, gran_factor, chunk_base, chunk_factor);
@@ -683,6 +688,12 @@ static int __init mtrr_search_optimal_index(void)
 	return index_good;
 }
 
+/**
+ * @brief 
+ * 
+ * @param address_bits 
+ * @return int 
+ */
 int __init mtrr_cleanup(unsigned address_bits)
 {
 	unsigned long x_remove_base, x_remove_size;
@@ -798,7 +809,10 @@ int __init mtrr_cleanup(unsigned address_bits)
 		for (i = 0; i < NUM_RESULT; i++)
 			mtrr_print_out_one_result(i);
 	}
-
+	/**
+	 * @brief 
+	 * https://github.com/tomreyn/linux_mtrr_size_fix
+	 */
 	pr_info("mtrr_cleanup: can not find optimal value\n");
 	pr_info("please specify mtrr_gran_size/mtrr_chunk_size\n");
 

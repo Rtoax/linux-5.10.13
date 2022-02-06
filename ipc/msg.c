@@ -309,6 +309,14 @@ long ksys_msgget(key_t key, int msgflg)
 	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
 }
 
+/**
+ * @brief 
+ * 
+ * @param key 
+ * @param msgflg 
+ * @return int 
+ */
+int msgget(key_t key, int msgflg){}//++++
 SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
 {
 	return ksys_msgget(key, msgflg);
@@ -629,6 +637,15 @@ static long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf, int ver
 	}
 }
 
+/**
+ * @brief 
+ * 
+ * @param msqid 
+ * @param cmd 
+ * @param buf 
+ * @return int 
+ */
+int msgctl(int msqid, int cmd, struct msqid_ds *buf){}//+++
 SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
 {
 	return ksys_msgctl(msqid, cmd, buf, IPC_64);
@@ -642,6 +659,15 @@ long ksys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
 	return ksys_msgctl(msqid, cmd, buf, version);
 }
 
+/**
+ * @brief 
+ * 
+ * @param msqid 
+ * @param cmd 
+ * @param buf 
+ * @return int 
+ */
+int msgctl(int msqid, int cmd, struct msqid_ds *buf){}//+++
 SYSCALL_DEFINE3(old_msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
 {
 	return ksys_old_msgctl(msqid, cmd, buf);
@@ -960,6 +986,15 @@ long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 	return do_msgsnd(msqid, mtype, msgp->mtext, msgsz, msgflg);
 }
 
+/**
+ * @brief 
+ * 
+ * @param msqid 
+ * @param msgp 
+ * @param msgsz 
+ * @param msgflg 
+ * @return int 
+ */
 int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 SYSCALL_DEFINE4(msgsnd, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
 		int, msgflg)
@@ -1260,7 +1295,16 @@ long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 	return do_msgrcv(msqid, msgp, msgsz, msgtyp, msgflg, do_msg_fill);
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param msqid 
+ * @param msgp 
+ * @param msgsz 
+ * @param msgtyp 
+ * @param msgflg 
+ * @return ssize_t 
+ */
 ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 SYSCALL_DEFINE5(msgrcv, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
 		long, msgtyp, int, msgflg)
