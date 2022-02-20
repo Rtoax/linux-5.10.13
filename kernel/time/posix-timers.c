@@ -1079,6 +1079,7 @@ SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
 	return kc->clock_set(which_clock, &new_tp);
 }
 
+int clock_gettime(clockid_t clk_id, struct timespec *tp){}//+++
 SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 		struct __kernel_timespec __user *, tp)
 {
@@ -1089,6 +1090,15 @@ SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 	if (!kc)
 		return -EINVAL;
 
+    /**
+     *  posix_get_realtime_timespec,
+     *  posix_get_monotonic_timespec,
+     *  posix_get_monotonic_raw,
+     *  posix_get_realtime_coarse,
+     *  posix_get_monotonic_coarse,
+     *  posix_get_tai_timespec,
+     *  posix_get_boottime_timespec,
+     */
 	error = kc->clock_get_timespec(which_clock, &kernel_tp);
 
 	if (!error && put_timespec64(&kernel_tp, tp))

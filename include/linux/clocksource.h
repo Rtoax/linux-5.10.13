@@ -87,6 +87,9 @@ struct module;
  * structure.
  */
 struct clocksource {    /* 硬件时钟源 */
+    /**
+     *  
+     */
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
 

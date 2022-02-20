@@ -7,6 +7,15 @@ struct k_clock {
 	int	(*clock_set)(const clockid_t which_clock,
 			     const struct timespec64 *tp);
 	/* Returns the clock value in the current time namespace. */
+    /**
+     *  posix_get_realtime_timespec,
+     *  posix_get_monotonic_timespec,
+     *  posix_get_monotonic_raw,
+     *  posix_get_realtime_coarse,
+     *  posix_get_monotonic_coarse,
+     *  posix_get_tai_timespec,
+     *  posix_get_boottime_timespec,
+     */
 	int	(*clock_get_timespec)(const clockid_t which_clock,
 				      struct timespec64 *tp);
 	/* Returns the clock value in the root time namespace. */
