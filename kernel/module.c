@@ -3181,8 +3181,8 @@ static void check_modinfo_retpoline(struct module *mod, struct load_info *info)
  *  Sets info->hdr and info->len. 
  *
  *  @umod:  用户空间传入的 .ko 文件
- *  @len:   
- *  @info:  
+ *  @len:   长度
+ *  @info:  内和数据
  */
 static int copy_module_from_user(const void __user *umod, unsigned long len,
 				  struct load_info *info)
@@ -3290,6 +3290,10 @@ static int setup_load_info(struct load_info *info, int flags)
 {
 	unsigned int i;
 
+	/**
+	 * Section 头
+	 * 
+	 */
 	/* Set up the convenience variables */
 	info->sechdrs = (void *)info->hdr + info->hdr->e_shoff;
 	info->secstrings = (void *)info->hdr
@@ -4432,7 +4436,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	struct load_info info = { };
 
     /**
-     *  是否支持模块加载
+     *  是否支持模块加载,简单的判断
      */
 	err = may_init_module();
 	if (err)
@@ -4697,7 +4701,8 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 	unsigned int i;
 	struct mod_kallsyms *kallsyms = rcu_dereference_sched(mod->kallsyms);
 
-    /** 
+    /**
+ 
      *  
      */
 	for (i = 0; i < kallsyms->num_symtab; i++) {
@@ -4723,11 +4728,13 @@ unsigned long module_kallsyms_lookup_name(const char *name)
 	/* Don't lock: we're in enough trouble already. */
 	preempt_disable();
 
-    /** 
+    /**
+ 
      *  从那么中查找 ":"
      */
 	if ((colon = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
-        /** 
+        /**
+ 
          *  
          */
 		if ((mod = find_module_all(name, colon - name, false)) != NULL)
