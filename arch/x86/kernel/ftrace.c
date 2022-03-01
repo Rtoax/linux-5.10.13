@@ -64,6 +64,11 @@ int ftrace_arch_code_modify_post_process(void)
 	return 0;
 }
 
+/**
+ * @brief 获取nop指令
+ * 
+ * @return const char* 
+ */
 static const char *ftrace_nop_replace(void) /*  */
 {
     /**
@@ -74,6 +79,8 @@ static const char *ftrace_nop_replace(void) /*  */
 /**
  *  Do a safe modify in case the trampoline is executing 
  *  这是如何保证安全性的，libcareplus  借鉴
+ * 
+ * ip - 
  */
 static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)    /* 更新 指令 */
 {
@@ -100,6 +107,10 @@ static int ftrace_verify_code(unsigned long ip, const char *old_code)   /* 确�
 		return -EFAULT;
 	}
 
+	/**
+	 * @brief 必须相等
+	 * 
+	 */
 	/* Make sure it is what we expect it to be */
 	if (memcmp(cur_code, old_code, MCOUNT_INSN_SIZE) != 0) {
 		WARN_ON(1);
@@ -163,12 +174,21 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 	return -EINVAL;
 }
 
+/**
+ * @brief 
+ * 
+ * @param rec 
+ * @param addr 
+ * @return int 
+ */
 int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 {
 	unsigned long ip = rec->ip;
 	const char *new, *old;
 
+	//获取 nop 指令
 	old = ftrace_nop_replace();
+	//替换
 	new = ftrace_call_replace(ip, addr);
 
 	/* Should only be called when module is loaded */
@@ -526,7 +546,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	if (!(ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP))
 		return;
     /**
-     *  
+     *  计算蹦床的偏移量
      */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);
 	ip = ops->trampoline + offset;

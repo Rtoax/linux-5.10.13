@@ -55,6 +55,10 @@ extern void text_poke_finish(void);
 #define RET_INSN_SIZE		1
 #define RET_INSN_OPCODE		0xC3
 
+/**
+ * @brief Call 指令
+ *
+ */
 #define CALL_INSN_SIZE		5
 #define CALL_INSN_OPCODE	0xE8
 
@@ -127,6 +131,14 @@ union text_poke_insn {  /*  */
 	} __attribute__((packed));
 };
 
+/**
+ * @brief 生成指令？
+ * 
+ * @param opcode 
+ * @param addr 
+ * @param dest 
+ * @return __always_inline* 
+ */
 static __always_inline
 void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数不可重入?? */
 {

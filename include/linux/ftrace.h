@@ -586,10 +586,11 @@ enum {
  *  MAKE_NOP         - Stop tracing the function
  */
 enum {
-	FTRACE_UPDATE_IGNORE,
+	FTRACE_UPDATE_IGNORE, //已经处理：已经被追踪或者已经去除追踪
+	/*开始追踪*/
 	FTRACE_UPDATE_MAKE_CALL,
-	FTRACE_UPDATE_MODIFY_CALL,
-	FTRACE_UPDATE_MAKE_NOP,
+	FTRACE_UPDATE_MODIFY_CALL, // 
+	FTRACE_UPDATE_MAKE_NOP, // 停止追踪
 };
 
 enum {

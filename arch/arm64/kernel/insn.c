@@ -193,6 +193,13 @@ bool __kprobes aarch64_insn_is_branch(u32 insn)
 		aarch64_insn_is_bcond(insn);
 }
 
+/**
+ * @brief ftrace开启替换代码
+ * 
+ * @param addr 
+ * @param insn 
+ * @return int 
+ */
 int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 {
 	u32 *tp = addr;
@@ -203,7 +210,7 @@ int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 		return -EINVAL;
 
     /**
-     *  
+     *  替换
      */
 	ret = aarch64_insn_write(tp, insn);
 	if (ret == 0)

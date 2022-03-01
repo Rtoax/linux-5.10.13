@@ -310,7 +310,7 @@ static int remove_ftrace_ops(struct ftrace_ops __rcu **list,
 static void ftrace_update_trampoline(struct ftrace_ops *ops);
 
 /**
- *  
+ *  注册 ftrace 函数
  */
 int __register_ftrace_function(struct ftrace_ops *ops)
 {
@@ -366,7 +366,7 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 		ops->func = ftrace_pid_func;
 
     /**
-     *  
+     *  更新蹦床，也就是mcount？或者fentry？
      */
 	ftrace_update_trampoline(ops);  /* 更新蹦床 */
 
@@ -2625,14 +2625,26 @@ __ftrace_replace_code(struct dyn_ftrace *rec, bool enable)
 	case FTRACE_UPDATE_IGNORE:
 		return 0;
 
+	/**
+	 * @brief 开始追踪
+	 * 
+	 */
 	case FTRACE_UPDATE_MAKE_CALL:
 		ftrace_bug_type = FTRACE_BUG_CALL;
 		return ftrace_make_call(rec, ftrace_addr);
 
+	/**
+	 * @brief 停止追踪
+	 * 
+	 */
 	case FTRACE_UPDATE_MAKE_NOP:
 		ftrace_bug_type = FTRACE_BUG_NOP;
 		return ftrace_make_nop(NULL, rec, ftrace_old_addr);
 
+	/**
+	 * @brief 
+	 * 
+	 */
 	case FTRACE_UPDATE_MODIFY_CALL:
 		ftrace_bug_type = FTRACE_BUG_UPDATE;
 		return ftrace_modify_call(rec, ftrace_old_addr, ftrace_addr);
@@ -2951,7 +2963,7 @@ static void ftrace_startup_all(int command)
 }
 
 /**
- *  启动
+ *  启动 ftrace
  */
 int ftrace_startup(struct ftrace_ops *ops, int command) /*  */
 {
@@ -3335,7 +3347,10 @@ static struct ftrace_page *ftrace_allocate_pages(unsigned long num_to_init)
 		cnt = ftrace_allocate_records(pg, num_to_init);
 		if (cnt < 0)
 			goto free_pages;
-
+		/**
+		 * @brief 必须分配成功
+		 * 
+		 */
 		num_to_init -= cnt;
 		if (!num_to_init)
 			break;
@@ -5283,6 +5298,8 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  *
  * @ip - 内核函数
  * @addr - ftrace 回调
+ * 
+ * 参见 https://gitee.com/rtoax/test-linux ftrace示例
  */
 int register_ftrace_direct(unsigned long ip, unsigned long addr)
 {
@@ -5360,6 +5377,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  查找 direct 函数，也就是 ftrace 的回调函数
+	 * addr 函数可能在 模块 中插入
      */
 	direct = ftrace_find_direct_func(addr);
 	if (!direct) {
@@ -6445,7 +6463,7 @@ static int ftrace_cmp_ips(const void *a, const void *b)
 }
 
 /**
- *  
+ *  处理 所有 mcount()
  */
 static int ftrace_process_locs(struct module *mod,
                  			       unsigned long *start,
@@ -6461,7 +6479,7 @@ static int ftrace_process_locs(struct module *mod,
 	int ret = -ENOMEM;
 
     /**
-     *  数量
+     *  数量,为什么没有除8？
      */
 	count = end - start;    /* 计算数量 */
 
@@ -7128,7 +7146,15 @@ void __init ftrace_free_init_mem(void)
 
 	ftrace_free_mem(NULL, start, end);
 }
-
+/**
+ * @brief Linux 使用 -pg 添加的 mcount
+ * 参见 arch/x86/kernel/vmlinux.lds
+ *  . = ALIGN(8); 
+	__start_mcount_loc = .;
+		KEEP(*(__mcount_loc)) 
+		KEEP(*(__patchable_function_entries)) 
+	__stop_mcount_loc = .;
+	*/
 extern unsigned long __start_mcount_loc[];  /*  */
 extern unsigned long __stop_mcount_loc[];
 
@@ -7138,6 +7164,15 @@ extern unsigned long __stop_mcount_loc[];
  */
 void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 {
+	/**
+	 * @brief Linux 使用 -pg 添加的 mcount
+	 * 参见 arch/x86/kernel/vmlinux.lds
+	 *  . = ALIGN(8);
+        __start_mcount_loc = .;
+		    KEEP(*(__mcount_loc)) 
+            KEEP(*(__patchable_function_entries)) 
+        __stop_mcount_loc = .;
+	 */
 	extern unsigned long __start_mcount_loc[];
 	extern unsigned long __stop_mcount_loc[];
 	unsigned long count, flags;
@@ -7166,7 +7201,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	last_ftrace_enabled = ftrace_enabled = 1;   /* 默认开启 */
 
     /**
-     *  进行处理
+     *  进行处理,所有函数对应的 mcount 函数都要进行处理
      */
 	ret = ftrace_process_locs(NULL,
             				  __start_mcount_loc,
@@ -7177,7 +7212,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 		ftrace_number_of_pages, ftrace_number_of_groups);
 
     /**
-     *  
+     *  早期过滤
      */
 	set_ftrace_early_filters();
 
@@ -7196,7 +7231,7 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops)    /*  */
 	unsigned long trampoline = ops->trampoline;
 
     /**
-     *  
+     *  架构相关
      */
 	arch_ftrace_update_trampoline(ops);
 	if (ops->trampoline && ops->trampoline != trampoline &&

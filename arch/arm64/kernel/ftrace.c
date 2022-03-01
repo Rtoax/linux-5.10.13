@@ -41,6 +41,10 @@ static int ftrace_modify_code(unsigned long pc, u32 old, u32 new,
 		if (replaced != old)
 			return -EINVAL;
 	}
+	/**
+	 * @brief 
+	 * 
+	 */
 	if (aarch64_insn_patch_text_nosync((void *)pc, new))
 		return -EPERM;
 
@@ -108,7 +112,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 
 		if (WARN_ON(!mod))
 			return -EINVAL;
-
+		/**
+		 * @brief 
+		 * 
+		 */
 		plt = get_ftrace_plt(mod, addr);
 		if (!plt) {
 			pr_err("ftrace: no module PLT for %ps\n", (void *)addr);
@@ -118,9 +125,18 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 		addr = (unsigned long)plt;
 	}
 
+	/**
+	 * @brief 
+	 * 
+	 */
 	old = aarch64_insn_gen_nop();
 	new = aarch64_insn_gen_branch_imm(pc, addr, AARCH64_INSN_BRANCH_LINK);
 
+	/**
+	 * @brief 
+	 * 
+	 * @return return 
+	 */
 	return ftrace_modify_code(pc, old, new, true);
 }
 
