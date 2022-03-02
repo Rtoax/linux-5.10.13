@@ -2996,6 +2996,10 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.mode		= 0644,
 		.proc_handler	= lowmem_reserve_ratio_sysctl_handler,
 	},
+	/**
+	 * @brief echo 3 > /proc/sys/vm/drop_caches
+	 * 
+	 */
 	{
 		.procname	= "drop_caches",
 		.data		= &sysctl_drop_caches,
@@ -3345,6 +3349,11 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 		.extra1		= &sysctl_nr_open_min,
 		.extra2		= &sysctl_nr_open_max,
 	},
+	/**
+	 * @brief /proc/sys/fs/dentry-state
+	 * $ cat /proc/sys/fs/dentry-state
+	 * 126429	93926	45	0	6155	0
+	 */
 	{
 		.procname	= "dentry-state",
 		.data		= &dentry_stat,

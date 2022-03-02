@@ -170,10 +170,24 @@ static long get_nr_dentry_negative(void)
 		sum += per_cpu(nr_dentry_negative, i);
 	return sum < 0 ? 0 : sum;
 }
-
+/**
+ * @brief 
+ * 
+ * @param table 
+ * @param write 
+ * @param buffer 
+ * @param lenp 
+ * @param ppos 
+ * @return int 
+ */
 int proc_nr_dentry(struct ctl_table *table, int write, void *buffer,
 		   size_t *lenp, loff_t *ppos)
 {
+	/**
+	 * @brief /proc/sys/fs/dentry-state see also fs_table[]
+	 * $ cat /proc/sys/fs/dentry-state
+	 * 126429	93926	45	0	6155	0
+	 */
 	dentry_stat.nr_dentry = get_nr_dentry();
 	dentry_stat.nr_unused = get_nr_dentry_unused();
 	dentry_stat.nr_negative = get_nr_dentry_negative();

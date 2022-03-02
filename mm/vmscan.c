@@ -153,7 +153,8 @@ struct scan_control {
 
     /**
      *  在页面回收过程中，可能会遇到如下问题
-     **
+     *
+*
      *  1. 大量脏页
      *  2. 大量正在回写的页面阻塞在块设备的IO通道上
      *
@@ -751,8 +752,9 @@ void drop_slab(void)
 {
 	int nid;
 
-	for_each_online_node(nid)
+	for_each_online_node(nid) {
 		drop_slab_node(nid);
+	}
 }
 
 static inline int is_page_cache_freeable(struct page *page)
@@ -1064,7 +1066,8 @@ enum page_references {  /* 页引用 */
  *  页面中 访问和引用 PTE 用户数
  *
  *  
- */
+ 
+*/
 static enum page_references page_check_references(struct page *page,
 						  struct scan_control *sc)
 {

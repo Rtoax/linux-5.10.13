@@ -14,6 +14,12 @@
 /* A global variable is a bit ugly, but it keeps the code simple */
 int sysctl_drop_caches;
 
+/**
+ * @brief echo 1 > /proc/sys/vm/drop_caches 或者 echo 3
+ * 
+ * @param sb 
+ * @param unused 
+ */
 static void drop_pagecache_sb(struct super_block *sb, void *unused)
 {
 	struct inode *inode, *toput_inode = NULL;
@@ -45,7 +51,16 @@ static void drop_pagecache_sb(struct super_block *sb, void *unused)
 	spin_unlock(&sb->s_inode_list_lock);
 	iput(toput_inode);
 }
-
+/**
+ * @brief echo 3 > /proc/sys/vm/drop_caches
+ * 
+ * @param table 
+ * @param write 
+ * @param buffer 
+ * @param length 
+ * @param ppos 
+ * @return int 
+ */
 int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
 {
