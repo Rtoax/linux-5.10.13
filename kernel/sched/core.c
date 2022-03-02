@@ -8256,7 +8256,24 @@ void sched_offline_group(struct task_group *tg)
 }
 
 /**
- *  
+ *  fork(2)->cgroup_post_fork()->ss.fork()->cpu_cgroup_fork()->sched_change_group()
+ *
+ *  sched_change_group+1
+	cpu_cgroup_fork+59
+	cgroup_post_fork+237
+	copy_process+4250
+	kernel_clone+151
+	__do_sys_clone+96
+	do_syscall_64+56
+	entry_SYSCALL_64_after_hwframe+68
+
+	sched_change_group+1
+	sched_move_task+213
+	do_exit+528
+	do_group_exit+51
+	__x64_sys_exit_group+20
+	do_syscall_64+56
+	entry_SYSCALL_64_after_hwframe+68
  */
 static void sched_change_group(struct task_struct *tsk, int type)
 {
@@ -8412,6 +8429,8 @@ static void cpu_cgroup_css_free(struct cgroup_subsys_state *css)
 /*
  * This is called before wake_up_new_task(), therefore we really only
  * have to set its group bits, all the other stuff does not apply.
+ * 
+ * cgroup_post_fork() 时候会调用
  */
 static void cpu_cgroup_fork(struct task_struct *task)
 {
@@ -8421,6 +8440,11 @@ static void cpu_cgroup_fork(struct task_struct *task)
 	rq = task_rq_lock(task, &rf);
 
 	update_rq_clock(rq);
+
+	/**
+	 * @brief 
+	 * 
+	 */
 	sched_change_group(task, TASK_SET_GROUP);
 
 	task_rq_unlock(rq, task, &rf);

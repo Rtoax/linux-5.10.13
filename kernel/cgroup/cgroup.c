@@ -119,7 +119,8 @@ static struct workqueue_struct *cgroup_destroy_wq;
 /* generate an array of cgroup subsystem pointers */
 #define SUBSYS(_x) [_x ## _cgrp_id] = &_x ## _cgrp_subsys,
 
-#ifdef rtoax_debug
+//#ifdef rtoax_debug
+#if 1
 extern struct cgroup_subsys cpuacct_cgrp_subsys;
 extern struct cgroup_subsys cpu_cgrp_subsys;
 extern struct cgroup_subsys cpuset_cgrp_subsys;
@@ -6154,7 +6155,7 @@ void cgroup_cancel_fork(struct task_struct *child,
  */
 void cgroup_post_fork(struct task_struct *child,
 		      struct kernel_clone_args *kargs)
-	__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex)
+	/*__releases(&cgroup_threadgroup_rwsem) __releases(&cgroup_mutex) 我注释的*/
 {
 	struct cgroup_subsys *ss;
 	struct css_set *cset;
@@ -6200,8 +6201,17 @@ void cgroup_post_fork(struct task_struct *child,
 	 * Call ss->fork().  This must happen after @child is linked on
 	 * css_set; otherwise, @child might change state between ->fork()
 	 * and addition to css_set.
+	 * 
+	 * 遍历所有子系统
 	 */
 	do_each_subsys_mask(ss, i, have_fork_callback) {
+		/**
+		 * @brief 调用
+		 * 如：
+		 * 内存 子系统 memory_cgrp_subsys 的fork为NULL
+		 * CPU 子系统 cpu_cgrp_subsys 的fork为 cpu_cgroup_fork()
+		 * 
+		 */
 		ss->fork(child);
 	} while_each_subsys_mask();
 

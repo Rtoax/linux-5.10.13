@@ -299,15 +299,28 @@ static void obj_cgroup_release(struct percpu_ref *ref)
 	kfree_rcu(objcg, rcu);
 }
 
+/**
+ * @brief 
+ * 
+ * @return struct obj_cgroup* 
+ */
 static struct obj_cgroup *obj_cgroup_alloc(void)
 {
 	struct obj_cgroup *objcg;
 	int ret;
 
+	/**
+	 * @brief 分配
+	 * 
+	 */
 	objcg = kzalloc(sizeof(struct obj_cgroup), GFP_KERNEL);
 	if (!objcg)
 		return NULL;
 
+	/**
+	 * @brief 
+	 * 
+	 */
 	ret = percpu_ref_init(&objcg->refcnt, obj_cgroup_release, 0,
 			      GFP_KERNEL);
 	if (ret) {
@@ -2703,6 +2716,14 @@ out:
 	css_put(&memcg->css);
 }
 
+/**
+ * @brief 
+ * 
+ * @param memcg 
+ * @param gfp_mask 
+ * @param nr_pages 
+ * @return int 
+ */
 static int try_charge(struct mem_cgroup *memcg, gfp_t gfp_mask,
 		      unsigned int nr_pages)
 {
@@ -3022,6 +3043,11 @@ __always_inline struct obj_cgroup *get_obj_cgroup_from_current(void)
 	return objcg;
 }
 
+/**
+ * @brief 
+ * 
+ * @return int 
+ */
 static int memcg_alloc_cache_id(void)
 {
 	int id, size;
@@ -3724,6 +3750,12 @@ static void memcg_flush_percpu_vmevents(struct mem_cgroup *memcg)
 }
 
 #ifdef CONFIG_MEMCG_KMEM
+/**
+ * @brief 
+ * 
+ * @param memcg 
+ * @return int 
+ */
 static int memcg_online_kmem(struct mem_cgroup *memcg)
 {
 	struct obj_cgroup *objcg;
@@ -3735,10 +3767,18 @@ static int memcg_online_kmem(struct mem_cgroup *memcg)
 	BUG_ON(memcg->kmemcg_id >= 0);
 	BUG_ON(memcg->kmem_state);
 
+	/**
+	 * @brief 分配一个cache id
+	 * 
+	 */
 	memcg_id = memcg_alloc_cache_id();
 	if (memcg_id < 0)
 		return memcg_id;
 
+	/**
+	 * @brief 
+	 * 
+	 */
 	objcg = obj_cgroup_alloc();
 	if (!objcg) {
 		memcg_free_cache_id(memcg_id);
@@ -3811,16 +3851,7 @@ static void memcg_free_kmem(struct mem_cgroup *memcg)
 		memcg_offline_kmem(memcg);
 }
 #else
-static int memcg_online_kmem(struct mem_cgroup *memcg)
-{
-	return 0;
-}
-static void memcg_offline_kmem(struct mem_cgroup *memcg)
-{
-}
-static void memcg_free_kmem(struct mem_cgroup *memcg)
-{
-}
+/*  */
 #endif /* CONFIG_MEMCG_KMEM */
 
 static int memcg_update_kmem_max(struct mem_cgroup *memcg,
@@ -5370,6 +5401,14 @@ fail:
 	return ERR_PTR(error);
 }
 
+/**
+ * @brief .css_alloc = mem_cgroup_css_alloc,
+ * 
+ * $ docker run -it docker.io/dokken/centos-stream-9 echo hello
+ * 
+ * @param parent_css 
+ * @return struct cgroup_subsys_state*
+ */
 static struct cgroup_subsys_state * __ref
 mem_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 {
@@ -5378,6 +5417,11 @@ mem_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 	long error = -ENOMEM;
 
 	old_memcg = set_active_memcg(parent);
+
+	/**
+	 * @brief 分配结构并初始化
+	 * 
+	 */
 	memcg = mem_cgroup_alloc();
 	set_active_memcg(old_memcg);
 	if (IS_ERR(memcg))
@@ -5390,17 +5434,24 @@ mem_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 		memcg->swappiness = mem_cgroup_swappiness(parent);
 		memcg->oom_kill_disable = parent->oom_kill_disable;
 	}
+
+	/**
+	 * @brief 初始化 counter，也就是清零
+	 * 
+	 */
 	if (!parent) {
 		page_counter_init(&memcg->memory, NULL);
 		page_counter_init(&memcg->swap, NULL);
 		page_counter_init(&memcg->kmem, NULL);
 		page_counter_init(&memcg->tcpmem, NULL);
+	// 继承
 	} else if (parent->use_hierarchy) {
 		memcg->use_hierarchy = true;
 		page_counter_init(&memcg->memory, &parent->memory);
 		page_counter_init(&memcg->swap, &parent->swap);
 		page_counter_init(&memcg->kmem, &parent->kmem);
 		page_counter_init(&memcg->tcpmem, &parent->tcpmem);
+	// =根
 	} else {
 		page_counter_init(&memcg->memory, &root_mem_cgroup->memory);
 		page_counter_init(&memcg->swap, &root_mem_cgroup->swap);
@@ -5420,7 +5471,10 @@ mem_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 		root_mem_cgroup = memcg;
 		return &memcg->css;
 	}
-
+	/**
+	 * @brief 在线的内存
+	 * 
+	 */
 	error = memcg_online_kmem(memcg);
 	if (error)
 		goto fail;
@@ -6602,6 +6656,10 @@ static struct cftype memory_files[] = {
 	{ }	/* terminate */
 };
 
+/**
+ * @brief Memory CGroup Subsystem
+ * 
+ */
 struct cgroup_subsys memory_cgrp_subsys = {
 	.css_alloc = mem_cgroup_css_alloc,
 	.css_online = mem_cgroup_css_online,

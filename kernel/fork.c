@@ -2398,6 +2398,10 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	p->vtime.state = VTIME_INACTIVE;
 #endif
 
+	/**
+	 * @brief io_uring
+	 * 
+	 */
 #ifdef CONFIG_IO_URING
 	p->io_uring = NULL;
 #endif
@@ -2430,7 +2434,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	audit_set_context(p, NULL); /* 清 NULL */
 
     /**
-     *  
+     *  cgroup 相关
      */
     cgroup_fork(p);     /* 控制组初始化 */
     
@@ -2873,7 +2877,11 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	sched_post_fork(p);
 
     /**
-     *  
+     * @brief kernel/cgroup/cgroup.c
+     *
+     * 1. cgroup_fork()
+	 * 2. cgroup_can_fork()
+	 * 3. cgroup_post_fork()
      */
 	cgroup_post_fork(p, args);
 
@@ -3136,7 +3144,7 @@ SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
 
 #ifdef __ARCH_WANT_SYS_VFORK
 /**
- *  vfork
+ *  vfork 和父进程共享地址空间
  */
 pid_t vfork(void);
 SYSCALL_DEFINE0(vfork)
