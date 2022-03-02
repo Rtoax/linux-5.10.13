@@ -766,6 +766,16 @@ ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
 	return ret;
 }
 
+/**
+ * @brief 
+ * 
+ * @param fd 
+ * @param buf 
+ * @param count 
+ * @param pos 
+ * @return ssize_t 
+ */
+ssize_t pread(int fd, void *buf, size_t count, off_t pos){}//+++
 SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf,
 			size_t, count, loff_t, pos)
 {
