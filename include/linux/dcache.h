@@ -59,6 +59,11 @@ struct qstr {
 extern const struct qstr empty_name;
 extern const struct qstr slash_name;
 
+/**
+ * @brief # cat /proc/sys/fs/dentry-state
+ * 			30714	84	45	0	29	0
+ * 
+ */
 struct dentry_stat_t {
 	long nr_dentry;
 	long nr_unused;

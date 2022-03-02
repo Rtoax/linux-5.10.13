@@ -730,6 +730,11 @@ out:
 	return freed;
 }
 
+/**
+ * @brief 
+ * 
+ * @param nid 
+ */
 void drop_slab_node(int nid)
 {
 	unsigned long freed;
@@ -741,6 +746,10 @@ void drop_slab_node(int nid)
 			return;
 
 		freed = 0;
+		/**
+		 * @brief 
+		 * 
+		 */
 		memcg = mem_cgroup_iter(NULL, NULL, NULL);
 		do {
 			freed += shrink_slab(GFP_KERNEL, nid, memcg, 0);
@@ -748,10 +757,17 @@ void drop_slab_node(int nid)
 	} while (freed > 10);
 }
 
+/**
+ * @brief 回收 slab
+ * 	 echo 2 > /proc/sys/vm/drop_caches
+ */
 void drop_slab(void)
 {
 	int nid;
-
+	/**
+	 * @brief 遍历所有 node
+	 * 
+	 */
 	for_each_online_node(nid) {
 		drop_slab_node(nid);
 	}

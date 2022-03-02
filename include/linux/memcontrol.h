@@ -58,6 +58,10 @@ struct mem_cgroup_reclaim_cookie {
 #define MEM_CGROUP_ID_SHIFT	16
 #define MEM_CGROUP_ID_MAX	USHRT_MAX
 
+/**
+ * @brief ID
+ * 
+ */
 struct mem_cgroup_id {
 	int id;
 	refcount_t ref;
@@ -215,10 +219,12 @@ struct obj_cgroup {
  * to help the administrator determine what knobs to tune.
  * 
  *  内存子系统 的资源控制统计信息结构
+ * 
+ * 内存控制器数据结构，控制每个cgroup的 pagecache 和 RSS。
  */
 struct mem_cgroup {
     /**
-     *  
+     *  子系统状态结构
      */
 	struct cgroup_subsys_state css;
 

@@ -528,6 +528,15 @@ void truncate_inode_pages_final(struct address_space *mapping)
 }
 EXPORT_SYMBOL(truncate_inode_pages_final);
 
+/**
+ * @brief 
+ * 
+ * @param mapping 
+ * @param start 
+ * @param end 
+ * @param nr_pagevec 
+ * @return unsigned 
+ */
 static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t end, unsigned long *nr_pagevec)
 {
@@ -588,7 +597,10 @@ static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 				pagevec_remove_exceptionals(&pvec);
 				pagevec_release(&pvec);
 			}
-
+			/**
+			 * @brief 
+			 * 
+			 */
 			ret = invalidate_inode_page(page);
 			unlock_page(page);
 			/*
