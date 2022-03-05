@@ -747,6 +747,9 @@ int security_binder_transfer_file(struct task_struct *from,
 
 int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
 {
+    /**
+     *  
+     */
 	return call_int_hook(ptrace_access_check, 0, child, mode);
 }
 

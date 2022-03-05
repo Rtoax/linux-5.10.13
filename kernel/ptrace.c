@@ -341,7 +341,9 @@ ok:
 	    ((get_dumpable(mm) != SUID_DUMP_USER) &&
 	     !ptrace_has_cap(mm->user_ns, mode)))
 	    return -EPERM;
-
+    /**
+     *  
+     */
 	return security_ptrace_access_check(task, mode);
 }
 
@@ -354,6 +356,9 @@ bool ptrace_may_access(struct task_struct *task, unsigned int mode)
 	return !err;
 }
 
+/**
+ *  
+ */
 static int ptrace_attach(struct task_struct *task, long request,
 			 unsigned long addr,
 			 unsigned long flags)
@@ -390,6 +395,9 @@ static int ptrace_attach(struct task_struct *task, long request,
 		goto out;
 
 	task_lock(task);
+    /**
+     *  
+     */
 	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH_REALCREDS);
 	task_unlock(task);
 	if (retval)
@@ -406,6 +414,9 @@ static int ptrace_attach(struct task_struct *task, long request,
 		flags |= PT_SEIZED;
 	task->ptrace = flags;
 
+    /**
+     *  
+     */
 	ptrace_link(task, current);
 
 	/* SEIZE doesn't trap tracee on attach */
@@ -797,6 +808,9 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 #define is_sysemu_singlestep(request)	0
 #endif
 
+/**
+ *  
+ */
 static int ptrace_resume(struct task_struct *child, long request,
 			 unsigned long data)
 {
@@ -817,14 +831,23 @@ static int ptrace_resume(struct task_struct *child, long request,
 		clear_tsk_thread_flag(child, TIF_SYSCALL_EMU);
 #endif
 
+    /**
+     *  单块
+     */
 	if (is_singleblock(request)) {
 		if (unlikely(!arch_has_block_step()))
 			return -EIO;
 		user_enable_block_step(child);
+    /**
+     *  
+     */
 	} else if (is_singlestep(request) || is_sysemu_singlestep(request)) {
 		if (unlikely(!arch_has_single_step()))
 			return -EIO;
 		user_enable_single_step(child);
+    /**
+     *  
+     */
 	} else {
 		user_disable_single_step(child);
 	}
@@ -993,6 +1016,9 @@ ptrace_get_syscall_info(struct task_struct *child, unsigned long user_size,
 }
 #endif /* CONFIG_HAVE_ARCH_TRACEHOOK */
 
+/**
+ *  
+ */
 int ptrace_request(struct task_struct *child, long request,
 		   unsigned long addr, unsigned long data)
 {
@@ -1182,6 +1208,9 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_SYSEMU_SINGLESTEP:
 #endif
 	case PTRACE_SYSCALL:
+    /**
+     *  
+     */
 	case PTRACE_CONT:
 		return ptrace_resume(child, request, data);
 
@@ -1256,6 +1285,9 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 		goto out;
 	}
 
+    /**
+     *  atttach, seize
+     */
 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
 		ret = ptrace_attach(child, request, addr, data);
 		/*
@@ -1272,6 +1304,9 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 	if (ret < 0)
 		goto out_put_task_struct;
 
+    /**
+     *  
+     */
 	ret = arch_ptrace(child, request, addr, data);
 	if (ret || request != PTRACE_DETACH)
 		ptrace_unfreeze_traced(child);
