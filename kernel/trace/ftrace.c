@@ -133,6 +133,9 @@ static void ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 //#define ftrace_ops_list_func ((ftrace_func_t)ftrace_ops_no_ops)
 #endif
 
+/**
+ *  
+ */
 static inline void ftrace_ops_init(struct ftrace_ops *ops)  /* 是否已经初始化 */
 {
 #ifdef CONFIG_DYNAMIC_FTRACE
@@ -7877,6 +7880,9 @@ int register_ftrace_function(struct ftrace_ops *ops)    /*  注册 ftrace*/
 {
 	int ret = -1;
 
+    /**
+     *  
+     */
 	ftrace_ops_init(ops);   /* 初始化 */
 
 	mutex_lock(&ftrace_lock);

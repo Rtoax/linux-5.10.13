@@ -8872,7 +8872,7 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 }
 
 /**
- *  
+ *  poke: 戳
  */
 void perf_event_text_poke(const void *addr, const void *old_bytes,
 			  size_t old_len, const void *new_bytes, size_t new_len)

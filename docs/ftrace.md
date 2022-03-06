@@ -16,7 +16,17 @@ register_ftrace_direct(unsigned long ip, unsigned long addr)
 		ftrace_ops_init				-- 初始化 ops
 		ftrace_startup				-- 启动
 			__register_ftrace_function	--
+				ftrace_update_trampoline	-- ?
+				update_ftrace_function	-- ?
 			ftrace_startup_enable		--
 
 
+```
+
+## register_ftrace_function
+
+```
+register_ftrace_function
+	ftrace_startup
+		[see above]
 ```
