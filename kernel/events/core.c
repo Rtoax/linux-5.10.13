@@ -8837,6 +8837,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	u64 padding = 0;
 	int ret;
 
+    /**
+     *  
+     */
 	if (!perf_event_text_poke_match(event))
 		return;
 
