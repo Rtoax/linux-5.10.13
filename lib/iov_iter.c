@@ -1194,6 +1194,14 @@ void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 }
 EXPORT_SYMBOL(iov_iter_bvec);
 
+/**
+ * @brief
+ *
+ * @param i
+ * @param direction
+ * @param pipe
+ * @param count
+ */
 void iov_iter_pipe(struct iov_iter *i, unsigned int direction,
 			struct pipe_inode_info *pipe,
 			size_t count)
@@ -1685,7 +1693,7 @@ uaccess_end:
 }
 
 /**
- *  
+ *
  */
 static int copy_iovec_from_user(struct iovec *iov,
 		const struct iovec __user *uvec, unsigned long nr_segs)
@@ -1703,7 +1711,7 @@ static int copy_iovec_from_user(struct iovec *iov,
 }
 
 /**
- *  
+ *
  */
 struct iovec *iovec_from_user(const struct iovec __user *uvec,
 		unsigned long nr_segs, unsigned long fast_segs,
@@ -1731,7 +1739,7 @@ struct iovec *iovec_from_user(const struct iovec __user *uvec,
 		ret = copy_compat_iovec_from_user(iov, uvec, nr_segs);
 	else
         /**
-         *  
+         *
          */
 		ret = copy_iovec_from_user(iov, uvec, nr_segs);
 	if (ret) {
@@ -1757,7 +1765,7 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 	struct iovec *iov;
 
     /**
-     *  
+     *
      */
 	iov = iovec_from_user(uvec, nr_segs, fast_segs, *iovp, compat);
 	if (IS_ERR(iov)) {
@@ -1779,7 +1787,7 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 		ssize_t len = (ssize_t)iov[seg].iov_len;
 
         /**
-         *  
+         *
          */
 		if (!access_ok(iov[seg].iov_base, len)) {
 			if (iov != *iovp)
@@ -1834,14 +1842,14 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
 		 struct iovec **iovp, struct iov_iter *i)
 {
     /**
-     *  
+     *
      */
 	return __import_iovec(type, uvec, nr_segs, fast_segs, iovp, i,
 			      in_compat_syscall());
 }
 EXPORT_SYMBOL(import_iovec);
 /**
- *  
+ *
  */
 int import_single_range(int rw, void __user *buf, size_t len,
 		 struct iovec *iov, struct iov_iter *i)

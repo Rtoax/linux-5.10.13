@@ -294,6 +294,7 @@ void splice_shrink_spd(struct splice_pipe_desc *spd)
  *    Will read pages from given file and fill them into a pipe. Can be
  *    used as long as it has more or less sane ->read_iter().
  *
+ * 参见 do_splice_to() --->> in->f_op->splice_read
  */
 ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
 				 struct pipe_inode_info *pipe, size_t len,
@@ -304,10 +305,23 @@ ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
 	unsigned int i_head;
 	int ret;
 
+	/**
+	 * @brief 构建 iov_iter 结构
+	 *
+	 */
 	iov_iter_pipe(&to, READ, pipe, len);
 	i_head = to.head;
+	/**
+	 * @brief 构建 kiocb 结构
+	 *
+	 */
 	init_sync_kiocb(&kiocb, in);
 	kiocb.ki_pos = *ppos;
+
+	/**
+	 * @brief 调用 read
+	 *
+	 */
 	ret = call_read_iter(in, &kiocb, &to);
 	if (ret > 0) {
 		*ppos = kiocb.ki_pos;
@@ -785,6 +799,10 @@ static long do_splice_to(struct file *in, loff_t *ppos,
 
 	if (unlikely(!in->f_op->splice_read))
 		return warn_unsupported(in, "read");
+	/**
+	 * @brief 对应 generic_file_splice_read()
+	 *
+	 */
 	return in->f_op->splice_read(in, ppos, pipe, len, flags);
 }
 
@@ -1031,9 +1049,18 @@ long do_splice(struct file *in, loff_t *off_in, struct file *out,
 		if ((in->f_flags | out->f_flags) & O_NONBLOCK)
 			flags |= SPLICE_F_NONBLOCK;
 
+		/**
+		 * @brief 管道到管道
+		 *
+		 * @return return
+		 */
 		return splice_pipe_to_pipe(ipipe, opipe, len, flags);
 	}
 
+	/**
+	 * @brief IN 是管道，OUT 不是管道
+	 *
+	 */
 	if (ipipe) {
 		if (off_in)
 			return -ESPIPE;
@@ -1067,6 +1094,10 @@ long do_splice(struct file *in, loff_t *off_in, struct file *out,
 		return ret;
 	}
 
+	/**
+	 * @brief Construct a new if object
+	 *	如果 infd 不是管道， outfd 是管道
+	 */
 	if (opipe) {
 		if (off_out)
 			return -ESPIPE;
@@ -1106,6 +1137,17 @@ long do_splice(struct file *in, loff_t *off_in, struct file *out,
 	return -EINVAL;
 }
 
+/**
+ * @brief splice(2)
+ *
+ * @param in
+ * @param off_in
+ * @param out
+ * @param off_out
+ * @param len
+ * @param flags
+ * @return long
+ */
 static long __do_splice(struct file *in, loff_t __user *off_in,
 			struct file *out, loff_t __user *off_out,
 			size_t len, unsigned int flags)
@@ -1134,6 +1176,10 @@ static long __do_splice(struct file *in, loff_t __user *off_in,
 		__off_in = &offset;
 	}
 
+	/**
+	 * @brief 拼接长度
+	 *
+	 */
 	ret = do_splice(in, __off_in, out, __off_out, len, flags);
 	if (ret < 0)
 		return ret;
@@ -1322,6 +1368,19 @@ out_fdput:
 	return error;
 }
 
+/**
+ * @brief
+ *
+ * @param fd_in
+ * @param off_in
+ * @param fd_out
+ * @param off_out
+ * @param len
+ * @param flags
+ * @return ssize_t
+ */
+ssize_t splice(int fd_in, loff_t *off_in, int fd_out,
+                      loff_t *off_out, size_t len, unsigned int flags){}//+++
 SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
 		int, fd_out, loff_t __user *, off_out,
 		size_t, len, unsigned int, flags)
@@ -1340,6 +1399,10 @@ SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
 	if (in.file) {
 		out = fdget(fd_out);
 		if (out.file) {
+			/**
+			 * @brief
+			 *
+			 */
 			error = __do_splice(in.file, off_in, out.file, off_out,
 						len, flags);
 			fdput(out);

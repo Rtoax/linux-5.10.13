@@ -254,6 +254,13 @@ xfs_file_dax_read(
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param iocb
+ * @param to
+ * @return STATIC
+ */
 STATIC ssize_t
 xfs_file_buffered_aio_read(
 	struct kiocb		*iocb,
@@ -380,7 +387,7 @@ restart:
 			drained_dio = true;
 			goto restart;
 		}
-	
+
 		trace_xfs_zero_eof(ip, isize, iocb->ki_pos - isize);
 		error = iomap_zero_range(inode, isize, iocb->ki_pos - isize,
 				NULL, &xfs_buffered_write_iomap_ops);
@@ -1329,7 +1336,7 @@ xfs_filemap_map_pages(
 
 	xfs_ilock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
     /**
-     *  
+     *
      */
 	filemap_map_pages(vmf, start_pgoff, end_pgoff);
 	xfs_iunlock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
@@ -1360,7 +1367,7 @@ xfs_file_mmap(
 	if (!daxdev_mapping_supported(vma, target->bt_daxdev))
 		return -EOPNOTSUPP;
     /**
-     *  
+     *
      */
 	file_accessed(file);
 	vma->vm_ops = &xfs_file_vm_ops;
@@ -1369,7 +1376,7 @@ xfs_file_mmap(
 	return 0;
 }
 /**
- *  
+ *
  */
 const struct file_operations xfs_file_operations = {
 	.llseek		= xfs_file_llseek,
@@ -1393,7 +1400,7 @@ const struct file_operations xfs_file_operations = {
 	.remap_file_range = xfs_file_remap_range,
 };
 /**
- *  
+ *
  */
 const struct file_operations xfs_dir_file_operations = {
 	.open		= xfs_dir_open,

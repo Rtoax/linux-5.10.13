@@ -248,7 +248,7 @@ struct iattr {
  */
 #define FILESYSTEM_MAX_STACK_DEPTH 2
 
-/** 
+/**
  * enum positive_aop_returns - aop return codes with specific semantics
  *
  * @AOP_WRITEPAGE_ACTIVATE: Informs the caller that page writeback has
@@ -258,7 +258,7 @@ struct iattr {
  * 			    be a candidate for writeback again in the near
  * 			    future.  Other callers must be careful to unlock
  * 			    the page if they get this return.  Returned by
- * 			    writepage(); 
+ * 			    writepage();
  *
  * @AOP_TRUNCATED_PAGE: The AOP method that was handed a locked page has
  *  			unlocked it and the page might have been truncated.
@@ -372,7 +372,7 @@ typedef int (*read_actor_t)(read_descriptor_t *, struct page *,
  */
 struct address_space_operations {
     /**
-     *  
+     *
      */
 	int (*writepage)(struct page *page, struct writeback_control *wbc);
 	int (*readpage)(struct file *, struct page *);
@@ -404,7 +404,7 @@ struct address_space_operations {
 	int (*releasepage) (struct page *, gfp_t);
 	void (*freepage)(struct page *);
 	ssize_t (*direct_IO)(struct kiocb *, struct iov_iter *iter);
-    
+
 	/*
 	 * migrate the contents of a page to the specified target. If
 	 * migrate_mode is MIGRATE_ASYNC, it must not block.
@@ -417,15 +417,15 @@ struct address_space_operations {
 	 *      isolate_movable_page() 中将调用
 	 *
 	 * 2. migratepage 迁移页面
-	 *      
+	 *
 	 * 3. putback_page 迁移失败时，将页面迁移回原来的地方。
-	 *  
+	 *
 	 */
 	int (*migratepage) (struct address_space *,
 			            struct page *, struct page *, enum migrate_mode);
 	bool (*isolate_page)(struct page *, isolate_mode_t);
 	void (*putback_page)(struct page *);
-    
+
 	int (*launder_page) (struct page *);
 	int (*is_partially_uptodate) (struct page *, unsigned long,
 					            unsigned long);
@@ -474,7 +474,7 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
  *
  * 用于管理文件（struct inode)映射到内存的页面(struct page)
  */
-struct address_space {  
+struct address_space {
 	struct inode		*host;      /* owner: inode, block_device拥有它的节点 */
 
     /**
@@ -735,7 +735,7 @@ struct inode {
 #endif
 	union {
 	    /**
-         *  
+         *
          */
 		const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 		void (*free_inode)(struct inode *);
@@ -745,7 +745,7 @@ struct inode {
 	struct list_head	i_devices;
 
     /**
-     *  
+     *
      */
 	union {
 		struct pipe_inode_info	*i_pipe;    /* pipe info */
@@ -935,7 +935,7 @@ static inline unsigned iminor(const struct inode *inode)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned imajor(const struct inode *inode)
 {
@@ -983,12 +983,12 @@ struct file {   /*  */
 	} f_u;
 
     /**
-     *  
+     *
      */
 	struct path		f_path;         /* 文件路径 */
 
     /**
-     *  
+     *
      */
 	struct inode		*f_inode;	/* cached value */
     /**
@@ -1009,12 +1009,12 @@ struct file {   /*  */
      *  文件标志
      *  O_RDONLY - 只读
      *  O_NONBLOCK - 检查是否非阻塞
-     *  O_SYNC - 
+     *  O_SYNC -
      *  [...]
      */
 	unsigned int 	f_flags;
     /**
-     *  文件模式， 
+     *  文件模式，
      *  FMODE_READ - 文件可读
      *  FMODE_WRITE - 文件可写
      *  [...]
@@ -1055,7 +1055,7 @@ struct file {   /*  */
 	void			*private_data;
 
     /**
-     *  epoll 
+     *  epoll
      */
 #ifdef CONFIG_EPOLL
 	/* Used by fs/eventpoll.c to link all the hooks to this file */
@@ -1071,7 +1071,7 @@ struct file {   /*  */
 	struct address_space	*f_mapping; /* 文件缓存 */
 
     /**
-     *  
+     *
      */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
@@ -1097,8 +1097,8 @@ static inline struct file *get_file(struct file *f)
 
 #define	MAX_NON_LFS	((1UL<<31) - 1)
 
-/* Page cache limit. The filesystems should put that into their s_maxbytes 
-   limits, otherwise bad things can happen in VM. */ 
+/* Page cache limit. The filesystems should put that into their s_maxbytes
+   limits, otherwise bad things can happen in VM. */
 #if BITS_PER_LONG==32
 //#define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
 #elif BITS_PER_LONG==64
@@ -1299,8 +1299,8 @@ static inline int locks_lock_file_wait(struct file *filp, struct file_lock *fl)
  *
  *  驱动程序怎样实现异步信号
  *  ---------------------
- *   fasync_helper()    
- *   kill_fasync()      
+ *   fasync_helper()
+ *   kill_fasync()
  */
 struct fasync_struct {
 	rwlock_t		fa_lock;
@@ -1405,7 +1405,7 @@ struct sb_writers {
 };
 
 /**
- *  
+ *
  */
 struct super_block {    /* 超级块 */
 	struct list_head	s_list;		/* Keep this first */
@@ -1814,7 +1814,7 @@ struct dir_context {
 struct iov_iter;
 
 /**
- *  
+ *
  *
  *  典型的例子
  *  -----------
@@ -1822,7 +1822,7 @@ struct iov_iter;
  */
 struct file_operations {    /* 文件操作符 */
     /**
-     *  
+     *
      */
 	struct module *owner;
 
@@ -1832,7 +1832,7 @@ struct file_operations {    /* 文件操作符 */
 	loff_t (*llseek) (struct file *, loff_t, int);
 
     /**
-     *  
+     *
      *  可能是谁？
      *  ext4 为空
      */
@@ -1846,7 +1846,7 @@ struct file_operations {    /* 文件操作符 */
 
     /**
      *  原来叫做 readv/writev
-     *  
+     *
      *  ext4_file_operations.ext4_file_read_iter()
      *  ext4_file_operations.ext4_file_write_iter()
      */
@@ -1854,7 +1854,7 @@ struct file_operations {    /* 文件操作符 */
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
 
     /**
-     *  
+     *
      */
 	int (*iopoll)(struct kiocb *kiocb, bool spin);
 	int (*iterate) (struct file *, struct dir_context *);
@@ -1878,21 +1878,21 @@ struct file_operations {    /* 文件操作符 */
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
 
     /**
-     *  
+     *
      */
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
     /**
-     *  
+     *
      */
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 
     /**
-     *  
+     *
      */
 	int (*mmap) (struct file *, struct vm_area_struct *);
 
     unsigned long mmap_supported_flags;
-    
+
 	int (*open) (struct inode *, struct file *);
 
     /**
@@ -1925,13 +1925,13 @@ struct file_operations {    /* 文件操作符 */
 	int (*lock) (struct file *, int, struct file_lock *);
 
     /**
-     *  
+     *
      */
 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 
     /**
      *  该方法的目的是为了在进程的地址空间中找到一个合适的位置，以便将底层设备中的内存段映射到这个位置。
-     *  
+     *
      *  xfs_file_operations->get_unmapped_area      = thp_get_unmapped_area
      *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
      *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
@@ -1953,12 +1953,12 @@ struct file_operations {    /* 文件操作符 */
 	long (*fallocate)(struct file *file, int mode, loff_t offset,
 			  loff_t len);
 	void (*show_fdinfo)(struct seq_file *m, struct file *f);
-    
+
 #ifndef CONFIG_MMU
 	unsigned (*mmap_capabilities)(struct file *);
 #endif
     /**
-     *  
+     *
      */
 	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
 			loff_t, size_t, unsigned int);
@@ -2003,7 +2003,8 @@ struct inode_operations {   /* inode 操作符 */
      * ----------------------
      *
      *
-     * 调用
+     *
+ 调用
      * ----------------------
      * vfs_getattr_nosec()
      */
@@ -2019,11 +2020,19 @@ struct inode_operations {   /* inode 操作符 */
 	int (*set_acl)(struct inode *, struct posix_acl *, int);
 } ____cacheline_aligned;
 
+/**
+ * @brief
+ *
+ * @param file
+ * @param kio
+ * @param iter
+ * @return ssize_t
+ */
 static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
 				     struct iov_iter *iter)
 {
     /**
-     *  
+     *
      *  ext4_file_operations.ext4_file_read_iter()
      */
 	return file->f_op->read_iter(kio, iter);
@@ -2046,7 +2055,7 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
      shm_file_operations_huge.mmap = shm_mmap,
      shmem_file_operations.mmap = shmem_mmap,
      socket_file_ops.mmap = sock_mmap,
-     
+
     */
 	return file->f_op->mmap(file, vma);
 }
@@ -2080,7 +2089,7 @@ typedef struct inode * pinode_t;
 typedef struct dquot ** ppdquot_t;
 
 /**
- *  
+ *
  */
 struct super_operations {   /* 超级块操作符 */
    	pinode_t (*alloc_inode)(struct super_block *sb);
@@ -2211,6 +2220,12 @@ static inline u16 ki_hint_validate(enum rw_hint hint)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param kiocb
+ * @param filp
+ */
 static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 {
 	*kiocb = (struct kiocb) {
@@ -2378,7 +2393,7 @@ int sync_inode_metadata(struct inode *inode, int wait);
 struct file_system_type {   /* 文件系统类型 */
 	const char *name;
 	int fs_flags;
-#define FS_REQUIRES_DEV		1 
+#define FS_REQUIRES_DEV		1
 #define FS_BINARY_MOUNTDATA	2
 #define FS_HAS_SUBTYPE		4
 #define FS_USERNS_MOUNT		8	/* Can be mounted by userns root */
@@ -2469,7 +2484,7 @@ extern int fd_statfs(int, struct kstatfs *);
 extern int freeze_super(struct super_block *super);
 extern int thaw_super(struct super_block *super);
 extern bool our_mnt(struct vfsmount *mnt);
-extern 
+extern
 int super_setup_bdi_name(struct super_block *sb, char *fmt, ...);
 extern int super_setup_bdi(struct super_block *sb);
 
@@ -2605,7 +2620,7 @@ static inline int break_layout(struct inode *inode, bool wait)
 struct audit_names;
 
 /**
- *  
+ *
  */
 struct filename {   /*  */
 	const char		*name;	    /* 指向内核空间的文件路径指针 pointer to actual string */
@@ -2762,7 +2777,7 @@ extern int __must_check file_check_and_advance_wb_err(struct file *file);
 extern int __must_check file_write_and_wait_range(struct file *file,
 						loff_t start, loff_t end);
 /**
- *  
+ *
  */
 static inline int file_write_and_wait(struct file *file)
 {
@@ -2954,7 +2969,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
 extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
 extern struct file * open_exec(const char *);
- 
+
 /* fs/dcache.c -- generic fs support functions */
 extern bool is_subdir(struct dentry *, struct dentry *);
 extern bool path_is_under(const struct path *, const struct path *);
@@ -3444,7 +3459,7 @@ static const struct file_operations __fops = {				\
 	.llseek	 = generic_file_llseek,					\
 }
 
-static inline 
+static inline
 void __simple_attr_check_format(const char *fmt, ...)
 {
 	/* don't do anything, just let the compiler check the arguments; */
@@ -3474,7 +3489,7 @@ int __init get_filesystem_list(char *buf);
 #define ACC_MODE(x) ("\004\002\006\006"[(x)&O_ACCMODE]) //这个局部变量表示权限模式
     //"\004\002\006\006" == {'\004', '\002', '\006', '\006'}
     //`ACC_MODE` 宏就是通过 `[(x) & O_ACCMODE]` 索引展开这个数组里的值
-    
+
 #define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 					    (flag & __FMODE_NONOTIFY)))
 
