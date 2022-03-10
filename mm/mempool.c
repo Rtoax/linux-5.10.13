@@ -54,7 +54,7 @@ static void __check_element(mempool_t *pool, void *element, size_t size)
 	}
 	memset(obj, POISON_INUSE, size);
 }
-
+    
 static void check_element(mempool_t *pool, void *element)
 {
 	/* Mempools backed by slab allocator */
@@ -176,7 +176,7 @@ void mempool_destroy(mempool_t *pool)
 EXPORT_SYMBOL(mempool_destroy);
 
 /**
- *  
+ *
  */
 int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 		      mempool_free_t *free_fn, void *pool_data,
@@ -190,7 +190,7 @@ int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 	init_waitqueue_head(&pool->wait);
 
     /**
-     *  
+     *
      */
 	pool->elements = kmalloc_array_node(min_nr, sizeof(void *),
 					    gfp_mask, node_id);
@@ -233,7 +233,7 @@ int mempool_init(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
 		 mempool_free_t *free_fn, void *pool_data)
 {
     /**
-     *  
+     *
      */
 	return mempool_init_node(pool, min_nr, alloc_fn, free_fn,
 				 pool_data, GFP_KERNEL, NUMA_NO_NODE);
@@ -258,7 +258,7 @@ EXPORT_SYMBOL(mempool_init);
  * Return: pointer to the created memory pool object or %NULL on error.
  *
  *  @min_nr 内存池应始终保持的已分配对象的最少数目
- *  
+ *
  */
 mempool_t *mempool_create(int min_nr, mempool_alloc_t *alloc_fn,
 				mempool_free_t *free_fn, void *pool_data)
