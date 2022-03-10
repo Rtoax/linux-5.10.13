@@ -649,6 +649,13 @@ out:
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param iocb
+ * @param from
+ * @return STATIC
+ */
 STATIC ssize_t
 xfs_file_buffered_aio_write(
 	struct kiocb		*iocb,
@@ -726,6 +733,13 @@ out:
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param iocb
+ * @param from
+ * @return STATIC
+ */
 STATIC ssize_t
 xfs_file_write_iter(
 	struct kiocb		*iocb,
@@ -1266,6 +1280,10 @@ __xfs_filemap_fault(
 			ret = iomap_page_mkwrite(vmf,
 					&xfs_buffered_write_iomap_ops);
 		else
+			/**
+			 * @brief
+			 *
+			 */
 			ret = filemap_fault(vmf);
 	}
 	xfs_iunlock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
@@ -1283,6 +1301,12 @@ xfs_is_write_fault(
 	       (vmf->vma->vm_flags & VM_SHARED);
 }
 
+/**
+ * @brief
+ *
+ * @param vmf
+ * @return vm_fault_t
+ */
 static vm_fault_t
 xfs_filemap_fault(
 	struct vm_fault		*vmf)

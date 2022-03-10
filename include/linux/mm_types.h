@@ -66,6 +66,10 @@ struct mem_cgroup;
 //#define _struct_page_alignment
 #endif
 
+/**
+ * @brief
+ *
+ */
 struct page {   /* 物理页 */
     /**
      *  +----------+---------+----------+--------+----------+
@@ -73,14 +77,14 @@ struct page {   /* 物理页 */
      *  +----------+---------+----------+--------+----------+
      *
      *  struct page->flags
-     * 
-     * 63    62 61  60 59             44 43                                               0  
+     *
+     * 63    62 61  60 59             44 43                                               0
      *  +------+------+-----------------+-------------------------------------------------+
      *  | node | zone |    LAST_CPUPID  |                   flags                         |
      *  +------+------+-----------------+-------------------------------------------------+
      *
      *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
-     * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+     * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
      */
     // 见 `set_page_links()`
     //flags -> enum pageflags
@@ -98,7 +102,7 @@ struct page {   /* 物理页 */
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
 			 * by the page owner.
-			 * 
+			 *
 			 * 链表头(不一定是链表头，可能是链表节点)，主要有3个用途：
              * a: page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
              * b: page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
@@ -108,7 +112,7 @@ struct page {   /* 物理页 */
              * a. `zone->free_area->free_list` 为链表头的链表,见`get_page_from_free_area()`
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
-            
+
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
             /**
              *  页面指向的地址空间,一个指针，两个用途
@@ -134,31 +138,31 @@ struct page {   /* 物理页 */
              * 如果 mapping != 0，
              *      bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
              *      bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
-             * 
+             *
              * 通过mapping恢复anon_vma的方法：anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
             */
 			struct address_space *mapping;
 
             /**
              *  在映射的虚拟空间（vma_area）内的偏移；
-             *  
+             *
              *  一个文件可能只映射一部分，假设映射了1M的空间，
              *  index指的是在1M空间内的偏移，而不是在整个文件内的偏移。
              *
              *  如果多个VMA的虚拟页面同时映射了同一个匿名页面，那么 index 值为多少?
-             *  
+             *
              *  1. 对于父子进程同时映射了一个 匿名页面， index 相同，见
              *      rmap_walk_anon()
              *        vma_address()
              *          __vma_address()
              *            page_to_pgoff()
-             * 
+             *
              *  2. 对于KSM页面，由内容相同的两个匿名页面合并而成，他们可以使不相干的进程的VMA
              *      也可以是 父子进程的 VMA
              *      对于 KSM页面来说， index 等于 第一次 映射该页面 的 VMA 中的偏移量
              */
 			pgoff_t index;		/* Our offset within mapping. */
-            
+
 			/**
 			 * @private: Mapping-private opaque data.
 			 * Usually used for buffer_heads if PagePrivate.
@@ -167,7 +171,7 @@ struct page {   /* 物理页 */
 			 */
 			unsigned long private;
 		};
-        
+
 		struct {	/* page_pool used by netstack 页池 */
 			/**
 			 * @dma_addr: might require a 64-bit value even on
@@ -175,7 +179,7 @@ struct page {   /* 物理页 */
 			 */
 			dma_addr_t dma_addr;
 		};
-        
+
 		struct {	/* slab, slob and slub 被slab使用 */
 			union {
                 /**
@@ -198,7 +202,7 @@ struct page {   /* 物理页 */
 			/* Double-word boundary */
             /* 管理区 */
 			void *freelist;		/* first free object */
-            
+
 			union {
 				void *s_mem;	/* slab: first object 第一个 slab 对应OBJ 的起始地址 */
 				unsigned long counters;		/* SLUB */
@@ -220,14 +224,14 @@ struct page {   /* 物理页 */
 			atomic_t compound_mapcount;
 			unsigned int compound_nr; /* 1 << compound_order */
 		};
-        
+
 		struct {	/* Second tail page of compound page */
 			unsigned long _compound_pad_1;	/* compound_head */
 			atomic_t hpage_pinned_refcount;
 			/* For both global and memcg */
 			struct list_head deferred_list;
 		};
-        
+
 		struct {	/* Page table pages 页表使用的Page(管理页表) */
 			unsigned long _pt_pad_1;	/* compound_head */
 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
@@ -236,7 +240,7 @@ struct page {   /* 物理页 */
 				struct mm_struct *pt_mm; /* x86 pgds only */
 				atomic_t pt_frag_refcount; /* powerpc */
 			};
-            
+
             /**
              *  页表自旋锁
              */
@@ -289,7 +293,7 @@ struct page {   /* 物理页 */
          * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
          * 被映射了不一定在使用，但要使用必须先映射。
          *
-         *  通常情况下，page_count(page) == page_mapcount(page) 
+         *  通常情况下，page_count(page) == page_mapcount(page)
          *          即   page->_refcount = page->_mapcount + 1
 		 */
 		atomic_t _mapcount;
@@ -312,7 +316,7 @@ struct page {   /* 物理页 */
 	};
 
 	/**
-	 *  Usage count. *DO NOT USE DIRECTLY*. See page_ref.h 
+	 *  Usage count. *DO NOT USE DIRECTLY*. See page_ref.h
 	 *
 	 *  内核中引用该页面的次数
 	 *  =0 该页面 为空闲页面或即将要被释放的页面
@@ -320,7 +324,7 @@ struct page {   /* 物理页 */
 	 *
 	 *  操作 _refcount 的函数 `get_page()`,`put_page()`
      *
-     *  通常情况下，page_count(page) == page_mapcount(page) 
+     *  通常情况下，page_count(page) == page_mapcount(page)
      *          即   page->_refcount = page->_mapcount + 1
      *
      *  _refcount 有以下四种来源：
@@ -350,7 +354,7 @@ struct page {   /* 物理页 */
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
-	void *virtual;			
+	void *virtual;
     /* page 的虚拟地址 *//* Kernel virtual address (NULL if not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
 
@@ -488,19 +492,19 @@ struct vm_area_struct { /* VMA */
 	 * or brk vma (with NULL file) can only be in an anon_vma list.
 	 *
 	 * 它是一个链表头，节点为:
-	 *  anon_vma_chain->same_vma 
+	 *  anon_vma_chain->same_vma
 	 */
 	struct list_head anon_vma_chain; /* Serialized by mmap_lock & page_table_lock */
 
     /**
      *  用于 RMAP ，指向 AV(struct anon_vma)结构
      *
-     * 
+     *
      */
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
 
 	/**
-	 *  Function pointers to deal with this struct. 
+	 *  Function pointers to deal with this struct.
 	 *  匿名页面该项 为 NULL
 	 *
 	 * 简单统计一下
@@ -539,7 +543,7 @@ struct vm_area_struct { /* VMA */
      * mm/hugetlb.c:  hugetlb_vm_ops
      * arch/x86/kernel/cpu/resctrl/pseudo_lock.c:   pseudo_mmap_ops
      * arch/x86/entry/vsyscall/vsyscall_64.c:   gate_vma_ops
-     * kernel/bpf/syscall.c:   bpf_map_default_vmops  
+     * kernel/bpf/syscall.c:   bpf_map_default_vmops
      * kernel/events/core.c:   perf_mmap_vmops
      * kernel/relay.c:   relay_file_mmap_ops
      * ipc/shm.c:   shm_vm_ops
@@ -555,21 +559,21 @@ struct vm_area_struct { /* VMA */
      * include/linux/ramfs.h:   generic_file_vm_ops
      * include/drm/drm_gem_cma_helper.h:   drm_gem_cma_vm_ops
      * security/selinux/selinuxfs.c:   sel_mmap_policy_ops
-     * 
+     *
 	 */
 	const struct vm_operations_struct *vm_ops;  /* VMA 操作 */
 
 	/* Information about our backing store: */
     /**
-     *  
+     *
      */
 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE units */
 
     /**
-     *  
+     *
      */
     struct file * vm_file;		/* File we map to (can be NULL). */
-    
+
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 
 #ifdef CONFIG_SWAP
@@ -608,7 +612,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 
         /* 节点为 vm_area_struct.vm_rb */
 		struct rb_root mm_rb;               /* `mm_rb` 是虚拟内存区域的红黑树结构 */
-        
+
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
         /**
@@ -632,7 +636,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
          */
 		unsigned long mmap_base;	/* base of mmap area 虚拟地址空间中用于内存映射的起始地址 */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
-        
+
 #ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
 		/* Base adresses for compatible mmap() */
 		unsigned long mmap_compat_base;
@@ -717,7 +721,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		 */
 		struct rw_semaphore mmap_lock;  /* 读写锁,内存区域信号量 */
 
-		struct list_head mmlist; /* List of maybe swapped mm's.	These 可能被 swap 的 mm 
+		struct list_head mmlist; /* List of maybe swapped mm's.	These 可能被 swap 的 mm
 					  * are globally strung together off
 					  * init_mm.mmlist, and are protected
 					  * by mmlist_lock
@@ -784,7 +788,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 
 		/* store ref to file /proc/<pid>/exe symlink points to */
 		struct file __rcu *exe_file;    /* 符号链接 */
-        
+
 #ifdef CONFIG_MMU_NOTIFIER
         /**
          *  MMU 通知

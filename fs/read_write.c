@@ -27,7 +27,7 @@
 
 
 /**
- *  
+ *
  */
 const struct file_operations generic_ro_fops = {
 	generic_ro_fops.llseek		= generic_file_llseek,
@@ -497,12 +497,12 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
     /**
-     *  
+     *
      */
 	if (file->f_op->read)
 		ret = file->f_op->read(file, buf, count, pos);
     /**
-     *  
+     *
      *  ext4_file_operations.ext4_file_read_iter()
      *  ext4_file_operations.ext4_file_write_iter()
      */
@@ -518,6 +518,15 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param filp
+ * @param buf
+ * @param len
+ * @param ppos
+ * @return ssize_t
+ */
 static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = (void __user *)buf, .iov_len = len };
@@ -529,7 +538,7 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	kiocb.ki_pos = (ppos ? *ppos : 0);
 	iov_iter_init(&iter, WRITE, &iov, 1, len);
     /**
-     *  
+     *
      */
 	ret = call_write_iter(filp, &kiocb, &iter);
 	BUG_ON(ret == -EIOCBQUEUED);
@@ -599,7 +608,7 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 EXPORT_SYMBOL(kernel_write);
 
 /**
- *  
+ *
  */
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
@@ -635,7 +644,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 		ret = -EINVAL;
 
     /**
-     *  
+     *
      */
     if (ret > 0) {
 		fsnotify_modify(file);  /* notify通知 */
@@ -643,7 +652,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	}
 
     /**
-     *  
+     *
      */
     inc_syscw(current);
 	file_end_write(file);
@@ -726,7 +735,7 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* w
 			f.file->f_pos = pos;
 
         /**
-         *  
+         *
          */
 		fdput_pos(f);
 	}
@@ -741,7 +750,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count)
 {
     /**
-     *  
+     *
      */
 	return ksys_write(fd, buf, count);
 }
@@ -767,13 +776,13 @@ ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
 }
 
 /**
- * @brief 
- * 
- * @param fd 
- * @param buf 
- * @param count 
- * @param pos 
- * @return ssize_t 
+ * @brief
+ *
+ * @param fd
+ * @param buf
+ * @param count
+ * @param pos
+ * @return ssize_t
  */
 ssize_t pread(int fd, void *buf, size_t count, off_t pos){}//+++
 SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf,
@@ -794,7 +803,7 @@ ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
 	f = fdget(fd);
 	if (f.file) {
 		ret = -ESPIPE;
-		if (f.file->f_mode & FMODE_PWRITE)  
+		if (f.file->f_mode & FMODE_PWRITE)
 			ret = vfs_write(f.file, buf, count, &pos);
 		fdput(f);
 	}

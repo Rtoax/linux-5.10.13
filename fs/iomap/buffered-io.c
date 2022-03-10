@@ -688,6 +688,16 @@ static size_t __iomap_write_end(struct inode *inode, loff_t pos, size_t len,
 	return copied;
 }
 
+/**
+ * @brief
+ *
+ * @param inode
+ * @param page
+ * @param iomap
+ * @param pos
+ * @param copied
+ * @return size_t
+ */
 static size_t iomap_write_end_inline(struct inode *inode, struct page *page,
 		struct iomap *iomap, loff_t pos, size_t copied)
 {
@@ -745,6 +755,17 @@ static size_t iomap_write_end(struct inode *inode, loff_t pos, size_t len,
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param inode
+ * @param pos
+ * @param length
+ * @param data
+ * @param iomap
+ * @param srcmap
+ * @return loff_t
+ */
 static loff_t
 iomap_write_actor(struct inode *inode, loff_t pos, loff_t length, void *data,
 		struct iomap *iomap, struct iomap *srcmap)
@@ -820,6 +841,14 @@ again:
 	return written ? written : status;
 }
 
+/**
+ * @brief
+ *
+ * @param iocb
+ * @param iter
+ * @param ops
+ * @return ssize_t
+ */
 ssize_t
 iomap_file_buffered_write(struct kiocb *iocb, struct iov_iter *iter,
 		const struct iomap_ops *ops)
@@ -827,6 +856,10 @@ iomap_file_buffered_write(struct kiocb *iocb, struct iov_iter *iter,
 	struct inode *inode = iocb->ki_filp->f_mapping->host;
 	loff_t pos = iocb->ki_pos, ret = 0, written = 0;
 
+	/**
+	 * @brief
+	 *
+	 */
 	while (iov_iter_count(iter)) {
 		ret = iomap_apply(inode, pos, iov_iter_count(iter),
 				IOMAP_WRITE, ops, iter, iomap_write_actor);
@@ -1123,7 +1156,7 @@ iomap_ioend_can_merge(struct iomap_ioend *ioend, struct iomap_ioend *next)
 	if (ioend->io_bio->bi_status != next->io_bio->bi_status)
 		return false;
     /**
-     *  
+     *
      */
 	if ((ioend->io_flags & IOMAP_F_SHARED) ^
 	    (next->io_flags & IOMAP_F_SHARED))
@@ -1136,7 +1169,7 @@ iomap_ioend_can_merge(struct iomap_ioend *ioend, struct iomap_ioend *next)
 	return true;
 }
 /**
- *  
+ *
  */
 void
 iomap_ioend_try_merge(struct iomap_ioend *ioend, struct list_head *more_ioends,
@@ -1147,7 +1180,7 @@ iomap_ioend_try_merge(struct iomap_ioend *ioend, struct list_head *more_ioends,
 
 	INIT_LIST_HEAD(&ioend->io_list);
     /**
-     *  
+     *
      */
 	while ((next = list_first_entry_or_null(more_ioends, struct iomap_ioend,
 			io_list))) {
@@ -1158,14 +1191,14 @@ iomap_ioend_try_merge(struct iomap_ioend *ioend, struct list_head *more_ioends,
         if (!iomap_ioend_can_merge(ioend, next))
 			break;
         /**
-         *  
+         *
          */
 		list_move_tail(&next->io_list, &ioend->io_list);
         /**
-         *  
+         *
          */
 		ioend->io_size += next->io_size;
-        
+
 		if (next->io_private && merge_private)
 			merge_private(ioend, next);
 	}
@@ -1178,7 +1211,7 @@ iomap_ioend_compare(void *priv, struct list_head *a, struct list_head *b)
 	struct iomap_ioend *ia = container_of(a, struct iomap_ioend, io_list);
 	struct iomap_ioend *ib = container_of(b, struct iomap_ioend, io_list);
     /**
-     *  
+     *
      */
 	if (ia->io_offset < ib->io_offset)
 		return -1;
@@ -1217,7 +1250,7 @@ iomap_submit_ioend(struct iomap_writepage_ctx *wpc, struct iomap_ioend *ioend,
 	ioend->io_bio->bi_end_io = iomap_writepage_end_bio;
 
     /**
-     *  
+     *
      */
 	if (wpc->ops->prepare_ioend)
 		error = wpc->ops->prepare_ioend(ioend, error);
@@ -1233,7 +1266,7 @@ iomap_submit_ioend(struct iomap_writepage_ctx *wpc, struct iomap_ioend *ioend,
 		return error;
 	}
     /**
-     *  
+     *
      */
 	submit_bio(ioend->io_bio);
 	return 0;
@@ -1576,14 +1609,14 @@ iomap_writepage(struct page *page, struct writeback_control *wbc,
 	if (!wpc->ioend)
 		return ret;
     /**
-     *  
+     *
      */
 	return iomap_submit_ioend(wpc, wpc->ioend, ret);
 }
 EXPORT_SYMBOL_GPL(iomap_writepage);
 
 /**
- *  
+ *
  */
 int
 iomap_writepages(struct address_space *mapping, struct writeback_control *wbc,
