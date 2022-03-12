@@ -44,7 +44,7 @@ struct load_info {  /*  */
 	unsigned long mod_kallsyms_init_off;
 #endif
     /**
-     *  
+     *  readelf -S xxx.ko 查看
      */
 	struct {
 		unsigned int 

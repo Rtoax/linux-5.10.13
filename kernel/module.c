@@ -294,7 +294,7 @@ void set_module_sig_enforced(void)
 int modules_disabled = 0;
 core_param(nomodule, modules_disabled, bint, 0);
 /**
- *  
+ *
  */
 /* Waiting for a module to finish initializing? */
 static DECLARE_WAIT_QUEUE_HEAD(module_wq);
@@ -456,7 +456,7 @@ static bool each_symbol_section(bool (*fn)(const struct symsearch *arr,
 
 	module_assert_mutex_or_preempt();
     /**
-     *  
+     *
      */
 	if (each_symbol_in_section(arr, ARRAY_SIZE(arr), NULL, fn, data))
 		return true;
@@ -588,7 +588,7 @@ static bool find_exported_symbol_in_section(const struct symsearch *syms,
 	sym = bsearch(fsa->name, syms->start, syms->stop - syms->start,
 			sizeof(struct kernel_symbol), cmp_name);
     /**
-     *  
+     *
      */
 	if (sym != NULL && check_exported_symbol(syms, owner,
 						 sym - syms->start, data))
@@ -641,6 +641,7 @@ static struct module *find_module_all(const char *name, size_t len,
 	module_assert_mutex_or_preempt();
     /**
      *  竟然用链表
+     *  因为模块并没有那么多
      */
 	list_for_each_entry_rcu(mod, &modules, list,
 				lockdep_is_held(&module_mutex)) {
@@ -656,7 +657,7 @@ struct module *find_module(const char *name)
 {
 	module_assert_mutex();
     /**
-     *  
+     *
      */
 	return find_module_all(name, strlen(name), false);
 }
@@ -685,6 +686,9 @@ static int percpu_modalloc(struct module *mod, struct load_info *info)
 	if (!pcpusec->sh_size)
 		return 0;
 
+    /**
+     *  最大也就页对其了
+     */
 	if (align > PAGE_SIZE) {
 		pr_warn("%s: per-cpu alignment %li > %li\n",
 			mod->name, align, PAGE_SIZE);
@@ -708,14 +712,14 @@ static void percpu_modfree(struct module *mod)
 	free_percpu(mod->percpu);
 }
 /**
- *  
+ *
  */
 static unsigned int find_pcpusec(struct load_info *info)
 {
 	return find_sec(info, ".data..percpu");
 }
 /**
- *  
+ *
  */
 static void percpu_modcopy(struct module *mod,
 			   const void *from, unsigned long size)
@@ -1011,7 +1015,7 @@ EXPORT_SYMBOL(module_refcount);
 static void free_module(struct module *mod);
 
 /**
- *  
+ *
  */
 int delete_module(const char *name, int flags);
 SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
@@ -1308,7 +1312,7 @@ static ssize_t show_taint(struct module_attribute *mattr,
 static struct module_attribute modinfo_taint =
 	__ATTR(taint, 0444, show_taint, NULL);
 /**
- *  
+ *
  */
 static struct module_attribute *modinfo_attrs[] = {
 	&module_uevent,
@@ -1321,7 +1325,7 @@ static struct module_attribute *modinfo_attrs[] = {
 #ifdef CONFIG_MODULE_UNLOAD
 	&modinfo_refcnt,
 #endif
-	NULL,
+	NULL, /* 必须有 */
 };
 
 static const char vermagic[] = VERMAGIC_STRING;
@@ -1345,7 +1349,7 @@ static u32 resolve_rel_crc(const s32 *crc)
 	return *(u32 *)((void *)crc + *crc);
 }
 /**
- *  
+ *
  */
 static int check_version(const struct load_info *info,
 			 const char *symname,
@@ -1369,7 +1373,7 @@ static int check_version(const struct load_info *info,
 	num_versions = sechdrs[versindex].sh_size
 		            / sizeof(struct modversion_info);
     /**
-     *  
+     *
      */
 	for (i = 0; i < num_versions; i++) {
 		u32 crcval;
@@ -1398,7 +1402,7 @@ bad_version:
 	return 0;
 }
 /**
- *  
+ *
  */
 static inline int check_modstruct_version(const struct load_info *info,
 					  struct module *mod)
@@ -1522,6 +1526,9 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
 	 */
 	sched_annotate_sleep();
 	mutex_lock(&module_mutex);
+    /**
+     *
+     */
 	sym = find_symbol(name, &owner, &crc, &license,
 			  !(mod->taints & (1 << TAINT_PROPRIETARY_MODULE)), true);
 	if (!sym)
@@ -1856,7 +1863,7 @@ static int add_usage_links(struct module *mod)
 
 static void module_remove_modinfo_attrs(struct module *mod, int end);
 /**
- *  
+ *
  */
 static int module_add_modinfo_attrs(struct module *mod)
 {
@@ -1920,7 +1927,7 @@ static void mod_kobject_put(struct module *mod)
 	wait_for_completion(&c);
 }
 /**
- *  
+ *
  */
 static int mod_sysfs_init(struct module *mod)
 {
@@ -1945,7 +1952,7 @@ static int mod_sysfs_init(struct module *mod)
 
 	mod->mkobj.mod = mod;
     /**
-     *  
+     *
      */
 	memset(&mod->mkobj.kobj, 0, sizeof(mod->mkobj.kobj));
 	mod->mkobj.kobj.kset = module_kset;
@@ -1961,7 +1968,7 @@ out:
 	return err;
 }
 /**
- *  
+ *
  */
 static int mod_sysfs_setup(struct module *mod,
 			   const struct load_info *info,
@@ -1970,7 +1977,7 @@ static int mod_sysfs_setup(struct module *mod,
 {
 	int err;
     /**
-     *  
+     *
      */
 	err = mod_sysfs_init(mod);
 	if (err)
@@ -1988,19 +1995,19 @@ static int mod_sysfs_setup(struct module *mod,
 	if (err)
 		goto out_unreg_holders;
     /**
-     *  
+     *
      */
 	err = module_add_modinfo_attrs(mod);
 	if (err)
 		goto out_unreg_param;
     /**
-     *  
+     *
      */
 	err = add_usage_links(mod);
 	if (err)
 		goto out_unreg_modinfo_attrs;
     /**
-     *  
+     *
      */
 	add_sect_attrs(mod, info);
 	add_notes_attrs(mod, info);
@@ -2031,30 +2038,9 @@ static void init_param_lock(struct module *mod)
 	mutex_init(&mod->param_lock);
 }
 #else /* !CONFIG_SYSFS */
-
-//static int mod_sysfs_setup(struct module *mod,
-//			   const struct load_info *info,
-//			   struct kernel_param *kparam,
-//			   unsigned int num_params)
-//{
-//	return 0;
-//}
-//
-//static void mod_sysfs_fini(struct module *mod)
-//{
-//}
-//
-//static void module_remove_modinfo_attrs(struct module *mod, int end)
-//{
-//}
-//
-//static void del_usage_links(struct module *mod)
-//{
-//}
-//
-//static void init_param_lock(struct module *mod)
-//{
-//}
+/**
+ *
+ */
 #endif /* CONFIG_SYSFS */
 
 static void mod_sysfs_teardown(struct module *mod)
@@ -2396,6 +2382,9 @@ static int verify_exported_symbols(struct module *mod)
 	return 0;
 }
 
+/**
+ *  更改所有符号，以便 st_value 直接对指针进行编码
+ */
 /* Change all symbols so that st_value encodes the pointer directly. */
 static int simplify_symbols(struct module *mod, const struct load_info *info)
 {
@@ -2412,9 +2401,12 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
      *  遍历符号表
      */
 	for (i = 1; i < symsec->sh_size / sizeof(Elf_Sym); i++) {
+        /**
+         *  符号名字
+         */
 		const char *name = info->strtab + sym[i].st_name;
         /**
-         *  
+         *
          */
 		switch (sym[i].st_shndx) {
         //相对于此节而定义的符号为通用符号，
@@ -2430,7 +2422,8 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			       mod->name);
 			ret = -ENOEXEC;
 			break;
-        //对应引用的绝对值。例如，相对于节编号 SHN_ABS 而定义的符号具有绝对值，**不受重定位影响**。
+        //对应引用的绝对值。
+        //例如，相对于节编号 SHN_ABS 而定义的符号具有绝对值，**不受重定位影响**。
 		case SHN_ABS:
 			/* Don't need to do anything */
 			pr_debug("Absolute symbol: 0x%08lx\n",
@@ -2450,6 +2443,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			ksym = resolve_symbol_wait(mod, info, name);
 			/* Ok if resolved.  */
 			if (ksym && !IS_ERR(ksym)) {
+                /**
+                 *  给这个符号赋值
+                 */
 				sym[i].st_value = kernel_symbol_value(ksym);
 				break;
 			}
@@ -2464,6 +2460,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			break;
 
 		default:
+            /**
+             * per-CPU
+             */
 			/* Divert to percpu allocation if a percpu var. */
 			if (sym[i].st_shndx == info->index.pcpu)
 				secbase = (unsigned long)mod_percpu(mod);
@@ -2478,6 +2477,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 }
 /**
  *  重定向
+ *  这部分代码相当重要
+ *  重定位公式参考
+ *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fct/index.html
  */
 static int apply_relocations(struct module *mod, const struct load_info *info)
 {
@@ -2510,12 +2512,14 @@ static int apply_relocations(struct module *mod, const struct load_info *info)
 						       NULL);
         /**
          *  32位采用 rel
+         *  TODO: 2022年3月12日
          */
         else if (info->sechdrs[i].sh_type == SHT_REL)
 			err = apply_relocate(info->sechdrs, info->strtab,
 					     info->index.sym, i, mod);
         /**
-         *  重定位
+         *  重定位，rela，有 append 字段
+         *  这是架构相关的
          */
         else if (info->sechdrs[i].sh_type == SHT_RELA)
 			err = apply_relocate_add(info->sechdrs, info->strtab,
@@ -2546,44 +2550,59 @@ static long get_offset(struct module *mod, unsigned int *size,
 	return ret;
 }
 
-/* 
+/*
    Lay out the SHF_ALLOC sections in a way not dissimilar to how ld
    might -- code, read-only data, read-write data, small data.  Tally
    sizes, and place the offsets into sh_entsize fields: high bit means it
-   belongs in init. 
+   belongs in init.
    以与 ld 不同的方式布置 SHF_ALLOC 部分——代码、只读数据、读写数据、小数据。
    Tally 大小，并将偏移量放入 sh_entsize 字段：高位表示它属于 init 。
 */
 static void layout_sections(struct module *mod, struct load_info *info)
 {
     /**
-     *  
+     *
      */
 	static unsigned long const masks[][2] = {
 		/* NOTE: all executable code must be the first section
 		 * in this array; otherwise modify the text_size
 		 * finder in the two loops below */
+		/**
+		 *  可执行指令并且需要分配
+		 */
 		{ SHF_EXECINSTR | SHF_ALLOC, ARCH_SHF_SMALL },
+		/**
+		 *  需要分配
+		 */
 		{ SHF_ALLOC, SHF_WRITE | ARCH_SHF_SMALL },
+		/**
+		 *  初始化后只读并且需要分配
+		 */
 		{ SHF_RO_AFTER_INIT | SHF_ALLOC, ARCH_SHF_SMALL },
+		/**
+		 *  可写并且需要分配
+		 */
 		{ SHF_WRITE | SHF_ALLOC, ARCH_SHF_SMALL },
+		/**
+		 *
+		 */
 		{ ARCH_SHF_SMALL | SHF_ALLOC, 0 }
 	};
 	unsigned int m, i;
 
     /**
-     *  
+     *
      */
 	for (i = 0; i < info->hdr->e_shnum; i++)
 		info->sechdrs[i].sh_entsize = ~0UL;
 
 	pr_debug("Core section allocation order:\n");
     /**
-     *  
+     *
      */
 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
         /**
-         *  
+         *
          */
 		for (i = 0; i < info->hdr->e_shnum; ++i) {
 			Elf_Shdr *s = &info->sechdrs[i];
@@ -2603,7 +2622,7 @@ static void layout_sections(struct module *mod, struct load_info *info)
 			pr_debug("\t%s\n", sname);
 		}
         /**
-         *  
+         *
          */
 		switch (m) {
 		case 0: /* executable */
@@ -2620,6 +2639,7 @@ static void layout_sections(struct module *mod, struct load_info *info)
 			break;
         /**
          *  3 呢？
+         *  再次疑问？2022年3月12日
          */
         case 4: /* whole core */
 			mod->core_layout.size = debug_align(mod->core_layout.size);
@@ -2627,6 +2647,9 @@ static void layout_sections(struct module *mod, struct load_info *info)
 		}
 	}
 
+    /**
+     *  不知道啥意思？
+     */
 	pr_debug("Init section allocation order:\n");
 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
 		for (i = 0; i < info->hdr->e_shnum; ++i) {
@@ -2697,7 +2720,9 @@ static char *next_string(char *string, unsigned long *secsize)
 	}
 	return string;
 }
-
+/**
+ *
+ */
 static char *get_next_modinfo(const struct load_info *info, const char *tag,
 			      char *prev)
 {
@@ -2712,6 +2737,9 @@ static char *get_next_modinfo(const struct load_info *info, const char *tag,
 	 */
 	char *modinfo = (char *)info->hdr + infosec->sh_offset;
 
+    /**
+     *
+     */
 	if (prev) {
 		size -= prev - modinfo;
 		modinfo = next_string(prev, &size);
@@ -2724,19 +2752,22 @@ static char *get_next_modinfo(const struct load_info *info, const char *tag,
 	return NULL;
 }
 
+/**
+ *  获取信息
+ */
 static char *get_modinfo(const struct load_info *info, const char *tag)
 {
 	return get_next_modinfo(info, tag, NULL);
 }
 /**
- *  
+ *
  */
 static void setup_modinfo(struct module *mod, struct load_info *info)
 {
 	struct module_attribute *attr;
 	int i;
     /**
-     *  
+     *
      */
 	for (i = 0; (attr = modinfo_attrs[i]); i++) {
 		if (attr->setup)
@@ -2854,6 +2885,9 @@ static bool is_core_symbol(const Elf_Sym *src, const Elf_Shdr *sechdrs,
  */
 static void layout_symtab(struct module *mod, struct load_info *info)
 {
+	/**
+	 *
+	 */
 	Elf_Shdr *symsect = info->sechdrs + info->index.sym;
 	Elf_Shdr *strsect = info->sechdrs + info->index.str;
 	const Elf_Sym *src;
@@ -2868,11 +2902,18 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 					 info->index.sym) | INIT_OFFSET_MASK;
 	pr_debug("\t%s\n", info->secstrings + symsect->sh_name);
 
+
+	/**
+	 *  找到这个sym section
+	 */
 	src = (void *)info->hdr + symsect->sh_offset;
 	nsrc = symsect->sh_size / sizeof(*src);
 
 	/* Compute total space required for the core symbols' strtab. */
 	for (ndst = i = 0; i < nsrc; i++) {
+        /**
+    	 *
+    	 */
 		if (i == 0 || is_livepatch_module(mod) ||
 		    is_core_symbol(src+i, info->sechdrs, info->hdr->e_shnum,
 				   info->index.pcpu)) {
@@ -2880,7 +2921,9 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 			ndst++;
 		}
 	}
-
+    /**
+	 *
+	 */
 	/* Append room for core symbols at end of core part. */
 	info->symoffs = ALIGN(mod->core_layout.size, symsect->sh_addralign ?: 1);
 	info->stroffs = mod->core_layout.size = info->symoffs + ndst * sizeof(Elf_Sym);
@@ -2895,6 +2938,9 @@ static void layout_symtab(struct module *mod, struct load_info *info)
 					 info->index.str) | INIT_OFFSET_MASK;
 	pr_debug("\t%s\n", info->secstrings + strsect->sh_name);
 
+    /**
+	 *
+	 */
 	/* We'll tack temporary mod_kallsyms on the end. */
 	mod->init_layout.size = ALIGN(mod->init_layout.size,
 				      __alignof__(struct mod_kallsyms));
@@ -2937,7 +2983,7 @@ static void add_kallsyms(struct module *mod, const struct load_info *info)
 	src = mod->kallsyms->symtab;
 
     /**
-     *  
+     *
      */
 	for (ndst = i = 0; i < mod->kallsyms->num_symtab; i++) {
 		mod->kallsyms->typetab[i] = elf_type(src + i, info);
@@ -2959,7 +3005,7 @@ static void add_kallsyms(struct module *mod, const struct load_info *info)
 }
 #else
 /**
-     *  
+     *
      */
 #endif /* CONFIG_KALLSYMS */
 
@@ -3086,6 +3132,9 @@ static int module_sig_check(struct load_info *info, int flags)
 //}
 #endif /* !CONFIG_MODULE_SIG */
 
+/**
+ *  检测elf头信息
+ */
 /* Sanity checks against invalid binaries, wrong arch, weird elf version. */
 static int elf_header_check(struct load_info *info)
 {
@@ -3115,35 +3164,35 @@ static int elf_header_check(struct load_info *info)
 #define COPY_CHUNK_SIZE (16*PAGE_SIZE)
 
 /**
- *  
+ *  拷贝一大块内存
  */
 static int copy_chunked_from_user(void *dst, const void __user *usrc, unsigned long len)
 {
     /**
-     *  
+     *
      */
 	do {
 		unsigned long n = min(len, COPY_CHUNK_SIZE);
 
         /**
-         *  
+         *
          */
 		if (copy_from_user(dst, usrc, n) != 0)
 			return -EFAULT;
-        
+
 		cond_resched();
 		dst += n;
 		usrc += n;
 		len -= n;
-        
+
 	} while (len);
-    
+
 	return 0;
 }
 
 #ifdef CONFIG_LIVEPATCH
 /**
- *  
+ *
  */
 static int check_modinfo_livepatch(struct module *mod, struct load_info *info)
 {
@@ -3178,7 +3227,7 @@ static void check_modinfo_retpoline(struct module *mod, struct load_info *info)
 }
 
 /**
- *  Sets info->hdr and info->len. 
+ *  Sets info->hdr and info->len.
  *
  *  @umod:  用户空间传入的 .ko 文件
  *  @len:   长度
@@ -3189,6 +3238,7 @@ static int copy_module_from_user(const void __user *umod, unsigned long len,
 {
 	int err;
 
+    /* 长度 */
 	info->len = len;
 	if (info->len < sizeof(*(info->hdr)))
 		return -ENOEXEC;
@@ -3203,7 +3253,7 @@ static int copy_module_from_user(const void __user *umod, unsigned long len,
 		return -ENOMEM;
 
     /**
-     *  
+     *  拷贝一大块内存，也就是这个elf文件
      */
 	if (copy_chunked_from_user(info->hdr, umod, info->len) != 0) {
 		err = -EFAULT;
@@ -3211,7 +3261,7 @@ static int copy_module_from_user(const void __user *umod, unsigned long len,
 	}
 
     /**
-     *  
+     *
      */
 	err = security_kernel_post_load_data((char *)info->hdr, info->len,
 					     LOADING_MODULE, "init_module");
@@ -3227,7 +3277,7 @@ static void free_copy(struct load_info *info)
 	vfree(info->hdr);
 }
 /**
- *  重写 elf 头
+ *  重写 elf 头，可以理解为libcare中的resolve函数
  */
 static int rewrite_section_headers(struct load_info *info, int flags)
 {
@@ -3241,11 +3291,11 @@ static int rewrite_section_headers(struct load_info *info, int flags)
      */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
         /**
-         *  
+         *
          */
 		Elf_Shdr *shdr = &info->sechdrs[i];
         /**
-         *  越界了
+         *  越界了，这种检测对于像我这种黑客来说轻而易举
          */
 		if (shdr->sh_type != SHT_NOBITS
 		    && info->len < shdr->sh_offset + shdr->sh_size) {
@@ -3257,7 +3307,10 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 		}
 
 		/* Mark all sections sh_addr with their address in the
-		   temporary image. */
+		   temporary image.
+		   也就是hdr 是加载到内核中的地址，再加上原来在elf文件中的 offset，
+		   就变成了在地址空间中的addr了，聪明如我
+		 */
 		shdr->sh_addr = (size_t)info->hdr + shdr->sh_offset;
 
 #ifndef CONFIG_MODULE_UNLOAD
@@ -3270,6 +3323,7 @@ static int rewrite_section_headers(struct load_info *info, int flags)
     /**
      *  不保留 modinfo 和 version 的 section
      *  SHF_ALLOC +SHF_WRITE 包含将出现在程序的内存映像中的为初始化数据
+     *  也就是说这部分就不申请内存了。
      */
 	/* Track but don't keep modinfo and version sections. */
 	info->sechdrs[info->index.vers].sh_flags &= ~(unsigned long)SHF_ALLOC;
@@ -3292,7 +3346,7 @@ static int setup_load_info(struct load_info *info, int flags)
 
 	/**
 	 * Section 头
-	 * 
+	 *
 	 */
 	/* Set up the convenience variables */
 	info->sechdrs = (void *)info->hdr + info->hdr->e_shoff;
@@ -3311,7 +3365,7 @@ static int setup_load_info(struct load_info *info, int flags)
 	/* Find internal symbols and strings. */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
         /**
-         *  查找到符号表
+         *  查找到符号表头
          */
 		if (info->sechdrs[i].sh_type == SHT_SYMTAB) {
 			info->index.sym = i;
@@ -3329,7 +3383,8 @@ static int setup_load_info(struct load_info *info, int flags)
 	}
 
     /**
-     *  必须要有 symbol section
+     *  必须要有 symbol section，
+     *  也就是说 strip 后的不行
      */
 	if (info->index.sym == 0) {
 		pr_warn("%s: module has no symbols (stripped?)\n",
@@ -3376,10 +3431,10 @@ static int setup_load_info(struct load_info *info, int flags)
      author:         Derek Molloy [ReCode by RToax]
      license:        GPL
      srcversion:     70BB318F7BEC3B86CB1BBAC
-     depends:        
+     depends:
      retpoline:      Y
      name:           hello
-     vermagic:       5.14.0 SMP mod_unload modversions 
+     vermagic:       5.14.0 SMP mod_unload modversions
      parm:           name:[RToax]The name to display in /var/log/kern.log (charp)
  */
 static int check_modinfo(struct module *mod, struct load_info *info, int flags)
@@ -3401,6 +3456,9 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 		return -ENOEXEC;
 	}
 
+    /**
+     *
+     */
 	if (!get_modinfo(info, "intree")) {
 		if (!test_taint(TAINT_OOT_MODULE))
 			pr_warn("%s: loading out-of-tree module taints kernel.\n",
@@ -3408,7 +3466,7 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 		add_taint_module(mod, TAINT_OOT_MODULE, LOCKDEP_STILL_OK);
 	}
     /**
-     *  
+     *
      */
 	check_modinfo_retpoline(mod, info);
 
@@ -3418,7 +3476,7 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 			"is unknown, you have been warned.\n", mod->name);
 	}
     /**
-     *  
+     *
      */
 	err = check_modinfo_livepatch(mod, info);
 	if (err)
@@ -3436,11 +3494,12 @@ static int check_modinfo(struct module *mod, struct load_info *info, int flags)
 
 /**
  *  搜索 module section
+ *  sudo bpftrace -e 'kprobe:find_module_sections{printf("comm = %s\n", comm);}'
  */
 static int find_module_sections(struct module *mod, struct load_info *info) /* 找到 module section */
 {
     /**
-     *  
+     * modinfo 的内容
      */
 	mod->kp = section_objs(info, "__param",
 			       sizeof(*mod->kp), &mod->num_kp);
@@ -3469,7 +3528,7 @@ static int find_module_sections(struct module *mod, struct load_info *info) /* �
 #endif
 #ifdef CONFIG_CONSTRUCTORS
     /**
-     *  
+     *
      */
 	mod->ctors = section_objs(info, ".ctors",
 				  sizeof(*mod->ctors), &mod->num_ctors);
@@ -3583,7 +3642,7 @@ static int move_module(struct module *mod, struct load_info *info)
 	mod->core_layout.base = ptr;
 
     /**
-     *  
+     *
      */
 	if (mod->init_layout.size) {
 		ptr = module_alloc(mod->init_layout.size);
@@ -3631,7 +3690,7 @@ static int move_module(struct module *mod, struct load_info *info)
 		if (shdr->sh_type != SHT_NOBITS)
 			memcpy(dest, (void *)shdr->sh_addr, shdr->sh_size);
         /**
-         *  
+         *  拷贝后设置地址，那现在是有两份在内存里吗？
          */
         /* Update sh_addr to point to copy in image. */
 		shdr->sh_addr = (unsigned long)dest;
@@ -3737,7 +3796,7 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	unsigned int ndx;
 	int err;
     /**
-     *  
+     *
      */
 	err = check_modinfo(info->mod, info, flags);
 	if (err)
@@ -3788,7 +3847,7 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	   special cases for the architectures. */
 	layout_sections(info->mod, info);
     /**
-     *  
+     *
      */
 	layout_symtab(info->mod, info);
 
@@ -3822,14 +3881,14 @@ int __weak module_finalize(const Elf_Ehdr *hdr,
 	return 0;
 }
 /**
- *  
+ *
  */
 static int post_relocation(struct module *mod, const struct load_info *info)
 {
 	/* Sort exception table now relocations are done. */
 	sort_extable(mod->extable, mod->extable + mod->num_exentries);
     /**
-     *  
+     *
      */
 	/* Copy relocated percpu area over. */
 	percpu_modcopy(mod, (void *)info->sechdrs[info->index.pcpu].sh_addr,
@@ -3900,8 +3959,8 @@ static void do_free_init(struct work_struct *w)
  *
  * Keep it uninlined to provide a reliable breakpoint target, e.g. for the gdb
  * helper command 'lx-symbols'.
- * 
- * 
+ *
+ *
  */
 static noinline int do_init_module(struct module *mod)
 {
@@ -3924,7 +3983,7 @@ static noinline int do_init_module(struct module *mod)
      *  析构函数执行
      */
 	do_mod_ctors(mod);
-    
+
 	/* Start the module */
 	if (mod->init != NULL)
         /**
@@ -4050,6 +4109,9 @@ static int add_unformed_module(struct module *mod)
 
 again:
 	mutex_lock(&module_mutex);
+    /**
+     *
+     */
 	old = find_module_all(mod->name, strlen(mod->name), true);
 	if (old != NULL) {
 		if (old->state != MODULE_STATE_LIVE) {
@@ -4075,7 +4137,7 @@ out_unlocked:
 	return err;
 }
 /**
- *  
+ *
  */
 static int complete_formation(struct module *mod, struct load_info *info)
 {
@@ -4091,7 +4153,7 @@ static int complete_formation(struct module *mod, struct load_info *info)
 	/* This relies on module_mutex for list integrity. */
 	module_bug_finalize(info->hdr, info->sechdrs, mod);
     /**
-     *  
+     *
      */
 	module_enable_ro(mod, false);
 	module_enable_nx(mod);
@@ -4109,7 +4171,7 @@ out:
 	return err;
 }
 /**
- *  
+ *
  */
 static int prepare_coming_module(struct module *mod)
 {
@@ -4149,13 +4211,13 @@ static int unknown_module_param_cb(char *param, char *val, const char *modname,
 
 /**
  *  Allocate and load the module: note that size of section 0 is always
- *  zero, and we rely on this for optional sections. 
+ *  zero, and we rely on this for optional sections.
  *
  *  加载一个 ko 模块到内核
- *  
- *  @info:  
- *  @uargs: 
- *  @flags: 
+ *
+ *  @info:
+ *  @uargs:
+ *  @flags:
  */
 static int load_module(struct load_info *info, const char __user *uargs, int flags)
 {
@@ -4197,6 +4259,8 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 
     /**
      *  重写 section 头
+     *  1. 把addr改为加载到内存之后的地址
+     *  2. .modinfo 等 ALLOC flags 的删除
      */
 	err = rewrite_section_headers(info, flags);
 	if (err)
@@ -4212,7 +4276,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 
     /**
-     *  分配内存
+     *  分配内存，为 ALLOC flag 相关变量，节分配内存
      */
 	/* Figure out module layout, and allocate all the memory. */
 	mod = layout_and_allocate(info, flags);
@@ -4222,10 +4286,13 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 
     /**
-     *  
+     *  鉴权
      */
 	audit_log_kern_module(mod->name);
 
+    /**
+     *
+     */
 	/* Reserve our place in the list. */
 	err = add_unformed_module(mod);
 	if (err)
@@ -4263,38 +4330,42 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	init_param_lock(mod);
 
 	/* Now we've got everything in the final locations, we can
-	 * find optional sections. */
+	 * find optional sections.
+	 */
 	err = find_module_sections(mod, info);
 	if (err)
 		goto free_unload;
 
     /**
-     *  
+     *
      */
 	err = check_module_license_and_versions(mod);
 	if (err)
 		goto free_unload;
 
     /**
-     *  
+     *
      */
 	/* Set up MODINFO_ATTR fields */
 	setup_modinfo(mod, info);
 
+    /**
+     *  修改符号的 st_value 值
+     */
 	/* Fix up syms, so that st_value is a pointer to location. */
 	err = simplify_symbols(mod, info);
 	if (err < 0)
 		goto free_modinfo;
 
     /**
-     *  重定位
+     *  重定位，这是比较关键的了
      */
 	err = apply_relocations(mod, info);
 	if (err < 0)
 		goto free_modinfo;
 
     /**
-     *  
+     *
      */
 	err = post_relocation(mod, info);
 	if (err < 0)
@@ -4316,7 +4387,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 
     /**
-     *  
+     *
      */
 	dynamic_debug_setup(mod, info->debug, info->num_debug);
 
@@ -4324,21 +4395,21 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	ftrace_module_init(mod);
 
     /**
-     *  
+     *
      */
 	/* Finally it's fully formed, ready to start executing. */
 	err = complete_formation(mod, info);
 	if (err)
 		goto ddebug_cleanup;
     /**
-     *  
+     *
      */
 	err = prepare_coming_module(mod);
 	if (err)
 		goto bug_cleanup;
 
     /**
-     *  
+     *
      */
 	/* Module is ready to execute: parsing args may do that. */
 	after_dashes = parse_args(mod->name, mod->args, mod->kp, mod->num_kp,
@@ -4352,7 +4423,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		       mod->name, after_dashes);
 	}
     /**
-     *  建立 这个模块的 sysfs 
+     *  建立 这个模块的 sysfs
      */
 	/* Link in to sysfs. */
 	err = mod_sysfs_setup(mod, info, mod->kp, mod->num_kp);
@@ -4376,7 +4447,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	trace_module_load(mod);
 
     /**
-     *  
+     *
      */
 	return do_init_module(mod);
 
@@ -4428,7 +4499,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 /**
  *  insmod - 插入内核模块
  */
-int init_module(void *umod, unsigned long len, const char *uargs);
+int init_module(void *umod, unsigned long len, const char *uargs){}//+++
 SYSCALL_DEFINE3(init_module, void __user *, umod,
 		unsigned long, len, const char __user *, uargs)
 {
@@ -4459,7 +4530,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 }
 
 /**
- *  insmod - 插入内核模块  
+ *  insmod - 插入内核模块
  *  这比 init_module 减少了 数据拷贝，更快乐
  */
 int finit_module(int fd, const char *param_values, int flags);
@@ -4470,7 +4541,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 	int err;
 
     /**
-     *  
+     *
      */
 	err = may_init_module();
 	if (err)
@@ -4482,7 +4553,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	err = kernel_read_file_from_fd(fd, 0, &hdr, INT_MAX, NULL, READING_MODULE);
 	if (err < 0)
@@ -4496,7 +4567,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 
     /**
      *  加载
-     */ 
+     */
 	return load_module(&info, uargs, flags);
 }
 
@@ -4702,8 +4773,8 @@ static unsigned long find_kallsyms_symbol_value(struct module *mod, const char *
 	struct mod_kallsyms *kallsyms = rcu_dereference_sched(mod->kallsyms);
 
     /**
- 
-     *  
+
+     *
      */
 	for (i = 0; i < kallsyms->num_symtab; i++) {
 		const Elf_Sym *sym = &kallsyms->symtab[i];
@@ -4729,13 +4800,13 @@ unsigned long module_kallsyms_lookup_name(const char *name)
 	preempt_disable();
 
     /**
- 
+
      *  从那么中查找 ":"
      */
 	if ((colon = strnchr(name, MODULE_NAME_LEN, ':')) != NULL) {
         /**
- 
-         *  
+
+         *
          */
 		if ((mod = find_module_all(name, colon - name, false)) != NULL)
 			ret = find_kallsyms_symbol_value(mod, colon+1);
@@ -5037,7 +5108,7 @@ void print_modules(void)
 
 #ifdef CONFIG_MODVERSIONS
 /**
- *  
+ *
  */
 /* Generate the signature for all relevant module structures here.
  * If these change, we don't want to try to parse the module. */

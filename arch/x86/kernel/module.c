@@ -129,14 +129,16 @@ int apply_relocate(Elf32_Shdr *sechdrs,
 }
 #else /*X86_64*/
 /**
- *  rela
+ *  rela 重定位
+ *  关键的计算公式参考
+ *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fct/index.html
  */
 static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,
 		   unsigned int symindex,
 		   unsigned int relsec,
 		   struct module *me,
-		   void *(*write)(void *dest, const void *src, size_t len))
+		   void *(*write_func)(void *dest, const void *src, size_t len))
 {
 	unsigned int i;
 	Elf64_Rela *rel = (void *)sechdrs[relsec].sh_addr;
@@ -151,14 +153,16 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
      */
     for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
         /**
-         *  位置
+         *  位置,我们将要对这个地址处的代码做出修改
          */
 		/* This is where to make the change */
 		loc = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
 			+ rel[i].r_offset;
 
 		/* This is the symbol it is referring to.  Note that all
-		   undefined symbols have been resolved.  */
+		 * undefined symbols have been resolved.
+		 *  这个 rela 对应的 sym 结构
+		 */
 		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
 			+ ELF64_R_SYM(rel[i].r_info);
 
@@ -166,48 +170,74 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		       (int)ELF64_R_TYPE(rel[i].r_info),
 		       sym->st_value, rel[i].r_addend, (u64)loc);
         /**
-         *  
+         *  st_value + r_addend 是我们需要改为的数值
          */
 		val = sym->st_value + rel[i].r_addend;
 
+        /**
+         *  这里就比较繁琐了，因为这里需要看下 gcc 手册，
+         *  不同类型的重定位有不同的计算公式，参见
+         *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fct/index.html
+         */
 		switch (ELF64_R_TYPE(rel[i].r_info)) {
+        /**
+         *
+         */
 		case R_X86_64_NONE:
 			break;
+        /**
+         *  word64  S + A
+         */
 		case R_X86_64_64:
 			if (*(u64 *)loc != 0)
 				goto invalid_relocation;
-			write(loc, &val, 8);
+			write_func(loc, &val, 8);
 			break;
+        /**
+         *  word32  S + A - P
+         */
 		case R_X86_64_32:
 			if (*(u32 *)loc != 0)
 				goto invalid_relocation;
-			write(loc, &val, 4);
+			write_func(loc, &val, 4);
 			if (val != *(u32 *)loc)
 				goto overflow;
 			break;
+        /**
+         *  word32  S + A
+         */
 		case R_X86_64_32S:
 			if (*(s32 *)loc != 0)
 				goto invalid_relocation;
-			write(loc, &val, 4);
+			write_func(loc, &val, 4);
 			if ((s64)val != *(s32 *)loc)
 				goto overflow;
 			break;
+        /**
+         *  word32  S + A - P
+         */
 		case R_X86_64_PC32:
+        /**
+         *  word32  L + A - P
+         */
 		case R_X86_64_PLT32:
 			if (*(u32 *)loc != 0)
 				goto invalid_relocation;
 			val -= (u64)loc;
-			write(loc, &val, 4);
+			write_func(loc, &val, 4);
 #if 0
 			if ((s64)val != *(s32 *)loc)
 				goto overflow;
 #endif
 			break;
+        /**
+         *  word64  S + A - P
+         */
 		case R_X86_64_PC64:
 			if (*(u64 *)loc != 0)
 				goto invalid_relocation;
 			val -= (u64)loc;
-			write(loc, &val, 8);
+			write_func(loc, &val, 8);
 			break;
 		default:
 			pr_err("%s: Unknown rela relocation: %llu\n",
@@ -232,6 +262,8 @@ overflow:
 
 /**
  *  rela 重定位
+ *  重定位公式参考
+ *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fct/index.html
  */
 int apply_relocate_add(Elf64_Shdr *sechdrs,
 		   const char *strtab,
@@ -241,17 +273,24 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 {
 	int ret;
 	bool early = me->state == MODULE_STATE_UNFORMED;
-	void *(*write)(void *, const void *, size_t) = memcpy;
+
+    /**
+     *  我感觉 libcare 就是在这里借鉴的代码啊
+     *  默认值为 memcpy
+     */
+	void *(*write_rtoax_fn)(void *, const void *, size_t) = memcpy;
 
 	if (!early) {
-		write = text_poke;
+		write_rtoax_fn = text_poke;
 		mutex_lock(&text_mutex);
 	}
     /**
-     *  
+     *  正经八百的重定位？
+     *  重定位公式参考
+     *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fct/index.html
      */
 	ret = __apply_relocate_add(sechdrs, strtab, symindex, relsec, me,
-				   write);
+				   write_rtoax_fn);
 
 	if (!early) {
 		text_poke_sync();

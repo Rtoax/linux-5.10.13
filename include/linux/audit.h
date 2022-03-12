@@ -154,12 +154,12 @@ struct filename;
 #ifdef CONFIG_AUDIT
 /* These are defined in audit.c */
 				/* Public API */
-//extern 
+//extern
 void audit_log(struct audit_context *ctx, gfp_t gfp_mask, int type,
 	       const char *fmt, ...);
 
 extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
-//extern 
+//extern
 void audit_log_format(struct audit_buffer *ab, const char *fmt, ...);
 extern void		    audit_log_end(struct audit_buffer *ab);
 extern bool		    audit_string_contains_control(const char *string,
@@ -290,7 +290,7 @@ static inline struct filename *audit_reusename(const __user char *name)
 	return NULL;
 }
 /**
- *  
+ *
  */
 static inline void audit_getname(struct filename *name)
 {
@@ -446,6 +446,9 @@ static inline void audit_mmap_fd(int fd, int flags)
 		__audit_mmap_fd(fd, flags);
 }
 
+/**
+ *
+ */
 static inline void audit_log_kern_module(char *name)
 {
 	if (!audit_dummy_context())
