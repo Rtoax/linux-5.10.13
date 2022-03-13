@@ -4790,6 +4790,9 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 	if (READ_ONCE(pgdat->kswapd_order) < order)
 		WRITE_ONCE(pgdat->kswapd_order, order);
 
+    /**
+     *  唤醒 kswapd ?
+     */
 	if (!waitqueue_active(&pgdat->kswapd_wait))
 		return;
 
@@ -4811,6 +4814,9 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		return;
 	}
 
+    /**
+     *
+     */
 	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, highest_zoneidx, order, gfp_flags);
 
 	wake_up_interruptible(&pgdat->kswapd_wait);
