@@ -177,7 +177,7 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 		return ERR_PTR(-EINVAL);
 
     /**
-     *  
+     *
      */
     type = array_index_nospec(type, ARRAY_SIZE(bpf_map_types));
 
@@ -198,7 +198,7 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 	}
 
     /**
-     *  
+     *
      */
 	if (attr->map_ifindex)
 		ops = &bpf_map_offload_ops;
@@ -211,7 +211,7 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
 		return map;
 
     /**
-     *  
+     *
      */
 	map->ops = ops;
 	map->map_type = type;
@@ -251,19 +251,19 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 	int err;
 
     /**
-     *  
+     *
      */
 	/* Need to create a kthread, thus must support schedule */
 	if (bpf_map_is_dev_bound(map)) {
 		return bpf_map_offload_update_elem(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_CPUMAP ||
 		       map->map_type == BPF_MAP_TYPE_STRUCT_OPS) {
 		/**
-         *  
+         *
          */
 		return map->ops->map_update_elem(map, key, _value, flags);
 
@@ -275,38 +275,38 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 		return sock_map_update_elem_sys(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (IS_FD_PROG_ARRAY(map)) {
 		return bpf_fd_array_map_update_elem(map, f.file, key, _value, flags);
 	}
 
     /**
-     *  
+     *
      */
 	bpf_disable_instrumentation();
 
     /**
-     *  
+     *
      */
     if (map->map_type == BPF_MAP_TYPE_PERCPU_HASH ||
 	    map->map_type == BPF_MAP_TYPE_LRU_PERCPU_HASH) {
 		err = bpf_percpu_hash_update(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_PERCPU_ARRAY) {
 		err = bpf_percpu_array_update(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE) {
 		err = bpf_percpu_cgroup_storage_update(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (IS_FD_ARRAY(map)) {
 		rcu_read_lock();
@@ -314,7 +314,7 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 		rcu_read_unlock();
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_HASH_OF_MAPS) {
 		rcu_read_lock();
@@ -322,26 +322,26 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 		rcu_read_unlock();
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_REUSEPORT_SOCKARRAY) {
 		/* rcu_read_lock() is not needed */
 		err = bpf_fd_reuseport_array_update_elem(map, key, _value, flags);
 
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_QUEUE ||
 		   map->map_type == BPF_MAP_TYPE_STACK) {
 		err = map->ops->map_push_elem(map, _value, flags);
 
     /**
-     *  
+     *
      */
     } else {
 		rcu_read_lock();
         /**
-         *  
+         *
          */
 		err = map->ops->map_update_elem(map, key, _value, flags);
 		rcu_read_unlock();
@@ -367,64 +367,64 @@ static int bpf_map_copy_value(struct bpf_map *map, void *key, void *_value,
 	bpf_disable_instrumentation();
 
     /**
-     *  
+     *
      */
     if (map->map_type == BPF_MAP_TYPE_PERCPU_HASH ||
 	    map->map_type == BPF_MAP_TYPE_LRU_PERCPU_HASH) {
 		err = bpf_percpu_hash_copy(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_PERCPU_ARRAY) {
 		err = bpf_percpu_array_copy(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE) {
 		err = bpf_percpu_cgroup_storage_copy(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_STACK_TRACE) {
 		err = bpf_stackmap_copy(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (IS_FD_ARRAY(map) || IS_FD_PROG_ARRAY(map)) {
 		err = bpf_fd_array_map_lookup_elem(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (IS_FD_HASH(map)) {
 		err = bpf_fd_htab_map_lookup_elem(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_REUSEPORT_SOCKARRAY) {
 		err = bpf_fd_reuseport_array_lookup_elem(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_QUEUE ||
 		   map->map_type == BPF_MAP_TYPE_STACK) {
 		err = map->ops->map_peek_elem(map, _value);
-	
+
     /**
-     *  
+     *
      */
     } else if (map->map_type == BPF_MAP_TYPE_STRUCT_OPS) {
 		/* struct_ops map requires directly updating "value" */
 		err = bpf_struct_ops_map_sys_lookup_elem(map, key, _value);
-	
+
     /**
-     *  
+     *
      */
     } else {
 		rcu_read_lock();
@@ -489,7 +489,7 @@ static void *__bpf_map_area_alloc(u64 size, int numa_node, bool mmapable)
      */
 	} else if (size <= (PAGE_SIZE << PAGE_ALLOC_COSTLY_ORDER)) {
 	    /**
-         *  
+         *
          */
 		area = kmalloc_node(size, gfp | GFP_USER | __GFP_NORETRY, numa_node);
 		if (area != NULL)
@@ -561,7 +561,7 @@ static void bpf_uncharge_memlock(struct user_struct *user, u32 pages)
 }
 
 /**
- *  
+ *
  */
 int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)   /*  */
 {
@@ -899,7 +899,7 @@ const struct file_operations bpf_map_fops = {   /*  */
 };
 
 /**
- *  
+ *
  */
 int bpf_map_new_fd(struct bpf_map *map, int flags)
 {
@@ -925,7 +925,7 @@ int bpf_map_new_fd(struct bpf_map *map, int flags)
 int bpf_get_file_flag(int flags)    /* 读写权限 */
 {
     /**
-     *  
+     *
      */
 	if ((flags & BPF_F_RDONLY) && (flags & BPF_F_WRONLY))
 		return -EINVAL;
@@ -1057,7 +1057,7 @@ static int map_create(union bpf_attr *attr)
 	}
 
     /**
-     *  
+     *
      */
 	f_flags = bpf_get_file_flag(attr->map_flags);   /* 读写权限 */
 	if (f_flags < 0)
@@ -1080,7 +1080,7 @@ static int map_create(union bpf_attr *attr)
 		return PTR_ERR(map);
 
     /**
-     *  
+     *
      */
 	err = bpf_obj_name_cpy(map->name, attr->map_name,
 			               sizeof(attr->map_name));
@@ -1088,14 +1088,14 @@ static int map_create(union bpf_attr *attr)
 		goto free_map;
 
     /**
-     *  
+     *
      */
 	atomic64_set(&map->refcnt, 1);
 	atomic64_set(&map->usercnt, 1);
 	mutex_init(&map->freeze_mutex);
 
     /**
-     *  
+     *
      */
 	map->spin_lock_off = -EINVAL;
 	if (attr->btf_key_type_id || attr->btf_value_type_id ||
@@ -1129,7 +1129,7 @@ static int map_create(union bpf_attr *attr)
 	}
 
     /**
-     *  
+     *
      */
     /**
      *  初始化 BPF 映射中的安全字段
@@ -1146,7 +1146,7 @@ static int map_create(union bpf_attr *attr)
 		goto free_map_sec;
 
     /**
-     *  
+     *
      */
 	err = bpf_map_new_fd(map, f_flags); /*  */
 	if (err < 0) {
@@ -1292,7 +1292,7 @@ static void *__bpf_copy_key(void __user *ukey, u64 key_size)
 static int map_lookup_elem(union bpf_attr *attr)
 {
     /**
-     *  
+     *
      */
 	void __user *ukey = u64_to_user_ptr(attr->key);
 	void __user *uvalue = u64_to_user_ptr(attr->value);
@@ -1315,7 +1315,7 @@ static int map_lookup_elem(union bpf_attr *attr)
 		return PTR_ERR(map);
 
     /**
-     *  
+     *
      */
 	if (!(map_get_sys_perms(map, f) & FMODE_CAN_READ)) {
 		err = -EPERM;
@@ -1401,7 +1401,7 @@ static int map_update_elem(union bpf_attr *attr)
 		return PTR_ERR(map);
 
     /**
-     *  
+     *
      */
 	if (!(map_get_sys_perms(map, f) & FMODE_CAN_WRITE)) {
 		err = -EPERM;
@@ -1465,7 +1465,7 @@ err_put:
 #define BPF_MAP_DELETE_ELEM_LAST_FIELD key
 
 /**
- *  
+ *
  *  删除 BPF 映射元素
  *
  *  - map_delete_elem() 内核系统调用
@@ -1499,7 +1499,7 @@ static int map_delete_elem(union bpf_attr *attr)
 	}
 
     /**
-     *  
+     *
      */
 	if (bpf_map_is_dev_bound(map)) {
 		err = bpf_map_offload_delete_elem(map, key);
@@ -1518,7 +1518,7 @@ static int map_delete_elem(union bpf_attr *attr)
 	bpf_disable_instrumentation();
 	rcu_read_lock();
     /**
-     *  
+     *
      */
 	err = map->ops->map_delete_elem(map, key);
 	rcu_read_unlock();
@@ -1814,7 +1814,7 @@ free_buf:
 
 /**
  *  查找和删除 BPF 映射元素
- * 
+ *
  */
 static int map_lookup_and_delete_elem(union bpf_attr *attr)
 {
@@ -1845,7 +1845,7 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	}
 
     /**
-     *  
+     *
      */
 	key = __bpf_copy_key(ukey, map->key_size);
 	if (IS_ERR(key)) {
@@ -1863,7 +1863,7 @@ static int map_lookup_and_delete_elem(union bpf_attr *attr)
 	if (map->map_type == BPF_MAP_TYPE_QUEUE ||
 	    map->map_type == BPF_MAP_TYPE_STACK) {
 	    /**
-         *  
+         *
          */
 		err = map->ops->map_pop_elem(map, _value);
 	} else {
@@ -2220,7 +2220,7 @@ static struct bpf_prog *____bpf_prog_get(struct fd f)
 	}
 
     /**
-     *  
+     *
      */
 	return f.file->private_data;
 }
@@ -2278,7 +2278,7 @@ bool bpf_prog_get_ok(struct bpf_prog *prog,
 }
 
 /**
- *  
+ *
  */
 static struct bpf_prog *__bpf_prog_get(u32 ufd, enum bpf_prog_type *attach_type,
 				       bool attach_drv)
@@ -2287,7 +2287,7 @@ static struct bpf_prog *__bpf_prog_get(u32 ufd, enum bpf_prog_type *attach_type,
 	struct bpf_prog *prog;
 
     /**
-     *  
+     *
      */
 	prog = ____bpf_prog_get(f);
 	if (IS_ERR(prog))
@@ -2476,7 +2476,7 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
 #define	BPF_PROG_LOAD_LAST_FIELD attach_prog_fd
 
 /**
- *  
+ *
  */
 static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 {
@@ -2524,12 +2524,12 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		return -EPERM;
 
     /**
-     *  
+     *
      */
 	bpf_prog_load_fixup_attach_type(attr);
 
     /**
-     *  
+     *
      */
 	if (bpf_prog_load_check_attach(type, attr->expected_attach_type,
 				       attr->attach_btf_id,
@@ -2558,7 +2558,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	prog->aux->sleepable = attr->prog_flags & BPF_F_SLEEPABLE;
 
     /**
-     *  
+     *
      */
     /**
      *  初始化 BPF 程序中的安全字段
@@ -2576,7 +2576,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	err = -EFAULT;
 
     /**
-     *  
+     *
      */
 	if (copy_from_user(prog->insns, u64_to_user_ptr(attr->insns),
 			   bpf_prog_insn_size(prog)) != 0)
@@ -2606,7 +2606,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		goto free_prog;
 
 	/**
-	 *  run eBPF verifier 
+	 *  run eBPF verifier
 	 *  运行 eBPF 验证器
 	 *
      *  eBPF 验证器 - 2021年9月1日17:48:33
@@ -2618,14 +2618,14 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
      *      3. 程序不包含永远无法到达的指令
      *      4. 程序不会超出程序界限
      *  第二项检查 - 预运行
-     *      
+     *
      */
 	err = bpf_check(&prog, attr, uattr);
 	if (err < 0)
 		goto free_used_maps;
 
     /**
-     *  
+     *
      */
 	prog = bpf_prog_select_runtime(prog, &err);
 	if (err < 0)
@@ -2680,7 +2680,7 @@ free_prog_nouncharge:
 #define BPF_OBJ_LAST_FIELD file_flags
 
 /**
- *  将 bpf 对象保存到文件系统 
+ *  将 bpf 对象保存到文件系统
  */
 static int bpf_obj_pin(const union bpf_attr *attr)
 {
@@ -3540,7 +3540,7 @@ static int bpf_prog_query(const union bpf_attr *attr,
 #define BPF_PROG_TEST_RUN_LAST_FIELD test.cpu
 
 /**
- *  
+ *
  */
 static int bpf_prog_test_run(const union bpf_attr *attr,
 			     union bpf_attr __user *uattr)
@@ -3560,14 +3560,14 @@ static int bpf_prog_test_run(const union bpf_attr *attr,
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	prog = bpf_prog_get(attr->test.prog_fd);
 	if (IS_ERR(prog))
 		return PTR_ERR(prog);
 
     /**
-     *  
+     *
      */
 	if (prog->aux->ops->test_run)
 		ret = prog->aux->ops->test_run(prog, attr, uattr);
@@ -4806,7 +4806,7 @@ out_prog_put:
 /**
  *  bpf 系统调用
  */
-int bpf(int cmd, union bpf_attr *attr, unsigned int size);
+int bpf(int cmd, union bpf_attr *attr, unsigned int size){}//+++
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
 {
 	union bpf_attr attr;    /* 存放 用户 uattr */
@@ -4817,16 +4817,16 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
      */
 	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
 		return -EPERM;
-    
+
     /**
-     *  检查attr个数是否太多了 
+     *  检查attr个数是否太多了
      */
 	err = bpf_check_uarg_tail_zero(uattr, sizeof(attr), size);
 	if (err)
 		return err;
 
     /**
-     *  
+     *
      */
 	size = min_t(u32, size, sizeof(attr));  /* 取 一个 bpf_attr 大小 */
 
@@ -4838,7 +4838,7 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
      */
 	if (copy_from_user(&attr, uattr, size) != 0)
 		return -EFAULT;
-    
+
     /* 安全的系统调用 */
     /**
      *  对执行的BPF系统调用进行初始检查
