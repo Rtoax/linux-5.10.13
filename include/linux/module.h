@@ -36,7 +36,7 @@
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN    /*  */
 
 /**
- *  
+ *
  */
 struct modversion_info {
 	unsigned long crc;
@@ -47,7 +47,7 @@ struct module;
 struct exception_table_entry;
 
 /**
- *  
+ *
  */
 struct module_kobject {
 	struct kobject kobj;
@@ -58,7 +58,7 @@ struct module_kobject {
 } __randomize_layout;
 
 /**
- *  
+ *
  */
 struct module_attribute {
 	struct attribute attr;
@@ -75,7 +75,7 @@ struct module_attribute {
 };
 
 /**
- *  
+ *
  */
 struct module_version_attribute {
 	struct module_attribute mattr;
@@ -247,7 +247,7 @@ extern void cleanup_module(void);
 
 #ifdef MODULE
 /**
- *  Creates an alias so file2alias.c can find device table. 
+ *  Creates an alias so file2alias.c can find device table.
  *
  *  struct pci_device_id 结构需要被导出到用户空间，
  *  使热插拔和模块装载系统知道什么模块针对什么硬件设备
@@ -333,6 +333,10 @@ struct mod_tree_node {
 	struct latch_tree_node node;
 };
 
+/**
+ * @brief 代码+数据 布局
+ *
+ */
 struct module_layout {
 	/* The actual code + data. */
 	void *base;
@@ -374,7 +378,7 @@ struct klp_modinfo {
 #endif
 
 /**
- *  
+ *
  */
 struct module { /* 模块 */
 	enum module_state state;

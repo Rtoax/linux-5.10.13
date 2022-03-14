@@ -719,7 +719,7 @@ static unsigned int find_pcpusec(struct load_info *info)
 	return find_sec(info, ".data..percpu");
 }
 /**
- *
+ *	拷贝per-CPU
  */
 static void percpu_modcopy(struct module *mod,
 			   const void *from, unsigned long size)
@@ -781,41 +781,7 @@ bool is_module_percpu_address(unsigned long addr)
 }
 
 #else /* ... !CONFIG_SMP */
-
-//static inline void __percpu *mod_percpu(struct module *mod)
-//{
-//	return NULL;
-//}
-//static int percpu_modalloc(struct module *mod, struct load_info *info)
-//{
-//	/* UP modules shouldn't have this section: ENOMEM isn't quite right */
-//	if (info->sechdrs[info->index.pcpu].sh_size != 0)
-//		return -ENOMEM;
-//	return 0;
-//}
-//static inline void percpu_modfree(struct module *mod)
-//{
-//}
-//static unsigned int find_pcpusec(struct load_info *info)
-//{
-//	return 0;
-//}
-//static inline void percpu_modcopy(struct module *mod,
-//				  const void *from, unsigned long size)
-//{
-//	/* pcpusec should be 0, and size of that section should be 0. */
-//	BUG_ON(size != 0);
-//}
-//bool is_module_percpu_address(unsigned long addr)
-//{
-//	return false;
-//}
-//
-//bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
-//{
-//	return false;
-//}
-
+/* 空 */
 #endif /* CONFIG_SMP */
 
 #define MODINFO_ATTR(field)	\
@@ -1210,25 +1176,7 @@ void module_put(struct module *module)
 EXPORT_SYMBOL(module_put);
 
 #else /* !CONFIG_MODULE_UNLOAD */
-//static inline void print_unload_info(struct seq_file *m, struct module *mod)
-//{
-//	/* We don't know the usage count, or what modules are using. */
-//	seq_puts(m, " - -");
-//}
-//
-//static inline void module_unload_free(struct module *mod)
-//{
-//}
-//
-//static int ref_module(struct module *a, struct module *b)
-//{
-//	return strong_try_module_get(b);
-//}
-//
-//static inline int module_unload_init(struct module *mod)
-//{
-//	return 0;
-//}
+/* 空 */
 #endif /* CONFIG_MODULE_UNLOAD */
 
 static size_t module_flags_taint(struct module *mod, char *buf)
@@ -1402,7 +1350,7 @@ bad_version:
 	return 0;
 }
 /**
- *
+ *	TODO 2022-03-14
  */
 static inline int check_modstruct_version(const struct load_info *info,
 					  struct module *mod)
@@ -1433,25 +1381,7 @@ static inline int same_magic(const char *amagic, const char *bmagic,
 	return strcmp(amagic, bmagic) == 0;
 }
 #else
-//static inline int check_version(const struct load_info *info,
-//				const char *symname,
-//				struct module *mod,
-//				const s32 *crc)
-//{
-//	return 1;
-//}
-//
-//static inline int check_modstruct_version(const struct load_info *info,
-//					  struct module *mod)
-//{
-//	return 1;
-//}
-//
-//static inline int same_magic(const char *amagic, const char *bmagic,
-//			     bool has_crcs)
-//{
-//	return strcmp(amagic, bmagic) == 0;
-//}
+/*  */
 #endif /* CONFIG_MODVERSIONS */
 
 static char *get_modinfo(const struct load_info *info, const char *tag);
@@ -2174,13 +2104,7 @@ static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 }
 
 #else /* !CONFIG_STRICT_MODULE_RWX */
-//static void module_enable_nx(const struct module *mod) { }
-//static void module_enable_ro(const struct module *mod, bool after_init) {}
-//static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
-//				       char *secstrings, struct module *mod)
-//{
-//	return 0;
-//}
+/*  */
 #endif /*  CONFIG_STRICT_MODULE_RWX */
 
 #ifdef CONFIG_LIVEPATCH
@@ -2409,7 +2333,10 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
          *
          */
 		switch (sym[i].st_shndx) {
-        //相对于此节而定义的符号为通用符号，
+        /**
+         * @brief 相对于此节而定义的符号为通用符号，
+         *
+         */
 		case SHN_COMMON:
 			/* Ignore common symbols */
 			if (!strncmp(name, "__gnu_lto", 9))
@@ -2422,8 +2349,10 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			       mod->name);
 			ret = -ENOEXEC;
 			break;
-        //对应引用的绝对值。
-        //例如，相对于节编号 SHN_ABS 而定义的符号具有绝对值，**不受重定位影响**。
+        /**
+         * @brief 对应引用的绝对值。
+         *	例如，相对于节编号 SHN_ABS 而定义的符号具有绝对值，**不受重定位影响**。
+         */
 		case SHN_ABS:
 			/* Don't need to do anything */
 			pr_debug("Absolute symbol: 0x%08lx\n",
@@ -2435,6 +2364,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			break;
         /**
          *  未定义、缺少、无关或无意义的节引用
+		 *
+		 * 比如说在模块中引用了一个符号，但是不是在模块内部定义的，这时候就是 UNDEF
+		 * 需要从全局查找到 sym 的值并赋给 st_value
          */
 		case SHN_UNDEF:
             /**
@@ -2459,6 +2391,10 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 				mod->name, name, ret);
 			break;
 
+		/**
+		 * @brief ????
+		 *
+		 */
 		default:
             /**
              * per-CPU
@@ -3062,10 +2998,7 @@ static void kmemleak_load_module(const struct module *mod,
 	}
 }
 #else
-//static inline void kmemleak_load_module(const struct module *mod,
-//					const struct load_info *info)
-//{
-//}
+/* 空 */
 #endif
 
 #ifdef CONFIG_MODULE_SIG
@@ -3309,7 +3242,8 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 		/* Mark all sections sh_addr with their address in the
 		   temporary image.
 		   也就是hdr 是加载到内核中的地址，再加上原来在elf文件中的 offset，
-		   就变成了在地址空间中的addr了，聪明如我
+		   就变成了在地址空间中的addr了，聪明如我.
+			这部分内容是必须的，因为毕竟你要访问的是你的地址空间不是吗？
 		 */
 		shdr->sh_addr = (size_t)info->hdr + shdr->sh_offset;
 
@@ -3638,6 +3572,9 @@ static int move_module(struct module *mod, struct load_info *info)
 	if (!ptr)
 		return -ENOMEM;
 
+	/**
+	 *	零
+	 */
 	memset(ptr, 0, mod->core_layout.size);
 	mod->core_layout.base = ptr;
 
@@ -3691,6 +3628,7 @@ static int move_module(struct module *mod, struct load_info *info)
 			memcpy(dest, (void *)shdr->sh_addr, shdr->sh_size);
         /**
          *  拷贝后设置地址，那现在是有两份在内存里吗？
+		 * 当然是两份，不过，一份是整个ELF 文件，一份是vmalloc()分配的
          */
         /* Update sh_addr to point to copy in image. */
 		shdr->sh_addr = (unsigned long)dest;
@@ -3787,6 +3725,7 @@ static bool blacklisted(const char *module_name)
 	return false;
 }
 core_param(module_blacklist, module_blacklist, charp, 0400);
+
 /**
  *  分配内存
  */
@@ -3796,7 +3735,7 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	unsigned int ndx;
 	int err;
     /**
-     *
+     *	检测 module info 结构
      */
 	err = check_modinfo(info->mod, info, flags);
 	if (err)
@@ -3861,6 +3800,11 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 
 	/* Module has been copied to its final place now: return it. */
 	mod = (void *)info->sechdrs[info->index.mod].sh_addr;
+
+	/**
+	 * @brief
+	 *
+	 */
 	kmemleak_load_module(mod, info);
 	return mod;
 }
@@ -3881,7 +3825,7 @@ int __weak module_finalize(const Elf_Ehdr *hdr,
 	return 0;
 }
 /**
- *
+ *	重定位的最后处理
  */
 static int post_relocation(struct module *mod, const struct load_info *info)
 {
@@ -4311,6 +4255,10 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	}
 #endif
 
+	/**
+	 * @brief	分配 per-CPU 变量
+	 *
+	 */
 	/* To avoid stressing percpu allocator, do this once we're unique. */
 	err = percpu_modalloc(mod, info);
 	if (err)
@@ -4337,7 +4285,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_unload;
 
     /**
-     *
+     *	检测 license 和 version
      */
 	err = check_module_license_and_versions(mod);
 	if (err)
