@@ -181,7 +181,11 @@ static int padzero(unsigned long elf_bss)
 #endif
 /**
  *  设置辅助向量
- *  hexdump -x /proc/self/auxv
+ *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
+ *  附带了传递给动态连接器的程序相关的特定信息。
+ *
+ *  查看方式：
+ *  $ hexdump -x /proc/self/auxv
  */
 static int
 create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
@@ -269,7 +273,12 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	ARCH_DLINFO;
 #endif
     /**
-     *  hexdump -x /proc/self/auxv
+     *  设置辅助向量
+     *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
+     *  附带了传递给动态连接器的程序相关的特定信息。
+     *
+     *  查看方式：
+     *  $ hexdump -x /proc/self/auxv
      */
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
@@ -900,6 +909,7 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 }
 /**
  *  ELF 加载二进制文件，见 `execve`系统调用
+ *  加载ELF，设置寄存器，但是还没有运行
  */
 static int load_elf_binary(struct linux_binprm *bprm)   /*  */
 {
@@ -1182,6 +1192,9 @@ out_free_interp:
 	if (retval < 0)
 		goto out_free_dentry;
 
+    /**
+     *  都初始化为 0
+     */
 	elf_bss = 0;
 	elf_brk = 0;
 
@@ -1475,7 +1488,7 @@ out_free_interp:
      */
 	}
     /**
-     *
+     *  全部都要偏移一个随机地址，安全呗
      */
 	e_entry = elf_ex->e_entry + load_bias;
 	elf_bss += load_bias;
@@ -1498,8 +1511,11 @@ out_free_interp:
 		goto out_free_dentry;
 	}
 
-    /*  */
+    /* 指定了解释器 */
 	if (interpreter) {
+        /**
+         *  加载解释器
+         */
 		elf_entry = load_elf_interp(interp_elf_ex,
 					    interpreter,
 					    load_bias, interp_elf_phdata,
@@ -1517,6 +1533,9 @@ out_free_interp:
 					(int)elf_entry : -EINVAL;
 			goto out_free_dentry;
 		}
+        /**
+         *  重定位
+         */
 		reloc_func_desc = interp_load_addr;
 
 		allow_write_access(interpreter);
@@ -1524,6 +1543,9 @@ out_free_interp:
 
 		kfree(interp_elf_ex);
 		kfree(interp_elf_phdata);
+    /**
+     *  没指定 解释器
+     */
 	} else {
 		elf_entry = e_entry;
 		if (BAD_ADDR(elf_entry)) {
@@ -1545,6 +1567,11 @@ out_free_interp:
 
     /**
      *  设置辅助向量
+     *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
+     *  附带了传递给动态连接器的程序相关的特定信息。
+     *
+     *  查看方式：
+     *  $ hexdump -x /proc/self/auxv
      */
     /* 创建 elf table TODO */
 	retval = create_elf_tables(bprm, elf_ex,
@@ -1563,7 +1590,7 @@ out_free_interp:
 	mm->start_stack = bprm->p;
 
     /**
-     *
+     *  如果开启了 随机 标志
      */
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
 		/*
@@ -1578,6 +1605,9 @@ out_free_interp:
 			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
 		}
 
+        /**
+         *  随机化 brk
+         */
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);   /*  */
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
@@ -1597,7 +1627,7 @@ out_free_interp:
 	}
 
     /**
-     *
+     *  获取当前的寄存器，注意，这是一个指针，会直接修改当前进程的寄存器
      */
 	regs = current_pt_regs();   /* 当前的寄存器 */
 #ifdef ELF_PLAT_INIT

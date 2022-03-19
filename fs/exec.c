@@ -1702,10 +1702,10 @@ static int search_binary_handler(struct linux_binprm *bprm) /*  */
 			continue;
 		read_unlock(&binfmt_lock);
 
-        /*
-           加载二进制文件
-            elf_format.load_binary = load_elf_binary() -> start_thread(ip=elf_entry)
-        */
+        /**
+         *  加载二进制文件
+         *  elf_format.load_binary = load_elf_binary() -> start_thread(ip=elf_entry)
+         */
 		retval = fmt->load_binary(bprm);    /*  */
 
 		read_lock(&binfmt_lock);
@@ -1750,7 +1750,8 @@ static int exec_binprm(struct linux_binprm *bprm)
 			return -ELOOP;
 
         /**
-         *
+         *  加载二进制
+         *  * 如果是ELF：加载 ELF - 调用 load_elf_binary()
          */
 		ret = search_binary_handler(bprm);
 		if (ret < 0)
@@ -1776,8 +1777,16 @@ static int exec_binprm(struct linux_binprm *bprm)
 	}
 
 	audit_bprm(bprm);
+
+    /**
+     *  跟踪点
+     */
 	trace_sched_process_exec(current, old_pid, bprm);   /*  */
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);  /*  */
+
+    /**
+     *
+     */
 	proc_exec_connector(current);   /*  */
 	return 0;
 }
@@ -1863,8 +1872,20 @@ static int bprm_execve(struct linux_binprm *bprm,
 	/* execve succeeded */
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
+
+    /**
+     *
+     */
 	rseq_execve(current);
+
+    /**
+     *
+     */
 	acct_update_integrals(current);
+
+    /**
+     *
+     */
 	task_numa_free(current, false);
 	if (displaced)
 		put_files_struct(displaced);
@@ -2097,16 +2118,21 @@ static int compat_do_execveat(int fd, struct filename *filename,
 }
 #endif
 
-void set_binfmt(struct linux_binfmt *new)
+/**
+ *
+ */
+void set_binfmt(struct linux_binfmt *_new)
 {
 	struct mm_struct *mm = current->mm;
-
+    /**
+     *
+     */
 	if (mm->binfmt)
 		module_put(mm->binfmt->module);
 
-	mm->binfmt = new;
-	if (new)
-		__module_get(new->module);
+	mm->binfmt = _new;
+	if (_new)
+		__module_get(_new->module);
 }
 EXPORT_SYMBOL(set_binfmt);
 

@@ -246,7 +246,7 @@ static __always_inline void save_base_legacy(struct task_struct *prev_p,
 }
 
 /**
- *  
+ *
  */
 static __always_inline void save_fsgs(struct task_struct *task)
 {
@@ -277,7 +277,7 @@ void current_save_fsgs(void)
 	/* Interrupts need to be off for FSGSBASE */
 	local_irq_save(flags);
     /**
-     *  
+     *
      */
 	save_fsgs(current);
 	local_irq_restore(flags);
@@ -346,7 +346,7 @@ static __always_inline void load_seg_legacy(unsigned short prev_index,
 }
 
 /**
- *  
+ *
  */
 static __always_inline void x86_fsgsbase_load(struct thread_struct *prev,
 					      struct thread_struct *next)
@@ -487,6 +487,7 @@ void x86_gsbase_write_task(struct task_struct *task, unsigned long gsbase)
 }
 /**
  *  执行程序
+ *  从 ip 开始执行，
  */
 static void /*  */
 start_thread_common(struct pt_regs *regs, unsigned long new_ip,
@@ -496,7 +497,7 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 	WARN_ON_ONCE(regs != current_pt_regs());
 
     /**
-     *  
+     *
      */
 	if (static_cpu_has(X86_BUG_NULL_SEG)) {
 		/* Loading zero below won't clear the base. */
@@ -505,13 +506,16 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 	}
 
     /**
-     *  
+     *
      */
 	loadsegment(fs, 0);
 	loadsegment(es, _ds);
 	loadsegment(ds, _ds);
 	load_gs_index(0);
 
+    /**
+     *  设置寄存器
+     */
 	regs->ip		= new_ip;
 	regs->sp		= new_sp;
 	regs->cs		= _cs;
@@ -525,7 +529,7 @@ void /* execv(2)类系统调用 */
 start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 {
     /**
-     *  
+     *  设置新的地址开始运行
      */
 	start_thread_common(regs, new_ip, new_sp,
 			    __USER_CS, __USER_DS, 0);
@@ -552,7 +556,7 @@ void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp)
  * Kprobes not supported here. Set the probe on schedule instead.
  * Function graph tracer not supported too.
  *
- * 
+ *
  */
 __visible __notrace_funcgraph struct task_struct *
 __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
@@ -591,7 +595,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 * Load TLS before restoring any segments so that segment loads
 	 * reference the correct GDT entries.
 	 *
-	 * 
+	 *
 	 */
 	load_TLS(next, cpu);
 
@@ -630,7 +634,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 		loadsegment(ds, next->ds);
 
     /**
-     *  
+     *
      */
 	x86_fsgsbase_load(prev, next);
 
@@ -643,22 +647,22 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	this_cpu_write(cpu_current_top_of_stack, task_top_of_stack(next_p));
 
     /**
-     *  
+     *
      */
 	switch_fpu_finish(next_fpu);
 
 	/**
-	 *  Reload sp0. 
+	 *  Reload sp0.
 	 */
 	update_task_stack(next_p);
 
     /**
-     *  
+     *
      */
 	switch_to_extra(prev_p, next_p);
 
     /**
-     *  
+     *
      */
 	if (static_cpu_has_bug(X86_BUG_SYSRET_SS_ATTRS)) {
 		/*
@@ -695,7 +699,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 }
 
 /**
- *  
+ *
  */
 void set_personality_64bit(void)
 {

@@ -740,6 +740,10 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		unsigned long def_flags;   /*  */
 
 		spinlock_t arg_lock; /* protect the below fields 保护下面的参数*/
+
+        /**
+         *  这些变量在 load_elf_binary() 中被赋值
+         */
 		unsigned long start_code, end_code, start_data, end_data;   /* brk() */
 		unsigned long start_brk, brk, start_stack;
 		unsigned long arg_start, arg_end, env_start, env_end;
@@ -758,6 +762,9 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		 */
 		struct mm_rss_stat rss_stat;    /*  */
 
+        /**
+         *  在 set_binfmt() 中赋值
+         */
 		struct linux_binfmt *binfmt;    /* ELF 对应`elf_format` */
 
 		/* Architecture-specific MM context */

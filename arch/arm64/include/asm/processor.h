@@ -201,15 +201,23 @@ static inline void start_thread_common(struct pt_regs *regs, unsigned long pc)
 {
 	memset(regs, 0, sizeof(*regs));
 	forget_syscall(regs);
+    /**
+     *  从这里开始执行
+     */
 	regs->pc = pc;
 
 	if (system_uses_irq_prio_masking())
 		regs->pmr_save = GIC_PRIO_IRQON;
 }
-
+/**
+ *
+ */
 static inline void start_thread(struct pt_regs *regs, unsigned long pc,
 				unsigned long sp)
 {
+    /**
+     *
+     */
 	start_thread_common(regs, pc);
 	regs->pstate = PSR_MODE_EL0t;
 	spectre_v4_enable_task_mitigation(current);
