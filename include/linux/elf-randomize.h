@@ -5,6 +5,10 @@
 struct mm_struct;
 
 #ifndef CONFIG_ARCH_HAS_ELF_RANDOMIZE
+/**
+ *  随机
+ *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
+ */
 static inline unsigned long arch_mmap_rnd(void) { return 0; }
 # if defined(arch_randomize_brk) && defined(CONFIG_COMPAT_BRK)
 #  define compat_brk_randomized

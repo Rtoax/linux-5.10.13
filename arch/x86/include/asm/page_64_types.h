@@ -12,7 +12,7 @@
 /*  */
 #endif
 
-//`PAGE_SIZE` is `(_AC(1,UL) << PAGE_SHIFT)` or `4096` bytes 
+//`PAGE_SIZE` is `(_AC(1,UL) << PAGE_SHIFT)` or `4096` bytes
 //`THREAD_SIZE` is `(PAGE_SIZE << THREAD_SIZE_ORDER)` or `16384` bytes for the `x86_64`
 #define THREAD_SIZE_ORDER	(2 + KASAN_STACK_ORDER/* 1 */)
 //每一个活动的线程在 Linux 内核中都有一个很大的栈
@@ -95,12 +95,12 @@
  * 用户地址空间的最大值：2^47-0x1000 = 0x7FFFFFFFF000       // 约128T
  */
 #define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT/*47或56*/) - PAGE_SIZE/*4096*/)
-    /*(1UL << 47)   0x0000 8000 0000 0000 
+    /*(1UL << 47)   0x0000 8000 0000 0000
        PAGE_SIZE    0x0000 0000 0000 1000
         =           0x0000 7fff ffff f000 约128T */
-        
+
 #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
-    /*(1UL << 47)   0x0000 8000 0000 0000 
+    /*(1UL << 47)   0x0000 8000 0000 0000
        PAGE_SIZE    0x0000 0000 0000 1000
         =           0x0000 7fff ffff f000 约128T */
 
@@ -113,9 +113,11 @@
 
 #define TASK_SIZE_LOW		(test_thread_flag(TIF_ADDR32) ? \
 					IA32_PAGE_OFFSET : DEFAULT_MAP_WINDOW)
-/*  */
+/**
+ *
+ */
 #define TASK_SIZE		(test_thread_flag(TIF_ADDR32) ? \
-					IA32_PAGE_OFFSET : TASK_SIZE_MAX/*0x0000 7fff ffff f000 约128T*/)   
+					IA32_PAGE_OFFSET : TASK_SIZE_MAX/*0x0000 7fff ffff f000 约128T*/)
 #define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_ADDR32)) ? \
 					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
 

@@ -230,7 +230,7 @@ char *strndup_user(const char __user *s, long n)
 		return ERR_PTR(-EINVAL);
 
     /**
-     *  
+     *
      */
 	p = memdup_user(s, length);
 
@@ -495,7 +495,7 @@ int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
 EXPORT_SYMBOL_GPL(account_locked_vm);
 
 /**
- *  
+ *
  */
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
@@ -512,11 +512,11 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		if (mmap_write_lock_killable(mm))   /* 信号量 down */
 			return -EINTR;
         /**
-         *  do mmap 
-         *  
+         *  do mmap
+         *
          */
 		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate, &uf);
-        
+
 		mmap_write_unlock(mm);  /* 信号量 up */
 		userfaultfd_unmap_complete(mm, &uf);
 
@@ -526,7 +526,9 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	}
 	return ret;
 }
-
+/**
+ *  映射
+ */
 unsigned long vm_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
 	unsigned long flag, unsigned long offset)   /*  */
@@ -647,8 +649,8 @@ static inline void *__page_rmapping(struct page *page)  /* 清理标志位 */
 }
 
 /**
- *  Neutral page->mapping pointer to address_space or anon_vma or other 
- *  
+ *  Neutral page->mapping pointer to address_space or anon_vma or other
+ *
  *  中性页面>指头到address_space或anon_vma或其他
  */
 void *page_rmapping(struct page *page)
@@ -993,7 +995,7 @@ out:
 }
 
 /**
- *  
+ *
  */
 int __weak memcmp_pages(struct page *page1, struct page *page2)
 {

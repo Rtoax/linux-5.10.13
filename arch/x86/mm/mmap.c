@@ -64,7 +64,7 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
  *  https://rtoax.blog.csdn.net/article/details/118602363
  */
 static int mmap_is_legacy(void)
-{ 
+{
     //使得mmap_is_legacy()返回真，那么就可以让mmap不进行随机化
 	if (current->personality & ADDR_COMPAT_LAYOUT/* 如果是兼容的 内存布局 */)
 		return 1;
@@ -79,22 +79,36 @@ static int mmap_is_legacy(void)
 //根据定义的随机bit，来计算随机偏移多少个page
 static unsigned long arch_rnd(unsigned int rndbits)
 {
+    /**
+     *  在某种情况下，条件判断重复了，如： load_elf_binary() 中
+     */
 	if (!(current->flags & PF_RANDOMIZE))
 		return 0;
+    /**
+     *
+     */
 	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
 }
-
+/**
+ *  随机
+ *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
+ */
 unsigned long arch_mmap_rnd(void)
 {
+    /**
+     *  随机数了解一下
+     */
 	return arch_rnd(mmap_is_ia32() ? mmap32_rnd_bits : mmap64_rnd_bits);
 }
 
-//// 用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+/**
+ *  用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+ */
 static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 			       struct rlimit *rlim_stack)
 {
     //堆栈的最大值
-	unsigned long gap = rlim_stack->rlim_cur;   
+	unsigned long gap = rlim_stack->rlim_cur;
 	// 堆栈的最大随机偏移 + 1M
 	unsigned long pad = stack_maxrandom_size(task_size) + stack_guard_gap;
 	unsigned long gap_min, gap_max;
@@ -157,7 +171,7 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
  *  经典布局的缺点：在x86_32,虚拟地址空间从0到0xc0000000,每个用户进程有3GB可用。
  *  TASK_UNMAPPED_BASE一般起始于0x4000000（即1GB）。这意味着堆只有1GB的空间可供使用，
  *  继续增长则进入到mmap区域。这时mmap区域是自底向上扩展的。
- *  
+ *
  *  传统layout模式下，mmap分配是从低到高的，从&mm->mmap_base到task_size。
  *  默认调用current->mm->get_unmapped_area -> arch_get_unmapped_area()：
  *
@@ -166,7 +180,7 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
     /**
-     *  (1) 给get_unmapped_area成员赋值 
+     *  (1) 给get_unmapped_area成员赋值
      *  https://rtoax.blog.csdn.net/article/details/118602363
      */
 	if (mmap_is_legacy())
@@ -256,7 +270,7 @@ const char *arch_vma_name(struct vm_area_struct *vma)
  * the failure of such a fixed mapping request, so the restriction is not
  * applied.
  *
- * 
+ *
  */
 bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 {

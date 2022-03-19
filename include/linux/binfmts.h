@@ -14,7 +14,7 @@ struct filename;
 /*
  * This structure is used to hold the arguments that are used when loading binaries.
  *
- * 加载二进制时候，用来保存 arguments 的结构体  
+ * 加载二进制时候，用来保存 arguments 的结构体
  */
 struct linux_binprm {   /*  */
 #ifdef CONFIG_MMU
@@ -71,6 +71,9 @@ struct linux_binprm {   /*  */
 
 	struct rlimit rlim_stack; /* Saved RLIMIT_STACK used during exec. */
 
+    /**
+     *  ehdr ->>> load_elf_binary()
+     */
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 

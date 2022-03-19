@@ -24,6 +24,14 @@ typedef __s64	Elf64_Sxword;
 
 /* These constants are for the segment types stored in the image headers */
 #define PT_NULL    0
+/**
+ *  指定一个可加载的段，由p_filesz和描述p_memsz。
+ *  文件中的字节映射到内存段的开头。
+ *  如果段的内存大小 ( p_memsz) 大于文件大小 ( p_filesz)，
+ *  则定义额外的字节以保存值 0 并跟随段的初始化区域。
+ *  文件大小不能大于内存大小。程序头表中的可加载段条目以升序显示，按p_vaddr成员排序。
+ *  ref: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
+ */
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
 #define PT_INTERP  3
@@ -300,7 +308,7 @@ typedef struct elf64_phdr {
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
 #define SHN_HIRESERVE	0xffff
- 
+
 typedef struct elf32_shdr {
   Elf32_Word	sh_name;
   Elf32_Word	sh_type;

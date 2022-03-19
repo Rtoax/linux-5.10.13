@@ -24,7 +24,7 @@ extern void add_device_randomness(const void *, unsigned int);
 extern void add_bootloader_randomness(const void *, unsigned int);
 
 #if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
-static inline void add_latent_entropy(void) 
+static inline void add_latent_entropy(void)
 {   /* latent:隐藏的; entropy:无序状态,熵;  */
 	add_device_randomness((const void *)&latent_entropy, sizeof(latent_entropy));
 }
@@ -54,6 +54,9 @@ static inline unsigned int get_random_int(void)
 {
 	return get_random_u32();
 }
+/**
+ *
+ */
 static inline unsigned long get_random_long(void)
 {
 	return get_random_u64();

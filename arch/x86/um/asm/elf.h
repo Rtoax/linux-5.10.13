@@ -206,7 +206,9 @@ extern int elf_core_copy_fpregs(struct task_struct *t, elf_fpregset_t *fpu);
 #define ELF_CORE_COPY_FPREGS(t, fpu) elf_core_copy_fpregs(t, fpu)
 
 #define ELF_EXEC_PAGESIZE 4096
-
+/**
+ *
+ */
 #define ELF_ET_DYN_BASE (TASK_SIZE / 3 * 2)
 
 extern long elf_aux_hwcap;

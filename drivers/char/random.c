@@ -2186,7 +2186,9 @@ struct batched_entropy {
 static DEFINE_PER_CPU(struct batched_entropy, batched_entropy_u64) = {
 	.batch_lock	= __SPIN_LOCK_UNLOCKED(batched_entropy_u64.lock),
 };
-
+/**
+ *  随机数算法
+ */
 u64 get_random_u64(void)
 {
 	u64 ret;
