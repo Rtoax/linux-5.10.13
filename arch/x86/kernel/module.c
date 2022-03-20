@@ -141,6 +141,10 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		   void *(*write_func)(void *dest, const void *src, size_t len))
 {
 	unsigned int i;
+
+    /**
+     *  在内存中的地址
+     */
 	Elf64_Rela *rel = (void *)sechdrs[relsec].sh_addr;
 	Elf64_Sym *sym;
 	void *loc;
@@ -150,10 +154,21 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 	       relsec, sechdrs[relsec].sh_info);
     /**
      *  节头表中有多少 项，也就是 .rela 中有多少个
+     *  遍历所有 rela，如下 readelf -r /usr/bin/ls
+     *  Relocation section '.rela.dyn' at offset 0x1968 contains 206 entries:
+     *    Offset          Info           Type           Sym. Value    Sym. Name + Addend
+     *  000000022fc0  007200000006 R_X86_64_GLOB_DAT 0000000000000000 free@GLIBC_2.2.5 + 0
+     *  000000022fc8  000900000006 R_X86_64_GLOB_DAT 0000000000000000 _ITM_deregisterTMClone + 0
+     *  000000022fd0  003500000006 R_X86_64_GLOB_DAT 0000000000000000 __libc_start_main@GLIBC_2.2.5 + 0
+     *  000000022fd8  004100000006 R_X86_64_GLOB_DAT 0000000000000000 __gmon_start__ + 0
+     *  000000022fe0  008800000006 R_X86_64_GLOB_DAT 0000000000000000 malloc@GLIBC_2.2.5 + 0
      */
     for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
         /**
          *  位置,我们将要对这个地址处的代码做出修改
+         *  sh_addr = 重定位表的起始地址
+         *  r_offset = 该重定位项在重定位表中的偏移
+         *  loc = 重定位符号的实际地址，也就是我们要修改的地址
          */
 		/* This is where to make the change */
 		loc = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
@@ -171,6 +186,27 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 		       sym->st_value, rel[i].r_addend, (u64)loc);
         /**
          *  st_value + r_addend 是我们需要改为的数值
+         *
+         *  st_value:
+         *      关联符号的值。该值可以是绝对值或地址，具体取决于上下文。请参阅符号值。
+         *      https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fcd/index.html
+         *
+         *      不同对象文件类型的符号表条目对st_value成员的解释略有不同。
+         *      https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter6-35166/index.html
+         *
+         *      1.在可重定位文件中，st_value保存节索引为SHN_COMMON的符号的对齐约束。
+         *      2.在可重定位文件中，st_value保存已定义符号的节偏移量。
+         *          st_value是从st_shndx标识部分开始的偏移量。
+         *      3.在可执行文件和共享对象文件中，st_value拥有一个虚拟地址。
+         *          为了使这些文件的符号对运行时链接器更有用，节偏移（文件解释）
+         *          让位于与节号无关的虚拟地址（内存解释）。
+         *
+         *      这里是 ‘st_value拥有一个虚拟地址’???
+         *
+         *  r_addend:
+         *      此成员指定一个常量加数，用于计算要存储到可重定位字段中的值。
+         *
+         *  例如： R_X86_64_64 对应 S + A， 那么 val = S + A
          */
 		val = sym->st_value + rel[i].r_addend;
 
@@ -194,7 +230,7 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 			write_func(loc, &val, 8);
 			break;
         /**
-         *  word32  S + A - P
+         *  word32  S + A
          */
 		case R_X86_64_32:
 			if (*(u32 *)loc != 0)
@@ -239,6 +275,9 @@ static int __apply_relocate_add(Elf64_Shdr *sechdrs,
 			val -= (u64)loc;
 			write_func(loc, &val, 8);
 			break;
+        /**
+         *
+         */
 		default:
 			pr_err("%s: Unknown rela relocation: %llu\n",
 			       me->name, ELF64_R_TYPE(rel[i].r_info));

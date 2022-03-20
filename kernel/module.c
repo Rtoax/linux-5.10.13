@@ -542,6 +542,9 @@ static bool check_exported_symbol(const struct symsearch *syms,
 	return true;
 }
 
+/**
+ *
+ */
 static unsigned long kernel_symbol_value(const struct kernel_symbol *sym)
 {
 #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
@@ -2316,6 +2319,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
      *  获取符号表
      */
 	Elf_Shdr *symsec = &info->sechdrs[info->index.sym];
+    /**
+     *  注意，这个地址是在地址空间中的地址，不是在ELF文件中的地址了
+     */
 	Elf_Sym *sym = (void *)symsec->sh_addr;
 	unsigned long secbase;
 	unsigned int i;
@@ -2338,6 +2344,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
          *
          */
 		case SHN_COMMON:
+            /**
+             *  LTO 为什么直接跳过？2022年3月20日 荣涛
+             */
 			/* Ignore common symbols */
 			if (!strncmp(name, "__gnu_lto", 9))
 				break;
@@ -2359,6 +2368,9 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			       (long)sym[i].st_value);
 			break;
 
+        /**
+         *  热补丁
+         */
 		case SHN_LIVEPATCH:
 			/* Livepatch symbols are resolved by livepatch */
 			break;
@@ -2377,12 +2389,28 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			if (ksym && !IS_ERR(ksym)) {
                 /**
                  *  给这个符号赋值
+                 *//**
+                 *  关联符号的值。该值可以是绝对值或地址，具体取决于上下文。请参阅符号值。
+                 *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fcd/index.html
+                 *
+                 *  不同对象文件类型的符号表条目对st_value成员的解释略有不同。
+                 *  1.在可重定位文件中，st_value保存节索引为SHN_COMMON的符号的对齐约束。
+                 *  2.在可重定位文件中，st_value保存已定义符号的节偏移量。
+                 *      st_value是从st_shndx标识部分开始的偏移量。
+                 *  3.在可执行文件和共享对象文件中，st_value拥有一个虚拟地址。
+                 *      为了使这些文件的符号对运行时链接器更有用，节偏移（文件解释）
+                 *      让位于与节号无关的虚拟地址（内存解释）。
+                 *
+                 *  这里显然是 ‘st_value拥有一个虚拟地址’
                  */
 				sym[i].st_value = kernel_symbol_value(ksym);
 				break;
 			}
 
 			/* Ok if weak.  */
+            /**
+             *  可能没有实现呗，如果没找到符号，并且 是 weak 的
+             */
 			if (!ksym && ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
 				break;
 
@@ -2393,7 +2421,7 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 
 		/**
 		 * @brief ????
-		 *
+		 *  其他所有类型的
 		 */
 		default:
             /**
@@ -2403,7 +2431,26 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 			if (sym[i].st_shndx == info->index.pcpu)
 				secbase = (unsigned long)mod_percpu(mod);
 			else
+                /**
+                 *  在内存中的地址
+                 */
 				secbase = info->sechdrs[sym[i].st_shndx].sh_addr;
+            /**
+             *  关联符号的值。该值可以是绝对值或地址，具体取决于上下文。请参阅符号值。
+             *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/6n33n7fcd/index.html
+             *
+             *  不同对象文件类型的符号表条目对st_value成员的解释略有不同。
+             *  https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter6-35166/index.html
+             *
+             *  1.在可重定位文件中，st_value保存节索引为SHN_COMMON的符号的对齐约束。
+             *  2.在可重定位文件中，st_value保存已定义符号的节偏移量。
+             *      st_value是从st_shndx标识部分开始的偏移量。
+             *  3.在可执行文件和共享对象文件中，st_value拥有一个虚拟地址。
+             *      为了使这些文件的符号对运行时链接器更有用，节偏移（文件解释）
+             *      让位于与节号无关的虚拟地址（内存解释）。
+             *
+             *  这里显然是 ‘st_value保存已定义符号的节偏移量’
+             */
 			sym[i].st_value += secbase;
 			break;
 		}
@@ -3229,6 +3276,8 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 		Elf_Shdr *shdr = &info->sechdrs[i];
         /**
          *  越界了，这种检测对于像我这种黑客来说轻而易举
+         *  SHT_NOBITS 表示不占用内存吧！？
+         *  此外，如果被截断了也不行
          */
 		if (shdr->sh_type != SHT_NOBITS
 		    && info->len < shdr->sh_offset + shdr->sh_size) {
@@ -3240,10 +3289,24 @@ static int rewrite_section_headers(struct load_info *info, int flags)
 		}
 
 		/* Mark all sections sh_addr with their address in the
-		   temporary image.
-		   也就是hdr 是加载到内核中的地址，再加上原来在elf文件中的 offset，
-		   就变成了在地址空间中的addr了，聪明如我.
-			这部分内容是必须的，因为毕竟你要访问的是你的地址空间不是吗？
+		 * temporary image.
+		 *  也就是hdr 是加载到内核中的地址，再加上原来在elf文件中的 offset，
+		 *  就变成了在地址空间中的addr了，聪明如我.
+		 *  这部分内容是必须的，因为毕竟你要访问的是你的地址空间不是吗？
+		 *
+		 *  +---+
+		 *  |   | <--- hdr (原来是在ELF文件中的地址 变成 在内存中的地址)
+		 *  |   |
+		 *  |   |
+		 *  |   |   shdr->sh_offset
+		 *  |   |
+		 *  |   |
+		 *  |   | <--- shdr->sh_addr
+		 *  |   |
+		 *  |   |
+		 *  +---+
+		 *
+		 *  原来，sh_addr 是在 ELF文件中的地址，加上首地址，就变成了在内存中的地址了
 		 */
 		shdr->sh_addr = (size_t)info->hdr + shdr->sh_offset;
 
@@ -3284,18 +3347,25 @@ static int setup_load_info(struct load_info *info, int flags)
 	 */
 	/* Set up the convenience variables */
 	info->sechdrs = (void *)info->hdr + info->hdr->e_shoff;
+    /**
+     *  对应的字符串表
+     */
 	info->secstrings = (void *)info->hdr
 		+ info->sechdrs[info->hdr->e_shstrndx].sh_offset;
 
     /**
      *  查找 modinfo section
      *  并获取 模块 名字
+     *  对于热补丁，我打算也这么做
      */
 	/* Try to find a name early so we can log errors with a module name */
 	info->index.info = find_sec(info, ".modinfo");
 	if (info->index.info)
 		info->name = get_modinfo(info, "name");
 
+    /**
+     *
+     */
 	/* Find internal symbols and strings. */
 	for (i = 1; i < info->hdr->e_shnum; i++) {
         /**
@@ -3437,6 +3507,9 @@ static int find_module_sections(struct module *mod, struct load_info *info) /* �
      */
 	mod->kp = section_objs(info, "__param",
 			       sizeof(*mod->kp), &mod->num_kp);
+    /**
+     *
+     */
 	mod->syms = section_objs(info, "__ksymtab",
 				 sizeof(*mod->syms), &mod->num_syms);
 	mod->crcs = section_addr(info, "__kcrctab");
@@ -3715,6 +3788,9 @@ static bool blacklisted(const char *module_name)
 	if (!module_blacklist)
 		return false;
 
+    /**
+     *  模块黑名单
+     */
 	for (p = module_blacklist; *p; p += len) {
 		len = strcspn(p, ",");
 		if (strlen(module_name) == len && !memcmp(module_name, p, len))
@@ -4205,6 +4281,20 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
      *  重写 section 头
      *  1. 把addr改为加载到内存之后的地址
      *  2. .modinfo 等 ALLOC flags 的删除
+     *
+	 *  +---+
+	 *  |   | <--- hdr (原来是在ELF文件中的地址 变成 在内存中的地址)
+	 *  |   |
+	 *  |   |
+	 *  |   |   shdr->sh_offset
+	 *  |   |
+	 *  |   |
+	 *  |   | <--- shdr->sh_addr
+	 *  |   |
+	 *  |   |
+	 *  +---+
+	 *
+	 *  原来，sh_addr 是在 ELF文件中的地址，加上首地址，就变成了在内存中的地址了
      */
 	err = rewrite_section_headers(info, flags);
 	if (err)
@@ -4235,7 +4325,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	audit_log_kern_module(mod->name);
 
     /**
-     *
+     *  unformed: 未成形的
      */
 	/* Reserve our place in the list. */
 	err = add_unformed_module(mod);
@@ -4501,7 +4591,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 		return -EINVAL;
 
     /**
-     *
+     *  hdr 是 vmalloc 分配的内存空间，并且保存了整个 ko 文件
      */
 	err = kernel_read_file_from_fd(fd, 0, &hdr, INT_MAX, NULL, READING_MODULE);
 	if (err < 0)

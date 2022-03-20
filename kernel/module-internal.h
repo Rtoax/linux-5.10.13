@@ -21,7 +21,7 @@ struct load_info {  /*  */
 	struct module *mod;
 
     /**
-     *
+     *  ko 文件在内存中的首地址 和 长度
      */
 	Elf_Ehdr *hdr;
 	unsigned long len;
