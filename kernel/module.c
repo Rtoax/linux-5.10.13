@@ -3755,6 +3755,11 @@ static int check_module_license_and_versions(struct module *mod)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param mod
+ */
 static void flush_module_icache(const struct module *mod)
 {
 	/*
@@ -3766,6 +3771,10 @@ static void flush_module_icache(const struct module *mod)
 		flush_icache_range((unsigned long)mod->init_layout.base,
 				   (unsigned long)mod->init_layout.base
 				   + mod->init_layout.size);
+	/**
+	 * @brief
+	 *
+	 */
 	flush_icache_range((unsigned long)mod->core_layout.base,
 			   (unsigned long)mod->core_layout.base + mod->core_layout.size);
 }

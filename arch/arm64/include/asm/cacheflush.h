@@ -71,12 +71,12 @@ extern void __clean_dcache_area_pou(void *addr, size_t len);
 extern long __flush_cache_user_range(unsigned long start, unsigned long end);
 extern void sync_icache_aliases(void *kaddr, unsigned long len);
 /**
- *  
+ *
  */
 static inline void flush_icache_range(unsigned long start, unsigned long end)
 {
     /**
-     *  
+     *	这是 汇编实现的函数
      */
 	__flush_icache_range(start, end);
 

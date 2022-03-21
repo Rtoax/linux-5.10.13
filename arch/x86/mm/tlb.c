@@ -160,7 +160,7 @@ static inline u16 user_pcid(u16 asid)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
@@ -453,14 +453,14 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
 {
     /**
-     *  
+     *
      */
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
 	u16 prev_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
 	bool was_lazy = this_cpu_read(cpu_tlbstate.is_lazy);
 
     /**
-     *  
+     *
      */
 	unsigned cpu = smp_processor_id();
 	u64 next_tlb_gen;
@@ -556,7 +556,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 * the TLB shootdown code.
 		 */
 		smp_mb();
-        
+
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) == next_tlb_gen)
 			return;
@@ -567,10 +567,10 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 */
 		new_asid = prev_asid;
 		need_flush = true;
-        
+
 	}
     /**
-     *  
+     *
      */
     else {
 		/*
@@ -596,7 +596,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 */
 		if (next != &init_mm)
 			cpumask_set_cpu(cpu, mm_cpumask(next));
-        
+
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 
 		choose_new_asid(next, next_tlb_gen, &new_asid, &need_flush);
@@ -605,7 +605,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
 
         /**
-         *  
+         *
          */
 		barrier();
 	}
@@ -621,7 +621,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 
 		trace_tlb_flush(TLB_FLUSH_ON_TASK_SWITCH, TLB_FLUSH_ALL);
 	} else {
-        
+
 		/* The new ASID is already up to date. */
 		load_new_mm_cr3(next->pgd, new_asid, false);
 
@@ -635,13 +635,13 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, new_asid);
 
     /**
-     *  
+     *
      */
 	if (next != real_prev) {
 		cr4_update_pce_mm(next);
 
         /**
-         *  
+         *
          */
 		switch_ldt(real_prev, next);
 	}
@@ -825,7 +825,7 @@ static void flush_tlb_func_common(const struct flush_tlb_info *f,
 		if (local)
 			count_vm_tlb_events(NR_TLB_LOCAL_FLUSH_ONE, nr_invalidate);
 		trace_tlb_flush(reason, nr_invalidate);
-        
+
 	} else {
 		/* Full flush. */
 		flush_tlb_local();
@@ -838,6 +838,12 @@ static void flush_tlb_func_common(const struct flush_tlb_info *f,
 	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
 }
 
+/**
+ * @brief
+ *
+ * @param info
+ * @param reason
+ */
 static void flush_tlb_func_local(const void *info, enum tlb_flush_reason reason)    /*  */
 {
 	const struct flush_tlb_info *f = info;
@@ -964,7 +970,7 @@ static inline void put_flush_tlb_info(void)
 }
 
 /**
- *  刷新 TLB 
+ *  刷新 TLB
  *
  */
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
@@ -985,19 +991,23 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 	}
 
     /**
-     *  
+     *
      */
 	/* This is also a barrier that synchronizes with switch_mm(). */
 	new_tlb_gen = inc_mm_tlb_gen(mm);   /*  */
 
     /**
-     *  
+     *
      */
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables, new_tlb_gen);
 
 	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		lockdep_assert_irqs_enabled();
 		local_irq_disable();
+		/**
+		 * @brief Construct a new flush tlb func local object
+		 *
+		 */
 		flush_tlb_func_local(info, TLB_LOCAL_MM_SHOOTDOWN); /*  */
 		local_irq_enable();
 	}
@@ -1031,12 +1041,12 @@ static void do_kernel_range_flush(void *info)
 	unsigned long addr;
 
     /**
-     *  
+     *
      */
 	/* flush range by one by one 'invlpg' */
 	for (addr = f->start; addr < f->end; addr += PAGE_SIZE) {
         /**
-         *  
+         *
          */
 		flush_tlb_one_kernel(addr);
     }
@@ -1053,14 +1063,14 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 		on_each_cpu(do_flush_tlb_all, NULL, 1);
 	} else {
         /**
-         *  tlb info 
+         *  tlb info
          */
 		struct flush_tlb_info *info;
 
 		preempt_disable();
 
         /**
-         *  
+         *
          */
 		info = get_flush_tlb_info(NULL, start, end, 0, false, 0);
 
@@ -1070,7 +1080,7 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 		on_each_cpu(do_kernel_range_flush, info, 1);
 
         /**
-         *  
+         *
          */
 		put_flush_tlb_info();
 		preempt_enable();
@@ -1134,7 +1144,7 @@ void flush_tlb_one_kernel(unsigned long addr)
 /*
  * Flush one page in the user mapping
  *
- * 
+ *
  */
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
@@ -1142,12 +1152,12 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 
     /**
      *  使用 `invlpg` 命令来使 `TLB` 入口失效
-     *  
+     *
      */
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 
     /**
-     *  
+     *
      */
 	if (!static_cpu_has(X86_FEATURE_PTI))
 		return;
@@ -1206,6 +1216,7 @@ STATIC_NOPV void native_flush_tlb_global(void)
 
 /*
  * Flush the entire current user mapping
+ *
  */
 STATIC_NOPV void native_flush_tlb_local(void)
 {
@@ -1222,8 +1233,16 @@ STATIC_NOPV void native_flush_tlb_local(void)
 	native_write_cr3(__native_read_cr3());
 }
 
+/**
+ * @brief
+ *
+ */
 void flush_tlb_local(void)/*刷新 本地TLB  */
 {
+	/**
+	 * @brief Construct a new flush tlb local object
+	 *
+	 */
 	__flush_tlb_local();
 }
 

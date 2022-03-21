@@ -664,7 +664,7 @@ int3_exception_notify(struct notifier_block *self, unsigned long val, void *data
 		return NOTIFY_DONE;
 
     /**
-     *  
+     *
      */
 	int3_emulate_call(regs, (unsigned long)&int3_magic);
 	return NOTIFY_STOP;
@@ -861,7 +861,7 @@ __ro_after_init unsigned long poking_addr;
 
 
 /**
- *  修改 addr 处 的指令为 opcode 
+ *  修改 addr 处 的指令为 opcode
  */
 static void *__text_poke(void *addr, const void *opcode, size_t len)
 {
@@ -896,7 +896,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
          */
 		pages[0] = vmalloc_to_page(addr);
         /**
-         *  
+         *
          *  是否在页的边界上
          *
          *       page1         page2
@@ -910,9 +910,9 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
      *  是内核 代码段地址
      */
     else {
-    
+
         /**
-         *  
+         *
          */
 		pages[0] = virt_to_page(addr);
 		WARN_ON(!PageReserved(pages[0]));
@@ -945,6 +945,9 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 
 	local_irq_save(flags);
 
+	/**
+	 *
+	 */
 	pte = mk_pte(pages[0], pgprot);
 	set_pte_at(poking_mm, poking_addr, ptep, pte);
 
@@ -965,7 +968,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
      *  代码注入
      */
 	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);  /*  */
-    
+
 	kasan_enable_current();
 
 	/*
@@ -975,7 +978,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	barrier();
 
 	pte_clear(poking_mm, poking_addr, ptep);
-    
+
 	if (cross_page_boundary)
 		pte_clear(poking_mm, poking_addr + PAGE_SIZE, ptep + 1);
 
@@ -1000,7 +1003,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 	 * If the text does not match what we just wrote then something is
 	 * fundamentally screwy; there's nothing we can really do about that.
 	 *
-	 * 
+	 *
 	 */
 	BUG_ON(memcmp(addr, opcode, len));
 
@@ -1206,11 +1209,11 @@ out_put:
 	return ret;
 }
 /**
- *  
+ *
  */
 #define TP_VEC_MAX (PAGE_SIZE / sizeof(struct text_poke_loc))
 /**
- *  
+ *
  */
 static struct text_poke_loc tp_vec[TP_VEC_MAX];
 static int tp_vec_nr;
@@ -1239,7 +1242,7 @@ static int tp_vec_nr;
 static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries)
 {
     /**
-     *  
+     *
      */
 	struct bp_patching_desc desc = {
 		.vec = tp,
@@ -1262,14 +1265,14 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 
 	/*
 	 * First step: add a int3 trap to the address that will be patched.
-	 * 1. 添加一个 int3 trap 到 目的地址 
+	 * 1. 添加一个 int3 trap 到 目的地址
 	 */
 	for (i = 0; i < nr_entries; i++) {
 		tp[i].old = *(u8 *)text_poke_addr(&tp[i]);
 		text_poke(text_poke_addr(&tp[i]), &int3, INT3_INSN_SIZE);
 	}
     /**
-     *  
+     *
      */
 	text_poke_sync();
 
@@ -1281,7 +1284,7 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 		int len = text_opcode_size(tp[i].opcode);
 
         /**
-         *  
+         *
          */
 		if (len - INT3_INSN_SIZE > 0) {
 			memcpy(old + INT3_INSN_SIZE,
@@ -1322,7 +1325,7 @@ static void text_poke_bp_batch(struct text_poke_loc *tp, unsigned int nr_entries
 	}
 
     /**
-     *  
+     *
      */
 	if (do_sync) {
 		/*
@@ -1377,11 +1380,11 @@ static void text_poke_loc_init(struct text_poke_loc *tp, void *addr,
 	if (!emulate)
 		emulate = opcode;
     /**
-     *  
+     *
      */
 	kernel_insn_init(&_insn, emulate, MAX_INSN_SIZE);
     /**
-     *  
+     *
      */
 	insn_get_length(&_insn);
 
@@ -1523,7 +1526,7 @@ void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *
 	}
 
     /**
-     *  
+     *
      */
 	text_poke_loc_init(&tp, addr, opcode, len, emulate);
     /**

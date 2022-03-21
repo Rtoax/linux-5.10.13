@@ -14,6 +14,12 @@
 #include <asm/cache.h>
 #include <asm/tlbflush.h>
 
+/**
+ * @brief
+ *
+ * @param kaddr
+ * @param len
+ */
 void sync_icache_aliases(void *kaddr, unsigned long len)
 {
 	unsigned long addr = (unsigned long)kaddr;
