@@ -668,6 +668,14 @@ static inline bool thread_group_leader(struct task_struct *p)
 	return p->exit_signal >= 0;
 }
 
+/**
+ * @brief	相同的 thread 组，共享信号结构
+ *
+ * @param p1
+ * @param p2
+ * @return true
+ * @return false
+ */
 static inline
 bool same_thread_group(struct task_struct *p1, struct task_struct *p2)
 {

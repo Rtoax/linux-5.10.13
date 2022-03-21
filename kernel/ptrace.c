@@ -63,7 +63,13 @@ int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 	return ret;
 }
 
-
+/**
+ * @brief	转换 parent
+ *
+ * @param child
+ * @param new_parent
+ * @param ptracer_cred
+ */
 void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
 		   const struct cred *ptracer_cred)
 {
@@ -228,6 +234,7 @@ static void ptrace_unfreeze_traced(struct task_struct *task)
  */
 static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
 {
+	/* No such process */
 	int ret = -ESRCH;
 
 	/*
@@ -249,6 +256,10 @@ static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
 	}
 	read_unlock(&tasklist_lock);
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (!ret && !ignore_state) {
 		if (!wait_task_inactive(child, __TASK_TRACED)) {
 			/*
@@ -271,6 +282,10 @@ static bool ptrace_has_cap(struct user_namespace *ns, unsigned int mode)
 	return ns_capable(ns, CAP_SYS_PTRACE);
 }
 
+/**
+ * @brief
+ *
+ */
 /* Returns 0 on success, -errno on denial. */
 static int __ptrace_may_access(struct task_struct *task, unsigned int mode)
 {
@@ -342,7 +357,7 @@ ok:
 	     !ptrace_has_cap(mm->user_ns, mode)))
 	    return -EPERM;
     /**
-     *  
+     *
      */
 	return security_ptrace_access_check(task, mode);
 }
@@ -357,7 +372,7 @@ bool ptrace_may_access(struct task_struct *task, unsigned int mode)
 }
 
 /**
- *  
+ *	attach 进程
  */
 static int ptrace_attach(struct task_struct *task, long request,
 			 unsigned long addr,
@@ -377,11 +392,19 @@ static int ptrace_attach(struct task_struct *task, long request,
 		flags = PT_PTRACED;
 	}
 
+	/**
+	 * @brief 是否有权限
+	 *
+	 */
 	audit_ptrace(task);
 
 	retval = -EPERM;
 	if (unlikely(task->flags & PF_KTHREAD))
 		goto out;
+	/**
+	 * @brief 和当前进程是相同的 group
+	 *	相同的 thread 组，共享信号结构
+	 */
 	if (same_thread_group(task, current))
 		goto out;
 
@@ -394,9 +417,13 @@ static int ptrace_attach(struct task_struct *task, long request,
 	if (mutex_lock_interruptible(&task->signal->cred_guard_mutex))
 		goto out;
 
+	/**
+	 * @brief 锁定
+	 *
+	 */
 	task_lock(task);
     /**
-     *  
+     *	可能访问
      */
 	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH_REALCREDS);
 	task_unlock(task);
@@ -415,7 +442,7 @@ static int ptrace_attach(struct task_struct *task, long request,
 	task->ptrace = flags;
 
     /**
-     *  
+     *	将 task->parent 转为 current
      */
 	ptrace_link(task, current);
 
@@ -444,6 +471,10 @@ static int ptrace_attach(struct task_struct *task, long request,
 	 */
 	if (task_is_stopped(task) &&
 	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
+		/**
+		 * @brief
+		 *
+		 */
 		signal_wake_up_state(task, __TASK_STOPPED);
 
 	spin_unlock(&task->sighand->siglock);
@@ -809,7 +840,7 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 #endif
 
 /**
- *  
+ *
  */
 static int ptrace_resume(struct task_struct *child, long request,
 			 unsigned long data)
@@ -839,14 +870,14 @@ static int ptrace_resume(struct task_struct *child, long request,
 			return -EIO;
 		user_enable_block_step(child);
     /**
-     *  
+     *
      */
 	} else if (is_singlestep(request) || is_sysemu_singlestep(request)) {
 		if (unlikely(!arch_has_single_step()))
 			return -EIO;
 		user_enable_single_step(child);
     /**
-     *  
+     *
      */
 	} else {
 		user_disable_single_step(child);
@@ -1017,7 +1048,7 @@ ptrace_get_syscall_info(struct task_struct *child, unsigned long user_size,
 #endif /* CONFIG_HAVE_ARCH_TRACEHOOK */
 
 /**
- *  
+ *
  */
 int ptrace_request(struct task_struct *child, long request,
 		   unsigned long addr, unsigned long data)
@@ -1209,7 +1240,7 @@ int ptrace_request(struct task_struct *child, long request,
 #endif
 	case PTRACE_SYSCALL:
     /**
-     *  
+     *
      */
 	case PTRACE_CONT:
 		return ptrace_resume(child, request, data);
@@ -1263,9 +1294,15 @@ int ptrace_request(struct task_struct *child, long request,
 #endif
 
 /**
- *  ptrace()
+ * @brief	ptrace(2)
+ *
+ * @param request
+ * @param pid
+ * @param addr
+ * @param data
+ * @return long
  */
-long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);
+long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data){}//++++
 SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 		unsigned long, data)
 {
@@ -1286,9 +1323,13 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 	}
 
     /**
-     *  atttach, seize
+     *  attach, seize
      */
 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
+		/**
+		 * @brief Attach 进程
+		 *
+		 */
 		ret = ptrace_attach(child, request, addr, data);
 		/*
 		 * Some architectures need to do book-keeping after
@@ -1299,13 +1340,17 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 		goto out_put_task_struct;
 	}
 
+	/**
+	 * @brief 检查是否被 attach
+	 *
+	 */
 	ret = ptrace_check_attach(child, request == PTRACE_KILL ||
 				  request == PTRACE_INTERRUPT);
 	if (ret < 0)
 		goto out_put_task_struct;
 
     /**
-     *  
+     *
      */
 	ret = arch_ptrace(child, request, addr, data);
 	if (ret || request != PTRACE_DETACH)

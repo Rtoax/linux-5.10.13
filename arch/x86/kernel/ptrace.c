@@ -705,6 +705,15 @@ void ptrace_disable(struct task_struct *child)
 static const struct user_regset_view user_x86_32_view; /* Initialized below. */
 #endif
 
+/**
+ * @brief
+ *
+ * @param child
+ * @param request
+ * @param addr
+ * @param data
+ * @return long
+ */
 long arch_ptrace(struct task_struct *child, long request,
 		 unsigned long addr, unsigned long data)
 {
@@ -712,6 +721,10 @@ long arch_ptrace(struct task_struct *child, long request,
 	unsigned long __user *datap = (unsigned long __user *)data;
 
 	switch (request) {
+	/**
+	 * @brief 从 目标进程 读取
+	 *
+	 */
 	/* read the word at location addr in the USER area. */
 	case PTRACE_PEEKUSR: {
 		unsigned long tmp;
@@ -722,16 +735,32 @@ long arch_ptrace(struct task_struct *child, long request,
 
 		tmp = 0;  /* Default return condition */
 		if (addr < sizeof(struct user_regs_struct))
+			/**
+			 * @brief 获取
+			 *
+			 */
 			tmp = getreg(child, addr);
+		/**
+		 * @brief x86_64 有 8个调试寄存器
+		 *
+		 */
 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
 			 addr <= offsetof(struct user, u_debugreg[7])) {
 			addr -= offsetof(struct user, u_debugreg[0]);
+			/**
+			 * @brief 读取调试寄存器
+			 *
+			 */
 			tmp = ptrace_get_debugreg(child, addr / sizeof(data));
 		}
 		ret = put_user(tmp, datap);
 		break;
 	}
 
+	/**
+	 * @brief 向 目标进程 写
+	 *
+	 */
 	case PTRACE_POKEUSR: /* write the word at location addr in the USER area */
 		ret = -EIO;
 		if ((addr & (sizeof(data) - 1)) || addr >= sizeof(struct user))
@@ -747,6 +776,10 @@ long arch_ptrace(struct task_struct *child, long request,
 		}
 		break;
 
+	/**
+	 * @brief 读取 目标进程 当前寄存器
+	 *
+	 */
 	case PTRACE_GETREGS:	/* Get all gp regs from the child. */
 		return copy_regset_to_user(child,
 					   task_user_regset_view(current),
@@ -754,6 +787,10 @@ long arch_ptrace(struct task_struct *child, long request,
 					   0, sizeof(struct user_regs_struct),
 					   datap);
 
+	/**
+	 * @brief 设置 目标进程 寄存器
+	 *
+	 */
 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
 		return copy_regset_from_user(child,
 					     task_user_regset_view(current),
@@ -761,6 +798,10 @@ long arch_ptrace(struct task_struct *child, long request,
 					     0, sizeof(struct user_regs_struct),
 					     datap);
 
+	/**
+	 * @brief 获取 FPU 状态
+	 *
+	 */
 	case PTRACE_GETFPREGS:	/* Get the child FPU state. */
 		return copy_regset_to_user(child,
 					   task_user_regset_view(current),
@@ -768,6 +809,10 @@ long arch_ptrace(struct task_struct *child, long request,
 					   0, sizeof(struct user_i387_struct),
 					   datap);
 
+	/**
+	 * @brief 设置 FPU 状态
+	 *
+	 */
 	case PTRACE_SETFPREGS:	/* Set the child FPU state. */
 		return copy_regset_from_user(child,
 					     task_user_regset_view(current),
@@ -814,6 +859,10 @@ long arch_ptrace(struct task_struct *child, long request,
 		break;
 #endif
 
+	/**
+	 * @brief 其他
+	 *
+	 */
 	default:
 		ret = ptrace_request(child, request, addr, data);
 		break;

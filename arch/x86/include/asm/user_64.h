@@ -65,6 +65,7 @@ struct user_i387_struct {
 
 /*
  * Segment register layout in coredumps.
+ * x86_64 的寄存器
  */
 struct user_regs_struct {
 	unsigned long	r15;
