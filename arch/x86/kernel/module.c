@@ -331,6 +331,9 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 	ret = __apply_relocate_add(sechdrs, strtab, symindex, relsec, me,
 				   write_rtoax_fn);
 
+	/**
+	 *
+	 */
 	if (!early) {
 		text_poke_sync();
 		mutex_unlock(&text_mutex);
