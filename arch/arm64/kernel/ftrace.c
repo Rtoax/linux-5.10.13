@@ -42,8 +42,8 @@ static int ftrace_modify_code(unsigned long pc, u32 old, u32 new,
 			return -EINVAL;
 	}
 	/**
-	 * @brief 
-	 * 
+	 * @brief
+	 *
 	 */
 	if (aarch64_insn_patch_text_nosync((void *)pc, new))
 		return -EPERM;
@@ -113,8 +113,8 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 		if (WARN_ON(!mod))
 			return -EINVAL;
 		/**
-		 * @brief 
-		 * 
+		 * @brief
+		 *
 		 */
 		plt = get_ftrace_plt(mod, addr);
 		if (!plt) {
@@ -126,16 +126,16 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 	}
 
 	/**
-	 * @brief 
-	 * 
+	 * @brief
+	 *
 	 */
 	old = aarch64_insn_gen_nop();
 	new = aarch64_insn_gen_branch_imm(pc, addr, AARCH64_INSN_BRANCH_LINK);
 
 	/**
-	 * @brief 
-	 * 
-	 * @return return 
+	 * @brief
+	 *
+	 * @return return
 	 */
 	return ftrace_modify_code(pc, old, new, true);
 }
@@ -283,6 +283,10 @@ void prepare_ftrace_return(unsigned long self_addr, unsigned long *parent,
 	 */
 	old = *parent;
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (!function_graph_enter(old, self_addr, frame_pointer, NULL))
 		*parent = return_hooker;
 }

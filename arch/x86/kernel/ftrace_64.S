@@ -129,6 +129,9 @@
 
 	.endm
 
+/**
+ *	CONFIG_DYNAMIC_FTRACE
+ */
 #ifdef CONFIG_DYNAMIC_FTRACE
 
 SYM_FUNC_START(__fentry__)
@@ -180,6 +183,11 @@ SYM_INNER_LABEL_ALIGN(ftrace_stub, SYM_L_WEAK)
 	retq
 SYM_FUNC_END(ftrace_epilogue)
 
+/**
+ *	可参见如下函数
+ *
+ *	calc_trampoline_call_offset()
+ */
 SYM_FUNC_START(ftrace_regs_caller)
 	/* Save the current flags before any operations that can change them */
 	pushfq
@@ -217,6 +225,9 @@ SYM_INNER_LABEL(ftrace_regs_caller_op_ptr, SYM_L_GLOBAL)
 	/* regs go into 4th parameter */
 	leaq (%rsp), %rcx
 
+/**
+ *	被 ftrace 的函数?
+ */
 SYM_INNER_LABEL(ftrace_regs_call, SYM_L_GLOBAL)
 	call ftrace_stub
 
@@ -277,6 +288,9 @@ SYM_FUNC_END(ftrace_regs_caller)
 
 #else /* ! CONFIG_DYNAMIC_FTRACE */
 
+/**
+ *	! CONFIG_DYNAMIC_FTRACE
+ */
 SYM_FUNC_START(__fentry__)
 	cmpq $ftrace_stub, ftrace_trace_function
 	jnz trace

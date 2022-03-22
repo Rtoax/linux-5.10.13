@@ -193,7 +193,7 @@ static int klp_patch_func(struct klp_func *func)
 	if (WARN_ON(func->patched))
 		return -EINVAL;
     /**
-     *  
+     *	旧函数
      */
 	ops = klp_find_ops(func->old_func);
 	if (!ops) {
@@ -210,7 +210,7 @@ static int klp_patch_func(struct klp_func *func)
 		}
 
         /**
-         *  
+         *	分配新的 ops 结构
          */
 		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
 		if (!ops)
@@ -221,15 +221,23 @@ static int klp_patch_func(struct klp_func *func)
          */
 		ops->fops.func = klp_ftrace_handler;
         /**
-         *  
+         *
          */
 		ops->fops.flags = FTRACE_OPS_FL_SAVE_REGS |
+				  /**
+				 *  set by ftrace when ops is dynamically allocated
+				 */
 				  FTRACE_OPS_FL_DYNAMIC |
+				  /**
+				   *  ops可以修改IP寄存器。 这只能用 SAVE_REGS 设置。
+				   *  如果另一个具有此标志集的操作已注册此操作将注册的任何功能，
+				   *  则此操作将无法注册或 set_filter_ip。
+				   */
 				  FTRACE_OPS_FL_IPMODIFY |
 				  FTRACE_OPS_FL_PERMANENT;
 
         /**
-         *  
+         *	添加到全局链表
          */
 		list_add(&ops->node, &klp_ops_list_head);
 
@@ -237,7 +245,7 @@ static int klp_patch_func(struct klp_func *func)
 		list_add_rcu(&func->stack_node, &ops->func_stack);
 
         /**
-         *  
+         *
          */
 		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
 		if (ret) {
@@ -256,9 +264,7 @@ static int klp_patch_func(struct klp_func *func)
 			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
 			goto err;
 		}
-
-
-	} 
+	}
     else {
 		list_add_rcu(&func->stack_node, &ops->func_stack);
 	}
@@ -297,7 +303,7 @@ void klp_unpatch_object(struct klp_object *obj)
 }
 
 /**
- *  
+ *
  */
 int klp_patch_object(struct klp_object *obj)
 {

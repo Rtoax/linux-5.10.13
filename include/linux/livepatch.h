@@ -14,7 +14,8 @@
 #include <linux/completion.h>
 #include <linux/list.h>
 
-#if IS_ENABLED(CONFIG_LIVEPATCH)
+//#if IS_ENABLED(CONFIG_LIVEPATCH)
+#if 1
 
 #include <asm/livepatch.h>
 
@@ -168,7 +169,13 @@ struct klp_state {
 struct klp_patch {
 	/* external */
 	struct module *mod;
+	/**
+	 *
+	 */
 	struct klp_object *objs;
+	/**
+	 *
+	 */
 	struct klp_state *states;
     /**
      *  替换已存在的补丁

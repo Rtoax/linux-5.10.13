@@ -76,8 +76,14 @@
 	add	x29, sp, #S_STACKFRAME
 	.endm
 
+/**
+ *	可参见如下函数
+ *
+ *	calc_trampoline_call_offset()
+ */
 SYM_CODE_START(ftrace_regs_caller)
 	ftrace_regs_entry	1
+	/* 跳转到 ftrace_common */
 	b	ftrace_common
 SYM_CODE_END(ftrace_regs_caller)
 
@@ -86,6 +92,9 @@ SYM_CODE_START(ftrace_caller)
 	b	ftrace_common
 SYM_CODE_END(ftrace_caller)
 
+/**
+ *
+ */
 SYM_CODE_START(ftrace_common)
 	sub	x0, x30, #AARCH64_INSN_SIZE	// ip (callsite's BL insn)
 	mov	x1, x9				// parent_ip (callsite's LR)

@@ -19,13 +19,13 @@
  * @func_stack:	list head for the stack of klp_func's (active func is on top)
  * @fops:	registered ftrace ops struct
  *
- *  
+ *
  */
 struct klp_ops {
 	struct list_head node;
 	struct list_head func_stack;
     /**
-     *  
+     *  Ftrace ops
      */
 	struct ftrace_ops fops;
 };

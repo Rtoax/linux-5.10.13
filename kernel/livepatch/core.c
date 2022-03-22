@@ -323,7 +323,7 @@ int klp_apply_section_relocs(struct module *pmod, Elf_Shdr *sechdrs,
 	if (ret)
 		return ret;
     /**
-     *  
+     *
      */
 	return apply_relocate_add(sechdrs, strtab, symndx, secndx, pmod);
 }
@@ -512,7 +512,7 @@ static struct klp_func *klp_alloc_func_nop(struct klp_func *old_func,
 }
 
 /**
- *  
+ *
  */
 static int klp_add_object_nops(struct klp_patch *patch,
 			       struct klp_object *old_obj)
@@ -521,7 +521,7 @@ static int klp_add_object_nops(struct klp_patch *patch,
 	struct klp_func *func, *old_func;
 
     /**
-     *  
+     *
      */
 	obj = klp_find_object(patch, old_obj);
 
@@ -532,7 +532,7 @@ static int klp_add_object_nops(struct klp_patch *patch,
 	}
 
     /**
-     *  
+     *
      */
 	klp_for_each_func(old_obj, old_func) {
 	    /**
@@ -543,7 +543,7 @@ static int klp_add_object_nops(struct klp_patch *patch,
 			continue;
 
         /**
-         *  
+         *
          */
 		func = klp_alloc_func_nop(old_func, obj);
 		if (!func)
@@ -574,7 +574,7 @@ static int klp_add_nops(struct klp_patch *patch)
 			int err;
 
             /**
-             *  
+             *
              */
 			err = klp_add_object_nops(patch, old_obj);
 			if (err)
@@ -852,6 +852,13 @@ static int klp_init_object_loaded(struct klp_patch *patch,
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param patch
+ * @param obj
+ * @return int
+ */
 static int klp_init_object(struct klp_patch *patch, struct klp_object *obj)
 {
 	struct klp_func *func;
@@ -883,6 +890,12 @@ static int klp_init_object(struct klp_patch *patch, struct klp_object *obj)
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param func
+ */
 static void klp_init_func_early(struct klp_object *obj,
 				struct klp_func *func)
 {
@@ -918,7 +931,7 @@ static int klp_init_patch_early(struct klp_patch *patch)
 	init_completion(&patch->finish);
 
     /**
-     *  遍历所有 object - 
+     *  遍历所有 object -
      */
 	klp_for_each_object_static(patch, obj) {
 	    /**
@@ -937,7 +950,7 @@ static int klp_init_patch_early(struct klp_patch *patch)
          */
 		klp_for_each_func_static(obj, func) {
 		    /**
-             *  
+             *
              */
 			klp_init_func_early(obj, func);
 		}
@@ -966,7 +979,7 @@ static int klp_init_patch(struct klp_patch *patch)
      */
 	if (patch->replace) {
         /**
-         *  
+         *
          */
 		ret = klp_add_nops(patch);
 		if (ret)
@@ -974,11 +987,11 @@ static int klp_init_patch(struct klp_patch *patch)
 	}
 
     /**
-     *  
+     *
      */
 	klp_for_each_object(patch, obj) {
 	    /**
-         *  
+         *
          */
 		ret = klp_init_object(patch, obj);
 		if (ret)
@@ -993,6 +1006,12 @@ static int klp_init_patch(struct klp_patch *patch)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param patch
+ * @return int
+ */
 static int __klp_disable_patch(struct klp_patch *patch)
 {
 	struct klp_object *obj;
@@ -1026,7 +1045,7 @@ static int __klp_disable_patch(struct klp_patch *patch)
 }
 
 /**
- *  使能
+ *  使能 补丁
  */
 static int __klp_enable_patch(struct klp_patch *patch)
 {
@@ -1070,7 +1089,7 @@ static int __klp_enable_patch(struct klp_patch *patch)
 		}
 
         /**
-         *  
+         *
          */
 		ret = klp_patch_object(obj);
 		if (ret) {
@@ -1114,6 +1133,9 @@ int klp_enable_patch(struct klp_patch *patch)
 	if (!patch || !patch->mod)
 		return -EINVAL;
 
+	/**
+	 *	是 livepatch 模块
+	 */
 	if (!is_livepatch_module(patch->mod)) {
 		pr_err("module %s is not marked as a livepatch module\n",
 		       patch->mod->name);

@@ -181,43 +181,46 @@ enum {
      */
 	FTRACE_OPS_FL_DELETED			= BIT(7),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_ADDING			= BIT(8),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_REMOVING			= BIT(9),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_MODIFYING			= BIT(10),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_ALLOC_TRAMP		= BIT(11),
     /**
-     *  
+     *  ops可以修改IP寄存器。 这只能用 SAVE_REGS 设置。
+	 *  如果另一个具有此标志集的操作已注册此操作将注册的任何功能，
+	 *  则此操作将无法注册或 set_filter_ip。
      */
 	FTRACE_OPS_FL_IPMODIFY			= BIT(12),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_PID			= BIT(13),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_RCU			= BIT(14),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_TRACE_ARRAY		= BIT(15),
     /**
-     *  
+     *	Set when the ops is permanent and should not be affected by
+ 	 *  ftrace_enabled.
      */
 	FTRACE_OPS_FL_PERMANENT                 = BIT(16),
     /**
-     *  
+     *
      */
 	FTRACE_OPS_FL_DIRECT			= BIT(17),
 };
@@ -225,7 +228,7 @@ enum {
 #ifdef CONFIG_DYNAMIC_FTRACE
 /* The hash used to know what functions callbacks trace */
 struct ftrace_ops_hash {
-	struct ftrace_hash __rcu	*notrace_hash;  /*Functions in notrace_hash will not be traced 
+	struct ftrace_hash __rcu	*notrace_hash;  /*Functions in notrace_hash will not be traced
                                                   even if they exist in filter_hash.
                                                   empty means OK to trace all */
 	struct ftrace_hash __rcu	*filter_hash;   /* what functions to trace
@@ -269,7 +272,7 @@ struct ftrace_ops {
      *  schedule
      *    push %rbp
      *    mov %rsp,%rbp
-     *    call ftrace_caller -----> ftrace_caller:
+     *    call ftrace_caller -----> ftrace_caller: (mcount)
      *                                save regs
      *                                load args
      *                              ftrace_call:
@@ -277,30 +280,30 @@ struct ftrace_ops {
      *                                restore regs
      *                              ftrace_stub:
      *                                retq
-     *    
+     *
      *
      *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
      */
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
     /**
-     *  
+     *
      */
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
 	void				*private;
     /**
-     *  
+     *
      */
 	ftrace_func_t			saved_func;
     /**
-     *  
+     *
      */
 #ifdef CONFIG_DYNAMIC_FTRACE
 	struct ftrace_ops_hash		local_hash;
 	struct ftrace_ops_hash		*func_hash;
 	struct ftrace_ops_hash		old_hash;
     /**
-     *  
+     *
      */
 	unsigned long			trampoline; /* 蹦床 */
 	unsigned long			trampoline_size;
@@ -360,7 +363,7 @@ int unregister_ftrace_function(struct ftrace_ops *ops);
  *      SYM_FUNC_START(ftrace_stub)
  *      	ret
  *      SYM_FUNC_END(ftrace_stub)
- *      
+ *
  */
 extern void ftrace_stub(unsigned long a0, unsigned long a1,
 			struct ftrace_ops *op, struct pt_regs *regs);
@@ -514,11 +517,11 @@ enum {
      */
 	FTRACE_FL_ENABLED	= (1UL << 31),
     /**
-     *  
+     *
      */
 	FTRACE_FL_REGS		= (1UL << 30),
 	/**
-     *  
+     *
      */
 	FTRACE_FL_REGS_EN	= (1UL << 29),
 	FTRACE_FL_TRAMP		= (1UL << 28),
@@ -535,7 +538,7 @@ enum {
 #define ftrace_rec_count(rec)	((rec)->flags & FTRACE_REF_MAX)
 
 /**
- *  ftrace 
+ *  ftrace
  */
 struct dyn_ftrace { /*  */
     /**
@@ -589,7 +592,7 @@ enum {
 	FTRACE_UPDATE_IGNORE, //已经处理：已经被追踪或者已经去除追踪
 	/*开始追踪*/
 	FTRACE_UPDATE_MAKE_CALL,
-	FTRACE_UPDATE_MODIFY_CALL, // 
+	FTRACE_UPDATE_MODIFY_CALL, //
 	FTRACE_UPDATE_MAKE_NOP, // 停止追踪
 };
 
@@ -685,7 +688,7 @@ extern void mcount_call(void);
 void ftrace_modify_all_code(int command);
 
 #ifndef FTRACE_ADDR
-#define FTRACE_ADDR ((unsigned long)ftrace_caller)    
+#define FTRACE_ADDR ((unsigned long)ftrace_caller)
 #endif
 
 #ifndef FTRACE_GRAPH_ADDR
@@ -924,7 +927,7 @@ static inline unsigned long get_lock_parent_ip(void)
 
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
 /**
- *  
+ *
  */
 extern void ftrace_init(void);
 #ifdef CC_USING_PATCHABLE_FUNCTION_ENTRY

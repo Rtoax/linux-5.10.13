@@ -1400,14 +1400,14 @@ static void text_poke_loc_init(struct text_poke_loc *tp, void *addr,
 	tp->rel_addr = addr - (void *)_stext;
 	tp->opcode = _insn.opcode.bytes[0];// 如 int3, call, jmp
     /**
-     *  int3 ret
+     *  int3 / ret
      */
 	switch (tp->opcode) {
 	case INT3_INSN_OPCODE:
 	case RET_INSN_OPCODE:
 		break;
     /**
-     *  jmp call
+     *  jmp / call
      */
 	case CALL_INSN_OPCODE:
 	case JMP32_INSN_OPCODE:
@@ -1513,7 +1513,8 @@ void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const voi
  * cc 37 2e 00 00 <bp>callq ffffffff810f7430 <ftrace_caller>
  * e8 37 2e 00 00 callq ffffffff810f7430 <ftrace_caller>
  */
-void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)    /*  */
+void /*__ref ---- 我把 __ref 注释掉了 */
+text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)    /*  */
 {
 	struct text_poke_loc tp;
 

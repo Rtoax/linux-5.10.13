@@ -86,7 +86,7 @@ static __always_inline int text_opcode_size(u8 opcode)
 	__CASE(JMP32);  /* JMP32_INSN_OPCODE */
 	__CASE(JMP8);   /* JMP8_INSN_OPCODE */
 	}
-#else    
+#else
 	switch(opcode) {
     /**
      *  int3
@@ -125,7 +125,7 @@ union text_poke_insn {  /*  */
          */
 		u8 opcode;
         /**
-         *  
+         *	display - 替换的值
          */
 		s32 disp;
 	} __attribute__((packed));
@@ -133,11 +133,11 @@ union text_poke_insn {  /*  */
 
 /**
  * @brief 生成指令？
- * 
- * @param opcode 
- * @param addr 
- * @param dest 
- * @return __always_inline* 
+ *
+ * @param opcode
+ * @param addr
+ * @param dest
+ * @return __always_inline*
  */
 static __always_inline
 void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数不可重入?? */
@@ -146,6 +146,10 @@ void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数
      *  为什么时 static 变量
      */
 	static union text_poke_insn insn; /* per instance */
+	/**
+	 * @brief 指令长度
+	 *
+	 */
 	int size = text_opcode_size(opcode);    /*  */
 
     /*  例
@@ -157,12 +161,12 @@ void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数
 	insn.opcode = opcode;   /* 操作码-指令 */
 
     /**
-     *  
+     *
      */
 	if (size > 1) {
         /**
-         *  给立即数赋值？？
-         *  
+		 *  计算替换的值：
+         *	替换的值 = 目的地址 - (修改的地址 + 指令长度)		见《Linux二进制分析》
          */
 		insn.disp = (long)dest - (long)(addr + size);   /*  */
 		if (size == 2) {

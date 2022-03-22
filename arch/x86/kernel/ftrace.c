@@ -66,8 +66,8 @@ int ftrace_arch_code_modify_post_process(void)
 
 /**
  * @brief 获取nop指令
- * 
- * @return const char* 
+ *
+ * @return const char*
  */
 static const char *ftrace_nop_replace(void) /*  */
 {
@@ -77,18 +77,24 @@ static const char *ftrace_nop_replace(void) /*  */
 	return ideal_nops[NOP_ATOMIC5]; /* 0x0f,0x1f,0x44,0x00,0 */
 }
 /**
- *  Do a safe modify in case the trampoline is executing 
+ *  Do a safe modify in case the trampoline is executing
  *  这是如何保证安全性的，libcareplus  借鉴
- * 
- * ip - 
+ *
+ * ip - 将要被修改的地址
+ * addr - 修改后会执行的函数
  */
 static const char *ftrace_call_replace(unsigned long ip, unsigned long addr)    /* 更新 指令 */
 {
+	/**
+	 * @brief 改为调用 call
+	 *
+	 * @return return
+	 */
 	return text_gen_insn(CALL_INSN_OPCODE, (void *)ip, (void *)addr);
 }
 
 /**
- *  
+ *
  */
 static int ftrace_verify_code(unsigned long ip, const char *old_code)   /* 确认 */
 {
@@ -109,7 +115,7 @@ static int ftrace_verify_code(unsigned long ip, const char *old_code)   /* 确�
 
 	/**
 	 * @brief 必须相等
-	 * 
+	 *
 	 */
 	/* Make sure it is what we expect it to be */
 	if (memcmp(cur_code, old_code, MCOUNT_INSN_SIZE) != 0) {
@@ -142,7 +148,7 @@ ftrace_modify_code_direct(unsigned long ip, const char *old_code,
 }
 
 /**
- *  
+ *
  */
 int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long addr)
 {
@@ -150,7 +156,7 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 	const char *new, *old;
 
     /**
-     *  
+     *
      */
 	old = ftrace_call_replace(ip, addr);
 	new = ftrace_nop_replace();
@@ -175,11 +181,11 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 }
 
 /**
- * @brief 
- * 
- * @param rec 
- * @param addr 
- * @return int 
+ * @brief
+ *
+ * @param rec
+ * @param addr
+ * @return int
  */
 int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 {
@@ -215,19 +221,19 @@ int ftrace_update_ftrace_func(ftrace_func_t func)   /*  更新函数*/
 	unsigned long ip;
 	const char *new;
 
-    /* 
+    /*
     call ftrace_call 替换为>>
     call func -> ftrace_ops_list_func
-    并把它写到 mcount 
+    并把它写到 mcount
     */
     ip = (unsigned long)(&ftrace_call); /* arch/x86/kernel/ftrace_64.S */
 	new = ftrace_call_replace(ip, (unsigned long)func); /* 用 func 替换 ftrace_call */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
-    /* 
+    /*
     call ftrace_regs_call 替换为>>
     call func -> ftrace_regs_call
-    并把它写到 mcount 
+    并把它写到 mcount
     */
 	ip = (unsigned long)(&ftrace_regs_call);
 	new = ftrace_call_replace(ip, (unsigned long)func); /* 替换 */
@@ -354,6 +360,13 @@ union ftrace_op_code_union {
 
 #define RET_SIZE		1
 
+/**
+ * @brief Create a trampoline object
+ *
+ * @param ops
+ * @param tramp_size
+ * @return unsigned long
+ */
 static unsigned long
 create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 {
@@ -405,7 +418,9 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	npages = DIV_ROUND_UP(*tramp_size, PAGE_SIZE);
 
 	/* Copy ftrace_caller onto the trampoline memory */
-    /* 将函数拷贝到 蹦床中 */
+    /**
+	 * 将函数拷贝到 蹦床中
+	 */
 	ret = copy_from_kernel_nofault(trampoline, (void *)start_offset, size);
 	if (WARN_ON(ret < 0))
 		goto fail;
@@ -505,6 +520,12 @@ void set_ftrace_ops_ro(void)
 	} while_for_each_ftrace_op(ops);
 }
 
+/**
+ * @brief 计算偏移量
+ *
+ * @param save_regs
+ * @return unsigned long
+ */
 static unsigned long calc_trampoline_call_offset(bool save_regs)
 {
 	unsigned long start_offset;
@@ -518,10 +539,14 @@ static unsigned long calc_trampoline_call_offset(bool save_regs)
 		call_offset = (unsigned long)ftrace_call;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	return call_offset - start_offset;
 }
 /**
- *  
+ *  架构相关：更新 蹦床
  */
 void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 {
@@ -532,6 +557,10 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	const char *_new;
 
 	if (!ops->trampoline) {
+		/**
+		 * @brief 如果没有蹦床，创建新的蹦床
+		 *
+		 */
 		ops->trampoline = create_trampoline(ops, &size);    /* 创建蹦床 */
 		if (!ops->trampoline)
 			return;
@@ -547,15 +576,26 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 		return;
     /**
      *  计算蹦床的偏移量
+	 *  例如： mcount 为 5 ???? 显然不是 MCOUNT_INSN_SIZE=5
      */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);
+
+	/**
+	 * @brief 将要被修改的 IP 地址
+	 *
+	 */
 	ip = ops->trampoline + offset;
+
+	/**
+	 * @brief 将要执行的函数（将 ip 替换为 func）
+	 *
+	 */
 	func = ftrace_ops_get_func(ops);
 
 	mutex_lock(&text_mutex);
-    
+
 	/**
-	 *  Do a safe modify in case the trampoline is executing 
+	 *  Do a safe modify in case the trampoline is executing
 	 *  这是如何保证安全性的，libcareplus  借鉴
 	 *
 	 *  new 为生成的新的指令
@@ -584,9 +624,23 @@ static void *addr_from_call(void *ptr)
 		return NULL;
 	}
 
+	/**
+	 * 替换的值 = 目的地址 - (修改的地址 + 指令长度)
+	 * >>>
+	 * 目的地址 = 修改的地址 + 指令长度 + 替换的值
+	 *
+	 * 见函数 text_gen_insn()
+	 */
 	return ptr + CALL_INSN_SIZE + call.disp;
 }
 
+/**
+ * @brief
+ *
+ * @param self_addr
+ * @param parent
+ * @param frame_pointer
+ */
 void prepare_ftrace_return(unsigned long self_addr, unsigned long *parent,
 			   unsigned long frame_pointer);
 
@@ -651,8 +705,20 @@ void arch_ftrace_trampoline_free(struct ftrace_ops *ops)
 #ifdef CONFIG_DYNAMIC_FTRACE
 extern void ftrace_graph_call(void);
 
+/**
+ * @brief 使用 jmp 替换
+ *
+ * @param ip
+ * @param addr
+ * @return const char*
+ */
 static const char *ftrace_jmp_replace(unsigned long ip, unsigned long addr)
 {
+	/**
+	 * @brief 替换为 jmp
+	 *
+	 * @return return
+	 */
 	return text_gen_insn(JMP32_INSN_OPCODE, (void *)ip, (void *)addr);
 }
 
