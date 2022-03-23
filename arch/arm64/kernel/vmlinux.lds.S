@@ -195,6 +195,9 @@ SECTIONS
 	__inittext_end = .;
 	__initdata_begin = .;
 
+	/**
+	 *	初始化数据
+	 */
 	.init.data : {
 		INIT_DATA
 		INIT_SETUP(16)

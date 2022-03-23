@@ -332,7 +332,7 @@ unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
 }
 #endif /* HAVE_FUNCTION_GRAPH_RET_ADDR_PTR */
 /**
- *  
+ *
  */
 static struct ftrace_ops graph_ops = {
 	.func			= ftrace_stub,
@@ -368,7 +368,7 @@ trace_func_graph_ret_t ftrace_graph_return = ftrace_stub_graph;
 trace_func_graph_ent_t ftrace_graph_entry = ftrace_graph_entry_stub;
 static trace_func_graph_ent_t __ftrace_graph_entry = ftrace_graph_entry_stub;
 
-/* Try to assign a return stack array on FTRACE_RETSTACK_ALLOC_SIZE tasks. 
+/* Try to assign a return stack array on FTRACE_RETSTACK_ALLOC_SIZE tasks.
  尝试在FTRACE_RETSTACK_ALLOC_SIZE任务上分配一个返回堆栈数组。 */
 static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
 {
@@ -418,7 +418,7 @@ free:
 
 
 /**
- *  
+ *
  */
 static void
 ftrace_graph_probe_sched_switch(void *ignore, bool preempt,
@@ -558,7 +558,7 @@ void ftrace_graph_init_task(struct task_struct *t)
 			return;
 
         /**
-         *  
+         *
          */
 		graph_init_task(t, ret_stack);
 	}
@@ -609,6 +609,12 @@ static int start_graph_tracing(void)
 	return ret;
 }
 
+/**
+ * @brief
+ *
+ * @param gops
+ * @return int
+ */
 int register_ftrace_graph(struct fgraph_ops *gops)
 {
 	int ret = 0;
@@ -647,6 +653,10 @@ int register_ftrace_graph(struct fgraph_ops *gops)
 	ftrace_graph_entry = ftrace_graph_entry_test;
 	update_function_graph_func();
 
+	/**
+	 * @brief
+	 *
+	 */
 	ret = ftrace_startup(&graph_ops, FTRACE_START_FUNC_RET);
 out:
 	mutex_unlock(&ftrace_lock);

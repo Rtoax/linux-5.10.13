@@ -139,7 +139,9 @@ SYM_FUNC_START(__fentry__)
 SYM_FUNC_END(__fentry__)
 EXPORT_SYMBOL(__fentry__)
 
-
+/**
+ *	ftrace_caller
+ */
 SYM_FUNC_START(ftrace_caller)
 	/* save_mcount_regs fills in first two parameters */
 	save_mcount_regs
@@ -268,6 +270,7 @@ SYM_INNER_LABEL(ftrace_regs_caller_jmp, SYM_L_GLOBAL)
 	 * it must not be copied into the trampoline.
 	 * The trampoline will add the code to jump
 	 * to the return.
+	 * 保存寄存器 的 end
 	 */
 SYM_INNER_LABEL(ftrace_regs_caller_end, SYM_L_GLOBAL)
 	jmp ftrace_epilogue

@@ -287,9 +287,13 @@ struct ftrace_ops {
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
     /**
-     *
+     *	标志
      */
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
+	/**
+	 * 私有变量
+	 *
+	 */
 	void				*private;
     /**
      *

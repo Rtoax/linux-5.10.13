@@ -378,6 +378,10 @@ static void *section_objs(const struct load_info *info,
 			  size_t object_size,
 			  unsigned int *num)
 {
+	/**
+	 * @brief
+	 *
+	 */
 	unsigned int sec = find_sec(info, name);    /*  */
 
 	/* Section 0 has sh_addr 0 and sh_size 0. */
@@ -3590,6 +3594,10 @@ static int find_module_sections(struct module *mod, struct load_info *info) /* æ
 					 &mod->num_trace_bprintk_fmt);
 #endif
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+	/**
+	 * @brief
+	 *
+	 */
 	/* sechdrs[0].sh_size is always zero */
 	mod->ftrace_callsites = section_objs(info, FTRACE_CALLSITE_SECTION,
 					     sizeof(*mod->ftrace_callsites),

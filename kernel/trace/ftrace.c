@@ -95,6 +95,13 @@ struct ftrace_ops __read_mostly *function_trace_op  = &ftrace_list_end;/*  */
 /* What to set function_trace_op to */
 static struct ftrace_ops *set_function_trace_op;
 
+/**
+ * @brief
+ *
+ * @param ops
+ * @return true
+ * @return false
+ */
 static bool ftrace_pids_enabled(struct ftrace_ops *ops)
 {
 	struct trace_array *tr;
@@ -134,7 +141,7 @@ static void ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 #endif
 
 /**
- *
+ *	初始化 ftrace_ops
  */
 static inline void ftrace_ops_init(struct ftrace_ops *ops)  /* 是否已经初始化 */
 {
@@ -268,6 +275,12 @@ static void update_ftrace_function(void)
 	ftrace_trace_function = func;
 }
 
+/**
+ * @brief	添加到链表
+ *
+ * @param list
+ * @param ops
+ */
 static void add_ftrace_ops(struct ftrace_ops __rcu **list,
 			   struct ftrace_ops *ops)
 {
@@ -320,6 +333,10 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 	if (ops->flags & FTRACE_OPS_FL_DELETED)
 		return -EINVAL;
 
+	/**
+	 * @brief 已经使能了
+	 *
+	 */
 	if (WARN_ON(ops->flags & FTRACE_OPS_FL_ENABLED))
 		return -EBUSY;
 
@@ -342,7 +359,7 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 	if (!core_kernel_data((unsigned long)ops))
 		ops->flags |= FTRACE_OPS_FL_DYNAMIC;
     /**
-     *
+     *	添加到全局链表
      */
 	add_ftrace_ops(&ftrace_ops_list, ops);  /*  */
 
@@ -1153,6 +1170,10 @@ struct ftrace_page {    /*  */
 	int			size;   /* records 中有多少 struct dyn_ftrace */
 };
 
+/**
+ * @brief
+ *
+ */
 #define ENTRY_SIZE sizeof(struct dyn_ftrace)
 #define ENTRIES_PER_PAGE (PAGE_SIZE / ENTRY_SIZE)
 
@@ -2927,6 +2948,11 @@ static int ftrace_start_up;
 /* List of trace_ops that have allocated trampolines */
 static LIST_HEAD(ftrace_ops_trampoline_list);
 
+/**
+ * @brief
+ *
+ * @param ops
+ */
 static void ftrace_add_trampoline_to_kallsyms(struct ftrace_ops *ops)
 {
 	lockdep_assert_held(&ftrace_lock);
@@ -7206,6 +7232,10 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 	int ret;
 
 	local_irq_save(flags);
+	/**
+	 * @brief x86/arm64 为空
+	 *
+	 */
 	ret = ftrace_dyn_arch_init();   /* x86/arm64 为空 */
 	local_irq_restore(flags);
 	if (ret)
@@ -7222,6 +7252,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  *//*  */
 
     //[rongtao@localhost src]$ dmesg | grep ftrace
     //[    0.264225] ftrace: allocating 29538 entries in 116 pages
+	//每个 entry 大小为 sizeof(struct dyn_ftrace)
 	pr_info("ftrace: allocating %ld entries in %ld pages\n",
 		    count, count / ENTRIES_PER_PAGE + 1);
 
@@ -7264,10 +7295,17 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops)    /*  */
 
     /**
      *  架构相关
+	 * 	这会替换 蹦床 -> 可以理解为 用 call func 替换 call mcount
      */
 	arch_ftrace_update_trampoline(ops);
+
+	/**
+	 * @brief
+	 *
+	 */
 	if (ops->trampoline && ops->trampoline != trampoline &&
 	    (ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP)) {
+
 		/* Add to kallsyms before the perf events */
 		ftrace_add_trampoline_to_kallsyms(ops); /*  */
 

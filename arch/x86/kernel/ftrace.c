@@ -387,12 +387,20 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	union ftrace_op_code_union op_ptr;
 	int ret;
 
+	/**
+	 * @brief 保存寄存器
+	 *
+	 */
 	if (ops->flags & FTRACE_OPS_FL_SAVE_REGS) {
 		start_offset = (unsigned long)ftrace_regs_caller;
 		end_offset = (unsigned long)ftrace_regs_caller_end;
 		op_offset = (unsigned long)ftrace_regs_caller_op_ptr;
 		call_offset = (unsigned long)ftrace_regs_call;
 		jmp_offset = (unsigned long)ftrace_regs_caller_jmp;
+	/**
+	 * @brief 不保存寄存器
+	 *
+	 */
 	} else {
 		start_offset = (unsigned long)ftrace_caller;
 		end_offset = (unsigned long)ftrace_caller_end;
@@ -401,6 +409,10 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 		jmp_offset = 0;
 	}
 
+	/**
+	 * @brief	计算代码大小
+	 *
+	 */
 	size = end_offset - start_offset;   //ftrace_caller_end - ftrace_caller
 
 	/*
@@ -414,7 +426,16 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	if (!trampoline)
 		return 0;
 
+	/**
+	 * @brief 大小
+	 *
+	 */
 	*tramp_size = size + RET_SIZE + sizeof(void *);
+
+	/**
+	 * @brief 需要的页数
+	 *
+	 */
 	npages = DIV_ROUND_UP(*tramp_size, PAGE_SIZE);
 
 	/* Copy ftrace_caller onto the trampoline memory */
@@ -429,6 +450,11 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 
 	/* The trampoline ends with ret(q) */
 	retq = (unsigned long)ftrace_stub;
+
+	/**
+	 * @brief 需要一个 ret 用于返回
+	 *
+	 */
 	ret = copy_from_kernel_nofault(ip, (void *)retq, RET_SIZE);
 	if (WARN_ON(ret < 0))
 		goto fail;
@@ -483,6 +509,10 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	/* ALLOC_TRAMP flags lets us know we created it */
 	ops->flags |= FTRACE_OPS_FL_ALLOC_TRAMP;
 
+	/**
+	 * @brief
+	 *
+	 */
 	set_vm_flush_reset_perms(trampoline);
 
 	if (likely(system_state != SYSTEM_BOOTING))
