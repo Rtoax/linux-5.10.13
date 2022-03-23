@@ -68,12 +68,12 @@
  * IRQF_XXX 用于申请中断时描述该中断的特性， irqaction.flags
  */
 /**
- *  Linux 内核支持所有总线的中断共享, 例如可以在 /proc/interrupts 对应的允许共享的中断线 
+ *  Linux 内核支持所有总线的中断共享, 例如可以在 /proc/interrupts 对应的允许共享的中断线
  *  进行 request_irq() 就可以添加该终端线的处理函数。
  */
 #define IRQF_SHARED		    0x00000080  //允许多个设备共享此中断号
 /**
- *  
+ *
  */
 #define IRQF_PROBE_SHARED	0x00000100  //中断处理程序允许出现共享中断不匹配的情况
 #define __IRQF_TIMER		0x00000200  //
@@ -81,7 +81,7 @@
 #define IRQF_NOBALANCING	0x00000800  //此中断不参与irq 多 CPU 负载均衡
 #define IRQF_IRQPOLL		0x00001000  //此中断用于轮询
 /**
- *  
+ *
  */
 #define IRQF_ONESHOT		0x00002000  //表示一次触发的中断，不能嵌套
 #define IRQF_NO_SUSPEND		0x00004000  //在系统睡眠过程中不要关闭该中断
@@ -115,7 +115,8 @@ enum {
  *  @pt_regs    在老版本的内核中，是有这个字段的
  *              保存了处理器进入中断代码之前的处理器上下文快照
  *
- *  返回值 - 用来指明是否真正处理了一个中断
+ *  返回值
+ - 用来指明是否真正处理了一个中断
  *              如果处理例程发现其设备的确需要处理，应该返回 IRQ_HANDLED
  *              否则，返回值应该是 IRQ_NONE
  *              请使用宏 IRQ_RETVAL
@@ -160,7 +161,7 @@ struct irqaction {  /* 中断动作描述符 */
      *      在`request_threaded_irq`中赋值
      *      在`irq_forced_thread_fn`,`irq_thread_fn`,`handle_nested_irq`中被调用
      *
-     *  
+     *
      */
 	irq_handler_t		thread_fn;  /* 不为 NULL 时，`request_irq`将创建线程 */
 
@@ -193,12 +194,12 @@ struct irqaction {  /* 中断动作描述符 */
      *  注册中断的名称
      */
 	const char		    *name;  /* 设备名称 */
-    
+
     /**
-     *  
+     *
      */
 	struct proc_dir_entry	*dir;   /* /proc/ 文件系统 */
-    
+
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
@@ -235,7 +236,7 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
  * 调用`request_irq()`的正确位置应该是在设备第一次打开、硬件被告知产生中断之前；
  * 对应的释放函数`free_irq()`
  *
- *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq() 
+ *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq()
  *  目的是降低中断处理对系统实时延迟的影响。
  *  中断线程化的目的在于：把中断处理中一些繁重的任务作为 内核线程来运行，
  *   实时进程可以比中断线程有更高的优先级。
@@ -251,7 +252,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)
 {
     /**
-     *  
+     *
      */
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
@@ -560,7 +561,7 @@ extern bool force_irqthreads;
 #ifndef local_softirq_pending
 
 /**
- *  
+ *
  */
 #ifndef local_softirq_pending_ref
 #define local_softirq_pending_ref irq_stat.__softirq_pending
@@ -837,7 +838,7 @@ static inline void tasklet_schedule(struct tasklet_struct *t)   /*  */
      */
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
         /**
-         *  
+         *
          */
 		__tasklet_schedule(t);
 }
@@ -881,7 +882,7 @@ static inline void tasklet_disable(struct tasklet_struct *t)
 	tasklet_unlock_wait(t);
 
     /**
-     *  
+     *
      */
 	smp_mb();
 }
@@ -930,7 +931,7 @@ extern void tasklet_setup(struct tasklet_struct *t,
  * if more than one irq occurred.
  */
 
-#if !defined(CONFIG_GENERIC_IRQ_PROBE) 
+#if !defined(CONFIG_GENERIC_IRQ_PROBE)
 /*  */
 #else
 extern unsigned long probe_irq_on(void);	/* returns 0 on failure */
