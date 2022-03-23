@@ -64,8 +64,8 @@ DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 struct task_struct * ksoftirqd; //+++
 
 
-//cat /proc/softirqs 
-//                    CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       
+//cat /proc/softirqs
+//                    CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7
 //          HI:          5          0          0          0          0          0          0          0
 //       TIMER:     332519     310498     289555     272913     282535     279467     282895     270979
 //      NET_TX:       2320          0          0          2          1          1          0          0
@@ -133,7 +133,7 @@ static bool ksoftirqd_running(unsigned long pending)
 		return false;
 
     /**
-     *  
+     *
      */
 	return tsk && (tsk->state == TASK_RUNNING) && !__kthread_should_park(tsk);
 }
@@ -163,7 +163,7 @@ EXPORT_PER_CPU_SYMBOL_GPL(hardirq_context);
 
 
 /**
- *  
+ *
  */
 void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
 {
@@ -205,7 +205,7 @@ static void __local_bh_enable(unsigned int cnt)
 	lockdep_assert_irqs_disabled();
 
     /**
-     *  
+     *
      */
 	if (preempt_count() == cnt)
 		trace_preempt_on(CALLER_ADDR0, get_lock_parent_ip());
@@ -228,18 +228,18 @@ void _local_bh_enable(void)
 EXPORT_SYMBOL(_local_bh_enable);
 
 /**
- *  
+ *
  */
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
     /**
      *  警告条件
-     *  如果在硬件上下文中，处于关中断的情况，没有必要再调用关 BH 
+     *  如果在硬件上下文中，处于关中断的情况，没有必要再调用关 BH
      */
 	WARN_ON_ONCE(in_irq());
-    
+
 	lockdep_assert_irqs_enabled();
-    
+
 #ifdef CONFIG_TRACE_IRQFLAGS
 	local_irq_disable();
 #endif
@@ -274,7 +274,7 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
      *  打开抢占，和上面的 留 1 呼应
      */
 	preempt_count_dec();
-    
+
 #ifdef CONFIG_TRACE_IRQFLAGS
 	local_irq_enable();
 #endif
@@ -336,9 +336,9 @@ static inline bool lockdep_softirq_start(void) { return false; }
 static inline void lockdep_softirq_end(bool in_hardirq) { }
 #endif
 
-//During execution of a deferred（延期的） function, new pending `softirqs` might occur. 
-//The main problem here that execution of the userspace code can be delayed for a long time 
-//while the `__do_softirq` function will handle deferred interrupts. For this purpose, 
+//During execution of a deferred（延期的） function, new pending `softirqs` might occur.
+//The main problem here that execution of the userspace code can be delayed for a long time
+//while the `__do_softirq` function will handle deferred interrupts. For this purpose,
 //it has the limit of the time when it must be finished
 /**
  *  处理软中断
@@ -387,7 +387,7 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
 
     /**
-     *  
+     *
      */
 	in_hardirq = lockdep_softirq_start();
 
@@ -427,7 +427,7 @@ restart:
 		vec_nr = h - softirq_vec;
 
         /**
-         *  
+         *
          */
 		prev_count = preempt_count();
 
@@ -436,10 +436,14 @@ restart:
          */
 		kstat_incr_softirqs_this_cpu(vec_nr);
 
+		/**
+		 * @brief sudo bpftrace -lv tracepoint:irq:softirq_entry
+		 *
+		 */
 		trace_softirq_entry(vec_nr);
 
         /**
-         *  执行 action 
+         *  执行 action
          *
          * open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
          * open_softirq(TASKLET_SOFTIRQ, tasklet_action);
@@ -454,11 +458,11 @@ restart:
          * open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
          */
 		h->action(h);
-        
+
 		trace_softirq_exit(vec_nr);
 
         /**
-         *  
+         *
          */
 		if (unlikely(prev_count != preempt_count())) {
 			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
@@ -511,12 +515,12 @@ restart:
 	}
 
     /**
-     *  
+     *
      */
 	lockdep_softirq_end(in_hardirq);
 
     /**
-     *  
+     *
      */
 	account_irq_exit_time(current);
 
@@ -524,7 +528,7 @@ restart:
      *  使能 本地 bottom-half
      */
 	__local_bh_enable(SOFTIRQ_OFFSET);
-    
+
 	WARN_ON_ONCE(in_interrupt());
 
     /**
@@ -535,7 +539,7 @@ restart:
 
 
 /**
- *  
+ *
  */
 asmlinkage __visible void do_softirq(void)
 {
@@ -551,7 +555,7 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_save(flags);
 
     /**
-     *  
+     *
      */
 	pending = local_softirq_pending();
 
@@ -560,7 +564,7 @@ asmlinkage __visible void do_softirq(void)
      */
 	if (pending && !ksoftirqd_running(pending))
         /**
-         *  
+         *
          */
 		do_softirq_own_stack();
 
@@ -585,14 +589,14 @@ void irq_enter_rcu(void)
 		 */
 		local_bh_disable();
         /**
-         *  
+         *
          */
 		tick_irq_enter();
-        
+
 		_local_bh_enable();
 	}
     /**
-     *  
+     *
      */
 	__irq_enter();
 }
@@ -607,7 +611,7 @@ void irq_enter(void)
 	rcu_irq_enter();
 
     /**
-     *  
+     *
      */
 	irq_enter_rcu();
 }
@@ -658,7 +662,7 @@ static inline void invoke_softirq(void)
 }
 
 /**
- *  
+ *
  */
 static inline void tick_irq_exit(void)
 {
@@ -685,7 +689,7 @@ static inline void __irq_exit_rcu(void)
 #endif
 
     /**
-     *  
+     *
      */
 	account_irq_exit_time(current);
 
@@ -736,7 +740,7 @@ void irq_exit(void)
 	__irq_exit_rcu();
 
     /**
-     *  
+     *
      */
 	rcu_irq_exit();
 	 /* must be last! */
@@ -750,7 +754,7 @@ void irq_exit(void)
 inline void raise_softirq_irqoff(unsigned int nr)   /*  */
 {
     /**
-     *  
+     *
      */
 	__raise_softirq_irqoff(nr);
 
@@ -797,7 +801,7 @@ void __raise_softirq_irqoff(unsigned int nr)
 	trace_softirq_raise(nr);
 
     /**
-     *  
+     *
      */
 	or_softirq_pending(1UL << nr);
 }
@@ -930,11 +934,11 @@ static void tasklet_action_common(struct softirq_action *a,
      *  执行链表，此过程，没有关闭中断
      */
 	while (list) {
-        
+
 		struct tasklet_struct *t = list;
 
 		list = list->next;
-        
+
         /**
          *  检测并设置 TASKLET_STATE_RUN 标志位
          */
@@ -970,7 +974,7 @@ static void tasklet_action_common(struct softirq_action *a,
 		}
 
         /**
-         *  如果 
+         *  如果
          *  获取 tasklet 锁失败，
          *  tasklet 未激活
          *  那么再将 这个 tasklet 添加到 链表中，期间当然要关中断
@@ -995,7 +999,7 @@ static void tasklet_action_common(struct softirq_action *a,
 static __latent_entropy void tasklet_action(struct softirq_action *a)
 {
     /**
-     *  
+     *
      */
 	tasklet_action_common(a, this_cpu_ptr(&tasklet_vec), TASKLET_SOFTIRQ);
 }
@@ -1011,7 +1015,7 @@ static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 
 
 /**
- *  
+ *
  */
 void tasklet_setup(struct tasklet_struct *t, void (*callback)(struct tasklet_struct *))
 {
@@ -1030,7 +1034,7 @@ EXPORT_SYMBOL(tasklet_setup);
 void tasklet_init(struct tasklet_struct *t, void (*func)(unsigned long), unsigned long data)
 {
     /**
-     *  
+     *
      */
 	t->next = NULL;
 	t->state = 0;
@@ -1086,7 +1090,7 @@ void __init softirq_init(void)  /*  */
 	int cpu;
 
     /**
-     *  
+     *
      * 每个 CPU 有两个链表：
      *  1. 一个 普通优先级 `tasklet_vec` ->  TASKLET_SOFTIRQ(优先级=6)
      *  2. 一个 高优先级  `tasklet_hi_vec`-> HI_SOFTIRQ(优先级=0)
@@ -1142,7 +1146,7 @@ static void run_ksoftirqd(unsigned int cpu) /*  */
 		local_irq_enable();
 
         /**
-         *  
+         *
          */
 		cond_resched();
 		return;
@@ -1196,7 +1200,7 @@ static int takeover_tasklets(unsigned int cpu)
 		per_cpu(tasklet_vec, cpu).tail = &per_cpu(tasklet_vec, cpu).head;
 	}
     /**
-     *  
+     *
      */
 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
 
@@ -1222,7 +1226,7 @@ static int takeover_tasklets(unsigned int cpu)
 static struct smp_hotplug_thread softirq_threads = {
 	softirq_threads.store			= &ksoftirqd,
     /**
-     *  
+     *
      */
 	softirq_threads.thread_should_run	= ksoftirqd_should_run,
 	/**
@@ -1236,7 +1240,7 @@ static struct smp_hotplug_thread softirq_threads = {
 };
 
 /**
- *  启动 ksoftirqd 进程，每个 CPU 一个 
+ *  启动 ksoftirqd 进程，每个 CPU 一个
  */
 static __init int spawn_ksoftirqd(void)
 {
