@@ -640,7 +640,10 @@ DECLARE_IDTENTRY_SYSVEC(X86_PLATFORM_IPI_VECTOR,	sysvec_x86_platform_ipi);
 #endif
 
 #ifdef CONFIG_SMP
-//
+/**
+ * @brief 核间中断
+ *
+ */
 DECLARE_IDTENTRY(RESCHEDULE_VECTOR,			sysvec_reschedule_ipi);
 DECLARE_IDTENTRY_SYSVEC(IRQ_MOVE_CLEANUP_VECTOR,	sysvec_irq_move_cleanup);
 DECLARE_IDTENTRY_SYSVEC(REBOOT_VECTOR,			sysvec_reboot);
@@ -711,6 +714,10 @@ SYM_CODE_START(irq_entries_start)
     .endr
 SYM_CODE_END(irq_entries_start)
     {};//+++
+/**
+ * @brief	操作系统预留的一些 idt
+ *
+ */
 idtentry X86_TRAP_DE asm_exc_divide_error exc_divide_error has_error_code=0;
 idtentry X86_TRAP_OF asm_exc_overflow exc_overflow has_error_code=0;
 idtentry X86_TRAP_BR asm_exc_bounds exc_bounds has_error_code=0;

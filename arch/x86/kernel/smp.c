@@ -227,10 +227,13 @@ DEFINE_IDTENTRY_SYSVEC_SIMPLE(sysvec_reschedule_ipi)
 	ack_APIC_irq();
     //tracepoint:irq_vectors:reschedule_entry
 	trace_reschedule_entry(RESCHEDULE_VECTOR);
-    //Rescheduling interrupts
+    /**
+     * @brief Rescheduling interrupts
+     *
+     */
 	inc_irq_stat(irq_resched_count);
     /**
-     *  
+     *
      */
 	scheduler_ipi();
 	trace_reschedule_exit(RESCHEDULE_VECTOR);
@@ -263,7 +266,7 @@ static int __init nonmi_ipi_setup(char *str)
 __setup("nonmi_ipi", nonmi_ipi_setup);
 
 /**
- *  
+ *
  */
 struct smp_ops smp_ops = {  /* SMP 操作 */
 	.smp_prepare_boot_cpu	= native_smp_prepare_boot_cpu,

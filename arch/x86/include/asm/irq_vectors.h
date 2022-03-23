@@ -107,7 +107,7 @@
 #define LOCAL_TIMER_VECTOR		0xec
 
 /**
- *  
+ *  最大 idt_table 项数
  */
 #define NR_VECTORS			 256
 

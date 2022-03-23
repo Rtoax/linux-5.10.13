@@ -28,7 +28,7 @@
 	}
 
 /**
- *  中断门 - Interrupt gate 
+ *  中断门 - Interrupt gate
  */
 #define INTG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL0, __KERNEL_CS)
@@ -44,8 +44,8 @@
 
 
 /**
- *  系统中断门 - System interrupt gate 
- *  
+ *  系统中断门 - System interrupt gate
+ *
  */
 #define SYSG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL3, __KERNEL_CS)
@@ -103,7 +103,7 @@ static const __initconst struct idt_data early_idts[] = {/* 中断描述符表 �
      *  调试
      */
 	INTG(X86_TRAP_DB,		asm_exc_debug),
-#ifdef __rtoax_ //上宏展开	
+#ifdef __rtoax_ //上宏展开
     {
       idt_data.vector     = X86_TRAP_DB,
       idt_data.bits.ist   = DEFAULT_STACK,
@@ -119,7 +119,7 @@ static const __initconst struct idt_data early_idts[] = {/* 中断描述符表 �
      *  断点
      */
 	SYSG(X86_TRAP_BP,		asm_exc_int3),
-#ifdef __rtoax_ //上宏展开	
+#ifdef __rtoax_ //上宏展开
     {
         idt_data.vector     = X86_TRAP_BP,
         idt_data.bits.ist   = DEFAULT_STACK,
@@ -180,11 +180,17 @@ static const __initconst struct idt_data def_idts[] = {/* 默认的 中断描述
 #endif
 };
 
-/*
+/**
  * The APIC and SMP idt entries
+ * 中断描述符表
+ *
  */
 static const __initconst struct idt_data apic_idts[] = {
 #ifdef CONFIG_SMP
+	/**
+	 * @brief Rescheduling interrupts
+	 *	核间中断
+	 */
 	INTG(RESCHEDULE_VECTOR,			asm_sysvec_reschedule_ipi),
 	INTG(CALL_FUNCTION_VECTOR,		asm_sysvec_call_function),
 	INTG(CALL_FUNCTION_SINGLE_VECTOR,	asm_sysvec_call_function_single),
@@ -206,7 +212,7 @@ static const __initconst struct idt_data apic_idts[] = {
 
 #ifdef CONFIG_X86_LOCAL_APIC
     /**
-     *  
+     *
      */
 	INTG(LOCAL_TIMER_VECTOR,		asm_sysvec_apic_timer_interrupt),
 	INTG(X86_PLATFORM_IPI_VECTOR,		asm_sysvec_x86_platform_ipi),
@@ -301,7 +307,7 @@ void __init idt_setup_early_traps(void)/* 中断描述符表 */
      *  拷贝
      */
 	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
-    
+
     //调用 `load_idt` 函数来执行 `ldtr` 指令来重新加载 `IDT` 表
 	load_idt(&idt_descr);/* 中断描述符 */
 }
@@ -392,7 +398,15 @@ void __init idt_setup_apic_and_irq_gates(void)
 
 	idt_setup_from_table(idt_table, apic_idts, ARRAY_SIZE(apic_idts), true);
 
+	/**
+	 * @brief 填充 idt_table
+	 *	system_vectors 是 per-CPU bitmap
+	 */
 	for_each_clear_bit_from(i, system_vectors, FIRST_SYSTEM_VECTOR) {
+		/**
+		 * @brief irq_entries_start
+		 *
+		 */
 		entry = irq_entries_start + 8 * (i - FIRST_EXTERNAL_VECTOR);
 		set_intr_gate(i, entry);
 	}

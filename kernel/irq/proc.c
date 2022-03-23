@@ -440,8 +440,8 @@ static void register_default_affinity_proc(void)
 }
 
 /**
- *  Initialize /proc/irq/ 
- *  
+ *  Initialize /proc/irq/
+ *
  */
 void init_irq_proc(void)
 {
@@ -479,7 +479,7 @@ int __weak arch_show_interrupts(struct seq_file *p, int prec)
  *  该文件只会显示 已经安装了中断处理例程的中断
  *
  *  cat /proc/interrupts
- *             CPU0       CPU1       CPU2       CPU3       
+ *             CPU0       CPU1       CPU2       CPU3
  *    0:         56          0          0          0   IO-APIC-edge      timer
  *    1:         10          0          0          0   IO-APIC-edge      i8042
  *    6:          3          0          0          0   IO-APIC-edge      floppy
@@ -493,7 +493,7 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 	unsigned long flags, any_count = 0;
 
     /**
-     *  
+     *
      */
 	int i = *(loff_t *) v, j;
 	struct irqaction *action;
@@ -503,11 +503,11 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 		return 0;
 
     /**
-     *  
+     *
      */
 	if (i == ACTUAL_NR_IRQS)
         /**
-         *  
+         *
          *  NMI:      28669      17014         51         53   Non-maskable interrupts
          *  LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
          *  SPU:          0          0          0          0   Spurious interrupts
@@ -527,7 +527,8 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 
 		seq_printf(p, "%*s", prec + 8, "");
 		for_each_online_cpu(j) {
-			seq_printf(p, "CPU%-8d", j);}
+			seq_printf(p, "CPU%-8d", j);
+		}
 		seq_putc(p, '\n');
 	}
 
@@ -538,7 +539,7 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 
 	if (desc->kstat_irqs)
         /**
-         *  
+         *
          */
 		for_each_online_cpu(j){
 			any_count |= *per_cpu_ptr(desc->kstat_irqs, j);
