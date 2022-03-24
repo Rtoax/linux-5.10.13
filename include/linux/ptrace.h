@@ -99,6 +99,11 @@ static inline int ptrace_reparented(struct task_struct *child)
 	return !same_thread_group(child->real_parent, child->parent);
 }
 
+/**
+ * @brief
+ *
+ * @param child
+ */
 static inline void ptrace_unlink(struct task_struct *child)
 {
 	if (unlikely(child->ptrace))
@@ -235,6 +240,10 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 static inline void ptrace_release_task(struct task_struct *task)
 {
 	BUG_ON(!list_empty(&task->ptraced));
+	/**
+	 * @brief
+	 *
+	 */
 	ptrace_unlink(task);
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }

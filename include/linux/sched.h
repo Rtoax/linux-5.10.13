@@ -96,7 +96,7 @@ struct io_uring_task;
 /**
  *  TASK_UNINTERRUPTIBLE状态是一种不可中断的睡眠状态，不可以被信号打断，必须等到等待的条件满足时才被唤醒。
  *  这个状态通常在进程必须等待时不受干扰或所等待的事件很快发生时使用。
- *  
+ *
  *  处于等待队伍中，等待资源有效时唤醒（比如等待键盘输入、socket连接、信号等等），但不可以被中断唤醒.
  *  TASK_UNINTERRUPTIBLE只能被 wake_up() 唤醒.
  *
@@ -119,8 +119,8 @@ struct io_uring_task;
 #define __TASK_STOPPED			0x0004
 
 /**
- *  
- *  
+ *
+ *
  */
 #define __TASK_TRACED			0x0008
 
@@ -374,7 +374,7 @@ struct sched_info {
 # define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
 
 //represent actual load weight of a scheduler entity and its invariant(不变量) value
-//The higher priority allows to get more time to run. 
+//The higher priority allows to get more time to run.
 //A `load weight` of a process is a relation between priority of this process and timeslices of this process.
 /**
  *  记录调度实体的权重
@@ -527,7 +527,7 @@ struct sched_avg {  /*  */
 
 
 /**
- *  
+ *
  */
 struct sched_statistics {   /* 调度统计 */
 #ifdef CONFIG_SCHEDSTATS
@@ -633,7 +633,7 @@ struct sched_entity {   /* 调度实体 */
 	struct sched_statistics		statistics;
 
     /**
-     *  
+     *
      */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int				depth;
@@ -643,7 +643,7 @@ struct sched_entity {   /* 调度实体 */
 	/* rq "owned" by this entity/group: */
 	struct cfs_rq			*my_q;      /*  */
 	/**
-	 *  cached value of my_q->h_nr_running 
+	 *  cached value of my_q->h_nr_running
 	 *
 	 *  标识 进程在可运行(runable)状态的权重，这个值等于进程的权重
 	 */
@@ -656,7 +656,7 @@ struct sched_entity {   /* 调度实体 */
 	 *
 	 * Per entity load average tracking.
 	 * 每个实体的平均负载跟踪
-	 * 
+	 *
 	 * Put into separate cache line so it does not
 	 * collide with read-mostly values above.
 	 */
@@ -670,10 +670,10 @@ struct sched_entity {   /* 调度实体 */
 struct sched_rt_entity {
 
     /**
-     *  链表头 rt_rq.active.queue[MAX_RT_PRIO] 
+     *  链表头 rt_rq.active.queue[MAX_RT_PRIO]
      */
 	struct list_head		run_list;
-    
+
 	unsigned long			timeout;
 	unsigned long			watchdog_stamp;
 	unsigned int			time_slice;
@@ -681,7 +681,7 @@ struct sched_rt_entity {
 	unsigned short			on_list;
 
 	struct sched_rt_entity		*back;
-    
+
 #ifdef CONFIG_RT_GROUP_SCHED
 	struct sched_rt_entity		*parent;
 	/* rq on which this entity is (to be) queued: */
@@ -858,9 +858,9 @@ struct task_struct {    /* PCB */
 	void				*stack; /* thread_union */
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: 例如: PF_IDLE */
-	unsigned int			flags;  
+	unsigned int			flags;
     /**
-     *  
+     *
      */
 	unsigned int			ptrace;
 
@@ -870,10 +870,10 @@ struct task_struct {    /* PCB */
      */
 	int				on_cpu;
     /**
-     *  
+     *
      */
 	struct __call_single_node	wake_entry;
-    
+
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* Current CPU: */
     /**
@@ -923,29 +923,29 @@ struct task_struct {    /* PCB */
 
     /**
      *  MAX_PRIO:140
-     *  MAX_RT_PRIO:100  
+     *  MAX_RT_PRIO:100
      *  nice:[-20,19]
      *
      *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
      */
-    //The higher priority allows to get more time to run. 
+    //The higher priority allows to get more time to run.
     /**
      *  prio: 动态优先级：
      *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
      *        取值范围: [0,MAX_PRIO-1],即[0,139]
-     *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]   
+     *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]
      *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
      *
      */
-	int				prio;   //`dynamic priority` which can't be changed during lifetime of 
+	int				prio;   //`dynamic priority` which can't be changed during lifetime of
 	                        //  a process based on its static priority and interactivity(交互性) of the process
     /**
-     *  static_prio: 静态优先级 
+     *  static_prio: 静态优先级
      *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
      *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
      *        调整后的优先级为动态优先级(prio)
      *        计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
-     *        静态优先级与nice 关系  
+     *        静态优先级与nice 关系
      *        static_prio=MAX_RT_PRIO(100)+nice+20
      *
      */
@@ -958,15 +958,15 @@ struct task_struct {    /* PCB */
      *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
      *
      */
-	int				normal_prio;    //based on the value of the `static_prio` too, 
+	int				normal_prio;    //based on the value of the `static_prio` too,
 	                                //but also it depends on the scheduling policy of a process.
-	                                
+
     /**
-     *  rt_priority: 实时优先级 
+     *  rt_priority: 实时优先级
      *      实时优先级只对实时进程有效
      *        实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
      *        也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
-     *  
+     *
      */
 	unsigned int			rt_priority;
 
@@ -983,7 +983,7 @@ struct task_struct {    /* PCB */
      */
 	struct sched_entity		se;/* 调度实体 */
 	struct sched_rt_entity		rt;/* 实时调度实体 */
-    
+
 #ifdef CONFIG_CGROUP_SCHED
     /**
      *  组调度
@@ -991,11 +991,11 @@ struct task_struct {    /* PCB */
 	struct task_group		*sched_task_group;/* cgroup 调度 */
 #endif
     /**
-     *  
+     *
      */
     struct sched_dl_entity		dl;
 
-#ifdef CONFIG_UCLAMP_TASK 
+#ifdef CONFIG_UCLAMP_TASK
 	/*
 	 * Clamp values requested for a scheduling entity.
 	 * Must be updated with task_rq_lock() held.
@@ -1017,7 +1017,7 @@ struct task_struct {    /* PCB */
 	unsigned int			btrace_seq;
 #endif
     /**
-     *  
+     *
      */
 	unsigned int			policy;
 
@@ -1061,10 +1061,10 @@ struct task_struct {    /* PCB */
 	struct sched_info		sched_info;
 
     /**
-     *  
+     *
      */
 	struct list_head		tasks;/* 任务链表 */
-    
+
 #ifdef CONFIG_SMP
 	struct plist_node		pushable_tasks;     /* 优先级队列 */
 	struct rb_node			pushable_dl_tasks;  /* deadline 任务 */
@@ -1089,16 +1089,18 @@ struct task_struct {    /* PCB */
 	struct task_rss_stat		rss_stat;   /* 文件映射、匿名映射、交换 */
 #endif
     /**
-     *  
+     *
      */
 	int				exit_state;
     /**
-     *  
+     *
      */
 	int				exit_code;
 
     /**
      *  领头进程的判断标志，如`thread_group_leader()`
+	 * The exit_signal the parent process will be sent when the child exits.
+	 * parent 退出时，会将 exit_signal 发给 child
      */
 	int				exit_signal;
 	/* The signal sent when the parent dies: */
@@ -1107,7 +1109,7 @@ struct task_struct {    /* PCB */
 	unsigned long			jobctl;
 
 	/**
-	 *  Used for emulating ABI behavior of previous Linux versions: 
+	 *  Used for emulating ABI behavior of previous Linux versions:
 	 *  可能为 `ADDR_COMPAT_LAYOUT`
 	 */
 	unsigned int			personality;
@@ -1116,7 +1118,7 @@ struct task_struct {    /* PCB */
 	unsigned			sched_reset_on_fork:1;
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
-    
+
 #ifdef CONFIG_PSI   //PSI (Pressure Stall Information)评估系统资源压力
 	unsigned			sched_psi_wake_requeue:1;
 #endif
@@ -1144,7 +1146,7 @@ struct task_struct {    /* PCB */
 	/* Bit to tell LSMs we're in execve(): */
 	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
-    
+
 #ifndef TIF_RESTORE_SIGMASK /*  */
 	unsigned			restore_sigmask:1;
 #endif
@@ -1173,12 +1175,12 @@ struct task_struct {    /* PCB */
 	struct restart_block		restart_block;/* system call restart block */
 
     /**
-     * 实际上的 线程ID，top -Hp tgid 后显示的 pid
+     *  实际上的 线程ID，top -Hp tgid 后显示的 pid
      */
 	pid_t				pid;
 
     /**
-     * 实际上的 进程ID， 线程组 ID， top -Hp tgid
+     * 实际上的 进程ID， 线程组 ID， top -Hp tgid
      */
 	pid_t				tgid;
 
@@ -1186,7 +1188,7 @@ struct task_struct {    /* PCB */
 	/* Canary(金丝雀) value for the -fstack-protector GCC feature: */
 	unsigned long			stack_canary;   /* 栈 金丝雀 保护 */
 #endif
-    
+
 	/*
 	 * Pointers to the (original) parent process, youngest child, younger sibling,
 	 * older sibling, respectively.  (p->father can be replaced with
@@ -1213,19 +1215,28 @@ struct task_struct {    /* PCB */
 	 *
 	 * This includes both natural children and PTRACE_ATTACH targets.
 	 * 'ptrace_entry' is this task's link on the p->parent->ptraced list.
+	 *
+	 * task_struct->ptrace_entry 的链表头，见 `__ptrace_link()`
 	 */
 	struct list_head		ptraced;/* 使用了 ptrace() 的 task */
+	/**
+	 * task_struct->ptraced 链表的节点，见 `__ptrace_link()`
+	 *
+	 * 当然，也可能到另一个链表中，见 `reparent_leader()`
+	 *
+	 */
 	struct list_head		ptrace_entry;/* 在 parent 中的 link */
 
 	/**
-	 *  PID/PID hash table linkage. 
+	 * PID/PID hash table linkage.
+	 * pid_namespace 也在这里
 	 *
 	 *  init_task.thread_pid = &init_struct_pid
 	 */
 	struct pid			*thread_pid;/* PID的哈希表 /include/linux/pid.h*/
 
     /**
-     *  
+     *	链表头为 struct pid->tasks[PIDTYPE_MAX];
      */
 	struct hlist_node		pid_links[PIDTYPE_MAX];
 	struct list_head		thread_group;/* 组 */
@@ -1241,7 +1252,7 @@ struct task_struct {    /* PCB */
 	/* CLONE_CHILD_CLEARTID: */
 	int __user			*clear_child_tid;
     /**
-     *  
+     *
      */
 	u64				utime;
 	u64				stime;
@@ -1280,7 +1291,7 @@ struct task_struct {    /* PCB */
 #endif
 
 	/**
-	 *  Process credentials: 
+	 *  Process credentials:
 	 */
 
 	/* Tracer's credentials at attach: */
@@ -1308,7 +1319,7 @@ struct task_struct {    /* PCB */
 	 */
 	char				comm[TASK_COMM_LEN];
     /**
-     *  
+     *
      */
 	struct nameidata		*nameidata;
 
@@ -1321,7 +1332,7 @@ struct task_struct {    /* PCB */
 	unsigned long			last_switch_count;
 	unsigned long			last_switch_time;
 #endif
-    
+
 	/* Filesystem information: */
 	struct fs_struct		*fs;/* 文件系统 */
 
@@ -1339,7 +1350,7 @@ struct task_struct {    /* PCB */
 #endif
 
 	/**
-	 *  Namespaces: 
+	 *  Namespaces:
 	 */
 	struct nsproxy			*nsproxy;   /*  */
 
@@ -1348,7 +1359,7 @@ struct task_struct {    /* PCB */
 	struct sighand_struct __rcu		*sighand;
 
     /**
-     *  
+     *
      */
 	sigset_t			blocked;
 	sigset_t			real_blocked;
@@ -1360,14 +1371,14 @@ struct task_struct {    /* PCB */
      */
 	struct sigpending		pending;
     /**
-     *  
+     *
      */
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;
 	unsigned int			sas_ss_flags;
 
     /**
-     *  
+     *
      */
 	struct callback_head		*task_works;
 
@@ -1379,7 +1390,7 @@ struct task_struct {    /* PCB */
 	unsigned int			sessionid;
 #endif
     /**
-     *  
+     *
      */
 	struct seccomp			seccomp;    /* 限制系统调用 */
 
@@ -1466,7 +1477,7 @@ struct task_struct {    /* PCB */
      *  IO统计信息
      */
 	struct task_io_accounting	ioac;   /* IO 统计信息 */
-    
+
 #ifdef CONFIG_PSI
 	/* Pressure stall state */
 	unsigned int			psi_flags;
@@ -1490,18 +1501,18 @@ struct task_struct {    /* PCB */
 
 #ifdef CONFIG_CGROUPS
 	/**
-	 *  Control Group info protected by css_set_lock: 
-	 *  通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup` 
+	 *  Control Group info protected by css_set_lock:
+	 *  通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup`
 	 */
 	struct css_set __rcu		*cgroups;   //cgroup subsys state
 
     /**
-	 *  cg_list protected by css_set_lock and tsk->alloc_lock: 
+	 *  cg_list protected by css_set_lock and tsk->alloc_lock:
 	 *
 	 *  该链表的头为 struct css_set.mg_tasks
 	 */
 	struct list_head		cg_list;
-    
+
 #endif
 #ifdef CONFIG_X86_CPU_RESCTRL
 	u32				closid;
@@ -1651,7 +1662,7 @@ struct task_struct {    /* PCB */
 #endif
 #endif
 
-#if IS_ENABLED(CONFIG_KUNIT/* 测试 运行实例 */)    
+#if IS_ENABLED(CONFIG_KUNIT/* 测试 运行实例 */)
 	struct kunit			*kunit_test;
 #endif
 
@@ -1661,8 +1672,8 @@ struct task_struct {    /* PCB */
 	int				curr_ret_depth;
 
 	/**
-	 *  Stack of return addresses for return function tracing: 
-	 *  
+	 *  Stack of return addresses for return function tracing:
+	 *
 	 */
 	struct ftrace_ret_stack		*ret_stack; /* 在 alloc_retstack_tasklist() 中使用*/
 
@@ -1741,14 +1752,14 @@ struct task_struct {    /* PCB */
 
     /**
      *  当前进程是否能触发 page-fault，使用这个变量
-     *  接口函数为 
+     *  接口函数为
      *  pagefault_disable()
      *      -> pagefault_disabled_inc()
      *  pagefault_enable()
      *      -> pagefault_disabled_dec()
      */
     int				pagefault_disabled; //
-	
+
 #ifdef CONFIG_MMU
 	struct task_struct		*oom_reaper_list;
 #endif
@@ -1860,6 +1871,13 @@ static inline int pid_alive(const struct task_struct *p)
 	return p->thread_pid != NULL;
 }
 
+/**
+ * @brief
+ *
+ * @param tsk
+ * @param ns
+ * @return pid_t
+ */
 static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
 {
 	return __task_pid_nr_ns(tsk, PIDTYPE_PGID, ns);
@@ -2081,7 +2099,7 @@ TASK_PFA_CLEAR(SPEC_IB_DISABLE, spec_ib_disable)
 
 TASK_PFA_TEST(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
 TASK_PFA_SET(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
-    {} /* ++++ */  
+    {} /* ++++ */
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)
 {
@@ -2306,7 +2324,7 @@ extern int _cond_resched(void);
 
 /**
  *  cond_resched 主动让出cpu . why??
- *  
+ *
  */
 #define cond_resched() ({			\
 	___might_sleep(__FILE__, __LINE__, 0);	\
@@ -2344,7 +2362,7 @@ static inline int spin_needbreak(spinlock_t *lock)
 }
 
 /**
- *  
+ *
  */
 static __always_inline bool need_resched(void)
 {
@@ -2357,7 +2375,7 @@ static __always_inline bool need_resched(void)
 #ifdef CONFIG_SMP
 
 /**
- *  
+ *
  */
 static inline unsigned int task_cpu(const struct task_struct *p)
 {

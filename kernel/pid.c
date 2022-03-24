@@ -87,8 +87,15 @@ struct pid_namespace init_pid_ns = {/* 初始的 PID 命名空间(资源名称�
 	 */
 	init_pid_ns.kref = KREF_INIT(2),
 	init_pid_ns.idr = IDR_INIT(init_pid_ns.idr),/*  */
+	/**
+	 *
+	 */
 	init_pid_ns.pid_allocated = PIDNS_ADDING,/*  */
 	init_pid_ns.level = 0,
+	/**
+	 * @brief 收割者
+	 *
+	 */
 	init_pid_ns.child_reaper = &init_task,/*  */
 	init_pid_ns.user_ns = &init_user_ns,/*  */
 	init_pid_ns.ns.inum = PROC_PID_INIT_INO,
@@ -135,6 +142,21 @@ static void delayed_put_pid(struct rcu_head *rhp)
 	put_pid(pid);
 }
 
+/**
+ * @brief 释放 pid
+ *
+ * @param pid
+ *
+ * 可能的调用栈
+ * --------------
+ *   free_pid+1
+ *   release_task.part.19+620
+ *   do_exit+1744
+ *   do_group_exit+58
+ *   __x64_sys_exit_group+20
+ *   do_syscall_64+91
+ *   entry_SYSCALL_64_after_hwframe+101
+ */
 void free_pid(struct pid *pid)
 {
 	/* We can be called with write_lock_irq(&tasklist_lock) held */
@@ -142,18 +164,35 @@ void free_pid(struct pid *pid)
 	unsigned long flags;
 
 	spin_lock_irqsave(&pidmap_lock, flags);
+
+	/**
+	 * @brief
+	 *
+	 */
 	for (i = 0; i <= pid->level; i++) {
 		struct upid *upid = pid->numbers + i;
 		struct pid_namespace *ns = upid->ns;
 		switch (--ns->pid_allocated) {
+		/**
+		 * @brief
+		 *
+		 */
 		case 2:
 		case 1:
 			/* When all that is left in the pid namespace
 			 * is the reaper wake up the reaper.  The reaper
 			 * may be sleeping in zap_pid_ns_processes().
+			 *
+			 * 当在 pid ns 中设想的就剩下 reaper 唤醒 reaper，
+			 * reaper(收割者) 可能在 zap_pid_ns_processes() 中
+			 * 睡眠。
 			 */
 			wake_up_process(ns->child_reaper);
 			break;
+		/**
+		 * @brief
+		 *
+		 */
 		case PIDNS_ADDING:
 			/* Handle a fork failure of the first process */
 			WARN_ON(ns->child_reaper);
@@ -194,6 +233,10 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 	if (set_tid_size > ns->level + 1)
 		return ERR_PTR(-EINVAL);
 
+	/**
+	 * @brief 分配内存
+	 *
+	 */
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
 	if (!pid)
 		return ERR_PTR(retval);
@@ -280,13 +323,32 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 	init_waitqueue_head(&pid->wait_pidfd);
 	INIT_HLIST_HEAD(&pid->inodes);
 
+	/**
+	 * @brief
+	 *
+	 */
 	upid = pid->numbers + ns->level;
+
 	spin_lock_irq(&pidmap_lock);
+
+	/**
+	 * @brief
+	 *
+	 */
 	if (!(ns->pid_allocated & PIDNS_ADDING))
 		goto out_unlock;
+
+	/**
+	 * @brief
+	 *
+	 */
 	for ( ; upid >= pid->numbers; --upid) {
 		/* Make the PID visible to find_pid_ns. */
 		idr_replace(&upid->ns->idr, pid, upid->nr);
+		/**
+		 * @brief 在这个 命名空间中又分配了新的 pid 结构
+		 *
+		 */
 		upid->ns->pid_allocated++;
 	}
 	spin_unlock_irq(&pidmap_lock);
@@ -314,9 +376,17 @@ out_free:
 	return ERR_PTR(retval);
 }
 
+/**
+ * Don't allow any more processes into the pid namespace
+ * 不允许再 添加新的 进程到 ns 中了
+ */
 void disable_pid_allocation(struct pid_namespace *ns)
 {
 	spin_lock_irq(&pidmap_lock);
+	/**
+	 * @brief PIDNS_ADDING 标志位去掉则代表 去使能
+	 *
+	 */
 	ns->pid_allocated &= ~PIDNS_ADDING;
 	spin_unlock_irq(&pidmap_lock);
 }
@@ -489,12 +559,23 @@ struct pid *find_get_pid(pid_t nr)
 }
 EXPORT_SYMBOL_GPL(find_get_pid);
 
+/**
+ * @brief
+ *
+ * @param pid
+ * @param ns
+ * @return pid_t
+ */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;
 	pid_t nr = 0;
 
 	if (pid && ns->level <= pid->level) {
+		/**
+		 * @brief 不同的 level
+		 *
+		 */
 		upid = &pid->numbers[ns->level];
 		if (upid->ns == ns)
 			nr = upid->nr;
@@ -513,6 +594,14 @@ pid_t pid_vnr(struct pid *pid)  /*  */
 }
 EXPORT_SYMBOL_GPL(pid_vnr);
 
+/**
+ * @brief
+ *
+ * @param task
+ * @param type
+ * @param ns
+ * @return pid_t
+ */
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 			struct pid_namespace *ns)
 {

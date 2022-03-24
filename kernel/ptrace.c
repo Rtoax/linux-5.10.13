@@ -74,6 +74,10 @@ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
 		   const struct cred *ptracer_cred)
 {
 	BUG_ON(!list_empty(&child->ptrace_entry));
+	/**
+	 * @brief 添加到链表
+	 *
+	 */
 	list_add(&child->ptrace_entry, &new_parent->ptraced);
 	child->parent = new_parent;
 	child->ptracer_cred = get_cred(ptracer_cred);
@@ -443,6 +447,7 @@ static int ptrace_attach(struct task_struct *task, long request,
 
     /**
      *	将 task->parent 转为 current
+	 *	也就是 current 追踪了 task
      */
 	ptrace_link(task, current);
 
@@ -617,10 +622,22 @@ void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
 {
 	struct task_struct *p, *n;
 
+	/**
+	 * @brief 遍历所有被追踪的进程
+	 *
+	 */
 	list_for_each_entry_safe(p, n, &tracer->ptraced, ptrace_entry) {
+		/**
+		 * @brief 如果设置了标志 PT_EXITKILL， 那么将被追踪的进程杀死
+		 *
+		 */
 		if (unlikely(p->ptrace & PT_EXITKILL))
 			send_sig_info(SIGKILL, SEND_SIG_PRIV, p);
 
+		/**
+		 * @brief 直接 detach，并把他添加到 dead 链表
+		 *
+		 */
 		if (__ptrace_detach(tracer, p))
 			list_add(&p->ptrace_entry, dead);
 	}

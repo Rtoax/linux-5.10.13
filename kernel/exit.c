@@ -179,6 +179,11 @@ void put_task_struct_rcu_user(struct task_struct *task)
 		call_rcu(&task->rcu, delayed_put_task_struct);
 }
 
+/**
+ * @brief 释放 task
+ *
+ * @param p
+ */
 void release_task(struct task_struct *p)
 {
 	struct task_struct *leader;
@@ -191,26 +196,51 @@ repeat:
 	atomic_dec(&__task_cred(p)->user->processes);
 	rcu_read_unlock();
 
+	/**
+	 * @brief 释放 cgroup
+	 *
+	 */
 	cgroup_release(p);
 
 	write_lock_irq(&tasklist_lock);
+
+	/**
+	 * @brief 将进程从 链表中删除
+	 *
+	 */
 	ptrace_release_task(p);
+
 	thread_pid = get_pid(p->thread_pid);
+
+	/**
+	 * @brief
+	 *
+	 */
 	__exit_signal(p);
 
 	/*
 	 * If we are the last non-leader member of the thread
 	 * group, and the leader is zombie, then notify the
 	 * group leader's parent process. (if it wants notification.)
+	 *
+	 * 如果我们是线程组最后一个非leader，并且这个 leader 是僵尸进程，
+	 * 那么通知 group leader 的父进程。
 	 */
 	zap_leader = 0;
 	leader = p->group_leader;
+	/**
+	 * @brief
+	 *
+	 */
 	if (leader != p && thread_group_empty(leader)
 			&& leader->exit_state == EXIT_ZOMBIE) {
 		/*
 		 * If we were the last child thread and the leader has
 		 * exited already, and the leader's parent ignores SIGCHLD,
 		 * then we are the one who should release the leader.
+		 *
+		 * 如果我们是最后一个子线程，并且 leader 已经推出了，并且 leader 的
+		 * 父进程忽略 SIGCHLD 信号，那么我们应该把 leader 释放了
 		 */
 		zap_leader = do_notify_parent(leader, leader->exit_signal);
 		if (zap_leader)
@@ -221,6 +251,11 @@ repeat:
 	seccomp_filter_release(p);
 	proc_flush_pid(thread_pid);
 	put_pid(thread_pid);
+
+	/**
+	 * @brief x86_64, arm64 为空
+	 *
+	 */
 	release_thread(p);
 	put_task_struct_rcu_user(p);
 
@@ -489,10 +524,20 @@ static void exit_mm(void)
 		exit_oom_victim();
 }
 
+/**
+ * @brief 查找一个进程
+ *
+ * @param p
+ * @return struct task_struct*
+ */
 static struct task_struct *find_alive_thread(struct task_struct *p)
 {
 	struct task_struct *t;
 
+	/**
+	 * @brief 遍历
+	 *
+	 */
 	for_each_thread(p, t) {
 		if (!(t->flags & PF_EXITING))
 			return t;
@@ -520,27 +565,51 @@ static struct task_struct *find_child_reaper(struct task_struct *father,
 	struct task_struct *reaper = pid_ns->child_reaper;
 	struct task_struct *p, *n;
 
+	/**
+	 * @brief 当前进程就是收割者，直接返回
+	 *
+	 */
 	if (likely(reaper != father))
 		return reaper;
 
+	/**
+	 * @brief 如果 father 不是收割者，那么选择一个存活的进程作为收割者
+	 *
+	 */
 	reaper = find_alive_thread(father);
 	if (reaper) {
+		/**
+		 * @brief 如果找到了，更新 pid 命名空间的 收割者，然后返回
+		 *
+		 */
 		pid_ns->child_reaper = reaper;
 		return reaper;
 	}
 
 	write_unlock_irq(&tasklist_lock);
 
+	/**
+	 * @brief 如果 进程追宗了别的进程，那么 dead 链表不为空，并且保存了
+	 * 		  被追踪的进程s.
+	 *
+	 */
 	list_for_each_entry_safe(p, n, dead, ptrace_entry) {
+		/**
+		 * @brief 把这个被追踪的进程从链表删除
+		 */
 		list_del_init(&p->ptrace_entry);
+		/**
+		 * @brief 释放进程
+		 */
 		release_task(p);
 	}
 
 	/**
-	 * @brief Construct a new zap pid ns processes object
+	 * @brief
 	 *
 	 */
 	zap_pid_ns_processes(pid_ns);
+
 	write_lock_irq(&tasklist_lock);
 
 	return father;
@@ -626,10 +695,14 @@ static void forget_original_parent(struct task_struct *father,
 	struct task_struct *p, *t, *reaper;
 
 	/**
-	 * @brief
-	 *
+	 * @brief 此时 dead 为空
+	 * 如果 father 进程正在追踪别的进程，ptraced 不为空
 	 */
 	if (unlikely(!list_empty(&father->ptraced)))
+		/**
+		 * @brief 这时，将会填充链表 dead
+		 *
+		 */
 		exit_ptrace(father, dead);
 
 	/**
@@ -641,6 +714,10 @@ static void forget_original_parent(struct task_struct *father,
 	if (list_empty(&father->children))
 		return;
 
+	/**
+	 * @brief
+	 *
+	 */
 	reaper = find_new_reaper(father, reaper);
 	list_for_each_entry(p, &father->children, sibling) {
 		for_each_thread(p, t) {
@@ -706,8 +783,13 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	/* mt-exec, de_thread() is waiting for group leader */
 	if (unlikely(tsk->signal->notify_count < 0))
 		wake_up_process(tsk->signal->group_exit_task);
+
 	write_unlock_irq(&tasklist_lock);
 
+	/**
+	 * @brief
+	 *
+	 */
 	list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
 		list_del_init(&p->ptrace_entry);
 		release_task(p);
@@ -1438,6 +1520,13 @@ static int do_wait_thread(struct wait_opts *wo, struct task_struct *tsk)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param wo
+ * @param tsk
+ * @return int
+ */
 static int ptrace_do_wait(struct wait_opts *wo, struct task_struct *tsk)
 {
 	struct task_struct *p;

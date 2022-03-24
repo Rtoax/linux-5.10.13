@@ -661,10 +661,15 @@ static inline int get_nr_threads(struct task_struct *task)
 }
 
 /**
- *  领头进程
+ *  领头进程，当前进程是否为 leader
  */
 static inline bool thread_group_leader(struct task_struct *p)
 {
+	/**
+	 * @brief
+	 *
+	 * The exit_signal the parent process will be sent when the child exits.
+	 */
 	return p->exit_signal >= 0;
 }
 

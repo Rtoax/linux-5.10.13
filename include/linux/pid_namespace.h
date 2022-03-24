@@ -18,7 +18,7 @@
 struct fs_pin;
 
 /**
- *  
+ *
  *  全局静态变量: `init_pid_ns`
  */
 struct pid_namespace {  /* pid 隔离 namespace */
@@ -27,7 +27,18 @@ struct pid_namespace {  /* pid 隔离 namespace */
      */
 	struct kref kref;
 	struct idr idr; /* ID to Pointer */
+    /**
+     * @brief
+     *
+     */
 	struct rcu_head rcu;
+    /**
+     * @brief
+     *
+     * 初始值= PIDNS_ADDING = 1000 0000 0000 0000 0000 0000 0000 0000
+     *  (见create_pid_namespace())
+     *
+     */
 	unsigned int pid_allocated;
 
     /**
@@ -48,12 +59,12 @@ struct pid_namespace {  /* pid 隔离 namespace */
      *  父亲
      */
 	struct pid_namespace *parent;
-    
+
 #ifdef CONFIG_BSD_PROCESS_ACCT
 	struct fs_pin *bacct;
 #endif
     /**
-     *  
+     *
      */
 	struct user_namespace *user_ns;
     /**
@@ -69,6 +80,12 @@ struct pid_namespace {  /* pid 隔离 namespace */
 
 extern struct pid_namespace init_pid_ns;
 
+/**
+ * @brief   PIDNS_ADDING 标志位去掉则代表 去使能
+ *
+ * disable_pid_allocation
+ *
+ */
 #define PIDNS_ADDING (1U << 31) /*  */
 
 #ifdef CONFIG_PID_NS

@@ -65,11 +65,20 @@ struct upid {   /*  */
  */
 struct pid/* task_struct.thread_pid  */
 {
+	/**
+	 *	引用计数
+	 */
 	refcount_t count;
+	/**
+	 *	级别
+	 */
 	unsigned int level;
 	spinlock_t lock;
 
-	/* lists of tasks that use this pid */
+	/**
+	 * lists of tasks that use this pid
+	 * 链表节点在 task_struct->pid_links[PIDTYPE_MAX]
+	 */
 	struct hlist_head tasks[PIDTYPE_MAX];
 	struct hlist_head inodes;
 

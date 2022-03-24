@@ -20,7 +20,7 @@ struct uid_gid_extent {
 	u32 count;
 };
 /**
- *  
+ *
  */
 struct uid_gid_map { /* 64 bytes -- 1 cache line */
 	u32 nr_extents;
@@ -62,7 +62,7 @@ enum ucount_type {  /*  */
  */
 struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
     /**
-     *  
+     *
      */
 	struct uid_gid_map	uid_map;
 	struct uid_gid_map	gid_map;
@@ -72,6 +72,10 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
      *  指向父亲
      */
 	struct user_namespace	*parent;
+	/**
+	 * @brief
+	 *
+	 */
 	int			level;
 	kuid_t			owner;
 	kgid_t			group;
@@ -94,7 +98,7 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
 	struct key		*persistent_keyring_register;
 #endif
     /**
-     *  
+     *
      */
 	struct work_struct	work;
 #ifdef CONFIG_SYSCTL

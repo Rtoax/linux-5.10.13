@@ -67,6 +67,13 @@ static void dec_pid_namespaces(struct ucounts *ucounts)
 	dec_ucount(ucounts, UCOUNT_PID_NAMESPACES);
 }
 
+/**
+ * @brief Create a pid namespace object
+ *
+ * @param user_ns
+ * @param parent_pid_ns
+ * @return struct pid_namespace*
+ */
 static struct pid_namespace *create_pid_namespace(struct user_namespace *user_ns,
 	struct pid_namespace *parent_pid_ns)
 {
@@ -108,6 +115,10 @@ static struct pid_namespace *create_pid_namespace(struct user_namespace *user_ns
 		goto out_free_idr;
 	ns->ns.ops = &pidns_operations;
 
+	/**
+	 * @brief 初始化变量
+	 *
+	 */
 	kref_init(&ns->kref);
 	ns->level = level;
 	ns->parent = get_pid_ns(parent_pid_ns);
@@ -186,13 +197,16 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 	int rc;
 	struct task_struct *task, *me = current;
 	/**
-	 * @brief 是否为 leader
+	 * @brief 当前进程是否为 leader
 	 *
 	 */
 	int init_pids = thread_group_leader(me) ? 1 : 2;
 	struct pid *pid;
 
-	/* Don't allow any more processes into the pid namespace */
+	/**
+	 * Don't allow any more processes into the pid namespace
+	 * 不允许再 添加新的 进程到 ns 中了
+	 */
 	disable_pid_allocation(pid_ns);
 
 	/*
@@ -238,7 +252,7 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 		rc = kernel_wait4(-1, NULL, __WALL, NULL);
 	} while (rc != -ECHILD);
 
-	/*
+	/**
 	 * kernel_wait4() misses EXIT_DEAD children, and EXIT_ZOMBIE
 	 * process whose parents processes are outside of the pid
 	 * namespace.  Such processes are created with setns()+fork().
@@ -260,15 +274,38 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 	 *
 	 * Once all of the other tasks are gone from the pid_namespace
 	 * free_pid() will awaken this task.
+	 *
+	 * 谷歌翻译
+	 * ====================
+	 * kernel_wait4() 错过了 EXIT_DEAD 子进程，以及其父进程位于 pid 命名空间
+	 * 之外的 EXIT_ZOMBIE 进程。 此类进程是使用 setns()+fork() 创建的。
+	 *
+	 * 如果那些 EXIT_ZOMBIE 进程在它们的父进程退出之前没有被它们的父进程收割，它
+	 * 们将被重新设置为 pid_ns->child_reaper。 因此 pidns->child_reaper 需
+	 * 要保持有效，直到它们全部消失。
+	 *
+	 * 该代码依赖于 pid_ns->child_reaper 忽略 SIGCHILD 以导致那些 EXIT_ZOMBIE
+	 * 进程在重新父级时自动回收。
+	 *
+	 * 从语义上讲，在允许 child_reaper 被收割之前等待 EXIT_ZOMBIE 进程也是可取的，
+	 * 因为这给出了当 pid 命名空间的 init 进程被收割时，pid 命名空间中的所有进程都
+	 * 消失的不变性。
+	 *
+	 * 一旦所有其他任务都从 pid_namespace 中消失，free_pid() 将唤醒此任务。
 	 */
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
 		/**
 		 * @brief
-		 *
+		 * 如果是 group leader： init_pids = 1
+		 * 否则， init_pids = 2
 		 */
 		if (pid_ns->pid_allocated == init_pids)
 			break;
+		/**
+		 * 睡眠
+		 *
+		 */
 		schedule();
 	}
 	__set_current_state(TASK_RUNNING);
@@ -453,6 +490,7 @@ static struct user_namespace *pidns_owner(struct ns_common *ns)
 {
 	return to_pid_ns(ns)->user_ns;
 }
+
 /**
  *  /proc/PID/ns/pid
  */

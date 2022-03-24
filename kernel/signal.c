@@ -1912,6 +1912,12 @@ static void do_notify_pidfd(struct task_struct *task)
  *
  * Returns true if our parent ignored us and so we've switched to
  * self-reaping.
+ *
+ * 让一个父亲指导一个孩子已经死了
+ * 如果是 stopped/continued 状态的变化，用 do_notify_parent_cldstop() 接口
+ *
+ * 返回
+ * 如果父亲忽略我们，并且我们开始自己收割自己，那么返回true
  */
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {
@@ -2005,6 +2011,11 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 	 */
 	if (valid_signal(sig) && sig)
 		__send_signal(sig, &info, tsk->parent, PIDTYPE_TGID, false);
+
+	/**
+	 * @brief
+	 *
+	 */
 	__wake_up_parent(tsk, tsk->parent);
 	spin_unlock_irqrestore(&psig->siglock, flags);
 
