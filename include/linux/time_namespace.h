@@ -17,13 +17,17 @@ struct timens_offsets {
 	struct timespec64 boottime;
 };
 /**
- *  
+ *  time命名空间
  */
 struct time_namespace {
 	struct kref		kref;
 	struct user_namespace	*user_ns;
 	struct ucounts		*ucounts;
 	struct ns_common	ns;
+	/**
+	 * @brief
+	 *
+	 */
 	struct timens_offsets	offsets;
 	struct page		*vvar_page;
 	/* If set prevents changing offsets after any task joined namespace. */

@@ -308,6 +308,13 @@ static int timens_install(struct nsset *nsset, struct ns_common *new)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param nsproxy
+ * @param tsk
+ * @return int
+ */
 int timens_on_fork(struct nsproxy *nsproxy, struct task_struct *tsk)
 {
 	struct ns_common *nsc = &nsproxy->time_ns_for_children->ns;

@@ -53,6 +53,10 @@ enum pid_type   /*  */
 
 struct upid {   /*  */
 	int nr;     /*  */
+	/**
+	 * @brief Namespace
+	 *
+	 */
 	struct pid_namespace *ns;   /*  */
 };
 
@@ -64,7 +68,7 @@ struct pid/* task_struct.thread_pid  */
 	refcount_t count;
 	unsigned int level;
 	spinlock_t lock;
-    
+
 	/* lists of tasks that use this pid */
 	struct hlist_head tasks[PIDTYPE_MAX];
 	struct hlist_head inodes;
@@ -72,6 +76,10 @@ struct pid/* task_struct.thread_pid  */
     /* wait queue for pidfd notifications */
 	wait_queue_head_t wait_pidfd;
 	struct rcu_head rcu;
+	/**
+	 * @brief
+	 *
+	 */
 	struct upid numbers[1];
 };
 
@@ -153,6 +161,10 @@ extern void disable_pid_allocation(struct pid_namespace *ns);
  */
 static inline struct pid_namespace *ns_of_pid(struct pid *_pid)  /*  */
 {
+	/**
+	 * @brief
+	 *
+	 */
 	struct pid_namespace *ns = NULL;
 	if (_pid)
 		ns = _pid->numbers[_pid->level].ns;
@@ -168,7 +180,7 @@ static inline struct pid_namespace *ns_of_pid(struct pid *_pid)  /*  */
 static inline bool is_child_reaper(struct pid *_pid)
 {
     /**
-     *  
+     *
      */
 	return _pid->numbers[_pid->level].nr == 1;
 }

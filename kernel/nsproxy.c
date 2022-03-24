@@ -66,10 +66,12 @@ static inline struct nsproxy *create_nsproxy(void)  /*  */
 	return nsproxy;
 }
 
-/*
+/**
  * Create new nsproxy and all of its the associated namespaces.
  * Return the newly created nsproxy.  Do not attach this to the task,
  * leave it to the caller to do proper locking and attach it to task.
+ *
+ * 新建那些 ns，并拷贝
  */
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct task_struct *tsk, struct user_namespace *user_ns,
@@ -149,6 +151,10 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 	}
 	new_nsp->time_ns = get_time_ns(tsk->nsproxy->time_ns);
 
+	/**
+	 * @brief 返回新的 ns 结构
+	 *
+	 */
 	return new_nsp;
 
 out_time:
@@ -179,11 +185,19 @@ out_ns:
  */
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 {
+	/**
+	 * @brief
+	 *
+	 */
 	struct nsproxy *old_ns = tsk->nsproxy;
 	struct user_namespace *user_ns = task_cred_xxx(tsk, user_ns);
 	struct nsproxy *new_ns;
 	int ret;
 
+	/**
+	 * @brief 如果下面的都 没有 设置
+	 *
+	 */
 	if (likely(!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
 			      CLONE_NEWPID | CLONE_NEWNET |
 			      CLONE_NEWCGROUP | CLONE_NEWTIME)))) {
@@ -191,6 +205,10 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 			get_nsproxy(old_ns);
 			return 0;
 		}
+	/**
+	 * @brief 如果设置了其中之一
+	 *	如果没有权限创建新的 ns，那么返回错误
+	 */
 	} else if (!ns_capable(user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
@@ -202,7 +220,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 	 * it along with CLONE_NEWIPC.
 	 */
 	if ((flags & (CLONE_NEWIPC | CLONE_SYSVSEM)) ==
-		(CLONE_NEWIPC | CLONE_SYSVSEM)) 
+		(CLONE_NEWIPC | CLONE_SYSVSEM))
 		return -EINVAL;
 
     /**
@@ -213,7 +231,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 		return  PTR_ERR(new_ns);
 
     /**
-     *  
+     *
      */
 	ret = timens_on_fork(new_ns, tsk);
 	if (ret) {
@@ -221,10 +239,19 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
 		return ret;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	tsk->nsproxy = new_ns;
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param ns
+ */
 void free_nsproxy(struct nsproxy *ns)
 {
 	if (ns->mnt_ns)
@@ -253,9 +280,9 @@ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 {
 	struct user_namespace *user_ns;
 	int err = 0;
-    
+
     /**
-     *  
+     *
      */
 	if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
 			       CLONE_NEWNET | CLONE_NEWPID | CLONE_NEWCGROUP |
@@ -267,7 +294,7 @@ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 		return -EPERM;
 
     /**
-     *  
+     *
      */
 	*new_nsp = create_new_namespaces(unshare_flags, current, user_ns,
 					 new_fs ? new_fs : current->fs);
@@ -571,7 +598,7 @@ static void commit_nsset(struct nsset *nsset)
 }
 
 /**
- *  
+ *
  */
 int setns(int fd, int nstype){}//+++++
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
@@ -601,7 +628,7 @@ SYSCALL_DEFINE2(setns, int, fd, int, flags)
 		goto out;
 
     /**
-     *  
+     *
      */
 	err = prepare_nsset(flags, &__nsset);
 	if (err)
@@ -613,7 +640,7 @@ SYSCALL_DEFINE2(setns, int, fd, int, flags)
 		err = validate_ns(&__nsset, ns);
 	else
 		err = validate_nsset(&__nsset, file->private_data);
-    
+
 	if (!err) {
 		commit_nsset(&__nsset);
 		perf_event_namespaces(current);

@@ -31,7 +31,7 @@ struct fs_struct;
 struct nsproxy {/* 命名空间代理 */
 	atomic_t count;
     /**
-     *  
+     *
      */
 	struct uts_namespace *uts_ns;
 	struct ipc_namespace *ipc_ns;
@@ -39,6 +39,11 @@ struct nsproxy {/* 命名空间代理 */
 	struct pid_namespace *pid_ns_for_children;
 	struct net 	     *net_ns;   /* 网络 */
 	struct time_namespace *time_ns;
+
+	/**
+	 * @brief
+	 *
+	 */
 	struct time_namespace *time_ns_for_children;
 	struct cgroup_namespace *cgroup_ns;
 };
@@ -53,12 +58,12 @@ extern struct nsproxy init_nsproxy;
  * to a modifiable set is needed nsset_cred() must be
  * used and tested.
  *
- * 
+ *
  */
 struct nsset {  /*  */
 	unsigned flags;
     /**
-     *  
+     *
      */
 	struct nsproxy *nsproxy;
 	struct fs_struct *fs;

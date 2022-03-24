@@ -78,8 +78,13 @@ int pid_max_max = PID_MAX_LIMIT;
  * first use and are never deallocated. This way a low pid_max
  * value does not cause lots of bitmaps to be allocated, but
  * the scheme scales to up to 4 million PIDs, runtime.
+ * *
+ * 参见： init_nsproxy 全局变量
  */
 struct pid_namespace init_pid_ns = {/* 初始的 PID 命名空间(资源名称隔离) */
+	/**
+	 *
+	 */
 	init_pid_ns.kref = KREF_INIT(2),
 	init_pid_ns.idr = IDR_INIT(init_pid_ns.idr),/*  */
 	init_pid_ns.pid_allocated = PIDNS_ADDING,/*  */
