@@ -500,11 +500,22 @@ static struct task_struct *find_alive_thread(struct task_struct *p)
 	return NULL;
 }
 
+/**
+ * @brief
+ *
+ * @param father
+ * @param dead
+ * @return struct task_struct*
+ */
 static struct task_struct *find_child_reaper(struct task_struct *father,
 						struct list_head *dead)
 	__releases(&tasklist_lock)
 	__acquires(&tasklist_lock)
 {
+	/**
+	 * @brief
+	 *
+	 */
 	struct pid_namespace *pid_ns = task_active_pid_ns(father);
 	struct task_struct *reaper = pid_ns->child_reaper;
 	struct task_struct *p, *n;
@@ -525,6 +536,10 @@ static struct task_struct *find_child_reaper(struct task_struct *father,
 		release_task(p);
 	}
 
+	/**
+	 * @brief Construct a new zap pid ns processes object
+	 *
+	 */
 	zap_pid_ns_processes(pid_ns);
 	write_lock_irq(&tasklist_lock);
 
@@ -610,9 +625,17 @@ static void forget_original_parent(struct task_struct *father,
 {
 	struct task_struct *p, *t, *reaper;
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (unlikely(!list_empty(&father->ptraced)))
 		exit_ptrace(father, dead);
 
+	/**
+	 * @brief
+	 *
+	 */
 	/* Can drop and reacquire tasklist_lock */
 	reaper = find_child_reaper(father, dead);
 	if (list_empty(&father->children))
@@ -651,6 +674,11 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	LIST_HEAD(dead);
 
 	write_lock_irq(&tasklist_lock);
+
+	/**
+	 * @brief 忘记了 原始的 parent？忘了你爹是谁？
+	 *
+	 */
 	forget_original_parent(tsk, &dead);
 
 	if (group_dead)
@@ -710,8 +738,17 @@ static void check_stack_usage(void)
 //static inline void check_stack_usage(void) {}
 #endif
 
+/**
+ * @brief
+ *
+ * @param code
+ */
 void __noreturn do_exit(long code)
 {
+	/**
+	 * @brief 当前进程
+	 *
+	 */
 	struct task_struct *tsk = current;
 	int group_dead;
 
@@ -828,6 +865,11 @@ void __noreturn do_exit(long code)
 	flush_ptrace_hw_breakpoint(tsk);
 
 	exit_tasks_rcu_start();
+
+	/**
+	 * @brief
+	 *
+	 */
 	exit_notify(tsk, group_dead);
 	proc_exit_connector(tsk);
 	mpol_put_task_policy(tsk);
@@ -907,6 +949,10 @@ do_group_exit(int exit_code)
 		spin_unlock_irq(&sighand->siglock);
 	}
 
+	/**
+	 * @brief Construct a new do exit object
+	 *
+	 */
 	do_exit(exit_code);
 	/* NOTREACHED */
 }
@@ -1483,7 +1529,7 @@ end:
 }
 
 /**
- *  
+ *
  */
 static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 			  int options, struct rusage *ru)
@@ -1553,7 +1599,7 @@ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 
 
 /**
- *  
+ *
  *
  * @which   P_ALL,...
  */
@@ -1565,7 +1611,7 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 	struct waitid_info info = {.status = 0};
 
     /**
-     *  
+     *
      */
 	long err = kernel_waitid(which, upid, &info, options, ru ? &r : NULL);
 	int signo = 0;
@@ -1583,7 +1629,7 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 		return -EFAULT;
 
     /**
-     *  
+     *
      */
 	unsafe_put_user(signo, &infop->si_signo, Efault);
 	unsafe_put_user(0, &infop->si_errno, Efault);
@@ -1658,7 +1704,7 @@ int kernel_wait(pid_t pid, int *stat)
 }
 
 /**
- *  
+ *
  */
 pid_t wait4(pid_t pid, int *status, int options, struct rusage *rusage);
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,

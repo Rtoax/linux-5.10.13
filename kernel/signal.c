@@ -542,7 +542,7 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 	struct k_sigaction *ka = &t->sighand->action[0];
 
     /**
-     *  
+     *
      */
 	for (i = _NSIG ; i != 0 ; i--) {
 		if (force_default || ka->sa.sa_handler != SIG_IGN)
@@ -1622,7 +1622,7 @@ send_sig(int sig, struct task_struct *p, int priv)
 EXPORT_SYMBOL(send_sig);
 
 /**
- *  
+ *
  */
 void force_sig(int sig) /*  */
 {
@@ -2533,6 +2533,13 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info)
 	return signr;
 }
 
+/**
+ * @brief Get the signal object
+ *
+ * @param ksig
+ * @return true
+ * @return false
+ */
 bool get_signal(struct ksignal *ksig)
 {
 	struct sighand_struct *sighand = current->sighand;
@@ -2761,8 +2768,9 @@ relock:
 			do_coredump(&ksig->info);
 		}
 
-		/*
+		/**
 		 * Death signals, no core dump.
+		 *
 		 */
 		do_group_exit(ksig->info.si_signo);
 		/* NOTREACHED */
@@ -2774,7 +2782,7 @@ relock:
 }
 
 /**
- * signal_delivered - 
+ * signal_delivered -
  * @ksig:		kernel signal struct
  * @stepping:		nonzero if debugger single-step or block-step in use
  *
@@ -4314,7 +4322,7 @@ COMPAT_SYSCALL_DEFINE4(rt_sigaction, int, sig,
 
 	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
 	if (!ret && oact) {
-		ret = put_user(ptr_to_compat(old_ka.sa.sa_handler), 
+		ret = put_user(ptr_to_compat(old_ka.sa.sa_handler),
 			       &oact->sa_handler);
 		ret |= put_compat_sigset(&oact->sa_mask, &old_ka.sa.sa_mask,
 					 sizeof(oact->sa_mask));
@@ -4493,7 +4501,7 @@ SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
 		return -EFAULT;
 	return sigsuspend(&newset);
 }
- 
+
 #ifdef CONFIG_COMPAT
 COMPAT_SYSCALL_DEFINE2(rt_sigsuspend, compat_sigset_t __user *, unewset, compat_size_t, sigsetsize)
 {

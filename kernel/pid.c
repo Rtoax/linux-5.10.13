@@ -46,7 +46,7 @@
 #include <uapi/linux/pidfd.h>
 
 /**
- *  
+ *
  */
 struct pid init_struct_pid = {/* PID 的哈希表 */
 	init_struct_pid.count		= REFCOUNT_INIT(1),/* 引用计数为 1 */
@@ -57,7 +57,7 @@ struct pid init_struct_pid = {/* PID 的哈希表 */
 	},
 
     /**
-     *  
+     *
      */
 	init_struct_pid.level		= 0,
 	init_struct_pid.numbers	= { {
@@ -524,7 +524,7 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 EXPORT_SYMBOL(__task_pid_nr_ns);
 
 /**
- *  
+ *	激活的pid namespace
  */
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
@@ -628,7 +628,7 @@ SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 	return fd;
 }
 /**
- *  
+ *
  */
 void __init pid_idr_init(void)  /*   */
 {
@@ -642,7 +642,7 @@ void __init pid_idr_init(void)  /*   */
 				PIDS_PER_CPU_MIN * num_possible_cpus());
 	pr_info("pid_max: default: %u minimum: %u\n", pid_max, pid_max_min);
     /**
-     *  
+     *
      */
 	idr_init(&init_pid_ns.idr); /* ID to pointer */
 

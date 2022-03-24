@@ -175,11 +175,20 @@ void put_pid_ns(struct pid_namespace *ns)
 }
 EXPORT_SYMBOL_GPL(put_pid_ns);
 
+/**
+ * @brief
+ *
+ * @param pid_ns
+ */
 void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 {
 	int nr;
 	int rc;
 	struct task_struct *task, *me = current;
+	/**
+	 * @brief 是否为 leader
+	 *
+	 */
 	int init_pids = thread_group_leader(me) ? 1 : 2;
 	struct pid *pid;
 
@@ -254,6 +263,10 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 	 */
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
+		/**
+		 * @brief
+		 *
+		 */
 		if (pid_ns->pid_allocated == init_pids)
 			break;
 		schedule();
@@ -384,7 +397,7 @@ static void pidns_put(struct ns_common *ns)
 	put_pid_ns(to_pid_ns(ns));
 }
 /**
- *  
+ *
  */
 static int pidns_install(struct nsset *_nsset, struct ns_common *ns)
 {
