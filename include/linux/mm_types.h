@@ -585,6 +585,10 @@ struct vm_area_struct { /* VMA */
 #ifdef CONFIG_NUMA
 	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
 #endif
+	/**
+	 * @brief userfaultfd(2) 上下文
+	 *
+	 */
 	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
 } __randomize_layout;
 

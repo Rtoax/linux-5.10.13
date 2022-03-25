@@ -895,6 +895,13 @@ void userfaultfd_unmap_complete(struct mm_struct *mm, struct list_head *uf)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param inode
+ * @param file
+ * @return int
+ */
 static int userfaultfd_release(struct inode *inode, struct file *file)
 {
 	struct userfaultfd_ctx *ctx = file->private_data;
@@ -919,14 +926,30 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
 	 */
 	mmap_write_lock(mm);
 	prev = NULL;
+	/**
+	 * @brief 遍历 mm 的 vma 链表
+	 *
+	 */
 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+		/**
+		 * @brief
+		 *
+		 */
 		cond_resched();
 		BUG_ON(!!vma->vm_userfaultfd_ctx.ctx ^
 		       !!(vma->vm_flags & (VM_UFFD_MISSING | VM_UFFD_WP)));
+		/**
+		 * @brief 每个 vma 都有 userfault 上下文信息
+		 *
+		 */
 		if (vma->vm_userfaultfd_ctx.ctx != ctx) {
 			prev = vma;
 			continue;
 		}
+		/**
+		 * @brief
+		 *
+		 */
 		new_flags = vma->vm_flags & ~(VM_UFFD_MISSING | VM_UFFD_WP);
 		prev = vma_merge(mm, prev, vma->vm_start, vma->vm_end,
 				 new_flags, vma->anon_vma,
@@ -937,7 +960,15 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
 			vma = prev;
 		else
 			prev = vma;
+		/**
+		 * @brief
+		 *
+		 */
 		vma->vm_flags = new_flags;
+		/**
+		 * @brief 清空
+		 *
+		 */
 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 	}
 	mmap_write_unlock(mm);
