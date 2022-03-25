@@ -331,6 +331,10 @@ int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES] = {
 	[ZONE_MOVABLE] = 0,
 };
 
+/**
+ * @brief
+ *
+ */
 static char * const zone_names[MAX_NR_ZONES] = {
 #ifdef CONFIG_ZONE_DMA
 	 "DMA",
@@ -348,6 +352,10 @@ static char * const zone_names[MAX_NR_ZONES] = {
 #endif
 };
 
+/**
+ * @brief
+ *
+ */
 const char * const migratetype_names[MIGRATE_TYPES] = {
 	"Unmovable",
 	"Movable",
@@ -6034,7 +6042,7 @@ EXPORT_SYMBOL(free_pages_exact);
  *
  *     nr_free_zone_pages = managed_pages - high_pages
  *
- * Return: number of pages beyond high watermark.
+ * Return: number of pages beyond high watermark. 超出高水位的 页数
  */
 static unsigned long nr_free_zone_pages(int offset) /* 高水位以上的 pages */
 {
@@ -6046,6 +6054,10 @@ static unsigned long nr_free_zone_pages(int offset) /* 高水位以上的 pages 
 
 	struct zonelist *zonelist = /* 获取 ZONE list */node_zonelist(numa_node_id(), GFP_KERNEL);
 
+	/**
+	 * @brief 遍历 zone
+	 *
+	 */
 	for_each_zone_zonelist(zone, z, zonelist, offset) {
 		unsigned long size = zone_managed_pages(zone);  /* 读取管理页数量 */
 		unsigned long high = high_wmark_pages(zone);    /* high 水位 pages */
@@ -6064,6 +6076,8 @@ static unsigned long nr_free_zone_pages(int offset) /* 高水位以上的 pages 
  *
  * Return: number of pages beyond high watermark within ZONE_DMA and
  * ZONE_NORMAL.
+ *
+ * 超出高水位的 页数
  */
 unsigned long nr_free_buffer_pages(void)    /* 超出高水位的 页数 */
 {
@@ -9232,6 +9246,10 @@ static void setup_per_zone_lowmem_reserve(void)
  */
 static void __setup_per_zone_wmarks(void)
 {
+	/**
+	 * @brief min_free_kbytes >> (12 - 10)
+	 *
+	 */
 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
 	unsigned long lowmem_pages = 0;
 	struct zone *zone;
@@ -9269,6 +9287,7 @@ static void __setup_per_zone_wmarks(void)
 			/*
 			 * If it's a lowmem zone, reserve a number of pages
 			 * proportionate to the zone's size.
+			 * 最低警戒水位
 			 */
 			zone->_watermark[WMARK_MIN] = tmp;
 		}
@@ -9291,7 +9310,13 @@ static void __setup_per_zone_wmarks(void)
          *
          */
 		zone->watermark_boost = 0;
+        /**
+         * LOW 水位
+         */
 		zone->_watermark[WMARK_LOW]  = min_wmark_pages(zone) + tmp;
+        /**
+         * HIGH 水位
+         */
 		zone->_watermark[WMARK_HIGH] = min_wmark_pages(zone) + tmp * 2;
 
 		spin_unlock_irqrestore(&zone->lock, flags);
@@ -9352,15 +9377,21 @@ int __meminit init_per_zone_wmark_min(void) /*  */
 	int new_min_free_kbytes;
 
     /**
-     *  lowmem_kbytes = 超出高水位的 页数 * 4
+     *  lowmem_kbytes = 超出高水位的 kb * 4
+	 *  也就是说这个时候 高水位已经定了?
      */
 	lowmem_kbytes = nr_free_buffer_pages() * (PAGE_SIZE >> 10);
 
     /**
      *  计算 min_free_kbytes
+	 *  最小水位 = 4 * sqrt(高水位页数)
      */
 	new_min_free_kbytes = int_sqrt(lowmem_kbytes * 16);
 
+	/**
+	 * user_min_free_kbytes 初始值为 -1
+	 *
+	 */
 	if (new_min_free_kbytes > user_min_free_kbytes) {
 
         /**
