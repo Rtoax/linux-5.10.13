@@ -32,6 +32,10 @@ int __read_mostly sysctl_unprivileged_userfaultfd  = 1;
 
 static struct kmem_cache __read_mostly *userfaultfd_ctx_cachep ;
 
+/**
+ * @brief
+ *
+ */
 enum userfaultfd_state {
 	UFFD_STATE_WAIT_API,
 	UFFD_STATE_RUNNING,
@@ -91,7 +95,17 @@ struct userfaultfd_unmap_ctx {
 	struct list_head list;
 };
 
+/**
+ * @brief
+ *
+ */
 struct userfaultfd_wait_queue {
+	/**
+	 * @brief 携带了一个 msg
+	 *
+	 * 是谁填充？
+	 *
+	 */
 	struct uffd_msg msg;
 	wait_queue_entry_t wq;
 	struct userfaultfd_ctx *ctx;
@@ -177,6 +191,11 @@ static void userfaultfd_ctx_put(struct userfaultfd_ctx *ctx)
 	}
 }
 
+/**
+ * @brief 初始化
+ *
+ * @param msg
+ */
 static inline void msg_init(struct uffd_msg *msg)
 {
 	BUILD_BUG_ON(sizeof(struct uffd_msg) != 32);
@@ -187,15 +206,42 @@ static inline void msg_init(struct uffd_msg *msg)
 	memset(msg, 0, sizeof(struct uffd_msg));
 }
 
+/**
+ * @brief 生成消息
+ *
+ * @param address
+ * @param flags
+ * @param reason
+ * @param features
+ * @return struct uffd_msg
+ */
 static inline struct uffd_msg userfault_msg(unsigned long address,
 					    unsigned int flags,
 					    unsigned long reason,
 					    unsigned int features)
 {
 	struct uffd_msg msg;
+
+	/**
+	 * @brief 清0
+	 *
+	 */
 	msg_init(&msg);
+	/**
+	 * @brief 缺页事件
+	 *
+	 */
 	msg.event = UFFD_EVENT_PAGEFAULT;
+	/**
+	 * @brief 缺页地址
+	 *
+	 */
 	msg.arg.pagefault.address = address;
+
+	/**
+	 * @brief
+	 *
+	 */
 	if (flags & FAULT_FLAG_WRITE)
 		/*
 		 * If UFFD_FEATURE_PAGEFAULT_FLAG_WP was set in the
@@ -205,6 +251,10 @@ static inline struct uffd_msg userfault_msg(unsigned long address,
 		 * a write fault.
 		 */
 		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_WRITE;
+	/**
+	 * @brief
+	 *
+	 */
 	if (reason & VM_UFFD_WP)
 		/*
 		 * If UFFD_FEATURE_PAGEFAULT_FLAG_WP was set in the
@@ -214,6 +264,10 @@ static inline struct uffd_msg userfault_msg(unsigned long address,
 		 * write protect fault.
 		 */
 		msg.arg.pagefault.flags |= UFFD_PAGEFAULT_FLAG_WP;
+	/**
+	 * @brief
+	 *
+	 */
 	if (features & UFFD_FEATURE_THREAD_ID)
 		msg.arg.pagefault.feat.ptid = task_pid_vnr(current);
 	return msg;
@@ -357,6 +411,8 @@ static inline long userfaultfd_get_blocking_state(unsigned int flags)
  * set, VM_FAULT_RETRY can still be returned if and only if there are
  * fatal_signal_pending()s, and the mmap_lock must be released before
  * returning it.
+ *
+ * 发生 缺页，进行处理
  */
 vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
 {
@@ -466,7 +522,14 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
 	userfaultfd_ctx_get(ctx);
 
 	init_waitqueue_func_entry(&uwq.wq, userfaultfd_wake_function);
+
+	/**
+	 * @brief 填充
+	 *
+	 */
 	uwq.wq.private = current;
+
+	/* 生成消息 */
 	uwq.msg = userfault_msg(vmf->address, vmf->flags, reason,
 			ctx->features);
 	uwq.ctx = ctx;
@@ -478,6 +541,8 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
 	/*
 	 * After the __add_wait_queue the uwq is visible to userland
 	 * through poll/read().
+	 *
+	 * 添加到队列，等待 poll(2) 和 read(2)
 	 */
 	__add_wait_queue(&ctx->fault_pending_wqh, &uwq.wq);
 	/*
@@ -488,6 +553,10 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
 	set_current_state(blocking_state);
 	spin_unlock_irq(&ctx->fault_pending_wqh.lock);
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (!is_vm_hugetlb_page(vmf->vma))
 		must_wait = userfaultfd_must_wait(ctx, vmf->address, vmf->flags,
 						  reason);
@@ -897,6 +966,11 @@ static inline struct userfaultfd_wait_queue *find_userfault_in(
 		wait_queue_head_t *wqh)
 {
 	wait_queue_entry_t *wq;
+
+	/**
+	 * @brief 等待队列
+	 *
+	 */
 	struct userfaultfd_wait_queue *uwq;
 
 	lockdep_assert_held(&wqh->lock);
@@ -904,7 +978,11 @@ static inline struct userfaultfd_wait_queue *find_userfault_in(
 	uwq = NULL;
 	if (!waitqueue_active(wqh))
 		goto out;
-	/* walk in reverse to provide FIFO behavior to read userfaults */
+
+	/**
+	 * walk in reverse to provide FIFO behavior to read userfaults
+	 *
+	 */
 	wq = list_last_entry(&wqh->head, typeof(*wq), entry);
 	uwq = container_of(wq, struct userfaultfd_wait_queue, wq);
 out:
@@ -917,6 +995,12 @@ static inline struct userfaultfd_wait_queue *find_userfault(
 	return find_userfault_in(&ctx->fault_pending_wqh);
 }
 
+/**
+ * @brief 查找一个待处理的事件
+ *
+ * @param ctx
+ * @return struct userfaultfd_wait_queue*
+ */
 static inline struct userfaultfd_wait_queue *find_userfault_evt(
 		struct userfaultfd_ctx *ctx)
 {
@@ -982,6 +1066,14 @@ static int resolve_userfault_fork(struct userfaultfd_ctx *ctx,
 	return 0;
 }
 
+/**
+ * @brief 从上下文读取 uffd_msg 信息
+ *
+ * @param ctx
+ * @param no_wait
+ * @param msg
+ * @return ssize_t
+ */
 static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 				    struct uffd_msg *msg)
 {
@@ -1001,6 +1093,10 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 	/* always take the fd_wqh lock before the fault_pending_wqh lock */
 	spin_lock_irq(&ctx->fd_wqh.lock);
 	__add_wait_queue(&ctx->fd_wqh, &wait);
+	/**
+	 * @brief
+	 *
+	 */
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
 		spin_lock(&ctx->fault_pending_wqh.lock);
@@ -1050,6 +1146,11 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 		spin_unlock(&ctx->fault_pending_wqh.lock);
 
 		spin_lock(&ctx->event_wqh.lock);
+
+		/**
+		 * @brief
+		 *
+		 */
 		uwq = find_userfault_evt(ctx);
 		if (uwq) {
 			*msg = uwq->msg;
@@ -1086,6 +1187,10 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 			break;
 		}
 		spin_unlock_irq(&ctx->fd_wqh.lock);
+		/**
+		 * @brief 睡眠干什么?
+		 *
+		 */
 		schedule();
 		spin_lock_irq(&ctx->fd_wqh.lock);
 	}
@@ -1093,6 +1198,10 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 	__set_current_state(TASK_RUNNING);
 	spin_unlock_irq(&ctx->fd_wqh.lock);
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (!ret && msg->event == UFFD_EVENT_FORK) {
 		ret = resolve_userfault_fork(ctx, fork_nctx, msg);
 		spin_lock_irq(&ctx->event_wqh.lock);
@@ -1147,6 +1256,20 @@ static ssize_t userfaultfd_ctx_read(struct userfaultfd_ctx *ctx, int no_wait,
 	return ret;
 }
 
+/**
+ * @brief 读取 uffd_msg
+ *
+ * @param file
+ * @param buf
+ * @param count
+ * @param ppos
+ * @return ssize_t
+ *
+ * 示例：
+ * ---------------------
+ * struct uffd_msg msg;
+ * nread = read(uffd, &msg, sizeof(msg));
+ */
 static ssize_t userfaultfd_read(struct file *file, char __user *buf,
 				size_t count, loff_t *ppos)
 {
@@ -1158,12 +1281,24 @@ static ssize_t userfaultfd_read(struct file *file, char __user *buf,
 	if (ctx->state == UFFD_STATE_WAIT_API)
 		return -EINVAL;
 
+	/**
+	 * @brief 读取
+	 *
+	 */
 	for (;;) {
 		if (count < sizeof(msg))
 			return ret ? ret : -EINVAL;
+		/**
+		 * @brief 从上下文读取数据
+		 *
+		 */
 		_ret = userfaultfd_ctx_read(ctx, no_wait, &msg);
 		if (_ret < 0)
 			return ret ? ret : _ret;
+		/**
+		 * @brief 读取的数据拷贝到用户态
+		 *
+		 */
 		if (copy_to_user((__u64 __user *) buf, &msg, sizeof(msg)))
 			return ret ? ret : -EFAULT;
 		ret += sizeof(msg);
@@ -1862,6 +1997,25 @@ err_out:
 	goto out;
 }
 
+/**
+ * @brief
+ *
+ * @param file
+ * @param cmd
+ * @param arg
+ * @return long
+ *
+ * 示例：
+ * ---------------------
+ * struct uffdio_api uffdio_api;
+ * ioctl(uffd, UFFDIO_API, &uffdio_api)
+ *
+ * struct uffdio_register uffdio_register;
+ * ioctl(uffd, UFFDIO_REGISTER, &uffdio_register)
+ *
+ * struct uffdio_copy uffdio_copy;
+ * ioctl(uffd, UFFDIO_COPY, &uffdio_copy)
+ */
 static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 			      unsigned long arg)
 {
@@ -1872,6 +2026,12 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 		return -EINVAL;
 
 	switch(cmd) {
+	/**
+	 * @brief
+	 * struct uffdio_api uffdio_api;
+	 * ioctl(uffd, UFFDIO_API, &uffdio_api)
+	 *
+	 */
 	case UFFDIO_API:
 		ret = userfaultfd_api(ctx, arg);
 		break;
@@ -1898,6 +2058,12 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 }
 
 #ifdef CONFIG_PROC_FS
+/**
+ * @brief 显示 userfaultfd 信息
+ *
+ * @param m
+ * @param f
+ */
 static void userfaultfd_show_fdinfo(struct seq_file *m, struct file *f)
 {
 	struct userfaultfd_ctx *ctx = f->private_data;
@@ -1925,15 +2091,63 @@ static void userfaultfd_show_fdinfo(struct seq_file *m, struct file *f)
 }
 #endif
 
+/**
+ * @brief userfaultfd(2) file 操作符
+ *
+ * 参考 ioctl(uffd, Flag, xxx)
+ */
 static const struct file_operations userfaultfd_fops = { /* userfaultfd 系统调用 */
 #ifdef CONFIG_PROC_FS
+	/**
+	 * @brief
+	 *
+	 */
 	.show_fdinfo	= userfaultfd_show_fdinfo,
 #endif
+	/**
+	 * @brief
+	 *
+	 */
 	.release	= userfaultfd_release,
+	/**
+	 * @brief
+	 * 示例：
+	 * ----------------
+	 *	struct pollfd pollfd;
+     *  int nready;
+     *  pollfd.fd = uffd;
+     *  pollfd.events = POLLIN;
+     *  nready = poll(&pollfd, 1, -1);
+	 */
 	.poll		= userfaultfd_poll,
+	/**
+	 * @brief
+	 * 示例：
+	 * ---------------------
+	 * struct uffd_msg msg;
+	 * nread = read(uffd, &msg, sizeof(msg));
+	 *
+	 */
 	.read		= userfaultfd_read,
+	/**
+	 * @brief
+	 * 示例：
+	 * ---------------------
+	 * struct uffdio_api uffdio_api;
+	 * ioctl(uffd, UFFDIO_API, &uffdio_api)
+	 *
+	 * struct uffdio_register uffdio_register;
+	 * ioctl(uffd, UFFDIO_REGISTER, &uffdio_register)
+	 *
+	 * struct uffdio_copy uffdio_copy;
+	 * ioctl(uffd, UFFDIO_COPY, &uffdio_copy)
+	 */
 	.unlocked_ioctl = userfaultfd_ioctl,
 	.compat_ioctl	= compat_ptr_ioctl,
+	/**
+	 * @brief
+	 *
+	 */
 	.llseek		= noop_llseek,
 };
 
@@ -1947,14 +2161,22 @@ static void init_once_userfaultfd_ctx(void *mem)
 	init_waitqueue_head(&ctx->fd_wqh);
 	seqcount_spinlock_init(&ctx->refile_seq, &ctx->fault_pending_wqh.lock);
 }
-
-//int userfaultfd(int flags);
-//userfaultfd机制可以让用户来处理缺页，可以在用户空间定义自己的page fau handler。
+/**
+ * @brief userfaultfd机制可以让用户来处理缺页，可以在用户空间定义自己的page fault handler。
+ *
+ */
+int userfaultfd(int flags){}//++++
 SYSCALL_DEFINE1(userfaultfd, int, flags)
 {
 	struct userfaultfd_ctx *ctx;
 	int fd;
 
+	/**
+	 * @brief
+	 * $ sudo sysctl vm.unprivileged_userfaultfd
+	 * vm.unprivileged_userfaultfd = 1
+	 *
+	 */
 	if (!sysctl_unprivileged_userfaultfd && !capable(CAP_SYS_PTRACE))
 		return -EPERM;
 
@@ -1964,13 +2186,25 @@ SYSCALL_DEFINE1(userfaultfd, int, flags)
 	BUILD_BUG_ON(UFFD_CLOEXEC != O_CLOEXEC);
 	BUILD_BUG_ON(UFFD_NONBLOCK != O_NONBLOCK);
 
+	/**
+	 * @brief 检测 fcntl flags
+	 *
+	 */
 	if (flags & ~UFFD_SHARED_FCNTL_FLAGS)
 		return -EINVAL;
 
+	/**
+	 * @brief 分配上下文
+	 *
+	 */
 	ctx = kmem_cache_alloc(userfaultfd_ctx_cachep, GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
 
+	/**
+	 * @brief 设置初始值
+	 *
+	 */
 	refcount_set(&ctx->refcount, 1);
 	ctx->flags = flags;
 	ctx->features = 0;
@@ -1981,6 +2215,10 @@ SYSCALL_DEFINE1(userfaultfd, int, flags)
 	/* prevent the mm struct to be freed */
 	mmgrab(ctx->mm);
 
+	/**
+	 * @brief 分配 fd，并设置 userfaultfd_fops
+	 *
+	 */
 	fd = anon_inode_getfd("[userfaultfd]", &userfaultfd_fops, ctx,
 			      O_RDWR | (flags & UFFD_SHARED_FCNTL_FLAGS));
 	if (fd < 0) {

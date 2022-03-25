@@ -1050,6 +1050,7 @@ struct file {   /*  */
      *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
      *  seq_release() 中对应 struct seq_file * 结构
      *  pid 中对应 struct pid * 结构
+	 *  userfaultfd(2) 中对应 struct userfaultfd_ctx * 结构，见 userfaultfd(2)
      *  [...]
      */
 	void			*private_data;

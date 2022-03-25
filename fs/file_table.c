@@ -94,7 +94,7 @@ int proc_nr_files(struct ctl_table *table, int write,
 #endif
 
 /**
- *  
+ *
  */
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {
@@ -159,7 +159,7 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	}
 
     /**
-     *  
+     *
      */
 	f = __alloc_file(flags, cred);
 	if (!IS_ERR(f))
@@ -221,7 +221,7 @@ static struct file *alloc_file(const struct path *path, int flags,
 	file->f_mode |= FMODE_OPENED;
 
     /**
-     *  
+     *
      */
 	file->f_op = fop;
 	if ((file->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
@@ -231,7 +231,7 @@ static struct file *alloc_file(const struct path *path, int flags,
 
 
 /**
- *  
+ *
  */
 struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
                 				const char *name, int flags,
@@ -253,7 +253,7 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	d_instantiate(path.dentry, inode);
 
     /**
-     *  
+     *  分配 file 结构
      */
 	file = alloc_file(&path, flags, fops);
 	if (IS_ERR(file)) {
@@ -271,7 +271,7 @@ EXPORT_SYMBOL(alloc_file_pseudo);
 struct file *alloc_file_clone(struct file *base, int flags, const struct file_operations *fops) /*  */
 {
     /**
-     *  
+     *
      */
 	struct file *f = alloc_file(&base->f_path, flags, fops);
 	if (!IS_ERR(f)) {
