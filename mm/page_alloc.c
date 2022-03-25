@@ -168,7 +168,7 @@ unsigned long __read_mostly totalcma_pages ;
 int percpu_pagelist_fraction;
 
 /**
- *
+ * 允许的 分配 mask，见 gfp_allowed_mask() 函数
  */
 gfp_t __read_mostly gfp_allowed_mask  = GFP_BOOT_MASK;  /*  */
 
@@ -4040,7 +4040,7 @@ noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
 
 /**
- *
+ *	不能使用的空闲 ？
  */
 static inline long __zone_watermark_unusable_free(struct zone *z,
 				unsigned int order, unsigned int alloc_flags)
@@ -4050,6 +4050,10 @@ static inline long __zone_watermark_unusable_free(struct zone *z,
      */
 	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
 
+	/**
+	 * 分配一个page： unusable_free = 0
+	 *
+	 */
 	long unusable_free = (1 << order) - 1;
 
 	/*
@@ -4115,29 +4119,85 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 {
 	long min = mark;    /*  */
 	int o;
+	/**
+	 * @brief 是否是强制分配
+	 *
+	 */
 	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
 
     /**
-     *
+     *	free_pages = 空闲页个数 - 不能使用的空闲页
      */
 	/* free_pages may go negative - that's OK */
 	free_pages -= __zone_watermark_unusable_free(z, order, alloc_flags);
 
     /**
+     * @brief ALLOC_HIGH 表示具有很高的优先级，能够访问
+     *
      *  允许使用 最低警戒水位的 1/2
+	 *
+	 * +----+ <------ min
+	 * |	|
+	 * |	|
+	 * |	|
+	 * |	|
+	 * |	|
+	 * |	| <------ min / 2
+	 * |	|
+	 * |	|
+	 * |	|
+	 * |	|
+	 * |	|
+	 * +----+
+	 *
      */
 	if (alloc_flags & ALLOC_HIGH)
 		min -= min / 2;
 
+	/**
+	 * @brief (ALLOC_HARDER|ALLOC_OOM) 这是最高优先级的分配了
+	 *
+	 */
 	if (unlikely(alloc_harder)) {
 		/*
 		 * OOM victims can try even harder than normal ALLOC_HARDER
 		 * users on the grounds that it's definitely going to be in
 		 * the exit path shortly and free memory. Any allocation it
 		 * makes during the free path will be small and short-lived.
+		 *
+		 * +----+ <------ min
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	| <------ min / 2
+		 * |	|
+		 * |	|
+		 * |	| <------ min / 4
+		 * |	|
+		 * |	|
+		 * +----+
 		 */
 		if (alloc_flags & ALLOC_OOM)
 			min -= min / 2;
+		/**
+		 *
+		 * +----+ <------ min
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	| <------ min / 2
+		 * |	| <------ min * (1 - 1/4)
+		 * |	|
+		 * |	|
+		 * |	|
+		 * |	|
+		 * +----+
+		 *
+		 */
 		else
 			min -= min / 4;
 	}
@@ -4171,11 +4231,28 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	 *  遍历 所有order 的   free_area
 	 */
 	for (o = order; o < MAX_ORDER; o++) {
+		/**
+		 * @brief 各个 order 都有一个 free_area 结构
+		 *
+		*  free areas of different sizes
+		*
+		*  +-----------+
+		*  |     0     |  / 不可移动的页面
+		*  +-----------+ /
+		*  |     1     |--- 可回收的页面
+		*  +-----------+ \
+		*  |     2     |  \ 可移动的页面
+		*  +-----------+	...
+		*  |    ...    |
+		*  +-----------+
+		*  |MAX_ORDER-1|
+		*  +-----------+
+		*/
 		struct free_area *area = &z->free_area[o];
 		int mt;
 
         /**
-         *  没有 free 页面了，找下一个
+         *  没有 free 页面了，找下一个 order 的
          */
 		if (!area->nr_free)
 			continue;
@@ -4197,6 +4274,10 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
          *  +----------------------+
          */
 		for (mt = 0; mt < MIGRATE_PCPTYPES; mt++) {
+			/**
+			 * @brief 如果链表不为空，直接返回 true 了，也就是有空闲页能够满足分配
+			 *
+			 */
 			if (!free_area_empty(area, mt))
 				return true;
 		}
@@ -4206,6 +4287,11 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			return true;
 		}
 #endif
+		/**
+		 * @brief 如果是优先级非常高的 分配 并且 MIGRATE_HIGHATOMIC 不为空
+		 * 	那么返回 true
+		 *
+		 */
 		if (alloc_harder && !free_area_empty(area, MIGRATE_HIGHATOMIC))
 			return true;
 	}
@@ -4229,35 +4315,81 @@ bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 					            zone_page_state(z, NR_FREE_PAGES));
 }
 
+/**
+ * @brief	判断是否能够快速分配
+ *
+ * @param z
+ * @param order
+ * @param mark
+ * @param highest_zoneidx
+ * @param alloc_flags
+ * @param gfp_mask
+ * @return true
+ * @return false
+ */
 static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 				unsigned long mark, int highest_zoneidx,
 				unsigned int alloc_flags, gfp_t gfp_mask)
 {
 	long free_pages;
 
+	/**
+	 * @brief zone 空闲的 pages 个数
+	 *
+	 */
 	free_pages = zone_page_state(z, NR_FREE_PAGES); /*  */
 
 	/*
 	 * Fast check for order-0 only. If this fails then the reserves
 	 * need to be calculated.
+	 *
+	 * 如果只是分配 一个 page
 	 */
 	if (!order) {
 		long fast_free;
 
 		fast_free = free_pages;
+		/**
+		 * 只分配 一个 page
+		 * fast_free = 空闲页 - 不能被使用的空闲页
+		 */
 		fast_free -= __zone_watermark_unusable_free(z, 0, alloc_flags);
+		/**
+		 * 如果 能够快速分配的页数 大于 当前水位值 + 预留的水位
+		 * 那么表示，可以进行快速分配，返回 true
+		 */
 		if (fast_free > mark + z->lowmem_reserve[highest_zoneidx])
 			return true;
 	}
-    /*  */
+    /**
+     * 如果分配多页，从 zone.free_area list链表 中查找是否有满足要求的页
+     *
+	 * 各个 order 都有一个 free_area 结构
+	 *
+	*  free areas of different sizes
+	*
+	*  +-----------+
+	*  |     0     |  / 不可移动的页面
+	*  +-----------+ /
+	*  |     1     |--- 可回收的页面
+	*  +-----------+ \
+	*  |     2     |  \ 可移动的页面
+	*  +-----------+	...
+	*  |    ...    |
+	*  +-----------+
+	*  |MAX_ORDER-1|
+	*  +-----------+
+	*/
 	if (__zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
 					free_pages))
 		return true;
-	/*
+	/**
 	 * Ignore watermark boosting for GFP_ATOMIC order-0 allocations
 	 * when checking the min watermark. The min watermark is the
 	 * point where boosting is ignored so that kswapd is woken up
 	 * when below the low watermark.
+	 *
+	 * GFP_ATOMIC 分配：必须成功，不许失败
 	 */
 	if (unlikely(!order && (gfp_mask & __GFP_ATOMIC) && z->watermark_boost
 		&& ((alloc_flags & ALLOC_WMARK_MASK) == WMARK_MIN))) {
@@ -4282,8 +4414,21 @@ bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 }
 
 #ifdef CONFIG_NUMA
+/**
+ * @brief
+ *
+ * @param local_zone	本 node 的其他偏好的 zone
+ * @param zone	本 zone
+ * @return true
+ * @return false
+ */
 static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
 {
+	/**
+	 * @brief 这两个 zone 的距离 <= node_reclaim_distance
+	 *
+	 * node_reclaim_distance 默认值 30
+	 */
 	return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <= node_reclaim_distance;
 }
 #else	/* CONFIG_NUMA */
@@ -4440,12 +4585,20 @@ retry:
 			}
 		}
         /**
-         *
+         *	获取水位高度
          */
 		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);   /* 获取 */
+		/**
+		 * @brief 判断是否能够快速分配
+		 *
+		 */
 		if (!zone_watermark_fast(zone, order, mark,
 				       ac->highest_zoneidx, alloc_flags,
 				       gfp_mask)) {
+			/**
+			 * @brief 如果不能快速分配，也就是水位不满足需求了
+			 *
+			 */
 			int ret;
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
@@ -4460,6 +4613,11 @@ retry:
 #endif
 			/* Checked here to keep the fast path fast */
 			BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
+
+			/**
+			 * @brief ALLOC_NO_WATERMARKS
+			 *
+			 */
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
 				goto try_this_zone;
 
@@ -4467,6 +4625,14 @@ retry:
              *  vm.zone_reclaim_mode = 0
              *
              *  不能回收，那就遍历下一个 zone
+			 *
+			 * node_reclaim_mode
+			 *  =0 表示可以从下一个内存管理区或下一个内存节点分配内存
+			 * !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
+			 *
+			 * sudo bpftrace  -e \
+			 *  'BEGIN{$min = kaddr("node_reclaim_mode"); \
+			 * 	printf("node_reclaim_mode = %d\n", *$min);}'
              */
 			if (node_reclaim_mode == 0 ||   /* 回收模式 没开启 */
 			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone)) /* NODE 之间的距离超限 */
@@ -5590,7 +5756,17 @@ got_pg:
 }
 
 /**
- *  为分配 page 做准备
+ * @brief 为分配 page 做准备
+ *
+ * @param gfp_mask	分配 mask
+ * @param order	大小
+ * @param preferred_nid	NUMA ID
+ * @param nodemask	允许分配的 node
+ * @param ac	分配上下文，用于保存分配请求的信息
+ * @param alloc_mask	分配 mask
+ * @param alloc_flags	分配标志
+ * @return true
+ * @return false
  */
 static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
                                             int preferred_nid, nodemask_t *nodemask,
@@ -5668,10 +5844,17 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	return true;
 }
 
-/*
- * This is the 'heart' of the zoned buddy allocator.
+/**
+ * @brief This is the 'heart' of the zoned buddy allocator.
+ * 		  zone 伙伴系统 核心函数。 在指定的 node 上分配 page
+ *
+ * @param gfp_mask
+ * @param order
+ * @param preferred_nid
+ * @param nodemask
+ * @return struct page*
  */
-struct page *   /* 在指定的 node 上分配 page */
+struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask)
 {
@@ -5691,6 +5874,10 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 		return NULL;
 	}
 
+	/**
+	 * @brief 允许的 分配mask
+	 *
+	 */
 	gfp_mask &= gfp_allowed_mask;
 	alloc_mask = gfp_mask;
 

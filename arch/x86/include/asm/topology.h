@@ -77,6 +77,11 @@ extern void setup_node_to_cpumask_map(void);
 
 #define pcibus_to_node(bus) __pcibus_to_node(bus)
 
+/**
+ * @brief NUMA node 之间的距离
+ *
+ * @return int
+ */
 extern int __node_distance(int, int);
 #define node_distance(a, b) __node_distance(a, b)
 

@@ -49,6 +49,11 @@ int arch_update_cpu_topology(void);
 #define LOCAL_DISTANCE		10
 #define REMOTE_DISTANCE		20
 #ifndef node_distance
+/**
+ * @brief 相同的 zone，距离为 10； 不相等，距离为 20
+ * 那 zone_allows_reclaim() 中对比 <= 30(RECLAIM_DISTANCE) 的意义是什么?
+ * 答： 参考 __node_distance() 函数 #define node_distance __node_distance
+ */
 #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
 #endif
 #ifndef RECLAIM_DISTANCE

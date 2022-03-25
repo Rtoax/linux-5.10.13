@@ -636,7 +636,7 @@ int sd_llc_size;    /* LLC 调度域包含多少个 CPU */
 int sd_llc_id;      /* LLC 调度域第一个CPU的编号 */
 struct sched_domain_shared __rcu * sd_llc_shared;
 struct sched_domain __rcu * sd_numa;
-struct sched_domain __rcu * sd_asym_packing;    
+struct sched_domain __rcu * sd_asym_packing;
 struct sched_domain __rcu * sd_asym_cpucapacity;    /* 指向第一个包含不同CPU架构的调度域 如 big.LITTLE */
 #endif //RTOAX
 
@@ -721,7 +721,7 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 }
 
 /**
- *  
+ *
  */
 struct s_data {
     /**
@@ -1163,7 +1163,7 @@ static int build_sched_groups(struct sched_domain *sd, int cpu)
 	}
 
     /**
-     *  
+     *
      */
 	last->next = first;
 	sd->groups = first;
@@ -1285,14 +1285,14 @@ __visit_domain_allocation_hell(struct s_data *d, const struct cpumask *cpu_map)
 		return sa_sd_storage;
 
     /**
-     *  
+     *
      */
 	d->sd = alloc_percpu(struct sched_domain *);
 	if (!d->sd)
 		return sa_sd_storage;
 
     /**
-     *  
+     *
      */
 	d->rd = alloc_rootdomain();
 	if (!d->rd)
@@ -1332,7 +1332,11 @@ static int			sched_domains_curr_level;
 int				sched_max_numa_distance;
 static int			*sched_domains_numa_distance;
 static struct cpumask		***sched_domains_numa_masks;
-int __read_mostly		node_reclaim_distance = RECLAIM_DISTANCE;   /*  */
+/**
+ * @brief numa 之间的距离，见函数 node_distance()
+ *
+ */
+int __read_mostly		node_reclaim_distance = RECLAIM_DISTANCE;   /* 30 */
 #endif
 
 /*
@@ -1872,7 +1876,7 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
 			return -ENOMEM;
 
         /**
-         *  
+         *
          */
 		for_each_cpu(j, cpu_map) {
 			struct sched_domain *sd;
@@ -1963,7 +1967,7 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
                                     		struct sched_domain *child, int dflags, int cpu)
 {
     /**
-     *  
+     *
      */
 	struct sched_domain *sd = sd_init(tl, cpu_map, child, dflags, cpu);
 
@@ -2111,7 +2115,7 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 		goto error;
 
     /**
-     *  
+     *
      */
 	tl_asym = asym_cpu_capacity_level(cpu_map);
 
@@ -2279,7 +2283,7 @@ int sched_init_domains(const struct cpumask *cpu_map)   /*  */
 	cpumask_and(doms_cur[0], cpu_map, housekeeping_cpumask(HK_FLAG_DOMAIN));
 
     /**
-     *  
+     *
      */
 	err = build_sched_domains(doms_cur[0], NULL);
 	register_sched_domain_sysctl();

@@ -27,7 +27,7 @@ nodemask_t __initdata numa_nodes_parsed ;
 
 /**
  *  NUMA 节点 描述符
- *  初始化 函数 `free_area_init_node()` 
+ *  初始化 函数 `free_area_init_node()`
  */
 struct pglist_data __read_mostly *node_data[MAX_NUMNODES] ;
 EXPORT_SYMBOL(node_data);
@@ -39,7 +39,7 @@ static int numa_distance_cnt;
 static u8 *numa_distance;
 
 /**
- *  
+ *
  */
 static __init int numa_setup(char *opt)
 {
@@ -70,7 +70,7 @@ int numa_cpu_node(int cpu)
 
 	if (apicid != BAD_APICID)
 		return __apicid_to_node[apicid];
-    
+
 	return NUMA_NO_NODE;
 }
 
@@ -84,7 +84,7 @@ DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
 EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
 
 /**
- *  
+ *
  */
 void numa_set_node(int cpu, int node)
 {
@@ -159,7 +159,7 @@ static int __init numa_add_memblk_to(int nid, u64 start, u64 end,
 	mi->blk[mi->nr_blks].end = end;
 	mi->blk[mi->nr_blks].nid = nid;
 	mi->nr_blks++;
-    
+
 	return 0;
 }
 
@@ -367,23 +367,41 @@ void __init numa_reset_distance(void)
 	numa_distance = NULL;	/* enable table creation */
 }
 
+/**
+ * @brief 计算 numa NODE 之间的距离
+ *
+ * @return int
+ */
 static int __init numa_alloc_distance(void)
 {
 	nodemask_t nodes_parsed;
 	size_t size;
-	int i, j, cnt = 0;
+	int i, j, cnt_node = 0;
 	u64 phys;
 
 	/* size the new table and allocate it */
 	nodes_parsed = numa_nodes_parsed;
 	numa_nodemask_from_meminfo(&nodes_parsed, &numa_meminfo);
 
+	/**
+	 * @brief 获取 node 个数
+	 *
+	 */
 	for_each_node_mask(i, nodes_parsed)
-		cnt = i;
-    
-	cnt++;
-	size = cnt * cnt * sizeof(numa_distance[0]);
+		cnt_node = i;
 
+	cnt_node++;
+
+	/**
+	 * @brief 数组大小
+	 *
+	 */
+	size = cnt_node * cnt_node * sizeof(numa_distance[0]);
+
+	/**
+	 * @brief 分配内存
+	 *
+	 */
 	phys = memblock_find_in_range(0, PFN_PHYS(max_pfn_mapped), size, PAGE_SIZE);
 	if (!phys) {
 		pr_warn("Warning: can't allocate distance table!\n");
@@ -393,14 +411,27 @@ static int __init numa_alloc_distance(void)
 	}
 	memblock_reserve(phys, size);
 
+	/**
+	 * @brief 获取虚拟地址
+	 *
+	 */
 	numa_distance = __va(phys);
-	numa_distance_cnt = cnt;
+	numa_distance_cnt = cnt_node;
 
-	/* fill with the default distances */
-	for (i = 0; i < cnt; i++)
-		for (j = 0; j < cnt; j++)
-			numa_distance[i * cnt + j] = i == j ? LOCAL_DISTANCE : REMOTE_DISTANCE;
-	printk(KERN_DEBUG "NUMA: Initialized distance table, cnt=%d\n", cnt);
+	/**
+	 * fill with the default distances
+	 * 默认的距离
+	 *
+	 *     0   1   2   3
+	 * 0  10
+	 * 1
+	 * 2
+	 * 3
+	 */
+	for (i = 0; i < cnt_node; i++)
+		for (j = 0; j < cnt_node; j++)
+			numa_distance[i * cnt_node + j] = i == j ? LOCAL_DISTANCE : REMOTE_DISTANCE;
+	printk(KERN_DEBUG "NUMA: Initialized distance table, cnt=%d\n", cnt_node);
 
 	return 0;
 }
@@ -446,6 +477,13 @@ void __init numa_set_distance(int from, int to, int distance)
 	numa_distance[from * numa_distance_cnt + to] = distance;
 }
 
+/**
+ * @brief
+ *
+ * @param from
+ * @param to
+ * @return int
+ */
 int __node_distance(int from, int to)
 {
 	if (from >= numa_distance_cnt || to >= numa_distance_cnt)

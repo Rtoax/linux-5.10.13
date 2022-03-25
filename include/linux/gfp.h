@@ -235,11 +235,11 @@ struct vm_area_struct;
  */
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 /**
- *  
+ *
  */
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 /**
- *  
+ *
  */
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
 
@@ -321,7 +321,7 @@ struct vm_area_struct;
 /**
  *  用于在中断例程或其他运行与进程上下文之外的代码中分配内存，不会休眠
  */
-#define GFP_ATOMIC	/* 不睡眠, 必须分配成功 */(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)  
+#define GFP_ATOMIC	/* 不睡眠, 必须分配成功 */(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
 
 /**
  *  内核内存的通常分配方式，可能睡眠
@@ -364,7 +364,7 @@ struct vm_area_struct;
 
 
 /**
- *  只剩下 __GFP_RECLAIMABLE 和 __GFP_MOVABLE, 
+ *  只剩下 __GFP_RECLAIMABLE 和 __GFP_MOVABLE,
  *  将返回 enum migratetype 数据类型: MIGRATE_MOVABLE, MIGRATE_RECLAIMABLE
  *
  *  从分配掩码 获取 页面 迁移类型
@@ -382,9 +382,9 @@ static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类�
 	if (unlikely(page_group_by_mobility_disabled))
 		return MIGRATE_UNMOVABLE;
 
-	/* Group based on mobility */
-	return (gfp_flags & GFP_MOVABLE_MASK/* 0x18 */) >> GFP_MOVABLE_SHIFT/* 3 */; /* 迁移类型 */
-    
+	/* Group based on mobility *//* 迁移类型 */
+	return (gfp_flags & GFP_MOVABLE_MASK/* 0x18 */) >> GFP_MOVABLE_SHIFT/* 3 */;
+
 #undef GFP_MOVABLE_MASK
 #undef GFP_MOVABLE_SHIFT
 }
@@ -392,7 +392,7 @@ static inline int gfp_migratetype(const gfp_t gfp_flags)    /* 获取迁移类�
 /**
  *  可回收 标志 表明 当前进程可以阻塞
  */
-static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)   
+static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 {
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
@@ -474,10 +474,13 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 /* ZONE_DEVICE is not a valid GFP zone specifier */
 #define GFP_ZONES_SHIFT 2
 #else
-//#define GFP_ZONES_SHIFT ZONES_SHIFT
+#define GFP_ZONES_SHIFT ZONES_SHIFT
 #endif
 
-
+/**
+ * @brief
+ *
+ */
 #define GFP_ZONE_TABLE ( \
 	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       \
 	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       \
@@ -512,14 +515,19 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 static inline enum zone_type gfp_zone(gfp_t flags)  /* 从 flags 获取来自哪个 zone */
 {
 	enum zone_type z;
+	/**
+	 * @brief 允许的 zone mask
+	 *
+	 * GFP_ZONEMASK = (__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
+	 */
 	int bit = (__force int) (flags & GFP_ZONEMASK);
 
     /**
-     *  
+     *
      */
 	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) & ((1 << GFP_ZONES_SHIFT) - 1);
 	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
-    
+
 	return z;
 }
 
@@ -629,7 +637,7 @@ static inline struct page *
 alloc_pages(gfp_t gfp_mask, unsigned int order)/* 分配 pages */
 {
     /**
-     *  
+     *
      */
 	return alloc_pages_current(gfp_mask, order);    /*  */
 }

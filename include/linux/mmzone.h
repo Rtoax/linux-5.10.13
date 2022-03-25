@@ -94,7 +94,7 @@ extern int page_group_by_mobility_disabled;
 
 
 /**
- *  伙伴系统 
+ *  伙伴系统
  */
 struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
     /**
@@ -104,15 +104,15 @@ struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
      *
      *  +----------------------+
      *  | MIGRATE_UNMOVABLE    | 不可移动
-     *  +----------------------+ 
+     *  +----------------------+
      *  | MIGRATE_MOVABLE      | 可移动
      *  +----------------------+
      *  | MIGRATE_RECLAIMABLE  | 可回收
      *  +----------------------+
-     *  | MIGRATE_PCPTYPES     | 
+     *  | MIGRATE_PCPTYPES     |
      *  | MIGRATE_HIGHATOMIC   |
      *  +----------------------+
-     *  | MIGRATE_CMA          | 
+     *  | MIGRATE_CMA          |
      *  +----------------------+
      *  | MIGRATE_ISOLATE      |
      *  +----------------------+
@@ -193,7 +193,7 @@ enum zone_stat_item {   /* ZONE 状态 */
 	NR_ZONE_ACTIVE_FILE,    /* 活跃文件映射 */
 	NR_ZONE_UNEVICTABLE,    /* 不可回收页面 */
 	NR_ZONE_WRITE_PENDING,	/* 脏页，正在回写和不稳定页面数量 Count of dirty, writeback and unstable pages */
-	
+
 	NR_MLOCK,               /* 使用mlock() 锁定的页面 mlock()ed pages found and moved off LRU */
 	NR_PAGETABLE,           /* 用于页表的页面数量 used for pagetables */
 	/* Second 128 byte cacheline */
@@ -229,7 +229,7 @@ enum node_stat_item {
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
 
     /**
-     *  
+     *
      */
 	WORKINGSET_NODES,
 	WORKINGSET_REFAULT_BASE,
@@ -243,7 +243,7 @@ enum node_stat_item {
 	WORKINGSET_RESTORE_FILE,
 	WORKINGSET_NODERECLAIM,
 
-    
+
 	NR_ANON_MAPPED,	/* Mapped anonymous pages */
 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
 			   only modified from process context */
@@ -310,7 +310,7 @@ static __always_inline bool vmstat_item_in_bytes(int idx)
  * pglist_data.lruvec.lists[NR_LRU_LISTS]
  */
 enum lru_list { /* 最近最少使用 list */
-	LRU_INACTIVE_ANON   /* 不活跃的匿名页面 */ = LRU_BASE,   
+	LRU_INACTIVE_ANON   /* 不活跃的匿名页面 */ = LRU_BASE,
 	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
@@ -347,7 +347,7 @@ enum lruvec_flags {
  *  Refault Distance算法： 平衡active-inactive 链表长度的算法(针对页面高速缓存类型页面)
  *
  */
-struct lruvec { 
+struct lruvec {
     /**
      *  各种 LRU 类型 页面的 page->lru
      */
@@ -365,10 +365,10 @@ struct lruvec {
      */
 	/* Non-resident age, driven by LRU movement */
 	atomic_long_t			nonresident_age;
-    
+
 	/* Refaults at the time of last reclaim cycle */
 	unsigned long			refaults[ANON_AND_FILE];
-    
+
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
 
@@ -410,7 +410,7 @@ Avaliable
 Free
 Page
 |
-|+                                  Back to High 
+|+                                  Back to High
 | +                                 WaterMark           +
 |  +                                      \         +
 |   +                                      \    +
@@ -456,10 +456,14 @@ static inline unsigned long high_wmark_pages(struct zone *z)
     return (z->_watermark[WMARK_HIGH] + z->watermark_boost);
 }
 /**
- *  
+ *	获取对应水位高度信息
  */
 static inline unsigned long wmark_pages(struct zone *z, enum zone_watermarks i)
 {
+	/**
+	 * @brief watermark_boost 用于临时提高水位，见 zone.watermark_boost 结构体中描述
+	 *
+	 */
     return (z->_watermark[i] + z->watermark_boost);
 }
 #endif
@@ -545,7 +549,7 @@ enum zone_type {
 	 * transfers to all addressable memory.
 	 */
 	ZONE_NORMAL,    /*  */
-	
+
 #ifdef CONFIG_HIGHMEM
 	/*
 	 * A memory area that is only addressable by the kernel through
@@ -593,13 +597,13 @@ enum zone_type {
 	 * there can be false negatives).
 	 */
 	ZONE_MOVABLE,   /* 用于适应大块连续内存的分配 */
-	
+
 #ifdef CONFIG_ZONE_DEVICE
 	ZONE_DEVICE,    /*  */
 #endif
 
     __MAX_NR_ZONES,
-	
+
     MAX_NR_ZONES = __MAX_NR_ZONES, /* = 5 我加的 */
 };
 
@@ -626,7 +630,7 @@ struct zone {   /* 内存 ZONE */
     /**
      *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
      *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
-     *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+     *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark
      *  的功能。
      *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
      *
@@ -792,14 +796,14 @@ struct zone {   /* 内存 ZONE */
      */
 #if defined CONFIG_COMPACTION || defined CONFIG_CMA
 	/**
-	 *  pfn where compaction free scanner should start 
+	 *  pfn where compaction free scanner should start
 	 *
 	 *  记录上一次扫描中空闲页面的位置, 见`compact_zone()`
 	 */
 	unsigned long		compact_cached_free_pfn;
 
 	/**
-	 *  pfn where compaction migration scanner should start 
+	 *  pfn where compaction migration scanner should start
 	 *
 	 *  记录上一次扫描中可迁移页面的位置
 	 *
@@ -838,7 +842,7 @@ struct zone {   /* 内存 ZONE */
 	bool			contiguous;
 
 	ZONE_PADDING(_pad3_)
-        
+
 	/* Zone statistics - 统计信息 */
     /**
      *  参见全局变量 mm/vmstat.c
@@ -848,7 +852,7 @@ struct zone {   /* 内存 ZONE */
      */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
-    
+
 } ____cacheline_internodealigned_in_smp;
 
 
@@ -879,17 +883,17 @@ enum pgdat_flags {
  *
  *  当使用了后备 fallback free_area 时，__zone_watermark_ok 还是返回成功，但是实际上已经发生了
  *  外碎片化，这时候就需要提早唤醒 kswapd 和 kcompactd 线程进行内存回收和内存规整，这样有助于
- *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark 
+ *  快速满足大块内存的需求，减少外碎片化。为此，linux 5.0 实现了一个临时增加水位 boost_watermark
  *  的功能。
  *  当发生挪用时，临时提高水位，并触发 kswapd 线程。
  *
  *  boost_watermark 函数及用于临时提高水位。
  */
 enum zone_flags {
-    /* zone recently boosted(提升) watermarks. 
+    /* zone recently boosted(提升) watermarks.
      * Cleared when kswapd is woken.
      */
-	ZONE_BOOSTED_WATERMARK,		
+	ZONE_BOOSTED_WATERMARK,
 };
 
 static inline unsigned long zone_managed_pages(struct zone *zone)   /* ZONE 的管理数据 */
@@ -927,7 +931,7 @@ static inline bool zone_intersects(struct zone *zone,
 	if (zone_is_empty(zone))
 		return false;
     /**
-     *  
+     *
      */
 	if (start_pfn >= zone_end_pfn(zone) ||
 	    start_pfn + nr_pages <= zone->zone_start_pfn)
@@ -947,11 +951,15 @@ static inline bool zone_intersects(struct zone *zone,
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES/* NODE个数 */ * MAX_NR_ZONES/* ZONE个数 */)
 
 /**
- *  
+ *
  */
 enum {
+	/**
+	 * @brief
+	 *
+	 */
 	ZONELIST_FALLBACK,	/* zonelist with fallback(倒退) */
-        
+
 #ifdef CONFIG_NUMA
 	/*
 	 * The NUMA zonelists are doubled because we need zonelists that
@@ -1035,7 +1043,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];  /*  */
 
 	int nr_zones; /* number of populated zones in this node 此节点中的人口稠密区数 */
-    
+
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
 	struct page *node_mem_map;
 #ifdef CONFIG_PAGE_EXTENSION/* 页扩展 */
@@ -1060,10 +1068,10 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 #endif
 
     /**
-     *  
+     *
      */
 	unsigned long node_start_pfn;   /* 起始页帧号 */
-    
+
     /**
      *  等于所有 zone 的 zone->present_pages 数值
      *  初始化`free_area_init_core()`
@@ -1088,7 +1096,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	wait_queue_head_t pfmemalloc_wait;
 	struct task_struct *kswapd;	/* Protected by mem_hotplug_begin/end() */
 
-    /*  */                   
+    /*  */
 	int kswapd_order;
 
     /**
@@ -1127,7 +1135,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 */
 	unsigned long		min_unmapped_pages;
 	unsigned long		min_slab_pages;
-    
+
 #endif /* CONFIG_NUMA */
 
 	/* Write-intensive fields used by page reclaim */
@@ -1185,11 +1193,11 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
      *  vm_node_stat
      */
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
-    
+
 } pg_data_t;
 
 /**
- *  
+ *
  */
 #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
 #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
@@ -1250,7 +1258,7 @@ extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn
 extern void lruvec_init(struct lruvec *lruvec);
 
 /**
- *  lruvec 对应的 NODE 
+ *  lruvec 对应的 NODE
  */
 static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 {
@@ -1293,7 +1301,7 @@ static inline bool managed_zone(struct zone *zone)
 }
 
 /**
- *  Returns true if a zone has memory 
+ *  Returns true if a zone has memory
  *
  *  zone 中有内存就返回 true
  */
@@ -1466,13 +1474,13 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
 		return z;
 
     /**
-     *  nodemask 不为空, 返回一个 zoneidx <= highest_zoneidx 的 zoneref 
+     *  nodemask 不为空, 返回一个 zoneidx <= highest_zoneidx 的 zoneref
      */
 	return __next_zones_zonelist(z, highest_zoneidx, nodes);
 }
 
 /**
- * first_zones_zonelist - Returns the first zone at or below highest_zoneidx within 
+ * first_zones_zonelist - Returns the first zone at or below highest_zoneidx within
  *                          the allowed nodemask in a zonelist
  *
  *  返回第一个 highest_zoneidx 及其下方的node(nodemask以内)
@@ -1496,7 +1504,7 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
  * also used as the starting point for the zonelist iterator. It
  * may get reset for allocations that ignore memory policies.
  *
- * 首选区域用于统计，但至关重要的是，它也用作 zonelist 迭代器的起点。 
+ * 首选区域用于统计，但至关重要的是，它也用作 zonelist 迭代器的起点。
  * 对于忽略内存策略的分配，它可能会被重置。
  */
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
@@ -1525,7 +1533,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 			zone = zonelist_zone(z))
 
 /**
- *  
+ *
  */
 #define for_next_zone_zonelist_nodemask(zone, z, highidx, nodemask) \
 	for (zone = z->zone;	\
@@ -1572,7 +1580,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
 
 /**
- *  
+ *
  */
 #define PAGES_PER_SECTION    /*x86-64=0x8000; arm64=0x40000*/   (1UL << PFN_SECTION_SHIFT/*x86-64=15; arm64=18*/)
 #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
@@ -1663,7 +1671,7 @@ struct mem_section {
 	 * `section_mem_map`存放的是struct page数组的地址，见`sparse_decode_mem_map()`
 	 *  每个section可容纳PFN_SECTION_SHIFT个struct page
 	 *
-	 * 
+	 *
 	 */
 	unsigned long section_mem_map;
 
@@ -1671,7 +1679,7 @@ struct mem_section {
      *  管理  稀疏内存 section 的 bitmap
      */
 	struct mem_section_usage *usage;
-    
+
 #ifdef CONFIG_PAGE_EXTENSION
 	/*
 	 * If SPARSEMEM, pgdat doesn't have page_ext pointer. We use
@@ -1688,7 +1696,7 @@ struct mem_section {
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
 /**
- *  
+ *
  */
 #define SECTIONS_PER_ROOT    /*128*/(PAGE_SIZE/*4096*/ / sizeof (struct mem_section)/*32*/)
 #else
