@@ -116,15 +116,24 @@ struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
      *  +----------------------+
      *  | MIGRATE_ISOLATE      |
      *  +----------------------+
+     *
+     *  节点为 struct page.lru
      */
 	struct list_head	free_list[MIGRATE_TYPES];   /*  page 链表头 */
 	unsigned long		nr_free;
 };
 
-static inline struct page *get_page_from_free_area(struct free_area *area,
+/**
+ *  从 free_list 中直接获取一个 entry
+ */
+static inline struct page *
+get_page_from_free_area(struct free_area *area,
 					    int migratetype)
 {
-    /* 获取  freelist链表的第一个 节点 entry */
+    /**
+     *  获取  freelist链表的第一个 节点 entry
+     *  节点为 struct page.lru
+     */
 	return list_first_entry_or_null(&area->free_list[migratetype],
 					struct page, lru);
 }
@@ -367,7 +376,7 @@ struct lruvec {
 	atomic_long_t			nonresident_age;
 
 	/* Refaults at the time of last reclaim cycle */
-	unsigned long			refaults[ANON_AND_FILE];
+	unsigned long			refaults[ANON_AND_FILE/*=2*/];
 
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
@@ -1294,6 +1303,8 @@ static inline int local_memory_node(int node_id) { return node_id; };
  * All the reclaim decisions have to use this function rather than
  * populated_zone(). If the whole zone is reserved then we can easily
  * end up with populated_zone() && !managed_zone().
+ *
+ * zone 管理的 page 数
  */
 static inline bool managed_zone(struct zone *zone)
 {

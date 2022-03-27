@@ -280,7 +280,7 @@ void refresh_zone_stat_thresholds(void)
 		unsigned long max_drift, tolerate_drift;
 
         /**
-         *  
+         *
          */
 		threshold = calculate_normal_threshold(zone);
 
@@ -291,7 +291,7 @@ void refresh_zone_stat_thresholds(void)
 
 			/* Base nodestat threshold on the largest populated zone. */
 			pgdat_threshold = per_cpu_ptr(pgdat->per_cpu_nodestats, cpu)->stat_threshold;
-            
+
 			per_cpu_ptr(pgdat->per_cpu_nodestats, cpu)->stat_threshold
 				= max(threshold, pgdat_threshold);
 		}
@@ -302,7 +302,7 @@ void refresh_zone_stat_thresholds(void)
 		 * the min watermark could be breached by an allocation
 		 */
 		tolerate_drift = low_wmark_pages(zone) - min_wmark_pages(zone);
-        
+
 		max_drift = num_online_cpus() * threshold;
 		if (max_drift > tolerate_drift)
 			zone->percpu_drift_mark = high_wmark_pages(zone) + max_drift;
@@ -344,6 +344,9 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 
 	t = __this_cpu_read(pcp->stat_threshold);
 
+    /**
+     *
+     */
 	if (unlikely(abs(x) > t)) { /*  */
 		zone_page_state_add(x, zone, item); /* + x */
 		x = 0;
@@ -353,7 +356,7 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 EXPORT_SYMBOL(__mod_zone_page_state);
 
 /**
- *  
+ *
  */
 void __mod_node_page_state(struct pglist_data *pgdat, enum node_stat_item item, long delta)
 {
@@ -371,14 +374,14 @@ void __mod_node_page_state(struct pglist_data *pgdat, enum node_stat_item item, 
 	}
 
 	x = delta + __this_cpu_read(*p);
-    
+
     /**
      *  门限
      */
 	t = __this_cpu_read(pcp->stat_threshold);
 
     /**
-     *  
+     *
      */
 	if (unlikely(abs(x) > t)) {
 		node_page_state_add(x, pgdat, item);
@@ -1017,7 +1020,7 @@ unsigned long sum_zone_numa_state(int node, enum numa_stat_item item)
 }
 
 /*
- * Determine the per node value of a stat item. 
+ * Determine the per node value of a stat item.
  */
 unsigned long node_page_state_pages(struct pglist_data *pgdat, enum node_stat_item item)
 {
@@ -1037,7 +1040,7 @@ unsigned long node_page_state(struct pglist_data *pgdat, enum node_stat_item ite
 	VM_WARN_ON_ONCE(vmstat_item_in_bytes(item));
 
     /**
-     *  统计NODE 对应 的 
+     *  统计NODE 对应 的
      */
 	return node_page_state_pages(pgdat, item);
 }
@@ -1069,7 +1072,7 @@ struct contig_page_info {
  * figured out from userspace
  *
  * 计算 ZONE 中 free 页数量、连续的free页、满足分配需求的页
- * 
+ *
  */
 static void fill_contig_page_info(struct zone *zone,
 				unsigned int suitable_order,
@@ -1085,7 +1088,7 @@ static void fill_contig_page_info(struct zone *zone,
 		unsigned long blocks;
 
         /**
-         *  
+         *
          */
 		/* Count number of free blocks */
 		blocks = zone->free_area[order].nr_free;
@@ -1168,9 +1171,9 @@ unsigned int extfrag_for_order(struct zone *zone, unsigned int order)
 }
 
 /**
- *  Same as __fragmentation index but allocs contig_page_info on stack 
+ *  Same as __fragmentation index but allocs contig_page_info on stack
  *
- *  
+ *
  */
 int fragmentation_index(struct zone *zone, unsigned int order)
 {
@@ -1653,8 +1656,8 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
 
 /**
  *  /proc/buddyinfo
- *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo 
- *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0 
+ *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo
+ *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0
  *  Node 0, zone    DMA32   1576   2437   1122    448     72      1      0      0      0      0      0
  */
 static const struct seq_operations fragmentation_op = {
@@ -2122,8 +2125,8 @@ void __init init_mm_internals(void)/*  */
 #ifdef CONFIG_PROC_FS
     /**
      *  /proc/buddyinfo
-     *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo 
-     *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0 
+     *  [rongtao@toa linux-5.10.13]$ cat /proc/buddyinfo
+     *  Node 0, zone      DMA     20     28     16      4      3      8      3      2      1      0      0
      *  Node 0, zone    DMA32   1576   2437   1122    448     72      1      0      0      0      0      0
      */
 	proc_create_seq("buddyinfo", 0444, NULL, &fragmentation_op);    /* /proc/buddyinfo */
@@ -2133,28 +2136,28 @@ void __init init_mm_internals(void)/*  */
     //Page block order: 9
     //Pages per block:  512
     //
-    //Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10 
-    //Node    0, zone      DMA, type    Unmovable     37     26     13      2      2      1      1      0      1      0      0 
-    //Node    0, zone      DMA, type  Reclaimable      0      3      1      2      2      1      1      1      0      0      0 
-    //Node    0, zone      DMA, type      Movable     53     13      6      3      0      6      1      1      0      0      0 
-    //Node    0, zone      DMA, type      Reserve      0      0      0      0      0      0      0      0      0      0      0 
-    //Node    0, zone      DMA, type          CMA      0      0      0      0      0      0      0      0      0      0      0 
-    //Node    0, zone      DMA, type      Isolate      0      0      0      0      0      0      0      0      0      0      0 
-    //Node    0, zone    DMA32, type    Unmovable   1291   2174    977    226     55      5      0      0      0      0      0 
-    //Node    0, zone    DMA32, type  Reclaimable     14     86     47    312     31     18      3      1      0      0      0 
-    //Node    0, zone    DMA32, type      Movable   2234   1141    510    280    189     43      9      4      2      2      0 
-    //Node    0, zone    DMA32, type      Reserve      0      0      0      0      0      0      0      0      0      0      0 
-    //Node    0, zone    DMA32, type          CMA      0      0      0      0      0      0      0      0      0      0      0 
-    //Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0 
+    //Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10
+    //Node    0, zone      DMA, type    Unmovable     37     26     13      2      2      1      1      0      1      0      0
+    //Node    0, zone      DMA, type  Reclaimable      0      3      1      2      2      1      1      1      0      0      0
+    //Node    0, zone      DMA, type      Movable     53     13      6      3      0      6      1      1      0      0      0
+    //Node    0, zone      DMA, type      Reserve      0      0      0      0      0      0      0      0      0      0      0
+    //Node    0, zone      DMA, type          CMA      0      0      0      0      0      0      0      0      0      0      0
+    //Node    0, zone      DMA, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
+    //Node    0, zone    DMA32, type    Unmovable   1291   2174    977    226     55      5      0      0      0      0      0
+    //Node    0, zone    DMA32, type  Reclaimable     14     86     47    312     31     18      3      1      0      0      0
+    //Node    0, zone    DMA32, type      Movable   2234   1141    510    280    189     43      9      4      2      2      0
+    //Node    0, zone    DMA32, type      Reserve      0      0      0      0      0      0      0      0      0      0      0
+    //Node    0, zone    DMA32, type          CMA      0      0      0      0      0      0      0      0      0      0      0
+    //Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
     //
-    //Number of blocks type     Unmovable  Reclaimable      Movable      Reserve          CMA      Isolate 
-    //Node 0, zone      DMA            2            1            5            0            0            0 
-    //Node 0, zone    DMA32          128           74          302            0            0            0 
+    //Number of blocks type     Unmovable  Reclaimable      Movable      Reserve          CMA      Isolate
+    //Node 0, zone      DMA            2            1            5            0            0            0
+    //Node 0, zone    DMA32          128           74          302            0            0            0
      */
 	proc_create_seq("pagetypeinfo", 0400, NULL, &pagetypeinfo_op);
     /**
      *  /proc/vmstat
-    // [rongtao@toa linux-5.10.13]$ cat /proc/vmstat 
+    // [rongtao@toa linux-5.10.13]$ cat /proc/vmstat
     // nr_free_pages 33813
     // nr_alloc_batch 2139
     // nr_inactive_anon 19426

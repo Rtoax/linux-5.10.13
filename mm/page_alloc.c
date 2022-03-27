@@ -241,6 +241,9 @@ static inline int get_pcppage_migratetype(struct page *page)
 	return page->index;
 }
 
+/**
+ *
+ */
 static inline void set_pcppage_migratetype(struct page *page, int migratetype)
 {
 	page->index = migratetype;
@@ -863,6 +866,9 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 //				unsigned int order, int migratetype) {}
 #endif
 
+/**
+ *
+ */
 static inline void set_buddy_order(struct page *page, unsigned int order)   /*  */
 {
 	set_page_private(page, order);
@@ -948,7 +954,9 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 				    unsigned int order, int migratetype)
 {
 	struct free_area *area = &zone->free_area[order];
-
+    /**
+     *  添加到链表
+     */
 	list_add(&page->lru, &area->free_list[migratetype]);
 	area->nr_free++;
 }
@@ -979,19 +987,32 @@ static inline void move_to_free_list(struct page *page, struct zone *zone,
 /**
  *  将 page 从链表中删除，并清除 伙伴系统标志
  */
-static inline void del_page_from_free_list(struct page *page, struct zone *zone,
+static inline void
+del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
 {
 	/* clear reported state and update reported page count */
 	if (page_reported(page))    /*  */
 		__ClearPageReported(page);
 
-	list_del(&page->lru);   /* 从链表中删除 */
+    /**
+     *  从 lru 链表中删除
+     */
+	list_del(&page->lru);
 
+    /**
+     *
+     */
 	__ClearPageBuddy(page); /*  */
 
+    /**
+     *  page->private = private = 0;
+     */
 	set_page_private(page, 0);
 
+    /**
+     *  链表中少了一个元素
+     */
 	zone->free_area[order].nr_free--;   /* 删除 */
 }
 
@@ -2346,12 +2367,16 @@ void __init init_cma_reserved_pageblock(struct page *page)
 static inline void expand(struct zone *zone, struct page *page,
 	int low, int high, int migratetype)
 {
-    /* 计算实际分配了几页 如：
-     high = 1 -> 表示两页
-     size = 2 -> 计算得到的 页数 */
+    /**
+     *  计算实际分配了几页 如：
+     *  high = 1 -> 表示两页
+     *  size = 2 -> 计算得到的 页数
+     s*/
 	unsigned long size = 1 << high;
 
-    /* high > low 表明，在分配page 过程中，多分配了，需要将其归还给伙伴系统 */
+    /**
+     *  high > low 表明，在分配page 过程中，多分配了，需要将其归还给伙伴系统
+     */
 	while (high > low) {
 
         /**
@@ -2382,7 +2407,11 @@ static inline void expand(struct zone *zone, struct page *page,
          *  将page 加入对应的freelist中
          */
 		add_to_free_list(&page[size], zone, high, migratetype);
-		set_buddy_order(&page[size], high); /* 重新设置下这个page 的order */
+
+        /**
+         *  重新设置下这个page 的order
+         */
+		set_buddy_order(&page[size], high); /*  */
 	}
 }
 
@@ -2400,9 +2429,14 @@ static void check_new_page_bad(struct page *page)
 
 /*
  * This page is about to be returned from the page allocator
+ *
+ *
  */
 static inline int check_new_page(struct page *page)
 {
+    /**
+     *
+     */
 	if (likely(page_expected_state(page,
 				PAGE_FLAGS_CHECK_AT_PREP|__PG_HWPOISON)))
 		return 0;
@@ -2439,12 +2473,21 @@ static inline bool check_new_pcp(struct page *page)
 /*  */
 #endif /* CONFIG_DEBUG_VM */
 
+/**
+ *
+ */
 static bool check_new_pages(struct page *page, unsigned int order)
 {
 	int i;
+    /**
+     *  遍历分配的 pages
+     */
 	for (i = 0; i < (1 << order); i++) {
 		struct page *p = page + i;
 
+        /**
+         *
+         */
 		if (unlikely(check_new_page(p)))
 			return true;
 	}
@@ -2510,24 +2553,37 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
      */
 	for (current_order = order; current_order < MAX_ORDER; ++current_order) {
 
-        /* 获取 free area */
+        /**
+         *  获取 free area
+         */
 		area = &(zone->free_area[current_order]);
 
-        /* 从链表中获取节点 */
+        /**
+         *  从链表中获取第一个节点
+         */
 		page = get_page_from_free_area(area, migratetype);
 
-        /* 如果获取失败，继续执行更大一级的 order
-           也就是从 一页变成了二页 */
+        /**
+         *  如果获取失败，说明这个 free_list 为空了，
+         *  那么继续执行更大一级的 order
+         *  也就是从 一页变成了二页
+         */
 		if (!page)
 			continue;
 
-        /* 从 free list 中删除 */
+        /**
+         *  从 free list 中删除
+         */
 		del_page_from_free_list(page, zone, current_order);
 
-        /* 如果 current_order > order，需要将多分配的还给伙伴系统 */
+        /**
+         *  如果 current_order > order，需要将多分配的还给伙伴系统
+         */
 		expand(zone, page, order, current_order, migratetype);
 
-        /*  */
+        /**
+         *
+         */
 		set_pcppage_migratetype(page, migratetype);
 		return page;
 	}
@@ -2582,7 +2638,11 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 };
 
 #ifdef CONFIG_CMA
-static __always_inline struct page *__rmqueue_cma_fallback(struct zone *zone,
+/**
+ *
+ */
+static __always_inline struct page *
+__rmqueue_cma_fallback(struct zone *zone,
 					unsigned int order)
 {
 	return __rmqueue_smallest(zone, order, MIGRATE_CMA);
@@ -3177,7 +3237,9 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 {
 	struct page *page;
 
-    /* 如果使能 连续内存管理 */
+    /**
+     *  如果使能 连续内存管理
+     */
 	if (IS_ENABLED(CONFIG_CMA)) {
 		/*
 		 * Balance movable allocations between regular and CMA areas by
@@ -3200,7 +3262,9 @@ __rmqueue(struct zone *zone, unsigned int order, int migratetype,
 	}
 
 retry:
-    /* 分配 */
+    /**
+     *  从 伙伴系统 分配
+     */
 	page = __rmqueue_smallest(zone, order, migratetype);
 	if (unlikely(!page)) {  /* 一般都能成功吧 */
         /**
@@ -3838,7 +3902,32 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	local_irq_restore(flags);
 	return page;
 }
-
+/*
+Avaliable
+Free
+Page
+|
+|+                                  Back to High
+| +                                 WaterMark           +
+|  +                                      \         +
+|   +                                      \    +
+|----+--------------------------------------+-------------------------------WMARK_HIGH
+|     +                                   +
+|      +                                +
+|       + kswapd Wakeup               +
+|        + /                        +
+|---------+-----------------------+-----------------------------------------WMARK_LOW
+|           +       Direct      +
+|             +     Reclaim   +
+|               +    /      +
+|                 + /     +
+|-------------------+---+---------------------------------------------------WMARK_MIN
+|                    + +
+|                     +
+|
+|
+\________________________________________________________________________________> time
+ */
 /*
  * Allocate a page from the given zone. Use pcplists for order-0 allocations.
  * 从 给出的 zone 中分配 page
@@ -3870,8 +3959,10 @@ struct page *rmqueue(struct zone *preferred_zone,
 
             /**
              *  PCP 形式的快速分配，每个CPU都有一个链表，装了一些 页面
+             *  pcp: Per CPU Page
              *
-             *  如果这个 pcp 的链表中没有 free page，将使用 __rmqueue 从伙伴系统申请 pcp->batch 个页面加入链表中
+             *  如果这个 pcp 的链表中没有 free page，将使用 __rmqueue
+             *  从伙伴系统申请 pcp->batch 个页面加入链表中
              *  pcp从 伙伴系统申请 过程是慢速过程。
              */
 			page = rmqueue_pcplist(preferred_zone, zone, gfp_flags,
@@ -3890,6 +3981,9 @@ struct page *rmqueue(struct zone *preferred_zone,
      * 如果申请多个页
      */
 
+    /**
+     *  关闭中断
+     */
 	spin_lock_irqsave(&zone->lock, flags);  /* 首先获取 zone 的锁 */
 
 	do {
@@ -3900,32 +3994,53 @@ struct page *rmqueue(struct zone *preferred_zone,
 		 * reserved for high-order atomic allocation, so order-0
 		 * request should skip it.
 		 *
-		 * 分配一个页的情况也有可能执行这部分代码
+		 * 1. 至少分配两个页（见注释）
+		 * 2. ALLOC_HARDER 优先级相当高的分配
 		 */
 		if (order > 0 && alloc_flags & ALLOC_HARDER) {
+            /**
+             *  从 伙伴系统分配 order 页
+             */
 			page = __rmqueue_smallest(zone, order, MIGRATE_HIGHATOMIC);
 			if (page)
 				trace_mm_page_alloc_zone_locked(page, order, migratetype);
 		}
-        /* 如果分配失败，或者上面分配一个页的情况没有分配页 */
+        /**
+         *  如果分配失败，或者上面分配一个页的情况没有分配页
+         */
 		if (!page)
 			page = __rmqueue(zone, order, migratetype, alloc_flags);
 
+    /**
+     *  突出循环条件
+     *  1. 分配到page
+     *  2. 并且
+     */
 	} while (page && check_new_pages(page, order));
 	spin_unlock(&zone->lock);
 
 	if (!page)
 		goto failed;
 
-    /*  */
+    /**
+     *  更新统计信息
+     */
 	__mod_zone_freepage_state(zone, -(1 << order),
 				  get_pcppage_migratetype(page));
 
+    /**
+     *
+     */
 	__count_zid_vm_events(PGALLOC, page_zonenum(page), 1 << order);
 
-    /* 统计 */
+    /**
+     *  更新 zone 统计信息
+     */
     zone_statistics(preferred_zone, zone);
 
+    /**
+     *  开启中断
+     */
 	local_irq_restore(flags);
 
 out:
@@ -4401,14 +4516,26 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 	return false;
 }
 
+/**
+ *
+ */
 bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 			unsigned long mark, int highest_zoneidx)
 {
+    /**
+     *  获取当前 zone 空闲的 pages 个数
+     */
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);
 
+    /**
+     *
+     */
 	if (z->percpu_drift_mark && free_pages < z->percpu_drift_mark)
 		free_pages = zone_page_state_snapshot(z, NR_FREE_PAGES);
 
+    /**
+     *
+     */
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0,
 								free_pages);
 }
@@ -4497,6 +4624,8 @@ static inline unsigned int current_alloc_flags(gfp_t gfp_mask,  /*  */
 /*
  * get_page_from_freelist goes through the zonelist trying to allocate
  * a page.
+ *
+ * 尝试从 freelist 中直接分配
  */
 static struct page *    /*  */
 get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
@@ -4511,6 +4640,8 @@ retry:
 	/*
 	 * Scan zonelist, looking for a zone with enough free.
 	 * See also __cpuset_node_allowed() comment in kernel/cpuset.c.
+	 *
+	 * ALLOC_NOFRAGMENT 避免混合页面块类型？
 	 */
 	no_fallback = alloc_flags & ALLOC_NOFRAGMENT;
 
@@ -4527,6 +4658,11 @@ retry:
 		struct page *page;
 		unsigned long mark;
 
+        /**
+         *  1. cpuset 使能
+         *  2. ALLOC_CPUSET？
+         *  3. __cpuset_zone_allowed
+         */
 		if (cpusets_enabled() &&
 			(alloc_flags & ALLOC_CPUSET) &&
 			!__cpuset_zone_allowed(zone, gfp_mask))
@@ -4561,7 +4697,8 @@ retry:
 		}
 
         /**
-         *
+         *  no_fallback 避免混合页面块类型？
+         *  node 数量大于1
          */
 		if (no_fallback && nr_online_nodes > 1 && zone != ac->preferred_zoneref->zone) {
 
@@ -4639,7 +4776,7 @@ retry:
 				continue;
 
             /**
-             *  允许回收, 进入回收流程
+             *  允许回收, 进入回收流程 - *** 直接回收 或者 唤醒kswapd ***
              *  传入 zone 对应的 NODE
              */
 			ret = node_reclaim(zone->zone_pgdat, gfp_mask, order);
@@ -4651,7 +4788,10 @@ retry:
 				/* scanned but unreclaimable - 扫描但是不回收 */
 				continue;
 			default:
-				/* did we reclaim enough */ /*  */
+				/**
+				 *  did we reclaim enough - 是否回收的够用了？
+				 *  如果够用了，那么直接 跳转到 try_this_zone 进行分配
+				 */
 				if (zone_watermark_ok(zone, order, mark,
 					ac->highest_zoneidx, alloc_flags))
 					goto try_this_zone;
@@ -4662,10 +4802,17 @@ retry:
 
 try_this_zone:
 
-        /* 从已知 NODE 中分配 page */
+        /**
+         *  从已知 NODE 中分配 page
+         *  1. 剩余内存够用，直接分配
+         *  2. 剩余内存够用，但是分配后进入 low 水位，唤醒 kswapd 进行异步回收
+         */
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
-				gfp_mask, alloc_flags, ac->migratetype);
+				        gfp_mask, alloc_flags, ac->migratetype);
 
+        /**
+         *  回收成功
+         */
 		if (page) { /* 分配成功 */
 			prep_new_page(page, order, gfp_mask, alloc_flags);  /*  */
 
@@ -5064,6 +5211,9 @@ out:
 static struct lockdep_map __fs_reclaim_map =
 	STATIC_LOCKDEP_MAP_INIT("fs_reclaim", &__fs_reclaim_map);
 
+/**
+ *
+ */
 static bool __need_fs_reclaim(gfp_t gfp_mask)
 {
 	gfp_mask = current_gfp_context(gfp_mask);
@@ -5096,6 +5246,9 @@ void __fs_reclaim_release(void) /* 死锁检测 */
 	lock_map_release(&__fs_reclaim_map);
 }
 
+/**
+ *
+ */
 void fs_reclaim_acquire(gfp_t gfp_mask) /* 死锁检测 */
 {
 	if (__need_fs_reclaim(gfp_mask))
@@ -5111,7 +5264,10 @@ void fs_reclaim_release(gfp_t gfp_mask)/* 死锁检测 */
 EXPORT_SYMBOL_GPL(fs_reclaim_release);
 #endif
 
-/* Perform direct synchronous page reclaim */
+/**
+ *  Perform direct synchronous page reclaim
+ *  执行同步的内存回收
+ */
 static unsigned long    /*  */
 __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 					const struct alloc_context *ac)
@@ -5119,14 +5275,22 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 	unsigned int noreclaim_flag;
 	unsigned long pflags, progress;
 
+    /**
+     *  让出 CPU 防止 soft lockup
+     */
 	cond_resched();
 
-	/* We now go into synchronous reclaim */
+	/**
+	 *  We now go into synchronous reclaim
+	 */
 	cpuset_memory_pressure_bump();
 	psi_memstall_enter(&pflags);
 	fs_reclaim_acquire(gfp_mask);
 	noreclaim_flag = memalloc_noreclaim_save();
 
+    /**
+     *  回收
+     */
 	progress = try_to_free_pages(ac->zonelist, order, gfp_mask,
 								ac->nodemask);
 
@@ -5140,7 +5304,7 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 }
 
 /**
- *
+ *  进行直接内存回收
  */
 /* The really slow allocator path where we enter direct reclaim */
 static inline struct page * /* 分配页时候直接回收 */
@@ -5151,11 +5315,17 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	struct page *page = NULL;
 	bool drained = false;
 
+    /**
+     *  执行同步的内存回收
+     */
 	*did_some_progress = __perform_reclaim(gfp_mask, order, ac);
 	if (unlikely(!(*did_some_progress)))
 		return NULL;
 
 retry:
+    /**
+     *  回收后 重新分配
+     */
 	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 
 	/*
@@ -5173,6 +5343,9 @@ retry:
 	return page;
 }
 
+/**
+ *  唤醒 所有 kswapd 进程（kswapd 一个 node 一个）
+ */
 static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
 			     const struct alloc_context *ac)
 {
@@ -5181,10 +5354,19 @@ static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
 	pg_data_t *last_pgdat = NULL;
 	enum zone_type highest_zoneidx = ac->highest_zoneidx;
 
+    /**
+     *
+     */
 	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist, highest_zoneidx,
 					ac->nodemask) {
+	    /**
+         *
+         */
 		if (last_pgdat != zone->zone_pgdat)
 			wakeup_kswapd(zone, gfp_mask, order, highest_zoneidx);
+        /**
+         *
+         */
 		last_pgdat = zone->zone_pgdat;
 	}
 }
@@ -5240,7 +5422,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 		alloc_flags |= ALLOC_HARDER;
 
     /**
-     *
+     *  CMA 相关
      */
 	alloc_flags = current_alloc_flags(gfp_mask, alloc_flags);
 
@@ -5494,7 +5676,8 @@ retry_cpuset:
 	 * there was a cpuset modification and we are retrying - otherwise we
 	 * could end up iterating over non-eligible zones endlessly.
 	 *
-	 * 重新计算首选推荐的 zone，因为可能在快速路径修改了内存节点掩码，或 使用 cpuset 机制做了修改
+	 *  重新计算首选推荐的 zone，因为可能在快速路径修改了内存节点掩码，
+	 *  或 使用 cpuset 机制做了修改
 	 */
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist, ac->highest_zoneidx, ac->nodemask);
 	if (!ac->preferred_zoneref->zone)
@@ -5510,7 +5693,7 @@ retry_cpuset:
 	 * The adjusted alloc_flags might result in immediate success, so try
 	 * that first
 	 *
-	 * 尝试以最低警戒水位 进行分配
+	 * 尝试以最低警戒水位 进行分配，如果获取到了直接退出就行了。
 	 */
 	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 	if (page)
@@ -5519,6 +5702,7 @@ retry_cpuset:
     /**
      *  如果分配不成功，继续往下看
      */
+
 	/*
 	 * For costly allocations, try direct compaction first, as it's likely
 	 * that we have enough base pages and don't need to reclaim. For non-
@@ -5618,7 +5802,9 @@ retry:
 					ac->highest_zoneidx, ac->nodemask);
 	}
 
-	/* Attempt with potentially adjusted zonelist and alloc_flags */
+	/**
+	 *  Attempt with potentially adjusted zonelist and alloc_flags
+	 */
 	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 	if (page)
 		goto got_pg;
@@ -5921,9 +6107,9 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	 */
 	ac.nodemask = nodemask;
 
-    /* 如果上面申请失败，则进入慢速路径 */
     /**
-     *  慢速路径
+     *  如果上面申请失败，则进入慢速路径
+     *  内部将 唤醒 kswapd 进程
      */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 

@@ -39,7 +39,7 @@ static int numa_distance_cnt;
 static u8 *numa_distance;
 
 /**
- *
+ *  内核启动参数
  */
 static __init int numa_setup(char *opt)
 {
@@ -423,10 +423,10 @@ static int __init numa_alloc_distance(void)
 	 * 默认的距离
 	 *
 	 *     0   1   2   3
-	 * 0  10
-	 * 1
-	 * 2
-	 * 3
+	 * 0  10   20  20  20
+	 * 1  20   10  20  20
+	 * 2  20   20  10  20
+	 * 3  20   20  20  10
 	 */
 	for (i = 0; i < cnt_node; i++)
 		for (j = 0; j < cnt_node; j++)
@@ -457,9 +457,15 @@ static int __init numa_alloc_distance(void)
  */
 void __init numa_set_distance(int from, int to, int distance)
 {
+    /**
+     *  设置 numa node 之间的距离
+     */
 	if (!numa_distance && numa_alloc_distance() < 0)
 		return;
 
+    /**
+     *  numa 个数检测
+     */
 	if (from >= numa_distance_cnt || to >= numa_distance_cnt ||
 			from < 0 || to < 0) {
 		pr_warn_once("Warning: node ids are out of bound, from=%d to=%d distance=%d\n",
@@ -467,6 +473,9 @@ void __init numa_set_distance(int from, int to, int distance)
 		return;
 	}
 
+    /**
+     *  前8位有效
+     */
 	if ((u8)distance != distance ||
 	    (from == to && distance != LOCAL_DISTANCE)) {
 		pr_warn_once("Warning: invalid distance parameter, from=%d to=%d distance=%d\n",
@@ -474,11 +483,23 @@ void __init numa_set_distance(int from, int to, int distance)
 		return;
 	}
 
+    /**
+     *  设置距离
+     *
+	 * fill with the default distances
+	 * 默认的距离
+	 *
+	 *     0   1   2   3
+	 * 0  10   20  20  20
+	 * 1  20   10  20  20
+	 * 2  20   20  10  20
+	 * 3  20   20  20  10
+	 */
 	numa_distance[from * numa_distance_cnt + to] = distance;
 }
 
 /**
- * @brief
+ * @brief 获取 node 之间的距离
  *
  * @param from
  * @param to

@@ -35,7 +35,7 @@ extern struct static_key_false cpusets_pre_enable_key;
 extern struct static_key_false cpusets_enabled_key;
 
 /**
- *  
+ *
  */
 static inline bool cpusets_enabled(void)    /*  */
 {
@@ -92,6 +92,9 @@ static inline bool cpuset_zone_allowed(struct zone *z, gfp_t gfp_mask)
 extern int cpuset_mems_allowed_intersects(const struct task_struct *tsk1,
 					  const struct task_struct *tsk2);
 
+/**
+ *
+ */
 #define cpuset_memory_pressure_bump() 				\
 	do {							\
 		if (cpuset_memory_pressure_enabled)		\

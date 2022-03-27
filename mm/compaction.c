@@ -46,7 +46,7 @@ static inline void count_compact_events(enum vm_event_item item, long delta)
 #include <trace/events/compaction.h>
 
 /**
- *  
+ *
  */
 #define block_start_pfn(pfn, order)	round_down(pfn, 1UL << (order))
 #define block_end_pfn(pfn, order)	ALIGN((pfn) + 1, 1UL << (order))
@@ -141,7 +141,7 @@ int PageMovable(struct page *page)
 EXPORT_SYMBOL(PageMovable);
 
 /**
- *  
+ *
  */
 void __SetPageMovable(struct page *page, struct address_space *mapping)
 {
@@ -152,7 +152,7 @@ void __SetPageMovable(struct page *page, struct address_space *mapping)
 EXPORT_SYMBOL(__SetPageMovable);
 
 /**
- *  
+ *
  */
 void __ClearPageMovable(struct page *page)
 {
@@ -191,7 +191,7 @@ void defer_compaction(struct zone *zone, int order)
 }
 
 /**
- *  Returns true if compaction should be skipped this time 
+ *  Returns true if compaction should be skipped this time
  *
  *  如果 这次需要被跳过，返回 true
  */
@@ -200,7 +200,7 @@ bool compaction_deferred(struct zone *zone, int order)
 	unsigned long defer_limit = 1UL << zone->compact_defer_shift;
 
     /**
-     *  需规整的order 小于 
+     *  需规整的order 小于
      */
 	if (order < zone->compact_order_failed)
 		return false;
@@ -223,7 +223,7 @@ bool compaction_deferred(struct zone *zone, int order)
  *
  * defer: 推迟
  *
- * 
+ *
  */
 void compaction_defer_reset(struct zone *zone, int order,
 		bool alloc_success)
@@ -414,7 +414,7 @@ static void __reset_isolation_suitable(struct zone *zone)
 }
 
 /**
- *  
+ *
  */
 void reset_isolation_suitable(pg_data_t *pgdat)
 {
@@ -519,7 +519,7 @@ static bool compact_lock_irqsave(spinlock_t *lock, unsigned long *flags,
 
 		cc->contended = true;
 	}
-    
+
     /**
      *  同步模式，如果有人已经获取了锁，那么只能等待
      */
@@ -780,7 +780,7 @@ isolate_freepages_range(struct compact_control *cc,
 
 
 /**
- *  Similar to reclaim, but different enough that they don't share logic 
+ *  Similar to reclaim, but different enough that they don't share logic
  *
  *  too_many_isolated 函数中
  *   如果判断当前 zone 从 LRU 链表分离出来的 页面比较多，则最好等待 100ms
@@ -803,7 +803,7 @@ static bool too_many_isolated(pg_data_t *pgdat)
 
     /**
      *  隔离
-     */ 
+     */
 	isolated = node_page_state(pgdat, NR_ISOLATED_FILE) +
 			node_page_state(pgdat, NR_ISOLATED_ANON);
 
@@ -871,7 +871,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
         /**
          *  如果判断当前 zone 从 LRU 链表分离出来的 页面比较多，则最好等待 100ms
          *
-         *  
+         *
          */
 		congestion_wait(BLK_RW_ASYNC, HZ/10);
 
@@ -880,7 +880,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 	}
 
     /**
-     *  
+     *
      */
 	cond_resched();
 
@@ -946,7 +946,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			goto isolate_fail;
 
         /**
-         *  
+         *
          */
 		nr_scanned++;
 
@@ -1048,7 +1048,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 		 *
 		 * 如果匿名页面锁在内存中，也不适合分离。
 		 *
-		 *  通常情况下，page_count(page) == page_mapcount(page) 
+		 *  通常情况下，page_count(page) == page_mapcount(page)
 		 *          即   page->_refcount = page->_mapcount + 1
 		 *  如果不相等，说明内核中使用了这个匿名页面，所以这种匿名页面也不适合迁移
 		 */
@@ -1075,14 +1075,14 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			if (!skip_updated) {
 				skip_updated = true;
                 /**
-                 *  
+                 *
                  */
 				if (test_and_set_skip(cc, page, low_pfn))
 					goto isolate_abort;
 			}
 
 			/**
-			 *  Recheck PageLRU and PageCompound under lock 
+			 *  Recheck PageLRU and PageCompound under lock
 			 *
 			 *  重新判断这个页面是否在 LRU 链表中
 			 */
@@ -1103,7 +1103,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 		lruvec = mem_cgroup_page_lruvec(page, pgdat);
 
 		/**
-		 *  Try isolate the page 
+		 *  Try isolate the page
 		 *
 		 *  尝试分离 这个页面，若分离成功，返回 0
 		 */
@@ -1115,7 +1115,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 			low_pfn += compound_nr(page) - 1;
 
 		/**
-		 *  Successfully isolated 
+		 *  Successfully isolated
 		 *
 		 *  从 LRU 链表删除
 		 */
@@ -1148,7 +1148,7 @@ isolate_success:
 		}
 
 		continue;
-            
+
 isolate_fail:
 		if (!skip_on_failure)
 			continue;
@@ -1364,7 +1364,7 @@ move_freelist_head(struct list_head *freelist, struct page *freepage)
  *
  *              #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
  *              ^
- *  
+ *
  */
 static void
 move_freelist_tail(struct list_head *freelist, struct page *freepage)
@@ -1658,7 +1658,7 @@ static void isolate_freepages(struct compact_control *cc)
 			cond_resched();
 
         /**
-         *  
+         *
          */
 		page = pageblock_pfn_to_page(block_start_pfn, block_end_pfn,
 									zone);
@@ -1734,12 +1734,12 @@ static struct page *compaction_alloc(struct page *migratepage,
 	struct page *freepage;
 
     /**
-     *  
+     *
      */
 	if (list_empty(&cc->freepages)) {
 
         /**
-         *  
+         *
          */
 		isolate_freepages(cc);
 
@@ -1868,7 +1868,7 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 		distance >>= 2;
 
     /**
-     *  
+     *
      */
 	high_pfn = pageblock_start_pfn(cc->migrate_pfn + distance);
 
@@ -1914,7 +1914,7 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 			free_pfn = page_to_pfn(freepage);
 
             /**
-             *  
+             *
              */
 			if (free_pfn < high_pfn) {
 				/*
@@ -1931,21 +1931,21 @@ static unsigned long fast_find_migrateblock(struct compact_control *cc)
 				}
 
 				/**
-				 *  Reorder to so a future search skips recent pages 
+				 *  Reorder to so a future search skips recent pages
 				 *
-				 *  
+				 *
 				 */
 				move_freelist_tail(freelist, freepage);
 
                 /**
-                 *  
+                 *
                  */
 				update_fast_start_pfn(cc, free_pfn);
 				pfn = pageblock_start_pfn(free_pfn);
 				cc->fast_search_fail = 0;
 
                 /**
-                 *  
+                 *
                  */
 				set_pageblock_skip(freepage);
 				break;
@@ -1998,7 +1998,7 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	const isolate_mode_t isolate_mode =
         		(sysctl_compact_unevictable_allowed ? ISOLATE_UNEVICTABLE : 0) |
         		(cc->mode != MIGRATE_SYNC ? ISOLATE_ASYNC_MIGRATE : 0);
-    
+
 	bool fast_find_block;
 
 	/*
@@ -2011,10 +2011,10 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	low_pfn = fast_find_migrateblock(cc);
 
     /**
-     *  
+     *
      */
 	block_start_pfn = pageblock_start_pfn(low_pfn);
-    
+
 	if (block_start_pfn < cc->zone->zone_start_pfn)
 		block_start_pfn = cc->zone->zone_start_pfn;
 
@@ -2026,7 +2026,7 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 	fast_find_block = low_pfn != cc->migrate_pfn && !cc->fast_search_fail;
 
     /**
-     *  以 block_end_pfn 为其实页帧号 开始扫描 
+     *  以 block_end_pfn 为其实页帧号 开始扫描
      */
 	/* Only scan within a pageblock boundary */
 	block_end_pfn = pageblock_end_pfn(low_pfn);
@@ -2087,7 +2087,7 @@ static isolate_migrate_t isolate_migratepages(struct compact_control *cc)
 		}
 
 		/**
-		 *  Perform the isolation 
+		 *  Perform the isolation
 		 *
 		 *  对页块 里的 页面执行分离任务
 		 */
@@ -2158,7 +2158,7 @@ static unsigned int fragmentation_score_node(pg_data_t *pgdat)
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
 		struct zone *zone;
         /**
-         *  
+         *
          */
 		zone = &pgdat->node_zones[zoneid];
 		score += fragmentation_score_zone(zone);
@@ -2231,7 +2231,7 @@ static enum compact_result __compact_finished(struct compact_control *cc)
 	}
 
     /**
-     *  
+     *
      */
 	if (cc->proactive_compaction) {
 		int score, wmark_low;
@@ -2268,10 +2268,10 @@ static enum compact_result __compact_finished(struct compact_control *cc)
 	ret = COMPACT_NO_SUITABLE_PAGE;
 
     /**
-     *  
+     *
      */
 	for (order = cc->order; order < MAX_ORDER; order++) {
-        
+
 		struct free_area *area = &cc->zone->free_area[order];
 		bool can_steal;
 
@@ -2329,7 +2329,7 @@ static enum compact_result compact_finished(struct compact_control *cc)
 	int ret;
 
     /**
-     *  
+     *
      */
 	ret = __compact_finished(cc);
 	trace_mm_compaction_finished(cc->zone, cc->order, ret);
@@ -2365,12 +2365,12 @@ static enum compact_result __compaction_suitable(struct zone *zone, int order,  
      *  当前 zone  的水位
      */
 	watermark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
-    
+
 	/*
 	 * If watermarks for high-order allocation are already met, there
 	 * should be no need for compaction at all.
 	 *
-	 * 检查 水位 
+	 * 检查 水位
 	 */
 	if (zone_watermark_ok(zone, order, watermark, highest_zoneidx, alloc_flags))
         /**
@@ -2454,12 +2454,12 @@ enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
 	 * excessive compaction for costly orders, but it should not be at the
 	 * expense of system stability.
 	 *
-	 * 
+	 *
 	 */
 	if (ret == COMPACT_CONTINUE && (order > PAGE_ALLOC_COSTLY_ORDER/*3*/)) {
 
         /**
-         *  
+         *
          */
 		fragindex = fragmentation_index(zone, order);
 		if (fragindex >= 0 && fragindex <= sysctl_extfrag_threshold)
@@ -2469,7 +2469,7 @@ enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
 	trace_mm_compaction_suitable(zone, order, ret);
 
     /**
-     *  
+     *
      */
 	if (ret == COMPACT_NOT_SUITABLE_ZONE)
 		ret = COMPACT_SKIPPED;
@@ -2526,7 +2526,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
      */
 	unsigned long start_pfn = cc->zone->zone_start_pfn;
 	unsigned long end_pfn = zone_end_pfn(cc->zone);
-    
+
 	unsigned long last_migrated_pfn;
 
     /**
@@ -2545,7 +2545,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	cc->total_free_scanned = 0;
 	cc->nr_migratepages = 0;
 	cc->nr_freepages = 0;
-    
+
 	INIT_LIST_HEAD(&cc->freepages);
 	INIT_LIST_HEAD(&cc->migratepages);
 
@@ -2615,7 +2615,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 			cc->zone->compact_cached_free_pfn = cc->free_pfn;
 		}
         /**
-         *  
+         *
          *  记录 的 migrate_pfn 越界了
          *
          *       +------------------------+
@@ -2628,11 +2628,11 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 		}
 
         /**
-         *  
+         *
          *  migrate_pfn < compact_init_migrate_pfn
          *
          *       +------------------------+
-         *   ^^^  
+         *   ^^^
          * ^^^
          */
 		if (cc->migrate_pfn <= cc->zone->compact_init_migrate_pfn)
@@ -2640,7 +2640,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	}
 
     /**
-     *  
+     *
      */
 	last_migrated_pfn = 0;
 
@@ -2652,7 +2652,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	 * Until a pageblock with isolation candidates is found, keep the
 	 * cached PFNs in sync to avoid revisiting the same blocks.
 	 *
-	 * 是否更新缓存 
+	 * 是否更新缓存
 	 *
 	 *  异步规整 并且 上一次同步异步的可迁移页面位置相同
 	 */
@@ -2663,7 +2663,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 				cc->free_pfn, end_pfn, sync);
 
     /**
-     *  
+     *
      */
 	migrate_prep_local();
 
@@ -2732,7 +2732,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
         /**
          *  迁移页面的核心函数
          */
-		err = migrate_pages(&cc->migratepages, 
+		err = migrate_pages(&cc->migratepages,
             		        compaction_alloc,   /* 从 zone的尾部开始查找空闲页面 */
             				compaction_free,    /*  */
             				(unsigned long)cc,
@@ -2740,7 +2740,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
             				MR_COMPACTION);
 
         /**
-         *  
+         *
          */
 		trace_mm_compaction_migratepages(cc->nr_migratepages, err, &cc->migratepages);
 
@@ -2756,7 +2756,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
              *  把已经 分离的页面 重新 添加到LRU 链表中
              */
 			putback_movable_pages(&cc->migratepages);
-            
+
 			/*
 			 * migrate_pages() may return -ENOMEM when scanners meet
 			 * and we want compact_finished() to detect it
@@ -2811,14 +2811,14 @@ out:
 	 *
 	 * 已经分离 的空闲页面的数量
 	 */
-	if (cc->nr_freepages > 0) { 
+	if (cc->nr_freepages > 0) {
         /**
          *  把空闲页面放回伙伴系统
          */
 		unsigned long free_pfn = release_freepages(&cc->freepages);
 
         /**
-         *  
+         *
          */
 		cc->nr_freepages = 0;
 		VM_BUG_ON(free_pfn == 0);
@@ -2854,7 +2854,7 @@ static enum compact_result compact_zone_order(struct zone *zone, int order,
 	enum compact_result ret;
 
     /**
-     *  
+     *
      */
 	struct compact_control cc = {
 		cc.order = order,
@@ -2871,7 +2871,7 @@ static enum compact_result compact_zone_order(struct zone *zone, int order,
 	};
 
     /**
-     *  
+     *
      */
 	struct capture_control capc = {
 		capc.cc = &cc,
@@ -2919,13 +2919,13 @@ int sysctl_extfrag_threshold = 500;
  *
  * This is the main entry point for direct page compaction.
  *
- * 
+ *
  * @gfp_mask        传递给页面分配器的分配掩码
  * @order           请求分配页面大小
- * @alloc_flags     页面分配器内部使用的分配标志位   
+ * @alloc_flags     页面分配器内部使用的分配标志位
  * @ac              页面分配器内部使用的分配上下文
  * @prio            内存规整优先级
- * 
+ *
  */
 enum compact_result try_to_compact_pages(gfp_t gfp_mask, unsigned int order,
                 		unsigned int alloc_flags, const struct alloc_context *ac,
@@ -2951,11 +2951,11 @@ enum compact_result try_to_compact_pages(gfp_t gfp_mask, unsigned int order,
 	/* Compact each zone in the list */
 	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist,
 					ac->highest_zoneidx, ac->nodemask) {
-					
+
 		enum compact_result status;
 
 		if (prio > MIN_COMPACT_PRIORITY && compaction_deferred(zone, order)) {
-            
+
 			rc = max_t(enum compact_result, COMPACT_DEFERRED, rc);
 			continue;
 		}
@@ -3026,7 +3026,7 @@ static void proactive_compact_node(pg_data_t *pgdat)
 
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
         /**
-         *  
+         *
          */
 		zone = &pgdat->node_zones[zoneid];
 		if (!populated_zone(zone))
@@ -3058,7 +3058,7 @@ static void compact_node(int nid)
 
 	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
         /**
-         *  
+         *
          */
 		zone = &pgdat->node_zones[zoneid];
 		if (!populated_zone(zone))
@@ -3297,6 +3297,9 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 		pgdat->kcompactd_highest_zoneidx = pgdat->nr_zones - 1;
 }
 
+/**
+ * 唤醒 kcompactd 内存规整进程
+ */
 void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx)
 {
 	if (!order)
@@ -3320,6 +3323,9 @@ void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx)
 
 	trace_mm_compaction_wakeup_kcompactd(pgdat->node_id, order,
 							highest_zoneidx);
+    /**
+     *  唤醒
+     */
 	wake_up_interruptible(&pgdat->kcompactd_wait);
 }
 
@@ -3357,15 +3363,15 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
 		trace_mm_compaction_kcompactd_sleep(pgdat->node_id);
 
         /**
-         *  
+         *
          */
-		if (wait_event_freezable_timeout(pgdat->kcompactd_wait, 
+		if (wait_event_freezable_timeout(pgdat->kcompactd_wait,
                         			kcompactd_work_requested(pgdat),
                         			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
 
             /**
              *  评估系统资源压力
-             **    
+             **
              *  暂且不看 2021年7月20日
              */
 			psi_memstall_enter(&pflags);
@@ -3374,7 +3380,7 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
              *  进行内存规整
              */
 			kcompactd_do_work(pgdat);   /* 内存规整 */
-            
+
 			psi_memstall_leave(&pflags);
 			continue;
 		}

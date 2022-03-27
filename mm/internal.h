@@ -76,7 +76,7 @@ struct page *find_lock_entry(struct address_space *mapping, pgoff_t index);
  * (1) page's mapping marked unevictable
  * (2) page is part of an mlocked VMA
  *
- * 
+ *
  */
 static inline bool page_evictable(struct page *page)
 {
@@ -140,13 +140,13 @@ extern pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address);
  */
 struct alloc_context {  /* 分配 page 的信息 */
     /**
-     *  
+     *
      */
 	struct zonelist *zonelist;  /* zonelist */
 	nodemask_t *nodemask;   /* node */
 
     /**
-     *  
+     *
      */
 	struct zoneref *preferred_zoneref;  /*  */
 	int migratetype;
@@ -555,15 +555,18 @@ extern void mminit_verify_zonelist(void);
 extern void mminit_validate_memmodel_limits(unsigned long *start_pfn,
 				unsigned long *end_pfn);
 #else
-//static inline void mminit_validate_memmodel_limits(unsigned long *start_pfn,
-//				unsigned long *end_pfn)
-//{
-//}
+static inline void mminit_validate_memmodel_limits(unsigned long *start_pfn,
+				unsigned long *end_pfn)
+{
+}
 #endif /* CONFIG_SPARSEMEM */
-
+/*  */
 #define NODE_RECLAIM_NOSCAN	-2
+/*  */
 #define NODE_RECLAIM_FULL	-1
+/*  */
 #define NODE_RECLAIM_SOME	0
+/*  */
 #define NODE_RECLAIM_SUCCESS	1
 
 #ifdef CONFIG_NUMA
@@ -622,6 +625,9 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone, struct list_head *
 #else
 /*  */
 #endif
+/**
+ *  唤醒 kswapd
+ */
 #define ALLOC_KSWAPD		0x800 /* allow waking of kswapd, __GFP_KSWAPD_RECLAIM set */
 
 enum ttu_flags;

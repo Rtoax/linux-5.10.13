@@ -388,6 +388,9 @@ static int __init numa_init(int (*init_func)(void))
 	nodes_clear(node_possible_map);
 	nodes_clear(node_online_map);
 
+    /**
+     *  计算/设置 numa 之间的距离
+     */
 	ret = numa_alloc_distance();
 	if (ret < 0)
 		return ret;

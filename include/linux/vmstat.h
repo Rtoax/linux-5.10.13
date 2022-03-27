@@ -160,7 +160,7 @@ static inline unsigned long global_numa_state(enum numa_stat_item item)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long zone_numa_state_snapshot(struct zone *zone,
 					enum numa_stat_item item)
@@ -410,8 +410,11 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 //static inline void drain_zonestat(struct zone *zone,
 //			struct per_cpu_pageset *pset) { }
 #endif		/* CONFIG_SMP */
-    /*  */
-static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
+/**
+ *
+ */
+static inline void
+__mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
 {
 	__mod_zone_page_state(zone, NR_FREE_PAGES, nr_pages);
