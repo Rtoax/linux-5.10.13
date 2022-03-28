@@ -4664,6 +4664,10 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 	if (freezing(current) || kthread_should_stop())
 		return;
 
+	/**
+	 * @brief
+	 *
+	 */
 	prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
 
 	/*
@@ -4703,6 +4707,10 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 				WRITE_ONCE(pgdat->kswapd_order, reclaim_order);
 		}
 
+		/**
+		 * @brief
+		 *
+		 */
 		finish_wait(&pgdat->kswapd_wait, &wait);
 		prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
 	}
@@ -4725,10 +4733,18 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 		 */
 		set_pgdat_percpu_threshold(pgdat, calculate_normal_threshold);
 
+		/**
+		 * @brief
+		 *
+		 */
 		if (!kthread_should_stop())
 			schedule();
 
 		set_pgdat_percpu_threshold(pgdat, calculate_pressure_threshold);
+	/**
+	 * @brief
+	 *
+	 */
 	} else {
 		if (remaining)
 			count_vm_event(KSWAPD_LOW_WMARK_HIT_QUICKLY);
@@ -4765,7 +4781,11 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 
 	struct task_struct *tsk = current;  /* current 为swap 进程 */
 
-    const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);    /* 在这个 NODE 上的CPU */
+	/**
+	 * @brief 在这个 NODE 上的CPU
+	 *
+	 */
+    const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
 
 	if (!cpumask_empty(cpumask))    /* 如果当前 node    的 CPU mask 不为空 */
 		set_cpus_allowed_ptr(tsk, cpumask); /* 设置 swap 进程的调度类 的CPUmask  */
@@ -4783,13 +4803,17 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 	 * trying to free the first piece of memory in the first place).
 	 *
 	 * 设置进程描述符中的 标志位
-	 * PF_MEMALLOC  标志进程可以使用 系统预留 内存，不关系ZONE水位
+	 * PF_MEMALLOC  标志进程可以使用 系统预留 内存，不用关心ZONE水位
 	 * PF_SWAPWRITE 允许写交换分区
 	 * PF_KSWAPD    kswapd 线程
 	 */
-	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;   /* 我是 swap 进程 */
+	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;
 
-	set_freezable();    /* 设置进程可以冻结 */
+	/**
+	 * @brief 设置进程可以冻结
+	 *
+	 */
+	set_freezable();
 
 	WRITE_ONCE(pgdat->kswapd_order, 0);
 	WRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);
@@ -4801,10 +4825,16 @@ static int kswapd(void *p)  /* swap 线程回调函数 */
 
 		bool ret;
 
-        /* 要回收的页面数量 */
+        /**
+         * @brief 要回收的页面数量
+         *
+         */
 		alloc_order = reclaim_order = READ_ONCE(pgdat->kswapd_order);
 
-        /* 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE */
+        /**
+         * @brief 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE
+         *
+         */
 		highest_zoneidx = kswapd_highest_zoneidx(pgdat, highest_zoneidx);
 
 kswapd_try_sleep:
@@ -4820,15 +4850,26 @@ kswapd_try_sleep:
 		/* Read the new order and highest_zoneidx */
 		alloc_order = reclaim_order = READ_ONCE(pgdat->kswapd_order);
 
-        /* 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE */
+        /**
+         * @brief 可以扫描和回收的最高 ZONE，扫描顺序: 从 高ZONE 到 低ZONE
+         *
+         */
 		highest_zoneidx = kswapd_highest_zoneidx(pgdat, highest_zoneidx);
 
 		WRITE_ONCE(pgdat->kswapd_order, 0);
 		WRITE_ONCE(pgdat->kswapd_highest_zoneidx, MAX_NR_ZONES);
 
-
+		/**
+		 * @brief
+		 *
+		 */
 		ret = try_to_freeze();  /* 冻结 */
-		if (kthread_should_stop())  /* 是否需要停止 */
+
+		/**
+		 * @brief 是否需要停止
+		 *
+		 */
+		if (kthread_should_stop())  /*  */
 			break;
 
 		/*
@@ -4878,7 +4919,7 @@ kswapd_try_sleep:
  * 回收内存后会唤醒kcompactd。
  * 如果 kswapd reclaim 失败或不需要，如果只需要压缩，仍然唤醒 kcompactd。
  *
- *
+ * 唤醒 kswapd 进程进行异步内存回收
  */
 void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		   enum zone_type highest_zoneidx)
@@ -4999,6 +5040,10 @@ int kswapd_run(int nid) /* 运行 */
 	if (pgdat->kswapd)  /* 如果已经运行，直接返回 */
 		return 0;
 
+	/**
+	 * @brief 创建 kswapd
+	 *
+	 */
 	pgdat->kswapd = kthread_run(kswapd, pgdat, "kswapd%d", nid);
 	if (IS_ERR(pgdat->kswapd)) {
 		/* failure at boot is fatal */
@@ -5024,13 +5069,32 @@ void kswapd_stop(int nid)
 	}
 }
 
-static int __init kswapd_init(void) /* 开启交换 */
+/**
+ * @brief 初始化 kswapd
+ *
+ * @return int
+ */
+static int __init kswapd_init(void)
 {
 	int nid;
 
-	swap_setup();   /* 决定要回收的页数 */
-	for_each_node_state(nid, N_MEMORY) {    /* 每个node一个kswapd */
- 		kswapd_run(nid);}
+	/**
+	 * @brief
+	 *
+	 */
+	swap_setup();
+
+	/**
+	 * @brief 每个 node 创建一个 kswapd
+	 *
+	 */
+	for_each_node_state(nid, N_MEMORY) {
+		/**
+		 * @brief
+		 *
+		 */
+ 		kswapd_run(nid);
+	}
 	return 0;
 }
 

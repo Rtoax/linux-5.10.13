@@ -49,6 +49,10 @@ struct kthread_create_info
 	struct list_head list;
 };
 
+/**
+ * @brief 内核线程
+ *
+ */
 struct kthread {    /* 内核线程 */
 	unsigned long flags;
 	unsigned int cpu;
@@ -105,6 +109,9 @@ void free_kthread_struct(struct task_struct *k)
  * When someone calls kthread_stop() on your kthread, it will be woken
  * and this will return true.  You should then return, and your return
  * value will be passed through to kthread_stop().
+ *
+ * 当有人在 kthread 调用了 kthread_stop()， kthread 将被唤醒，并且 此函数 将
+ * 返回 true。你应该返回，并且返回值将被传递给 kthread_stop()。
  */
 bool kthread_should_stop(void)/*  检查标志位*/
 {
@@ -580,6 +587,9 @@ EXPORT_SYMBOL_GPL(kthread_park);
  *
  * Returns the result of threadfn(), or %-EINTR if wake_up_process()
  * was never called.
+ *
+ * 当有人在 kthread 调用了 kthread_stop()， kthread 将被唤醒，并且 此函数 将
+ * 返回 true。你应该返回，并且返回值将被传递给 kthread_stop()。
  */
 int kthread_stop(struct task_struct *k)
 {
@@ -715,7 +725,7 @@ repeat:
 }
 EXPORT_SYMBOL_GPL(kthread_worker_fn);
 
-static  
+static
     struct kthread_worker *__kthread_create_worker(int cpu, unsigned int flags,
 			const char namefmt[], va_list args)
 {

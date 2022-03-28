@@ -157,6 +157,8 @@ void __thaw_task(struct task_struct *p)
  * set_freezable - make %current freezable
  *
  * Mark %current freezable and enter refrigerator if necessary.
+ *
+ * 进程可以被冻结
  */
 bool set_freezable(void)    /*  */
 {

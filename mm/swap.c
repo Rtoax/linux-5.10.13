@@ -472,11 +472,11 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 
         /**
          *  第二次访问会调用此函数
-         *  
+         *
          */
 		workingset_activation(page);
 	}
-    
+
 	if (page_is_idle(page)) /*  */
 		clear_page_idle(page);
 }
@@ -501,7 +501,7 @@ void lru_cache_add(struct page *page)   /*  */
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
 	get_page(page);
-    
+
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
 
@@ -533,7 +533,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 
     /* 锁定 */
 	unevictable = (vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED;
-    
+
 	if (unlikely(unevictable) && !TestSetPageMlocked(page)) {
 
         /* 几个物理页 */
@@ -546,7 +546,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		__mod_zone_page_state(page_zone(page), NR_MLOCK, nr_pages);
 		count_vm_events(UNEVICTABLE_PGMLOCKED, nr_pages);
 	}
-    
+
     /*  */
 	lru_cache_add(page);
 }
@@ -1057,7 +1057,7 @@ void lru_add_page_tail(struct page *page, struct page *page_tail,
 
 /**
  *  将 page 添加至 lruvec 链表中， 等待被回收
- *  
+ *
  */
 static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void *arg)
 {
@@ -1109,14 +1109,14 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
 
     /* 可驱逐 */
 	if (page_evictable(page)) { /* 内部调用 PageMlocked() */
-        
+
 		lru = page_lru(page);
 		if (was_unevictable)/* 不可驱逐 */
 			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
 
     /* 不可驱逐 */
     } else {
-	
+
 		lru = LRU_UNEVICTABLE;  /* 不可驱逐 */
 		ClearPageActive(page);      /*  */
 		SetPageUnevictable(page);   /*  */
@@ -1127,10 +1127,10 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
 	}
 
     /**
-     *  添加至 lruvec 对应的 类别 链表中 
+     *  添加至 lruvec 对应的 类别 链表中
      */
 	add_page_to_lru_list(page, lruvec, lru);
-    
+
 	trace_mm_lru_insertion(page, lru);
 }
 
@@ -1251,7 +1251,7 @@ EXPORT_SYMBOL(pagevec_lookup_range_nr_tag);
 /*
  * Perform any setup for the swap system
  *
- * 决定要回收的页数
+ * 决定要回收的页数？
  */
 void __init swap_setup(void)    /*  */
 {
