@@ -195,6 +195,12 @@ struct scan_control {
  */
 int vm_swappiness = 60;
 
+/**
+ * @brief	设置回收状态
+ *
+ * @param task
+ * @param rs
+ */
 static void set_task_reclaim_state(struct task_struct *task,
 				   struct reclaim_state *rs)
 {
@@ -2494,9 +2500,13 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 }
 
 /**
- *  扫描活跃链表 包括匿名页面 或 文件映射页面
+ * @brief 扫描活跃链表 包括匿名页面 或 文件映射页面
+ * 	收割 和迁移 一部分(最近一直没被访问)活跃页面到 不活跃链表中
  *
- *  收割 和迁移 一部分(最近一直没被访问)活跃页面到 不活跃链表中
+ * @param nr_to_scan
+ * @param lruvec
+ * @param sc
+ * @param lru
  */
 static void shrink_active_list(unsigned long nr_to_scan,
               			       struct lruvec *lruvec,
@@ -2558,6 +2568,10 @@ static void shrink_active_list(unsigned long nr_to_scan,
      */
 	while (!list_empty(&l_hold)) {
 
+		/**
+		 * @brief 让出 CPU
+		 *
+		 */
 		cond_resched();
 
         /**
@@ -2656,6 +2670,10 @@ static void shrink_active_list(unsigned long nr_to_scan,
      */
 	free_unref_page_list(&l_active);
 
+	/**
+	 * @brief 跟踪 tracepoint:vmscan:mm_vmscan_lru_shrink_active
+	 *
+	 */
 	trace_mm_vmscan_lru_shrink_active(pgdat->node_id, nr_taken, nr_activate,
 			nr_deactivate, nr_rotated, sc->priority, file);
 }
@@ -4180,8 +4198,11 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 }
 #endif
 
-/*
- * 对 匿名页面的活跃 LRU 链表进行老化
+/**
+ * @brief 对 匿名页面的活跃 LRU 链表进行老化
+ *
+ * @param pgdat
+ * @param sc
  */
 static void age_active_anon(struct pglist_data *pgdat,
 				struct scan_control *sc)
@@ -4189,16 +4210,33 @@ static void age_active_anon(struct pglist_data *pgdat,
 	struct mem_cgroup *memcg;
 	struct lruvec *lruvec;
 
+	/**
+	 * @brief swap 页数等于0 直接退出
+	 *
+	 */
 	if (!total_swap_pages)
 		return;
 
+	/**
+	 * @brief 从 memcg 中获取 LRU 链表向量
+	 *
+	 */
 	lruvec = mem_cgroup_lruvec(NULL, pgdat);
 	if (!inactive_is_low(lruvec, LRU_INACTIVE_ANON))
 		return;
 
+	/**
+	 * @brief 遍历 memcg 等级
+	 *
+	 */
 	memcg = mem_cgroup_iter(NULL, NULL, NULL);
 	do {
 		lruvec = mem_cgroup_lruvec(memcg, pgdat);
+		/**
+		 * @brief 扫描活跃链表 包括匿名页面 或 文件映射页面
+ 		 * 	收割 和迁移 一部分(最近一直没被访问)活跃页面到 不活跃链表中
+		 *
+		 */
 		shrink_active_list(SWAP_CLUSTER_MAX, lruvec, sc, LRU_ACTIVE_ANON);
 		memcg = mem_cgroup_iter(NULL, memcg, NULL);
 	} while (memcg);
@@ -4394,7 +4432,7 @@ static bool kswapd_shrink_node(pg_data_t *pgdat,
  * or lower is eligible for reclaim until at least one usable zone is
  * balanced.
  *
- *  回收页面的主函数
+ *  回收页面的主函数 - 被 kswapd() 调用
  *
  * kswapd 将横跨整个 node zone, 回收那些认为合适的 pages
  * 一旦 zone 被发现当 free_pages <= high_wmark_pages(zone) 将被回收
@@ -4410,6 +4448,8 @@ static int balance_pgdat(pg_data_t *pgdat, int order, int highest_zoneidx)
      *  提升回收
      *
      *  用于优化外碎片化的机制
+	 *
+	 * zone_boosts[i] = zone->watermark_boost;
      */
 	unsigned long nr_boost_reclaim;
 	unsigned long zone_boosts[MAX_NR_ZONES] = { 0, };
@@ -4422,10 +4462,24 @@ static int balance_pgdat(pg_data_t *pgdat, int order, int highest_zoneidx)
 		sc.may_unmap = 1,
 	};
 
+	/**
+	 * task->reclaim_state = &sc.reclaim_state;
+	 *
+	 */
 	set_task_reclaim_state(current, &sc.reclaim_state);
+
 	psi_memstall_enter(&pflags);
+
+	/**
+	 * @brief
+	 *
+	 */
 	__fs_reclaim_acquire();
 
+	/**
+	 * @brief vm_event_states.event[PAGEOUTRUN]+1
+	 *
+	 */
 	count_vm_event(PAGEOUTRUN);
 
 	/*
@@ -4434,19 +4488,40 @@ static int balance_pgdat(pg_data_t *pgdat, int order, int highest_zoneidx)
 	 * stall or direct reclaim until kswapd is finished.
 	 */
 	nr_boost_reclaim = 0;
+
+	/**
+	 * @brief 遍历回收的 zone
+	 *
+	 */
 	for (i = 0; i <= highest_zoneidx; i++) {
 		zone = pgdat->node_zones + i;
+		/**
+		 * @brief 必须有管理的 page
+		 *
+		 */
 		if (!managed_zone(zone))
 			continue;
 
+		/**
+		 * @brief 提升水位
+		 *
+		 */
 		nr_boost_reclaim += zone->watermark_boost;
 		zone_boosts[i] = zone->watermark_boost;
 	}
+	/**
+	 * @brief 是否提升
+	 *
+	 */
 	boosted = nr_boost_reclaim;
 
 restart:
-	sc.priority = DEF_PRIORITY;
+	sc.priority = DEF_PRIORITY; /* DEF_PRIORITY=12 */
 	do {
+		/**
+		 * @brief 已经回收
+		 *
+		 */
 		unsigned long nr_reclaimed = sc.nr_reclaimed;
 		bool raise_priority = true;
 		bool balanced;
@@ -4483,7 +4558,8 @@ restart:
 		 * re-evaluate if boosting is required when kswapd next wakes.
 		 *
 		 * 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
-		 * 分配出 2 的 sc.order 次幂 个连续的物理页面
+		 * 分配出 2 的 sc.order 次幂 个连续的物理页面。
+		 * 如果 没有满足，并且 nr_boost_reclaim
 		 */
 		balanced = pgdat_balanced(pgdat, sc.order, highest_zoneidx);
 		if (!balanced && nr_boost_reclaim) {
@@ -4886,6 +4962,8 @@ kswapd_try_sleep:
 		 * for the order it finished reclaiming at (reclaim_order)
 		 * but kcompactd is woken to compact for the original
 		 * request (alloc_order).
+		 *
+		 * 追踪
 		 */
 		trace_mm_vmscan_kswapd_wake(pgdat->node_id, highest_zoneidx, alloc_order);
 
