@@ -19,8 +19,12 @@
 
 /* 0x01 - 0x03 are defined in linux/mman.h */
 #define MAP_TYPE	0x0f		/* Mask for type of mapping */
-#define MAP_FIXED	0x10		/* Interpret addr exactly  准确解释地址
-                            如果addr和len指定的内存区域与任何现有映射的页面重叠，则现有映射的重叠部分将被丢弃。*/
+/**
+ * 准确解释地址
+ * 如果addr和len指定的内存区域与任何现有映射的页面重叠，则现有映射的重叠部分将被丢弃。
+ *
+ */
+#define MAP_FIXED	0x10		/* Interpret addr exactly  */
 #define MAP_ANONYMOUS	0x20		/* don't use a file */
 
 /* 0x0100 - 0x4000 flags are defined in asm-generic/mman.h */

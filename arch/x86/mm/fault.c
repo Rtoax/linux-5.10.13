@@ -327,7 +327,7 @@ LIST_HEAD(pgd_list);
 
 #ifdef CONFIG_CPU_SUP_AMD
 static const char errata93_warning[] =
-KERN_ERR 
+KERN_ERR
 "******* Your BIOS seems to not contain a fix for K8 errata #93\n"
 "******* Working around it, but it may cause SEGVs or burn power.\n"
 "******* Please consider a BIOS update.\n"
@@ -825,7 +825,7 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 			force_sig_pkuerr((void __user *)address, pkey);
 
         /**
-         *  段错误 
+         *  段错误
          *  /proc/sys/kernel/core_pattern & ulimit -c ulimited
          */
 		force_sig_fault(SIGSEGV, si_code, (void __user *)address);
@@ -994,7 +994,7 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
 }
 
 static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
-{   
+{
     /* 如果是写操作，检测pte 是否可写 */
 	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
 		return 0;
@@ -1233,10 +1233,14 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 NOKPROBE_SYMBOL(do_kern_addr_fault);
 
 /**
- *  
+ * @brief Handle faults in the user portion of the address space
+ * 			处理缺页异常/中断
+ *
+ * @param regs
+ * @param hw_error_code
+ * @param address
  */
-/* Handle faults in the user portion of the address space */
-static inline   /* 用户态缺页 */
+static inline
 void do_user_addr_fault(struct pt_regs *regs,
 			unsigned long hw_error_code,
 			unsigned long address)
@@ -1362,7 +1366,7 @@ retry:
 	}
 
     /**
-     *  查找 当前进程 address 所在的 vma 结构 
+     *  查找 当前进程 address 所在的 vma 结构
      */
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
@@ -1386,11 +1390,11 @@ retry:
      *  +---+ vm_end
      *  |   |
      *  |   |
-     *  |   |   
+     *  |   |
      *  |   |
      *  |   |
      *  +---+ vm_start
-     *  
+     *
      *          <--- address
      */
 	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {    /*向下增长   */
@@ -1402,7 +1406,7 @@ retry:
      *  +---+ vm_end
      *  |   |
      *  |   |
-     *  |   |   
+     *  |   |
      *  |   |
      *  |   |
      *  +---+ vm_start
@@ -1482,7 +1486,11 @@ trace_page_fault_entries(struct pt_regs *regs, unsigned long error_code,
 }
 
 /**
- *  缺页中断
+ * @brief 缺页中断
+ *
+ * @param regs
+ * @param error_code
+ * @param address
  */
 static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code,
@@ -1494,8 +1502,8 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 	if (unlikely(kmmio_fault(regs, address))) /* TODO */
 		return;
 
-	/* Was the fault on kernel-controlled part of the address space? 
-       `kmemcheck` fault, spurious fault, [kprobes] fault and etc 
+	/* Was the fault on kernel-controlled part of the address space?
+       `kmemcheck` fault, spurious fault, [kprobes] fault and etc
     */
 	if (unlikely(fault_in_kernel_space(address))) { /* 内核小概率 才会发生缺页 */
         /**
@@ -1519,10 +1527,12 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 }
 
 /**
- *  缺页中断/缺页异常 
+ *  缺页中断/缺页异常
+ *
+ * 老版本的内核叫做 do_page_fault() 这个名字
  */
-void do_page_fault(struct pt_regs *regs, int error_code){/* 我加的： 因为老版本的内核叫做这个名字 */}
-__visible noinstr void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* 我加的 */}
+void do_page_fault(struct pt_regs *regs, int error_code){/* +++ */}
+void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* +++ */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 {
     struct pt_regs *regs/* 我加的 */;
@@ -1575,9 +1585,9 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 
     /* 处理缺页异常/中断 */
 	handle_page_fault(regs, error_code, address);   /* 处理缺页异常 */
-    
+
 	instrumentation_end();
 
     /*  */
-	irqentry_exit(regs, state); 
+	irqentry_exit(regs, state);
 }

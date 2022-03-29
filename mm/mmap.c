@@ -2251,8 +2251,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	if (!may_expand_vm(mm, vm_flags, len >> PAGE_SHIFT)) {
 
         /**
-         *
- 如果 VM 不能扩展了(超出 ULimit 限制)
+         * 如果 VM 不能扩展了(超出 ULimit 限制)
          */
 		unsigned long nr_pages;
 
