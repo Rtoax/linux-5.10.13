@@ -2351,7 +2351,7 @@ static enum compact_result compact_finished(struct compact_control *cc)
  *  以 alloc_flags 内存分配掩码中指定的水位为条件判断是否可以再这个zone 中分配
  *  出 2 order 次幂 个物理页面，判断函数为 zone_watermark_ok()
  */
-static enum compact_result __compaction_suitable(struct zone *zone, int order,  /*  */
+static enum compact_result __compaction_suitable(struct zone *zone, int order,
 					unsigned int alloc_flags,
 					int highest_zoneidx,
 					unsigned long wmark_target)
@@ -2466,6 +2466,10 @@ enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
 			ret = COMPACT_NOT_SUITABLE_ZONE;
 	}
 
+	/**
+	 * @brief 跟踪 tracepoint:compaction:mm_compaction_suitable
+	 *
+	 */
 	trace_mm_compaction_suitable(zone, order, ret);
 
     /**
@@ -2509,15 +2513,15 @@ bool compaction_zonelist_suitable(struct alloc_context *ac, int order,
 	return false;
 }
 
-
 /**
- *  内存规整的核心函数
+ * @brief 内存规整的核心函数
  *
- * @cc      规整控制结构
- * @capc    ？
+ * @param cc 规整控制结构
+ * @param capc
+ * @return enum compact_result
  */
 static enum compact_result
-compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规整 ZONE */
+compact_zone(struct compact_control *cc, struct capture_control *capc)
 {
 	enum compact_result ret;
 
@@ -2659,6 +2663,10 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
 	update_cached = !sync &&
 		cc->zone->compact_cached_migrate_pfn[0] == cc->zone->compact_cached_migrate_pfn[1];
 
+	/**
+	 * @brief 跟踪规整 tracepoint:compaction:mm_compaction_begin
+	 *
+	 */
 	trace_mm_compaction_begin(start_pfn, cc->migrate_pfn,
 				cc->free_pfn, end_pfn, sync);
 
@@ -2740,7 +2748,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)  /* 规�
             				MR_COMPACTION);
 
         /**
-         *
+         *	tracepoint:compaction:mm_compaction_migratepages
          */
 		trace_mm_compaction_migratepages(cc->nr_migratepages, err, &cc->migratepages);
 
@@ -3169,6 +3177,7 @@ static bool kcompactd_node_suitable(pg_data_t *pgdat)   /*  */
 
 /**
  *  kcompactd 调用的函数
+ * 内存规整的核心函数
  */
 static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 {
@@ -3209,7 +3218,7 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 		zone = &pgdat->node_zones[zoneid];
 
         /**
-         *  zone 中没有管理的内存，直接返回
+         *  zone 中没有管理的内存，继续
          */
 		if (!populated_zone(zone))
 			continue;
@@ -3321,6 +3330,10 @@ void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx)
 	if (!kcompactd_node_suitable(pgdat))
 		return;
 
+	/**
+	 * @brief 跟踪 tracepoint:compaction:mm_compaction_wakeup_kcompactd
+	 *
+	 */
 	trace_mm_compaction_wakeup_kcompactd(pgdat->node_id, order,
 							highest_zoneidx);
     /**
@@ -3371,7 +3384,7 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
 
             /**
              *  评估系统资源压力
-             **
+             *
              *  暂且不看 2021年7月20日
              */
 			psi_memstall_enter(&pflags);
