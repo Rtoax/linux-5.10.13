@@ -4366,6 +4366,12 @@ static bool prepare_kswapd_sleep(pg_data_t *pgdat, int order,
 	if (pgdat->kswapd_failures >= MAX_RECLAIM_RETRIES)
 		return true;
 
+	/**
+	 * @brief 是否已经平衡了
+	 *
+	 * 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
+	 * 分配出 2 的 sc.order 次幂 个连续的物理页面
+	 */
 	if (pgdat_balanced(pgdat, order, highest_zoneidx)) {
 		clear_pgdat_congested(pgdat);
 		return true;
@@ -4692,6 +4698,8 @@ out:
 		/*
 		 * As there is now likely space, wakeup kcompact to defragment(解冻)
 		 * pageblocks.
+		 *
+		 * 唤醒 内存规整进程
 		 */
 		wakeup_kcompactd(pgdat, pageblock_order, highest_zoneidx);
 	}
@@ -4765,6 +4773,8 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 		/*
 		 * We have freed the memory, now we should compact it to make
 		 * allocation of the requested order possible.
+		 *
+		 * 唤醒 内存规整进程
 		 */
 		wakeup_kcompactd(pgdat, alloc_order, highest_zoneidx);
 
@@ -5033,7 +5043,9 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 	 *  Hopeless node, leave it to direct reclaim if possible
 	 *
 	 *  1. kswapd 失败 >= 16 次
-	 *  2.
+	 *  2. 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
+	 * 		分配出 2 的 sc.order 次幂 个连续的物理页面
+	 * 	   并且 水位没有被临时提升
 	 */
 	if (pgdat->kswapd_failures >= MAX_RECLAIM_RETRIES ||
 	    (pgdat_balanced(pgdat, order, highest_zoneidx) &&
