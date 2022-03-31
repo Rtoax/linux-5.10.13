@@ -665,7 +665,7 @@ static void walk_shadow_page_lockless_end(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu, bool maybe_indirect)
 {
@@ -1683,20 +1683,20 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
 	struct kvm_mmu_page *sp;
 
     /**
-     *  
+     *
      */
 	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
     /**
-     *  
+     *
      */
 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
     /**
-     *  
+     *
      */
 	if (!direct)
 		sp->gfns = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_gfn_array_cache);
     /**
-     *  
+     *
      */
 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
 
@@ -1711,7 +1711,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
      */
 	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
     /**
-     *  
+     *
      */
 	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
 	return sp;
@@ -2062,13 +2062,13 @@ static void clear_sp_write_flooding_count(u64 *spte)
 }
 
 /**
- *  
+ *
  *  对于多任务的 Guest来说，多个任务分时轮转运行，某个暂时被换出的页表会再次被载入
  *  如果每次都释放然后重建影子页表，性能开销太大。因此，KVM设计了 cache机制，除了首次
  *  创建的影子页表需要从0开始构建，替他都是从cache中获取。
  *
  *  Guest 页表的根页面的帧号作为 hash 表的key。
- *  
+ *
  *  见 `kvm_mmu_get_page()`
  */
 static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
@@ -2098,7 +2098,7 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
 	role.access = access;
 
     /**
-     *  
+     *
      */
 	if (!direct_mmu && vcpu->arch.mmu->root_level <= PT32_ROOT_LEVEL) {
 		quadrant = gaddr >> (PAGE_SHIFT + (PT64_PT_BITS * level));
@@ -2107,12 +2107,12 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
 	}
 
     /**
-     *  
+     *
      */
 	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
 
     /**
-     *  
+     *
      */
 	for_each_valid_sp(vcpu->kvm, sp, sp_list) {
 		if (sp->gfn != gfn) {
@@ -2153,7 +2153,7 @@ trace_get_page:
 	++vcpu->kvm->stat.mmu_cache_miss;
 
     /**
-     *  
+     *
      */
 	sp = kvm_mmu_alloc_page(vcpu, direct);
 
@@ -2174,7 +2174,7 @@ trace_get_page:
 			flush |= kvm_sync_pages(vcpu, gfn, &invalid_list);
 	}
     /**
-     *  
+     *
      */
 	trace_kvm_mmu_get_page(sp, true);
 
@@ -2248,7 +2248,7 @@ static void shadow_walk_next(struct kvm_shadow_walk_iterator *iterator)
 }
 
 /**
- *  
+ *
  */
 static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
 			     struct kvm_mmu_page *sp)
@@ -2660,7 +2660,7 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
 }
 
 /**
- *  
+ *
  */
 static int mmu_set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
 			unsigned int pte_access, bool write_fault, int level,
@@ -2848,7 +2848,7 @@ static int host_pfn_mapping_level(struct kvm_vcpu *vcpu, gfn_t gfn,
 }
 
 /**
- *  
+ *
  */
 int kvm_mmu_hugepage_adjust(struct kvm_vcpu *vcpu, gfn_t gfn,
 			    int max_level, kvm_pfn_t *pfnp,
@@ -2929,7 +2929,7 @@ void disallowed_hugepage_adjust(u64 spte, gfn_t gfn, int cur_level,
 }
 
 /**
- *  
+ *
  */
 static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			int map_writable, int max_level, kvm_pfn_t pfn,
@@ -2949,13 +2949,13 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		return RET_PF_RETRY;
 
     /**
-     *  
+     *
      */
 	level = kvm_mmu_hugepage_adjust(vcpu, gfn, max_level, &pfn,
 					huge_page_disallowed, &req_level);
 
     /**
-     *  
+     *
      */
 	trace_kvm_mmu_spte_requested(gpa, level, pfn);
 
@@ -2971,7 +2971,7 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			disallowed_hugepage_adjust(*it.sptep, gfn, it.level, &pfn, &level);
 
         /**
-         *  
+         *
          */
 		base_gfn = gfn & ~(KVM_PAGES_PER_HPAGE(it.level) - 1);
 		if (it.level == level)
@@ -2980,17 +2980,17 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		drop_large_spte(vcpu, it.sptep);
 
         /**
-         *  
+         *
          */
 		if (!is_shadow_present_pte(*it.sptep)) {
             /**
-             *  
+             *
              */
 			sp = kvm_mmu_get_page(vcpu, base_gfn, it.addr,
 					      it.level - 1, true, ACC_ALL);
 
             /**
-             *  
+             *
              */
 			link_shadow_page(vcpu, it.sptep, sp);
 			if (is_tdp && huge_page_disallowed &&
@@ -3000,7 +3000,7 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	}
 
     /**
-     *  
+     *
      */
 	ret = mmu_set_spte(vcpu, it.sptep, ACC_ALL,
 			   write, level, base_gfn, pfn, prefault,
@@ -3019,7 +3019,7 @@ static void kvm_send_hwpoison_signal(unsigned long address, struct task_struct *
 }
 
 /**
- *  
+ *
  */
 static int kvm_handle_bad_page(struct kvm_vcpu *vcpu, gfn_t gfn, kvm_pfn_t pfn)
 {
@@ -3040,7 +3040,7 @@ static int kvm_handle_bad_page(struct kvm_vcpu *vcpu, gfn_t gfn, kvm_pfn_t pfn)
 }
 
 /**
- *  
+ *
  */
 static bool handle_abnormal_pfn(struct kvm_vcpu *vcpu, gva_t gva, gfn_t gfn,
 				kvm_pfn_t pfn, unsigned int access,
@@ -3052,14 +3052,14 @@ static bool handle_abnormal_pfn(struct kvm_vcpu *vcpu, gva_t gva, gfn_t gfn,
      */
 	if (unlikely(is_error_pfn(pfn))) {
         /**
-         *  
+         *
          */
 		*ret_val = kvm_handle_bad_page(vcpu, gfn, pfn);
 		return true;
 	}
 
     /**
-     *  
+     *
      */
 	if (unlikely(is_noslot_pfn(pfn)))
 		vcpu_cache_mmio_info(vcpu, gva, gfn, access & shadow_mmio_access_mask);
@@ -3338,7 +3338,7 @@ static int mmu_check_root(struct kvm_vcpu *vcpu, gfn_t root_gfn)
 }
 
 /**
- *  
+ *
  */
 static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 			    u8 level, bool direct)
@@ -3352,7 +3352,7 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 		return INVALID_PAGE;
 	}
     /**
-     *  
+     *
      */
 	sp = kvm_mmu_get_page(vcpu, gfn, gva, level, direct, ACC_ALL);
 	++sp->root_count;
@@ -3362,7 +3362,7 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 }
 
 /**
- *  
+ *
  */
 static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 {
@@ -3371,7 +3371,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 	unsigned i;
 
     /**
-     *  
+     *
      */
 	if (vcpu->kvm->arch.tdp_mmu_enabled) {
 		root = kvm_tdp_mmu_get_vcpu_root_hpa(vcpu);
@@ -3387,7 +3387,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
          */
 		vcpu->arch.mmu->root_hpa = root;
     /**
-     *  
+     *
      */
 	} else if (shadow_root_level >= PT64_ROOT_4LEVEL) {
 		root = mmu_alloc_root(vcpu, 0, 0, shadow_root_level, true);
@@ -3396,7 +3396,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 			return -ENOSPC;
 		vcpu->arch.mmu->root_hpa = root;
     /**
-     *  
+     *
      */
     } else if (shadow_root_level == PT32E_ROOT_LEVEL) {
 		for (i = 0; i < 4; ++i) {
@@ -3420,7 +3420,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
 {
@@ -3430,7 +3430,7 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
 	int i;
 
     /**
-     *  
+     *
      */
 	root_pgd = vcpu->arch.mmu->get_guest_pgd(vcpu);
 	root_gfn = root_pgd >> PAGE_SHIFT;
@@ -3520,7 +3520,7 @@ set_root_pgd:
 static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 {
     /**
-     *  
+     *
      */
 	if (vcpu->arch.mmu->direct_map)
 		return mmu_alloc_direct_roots(vcpu);
@@ -3529,7 +3529,7 @@ static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 void kvm_mmu_sync_roots(struct kvm_vcpu *vcpu)
 {
@@ -3751,7 +3751,7 @@ static int handle_mmio_page_fault(struct kvm_vcpu *vcpu, u64 addr, bool direct)
 }
 
 /**
- *  
+ *
  */
 static bool page_fault_handle_page_track(struct kvm_vcpu *vcpu,
 					 u32 error_code, gfn_t gfn)
@@ -3849,17 +3849,17 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	int r;
 
     /**
-     *  
+     *
      */
 	if (page_fault_handle_page_track(vcpu, error_code, gfn))
 		return RET_PF_EMULATE;
 
     /**
-     *  
+     *
      */
 	if (!is_tdp_mmu_root(vcpu->kvm, vcpu->arch.mmu->root_hpa)) {
         /**
-         *  
+         *
          */
 		r = fast_page_fault(vcpu, gpa, error_code);
 		if (r != RET_PF_INVALID)
@@ -3867,7 +3867,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	}
 
     /**
-     *  
+     *
      */
 	r = mmu_topup_memory_caches(vcpu, false);
 	if (r)
@@ -3880,7 +3880,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		return RET_PF_RETRY;
 
     /**
-     *  
+     *
      */
 	if (handle_abnormal_pfn(vcpu, is_tdp ? 0 : gpa, gfn, pfn, ACC_ALL, &r))
 		return r;
@@ -3889,26 +3889,26 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	spin_lock(&vcpu->kvm->mmu_lock);
 
     /**
-     *  
+     *
      */
 	if (mmu_notifier_retry(vcpu->kvm, mmu_seq))
 		goto out_unlock;
 
     /**
-     *  
+     *
      */
 	r = make_mmu_pages_available(vcpu);
 	if (r)
 		goto out_unlock;
 
     /**
-     *  
+     *
      */
 	if (is_tdp_mmu_root(vcpu->kvm, vcpu->arch.mmu->root_hpa))
 		r = kvm_tdp_mmu_map(vcpu, gpa, error_code, map_writable, max_level,
 				    pfn, prefault);
     /**
-     *  
+     *
      */
     else
 		r = __direct_map(vcpu, gpa, error_code, map_writable, max_level, pfn,
@@ -3958,18 +3958,18 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 		if (kvm_event_needs_reinjection(vcpu))
 			kvm_mmu_unprotect_page_virt(vcpu, fault_address);
         /**
-         *  
+         *
          */
 		r = kvm_mmu_page_fault(vcpu, fault_address, error_code, insn, insn_len);
-        
+
     /**
-     *  
+     *
      */
 	} else if (flags & KVM_PV_REASON_PAGE_NOT_PRESENT) {
 		vcpu->arch.apf.host_apf_flags = 0;
 		local_irq_disable();
         /**
-         *  
+         *
          */
 		kvm_async_pf_task_wait_schedule(fault_address);
 		local_irq_enable();
@@ -3982,7 +3982,7 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 
 /**
- *  
+ *
  */
 int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		       bool prefault)
@@ -3999,7 +3999,7 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			break;
 	}
     /**
-     *  
+     *
      */
 	return direct_page_fault(vcpu, gpa, error_code, prefault,
 				 max_level, true);
@@ -4105,7 +4105,7 @@ static void __kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd,
 	kvm_make_request(KVM_REQ_LOAD_MMU_PGD, vcpu);
 
     /**
-     *  
+     *
      */
 	if (!skip_mmu_sync || force_flush_and_sync_on_reuse)
 		kvm_make_request(KVM_REQ_MMU_SYNC, vcpu);
@@ -5216,7 +5216,7 @@ kvm_calc_shadow_mmu_root_page_role(struct kvm_vcpu *vcpu, bool base_only)
 }
 
 /**
- *  
+ *
  */
 static void shadow_mmu_init_context(struct kvm_vcpu *vcpu, struct kvm_mmu *context,
 				    u32 cr0, u32 cr4, u32 efer,
@@ -5228,17 +5228,17 @@ static void shadow_mmu_init_context(struct kvm_vcpu *vcpu, struct kvm_mmu *conte
 	if (!(cr0 & X86_CR0_PG))
 		nonpaging_init_context(vcpu, context);
     /**
-     *  
+     *
      */
     else if (efer & EFER_LMA)
 		paging64_init_context(vcpu, context);
     /**
-     *  
+     *
      */
     else if (cr4 & X86_CR4_PAE)
 		paging32E_init_context(vcpu, context);
     /**
-     *  
+     *
      */
     else
 		paging32_init_context(vcpu, context);
@@ -5248,7 +5248,7 @@ static void shadow_mmu_init_context(struct kvm_vcpu *vcpu, struct kvm_mmu *conte
 }
 
 /**
- *  
+ *
  *  @cr0 - 可以判断是否开启分页
  */
 static void kvm_init_shadow_mmu(struct kvm_vcpu *vcpu, u32 cr0, u32 cr4, u32 efer)
@@ -5258,7 +5258,7 @@ static void kvm_init_shadow_mmu(struct kvm_vcpu *vcpu, u32 cr0, u32 cr4, u32 efe
 		kvm_calc_shadow_mmu_root_page_role(vcpu, false);
 
     /**
-     *  
+     *
      */
 	if (new_role.as_u64 != context->mmu_role.as_u64)
 		shadow_mmu_init_context(vcpu, context, cr0, cr4, efer, new_role);
@@ -5356,14 +5356,14 @@ void kvm_init_shadow_ept_mmu(struct kvm_vcpu *vcpu, bool execonly,
 EXPORT_SYMBOL_GPL(kvm_init_shadow_ept_mmu);
 
 /**
- *  
+ *
  */
 static void init_kvm_softmmu(struct kvm_vcpu *vcpu)
 {
 	struct kvm_mmu *context = &vcpu->arch.root_mmu;
 
     /**
-     *  
+     *
      */
 	kvm_init_shadow_mmu(vcpu,
 			    kvm_read_cr0_bits(vcpu, X86_CR0_PG),
@@ -5444,7 +5444,7 @@ void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 	}
 
     /**
-     *  
+     *
      */
 	if (mmu_is_nested(vcpu))
 		init_kvm_nested_mmu(vcpu);
@@ -5454,7 +5454,7 @@ void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 	else if (tdp_enabled)
 		init_kvm_tdp_mmu(vcpu);
     /**
-     *  
+     *
      */
     else
 		init_kvm_softmmu(vcpu);
@@ -5475,7 +5475,7 @@ kvm_mmu_calc_root_page_role(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 void kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
 {
@@ -5485,14 +5485,14 @@ void kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(kvm_mmu_reset_context);
 
 /**
- *  
+ *
  */
 int kvm_mmu_load(struct kvm_vcpu *vcpu)
 {
 	int r;
 
     /**
-     *  
+     *
      */
 	r = mmu_topup_memory_caches(vcpu, !vcpu->arch.mmu->direct_map);
 	if (r)
@@ -5504,14 +5504,14 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
 	r = mmu_alloc_roots(vcpu);
 
     /**
-     *  
+     *
      */
 	kvm_mmu_sync_roots(vcpu);
 	if (r)
 		goto out;
 
     /**
-     *  
+     *
      */
     kvm_mmu_load_pgd(vcpu);
 
@@ -5777,7 +5777,7 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	r = RET_PF_INVALID;
 
     /**
-     *  
+     *
      */
 	if (unlikely(error_code & PFERR_RSVD_MASK)) {
 		r = handle_mmio_page_fault(vcpu, cr2_or_gpa, direct);
@@ -5786,11 +5786,11 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	}
 
     /**
-     *  
+     *
      */
 	if (r == RET_PF_INVALID) {
         /**
-         *  
+         *
          */
 		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa, lower_32_bits(error_code), false);
 		if (WARN_ON_ONCE(r == RET_PF_INVALID))
@@ -6590,7 +6590,7 @@ static int set_nx_huge_pages(const char *val, const struct kernel_param *kp)
 }
 
 /**
- *  
+ *
  */
 int kvm_mmu_module_init(void)
 {

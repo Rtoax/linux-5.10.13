@@ -41,7 +41,7 @@
  */
 
 /* 返回 PTE 所在 PMD 中的索引 [0 ~ 511] */
-static inline unsigned long pte_index(unsigned long address) 
+static inline unsigned long pte_index(unsigned long address)
 {
 	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE/* 512:0x200 */ - 1)/*:0x1FF*/;
 }
@@ -1079,14 +1079,25 @@ extern void untrack_pfn_moved(struct vm_area_struct *vma);
 //#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
 
 #else
-static inline int is_zero_pfn(unsigned long pfn)    /* 系统零页(zero page) */
+/**
+ * @brief 系统零页(zero page)
+ *
+ * @param pfn
+ * @return int
+ */
+static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;
 	return pfn == zero_pfn;
 }
 
-
-static inline unsigned long my_zero_pfn(unsigned long addr) /* 零页 */
+/**
+ * @brief 零页
+ *
+ * @param addr
+ * @return unsigned long
+ */
+static inline unsigned long my_zero_pfn(unsigned long addr)
 {
 	extern unsigned long zero_pfn;
 	return zero_pfn;
