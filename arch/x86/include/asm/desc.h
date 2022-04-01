@@ -12,6 +12,12 @@
 #include <linux/smp.h>
 #include <linux/percpu.h>
 
+/**
+ * @brief 填充 LDT
+ *
+ * @param desc
+ * @param info
+ */
 static inline void fill_ldt(struct desc_struct *desc, const struct user_desc *info)
 {
 	desc->limit0		= info->limit & 0x0ffff;
@@ -25,6 +31,10 @@ static inline void fill_ldt(struct desc_struct *desc, const struct user_desc *in
 	desc->type	       |= 1;
 
 	desc->s			= 1;
+	/**
+	 * @brief 特权等级初始化为 3 (最低权限)
+	 *
+	 */
 	desc->dpl		= 0x3;
 	desc->p			= info->seg_not_present ^ 1;
 	desc->limit1		= (info->limit & 0xf0000) >> 16;
@@ -40,11 +50,20 @@ static inline void fill_ldt(struct desc_struct *desc, const struct user_desc *in
 	desc->l			= 0;
 }
 
-//definition of the `gdt_page` in the [arch/x86/kernel/head_64.S]
+/**
+ * @brief
+ *
+ * definition of the `gdt_page` in the [arch/x86/kernel/head_64.S]
+ *
+ */
 struct gdt_page {
 	struct desc_struct gdt[GDT_ENTRIES];
 } __attribute__((aligned(PAGE_SIZE)));
 
+/**
+ * @brief 每个 CPU 都有一个 GDT
+ *
+ */
 DECLARE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page);
 
 /* Provide the original GDT */
@@ -77,7 +96,16 @@ static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
 }
 
-//组建 中断门, 通过`write_idt_entry()` 填入IDT中
+/**
+ * @brief 组建 中断门, 通过`write_idt_entry()` 填入IDT中
+ *
+ * @param gate
+ * @param type
+ * @param func
+ * @param dpl
+ * @param ist
+ * @param seg
+ */
 static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
 			     unsigned dpl, unsigned ist, unsigned seg)
 {
@@ -193,7 +221,7 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_h
 	write_gdt_entry(d, entry, &tss, DESC_TSS);
 }
 
-/* `Task State Segments` 
+/* `Task State Segments`
 writes given  descriptor to the `Global Descriptor Table` of the given processor */
 #define set_tss_desc(cpu, addr) __set_tss_desc(cpu, GDT_ENTRY_TSS, addr)
 
@@ -409,7 +437,7 @@ static inline void init_idt_data(struct idt_data *data, unsigned int n,
 }
 
 /* 初始化一个门 */
-static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d) 
+static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
 {
 	unsigned long addr = (unsigned long) d->addr;
 

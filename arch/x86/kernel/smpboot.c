@@ -893,7 +893,7 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
 
 		pr_debug("Waiting for send to finish...\n");
         /**
-         *  
+         *
          */
 		send_status = safe_apic_wait_icr_idle();
 
@@ -981,7 +981,7 @@ static int wakeup_cpu0_nmi(unsigned int cmd, struct pt_regs *regs)
  * We'll change this code in the future to wake up hard offlined CPU0 if
  * real platform and request are available.
  *
- *  
+ *
  */
 static int
 wakeup_cpu_via_init_nmi(int cpu, unsigned long start_ip, int apicid,
@@ -1015,7 +1015,7 @@ wakeup_cpu_via_init_nmi(int cpu, unsigned long start_ip, int apicid,
 		else
 			id = apicid;
         /**
-         *  
+         *
          */
 		boot_error = wakeup_secondary_cpu_via_nmi(id, start_ip);
 	}
@@ -1062,7 +1062,7 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 		       int *cpu0_nmi_registered)
 {
 	/**
-	 *  start_ip had better be page-aligned! 
+	 *  start_ip had better be page-aligned!
 	 *  参见  ：arch/x86/realmode/rm/trampoline_64.S
 	 */
 	unsigned long start_ip = real_mode_header->trampoline_start;
@@ -1071,12 +1071,12 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 	unsigned long timeout;
 
     /**
-     *  
+     *
      */
 	idle->thread.sp = (unsigned long)task_pt_regs(idle);
 
     /**
-     *  
+     *
      */
 	early_gdt_descr.address = (unsigned long)get_cpu_gdt_rw(cpu);
 
@@ -1126,21 +1126,21 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 	 * Otherwise,
 	 * - Use an INIT boot APIC message for APs or NMI for BSP.
 	 *
-     *  
+     *
      */
 	if (apic->wakeup_secondary_cpu)
         /**
-         *  
+         *
          */
 		boot_error = apic->wakeup_secondary_cpu(apicid, start_ip);
 	else
         /**
-         *  
+         *
          */
 		boot_error = wakeup_cpu_via_init_nmi(cpu, start_ip, apicid,
 						     cpu0_nmi_registered);
     /**
-     *  
+     *
      */
 	if (!boot_error) {
 		/*
@@ -1187,7 +1187,7 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle,
 }
 
 /**
- *  
+ *
  */
 int native_cpu_up(unsigned int cpu, struct task_struct *tidle)
 {
@@ -1234,7 +1234,7 @@ int native_cpu_up(unsigned int cpu, struct task_struct *tidle)
 		return err;
 
     /**
-     *  
+     *
      */
 	err = do_boot_cpu(apicid, cpu, tidle, &cpu0_nmi_registered);
 	if (err) {
@@ -1452,27 +1452,36 @@ void arch_thaw_secondary_cpus_end(void)
 
 /*
  * Early setup to make printk work.
- * 
+ *
  * start_kernel()->smp_prepare_boot_cpu()->
  */
 void __init native_smp_prepare_boot_cpu(void)
 {
-    //gets the `id` of the current CPU (which is Bootstrap processor and its `id` is zero for this moment)
+    /**
+	 * gets the `id` of the current CPU (which is Bootstrap processor and its `id` is zero for this moment)
+	 */
 	int me = smp_processor_id();
 
-    //reload [Global Descriptor Table]
+    /**
+     * @brief reload [Global Descriptor Table]
+     *
+     */
 	switch_to_new_gdt(me);
-    
-	/* already set me in cpu_online_mask in boot_cpu_init() */
-	cpumask_set_cpu(me, cpu_callout_mask);  /* 设置当前 CPU mask */
+
+	/**
+	 * already set me in cpu_online_mask in boot_cpu_init()
+	 *
+	 * 设置当前 CPU mask
+	 */
+	cpumask_set_cpu(me, cpu_callout_mask);
     /**
-     *  
+     *	设置 ONLINE
      */
-	cpu_set_state_online(me);   /* 设置 ONLINE */
+	cpu_set_state_online(me);
     /**
-     *  
+     *	半虚拟化时， 才不为空
      */
-	native_pv_lock_init();      /* 半虚拟化时， 才不为空 */
+	native_pv_lock_init();
 }
 
 void __init calculate_max_logical_packages(void)
@@ -2153,7 +2162,7 @@ static DECLARE_WORK(disable_freq_invariance_work,
 DEFINE_PER_CPU(unsigned long, arch_freq_scale) = SCHED_CAPACITY_SCALE;
 
 /**
- *  
+ *
  */
 void arch_scale_freq_tick(void)
 {

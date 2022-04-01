@@ -64,20 +64,20 @@
 u32 __read_mostly elf_hwcap2 ;
 
 /* all of these masks are initialized in setup_cpu_local_masks() */
-//As we initialized bootstrap processor (processor which is booted the first on `x86`) 
-//the other processors in a multiprocessor system are known as `secondary processors`. 
+//As we initialized bootstrap processor (processor which is booted the first on `x86`)
+//the other processors in a multiprocessor system are known as `secondary processors`.
 //Linux kernel uses following two bitmasks:
 //
 //* `cpu_callout_mask`
 //* `cpu_callin_mask`
 //
-//After bootstrap processor initialized, it updates the `cpu_callout_mask` to indicate 
-//which secondary processor can be initialized next. 
-//All other or secondary processors can do some initialization stuff before and check the 
-//`cpu_callout_mask` on the boostrap processor bit. Only after the bootstrap processor 
-//filled the `cpu_callout_mask` with this secondary processor, it will continue the rest 
-//of its initialization. After that the certain processor finish its initialization process, 
-//the processor sets bit in the `cpu_callin_mask`. Once the bootstrap processor finds the 
+//After bootstrap processor initialized, it updates the `cpu_callout_mask` to indicate
+//which secondary processor can be initialized next.
+//All other or secondary processors can do some initialization stuff before and check the
+//`cpu_callout_mask` on the boostrap processor bit. Only after the bootstrap processor
+//filled the `cpu_callout_mask` with this secondary processor, it will continue the rest
+//of its initialization. After that the certain processor finish its initialization process,
+//the processor sets bit in the `cpu_callin_mask`. Once the bootstrap processor finds the
 //bit in the `cpu_callin_mask` for the current secondary processor, this processor repeats
 //the same procedure for initialization of one of the remaining secondary processors. In a
 //short words it works as i described, but we will see more details in the chapter about `SMP`.
@@ -130,9 +130,15 @@ static const struct cpu_dev default_cpu = {
 
 static const struct cpu_dev *this_cpu = &default_cpu;
 struct gdt_page __percpu gdt_page; /* 我加的 */
-DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+
+/**
+ * @brief
+ *
+ */
+DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = {
+	.gdt = {
 #ifdef CONFIG_X86_64
-	/*
+	/**
 	 * We need valid kernel segments for data and code in long mode too
 	 * IRET will check the segment types  kkeil 2000/10/28
 	 * Also sysret mandates a special GDT layout
@@ -181,7 +187,8 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 	GDT_STACK_CANARY_INIT
 #endif
-} };
+}
+};
 EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
 
 #ifdef CONFIG_X86_64
@@ -609,18 +616,31 @@ static const char *table_lookup_model(struct cpuinfo_x86 *c)
 __u32 __aligned_ulong cpu_caps_cleared[NCAPINTS + NBUGINTS];
 __u32 __aligned_ulong cpu_caps_set[NCAPINTS + NBUGINTS];
 
+/**
+ * @brief
+ *
+ * @param cpu
+ */
 void load_percpu_segment(int cpu)
 {
 #ifdef CONFIG_X86_32
-//	loadsegment(fs, __KERNEL_PERCPU);
+	loadsegment(fs, __KERNEL_PERCPU);
 #else
-    //`gs` 寄存器指向中断栈的栈底: `struct irq_stack` and `struct fixed_percpu_data`
+    /**
+     * `gs` 寄存器指向中断栈的栈底: `struct irq_stack` and `struct fixed_percpu_data`
+     *
+     */
 	__loadsegment_simple(gs, 0);
 
-    //这个指令从 `edx:eax` 加载数据到 被 `ecx` 指向的[MSR寄存器]
+    /**
+     * 这个指令从 `edx:eax` 加载数据到 被 `ecx` 指向的[MSR寄存器]
+     *
+     */
 	wrmsrl(MSR_GS_BASE, cpu_kernelmode_gs_base(cpu));
 #endif
-    //writes the base address if the [IRQ] stack and setup stack
+    /**
+	 * writes the base address if the [IRQ] stack and setup stack
+	 */
 	load_stack_canary_segment();
 }
 
@@ -634,20 +654,44 @@ void load_direct_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;  //pointer to the `GDT` descriptor
     //we already saw definition of a `desc_ptr` structure in the [Early interrupt and exception handling]
-    
+
 	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
-	gdt_descr.size = GDT_SIZE - 1;//=16*8-1=127
+
+	/**
+	 * gdt_descr.size = 16*8 - 1 = 127
+	 */
+	gdt_descr.size = GDT_SIZE - 1;//
+
+	/**
+	 * @brief 将 CPU 的 GDT lgdt 加载
+	 */
 	load_gdt(&gdt_descr);
 }
 EXPORT_SYMBOL_GPL(load_direct_gdt);
 
-/* Load a fixmap remapping of the per-cpu GDT *//* 加载 固定映射区的全局描述符表 */
+/**
+ * Load a fixmap remapping of the per-cpu GDT
+ *
+ * 加载 固定映射区的全局描述符表
+ */
 void load_fixmap_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
 
+	/**
+	 * @brief 只读
+	 *
+	 */
 	gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
+
+	/**
+	 * gdt_descr.size = 16*8 - 1 = 127
+	 */
 	gdt_descr.size = GDT_SIZE - 1;
+
+	/**
+	 * @brief 将 CPU 的 GDT lgdt 加载
+	 */
 	load_gdt(&gdt_descr);
 }
 EXPORT_SYMBOL_GPL(load_fixmap_gdt);
@@ -1355,7 +1399,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 	cpu_set_core_cap_bits(c);
 
     /**
-     *  
+     *
      */
 	fpu__init_system(c);
 
@@ -1772,14 +1816,14 @@ DEFINE_PER_CPU(unsigned int, irq_count) __visible = -1;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 EXPORT_PER_CPU_SYMBOL(__preempt_count);
 
-/* May not be marked __init: used by software suspend 
+/* May not be marked __init: used by software suspend
    执行系统调用入口的初始化 */
 void syscall_init(void)
 {
     //特殊模块集寄存器`MSR_STAR` 的 `63:48` 为用户代码的代码段
     //这些数据将加载至 `CS` 和  `SS` 段选择符，由提供将系统调用返回
-    //至相应特权级的用户代码功能的 `sysret` 指令使用。 
-    //同时从内核代码来看， 当用户空间应用程序执行系统调用时，`MSR_STAR` 
+    //至相应特权级的用户代码功能的 `sysret` 指令使用。
+    //同时从内核代码来看， 当用户空间应用程序执行系统调用时，`MSR_STAR`
     //的 `47:32` 将作为 `CS` and `SS`段选择寄存器的基地址
 	wrmsr(MSR_STAR, 0, (__USER32_CS << 16) | __KERNEL_CS);
 
@@ -2033,7 +2077,7 @@ void cpu_init(void) /*  */
          */
 		syscall_init();
         /* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
-        
+
 		wrmsrl(MSR_FS_BASE, 0);
 		wrmsrl(MSR_KERNEL_GS_BASE, 0);
 		barrier();

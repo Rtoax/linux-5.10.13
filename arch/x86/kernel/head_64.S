@@ -200,13 +200,15 @@ SYM_INNER_LABEL(secondary_startup_64_no_verify, SYM_L_GLOBAL)
 1:
 	UNWIND_HINT_EMPTY
 
-	/*
+	/**
 	 * We must switch to a new descriptor in kernel space for the GDT
 	 * because soon the kernel won't have access anymore to the userspace
 	 * addresses where we're currently running on. We have to do that here
 	 * because in 32bit we couldn't load a 64bit linear address.
+	 *
+	 * 全局描述附表
 	 */
-	lgdt	early_gdt_descr(%rip)   /* 全局描述附表 */
+	lgdt	early_gdt_descr(%rip)
 
 	/* set up data segments */
 	xorl %eax,%eax
@@ -386,7 +388,7 @@ SYM_CODE_START(early_idt_handler_array) //这段代码自动生成为前 `32` �
 	.endif
 
     /**
-     *  
+     *
      */
 	pushq $i		//# 72(%rsp) Vector number
 	jmp early_idt_handler_common
@@ -398,7 +400,7 @@ SYM_CODE_START(early_idt_handler_array) //这段代码自动生成为前 `32` �
 SYM_CODE_END(early_idt_handler_array)
 
 /**
- *  
+ *
  */
 SYM_CODE_START_LOCAL(early_idt_handler_common)
 	/*
@@ -433,7 +435,7 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	movq %rsp,%rdi		/* RDI = pt_regs; RSI is already trapnr */
 
     /**
-     *  
+     *
      */
 	call do_early_exception
 
@@ -554,7 +556,7 @@ SYM_DATA_END(init_top_pgt)
 #endif
 
 #ifdef CONFIG_X86_5LEVEL
-SYM_DATA_START_PAGE_ALIGNED(level4_kernel_pgt) 
+SYM_DATA_START_PAGE_ALIGNED(level4_kernel_pgt)
 	.fill	511,8,0
 	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE_NOENC
 SYM_DATA_END(level4_kernel_pgt)
@@ -618,7 +620,8 @@ SYM_DATA_END(level1_fixmap_pgt)
 	.data
 	.align 16
 
-SYM_DATA(early_gdt_descr,		.word GDT_ENTRIES*8-1)  /* 全局描述附表 */
+/* 全局描述附表 */
+SYM_DATA(early_gdt_descr,		.word GDT_ENTRIES*8-1)
 SYM_DATA_LOCAL(early_gdt_descr_base,	.quad INIT_PER_CPU_VAR(gdt_page))
 
 	.align 16

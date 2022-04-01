@@ -7205,7 +7205,10 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 {
 	unsigned long vm_total_pages;
 
-    /* 启动阶段 */
+    /**
+     * @brief 启动阶段
+     *
+     */
 	if (system_state == SYSTEM_BOOTING) {
 		build_all_zonelists_init();     /*  */
 
