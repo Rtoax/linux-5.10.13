@@ -281,6 +281,12 @@ noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 	exit_to_user_mode();
 }
 
+/**
+ * @brief
+ *
+ * @param regs
+ * @return irqentry_state_t
+ */
 noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 {
 	irqentry_state_t ret = {

@@ -268,7 +268,7 @@ u32 native_safe_apic_wait_icr_idle(void)
 }
 
 /**
- *  
+ *
  */
 void native_apic_icr_write(u32 low, u32 id)
 {
@@ -1077,13 +1077,13 @@ static void local_apic_timer_interrupt(void)
 
 	/*
 	 * the NMI deadlock-detector uses this.
-	 * 
+	 *
 	 * /proc/interrupts: LOC xxx Local timer interrupts
 	 */
 	inc_irq_stat(apic_timer_irqs);
 
     /**
-     *  回调 
+     *  回调
      *  可能 = `hrtimer_interrupt()`
      */
 	evt->event_handler(evt);
@@ -1103,7 +1103,7 @@ __visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
     irqentry_state_t state = irqentry_enter(regs);
 
     /**
-     *  
+     *
      */
     instrumentation_begin();
     __irq_enter_raw();
@@ -1136,7 +1136,7 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
 	local_apic_timer_interrupt();
 	trace_local_timer_exit(LOCAL_TIMER_VECTOR);
     /**
-     *  
+     *
      */
 	set_irq_regs(old_regs);
 }
@@ -1405,7 +1405,7 @@ void __init init_bsp_APIC(void)
 	 * Don't do the setup now if we have a SMP BIOS as the
 	 * through-I/O-APIC virtual wire mode might be active.
 	 */
-    //check that we found [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing) 
+    //check that we found [SMP](https://en.wikipedia.org/wiki/Symmetric_multiprocessing)
 	if (smp_found_config || !boot_cpu_has(X86_FEATURE_APIC))
 		return;
 
@@ -1910,7 +1910,7 @@ static __init void try_to_enable_x2apic(int remap_mode)
 }
 
 /**
- *  
+ *
  */
 void __init check_x2apic(void)  /*  */
 {
@@ -2484,10 +2484,10 @@ int generic_processor_info(int apicid, int version)
 
 		/* Logical cpuid 0 is reserved for BSP. */
 		cpuid_to_apicid[0] = apicid;
-    
+
 	} else {
         /**
-         *  
+         *
          */
 		cpu = allocate_logical_cpuid(apicid);
 		if (cpu < 0) {
