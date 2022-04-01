@@ -161,7 +161,7 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 
         /**
-         *  
+         *
          */
 		struct e820_entry *entry = &e820_table->entries[i];
 
@@ -365,7 +365,7 @@ static struct e820_entry	__initdata *overlap_list[E820_MAX_ENTRIES]		;
 static struct e820_entry	__initdata new_entries[E820_MAX_ENTRIES]		;
 
 /**
- *  
+ *
  */
 static int __init cpcompare(const void *a, const void *b)
 {
@@ -399,7 +399,7 @@ static bool e820_nomerge(enum e820_type type)
 }
 
 /**
- *  
+ *
  */
 int __init e820__update_table(struct e820_table *table)
 {
@@ -454,7 +454,7 @@ int __init e820__update_table(struct e820_table *table)
 	last_addr = 0;		 /* Start with 0 as last starting address */
 
     /**
-     *  
+     *
      */
 	/* Loop through change-points, determining effect on the new map: */
 	for (chg_idx = 0; chg_idx < chg_nr; chg_idx++) {
@@ -976,7 +976,7 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 }
 
 /**
- *  
+ *
  */
 unsigned long __init e820__end_of_ram_pfn(void)
 {
@@ -1119,7 +1119,7 @@ void __init e820__reserve_setup_data(void)
 		return;
 
     /**
-     *  
+     *
      */
 	while (pa_data) {
 		data = early_memremap(pa_data, sizeof(*data));
@@ -1172,7 +1172,7 @@ void __init e820__finish_early_params(void)
 }
 
 /**
- *  
+ *
  */
 static const char *__init e820_type_to_string(struct e820_entry *entry)
 {
@@ -1186,7 +1186,7 @@ static const char *__init e820_type_to_string(struct e820_entry *entry)
 	case E820_TYPE_PMEM:		return "Persistent Memory";
 	case E820_TYPE_RESERVED:	return "Reserved";
 	case E820_TYPE_SOFT_RESERVED:	return "Soft Reserved";
-	default:			
+	default:
 	    return "Unknown E820 type";
 	}
 }
@@ -1203,7 +1203,7 @@ static unsigned long __init e820_type_to_iomem_type(struct e820_entry *entry)
 	case E820_TYPE_PMEM:		/* Fall-through: */
 	case E820_TYPE_RESERVED:	/* Fall-through: */
 	case E820_TYPE_SOFT_RESERVED:	/* Fall-through: */
-	default:			
+	default:
 	    return IORESOURCE_MEM;
 	}
 }
@@ -1220,7 +1220,7 @@ static unsigned long __init e820_type_to_iores_desc(struct e820_entry *entry)
 	case E820_TYPE_RESERVED_KERN:	/* Fall-through: */
 	case E820_TYPE_RAM:		/* Fall-through: */
 	case E820_TYPE_UNUSABLE:	/* Fall-through: */
-	default:			
+	default:
 	    return IORES_DESC_NONE;
 	}
 }
@@ -1371,7 +1371,7 @@ void __init e820__reserve_resources_late(void)
 	struct resource *res;
 
     /**
-     *  
+     *
      */
 	res = e820_res;
 	for (i = 0; i < e820_table->nr_entries; i++) {
@@ -1427,7 +1427,7 @@ void __init e820__reserve_resources_late(void)
 		printk(KERN_DEBUG "e820: reserve RAM buffer [mem %#010llx-%#010llx]\n", start, end);
 
         /**
-         *  
+         *
          */
 		reserve_region_with_split(&iomem_resource, start, end, "RAM buffer");
 	}
@@ -1439,7 +1439,7 @@ void __init e820__reserve_resources_late(void)
 char *__init e820__memory_setup_default(void)
 {
 	char *who = "BIOS-e820";
-    
+
     //$ dmesg | grep e820
     //[    0.000000] e820: BIOS-provided physical RAM map:
     //[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
@@ -1465,7 +1465,7 @@ char *__init e820__memory_setup_default(void)
 	 * the next section from 1mb->appropriate_mem_k
 	 */
 	if (append_e820_table(boot_params.e820_table, boot_params.e820_entries) < 0) {
-        
+
 		u64 mem_size;
 
 		/* Compare results from other methods and take the one that gives more RAM: */
@@ -1525,6 +1525,12 @@ void __init e820__memory_setup(void)
 	e820__print_table(who);
 }
 
+/**
+ * @brief 初始化 memblock
+ *
+ */
+void __init e820__memblock_setup(void)
+{
 //[rongtao@localhost src]$ dmesg | grep e820
 //[    0.000000] e820: BIOS-provided physical RAM map:
 //[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
@@ -1542,8 +1548,6 @@ void __init e820__memory_setup(void)
 //[    0.000000] e820: [mem 0xc0000000-0xfeffbfff] available for PCI devices
 //[    1.258057] e820: reserve RAM buffer [mem 0x0009fc00-0x0009ffff]
 //[    1.258059] e820: reserve RAM buffer [mem 0xbff80000-0xbfffffff]
-void __init e820__memblock_setup(void)
-{
 	int i;
 	u64 end;
 
@@ -1559,7 +1563,7 @@ void __init e820__memblock_setup(void)
 	memblock_allow_resize();
 
     /**
-     *  
+     *
      *  Physic Memory
      *
      *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
@@ -1608,7 +1612,6 @@ void __init e820__memblock_setup(void)
          *  将 RAM 和 给 kernel 的 ram 添加至 memblock.memory 中
          */
 		memblock_add(entry->addr, entry->size);
-        
 	}
 
 	/* Throw away partial pages: */

@@ -62,6 +62,7 @@ struct memblock_region {/* 内存块 */
 
 /**
  * struct memblock_type - collection of memory regions of certain type
+ *
  * @cnt: number of regions
  * @max: size of the allocated array
  * @total_size: size of all regions
@@ -84,8 +85,26 @@ struct memblock_type {  //内存类型
  * @current_limit: physical address of the current allocation limit
  * @memory: usable memory regions
  * @reserved: reserved memory regions
+ *
+ * https://0xax.gitbooks.io/linux-insides/content/MM/linux-mm-1.html
+ *
+ * +---------------------------+   +---------------------------+
+ * |         memblock          |   |                           |
+ * |  _______________________  |   |                           |
+ * | |        memory         | |   |       Array of the        |
+ * | |      memblock_type    |-|-->|      memblock_region      |
+ * | |_______________________| |   |                           |
+ * |                           |   +---------------------------+
+ * |  _______________________  |   +---------------------------+
+ * | |       reserved        | |   |                           |
+ * | |      memblock_type    |-|-->|       Array of the        |
+ * | |_______________________| |   |      memblock_region      |
+ * |                           |   |                           |
+ * +---------------------------+   +---------------------------+
+ *
+ * 初始化 __initdata_memblock
  */
-struct memblock {   
+struct memblock {
 	bool bottom_up;  /* is bottom up direction? 为 `true` 时允许内存以自底向上模式进行分配 */
 	phys_addr_t current_limit;  /* 内存块的尺寸限制,为 `memblock` 分配内存设置一个界限 */
 	struct memblock_type memory;    //内存
@@ -391,7 +410,7 @@ phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int
 
 
 /**
- *  
+ *
  */
 static inline phys_addr_t memblock_phys_alloc(phys_addr_t size, phys_addr_t align)
 {
@@ -409,7 +428,7 @@ void *memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 			     int nid);
 
 /**
-  *  
+  *
   */
 static inline void * __init memblock_alloc(phys_addr_t size,  phys_addr_t align)
 {
@@ -441,7 +460,7 @@ static inline void * __init memblock_alloc_low(phys_addr_t size,
 }
 
 /**
- *  
+ *
  */
 static inline void * __init memblock_alloc_node(phys_addr_t size,
 						phys_addr_t align, int nid)

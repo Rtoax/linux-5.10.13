@@ -98,16 +98,16 @@
 #endif
 
 /**
- *  
+ *
  */
-unsigned long max_low_pfn;/*  */
+unsigned long max_low_pfn;
 unsigned long min_low_pfn;
 
 /**
  *  arch/arm64/mm/init.c:           max_pfn = max_low_pfn = max;
  *  arch/x86/mm/init_64.c:          max_pfn = end_pfn;
- *  arch/x86/mm/numa_emulation.c:	unsigned long max_pfn = PHYS_PFN(max_addr);
- *  arch/x86/kernel/setup.c:        max_pfn = e820__end_of_ram_pfn();   
+ *  arch/x86/mm/numa_emulation.c:	max_pfn = PHYS_PFN(max_addr);
+ *  arch/x86/kernel/setup.c:        max_pfn = e820__end_of_ram_pfn();
  *  arch/x86/kernel/setup.c:        max_pfn = e820__end_of_ram_pfn();
  *  arch/x86/xen/setup.c:           max_pfn = xen_get_pages_limit();
  *  arch/x86/xen/setup.c:           max_pfn = min(max_pfn, xen_start_info->nr_pages);
@@ -115,11 +115,18 @@ unsigned long min_low_pfn;
 unsigned long max_pfn;  /* 最大帧号 */
 unsigned long long max_possible_pfn;
 
-static struct memblock_region __initdata_memblock memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] ;
-static struct memblock_region __initdata_memblock memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS] ;
+/**
+ * @brief
+ *
+ */
+static struct memblock_region __initdata_memblock
+memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS/*128*/] ;
+static struct memblock_region __initdata_memblock
+memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS/*128*/] ;
 
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
-//static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS];/*  */
+static struct memblock_region
+memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS/*128*/];
 #endif
 
 /**
@@ -128,25 +135,25 @@ static struct memblock_region __initdata_memblock memblock_reserved_init_regions
 struct memblock __initdata_memblock memblock  = {
 	memblock.memory.regions		= memblock_memory_init_regions,
 	memblock.memory.cnt		    = 1,	/* empty dummy entry */
-	memblock.memory.max		    = INIT_MEMBLOCK_REGIONS,
+	memblock.memory.max		    = INIT_MEMBLOCK_REGIONS, /*128*/
 	memblock.memory.name		= "memory",
 
 	memblock.reserved.regions	= memblock_reserved_init_regions,
 	memblock.reserved.cnt		= 1,	/* empty dummy entry */
-	memblock.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,
+	memblock.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,/*128*/
 	memblock.reserved.name		= "reserved",
 
 	memblock.bottom_up		    = false,
-	memblock.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
+	memblock.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,/*0xffffffffffffffff*/
 };
 
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
-//struct memblock_type physmem = {/*  */
-//	physmem.regions		= memblock_physmem_init_regions,
-//	physmem.cnt			= 1,	/* empty dummy entry */
-//	physmem.max			= INIT_PHYSMEM_REGIONS,
-//	physmem.name		= "physmem",
-//};
+struct memblock_type physmem = {
+	physmem.regions		= memblock_physmem_init_regions,
+	physmem.cnt			= 1,	/* empty dummy entry */
+	physmem.max			= INIT_PHYSMEM_REGIONS,
+	physmem.name		= "physmem",
+};
 #endif
 
 /*
@@ -188,13 +195,15 @@ static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 /*
  * Address comparison utilities
  */
-static unsigned long __init_memblock memblock_addrs_overlap(phys_addr_t base1, phys_addr_t size1,
+static unsigned long __init_memblock
+memblock_addrs_overlap(phys_addr_t base1, phys_addr_t size1,
 				       phys_addr_t base2, phys_addr_t size2)
 {
 	return ((base1 < (base2 + size2)) && (base2 < (base1 + size1)));
 }
 
-bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
+bool __init_memblock
+memblock_overlaps_region(struct memblock_type *type,
 					phys_addr_t base, phys_addr_t size)
 {
 	unsigned long i;
@@ -230,7 +239,7 @@ __memblock_find_range_bottom_up(phys_addr_t start, phys_addr_t end,
 	u64 i;
 
     /**
-     *  
+     *
      */
 	for_each_free_mem_range(i, nid, flags, &this_start, &this_end, NULL) {
 		this_start = clamp(this_start, start, end);
@@ -399,7 +408,7 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type, u
 	type->total_size -= type->regions[r].size;
 	memmove(&type->regions[r], &type->regions[r + 1],
 		(type->cnt - (r + 1)) * sizeof(type->regions[r]));
-    
+
 	type->cnt--;
 
 	/* Special case for empty arrays */
@@ -627,23 +636,24 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
  *
  * Return:
  * 0 on success, -errno on failure.
- *//* TODO */
+ */
 //0                    0x1000
 //+-----------------------+
 //|        region1        |
 //+-----------------------+
-//                           
+//
 //0x100                 0x2000
 //+-----------------------+
 //|        region2        |
 //+-----------------------+
-//成功地将两个内存区域合并 ==> 
+//成功地将两个内存区域合并 ==>
 //0                                             0x2000
 //+------------------------------------------------+
 //|                   region1                      |
 //+------------------------------------------------+
 
-static int __init_memblock memblock_add_range(struct memblock_type *type,
+static int __init_memblock
+memblock_add_range(struct memblock_type *type,
 				phys_addr_t base, phys_addr_t size,
 				int nid, enum memblock_flags flags)
 {
@@ -732,7 +742,7 @@ repeat:
         |
         |
         |
-        |       
+        |
         |<--end
         |
         |
@@ -753,16 +763,16 @@ repeat:
         |
         |
         |
-        |       
+        |
         |<--end
         |       <--rend
         |
         |       <--rbase
         |<--base
         |
-        |       
         |
-        -- 
+        |
+        --
         */
 		if (rbase > base) {
 #ifdef CONFIG_NEED_MULTIPLE_NODES
@@ -923,7 +933,8 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 	return 0;
 }
 
-static int __init_memblock memblock_remove_range(struct memblock_type *type,
+static int __init_memblock
+memblock_remove_range(struct memblock_type *type,
 					  phys_addr_t base, phys_addr_t size)
 {
 	int start_rgn, end_rgn;
@@ -939,7 +950,7 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 }
 
 /**
- *  
+ *
  */
 int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 {
@@ -1338,7 +1349,7 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 	int r_nid;
 
     /**
-     *  
+     *
      */
 	while (++*idx < type->cnt) {
 		r = &type->regions[*idx];
@@ -1360,7 +1371,7 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 		if (nid == MAX_NUMNODES || nid == r_nid)
 			break;
 	}
-    
+
 	if (*idx >= type->cnt) {
 		*idx = -1;
 		return;
@@ -1519,7 +1530,7 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 
 again:
     /**
-     *  
+     *
      */
 	found = memblock_find_in_range_node(size, align, start, end, nid, flags);
 	if (found && !memblock_reserve(found, size))
@@ -1755,7 +1766,7 @@ void * __init memblock_alloc_try_nid(/* 分配启动 内存 块 */
         		     &max_addr, (void *)_RET_IP_);
 
     /**
-     *  
+     *
      */
 	ptr = memblock_alloc_internal(size, align, min_addr, max_addr, nid, false);
 	if (ptr)
@@ -1996,7 +2007,7 @@ bool __init_memblock memblock_is_region_reserved(phys_addr_t base, phys_addr_t s
 }
 
 /**
- *  
+ *
  */
 void __init_memblock memblock_trim_memory(phys_addr_t align)
 {
@@ -2025,7 +2036,7 @@ void __init_memblock memblock_trim_memory(phys_addr_t align)
 		if (start < end) {
 			r->base = start;
 			r->size = end - start;
-        
+
 		} else {
             /**
              *  地址不合理，直接释放
@@ -2038,7 +2049,7 @@ void __init_memblock memblock_trim_memory(phys_addr_t align)
 
 /**
  *  为 `memblock` 分配内存设置一个界限
- *  这个界限可以是 `ISA_END_ADDRESS` 或者 `0x100000` 
+ *  这个界限可以是 `ISA_END_ADDRESS` 或者 `0x100000`
  */
 void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 {
@@ -2072,7 +2083,7 @@ static void __init_memblock memblock_dump(struct memblock_type *type)
 		size = rgn->size;
 		end = base + size - 1;
 		flags = rgn->flags;
-        
+
 #ifdef CONFIG_NEED_MULTIPLE_NODES
 		if (memblock_get_region_node(rgn) != MAX_NUMNODES)
 			snprintf(nid_buf, sizeof(nid_buf), " on node %d", memblock_get_region_node(rgn));
@@ -2098,7 +2109,7 @@ static void __init_memblock __memblock_dump_all(void)
      */
 	memblock_dump(&memblock.memory);
 	memblock_dump(&memblock.reserved);
-    
+
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
 //	memblock_dump(&physmem);
 #endif
@@ -2127,7 +2138,7 @@ static int __init early_memblock(char *p)
 early_param("memblock", early_memblock);
 
 /**
- *  
+ *
  */
 static void __init __free_pages_memory(unsigned long start, unsigned long end)/* 释放 页 内存 */
 {
@@ -2149,7 +2160,7 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end)/*
 }
 
 /**
- *  
+ *
  */
 static unsigned long __init __free_memory_core(phys_addr_t start,/* 从 start 到 end 有多少 pages */
 				 phys_addr_t end)
@@ -2167,7 +2178,7 @@ static unsigned long __init __free_memory_core(phys_addr_t start,/* 从 start �
 }
 
 /**
-  *  
+  *
   */
 static unsigned long __init free_low_memory_core_early(void)/*  */
 {
@@ -2192,7 +2203,7 @@ static unsigned long __init free_low_memory_core_early(void)/*  */
 	 */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,NULL) {
 	    /**
-         *  
+         *
          */
 		count += __free_memory_core(start, end);    /* 计算总页数 */
     }
@@ -2216,7 +2227,7 @@ void reset_node_managed_pages(pg_data_t *pgdat)
 }
 
 /**
- *  
+ *
  */
 void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页 */
 {
@@ -2228,7 +2239,7 @@ void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页
     /**
      *  遍历所有 NODE
      */
-	for_each_online_pgdat(pgdat) { /* 遍历 每个在线 的 页表 */ 
+	for_each_online_pgdat(pgdat) { /* 遍历 每个在线 的 页表 */
 
         /**
          *  重置NODE管理页
