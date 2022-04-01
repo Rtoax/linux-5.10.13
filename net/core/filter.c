@@ -4115,7 +4115,7 @@ static const struct bpf_func_proto bpf_xdp_redirect_proto = {
 };
 
 /**
- *  
+ *
  */
 long bpf_xdp_redirect_map(struct bpf_map *map, u32 ifindex, u64 flags);//+++
 BPF_CALL_3(bpf_xdp_redirect_map, struct bpf_map *, map, u32, ifindex, u64, flags)
@@ -6375,6 +6375,10 @@ BPF_CALL_1(bpf_tcp_sock, struct sock *, sk)
 	return (unsigned long)NULL;
 }
 
+/**
+ * @brief
+ *
+ */
 const struct bpf_func_proto bpf_tcp_sock_proto = {
 	.func		= bpf_tcp_sock,
 	.gpl_only	= false,
@@ -7072,6 +7076,10 @@ cg_skb_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_sk_release_proto;
 	case BPF_FUNC_skc_lookup_tcp:
 		return &bpf_skc_lookup_tcp_proto;
+	/**
+	 * @brief
+	 *
+	 */
 	case BPF_FUNC_tcp_sock:
 		return &bpf_tcp_sock_proto;
 	case BPF_FUNC_get_listener_sock:

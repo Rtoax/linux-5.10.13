@@ -196,6 +196,10 @@
 DEFINE_IDR(btf_idr);
 DEFINE_SPINLOCK(btf_idr_lock);
 
+/**
+ * @brief
+ *
+ */
 struct btf {
 	void *data;
 	struct btf_type **types;
@@ -4245,13 +4249,13 @@ static union {
 
         bpf_user_pt_regs_t BPF_PROG_TYPE_KPROBE_prog;
         struct pt_regs BPF_PROG_TYPE_KPROBE_kern;
-        __u64 BPF_PROG_TYPE_TRACEPOINT_prog; 
+        __u64 BPF_PROG_TYPE_TRACEPOINT_prog;
         u64 BPF_PROG_TYPE_TRACEPOINT_kern;
         struct bpf_perf_event_data BPF_PROG_TYPE_PERF_EVENT_prog;
         struct bpf_perf_event_data_kern BPF_PROG_TYPE_PERF_EVENT_kern;
-        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_prog; 
+        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_prog;
         u64 BPF_PROG_TYPE_RAW_TRACEPOINT_kern;
-        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE_prog; 
+        struct bpf_raw_tracepoint_args BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE_prog;
         u64 BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE_kern;
         void * BPF_PROG_TYPE_TRACING_prog;
         void * BPF_PROG_TYPE_TRACING_kern;
@@ -4265,7 +4269,7 @@ static union {
         struct bpf_sockopt_kern BPF_PROG_TYPE_CGROUP_SOCKOPT_kern;
 
 
-        __u32 BPF_PROG_TYPE_LIRC_MODE2_prog; 
+        __u32 BPF_PROG_TYPE_LIRC_MODE2_prog;
         u32 BPF_PROG_TYPE_LIRC_MODE2_kern;
 
 
@@ -4498,6 +4502,11 @@ static int btf_translate_to_vmlinux(struct bpf_verifier_log *log,
 BTF_ID_LIST(bpf_ctx_convert_btf_id)
 BTF_ID(struct, bpf_ctx_convert)
 
+/**
+ * @brief
+ *
+ * @return struct btf*
+ */
 struct btf *btf_parse_vmlinux(void)
 {
 	struct btf_verifier_env *env = NULL;
@@ -5536,6 +5545,17 @@ static void btf_snprintf_show(struct btf_show *show, const char *fmt,
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param btf
+ * @param type_id
+ * @param obj
+ * @param buf
+ * @param len
+ * @param flags
+ * @return int
+ */
 int btf_type_snprintf_show(const struct btf *btf, u32 type_id, void *obj,
 			   char *buf, int len, u64 flags)
 {

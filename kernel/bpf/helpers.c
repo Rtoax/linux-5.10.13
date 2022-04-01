@@ -308,7 +308,7 @@ const struct bpf_func_proto bpf_spin_lock_proto = {
 	bpf_spin_lock_proto.ret_type	= RET_VOID,
 	bpf_spin_lock_proto.arg1_type	= ARG_PTR_TO_SPIN_LOCK,
 };
-    
+
 void bpf_spin_unlock(struct bpf_spin_lock *lock); //+++
 notrace BPF_CALL_1(bpf_spin_unlock, struct bpf_spin_lock *, lock)
 {
@@ -356,6 +356,10 @@ const struct bpf_func_proto bpf_jiffies64_proto = {
 };
 
 #ifdef CONFIG_CGROUPS
+/**
+ * @brief
+ *
+ */
 BPF_CALL_0(bpf_get_current_cgroup_id)
 {
 	struct cgroup *cgrp = task_dfl_cgroup(current);
@@ -363,6 +367,10 @@ BPF_CALL_0(bpf_get_current_cgroup_id)
 	return cgroup_id(cgrp);
 }
 
+/**
+ * @brief
+ *
+ */
 const struct bpf_func_proto bpf_get_current_cgroup_id_proto = {
 	.func		= bpf_get_current_cgroup_id,
 	.gpl_only	= false,
@@ -549,6 +557,10 @@ const struct bpf_func_proto bpf_strtoul_proto = {
 };
 #endif
 
+/**
+ * @brief
+ *
+ */
 BPF_CALL_4(bpf_get_ns_current_pid_tgid, u64, dev, u64, ino,
 	   struct bpf_pidns_info *, nsdata, u32, size)
 {
@@ -565,6 +577,10 @@ BPF_CALL_4(bpf_get_ns_current_pid_tgid, u64, dev, u64, ino,
 	if (unlikely(!task))
 		goto clear;
 
+	/**
+	 * @brief
+	 *
+	 */
 	pidns = task_active_pid_ns(task);
 	if (unlikely(!pidns)) {
 		err = -ENOENT;
@@ -732,6 +748,10 @@ bpf_base_func_proto(enum bpf_func_id func_id)
 		if (!perfmon_capable())
 			return NULL;
 		return bpf_get_trace_printk_proto();
+	/**
+	 * @brief
+	 *
+	 */
 	case BPF_FUNC_snprintf_btf:
 		if (!perfmon_capable())
 			return NULL;

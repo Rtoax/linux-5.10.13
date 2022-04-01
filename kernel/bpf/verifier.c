@@ -169,7 +169,7 @@ static const struct bpf_verifier_ops * const bpf_verifier_ops[] = {
  *      3. 程序不包含永远无法到达的指令
  *      4. 程序不会超出程序界限
  *  第二项检查 - 预运行
- *      
+ *
  */
 
 /* verifier_state + insn_idx are pushed to stack when branch is encountered */
@@ -11393,7 +11393,7 @@ static int do_check_main(struct bpf_verifier_env *env)
 }
 
 /**
- *  
+ *
  */
 static void print_verification_stats(struct bpf_verifier_env *env)
 {
@@ -11816,6 +11816,11 @@ static int check_attach_btf_id(struct bpf_verifier_env *env)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @return struct btf*
+ */
 struct btf *bpf_get_btf_vmlinux(void)
 {
 	if (!btf_vmlinux && IS_ENABLED(CONFIG_DEBUG_INFO_BTF)) {
@@ -11837,7 +11842,7 @@ struct btf *bpf_get_btf_vmlinux(void)
  *      3. 程序不包含永远无法到达的指令
  *      4. 程序不会超出程序界限
  *  第二项检查 - 预运行
- *      
+ *
  */
 int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	      union bpf_attr __user *uattr)
@@ -11916,7 +11921,7 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		env->test_state_freq = attr->prog_flags & BPF_F_TEST_STATE_FREQ;
 
     /**
-     *  
+     *
      */
 	if (bpf_prog_is_dev_bound(env->prog->aux)) {
 		ret = bpf_prog_offload_verifier_prep(env->prog);
@@ -11932,48 +11937,48 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = check_subprogs(env);
 	if (ret < 0)
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = check_btf_info(env, attr, uattr);
 	if (ret < 0)
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = check_attach_btf_id(env);
 	if (ret)
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = resolve_pseudo_ldimm64(env);
 	if (ret < 0)
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = check_cfg(env);
 	if (ret < 0)
 		goto skip_full_check;
 
     /**
-     *  
+     *
      */
 	ret = do_check_subprogs(env);
 	ret = ret ?: do_check_main(env);
 
     /**
-     *  
+     *
      */
 	if (ret == 0 && bpf_prog_is_dev_bound(env->prog->aux))
 		ret = bpf_prog_offload_finalize(env);
@@ -11982,7 +11987,7 @@ skip_full_check:
 	kvfree(env->explored_states);
 
     /**
-     *  
+     *
      */
 	if (ret == 0)
 		ret = check_max_stack_depth(env);
@@ -12001,14 +12006,14 @@ skip_full_check:
 	}
 
     /**
-     *  
+     *
      */
 	if (ret == 0)
 		/* program is valid, convert *(u32*)(ctx + off) accesses */
 		ret = convert_ctx_accesses(env);
 
     /**
-     *  
+     *
      */
 	if (ret == 0)
 		ret = fixup_bpf_calls(env);
@@ -12028,7 +12033,7 @@ skip_full_check:
 	env->verification_time = ktime_get_ns() - start_time;
 
     /**
-     *  
+     *
      */
 	print_verification_stats(env);
 

@@ -889,7 +889,7 @@ static const struct bpf_func_proto bpf_perf_event_read_value_proto = {
 };
 
 /**
- *  
+ *
  */
 static __always_inline u64
 __bpf_perf_event_output(struct pt_regs *regs, struct bpf_map *map,
@@ -1203,6 +1203,16 @@ static const struct bpf_func_proto bpf_d_path_proto = {
 #define BTF_F_ALL	(BTF_F_COMPACT  | BTF_F_NONAME | \
 			 BTF_F_PTR_RAW | BTF_F_ZERO)
 
+/**
+ * @brief
+ *
+ * @param ptr
+ * @param btf_ptr_size
+ * @param flags
+ * @param btf
+ * @param btf_id
+ * @return int
+ */
 static int bpf_btf_printf_prepare(struct btf_ptr *ptr, u32 btf_ptr_size,
 				  u64 flags, const struct btf **btf,
 				  s32 *btf_id)
@@ -1233,6 +1243,10 @@ static int bpf_btf_printf_prepare(struct btf_ptr *ptr, u32 btf_ptr_size,
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ */
 BPF_CALL_5(bpf_snprintf_btf, char *, str, u32, str_size, struct btf_ptr *, ptr,
 	   u32, btf_ptr_size, u64, flags)
 {
@@ -1240,14 +1254,26 @@ BPF_CALL_5(bpf_snprintf_btf, char *, str, u32, str_size, struct btf_ptr *, ptr,
 	s32 btf_id;
 	int ret;
 
+	/**
+	 * @brief
+	 *
+	 */
 	ret = bpf_btf_printf_prepare(ptr, btf_ptr_size, flags, &btf, &btf_id);
 	if (ret)
 		return ret;
 
+	/**
+	 * @brief
+	 *
+	 */
 	return btf_type_snprintf_show(btf, btf_id, ptr->ptr, str, str_size,
 				      flags);
 }
 
+/**
+ * @brief
+ *
+ */
 const struct bpf_func_proto bpf_snprintf_btf_proto = {
 	.func		= bpf_snprintf_btf,
 	.gpl_only	= false,
