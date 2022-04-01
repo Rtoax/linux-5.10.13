@@ -219,7 +219,7 @@ static u16 __read_mostly have_release_callback ;
 static u16 __read_mostly have_canfork_callback ;
 
 /**
- *  
+ *
  */
 /* cgroup namespace for init task */
 struct cgroup_namespace init_cgroup_ns = {
@@ -3402,6 +3402,19 @@ static int cgroup_type_show(struct seq_file *seq, void *v)   /*  */
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param of
+ * @param buf
+ * @param nbytes
+ * @param off
+ * @return ssize_t
+ *
+ * https://www.kernel.org/doc/Documentation/cgroup-v2.txt
+ *
+ * echo threaded > cgroup.type
+ */
 static ssize_t cgroup_type_write(struct kernfs_open_file *of, char *buf,
 				 size_t nbytes, loff_t off)
 {
@@ -3551,6 +3564,13 @@ static int __maybe_unused cgroup_extra_stat_show(struct seq_file *seq,
 	return ret;
 }
 
+/**
+ * @brief cpu.stat
+ *
+ * @param seq
+ * @param v
+ * @return int
+ */
 static int cpu_stat_show(struct seq_file *seq, void *v)
 {
 	struct cgroup __maybe_unused *cgrp = seq_css(seq)->cgroup;
@@ -4835,14 +4855,27 @@ out_unlock:
 	return ret ?: nbytes;
 }
 
-/* cgroup core interface files for the default hierarchy */
-static struct cftype cgroup_base_files[]  /* cgroup 基本文件 */= {
+/**
+ * cgroup core interface files for the default hierarchy
+ * cgroup 基本文件
+ *
+ * https://www.kernel.org/doc/Documentation/cgroup-v2.txt
+ */
+static struct cftype cgroup_base_files[] = {
+	/**
+	 * @brief echo threaded > cgroup.type
+	 *
+	 */
 	{
 		.name = "cgroup.type",
 		.flags = CFTYPE_NOT_ON_ROOT,
 		.seq_show = cgroup_type_show,
 		.write = cgroup_type_write,
 	},
+	/**
+	 * @brief echo 0 > sub_cgrp_1/cgroup.procs
+	 *
+	 */
 	{
 		.name = "cgroup.procs",
 		.flags = CFTYPE_NS_DELEGATABLE,
@@ -4862,10 +4895,23 @@ static struct cftype cgroup_base_files[]  /* cgroup 基本文件 */= {
 		.seq_show = cgroup_procs_show,
 		.write = cgroup_threads_write,
 	},
+	/**
+	 * @brief
+	 *
+	 * # cat cgroup.controllers
+	 * cpu io memory
+	 *
+	 */
 	{
 		.name = "cgroup.controllers",
 		.seq_show = cgroup_controllers_show,
 	},
+	/**
+	 * @brief
+	 *
+	 * # echo "+cpu +memory -io" > cgroup.subtree_control
+	 *
+	 */
 	{
 		.name = "cgroup.subtree_control",
 		.flags = CFTYPE_NS_DELEGATABLE,
@@ -4902,6 +4948,10 @@ static struct cftype cgroup_base_files[]  /* cgroup 基本文件 */= {
 		.name = "cpu.stat",
 		.seq_show = cpu_stat_show,
 	},
+	/**
+	 * @brief PSI (Pressure Stall Info)评估系统资源压力
+	 *
+	 */
 #ifdef CONFIG_PSI
 	{
 		.name = "io.pressure",
@@ -5597,6 +5647,25 @@ static struct kernfs_syscall_ops cgroup_kf_syscall_ops = {
 	.show_path		= cgroup_show_path,
 };
 
+/**
+ * @brief 在 cgroup_init_early() 中遍历所有 子系统
+ * 			使用 cgroup_init_subsys() 初始化
+ *
+ *  extern struct cgroup_subsys cpuacct_cgrp_subsys;
+ *  extern struct cgroup_subsys cpu_cgrp_subsys;
+ *  extern struct cgroup_subsys cpuset_cgrp_subsys;
+ *  extern struct cgroup_subsys debug_cgrp_subsys;
+ *  extern struct cgroup_subsys devices_cgrp_subsys;
+ *  extern struct cgroup_subsys freezer_cgrp_subsys;
+ *  extern struct cgroup_subsys hugetlb_cgrp_subsys;
+ *  extern struct cgroup_subsys io_cgrp_subsys;
+ *  extern struct cgroup_subsys memory_cgrp_subsys;
+ *  extern struct cgroup_subsys net_cls_cgrp_subsys;
+ *  extern struct cgroup_subsys net_prio_cgrp_subsys;
+ *  extern struct cgroup_subsys perf_event_cgrp_subsys;
+ *  extern struct cgroup_subsys pids_cgrp_subsys;
+ *  extern struct cgroup_subsys rdma_cgrp_subsys;
+ */
 static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 {
 	struct cgroup_subsys_state *css;
@@ -5605,7 +5674,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 
 	mutex_lock(&cgroup_mutex);
 
-	idr_init(&ss->css_idr);/*  */
+	idr_init(&ss->css_idr);
 	INIT_LIST_HEAD(&ss->cfts);
 
 	/* Create the root cgroup state for this subsystem */
@@ -5632,7 +5701,8 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
 	/* Update the init_css_set to contain a subsys
 	 * pointer to this state - since the subsystem is
 	 * newly registered, all tasks and hence the
-	 * init_css_set is in the subsystem's root cgroup. */
+	 * init_css_set is in the subsystem's root cgroup.
+	 */
 	init_css_set.subsys[ss->id] = css;
 
 	have_fork_callback |= (bool)ss->fork << ss->id;
@@ -5658,6 +5728,8 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
  *
  * 对一些子系统进行早期初始化,”早期“初始化的子系统的 `cgroup_subsys->early_init` 字段应该为 `1`
  */
+int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
+{
 #ifdef rtoax_debug
   extern struct cgroup_subsys cpuacct_cgrp_subsys;
   extern struct cgroup_subsys cpu_cgrp_subsys;
@@ -5674,8 +5746,6 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
   extern struct cgroup_subsys pids_cgrp_subsys;
   extern struct cgroup_subsys rdma_cgrp_subsys;
 #endif
-int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
-{
 
 	static struct cgroup_fs_context __initdata ctx;/*  */
 	struct cgroup_subsys *ss;   /*  */
@@ -5683,10 +5753,36 @@ int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
 
 	ctx.root = &cgrp_dfl_root;
 	init_cgroup_root(&ctx);
-	cgrp_dfl_root.cgrp.self.flags |= CSS_NO_REF;//设置 `CSS_NO_REF` 标志来禁止这个 css 的引用计数
 
-	RCU_INIT_POINTER(init_task.cgroups, &init_css_set);//把初始化的 `css_set` 分配给 `init_task`
-    /*  */
+	/**
+	 * @brief 设置 `CSS_NO_REF` 标志来禁止这个 css 的引用计数
+	 *
+	 */
+	cgrp_dfl_root.cgrp.self.flags |= CSS_NO_REF;
+
+	/**
+	 * @brief 把初始化的 `css_set` 分配给 `init_task`
+	 *
+	 */
+	RCU_INIT_POINTER(init_task.cgroups, &init_css_set);
+    /**
+     * @brief 遍历所有 子系统
+     *
+     *  extern struct cgroup_subsys cpuacct_cgrp_subsys;
+     *  extern struct cgroup_subsys cpu_cgrp_subsys;
+     *  extern struct cgroup_subsys cpuset_cgrp_subsys;
+     *  extern struct cgroup_subsys debug_cgrp_subsys;
+     *  extern struct cgroup_subsys devices_cgrp_subsys;
+     *  extern struct cgroup_subsys freezer_cgrp_subsys;
+     *  extern struct cgroup_subsys hugetlb_cgrp_subsys;
+     *  extern struct cgroup_subsys io_cgrp_subsys;
+     *  extern struct cgroup_subsys memory_cgrp_subsys;
+     *  extern struct cgroup_subsys net_cls_cgrp_subsys;
+     *  extern struct cgroup_subsys net_prio_cgrp_subsys;
+     *  extern struct cgroup_subsys perf_event_cgrp_subsys;
+     *  extern struct cgroup_subsys pids_cgrp_subsys;
+     *  extern struct cgroup_subsys rdma_cgrp_subsys;
+     */
 	for_each_subsys(ss, i) {
 		WARN(!ss->css_alloc || !ss->css_free || ss->name || ss->id,
 		     "invalid cgroup_subsys %d:%s css_alloc=%p css_free=%p id:name=%d:%s\n",
@@ -5700,8 +5796,12 @@ int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
 		if (!ss->legacy_name)
 			ss->legacy_name = cgroup_subsys_name[i];
 
+		/**
+		 * @brief 初始化
+		 *
+		 */
 		if (ss->early_init)
-			cgroup_init_subsys(ss, true);/* 初始化 TODO */
+			cgroup_init_subsys(ss, true);
 	}
 	return 0;
 }
@@ -6201,7 +6301,7 @@ void cgroup_post_fork(struct task_struct *child,
 	 * Call ss->fork().  This must happen after @child is linked on
 	 * css_set; otherwise, @child might change state between ->fork()
 	 * and addition to css_set.
-	 * 
+	 *
 	 * 遍历所有子系统
 	 */
 	do_each_subsys_mask(ss, i, have_fork_callback) {
@@ -6210,7 +6310,7 @@ void cgroup_post_fork(struct task_struct *child,
 		 * 如：
 		 * 内存 子系统 memory_cgrp_subsys 的fork为NULL
 		 * CPU 子系统 cpu_cgrp_subsys 的fork为 cpu_cgroup_fork()
-		 * 
+		 *
 		 */
 		ss->fork(child);
 	} while_each_subsys_mask();
@@ -6492,7 +6592,7 @@ void cgroup_sk_alloc_disable(void)
 #endif
 
 /**
- *  
+ *
  */
 void cgroup_sk_alloc(struct sock_cgroup_data *skcd)
 {

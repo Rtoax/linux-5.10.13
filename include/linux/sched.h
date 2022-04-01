@@ -1444,7 +1444,11 @@ struct task_struct {    /* PCB */
 	struct held_lock		held_locks[MAX_LOCK_DEPTH]; /*  */
 #endif
 
-#if defined(CONFIG_UBSAN) && !defined(CONFIG_UBSAN_TRAP)//Undefined Behavior Sanitizer，用于运行时未定义行为检测
+#if defined(CONFIG_UBSAN) && !defined(CONFIG_UBSAN_TRAP)
+	/**
+	 * @brief Undefined Behavior Sanitizer，用于运行时未定义行为检测
+	 *
+	 */
 	unsigned int			in_ubsan;
 #endif
 
@@ -1502,9 +1506,9 @@ struct task_struct {    /* PCB */
 #ifdef CONFIG_CGROUPS
 	/**
 	 *  Control Group info protected by css_set_lock:
-	 *  通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup`
+	 *  通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 所有 `cgroup` 子系统
 	 */
-	struct css_set __rcu		*cgroups;   //cgroup subsys state
+	struct css_set __rcu		*cgroups;
 
     /**
 	 *  cg_list protected by css_set_lock and tsk->alloc_lock:

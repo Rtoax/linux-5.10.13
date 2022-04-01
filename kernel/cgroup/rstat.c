@@ -426,6 +426,11 @@ static void root_cgroup_cputime(struct task_cputime *cputime)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param seq
+ */
 void cgroup_base_stat_cputime_show(struct seq_file *seq)
 {
 	struct cgroup *cgrp = seq_css(seq)->cgroup;
@@ -449,6 +454,11 @@ void cgroup_base_stat_cputime_show(struct seq_file *seq)
 	do_div(utime, NSEC_PER_USEC);
 	do_div(stime, NSEC_PER_USEC);
 
+	/**
+	 * - usage_usec
+	 * - user_usec
+	 * - system_usec
+	 */
 	seq_printf(seq, "usage_usec %llu\n"
 		   "user_usec %llu\n"
 		   "system_usec %llu\n",

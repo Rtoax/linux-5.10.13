@@ -62,9 +62,10 @@ struct upid {   /*  */
 
 /**
  *  保存系统所有 PID 的哈希表
+ *
+ * struct task_struct.thread_pid
  */
-struct pid/* task_struct.thread_pid  */
-{
+struct pid {
 	/**
 	 *	引用计数
 	 */

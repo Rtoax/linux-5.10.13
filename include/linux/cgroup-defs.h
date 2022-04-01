@@ -39,7 +39,7 @@ struct poll_table_struct;
 #define MAX_CFTYPE_NAME		64
 
 /**
- *  
+ *
  */
 /* define the enumeration of all cgroup subsystems */
 #define SUBSYS(_x) _x ## _cgrp_id,
@@ -217,14 +217,60 @@ typedef struct cgroup_subsys_state * cgroup_subsys_state_t; //++++
  * set for a task.
  *
  * cgroup subsys state 集合
+ *
+ * +-------------+         +---------------------+    +------------->+---------------------+          +----------------+
+ * | task_struct |         |       css_set       |    |              | cgroup_subsys_state |          |     cgroup     |
+ * +-------------+         |                     |    |              +---------------------+          +----------------+
+ * |             |         |                     |    |              |                     |          |     flags      |
+ * |             |         |                     |    |              +---------------------+          |  cgroup.procs  |
+ * |             |         |                     |    |              |        cgroup       |--------->|       id       |
+ * |             |         |                     |    |              +---------------------+          |      ....      |
+ * |-------------+         |---------------------+----+                                               +----------------+
+ * |   cgroups   | ------> | cgroup_subsys_state | array of cgroup_subsys_state
+ * |-------------+         +---------------------+------------------>+---------------------+          +----------------+
+ * |             |         |                     |                   | cgroup_subsys_state |          |      cgroup    |
+ * +-------------+         +---------------------+                   +---------------------+          +----------------+
+ *                                                                   |                     |          |      flags     |
+ *                                                                   +---------------------+          |   cgroup.procs |
+ *                                                                   |        cgroup       |--------->|        id      |
+ *                                                                   +---------------------+          |       ....     |
+ *                                                                   |    cgroup_subsys    |          +----------------+
+ *                                                                   +---------------------+
+ *                                                                              |
+ *                                                                              |
+ *                                                                              ↓
+ *                                                                   +---------------------+
+ *                                                                   |    cgroup_subsys    |
+ *                                                                   +---------------------+
+ *                                                                   |         id          |
+ *                                                                   |        name         |
+ *                                                                   |      css_online     |
+ *                                                                   |      css_ofline     |
+ *                                                                   |        attach       |
+ *                                                                   |         ....        |
+ *                                                                   +---------------------+
  */
-struct css_set {    /* cgroup subsys state */
+struct css_set {
 	/*
 	 * Set of subsystem states, one for each subsystem. This array is
 	 * immutable after creation apart from the init_css_set during
 	 * subsystem registration (at boot time).
 	 *
 	 * 通过 `cgroup_subsys_state` 结构体，一个进程可以找到其所属的 `cgroup`
+	 *  extern struct cgroup_subsys cpuacct_cgrp_subsys;
+	 *  extern struct cgroup_subsys cpu_cgrp_subsys;
+	 *  extern struct cgroup_subsys cpuset_cgrp_subsys;
+	 *  extern struct cgroup_subsys debug_cgrp_subsys;
+	 *  extern struct cgroup_subsys devices_cgrp_subsys;
+	 *  extern struct cgroup_subsys freezer_cgrp_subsys;
+	 *  extern struct cgroup_subsys hugetlb_cgrp_subsys;
+	 *  extern struct cgroup_subsys io_cgrp_subsys;
+	 *  extern struct cgroup_subsys memory_cgrp_subsys;
+	 *  extern struct cgroup_subsys net_cls_cgrp_subsys;
+	 *  extern struct cgroup_subsys net_prio_cgrp_subsys;
+	 *  extern struct cgroup_subsys perf_event_cgrp_subsys;
+	 *  extern struct cgroup_subsys pids_cgrp_subsys;
+	 *  extern struct cgroup_subsys rdma_cgrp_subsys;
 	 */
 	struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT];
 
@@ -282,7 +328,7 @@ struct css_set {    /* cgroup subsys state */
 	 * List of cgrp_cset_links pointing at cgroups referenced from this
 	 * css_set.  Protected by css_set_lock.
 	 *
-	 * 
+	 *
 	 */
 	struct list_head cgrp_links;
 
@@ -305,13 +351,13 @@ struct css_set {    /* cgroup subsys state */
 	struct css_set *mg_dst_cset;
 
     /**
-     *  
+     *
      */
 	/* dead and being drained, ignore for migration */
 	bool dead;
 
     /**
-     *  
+     *
      */
 	/* For RCU-protected deletion */
 	struct rcu_head rcu_head;
@@ -390,14 +436,47 @@ struct cgroup_freezer_state {
 };
 
 /**
- *  
+ * 控制组数据结构
+ * https://0xax.gitbooks.io/linux-insides/content/Cgroups/linux-cgroups-1.html
+ *
+ * +-------------+         +---------------------+    +------------->+---------------------+          +----------------+
+ * | task_struct |         |       css_set       |    |              | cgroup_subsys_state |          |     cgroup     |
+ * +-------------+         |                     |    |              +---------------------+          +----------------+
+ * |             |         |                     |    |              |                     |          |     flags      |
+ * |             |         |                     |    |              +---------------------+          |  cgroup.procs  |
+ * |             |         |                     |    |              |        cgroup       |--------->|       id       |
+ * |             |         |                     |    |              +---------------------+          |      ....      |
+ * |-------------+         |---------------------+----+                                               +----------------+
+ * |   cgroups   | ------> | cgroup_subsys_state | array of cgroup_subsys_state
+ * |-------------+         +---------------------+------------------>+---------------------+          +----------------+
+ * |             |         |                     |                   | cgroup_subsys_state |          |      cgroup    |
+ * +-------------+         +---------------------+                   +---------------------+          +----------------+
+ *                                                                   |                     |          |      flags     |
+ *                                                                   +---------------------+          |   cgroup.procs |
+ *                                                                   |        cgroup       |--------->|        id      |
+ *                                                                   +---------------------+          |       ....     |
+ *                                                                   |    cgroup_subsys    |          +----------------+
+ *                                                                   +---------------------+
+ *                                                                              |
+ *                                                                              |
+ *                                                                              ↓
+ *                                                                   +---------------------+
+ *                                                                   |    cgroup_subsys    |
+ *                                                                   +---------------------+
+ *                                                                   |         id          |
+ *                                                                   |        name         |
+ *                                                                   |      css_online     |
+ *                                                                   |      css_ofline     |
+ *                                                                   |        attach       |
+ *                                                                   |         ....        |
+ *                                                                   +---------------------+
  */
 struct cgroup {
 	/* self css with NULL ->ss, points back to this cgroup */
 	struct cgroup_subsys_state self;
 
     /**
-     *  
+     *
      */
 	unsigned long flags;		/* "unsigned long" so bitops work */
 
@@ -461,13 +540,13 @@ struct cgroup {
 	u16 old_subtree_ss_mask;
 
     /**
-     *  
+     *
      */
 	/* Private pointers for each registered subsystem */
 	struct cgroup_subsys_state __rcu *subsys[CGROUP_SUBSYS_COUNT];
 
     /**
-     *  
+     *
      */
 	struct cgroup_root *root;
 
@@ -500,7 +579,7 @@ struct cgroup {
 	struct cgroup_rstat_cpu __percpu *rstat_cpu;/* 再次资源统计 */
 
     /**
-     *  
+     *
      */
 	struct list_head rstat_css_list;
 
@@ -545,7 +624,7 @@ struct cgroup {
  */
 struct cgroup_root {/*  */
     /**
-     *  
+     *
      */
 	struct kernfs_root *kf_root;
 
@@ -571,7 +650,7 @@ struct cgroup_root {/*  */
 	unsigned int flags;
 
     /**
-     *  
+     *
      */
 	/* The path to use for release notifications. */
 	char release_agent_path[PATH_MAX];
@@ -580,14 +659,16 @@ struct cgroup_root {/*  */
 	char name[MAX_CGROUP_ROOT_NAMELEN];
 };
 
-/*
+/**
  * struct cftype: handler definitions for cgroup control files
  *
  * When reading/writing to a file:
  *	- the cgroup to use is file->f_path.dentry->d_parent->d_fsdata
  *	- the 'cftype' of the file is file->f_path.dentry->d_fsdata
+ *
+ *
  */
-struct cftype {  /*  */
+struct cftype {
 	/*
 	 * By convention, the name should begin with the name of the
 	 * subsystem, followed by a period.  Zero length string indicates
@@ -676,11 +757,11 @@ struct cftype {  /*  */
  * Control Group subsystem type.
  * See Documentation/admin-guide/cgroup-v1/cgroups.rst for details
  *
- * CSS(cgroup subsys state) 控制子系统 
+ * CSS(cgroup subsys state) 控制子系统
  */
 struct cgroup_subsys {
     /**
-     *  
+     *
      */
 	cgroup_subsys_state_t (*css_alloc)(struct cgroup_subsys_state *parent_css);
 	int (*css_online)(struct cgroup_subsys_state *css); //在 cgroup 成功完成所有分配之后调用
@@ -698,14 +779,14 @@ struct cgroup_subsys {
 	void (*post_attach)(void);
 	/**
 	 * @brief fork(2) -> cgroup_can_fork() -> ss->fork()
-	 * 
+	 *
 	 */
 	int (*can_fork)(struct task_struct *task,
 			struct css_set *cset);
 	void (*cancel_fork)(struct task_struct *task, struct css_set *cset);
 	/**
 	 * @brief fork(2) -> cgroup_post_fork() -> ss->fork()
-	 * 
+	 *
 	 */
 	void (*fork)(struct task_struct *task);
 	void (*exit)(struct task_struct *task);
@@ -713,9 +794,9 @@ struct cgroup_subsys {
 	void (*bind)(struct cgroup_subsys_state *root_css);
 
     /**
-     *  
+     *  标记子系统是否要提前初始化
      */
-	bool early_init:1;  //标记子系统是否要提前初始化
+	bool early_init:1;
 
 	/*
 	 * If %true, the controller, on the default hierarchy, doesn't show
@@ -757,7 +838,7 @@ struct cgroup_subsys {
 	bool broken_hierarchy:1;
 	bool warned_broken_hierarchy:1;
 
-    
+
 	/* the following two fields are initialized automtically during boot */
     /**
      *  在 cgroup 中已注册的子系统的唯一标识

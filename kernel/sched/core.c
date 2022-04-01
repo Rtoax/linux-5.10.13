@@ -9232,6 +9232,10 @@ static struct cftype cpu_files[] = {
 	{ }	/* terminate */
 };
 
+/**
+ * @brief CPU 控制组 子系统
+ *
+ */
 struct cgroup_subsys cpu_cgrp_subsys = {
 	.css_alloc	= cpu_cgroup_css_alloc,
 	.css_online	= cpu_cgroup_css_online,
