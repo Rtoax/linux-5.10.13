@@ -1480,6 +1480,12 @@ static int add_subprog(struct bpf_verifier_env *env, int off)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param env
+ * @return int
+ */
 static int check_subprogs(struct bpf_verifier_env *env)
 {
 	int i, ret, subprog_start, subprog_end, off, cur_subprog = 0;
@@ -11833,7 +11839,13 @@ struct btf *bpf_get_btf_vmlinux(void)
 }
 
 /**
- *  eBPF 验证器
+ * @brief  eBPF 验证器
+ *
+ *
+ * @param prog
+ * @param attr
+ * @param uattr
+ * @return int
  *
  *  第一项检查 - 静态分析
  *      创建 有向无环图(DAG) ，并执行深度优先搜索(DFS) 确保程序不包含危险路径
@@ -11871,8 +11883,9 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	ret = -ENOMEM;
 	if (!env->insn_aux_data)
 		goto err_free_env;
-	for (i = 0; i < len; i++)
+	for (i = 0; i < len; i++) {
 		env->insn_aux_data[i].orig_idx = i;
+	}
 	env->prog = *prog;
 	env->ops = bpf_verifier_ops[env->prog->type];
 	is_priv = bpf_capable();
@@ -11883,6 +11896,10 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	if (!is_priv)
 		mutex_lock(&bpf_verifier_lock);
 
+	/**
+	 * @brief
+	 *
+	 */
 	if (attr->log_level || attr->log_buf || attr->log_size) {
 		/* user requested verbose verifier output
 		 * and supplied buffer to store the verification trace
@@ -11905,6 +11922,10 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		goto skip_full_check;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	env->strict_alignment = !!(attr->prog_flags & BPF_F_STRICT_ALIGNMENT);
 	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS))
 		env->strict_alignment = true;

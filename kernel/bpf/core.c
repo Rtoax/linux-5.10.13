@@ -104,16 +104,31 @@ struct bpf_prog *bpf_prog_alloc_no_stats(unsigned int size, gfp_t gfp_extra_flag
 	return fp;
 }
 
+/**
+ * @brief 分配 struct bpf_prog 结构
+ *
+ * @param size
+ * @param gfp_extra_flags
+ * @return struct bpf_prog*
+ */
 struct bpf_prog *bpf_prog_alloc(unsigned int size, gfp_t gfp_extra_flags)
 {
 	gfp_t gfp_flags = GFP_KERNEL | __GFP_ZERO | gfp_extra_flags;
 	struct bpf_prog *prog;
 	int cpu;
 
+	/**
+	 * @brief 分配结构体
+	 *
+	 */
 	prog = bpf_prog_alloc_no_stats(size, gfp_extra_flags);
 	if (!prog)
 		return NULL;
 
+	/**
+	 * @brief 分配 per-CPU 变量
+	 *
+	 */
 	prog->aux->stats = alloc_percpu_gfp(struct bpf_prog_stats, gfp_flags);
 	if (!prog->aux->stats) {
 		kfree(prog->aux);
@@ -121,10 +136,19 @@ struct bpf_prog *bpf_prog_alloc(unsigned int size, gfp_t gfp_extra_flags)
 		return NULL;
 	}
 
+	/**
+	 * @brief 初始化
+	 *
+	 */
 	for_each_possible_cpu(cpu) {
 		struct bpf_prog_stats *pstats;
 
 		pstats = per_cpu_ptr(prog->aux->stats, cpu);
+
+		/**
+		 * @brief 初始化
+		 *
+		 */
 		u64_stats_init(&pstats->syncp);
 	}
 	return prog;

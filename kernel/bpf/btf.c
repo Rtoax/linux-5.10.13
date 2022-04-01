@@ -197,7 +197,7 @@ DEFINE_IDR(btf_idr);
 DEFINE_SPINLOCK(btf_idr_lock);
 
 /**
- * @brief
+ * @brief BPF type Format
  *
  */
 struct btf {
@@ -420,6 +420,10 @@ static bool btf_type_is_modifier(const struct btf_type *t)
 
 bool btf_type_is_void(const struct btf_type *t)
 {
+	/**
+	 * static struct btf_type btf_void;
+	 *
+	 */
 	return t == &btf_void;
 }
 

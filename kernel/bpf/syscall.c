@@ -65,11 +65,11 @@ static spinlock_t link_idr_lock = __SPIN_LOCK_UNLOCKED(link_idr_lock);//+++
 int __read_mostly sysctl_unprivileged_bpf_disabled ;
 
 static const struct bpf_map_ops * const bpf_map_types[] = {
-//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
-//#define BPF_MAP_TYPE(_id, _ops) \
-//	[_id] = &_ops,
-//#define BPF_LINK_TYPE(_id, _name)
-//#include <linux/bpf_types.h>
+#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
+#define BPF_MAP_TYPE(_id, _ops) \
+	[_id] = &_ops,
+#define BPF_LINK_TYPE(_id, _name)
+#include <linux/bpf_types.h>
 
 /**
  *  展开 #include <linux/bpf_types.h>
@@ -123,9 +123,9 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
     [BPF_MAP_TYPE_RINGBUF] = &ringbuf_map_ops,
 #endif /*__rtoax_debug______________________________________________________*/
 
-//#undef BPF_PROG_TYPE
-//#undef BPF_MAP_TYPE
-//#undef BPF_LINK_TYPE
+#undef BPF_PROG_TYPE
+#undef BPF_MAP_TYPE
+#undef BPF_LINK_TYPE
 };
 
 /*
@@ -533,7 +533,7 @@ static u32 bpf_map_flags_retain_permanent(u32 flags)
 	return flags & ~(BPF_F_RDONLY | BPF_F_WRONLY);
 }
 
-void bpf_map_init_from_attr(struct bpf_map *map, union bpf_attr *attr)  /*  */
+void bpf_map_init_from_attr(struct bpf_map *map, union bpf_attr *attr)
 {
 	map->map_type = attr->map_type;
 	map->key_size = attr->key_size;
@@ -563,7 +563,7 @@ static void bpf_uncharge_memlock(struct user_struct *user, u32 pages)
 /**
  *
  */
-int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)   /*  */
+int bpf_map_charge_init(struct bpf_map_memory *mem, u64 size)
 {
 	u32 pages = round_up(size, PAGE_SIZE) >> PAGE_SHIFT;
 	struct user_struct *user;
@@ -821,12 +821,12 @@ static void bpf_map_mmap_close(struct vm_area_struct *vma)
 	}
 }
 
-static const struct vm_operations_struct bpf_map_default_vmops = {  /*  */
+static const struct vm_operations_struct bpf_map_default_vmops = {
 	.open		= bpf_map_mmap_open,
 	.close		= bpf_map_mmap_close,
 };
 
-static int bpf_map_mmap(struct file *filp, struct vm_area_struct *vma)  /*  */
+static int bpf_map_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	struct bpf_map *map = filp->private_data;
 	int err;
@@ -2329,10 +2329,16 @@ EXPORT_SYMBOL_GPL(bpf_prog_get_type_dev);
  */
 static void bpf_prog_load_fixup_attach_type(union bpf_attr *attr)
 {
+	/**
+	 * @brief 程序类型
+	 *
+	 */
 	switch (attr->prog_type) {
 	case BPF_PROG_TYPE_CGROUP_SOCK:
 		/* Unfortunately BPF_ATTACH_TYPE_UNSPEC enumeration doesn't
 		 * exist so checking for non-zero is the way to go here.
+		 *
+		 * BPF_ATTACH_TYPE_UNSPEC 枚举不存在
 		 */
 		if (!attr->expected_attach_type)
 			attr->expected_attach_type =
@@ -2341,11 +2347,24 @@ static void bpf_prog_load_fixup_attach_type(union bpf_attr *attr)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param prog_type
+ * @param expected_attach_type
+ * @param btf_id
+ * @param prog_fd
+ * @return int
+ */
 static int
 bpf_prog_load_check_attach(enum bpf_prog_type prog_type,
 			   enum bpf_attach_type expected_attach_type,
 			   u32 btf_id, u32 prog_fd)
 {
+	/**
+	 * @brief
+	 *
+	 */
 	if (btf_id) {
 		if (btf_id > BTF_MAX_TYPE)
 			return -EINVAL;
@@ -2476,11 +2495,20 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
 #define	BPF_PROG_LOAD_LAST_FIELD attach_prog_fd
 
 /**
+ * @brief 加载 bpf 二进制程序
  *
+ * @param attr
+ * @param uattr
+ * @return int
  */
 static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 {
 	enum bpf_prog_type type = attr->prog_type;
+
+	/**
+	 * @brief
+	 *
+	 */
 	struct bpf_prog *prog;
 	int err;
 	char license[128];
@@ -2507,7 +2535,11 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		return -EFAULT;
 	license[sizeof(license) - 1] = 0;
 
-	/* eBPF programs must be GPL compatible to use GPL-ed functions */
+	/**
+	 * eBPF programs must be GPL compatible to use GPL-ed functions
+	 *
+	 * eBPF 必须是 GPL？
+	 */
 	is_gpl = license_is_gpl_compatible(license);
 
 	if (attr->insn_cnt == 0 ||
@@ -2524,7 +2556,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		return -EPERM;
 
     /**
-     *
+     *	简单处理 BPF_PROG_TYPE_CGROUP_SOCK
      */
 	bpf_prog_load_fixup_attach_type(attr);
 
@@ -2536,7 +2568,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 				       attr->attach_prog_fd))
 		return -EINVAL;
 
-	/* plain bpf_prog allocation */
+	/**
+	 * plain bpf_prog allocation
+	 * 分配 struct bpf_prog 结构 并初始化
+	 */
 	prog = bpf_prog_alloc(bpf_prog_size(attr->insn_cnt), GFP_USER);
 	if (!prog)
 		return -ENOMEM;
@@ -2558,15 +2593,16 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	prog->aux->sleepable = attr->prog_flags & BPF_F_SLEEPABLE;
 
     /**
-     *
-     */
-    /**
      *  初始化 BPF 程序中的安全字段
      */
 	err = security_bpf_prog_alloc(prog->aux);
 	if (err)
 		goto free_prog_nouncharge;
 
+	/**
+	 * @brief
+	 *
+	 */
 	err = bpf_prog_charge_memlock(prog);
 	if (err)
 		goto free_prog_sec;
@@ -4802,9 +4838,13 @@ out_prog_put:
 	return ret;
 }
 
-
 /**
- *  bpf 系统调用
+ * @brief bpf 系统调用
+ *
+ * @param cmd
+ * @param attr
+ * @param size
+ * @return int
  */
 int bpf(int cmd, union bpf_attr *attr, unsigned int size){}//+++
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
