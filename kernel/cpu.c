@@ -1210,7 +1210,7 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen, enum cpuhp_state target)
 	}
 
     /**
-     *  
+     *
      */
 	cpuhp_tasks_frozen = tasks_frozen;
 
@@ -1243,7 +1243,7 @@ out:
 }
 
 /**
- *  
+ *
  */
 static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
 {
@@ -1274,7 +1274,7 @@ static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
 	}
 
     /**
-     *  
+     *
      */
 	err = _cpu_up(cpu, 0, target);
 out:
@@ -1877,7 +1877,7 @@ EXPORT_SYMBOL_GPL(__cpuhp_state_add_instance);
  *      Positive state number if @state is CPUHP_AP_ONLINE_DYN
  *      0 for all other states
  *   On failure: proper (negative) error code
- */ /*  */
+ */
 int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 				   const char *name, bool invoke,
 				   int (*startup)(unsigned int cpu),
@@ -1936,6 +1936,17 @@ out:
 }
 EXPORT_SYMBOL(__cpuhp_setup_state_cpuslocked);
 
+/**
+ * @brief
+ *
+ * @param state
+ * @param name
+ * @param invoke
+ * @param startup
+ * @param teardown
+ * @param multi_instance
+ * @return int
+ */
 int __cpuhp_setup_state(enum cpuhp_state state,
 			const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
@@ -2450,7 +2461,7 @@ struct cpumask __read_mostly __cpu_active_mask ;
 EXPORT_SYMBOL(__cpu_active_mask);
 
 /**
- *  
+ *
  */
 atomic_t __read_mostly __num_online_cpus ;
 EXPORT_SYMBOL(__num_online_cpus);

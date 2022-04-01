@@ -566,40 +566,44 @@ struct sched_statistics {   /* 调度统计 */
 };
 
 /**
+ * 调度实体
+ *
  *  采用CFS算法调度的普通非实时进程的调度实体
  */
-struct sched_entity {   /* 调度实体 */
+struct sched_entity {
     /**
      *  For load-balancing:
      *  记录调度实体的权重
      */
-	struct load_weight		load;       /*  */
+	struct load_weight		load;
 
     /**
      *  cfs_rq.tasks_timeline , 标识该调度实体在红黑树中的节点
      */
-	struct rb_node			run_node;   /*  */
+	struct rb_node			run_node;
 
     /**
      *  在就绪队列中有个链表， rq.cfs_tasks
      *  调度实体添加到就绪队列后，会添加到该链表中
      */
-	struct list_head		group_node; /*  */
+	struct list_head		group_node;
 
     /**
+	 * 是否在运行队列中
+	 *
      *  进程进入就绪队列时(调用`enqueue_entity()`), on_rq 会被 设置为 1；
      *  当该进程处于睡眠等原因退出就绪队列时(调用`dequeue_entity()`), on_rq 会被清 0
      */
-	unsigned int			on_rq;      /* 是否在运行队列中 */
+	unsigned int			on_rq;
 
     /**
      *  计算 调度实体 虚拟时间 的起始时间
      */
-	u64				exec_start;         /*  */
+	u64				exec_start;
     /**
      *  调度实体的总运行时间，这是真实时间
      */
-	u64				sum_exec_runtime;   /*  */
+	u64				sum_exec_runtime;
 
     /**
      *  调度实体的 虚拟运行时间
@@ -615,12 +619,12 @@ struct sched_entity {   /* 调度实体 */
      *
      *  见 `calc_delta_fair()`
      */
-	u64				vruntime;           /* 虚拟时间 */
+	u64				vruntime;
 
     /**
      *  上一次统计调度实体 运行的总时间
      */
-	u64				prev_sum_exec_runtime;  /*  */
+	u64				prev_sum_exec_runtime;
 
     /**
      *  该调度实体发生迁移的次数
@@ -637,11 +641,11 @@ struct sched_entity {   /* 调度实体 */
      */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int				depth;
-	struct sched_entity		*parent;    /*  */
+	struct sched_entity		*parent;
 	/* rq on which this entity is (to be) queued: */
-	struct cfs_rq			*cfs_rq;    /*  */
+	struct cfs_rq			*cfs_rq;
 	/* rq "owned" by this entity/group: */
-	struct cfs_rq			*my_q;      /*  */
+	struct cfs_rq			*my_q;
 	/**
 	 *  cached value of my_q->h_nr_running
 	 *
@@ -660,7 +664,7 @@ struct sched_entity {   /* 调度实体 */
 	 * Put into separate cache line so it does not
 	 * collide with read-mostly values above.
 	 */
-	struct sched_avg		avg;    /*  */
+	struct sched_avg		avg;
 #endif
 };
 

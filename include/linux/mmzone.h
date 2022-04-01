@@ -545,11 +545,11 @@ enum zone_type {
 	 *  - parisc uses neither.
 	 */
 #ifdef CONFIG_ZONE_DMA
-	ZONE_DMA,       /* DMA */
+	ZONE_DMA,
 #endif
 
 #ifdef CONFIG_ZONE_DMA32
-	ZONE_DMA32,     /*  */
+	ZONE_DMA32,
 #endif
 
 	/*
@@ -557,7 +557,7 @@ enum zone_type {
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
 	 */
-	ZONE_NORMAL,    /*  */
+	ZONE_NORMAL,
 
 #ifdef CONFIG_HIGHMEM
 	/*
@@ -568,7 +568,7 @@ enum zone_type {
 	 * table entries on i386) for each page that the kernel needs to
 	 * access.
 	 */
-//	ZONE_HIGHMEM,   /*  */
+	ZONE_HIGHMEM,
 #endif
 	/*
 	 * ZONE_MOVABLE is similar to ZONE_NORMAL, except that it contains
@@ -604,11 +604,13 @@ enum zone_type {
 	 * have to expect that migrating pages in ZONE_MOVABLE can fail (even
 	 * if has_unmovable_pages() states that there are no unmovable pages,
 	 * there can be false negatives).
+	 *
+	 * 用于适应大块连续内存的分配
 	 */
-	ZONE_MOVABLE,   /* 用于适应大块连续内存的分配 */
+	ZONE_MOVABLE,
 
 #ifdef CONFIG_ZONE_DEVICE
-	ZONE_DEVICE,    /*  */
+	ZONE_DEVICE,
 #endif
 
     __MAX_NR_ZONES,

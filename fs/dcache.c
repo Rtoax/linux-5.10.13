@@ -99,7 +99,7 @@ static unsigned int __read_mostly d_hash_shift ;/*  */
 /**
  *  struct dentry.d_hash 为 hash 节点
  *  系统为 dentry 结构的hash表，
- *  利用 文件路径快速查 hash 表 dentry_hashtable 
+ *  利用 文件路径快速查 hash 表 dentry_hashtable
  *  可以快速找到与之对应的 inode 结构
  */
 static struct hlist_bl_head __read_mostly*dentry_hashtable ;/* 目录的哈希表 */
@@ -172,14 +172,14 @@ static long get_nr_dentry_negative(void)
 	return sum < 0 ? 0 : sum;
 }
 /**
- * @brief 
- * 
- * @param table 
- * @param write 
- * @param buffer 
- * @param lenp 
- * @param ppos 
- * @return int 
+ * @brief
+ *
+ * @param table
+ * @param write
+ * @param buffer
+ * @param lenp
+ * @param ppos
+ * @return int
  */
 int proc_nr_dentry(struct ctl_table *table, int write, void *buffer,
 		   size_t *lenp, loff_t *ppos)
@@ -289,7 +289,7 @@ static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 
-	kmem_cache_free(dentry_cache, dentry); 
+	kmem_cache_free(dentry_cache, dentry);
 }
 
 static void __d_free_external(struct rcu_head *head)
@@ -854,7 +854,7 @@ static inline bool fast_dput(struct dentry *dentry)
 }
 
 
-/* 
+/*
  * This is dput
  *
  * This is complicated by the fact that we do not want to put
@@ -873,7 +873,7 @@ static inline bool fast_dput(struct dentry *dentry)
 
 /*
  * dput - release a dentry
- * @dentry: dentry to release 
+ * @dentry: dentry to release
  *
  * Release a dentry. This will drop the usage count and if appropriate
  * call the dentry unlink method as well as removing it from the queues and
@@ -1723,7 +1723,7 @@ EXPORT_SYMBOL(d_invalidate);
  * available. On a success the dentry is returned. The name passed in is
  * copied and the copy passed in may be reused after this call.
  */
- 
+
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
@@ -1750,14 +1750,14 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 						  GFP_KERNEL_ACCOUNT |
 						  __GFP_RECLAIMABLE);
 		if (!p) {
-			kmem_cache_free(dentry_cache, dentry); 
+			kmem_cache_free(dentry_cache, dentry);
 			return NULL;
 		}
 		atomic_set(&p->u.count, 1);
 		dname = p->name;
 	} else  {
 		dname = dentry->d_iname;
-	}	
+	}
 
 	dentry->d_name.len = name->len;
 	dentry->d_name.hash = name->hash;
@@ -1989,7 +1989,7 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
  * (or otherwise set) by the caller to indicate that it is now
  * in use by the dcache.
  */
- 
+
 void d_instantiate(struct dentry *entry, struct inode * inode)
 {
 	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
@@ -2039,7 +2039,7 @@ struct dentry *d_make_root(struct inode *root_inode)
 }
 EXPORT_SYMBOL(d_make_root);
 /**
- *  
+ *
  */
 static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 					   struct inode *inode,
@@ -2065,7 +2065,7 @@ static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 
 	spin_lock(&dentry->d_lock);
     /**
-     *  
+     *
      */
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
@@ -2204,7 +2204,7 @@ struct dentry *d_add_ci(struct dentry *dentry, struct inode *inode,
 		if (!found) {
 			iput(inode);
 			return ERR_PTR(-ENOMEM);
-		} 
+		}
 	}
 	res = d_splice_alias(inode, found);
 	if (res) {
@@ -2413,7 +2413,7 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 	 * See Documentation/filesystems/path-lookup.txt for more details.
 	 */
 	rcu_read_lock();
-	
+
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 
 		if (dentry->d_name.hash != hash)
@@ -2476,7 +2476,7 @@ EXPORT_SYMBOL(d_hash_and_lookup);
  * it from the hash queues and waiting for
  * it to be deleted later when it has no users
  */
- 
+
 /**
  * d_delete - delete a dentry
  * @dentry: The dentry to delete
@@ -2484,7 +2484,7 @@ EXPORT_SYMBOL(d_hash_and_lookup);
  * Turn the dentry into a negative dentry if possible, otherwise
  * remove it from the hash queues so it can be deleted later
  */
- 
+
 void d_delete(struct dentry * dentry)
 {
 	struct inode *inode = dentry->d_inode;
@@ -2520,7 +2520,7 @@ static void __d_rehash(struct dentry *entry)
  *
  * Adds a dentry to the hash according to its name.
  */
- 
+
 void d_rehash(struct dentry * entry)
 {
 	spin_lock(&entry->d_lock);
@@ -3111,7 +3111,7 @@ EXPORT_SYMBOL(d_splice_alias);
  * Returns false otherwise.
  * Caller must ensure that "new_dentry" is pinned before calling is_subdir()
  */
-  
+
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
 	bool result;
@@ -3186,10 +3186,11 @@ static int __init set_dhash_entries(char *str)
 	return 1;
 }
 __setup("dhash_entries=", set_dhash_entries);
+
 /**
  *  初始化 dentry hash表
  */
-static void __init dcache_init_early(void)  /*  */
+static void __init dcache_init_early(void)
 {
 	/* If hashes are distributed across NUMA nodes, defer
 	 * hash allocation until vmalloc space is available.
@@ -3201,7 +3202,7 @@ static void __init dcache_init_early(void)  /*  */
      *  每个文件都有 dentry 结构，所以说也不能叫做 目录哈希表
      *      荣涛 2021年11月13日21:41:03
      */
-	dentry_hashtable /* 目录哈希表 */=
+	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
 					dhash_entries,
@@ -3214,9 +3215,9 @@ static void __init dcache_init_early(void)  /*  */
 	d_hash_shift = 32 - d_hash_shift;
 }
 /**
- *  
+ * 文件目录缓存
  */
-static void __init dcache_init(void)    /*文件目录缓存  */
+static void __init dcache_init(void)
 {
 	/*
 	 * A constructor could be added for stable state like the lists,

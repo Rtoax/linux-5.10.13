@@ -95,7 +95,7 @@ struct sched_clock_data {   /*  */
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
 
-static inline struct sched_clock_data *this_scd(void)   /*  */
+static inline struct sched_clock_data *this_scd(void)
 {
 	return this_cpu_ptr(&sched_clock_data);
 }
@@ -116,7 +116,7 @@ static void __scd_stamp(struct sched_clock_data *scd)
 	scd->tick_raw = sched_clock();  /* 当前的 NanoSec */
 }
 
-static void __set_sched_clock_stable(void)  /*  */
+static void __set_sched_clock_stable(void)
 {
 	struct sched_clock_data *scd;
 
@@ -196,15 +196,19 @@ void clear_sched_clock_stable(void)
 		__clear_sched_clock_stable();
 }
 
-static void __sched_clock_gtod_offset(void) /*  */
+static void __sched_clock_gtod_offset(void)
 {
 	struct sched_clock_data *scd = this_scd();
 
-	__scd_stamp(scd);   /*  */
+	__scd_stamp(scd);
 	__gtod_offset = (scd->tick_raw + __sched_clock_offset) - scd->tick_gtod;
 }
 
-void __init sched_clock_init(void)  /*  */
+/**
+ * @brief
+ *
+ */
+void __init sched_clock_init(void)
 {
 	/*
 	 * Set __gtod_offset such that once we mark sched_clock_running,
@@ -214,7 +218,7 @@ void __init sched_clock_init(void)  /*  */
 	 * can't really be out of sync.
 	 */
 	local_irq_disable();
-	__sched_clock_gtod_offset();    /*  */
+	__sched_clock_gtod_offset();
 	local_irq_enable();
 
 	static_branch_inc(&sched_clock_running);
@@ -387,7 +391,7 @@ u64 sched_clock_cpu(int cpu)
 EXPORT_SYMBOL_GPL(sched_clock_cpu);
 
 /**
- *  
+ *
  */
 void sched_clock_tick(void)
 {

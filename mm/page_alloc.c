@@ -6838,7 +6838,7 @@ static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 }
 
 /*
- * Builds allocation fallback zone lists.
+ * Builds allocation fallback zone lists. 创建 fallback zone list
  *
  * Add all populated zones of a node to the zonelist.
  */
@@ -6850,10 +6850,20 @@ static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
 
 	do {
 		zone_type--;
+		/**
+		 * @brief 获取 一个 zone
+		 *
+		 */
 		zone = pgdat->node_zones + zone_type;
+
+		/**
+		 * return zone_managed_pages(zone);
+		 */
 		if (managed_zone(zone)) {
             /**
              *  设置 zoneref
+			 * zoneref->zone = zone;
+			 * zoneref->zone_idx = zone_idx(zone);
              */
 			zoneref_set_zone(zone, &zonerefs[nr_zones++]);
 
@@ -6899,6 +6909,11 @@ int numa_zonelist_order_handler(struct ctl_table *table, int write,
 
 
 #define MAX_NODE_LOAD (nr_online_nodes)
+
+/**
+ * @brief NODE
+ *
+ */
 static int node_load[MAX_NUMNODES];
 
 /**
@@ -6965,20 +6980,43 @@ static int find_next_best_node(int node, nodemask_t *used_node_mask)
  * Build zonelists ordered by node and zones within node.
  * This results in maximum locality--normal zone overflows into local
  * DMA zone, if any--but risks exhausting DMA zone.
+ *
+ * 构建 zonelists
+ *
  */
 static void build_zonelists_in_node_order(pg_data_t *pgdat, int *node_order,
 		unsigned nr_nodes)
 {
+	/**
+	 * 在 zonelist 中的 zone 信息
+	 *   struct zoneref {
+	 *       struct zone *zone;	Pointer to actual zone
+	 *       int zone_idx;	zone_idx(zoneref->zone)
+	 *   };
+	 *
+	 */
 	struct zoneref *zonerefs;
 	int i;
 
+	/**
+	 * @brief
+	 *
+	 */
 	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
 
+	/**
+	 * @brief 遍历所有 NODE
+	 *
+	 */
 	for (i = 0; i < nr_nodes; i++) {
 		int nr_zones;
 
 		pg_data_t *node = NODE_DATA(node_order[i]);
 
+		/**
+		 * @brief 获取 node zone 个数
+		 *
+		 */
 		nr_zones = build_zonerefs_node(node, zonerefs);
 		zonerefs += nr_zones;
 	}
@@ -6995,6 +7033,11 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
 	int nr_zones;
 
 	zonerefs = pgdat->node_zonelists[ZONELIST_NOFALLBACK]._zonerefs;
+
+	/**
+	 * @brief
+	 *
+	 */
 	nr_zones = build_zonerefs_node(pgdat, zonerefs);
 	zonerefs += nr_zones;
 	zonerefs->zone = NULL;
@@ -7006,8 +7049,9 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
  * This results in conserving DMA zone[s] until all Normal memory is
  * exhausted, but results in overflowing to remote node while memory
  * may still exist in local DMA zone.
+ *
+ *
  */
-
 static void build_zonelists(pg_data_t *pgdat)   /*  */
 {
 	static int node_order[MAX_NUMNODES];
@@ -7021,6 +7065,11 @@ static void build_zonelists(pg_data_t *pgdat)   /*  */
 	prev_node = local_node;
 
 	memset(node_order, 0, sizeof(node_order));
+
+	/**
+	 * @brief
+	 *
+	 */
 	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
 		/*
 		 * We don't want to pressure a particular node.
@@ -7036,7 +7085,16 @@ static void build_zonelists(pg_data_t *pgdat)   /*  */
 		load--;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
+
+	/**
+	 * @brief
+	 *
+	 */
 	build_thisnode_zonelists(pgdat);
 }
 
@@ -7125,7 +7183,13 @@ static DEFINE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 static struct per_cpu_nodestat boot_nodestats;
 static struct per_cpu_pageset boot_pageset;
 
-static void __build_all_zonelists(void *data/* 启动阶段 data=NULL */)/*  */
+/**
+ * @brief
+ *
+ * @param data
+ * 				启动阶段 data=NULL
+ */
+static void __build_all_zonelists(void *data)
 {
 	int nid;
 	int __maybe_unused cpu;
@@ -7135,6 +7199,10 @@ static void __build_all_zonelists(void *data/* 启动阶段 data=NULL */)/*  */
 	spin_lock(&lock);
 
 #ifdef CONFIG_NUMA
+	/**
+	 * @brief 清零
+	 *
+	 */
 	memset(node_load, 0, sizeof(node_load));
 #endif
 
@@ -7142,12 +7210,24 @@ static void __build_all_zonelists(void *data/* 启动阶段 data=NULL */)/*  */
 	 * This node is hotadded and no memory is yet present.   So just
 	 * building zonelists is fine - no need to touch other nodes.
 	 */
-	if (self/*  */ && !node_online(self->node_id)) {
+	if (self && !node_online(self->node_id)) {
 		build_zonelists(self);
 	} else {
+		/**
+		 * @brief 遍历所有节点
+		 *
+		 */
 		for_each_online_node(nid) {
+			/**
+			 * @brief 获取节点句柄 pgdat
+			 *
+			 */
 			pg_data_t *pgdat = NODE_DATA(nid);
 
+			/**
+			 * @brief 构建 zone list
+			 *
+			 */
 			build_zonelists(pgdat);
 		}
 
@@ -7160,20 +7240,30 @@ static void __build_all_zonelists(void *data/* 启动阶段 data=NULL */)/*  */
 		 * secondary cpus' numa_mem as they come on-line.  During
 		 * node/memory hotplug, we'll fixup all on-line cpus.
 		 */
-//		for_each_online_cpu(cpu){
-//			set_cpu_numa_mem(cpu, local_memory_node(cpu_to_node(cpu)));}
+		for_each_online_cpu(cpu){
+			set_cpu_numa_mem(cpu, local_memory_node(cpu_to_node(cpu)));
+		}
 #endif
 	}
 
 	spin_unlock(&lock);
 }
 
+/**
+ * @brief ZONE 页表初始化
+ *
+ * @return noinline
+ */
 static noinline void __init
-build_all_zonelists_init(void)  /* ZONE 页表初始化 */
+build_all_zonelists_init(void)
 {
 	int cpu;
 
-	__build_all_zonelists(NULL);    /*  */
+	/**
+	 * @brief
+	 *
+	 */
+	__build_all_zonelists(NULL);
 
 	/*
 	 * Initialize the boot_pagesets that are going to be used
@@ -7189,13 +7279,16 @@ build_all_zonelists_init(void)  /* ZONE 页表初始化 */
 	 * (a chicken-egg dilemma).
 	 */
 	for_each_possible_cpu(cpu){
-		setup_pageset(&per_cpu(boot_pageset, cpu), 0);}
+		setup_pageset(&per_cpu(boot_pageset, cpu), 0);
+	}
 
 	mminit_verify_zonelist();
 	cpuset_init_current_mems_allowed();
 }
 
-/*
+/**
+ * zone list 创建
+ *
  * unless system_state == SYSTEM_BOOTING.
  *
  * __ref due to call of __init annotated helper build_all_zonelists_init
@@ -7212,13 +7305,18 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 	if (system_state == SYSTEM_BOOTING) {
 		build_all_zonelists_init();     /*  */
 
-    /* 非启动阶段 */
+    /**
+     * @brief 非启动阶段
+     *
+     */
 	} else {
 		__build_all_zonelists(pgdat);   /*  */
 		/* cpuset refresh routine should be here */
 	}
-	/* Get the number of free pages beyond high watermark in all zones.
-	    超出高水位的 空闲页 (所有 ZONEs)*/
+	/**
+	 * Get the number of free pages beyond high watermark in all zones.
+	 * 超出高水位的 空闲页 (所有 ZONEs)
+	 */
 	vm_total_pages = nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
 	/*
 	 * Disable grouping by mobility(流动性) if the number of pages in the
@@ -7236,6 +7334,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		nr_online_nodes,
 		page_group_by_mobility_disabled ? "off" : "on",
 		vm_total_pages);
+
 #ifdef CONFIG_NUMA
 	pr_info("Policy zone: %s\n", zone_names[policy_zone]);
 #endif
@@ -9509,9 +9608,10 @@ __setup("hashdist=", set_hashdist);
 #endif
 
 /**
+ * @brief
  *
  */
-void __init page_alloc_init(void)   /*  */
+void __init page_alloc_init(void)
 {
 	int ret;
 
@@ -9519,7 +9619,10 @@ void __init page_alloc_init(void)   /*  */
 	if (num_node_state(N_MEMORY/* NODE 有内存 */) == 1)
 		hashdist = 0;
 #endif
-            /* CPU 热插 */
+    /**
+     * @brief CPU 热插？
+     *
+     */
 	ret = cpuhp_setup_state_nocalls(CPUHP_PAGE_ALLOC_DEAD,
                 					"mm/page_alloc:dead", NULL,
                 					page_alloc_cpu_dead);
@@ -10006,7 +10109,20 @@ static unsigned long __init arch_reserved_kernel_pages(void)
  * - it is assumed that the hash table must contain an exact power-of-2
  *   quantity of entries
  * - limit is the number of hash buckets, not the total allocation size
- */ /* 从启动内存中分配一大块哈希表 */
+ *
+ * 为 bootmem 从启动内存中分配一大块哈希表
+ *
+ * @param tablename
+ * @param bucketsize
+ * @param numentries
+ * @param scale
+ * @param flags
+ * @param _hash_shift
+ * @param _hash_mask
+ * @param low_limit
+ * @param high_limit
+ * @return void*
+ */
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries,
