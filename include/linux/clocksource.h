@@ -88,7 +88,7 @@ struct module;
  */
 struct clocksource {    /* 硬件时钟源 */
     /**
-     *  
+     *
      */
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
@@ -117,7 +117,7 @@ struct clocksource {    /* 硬件时钟源 */
 	struct list_head	list;   /* 时钟源链表 */
 
     //`rating` field that helps to the Linux kernel to select the best clocksource and etc
-	int			rating; /* rating of the [time stamp counter] is `300` 
+	int			rating; /* rating of the [time stamp counter] is `300`
                            rating of the [high precision event timer] is `250`*/
 	enum vdso_clock_mode	vdso_clock_mode;
 	unsigned long		flags;  /* describes different properties of a counter */
@@ -126,7 +126,7 @@ struct clocksource {    /* 硬件时钟源 */
 	void			(*disable)(struct clocksource *cs);
 	void			(*suspend)(struct clocksource *cs);
 	void			(*resume)(struct clocksource *cs);
-    
+
 	void			(*mark_unstable)(struct clocksource *cs);
 	void			(*tick_stable)(struct clocksource *cs);
 
@@ -216,6 +216,14 @@ static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
  */
 static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 {
+	/**
+	 * https://www.kernel.org/doc/html/latest/timers/timekeeping.html
+	 *
+	 * 时钟源结构应提供将提供的计数器转换为无符号长长（无符号 64 位）数的纳秒值的方法。
+	 * 由于此操作可能会被非常频繁地调用，因此在严格的数学意义上这样做是不可取的：
+	 * 相反，仅使用算术运算乘法和移位使数字尽可能接近纳秒值
+	 *
+	 */
 	return ((u64) cycles * mult) >> shift;
 }
 
