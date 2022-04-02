@@ -421,6 +421,30 @@ static struct btf_type *btf_type_by_id(struct btf *btf, __u32 type_id)
 	return btf->types_data + btf->type_offs[type_id];
 }
 
+/**
+ * @brief 根据 type_id 查找 type
+ *
+ * @param btf
+ * @param type_id
+ * @return const struct btf_type*
+ *
+ * 参见 bcc kernel_struct_has_field() 函数实现：
+ * ------------------------------------------
+ * const struct btf_type *btf_type;
+ * const struct btf_member *btf_member;
+ * struct btf *btf;
+ * int i, ret, btf_id;
+ *
+ * btf = btf__load_vmlinux_btf();
+ * btf_id = btf__find_by_name_kind(btf, "task_struct", BTF_KIND_STRUCT);
+ * btf_type = btf__type_by_id(btf, btf_id);
+ * btf_member = btf_members(btf_type);
+ * for (i = 0; i < btf_vlen(btf_type); i++, btf_member++) {
+ *     if (!strcmp(btf__name_by_offset(btf, btf_member->name_off), "__state")) {
+ * 			//查找 task_struct 结构中是否有 __state 字段
+ *     }
+ * }
+ */
 const struct btf_type *btf__type_by_id(const struct btf *btf, __u32 type_id)
 {
 	if (type_id > btf->nr_types)
@@ -659,6 +683,16 @@ __s32 btf__find_by_name(const struct btf *btf, const char *type_name)
 	return -ENOENT;
 }
 
+/**
+ * @brief 根据结构体名称字符串查找 btf_id
+ *
+ * @param btf
+ * @param type_name 结构体名称字符串，如"task_struct"
+ * @param kind
+ * @return __s32
+ *
+ * btf_id = btf__find_by_name_kind(btf, "task_struct", BTF_KIND_STRUCT);
+ */
 __s32 btf__find_by_name_kind(const struct btf *btf, const char *type_name,
 			     __u32 kind)
 {
@@ -668,11 +702,19 @@ __s32 btf__find_by_name_kind(const struct btf *btf, const char *type_name,
 		return 0;
 
 	for (i = 1; i <= btf->nr_types; i++) {
+		/**
+		 * @brief 获取  struct btf_type 结构
+		 *
+		 */
 		const struct btf_type *t = btf__type_by_id(btf, i);
 		const char *name;
 
 		if (btf_kind(t) != kind)
 			continue;
+		/**
+		 * @brief btf_type 转化为 字符串
+		 *
+		 */
 		name = btf__name_by_offset(btf, t->name_off);
 		if (name && !strcmp(type_name, name))
 			return i;
@@ -1752,13 +1794,13 @@ static int btf_add_composite(struct btf *btf, int kind, const char *name, __u32 
 	return btf->nr_types;
 }
 
-/*
+/**
  * Append new BTF_KIND_STRUCT type with:
  *   - *name* - name of the struct, can be NULL or empty for anonymous structs;
  *   - *byte_sz* - size of the struct, in bytes;
  *
  * Struct initially has no fields in it. Fields can be added by
- * btf__add_field() right after btf__add_struct() succeeds. 
+ * btf__add_field() right after btf__add_struct() succeeds.
  *
  * Returns:
  *   - >0, type ID of newly added BTF type;

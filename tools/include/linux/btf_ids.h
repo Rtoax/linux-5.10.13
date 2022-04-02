@@ -141,7 +141,7 @@ asm(							\
 ".popsection;                                 \n");	\
 extern struct btf_id_set name;
 
-#else
+#else /* CONFIG_DEBUG_INFO_BTF=n */
 
 #define BTF_ID_LIST(name) static u32 name[5];
 #define BTF_ID(prefix, name)

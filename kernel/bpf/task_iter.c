@@ -349,6 +349,11 @@ static struct bpf_iter_reg task_file_reg_info = {
 	.seq_info		= &task_file_seq_info,
 };
 
+/**
+ * @brief
+ *
+ * @return int
+ */
 static int __init task_iter_init(void)
 {
 	int ret;
