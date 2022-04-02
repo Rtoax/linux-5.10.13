@@ -199,14 +199,52 @@ DEFINE_SPINLOCK(btf_idr_lock);
 /**
  * @brief BPF type Format
  *
+ * 可以参见 bcc 代码中 'kernel_struct_has_field()' 接口实现
+ *
+ * /sys/kernel/btf/vmlinux
  */
 struct btf {
+	/**
+	 * 指向文件 /sys/kernel/btf/vmlinux 的内存
+	 *
+	 */
 	void *data;
+	/**
+	 * 二维数组
+	 *
+	 * 参见 bcc 代码
+	 *
+	 * struct btf *btf_new(const void *data, __u32 size, struct btf *base_btf) {
+	 *   btf->strs_data = btf->raw_data + btf->hdr->hdr_len + btf->hdr->type_off;
+	 * }
+	 *
+	 * struct btf_type *btf_type_by_id(const struct btf *btf, __u32 type_id) {
+	 *   return btf->types_data + btf->type_offs[type_id - btf->start_id];
+	 * }
+	 *
+	 */
 	struct btf_type **types;
 	u32 *resolved_ids;
 	u32 *resolved_sizes;
+	/**
+	 * @brief
+	 *
+	 * 参见 bcc 代码
+	 * struct btf *btf_new(const void *data, __u32 size, struct btf *base_btf) {
+	 *   btf->strs_data = btf->raw_data + btf->hdr->hdr_len + btf->hdr->str_off;
+	 * }
+	 */
 	const char *strings;
 	void *nohdr_data;
+	/**
+	 *  BTF  头
+	 *
+	 * $ od -x  /sys/kernel/btf/vmlinux | more
+	 * 0000000 eb9f 0001 0018 0000 0000 0000 b428 0027
+	 * 0000020 b428 0027 0a77 001b 0001 0000 0000 0100
+	 * 0000040 0008 0000 0040 0000 0000 0000 0000 0a00
+	 * [...]
+	 */
 	struct btf_header hdr;
 	u32 nr_types;
 	u32 types_size;

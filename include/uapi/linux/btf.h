@@ -7,12 +7,24 @@
 
 /**
  *  识别码
+ *
+ * $ od -x  /sys/kernel/btf/vmlinux | more
+ * 0000000 eb9f 0001 0018 0000 0000 0000 b428 0027
+ * 0000020 b428 0027 0a77 001b 0001 0000 0000 0100
+ * 0000040 0008 0000 0040 0000 0000 0000 0000 0a00
+ * [...]
  */
 #define BTF_MAGIC	0xeB9F
 #define BTF_VERSION	1
 
 /**
  *  BTF  头
+ *
+ * $ od -x  /sys/kernel/btf/vmlinux | more
+ * 0000000 eb9f 0001 0018 0000 0000 0000 b428 0027
+ * 0000020 b428 0027 0a77 001b 0001 0000 0000 0100
+ * 0000040 0008 0000 0040 0000 0000 0000 0000 0a00
+ * [...]
  */
 struct btf_header {
 	__u16	magic;
@@ -35,7 +47,7 @@ struct btf_header {
 #define BTF_MAX_VLEN	0xffff
 
 /**
- *  
+ *
  */
 struct btf_type {
 	__u32 name_off;
@@ -65,6 +77,10 @@ struct btf_type {
 #define BTF_INFO_VLEN(info)	((info) & 0xffff)
 #define BTF_INFO_KFLAG(info)	((info) >> 31)
 
+/**
+ * @brief
+ *
+ */
 #define BTF_KIND_UNKN		0	/* Unknown	*/
 #define BTF_KIND_INT		1	/* Integer	*/
 #define BTF_KIND_PTR		2	/* Pointer	*/
