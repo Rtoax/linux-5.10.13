@@ -39,7 +39,7 @@ struct bpf_iter__bpf_prog {
 	__bpf_md_ptr(struct bpf_prog *, prog);
 };
 
-DEFINE_BPF_ITER_FUNC(bpf_prog, struct bpf_iter_meta *meta, struct bpf_prog *prog)
+(bpf_prog, struct bpf_iter_meta *meta, struct bpf_prog *prog)
 
 static int __bpf_prog_seq_show(struct seq_file *seq, void *v, bool in_stop)
 {

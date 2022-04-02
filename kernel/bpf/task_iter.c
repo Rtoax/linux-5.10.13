@@ -84,7 +84,7 @@ struct bpf_iter__task {
 	__bpf_md_ptr(struct task_struct *, task);
 };
 
-DEFINE_BPF_ITER_FUNC(task, struct bpf_iter_meta *meta, struct task_struct *task)
+(task, struct bpf_iter_meta *meta, struct task_struct *task)
 
 static int __task_seq_show(struct seq_file *seq, struct task_struct *task,
 			   bool in_stop)
@@ -135,6 +135,12 @@ struct bpf_iter_seq_task_file_info {
 	u32 fd;
 };
 
+/**
+ * @brief
+ *
+ * @param info
+ * @return struct file*
+ */
 static struct file *
 task_file_seq_get_next(struct bpf_iter_seq_task_file_info *info)
 {
@@ -239,9 +245,18 @@ struct bpf_iter__task_file {
 	__bpf_md_ptr(struct file *, file);
 };
 
-DEFINE_BPF_ITER_FUNC(task_file, struct bpf_iter_meta *meta,
+(task_file, struct bpf_iter_meta *meta,
 		     struct task_struct *task, u32 fd,
 		     struct file *file)
+
+#if 1 /* 上面展开为 */
+extern int bpf_iter_task_file(struct bpf_iter_meta *meta,
+			struct task_struct *task, u32 fd,
+			struct file *file);
+int __init bpf_iter_task_file(struct bpf_iter_meta *meta,
+			struct task_struct *task, u32 fd,
+			struct file *file) { return 0; }
+#endif
 
 static int __task_file_seq_show(struct seq_file *seq, struct file *file,
 				bool in_stop)
@@ -330,6 +345,10 @@ static struct bpf_iter_reg task_reg_info = {
 	.seq_info		= &task_seq_info,
 };
 
+/**
+ * @brief
+ *
+ */
 static const struct bpf_iter_seq_info task_file_seq_info = {
 	.seq_ops		= &task_file_seq_ops,
 	.init_seq_private	= init_seq_pidns,

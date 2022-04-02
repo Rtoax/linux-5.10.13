@@ -672,8 +672,16 @@ BPF_CALL_4(bpf_get_task_stack, struct task_struct *, task, void *, buf,
 	return __bpf_get_stack(regs, task, NULL, buf, size, flags);
 }
 
+/**
+ * @brief task_struct BTF
+ *
+ */
 BTF_ID_LIST_SINGLE(bpf_get_task_stack_btf_ids, struct, task_struct)
 
+/**
+ * @brief
+ *
+ */
 const struct bpf_func_proto bpf_get_task_stack_proto = {
 	.func		= bpf_get_task_stack,
 	.gpl_only	= false,

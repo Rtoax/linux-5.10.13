@@ -74,7 +74,7 @@
 #define CONFIG_ACPI 1	 /* 高级配置与电源接口（Advanced Configuration and Power Interface） linux内核提供了两个不同的模块来实现电源管理功能,这就是apm和acpi*/
 #define CONFIG_ACPI_AC 1
 #define CONFIG_ACPI_ADXL 1
-#define CONFIG_ACPI_APEI            
+#define CONFIG_ACPI_APEI
 #define CONFIG_ACPI_APEI 1
 #define CONFIG_ACPI_APEI_EINJ_MODULE 1
 #define CONFIG_ACPI_APEI_GHES       /*  */
@@ -384,14 +384,14 @@
 #define CONFIG_BINARY_PRINTF 1
 #define CONFIG_BINFMT_ELF 1
 #define CONFIG_BINFMT_MISC      /*  */
-#define CONFIG_BINFMT_MISC_MODULE   
+#define CONFIG_BINFMT_MISC_MODULE
 #define CONFIG_BINFMT_MISC_MODULE 1
 #define CONFIG_BINFMT_SCRIPT 1
 #define CONFIG_BITREVERSE 1
 #define CONFIG_BLK_CGROUP       /*  */
 #define CONFIG_BLK_CGROUP 1
 #define CONFIG_BLK_CGROUP_RWSTAT 1
-#define CONFIG_BLK_DEBUG_FS     
+#define CONFIG_BLK_DEBUG_FS
 #define CONFIG_BLK_DEBUG_FS 1
 #define CONFIG_BLK_DEBUG_FS_ZONED 1
 #define CONFIG_BLK_DEV 1
@@ -401,7 +401,7 @@
 #define CONFIG_BLK_DEV_DM_BUILTIN 1
 #define CONFIG_BLK_DEV_DM_MODULE 1
 #define CONFIG_BLK_DEV_FD_MODULE 1
-#define CONFIG_BLK_DEV_IDEACPI  
+#define CONFIG_BLK_DEV_IDEACPI
 #define CONFIG_BLK_DEV_INITRD   /*  */
 #define CONFIG_BLK_DEV_INITRD 1
 #define CONFIG_BLK_DEV_INTEGRITY/*  */
@@ -409,7 +409,7 @@
 #define CONFIG_BLK_DEV_INTEGRITY_T10_MODULE 1
 #define CONFIG_BLK_DEV_IO_TRACE /*  */
 #define CONFIG_BLK_DEV_IO_TRACE 1
-#define CONFIG_BLK_DEV_LOOP     
+#define CONFIG_BLK_DEV_LOOP
 #define CONFIG_BLK_DEV_LOOP_MIN_COUNT 0
 #define CONFIG_BLK_DEV_LOOP_MODULE 1
 #define CONFIG_BLK_DEV_MD       /*  */
@@ -429,7 +429,7 @@
 #define CONFIG_BLK_DEV_SR_MODULE 1
 #define CONFIG_BLK_DEV_SX8_MODULE 1
 #define CONFIG_BLK_DEV_THROTTLING 1
-#define CONFIG_BLK_DEV_ZONED    
+#define CONFIG_BLK_DEV_ZONED
 #define CONFIG_BLK_DEV_ZONED 1
 #define CONFIG_BLK_INLINE_ENCRYPTION 1
 #define CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK 1
@@ -552,14 +552,10 @@
 #define CONFIG_BTRFS_ASSERT 1
 #define CONFIG_BTRFS_DEBUG 1
 #define CONFIG_BTRFS_DEBUG      /* B-tree Filesystem */
-#define CONFIG_BTRFS_FS_CHECK_INTEGRITY /*  */
 #define CONFIG_BTRFS_FS_CHECK_INTEGRITY 1
 #define CONFIG_BTRFS_FS_MODULE 1
-#define CONFIG_BTRFS_FS_POSIX_ACL       /*  */
 #define CONFIG_BTRFS_FS_POSIX_ACL 1
-#define CONFIG_BTRFS_FS_REF_VERIFY      /*  */
 #define CONFIG_BTRFS_FS_REF_VERIFY 1
-#define CONFIG_BTRFS_FS_RUN_SANITY_TESTS/*  */
 #define CONFIG_BTRFS_FS_RUN_SANITY_TESTS 1
 #define CONFIG_BT_RTL_MODULE 1
 #define CONFIG_BTT 1
@@ -631,34 +627,27 @@
 #define CONFIG_CFG80211_REQUIRE_SIGNED_REGDB 1
 #define CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS 1
 #define CONFIG_CFG80211_WEXT 1
-#define CONFIG_CFS_BANDWIDTH    /*  */
 #define CONFIG_CFS_BANDWIDTH 1
 #define CONFIG_CGROUP_BPF       /*  */
 #define CONFIG_CGROUP_CPUACCT 1 /* 对cpu使用状况做统计，并自动生成cgroup中进程所使用的CPU资源报告 */
 #define CONFIG_CGROUP_DEBUG     /*  */
 #define CONFIG_CGROUP_DEVICE    /*  */
 #define CONFIG_CGROUP_DEVICE 1
-#define CONFIG_CGROUP_FREEZER   /*  */
 #define CONFIG_CGROUP_FREEZER 1
 #define CONFIG_CGROUP_HUGETLB   /*  */
 #define CONFIG_CGROUP_HUGETLB 1
 #define CONFIG_CGROUP_NET_CLASSID   /*  */
 #define CONFIG_CGROUP_NET_CLASSID 1
 #define CONFIG_CGROUP_NET_PRIO  /*  */
-#define CONFIG_CGROUP_PERF      /*  */
 #define CONFIG_CGROUP_PERF 1
-#define CONFIG_CGROUP_PIDS      /*  */
 #define CONFIG_CGROUP_PIDS 1
 #define CONFIG_CGROUP_RDMA      /*  */
 #define CONFIG_CGROUPS          /*  */
 #define CONFIG_CGROUPS 1
-#define CONFIG_CGROUP_SCHED     /*  */
 #define CONFIG_CGROUP_SCHED 1
-#define CONFIG_CGROUP_WRITEBACK /*  */
 #define CONFIG_CGROUP_WRITEBACK 1
 #define CONFIG_CHARGER_SMB347_MODULE 1
 #define CONFIG_CHARLCD_BL_FLASH 1
-#define CONFIG_CHECKPOINT_RESTORE   /*  */
 #define CONFIG_CHECKPOINT_RESTORE 1
 #define CONFIG_CHECK_SIGNATURE 1
 #define CONFIG_CHELSIO_INLINE_CRYPTO 1
@@ -697,11 +686,8 @@
 #define CONFIG_CLZ_TAB 1
 #define CONFIG_CMA 1    /* linux kernel中的CMA即，连续内存区管理 */
 #define CONFIG_CMA_ALIGNMENT 8
-#define CONFIG_CMA_AREAS        /*  */
 #define CONFIG_CMA_AREAS 19
-#define CONFIG_CMA_DEBUG        /*  */
 #define CONFIG_CMA_DEBUG 1
-#define CONFIG_CMA_DEBUGFS      /*  */
 #define CONFIG_CMA_DEBUGFS 1
 #define CONFIG_CMA_SIZE_MBYTES 0
 #define CONFIG_CMA_SIZE_SEL_MBYTES 1
@@ -723,31 +709,25 @@
 #define CONFIG_COMPAT           /* 兼容 */
 #define CONFIG_COMPILE_TEST 1
 #define CONFIG_CONFIGFS_FS 1
-#define CONFIG_CONNECTOR        /*  */
 #define CONFIG_CONNECTOR 1
 #define CONFIG_CONSOLE_LOGLEVEL_DEFAULT 7
 #define CONFIG_CONSOLE_LOGLEVEL_QUIET 4
-#define CONFIG_CONSOLE_POLL     /*  */
 #define CONFIG_CONSOLE_POLL 1
 #define CONFIG_CONSOLE_TRANSLATIONS 1
-#define CONFIG_CONSTRUCTORS     /*  */
 #define CONFIG_CONSTRUCTORS 1
 #define CONFIG_CONTEXT_SWITCH_TRACER 1
 #define CONFIG_CONTEXT_TRACKING 1   /*  */
 #define CONFIG_CONTEXT_TRACKING_FORCE   /*  */
-#define CONFIG_CONTIG_ALLOC     /*  */
 #define CONFIG_CONTIG_ALLOC 1
 #define CONFIG_CORDIC_MODULE 1
 #define CONFIG_COREDUMP 1
 #define CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS 1
-#define CONFIG_CPA_DEBUG        /*  */
 #define CONFIG_CPU_FREQ 1       /*  */
 #define CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL 1
 #define CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE   /*  */
 #define CONFIG_CPU_FREQ_GOV_ATTR_SET 1
 #define CONFIG_CPU_FREQ_GOV_COMMON 1
 #define CONFIG_CPU_FREQ_GOV_CONSERVATIVE 1
-#define CONFIG_CPU_FREQ_GOV_ONDEMAND    /*  */
 #define CONFIG_CPU_FREQ_GOV_ONDEMAND 1
 #define CONFIG_CPU_FREQ_GOV_PERFORMANCE 1
 #define CONFIG_CPU_FREQ_GOV_POWERSAVE 1
@@ -755,15 +735,11 @@
 #define CONFIG_CPU_FREQ_GOV_USERSPACE 1
 #define CONFIG_CPU_FREQ_STAT 1 /*  */
 #define CONFIG_CPU_HOTPLUG_STATE_CONTROL 1
-#define CONFIG_CPU_IDLE         /*  */
 #define CONFIG_CPU_IDLE 1
 #define CONFIG_CPU_IDLE_GOV_MENU 1
-#define CONFIG_CPU_ISOLATION    /*  */
 #define CONFIG_CPU_ISOLATION 1
-#define CONFIG_CPUMASK_OFFSTACK /*  */
 #define CONFIG_CPUMASK_OFFSTACK 1
 #define CONFIG_CPU_RMAP 1
-#define CONFIG_CPUSETS          /*  */
 #define CONFIG_CPUSETS 1
 #define CONFIG_CPU_SUP_AMD 1
 #define CONFIG_CPU_SUP_CENTAUR 1
@@ -772,9 +748,7 @@
 #define CONFIG_CPU_SUP_ZHAOXIN 1
 #define CONFIG_CRAMFS_BLOCKDEV 1
 #define CONFIG_CRAMFS_MODULE 1
-#define CONFIG_CRASH_CORE       /*  */
 #define CONFIG_CRASH_CORE 1
-#define CONFIG_CRASH_DUMP       /*  */
 #define CONFIG_CRASH_DUMP 1
 #define CONFIG_CRC16 1
 #define CONFIG_CRC32 1
@@ -950,7 +924,7 @@
 #define CONFIG_DEBUG_FS 1               /*  */
 #define CONFIG_DEBUG_FS_ALLOW_ALL 1
 #define CONFIG_DEBUG_HOTPLUG_CPU0       /*  */
-#define CONFIG_DEBUG_INFO_BTF           /* BPF Type Format (BTF)  */
+#define CONFIG_DEBUG_INFO_BTF 1         /* BPF Type Format (BTF)  */
 #define CONFIG_DEBUG_KERNEL 1           /*  */
 #define CONFIG_DEBUG_KMEMLEAK 1
 #define CONFIG_DEBUG_KMEMLEAK_AUTO_SCAN /*  */
@@ -1522,7 +1496,7 @@
 #define CONFIG_FUJITSU_ES_MODULE 1
 #define CONFIG_FUJITSU_LAPTOP_MODULE 1
 #define CONFIG_FUJITSU_TABLET_MODULE 1
-#define CONFIG_FUNCTION_ERROR_INJECTION 
+#define CONFIG_FUNCTION_ERROR_INJECTION
 #define CONFIG_FUNCTION_ERROR_INJECTION 1
 #define CONFIG_FUNCTION_GRAPH_TRACER    /*  */
 #define CONFIG_FUNCTION_GRAPH_TRACER 1
@@ -1601,7 +1575,7 @@
 #define CONFIG_GENERIC_SMP_IDLE_THREAD 1
 #define CONFIG_GENERIC_STRNCPY_FROM_USER 1
 #define CONFIG_GENERIC_STRNLEN_USER 1
-#define CONFIG_GENERIC_TIME_VSYSCALL/*  */  
+#define CONFIG_GENERIC_TIME_VSYSCALL/*  */
 #define CONFIG_GENERIC_TIME_VSYSCALL 1
 #define CONFIG_GENERIC_TRACER 1
 #define CONFIG_GENERIC_VDSO_TIME_NS 1
@@ -2650,7 +2624,7 @@
 #define CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE 1  /*  */
 #define CONFIG_MEMORY_HOTPLUG_SPARSE 1  /*  */
 #define CONFIG_MEMORY_HOTREMOVE /*  */
-#define CONFIG_MEMORY_HOTREMOVE 
+#define CONFIG_MEMORY_HOTREMOVE
 #define CONFIG_MEMORY_HOTREMOVE 1
 #define CONFIG_MEMORY_ISOLATION /*  */
 #define CONFIG_MEMORY_ISOLATION 1
@@ -2874,7 +2848,7 @@
 #define CONFIG_NET_CORE 1
 #define CONFIG_NETDEVICES       /*  */
 #define CONFIG_NETDEVICES 1
-#define CONFIG_NET_DEVLINK      
+#define CONFIG_NET_DEVLINK
 #define CONFIG_NET_DEVLINK 1
 #define CONFIG_NET_DROP_MONITOR 1
 #define CONFIG_NET_DSA          /*  */
@@ -3265,7 +3239,7 @@
 #define CONFIG_NLS_UTF8_MODULE 1
 #define CONFIG_NODES_SHIFT 10   /*  */
 #define CONFIG_NO_HZ 1          /*  enables the Linux kernel to run without a regular timer tick */
-#define CONFIG_NO_HZ_COMMON 1   
+#define CONFIG_NO_HZ_COMMON 1
 #define CONFIG_NO_HZ_FULL 1     /*  */
 #define CONFIG_NO_HZ            /* NO_HZ 减小调度时钟中断 */
 #define CONFIG_NOP_TRACER 1
@@ -3340,10 +3314,10 @@
 #define CONFIG_PAGE_POOL 1
 #define CONFIG_PAGE_REPORTING 1
 #define CONFIG_PAGE_TABLE_ISOLATION 1/* PTI:页表隔离 */
-                                    /* 
+                                    /*
                                     内核页表隔离 （Kernel page-table isolation，
                                     缩写KPTI，也简称PTI，旧称KAISER）
-                                    是 Linux内核 中的一种 强化 技术，旨在更好地隔离 
+                                    是 Linux内核 中的一种 强化 技术，旨在更好地隔离
                                     用户空间 与内核空间的 内存 来提高安全性，
                                     缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
                                     */
@@ -3409,7 +3383,7 @@
 #define CONFIG_PCI_DIRECT       /*  */
 #define CONFIG_PCI_DIRECT 1
 #define CONFIG_PCI_DOMAINS 1
-#define CONFIG_PCI_DOMAINS_GENERIC  
+#define CONFIG_PCI_DOMAINS_GENERIC
 #define CONFIG_PCIEAER 1
 #define CONFIG_PCIEAER_INJECT_MODULE 1
 #define CONFIG_PCIEASPM 1
@@ -3476,7 +3450,7 @@
 #define CONFIG_PLDMFW 1
 #define CONFIG_PM 1
 #define CONFIG_PM_ADVANCED_DEBUG 1
-#define CONFIG_PM_AUTOSLEEP     
+#define CONFIG_PM_AUTOSLEEP
 #define CONFIG_PM_AUTOSLEEP 1
 #define CONFIG_PMBUS_MODULE 1
 #define CONFIG_PMC_ATOM 1
@@ -3591,9 +3565,9 @@
 #define CONFIG_PSTORE_CONSOLE   /*  */
 #define CONFIG_PSTORE_DEFLATE_COMPRESS 1
 #define CONFIG_PSTORE_DEFLATE_COMPRESS_DEFAULT 1
-#define CONFIG_PSTORE_LZ4_COMPRESS  
-#define CONFIG_PSTORE_LZ4HC_COMPRESS    
-#define CONFIG_PSTORE_LZO_COMPRESS  
+#define CONFIG_PSTORE_LZ4_COMPRESS
+#define CONFIG_PSTORE_LZ4HC_COMPRESS
+#define CONFIG_PSTORE_LZO_COMPRESS
 #define CONFIG_PSTORE_RAM_MODULE 1
 #define CONFIG_PSTORE_ZSTD_COMPRESS
 #define CONFIG_PTDUMP_CORE 1
@@ -4487,7 +4461,7 @@
 #define CONFIG_SYNTH_EVENTS     /*  */
 #define CONFIG_SYSCTL           /*  */
 #define CONFIG_SYSCTL 1
-#define CONFIG_SYSCTL_EXCEPTION_TRACE   
+#define CONFIG_SYSCTL_EXCEPTION_TRACE
 #define CONFIG_SYSCTL_EXCEPTION_TRACE 1
 #define CONFIG_SYSFS            /*  */
 #define CONFIG_SYSFS 1
@@ -5174,7 +5148,7 @@
 #define CONFIG_X86_PM_TIMER 1
 #define CONFIG_X86_PM_TIMER     /* 电源管理定时器 */
 #define CONFIG_X86_POWERNOW_K8_MODULE 1
-#define CONFIG_X86_PSE          /* Page Size Extension（PSE）技术的作用是在IA32架构中，实现大于传统的4KB的页面 */   
+#define CONFIG_X86_PSE          /* Page Size Extension（PSE）技术的作用是在IA32架构中，实现大于传统的4KB的页面 */
 #define CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS /*  */
 #define CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS 1
 #define CONFIG_X86_RESERVE_LOW 64
@@ -5285,5 +5259,5 @@
 #define CONFIG_ZSWAP_ZPOOL_DEFAULT_ZBUD 1
 #define HAVE_ARCH_ALLOC_PAGE    /*  */
 #define HAVE_ARCH_FREE_PAGE     /*  */
-#define HAVE_ARCH_KALLSYMS_SYMBOL_VALUE     /*  */      
+#define HAVE_ARCH_KALLSYMS_SYMBOL_VALUE     /*  */
 #define HAVE_ARCH_MAKE_PAGE_ACCESSIBLE      /*  */

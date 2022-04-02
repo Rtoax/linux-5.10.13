@@ -1772,6 +1772,10 @@ static int btf_add_composite(struct btf *btf, int kind, const char *name, __u32 
 		return -ENOMEM;
 
 	if (name && name[0]) {
+		/**
+		 * @brief 添加并获取 offset
+		 *
+		 */
 		name_off = btf__add_str(btf, name);
 		if (name_off < 0)
 			return name_off;
@@ -1805,6 +1809,8 @@ static int btf_add_composite(struct btf *btf, int kind, const char *name, __u32 
  * Returns:
  *   - >0, type ID of newly added BTF type;
  *   - <0, on error.
+ *
+ * 向 btf 添加 结构体名称，如"task_struct"
  */
 int btf__add_struct(struct btf *btf, const char *name, __u32 byte_sz)
 {
@@ -1823,6 +1829,8 @@ int btf__add_struct(struct btf *btf, const char *name, __u32 byte_sz)
  * Returns:
  *   - >0, type ID of newly added BTF type;
  *   - <0, on error.
+ *
+ * 向 btf 添加 联合体名称
  */
 int btf__add_union(struct btf *btf, const char *name, __u32 byte_sz)
 {

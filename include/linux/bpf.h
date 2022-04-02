@@ -53,9 +53,9 @@ typedef struct bpf_map * p_bpf_map_t;/* 我加的 */
 
 
 /**
- *  map is generic key/value storage optionally accesible by eBPF programs 
+ *  map is generic key/value storage optionally accesible by eBPF programs
  *
- *  
+ *
  *  `BPF_MAP_TYPE_QUEUE` 操作符 `queue_map_ops`
  *  `BPF_MAP_TYPE_STACK` 操作符 `stack_map_ops`
  *
@@ -90,7 +90,7 @@ struct bpf_map_ops {
 	int (*map_delete_elem)(struct bpf_map *map, void *key);
 	int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags);
     /**
-     *  
+     *
      */
     int (*map_pop_elem)(struct bpf_map *map, void *value);
 	int (*map_peek_elem)(struct bpf_map *map, void *value);
@@ -159,7 +159,7 @@ struct bpf_map_memory { /*  */
 };
 
 /**
- *  
+ *
  */
 struct bpf_map {    /*  */
 	/* The first two cachelines with read-mostly members of which some
@@ -190,7 +190,7 @@ struct bpf_map {    /*  */
 	struct btf *btf;
 
     /**
-     *  
+     *
      */
 	struct bpf_map_memory memory;
 	char name[BPF_OBJ_NAME_LEN];
@@ -244,7 +244,7 @@ struct bpf_offload_dev;
 struct bpf_offloaded_map;
 
 /**
- *  
+ *
  */
 struct bpf_map_dev_ops {
 	int (*map_get_next_key)(struct bpf_offloaded_map *map,
@@ -254,7 +254,7 @@ struct bpf_map_dev_ops {
 	int (*map_update_elem)(struct bpf_offloaded_map *map,
 			                void *key, void *value, u64 flags);
     /**
-     *  
+     *
      */
     int (*map_delete_elem)(struct bpf_offloaded_map *map, void *key);
 };
@@ -958,7 +958,7 @@ struct bpf_array {
      */
 	struct bpf_array_aux *aux;
     /**
-     *  
+     *
      */
 	union {
 		char __aligned(8) value[0] ;
@@ -1413,6 +1413,10 @@ struct bpf_link *bpf_link_get_from_fd(u32 ufd);
 int bpf_obj_pin_user(u32 ufd, const char __user *pathname);
 int bpf_obj_get_user(const char __user *pathname, int flags);
 
+/**
+ * @brief
+ *
+ */
 #define BPF_ITER_FUNC_PREFIX "bpf_iter_"
 #define DEFINE_BPF_ITER_FUNC(target, args...)			\
 	extern int bpf_iter_ ## target(args);			\

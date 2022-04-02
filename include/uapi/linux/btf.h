@@ -78,7 +78,7 @@ struct btf_type {
 #define BTF_INFO_KFLAG(info)	((info) >> 31)
 
 /**
- * @brief
+ * @brief BTF 类型
  *
  */
 #define BTF_KIND_UNKN		0	/* Unknown	*/
