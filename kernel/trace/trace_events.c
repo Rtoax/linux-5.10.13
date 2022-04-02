@@ -344,7 +344,7 @@ void trace_event_enable_cmd_record(bool enable)
 }
 
 /**
- *  
+ *
  */
 void trace_event_enable_tgid_record(bool enable)
 {
@@ -1830,6 +1830,10 @@ static const struct seq_operations show_set_no_pid_seq_ops = {
 	.stop = p_stop,
 };
 
+/**
+ * @brief /sys/kernel/debug/tracing/available_events
+ *	in `event_trace_init()`
+ */
 static const struct file_operations ftrace_avail_fops = {
 	.open = ftrace_event_avail_open,
 	.read = seq_read,
@@ -1947,6 +1951,10 @@ static int ftrace_event_release(struct inode *inode, struct file *file)
 	return seq_release(inode, file);
 }
 
+/**
+ * @brief /sys/kernel/debug/tracing/available_events
+ *	in `event_trace_init()` 初始化
+ */
 static int
 ftrace_event_avail_open(struct inode *inode, struct file *file)
 {
@@ -2999,7 +3007,7 @@ static struct ftrace_probe_ops event_disable_count_probe_ops = {
 
 
 /**
- *  
+ *
  */
 static int
 event_enable_func(struct trace_array *tr, struct ftrace_hash *hash,
@@ -3398,7 +3406,7 @@ early_enable_events(struct trace_array *tr, bool disable_first)
 }
 
 /**
- *  
+ *
  */
 static __init int event_trace_enable(void)
 {
@@ -3410,7 +3418,7 @@ static __init int event_trace_enable(void)
 		return -ENODEV;
 
     /**
-     *  
+     *
      */
 	for_each_event(iter, __start_ftrace_events, __stop_ftrace_events) {
 
@@ -3431,7 +3439,7 @@ static __init int event_trace_enable(void)
 	early_enable_events(tr, false);
 
     /**
-     *  
+     *
      */
 	trace_printk_start_comm();
 
@@ -3479,7 +3487,12 @@ static __init int event_trace_init_fields(void)
 	return 0;
 }
 
-__init int event_trace_init(void)   /*  */
+/**
+ * @brief
+ *
+ * @return __init
+ */
+__init int event_trace_init(void)
 {
 	struct trace_array *tr;
 	struct dentry *entry;
@@ -3488,7 +3501,9 @@ __init int event_trace_init(void)   /*  */
 	tr = top_trace_array();
 	if (!tr)
 		return -ENODEV;
-//        /sys/kernel/debug/tracing/available_events
+	/**
+	 * /sys/kernel/debug/tracing/available_events
+	 */
 	entry = tracefs_create_file("available_events", 0444, NULL,
 				    tr, &ftrace_avail_fops);
 	if (!entry)

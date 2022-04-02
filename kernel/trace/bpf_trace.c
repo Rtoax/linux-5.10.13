@@ -1168,6 +1168,10 @@ BPF_CALL_3(bpf_d_path, struct path *, path, char *, buf, u32, sz)
 
 BTF_SET_START(btf_allowlist_d_path)
 #ifdef CONFIG_SECURITY
+/**
+ * @brief 添加这个函数
+ *
+ */
 BTF_ID(func, security_file_permission)
 BTF_ID(func, security_inode_getattr)
 BTF_ID(func, security_file_open)
@@ -1175,6 +1179,12 @@ BTF_ID(func, security_file_open)
 #ifdef CONFIG_SECURITY_PATH
 BTF_ID(func, security_path_truncate)
 #endif
+/**
+ * $ sudo bpftrace -l | grep vfs_truncate
+ * kfunc:vfs_truncate
+ * kprobe:vfs_truncate
+ *
+ */
 BTF_ID(func, vfs_truncate)
 BTF_ID(func, vfs_fallocate)
 BTF_ID(func, dentry_open)
@@ -1285,6 +1295,13 @@ const struct bpf_func_proto bpf_snprintf_btf_proto = {
 	.arg5_type	= ARG_ANYTHING,
 };
 
+/**
+ * @brief
+ *
+ * @param func_id
+ * @param prog
+ * @return const struct bpf_func_proto*
+ */
 const struct bpf_func_proto *
 bpf_tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 {

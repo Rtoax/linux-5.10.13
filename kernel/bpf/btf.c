@@ -201,7 +201,9 @@ DEFINE_SPINLOCK(btf_idr_lock);
  *
  * 可以参见 bcc 代码中 'kernel_struct_has_field()' 接口实现
  *
- * /sys/kernel/btf/vmlinux
+ * /sys/kernel/btf/vmlinux 文件清查看
+ * libbpf_find_kernel_btf()
+ * bin_attr_btf_vmlinux[]
  */
 struct btf {
 	/**
@@ -3835,6 +3837,12 @@ static s32 btf_check_meta(struct btf_verifier_env *env,
 	return saved_meta_left - meta_left;
 }
 
+/**
+ * @brief 检测 BTF 元数据
+ *
+ * @param env
+ * @return int
+ */
 static int btf_check_all_metas(struct btf_verifier_env *env)
 {
 	struct btf *btf = env->btf;
@@ -3993,6 +4001,12 @@ static int btf_parse_type_sec(struct btf_verifier_env *env)
 	return btf_check_all_types(env);
 }
 
+/**
+ * @brief BTF 字符串
+ *
+ * @param env
+ * @return int
+ */
 static int btf_parse_str_sec(struct btf_verifier_env *env)
 {
 	const struct btf_header *hdr;
@@ -4545,9 +4559,12 @@ BTF_ID_LIST(bpf_ctx_convert_btf_id)
 BTF_ID(struct, bpf_ctx_convert)
 
 /**
- * @brief
+ * @brief 解析出 btf
  *
  * @return struct btf*
+ *
+ * 参见
+ * 1. /sys/kernel/btf/vmlinux 和 btf_vmlinux_read()
  */
 struct btf *btf_parse_vmlinux(void)
 {
@@ -4570,19 +4587,35 @@ struct btf *btf_parse_vmlinux(void)
 	}
 	env->btf = btf;
 
+	/**
+	 * @brief 初始值 和 大小
+	 *
+	 */
 	btf->data = __start_BTF;
 	btf->data_size = __stop_BTF - __start_BTF;
 
+	/**
+	 * @brief 解析 BTF 文件头
+	 *
+	 */
 	err = btf_parse_hdr(env);
 	if (err)
 		goto errout;
 
 	btf->nohdr_data = btf->data + btf->hdr.hdr_len;
 
+	/**
+	 * @brief
+	 *
+	 */
 	err = btf_parse_str_sec(env);
 	if (err)
 		goto errout;
 
+	/**
+	 * @brief
+	 *
+	 */
 	err = btf_check_all_metas(env);
 	if (err)
 		goto errout;
@@ -4595,6 +4628,10 @@ struct btf *btf_parse_vmlinux(void)
 	if (err < 0)
 		goto errout;
 
+	/**
+	 * @brief
+	 *
+	 */
 	bpf_struct_ops_init(btf, log);
 
 	btf_verifier_env_free(env);

@@ -24,6 +24,10 @@ struct btf_id_set {
 
 #define BTF_IDS_SECTION ".BTF_ids"
 
+/**
+ * @brief
+ *
+ */
 #define ____BTF_ID(symbol)				\
 asm(							\
 ".pushsection " BTF_IDS_SECTION ",\"a\";       \n"	\

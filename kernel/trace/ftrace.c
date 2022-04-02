@@ -1179,14 +1179,15 @@ struct ftrace_page {    /*  */
 
 
 /**
- *  地址
+ *  ftrace 起始地址
+ * 初始化位置 ftrace_process_locs()
  */
-static struct ftrace_page	*ftrace_pages_start;    /* ftrace 起始地址 */
-                                                    /* 初始化位置 ftrace_process_locs() */
+static struct ftrace_page	*ftrace_pages_start;
+
 /**
- *
+ *	同上，用于定位链表中最后一个 pg
  */
-static struct ftrace_page	*ftrace_pages;          /* 同上，用于定位链表中最后一个 pg */
+static struct ftrace_page	*ftrace_pages;
 
 static __always_inline unsigned long
 ftrace_hash_key(struct ftrace_hash *hash, unsigned long ip)
@@ -6476,7 +6477,9 @@ void ftrace_destroy_filter_files(struct ftrace_ops *ops)
 
 static __init int ftrace_init_dyn_tracefs(struct dentry *d_tracer)
 {
-    /* /sys/kernel/debug/tracing/available_filter_functions */
+    /**
+	 * /sys/kernel/debug/tracing/available_filter_functions
+	 */
 	trace_create_file("available_filter_functions", 0444,
 			d_tracer, NULL, &ftrace_avail_fops);
 

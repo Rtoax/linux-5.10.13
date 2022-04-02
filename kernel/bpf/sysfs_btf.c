@@ -8,7 +8,12 @@
 #include <linux/init.h>
 #include <linux/sysfs.h>
 
-/* See scripts/link-vmlinux.sh, gen_btf() func for details */
+/**
+ * See scripts/link-vmlinux.sh, gen_btf() func for details
+ *
+ * 参见
+ * CONFIG_DEBUG_INFO_BTF
+ */
 extern char __weak __start_BTF[];
 extern char __weak __stop_BTF[];
 
@@ -17,17 +22,40 @@ btf_vmlinux_read(struct file *file, struct kobject *kobj,
 		 struct bin_attribute *bin_attr,
 		 char *buf, loff_t off, size_t len)
 {
+	/**
+	 * @brief 读取 BTF
+	 *
+	 */
 	memcpy(buf, __start_BTF + off, len);
 	return len;
 }
 
+/**
+ * @brief /sys/kernel/btf/vmlinux
+ *
+ * 参见
+ * btf_vmlinux_init() 初始化
+ * libbpf_find_kernel_btf() 函数
+ */
 static struct bin_attribute __ro_after_init bin_attr_btf_vmlinux  = {
-	.attr = { .name = "vmlinux", .mode = 0444, },
+	.attr = {
+		.name = "vmlinux",
+		.mode = 0444,
+	},
 	.read = btf_vmlinux_read,
 };
 
+/**
+ * @brief
+ *
+ */
 static struct kobject *btf_kobj;
 
+/**
+ * @brief BTF 初始化
+ *
+ * @return int
+ */
 static int __init btf_vmlinux_init(void)
 {
 	bin_attr_btf_vmlinux.size = __stop_BTF - __start_BTF;
@@ -39,6 +67,9 @@ static int __init btf_vmlinux_init(void)
 	if (!btf_kobj)
 		return -ENOMEM;
 
+	/**
+	 * @brief /sys/kernel/btf/vmlinux
+	 */
 	return sysfs_create_bin_file(btf_kobj, &bin_attr_btf_vmlinux);
 }
 
