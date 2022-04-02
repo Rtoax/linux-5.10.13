@@ -4283,6 +4283,12 @@ static int bpf_obj_get_info_by_fd(const union bpf_attr *attr,
 
 #define BPF_BTF_LOAD_LAST_FIELD btf_log_level
 
+/**
+ * @brief 加载 btf
+ *
+ * @param attr
+ * @return int
+ */
 static int bpf_btf_load(const union bpf_attr *attr)
 {
 	if (CHECK_ATTR(BPF_BTF_LOAD))
