@@ -12,17 +12,30 @@
 #include "capabilities.h"
 
 /**
- *  
+ *
  */
 struct vmcs_hdr {
     /**
-     *  
+     *
      */
 	u32 revision_id:31;
 	u32 shadow_vmcs:1;
 };
 
 /**
+ *  https://zhuanlan.zhihu.com/p/49257842
+ *  -------------------------------------
+ *  在虚拟化中，为了实现vCPU，既要模拟CPU的运行，又要记录vCPU的状态
+ *  （包括对vCPU运行的控制信息），在Intel x86处理器的VMX（Virtual
+ *  Machine Extension）功能中，通过引入根运行模式（VMX root operation）
+ *  和非根模式（VMX non-root operation），直接让vCPU运行在逻辑CPU上，
+ *  在软件上省去了对vCPU运行的模拟，同时也大大提升了性能。
+ *  剩下的就是对vCPU状态的记录了，为此Intel引入了VMCS（Virtual Machine
+ *  Control Structure）功能。
+ *
+ *  VMCS（Virtual Machine Control Structure）是Intel x86处理器中实现CPU虚拟化，
+ *  记录vCPU状态的一个关键数据结构。
+ *
  *  1. 每个任务有自己的上下文
  *  2. 不同模式(Guest,Host)也需要保存自己的上下文
  *
@@ -31,6 +44,37 @@ struct vmcs_hdr {
  *  vmcs 保存了两大类数据
  *  1. Host的状态和 Guest 的状态
  *  2. 控制Guest 运行时的行为
+ *
+ *  https://zhuanlan.zhihu.com/p/49257842
+ *  1.[Guest-state area]
+ *  2.[Host-state area]
+ *  3.[VM-execution control fields]
+ *  4.[VM-exit control fields]
+ *  5.[VM-entry control fields]
+ *  6.[VM-exit information fields]
+ *
+ *  1. [Guest-state area]，即vCPU的状态信息，包括vCPU的基本运行环境（如通用寄存器等）
+ *      和一些非寄存器信息，如当前vCPU是否接收中断，是否有挂起的exception，VMCS的状态等等。
+ *  2. [Host-state area]，即主机物理CPU的状态信息，因为物理CPU是在主机CPU和vCPU之间来回切换
+ *      运行的，所以在VMCS中既要记录vCPU的状态，也需要记录主机CPU的状态，这样vCPU才能有足
+ *      够的信息恢复到原来主机CPU的状态，继续主机CPU的运行。其包含的具体信息和前面记录的
+ *      vCPU的状态信息大体相同。
+ *  3. [VM-execution control fields]，该方面信息主要用于对vCPU的运行行为进行控制，这是VMM对
+ *      vCPU进行配置最复杂的一部分，如
+ *      3.1 控制vCPU在接收到某些中断事件的时候，是否直接在vCPU中处理掉，即虚拟机直接处理掉
+ *          该中断事件还是需要退出到VMM中，让VMM去处理该中断事件。
+ *      3.2 是否使用EPT（Extended Page Table）功能。
+ *      3.3 是否允许vCPU直接访问某些I/O口，MSR寄存器等资源。
+ *      3.4 vCPU执行某些指令的时候，是否会出发VM Exit等等。
+ *  4. [VM-exit control fields]，即对VM Exit的行为进行控制，如VM Exit的时候对vCPU来说需要保存
+ *      哪些MSR寄存器，对于主机CPU来说需要恢复哪些MSR寄存器。
+ *  5. [VM-entry control fields]，即对VM Entry的行为进行控制，如需要保存和恢复哪些MSR寄存器，
+ *      是否需要向vCPU注入中断和异常等事件（VM Exit的时候不需要向主机CPU注入中断/异常事件，
+ *      因为可以让那些事件直接触发VM Exit）。
+ *  6. [VM-exit information fields]，即记录下发生VM Exit发生的原因及一些必要的信息，方便于VMM
+ *      对VM Exit事件进行处理，如vCPU访问了特权资源造成VM Exit，则在该区域中，会记录下这个
+ *      特权资源的类型，如I/O地址，内存地址或者是MSR寄存器，并且也会记录下该特权资源的地址，
+ *      好让VMM对该特权资源进行模拟。
  */
 struct vmcs {
 	struct vmcs_hdr hdr;
@@ -51,7 +95,7 @@ DECLARE_PER_CPU(struct vmcs *, current_vmcs);
  */
 struct vmcs_host_state {
     /**
-     *  
+     *
      */
 	unsigned long cr3;	/* May not match real cr3 */
 	unsigned long cr4;	/* May not match real cr4 */

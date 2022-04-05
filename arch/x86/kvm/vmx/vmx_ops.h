@@ -65,6 +65,12 @@ static __always_inline void vmcs_checkl(unsigned long field)
 			 "Natural width accessor invalid for 32-bit field");
 }
 
+/**
+ *  https://zhuanlan.zhihu.com/p/49257842
+ *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
+ *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
+ *  的方法就是通过VMREAD和VMWRITE指令去访问。
+ */
 static __always_inline unsigned long __vmcs_readl(unsigned long field)
 {
 	unsigned long value;
@@ -118,17 +124,23 @@ static __always_inline u32 vmcs_read32(unsigned long field)
 }
 
 /**
- *  
+ *
  */
 static __always_inline u64 vmcs_read64(unsigned long field)
 {
 	vmcs_check64(field);
 	if (static_branch_unlikely(&enable_evmcs))
 		return evmcs_read64(field);
+    /**
+     *  https://zhuanlan.zhihu.com/p/49257842
+     *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
+     *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
+     *  的方法就是通过VMREAD和VMWRITE指令去访问。
+     */
 #ifdef CONFIG_X86_64
 	return __vmcs_readl(field);
 #else
-//	return __vmcs_readl(field) | ((u64)__vmcs_readl(field+1) << 32);
+	return __vmcs_readl(field) | ((u64)__vmcs_readl(field+1) << 32);
 #endif
 }
 
@@ -174,6 +186,12 @@ fault:									\
 	kvm_spurious_fault();						\
 } while (0)
 
+/**
+ *  https://zhuanlan.zhihu.com/p/49257842
+ *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
+ *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
+ *  的方法就是通过VMREAD和VMWRITE指令去访问。
+ */
 static __always_inline void __vmcs_writel(unsigned long field, unsigned long value)
 {
     /**
@@ -192,7 +210,7 @@ static __always_inline void vmcs_write16(unsigned long field, u16 value)
 }
 
 /**
- *  
+ *
  */
 static __always_inline void vmcs_write32(unsigned long field, u32 value)
 {
@@ -204,7 +222,7 @@ static __always_inline void vmcs_write32(unsigned long field, u32 value)
 }
 
 /**
- *  
+ *
  */
 static __always_inline void vmcs_write64(unsigned long field, u64 value)
 {
@@ -219,7 +237,7 @@ static __always_inline void vmcs_write64(unsigned long field, u64 value)
 }
 
 /**
- *  
+ *
  */
 static __always_inline void vmcs_writel(unsigned long field, unsigned long value)
 {
@@ -265,7 +283,7 @@ static inline void vmcs_load(struct vmcs *vmcs)
 		return evmcs_load(phys_addr);
 
     /**
-     *  
+     *
      */
 	vmx_asm1(vmptrld, "m"(phys_addr), vmcs, phys_addr);
 }
