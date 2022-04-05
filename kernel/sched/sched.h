@@ -88,7 +88,7 @@ struct rq;
 struct cpuidle_state;
 
 /**
- *  task_struct::on_rq states: 
+ *  task_struct::on_rq states:
  */
 #define TASK_ON_RQ_QUEUED       1   //进程正在就绪队列中运行
 #define TASK_ON_RQ_MIGRATING    2   //处于迁移过程中的进程，它可能不在就绪队列里
@@ -266,7 +266,7 @@ struct rt_prio_array {
     /**
      *  100 个优先级队列(0-99)
      *
-     *  
+     *
      *                  SCHED_FIFO                        SCHED_NORMAL
      *                  SCHED_RR                          SCHED_BATCH
      *                                                    SCHED_IDLE
@@ -274,16 +274,16 @@ struct rt_prio_array {
      *  |                  0 - 99                   |       100 - 139     |
      *  |                                           |  nice(-20 ~ 19)     |
      *  +-------------------------------------------+---------------------+
-     *  
-     *  
+     *
+     *
      */
 	struct list_head queue[MAX_RT_PRIO];
 };
 
 //* `sched_rt_period_us`: represents a period
 //* `sched_rt_runtime_us`: represents quantum(量子)
-//$ cat /proc/sys/kernel/sched_rt_period_us 
-//$ cat /proc/sys/kernel/sched_rt_runtime_us 
+//$ cat /proc/sys/kernel/sched_rt_period_us
+//$ cat /proc/sys/kernel/sched_rt_runtime_us
 
 struct rt_bandwidth {
 	/* nests inside the rq lock: */
@@ -414,7 +414,7 @@ struct cfs_bandwidth {
 };
 
 /**
- *  Task group related information 
+ *  Task group related information
  *
  *  为解决 多用户情况下，进程多的用户，获取的总 CPU 时间多，引入了组调度机制。
  *
@@ -431,7 +431,7 @@ struct cfs_bandwidth {
 struct task_group {/* cgroup sched *//* cgroup调度 */
 
     /**
-     *  
+     *
      */
 	struct cgroup_subsys_state css;
 
@@ -454,7 +454,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 
 #ifdef CONFIG_RT_GROUP_SCHED/* 实时组调度 */
     /**
-     *  
+     *
      */
 	struct sched_rt_entity	**rt_se;
 	struct rt_rq		**rt_rq;
@@ -463,7 +463,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 #endif
 
     /**
-     *  
+     *
      */
 	struct rcu_head		rcu;
 	struct list_head	list;
@@ -477,7 +477,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 #endif
 
     /**
-     *  
+     *
      */
 	struct cfs_bandwidth	cfs_bandwidth;
 
@@ -576,8 +576,8 @@ extern void set_task_rq_fair(struct sched_entity *se,
 #endif	/* CONFIG_CGROUP_SCHED */
 
 /**
- * CFS 就绪队列的数据结构 - CFS-related fields in a runqueue 
- * 
+ * CFS 就绪队列的数据结构 - CFS-related fields in a runqueue
+ *
  * `SCHED_NORMAL`;
  * `SCHED_BATCH`;
  * `SCHED_IDLE`.
@@ -611,7 +611,7 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
      *  单步递增的，用于跟踪整个 CFS 就绪队列中红黑树里的最小 vruntime 值
      */
 	u64			min_vruntime;   /* 最小虚拟时间 */
-    
+
 #ifndef CONFIG_64BIT
 	u64			min_vruntime_copy;
 #endif
@@ -712,7 +712,7 @@ static inline int rt_bandwidth_enabled(void)
 #endif
 
 /**
- *  Real-Time classes' related field in a runqueue: 
+ *  Real-Time classes' related field in a runqueue:
  *  `SCHED_FIFO`
  *  `SCHED_RR`
 */
@@ -722,10 +722,10 @@ struct rt_rq {  /* 实时运行队列 */
      *  优先级队列
      */
 	struct rt_prio_array	active;
-    
+
 	unsigned int		rt_nr_running;
 	unsigned int		rr_nr_running;
-    
+
 #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
 	struct {
 		int		curr; /* highest queued rt task prio */
@@ -764,12 +764,12 @@ static inline bool rt_rq_is_runnable(struct rt_rq *rt_rq)
 }
 
 /**
- *  Deadline class' related fields in a runqueue 
+ *  Deadline class' related fields in a runqueue
  */
 struct dl_rq {  /* deadline 运行队列 */
 
 	/**
-	 *  runqueue is an rbtree, ordered by deadline 
+	 *  runqueue is an rbtree, ordered by deadline
 	 *
 	 *  节点 sched_dl_entity.rb_node
 	 */
@@ -1000,7 +1000,7 @@ DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
 #endif /* CONFIG_UCLAMP_TASK */
 
 /**
- * 通用就绪队列
+ * 通用就绪队列 - runqueue 运行队列
  *
  * This is the main, per-CPU runqueue data structure.
  *
@@ -1014,20 +1014,22 @@ DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
  *
  * API有: `cpu_rq()`, `this_rq()`, `task_rq()`, `cpu_curr()`, `raw_rq()`
  */
-struct rq { /* runqueue 运行队列 */
+struct rq {
 
     /**
      *  保护本结构
      */
 	/* runqueue lock: */
-	raw_spinlock_t		lock;   /*  */
+	raw_spinlock_t		lock;
 
 	/* 就绪队列总可运行的进程数
 	 *
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.
+	 *
+	 * 进程数
 	 */
-	unsigned int		nr_running; /* 进程数 */
+	unsigned int		nr_running;
 
 #ifdef CONFIG_NUMA_BALANCING
 	unsigned int		nr_numa_running;
@@ -1052,11 +1054,11 @@ struct rq { /* runqueue 运行队列 */
     /**
      *  记录进程切换的次数
      */
-	u64			nr_switches;    /*  */
+	u64			nr_switches;
 
 #ifdef CONFIG_UCLAMP_TASK   /* 任务利用率管制 */
 	/* Utilization clamp values based on CPU's RUNNABLE tasks */
-	struct uclamp_rq	____cacheline_aligned uclamp[UCLAMP_CNT] ;/*  */
+	struct uclamp_rq	____cacheline_aligned uclamp[UCLAMP_CNT] ;
 	unsigned int		uclamp_flags;
 #define UCLAMP_FLAG_IDLE 0x01
 #endif
@@ -1190,12 +1192,12 @@ struct rq { /* runqueue 运行队列 */
      *  可运行状态的 调度实体 添加到就绪队列后，会添加到该链表中
      *  见 `sched_entity.group_node`
      *
-     *  
+     *
      */
 	struct list_head cfs_tasks;
 
     /**
-     *  
+     *
      */
 	struct sched_avg	avg_rt;
 	struct sched_avg	avg_dl;
@@ -1300,7 +1302,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 struct rq __percpu runqueues; //+++
 
 /**
- *  
+ *
  */
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 
@@ -1785,15 +1787,13 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
 }
 
 #else /* CONFIG_CGROUP_SCHED */
-
-//static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
-//static inline struct task_group *task_group(struct task_struct *p)
-//{
-//	return NULL;
-//}
-
+/*  */
 #endif /* CONFIG_CGROUP_SCHED */
 
+
+/**
+ *  设置运行的CPU
+ */
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
 	set_task_rq(p, cpu);
@@ -1807,7 +1807,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	WRITE_ONCE(p->cpu, cpu);
 #else
-//	WRITE_ONCE(task_thread_info(p)->cpu, cpu);
+	WRITE_ONCE(task_thread_info(p)->cpu, cpu);
 #endif
 	p->wake_cpu = cpu;
 #endif
@@ -1818,7 +1818,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
  */
 #ifdef CONFIG_SCHED_DEBUG
 # include <linux/static_key.h>
-# define __read_mostly const_debug 
+# define __read_mostly const_debug
 #else
 # define const_debug const
 #endif
@@ -1884,14 +1884,14 @@ extern struct static_key_false sched_numa_balancing;
 extern struct static_key_false sched_schedstats;
 
 //* `sched_rt_period_us`: represents a period
-//$ cat /proc/sys/kernel/sched_rt_period_us 
+//$ cat /proc/sys/kernel/sched_rt_period_us
 static inline u64 global_rt_period(void)
 {
 	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
 }
 
 //* `sched_rt_runtime_us`: represents quantum(量子)
-//$ cat /proc/sys/kernel/sched_rt_runtime_us 
+//$ cat /proc/sys/kernel/sched_rt_runtime_us
 static inline u64 global_rt_runtime(void)
 {
 	if (sysctl_sched_rt_runtime < 0)
@@ -1981,7 +1981,7 @@ extern const u32		sched_prio_to_wmult[40];
 #define DEQUEUE_NOCLOCK		0x08 /* Matches ENQUEUE_NOCLOCK */
 
 /**
- *  
+ *
  */
 #define ENQUEUE_WAKEUP		0x01
 #define ENQUEUE_RESTORE		0x02
@@ -2001,10 +2001,11 @@ extern const u32		sched_prio_to_wmult[40];
 /**
  *  调度类方法集
  */
-struct sched_class {    /* 调度类 *//*  */
+struct sched_class {
 
 #ifdef CONFIG_UCLAMP_TASK
-	int uclamp_enabled; /* 利用率管制 使能 */
+    /* 利用率管制 使能 */
+	int uclamp_enabled;
 #endif
 
     /* 添加 和 移除 就绪队列
@@ -2022,7 +2023,7 @@ struct sched_class {    /* 调度类 *//*  */
 	void (*yield_task)   (struct rq *rq);
 	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
 
-    /** 
+    /**
      * 检查是否需要抢占当前线程
      *  check_preempt_curr_idle()
      *  check_preempt_wakeup()
@@ -2069,6 +2070,8 @@ struct sched_class {    /* 调度类 *//*  */
 
     /**
      *  处理进程被唤醒的情况
+     *
+     *
      */
 	void (*task_woken)(struct rq *this_rq, struct task_struct *task);
 
@@ -2100,10 +2103,10 @@ struct sched_class {    /* 调度类 *//*  */
 
     /**
      *  处理 fork 新进程与调度相关的一些初始化信息
-     *  
+     *
      *  task_fork_fair()
      *  task_fork_dl()
-     */ 
+     */
 	void (*task_fork)(struct task_struct *p);
 
     /**
@@ -2132,7 +2135,7 @@ struct sched_class {    /* 调度类 *//*  */
 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task, int oldprio);
 
     /**
-     *  
+     *
      */
 	unsigned int (*get_rr_interval)(struct rq *rq, struct task_struct *task);
 
@@ -2162,7 +2165,7 @@ static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 {
 	WARN_ON_ONCE(rq->curr != prev);
 
-    /* 
+    /*
         fair_sched_class.put_prev_task  =  put_prev_task_fair
         rt_sched_class.put_prev_task    =  put_prev_task_rt
         dl_sched_class.put_prev_task    =  put_prev_task_dl
@@ -2175,7 +2178,7 @@ static inline void set_next_task(struct rq *rq, struct task_struct *next)/*  */
 {
 	WARN_ON_ONCE(rq->curr != next);
 
-    /* 
+    /*
         fair_sched_class.set_next_task  =  set_next_task_fair
         rt_sched_class.set_next_task    =  set_next_task_rt
         dl_sched_class.set_next_task    =  set_next_task_dl

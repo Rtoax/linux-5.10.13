@@ -307,7 +307,7 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 }
 
 /**
- *  Walk up scheduling entities hierarchy 
+ *  Walk up scheduling entities hierarchy
  *
  *  如果 没有定义宏 CONFIG_FAIR_GROUP_SCHED(组调度) ，该宏定义为
  *  for (; se; se = NULL)
@@ -542,7 +542,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 	u64 vruntime = cfs_rq->min_vruntime;
 
     /**
-     *  
+     *
      */
 	if (curr) {
 		if (curr->on_rq)
@@ -566,12 +566,12 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 	/* ensure we never gain time by being placed backwards. */
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
-    
+
 #ifndef CONFIG_64BIT
 	smp_wmb();
 
     /**
-     *  
+     *
      */
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 #endif
@@ -615,7 +615,7 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 	}
 
     /**
-     *  
+     *
      * 3. 将新进程的节点加入到红黑树中
      * 4. 为新插入的结点进行着色
      */
@@ -695,7 +695,7 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
  * @delta  该进程从上次调用 update_curr() 函数到现在的时间差
  *
  * 计算虚拟时间的核心函数
- *  
+ *
  *              delta_exec * nice_0_weight
  *  vruntime = -----------------------------
  *                       weight
@@ -719,7 +719,7 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
  *  inv_weight = ------------
  *                 weight  -------> sched_prio_to_weight[] 之一
  *
- *  
+ *
  *              delta_exec * nice_0_weight * 2^32
  *  vruntime = ------------------------------------ >> 32
  *                           weight
@@ -816,7 +816,7 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)  /*  */
 static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
     /**
-     *  
+     *
      */
 	return calc_delta_fair(sched_slice(cfs_rq, se), se);
 }
@@ -2981,7 +2981,7 @@ out:
 }
 
 /**
- *  
+ *
  */
 void init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 {
@@ -3878,7 +3878,7 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 #define DO_ATTACH	0x4
 
 /**
- *  Update task and its cfs_rq load average 
+ *  Update task and its cfs_rq load average
  *
  *  更新平均负载
  *  更新 该进程调度实体 的负载和就绪队列 的负载
@@ -3975,7 +3975,7 @@ static void remove_entity_load_avg(struct sched_entity *se)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long cfs_rq_runnable_avg(struct cfs_rq *cfs_rq)
 {
@@ -3983,7 +3983,7 @@ static inline unsigned long cfs_rq_runnable_avg(struct cfs_rq *cfs_rq)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long cfs_rq_load_avg(struct cfs_rq *cfs_rq)
 {
@@ -4341,7 +4341,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
 
     /**
-     *  
+     *
      */
 	se_update_runnable(se);
 	update_cfs_group(se);
@@ -4356,7 +4356,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	check_schedstat_required();
 
     /**
-     *  
+     *
      */
 	update_stats_enqueue(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
@@ -4421,7 +4421,7 @@ static void __clear_buddies_skip(struct sched_entity *se)
 }
 
 /**
- *  
+ *
  */
 static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)   /* 清理 */
 {
@@ -4610,7 +4610,7 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	 * when there are only lesser-weight tasks around):
 	 */
 	if (schedstat_enabled() && rq_of(cfs_rq)->cfs.load.weight >= 2*se->load.weight) {
-        
+
 		schedstat_set(se->statistics.slice_max,
             			max((u64)schedstat_val(se->statistics.slice_max),
             			    se->sum_exec_runtime - se->prev_sum_exec_runtime));
@@ -4715,7 +4715,7 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	if (prev->on_rq) {
 		update_stats_wait_start(cfs_rq, prev);
 		/**
-		 *  Put 'current' back into the tree. 
+		 *  Put 'current' back into the tree.
 		 *  将prev进程(即current进程)加入到 CFS 队列 rq 上的红黑树
 		 */
 		__enqueue_entity(cfs_rq, prev);
@@ -4747,7 +4747,7 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 	update_load_avg(cfs_rq, curr, UPDATE_TG);
 
     /*
-	 * 
+	 *
 	 */
 	update_cfs_group(curr);
 
@@ -5564,7 +5564,7 @@ static void __maybe_unused unthrottle_offline_cfs_rqs(struct rq *rq)
 		cfs_rq->runtime_enabled = 0;
 
         /**
-         *  
+         *
          */
 		if (cfs_rq_throttled(cfs_rq))
 			unthrottle_cfs_rq(cfs_rq);
@@ -5677,13 +5677,13 @@ static int sched_idle_cpu(int cpu)
  *       entry_SYSCALL_64_after_hwframe+68
  */
 static void
-enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
+enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;   /* 该进程的调度实体 */
 
     /**
-     *  
+     *
      */
 	int idle_h_nr_running = task_has_idle_policy(p);
 	int task_new = !(flags & ENQUEUE_WAKEUP);
@@ -5694,7 +5694,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 	 * Let's add the task's estimated utilization to the cfs_rq's
 	 * estimated utilization, before we update schedutil.
 	 */
-	util_est_enqueue(&rq->cfs, p);  /*  */
+	util_est_enqueue(&rq->cfs, p);
 
 	/*
 	 * If in_iowait is set, the code below may not trigger any cpufreq
@@ -5706,16 +5706,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 
     /**
      *  for (; se; se = se->parent)
+     *  遍历调度实体
      */
-	for_each_sched_entity(se) { /* 遍历调度实体 */
+	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
 		cfs_rq = cfs_rq_of(se);
 
         /**
-         *  插入 队列
+         *  插入 队列 (插入到红黑树中)
          */
-		enqueue_entity(cfs_rq, se, flags);      /* 插入到红黑树中 */
+		enqueue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
@@ -5728,7 +5729,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 	}
 
     /**
-     *  
+     *
      */
 	for_each_sched_entity(se) { /* for (; se; se = se->parent) */
 		cfs_rq = cfs_rq_of(se);
@@ -5752,8 +5753,11 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
                        list_add_leaf_cfs_rq(cfs_rq);
 	}
 
-	/* At this point se is NULL and we are at root level*/
-	add_nr_running(rq, 1);  /* 添加运行进程数 */
+	/**
+	 *  At this point se is NULL and we are at root level
+	 *  添加运行进程数
+	 */
+	add_nr_running(rq, 1);
 
 	/*
 	 * Since new tasks are assigned an initial util_avg equal to
@@ -5774,7 +5778,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)  /*  */
 
 enqueue_throttle:
     /**
-     *  
+     *
      */
 	if (cfs_bandwidth_used()) {
 		/*
@@ -5794,9 +5798,9 @@ enqueue_throttle:
 	assert_list_leaf_cfs_rq(rq);
 
     /**
-     *  
+     *  高精度定时器更新
      */
-	hrtick_update(rq);  /* 高精度定时器更新 */
+	hrtick_update(rq);
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -5965,7 +5969,7 @@ static unsigned long capacity_of(int cpu)
 }
 
 /**
- *  
+ *
  */
 static void record_wakee(struct task_struct *p)
 {
@@ -5984,7 +5988,7 @@ static void record_wakee(struct task_struct *p)
 	if (current->last_wakee != p) {
 
         /**
-         *  
+         *
          */
 		current->last_wakee = p;
         /**
@@ -6104,7 +6108,7 @@ wake_affine_weight(struct sched_domain *sd, struct task_struct *p,
 }
 
 /**
- *  
+ *
  *
  */
 static int wake_affine(struct sched_domain *sd, struct task_struct *p,
@@ -6150,7 +6154,7 @@ find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this
 		return cpumask_first(sched_group_span(group));
 
     /**
-     *  
+     *
      */
 	/* Traverse only the allowed CPUs */
 	for_each_cpu_and(i, sched_group_span(group), p->cpus_ptr) {
@@ -6200,7 +6204,7 @@ find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this
  * @cpu        表示 wakeup_cpu
  * @prev_cpu   进程上次运行在哪
  * @sd_flag    调度域 标志
- *  
+ *
  */
 static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p,
 				  int cpu, int prev_cpu, int sd_flag)
@@ -6217,7 +6221,7 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 	 * We need task's util for cpu_util_without, sync it up to
 	 * prev_cpu's last_update_time.
 	 *
-	 * 不是因为 fork(2) 
+	 * 不是因为 fork(2)
 	 */
 	if (!(sd_flag & SD_BALANCE_FORK))
         /**
@@ -6263,7 +6267,7 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 		sd = NULL;
 
         /**
-         *  
+         *
          */
 		for_each_domain(cpu, tmp) {
 			if (weight <= tmp->span_weight)
@@ -6274,7 +6278,7 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 	}
 
     /**
-     *  
+     *
      */
 	return new_cpu;
 }
@@ -6558,7 +6562,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 	}
 
     /**
-     *  
+     *
      */
 	/* Check a recently used CPU as a potential idle candidate: */
 	recent_used_cpu = p->recent_used_cpu;
@@ -7019,7 +7023,7 @@ static int
 select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_flags)
 {
     /**
-     *  
+     *
      */
 	struct sched_domain *tmp, *sd = NULL;
 
@@ -7082,7 +7086,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
              */
 
             /**
-             *  
+             *
              */
 			if (cpu != prev_cpu)
                 /**
@@ -7289,7 +7293,7 @@ static void set_next_buddy(struct sched_entity *se)
 }
 
 /**
- *  
+ *
  */
 static void set_skip_buddy(struct sched_entity *se)
 {
@@ -7354,10 +7358,10 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	find_matching_se(&se, &pse);
 
     /**
-     *  
+     *
      */
 	update_curr(cfs_rq_of(se));
-    
+
 	BUG_ON(!pse);
 	if (wakeup_preempt_entity(se, pse) == 1) {
 		/*
@@ -7575,7 +7579,7 @@ static void yield_task_fair(struct rq *rq)  /*  */
 	clear_buddies(cfs_rq, se);  /*  */
 
     /**
-     *  
+     *
      */
 	if (curr->policy != SCHED_BATCH) {
 		update_rq_clock(rq);
@@ -7793,7 +7797,7 @@ enum migration_type {
 
 /**
  *  负载均衡环境变量，在`load_balance()`内部使用，用于传递参数
- */ 
+ */
 struct lb_env {
 	struct sched_domain	*sd;
 
@@ -8109,7 +8113,7 @@ static int detach_tasks(struct lb_env *env)
 			goto next;
 
         /**
-         *  
+         *
          */
 		switch (env->migration_type) {
 		case migrate_load:
@@ -8149,7 +8153,7 @@ static int detach_tasks(struct lb_env *env)
 			break;
 
         /**
-         *  
+         *
          */
 		case migrate_task:
 			env->imbalance--;
@@ -8240,14 +8244,14 @@ static void attach_one_task(struct rq *rq, struct task_struct *p)
 static void attach_tasks(struct lb_env *env)
 {
     /**
-     *  
+     *
      */
 	struct list_head *tasks = &env->tasks;
 	struct task_struct *p;
 	struct rq_flags rf;
 
     /**
-     *  
+     *
      */
 	rq_lock(env->dst_rq, &rf);
 	update_rq_clock(env->dst_rq);
@@ -8257,7 +8261,7 @@ static void attach_tasks(struct lb_env *env)
      */
 	while (!list_empty(tasks)) {
         /**
-         *  
+         *
          */
 		p = list_first_entry(tasks, struct task_struct, se.group_node);
 		list_del_init(&p->se.group_node);
@@ -8475,7 +8479,7 @@ static void update_blocked_averages(int cpu)
  */
 struct sg_lb_stats {
     /**
-     *  
+     *
      */
 	unsigned long avg_load; /*Avg load across the CPUs of the group */
 	unsigned long group_load; /* Total load over the CPUs of the group */
@@ -8775,7 +8779,7 @@ group_smaller_max_cpu_capacity(struct sched_group *sg, struct sched_group *ref)
 
 
 /**
- *  返回调度组的状态 - 
+ *  返回调度组的状态 -
  */
 static inline enum
 group_type group_classify(unsigned int imbalance_pct,
@@ -8783,7 +8787,7 @@ group_type group_classify(unsigned int imbalance_pct,
 			  struct sg_lb_stats *sgs)
 {
     /**
-     *  
+     *
      */
 	if (group_is_overloaded(imbalance_pct, sgs))
 		return group_overloaded;
@@ -8795,19 +8799,19 @@ group_type group_classify(unsigned int imbalance_pct,
 		return group_imbalanced;
 
     /**
-     *  
+     *
      */
 	if (sgs->group_asym_packing)
 		return group_asym_packing;
 
     /**
-     *  
+     *
      */
 	if (sgs->group_misfit_task_load)
 		return group_misfit_task;
 
     /**
-     *  
+     *
      */
 	if (!group_has_capacity(imbalance_pct, sgs))
 		return group_fully_busy;
@@ -8880,12 +8884,12 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		sgs->group_util += cpu_util(i);
 
         /**
-         *  
+         *
          */
 		sgs->group_runnable += cpu_runnable(rq);
 		sgs->sum_h_nr_running += rq->cfs.h_nr_running;
 
-        
+
         /**
          *  统计运行中的进程数目
          */
@@ -9262,7 +9266,7 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p, int this_cpu)
 	unsigned long imbalance;
 
     /**
-     *  
+     *
      */
 	struct sg_lb_stats idlest_sgs = {
 			idlest_sgs.avg_load = UINT_MAX,
@@ -9453,7 +9457,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
 			goto next_group;
 
         /**
-         *  
+         *
          */
 		if (update_sd_pick_busiest(env, sds, sg, sgs)) {
 			sds->busiest = sg;
@@ -9909,7 +9913,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 			continue;
 
         /**
-         *  
+         *
          */
 		switch (env->migration_type) {
 		case migrate_load:
@@ -10223,7 +10227,7 @@ more_balance:
 			ld_moved += cur_ld_moved;
 		}
         /**
-         *  
+         *
          */
 		local_irq_restore(rf.flags);
 
@@ -10608,12 +10612,12 @@ static void rebalance_domains(struct rq *rq, enum cpu_idle_type idle)
 		}
 
         /**
-         *  
+         *
          */
 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
 
             /**
-             *  
+             *
              */
 			if (load_balance(cpu, rq, sd, idle, &continue_balancing)) {
 				/*
@@ -11247,7 +11251,7 @@ out:
 static __latent_entropy void run_rebalance_domains(struct softirq_action *h)
 {
 	struct rq *this_rq = this_rq();
-    
+
 	enum cpu_idle_type idle = this_rq->idle_balance ? CPU_IDLE : CPU_NOT_IDLE;
 
 	/*
@@ -11338,13 +11342,13 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	}
 
     /**
-     *  
+     *
      */
 	if (static_branch_unlikely(&sched_numa_balancing))
 		task_tick_numa(rq, curr);
 
     /**
-     *  
+     *
      */
 	update_misfit_status(curr, rq);
 	update_overutilized_status(task_rq(curr));
@@ -11403,10 +11407,10 @@ static void task_fork_fair(struct task_struct *p)   /*  */
      **
      *  新进程还没有添加到调度器中，加入调度器时会增加 min_vruntime 值。
      *
-     *  换个角度思考： 
+     *  换个角度思考：
      *      新进程 在 place_entity 函数中得到了惩罚，惩罚的虚拟时间由 sched_vslice 计算，
      *      在某种程度上也是为了防止新进程恶意占用 CPU；
-     *  
+     *
      *  在 `enqueue_entity()` 中会加上
      */
 	se->vruntime -= cfs_rq->min_vruntime;
@@ -11672,21 +11676,21 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
 	int i;
 
     /**
-     *  
+     *
      */
 	tg->cfs_rq = kcalloc(nr_cpu_ids, sizeof(cfs_rq), GFP_KERNEL);
 	if (!tg->cfs_rq)
 		goto err;
 
     /**
-     *  
+     *
      */
     tg->se = kcalloc(nr_cpu_ids, sizeof(se), GFP_KERNEL);
 	if (!tg->se)
 		goto err;
 
     /**
-     *  
+     *
      */
 	tg->shares = NICE_0_LOAD;
 
@@ -11833,7 +11837,7 @@ done:
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 /**
- *  
+ *
  */
 static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
 {
@@ -11937,7 +11941,7 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
 #endif /* CONFIG_SCHED_DEBUG */
 
 /**
- *  
+ *
  */
 __init void init_sched_fair_class(void) /*  */
 {

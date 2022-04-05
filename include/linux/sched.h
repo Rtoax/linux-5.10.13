@@ -882,6 +882,7 @@ struct task_struct {    /* PCB */
 	/* Current CPU: */
     /**
      *  正运行在哪个CPU上
+     *  __set_task_cpu()
      */
 	unsigned int			cpu;
 #endif
@@ -932,8 +933,11 @@ struct task_struct {    /* PCB */
      *
      *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
      */
-    //The higher priority allows to get more time to run.
     /**
+     *  The higher priority allows to get more time to run.
+     *  `dynamic priority` which can't be changed during lifetime of
+     *  a process based on its static priority and interactivity(交互性) of the process.
+     *
      *  prio: 动态优先级：
      *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
      *        取值范围: [0,MAX_PRIO-1],即[0,139]
@@ -941,10 +945,12 @@ struct task_struct {    /* PCB */
      *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
      *
      */
-	int				prio;   //`dynamic priority` which can't be changed during lifetime of
-	                        //  a process based on its static priority and interactivity(交互性) of the process
+	int				prio;
     /**
      *  static_prio: 静态优先级
+     *  initial priority most likely well-known to you `nice value`
+     *  This value does not changed by the kernel if a user will not change it.
+     *
      *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
      *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
      *        调整后的优先级为动态优先级(prio)
@@ -953,17 +959,18 @@ struct task_struct {    /* PCB */
      *        static_prio=MAX_RT_PRIO(100)+nice+20
      *
      */
-	int				static_prio;    //initial priority most likely well-known to you `nice value`
-	                                //This value does not changed by the kernel if a user will not change it.
+	int				static_prio;
     /**
      *  normal_prio: 归一化优先级
+     *  based on the value of the `static_prio` too,
+     *  but also it depends on the scheduling policy of a process.
+     *
      *      根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的 normal_prio
      *      对普通进程来说， normal_prio == static_prio
      *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
      *
      */
-	int				normal_prio;    //based on the value of the `static_prio` too,
-	                                //but also it depends on the scheduling policy of a process.
+	int				normal_prio;
 
     /**
      *  rt_priority: 实时优先级
@@ -985,14 +992,17 @@ struct task_struct {    /* PCB */
     /**
      *  调度实体
      */
-	struct sched_entity		se;/* 调度实体 */
-	struct sched_rt_entity		rt;/* 实时调度实体 */
+	struct sched_entity		se;
+    /**
+     *  实时调度实体
+     */
+	struct sched_rt_entity		rt;
 
 #ifdef CONFIG_CGROUP_SCHED
     /**
      *  组调度
      */
-	struct task_group		*sched_task_group;/* cgroup 调度 */
+	struct task_group		*sched_task_group;
 #endif
     /**
      *
@@ -1029,12 +1039,12 @@ struct task_struct {    /* PCB */
      *  CPU 亲和性
      *  进程允许运行 CPU 的个数
      */
-	int				nr_cpus_allowed;    /* 个数 */
+	int				nr_cpus_allowed;
 	const cpumask_t			*cpus_ptr;
     /**
-     *  允许运行的 CPU 位图
+     *  允许运行的 CPU 位图 - sched_getaffinity()
      */
-	cpumask_t			cpus_mask;  /* sched_getaffinity() */
+	cpumask_t			cpus_mask;
 
 #ifdef CONFIG_PREEMPT_RCU
 	int				rcu_read_lock_nesting;
@@ -1065,32 +1075,37 @@ struct task_struct {    /* PCB */
 	struct sched_info		sched_info;
 
     /**
-     *
+     *  任务链表
      */
-	struct list_head		tasks;/* 任务链表 */
+	struct list_head		tasks;
 
 #ifdef CONFIG_SMP
-	struct plist_node		pushable_tasks;     /* 优先级队列 */
-	struct rb_node			pushable_dl_tasks;  /* deadline 任务 */
+    /* 优先级队列 */
+	struct plist_node		pushable_tasks;
+    /* deadline 任务 */
+	struct rb_node			pushable_dl_tasks;
 #endif
 
     /**
      *  `mm` 指向进程地址空间
      */
-	struct mm_struct		*mm;        /*  */
+	struct mm_struct		*mm;
 
     /**
      *  `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间
      *  见 context_switch()
      */
-	struct mm_struct		*active_mm; /*  */
+	struct mm_struct		*active_mm;
 
 	/* Per-thread vma caching: */
 	struct vmacache			vmacache;   /* vma 缓存 */
 
 #ifdef SPLIT_RSS_COUNTING
-    /* 对不同页面的统计计数 */
-	struct task_rss_stat		rss_stat;   /* 文件映射、匿名映射、交换 */
+    /**
+     *  对不同页面的统计计数
+     *  文件映射、匿名映射、交换
+     */
+	struct task_rss_stat		rss_stat;
 #endif
     /**
      *

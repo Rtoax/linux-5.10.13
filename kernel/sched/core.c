@@ -193,6 +193,10 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	for (;;) {
 		rq = task_rq(p);
 		raw_spin_lock(&rq->lock);
+        /**
+         *  如果获取到队列，并且进程没有正在迁移中
+         *  那么就可以 加锁 后 直接返回这个运行队列
+         */
 		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
 			rq_pin_lock(rq, rf);
 			return rq;
@@ -1570,7 +1574,7 @@ static void __init init_uclamp(void)
 #endif /* CONFIG_UCLAMP_TASK */
 
 /**
- *  加入 - 把进程添加到就绪队列中
+ *  入队 - 把进程添加到就绪队列中
  *
  *	一个 kstack 示例:
  *       enqueue_entity+1
@@ -1589,7 +1593,7 @@ static void __init init_uclamp(void)
  *       do_syscall_64+55
  *       entry_SYSCALL_64_after_hwframe+68
  */
-static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)    /* 入队 */
+static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
@@ -1604,13 +1608,15 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 
 	uclamp_rq_inc(rq, p);
 
-    /*
+    /**
+     *  调用调度类入队函数
+     *
      * fair_sched_class.enqueue_task   = enqueue_task_fair
      * rt_sched_class.enqueue_task     = enqueue_task_rt
      * dl_sched_class.enqueue_task     = enqueue_task_dl
      * idle_sched_class.enqueue_task   = NULL
      */
-	p->sched_class->enqueue_task(rq, p, flags); /* 调用调度类入队函数 *//* CFS->`enqueue_task_fair` */
+	p->sched_class->enqueue_task(rq, p, flags);
 }
 
 /**
@@ -1633,15 +1639,15 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 /**
  *  激活进程
  */
-void activate_task(struct rq *rq, struct task_struct *p, int flags) /*  */
+void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
     /**
      *  入队
      */
-	enqueue_task(rq, p, flags); /* 入队 */
+	enqueue_task(rq, p, flags);
 
     /**
-     *  //进程正在就绪队列中运行
+     *  进程正在就绪队列中运行
      */
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
@@ -2424,15 +2430,16 @@ out:
  *
  * 选择最合适的调度域中最悠闲的 CPU
  */
-static inline   /*  */
+static inline
 int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 {
 	lockdep_assert_held(&p->pi_lock);
 
     /**
      *  选择一个合适的 CPU
+     *  使用调度类的 队列选择 接口
      */
-	if (p->nr_cpus_allowed > 1) /* 使用调度类的 队列选择 接口 */
+	if (p->nr_cpus_allowed > 1)
         /**
          *  select_task_rq_idle()
          *  select_task_rq_fair()
@@ -3537,10 +3544,10 @@ unsigned long to_ratio(u64 period, u64 runtime)
  *
  * 添加到调度器中
  */
-void wake_up_new_task(struct task_struct *p)    /*  */
+void wake_up_new_task(struct task_struct *p)
 {
 	struct rq_flags rf;
-	struct rq *rq;
+	struct rq *__rq;
 
 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
 
@@ -3569,10 +3576,18 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 #endif
 
     /**
+     *  获取当前进程的运行队列并上锁
+     */
+	__rq = __task_rq_lock(p, &rf);
+
+    /**
+     *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+     */
+	update_rq_clock(__rq);
+
+    /**
      *
      */
-	rq = __task_rq_lock(p, &rf);
-	update_rq_clock(rq);
 	post_init_entity_util_avg(p);
 
     /**
@@ -3580,11 +3595,12 @@ void wake_up_new_task(struct task_struct *p)    /*  */
      *
      *  调用 `enqueue_task` 把子进程添加到 调度器中
      */
-	activate_task(rq, p, ENQUEUE_NOCLOCK);  /*  */
+	activate_task(__rq, p, ENQUEUE_NOCLOCK);
 
+    /* tracepoint:sched:sched_wakeup_new */
 	trace_sched_wakeup_new(p);
 
-	check_preempt_curr(rq, p, WF_FORK);
+	check_preempt_curr(__rq, p, WF_FORK);
 
 #ifdef CONFIG_SMP
 	if (p->sched_class->task_woken) {
@@ -3592,12 +3608,18 @@ void wake_up_new_task(struct task_struct *p)    /*  */
 		 * Nothing relies on rq->lock after this, so its fine to
 		 * drop it.
 		 */
-		rq_unpin_lock(rq, &rf);
-		p->sched_class->task_woken(rq, p);  /*  */
-		rq_repin_lock(rq, &rf);
+		rq_unpin_lock(__rq, &rf);
+        /**
+         *
+         */
+		p->sched_class->task_woken(__rq, p);
+		rq_repin_lock(__rq, &rf);
 	}
 #endif
-	task_rq_unlock(rq, p, &rf);
+    /**
+     *  开锁
+     */
+	task_rq_unlock(__rq, p, &rf);
 }
 
 

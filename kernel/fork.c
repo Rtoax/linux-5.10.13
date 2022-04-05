@@ -3007,14 +3007,14 @@ struct mm_struct *copy_init_mm(void)    /*  */
  */
 pid_t do_fork();    /* +++ linux-5.0 */
 pid_t _do_fork();   /* +++ linux-5.0 */
-pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...) */
+pid_t kernel_clone(struct kernel_clone_args *args)
 {
 	u64 clone_flags = args->flags;
 
     /**
      *  vfork 父进程等待子进程结束
      */
-	struct completion vfork;      /* 等待结束 */
+	struct completion vfork;
 	struct pid *pid;
 	struct task_struct *p;
 	int trace = 0;
@@ -3056,7 +3056,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...)
      *
      *
      */
-	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);    /*  */
+	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);
 
     /**
      *
@@ -3089,20 +3089,23 @@ pid_t kernel_clone(struct kernel_clone_args *args)  /* fork() vfork() clone(...)
      */
 	if (clone_flags & CLONE_VFORK) {
 		p->vfork_done = &vfork;
-		init_completion(&vfork);    /* VFORK 机制 使用completion完成 */
+        /* VFORK 机制 使用completion完成 */
+		init_completion(&vfork);
 		get_task_struct(p);
 	}
 
     /**
      *  唤醒 新进程 ，将进程 添加到运行队列
+     *  这里唤醒新的 task 这就是为什么 fork 返回两次
      */
-	wake_up_new_task(p);    /* 这里唤醒新的 task 这就是为什么 fork 返回两次 */
+	wake_up_new_task(p);
 
 	/* forking complete and child started to run, tell ptracer */
 	if (unlikely(trace))
 		ptrace_event_pid(trace, pid);
 
-	if (clone_flags & CLONE_VFORK) {    /* vfork() */
+    /* vfork() */
+	if (clone_flags & CLONE_VFORK) {
 		if (!wait_for_vfork_done(p, &vfork))
 			ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
 	}
@@ -3169,24 +3172,24 @@ SYSCALL_DEFINE0(vfork)
 #elif defined(CONFIG_CLONE_BACKWARDS3)
 #else
 /**
- *  克隆
+ *  克隆 clone(2)
  *
  *  pthread_create 为
  *  clone(child_stack=0x7f2c7ec71fb0,
  *          flags=CLONE_VM|
-                  CLONE_FS|
-                  CLONE_FILES|
-                  CLONE_SIGHAND|
-                  CLONE_THREAD|
-                  CLONE_SYSVSEM|
-                  CLONE_SETTLS|
-                  CLONE_PARENT_SETTID|
-                  CLONE_CHILD_CLEARTID,
-        parent_tidptr=0x7f2c7ec729d0, tls=0x7f2c7ec72700, child_tidptr=0x7f2c7ec729d0)
+ *                CLONE_FS|
+ *                CLONE_FILES|
+ *                CLONE_SIGHAND|
+ *                CLONE_THREAD|
+ *                CLONE_SYSVSEM|
+ *                CLONE_SETTLS|
+ *                CLONE_PARENT_SETTID|
+ *                CLONE_CHILD_CLEARTID,
+ *      parent_tidptr=0x7f2c7ec729d0, tls=0x7f2c7ec72700, child_tidptr=0x7f2c7ec729d0)
  */
 long clone(unsigned long flags, void *child_stack,
                  void *ptid, void *ctid,
-                 struct pt_regs *regs);
+                 struct pt_regs *regs){}//+++
 SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
                 		 int __user *, parent_tidptr,
                 		 int __user *, child_tidptr,
