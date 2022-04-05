@@ -60,7 +60,7 @@ extern struct nsproxy init_nsproxy;
  *
  *
  */
-struct nsset {  /*  */
+struct nsset {
 	unsigned flags;
     /**
      *

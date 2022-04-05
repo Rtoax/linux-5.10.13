@@ -3535,6 +3535,11 @@ int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
  * because they modify an inactive task_struct that is being
  * constructed. Here we are modifying the current, active,
  * task_struct.
+ *
+ *  unshare(2)
+ *  将当前进程和所在的Namespace分离，并加入到一个新的Namespace中
+ *  相对于setns()系统调用来说，unshare()不用关联之前存在的Namespace，
+ *  只需要指定需要分离的Namespace就行，该调用会自动创建一个新的Namespace
  */
 int ksys_unshare(unsigned long unshare_flags)
 {
@@ -3567,6 +3572,9 @@ int ksys_unshare(unsigned long unshare_flags)
 	if (unshare_flags & CLONE_NEWNS)
 		unshare_flags |= CLONE_FS;
 
+    /**
+     *
+     */
 	err = check_unshare_flags(unshare_flags);
 	if (err)
 		goto bad_unshare_out;
@@ -3577,15 +3585,28 @@ int ksys_unshare(unsigned long unshare_flags)
 	 */
 	if (unshare_flags & (CLONE_NEWIPC|CLONE_SYSVSEM))
 		do_sysvsem = 1;
+
+    /**
+     *
+     */
 	err = unshare_fs(unshare_flags, &new_fs);
 	if (err)
 		goto bad_unshare_out;
+    /**
+     *
+     */
 	err = unshare_fd(unshare_flags, NR_OPEN_MAX, &new_fd);
 	if (err)
 		goto bad_unshare_cleanup_fs;
+    /**
+     *
+     */
 	err = unshare_userns(unshare_flags, &new_cred);
 	if (err)
 		goto bad_unshare_cleanup_fd;
+    /**
+     *
+     */
 	err = unshare_nsproxy_namespaces(unshare_flags, &new_nsproxy,
 					 new_cred, new_fs);
 	if (err)
@@ -3653,9 +3674,12 @@ bad_unshare_out:
 }
 
 /**
- *
+ *  unshare(2)
+ *  将当前进程和所在的Namespace分离，并加入到一个新的Namespace中
+ *  相对于setns()系统调用来说，unshare()不用关联之前存在的Namespace，
+ *  只需要指定需要分离的Namespace就行，该调用会自动创建一个新的Namespace
  */
-int unshare(int flags);
+int unshare(int unshare_flags){}//+++++
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
 	return ksys_unshare(unshare_flags);

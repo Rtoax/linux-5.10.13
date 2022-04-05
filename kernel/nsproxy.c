@@ -81,16 +81,17 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 	int err;
 
     /**
+     *  分配内存
      *  nsproxy 一定是要有的，所以没有 flags 传入
      */
-	new_nsp = create_nsproxy(); /* 分配内存 */
+	new_nsp = create_nsproxy();
 	if (!new_nsp)
 		return ERR_PTR(-ENOMEM);
 
     /**
      *  mnt namespace
      */
-	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);    /* 挂载 */
+	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);
 	if (IS_ERR(new_nsp->mnt_ns)) {
 		err = PTR_ERR(new_nsp->mnt_ns);
 		goto out_ns;
@@ -99,7 +100,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
     /**
      *  UTS namespace
      */
-	new_nsp->uts_ns = copy_utsname(flags, user_ns, tsk->nsproxy->uts_ns);   /* UTS */
+	new_nsp->uts_ns = copy_utsname(flags, user_ns, tsk->nsproxy->uts_ns);
 	if (IS_ERR(new_nsp->uts_ns)) {
 		err = PTR_ERR(new_nsp->uts_ns);
 		goto out_uts;
@@ -108,7 +109,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
     /**
      *  IPC namespace
      */
-	new_nsp->ipc_ns = copy_ipcs(flags, user_ns, tsk->nsproxy->ipc_ns);  /* IPC */
+	new_nsp->ipc_ns = copy_ipcs(flags, user_ns, tsk->nsproxy->ipc_ns);
 	if (IS_ERR(new_nsp->ipc_ns)) {
 		err = PTR_ERR(new_nsp->ipc_ns);
 		goto out_ipc;
@@ -118,7 +119,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
      *  PID namespace
      */
 	new_nsp->pid_ns_for_children =
-		copy_pid_ns(flags, user_ns, tsk->nsproxy->pid_ns_for_children); /* PID */
+		copy_pid_ns(flags, user_ns, tsk->nsproxy->pid_ns_for_children);
 	if (IS_ERR(new_nsp->pid_ns_for_children)) {
 		err = PTR_ERR(new_nsp->pid_ns_for_children);
 		goto out_pid;
@@ -126,7 +127,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
     /**
      *  cgroup namespace
      */
-	new_nsp->cgroup_ns = copy_cgroup_ns(flags, user_ns, /* CGroup */
+	new_nsp->cgroup_ns = copy_cgroup_ns(flags, user_ns,
 					    tsk->nsproxy->cgroup_ns);
 	if (IS_ERR(new_nsp->cgroup_ns)) {
 		err = PTR_ERR(new_nsp->cgroup_ns);
@@ -135,7 +136,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
     /**
      *  网络名字空间
      */
-	new_nsp->net_ns = copy_net_ns(flags, user_ns, tsk->nsproxy->net_ns);    /* 网络 ** */
+	new_nsp->net_ns = copy_net_ns(flags, user_ns, tsk->nsproxy->net_ns);
 	if (IS_ERR(new_nsp->net_ns)) {
 		err = PTR_ERR(new_nsp->net_ns);
 		goto out_net;
@@ -143,7 +144,7 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
     /**
      *  时间名字空间
      */
-	new_nsp->time_ns_for_children = copy_time_ns(flags, user_ns,    /* time */
+	new_nsp->time_ns_for_children = copy_time_ns(flags, user_ns,
 					tsk->nsproxy->time_ns_for_children);
 	if (IS_ERR(new_nsp->time_ns_for_children)) {
 		err = PTR_ERR(new_nsp->time_ns_for_children);
@@ -382,40 +383,52 @@ static void put_nsset(struct nsset *nsset)
 		free_nsproxy(nsset->nsproxy);
 }
 
-static int prepare_nsset(unsigned flags, struct nsset *nsset)
+/**
+ *
+ */
+static int prepare_nsset(unsigned flags, struct nsset *__nsset)
 {
 	struct task_struct *me = current;
 
-	nsset->nsproxy = create_new_namespaces(0, me, current_user_ns(), me->fs);
-	if (IS_ERR(nsset->nsproxy))
-		return PTR_ERR(nsset->nsproxy);
+    /**
+     *  创建新的 namespace
+     */
+	__nsset->nsproxy = create_new_namespaces(0, me, current_user_ns(), me->fs);
+	if (IS_ERR(__nsset->nsproxy))
+		return PTR_ERR(__nsset->nsproxy);
 
 	if (flags & CLONE_NEWUSER)
-		nsset->cred = prepare_creds();
+		__nsset->cred = prepare_creds();
 	else
-		nsset->cred = current_cred();
-	if (!nsset->cred)
+		__nsset->cred = current_cred();
+	if (!__nsset->cred)
 		goto out;
 
 	/* Only create a temporary copy of fs_struct if we really need to. */
 	if (flags == CLONE_NEWNS) {
-		nsset->fs = me->fs;
+		__nsset->fs = me->fs;
 	} else if (flags & CLONE_NEWNS) {
-		nsset->fs = copy_fs_struct(me->fs);
-		if (!nsset->fs)
+		__nsset->fs = copy_fs_struct(me->fs);
+		if (!__nsset->fs)
 			goto out;
 	}
 
-	nsset->flags = flags;
+	__nsset->flags = flags;
 	return 0;
 
 out:
-	put_nsset(nsset);
+	put_nsset(__nsset);
 	return -ENOMEM;
 }
 
+/**
+ *  使能
+ */
 static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 {
+    /**
+     *
+     */
 	return ns->ops->install(nsset, ns);
 }
 
@@ -598,7 +611,12 @@ static void commit_nsset(struct nsset *nsset)
 }
 
 /**
+ *  setns(2) - 把进程加入到指定的Namespace中
  *
+ *  fd参数：表示文件描述符，前面提到可以通过打开/proc/$pid/ns/的方式将指定的Namespace保留下来，
+ *      也就是说可以通过文件描述符的方式来索引到某个Namespace。
+ *  nstype参数：用来检查fd关联Namespace是否与nstype表明的Namespace一致，
+ *      如果填0的话表示不进行该项检查。
  */
 int setns(int fd, int nstype){}//+++++
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
@@ -613,8 +631,12 @@ SYSCALL_DEFINE2(setns, int, fd, int, flags)
 		return -EBADF;
     /**
      *  是否为ns
+     *  file->f_op == &ns_file_operations;
      */
 	if (proc_ns_file(file)) {
+        /**
+         *  ns = ((struct ns_common *)(inode)->i_private)
+         */
 		ns = get_proc_ns(file_inode(file));
 		if (flags && (ns->ops->type != flags))
 			err = -EINVAL;
@@ -651,7 +673,10 @@ out:
 	return err;
 }
 
-int __init nsproxy_cache_init(void) /* namespace proxy 缓存 */
+/**
+ *  namespace proxy slab 初始化
+ */
+int __init nsproxy_cache_init(void)
 {
 	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC);
 	return 0;
