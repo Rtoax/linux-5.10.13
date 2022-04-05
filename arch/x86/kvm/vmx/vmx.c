@@ -5950,16 +5950,28 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	 *  Guest 发生 IO 导致 VM exit
 	 */
 	[EXIT_REASON_IO_INSTRUCTION]          = handle_io,
+	/**
+	 *  访问了CR寄存器，地址寄存器，和DR寄存器（debug register)一样，用于调试
+	 */
 	[EXIT_REASON_CR_ACCESS]               = handle_cr,
 	[EXIT_REASON_DR_ACCESS]               = handle_dr,
 	[EXIT_REASON_CPUID]                   = kvm_emulate_cpuid,
+	/**
+	 *  访问了MSR寄存器
+	 */
 	[EXIT_REASON_MSR_READ]                = kvm_emulate_rdmsr,
 	[EXIT_REASON_MSR_WRITE]               = kvm_emulate_wrmsr,
 	[EXIT_REASON_INTERRUPT_WINDOW]        = handle_interrupt_window,
+	/**
+	 *  Guest执行了HLT指令，Demo开胃菜就是这个指令
+	 */
 	[EXIT_REASON_HLT]                     = kvm_emulate_halt,
 	[EXIT_REASON_INVD]		      = handle_invd,
 	[EXIT_REASON_INVLPG]		      = handle_invlpg,
 	[EXIT_REASON_RDPMC]                   = handle_rdpmc,
+	/**
+	 *
+	 */
 	[EXIT_REASON_VMCALL]                  = handle_vmcall,
 	[EXIT_REASON_VMCLEAR]		      = handle_vmx_instruction,
 	[EXIT_REASON_VMLAUNCH]		      = handle_vmx_instruction,
@@ -5972,7 +5984,7 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_VMON]		      = handle_vmx_instruction,
 	[EXIT_REASON_TPR_BELOW_THRESHOLD]     = handle_tpr_below_threshold,
 	/**
-     *
+     *  访问了APIC
      */
 	[EXIT_REASON_APIC_ACCESS]             = handle_apic_access,
 	/**
@@ -5982,6 +5994,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_EOI_INDUCED]             = handle_apic_eoi_induced,
 	[EXIT_REASON_WBINVD]                  = handle_wbinvd,
 	[EXIT_REASON_XSETBV]                  = handle_xsetbv,
+	/**
+	 *  进程切换
+	 */
 	[EXIT_REASON_TASK_SWITCH]             = handle_task_switch,
 	[EXIT_REASON_MCE_DURING_VMENTRY]      = handle_machine_check,
 	[EXIT_REASON_GDTR_IDTR]		      = handle_desc,
@@ -6102,6 +6117,9 @@ static void vmx_dump_dtsel(char *name, uint32_t limit)
 	       vmcs_readl(limit + GUEST_GDTR_BASE - GUEST_GDTR_LIMIT));
 }
 
+/**
+ *  转储 vmcs
+ */
 void dump_vmcs(void)
 {
 	u32 vmentry_ctl, vmexit_ctl;
@@ -6304,7 +6322,13 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 			return 1;
 	}
 
+    /**
+     *  失败了
+     */
 	if (exit_reason & VMX_EXIT_REASONS_FAILED_VMENTRY) {
+        /**
+         *  转储 vmcs
+         */
 		dump_vmcs();
 		vcpu->run->exit_reason = KVM_EXIT_FAIL_ENTRY;
 		vcpu->run->fail_entry.hardware_entry_failure_reason
