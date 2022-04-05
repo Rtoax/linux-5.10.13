@@ -228,8 +228,8 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	pop %r14
 	pop %r15
 #else
-//	pop %esi
-//	pop %edi
+	pop %esi
+	pop %edi
 #endif
 	pop %_ASM_BP
 	ret

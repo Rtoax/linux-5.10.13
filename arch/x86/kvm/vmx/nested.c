@@ -3018,6 +3018,9 @@ static int nested_vmx_check_guest_state(struct kvm_vcpu *vcpu,
 	return 0;
 }
 
+/**
+ *  VM Entry
+ */
 static int nested_vmx_check_vmentry_hw(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -3312,7 +3315,7 @@ static u8 vmx_has_apicv_interrupt(struct kvm_vcpu *vcpu)
 static void load_vmcs12_host_state(struct kvm_vcpu *vcpu,
 				   struct vmcs12 *vmcs12);
 
-/*
+/**
  * If from_vmentry is false, this is being called from state restore (either RSM
  * or KVM_SET_NESTED_STATE).  Otherwise it's called from vmlaunch/vmresume.
  *
@@ -3321,6 +3324,14 @@ static void load_vmcs12_host_state(struct kvm_vcpu *vcpu,
  *	NVMX_VMENTRY_VMFAIL:  Consistency check VMFail
  *	NVMX_VMENTRY_VMEXIT:  Consistency check VMExit
  *	NVMX_VMENTRY_KVM_INTERNAL_ERROR: KVM internal error
+ *
+ * 进入 VMX non-root 模式
+ * VM运行在VMX non-root模式，这是Intel-V或者AMD-V提供的一种特殊的CPU执行模式。
+ * 然后当VM执行了特殊指令的时候，CPU将当前VM的上下文保存到VMCS寄存器（这个寄存器
+ * 是一个指针，保存了实际的上下文地址），然后执行权切换到VMM。
+ * VMM 获取 VM 返回原因，并做处理。 如果是IO请求，VMM 可以直接读取VM的内存并将
+ * IO操作模拟出来，然后再调用VMRESUME指令，VM继续执行，此时在VM看来，IO操作的
+ * 指令被CPU执行了。 Intel-V 技术是Intel为了支持虚拟化而提供的一套CPU特殊运行模式。
  */
 enum nvmx_vmentry_status nested_vmx_enter_non_root_mode(struct kvm_vcpu *vcpu,
 							bool from_vmentry)
@@ -3479,6 +3490,8 @@ vmentry_fail_vmexit:
 /*
  * nested_vmx_run() handles a nested entry, i.e., a VMLAUNCH or VMRESUME on L1
  * for running an L2 nested guest.
+ *
+ * VMX 是Intel指令。SVM 是AMD指令
  */
 static int nested_vmx_run(struct kvm_vcpu *vcpu, bool launch)
 {

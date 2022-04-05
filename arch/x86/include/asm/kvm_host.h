@@ -157,7 +157,7 @@ enum kvm_reg {
 	VCPU_REGS_R13 = __VCPU_REGS_R13,
 	VCPU_REGS_R14 = __VCPU_REGS_R14,
 	VCPU_REGS_R15 = __VCPU_REGS_R15,
-#endif  
+#endif
     /**
      *  指令指针
      */
@@ -186,13 +186,13 @@ enum {
 };
 
 /**
- *  
+ *
  */
 enum exit_fastpath_completion {
 	EXIT_FASTPATH_NONE,
     /**
      *  从 Host 内核空间，再次进入 Guest
-     *  
+     *
      */
 	EXIT_FASTPATH_REENTER_GUEST,
 	/**
@@ -357,7 +357,7 @@ struct kvm_mmu_page;
  * and 2-level 32-bit).  The kvm_mmu structure abstracts the details of the
  * current mmu mode.
  *
- *  
+ *
  */
 struct kvm_mmu {
     /**
@@ -422,7 +422,7 @@ struct kvm_mmu {
 	u8 shadow_root_level;
 	u8 ept_ad;
     /**
-     *  
+     *
      */
 	bool direct_map;
 	struct kvm_mmu_root_info prev_roots[KVM_MMU_NUM_PREV_ROOTS];
@@ -579,7 +579,7 @@ struct kvm_vcpu_hv {
 };
 
 /**
- *  
+ *
  */
 struct kvm_vcpu_arch {
 	/*
@@ -591,7 +591,7 @@ struct kvm_vcpu_arch {
 	u32 regs_dirty;
 
     /**
-     *  
+     *
      */
 	unsigned long cr0;
 	unsigned long cr0_guest_owned_bits;
@@ -883,7 +883,7 @@ struct kvm_lpage_info {
 };
 
 /**
- *  
+ *
  */
 struct kvm_arch_memory_slot {
 	struct kvm_rmap_head *rmap[KVM_NR_PAGE_SIZES];
@@ -972,7 +972,7 @@ enum kvm_irqchip_mode {
 #define APICV_INHIBIT_REASON_X2APIC	5
 
 /**
- *  
+ *
  */
 struct kvm_arch {
 	unsigned long n_used_mmu_pages;
@@ -987,7 +987,7 @@ struct kvm_arch {
      *  创建的影子页表需要从0开始构建，替他都是从cache中获取。
      *
      *  Guest 页表的根页面的帧号作为 hash 表的key。
-     *  
+     *
      *  见 `kvm_mmu_get_page()`
      */
 	struct hlist_head mmu_page_hash[KVM_NUM_MMU_PAGES];
@@ -1180,7 +1180,7 @@ static inline u16 kvm_lapic_irq_dest_mode(bool dest_mode_logical)
 }
 
 /**
- *  
+ *
  */
 struct kvm_x86_ops {
 	int (*hardware_enable)(void);
@@ -1665,6 +1665,9 @@ void kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd, bool skip_tlb_flush,
 void kvm_configure_mmu(bool enable_tdp, int tdp_max_root_level,
 		       int tdp_huge_page_level);
 
+/**
+ *
+ */
 static inline u16 kvm_read_ldt(void)
 {
 	u16 ldt;
