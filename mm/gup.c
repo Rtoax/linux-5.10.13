@@ -854,6 +854,9 @@ static int faultin_page(struct vm_area_struct *vma,
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (*flags & FOLL_REMOTE)
 		fault_flags |= FAULT_FLAG_REMOTE;
+    /**
+     *
+     */
 	if (locked)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
 	if (*flags & FOLL_NOWAIT)
@@ -1027,9 +1030,10 @@ static long __get_user_pages(struct mm_struct *mm,
 	 * fault information is unrelated to the reference behaviour of a task
 	 * using the address space
 	 *
-	 * 如果设置了 FOLL_FORCE，则不要强制完全错误，因为提示错误信息与使用地址空间的任务的引用行为无关
+	 * 如果设置了 FOLL_FORCE，则不要强制完全错误，因为提示错误信息与使用
+	 * 地址空间的任务的引用行为无关
 	 */
-	if (!(gup_flags & FOLL_FORCE))  /*  */
+	if (!(gup_flags & FOLL_FORCE))
 		gup_flags |= FOLL_NUMA;
 
 	do {
@@ -1056,7 +1060,7 @@ static long __get_user_pages(struct mm_struct *mm,
 				ret = -EFAULT;
 				goto out;
 			}
-            
+
             /* 如果是大页内存 */
 			if (is_vm_hugetlb_page(vma)) {
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
@@ -1293,7 +1297,7 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 
 	pages_done = 0; /* page 计数 */
 	lock_dropped = false;
-    
+
 	for (;;) {
         /**
          *  为地址空间分配物理内存 并建立映射关系
@@ -1454,7 +1458,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 }
 
 /*
- * __mm_populate - populate and/or mlock pages within a range of address space.
+ * __mm_populate - populate(填充) and/or mlock pages within a range of address space.
  *
  * This is used to implement mlock() and the MAP_POPULATE / MAP_LOCKED mmap
  * flags. VMAs must be already marked with the desired vm_flags, and
@@ -1462,7 +1466,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
  *
  * 在地址空间范围内填充和/或锁定页面。
  */
-int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    /*  */
+int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long end, nstart, nend;
@@ -1472,12 +1476,17 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 
 	end = start + len;
 
+    /**
+     *  遍历这块地址空间
+     */
 	for (nstart = start; nstart < end; nstart = nend) {
 		/*
 		 * We want to fault in pages for [nstart; end) address range.
 		 * Find first corresponding VMA.
 		 */
-		/* (1) 根据目标地址，查找vma */
+		/**
+		 *  (1) 根据目标地址，查找vma
+		 */
 		if (!locked) {
 			locked = 1;
 			mmap_read_lock(mm);
@@ -1490,7 +1499,9 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 		 * Set [nstart; nend) to intersection of desired address
 		 * range with the first VMA. Also, skip undesirable VMA types.
 		 */
-		/* (2) 计算目标地址和vma的重叠部分 */
+		/**
+		 *  (2) 计算目标地址和vma的重叠部分
+		 */
 		nend = min(end, vma->vm_end);
 		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
 			continue;
@@ -1501,7 +1512,9 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 		 * double checks the vma flags, so that it won't mlock pages
 		 * if the vma was already munlocked.
 		 */
-		/* (3) 对重叠部分进行page内存填充 */
+		/**
+		 *  (3) 对重叠部分进行page内存填充
+		 */
 		ret = populate_vma_page_range(vma, nstart, nend, &locked);
 		if (ret < 0) {
 			if (ignore_errors) {
@@ -1518,48 +1531,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)    
 	return ret;	/* 0 or negative error code */
 }
 #else /* CONFIG_MMU */
-//static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
-//		unsigned long nr_pages, struct page **pages,
-//		struct vm_area_struct **vmas, int *locked,
-//		unsigned int foll_flags)
-//{
-//	struct vm_area_struct *vma;
-//	unsigned long vm_flags;
-//	int i;
-//
-//	/* calculate required read or write permissions.
-//	 * If FOLL_FORCE is set, we only require the "MAY" flags.
-//	 */
-//	vm_flags  = (foll_flags & FOLL_WRITE) ?
-//			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
-//	vm_flags &= (foll_flags & FOLL_FORCE) ?
-//			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
-//
-//	for (i = 0; i < nr_pages; i++) {
-//		vma = find_vma(mm, start);
-//		if (!vma)
-//			goto finish_or_fault;
-//
-//		/* protect what we can, including chardevs */
-//		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
-//		    !(vm_flags & vma->vm_flags))
-//			goto finish_or_fault;
-//
-//		if (pages) {
-//			pages[i] = virt_to_page(start);
-//			if (pages[i])
-//				get_page(pages[i]);
-//		}
-//		if (vmas)
-//			vmas[i] = vma;
-//		start = (start + PAGE_SIZE) & PAGE_MASK;
-//	}
-//
-//	return i;
-//
-//finish_or_fault:
-//	return i ? : -EFAULT;
-//}
+/*  */
 #endif /* !CONFIG_MMU */
 
 /**

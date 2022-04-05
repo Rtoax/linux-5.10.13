@@ -184,7 +184,7 @@ static void __munlock_isolation_failed(struct page *page)
  * can't isolate the page, we leave it for putback_lru_page() and vmscan
  * [page_referenced()/try_to_unmap()] to deal with.
  *
- * 
+ *
  */
 unsigned int munlock_vma_page(struct page *page)    /*  */
 {
@@ -516,6 +516,7 @@ next:
 
 /*
  * mlock_fixup  - handle mlock[all]/munlock[all] requests.
+ * 锁定mmap
  *
  * Filters out "special" vmas -- VM_LOCKED never gets set for these, and
  * munlock is a no-op.  However, for some special vmas, we go ahead and
@@ -523,7 +524,8 @@ next:
  *
  * For vmas that pass the filters, merge/split as appropriate.
  */
-static int mlock_fixup(struct vm_area_struct *vma, struct vm_area_struct **prev,
+static int
+mlock_fixup(struct vm_area_struct *vma, struct vm_area_struct **prev,
 	unsigned long start, unsigned long end, vm_flags_t newflags)
 {
 	struct mm_struct *mm = vma->vm_mm;
@@ -577,8 +579,14 @@ success:
 	 * set VM_LOCKED, populate_vma_page_range will bring it back.
 	 */
 
+    /**
+     *  锁定
+     */
 	if (lock)
 		vma->vm_flags = newflags;
+    /**
+     *  解除锁定
+     */
 	else
 		munlock_vma_pages_range(vma, start, end);
 
@@ -675,7 +683,11 @@ static unsigned long count_mm_mlocked_page_nr(struct mm_struct *mm,
 	return count >> PAGE_SHIFT;
 }
 
-static __must_check int do_mlock(unsigned long start, size_t len, vm_flags_t flags)
+/**
+ *  mlock(2), mlock2(2)
+ */
+static __must_check int
+do_mlock(unsigned long start, size_t len, vm_flags_t flags)
 {
 	unsigned long locked;
 	unsigned long lock_limit;
@@ -716,17 +728,28 @@ static __must_check int do_mlock(unsigned long start, size_t len, vm_flags_t fla
 	if (error)
 		return error;
 
+    /**
+     *  在地址空间范围内填充和/或锁定页面。
+     */
 	error = __mm_populate(start, len, 0);
 	if (error)
 		return __mlock_posix_error_return(error);
 	return 0;
 }
 
+/**
+ *  mlock(2)
+ */
+int mlock(const void *addr, size_t len){}//+++++
 SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
 {
 	return do_mlock(start, len, VM_LOCKED);
 }
 
+/**
+ *  mlock2(2)
+ */
+int mlock2(const void *addr, size_t len, int flags){}//+++++
 SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
 {
 	vm_flags_t vm_flags = VM_LOCKED;
@@ -740,6 +763,10 @@ SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
 	return do_mlock(start, len, vm_flags);
 }
 
+/**
+ *  munlock(2)
+ */
+int munlock(const void *addr, size_t len){}//+++++
 SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
 {
 	int ret;
@@ -766,6 +793,8 @@ SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
  * times with different flags, the values do not necessarily stack.  If mlockall
  * is called once including the MCL_FUTURE flag and then a second time without
  * it, VM_LOCKED and VM_LOCKONFAULT will be cleared from mm->def_flags.
+ *
+ * mlock(2)
  */
 static int apply_mlockall_flags(int flags)
 {
@@ -789,6 +818,9 @@ static int apply_mlockall_flags(int flags)
 			to_add |= VM_LOCKONFAULT;
 	}
 
+    /**
+     *  遍历 所有vma
+     */
 	for (vma = current->mm->mmap; vma ; vma = prev->vm_next) {
 		vm_flags_t newflags;
 
@@ -803,6 +835,14 @@ out:
 	return 0;
 }
 
+/**
+ *  mlockall(2)
+ *
+ *  MCL_CURRENT - 当前
+ *  MCL_FUTURE  - 将来要mapping的
+ *  MCL_ONFAULT - 已经产生缺页的
+ */
+int mlockall(int flags){}//+++++
 SYSCALL_DEFINE1(mlockall, int, flags)
 {
 	unsigned long lock_limit;
@@ -822,8 +862,17 @@ SYSCALL_DEFINE1(mlockall, int, flags)
 		return -EINTR;
 
 	ret = -ENOMEM;
+    /**
+     *  如果
+     *  1. 没有设置 MCL_CURRENT
+     *  2. 当前 vm 小于限制
+     *  3.
+     */
 	if (!(flags & MCL_CURRENT) || (current->mm->total_vm <= lock_limit) ||
 	    capable(CAP_IPC_LOCK))
+        /**
+         *  执行锁定
+         */
 		ret = apply_mlockall_flags(flags);
 	mmap_write_unlock(current->mm);
 	if (!ret && (flags & MCL_CURRENT))
@@ -832,6 +881,11 @@ SYSCALL_DEFINE1(mlockall, int, flags)
 	return ret;
 }
 
+/**
+ *  munlockall(2)
+ *
+ */
+int munlockall(void){}//++++
 SYSCALL_DEFINE0(munlockall)
 {
 	int ret;
