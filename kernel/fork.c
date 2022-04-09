@@ -3131,20 +3131,20 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 
 #ifdef __ARCH_WANT_SYS_FORK
 /**
- *  fork
+ *  fork()系统调用
  */
-pid_t fork(void); /* +++ */
-SYSCALL_DEFINE0(fork)   /* fork()系统调用 */
+pid_t fork(void){} /* +++ */
+SYSCALL_DEFINE0(fork)
 {
 #ifdef CONFIG_MMU
 	struct kernel_clone_args args = {
 		args.exit_signal = SIGCHLD,
 	};
 
-	return kernel_clone(&args); /*  */
+	return kernel_clone(&args);
 #else
 	/* can not support in nommu mode */
-//	return -EINVAL;
+	return -EINVAL;
 #endif
 }
 #endif

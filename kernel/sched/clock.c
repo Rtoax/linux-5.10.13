@@ -87,6 +87,9 @@ static int __sched_clock_stable_early = 1;
 __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
 
+/**
+ *
+ */
 struct sched_clock_data {   /*  */
 	u64			tick_raw;   /* sched_clock(); */
 	u64			tick_gtod;  /* ktime_get_ns() */
@@ -378,8 +381,15 @@ u64 sched_clock_cpu(int cpu)
 		return sched_clock();
 
 	preempt_disable_notrace();
+
+    /**
+     *
+     */
 	scd = cpu_sdc(cpu);
 
+    /**
+     *
+     */
 	if (cpu != smp_processor_id())
 		clock = sched_clock_remote(scd);
 	else
@@ -465,6 +475,9 @@ void __init sched_clock_init(void)  /*  */
 	local_irq_enable();
 }
 
+/**
+ *
+ */
 u64 sched_clock_cpu(int cpu)
 {
 	if (!static_branch_likely(&sched_clock_running))
