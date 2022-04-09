@@ -66,8 +66,22 @@ struct setup_indirect {
 	__u64 addr;
 };
 
-/* Documentation/x86/zero-page.txt */
-struct setup_header {/* 该结构包含与linux引导协议中定义的字段相同的字段，并由引导加载程序以及内核编译/构建时填充 */
+/**
+ *  Documentation/x86/zero-page.txt
+ *  该结构包含与linux引导协议中定义的字段相同的字段，
+ *  并由引导加载程序以及内核编译/构建时填充
+ */
+struct setup_header {
+    /**
+     *  header.S中专门开辟了一部分空间用于存储boot params参数
+     *  这些参数都是linux boot protocol协议定义的只读或可写参数，
+     *  bootloader程序(例如grub)会根据boot params中定义的setup_sects参数，
+     *  将bzImage分割成实模式代码和保护模式代码两个部分，
+     *  其中保护模式代码会被bootloader加载到>=0x100000(1M)内存处，
+     *  具体的位置有boot params中定义的code32_start参数决定，
+     *  实模式代码被bootloader加载到x~x+0x8000这32K低地址区间内，
+     *  其具体位置由bootloader决定，这个协议没有规定。
+     */
 	__u8	setup_sects;
 	__u16	root_flags;
 	__u32	syssize;
@@ -93,6 +107,19 @@ struct setup_header {/* 该结构包含与linux引导协议中定义的字段相
 	__u8	type_of_loader;
 	__u8	loadflags;
 	__u16	setup_move_size;
+    /**
+     * https://zhuanlan.zhihu.com/p/99557658
+     *  当设置.config文件中的CONFIG_RANDOMIZE_BASE=n后，
+     *  内核代码中引用的虚拟地址不需要 relocate，
+     *  加载内核的物理地址由 boot params 中的参数 code32_start（default:0x100000，1M）参数
+     *  和#define CONFIG_PHYSICAL_START 0x1000000(16M)这个编译时定义的默认值决定。
+     *
+     *  该参数定义在arch/x86/boot/header.S中，
+     *  仅被 bootloader（grub） 使用， 用于将内核的保护模式代码加载到1M内存地址处，
+     *  当内核的实地址代码运行完各种寄存器，
+     *  CPU check和某些boot params的初始化操作后，
+     *  会进入保护模式并跳转到1M地址处执行head_64.S中start_32，
+     */
 	__u32	code32_start;
 	__u32	ramdisk_image;  /* get_ramdisk_image() */
 	__u32	ramdisk_size;   /* get_ramdisk_size() */
@@ -222,7 +249,7 @@ struct boot_parameters {/* 所谓的零 页 page0 */
 	struct edid_info edid_info;			/* 0x140 */
 	struct efi_info efi_info;			/* 0x1c0 */
 	__u32 alt_mem_k;				/* 0x1e0 */
-	__u32 scratch;		/* Scratch field! */	/* 0x1e4 = BP_scratch */ 
+	__u32 scratch;		/* Scratch field! */	/* 0x1e4 = BP_scratch */
     /**
      *  e820_table 的个数， 在 detect_memory_e820() 中被初始化
      */
@@ -253,7 +280,7 @@ struct boot_parameters {/* 所谓的零 页 page0 */
      *  启动 bios 获取 的  e820 table，个数用 `e820_entries`记录
      *  将在 detect_memory_e820() 中被初始化
      *
-     *  
+     *
      *  Physic Memory
      *
      *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
@@ -279,11 +306,11 @@ struct boot_parameters {/* 所谓的零 页 page0 */
      *      e820_table 遍历
      */
 	struct boot_e820_entry e820_table[E820_MAX_ENTRIES_ZEROPAGE/*128*/]; /* 0x2d0 */
-    
+
 	__u8  _pad8[48];				/* 0xcd0 */
-    
+
 	struct edd_info eddbuf[EDDMAXNR];		/* 0xd00 */
-    
+
 	__u8  _pad9[276];				/* 0xeec */
 } __attribute__((packed));
 

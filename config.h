@@ -3428,6 +3428,14 @@
 #define CONFIG_PHYLINK_MODULE 1
 #define CONFIG_PHYS_ADDR_T_64BIT 1
 #define CONFIG_PHYSICAL_ALIGN 0x200000
+/**
+ *  https://zhuanlan.zhihu.com/p/99557658
+ *
+ *  当设置.config文件中的CONFIG_RANDOMIZE_BASE=n后，
+ *  内核代码中引用的虚拟地址不需要relocate，
+ *  加载内核的物理地址由boot params中的参数code32_start（default:0x100000，1M）参数
+ *  和#define CONFIG_PHYSICAL_START 0x1000000(16M)这个编译时定义的默认值决定。
+ */
 #define CONFIG_PHYSICAL_START 0x1000000 /* (16 MB) */
 #define CONFIG_PID_NS           /*  */
 #define CONFIG_PID_NS 1
@@ -3613,6 +3621,23 @@
 #define CONFIG_RAID6_PQ_BENCHMARK 1
 #define CONFIG_RAID6_PQ_MODULE 1
 #define CONFIG_RAID_ATTRS_MODULE 1
+/**
+ *  https://zhuanlan.zhihu.com/p/99557658
+ *
+ *  内核重定位表用于对内核虚拟地址的重定位操作，
+ *  我们知道内核的默认虚拟基地址是: 0xffffffff81000000
+ *  （内核占用0xffffffff80000000~0xffffffffC0000000这1G虚拟地址空间），
+ *  当我们在编译内核的时候，如果设置.config文件中的CONFIG_RANDOMIZE_BASE=y，
+ *  那么在将compressed kernel解压到randomized physical address后，
+ *  还要对kernel中的虚拟地址进行randomize，
+ *  这时就要知道内核中哪些地方的虚拟地址需要relocate，
+ *  内核重定位表就记录了内核中所有需要重定位的虚拟地址的位置。
+ *
+ *  当设置.config文件中的CONFIG_RANDOMIZE_BASE=n后，
+ *  内核代码中引用的虚拟地址不需要relocate，
+ *  加载内核的物理地址由boot params中的参数code32_start（default:0x100000，1M）参数
+ *  和#define CONFIG_PHYSICAL_START 0x1000000(16M)这个编译时定义的默认值决定。
+ */
 #define CONFIG_RANDOMIZE_BASE 1
 #define CONFIG_RANDOMIZE_MEMORY 1
 #define CONFIG_RANDOMIZE_MEMORY_PHYSICAL_PADDING 0xa

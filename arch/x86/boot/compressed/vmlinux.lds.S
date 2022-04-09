@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <asm-generic/vmlinux.lds.h>
 
+/**
+ *  vmlinux.lds.S的链接规则就可得到 protect mode kernel 的文件结构
+ */
+
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 
 #undef i386
@@ -12,10 +16,13 @@ OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(startup_64)   /*  */
 #else
-//OUTPUT_ARCH(i386)
-//ENTRY(startup_32)
+OUTPUT_ARCH(i386)
+ENTRY(startup_32)
 #endif
 
+/**
+ *
+ */
 SECTIONS
 {
 	/* Be careful parts of head_64.S assume startup_32 is at
@@ -27,15 +34,31 @@ SECTIONS
 		HEAD_TEXT   /*  */
 		_ehead = . ;
 	}
-	.rodata..compressed : { /* `.rodata..compressed`包含了压缩了的内核镜像 */
+    /**
+     *  由mkpiggy.c文件生成的 piggy.S 中定义的
+     *  `.rodata..compressed`包含了压缩了的内核镜像
+     */
+	.rodata..compressed : {
 		*(.rodata..compressed)
 	}
-	.text :	{   /* `.text`节包含解压代码 */
+    /**
+     * `.text`节包含解压代码
+     */
+	.text :	{
 		_text = .; 	/* Text */
 		*(.text)
 		*(.text.*)
 		_etext = . ;
 	}
+    /**
+     *  head_64.S在链接的时候会以“relocated:”标号为界，
+     *  relocated之前的代码被链接在compressed kernel之前，
+     *  relocated标号之后的代码以及decompressing code都被链接在compressed kernel之后。
+     */
+
+    /**
+     *
+     */
 	.rodata : { /*  */
 		_rodata = . ;
 		*(.rodata)	 /* read-only data */
@@ -87,7 +110,7 @@ SECTIONS
 #ifdef CONFIG_X86_64
 	       SIZEOF(.got.plt) == 0x18,
 #else
-//	       SIZEOF(.got.plt) == 0xc,
+	       SIZEOF(.got.plt) == 0xc,
 #endif
 	       "Unexpected GOT/PLT entries detected!")
 

@@ -62,10 +62,12 @@ _head:
 	/*
 	 * DO NOT MODIFY. Image header expected by Linux boot-loaders.
 	 */
-#ifdef CONFIG_EFI
+#ifdef CONFIG_EFI //EFI启动配置
 	/*
 	 * This add instruction has no meaningful effect except that
 	 * its opcode forms the magic "MZ" signature required by UEFI.
+	 *
+	 * 把自己伪装成一个UEFI image，kernel需要符合PE格式
 	 */
 	add	x13, x18, #0x16
 	b	primary_entry
@@ -74,6 +76,11 @@ _head:
 	.long	0				// reserved
 #endif
 	.quad	0				// Image load offset from start of RAM, little-endian
+	/**
+	 *  _kernel_offset_le： kernel在RAM中加载的偏移，如果等于0，表示加载到RAM的0地址的位置上
+	 *  _kernel_size_le： kernel的大小
+	 *  _kernel_flags_le： kernel的一些属性
+	 */
 	le64sym	_kernel_size_le			// Effective size of kernel image, little-endian
 	le64sym	_kernel_flags_le		// Informative flags, little-endian
 	.quad	0				// reserved
@@ -84,6 +91,9 @@ _head:
 	.long	pe_header - _head		// Offset to the PE header.
 
 pe_header:
+    /**
+     *  定义在 arch/arm64/kernel/efi-head.S
+     */
 	__EFI_PE_HEADER
 #else
 	.long	0				// reserved
@@ -101,6 +111,8 @@ pe_header:
 	 *  x28        __create_page_tables()                   callee preserved temp register
 	 *  x19/x20    __primary_switch()                       callee preserved temp registers
 	 *  x24        __primary_switch() .. relocate_kernel()  current RELR displacement
+	 *
+	 * 获取处理器类型和机器类型信息，并创建临时的页表？
 	 */
 SYM_CODE_START(primary_entry)
 	bl	preserve_boot_args
@@ -966,7 +978,7 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 	mrs	x20, sctlr_el1			// preserve old SCTLR_EL1 value
 #endif
     /**
-     *  
+     *
      */
 	adrp	x1, init_pg_dir
 	/**
@@ -979,7 +991,7 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 #endif
 	bl	__relocate_kernel
 #ifdef CONFIG_RANDOMIZE_BASE
-    
+
 	ldr	x8, =__primary_switched
 	adrp	x0, __PHYS_OFFSET
 	blr	x8

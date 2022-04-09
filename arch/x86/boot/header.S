@@ -43,8 +43,8 @@ SYSSEG		= 0x1000		/* historical load address >> 4 */
 bootsect_start:
 #ifdef CONFIG_EFI_STUB
 	//# "MZ", MS-DOS header
-	.word	MZ_MAGIC    /* 为了能够作为 bootloader 来使用, 
-	                    `header.S` 开始处定义了 [MZ] 
+	.word	MZ_MAGIC    /* 为了能够作为 bootloader 来使用,
+	                    `header.S` 开始处定义了 [MZ]
 	                    [MZ](https://en.wikipedia.org/wiki/DOS_MZ_executable) 魔术数字 */
 #endif
 
@@ -336,6 +336,19 @@ setup_move_size: .word  0x8000		# size to move, when setup is not
 					# loader knows how much data behind
 					# us also needs to be loaded.
 
+/**
+ * https://zhuanlan.zhihu.com/p/99557658
+ *  当设置.config文件中的CONFIG_RANDOMIZE_BASE=n后，
+ *  内核代码中引用的虚拟地址不需要 relocate，
+ *  加载内核的物理地址由 boot params 中的参数 code32_start（default:0x100000，1M）参数
+ *  和#define CONFIG_PHYSICAL_START 0x1000000(16M)这个编译时定义的默认值决定。
+ *
+ *  该参数定义在arch/x86/boot/header.S中，
+ *  仅被 bootloader（grub） 使用， 用于将内核的保护模式代码加载到1M内存地址处，
+ *  当内核的实地址代码运行完各种寄存器，
+ *  CPU check和某些boot params的初始化操作后，
+ *  会进入保护模式并跳转到1M地址处执行head_64.S中start_32，
+ */
 code32_start:				# here loaders can put a different
 					# start address for 32-bit code.
 		.long	0x100000	//# 0x100000 = default for big kernel
@@ -617,7 +630,7 @@ start_of_setup:
     //* `ss` 寄存器的值是 0x10000 ( 和其他除了 `cs` 寄存器之外的所有寄存器的一样）
     //* `ss` 寄存器的值不是 0x10000，但是 `CAN_USE_HEAP` 标志被设置了
     //* `ss` 寄存器的值不是 0x10000，同时 `CAN_USE_HEAP` 标志没有被设置
-        
+
     //`ss` != `ds`的情况
     //	# Invalid %ss, make up a new stack
 	movw	$_end, %dx      //将 setup code 的结束地址 [_end]写入 `dx` 寄存器
@@ -648,11 +661,11 @@ start_of_setup:
 	pushw	$6f
 	lretw
     //上面的代码使用了一个小小的技巧来重置 `cs` 寄存器的内容，下面我们就来仔细分析。
-    //这段代码首先将 `ds`寄存器的值入栈，然后将标号为 [6]的代码段地址入栈 ，接着执行 
+    //这段代码首先将 `ds`寄存器的值入栈，然后将标号为 [6]的代码段地址入栈 ，接着执行
     //`lretw` 指令，这条指令，将把标号为 `6` 的内存地址放入 `ip` 寄存器 （[instruction pointer]），
     //将 `ds` 寄存器的值放入 `cs` 寄存器。 这样一来 `ds` 和 `cs` 段寄存器就拥有了相同的值。
 
-    
+
 6:
 
     //# Check signature at end of setup
@@ -660,7 +673,7 @@ start_of_setup:
     //这只是将setup_sig与幻数进行比较0x5a5aaa55,如果它们不相等，则会报告致命错误。
     //如果魔术数字匹配，则在知道我们有一组正确的段寄存器和一个堆栈的情况下，
     //我们只需要在跳入C代码之前设置BSS部分即可。
-    //arch/x86/boot/setup.ld 
+    //arch/x86/boot/setup.ld
     //如果 `magic` 签名是对的， 那么我们只要设置好 `BSS` 段，就可以开始执行 C 代码了。
 	cmpl	$0x5a5aaa55, setup_sig
 	jne	setup_bad

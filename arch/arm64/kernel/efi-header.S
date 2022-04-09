@@ -7,28 +7,31 @@
 #include <linux/pe.h>
 #include <linux/sizes.h>
 
+    /**
+     *  使用在 arch/arm64/kernel/head.S
+     */
 	.macro	__EFI_PE_HEADER
 	.long	PE_MAGIC
 coff_header:
-	.short	IMAGE_FILE_MACHINE_ARM64		// Machine
-	.short	section_count				// NumberOfSections
-	.long	0 					// TimeDateStamp
-	.long	0					// PointerToSymbolTable
-	.long	0					// NumberOfSymbols
-	.short	section_table - optional_header		// SizeOfOptionalHeader
+	.short	IMAGE_FILE_MACHINE_ARM64		// Machine 表示machine type是AArch64
+	.short	section_count				// NumberOfSections 该PE文件有多少个section
+	.long	0 					// TimeDateStamp    该文件的创建时间
+	.long	0					// PointerToSymbolTable 符号表信息
+	.long	0					// NumberOfSymbols  符号表中的符号的数目
+	.short	section_table - optional_header		// SizeOfOptionalHeader optional header的长度
 	.short	IMAGE_FILE_DEBUG_STRIPPED | \
 		IMAGE_FILE_EXECUTABLE_IMAGE | \
-		IMAGE_FILE_LINE_NUMS_STRIPPED		// Characteristics
+		IMAGE_FILE_LINE_NUMS_STRIPPED		// Characteristics 具体的含义请查看PE规格书
 
 optional_header:
 	.short	PE_OPT_MAGIC_PE32PLUS			// PE32+ format
 	.byte	0x02					// MajorLinkerVersion
 	.byte	0x14					// MinorLinkerVersion
-	.long	__initdata_begin - efi_header_end	// SizeOfCode
-	.long	__pecoff_data_size			// SizeOfInitializedData
-	.long	0					// SizeOfUninitializedData
-	.long	__efistub_efi_pe_entry - _head		// AddressOfEntryPoint
-	.long	efi_header_end - _head			// BaseOfCode
+	.long	__initdata_begin - efi_header_end	// SizeOfCode   正文段的大小
+	.long	__pecoff_data_size			// SizeOfInitializedData    data段的大小
+	.long	0					// SizeOfUninitializedData  bss段的大小
+	.long	__efistub_efi_pe_entry - _head		// AddressOfEntryPoint  加载到memory后入口函数
+	.long	efi_header_end - _head			// BaseOfCode   代码段在image file中的偏移
 
 extra_header_fields:
 	.quad	0					// ImageBase

@@ -13,9 +13,9 @@
  * the page directory. [According to comments etc elsewhere on a compressed
  * kernel it will end up at 0x1000 + 1Mb I hope so as I assume this. - AC]
  *
- * Page 0 is deliberately kept safe, since System Management Mode code in 
+ * Page 0 is deliberately kept safe, since System Management Mode code in
  * laptops may need to access the BIOS data stored there.  This is also
- * useful for future device drivers that either access the BIOS via VM86 
+ * useful for future device drivers that either access the BIOS via VM86
  * mode.
  */
 
@@ -47,6 +47,9 @@
 	.hidden _ebss
 	.hidden _end
 
+    /**
+     *  ".head.text","ax"
+     */
 	__HEAD  /* __HEAD 是在 include/linux/init.h */
 
 /*
@@ -98,7 +101,7 @@ SYM_FUNC_START(startup_32)
  * for this calculation. Only 4 bytes are needed.
  */
     //`esi` 寄存器包含了 [boot_params]
-    ///* 0x1e4 = BP_scratch */ 
+    ///* 0x1e4 = BP_scratch */
     //BP_scratch ~ BP_scratch+4 4 字节的区域将会成为 `call` 指令的临时栈
 	leal	(BP_scratch+4)(%esi), %esp
 	call	1f
@@ -120,7 +123,7 @@ SYM_FUNC_START(startup_32)
 	movl	%eax, %ss
 
 /* setup a stack and make sure cpu supports long mode. */
-	leal	rva(boot_stack_end)(%ebp), %esp 
+	leal	rva(boot_stack_end)(%ebp), %esp
 
     //既然我们将要切换到 `长模式` ，我们需要检查 CPU 是否支持 `长模式` 和 `SSE`
     //arch/x86/kernel/verify_cpu.S verify_cpu
@@ -147,7 +150,7 @@ SYM_FUNC_START(startup_32)
 #ifdef CONFIG_RELOCATABLE
 	movl	%ebp, %ebx  //ebp寄存器的值是startup_32标签的物理地址。
 	                    //ebx = startup_32
-    
+
 #ifdef CONFIG_EFI_STUB
 /*
  * If we were loaded via the EFI LoadImage service, startup_32 will be at an
@@ -170,7 +173,7 @@ SYM_FUNC_START(startup_32)
 #endif
 	movl	$LOAD_PHYSICAL_ADDR, %ebx
 1:
-    
+
 	/* Target address to relocate to for decompression */
 	addl	BP_init_size(%esi), %ebx
 	subl	$ rva(_end), %ebx   //给 `startup_32` 加上偏移来获得解压内核镜像的地址
@@ -182,7 +185,7 @@ SYM_FUNC_START(startup_32)
  */
 
     //在我们载入 `全局描述符表` 之后,必须启用 [PAE]
-    //方法是将 `cr4` 寄存器的值传入 `eax` ，将第5位置1，然后再写回 `cr4` 
+    //方法是将 `cr4` 寄存器的值传入 `eax` ，将第5位置1，然后再写回 `cr4`
 	/* Enable PAE mode */
 	movl	%cr4, %eax
 	orl	$X86_CR4_PAE, %eax /* X86_CR4_PAE: enable physical address extensions */
@@ -200,13 +203,13 @@ SYM_FUNC_START(startup_32)
     * 新的操作模式 - 长模式;
     * 64位地址和操作数;
     * RIP 相对寻址 (我们将会在接下来的章节看到一个例子).
-    
+
     长模式是一个传统保护模式的扩展，其由两个子模式构成：
-    
+
     * 64位模式
     * 兼容模式
  */
-    
+
 //要切换到64-bit模式，我们需要执行以下操作：
 //
 //    启用PAE ;
@@ -282,7 +285,7 @@ SYM_FUNC_START(startup_32)
      *  现在准备切换到长模式
      */
 
-	/* Enable Long mode in EFER (Extended Feature Enable Register) 
+	/* Enable Long mode in EFER (Extended Feature Enable Register)
     需要EFER.LME将MSR中的标志设置为0xC0000080 */
 	movl	$MSR_EFER, %ecx     //将 MSR_EFER(0xc0000080) 标志放入ecx寄存器
 	rdmsr   //调用 `rdmsr` 指令读取 [MSR] 寄存器
@@ -335,15 +338,15 @@ SYM_FUNC_START(startup_32)
 	pushl	%eax    //将 `startup_64` 的地址
 
 	/* Enter paged protected Mode, activating Long Mode */
-    //通过设置 cr0 寄存器中的 PG 和 PE 位来启用分页 
+    //通过设置 cr0 寄存器中的 PG 和 PE 位来启用分页
 	movl	$(X86_CR0_PG | X86_CR0_PE), %eax /* Enable Paging and Protected mode */
 	movl	%eax, %cr0
 
-	/* Jump from 32bit compatibility mode into 64bit mode. 
+	/* Jump from 32bit compatibility mode into 64bit mode.
         记住前一步我们已经将 `startup_64` 函数的地址入栈，
         在 `lret` 指令之后，CPU 取出了其地址跳转到那里
         步骤之后我们最后来到了64位模式 startup_64 */
-	lret 
+	lret
 SYM_FUNC_END(startup_32)
 
 #ifdef CONFIG_EFI_MIXED
@@ -400,7 +403,7 @@ SYM_CODE_START(startup_64)  /* 进入了64位模式 */
 
 	cld //cld清除标志寄存器中DF位的指令,因为稍后我们将使用字符串操作来执行各种操作
 	cli
-    
+
 	/* Setup data segments. 设置段寄存器 现在，除cs寄存器外的所有段寄存器都将复位为long mode
         数据段的建立 */
 	xorl	%eax, %eax
@@ -460,10 +463,10 @@ SYM_CODE_START(startup_64)  /* 进入了64位模式 */
 	subl	$ rva(_end), %ebx
 	addq	%rbp, %rbx // 执行此代码后，rbx 寄存器将包含内核代码将被重新定位到的地址，以进行解压缩
     //}}}
-    
 
-	/* Set up the stack 
-        栈指针的设置和标志寄存器的重置 
+
+	/* Set up the stack
+        栈指针的设置和标志寄存器的重置
         `rbx`寄存器包含了内核解压代码的起始地址，
         把这个地址的`boot_stack_entry`偏移地址相加放到表示栈顶指针的`rsp`寄存器
         在这一步之后，栈就是正确的 */
@@ -577,10 +580,10 @@ trampoline_return:
     //实际上，压缩了的代码镜像存放在这份复制了的代码（从`startup_32`到当前的代码）和解压了的代码之间。
     leaq	(_bss-8)(%rip), %rsi    /* `rsi`包含`_bss - 8`的绝对地址 */
 	leaq	rva(_bss-8)(%rbx), %rdi /* `rdi`包含`_bss - 8`的重定位的相对地址 */
-	
+
 	movl	$(_bss - startup_32), %ecx
 	shrl	$3, %ecx
-	
+
 	std         //在数据复制前有`std`指令：它设置`DF`标志，意味着`rsi`和`rdi`会递减
 	rep	movsq   //现在我们可以开始用`movsq`指令每次8字节地从`rsi`到`rdi`复制代码。
 	cld         //用`cld`指令清除`DF`标志
@@ -597,7 +600,7 @@ trampoline_return:
 	lgdt	(%rax)
 
 /*
- * Jump to the relocated address.
+ *  Jump to the relocated address.
  *  现在我们有`.text`节的重定位后的地址，我们可以跳到那里
  *  可能是 arch/x86/kernel/head_64.S startup_64
  */
@@ -615,7 +618,7 @@ SYM_FUNC_START_ALIAS(efi_stub_entry)
 	movq	%rbx,%rsi
 	leaq	rva(startup_64)(%rax), %rax
 	jmp	*%rax //可能是 arch/x86/kernel/head_64.S startup_64
-	
+
 SYM_FUNC_END(efi64_stub_entry)
 SYM_FUNC_END_ALIAS(efi_stub_entry)
 #endif
@@ -650,16 +653,16 @@ SYM_FUNC_START_LOCAL_NOALIGN(.Lrelocated)
 
 	/* Pass boot_params to initialize_identity_maps() */
 	movq	(%rsp), %rdi
-	call	initialize_identity_maps    
+	call	initialize_identity_maps
 	popq	%rsi
 
 /*
  * Do the extraction, and jump to the new kernel..
  */
 	pushq	%rsi			/* Save the real mode argument */
-	movq	%rsi, %rdi		/* real mode address 
+	movq	%rsi, %rdi		/* real mode address
 	                            再一次设置`rdi`为指向`boot_params`结构体的指针并把它保存到栈中*/
-	leaq	boot_heap(%rip), %rsi	/* malloc area for uncompression 
+	leaq	boot_heap(%rip), %rsi	/* malloc area for uncompression
 	                                同时我们设置`rsi`指向用于内核解压的区域*/
 	        /* 准备`extract_kernel`的参数 */
 	leaq	input_data(%rip), %rdx  /* input_data */
@@ -773,7 +776,7 @@ SYM_FUNC_END(.Lpaging_enabled)
 	.org	trampoline_32bit_src + TRAMPOLINE_32BIT_CODE_SIZE
 
 	.code32
-SYM_FUNC_START_LOCAL_NOALIGN(.Lno_longmode) 
+SYM_FUNC_START_LOCAL_NOALIGN(.Lno_longmode)
     //如果检查对 `长模式` 和 `SSE` 不支持
     //用 `hlt` 指令停止 CPU ，期间不会发生硬件中断
 	/* This isn't an x86-64 CPU, so hang intentionally, we cannot continue */
@@ -824,6 +827,9 @@ SYM_DATA(efi_is64, .byte 1)
 #define BS32_handle_protocol	88 // offsetof(efi_boot_services_32_t, handle_protocol)
 #define LI32_image_base		32 // offsetof(efi_loaded_image_32_t, image_base)
 
+    /**
+     *  ".head.text","ax"
+     */
 	__HEAD
 	.code32
 SYM_FUNC_START(efi32_pe_entry)

@@ -1,3 +1,7 @@
+/**
+ *  见 arch/x86/boot/compressed/vmlinux.lds.S 中
+ *  `.rodata..compressed`
+ */
 .section ".rodata..compressed","a",@progbits
 .globl z_input_len
 z_input_len = 13449128  //压缩的`vmlinux.bin.gz`的大小

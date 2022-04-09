@@ -60,6 +60,19 @@ L3_START_KERNEL = pud_index(__START_KERNEL_map)
 	.text
 	__HEAD
 	.code64
+/**
+ *  vmlinux.bin（真正内核代码）
+ *  Vmlinux.bin的入口函数是arch/x86/kernel/head_64.S中定义的startup_64
+ *  在内核还没有运行在自己的虚拟地址空间(0xffffffff81000000)之前，head_64.S中的代码必须是PIE
+ *  但vmlinux的编译是加-fno-pic选项的，所以这就要求我们手工将head_64.S写成PIE code。
+ *
+ *  这样做的目的：
+ *  将vmlinux.bin加载到任意物理地址后，head_64.S能根据被重定位的虚拟基地址重新初
+ *  始化 PML512 paging structure，这样内核才可以正确的运行在已经被重定位的虚拟地址空间，
+ *  这是因为之前定义的pgtable占用6pages，是实地址映射4G物理地址的，也就意味着只能管理4G虚拟地址空间，
+ *  而现在内核的默认基地址是0xffffffff81000000，被重定位后一定是 > 0xffffffff81000000的，
+ *  所以要重新初始化一个PML512 paging structure， 所以这里明白吧，head_64.S一定手工写成PIE code.
+ */
 SYM_CODE_START_NOALIGN(startup_64)
 	UNWIND_HINT_EMPTY
 	/*
@@ -83,10 +96,17 @@ SYM_CODE_START_NOALIGN(startup_64)
 	/* Set up the stack for verify_cpu(), similar to initial_stack below */
 	leaq	(__end_init_task - SIZEOF_PTREGS)(%rip), %rsp
 
-    //`_text` 是一个地址计数器,对于 [x86_64] 来说，它定义为 . = __START_KERNEL;
-    //__START_KERNEL = (__START_KERNEL_map + __PHYSICAL_START)
-    //* Linux 内核的物理基址 - `0x1000000`;
-    //* Linux 内核的虚拟基址 - `0xffffffff81000000`.
+    /**
+     *  `_text` 是一个地址计数器,对于 [x86_64] 来说，它定义为 . = __START_KERNEL;
+     *  __START_KERNEL = (__START_KERNEL_map + __PHYSICAL_START)
+     *  Linux 内核的物理基址 - `0x1000000`;
+     *  Linux 内核的虚拟基址 - `0xffffffff81000000`.
+     *
+     *  通过 %rip 进行相对寻址，实现 PIC code，这里假设随机选取的物理加载地址是
+     *  output=32M， 随机选取的 virt_addr=128M(output/virt_addr 参考 extract_kernel 函数)，
+     *  内核编译默认加载值d是 LOAD_PHYSICAL_ADDR=16M，所以下一行代码执行后 %rdi=32M,
+     *  当前内核运行在 32M 其实地址处。
+     */
 	leaq	_text(%rip), %rdi
 	pushq	%rsi
 	call	startup_64_setup_env
@@ -115,8 +135,10 @@ SYM_CODE_START_NOALIGN(startup_64)
 	call	__startup_64    /*  */
 	popq	%rsi
 
-	/* Form the CR3 value being sure to include the CR3 modifier
-	    虽然定义为 `0x1000000`，但是仍然有可能变化，例如启用 [kASLR] */
+	/**
+	 *  Form the CR3 value being sure to include the CR3 modifier
+	 *  虽然定义为 `0x1000000`，但是仍然有可能变化，例如启用 [kASLR]
+	 */
 	addq	$(early_top_pgt - __START_KERNEL_map), %rax
 	jmp 1f
 SYM_CODE_END(startup_64)

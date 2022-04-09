@@ -390,7 +390,7 @@ static void handle_mem_options(void)
  *  但是，正如您可能已经猜到的，我们不能只选择任何地址。有一些重新存储的内存区域，
  *  这些区域被重要的东西占用，例如initrd和内核命令行，必须避免。
  *  该mem_avoid_init功能将帮助我们做到这一点：
- * 
+ *
  *  所有不安全的内存区域将被收集在一个称为数组中 mem_avoid
  */
 static void mem_avoid_init(unsigned long input, unsigned long input_size,
@@ -850,13 +850,13 @@ static unsigned long find_random_virt_addr(unsigned long minimum,
  * 选择了一个存储位置来写入解压缩的内核
  * 需要找到choose压缩的内核映像，甚至在哪里解压缩，这看起来很奇怪，
  * 但是出于安全考虑，Linux内核支持kASLR，它允许将内核解压缩为一个随机地址。
- * 
+ *
  * 实际上，随机化内核加载地址的第一步是建立新的身份映射页表。
  *
  * KALSR - Kernel Address Space Layout Randomization 内核地址空间随机分布
  *
  *
- * @input    extract_kernel(input,...) 
+ * @input    extract_kernel(input,...)
  *          此参数从arch/x86/boot/compressed/head_64.S源代码文件通过汇编传递：
  *          leaq    input_data(%rip), %rdx
  * @input_size  - z_input_len = 13449128
@@ -866,6 +866,10 @@ static unsigned long find_random_virt_addr(unsigned long minimum,
  * @
  *
  *  为解压缩内核随机分配了基本物理地址*output和虚拟*virt_addr地址
+ *  选择一个存储位置来写入解压缩的内核
+ *
+ *  该函数 为 output 和 virt_addr 分别分配随机值 (2M 对齐)，
+ *  他们的随机值可以相同，如果 kaslr=false 直接返回
  */
 void choose_random_location(unsigned long input,
 			    unsigned long input_size,
@@ -875,14 +879,20 @@ void choose_random_location(unsigned long input,
 {
 	unsigned long random_addr, min_addr;
 
-    /* 内核​​命令行 nokaslr */
+    /**
+     *  内核​​命令行 nokaslr
+     */
 	if (cmdline_find_option_bool("nokaslr")) {
 		warn("KASLR disabled: 'nokaslr' on cmdline.");
-        //内核的加载地址不会随机化
+        /**
+         * 内核的加载地址不会随机化
+         */
 		return;
 	}
 
-    //将kASLR标志添加到内核​​加载标志
+    /**
+     *  将kASLR标志添加到内核​​加载标志
+     */
 	boot_params->hdr.loadflags |= KASLR_FLAG;
 
 	if (IS_ENABLED(CONFIG_X86_32))
@@ -904,14 +914,18 @@ void choose_random_location(unsigned long input,
 	 * smaller of 512M or the initial kernel image
 	 * location:
 	 */
-	//选择最小可用的地址作为解压内核的随机内存区域
-	min_addr = min(*output, 512UL << 20/* 它应该小于 512MB */);
+	/**
+	 *  选择最小可用的地址作为解压内核的随机内存区域
+	 *  512UL << 20: 它应该小于 512MB
+	 */
+	min_addr = min(*output, 512UL << 20);
 	/* Make sure minimum is aligned. */
 	min_addr = ALIGN(min_addr, CONFIG_PHYSICAL_ALIGN);
 
-	/* Walk available memory entries to find a random address. 
-        选择要加载内核的随机物理地址 
-        现在，我们有一个随机的物理地址将内核解压缩到该地址 */
+	/* Walk available memory entries to find a random address.
+        选择要加载内核的随机物理地址
+        现在，我们有一个随机的物理地址将内核解压缩到该地址
+     */
 	random_addr = find_random_phys_addr(min_addr, output_size);
 	if (!random_addr) {
 		warn("Physical KASLR disabled: no suitable memory region!");

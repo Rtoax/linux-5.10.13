@@ -82,10 +82,15 @@ typedef struct gdt_ptr idt_ptr;/*是因为 idt_ptr 与`gdt_prt`具有相同的�
 
 static void setup_gdt(void)
 {
-	/* There are machines which are known to not boot with the GDT
-	   being 8-byte unaligned.  Intel recommends 16 byte alignment. */
-	   //用于代码，数据和TSS（任务状态段）
-	static const u64 boot_gdt[] __attribute__((aligned(16)))/* 16 字节对齐,共占用了 48 字节 */ = {
+	/**
+	 *  There are machines which are known to not boot with the GDT
+	 *  being 8-byte unaligned.  Intel recommends 16 byte alignment.
+	 *
+	 *  用于代码，数据和TSS（任务状态段）
+	 *
+	 *  16 字节对齐,共占用了 48 字节
+	 */
+	static const u64 boot_gdt[] __attribute__((aligned(16))) = {
 		/* CS: code, read/execute, 4 GB, base 0 */
 		[GDT_ENTRY_BOOT_CS] = GDT_ENTRY(0xc09b, 0, 0xfffff),
 		/* DS: data, read/write, 4 GB, base 0 */
@@ -101,27 +106,42 @@ static void setup_gdt(void)
 	   proper kernel GDT. */
 	static struct gdt_ptr gdt;
 
-    //GDT的长度为
+    /**
+     *  GDT的长度为
+     */
 	gdt.len = sizeof(boot_gdt)-1;
 
-    //获得一个指向GDT的指针
-    //获取boot_gdt的地址，并将其添加到左移4位的数据段的地址中
-    //（请记住，我们现在处于实模式）
-    //因为我们还在实模式，所以就是 （ ds << 4 + 数组起始地址）
+    /**
+     *  获得一个指向GDT的指针
+     *  获取boot_gdt的地址，并将其添加到左移4位的数据段的地址中
+     *
+     *  （请记住，我们现在处于实模式）
+     *
+     *  因为我们还在实模式，所以就是 （ ds << 4 + 数组起始地址）
+     */
 	gdt.ptr = (u32)&boot_gdt + (ds() << 4);
 
-    //执行lgdtl指令以将GDT加载到GDTR寄存器中
+    /**
+     *  执行lgdtl指令以将GDT加载到GDTR寄存器中
+     */
 	asm volatile("lgdtl %0" : : "m" (gdt));
 }
 
 /*
- * Set up the IDT, 用 `NULL`填充了中断描述符表
+ *  Set up the IDT, 用 `NULL`填充了中断描述符表
+ *  设置中断描述符表（IDT）
  */
 static void setup_idt(void)
-{   //设置中断描述符表（IDT）
-    //内核在此处并没有填充`Interrupt Descriptor Table`，这是因为此刻处理任何中断或异常还为时尚早
+{
+    /**
+     *  内核在此处并没有填充`Interrupt Descriptor Table`，
+     *  这是因为此刻处理任何中断或异常还为时尚早
+     */
 	static const struct gdt_ptr null_idt = {0, 0};
-	asm volatile("lidtl %0" : : "m" (null_idt));    //加载到 `IDTR` 寄存器(`IDT` 的基址存储)
+    /**
+     *  加载到 `IDTR` 寄存器(`IDT` 的基址存储)
+     */
+	asm volatile("lidtl %0" : : "m" (null_idt));
 }
 
 /*
@@ -129,41 +149,62 @@ static void setup_idt(void)
  */
 void go_to_protected_mode(void)
 {
-	/* Hook before leaving real mode, also disables interrupts */
-    //存在实函数开关钩子
+	/**
+	 * Hook before leaving real mode, also disables interrupts
+	 * 存在实函数开关钩子
+     */
 	realmode_switch_hook();
 
-	/* Enable the A20 gate */
-    //启用A20线: 尝试使用不同的方法启用A20门
+	/**
+	 *  Enable the A20 gate
+	 *  启用A20线: 尝试使用不同的方法启用A20门
+	 */
 	if (enable_a20()) {
 		puts("A20 gate not responding, unable to boot...\n");
-		die();  //die: arch/x86/boot/header.S
-        //die:
-        //	hlt
-        //	jmp	die
-        //
-        //	.size	die, .-die
+        /**
+         *  die: arch/x86/boot/header.S
+         *  die:
+         *      hlt
+         *      jmp	die
+         *      .size	die, .-die
+         */
+		die();
 	}
 
-	/* Reset coprocessor (IGNNE#) 
-        通过将 `0` 写入 I/O 端口 `0xf0` 和 `0xf1` 以复位数字协处理器*/
+	/**
+	 * Reset coprocessor (IGNNE#)
+     * 通过将 `0` 写入 I/O 端口 `0xf0` 和 `0xf1` 以复位数字协处理器
+     */
 	reset_coprocessor();
 
-	/* Mask all interrupts in the PIC */
-    //这将屏蔽辅助PIC（可编程中断控制器）和主要PIC上的所有中断，但主要PIC上的IRQ2除外
+	/**
+	 *  Mask all interrupts in the PIC
+	 *  这将屏蔽辅助PIC（可编程中断控制器）和主要PIC上的所有中断，但主要PIC上的IRQ2除外
+	 */
 	mask_all_interrupts();
 
 	/* Actual transition to protected mode... */
-	setup_idt();    //设置中断描述符表（IDT）
-	setup_gdt();    //设置全局描述符表
+    /**
+     *  设置中断描述符表（IDT）
+     */
+	setup_idt();
+	/**
+	 *  设置全局描述符表
+	 */
+	setup_gdt();
 
     /**
      *  `go_to_protected_mode` 函数在完成 IDT, GDT 初始化，并禁止了 NMI 中断之后，
      *  将调用 `protected_mode_jump` 函数完成从实模式到保护模式的跳转
      */
 
-    //实际过渡到保护模式
-    //arch/x86/boot/pmjump.S
-	protected_mode_jump(boot_params.hdr.code32_start/* 保护模式入口点的地址 */,
-			    (u32)&boot_params + (ds() << 4)/* boot_params 的地址  */);
+    /**
+     *  实际过渡到保护模式
+     *  arch/x86/boot/pmjump.S
+     *
+     *  boot_params.hdr.code32_start: 保护模式入口点的地址
+     *  (u32)&boot_params + (ds() << 4): boot_params 的地址
+     */
+	protected_mode_jump(boot_params.hdr.code32_start,
+			    (u32)&boot_params + (ds() << 4));
 }

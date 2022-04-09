@@ -43,14 +43,14 @@ static void copy_boot_params(void)
 
 	BUILD_BUG_ON(sizeof(boot_params) != 4096);
 
-    /* setup_header hdr 
-        该结构包含与linux引导协议中定义的字段相同的字段，并由引导加载程序以及内核编译/构建时填充 
-        arch/x86/boot/copy.S:memcpy 
+    /* setup_header hdr
+        该结构包含与linux引导协议中定义的字段相同的字段，并由引导加载程序以及内核编译/构建时填充
+        arch/x86/boot/copy.S:memcpy
             ax 将包含的地址 boot_params.hdr
             dx 将包含的地址 hdr
             cx将包含hdr以字节为单位的大小。*/
 	memcpy(&boot_params.hdr, &hdr, sizeof(hdr));
-    
+
 	if (!boot_params.hdr.cmd_line_ptr &&
 	    oldcmd->cl_magic == OLD_CL_MAGIC) {
 		/* Old-style command line protocol. */
@@ -117,7 +117,7 @@ static void query_ist(void)
 
 /*
  * Tell the BIOS what CPU mode we intend to run in.
- * //set_bios_mode 可能会在安装代码发现合适的CPU之后对该函数调用
+ * set_bios_mode 可能会在安装代码发现合适的CPU之后对该函数调用
  */
 static void set_bios_mode(void)
 {
@@ -131,20 +131,29 @@ static void set_bios_mode(void)
 #endif
 }
 
-//在header.S中准备好stack和bss部分之后（请参阅上一部分），内核需要使用 init_heap 函数来初始化堆。
+/**
+ *  在header.S中准备好stack和bss部分之后（请参阅上一部分），
+ *  内核需要使用 init_heap 函数来初始化堆。
+ */
 static void init_heap(void)
 {
 	char *stack_end;
 
-    //检查CAN_USE_HEAP标志
+    /**
+     *  检查CAN_USE_HEAP标志
+     */
 	if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
 
-        //并loadflags在设置了该标志的情况下计算堆栈的结尾
-        //stack_end = esp - STACK_SIZE
+        /**
+         *  并loadflags在设置了该标志的情况下计算堆栈的结尾
+         *  stack_end = esp - STACK_SIZE
+         */
 		asm("leal %P1(%%esp),%0"
 		    : "=r" (stack_end) : "i" (-STACK_SIZE/* 1024 */));
 
-        //heap_end = heap_end_ptr(=_end) + 512（0x200h）
+        /**
+         *  heap_end = heap_end_ptr(=_end) + 512（0x200h）
+         */
 		heap_end = (char *)
 			((size_t)boot_params.hdr.heap_end_ptr + 0x200);
 		if (heap_end > stack_end)
@@ -156,13 +165,17 @@ static void init_heap(void)
 	}
 }
 
-/* 从 arch/x86/boot/header.S 中 calll main 跳转 */
-//什么是protected mode，
-//过渡到它，
-//堆和控制台的初始化，
-//内存检测，CPU验证和键盘初始化
-
-void main(void) /* 这是无参数 的 no args */
+/**
+ *  从 arch/x86/boot/header.S 中 calll main 跳转
+ *
+ *  什么是protected mode，
+ *  过渡到它，
+ *  堆和控制台的初始化，
+ *  内存检测，CPU验证和键盘初始化
+ *
+ *  这是无参数 的 no args
+ */
+void main(void)
 {
 	/* First, copy the boot header into the "zeropage" */
 	copy_boot_params();
@@ -172,30 +185,44 @@ void main(void) /* 这是无参数 的 no args */
 	if (cmdline_find_option_bool("debug"))
 		puts("early console in setup code\n");
 
-	/* End of heap check */
-    //在header.S中准备好stack和bss部分之后（请参阅上一部分），内核需要使用 init_heap 函数来初始化堆。
-    //堆已初始化，我们可以使用 GET_HEAP 方法使用它
+	/**
+	 *  End of heap check
+	 *
+	 *  在header.S中准备好stack和bss部分之后（请参阅上一部分），
+	 *  内核需要使用 init_heap 函数来初始化堆。
+	 *  堆已初始化，我们可以使用 GET_HEAP 方法使用它
+	 */
 	init_heap();
 
-	/* Make sure we have all the proper CPU support */
-    //cpu验证
+	/**
+	 *  Make sure we have all the proper CPU support
+	 *  cpu验证
+	 */
 	if (validate_cpu()) {
 		puts("Unable to boot - please use a kernel appropriate "
 		     "for your CPU.\n");
 		die();
 	}
 
-	/* Tell the BIOS what CPU mode we intend to run in. */
-    //set_bios_mode 可能会在安装代码发现合适的CPU之后对该函数调用
+	/**
+	 *  Tell the BIOS what CPU mode we intend to run in.
+	 *  set_bios_mode 可能会在安装代码发现合适的CPU之后对该函数调用
+	 */
 	set_bios_mode();
 
-	/* Detect memory layout */
-    //提供了可用RAM到CPU的映射
-    //它使用的内存检测喜欢不同的编程接口0xe820，0xe801和0x88。在这里，我们将仅看到0xE820接口的实现。
+	/**
+	 *  Detect memory layout
+	 *
+	 *  提供了可用RAM到CPU的映射
+	 *  它使用的内存检测喜欢不同的编程接口0xe820，0xe801和0x88。
+	 *  在这里，我们将仅看到0xE820接口的实现。
+	 */
 	detect_memory();
 
-	/* Set keyboard repeat rate (why?) and query the lock flags */
-    //初始化键盘
+	/**
+	 *  Set keyboard repeat rate (why?) and query the lock flags
+	 *  初始化键盘
+	 */
 	keyboard_init();
 
 	/* Query Intel SpeedStep (IST) information */
@@ -203,21 +230,30 @@ void main(void) /* 这是无参数 的 no args */
 
 	/* Query APM information */
 #if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-    //从BIOS获取高级电源管理信息
+    /**
+     *  从BIOS获取高级电源管理信息
+     *
+     */
 	query_apm_bios();
 #endif
 
 	/* Query EDD information */
 #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
-    //从 BIOS 查询 Enhanced Disk Drive 信息
+    /**
+     *  从 BIOS 查询 Enhanced Disk Drive 信息
+     */
 	query_edd();
 #endif
 
-	/* Set the video mode */
-    //视频模式设置    : arch/x86/boot/video.c
+	/**
+	 *  Set the video mode
+	 *  视频模式设置    : arch/x86/boot/video.c
+	 */
 	set_video();
 
-	/* Do the last things and invoke protected mode */
-    //进行最后的准备工作然后进入保护模式
+	/**
+	 *  Do the last things and invoke protected mode
+	 *  进行最后的准备工作然后进入保护模式
+	 */
 	go_to_protected_mode();
 }
