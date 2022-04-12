@@ -342,4 +342,4 @@ error:
 	securityfs_remove(policy_dir);
 	return ret;
 }
-fs_initcall(safesetid_init_securityfs); /*  */
+fs_initcall(safesetid_init_securityfs);

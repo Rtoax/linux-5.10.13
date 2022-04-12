@@ -189,7 +189,7 @@ void context_tracking_user_exit(void)
 NOKPROBE_SYMBOL(context_tracking_user_exit);
 
 //main point of this function is to set the `context_tracking.active` [percpu]
-void __init context_tracking_cpu_set(int cpu)/*  */
+void __init context_tracking_cpu_set(int cpu)
 {
 	static __initdata bool initialized = false;
 
@@ -201,7 +201,7 @@ void __init context_tracking_cpu_set(int cpu)/*  */
 	if (initialized)
 		return;
 
-#ifdef CONFIG_HAVE_TIF_NOHZ/*  */
+#ifdef CONFIG_HAVE_TIF_NOHZ
 	/*
 	 * Set TIF_NOHZ to init/0 and let it propagate to all tasks through fork
 	 * This assumes that init is the only task at this early boot stage.

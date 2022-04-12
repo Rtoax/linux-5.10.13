@@ -105,7 +105,7 @@ static int register_cpu_capacity_sysctl(void)
 
 	return 0;
 }
-subsys_initcall(register_cpu_capacity_sysctl);/*  */
+subsys_initcall(register_cpu_capacity_sysctl);
 
 static int update_topology;
 

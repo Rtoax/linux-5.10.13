@@ -19,7 +19,7 @@ struct mod_arch_specific
 #define Elf_Dyn		Elf64_Dyn
 #define Elf_Ehdr	Elf64_Ehdr
 #define Elf_Addr	Elf64_Addr
-#ifdef CONFIG_MODULES_USE_ELF_REL   /*  */
+#ifdef CONFIG_MODULES_USE_ELF_REL
 #define Elf_Rel		Elf64_Rel
 #endif
 #ifdef CONFIG_MODULES_USE_ELF_RELA

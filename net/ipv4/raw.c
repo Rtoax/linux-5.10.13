@@ -939,7 +939,7 @@ int raw_abort(struct sock *sk, int err)
 EXPORT_SYMBOL_GPL(raw_abort);
 
 /**
- *  
+ *
  */
 struct proto raw_prot = {   /* 原始套接字 */
 	raw_prot.name		   = "RAW",
@@ -1131,7 +1131,7 @@ static struct pernet_operations __net_initdata raw_sysctl_ops = {
 	.init	= raw_sysctl_init,
 };
 
-void __init raw_init(void)  /*  */
+void __init raw_init(void)
 {
 	raw_sysctl_init_net(&init_net);
 	if (register_pernet_subsys(&raw_sysctl_ops))

@@ -73,7 +73,7 @@ enum perf_hw_id {
  */
 enum perf_hw_cache_id {
     /**
-     *  
+     *
      */
 	PERF_COUNT_HW_CACHE_L1D			= 0,
 	PERF_COUNT_HW_CACHE_L1I			= 1,
@@ -123,7 +123,7 @@ enum perf_hw_cache_op_result_id {
  * physical and sw events of the kernel (and allow the profiling of them as
  * well):
  *
- * 软件事件  
+ * 软件事件
  */
 enum perf_sw_ids {
     /**
@@ -147,7 +147,7 @@ enum perf_sw_ids {
      */
 	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
 	/**
-     *  
+     *
      */
 	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
@@ -161,7 +161,7 @@ enum perf_sw_ids {
      */
 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
 	/**
-     *  
+     *
      */
 	PERF_COUNT_SW_DUMMY			= 9,
 	/**
@@ -244,7 +244,7 @@ enum perf_branch_sample_type_shift {
 };
 
 /**
- *  
+ *
  */
 enum perf_branch_sample_type {
 	PERF_SAMPLE_BRANCH_USER		= 1U << PERF_SAMPLE_BRANCH_USER_SHIFT,
@@ -351,7 +351,7 @@ enum {
  */
 enum perf_event_read_format {
     /**
-     *  
+     *
      */
 	PERF_FORMAT_TOTAL_TIME_ENABLED		= 1U << 0,
 	PERF_FORMAT_TOTAL_TIME_RUNNING		= 1U << 1,
@@ -449,7 +449,7 @@ struct perf_event_attr {
 				__reserved_1   : 30;
 
     /**
-     *  
+     *
      */
     union {
 		__u32		wakeup_events;	  /* wakeup every n events */
@@ -534,7 +534,7 @@ struct perf_event_query_bpf {
 /*
  * Ioctls that can be done on a perf event fd:
  *
- * 实际上，当 perf 命令运行过程中，会设置当前进程的大部分 fd  
+ * 实际上，当 perf 命令运行过程中，会设置当前进程的大部分 fd
  */
 #define PERF_EVENT_IOC_ENABLE			_IO ('$', 0)
 #define PERF_EVENT_IOC_DISABLE			_IO ('$', 1)
@@ -556,9 +556,9 @@ enum perf_event_ioc_flags {
 /*
  * Structure of the page that can be mapped via mmap
  *
- *  
+ *
  */
-struct perf_event_mmap_page {   /*  */
+struct perf_event_mmap_page {
 	__u32	version;		/* version number of this structure */
 	__u32	compat_version;		/* lowest version this is compat with */
 
@@ -604,7 +604,7 @@ struct perf_event_mmap_page {   /*  */
 	__u64	time_running;		/* time event on cpu */
 
     /**
-     *  
+     *
      */
 	union {
 		__u64	capabilities;
@@ -790,22 +790,22 @@ struct perf_event_mmap_page {   /*  */
 #define PERF_RECORD_MISC_EXT_RESERVED		(1 << 15)
 
 /**
- *  
+ *
  */
-struct perf_event_header {  /*  */
+struct perf_event_header {
     /**
-     *  
+     *
      */
 	__u32	type;   //
 	/**
-     *  
+     *
      */
 	__u16	misc;   //其他信息，如`PERF_RECORD_MISC_CPUMODE_MASK`
 	__u16	size;   //标记记录的大小
 };
 
 /**
- *  
+ *
  */
 struct perf_ns_link_info {
 	__u64	dev;
@@ -828,7 +828,7 @@ enum {
 };
 
 /**
- *  
+ *
  */
 enum perf_event_type {
 
@@ -1166,11 +1166,11 @@ enum perf_event_type {
 };
 
 /**
- *  
+ *
  */
 enum perf_record_ksymbol_type {
     /**
-     *  
+     *
      */
 	PERF_RECORD_KSYMBOL_TYPE_UNKNOWN	= 0,
 	PERF_RECORD_KSYMBOL_TYPE_BPF		= 1,
@@ -1185,7 +1185,7 @@ enum perf_record_ksymbol_type {
 #define PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER	(1 << 0)
 
 /**
- *  
+ *
  */
 enum perf_bpf_event_type {
 	PERF_BPF_EVENT_UNKNOWN		= 0,
@@ -1225,7 +1225,7 @@ enum perf_callchain_context {
 #define PERF_AUX_FLAG_COLLISION		0x08	/* sample collided with another */
 
 /**
- *  
+ *
  */
 #define PERF_FLAG_FD_NO_GROUP		(1UL << 0)
 #define PERF_FLAG_FD_OUTPUT		(1UL << 1)
@@ -1234,7 +1234,7 @@ enum perf_callchain_context {
 
 #if defined(__LITTLE_ENDIAN_BITFIELD)
 /**
- *  
+ *
  */
 union perf_mem_data_src {
 	__u64 val;
@@ -1361,8 +1361,8 @@ union perf_mem_data_src {
  *     abort: aborting a hardware transaction
  *    cycles: cycles from last branch (or 0 if not supported)
  *      type: branch type
- * 
- *  
+ *
+ *
  */
 struct perf_branch_entry {
 	__u64	from;

@@ -289,7 +289,7 @@ struct tc_skb_ext {
 #endif
 
 /**
- *  
+ *
  */
 struct sk_buff_head {
 	/* These two members must be first. */
@@ -300,7 +300,7 @@ struct sk_buff_head {
 	struct sk_buff	*prev;
 
     /**
-     *  
+     *
      */
 	__u32		qlen;
 	spinlock_t	lock;
@@ -731,16 +731,16 @@ typedef struct sk_buff* psk_buff_t; //我加的
  *
  *  alloc_skb       内存分配
  *  dev_alloc_skb   内存分配
- *  
+ *
  *  kfree_skb       内存释放
  *  dev_kfree_skb   内存释放
  */
 struct sk_buff {    /* 网络协议栈 包结构 */
     /**
-     *  
+     *
      */
 	union {
-		struct {    /*  */
+		struct {
 			/* These two members must be first. */
             /**
              *  见 sk_buff_head 的 next 和 prev 组成双向链表
@@ -756,13 +756,13 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 			struct sk_buff		*prev;
 
             /**
-             *  
+             *
              */
 			union {
                 /**
                  *  收到此报文的网络设备
                  *  dev代表的设备的作用取决于缓冲区中存储的数据包是要发送还是刚刚被接收。
-                 *  
+                 *
                  *  1. 当收到数据包后，设备驱动程序会使用指向接收数据接口的指针来更新此字段。
                  *  2. 当要发送数据包时，此参数表示将通过其发送出去的设备。
                  */
@@ -783,7 +783,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	};
 
     /**
-     *  
+     *
      */
 	union {
         /**
@@ -795,7 +795,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	};
 
     /**
-     *  
+     *
      */
 	union {
         /**
@@ -819,7 +819,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	char		__aligned8	cb[48] ;
 
     /**
-     *  
+     *
      */
 	union {
 		struct {
@@ -853,7 +853,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 
     /**
      *  mac_len MAC 头部的长度
-     *  hdr_len 
+     *  hdr_len
      */
 	__u16			mac_len, hdr_len;
 
@@ -872,10 +872,10 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 
 	/* private: */
 	__u8			__cloned_offset[0];
-    
+
 	/* public: */
     /**
-     *  
+     *
      */
 	__u8			cloned:1,
 				nohdr:1,
@@ -920,7 +920,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u8			ooo_okay:1;
 
     /**
-     *  
+     *
      */
 	__u8			l4_hash:1;
 	__u8			sw_hash:1;
@@ -978,7 +978,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
      */
 	union { /* 校验和 */
 		__wsum		csum;
-		struct {    /*  */
+		struct {
 			__u16	csum_start;
 			__u16	csum_offset;
 		};
@@ -988,7 +988,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u32			hash;
 	__be16			vlan_proto;
 	__u16			vlan_tci;
-    
+
 #if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
 	union {
 		unsigned int	napi_id;
@@ -1045,8 +1045,8 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	/* These elements must be at the end, see alloc_skb() for details.  */
     /**
      *  用来表示 buffer 中数据域的边界。
-     *  当每一层为了任务而准备 buffer 时，为了协议头或数据，可能会分配更多的空间。 
-     *  head 和 end 指向了 buffer 被分配的内存区域的开始和结束， 
+     *  当每一层为了任务而准备 buffer 时，为了协议头或数据，可能会分配更多的空间。
+     *  head 和 end 指向了 buffer 被分配的内存区域的开始和结束，
      *  data 和 tail 指向其中实际数据域的开始和结束。
      *  每一层能够在 head 和 data 之间的区域填充协议头，或者在 tail 和 end 之间的区域填充新的数据。
      *
@@ -1077,7 +1077,7 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	unsigned int		truesize;
 
     /**
-     *  users   sk_buff 的引用计数，或引用了此 sk_buff 缓冲区的对象数。 
+     *  users   sk_buff 的引用计数，或引用了此 sk_buff 缓冲区的对象数。
      *          主要用途是避免在有人还在使用时就释放了 sk_buff。
      *          users的值可以通过 atomic_inc 和 atomic_dec直接增加和减少，
      *          但更多的时候是通过`skb_get`和`kfree_skb` 函数进行。
@@ -2187,7 +2187,7 @@ void skb_append(struct sk_buff *old, struct sk_buff *newsk,
 		struct sk_buff_head *list);
 
 /**
- *  
+ *
  */
 static inline void __skb_queue_before(struct sk_buff_head *list,
 				      struct sk_buff *next,

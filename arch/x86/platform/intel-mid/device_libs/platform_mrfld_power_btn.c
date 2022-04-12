@@ -67,7 +67,7 @@ static void __init *mrfld_power_btn_platform_data(void *info)
 	return NULL;
 }
 
-static const struct devs_id __initconst mrfld_power_btn_dev_id  = {/*  */
+static const struct devs_id __initconst mrfld_power_btn_dev_id  = {
 	.name			= "bcove_power_btn",
 	.type			= SFI_DEV_TYPE_IPC,
 	.delay			= 1,

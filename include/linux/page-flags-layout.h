@@ -69,7 +69,7 @@
 
 #define LAST_CPUPID_SHIFT (LAST__PID_SHIFT/* 8 */+LAST__CPU_SHIFT/* 13 */)/* = 21 */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_KASAN_SW_TAGS

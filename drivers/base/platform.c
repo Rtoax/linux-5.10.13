@@ -63,7 +63,7 @@ struct resource *platform_get_resource(struct platform_device *dev,
 }
 EXPORT_SYMBOL_GPL(platform_get_resource);
 
-#ifdef CONFIG_HAS_IOMEM /*  */
+#ifdef CONFIG_HAS_IOMEM
 /**
  * devm_platform_get_and_ioremap_resource - call devm_ioremap_resource() for a
  *					    platform device and get resource
@@ -1357,7 +1357,7 @@ static const struct dev_pm_ops platform_dev_pm_ops = {
 	USE_PLATFORM_PM_SLEEP_OPS
 };
 
-struct bus_type platform_bus_type = {   /*  */
+struct bus_type platform_bus_type = {
 	.name		= "platform",
 	.dev_groups	= platform_dev_groups,
 	.match		= platform_match,
@@ -1388,7 +1388,7 @@ EXPORT_SYMBOL_GPL(platform_find_device_by_driver);
 
 void __weak __init early_platform_cleanup(void) { }
 
-int __init platform_bus_init(void)  /*  */
+int __init platform_bus_init(void)
 {
 	int error;
 

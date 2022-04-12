@@ -216,7 +216,7 @@ void __init setup_cpu_entry_areas(void)
 
 	setup_cpu_entry_area_ptes();
 
-	for_each_possible_cpu(cpu){/*  */
+	for_each_possible_cpu(cpu){
 		setup_cpu_entry_area(cpu);}
 
 	/*

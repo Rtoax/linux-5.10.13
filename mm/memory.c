@@ -122,7 +122,7 @@ EXPORT_SYMBOL(high_memory);
  * ( When CONFIG_COMPAT_BRK=y we exclude brk from randomization,
  *   as ancient (libc5 based) binaries can segfault. )
  */
-int __read_mostly randomize_va_space  =/*  */
+int __read_mostly randomize_va_space  =
 #ifdef CONFIG_COMPAT_BRK
 					1;
 #else
@@ -177,7 +177,7 @@ void mm_trace_rss_stat(struct mm_struct *mm, int member, long count)
 
 #if defined(SPLIT_RSS_COUNTING)
 
-void sync_mm_rss(struct mm_struct *mm)  /*  */
+void sync_mm_rss(struct mm_struct *mm)
 {
 	int i;
 
@@ -190,7 +190,7 @@ void sync_mm_rss(struct mm_struct *mm)  /*  */
 	current->rss_stat.events = 0;
 }
 
-static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)  /*  */
+static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
 {
 	struct task_struct *task = current;
 
@@ -199,12 +199,12 @@ static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)  /*  
 	else
 		add_mm_counter(mm, member, val);
 }
-#define inc_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, 1)  /*  */
+#define inc_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, 1)
 #define dec_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, -1)
 
 /* sync counter once per 64 page faults */
 #define TASK_RSS_EVENTS_THRESH	(64)
-static void check_sync_rss_stat(struct task_struct *task)   /*  */
+static void check_sync_rss_stat(struct task_struct *task)
 {
 	if (unlikely(task != current))
 		return;
@@ -642,13 +642,13 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_
      *
      *  比如 系统零页
      */
-	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {  /*  */
+	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {
 		if (likely(!pte_special(pte)))
 			goto check_pfn;
 
         /* 设置了vm_ops，并且 有 find_special_page  */
 		if (vma->vm_ops && vma->vm_ops->find_special_page)
-			return vma->vm_ops->find_special_page(vma, addr);   /*  */
+			return vma->vm_ops->find_special_page(vma, addr);
 
 		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 			return NULL;
@@ -699,7 +699,7 @@ check_pfn:
 	 * eg. VDSO mappings can cause them to exist.
 	 */
 out:
-	return pfn_to_page(pfn);    /*  */
+	return pfn_to_page(pfn);
 }
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -2778,7 +2778,7 @@ static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
  *
  * We do this without the lock held, so that it can sleep if it needs to.
  */
-static vm_fault_t do_page_mkwrite(struct vm_fault *vmf) /*  */
+static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 {
 	vm_fault_t ret;
 	struct page *page = vmf->page;
@@ -2790,7 +2790,7 @@ static vm_fault_t do_page_mkwrite(struct vm_fault *vmf) /*  */
 	    IS_SWAPFILE(vmf->vma->vm_file->f_mapping->host))
 		return VM_FAULT_SIGBUS;
 
-    /*  */
+
 	ret = vmf->vma->vm_ops->page_mkwrite(vmf);
 
 	/* Restore original flags so that caller is not surprised */
@@ -3024,7 +3024,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
         /* 刷新 页缓存，函数为空 */
 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
 
-        /*  */
+
 		entry = mk_pte(new_page, vma->vm_page_prot);
 		entry = pte_sw_mkyoung(entry);
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
@@ -3100,7 +3100,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 		update_mmu_tlb(vma, vmf->address, vmf->pte);
 	}
 
-    /*  */
+
 	if (new_page)
 		put_page(new_page);
 
@@ -3122,10 +3122,10 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 
 			lock_page(old_page);	/* LRU manipulation */
 			if (PageMlocked(old_page))      /* 如果设置了 locked 标志 */
-				munlock_vma_page(old_page); /*  */
+				munlock_vma_page(old_page);
 			unlock_page(old_page);
 		}
-		put_page(old_page); /*  */
+		put_page(old_page);
 	}
 
     /**
@@ -3185,7 +3185,7 @@ static vm_fault_t wp_pfn_shared(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 
-    /*  */
+
 	if (vma->vm_ops && vma->vm_ops->pfn_mkwrite) {
 		vm_fault_t ret;
 
@@ -3209,7 +3209,7 @@ static vm_fault_t wp_pfn_shared(struct vm_fault *vmf)
 /**
  * 处理 可写的并且共享的 普通映射 页面
  */
-static vm_fault_t wp_page_shared(struct vm_fault *vmf)  /*  */
+static vm_fault_t wp_page_shared(struct vm_fault *vmf)
 	__releases(vmf->ptl)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -3230,7 +3230,7 @@ static vm_fault_t wp_page_shared(struct vm_fault *vmf)  /*  */
 			return tmp;
 		}
 
-        /*  */
+
 		tmp = finish_mkwrite_fault(vmf);
 		if (unlikely(tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
 			unlock_page(vmf->page);
@@ -3322,7 +3322,7 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)  /* 写时复制 */
              *
              * 内部会调用`wp_page_reuse()`
              */
-			return wp_pfn_shared(vmf);  /*  */
+			return wp_pfn_shared(vmf);
 
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 
@@ -3495,7 +3495,7 @@ EXPORT_SYMBOL(unmap_mapping_range);
  *  主缺页：从交换分区中读取数据，见`VM_FAULT_MAJOR`
  *  次缺页：从内存中直接分配页面
  */
-vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
+vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page = NULL, *swapcache;
@@ -3536,7 +3536,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 	page = lookup_swap_cache(entry, vma, vmf->address);
 	swapcache = page;
 
-    /*  */
+
 	if (!page) {
 		struct swap_info_struct *si = swp_swap_info(entry);
 
@@ -3571,7 +3571,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)   /*  */
 				swap_readpage(page, true);
 			}
 		}
-        /*  */
+
         else {
 			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE, vmf);
 			swapcache = page;
@@ -3802,7 +3802,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 			goto unlock;
 		}
 
-        /*  */
+
 		ret = check_stable_address_space(vma->vm_mm);
 		if (ret)
 			goto unlock;
@@ -3815,7 +3815,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		if (userfaultfd_missing(vma)) {
 			pte_unmap_unlock(vmf->pte, vmf->ptl);
 
-            /*  */
+
 			return handle_userfault(vmf, VM_UFFD_MISSING);
 		}
         /**
@@ -3986,7 +3986,7 @@ static int pmd_devmap_trans_unstable(pmd_t *pmd)
 	return pmd_devmap(*pmd) || pmd_trans_unstable(pmd);
 }
 
-/*  */
+
 static vm_fault_t pte_alloc_one_map(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -4110,7 +4110,7 @@ out:
 	return ret;
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -4219,7 +4219,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
     return ret;
 }
 
-static unsigned long __read_mostly fault_around_bytes  =/*  */
+static unsigned long __read_mostly fault_around_bytes  =
 	rounddown_pow_of_two(65536);
 
 #ifdef CONFIG_DEBUG_FS
@@ -4252,7 +4252,7 @@ static int __init fault_around_debugfs(void)
 				   &fault_around_bytes_fops);
 	return 0;
 }
-late_initcall(fault_around_debugfs);    /*  */
+late_initcall(fault_around_debugfs);
 #endif
 
 /*
@@ -4358,7 +4358,7 @@ static vm_fault_t do_read_fault(struct vm_fault *vmf)
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		return ret;
 
-	ret |= finish_fault(vmf);   /*  */
+	ret |= finish_fault(vmf);
 	unlock_page(vmf->page);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		put_page(vmf->page);
@@ -4383,17 +4383,17 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	if (!vmf->cow_page)
 		return VM_FAULT_OOM;
 
-    /*  */
+
 	if (mem_cgroup_charge(vmf->cow_page, vma->vm_mm, GFP_KERNEL)) {
 		put_page(vmf->cow_page);
 		return VM_FAULT_OOM;
 	}
-	cgroup_throttle_swaprate(vmf->cow_page, GFP_KERNEL);    /*  */
+	cgroup_throttle_swaprate(vmf->cow_page, GFP_KERNEL);
 
     /**
      *
      */
-	ret = __do_fault(vmf);  /*  */
+	ret = __do_fault(vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
 	if (ret & VM_FAULT_DONE_COW)
@@ -4404,7 +4404,7 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
     /* 表明 page 可用了 */
 	__SetPageUptodate(vmf->cow_page);
 
-    /*  */
+
 	ret |= finish_fault(vmf);
 
 	unlock_page(vmf->page);
@@ -4412,7 +4412,7 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
 
-    /*  */
+
     return ret;
 
 uncharge_out:
@@ -4692,7 +4692,7 @@ static vm_fault_t create_huge_pud(struct vm_fault *vmf)
 #if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&			\
 	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
 	/* No support for anonymous transparent PUD pages yet */
-	if (vma_is_anonymous(vmf->vma)) /*  */
+	if (vma_is_anonymous(vmf->vma))
 		goto split;
 	if (vmf->vma->vm_ops->huge_fault) {
 		vm_fault_t ret = vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PUD);
@@ -4700,10 +4700,10 @@ static vm_fault_t create_huge_pud(struct vm_fault *vmf)
 		if (!(ret & VM_FAULT_FALLBACK))
 			return ret;
 	}
-split:/*  */
+split:
 
 	/* COW or write-notify not handled on PUD level: split pud.*/
-	__split_huge_pud(vmf->vma, vmf->pud, vmf->address); /*  */
+	__split_huge_pud(vmf->vma, vmf->pud, vmf->address);
 
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
@@ -4803,7 +4803,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
             /**
              * 文件映射的缺页中断
              */
-			return do_fault(vmf);   /*  */
+			return do_fault(vmf);
 	}
 
     /**
@@ -4837,7 +4837,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 
     entry = vmf->orig_pte;
 
-    /*  */
+
 	if (unlikely(!pte_same(*vmf->pte, entry))) {    /* 如果不是同一个 pte */
 		update_mmu_tlb(vmf->vma, vmf->address, vmf->pte);   /* 更新TLB */
 		goto unlock;
@@ -4862,10 +4862,10 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		entry = pte_mkdirty(entry);
 	}
 
-    /*  */
+
 	entry = pte_mkyoung(entry); /* 设置 _PAGE_ACCESSED 标志位 */
 
-    /*  */
+
 	if (ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
 				              vmf->flags & FAULT_FLAG_WRITE)) {
 		update_mmu_cache(vmf->vma, vmf->address, vmf->pte); /* x86 为空 */
@@ -4914,7 +4914,7 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	};
 
 	unsigned int dirty = flags & FAULT_FLAG_WRITE;  /* 是否需要回写 */
-	struct mm_struct *mm = vma->vm_mm;  /*  */
+	struct mm_struct *mm = vma->vm_mm;
 	pgd_t *pgd;
 	p4d_t *p4d;
 	vm_fault_t ret;
@@ -5142,7 +5142,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 			mem_cgroup_oom_synchronize(false);
 	}
 
-	mm_account_fault(regs, address, flags, ret);    /*  */
+	mm_account_fault(regs, address, flags, ret);
 
 	return ret;
 }
@@ -5178,7 +5178,7 @@ int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
  */
 int __pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address)
 {
-	pud_t *new = pud_alloc_one(mm, address);    /*  */
+	pud_t *new = pud_alloc_one(mm, address);
 	if (!new)
 		return -ENOMEM;
 
@@ -5203,7 +5203,7 @@ int __pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address)
 int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 {
 	spinlock_t *ptl;
-	pmd_t *new = pmd_alloc_one(mm, address);    /*  */
+	pmd_t *new = pmd_alloc_one(mm, address);
 	if (!new)
 		return -ENOMEM;
 

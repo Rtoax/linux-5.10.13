@@ -65,7 +65,7 @@ struct tlb_context {
 };
 
 /**
- *  
+ *
  */
 struct tlb_state {
 	/*
@@ -162,8 +162,8 @@ struct tlb_state cpu_tlbstate; //++
 bool nmi_uaccess_okay(void);
 #define nmi_uaccess_okay nmi_uaccess_okay
 
-/* Initialize cr4 shadow for this CPU. 
-存储了每个CPU中 `cr4` 的Shadow Copy 
+/* Initialize cr4 shadow for this CPU.
+存储了每个CPU中 `cr4` 的Shadow Copy
 上下文切换可能会修改 `cr4` 中的位，因此需要保存每个CPU中 `cr4` 的内容*/
 static inline void cr4_init_shadow(void)
 {
@@ -190,7 +190,7 @@ extern void initialize_tlbstate_and_flush(void);
  *
  * TLB 信息
  */
-struct flush_tlb_info { /*  */
+struct flush_tlb_info {
 	/*
 	 * We support several kinds of flushes.
 	 *
@@ -241,7 +241,7 @@ extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
 
 /**
- *  
+ *
  */
 static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
 {

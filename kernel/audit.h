@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* audit -- definition of audit_context structure and supporting types 
+/* audit -- definition of audit_context structure and supporting types
  *
  * Copyright 2003-2004 Red Hat, Inc.
  * Copyright 2005 Hewlett-Packard Development Company, L.P.
@@ -20,7 +20,7 @@
 /* At task start time, the audit_state is set in the audit_context using
    a per-task filter.  At syscall entry, the audit_state is augmented by
    the syscall filter. */
-enum audit_state {  /*  */
+enum audit_state {
 	AUDIT_DISABLED,		/* Do not create per-task audit_context.
 				 * No syscall-specific audit records can
 				 * be generated. */
@@ -64,7 +64,7 @@ struct audit_cap_data {
  *
  * Further, in fs/namei.c:path_lookup() we store the inode and device.
  */
-struct audit_names {    /*  */
+struct audit_names {
 	struct list_head	list;		/* audit_context->names_list */
 
 	struct filename		*name;

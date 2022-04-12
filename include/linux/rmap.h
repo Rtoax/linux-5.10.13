@@ -48,8 +48,8 @@
  * |          |             |           |        |           ()  ()
  * +----------+             |           +--------+           /\  /\
  * |  mapping |-------------+                              () ()() ()
- * +----------+             
- * |          |             
+ * +----------+
+ * |          |
  * +----------+
  */
 struct anon_vma {   /* 匿名 VMA */
@@ -58,7 +58,7 @@ struct anon_vma {   /* 匿名 VMA */
 	struct anon_vma *root;		/* Root of this anon_vma tree */
 
     /**
-     *  保护链表 
+     *  保护链表
      *
      *  写保护见 `anon_vma_fork()` 函数中的 `anon_vma_lock_write()``anon_vma_unlock_write()`
      *  读保护见 `try_to_unmap()` 函数中的 `page_lock_anon_vma_read()`回调函数
@@ -87,10 +87,10 @@ struct anon_vma {   /* 匿名 VMA */
 	 * 决定是否在 fork/clone 时复用 anon_vma 结构
 	 * degree < 2: 将复用
 	 */
-	unsigned degree;    
+	unsigned degree;
 
     /**
-     *  指向 父节点 
+     *  指向 父节点
      *
      *  `anon_vma_fork()` 指向了 父进程的 aon_vma
      *  `anon_vma_alloc()`指向 结构本身
@@ -126,10 +126,10 @@ struct anon_vma {   /* 匿名 VMA */
  * 该数据结构起到枢纽作用，比如：
  *  1. 链接父子进程间的 struct anon_vma 结构
  */
-struct anon_vma_chain { 
+struct anon_vma_chain {
 
     /* 指向 VMA */
-	struct vm_area_struct *vma; 
+	struct vm_area_struct *vma;
 
     /* 可以指向 父进程或子进程 的 anon_vma 结构 */
 	struct anon_vma *anon_vma;
@@ -138,15 +138,15 @@ struct anon_vma_chain {
      *  链表节点，该链表具有相同的 VMA 结构
      *  链表头是：
      *
-     *  vm_area_struct->anon_vma_chain 
+     *  vm_area_struct->anon_vma_chain
      */
 	struct list_head same_vma;   /* locked by mmap_lock & page_table_lock */
 
-    /*  */
+
     struct rb_node rb;			/* locked by anon_vma->rwsem */
 	unsigned long rb_subtree_last;
-    
-#ifdef CONFIG_DEBUG_VM_RB   /*  */
+
+#ifdef CONFIG_DEBUG_VM_RB
 	unsigned long cached_vma_start, cached_vma_last;
 #endif
 };
@@ -174,13 +174,13 @@ static inline void get_anon_vma(struct anon_vma *anon_vma)
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 
-static inline void put_anon_vma(struct anon_vma *anon_vma)  /*  */
+static inline void put_anon_vma(struct anon_vma *anon_vma)
 {
 	if (atomic_dec_and_test(&anon_vma->refcount))
 		__put_anon_vma(anon_vma);
 }
 
-static inline void anon_vma_lock_write(struct anon_vma *anon_vma)   /*  */
+static inline void anon_vma_lock_write(struct anon_vma *anon_vma)
 {
 	down_write(&anon_vma->root->rwsem);
 }
@@ -211,11 +211,11 @@ int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
 int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
 /**
- *  RMAP 相关结构申请 
+ *  RMAP 相关结构申请
  *
- *  
+ *
  */
-static inline int anon_vma_prepare(struct vm_area_struct *vma)  
+static inline int anon_vma_prepare(struct vm_area_struct *vma)
 {
 	if (likely(vma->anon_vma))  /* 已经申请了 anon_vma 结构 */
 		return 0;
@@ -273,7 +273,7 @@ bool try_to_unmap(struct page *, enum ttu_flags flags);
 #define PVMW_MIGRATION		(1 << 1)
 
 /**
- *  
+ *
  */
 struct page_vma_mapped_walk {
 	struct page *page;
@@ -355,7 +355,7 @@ struct rmap_walk_control {
     /* 完成 */
 	int (*done)(struct page *page);
 
-    /*  */
+
 	anon_vma_t (*anon_lock)(struct page *page);
 
     /* 可用 */
@@ -366,7 +366,7 @@ void rmap_walk(struct page *page, struct rmap_walk_control *rwc);
 void rmap_walk_locked(struct page *page, struct rmap_walk_control *rwc);
 
 #else	/* !CONFIG_MMU */
-/*  */
+
 #endif	/* CONFIG_MMU */
 
 #endif	/* _LINUX_RMAP_H */

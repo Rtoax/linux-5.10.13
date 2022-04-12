@@ -31,7 +31,7 @@
  * @base_real is for the fast NMI safe accessor to allow reading clock
  * realtime from any context.
  */
-struct tk_read_base {   /*  */
+struct tk_read_base {
 	struct clocksource	*clock;
 	u64			mask;
 	u64			cycle_last;
@@ -89,7 +89,7 @@ struct tk_read_base {   /*  */
  * @monotonic_to_boottime is a timespec64 representation of @offs_boot to
  * accelerate the VDSO update for CLOCK_BOOTTIME.
  */
-struct timekeeper { /*  */
+struct timekeeper {
 	struct tk_read_base	tkr_mono;
 	struct tk_read_base	tkr_raw;
 	u64			xtime_sec;

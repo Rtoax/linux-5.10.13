@@ -18,7 +18,7 @@ struct task_struct;
 #define LT_SAVECOUNT		32
 #define LT_BACKTRACEDEPTH	12
 
-struct latency_record { /*  */
+struct latency_record {
 	unsigned long	backtrace[LT_BACKTRACEDEPTH];
 	unsigned int	count;
 	unsigned long	time;

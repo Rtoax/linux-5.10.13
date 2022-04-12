@@ -133,7 +133,7 @@
 #define X86_FEATURE_DCA			( 4*32+18) /* Direct Cache Access */
 #define X86_FEATURE_XMM4_1		( 4*32+19) /* "sse4_1" SSE-4.1 */
 #define X86_FEATURE_XMM4_2		( 4*32+20) /* "sse4_2" SSE-4.2 */
-#define X86_FEATURE_X2APIC		( 4*32+21) /* X2APIC *//*  */
+#define X86_FEATURE_X2APIC		( 4*32+21) /* X2APIC */
 #define X86_FEATURE_MOVBE		( 4*32+22) /* MOVBE instruction */
 #define X86_FEATURE_POPCNT		( 4*32+23) /* POPCNT instruction */
 #define X86_FEATURE_TSC_DEADLINE_TIMER	( 4*32+24) /* TSC deadline timer */

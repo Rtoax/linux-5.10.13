@@ -111,7 +111,7 @@ struct sem {
 } ____cacheline_aligned_in_smp;
 
 /* One sem_array data structure for each set of semaphores in the system. */
-struct sem_array {  /*  */
+struct sem_array {
 	struct kern_ipc_perm	sem_perm;	/* permissions .. see ipc.h */
 	time64_t		sem_ctime;	/* create/last semctl() time */
 	struct list_head	pending_alter;	/* pending operations */
@@ -2419,7 +2419,7 @@ void exit_sem(struct task_struct *tsk)
 }
 
 #ifdef CONFIG_PROC_FS
-static int sysvipc_sem_proc_show(struct seq_file *s, void *it)  /*  */
+static int sysvipc_sem_proc_show(struct seq_file *s, void *it)
 {
 	struct user_namespace *user_ns = seq_user_ns(s);
 	struct kern_ipc_perm *ipcp = it;

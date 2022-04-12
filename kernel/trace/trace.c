@@ -179,7 +179,7 @@ static void ftrace_trace_userstack(struct trace_array *tr,
 				   unsigned long flags, int pc);
 
 #define MAX_TRACER_SIZE		100
-static char __initdata bootup_tracer_buf[MAX_TRACER_SIZE] ;/*  */
+static char __initdata bootup_tracer_buf[MAX_TRACER_SIZE] ;
 static char *default_bootup_tracer;
 
 static bool allocate_snapshot;
@@ -237,7 +237,7 @@ static int __init set_trace_boot_options(char *str)
 }
 __setup("trace_options=", set_trace_boot_options);
 
-static char __initdata trace_boot_clock_buf[MAX_TRACER_SIZE] ;/*  */
+static char __initdata trace_boot_clock_buf[MAX_TRACER_SIZE] ;
 static char __initdata *trace_boot_clock ;
 
 static int __init set_trace_boot_clock(char *str)
@@ -814,7 +814,7 @@ int tracing_is_enabled(void)
 static unsigned long		trace_buf_size = TRACE_BUF_SIZE_DEFAULT;
 
 /* trace_types holds a link list of available tracers. */
-static struct tracer		__read_mostly *trace_types ;/*  */
+static struct tracer		__read_mostly *trace_types ;
 
 /*
  * trace_types_lock is used to protect the trace_types list.
@@ -882,7 +882,7 @@ static inline void trace_access_lock_init(void)
 }
 
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_STACKTRACE
@@ -895,7 +895,7 @@ static inline void ftrace_trace_stack(struct trace_array *tr,
 				      int skip, int pc, struct pt_regs *regs);
 
 #else
-/*  */
+
 #endif
 
 static __always_inline void
@@ -997,7 +997,7 @@ int __trace_puts(unsigned long ip, const char *str, int size)
 	local_save_flags(irq_flags);
 	buffer = global_trace.array_buffer.buffer;
 	ring_buffer_nest_start(buffer);
-	event = __trace_buffer_lock_reserve(buffer, TRACE_PRINT, alloc, 
+	event = __trace_buffer_lock_reserve(buffer, TRACE_PRINT, alloc,
 					    irq_flags, pc);
 	if (!event) {
 		size = 0;
@@ -1351,7 +1351,7 @@ int tracing_snapshot_cond_disable(struct trace_array *tr)
 }
 EXPORT_SYMBOL_GPL(tracing_snapshot_cond_disable);
 #else
-/*  */
+
 #endif /* CONFIG_TRACER_SNAPSHOT */
 
 void tracer_tracing_off(struct trace_array *tr)
@@ -1966,7 +1966,7 @@ static __init int init_trace_selftests(void)
 }
 core_initcall(init_trace_selftests);
 #else
-/*  */
+
 #endif /* CONFIG_FTRACE_STARTUP_TEST */
 
 static void add_tracer_options(struct trace_array *tr, struct tracer *t);
@@ -1979,7 +1979,7 @@ static void __init apply_trace_boot_options(void);
  *
  * Register a new plugin tracer.
  */
-int __init register_tracer(struct tracer *type) /*  */
+int __init register_tracer(struct tracer *type)
 {
 	struct tracer *t;
 	int ret = 0;
@@ -3044,7 +3044,7 @@ ftrace_trace_userstack(struct trace_array *tr,
 	preempt_enable();
 }
 #else /* CONFIG_USER_STACKTRACE_SUPPORT */
-/*  */
+
 #endif /* !CONFIG_USER_STACKTRACE_SUPPORT */
 
 #endif /* CONFIG_STACKTRACE */
@@ -3141,7 +3141,7 @@ void trace_printk_init_buffers(void)
 EXPORT_SYMBOL_GPL(trace_printk_init_buffers);
 
 /**
- *  
+ *
  */
 void trace_printk_start_comm(void)
 {
@@ -4172,7 +4172,7 @@ static void print_snapshot_help(struct seq_file *m, struct trace_iterator *iter)
 }
 #else
 /* Should never be called */
-/*  */
+
 #endif
 
 static int s_show(struct seq_file *m, void *v)
@@ -4619,7 +4619,7 @@ static const struct file_operations tracing_fops = {
 	.release	= tracing_release,
 };
 
-static const struct file_operations show_traces_fops = {    /* /sys/kernel/debug/tracing/available_tracers */  
+static const struct file_operations show_traces_fops = {    /* /sys/kernel/debug/tracing/available_tracers */
 	.open		= show_traces_open,
 	.read		= seq_read,
 	.llseek		= seq_lseek,
@@ -5634,7 +5634,7 @@ static void trace_create_eval_file(struct dentry *d_tracer)
 }
 
 #else /* CONFIG_TRACE_EVAL_MAP_FILE */
-/*  */
+
 #endif /* !CONFIG_TRACE_EVAL_MAP_FILE */
 
 static void trace_insert_eval_map(struct module *mod,
@@ -5837,7 +5837,7 @@ static void tracing_set_nop(struct trace_array *tr)
 {
 	if (tr->current_trace == &nop_trace)
 		return;
-	
+
 	tr->current_trace->enabled--;
 
 	if (tr->current_trace->reset)
@@ -5921,7 +5921,7 @@ int tracing_set_tracer(struct trace_array *tr, const char *buf)
         graph_trace<"function_graph"> -> graph_trace_reset()
     */
 	if (tr->current_trace->reset)
-		tr->current_trace->reset(tr);   
+		tr->current_trace->reset(tr);
 
 	/* Current trace needs to be nop_trace before synchronize_rcu */
 	tr->current_trace = &nop_trace;
@@ -6032,7 +6032,7 @@ tracing_nsecs_write(unsigned long *ptr, const char __user *ubuf,
 }
 
 /**
- *  
+ *
  */
 static ssize_t
 tracing_thresh_read(struct file *filp, char __user *ubuf,
@@ -7101,7 +7101,7 @@ static const struct file_operations tracing_max_lat_fops = {
 #endif
 
 /**
- *  /sys/kernel/debug/tracing/current_tracer 
+ *  /sys/kernel/debug/tracing/current_tracer
  *
  *  echo function > current_tracer
  */
@@ -8012,7 +8012,7 @@ static __init int register_snapshot_cmd(void)
 	return register_ftrace_command(&ftrace_snapshot_cmd);
 }
 #else
-/*  */
+
 #endif /* defined(CONFIG_TRACER_SNAPSHOT) && defined(CONFIG_DYNAMIC_FTRACE) */
 
 static struct dentry *tracing_get_dentry(struct trace_array *tr)
@@ -8901,7 +8901,7 @@ static __init void create_trace_instances(struct dentry *d_tracer)
 
 static void /* /sys/kernel/debug/tracing/ */
 init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
-{   
+{
 	struct trace_event_file *file;
 	int cpu;
 
@@ -8912,12 +8912,12 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
      *  echo function_graph > current_tracer
      *  cat trace
      */
-    
+
     /* /sys/kernel/debug/tracing/available_tracers */
 	trace_create_file("available_tracers", 0444, d_tracer, tr, &show_traces_fops);
 
     /**
-     *  /sys/kernel/debug/tracing/current_tracer 
+     *  /sys/kernel/debug/tracing/current_tracer
      *
      *  echo function > current_tracer
      */
@@ -8985,7 +8985,7 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
 	for_each_tracing_cpu(cpu) {
 		tracing_init_tracefs_percpu(tr, cpu);
     }
-    
+
 	ftrace_init_tracefs(tr, d_tracer);
 }
 
@@ -9031,7 +9031,7 @@ int tracing_init_dentry(void)   // /sys/kernel/debug/tracing ??
 	if (tr->dir)
 		return 0;
 
-	if (WARN_ON(!tracefs_initialized()))    /*  */
+	if (WARN_ON(!tracefs_initialized()))
 		return -ENODEV;
 
 	/*
@@ -9039,8 +9039,8 @@ int tracing_init_dentry(void)   // /sys/kernel/debug/tracing ??
 	 * files to exist in debugfs/tracing, we must automount
 	 * the tracefs file system there, so older tools still
 	 * work with the newer kerenl.
-	 */ /*  */
-	tr->dir = debugfs_create_automount("tracing", NULL, 
+	 */
+	tr->dir = debugfs_create_automount("tracing", NULL,
 					   trace_automount, NULL);
 
 	return 0;
@@ -9102,7 +9102,7 @@ static void trace_module_remove_evals(struct module *mod)
 	mutex_unlock(&trace_eval_mutex);
 }
 #else
-/*  */
+
 #endif /* CONFIG_TRACE_EVAL_MAP_FILE */
 
 static int trace_module_notify(struct notifier_block *self,
@@ -9132,17 +9132,17 @@ static struct notifier_block trace_module_nb = {
 /**
  *  初始化
  */
-static __init int tracer_init_tracefs(void) /*  */
+static __init int tracer_init_tracefs(void)
 {
 	int ret;
 
 	trace_access_lock_init();
 
-	ret = tracing_init_dentry();    /*  */
+	ret = tracing_init_dentry();
 	if (ret)
 		return 0;
 
-	event_trace_init();   /* /sys/kernel/debug/tracing/available_events */  
+	event_trace_init();   /* /sys/kernel/debug/tracing/available_events */
 
 	init_tracer_tracefs(&global_trace, NULL);   /* /sys/kernel/debug/tracing/ */
 	ftrace_init_tracefs_toplevel(&global_trace, NULL);
@@ -9166,9 +9166,9 @@ static __init int tracer_init_tracefs(void) /*  */
 
 	trace_create_file("saved_tgids", 0444, NULL, NULL, &tracing_saved_tgids_fops);
 
-	trace_eval_init();  /*  */
+	trace_eval_init();
 
-	trace_create_eval_file(NULL);   /*  */
+	trace_create_eval_file(NULL);
 
 #ifdef CONFIG_MODULES
 	register_module_notifier(&trace_module_nb);
@@ -9179,9 +9179,9 @@ static __init int tracer_init_tracefs(void) /*  */
 			NULL, &tracing_dyn_info_fops);
 #endif
 
-	create_trace_instances(NULL);   /*  */
+	create_trace_instances(NULL);
 
-	update_tracer_options(&global_trace);   /*  */
+	update_tracer_options(&global_trace);
 
 	return 0;
 }
@@ -9473,7 +9473,7 @@ out:
 	return ret;
 }
 
-__init static int tracer_alloc_buffers(void)    /*  */
+__init static int tracer_alloc_buffers(void)
 {
 	int ring_buf_size;
 	int ret = -ENOMEM;
@@ -9602,7 +9602,7 @@ out:
 	return ret;
 }
 
-void __init early_trace_init(void)  /*  */
+void __init early_trace_init(void)
 {
 	if (tracepoint_printk) {
 		tracepoint_print_iter =
@@ -9613,10 +9613,10 @@ void __init early_trace_init(void)  /*  */
 		else
 			static_key_enable(&tracepoint_printk_key.key);
 	}
-	tracer_alloc_buffers(); /*  */
+	tracer_alloc_buffers();
 }
 
-void __init trace_init(void)    /*  */
+void __init trace_init(void)
 {
 	trace_event_init();
 }
@@ -9640,7 +9640,7 @@ __init static int clear_boot_tracer(void)
 	return 0;
 }
 
-fs_initcall(tracer_init_tracefs);   /*  */
+fs_initcall(tracer_init_tracefs);
 late_initcall_sync(clear_boot_tracer);
 
 #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK

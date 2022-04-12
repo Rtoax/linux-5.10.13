@@ -46,13 +46,13 @@ DEFINE_RAW_SPINLOCK(timekeeper_lock);
  * cache line.
  */
 static struct {
-	seqcount_raw_spinlock_t	seq;    /*  */
-	struct timekeeper	timekeeper; /*  */
+	seqcount_raw_spinlock_t	seq;
+	struct timekeeper	timekeeper;
 
     /**
-     *  
+     *
      */
-} ____cacheline_aligned tk_core  = {/*  */
+} ____cacheline_aligned tk_core  = {
 	tk_core.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
 
@@ -263,7 +263,7 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
     /**
-     *  
+     *
      */
 	delta = clocksource_delta(now, last, mask);
 
@@ -396,7 +396,7 @@ static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 de
 	return nsec + arch_gettimeoffset();
 }
 
-static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)    /*  */
+static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 {
 	u64 delta;
 
@@ -827,7 +827,7 @@ void ktime_get_real_ts64(struct timespec64 *ts)
 }
 EXPORT_SYMBOL(ktime_get_real_ts64);
 
-ktime_t ktime_get(void) /*  */
+ktime_t ktime_get(void)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	unsigned int seq;
@@ -1638,7 +1638,7 @@ void __init timekeeping_init(void)  /*初始化时钟源  */
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	ntp_init(); /*  */
+	ntp_init();
 
 	clock = clocksource_default_clock();
 	if (clock->enable)
@@ -1895,7 +1895,7 @@ static int __init timekeeping_init_ops(void)
 	register_syscore_ops(&timekeeping_syscore_ops);
 	return 0;
 }
-device_initcall(timekeeping_init_ops);  /*  */
+device_initcall(timekeeping_init_ops);
 
 /*
  * Apply a multiplier adjustment to the timekeeper

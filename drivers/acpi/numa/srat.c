@@ -394,7 +394,7 @@ acpi_parse_gi_affinity(union acpi_subtable_headers *header,
 	return 0;
 }
 #else
-/*  */
+
 #endif /* defined(CONFIG_X86) || defined (CONFIG_ARM64) */
 
 static int __initdata parsed_numa_memblks;

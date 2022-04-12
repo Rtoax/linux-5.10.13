@@ -52,7 +52,7 @@
 #ifdef CONFIG_XFRM_STATISTICS
 #define XFRM_INC_STATS(net, field)	SNMP_INC_STATS((net)->mib.xfrm_statistics, field)
 #else
-/*  */
+
 #endif
 
 
@@ -146,7 +146,7 @@ enum {
 };
 
 /* Full description of state of transformer. */
-struct xfrm_state { /*  */
+struct xfrm_state {
 	possible_net_t		xs_net;
 	union {
 		struct hlist_node	gclist;
@@ -711,7 +711,7 @@ void xfrm_audit_state_notfound(struct sk_buff *skb, u16 family, __be32 net_spi,
 void xfrm_audit_state_icvfail(struct xfrm_state *x, struct sk_buff *skb,
 			      u8 proto);
 #else
-/*  */
+
 #endif /* CONFIG_AUDITSYSCALL */
 
 static inline void xfrm_pol_hold(struct xfrm_policy *policy)
@@ -861,7 +861,7 @@ static inline bool xfrm_sec_ctx_match(struct xfrm_sec_ctx *s1, struct xfrm_sec_c
 		 (s1->ctx_alg == s2->ctx_alg)));
 }
 #else
-/*  */
+
 #endif
 
 /* A struct encoding bundle of transformations to apply to some set of flow.
@@ -875,7 +875,7 @@ static inline bool xfrm_sec_ctx_match(struct xfrm_sec_ctx *s1, struct xfrm_sec_c
  * bundles differing by session id. All the bundles grow from a parent
  * policy rule.
  */
-struct xfrm_dst {   /*  */
+struct xfrm_dst {
 	union {
 		struct dst_entry	dst;
 		struct rtable		rt;
@@ -1148,7 +1148,7 @@ static inline void xfrm_sk_free_policy(struct sock *sk)
 }
 
 #else
-/*  */
+
 #endif
 
 static __inline__
@@ -1369,7 +1369,7 @@ void xfrm6_state_fini(void);
 int xfrm6_protocol_init(void);
 void xfrm6_protocol_fini(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_XFRM_STATISTICS
@@ -1381,7 +1381,7 @@ int xfrm_sysctl_init(struct net *net);
 #ifdef CONFIG_SYSCTL
 void xfrm_sysctl_fini(struct net *net);
 #else
-/*  */
+
 #endif
 
 void xfrm_state_walk_init(struct xfrm_state_walk *walk, u8 proto,
@@ -1422,7 +1422,7 @@ void xfrm_tmpl_sort(struct xfrm_tmpl **dst, struct xfrm_tmpl **src, int n,
 void xfrm_state_sort(struct xfrm_state **dst, struct xfrm_state **src, int n,
 		     unsigned short family);
 #else
-/*  */
+
 #endif
 
 struct xfrmk_sadinfo {
@@ -1520,7 +1520,7 @@ int xfrm6_udp_encap_rcv(struct sock *sk, struct sk_buff *skb);
 int xfrm_user_policy(struct sock *sk, int optname, sockptr_t optval,
 		     int optlen);
 #else
-/*  */
+
 #endif
 
 struct dst_entry *__xfrm_dst_lookup(struct net *net, int tos, int oif,
@@ -1799,7 +1799,7 @@ static inline void xfrm_dev_state_free(struct xfrm_state *x)
 	}
 }
 #else
-/*  */
+
 #endif
 
 static inline int xfrm_mark_get(struct nlattr **attrs, struct xfrm_mark *m)
@@ -1882,7 +1882,7 @@ extern int xfrm_unregister_translator(struct xfrm_translator *xtr);
 extern struct xfrm_translator *xfrm_get_translator(void);
 extern void xfrm_put_translator(struct xfrm_translator *xtr);
 #else
-/*  */
+
 #endif
 
 #if IS_ENABLED(CONFIG_IPV6)

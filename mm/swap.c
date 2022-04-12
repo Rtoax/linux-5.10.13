@@ -43,7 +43,7 @@
 #include <trace/events/pagemap.h>
 
 /* How many pages do we try to swap or page in/out together? */
-int page_cluster;   /*  */
+int page_cluster;
 
 /* Protecting only lru_rotate.pvec which requires disabling interrupts */
 struct lru_rotate {
@@ -76,7 +76,7 @@ static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
  * This path almost never happens for VM activity - pages are normally
  * freed via pagevecs.  But it gets used by networking.
  */
-static void __page_cache_release(struct page *page) /*  */
+static void __page_cache_release(struct page *page)
 {
 	if (PageLRU(page)) {
 		pg_data_t *pgdat = page_pgdat(page);
@@ -88,7 +88,7 @@ static void __page_cache_release(struct page *page) /*  */
 		VM_BUG_ON_PAGE(!PageLRU(page), page);
 		__ClearPageLRU(page);
 
-        /*  */
+
 		del_page_from_lru_list(page, lruvec, page_off_lru(page));
 		spin_unlock_irqrestore(&pgdat->lru_lock, flags);
 	}
@@ -241,11 +241,11 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 		(*move_fn)(page, lruvec, arg);
 	}
 
-    /*  */
+
 	if (pgdat)
 		spin_unlock_irqrestore(&pgdat->lru_lock, flags);
 
-    /*  */
+
     release_pages(pvec->pages, pvec->nr);
 
     /* 重置 nr = 0，用于再次回收 */
@@ -455,14 +455,14 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 		 * this list is never rotated or maintained, so marking an
 		 * evictable page accessed has no effect.
 		 */
-	} else if (!PageActive(page)) { /*  */
+	} else if (!PageActive(page)) {
 		/*
 		 * If the page is on the LRU, queue it for activation via
 		 * lru_pvecs.activate_page. Otherwise, assume the page is on a
 		 * pagevec, mark it active and it'll be moved to the active
 		 * LRU on the next drain.
 		 */
-		if (PageLRU(page))  /*  */
+		if (PageLRU(page))
 			activate_page(page);     /* 加入活跃链表 */
 		else
 			__lru_cache_activate_page(page);     /* 加入活跃链表 */
@@ -477,7 +477,7 @@ void mark_page_accessed(struct page *page)  /* 把页标记为访问过时 */
 		workingset_activation(page);
 	}
 
-	if (page_is_idle(page)) /*  */
+	if (page_is_idle(page))
 		clear_page_idle(page);
 }
 EXPORT_SYMBOL(mark_page_accessed);
@@ -493,7 +493,7 @@ EXPORT_SYMBOL(mark_page_accessed);
  *
  * 加入 LRU 链表
  */
-void lru_cache_add(struct page *page)   /*  */
+void lru_cache_add(struct page *page)
 {
 	struct pagevec *pvec;
 
@@ -547,7 +547,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		count_vm_events(UNEVICTABLE_PGMLOCKED, nr_pages);
 	}
 
-    /*  */
+
 	lru_cache_add(page);
 }
 
@@ -1118,8 +1118,8 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
     } else {
 
 		lru = LRU_UNEVICTABLE;  /* 不可驱逐 */
-		ClearPageActive(page);      /*  */
-		SetPageUnevictable(page);   /*  */
+		ClearPageActive(page);
+		SetPageUnevictable(page);
 
         /* 可驱逐 */
 		if (!was_unevictable)
@@ -1253,13 +1253,13 @@ EXPORT_SYMBOL(pagevec_lookup_range_nr_tag);
  *
  * 决定要回收的页数？
  */
-void __init swap_setup(void)    /*  */
+void __init swap_setup(void)
 {
 	unsigned long megs = totalram_pages() >> (20 - PAGE_SHIFT);
 
 	/* Use a smaller cluster for small-memory machines */
 	if (megs < 16)
-		page_cluster = 2;   /*  */
+		page_cluster = 2;
 	else
 		page_cluster = 3;
 	/*

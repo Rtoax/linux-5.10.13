@@ -433,7 +433,7 @@ static int try_context_readahead(struct address_space *mapping,
  * A minimal readahead algorithm for trivial sequential/random reads.
  * 用于琐碎连续/随机读取的最小读取算法。
  */
-static void ondemand_readahead(struct readahead_control *ractl, /*  */
+static void ondemand_readahead(struct readahead_control *ractl,
 		struct file_ra_state *ra, bool hit_readahead_marker,
 		unsigned long req_size)
 {
@@ -478,20 +478,20 @@ static void ondemand_readahead(struct readahead_control *ractl, /*  */
 		pgoff_t start;
 
 		rcu_read_lock();
-        /*  */
+
 		start = page_cache_next_miss(ractl->mapping, index + 1, max_pages);
 		rcu_read_unlock();
 
 		if (!start || start - index > max_pages)
 			return;
 
-        /*  */
+
 		ra->start = start;
 		ra->size = start - index;	/* old async_size */
 		ra->size += req_size;
 		ra->size = get_next_ra_size(ra, max_pages);
 		ra->async_size = ra->size;
-        
+
 		goto readit;
 	}
 
@@ -523,7 +523,7 @@ static void ondemand_readahead(struct readahead_control *ractl, /*  */
 	 * Read as is, and do not pollute the readahead state.
 	 */
 	do_page_cache_ra(ractl, req_size, 0);
-    
+
 	return;
 
 initial_readahead:

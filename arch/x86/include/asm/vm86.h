@@ -28,7 +28,7 @@ struct kernel_vm86_regs {
 	unsigned short gs, __gsh;
 };
 
-struct vm86 {   /*  */
+struct vm86 {
 	struct vm86plus_struct __user *user_vm86;
 	struct pt_regs regs32;
 	unsigned long veflags;
@@ -74,7 +74,7 @@ static inline int invalid_vm86_irq(int irq)
 void release_vm86_irqs(struct task_struct *);
 
 #else
-/*  */
+
 #endif /* CONFIG_VM86 */
 
 #endif /* _ASM_X86_VM86_H */

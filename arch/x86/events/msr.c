@@ -293,7 +293,7 @@ static struct pmu pmu_msr = {/* 性能监控单元 */
  *  MSR（Model Specific Register）是x86架构中的概念，指的是在x86架构处理器中，
  *  一系列用于控制CPU运行、功能开关、调试、跟踪程序执行、监测CPU性能等方面的寄存器。
  */
-static int __init msr_init(void)    /*  */
+static int __init msr_init(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC)) {
 		pr_cont("no MSR PMU driver.\n");
@@ -306,4 +306,4 @@ static int __init msr_init(void)    /*  */
 
 	return 0;
 }
-device_initcall(msr_init);  /*  */
+device_initcall(msr_init);

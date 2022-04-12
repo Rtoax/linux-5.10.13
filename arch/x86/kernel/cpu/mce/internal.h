@@ -111,7 +111,7 @@ void mce_work_trigger(void);
 void mce_register_injector_chain(struct notifier_block *nb);
 void mce_unregister_injector_chain(struct notifier_block *nb);
 #else
-/*  */
+
 #endif
 
 struct mca_config {

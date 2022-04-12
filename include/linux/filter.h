@@ -525,7 +525,7 @@ struct bpf_binary_header {
 /**
  *  经过 BPF 解释器解释（翻译）之后的整个镜像
  */
-struct bpf_prog {   /*  */
+struct bpf_prog {
 	u16			pages;		/* Number of allocated pages */
 	u16			jited:1,	/* Is our filter JIT'ed? */
 				jit_requested:1,/* archs need to JIT the prog */
@@ -552,10 +552,10 @@ struct bpf_prog {   /*  */
 	struct bpf_insn		insnsi[];
 };
 
-struct sk_filter {  /*  */
-	refcount_t	refcnt;     /*  */
-	struct rcu_head	rcu;    /*  */
-	struct bpf_prog	*prog;  /*  */
+struct sk_filter {
+	refcount_t	refcnt;
+	struct rcu_head	rcu;
+	struct bpf_prog	*prog;
 };
 
 DECLARE_STATIC_KEY_FALSE(bpf_stats_enabled_key);

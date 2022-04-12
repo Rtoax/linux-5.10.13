@@ -321,7 +321,7 @@ pipe_read(struct kiocb *iocb, struct iov_iter *to)  /* 读取数据 */
 				continue;
 		}
 
-		if (!pipe->writers) /*  */
+		if (!pipe->writers)
 			break;
 		if (ret)    /* 如果读取失败，但是非阻塞，不应该不退出吗?? */
 			break;
@@ -329,7 +329,7 @@ pipe_read(struct kiocb *iocb, struct iov_iter *to)  /* 读取数据 */
 			ret = -EAGAIN;
 			break;
 		}
-		__pipe_unlock(pipe);    /*  */
+		__pipe_unlock(pipe);
 
 		/*
 		 * We only get here if we didn't actually read anything.
@@ -364,7 +364,7 @@ pipe_read(struct kiocb *iocb, struct iov_iter *to)  /* 读取数据 */
 
 		__pipe_lock(pipe);
 		was_full = pipe_full(pipe->head, pipe->tail, pipe->max_usage);
-		wake_next_reader = true;    /*  */
+		wake_next_reader = true;
 	}
 	if (pipe_empty(pipe->head, pipe->tail))
 		wake_next_reader = false;   /* 队列是空的，不唤醒下一个 */
@@ -422,7 +422,7 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
 	}
 
 #ifdef CONFIG_WATCH_QUEUE
-	if (pipe->watch_queue) {    /*  */
+	if (pipe->watch_queue) {
 		ret = -EXDEV;
 		goto out;
 	}
@@ -444,10 +444,10 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
 	chars = total_len & (PAGE_SIZE-1);  /* 需要写的 字节数 */
 
     /**
-     *  如果有东西要写，并且pipe不是空的 
+     *  如果有东西要写，并且pipe不是空的
      *  第一次读写，pipe 为空，此分支不会执行
      */
-	if (chars && !was_empty) {  
+	if (chars && !was_empty) {
 		unsigned int mask = pipe->ring_size - 1;
 		struct pipe_buffer *buf = &pipe->bufs[(head - 1) & mask];
 		int offset = buf->offset + buf->len;
@@ -484,7 +484,7 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
 
 		head = pipe->head;  /* 获取头指针 */
         /**
-         *  如果 pipe 没有满 
+         *  如果 pipe 没有满
          *  初始状态，肯定会运行这个分支
          */
 		if (!pipe_full(head, pipe->tail, pipe->max_usage)) {
@@ -940,12 +940,12 @@ int create_pipe_files(struct file **res, int flags) /* 分配pipe file 结构 */
 	}
 
     /**
-     *  
+     *
      */
     /* 分配 file 写端 */
 	f = alloc_file_pseudo(inode, pipe_mnt, "",
             				O_WRONLY | (flags & (O_NONBLOCK | O_DIRECT)),
-            				&pipefifo_fops);    /*  */
+            				&pipefifo_fops);
 	if (IS_ERR(f)) {
 		free_pipe_info(inode->i_pipe);
 		iput(inode);
@@ -991,7 +991,7 @@ static int __do_pipe_flags(int *fd, struct file **files, int flags) /* pipe() */
 		goto err_fdr;
 	fdw = error;
 
-	audit_fd_pair(fdr, fdw);    /*  */
+	audit_fd_pair(fdr, fdw);
 	fd[0] = fdr;    /* 读 */
 	fd[1] = fdw;    /* 写 */
 	return 0;
@@ -1021,7 +1021,7 @@ int do_pipe_flags(int *fd, int flags)
  *、
  * flags:
  *  O_NONBLOCK
- *  O_CLOEXEC   
+ *  O_CLOEXEC
  */
 static int do_pipe2(int __user *fildes, int flags)  /* pipe() */
 {
@@ -1032,7 +1032,7 @@ static int do_pipe2(int __user *fildes, int flags)  /* pipe() */
     /* 申请两个 file 结构，获取两个可用的 fd */
 	error = __do_pipe_flags(fd, files, flags);  /* */
 	if (!error) {
-        /*  */
+
 		if (unlikely(copy_to_user(fildes, fd, sizeof(fd)))) {
 			fput(files[0]); /* 把 file 给当前的进程 */
 			fput(files[1]); /* 同上 */
@@ -1150,7 +1150,7 @@ static int fifo_open(struct inode *inode, struct file *filp)    /* 打开 FIFO *
 	__pipe_lock(pipe);  /* 互斥 mutex 锁 */
 
 	/* We can only do regular read/write on fifos */
-	stream_open(inode, filp);   /*  */
+	stream_open(inode, filp);
 
 	switch (filp->f_mode & (FMODE_READ | FMODE_WRITE)) {
 	case FMODE_READ:
@@ -1240,18 +1240,18 @@ err:
 }
 
 /**
- *  
+ *
  */
 const struct file_operations pipefifo_fops = {  /* pipe 管道 操作符 */
 	pipefifo_fops.open		= fifo_open,    /* 打开管道 */
-	pipefifo_fops.llseek		= no_llseek,    /*  */
+	pipefifo_fops.llseek		= no_llseek,
 	pipefifo_fops.read_iter	= pipe_read,    /* 读 */
 	pipefifo_fops.write_iter	= pipe_write,   /* 写 */
-	pipefifo_fops.poll		= pipe_poll,    /*  */
-	pipefifo_fops.unlocked_ioctl	= pipe_ioctl,   /*  */
-	pipefifo_fops.release	= pipe_release,     /*  */
-	pipefifo_fops.fasync		= pipe_fasync,      /*  */
-	pipefifo_fops.splice_write	= iter_file_splice_write,   /*  */
+	pipefifo_fops.poll		= pipe_poll,
+	pipefifo_fops.unlocked_ioctl	= pipe_ioctl,
+	pipefifo_fops.release	= pipe_release,
+	pipefifo_fops.fasync		= pipe_fasync,
+	pipefifo_fops.splice_write	= iter_file_splice_write,
 };
 
 /*
@@ -1432,7 +1432,7 @@ long pipe_fcntl(struct file *file, unsigned int cmd, unsigned long arg)
 	return ret;
 }
 
-static const struct super_operations pipefs_ops = { /*  */
+static const struct super_operations pipefs_ops = {
 	.destroy_inode = free_inode_nonrcu,
 	.statfs = simple_statfs,
 };

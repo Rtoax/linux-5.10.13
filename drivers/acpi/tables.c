@@ -500,7 +500,7 @@ static DECLARE_BITMAP(acpi_initrd_installed, NR_ACPI_INITRD_TABLES);
 
 #define MAP_CHUNK_SIZE   (NR_FIX_BTMAPS << PAGE_SHIFT)
 
-/*  */
+
 void __init acpi_table_upgrade(void)
 {
 	void *data;

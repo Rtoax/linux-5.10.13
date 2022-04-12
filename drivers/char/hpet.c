@@ -356,7 +356,7 @@ static __poll_t hpet_poll(struct file *file, poll_table * wait)
 	return 0;
 }
 
-#ifdef CONFIG_HPET_MMAP /*  */
+#ifdef CONFIG_HPET_MMAP
 #ifdef CONFIG_HPET_MMAP_DEFAULT
 static int hpet_mmap_enabled = 1;
 #else
@@ -389,7 +389,7 @@ static int hpet_mmap(struct file *file, struct vm_area_struct *vma)
 	return vm_iomap_memory(vma, addr, PAGE_SIZE);
 }
 #else
-/*  */
+
 #endif
 
 static int hpet_fasync(int fd, struct file *file, int on)

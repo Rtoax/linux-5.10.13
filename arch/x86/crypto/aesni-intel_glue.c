@@ -1117,7 +1117,7 @@ static void __exit aesni_exit(void)
 	crypto_unregister_alg(&aesni_cipher_alg);
 }
 
-late_initcall(aesni_init);  /*  */
+late_initcall(aesni_init);
 module_exit(aesni_exit);
 
 MODULE_DESCRIPTION("Rijndael (AES) Cipher Algorithm, Intel AES-NI instructions optimized");

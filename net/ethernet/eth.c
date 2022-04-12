@@ -406,7 +406,7 @@ ssize_t sysfs_format_mac(char *buf, const unsigned char *addr, int len)
 }
 EXPORT_SYMBOL(sysfs_format_mac);
 
-struct sk_buff *eth_gro_receive(struct list_head *head, struct sk_buff *skb)    /*  */
+struct sk_buff *eth_gro_receive(struct list_head *head, struct sk_buff *skb)
 {
 	const struct packet_offload *ptype;
 	unsigned int hlen, off_eth;
@@ -481,7 +481,7 @@ int eth_gro_complete(struct sk_buff *skb, int nhoff)
 }
 EXPORT_SYMBOL(eth_gro_complete);
 
-static struct packet_offload __read_mostly eth_packet_offload  = {/*  */
+static struct packet_offload __read_mostly eth_packet_offload  = {
 	.type = cpu_to_be16(ETH_P_TEB),
 	.priority = 10,
 	.callbacks = {

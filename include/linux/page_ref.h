@@ -35,7 +35,7 @@ extern void __page_ref_freeze(struct page *page, int v, int ret);
 extern void __page_ref_unfreeze(struct page *page, int v);
 
 #else
-/*  */
+
 #endif
 
 static inline int page_ref_count(struct page *page)
@@ -46,7 +46,7 @@ static inline int page_ref_count(struct page *page)
 /**
  *  引用计数
  *
- *  通常情况下，page_count(page) == page_mapcount(page) 
+ *  通常情况下，page_count(page) == page_mapcount(page)
  *          即   page->_refcount = page->_mapcount + 1
  *
  *  _refcount 有以下四种来源：
@@ -56,7 +56,7 @@ static inline int page_ref_count(struct page *page)
  *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
  *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
  */
-static inline int page_count(struct page *page) /*  */
+static inline int page_count(struct page *page)
 {
 	return atomic_read(&compound_head(page)->_refcount);
 }
@@ -72,7 +72,7 @@ static inline void set_page_count(struct page *page, int v)
  * Setup the page count before being freed into the page allocator for
  * the first time (boot or memory hotplug)
  */
-static inline void init_page_count(struct page *page)   /*  */
+static inline void init_page_count(struct page *page)
 {
 	set_page_count(page, 1);
 }
@@ -100,14 +100,14 @@ static inline int page_ref_sub_return(struct page *page, int nr)
 	return ret;
 }
 
-static inline void page_ref_inc(struct page *page)  /*  */
+static inline void page_ref_inc(struct page *page)
 {
 	atomic_inc(&page->_refcount);   /* 引用计数 */
 	if (page_ref_tracepoint_active(page_ref_mod))
 		__page_ref_mod(page, 1);    /* tracepoint */
 }
 
-static inline void page_ref_dec(struct page *page)  /*  */
+static inline void page_ref_dec(struct page *page)
 {
 	atomic_dec(&page->_refcount);
 	if (page_ref_tracepoint_active(page_ref_mod))
@@ -151,7 +151,7 @@ static inline int page_ref_dec_return(struct page *page)
 }
 
 /**
- *  
+ *
  */
 static inline int page_ref_add_unless(struct page *page, int nr, int u)
 {
@@ -163,7 +163,7 @@ static inline int page_ref_add_unless(struct page *page, int nr, int u)
 }
 
 /**
- *  
+ *
  */
 static inline int page_ref_freeze(struct page *page, int count)
 {

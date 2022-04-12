@@ -30,7 +30,7 @@ struct unix_address {
 	struct sockaddr_un name[];
 };
 
-struct unix_skb_parms { /*  */
+struct unix_skb_parms {
 	struct pid		*pid;		/* Skb credentials	*/
 	kuid_t			uid;
 	kgid_t			gid;
@@ -54,8 +54,8 @@ struct scm_stat {
 				SINGLE_DEPTH_NESTING)
 
 /**
- *  The AF_UNIX socket 
- *  
+ *  The AF_UNIX socket
+ *
  *  这个结构和 struct sock sk 在 AF_UNIX 时会公用，见`unix_sk()`
  */
 struct unix_sock {
@@ -90,6 +90,6 @@ long unix_outq_len(struct sock *sk);
 int unix_sysctl_register(struct net *net);
 void unix_sysctl_unregister(struct net *net);
 #else
-/*  */
+
 #endif
 #endif

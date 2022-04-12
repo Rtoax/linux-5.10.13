@@ -44,13 +44,13 @@ extern void __init enable_debug_cgroup(void);
  * The cgroup filesystem superblock creation/mount context.
  */
 struct cgroup_fs_context {/* 文件系统上下文 */
-	struct kernfs_fs_context kfc;   /*  */
-	struct cgroup_root	*root;      /*  */
-	struct cgroup_namespace	*ns;    /*  */
+	struct kernfs_fs_context kfc;
+	struct cgroup_root	*root;
+	struct cgroup_namespace	*ns;
 	unsigned int	flags;			/* CGRP_ROOT_* flags */
 
 	/* cgroup1 bits */
-	bool		cpuset_clone_children;  /*  */
+	bool		cpuset_clone_children;
 	bool		none;			/* User explicitly requested empty subsystem */
 	bool		all_ss;			/* Seen 'all' option */
 	u16		subsys_mask;		/* Selected subsystems */
@@ -86,7 +86,7 @@ struct cgrp_cset_link {
 };
 
 /**
- *  used to track tasks and csets during migration 
+ *  used to track tasks and csets during migration
  *
  *  组调度的进程集合
  */

@@ -73,4 +73,4 @@ static int __init i8237A_init_ops(void)
 	register_syscore_ops(&i8237_syscore_ops);
 	return 0;
 }
-device_initcall(i8237A_init_ops);   /*  */
+device_initcall(i8237A_init_ops);

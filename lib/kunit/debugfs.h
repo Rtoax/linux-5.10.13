@@ -16,7 +16,7 @@ void kunit_debugfs_init(void);
 void kunit_debugfs_cleanup(void);
 
 #else
-/*  */
+
 #endif /* CONFIG_KUNIT_DEBUGFS */
 
 #endif /* _KUNIT_DEBUGFS_H */

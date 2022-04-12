@@ -107,9 +107,9 @@ static int flat_probe(void)
 }
 
 /**
- *  
+ *
  */
-static struct apic __ro_after_init apic_flat  = {   /*  */
+static struct apic __ro_after_init apic_flat  = {
 	.name				= "flat",
 	.probe				= flat_probe,
 	.acpi_madt_oem_check		= flat_acpi_madt_oem_check,

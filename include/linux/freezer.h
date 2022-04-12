@@ -56,13 +56,13 @@ static inline bool try_to_freeze_unsafe(void)
 {
 	might_sleep();
 	if (likely(!freezing(current))) /* 冻结进程 */
-		return false;   /*  */
+		return false;
 	return __refrigerator(false);   /* 电冰箱-> 强制冻结 */
 }
 
 static inline bool try_to_freeze(void)
 {
-	if (!(current->flags & PF_NOFREEZE))    /*  */
+	if (!(current->flags & PF_NOFREEZE))
 		debug_check_no_locks_held();
 	return try_to_freeze_unsafe();  /* 冻结 */
 }
@@ -73,7 +73,7 @@ extern bool set_freezable(void);
 #ifdef CONFIG_CGROUP_FREEZER
 extern bool cgroup_freezing(struct task_struct *task);
 #else /* !CONFIG_CGROUP_FREEZER */
-/*  */
+
 #endif /* !CONFIG_CGROUP_FREEZER */
 
 /*
@@ -266,7 +266,7 @@ static inline int freezable_schedule_hrtimeout_range(ktime_t *expires,
 })
 
 #else /* !CONFIG_FREEZER */
-/*  */
+
 #endif /* !CONFIG_FREEZER */
 
 #endif	/* FREEZER_H_INCLUDED */

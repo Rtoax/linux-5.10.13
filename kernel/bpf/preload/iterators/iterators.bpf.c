@@ -53,7 +53,7 @@ struct bpf_prog_aux {
 /**
  *  经过 BPF 解释器解释（翻译）之后的整个镜像
  */
-struct bpf_prog {   /*  */
+struct bpf_prog {
 	struct bpf_prog_aux *aux;
 };
 

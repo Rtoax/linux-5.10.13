@@ -151,7 +151,7 @@ static void sched_domain_debug(struct sched_domain *sd, int cpu)
 	}
 }
 #else /* !CONFIG_SCHED_DEBUG */
-/*  */
+
 #endif /* CONFIG_SCHED_DEBUG */
 
 /* Generate a mask of SD flags with the SDF_NEEDS_GROUPS metaflag */
@@ -426,7 +426,7 @@ free:
 	return false;
 }
 #else
-/*  */
+
 #endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL*/
 
 static void free_rootdomain(struct rcu_head *rcu)
@@ -1647,7 +1647,7 @@ static void init_numa_topology_type(void)
 	}
 }
 
-void sched_init_numa(void)  /*  */
+void sched_init_numa(void)
 {
 	int next_distance, curr_distance = node_distance(0, 0);
 	struct sched_domain_topology_level *tl;
@@ -2093,7 +2093,7 @@ next_level:
  * Build sched domains for a given set of CPUs and attach the sched domains
  * to the individual CPUs
  */
-static int  /*  */
+static int
 build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *attr)
 {
 	enum s_alloc alloc_state = sa_none;
@@ -2267,7 +2267,7 @@ void free_sched_domains(cpumask_var_t doms[], unsigned int ndoms)
  * Set up scheduler domains and groups.  For now this just excludes isolated
  * CPUs, but could be used to exclude other special cases in the future.
  */
-int sched_init_domains(const struct cpumask *cpu_map)   /*  */
+int sched_init_domains(const struct cpumask *cpu_map)
 {
 	int err;
 
@@ -2275,7 +2275,7 @@ int sched_init_domains(const struct cpumask *cpu_map)   /*  */
 	zalloc_cpumask_var(&sched_domains_tmpmask2, GFP_KERNEL);
 	zalloc_cpumask_var(&fallback_doms, GFP_KERNEL);
 
-	arch_update_cpu_topology(); /*  */
+	arch_update_cpu_topology();
 	ndoms_cur = 1;
 	doms_cur = alloc_sched_domains(ndoms_cur);
 	if (!doms_cur)

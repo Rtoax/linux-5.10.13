@@ -19,7 +19,7 @@
 /**
  *  不同的信号的处理函数
  */
-struct sighand_struct { /*  */
+struct sighand_struct {
 	spinlock_t		siglock;    /* 保护 task_struct->signal */
 	refcount_t		count;
 	wait_queue_head_t	signalfd_wqh;
@@ -588,7 +588,7 @@ extern void __cleanup_sighand(struct sighand_struct *);
 extern void flush_itimer_signals(void);
 
 #define tasklist_empty() \
-	list_empty(&init_task.tasks)/*  */
+	list_empty(&init_task.tasks)
 
 #define next_task(p) \
 	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
@@ -736,7 +736,7 @@ static inline unsigned long task_rlimit_max(const struct task_struct *task,
 
 static inline unsigned long rlimit(unsigned int limit)/* 当前进程的权限限制 */
 {
-	return task_rlimit(current, limit);/*  */
+	return task_rlimit(current, limit);
 }
 
 static inline unsigned long rlimit_max(unsigned int limit)

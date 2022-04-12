@@ -134,7 +134,7 @@ void shm_exit_ns(struct ipc_namespace *ns)
 }
 #endif
 
-static int __init ipc_ns_init(void) /*  */
+static int __init ipc_ns_init(void)
 {
 	shm_init_ns(&init_ipc_ns);
 	return 0;
@@ -1522,7 +1522,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 	}
 
     /**
-     *  
+     *
      */
 	file = alloc_file_clone(base, f_flags,
 			  is_file_hugepages(base) ?

@@ -70,7 +70,7 @@ enum {
  *   locks.  Due to the lock ordering, q exit is simple but ioc exit
  *   requires reverse-order double lock dance.
  */
-struct io_cq {  /*  */
+struct io_cq {
 	struct request_queue	*q;
 	struct io_context	*ioc;
 

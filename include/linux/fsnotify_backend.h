@@ -145,7 +145,7 @@ struct mem_cgroup;
  *		dropped in this function.  inotify uses this function to send
  *		userspace messages that marks have been removed.
  */
-struct fsnotify_ops {   /*  */
+struct fsnotify_ops {
 	int (*handle_event)(struct fsnotify_group *group, u32 mask,
 			    const void *data, int data_type, struct inode *dir,
 			    const struct qstr *file_name, u32 cookie,
@@ -583,7 +583,7 @@ static inline void fsnotify_init_event(struct fsnotify_event *event,
 }
 
 #else
-/*  */
+
 #endif	/* CONFIG_FSNOTIFY */
 
 #endif	/* __KERNEL __ */

@@ -129,7 +129,7 @@ struct wb_domain global_wb_domain;
 
 /* consolidated parameters for balance_dirty_pages() and its subroutines */
 struct dirty_throttle_control {
-#ifdef CONFIG_CGROUP_WRITEBACK  /*  */
+#ifdef CONFIG_CGROUP_WRITEBACK
 	struct wb_domain	*dom;
 	struct dirty_throttle_control *gdtc;	/* only set in memcg dtc's */
 #endif
@@ -216,7 +216,7 @@ static void wb_min_max_ratio(struct bdi_writeback *wb,
 }
 
 #else	/* CONFIG_CGROUP_WRITEBACK */
-/*  */
+
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
 /*
@@ -2063,7 +2063,7 @@ static int page_writeback_cpu_online(unsigned int cpu)
  *
  * initializes the ratio for the dirty pages
  */
-void __init page_writeback_init(void)   /*  */
+void __init page_writeback_init(void)
 {
 	BUG_ON(wb_domain_init(&global_wb_domain, GFP_KERNEL));
 

@@ -285,12 +285,12 @@ static struct file_system_type proc_fs_type = {
 	.fs_flags		= FS_USERNS_MOUNT | FS_DISALLOW_NOTIFY_PERM,
 };
 
-void __init proc_root_init(void)    /*  */
+void __init proc_root_init(void)
 {
 	proc_init_kmemcache();  /* kmem_cache */
 	set_proc_pid_nlink();   /* /proc/PID/  */
 	proc_self_init();       /* /proc/self/ */
-	proc_thread_self_init();/*  */
+	proc_thread_self_init();
 	proc_symlink("mounts", NULL, "self/mounts");    /* /proc/PID/mounts */
 
 	proc_net_init();        /* /proc/net/ */
@@ -359,12 +359,12 @@ static const struct inode_operations proc_root_inode_operations = {
  * This is the root "inode" in the /proc tree..
  */
 struct proc_dir_entry proc_root = {
-	.low_ino	= PROC_ROOT_INO, 
-	.namelen	= 5, 
-	.mode		= S_IFDIR | S_IRUGO | S_IXUGO, 
-	.nlink		= 2, 
+	.low_ino	= PROC_ROOT_INO,
+	.namelen	= 5,
+	.mode		= S_IFDIR | S_IRUGO | S_IXUGO,
+	.nlink		= 2,
 	.refcnt		= REFCOUNT_INIT(1),
-	.proc_iops	= &proc_root_inode_operations, 
+	.proc_iops	= &proc_root_inode_operations,
 	.proc_dir_ops	= &proc_root_operations,
 	.parent		= &proc_root,
 	.subdir		= RB_ROOT,

@@ -15,8 +15,8 @@
 
 #define PB_migratetype_bits 3   /* 偏移所在的标志位  */
 /* Bit indices that affect a whole block of pages */
-enum pageblock_bits {   /*  */
-	PB_migrate, /*  */
+enum pageblock_bits {
+	PB_migrate,
 	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
 			/* 3 bits required for migrate types */
 	PB_migrate_skip,/* If set the block is skipped by compaction */
@@ -50,7 +50,7 @@ enum pageblock_bits {   /*  */
 #endif /* CONFIG_HUGETLB_PAGE */
 
 /**
- *  
+ *
  */
 #define pageblock_nr_pages /* 512 */	(1UL << pageblock_order/* 9 */)
 
@@ -76,14 +76,14 @@ void set_pfnblock_flags_mask(struct page *page,
 			(1 << PB_migrate_skip))
 
 /**
- *  
+ *
  */
 #define set_pageblock_skip(page) \
 	set_pfnblock_flags_mask(page, (1 << PB_migrate_skip),	\
 			page_to_pfn(page),			\
 			(1 << PB_migrate_skip))
 #else
-/*  */
+
 #endif /* CONFIG_COMPACTION */
 
 #endif	/* PAGEBLOCK_FLAGS_H */

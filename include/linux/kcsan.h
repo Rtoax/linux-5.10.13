@@ -52,7 +52,7 @@ void kcsan_init(void);
 
 #else /* CONFIG_KCSAN */
 
-/*  */
+
 
 #endif /* CONFIG_KCSAN */
 

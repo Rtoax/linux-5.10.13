@@ -35,7 +35,7 @@ enum {
 };
 
 /**
- *  
+ *
  */
 int ftrace_allocate_ftrace_ops(struct trace_array *tr)
 {
@@ -772,7 +772,7 @@ static struct ftrace_func_command ftrace_cpudump_cmd = {
 	.func			= ftrace_cpudump_callback,
 };
 
-static int __init init_func_cmd_traceon(void)   /*  */
+static int __init init_func_cmd_traceon(void)
 {
 	int ret;
 
@@ -816,7 +816,7 @@ static int __init init_func_cmd_traceon(void)   /*  */
 //}
 #endif /* CONFIG_DYNAMIC_FTRACE */
 
-__init int init_function_trace(void)    /*  */
+__init int init_function_trace(void)
 {
 	init_func_cmd_traceon();
 	return register_tracer(&function_trace);

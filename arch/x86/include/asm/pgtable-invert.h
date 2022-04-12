@@ -13,13 +13,13 @@
  * set. So the all zero case really is limited to just the
  * cleared page table entry case.
  */
-static inline bool __pte_needs_invert(u64 val)  /*  */
+static inline bool __pte_needs_invert(u64 val)
 {
-	return val && !(val & _PAGE_PRESENT);   /*  */
+	return val && !(val & _PAGE_PRESENT);
 }
 
 /* Get a mask to xor with the page table entry to get the correct pfn. */
-static inline u64 protnone_mask(u64 val)    /*  */
+static inline u64 protnone_mask(u64 val)
 {
 	return __pte_needs_invert(val) ?  ~0ull : 0;
 }

@@ -2,8 +2,8 @@
 #ifndef _LINUX_SCHED_PRIO_H
 #define _LINUX_SCHED_PRIO_H
 
-#define MAX_NICE	19  /*  */
-#define MIN_NICE	-20 /*  */
+#define MAX_NICE	19
+#define MIN_NICE	-20
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)   /* 40 */
 
 /*
@@ -30,7 +30,7 @@
 #define DEFAULT_PRIO /* 120 */		(MAX_RT_PRIO/* 100 */ + NICE_WIDTH/* 40 */ / 2)
 
 /**
- *  
+ *
  *                  SCHED_FIFO                        SCHED_NORMAL
  *                  SCHED_RR                          SCHED_BATCH
  *                                                    SCHED_IDLE
@@ -38,8 +38,8 @@
  *  |                  0 - 99                   |       100 - 139     |
  *  |                                           |  nice(-20 ~ 19)     |
  *  +-------------------------------------------+---------------------+
- *  
- *  
+ *
+ *
  */
 
 /*

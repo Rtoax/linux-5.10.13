@@ -450,7 +450,7 @@ static void __jump_label_update(struct static_key *key,
 }
 #endif
 
-void __init jump_label_init(void)/*  */
+void __init jump_label_init(void)
 {
 	struct jump_entry *iter_start = __start___jump_table;
 	struct jump_entry *iter_stop = __stop___jump_table;

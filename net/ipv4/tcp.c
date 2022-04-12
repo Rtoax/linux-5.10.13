@@ -938,7 +938,7 @@ static unsigned int tcp_xmit_size_goal(struct sock *sk, u32 mss_now,
 	return max(size_goal, mss_now);
 }
 /**
- *  
+ *
  */
 int tcp_send_mss(struct sock *sk, int *size_goal, int flags)
 {
@@ -967,7 +967,7 @@ static void tcp_remove_empty_skb(struct sock *sk, struct sk_buff *skb)
 }
 
 /**
- *  
+ *
  * 涉及到 零拷贝 sendfile 2021年7月16日08:38:33
  */
 ssize_t do_tcp_sendpages(struct sock *sk, struct page *page, int offset,
@@ -998,7 +998,7 @@ ssize_t do_tcp_sendpages(struct sock *sk, struct page *page, int offset,
 	sk_clear_bit(SOCKWQ_ASYNC_NOSPACE, sk);
 
     /**
-     *  
+     *
      */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 	copied = 0;
@@ -1195,7 +1195,7 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 	return err;
 }
 /**
- *  
+ *
  */
 int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 {
@@ -1215,11 +1215,11 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
      */
 	if (flags & MSG_ZEROCOPY && size && sock_flag(sk, SOCK_ZEROCOPY)) {
         /**
-         *  
+         *
          */
 		skb = tcp_write_queue_tail(sk);
         /**
-         *  
+         *
          */
 		uarg = sock_zerocopy_realloc(sk, size, skb_zcopy(skb));
 		if (!uarg) {
@@ -1232,7 +1232,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 			uarg->zerocopy = 0;
 	}
     /**
-     *  
+     *
      */
 	if (unlikely(flags & MSG_FASTOPEN || inet_sk(sk)->defer_connect) &&
 	    !tp->repair) {
@@ -1247,7 +1247,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
      */
 	timeo = sock_sndtimeo(sk, flags & MSG_DONTWAIT);
     /**
-     *  
+     *
      */
 	tcp_rate_check_app_limited(sk);  /* is sending application-limited? */
 
@@ -1275,7 +1275,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 		/* 'common' sending to sendq */
 	}
     /**
-     *  
+     *
      */
 	sockcm_init(&sockc, sk);
 	if (msg->msg_controllen) {
@@ -1294,7 +1294,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 
 restart:
     /**
-     *  
+     *
      */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 
@@ -1302,12 +1302,12 @@ restart:
 	if (sk->sk_err || (sk->sk_shutdown & SEND_SHUTDOWN))
 		goto do_error;
     /**
-     *  
+     *
      */
 	while (msg_data_left(msg)) {
 		int copy = 0;
         /**
-         *  
+         *
          */
 		skb = tcp_write_queue_tail(sk);
 		if (skb)
@@ -1396,10 +1396,10 @@ new_segment:
 				page_ref_inc(pfrag->page);
 			}
 			pfrag->offset += copy;
-            
+
 		} else {
             /**
-             *  
+             *
              */
 			err = skb_zerocopy_iter_stream(sk, skb, msg, copy, uarg);
 			if (err == -EMSGSIZE || err == -EEXIST) {
@@ -1484,7 +1484,7 @@ int tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
 
 	lock_sock(sk);
     /**
-     *  
+     *
      */
 	ret = tcp_sendmsg_locked(sk, msg, size);
 	release_sock(sk);
@@ -1498,7 +1498,7 @@ EXPORT_SYMBOL(tcp_sendmsg);
  *	this, no blocking and very strange errors 8)
  */
 /**
- *  
+ *
  */
 static int tcp_recv_urg(struct sock *sk, struct msghdr *msg, int len, int flags)
 {
@@ -2031,7 +2031,7 @@ static void tcp_recv_timestamp(struct msghdr *msg, const struct sock *sk,
 	}
 }
 /**
- *  
+ *
  */
 static int tcp_inq_hint(struct sock *sk)
 {
@@ -2062,7 +2062,7 @@ static int tcp_inq_hint(struct sock *sk)
  *	Probably, code can be easily improved even more.
  */
 /**
- *  
+ *
  */
 int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		int flags, int *addr_len)
@@ -2083,7 +2083,7 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 	if (unlikely(flags & MSG_ERRQUEUE))
 		return inet_recv_error(sk, msg, len, addr_len);
     /**
-     *  
+     *
      */
 	if (sk_can_busy_loop(sk) && skb_queue_empty_lockless(&sk->sk_receive_queue) &&
 	    (sk->sk_state == TCP_ESTABLISHED))
@@ -2123,7 +2123,7 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		seq = &peek_seq;
 	}
     /**
-     *  
+     *
      */
 	target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
 
@@ -4221,7 +4221,7 @@ void __init tcp_init(void)
 					thash_entries ? 0 : 512 * 1024);
 
     /**
-     *  
+     *
      */
 	for (i = 0; i <= tcp_hashinfo.ehash_mask; i++)
 		INIT_HLIST_NULLS_HEAD(&tcp_hashinfo.ehash[i].chain, i);
@@ -4266,16 +4266,16 @@ void __init tcp_init(void)
 		tcp_hashinfo.ehash_mask + 1, tcp_hashinfo.bhash_size);
 
     /**
-     *  
+     *
      */
-	tcp_v4_init();      /*  */
-	tcp_metrics_init(); /*  */
+	tcp_v4_init();
+	tcp_metrics_init();
 	BUG_ON(tcp_register_congestion_control(&tcp_reno) != 0);
 
     /**
      *  初始化 TCP tasklet
      */
-	tcp_tasklet_init(); /*  */
-    
-	mptcp_init();       /*  */
+	tcp_tasklet_init();
+
+	mptcp_init();
 }

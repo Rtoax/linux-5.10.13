@@ -121,7 +121,7 @@ static const struct file_operations fops_lockevent = {
 static bool __init skip_lockevent(const char *name)
 {
 	static int __initdata pv_on  = -1;
-    /*  */
+
 
 	if (pv_on < 0)
 		pv_on = !pv_is_native_spin_unlock();
@@ -133,7 +133,7 @@ static bool __init skip_lockevent(const char *name)
 	return false;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -174,4 +174,4 @@ out:
 	pr_warn("Could not create '%s' debugfs entries\n", LOCK_EVENTS_DIR);
 	return -ENOMEM;
 }
-fs_initcall(init_lockevent_counts); /*  */
+fs_initcall(init_lockevent_counts);

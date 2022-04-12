@@ -36,7 +36,7 @@
 
 #include <linux/ethtool.h>
 #include <net/net_namespace.h>
-#ifdef CONFIG_DCB   /*  */
+#ifdef CONFIG_DCB
 #include <net/dcbnl.h>
 #endif
 #include <net/netprio_cgroup.h>
@@ -618,7 +618,7 @@ struct netdev_queue {
 
 	unsigned long		state;
 
-#ifdef CONFIG_BQL   /*  */
+#ifdef CONFIG_BQL
 	struct dql		dql;
 #endif
 } ____cacheline_aligned_in_smp;
@@ -726,7 +726,7 @@ static inline void rps_record_sock_flow(struct rps_sock_flow_table *table,
 	}
 }
 
-#ifdef CONFIG_RFS_ACCEL /*  */
+#ifdef CONFIG_RFS_ACCEL
 bool rps_may_expire_flow(struct net_device *dev, u16 rxq_index, u32 flow_id,
 			 u16 filter_id);
 #endif
@@ -857,7 +857,7 @@ enum tc_setup_type {
 /* These structures hold the attributes of bpf state that are being passed
  * to the netdevice through the bpf op.
  *
- * 
+ *
  */
 enum bpf_netdev_command {
 	/* Set or clear a bpf program used in the earliest stages of packet
@@ -2507,7 +2507,7 @@ static inline struct sk_buff *call_gro_receive_sk(gro_receive_sk_t cb,
 	return cb(sk, head, skb);
 }
 
-struct packet_type {    /*  */
+struct packet_type {
 	__be16			type;	/* This is really htons(ether_type). */
 	bool			ignore_outgoing;
 	struct net_device	*dev;	/* NULL is wildcarded here	     */
@@ -3223,7 +3223,7 @@ struct softnet_data {
 	unsigned int	____cacheline_aligned_in_smp	input_queue_head ;
 
 	/* Elements below can be accessed between CPUs for RPS/RFS */
-	call_single_data_t	____cacheline_aligned_in_smp csd ;/*  */
+	call_single_data_t	____cacheline_aligned_in_smp csd ;
 	struct softnet_data	*rps_ipi_next;
 	unsigned int		cpu;
 	unsigned int		input_queue_tail;
@@ -4725,7 +4725,7 @@ static inline bool can_checksum_protocol(netdev_features_t features,
 #ifdef CONFIG_BUG
 void netdev_rx_csum_fault(struct net_device *dev, struct sk_buff *skb);
 #else
-/*  */
+
 #endif
 /* rx skb timestamps */
 void net_enable_timestamp(void);
@@ -4734,7 +4734,7 @@ void net_disable_timestamp(void);
 #ifdef CONFIG_PROC_FS
 int __init dev_proc_init(void);
 #else
-/*  */
+
 #endif
 
 static inline netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,

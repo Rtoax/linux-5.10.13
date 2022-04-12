@@ -3567,7 +3567,7 @@ static int neigh_proc_base_reachable_time(struct ctl_table *ctl, int write,
 static struct neigh_sysctl_table {
 	struct ctl_table_header *sysctl_header;
 	struct ctl_table neigh_vars[NEIGH_VAR_MAX + 1];
-} __read_mostly neigh_sysctl_template  = {/*  */
+} __read_mostly neigh_sysctl_template  = {
 	.neigh_vars = {
 		NEIGH_SYSCTL_ZERO_INTMAX_ENTRY(MCAST_PROBES, "mcast_solicit"),
 		NEIGH_SYSCTL_ZERO_INTMAX_ENTRY(UCAST_PROBES, "ucast_solicit"),
@@ -3618,7 +3618,7 @@ static struct neigh_sysctl_table {
 		{},
 	},
 };
-    /*  */
+
 int neigh_sysctl_register(struct net_device *dev, struct neigh_parms *p,
 			  proc_handler *handler)
 {

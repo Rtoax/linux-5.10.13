@@ -38,10 +38,10 @@ struct hrtimer_cpu_base;
  */
 enum hrtimer_mode {
 	HRTIMER_MODE_ABS	= 0x00,/* 绝对时间 */
-	HRTIMER_MODE_REL	= 0x01,/*  */
-	HRTIMER_MODE_PINNED	= 0x02,/*  */
-	HRTIMER_MODE_SOFT	= 0x04,/*  */
-	HRTIMER_MODE_HARD	= 0x08,/*  */
+	HRTIMER_MODE_REL	= 0x01,
+	HRTIMER_MODE_PINNED	= 0x02,
+	HRTIMER_MODE_SOFT	= 0x04,
+	HRTIMER_MODE_HARD	= 0x08,
 
 	HRTIMER_MODE_ABS_PINNED = HRTIMER_MODE_ABS | HRTIMER_MODE_PINNED,
 	HRTIMER_MODE_REL_PINNED = HRTIMER_MODE_REL | HRTIMER_MODE_PINNED,
@@ -159,18 +159,18 @@ struct hrtimer_sleeper {
  * @get_time:		function to retrieve the current time of the clock
  * @offset:		offset of this clock to the monotonic base
  */
-struct hrtimer_clock_base { /*  */
-	struct hrtimer_cpu_base	*cpu_base;  /*  */
-	unsigned int		index;      /*  */
+struct hrtimer_clock_base {
+	struct hrtimer_cpu_base	*cpu_base;
+	unsigned int		index;
 	clockid_t		clockid;        /* 时钟策略 */
-	seqcount_raw_spinlock_t	seq;    /*  */
+	seqcount_raw_spinlock_t	seq;
     /**
      *  见 `__run_hrtimer()`
      */
 	struct hrtimer		*running;   /* 记录正被执行的 timer */
 	struct timerqueue_head	active; /* 红黑树的根 */
 	ktime_t			(*get_time)(void);  /* 获取时间 */
-	ktime_t			offset;         /*  */
+	ktime_t			offset;
 } __hrtimer_clock_base_align;
 
 enum  hrtimer_base_type {
@@ -217,7 +217,7 @@ enum  hrtimer_base_type {
  *	 Do not dereference the pointer because it is not reliable on
  *	 cross cpu removals.
  */
-struct hrtimer_cpu_base {   /*  */
+struct hrtimer_cpu_base {
 	raw_spinlock_t			lock;
 	unsigned int			cpu;
 	unsigned int			active_bases;
@@ -358,7 +358,7 @@ hrtimer_expires_remaining_adjusted(const struct hrtimer *timer)
 }
 
 extern void clock_was_set(void);
-#ifdef CONFIG_TIMERFD/*  */
+#ifdef CONFIG_TIMERFD
 extern void timerfd_clock_was_set(void);
 #else
 //static inline void timerfd_clock_was_set(void) { }

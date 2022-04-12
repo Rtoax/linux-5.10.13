@@ -33,7 +33,7 @@
 /* Not Yet Implemented */
 #define MODULE_SUPPORTED_DEVICE(name)
 
-#define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN    /*  */
+#define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
 
 /**
  *
@@ -166,7 +166,7 @@ extern void cleanup_module(void);
 #define __INITDATA_OR_MODULE	.data
 #define __INITRODATA_OR_MODULE	.section ".rodata","a",%progbits
 #else
-/*  */
+
 #endif /*CONFIG_MODULES*/
 
 /* Generic info of form tag = "info" */
@@ -277,7 +277,7 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
  */
 
 #if defined(MODULE) || !defined(CONFIG_SYSFS)
-/*  */
+
 #else
 #define MODULE_VERSION(_version)					\
 	MODULE_INFO(version, _version);					\
@@ -358,7 +358,7 @@ struct module_layout {
 /* Only touch one cacheline for common rbtree-for-core-layout case. */
 #define __module_layout_align ____cacheline_aligned
 #else
-/*  */
+
 #endif
 
 struct mod_kallsyms {
@@ -426,7 +426,7 @@ struct module { /* 模块 */
 	const s32 *unused_gpl_crcs;
 #endif
 
-#ifdef CONFIG_MODULE_SIG    /*  */
+#ifdef CONFIG_MODULE_SIG
 	/* Signature was verified. */
 	bool sig_ok;
 #endif
@@ -454,14 +454,14 @@ struct module { /* 模块 */
 
 	unsigned long taints;	/* same bits as kernel:taint_flags */
 
-#ifdef CONFIG_GENERIC_BUG   /*  */
+#ifdef CONFIG_GENERIC_BUG
 	/* Support for BUG */
 	unsigned num_bugs;
 	struct list_head bug_list;
 	struct bug_entry *bug_table;
 #endif
 
-#ifdef CONFIG_KALLSYMS  /*  */
+#ifdef CONFIG_KALLSYMS
 	/* Protected by RCU and/or module_mutex: use rcu_dereference() */
 	struct mod_kallsyms __rcu *kallsyms;
 	struct mod_kallsyms core_kallsyms;

@@ -18,7 +18,7 @@
 #define NMI_REASON_CLEAR_IOCHK	0x08
 #define NMI_REASON_CLEAR_MASK	0x0f
 
-/*  */
+
 static inline unsigned char default_get_nmi_reason(void)
 {
 	return inb(NMI_REASON_PORT);

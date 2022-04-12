@@ -137,7 +137,7 @@ static void component_master_debugfs_del(struct master *m)
 }
 
 #else
-/*  */
+
 #endif
 
 static struct master *__master_find(struct device *dev,

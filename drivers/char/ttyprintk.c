@@ -170,7 +170,7 @@ static const struct tty_port_operations null_ops = { };
 
 static struct tty_driver *ttyprintk_driver;
 
-static int __init ttyprintk_init(void)  /*  */
+static int __init ttyprintk_init(void)
 {
 	int ret;
 
@@ -217,7 +217,7 @@ static void __exit ttyprintk_exit(void)
 	tty_port_destroy(&tpk_port.port);
 }
 
-device_initcall(ttyprintk_init);    /*  */
+device_initcall(ttyprintk_init);
 module_exit(ttyprintk_exit);
 
 MODULE_LICENSE("GPL");

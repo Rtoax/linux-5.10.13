@@ -4286,11 +4286,11 @@ early_initcall(rcu_spawn_gp_kthread);
  * A later core_initcall() rcu_set_runtime_mode() will switch to full
  * runtime RCU functionality.
  */
-void rcu_scheduler_starting(void)   /*  */
+void rcu_scheduler_starting(void)
 {
-	WARN_ON(num_online_cpus() != 1);    /*  */
-	WARN_ON(nr_context_switches() > 0); /*  */
-	rcu_test_sync_prims();  /*  */
+	WARN_ON(num_online_cpus() != 1);
+	WARN_ON(nr_context_switches() > 0);
+	rcu_test_sync_prims();
 	rcu_scheduler_active = RCU_SCHEDULER_INIT;
 	rcu_test_sync_prims();
 }
@@ -4428,7 +4428,7 @@ static void __init rcu_init_geometry(void)
 	adjust_jiffies_till_sched_qs();
 
 	/* If the compile-time values are accurate, just leave. */
-    //check that `rcu_fanout_leaf` didn't change 
+    //check that `rcu_fanout_leaf` didn't change
 	if (rcu_fanout_leaf == RCU_FANOUT_LEAF &&
 	    nr_cpu_ids == NR_CPUS)
 		return;
@@ -4532,7 +4532,7 @@ static void __init kfree_rcu_batch_init(void)
 }
 
 /**
- *  
+ *
  */
 void __init rcu_init(void)
 {
@@ -4555,7 +4555,7 @@ void __init rcu_init(void)
 		rcu_dump_rcu_node_tree();
 
     /**
-     *  
+     *
      */
 	if (use_softirq)
 		open_softirq(RCU_SOFTIRQ, rcu_core_si);

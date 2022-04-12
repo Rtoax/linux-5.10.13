@@ -7,9 +7,9 @@
 
 enum ctx_state {
 	CONTEXT_DISABLED = -1,	/* returned by ct_state() if unknown */
-	CONTEXT_KERNEL = 0, /*  */
+	CONTEXT_KERNEL = 0,
 	CONTEXT_USER,   /* 用户上下文 */
-	CONTEXT_GUEST,  /*  */
+	CONTEXT_GUEST,
 };
 
 struct context_tracking {
@@ -48,7 +48,7 @@ static __always_inline bool context_tracking_in_user(void)
 	return __this_cpu_read(context_tracking.state) == CONTEXT_USER;
 }
 #else
-/*  */
+
 #endif /* CONFIG_CONTEXT_TRACKING */
 
 #endif

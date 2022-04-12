@@ -63,7 +63,7 @@ static int __init add_bus_probe(void)
 
 	return of_platform_bus_probe(NULL, ce4100_ids, NULL);
 }
-device_initcall(add_bus_probe); /*  */
+device_initcall(add_bus_probe);
 
 #ifdef CONFIG_PCI
 struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
@@ -216,7 +216,7 @@ static struct of_ioapic_type of_ioapic_type[] =
 };
 
 /**
- *  
+ *
  */
 static int dt_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 			      unsigned int nr_irqs, void *arg)
@@ -242,11 +242,11 @@ static int dt_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 }
 
 /**
- *  
+ *
  */
 static const struct irq_domain_ops ioapic_irq_domain_ops = {
     /**
-     *  
+     *
      */
 	ioapic_irq_domain_ops.alloc		= dt_irqdomain_alloc,
 	ioapic_irq_domain_ops.free		= mp_irqdomain_free,
@@ -255,7 +255,7 @@ static const struct irq_domain_ops ioapic_irq_domain_ops = {
 };
 
 /**
- *  
+ *
  */
 static void __init dtb_add_ioapic(struct device_node *dn)
 {
@@ -263,7 +263,7 @@ static void __init dtb_add_ioapic(struct device_node *dn)
 	int ret;
 
     /**
-     *  
+     *
      */
 	struct ioapic_domain_cfg cfg = {
 		cfg.type = IOAPIC_DOMAIN_DYNAMIC,
@@ -272,7 +272,7 @@ static void __init dtb_add_ioapic(struct device_node *dn)
 	};
 
     /**
-     *  
+     *
      */
 	ret = of_address_to_resource(dn, 0, &r);
 	if (ret) {
@@ -280,24 +280,24 @@ static void __init dtb_add_ioapic(struct device_node *dn)
 		return;
 	}
     /**
-     *  
+     *
      */
 	mp_register_ioapic(++ioapic_id, r.start, gsi_top, &cfg);
 }
 
 /**
- *  
+ *
  */
 static void __init dtb_ioapic_setup(void)
 {
 	struct device_node *dn;
 
     /**
-     *  
+     *
      */
 	for_each_compatible_node(dn, NULL, "intel,ce4100-ioapic") {
 	    /**
-         *  
+         *
          */
 		dtb_add_ioapic(dn);
     }
@@ -319,16 +319,16 @@ static void __init dtb_apic_setup(void)
 {
 #ifdef CONFIG_X86_LOCAL_APIC
     /**
-     *  
+     *
      */
 	dtb_lapic_setup();
     /**
-     *  
+     *
      */
 	dtb_cpu_setup();
 #endif
     /**
-     *  
+     *
      */
 	dtb_ioapic_setup();
 }
@@ -361,7 +361,7 @@ static inline void x86_flattree_get_config(void) { }
 #endif
 
 /**
- *  
+ *
  */
 void __init x86_dtb_init(void)
 {
@@ -371,7 +371,7 @@ void __init x86_dtb_init(void)
 		return;
 
     /**
-     *  
+     *
      */
 	dtb_setup_hpet();
 

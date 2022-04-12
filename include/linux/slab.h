@@ -39,7 +39,7 @@
 #define SLAB_STORE_USER		((slab_flags_t __force)0x00010000U)
 
 /* Panic if kmem_cache_create() fails 出错的话我就吓一跳 */
-#define SLAB_PANIC		((slab_flags_t __force)0x00040000U) /*  */
+#define SLAB_PANIC		((slab_flags_t __force)0x00040000U)
 /*
  * SLAB_TYPESAFE_BY_RCU - **WARNING** READ THIS!
  *
@@ -115,7 +115,7 @@
 
 /* The following flags affect the page allocator grouping pages by mobility */
 /**
- *  Objects are reclaimable 
+ *  Objects are reclaimable
  *
  *  表明 slab 分配物理页的行为是可回收的
  */
@@ -149,7 +149,7 @@ bool slab_is_available(void);
 
 extern bool usercopy_fallback;
 
-/*  */
+
 struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
 			unsigned int align, slab_flags_t flags,
 			void (*ctor)(void *));
@@ -197,7 +197,7 @@ size_t ksize(const void *);
 void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
 			bool to_user);
 #else
-/*  */
+
 #endif
 
 /*
@@ -289,7 +289,7 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
  * Kmalloc subsystem.
  */
 #ifndef KMALLOC_MIN_SIZE
-#define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW/* 3 */)   /*  */
+#define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW/* 3 */)
 #endif
 
 /*
@@ -307,21 +307,21 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
  * Whenever changing this, take care of that kmalloc_type() and
  * create_kmalloc_caches() still work as intended.
  */
-enum kmalloc_cache_type {   /*  */
+enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0, /* 正常 */
 	KMALLOC_RECLAIM,    /* 回收 */
 #ifdef CONFIG_ZONE_DMA
 	KMALLOC_DMA,        /* DMA */
 #endif
-	NR_KMALLOC_TYPES    /*  */
+	NR_KMALLOC_TYPES
 };
 
 #ifndef CONFIG_SLOB
 extern struct kmem_cache *
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1/* 14 */];   /*  */
+kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1/* 14 */];
 
 /**
- *  
+ *
  */
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
@@ -421,7 +421,7 @@ static __always_inline void kfree_bulk(size_t size, void **p)
 void __assume_kmalloc_alignment __malloc *__kmalloc_node(size_t size, gfp_t flags, int node);
 void __assume_slab_alignment __malloc *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_TRACING
@@ -432,11 +432,11 @@ extern void  __assume_slab_alignment __malloc *kmem_cache_alloc_node_trace(struc
 					   gfp_t gfpflags,
 					   int node, size_t size);
 #else
-/*  */
+
 #endif /* CONFIG_NUMA */
 
 #else /* CONFIG_TRACING */
-/*  */
+
 #endif /* CONFIG_TRACING */
 
 extern void  __assume_page_alignment __malloc *kmalloc_order(size_t size, gfp_t flags, unsigned int order);
@@ -444,7 +444,7 @@ extern void  __assume_page_alignment __malloc *kmalloc_order(size_t size, gfp_t 
 #ifdef CONFIG_TRACING
 extern void  __assume_page_alignment __malloc *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order);
 #else
-/*  */
+
 #endif
 
 static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
@@ -507,9 +507,9 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  *	Try really hard to succeed the allocation but fail
  *	eventually.
  *
- * 
+ *
  */
-static __always_inline void *kmalloc(size_t size, gfp_t flags)  /*  */
+static __always_inline void *kmalloc(size_t size, gfp_t flags)
 {
     /* 如果编译阶段即为常量的,使用slab或slub */
 	if (__builtin_constant_p(size)) {
@@ -518,7 +518,7 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)  /*  */
 #endif
 		if (size > KMALLOC_MAX_CACHE_SIZE/* 1<<13 */)
 			return kmalloc_large(size, flags);  /* 申请大块内存 8096KB */
-        
+
 #ifndef CONFIG_SLOB
 
         /* slab 和 slub 都走这条 */
@@ -535,11 +535,11 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)  /*  */
 	}
 
     /* 如果编译阶段不是常量 */
-	return __kmalloc(size, flags);  /*  */
+	return __kmalloc(size, flags);
 }
 
 /**
- *  
+ *
  */
 static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
 {
@@ -565,7 +565,7 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
  * @size: element size.
  * @flags: the type of memory to allocate (see kmalloc).
  */
-static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)   /*  */
+static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 {
 	size_t bytes;
 
@@ -582,7 +582,7 @@ static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)   /*  */
  * @size: element size.
  * @flags: the type of memory to allocate (see kmalloc).
  */
-static inline void *kcalloc(size_t n, size_t size, gfp_t flags) /*  */
+static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 {
 	return kmalloc_array(n, size, flags | __GFP_ZERO);
 }
@@ -632,7 +632,7 @@ extern void *__kmalloc_node_track_caller(size_t, gfp_t, int, unsigned long);
 
 /*
  * Shortcuts
- */ /*  */
+ */
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);
@@ -645,7 +645,7 @@ static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
  */
 static inline void *kzalloc(size_t size, gfp_t flags)   /* 分配 0 内存区 */
 {
-	return kmalloc(size, flags | __GFP_ZERO);   /*  */
+	return kmalloc(size, flags | __GFP_ZERO);
 }
 
 /**

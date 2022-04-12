@@ -30,7 +30,7 @@ extern int show_trace_dev_match(char *buf, size_t size);
 	} while(0)
 
 #else
-/*  */
+
 #endif
 
 #endif

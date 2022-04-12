@@ -33,7 +33,7 @@
  */
 struct mem_section **mem_section;
 #else
-/*  */
+
 #endif
 EXPORT_SYMBOL(mem_section);
 
@@ -60,7 +60,7 @@ static void set_section_nid(unsigned long section_nr, int nid)
 	section_to_node_table[section_nr] = nid;
 }
 #else /* !NODE_NOT_IN_PAGE_FLAGS */
-/*  */
+
 #endif
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
@@ -84,7 +84,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
 }
 
 /**
- *  
+ *
  */
 static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 {
@@ -116,7 +116,7 @@ static int __meminit sparse_index_init(unsigned long section_nr, int nid)
 	return 0;
 }
 #else /* !SPARSEMEM_EXTREME */
-/*  */
+
 #endif
 
 #ifdef CONFIG_SPARSEMEM_EXTREME
@@ -139,7 +139,7 @@ unsigned long __section_nr(struct mem_section *ms)
 	return (root_nr * SECTIONS_PER_ROOT) + (ms - root);
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -251,11 +251,11 @@ void __init subsection_map_init(unsigned long pfn, unsigned long nr_pages)
 	}
 }
 #else
-/*  */
+
 #endif
 
 /**
- *  
+ *
  */
 /* Record a memory area against a node. */
 static void __init memory_present(int nid, unsigned long start, unsigned long end)
@@ -279,12 +279,12 @@ static void __init memory_present(int nid, unsigned long start, unsigned long en
 	mminit_validate_memmodel_limits(&start, &end);
 
     /**
-     *  
+     *
      */
 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
 
         /**
-         *  
+         *
          */
 		unsigned long section = pfn_to_section_nr(pfn);
 		struct mem_section *ms;
@@ -315,7 +315,7 @@ static void __init memblocks_present(void)
      */
 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid) {
 	    /**
-         *  
+         *
          */
 		memory_present(nid, start, end);
     }
@@ -362,7 +362,7 @@ static void __meminit sparse_init_one_section(struct mem_section *ms,
 }
 
 /**
- *  
+ *
  */
 static unsigned long usemap_size(void)
 {
@@ -370,7 +370,7 @@ static unsigned long usemap_size(void)
 }
 
 /**
- *  获取这块 
+ *  获取这块
  */
 size_t mem_section_usage_size(void)
 {
@@ -450,7 +450,7 @@ static void __init check_usemap_section_nr(int nid,
 		usemap_snr, pgdat_snr, nid);
 }
 #else
-/*  */
+
 #endif /* CONFIG_MEMORY_HOTREMOVE */
 
 #ifdef CONFIG_SPARSEMEM_VMEMMAP
@@ -460,7 +460,7 @@ static unsigned long __init section_map_size(void)
 }
 
 #else
-/*  */
+
 #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
 
 static void __meminitdata *sparsemap_buf ;
@@ -573,7 +573,7 @@ failed:
  * Allocate the accumulated non-linear sections, allocate a mem_map
  * for each and record the physical to section mapping.
  *
- * The `Sparsemem` is a special foundation in the linux kernel memory 
+ * The `Sparsemem` is a special foundation in the linux kernel memory
  * manager which used to split memory area into different memory banks in the [NUMA]
  */
 void __init sparse_init(void)
@@ -582,7 +582,7 @@ void __init sparse_init(void)
 	int nid_begin;
 
     /**
-     *  
+     *
      */
 	memblocks_present();
 
@@ -725,7 +725,7 @@ static int fill_subsection_map(unsigned long pfn, unsigned long nr_pages)
 	return rc;
 }
 #else
-/*  */
+
 #endif /* CONFIG_SPARSEMEM_VMEMMAP */
 
 /*
@@ -908,11 +908,11 @@ static void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
 	}
 }
 #else
-/*  */
+
 #endif
 
 /**
- *  
+ *
  */
 void sparse_remove_section(struct mem_section *ms, unsigned long pfn,
 		unsigned long nr_pages, unsigned long map_offset,
@@ -921,7 +921,7 @@ void sparse_remove_section(struct mem_section *ms, unsigned long pfn,
 	clear_hwpoisoned_pages(pfn_to_page(pfn) + map_offset, nr_pages - map_offset);
 
     /**
-     *  
+     *
      */
 	section_deactivate(pfn, nr_pages, altmap);
 }

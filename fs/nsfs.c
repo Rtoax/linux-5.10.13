@@ -293,7 +293,7 @@ static int nsfs_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
-static struct file_system_type nsfs = { /*  */
+static struct file_system_type nsfs = {
 	.name = "nsfs",
 	.init_fs_context = nsfs_init_fs_context,
 	.kill_sb = kill_anon_super,

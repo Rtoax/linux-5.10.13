@@ -622,7 +622,7 @@ static void hwlat_tracer_reset(struct trace_array *tr)
 	hwlat_busy = false;
 }
 
-static struct tracer __read_mostly hwlat_tracer  =/*  */
+static struct tracer __read_mostly hwlat_tracer  =
 {
 	.name		= "hwlat",
 	.init		= hwlat_tracer_init,
@@ -646,4 +646,4 @@ __init static int init_hwlat_tracer(void)
 
 	return 0;
 }
-late_initcall(init_hwlat_tracer);/*  */
+late_initcall(init_hwlat_tracer);

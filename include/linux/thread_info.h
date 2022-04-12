@@ -28,7 +28,7 @@
  * For per-arch arch_within_stack_frames() implementations, defined in
  * asm/thread_info.h.
  */
-enum {  /*  */
+enum {
 	BAD_STACK = -1,
 	NOT_STACK = 0,
 	GOOD_FRAME,
@@ -114,7 +114,7 @@ static __always_inline void check_object_size(const void *ptr, unsigned long n,
 		__check_object_size(ptr, n, to_user);
 }
 #else
-/*  */
+
 #endif /* CONFIG_HARDENED_USERCOPY */
 #define __compiletime_error1 __compiletime_error("copy source size is too small")
 #define __compiletime_error2 __compiletime_error("copy destination size is too small")
@@ -133,7 +133,7 @@ static __always_inline __must_check bool
 check_copy_size(const void *addr, size_t bytes, bool is_source)
 {
     /**
-     *  
+     *
      */
 	int sz = __compiletime_object_size(addr);
 	if (unlikely(sz >= 0 && sz < bytes)) {
@@ -152,7 +152,7 @@ check_copy_size(const void *addr, size_t bytes, bool is_source)
 		return false;
 
     /**
-     *  
+     *
      */
     check_object_size(addr, bytes, is_source);
 	return true;

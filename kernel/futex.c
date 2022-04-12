@@ -170,7 +170,7 @@ static int  __read_mostly futex_cmpxchg_enabled;
 /*
  * Priority Inheritance state:
  */
-struct futex_pi_state { /*  */
+struct futex_pi_state {
 	/*
 	 * list of 'owned' pi_state instances - these have to be
 	 * cleaned up in do_exit() if the task exits prematurely:
@@ -297,18 +297,18 @@ static int __init fail_futex_debugfs(void)
 	return 0;
 }
 
-late_initcall(fail_futex_debugfs);  /*  */
+late_initcall(fail_futex_debugfs);
 
 #endif /* CONFIG_FAULT_INJECTION_DEBUG_FS */
 
 #else
-/*  */
+
 #endif /* CONFIG_FAIL_FUTEX */
 
 #ifdef CONFIG_COMPAT
 static void compat_exit_robust_list(struct task_struct *curr);
 #else
-/*  */
+
 #endif
 
 /*

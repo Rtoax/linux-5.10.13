@@ -221,7 +221,7 @@ enum {
 	X86_PERF_KFREE_MAX
 };
 
-struct cpu_hw_events {  /*  */
+struct cpu_hw_events {
 	/*
 	 * Generic x86 PMC bits
 	 */
@@ -716,7 +716,7 @@ struct x86_pmu {
 	union perf_capabilities intel_cap;
 
 	/*
-	 * Intel DebugStore bits 
+	 * Intel DebugStore bits
 	 * https://www.felixcloutier.com/x86/bts
 	 * https://rtoax.blog.csdn.net/article/details/116978549
 	 */
@@ -1257,11 +1257,11 @@ static inline int is_ht_workaround_enabled(void)
 }
 
 #else /* CONFIG_CPU_SUP_INTEL */
-/*  */
+
 #endif /* CONFIG_CPU_SUP_INTEL */
 
 #if ((defined CONFIG_CPU_SUP_CENTAUR) || (defined CONFIG_CPU_SUP_ZHAOXIN))
 int zhaoxin_pmu_init(void);
 #else
-/*  */
+
 #endif /*CONFIG_CPU_SUP_CENTAUR or CONFIG_CPU_SUP_ZHAOXIN*/

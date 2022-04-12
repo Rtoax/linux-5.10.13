@@ -366,4 +366,4 @@ static int __init kasan_cpu_quarantine_init(void)
 		pr_err("kasan cpu quarantine register failed [%d]\n", ret);
 	return ret;
 }
-late_initcall(kasan_cpu_quarantine_init);   /*  */
+late_initcall(kasan_cpu_quarantine_init);

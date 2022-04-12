@@ -9,7 +9,7 @@
 struct rtc_device;
 
 enum alarmtimer_type {
-	ALARM_REALTIME, /*  */
+	ALARM_REALTIME,
 	ALARM_BOOTTIME,
 
 	/* Supported types end here */
@@ -64,7 +64,7 @@ ktime_t alarm_expires_remaining(const struct alarm *alarm);
 /* Provide way to access the rtc device being used by alarmtimers */
 struct rtc_device *alarmtimer_get_rtcdev(void);
 #else
-/*  */
+
 #endif
 
 #endif

@@ -176,4 +176,4 @@ static int __init blacklist_init(void)
 /*
  * Must be initialised before we try and load the keys into the keyring.
  */
-device_initcall(blacklist_init);    /*  */
+device_initcall(blacklist_init);

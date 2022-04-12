@@ -1353,7 +1353,7 @@ static __init int init_graph_tracefs(void)
 
 	return 0;
 }
-fs_initcall(init_graph_tracefs);    /*  */
+fs_initcall(init_graph_tracefs);
 
 static __init int init_graph_trace(void)
 {
@@ -1372,4 +1372,4 @@ static __init int init_graph_trace(void)
 	return register_tracer(&graph_trace);
 }
 
-core_initcall(init_graph_trace);    /*  */
+core_initcall(init_graph_trace);

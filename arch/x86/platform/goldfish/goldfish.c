@@ -33,7 +33,7 @@ static struct resource goldfish_pdev_bus_resources[] = {
 	}
 };
 
-static bool __initdata goldfish_enable ;/*  */
+static bool __initdata goldfish_enable ;
 
 static int __init goldfish_setup(char *str)
 {
@@ -51,4 +51,4 @@ static int __init goldfish_init(void)
 					goldfish_pdev_bus_resources, 2);
 	return 0;
 }
-device_initcall(goldfish_init); /*  */
+device_initcall(goldfish_init);

@@ -8,7 +8,7 @@
 /*
  * Constructor for a conventional segment GDT (or LDT) entry.
  * This is a macro so it can be used in initializers.
- * 
+ *
  * 接受标志，基本，限制并构建一个GDT条目
  * 例:    GDT_ENTRY (0xc09b, 0, 0xfffff)
  * 基数-0 段的基址为0
@@ -25,7 +25,7 @@
  *      1-（S）代码或数据段，而不是系统段
  *      101-段类型执行/读取/
  *      1-访问位
- *  
+ *
  */
 #define GDT_ENTRY(flags, base, limit)			\
 	((((base)  & _AC(0xff000000,ULL)) << (56-24)) |	\
@@ -225,7 +225,7 @@
 
 /*
  * Segment selector values corresponding to the above entries:
- *  
+ *
  * 段选择子的格式：
  *
  * 15                               3  2   1  0
@@ -242,7 +242,7 @@
 #define __KERNEL_DS     /* 0x18 */(GDT_ENTRY_KERNEL_DS/* 3 */*8)
 #define __USER32_CS     /* 0x23 */(GDT_ENTRY_DEFAULT_USER32_CS/* 4 */*8 + 3)
 #define __USER_DS       /* 0x2B */(GDT_ENTRY_DEFAULT_USER_DS/* 5 */*8 + 3)
-#define __USER32_DS     /* 0x2B */__USER_DS/*  */
+#define __USER32_DS     /* 0x2B */__USER_DS
 #define __USER_CS       /* 0x33 */(GDT_ENTRY_DEFAULT_USER_CS/* 6 */*8 + 3)
 #define __CPUNODE_SEG   /* 0x7B */(GDT_ENTRY_CPUNODE/* 15 */*8 + 3)
 

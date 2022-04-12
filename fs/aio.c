@@ -78,7 +78,7 @@ struct aio_ring {
 
 #define AIO_RING_PAGES	8
 
-struct kioctx_table {   /*  */
+struct kioctx_table {
 	struct rcu_head		rcu;
 	unsigned		nr;
 	struct kioctx __rcu	*table[];
@@ -244,7 +244,7 @@ static struct file *aio_private_file(struct kioctx *ctx, loff_t nr_pages)
 	inode->i_size = PAGE_SIZE * nr_pages;
 
     /**
-     *  
+     *
      */
 	file = alloc_file_pseudo(inode, aio_mnt, "[aio]", O_RDWR, &aio_ring_fops);
 	if (IS_ERR(file))
@@ -1302,10 +1302,10 @@ static long read_events(struct kioctx *ctx, long min_nr, long nr,
  *	Create an aio_context capable of receiving at least nr_events.
  *	ctxp must not point to an aio_context that already exists, and
  *	must be initialized to 0 prior to the call.  On successful
- *	creation of the aio_context, *ctxp is filled in with the resulting 
+ *	creation of the aio_context, *ctxp is filled in with the resulting
  *	handle.  May fail with -EINVAL if *ctxp is not initialized,
- *	if the specified nr_events exceeds internal limits.  May fail 
- *	with -EAGAIN if the specified nr_events exceeds the user's limit 
+ *	if the specified nr_events exceeds internal limits.  May fail
+ *	with -EAGAIN if the specified nr_events exceeds the user's limit
  *	of available events.  May fail with -ENOMEM if insufficient kernel
  *	resources are available.  May fail with -EFAULT if an invalid
  *	pointer is passed for ctxp.  Will fail with -ENOSYS if not
@@ -1375,7 +1375,7 @@ out:
 #endif
 
 /* sys_io_destroy:
- *	Destroy the aio_context specified.  May cancel any outstanding 
+ *	Destroy the aio_context specified.  May cancel any outstanding
  *	AIOs and block on completion.  Will fail with -ENOSYS if not
  *	implemented.  May fail with -EINVAL if the context pointed to
  *	is invalid.

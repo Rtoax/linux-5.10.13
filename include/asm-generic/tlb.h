@@ -247,7 +247,7 @@ extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
  * struct mmu_gather is an opaque type used by the mm code for passing around
  * any data needed by arch specific code for tlb_remove_page.
  */
-struct mmu_gather { /*  */
+struct mmu_gather {
 	struct mm_struct	*mm;
 
 #ifdef CONFIG_MMU_GATHER_TABLE_FREE

@@ -2071,7 +2071,7 @@ static struct ctl_path seccomp_sysctl_path[] = {
 	{ }
 };
 
-static struct ctl_table seccomp_sysctl_table[] = {  /*  */
+static struct ctl_table seccomp_sysctl_table[] = {
 	{
 		.procname	= "actions_avail",  /* /proc/sys/kernel/seccomp/actions_avail */
 		.data		= (void *) &seccomp_actions_avail,
@@ -2100,7 +2100,7 @@ static int __init seccomp_sysctl_init(void)
 	return 0;
 }
 
-device_initcall(seccomp_sysctl_init)    /* seccomp 禁用 syscall 的安全机制 
+device_initcall(seccomp_sysctl_init)    /* seccomp 禁用 syscall 的安全机制
                                             /proc/sys/kernel/seccomp/xxx */
 
 #endif /* CONFIG_SYSCTL */

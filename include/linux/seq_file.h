@@ -24,28 +24,28 @@ struct seq_file {
     size_t size;  //缓冲区大小，默认为1个页面大小，随着需求会动态以2的级数倍扩张，4k,8k,16k...
     size_t from;  //没有拷贝到用户空间的数据在buf中的起始偏移量
     size_t count; //buf中没有拷贝到用户空间的数据的字节数，调用seq_printf()等函数向buf写数据的同时相应增加m->count
-    size_t pad_until; 
+    size_t pad_until;
     loff_t index;  //正在或即将读取的数据项索引，和seq_operations中的start、next操作中的pos项一致，一条记录为一个索引
     loff_t read_pos;  //当前读取数据（file）的偏移量，字节为单位
     struct mutex lock;  //序列化对这个文件的并行操作
     const struct seq_operations *op;  //指向seq_operations
-    int poll_event; 
+    int poll_event;
     const struct file *file; // seq_file相关的proc或其他文件
     void *private;  //指向文件的私有数据
 };
 typedef void * ptr_t;
 
 /**
- *  
+ *
  */
 struct seq_operations {
     /**
-     *  
+     *
      */
 	ptr_t (*start) (struct seq_file *m, loff_t *pos);
 
     /**
-     *  
+     *
      */
 	void (*stop) (struct seq_file *m, void *v);
 
@@ -167,7 +167,7 @@ void *__seq_open_private(struct file *, const struct seq_operations *, int);
 int seq_open_private(struct file *, const struct seq_operations *, int);
 int seq_release_private(struct inode *, struct file *);
 
-/*  */
+
 #define DEFINE_SEQ_ATTRIBUTE(__name)					\
 static int __name ## _open(struct inode *inode, struct file *file)	\
 {									\

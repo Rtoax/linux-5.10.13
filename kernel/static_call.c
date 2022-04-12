@@ -410,7 +410,7 @@ int static_call_text_reserved(void *start, void *end)
 	return __static_call_mod_text_reserved(start, end);
 }
 
-int __init static_call_init(void)/*  */
+int __init static_call_init(void)
 {
 	int ret;
 

@@ -46,7 +46,7 @@
  * (these are usually mapped into the 0x30-0xff vector range)
  */
 vector_irq_t vector_irq;/* 我加的 */
-//`vector_irq` will be used during the first steps of an external hardware interrupt handling 
+//`vector_irq` will be used during the first steps of an external hardware interrupt handling
 //in the `do_IRQ` function from the [arch/x86/kernel/irq.c]
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,
@@ -72,7 +72,7 @@ void __init init_ISA_irqs(void)
 	legacy_pic->init(0);    /* default is init=&`init_8259A()` */
 
     /**
-     *  
+     *
      */
 	for (i = 0; i < nr_legacy_irqs(); i++)
 		irq_set_chip_and_handler(i, chip, handle_level_irq);
@@ -83,7 +83,7 @@ void __init init_ISA_irqs(void)
  *  老版本的中断函数为 do_IRQ()
  *  新版本内核的中断为 common_interrupt()
  */
-void __init init_IRQ(void)  /*  */
+void __init init_IRQ(void)
 {
 	int i;
 
@@ -121,7 +121,7 @@ void __init native_init_IRQ(void)
 	/* Execute any quirks before the call gates are initialised: */
 	x86_init.irqs.pre_vector_init(); /* = init_ISA_irqs() */
     init_ISA_irqs();//+++ = x86_init.irqs.pre_vector_init();
-    
+
     //初始化本地 [APIC],executes general initialization of the [Local APIC]
 	idt_setup_apic_and_irq_gates();
 
@@ -139,9 +139,9 @@ void __init native_init_IRQ(void)
             irq2.name = "cascade",
             irq2.flags = IRQF_NO_THREAD,
         };
-#endif            
+#endif
         /**
-         *  
+         *
          */
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade"/* 级 联 */, NULL))
 			pr_err("%s: request_irq() failed\n", "cascade");

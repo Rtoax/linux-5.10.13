@@ -83,12 +83,12 @@
  * void (*flush_chars)(struct tty_struct *tty);
  *
  * 	This routine is called by the kernel after it has written a
- * 	series of characters to the tty device using put_char().  
+ * 	series of characters to the tty device using put_char().
  *
  *	Optional:
  *
  *	Note: Do not call this function directly, call tty_driver_flush_chars
- * 
+ *
  * int  (*write_room)(struct tty_struct *tty);
  *
  * 	This routine returns the numbers of characters the tty driver
@@ -99,7 +99,7 @@
  *	Required if write method is provided else not needed.
  *
  *	Note: Do not call this function directly, call tty_write_room
- * 
+ *
  * int  (*ioctl)(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
  *
  * 	This routine allows the tty driver to implement
@@ -114,7 +114,7 @@
  * 	implement ioctl processing for 32 bit process on 64 bit system
  *
  *	Optional
- * 
+ *
  * void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
  *
  * 	This routine allows the tty driver to be notified when
@@ -129,7 +129,7 @@
  * 	device's termios settings have changed.
  *
  *	Optional: Called under BKL (currently)
- * 
+ *
  * void (*throttle)(struct tty_struct * tty);
  *
  * 	This routine notifies the tty driver that input buffers for
@@ -138,27 +138,27 @@
  *
  *	Optional: Always invoke via tty_throttle(), called under the
  *	termios lock.
- * 
+ *
  * void (*unthrottle)(struct tty_struct * tty);
  *
  * 	This routine notifies the tty drivers that it should signals
  * 	that characters can now be sent to the tty without fear of
  * 	overrunning the input buffers of the line disciplines.
- * 
+ *
  *	Optional: Always invoke via tty_unthrottle(), called under the
  *	termios lock.
  *
  * void (*stop)(struct tty_struct *tty);
  *
  * 	This routine notifies the tty driver that it should stop
- * 	outputting characters to the tty device.  
+ * 	outputting characters to the tty device.
  *
  *	Called with ->flow_lock held. Serialized with start() method.
  *
  *	Optional:
  *
  *	Note: Call stop_tty not this method.
- * 
+ *
  * void (*start)(struct tty_struct *tty);
  *
  * 	This routine notifies the tty driver that it resume sending
@@ -169,7 +169,7 @@
  *	Optional:
  *
  *	Note: Call start_tty not this method.
- * 
+ *
  * void (*hangup)(struct tty_struct *tty);
  *
  * 	This routine notifies the tty driver that it should hang up the
@@ -197,7 +197,7 @@
  *	Optional: Required for TCSBRK/BRKP/etc handling.
  *
  * void (*wait_until_sent)(struct tty_struct *tty, int timeout);
- * 
+ *
  * 	This routine waits until the device has written out all of the
  * 	characters in its transmitter FIFO.
  *
@@ -251,7 +251,7 @@ struct tty_driver;
 struct serial_icounter_struct;
 struct serial_struct;
 
-struct tty_operations { /*  */
+struct tty_operations {
 	struct tty_struct * (*lookup)(struct tty_driver *driver,
 			struct file *filp, int idx);
 	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
@@ -291,7 +291,7 @@ struct tty_operations { /*  */
 	int  (*get_serial)(struct tty_struct *tty, struct serial_struct *p);
 	int  (*set_serial)(struct tty_struct *tty, struct serial_struct *p);
 	void (*show_fdinfo)(struct tty_struct *tty, struct seq_file *m);
-#ifdef CONFIG_CONSOLE_POLL  /*  */
+#ifdef CONFIG_CONSOLE_POLL
 	int (*poll_init)(struct tty_driver *driver, int line, char *options);
 	int (*poll_get_char)(struct tty_driver *driver, int line);
 	void (*poll_put_char)(struct tty_driver *driver, int line, char ch);
@@ -300,9 +300,9 @@ struct tty_operations { /*  */
 } __randomize_layout;
 
 /**
- *  
+ *
  */
-struct tty_driver { /*  */
+struct tty_driver {
 	int	magic;		/* magic number for this structure */
 	struct kref kref;	/* Reference management */
 	struct cdev **cdevs;
@@ -374,11 +374,11 @@ static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
 
 /*
  * tty driver flags
- * 
+ *
  * TTY_DRIVER_RESET_TERMIOS --- requests the tty layer to reset the
  * 	termios setting when the last process has closed the device.
  * 	Used for PTY's, in particular.
- * 
+ *
  * TTY_DRIVER_REAL_RAW --- if set, indicates that the driver will
  * 	guarantee never not to set any special character handling
  * 	flags if ((IGNBRK || (!BRKINT && !PARMRK)) && (IGNPAR ||

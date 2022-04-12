@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #ifdef CONFIG_SCHED_AUTOGROUP
 
-//The `autogroup` feature is about automatic creation and population of a 
+//The `autogroup` feature is about automatic creation and population of a
 //  new task group during creation of a new session via [setsid]
-struct autogroup {  /*  */
+struct autogroup {
 	/*
 	 * Reference doesn't mean how many threads attach to this
 	 * autogroup now. It just stands for the number of tasks
@@ -40,5 +40,5 @@ autogroup_task_group(struct task_struct *p, struct task_group *tg)
 extern int autogroup_path(struct task_group *tg, char *buf, int buflen);
 
 #else /* !CONFIG_SCHED_AUTOGROUP */
-/*  */
+
 #endif /* CONFIG_SCHED_AUTOGROUP */

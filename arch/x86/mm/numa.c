@@ -827,7 +827,7 @@ static void __init init_memory_less_node(int nid)
  * When this function is called, any nodes containing either memory and/or CPUs
  * will already be online and there is no need to do anything extra, even if
  * they also contain one or more Generic Initiators.
- *//*  */
+ */
 void __init init_gi_nodes(void)
 {
 	int nid;
@@ -866,7 +866,7 @@ void __init init_cpu_to_node(void)
 			continue;
 
 		if (!node_online(node))
-			init_memory_less_node(node);    /*  */
+			init_memory_less_node(node);
 
 		numa_set_node(cpu, node);
 	}

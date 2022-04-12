@@ -26,9 +26,9 @@ extern int unknown_nmi_panic;
 
 enum {  /* NMI 不可屏蔽中断 Non Maskable Interrupt */
 	NMI_LOCAL=0,    /* 本地不可屏蔽中断 */
-	NMI_UNKNOWN,    /*  */
-	NMI_SERR,       /*  */
-	NMI_IO_CHECK,   /*  */
+	NMI_UNKNOWN,
+	NMI_SERR,
+	NMI_IO_CHECK,
 	NMI_MAX
 };
 

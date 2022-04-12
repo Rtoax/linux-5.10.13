@@ -102,7 +102,7 @@ enum irq_domain_bus_token {
  * whatever internal data structures management is required. It also needs
  * to setup the irq_desc when returning from map().
  */
-struct irq_domain_ops { /*  */
+struct irq_domain_ops {
 	int (*match)(struct irq_domain *d, struct device_node *node,
 		     enum irq_domain_bus_token bus_token);
 	int (*select)(struct irq_domain *d, struct irq_fwspec *fwspec,
@@ -174,7 +174,7 @@ struct irq_domain_chip_generic;
  * 2. 并且完美的支持设备树机制，
  * 3. 解决硬件中断号映射到 Linux 内核 IRQ 号的问题
  */
-struct irq_domain { /*  */
+struct irq_domain {
     /**
      *  链表头为 irq_domain_list
      */
@@ -197,10 +197,10 @@ struct irq_domain { /*  */
 	enum irq_domain_bus_token bus_token;
 
     /**
-     *  
+     *
      */
 	struct irq_domain_chip_generic *gc;
-    
+
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
 	struct irq_domain *parent;
 #endif
@@ -544,7 +544,7 @@ static inline int irq_domain_alloc_irqs(struct irq_domain *domain,
 			unsigned int nr_irqs, int node, void *arg)
 {
     /**
-     *  
+     *
      */
 	return __irq_domain_alloc_irqs(domain, -1, nr_irqs, node, arg, false, NULL);
 }
@@ -611,11 +611,11 @@ static inline bool irq_domain_is_msi_remap(struct irq_domain *domain)
 extern bool irq_domain_hierarchical_is_msi_remap(struct irq_domain *domain);
 
 #else	/* CONFIG_IRQ_DOMAIN_HIERARCHY */
-/*  */
+
 #endif	/* CONFIG_IRQ_DOMAIN_HIERARCHY */
 
 #else /* CONFIG_IRQ_DOMAIN */
-/*  */
+
 #endif /* !CONFIG_IRQ_DOMAIN */
 
 #endif /* _LINUX_IRQDOMAIN_H */

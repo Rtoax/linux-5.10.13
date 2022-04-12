@@ -1213,7 +1213,7 @@ error:
 	return err;
 }
 EXPORT_SYMBOL(vfs_get_super);
-    /*  */
+
 int get_tree_nodev(struct fs_context *fc,
 		  int (*fill_super)(struct super_block *sb,
 				    struct fs_context *fc))

@@ -81,7 +81,7 @@ static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
 	return state->regs;
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_UNWINDER_ORC
@@ -89,7 +89,7 @@ void unwind_init(void);
 void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,
 			void *orc, size_t orc_size);
 #else
-/*  */
+
 #endif
 
 /*

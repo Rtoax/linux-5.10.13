@@ -11,7 +11,7 @@ struct paravirt_patch_site;
 void apply_paravirt(struct paravirt_patch_site *start,
 		    struct paravirt_patch_site *end);
 #else
-/*  */
+
 #endif
 
 /*
@@ -117,7 +117,7 @@ static __always_inline int text_opcode_size(u8 opcode)
 /**
  *  一条 x86 指令
  */
-union text_poke_insn {  /*  */
+union text_poke_insn {
 	u8 text[POKE_MAX_OPCODE_SIZE];
 	struct {
         /**
@@ -150,7 +150,7 @@ void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数
 	 * @brief 指令长度
 	 *
 	 */
-	int size = text_opcode_size(opcode);    /*  */
+	int size = text_opcode_size(opcode);
 
     /*  例
     0f 1f 44 00 00 nop
@@ -168,7 +168,7 @@ void *text_gen_insn(u8 opcode, const void *addr, const void *dest)  /* 该函数
 		 *  计算替换的值：
          *	替换的值 = 目的地址 - (修改的地址 + 指令长度)		见《Linux二进制分析》
          */
-		insn.disp = (long)dest - (long)(addr + size);   /*  */
+		insn.disp = (long)dest - (long)(addr + size);
 		if (size == 2) {
 			/*
 			 * Ensure that for JMP9 the displacement

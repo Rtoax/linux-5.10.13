@@ -256,9 +256,9 @@ static void ptype_seq_stop(struct seq_file *seq, void *v)
 {
 	rcu_read_unlock();
 }
-static int ptype_seq_show(struct seq_file *seq, void *v)    /*  */
+static int ptype_seq_show(struct seq_file *seq, void *v)
 {
-//    more /proc/self/net/ptype 
+//    more /proc/self/net/ptype
 //    Type Device      Function
 //    0800          ip_rcv
 //    0011          llc_rcv [llc]

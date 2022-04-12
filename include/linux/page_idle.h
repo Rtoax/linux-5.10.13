@@ -34,7 +34,7 @@ static inline void set_page_idle(struct page *page)
 	SetPageIdle(page);
 }
 
-static inline void clear_page_idle(struct page *page)   /*  */
+static inline void clear_page_idle(struct page *page)
 {
 	ClearPageIdle(page);
 }
@@ -107,7 +107,7 @@ static inline void clear_page_idle(struct page *page)   /*  */
 #endif /* CONFIG_64BIT */
 
 #else /* !CONFIG_IDLE_PAGE_TRACKING */
-/*  */
+
 #endif /* CONFIG_IDLE_PAGE_TRACKING */
 
 #endif /* _LINUX_MM_PAGE_IDLE_H */

@@ -65,58 +65,58 @@ typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
  *     code        registered        call pre_handler
  *  |        |     |        |       /
  *  | instr1 |     | instr1 |      / single step instr2
- *  |        |     |        |>----+  
+ *  |        |     |        |>----+
  *  | instr2 |     |  trap  |<---+   call post_handler
- *  |        |     |        |     \  
+ *  |        |     |        |     \
  *  | instr3 |     | instr3 |      \ continue
  *  |        |     |        |
  *  | instr4 |     | instr4 |
  *  |        |     |        |
  */
-struct kprobe { /*  */
+struct kprobe {
     /**
      *  被用于kprobe全局hash，索引值为被探测点的地址。
      *  头为 `kprobe_table[x]`
      */
-	struct hlist_node hlist;    /*  */
+	struct hlist_node hlist;
 
 	/**
-	 *  list of kprobes for multi-handler support 
+	 *  list of kprobes for multi-handler support
 	 *
 	 *  用于链接同一被探测点的不同探测kprobe。
 	 */
-	struct list_head list;      /*  */
+	struct list_head list;
 
 	/**
-	 *  count the number of times this probe was temporarily disarmed 
+	 *  count the number of times this probe was temporarily disarmed
      *  如果 kprobe 嵌套，增加nmissed字段的数值
      */
-	unsigned long nmissed;      /*  */
+	unsigned long nmissed;
 
 	/**
-	 *  location of the probe point 
+	 *  location of the probe point
 	 *  被探测点的地址。
 	 */
-	kprobe_opcode_t *addr;      /*  */
+	kprobe_opcode_t *addr;
 
 	/* Allow user to indicate symbol name of the probe point */
 	const char *symbol_name;    /* 被探测函数的名称。 */
 
 	/**
-	 *  Offset into the symbol 
+	 *  Offset into the symbol
 	 *  被探测点在函数内部的偏移，用于探测函数内核的指令，
 	 *  如果该值为0表示函数的入口。
 	 */
-	unsigned int offset;        /*  */
+	unsigned int offset;
 
     /**
      *   original        kprobe
      *     code        registered        call pre_handler
      *  |        |     |        |       /
      *  | instr1 |     | instr1 |      / single step instr2
-     *  |        |     |        |>----+  
+     *  |        |     |        |>----+
      *  | instr2 |     |  trap  |<---+   call post_handler
-     *  |        |     |        |     \  
+     *  |        |     |        |     \
      *  | instr3 |     | instr3 |      \ continue
      *  |        |     |        |
      *  | instr4 |     | instr4 |
@@ -125,10 +125,10 @@ struct kprobe { /*  */
 	/**
 	 *  Called before addr is executed. 在被探测指令被执行前回调
 	 */
-	kprobe_pre_handler_t pre_handler;   
+	kprobe_pre_handler_t pre_handler;
 
 	/**
-	 *  Called after addr is executed, unless... 
+	 *  Called after addr is executed, unless...
 	 *  在被探测指令执行完毕后回调（注意不是被探测函数）
 	 */
 	kprobe_post_handler_t post_handler;
@@ -139,19 +139,19 @@ struct kprobe { /*  */
 	 *
 	 * 在内存访问出错时被调用
 	 */
-	kprobe_fault_handler_t fault_handler;   /*  */
+	kprobe_fault_handler_t fault_handler;
 
 	/**
-	 *  Saved opcode (which has been replaced with breakpoint) 
+	 *  Saved opcode (which has been replaced with breakpoint)
 	 *  保存的被探测点原始指令。
 	 */
-	kprobe_opcode_t opcode; /*  */
+	kprobe_opcode_t opcode;
 
     /**
      *  被复制的被探测点的原始指令，用于单步执行，架构强相关。
      */
 	/* copy of the original instruction */
-	struct arch_specific_insn ainsn;    /*  */
+	struct arch_specific_insn ainsn;
 
 	/*
 	 * Indicates various status flags.
@@ -159,7 +159,7 @@ struct kprobe { /*  */
 	 *
 	 * 状态标记。
 	 */
-	u32 flags;  /*  */
+	u32 flags;
 };
 
 /* Kprobe status flags */
@@ -191,7 +191,7 @@ static inline int kprobe_optimized(struct kprobe *p)
 }
 
 /**
- *  Is this kprobe uses ftrace ? 
+ *  Is this kprobe uses ftrace ?
  *  这个 kprobe 是否使用了 ftrace
  */
 static inline int kprobe_ftrace(struct kprobe *p)
@@ -211,7 +211,7 @@ static inline int kprobe_ftrace(struct kprobe *p)
  */
 struct kretprobe {
     /**
-     *  
+     *
      */
 	struct kprobe kp;
 	kretprobe_handler_t handler;
@@ -240,7 +240,7 @@ struct kretprobe_blackpoint {
 	void *addr;
 };
 
-struct kprobe_blacklist_entry { /*  */
+struct kprobe_blacklist_entry {
 	struct list_head list;
 	unsigned long start_addr;
 	unsigned long end_addr;
@@ -290,7 +290,7 @@ unsigned long kretprobe_trampoline_handler(struct pt_regs *regs,
 }
 
 #else /* CONFIG_KRETPROBES */
-/*  */
+
 #endif /* CONFIG_KRETPROBES */
 
 extern struct kretprobe_blackpoint kretprobe_blacklist[];
@@ -319,7 +319,7 @@ extern int kprobe_add_ksym_blacklist(unsigned long entry);
 extern int kprobe_add_area_blacklist(unsigned long start, unsigned long end);
 
 /**
- *  
+ *
  */
 struct kprobe_insn_cache {
 	struct mutex mutex;
@@ -374,21 +374,21 @@ DEFINE_INSN_CACHE_OPS(insn);
 int kprobe_cache_get_kallsym(struct kprobe_insn_cache *c, unsigned int *symnum,
           unsigned long *value, char *type, char *sym);
 
-extern struct kprobe_insn_cache kprobe_insn_slots; 
+extern struct kprobe_insn_cache kprobe_insn_slots;
 
-static inline kprobe_opcode_t *get_insn_slot(void) 
+static inline kprobe_opcode_t *get_insn_slot(void)
 {
- return __get_insn_slot(&kprobe_insn_slots); 
-} 
+ return __get_insn_slot(&kprobe_insn_slots);
+}
 
 static inline void free_insn_slot(kprobe_opcode_t *slot, int dirty)
 {
- __free_insn_slot(&kprobe_insn_slots, slot, dirty); 
-} 
+ __free_insn_slot(&kprobe_insn_slots, slot, dirty);
+}
 
-static inline bool is_kprobe_insn_slot(unsigned long addr) 
+static inline bool is_kprobe_insn_slot(unsigned long addr)
 {
- return __is_insn_slot_addr(&kprobe_insn_slots, addr); 
+ return __is_insn_slot_addr(&kprobe_insn_slots, addr);
 };
 
 
@@ -430,7 +430,7 @@ extern int proc_kprobes_optimization_handler(struct ctl_table *table,
 #endif
 extern void wait_for_kprobe_optimizer(void);
 #else
-/*  */
+
 #endif /* CONFIG_OPTPROBES */
 #ifdef CONFIG_KPROBES_ON_FTRACE
 extern void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
@@ -444,7 +444,7 @@ int arch_check_ftrace_location(struct kprobe *p);
 struct kprobe *get_kprobe(void *addr);
 
 /* kprobe_running() will just return the current_kprobe on this CPU */
-static inline struct kprobe *kprobe_running(void)   /*  */
+static inline struct kprobe *kprobe_running(void)
 {
 	return (__this_cpu_read(current_kprobe));
 }
@@ -493,7 +493,7 @@ int kprobe_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
 int arch_kprobe_get_kallsym(unsigned int *symnum, unsigned long *value,
 			    char *type, char *sym);
 #else /* !CONFIG_KPROBES: */
-/*  */
+
 #endif /* CONFIG_KPROBES */
 static inline int disable_kretprobe(struct kretprobe *rp)
 {
@@ -520,7 +520,7 @@ static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 		return false;
 	if (!kprobe_running())  /* 如果kprobe未运行，返回失败 */
 		return false;
-	return kprobe_fault_handler(regs, trap);    /*  */
+	return kprobe_fault_handler(regs, trap);
 }
 
 #endif /* _LINUX_KPROBES_H */

@@ -37,11 +37,11 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 /* x86_64 没哟高端内存 */
 #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
-	
+
 #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
 
 #ifndef __pa
-#define __pa(x)		__phys_addr((unsigned long)(x))/*  */
+#define __pa(x)		__phys_addr((unsigned long)(x))
 #endif
 
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
@@ -59,7 +59,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 
 #ifndef __va
     //所有对物理地址进行直接映射后的虚拟基地址
-#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))/*  */
+#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
 #endif
 
 #define __boot_va(x)		__va(x)

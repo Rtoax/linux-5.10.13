@@ -29,7 +29,7 @@ static inline void add_latent_entropy(void)
 	add_device_randomness((const void *)&latent_entropy, sizeof(latent_entropy));
 }
 #else
-/*  */
+
 #endif
 
 extern void __latent_entropy add_input_randomness(unsigned int type, unsigned int code,

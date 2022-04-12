@@ -69,7 +69,7 @@ get_frame_pointer(struct task_struct *task, struct pt_regs *regs)
 	return &((struct inactive_task_frame *)task->thread.sp)->bp;
 }
 #else
-/*  */
+
 #endif /* CONFIG_FRAME_POINTER */
 
 static inline unsigned long *   /* 获取栈虚拟地址 */
@@ -81,7 +81,7 @@ get_stack_pointer(struct task_struct *task, struct pt_regs *regs)
 	if (task == current)
 		return __builtin_frame_address(0);  /* 当前的帧 */
 
-	return (unsigned long *)task->thread.sp;    /*  */
+	return (unsigned long *)task->thread.sp;
 }
 
 void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,

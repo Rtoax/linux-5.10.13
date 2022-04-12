@@ -219,4 +219,4 @@ static int __init integrity_fs_init(void)
 	return 0;
 }
 
-late_initcall(integrity_fs_init)    /*  */
+late_initcall(integrity_fs_init)

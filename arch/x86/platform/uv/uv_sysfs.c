@@ -31,7 +31,7 @@ static struct kobj_attribute coherence_id_attr =
 	__ATTR(coherence_id, S_IRUGO, coherence_id_show, NULL);
 
 
-static int __init sgi_uv_sysfs_init(void)   /*  */
+static int __init sgi_uv_sysfs_init(void)
 {
 	unsigned long ret;
 
@@ -60,4 +60,4 @@ static int __init sgi_uv_sysfs_init(void)   /*  */
 	return 0;
 }
 
-device_initcall(sgi_uv_sysfs_init); /*  */
+device_initcall(sgi_uv_sysfs_init);

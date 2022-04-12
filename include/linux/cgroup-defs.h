@@ -43,7 +43,7 @@ struct poll_table_struct;
  */
 /* define the enumeration of all cgroup subsystems */
 #define SUBSYS(_x) _x ## _cgrp_id,
-enum cgroup_subsys_id {  /*  */
+enum cgroup_subsys_id {
 #include <linux/cgroup_subsys.h>
     /**
      *  展开 #include <linux/cgroup_subsys.h>
@@ -622,7 +622,7 @@ struct cgroup {
  * associated with a kernfs_root to form an active hierarchy.  This is
  * internal to cgroup core.  Don't access directly from controllers.
  */
-struct cgroup_root {/*  */
+struct cgroup_root {
     /**
      *
      */
@@ -912,7 +912,7 @@ static inline void cgroup_threadgroup_change_end(struct task_struct *tsk)
 
 #else	/* CONFIG_CGROUPS */
 
-/*  */
+
 
 #endif	/* CONFIG_CGROUPS */
 
@@ -1027,7 +1027,7 @@ static inline void sock_cgroup_set_classid(struct sock_cgroup_data *skcd,
 
 #else	/* CONFIG_SOCK_CGROUP_DATA */
 
-/*  */
+
 
 #endif	/* CONFIG_SOCK_CGROUP_DATA */
 

@@ -248,7 +248,7 @@ static int __init sch_default_qdisc(void)
 {
 	return qdisc_set_default(CONFIG_DEFAULT_NET_SCH);
 }
-late_initcall(sch_default_qdisc);   /*  */
+late_initcall(sch_default_qdisc);
 #endif
 
 /* We know handle. Find qdisc among all qdisc's attached to device

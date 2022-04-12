@@ -47,7 +47,7 @@ static struct alarm_base {
 	ktime_t			(*get_ktime)(void);
 	void			(*get_timespec)(struct timespec64 *tp);
 	clockid_t		base_clockid;
-} alarm_bases[ALARM_NUMTYPE];   /*  */
+} alarm_bases[ALARM_NUMTYPE];
 
 #if defined(CONFIG_POSIX_TIMERS) || defined(CONFIG_RTC_CLASS)
 /* freezer information to handle clock_nanosleep triggered wakeups */
@@ -124,7 +124,7 @@ unlock:
 	return ret;
 }
 
-static inline void alarmtimer_rtc_timer_init(void)  /*  */
+static inline void alarmtimer_rtc_timer_init(void)
 {
 	rtc_timer_init(&rtctimer, NULL, NULL);
 }
@@ -143,7 +143,7 @@ static void alarmtimer_rtc_interface_remove(void)
 	class_interface_unregister(&alarmtimer_rtc_interface);
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -309,7 +309,7 @@ static int alarmtimer_resume(struct device *dev)
 }
 
 #else
-/*  */
+
 #endif
 
 static void
@@ -888,7 +888,7 @@ static void get_boottime_timespec(struct timespec64 *tp)
  * This function initializes the alarm bases and registers
  * the posix clock ids.
  */
-static int __init alarmtimer_init(void) /*  */
+static int __init alarmtimer_init(void)
 {
 	int error;
 	int i;

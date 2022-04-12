@@ -121,7 +121,7 @@ struct task_struct init_task
 	init_task.io_uring	= NULL,/* io_uring AIO */
 #endif
 	init_task.signal		= &init_signals,/* 信号 */
-	init_task.sighand	= &init_sighand,/*  */
+	init_task.sighand	= &init_sighand,
 	init_task.nsproxy	= &init_nsproxy,/* 命名空间 */
 	init_task.pending	= {/* 挂起 */
 		init_task.pending.list = LIST_HEAD_INIT(init_task.pending.list),
@@ -131,39 +131,39 @@ struct task_struct init_task
 	init_task.alloc_lock	= __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),/* 保护一些 分配 的 变量 */
 	init_task.journal_info	= NULL,
 	INIT_CPU_TIMERS(init_task)/* POSIX CPU 定时器，  */
-	init_task.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),/*  */
+	init_task.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	init_task.timer_slack_ns = 50000, /* 50 usec default slack松弛的 *//* 用于poll 和 select */
 	init_task.thread_pid	= &init_struct_pid,/* PID 的哈希表 */
 	init_task.thread_group	= LIST_HEAD_INIT(init_task.thread_group),
 	init_task.thread_node	= LIST_HEAD_INIT(init_signals.thread_head),
 #ifdef CONFIG_AUDIT
-	init_task.loginuid	= INVALID_UID,/*  */
-	init_task.sessionid	= AUDIT_SID_UNSET,/*  */
+	init_task.loginuid	= INVALID_UID,
+	init_task.sessionid	= AUDIT_SID_UNSET,
 #endif
 #ifdef CONFIG_PERF_EVENTS/* perf_event */
 	init_task.perf_event_mutex = __MUTEX_INITIALIZER(init_task.perf_event_mutex),
 	init_task.perf_event_list = LIST_HEAD_INIT(init_task.perf_event_list),
 #endif
-#ifdef CONFIG_PREEMPT_RCU/*  */
+#ifdef CONFIG_PREEMPT_RCU
 	init_task.rcu_read_lock_nesting = 0,
 	init_task.rcu_read_unlock_special.s = 0,
 	init_task.rcu_node_entry = LIST_HEAD_INIT(init_task.rcu_node_entry),
 	init_task.rcu_blocked_node = NULL,
 #endif
-#ifdef CONFIG_TASKS_RCU/*  */
+#ifdef CONFIG_TASKS_RCU
 	init_task.rcu_tasks_holdout = false,
 	init_task.rcu_tasks_holdout_list = LIST_HEAD_INIT(init_task.rcu_tasks_holdout_list),
 	init_task.rcu_tasks_idle_cpu = -1,
 #endif
-#ifdef CONFIG_TASKS_TRACE_RCU/*  */
+#ifdef CONFIG_TASKS_TRACE_RCU
 	init_task.trc_reader_nesting = 0,
 	init_task.trc_reader_special.s = 0,
 	init_task.trc_holdout_list = LIST_HEAD_INIT(init_task.trc_holdout_list),
 #endif
-#ifdef CONFIG_CPUSETS/*  */
+#ifdef CONFIG_CPUSETS
 	init_task.mems_allowed_seq = SEQCNT_SPINLOCK_ZERO(init_task.mems_allowed_seq, &init_task.alloc_lock),
 #endif
-#ifdef CONFIG_RT_MUTEXES/*  */
+#ifdef CONFIG_RT_MUTEXES
 	init_task.pi_waiters	= RB_ROOT_CACHED,
 	init_task.pi_top_task	= NULL,
 #endif

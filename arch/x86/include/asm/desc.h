@@ -397,7 +397,7 @@ static inline void clear_LDT(void)
 	set_ldt(NULL, 0);
 }
 
-static inline unsigned long get_desc_base(const struct desc_struct *desc)   /*  */
+static inline unsigned long get_desc_base(const struct desc_struct *desc)
 {
 	return (unsigned)(desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24));
 }
@@ -424,7 +424,7 @@ void alloc_intr_gate(unsigned int n, const void *addr);
 
 /* 初始化一个 中断描述符 - 中断门*/
 static inline void init_idt_data(struct idt_data *data, unsigned int n,
-				 const void *addr)/*  */
+				 const void *addr)
 {
 	BUG_ON(n > 0xFF);   //`BUG_ON` 宏确保了传入的中断向量号不会大于255
 
@@ -464,7 +464,7 @@ extern bool idt_is_f00f_address(unsigned long address);
 extern void idt_setup_early_pf(void);
 extern void idt_setup_ist_traps(void);
 #else
-/*  */
+
 #endif
 
 extern void idt_invalidate(void *addr);

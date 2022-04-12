@@ -69,11 +69,11 @@ struct arch_specific_insn {
 	 */
 	bool boostable;
     /**
-     *  
+     *
      */
 	bool if_modifier;
 	/**
-	 *  Number of bytes of text poked 
+	 *  Number of bytes of text poked
 	 */
 	int tp_len;
 };
@@ -93,7 +93,7 @@ static inline int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
 	return optinsn->size;
 }
 
-struct prev_kprobe {    /*  */
+struct prev_kprobe {
 	struct kprobe *kp;
 	unsigned long status;
 	unsigned long old_flags;
@@ -101,7 +101,7 @@ struct prev_kprobe {    /*  */
 };
 
 /* per-cpu kprobe control block */
-struct kprobe_ctlblk {  /*  */
+struct kprobe_ctlblk {
 	unsigned long kprobe_status;
 	unsigned long kprobe_old_flags;
 	unsigned long kprobe_saved_flags;
@@ -117,7 +117,7 @@ extern int kprobe_debug_handler(struct pt_regs *regs);
 
 #else
 /**
-     *  
+     *
      */
 #endif /* CONFIG_KPROBES */
 #endif /* _ASM_X86_KPROBES_H */

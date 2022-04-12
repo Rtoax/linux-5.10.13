@@ -765,4 +765,4 @@ static int __init cpu_map_init(void)
 	return 0;
 }
 
-subsys_initcall(cpu_map_init);  /*  */
+subsys_initcall(cpu_map_init);

@@ -170,7 +170,7 @@ int percpu_pagelist_fraction;
 /**
  * 允许的 分配 mask，见 gfp_allowed_mask() 函数
  */
-gfp_t __read_mostly gfp_allowed_mask  = GFP_BOOT_MASK;  /*  */
+gfp_t __read_mostly gfp_allowed_mask  = GFP_BOOT_MASK;
 
 #ifdef CONFIG_INIT_ON_ALLOC_DEFAULT_ON
 //DEFINE_STATIC_KEY_TRUE(init_on_alloc);
@@ -203,7 +203,7 @@ static int __init early_init_on_alloc(char *buf)
 	if (bool_result && page_poisoning_enabled())
 		pr_info("mem auto-init: CONFIG_PAGE_POISONING is on, will take precedence over init_on_alloc\n");
 	if (bool_result)
-		static_branch_enable(&init_on_alloc);   /*  */
+		static_branch_enable(&init_on_alloc);
 	else
 		static_branch_disable(&init_on_alloc);
 	return 0;
@@ -428,7 +428,7 @@ int __read_mostly watermark_boost_factor  = 15000;
  */
 int watermark_scale_factor = 10;
 
-static unsigned long __initdata nr_kernel_pages ;/*  */
+static unsigned long __initdata nr_kernel_pages ;
 static unsigned long __initdata nr_all_pages ;
 static unsigned long __initdata dma_reserve ;
 
@@ -488,7 +488,7 @@ static inline void kasan_free_nondeferred_pages(struct page *page, int order)
 }
 
 /* Returns true if the struct page for the pfn is uninitialised */
-static inline bool __meminit early_page_uninitialised(unsigned long pfn)/*  */
+static inline bool __meminit early_page_uninitialised(unsigned long pfn)
 {
 	int nid = early_pfn_to_nid(pfn);/* pfn 所在的 NODE */
     /* NODE 在线，并且 pfn 大于等于 第一个 PFN */
@@ -538,7 +538,7 @@ defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
 	return false;
 }
 #else
-/*  */
+
 #endif
 
 /* Return a pointer to the bitmap storing bits affecting a block of pages */
@@ -569,7 +569,7 @@ static inline int pfn_to_bitidx(struct page *page, unsigned long pfn)
  *
  * Return: pageblock_bits flags
  */
-static __always_inline  /*  */
+static __always_inline
 unsigned long __get_pfnblock_flags_mask(struct page *page,
 					unsigned long pfn,
 					unsigned long mask)
@@ -698,7 +698,7 @@ static int __maybe_unused bad_range(struct zone *zone, struct page *page)
 	return 0;
 }
 #else
-/*  */
+
 #endif
 
 static void bad_page(struct page *page, const char *reason)
@@ -802,7 +802,7 @@ early_param("debug_pagealloc", early_debug_pagealloc);
 /**
  *
  */
-void init_debug_pagealloc(void) /*  */
+void init_debug_pagealloc(void)
 {
 	if (!debug_pagealloc_enabled())
 		return;
@@ -846,7 +846,7 @@ static inline bool set_page_guard(struct zone *zone, struct page *page,
 
 	return true;
 }
-    /*  */
+
 static inline void clear_page_guard(struct zone *zone, struct page *page,
 				unsigned int order, int migratetype)
 {
@@ -855,7 +855,7 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 
 	__ClearPageGuard(page); /* 清理标志位 */
 
-	set_page_private(page, 0);  /*  */
+	set_page_private(page, 0);
 	if (!is_migrate_isolate(migratetype))
 		__mod_zone_freepage_state(zone, (1 << order), migratetype);
 }
@@ -869,7 +869,7 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 /**
  *
  */
-static inline void set_buddy_order(struct page *page, unsigned int order)   /*  */
+static inline void set_buddy_order(struct page *page, unsigned int order)
 {
 	set_page_private(page, order);
 	__SetPageBuddy(page);
@@ -946,7 +946,7 @@ compaction_capture(struct capture_control *capc, struct page *page,
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_COMPACTION */
 
 /* Used for pages not on another list *//* 将 page 插入 free 链表中 */
@@ -961,7 +961,7 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 	area->nr_free++;
 }
 
-/* Used for pages not on another list *//*  */
+/* Used for pages not on another list */
 static inline void add_to_free_list_tail(struct page *page, struct zone *zone,
 					 unsigned int order, int migratetype)
 {
@@ -992,7 +992,7 @@ del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
 {
 	/* clear reported state and update reported page count */
-	if (page_reported(page))    /*  */
+	if (page_reported(page))
 		__ClearPageReported(page);
 
     /**
@@ -1003,7 +1003,7 @@ del_page_from_free_list(struct page *page, struct zone *zone,
     /**
      *
      */
-	__ClearPageBuddy(page); /*  */
+	__ClearPageBuddy(page);
 
     /**
      *  page->private = private = 0;
@@ -1075,7 +1075,7 @@ static inline void __free_one_page(struct page *page,
                              		struct zone *zone, unsigned int order,
                              		int migratetype, fpi_t fpi_flags)
 {
-	struct capture_control *capc = task_capc(zone);/*  */
+	struct capture_control *capc = task_capc(zone);
 	unsigned long buddy_pfn;
 	unsigned long combined_pfn;
 	unsigned int max_order;
@@ -1145,7 +1145,7 @@ continue_merging:
     /**
      *
      */
-	if (max_order < MAX_ORDER) {    /*  */
+	if (max_order < MAX_ORDER) {
 		/* If we are here, it means order is >= pageblock_order.
 		 * We want to prevent merge between freepages on isolate
 		 * pageblock and normal pageblock. Without this, pageblock
@@ -1421,7 +1421,7 @@ static bool bulkfree_pcp_prepare(struct page *page)
 		return false;
 }
 #else
-/*  */
+
 #endif /* CONFIG_DEBUG_VM */
 
 static inline void prefetch_buddy(struct page *page)
@@ -1529,7 +1529,7 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 /**
  *  向伙伴系统释放
  */
-static void free_one_page(struct zone *zone,    /*  */
+static void free_one_page(struct zone *zone,
 				struct page *page, unsigned long pfn,
 				unsigned int order,
 				int migratetype, fpi_t fpi_flags)
@@ -1577,17 +1577,17 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
     /**
      *  CPUID
      */
-	page_cpupid_reset_last(page);           /*  */
+	page_cpupid_reset_last(page);
 
     /**
      *
      */
-	page_kasan_tag_reset(page);             /*  */
+	page_kasan_tag_reset(page);
 
     /**
      *  初始化  lru 链表
      */
-	INIT_LIST_HEAD(&page->lru);             /*  */
+	INIT_LIST_HEAD(&page->lru);
 
 #ifdef WANT_PAGE_VIRTUAL
 	/* The shift won't overflow because ZONE_NORMAL is below 4G. */
@@ -1640,7 +1640,7 @@ static void __meminit init_reserved_page(unsigned long pfn)
 	__init_single_page(pfn_to_page(pfn), pfn, zid, nid);
 }
 #else
-/*  */
+
 #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
 /*
@@ -1721,12 +1721,12 @@ void __free_pages_core(struct page *page, unsigned int order)/* 释放 page */
 	 */
 	prefetchw(p);/* 预取 */
 	for (loop = 0; loop < (nr_pages - 1); loop++, p++) {
-		prefetchw(p + 1);/*  */
+		prefetchw(p + 1);
 
         /**
          *  清理预留位
          */
-		__ClearPageReserved(p);/*  */
+		__ClearPageReserved(p);
 
         /**
          *  _refcount = 0
@@ -2411,7 +2411,7 @@ static inline void expand(struct zone *zone, struct page *page,
         /**
          *  重新设置下这个page 的order
          */
-		set_buddy_order(&page[size], high); /*  */
+		set_buddy_order(&page[size], high);
 	}
 }
 
@@ -2470,7 +2470,7 @@ static inline bool check_new_pcp(struct page *page)
 	return check_new_page(page);
 }
 #else
-/*  */
+
 #endif /* CONFIG_DEBUG_VM */
 
 /**
@@ -2648,7 +2648,7 @@ __rmqueue_cma_fallback(struct zone *zone,
 	return __rmqueue_smallest(zone, order, MIGRATE_CMA);
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -2747,7 +2747,7 @@ static void change_pageblock_range(struct page *pageblock_page,
  *
  * 判断后备 free_area 中 是否满足需求
  */
-static bool can_steal_fallback(unsigned int order, int start_mt)    /*  */
+static bool can_steal_fallback(unsigned int order, int start_mt)
 {
 	/*
 	 * Leaving this order check is intended, although there is
@@ -3190,7 +3190,7 @@ find_smallest:
      *
      */
 	for (current_order = order; current_order < MAX_ORDER; current_order++) {
-        /*  */
+
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
 				            start_migratetype, false, &can_steal);
@@ -3819,7 +3819,7 @@ void __putback_isolated_page(struct page *page, unsigned int order, int mt)
  *
  * Must be called with interrupts disabled.
  */
-static inline void zone_statistics(struct zone *preferred_zone, struct zone *z) /*  */
+static inline void zone_statistics(struct zone *preferred_zone, struct zone *z)
 {
 #ifdef CONFIG_NUMA
 	enum numa_stat_item local_stat = NUMA_LOCAL;
@@ -3841,7 +3841,7 @@ static inline void zone_statistics(struct zone *preferred_zone, struct zone *z) 
 #endif
 }
 
-/* Remove page from the per-cpu list, caller must protect the list *//*  */
+/* Remove page from the per-cpu list, caller must protect the list */
 static struct page *__rmqueue_pcplist(struct zone *zone, int migratetype,
 			unsigned int alloc_flags,
 			struct per_cpu_pages *pcp,
@@ -4118,7 +4118,7 @@ failed:
 //
 //#ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
 //
-//static int __init fail_page_alloc_debugfs(void) /*  */
+//static int __init fail_page_alloc_debugfs(void)
 //{
 //	umode_t mode = S_IFREG | 0600;
 //	struct dentry *dir;
@@ -4135,7 +4135,7 @@ failed:
 //	return 0;
 //}
 //
-//late_initcall(fail_page_alloc_debugfs); /*  */
+//late_initcall(fail_page_alloc_debugfs);
 //
 //#endif /* CONFIG_FAULT_INJECTION_DEBUG_FS */
 
@@ -4232,7 +4232,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages)
 {
-	long min = mark;    /*  */
+	long min = mark;
 	int o;
 	/**
 	 * @brief 是否是强制分配
@@ -4421,7 +4421,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
  *  水位是否合理
  */
 bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
-		      int highest_zoneidx, unsigned int alloc_flags)    /*  */
+		      int highest_zoneidx, unsigned int alloc_flags)
 {
     /**
      *  检查
@@ -4452,7 +4452,7 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 	 * @brief zone 空闲的 pages 个数
 	 *
 	 */
-	free_pages = zone_page_state(z, NR_FREE_PAGES); /*  */
+	free_pages = zone_page_state(z, NR_FREE_PAGES);
 
 	/*
 	 * Fast check for order-0 only. If this fails then the reserves
@@ -4559,7 +4559,7 @@ static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
 	return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <= node_reclaim_distance;
 }
 #else	/* CONFIG_NUMA */
-/*  */
+
 #endif	/* CONFIG_NUMA */
 
 /*
@@ -4571,7 +4571,7 @@ static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
  * fragmentation between the Normal and DMA32 zones.
  */
 static inline unsigned int
-alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)   /*  */
+alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
 {
 	unsigned int alloc_flags;
 
@@ -4608,14 +4608,14 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)   /*  */
 /**
  *  判定 连续内存管理
  */
-static inline unsigned int current_alloc_flags(gfp_t gfp_mask,  /*  */
+static inline unsigned int current_alloc_flags(gfp_t gfp_mask,
 					unsigned int alloc_flags)
 {
 #ifdef CONFIG_CMA   /* 连续内存管理 */
 	unsigned int pflags = current->flags;   /* 获取进程 flags */
 
 	if (!(pflags & PF_MEMALLOC_NOCMA) && gfp_migratetype(gfp_mask) == MIGRATE_MOVABLE)
-		alloc_flags |= ALLOC_CMA;   /*  */
+		alloc_flags |= ALLOC_CMA;
 
 #endif
 	return alloc_flags;
@@ -4627,7 +4627,7 @@ static inline unsigned int current_alloc_flags(gfp_t gfp_mask,  /*  */
  *
  * 尝试从 freelist 中直接分配
  */
-static struct page *    /*  */
+static struct page *
 get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 						const struct alloc_context *ac)
 {
@@ -4814,7 +4814,7 @@ try_this_zone:
          *  回收成功
          */
 		if (page) { /* 分配成功 */
-			prep_new_page(page, order, gfp_mask, alloc_flags);  /*  */
+			prep_new_page(page, order, gfp_mask, alloc_flags);
 
 			/*
 			 * If this is a high-order atomic allocation then check
@@ -5268,7 +5268,7 @@ EXPORT_SYMBOL_GPL(fs_reclaim_release);
  *  Perform direct synchronous page reclaim
  *  执行同步的内存回收
  */
-static unsigned long    /*  */
+static unsigned long
 __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 					const struct alloc_context *ac)
 {
@@ -5967,7 +5967,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
     /**
      *  根据 __GFP_THISNODE 决定使用fallback还是nofallback
      */
-	ac->zonelist = node_zonelist(preferred_nid, gfp_mask); /*  */
+	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
 	ac->nodemask = nodemask;    /* bitmap */
 
     /**
@@ -5999,7 +5999,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	fs_reclaim_acquire(gfp_mask);
 	fs_reclaim_release(gfp_mask);
 
-    /*  */
+
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);    /* 抢占相关 */
 
     /* 根据CONFIG_分支，恒不成立 */
@@ -6009,7 +6009,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
     /**
      *  连续内存管理 标志位
      */
-	*alloc_flags = current_alloc_flags(gfp_mask, *alloc_flags); /*  */
+	*alloc_flags = current_alloc_flags(gfp_mask, *alloc_flags);
 
 	/* Dirty zone balancing only done in the fast path
 	    */
@@ -7052,7 +7052,7 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
  *
  *
  */
-static void build_zonelists(pg_data_t *pgdat)   /*  */
+static void build_zonelists(pg_data_t *pgdat)
 {
 	static int node_order[MAX_NUMNODES];
 	int node, load, nr_nodes = 0;
@@ -7303,14 +7303,14 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
      *
      */
 	if (system_state == SYSTEM_BOOTING) {
-		build_all_zonelists_init();     /*  */
+		build_all_zonelists_init();
 
     /**
      * @brief 非启动阶段
      *
      */
 	} else {
-		__build_all_zonelists(pgdat);   /*  */
+		__build_all_zonelists(pgdat);
 		/* cpuset refresh routine should be here */
 	}
 	/**
@@ -7693,7 +7693,7 @@ static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 }
 
 /* a companion to pageset_set_high() */
-static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)   /*  */
+static void pageset_set_batch(struct per_cpu_pageset *p, unsigned long batch)
 {
 	pageset_update(&p->pcp, 6 * batch/* =0 */, max(1UL, 1 * batch));
 }
@@ -7710,10 +7710,10 @@ static void pageset_init(struct per_cpu_pageset *p) /* 初始化链表 */
 		INIT_LIST_HEAD(&pcp->lists[migratetype]);   /* 初始化链表 */
 }
 
-static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch/* =0 */)   /*  */
+static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch/* =0 */)
 {
 	pageset_init(p);    /* 初始化链表 */
-	pageset_set_batch(p, batch/* =0 */);    /*  */
+	pageset_set_batch(p, batch/* =0 */);
 }
 
 /*
@@ -7739,7 +7739,7 @@ static void pageset_set_high_and_batch(struct zone *zone,
 		pageset_set_batch(pcp, zone_batchsize(zone));
 }
 
-static void __meminit zone_pageset_init(struct zone *zone, int cpu) /*  */
+static void __meminit zone_pageset_init(struct zone *zone, int cpu)
 {
 	struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
 
@@ -7747,7 +7747,7 @@ static void __meminit zone_pageset_init(struct zone *zone, int cpu) /*  */
 	pageset_set_high_and_batch(zone, pcp);
 }
 
-void __meminit setup_zone_pageset(struct zone *zone)    /*  */
+void __meminit setup_zone_pageset(struct zone *zone)
 {
 	int cpu;
 	zone->pageset = alloc_percpu(struct per_cpu_pageset);
@@ -7766,7 +7766,7 @@ void __init setup_per_cpu_pageset(void) /* 为每个 CPU 分配 */
 	int __maybe_unused cpu;
 
 	for_each_populated_zone(zone){
-		setup_zone_pageset(zone);}  /*  */
+		setup_zone_pageset(zone);}
 
 #ifdef CONFIG_NUMA
 	/*
@@ -8237,7 +8237,7 @@ static void __ref setup_usemap(struct pglist_data *pgdat,
 	}
 }
 #else
-/*  */
+
 #endif /* CONFIG_SPARSEMEM */
 
 #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
@@ -8318,7 +8318,7 @@ static void pgdat_init_split_queue(struct pglist_data *pgdat)
 	ds_queue->split_queue_len = 0;
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_COMPACTION
@@ -8327,7 +8327,7 @@ static void pgdat_init_kcompactd(struct pglist_data *pgdat)
 	init_waitqueue_head(&pgdat->kcompactd_wait);
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -8658,7 +8658,7 @@ static inline void pgdat_set_deferred_range(pg_data_t *pgdat)
 	pgdat->first_deferred_pfn = ULONG_MAX;
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -9633,7 +9633,7 @@ void __init page_alloc_init(void)
  * calculate_totalreserve_pages - called when sysctl_lowmem_reserve_ratio
  *	or min_free_kbytes changes.
  */
-static void calculate_totalreserve_pages(void)  /*  */
+static void calculate_totalreserve_pages(void)
 {
 	struct pglist_data *pgdat;
 	unsigned long reserve_pages = 0;
@@ -9850,7 +9850,7 @@ void setup_per_zone_wmarks(void)    /* 每个 zone 的 watermark */
  *
  *
  */
-int __meminit init_per_zone_wmark_min(void) /*  */
+int __meminit init_per_zone_wmark_min(void)
 {
 	unsigned long lowmem_kbytes;
 	int new_min_free_kbytes;
@@ -9890,7 +9890,7 @@ int __meminit init_per_zone_wmark_min(void) /*  */
     /**
      *  设置初始水位
      */
-	setup_per_zone_wmarks();    /*  */
+	setup_per_zone_wmarks();
 
     /**
      *

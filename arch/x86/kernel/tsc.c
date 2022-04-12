@@ -1376,7 +1376,7 @@ unreg:
 }
 
 
-static int __init init_tsc_clocksource(void)    /*  */
+static int __init init_tsc_clocksource(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
 		return 0;
@@ -1470,7 +1470,7 @@ static void __init tsc_enable_sched_clock(void)
 	static_branch_enable(&__use_tsc);
 }
 
-/*  *//* Time Stamp Counter */
+/* Time Stamp Counter */
 void __init tsc_early_init(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC))
@@ -1485,7 +1485,7 @@ void __init tsc_early_init(void)
 	tsc_enable_sched_clock();
 }
 
-void __init tsc_init(void)  /*  */
+void __init tsc_init(void)
 {
 	/*
 	 * native_calibrate_cpu_early can only calibrate using methods that are

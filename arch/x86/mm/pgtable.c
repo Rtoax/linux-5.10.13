@@ -127,7 +127,7 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 }
 
 /**
- *  
+ *
  */
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
@@ -211,7 +211,7 @@ void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd)
 	flush_tlb_mm(mm);
 }
 #else  /* !CONFIG_X86_PAE */
-/*  */
+
 #endif	/* CONFIG_X86_PAE */
 
 static void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
@@ -301,7 +301,7 @@ static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
 }
 
 /**
- *  
+ *
  */
 static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 {
@@ -316,7 +316,7 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 	pud = pud_offset(p4d, 0);
 
     /**
-     *  
+     *
      */
 	for (i = 0; i < PREALLOCATED_PMDS; i++, pud++) {
 		pmd_t *pmd = pmds[i];
@@ -325,7 +325,7 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]), sizeof(pmd_t) * PTRS_PER_PMD);
 
         /**
-         *  
+         *
          */
 		pud_populate(mm, pud, pmd);
 	}
@@ -358,7 +358,7 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
 
 }
 #else
-/*  */
+
 #endif
 /*
  * Xen paravirt assumes pgd table should be in one page. 64 bit kernel also
@@ -398,7 +398,7 @@ void __init pgtable_cache_init(void)    /* 一级页表内存分配 */
 /**
  *  分配全局页表
  */
-static inline pgd_t *_pgd_alloc(void)   /*  */
+static inline pgd_t *_pgd_alloc(void)
 {
 	/*
 	 * If no SHARED_KERNEL_PMD, PAE kernel is running as a Xen domain.
@@ -449,7 +449,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
     /**
      *  分配 全局页表，这将占用 2个 page
      */
-	pgd = _pgd_alloc(); /*  */
+	pgd = _pgd_alloc();
 
 	if (pgd == NULL)
 		goto out;
@@ -466,7 +466,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 		goto out_free_pmds;
 
     /**
-     *  
+     *
      */
 	if (paravirt_pgd_alloc(mm) != 0)
 		goto out_free_user_pmds;
@@ -479,12 +479,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)  /* 全局页表 */
 	spin_lock(&pgd_lock);
 
     /**
-     *  
+     *
      */
 	pgd_ctor(mm, pgd);
 
     /**
-     *  
+     *
      */
 	pgd_prepopulate_pmd(mm, pgd, pmds);
 	pgd_prepopulate_user_pmd(mm, pgd, u_pmds);
@@ -518,7 +518,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
  * to also make the pte writeable at the same time the dirty bit is
  * set. In that case we do actually need to write the PTE.
  */
-int ptep_set_access_flags(struct vm_area_struct *vma,   /*  */
+int ptep_set_access_flags(struct vm_area_struct *vma,
 			  unsigned long address, pte_t *ptep,
 			  pte_t entry, int dirty)
 {
@@ -683,7 +683,7 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 		BUG();
 		return;
 	}
-    
+
     //set page table entry with the call of the `set_pte_vaddr`
 	set_pte_vaddr(address, pte);
 

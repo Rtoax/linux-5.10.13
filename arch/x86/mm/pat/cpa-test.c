@@ -114,7 +114,7 @@ static struct page *pages[NPAGES];
 static unsigned long addrs[NPAGES];
 
 /* Change the global bit on random pages in the direct mapping */
-static int pageattr_test(void)  /*  */
+static int pageattr_test(void)
 {
 	struct split_state sa, sb, sc;
 	unsigned long *bm;
@@ -262,10 +262,10 @@ static int do_pageattr_test(void *__unused)
 	return 0;
 }
 
-static int start_pageattr_test(void)    /*  */
+static int start_pageattr_test(void)
 {
 	struct task_struct *p;
-    /*  */
+
 	p = kthread_create(do_pageattr_test, NULL, "pageattr-test");
 	if (!IS_ERR(p))
 		wake_up_process(p);

@@ -27,7 +27,7 @@
 #include <asm/fpu/api.h>
 #include <asm-generic/pgtable_uffd.h>
 
-extern pgd_t early_top_pgt[PTRS_PER_PGD];   /*  */
+extern pgd_t early_top_pgt[PTRS_PER_PGD];
 bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
 
 void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm);
@@ -40,7 +40,7 @@ void ptdump_walk_user_pgd_level_checkwx(void);
 #define debug_checkwx()		ptdump_walk_pgd_level_checkwx()
 #define debug_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
 #else
-/*  */
+
 #endif
 
 /*
@@ -50,9 +50,9 @@ void ptdump_walk_user_pgd_level_checkwx(void);
  * malloc() 后，实际上先返回系统零页。
  *  1. 当 读 数据时，将使用这个 系统零页；
  *  2. 当 发生写 时，才进入缺页中断，进行写时复制；
- *  
+ *
  */
-extern unsigned long __visible empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]/*  *//* 系统零页(zero page) */;
+extern unsigned long __visible empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]/* 系统零页(zero page) */;
 
 #define ZERO_PAGE(vaddr) ((void)(vaddr),virt_to_page(empty_zero_page))
 
@@ -68,9 +68,9 @@ extern pmdval_t early_pmd_flags;
 #else  /* !CONFIG_PARAVIRT_XXL */
 
 /**
- *  
+ *
  */
-#define set_pte(ptep, pte)		native_set_pte(ptep, pte)   /*  */
+#define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 
 #define set_pte_atomic(ptep, pte)					\
 	native_set_pte_atomic(ptep, pte)
@@ -120,7 +120,7 @@ extern pmdval_t early_pmd_flags;
 #define __pmd(x)	native_make_pmd(x)
 #endif
 
-#define pte_val(x)	native_pte_val(x)   /*  */
+#define pte_val(x)	native_pte_val(x)
 #define __pte(x)	native_make_pte(x)
 
 #define arch_end_context_switch(prev)	do {} while(0)
@@ -221,7 +221,7 @@ static inline u64 protnone_mask(u64 val);
 /**
  *  PTE  转化为 PFN
  */
-static inline unsigned long pte_pfn(pte_t pte)  /*  */
+static inline unsigned long pte_pfn(pte_t pte)
 {
 	phys_addr_t pfn = pte_val(pte); /* pte.pte */
 	pfn ^= protnone_mask(pfn);
@@ -260,7 +260,7 @@ static inline int p4d_large(p4d_t p4d)  /* 四级页表项就是大页 */
 }
 
 /**
- *  
+ *
  */
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))   /* 页 */
 
@@ -302,7 +302,7 @@ static inline int pud_devmap(pud_t pud)
 	return !!(pud_val(pud) & _PAGE_DEVMAP);
 }
 #else
-/*  */
+
 #endif
 
 static inline int pgd_devmap(pgd_t pgd)
@@ -320,7 +320,7 @@ static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 }
 
 /**
- *  
+ *
  */
 static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 {
@@ -357,7 +357,7 @@ static inline pte_t pte_mkold(pte_t pte)
 }
 
 /**
- *  
+ *
  */
 static inline pte_t pte_wrprotect(pte_t pte)
 {
@@ -369,12 +369,12 @@ static inline pte_t pte_mkexec(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_NX);
 }
 
-static inline pte_t pte_mkdirty(pte_t pte)  /*  */
+static inline pte_t pte_mkdirty(pte_t pte)
 {
 	return pte_set_flags(pte, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
 }
 
-static inline pte_t pte_mkyoung(pte_t pte)  /*  */
+static inline pte_t pte_mkyoung(pte_t pte)
 {
 	return pte_set_flags(pte, _PAGE_ACCESSED);
 }
@@ -625,14 +625,14 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 
     pfn ^= protnone_mask(pgprot_val(pgprot));   /* xor */
 	pfn &= PTE_PFN_MASK/* 0xffff ffff ffff f000 */;
-    
+
 	return __pte(pfn | check_pgprot(pgprot));
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 {
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));   
+	pfn ^= protnone_mask(pgprot_val(pgprot));
 	pfn &= PHYSICAL_PMD_PAGE_MASK;
 	return __pmd(pfn | check_pgprot(pgprot));
 }
@@ -736,7 +736,7 @@ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION  /*  */
+#ifdef CONFIG_PAGE_TABLE_ISOLATION
 pgd_t __pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd);
 
 /*
@@ -751,13 +751,13 @@ static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
 	return __pti_set_user_pgtbl(pgdp, pgd);
 }
 #else   /* CONFIG_PAGE_TABLE_ISOLATION */
-/*  */
+
 #endif  /* CONFIG_PAGE_TABLE_ISOLATION */
 
 #endif	/* __ASSEMBLY__ */
 
 
-#ifdef CONFIG_X86_32    /*  */
+#ifdef CONFIG_X86_32
 # include <asm/pgtable_32.h>
 #else
 # include <asm/pgtable_64.h>
@@ -779,7 +779,7 @@ static inline int pte_same(pte_t a, pte_t b)
 {
 	return a.pte == b.pte;
 }
-///*  */
+//
 static inline int pte_present(pte_t a)   /* 该页面是否在内存中 */
 {
 	return pte_flags(a) & (_PAGE_PRESENT | _PAGE_PROTNONE);
@@ -826,7 +826,7 @@ static inline int pmd_present(pmd_t pmd)
 static inline int pte_protnone(pte_t pte)
 {
 	return (pte_flags(pte) & (_PAGE_PROTNONE | _PAGE_PRESENT))
-		== _PAGE_PROTNONE;  /*  */
+		== _PAGE_PROTNONE;
 }
 
 static inline int pmd_protnone(pmd_t pmd)
@@ -863,7 +863,7 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)   /* PMD 的虚拟地址 *
  * (Currently stuck as a macro because of indirect forward reference
  * to linux/mm.h:page_to_nid())
  *
- *  
+ *
  */
 #define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot)) /* TODO */
 
@@ -878,13 +878,13 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 }
 
 #if CONFIG_PGTABLE_LEVELS > 2
-/*  */
+
 static inline int pud_none(pud_t pud)
 {
 	return (native_pud_val(pud) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;
 }
 
-static inline int pud_present(pud_t pud)    /*  */
+static inline int pud_present(pud_t pud)
 {
 	return pud_flags(pud) & _PAGE_PRESENT;
 }
@@ -912,7 +912,7 @@ static inline int pud_bad(pud_t pud)
 	return (pud_flags(pud) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
 }
 #else
-/*  */
+
 #endif	/* CONFIG_PGTABLE_LEVELS > 2 */
 
 #if CONFIG_PGTABLE_LEVELS > 3
@@ -948,7 +948,7 @@ static inline int p4d_bad(p4d_t p4d)
 }
 #endif  /* CONFIG_PGTABLE_LEVELS > 3 */
 /**
- *  
+ *
  */
 static inline unsigned long p4d_index(unsigned long address)
 {
@@ -998,7 +998,7 @@ static inline int pgd_bad(pgd_t pgd)
 	return (pgd_flags(pgd) & ~ignore_flags) != _KERNPG_TABLE;
 }
 
-static inline int pgd_none(pgd_t pgd)   /*  */
+static inline int pgd_none(pgd_t pgd)
 {
 	if (!pgtable_l5_enabled())
 		return 0;
@@ -1014,7 +1014,7 @@ static inline int pgd_none(pgd_t pgd)   /*  */
 
 #endif	/* __ASSEMBLY__ */
 
-#define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET/*0xffff 8880 0000 0000*/)/*  */
+#define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET/*0xffff 8880 0000 0000*/)
 #define KERNEL_PGD_PTRS		(PTRS_PER_PGD/* 512 */ - KERNEL_PGD_BOUNDARY)
 
 #ifndef __ASSEMBLY__
@@ -1060,11 +1060,11 @@ static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
 /**
  *  把 新生成的 PTE 的内容写回到 原来映射 的页表(ptep)中,
  *
- *  例如在页面迁移过程: 
+ *  例如在页面迁移过程:
  *      完成 PTE 迁移，这样用户进程 地址空间就可以 通过原来的 PTE 访问新页面
  */
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-			      pte_t *ptep, pte_t pte)   /*  */
+			      pte_t *ptep, pte_t pte)
 {
 	set_pte(ptep, pte);
 }
@@ -1255,7 +1255,7 @@ static inline void *ptr_clear_bit(void *ptr, int bit)
 	return (void *)__ptr;
 }
 
-static inline pgd_t *kernel_to_user_pgdp(pgd_t *pgdp)/*  */
+static inline pgd_t *kernel_to_user_pgdp(pgd_t *pgdp)
 {
 	return ptr_set_bit(pgdp, PTI_PGTABLE_SWITCH_BIT/* 12=4K */);
 }
@@ -1404,7 +1404,7 @@ static inline pmd_t pmd_swp_clear_uffd_wp(pmd_t pmd)
 #ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
 extern u32 init_pkru_value;
 #else
-/*  */
+
 #endif
 
 static inline bool __pkru_allows_read(u32 pkru, u16 pkey)

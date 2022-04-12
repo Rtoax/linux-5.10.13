@@ -46,7 +46,7 @@ int is_valid_bugaddr(unsigned long addr);
 void generic_bug_clear_once(void);
 
 #else	/* !CONFIG_GENERIC_BUG */
-/*  */
+
 #endif	/* CONFIG_GENERIC_BUG */
 
 /*

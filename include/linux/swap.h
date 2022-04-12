@@ -117,7 +117,7 @@ union swap_header { /* 交换区的第一个页槽，用来永久存放有关交
 		__u32		version;        /* 交换算法的版本 */
 		__u32		last_page;      /* 可有效使用的最后一个页槽 */
 		__u32		nr_badpages;    /* 有缺陷的页槽的个数 */
-		unsigned char	sws_uuid[16];   /*  */
+		unsigned char	sws_uuid[16];
 		unsigned char	sws_volume[16];
 		__u32		padding[117];   /* 填充字节 */
 		__u32		badpages[1];    /* 一共637个数字，用来指定有缺陷页槽的位置 */
@@ -128,7 +128,7 @@ union swap_header { /* 交换区的第一个页槽，用来永久存放有关交
  * current->reclaim_state points to one of these when a task is running
  * memory reclaim
  */
-struct reclaim_state {  /*  */
+struct reclaim_state {
 	unsigned long reclaimed_slab;
 };
 
@@ -244,7 +244,7 @@ struct swap_info_struct {   /* 交换区描述符 */
 	struct plist_node list;		/* entry in swap_active_head */
 	signed char	type;		/* strange name for an index */
 	unsigned int	max;		/* extent of the swap_map */
-	unsigned char *swap_map;	/* vmalloc'ed array of usage counts 
+	unsigned char *swap_map;	/* vmalloc'ed array of usage counts
 	                                指向计数器数组的指针，交换区的每个页槽对应一个数组元素 */
 	struct swap_cluster_info *cluster_info; /* cluster info. Only for SSD */
 	struct swap_cluster_list free_clusters; /* free clusters list */
@@ -260,7 +260,7 @@ struct swap_info_struct {   /* 交换区描述符 */
 	struct block_device *bdev;	/* swap device or bdev of swap file 存放交换区的块设备描述符 */
 	struct file *swap_file;		/* seldom referenced 指向交换区的普通文件或设备文件的文件对象 */
 	unsigned int old_block_size;	/* seldom referenced */
-#ifdef CONFIG_FRONTSWAP /*  */
+#ifdef CONFIG_FRONTSWAP
 	unsigned long *frontswap_map;	/* frontswap in-use, one bit per page */
 	atomic_t frontswap_pages;	/* frontswap pages in-use counter */
 #endif
@@ -495,13 +495,13 @@ static inline void put_swap_device(struct swap_info_struct *si)
 }
 
 #else /* CONFIG_SWAP */
-/*  */
+
 #endif /* CONFIG_SWAP */
 
 #ifdef CONFIG_THP_SWAP
 extern int split_swap_cluster(swp_entry_t entry);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMCG
@@ -518,13 +518,13 @@ static inline int mem_cgroup_swappiness(struct mem_cgroup *memcg)
 	return memcg->swappiness;
 }
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_SWAP) && defined(CONFIG_MEMCG) && defined(CONFIG_BLK_CGROUP)
 extern void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMCG_SWAP
@@ -534,7 +534,7 @@ extern void mem_cgroup_uncharge_swap(swp_entry_t entry, unsigned int nr_pages);
 extern long mem_cgroup_get_nr_swap_pages(struct mem_cgroup *memcg);
 extern bool mem_cgroup_swap_full(struct page *page);
 #else
-/*  */
+
 #endif
 
 #endif /* __KERNEL__*/

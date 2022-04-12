@@ -516,7 +516,7 @@ struct rb_node *rb_next(const struct rb_node *node)
 	 * Go up the tree; any time the ancestor is a right-hand child of its
 	 * parent, keep going up. First time it's a left-hand child of its
 	 * parent, said parent is our 'next' node.
-	 */ /*  */
+	 */
 	while ((parent = rb_parent(node)) && node == parent->rb_right)
 		node = parent;
 

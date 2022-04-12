@@ -32,7 +32,7 @@
 	rcu_dereference_protected(p, lockdep_is_held(&bpf_event_mutex))
 
 #ifdef CONFIG_MODULES
-struct bpf_trace_module {   /*  */
+struct bpf_trace_module {
 	struct module *module;
 	struct list_head list;
 };

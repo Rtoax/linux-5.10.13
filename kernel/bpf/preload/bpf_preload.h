@@ -5,7 +5,7 @@
 #include <linux/usermode_driver.h>
 #include "iterators/bpf_preload_common.h"
 
-struct bpf_preload_ops {    /*  */
+struct bpf_preload_ops {
         struct umd_info info;   /* 用户态驱动 */
 	int (*preload)(struct bpf_preload_info *);
 	int (*finish)(void);

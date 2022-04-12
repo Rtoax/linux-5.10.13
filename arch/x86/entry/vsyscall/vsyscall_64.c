@@ -182,7 +182,7 @@ bool emulate_vsyscall(unsigned long error_code,
 	 * vsyscalls, NULL means "don't write anything" not "write it at
 	 * address 0".
 	 *
-	 * 这三个 系统调用应该很快 
+	 * 这三个 系统调用应该很快
 	 */
 	switch (vsyscall_nr) {  /* vsyscall number */
 	case 0:
@@ -304,7 +304,7 @@ static const char *gate_vma_name(struct vm_area_struct *vma)
 {
 	return "[vsyscall]";
 }
-static const struct vm_operations_struct gate_vma_ops = {/*  */
+static const struct vm_operations_struct gate_vma_ops = {
 	.name = gate_vma_name,
 };
 static struct vm_area_struct __ro_after_init gate_vma  /* vsyscall */= {
@@ -323,7 +323,7 @@ struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
 #endif
 	if (vsyscall_mode == NONE)
 		return NULL;
-	return &gate_vma;/*  */
+	return &gate_vma;
 }
 
 int in_gate_area(struct mm_struct *mm, unsigned long addr)
@@ -376,7 +376,7 @@ void __init set_vsyscall_pgtable_user_bits(pgd_t *root)
 }
 
 //maps memory space for [vsyscalls]
-//provides fast access to the certain system calls 
+//provides fast access to the certain system calls
 void __init map_vsyscall(void)
 {
 	extern char __vsyscall_page;
@@ -400,9 +400,9 @@ void __init map_vsyscall(void)
 	if (vsyscall_mode == XONLY)
 		gate_vma.vm_flags = VM_EXEC;
 
-    //check that virtual address of the `VSYSCALL_PAGE` (which is first index in the `fixed_addresses`) 
+    //check that virtual address of the `VSYSCALL_PAGE` (which is first index in the `fixed_addresses`)
     //is not greater than `VSYSCALL_ADDR` which is `-10UL << 20` or `ffffffffff600000` with the `BUILD_BUG_ON` macro
-    //        
+    //
     //       +-----------+-----------------+---------------+------------------+
     //       |           |                 |               |                  |
     //       |kernel text|      kernel     |               |    vsyscalls     |
@@ -411,7 +411,7 @@ void __init map_vsyscall(void)
     //       |           |                 |               |                  |
     //       +-----------+-----------------+---------------+------------------+
     //__START_KERNEL_map   __START_KERNEL    MODULES_VADDR            0xffffffffffffffff
-    //宏检查  `vsyscall` 内存页的虚拟地址是否等于变量 `VSYSCALL_ADDR` 
+    //宏检查  `vsyscall` 内存页的虚拟地址是否等于变量 `VSYSCALL_ADDR`
 	BUILD_BUG_ON((unsigned long)__fix_to_virt(VSYSCALL_PAGE) !=
 		     (unsigned long)VSYSCALL_ADDR);
 

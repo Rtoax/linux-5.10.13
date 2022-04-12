@@ -52,8 +52,8 @@
  * The new code replaces the old recursive symlink resolution with
  * an iterative one (in case of non-nested symlink chains).  It does
  * this with calls to <fs>_follow_link().
- * As a side effect, dir_namei(), _namei() and follow_link() are now 
- * replaced with a single function lookup_dentry() that can handle all 
+ * As a side effect, dir_namei(), _namei() and follow_link() are now
+ * replaced with a single function lookup_dentry() that can handle all
  * the special cases of the former code.
  *
  * With the new dcache, the pathname is stored at each inode, at least as
@@ -127,13 +127,13 @@
 /**
  *  从用户空间复制文件路径到内核空间
  */
-struct filename *getname_flags(const char __user *str_filename, int flags, int *empty)   /*  */
+struct filename *getname_flags(const char __user *str_filename, int flags, int *empty)
 {
 	struct filename *result;
 	char *kname;
 	int len;
 
-	result = audit_reusename(str_filename); 
+	result = audit_reusename(str_filename);
 	if (result)
 		return result;
 
@@ -180,12 +180,12 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 		}
 
         /**
-         *  
+         *
          */
 		result->name = kname;
 
         /**
-         *  
+         *
          */
 		len = strncpy_from_user(kname, str_filename, PATH_MAX);
 		if (unlikely(len < 0)) {
@@ -261,7 +261,7 @@ struct filename *getname_kernel(const char * filename)
 }
 
 /**
- *  
+ *
  */
 void putname(struct filename *name)
 {
@@ -278,7 +278,7 @@ void putname(struct filename *name)
 }
 
 /**
- *  
+ *
  */
 static int check_acl(struct inode *inode, int mask)
 {
@@ -499,7 +499,7 @@ EXPORT_SYMBOL(inode_permission);
  *
  * Given a path increment the reference count to the dentry and the vfsmount.
  */
-void path_get(const struct path *path)  /*  */
+void path_get(const struct path *path)
 {
 	mntget(path->mnt);
 	dget(path->dentry);
@@ -522,14 +522,14 @@ EXPORT_SYMBOL(path_put);
 #define EMBEDDED_LEVELS 2
 
 /**
- *  
+ *
  */
 struct nameidata {
 	struct path	path;
 	struct qstr	last;
 	struct path	root;
     /**
-     *  
+     *
      */
 	struct inode	*inode; /* path.dentry.d_inode */
 	unsigned int	flags;
@@ -538,7 +538,7 @@ struct nameidata {
 	unsigned	depth;
 	int		total_link_count;
     /**
-     *  
+     *
      */
 	struct saved {
 		struct path link;
@@ -547,7 +547,7 @@ struct nameidata {
 		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];
     /**
-     *  
+     *
      */
 	struct filename	*name;
 	struct nameidata *saved;
@@ -2367,7 +2367,7 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 			s = ERR_PTR(err);
 	}
     /**
-     *  
+     *
      */
 	while (!(err = link_path_walk(s, nd)) &&
 	       (s = lookup_last(nd)) != NULL)
@@ -2388,23 +2388,23 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		nd->path.dentry = NULL;
 	}
     /**
-     *  
+     *
      */
 	terminate_walk(nd);
 	return err;
 }
 /**
- *  
+ *
  */
 int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		    struct path *path, struct path *root)
 {
 	int retval;
     /**
-     *  
+     *
      */
 	struct nameidata nd;
-    
+
 	if (IS_ERR(name))
 		return PTR_ERR(name);
 	if (unlikely(root)) {
@@ -2412,7 +2412,7 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		flags |= LOOKUP_ROOT;
 	}
     /**
-     *  
+     *
      */
 	set_nameidata(&nd, dfd, name);
 
@@ -2696,13 +2696,13 @@ int path_pts(struct path *path)
 }
 #endif
 /**
- *  
+ *
  */
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)
 {
     /**
-     *  
+     *
      */
 	return filename_lookup(dfd, getname_flags(name, flags, empty),
 			       flags, path, NULL);
@@ -3266,11 +3266,11 @@ finish_lookup:
 
 /*
  * Handle the last step of open()
- *//*  */
+ */
 static int do_open(struct nameidata *nd, struct file *rtoax_file, const struct open_flags *op)
 {
     /**
-     *  
+     *
      */
 	int open_flag = op->open_flag;
 	bool do_truncate;
@@ -3311,14 +3311,14 @@ static int do_open(struct nameidata *nd, struct file *rtoax_file, const struct o
 	}
 
     /**
-     *  
+     *
      */
 	error = may_open(&nd->path, acc_mode, open_flag);
 	if (!error && !(rtoax_file->f_mode & FMODE_OPENED))
         /**
-         *  
+         *
          */
-		error = vfs_open(&nd->path, rtoax_file);  /*  */
+		error = vfs_open(&nd->path, rtoax_file);
 	if (!error)
 		error = ima_file_check(rtoax_file, op->acc_mode);
 	if (!error && do_truncate)
@@ -3416,7 +3416,7 @@ static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 }
 
 /**
- *  
+ *
  */
 static struct file *path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
 {
@@ -3429,26 +3429,26 @@ static struct file *path_openat(struct nameidata *nd, const struct open_flags *o
 		return rtoax_file;
 
     /**
-     *  
+     *
      */
 	if (unlikely(rtoax_file->f_flags & __O_TMPFILE)) {
 		error = do_tmpfile(nd, flags, op, rtoax_file);
 
     /**
-     *  
+     *
      */
 	} else if (unlikely(rtoax_file->f_flags & O_PATH)) {
 		error = do_o_path(nd, flags, rtoax_file);
 
     /**
-     *  
+     *
      */
 	} else {
 		const char *s = path_init(nd, flags);
 		while (!(error = link_path_walk(s, nd)) && (s = open_last_lookups(nd, rtoax_file, op)) != NULL);
 
         /**
-         *  
+         *
          */
 		if (!error)
 			error = do_open(nd, rtoax_file, op);  /* vfs_open() */
@@ -3487,15 +3487,15 @@ struct file *do_filp_open(int dfd, struct filename *pathname, const struct open_
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 
     /**
-     *  
+     *
      */
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);
 	if (unlikely(filp == ERR_PTR(-ESTALE)))
 		filp = path_openat(&nd, op, flags | LOOKUP_REVAL);
-    
+
 	restore_nameidata();
-    
+
 	return filp;
 }
 

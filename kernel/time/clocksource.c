@@ -441,7 +441,7 @@ static bool clocksource_is_watchdog(struct clocksource *cs)
 }
 
 #else /* CONFIG_CLOCKSOURCE_WATCHDOG */
-/*  */
+
 #endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
 
 static bool clocksource_is_suspend(struct clocksource *cs)
@@ -689,7 +689,7 @@ static inline void clocksource_update_max_deferment(struct clocksource *cs)
 						&cs->max_cycles);
 }
 
-#ifndef CONFIG_ARCH_USES_GETTIMEOFFSET  /*  */
+#ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
 
 static struct clocksource *clocksource_find_best(bool oneshot, bool skipcur)
 {
@@ -784,7 +784,7 @@ static void clocksource_select_fallback(void)
 }
 
 #else /* !CONFIG_ARCH_USES_GETTIMEOFFSET */
-/*  */
+
 #endif
 
 /*
@@ -1188,7 +1188,7 @@ static int __init init_clocksource_sysfs(void)
 	return error;
 }
 ///sys/devices/system/clocksource
-device_initcall(init_clocksource_sysfs);    /*  */
+device_initcall(init_clocksource_sysfs);
 #endif /* CONFIG_SYSFS */
 
 /**

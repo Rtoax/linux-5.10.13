@@ -97,8 +97,8 @@ enum sock_type {
  */
 enum sock_shutdown_cmd {
 	SHUT_RD,    /* shutdown() */
-	SHUT_WR,    /*  */
-	SHUT_RDWR,  /*  */
+	SHUT_WR,
+	SHUT_RDWR,
 };
 
 struct socket_wq {
@@ -161,12 +161,12 @@ struct proto_ops {  /* struct socket 操作 */
 	struct module	*owner;
 
     /**
-     *  
+     *
      */
 	int		(*release)   (struct socket *sock);
 
     /**
-     *  
+     *
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_bind()
      *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_bind()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
@@ -176,7 +176,7 @@ struct proto_ops {  /* struct socket 操作 */
 				      struct sockaddr *myaddr,
 				      int sockaddr_len);
     /**
-     *  
+     *
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
      *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
@@ -188,7 +188,7 @@ struct proto_ops {  /* struct socket 操作 */
 	int		(*socketpair)(struct socket *sock1,
 				      struct socket *sock2);
     /**
-     *  
+     *
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
      *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> sock_no_accept()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
@@ -200,7 +200,7 @@ struct proto_ops {  /* struct socket 操作 */
 				      struct sockaddr *addr,
 				      int peer);
     /**
-     *  
+     *
      */
 	__poll_t	(*poll)	     (struct file *file, struct socket *sock,
 				      struct poll_table_struct *wait);
@@ -213,7 +213,7 @@ struct proto_ops {  /* struct socket 操作 */
 	int		(*gettstamp) (struct socket *sock, void __user *userstamp,
 				      bool timeval, bool time32);
     /**
-     *  
+     *
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
      *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
@@ -269,13 +269,13 @@ struct proto_ops {  /* struct socket 操作 */
  *  全局变量
  *  ----------
  *  inet_family_ops
- *  
+ *
  */
-struct net_proto_family {   /*  */
+struct net_proto_family {
 	int		family;
     /**
-     *  
-     *  AF_INET->inet_family_ops->inet_create() 
+     *
+     *  AF_INET->inet_family_ops->inet_create()
      *  AF_UNIX->unix_family_ops->unix_create()
      *  AF_PACKET->packet_family_ops->packet_create()
      */

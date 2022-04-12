@@ -12,7 +12,7 @@
 #define __noinitretpoline
 #endif
 
-/* These macros are used to mark some functions or 
+/* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
  * as `initialization' functions. The kernel can take this
  * as hint that the function is used only during the initialization
@@ -20,7 +20,7 @@
  *
  * Usage:
  * For functions:
- * 
+ *
  * You should add __init immediately before the function name, like:
  *
  * static void __init initme(int x, int y)
@@ -47,11 +47,11 @@
 
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
-#define __init		__section(".init.text")     /*  */__cold  __latent_entropy __noinitretpoline
+#define __init		__section(".init.text")     __cold  __latent_entropy __noinitretpoline
 #define __initdata	__section(".init.data")     /* 使用 `__initdata` 定义，这意味着这些内存都会在内核初始化结束后释放掉 */
-#define __initconst	__section(".init.rodata")   /*  */
-#define __exitdata	__section(".exit.data")     /*  */
-#define __exit_call	__used __section(".exitcall.exit")  /*  */
+#define __initconst	__section(".init.rodata")
+#define __exitdata	__section(".exit.data")
+#define __exit_call	__used __section(".exitcall.exit")
 
 /*
  * modpost check for section mismatches during the kernel build.
@@ -96,7 +96,7 @@
             //这意味着具有此选项集的Linux内核可以从不同的地址引导
             //从技术上讲，这是通过将解压缩器编译为与位置无关的代码来完成的
 #define __HEAD		.section	".head.text","ax"   /* HEAD_TEXT */
-#define __INIT		.section	".init.text","ax"   /*  */
+#define __INIT		.section	".init.text","ax"
 #define __FINIT		.previous
 
 #define __INITDATA	.section	".init.data","aw",%progbits /* vmlinux.lds.S  */
@@ -127,13 +127,13 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 	return offset_to_ptr(entry);
 }
 #else
-/*  */
+
 #endif
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
 /* Used for contructor calls. */
-typedef void (*ctor_fn_t)(void);    /*  */
+typedef void (*ctor_fn_t)(void);
 
 struct file_system_type;
 
@@ -161,7 +161,7 @@ extern void (*late_time_init)(void);
 extern bool initcall_debug;
 
 #endif
-  
+
 #ifndef MODULE
 
 #ifndef __ASSEMBLY__
@@ -169,8 +169,8 @@ extern bool initcall_debug;
 /*
  * initcalls are now grouped by functionality into separate
  * subsections. Ordering inside the subsections is determined
- * by link order. 
- * For backwards compatibility, initcall() puts the call in 
+ * by link order.
+ * For backwards compatibility, initcall() puts the call in
  * the device init subsection.
  *
  * The `id' arg to __define_initcall() is needed so that multiple initcalls
@@ -207,7 +207,7 @@ extern bool initcall_debug;
  * Early initcalls run before initializing SMP.
  *
  * Only for built-in code, not modules.
- */                 
+ */
 #define early_initcall(fn) /* fn */ __define_initcall(fn, early)/* (fn,early) */
 
 /*
@@ -215,7 +215,7 @@ extern bool initcall_debug;
  * initializes variables that couldn't be statically initialized.
  *
  * This only exists for built-in code, not for modules.
- * Keep main.c:initcall_level_names[] in sync. 
+ * Keep main.c:initcall_level_names[] in sync.
  *//* 数字越小，优先级越高 */
 #define pure_initcall(fn)		__define_initcall(fn, 0)
 
@@ -243,12 +243,12 @@ extern bool initcall_debug;
 #define console_initcall(fn)	___define_initcall(fn,, .con_initcall)
 
 /**
- * 
+ *
  */
 struct obs_kernel_param {
 	const char *str;    //内核参数的名称
 	int (*setup_func)(char *);  //根据不同的参数，选取对应的处理函数
-	int early;  //决定参数是否为 early 的标记位 
+	int early;  //决定参数是否为 early 的标记位
 };
 
 /*
@@ -271,9 +271,9 @@ struct obs_kernel_param {
 /*
  * NOTE: fn is as per module_param, not __setup!
  * Emits warning if fn returns non-zero.
- * 
+ *
  * @str 命令行参数的名称
- * @fn 如果给定的参数通过，函数将被调用 
+ * @fn 如果给定的参数通过，函数将被调用
  */
 #define early_param(str, fn)						\
 	__setup_param(str, fn, fn, 1)

@@ -55,7 +55,7 @@ int acpi_strict;
 int acpi_disable_cmcff;
 
 /* ACPI SCI override configuration */
-u8 __initdata acpi_sci_flags ;/*  */
+u8 __initdata acpi_sci_flags ;
 u32 __initdata acpi_sci_override_gsi  = INVALID_ACPI_IRQ;
 int __initdata acpi_skip_timer_override ;
 int __initdata acpi_use_timer_override ;
@@ -735,7 +735,7 @@ static void __init acpi_set_irq_model_ioapic(void)
 
 static int acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
 {
-#ifdef CONFIG_ACPI_NUMA /*  */
+#ifdef CONFIG_ACPI_NUMA
 	int nid;
 
 	nid = acpi_get_node(handle);
@@ -863,7 +863,7 @@ static int __init acpi_parse_sbf(struct acpi_table_header *table)
 #ifdef CONFIG_HPET_TIMER
 #include <asm/hpet.h>
 
-static struct resource __initdata *hpet_res ;/*  */
+static struct resource __initdata *hpet_res ;
 
 static int __init acpi_parse_hpet(struct acpi_table_header *table)
 {
@@ -949,7 +949,7 @@ static __init int hpet_insert_resource(void)
 late_initcall(hpet_insert_resource);
 
 #else
-/*  */
+
 #endif
 
 static int __init acpi_parse_fadt(struct acpi_table_header *table)
@@ -1690,7 +1690,7 @@ early_param("pci", parse_pci);
 
 /**
  *  检查内置的 `MPS` 又称 [多重处理器规范]
- *  
+ *
  * 传递给内核的命令行选项中有 `acpi=off`、`acpi=noirq` 或者 `pci=noacpi` 参数,
  * 就会输出警告信息, see parse_acpi()
  *

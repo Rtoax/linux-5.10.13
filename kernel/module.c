@@ -349,7 +349,7 @@ void __noreturn __module_put_and_exit(struct module *mod, long code)
 EXPORT_SYMBOL(__module_put_and_exit);
 
 /* Find a module section: 0 means not found. */
-static unsigned int find_sec(const struct load_info *info, const char *name)    /*  */
+static unsigned int find_sec(const struct load_info *info, const char *name)
 {
 	unsigned int i;
     /**
@@ -382,7 +382,7 @@ static void *section_objs(const struct load_info *info,
 	 * @brief
 	 *
 	 */
-	unsigned int sec = find_sec(info, name);    /*  */
+	unsigned int sec = find_sec(info, name);
 
 	/* Section 0 has sh_addr 0 and sh_size 0. */
 	*num = info->sechdrs[sec].sh_size / object_size;
@@ -1388,7 +1388,7 @@ static inline int same_magic(const char *amagic, const char *bmagic,
 	return strcmp(amagic, bmagic) == 0;
 }
 #else
-/*  */
+
 #endif /* CONFIG_MODVERSIONS */
 
 static char *get_modinfo(const struct load_info *info, const char *tag);
@@ -2111,7 +2111,7 @@ static int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
 }
 
 #else /* !CONFIG_STRICT_MODULE_RWX */
-/*  */
+
 #endif /*  CONFIG_STRICT_MODULE_RWX */
 
 #ifdef CONFIG_LIVEPATCH

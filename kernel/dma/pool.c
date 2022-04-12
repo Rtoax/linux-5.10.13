@@ -13,7 +13,7 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 
-static struct gen_pool __ro_after_init *atomic_pool_dma ;/*  */
+static struct gen_pool __ro_after_init *atomic_pool_dma ;
 static unsigned long pool_size_dma;
 static struct gen_pool __ro_after_init *atomic_pool_dma32 ;
 static unsigned long pool_size_dma32;
@@ -222,7 +222,7 @@ static int __init dma_atomic_pool_init(void)
 	dma_atomic_pool_debugfs_init();
 	return ret;
 }
-postcore_initcall(dma_atomic_pool_init);    /*  */
+postcore_initcall(dma_atomic_pool_init);
 
 static inline struct gen_pool *dma_guess_pool(struct gen_pool *prev, gfp_t gfp)
 {

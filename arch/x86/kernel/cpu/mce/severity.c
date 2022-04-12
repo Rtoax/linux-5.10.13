@@ -488,5 +488,5 @@ static int __init severities_debugfs_init(void)
 			    &severities_coverage_fops);
 	return 0;
 }
-late_initcall(severities_debugfs_init); /*  */
+late_initcall(severities_debugfs_init);
 #endif /* CONFIG_DEBUG_FS */

@@ -39,7 +39,7 @@ static int proc_mq_dointvec_minmax(struct ctl_table *table, int write,
 					lenp, ppos);
 }
 #else
-/*  */
+
 #endif
 
 static int msg_max_limit_min = MIN_MSGMAX;
@@ -48,7 +48,7 @@ static int msg_max_limit_max = HARD_MSGMAX;
 static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
 static int msg_maxsize_limit_max = HARD_MSGSIZEMAX;
 
-static struct ctl_table mq_sysctls[] = {    /*  */
+static struct ctl_table mq_sysctls[] = {
 	{
 		.procname	= "queues_max", /* /proc/sys/fs/mqueue/queues_max */
 		.data		= &init_ipc_ns.mq_queues_max,

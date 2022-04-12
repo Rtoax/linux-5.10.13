@@ -310,7 +310,7 @@ out:
 	return ret;
 }
 #else
-/*  */
+
 #endif /* CONFIG_HUGETLB_PAGE */
 
 /*
@@ -414,7 +414,7 @@ static inline long userfaultfd_get_blocking_state(unsigned int flags)
  *
  * 发生 缺页，进行处理
  */
-vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason) /*  */
+vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 {
 	struct mm_struct *mm = vmf->vma->vm_mm;
 	struct userfaultfd_ctx *ctx;
@@ -691,7 +691,7 @@ static void userfaultfd_event_complete(struct userfaultfd_ctx *ctx,
 	__remove_wait_queue(&ctx->event_wqh, &ewq->wq);
 }
 
-int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)  /*  */
+int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
 {
 	struct userfaultfd_ctx *ctx = NULL, *octx;
 	struct userfaultfd_fork_ctx *fctx;

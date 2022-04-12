@@ -15,7 +15,7 @@ enum kcore_type {
 	KCORE_REMAP,
 };
 
-struct kcore_list { /*  */
+struct kcore_list {
 	struct list_head list;
 	unsigned long addr;
 	unsigned long vaddr;

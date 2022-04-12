@@ -1301,7 +1301,7 @@ static void __exit zswap_debugfs_exit(void)
 	debugfs_remove_recursive(zswap_debugfs_root);
 }
 #else
-/*  */
+
 #endif
 
 /*********************************
@@ -1367,7 +1367,7 @@ cache_fail:
 	return -ENOMEM;
 }
 /* must be late so crypto has time to come up */
-late_initcall(init_zswap);  /*  */
+late_initcall(init_zswap);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Seth Jennings <sjennings@variantweb.net>");

@@ -186,7 +186,7 @@ static void __munlock_isolation_failed(struct page *page)
  *
  *
  */
-unsigned int munlock_vma_page(struct page *page)    /*  */
+unsigned int munlock_vma_page(struct page *page)
 {
 	int nr_pages;
 	pg_data_t *pgdat = page_pgdat(page);

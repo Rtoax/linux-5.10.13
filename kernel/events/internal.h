@@ -11,7 +11,7 @@
 #define RING_BUFFER_WRITABLE		0x01
 
 /**
- *  
+ *
  */
 struct perf_buffer {
 	refcount_t			refcount;
@@ -66,7 +66,7 @@ struct perf_buffer {
 	void				*aux_priv;
 
     /**
-     *  
+     *
      */
 	struct perf_event_mmap_page	*user_page;
 	void				*data_pages[];
@@ -249,7 +249,7 @@ static inline bool arch_perf_have_user_stack_dump(void)
 
 #define perf_user_stack_pointer(regs) user_stack_pointer(regs)
 #else
-/*  */
+
 #endif /* CONFIG_HAVE_PERF_USER_STACK_DUMP */
 
 #endif /* _KERNEL_EVENTS_INTERNAL_H */

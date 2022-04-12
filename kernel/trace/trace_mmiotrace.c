@@ -290,7 +290,7 @@ __init static int init_mmio_trace(void)
 {
 	return register_tracer(&mmio_tracer);
 }
-device_initcall(init_mmio_trace);   /*  */
+device_initcall(init_mmio_trace);
 
 static void __trace_mmiotrace_rw(struct trace_array *tr,
 				struct trace_array_cpu *data,

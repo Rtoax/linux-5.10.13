@@ -62,7 +62,7 @@ static int __init init_dax_wait_table(void)
 		init_waitqueue_head(wait_table + i);
 	return 0;
 }
-fs_initcall(init_dax_wait_table);   /*  */
+fs_initcall(init_dax_wait_table);
 
 /*
  * DAX pagecache entries use XArray value entries so they can't be mistaken
@@ -1653,7 +1653,7 @@ vm_fault_t dax_iomap_fault(struct vm_fault *vmf, enum page_entry_size pe_size,
 		    pfn_t *pfnp, int *iomap_errp, const struct iomap_ops *ops)
 {
 	switch (pe_size) {
-	case PE_SIZE_PTE:   /*  */
+	case PE_SIZE_PTE:
 		return dax_iomap_pte_fault(vmf, pfnp, iomap_errp, ops);
 	case PE_SIZE_PMD:
 		return dax_iomap_pmd_fault(vmf, pfnp, ops);

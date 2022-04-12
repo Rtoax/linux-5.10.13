@@ -34,7 +34,7 @@
  * Note also that the obfuscation itself is invisible to userspace and if needed
  * it can be changed to an alternate scheme.
  */
-static unsigned long __read_mostly cookies[KCMP_TYPES][2] ;/*  */
+static unsigned long __read_mostly cookies[KCMP_TYPES][2] ;
 
 static long kptr_obfuscate(long v, int type)
 {
@@ -253,4 +253,4 @@ static __init int kcmp_cookies_init(void)
 
 	return 0;
 }
-arch_initcall(kcmp_cookies_init); /*  */
+arch_initcall(kcmp_cookies_init);

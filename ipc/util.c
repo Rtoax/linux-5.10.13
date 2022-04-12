@@ -86,12 +86,12 @@ struct ipc_proc_iface {
  * chain: since msgmni scales to lowmem this callback routine will be
  * called upon successful memory add / remove to recompute msmgni.
  */
-static int __init ipc_init(void)    /*  */
+static int __init ipc_init(void)
 {
 	proc_mkdir("sysvipc", NULL);    // /proc/sysvipc
-	sem_init(); /*  */
-	msg_init(); /*  */
-	shm_init(); /*  */
+	sem_init();
+	msg_init();
+	shm_init();
 
 	return 0;
 }
@@ -617,7 +617,7 @@ struct kern_ipc_perm *ipc_obtain_object_check(struct ipc_ids *ids, int id)
 {
 	/**
 	 * @brief 从idr中获取
-	 * 
+	 *
 	 */
 	struct kern_ipc_perm *out = ipc_obtain_object_idr(ids, id);
 

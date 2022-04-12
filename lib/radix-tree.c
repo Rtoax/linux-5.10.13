@@ -758,14 +758,14 @@ void *__radix_tree_lookup(const struct radix_tree_root *root,
 		return NULL;
 
     /**
-     *  
+     *
      */
 	while (radix_tree_is_internal_node(node)) {
 		unsigned offset;
 
 		parent = entry_to_node(node);
         /**
-         *  
+         *
          */
 		offset = radix_tree_descend(parent, &node, index);
 		slot = parent->slots + offset;
@@ -1579,7 +1579,7 @@ radix_tree_node_ctor(void *arg)
 	INIT_LIST_HEAD(&node->private_list);
 }
 
-static int radix_tree_cpu_dead(unsigned int cpu)    /*  */
+static int radix_tree_cpu_dead(unsigned int cpu)
 {
 	struct radix_tree_preload *rtp;
 	struct radix_tree_node *node;
@@ -1603,7 +1603,7 @@ void __init radix_tree_init(void)   /*  radix tree*/
 	BUILD_BUG_ON(ROOT_IS_IDR & ~GFP_ZONEMASK);
 	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
 
-    /*  */
+
     //sudo cat /proc/slabinfo | grep radix
     //radix_tree_node    47895  48216    584   56    8 : tunables    0    0    0 : slabdata    861    861      0
 	radix_tree_node_cachep = kmem_cache_create("radix_tree_node",

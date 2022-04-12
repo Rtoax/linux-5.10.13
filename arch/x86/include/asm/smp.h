@@ -68,7 +68,7 @@ static inline void stop_other_cpus(void)
 }
 
 /**
- *  
+ *
  */
 static inline void smp_prepare_boot_cpu(void)
 {
@@ -109,7 +109,7 @@ static inline void play_dead(void)
 }
 
 /**
- *  
+ *
  */
 static inline void smp_send_reschedule(int cpu)
 {
@@ -168,7 +168,7 @@ __visible void smp_call_function_single_interrupt(struct pt_regs *r);
  * so this is correct in the x86 case.
  */
 #define raw_smp_processor_id()  this_cpu_read(cpu_number)
-#define __smp_processor_id() __this_cpu_read(cpu_number)    /*  */
+#define __smp_processor_id() __this_cpu_read(cpu_number)
 
 #ifdef CONFIG_X86_32
 extern int safe_smp_processor_id(void);

@@ -1755,7 +1755,7 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	if ((alloc_gfp & __GFP_DIRECT_RECLAIM) && oo_order(oo) > oo_order(s->min))
 		alloc_gfp = (alloc_gfp | __GFP_NOMEMALLOC) & ~(__GFP_RECLAIM|__GFP_NOFAIL);
 
-	page = alloc_slab_page(s, alloc_gfp, node, oo); /*  */
+	page = alloc_slab_page(s, alloc_gfp, node, oo);
 	if (unlikely(!page)) {
 		oo = s->min;
 		alloc_gfp = flags;
@@ -1778,7 +1778,7 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	kasan_poison_slab(page);
 
-	start = page_address(page); /*  */
+	start = page_address(page);
 
 	setup_page_debug(s, page, start);
 
@@ -2145,7 +2145,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 
 /*
  * Remove the cpu slab
- */ /*  */
+ */
 static void deactivate_slab(struct kmem_cache *s, struct page *page,
 				void *freelist, struct kmem_cache_cpu *c)
 {
@@ -2421,7 +2421,7 @@ static void put_cpu_partial(struct kmem_cache *s, struct page *page, int drain)
 #endif	/* CONFIG_SLUB_CPU_PARTIAL */
 }
 
-static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)/*  */
+static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
 	stat(s, CPUSLAB_FLUSH);
 	deactivate_slab(s, c->page, c->freelist, c);
@@ -2439,7 +2439,7 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
 
 	if (c->page)
-		flush_slab(s, c);   /*  */
+		flush_slab(s, c);
 
 	unfreeze_partials(s, c);
 }
@@ -2738,7 +2738,7 @@ new_slab:   /* 新的 slab */
 		goto redo;
 	}
 
-	freelist = new_slab_objects(s, gfpflags, node, &c); /*  */
+	freelist = new_slab_objects(s, gfpflags, node, &c);
 
 	if (unlikely(!freelist)) {
 		slab_out_of_memory(s, gfpflags, node);
@@ -2893,7 +2893,7 @@ redo:
 	return object;
 }
 
-        /*  */
+
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
@@ -4341,7 +4341,7 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 	 * up.  Even if it weren't true, IRQs are not up so we couldn't fire
 	 * IPIs around.
 	 */
-	__flush_cpu_slab(s, smp_processor_id());    /*  */
+	__flush_cpu_slab(s, smp_processor_id());
 	for_each_kmem_cache_node(s, node, n) {
 		struct page *p;
 
@@ -4366,7 +4366,7 @@ void __init kmem_cache_init(void)/* slub 初始化， 较于 slab 更加精简 *
 		slub_max_order = 0;
 
 	kmem_cache_node = &boot_kmem_cache_node; /* 启动缓存 */
-	kmem_cache = &boot_kmem_cache;  /*  */
+	kmem_cache = &boot_kmem_cache;
 
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 		sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0, 0);
@@ -4385,8 +4385,8 @@ void __init kmem_cache_init(void)/* slub 初始化， 较于 slab 更加精简 *
 	kmem_cache_node = bootstrap(&boot_kmem_cache_node);
 
 	/* Now we can use the kmem_cache to allocate kmalloc slabs */
-	setup_kmalloc_cache_index_table();  /*  */
-	create_kmalloc_caches(0);   /*  */
+	setup_kmalloc_cache_index_table();
+	create_kmalloc_caches(0);
 
 	/* Setup random freelists for each cache */
 	init_freelist_randomization();
@@ -4400,7 +4400,7 @@ void __init kmem_cache_init(void)/* slub 初始化， 较于 slab 更加精简 *
 		nr_cpu_ids, nr_node_ids);
 }
 
-void __init kmem_cache_init_late(void)  /*  */
+void __init kmem_cache_init_late(void)
 {
 }
 
@@ -4430,11 +4430,11 @@ __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 	return s;
 }
 
-int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)   /*  */
+int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 {
 	int err;
 
-	err = kmem_cache_open(s, flags);    /*  */
+	err = kmem_cache_open(s, flags);
 	if (err)
 		return err;
 
@@ -4442,7 +4442,7 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)   /*  */
 	if (slab_state <= UP)
 		return 0;
 
-	err = sysfs_slab_add(s);    /*  */
+	err = sysfs_slab_add(s);
 	if (err)
 		__kmem_cache_release(s);
 

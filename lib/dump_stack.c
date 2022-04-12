@@ -71,12 +71,12 @@ void show_regs_print_info(const char *log_lvl)
 }
 
 /**
- *  
+ *
  */
 static void __dump_stack(void)  /*栈 dump 转储  */
 {
-	dump_stack_print_info(KERN_DEFAULT);    /*  */
-	show_stack(NULL, NULL, KERN_DEFAULT);   /*  */
+	dump_stack_print_info(KERN_DEFAULT);
+	show_stack(NULL, NULL, KERN_DEFAULT);
 }
 
 /**
@@ -121,9 +121,9 @@ retry:
 	}
 
     /**
-     *  
+     *
      */
-	__dump_stack(); /*  */
+	__dump_stack();
 
 	if (!was_locked)
 		atomic_set(&dump_lock, -1);
@@ -131,6 +131,6 @@ retry:
 	local_irq_restore(flags);
 }
 #else
-/*  */
+
 #endif
 EXPORT_SYMBOL(dump_stack);

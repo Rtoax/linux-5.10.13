@@ -46,7 +46,7 @@ struct hpet_base {
 /*
  * HPET address is set in acpi/boot.c, when an ACPI entry exists
  */
-unsigned long				hpet_address;   /*  */
+unsigned long				hpet_address;
 u8					hpet_blockid; /* OS timer block num */
 bool					hpet_msi_disable;
 
@@ -55,7 +55,7 @@ static DEFINE_PER_CPU(struct hpet_channel *, cpu_hpet_channel);
 static struct irq_domain		*hpet_domain;
 #endif
 
-static void __iomem			*hpet_virt_address; /*  */
+static void __iomem			*hpet_virt_address;
 
 static struct hpet_base			hpet_base;
 
@@ -238,7 +238,7 @@ static void __init hpet_select_device_channel(void)
 }
 
 #else
-/*  */
+
 #endif
 
 /* Common HPET functions */
@@ -634,7 +634,7 @@ static void __init hpet_select_clockevents(void)
 }
 
 #else
-/*  */
+
 #endif
 
 /*
@@ -803,7 +803,7 @@ static bool __init hpet_counting(void)
 /**
  * hpet_enable - Try to setup the HPET timer. Returns 1 on success.
  */
-int __init hpet_enable(void)    /*  */
+int __init hpet_enable(void)
 {
 	u32 hpet_period, cfg, id, irq;
 	unsigned int i, channels;
@@ -895,7 +895,7 @@ int __init hpet_enable(void)    /*  */
 	 */
 	if (!hpet_counting())
 		goto out_nohpet;
-    /*  */
+
 	clocksource_register_hz(&clocksource_hpet, (u32)hpet_freq);
 
 	if (id & HPET_ID_LEGSUP) {
@@ -967,7 +967,7 @@ err_cpuhp:
 	cpuhp_remove_state(CPUHP_AP_X86_HPET_ONLINE);
 	return ret;
 }
-fs_initcall(hpet_late_init);  /* HPET(High Precision Event Timer)俗称高精度定时器 */  
+fs_initcall(hpet_late_init);  /* HPET(High Precision Event Timer)俗称高精度定时器 */
 
 void hpet_disable(void)
 {
@@ -991,7 +991,7 @@ void hpet_disable(void)
 		hpet_writel(hpet_base.boot_cfg, HPET_CFG);
 }
 
-#ifdef CONFIG_HPET_EMULATE_RTC  /*  */
+#ifdef CONFIG_HPET_EMULATE_RTC
 
 /*
  * HPET in LegacyReplacement mode eats up the RTC interrupt line. When HPET

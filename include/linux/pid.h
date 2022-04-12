@@ -6,12 +6,12 @@
 #include <linux/wait.h>
 #include <linux/refcount.h>
 
-enum pid_type   /*  */
+enum pid_type
 {
 	PIDTYPE_PID,    /* process ID */
 	PIDTYPE_TGID,   /* thread ID */
-	PIDTYPE_PGID,   /*  */
-	PIDTYPE_SID,    /*  */
+	PIDTYPE_PGID,
+	PIDTYPE_SID,
 	PIDTYPE_MAX,
 };
 
@@ -51,13 +51,13 @@ enum pid_type   /*  */
  * find_pid_ns() using the int nr and struct pid_namespace *ns.
  */
 
-struct upid {   /*  */
-	int nr;     /*  */
+struct upid {
+	int nr;
 	/**
 	 * @brief Namespace
 	 *
 	 */
-	struct pid_namespace *ns;   /*  */
+	struct pid_namespace *ns;
 };
 
 /**
@@ -169,7 +169,7 @@ extern void disable_pid_allocation(struct pid_namespace *ns);
  * 	is expected to be non-NULL. If @pid is NULL, caller should handle
  * 	the resulting NULL pid-ns.
  */
-static inline struct pid_namespace *ns_of_pid(struct pid *_pid)  /*  */
+static inline struct pid_namespace *ns_of_pid(struct pid *_pid)
 {
 	/**
 	 * @brief

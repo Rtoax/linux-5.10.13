@@ -92,7 +92,7 @@ static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
 	return 0;
 }
 #else
-/*  */
+
 #endif
 
 static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
@@ -179,7 +179,7 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
 	return 0;
 }
 #else
-/*  */
+
 #endif
 
 static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,

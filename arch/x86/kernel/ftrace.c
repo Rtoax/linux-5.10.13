@@ -46,7 +46,7 @@ int ftrace_arch_code_modify_prepare(void)   /*准备工作  */
 	 * ftrace has it set to "read/write".
 	 */
 	mutex_lock(&text_mutex);    /* 锁定 */
-	ftrace_poke_late = 1;       /*  */
+	ftrace_poke_late = 1;
 	return 0;
 }
 
@@ -59,7 +59,7 @@ int ftrace_arch_code_modify_post_process(void)
 	 * that they do, here.
 	 */
 	text_poke_finish();
-	ftrace_poke_late = 0;       /*  */
+	ftrace_poke_late = 0;
 	mutex_unlock(&text_mutex);  /* 解锁 */
 	return 0;
 }
@@ -69,7 +69,7 @@ int ftrace_arch_code_modify_post_process(void)
  *
  * @return const char*
  */
-static const char *ftrace_nop_replace(void) /*  */
+static const char *ftrace_nop_replace(void)
 {
     /**
      *  nop 指令
@@ -242,7 +242,7 @@ int ftrace_update_ftrace_func(ftrace_func_t func)   /*  更新函数*/
 	return 0;
 }
 
-void ftrace_replace_code(int enable)    /*  */
+void ftrace_replace_code(int enable)
 {
 	struct ftrace_rec_iter *iter;
 	struct dyn_ftrace *rec;
@@ -253,13 +253,13 @@ void ftrace_replace_code(int enable)    /*  */
 	for_ftrace_rec_iter(iter) {
 		rec = ftrace_rec_iter_record(iter); /* 获取 动态 ftrace 结构 */
 
-        /*  */
+
 		switch (ftrace_test_record(rec, enable)) {
 		case FTRACE_UPDATE_IGNORE:    /* 忽略 */
 		default:
 			continue;
 
-		case FTRACE_UPDATE_MAKE_CALL:     /*  */
+		case FTRACE_UPDATE_MAKE_CALL:
 			old = ftrace_nop_replace(); /* 0x0f,0x1f,0x44,0x00,0 */
 			break;
 
@@ -295,7 +295,7 @@ void ftrace_replace_code(int enable)    /*  */
 			new = ftrace_nop_replace();
 			break;
 		}
-        /*  */
+
 		text_poke_queue((void *)rec->ip, new, MCOUNT_INSN_SIZE, NULL);
 		ftrace_update_record(rec, enable);
 	}
@@ -327,7 +327,7 @@ static inline void tramp_free(void *tramp)
 	module_memfree(tramp);
 }
 #else
-/*  */
+
 #endif
 
 /* Defined as markers to the end of the ftrace default trampolines */
@@ -630,7 +630,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	 *
 	 *  new 为生成的新的指令
 	 */
-	_new = ftrace_call_replace(ip, (unsigned long)func);     /*  */
+	_new = ftrace_call_replace(ip, (unsigned long)func);
     /**
      *  下面时如何进行替换的？
      */

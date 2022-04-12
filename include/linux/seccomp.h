@@ -42,9 +42,9 @@ struct seccomp {    /* 限制系统调用 */
 	int mode;
 	atomic_t filter_count;
     /**
-     *  
+     *
      */
-	struct seccomp_filter *filter;  /*  */
+	struct seccomp_filter *filter;
 };
 
 #ifdef CONFIG_HAVE_ARCH_SECCOMP_FILTER
@@ -68,14 +68,14 @@ static inline int seccomp_mode(struct seccomp *s)
 }
 
 #else /* CONFIG_SECCOMP */
-/*  */
+
 #endif /* CONFIG_SECCOMP */
 
 #ifdef CONFIG_SECCOMP_FILTER
 extern void seccomp_filter_release(struct task_struct *tsk);
 extern void get_seccomp_filter(struct task_struct *tsk);
 #else  /* CONFIG_SECCOMP_FILTER */
-/*  */
+
 
 #endif /* CONFIG_SECCOMP_FILTER */
 
@@ -85,7 +85,7 @@ extern long seccomp_get_filter(struct task_struct *task,
 extern long seccomp_get_metadata(struct task_struct *task,
 				 unsigned long filter_off, void __user *data);
 #else
-/*  */
+
 
 #endif /* CONFIG_SECCOMP_FILTER && CONFIG_CHECKPOINT_RESTORE */
 #endif /* _LINUX_SECCOMP_H */

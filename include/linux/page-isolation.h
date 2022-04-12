@@ -16,7 +16,7 @@ static inline bool is_migrate_isolate(int migratetype)/* 迁移隔离 */
 	return migratetype == MIGRATE_ISOLATE;
 }
 #else
-/*  */
+
 #endif
 
 #define MEMORY_OFFLINE	0x1

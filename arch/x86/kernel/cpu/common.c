@@ -273,7 +273,7 @@ early_param("noinvpcid", x86_noinvpcid_setup);
 //}
 //
 ///* Probe for the CPUID instruction */
-//int have_cpuid_p(void)/*  */
+//int have_cpuid_p(void)
 //{
 //	return flag_is_changeable_p(X86_EFLAGS_ID);/* EFLAGS 寄存器 */
 //}
@@ -888,7 +888,7 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 	this_cpu = &default_cpu;
 }
 
-void cpu_detect(struct cpuinfo_x86 *c)/*  */
+void cpu_detect(struct cpuinfo_x86 *c)
 {
 	/* Get vendor name */
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
@@ -1057,7 +1057,7 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 	c->x86_cache_bits = c->x86_phys_bits;
 }
 
-static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)/*  */
+static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 {
 #ifdef CONFIG_X86_32
 	int i;
@@ -1355,7 +1355,7 @@ static void __init cpu_parse_early_param(void)
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 {
 #ifdef CONFIG_X86_64
-	c->x86_clflush_size = 64;/*  */
+	c->x86_clflush_size = 64;
 	c->x86_phys_bits = 36;/* 物理 */
 	c->x86_virt_bits = 48;/* 虚拟 */
 #else
@@ -1373,10 +1373,10 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 
 	/* cyrix could have cpuid enabled via c_identify()*/
 	if (have_cpuid_p()) {   /* 检测 EFLAGS 寄存器 */
-		cpu_detect(c);      /*  */
-		get_cpu_vendor(c);  /*  */
-		get_cpu_cap(c);     /*  */
-		get_cpu_address_sizes(c);   /*  */
+		cpu_detect(c);
+		get_cpu_vendor(c);
+		get_cpu_cap(c);
+		get_cpu_address_sizes(c);
 		setup_force_cpu_cap(X86_FEATURE_CPUID);
 		cpu_parse_early_param();
 
@@ -1431,7 +1431,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 
 void __init early_cpu_init(void)/* CPU 初始化 -> 收集 `CPU` 和其供应商的信息 */
 {
-	const struct cpu_dev *const *cdev;/*  */
+	const struct cpu_dev *const *cdev;
 	int count = 0;
 
 #ifdef CONFIG_PROCESSOR_SELECT
@@ -1459,7 +1459,7 @@ void __init early_cpu_init(void)/* CPU 初始化 -> 收集 `CPU` 和其供应商
 		}
 #endif
 	}
-	early_identify_cpu(&boot_cpu_data);/*  */
+	early_identify_cpu(&boot_cpu_data);
 }
 
 static void detect_null_seg_behavior(struct cpuinfo_x86 *c)
@@ -1926,7 +1926,7 @@ static void dbg_restore_debug_regs(void)
 		arch_kgdb_ops.correct_hw_break();   //== kgdb_correct_hw_break()
 }
 #else /* ! CONFIG_KGDB */
-/*  */
+
 #endif /* ! CONFIG_KGDB */
 
 static void wait_for_master_cpu(int cpu)
@@ -1982,7 +1982,7 @@ static inline void tss_setup_ist(struct tss_struct *tss)
 }
 
 #else /* CONFIG_X86_64 */
-/*  */
+
 #endif /* !CONFIG_X86_64 */
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
@@ -2034,7 +2034,7 @@ void cpu_init_exception_handling(void)
  * and IDT. We reload them nevertheless, this function acts as a
  * 'CPU state barrier', nothing should get across.
  */
-void cpu_init(void) /*  */
+void cpu_init(void)
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	struct task_struct *cur = current;
@@ -2042,7 +2042,7 @@ void cpu_init(void) /*  */
 
 	wait_for_master_cpu(cpu);   /* 等待主 CPU */
 
-	ucode_cpu_init(cpu);    /*  */
+	ucode_cpu_init(cpu);
 
 #ifdef CONFIG_NUMA
 	if (this_cpu_read(numa_node) == 0 &&
@@ -2050,7 +2050,7 @@ void cpu_init(void) /*  */
 		set_numa_node(early_cpu_to_node(cpu));
 #endif
 
-    /*  */
+
 	setup_getcpu(cpu);
 
 	pr_debug("Initializing CPU#%d\n", cpu);

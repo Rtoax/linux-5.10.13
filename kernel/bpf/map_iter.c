@@ -192,4 +192,4 @@ static int __init bpf_map_iter_init(void)
 	return bpf_iter_reg_target(&bpf_map_elem_reg_info);
 }
 
-late_initcall(bpf_map_iter_init);   /*  */
+late_initcall(bpf_map_iter_init);

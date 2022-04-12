@@ -55,7 +55,7 @@
  *   inode_hash_lock
  */
 
-static unsigned int __read_mostly i_hash_mask ;/*  */
+static unsigned int __read_mostly i_hash_mask ;
 static unsigned int __read_mostly i_hash_shift ;
 static struct hlist_head __read_mostly *inode_hashtable ;   /* inode 的哈希表 */
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
@@ -893,7 +893,7 @@ static DEFINE_PER_CPU(unsigned int, last_ino);
 static unsigned int __percpu last_ino;//+++
 
 /**
- *  获取一个 inode 
+ *  获取一个 inode
  */
 unsigned int get_next_ino(void)
 {
@@ -931,7 +931,7 @@ EXPORT_SYMBOL(get_next_ino);
  */
 struct inode *new_inode_pseudo(struct super_block *sb)  /* 获取一个inode 结构 */
 {
-	struct inode *inode = alloc_inode(sb);  /*  */
+	struct inode *inode = alloc_inode(sb);
 
 	if (inode) {
 		spin_lock(&inode->i_lock);
@@ -1967,7 +1967,7 @@ EXPORT_SYMBOL(file_remove_privs);
  *	file systems who need to allocate space in order to update an inode.
  */
 
-int file_update_time(struct file *file) /*  */
+int file_update_time(struct file *file)
 {
 	struct inode *inode = file_inode(file);
 	struct timespec64 now;
@@ -2069,7 +2069,7 @@ __setup("ihash_entries=", set_ihash_entries);
 /*
  * Initialize the waitqueues and inode hash table.
  */
-void __init inode_init_early(void)  /*  */
+void __init inode_init_early(void)
 {
 	/* If hashes are distributed across NUMA nodes, defer
 	 * hash allocation until vmalloc space is available.

@@ -15,7 +15,7 @@ static inline int  __paravirt_pgd_alloc(struct mm_struct *mm) { return 0; }
 #ifdef CONFIG_PARAVIRT_XXL
 #include <asm/paravirt.h>
 #else
-/*  */
+
 #endif
 
 /*
@@ -66,12 +66,12 @@ static inline void pmd_populate_kernel_safe(struct mm_struct *mm,
 }
 
 /**
- *  
+ *
  */
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 				struct page *pte)
 {
-	unsigned long pfn = page_to_pfn(pte);   /*  */
+	unsigned long pfn = page_to_pfn(pte);
 
 	paravirt_alloc_pte(mm, pfn);
 	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT/* 12 */) | _PAGE_TABLE));
@@ -142,7 +142,7 @@ static inline void pgd_populate_safe(struct mm_struct *mm, pgd_t *pgd, p4d_t *p4
 	set_pgd_safe(pgd, __pgd(_PAGE_TABLE | __pa(p4d)));
 }
 
-static inline p4d_t *p4d_alloc_one(struct mm_struct *mm, unsigned long addr)    /*  */
+static inline p4d_t *p4d_alloc_one(struct mm_struct *mm, unsigned long addr)
 {
 	gfp_t gfp = GFP_KERNEL_ACCOUNT;
 

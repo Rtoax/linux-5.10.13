@@ -38,7 +38,7 @@
 #include <asm/ioctls.h>
 
 /* configurable via /proc/sys/fs/inotify/ */
-static int __read_mostly inotify_max_queued_events ;/*  */
+static int __read_mostly inotify_max_queued_events ;
 
 struct kmem_cache __read_mostly *inotify_inode_mark_cachep ;
 
@@ -552,7 +552,7 @@ out:
 
 	return ret;
 }
-            /*  */
+
 static int inotify_new_watch(struct fsnotify_group *group,
 			     struct inode *inode,
 			     u32 arg)

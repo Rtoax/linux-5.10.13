@@ -57,7 +57,7 @@ enum compact_result {
 	 * 标识已经完成一轮 的页面扫描，但是没能满足页面分配请求的需求
 	 */
 	COMPACT_COMPLETE,
-	
+
 	/*
 	 * direct compaction has scanned part of the zone but wasn't successfull
 	 * to compact suitable pages.
@@ -210,7 +210,7 @@ extern void kcompactd_stop(int nid);
 extern void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx);
 
 #else
-/*  */
+
 #endif /* CONFIG_COMPACTION */
 
 struct node;
@@ -219,7 +219,7 @@ extern int compaction_register_node(struct node *node);
 extern void compaction_unregister_node(struct node *node);
 
 #else
-/*  */
+
 #endif /* CONFIG_COMPACTION && CONFIG_SYSFS && CONFIG_NUMA */
 
 #endif /* _LINUX_COMPACTION_H */

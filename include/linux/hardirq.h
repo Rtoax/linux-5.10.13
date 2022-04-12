@@ -92,7 +92,7 @@ void irq_exit_rcu(void);
 #endif
 
 #ifdef CONFIG_TINY_RCU
-/*  */
+
 #else
 extern void rcu_nmi_enter(void);
 extern void rcu_nmi_exit(void);

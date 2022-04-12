@@ -35,28 +35,28 @@ static struct kmem_cache *nsproxy_cachep;
  */
 struct nsproxy init_nsproxy /* init_task 的命名空间代理， namespace-资源隔离 */= {
 	init_nsproxy.count			= ATOMIC_INIT(1),
-	init_nsproxy.uts_ns			= &init_uts_ns,/*  */
+	init_nsproxy.uts_ns			= &init_uts_ns,
 #if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
 	init_nsproxy.ipc_ns			= &init_ipc_ns,/* IPC 相关 */
 #endif
 	init_nsproxy.mnt_ns			= NULL,
-	init_nsproxy.pid_ns_for_children	= &init_pid_ns,/*  */
+	init_nsproxy.pid_ns_for_children	= &init_pid_ns,
 #ifdef CONFIG_NET
     /**
      *  网络的这个比较神奇
      */
-	init_nsproxy.net_ns			= &init_net,/*  */
+	init_nsproxy.net_ns			= &init_net,
 #endif
 #ifdef CONFIG_CGROUPS
-	init_nsproxy.cgroup_ns		= &init_cgroup_ns,/*  */
+	init_nsproxy.cgroup_ns		= &init_cgroup_ns,
 #endif
 #ifdef CONFIG_TIME_NS
-	init_nsproxy.time_ns		= &init_time_ns,/*  */
-	init_nsproxy.time_ns_for_children	= &init_time_ns,/*  */
+	init_nsproxy.time_ns		= &init_time_ns,
+	init_nsproxy.time_ns_for_children	= &init_time_ns,
 #endif
 };
 
-static inline struct nsproxy *create_nsproxy(void)  /*  */
+static inline struct nsproxy *create_nsproxy(void)
 {
 	struct nsproxy *nsproxy;
 
@@ -184,7 +184,7 @@ out_ns:
  * namespaces therein.
  * 复制父进程的命名空间
  */
-int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
+int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	/**
 	 * @brief
@@ -227,7 +227,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)   /*  */
     /**
      *  根据 CLONE_xxx 判定创建哪些 namespace
      */
-	new_ns = create_new_namespaces(flags, tsk, user_ns, tsk->fs);   /*  */
+	new_ns = create_new_namespaces(flags, tsk, user_ns, tsk->fs);
 	if (IS_ERR(new_ns))
 		return  PTR_ERR(new_ns);
 

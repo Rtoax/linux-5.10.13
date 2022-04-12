@@ -27,7 +27,7 @@ void iterate_bdevs(void (*)(struct block_device *, void *), void *);
 void emergency_thaw_bdev(struct super_block *sb);
 void bd_forget(struct inode *inode);
 #else
-/*  */
+
 #endif /* CONFIG_BLOCK */
 
 /*

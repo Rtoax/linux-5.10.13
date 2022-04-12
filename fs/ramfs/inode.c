@@ -104,7 +104,7 @@ static int
 ramfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 {
     /**
-     *  
+     *
      */
 	struct inode * inode = ramfs_get_inode(dir->i_sb, dir, mode, dev);
 	int error = -ENOSPC;
@@ -253,7 +253,7 @@ static const struct fs_context_operations ramfs_context_ops = {
 	.get_tree	= ramfs_get_tree,
 };
 
-int ramfs_init_fs_context(struct fs_context *fc)    /*  */
+int ramfs_init_fs_context(struct fs_context *fc)
 {
 	struct ramfs_fs_info *fsi;
 
@@ -273,7 +273,7 @@ static void ramfs_kill_sb(struct super_block *sb)
 	kill_litter_super(sb);
 }
 
-static struct file_system_type ramfs_fs_type = {    /*  */
+static struct file_system_type ramfs_fs_type = {
 	.name		= "ramfs",
 	.init_fs_context = ramfs_init_fs_context,
 	.parameters	= ramfs_fs_parameters,

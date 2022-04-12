@@ -393,4 +393,4 @@ fail_free_queue:
 fail:
 	return err;
 }
-late_initcall(fscrypt_init) /*  */
+late_initcall(fscrypt_init)

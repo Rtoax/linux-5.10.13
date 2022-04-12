@@ -39,7 +39,7 @@ enum profile_type {
 
 #ifdef CONFIG_PROFILING
 
-extern int __read_mostly prof_on ;/*  */
+extern int __read_mostly prof_on ;
 
 /* init basic kernel profiler */
 int profile_init(void);

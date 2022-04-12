@@ -219,7 +219,7 @@ struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 
 	for (;;) {
 		raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
-		rq = task_rq(p);    /*  */
+		rq = task_rq(p);
 		raw_spin_lock(&rq->lock);
 		/*
 		 *	move_queued_task()		task_rq_lock()
@@ -458,7 +458,7 @@ static void hrtick_rq_init(struct rq *rq)
 	rq->hrtick_timer.function = hrtick;
 }
 #else	/* CONFIG_SCHED_HRTICK */
-/*  */
+
 #endif	/* CONFIG_SCHED_HRTICK */
 
 /*
@@ -516,7 +516,7 @@ static bool set_nr_if_polling(struct task_struct *p)
 }
 
 #else
-/*  */
+
 #endif
 
 /**
@@ -621,7 +621,7 @@ void wake_up_q(struct wake_q_head *head)
  *
  *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位
  */
-void resched_curr(struct rq *rq)    /*  */
+void resched_curr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
 	int cpu;
@@ -870,7 +870,7 @@ int tg_nop(struct task_group *tg, void *data)
 /**
  *
  */
-static void set_load_weight(struct task_struct *p, bool update_load)    /*  */
+static void set_load_weight(struct task_struct *p, bool update_load)
 {
     /* nice + 120 - 100 = nice + 20 */
 	int prio = p->static_prio - MAX_RT_PRIO/* 100 */;    //calculate initial `prio`
@@ -890,7 +890,7 @@ static void set_load_weight(struct task_struct *p, bool update_load)    /*  */
 	 * weight
 	 */
 	if (update_load && p->sched_class == &fair_sched_class) {   /* CFS 调度：只使用 100-139 优先级 */
-		reweight_task(p, prio); /*  */
+		reweight_task(p, prio);
 	} else {
 		load->weight = scale_load(sched_prio_to_weight[prio]);  /* RT 或其他 调度 */
 		load->inv_weight = sched_prio_to_wmult[prio];
@@ -1260,7 +1260,7 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
 	}
 }
 
-static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)  /*  */
+static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
 {
 	enum uclamp_id clamp_id;
 
@@ -1570,7 +1570,7 @@ static void __init init_uclamp(void)
 }
 
 #else /* CONFIG_UCLAMP_TASK */
-/*  */
+
 #endif /* CONFIG_UCLAMP_TASK */
 
 /**
@@ -1667,7 +1667,7 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
  */
 static inline int __normal_prio(struct task_struct *p)
 {
-	return p->static_prio;  /*  */
+	return p->static_prio;
 }
 
 /*
@@ -2023,7 +2023,7 @@ out:
 	return ret;
 }
 
-int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask) /*  */
+int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {
 	return __set_cpus_allowed_ptr(p, new_mask, false);
 }
@@ -2501,7 +2501,7 @@ void sched_set_stop_task(int cpu, struct task_struct *stop)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_SMP */
 
 static void
@@ -2793,7 +2793,7 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 }
 
 #else /* !CONFIG_SMP */
-/*  */
+
 #endif /* CONFIG_SMP */
 
 /**
@@ -3092,7 +3092,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * their previous state and preserve Program Order.
 	 */
 	smp_cond_load_acquire(&p->on_cpu, !VAL);
-    /*  */
+
     /**
      *  调用调度类的 select_task_rq()
      */
@@ -3208,7 +3208,7 @@ int wake_up_state(struct task_struct *p, unsigned int state)
  *
  * __sched_fork() is basic setup used by init_idle() too:
  */
-static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  */
+static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq			= 0;
 
@@ -3246,7 +3246,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  
      *  初始化 deadline 调度实体
      */
 	init_dl_task_timer(&p->dl);     /* 初始化 deadline hrtimer */
-	init_dl_inactive_task_timer(&p->dl);    /*  */
+	init_dl_inactive_task_timer(&p->dl);
 	__dl_clear_params(p);           /* 清理 deadline 参数 */
 
     /**
@@ -3269,7 +3269,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)  /*  
     /**
      *
      */
-	init_numa_balancing(clone_flags, p);    /*  */
+	init_numa_balancing(clone_flags, p);
 #ifdef CONFIG_SMP
 	p->wake_entry.u_flags = CSD_TYPE_TTWU;
 #endif
@@ -3359,7 +3359,7 @@ out:
 }
 __setup("schedstats=", setup_schedstats);
 
-static void __init init_schedstats(void)/*  */
+static void __init init_schedstats(void)
 {
 	set_schedstats(__sched_schedstats);
 }
@@ -3424,7 +3424,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	 */
 	p->prio = current->normal_prio; /* 继承父进程的优先级 */
 
-	uclamp_fork(p);     /*  */
+	uclamp_fork(p);
 
 	/*
 	 * Revert to default priority/policy on fork if requested.
@@ -3505,7 +3505,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
     /**
      *  x86 为 空
      */
-	init_task_preempt_count(p); /*  */
+	init_task_preempt_count(p);
 
 #ifdef CONFIG_SMP
 	plist_node_init(&p->pushable_tasks, MAX_PRIO);
@@ -3697,7 +3697,7 @@ fire_sched_out_preempt_notifiers(struct task_struct *curr,
 }
 
 #else /* !CONFIG_PREEMPT_NOTIFIERS */
-/*  */
+
 #endif /* CONFIG_PREEMPT_NOTIFIERS */
 
 static inline void prepare_task(struct task_struct *next)
@@ -3948,7 +3948,7 @@ static inline void balance_callback(struct rq *rq)
 }
 
 #else
-/*  */
+
 #endif
 
 /**
@@ -4125,7 +4125,7 @@ bool single_task_running(void)
 }
 EXPORT_SYMBOL(single_task_running);
 
-unsigned long long nr_context_switches(void)    /*  */
+unsigned long long nr_context_switches(void)
 {
 	int i;
 	unsigned long long sum = 0;
@@ -4196,7 +4196,7 @@ unsigned long nr_iowait(void)
  *
  * sched_exec-execve（）是宝贵的平衡机会，因为此时任务具有最小的有效内存和高速缓存占用空间。
  */
-void sched_exec(void)   /*  */
+void sched_exec(void)
 {
 	struct task_struct *p = current;
 	unsigned long flags;
@@ -4515,7 +4515,7 @@ int __init sched_tick_offload_init(void)
 }
 
 #else /* !CONFIG_NO_HZ_FULL */
-/*  */
+
 #endif
 
 #if defined(CONFIG_PREEMPTION) && (defined(CONFIG_DEBUG_PREEMPT) || \
@@ -4538,7 +4538,7 @@ static inline void preempt_latency_start(int val)
 /**
  *  增加 preempt 计数
  */
-void preempt_count_add(int val) /*  */
+void preempt_count_add(int val)
 {
 #ifdef CONFIG_DEBUG_PREEMPT
 	/*
@@ -5521,13 +5521,13 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	if (queued)
 		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);    /* 溢出队列 */
 	if (running)
-		put_prev_task(rq, p);   /*  */
+		put_prev_task(rq, p);
 
     /**
      *
      */
 	p->static_prio = NICE_TO_PRIO(nice);    /* nice + 120 */
-	set_load_weight(p, true);   /*  */
+	set_load_weight(p, true);
 	old_prio = p->prio;
 	p->prio = effective_prio(p);
 
@@ -5587,7 +5587,7 @@ SYSCALL_DEFINE1(nice, int, increment)   /*  修改nice值*/
 	 * and we have a single winner.
 	 */
 	increment = clamp(increment, -NICE_WIDTH, NICE_WIDTH);
-	nice = task_nice(current) + increment;  /*  */
+	nice = task_nice(current) + increment;
 
 	nice = clamp_val(nice, MIN_NICE, MAX_NICE);
 	if (increment < 0 && !can_nice(current, nice))
@@ -5811,7 +5811,7 @@ recheck:
 			return -EINVAL;
 	}
 
-    /*  */
+
 	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
 		return -EINVAL;
 
@@ -5832,7 +5832,7 @@ recheck:
 	 */
 	if (user && !capable(CAP_SYS_NICE)) {
         /* 公平调度 */
-		if (fair_policy(policy)) {  /*  */
+		if (fair_policy(policy)) {
 			if (attr->sched_nice < task_nice(p) &&
 			    !can_nice(p, attr->sched_nice))
 				return -EPERM;
@@ -5858,7 +5858,7 @@ recheck:
 		  * unprivileged DL tasks to increase their relative deadline
 		  * or reduce their runtime (both ways reducing utilization)
 		  */
-		/*  */
+
 		if (dl_policy(policy))
 			return -EPERM;
 
@@ -5886,7 +5886,7 @@ recheck:
 
         //selinux_task_setscheduler
         //cap_task_setscheduler
-		retval = security_task_setscheduler(p); /*  */
+		retval = security_task_setscheduler(p);
 		if (retval)
 			return retval;
 	}
@@ -6011,7 +6011,7 @@ change:
 	if (queued)
 		dequeue_task(rq, p, queue_flags);   /* 将其出队 */
 	if (running)
-		put_prev_task(rq, p);   /*  */
+		put_prev_task(rq, p);
 
 	prev_class = p->sched_class;
 
@@ -6067,7 +6067,7 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
     /**
      *
      */
-	struct sched_attr attr = {  /*  */
+	struct sched_attr attr = {
 		attr.sched_policy   = policy,
 		attr.sched_priority = param->sched_priority,
 		attr.sched_nice	= PRIO_TO_NICE(p->static_prio),
@@ -6212,7 +6212,7 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 	rcu_read_unlock();
 
 	if (likely(p)) {
-		retval = sched_setscheduler(p, policy, &lparam);    /*  */
+		retval = sched_setscheduler(p, policy, &lparam);
 		put_task_struct(p);
 	}
 
@@ -6275,7 +6275,7 @@ err_size:
  * int sched_setscheduler(pid_t pid, int policy, const struct sched_param *param);
  */
 int sched_setscheduler(pid_t pid, int policy, const struct sched_param *param);
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)    /*  */
+SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {
 	if (policy < 0)
 		return -EINVAL;
@@ -6545,7 +6545,7 @@ out_unlock:
 /**
  *
  */
-long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)    /*  */
+long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
 	cpumask_var_t cpus_allowed, new_mask;
 	struct task_struct *p;
@@ -6688,7 +6688,7 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 /**
  *
  */
-long sched_getaffinity(pid_t pid, struct cpumask *mask) /*  */
+long sched_getaffinity(pid_t pid, struct cpumask *mask)
 {
 	struct task_struct *p;
 	unsigned long flags;
@@ -6751,7 +6751,7 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
     /**
      *
      */
-	ret = sched_getaffinity(pid, mask); /*  */
+	ret = sched_getaffinity(pid, mask);
 	if (ret == 0) {
 		unsigned int retlen = min(len, cpumask_size());
 
@@ -6800,7 +6800,7 @@ static void do_sched_yield(void)
  *  int sched_yield(void);
  */
 int sched_yield(void);
-SYSCALL_DEFINE0(sched_yield)    /*  */
+SYSCALL_DEFINE0(sched_yield)
 {
 	do_sched_yield();
 	return 0;
@@ -6819,7 +6819,7 @@ SYSCALL_DEFINE0(sched_yield)    /*  */
  */
 int __sched _cond_resched(void) /* 重新调度 */
 {
-	if (should_resched(0)) {    /*  */
+	if (should_resched(0)) {
 		preempt_schedule_common();
 		return 1;
 	}
@@ -7055,7 +7055,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	case SCHED_NORMAL:
 	case SCHED_BATCH:
 	case SCHED_IDLE:
-		ret = 0;    /*  */
+		ret = 0;
 	}
 	return ret;
 }
@@ -7063,7 +7063,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 /**
  *
  */
-static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)   /*  */
+static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 {
 	struct task_struct *p;
 	unsigned int time_slice;
@@ -7107,7 +7107,7 @@ static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)   /*  */
     /**
      *
      */
-	jiffies_to_timespec64(time_slice, t);   /*  */
+	jiffies_to_timespec64(time_slice, t);
 	return 0;
 
 out_unlock:
@@ -7135,7 +7135,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
     /**
      *
      */
-	int retval = sched_rr_get_interval(pid, &t);    /*  */
+	int retval = sched_rr_get_interval(pid, &t);
 
 	if (retval == 0)
 		retval = put_timespec64(&t, interval);
@@ -7739,13 +7739,13 @@ void __init sched_init_smp(void)
 	 * happen.
 	 */
 	mutex_lock(&sched_domains_mutex);
-	sched_init_domains(cpu_active_mask);    /*  */
+	sched_init_domains(cpu_active_mask);
 	mutex_unlock(&sched_domains_mutex);
 
 	/* Move init over to a non-isolated CPU */
 	if (set_cpus_allowed_ptr(current, housekeeping_cpumask(HK_FLAG_DOMAIN)) < 0)
 		BUG();
-	sched_init_granularity();   /*  */
+	sched_init_granularity();
 
 	init_sched_rt_class();  /* 实时调度类 */
 	init_sched_dl_class();  /* deadline 调度类 */
@@ -7761,10 +7761,10 @@ static int __init migration_init(void)
 early_initcall(migration_init);
 
 #else
-/*  */
+
 #endif /* CONFIG_SMP */
 
-int in_sched_functions(unsigned long addr)  /*  */
+int in_sched_functions(unsigned long addr)
 {
 	return in_lock_functions(addr) ||
 		(addr >= (unsigned long)__sched_text_start
@@ -7782,7 +7782,7 @@ struct task_group root_task_group;/* init_task.sched_task_group = &root_task_gro
 LIST_HEAD(task_groups);
 
 /* Cacheline aligned slab cache for task_group */
-static struct kmem_cache __read_mostly *task_group_cache ;/*  */
+static struct kmem_cache __read_mostly *task_group_cache ;
 #endif
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
@@ -7883,16 +7883,16 @@ void __init sched_init(void)    /* 调度初始化 */
 #endif /* CONFIG_CGROUP_SCHED */
 
 	for_each_possible_cpu(i) {
-		struct rq *rq;  /*  */
+		struct rq *rq;
 
 		rq = cpu_rq(i); /* 该CPU的运行队列 */
 		raw_spin_lock_init(&rq->lock);  /* 初始化自旋锁 */
 		rq->nr_running = 0;             /* 运行的进程数 */
-		rq->calc_load_active = 0;       /*  */
-		rq->calc_load_update = jiffies + LOAD_FREQ; /*  */
-		init_cfs_rq(&rq->cfs);  /*  */
-		init_rt_rq(&rq->rt);    /*  */
-		init_dl_rq(&rq->dl);    /*  */
+		rq->calc_load_active = 0;
+		rq->calc_load_update = jiffies + LOAD_FREQ;
+		init_cfs_rq(&rq->cfs);
+		init_rt_rq(&rq->rt);
+		init_dl_rq(&rq->dl);
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
 		rq->tmp_alone_branch = &rq->leaf_cfs_rq_list;
@@ -7978,7 +7978,7 @@ void __init sched_init(void)    /* 调度初始化 */
 
 	psi_init(); /* 评估系统资源压力 */
 
-	init_uclamp();  /*  */
+	init_uclamp();
 
 	scheduler_running = 1;  /* 标记运行 */
 }

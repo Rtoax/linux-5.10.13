@@ -356,7 +356,7 @@ static void __init hugepage_exit_sysfs(struct kobject *hugepage_kobj)
 	kobject_put(hugepage_kobj);
 }
 #else
-/*  */
+
 #endif /* CONFIG_SYSFS */
 
 static int __init hugepage_init(void)
@@ -517,7 +517,7 @@ static unsigned long __thp_get_unmapped_area(struct file *filp,
 	if (len_pad < len || (off + len_pad) < off)
 		return 0;
     /**
-     *  
+     *
      */
 	ret = current->mm->get_unmapped_area(filp, addr, len_pad,
 					      off >> PAGE_SHIFT, flags);
@@ -2506,7 +2506,7 @@ int total_mapcount(struct page *page)
 		return atomic_read(&page->_mapcount) + 1;
 
     /* 页面数 */
-	compound = compound_mapcount(page); /*  */
+	compound = compound_mapcount(page);
 	nr = compound_nr(page);             /* 复合页面中包含多少 标准 page */
 
     /* 如果是大页，直接返回 */
@@ -2519,9 +2519,9 @@ int total_mapcount(struct page *page)
     /* 遍历 所有标准 page */
 	for (i = 0; i < nr; i++)
 		ret += atomic_read(&page[i]._mapcount) + 1;
-    
+
 	/**
-	 *  File pages has compound_mapcount included in _mapcount 
+	 *  File pages has compound_mapcount included in _mapcount
 	 *
 	 *  如果不是匿名映射，即为 文件映射
 	 *  文件page 在 _mapcount 中 已经包含了  compound_mapcount
@@ -2529,11 +2529,11 @@ int total_mapcount(struct page *page)
 	if (!PageAnon(page))
 		return ret - compound * nr;
 
-    /*  */
+
 	if (PageDoubleMap(page))
 		ret -= nr;
 
-    /*  */
+
 	return ret;
 }
 
@@ -2940,7 +2940,7 @@ static int __init split_huge_pages_debugfs(void)
 			    &split_huge_pages_fops);
 	return 0;
 }
-late_initcall(split_huge_pages_debugfs);    /*  */
+late_initcall(split_huge_pages_debugfs);
 #endif
 
 #ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION

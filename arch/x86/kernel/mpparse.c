@@ -125,7 +125,7 @@ static void __init print_mp_irq_info(struct mpc_intsrc *mp_irq)
 }
 
 #else /* CONFIG_X86_IO_APIC */
-/*  */
+
 #endif /* CONFIG_X86_IO_APIC */
 
 static void __init MP_lintsrc_info(struct mpc_lintsrc *m)
@@ -189,8 +189,8 @@ static void __init smp_dump_mptable(struct mpc_table *mpc, unsigned char *mpt)
 }
 
 /**
- *  遍历 MP Table，找出具体的 CPU 信息，将 
- *  
+ *  遍历 MP Table，找出具体的 CPU 信息，将
+ *
  */
 static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
 {
@@ -374,11 +374,11 @@ static void __init construct_ioapic_table(int mpc_default_type)
 	construct_default_ioirq_mptable(mpc_default_type);
 }
 #else
-/*  */
+
 #endif
 
 /**
- *  
+ *
  */
 static inline void __init construct_default_ISA_mptable(int mpc_default_type)
 {
@@ -406,7 +406,7 @@ static inline void __init construct_default_ISA_mptable(int mpc_default_type)
 	processor.reserved[1] = 0;
 
     /**
-     *  
+     *
      */
 	for (i = 0; i < 2; i++) {
         /**
@@ -419,7 +419,7 @@ static inline void __init construct_default_ISA_mptable(int mpc_default_type)
 	construct_ioapic_table(mpc_default_type);
 
     /**
-     *  
+     *
      */
 	lintsrc.type = MP_LINTSRC;
 	lintsrc.irqflag = MP_IRQTRIG_DEFAULT | MP_IRQPOL_DEFAULT;
@@ -511,7 +511,7 @@ static int __init check_physptr(struct mpf_intel *mpf, unsigned int early)
 void __init default_get_smp_config(unsigned int early)
 {
     /**
-     *  
+     *
      */
 	struct mpf_intel *mpf;
 
@@ -587,7 +587,7 @@ static void __init smp_reserve_memory(struct mpf_intel *mpf)
 /**
  *  multiprocessor configuration was found in the `smp_scan_config` function
  *
- *  
+ *
  */
 static int __init smp_scan_config(unsigned long base, unsigned long length)
 {
@@ -600,14 +600,14 @@ static int __init smp_scan_config(unsigned long base, unsigned long length)
 	BUILD_BUG_ON(sizeof(*mpf) != 16);
 
     /**
-     *  
+     *
      */
     //在指定的内存区域中循环查找 `MP floating pointer structure`
 	while (length > 0) {
 		bp = early_memremap(base, length);
 		mpf = (struct mpf_intel *)bp;
         /**
-         *  
+         *
          */
         //检查当前字节是否指向 `_MP_` 签名
 		if ((*bp == SMP_MAGIC_IDENT) &&
@@ -615,8 +615,8 @@ static int __init smp_scan_config(unsigned long base, unsigned long length)
 		    !mpf_checksum((unsigned char *)bp, 16) &&
 		    //检查循环中的 `mpf->specification` 的值是1还是4
 		    ((mpf->specification == 1)
-		     || (mpf->specification == 4))) { 
-		     
+		     || (mpf->specification == 4))) {
+
 #ifdef CONFIG_X86_LOCAL_APIC
 			smp_found_config = 1;
 #endif
@@ -652,7 +652,7 @@ static int __init smp_scan_config(unsigned long base, unsigned long length)
 //      default_find_smp_config()
 //
 //扫描内存中的一些区域来寻找 `SMP` 的配置信息
-void __init default_find_smp_config(void)   /*  */
+void __init default_find_smp_config(void)
 {
 	unsigned int address;
 
@@ -772,7 +772,7 @@ check_slot(unsigned long mpc_new_phys, unsigned long mpc_new_length, int count)
 	return 0;
 }
 #else /* CONFIG_X86_IO_APIC */
-/*  */
+
 #endif /* CONFIG_X86_IO_APIC */
 
 static int  __init replace_intsrc_all(struct mpc_table *mpc,
@@ -862,7 +862,7 @@ static int __init update_mptable_setup(char *str)
 early_param("update_mptable", update_mptable_setup);
 
 /**
- *  
+ *
  */
 static unsigned long __initdata mpc_new_phys;
 static unsigned long __initdata mpc_new_length  = 4096;
@@ -870,7 +870,7 @@ static unsigned long __initdata mpc_new_length  = 4096;
 /* alloc_mptable or alloc_mptable=4k */
 static int __initdata alloc_mptable;
 /**
- *  
+ *
  */
 static int __init parse_alloc_mptable_opt(char *p)
 {
@@ -893,7 +893,7 @@ void __init e820__memblock_alloc_reserved_mpc_new(void)
 }
 
 /**
- *  
+ *
  */
 static int __init update_mp_table(void)
 {
@@ -980,7 +980,7 @@ static int __init update_mp_table(void)
 			early_memunmap(mpf, sizeof(*mpf));
 			mpf = mpf_new;
             /**
-             *  
+             *
              */
 			mpf->physptr = mpc_new_phys;
 		}
@@ -1006,4 +1006,4 @@ do_unmap_mpf:
 	return 0;
 }
 
-late_initcall(update_mp_table); /*  */
+late_initcall(update_mp_table);

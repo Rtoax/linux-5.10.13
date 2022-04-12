@@ -9,7 +9,7 @@
 DEFINE_STATIC_KEY_FALSE(apic_use_ipi_shorthand);
 
 #ifdef CONFIG_SMP
-static int __ro_after_init apic_ipi_shorthand_off ;/*  */
+static int __ro_after_init apic_ipi_shorthand_off ;
 
 static __init int apic_ipi_shorthand(char *str)
 {
@@ -24,7 +24,7 @@ static int __init print_ipi_mode(void)
 		apic_ipi_shorthand_off ? "disabled" : "enabled");
 	return 0;
 }
-late_initcall(print_ipi_mode);  /*  */
+late_initcall(print_ipi_mode);
 
 void apic_smt_update(void)
 {
@@ -62,7 +62,7 @@ void apic_send_IPI_allbutself(unsigned int vector)
  * wastes no time serializing anything. Worst case is that we lose a
  * reschedule ...
  */
-void native_smp_send_reschedule(int cpu)    /*  */
+void native_smp_send_reschedule(int cpu)
 {
 	if (unlikely(cpu_is_offline(cpu))) {
 		WARN(1, "sched: Unexpected reschedule of offline CPU#%d!\n", cpu);

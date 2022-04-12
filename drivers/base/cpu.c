@@ -136,7 +136,7 @@ struct bus_type cpu_subsys = {  /* CPU 子系统 */
 };
 EXPORT_SYMBOL_GPL(cpu_subsys);
 
-#ifdef CONFIG_KEXEC /*  */
+#ifdef CONFIG_KEXEC
 #include <linux/kexec.h>
 
 static ssize_t crash_notes_show(struct device *dev,

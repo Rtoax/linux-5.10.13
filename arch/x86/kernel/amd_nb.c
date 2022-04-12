@@ -538,4 +538,4 @@ static __init int init_amd_nbs(void)
 }
 
 /* This has to go after the PCI subsystem */
-fs_initcall(init_amd_nbs);  /*  */
+fs_initcall(init_amd_nbs);

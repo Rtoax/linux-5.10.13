@@ -721,7 +721,7 @@ void initialize_tlbstate_and_flush(void)
  * atomic64_read operation won't be reordered by the compiler.
  */
 static void flush_tlb_func_common(const struct flush_tlb_info *f,
-				  bool local, enum tlb_flush_reason reason) /*  */
+				  bool local, enum tlb_flush_reason reason)
 {
 	/*
 	 * We have three different tlb_gen values in here.  They are:
@@ -844,7 +844,7 @@ static void flush_tlb_func_common(const struct flush_tlb_info *f,
  * @param info
  * @param reason
  */
-static void flush_tlb_func_local(const void *info, enum tlb_flush_reason reason)    /*  */
+static void flush_tlb_func_local(const void *info, enum tlb_flush_reason reason)
 {
 	const struct flush_tlb_info *f = info;
 
@@ -915,7 +915,7 @@ void flush_tlb_others(const struct cpumask *cpumask,
  *
  * ceiling: 天花板
  */
-unsigned long __read_mostly tlb_single_page_flush_ceiling  = 33;    /*  */
+unsigned long __read_mostly tlb_single_page_flush_ceiling  = 33;
 
 /**
  *  每个 CPU 一个 TLB info 结构
@@ -973,7 +973,7 @@ static inline void put_flush_tlb_info(void)
  *  刷新 TLB
  *
  */
-void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
             				unsigned long end, unsigned int stride_shift,
             				bool freed_tables)
 {
@@ -994,7 +994,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
      *
      */
 	/* This is also a barrier that synchronizes with switch_mm(). */
-	new_tlb_gen = inc_mm_tlb_gen(mm);   /*  */
+	new_tlb_gen = inc_mm_tlb_gen(mm);
 
     /**
      *
@@ -1008,7 +1008,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 		 * @brief Construct a new flush tlb func local object
 		 *
 		 */
-		flush_tlb_func_local(info, TLB_LOCAL_MM_SHOOTDOWN); /*  */
+		flush_tlb_func_local(info, TLB_LOCAL_MM_SHOOTDOWN);
 		local_irq_enable();
 	}
 
@@ -1020,13 +1020,13 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,  /*  */
 }
 
 
-static void do_flush_tlb_all(void *info)    /*  */
+static void do_flush_tlb_all(void *info)
 {
 	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 	__flush_tlb_all();
 }
 
-void flush_tlb_all(void)    /*  */
+void flush_tlb_all(void)
 {
 	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
@@ -1363,7 +1363,7 @@ static ssize_t tlbflush_write_file(struct file *file,
 	return count;
 }
 
-static const struct file_operations fops_tlbflush = {     /*  */
+static const struct file_operations fops_tlbflush = {
 	.read = tlbflush_read_file,
 	.write = tlbflush_write_file,
 	.llseek = default_llseek,
@@ -1375,4 +1375,4 @@ static int __init create_tlb_single_page_flush_ceiling(void)
 			    arch_debugfs_dir, NULL, &fops_tlbflush);
 	return 0;
 }
-late_initcall(create_tlb_single_page_flush_ceiling);      /*  */
+late_initcall(create_tlb_single_page_flush_ceiling);

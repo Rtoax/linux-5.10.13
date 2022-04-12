@@ -636,7 +636,7 @@ static bool arch_timer_counter_has_wa(void)
 #endif /* CONFIG_ARM_ARCH_TIMER_OOL_WORKAROUND */
 
 /**
- *  
+ *
  */
 static __always_inline irqreturn_t rtoax_timer_handler(const int access,
 					struct clock_event_device *evt)
@@ -649,7 +649,7 @@ static __always_inline irqreturn_t rtoax_timer_handler(const int access,
 		arch_timer_reg_write(access, ARCH_TIMER_REG_CTRL, ctrl, evt);
 
         /**
-         *  
+         *
          */
 		evt->event_handler(evt);
 		return IRQ_HANDLED;
@@ -659,7 +659,7 @@ static __always_inline irqreturn_t rtoax_timer_handler(const int access,
 }
 
 /**
- *  
+ *
  */
 static irqreturn_t arch_timer_handler_virt(int irq, void *dev_id)
 {
@@ -1096,7 +1096,7 @@ static void __init arch_timer_cpu_pm_deinit(void)
 }
 
 #else
-/*  */
+
 #endif
 
 static int __init arch_timer_register(void)

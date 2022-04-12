@@ -92,7 +92,7 @@
 
 #define IDT_TABLE_SIZE		(IDT_ENTRIES * sizeof(gate_desc))
 
-static bool __initdata idt_setup_done ;/*  */
+static bool __initdata idt_setup_done ;
 
 /*
  * Early traps running on the DEFAULT_STACK because the other interrupt
@@ -384,7 +384,7 @@ void __init idt_setup_early_pf(void)    /* page fault */
  */
 void __init idt_setup_ist_traps(void)/* IST(Interrupt Stack Table) */
 {
-	idt_setup_from_table(idt_table, ist_idts/*  */, ARRAY_SIZE(ist_idts), true);
+	idt_setup_from_table(idt_table, ist_idts, ARRAY_SIZE(ist_idts), true);
 }
 #endif
 

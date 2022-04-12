@@ -467,7 +467,7 @@ void __init efi_runtime_update_mappings(void)
 	}
 }
 
-void __init efi_dump_pagetable(void)    /*  */
+void __init efi_dump_pagetable(void)
 {
 #ifdef CONFIG_EFI_PGT_DUMP
 	ptdump_walk_pgd_level(NULL, &efi_mm);

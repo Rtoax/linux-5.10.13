@@ -9,7 +9,7 @@
 /* Physical address where kernel should be loaded. */
 #define LOAD_PHYSICAL_ADDR  /* =1000000 */((CONFIG_PHYSICAL_START/* 0x1000000 */ \
 				+ (CONFIG_PHYSICAL_ALIGN/* 0x200000 */ - 1)/* 0x1fffff */) \
-				& ~(CONFIG_PHYSICAL_ALIGN/* 0x200000 */ - 1)/*  */)
+				& ~(CONFIG_PHYSICAL_ALIGN/* 0x200000 */ - 1))
 
 /* Minimum kernel alignment, as a power of two */
 #ifdef CONFIG_X86_64

@@ -31,7 +31,7 @@ MODULE_LICENSE("GPL");
 
 struct kmem_cache *cachefiles_object_jar;
 
-static struct miscdevice cachefiles_dev = { /*  */
+static struct miscdevice cachefiles_dev = {
 	.minor	= MISC_DYNAMIC_MINOR,
 	.name	= "cachefiles",
 	.fops	= &cachefiles_daemon_fops,
@@ -85,7 +85,7 @@ error_dev:
 	return ret;
 }
 
-fs_initcall(cachefiles_init);   /*  */
+fs_initcall(cachefiles_init);
 
 /*
  * clean up on module removal

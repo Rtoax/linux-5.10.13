@@ -170,7 +170,7 @@ static void format_mod_stop(void)
 }
 
 #else /* !CONFIG_MODULES */
-/*  */
+
 #endif /* CONFIG_MODULES */
 
 static bool __read_mostly trace_printk_enabled = true;
@@ -367,7 +367,7 @@ static __init int init_trace_printk_function_export(void)
 	return 0;
 }
 
-fs_initcall(init_trace_printk_function_export); /*  */
+fs_initcall(init_trace_printk_function_export);
 
 static __init int init_trace_printk(void)
 {

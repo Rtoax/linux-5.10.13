@@ -476,7 +476,7 @@ static struct ratelimit_state unseeded_warning =
 static struct ratelimit_state urandom_warning =
 	RATELIMIT_STATE_INIT("warn_urandom_randomness", HZ, 3);
 
-static int __read_mostly ratelimit_disable ;/*  */
+static int __read_mostly ratelimit_disable ;
 
 module_param_named(ratelimit_disable, ratelimit_disable, int, 0644);
 MODULE_PARM_DESC(ratelimit_disable, "Disable random ratelimit suppression");
@@ -1121,7 +1121,7 @@ struct timer_rand_state {
  * the entropy pool having similar initial state across largely
  * identical devices.
  */
-void add_device_randomness(const void *buf, unsigned int size)  /*  */
+void add_device_randomness(const void *buf, unsigned int size)
 {
 	unsigned long time = random_get_entropy() ^ jiffies;
 	unsigned long flags;
@@ -1546,7 +1546,7 @@ static void _warn_unseeded_randomness(const char *func_name, void *caller,
  * wait_for_random_bytes() should be called and return 0 at least once
  * at any point prior.
  */
-static void _get_random_bytes(void *buf, int nbytes)    /*  */
+static void _get_random_bytes(void *buf, int nbytes)
 {
 	__u8 tmp[CHACHA_BLOCK_SIZE] __aligned(4);
 
@@ -1861,7 +1861,7 @@ random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
 	int ret;
 
-	ret = wait_for_random_bytes();  /*  */
+	ret = wait_for_random_bytes();
 	if (ret != 0)
 		return ret;
 	return urandom_read_nowarn(file, buf, nbytes, ppos);

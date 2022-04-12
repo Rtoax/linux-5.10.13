@@ -11,7 +11,7 @@
 #include <linux/atomic.h>
 #include <linux/static_key.h>
 
-struct static_call_key; /*  */
+struct static_call_key;
 
 struct trace_print_flags {
 	unsigned long		mask;
@@ -24,11 +24,11 @@ struct trace_print_flags_u64 {
 };
 
 /**
- *  
+ *
  */
-struct tracepoint_func {    /*  */
+struct tracepoint_func {
     /**
-     *  
+     *
      *  例
      *  __schedule()->trace_sched_switch() ==> probe_sched_switch()
      */
@@ -44,7 +44,7 @@ struct tracepoint_func {    /*  */
 struct tracepoint {         /* 跟踪点 */
 	const char *name;		/* Tracepoint name */
     /**
-     *  
+     *
      */
 	struct static_key key;  /* static_key */
 
@@ -52,23 +52,23 @@ struct tracepoint {         /* 跟踪点 */
      *  static call key
      */
 	struct static_call_key *static_call_key;
-	void *static_call_tramp;/*  */
+	void *static_call_tramp;
 
     /**
-     *  
+     *
      *  例
      *  sched_switch --> iterator = __traceiter_sched_switch
      */
-	void *iterator;         /*  */
+	void *iterator;
 
     /**
-     *  
+     *
      */
 	int (*regfunc)(void);   /* 注册函数 */
 	void (*unregfunc)(void);/* 注销函数 */
 
     /**
-     *  
+     *
      */
 	struct tracepoint_func __rcu *funcs;
 };

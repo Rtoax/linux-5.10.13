@@ -60,7 +60,7 @@ enum {
 };
 
 /**
- *  
+ *
  */
 static inline void futex_init_task(struct task_struct *tsk)
 {
@@ -81,7 +81,7 @@ void futex_exec_release(struct task_struct *tsk);
 long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
 	      u32 __user *uaddr2, u32 val2, u32 val3);
 #else
-/*  */
+
 #endif
 
 #endif

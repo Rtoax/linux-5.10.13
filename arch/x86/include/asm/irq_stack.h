@@ -48,7 +48,7 @@ __run_irq_on_irqstack(void (*func)(struct irq_desc *desc),
 }
 
 #else /* CONFIG_X86_64 */
-/*  */
+
 #endif /* !CONFIG_X86_64 */
 
 static __always_inline bool irq_needs_irq_stack(struct pt_regs *regs)
@@ -62,7 +62,7 @@ static __always_inline bool irq_needs_irq_stack(struct pt_regs *regs)
 
 
 /**
- *  
+ *
  */
 static __always_inline void run_on_irqstack_cond(void (*func)(void), struct pt_regs *regs)
 {
@@ -70,7 +70,7 @@ static __always_inline void run_on_irqstack_cond(void (*func)(void), struct pt_r
 
 	if (irq_needs_irq_stack(regs))
         /**
-         *  
+         *
          */
 		__run_on_irqstack(func);
 	else

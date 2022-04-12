@@ -129,7 +129,7 @@ extern struct acpi_table_header *tboot_get_dmar_table(
 extern int tboot_force_iommu(void);
 
 #else
-/*  */
+
 #endif /* !CONFIG_INTEL_TXT */
 
 #endif /* _LINUX_TBOOT_H */

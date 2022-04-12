@@ -2046,7 +2046,7 @@ static int ftrace_function_set_filter(struct perf_event *event,
 	return 0;
 }
 #else
-/*  */
+
 #endif /* CONFIG_FUNCTION_TRACER */
 
 int ftrace_profile_set_filter(struct perf_event *event, int event_id,
@@ -2206,7 +2206,7 @@ static void update_pred_fn(struct event_filter *filter, char *fields)
 	}
 }
 
-static __init int ftrace_test_event_filter(void)    /*  */
+static __init int ftrace_test_event_filter(void)
 {
 	int i;
 
@@ -2266,6 +2266,6 @@ static __init int ftrace_test_event_filter(void)    /*  */
 	return 0;
 }
 
-late_initcall(ftrace_test_event_filter);    /*  */
+late_initcall(ftrace_test_event_filter);
 
 #endif /* CONFIG_FTRACE_STARTUP_TEST */

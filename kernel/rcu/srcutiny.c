@@ -20,7 +20,7 @@
 #include "rcu_segcblist.h"
 #include "rcu.h"
 
-int __read_mostly rcu_scheduler_active ;/*  */
+int __read_mostly rcu_scheduler_active ;
 static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;
 

@@ -42,11 +42,11 @@
 
 #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
-#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)    /*  */
+#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
 #define _PAGE_PWT	(_AT(pteval_t, 1) << _PAGE_BIT_PWT)
 #define _PAGE_PCD	(_AT(pteval_t, 1) << _PAGE_BIT_PCD)
 #define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
-#define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)   /*  */
+#define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
 #define _PAGE_SOFTW1	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW1)
@@ -96,7 +96,7 @@
  * mark if and only if the PTE/PMD has present bit clear!
  */
 #ifdef CONFIG_MEM_SOFT_DIRTY
-#define _PAGE_SWP_SOFT_DIRTY	_PAGE_RW    /*  */
+#define _PAGE_SWP_SOFT_DIRTY	_PAGE_RW
 #else
 //#define _PAGE_SWP_SOFT_DIRTY	(_AT(pteval_t, 0))
 #endif
@@ -175,7 +175,7 @@ enum page_cache_mode {
 
 #define pgprot_val(x)		((x).pgprot)    /* page 属性 */
 #define __pgprot(x)		((pgprot_t) { (x) } )
-#define __pg(x)			__pgprot(x) 
+#define __pg(x)			__pgprot(x)
 
 #define _PAGE_PAT_LARGE		(_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
 
@@ -193,7 +193,7 @@ enum page_cache_mode {
 #define _KERNPG_TABLE_NOENC	 (__PP|__RW|   0|___A|   0|___D|   0|   0)  /* 页面输入访问权限 */
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
 #define _PAGE_TABLE_NOENC	 (__PP|__RW|_USR|___A|   0|___D|   0|   0)
-#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)    /*  */
+#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_ROX	 (__PP|   0|   0|___A|   0|___D|   0|___G)
 #define __PAGE_KERNEL_NOCACHE	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __NC)
@@ -298,7 +298,7 @@ typedef struct pgprot { pgprotval_t pgprot; } pgprot_t; /* page 属性 */
 // --------------------------------------------------------------------------------
 //```
 //这些字段有着如下的意义：
-//* 第 0 到第 2 位 - 忽略； 
+//* 第 0 到第 2 位 - 忽略；
 //* 第 12 位到第 51 位 - 存储最高层分页结构的地址；
 //* 第 3 位 到第 4 位 - PWT 或 Page-Level Writethrough 和 PCD 或 Page-level Cache Disable 显示。
 //                        这些位控制页或者页表被硬件缓存处理的方式；
@@ -487,7 +487,7 @@ static inline pudval_t pud_flags(pud_t pud)
 	return native_pud_val(pud) & pud_flags_mask(pud);
 }
 
-static inline pmdval_t pmd_pfn_mask(pmd_t pmd)  /*  */
+static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {
 	if (native_pmd_val(pmd) & _PAGE_PSE)
 		return PHYSICAL_PMD_PAGE_MASK;
@@ -505,18 +505,18 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
 	return native_pmd_val(pmd) & pmd_flags_mask(pmd);
 }
 
-static inline pte_t native_make_pte(pteval_t val)   /*  */
+static inline pte_t native_make_pte(pteval_t val)
 {
 	return (pte_t) { .pte = val };
 }
 
-static inline pteval_t native_pte_val(pte_t pte)    /*  */
+static inline pteval_t native_pte_val(pte_t pte)
 {
 	return pte.pte;
 }
 
 /**
- *  
+ *
  */
 static inline pteval_t pte_flags(pte_t pte)
 {

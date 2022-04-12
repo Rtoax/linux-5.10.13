@@ -18,10 +18,10 @@
  * Mostly rewritten by Thomas Gleixner <tglx@linutronix.de> and
  *		       Andy Lutomirsky <luto@amacapital.net>
  *//* PTI 页表隔离 */
- /* 
+ /*
 内核页表隔离 （Kernel page-table isolation，
 缩写KPTI，也简称PTI，旧称KAISER）
-是 Linux内核 中的一种 强化 技术，旨在更好地隔离 
+是 Linux内核 中的一种 强化 技术，旨在更好地隔离
 用户空间 与内核空间的 内存 来提高安全性，
 缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
 */
@@ -82,7 +82,7 @@ static enum pti_mode {
 	PTI_FORCE_ON
 } pti_mode;
 
-void __init pti_check_boottime_disable(void)    /*  */
+void __init pti_check_boottime_disable(void)
 {
 	char arg[5];
 	int ret;
@@ -96,7 +96,7 @@ void __init pti_check_boottime_disable(void)    /*  */
 		return;
 	}
 
-    /* grub 文件中 kernel 的命令行 
+    /* grub 文件中 kernel 的命令行
     内核页表隔离 （Kernel page-table isolation，缩写KPTI，也简称PTI，旧称KAISER）
     是 Linux内核 中的一种 强化 技术，旨在更好地隔离 用户空间 与内核空间的 内存 来提高安全性，
     缓解现代 x86 CPU 中的“ 熔毁 ”硬件安全缺陷。
@@ -253,7 +253,7 @@ static pmd_t *pti_user_pagetable_walk_pmd(unsigned long address)
  *
  * Returns a pointer to a PTE on success, or NULL on failure.
  */
-static pte_t *pti_user_pagetable_walk_pte(unsigned long address)    /*  */
+static pte_t *pti_user_pagetable_walk_pte(unsigned long address)
 {
 	gfp_t gfp = (GFP_KERNEL | __GFP_NOTRACK | __GFP_ZERO);
 	pmd_t *pmd;
@@ -285,7 +285,7 @@ static pte_t *pti_user_pagetable_walk_pte(unsigned long address)    /*  */
 	return pte;
 }
 
-#ifdef CONFIG_X86_VSYSCALL_EMULATION    /*  */
+#ifdef CONFIG_X86_VSYSCALL_EMULATION
 static void __init pti_setup_vsyscall(void)
 {
 	pte_t *pte, *target_pte;
@@ -307,11 +307,11 @@ static void __init pti_setup_vsyscall(void)
 #endif
 
 enum pti_clone_level {  /* 页表隔离 */
-	PTI_CLONE_PMD,  /*  */
-	PTI_CLONE_PTE,  /*  */
+	PTI_CLONE_PMD,
+	PTI_CLONE_PTE,
 };
 
-static void /*  */
+static void
 pti_clone_pgtable(unsigned long start, unsigned long end,
 		  enum pti_clone_level level)
 {
@@ -426,7 +426,7 @@ pti_clone_pgtable(unsigned long start, unsigned long end,
  * Clone a single p4d (i.e. a top-level entry on 4-level systems and a
  * next-level entry on 5-level systems.
  */
-static void __init pti_clone_p4d(unsigned long addr)    /*  */
+static void __init pti_clone_p4d(unsigned long addr)
 {
 	p4d_t *kernel_p4d, *user_p4d;
 	pgd_t *kernel_pgd;
@@ -448,7 +448,7 @@ static void __init pti_clone_user_shared(void)/* 页表隔离 */
 {
 	unsigned int cpu;
 
-	pti_clone_p4d(CPU_ENTRY_AREA_BASE); /*  */
+	pti_clone_p4d(CPU_ENTRY_AREA_BASE);
 
 	for_each_possible_cpu(cpu) {/* 遍历 CPU */
 		/*
@@ -505,7 +505,7 @@ static void __init pti_setup_espfix64(void)
 /*
  * Clone the populated PMDs of the entry text and force it RO.
  */
-static void pti_clone_entry_text(void)  /*  */
+static void pti_clone_entry_text(void)
 {
 	pti_clone_pgtable((unsigned long) __entry_text_start,
 			  (unsigned long) __entry_text_end,
@@ -596,7 +596,7 @@ static void pti_clone_kernel_text(void)
 	set_memory_global(start, (end_global - start) >> PAGE_SHIFT);
 }
 
-static void pti_set_kernel_image_nonglobal(void)    /*  */
+static void pti_set_kernel_image_nonglobal(void)
 {
 	/*
 	 * The identity map is created with PMDs, regardless of the
@@ -612,7 +612,7 @@ static void pti_set_kernel_image_nonglobal(void)    /*  */
 	 * pti_clone_kernel_text() map put _PAGE_GLOBAL back for
 	 * areas that are mapped to userspace.
 	 */
-	set_memory_nonglobal(start, (end - start) >> PAGE_SHIFT);   /*  */
+	set_memory_nonglobal(start, (end - start) >> PAGE_SHIFT);
 }
 
 /*
@@ -654,11 +654,11 @@ void __init pti_init(void)  /* 页表隔离  */
 	pti_clone_user_shared();    /* 页表隔离 */
 
 	/* Undo all global bits from the init pagetables in head_64.S: */
-	pti_set_kernel_image_nonglobal();   /*  */
+	pti_set_kernel_image_nonglobal();
 	/* Replace some of the global bits just for shared entry text: */
-	pti_clone_entry_text(); /*  */
-	pti_setup_espfix64();   /*  */
-	pti_setup_vsyscall();   /*  */
+	pti_clone_entry_text();
+	pti_setup_espfix64();
+	pti_setup_vsyscall();
 }
 
 /*

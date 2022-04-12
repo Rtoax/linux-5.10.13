@@ -100,7 +100,7 @@ enum clock_event_state {
  * @list:		list head for the management code
  * @owner:		module reference
  */
-struct clock_event_device { /*  */
+struct clock_event_device {
     /**
      *  时钟处理函数
      *  可能等于的值
@@ -219,11 +219,11 @@ extern int tick_receive_broadcast(void);
 extern void tick_setup_hrtimer_broadcast(void);
 extern int tick_check_broadcast_expired(void);
 # else
-/*  */
+
 # endif
 
 #else /* !CONFIG_GENERIC_CLOCKEVENTS: */
-/*  */
+
 #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
 
 #endif /* _LINUX_CLOCKCHIPS_H */

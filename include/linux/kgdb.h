@@ -361,6 +361,6 @@ extern bool dbg_is_early;
 extern void __init dbg_late_init(void);
 extern void kgdb_panic(const char *msg);
 #else /* ! CONFIG_KGDB */
-/*  */
+
 #endif /* ! CONFIG_KGDB */
 #endif /* _KGDB_H_ */

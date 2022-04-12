@@ -113,7 +113,7 @@ enum fixed_addresses {  /* 每个固定映射的地址都由一个整数索引�
 	FIX_APEI_GHES_NMI,
 #endif
 
-	__end_of_permanent_fixed_addresses,/*  */
+	__end_of_permanent_fixed_addresses,
 
 	/*
 	 * 512 temporary boot-time mappings, used by early_ioremap(),

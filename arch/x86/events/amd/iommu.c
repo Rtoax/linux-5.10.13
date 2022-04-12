@@ -397,7 +397,7 @@ static const struct attribute_group *amd_iommu_attr_groups[] = {
 	NULL,
 };
 
-static const struct pmu __initconst iommu_pmu  = {  /*  */
+static const struct pmu __initconst iommu_pmu  = {
 	.event_init	= perf_iommu_event_init,
 	.add		= perf_iommu_add,
 	.del		= perf_iommu_del,
@@ -480,4 +480,4 @@ static __init int amd_iommu_pc_init(void)
 	return 0;
 }
 
-device_initcall(amd_iommu_pc_init); /*  */
+device_initcall(amd_iommu_pc_init);

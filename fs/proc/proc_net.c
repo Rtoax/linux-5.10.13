@@ -101,7 +101,7 @@ void bpf_iter_fini_seq_net(void *priv_data)
 #endif
 }
 /**
- *  
+ *
  */
 struct proc_dir_entry *proc_create_net_data(const char *name, umode_t mode,
 		struct proc_dir_entry *parent, const struct seq_operations *ops,
@@ -390,7 +390,7 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
 	.exit = proc_net_ns_exit,
 };
 
-int __init proc_net_init(void)  /*  */
+int __init proc_net_init(void)
 {
 	proc_symlink("net", NULL, "self/net");
 

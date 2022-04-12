@@ -53,14 +53,14 @@
 #include <asm/x86_init.h>
 #include <asm/uv/uv.h>
 
-static unsigned long __initdata efi_systab_phys ;/*  */
+static unsigned long __initdata efi_systab_phys ;
 static unsigned long prop_phys = EFI_INVALID_TABLE_ADDR;
 static unsigned long uga_phys = EFI_INVALID_TABLE_ADDR;
 static unsigned long efi_runtime, efi_nr_tables;
 
 unsigned long efi_fw_vendor, efi_config_table;
 
-static const efi_config_table_type_t __initconst arch_tables[]  = {/*  */
+static const efi_config_table_type_t __initconst arch_tables[]  = {
 	{EFI_PROPERTIES_TABLE_GUID,	&prop_phys,		"PROP"		},
 	{UGA_IO_PROTOCOL_GUID,		&uga_phys,		"UGA"		},
 #ifdef CONFIG_X86_UV
@@ -97,7 +97,7 @@ static const unsigned long * const efi_tables[] = {
 
 u64 efi_setup;		/* efi setup_data physical address */
 
-static int __initdata add_efi_memmap ;/*  */
+static int __initdata add_efi_memmap ;
 static int __init setup_add_efi_memmap(char *arg)
 {
 	add_efi_memmap = 1;
@@ -212,7 +212,7 @@ static bool do_efi_soft_reserve(void)
 	return false;
 }
 
-int __init efi_memblock_x86_reserve_range(void) /*  */
+int __init efi_memblock_x86_reserve_range(void)
 {
 	struct efi_info *e = &boot_params.efi_info;
 	struct efi_memory_map_data data;
@@ -703,7 +703,7 @@ static void * __init efi_map_regions(int *count, int *pg_shift)
 	return new_memmap;
 }
 
-static void __init kexec_enter_virtual_mode(void)   /*  */
+static void __init kexec_enter_virtual_mode(void)
 {
 #ifdef CONFIG_KEXEC_CORE
 	efi_memory_desc_t *md;
@@ -851,7 +851,7 @@ err:
 	clear_bit(EFI_RUNTIME_SERVICES, &efi.flags);
 }
 
-void __init efi_enter_virtual_mode(void)    /*  */
+void __init efi_enter_virtual_mode(void)
 {
 	if (efi_enabled(EFI_PARAVIRT))
 		return;
@@ -859,11 +859,11 @@ void __init efi_enter_virtual_mode(void)    /*  */
 	efi.runtime = (efi_runtime_services_t *)efi_runtime;
 
 	if (efi_setup)
-		kexec_enter_virtual_mode(); /*  */
+		kexec_enter_virtual_mode();
 	else
-		__efi_enter_virtual_mode(); /*  */
+		__efi_enter_virtual_mode();
 
-	efi_dump_pagetable();   /*  */
+	efi_dump_pagetable();
 }
 
 bool efi_is_table_address(unsigned long phys_addr)

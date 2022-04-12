@@ -174,7 +174,7 @@ int memory_notify(unsigned long val, void *v)
  * OK to have direct references to sparsemem variables in here.
  */
 static int
-memory_block_action(unsigned long start_section_nr, unsigned long action,   /*  */
+memory_block_action(unsigned long start_section_nr, unsigned long action,
 		    int online_type, int nid)
 {
 	unsigned long start_pfn;
@@ -199,7 +199,7 @@ memory_block_action(unsigned long start_section_nr, unsigned long action,   /*  
 	return ret;
 }
 
-static int memory_block_change_state(struct memory_block *mem,  /*  */
+static int memory_block_change_state(struct memory_block *mem,
 		unsigned long to_state, unsigned long from_state_req)
 {
 	int ret = 0;
@@ -724,7 +724,7 @@ static const struct attribute_group *memory_root_attr_groups[] = {
  * is called, we cannot have concurrent creation/deletion of memory block
  * devices, the device_hotplug_lock is not needed.
  */
-void __init memory_dev_init(void)   /*  */
+void __init memory_dev_init(void)
 {
 	int ret;
 	unsigned long block_sz, nr;

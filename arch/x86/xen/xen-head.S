@@ -55,7 +55,7 @@ SYM_CODE_END(startup_xen)
 
 #ifdef CONFIG_XEN_PV_SMP
 .pushsection .text
-SYM_CODE_START(asm_cpu_bringup_and_idle)    /*  */
+SYM_CODE_START(asm_cpu_bringup_and_idle)
 	UNWIND_HINT_EMPTY
 
 	call cpu_bringup_and_idle

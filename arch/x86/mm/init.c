@@ -178,12 +178,12 @@ void  __init early_alloc_pgt_buf(void)
 
     //调用 `extend_brk` 函数并且传入两个参数: size和align,会在 `brk` 段中预留给定大小的空间
     //用 `_pa` 宏得到了新的 `brk` 区段的物理地址
-    // 
+    //
     // 在 brk_end 位置插入 6页，并返回 起始地址
 	base = __pa(extend_brk(tables/* 6*4096 */, PAGE_SIZE/* 4096 */));
 
     //计算页表缓冲区的基地址和结束地址
-    /* 
+    /*
         在 brk 区域 分配一个 pgt buf
     */
 	pgt_buf_start = base >> PAGE_SHIFT;
@@ -711,7 +711,7 @@ static void __init init_trampoline(void)
 	if (!kaslr_memory_enabled())    /* 如果 KASLR 使能 */
 		trampoline_pgd_entry = init_top_pgt[pgd_index(__PAGE_OFFSET)];
 	else
-		init_trampoline_kaslr();    /*  */
+		init_trampoline_kaslr();
 #endif
 }
 
@@ -731,15 +731,15 @@ void __init init_mem_mapping(void)
 #endif
 
 	/* the ISA range is always mapped regardless of memory holes */
-	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);   /*  */
+	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
 	/* Init the trampoline(蹦床), possibly with KASLR(地址空间配置随机加载) memory offset */
-	init_trampoline();  /*  */
+	init_trampoline();
 
 	/*
 	 * If the allocation is in bottom-up direction, we setup direct mapping
 	 * in bottom-up, otherwise we setup direct mapping in top-down.
-	 */ /*  */
+	 */
 	if (memblock_bottom_up()) {
 		unsigned long kernel_end = __pa_symbol(_end);
 
@@ -1004,7 +1004,7 @@ void __init memblock_find_dma_reserve(void)
 }
 
 /**
- *  初始化 zone 
+ *  初始化 zone
  */
 // initialize sizes of zones 初始化 ZONE 大小
 void __init zone_sizes_init(void)
@@ -1017,18 +1017,18 @@ void __init zone_sizes_init(void)
     /**
      *  初始化 DMA
      */
-	max_zone_pfns[ZONE_DMA]		= min(MAX_DMA_PFN/* 1024*16 */, max_low_pfn);    
+	max_zone_pfns[ZONE_DMA]		= min(MAX_DMA_PFN/* 1024*16 */, max_low_pfn);
 #endif
 
 #ifdef CONFIG_ZONE_DMA32
     /**
-     *  
+     *
      */
 	max_zone_pfns[ZONE_DMA32]	= min(MAX_DMA32_PFN/* 1<<20 */, max_low_pfn);
 #endif
 
     /**
-     *  
+     *
      */
 	max_zone_pfns[ZONE_NORMAL]	= max_low_pfn;
 
@@ -1039,12 +1039,12 @@ void __init zone_sizes_init(void)
     /**
      *  free_area 初始化
      */
-	free_area_init(max_zone_pfns);  /*  */
+	free_area_init(max_zone_pfns);
 }
 
 
 /**
- *  
+ *
  */
 __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.loaded_mm = &init_mm,

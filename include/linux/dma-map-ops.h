@@ -87,7 +87,7 @@ static inline void set_dma_ops(struct device *dev,
 	dev->dma_ops = dma_ops;
 }
 #else /* CONFIG_DMA_OPS */
-/*  */
+
 #endif /* CONFIG_DMA_OPS */
 
 #ifdef CONFIG_DMA_CMA
@@ -113,7 +113,7 @@ void dma_free_contiguous(struct device *dev, struct page *page, size_t size);
 
 void dma_contiguous_early_fixup(phys_addr_t base, unsigned long size);
 #else /* CONFIG_DMA_CMA */
-/*  */
+
 #endif /* CONFIG_DMA_CMA*/
 
 #ifdef CONFIG_DMA_PERNUMA_CMA

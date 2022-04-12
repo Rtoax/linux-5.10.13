@@ -2357,7 +2357,7 @@ static void queued_read_lock_tests(void)
 	pr_cont("\n");
 }
 
-void locking_selftest(void) /*  */
+void locking_selftest(void)
 {
 	/*
 	 * Got a locking failure before the selftest ran?

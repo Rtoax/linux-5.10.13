@@ -60,15 +60,15 @@ struct perf_guest_info_callbacks {
 #include <asm/local.h>
 
 /**
- *  
+ *
  */
 struct perf_callchain_entry {
     /**
-     *  
+     *
      */
 	__u64				nr;
     /**
-     *  
+     *
      */
 	__u64				ip[]; /* /proc/sys/kernel/perf_event_max_stack */
 };
@@ -268,7 +268,7 @@ struct perf_event;
 
 /**
  * pmu::capabilities flags
- */ /*  */
+ */
 #define PERF_PMU_CAP_NO_INTERRUPT		0x01
 #define PERF_PMU_CAP_NO_NMI			0x02
 #define PERF_PMU_CAP_AUX_NO_SG			0x04
@@ -292,8 +292,8 @@ struct pmu {    /* 性能监控单元 */
 
 	struct module			*module;    /* 隶属模块 */
 	struct device			*dev;       /* 隶属设备 */
-	const struct attribute_group	**attr_groups;  /*  */
-	const struct attribute_group	**attr_update;  /*  */
+	const struct attribute_group	**attr_groups;
+	const struct attribute_group	**attr_update;
 	const char			*name;  /* 名称 */
 	int				type;       /* 类型, PERF_TYPE_SOFTWARE .. */
 
@@ -302,8 +302,8 @@ struct pmu {    /* 性能监控单元 */
 	 */
 	int				capabilities;   /* 能力 PERF_PMU_CAP_NO_NMI ...*/
 
-	int __percpu			*pmu_disable_count; /*  */
-	struct perf_cpu_context __percpu *pmu_cpu_context;  /*  */
+	int __percpu			*pmu_disable_count;
+	struct perf_cpu_context __percpu *pmu_cpu_context;
 	atomic_t			exclusive_cnt; /* < 0: cpu; > 0: tsk 独占计数 */
 	int				task_ctx_nr;    /* perf_hw_context ... */
 	int				hrtimer_interval_ms;
@@ -389,7 +389,7 @@ struct pmu {    /* 性能监控单元 */
 	 *
 	 * ->start() with PERF_EF_RELOAD will reprogram the counter
 	 *  value, must be preceded by a ->stop() with PERF_EF_UPDATE.
-	 *  
+	 *
 	 *  x86 -> x86_pmu_start()
      *  x86 -> x86_pmu_stop()
      */
@@ -585,7 +585,7 @@ struct perf_addr_filter_range {
 /**
  * enum perf_event_state - the states of an event:
  *
- *   
+ *
  */
 enum perf_event_state {
 	PERF_EVENT_STATE_DEAD		= -4,
@@ -635,7 +635,7 @@ struct perf_cgroup;
 struct perf_buffer;
 
 /**
- *  
+ *
  */
 struct pmu_event_list {
 	raw_spinlock_t		lock;
@@ -654,7 +654,7 @@ struct pmu_event_list {
  *
  *  性能事件
  */
-struct perf_event { /*  */
+struct perf_event {
 #ifdef CONFIG_PERF_EVENTS
 	/*
 	 * entry onto perf_event_context::event_list;
@@ -770,7 +770,7 @@ struct perf_event { /*  */
 	int				rcu_pending;
 
 	/**
-	 *  poll related 
+	 *  poll related
 	 *  在 `perf_poll()` 中使用
 	 */
 	wait_queue_head_t		waitq;
@@ -831,7 +831,7 @@ struct perf_event { /*  */
 
 
 /**
- *  
+ *
  */
 struct perf_event_groups {  /* 红黑树 */
 	struct rb_root	tree;
@@ -858,10 +858,10 @@ struct perf_event_context { /* perf event上下文 */
 	struct mutex			mutex;
 
     /**
-     *  
+     *
      */
 	struct list_head		active_ctx_list;
-	struct perf_event_groups	pinned_groups;      /*  */
+	struct perf_event_groups	pinned_groups;
 	struct perf_event_groups	flexible_groups;
 	struct list_head		event_list;
 
@@ -895,18 +895,18 @@ struct perf_event_context { /* perf event上下文 */
 	struct perf_event_context	*parent_ctx;
 
     /**
-     *  
+     *
      */
 	u64				parent_gen;
 	u64				generation;
 	int				pin_count;
-    
+
 #ifdef CONFIG_CGROUP_PERF
 	int				nr_cgroups;	 /* cgroup evts */
 #endif
 
     /**
-     *  
+     *
      */
 	void				*task_ctx_data; /* pmu specific data */
 	struct rcu_head			rcu_head;
@@ -929,7 +929,7 @@ struct perf_cpu_context {   /* CPU perf 上下文 */
 
     /* 在 __perf_mux_hrtimer_init() 中初始化 */
 	raw_spinlock_t			hrtimer_lock;
-	struct hrtimer			hrtimer;        
+	struct hrtimer			hrtimer;
 	ktime_t				hrtimer_interval;
 	unsigned int			hrtimer_active;
 
@@ -951,7 +951,7 @@ struct perf_cpu_context {   /* CPU perf 上下文 */
 };
 
 /**
- *  
+ *
  */
 struct perf_output_handle {
 	struct perf_event		*event;

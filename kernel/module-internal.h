@@ -11,7 +11,7 @@
 /**
  *  模块加载信息
  */
-struct load_info {  /*  */
+struct load_info {
     /**
      *
      */

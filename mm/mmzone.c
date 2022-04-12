@@ -10,7 +10,7 @@
 #include <linux/mm.h>
 #include <linux/mmzone.h>
 /**
- *  
+ *
  */
 struct pglist_data *first_online_pgdat(void)    /* 第一个 页表 */
 {
@@ -19,7 +19,7 @@ struct pglist_data *first_online_pgdat(void)    /* 第一个 页表 */
 
 struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)    /* 下一个 */
 {
-	int nid = next_online_node(pgdat->node_id); /*  */
+	int nid = next_online_node(pgdat->node_id);
 
 	if (nid == MAX_NUMNODES)
 		return NULL;
@@ -59,7 +59,7 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 
 /* Returns the next zone at or below highest_zoneidx in a zonelist *//* 遍历 */
 /**
- *  遍历zoneref 
+ *  遍历zoneref
  *
  *  找到一个 zonelist_zone_idx(z) <= highest_zoneidx 的zoneref
  */
@@ -71,7 +71,7 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
 	 * Find the next suitable zone to use for the allocation.
 	 * Only filter based on nodemask if it's set
 	 */
-	if (unlikely(nodes == NULL))    /*  */
+	if (unlikely(nodes == NULL))
 		while (zonelist_zone_idx(z) > highest_zoneidx)
 			z++;
 

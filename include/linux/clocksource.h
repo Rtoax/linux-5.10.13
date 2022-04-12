@@ -285,7 +285,7 @@ static inline void __clocksource_update_freq_khz(struct clocksource *cs, u32 khz
 #ifdef CONFIG_ARCH_CLOCKSOURCE_INIT
 extern void clocksource_arch_init(struct clocksource *cs);
 #else
-/*  */
+
 #endif
 
 extern int timekeeping_notify(struct clocksource *clock);

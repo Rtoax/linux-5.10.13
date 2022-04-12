@@ -402,7 +402,7 @@ static void __net_exit ip_rt_do_proc_exit(struct net *net)
 #endif
 }
 
-static struct pernet_operations __net_initdata ip_rt_proc_ops  =  {/*  */
+static struct pernet_operations __net_initdata ip_rt_proc_ops  =  {
 	.init = ip_rt_do_proc_init,
 	.exit = ip_rt_do_proc_exit,
 };
@@ -413,7 +413,7 @@ static int __init ip_rt_proc_init(void)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_PROC_FS */
 
 static inline bool rt_is_expired(const struct rtable *rth)
@@ -616,7 +616,7 @@ static struct fib_nh_exception *fnhe_oldest(struct fnhe_hash_bucket *hash)
 
 static inline u32 fnhe_hashfun(__be32 daddr)
 {
-	static u32 __read_mostly fnhe_hashrnd ;/*  */
+	static u32 __read_mostly fnhe_hashrnd ;
 	u32 hval;
 
 	net_get_random_once(&fnhe_hashrnd, sizeof(fnhe_hashrnd));
@@ -2760,7 +2760,7 @@ struct dst_entry *ipv4_blackhole_route(struct net *net, struct dst_entry *dst_or
 }
 
 /**
- *  
+ *
  */
 struct rtable *ip_route_output_flow(struct net *net, struct flowi4 *flp4,
 				    const struct sock *sk)
@@ -2787,7 +2787,7 @@ struct rtable *ip_route_output_tunnel(struct sk_buff *skb,
 				      const struct ip_tunnel_info *info,
 				      u8 protocol, bool use_cache)
 {
-#ifdef CONFIG_DST_CACHE /*  */
+#ifdef CONFIG_DST_CACHE
 	struct dst_cache *dst_cache;
 #endif
 	struct rtable *rt = NULL;
@@ -3341,7 +3341,7 @@ void ip_rt_multicast_event(struct in_device *in_dev)
 }
 
 #ifdef CONFIG_SYSCTL
-static int __read_mostly ip_rt_gc_interval      = 60 * HZ;/*  */
+static int __read_mostly ip_rt_gc_interval      = 60 * HZ;
 static int __read_mostly ip_rt_gc_min_interval 	= HZ / 2;
 static int __read_mostly ip_rt_gc_elasticity 	= 8;
 static int __read_mostly ip_min_valid_pmtu 	    = IPV4_MIN_MTU;
@@ -3568,7 +3568,7 @@ static __net_initdata struct pernet_operations ipv4_inetpeer_ops = {
 };
 
 #ifdef CONFIG_IP_ROUTE_CLASSID
-struct ip_rt_acct __percpu __read_mostly *ip_rt_acct ;/*  */
+struct ip_rt_acct __percpu __read_mostly *ip_rt_acct ;
 #endif /* CONFIG_IP_ROUTE_CLASSID */
 
 int __init ip_rt_init(void)

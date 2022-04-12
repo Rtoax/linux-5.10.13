@@ -153,7 +153,7 @@ struct bpf_map_ops {
 /**
  *  bpf 映射的内存
  */
-struct bpf_map_memory { /*  */
+struct bpf_map_memory {
 	u32 pages;
 	struct user_struct *user;
 };
@@ -161,7 +161,7 @@ struct bpf_map_memory { /*  */
 /**
  *
  */
-struct bpf_map {    /*  */
+struct bpf_map {
 	/* The first two cachelines with read-mostly members of which some
 	 * are also accessed in fast-path (e.g. ops, max_entries).
 	 */
@@ -406,7 +406,7 @@ enum bpf_access_type {
  * if (id > 0) means that some 'var' was added
  * if (off > 0) means that 'imm' was added
  */
-enum bpf_reg_type { /*  */
+enum bpf_reg_type {
 	NOT_INIT = 0,		 /* nothing was written into register */
 	SCALAR_VALUE,		 /* reg doesn't contain a valid pointer */
 	PTR_TO_CTX,		 /* reg points to bpf_context */
@@ -732,7 +732,7 @@ void bpf_image_ksym_del(struct bpf_ksym *ksym);
 void bpf_ksym_add(struct bpf_ksym *ksym);
 void bpf_ksym_del(struct bpf_ksym *ksym);
 #else
-/*  */
+
 #endif
 
 struct bpf_func_info_aux {
@@ -762,7 +762,7 @@ struct bpf_jit_poke_descriptor {
 };
 
 /* reg_type info for ctx arguments */
-struct bpf_ctx_arg_aux {    /*  */
+struct bpf_ctx_arg_aux {
 	u32 offset;
 	enum bpf_reg_type reg_type;
 	u32 btf_id;
@@ -939,7 +939,7 @@ static inline void bpf_module_put(const void *data, struct module *owner)
 		module_put(owner);
 }
 #else
-/*  */
+
 
 #endif
 
@@ -1436,7 +1436,7 @@ typedef int (*bpf_iter_fill_link_info_t)(const struct bpf_iter_aux_info *aux,
 					 struct bpf_link_info *info);
 
 #define BPF_ITER_CTX_ARG_MAX 2
-struct bpf_iter_reg {   /*  */
+struct bpf_iter_reg {
 	const char *target;
 	bpf_iter_attach_target_t attach_target;
 	bpf_iter_detach_target_t detach_target;
@@ -1589,7 +1589,7 @@ struct bpf_link *bpf_link_by_id(u32 id);
 
 const struct bpf_func_proto *bpf_base_func_proto(enum bpf_func_id func_id);
 #else /* !CONFIG_BPF_SYSCALL */
-/*  */
+
 #endif /* CONFIG_BPF_SYSCALL */
 
 static inline struct bpf_prog *bpf_prog_get_type(u32 ufd,
@@ -1642,7 +1642,7 @@ static inline bool bpf_map_is_dev_bound(struct bpf_map *map)
 struct bpf_map *bpf_map_offload_map_alloc(union bpf_attr *attr);
 void bpf_map_offload_map_free(struct bpf_map *map);
 #else
-/*  */
+
 
 #endif /* CONFIG_NET && CONFIG_BPF_SYSCALL */
 
@@ -1688,7 +1688,7 @@ int bpf_fd_reuseport_array_lookup_elem(struct bpf_map *map, void *key,
 int bpf_fd_reuseport_array_update_elem(struct bpf_map *map, void *key,
 				       void *value, u64 map_flags);
 #else
-/*  */
+
 
 #endif /* CONFIG_BPF_SYSCALL */
 #endif /* defined(CONFIG_INET) && defined(CONFIG_BPF_SYSCALL) */
@@ -1770,7 +1770,7 @@ u32 bpf_sock_convert_ctx_access(enum bpf_access_type type,
 				struct bpf_prog *prog,
 				u32 *target_size);
 #else
-/*  */
+
 
 #endif
 
@@ -1802,7 +1802,7 @@ u32 bpf_xdp_sock_convert_ctx_access(enum bpf_access_type type,
 				    struct bpf_prog *prog,
 				    u32 *target_size);
 #else
-/*  */
+
 
 #endif /* CONFIG_INET */
 

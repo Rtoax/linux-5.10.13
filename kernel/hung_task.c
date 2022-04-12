@@ -62,7 +62,7 @@ static bool hung_task_call_panic;
 static bool hung_task_show_all_bt;
 
 /**
- *  
+ *
  */
 static struct task_struct *watchdog_task;
 
@@ -336,7 +336,7 @@ static int watchdog(void *dummy)    /* watchdog */
  *   如果有 D 状态线程，则检查最近是否有调度切换。
  *   如果没有切换，则说明发生了 hung task
  */
-static int __init hung_task_init(void)  /*  */
+static int __init hung_task_init(void)
 {
 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block); /* 通知链 */
 
@@ -344,9 +344,9 @@ static int __init hung_task_init(void)  /*  */
 	pm_notifier(hungtask_pm_notify, 0); /* 电源管理 */
 
     /**
-     *  
+     *
      */
-	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");  /*  */
+	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
 
 	return 0;
 }

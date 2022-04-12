@@ -46,7 +46,7 @@
  * int next_node(node, mask)		Next node past 'node', or MAX_NUMNODES
  * int next_node_in(node, mask)		Next node past 'node', or wrap to first,
  *					or MAX_NUMNODES
- * int first_unset_node(mask)		First node not set in mask, or 
+ * int first_unset_node(mask)		First node not set in mask, or
  *					MAX_NUMNODES
  *
  * nodemask_t nodemask_of_node(node)	Return nodemask with bit 'node' set
@@ -428,7 +428,7 @@ static inline void node_clear_state(int node, enum node_states state)
 }
 
 /**
- *  
+ *
  */
 static inline int num_node_state(enum node_states state)
 {
@@ -436,13 +436,13 @@ static inline int num_node_state(enum node_states state)
 }
 
 #define for_each_node_state(__node, __state) \
-	for_each_node_mask((__node), node_states[__state])  /*  */
+	for_each_node_mask((__node), node_states[__state])
 /**
- *  
+ *
  */
 #define first_online_node	first_node(node_states[N_ONLINE])   /* 第一个 NUMA NODE */
-#define first_memory_node	first_node(node_states[N_MEMORY])   /*  */
-static inline int next_online_node(int nid) /*  */
+#define first_memory_node	first_node(node_states[N_MEMORY])
+static inline int next_online_node(int nid)
 {
 	return next_node(nid, node_states[N_ONLINE]);
 }
@@ -467,17 +467,17 @@ static inline void node_set_offline(int nid)
 }
 
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_NUMA) && (MAX_NUMNODES > 1)
 extern int node_random(const nodemask_t *maskp);
 #else
-/*  */
+
 #endif
 
 /**
- *  
+ *
  */
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]
@@ -487,7 +487,7 @@ extern int node_random(const nodemask_t *maskp);
 #define node_online(node)	node_state((node), N_ONLINE)    /* NODE 是否在线 */
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 /**
- *  
+ *
  */
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)

@@ -187,7 +187,7 @@ struct scan_control {
 		}							\
 	} while (0)
 #else
-/*  */
+
 #endif
 
 /*
@@ -306,7 +306,7 @@ static bool writeback_throttling_sane(struct scan_control *sc)
 	return false;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -668,7 +668,7 @@ unlock:
 	return freed;
 }
 #else /* CONFIG_MEMCG */
-/*  */
+
 #endif /* CONFIG_MEMCG */
 
 /**
@@ -690,7 +690,7 @@ unlock:
  * in order to get the scan target.
  *
  * Returns the number of reclaimed slab objects.
- */ /*  */
+ */
 static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
                 				 struct mem_cgroup *memcg,
                 				 int priority)
@@ -2708,7 +2708,7 @@ unsigned long reclaim_pages(struct list_head *page_list)
 			list_move(&page->lru, &node_page_list);
 			continue;
 		}
-        /*  */
+
 		nr_reclaimed += shrink_page_list(&node_page_list,
 						NODE_DATA(nid),
 						&sc, &dummy_stat, false);
@@ -2734,7 +2734,7 @@ unsigned long reclaim_pages(struct list_head *page_list)
 
 	return nr_reclaimed;
 }
-                    /*  */
+
 /**
  *  根据 lru 链表类型来调用不同的处理函数
  */
@@ -3659,7 +3659,7 @@ static inline bool compaction_ready(struct zone *zone, struct scan_control *sc)
  *
  * 对页高速缓存和用户态地址空间进行页回收
  */
-static void shrink_zones(struct zonelist *zonelist, struct scan_control *sc)    /*  */
+static void shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 {
 	struct zoneref *z;
 	struct zone *zone;
@@ -4248,7 +4248,7 @@ static void age_active_anon(struct pglist_data *pgdat,
  *
  *  boosted: 提升
  */
-static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)  /*  */
+static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)
 {
 	int i;
 	struct zone *zone;
@@ -4285,7 +4285,7 @@ static bool pgdat_watermark_boosted(pg_data_t *pgdat, int highest_zoneidx)  /*  
  * 检查这个内存节点中是否由合适的 ZONE，其水位高于高水位并且能
  * 分配出 2 的 sc.order 次幂 个连续的物理页面
  */
-static bool pgdat_balanced(pg_data_t *pgdat, int order, int highest_zoneidx)    /*  */
+static bool pgdat_balanced(pg_data_t *pgdat, int order, int highest_zoneidx)
 {
 	int i;
 	unsigned long mark = -1;
@@ -4955,7 +4955,7 @@ kswapd_try_sleep:
 		 * @brief 是否需要停止
 		 *
 		 */
-		if (kthread_should_stop())  /*  */
+		if (kthread_should_stop())
 			break;
 
 		/*
@@ -5019,7 +5019,7 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 	if (!managed_zone(zone))
 		return;
 
-    /*  */
+
 	if (!cpuset_zone_allowed(zone, gfp_flags))
 		return;
 
@@ -5063,7 +5063,7 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
             /**
              *  唤醒 内存规整进程
              */
-			wakeup_kcompactd(pgdat, order, highest_zoneidx);    /*  */
+			wakeup_kcompactd(pgdat, order, highest_zoneidx);
         }
 		return;
 	}
@@ -5306,7 +5306,7 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
      */
 	struct scan_control sc = {
 		sc.nr_to_reclaim    = max(nr_pages, SWAP_CLUSTER_MAX/* 32 */),  /* 最少也要回收 32 个页面 */
-		sc.gfp_mask         = current_gfp_context(gfp_mask),    /*  */
+		sc.gfp_mask         = current_gfp_context(gfp_mask),
 		sc.order            = order,
 		sc.priority         = NODE_RECLAIM_PRIORITY,    /* 回收优先级, 和上面的32 有关系 */
 		sc.may_writepage    = !!(node_reclaim_mode & RECLAIM_WRITE),
@@ -5324,7 +5324,7 @@ static int __node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned in
     /**
      *  主动让出 cpu 防止 softlockup
      */
-	cond_resched(); /*  */
+	cond_resched();
 
     /**
      *  fs回收？
@@ -5435,7 +5435,7 @@ int node_reclaim(struct pglist_data *pgdat, gfp_t gfp_mask, unsigned int order)
     /**
      *  上面的条件都满足，进行回收
      */
-	ret = __node_reclaim(pgdat, gfp_mask, order);   /*  */
+	ret = __node_reclaim(pgdat, gfp_mask, order);
 
     /**
      *  清理 回收 锁定 位

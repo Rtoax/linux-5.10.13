@@ -1533,7 +1533,7 @@
  * @perf_event_write:
  * 	Write perf_event security info if allowed.
  */
-union security_list_options {/*  */
+union security_list_options {
 //	#define LSM_HOOK(RET, DEFAULT, NAME, ...) RET (*NAME)(__VA_ARGS__);
 //	#include "lsm_hook_defs.h"
 /* 展开 #include "lsm_hook_defs.h"  */
@@ -1887,11 +1887,11 @@ union security_list_options {/*  */
     int (*perf_event_write)(struct perf_event *event);
 
 #endif//__RTOAX________________________________________
-    
+
 //	#undef LSM_HOOK
 };
 
-struct security_hook_heads {/*  */
+struct security_hook_heads {
 //	#define LSM_HOOK(RET, DEFAULT, NAME, ...) struct hlist_head NAME;
 //	#include "lsm_hook_defs.h" /* 安全 钩子 函数 */
 /* 展开 #include "lsm_hook_defs.h"  */
@@ -2277,7 +2277,7 @@ struct security_hook_list {
 /*
  * Security blob size or offset data.
  */
-struct lsm_blob_sizes { /*  */
+struct lsm_blob_sizes {
 	int	lbs_cred;
 	int	lbs_file;
 	int	lbs_inode;
@@ -2324,8 +2324,8 @@ struct lsm_info {   /* Linux Security Modules */
 	struct lsm_blob_sizes *blobs; /* Optional: for blob sharing. */
 };
 
-extern struct lsm_info __start_lsm_info[], __end_lsm_info[];    /*  */
-extern struct lsm_info __start_early_lsm_info[], __end_early_lsm_info[];    /*  */
+extern struct lsm_info __start_lsm_info[], __end_lsm_info[];
+extern struct lsm_info __start_early_lsm_info[], __end_early_lsm_info[];
 
 #define DEFINE_LSM(lsm)							\
 	static struct lsm_info __lsm_##lsm				\

@@ -240,5 +240,5 @@ unsigned int stack_trace_save_user(unsigned long *store, unsigned int size)
 #endif
 
 #else /* CONFIG_ARCH_STACKWALK */
-/*  */
+
 #endif /* !CONFIG_ARCH_STACKWALK */

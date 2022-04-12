@@ -79,7 +79,7 @@ static inline void set_kthread_struct(void *kthread)/* 内核线程 */
 	 * can't be wrongly copied by copy_process(). We also rely on fact
 	 * that the caller can't exec, so PF_KTHREAD can't be cleared.
 	 */
-	current->set_child_tid = (__force void __user *)kthread;/*  */
+	current->set_child_tid = (__force void __user *)kthread;
 }
 
 static inline struct kthread *to_kthread(struct task_struct *k)
@@ -248,7 +248,7 @@ void kthread_parkme(void)
 }
 EXPORT_SYMBOL_GPL(kthread_parkme);
 
-static int kthread(void *_create)   /*  */
+static int kthread(void *_create)
 {
 	/* Copy data: it's on kthread's stack */
 	struct kthread_create_info *create = _create;
@@ -454,7 +454,7 @@ static void __kthread_bind_mask(struct task_struct *p, const struct cpumask *mas
 }
 
 static void __kthread_bind(struct task_struct *p, unsigned int cpu, long state)
-{/*  */
+{
 	__kthread_bind_mask(p, cpumask_of(cpu), state);
 }
 
@@ -617,7 +617,7 @@ int kthreadd(void *unused)  /* kthreadd 线程 2号进程， 管理调度其它�
 	struct task_struct *tsk = current;
 
 	/* Setup a clean context for our children to inherit. */
-	set_task_comm(tsk, "kthreadd"); /*  */
+	set_task_comm(tsk, "kthreadd");
 	ignore_signals(tsk);
 	set_cpus_allowed_ptr(tsk, housekeeping_cpumask(HK_FLAG_KTHREAD));
 	set_mems_allowed(node_states[N_MEMORY]);
@@ -629,7 +629,7 @@ int kthreadd(void *unused)  /* kthreadd 线程 2号进程， 管理调度其它�
 		set_current_state(TASK_INTERRUPTIBLE);
 		if (list_empty(&kthread_create_list))/* 如果是空 */
 			schedule(); /* 调度 */
-		__set_current_state(TASK_RUNNING);  /*  */
+		__set_current_state(TASK_RUNNING);
 
 		spin_lock(&kthread_create_lock);
 		while (!list_empty(&kthread_create_list)) {

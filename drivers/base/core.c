@@ -1060,7 +1060,7 @@ static int sync_state_resume_initcall(void)
 	device_links_supplier_sync_state_resume();
 	return 0;
 }
-late_initcall(sync_state_resume_initcall);  /*  */
+late_initcall(sync_state_resume_initcall);
 
 static void __device_links_supplier_defer_sync(struct device *sup)
 {
@@ -2830,7 +2830,7 @@ static int device_private_init(struct device *dev)
  * *not* succeeded, use *only* put_device() to drop the reference
  * count.
  */
-int device_add(struct device *dev)  /*  */
+int device_add(struct device *dev)
 {
 	struct device *parent;
 	struct kobject *kobj;
@@ -3023,8 +3023,8 @@ EXPORT_SYMBOL_GPL(device_add);
  */
 int device_register(struct device *dev)
 {
-	device_initialize(dev); /*  */
-	return device_add(dev); /*  */
+	device_initialize(dev);
+	return device_add(dev);
 }
 EXPORT_SYMBOL_GPL(device_register);
 

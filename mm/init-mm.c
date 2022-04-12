@@ -37,6 +37,6 @@ struct mm_struct init_mm = {/* 初始的 mm_struct 结构 */
 	init_mm.arg_lock	=  __SPIN_LOCK_UNLOCKED(init_mm.arg_lock),/* 保护 mm_struct 中的一些参数 */
 	init_mm.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),/* 保存可能被 swap 的链表 */
 	init_mm.user_ns	= &init_user_ns,/* namespace 资源的隔离， cgroup=资源的限制*/
-	init_mm.cpu_bitmap	= CPU_BITS_NONE,/*  */
+	init_mm.cpu_bitmap	= CPU_BITS_NONE,
 	INIT_MM_CONTEXT(init_mm)/* TODO */
 };

@@ -658,7 +658,7 @@ EXPORT_SYMBOL(cred_fscmp);
 /*
  * initialise the credentials stuff 初始化凭据的东西
  */
-void __init cred_init(void) /*  */
+void __init cred_init(void)
 {
 	/* allocate a slab in which we can store credentials */
 	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0,

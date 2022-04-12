@@ -1656,4 +1656,4 @@ static __init int init_uprobe_trace(void)
 	return 0;
 }
 
-fs_initcall(init_uprobe_trace); /*  */
+fs_initcall(init_uprobe_trace);

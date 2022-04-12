@@ -119,7 +119,7 @@ enum zone_type policy_zone = 0;
 /*
  * run-time system-wide default policy => local allocation
  */
-static struct mempolicy default_policy = {  /*  */
+static struct mempolicy default_policy = {
 	.refcnt = ATOMIC_INIT(1), /* never free it */
 	.mode = MPOL_PREFERRED, /* 偏好策略 */
 	.flags = MPOL_F_LOCAL,  /* 偏好在本地的内存节点分配 */
@@ -1775,13 +1775,13 @@ struct mempolicy *__get_vma_policy(struct vm_area_struct *vma,
 	struct mempolicy *pol = NULL;
 
 	if (vma) {
-        
+
         /* 文件映射 */
 		if (vma->vm_ops && vma->vm_ops->get_policy) {
 
             /* TODO */
 			pol = vma->vm_ops->get_policy(vma, addr);
-            
+
 		} else if (vma->vm_policy) {
 			pol = vma->vm_policy;
 
@@ -1908,8 +1908,8 @@ static unsigned interleave_nodes(struct mempolicy *policy)
 	next = next_node_in(me->il_prev, policy->v.nodes);  /* 选择下一个 node */
 	if (next < MAX_NUMNODES)
 		me->il_prev = next;
-    
-	return next;    /*  */
+
+	return next;
 }
 
 /*
@@ -2132,7 +2132,7 @@ out:
 /**
  *  Allocate a page in interleaved policy.
  *  Own path because it needs to do special accounting.  交织
- *  在某个node上分配 page 
+ *  在某个node上分配 page
  */
 static struct page *alloc_page_interleave(gfp_t gfp, unsigned order, unsigned nid)
 {
@@ -2156,7 +2156,7 @@ static struct page *alloc_page_interleave(gfp_t gfp, unsigned order, unsigned ni
 	if (page && page_to_nid(page) == nid) {
 		preempt_disable();  /* 不可抢占 */
         /**
-         *  
+         *
          */
 		__inc_numa_state(page_zone(page), NUMA_INTERLEAVE_HIT);
 		preempt_enable();
@@ -2209,7 +2209,7 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 		nid = interleave_nid(pol, vma, addr, PAGE_SHIFT + order);
 
         mpol_cond_put(pol);
-        
+
 		page = alloc_page_interleave(gfp, order, nid);
 		goto out;
 	}
@@ -2232,7 +2232,7 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 			hpage_node = pol->v.preferred_node;
 
 		nmask = policy_nodemask(gfp, pol);
-        
+
 		if (!nmask || node_isset(hpage_node, *nmask)) {
 			mpol_cond_put(pol);
 			/*
@@ -2262,7 +2262,7 @@ alloc_pages_vma(gfp_t gfp, int order, struct vm_area_struct *vma,
 
     /* 不是交织的 `MPOL_INTERLEAVE`  */
 	page = __alloc_pages_nodemask(gfp, order, preferred_nid, nmask);
-    
+
 	mpol_cond_put(pol);
 out:
 	return page;
@@ -2276,7 +2276,7 @@ EXPORT_SYMBOL(alloc_pages_vma);
  *		    %GFP_USER   user allocation,    用户态分配
  *      	%GFP_KERNEL kernel allocation,  内核太分配
  *      	%GFP_HIGHMEM highmem allocation,高端内存 x86-64 不用
- *      	%GFP_FS     don't call back into a file system. 
+ *      	%GFP_FS     don't call back into a file system.
  *      	%GFP_ATOMIC don't sleep.        不睡眠
  *	@order: Power of two of allocation size in pages. 0 is a single page.
  *
@@ -2297,7 +2297,7 @@ struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
     /**
      *  不在中断上下文并且不在 本NODE分配
      */
-	if (!in_interrupt() && !(gfp & __GFP_THISNODE)) /*  */
+	if (!in_interrupt() && !(gfp & __GFP_THISNODE))
 		pol = get_task_policy(current); /* 获取 策略 */
 
 	/**
@@ -2322,11 +2322,11 @@ struct page *alloc_pages_current(gfp_t gfp, unsigned order) /* 分配页 page */
 EXPORT_SYMBOL(alloc_pages_current);
 
 /**
- *  
+ *
  */
 int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)/* 内存策略 */
 {
-	struct mempolicy *pol = mpol_dup(vma_policy(src));  /*  */
+	struct mempolicy *pol = mpol_dup(vma_policy(src));
 
 	if (IS_ERR(pol))
 		return PTR_ERR(pol);
@@ -2354,7 +2354,7 @@ struct mempolicy *__mpol_dup(struct mempolicy *old) /* dup 内存策略 */
 		return ERR_PTR(-ENOMEM);
 
 	/* task's mempolicy is protected by alloc_lock */
-	if (old == current->mempolicy) {    /*  */
+	if (old == current->mempolicy) {
 		task_lock(current);
 		*new = *old;
 		task_unlock(current);
@@ -2832,7 +2832,7 @@ __setup("numa_balancing=", setup_numabalancing);
 #endif /* CONFIG_NUMA_BALANCING */
 
 /* assumes fs == KERNEL_DS */
-void __init numa_policy_init(void)  /*  */
+void __init numa_policy_init(void)
 {
 	nodemask_t interleave_nodes;
 	unsigned long largest = 0;

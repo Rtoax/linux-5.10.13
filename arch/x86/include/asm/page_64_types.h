@@ -9,7 +9,7 @@
 #ifdef CONFIG_KASAN
 #define KASAN_STACK_ORDER 1
 #else
-/*  */
+
 #endif
 
 //`PAGE_SIZE` is `(_AC(1,UL) << PAGE_SHIFT)` or `4096` bytes
@@ -68,7 +68,7 @@
 #ifdef CONFIG_X86_5LEVEL
 #define __VIRTUAL_MASK_SHIFT	(pgtable_l5_enabled() ? 56 : 47)
 #else
-//#define __VIRTUAL_MASK_SHIFT	47  /*  */
+//#define __VIRTUAL_MASK_SHIFT	47
 #endif
 
 /*

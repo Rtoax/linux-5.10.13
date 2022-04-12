@@ -28,18 +28,18 @@ struct bin_attribute;
 enum kobj_ns_type;
 
 /**
- *  
+ *
  */
-struct attribute {  /*  */
+struct attribute {
     /**
-     *  
+     *
      */
 	const char		*name;
     /**
-     *  
+     *
      */
 	umode_t			mode;
-    
+
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 	bool			ignore_lockdep:1;
 	struct lock_class_key	*key;
@@ -91,7 +91,7 @@ do {							\
  * @bin_attrs:	Pointer to NULL terminated list of binary attributes.
  *		Either attrs or bin_attrs or both must be provided.
  */
-struct attribute_group {    /*  */
+struct attribute_group {
 	const char		*name;
 	umode_t			(*is_visible)(struct kobject *,
 					      struct attribute *, int);
@@ -175,7 +175,7 @@ __ATTRIBUTE_GROUPS(_name)
 struct file;
 struct vm_area_struct;
 
-struct bin_attribute {  /*  */
+struct bin_attribute {
 	struct attribute	attr;
 	size_t			size;
 	void			*private;
@@ -345,7 +345,7 @@ int sysfs_emit(char *buf, const char *fmt, ...);
 int sysfs_emit_at(char *buf, int at, const char *fmt, ...);
 
 #else /* CONFIG_SYSFS */
-/*  */
+
 #endif /* CONFIG_SYSFS */
 
 static inline int __must_check sysfs_create_file(struct kobject *kobj,

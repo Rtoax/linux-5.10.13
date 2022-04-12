@@ -14,7 +14,7 @@
 #include <asm/intel-family.h>
 #include <asm/intel-mid.h>
 
-struct bt_sfi_data {    /*  */
+struct bt_sfi_data {
 	struct device *dev;
 	const char *name;
 	int (*setup)(struct bt_sfi_data *ddata);
@@ -56,7 +56,7 @@ static int __init tng_bt_sfi_setup(struct bt_sfi_data *ddata)
 	return 0;
 }
 
-static struct bt_sfi_data __initdata tng_bt_sfi_data  = {/*  */
+static struct bt_sfi_data __initdata tng_bt_sfi_data  = {
 	.setup	= tng_bt_sfi_setup,
 };
 

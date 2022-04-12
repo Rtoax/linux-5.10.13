@@ -20,7 +20,7 @@ struct dma_coherent_mem {
 	bool		use_dev_dma_pfn_offset;
 };
 
-static struct dma_coherent_mem __ro_after_init *dma_coherent_default_memory ;/*  */
+static struct dma_coherent_mem __ro_after_init *dma_coherent_default_memory ;
 
 static inline struct dma_coherent_mem *dev_get_coherent_memory(struct device *dev)
 {
@@ -111,7 +111,7 @@ static int dma_assign_coherent_memory(struct device *dev,
  * Declare a region of memory to be handed out by dma_alloc_coherent() when it
  * is asked for coherent memory for this device.  This shall only be used
  * from platform code, usually based on the device tree description.
- * 
+ *
  * phys_addr is the CPU physical address to which the memory is currently
  * assigned (this will be ioremapped so the CPU can access the region).
  *
@@ -315,7 +315,7 @@ int dma_mmap_from_global_coherent(struct vm_area_struct *vma, void *vaddr,
 #include <linux/of_fdt.h>
 #include <linux/of_reserved_mem.h>
 
-static struct reserved_mem __initdata *dma_reserved_default_memory ;/*  */
+static struct reserved_mem __initdata *dma_reserved_default_memory ;
 
 static int rmem_dma_device_init(struct reserved_mem *rmem, struct device *dev)
 {

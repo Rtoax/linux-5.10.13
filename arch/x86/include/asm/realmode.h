@@ -15,14 +15,14 @@
 #include <asm/io.h>
 
 /**
- *  This must match data at realmode/rm/header.S 
- *  
+ *  This must match data at realmode/rm/header.S
+ *
  */
 struct real_mode_header {
 	u32	text_start;
 	u32	ro_end;
 	/**
-	 *  SMP trampoline 
+	 *  SMP trampoline
 	 *  1. 在 `do_boot_cpu()` 中使用
 	 *  2. 参见  ：arch/x86/realmode/rm/trampoline_64.S
 	 */
@@ -64,15 +64,15 @@ struct trampoline_header {
 extern struct real_mode_header *real_mode_header;
 extern unsigned char real_mode_blob_end[];
 
-extern unsigned long initial_code;  /*  */
+extern unsigned long initial_code;
 extern unsigned long initial_gs;    /* 指向 `irq_stack` */
-extern unsigned long initial_stack; /*  */
+extern unsigned long initial_stack;
 #ifdef CONFIG_AMD_MEM_ENCRYPT
 extern unsigned long initial_vc_handler;
 #endif
 
 /**
- *  
+ *
  */
 extern unsigned char real_mode_blob[];
 extern unsigned char real_mode_relocs[];

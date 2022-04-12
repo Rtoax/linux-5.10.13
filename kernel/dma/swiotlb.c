@@ -182,7 +182,7 @@ void swiotlb_print_info(void)
  * call SWIOTLB when the operations are possible.  It needs to be called
  * before the SWIOTLB memory is used.
  */
-void __init swiotlb_update_mem_attributes(void) /*  */
+void __init swiotlb_update_mem_attributes(void)
 {
 	void *vaddr;
 	unsigned long bytes;
@@ -709,13 +709,13 @@ static int __init swiotlb_create_debugfs(void)
 {
 	struct dentry *root;
 
-	root = debugfs_create_dir("swiotlb", NULL); /*  */
+	root = debugfs_create_dir("swiotlb", NULL);
 	debugfs_create_ulong("io_tlb_nslabs", 0400, root, &io_tlb_nslabs);
 	debugfs_create_ulong("io_tlb_used", 0400, root, &io_tlb_used);
 	return 0;
 }
 
-late_initcall(swiotlb_create_debugfs);  /*  */
+late_initcall(swiotlb_create_debugfs);
 /* swiotlb : 纯软件的地址映射技术，为寻址能力受限的 DMA 提供软件上的地址映射 */
 
 #endif

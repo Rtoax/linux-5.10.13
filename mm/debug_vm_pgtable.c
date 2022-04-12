@@ -884,7 +884,7 @@ static unsigned long __init get_random_vaddr(void)
 	return random_vaddr;
 }
 
-static int __init debug_vm_pgtable(void)    /*  */
+static int __init debug_vm_pgtable(void)
 {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;
@@ -1041,4 +1041,4 @@ static int __init debug_vm_pgtable(void)    /*  */
 	mmdrop(mm);
 	return 0;
 }
-late_initcall(debug_vm_pgtable);      /*  */
+late_initcall(debug_vm_pgtable);

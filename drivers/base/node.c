@@ -1065,4 +1065,4 @@ static int __init register_node_type(void)
 	 */
 	return ret;
 }
-postcore_initcall(register_node_type);  /*  */
+postcore_initcall(register_node_type);

@@ -38,7 +38,7 @@ struct debugfs_regset32 {
 	struct device *dev;	/* Optional device for Runtime PM */
 };
 
-struct debugfs_u32_array {  /*  */
+struct debugfs_u32_array {
 	u32 *array;
 	u32 n_elements;
 };
@@ -157,7 +157,7 @@ ssize_t debugfs_write_file_bool(struct file *file, const char __user *user_buf,
 				size_t count, loff_t *ppos);
 
 #else
-/*  */
+
 #endif
 
 /**

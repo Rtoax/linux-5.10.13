@@ -86,7 +86,7 @@ void __init hpet_time_init(void)
 	setup_default_timer_irq();
 }
 
-static __init void x86_late_time_init(void) /*  */
+static __init void x86_late_time_init(void)
 {
 	/*
 	 * Before PIT/HPET init, select the interrupt mode. This is required
@@ -102,7 +102,7 @@ static __init void x86_late_time_init(void) /*  */
 	 * delivering IRQs.
 	 */
 	x86_init.irqs.intr_mode_init();     /* 中断模式初始化 */
-	tsc_init(); /*  */
+	tsc_init();
 
 	if (static_cpu_has(X86_FEATURE_WAITPKG))
 		use_tpause_delay();
@@ -114,7 +114,7 @@ static __init void x86_late_time_init(void) /*  */
  */
 void __init time_init(void)
 {
-	late_time_init = x86_late_time_init;    /*  */
+	late_time_init = x86_late_time_init;
 }
 
 /*

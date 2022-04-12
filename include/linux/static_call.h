@@ -140,7 +140,7 @@ extern int __init static_call_init(void);
 
 
 /**
- *  
+ *
  */
 struct static_call_mod {
 	struct static_call_mod *next;
@@ -151,9 +151,9 @@ struct static_call_mod {
 /**
  *  static call key
  */
-struct static_call_key {    /*  */
-	void *func;             /*  */
-	union {                 /*  */
+struct static_call_key {
+	void *func;
+	union {
 		/* bit 0: 0 = mods, 1 = sites */
 		unsigned long type;
 		struct static_call_mod *mods;
@@ -162,14 +162,14 @@ struct static_call_key {    /*  */
 };
 
 /**
- *  
+ *
  */
 extern void __static_call_update(struct static_call_key *key, void *tramp, void *func);
 extern int static_call_mod_init(struct module *mod);
 extern int static_call_text_reserved(void *start, void *end);
 
 /**
- *  
+ *
  */
 #define DEFINE_STATIC_CALL(name, _func)					\
 	DECLARE_STATIC_CALL(name, _func);				\

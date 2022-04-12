@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * include/linux/idr.h
- * 
+ *
  * 2002-10-18  written by Jim Houston jim.houston@ccur.com
  *	Copyright (C) 2002 by Concurrent Computer Corporation
  *
@@ -134,7 +134,7 @@ void idr_destroy(struct idr *);
  * This variation of idr_init() creates an IDR which will allocate IDs
  * starting at %base.
  */
-static inline void idr_init_base(struct idr *idr, int base) /*  */
+static inline void idr_init_base(struct idr *idr, int base)
 {
 	INIT_RADIX_TREE(&idr->idr_rt, IDR_RT_MARKER);
 	idr->idr_base = base;

@@ -70,7 +70,7 @@ struct rtc_class_ops {
 
 struct rtc_device;
 
-struct rtc_timer {  /*  */
+struct rtc_timer {
 	struct timerqueue_node node;
 	ktime_t period;
 	void (*func)(struct rtc_device *rtc);
@@ -244,7 +244,7 @@ static inline bool rtc_tv_nsec_ok(s64 set_offset_nsec,
 #ifdef CONFIG_RTC_HCTOSYS_DEVICE
 extern int rtc_hctosys_ret;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_RTC_NVMEM
@@ -252,13 +252,13 @@ int rtc_nvmem_register(struct rtc_device *rtc,
 		       struct nvmem_config *nvmem_config);
 void rtc_nvmem_unregister(struct rtc_device *rtc);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_RTC_INTF_SYSFS
 int rtc_add_group(struct rtc_device *rtc, const struct attribute_group *grp);
 int rtc_add_groups(struct rtc_device *rtc, const struct attribute_group **grps);
 #else
-/*  */
+
 #endif
 #endif /* _LINUX_RTC_H_ */

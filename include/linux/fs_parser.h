@@ -86,7 +86,7 @@ extern bool validate_constant_table(const struct constant_table *tbl, size_t tbl
 extern bool fs_validate_description(const char *name,
 				    const struct fs_parameter_spec *desc);
 #else
-/*  */
+
 #endif
 
 /*

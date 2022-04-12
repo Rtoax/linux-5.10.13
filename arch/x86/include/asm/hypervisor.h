@@ -74,6 +74,6 @@ static inline bool hypervisor_is_type(enum x86_hypervisor_type type)
 	return x86_hyper_type == type;
 }
 #else
-/*  */
+
 #endif /* CONFIG_HYPERVISOR_GUEST */
 #endif /* _ASM_X86_HYPERVISOR_H */

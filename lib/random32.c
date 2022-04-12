@@ -508,7 +508,7 @@ static void prandom_reseed(struct timer_list *unused)
 		struct siprand_state *state;
 		unsigned long v0 = get_random_long(), v2 = v0 ^ PRND_K0;
 		unsigned long v1 = get_random_long(), v3 = v1 ^ PRND_K1;
-        
+
 		/*
 		 * Probably impossible in practice, but there is a
 		 * theoretical risk that a race between this reseeding
@@ -612,4 +612,4 @@ static int __init prandom_init_late(void)
 	}
 	return ret;
 }
-late_initcall(prandom_init_late);   /*  */
+late_initcall(prandom_init_late);

@@ -41,8 +41,8 @@ struct _tlb_table {
 	__section(".x86_cpu_dev.init") = \
 	&cpu_devX;
     /* arch/x86/kernel/vmlinux.lds.S:248 */
-extern const struct cpu_dev *const __x86_cpu_dev_start[],/*  */
-			    *const __x86_cpu_dev_end[];/*  */
+extern const struct cpu_dev *const __x86_cpu_dev_start[],
+			    *const __x86_cpu_dev_end[];
 
 #ifdef CONFIG_CPU_SUP_INTEL
 enum tsx_ctrl_states {

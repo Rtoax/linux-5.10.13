@@ -90,7 +90,7 @@ struct msi_desc {   /* MSI , MSI-X  一种终端机制 */
 	struct device			*dev;
 	struct msi_msg			msg;
 	struct irq_affinity_desc	*affinity;
-#ifdef CONFIG_IRQ_MSI_IOMMU /*  */
+#ifdef CONFIG_IRQ_MSI_IOMMU
 	const void			*iommu_cookie;
 #endif
 

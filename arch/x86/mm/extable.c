@@ -187,7 +187,7 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 
 extern unsigned int early_recursion_flag;
 
-/* Restricted(有限的) version used during very early boot *//*  */
+/* Restricted(有限的) version used during very early boot */
 void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 {
 	/* Ignore early NMIs. */

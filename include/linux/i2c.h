@@ -482,7 +482,7 @@ int
 i2c_register_board_info(int busnum, struct i2c_board_info const *info,
 			unsigned n);
 #else
-/*  */
+
 #endif /* I2C_BOARDINFO */
 
 /**
@@ -949,7 +949,7 @@ int of_i2c_get_board_info(struct device *dev, struct device_node *node,
 			  struct i2c_board_info *info);
 
 #else
-/*  */
+
 #endif /* CONFIG_OF */
 
 struct acpi_resource;
@@ -963,7 +963,7 @@ struct i2c_client *i2c_acpi_new_device(struct device *dev, int index,
 				       struct i2c_board_info *info);
 struct i2c_adapter *i2c_acpi_find_adapter_by_handle(acpi_handle handle);
 #else
-/*  */
+
 #endif /* CONFIG_ACPI */
 
 #endif /* _LINUX_I2C_H */

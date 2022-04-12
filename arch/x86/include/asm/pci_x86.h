@@ -100,7 +100,7 @@ extern void (*pcibios_disable_irq)(struct pci_dev *dev);
 extern bool mp_should_keep_irq(struct device *dev);
 
 /**
- *  
+ *
  *  参见 `pci_ops`
  */
 struct pci_raw_ops {
@@ -118,17 +118,17 @@ extern const struct pci_raw_ops pci_direct_conf1;
 extern bool port_cf9_safe;
 
 /* arch_initcall level */
-#ifdef CONFIG_PCI_DIRECT    /*  */
+#ifdef CONFIG_PCI_DIRECT
 extern int pci_direct_probe(void);
 extern void pci_direct_init(int type);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_PCI_BIOS
 extern void pci_pcbios_init(void);
 #else
-/*  */
+
 #endif
 
 extern void __init dmi_check_pciprobe(void);
@@ -138,7 +138,7 @@ extern void __init dmi_check_skip_isa_align(void);
 #ifdef CONFIG_PCI
 extern int __init pci_acpi_init(void);
 #else
-/*  */
+
 #endif
 extern void __init pcibios_irq_init(void);
 extern int __init pcibios_init(void);
@@ -223,10 +223,10 @@ static inline void mmio_config_writel(void __iomem *pos, u32 val)
 # ifdef CONFIG_ACPI
 #  define x86_default_pci_init		pci_acpi_init
 # else
-/*  */
+
 # endif
 # define x86_default_pci_init_irq	pcibios_irq_init
 # define x86_default_pci_fixup_irqs	pcibios_fixup_irqs
 #else
-/*  */
+
 #endif

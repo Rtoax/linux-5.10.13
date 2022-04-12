@@ -86,7 +86,7 @@ void choose_random_location(unsigned long input,
 			    unsigned long output_size,
 			    unsigned long *virt_addr);
 #else
-/*  */
+
 #endif
 
 /* cpuflags.c */
@@ -127,7 +127,7 @@ acpi_physical_address get_rsdp_addr(void);
 extern struct mem_vector immovable_mem[MAX_NUMNODES*2];
 int count_immovable_mem_regions(void);
 #else
-/*  */
+
 #endif
 
 /* ident_map_64.c */
@@ -147,6 +147,6 @@ void boot_page_fault(void);
 void boot_stage1_vc(void);
 void boot_stage2_vc(void);
 
-unsigned long sev_verify_cbit(unsigned long cr3);   /*  */
+unsigned long sev_verify_cbit(unsigned long cr3);
 
 #endif /* BOOT_COMPRESSED_MISC_H */

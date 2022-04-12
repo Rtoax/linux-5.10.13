@@ -53,7 +53,7 @@
 #define KDB_MAXBPT	16
 
 /* Symbol table format returned by kallsyms. */
-typedef struct __ksymtab {  /*  */
+typedef struct __ksymtab {
 		unsigned long value;	/* Address of symbol */
 		const char *mod_name;	/* Module containing symbol or
 					 * "kernel" */

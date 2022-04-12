@@ -159,7 +159,7 @@ static int smpboot_thread_fn(void *data)
 		if (!ht->thread_should_run(td->cpu)) {  /* 如果不应该执行，进行 调度 */
 			preempt_enable_no_resched();
 			schedule();
-		} else {    
+		} else {
 			__set_current_state(TASK_RUNNING);
 			preempt_enable();
 			ht->thread_fn(td->cpu); /* 执行线程 */
@@ -168,7 +168,7 @@ static int smpboot_thread_fn(void *data)
 }
 
 static int
-__smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)    /*  */
+__smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 {
 	struct task_struct *tsk = *per_cpu_ptr(ht->store, cpu);
 	struct smpboot_thread_data *td;
@@ -182,7 +182,7 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)    /*  
 	td->cpu = cpu;
 	td->ht = ht;
     /**
-     *  
+     *
      */
 	tsk = kthread_create_on_cpu(smpboot_thread_fn, td, cpu,
 				    ht->thread_comm);

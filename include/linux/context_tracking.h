@@ -61,7 +61,7 @@ static inline enum ctx_state exception_enter(void)
 	return prev_ctx;
 }
 
-//checks that context tracking is enabled and 
+//checks that context tracking is enabled and
 //call the `contert_tracking_enter` function if the previous context was `user`
 static inline void exception_exit(enum ctx_state prev_ctx)
 {
@@ -85,7 +85,7 @@ static __always_inline enum ctx_state ct_state(void)
 		this_cpu_read(context_tracking.state) : CONTEXT_DISABLED;
 }
 #else
-/*  */
+
 #endif /* !CONFIG_CONTEXT_TRACKING */
 
 #define CT_WARN_ON(cond) WARN_ON(context_tracking_enabled() && (cond))
@@ -93,7 +93,7 @@ static __always_inline enum ctx_state ct_state(void)
 #ifdef CONFIG_CONTEXT_TRACKING_FORCE
 extern void context_tracking_init(void);
 #else
-/*  */
+
 #endif /* CONFIG_CONTEXT_TRACKING_FORCE */
 
 

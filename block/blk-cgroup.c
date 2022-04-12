@@ -1928,7 +1928,7 @@ static int __init blkcg_init(void)
 		return -ENOMEM;
 	return 0;
 }
-subsys_initcall(blkcg_init);    /*  */
+subsys_initcall(blkcg_init);
 
 module_param(blkcg_debug_stats, bool, 0644);
 MODULE_PARM_DESC(blkcg_debug_stats, "True if you want debug stats, false if not");

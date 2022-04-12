@@ -12,7 +12,7 @@ extern void kvmclock_init(void);
 #ifdef CONFIG_KVM_GUEST
 bool kvm_check_and_clear_guest_paused(void);
 #else
-/*  */
+
 #endif /* CONFIG_KVM_GUEST */
         /* hypercall */
 #define KVM_HYPERCALL \
@@ -105,11 +105,11 @@ static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 #ifdef CONFIG_PARAVIRT_SPINLOCKS
 void __init kvm_spinlock_init(void);
 #else /* !CONFIG_PARAVIRT_SPINLOCKS */
-/*  */
+
 #endif /* CONFIG_PARAVIRT_SPINLOCKS */
 
 #else /* CONFIG_KVM_GUEST */
-/*  */
+
 #endif
 
 #endif /* _ASM_X86_KVM_PARA_H */

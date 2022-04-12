@@ -22,7 +22,7 @@ struct work_struct;
 /**
  *  工作队列 - 回调函数
  */
-typedef void (*work_func_t)(struct work_struct *work);  /*  */
+typedef void (*work_func_t)(struct work_struct *work);
 void delayed_work_timer_fn(struct timer_list *t);
 
 /*
@@ -32,7 +32,7 @@ void delayed_work_timer_fn(struct timer_list *t);
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 /**
- *  
+ *
  */
 enum {
     /**
@@ -51,7 +51,7 @@ enum {
      *                              ->set_work_pool_and_clear_pending()
      */
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
-	
+
 	/**
      *  表示该 work 被延迟执行了
      */
@@ -117,7 +117,7 @@ enum {
 	__WORK_OFFQ_CANCELING	= WORK_OFFQ_FLAG_BASE,
 
     /**
-     *  
+     *
      */
 	WORK_OFFQ_CANCELING	= (1 << __WORK_OFFQ_CANCELING),
 
@@ -151,13 +151,13 @@ enum {
 struct work_struct {    /* 工作队列 */
     /**
      *  分为两部分
-     *  1. 低8位(或者5位，见`WORK_STRUCT_PWQ_BIT`)部分是 work 的标志位, 
+     *  1. 低8位(或者5位，见`WORK_STRUCT_PWQ_BIT`)部分是 work 的标志位,
      *          见`set_work_pwq()`，`get_work_pool()`
-     *  
+     *
      *  2. 剩余位通常用于存放一次运行的 work_poll 的 ID 或 pool_workqueue 的指针，
      *      上面二者用 `WORK_STRUCT_PWQ_BIT` 进行区分
      */
-	atomic_long_t data; 
+	atomic_long_t data;
 
     /**
      *  用于把work挂到队列上
@@ -170,14 +170,14 @@ struct work_struct {    /* 工作队列 */
      *
      *  将在 `process_one_work()` 被执行
      *  实际上，使用 `worker->current_func` 执行
-     *  
+     *
      */
 	work_func_t func;   /* 回调 */
     /**
-     *  
+     *
      */
 #ifdef CONFIG_LOCKDEP   /* 死锁检测 */
-	struct lockdep_map lockdep_map; /*  */
+	struct lockdep_map lockdep_map;
 #endif
 };
 
@@ -186,7 +186,7 @@ struct work_struct {    /* 工作队列 */
 	ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
 /**
- *  
+ *
  * queue_work 会将制定的工作添加到工作队列，但是如果使用 queue_delayed_work
  * 则实际上，工作会在经过制定的 jiffies(由delay参数计算) 之后才会执行
  */
@@ -222,7 +222,7 @@ struct rcu_work {
  *
  * 相关接口
  * -----------------------------
- * `wqattrs_equal()`: 比较两个 结构 
+ * `wqattrs_equal()`: 比较两个 结构
  */
 struct workqueue_attrs {
 	/**
@@ -291,13 +291,13 @@ struct execute_work {
 	struct work_struct n = __WORK_INITIALIZER(n, f)
 
 /**
- *  
+ *
  */
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
 /**
- *  
+ *
  */
 #define DECLARE_DEFERRABLE_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, TIMER_DEFERRABLE)
@@ -311,7 +311,7 @@ static inline unsigned int work_static(struct work_struct *work)
 	return *work_data_bits(work) & WORK_STRUCT_STATIC;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -334,7 +334,7 @@ static inline unsigned int work_static(struct work_struct *work)
 //	} while (0)
 #else
 /**
- *  
+ *
  */
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
@@ -352,7 +352,7 @@ static inline unsigned int work_static(struct work_struct *work)
 	__INIT_WORK((_work), (_func), 0)
 
 /**
- *  
+ *
  */
 #define INIT_WORK_ONSTACK(_work, _func)					\
 	__INIT_WORK((_work), (_func), 1)
@@ -414,7 +414,7 @@ enum {
     /**
      *  没有绑定到 CPU上，
      *  work 会加入 UNBOUND 工作队列中。
-     *  
+     *
      *  虽然根据局部性原理会丧失一部分性能，但是比较适合下面的场景
      *  -------------------------------
      *  1. 一些应用会在不同的CPU上交叉执行，若使用BOUND 类型的工作队列，
@@ -430,7 +430,7 @@ enum {
      *  并且这个过程中不会再新开始一个 work 的执行，知道进程被冻结。
      */
 	WQ_FREEZABLE		= 1 << 2, /* freeze during suspend */
-	
+
 	/*
      *  为每一个 工作队列创建一个 rescuer 线程(见`workqueue_init()`)。
      *  内存紧张时，创建新的工作线程可能会失败，如果创建工作队列时设置了
@@ -532,7 +532,7 @@ enum {
  * system_power_efficient_wq is identical to system_wq if
  * 'wq_power_efficient' is disabled.  See WQ_POWER_EFFICIENT for more info.
  */
-extern struct workqueue_struct *system_wq;  /*  */
+extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_highpri_wq;
 extern struct workqueue_struct *system_long_wq;
 extern struct workqueue_struct *system_unbound_wq;
@@ -587,7 +587,7 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 			WQ_MEM_RECLAIM, 1, (name))
 
 /**
- *  
+ *
  */
 #define create_singlethread_workqueue(name)				\
 	alloc_ordered_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, name)
@@ -735,7 +735,7 @@ static inline bool schedule_work(struct work_struct *work)
 {
     /**
      *  把 work 挂入系统默认 BOUND 类型的工作队列 system_wq 中
-     *  该工作队列是在 
+     *  该工作队列是在
      */
 	return queue_work(system_wq, work);
 }
@@ -799,7 +799,7 @@ static inline bool schedule_delayed_work(struct delayed_work *dwork,
 }
 
 #ifndef CONFIG_SMP
-/*  */
+
 #else
 long work_on_cpu(int cpu, long (*fn)(void *), void *arg);
 long work_on_cpu_safe(int cpu, long (*fn)(void *), void *arg);
@@ -814,7 +814,7 @@ extern void thaw_workqueues(void);
 #ifdef CONFIG_SYSFS
 int workqueue_sysfs_register(struct workqueue_struct *wq);
 #else	/* CONFIG_SYSFS */
-/*  */
+
 #endif	/* CONFIG_SYSFS */
 
 #ifdef CONFIG_WQ_WATCHDOG

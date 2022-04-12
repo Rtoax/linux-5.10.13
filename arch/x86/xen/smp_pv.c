@@ -57,7 +57,7 @@ static DEFINE_PER_CPU(struct xen_common_irq, xen_pmu_irq) = { .irq = -1 };
 static irqreturn_t xen_irq_work_interrupt(int irq, void *dev_id);
 void asm_cpu_bringup_and_idle(void);
 
-static void cpu_bringup(void)   /*  */
+static void cpu_bringup(void)
 {
 	int cpu;
 
@@ -90,7 +90,7 @@ static void cpu_bringup(void)   /*  */
 	local_irq_enable();
 }
 
-asmlinkage __visible void cpu_bringup_and_idle(void)    /*  */
+asmlinkage __visible void cpu_bringup_and_idle(void)
 {
 	cpu_bringup();
 	cpu_startup_entry(CPUHP_AP_ONLINE_IDLE);

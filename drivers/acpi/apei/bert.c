@@ -148,4 +148,4 @@ out_put_bert_tab:
 	return rc;
 }
 
-late_initcall(bert_init);   /*  */
+late_initcall(bert_init);

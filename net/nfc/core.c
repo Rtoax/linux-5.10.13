@@ -1009,7 +1009,7 @@ static void nfc_check_pres_timeout(struct timer_list *t)
 	schedule_work(&dev->check_pres_work);
 }
 
-struct class nfc_class = {  /*  */
+struct class nfc_class = {
 	.name = "nfc",
 	.dev_release = nfc_release,
 };
@@ -1179,7 +1179,7 @@ static int __init nfc_init(void)    /* Near Field Communication (NFC) */
 
 	pr_info("NFC Core ver %s\n", VERSION);
 
-	rc = class_register(&nfc_class);    /*  */
+	rc = class_register(&nfc_class);
 	if (rc)
 		return rc;
 

@@ -24,7 +24,7 @@ extern u64 sched_clock_cpu(int cpu);
 extern void sched_clock_init(void);
 
 #ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
-/*  */
+
 #else
 extern int sched_clock_stable(void);
 extern void clear_sched_clock_stable(void);
@@ -70,7 +70,7 @@ static inline u64 local_clock(void)
 extern void enable_sched_clock_irqtime(void);
 extern void disable_sched_clock_irqtime(void);
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_SCHED_CLOCK_H */

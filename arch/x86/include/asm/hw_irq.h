@@ -102,12 +102,12 @@ extern void unlock_vector_lock(void);
 extern void send_cleanup_vector(struct irq_cfg *);
 extern void irq_complete_move(struct irq_cfg *cfg);
 #else
-/*  */
+
 #endif
 
 extern void apic_ack_edge(struct irq_data *data);
 #else	/*  CONFIG_X86_LOCAL_APIC */
-/*  */
+
 #endif	/* CONFIG_X86_LOCAL_APIC */
 
 /* Statistics */

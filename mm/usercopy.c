@@ -290,7 +290,7 @@ void __check_object_size(const void *ptr, unsigned long n, bool to_user)
 }
 EXPORT_SYMBOL(__check_object_size);
 
-static bool __initdata enable_checks  = true;/*  */
+static bool __initdata enable_checks  = true;
 
 static int __init parse_hardened_usercopy(char *str)
 {
@@ -306,4 +306,4 @@ static int __init set_hardened_usercopy(void)
 	return 1;
 }
 
-late_initcall(set_hardened_usercopy);   /*  */
+late_initcall(set_hardened_usercopy);

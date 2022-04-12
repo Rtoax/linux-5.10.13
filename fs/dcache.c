@@ -71,7 +71,7 @@
  * If no ancestor relationship:
  * arbitrary, since it's serialized on rename_lock
  */
-int __read_mostly sysctl_vfs_cache_pressure  = 100;/*  */
+int __read_mostly sysctl_vfs_cache_pressure  = 100;
 EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
@@ -94,7 +94,7 @@ EXPORT_SYMBOL(slash_name);
  * information, yet avoid using a prime hash-size or similar.
  */
 
-static unsigned int __read_mostly d_hash_shift ;/*  */
+static unsigned int __read_mostly d_hash_shift ;
 
 /**
  *  struct dentry.d_hash 为 hash 节点
@@ -1580,7 +1580,7 @@ out:
  *
  * Prune the dcache to remove unused children of the parent dentry.
  */
-void shrink_dcache_parent(struct dentry *parent)    /*  */
+void shrink_dcache_parent(struct dentry *parent)
 {
 	for (;;) {
 		struct select_data data = {.start = parent};
@@ -3268,7 +3268,7 @@ void __init vfs_caches_init(void)   /*虚拟文件系统 缓存  */
 	dcache_init();  /* 文件目录缓存 */
 	inode_init();   /* inode 缓存 */
 	files_init();   /* 文件缓存 */
-	files_maxfiles_init();  /*  */
+	files_maxfiles_init();
 	mnt_init();     /* 挂载 */
 	bdev_cache_init();  /* 块设备 缓存 */
 	chrdev_init();  /* 字符设备 */

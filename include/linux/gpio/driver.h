@@ -532,7 +532,7 @@ extern int gpiochip_add_data_with_key(struct gpio_chip *gc, void *data,
 					   &request_key);	  \
 	})
 #else
-/*  */
+
 #endif /* CONFIG_LOCKDEP */
 
 static inline int gpiochip_add(struct gpio_chip *gc)
@@ -580,7 +580,7 @@ void *gpiochip_populate_parent_fwspec_fourcell(struct gpio_chip *gc,
 					      unsigned int parent_type);
 
 #else
-/*  */
+
 #endif /* CONFIG_IRQ_DOMAIN_HIERARCHY */
 
 int bgpio_init(struct gpio_chip *gc, struct device *dev,
@@ -661,7 +661,7 @@ static inline int gpiochip_irqchip_add_nested(struct gpio_chip *gc,
 					&lock_key, &request_key);
 }
 #else /* ! CONFIG_LOCKDEP */
-/*  */
+
 #endif /* CONFIG_LOCKDEP */
 
 int gpiochip_generic_request(struct gpio_chip *gc, unsigned int offset);
@@ -692,7 +692,7 @@ int gpiochip_add_pingroup_range(struct gpio_chip *gc,
 void gpiochip_remove_pin_ranges(struct gpio_chip *gc);
 
 #else /* ! CONFIG_PINCTRL */
-/*  */
+
 #endif /* CONFIG_PINCTRL */
 
 struct gpio_desc *gpiochip_request_own_desc(struct gpio_chip *gc,
@@ -712,7 +712,7 @@ void gpiochip_unlock_as_irq(struct gpio_chip *gc, unsigned int offset);
 struct gpio_chip *gpiod_to_chip(const struct gpio_desc *desc);
 
 #else /* CONFIG_GPIOLIB */
-/*  */
+
 #endif /* CONFIG_GPIOLIB */
 
 #endif /* __LINUX_GPIO_DRIVER_H */

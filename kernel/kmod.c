@@ -66,7 +66,7 @@ static void free_modprobe_argv(struct subprocess_info *info)
 	kfree(info->argv);
 }
 
-static int call_modprobe(char *module_name, int wait)   /*  */
+static int call_modprobe(char *module_name, int wait)
 {
 	struct subprocess_info *info;
 	static char *envp[] = {

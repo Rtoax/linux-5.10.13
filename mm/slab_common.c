@@ -138,7 +138,7 @@ int __kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t nr,
  * flags, a user specified alignment and the size of the objects.
  */
 static unsigned int calculate_alignment(slab_flags_t flags,
-		unsigned int align, unsigned int size)  /*  */
+		unsigned int align, unsigned int size)
 {
 	/*
 	 * If the user wants hardware cache aligned objects then follow that
@@ -186,7 +186,7 @@ int slab_unmergeable(struct kmem_cache *s)
 }
 
 /**
- *  
+ *
  */
 struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 		slab_flags_t flags, const char *name, void (*ctor)(void *))
@@ -240,7 +240,7 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 	}
 	return NULL;
 }
-                            /*  */
+
 /**
  *  kmem_cache_create
  */
@@ -332,7 +332,7 @@ kmem_cache_create_usercopy(const char *name,
          /**
           *  user 可以使用的 区间
           */
-		  unsigned int useroffset, 
+		  unsigned int useroffset,
 		  unsigned int usersize,
 		  void (*ctor)(void *))
 {
@@ -341,10 +341,10 @@ kmem_cache_create_usercopy(const char *name,
 	int err;
 
     /**
-     *  
+     *
      */
-	get_online_cpus();  /*  */
-	get_online_mems();  /*  */
+	get_online_cpus();
+	get_online_mems();
 
 	mutex_lock(&slab_mutex);
 
@@ -455,18 +455,18 @@ EXPORT_SYMBOL(kmem_cache_create_usercopy);
  *
  * Return: a pointer to the cache on success, NULL on failure.
  *
- * @flags: 
- *  SLAB_POISON,    
+ * @flags:
+ *  SLAB_POISON,
  *  SLAB_RED_ZONE,  检测 overruns 越界情况
  *  SLAB_HWCACHE_ALIGN,
- *  
+ *
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 		            slab_flags_t flags, void (*ctor)(void *))
 {
     /**
-     *  
+     *
      */
 	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
@@ -540,7 +540,7 @@ void slab_kmem_cache_release(struct kmem_cache *s)
 }
 
 /**
- *  销毁 一个 kmem_cache 
+ *  销毁 一个 kmem_cache
  */
 void kmem_cache_destroy(struct kmem_cache *s)
 {
@@ -550,7 +550,7 @@ void kmem_cache_destroy(struct kmem_cache *s)
 		return;
 
     /**
-     *  
+     *
      */
 	get_online_cpus();
 	get_online_mems();
@@ -562,7 +562,7 @@ void kmem_cache_destroy(struct kmem_cache *s)
 		goto out_unlock;
 
     /**
-     *  
+     *
      */
 	err = shutdown_cache(s);
 	if (err) {
@@ -636,13 +636,13 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 
 	s->refcount = -1;	/* Exempt from merging for now */
 }
-    /*  */
+
 struct kmem_cache *__init create_kmalloc_cache(const char *name,/* 申请 */
 		unsigned int size, slab_flags_t flags,
 		unsigned int useroffset, unsigned int usersize)
 {
     /* 分配 kmem_cache 结构 */
-	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);   /*  */
+	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
 
 	if (!s)
 		panic("Out of memory when creating slab %s\n", name);
@@ -657,8 +657,8 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,/* 申请 */
 }
 
 struct kmem_cache *__ro_after_init
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1]  = { 
-    /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 *//*  */ 
+kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1]  = {
+    /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 */
     /**
      *  see `create_kmalloc_caches()`
      */
@@ -671,7 +671,7 @@ EXPORT_SYMBOL(kmalloc_caches);
  * of two cache sizes there. The size of larger slabs can be determined using
  * fls.
  */
-static u8 __ro_after_init size_index[24]  = {/*  */
+static u8 __ro_after_init size_index[24]  = {
 	3,	/* 8 */
 	4,	/* 16 */
 	5,	/* 24 */
@@ -722,7 +722,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)/* 返回对应的 kmem
 		index = fls(size - 1);
 	}
 
-	return kmalloc_caches[kmalloc_type(flags)][index];  /*  */
+	return kmalloc_caches[kmalloc_type(flags)][index];
 }
 
 #ifdef CONFIG_ZONE_DMA
@@ -734,7 +734,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)/* 返回对应的 kmem
 	.size = __size,						\
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -813,7 +813,7 @@ const struct kmalloc_info_struct __initconst kmalloc_info[]  = {/* 缓存大小�
  * Make sure that nothing crazy happens if someone starts tinkering
  * around with ARCH_KMALLOC_MINALIGN
  */
-void __init setup_kmalloc_cache_index_table(void)   /*  */
+void __init setup_kmalloc_cache_index_table(void)
 {
 	unsigned int i;
 
@@ -865,7 +865,7 @@ new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)    
  * Create the kmalloc array. Some of the regular kmalloc arrays
  * may already have been created because they were needed to
  * enable allocations for slab creation.
- */ /*  */
+ */
 void __init create_kmalloc_caches(slab_flags_t flags)   /* kmalloc array 初始化 */
 {
 	int i;
@@ -926,7 +926,7 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
  * directly to the page allocator. We use __GFP_COMP, because we will need to
  * know the allocation order to free the pages properly in kfree.
  */
-void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)   /*  */
+void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 {
 	void *ret = NULL;
 	struct page *page;
@@ -935,7 +935,7 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)   /*  */
 		flags = kmalloc_fix_flags(flags);
 
 	flags |= __GFP_COMP;
-	page = alloc_pages(flags, order);   /*  */
+	page = alloc_pages(flags, order);
 	if (likely(page)) {
 		ret = page_address(page);
 		mod_node_page_state(page_pgdat(page), NR_SLAB_UNRECLAIMABLE_B,
@@ -949,7 +949,7 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)   /*  */
 EXPORT_SYMBOL(kmalloc_order);
 
 #ifdef CONFIG_TRACING
-void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order) /*  */
+void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
 {
 	void *ret = kmalloc_order(size, flags, order);
 	trace_kmalloc(_RET_IP_, ret, size, PAGE_SIZE << order, flags);

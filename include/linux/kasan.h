@@ -102,7 +102,7 @@ bool kasan_save_enable_multi_shot(void);
 void kasan_restore_multi_shot(bool enabled);
 
 #else /* CONFIG_KASAN */
-/*  */
+
 #endif /* CONFIG_KASAN */
 
 #ifdef CONFIG_KASAN_GENERIC
@@ -114,10 +114,10 @@ void kasan_cache_shutdown(struct kmem_cache *cache);
 void kasan_record_aux_stack(void *ptr);
 
 #else /* CONFIG_KASAN_GENERIC */
-/*  */
+
 #endif /* CONFIG_KASAN_GENERIC */
 
-#ifdef CONFIG_KASAN_SW_TAGS /*  */
+#ifdef CONFIG_KASAN_SW_TAGS
 
 #define KASAN_SHADOW_INIT 0xFF
 
@@ -130,7 +130,7 @@ bool kasan_report(unsigned long addr, size_t size,
 
 #else /* CONFIG_KASAN_SW_TAGS */
 
-/*  */
+
 
 #endif /* CONFIG_KASAN_SW_TAGS */
 
@@ -142,13 +142,13 @@ void kasan_release_vmalloc(unsigned long start, unsigned long end,
 			   unsigned long free_region_start,
 			   unsigned long free_region_end);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_KASAN_INLINE
 void kasan_non_canonical_hook(unsigned long addr);
 #else /* CONFIG_KASAN_INLINE */
-/*  */
+
 #endif /* CONFIG_KASAN_INLINE */
 
 #endif /* LINUX_KASAN_H */

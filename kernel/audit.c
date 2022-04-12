@@ -1627,7 +1627,7 @@ static void __net_exit audit_net_exit(struct net *net)
 	netlink_kernel_release(aunet->sk);
 }
 
-static struct pernet_operations __net_initdata audit_net_ops  = {/*  */
+static struct pernet_operations __net_initdata audit_net_ops  = {
 	.init = audit_net_init,
 	.exit = audit_net_exit,
 	.id = &audit_net_id,
@@ -1674,7 +1674,7 @@ static int __init audit_init(void)
 
 	return 0;
 }
-postcore_initcall(audit_init);/*  */
+postcore_initcall(audit_init);
 
 /*
  * Process kernel command-line parameter at boot time.

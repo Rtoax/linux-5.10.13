@@ -538,8 +538,8 @@ static ssize_t phys_switch_id_show(struct device *dev,
 }
 static DEVICE_ATTR_RO(phys_switch_id);
 
-static struct attribute __ro_after_init *net_class_attrs[]  = {/*  */
-	&dev_attr_netdev_group.attr,    /*  */
+static struct attribute __ro_after_init *net_class_attrs[]  = {
+	&dev_attr_netdev_group.attr,
 	&dev_attr_type.attr,
 	&dev_attr_dev_id.attr,
 	&dev_attr_dev_port.attr,
@@ -676,7 +676,7 @@ static const struct attribute_group wireless_group = {
 #endif
 
 #else /* CONFIG_SYSFS */
-/*  */
+
 #endif /* CONFIG_SYSFS */
 
 #ifdef CONFIG_SYSFS
@@ -885,10 +885,10 @@ static ssize_t store_rps_dev_flow_table_cnt(struct netdev_rx_queue *queue,
 	return len;
 }
 
-static struct rx_queue_attribute __ro_after_init rps_cpus_attribute 
+static struct rx_queue_attribute __ro_after_init rps_cpus_attribute
 	= __ATTR(rps_cpus, 0644, show_rps_map, store_rps_map);
 
-static struct rx_queue_attribute __ro_after_init rps_dev_flow_table_cnt_attribute 
+static struct rx_queue_attribute __ro_after_init rps_dev_flow_table_cnt_attribute
 	= __ATTR(rps_flow_cnt, 0644,
 		 show_rps_dev_flow_table_cnt, store_rps_dev_flow_table_cnt);
 #endif /* CONFIG_RPS */
@@ -1198,14 +1198,14 @@ static ssize_t tx_maxrate_store(struct netdev_queue *queue,
 	return err;
 }
 
-static struct netdev_queue_attribute __ro_after_init queue_tx_maxrate 
+static struct netdev_queue_attribute __ro_after_init queue_tx_maxrate
 	= __ATTR_RW(tx_maxrate);
 #endif
 
-static struct netdev_queue_attribute __ro_after_init queue_trans_timeout 
+static struct netdev_queue_attribute __ro_after_init queue_trans_timeout
 	= __ATTR_RO(tx_timeout);
 
-static struct netdev_queue_attribute __ro_after_init queue_traffic_class 
+static struct netdev_queue_attribute __ro_after_init queue_traffic_class
 	= __ATTR_RO(traffic_class);
 
 #ifdef CONFIG_BQL
@@ -1262,7 +1262,7 @@ static ssize_t bql_set_hold_time(struct netdev_queue *queue,
 	return len;
 }
 
-static struct netdev_queue_attribute __ro_after_init bql_hold_time_attribute 
+static struct netdev_queue_attribute __ro_after_init bql_hold_time_attribute
 	= __ATTR(hold_time, 0644,
 		 bql_show_hold_time, bql_set_hold_time);
 
@@ -1424,7 +1424,7 @@ static ssize_t xps_cpus_store(struct netdev_queue *queue,
 	return err ? : len;
 }
 
-static struct netdev_queue_attribute __ro_after_init xps_cpus_attribute 
+static struct netdev_queue_attribute __ro_after_init xps_cpus_attribute
 	= __ATTR_RW(xps_cpus);
 
 static ssize_t xps_rxqs_show(struct netdev_queue *queue, char *buf)
@@ -1527,7 +1527,7 @@ static ssize_t xps_rxqs_store(struct netdev_queue *queue, const char *buf,
 	return err ? : len;
 }
 
-static struct netdev_queue_attribute __ro_after_init xps_rxqs_attribute 
+static struct netdev_queue_attribute __ro_after_init xps_rxqs_attribute
 	= __ATTR_RW(xps_rxqs);
 #endif /* CONFIG_XPS */
 
@@ -1781,7 +1781,7 @@ static const void *net_netlink_ns(struct sock *sk)
 	return sock_net(sk);
 }
 
-const struct kobj_ns_type_operations net_ns_type_operations = { /*  */
+const struct kobj_ns_type_operations net_ns_type_operations = {
 	.type = KOBJ_NS_TYPE_NET,
 	.current_may_mount = net_current_may_mount,
 	.grab_current_ns = net_grab_current_ns,
@@ -1853,7 +1853,7 @@ static struct class __ro_after_init net_class  = {
 	.get_ownership = net_get_ownership,
 };
 
-#ifdef CONFIG_OF_NET    /*  */
+#ifdef CONFIG_OF_NET
 static int of_dev_node_match(struct device *dev, const void *data)
 {
 	for (; dev; dev = dev->parent) {

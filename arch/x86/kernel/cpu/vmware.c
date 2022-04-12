@@ -106,7 +106,7 @@ struct vmware_steal_time {
 	uint64_t reserved[7];
 };
 
-static unsigned long __ro_after_init vmware_tsc_khz ;/*  */
+static unsigned long __ro_after_init vmware_tsc_khz ;
 static u8 __ro_after_init vmware_hypercall_mode;
 
 static inline int __vmware_platform(void)

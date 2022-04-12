@@ -129,7 +129,7 @@ static __always_inline int user_mode(struct pt_regs *regs)
 //	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
 #else
     /**
-     *  
+     *
      */
 	return !!(regs->cs & 3);    /* 用户优先级是 3(好像不是这个3，错了) */
 #endif
@@ -369,7 +369,7 @@ extern int do_set_thread_area(struct task_struct *p, int idx,
 #ifdef CONFIG_X86_64
 # define do_set_thread_area_64(p, s, t)	do_arch_prctl_64(p, s, t)
 #else
-/*  */
+
 #endif
 
 #endif /* !__ASSEMBLY__ */

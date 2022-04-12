@@ -126,7 +126,7 @@
 //#define __pcpu_ptr_to_addr(ptr)		(void __force *)(ptr)
 #endif	/* CONFIG_SMP */
 
-static int __ro_after_init pcpu_unit_pages ;/*  */
+static int __ro_after_init pcpu_unit_pages ;
 static int __ro_after_init pcpu_unit_size ;
 static int __ro_after_init pcpu_nr_units ;
 static int __ro_after_init pcpu_atom_size ;
@@ -166,7 +166,7 @@ struct pcpu_chunk __ro_after_init *pcpu_reserved_chunk ;
 DEFINE_SPINLOCK(pcpu_lock);	/* all internal data structures */
 static DEFINE_MUTEX(pcpu_alloc_mutex);	/* chunk create/destroy, [de]pop, map ext */
 
-struct list_head __ro_after_init *pcpu_chunk_lists ; /* chunk list slots *//*  */
+struct list_head __ro_after_init *pcpu_chunk_lists ; /* chunk list slots */
 
 /* chunks which need their map areas extended, protected by pcpu_lock */
 static LIST_HEAD(pcpu_map_extend_chunks);
@@ -1673,7 +1673,7 @@ static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
  * RETURNS:
  * Percpu pointer to the allocated area on success, NULL on failure.
  *
- *  动态分配 per-CPU 变量  
+ *  动态分配 per-CPU 变量
  */
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t gfp)
 {
@@ -1688,7 +1688,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t
 	const char *err;
 	int slot, off, cpu, ret;
 	unsigned long flags;
-	void __percpu *ptr; /*  */
+	void __percpu *ptr;
 	size_t bits, bit_align;
 
 	gfp = current_gfp_context(gfp);
@@ -1722,7 +1722,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved, gfp_t
 		return NULL;
 
     /**
-     *  
+     *
      */
 	pcpu_slot = pcpu_chunk_list(type);
 
@@ -1765,11 +1765,11 @@ restart:
 	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
 
         /**
-         *  
+         *
          */
 		list_for_each_entry_safe(chunk, next, &pcpu_slot[slot], list) {
 		    /**
-             *  
+             *
              */
 			off = pcpu_find_block_fit(chunk, bits, bit_align, is_atomic);
 			if (off < 0) {
@@ -1779,7 +1779,7 @@ restart:
 			}
 
             /**
-             *  
+             *
              */
 			off = pcpu_alloc_area(chunk, bits, bit_align, off);
 			if (off >= 0)
@@ -1915,9 +1915,9 @@ EXPORT_SYMBOL_GPL(__alloc_percpu_gfp);
  *
  * Equivalent to __alloc_percpu_gfp(size, align, %GFP_KERNEL).
  *
- *  动态分配 per-CPU 变量  
+ *  动态分配 per-CPU 变量
  */
-void __percpu *__alloc_percpu(size_t size, size_t align)    /*  */
+void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
@@ -2239,7 +2239,7 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
 
 	if (in_first_chunk) {
 		if (!is_vmalloc_addr(addr)) /* 不是 vmalloc */
-			return __pa(addr);  /*  */
+			return __pa(addr);
 		else    /* 获取 物理页 + 偏移 */
 			return page_to_phys(vmalloc_to_page(addr)) +
 			       offset_in_page(addr);

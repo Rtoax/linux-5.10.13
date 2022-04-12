@@ -97,7 +97,7 @@ void ip_send_check(struct iphdr *iph)
 EXPORT_SYMBOL(ip_send_check);
 
 /**
- *  
+ *
  */
 int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
@@ -121,14 +121,14 @@ int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 }
 
 /**
- *  
+ *
  */
 int ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
 	int err;
 
     /**
-     *  
+     *
      */
 	err = __ip_local_out(net, sk, skb);
 	if (likely(err == 1))
@@ -312,7 +312,7 @@ static int __ip_finish_output(struct net *net, struct sock *sk, struct sk_buff *
 		return ip_finish_output_gso(net, sk, skb, mtu);
 
     /**
-     *  
+     *
      */
 	if (skb->len > mtu || IPCB(skb)->frag_max_size)
 		return ip_fragment(net, sk, skb, mtu, ip_finish_output2);
@@ -596,7 +596,7 @@ static int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 	struct iphdr *iph = ip_hdr(skb);
 
     /**
-     *  
+     *
      */
 	if ((iph->frag_off & htons(IP_DF)) == 0)
 		return ip_do_fragment(net, sk, skb, output);
@@ -612,7 +612,7 @@ static int ip_fragment(struct net *net, struct sock *sk, struct sk_buff *skb,
 	}
 
     /**
-     *  
+     *
      */
 	return ip_do_fragment(net, sk, skb, output);
 }
@@ -989,7 +989,7 @@ csum_page(struct page *page, int offset, int copy)
 }
 
 /**
- *  
+ *
  */
 static int __ip_append_data(struct sock *sk,
 			    struct flowi4 *fl4,
@@ -1352,7 +1352,7 @@ int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 		return 0;
 
     /**
-     *  
+     *
      */
 	if (skb_queue_empty(&sk->sk_write_queue)) {
 		err = ip_setup_cork(sk, &inet->cork.base, ipc, rtp);
@@ -1363,7 +1363,7 @@ int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 	}
 
     /**
-     *  
+     *
      */
 	return __ip_append_data(sk, fl4, &sk->sk_write_queue, &inet->cork.base,
             				sk_page_frag(sk), getfrag,
@@ -1371,7 +1371,7 @@ int ip_append_data(struct sock *sk, struct flowi4 *fl4,
 }
 
 /**
- *  
+ *
  * UDP 使用?!
  * 涉及到 零拷贝 sendfile 2021年7月16日08:38:33
  */
@@ -1534,7 +1534,7 @@ struct sk_buff *__ip_make_skb(struct sock *sk,
 	__u8 ttl;
 
     /**
-     *  
+     *
      */
 	skb = __skb_dequeue(queue);
 	if (!skb)
@@ -1630,7 +1630,7 @@ int ip_send_skb(struct net *net, struct sk_buff *skb)
 }
 
 /**
- *  
+ *
  */
 int ip_push_pending_frames(struct sock *sk, struct flowi4 *fl4)
 {
@@ -1687,7 +1687,7 @@ struct sk_buff *ip_make_skb(struct sock *sk,
 	if (err)
 		return ERR_PTR(err);
 
-    /*  */
+
 	err = __ip_append_data(sk, fl4, &queue, cork,
 			       &current->task_frag, getfrag,
 			       from, length, transhdrlen, flags);
@@ -1788,12 +1788,12 @@ out:
 	ip_rt_put(rt);
 }
 
-void __init ip_init(void)   /*  */
+void __init ip_init(void)
 {
-	ip_rt_init();   /*  */
+	ip_rt_init();
 	inet_initpeers();
 
-#if defined(CONFIG_IP_MULTICAST)/*  */
+#if defined(CONFIG_IP_MULTICAST)
 	igmp_mc_init();
 #endif
 }

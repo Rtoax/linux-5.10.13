@@ -640,7 +640,7 @@ err:
 	nlmsg_free(rep_skb);
 }
 
-static const struct genl_ops taskstats_ops[] = {    /*  */
+static const struct genl_ops taskstats_ops[] = {
 	{
 		.cmd		= TASKSTATS_CMD_GET,
 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,

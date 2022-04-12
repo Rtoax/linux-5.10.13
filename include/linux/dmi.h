@@ -119,7 +119,7 @@ extern u8 dmi_memdev_type(u16 handle);
 extern u16 dmi_memdev_handle(int slot);
 
 #else
-/*  */
+
 #endif
 
 #endif	/* __DMI_H__ */

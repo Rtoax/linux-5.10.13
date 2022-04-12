@@ -142,7 +142,7 @@ static struct linux_binfmt script_format = {
 	.load_binary	= load_script,
 };
 
-static int __init init_script_binfmt(void)  /*  */
+static int __init init_script_binfmt(void)
 {
 	register_binfmt(&script_format);
 	return 0;

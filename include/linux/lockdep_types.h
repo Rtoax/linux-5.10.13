@@ -65,7 +65,7 @@ struct lockdep_subclass_key {
 } __attribute__ ((__packed__));
 
 /* hash_entry is used to keep track of dynamically allocated keys. */
-struct lock_class_key { /*  */
+struct lock_class_key {
 	union {
 		struct hlist_node		hash_entry;
 		struct lockdep_subclass_key	subkeys[MAX_LOCKDEP_SUBCLASSES];
@@ -82,7 +82,7 @@ struct lock_trace;
  * The lock-class itself. The order of the structure members matters.
  * reinit_class() zeroes the key member and all subsequent members.
  */
-struct lock_class { /*  */
+struct lock_class {
 	/*
 	 * class-hash:
 	 */
@@ -180,7 +180,7 @@ struct lockdep_map {    /* 死锁检测 */
 struct pin_cookie { unsigned int val; };
 
 #else /* !CONFIG_LOCKDEP */
-/*  */
+
 #endif /* !LOCKDEP */
 
 #endif /* __LINUX_LOCKDEP_TYPES_H */

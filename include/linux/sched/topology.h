@@ -127,7 +127,7 @@ struct sched_domain {
 	struct sched_group *groups;	/* the balancing groups of the domain */
 
     /**
-     *  
+     *
      */
 	unsigned long min_interval;	/* Minimum balance interval ms */
 	unsigned long max_interval;	/* Maximum balance interval ms */
@@ -244,7 +244,7 @@ struct sched_domain_topology_level {    /* 调度域拓扑 级别 */
     /**
      *  函数指针，用于指定某个 SDTL 的 cpumask 位图
      */
-	sched_domain_mask_f mask;   /*  */
+	sched_domain_mask_f mask;
 
     /**
      *  函数指针，用于指定某个 SDTL 的标志位
@@ -252,16 +252,16 @@ struct sched_domain_topology_level {    /* 调度域拓扑 级别 */
 	sched_domain_flags_f sd_flags;
 
     /**
-     *  
+     *
      */
 	int		    flags;
 	int		    numa_level;
 
     /**
-     *  
+     *
      */
 	struct sd_data      data;
-    
+
 #ifdef CONFIG_SCHED_DEBUG
 	char                *name;
 #endif
@@ -272,11 +272,11 @@ extern void set_sched_topology(struct sched_domain_topology_level *tl);
 #ifdef CONFIG_SCHED_DEBUG
 # define SD_INIT_NAME(type)		.name = #type
 #else
-/*  */
+
 #endif
 
 #else /* CONFIG_SMP */
-/*  */
+
 #endif	/* !CONFIG_SMP */
 
 #ifndef arch_scale_cpu_capacity

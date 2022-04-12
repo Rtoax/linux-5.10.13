@@ -152,7 +152,7 @@
 
 /* Shouldn't this be in a header file somewhere? */
 #define	BYTES_PER_WORD		sizeof(void *)
-#define	REDZONE_ALIGN		max(BYTES_PER_WORD/* 8 */, __alignof__(unsigned long long)/*  */)
+#define	REDZONE_ALIGN		max(BYTES_PER_WORD/* 8 */, __alignof__(unsigned long long))
 
 #ifndef ARCH_KMALLOC_FLAGS
 #define ARCH_KMALLOC_FLAGS SLAB_HWCACHE_ALIGN
@@ -168,7 +168,7 @@ typedef unsigned short freelist_idx_t;
 #endif
 
 /**
- *  * 优先级高于 << 
+ *  * 优先级高于 <<
  *  (1 << 16) - 1 = 0xFFFF = 65535
  */
 #define SLAB_OBJ_MAX_NUM /* 65535 */ ((1 << sizeof(freelist_idx_t)/* 2 */ * BITS_PER_BYTE/* 8 */) - 1)
@@ -185,23 +185,23 @@ typedef unsigned short freelist_idx_t;
  * footprint.
  *
  * 每CPU变量
- * 
+ *
  */
-struct array_cache {    /*  */
-	unsigned int avail;         /*  */
-	unsigned int limit;         /*  */
-	unsigned int batchcount;    /*  */
-	unsigned int touched;       /*  */
-    
+struct array_cache {
+	unsigned int avail;
+	unsigned int limit;
+	unsigned int batchcount;
+	unsigned int touched;
+
     /*
 	 * Must have this definition in here for the proper
 	 * alignment of array_cache. Also simplifies accessing
 	 * the entries.
 	 */
-	void *entry[];	
+	void *entry[];
 };
 
-struct alien_cache {    /*  */
+struct alien_cache {
 	spinlock_t lock;
 	struct array_cache ac;
 };
@@ -229,7 +229,7 @@ static inline void fixup_slab_list(struct kmem_cache *cachep,
 				void **list);
 static int slab_early_init = 1;
 
-#define INDEX_NODE kmalloc_index(sizeof(struct kmem_cache_node))    /*  */
+#define INDEX_NODE kmalloc_index(sizeof(struct kmem_cache_node))
 
 static void kmem_cache_node_init(struct kmem_cache_node *parent)
 {
@@ -262,10 +262,10 @@ static void kmem_cache_node_init(struct kmem_cache_node *parent)
 /**
  *  一共三种 slab 模式
  *
- *  
+ *
  */
-#define CFLGS_OBJFREELIST_SLAB	/*  */ ((slab_flags_t __force)0x40000000U)
-#define CFLGS_OFF_SLAB	/*  */	((slab_flags_t __force)0x80000000U) //见 cache_estimate
+#define CFLGS_OBJFREELIST_SLAB	 ((slab_flags_t __force)0x40000000U)
+#define CFLGS_OFF_SLAB		((slab_flags_t __force)0x80000000U) //见 cache_estimate
 
 #define	OBJFREELIST_SLAB(x)	((x)->flags & CFLGS_OBJFREELIST_SLAB)
 #define	OFF_SLAB(x)	((x)->flags & CFLGS_OFF_SLAB)
@@ -383,7 +383,7 @@ static void kmem_cache_node_init(struct kmem_cache_node *parent)
 #define	SLAB_MAX_ORDER_HI	1
 #define	SLAB_MAX_ORDER_LO	0
 static int slab_max_order = SLAB_MAX_ORDER_LO;
-static bool __initdata slab_max_order_set ;  /*  */
+static bool __initdata slab_max_order_set ;
 
 static inline void *index_to_obj(struct kmem_cache *cache, struct page *page,
 				 unsigned int idx)
@@ -446,21 +446,21 @@ static unsigned int cache_estimate(unsigned long gfporder, size_t buffer_size,
 	if (flags & (CFLGS_OBJFREELIST_SLAB | CFLGS_OFF_SLAB)) {
         /**
          *  freelist 不在 object 内部
-         *  
-         *  
+         *
+         *
          */
 		num = slab_size / buffer_size;
 		*left_over = slab_size % buffer_size;
 	} else {
         /**
          *  freelist 在 object 内部 (freelist_idx_t)
-         *  
-         *  
+         *
+         *
          */
 		num = slab_size / (buffer_size + sizeof(freelist_idx_t));
 		*left_over = slab_size % (buffer_size + sizeof(freelist_idx_t));
 	}
-    
+
     /**
      *  返回 object 数量
      */
@@ -531,7 +531,7 @@ static void next_reap_node(void)
 }
 
 #else
-/*  */
+
 
 #endif
 
@@ -542,7 +542,7 @@ static void next_reap_node(void)
  * the CPUs getting into lockstep and contending for the global cache chain
  * lock.
  *
- * 
+ *
  */
 static void start_cpu_timer(int cpu)
 {
@@ -637,7 +637,7 @@ static __always_inline void __free_one(struct array_cache *ac, void *objp)
 
 #ifndef CONFIG_NUMA
 /**
- * 
+ *
  */
 #else	/* CONFIG_NUMA */
 
@@ -1164,7 +1164,7 @@ out:
 
 /*
  * swap the static kmem_cache_node with kmalloced memory
- */ /*  */
+ */
 static void __init init_list(struct kmem_cache *cachep, struct kmem_cache_node *list,
 				int nodeid)
 {
@@ -1212,8 +1212,8 @@ void __init kmem_cache_init(void)/* slab 初始化 */
 	if (!IS_ENABLED(CONFIG_NUMA) || num_possible_nodes() == 1)
 		use_alien_caches = 0;   /* 远端 NODE 是否存在 */
 
-	for (i = 0; i < NUM_INIT_LISTS; i++)    /*  */
-		kmem_cache_node_init(&init_kmem_cache_node[i]); /*  */
+	for (i = 0; i < NUM_INIT_LISTS; i++)
+		kmem_cache_node_init(&init_kmem_cache_node[i]);
 
 	/*
 	 * Fragmentation resistance on low memory - only use bigger
@@ -1265,9 +1265,9 @@ void __init kmem_cache_init(void)/* slab 初始化 */
 				ARCH_KMALLOC_FLAGS, 0,
 				kmalloc_info[INDEX_NODE].size);
 	slab_state = PARTIAL_NODE;
-	setup_kmalloc_cache_index_table();  /*  */
+	setup_kmalloc_cache_index_table();
 
-	slab_early_init = 0;    /*  */
+	slab_early_init = 0;
 
 	/* 5) Replace the bootstrap kmem_cache_node */
 	{
@@ -1291,7 +1291,7 @@ void __init kmem_cache_init(void)/* slab 初始化 */
 	create_kmalloc_caches(ARCH_KMALLOC_FLAGS);  /* 分配各种大小的 kmem_cache */
 }
 
-void __init kmem_cache_init_late(void)  /*  */
+void __init kmem_cache_init_late(void)
 {
 	struct kmem_cache *cachep;
 
@@ -1453,7 +1453,7 @@ static void slab_kernel_map(struct kmem_cache *cachep, void *objp, int map)
 }
 
 #else
-/*  */
+
 #endif
 
 static void poison_obj(struct kmem_cache *cachep, void *addr, unsigned char val)
@@ -1680,7 +1680,7 @@ static size_t calculate_slab_order(struct kmem_cache *cachep,
 	int gfporder;
 
     /**
-     *  
+     *
      */
 	for (gfporder = 0; gfporder <= KMALLOC_MAX_ORDER/* 11 */; gfporder++) {
 		unsigned int num;
@@ -1697,7 +1697,7 @@ static size_t calculate_slab_order(struct kmem_cache *cachep,
 		if (num > SLAB_OBJ_MAX_NUM/* 65535 */)
 			break;
 
-		if (flags & CFLGS_OFF_SLAB/*  */) {
+		if (flags & CFLGS_OFF_SLAB) {
 			struct kmem_cache *freelist_cache;
 			size_t freelist_size;
 
@@ -1747,7 +1747,7 @@ static size_t calculate_slab_order(struct kmem_cache *cachep,
 	return left_over;
 }
 
-static struct array_cache __percpu *alloc_kmem_cache_cpus(  /*  */
+static struct array_cache __percpu *alloc_kmem_cache_cpus(
 		struct kmem_cache *cachep, int entries, int batchcount)
 {
 	int cpu;
@@ -1770,9 +1770,9 @@ static struct array_cache __percpu *alloc_kmem_cache_cpus(  /*  */
 
 
 /**
- *  
+ *
  */
-static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
+static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)
 {
 	if (slab_state >= FULL)
 		return enable_cpucache(cachep, gfp);
@@ -1782,7 +1782,7 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 		return 1;
 
     /**
-     *  
+     *
      */
 	if (slab_state == DOWN) {
 		/* Creation of first cache (kmem_cache). */
@@ -1790,7 +1790,7 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 	} else if (slab_state == PARTIAL) {
 		/* For kmem_cache_node */
 		set_up_node(cachep, SIZE_NODE);
-        
+
 	} else {
 		int node;
 
@@ -1802,14 +1802,14 @@ static int __ref setup_cpu_cache(struct kmem_cache *cachep, gfp_t gfp)  /*  */
 	}
 
     /**
-     *  
+     *
      */
 	cachep->node[numa_mem_id()]->next_reap =
             			jiffies + REAPTIMEOUT_NODE +
             			((unsigned long)cachep) % REAPTIMEOUT_NODE;
 
     /**
-     *  
+     *
      */
 	cpu_cache_get(cachep)->avail = 0;
 	cpu_cache_get(cachep)->limit = BOOT_CPUCACHE_ENTRIES;
@@ -1837,7 +1837,7 @@ __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 	struct kmem_cache *cachep;
 
     /**
-     *  
+     *
      */
 	cachep = find_mergeable(size, align, flags, name, ctor);
 	if (cachep) {
@@ -1858,7 +1858,7 @@ __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 }
 
 /**
- *  
+ *
  */
 static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
 			            size_t size, slab_flags_t flags)
@@ -1882,7 +1882,7 @@ static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
      *  返回剩下的没使用的 字节数
      */
 	left = calculate_slab_order(cachep, size, flags | CFLGS_OBJFREELIST_SLAB);
-    
+
 	if (!cachep->num)
 		return false;
 
@@ -1898,9 +1898,9 @@ static bool set_objfreelist_slab_cache(struct kmem_cache *cachep,
 }
 
 /**
- *  
+ *
  */
-static bool set_off_slab_cache(struct kmem_cache *cachep,   /*  */
+static bool set_off_slab_cache(struct kmem_cache *cachep,
 			size_t size, slab_flags_t flags)
 {
 	size_t left;
@@ -1977,7 +1977,7 @@ static bool set_on_slab_cache(struct kmem_cache *cachep,
  *
  * 创建 kmem_cache
  */
-int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
+int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)
 {
 	size_t ralign = BYTES_PER_WORD;
 	gfp_t gfp;
@@ -2031,13 +2031,13 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	/*
 	 * 4) Store it.
 	 */
-	cachep->align = ralign; /*  */
+	cachep->align = ralign;
 
     /**
      *  着色区 缓存行 大小，一级缓存
      */
 	cachep->colour_off = cache_line_size();
-    
+
 	/* Offset must be a multiple of the alignment. */
 	if (cachep->colour_off < cachep->align)
 		cachep->colour_off = cachep->align;
@@ -2074,7 +2074,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 #endif
 
     /**
-     *  
+     *
      */
 	kasan_cache_create(cachep, &size, &flags);  /* 给监控 cache 设置红区 */
 
@@ -2122,7 +2122,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)  /*  */
 	}
 
     /**
-     *  
+     *
      */
 	if (set_off_slab_cache(cachep, size, flags)) {
 		flags |= CFLGS_OFF_SLAB;
@@ -2164,7 +2164,7 @@ done:
 #endif
 
     /**
-     *  
+     *
      */
 	if (OFF_SLAB(cachep)) {
 		cachep->freelist_cache = kmalloc_slab(cachep->freelist_size, 0u);
@@ -2173,7 +2173,7 @@ done:
     /**
      *  cpu cache
      */
-	err = setup_cpu_cache(cachep, gfp); /*  */
+	err = setup_cpu_cache(cachep, gfp);
 	if (err) {
 		__kmem_cache_release(cachep);
 		return err;
@@ -2215,7 +2215,7 @@ static void check_spinlock_acquired_node(struct kmem_cache *cachep, int node)
 }
 
 #else
-/*  */
+
 #endif
 
 static void drain_array_locked(struct kmem_cache *cachep, struct array_cache *ac,
@@ -2474,7 +2474,7 @@ union freelist_init_state {
 /*
  * Initialize the state based on the randomization methode available.
  * return true if the pre-computed list is available, false otherwize.
- *//*  */
+ */
 static bool freelist_state_initialize(union freelist_init_state *state,
 				struct kmem_cache *cachep,
 				unsigned int count)
@@ -2604,7 +2604,7 @@ static void cache_init_objs(struct kmem_cache *cachep,
 	}
 }
 
-static void *slab_get_obj(struct kmem_cache *cachep, struct page *page) /*  */
+static void *slab_get_obj(struct kmem_cache *cachep, struct page *page)
 {
 	void *objp;
 
@@ -2848,7 +2848,7 @@ static inline void fixup_objfreelist_debug(struct kmem_cache *cachep,
 }
 
 /**
- *  
+ *
  */
 static inline void fixup_slab_list(struct kmem_cache *cachep,
 				struct kmem_cache_node *n, struct page *page,
@@ -2858,7 +2858,7 @@ static inline void fixup_slab_list(struct kmem_cache *cachep,
 	list_del(&page->slab_list);
 
     /**
-     *  
+     *
      */
 	if (page->active == cachep->num) {
         /**
@@ -3003,7 +3003,7 @@ static __always_inline int alloc_block(struct kmem_cache *cachep,
 /**
  *  ____cache_alloc() 中 当没有 可用的，将被 调用
  */
-static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags) /*  */
+static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags)
 {
 	int batchcount;
 	struct kmem_cache_node *n;
@@ -3136,10 +3136,10 @@ static inline void cache_alloc_debugcheck_before(struct kmem_cache *cachep,
 #endif
 
 /**
- *  
+ *
  */
-static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags) /*  */
-{/*  */
+static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+{
 	void *objp;
 	struct array_cache *ac;
 
@@ -3161,13 +3161,13 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags) /*  
 	}
 
     /**
-     *  
+     *
      */
     /* 如果没有可用的 */
 	STATS_INC_ALLOCMISS(cachep);
 
     /**
-     *  
+     *
      */
 	objp = cache_alloc_refill(cachep, flags);
 	/*
@@ -3284,7 +3284,7 @@ retry:
 
 /*
  * A interface to enable slab creation on nodeid
- */ /*  */
+ */
 static void *____cache_alloc_node(struct kmem_cache *cachep, gfp_t flags,
 				int nodeid)
 {
@@ -3312,7 +3312,7 @@ static void *____cache_alloc_node(struct kmem_cache *cachep, gfp_t flags,
 	BUG_ON(page->active == cachep->num);
 
     /**
-     *  
+     *
      */
 	obj = slab_get_obj(cachep, page);
 	n->free_objects--;
@@ -3389,10 +3389,10 @@ slab_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
 }
 
 /**
- *  
+ *
  */
 static __always_inline void *
-__do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
+__do_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 {/* 关闭中断的情况下被调用 */
 	void *objp;
 
@@ -3401,12 +3401,12 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 		if (objp)
 			goto out;
 	}
-    
+
     /**
      *  从 avail 中取 !!
      *  或 分配新的 array_node??
      */
-	objp = ____cache_alloc(cache, flags);   /*  */
+	objp = ____cache_alloc(cache, flags);
 
 	/*
 	 * We may just have run out of memory on the local node.
@@ -3432,10 +3432,10 @@ __do_cache_alloc(struct kmem_cache *cache, gfp_t flags) /*  */
 #endif /* CONFIG_NUMA */
 
 /**
- *  
+ *
  */
 static __always_inline void *
-slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)    /*  */
+slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)
 {
 	unsigned long save_flags;
 	void *objp;
@@ -3444,7 +3444,7 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)    /*  
 	flags &= gfp_allowed_mask;
 
     /**
-     *  
+     *
      */
 	cachep = slab_pre_alloc_hook(cachep, &objcg, 1, flags);
 	if (unlikely(!cachep))
@@ -3457,11 +3457,11 @@ slab_alloc(struct kmem_cache *cachep, gfp_t flags, unsigned long caller)    /*  
      */
 	local_irq_save(save_flags); /* 关本地中断 */
     /**
-     *  
+     *
      */
 	objp = __do_cache_alloc(cachep, flags);
 	local_irq_restore(save_flags);  /* 开本地中断 */
-    
+
 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
 	prefetchw(objp);
 
@@ -3635,8 +3635,8 @@ void ___cache_free(struct kmem_cache *cachep, void *objp,
  * if the cache has no available objects.
  *
  * Return: pointer to the new object or %NULL in case of error
- 
- *  
+
+ *
  */
 void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 {
@@ -3646,7 +3646,7 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 	void *ret = slab_alloc(cachep, flags, _RET_IP_);
 
     /**
-     *  
+     *
      */
 	trace_kmem_cache_alloc(_RET_IP_, ret, cachep->object_size, cachep->size, flags);
 
@@ -3806,7 +3806,7 @@ EXPORT_SYMBOL(__kmalloc_node_track_caller);
  * Return: pointer to the allocated memory or %NULL in case of error
  */
 static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
-					  unsigned long caller) /*  */
+					  unsigned long caller)
 {
 	struct kmem_cache *cachep;
 	void *ret;
@@ -3816,16 +3816,16 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
 	cachep = kmalloc_slab(size, flags); /* 查找句柄 */
 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
 		return cachep;
-	ret = slab_alloc(cachep, flags, caller);    /*  */
+	ret = slab_alloc(cachep, flags, caller);
 
-	ret = kasan_kmalloc(cachep, ret, size, flags);  /*  */
+	ret = kasan_kmalloc(cachep, ret, size, flags);
 	trace_kmalloc(caller, ret,
 		      size, cachep->size, flags);
 
 	return ret;
 }
 
-void *__kmalloc(size_t size, gfp_t flags)   /*  */
+void *__kmalloc(size_t size, gfp_t flags)
 {
 	return __do_kmalloc(size, flags, _RET_IP_);
 }

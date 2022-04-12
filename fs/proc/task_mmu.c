@@ -341,7 +341,7 @@ static int show_map(struct seq_file *m, void *v)
 	return 0;
 }
 
-static const struct seq_operations proc_pid_maps_op = { /*  */
+static const struct seq_operations proc_pid_maps_op = {
 	.start	= m_start,
 	.next	= m_next,
 	.stop	= m_stop,

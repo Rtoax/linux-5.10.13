@@ -96,7 +96,7 @@ static LIST_HEAD(free_entries);
 static DEFINE_SPINLOCK(free_entries_lock);
 
 /* Global disable flag - will be set in case of an error */
-static bool __read_mostly global_disable ;/*  */
+static bool __read_mostly global_disable ;
 
 /* Early initialization disable flag, set at the end of dma_debug_init */
 static bool __read_mostly dma_debug_initialized ;
@@ -125,7 +125,7 @@ static u32 nr_prealloc_entries = PREALLOC_DMA_DEBUG_ENTRIES;
 
 #define NAME_MAX_LEN	64
 
-static char                 __read_mostly current_driver_name[NAME_MAX_LEN] ;/*  */
+static char                 __read_mostly current_driver_name[NAME_MAX_LEN] ;
 static struct device_driver __read_mostly*current_driver                    ;
 
 static DEFINE_RWLOCK(driver_name_lock);

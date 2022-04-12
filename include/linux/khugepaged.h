@@ -19,7 +19,7 @@ extern void khugepaged_min_free_kbytes_update(void);
 #ifdef CONFIG_SHMEM
 extern void collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr);
 #else
-/*  */
+
 #endif
 
 #define khugepaged_enabled()					       \
@@ -62,7 +62,7 @@ static inline int khugepaged_enter(struct vm_area_struct *vma,
 	return 0;
 }
 #else /* CONFIG_TRANSPARENT_HUGEPAGE */
-/*  */
+
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 #endif /* _LINUX_KHUGEPAGED_H */

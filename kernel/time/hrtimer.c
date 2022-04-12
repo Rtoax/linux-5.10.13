@@ -454,7 +454,7 @@ void destroy_hrtimer_on_stack(struct hrtimer *timer)/* 删除栈上的数据 */
 EXPORT_SYMBOL_GPL(destroy_hrtimer_on_stack);
 
 #else
-/*  */
+
 #endif
 
 static inline void
@@ -753,7 +753,7 @@ void clock_was_set_delayed(void)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_HIGH_RES_TIMERS */
 
 /*
@@ -1411,7 +1411,7 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
  *              The PINNED variants of the above can be handed in,
  *              but the PINNED bit is ignored as pinning happens
  *              when the hrtimer is started
- */ /*  */
+ */
 void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 		  enum hrtimer_mode mode)
 {
@@ -1577,11 +1577,11 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 	struct hrtimer_clock_base *base;
 	unsigned int active = cpu_base->active_bases & active_mask;
     /**
-     *  
+     *
      */
 	for_each_active_base(base, cpu_base, active) {
 	    /**
-         *  
+         *
          */
 		struct timerqueue_node *node;
 		ktime_t basenow;
@@ -1618,7 +1618,7 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
              */
 			__run_hrtimer(cpu_base, base, timer, &basenow, flags);
             /**
-             *  
+             *
              */
 			if (active_mask == HRTIMER_ACTIVE_SOFT)
 				hrtimer_sync_wait_running(cpu_base, flags);
@@ -1626,7 +1626,7 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 	}
 }
 
-static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)  /*  */
+static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
 	unsigned long flags;
@@ -1652,7 +1652,7 @@ static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)  /*  
  * Called with interrupts disabled
  *
  * 高精度定时器
- *  调用栈 
+ *  调用栈
      __sysvec_apic_timer_interrupt+318
      sysvec_apic_timer_interrupt+102
      asm_sysvec_apic_timer_interrupt+18
@@ -1683,7 +1683,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
 
 	raw_spin_lock_irqsave(&cpu_base->lock, flags);
 	entry_time = now = hrtimer_update_base(cpu_base);
-    
+
 retry:
 	cpu_base->in_hrtirq = 1;
 	/*
@@ -1701,7 +1701,7 @@ retry:
 		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
 	}
     /**
-     *  
+     *
      */
 	__hrtimer_run_queues(cpu_base, now, flags, HRTIMER_ACTIVE_HARD);
 
@@ -1762,7 +1762,7 @@ retry:
 		expires_next = ktime_add(now, delta);
 
     /**
-     *  
+     *
      */
 	tick_program_event(expires_next, 1);
 	pr_warn_once("hrtimer: interrupt took %llu ns\n", ktime_to_ns(delta));
@@ -2161,14 +2161,14 @@ int hrtimers_dead_cpu(unsigned int scpu)
 #endif /* CONFIG_HOTPLUG_CPU */
 
 /**
- *  
+ *
  */
 void __init hrtimers_init(void) /* 高精度定时器初始化 */
 {
 	hrtimers_prepare_cpu(smp_processor_id());
 
     /**
-     *  
+     *
      */
 	open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq); /* 赋值 */
 }
@@ -2291,7 +2291,7 @@ int __sched schedule_hrtimeout_range(ktime_t *expires, u64 delta,
 				     const enum hrtimer_mode mode)
 {
     /**
-     *  
+     *
      */
 	return schedule_hrtimeout_range_clock(expires, delta, mode, CLOCK_MONOTONIC);
 }

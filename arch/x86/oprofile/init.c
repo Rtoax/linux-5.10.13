@@ -20,7 +20,7 @@
 extern int op_nmi_init(struct oprofile_operations *ops);
 extern void op_nmi_exit(void);
 #else
-/*  */
+
 #endif
 
 extern void x86_backtrace(struct pt_regs * const regs, unsigned int depth);

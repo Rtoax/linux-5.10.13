@@ -435,7 +435,7 @@ static int bpf_iter_link_pin_kernel(struct dentry *parent,
 }
 
 /**
- *  
+ *
  */
 static int bpf_obj_do_pin(const char __user *pathname, void *raw,
 			  enum bpf_type type)
@@ -481,7 +481,7 @@ out:
 }
 
 /**
- *  
+ *
  */
 int bpf_obj_pin_user(u32 ufd, const char __user *pathname)
 {
@@ -494,7 +494,7 @@ int bpf_obj_pin_user(u32 ufd, const char __user *pathname)
 		return PTR_ERR(raw);
 
     /**
-     *  
+     *
      */
 	ret = bpf_obj_do_pin(pathname, raw, type);
 	if (ret != 0)
@@ -791,7 +791,7 @@ static void bpf_free_fc(struct fs_context *fc)
 	kfree(fc->fs_private);
 }
 
-static const struct fs_context_operations bpf_context_ops = {   /*  */
+static const struct fs_context_operations bpf_context_ops = {
 	.free		= bpf_free_fc,
 	.parse_param	= bpf_parse_param,
 	.get_tree	= bpf_get_tree,
@@ -815,7 +815,7 @@ static int bpf_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
-static struct file_system_type bpf_fs_type = {  /*  */
+static struct file_system_type bpf_fs_type = {
 	.owner		= THIS_MODULE,
 	.name		= "bpf",
 	.init_fs_context = bpf_init_fs_context,
@@ -833,7 +833,7 @@ static int __init bpf_init(void)
 	if (ret)
 		return ret;
 
-	ret = register_filesystem(&bpf_fs_type);    /*  */
+	ret = register_filesystem(&bpf_fs_type);
 	if (ret)
 		sysfs_remove_mount_point(fs_kobj, "bpf");
 

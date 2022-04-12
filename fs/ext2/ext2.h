@@ -241,7 +241,7 @@ struct ext2_group_desc
 #define EXT2_COMPRBLK_FL		FS_COMPRBLK_FL	/* One or more compressed clusters */
 #define EXT2_NOCOMP_FL			FS_NOCOMP_FL	/* Don't compress */
 #define EXT2_ECOMPR_FL			FS_ECOMPR_FL	/* Compression error */
-/* End compression flags --- maybe not all used */	
+/* End compression flags --- maybe not all used */
 #define EXT2_BTREE_FL			FS_BTREE_FL	/* btree format dir */
 #define EXT2_INDEX_FL			FS_INDEX_FL	/* hash-indexed directory */
 #define EXT2_IMAGIC_FL			FS_IMAGIC_FL	/* AFS directory */
@@ -299,7 +299,7 @@ static inline __u32 ext2_mask_flags(umode_t mode, __u32 flags)
 /*
  * Structure of an inode on the disk
  */
-struct ext2_inode { /*  */
+struct ext2_inode {
 	__le16	i_mode;		/* File mode */
 	__le16	i_uid;		/* Low 16 bits of Owner Uid */
 	__le32	i_size;		/* Size in bytes */
@@ -413,7 +413,7 @@ struct ext2_inode { /*  */
 /*
  * Structure of the super block
  */
-struct ext2_super_block {   /*  */
+struct ext2_super_block {
 	__le32	s_inodes_count;		/* Inodes count */
 	__le32	s_blocks_count;		/* Blocks count */
 	__le32	s_r_blocks_count;	/* Reserved blocks count */
@@ -446,7 +446,7 @@ struct ext2_super_block {   /*  */
 	 * the incompatible feature set is that if there is a bit set
 	 * in the incompatible feature set that the kernel doesn't
 	 * know about, it should refuse to mount the filesystem.
-	 * 
+	 *
 	 * e2fsck's requirements are more strict; if it doesn't know
 	 * about a feature in either the compatible or incompatible
 	 * feature set, it must abort and not try to meddle with
@@ -572,7 +572,7 @@ struct ext2_super_block {   /*  */
 #define EXT2_DEFM_ACL		0x0008
 #define EXT2_DEFM_UID16		0x0010
     /* Not used by ext2, but reserved for use by ext3 */
-#define EXT3_DEFM_JMODE		0x0060 
+#define EXT3_DEFM_JMODE		0x0060
 #define EXT3_DEFM_JMODE_DATA	0x0020
 #define EXT3_DEFM_JMODE_ORDERED	0x0040
 #define EXT3_DEFM_JMODE_WBACK	0x0060
@@ -691,7 +691,7 @@ struct ext2_inode_info {
 #define dax_sem_down_write(ext2_inode)	down_write(&(ext2_inode)->dax_sem)
 #define dax_sem_up_write(ext2_inode)	up_write(&(ext2_inode)->dax_sem)
 #else
-/*  */
+
 #endif
 
 /*
@@ -770,9 +770,9 @@ extern long ext2_compat_ioctl(struct file *, unsigned int, unsigned long);
 struct dentry *ext2_get_parent(struct dentry *child);
 
 /* super.c */
-extern 
+extern
 void ext2_error(struct super_block *, const char *, const char *, ...);
-extern 
+extern
 void ext2_msg(struct super_block *, const char *, const char *, ...);
 extern void ext2_update_dynamic_rev (struct super_block *sb);
 extern void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es,

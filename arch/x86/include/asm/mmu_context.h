@@ -67,14 +67,14 @@ int ldt_dup_context(struct mm_struct *oldmm, struct mm_struct *mm);
 void destroy_context_ldt(struct mm_struct *mm);
 void ldt_arch_exit_mmap(struct mm_struct *mm);
 #else	/* CONFIG_MODIFY_LDT_SYSCALL */
-/*  */
+
 #endif
 
 #ifdef CONFIG_MODIFY_LDT_SYSCALL
 extern void load_mm_ldt(struct mm_struct *mm);
 extern void switch_ldt(struct mm_struct *prev, struct mm_struct *next);
 #else
-/*  */
+
 #endif
 
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
@@ -83,7 +83,7 @@ extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
  * Init a new mm.  Used on mm copies, like at fork()
  * and on mm's that are brand-new, like at execve().
  *
- * 初始化 新的 mm, 
+ * 初始化 新的 mm,
  */
 static inline int init_new_context(struct task_struct *tsk,
 				   struct mm_struct *mm)
@@ -103,7 +103,7 @@ static inline int init_new_context(struct task_struct *tsk,
 #endif
 
     /**
-     *  
+     *
      */
 	init_new_context_ldt(mm);
 	return 0;
@@ -153,7 +153,7 @@ static inline void arch_dup_pkeys(struct mm_struct *oldmm,
 }
 
 /**
- *  
+ *
  */
 static inline int arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
 {
@@ -179,11 +179,11 @@ static inline bool is_64bit_mm(struct mm_struct *mm)
 		!(mm->context.ia32_compat == TIF_IA32);
 }
 #else
-/*  */
+
 #endif
 
 static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
-			      unsigned long end)/*  */
+			      unsigned long end)
 {
 }
 

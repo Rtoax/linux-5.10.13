@@ -953,7 +953,7 @@ struct fown_struct {    /* 文件拥有者 */
 /*
  * Track a single file's readahead state
  */
-struct file_ra_state {  /*  */
+struct file_ra_state {
 	pgoff_t start;			/* where readahead started */
 	unsigned int size;		/* # of readahead pages */
 	unsigned int async_size;	/* do asynchronous readahead when
@@ -976,7 +976,7 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
 /**
  *  打开的文件结构，在 open 时创建
  */
-struct file {   /*  */
+struct file {
 	union {
 		struct llist_node	fu_llist;   /* 单链表 */
 		struct rcu_head 	fu_rcuhead; /* 单链表+回调函数 */
@@ -1002,7 +1002,7 @@ struct file {   /*  */
 	 * Must not be taken from IRQ context.
 	 */
 	spinlock_t		f_lock;         /* 文件锁 */
-	enum rw_hint	f_write_hint;   /*  */
+	enum rw_hint	f_write_hint;
 	atomic_long_t	f_count;
 
     /**
@@ -1028,9 +1028,9 @@ struct file {   /*  */
 	loff_t			f_pos;
 	struct fown_struct	f_owner;    /* 文件拥有者 */
 	const struct cred	*f_cred;    /* 文件安全上下文 */
-	struct file_ra_state    f_ra;   /*  */
+	struct file_ra_state    f_ra;
 
-	u64			f_version;          /*  */
+	u64			f_version;
 #ifdef CONFIG_SECURITY
     /**
      *  存储安全数据用的
@@ -1277,7 +1277,7 @@ struct files_struct;
 extern void show_fd_locks(struct seq_file *f,
 			 struct file *filp, struct files_struct *files);
 #else /* !CONFIG_FILE_LOCKING */
-/*  */
+
 #endif /* !CONFIG_FILE_LOCKING */
 
 static inline struct inode *file_inode(const struct file *f)    /* 从打开的文件file到 inode */
@@ -1537,7 +1537,7 @@ struct super_block {    /* 超级块 */
 	int s_stack_depth;
 
 	/* s_inode_list_lock protects s_inodes */
-	spinlock_t		____cacheline_aligned_in_smp s_inode_list_lock ;/*  */
+	spinlock_t		____cacheline_aligned_in_smp s_inode_list_lock ;
 	struct list_head	s_inodes;	/* all inodes */
 
 	spinlock_t		s_inode_wblist_lock;
@@ -2046,7 +2046,7 @@ static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
      *  pipe() -> pipefifo_fops.pipe_write()
      *  ext4 -> ext4_file_operations.ext4_file_write_iter()
      */
-	return file->f_op->write_iter(kio, iter);   /*  */
+	return file->f_op->write_iter(kio, iter);
 }
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
@@ -2115,7 +2115,7 @@ struct super_operations {   /* 超级块操作符 */
 	int (*show_devname)(struct seq_file *, struct dentry *);
 	int (*show_path)(struct seq_file *, struct dentry *);
 	int (*show_stats)(struct seq_file *, struct dentry *);
-#ifdef CONFIG_QUOTA /*  */
+#ifdef CONFIG_QUOTA
 	ssize_t (*quota_read)(struct super_block *, int, char *, size_t, loff_t);
 	ssize_t (*quota_write)(struct super_block *, int, const char *, size_t, loff_t);
 	ppdquot_t (*get_dquots)(struct inode *);
@@ -2178,7 +2178,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_I_VERSION(inode)	__IS_FLG(inode, SB_I_VERSION)
 
 #define IS_NOQUOTA(inode)	((inode)->i_flags & S_NOQUOTA)
-#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)   /*  */
+#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
 #define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 
@@ -2548,7 +2548,7 @@ static inline int locks_verify_truncate(struct inode *inode,
 }
 
 #else /* !CONFIG_MANDATORY_FILE_LOCKING */
-/*  */
+
 #endif /* CONFIG_MANDATORY_FILE_LOCKING */
 
 
@@ -2614,7 +2614,7 @@ static inline int break_layout(struct inode *inode, bool wait)
 }
 
 #else /* !CONFIG_FILE_LOCKING */
-/*  */
+
 #endif /* CONFIG_FILE_LOCKING */
 
 /* fs/open.c */
@@ -2623,7 +2623,7 @@ struct audit_names;
 /**
  *
  */
-struct filename {   /*  */
+struct filename {
 	const char		*name;	    /* 指向内核空间的文件路径指针 pointer to actual string */
 	const __user char	*uptr;	/* 用户空间的原始指针 original userland pointer */
 	int			refcnt;         /* 引用计数 */
@@ -2877,7 +2877,7 @@ extern void emergency_remount(void);
 #ifdef CONFIG_BLOCK
 extern int bmap(struct inode *inode, sector_t *block);
 #else
-/*  */
+
 #endif
 
 extern int notify_change(struct dentry *, struct iattr *, struct inode **);
@@ -2961,7 +2961,7 @@ static inline void i_readcount_inc(struct inode *inode)
 	atomic_inc(&inode->i_readcount);
 }
 #else
-/*  */
+
 #endif
 extern int do_pipe_flags(int *, int);
 
@@ -3327,7 +3327,7 @@ extern int buffer_migrate_page_norefs(struct address_space *,
 				struct page *, struct page *,
 				enum migrate_mode);
 #else
-/*  */
+
 #endif
 
 extern int setattr_prepare(struct dentry *, struct iattr *);

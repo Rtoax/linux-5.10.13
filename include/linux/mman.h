@@ -61,7 +61,7 @@ extern struct percpu_counter vm_committed_as;
 extern s32 vm_committed_as_batch;
 extern void mm_compute_batch(int overcommit_policy);
 #else
-/*  */
+
 #endif
 
 unsigned long vm_memory_committed(void);

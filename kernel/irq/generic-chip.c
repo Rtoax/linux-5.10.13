@@ -614,7 +614,7 @@ static void irq_gc_resume(void)
 	}
 }
 #else
-/*  */
+
 #endif
 
 static void irq_gc_shutdown(void)
@@ -644,4 +644,4 @@ static int __init irq_gc_init_ops(void)
 	register_syscore_ops(&irq_gc_syscore_ops);
 	return 0;
 }
-device_initcall(irq_gc_init_ops);   /*  */
+device_initcall(irq_gc_init_ops);

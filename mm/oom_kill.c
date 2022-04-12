@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  *  linux/mm/oom_kill.c
- * 
+ *
  *  Copyright (C)  1998,2000  Rik van Riel
  *	Thanks go out to Claus Fischer for some serious inspiration and
  *	for goading me into coding this file...
@@ -120,7 +120,7 @@ static bool oom_cpuset_eligible(struct task_struct *start,
 	return ret;
 }
 #else
-/*  */
+
 #endif /* CONFIG_NUMA */
 
 /*
@@ -677,7 +677,7 @@ static int __init oom_init(void)
 }
 subsys_initcall(oom_init)
 #else
-/*  */
+
 #endif /* CONFIG_MMU */
 
 /**
@@ -852,7 +852,7 @@ static bool task_will_free_mem(struct task_struct *task)
 
 
 /**
- *  
+ *
  */
 static void __oom_kill_process(struct task_struct *victim, const char *message)
 {
@@ -908,7 +908,7 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	rcu_read_lock();
 
     /**
-     *  
+     *
      */
 	for_each_process(p) {
 		if (!process_shares_mm(p, mm))
@@ -937,7 +937,7 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 		wake_oom_reaper(victim);
 
     /**
-     *  
+     *
      */
 	mmdrop(mm);
 	put_task_struct(victim);
@@ -959,7 +959,7 @@ static int oom_kill_memcg_member(struct task_struct *task, void *message)
 }
 
 /**
- *  
+ *
  */
 static void oom_kill_process(struct oom_control *oc, const char *message)
 {
@@ -984,7 +984,7 @@ static void oom_kill_process(struct oom_control *oc, const char *message)
 	task_unlock(victim);
 
     /**
-     *  
+     *
      */
 	if (__ratelimit(&oom_rs))
 		dump_header(oc, victim);
@@ -1029,7 +1029,7 @@ static void check_panic_on_oom(struct oom_control *oc)
 		return;
 
     /**
-     *  
+     *
      */
 	dump_header(oc, NULL);
 	panic("Out of memory: %s panic_on_oom is enabled\n",
@@ -1104,7 +1104,7 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 	check_panic_on_oom(oc);
 
     /**
-     *  
+     *
      */
 	if (!is_memcg_oom(oc) && sysctl_oom_kill_allocating_task &&
 	    current->mm && !oom_unkillable_task(current) &&

@@ -26,9 +26,9 @@ struct ipc_ids {
 	struct rhashtable key_ht;
 };
 /**
- *  
+ *
  */
-struct ipc_namespace {  /*  */
+struct ipc_namespace {
 	refcount_t	count;
 	struct ipc_ids	ids[3]; /* IPC_SEM_IDS IPC_MSG_IDS IPC_SHM_IDS */
 
@@ -81,7 +81,7 @@ extern spinlock_t mq_lock;
 #ifdef CONFIG_SYSVIPC
 extern void shm_destroy_orphaned(struct ipc_namespace *ns);
 #else /* CONFIG_SYSVIPC */
-/*  */
+
 #endif /* CONFIG_SYSVIPC */
 
 #ifdef CONFIG_POSIX_MQUEUE
@@ -120,7 +120,7 @@ extern int mq_init_ns(struct ipc_namespace *ns);
 #define DFLT_MSGSIZEMAX		     8192
 #define HARD_MSGSIZEMAX	    (16*1024*1024)
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_IPC_NS)
@@ -136,7 +136,7 @@ static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
 
 extern void put_ipc_ns(struct ipc_namespace *ns);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_POSIX_MQUEUE_SYSCTL
@@ -145,6 +145,6 @@ struct ctl_table_header;
 extern struct ctl_table_header *mq_register_sysctl_table(void);
 
 #else /* CONFIG_POSIX_MQUEUE_SYSCTL */
-/*  */
+
 #endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
 #endif

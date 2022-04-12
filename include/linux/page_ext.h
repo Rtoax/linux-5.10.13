@@ -45,7 +45,7 @@ static inline void page_ext_init_flatmem(void)
 }
 extern void page_ext_init(void);
 #else
-/*  */
+
 #endif
 
 struct page_ext *lookup_page_ext(const struct page *page);
@@ -58,6 +58,6 @@ static inline struct page_ext *page_ext_next(struct page_ext *curr)
 }
 
 #else /* !CONFIG_PAGE_EXTENSION */
-/*  */
+
 #endif /* CONFIG_PAGE_EXTENSION */
 #endif /* __LINUX_PAGE_EXT_H */

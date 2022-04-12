@@ -94,14 +94,14 @@ static struct resource data_resource = {
 	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
 };
 
-static struct resource code_resource = {/*  */
+static struct resource code_resource = {
 	.name	= "Kernel code",
 	.start	= 0,
 	.end	= 0,
 	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
 };
 
-static struct resource bss_resource = {/*  */
+static struct resource bss_resource = {
 	.name	= "Kernel bss",
 	.start	= 0,
 	.end	= 0,
@@ -111,7 +111,7 @@ static struct resource bss_resource = {/*  */
 
 #ifdef CONFIG_X86_32
 /* CPU data as detected by the assembly code in head_32.S */
-struct cpuinfo_x86 new_cpu_data;/*  */
+struct cpuinfo_x86 new_cpu_data;
 
 /* Common CPU data for all CPUs */
 struct cpuinfo_x86 __read_mostly boot_cpu_data ;
@@ -190,7 +190,7 @@ static inline void __init copy_edd(void) /* BIOS Enhanced Disk Drive Specificati
      edd.edd_info_nr = boot_params.eddbuf_entries;
 }
 #else
-/*  */
+
 #endif
 
 //会在 `brk` 段中预留给定大小的空间
@@ -223,7 +223,7 @@ void * __init extend_brk(size_t size, size_t align)
 /**
  *
  */
-static void __init reserve_brk(void)    /*  */
+static void __init reserve_brk(void)
 {
 	if (_brk_end > _brk_start)
 		memblock_reserve(__pa_symbol(_brk_start),
@@ -251,7 +251,7 @@ static u64 __init get_ramdisk_image(void)   /* RAM */
 	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
 
 	if (ramdisk_image == 0)
-		ramdisk_image = phys_initrd_start;  /*  */
+		ramdisk_image = phys_initrd_start;
 
     /**
      *  initrd
@@ -378,10 +378,10 @@ static void __init reserve_initrd(void)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_BLK_DEV_INITRD */
 
-static void __init parse_setup_data(void) /*  */
+static void __init parse_setup_data(void)
 {
 	struct setup_data *data;
 	u64 pa_data, pa_next;
@@ -583,7 +583,7 @@ static void __init reserve_crashkernel(void)
 	insert_resource(&iomem_resource, &crashk_res);
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -1158,7 +1158,7 @@ void __init setup_arch(char **cmdline_p)
 	 * allocate memory near the kernel image to try the best to keep
 	 * the kernel away from hotpluggable memory.
 	 */
-	if (movable_node_is_enabled())  /*  */
+	if (movable_node_is_enabled())
 		memblock_set_bottom_up(true);
 #endif
 
@@ -1227,7 +1227,7 @@ void __init setup_arch(char **cmdline_p)
     /* Time Stamp Counter */
 	tsc_early_init();
 
-    /*  */
+
 	x86_init.resources.probe_roms();    /* probe BIOS roms */
 
 	/* after parse_early_param, so could debug it */
@@ -1246,12 +1246,12 @@ void __init setup_arch(char **cmdline_p)
     /**
      *  将内核 的 _text ~ _end 与 RAM 建立联系
      */
-	e820_add_kernel_range(); /*  */
+	e820_add_kernel_range();
 
     /**
      *  从 e820 中移除 BIOS   的部分
      */
-    trim_bios_range();      /*  */
+    trim_bios_range();
 
 
 #ifdef CONFIG_X86_32
@@ -1266,21 +1266,21 @@ void __init setup_arch(char **cmdline_p)
     /**
      *
      */
-	early_gart_iommu_check();   /*  */
+	early_gart_iommu_check();
 #endif
 
 	/*
 	 * partially used pages are not usable - thus
 	 * we are rounding upwards:
 	 */
-	max_pfn = e820__end_of_ram_pfn();   /*  */
+	max_pfn = e820__end_of_ram_pfn();
 
 	/**
 	 *  update e820 for memory not covered by WB MTRRs
 	 *
 	 *  在 启动的 CPU 初始化 MTRR
 	 */
-	mtrr_bp_init(); /*  */
+	mtrr_bp_init();
 
     /**
      *
@@ -1291,14 +1291,14 @@ void __init setup_arch(char **cmdline_p)
     /**
      *
      */
-	max_possible_pfn = max_pfn; /*  */
+	max_possible_pfn = max_pfn;
 
 	/*
 	 * This call is required when the CPU does not support PAT. If
 	 * mtrr_bp_init() invoked it already via pat_init() the call has no
 	 * effect.
 	 */
-	init_cache_modes(); /*  */
+	init_cache_modes();
 
 	/*
 	 * Define random base addresses for memory sections after max_pfn is
@@ -1306,11 +1306,11 @@ void __init setup_arch(char **cmdline_p)
 	 *
 	 * 随机化 内存 节 的 基址 - ASLR 地址空间布局随机化
 	 */
-	kernel_randomize_memory();  /*  */
+	kernel_randomize_memory();
 
 #ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */
-	find_low_pfn_range();   /*  */
+	find_low_pfn_range();
 #else
 
     /**
@@ -1455,7 +1455,7 @@ void __init setup_arch(char **cmdline_p)
     /**
      *  用于在 `PAGE_OFFSET` 处重建物理内存的直接映射
      */
-	init_mem_mapping(); /*  */
+	init_mem_mapping();
 
     /**
      *  用于建立 `#PF` 处理函数 (Page Fault)
@@ -1492,7 +1492,7 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	/* Allocate bigger log buffer 日志 buffer 大小 */
-	setup_log_buf(1);   /*  */
+	setup_log_buf(1);
 
 	if (efi_enabled(EFI_BOOT)) {
 		switch (boot_params.secure_boot) {
@@ -1530,7 +1530,7 @@ void __init setup_arch(char **cmdline_p)
     /**
      *  This function allows to override  default I/O delay `0x80` port
      */
-	io_delay_init();    /*  */
+	io_delay_init();
 
     /**
      *  quirks: 怪癖
@@ -1561,7 +1561,7 @@ void __init setup_arch(char **cmdline_p)
      */
 	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
 
-    /*  */
+
 	if (boot_cpu_has(X86_FEATURE_GBPAGES))
 		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
 
@@ -1650,12 +1650,12 @@ void __init setup_arch(char **cmdline_p)
     /**
      *  makes preliminary(初步的) filling of the possible CPU's `cpumask`
      */
-	prefill_possible_map(); /*  */
+	prefill_possible_map();
 
     /**
      *
      */
-	init_cpu_to_node(); /*  */
+	init_cpu_to_node();
 
     /**
      *
@@ -1665,7 +1665,7 @@ void __init setup_arch(char **cmdline_p)
     /**
      *
      */
-	io_apic_init_mappings();    /*  */
+	io_apic_init_mappings();
 
     /*
         初始值: x86_init_noop()
@@ -1677,7 +1677,7 @@ void __init setup_arch(char **cmdline_p)
      *  E820 内存管理器
      *  memblock 添加到 iomem_resource
      */
-	e820__reserve_resources();  /*  */
+	e820__reserve_resources();
 
     /**
      *
@@ -1716,18 +1716,18 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.timers.wallclock_init();
 
     //initializes `Machine check Exception`
-	mcheck_init();  /*  */
+	mcheck_init();
 
     //registers [jiffy]
 	register_refined_jiffies(CLOCK_TICK_RATE/* The clock frequency of the i8253/i8254 PIT */);
 
 #ifdef CONFIG_EFI
-	if (efi_enabled(EFI_BOOT))      /*  */
-		efi_apply_memmap_quirks();  /*  */
+	if (efi_enabled(EFI_BOOT))
+		efi_apply_memmap_quirks();
 #endif
 
     /* 回溯 */
-	unwind_init();  /*  */
+	unwind_init();
 }
 
 #ifdef CONFIG_X86_32

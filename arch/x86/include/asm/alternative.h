@@ -86,7 +86,7 @@ extern void alternatives_enable_smp(void);
 extern int alternatives_text_reserved(void *start, void *end);
 extern bool skip_smp_alternatives;
 #else
-/*  */
+
 #endif	/* CONFIG_SMP */
 
 #define b_replacement(num)	"664"#num

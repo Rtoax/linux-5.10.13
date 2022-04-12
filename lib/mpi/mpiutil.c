@@ -64,7 +64,7 @@ static int __init mpi_init(void)
 
 	return 0;
 }
-postcore_initcall(mpi_init);    /*  */
+postcore_initcall(mpi_init);
 
 /* Return a constant MPI descripbed by NO which is one of the
  * MPI_C_xxx macros.  There is no need to copy this returned value; it

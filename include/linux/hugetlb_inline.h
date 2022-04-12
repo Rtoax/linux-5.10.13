@@ -12,7 +12,7 @@ static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma)   /*  设置�
 }
 
 #else
-/*  */
+
 #endif
 
 #endif

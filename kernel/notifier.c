@@ -81,7 +81,7 @@ static int notifier_call_chain(struct notifier_block **nl,
 		}
 #endif
         /**
-         *  
+         *
          */
 		ret = nb->notifier_call(nb, val, v);
 
@@ -241,7 +241,7 @@ NOKPROBE_SYMBOL(atomic_notifier_call_chain);
  *	Currently always returns zero.
  */
 int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-		struct notifier_block *n)/*  */
+		struct notifier_block *n)
 {
 	int ret;
 
@@ -537,13 +537,13 @@ static ATOMIC_NOTIFIER_HEAD(die_chain);
 static struct atomic_notifier_head die_chain = \
 		ATOMIC_NOTIFIER_INIT(die_chain);//+++
 /**
- *  
+ *
  */
 int notrace notify_die(enum die_val val, const char *str,
 	       struct pt_regs *regs, long err, int trap, int sig)
 {
     /**
-     *  
+     *
      */
 	struct die_args args = {
 		args.regs	= regs,
@@ -553,7 +553,7 @@ int notrace notify_die(enum die_val val, const char *str,
 		args.signr	= sig,
 	};
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "notify_die called but RCU thinks we're quiescent");
-    
+
 	return atomic_notifier_call_chain(&die_chain, val, &args);
 }
 NOKPROBE_SYMBOL(notify_die);

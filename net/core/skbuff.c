@@ -80,7 +80,7 @@
 #include "datagram.h"
 
 /**
- *  
+ *
  */
 struct kmem_cache __ro_after_init*skbuff_head_cache ;
 static struct kmem_cache __ro_after_init*skbuff_fclone_cache ;
@@ -88,7 +88,7 @@ static struct kmem_cache __ro_after_init*skbuff_fclone_cache ;
 static struct kmem_cache __ro_after_init*skbuff_ext_cache ;
 #endif
 /**
- *  
+ *
  */
 int __read_mostly sysctl_max_skb_frags  = MAX_SKB_FRAGS;
 EXPORT_SYMBOL(sysctl_max_skb_frags);
@@ -1281,7 +1281,7 @@ void sock_zerocopy_put_abort(struct ubuf_info *uarg, bool have_uref)
 }
 EXPORT_SYMBOL_GPL(sock_zerocopy_put_abort);
 
-int skb_zerocopy_iter_dgram(struct sk_buff *skb, struct msghdr *msg, int len)   /*  */
+int skb_zerocopy_iter_dgram(struct sk_buff *skb, struct msghdr *msg, int len)
 {
 	return __zerocopy_sg_from_iter(skb->sk, skb, &msg->msg_iter, len);
 }
@@ -1303,7 +1303,7 @@ int skb_zerocopy_iter_stream(struct sock *sk, struct sk_buff *skb,
 	if (orig_uarg && uarg != orig_uarg)
 		return -EEXIST;
     /**
-     *  
+     *
      */
 	err = __zerocopy_sg_from_iter(sk, skb, &msg->msg_iter, len);
 	if (err == -EFAULT || (err == -EMSGSIZE && skb->len == orig_len)) {
@@ -1470,7 +1470,7 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
 		n->fclone = SKB_FCLONE_UNAVAILABLE;
 	}
     /**
-     *  
+     *
      */
 	return __skb_clone(n, skb);
 }

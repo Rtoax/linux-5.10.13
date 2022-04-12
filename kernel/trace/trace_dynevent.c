@@ -222,7 +222,7 @@ static __init int init_dynamic_event(void)
 
 	return 0;
 }
-fs_initcall(init_dynamic_event);    /*  */
+fs_initcall(init_dynamic_event);
 
 /**
  * dynevent_arg_add - Add an arg to a dynevent_cmd

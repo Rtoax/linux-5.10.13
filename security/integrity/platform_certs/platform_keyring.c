@@ -55,4 +55,4 @@ static __init int platform_keyring_init(void)
 /*
  * Must be initialised before we try and load the keys into the keyring.
  */
-device_initcall(platform_keyring_init); /*  */
+device_initcall(platform_keyring_init);

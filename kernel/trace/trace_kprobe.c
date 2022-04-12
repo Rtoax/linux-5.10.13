@@ -24,7 +24,7 @@
 #define KRETPROBE_MAXACTIVE_MAX 4096
 
 /* Kprobe early definition from command line */
-static char __initdata kprobe_boot_events_buf[COMMAND_LINE_SIZE] ;/*  */
+static char __initdata kprobe_boot_events_buf[COMMAND_LINE_SIZE] ;
 
 static int __init set_kprobe_boot_events(char *str)
 {
@@ -475,7 +475,7 @@ static bool within_notrace_func(struct trace_kprobe *tk)
 	return true;
 }
 #else
-/*  */
+
 #endif
 
 /* Internal register function - just handle k*probes and flags */
@@ -1942,7 +1942,7 @@ static __init int init_kprobe_trace(void)
 
 	return 0;
 }
-fs_initcall(init_kprobe_trace); /*  */
+fs_initcall(init_kprobe_trace);
 
 
 #ifdef CONFIG_FTRACE_STARTUP_TEST
@@ -2105,6 +2105,6 @@ end:
 	return 0;
 }
 
-late_initcall(kprobe_trace_self_tests_init);    /*  */
+late_initcall(kprobe_trace_self_tests_init);
 
 #endif

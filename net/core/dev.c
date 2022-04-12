@@ -159,7 +159,7 @@ static DEFINE_SPINLOCK(offload_lock);
 struct list_head __read_mostly ptype_base[PTYPE_HASH_SIZE] ;
 /**
  *  链表头
- *  函数 
+ *  函数
  *  ptype_head() 返回这个链表头
  */
 struct list_head __read_mostly ptype_all ;	/* Taps */
@@ -614,7 +614,7 @@ EXPORT_SYMBOL(dev_remove_pack);
  *	guarantee all CPU's that are in middle of receiving packets
  *	will see the new offload handlers (until the next received packet).
  */
-void dev_add_offload(struct packet_offload *po) /*  */
+void dev_add_offload(struct packet_offload *po)
 {
 	struct packet_offload *elem;
 
@@ -2254,7 +2254,7 @@ int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
 EXPORT_SYMBOL_GPL(dev_forward_skb);
 
 /**
- *  
+ *
  */
 static inline int deliver_skb(struct sk_buff *skb,
 			      struct packet_type *pt_prev,
@@ -3586,7 +3586,7 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
 }
 
 /**
- *  
+ *
  */
 struct sk_buff *dev_hard_start_xmit(struct sk_buff *first, struct net_device *dev,
 				    struct netdev_queue *txq, int *ret)
@@ -4472,7 +4472,7 @@ static void rps_trigger_softirq(void *data)
 {
 	struct softnet_data *sd = data;
 
-	____napi_schedule(sd, &sd->backlog);    /*  */
+	____napi_schedule(sd, &sd->backlog);
 	sd->received_rps++;
 }
 
@@ -4558,7 +4558,7 @@ static int enqueue_to_backlog(struct sk_buff *skb, int cpu,
 	if (!netif_running(skb->dev))
 		goto drop;
     /**
-     *  
+     *
      */
 	qlen = skb_queue_len(&sd->input_pkt_queue);
 	if (qlen <= netdev_max_backlog && !skb_flow_limit(skb, qlen)) {
@@ -4794,7 +4794,7 @@ out_redir:
 }
 EXPORT_SYMBOL_GPL(do_xdp_generic);
 /**
- *  
+ *
  */
 static int netif_rx_internal(struct sk_buff *skb)
 {
@@ -4873,7 +4873,7 @@ int netif_rx_ni(struct sk_buff *skb)
 	preempt_disable();
 	err = netif_rx_internal(skb);
     /**
-     *  
+     *
      */
 	if (local_softirq_pending())
 		do_softirq();
@@ -4900,9 +4900,9 @@ int netif_rx_any_context(struct sk_buff *skb)
 EXPORT_SYMBOL(netif_rx_any_context);
 
 /**
- *  
+ *
  */
-static __latent_entropy void net_tx_action(struct softirq_action *h)    /*  */
+static __latent_entropy void net_tx_action(struct softirq_action *h)
 {
 	struct softnet_data *sd = this_cpu_ptr(&softnet_data);
 
@@ -5143,7 +5143,7 @@ static inline int nf_ingress(struct sk_buff *skb, struct packet_type **pt_prev,
 }
 
 /**
- *  
+ *
  */
 static int __netif_receive_skb_core(struct sk_buff **pskb, bool pfmemalloc,
 				    struct packet_type **ppt_prev)
@@ -5211,7 +5211,7 @@ another_round:
 	}
 
     /**
-     *  
+     *
      */
 	list_for_each_entry_rcu(ptype, &skb->dev->ptype_all, list) {
 		if (pt_prev)
@@ -6347,7 +6347,7 @@ static bool sd_has_rps_ipi_waiting(struct softnet_data *sd)
 #endif
 }
 
-static int process_backlog(struct napi_struct *napi, int quota) /*  */
+static int process_backlog(struct napi_struct *napi, int quota)
 {
 	struct softnet_data *sd = container_of(napi, struct softnet_data, backlog);
 	bool again = true;
@@ -6587,7 +6587,7 @@ static void busy_poll_stop(struct napi_struct *napi, void *have_poll_lock)
 }
 
 /**
- *  
+ *
  */
 void napi_busy_loop(unsigned int napi_id,
             		    bool (*loop_end)(void *, unsigned long),
@@ -6636,7 +6636,7 @@ count:
 			__NET_ADD_STATS(dev_net(napi->dev),
 					LINUX_MIB_BUSYPOLLRXPACKETS, work);
 		local_bh_enable();
-        
+
 		if (!loop_end || loop_end(loop_end_arg, start_time))
 			break;
 
@@ -6861,7 +6861,7 @@ out_unlock:
 	return work;
 }
 
-static __latent_entropy void net_rx_action(struct softirq_action *h)    /*  */
+static __latent_entropy void net_rx_action(struct softirq_action *h)
 {
 	struct softnet_data *sd = this_cpu_ptr(&softnet_data);
 	unsigned long time_limit = jiffies +
@@ -10955,7 +10955,7 @@ static struct hlist_head * __net_init netdev_create_hash(void)
 }
 
 /* Initialize per network namespace state */
-static int __net_init netdev_init(struct net *net)  /*  */
+static int __net_init netdev_init(struct net *net)
 {
 	BUILD_BUG_ON(GRO_HASH_BUCKETS >
 		     8 * sizeof_field(struct napi_struct, gro_bitmask));
@@ -11068,16 +11068,16 @@ static void __net_exit netdev_exit(struct net *net)
 {
 	kfree(net->dev_name_head);
 	kfree(net->dev_index_head);
-	if (net != &init_net)   /*  */
+	if (net != &init_net)
 		WARN_ON_ONCE(!list_empty(&net->dev_base_head));
 }
 
-static struct pernet_operations __net_initdata netdev_net_ops = {   /*  */
-	.init = netdev_init,    /*  */
+static struct pernet_operations __net_initdata netdev_net_ops = {
+	.init = netdev_init,
 	.exit = netdev_exit,
 };
 
-static void __net_exit default_device_exit(struct net *net) /*  */
+static void __net_exit default_device_exit(struct net *net)
 {
 	struct net_device *dev, *aux;
 	/*
@@ -11199,7 +11199,7 @@ static int __init net_dev_init(void)    /* 网络设备初始化 */
 	if (dev_proc_init())    /* /proc/PID/net/xxx */
 		goto out;
 
-	if (netdev_kobject_init())  /*  */
+	if (netdev_kobject_init())
 		goto out;
 
 	INIT_LIST_HEAD(&ptype_all);
@@ -11228,7 +11228,7 @@ static int __init net_dev_init(void)    /* 网络设备初始化 */
 #endif
 		INIT_LIST_HEAD(&sd->poll_list);
 		sd->output_queue_tailp = &sd->output_queue;
-#ifdef CONFIG_RPS   /*  */
+#ifdef CONFIG_RPS
 		sd->csd.func = rps_trigger_softirq;
 		sd->csd.info = sd;
 		sd->cpu = i;
@@ -11253,11 +11253,11 @@ static int __init net_dev_init(void)    /* 网络设备初始化 */
 	if (register_pernet_device(&loopback_net_ops))  /* 127.0.0.1 */
 		goto out;
 
-	if (register_pernet_device(&default_device_ops))/*  */
+	if (register_pernet_device(&default_device_ops))
 		goto out;
 
     /**
-     *  
+     *
      */
 	open_softirq(NET_TX_SOFTIRQ, net_tx_action);    /* 发 */
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action);    /* 收 */

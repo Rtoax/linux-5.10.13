@@ -2864,7 +2864,7 @@ static int __init max_swapfiles_check(void)
 	MAX_SWAPFILES_CHECK();
 	return 0;
 }
-late_initcall(max_swapfiles_check); /*  */
+late_initcall(max_swapfiles_check);
 #endif
 
 static struct swap_info_struct *alloc_swap_info(void)
@@ -3152,7 +3152,7 @@ static bool swap_discardable(struct swap_info_struct *si)
 /* swapon 系统调用 int swapon(const char *path, int swapflags); */
 SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 {
-	struct swap_info_struct *p; /*  */
+	struct swap_info_struct *p;
 	struct filename *name;
 	struct file *swap_file = NULL;
 	struct address_space *mapping;
@@ -3800,7 +3800,7 @@ static void free_swap_count_continuations(struct swap_info_struct *si)
 }
 
 #if defined(CONFIG_MEMCG) && defined(CONFIG_BLK_CGROUP)
-void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)    /*  */
+void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
 {
 	struct swap_info_struct *si, *next;
 	int nid = page_to_nid(page);

@@ -87,7 +87,7 @@ struct vdso_timestamp {
  * For clocks which are not affected by time namespace adjustment the
  * offset must be zero.
  */
-struct vdso_data {  /*  */
+struct vdso_data {
 	u32			seq;
 
 	s32			clock_mode;

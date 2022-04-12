@@ -268,12 +268,12 @@ struct kvm_vcpu {
 	struct preempt_notifier preempt_notifier;
 #endif
     /**
-     *  
+     *
      */
 	int cpu;
 
     /**
-     *  
+     *
      */
 	int vcpu_id; /* id given by userspace at creation */
 	int vcpu_idx; /* index in kvm->vcpus array */
@@ -362,7 +362,7 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
 /**
  *  KVM 内存条实例
  *
- *  
+ *
  */
 struct kvm_memory_slot {
     /**
@@ -370,15 +370,15 @@ struct kvm_memory_slot {
      */
 	gfn_t base_gfn;
     /**
-     *  
+     *
      */
 	unsigned long npages;
     /**
-     *  
+     *
      */
 	unsigned long *dirty_bitmap;
     /**
-     *  
+     *
      */
 	struct kvm_arch_memory_slot arch;
     /**
@@ -387,7 +387,7 @@ struct kvm_memory_slot {
      */
 	unsigned long userspace_addr;
     /**
-     *  
+     *
      */
 	u32 flags;
 	short id;
@@ -424,7 +424,7 @@ struct kvm_hv_sint {
 };
 
 /**
- *  
+ *
  */
 struct kvm_kernel_irq_routing_entry {
     /**
@@ -449,7 +449,7 @@ struct kvm_kernel_irq_routing_entry {
     		   struct kvm *kvm, int irq_source_id, int level,
     		   bool line_status);
     /**
-     *  
+     *
      */
     union {
 		struct {
@@ -685,7 +685,7 @@ static inline void kvm_arch_post_irq_routing_update(struct kvm *kvm)
 int kvm_irqfd_init(void);
 void kvm_irqfd_exit(void);
 #else
-/*  */
+
 #endif
 int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 		  struct module *module);
@@ -1096,7 +1096,7 @@ bool kvm_is_zone_device_pfn(kvm_pfn_t pfn);
 bool kvm_is_transparent_hugepage(kvm_pfn_t pfn);
 
 /**
- *  
+ *
  */
 struct kvm_irq_ack_notifier {
 	struct hlist_node link;
@@ -1167,7 +1167,7 @@ search_memslots(struct kvm_memslots *slots, gfn_t gfn)
 }
 
 /**
- *  
+ *
  */
 static inline struct kvm_memory_slot *
 __gfn_to_memslot(struct kvm_memslots *slots, gfn_t gfn)
@@ -1176,13 +1176,13 @@ __gfn_to_memslot(struct kvm_memslots *slots, gfn_t gfn)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long
 __gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn)
 {
     /**
-     *  获取 用户态虚拟地址 
+     *  获取 用户态虚拟地址
      */
 	return slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE;
 }

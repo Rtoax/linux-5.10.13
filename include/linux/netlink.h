@@ -41,10 +41,10 @@ void netlink_table_ungrab(void);
 #define NL_CFG_F_NONROOT_SEND	(1 << 1)
 
 /**
- *  optional Netlink kernel configuration parameters 
- *  
+ *  optional Netlink kernel configuration parameters
+ *
  */
-struct netlink_kernel_cfg { /*  */
+struct netlink_kernel_cfg {
 	unsigned int	groups;
 	unsigned int	flags;
 	void		(*input)(struct sk_buff *skb);

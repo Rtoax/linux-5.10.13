@@ -331,7 +331,7 @@ extern void arch_suspend_enable_irqs(void);
 extern int pm_suspend(suspend_state_t state);
 extern bool sync_on_suspend_enabled;
 #else /* !CONFIG_SUSPEND */
-/*  */
+
 #endif /* !CONFIG_SUSPEND */
 
 /* struct pbe is used for creating lists of pages that should be restored
@@ -506,7 +506,7 @@ extern void lock_system_sleep(void);
 extern void unlock_system_sleep(void);
 
 #else /* !CONFIG_PM_SLEEP */
-/*  */
+
 #endif /* !CONFIG_PM_SLEEP */
 
 #ifdef CONFIG_PM_SLEEP_DEBUG

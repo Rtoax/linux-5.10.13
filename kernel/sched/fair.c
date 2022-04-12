@@ -181,7 +181,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 	lw->inv_weight = 0;
 }
 
-static inline void update_load_set(struct load_weight *lw, unsigned long w) /*  */
+static inline void update_load_set(struct load_weight *lw, unsigned long w)
 {
 	lw->weight = w;
 	lw->inv_weight = 0;
@@ -223,9 +223,9 @@ static void update_sysctl(void)
 
 #define SET_SYSCTL(name) \
 	(sysctl_##name = (factor) * normalized_sysctl_##name)
-	SET_SYSCTL(sched_min_granularity);  /*  */
-	SET_SYSCTL(sched_latency);          /*  */
-	SET_SYSCTL(sched_wakeup_granularity);   /*  */
+	SET_SYSCTL(sched_min_granularity);
+	SET_SYSCTL(sched_latency);
+	SET_SYSCTL(sched_wakeup_granularity);
 #undef SET_SYSCTL
 }
 
@@ -237,7 +237,7 @@ void __init sched_init_granularity(void)
 #define WMULT_CONST	(~0U)
 #define WMULT_SHIFT	32
 
-static void __update_inv_weight(struct load_weight *lw) /*  */
+static void __update_inv_weight(struct load_weight *lw)
 {
 	unsigned long w;
 
@@ -268,7 +268,7 @@ static void __update_inv_weight(struct load_weight *lw) /*  */
  *
  * 见 `calc_delta_fair()` 函数注释
  */
-static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)   /*  */
+static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
 {
 	u64 fact = scale_load_down(weight);
 	int shift = WMULT_SHIFT;
@@ -324,7 +324,7 @@ static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 }
 
 /* runqueue on which this entity is (to be) queued */
-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se) /*  */
+static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 {
 	return se->cfs_rq;
 }
@@ -494,7 +494,7 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 }
 
 #else	/* !CONFIG_FAIR_GROUP_SCHED */
-/*  */
+
 #endif	/* CONFIG_FAIR_GROUP_SCHED */
 
 static __always_inline
@@ -601,7 +601,7 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 	 */
 	while (*link) {
 		parent = *link;
-		entry = rb_entry(parent, struct sched_entity, run_node);    /*  */
+		entry = rb_entry(parent, struct sched_entity, run_node);
 		/*
 		 * We dont care about collisions. Nodes with
 		 * the same key stay together.
@@ -778,7 +778,7 @@ static u64 __sched_period(unsigned long nr_running)
  *
  * 根据当前进程的权重，计算 在 CFS 就绪队列总权重 中可以瓜分到的调度时间
  */
-static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)  /*  */
+static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
     /**
      *  计算 CFS 就绪队列中一个 调度周期的长度
@@ -919,7 +919,7 @@ void post_init_entity_util_avg(struct task_struct *p)
 }
 
 #else /* !CONFIG_SMP */
-/*  */
+
 #endif /* CONFIG_SMP */
 
 /*
@@ -938,7 +938,7 @@ void post_init_entity_util_avg(struct task_struct *p)
  * 4. 通过 calc_delta_fair 计算当前进程虚拟时间
  * 5. 通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
  */
-static void update_curr(struct cfs_rq *cfs_rq)  /*  */
+static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
 
@@ -1716,7 +1716,7 @@ static inline int numa_idle_core(int idle_core, int cpu)
 	return idle_core;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -3095,7 +3095,7 @@ static void update_scan_period(struct task_struct *p, int new_cpu)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_NUMA_BALANCING */
 
 static void
@@ -3189,9 +3189,9 @@ dequeue_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	sub_positive(&cfs_rq->avg.load_sum, se_weight(se) * se->avg.load_sum);
 }
 #else
-/*  */
+
 #endif
-            /*  */
+
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
 {
@@ -3224,10 +3224,10 @@ void reweight_task(struct task_struct *p, int prio) /* 公平调度器权重 */
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	struct load_weight *load = &se->load;
-	unsigned long weight = scale_load/* << 10 */(sched_prio_to_weight[prio]);  /*  */
+	unsigned long weight = scale_load/* << 10 */(sched_prio_to_weight[prio]);
 
-	reweight_entity(cfs_rq, se, weight);    /*  */
-	load->inv_weight = sched_prio_to_wmult[prio];   /*  */
+	reweight_entity(cfs_rq, se, weight);
+	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -3370,7 +3370,7 @@ static void update_cfs_group(struct sched_entity *se)
 }
 
 #else /* CONFIG_FAIR_GROUP_SCHED */
-/*  */
+
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
@@ -3723,7 +3723,7 @@ static inline bool skip_blocked_update(struct sched_entity *se)
 }
 
 #else /* CONFIG_FAIR_GROUP_SCHED */
-/*  */
+
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 /**
@@ -3883,7 +3883,7 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
  *  更新平均负载
  *  更新 该进程调度实体 的负载和就绪队列 的负载
  */
-static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)   /*  */
+static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
 	u64 now = cfs_rq_clock_pelt(cfs_rq);
 	int decayed;
@@ -3933,7 +3933,7 @@ static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
 	return last_update_time;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -4017,10 +4017,10 @@ static inline unsigned long uclamp_task_util(struct task_struct *p)
 		     uclamp_eff_value(p, UCLAMP_MAX));
 }
 #else
-/*  */
+
 #endif
 
-static inline void util_est_enqueue(struct cfs_rq *cfs_rq, struct task_struct *p)  /*  */
+static inline void util_est_enqueue(struct cfs_rq *cfs_rq, struct task_struct *p)
 {
 	unsigned int enqueued;
 
@@ -4162,7 +4162,7 @@ static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
 }
 
 #else /* CONFIG_SMP */
-/*  */
+
 #endif /* CONFIG_SMP */
 
 static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
@@ -4186,7 +4186,7 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
  *           =0 补偿
  */
 static void
-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)   /*  */
+place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 {
     /**
      *  获取 红黑树中的最小 vruntime 值
@@ -4368,7 +4368,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
         /**
          *  插入到调度红黑树
          */
-		__enqueue_entity(cfs_rq, se);   /*  */
+		__enqueue_entity(cfs_rq, se);
 
     /**
      *  调度实体名花有主
@@ -4799,7 +4799,7 @@ void cfs_bandwidth_usage_dec(void)
 	static_key_slow_dec_cpuslocked(&__cfs_bandwidth_used);
 }
 #else /* CONFIG_JUMP_LABEL */
-/*  */
+
 #endif /* CONFIG_JUMP_LABEL */
 
 /*
@@ -5469,7 +5469,7 @@ static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
 }
 
-void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b)    /*  */
+void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b)
 {
 	raw_spin_lock_init(&cfs_b->lock);
 	cfs_b->runtime = 0;
@@ -5573,7 +5573,7 @@ static void __maybe_unused unthrottle_offline_cfs_rqs(struct rq *rq)
 }
 
 #else /* CONFIG_CFS_BANDWIDTH */
-/*  */
+
 #endif /* CONFIG_CFS_BANDWIDTH */
 
 /**************************************************
@@ -5618,7 +5618,7 @@ static void hrtick_update(struct rq *rq)
 		hrtick_start_fair(rq, curr);
 }
 #else /* !CONFIG_SCHED_HRTICK */
-/*  */
+
 #endif
 
 #ifdef CONFIG_SMP
@@ -5637,7 +5637,7 @@ static inline void update_overutilized_status(struct rq *rq)
 	}
 }
 #else
-/*  */
+
 #endif
 
 /* Runqueue only has SCHED_IDLE tasks enqueued */
@@ -6199,11 +6199,16 @@ find_idlest_group_cpu(struct sched_group *group, struct task_struct *p, int this
 /**
  *  找到一个悠闲的 CPU 来运行 唤醒的进程 - 慢速路径
  *
- * @sd        从此调度域中查找候选 CPU
- * @p          将要唤醒的进程
- * @cpu        表示 wakeup_cpu
- * @prev_cpu   进程上次运行在哪
- * @sd_flag    调度域 标志
+ *
+ @sd        从此调度域中查找候选 CPU
+ *
+ @p          将要唤醒的进程
+ *
+ @cpu        表示 wakeup_cpu
+ *
+ @prev_cpu   进程上次运行在哪
+ *
+ @sd_flag    调度域 标志
  *
  */
 static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p,
@@ -6399,7 +6404,7 @@ static int select_idle_smt(struct task_struct *p, struct sched_domain *sd, int t
 }
 
 #else /* CONFIG_SCHED_SMT */
-/*  */
+
 #endif /* CONFIG_SCHED_SMT */
 
 /*
@@ -7564,19 +7569,19 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
  *
  * The magic of dealing with the ->skip buddy is in pick_next_entity().
  */
-static void yield_task_fair(struct rq *rq)  /*  */
+static void yield_task_fair(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
 	struct sched_entity *se = &curr->se;    /* 获取当前实体 */
 
 	/*
-	 * Are we the only task in the tree?
+	 * Are we the only task in te?
 	 */
 	if (unlikely(rq->nr_running == 1))
 		return;
 
-	clear_buddies(cfs_rq, se);  /*  */
+	clear_buddies(cfs_rq, se);
 
     /**
      *
@@ -7915,7 +7920,7 @@ static int migrate_degrades_locality(struct task_struct *p, struct lb_env *env)
 }
 
 #else
-/*  */
+
 #endif
 
 /*
@@ -8314,7 +8319,7 @@ static inline void update_blocked_load_status(struct rq *rq, bool has_blocked)
 		rq->has_blocked_load = 0;
 }
 #else
-/*  */
+
 #endif
 
 static bool __update_blocked_others(struct rq *rq, bool *done)
@@ -8444,12 +8449,12 @@ static unsigned long task_h_load(struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq = task_cfs_rq(p);
 
-	update_cfs_rq_h_load(cfs_rq);
+e_cfs_rq_h_load(cfs_rq);
 	return div64_ul(p->se.avg.load_avg * cfs_rq->h_load,
 			cfs_rq_load_avg(cfs_rq) + 1);
 }
 #else
-/*  */
+
 #endif
 
 static void update_blocked_averages(int cpu)
@@ -9086,12 +9091,12 @@ static inline enum fbq_type fbq_classify_rq(struct rq *rq)
 {
 	if (rq->nr_running > rq->nr_numa_running)
 		return regular;
-	if (rq->nr_running > rq->nr_preferred_running)
+q->nr_running > rq->nr_preferred_running)
 		return remote;
 	return all;
 }
 #else
-/*  */
+
 #endif /* CONFIG_NUMA_BALANCING */
 
 
@@ -11114,12 +11119,12 @@ static void nohz_newidle_balance(struct rq *this_rq)
 	 * Kick an normal ilb if we failed to do the update.
 	 */
 	if (!_nohz_idle_balance(this_rq, NOHZ_STATS_KICK, CPU_NEWLY_IDLE))
-		kick_ilb(NOHZ_STATS_KICK);
+_ilb(NOHZ_STATS_KICK);
 	raw_spin_lock(&this_rq->lock);
 }
 
 #else /* !CONFIG_NO_HZ_COMMON */
-/*  */
+
 #endif /* CONFIG_NO_HZ_COMMON */
 
 /*
@@ -11361,7 +11366,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  *
  * 在 `sched_fork()` 中被调用
  */
-static void task_fork_fair(struct task_struct *p)   /*  */
+static void task_fork_fair(struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se, *curr;
@@ -11391,7 +11396,7 @@ static void task_fork_fair(struct task_struct *p)   /*  */
     /**
      *  根据请款对 虚拟时间进行惩罚
      */
-	place_entity(cfs_rq, se, 1);    /*  */
+	place_entity(cfs_rq, se, 1);
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
 		/*
@@ -11492,7 +11497,7 @@ static void propagate_entity_cfs_rq(struct sched_entity *se)
 	}
 }
 #else
-/*  */
+
 #endif
 
 static void detach_entity_cfs_rq(struct sched_entity *se)
@@ -11598,20 +11603,20 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 		set_next_entity(cfs_rq, se);
-		/* ensure bandwidth has been allocated on our new cfs_rq */
+		/* ensure bandwidth has been allocatedr new cfs_rq */
 		account_cfs_rq_runtime(cfs_rq, 0);
 	}
 }
 
-void init_cfs_rq(struct cfs_rq *cfs_rq) /*  */
+void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
-	cfs_rq->min_vruntime = (u64)(-(1LL << 20)); /* 虚拟时间的概念 */
+	cfs_rq->min_vruntime = (u64)(-(1LL << 20)); 间的概念 */
 #ifndef CONFIG_64BIT
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 #endif
 #ifdef CONFIG_SMP
-	raw_spin_lock_init(&cfs_rq->removed.lock);  /*  */
+	raw_spin_lock_init(&cfs_rq->removed.lock);
 #endif
 }
 
@@ -11828,12 +11833,12 @@ int sched_group_set_shares(struct task_group *tg, unsigned long shares)
 		rq_unlock_irqrestore(rq, &rf);
 	}
 
-done:
+
 	mutex_unlock(&shares_mutex);
 	return 0;
 }
 #else /* CONFIG_FAIR_GROUP_SCHED */
-/*  */
+
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 /**
@@ -11943,7 +11948,7 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
 /**
  *
  */
-__init void init_sched_fair_class(void) /*  */
+__init void init_sched_fair_class(void)
 {
 #ifdef CONFIG_SMP
     //注册一个 softirq

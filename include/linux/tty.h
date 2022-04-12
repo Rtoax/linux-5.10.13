@@ -282,7 +282,7 @@ struct tty_port {
 
 struct tty_operations;
 
-struct tty_struct { /*  */
+struct tty_struct {
 	int	magic;
 	struct kref kref;
 	struct device *dev;
@@ -424,7 +424,7 @@ extern int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 extern void tty_ldisc_unlock(struct tty_struct *tty);
 extern ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);
 #else
-/*  */
+
 #endif
 
 extern struct ktermios tty_std_termios;
@@ -700,7 +700,7 @@ extern int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 
 /* n_tty.c */
 extern void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
-#ifdef CONFIG_TTY   /*  */
+#ifdef CONFIG_TTY
 extern void __init n_tty_init(void);
 #else
 //static inline void n_tty_init(void) { }

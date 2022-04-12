@@ -958,7 +958,7 @@ static int __init genpd_power_off_unused(void)
 
 	return 0;
 }
-late_initcall(genpd_power_off_unused);  /*  */
+late_initcall(genpd_power_off_unused);
 
 #ifdef CONFIG_PM_SLEEP
 
@@ -3209,7 +3209,7 @@ static int __init genpd_debug_init(void)
 
 	return 0;
 }
-late_initcall(genpd_debug_init);    /*  */
+late_initcall(genpd_debug_init);
 
 static void __exit genpd_debug_exit(void)
 {

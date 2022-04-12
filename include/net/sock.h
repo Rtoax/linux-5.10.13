@@ -191,7 +191,7 @@ struct sock_common {    /* 网络层 */
 		struct hlist_node	skc_portaddr_node;
 	};
     /**
-     *  
+     *
      * tcp_prot
      * udp_prot
      * raw_prot
@@ -402,21 +402,21 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	 * backlog.
 	 *
 	 * 积压队列是特殊的，它总是与每个套接字的自旋锁一起使用，
-	 * 并且要求低延迟访问。 因此，我们特意将其实现。 
+	 * 并且要求低延迟访问。 因此，我们特意将其实现。
 	 * 注意：rmem_alloc在此结构中可以填补64位拱门上的漏洞，
 	 * 而不是因为它在逻辑上是积压的一部分。
 	 */
 	struct {    /* backlog */
-		atomic_t	rmem_alloc; /*  */
+		atomic_t	rmem_alloc;
 		int		len;
 		struct sk_buff	*head;
 		struct sk_buff	*tail;
 	} sk_backlog;
-    
+
 #define sk_rmem_alloc sk_backlog.rmem_alloc
 
 	int			sk_forward_alloc;
-#ifdef CONFIG_NET_RX_BUSY_POLL  /*  */
+#ifdef CONFIG_NET_RX_BUSY_POLL
 	unsigned int		sk_ll_usec;
 	/* ===== mostly read cache line ===== */
 	unsigned int		sk_napi_id;
@@ -430,7 +430,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 		struct socket_wq	*sk_wq_raw;
 		/* public: */
 	};
-#ifdef CONFIG_XFRM  /*  */
+#ifdef CONFIG_XFRM
 	struct xfrm_policy __rcu *sk_policy[2];
 #endif
 	struct dst_entry	*sk_rx_dst;
@@ -503,7 +503,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
      */
 	long			sk_rcvtimeo;
 	ktime_t			sk_stamp;
-    
+
 #if BITS_PER_LONG==32
 	seqlock_t		sk_stamp_seq;
 #endif
@@ -531,7 +531,7 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	void			(*sk_error_report)(struct sock *sk);
 	int			(*sk_backlog_rcv)(struct sock *sk,
 						  struct sk_buff *skb);
-#ifdef CONFIG_SOCK_VALIDATE_XMIT    
+#ifdef CONFIG_SOCK_VALIDATE_XMIT
 	psk_buff_t		(*sk_validate_xmit_skb)(struct sock *sk,
 							struct net_device *dev,
 							struct sk_buff *skb);
@@ -1047,7 +1047,7 @@ static inline void sock_rps_record_flow_hash(__u32 hash)
 }
 
 /**
- *  
+ *
  */
 static inline void sock_rps_record_flow(const struct sock *sk)
 {
@@ -1149,7 +1149,7 @@ static inline void sk_prot_clear_nulls(struct sock *sk, int size)
  * udp_prot
  * raw_prot
  * ping_prot
- * 
+ *
  */
 struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输层的接口)*/
 	void			(*close)(struct sock *sk,
@@ -1244,7 +1244,7 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 
 	struct percpu_counter	*orphan_count;
 
-	struct request_sock_ops	*rsk_prot;  /*  */
+	struct request_sock_ops	*rsk_prot;
 	struct timewait_sock_ops *twsk_prot;
 
 	union {
@@ -1259,7 +1259,7 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 	char			name[32];
 
 	struct list_head	node;
-#ifdef SOCK_REFCNT_DEBUG    /*  */
+#ifdef SOCK_REFCNT_DEBUG
 	atomic_t		socks;
 #endif
 	int			(*diag_destroy)(struct sock *sk, int err);
@@ -1441,7 +1441,7 @@ struct socket_alloc {   /* socket 申请 */
 	struct inode vfs_inode;
 };
 
-static inline struct socket *SOCKET_I(struct inode *inode)  /*  */
+static inline struct socket *SOCKET_I(struct inode *inode)
 {
 	return &container_of(inode, struct socket_alloc, vfs_inode)->socket;
 }
@@ -1604,7 +1604,7 @@ static inline bool lockdep_sock_is_held(const struct sock *sk)
 void lock_sock_nested(struct sock *sk, int subclass);
 
 /**
- *  
+ *
  */
 static inline void lock_sock(struct sock *sk)
 {
@@ -1907,24 +1907,24 @@ static inline void sock_orphan(struct sock *sk)
 static inline void sock_graft(struct sock *sk, struct socket *parent)
 {
 	WARN_ON(parent->sk);
-    
+
 	write_lock_bh(&sk->sk_callback_lock);
-    
+
 	rcu_assign_pointer(sk->sk_wq, &parent->wq);
-    
+
     /**
-     *  
+     *
      */
 	parent->sk = sk;
-    
+
     /**
-     *  
+     *
      */
 	sk_set_socket(sk, parent);
 	sk->sk_uid = SOCK_INODE(parent)->i_uid;
-    
+
     /**
-     *  
+     *
      */
 	security_sock_graft(sk, parent);
 	write_unlock_bh(&sk->sk_callback_lock);

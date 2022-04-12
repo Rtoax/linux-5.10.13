@@ -46,7 +46,7 @@ extern void proc_sched_set_task(struct task_struct *p);
 #define __sched		__section(".sched.text")    /* SCHED_TEXT */
 
 /* Linker adds these: start and end of __sched functions */
-extern char __sched_text_start[], __sched_text_end[];   /*  */
+extern char __sched_text_start[], __sched_text_end[];
 
 /* Is this address in the __sched functions? */
 extern int in_sched_functions(unsigned long addr);

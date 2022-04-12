@@ -26,7 +26,7 @@ extern void housekeeping_affine(struct task_struct *t, enum hk_flags flags);
 extern bool housekeeping_test_cpu(int cpu, enum hk_flags flags);
 extern void __init housekeeping_init(void);
 
-#else   /*  */
+#else
 
 //static inline int housekeeping_any_cpu(enum hk_flags flags)
 //{

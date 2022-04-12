@@ -24,7 +24,7 @@
   extern void lockdep_hardirqs_on(unsigned long ip);
   extern void lockdep_hardirqs_off(unsigned long ip);
 #else
-  /*  */
+
 #endif
 
 #ifdef CONFIG_TRACE_IRQFLAGS
@@ -115,7 +115,7 @@ do {						\
 	  } while (0)
 
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_IRQSOFF_TRACER) || \
@@ -123,17 +123,17 @@ do {						\
  extern void stop_critical_timings(void);
  extern void start_critical_timings(void);
 #else
-/*  */
+
 #endif
 
 /*
  * Wrap the arch provided IRQ routines to provide appropriate checks.
  */
 #define raw_local_irq_disable()		arch_local_irq_disable()/* 架构相关 */
-#define raw_local_irq_enable()		arch_local_irq_enable()/*  */
+#define raw_local_irq_enable()		arch_local_irq_enable()
 
 /**
- *  
+ *
  */
 #define raw_local_irq_save(flags)			\
 	do {						\
@@ -205,7 +205,7 @@ do {						\
 	} while (0)
 
 /**
- *  
+ *
  */
 #define safe_halt()				\
 	do {					\

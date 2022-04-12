@@ -160,7 +160,7 @@ void __thaw_task(struct task_struct *p)
  *
  * 进程可以被冻结
  */
-bool set_freezable(void)    /*  */
+bool set_freezable(void)
 {
 	might_sleep();
 

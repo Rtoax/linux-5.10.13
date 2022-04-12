@@ -23,8 +23,8 @@
 #define SCS_SIZE		SZ_1K
 #define GFP_SCS			(GFP_KERNEL | __GFP_ZERO)
 
-/* An illegal pointer value to mark the end of the shadow stack. *//*  */
-#define SCS_END_MAGIC		(0x5f6UL + POISON_POINTER_DELTA)    /*  */
+/* An illegal pointer value to mark the end of the shadow stack. */
+#define SCS_END_MAGIC		(0x5f6UL + POISON_POINTER_DELTA)
 
 /* Allocate a static per-CPU shadow stack */
 #define DEFINE_SCS(name)						\
@@ -60,7 +60,7 @@ static inline bool task_scs_end_corrupted(struct task_struct *tsk)
 }
 
 #else /* CONFIG_SHADOW_CALL_STACK */
-/*  */
+
 
 #endif /* CONFIG_SHADOW_CALL_STACK */
 

@@ -7,7 +7,7 @@
 
 /*
  * /proc/thread_self: /proc/thread-self -> /proc/[pid]/task/[TID]/
- *  每次访问 /proc/thread-self 都会 调用这个函数 
+ *  每次访问 /proc/thread-self 都会 调用这个函数
  *  sudo bpftrace -e 'kprobe:proc_thread_self_get_link{printf("%-8d %-16s\n", pid, comm);}'
  */
 static const char *proc_thread_self_get_link(struct dentry *dentry,
@@ -15,7 +15,7 @@ static const char *proc_thread_self_get_link(struct dentry *dentry,
 					     struct delayed_call *done)
 {
     /**
-     *  
+     *
      */
 	struct pid_namespace *ns = proc_pid_ns(inode->i_sb);
 	pid_t tgid = task_tgid_nr_ns(current, ns);
@@ -49,11 +49,11 @@ static const struct inode_operations proc_thread_self_inode_operations = {
 	.get_link	= proc_thread_self_get_link,
 };
 
-static unsigned __ro_after_init thread_self_inum ;/*  */
+static unsigned __ro_after_init thread_self_inum ;
 
 /**
  *  sudo bpftrace -e 'kprobe:proc_setup_thread_self{printf("%-8d %-16s\n", pid, comm);}'
- *  
+ *
  *  这只会在 proc_fill_super() 中调用
  *
  *  https://github.com/opencontainers/selinux/blob/main/go-selinux/selinux_linux.go#L454
@@ -96,7 +96,7 @@ int proc_setup_thread_self(struct super_block *s)
 	return ret;
 }
 
-void __init proc_thread_self_init(void) /*  */
+void __init proc_thread_self_init(void)
 {
 	proc_alloc_inum(&thread_self_inum);
 }

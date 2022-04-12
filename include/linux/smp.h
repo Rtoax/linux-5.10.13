@@ -237,7 +237,7 @@ static inline int get_boot_cpu_id(void)
 # define smp_processor_id() __smp_processor_id()
 #endif
 
-#define get_cpu()		({ preempt_disable(); __smp_processor_id(); })  /*  */
+#define get_cpu()		({ preempt_disable(); __smp_processor_id(); })
 #define put_cpu()		preempt_enable()
 
 /*

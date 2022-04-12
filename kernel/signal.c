@@ -62,7 +62,7 @@
 
 static struct kmem_cache *sigqueue_cachep;
 
-int __read_mostly print_fatal_signals ;/*  */
+int __read_mostly print_fatal_signals ;
 
 static void __user *sig_handler(struct task_struct *t, int sig)
 {
@@ -1624,7 +1624,7 @@ EXPORT_SYMBOL(send_sig);
 /**
  *
  */
-void force_sig(int sig) /*  */
+void force_sig(int sig)
 {
 	struct kernel_siginfo info;
 
@@ -1657,7 +1657,7 @@ void force_sigsegv(int sig)
 	force_sig(SIGSEGV);
 }
 
-/*  */
+
 int force_sig_fault_to_task(int sig, int code, void __user *addr
 	___ARCH_SI_TRAPNO(int trapno)
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
@@ -1681,7 +1681,7 @@ int force_sig_fault_to_task(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, t);
 }
 
-/*  */
+
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_TRAPNO(int trapno)
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
@@ -4619,11 +4619,11 @@ static inline void siginfo_buildtime_checks(void)
 #endif
 }
 
-void __init signals_init(void)  /*  */
+void __init signals_init(void)
 {
 	siginfo_buildtime_checks();
 
-	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);/*  */
+	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);
 }
 
 #ifdef CONFIG_KGDB_KDB

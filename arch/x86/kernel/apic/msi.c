@@ -200,14 +200,14 @@ int pci_msi_prepare(struct irq_domain *domain, struct device *dev, int nvec,
 EXPORT_SYMBOL_GPL(pci_msi_prepare);
 
 /**
- *  
+ *
  */
 static struct msi_domain_ops pci_msi_domain_ops = {
 	pci_msi_domain_ops.msi_prepare	= pci_msi_prepare,
 };
 
 /**
- *  
+ *
  */
 static struct msi_domain_info pci_msi_domain_info = {
 	pci_msi_domain_info.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
@@ -241,14 +241,14 @@ struct irq_domain * __init native_create_pci_msi_domain(void)
 	return d;
 }
 
-void __init x86_create_pci_msi_domain(void) /*  */
+void __init x86_create_pci_msi_domain(void)
 {
 	x86_pci_msi_default_domain = x86_init.irqs.create_pci_msi_domain();
 }
 
-#ifdef CONFIG_IRQ_REMAP /*  */
+#ifdef CONFIG_IRQ_REMAP
 /**
- *  
+ *
  */
 static struct irq_chip pci_msi_ir_controller = {
 	pci_msi_ir_controller.name			= "IR-PCI-MSI",
@@ -258,9 +258,9 @@ static struct irq_chip pci_msi_ir_controller = {
 	pci_msi_ir_controller.irq_retrigger		= irq_chip_retrigger_hierarchy,
 	pci_msi_ir_controller.flags			= IRQCHIP_SKIP_SET_WAKE,
 };
-    
+
 /**
- *  
+ *
  */
 static struct msi_domain_info pci_msi_ir_domain_info = {
 	pci_msi_ir_domain_info.flags		= MSI_FLAG_USE_DEF_DOM_OPS | MSI_FLAG_USE_DEF_CHIP_OPS |
@@ -397,7 +397,7 @@ static struct irq_chip __ro_after_init hpet_msi_controller  = {
 };
 
 /**
- *  
+ *
  */
 static int hpet_msi_init(struct irq_domain *domain,
 			 struct msi_domain_info *info, unsigned int virq,

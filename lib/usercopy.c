@@ -16,12 +16,12 @@ unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n
 	might_fault();
 
     /**
-     *  
+     *
      */
 	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
 		instrument_copy_from_user(to, from, n);
         /**
-         *  
+         *
          */
 		res = raw_copy_from_user(to, from, n);
 	}
@@ -60,7 +60,7 @@ EXPORT_SYMBOL(_copy_to_user);
  *  * 0: There were non-zero bytes present in the buffer.
  *  * 1: The buffer was full of zero bytes.
  *  * -EFAULT: access to userspace failed.
- */ /*  */
+ */
 int check_zeroed_user(const void __user *from, size_t size)
 {
 	unsigned long val;

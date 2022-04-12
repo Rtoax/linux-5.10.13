@@ -4,7 +4,7 @@
 
 #include <linux/rbtree.h>
 
-struct interval_tree_node { /*  */
+struct interval_tree_node {
 	struct rb_node rb;
 	unsigned long start;	/* Start of interval */
 	unsigned long last;	/* Last location _in_ interval */

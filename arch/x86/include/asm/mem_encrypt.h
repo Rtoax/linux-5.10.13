@@ -18,7 +18,7 @@
 
 #ifdef CONFIG_AMD_MEM_ENCRYPT
 
-extern u64 sme_me_mask; /*  */
+extern u64 sme_me_mask;
 extern u64 sev_status;
 extern bool sev_enabled;
 
@@ -107,7 +107,7 @@ static inline bool mem_encrypt_active(void)
 
 static inline u64 sme_get_me_mask(void)
 {
-	return sme_me_mask; /*  */
+	return sme_me_mask;
 }
 
 #endif	/* __ASSEMBLY__ */

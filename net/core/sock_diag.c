@@ -306,7 +306,7 @@ int sock_diag_destroy(struct sock *sk, int err)
 }
 EXPORT_SYMBOL_GPL(sock_diag_destroy);
 
-static int __net_init diag_net_init(struct net *net)    /*  */
+static int __net_init diag_net_init(struct net *net)
 {
 	struct netlink_kernel_cfg cfg = {
 		.groups	= SKNLGRP_MAX,
@@ -325,7 +325,7 @@ static void __net_exit diag_net_exit(struct net *net)
 	net->diag_nlsk = NULL;
 }
 
-static struct pernet_operations diag_net_ops = {    /*  */
+static struct pernet_operations diag_net_ops = {
 	.init = diag_net_init,
 	.exit = diag_net_exit,
 };
@@ -336,4 +336,4 @@ static int __init sock_diag_init(void)
 	BUG_ON(!broadcast_wq);
 	return register_pernet_subsys(&diag_net_ops);
 }
-device_initcall(sock_diag_init);    /*  */
+device_initcall(sock_diag_init);

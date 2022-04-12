@@ -18,7 +18,7 @@ struct irq_domain;
  * @find_smp_config:		find the smp configuration
  * @get_smp_config:		get the smp configuration
  */
-struct x86_init_mpparse {   /*  */
+struct x86_init_mpparse {
 	void (*setup_ioapic_ids)(void);
 	void (*find_smp_config)(void);
 	void (*get_smp_config)(unsigned int early);
@@ -33,7 +33,7 @@ struct x86_init_mpparse {   /*  */
  *
  */
 typedef char * pchar_t;/* +++ */
-struct x86_init_resources { /*  */
+struct x86_init_resources {
 	void (*probe_roms)(void);
 	void (*reserve_resources)(void);    //reserve standard I/O resources like `DMA`, `TIMER`, `FPU`, etc
 	pchar_t (*memory_setup)(void);
@@ -48,7 +48,7 @@ struct x86_init_resources { /*  */
  * @intr_mode_init:		interrupt delivery mode setup
  * @create_pci_msi_domain:	Create the PCI/MSI interrupt domain
  */
-struct x86_init_irqs {  /*  */
+struct x86_init_irqs {
 	void (*pre_vector_init)(void);
 	void (*intr_init)(void);
 	void (*intr_mode_select)(void);
@@ -84,7 +84,7 @@ struct x86_init_paging {
  * @timer_init:			initialize the platform timer (default PIT/HPET)
  * @wallclock_init:		init the wallclock device
  */
-struct x86_init_timers {    /*  */
+struct x86_init_timers {
 	void (*setup_percpu_clockev)(void);
 	void (*timer_init)(void);
 	void (*wallclock_init)(void);
@@ -94,7 +94,7 @@ struct x86_init_timers {    /*  */
  * struct x86_init_iommu - platform specific iommu setup
  * @iommu_init:			platform specific iommu setup
  */
-struct x86_init_iommu { /*  */
+struct x86_init_iommu {
 	int (*iommu_init)(void);
 };
 
@@ -122,7 +122,7 @@ struct x86_init_pci {
  */
 struct x86_hyper_init {
 	void (*init_platform)(void);
-	void (*guest_late_init)(void);  /*  */
+	void (*guest_late_init)(void);
 	bool (*x2apic_available)(void);
 	void (*init_mem_mapping)(void);
 	void (*init_after_bootmem)(void);
@@ -134,7 +134,7 @@ struct x86_hyper_init {
  * @get_root_pointer:		get RSDP address
  * @reduced_hw_early_init:	hardware reduced platform early init
  */
-struct x86_init_acpi {  /*  */
+struct x86_init_acpi {
 	void (*set_root_pointer)(u64 addr);
 	u64 (*get_root_pointer)(void);
 	void (*reduced_hw_early_init)(void);
@@ -145,16 +145,16 @@ struct x86_init_acpi {  /*  */
  * 表示项资源初始化
  */
 struct x86_init_ops { /* x86 相关 setup 的 函数 */
-	struct x86_init_resources	resources;  /*  */
-	struct x86_init_mpparse		mpparse;    /*  */
-	struct x86_init_irqs		irqs;       /*  */
-	struct x86_init_oem		    oem;        /*  */
-	struct x86_init_paging		paging;     /*  */
-	struct x86_init_timers		timers;     /*  */
-	struct x86_init_iommu		iommu;      /*  */
-	struct x86_init_pci		    pci;        /*  */
-	struct x86_hyper_init		hyper;      /*  */
-	struct x86_init_acpi		acpi;       /*  */
+	struct x86_init_resources	resources;
+	struct x86_init_mpparse		mpparse;
+	struct x86_init_irqs		irqs;
+	struct x86_init_oem		    oem;
+	struct x86_init_paging		paging;
+	struct x86_init_timers		timers;
+	struct x86_init_iommu		iommu;
+	struct x86_init_pci		    pci;
+	struct x86_hyper_init		hyper;
+	struct x86_init_acpi		acpi;
 };
 
 /**
@@ -282,9 +282,9 @@ struct x86_platform_ops {
 	unsigned char (*get_nmi_reason)(void);
 	void (*save_sched_clock_state)(void);
 	void (*restore_sched_clock_state)(void);
-	void (*apic_post_init)(void);       /*  */
+	void (*apic_post_init)(void);
 	struct x86_legacy_features legacy;  /* legacy:（计算机系统或产品）已停产的 */
-	void (*set_legacy_features)(void);  
+	void (*set_legacy_features)(void);
 	struct x86_hyper_runtime hyper;
 };
 

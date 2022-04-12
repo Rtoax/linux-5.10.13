@@ -110,7 +110,7 @@ struct robust_list_head {
 /*
  * The rest of the robust-futex field is for the TID:
  */
-#define FUTEX_TID_MASK		0x3fffffff  /*  */
+#define FUTEX_TID_MASK		0x3fffffff
 
 /*
  * This limit protects against a deliberately circular list.

@@ -697,7 +697,7 @@ static inline void cgroup_kthread_ready(void)
 
 void cgroup_path_from_kernfs_id(u64 id, char *buf, size_t buflen);
 #else /* !CONFIG_CGROUPS */
-/*  */
+
 #endif /* !CONFIG_CGROUPS */
 
 #ifdef CONFIG_CGROUPS
@@ -717,7 +717,7 @@ void cgroup_rstat_flush_release(void);
 void cpuacct_charge(struct task_struct *tsk, u64 cputime);
 void cpuacct_account_field(struct task_struct *tsk, int index, u64 val);
 #else
-/*  */
+
 #endif
 
 void __cgroup_account_cputime(struct cgroup *cgrp, u64 delta_exec);
@@ -754,7 +754,7 @@ static inline void cgroup_account_cputime_field(struct task_struct *task,
 }
 
 #else	/* CONFIG_CGROUPS */
-/*  */
+
 #endif	/* CONFIG_CGROUPS */
 
 /*
@@ -793,10 +793,10 @@ static inline struct cgroup *sock_cgroup_ptr(struct sock_cgroup_data *skcd)
 }
 
 #else	/* CONFIG_CGROUP_DATA */
-/*  */
+
 #endif	/* CONFIG_CGROUP_DATA */
 /**
- *  
+ *
  */
 struct cgroup_namespace {
 	refcount_t		count;
@@ -820,7 +820,7 @@ int cgroup_path_ns(struct cgroup *cgrp, char *buf, size_t buflen,
 		   struct cgroup_namespace *ns);
 
 #else /* !CONFIG_CGROUPS */
-/*  */
+
 #endif /* !CONFIG_CGROUPS */
 
 static inline void get_cgroup_ns(struct cgroup_namespace *ns)
@@ -864,7 +864,7 @@ static inline bool cgroup_task_frozen(struct task_struct *task)
 }
 
 #else /* !CONFIG_CGROUPS */
-/*  */
+
 #endif /* !CONFIG_CGROUPS */
 
 #ifdef CONFIG_CGROUP_BPF
@@ -879,7 +879,7 @@ static inline void cgroup_bpf_put(struct cgroup *cgrp)
 }
 
 #else /* CONFIG_CGROUP_BPF */
-/*  */
+
 #endif /* CONFIG_CGROUP_BPF */
 
 #endif /* _LINUX_CGROUP_H */

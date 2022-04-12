@@ -195,7 +195,7 @@ static size_t parent(size_t i, unsigned int lsbit, size_t size)
  * quicksort is slightly faster on average, it suffers from exploitable
  * O(n*n) worst-case behavior and extra memory requirements that make
  * it less suitable for kernel use.
- */ /*  */
+ */
 void sort_r(void *base, size_t num, size_t size,
 	    cmp_r_func_t cmp_func,
 	    swap_func_t swap_func,

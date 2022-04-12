@@ -11,7 +11,7 @@
  * ELF section at every dynamic debug callsite.  At runtime,
  * the special section is treated as an array of these.
  */
-struct _ddebug {    /*  */
+struct _ddebug {
 	/*
 	 * These fields are used to drive the user interface
 	 * for selecting and displaying debug callsites.
@@ -40,7 +40,7 @@ struct _ddebug {    /*  */
 	unsigned int flags:8;
 
     /**
-     *  
+     *
      */
 #ifdef CONFIG_JUMP_LABEL
 	union {
@@ -60,7 +60,7 @@ int dynamic_debug_exec_queries(const char *query, const char *modname);
 int ddebug_add_module(struct _ddebug *tab, unsigned int n,
 				const char *modname);
 extern int ddebug_remove_module(const char *mod_name);
-extern 
+extern
 void __dynamic_pr_debug(struct _ddebug *descriptor, const char *fmt, ...);
 
 extern int ddebug_dyndbg_module_param_cb(char *param, char *val,
@@ -68,20 +68,20 @@ extern int ddebug_dyndbg_module_param_cb(char *param, char *val,
 
 struct device;
 
-extern 
+extern
 void __dynamic_dev_dbg(struct _ddebug *descriptor, const struct device *dev,
 		       const char *fmt, ...);
 
 struct net_device;
 
-extern 
+extern
 void __dynamic_netdev_dbg(struct _ddebug *descriptor,
 			  const struct net_device *dev,
 			  const char *fmt, ...);
 
 struct ib_device;
 
-extern 
+extern
 void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
 			 const struct ib_device *ibdev,
 			 const char *fmt, ...);
@@ -116,7 +116,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
 #else /* !CONFIG_JUMP_LABEL */
 
 #define _DPRINTK_KEY_INIT
-/*  */
+
 #endif /* CONFIG_JUMP_LABEL */
 
 #define __dynamic_func_call(id, fmt, func, ...) do {	\
@@ -173,7 +173,7 @@ void __dynamic_ibdev_dbg(struct _ddebug *descriptor,
 				   rowsize, groupsize, buf, len, ascii)
 
 #else /* !CONFIG_DYNAMIC_DEBUG_CORE */
-/*  */
+
 #endif /* !CONFIG_DYNAMIC_DEBUG_CORE */
 
 #endif

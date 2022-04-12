@@ -63,7 +63,7 @@ bool housekeeping_test_cpu(int cpu, enum hk_flags flags)
 }
 EXPORT_SYMBOL_GPL(housekeeping_test_cpu);
 
-void __init housekeeping_init(void) /*  */
+void __init housekeeping_init(void)
 {
 	if (!housekeeping_flags)
 		return;

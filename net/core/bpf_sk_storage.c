@@ -869,4 +869,4 @@ static int __init bpf_sk_storage_map_iter_init(void)
 		btf_sock_ids[BTF_SOCK_TYPE_SOCK];
 	return bpf_iter_reg_target(&bpf_sk_storage_map_reg_info);
 }
-late_initcall(bpf_sk_storage_map_iter_init);    /*  */
+late_initcall(bpf_sk_storage_map_iter_init);

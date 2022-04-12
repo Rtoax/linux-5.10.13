@@ -44,7 +44,7 @@ int udp_sock_create4(struct net *net, struct udp_port_cfg *cfg,
 int udp_sock_create6(struct net *net, struct udp_port_cfg *cfg,
 		     struct socket **sockp);
 #else
-/*  */
+
 #endif
 
 static inline int udp_sock_create(struct net *net,
@@ -240,7 +240,7 @@ struct udp_tunnel_nic_shared_node {
  *  - none of the devices care about the socket family at present, so we don't
  *    track it. Please extend this code if you care.
  */
-struct udp_tunnel_nic_info {    /*  */
+struct udp_tunnel_nic_info {
 	/* one-by-one */
 	int (*set_port)(struct net_device *dev,
 			unsigned int table, unsigned int entry,
@@ -272,7 +272,7 @@ struct udp_tunnel_nic_info {    /*  */
  * Since we want a weak dependency from the drivers and the core to udp_tunnel
  * we call things through the following stubs.
  */
-struct udp_tunnel_nic_ops { /*  */
+struct udp_tunnel_nic_ops {
 	void (*get_port)(struct net_device *dev, unsigned int table,
 			 unsigned int idx, struct udp_tunnel_info *ti);
 	void (*set_port_priv)(struct net_device *dev, unsigned int table,
@@ -289,7 +289,7 @@ struct udp_tunnel_nic_ops { /*  */
 #ifdef CONFIG_INET
 extern const struct udp_tunnel_nic_ops *udp_tunnel_nic_ops;
 #else
-/*  */
+
 #endif
 
 static inline void

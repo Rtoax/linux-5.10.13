@@ -33,7 +33,7 @@ static inline void clear_user_return_notifier(struct task_struct *p)
 }
 
 #else
-/*  */
+
 #endif
 
 #endif

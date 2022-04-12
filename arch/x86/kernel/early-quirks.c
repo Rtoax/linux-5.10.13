@@ -676,16 +676,16 @@ static void __init apple_airport_reset(int bus, int slot, int func)
 struct chipset {    /* chip set */
 	u32 vendor;     /* 厂商 */
 	u32 device;     /* 设备 */
-	u32 class;      /*  */
-	u32 class_mask; /*  */
-	u32 flags;      /*  */
+	u32 class;
+	u32 class_mask;
+	u32 flags;
 	void (*f)(int num, int slot, int func);
 };
 
 /**
- *  
+ *
  */
-static struct chipset __initdata early_qrk[]  = {   
+static struct chipset __initdata early_qrk[]  = {
 	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
 	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, nvidia_bugs },
 	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID,
@@ -738,7 +738,7 @@ static void __init early_pci_scan_bus(int bus);
  * If the device is single function, let early_pci_scan_bus() know so we don't
  * poke at this device again.
  *
- * 
+ *
  */
 static int __init check_dev_quirk(int num, int slot, int func)
 {
@@ -755,7 +755,7 @@ static int __init check_dev_quirk(int num, int slot, int func)
 	if (class == 0xffff)
 		return -1; /* no class, treat as single function */
 
-    /* 
+    /*
         PCI标准的 设备 都得这样搞吧
         荣涛 2021年7月1日
     */
@@ -809,10 +809,10 @@ static void __init early_pci_scan_bus(int bus)  /* 发现 PCI 设备 */
 }
 
 /**
- *  
+ *
  * quirks: 怪异的性格(或行为); 怪癖; (尤指偶发的)怪事，奇事;
  */
-void __init early_quirks(void)  /*  */
+void __init early_quirks(void)
 {
 	if (!early_pci_allowed())
 		return;

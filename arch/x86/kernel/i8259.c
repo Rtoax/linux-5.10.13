@@ -221,7 +221,7 @@ spurious_8259A_irq:
 	}
 }
 
-struct irq_chip i8259A_chip = { /*  */
+struct irq_chip i8259A_chip = {
 	.name		= "XT-PIC",
 	.irq_mask	= disable_8259A_irq,
 	.irq_disable	= disable_8259A_irq,
@@ -301,7 +301,7 @@ static void unmask_8259A(void)
 /**
  *  sudo bpftrace -e 'kprobe:probe_8259A{printf("--\n");}'
  */
-static int probe_8259A(void)    /*  */
+static int probe_8259A(void)
 {
 	unsigned long flags;
 	unsigned char probe_val = ~(1 << PIC_CASCADE_IR);
@@ -336,7 +336,7 @@ static int probe_8259A(void)    /*  */
 #4  0xffffffff81000107 in secondary_startup_64 () at arch/x86/kernel/head_64.S:283
 #5  0x0000000000000000 in ?? ()
  */
-static void init_8259A(int auto_eoi/*=0和=1各调用一次*/)    /*  */
+static void init_8259A(int auto_eoi/*=0和=1各调用一次*/)
 {
 	unsigned long flags;
 
@@ -407,7 +407,7 @@ static int legacy_pic_probe(void)
 	return 0;
 }
 
-struct legacy_pic null_legacy_pic = {   
+struct legacy_pic null_legacy_pic = {
 	.nr_legacy_irqs = 0,
 	.chip = &dummy_irq_chip,
 	.mask = legacy_pic_uint_noop,
@@ -420,9 +420,9 @@ struct legacy_pic null_legacy_pic = {
 	.make_irq = legacy_pic_uint_noop,
 };
 
-struct legacy_pic default_legacy_pic = {    /*  */
+struct legacy_pic default_legacy_pic = {
 	.nr_legacy_irqs = NR_IRQS_LEGACY,
-	.chip  = &i8259A_chip,  /*  */
+	.chip  = &i8259A_chip,
 	.mask = mask_8259A_irq,
 	.unmask = unmask_8259A_irq,
 	.mask_all = mask_8259A,
@@ -433,7 +433,7 @@ struct legacy_pic default_legacy_pic = {    /*  */
 	.make_irq = make_8259A_irq,
 };
 
-struct legacy_pic *legacy_pic = &default_legacy_pic;/*  */
+struct legacy_pic *legacy_pic = &default_legacy_pic;
 EXPORT_SYMBOL(legacy_pic);
 
 static int __init i8259A_init_ops(void)
@@ -444,4 +444,4 @@ static int __init i8259A_init_ops(void)
 	return 0;
 }
 
-device_initcall(i8259A_init_ops);   /*  */
+device_initcall(i8259A_init_ops);

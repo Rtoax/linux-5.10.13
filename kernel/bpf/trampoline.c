@@ -450,4 +450,4 @@ static int __init init_trampolines(void)
 		INIT_HLIST_HEAD(&trampoline_table[i]);
 	return 0;
 }
-late_initcall(init_trampolines);    /*  */
+late_initcall(init_trampolines);

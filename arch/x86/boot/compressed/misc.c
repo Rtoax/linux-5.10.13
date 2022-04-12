@@ -279,7 +279,7 @@ static void handle_relocations(void *output, unsigned long output_len,
 #endif
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -384,7 +384,8 @@ static void parse_elf(void *output)
 			dest = (void *)(phdr->p_paddr);
 #endif
             /**
-             * 将所有具有正确2 MB对齐地址的可加载段复制到输出缓冲区中
+             *
+ 将所有具有正确2 MB对齐地址的可加载段复制到输出缓冲区中
              */
 			memmove(dest, output + phdr->p_offset, phdr->p_filesz);
 			break;

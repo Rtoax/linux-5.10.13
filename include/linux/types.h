@@ -142,7 +142,7 @@ typedef u64 blkcnt_t;
 #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
 typedef u64 dma_addr_t;
 #else
-/*  */
+
 #endif
 
 typedef unsigned int __bitwise gfp_t;
@@ -156,7 +156,7 @@ typedef unsigned int __bitwise fmode_t;
 #ifdef CONFIG_PHYS_ADDR_T_64BIT
 typedef u64 phys_addr_t;
 #else
-/*  */
+
 #endif
 
 typedef phys_addr_t resource_size_t;
@@ -168,7 +168,7 @@ typedef phys_addr_t resource_size_t;
 typedef unsigned long irq_hw_number_t;
 
 /**
- *  
+ *
  */
 typedef struct {
 	int counter;
@@ -222,7 +222,7 @@ struct ustat {
  *    which encode PageTail() in bit 0. The guarantee is needed to avoid
  *    false-positive PageTail().
  */
-struct callback_head {  /*  */
+struct callback_head {
 	struct callback_head *next;
 	void (*func)(struct callback_head *head);
 } __attribute__((aligned(sizeof(void *))));

@@ -511,4 +511,4 @@ static int pm_check_save_msr(void)
 	return 0;
 }
 
-device_initcall(pm_check_save_msr); /*  */
+device_initcall(pm_check_save_msr);

@@ -33,4 +33,4 @@ static int __init load_ipl_certs(void)
 	}
 	return 0;
 }
-late_initcall(load_ipl_certs);  /*  */
+late_initcall(load_ipl_certs);

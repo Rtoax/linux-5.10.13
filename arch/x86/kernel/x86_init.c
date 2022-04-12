@@ -57,7 +57,7 @@ static __init void x86_wallclock_init(void)
 
 /*
  * The platform setup functions are preset with the default functions
- * for standard PC hardware.    
+ * for standard PC hardware.
  *
  *  资源初始化
  */
@@ -71,7 +71,7 @@ struct x86_init_ops __initdata x86_init  = {
 
 	.mpparse = {
 		.setup_ioapic_ids	= x86_init_noop,
-		.find_smp_config	= default_find_smp_config,  /*  */
+		.find_smp_config	= default_find_smp_config,
 		.get_smp_config		= default_get_smp_config,
 	},
 
@@ -131,7 +131,7 @@ struct x86_cpuinit_ops x86_cpuinit = {
 static void default_nmi_init(void) { };
 
 /**
- *  
+ *
  */
 struct x86_platform_ops __ro_after_init x86_platform  = {
 	.calibrate_cpu			= native_calibrate_cpu_early,
@@ -141,7 +141,7 @@ struct x86_platform_ops __ro_after_init x86_platform  = {
 	.iommu_shutdown			= iommu_shutdown_noop,
 	.is_untracked_pat_range		= is_ISA_range,
 	.nmi_init			= default_nmi_init,
-	.get_nmi_reason			= default_get_nmi_reason,   /*  */
+	.get_nmi_reason			= default_get_nmi_reason,
 	.save_sched_clock_state 	= tsc_save_sched_clock_state,
 	.restore_sched_clock_state 	= tsc_restore_sched_clock_state,
 	.hyper.pin_vcpu			= x86_op_int_noop,
@@ -162,7 +162,7 @@ void arch_restore_msi_irqs(struct pci_dev *dev)
 #endif
 
 /**
- *  APIC 
+ *  APIC
  */
 struct x86_apic_ops __ro_after_init x86_apic_ops  = {
 	.io_apic_read	= native_io_apic_read,

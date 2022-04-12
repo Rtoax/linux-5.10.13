@@ -92,7 +92,7 @@ static inline u64 get_jiffies_64(void)
 #endif
 
 /*
- *	These inlines deal with timer wrapping correctly. You are 
+ *	These inlines deal with timer wrapping correctly. You are
  *	strongly encouraged to use them
  *	1. Because people otherwise forget
  *	2. Because if the timer wrap changes in future you won't have to
@@ -112,19 +112,19 @@ static inline u64 get_jiffies_64(void)
 	 ((long)((b) - (a)) < 0))
 /**
  * a<b, true
- */	 
+ */
 #define time_before(a,b)	time_after(b,a)
 
 /**
  * a>=b, true
- */ 
+ */
 #define time_after_eq(a,b)	\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((a) - (b)) >= 0))
 /**
  * a<=b, true
- */	
+ */
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
 /*
@@ -280,8 +280,8 @@ extern unsigned long preset_lpj;
 #endif
 #define NSEC_JIFFIE_SC (SEC_JIFFIE_SC + 29)
 /**
- *  
- */ 
+ *
+ */
 #define SEC_CONVERSION ((unsigned long)((((u64)NSEC_PER_SEC << SEC_JIFFIE_SC) +\
                                 TICK_NSEC -1) / (u64)TICK_NSEC))
 
@@ -376,7 +376,7 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
  * the HZ range specific helpers _msecs_to_jiffies() are called both
  * directly here and from __msecs_to_jiffies() in the case where
  * constant folding is not possible.
- */ /*  */
+ */
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 {//jiffies是记录着从电脑开机到现在总共的时钟中断次数。在linux内核中jiffies远比xtime重要
 	if (__builtin_constant_p(m)) {

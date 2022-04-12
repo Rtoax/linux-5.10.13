@@ -63,9 +63,9 @@ struct mem_section;
 #define IPC_CALLBACK_PRI        10
 
 #ifndef CONFIG_MEMORY_HOTPLUG_SPARSE
-/*  */
+
 #else
-extern int register_memory_notifier(struct notifier_block *nb); /*  */
+extern int register_memory_notifier(struct notifier_block *nb);
 extern void unregister_memory_notifier(struct notifier_block *nb);
 int create_memory_block_devices(unsigned long start, unsigned long size);
 void remove_memory_block_devices(unsigned long start, unsigned long size);
@@ -85,10 +85,10 @@ extern int for_each_memory_block(void *arg, walk_memory_blocks_func_t func);
 		{ .notifier_call = fn, .priority = pri };\
 	register_memory_notifier(&fn##_mem_nb);			\
 })
-#define register_hotmemory_notifier(nb)		register_memory_notifier(nb)    /*  */
+#define register_hotmemory_notifier(nb)		register_memory_notifier(nb)
 #define unregister_hotmemory_notifier(nb) 	unregister_memory_notifier(nb)
 #else
-/*  */
+
 #endif
 
 /*

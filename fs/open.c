@@ -527,13 +527,13 @@ out:
 }
 
 /**
- *  
+ *
  */
 int chroot(const char *path){}//+++
 SYSCALL_DEFINE1(chroot, const char __user *, filename)
 {
     /**
-     *  
+     *
      */
 	struct path _path;
 	int error;
@@ -544,7 +544,7 @@ retry:
 		goto out;
 
     /**
-     *  
+     *
      */
 	error = inode_permission(_path.dentry->d_inode, MAY_EXEC | MAY_CHDIR);
 	if (error)
@@ -555,14 +555,14 @@ retry:
 		goto dput_and_out;
 
     /**
-     *  
+     *
      */
 	error = security_path_chroot(&_path);
 	if (error)
 		goto dput_and_out;
 
     /**
-     *  
+     *
      */
 	set_fs_root(current->fs, &_path);
 	error = 0;
@@ -782,7 +782,7 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 
 
 /**
- *  
+ *
  */
 static int do_dentry_open(struct file *f,
 			  struct inode *inode,
@@ -820,7 +820,7 @@ static int do_dentry_open(struct file *f,
 		f->f_mode |= FMODE_ATOMIC_POS;
 
     /**
-     *  
+     *
      */
 	f->f_op = fops_get(inode->i_fop);
 	if (WARN_ON(!f->f_op)) {
@@ -953,7 +953,7 @@ EXPORT_SYMBOL(file_path);
  * @path: path to open
  * @file: newly allocated file with f_flag initialized
  * @cred: credentials to use
- *//*  */
+ */
 int vfs_open(const struct path *path, struct file *file)
 {
 	file->f_path = *path;
@@ -1065,7 +1065,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	 * looks like (O_DIRECTORY|O_RDWR & ~O_CREAT) to old kernels. But we
 	 * have to require userspace to explicitly set it.
 	 *
-	 * 确认用户是否想要创建一个临时文件，flags 参数应该会包含 `O_TMPFILE_MASK` 
+	 * 确认用户是否想要创建一个临时文件，flags 参数应该会包含 `O_TMPFILE_MASK`
 	 * 或者说，会包含 `O_CREAT` | `O_TMPFILE` 或者 `O_CREAT` & `O_TMPFILE` 的运算结果，并且确保（文件）可写
 	 */
 	if (flags & __O_TMPFILE) {
@@ -1096,7 +1096,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 
 	op->open_flag = flags;
 
-	/* O_TRUNC implies we need access checks for write permissions 
+	/* O_TRUNC implies we need access checks for write permissions
         `O_TRUNC` 标志表示如果已打开的文件之前已经存在则删节为 0 */
 	if (flags & O_TRUNC)
 		acc_mode |= MAY_WRITE;
@@ -1110,7 +1110,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	op->acc_mode = acc_mode;
 
     //`intent`我们的目的，换句话说就是我们真正想对文件做什么，打开，新建，重命名等等操作
-    //如果我们的 flags 参数包含这个 `O_PATH` 标志，即我们不能对文件内容做任何事情，`open_flags` 会被设置为 0 
+    //如果我们的 flags 参数包含这个 `O_PATH` 标志，即我们不能对文件内容做任何事情，`open_flags` 会被设置为 0
 	op->intent = flags & O_PATH ? 0 : LOOKUP_OPEN;
 
     //如果我们想要新建文件，我们可以设置 `LOOKUP_CREATE`，并且使用 `O_EXEC` 标志来确认文件之前不存在
@@ -1181,7 +1181,7 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 {
 	struct filename *name = getname_kernel(filename);
 	struct file *file = ERR_CAST(name);
-	
+
 	if (!IS_ERR(name)) {
 		file = file_open_name(name, flags, mode);
 		putname(name);
@@ -1223,7 +1223,7 @@ static long do_sys_openat2(int dfd, const char __user *str_filename, struct open
 	fd = get_unused_fd_flags(how->flags);
 
     /**
-     *  
+     *
      */
 	if (fd >= 0) {
         //解析给定的文件路径名到 `file` 结构体
@@ -1252,7 +1252,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
      */
 	struct open_how how = build_open_how(flags, mode);
     /**
-     *  
+     *
      */
 	return do_sys_openat2(dfd, filename, &how);
 }
@@ -1269,13 +1269,13 @@ SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 		flags |= O_LARGEFILE;
 
     /**
-     *  
+     *
      */
 	return do_sys_open(AT_FDCWD, filename, flags, mode);
 }
 
 /**
- *  
+ *
  */
 int openat(int dirfd, const char *pathname, int flags);
 int openat(int dirfd, const char *pathname, int flags, mode_t mode);
@@ -1367,7 +1367,7 @@ int filp_close(struct file *filp, fl_owner_t id)
 		retval = filp->f_op->flush(filp, id);
 
     /**
-     *  
+     *
      */
 	if (likely(!(filp->f_mode & FMODE_PATH))) {
 		dnotify_flush(filp, id);
@@ -1388,7 +1388,7 @@ int close(int fd){}//+++
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
     /**
-     *  
+     *
      */
 	int retval = __close_fd(current->files, fd);
 

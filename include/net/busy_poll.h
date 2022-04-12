@@ -50,10 +50,10 @@ void napi_busy_loop(unsigned int napi_id,
 		    void *loop_end_arg);
 
 #else /* CONFIG_NET_RX_BUSY_POLL */
-/*  */
+
 #endif /* CONFIG_NET_RX_BUSY_POLL */
 
-static inline unsigned long busy_loop_current_time(void)    /*  */
+static inline unsigned long busy_loop_current_time(void)
 {
 #ifdef CONFIG_NET_RX_BUSY_POLL
 	return (unsigned long)(local_clock() >> 10);
@@ -69,7 +69,7 @@ static inline bool busy_loop_timeout(unsigned long start_time)
 	unsigned long bp_usec = READ_ONCE(sysctl_net_busy_poll);
 
     /**
-     *  
+     *
      */
 	if (bp_usec) {
 		unsigned long end_time = start_time + bp_usec;

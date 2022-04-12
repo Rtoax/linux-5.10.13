@@ -208,27 +208,27 @@ EXPORT_SYMBOL(jiffies_64);
 #endif
 
 /**
- *  
+ *
  *  每个 CPU 一个 timer_base, 见 `timer_bases`
  *
- * 软中断定时器 
+ * 软中断定时器
  * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
  *  run_timer_softirq 调用 __run_timers()
  */
-struct timer_base { /*  */
+struct timer_base {
 	raw_spinlock_t		lock;
     /**
      *  当前正在运行的 定时器
      */
 	struct timer_list	*running_timer; //currently running timer for the certain processor
-	
+
 #ifdef CONFIG_PREEMPT_RT
 	spinlock_t		expiry_lock;    /* 期满 锁 */
 	atomic_t		timer_waiters;
 #endif
 
     /**
-     *  
+     *
      */
 	unsigned long		clk;
 	unsigned long		next_expiry;    /* 下次期满 */
@@ -241,9 +241,9 @@ struct timer_base { /*  */
      */
 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
     unsigned long pending_map[BITS_TO_LONGS(WHEEL_SIZE)]; //+++
-    
+
     /**
-     *  
+     *
      */
 	struct hlist_head	vectors[WHEEL_SIZE];
 } ____cacheline_aligned;
@@ -251,7 +251,7 @@ struct timer_base { /*  */
 /**
  *  每个 CPU 一个 timer_base
  */
-static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);    /*  */
+static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 static struct timer_base __percpu timer_bases[NR_BASES];//++++
 
 
@@ -276,7 +276,7 @@ static void timers_update_migration(void)
 		static_branch_disable(&timers_migration_enabled);
 }
 #else
-/*  */
+
 #endif /* !CONFIG_SMP */
 
 static void timer_update_keys(struct work_struct *work)
@@ -310,7 +310,7 @@ static inline bool is_timers_nohz_active(void)
 	return static_branch_unlikely(&timers_nohz_active);
 }
 #else
-/*  */
+
 #endif /* NO_HZ_COMMON */
 
 static unsigned long round_jiffies_common(unsigned long j, int cpu,
@@ -558,7 +558,7 @@ static int calc_wheel_index(unsigned long expires, unsigned long clk,
 	unsigned int idx;
 
     /**
-     *  
+     *
      */
 	if (delta < LVL_START(1)) {
 		idx = calc_index(expires, 0, bucket_expiry);
@@ -651,7 +651,7 @@ static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
 }
 
 /**
- *  
+ *
  */
 static void internal_add_timer(struct timer_base *base, struct timer_list *timer)
 {
@@ -659,7 +659,7 @@ static void internal_add_timer(struct timer_base *base, struct timer_list *timer
 	unsigned int idx;
 
     /**
-     *  
+     *
      */
 	idx = calc_wheel_index(timer->expires, base->clk, &bucket_expiry);
 	enqueue_timer(base, timer, idx, bucket_expiry);
@@ -815,7 +815,7 @@ void destroy_timer_on_stack(struct timer_list *timer)
 EXPORT_SYMBOL_GPL(destroy_timer_on_stack);
 
 #else
-/*  */
+
 #endif
 
 static inline void debug_init(struct timer_list *timer)
@@ -850,13 +850,13 @@ static void do_init_timer(struct timer_list *timer,
 	timer->function = func;
 
     /**
-     *  
+     *
      */
 	if (WARN_ON_ONCE(flags & ~TIMER_INIT_FLAGS))
 		flags &= TIMER_INIT_FLAGS;
 
     /**
-     *  
+     *
      */
 	timer->flags = flags | raw_smp_processor_id();
 	lockdep_init_map(&timer->lockdep_map, name, key, 0);
@@ -915,7 +915,7 @@ static int detach_if_pending(struct timer_list *timer, struct timer_base *base,
 }
 
 /**
- *  
+ *
  */
 static inline struct timer_base *get_timer_cpu_base(u32 tflags, u32 cpu)
 {
@@ -1135,12 +1135,12 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 	 */
 	if (idx != UINT_MAX && clk == base->clk)
         /**
-         *  
+         *
          */
 		enqueue_timer(base, timer, idx, bucket_expiry);
 	else
         /**
-         *  
+         *
          */
 		internal_add_timer(base, timer);
 
@@ -1242,7 +1242,7 @@ EXPORT_SYMBOL(add_timer);
 void add_timer_on(struct timer_list *timer, int cpu)
 {
     /**
-     *  
+     *
      */
 	struct timer_base *new_base, *base;
 	unsigned long flags;
@@ -1270,7 +1270,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
 
 	debug_timer_activate(timer);
     /**
-     *  
+     *
      */
 	internal_add_timer(base, timer);
 	raw_spin_unlock_irqrestore(&base->lock, flags);
@@ -1835,7 +1835,7 @@ void update_process_times(int user_tick)
      *  本地定时器
      */
 	run_local_timers();
-    
+
 	rcu_sched_clock_irq(user_tick);
 #ifdef CONFIG_IRQ_WORK
 	if (in_irq())
@@ -1868,13 +1868,13 @@ static inline void __run_timers(struct timer_base *base)
 	raw_spin_lock_irq(&base->lock);
 
     /**
-     *  
+     *
      */
 	while (time_after_eq(jiffies, base->clk) &&
 	       time_after_eq(jiffies, base->next_expiry)) {
 
         /**
-         *  
+         *
          */
 		levels = collect_expired_timers(base, heads);
 		/*
@@ -1885,13 +1885,13 @@ static inline void __run_timers(struct timer_base *base)
 		WARN_ON_ONCE(!levels && !base->next_expiry_recalc);
 
         /**
-         *  
+         *
          */
 		base->clk++;
 		base->next_expiry = __next_timer_interrupt(base);
 
         /**
-         *  
+         *
          */
 		while (levels--)
 			expire_timers(base, heads + levels);
@@ -1923,15 +1923,15 @@ void run_local_timers(void)
 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
 
 	hrtimer_run_queues();
-    
+
 	/* Raise the softirq only if required. */
 	if (time_before(jiffies, base->next_expiry)) {
 		if (!IS_ENABLED(CONFIG_NO_HZ_COMMON))
 			return;
-        
+
 		/* CPU is awake, so check the deferrable base. */
 		base++;
-        
+
 		if (time_before(jiffies, base->next_expiry))
 			return;
 	}
@@ -1997,7 +1997,7 @@ signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超�
 	unsigned long expire;
 
     /**
-     *  
+     *
      */
 	switch (timeout)
 	{
@@ -2021,7 +2021,7 @@ signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超�
 		 */
 		if (timeout < 0) {
 			printk(KERN_ERR "schedule_timeout: wrong timeout value %lx\n", timeout);
-			dump_stack();   /*  */
+			dump_stack();
 			current->state = TASK_RUNNING;
 			goto out;
 		}
@@ -2032,7 +2032,7 @@ signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超�
 	timer.task = current;
 
     /**
-     *  
+     *
      */
 	timer_setup_on_stack(&timer.timer, process_timeout, 0);
 
@@ -2044,10 +2044,10 @@ signed long __sched schedule_timeout(signed long timeout)   /* 睡眠直到超�
     /**
      *  调度
      */
-	schedule(); /*  */
+	schedule();
 
     /**
-     *  
+     *
      */
 	del_singleshot_timer_sync(&timer.timer);
 
@@ -2168,7 +2168,7 @@ int timers_dead_cpu(unsigned int cpu)
 
 #endif /* CONFIG_HOTPLUG_CPU */
 
-static void __init init_timer_cpu(int cpu)  /*  */
+static void __init init_timer_cpu(int cpu)
 {
 	struct timer_base *base;
 	int i;
@@ -2183,7 +2183,7 @@ static void __init init_timer_cpu(int cpu)  /*  */
 	}
 }
 
-static void __init init_timer_cpus(void)    /*  */
+static void __init init_timer_cpus(void)
 {
 	int cpu;
 
@@ -2192,15 +2192,15 @@ static void __init init_timer_cpus(void)    /*  */
 }
 
 /**
- *  
+ *
  */
-void __init init_timers(void)   /*  */
+void __init init_timers(void)
 {
-	init_timer_cpus();  /*  */
+	init_timer_cpus();
 	posix_cputimers_init_work();
 
     /**
-     *  
+     *
      */
 	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);/* 给 softirq_vec 赋值 */
 }

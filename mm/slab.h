@@ -391,7 +391,7 @@ static inline void memcg_slab_free_hook(struct kmem_cache *s_orig,
 
 #else /* CONFIG_MEMCG_KMEM */
 /**
- * 
+ *
  */
 #endif /* CONFIG_MEMCG_KMEM */
 
@@ -470,7 +470,7 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 }
 
 /**
- *  
+ *
  */
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct obj_cgroup **objcgp,
@@ -514,7 +514,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
  * The slab lists for all objects.
  */
 struct kmem_cache_node {    /* slab list */
-	spinlock_t list_lock;   /*  */
+	spinlock_t list_lock;
 
 #ifdef CONFIG_SLAB
 	struct list_head slabs_partial;	/* partial list first, better asm code */
@@ -566,7 +566,7 @@ int memcg_slab_show(struct seq_file *m, void *p);
 #if defined(CONFIG_SLAB) || defined(CONFIG_SLUB_DEBUG)
 void dump_unreclaimable_slab(void);
 #else
-/*  */
+
 #endif
 
 void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
@@ -576,7 +576,7 @@ int cache_random_seq_create(struct kmem_cache *cachep, unsigned int count,
 			gfp_t gfp);
 void cache_random_seq_destroy(struct kmem_cache *cachep);
 #else
-/*  */
+
 #endif /* CONFIG_SLAB_FREELIST_RANDOM */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)

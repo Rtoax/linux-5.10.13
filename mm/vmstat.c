@@ -142,7 +142,7 @@ EXPORT_SYMBOL_GPL(all_vm_events);
  * This is adding to the events on one processor
  * but keeps the global counts constant.
  */
-void vm_events_fold_cpu(int cpu)    /*  */
+void vm_events_fold_cpu(int cpu)
 {
 	struct vm_event_state *fold_state = &per_cpu(vm_event_states, cpu);
 	int i;
@@ -331,7 +331,7 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat, int (*calculate_pressure)(stru
  * For use when we know that interrupts are disabled,
  * or when we know that preemption is disabled and that
  * particular counter cannot be updated from interrupt context.
- */ /*  *//* 没有 CONFIG_SMP 对称多处理 */
+ */ /* 没有 CONFIG_SMP 对称多处理 */
 void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
 			   long delta)
 {
@@ -347,7 +347,7 @@ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
     /**
      *
      */
-	if (unlikely(abs(x) > t)) { /*  */
+	if (unlikely(abs(x) > t)) {
 		zone_page_state_add(x, zone, item); /* + x */
 		x = 0;
 	}
@@ -753,7 +753,7 @@ static int fold_diff(int *zone_diff, int *numa_diff, int *node_diff)
 	return changes;
 }
 #else
-/*  */
+
 #endif /* CONFIG_NUMA */
 
 /*
@@ -968,7 +968,7 @@ void drain_zonestat(struct zone *zone, struct per_cpu_pageset *pset)
 #ifdef CONFIG_NUMA
 void __inc_numa_state(struct zone *zone,
 				 enum numa_stat_item item)
-{   /*  */
+{
 	struct per_cpu_pageset __percpu *pcp = zone->pageset;
 	u16 __percpu *p = pcp->vm_numa_stat_diff + item;
 	u16 v;
@@ -1196,13 +1196,13 @@ int fragmentation_index(struct zone *zone, unsigned int order)
 #ifdef CONFIG_ZONE_DMA
 #define TEXT_FOR_DMA(xx) xx "_dma",
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ZONE_DMA32
 #define TEXT_FOR_DMA32(xx) xx "_dma32",
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_HIGHMEM
@@ -2055,7 +2055,7 @@ static void __init start_shepherd_timer(void)
 		round_jiffies_relative(sysctl_stat_interval));
 }
 
-static void __init init_cpu_node_state(void)    /*  */
+static void __init init_cpu_node_state(void)
 {
 	int node;
 
@@ -2098,7 +2098,7 @@ static int vmstat_cpu_dead(unsigned int cpu)
 
 struct workqueue_struct *mm_percpu_wq;
 
-void __init init_mm_internals(void)/*  */
+void __init init_mm_internals(void)
 {
 	int __maybe_unused ret ;
 

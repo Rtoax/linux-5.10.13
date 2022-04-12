@@ -140,7 +140,7 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 * 翻译：
 	 * 所以要么线程等待我们清除 IRQS_INPROGRESS 要么我们在流处理程序
 	 * 中等待 desc->lock 在我们到达这一点之前被释放。
-	 * 该线程还在 desc->lock 下检查 IRQTF_RUNTHREAD。 
+	 * 该线程还在 desc->lock 下检查 IRQTF_RUNTHREAD。
 	 * 如果设置，它会保持 threads_oneshot 不变并再次运行线程。
 	 *
 	 * -------------------------------------------------------------
@@ -169,7 +169,7 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 }
 
 /**
- *  
+ *
  */
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags)
 {
@@ -204,7 +204,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 			local_irq_disable();
 
         /**
-         *  
+         *
          */
 		switch (res) {
         /**
@@ -244,7 +244,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 }
 
 /**
- *  
+ *
  */
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 {
@@ -252,12 +252,12 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 	unsigned int flags = 0;
 
     /**
-     *  
+     *
      */
 	retval = __handle_irq_event_percpu(desc, &flags);
 
     /**
-     *  
+     *
      */
 	add_interrupt_randomness(desc->irq_data.irq, flags);
 
@@ -271,7 +271,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
  *
  *  如果设备有一个已注册的处理例程，并法身了中断，这个函数将被调用
  */
-irqreturn_t handle_irq_event(struct irq_desc *desc) /*  */
+irqreturn_t handle_irq_event(struct irq_desc *desc)
 {
 	irqreturn_t ret;
 
@@ -287,12 +287,12 @@ irqreturn_t handle_irq_event(struct irq_desc *desc) /*  */
 	raw_spin_unlock(&desc->lock);
 
     /**
-     *  
+     *
      */
 	ret = handle_irq_event_percpu(desc);
 
 	raw_spin_lock(&desc->lock);
-    
+
     /**
      *  清除标记位
      */

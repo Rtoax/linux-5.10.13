@@ -32,7 +32,7 @@ extern unsigned long long max_possible_pfn;
  * @MEMBLOCK_MIRROR: mirrored region
  * @MEMBLOCK_NOMAP: don't add to kernel direct mapping
  */
-enum memblock_flags {/*  */
+enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,	/* No special request */
 	MEMBLOCK_HOTPLUG	= 0x1,	/* hotpluggable region */
 	MEMBLOCK_MIRROR		= 0x2,	/* mirrored region */
@@ -376,7 +376,7 @@ int memblock_set_node(phys_addr_t base, phys_addr_t size,
 		      struct memblock_type *type, int nid);
 
 #ifdef CONFIG_NEED_MULTIPLE_NODES
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)/*  */
+static inline void memblock_set_region_node(struct memblock_region *r, int nid)
 {
 	r->nid = nid;
 }
@@ -386,7 +386,7 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
 	return r->nid;
 }
 #else
-/*  */
+
 #endif /* CONFIG_NEED_MULTIPLE_NODES */
 
 /* Flags for memblock allocation APIs */
@@ -622,13 +622,13 @@ extern void *alloc_large_system_hash(const char *tablename,
 #define HASHDIST_DEFAULT IS_ENABLED(CONFIG_64BIT)
 extern int hashdist;		/* Distribute hashes across NUMA nodes? */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMTEST
 extern void early_memtest(phys_addr_t start, phys_addr_t end);
 #else
-/*  */
+
 #endif
 
 #endif /* __KERNEL__ */

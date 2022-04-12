@@ -168,7 +168,7 @@ error_object_wq:
 	return ret;
 }
 
-fs_initcall(fscache_init);  /*  */
+fs_initcall(fscache_init);
 
 /*
  * clean up on module removal

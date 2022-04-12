@@ -11,4 +11,4 @@ static __init int add_pcspkr(void)
 
 	return PTR_ERR_OR_ZERO(pd);
 }
-device_initcall(add_pcspkr);    /*  */
+device_initcall(add_pcspkr);

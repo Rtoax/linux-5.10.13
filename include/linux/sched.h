@@ -131,7 +131,7 @@ struct io_uring_task;
 #define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
 
 /* Used in tsk->state again: */
-#define TASK_PARKED			0x0040  /*  */
+#define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
@@ -321,9 +321,9 @@ struct vtime {
  * @UCLAMP_CNT:	Utilization clamp constraints count
  */
 enum uclamp_id {
-	UCLAMP_MIN = 0, /*  */
-	UCLAMP_MAX,     /*  */
-	UCLAMP_CNT      /*  */
+	UCLAMP_MIN = 0,
+	UCLAMP_MAX,
+	UCLAMP_CNT
 };
 
 #ifdef CONFIG_SMP
@@ -463,32 +463,32 @@ struct util_est {   /* 评估利用率 */
  *
  * 抽象一个se或者cfs rq的平均负载信息
  */
-struct sched_avg {  /*  */
+struct sched_avg {
 
     /**
      *  上一次 更新 时间点，用于计算时间间隔
      */
-	u64				last_update_time;   /*  */
+	u64				last_update_time;
 
     /**
      *  对于调度实体和调度队列来说，这个数值是有区别的
      *  对于调度实体：它统计的仅仅是时间；
      *  对于调度队列：它统计的是工作负载，即 时间 * 权重
      */
-	u64				load_sum;           /*  */
+	u64				load_sum;
 
     /**
      *  对于调度实体：它是在就绪队列里可运行状态下的累计衰减总时间
      *  对于调度队列：它统计就绪队列里所有可运行状态下进程的累计工作总负载
      */
-	u64				runnable_sum;       /*  */
+	u64				runnable_sum;
 
     /**
      *  调度实体：正在运行状态下的累计衰减总时间，使用 cfs_rq->curr == se 判断当前进程是否正在运行
      *  调度队列：整个就绪队列中所有处于运行状态进程的累计衰减总时间，
      *              只要就绪队列里有正在运行的进程，他就会计算和累加
      */
-	u32				util_sum;           /*  */
+	u32				util_sum;
 
     /**
      *  存放 上一次时间采样时，不能凑成一个 周期 1024us 的剩余时间 `d1`
@@ -501,7 +501,7 @@ struct sched_avg {  /*  */
      *     |<->|<->|<----------------->|<--->|
      * ... |---x---|------| ... |------|-----x (now)
      */
-	u32				period_contrib;     /*  */
+	u32				period_contrib;
 
     /**
      *  对于调度实体来说：它是可运行状态下的量化负载。在负载均衡算法中，使用该成员来衡量一个进程的负载共享值
@@ -758,7 +758,7 @@ struct sched_dl_entity {
 	 * Bandwidth enforcement timer. Each -deadline task has its
 	 * own bandwidth to be enforced, thus we need one timer per task.
 	 */
-	struct hrtimer			dl_timer;   /*  */
+	struct hrtimer			dl_timer;
 
 	/*
 	 * Inactive timer, responsible for decreasing the active utilization
@@ -767,7 +767,7 @@ struct sched_dl_entity {
 	 * timer is needed to decrease the active utilization at the correct
 	 * time.
 	 */
-	struct hrtimer inactive_timer;      /*  */
+	struct hrtimer inactive_timer;
 
 #ifdef CONFIG_RT_MUTEXES
 	/*
@@ -781,7 +781,7 @@ struct sched_dl_entity {
 
 #ifdef CONFIG_UCLAMP_TASK
 /* Number of utilization clamp buckets (shorter alias) */
-#define UCLAMP_BUCKETS CONFIG_UCLAMP_BUCKETS_COUNT  /*  */
+#define UCLAMP_BUCKETS CONFIG_UCLAMP_BUCKETS_COUNT
 
 /*
  * Utilization clamp for a scheduling entity    调度实体的利用率钳制
@@ -828,7 +828,7 @@ enum perf_event_task_context {  /* perf_event task 上下文 */
 	perf_invalid_context = -1,
 	perf_hw_context = 0,    /* 硬件 */
 	perf_sw_context,        /* 软件 */
-	perf_nr_task_contexts,  /*  */
+	perf_nr_task_contexts,
 };
 
 struct wake_q_node {
@@ -1166,16 +1166,16 @@ struct task_struct {    /* PCB */
 	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
 
-#ifndef TIF_RESTORE_SIGMASK /*  */
+#ifndef TIF_RESTORE_SIGMASK
 	unsigned			restore_sigmask:1;
 #endif
-#ifdef CONFIG_MEMCG /*  */
+#ifdef CONFIG_MEMCG
 	unsigned			in_user_fault:1;
 #endif
-#ifdef CONFIG_COMPAT_BRK    /*  */
+#ifdef CONFIG_COMPAT_BRK
 	unsigned			brk_randomized:1;
 #endif
-#ifdef CONFIG_CGROUPS   /*  */
+#ifdef CONFIG_CGROUPS
 	/* disallow userland-initiated cgroup migration */
 	unsigned			no_cgroup_migration:1;
 	/* task is frozen/stopped (used by the cgroup freezer) */
@@ -1259,14 +1259,14 @@ struct task_struct {    /* PCB */
      */
 	struct hlist_node		pid_links[PIDTYPE_MAX];
 	struct list_head		thread_group;/* 组 */
-	struct list_head		thread_node;/*  */
+	struct list_head		thread_node;
     /**
      *  vfork()
      */
 	struct completion		*vfork_done;/* 等待vfork系统调用结束 */
 
 	/* CLONE_CHILD_SETTID: */
-	int __user			*set_child_tid; /*  */
+	int __user			*set_child_tid;
 
 	/* CLONE_CHILD_CLEARTID: */
 	int __user			*clear_child_tid;
@@ -1371,7 +1371,7 @@ struct task_struct {    /* PCB */
 	/**
 	 *  Namespaces:
 	 */
-	struct nsproxy			*nsproxy;   /*  */
+	struct nsproxy			*nsproxy;
 
 	/* Signal handlers: */
 	struct signal_struct		*signal;/* 进程信号 */
@@ -1460,7 +1460,7 @@ struct task_struct {    /* PCB */
 	u64				curr_chain_key;
 	int				lockdep_depth;
 	unsigned int			lockdep_recursion;
-	struct held_lock		held_locks[MAX_LOCK_DEPTH]; /*  */
+	struct held_lock		held_locks[MAX_LOCK_DEPTH];
 #endif
 
 #if defined(CONFIG_UBSAN) && !defined(CONFIG_UBSAN_TRAP)
@@ -1487,7 +1487,7 @@ struct task_struct {    /* PCB */
 
 	struct backing_dev_info		*backing_dev_info;
 
-	struct io_context		*io_context;    /*  */
+	struct io_context		*io_context;
 
 #ifdef CONFIG_COMPACTION    /* 紧致机制 */
 	struct capture_control		*capture_control;
@@ -1517,7 +1517,7 @@ struct task_struct {    /* PCB */
 	/* Protected by ->alloc_lock: */
 	nodemask_t			mems_allowed;   /* 允许在哪个 NODE 上分配内存 */
 	/* Seqence number to catch updates: */
-	seqcount_spinlock_t		mems_allowed_seq;   /*  */
+	seqcount_spinlock_t		mems_allowed_seq;
 	int				cpuset_mem_spread_rotor;
 	int				cpuset_slab_spread_rotor;
 #endif
@@ -1647,7 +1647,7 @@ struct task_struct {    /* PCB */
 	struct page_frag		task_frag;
 
 #ifdef CONFIG_TASK_DELAY_ACCT
-	struct task_delay_info		*delays;    /*  */
+	struct task_delay_info		*delays;
 #endif
 
 #ifdef CONFIG_FAULT_INJECTION
@@ -1737,7 +1737,7 @@ struct task_struct {    /* PCB */
 	struct kcov			*kcov;
 
 	/* KCOV common handle for remote coverage collection: */
-	u64				kcov_handle;    /*  */
+	u64				kcov_handle;
 
 	/* KCOV sequence number: */
 	int				kcov_sequence;  /* 顺序号 */
@@ -1787,18 +1787,18 @@ struct task_struct {    /* PCB */
 	struct task_struct		*oom_reaper_list;
 #endif
 #ifdef CONFIG_VMAP_STACK
-	struct vm_struct		*stack_vm_area; /*  */
+	struct vm_struct		*stack_vm_area;
 #endif
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* A live task holds one reference: */
-	refcount_t			stack_refcount; /*  */
+	refcount_t			stack_refcount;
 #endif
 #ifdef CONFIG_LIVEPATCH
 	int patch_state;
 #endif
 #ifdef CONFIG_SECURITY
 	/* Used by LSM modules for access restriction: */
-	void				*security;  /*  */
+	void				*security;
 #endif
 
 #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
@@ -2136,7 +2136,7 @@ extern int task_can_attach(struct task_struct *p, const struct cpumask *cs_cpus_
 extern void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask);
 extern int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask);
 #else
-/*  */
+
 #endif
 
 extern int yield_to(struct task_struct *p, bool preempt);
@@ -2289,7 +2289,7 @@ static __always_inline void scheduler_ipi(void)
 }
 extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
 #else
-/*  */
+
 #endif
 
 /*
@@ -2354,7 +2354,7 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 #ifndef CONFIG_PREEMPTION
 extern int _cond_resched(void);
 #else
-/*  */
+
 #endif
 
 /**

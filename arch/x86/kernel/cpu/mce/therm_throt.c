@@ -514,7 +514,7 @@ static __init int thermal_throttle_init_device(void)
 				thermal_throttle_offline);
 	return ret < 0 ? ret : 0;
 }
-device_initcall(thermal_throttle_init_device);  /*  */
+device_initcall(thermal_throttle_init_device);
 
 #endif /* CONFIG_SYSFS */
 

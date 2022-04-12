@@ -385,7 +385,7 @@ static atomic_t perf_sched_count;
 static DEFINE_PER_CPU(atomic_t, perf_cgroup_events);
 static DEFINE_PER_CPU(struct pmu_event_list, pmu_sb_events);
 
-static atomic_t __read_mostly nr_mmap_events ;/*  */
+static atomic_t __read_mostly nr_mmap_events ;
 static atomic_t __read_mostly nr_comm_events ;
 static atomic_t __read_mostly nr_namespaces_events ;
 static atomic_t __read_mostly nr_task_events ;
@@ -408,7 +408,7 @@ static cpumask_var_t perf_online_mask;
  *   1 - disallow cpu events for unpriv
  *   2 - disallow kernel profiling for unpriv
  */
-int __read_mostly sysctl_perf_event_paranoid  = 2;/*  */
+int __read_mostly sysctl_perf_event_paranoid  = 2;
 
 /* Minimum for 512 kiB + 1 user control page */
 int __read_mostly sysctl_perf_event_mlock  = 512 + (PAGE_SIZE / 1024); /* 'free' kiB per user */
@@ -1052,7 +1052,7 @@ perf_cgroup_event_disable(struct perf_event *event, struct perf_event_context *c
 }
 
 #else /* !CONFIG_CGROUP_PERF */
-/*  */
+
 #endif
 
 /*
@@ -4124,7 +4124,7 @@ static void perf_event_enable_on_exec(int ctxn)
 		clone_ctx = unclone_ctx(ctx);
 		ctx_resched(cpuctx, ctx, event_type);
 	} else {
-		ctx_sched_in(ctx, cpuctx, EVENT_TIME, current); /*  */
+		ctx_sched_in(ctx, cpuctx, EVENT_TIME, current);
 	}
 	perf_ctx_unlock(cpuctx, ctx);
 
@@ -4718,7 +4718,7 @@ static int exclusive_event_init(struct perf_event *event)
 {
 	struct pmu *pmu = event->pmu;
 
-	if (!is_exclusive_pmu(pmu)) /*  */
+	if (!is_exclusive_pmu(pmu))
 		return 0;
 
 	/*
@@ -7502,7 +7502,7 @@ static void perf_event_addr_filters_exec(struct perf_event *event, void *data)
 /**
  *
  */
-void perf_event_exec(void)  /*  */
+void perf_event_exec(void)
 {
 	struct perf_event_context *ctx;
 	int ctxn;
@@ -7518,7 +7518,7 @@ void perf_event_exec(void)  /*  */
         /**
          *
          */
-		perf_event_enable_on_exec(ctxn);    /*  */
+		perf_event_enable_on_exec(ctxn);
         /**
          *
          */
@@ -8057,13 +8057,13 @@ static void perf_event_cgroup(struct cgroup *cgrp)
  * mmap tracking
  */
 
-struct perf_mmap_event {    /*  */
+struct perf_mmap_event {
 	struct vm_area_struct	*vma;
 
 	const char		*file_name;
 	int			file_size;
-	int			maj, min;   /*  */
-	u64			ino;        /*  */
+	int			maj, min;
+	u64			ino;
 	u64			ino_generation;
 	u32			prot, flags;
 
@@ -8365,7 +8365,7 @@ static void perf_addr_filters_adjust(struct vm_area_struct *vma)
 	rcu_read_unlock();
 }
 
-void perf_event_mmap(struct vm_area_struct *vma)    /*  */
+void perf_event_mmap(struct vm_area_struct *vma)
 {
 	struct perf_mmap_event mmap_event;
 
@@ -9395,7 +9395,7 @@ static void swevent_hlist_put_cpu(int cpu)
 	mutex_unlock(&swhash->hlist_mutex);
 }
 
-static void swevent_hlist_put(void) /*  */
+static void swevent_hlist_put(void)
 {
 	int cpu;
 
@@ -9403,7 +9403,7 @@ static void swevent_hlist_put(void) /*  */
 		swevent_hlist_put_cpu(cpu);}
 }
 
-static int swevent_hlist_get_cpu(int cpu)   /*  */
+static int swevent_hlist_get_cpu(int cpu)
 {
 	struct swevent_htable *swhash = &per_cpu(swevent_htable, cpu);
 	int err = 0;
@@ -9427,7 +9427,7 @@ exit:
 	return err;
 }
 
-static int swevent_hlist_get(void)  /*  */
+static int swevent_hlist_get(void)
 {
 	int err, cpu, failed_cpu;
 
@@ -9451,7 +9451,7 @@ fail:
 	return err;
 }
 
-struct static_key perf_swevent_enabled[PERF_COUNT_SW_MAX];  /*  */
+struct static_key perf_swevent_enabled[PERF_COUNT_SW_MAX];
 
 static void sw_perf_event_destroy(struct perf_event *event)
 {
@@ -9463,7 +9463,7 @@ static void sw_perf_event_destroy(struct perf_event *event)
 	swevent_hlist_put();
 }
 
-static int perf_swevent_init(struct perf_event *event)  /*  */
+static int perf_swevent_init(struct perf_event *event)
 {
 	u64 event_id = event->attr.config;
 
@@ -9496,13 +9496,13 @@ static int perf_swevent_init(struct perf_event *event)  /*  */
 			return err;
 
 		static_key_slow_inc(&perf_swevent_enabled[event_id]);   /* 使能 static_key */
-		event->destroy = sw_perf_event_destroy; /*  */
+		event->destroy = sw_perf_event_destroy;
 	}
 
 	return 0;
 }
 
-static struct pmu/* 性能监控单元 */ perf_swevent = {  /*  */
+static struct pmu/* 性能监控单元 */ perf_swevent = {
 	.task_ctx_nr	= perf_sw_context,
 
 	.capabilities	= PERF_PMU_CAP_NO_NMI,
@@ -9980,7 +9980,7 @@ static void perf_event_free_bpf_prog(struct perf_event *event)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_EVENT_TRACING */
 
 #ifdef CONFIG_HAVE_HW_BREAKPOINT
@@ -10872,7 +10872,7 @@ static int pmu_dev_alloc(struct pmu *pmu)   /* 申请一个device内存空间 */
 		goto free_dev;
 
 	/* For PMUs with address filters, throw in an extra attribute: */
-	if (pmu->nr_addr_filters)   /*  */
+	if (pmu->nr_addr_filters)
 		ret = device_create_file(pmu->dev, &dev_attr_nr_addr_filters);
 
 	if (ret)
@@ -10974,13 +10974,13 @@ skip_type:
 
 		__perf_mux_hrtimer_init(cpuctx, cpu);               /* 6.高精度定时器，function=perf_mux_hrtimer_handler */
 
-		cpuctx->heap_size = ARRAY_SIZE(cpuctx->heap_default);/*  */
+		cpuctx->heap_size = ARRAY_SIZE(cpuctx->heap_default);
 		cpuctx->heap = cpuctx->heap_default;    /* 默认使用2个 */
 	}
 
 got_cpu_context:
 
-    /*  */
+
 	if (!pmu->start_txn) {
 		if (pmu->pmu_enable) {
 			/*
@@ -11008,7 +11008,7 @@ got_cpu_context:
 	if (!pmu->check_period)
 		pmu->check_period = perf_event_nop_int;
 
-    /*  */
+
 	if (!pmu->event_idx)
 		pmu->event_idx = perf_event_idx_default;
 
@@ -11020,7 +11020,7 @@ got_cpu_context:
 	if (type == PERF_TYPE_SOFTWARE || !name)
 		list_add_rcu(&pmu->entry, &pmus);   /* 软件 或者 name=NULL */
 	else
-		list_add_tail_rcu(&pmu->entry, &pmus);/*  */
+		list_add_tail_rcu(&pmu->entry, &pmus);
 
 	atomic_set(&pmu->exclusive_cnt, 0); /* 独占计数 */
 	ret = 0;
@@ -11871,7 +11871,7 @@ again:
 int perf_event_open(struct perf_event_attr *attr,
                      pid_t pid, int cpu, int group_fd,
                      unsigned long flags);
-SYSCALL_DEFINE5(perf_event_open,    /*  */
+SYSCALL_DEFINE5(perf_event_open,
 		struct perf_event_attr __user *, attr_uptr,
 		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
 {
@@ -11883,7 +11883,7 @@ SYSCALL_DEFINE5(perf_event_open,    /*  */
 	struct perf_event_attr attr;
 	struct perf_event_context *ctx, *gctx;
 	struct file *event_file = NULL;
-	struct fd group = {NULL, 0};      /*  */
+	struct fd group = {NULL, 0};
 	struct task_struct *task = NULL;
 	struct pmu *pmu;
 	int event_fd;
@@ -13035,7 +13035,7 @@ inherit_task_group(struct perf_event *event, struct task_struct *parent,
 /*
  * Initialize the perf_event context in task_struct
  */
-static int perf_event_init_context(struct task_struct *child, int ctxn) /*  */
+static int perf_event_init_context(struct task_struct *child, int ctxn)
 {
 	struct perf_event_context *child_ctx, *parent_ctx;
 	struct perf_event_context *cloned_ctx;
@@ -13052,7 +13052,7 @@ static int perf_event_init_context(struct task_struct *child, int ctxn) /*  */
 	 * If the parent's context is a clone, pin it so it won't get
 	 * swapped under us.
 	 */
-	parent_ctx = perf_pin_task_context(parent, ctxn);   /*  */
+	parent_ctx = perf_pin_task_context(parent, ctxn);
 	if (!parent_ctx)
 		return 0;
 
@@ -13139,12 +13139,12 @@ int perf_event_init_task(struct task_struct *child) /* 软硬件 perf_event */
 
 	memset(child->perf_event_ctxp, 0, sizeof(child->perf_event_ctxp));  /* 清零 */
 	mutex_init(&child->perf_event_mutex);   /* 互斥 */
-	INIT_LIST_HEAD(&child->perf_event_list);/*  */
+	INIT_LIST_HEAD(&child->perf_event_list);
 
 	for_each_task_context_nr(ctxn) {    /* 遍历 (ctxn=perf_hw_context; ctxn<=perf_sw_context;ctxn++) */
-		ret = perf_event_init_context(child, ctxn); /*  */
+		ret = perf_event_init_context(child, ctxn);
 		if (ret) {
-			perf_event_free_task(child);    /*  */
+			perf_event_free_task(child);
 			return ret;
 		}
 	}
@@ -13152,7 +13152,7 @@ int perf_event_init_task(struct task_struct *child) /* 软硬件 perf_event */
 	return 0;
 }
 
-static void __init perf_event_init_all_cpus(void)   /*  */
+static void __init perf_event_init_all_cpus(void)
 {
 	struct swevent_htable *swhash;
 	int cpu;
@@ -13223,7 +13223,7 @@ static void perf_event_exit_cpu_context(int cpu)
 }
 #else
 
-/*  */
+
 
 #endif
 
@@ -13280,7 +13280,7 @@ void __init perf_event_init(void)   /* 在 start_kernel 中调用 */
 {
 	int ret;
 
-	idr_init(&pmu_idr); /*  */
+	idr_init(&pmu_idr);
 
 	perf_event_init_all_cpus();
 	init_srcu_struct(&pmus_srcu);

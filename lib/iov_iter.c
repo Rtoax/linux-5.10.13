@@ -939,7 +939,7 @@ size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
 		return 0;
 	}
 	if (i->type & (ITER_BVEC|ITER_KVEC)) {
-		void *kaddr = kmap_atomic(page);    /*  */
+		void *kaddr = kmap_atomic(page);
 		size_t wanted = _copy_from_iter(kaddr + offset, bytes, i);
 		kunmap_atomic(kaddr);
 		return wanted;
@@ -1068,7 +1068,7 @@ static void pipe_advance(struct iov_iter *i, size_t size)
 	pipe_truncate(i);
 }
 
-void iov_iter_advance(struct iov_iter *i, size_t size)  /*  */
+void iov_iter_advance(struct iov_iter *i, size_t size)
 {
 	if (unlikely(iov_iter_is_pipe(i))) {
 		pipe_advance(i, size);

@@ -139,7 +139,7 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
  * If you need to stop the walk before page_vma_mapped_walk() returned false,
  * use page_vma_mapped_walk_done(). It will do the housekeeping.
  *
- * 从虚拟地址 address 遍历页表，找出对应的 PTE 
+ * 从虚拟地址 address 遍历页表，找出对应的 PTE
  */
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 {
@@ -158,7 +158,7 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 		goto next_pte;
 
     /**
-     *  
+     *
      */
 	if (unlikely(PageHuge(pvmw->page))) {
 		/* when pud is not present, pte will be NULL */
@@ -172,10 +172,10 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 			return not_found(pvmw);
 		return true;
 	}
-    
+
 restart:
     /**
-     *  
+     *
      */
 	pgd = pgd_offset(mm, pvmw->address);
 	if (!pgd_present(*pgd))
@@ -195,14 +195,14 @@ restart:
 	pmde = READ_ONCE(*pvmw->pmd);
 
     /**
-     *  
+     *
      */
 	if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde)) {
-        
+
 		pvmw->ptl = pmd_lock(mm, pvmw->pmd);
 
         /**
-         *  
+         *
          */
 		if (likely(pmd_trans_huge(*pvmw->pmd))) {
 			if (pvmw->flags & PVMW_MIGRATION)
@@ -234,7 +234,7 @@ restart:
 	if (!map_pte(pvmw))
 		goto next_pte;
 
-    /*  */
+
 	while (1) {
 		if (check_pte(pvmw))
 			return true;
@@ -247,7 +247,7 @@ next_pte:
 			if (pvmw->address >= pvmw->vma->vm_end ||
 			    pvmw->address >= __vma_address(pvmw->page, pvmw->vma) + thp_size(pvmw->page))
 				return not_found(pvmw);
-            
+
 			/* Did we cross page table boundary? 页表边界 */
 			if (pvmw->address % PMD_SIZE == 0) {
 				pte_unmap(pvmw->pte);
@@ -258,12 +258,12 @@ next_pte:
 				goto restart;
 
 			} else {
-                
+
 				pvmw->pte++;
 			}
 		} while (pte_none(*pvmw->pte));
 
-        /*  */
+
 		if (!pvmw->ptl) {
 			pvmw->ptl = pte_lockptr(mm, pvmw->pmd);
 			spin_lock(pvmw->ptl);

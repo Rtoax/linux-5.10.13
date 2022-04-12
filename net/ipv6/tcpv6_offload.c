@@ -64,7 +64,7 @@ static struct sk_buff *tcp6_gso_segment(struct sk_buff *skb,
 
 	return tcp_gso_segment(skb, features);
 }
-static const struct net_offload tcpv6_offload = {   /*  */
+static const struct net_offload tcpv6_offload = {
 	.callbacks = {
 		.gso_segment	=	tcp6_gso_segment,
 		.gro_receive	=	tcp6_gro_receive,

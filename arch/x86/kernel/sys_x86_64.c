@@ -25,7 +25,7 @@
 /*
  * Align a virtual address to avoid aliasing in the I$ on AMD F15h.
  */
-static unsigned long get_align_mask(void)   /*  */
+static unsigned long get_align_mask(void)
 {
 	/* handle 32- and 64-bit case with a single conditional */
 	if (va_align.flags < 0 || !(va_align.flags & (2 - mmap_is_ia32())))
@@ -87,7 +87,7 @@ static int __init control_va_addr_alignment(char *str)
 __setup("align_va_addr", control_va_addr_alignment);
 
 /**
- *  
+ *
  */
 long mmap(unsigned long addr, unsigned long len,
                         unsigned long prot, unsigned long flags,
@@ -101,7 +101,7 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
 	if (off & ~PAGE_MASK)
 		goto out;
     /**
-     *  
+     *
      */
 	error = ksys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
 out:
@@ -116,7 +116,7 @@ out:
  *  |       |
  *  |       |
  *  +-------+ begin
- *   
+ *
  *  获取mmap区域的开始、结束地址：
  *      begin   ：mm->mmap_base
  *      end     ：task_size
@@ -125,7 +125,7 @@ static void find_start_end(unsigned long addr, unsigned long flags,
 		unsigned long *begin, unsigned long *end)
 {
     /* 32 位 */
-	if (!in_32bit_syscall() && (flags & MAP_32BIT)) {   
+	if (!in_32bit_syscall() && (flags & MAP_32BIT)) {
 		/* This is usually used needed to map code in small
 		   model, so it needs to be in the first 31bit. Limit
 		   it to that.  This means we need to move the
@@ -141,8 +141,8 @@ static void find_start_end(unsigned long addr, unsigned long flags,
 		return;
 	}
 
-    /*  */
-	*begin	= get_mmap_base(1); 
+
+	*begin	= get_mmap_base(1);
 	if (in_32bit_syscall())
 		*end = task_size_32bit();
 	else
@@ -170,7 +170,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
      *  |       |
      *  |       |
      *  +-------+ begin
-     *   
+     *
      *  获取mmap区域的开始、结束地址：
      *      begin   ：mm->mmap_base
      *      end     ：task_size
@@ -186,7 +186,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	if (addr) {
 		addr = PAGE_ALIGN(addr);    /* 对齐 Make sure the address is page aligned */
 		vma = find_vma(mm, addr);   /* 查找对应 vma, return the region closest to the requested address*/
-        /* Make sure the mapping will not overlap with another region. 
+        /* Make sure the mapping will not overlap with another region.
            If it does not, return it as it is safe to use. Otherwise it gets ignored */
 
         /**
@@ -215,12 +215,12 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		info.align_mask = get_align_mask();
 		info.align_offset += get_align_bits();
 	}
-    
+
     /**
      *  否则只能废弃掉用户指定的地址，根据长度重新给他找一个合适的地址
      *    优先在vma红黑树的空洞中找，其次在空白位置找
      */
-	return vm_unmapped_area(&info); /*  */
+	return vm_unmapped_area(&info);
 }
 
 
@@ -231,7 +231,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
  *  https://rtoax.blog.csdn.net/article/details/118602363
  */
 unsigned long
-arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    /*  */
+arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 			  const unsigned long len, const unsigned long pgoff,
 			  const unsigned long flags)
 {
@@ -249,7 +249,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    
 		return addr;
 
 	/**
-	 *  for MAP_32BIT mappings we force the legacy mmap base 
+	 *  for MAP_32BIT mappings we force the legacy mmap base
 	 *
 	 *  强制使用 legacy 老版本的 mmap 布局
 	 *  见 https://rtoax.blog.csdn.net/article/details/118602363
@@ -258,7 +258,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    
 		goto bottomup;
 
 	/**
-	 *  requesting a specific address 
+	 *  requesting a specific address
 	 *
 	 *  如果 mmap 期间填入了 addr，就会使用特殊的地址
 	 */
@@ -274,17 +274,17 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,    
          *  满足下面的条件之一直接返回地址
          *
          *  1. 如果 addr 不在 VMA 树内
-         *  2. 
+         *  2.
          *
          *  这个 if 大概率不会成立
          */
 		if (!vma || addr + len <= vm_start_gap(vma))
 			return addr;
 	}
-    
+
 get_unmapped_area:
 
-    /*  */
+
 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;  /* 默认为 topdown ， modern 模式 */
 	info.length = len;  /* 长度 */
 	info.low_limit = PAGE_SIZE/* 4096 */; /* 这么低，那代码段和数据段也可以映射吧 */
@@ -307,8 +307,8 @@ get_unmapped_area:
 
     /* 如果是文件映射 */
 	if (filp) {
-		info.align_mask = get_align_mask(); /*  */
-		info.align_offset += get_align_bits();  /*  */
+		info.align_mask = get_align_mask();
+		info.align_offset += get_align_bits();
 	}
 
     /**
@@ -329,7 +329,7 @@ get_unmapped_area:
 	addr = vm_unmapped_area(&info);
 	if (!(addr & ~PAGE_MASK))
 		return addr;
-    
+
 	VM_BUG_ON(addr != -ENOMEM);
 
 bottomup:

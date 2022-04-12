@@ -74,7 +74,7 @@ enum {
 
     /**
      *  工作线程池内部使用的标志位
-     *  
+     *
      *  工作线程可以处于 associated(联系) 或 unassociated(无关联的) 状态
      *  1. associated(联系) 状态表示线程池绑定到 某个 CPU 上；
      *  2. unassociated 状态表示 线程池没有绑定到 某个 CPU 上，
@@ -166,7 +166,7 @@ enum {
  *
  *  CMWQ 提出了工作线程池的概念
  *  准确的说，每个 CPU 有两个工作线程池，一个用于普通优先级，一个用于高优先级的工作线程
- *  
+ *
  *  几个数据结构之间的关系
  *  ------------------------------------
  *          BOUND 类型工作队列
@@ -249,7 +249,7 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 	struct list_head	idle_list;	/* X: list of idle workers */
 
     /**
-     *  
+     *
      */
     struct timer_list	idle_timer;	/* L: worker idle timeout */
 	struct timer_list	mayday_timer;	/* L: SOS timer for workers */
@@ -289,14 +289,14 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
 	 *
 	 * 在进程调度器中唤醒进程(调用`try_to_wake_up()`)时，其他CPU 可能会同时访问该成员，
 	 * 该成员频繁在多核之间读写，因此`独占缓存行`，避免多核CPU 在读写该成员是引发的缓存颠簸线程
-	 * 
+	 *
 	 * API
 	 * --------------------------
 	 * worker_thread()->worker_clr_flags()
 	 * worker_thread()->worker_set_flags()
-	 * 
+	 *
 	 */
-	atomic_t	____cacheline_aligned_in_smp	nr_running ;/*  */
+	atomic_t	____cacheline_aligned_in_smp	nr_running ;
 
 	/*
 	 * Destruction of pool is RCU protected to allow dereferences
@@ -314,7 +314,7 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
  * number of flag bits.
  *
  * 链接 工作队列 和 工作线程池 的枢纽
- *  
+ *
  *  几个数据结构之间的关系
  *  ------------------------------------
  *          BOUND 类型工作队列
@@ -339,7 +339,7 @@ struct worker_pool {    /* 中断下半部, 工作队列 */
  *               |
  *             CPU0
  */
-struct pool_workqueue { /*  */
+struct pool_workqueue {
 
     /**
      *  指向工作线程池
@@ -352,7 +352,7 @@ struct pool_workqueue { /*  */
 	struct workqueue_struct *wq;		/* I: the owning workqueue */
 
     /**
-     *  
+     *
      */
 	int			work_color;	/* L: current color */
 	int			flush_color;	/* L: flushing color */
@@ -434,7 +434,7 @@ struct wq_device;
  *  system_freezable_wq
  *  system_power_efficient_wq
  *  system_freezable_power_efficient_wq
- *  
+ *
  *  几个数据结构之间的关系
  *  ------------------------------------
  *          BOUND 类型工作队列
@@ -459,7 +459,7 @@ struct wq_device;
  *               |
  *             CPU0
  */
-struct workqueue_struct {   /*  */
+struct workqueue_struct {
     /**
      *  所有 pool_workqueue 数据结构都挂入链表中
      */
@@ -471,7 +471,7 @@ struct workqueue_struct {   /*  */
 	struct list_head	list;		/* PR: list of all workqueues *//* 串联所有 workqueue */
 
     /**
-     *  
+     *
      */
 	struct mutex		mutex;		/* protects this wq */
 	int			work_color;	/* WQ: current work color */
@@ -480,7 +480,7 @@ struct workqueue_struct {   /*  */
 	struct wq_flusher	*first_flusher;	/* WQ: first flusher */
 
     /**
-     *  
+     *
      */
 	struct list_head	flusher_queue;	/* WQ: flush waiters */
 	struct list_head	flusher_overflow; /* WQ: flush overflow list */
@@ -507,12 +507,12 @@ struct workqueue_struct {   /*  */
 	struct workqueue_attrs	*unbound_attrs;	/* PW: only for unbound wqs */
 
     /**
-     *  指向 UNBOUND 类型的 pool_workqueue 
+     *  指向 UNBOUND 类型的 pool_workqueue
      */
 	struct pool_workqueue	*dfl_pwq;	/* PW: only for unbound wqs */
 
     /**
-     *  
+     *
      */
 #ifdef CONFIG_SYSFS
 	struct wq_device	*wq_dev;	/* I: for sysfs interface */
@@ -545,7 +545,7 @@ struct workqueue_struct {   /*  */
 	unsigned int	____cacheline_aligned	flags ; /* WQ: WQ_* flags */
 
     /**
-     *  
+     *
      */
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
 
@@ -620,7 +620,7 @@ static DEFINE_IDR(worker_pool_idr);	/* PR: idr of all pools */
 static struct idr worker_pool_idr = IDR_INIT(worker_pool_idr);//+++
 
 /**
- *  管理系统中所有的 UNBOUND 类型的 worker_pool 
+ *  管理系统中所有的 UNBOUND 类型的 worker_pool
  */
 /* PL: hash of all unbound pools keyed by pool->attrs */
 static DEFINE_HASHTABLE(unbound_pool_hash, UNBOUND_POOL_HASH_ORDER);
@@ -797,7 +797,7 @@ static inline void debug_work_deactivate(struct work_struct *work)
 }
 
 /**
- *  
+ *
  */
 void __init_work(struct work_struct *work, int onstack)
 {
@@ -822,7 +822,7 @@ void destroy_delayed_work_on_stack(struct delayed_work *work)
 EXPORT_SYMBOL_GPL(destroy_delayed_work_on_stack);
 
 #else
-/*  */
+
 #endif
 
 /**
@@ -874,7 +874,7 @@ static struct pool_workqueue *unbound_pwq_by_node(struct workqueue_struct *wq, i
 	if (unlikely(node == NUMA_NO_NODE))
 		return wq->dfl_pwq;
 
-    
+
     /**
      *  变长数组
      *  对于 unbound 类型的工作队列，
@@ -960,7 +960,7 @@ static void set_work_pool_and_clear_pending(struct work_struct *work, int pool_i
 	smp_wmb();
 
     /**
-     *  
+     *
      */
 	set_work_data(work, (unsigned long)pool_id << WORK_OFFQ_POOL_SHIFT, 0);
 	/*
@@ -1036,20 +1036,20 @@ static struct worker_pool *get_work_pool(struct work_struct *work)
 
     /**
      *  见`WORK_STRUCT_PWQ_BIT`注释
-     *  
+     *
      */
 	if (data & WORK_STRUCT_PWQ)
 		return ((struct pool_workqueue *)(data & WORK_STRUCT_WQ_DATA_MASK))->pool;
 
     /**
-     *  
+     *
      */
 	pool_id = data >> WORK_OFFQ_POOL_SHIFT;
 	if (pool_id == WORK_OFFQ_POOL_NONE)
 		return NULL;
 
     /**
-     *  
+     *
      */
 	return idr_find(&worker_pool_idr, pool_id);
 }
@@ -1221,7 +1221,7 @@ void wq_worker_running(struct task_struct *task)
 void wq_worker_sleeping(struct task_struct *task)
 {
     /**
-     *  
+     *
      */
 	struct worker *next, *worker = kthread_data(task);
 	struct worker_pool *pool;
@@ -1256,8 +1256,8 @@ void wq_worker_sleeping(struct task_struct *task)
 	 *
 	 * 当前的工作线程马上就要被换出(睡眠)，因此先把 nr_running-1, 然后判断该数值是否为 0
 	 * 若 为 0，说明当前工作线程池也没有活跃的工作线程。
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	if (atomic_dec_and_test(&pool->nr_running) && !list_empty(&pool->worklist)) {
         /**
@@ -1399,7 +1399,7 @@ static struct worker *find_worker_executing_work(struct worker_pool *pool,
 	struct worker *worker;
 
     /**
-     *  
+     *
      */
 	hash_for_each_possible(pool->busy_hash, worker, hentry, (unsigned long)work) {
 		if (worker->current_work == work && worker->current_func == work->func)
@@ -1642,14 +1642,14 @@ static int try_to_grab_pending(struct work_struct *work, bool is_dwork,
      */
 
     /**
-     *  
+     *
      */
 	rcu_read_lock();
 	/*
 	 * The queueing is in progress, or it is already queued. Try to
 	 * steal it from ->worklist without clearing WORK_STRUCT_PENDING.
 	 *
-	 * 
+	 *
 	 */
 	pool = get_work_pool(work);
 	if (!pool)
@@ -1722,7 +1722,7 @@ static void insert_work(struct pool_workqueue *pwq, struct work_struct *work,
 	struct worker_pool *pool = pwq->pool;
 
     /**
-     *  
+     *
      */
 	/* we own @work, set data and link */
     /**
@@ -1754,7 +1754,7 @@ static void insert_work(struct pool_workqueue *pwq, struct work_struct *work,
 	smp_mb();
 
     /**
-     *  
+     *
      */
 	if (__need_more_worker(pool))
 		wake_up_worker(pool);
@@ -1838,7 +1838,7 @@ static void __queue_work(int cpu, struct workqueue_struct *wq, struct work_struc
      */
 	if (unlikely(wq->flags & __WQ_DRAINING) && WARN_ON_ONCE(!is_chained_work(wq)))
 		return;
-    
+
 	rcu_read_lock();
 retry:
     /**
@@ -1858,7 +1858,7 @@ retry:
 		pwq = unbound_pwq_by_node(wq, cpu_to_node(cpu));
 
     /**
-     *  BOUND 类型，直接用本地 CPU 对应的 pool_workqueue 
+     *  BOUND 类型，直接用本地 CPU 对应的 pool_workqueue
      */
 	} else {
 		if (req_cpu == WORK_CPU_UNBOUND)
@@ -1891,7 +1891,7 @@ retry:
 		_worker = find_worker_executing_work(last_pool, work);
 
         /**
-         *  
+         *
          */
 		if (_worker && _worker->current_pwq->wq == wq) {
 			pwq = _worker->current_pwq;
@@ -1938,13 +1938,13 @@ retry:
 	trace_workqueue_queue_work(req_cpu, pwq, work);
 
     /**
-     *  
+     *
      */
 	if (WARN_ON(!list_empty(&work->entry)))
 		goto out;
 
     /**
-     *  
+     *
      */
 	pwq->nr_in_flight[pwq->work_color]++;
 	work_flags = work_color_to_flags(pwq->work_color);
@@ -1961,7 +1961,7 @@ retry:
 		worklist = &pwq->pool->worklist;
 		if (list_empty(worklist))
 			pwq->pool->watchdog_ts = jiffies;
-        
+
 	} else {
 	    /**
          *  加入延迟链表
@@ -2007,7 +2007,7 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
      */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
         /**
-         *  
+         *
          */
 		__queue_work(cpu, wq, work);
 		ret = true;
@@ -2112,7 +2112,7 @@ void delayed_work_timer_fn(struct timer_list *t)
 EXPORT_SYMBOL(delayed_work_timer_fn);
 
 /**
- *  
+ *
  */
 static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
 				struct delayed_work *dwork, unsigned long delay)
@@ -2178,11 +2178,11 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 	local_irq_save(flags);
 
     /**
-     *  
+     *
      */
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
         /**
-         *  
+         *
          */
 		__queue_delayed_work(cpu, wq, dwork, delay);
 		ret = true;
@@ -2371,7 +2371,7 @@ static void worker_attach_to_pool(struct worker *worker,
 	 * definition for details.
 	 *
      *  工作线程池内部使用的标志位 POOL_DISASSOCIATED
-     *  
+     *
      *  工作线程可以处于 associated(联系) 或 unassociated(无关联的) 状态
      *  1. associated(联系) 状态表示线程池绑定到 某个 CPU 上；
      *  2. unassociated 状态表示 线程池没有绑定到 某个 CPU 上，
@@ -2474,7 +2474,7 @@ static struct worker *create_worker(struct worker_pool *pool)
     else
 		snprintf(id_buf, sizeof(id_buf), "u%d:%d", pool->id, id);
 
-    //命名规则    
+    //命名规则
     //[rongtao@toa linux-5.10.13]$ ps -ef | grep worker
     //root          5      2  0 09:19 ?        00:00:00 [kworker/0:0H]
     //root         15      2  0 09:19 ?        00:00:00 [kworker/1:0H]
@@ -2512,7 +2512,7 @@ static struct worker *create_worker(struct worker_pool *pool)
 	worker_attach_to_pool(worker, pool);
 
     /**
-     *  
+     *
      */
 	/* start the newly created worker */
 	raw_spin_lock_irq(&pool->lock);
@@ -2533,7 +2533,7 @@ static struct worker *create_worker(struct worker_pool *pool)
      *  唤醒该工作线程
      */
 	wake_up_process(worker->task);
-    
+
 	raw_spin_unlock_irq(&pool->lock);
 
 	return worker;
@@ -2576,7 +2576,7 @@ static void destroy_worker(struct worker *worker)
 }
 
 /**
- *  
+ *
  */
 static void idle_worker_timeout(struct timer_list *t)
 {
@@ -2598,7 +2598,7 @@ static void idle_worker_timeout(struct timer_list *t)
 		}
 
         /**
-         *  
+         *
          */
 		destroy_worker(worker);
 	}
@@ -2672,7 +2672,7 @@ static void pool_mayday_timeout(struct timer_list *t)
  * multiple times.  Does GFP_KERNEL allocations.  Called only from
  * manager.
  *
- *  
+ *
  */
 static void maybe_create_worker(struct worker_pool *pool)
 __releases(&pool->lock)
@@ -2695,7 +2695,7 @@ restart:
 			break;
 
         /**
-         *  
+         *
          */
 		schedule_timeout_interruptible(CREATE_COOLDOWN);
 
@@ -2707,7 +2707,7 @@ restart:
 	}
 
     /**
-     *  
+     *
      */
 	del_timer_sync(&pool->mayday_timer);
 	raw_spin_lock_irq(&pool->lock);
@@ -2755,7 +2755,7 @@ static bool manage_workers(struct worker *worker)
 	pool->manager = worker;
 
     /**
-     *  
+     *
      */
 	maybe_create_worker(pool);
 
@@ -2784,7 +2784,7 @@ __releases(&pool->lock)
 __acquires(&pool->lock)
 {
     /**
-     *  
+     *
      */
 	struct pool_workqueue *pwq = get_work_pwq(work);
 	struct worker_pool *pool = worker->pool;
@@ -2795,7 +2795,7 @@ __acquires(&pool->lock)
 	bool cpu_intensive = pwq->wq->flags & WQ_CPU_INTENSIVE;
 	int work_color;
 	struct worker *collision;
-    
+
 #ifdef CONFIG_LOCKDEP
 	/*
 	 * It is permissible to free the struct work_struct from
@@ -2879,7 +2879,7 @@ __acquires(&pool->lock)
 	 * 继续判断是否需要创建更多线程
 	 *
 	 * 对于 BOUND 类型， 这里 nr_running=1，所以 if 不成立；
-	 * 
+	 *
 	 */
 	if (need_more_worker(pool))
 		wake_up_worker(pool);
@@ -2926,7 +2926,7 @@ __acquires(&pool->lock)
      *  正在执行的 work 函数
      */
 	worker->current_func(work);
-    
+
 	/*
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
@@ -2936,7 +2936,7 @@ __acquires(&pool->lock)
 	lock_map_release(&pwq->wq->lockdep_map);
 
     /**
-     *  
+     *
      */
 	if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
 		pr_err("BUG: workqueue leaked lock or atomic: %s/0x%08x/%d\n"
@@ -3026,19 +3026,19 @@ static int worker_thread(void *__worker)
 	struct worker_pool *pool = worker->pool;
 
     /**
-     *  
+     *
      */
-	/** 
-	 *  tell the scheduler that this is a workqueue worker 
+	/**
+	 *  tell the scheduler that this is a workqueue worker
 	 *  这是一个 worker 线程
 	 */
 	set_pf_worker(true);
-    
+
 woke_up:
 	raw_spin_lock_irq(&pool->lock);
 
 	/**
-	 *  am I supposed to die? 
+	 *  am I supposed to die?
 	 *  是指工作线程要被销毁的情况
 	 */
 	if (unlikely(worker->flags & WORKER_DIE)) {
@@ -3058,7 +3058,7 @@ woke_up:
      *  现在执行线程时，应该退出空闲状态，见 `worker_thread()`,here
      */
 	worker_leave_idle(worker);
-    
+
 recheck:
 	/* no more worker necessary? */
     /**
@@ -3109,7 +3109,7 @@ recheck:
 					                        struct work_struct, entry);
 
         /**
-         *  
+         *
          */
 		pool->watchdog_ts = jiffies;
 
@@ -3125,7 +3125,7 @@ recheck:
 			process_one_work(worker, work);
 
             /**
-             *  
+             *
              */
 			if (unlikely(!list_empty(&worker->scheduled)))
 				process_scheduled_works(worker);
@@ -3134,11 +3134,11 @@ recheck:
          */
 		} else {
 		    /**
-             *  
+             *
              */
 			move_linked_works(work, &worker->scheduled, NULL);
             /**
-             *  
+             *
              */
 			process_scheduled_works(worker);
 		}
@@ -3148,7 +3148,7 @@ recheck:
 	} while (keep_working(pool));
 
 	worker_set_flags(worker, WORKER_PREP);
-    
+
 sleep:
 	/*
 	 * pool->lock is held and there's no work to process and no need to
@@ -3160,14 +3160,14 @@ sleep:
 	worker_enter_idle(worker);
 
     /**
-     *  
+     *
      */
 	__set_current_state(TASK_IDLE);
-    
+
 	raw_spin_unlock_irq(&pool->lock);
 
     /**
-     *  
+     *
      */
 	schedule();
 	goto woke_up;
@@ -3348,11 +3348,11 @@ static void check_flush_dependency(struct workqueue_struct *target_wq,
 }
 
 /**
- *  
+ *
  */
 struct wq_barrier {
     /**
-     *  
+     *
      */
 	struct work_struct	work;
     /**
@@ -3409,7 +3409,7 @@ static void insert_wq_barrier(struct pool_workqueue *pwq,
 	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
 
     /**
-     *  
+     *
      */
 	init_completion_map(&barr->done, &target->lockdep_map);
 
@@ -3514,12 +3514,12 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
  * have finished execution, but it is not livelocked by new incoming ones.
  *
  * 为了确保 work 函数不会再 cancel_delayed_work 返回 0 之后任何地方运行，
- * 使用 flush_workqueue 
+ * 使用 flush_workqueue
  */
 void flush_workqueue(struct workqueue_struct *wq)
 {
     /**
-     *  
+     *
      */
 	struct wq_flusher this_flusher = {
 		this_flusher.list = LIST_HEAD_INIT(this_flusher.list),
@@ -3584,7 +3584,7 @@ void flush_workqueue(struct workqueue_struct *wq)
 	mutex_unlock(&wq->mutex);
 
     /**
-     *  
+     *
      */
 	wait_for_completion(&this_flusher.done);
 
@@ -3698,10 +3698,10 @@ void drain_workqueue(struct workqueue_struct *wq)
 	if (!wq->nr_drainers++)
 		wq->flags |= __WQ_DRAINING;
 	mutex_unlock(&wq->mutex);
-    
+
 reflush:
     /**
-     *  
+     *
      */
 	flush_workqueue(wq);
 
@@ -3743,7 +3743,7 @@ static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 	struct pool_workqueue *pwq;
 
     /**
-     *  
+     *
      */
 	might_sleep();
 
@@ -3770,7 +3770,7 @@ static bool start_flush_work(struct work_struct *work, struct wq_barrier *barr,
 	check_flush_dependency(pwq->wq, work);
 
     /**
-     *  
+     *
      */
 	insert_wq_barrier(pwq, barr, work, worker);
 	raw_spin_unlock_irq(&pool->lock);
@@ -3847,14 +3847,14 @@ static bool __flush_work(struct work_struct *work, bool from_cancel)
 bool flush_work(struct work_struct *work)
 {
     /**
-     *  
+     *
      */
 	return __flush_work(work, false);
 }
 EXPORT_SYMBOL_GPL(flush_work);
 
 /**
- *  
+ *
  */
 struct cwt_wait {
 	wait_queue_entry_t		wait;
@@ -3873,7 +3873,7 @@ static int cwt_wakefn(wait_queue_entry_t *wait, unsigned mode, int sync, void *k
 /**
  *  取消一个 work, 但会等待 work 执行完毕
  *
- * @work:       
+ * @work:
  * @is_dwork:   Delay Work, 工作队列的一种变体
  *
  *
@@ -3920,12 +3920,12 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 		 */
 		if (unlikely(ret == -ENOENT)) {
             /**
-             *  
+             *
              */
 			struct cwt_wait cwait;
 
             /**
-             *  
+             *
              */
 			init_wait(&cwait.wait);
 			cwait.wait.func = cwt_wakefn;
@@ -3943,13 +3943,13 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
      */
 
     /**
-     *  设置 
+     *  设置
      */
 	/* tell other tasks trying to grab @work to back off */
 	mark_work_canceling(work);
 
     /**
-     *  
+     *
      */
 	local_irq_restore(flags);
 
@@ -3964,7 +3964,7 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 		__flush_work(work, true);
 
     /**
-     *  
+     *
      */
 	clear_work_data(work);
 
@@ -3976,7 +3976,7 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 	smp_mb();
 
     /**
-     *  
+     *
      */
 	if (waitqueue_active(&cancel_waitq))
 		__wake_up(&cancel_waitq, TASK_NORMAL, 1, work);
@@ -4007,7 +4007,7 @@ static bool __cancel_work_timer(struct work_struct *work, bool is_dwork)
 bool cancel_work_sync(struct work_struct *work)
 {
     /**
-     *  
+     *
      */
 	return __cancel_work_timer(work, false);
 }
@@ -4056,7 +4056,7 @@ bool flush_rcu_work(struct rcu_work *rwork)
 EXPORT_SYMBOL(flush_rcu_work);
 
 /**
- *  
+ *
  */
 static bool __cancel_work(struct work_struct *work, bool is_dwork)
 {
@@ -4071,7 +4071,7 @@ static bool __cancel_work(struct work_struct *work, bool is_dwork)
 		return false;
 
     /**
-     *  
+     *
      */
 	set_work_pool_and_clear_pending(work, get_work_pool_id(work));
 	local_irq_restore(flags);
@@ -4099,7 +4099,7 @@ static bool __cancel_work(struct work_struct *work, bool is_dwork)
 bool cancel_delayed_work(struct delayed_work *dwork)
 {
     /**
-     *  
+     *
      */
 	return __cancel_work(&dwork->work, true);
 }
@@ -4276,7 +4276,7 @@ static bool wqattrs_equal(const struct workqueue_attrs *a,
  *
  * 初始化工作线程池
  */
-static int init_worker_pool(struct worker_pool *pool)   /*  */
+static int init_worker_pool(struct worker_pool *pool)
 {
 	raw_spin_lock_init(&pool->lock);
 	pool->id = -1;
@@ -4329,7 +4329,7 @@ static void wq_free_lockdep(struct workqueue_struct *wq)
 	if (wq->lock_name != wq->name)
 		kfree(wq->lock_name);
 }
-#else   /*  */
+#else
 //static void wq_init_lockdep(struct workqueue_struct *wq)
 //{
 //}
@@ -4474,7 +4474,7 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 	/* do we already have a matching pool? */
 	hash_for_each_possible(unbound_pool_hash, pool, hash_node, hash) {
 	    /**
-         *  是否已经有了 类型相关的 worker_pool 
+         *  是否已经有了 类型相关的 worker_pool
          *  如果 attr 相等，就可以直接返回其对应的 pool 了
          */
 		if (wqattrs_equal(pool->attrs, attrs)) {
@@ -4637,8 +4637,8 @@ static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 	memset(pwq, 0, sizeof(*pwq));
 
     /**
-     *  
-     *  
+     *
+     *
      *  几个数据结构之间的关系
      *  ------------------------------------
      *          BOUND 类型工作队列
@@ -4673,8 +4673,8 @@ static void init_pwq(struct pool_workqueue *pwq, struct workqueue_struct *wq,
 	INIT_WORK(&pwq->unbound_release_work, pwq_unbound_release_workfn);
 }
 
-/** 
- *   sync @pwq with the current state of its associated wq and link it 
+/**
+ *   sync @pwq with the current state of its associated wq and link it
  *
  *  将 pool_workqueue 添加到 workqueue_struct->pwqs
  *  一个 work 可以属于多个 pool_workqueue
@@ -4795,7 +4795,7 @@ static struct pool_workqueue *numa_pwq_tbl_install(struct workqueue_struct *wq,
 
     /**
      *  RCU 机制保护 pool_workqueue 数据结构
-     *  
+     *
      */
 	old_pwq = rcu_access_pointer(wq->numa_pwq_tbl[node]);
 	rcu_assign_pointer(wq->numa_pwq_tbl[node], pwq);
@@ -4815,14 +4815,14 @@ struct apply_wqattrs_ctx {
 static void apply_wqattrs_cleanup(struct apply_wqattrs_ctx *ctx)
 {
     /**
-     *  
+     *
      */
 	if (ctx) {
 		int node;
 
 		for_each_node(node) {
 		    /**
-             *  
+             *
              */
 			put_pwq_unlocked(ctx->pwq_tbl[node]);
         }
@@ -4869,7 +4869,7 @@ apply_wqattrs_prepare(struct workqueue_struct *wq,
 	copy_workqueue_attrs(new_attrs, attrs);
 
     /**
-     *  
+     *
      */
 	cpumask_and(new_attrs->cpumask, new_attrs->cpumask, wq_unbound_cpumask);
 	if (unlikely(cpumask_empty(new_attrs->cpumask)))
@@ -4894,7 +4894,7 @@ apply_wqattrs_prepare(struct workqueue_struct *wq,
 		goto out_free;
 
     /**
-     *  
+     *
      */
 	for_each_node(node) {
 		if (wq_calc_node_cpumask(new_attrs, node, -1, tmp_attrs->cpumask)) {
@@ -4932,7 +4932,7 @@ static void apply_wqattrs_commit(struct apply_wqattrs_ctx *ctx)
 	mutex_lock(&ctx->wq->mutex);
 
     /**
-     *  
+     *
      */
 	copy_workqueue_attrs(ctx->wq->unbound_attrs, ctx->attrs);
 
@@ -4943,7 +4943,7 @@ static void apply_wqattrs_commit(struct apply_wqattrs_ctx *ctx)
 	for_each_node(node) {
 	    /**
          *  安装
-         */ 
+         */
 		ctx->pwq_tbl[node] = numa_pwq_tbl_install(ctx->wq, node,
 							  ctx->pwq_tbl[node]);
     }
@@ -4974,7 +4974,7 @@ static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 					const struct workqueue_attrs *attrs)
 {
     /**
-     *  
+     *
      */
 	struct apply_wqattrs_ctx *ctx;
 
@@ -4991,7 +4991,7 @@ static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 	}
 
     /**
-     *  
+     *
      */
 	ctx = apply_wqattrs_prepare(wq, attrs);
 	if (!ctx)
@@ -5004,7 +5004,7 @@ static int apply_workqueue_attrs_locked(struct workqueue_struct *wq,
 	apply_wqattrs_commit(ctx);
 
     /**
-     *  
+     *
      */
 	apply_wqattrs_cleanup(ctx);
 
@@ -5201,7 +5201,7 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 	}
 
     /**
-     *  
+     *
      */
 	get_online_cpus();
 
@@ -5403,11 +5403,11 @@ struct workqueue_struct *alloc_workqueue(const char *fmt,
 	mutex_lock(&wq_pool_mutex);
 
     /**
-     *  
+     *
      */
 	mutex_lock(&wq->mutex);
     /**
-     *  
+     *
      */
 	for_each_pwq(pwq, wq) {
 		pwq_adjust_max_active(pwq);
@@ -6258,7 +6258,7 @@ long work_on_cpu_safe(int cpu, long (*fn)(void *), void *arg)
 EXPORT_SYMBOL_GPL(work_on_cpu_safe);
 #endif /* CONFIG_SMP */
 
-#ifdef CONFIG_FREEZER   /*  */
+#ifdef CONFIG_FREEZER
 
 /**
  * freeze_workqueues_begin - begin freezing workqueues
@@ -6677,7 +6677,7 @@ static struct device_attribute wq_sysfs_unbound_attrs[] = {
 };
 
 static struct bus_type wq_subsys = {
-	.name				= "workqueue",  /*  */
+	.name				= "workqueue",
 	.dev_groups			= wq_sysfs_groups,
 };
 
@@ -6725,7 +6725,7 @@ static int __init wq_sysfs_init(void)
 
 	return device_create_file(wq_subsys.dev_root, &wq_sysfs_cpumask_attr);
 }
-core_initcall(wq_sysfs_init);   /*  */
+core_initcall(wq_sysfs_init);
 
 static void wq_device_release(struct device *dev)
 {
@@ -6819,7 +6819,7 @@ static void workqueue_sysfs_unregister(struct workqueue_struct *wq)
 	device_unregister(&wq_dev->dev);
 }
 #else	/* CONFIG_SYSFS */
-/*  */
+
 #endif	/* CONFIG_SYSFS */
 
 /*
@@ -6857,7 +6857,7 @@ static void wq_watchdog_reset_touched(void)
 }
 
 /**
- *  
+ *
  */
 static void wq_watchdog_timer_fn(struct timer_list *unused)
 {
@@ -6960,7 +6960,7 @@ module_param_cb(watchdog_thresh, &wq_watchdog_thresh_ops, &wq_watchdog_thresh,
 		0644);
 
 /**
- *  
+ *
  */
 static void wq_watchdog_init(void)
 {
@@ -6970,12 +6970,12 @@ static void wq_watchdog_init(void)
 
 #else	/* CONFIG_WQ_WATCHDOG */
 
-/*  */
+
 
 #endif	/* CONFIG_WQ_WATCHDOG */
 
 /**
- *  
+ *
  */
 static void __init wq_numa_init(void)
 {
@@ -7039,7 +7039,7 @@ static void __init wq_numa_init(void)
  *  system_power_efficient_wq
  *  system_freezable_power_efficient_wq
  */
-void __init workqueue_init_early(void)  /*  */
+void __init workqueue_init_early(void)
 {
 	int std_nice[NR_STD_WORKER_POOLS] = { 0, HIGHPRI_NICE_LEVEL };
 	int hk_flags = HK_FLAG_DOMAIN | HK_FLAG_WQ;
@@ -7077,7 +7077,7 @@ void __init workqueue_init_early(void)  /*  */
 			BUG_ON(init_worker_pool(pool));
 
             /**
-             *  
+             *
              */
 			pool->cpu = cpu;
 			cpumask_copy(pool->attrs->cpumask, cpumask_of(cpu));
@@ -7120,12 +7120,12 @@ void __init workqueue_init_early(void)  /*  */
     /**
      *  ------------------------------------
      *  system_wq                               可以理解为默认工作队列
-     *  system_long_wq  
+     *  system_long_wq
      *  system_highpri_wq                       高优先级 BOUND 工作队列
      *  system_unbound_wq                       UNBOUND 类型的工作队列
      *  system_freezable_wq                     Freeable 类型的工作队列
      *  system_power_efficient_wq               省电类型的工作队列
-     *  system_freezable_power_efficient_wq     
+     *  system_freezable_power_efficient_wq
      */
 	system_wq = alloc_workqueue("events", 0, 0);
 	system_highpri_wq = alloc_workqueue("events_highpri", WQ_HIGHPRI, 0);
@@ -7140,7 +7140,7 @@ void __init workqueue_init_early(void)  /*  */
 					      WQ_FREEZABLE | WQ_POWER_EFFICIENT,
 					      0);
     /**
-     *  
+     *
      */
     BUG_ON(!system_wq || !system_highpri_wq || !system_long_wq ||
 	       !system_unbound_wq || !system_freezable_wq ||
@@ -7181,11 +7181,11 @@ void __init workqueue_init(void)
 	mutex_lock(&wq_pool_mutex);
 
     /**
-     *  
+     *
      */
 	for_each_possible_cpu(cpu) {
 	    /**
-         *  
+         *
          */
 		for_each_cpu_worker_pool(pool, cpu) {
 			pool->node = cpu_to_node(cpu);
@@ -7229,12 +7229,12 @@ void __init workqueue_init(void)
     }
 
     /**
-     *  
+     *
      */
 	wq_online = true;
 
     /**
      *  初始化工作队列用的看门狗
      */
-	wq_watchdog_init(); /*  */
+	wq_watchdog_init();
 }

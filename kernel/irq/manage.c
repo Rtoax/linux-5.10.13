@@ -367,7 +367,7 @@ int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
 	}
 
     /**
-     *  
+     *
      */
 	if (desc->affinity_notify) {
 		kref_get(&desc->affinity_notify->kref);
@@ -583,7 +583,7 @@ int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 EXPORT_SYMBOL_GPL(irq_set_vcpu_affinity);
 
 /**
- *  
+ *
  */
 void __disable_irq(struct irq_desc *desc)
 {
@@ -599,7 +599,7 @@ static int __disable_irq_nosync(unsigned int irq)
 	unsigned long flags;
 
     /**
-     *  
+     *
      */
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
 
@@ -607,7 +607,7 @@ static int __disable_irq_nosync(unsigned int irq)
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	__disable_irq(desc);
 	irq_put_desc_busunlock(desc, flags);
@@ -859,7 +859,7 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
 		return 0;
 
     /**
-     *  
+     *
      */
 	if (irq_settings_can_request(desc)) {
 		if (!desc->action ||
@@ -974,7 +974,7 @@ static irqreturn_t irq_forced_secondary_handler(int irq, void *dev_id)
 static int irq_wait_for_interrupt(struct irqaction *action)
 {
     /**
-     *  
+     *
      */
 	for (;;) {
         /**
@@ -983,7 +983,7 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 		set_current_state(TASK_INTERRUPTIBLE);
 
         /**
-         *  
+         *
          */
 		if (kthread_should_stop()) {
 			/* may need to run one last time */
@@ -996,7 +996,7 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 		}
 
         /**
-         *  
+         *
          */
 		if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags)) {
 			__set_current_state(TASK_RUNNING);
@@ -1023,7 +1023,7 @@ static void irq_finalize_oneshot(struct irq_desc *desc,
 	if (!(desc->istate & IRQS_ONESHOT) ||
 	    action->handler == irq_forced_secondary_handler)
 		return;
-    
+
 again:
 	chip_bus_lock(desc);
 	raw_spin_lock_irq(&desc->lock);
@@ -1067,7 +1067,7 @@ again:
 	if (!desc->threads_oneshot && !irqd_irq_disabled(&desc->irq_data) &&
 	        irqd_irq_masked(&desc->irq_data))
 	    /**
-         *  
+         *
          */
 		unmask_threaded_irq(desc);
 
@@ -1145,7 +1145,7 @@ irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
 		atomic_inc(&desc->threads_handled);
 
     /**
-     *  
+     *
      */
 	irq_finalize_oneshot(desc, action);
 	local_bh_enable();
@@ -1173,14 +1173,14 @@ static irqreturn_t irq_thread_fn(struct irq_desc *desc, struct irqaction *action
 		atomic_inc(&desc->threads_handled);
 
     /**
-     *  
+     *
      */
 	irq_finalize_oneshot(desc, action);
 	return ret;
 }
 
 /**
- *  
+ *
  */
 static void wake_threads_waitq(struct irq_desc *desc)
 {
@@ -1247,7 +1247,7 @@ static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
 static int irq_thread(void *data)
 {
     /**
-     *  
+     *
      */
 	struct callback_head on_exit_work;
 	struct irqaction *action = data;
@@ -1269,7 +1269,7 @@ static int irq_thread(void *data)
 		handler_fn = irq_thread_fn;
 
     /**
-     *  
+     *
      */
 	init_task_work(&on_exit_work, irq_thread_dtor);
 	task_work_add(current, &on_exit_work, TWA_NONE);
@@ -1280,7 +1280,7 @@ static int irq_thread(void *data)
      *  唤醒中断线程
      */
 	while (!irq_wait_for_interrupt(action)) {
-        
+
 		irqreturn_t action_ret;
 
 		irq_thread_check_affinity(desc, action);
@@ -1296,7 +1296,7 @@ static int irq_thread(void *data)
 			irq_wake_secondary(desc, action);
 
         /**
-         *  
+         *
          */
 		wake_threads_waitq(desc);
 	}
@@ -1506,9 +1506,9 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
  * interrupt related functions. desc->request_mutex solely serializes
  * request/free_irq().
  *
- * 
+ *
  */
-static int /*  */
+static int
 __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqaction)
 {
 	struct irqaction *old, **old_ptr;
@@ -1556,7 +1556,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	} else {
 		if (irq_settings_can_thread(desc)) {
             /**
-             *  强制中断线程化 
+             *  强制中断线程化
              */
 			ret = irq_setup_forced_threading(new_irqaction);
 			if (ret)
@@ -1574,7 +1574,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
      *  对于没有嵌套的 线程化中断，创建一个内核线程
      */
 	if (new_irqaction->thread_fn && !nested) {
-        /** 
+        /**
          *  创建了一个中断处理线程
          */
 		ret = setup_irq_thread(new_irqaction, irq, false);
@@ -1582,7 +1582,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 			goto out_mput;
 
         /**
-         *  
+         *
          */
 		if (new_irqaction->secondary) {
 			ret = setup_irq_thread(new_irqaction->secondary, irq, true);
@@ -1640,7 +1640,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	raw_spin_lock_irqsave(&desc->lock, flags);
 
     /**
-     *  
+     *
      */
 	old_ptr = &desc->action;
 	old = *old_ptr;
@@ -1733,9 +1733,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 		 */
 		new_irqaction->thread_mask = 1UL << ffz(thread_mask);
 
-	} 
+	}
     /**
-     *  
+     *
      */
     else if (new_irqaction->handler == irq_default_primary_handler &&
 		   !(desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)) {
@@ -1761,7 +1761,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new_irqac
 	}
 
     /**
-     *  
+     *
      */
 	if (!shared) {
 		init_waitqueue_head(&desc->wait_for_threads);
@@ -2186,7 +2186,7 @@ const void *free_nmi(unsigned int irq, void *dev_id)
  *
  * * 注册一个中断处理程序，然后激活一条给定的中断线
  *
- *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq() 
+ *  linux-2.6.30 中新增了线程化的中断注册函数 request_threaded_irq()
  *  目的是降低中断处理对系统实时延迟的影响。
  *  中断线程化的目的在于：把中断处理中一些繁重的任务作为 内核线程来运行，
  *   实时进程可以比中断线程有更高的优先级。
@@ -2203,7 +2203,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 const char *devname, void *dev_id)
 {
     /**
-     *  
+     *
      */
 	struct irqaction *action;   /* 中断动作描述符 */
 	struct irq_desc *desc;  /* 中断描述符 */
@@ -2245,7 +2245,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
              *  二者同时为空，直接参数错误
              */
 			return -EINVAL;
-        
+
         //如果 中断处理程序 为空，并且设置了 线程回调，默认将 中断处理程序设置为唤醒 线程
 		handler = irq_default_primary_handler;
 	}

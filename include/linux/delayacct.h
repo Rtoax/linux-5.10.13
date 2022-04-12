@@ -94,7 +94,7 @@ static inline void delayacct_clear_flag(int flag)
 		current->delays->flags &= ~flag;
 }
 
-static inline void delayacct_tsk_init(struct task_struct *tsk)  /*  */
+static inline void delayacct_tsk_init(struct task_struct *tsk)
 {
 	/* reinitialize in case parent's non-null pointer was dup'ed*/
 	tsk->delays = NULL;
@@ -166,7 +166,7 @@ static inline void delayacct_thrashing_end(void)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_TASK_DELAY_ACCT */
 
 #endif

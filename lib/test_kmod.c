@@ -1171,7 +1171,7 @@ out:
 
 }
 
-static int __init test_kmod_init(void)  /*  */
+static int __init test_kmod_init(void)
 {
 	struct kmod_test_device *test_dev;
 	int ret;
@@ -1202,7 +1202,7 @@ static int __init test_kmod_init(void)  /*  */
 
 	return 0;
 }
-late_initcall(test_kmod_init);  /*  */
+late_initcall(test_kmod_init);
 
 static
 void unregister_test_dev_kmod(struct kmod_test_device *test_dev)

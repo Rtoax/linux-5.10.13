@@ -308,7 +308,7 @@ found:
 	return data;
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_BOOT_CONFIG
@@ -622,7 +622,7 @@ static void __init setup_command_line(char *command_line)
 
 	len = xlen + strlen(boot_command_line) + 1;
 
-    //allocate space for the three buffers 
+    //allocate space for the three buffers
 	saved_command_line = memblock_alloc(len + ilen, SMP_CACHE_BYTES);
 	if (!saved_command_line)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len + ilen);
@@ -673,12 +673,12 @@ static void __init setup_command_line(char *command_line)
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
 /**
- *  
+ *
  */
 //[rongtao@localhost src]$ ps -ef | grep -e kthread -e systemd
 //root          1      0  0 3月02 ?       00:05:39 systemd --switched-root --system --deserialize 21
 //root          2      0  0 3月02 ?       00:00:00 [kthreadd]
-noinline void __ref rest_init(void) /*  */
+noinline void __ref rest_init(void)
 {
 	struct task_struct *tsk;
 	int pid;
@@ -705,12 +705,12 @@ noinline void __ref rest_init(void) /*  */
 
     //`PID = 2` for `kthreadd`
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);    /* kthreadd 内核线程 PID=2 */
-    
+
 	rcu_read_lock();//marks the beginning of an [RCU] read-side critical section
 
         //returns pointer to the `task_struct` by the given pid
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
-        
+
 	rcu_read_unlock();//marks the end of an RCU read-side critical section
 
 	/*
@@ -731,8 +731,8 @@ noinline void __ref rest_init(void) /*  */
 	 *
 	 * >> disables preempt in `idle` tasks
 	 */
-	schedule_preempt_disabled();    /*  */
-    
+	schedule_preempt_disabled();
+
 	/* Call into cpu_idle with preempt disabled */
     //works as process with `PID = 0` and works in the background
 	cpu_startup_entry(CPUHP_ONLINE);
@@ -740,7 +740,7 @@ noinline void __ref rest_init(void) /*  */
 
 /* Check for early params. *//* 解析 */
 static int __init do_early_param(char *param, char *val,
-				 const char *unused, void *arg)/*  */
+				 const char *unused, void *arg)
 {
 	const struct obs_kernel_param *p;
 
@@ -767,7 +767,7 @@ void __init parse_early_options(char *cmdline)/* 解析启动命令行 */
 		   do_early_param);
 }
 
-/* Arch code calls this early on, or if not, just before other parsing. 
+/* Arch code calls this early on, or if not, just before other parsing.
     解析内核命令行并且基于给定的参数创建不同的服务*/
 void __init parse_early_param(void) /* 解析 命令行 */
 {
@@ -807,11 +807,11 @@ core_param(initcall_debug, initcall_debug, bool, 0644);
 #ifdef TRACEPOINTS_ENABLED
 static void __init initcall_debug_enable(void);
 #else
-/*  */
+
 #endif
 
 /**
- *  
+ *
  */
 /* Report memory auto-initialization states for this boot. */
 static void __init report_meminit(void)
@@ -852,17 +852,17 @@ static void __init mm_init(void)/* 内存管理初始化 */
 	page_ext_init_flatmem();    /* 页扩展 */
 
     /**
-     *  
+     *
      */
-	init_debug_pagealloc();     /*  */
+	init_debug_pagealloc();
 
     /**
-     *  
+     *
      */
 	report_meminit();           /* 一些 LOG */
 
     /**
-     *  
+     *
      */
 	mem_init();                 /* 初始化: releases all `bootmem` */
 
@@ -873,7 +873,7 @@ static void __init mm_init(void)/* 内存管理初始化 */
      */
 	kmem_cache_init();          /* 初始化 slab slob slub */
     /**
-     *  
+     *
      */
 	kmemleak_init();            /* 泄漏检测 提前分配 */
 
@@ -889,28 +889,28 @@ static void __init mm_init(void)/* 内存管理初始化 */
      */
 	vmalloc_init();             /* vmalloc虚拟内存连续的内存 */
     /**
-     *  
+     *
      */
 	ioremap_huge_init();        /* 大页内存   */
-    
+
 	/**
-	 *  Should be run before the first non-init thread is created 
+	 *  Should be run before the first non-init thread is created
 	 *  应该在第一个非初始化线程前创建
 	 *
 	 */
 	init_espfix_bsp();          /* does something with the stack */
-    
+
 	/* Should be run after espfix64 is set up. */
 	pti_init(); /*  页表隔离 */
 }
 
 /**
- *  
+ *
  */
-void __init __weak arch_call_rest_init(void)    /*  */
+void __init __weak arch_call_rest_init(void)
 {
     /**
-     *  
+     *
      */
 	rest_init();    /* 在linux启动的阶段start_kernel()的最后，
 	rest_init()会开启两个进程：kernel_init，kthreadd，之后主线程变成idle线程，init/main.c。
@@ -948,7 +948,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	boot_cpu_init();                    /* 启动第一个 CPU */
 
     /**
-     *  
+     *
      */
 	page_address_init();                /* 页地址初始化 (此函数不执行任何操作，因为只有当所有内存不能直接映射的时候才会执行)*/
 
@@ -959,7 +959,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
     pr_notice("%s", linux_banner);      /* 版本信息: 内核的版本号以及编译环境信息 */
 
     /**
-     *  
+     *
      */
 	early_security_init();              /* 安全初始化 一些安全的 钩子函数*/
 
@@ -967,18 +967,18 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      *  依赖于体系结构的初始化部分
      *
      *  可能的操作：
-     ***    
+     ***
      *  pgdat 内存节点初始化
      *
-     */    
+     */
 	setup_arch(&command_line);          /* 初始化 架构相关 */
-    
+
 	setup_boot_config(command_line);    /* 启动配置 */
 	setup_command_line(command_line);   /* 保存命令行参数 */
 	setup_nr_cpu_ids();                 /* 设置CPU数量: setting `nr_cpu_ids` */
 	setup_per_cpu_areas();              /* setups memory areas for the `percpu` variables */
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
-	boot_cpu_hotplug_init();            /*  */
+	boot_cpu_hotplug_init();
 
     /**
      *  ZONE lists 创建
@@ -987,17 +987,17 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	build_all_zonelists(NULL);          /* sets up the order of zones that allocations are preferred from */
 
     /**
-     *  
+     *
      */
-	page_alloc_init();                  /*  */
+	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
-    
+
 	/* parameters may set static keys */
-	jump_label_init();      /*  */
+	jump_label_init();
 
     //sudo cat /var/log/messages | grep Command -B 2
-	parse_early_param();    /*  */
+	parse_early_param();
 	after_dashes = parse_args("Booting kernel",
 				  static_command_line, __start___param,
 				  __stop___param - __start___param,
@@ -1020,7 +1020,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      */
 	vfs_caches_init_early();    /* VFS cache, 目录和inode的哈希表的分配 */
 
-    /*  */
+
 	sort_main_extable();        /* 对异常表进行排序 */
 
     /**
@@ -1029,7 +1029,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
      *  start_kernel()->trap_init()->idt_setup_traps()
      *  start_kernel()->trap_init()->idt_setup_ist_traps()
      */
-	trap_init();                /* 陷阱初始化，各种 中断的 拷贝 
+	trap_init();                /* 陷阱初始化，各种 中断的 拷贝
                                 This function makes initialization of the remaining exceptions handlers */
 
     /**
@@ -1043,84 +1043,84 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	ftrace_init();      /* 故障调试和性能分析 */
 
 	/* trace_printk can be enabled here */
-	early_trace_init(); /*  */
+	early_trace_init();
 
 	/*
 	 * Set up the scheduler prior starting any interrupts (such as the
 	 * timer interrupt). Full topology setup happens at smp_init()
 	 * time - but meanwhile we still have a functioning scheduler.
 	 */
-	sched_init();   /*  */
-    
+	sched_init();
+
 	/*
 	 * Disable preemption - early bootup scheduling is extremely
 	 * fragile until we cpu_idle() for the first time.
 	 */
 	preempt_disable();  /* j禁止抢占 */
-    
+
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
 		local_irq_disable();
-    
-	radix_tree_init();  /*  */
+
+	radix_tree_init();
 
 	/*
 	 * Set up housekeeping before setting up workqueues to allow the unbound
 	 * workqueue to take non-housekeeping into account.
 	 */
-	housekeeping_init();    /*  */
+	housekeeping_init();
 
 	/*
 	 * Allow workqueue creation and work item queueing/cancelling
 	 * early.  Work item execution depends on kthreads and starts after
 	 * workqueue_init().
 	 */
-	workqueue_init_early(); /*  */
+	workqueue_init_early();
 
 	rcu_init(); /* Read-Copy Update */
 
 	/* Trace events are available after this */
-	trace_init();   /*  */
+	trace_init();
 
 	if (initcall_debug)
-		initcall_debug_enable();    /*  */
+		initcall_debug_enable();
 
-	context_tracking_init();    /*  */
-    
+	context_tracking_init();
+
 	/* init some links before init_ISA_irqs() */
 
     /**
-     *  
+     *
      */
-	early_irq_init();       /*  */
+	early_irq_init();
     /**
-     *  
+     *
      */
 	init_IRQ();             /* 架构相关 */
     /**
-     *  
+     *
      */
-	tick_init();            /*  */
-    
+	tick_init();
+
     /**
      *  这么漫无目的的看肯定不行
      *  荣涛 2021年11月20日17:14:38
      */
 
     /**
-     *  
+     *
      */
-    rcu_init_nohz();        /*  */
+    rcu_init_nohz();
 
     /**
-     *  
+     *
      */
-    init_timers();          /*  */
+    init_timers();
 	hrtimers_init();        /* 高精度定时器 */
-    
+
 	softirq_init();         /* tasklet 和 hi(高优先级) tasklet 初始化 */
-    
-	timekeeping_init();     /*  */
+
+	timekeeping_init();
 
 	/*
 	 * For best initial stack canary entropy, prepare it after:
@@ -1130,20 +1130,20 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	 * - add_latent_entropy() to get any latent entropy
 	 * - adding command line entropy
 	 */
-	rand_initialize();  /*  */
+	rand_initialize();
 	add_latent_entropy();   /* entropy:无序状态,熵?? */
-	add_device_randomness(command_line, strlen(command_line));  /*  */
+	add_device_randomness(command_line, strlen(command_line));
 	boot_init_stack_canary();   /* 金丝雀， 保护区， magic number 防止中断栈溢出 */
 
-	time_init();            /*  */
-	perf_event_init();      /*  */
+	time_init();
+	perf_event_init();
 	profile_init();         /* 剖析 */
-	call_function_init();   /*  */
+	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
     /* 开启中断 */
 	early_boot_irqs_disabled = false;
-	local_irq_enable(); /*  */
+	local_irq_enable();
 
     /**
      *  此处往下开启本地中断
@@ -1156,8 +1156,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	 * we've done PCI setups etc, and console_init() must be aware of
 	 * this. But we do want output early, in case something goes wrong.
 	 */
-	console_init(); /*  */
-    
+	console_init();
+
 	if (panic_later)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
@@ -1179,7 +1179,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	 */
 	mem_encrypt_init(); /* 内存encrypt加密 */
 
-#ifdef CONFIG_BLK_DEV_INITRD    /*  */
+#ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
@@ -1189,51 +1189,51 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启�
 	}
 #endif
 
-	setup_per_cpu_pageset();    /*  */
-	numa_policy_init();         /*  */
-    
+	setup_per_cpu_pageset();
+	numa_policy_init();
+
 	acpi_early_init();          /* 高级电源管理 */
-    
+
 	if (late_time_init)
 		late_time_init();       /* time_init() */
-	sched_clock_init();         /*  */
+	sched_clock_init();
 	calibrate_delay();          /* 校准延迟  */
 	pid_idr_init();             /* PID ID 2 Pointer 初始化  */
 	anon_vma_init();            /* 匿名 VMA 初始化， 分配 slab 缓存 */
 #ifdef CONFIG_X86
-	if (efi_enabled(EFI_RUNTIME_SERVICES))  /*  */
+	if (efi_enabled(EFI_RUNTIME_SERVICES))
 		efi_enter_virtual_mode();   /* 虚拟模式 */
 #endif
-	thread_stack_cache_init();  /*  */
+	thread_stack_cache_init();
 	cred_init();            /* 任务安全凭证 */
 	fork_init();            /* 一些缓存的申请， */
 	proc_caches_init();     /* 缓存分配 /proc/slabinfo  */
 	uts_ns_init();          /* UTS namespace 用来隔离系统的 hostname 以及 NIS domain name。UTS 据称是 UNIX Time-sharing System 的缩写。 */
 	buffer_init();          /* allocate cache for the `buffer_head`, `10%` of the `ZONE_NORMAL` */
-	key_init();             /*  */
-	security_init();        /*  */
-	dbg_late_init();        /*  */
-	vfs_caches_init();      /*  */
-	pagecache_init();       /*  */
-	signals_init();         /*  */
+	key_init();
+	security_init();
+	dbg_late_init();
+	vfs_caches_init();
+	pagecache_init();
+	signals_init();
 	seq_file_init();        /* 文件数据缓冲区 */
 	proc_root_init();       /* /proc/xxx */
 	nsfs_init();            /* Namespace FS */
-	cpuset_init();          /*  */
-	cgroup_init();          /*  */
+	cpuset_init();
+	cgroup_init();
 	taskstats_init_early(); /* 任务统计信息分配内存缓存 */
-	delayacct_init();       /*  */
+	delayacct_init();
 
 	poking_init();          /* ??? */
-	check_bugs();           /*  */
+	check_bugs();
 
 	acpi_subsystem_init();  /* 高级配置与电源管理 */
-	arch_post_acpi_subsys_init();   /*  */
-	sfi_init_late();    /*  */
+	arch_post_acpi_subsys_init();
+	sfi_init_late();
 	kcsan_init();       /* Kernel Concurrency Sanitizer,并发性检测 */
 
     /**
-     *  
+     *
      */
 	/* Do the rest non-__init'ed, we're now alive */
 	arch_call_rest_init();  /* 开启线程 init/systed[PID=1] kthreadd[PID=2] */
@@ -1272,7 +1272,7 @@ static int __init initcall_blacklist(char *str)
 		str_entry = strsep(&str, ",");
 		if (str_entry) {
             //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep main.c| grep black
-            //init/main.c:714 [main]initcall_blacklist =p "blacklisting initcall %s\012"            
+            //init/main.c:714 [main]initcall_blacklist =p "blacklisting initcall %s\012"
 			pr_debug("blacklisting initcall %s\n", str_entry);
 			entry = memblock_alloc(sizeof(*entry),
 					       SMP_CACHE_BYTES);
@@ -1312,7 +1312,7 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 
 	list_for_each_entry(entry, &blacklisted_initcalls, next) {
 		if (!strcmp(fn_name, entry->buf)) {
-            
+
             //[root@localhost sys]# cat /sys/kernel/debug/dynamic_debug/control | grep main.c
             //init/main.c:738 [main]initcall_blacklisted =p "initcall %s blacklisted\012"
 			pr_debug("initcall %s blacklisted\n", fn_name);
@@ -1323,7 +1323,7 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 	return false;
 }
 #else
-/*  */
+
 #endif
 __setup("initcall_blacklist=", initcall_blacklist);
 
@@ -1362,7 +1362,7 @@ trace_initcall_finish_cb(void *data, initcall_t fn, int ret)
 static ktime_t initcall_calltime;
 
 #ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void)  /*  */
+static void __init initcall_debug_enable(void)
 {
 	int ret;
 
@@ -1375,7 +1375,7 @@ static void __init initcall_debug_enable(void)  /*  */
 # define do_trace_initcall_start	trace_initcall_start
 # define do_trace_initcall_finish	trace_initcall_finish
 #else
-/*  */
+
 #endif /* !TRACEPOINTS_ENABLED */
 
 int __init_or_module do_one_initcall(initcall_t fn)
@@ -1435,7 +1435,7 @@ static initcall_entry_t __initdata*initcall_levels[]  = {
 };
 
 /* Keep these in sync with initcalls in include/linux/init.h */
-static const char __initdata*initcall_level_names[]  = {/*  */
+static const char __initdata*initcall_level_names[]  = {
 	"pure",
 	"core",
 	"postcore",
@@ -1497,8 +1497,8 @@ static void __init do_basic_setup(void)
 {
 	cpuset_init_smp();  /* reinitialize [cpuset] */
 	driver_init();      /* initialize `drivers` subsystem */
-	init_irq_proc();    /*  */
-	do_ctors();         /*  */
+	init_irq_proc();
+	do_ctors();
 	usermodehelper_enable();    /* enable the user-mode helper `workqueue` */
 	do_initcalls();/* xxx_initcall(): make post-early call */
 }
@@ -1527,7 +1527,7 @@ static int run_init_process(const char *init_filename)
 	return kernel_execve(init_filename, argv_init, envp_init);
 }
 
-static int try_to_run_init_process(const char *init_filename)   /*  */
+static int try_to_run_init_process(const char *init_filename)
 {
 	int ret;
 
@@ -1569,9 +1569,9 @@ static void mark_readonly(void)
 		pr_info("Kernel memory protection disabled.\n");
 }
 #elif defined(CONFIG_ARCH_HAS_STRICT_KERNEL_RWX)
-/*  */
+
 #else
-/*  */
+
 #endif
 
 //release all memory occupied by the initialization stuff which located between `__init_begin` and `__init_end`
@@ -1581,7 +1581,7 @@ void __weak free_initmem(void)
 }
 
 /**
- *  
+ *
  */
 static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个线程 */
 {
@@ -1589,18 +1589,18 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 
     //waits for the completion of the `kthreadd` setup
 	kernel_init_freeable(); /* 等待 rest_init() 中的 complete(&kthreadd_done); 执行 */
-    
+
 	/* need to finish all async __init code before freeing the memory */
     //waits until all asynchronous function calls have been done
 	async_synchronize_full();
-    
+
 	kprobe_free_init_mem();
 	ftrace_free_init_mem();
 
-    //release all memory occupied by the initialization stuff 
+    //release all memory occupied by the initialization stuff
     //  which located between `__init_begin` and `__init_end`
 	free_initmem();
-    
+
 	mark_readonly();    /* protect `.rodata` */
 
 	/*
@@ -1610,12 +1610,12 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 	pti_finalize(); /* PTI:页表隔离 */
 
 	system_state = SYSTEM_RUNNING;  /* 系统运行 */
-    
-	numa_default_policy();  /*  */
 
-	rcu_end_inkernel_boot();/*  */
+	numa_default_policy();
 
-	do_sysctl_args();       /*  */
+	rcu_end_inkernel_boot();
+
+	do_sysctl_args();
 
     //see rdinit_setup()
 	if (ramdisk_execute_command) {
@@ -1650,10 +1650,10 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 		else
 			return 0;
 	}
-        /*  */
-    //If we did not pass `init=` kernel command line parameter either, 
+
+    //If we did not pass `init=` kernel command line parameter either,
     //kernel tries to run one of the following executable files
-    //    
+    //
     //[rongtao@localhost src]$ ll /sbin/init
     //lrwxrwxrwx 1 root root 22 1月  28 11:18 /sbin/init -> ../lib/systemd/systemd
 	if (!try_to_run_init_process("/sbin/init") ||
@@ -1666,7 +1666,7 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 	      "See Linux Documentation/admin-guide/init.rst for guidance.");
 }
 
-/* Open /dev/console, for stdin/stdout/stderr, this should never fail 
+/* Open /dev/console, for stdin/stdout/stderr, this should never fail
     opening of the `dev/console` and dup twice file descriptors from `0` to `2` */
 void __init console_on_rootfs(void)
 {
@@ -1683,14 +1683,14 @@ void __init console_on_rootfs(void)
 }
 
 /**
- *  
+ *
  */
-static noinline void __init kernel_init_freeable(void)  /*  */
+static noinline void __init kernel_init_freeable(void)
 {   /* 由 init[PID=1] 进程调用 */
 	/*
 	 * Wait until kthreadd is all set-up. 等待 kthreadd 进程
 	 */
-	wait_for_completion(&kthreadd_done);    /*  */
+	wait_for_completion(&kthreadd_done);
 
 	/* Now the scheduler is fully set up and can do blocking allocations */
     //>>>>>>means that system is already running<<<<<<<<
@@ -1704,7 +1704,7 @@ static noinline void __init kernel_init_freeable(void)  /*  */
 	set_mems_allowed(node_states[N_MEMORY]);
 
     //set pid for the `cad` or `Ctrl-Alt-Delete`
-	cad_pid = task_pid(current);    /*  */
+	cad_pid = task_pid(current);
 
 	smp_prepare_cpus(setup_max_cpus);
 
@@ -1713,7 +1713,7 @@ static noinline void __init kernel_init_freeable(void)  /*  */
      */
 	workqueue_init();
 
-	init_mm_internals();    /*  */
+	init_mm_internals();
 
 	rcu_init_tasks_generic();
 	do_pre_smp_initcalls();
@@ -1732,9 +1732,9 @@ static noinline void __init kernel_init_freeable(void)  /*  */
      * Now we can finally start doing some real work..
      */
 
-	do_basic_setup();   /*  */
+	do_basic_setup();
 
-	kunit_run_all_tests();  /*  */
+	kunit_run_all_tests();
 
     //opening of the `dev/console` and dup twice file descriptors from `0` to `2`
 	console_on_rootfs();
@@ -1751,7 +1751,7 @@ static noinline void __init kernel_init_freeable(void)  /*  */
 		ramdisk_execute_command = NULL;
 
         /**
-         *  
+         *
          */
         //checks and mounts the [initrd]
 		prepare_namespace();

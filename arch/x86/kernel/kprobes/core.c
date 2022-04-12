@@ -276,7 +276,7 @@ unsigned long recover_probed_instruction(kprobe_opcode_t *buf, unsigned long add
 }
 
 /**
- *  Check if paddr is at an instruction boundary 
+ *  Check if paddr is at an instruction boundary
  *  检测 paddr 是否为 指令边界
  */
 static int can_probe(unsigned long paddr)
@@ -286,7 +286,7 @@ static int can_probe(unsigned long paddr)
 	kprobe_opcode_t buf[MAX_INSN_SIZE];
 
     /**
-     *  
+     *
      */
 	if (!kallsyms_lookup_size_offset(paddr, NULL, &offset))
 		return 0;
@@ -318,7 +318,7 @@ static int can_probe(unsigned long paddr)
 	}
 
     /**
-     *  
+     *
      */
 	return (addr == paddr);
 }
@@ -463,7 +463,7 @@ void free_insn_page(void *page)
 }
 
 /**
- *  
+ *
  */
 static int arch_copy_kprobe(struct kprobe *p)
 {
@@ -498,7 +498,7 @@ static int arch_copy_kprobe(struct kprobe *p)
 }
 
 /**
- *  
+ *
  */
 int arch_prepare_kprobe(struct kprobe *p)
 {
@@ -512,9 +512,9 @@ int arch_prepare_kprobe(struct kprobe *p)
      */
 	if (!can_probe((unsigned long)p->addr))
 		return -EILSEQ;
-    
+
 	/**
-	 *  insn: must be on special executable page on x86. 
+	 *  insn: must be on special executable page on x86.
 	 *
 	 *  在 x86 中必须为 可执行的 page
 	 */
@@ -523,7 +523,7 @@ int arch_prepare_kprobe(struct kprobe *p)
 		return -ENOMEM;
 
     /**
-     *  
+     *
      */
 	ret = arch_copy_kprobe(p);
 	if (ret) {
@@ -536,7 +536,7 @@ int arch_prepare_kprobe(struct kprobe *p)
 
 
 /**
- *  激活一个 kprobe 
+ *  激活一个 kprobe
  */
 void arch_arm_kprobe(struct kprobe *p)
 {
@@ -553,7 +553,7 @@ void arch_arm_kprobe(struct kprobe *p)
 	text_poke_sync();
 
     /**
-     *  
+     *
      */
 	perf_event_text_poke(p->addr, &p->opcode, 1, &int3, 1);
 }
@@ -628,7 +628,7 @@ static nokprobe_inline void restore_btf(void)
 }
 
 /**
- *  
+ *
  */
 void arch_prepare_kretprobe(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
@@ -649,9 +649,9 @@ NOKPROBE_SYMBOL(arch_prepare_kretprobe);
  *     code        registered        call pre_handler
  *  |        |     |        |       /
  *  | instr1 |     | instr1 |      / single step instr2
- *  |        |     |        |>----+  
+ *  |        |     |        |>----+
  *  | instr2 |     |  trap  |<---+   call post_handler
- *  |        |     |        |     \  
+ *  |        |     |        |     \
  *  | instr3 |     | instr3 |      \ continue
  *  |        |     |        |
  *  | instr4 |     | instr4 |
@@ -678,9 +678,9 @@ static void setup_singlestep(struct kprobe *p, struct pt_regs *regs,
          *     code        registered        call pre_handler
          *  |        |     |        |       /
          *  | instr1 |     | instr1 |      / single step instr2 ######
-         *  |        |     |        |>----+  
+         *  |        |     |        |>----+
          *  | instr2 |     |  trap  |<---+   call post_handler
-         *  |        |     |        |     \  
+         *  |        |     |        |     \
          *  | instr3 |     | instr3 |      \ continue
          *  |        |     |        |
          *  | instr4 |     | instr4 |
@@ -692,7 +692,7 @@ static void setup_singlestep(struct kprobe *p, struct pt_regs *regs,
 #endif
 
     /**
-     *  
+     *
      */
 	if (reenter) {
 		save_previous_kprobe(kcb);
@@ -705,12 +705,12 @@ static void setup_singlestep(struct kprobe *p, struct pt_regs *regs,
 	clear_btf();
 
     /**
-     *  
+     *
      */
 	regs->flags |= X86_EFLAGS_TF;
 	regs->flags &= ~X86_EFLAGS_IF;
 
-    
+
 	/* single step inline if the instruction is an int3 */
 	if (p->opcode == INT3_INSN_OPCODE)
 		regs->ip = (unsigned long)p->addr;
@@ -776,7 +776,7 @@ int kprobe_int3_handler(struct pt_regs *regs)
      *  指令已经指向 int3 的下一条，找到 int3 地址
      */
 	addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
-    
+
 	/*
 	 * We don't want to be preempted for the entire duration of kprobe
 	 * processing. Since int3 and debug trap disables irqs and we clear
@@ -822,9 +822,9 @@ int kprobe_int3_handler(struct pt_regs *regs)
                  *     code        registered        call pre_handler
                  *  |        |     |        |       /
                  *  | instr1 |     | instr1 |      / single step instr2
-                 *  |        |     |        |>----+  
+                 *  |        |     |        |>----+
                  *  | instr2 |     |  trap  |<---+   call post_handler
-                 *  |        |     |        |     \  
+                 *  |        |     |        |     \
                  *  | instr3 |     | instr3 |      \ continue
                  *  |        |     |        |
                  *  | instr4 |     | instr4 |
@@ -835,7 +835,7 @@ int kprobe_int3_handler(struct pt_regs *regs)
 				reset_current_kprobe();
 			return 1;
 		}
-	} 
+	}
     /**
      *  不是 int3 ， 那么就执行这条指令
      */
@@ -1006,7 +1006,7 @@ NOKPROBE_SYMBOL(resume_execution);
  * Interrupts are disabled on entry as trap1 is an interrupt gate and they
  * remain disabled throughout this function.
  *
- * 
+ *
  */
 int kprobe_debug_handler(struct pt_regs *regs)
 {
@@ -1020,7 +1020,7 @@ int kprobe_debug_handler(struct pt_regs *regs)
 	regs->flags |= kcb->kprobe_saved_flags;
 
     /**
-     *  
+     *
      */
 	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
 		kcb->kprobe_status = KPROBE_HIT_SSDONE;
@@ -1046,10 +1046,10 @@ out:
 }
 NOKPROBE_SYMBOL(kprobe_debug_handler);
 
-int kprobe_fault_handler(struct pt_regs *regs, int trapnr)  /*  */
+int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
 {
 	struct kprobe *cur = kprobe_running();  /* TODO */
-	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();    /*  */
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
 
 	if (unlikely(regs->ip == (unsigned long)cur->ainsn.insn)) {
 		/* This must happen on single-stepping */

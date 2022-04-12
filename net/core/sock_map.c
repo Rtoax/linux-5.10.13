@@ -476,7 +476,7 @@ static bool sock_map_redirect_allowed(const struct sock *sk);
 
 
 /**
- *  
+ *
  */
 static int sock_map_update_common(struct bpf_map *map, u32 idx,
 				  struct sock *sk, u64 flags)
@@ -579,7 +579,7 @@ static int sock_hash_update_common(struct bpf_map *map, void *key,
 				   struct sock *sk, u64 flags);
 
 /**
- *  
+ *
  */
 int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value, u64 flags)
 {
@@ -614,13 +614,13 @@ int sock_map_update_elem_sys(struct bpf_map *map, void *key, void *value, u64 fl
 	sock_map_sk_acquire(sk);
 
     /**
-     *  
+     *
      */
 	if (!sock_map_sk_state_allowed(sk))
 		ret = -EOPNOTSUPP;
 
     /**
-     *  
+     *
      */
 	else if (map->map_type == BPF_MAP_TYPE_SOCKMAP)
 		ret = sock_map_update_common(map, *(u32 *)key, sk, flags);
@@ -658,7 +658,7 @@ static int sock_map_update_elem(struct bpf_map *map, void *key,
 }
 
 /**
- *  
+ *
  */
 long bpf_sock_map_update(struct bpf_sock_ops *skops, struct bpf_map *map, void *key, u64 flags){}//++++
 BPF_CALL_4(bpf_sock_map_update, struct bpf_sock_ops_kern *, sops,
@@ -685,7 +685,7 @@ const struct bpf_func_proto bpf_sock_map_update_proto = {
 };
 
 /**
- *  
+ *
  */
 long bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags){}//+++
 BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
@@ -698,7 +698,7 @@ BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 		return SK_DROP;
 
     /**
-     *  
+     *
      */
 	sk = __sock_map_lookup_elem(map, key);
 	if (unlikely(!sk || !sock_map_redirect_allowed(sk)))
@@ -720,7 +720,7 @@ const struct bpf_func_proto bpf_sk_redirect_map_proto = {
 };
 
 /**
- *  
+ *
  */
 long bpf_msg_redirect_map(struct sk_msg_buff *msg, struct bpf_map *map, u32 key, u64 flags){}//+++
 BPF_CALL_4(bpf_msg_redirect_map, struct sk_msg *, msg,
@@ -887,7 +887,7 @@ struct bpf_shtab_bucket {   /* 哈希捅 */
 	raw_spinlock_t lock;
 };
 
-struct bpf_shtab {  /*  */
+struct bpf_shtab {
 	struct bpf_map map;
 	struct bpf_shtab_bucket *buckets;
 	u32 buckets_num;
@@ -1131,9 +1131,9 @@ find_first_elem:
 	return -ENOENT;
 }
 
-static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)    /*  */
+static struct bpf_map *sock_hash_alloc(union bpf_attr *attr)
 {
-	struct bpf_shtab *htab; /*  */
+	struct bpf_shtab *htab;
 	int i, err;
 	u64 cost;
 
@@ -1652,4 +1652,4 @@ static int __init bpf_sockmap_iter_init(void)
 		btf_sock_ids[BTF_SOCK_TYPE_SOCK];
 	return bpf_iter_reg_target(&sock_map_iter_reg);
 }
-late_initcall(bpf_sockmap_iter_init);   /*  */
+late_initcall(bpf_sockmap_iter_init);

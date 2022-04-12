@@ -8,8 +8,8 @@
  */
 
 /** RToax
- *  manage clock event devices 
- *  or in other words - to manage devices that allow to register 
+ *  manage clock event devices
+ *  or in other words - to manage devices that allow to register
  *  an event or in other words [interrupt]
  */
 
@@ -382,7 +382,7 @@ static int clockevents_replace(struct clock_event_device *ced)
 	}
 	if (newdev) {
         /**
-         *  
+         *
          */
 		tick_install_replacement(newdev);
 		list_del_init(&ced->list);
@@ -577,7 +577,7 @@ void clockevents_handle_noop(struct clock_event_device *dev)
  * Called from various tick functions with clockevents_lock held and
  * interrupts disabled.
  *
- * release old clock events device 
+ * release old clock events device
  */
 void clockevents_exchange_device(struct clock_event_device *old,
 				 struct clock_event_device *new)
@@ -787,5 +787,5 @@ static int __init clockevents_init_sysfs(void)
 		err = tick_init_sysfs();
 	return err;
 }
-device_initcall(clockevents_init_sysfs);    /*  */
+device_initcall(clockevents_init_sysfs);
 #endif /* SYSFS */

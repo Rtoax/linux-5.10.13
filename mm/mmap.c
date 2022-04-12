@@ -125,7 +125,7 @@ static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
 /**
  * 把 vm_flags 转化成 PTE 硬件标志位
  */
-pgprot_t vm_get_page_prot(unsigned long vm_flags)   /*  */
+pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {
 	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags & (VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)] ) |
             			    pgprot_val(arch_vm_get_page_prot(vm_flags)));
@@ -189,7 +189,7 @@ void unlink_file_vma(struct vm_area_struct *vma)
 /*
  * Close a vm structure and free it, returning the next.
  */
-static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)    /*  */
+static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 {
 	struct vm_area_struct *next = vma->vm_next;
 
@@ -333,8 +333,8 @@ success:
 		mmap_read_unlock(mm);
 	else
 		mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);    /*  */
-	if (populate)   /*  */
+	userfaultfd_unmap_complete(mm, &uf);
+	if (populate)
 		mm_populate(oldbrk, newbrk - oldbrk);   /* TODO */
 	return brk;
 
@@ -445,7 +445,7 @@ static void validate_mm_rb(struct rb_root *root, struct vm_area_struct *ignore)
 	}
 }
 
-static void validate_mm(struct mm_struct *mm)   /*  */
+static void validate_mm(struct mm_struct *mm)
 {
 	int bug = 0;
 	int i = 0;
@@ -485,7 +485,7 @@ static void validate_mm(struct mm_struct *mm)   /*  */
 	VM_BUG_ON_MM(bug, mm);
 }
 #else
-/*  */
+
 #endif
 
 RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks,
@@ -682,7 +682,7 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 	__rb_link = &mm->mm_rb.rb_node;
 	rb_prev = __rb_parent = NULL;
 
-    /*  */
+
 	while (*__rb_link) {
 		struct vm_area_struct *vma_tmp;
 
@@ -824,7 +824,7 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
  *
  */
 static unsigned long count_vma_pages_range(struct mm_struct *mm,
-		unsigned long addr, unsigned long end)/*  */
+		unsigned long addr, unsigned long end)
 {
 	unsigned long nr_pages = 0;
 	struct vm_area_struct *vma;
@@ -877,7 +877,7 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	vma_rb_insert(vma, &mm->mm_rb);
 }
 
-static void __vma_link_file(struct vm_area_struct *vma) /*  */
+static void __vma_link_file(struct vm_area_struct *vma)
 {
 	struct file *file;
 
@@ -926,7 +926,7 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		i_mmap_unlock_write(mapping);
 
 	mm->map_count++;    /* 映射计数++ */
-	validate_mm(mm);    /*  */
+	validate_mm(mm);
 }
 
 /*
@@ -964,7 +964,7 @@ static __always_inline void __vma_unlink(struct mm_struct *mm,
  *
  * 如果不调整树，则无法调整i_mmap树中已经存在的vma的vm_start，vm_end，vm_pgoff字段。
  * 当需要进行此类调整时，应使用以下帮助器功能。 在插入必要的锁之前，将插入“插入” vma（如果有）。
- */ /*  */
+ */
 int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
 	struct vm_area_struct *expand)
@@ -1538,7 +1538,7 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
 	return a->vm_end == b->vm_start &&  /* 起始地址相同 */
 		mpol_equal(vma_policy(a), vma_policy(b)) && /* 策略相同 */
 		a->vm_file == b->vm_file &&     /* 文件相同 */
-		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&       /*  */
+		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
 
         /**
          *
@@ -1575,7 +1575,7 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
  */
 static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_area_struct *a, struct vm_area_struct *b)
 {
-    /*  */
+
 	if (anon_vma_compatible(a, b)) {
 		struct anon_vma *anon_vma = READ_ONCE(old->anon_vma);
 
@@ -1600,7 +1600,7 @@ static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_
  *  VMA 内的 policy 相同
  *  相同的 vm_file
  */
-struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)    /*  */
+struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 {
 	struct anon_vma *anon_vma = NULL;
 
@@ -1718,7 +1718,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 * @brief 当前进程 mm 结构
 	 *
 	 */
-	struct mm_struct *mm = current->mm; /*  */
+	struct mm_struct *mm = current->mm;
 	int pkey = 0;
 
 	*populate = 0;
@@ -1738,7 +1738,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
      * PROT_WRITE Pages may be written.
      * PROT_NONE  Pages may not be accessed.
 	 */
-	/*  */
+
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
 		if (!(file && path_noexec(&file->f_path)))
 			prot |= PROT_EXEC;
@@ -1994,7 +1994,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	if (flags & MAP_NORESERVE) {    /* 不要为此映射提供swap空间 */
 		/* We honor MAP_NORESERVE if allowed to overcommit */
 		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-			vm_flags |= VM_NORESERVE;   /*  */
+			vm_flags |= VM_NORESERVE;
 
 		/* hugetlb applies strict overcommit unless MAP_NORESERVE */
 		if (file && is_file_hugepages(file))    /* 如果是大页内存 */
@@ -2326,11 +2326,11 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	}
 
     /* 填充VMA结构体相关成员 */
-	vma->vm_start = addr;       /*  */
-	vma->vm_end = addr + len;   /*  */
-	vma->vm_flags = vm_flags;   /*  */
+	vma->vm_start = addr;
+	vma->vm_end = addr + len;
+	vma->vm_flags = vm_flags;
 	vma->vm_page_prot = vm_get_page_prot(vm_flags);
-	vma->vm_pgoff = pgoff;      /*  */
+	vma->vm_pgoff = pgoff;
 
     /**
      *  文件内存映射
@@ -2439,13 +2439,13 @@ unmap_writable:
 			allow_write_access(file);
 	}
 
-	file = vma->vm_file;    /*  */
+	file = vma->vm_file;
 
 out:
     /**
      *
      */
-	perf_event_mmap(vma);   /*  */
+	perf_event_mmap(vma);
 
 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
 	if (vm_flags & VM_LOCKED) {
@@ -2457,9 +2457,9 @@ out:
 			mm->locked_vm += (len >> PAGE_SHIFT);
 	}
 
-    /*  */
+
 	if (file)
-		uprobe_mmap(vma);   /*  */
+		uprobe_mmap(vma);
 
 	/*
 	 * New (or expanded) vma always get soft dirty status.
@@ -2683,7 +2683,7 @@ static unsigned long unmapped_area_topdown(struct vm_unmapped_area_info *info)
 	 *
 	 *
 	 */
-	gap_end = info->high_limit; /*  */
+	gap_end = info->high_limit;
 	if (gap_end < length)
 		return -ENOMEM;
 
@@ -2994,14 +2994,14 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 		return addr;
 
     /* 地址过大 */
-	if (addr > TASK_SIZE/*  */ - len)
+	if (addr > TASK_SIZE - len)
 		return -ENOMEM;
 
     /* 页偏移 不为0 */
 	if (offset_in_page(addr))   /* 必须页对齐，低12bit为0 */
 		return -EINVAL;
 
-    /*  */
+
 	error = security_mmap_addr(addr);
 	return error ? error : addr;
 }
@@ -3073,7 +3073,7 @@ find_vma_prev(struct mm_struct *mm, unsigned long addr,
  * grow-up and grow-down cases.
  */
 static int acct_stack_growth(struct vm_area_struct *vma,
-			     unsigned long size, unsigned long grow)    /*  */
+			     unsigned long size, unsigned long grow)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long new_start;
@@ -3317,7 +3317,7 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
 				vma->vm_start = address;    /* 赋值 */
-				vma->vm_pgoff -= grow;      /*  */
+				vma->vm_pgoff -= grow;
 				anon_vma_interval_tree_post_update_vma(vma);
 				vma_gap_update(vma);
 
@@ -3404,11 +3404,11 @@ __setup("stack_guard_gap=", cmdline_parse_stack_guard_gap);
  */
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
-	return expand_downwards(vma, address);  /*  */
+	return expand_downwards(vma, address);
 }
 
 struct vm_area_struct *
-find_extend_vma(struct mm_struct *mm, unsigned long addr)   /*  */
+find_extend_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
 	unsigned long start;
@@ -3490,7 +3490,7 @@ static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 	/* Update high watermark before we lower total_vm */
 	update_hiwater_vm(mm);
 	do {
-		long nrpages = vma_pages(vma);/*  */
+		long nrpages = vma_pages(vma);
 
 		if (vma->vm_flags & VM_ACCOUNT)
 			nr_accounted += nrpages;
@@ -3498,14 +3498,14 @@ static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		vma = remove_vma(vma);  /* 释放内存 */
 	} while (vma);
 	vm_unacct_memory(nr_accounted);
-	validate_mm(mm);    /*  */
+	validate_mm(mm);
 }
 
 /*
  * Get rid of page table information in the indicated region.
  *
  * Called with the mm semaphore held.
- */ /*  */
+ */
 static void unmap_region(struct mm_struct *mm,
 		struct vm_area_struct *vma, struct vm_area_struct *prev,
 		unsigned long start, unsigned long end)
@@ -3615,7 +3615,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!new)   /* 失败的话，oom error */
 		return -ENOMEM;
 
-	if (new_below)  /*  */
+	if (new_below)
         /*
         +-------+
         |       |
@@ -3739,7 +3739,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		return -EINVAL;
 
     /* 页对齐 */
-	len = PAGE_ALIGN(len);  /*  */
+	len = PAGE_ALIGN(len);
     /*
     +-------+--- end
     |       |
@@ -3955,7 +3955,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 
     /* (5.4) 移除掉vma的其他信息，最后释放掉vma结构体 */
 	/* Fix up all other VM information */
-	remove_vma_list(mm, vma);   /*  */
+	remove_vma_list(mm, vma);
 
 	return downgrade ? 1 : 0;
 }
@@ -4188,7 +4188,7 @@ out:
 	return 0;
 }
 
-int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)    /*  */
+int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	unsigned long len;
@@ -4215,7 +4215,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 }
 EXPORT_SYMBOL(vm_brk_flags);
 
-int vm_brk(unsigned long addr, unsigned long len)   /*  */
+int vm_brk(unsigned long addr, unsigned long len)
 {
 	return vm_brk_flags(addr, len, 0);
 }
@@ -4296,7 +4296,7 @@ void exit_mmap(struct mm_struct *mm)
  * and into the inode's i_mmap tree.  If vm_file is non-NULL
  * then i_mmap_rwsem is taken here.
  */
-int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)  /*  */
+int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;
 	struct rb_node **rb_link, *rb_parent;
@@ -4325,7 +4325,7 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)  /*  */
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
 	}
 
-	vma_link(mm, vma, prev, rb_link, rb_parent);    /*  */
+	vma_link(mm, vma, prev, rb_link, rb_parent);
 	return 0;
 }
 
@@ -4785,7 +4785,7 @@ void mm_drop_all_locks(struct mm_struct *mm)
  * initialise the percpu counter for VM
  *
  */
-void __init mmap_init(void) /*  */
+void __init mmap_init(void)
 {
 	int ret;
 

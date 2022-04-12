@@ -357,7 +357,7 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 //	return vma->vm_flags & VM_MAYSHARE;
 //}
 #else
-/*  */
+
 #endif
 
 static const struct vm_operations_struct mmap_mem_ops = {
@@ -1066,7 +1066,7 @@ static int devmem_init_inode(void)
 	return 0;
 }
 
-static int __init chr_dev_init(void)    /*  */
+static int __init chr_dev_init(void)
 {
 	int minor;
 
@@ -1077,7 +1077,7 @@ static int __init chr_dev_init(void)    /*  */
 	if (IS_ERR(mem_class))
 		return PTR_ERR(mem_class);
 
-	mem_class->devnode = mem_devnode;   /*  */
+	mem_class->devnode = mem_devnode;
 	for (minor = 1; minor < ARRAY_SIZE(devlist/* /dev/null 等 */); minor++) {
 		if (!devlist[minor].name)
 			continue;
@@ -1094,7 +1094,7 @@ static int __init chr_dev_init(void)    /*  */
 			      NULL, devlist[minor].name);
 	}
 
-	return tty_init();  /*  */
+	return tty_init();
 }
 
 fs_initcall(chr_dev_init);  /* 字符设备 /dev/null 等 */

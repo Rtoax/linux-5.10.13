@@ -24,7 +24,7 @@
  * shrinks, so values greater than 8 overflow 32bits when
  * HZ=100.
  */
-#if HZ < 34 
+#if HZ < 34
 //#define JIFFIES_SHIFT	6
 #elif HZ < 67
 //#define JIFFIES_SHIFT	7
@@ -65,8 +65,8 @@ __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_t jiffies_seq;
 
 /**
- *  
- */	
+ *
+ */
 #if (BITS_PER_LONG < 64)
 u64 get_jiffies_64(void)
 {
@@ -105,24 +105,24 @@ static struct clocksource refined_jiffies;
  *  Main point of the `register_refined_jiffies` is registration of the jiffy `clocksource`
  */
 int register_refined_jiffies(long cycles_per_second/*=CLOCK_TICK_RATE The clock frequency of the i8253/i8254 PIT */)
-{   
+{
     /* The clock frequency of the i8253/i8254 PIT */
     //cycles_per_second = CLOCK_TICK_RATE = 1193182ul
 	u64 nsec_per_tick, shift_hz;
 	long cycles_per_tick;
-    
+
 	refined_jiffies = clocksource_jiffies;
 	refined_jiffies.name = "refined-jiffies";
 	refined_jiffies.rating++; /* == 2 */
 
 	/* Calc cycles per tick 每秒多少个滴答*/
 	cycles_per_tick = (cycles_per_second + HZ/2)/HZ;/*HZ=1000 计算每秒多少个 滴答*/
-    
+
 	/* shift_hz stores hz<<8 for extra accuracy */
 	shift_hz = (u64)cycles_per_second << 8; /* 其他精度 */
-	shift_hz += cycles_per_tick/2;          /*  */
-	do_div(shift_hz, cycles_per_tick);      /*  */
-    
+	shift_hz += cycles_per_tick/2;
+	do_div(shift_hz, cycles_per_tick);
+
 	/* Calculate nsec_per_tick using shift_hz */
 	nsec_per_tick = (u64)NSEC_PER_SEC << 8;
 	nsec_per_tick += (u32)shift_hz/2;

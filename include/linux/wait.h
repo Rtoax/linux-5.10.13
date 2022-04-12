@@ -26,10 +26,10 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
  *  但是，内核还是会每次唤醒所有带有 该标志 的进程。
  */
 #define WQ_FLAG_EXCLUSIVE	0x01/* 独占的 */
-#define WQ_FLAG_WOKEN		0x02/*  */
-#define WQ_FLAG_BOOKMARK	0x04/*  */
-#define WQ_FLAG_CUSTOM		0x08/*  */
-#define WQ_FLAG_DONE		0x10/*  */
+#define WQ_FLAG_WOKEN		0x02
+#define WQ_FLAG_BOOKMARK	0x04
+#define WQ_FLAG_CUSTOM		0x08
+#define WQ_FLAG_DONE		0x10
 
 /*
  * A single wait-queue entry structure:
@@ -64,13 +64,13 @@ struct wait_queue_entry {   /* 等待队列 */
 	wait_queue_func_t	func;   /* 回调函数 */
 
     /**
-     *  
+     *
      */
 	struct list_head	entry;  /* wait_queue_head->head 中的 链表节点 */
 };
 
 /**
- *  
+ *
  *
  * API
  * ---------------
@@ -78,12 +78,12 @@ struct wait_queue_entry {   /* 等待队列 */
  *  wait_event_timeout() 非中断休眠-超时机制
  *  wait_event_interruptible() 中断休眠
  *  wait_event_interruptible_timeout() 中断休眠-超时机制
- *  
+ *
  *  上面的睡眠，分别使用下面的唤醒函数
  *  wake_up()
  *  wake_up_interruptible()
  */
-struct wait_queue_head {    /*  */
+struct wait_queue_head {
     /**
      *  保护链表的锁
      */
@@ -180,7 +180,7 @@ init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t f
  * Also note that this 'optimization' trades a spin_lock() for an smp_mb(),
  * which (when the lock is uncontended) are of roughly equal cost.
  */
-static inline int waitqueue_active(struct wait_queue_head *wq_head) /*  */
+static inline int waitqueue_active(struct wait_queue_head *wq_head)
 {
 	return !list_empty(&wq_head->head);
 }
@@ -206,7 +206,7 @@ static inline bool wq_has_single_sleeper(struct wait_queue_head *wq_head)
  *
  * Please refer to the comment for waitqueue_active.
  */
-static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)  /*  */
+static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)
 {
 	/*
 	 * We need to be sure we are in sync with the
@@ -235,7 +235,7 @@ static inline void
 __add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
     /**
-     *  
+     *
      */
 	wq_entry->flags |= WQ_FLAG_EXCLUSIVE/* 独占的 */;
 
@@ -289,7 +289,7 @@ void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode);
 #define wake_up_all_locked(x)		__wake_up_locked((x), TASK_NORMAL, 0)
 
 /**
- *  
+ *
  *  唤醒使用下面函数的休眠的进程
  *  ----------------------------------------
  *  wait_event_interruptible() 中断休眠
@@ -297,13 +297,13 @@ void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode);
  */
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
 /**
- *  
+ *
  */
 #define wake_up_interruptible_nr(x, nr)	__wake_up(x, TASK_INTERRUPTIBLE, nr, NULL)
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
 
 /**
- *  
+ *
  */
 #define wake_up_interruptible_sync(x)	__wake_up_sync((x), TASK_INTERRUPTIBLE)
 
@@ -401,7 +401,7 @@ do {										\
 } while (0)
 
 /**
- *  
+ *
  */
 #define __io_wait_event(wq_head, condition)					\
 	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
@@ -1242,12 +1242,12 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 	}
 
 /**
- *  
+ *
  */
 #define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
 
 /**
- *  
+ *
  */
 #define init_wait(wait)								\
 	do {									\

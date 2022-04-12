@@ -111,7 +111,7 @@ static int irq_affinity_list_proc_show(struct seq_file *m, void *v)
 	return show_irq_affinity(AFFINITY_LIST, m);
 }
 
-#ifndef CONFIG_AUTO_IRQ_AFFINITY    /*  */
+#ifndef CONFIG_AUTO_IRQ_AFFINITY
 //static inline int irq_select_affinity_usr(unsigned int irq)
 //{
 	/*
@@ -569,7 +569,7 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 		seq_printf(p, " %*d", prec, (int) desc->irq_data.hwirq);
 	else
 		seq_printf(p, " %*s", prec, "");
-#ifdef CONFIG_GENERIC_IRQ_SHOW_LEVEL    /*  */
+#ifdef CONFIG_GENERIC_IRQ_SHOW_LEVEL
 	seq_printf(p, " %-8s", irqd_is_level_type(&desc->irq_data) ? "Level" : "Edge");
 #endif
 	if (desc->name)

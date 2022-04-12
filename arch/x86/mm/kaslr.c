@@ -52,7 +52,7 @@ static  struct __initdata kaslr_memory_region {
 	unsigned long size_tb;
 
 } kaslr_regions[] = {
-    
+
 	{ &page_offset_base, 0 },
 	{ &vmalloc_base, 0 },
 	{ &vmemmap_base, 0 },
@@ -118,7 +118,7 @@ void __init kernel_randomize_memory(void)
 		remain_entropy -= get_padding(&kaslr_regions[i]);
 
     /**
-     *  
+     *
      */
 	prandom_seed_state(&rand_state, kaslr_get_random_long("Memory"));
 
@@ -153,7 +153,7 @@ void __init kernel_randomize_memory(void)
 	}
 }
 
-void __meminit init_trampoline_kaslr(void)  /*  */
+void __meminit init_trampoline_kaslr(void)
 {/* KALSR - Kernel Address Space Layout Randomization 内核地址空间随机分布 */
 	pud_t *pud_page_tramp, *pud, *pud_tramp;
 	p4d_t *p4d_page_tramp, *p4d, *p4d_tramp;

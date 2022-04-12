@@ -485,7 +485,7 @@ static void pstore_unregister_kmsg(void)
 	kmsg_dump_unregister(&pstore_dumper);
 }
 
-#ifdef CONFIG_PSTORE_CONSOLE    /*  */
+#ifdef CONFIG_PSTORE_CONSOLE
 static void pstore_console_write(struct console *con, const char *s, unsigned c)
 {
 	struct pstore_record record;
@@ -524,7 +524,7 @@ static void pstore_unregister_console(void)
 	unregister_console(&pstore_console);
 }
 #else
-/*  */
+
 
 #endif
 

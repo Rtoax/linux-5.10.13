@@ -40,7 +40,7 @@ struct eventfd_ctx {
 	 * side eventfd_signal() also, adds to the "count" counter and
 	 * issue a wakeup.
 	 */
-	__u64 count;    /*  */
+	__u64 count;
 	unsigned int flags;
 	int id;
 };

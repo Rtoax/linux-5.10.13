@@ -91,4 +91,4 @@ static int __init proc_boot_config_init(void)
 
 	return 0;
 }
-fs_initcall(proc_boot_config_init); /*  */
+fs_initcall(proc_boot_config_init);

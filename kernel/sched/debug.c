@@ -56,23 +56,23 @@ static const char * const sched_feat_names[] = {
 #if _RTOAX________
     "GENTLE_FAIR_SLEEPERS" ,
     "START_DEBIT" ,
-    "NEXT_BUDDY" ,    
+    "NEXT_BUDDY" ,
     "LAST_BUDDY" ,
     "CACHE_HOT_BUDDY" ,
     "WAKEUP_PREEMPTION" ,
-    
+
     "HRTICK" ,
     "DOUBLE_TICK" ,
     "NONTASK_CAPACITY" ,
     "TTWU_QUEUE" ,
     "SIS_AVG_CPU" ,
     "SIS_PROP" ,
-    
+
     "WARN_DOUBLE_CLOCK" ,
     "RT_RUNTIME_SHARE" ,
     "LB_MIN" ,
     "ATTACH_AGE_LOAD" ,
-    
+
     "WA_IDLE" ,
     "WA_WEIGHT" ,
     "WA_BIAS" ,
@@ -114,25 +114,25 @@ struct static_key sched_feat_keys[__SCHED_FEAT_NR] = {
     jump_label_key__true ,
     jump_label_key__true ,
     jump_label_key__true ,
-    
+
     jump_label_key__false ,
     jump_label_key__false ,
     jump_label_key__true ,
-    
+
     jump_label_key__true ,
-    
+
     jump_label_key__false ,
     jump_label_key__true ,
-    
+
     jump_label_key__false ,
     jump_label_key__false ,
     jump_label_key__false ,
     jump_label_key__true ,
-    
+
     jump_label_key__true ,
     jump_label_key__true ,
     jump_label_key__true ,
-    
+
     jump_label_key__true ,
     jump_label_key__true ,
 
@@ -227,28 +227,28 @@ static const struct file_operations sched_feat_fops = {
 };
 
 /**
- *  /sys/kernel/debug/sched_debug 
+ *  /sys/kernel/debug/sched_debug
  *
  *  调度器 的调试信息的开关。该值仅仅控制 sched_debug_enabled ， 不会影响 /proc/sched_debug
  */
 __read_mostly bool sched_debug_enabled;
 
 /**
- *  
+ *
  */
 static __init int sched_init_debug(void)
-{   
+{
     /**
-     *  /sys/kernel/debug/sched_features 
+     *  /sys/kernel/debug/sched_features
      *
-     *  表示 调度器支持的特性， 如 
-     *      1. START_DEBIT(新进程尽量早调度) 
+     *  表示 调度器支持的特性， 如
+     *      1. START_DEBIT(新进程尽量早调度)
      *      2. WAKEUP_PREEMPT(唤醒的进程是否可以抢占当前运行的进程)
      */
 	debugfs_create_file("sched_features", 0644, NULL, NULL, &sched_feat_fops);
-    
+
     /**
-     *  /sys/kernel/debug/sched_debug 
+     *  /sys/kernel/debug/sched_debug
      *
      *  调度器 的调试信息的开关。该值仅仅控制 sched_debug_enabled ， 不会影响 /proc/sched_debug
      */
@@ -256,7 +256,7 @@ static __init int sched_init_debug(void)
 
 	return 0;
 }
-late_initcall(sched_init_debug);    /*  */
+late_initcall(sched_init_debug);
 
 #ifdef CONFIG_SMP
 
@@ -269,7 +269,7 @@ late_initcall(sched_init_debug);    /*  */
  */
 static struct ctl_table sd_ctl_dir[] = {
 	{
-		sd_ctl_dir[0].procname	= "sched_domain",   /*  */
+		sd_ctl_dir[0].procname	= "sched_domain",
 		sd_ctl_dir[0].mode		= 0555,
 	},
 	{}
@@ -857,7 +857,7 @@ do {									\
 #undef P
 
 	spin_lock_irqsave(&sched_debug_lock, flags);
-    
+
 	print_cfs_stats(m, cpu);
 	print_rt_stats(m, cpu);
 	print_dl_stats(m, cpu);
@@ -903,7 +903,7 @@ static void sched_debug_header(struct seq_file *m)
 	PN(sched_clk);
 	PN(cpu_clk);
 	P(jiffies);
-    
+
 #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
 //    sched_clock_stable()                    : 1
 	P(sched_clock_stable());
@@ -1128,7 +1128,7 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
     //echo 1 > /proc/sys/kernel/sched_schedstats
 	if (schedstat_enabled()) {
 		u64 avg_atom, avg_per_cpu;
-        
+
         //[rongtao@toa ~]$ cat /proc/self/sched
         //se.statistics->sum_sleep_runtime             :             0.031775
         //se.statistics->wait_start                    :             0.000000
@@ -1212,7 +1212,7 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 
     //se.load.weight                               :                 1024
 	P(se.load.weight);
-    
+
 #ifdef CONFIG_SMP
 	P(se.avg.load_sum);
 	P(se.avg.runnable_sum);

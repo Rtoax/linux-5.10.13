@@ -215,7 +215,7 @@ struct page {   /* 物理页 */
 		};
 
         /* TODO */
-		struct {	/* Tail pages of compound(复合) page *//*  */
+		struct {	/* Tail pages of compound(复合) page */
 			unsigned long compound_head;	/* Bit zero is set */
 
 			/* First tail page only */
@@ -413,7 +413,7 @@ typedef unsigned long vm_flags_t;
  * conditions.  These are held in a global tree and are pinned by the VMAs that
  * map parts of them.
  */
-struct vm_region {  /*  */
+struct vm_region {
 	struct rb_node	vm_rb;		/* link in global region tree */
 	vm_flags_t	vm_flags;	/* VMA vm_flags */
 	unsigned long	vm_start;	/* start address of region */
@@ -433,7 +433,7 @@ struct vm_userfaultfd_ctx {
 	struct userfaultfd_ctx *ctx;
 };
 #else /* CONFIG_USERFAULTFD */
-/*  */
+
 #endif /* CONFIG_USERFAULTFD */
 
 /*
@@ -466,7 +466,7 @@ struct vm_area_struct { /* VMA */
 	 * vma-> vm_prev之间，或在VMA rbtree中我们下面的VMA之一与其-> vm_prev之间。
 	 * 这有助于`get_unmapped_area`找到合适大小的空闲区域。
 	 */
-	unsigned long rb_subtree_gap;   /*  */
+	unsigned long rb_subtree_gap;
 
 	/* Second cache line starts here. */
 
@@ -483,7 +483,7 @@ struct vm_area_struct { /* VMA */
 	 * For areas with an address space and backing store,
 	 * linkage into the address_space->i_mmap interval tree.
 	 */
-	struct {    /*  */
+	struct {
 		struct rb_node rb;
 		unsigned long rb_subtree_last;
 	} shared;
@@ -602,7 +602,7 @@ struct core_thread {    /* coredump 线程链表 */
 
 struct core_state { /* coredump 支持 */
 	atomic_t nr_threads;
-	struct core_thread dumper;  /*  */
+	struct core_thread dumper;
 	struct completion startup;
 };
 
@@ -744,7 +744,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		unsigned long data_vm;	   /* VM_WRITE & ~VM_SHARED & ~VM_STACK */
 		unsigned long exec_vm;	   /* VM_EXEC & ~VM_WRITE & ~VM_STACK */
 		unsigned long stack_vm;	   /* VM_STACK */
-		unsigned long def_flags;   /*  */
+		unsigned long def_flags;
 
 		spinlock_t arg_lock; /* protect the below fields 保护下面的参数*/
 
@@ -759,7 +759,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
          *  辅助向量
          *  /proc/PID/auxv
          */
-		unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv *//*  */
+		unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
 
 		/*
 		 * Special counters, in some configurations protected by the
@@ -767,7 +767,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		 *
 		 * 用于记录进程的内存使用情况
 		 */
-		struct mm_rss_stat rss_stat;    /*  */
+		struct mm_rss_stat rss_stat;
 
         /**
          *  在 set_binfmt() 中赋值
@@ -781,7 +781,7 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 
 		struct core_state *core_state; /* coredumping support */
 
-#ifdef CONFIG_AIO   /*  */
+#ifdef CONFIG_AIO
 		spinlock_t			ioctx_lock;
 		struct kioctx_table __rcu	*ioctx_table;
 #endif

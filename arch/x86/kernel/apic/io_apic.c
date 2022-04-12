@@ -103,7 +103,7 @@ struct mp_ioapic_gsi {
 };
 
 /**
- *  
+ *
  */
 static struct ioapic {
 	/*
@@ -221,9 +221,9 @@ void mp_save_irq(struct mpc_intsrc *m)
 		panic("Max # of irq sources exceeded!!\n");
 }
 /**
- *  
+ *
  */
-static void alloc_ioapic_saved_registers(int idx)   /*  */
+static void alloc_ioapic_saved_registers(int idx)
 {
 	size_t size;
 
@@ -243,7 +243,7 @@ static void free_ioapic_saved_registers(int idx)
 }
 
     /* [I/O APIC](https://en.wikipedia.org/wiki/Advanced_Programmable_Interrupt_Controller).  */
-int __init arch_early_ioapic_init(void) /*  */
+int __init arch_early_ioapic_init(void)
 {
 	int i;
 
@@ -264,14 +264,14 @@ int __init arch_early_ioapic_init(void) /*  */
  */
 struct io_apic {
     /**
-     *  内存映射 的 IOREGSEL(IO register Select) IOAPIC 寄存器 
+     *  内存映射 的 IOREGSEL(IO register Select) IOAPIC 寄存器
      *  IOAPIC_REG_SELECT
      *
      *  见《深度探索Linux系统虚拟化》 P119
      */
 	unsigned int index;
 	unsigned int unused[3];
-    
+
     /**
      *  内存映射 的 IOWIN(IO Window) IOAPIC 寄存器
      *  IOAPIC_REG_WINDOW
@@ -296,13 +296,13 @@ static inline void io_apic_eoi(unsigned int apic, unsigned int vector)
 }
 
 /**
- *  
+ *
  */
 unsigned int native_io_apic_read(unsigned int apic, unsigned int reg)
 {
 	struct io_apic __iomem *io_apic = io_apic_base(apic);
     /**
-	 *  先写 
+	 *  先写
 	 */
 	writel(reg, &io_apic->index);
     /**
@@ -312,7 +312,7 @@ unsigned int native_io_apic_read(unsigned int apic, unsigned int reg)
 }
 
 /**
- *  
+ *
  *  @reg    寄存器地址(相对于基址的偏移)
  *  @value  写入的内容
  */
@@ -334,7 +334,7 @@ union entry_union {
 };
 
 /**
- *  
+ *
  */
 static struct IO_APIC_route_entry __ioapic_read_entry(int apic, int pin)
 {
@@ -380,7 +380,7 @@ static void __ioapic_write_entry(int apic, int pin, struct IO_APIC_route_entry e
 }
 
 /**
- *  
+ *
  */
 static void ioapic_write_entry(int apic, int pin, struct IO_APIC_route_entry e)
 {
@@ -961,7 +961,7 @@ static int ioapic_alloc_attr_node(struct irq_alloc_info *info)
 }
 
 /**
- *  
+ *
  */
 static void mp_register_handler(unsigned int irq, unsigned long trigger)
 {
@@ -977,7 +977,7 @@ static void mp_register_handler(unsigned int irq, unsigned long trigger)
 	}
 
     /**
-     *  
+     *
      */
 	hdl = fasteoi ? handle_fasteoi_irq : handle_edge_irq;
 	__irq_set_handler(irq, hdl, 0, fasteoi ? "fasteoi" : "edge");
@@ -2906,7 +2906,7 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
 	gsi_cfg->gsi_end = gsi_end;
 
     /**
-     *  
+     *
      */
 	ioapics[idx].irqdomain = NULL;
 	ioapics[idx].irqdomain_cfg = *cfg;
@@ -3028,7 +3028,7 @@ static void mp_setup_entry(struct irq_cfg *cfg, struct mp_chip_data *data,
 }
 
 /**
- *  
+ *
  */
 int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 		       unsigned int nr_irqs, void *arg)
@@ -3077,7 +3077,7 @@ int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
 		mp_setup_entry(cfg, data, info->ioapic.entry);
 
     /**
-     *  
+     *
      */
 	mp_register_handler(virq, data->trigger);
 	if (virq < nr_legacy_irqs())

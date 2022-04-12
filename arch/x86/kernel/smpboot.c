@@ -1503,11 +1503,11 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
 
 	calculate_max_logical_packages();
 
-	if (x86_has_numa_in_package)    /*  */
+	if (x86_has_numa_in_package)
 		set_sched_topology(x86_numa_in_package_topology);/* 设置 调度 拓扑 */
 
 	nmi_selftest(); /* NMI 不可屏蔽中断 */
-	impress_friends();  /*  */
+	impress_friends();
 	mtrr_aps_init();    /* memory Type Range Register */
 }
 

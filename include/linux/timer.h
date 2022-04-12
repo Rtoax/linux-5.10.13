@@ -21,7 +21,7 @@
  * del_timer()
  * mod_timer()
  *
- * 软中断定时器 
+ * 软中断定时器
  * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
  *  run_timer_softirq 调用 __run_timers()
  */
@@ -35,7 +35,7 @@ struct timer_list { /* 定时器哈希表 */
 	struct hlist_node	entry;
 
     /**
-     *  
+     *
      */
 	unsigned long		expires;
 
@@ -53,7 +53,7 @@ struct timer_list { /* 定时器哈希表 */
 #endif
 };
 
-#ifdef CONFIG_LOCKDEP/*  */
+#ifdef CONFIG_LOCKDEP
 /*
  * NB: because we have to copy the lockdep_map, setting the lockdep_map key
  * (second argument) here is required, otherwise it could be initialised to
@@ -96,7 +96,7 @@ struct timer_list { /* 定时器哈希表 */
 #define TIMER_BASEMASK		(TIMER_CPUMASK | TIMER_MIGRATING)
 #define TIMER_DEFERRABLE	0x00080000
 #define TIMER_PINNED		0x00100000
-#define TIMER_IRQSAFE		0x00200000  /*  */
+#define TIMER_IRQSAFE		0x00200000
 #define TIMER_INIT_FLAGS	(TIMER_DEFERRABLE | TIMER_PINNED | TIMER_IRQSAFE)
 #define TIMER_ARRAYSHIFT	22
 #define TIMER_ARRAYMASK		0xFFC00000
@@ -161,7 +161,7 @@ extern void init_timer_on_stack_key(struct timer_list *timer,
 					#_timer, &__key);		 \
 	} while (0)
 #else
-/*  */
+
 #endif
 
 /**
@@ -183,7 +183,7 @@ extern void init_timer_on_stack_key(struct timer_list *timer,
 #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
 extern void destroy_timer_on_stack(struct timer_list *timer);
 #else
-/*  */
+
 #endif
 
 #define from_timer(var, callback_timer, timer_fieldname) \

@@ -1376,6 +1376,6 @@ static __init int init_srcu_module_notifier(void)
 		pr_warn("Failed to register srcu module notifier\n");
 	return ret;
 }
-late_initcall(init_srcu_module_notifier);   /*  */
+late_initcall(init_srcu_module_notifier);
 
 #endif /* #ifdef CONFIG_MODULES */

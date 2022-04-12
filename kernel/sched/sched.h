@@ -146,7 +146,7 @@ extern void call_trace_sched_update_nr_running(struct rq *rq, int count);
  *  scale_load(sched_prio_to_weight[USER_PRIO(NICE_TO_PRIO(0))]) == NICE_0_LOAD
  *
  */
-#define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)   /*  */
+#define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
 
 /*
  * Single value that decides SCHED_DEADLINE internal math precision.
@@ -392,7 +392,7 @@ struct rt_rq;
 extern struct list_head task_groups;
 
 struct cfs_bandwidth {
-#ifdef CONFIG_CFS_BANDWIDTH /*  */
+#ifdef CONFIG_CFS_BANDWIDTH
 	raw_spinlock_t		lock;
 	ktime_t			period;
 	u64			quota;
@@ -448,7 +448,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	 * it in its own cacheline separated from the fields above which
 	 * will also be accessed at each tick.
 	 */
-	atomic_long_t	____cacheline_aligned	load_avg ;/*  */
+	atomic_long_t	____cacheline_aligned	load_avg ;
 #endif
 #endif
 
@@ -481,7 +481,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
      */
 	struct cfs_bandwidth	cfs_bandwidth;
 
-#ifdef CONFIG_UCLAMP_TASK_GROUP /*  */
+#ifdef CONFIG_UCLAMP_TASK_GROUP
 	/* The two decimal precision [%] value requested from user-space */
 	unsigned int		uclamp_pct[UCLAMP_CNT];
 	/* Clamp values requested for a task group */
@@ -493,7 +493,7 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 };
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
-#define ROOT_TASK_GROUP_LOAD	NICE_0_LOAD /*  */
+#define ROOT_TASK_GROUP_LOAD	NICE_0_LOAD
 
 /*
  * A weight of 0 or 1 can cause arithmetics problems.
@@ -586,7 +586,7 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
     /**
      *  就绪队列的总权重
      */
-	struct load_weight	load;   /*  */
+	struct load_weight	load;
 
     /**
      *  可运行状态的进程总数
@@ -1066,9 +1066,9 @@ struct rq {
     /**
      *  三种调度类型的 队列
      */
-	struct cfs_rq		cfs;    /*  */
-	struct rt_rq		rt;     /*  */
-	struct dl_rq		dl;     /*  */
+	struct cfs_rq		cfs;
+	struct rt_rq		rt;
+	struct dl_rq		dl;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* list of leaf cfs_rq on this CPU: */
@@ -1130,7 +1130,7 @@ struct rq {
 
 	atomic_t		nr_iowait;
 
-#ifdef CONFIG_MEMBARRIER    /*  */
+#ifdef CONFIG_MEMBARRIER
 	int membarrier_state;
 #endif
 
@@ -1295,7 +1295,7 @@ static inline void update_idle_core(struct rq *rq)
 }
 
 #else
-/*  */
+
 #endif
 
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
@@ -1571,7 +1571,7 @@ extern void sched_domains_numa_masks_set(unsigned int cpu);
 extern void sched_domains_numa_masks_clear(unsigned int cpu);
 extern int sched_numa_find_closest(const struct cpumask *cpus, int cpu);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_NUMA_BALANCING
@@ -1588,7 +1588,7 @@ extern int migrate_swap(struct task_struct *p, struct task_struct *t,
 			int cpu, int scpu);
 extern void init_numa_balancing(unsigned long clone_flags, struct task_struct *p);
 #else
-/*  */
+
 #endif /* CONFIG_NUMA_BALANCING */
 
 #ifdef CONFIG_SMP
@@ -1735,13 +1735,13 @@ void register_sched_domain_sysctl(void);
 void dirty_sched_domain_sysctl(int cpu);
 void unregister_sched_domain_sysctl(void);
 #else
-/*  */
+
 #endif
 
 extern void flush_smp_call_function_from_idle(void);
 
 #else /* !CONFIG_SMP: */
-/*  */
+
 #endif
 
 #include "stats.h"
@@ -1787,7 +1787,8 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
 }
 
 #else /* CONFIG_CGROUP_SCHED */
-/*  */
+/*  *
+/
 #endif /* CONFIG_CGROUP_SCHED */
 
 
@@ -2174,7 +2175,7 @@ static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 	prev->sched_class->put_prev_task(rq, prev);
 }
 
-static inline void set_next_task(struct rq *rq, struct task_struct *next)/*  */
+static inline void set_next_task(struct rq *rq, struct task_struct *next)
 {
 	WARN_ON_ONCE(rq->curr != next);
 
@@ -2188,7 +2189,7 @@ static inline void set_next_task(struct rq *rq, struct task_struct *next)/*  */
 }
 
 /* Defined in include/asm-generic/vmlinux.lds.h */
-extern struct sched_class __begin_sched_classes[];  /*  */
+extern struct sched_class __begin_sched_classes[];
 extern struct sched_class __end_sched_classes[];
 
 #define sched_class_highest (__end_sched_classes - 1)
@@ -2200,11 +2201,11 @@ extern struct sched_class __end_sched_classes[];
 #define for_each_class(class) \
 	for_class_range(class, sched_class_highest, sched_class_lowest)
 
-extern const struct sched_class stop_sched_class;   /*  */
-extern const struct sched_class dl_sched_class;     /*  */
-extern const struct sched_class rt_sched_class;     /*  */
-extern const struct sched_class fair_sched_class;   /*  */
-extern const struct sched_class idle_sched_class;   /*  */
+extern const struct sched_class stop_sched_class;
+extern const struct sched_class dl_sched_class;
+extern const struct sched_class rt_sched_class;
+extern const struct sched_class fair_sched_class;
+extern const struct sched_class idle_sched_class;
 
 static inline bool sched_stop_runnable(struct rq *rq)
 {
@@ -2318,8 +2319,8 @@ static inline void sched_update_tick_dependency(struct rq *rq)
 	else
 		tick_nohz_dep_set_cpu(cpu, TICK_DEP_BIT_SCHED);
 }
-#else
-/*  */
+
+
 #endif
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
@@ -2378,8 +2379,8 @@ static inline int hrtick_enabled(struct rq *rq)
 
 void hrtick_start(struct rq *rq, u64 delay);
 
-#else
-/*  */
+
+
 #endif /* CONFIG_SCHED_HRTICK */
 
 #ifndef arch_scale_freq_tick

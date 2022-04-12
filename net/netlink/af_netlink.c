@@ -2855,7 +2855,7 @@ static int __init bpf_iter_register(void)
 }
 #endif
 
-static int __init netlink_proto_init(void)  /*  */
+static int __init netlink_proto_init(void)
 {
 	int i;
 	int err = proto_register(&netlink_proto, 0);

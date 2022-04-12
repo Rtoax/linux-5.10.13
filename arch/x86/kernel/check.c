@@ -183,5 +183,5 @@ static int start_periodic_check_for_corruption(void)
 
 	return 0;
 }
-device_initcall(start_periodic_check_for_corruption);   /*  */
+device_initcall(start_periodic_check_for_corruption);
 

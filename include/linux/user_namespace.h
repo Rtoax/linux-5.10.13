@@ -41,7 +41,7 @@ struct ucounts;
 /**
  *  每个命名空间的计数
  */
-enum ucount_type {  /*  */
+enum ucount_type {
 	UCOUNT_USER_NAMESPACES,
 	UCOUNT_PID_NAMESPACES,
 	UCOUNT_UTS_NAMESPACES,
@@ -112,7 +112,7 @@ struct user_namespace {/* 资源/名字的隔离， cgroup 做资源的限制 */
     /**
      *  最大值的限制，用于约束 ucounts
      */
-	int ucount_max[UCOUNT_COUNTS];  /*  */
+	int ucount_max[UCOUNT_COUNTS];
 } __randomize_layout;
 typedef struct user_namespace * user_namespace_t;//+++
 /**
@@ -170,7 +170,7 @@ extern bool in_userns(const struct user_namespace *ancestor,
 extern bool current_in_userns(const struct user_namespace *target_ns);
 struct ns_common *ns_get_owner(struct ns_common *ns);
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_USER_H */

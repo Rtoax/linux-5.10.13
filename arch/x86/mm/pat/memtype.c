@@ -272,7 +272,7 @@ static void pat_ap_init(u64 pat)
 }
 
 /**
- *  
+ *
  */
 void init_cache_modes(void)
 {
@@ -320,7 +320,7 @@ void init_cache_modes(void)
 	}
 
     /**
-     *  
+     *
      */
 	__init_cache_modes(pat);
 }
@@ -1220,6 +1220,6 @@ static int __init pat_memtype_list_init(void)
 	}
 	return 0;
 }
-late_initcall(pat_memtype_list_init);   /*  */
+late_initcall(pat_memtype_list_init);
 
 #endif /* CONFIG_DEBUG_FS && CONFIG_X86_PAT */

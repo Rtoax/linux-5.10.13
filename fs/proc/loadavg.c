@@ -12,11 +12,11 @@
 
 static int loadavg_proc_show(struct seq_file *m, void *v)
 {
-//    $ sudo cat /proc/loadavg 
+//    $ sudo cat /proc/loadavg
 //    0.00 0.02 0.05 1/275 96511
 	unsigned long avnrun[3];
 
-	get_avenrun(avnrun, FIXED_1/200, 0);      /*  */
+	get_avenrun(avnrun, FIXED_1/200, 0);
 
 	seq_printf(m, "%lu.%02lu %lu.%02lu %lu.%02lu %ld/%d %d\n",
 		LOAD_INT(avnrun[0]), LOAD_FRAC(avnrun[0]),
@@ -32,4 +32,4 @@ static int __init proc_loadavg_init(void)
 	proc_create_single("loadavg", 0, NULL, loadavg_proc_show);
 	return 0;
 }
-fs_initcall(proc_loadavg_init); /*  负载平衡 /proc/loadavg *//*  */
+fs_initcall(proc_loadavg_init); /*  负载平衡 /proc/loadavg */

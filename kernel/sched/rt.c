@@ -20,7 +20,7 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
 struct rt_bandwidth def_rt_bandwidth;   /* default values of bandwidths for `real-time` */
 
 /**
- *  
+ *
  */
 static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
 {
@@ -81,7 +81,7 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
 	raw_spin_unlock(&rt_b->rt_runtime_lock);
 }
 
-void init_rt_rq(struct rt_rq *rt_rq)    /*  */
+void init_rt_rq(struct rt_rq *rt_rq)
 {
 	struct rt_prio_array *array;
 	int i;
@@ -96,17 +96,17 @@ void init_rt_rq(struct rt_rq *rt_rq)    /*  */
 
 #if defined CONFIG_SMP
 	rt_rq->highest_prio.curr = MAX_RT_PRIO; /* 100 */
-	rt_rq->highest_prio.next = MAX_RT_PRIO; /*  */
+	rt_rq->highest_prio.next = MAX_RT_PRIO;
 	rt_rq->rt_nr_migratory = 0;
 	rt_rq->overloaded = 0;
 	plist_head_init(&rt_rq->pushable_tasks);
 #endif /* CONFIG_SMP */
 	/* We start is dequeued state, because no RT tasks are queued */
-	rt_rq->rt_queued = 0;   /*  */
+	rt_rq->rt_queued = 0;
 
-	rt_rq->rt_time = 0;     /*  */
-	rt_rq->rt_throttled = 0;/*  */
-	rt_rq->rt_runtime = 0;  /*  */
+	rt_rq->rt_time = 0;
+	rt_rq->rt_throttled = 0;
+	rt_rq->rt_runtime = 0;
 	raw_spin_lock_init(&rt_rq->rt_runtime_lock);
 }
 
@@ -1428,7 +1428,7 @@ static void requeue_task_rt(struct rq *rq, struct task_struct *p, int head)
 	}
 }
 
-static void yield_task_rt(struct rq *rq)    /*  */
+static void yield_task_rt(struct rq *rq)
 {
 	requeue_task_rt(rq, rq->curr, 0);
 }
@@ -2359,7 +2359,7 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 
 #ifdef CONFIG_POSIX_TIMERS
 /**
- *  
+ *
  */
 static void watchdog(struct rq *rq, struct task_struct *p)
 {
@@ -2385,7 +2385,7 @@ static void watchdog(struct rq *rq, struct task_struct *p)
 	}
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -2404,7 +2404,7 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, 1);
 
     /**
-     *  
+     *
      */
 	watchdog(rq, p);
 

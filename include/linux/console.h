@@ -141,7 +141,7 @@ static inline int con_debug_leave(void)
 /**
  *  终端 console
  */
-struct console {    /*  */
+struct console {
 	char	name[16];
 	void	(*write)(struct console *, const char *, unsigned);
 	int	(*read)(struct console *, char *, unsigned);
@@ -195,7 +195,7 @@ extern int braille_unregister_console(struct console *);
 #ifdef CONFIG_TTY
 extern void console_sysfs_notify(void);
 #else
-/*  */
+
 #endif
 extern bool console_suspend_enabled;
 
@@ -227,7 +227,7 @@ extern atomic_t ignore_console_lock_warning;
 #ifdef CONFIG_VGA_CONSOLE
 extern bool vgacon_text_force(void);
 #else
-/*  */
+
 #endif
 
 extern void console_init(void);

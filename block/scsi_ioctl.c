@@ -507,7 +507,7 @@ int sg_scsi_ioctl(struct request_queue *q, struct gendisk *disk, fmode_t mode,
 		if (copy_to_user(sic->data, buffer, out_len))
 			err = -EFAULT;
 	}
-	
+
 error:
 	blk_put_request(rq);
 
@@ -888,4 +888,4 @@ static int __init blk_scsi_ioctl_init(void)
 	blk_set_cmd_filter_defaults(&blk_default_cmd_filter);
 	return 0;
 }
-fs_initcall(blk_scsi_ioctl_init);   /*  */
+fs_initcall(blk_scsi_ioctl_init);

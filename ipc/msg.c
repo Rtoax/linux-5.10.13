@@ -113,7 +113,7 @@ static inline struct msg_queue *msq_obtain_object_check(struct ipc_namespace *ns
 {
 	/**
 	 * @brief 从idr(radix树)中获取
-	 * 
+	 *
 	 */
 	struct kern_ipc_perm *ipcp = ipc_obtain_object_check(&msg_ids(ns), id);
 
@@ -314,11 +314,11 @@ long ksys_msgget(key_t key, int msgflg)
 }
 
 /**
- * @brief 
- * 
- * @param key 
- * @param msgflg 
- * @return int 
+ * @brief
+ *
+ * @param key
+ * @param msgflg
+ * @return int
  */
 int msgget(key_t key, int msgflg){}//++++
 SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
@@ -642,12 +642,12 @@ static long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf, int ver
 }
 
 /**
- * @brief 
- * 
- * @param msqid 
- * @param cmd 
- * @param buf 
- * @return int 
+ * @brief
+ *
+ * @param msqid
+ * @param cmd
+ * @param buf
+ * @return int
  */
 int msgctl(int msqid, int cmd, struct msqid_ds *buf){}//+++
 SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
@@ -664,12 +664,12 @@ long ksys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
 }
 
 /**
- * @brief 
- * 
- * @param msqid 
- * @param cmd 
- * @param buf 
- * @return int 
+ * @brief
+ *
+ * @param msqid
+ * @param cmd
+ * @param buf
+ * @return int
  */
 int msgctl(int msqid, int cmd, struct msqid_ds *buf){}//+++
 SYSCALL_DEFINE3(old_msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
@@ -869,13 +869,13 @@ static inline int pipelined_send(struct msg_queue *msq, struct msg_msg *msg,
 
 /**
  * @brief 发送消息
- * 
- * @param msqid 
- * @param mtype 
- * @param mtext 
- * @param msgsz 
- * @param msgflg 
- * @return long 
+ *
+ * @param msqid
+ * @param mtype
+ * @param mtext
+ * @param msgsz
+ * @param msgflg
+ * @return long
  */
 static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 		size_t msgsz, int msgflg)
@@ -895,7 +895,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 
 	/**
 	 * @brief 加载，从用户台拷贝数据
-	 * 
+	 *
 	 */
 	msg = load_msg(mtext, msgsz);
 	if (IS_ERR(msg))
@@ -907,7 +907,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 	rcu_read_lock();
 	/**
 	 * @brief 从id获取msq句柄（实际上id保存在idr（radix树）中）
-	 * 
+	 *
 	 */
 	msq = msq_obtain_object_check(ns, msqid);
 	if (IS_ERR(msq)) {
@@ -932,7 +932,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 
 		/**
 		 * @brief selinux等...
-		 * 
+		 *
 		 */
 		err = security_msg_queue_msgsnd(&msq->q_perm, msg, msgflg);
 		if (err)
@@ -960,7 +960,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 
 		/**
 		 * @brief 这难道是睡眠的吗？
-		 * 
+		 *
 		 */
 		schedule();
 
@@ -987,7 +987,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
 
 	/**
 	 * @brief 管道发送
-	 * 
+	 *
 	 */
 	if (!pipelined_send(msq, msg, &wake_q)) {
 		/* no one is waiting for this message, enqueue it */
@@ -1013,12 +1013,12 @@ out_unlock1:
 
 /**
  * @brief 发送消息
- * 
- * @param msqid 
- * @param msgp 
- * @param msgsz 
- * @param msgflg 
- * @return long 
+ *
+ * @param msqid
+ * @param msgp
+ * @param msgsz
+ * @param msgflg
+ * @return long
  */
 long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 		 int msgflg)
@@ -1032,12 +1032,12 @@ long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 
 /**
  * @brief 发送消息
- * 
- * @param msqid 
- * @param msgp 
- * @param msgsz 
- * @param msgflg 
- * @return int 
+ *
+ * @param msqid
+ * @param msgp
+ * @param msgsz
+ * @param msgflg
+ * @return int
  */
 int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 SYSCALL_DEFINE4(msgsnd, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
@@ -1097,11 +1097,11 @@ static inline int convert_mode(long *msgtyp, int msgflg)
 
 /**
  * @brief 填充
- * 
- * @param dest 
- * @param msg 
- * @param bufsz 
- * @return long 
+ *
+ * @param dest
+ * @param msg
+ * @param bufsz
+ * @return long
  */
 static long do_msg_fill(void __user *dest, struct msg_msg *msg, size_t bufsz)
 {
@@ -1142,8 +1142,8 @@ static inline void free_copy(struct msg_msg *copy)
 }
 #else
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 #endif
 
@@ -1173,14 +1173,14 @@ static struct msg_msg *find_msg(struct msg_queue *msq, long *msgtyp, int mode)
 
 /**
  * @brief 发送
- * 
- * @param msqid 
- * @param buf 
- * @param bufsz 
- * @param msgtyp 
- * @param msgflg 
+ *
+ * @param msqid
+ * @param buf
+ * @param bufsz
+ * @param msgtyp
+ * @param msgflg
  * @param msg_handler 最后被调用
- * @return long 
+ * @return long
  */
 static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, int msgflg,
 	       long (*msg_handler)(void __user *, struct msg_msg *, size_t))
@@ -1208,7 +1208,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 	rcu_read_lock();
 	/**
 	 * @brief 从 id 获取 句柄
-	 * 
+	 *
 	 */
 	msq = msq_obtain_object_check(ns, msqid);
 	if (IS_ERR(msq)) {
@@ -1233,12 +1233,12 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 		}
 		/**
 		 * @brief 查找一个消息
-		 * 
+		 *
 		 */
 		msg = find_msg(msq, &msgtyp, mode);
 		/**
 		 * @brief 有消息就要处理
-		 * 
+		 *
 		 */
 		if (!IS_ERR(msg)) {
 			/*
@@ -1272,7 +1272,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 
 		/**
 		 * @brief 不等待
-		 * 
+		 *
 		 */
 		/* No message waiting. Wait for a message */
 		if (msgflg & IPC_NOWAIT) {
@@ -1281,8 +1281,8 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 		}
 
 		/**
-		 * @brief 
-		 * 
+		 * @brief
+		 *
 		 */
 		list_add_tail(&msr_d.r_list, &msq->q_receivers);
 		msr_d.r_tsk = current;
@@ -1304,7 +1304,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
 
 		/**
 		 * @brief 调度一波
-		 * 
+		 *
 		 */
 		schedule();
 
@@ -1368,7 +1368,7 @@ out_unlock1:
 
 	/**
 	 * @brief ~= do_msg_fill()
-	 * 
+	 *
 	 */
 	bufsz = msg_handler(buf, msg, bufsz);
 	free_msg(msg);
@@ -1378,13 +1378,13 @@ out_unlock1:
 
 /**
  * @brief 接收
- * 
- * @param msqid 
- * @param msgp 
- * @param msgsz 
- * @param msgtyp 
- * @param msgflg 
- * @return long 
+ *
+ * @param msqid
+ * @param msgp
+ * @param msgsz
+ * @param msgtyp
+ * @param msgflg
+ * @return long
  */
 long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 		 long msgtyp, int msgflg)
@@ -1394,13 +1394,13 @@ long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
 
 /**
  * @brief 接收消息队列
- * 
- * @param msqid 
- * @param msgp 
- * @param msgsz 
- * @param msgtyp 
- * @param msgflg 
- * @return ssize_t 
+ *
+ * @param msqid
+ * @param msgp
+ * @param msgsz
+ * @param msgtyp
+ * @param msgflg
+ * @return ssize_t
  */
 ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 SYSCALL_DEFINE5(msgrcv, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
@@ -1488,7 +1488,7 @@ static int sysvipc_msg_proc_show(struct seq_file *s, void *it)
 }
 #endif
 
-void __init msg_init(void)  /*  */
+void __init msg_init(void)
 {
 	msg_init_ns(&init_ipc_ns);
 

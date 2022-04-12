@@ -503,7 +503,7 @@ static int irqsoff_function_set(struct trace_array *tr, u32 mask, int set)
 	return 1;
 }
 #else
-/*  */
+
 #endif /* CONFIG_FUNCTION_TRACER */
 
 static int irqsoff_flag_changed(struct trace_array *tr, u32 mask, int set)
@@ -714,7 +714,7 @@ static void preemptirqsoff_tracer_reset(struct trace_array *tr)
 	__irqsoff_tracer_reset(tr);
 }
 
-static struct tracer __read_mostly preemptirqsoff_tracer  =/*  */
+static struct tracer __read_mostly preemptirqsoff_tracer  =
 {
 	.name		= "preemptirqsoff",
 	.init		= preemptirqsoff_tracer_init,

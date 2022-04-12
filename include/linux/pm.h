@@ -27,7 +27,7 @@ struct device; /* we have a circular dep with device.h */
 extern void pm_vt_switch_required(struct device *dev, bool required);
 extern void pm_vt_switch_unregister(struct device *dev);
 #else
-/*  */
+
 #endif /* CONFIG_VT_CONSOLE_SLEEP */
 
 /*
@@ -749,7 +749,7 @@ extern bool dev_pm_skip_resume(struct device *dev);
 extern bool dev_pm_skip_suspend(struct device *dev);
 
 #else /* !CONFIG_PM_SLEEP */
-/*  */
+
 #endif /* !CONFIG_PM_SLEEP */
 
 /* How to reorder dpm_list after device_move() */

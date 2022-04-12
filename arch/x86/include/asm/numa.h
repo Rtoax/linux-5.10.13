@@ -43,7 +43,7 @@ static inline void set_apicid_to_node(int apicid, s16 node)
 extern int numa_cpu_node(int cpu);
 
 #else	/* CONFIG_NUMA */
-/*  */
+
 #endif	/* CONFIG_NUMA */
 
 #ifdef CONFIG_X86_32
@@ -58,7 +58,7 @@ extern void numa_add_cpu(int cpu);
 extern void numa_remove_cpu(int cpu);
 extern void init_gi_nodes(void);
 #else	/* CONFIG_NUMA */
-/*  */
+
 #endif	/* CONFIG_NUMA */
 
 #ifdef CONFIG_DEBUG_PER_CPU_MAPS
@@ -70,7 +70,7 @@ void debug_cpumask_set_cpu(int cpu, int node, bool enable);
 #define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1UL))
 int numa_emu_cmdline(char *str);
 #else /* CONFIG_NUMA_EMU */
-/*  */
+
 #endif /* CONFIG_NUMA_EMU */
 
 #endif	/* _ASM_X86_NUMA_H */

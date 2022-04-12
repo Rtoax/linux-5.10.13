@@ -18,7 +18,7 @@
 #endif
 
 /**
- *  
+ *
  */
 #define istate core_internal_state__do_not_mess_with_it
 
@@ -74,7 +74,7 @@ enum {
     /* 重新发一次中断 */
 	IRQS_REPLAY		= 0x00000040,
     /**
-     *  表示某个 irq_desc 处于等待状态 
+     *  表示某个 irq_desc 处于等待状态
      *  IRQ 探测是通过为每个缺少中断处理例程的 IRQ 设置 IRQS_WAITING 状态位 来完成的
      *  当中断产生时，因为没有注册处理例程， do_IRQ 清除该标志位后返回。
      *  当 probe_irq_off() 被一个驱动程序调用的时候，只需要搜索那些 没有设置 IRQS_WAITING 位的 IRQ
@@ -84,9 +84,9 @@ enum {
 	IRQS_PENDING		= 0x00000200,
     /* 表示该中断被暂停 */
 	IRQS_SUSPENDED		= 0x00000800,
-    /*  */
+
 	IRQS_TIMINGS		= 0x00001000,
-    /*  */
+
 	IRQS_NMI		= 0x00002000,
 };
 
@@ -144,7 +144,7 @@ extern void unregister_irq_proc(unsigned int irq, struct irq_desc *desc);
 extern void register_handler_proc(unsigned int irq, struct irqaction *action);
 extern void unregister_handler_proc(unsigned int irq, struct irqaction *action);
 #else
-/*  */
+
 #endif
 
 extern bool irq_can_set_affinity_usr(unsigned int irq);
@@ -157,7 +157,7 @@ extern int irq_do_set_affinity(struct irq_data *data,
 #ifdef CONFIG_SMP
 extern int irq_setup_affinity(struct irq_desc *desc);
 #else
-/*  */
+
 #endif
 
 /* Inline functions for support of irq chips on slow busses */
@@ -189,7 +189,7 @@ void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
 
 
 /**
- *  
+ *
  */
 static inline struct irq_desc *
 irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
@@ -299,7 +299,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc);
 void irq_pm_install_action(struct irq_desc *desc, struct irqaction *action);
 void irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_IRQ_TIMINGS
@@ -417,7 +417,7 @@ void irq_init_generic_chip(struct irq_chip_generic *gc, const char *name,
 			   int num_ct, unsigned int irq_base,
 			   void __iomem *reg_base, irq_flow_handler_t handler);
 #else
-/*  */
+
 #endif /* CONFIG_GENERIC_IRQ_CHIP */
 
 #ifdef CONFIG_GENERIC_PENDING_IRQ
@@ -449,7 +449,7 @@ static inline bool handle_enforce_irqctx(struct irq_data *data)
 }
 bool irq_fixup_move_pending(struct irq_desc *desc, bool force_clear);
 #else /* CONFIG_GENERIC_PENDING_IRQ */
-/*  */
+
 #endif /* !CONFIG_GENERIC_PENDING_IRQ */
 
 #if !defined(CONFIG_IRQ_DOMAIN) || !defined(CONFIG_IRQ_DOMAIN_HIERARCHY)
@@ -486,8 +486,8 @@ void irq_debugfs_copy_devname(int irq, struct device *dev);
 # ifdef CONFIG_IRQ_DOMAIN
 void irq_domain_debugfs_init(struct dentry *root);
 # else
-/*  */
+
 # endif
 #else /* CONFIG_GENERIC_IRQ_DEBUGFS */
-/*  */
+
 #endif /* CONFIG_GENERIC_IRQ_DEBUGFS */

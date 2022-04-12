@@ -34,7 +34,7 @@ static DEFINE_MUTEX(chrdevs_lock);
 static struct char_device_struct {
 	struct char_device_struct *next;
 	unsigned int major;     /* 主设备号 */
-	unsigned int baseminor; /*  */
+	unsigned int baseminor;
 	int minorct;
 	char name[64];
 	struct cdev *cdev;		/* will die */
@@ -50,7 +50,7 @@ static inline int major_to_index(unsigned major)
 
 void chrdev_show(struct seq_file *f, off_t offset)
 {
-//    $ more /proc/devices 
+//    $ more /proc/devices
 //    Character devices:
 //      1 mem
 //      4 /dev/vc/0
@@ -373,7 +373,7 @@ static struct kobject *cdev_get(struct cdev *p)
 		return NULL;
 
     /**
-     *  
+     *
      */
 	kobj = kobject_get_unless_zero(&p->kobj);
 	if (!kobj)

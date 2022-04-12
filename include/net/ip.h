@@ -41,7 +41,7 @@ extern unsigned int sysctl_fib_sync_mem_max;
 
 struct sock;
 
-struct inet_skb_parm {  /*  */
+struct inet_skb_parm {
 	int			iif;
 	struct ip_options	opt;		/* Compiled IP options		*/
 	u16			flags;
@@ -235,7 +235,7 @@ struct sk_buff *ip_make_skb(struct sock *sk, struct flowi4 *fl4,
 int ip_queue_xmit(struct sock *sk, struct sk_buff *skb, struct flowi *fl);
 
 /**
- *  
+ *
  */
 static inline struct sk_buff *ip_finish_skb(struct sock *sk, struct flowi4 *fl4)
 {
@@ -455,7 +455,7 @@ static inline unsigned int ip_dst_mtu_maybe_forward(const struct dst_entry *dst,
 }
 
 /**
- *  
+ *
  */
 static inline unsigned int ip_skb_dst_mtu(struct sock *sk,
 					  const struct sk_buff *skb)

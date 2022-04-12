@@ -6,7 +6,7 @@
 #ifdef CONFIG_NODES_SHIFT
 #define NODES_SHIFT     CONFIG_NODES_SHIFT  /* 10 */
 #else
-//#define NODES_SHIFT     0/*  */
+//#define NODES_SHIFT     0
 #endif
 
 #define MAX_NUMNODES /* 1024 */  /* NUMA NODEs */ (1 << NODES_SHIFT/* 10 */)

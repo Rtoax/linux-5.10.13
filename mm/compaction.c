@@ -65,7 +65,7 @@ static const unsigned int HPAGE_FRAG_CHECK_INTERVAL_MSEC = 500;
  */
 #if defined CONFIG_TRANSPARENT_HUGEPAGE
 #define COMPACTION_HPAGE_ORDER /* 9 */	HPAGE_PMD_ORDER/* 9 */
-#elif defined CONFIG_HUGETLBFS  /*  */
+#elif defined CONFIG_HUGETLBFS
 //#define COMPACTION_HPAGE_ORDER /* 9 */	HUGETLB_PAGE_ORDER/* 9 */
 #else
 //#define COMPACTION_HPAGE_ORDER	(PMD_SHIFT - PAGE_SHIFT)
@@ -493,7 +493,7 @@ static void update_pageblock_skip(struct compact_control *cc,
 		zone->compact_cached_free_pfn = pfn;
 }
 #else
-/*  */
+
 #endif /* CONFIG_COMPACTION */
 
 /*
@@ -2425,7 +2425,7 @@ static enum compact_result __compaction_suitable(struct zone *zone, int order,
 /**
  *  根据 zone 水位判断是否需要内存规整
  */
-enum compact_result compaction_suitable(struct zone *zone, int order,   /*  */
+enum compact_result compaction_suitable(struct zone *zone, int order,
                         					unsigned int alloc_flags,
                         					int highest_zoneidx)
 {
@@ -2742,7 +2742,7 @@ compact_zone(struct compact_control *cc, struct capture_control *capc)
          */
 		err = migrate_pages(&cc->migratepages,
             		        compaction_alloc,   /* 从 zone的尾部开始查找空闲页面 */
-            				compaction_free,    /*  */
+            				compaction_free,
             				(unsigned long)cc,
             				cc->mode,
             				MR_COMPACTION);
@@ -3155,7 +3155,7 @@ static inline bool kcompactd_work_requested(pg_data_t *pgdat)
 	return pgdat->kcompactd_max_order > 0 || kthread_should_stop();
 }
 
-static bool kcompactd_node_suitable(pg_data_t *pgdat)   /*  */
+static bool kcompactd_node_suitable(pg_data_t *pgdat)
 {
 	int zoneid;
 	struct zone *zone;
@@ -3282,7 +3282,7 @@ static void kcompactd_do_work(pg_data_t *pgdat) /* 内存规整 */
 			 *
 			 * 延迟 规整
 			 */
-			defer_compaction(zone, cc.order);   /*  */
+			defer_compaction(zone, cc.order);
 		}
 
         /**
@@ -3427,9 +3427,9 @@ static int kcompactd(void *p/* 内存节点-所有的ZONE */)
  *
  * 内存规整线程 启动
  */
-int kcompactd_run(int nid)  /*  */
+int kcompactd_run(int nid)
 {
-	pg_data_t *pgdat = NODE_DATA(nid);  /*  */
+	pg_data_t *pgdat = NODE_DATA(nid);
 	int ret = 0;
 
 	if (pgdat->kcompactd)

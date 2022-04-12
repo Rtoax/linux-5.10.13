@@ -113,6 +113,6 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_SMP */
 #endif

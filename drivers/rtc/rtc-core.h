@@ -6,7 +6,7 @@ extern void __exit rtc_dev_exit(void);
 extern void rtc_dev_prepare(struct rtc_device *rtc);
 
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_RTC_INTF_PROC
@@ -15,11 +15,11 @@ extern void rtc_proc_add_device(struct rtc_device *rtc);
 extern void rtc_proc_del_device(struct rtc_device *rtc);
 
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_RTC_INTF_SYSFS
 const struct attribute_group **rtc_get_dev_attribute_groups(void);
 #else
-/*  */
+
 #endif

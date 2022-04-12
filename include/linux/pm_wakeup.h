@@ -114,7 +114,7 @@ extern void pm_wakeup_ws_event(struct wakeup_source *ws, unsigned int msec, bool
 extern void pm_wakeup_dev_event(struct device *dev, unsigned int msec, bool hard);
 
 #else /* !CONFIG_PM_SLEEP */
-/*  */
+
 #endif /* !CONFIG_PM_SLEEP */
 
 static inline void __pm_wakeup_event(struct wakeup_source *ws, unsigned int msec)

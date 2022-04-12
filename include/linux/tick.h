@@ -21,14 +21,14 @@ extern void tick_resume_local(void);
 extern void tick_handover_do_timer(void);
 extern void tick_cleanup_dead_cpu(int cpu);
 #else /* CONFIG_GENERIC_CLOCKEVENTS */
-/*  */
+
 #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
 
 #if defined(CONFIG_GENERIC_CLOCKEVENTS) && defined(CONFIG_SUSPEND)
 extern void tick_freeze(void);
 extern void tick_unfreeze(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_TICK_ONESHOT
@@ -37,13 +37,13 @@ extern void tick_irq_enter(void);
 #   define arch_needs_cpu() (0)
 #  endif
 # else
-/*  */
+
 #endif
 
 #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
 extern void hotplug_cpu__broadcast_tick_pull(int dead_cpu);
 #else
-/*  */
+
 #endif
 
 enum tick_broadcast_mode {
@@ -60,19 +60,19 @@ enum tick_broadcast_state {
 #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
 extern void tick_broadcast_control(enum tick_broadcast_mode mode);
 #else
-/*  */
+
 #endif /* BROADCAST */
 
 #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_HOTPLUG_CPU)
 extern void tick_offline_cpu(unsigned int cpu);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_GENERIC_CLOCKEVENTS
 extern int tick_broadcast_oneshot_control(enum tick_broadcast_state state);
 #else
-/*  */
+
 #endif
 
 static inline void tick_broadcast_enable(void)
@@ -140,7 +140,7 @@ static inline void tick_nohz_idle_stop_tick_protected(void)
 }
 
 #else /* !CONFIG_NO_HZ_COMMON */
-/*  */
+
 #endif /* !CONFIG_NO_HZ_COMMON */
 
 #ifdef CONFIG_NO_HZ_FULL
@@ -239,7 +239,7 @@ extern void tick_nohz_full_kick_cpu(int cpu);
 extern void __tick_nohz_task_switch(void);
 extern void __init tick_nohz_full_setup(cpumask_var_t cpumask);
 #else
-/*  */
+
 #endif
 
 static inline void tick_nohz_task_switch(void)

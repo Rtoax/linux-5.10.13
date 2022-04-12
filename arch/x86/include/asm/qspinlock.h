@@ -103,7 +103,7 @@ static inline bool virt_spin_lock(struct qspinlock *lock)
 	return true;
 }
 #else
-/*  */
+
 #endif /* CONFIG_PARAVIRT */
 
 #include <asm-generic/qspinlock.h>

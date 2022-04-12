@@ -1494,8 +1494,8 @@ static void __start_timer(struct timer_list *t, unsigned long interval)
 
 /**
  * @brief 定时器
- * 
- * @param t 
+ *
+ * @param t
  */
 static void mce_timer_fn(struct timer_list *t)
 {
@@ -1508,7 +1508,7 @@ static void mce_timer_fn(struct timer_list *t)
 
 	/**
 	 * @brief Machine Check Exception
-	 * 
+	 *
 	 */
 	if (mce_available(this_cpu_ptr(&cpu_info))) {
 		machine_check_poll(0, this_cpu_ptr(&mce_poll_banks));
@@ -2753,7 +2753,7 @@ static int fake_panic_set(void *data, u64 val)
 DEFINE_DEBUGFS_ATTRIBUTE(fake_panic_fops, fake_panic_get, fake_panic_set,
 			 "%llu\n");
 
-static void __init mcheck_debugfs_init(void)    /*  */
+static void __init mcheck_debugfs_init(void)
 {
 	struct dentry *dmce;
 
@@ -2762,7 +2762,7 @@ static void __init mcheck_debugfs_init(void)    /*  */
 				   &fake_panic_fops);
 }
 #else
-/*  */
+
 #endif
 
 static int __init mcheck_late_init(void)
@@ -2776,7 +2776,7 @@ static int __init mcheck_late_init(void)
 	 * Flush out everything that has been logged during early boot, now that
 	 * everything has been initialized (workqueues, decoders, ...).
 	 */
-	mce_schedule_work();    /*  */
+	mce_schedule_work();
 
 	return 0;
 }

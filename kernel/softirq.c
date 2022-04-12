@@ -55,7 +55,7 @@ EXPORT_PER_CPU_SYMBOL(irq_stat);
 /**
  *  处理函数 - 软中断描述符
  */
-static struct softirq_action __cacheline_aligned_in_smp softirq_vec[NR_SOFTIRQS] ;/*  */
+static struct softirq_action __cacheline_aligned_in_smp softirq_vec[NR_SOFTIRQS] ;
 
 /**
  *  软终端 线程 - 每个 CPU 一个
@@ -76,7 +76,7 @@ struct task_struct * ksoftirqd; //+++
 //       SCHED:     161852     146745     129539     126064     127998     128014     120243     117391
 //     HRTIMER:          0          0          0          0          0          0          0          0
 //         RCU:     337707     289397     251874     239796     254377     254898     267497     256624
-const char * const softirq_to_name[NR_SOFTIRQS] /*  */= {
+const char * const softirq_to_name[NR_SOFTIRQS] = {
 	"HI",       /* 高优先级 */
     "TIMER",    /* 定时器 */
     "NET_TX",   /* 网络发包 */
@@ -751,7 +751,7 @@ void irq_exit(void)
  * This function must run with irqs disabled!
  *  该函数运行期间关闭了中断，因此允许在进程上下文中调用
  */
-inline void raise_softirq_irqoff(unsigned int nr)   /*  */
+inline void raise_softirq_irqoff(unsigned int nr)
 {
     /**
      *
@@ -769,7 +769,7 @@ inline void raise_softirq_irqoff(unsigned int nr)   /*  */
 	 *
 	 * 如果在进程上下文中
 	 */
-	if (!in_interrupt())/*  */
+	if (!in_interrupt())
         /**
          *  唤醒内核线程
          */
@@ -780,7 +780,7 @@ inline void raise_softirq_irqoff(unsigned int nr)   /*  */
  *  主动触发一个软中断
  *  延期的中断由`open_softirq`打开，使用`raise_softirq`激活
  */
-void raise_softirq(unsigned int nr) /*  */
+void raise_softirq(unsigned int nr)
 {
 	unsigned long flags;
 
@@ -797,7 +797,7 @@ void raise_softirq(unsigned int nr) /*  */
  */
 void __raise_softirq_irqoff(unsigned int nr)
 {
-	lockdep_assert_irqs_disabled(); /*  */
+	lockdep_assert_irqs_disabled();
 	trace_softirq_raise(nr);
 
     /**
@@ -821,7 +821,7 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))/* 赋值 */
  *  1. 一个 普通优先级 `tasklet_vec` ->  TASKLET_SOFTIRQ(优先级=6)
  *  2. 一个 高优先级  `tasklet_hi_vec`-> HI_SOFTIRQ(优先级=0)
  */
-struct tasklet_head {   /*  */
+struct tasklet_head {
 	struct tasklet_struct *head;
 	struct tasklet_struct **tail;
 };
@@ -1085,7 +1085,7 @@ EXPORT_SYMBOL(tasklet_kill);
  *
  *  softirqs是静态分配的，这对内核模块来说是不可加载的，这就引出了tasklets；
  */
-void __init softirq_init(void)  /*  */
+void __init softirq_init(void)
 {
 	int cpu;
 
@@ -1103,7 +1103,7 @@ void __init softirq_init(void)  /*  */
     /**
      *  为 tasklet 注册 softirq
      */
-	open_softirq(TASKLET_SOFTIRQ, tasklet_action);  /*  */
+	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);    /* high-priority tasklets 高优先级 tasklet */
 }
 
@@ -1122,7 +1122,7 @@ static int ksoftirqd_should_run(unsigned int cpu)
  *  ksoftirqd 主任务
  *  这是在中断关闭状态下中运行的
  */
-static void run_ksoftirqd(unsigned int cpu) /*  */
+static void run_ksoftirqd(unsigned int cpu)
 {
     /**
      *  ksoftirqd
@@ -1151,7 +1151,7 @@ static void run_ksoftirqd(unsigned int cpu) /*  */
 		cond_resched();
 		return;
 	}
-	local_irq_enable(); /*  */
+	local_irq_enable();
 }
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -1245,7 +1245,7 @@ static struct smp_hotplug_thread softirq_threads = {
 static __init int spawn_ksoftirqd(void)
 {
 	cpuhp_setup_state_nocalls(CPUHP_SOFTIRQ_DEAD, "softirq:dead", NULL, takeover_tasklets);
-	BUG_ON(smpboot_register_percpu_thread(&softirq_threads));   /*  */
+	BUG_ON(smpboot_register_percpu_thread(&softirq_threads));
 
 	return 0;
 }

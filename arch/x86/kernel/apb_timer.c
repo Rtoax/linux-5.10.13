@@ -236,7 +236,7 @@ static __init int apbt_late_init(void)
 fs_initcall(apbt_late_init);
 #else
 
-/*  */
+
 
 #endif /* CONFIG_SMP */
 

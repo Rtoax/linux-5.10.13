@@ -85,7 +85,7 @@ static s64			ntp_tick_adj;
 /* second value of the next pending leapsecond, or TIME64_MAX if no leap */
 static time64_t			ntp_next_leap_sec = TIME64_MAX;
     //目标板在使用GPS15/35时，连上卫星，会发出每秒1次的脉冲（1 Pluse Per Second）
-#ifdef CONFIG_NTP_PPS  
+#ifdef CONFIG_NTP_PPS
     //Network Time Protocol（NTP）
 /*
  * The following variables are used when a pulse-per-second (PPS) signal
@@ -1043,5 +1043,5 @@ __setup("ntp_tick_adj=", ntp_tick_adj_setup);
 
 void __init ntp_init(void)  /* Network Time Protocol  */
 {
-	ntp_clear();/*  */
+	ntp_clear();
 }

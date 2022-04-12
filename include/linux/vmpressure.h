@@ -44,6 +44,6 @@ extern int vmpressure_register_event(struct mem_cgroup *memcg,
 extern void vmpressure_unregister_event(struct mem_cgroup *memcg,
 					struct eventfd_ctx *eventfd);
 #else
-/*  */
+
 #endif /* CONFIG_MEMCG */
 #endif /* __LINUX_VMPRESSURE_H */

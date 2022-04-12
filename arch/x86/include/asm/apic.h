@@ -67,7 +67,7 @@ enum apic_intr_mode_id {
 #ifdef CONFIG_SMP
 extern void __inquire_remote_apic(int apicid);
 #else /* CONFIG_SMP */
-/*  */
+
 #endif /* CONFIG_SMP */
 
 static inline void default_inquire_remote_apic(int apicid)
@@ -99,7 +99,7 @@ static inline bool apic_from_smp_config(void)
 extern int setup_profiling_timer(unsigned int);
 
 /**
- *  
+ *
  */
 static inline void native_apic_mem_write(u32 reg, u32 v)
 {
@@ -255,7 +255,7 @@ static inline int x2apic_enabled(void)
 
 #define x2apic_supported()	(boot_cpu_has(X86_FEATURE_X2APIC))
 #else /* !CONFIG_X86_X2APIC */
-/*  */
+
 #endif /* !CONFIG_X86_X2APIC */
 
 struct irq_data;
@@ -271,9 +271,9 @@ struct irq_data;
  *
  * 高级可编程中断控制器
  */
-struct apic {   /*  */
+struct apic {
 	/**
-	 *  Hotpath functions first 
+	 *  Hotpath functions first
         arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
         arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
         arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
@@ -332,7 +332,7 @@ struct apic {   /*  */
 	u32	(*set_apic_id)(unsigned int id);
 
     /**
-     *  
+     *
      */
 	/* wakeup_secondary_cpu */
 	int	(*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
@@ -353,7 +353,7 @@ struct apic {   /*  */
 	int (*x86_32_early_logical_apicid)(int cpu);
 #endif
     /**
-     *  
+     *
      */
 	char	*name;
 };
@@ -397,11 +397,11 @@ extern int lapic_can_unplug_cpu(void);
 
 static inline u32 apic_read(u32 reg)
 {   /* apic maybe == apic_flat -> native_apic_mem_read() */
-	return apic->read(reg); 
+	return apic->read(reg);
 }
 
 /**
- *  
+ *
  */
 static inline void apic_write(u32 reg, u32 val)
 {
@@ -451,7 +451,7 @@ static inline u32 safe_apic_wait_icr_idle(void)
 extern void __init apic_set_eoi_write(void (*eoi_write)(u32 reg, u32 v));
 
 #else /* CONFIG_X86_LOCAL_APIC */
-/*  */
+
 #endif /* CONFIG_X86_LOCAL_APIC */
 
 extern void apic_ack_irq(struct irq_data *data);

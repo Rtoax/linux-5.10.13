@@ -1452,4 +1452,4 @@ static int __init ghes_init(void)
 err:
 	return rc;
 }
-device_initcall(ghes_init); /*  */
+device_initcall(ghes_init);

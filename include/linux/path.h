@@ -6,7 +6,7 @@ struct dentry;
 struct vfsmount;
 
 /**
- *  
+ *
  */
 struct path {   /* 路径 */
     /**
@@ -16,7 +16,7 @@ struct path {   /* 路径 */
     /**
      *  实体自身的 dentry 结构，表示实体本身
      */
-	struct dentry *dentry;  /*  */
+	struct dentry *dentry;
 } __randomize_layout;
 
 extern void path_get(const struct path *);

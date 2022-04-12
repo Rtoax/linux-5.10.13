@@ -67,7 +67,7 @@ static inline bool is_vmd(struct pci_bus *bus)
 	return to_pci_sysdata(bus)->vmd_dev != NULL;
 }
 #else
-/*  */
+
 #endif /* CONFIG_VMD */
 
 /* Can be used to override the logic in pci_scan_bus for skipping
@@ -77,7 +77,7 @@ static inline bool is_vmd(struct pci_bus *bus)
 extern unsigned int pcibios_assign_all_busses(void);
 extern int pci_legacy_init(void);
 #else
-/*  */
+
 #endif
 
 extern unsigned long pci_mem_start;
@@ -100,7 +100,7 @@ int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
 #ifdef CONFIG_PCI
 extern void early_quirks(void);
 #else
-/*  */
+
 #endif
 
 extern void pci_iommu_alloc(void);

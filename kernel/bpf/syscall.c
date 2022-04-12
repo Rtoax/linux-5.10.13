@@ -166,7 +166,7 @@ const struct bpf_map_ops bpf_map_offload_ops = {
 /**
  *  查找已经存在映射，或者创建新的映射
  */
-static struct bpf_map *find_and_alloc_map(union bpf_attr *attr) /*  */
+static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
 {
 	const struct bpf_map_ops *ops;
 	u32 type = attr->map_type;
@@ -887,7 +887,7 @@ static __poll_t bpf_map_poll(struct file *filp, struct poll_table_struct *pts)
 /**
  *  bpf map FD 操作符
  */
-const struct file_operations bpf_map_fops = {   /*  */
+const struct file_operations bpf_map_fops = {
 #ifdef CONFIG_PROC_FS
 	bpf_map_fops.show_fdinfo	= bpf_map_show_fdinfo,
 #endif
@@ -1134,21 +1134,21 @@ static int map_create(union bpf_attr *attr)
     /**
      *  初始化 BPF 映射中的安全字段
      */
-	err = security_bpf_map_alloc(map);  /*  */
+	err = security_bpf_map_alloc(map);
 	if (err)
 		goto free_map;
 
     /**
      *  分配一个ID
      */
-	err = bpf_map_alloc_id(map);    /*  */
+	err = bpf_map_alloc_id(map);
 	if (err)
 		goto free_map_sec;
 
     /**
      *
      */
-	err = bpf_map_new_fd(map, f_flags); /*  */
+	err = bpf_map_new_fd(map, f_flags);
 	if (err < 0) {
 		/* failed to allocate fd.
 		 * bpf_map_put_with_uref() is needed because the above
@@ -4579,7 +4579,7 @@ out:
 
 #define BPF_LINK_UPDATE_LAST_FIELD link_update.old_prog_fd
 
-static int link_update(union bpf_attr *attr)    /*  */
+static int link_update(union bpf_attr *attr)
 {
 	struct bpf_prog *old_prog = NULL, *new_prog;
 	struct bpf_link *link;
@@ -4909,10 +4909,10 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	case BPF_MAP_DELETE_ELEM:   /* 映射删除元素 */
 		err = map_delete_elem(&attr);
 		break;
-	case BPF_MAP_GET_NEXT_KEY:  /*  */
+	case BPF_MAP_GET_NEXT_KEY:
 		err = map_get_next_key(&attr);
 		break;
-	case BPF_MAP_FREEZE:        /*  */
+	case BPF_MAP_FREEZE:
 		err = map_freeze(&attr);
 		break;
 	case BPF_PROG_LOAD:         /* 加载程序 */

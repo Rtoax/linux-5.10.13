@@ -17,7 +17,7 @@
 
 #ifdef CONFIG_SMP
 
-struct percpu_counter { /*  */
+struct percpu_counter {
 	raw_spinlock_t lock;
 	s64 count;
 #ifdef CONFIG_HOTPLUG_CPU
@@ -93,7 +93,7 @@ static inline bool percpu_counter_initialized(struct percpu_counter *fbc)
 }
 
 #else /* !CONFIG_SMP */
-/*  */
+
 #endif	/* CONFIG_SMP */
 
 static inline void percpu_counter_inc(struct percpu_counter *fbc)

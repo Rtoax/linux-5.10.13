@@ -73,7 +73,7 @@ union IO_APIC_reg_03 {
  *  接口
  *  __ioapic_write_entry() - 添加 重定向表的 entry
  */
-struct IO_APIC_route_entry {    /*  */
+struct IO_APIC_route_entry {
 	__u32	vector		:  8,
 		delivery_mode	:  3,	/* 000: FIXED
 					             * 001: lowest prio
@@ -92,7 +92,7 @@ struct IO_APIC_route_entry {    /*  */
 } __attribute__ ((packed));
 
 /**
- *  
+ *
  */
 struct IR_IO_APIC_route_entry {
 	__u64	vector		: 8,
@@ -197,7 +197,7 @@ extern unsigned int native_io_apic_read(unsigned int apic, unsigned int reg);
 extern void native_restore_boot_irq_mode(void);
 
 /**
- *  
+ *
  */
 static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
 {

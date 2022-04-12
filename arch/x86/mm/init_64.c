@@ -585,7 +585,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
 	}
 
     /**
-     *  
+     *
      */
 	update_page_count(PG_LEVEL_2M, pages);
 	return paddr_last;
@@ -680,7 +680,7 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
 	}
 
     /**
-     *  
+     *
      */
 	update_page_count(PG_LEVEL_1G, pages);
 
@@ -795,7 +795,7 @@ __kernel_physical_mapping_init(unsigned long paddr_start,
  * The virtual and physical addresses have to be aligned on PMD level
  * down. It returns the last physical address mapped.
  */
-unsigned long __meminit /*  */
+unsigned long __meminit
 kernel_physical_mapping_init(unsigned long paddr_start,
 			     unsigned long paddr_end,
 			     unsigned long page_size_mask, pgprot_t prot)
@@ -835,10 +835,10 @@ kernel_physical_mapping_change(unsigned long paddr_start,
 void __init paging_init(void)
 {
     /**
-     *  
+     *
      */
     //allocates non-linear `mem_section` and `mem_map`
-	sparse_init();  
+	sparse_init();
 
 	/*
 	 * clear the default setting with node 0
@@ -1254,7 +1254,7 @@ void __ref arch_remove_memory(int nid, u64 start, u64 size,
 }
 #endif /* CONFIG_MEMORY_HOTPLUG */
 
-static struct kcore_list kcore_vsyscall;    /*  */
+static struct kcore_list kcore_vsyscall;
 
 static void __init register_page_bootmem_info(void)/* 注册 boot page */
 {
@@ -1275,7 +1275,7 @@ static void __init register_page_bootmem_info(void)/* 注册 boot page */
  * Only the level which needs to be synchronized between all page-tables is
  * allocated because the synchronization can be expensive.
  */ /* vmalloc 预分配 */
-static void __init preallocate_vmalloc_pages(void)  
+static void __init preallocate_vmalloc_pages(void)
 {
 	unsigned long addr;
 	const char *lvl;
@@ -1304,7 +1304,7 @@ static void __init preallocate_vmalloc_pages(void)
 		 * hardware level is allocated on 4-level systems too.
 		 */
 		lvl = "pud";
-		pud = pud_alloc(&init_mm, p4d, addr);   /*  */
+		pud = pud_alloc(&init_mm, p4d, addr);
 		if (!pud)
 			goto failed;
 	}
@@ -1326,7 +1326,7 @@ failed:
 void __init mem_init(void)  /* 64bit 初始化 */
 {
     /**
-     *  
+     *
      */
 	pci_iommu_alloc();  /* __IOMMU_INIT */
 
@@ -1337,10 +1337,10 @@ void __init mem_init(void)  /* 64bit 初始化 */
      */
 	/* this will put all memory onto the freelists */
 	memblock_free_all();/* 统计总页数 */
-    
+
 	after_bootmem = 1;
 
-    /* 
+    /*
         初始化阶段为 x86_init_noop()
         可能等于 xen_after_bootmem()
     */
@@ -1355,10 +1355,10 @@ void __init mem_init(void)  /* 64bit 初始化 */
 	 * 必须在boot memory放到freelist之后才做，因为这里我们可能会在deferred struct pages
 	 * 中设置尚未初始化的字段，而memblock_free_all()会为我们初始化所有保留的deferred pages。
 	 */
-	register_page_bootmem_info();   /*  */
+	register_page_bootmem_info();
 
 	/* Register memory areas for /proc/kcore */
-	if (get_gate_vma(&init_mm)) /*  */
+	if (get_gate_vma(&init_mm))
 		kclist_add(&kcore_vsyscall, (void *)VSYSCALL_ADDR, PAGE_SIZE, KCORE_USER);
 
     /**
@@ -1366,7 +1366,7 @@ void __init mem_init(void)  /* 64bit 初始化 */
      */
 	preallocate_vmalloc_pages();    /* vmalloc 预分配 pages */
 
-	mem_init_print_info(NULL);  /*  */
+	mem_init_print_info(NULL);
 }
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
@@ -1632,7 +1632,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
 
 #if defined(CONFIG_MEMORY_HOTPLUG_SPARSE) && defined(CONFIG_HAVE_BOOTMEM_INFO_NODE)
 /**
- *  
+ *
  */
 void register_page_bootmem_memmap(unsigned long section_nr,
 				  struct page *start_page, unsigned long nr_pages)
@@ -1659,7 +1659,7 @@ void register_page_bootmem_memmap(unsigned long section_nr,
 			continue;
 		}
         /**
-         *  
+         *
          */
 		get_page_bootmem(section_nr, pgd_page(*pgd), MIX_SECTION_INFO);
 
@@ -1669,7 +1669,7 @@ void register_page_bootmem_memmap(unsigned long section_nr,
 			continue;
 		}
         /**
-         *  
+         *
          */
 		get_page_bootmem(section_nr, p4d_page(*p4d), MIX_SECTION_INFO);
 

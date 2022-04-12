@@ -107,7 +107,7 @@ struct shmem_falloc {
 	pgoff_t nr_unswapped;	/* how often writepage refused to swap out */
 };
 
-struct shmem_options {  /*  */
+struct shmem_options {
 	unsigned long long blocks;
 	unsigned long long inodes;
 	struct mempolicy *mpol;
@@ -474,7 +474,7 @@ static bool shmem_confirm_swap(struct address_space *mapping,
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 /* ifdef here to avoid bloating shmem.o when not necessary */
 
-static int __read_mostly shmem_huge ;/*  */
+static int __read_mostly shmem_huge ;
 
 #if defined(CONFIG_SYSFS)
 static int shmem_parse_huge(const char *str)
@@ -1820,7 +1820,7 @@ repeat:
 	charge_mm = vma ? vma->vm_mm : current->mm;
 
     /**
-     *  
+     *
      */
 	page = find_lock_entry(mapping, index);
 	if (xa_is_value(page)) {
@@ -2046,7 +2046,7 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 	struct inode *inode = file_inode(vma->vm_file);
 
     /**
-     *  
+     *
      */
 	gfp_t gfp = mapping_gfp_mask(inode->i_mapping);
 	enum sgp_type sgp;
@@ -2079,7 +2079,7 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 		    shmem_falloc->waitq &&
 		    vmf->pgoff >= shmem_falloc->start &&
 		    vmf->pgoff < shmem_falloc->next) {
-		    
+
 			struct file *fpin;
 			wait_queue_head_t *shmem_falloc_waitq;
 			DEFINE_WAIT_FUNC(shmem_fault_wait, synchronous_wake_function);
@@ -2094,7 +2094,7 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 			spin_unlock(&inode->i_lock);
 
             /**
-             *  
+             *
              */
 			schedule();
 
@@ -2134,7 +2134,7 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 }
 
 /**
- *  映射 共享内存 
+ *  映射 共享内存
  */
 unsigned long shmem_get_unmapped_area(struct file *file,
 				      unsigned long uaddr, unsigned long len,
@@ -3816,7 +3816,7 @@ failed:
 	return err;
 }
 
-static int shmem_get_tree(struct fs_context *fc)    /*  */
+static int shmem_get_tree(struct fs_context *fc)
 {
 	return get_tree_nodev(fc, shmem_fill_super);
 }
@@ -3833,7 +3833,7 @@ static void shmem_free_fc(struct fs_context *fc)
 
 static const struct fs_context_operations shmem_fs_context_ops = {  /* 文件系统上下文操作 */
 	.free			= shmem_free_fc,
-	.get_tree		= shmem_get_tree,   /*  */
+	.get_tree		= shmem_get_tree,
 #ifdef CONFIG_TMPFS
 	.parse_monolithic	= shmem_parse_options,
 	.parse_param		= shmem_parse_one,
@@ -3884,7 +3884,7 @@ static void shmem_destroy_inodecache(void)
 }
 
 /**
- *  
+ *
  */
 static const struct address_space_operations shmem_aops = {
 	shmem_aops.writepage	= shmem_writepage,
@@ -3900,7 +3900,7 @@ static const struct address_space_operations shmem_aops = {
 };
 
 /**
- *  
+ *
  */
 static const struct file_operations shmem_file_operations = {
 	shmem_file_operations.mmap		= shmem_mmap,
@@ -3917,7 +3917,7 @@ static const struct file_operations shmem_file_operations = {
 };
 
 /**
- *  
+ *
  */
 static const struct inode_operations shmem_inode_operations = {
 	shmem_inode_operations.getattr	= shmem_getattr,
@@ -3929,7 +3929,7 @@ static const struct inode_operations shmem_inode_operations = {
 };
 
 /**
- *  
+ *
  */
 static const struct inode_operations shmem_dir_inode_operations = {
 #ifdef CONFIG_TMPFS
@@ -3954,7 +3954,7 @@ static const struct inode_operations shmem_dir_inode_operations = {
 };
 
 /**
- *  
+ *
  */
 static const struct inode_operations shmem_special_inode_operations = {
 #ifdef CONFIG_TMPFS_XATTR
@@ -3967,7 +3967,7 @@ static const struct inode_operations shmem_special_inode_operations = {
 };
 
 /**
- *  
+ *
  */
 static const struct super_operations shmem_ops = {
 	shmem_ops.alloc_inode	= shmem_alloc_inode,
@@ -3987,7 +3987,7 @@ static const struct super_operations shmem_ops = {
 };
 
 /**
- *  
+ *
  */
 static const struct vm_operations_struct shmem_vm_ops = {
 	shmem_vm_ops.fault		= shmem_fault,
@@ -4016,12 +4016,12 @@ int shmem_init_fs_context(struct fs_context *fc)    /*  初始化*/
 }
 
 /**
- *  
+ *
  */
 static struct file_system_type shmem_fs_type = {    /* tmpfs 文件系统 /dev/shm 就是 tmpfs */
 	shmem_fs_type.owner		= THIS_MODULE,
-	shmem_fs_type.name		= "tmpfs",  /*  */
-	shmem_fs_type.init_fs_context = shmem_init_fs_context,   /*  */
+	shmem_fs_type.name		= "tmpfs",
+	shmem_fs_type.init_fs_context = shmem_init_fs_context,
 #ifdef CONFIG_TMPFS
 	shmem_fs_type.parameters	= shmem_fs_parameters,
 #endif
@@ -4030,7 +4030,7 @@ static struct file_system_type shmem_fs_type = {    /* tmpfs 文件系统 /dev/s
 };
 
 /**
- *  
+ *
  */
 int __init shmem_init(void) /* 共享内存 */
 {
@@ -4159,7 +4159,7 @@ bool shmem_huge_enabled(struct vm_area_struct *vma)
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 #else /* !CONFIG_SHMEM */
-/*  */
+
 #endif /* CONFIG_SHMEM */
 
 /* common code */
@@ -4191,7 +4191,7 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, l
 	res = ERR_PTR(ramfs_nommu_expand_for_mapping(inode, size));
 	if (!IS_ERR(res))
         /**
-         *  
+         *
          */
 		res = alloc_file_pseudo(inode, mnt, name, O_RDWR, &shmem_file_operations);
 	if (IS_ERR(res))

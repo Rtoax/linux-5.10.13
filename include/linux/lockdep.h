@@ -90,7 +90,7 @@ struct lock_chain {
 #define MAX_LOCKDEP_KEYS		(1UL << MAX_LOCKDEP_KEYS_BITS)
 #define INITIAL_CHAIN_KEY		-1
 
-struct held_lock {  /*  */
+struct held_lock {
 	/*
 	 * One-way hash of the dependency chain up to this point. We
 	 * hash the hashes step by step as the dependency chain grows.
@@ -196,7 +196,7 @@ lockdep_init_map_wait(struct lockdep_map *lock, const char *name,
 }
 
 /**
- *  
+ *
  */
 static inline void lockdep_init_map(struct lockdep_map *lock, const char *name,
 			     struct lock_class_key *key, int subclass)
@@ -598,7 +598,7 @@ do {									\
 } while (0)
 
 #else
-/*  */
+
 
 #endif
 
@@ -613,14 +613,14 @@ do {									\
 
 #else
 
-/*  */
+
 
 #endif
 
 #ifdef CONFIG_LOCKDEP
 void lockdep_rcu_suspicious(const char *file, const int line, const char *s);
 #else
-/*  */
+
 #endif
 
 #endif /* __LINUX_LOCKDEP_H */

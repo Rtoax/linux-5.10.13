@@ -386,4 +386,4 @@ static int __init task_iter_init(void)
 	task_file_reg_info.ctx_arg_info[1].btf_id = btf_task_file_ids[1];
 	return bpf_iter_reg_target(&task_file_reg_info);
 }
-late_initcall(task_iter_init);  /*  */
+late_initcall(task_iter_init);

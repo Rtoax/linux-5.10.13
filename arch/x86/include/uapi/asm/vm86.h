@@ -60,7 +60,7 @@
  * is 'kernel_vm86_regs' (see below).
  */
 
-struct vm86_regs {  /*  */
+struct vm86_regs {
 /*
  * normal regs, with special meaning for the segment descriptors..
  */
@@ -116,7 +116,7 @@ struct vm86plus_info_struct {
 	unsigned long is_vm86pus:1;	      /* for vm86 internal use */
 	unsigned char vm86dbg_intxxtab[32];   /* for debugger */
 };
-struct vm86plus_struct {    /*  */
+struct vm86plus_struct {
 	struct vm86_regs regs;
 	unsigned long flags;
 	unsigned long screen_bitmap;

@@ -95,12 +95,12 @@ extern unsigned int ptrs_per_p4d;
  */
 #define PTRS_PER_PTE	512
 
-#define PMD_SIZE	/*  */ (_AC(1, UL) << PMD_SHIFT/* 21 */)
-#define PMD_MASK	/*  */ (~(PMD_SIZE - 1))
-#define PUD_SIZE	/*  */ (_AC(1, UL) << PUD_SHIFT/* 30 */)
-#define PUD_MASK	/*  */ (~(PUD_SIZE - 1))
-#define PGDIR_SIZE	/*  */ (_AC(1, UL) << PGDIR_SHIFT)
-#define PGDIR_MASK	/*  */ (~(PGDIR_SIZE - 1))
+#define PMD_SIZE	 (_AC(1, UL) << PMD_SHIFT/* 21 */)
+#define PMD_MASK	 (~(PMD_SIZE - 1))
+#define PUD_SIZE	 (_AC(1, UL) << PUD_SHIFT/* 30 */)
+#define PUD_MASK	 (~(PUD_SIZE - 1))
+#define PGDIR_SIZE	 (_AC(1, UL) << PGDIR_SHIFT)
+#define PGDIR_MASK	 (~(PGDIR_SIZE - 1))
 
 /*
  * See Documentation/x86/x86_64/mm.rst for a description of the memory map.
@@ -120,7 +120,7 @@ extern unsigned int ptrs_per_p4d;
 #define LDT_BASE_ADDR		(LDT_PGD_ENTRY << PGDIR_SHIFT)
 #define LDT_END_ADDR		(LDT_BASE_ADDR + PGDIR_SIZE)
 
-#define __VMALLOC_BASE_L4	0xffffc90000000000UL    /*  */
+#define __VMALLOC_BASE_L4	0xffffc90000000000UL
 #define __VMALLOC_BASE_L5 	0xffa0000000000000UL
 
 #define VMALLOC_SIZE_TB_L4	32UL
@@ -130,16 +130,16 @@ extern unsigned int ptrs_per_p4d;
 #define __VMEMMAP_BASE_L5	0xffd4000000000000UL
 
 #ifdef CONFIG_DYNAMIC_MEMORY_LAYOUT
-# define VMALLOC_START		vmalloc_base    /*  */
+# define VMALLOC_START		vmalloc_base
 # define VMALLOC_SIZE_TB	(pgtable_l5_enabled() ? VMALLOC_SIZE_TB_L5 : VMALLOC_SIZE_TB_L4)
-# define VMEMMAP_START		vmemmap_base    /*  */
+# define VMEMMAP_START		vmemmap_base
 #else
 //# define VMALLOC_START		__VMALLOC_BASE_L4
 //# define VMALLOC_SIZE_TB	VMALLOC_SIZE_TB_L4
 //# define VMEMMAP_START		__VMEMMAP_BASE_L4
 #endif /* CONFIG_DYNAMIC_MEMORY_LAYOUT */
 
-#define VMALLOC_END		(VMALLOC_START + (VMALLOC_SIZE_TB << 40) - 1)   /*  */
+#define VMALLOC_END		(VMALLOC_START + (VMALLOC_SIZE_TB << 40) - 1)
 
 #define MODULES_VADDR		(__START_KERNEL_map/* 0xffffffff80000000 */ + KERNEL_IMAGE_SIZE/* (1024*1024*1024)=1G */)
 //       +-----------+-----------------+---------------+------------------+

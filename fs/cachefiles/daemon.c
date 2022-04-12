@@ -44,7 +44,7 @@ static int cachefiles_daemon_tag(struct cachefiles_cache *, char *);
 
 static unsigned long cachefiles_open;
 
-const struct file_operations cachefiles_daemon_fops = { /*  */
+const struct file_operations cachefiles_daemon_fops = {
 	.owner		= THIS_MODULE,
 	.open		= cachefiles_daemon_open,
 	.release	= cachefiles_daemon_release,

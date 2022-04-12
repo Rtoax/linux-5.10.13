@@ -4,8 +4,8 @@
 
 #ifdef CONFIG_MMU
 
-#define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)   /*  */
-#define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)    /*  */
+#define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
+#define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
 
 /**
  * __pte_alloc_one_kernel - allocate a page for PTE-level kernel page table
@@ -56,7 +56,7 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
  *
  * Return: `struct page` initialized as page table or %NULL on error
  */
-static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)    /*  */
+static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 {
 	struct page *pte;
 
@@ -115,7 +115,7 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
  * %GFP_PGTABLE_KERNEL in kernel context.
  *
  * Return: pointer to the allocated memory or %NULL on error
- */ /*  */
+ */
 static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
 {
 	struct page *page;

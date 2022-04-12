@@ -16,7 +16,7 @@
 
 #include <asm/setup.h>
 
-struct dentry *arch_debugfs_dir;    /*  */
+struct dentry *arch_debugfs_dir;
 EXPORT_SYMBOL(arch_debugfs_dir);
 
 #ifdef CONFIG_DEBUG_BOOT_PARAMS
@@ -173,4 +173,4 @@ static int __init arch_kdebugfs_init(void)
 
 	return error;
 }
-arch_initcall(arch_kdebugfs_init);  /*  */
+arch_initcall(arch_kdebugfs_init);

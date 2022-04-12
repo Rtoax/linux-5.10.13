@@ -692,7 +692,7 @@ static int __init cgwb_init(void)
 subsys_initcall(cgwb_init);
 
 #else	/* CONFIG_CGROUP_WRITEBACK */
-/*  */
+
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
 static int bdi_init(struct backing_dev_info *bdi)
@@ -944,7 +944,7 @@ long congestion_wait(int sync, long timeout)
 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
 
     /**
-     *  
+     *
      */
 	ret = io_schedule_timeout(timeout);
 	finish_wait(wqh, &wait);

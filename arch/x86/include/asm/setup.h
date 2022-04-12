@@ -36,7 +36,7 @@ extern u64 relocated_ramdisk;
 #ifdef CONFIG_X86_64
 void vsmp_init(void);
 #else
-/*  */
+
 #endif
 
 struct pt_regs;
@@ -57,13 +57,13 @@ extern void __init do_early_exception(struct pt_regs *regs, int trapnr);
 #ifdef CONFIG_X86_INTEL_MID
 extern void x86_intel_mid_early_setup(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_X86_INTEL_CE
 extern void x86_ce4100_early_setup(void);
 #else
-/*  */
+
 #endif
 
 #ifndef _SETUP

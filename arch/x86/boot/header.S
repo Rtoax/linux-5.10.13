@@ -133,7 +133,7 @@ optional_header:
 	.long	0				//# SizeOfUninitializedData
 
 	//# Filled in by build.c
-	.long	0x0000				//# AddressOfEntryPoint   /*  */
+	.long	0x0000				//# AddressOfEntryPoint
 
 	.long	0x0200				//# BaseOfCode
 #ifdef CONFIG_X86_32

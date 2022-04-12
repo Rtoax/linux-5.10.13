@@ -550,4 +550,4 @@ static int __init vlan_offload_init(void)
 	return 0;
 }
 
-fs_initcall(vlan_offload_init); /*  */
+fs_initcall(vlan_offload_init);

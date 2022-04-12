@@ -75,9 +75,9 @@ static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
 }
 #define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
 
-static __always_inline void arch_exit_to_user_mode(void)    /*  */
+static __always_inline void arch_exit_to_user_mode(void)
 {
-	mds_user_clear_cpu_buffers();   /*  */
+	mds_user_clear_cpu_buffers();
 }
 #define arch_exit_to_user_mode arch_exit_to_user_mode
 

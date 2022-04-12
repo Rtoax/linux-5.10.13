@@ -56,7 +56,7 @@ struct notifier_block;		/* in notifier.h */
 /**
  *  vmalloc() 区域
  */
-struct vm_struct {  /*  */
+struct vm_struct {
 	struct vm_struct	*next;
 	void			*addr;
 	unsigned long		size;
@@ -72,18 +72,18 @@ struct vm_struct {  /*  */
 	unsigned int		nr_pages;
 
     /**
-     *  
+     *
      */
 	phys_addr_t		phys_addr;
 	const void		*caller;
 };
 
 /**
- *  
+ *
  */
 struct vmap_area {  /* vmalloc 管理区 */
     /**
-     *  
+     *
      */
 	unsigned long va_start;
 	unsigned long va_end;

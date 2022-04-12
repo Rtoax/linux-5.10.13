@@ -11,7 +11,7 @@ struct ip6t_rt {
 	__u32 rt_type;			/* Routing Type */
 	__u32 segsleft[2];			/* Segments Left */
 	__u32 hdrlen;			/* Header Length */
-	__u8  flags;			/*  */
+	__u8  flags;
 	__u8  invflags;			/* Inverse flags */
 	struct in6_addr addrs[IP6T_RT_HOPS];	/* Hops */
 	__u8 addrnr;			/* Nr of Addresses */

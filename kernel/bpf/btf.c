@@ -5671,7 +5671,7 @@ static int btf_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-const struct file_operations btf_fops = {   /*  */
+const struct file_operations btf_fops = {
 #ifdef CONFIG_PROC_FS
 	.show_fdinfo	= bpf_btf_show_fdinfo,
 #endif

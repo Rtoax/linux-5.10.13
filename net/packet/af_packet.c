@@ -302,7 +302,7 @@ static void __register_prot_hook(struct sock *sk)
 	struct packet_sock *po = pkt_sk(sk);
 
     /**
-     *  
+     *
      */
 	if (!po->running) {
 		if (po->fanout)
@@ -2093,7 +2093,7 @@ static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 	snaplen = skb->len;
 
     /**
-     *  
+     *
      */
 	res = run_filter(skb, sk, snaplen);
 	if (!res)
@@ -2118,7 +2118,7 @@ static int packet_rcv(struct sk_buff *skb, struct net_device *dev,
 	}
 
     /**
-     *  
+     *
      */
 	sock_skb_cb_check_size(sizeof(*PACKET_SKB_CB(skb)) + MAX_ADDR_LEN - 8);
 
@@ -3253,7 +3253,7 @@ static struct proto packet_proto = {
 /*
  *	Create a packet of type SOCK_PACKET.
  *
- *  
+ *
  */
 static int packet_create(struct net *net, struct socket *sock, int protocol,
 			 int kern)
@@ -4561,7 +4561,7 @@ static const struct proto_ops packet_ops = {
 	.sendpage =	sock_no_sendpage,
 };
 
-static const struct net_proto_family packet_family_ops = {  /*  */
+static const struct net_proto_family packet_family_ops = {
 	.family =	PF_PACKET,
 	.create =	packet_create,
 	.owner	=	THIS_MODULE,

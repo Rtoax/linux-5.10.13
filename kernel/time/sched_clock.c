@@ -34,7 +34,7 @@
  * performance. In particular 'seq' and 'read_data[0]' (combined) should fit
  * into a single 64-byte cache line.
  */
-struct clock_data { /*  */
+struct clock_data {
 	seqcount_latch_t	seq;
 	struct clock_read_data	read_data[2];
 	ktime_t			wrap_kt;
@@ -57,7 +57,7 @@ static u64 notrace jiffy_sched_clock_read(void)
 	return (u64)(jiffies - INITIAL_JIFFIES);
 }
 
-static struct clock_data ____cacheline_aligned cd  = {/*  */
+static struct clock_data ____cacheline_aligned cd  = {
 	.read_data[0] = { .mult = NSEC_PER_SEC / HZ,
 			  .read_sched_clock = jiffy_sched_clock_read, },
 	.actual_read_sched_clock = jiffy_sched_clock_read,
@@ -294,4 +294,4 @@ static int __init sched_clock_syscore_init(void)
 
 	return 0;
 }
-device_initcall(sched_clock_syscore_init);  /*  */
+device_initcall(sched_clock_syscore_init);

@@ -18,7 +18,7 @@
  */
 static inline void *task_stack_page(const struct task_struct *task)
 {
-	return task->stack; /*  */
+	return task->stack;
 }
 
 #define setup_thread_stack(new,old)	do { } while(0)
@@ -67,7 +67,7 @@ static inline void *try_get_task_stack(struct task_struct *tsk)
 
 extern void put_task_stack(struct task_struct *tsk);
 #else
-/*  */
+
 #endif
 
 #define task_stack_end_corrupted(task) \
@@ -82,7 +82,7 @@ static inline int object_is_on_stack(const void *obj)
 
 extern void thread_stack_cache_init(void);
 
-#ifdef CONFIG_DEBUG_STACK_USAGE /*  */
+#ifdef CONFIG_DEBUG_STACK_USAGE
 static inline unsigned long stack_not_used(struct task_struct *p)
 {
 	unsigned long *n = end_of_stack(p);

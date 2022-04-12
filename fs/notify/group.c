@@ -114,7 +114,7 @@ EXPORT_SYMBOL_GPL(fsnotify_put_group);
 /*
  * Create a new fsnotify_group and hold a reference for the group returned.
  */
-struct fsnotify_group *fsnotify_alloc_group(const struct fsnotify_ops *ops) /*  */
+struct fsnotify_group *fsnotify_alloc_group(const struct fsnotify_ops *ops)
 {
 	struct fsnotify_group *group;
 

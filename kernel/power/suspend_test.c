@@ -142,7 +142,7 @@ static int __init has_wakealarm(struct device *dev, const void *data)
  * at startup time.  They're normally disabled, for faster boot and because
  * we can't know which states really work on this particular system.
  */
-static const char __initdata *test_state_label ;/*  */
+static const char __initdata *test_state_label ;
 
 static char __initdata warn_bad_state[]  =
 	KERN_WARNING "PM: can't test '%s' suspend state\n";
@@ -176,7 +176,7 @@ static int __init setup_test_suspend(char *value)
 }
 __setup("test_suspend", setup_test_suspend);
 
-static int __init test_suspend(void)    /*  */
+static int __init test_suspend(void)
 {
 	static char	__initdata	warn_no_rtc[]  =
 		KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
@@ -216,4 +216,4 @@ static int __init test_suspend(void)    /*  */
 	rtc_class_close(rtc);
 	return 0;
 }
-late_initcall(test_suspend);    /*  */
+late_initcall(test_suspend);

@@ -85,7 +85,7 @@ static DEVICE_ATTR_RO(drawer_siblings);
 static DEVICE_ATTR_RO(drawer_siblings_list);
 #endif
 
-static struct attribute *default_attrs[] = {    /*  */
+static struct attribute *default_attrs[] = {
 	&dev_attr_physical_package_id.attr,
 	&dev_attr_die_id.attr,
 	&dev_attr_core_id.attr,

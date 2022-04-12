@@ -82,7 +82,7 @@ static inline bool pde_is_permanent(const struct proc_dir_entry *pde)
 extern struct kmem_cache *proc_dir_entry_cache;
 void pde_free(struct proc_dir_entry *pde);
 
-union proc_op { /*  */
+union proc_op {
 	int (*proc_get_link)(struct dentry *, struct path *);
 	int (*proc_show)(struct seq_file *m,
 		struct pid_namespace *ns, struct pid *pid,
@@ -237,7 +237,7 @@ extern const struct inode_operations proc_net_inode_operations;
 #ifdef CONFIG_NET
 extern int proc_net_init(void);
 #else
-/*  */
+
 #endif
 
 /*
@@ -259,7 +259,7 @@ extern int proc_sys_init(void);
 extern void proc_sys_evict_inode(struct inode *inode,
 				 struct ctl_table_header *head);
 #else
-/*  */
+
 #endif
 
 /*
@@ -268,7 +268,7 @@ extern void proc_sys_evict_inode(struct inode *inode,
 #ifdef CONFIG_TTY
 extern void proc_tty_init(void);
 #else
-/*  */
+
 #endif
 
 /*

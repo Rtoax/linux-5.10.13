@@ -11,8 +11,8 @@ typedef __u64 timeu64_t;
 #include <uapi/linux/time.h>
 
 /**
- *  
- */	
+ *
+ */
 struct timespec64 {
 	time64_t	tv_sec;			/* seconds */
 	long		tv_nsec;		/* nanoseconds */
@@ -27,7 +27,7 @@ struct itimerspec64 {
 #define TIME64_MAX			((s64)~((u64)1 << 63))
 #define TIME64_MIN			(-TIME64_MAX - 1)
 
-#define KTIME_MAX			((s64)~((u64)1 << 63))  /*  */
+#define KTIME_MAX			((s64)~((u64)1 << 63))
 #define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
 
 /*

@@ -434,15 +434,15 @@ static void print_mem_encrypt_feature_info(void)
 }
 
 /* Architecture __weak replacement functions */
-void __init mem_encrypt_init(void)  /*  */
+void __init mem_encrypt_init(void)
 {
 	if (!sme_me_mask)
 		return;
 
-	/* Call into SWIOTLB to update the SWIOTLB DMA buffers 
+	/* Call into SWIOTLB to update the SWIOTLB DMA buffers
 	    swiotlb技术是一种纯软件的地址映射技术，
 	    主要为寻址能力受限的DMA提供软件上的地址映射*/
-	swiotlb_update_mem_attributes();    /*  */
+	swiotlb_update_mem_attributes();
 
 	/*
 	 * With SEV, we need to unroll the rep string I/O instructions.

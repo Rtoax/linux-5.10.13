@@ -185,7 +185,7 @@ extern void preempt_count_sub(int val);
 #define preempt_count_inc() preempt_count_add(1)
 #define preempt_count_dec() preempt_count_sub(1)
 
-#ifdef CONFIG_PREEMPT_COUNT/*  */
+#ifdef CONFIG_PREEMPT_COUNT
 
 /**
  *  禁止抢占
@@ -296,7 +296,7 @@ do { \
 		set_preempt_need_resched(); \
 } while (0)
 
-#ifdef CONFIG_PREEMPT_NOTIFIERS /*  */
+#ifdef CONFIG_PREEMPT_NOTIFIERS
 
 struct preempt_notifier;
 

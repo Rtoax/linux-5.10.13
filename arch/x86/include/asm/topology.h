@@ -86,7 +86,7 @@ extern int __node_distance(int, int);
 #define node_distance(a, b) __node_distance(a, b)
 
 #else /* !CONFIG_NUMA */
-/*  */
+
 #endif
 
 #include <asm-generic/topology.h>

@@ -953,4 +953,4 @@ static int __init init_root_keyring(void)
 	return look_up_user_keyrings(NULL, NULL);
 }
 
-late_initcall(init_root_keyring);   /*  */
+late_initcall(init_root_keyring);

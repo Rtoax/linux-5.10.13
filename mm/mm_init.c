@@ -24,7 +24,7 @@ int __meminitdata mminit_loglevel;
 #endif
 
 /**
- *  
+ *
  */
 /* The zonelists are simply reported, validation is manual. */
 void __init mminit_verify_zonelist(void)
@@ -38,7 +38,7 @@ void __init mminit_verify_zonelist(void)
      *  遍历node
      */
 	for_each_online_node(nid) {
-	
+
 		pg_data_t *pgdat = NODE_DATA(nid);
 		struct zone *zone;
 		struct zoneref *z;
@@ -48,7 +48,7 @@ void __init mminit_verify_zonelist(void)
 		BUILD_BUG_ON(MAX_ZONELISTS > 2);
 
         /**
-         *  
+         *
          */
 		for (i = 0; i < MAX_ZONELISTS * MAX_NR_ZONES; i++) {
 
@@ -74,7 +74,7 @@ void __init mminit_verify_zonelist(void)
     				zone->name);
 
             /**
-             *  
+             *
              */
 			/* Iterate the zonelist */
 			for_each_zone_zonelist(zone, z, zonelist, zoneid) {
@@ -125,7 +125,7 @@ void __init mminit_verify_pageflags_layout(void)
 	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_usage",
             		"location: %d -> %d layout %d -> %d unused %d -> %d page-flags\n",
             		shift, width, width, NR_PAGEFLAGS, NR_PAGEFLAGS, 0);
-    
+
 #ifdef NODE_NOT_IN_PAGE_FLAGS
 //	mminit_dprintk(MMINIT_TRACE, "pageflags_layout_nodeflags",
 //		            "Node not in page flags");
@@ -210,13 +210,13 @@ static int __meminit mm_compute_batch_notifier(struct notifier_block *self,
 	return NOTIFY_OK;
 }
 
-static struct notifier_block __meminitdata compute_batch_nb  = {/*  */
+static struct notifier_block __meminitdata compute_batch_nb  = {
 	.notifier_call = mm_compute_batch_notifier,
 	.priority = IPC_CALLBACK_PRI, /* use lowest priority */
 };
 
 /**
- *  
+ *
  */
 static int __init mm_compute_batch_init(void)
 {
@@ -226,7 +226,7 @@ static int __init mm_compute_batch_init(void)
 	mm_compute_batch(sysctl_overcommit_memory);
 
     /**
-     *  
+     *
      */
 	register_hotmemory_notifier(&compute_batch_nb);
 
@@ -238,7 +238,7 @@ __initcall(mm_compute_batch_init);
 #endif
 
 /**
- *  
+ *
  */
 static int __init mm_sysfs_init(void)
 {

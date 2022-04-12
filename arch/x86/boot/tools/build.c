@@ -64,7 +64,7 @@ static unsigned long efi64_stub_entry;
 static unsigned long efi_pe_entry;
 static unsigned long efi32_pe_entry;
 static unsigned long kernel_info;
-static unsigned long startup_64;    /*  */
+static unsigned long startup_64;
 static unsigned long _ehead;
 static unsigned long _end;
 
@@ -230,7 +230,7 @@ static void update_pecoff_setup_and_reloc(unsigned int size)
 }
 
 static void update_pecoff_text(unsigned int text_start, unsigned int file_sz,
-			       unsigned int init_sz)    
+			       unsigned int init_sz)
 {
 	unsigned int pe_header;
 	unsigned int text_sz = file_sz - text_start;
@@ -303,7 +303,7 @@ static void efi_stub_entry_update(void)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_EFI_STUB */
 
 static int reserve_pecoff_compat_section(int c)
@@ -450,7 +450,7 @@ int main(int argc, char ** argv)
 		put_unaligned_le32(init_sz, &buf[0x260]);
 	}
 #endif
-	update_pecoff_text(setup_sectors * 512/*  */, i + (sys_size * 16), init_sz);
+	update_pecoff_text(setup_sectors * 512, i + (sys_size * 16), init_sz);
 
 	efi_stub_entry_update();
 

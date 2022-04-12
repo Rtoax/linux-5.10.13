@@ -10,7 +10,7 @@ struct cma {    /* 连续内存访问 */
 	unsigned long   *bitmap;
 	unsigned int order_per_bit; /* Order of pages represented by one bit */
 	struct mutex    lock;
-#ifdef CONFIG_CMA_DEBUGFS   /*  */
+#ifdef CONFIG_CMA_DEBUGFS
 	struct hlist_head mem_head;
 	spinlock_t mem_head_lock;
 	struct debugfs_u32_array dfs_bitmap;

@@ -56,7 +56,7 @@ void _dev_notice(const struct device *dev, const char *fmt, ...);
 void _dev_info(const struct device *dev, const char *fmt, ...);
 
 #else
-/*  */
+
 #endif
 
 /*

@@ -8,7 +8,7 @@
 
 struct ip6t_opts {
 	__u32 hdrlen;			/* Header Length */
-	__u8 flags;				/*  */
+	__u8 flags;
 	__u8 invflags;			/* Inverse flags */
 	__u16 opts[IP6T_OPTS_OPTSNR];	/* opts */
 	__u8 optsnr;			/* Nr of OPts */

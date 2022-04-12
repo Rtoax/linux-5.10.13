@@ -56,19 +56,19 @@ static int meminfo_proc_show(struct seq_file *m, void *v)   /* /proc/meminfo */
 	available = si_mem_available();
 	sreclaimable = global_node_page_state_pages(NR_SLAB_RECLAIMABLE_B);
 	sunreclaim = global_node_page_state_pages(NR_SLAB_UNRECLAIMABLE_B);
-    
+
     /**
      *  物理内存总量
      *
-     *[rongtao@toa linux-5.10.13]$ cat /proc/meminfo 
+     *[rongtao@toa linux-5.10.13]$ cat /proc/meminfo
      *MemTotal:         998660 kB
      *[rongtao@toa linux-5.10.13]$ dmesg | grep reserved
-     *[    0.000000] Memory: 967124k/1048576k available 
+     *[    0.000000] Memory: 967124k/1048576k available
      *                        (6916k kernel code, 524k absent, 80928k reserved, 4551k data, 1800k init)
      *[rongtao@toa linux-5.10.13]$ dmesg | grep Freeing
      *[    3.143139] Freeing unused kernel memory: 1800k freed
      *
-     * (MemTotal:998660 kB) + (80928k reserved - 1800k freed) = 
+     * (MemTotal:998660 kB) + (80928k reserved - 1800k freed) =
      */
 	show_val_kb(m, "MemTotal:       ", i.totalram);
     /**
@@ -184,7 +184,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)   /* /proc/meminfo */
      */
 	show_val_kb(m, "NFS_Unstable:   ", 0);
     /**
-     *  
+     *
      */
 	show_val_kb(m, "Bounce:         ", global_zone_page_state(NR_BOUNCE));
     /**
@@ -192,7 +192,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)   /* /proc/meminfo */
      */
 	show_val_kb(m, "WritebackTmp:   ", global_node_page_state(NR_WRITEBACK_TEMP));
     /**
-     *  
+     *
      */
 	show_val_kb(m, "CommitLimit:    ", vm_commit_limit());
 	show_val_kb(m, "Committed_AS:   ", committed);
@@ -254,7 +254,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)   /* /proc/meminfo */
 	hugetlb_report_meminfo(m);
 
     /**
-     *  
+     *
      */
 	arch_report_meminfo(m);
 
@@ -267,9 +267,9 @@ static int meminfo_proc_show(struct seq_file *m, void *v)   /* /proc/meminfo */
 static int __init proc_meminfo_init(void)
 {
     /**
-     *  
+     *
      */
-	proc_create_single("meminfo", 0, NULL, meminfo_proc_show);  /*  */
+	proc_create_single("meminfo", 0, NULL, meminfo_proc_show);
 	return 0;
 }
 fs_initcall(proc_meminfo_init); /* /proc/meminfo */

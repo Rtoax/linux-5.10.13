@@ -120,4 +120,4 @@ static int __init init_profile_hash(void)
 	return 0;
 }
 
-late_initcall(init_profile_hash);   /*  */
+late_initcall(init_profile_hash);

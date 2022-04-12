@@ -82,7 +82,7 @@ extern int enable_update_mptable;
 extern void default_find_smp_config(void);
 extern void default_get_smp_config(unsigned int early);
 #else
-/*  */
+
 #endif
 
 int generic_processor_info(int apicid, int version);

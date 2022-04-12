@@ -339,4 +339,4 @@ error:
 	return err;
 }
 
-device_initcall(ts5500_init);   /*  */
+device_initcall(ts5500_init);

@@ -9,7 +9,7 @@ struct sem_undo_list;
 
 #ifdef CONFIG_SYSVIPC
 
-struct sysv_sem {   /*  */
+struct sysv_sem {
 	struct sem_undo_list *undo_list;
 };
 
@@ -17,7 +17,7 @@ extern int copy_semundo(unsigned long clone_flags, struct task_struct *tsk);
 extern void exit_sem(struct task_struct *tsk);
 
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_SEM_H */

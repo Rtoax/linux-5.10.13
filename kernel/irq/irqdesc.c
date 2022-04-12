@@ -46,7 +46,7 @@ static void __init init_irq_default_affinity(void)  /* IRQ默认的亲和性 */
 		cpumask_setall(irq_default_affinity);
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_SMP
@@ -75,7 +75,7 @@ static int alloc_masks(struct irq_desc *desc, int node)
 #endif
 	return 0;
 }
-            /*  */
+
 static void desc_smp_init(struct irq_desc *desc, int node,
 			  const struct cpumask *affinity)
 {
@@ -92,10 +92,10 @@ static void desc_smp_init(struct irq_desc *desc, int node,
 }
 
 #else
-/*  */
+
 #endif
 
-            /*  */
+
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 			      const struct cpumask *affinity, struct module *owner)
 {
@@ -106,11 +106,11 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 
 	desc->irq_data.common = &desc->irq_common_data;
 	desc->irq_data.irq = irq;
-	desc->irq_data.chip = &no_irq_chip; /*  */
+	desc->irq_data.chip = &no_irq_chip;
 	desc->irq_data.chip_data = NULL;
 
-    /*  */
-	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);    /*  */
+
+	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
 	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 
@@ -127,11 +127,11 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	for_each_possible_cpu(cpu) {
 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;}
 
-    /*  */
+
 	desc_smp_init(desc, node, affinity);
 }
 
-int nr_irqs = NR_IRQS;/*  */
+int nr_irqs = NR_IRQS;
 EXPORT_SYMBOL_GPL(nr_irqs);
 
 static DEFINE_MUTEX(sparse_irq_lock);
@@ -149,7 +149,7 @@ unsigned long allocated_irqs[BITS_TO_LONGS(IRQ_BITMAP_BITS)];//+++
 
 static void irq_kobj_release(struct kobject *kobj);
 
-#ifdef CONFIG_SYSFS /*  */
+#ifdef CONFIG_SYSFS
 static struct kobject *irq_kobj_base;
 
 #define IRQ_ATTR_RO(_name) \
@@ -319,7 +319,7 @@ static void irq_sysfs_del(struct irq_desc *desc)
 		kobject_del(&desc->kobj);
 }
 
-static int __init irq_sysfs_init(void)  /*  */
+static int __init irq_sysfs_init(void)
 {
 	struct irq_desc *desc;
 	int irq;
@@ -343,14 +343,14 @@ static int __init irq_sysfs_init(void)  /*  */
 postcore_initcall(irq_sysfs_init);
 
 #else /* !CONFIG_SYSFS */
-/*  */
+
 #endif /* CONFIG_SYSFS */
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);   /* 中断向量表 radix tree */
 static struct radix_tree_root irq_desc_tree = RADIX_TREE_INIT(irq_desc_tree, GFP_KERNEL);//+++
 
-            /*  */
-static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)/*  */
+
+static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
 {
 	radix_tree_insert(&irq_desc_tree, irq, desc);
 }
@@ -379,7 +379,7 @@ static void free_masks(struct irq_desc *desc)
 #endif
 }
 #else
-/*  */
+
 #endif
 
 void irq_lock_sparse(void)
@@ -414,7 +414,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	mutex_init(&desc->request_mutex);
 	init_rcu_head(&desc->rcu);
 
-    /*  */
+
 	desc_set_defaults(irq, desc, node, affinity, owner);
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
@@ -473,7 +473,7 @@ static void free_desc(unsigned int irq)
 }
 
 /**
- *  分配 
+ *  分配
  */
 static int alloc_descs(unsigned int start, unsigned int cnt, int node,
             		       const struct irq_affinity_desc *affinity,
@@ -505,12 +505,12 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 		}
 
         /**
-         *  
+         *
          */
 		desc = alloc_desc(start + i, node, flags, mask, owner);
 		if (!desc)
 			goto err;
-        
+
 		irq_insert_desc(start + i, desc);
 		irq_sysfs_add(start + i, desc);
 		irq_add_debugfs_entry(start + i, desc);
@@ -561,11 +561,11 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 
 	for (i = 0; i < initcnt; i++) {
         /* 申请内存 */
-		desc = alloc_desc(i, node, 0, NULL, NULL);  /*  */
+		desc = alloc_desc(i, node, 0, NULL, NULL);
 		set_bit(i, allocated_irqs);
 		irq_insert_desc(i, desc);   /* 插入到 radix 树 */
 	}
-	return arch_early_irq_init();   /*  */
+	return arch_early_irq_init();
 }
 
 #else /* !CONFIG_SPARSE_IRQ */
@@ -582,7 +582,7 @@ struct irq_desc __cacheline_aligned_in_smp irq_desc[NR_IRQS]  = {
 	}
 };
 /**
- *  
+ *
  */
 int __init early_irq_init(void)
 {
@@ -607,13 +607,13 @@ int __init early_irq_init(void)
 		desc_set_defaults(i, &desc[i], node, NULL, NULL);
 	}
     /**
-     *  
+     *
      */
 	return arch_early_irq_init();
 }
 
 /**
- *  
+ *
  */
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
@@ -681,12 +681,12 @@ int generic_handle_irq(unsigned int irq)
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	data = irq_desc_get_irq_data(desc);
 
     /**
-     *  
+     *
      */
 	if (WARN_ON_ONCE(!in_irq() && handle_enforce_irqctx(data)))
 		return -EPERM;
@@ -700,7 +700,7 @@ int generic_handle_irq(unsigned int irq)
      *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
      */
 	generic_handle_irq_desc(desc);
-    
+
 	return 0;
 }
 EXPORT_SYMBOL_GPL(generic_handle_irq);
@@ -761,7 +761,7 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	}
 
     /**
-     *  
+     *
      */
 	irq_exit();
 
@@ -889,7 +889,7 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
      *  分配 irq_desc 数据结构(中断描述符)
      */
 	ret = alloc_descs(start, cnt, node, affinity, owner);
-    
+
 unlock:
 	mutex_unlock(&sparse_irq_lock);
 	return ret;
@@ -959,7 +959,7 @@ unsigned int irq_get_next_irq(unsigned int offset)
 }
 
 /**
- *  
+ *
  */
 struct irq_desc *
 __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,

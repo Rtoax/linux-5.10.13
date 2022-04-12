@@ -94,7 +94,7 @@ extern void x86_init_rdrand(struct cpuinfo_x86 *c);
 
 #else  /* !CONFIG_ARCH_RANDOM */
 
-/*  */
+
 
 #endif  /* !CONFIG_ARCH_RANDOM */
 

@@ -90,10 +90,10 @@ static __read_mostly u64 __gtod_offset;
 /**
  *
  */
-struct sched_clock_data {   /*  */
+struct sched_clock_data {
 	u64			tick_raw;   /* sched_clock(); */
 	u64			tick_gtod;  /* ktime_get_ns() */
-	u64			clock;      /*  */
+	u64			clock;
 };
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
@@ -115,7 +115,7 @@ int sched_clock_stable(void)
 
 static void __scd_stamp(struct sched_clock_data *scd)
 {
-	scd->tick_gtod = ktime_get_ns();    /*  */
+	scd->tick_gtod = ktime_get_ns();
 	scd->tick_raw = sched_clock();  /* 当前的 NanoSec */
 }
 
@@ -247,7 +247,7 @@ static int __init sched_clock_init_late(void)
 
 	return 0;
 }
-late_initcall(sched_clock_init_late);   /*  */
+late_initcall(sched_clock_init_late);
 
 /*
  * min, max except they take wrapping into account
@@ -467,7 +467,7 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
 
 #else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
 
-void __init sched_clock_init(void)  /*  */
+void __init sched_clock_init(void)
 {
 	static_branch_inc(&sched_clock_running);
 	local_irq_disable();

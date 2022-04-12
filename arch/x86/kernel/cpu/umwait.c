@@ -235,4 +235,4 @@ static int __init umwait_init(void)
 	dev = cpu_subsys.dev_root;
 	return sysfs_create_group(&dev->kobj, &umwait_attr_group);
 }
-device_initcall(umwait_init);   /*  */
+device_initcall(umwait_init);

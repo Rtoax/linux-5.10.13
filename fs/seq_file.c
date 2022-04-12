@@ -23,7 +23,7 @@
 #include <linux/uaccess.h>
 #include <asm/page.h>
 
-static struct kmem_cache __ro_after_init *seq_file_cache ;/*  */
+static struct kmem_cache __ro_after_init *seq_file_cache ;
 
 static void seq_set_overflow(struct seq_file *m)
 {
@@ -144,7 +144,7 @@ Eoverflow:
  *	@ppos: the current position in the file
  *
  *	Ready-made ->f_op->read()
- */ /*  */
+ */
 ssize_t seq_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = buf, .iov_len = size};
@@ -377,7 +377,7 @@ void seq_escape(struct seq_file *m, const char *s, const char *esc)
 EXPORT_SYMBOL(seq_escape);
 
 /**
- *  
+ *
  */
 void seq_escape_mem_ascii(struct seq_file *m, const char *src, size_t isz)
 {
@@ -391,9 +391,9 @@ void seq_escape_mem_ascii(struct seq_file *m, const char *src, size_t isz)
 EXPORT_SYMBOL(seq_escape_mem_ascii);
 
 /**
- *  
+ *
  */
-void seq_vprintf(struct seq_file *m, const char *f, va_list args)   /*  */
+void seq_vprintf(struct seq_file *m, const char *f, va_list args)
 {
 	int len;
 
@@ -410,9 +410,9 @@ void seq_vprintf(struct seq_file *m, const char *f, va_list args)   /*  */
 EXPORT_SYMBOL(seq_vprintf);
 
 /**
- *  
+ *
  */
-void seq_printf(struct seq_file *m, const char *f, ...) /*  */
+void seq_printf(struct seq_file *m, const char *f, ...)
 {
 	va_list args;
 

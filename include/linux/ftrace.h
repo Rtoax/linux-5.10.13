@@ -41,11 +41,11 @@
 #endif
 
 /* Main tracing buffer and events set up */
-#ifdef CONFIG_TRACING/*  */
+#ifdef CONFIG_TRACING
 void trace_init(void);
 void early_trace_init(void);
 #else
-/*  */
+
 #endif
 
 struct module;
@@ -58,7 +58,7 @@ const char *
 ftrace_mod_address_lookup(unsigned long addr, unsigned long *size,
 		   unsigned long *off, char **modname, char *sym);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_FUNCTION_TRACER) && defined(CONFIG_DYNAMIC_FTRACE)
@@ -66,7 +66,7 @@ int ftrace_mod_get_kallsym(unsigned int symnum, unsigned long *value,
 			   char *type, char *name,
 			   char *module_name, int *exported);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_FUNCTION_TRACER
@@ -239,7 +239,7 @@ struct ftrace_ops_hash {
 void ftrace_free_init_mem(void);
 void ftrace_free_mem(struct module *mod, void *start, void *end);
 #else
-/*  */
+
 #endif
 
 /*
@@ -373,7 +373,7 @@ extern void ftrace_stub(unsigned long a0, unsigned long a1,
 			struct ftrace_ops *op, struct pt_regs *regs);
 
 #else /* !CONFIG_FUNCTION_TRACER */
-/*  */
+
 #endif /* CONFIG_FUNCTION_TRACER */
 
 struct ftrace_func_entry {
@@ -396,7 +396,7 @@ int ftrace_modify_direct_caller(struct ftrace_func_entry *entry,
 				unsigned long new_addr);
 unsigned long ftrace_find_rec_direct(unsigned long ip);
 #else
-/*  */
+
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
 #ifndef CONFIG_HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
@@ -459,7 +459,7 @@ static inline void stack_tracer_enable(void)
 	this_cpu_dec(disable_stack_tracer);
 }
 #else
-/*  */
+
 
 #endif
 
@@ -544,7 +544,7 @@ enum {
 /**
  *  ftrace
  */
-struct dyn_ftrace { /*  */
+struct dyn_ftrace {
     /**
      *  指向 函数地址 address of mcount call-site
      */
@@ -846,7 +846,7 @@ extern void ftrace_release_mod(struct module *mod);
 extern void ftrace_disable_daemon(void);
 extern void ftrace_enable_daemon(void);
 #else /* CONFIG_DYNAMIC_FTRACE */
-/*  */
+
 
 #endif /* CONFIG_DYNAMIC_FTRACE */
 
@@ -940,7 +940,7 @@ extern void ftrace_init(void);
 #define FTRACE_CALLSITE_SECTION	"__mcount_loc"
 #endif
 #else
-/*  */
+
 #endif
 
 /*
@@ -985,7 +985,7 @@ struct fgraph_ops {
  * of a thread.
  * Used in struct thread_info
  */
-struct ftrace_ret_stack {   /*  */
+struct ftrace_ret_stack {
 	unsigned long ret;
 	unsigned long func;
 	unsigned long long calltime;
@@ -1051,7 +1051,7 @@ static inline void unpause_graph_tracing(void)
 	atomic_dec(&current->tracing_graph_pause);
 }
 #else /* !CONFIG_FUNCTION_GRAPH_TRACER */
-/*  */
+
 
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 
@@ -1109,7 +1109,7 @@ int tracepoint_printk_sysctl(struct ctl_table *table, int write,
 			     void *buffer, size_t *lenp, loff_t *ppos);
 
 #else /* CONFIG_TRACING */
-/*  */
+
 #endif /* CONFIG_TRACING */
 
 #ifdef CONFIG_FTRACE_SYSCALLS

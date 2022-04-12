@@ -61,14 +61,14 @@ struct cpio_data find_microcode_in_initrd(const char *path, bool use_pa);
 #ifdef CONFIG_MICROCODE_INTEL
 extern struct microcode_ops * __init init_intel_microcode(void);
 #else
-/*  */
+
 #endif /* CONFIG_MICROCODE_INTEL */
 
 #ifdef CONFIG_MICROCODE_AMD
 extern struct microcode_ops * __init init_amd_microcode(void);
 extern void __exit exit_amd_microcode(void);
 #else
-/*  */
+
 #endif
 
 #define MAX_UCODE_COUNT 128
@@ -127,7 +127,7 @@ void reload_early_microcode(void);
 extern bool get_builtin_firmware(struct cpio_data *cd, const char *name);
 extern bool initrd_gone;
 #else
-/*  */
+
 #endif
 
 #endif /* _ASM_X86_MICROCODE_H */

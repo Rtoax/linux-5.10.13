@@ -36,7 +36,7 @@ static unsigned int noop_ret(struct irq_data *data)
 /*
  * Generic no controller implementation
  */
-struct irq_chip no_irq_chip = { /*  */
+struct irq_chip no_irq_chip = {
 	.name		= "none",
 	.irq_startup	= noop_ret,
 	.irq_shutdown	= noop,

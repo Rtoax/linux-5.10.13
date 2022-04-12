@@ -62,16 +62,16 @@ static inline unsigned long pud_index(unsigned long address)
 #define pud_index pud_index
 #endif
 
-#ifndef pgd_index/*  */
+#ifndef pgd_index
 /* Must be a compile-time constant, so implement it as a macro */
-#define pgd_index(a)  (((a) >> PGDIR_SHIFT/*  */) & (PTRS_PER_PGD - 1))
+#define pgd_index(a)  (((a) >> PGDIR_SHIFT) & (PTRS_PER_PGD - 1))
 #endif
 
 #ifndef pte_offset_kernel
 /**
  *  PTE 的 虚拟地址
  */
-static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)   /*  */
+static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 {
 	return (pte_t *)pmd_page_vaddr(*pmd)/* PMD 虚拟地址 */ + pte_index(address)/* PTE 在PMD中的 索引 */;
 }
@@ -84,7 +84,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)   /*  
 //	 pte_index((address)))
 //#define pte_unmap(pte) kunmap_atomic((pte))
 #else
-#define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address)) /*  */
+#define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	/* NOP */
 #endif
 
@@ -114,14 +114,14 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
  * a shortcut to get a pgd_t in a given mm
  */
 #ifndef pgd_offset
-#define pgd_offset(mm, address)		pgd_offset_pgd((mm)->pgd, (address))/*  */
+#define pgd_offset(mm, address)		pgd_offset_pgd((mm)->pgd, (address))
 #endif
 
 /*
  * a shortcut which implies the use of the kernel's pgd, instead
  * of a process's
  */
-#ifndef pgd_offset_k    /*  */
+#ifndef pgd_offset_k
 #define pgd_offset_k(address)		pgd_offset(&init_mm, (address)) /* init_mm */
 #endif
 
@@ -327,7 +327,7 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
  * It is the difference with function update_mmu_cache.
  */
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
-static inline void update_mmu_tlb(struct vm_area_struct *vma,   /*  */
+static inline void update_mmu_tlb(struct vm_area_struct *vma,
 				unsigned long address, pte_t *ptep)
 {
 }

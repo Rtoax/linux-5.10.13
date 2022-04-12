@@ -39,7 +39,7 @@ static inline void mmgrab(struct mm_struct *mm)
 extern void __mmdrop(struct mm_struct *mm);
 
 /**
- *  
+ *
  */
 static inline void mmdrop(struct mm_struct *mm)
 {
@@ -104,7 +104,7 @@ extern void exec_mm_release(struct task_struct *, struct mm_struct *);
 #ifdef CONFIG_MEMCG
 extern void mm_update_next_owner(struct mm_struct *mm);
 #else
-/*  */
+
 #endif /* CONFIG_MEMCG */
 
 #ifdef CONFIG_MMU
@@ -118,7 +118,7 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 			  unsigned long len, unsigned long pgoff,
 			  unsigned long flags);
 #else
-/*  */
+
 #endif
 
 static inline bool in_vfork(struct task_struct *tsk)
@@ -175,7 +175,7 @@ extern void __fs_reclaim_release(void);
 extern void fs_reclaim_acquire(gfp_t gfp_mask);
 extern void fs_reclaim_release(gfp_t gfp_mask);
 #else
-/*  */
+
 #endif
 
 /**
@@ -266,7 +266,7 @@ static inline void memalloc_nocma_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_NOCMA) | flags;
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMCG
@@ -339,7 +339,7 @@ static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct *mm)
 extern void membarrier_exec_mmap(struct mm_struct *mm);
 
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_SCHED_MM_H */

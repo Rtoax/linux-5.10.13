@@ -9,8 +9,8 @@
  */
 
 struct kmem_cache { /* slab 句柄 */
-    
-	struct array_cache __percpu *cpu_cache; /*  */
+
+	struct array_cache __percpu *cpu_cache;
 
 /* 1) Cache tunables可调参数. Protected by slab_mutex */
 	unsigned int batchcount;
@@ -19,7 +19,7 @@ struct kmem_cache { /* slab 句柄 */
 
 	unsigned int size;
 	struct reciprocal_value reciprocal_buffer_size;
-    
+
 /* 2) touched by every alloc & free from the backend */
 
 	slab_flags_t flags;		/* constant flags */
@@ -33,14 +33,14 @@ struct kmem_cache { /* slab 句柄 */
 	gfp_t allocflags;
 
     /**
-     *  着色 
+     *  着色
      *
      *  见 `set_objfreelist_slab_cache()` 中 color 的计算
      */
 	size_t colour;			/* cache colouring range */
 	unsigned int colour_off;	/* colour offset = cache_line_size() = 32 这是一级缓存大小 */
 
-    
+
 	struct kmem_cache *freelist_cache;
 	unsigned int freelist_size;
 

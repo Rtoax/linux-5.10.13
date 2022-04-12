@@ -19,7 +19,7 @@ struct css_set;
 #define CLONE_LEGACY_FLAGS 0xffffffffULL
 
 /**
- *  
+ *
  */
 struct kernel_clone_args {  /* kernel_clone()'s arguments */
 	u64         flags;  /* 标志 */
@@ -55,7 +55,7 @@ struct kernel_clone_args {  /* kernel_clone()'s arguments */
 extern rwlock_t tasklist_lock;
 extern spinlock_t mmlist_lock;/* 保护可能被 swap 的 mm 链表 mm_struct->mmlist(list_head) */
 
-extern union thread_union init_thread_union;  /*  */
+extern union thread_union init_thread_union;
 extern struct task_struct init_task; /* /init/init_task.c */
 
 #ifdef CONFIG_PROVE_RCU
@@ -82,7 +82,7 @@ extern int copy_thread(unsigned long, unsigned long, unsigned long,
 
 extern void flush_thread(void);
 
-#ifdef CONFIG_HAVE_EXIT_THREAD  /*  */
+#ifdef CONFIG_HAVE_EXIT_THREAD
 extern void exit_thread(struct task_struct *tsk);
 #else
 //static inline void exit_thread(struct task_struct *tsk)
@@ -107,7 +107,7 @@ extern void free_task(struct task_struct *tsk);
 #ifdef CONFIG_SMP
 extern void sched_exec(void);
 #else
-/*  */
+
 #endif
 
 static inline struct task_struct *get_task_struct(struct task_struct *t)
@@ -133,7 +133,7 @@ static inline void put_task_struct_many(struct task_struct *t, int nr)
 void put_task_struct_rcu_user(struct task_struct *task);
 
 #ifdef CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT
-extern int __read_mostly arch_task_struct_size ;/*  */
+extern int __read_mostly arch_task_struct_size ;
 #else
 //# define arch_task_struct_size (sizeof(struct task_struct))
 #endif
@@ -155,12 +155,12 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 #ifdef CONFIG_VMAP_STACK
 //static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
 //{
-//	return t->stack_vm_area;    
+//	return t->stack_vm_area;
 //}
 #else
 static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
 {
-	return NULL;    
+	return NULL;
 }
 #endif
 

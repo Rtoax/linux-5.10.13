@@ -119,4 +119,4 @@ out_memmap:
 	memunmap(bgrt_image);
 	return ret;
 }
-device_initcall(bgrt_init); /*  */
+device_initcall(bgrt_init);

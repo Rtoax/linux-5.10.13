@@ -8,7 +8,7 @@ unsigned long kaslr_get_random_long(const char *purpose);
 void kernel_randomize_memory(void);
 void init_trampoline_kaslr(void);
 #else
-/*  */
+
 #endif /* CONFIG_RANDOMIZE_MEMORY */
 
 #endif

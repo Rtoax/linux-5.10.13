@@ -45,19 +45,19 @@ struct mmu_interval_notifier;
  *
  * 通知 MMU 页表做出了修改
  */
-enum mmu_notifier_event {           /*  */
-	MMU_NOTIFY_UNMAP = 0,           /*  */
-	MMU_NOTIFY_CLEAR,               /*  */
-	MMU_NOTIFY_PROTECTION_VMA,      /*  */
-	MMU_NOTIFY_PROTECTION_PAGE,     /*  */
-	MMU_NOTIFY_SOFT_DIRTY,          /*  */
-	MMU_NOTIFY_RELEASE,             /*  */
-	MMU_NOTIFY_MIGRATE,             /*  */
+enum mmu_notifier_event {
+	MMU_NOTIFY_UNMAP = 0,
+	MMU_NOTIFY_CLEAR,
+	MMU_NOTIFY_PROTECTION_VMA,
+	MMU_NOTIFY_PROTECTION_PAGE,
+	MMU_NOTIFY_SOFT_DIRTY,
+	MMU_NOTIFY_RELEASE,
+	MMU_NOTIFY_MIGRATE,
 };
 
 #define MMU_NOTIFIER_RANGE_BLOCKABLE (1 << 0)
 
-struct mmu_notifier_ops {   /*  */
+struct mmu_notifier_ops {
 	/*
 	 * Called either by mmu_notifier_unregister or when the mm is
 	 * being destroyed by exit_mmap, always before all pages are
@@ -653,7 +653,7 @@ static inline void mmu_notifier_range_init_migrate(
 })
 
 #else /* CONFIG_MMU_NOTIFIER */
-/*  */
+
 #endif /* CONFIG_MMU_NOTIFIER */
 
 #endif /* _LINUX_MMU_NOTIFIER_H */

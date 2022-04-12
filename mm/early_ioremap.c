@@ -110,7 +110,7 @@ late_initcall(check_early_ioremap_leak);
  * `size` - I/O 内存区域的尺寸；
  * `prot` - 页表入口位。
  */
-static void __init __iomem * 
+static void __init __iomem *
 __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
 {
 	unsigned long offset;
@@ -281,7 +281,7 @@ void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 }
 
 #else /* CONFIG_MMU */
-/*  */
+
 #endif /* CONFIG_MMU */
 
 

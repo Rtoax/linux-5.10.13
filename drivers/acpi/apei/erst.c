@@ -1203,4 +1203,4 @@ err:
 	return rc;
 }
 
-device_initcall(erst_init); /*  */
+device_initcall(erst_init);

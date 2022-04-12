@@ -301,7 +301,7 @@ static int __init olpc_init(void)
 	if (olpc_board_at_least(olpc_board(0xb1)))
 		olpc_platform_info.flags |= OLPC_F_DCON;
 
-#ifdef CONFIG_PCI_OLPC  /*  */
+#ifdef CONFIG_PCI_OLPC
 	/* If the VSA exists let it emulate PCI, if not emulate in kernel.
 	 * XO-1 only. */
 	if (olpc_platform_info.boardrev < olpc_board_pre(0xd0) &&

@@ -43,7 +43,7 @@ struct nmi_desc {   /* NMI：不可屏蔽中断处理函数 链表头 */
 	struct list_head head; /* struct nmiaction->list */
 };
 
-static struct nmi_desc nmi_desc[NMI_MAX] = 
+static struct nmi_desc nmi_desc[NMI_MAX] =
 {
 	{
 		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[0].lock),
@@ -73,7 +73,7 @@ struct nmi_stats {  /* NMI 不可屏蔽中断 */
 
 static DEFINE_PER_CPU(struct nmi_stats, nmi_stats);
 
-static int __read_mostly ignore_nmis ;/*  */
+static int __read_mostly ignore_nmis ;
 
 int unknown_nmi_panic;
 /*
@@ -177,7 +177,7 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 		list_add_rcu(&action->list, &desc->head);
 	else
 		list_add_tail_rcu(&action->list, &desc->head);
-	
+
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 	return 0;
 }
@@ -360,7 +360,7 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 		cpu_relax();
 	}
 
-	reason = x86_platform.get_nmi_reason(); /*  */
+	reason = x86_platform.get_nmi_reason();
 
 	if (reason & NMI_REASON_MASK) {
 		if (reason & NMI_REASON_SERR)

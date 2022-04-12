@@ -10,7 +10,7 @@
 
 #include <asm/uaccess.h>
 
-#ifdef CONFIG_SET_FS    /*  */
+#ifdef CONFIG_SET_FS
 /*
  * Force the uaccess routines to be wired up for actual userspace access,
  * overriding any possible set_fs(KERNEL_DS) still lingering around.  Undone
@@ -29,7 +29,7 @@ static inline void force_uaccess_end(mm_segment_t oldfs)
 	set_fs(oldfs);
 }
 #else /* CONFIG_SET_FS */
-/*  */
+
 #endif /* CONFIG_SET_FS */
 
 /*
@@ -176,17 +176,17 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
     /* 从用户态向内核态拷贝数据 */
 	if (likely(check_copy_size(to, n, false)))
         /**
-         *  
+         *
          */
 		n = _copy_from_user(to, from, n);
 	return n;
 }
 
 /**
- *  
+ *
  */
 static __always_inline unsigned long __must_check
-copy_to_user(void __user *to, const void *from, unsigned long n)    /*  */
+copy_to_user(void __user *to, const void *from, unsigned long n)
 {
 	if (likely(check_copy_size(from, n, true)))
 		n = _copy_to_user(to, from, n);

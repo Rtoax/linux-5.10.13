@@ -16,7 +16,7 @@ struct filename;
  *
  * 加载二进制时候，用来保存 arguments 的结构体
  */
-struct linux_binprm {   /*  */
+struct linux_binprm {
 #ifdef CONFIG_MMU
 	struct vm_area_struct *vma;
 	unsigned long vma_pages;
@@ -99,7 +99,7 @@ struct coredump_params {
  * This structure defines the functions that are used to load the binary formats that
  * linux accepts.
  */
-struct linux_binfmt {   /*  */
+struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
 	int (*load_binary)(struct linux_binprm *);

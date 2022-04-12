@@ -193,10 +193,10 @@ __init static int init_branch_tracer(void)
 	}
 	return register_tracer(&branch_trace);
 }
-core_initcall(init_branch_tracer);  /*  */
+core_initcall(init_branch_tracer);
 
 #else
-/*  */
+
 #endif /* CONFIG_BRANCH_TRACER */
 
 void ftrace_likely_update(struct ftrace_likely_data *f, int val,
@@ -383,7 +383,7 @@ __init static int init_annotated_branch_stats(void)
 	}
 	return 0;
 }
-fs_initcall(init_annotated_branch_stats);   /*  */
+fs_initcall(init_annotated_branch_stats);
 
 #ifdef CONFIG_PROFILE_ALL_BRANCHES
 

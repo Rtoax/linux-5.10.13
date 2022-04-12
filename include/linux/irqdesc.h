@@ -58,7 +58,7 @@ struct pt_regs;
  */
 struct irq_desc {   /* 中断描述符 */
     /**
-     *  
+     *
      */
 	struct irq_common_data	irq_common_data;
 	struct irq_data		irq_data;
@@ -74,7 +74,7 @@ struct irq_desc {   /* 中断描述符 */
 	struct irqaction	*action;	/* IRQ action list */
 
     /**
-     *  
+     *
      */
 	unsigned int		status_use_accessors;
 
@@ -85,11 +85,11 @@ struct irq_desc {   /* 中断描述符 */
      */
     union {
 	unsigned int		core_internal_state__do_not_mess_with_it;
-    unsigned int        istate;//+++, 实际上为宏定义 
+    unsigned int        istate;//+++, 实际上为宏定义
     };
 
     /**
-     *  嵌套的深度， 
+     *  嵌套的深度，
      *      disable
      *        disable
      *        [...]
@@ -137,17 +137,17 @@ struct irq_desc {   /* 中断描述符 */
      *      中断线程执行完毕，然后才真正的关闭中断。
      */
 	wait_queue_head_t       wait_for_threads;
-    
-#ifdef CONFIG_PM_SLEEP  /*  */
+
+#ifdef CONFIG_PM_SLEEP
 	unsigned int		nr_actions;
 	unsigned int		no_suspend_depth;
 	unsigned int		cond_suspend_depth;
 	unsigned int		force_resume_depth;
 #endif
-#ifdef CONFIG_PROC_FS   /*  */
+#ifdef CONFIG_PROC_FS
 	struct proc_dir_entry	*dir;
 #endif
-#ifdef CONFIG_GENERIC_IRQ_DEBUGFS   /*  */
+#ifdef CONFIG_GENERIC_IRQ_DEBUGFS
 	struct dentry		*debugfs_file;
 	const char		*dev_name;
 #endif
@@ -219,7 +219,7 @@ static inline void generic_handle_irq_desc(struct irq_desc *desc)
  */
 int generic_handle_irq(unsigned int irq);
 
-#ifdef CONFIG_HANDLE_DOMAIN_IRQ/*  */
+#ifdef CONFIG_HANDLE_DOMAIN_IRQ
 /*
  * Convert a HW interrupt number to a logical one using a IRQ domain,
  * and handle the result interrupt number. Return -EINVAL if

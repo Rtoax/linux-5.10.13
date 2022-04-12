@@ -26,13 +26,13 @@ search_kernel_exception_table(unsigned long addr);
 /* For extable.c to search modules' exception tables. */
 const struct exception_table_entry *search_module_extables(unsigned long addr);
 #else
-/*  */
+
 #endif /*CONFIG_MODULES*/
 
 #ifdef CONFIG_BPF_JIT
 const struct exception_table_entry *search_bpf_extables(unsigned long addr);
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_EXTABLE_H */

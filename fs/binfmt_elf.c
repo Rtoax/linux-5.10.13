@@ -119,7 +119,7 @@ static struct linux_binfmt elf_format = {
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))
 
-static int set_brk(unsigned long start, unsigned long end, int prot)    /*  */
+static int set_brk(unsigned long start, unsigned long end, int prot)
 {
 	start = ELF_PAGEALIGN(start);
 	end = ELF_PAGEALIGN(end);
@@ -389,7 +389,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
  */
 static unsigned long elf_map(struct file *filep, unsigned long addr,
 		const struct elf_phdr *eppnt, int prot, int type,
-		unsigned long total_size)   /*  */
+		unsigned long total_size)
 {
 	unsigned long map_addr;
 
@@ -911,7 +911,7 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
  *  ELF 加载二进制文件，见 `execve`系统调用
  *  加载ELF，设置寄存器，但是还没有运行
  */
-static int load_elf_binary(struct linux_binprm *bprm)   /*  */
+static int load_elf_binary(struct linux_binprm *bprm)
 {
 	struct file *interpreter = NULL; /* to shut gcc up */
  	unsigned long load_addr = 0, load_bias = 0;
@@ -966,7 +966,7 @@ static int load_elf_binary(struct linux_binprm *bprm)   /*  */
      */
 	if (elf_check_fdpic(elf_ex))
 		goto out;
-	if (!bprm->file->f_op->mmap)    /*  */
+	if (!bprm->file->f_op->mmap)
 		goto out;
 
     /**
@@ -1157,7 +1157,7 @@ out_free_interp:
 	 * still possible to return an error to the code that invoked
 	 * the exec syscall.
 	 */
-	/*  */
+
 	retval = arch_check_elf(elf_ex,
 				!!interpreter, interp_elf_ex,
 				&arch_state);
@@ -1182,7 +1182,7 @@ out_free_interp:
 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
 		current->flags |= PF_RANDOMIZE;
 
-    /*  */
+
 	setup_new_exec(bprm);
 
 	/* Do this so that we can load the interpreter, if need be.  We will
@@ -1272,7 +1272,7 @@ out_free_interp:
         /**
          *  p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
          */
-		vaddr = elf_ppnt->p_vaddr;  /*  */
+		vaddr = elf_ppnt->p_vaddr;
 		/*
 		 * If we are loading ET_EXEC or we have already performed
 		 * the ET_DYN load_addr calculations, proceed normally.
@@ -1503,7 +1503,7 @@ out_free_interp:
 	 * mapping in the interpreter, to make sure it doesn't wind
 	 * up getting placed where the bss needs to go.
 	 */
-	retval = set_brk(elf_bss, elf_brk, bss_prot);   /*  */
+	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
 		goto out_free_dentry;
 	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
@@ -1608,7 +1608,7 @@ out_free_interp:
         /**
          *  随机化 brk
          */
-		mm->brk = mm->start_brk = arch_randomize_brk(mm);   /*  */
+		mm->brk = mm->start_brk = arch_randomize_brk(mm);
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
 #endif
@@ -1647,7 +1647,7 @@ out_free_interp:
     /**
      *
      */
-	finalize_exec(bprm);    /*  */
+	finalize_exec(bprm);
 
     /**
      *  这个函数时架构相关的
@@ -1676,7 +1676,7 @@ out_free_ph:
 #ifdef CONFIG_USELIB
 /* This is really simpleminded and specialized - we are loading an
    a.out library that is given an ELF header. */
-static int load_elf_library(struct file *file)  /*  */
+static int load_elf_library(struct file *file)
 {
 	struct elf_phdr *elf_phdata;
 	struct elf_phdr *eppnt;
@@ -1727,7 +1727,7 @@ static int load_elf_library(struct file *file)  /*  */
 	/* Now use mmap to map the library into memory. */
     /* 将共享库映射进进程地址空间
 
-    *//*  */
+    */
 	error = vm_mmap(file,
 			ELF_PAGESTART(eppnt->p_vaddr),
 			(eppnt->p_filesz +
@@ -1748,7 +1748,7 @@ static int load_elf_library(struct file *file)  /*  */
 	len = ELF_PAGEALIGN(eppnt->p_filesz + eppnt->p_vaddr);
 	bss = ELF_PAGEALIGN(eppnt->p_memsz + eppnt->p_vaddr);
 	if (bss > len) {
-		error = vm_brk(len, bss - len); /*  */
+		error = vm_brk(len, bss - len);
 		if (error)
 			goto out_free_ph;
 	}

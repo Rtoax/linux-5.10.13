@@ -27,7 +27,7 @@ struct soc_device {
 	int soc_dev_num;
 };
 
-static struct bus_type soc_bus_type = { /*  */
+static struct bus_type soc_bus_type = {
 	.name  = "soc",
 };
 
@@ -189,7 +189,7 @@ static int __init soc_bus_register(void)
 
 	return 0;
 }
-core_initcall(soc_bus_register);    /*  */
+core_initcall(soc_bus_register);
 
 static int soc_device_match_attr(const struct soc_device_attribute *attr,
 				 const struct soc_device_attribute *match)

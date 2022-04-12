@@ -1097,7 +1097,7 @@ static void handle_posix_cpu_timers(struct task_struct *tsk);
 #ifdef CONFIG_POSIX_CPU_TIMERS_TASK_WORK
 static void posix_cpu_timers_work(struct callback_head *work)
 {
-	handle_posix_cpu_timers(current);/*  */
+	handle_posix_cpu_timers(current);
 }
 
 /*

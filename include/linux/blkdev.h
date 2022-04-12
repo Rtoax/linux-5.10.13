@@ -140,7 +140,7 @@ struct request {
 	/* the following two fields are internal, NEVER access directly */
 	unsigned int __data_len;	/* total data len */
     /**
-     *  
+     *
      */
 	sector_t __sector;		/* sector cursor */
 
@@ -150,7 +150,7 @@ struct request {
      *  这时，linux需要一个更加灵活的IO数据结构，可以在这些负载的块设备的不同
      *  层次之间传递、分割、合并IO数据等。所以，bio被引入。
      *
-     *  bio 表示一段连续的扇区 
+     *  bio 表示一段连续的扇区
      */
 	struct bio *bio;
 	struct bio *biotail;
@@ -385,15 +385,15 @@ extern int blkdev_zone_mgmt_ioctl(struct block_device *bdev, fmode_t mode,
 				  unsigned int cmd, unsigned long arg);
 
 #else /* CONFIG_BLK_DEV_ZONED */
-/*  */
+
 #endif /* CONFIG_BLK_DEV_ZONED */
 
 /**
- *  
+ *
  *  请求队列
  *  用来管理该设备的I/O请求，请求队列的相关函数：
  */
-struct request_queue {  /*  */
+struct request_queue {
 	struct request		*last_merge;
 	struct elevator_queue	*elevator;
 
@@ -775,7 +775,7 @@ static inline unsigned int queue_max_active_zones(const struct request_queue *q)
 }
 #else /* CONFIG_BLK_DEV_ZONED */
 /**
- *  
+ *
  */
 #endif /* CONFIG_BLK_DEV_ZONED */
 
@@ -882,7 +882,7 @@ struct req_iterator {
 extern void rq_flush_dcache_pages(struct request *rq);
 #else
 /**
- *  
+ *
  */
 #endif
 
@@ -892,7 +892,7 @@ blk_qc_t submit_bio_noacct(struct bio *bio);
 extern void blk_rq_init(struct request_queue *q, struct request *rq);
 extern void blk_put_request(struct request *);
 /**
- *  
+ *
  */
 extern struct request *blk_get_request(struct request_queue *, unsigned int op,
 				       blk_mq_req_flags_t flags);
@@ -1272,7 +1272,7 @@ int blkdev_issue_flush(struct block_device *, gfp_t);
 long nr_blockdev_pages(void);
 #else /* CONFIG_BLOCK */
 /**
- *  
+ *
  */
 #endif /* CONFIG_BLOCK */
 
@@ -1786,12 +1786,12 @@ void blk_ksm_unregister(struct request_queue *q);
 
 #else /* CONFIG_BLK_INLINE_ENCRYPTION */
 /**
- *  
+ *
  */
 #endif /* CONFIG_BLK_INLINE_ENCRYPTION */
 
 /**
- *  
+ *
  */
 struct block_device_operations {
 	blk_qc_t (*submit_bio) (struct bio *bio);

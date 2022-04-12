@@ -11,7 +11,7 @@
 #include <trace/events/power.h>
 
 /* Linker adds these: start and end of __cpuidle functions */
-extern char __cpuidle_text_start[], __cpuidle_text_end[];   /*  */
+extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
 /**
  * sched_idle_set_state - Record idle state for the current CPU.
@@ -397,10 +397,10 @@ EXPORT_SYMBOL_GPL(play_idle_precise);
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	arch_cpu_idle_prepare();    /* 为空 */
-	cpuhp_online_idle(state); 
+	cpuhp_online_idle(state);
 
     //consume the idle CPU cycles
-    //When there is no process to run, this process starts to work. 
+    //When there is no process to run, this process starts to work.
 	while (1)
 		do_idle();
 }
@@ -493,8 +493,8 @@ static void update_curr_idle(struct rq *rq)
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
  */    const struct sched_class idle_sched_class, __idle_sched_class ;/* 我加的 */
-const struct sched_class idle_sched_class   /*  */
-	__section("__idle_sched_class") = { 
+const struct sched_class idle_sched_class
+	__section("__idle_sched_class") = {
 	/* no enqueue/yield_task for idle tasks */
 
 	/* dequeue is not valid, we print a debug message there: */

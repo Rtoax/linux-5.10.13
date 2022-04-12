@@ -36,7 +36,7 @@ DEFINE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off) = BOOT_PERCPU_OFFSET;
 EXPORT_PER_CPU_SYMBOL(this_cpu_off);
 
 //`__per_cpu_offset` 数组以 CPU 变量拷贝之间的距离填充
-unsigned long __ro_after_init __per_cpu_offset[NR_CPUS]  = {/*  */
+unsigned long __ro_after_init __per_cpu_offset[NR_CPUS]  = {
 	[0 ... NR_CPUS-1] = BOOT_PERCPU_OFFSET,
 };
 EXPORT_SYMBOL(__per_cpu_offset);
@@ -98,7 +98,7 @@ static bool __init pcpu_need_numa(void)
  * RETURNS:
  * Pointer to the allocated area on success, NULL on failure.
  *
- *  
+ *
  */
 static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
 					unsigned long align)

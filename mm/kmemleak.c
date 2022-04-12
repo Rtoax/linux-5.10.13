@@ -1924,7 +1924,7 @@ early_param("kmemleak", kmemleak_boot_config);
 
 /*
  * Kmemleak initialization.
- */ /*  */
+ */
 void __init kmemleak_init(void)
 {
 #ifdef CONFIG_DEBUG_KMEMLEAK_DEFAULT_OFF
@@ -1962,7 +1962,7 @@ static int __init kmemleak_late_init(void)
 {
 	kmemleak_initialized = 1;
 
-	debugfs_create_file("kmemleak", 0644, NULL, NULL, &kmemleak_fops);  /*  */
+	debugfs_create_file("kmemleak", 0644, NULL, NULL, &kmemleak_fops);
 
 	if (kmemleak_error) {
 		/*
@@ -1971,11 +1971,11 @@ static int __init kmemleak_late_init(void)
 		 * after setting kmemleak_initialized and we may end up with
 		 * two clean-up threads but serialized by scan_mutex.
 		 */
-		schedule_work(&cleanup_work);   /*  */
+		schedule_work(&cleanup_work);
 		return -ENOMEM;
 	}
 
-	if (IS_ENABLED(CONFIG_DEBUG_KMEMLEAK_AUTO_SCAN)) {  /*  */
+	if (IS_ENABLED(CONFIG_DEBUG_KMEMLEAK_AUTO_SCAN)) {
 		mutex_lock(&scan_mutex);
 		start_scan_thread();    /* 开启扫描线程 */
 		mutex_unlock(&scan_mutex);

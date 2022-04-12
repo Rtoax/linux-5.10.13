@@ -9,7 +9,7 @@ struct task_struct *idle_thread_get(unsigned int cpu);
 void idle_thread_set_boot_cpu(void);
 void idle_threads_init(void);
 #else
-/*  */
+
 #endif
 
 int smpboot_create_threads(unsigned int cpu);

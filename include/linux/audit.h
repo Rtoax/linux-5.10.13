@@ -210,7 +210,7 @@ extern u32 audit_enabled;
 extern int audit_signal_info(int sig, struct task_struct *t);
 
 #else /* CONFIG_AUDIT */
-/*  */
+
 #endif /* CONFIG_AUDIT */
 
 #ifdef CONFIG_AUDIT_COMPAT_GENERIC
@@ -505,7 +505,7 @@ static inline void audit_log_nfcfg(const char *name, u8 af,
 extern int audit_n_rules;
 extern int audit_signals;
 #else /* CONFIG_AUDITSYSCALL */
-/*  */
+
 #endif /* CONFIG_AUDITSYSCALL */
 
 static inline bool audit_loginuid_set(struct task_struct *tsk)

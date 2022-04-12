@@ -14,7 +14,7 @@
 #ifndef __ASSEMBLY__
 #ifdef MODULE
 extern struct module __this_module;
-#define THIS_MODULE (&__this_module)    /*  */
+#define THIS_MODULE (&__this_module)
 #else
 #define THIS_MODULE ((struct module *)0)
 #endif
@@ -23,7 +23,7 @@ extern struct module __this_module;
 /* Mark the CRC weak since genksyms apparently decides not to
  * generate a checksums for some symbols */
 #if defined(CONFIG_MODULE_REL_CRCS)
-/*  */
+
 #else
 #define __CRC_SYMBOL(sym, sec)						\
 	asm("	.section \"___kcrctab" sec "+" #sym "\", \"a\"	\n"	\
@@ -32,7 +32,7 @@ extern struct module __this_module;
 	    "	.previous					\n")
 #endif
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
@@ -59,11 +59,11 @@ struct kernel_symbol {
 	int namespace_offset;
 };
 #else
-/*  */
+
 #endif
 
 #ifdef __GENKSYMS__
-/*  */
+
 #else
 
 /*
@@ -94,9 +94,9 @@ struct kernel_symbol {
 #endif
 
 #if !defined(CONFIG_MODULES) || defined(__DISABLE_EXPORTS)
-/*  */
+
 #elif defined(CONFIG_TRIM_UNUSED_KSYMS)
-/*  */
+
 #else
 
 #define __EXPORT_SYMBOL(sym, sec, ns)	___EXPORT_SYMBOL(sym, sec, ns)
@@ -104,13 +104,13 @@ struct kernel_symbol {
 #endif /* CONFIG_MODULES */
 
 #ifdef DEFAULT_SYMBOL_NAMESPACE
-/*  */
+
 #else
 #define _EXPORT_SYMBOL(sym, sec)	__EXPORT_SYMBOL(sym, sec, "")
 #endif
 
 /**
- *  
+ *
  */
 #define EXPORT_SYMBOL(sym)		_EXPORT_SYMBOL(sym, "")
 #define EXPORT_SYMBOL_GPL(sym)		_EXPORT_SYMBOL(sym, "_gpl")
@@ -124,33 +124,33 @@ struct kernel_symbol {
 \**********************************************************************************************************************/
 int rtoax()
 {
-    
+
 }
 EXPORT_SYMBOL(rtoax);
 
 //=================>>
 
-extern typeof(rtoax) rtoax;						
-extern const char __kstrtab_rtoax[];					
-extern const char __kstrtabns_rtoax[];					
-asm("	.section \"___kcrctab+rtoax\", \"a\"	\n"	
-    "	.weak	__crc_rtoax				\n"	
-    "	.long	__crc_rtoax				\n"	
+extern typeof(rtoax) rtoax;
+extern const char __kstrtab_rtoax[];
+extern const char __kstrtabns_rtoax[];
+asm("	.section \"___kcrctab+rtoax\", \"a\"	\n"
+    "	.weak	__crc_rtoax				\n"
+    "	.long	__crc_rtoax				\n"
     "	.previous					\n");
 
-asm("	.section \"__ksymtab_strings\",\"aMS\",%progbits,1	\n"	
-    "__kstrtab_rtoax:					\n"	
-    "	.asciz 	\"rtoax\"					\n"	
-    "__kstrtabns_rtoax:					\n"	
-    "	.asciz 	\"rtoax\"					\n"	
-    "	.previous						\n");	    
+asm("	.section \"__ksymtab_strings\",\"aMS\",%progbits,1	\n"
+    "__kstrtab_rtoax:					\n"
+    "	.asciz 	\"rtoax\"					\n"
+    "__kstrtabns_rtoax:					\n"
+    "	.asciz 	\"rtoax\"					\n"
+    "	.previous						\n");
 static void * __section(".discard.addressable") __used __UNIQUE_ID___addressable_rtoax__COUNTER__ = (void *)&rtoax;
-asm("	.section \"___ksymtab+rtoax\", \"a\"	\n"	
-    "	.balign	4					\n"	
+asm("	.section \"___ksymtab+rtoax\", \"a\"	\n"
+    "	.balign	4					\n"
     "__ksymtab_rtoax:				\n"
-    "	.long	rtoax- .				\n"	
-    "	.long	__kstrtab_rtoax- .			\n"	
-    "	.long	__kstrtabns_rtoax- .			\n"	
+    "	.long	rtoax- .				\n"
+    "	.long	__kstrtab_rtoax- .			\n"
+    "	.long	__kstrtabns_rtoax- .			\n"
     "	.previous					\n");
 
 /**********************************************************************************************************************\
@@ -162,7 +162,7 @@ asm("	.section \"___ksymtab+rtoax\", \"a\"	\n"
 #define EXPORT_UNUSED_SYMBOL(sym)	_EXPORT_SYMBOL(sym, "_unused")
 #define EXPORT_UNUSED_SYMBOL_GPL(sym)	_EXPORT_SYMBOL(sym, "_unused_gpl")
 #else
-/*  */
+
 #endif
 
 #endif /* !__ASSEMBLY__ */

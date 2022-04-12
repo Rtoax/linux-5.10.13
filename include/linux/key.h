@@ -487,7 +487,7 @@ extern void key_fsgid_changed(struct cred *new_cred);
 extern void key_init(void);
 
 #else /* CONFIG_KEYS */
-/*  */
+
 
 #endif /* CONFIG_KEYS */
 #endif /* __KERNEL__ */

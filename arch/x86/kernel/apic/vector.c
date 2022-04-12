@@ -658,7 +658,7 @@ int __init arch_probe_nr_irqs(void) /* 有多少个 irq */
 		nr_irqs = NR_VECTORS * nr_cpu_ids;
 
 	nr = (gsi_top + nr_legacy_irqs()) + 8 * nr_cpu_ids;
-#if defined(CONFIG_PCI_MSI) /*  */
+#if defined(CONFIG_PCI_MSI)
 	/*
 	 * for MSI and HT dyn irq
 	 */
@@ -707,9 +707,9 @@ void __init lapic_assign_system_vectors(void)
 	}
 }
 /**
- *  
+ *
  */
-int __init arch_early_irq_init(void)    /*  */
+int __init arch_early_irq_init(void)
 {
 	struct fwnode_handle *fn;
 
@@ -797,7 +797,7 @@ static int apic_set_affinity(struct irq_data *irqd,
 }
 
 #else
-/*  */
+
 #endif
 
 static int apic_retrigger_irq(struct irq_data *irqd)
@@ -1068,7 +1068,7 @@ static void __init print_APIC_field(int base)
 	pr_cont("\n");
 }
 
-static void __init print_local_APIC(void *dummy)    /*  */
+static void __init print_local_APIC(void *dummy)
 {
 	unsigned int i, v, ver, maxlvt;
 	u64 icr;
@@ -1223,7 +1223,7 @@ static void __init print_PIC(void)
 	pr_debug("... PIC ELCR: %04x\n", v);
 }
 
-static int __initdata show_lapic  = 1;/*  */
+static int __initdata show_lapic  = 1;
 static __init int setup_show_lapic(char *arg)
 {
 	int num = -1;

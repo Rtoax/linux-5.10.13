@@ -78,7 +78,7 @@ struct fmeter {
 	spinlock_t lock;	/* guards read or write of above */
 };
 
-struct cpuset { /*  */
+struct cpuset {
 	struct cgroup_subsys_state css;
 
 	unsigned long flags;		/* "unsigned long" so bitops work */
@@ -195,7 +195,7 @@ static inline struct cpuset *css_cs(struct cgroup_subsys_state *css)
 }
 
 /* Retrieve the cpuset for a task */
-static inline struct cpuset *task_cs(struct task_struct *task)  /*  */
+static inline struct cpuset *task_cs(struct task_struct *task)
 {
 	return css_cs(task_css(task, cpuset_cgrp_id));
 }
@@ -2766,7 +2766,7 @@ static int cpuset_css_online(struct cgroup_subsys_state *css)
 		set_bit(CS_SPREAD_SLAB, &cs->flags);
 
     /**
-     *  
+     *
      */
 	cpuset_inc();
 
@@ -2917,7 +2917,7 @@ struct cgroup_subsys cpuset_cgrp_subsys = {
  * Description: Initialize top_cpuset
  **/
 
-int __init cpuset_init(void)    /*  */
+int __init cpuset_init(void)
 {
 	BUG_ON(percpu_init_rwsem(&cpuset_rwsem));
 

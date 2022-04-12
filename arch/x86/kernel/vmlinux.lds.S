@@ -87,7 +87,7 @@ jiffies = jiffies_64;
 	__end_bss_decrypted = .;				\
 
 #else
-/*  */
+
 #endif
 
 PHDRS {
@@ -105,13 +105,13 @@ PHDRS {
 SECTIONS
 {
 #ifdef CONFIG_X86_32
-/*  */
+
 #else
     /* 0xffffffff81000000 */
 	. = __START_KERNEL; /* __START_KERNEL = 0xffffffff81000000 = 0xffffffff80000000 + 0x1000000 */
-    
+
     /* 0x1000000 */
-	phys_startup_64 = ABSOLUTE(startup_64 - LOAD_OFFSET);     
+	phys_startup_64 = ABSOLUTE(startup_64 - LOAD_OFFSET);
     /* phys_startup_64 = 0x1000000 = ffffffff81000000 - 0xffffffff80000000 */
 #endif
 
@@ -120,18 +120,18 @@ SECTIONS
 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
 		_text = .;  /* ffffffff81000000 */
 		_stext = .; /* ffffffff81000000 */
-        
+
 		/* bootstrapping code */
         /* ffffffff81000000 */
-        
+
 		HEAD_TEXT   /* __HEAD  */
-		TEXT_TEXT   /*  */
+		TEXT_TEXT
 
         /* ffffffff81ef5fb0 - ffffffff81efde9c */
-		SCHED_TEXT  /* __sched *//*  */
+		SCHED_TEXT  /* __sched */
 
         /* ffffffff81efdea0 - ffffffff81efe7f8 */
-		CPUIDLE_TEXT/* __cpuidle *//*  */
+		CPUIDLE_TEXT/* __cpuidle */
 
         /* ffffffff81efe7f8 - ffffffff81eff401 */
 		LOCK_TEXT   /* __lockfunc */
@@ -139,22 +139,22 @@ SECTIONS
         /* ffffffff81eff408 - ffffffff81eff408 */
 		KPROBES_TEXT/* __kprobes */
 
-		ALIGN_ENTRY_TEXT_BEGIN  /*  */
+		ALIGN_ENTRY_TEXT_BEGIN
 
         /* ffffffff82000000 - ffffffff820017de */
 		ENTRY_TEXT              /* arch/x86/entry/entry_64.S */
 
-		ALIGN_ENTRY_TEXT_END    /*  */
+		ALIGN_ENTRY_TEXT_END
 
         /* ffffffff82200000 - ffffffff822003d6 */
-		SOFTIRQENTRY_TEXT       /* __softirq_entry *//*  */
+		SOFTIRQENTRY_TEXT       /* __softirq_entry */
 
         /* ffffffff822003d8 - ffffffff822018fd */
-		STATIC_CALL_TEXT        /* __ARCH_DEFINE_STATIC_CALL_TRAMP static_call *//*  */
+		STATIC_CALL_TEXT        /* __ARCH_DEFINE_STATIC_CALL_TRAMP static_call */
 
-        
+
 		*(.fixup)           /* entry_64.S   emulate.c copy_user_64.S */
-		*(.gnu.warning)     /*  */
+		*(.gnu.warning)
 
 #ifdef CONFIG_RETPOLINE
 		__indirect_thunk_start = .; /* ffffffff82201f56 */
@@ -168,31 +168,31 @@ SECTIONS
 
 	. = ALIGN(PAGE_SIZE/* 4K */);
 
-	X86_ALIGN_RODATA_BEGIN  
+	X86_ALIGN_RODATA_BEGIN
 
     /* ffffffff82400000 - ffffffff82b94000 */
-	RO_DATA(PAGE_SIZE/*  */)      /* 只读 数据段 */
+	RO_DATA(PAGE_SIZE)      /* 只读 数据段 */
 
 	X86_ALIGN_RODATA_END    /* ffffffff82c00000 */
 
 	/* Data *//* 数据段 */
     /* ffffffff82c00000 - ffffffff83675580 */
-	.data : AT(ADDR(.data) - LOAD_OFFSET) 
+	.data : AT(ADDR(.data) - LOAD_OFFSET)
 	{
 		/* Start of data section */
 		_sdata = .; /* ffffffff82c00000 */
 
-		/**     init_task 第一个进程 
+		/**     init_task 第一个进程
 		 *
          *  ffffffff82c00000 D init_stack
          *  ffffffff82c00000 D init_thread_union
-         *  
-         *  
-         *  
-         *  
+         *
+         *
+         *
+         *
          */
         /* ffffffff82c00000 - ffffffff82c08000 共 32K 大小 */
-		INIT_TASK_DATA(THREAD_SIZE/* 32K, 用于对齐 */) 
+		INIT_TASK_DATA(THREAD_SIZE/* 32K, 用于对齐 */)
 
         /**
          *  ffffffff82c08000 d bringup_idt_table
@@ -213,10 +213,10 @@ SECTIONS
          *  ...
          *  ffffffff836664e0 D node_data    (struct pglist_data *)
          *  ...
-         *  
-         *  
-         *  
-         *  
+         *
+         *
+         *
+         *
          */
 
 #ifdef CONFIG_X86_32
@@ -230,7 +230,7 @@ SECTIONS
         /*  -  */
 		DATA_DATA
 
-        
+
 		CONSTRUCTORS    /* 构造函数 *//* 将C++的构造函数指针段合并到这里 */
 
 		/* rarely changed data like cpu maps */
@@ -242,14 +242,14 @@ SECTIONS
 
     /* ffffffff83675580 - ffffffff836974b0 */
 	BUG_TABLE
-	
+
     /* ffffffff836974b0 - ffffffff83bda604 */
 	ORC_UNWIND_TABLE
-    
+
 	. = ALIGN(PAGE_SIZE);
 
     /* ffffffff83bdb000 */
-	__vvar_page = .;    
+	__vvar_page = .;
 
 	.vvar : AT(ADDR(.vvar) - LOAD_OFFSET) {
 		/* work around gold bug 13023 */
@@ -260,7 +260,7 @@ SECTIONS
 #define EMIT_VVAR(name, offset)				\
 		. = __vvar_beginning_hack + offset;	\
 		*(.vvar_ ## name)
-		
+
 #include <asm/vvar.h>
         /**
          *  ffffffff83bdb080 D _vdso_data
@@ -279,11 +279,11 @@ SECTIONS
 	/* Init code and data - will be freed after init */
 	. = ALIGN(PAGE_SIZE);
 	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {
-        
+
         /* ffffffff83bdc000 D __init_begin */
 		__init_begin = .; /* paired with __init_end */
 	}
-    
+
 #if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
 	/*
 	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
@@ -361,12 +361,12 @@ SECTIONS
 #endif
 
     /** 还不知道这个放在那里
-     *         
-     *  ffffffff83eca000   empty_zero_page -> arch/x86/include/asm/pgtable.h   
+     *
+     *  ffffffff83eca000   empty_zero_page -> arch/x86/include/asm/pgtable.h
      *                           ZERO_PAGE -> arch/x86/include/asm/pgtable.h
-     *  ffffffff83ecb000   dummy_mapping   
+     *  ffffffff83ecb000   dummy_mapping
      *  ...
-     *  ffffffff83ecc000  level3_user_vsyscall     
+     *  ffffffff83ecc000  level3_user_vsyscall
      *  ffffffff83ecd000  idt_table
      *  ffffffff83ece000  espfix_pud_page
      *  ffffffff83ecf000  bm_pte
@@ -386,7 +386,7 @@ SECTIONS
      *  ffffffff83f4ce80  task_struct_cachep
      *  ...
      *  (ffffffff83f54c40)  rootdir
-     *  
+     *
      */
 
 	/*
@@ -401,10 +401,10 @@ SECTIONS
 	}
 
     /**
-     *  
+     *
      */
 	INIT_DATA_SECTION(16)
-    /*  */
+
 	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
 		__x86_cpu_dev_start = .;
 		*(.x86_cpu_dev.init)
@@ -461,7 +461,7 @@ SECTIONS
 	 * this section can be safely removed.
 	 */
 	.iommu_table : AT(ADDR(.iommu_table) - LOAD_OFFSET) {
-		__iommu_table = .;  /*  */
+		__iommu_table = .;
 		*(.iommu_table)
 		__iommu_table_end = .;
 	}

@@ -133,7 +133,7 @@ static void sdv_pci_init(void)
  * CE4100 specific x86_init function overrides and early setup
  * calls.
  */
-void __init x86_ce4100_early_setup(void)/*  */
+void __init x86_ce4100_early_setup(void)
 {
 	x86_init.oem.arch_setup = sdv_arch_setup;
 	x86_init.resources.probe_roms = x86_init_noop;
@@ -142,7 +142,7 @@ void __init x86_ce4100_early_setup(void)/*  */
 	x86_init.mpparse.setup_ioapic_ids = setup_ioapic_ids_from_mpc_nocheck;
 
     /**
-     *  
+     *
      */
 	x86_init.pci.init = ce4100_pci_init;
 	x86_init.pci.init_irq = sdv_pci_init;

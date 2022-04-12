@@ -1328,4 +1328,4 @@ static int __init fanotify_user_setup(void)
 
 	return 0;
 }
-device_initcall(fanotify_user_setup);   /*  */
+device_initcall(fanotify_user_setup);

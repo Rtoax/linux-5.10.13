@@ -140,4 +140,4 @@ static int __init net5501_init(void)
 
 	return 0;
 }
-device_initcall(net5501_init);  /*  */
+device_initcall(net5501_init);

@@ -180,7 +180,7 @@ extern int cachefiles_check_in_use(struct cachefiles_cache *cache,
 /*
  * proc.c
  */
-#ifdef CONFIG_CACHEFILES_HISTOGRAM  /*  */
+#ifdef CONFIG_CACHEFILES_HISTOGRAM
 extern atomic_t cachefiles_lookup_histogram[HZ];
 extern atomic_t cachefiles_mkdir_histogram[HZ];
 extern atomic_t cachefiles_create_histogram[HZ];
@@ -197,7 +197,7 @@ void cachefiles_hist(atomic_t histogram[], unsigned long start_jif)
 }
 
 #else
-/*  */
+
 #endif
 
 /*

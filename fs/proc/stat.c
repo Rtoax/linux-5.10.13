@@ -96,7 +96,7 @@ static void show_all_irqs(struct seq_file *p)
 {
 	unsigned int i, next = 0;
     /**
-     *  
+     *
      */
 	for_each_active_irq(i) {
 		show_irq_gap(p, i - next);
@@ -106,7 +106,7 @@ static void show_all_irqs(struct seq_file *p)
 	show_irq_gap(p, nr_irqs - next);
 }
 /**
- *  
+ *
  * $ cat /proc/stat | sed 's/^/ * /g'
  * cpu  15691 821 58028 36979803 1407 11576 11927 0 0 0
  * cpu0 3004 375 8256 3075792 103 890 641 0 0 0
@@ -144,7 +144,7 @@ static int show_stat(struct seq_file *p, void *v)
 	guest = guest_nice = 0;
 	getboottime64(&boottime);
     /**
-     *  
+     *
      */
 	for_each_possible_cpu(i) {
 		struct kernel_cpustat kcpustat;
@@ -180,7 +180,7 @@ static int show_stat(struct seq_file *p, void *v)
 
     /**
      *  打印
-     *  
+     *
      * cpu  15691 821 58028 36979803 1407 11576 11927 0 0 0
      */
 	seq_put_decimal_ull(p, "cpu  ", nsec_to_clock_t(user));
@@ -234,11 +234,11 @@ static int show_stat(struct seq_file *p, void *v)
     /**
      *  显示所有 中断
      */
-	seq_put_decimal_ull(p, "intr ", (unsigned long long)sum);    
+	seq_put_decimal_ull(p, "intr ", (unsigned long long)sum);
 	show_all_irqs(p);
 
     /**
-     *  
+     *
      */
 	seq_printf(p,
 		"\nctxt %llu\n"
@@ -289,4 +289,4 @@ static int __init proc_stat_init(void)
 	proc_create("stat", 0, NULL, &stat_proc_ops);
 	return 0;
 }
-fs_initcall(proc_stat_init);    /*  */
+fs_initcall(proc_stat_init);

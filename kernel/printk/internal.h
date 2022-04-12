@@ -55,5 +55,5 @@ bool printk_percpu_data_ready(void);
 void defer_console_output(void);
 
 #else
-/*  */
+
 #endif /* CONFIG_PRINTK */

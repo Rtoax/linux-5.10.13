@@ -85,7 +85,7 @@ const int special_pages[] = {
 	sym_timens_page,
 };
 
-struct vdso_sym {   /*  */
+struct vdso_sym {
 	const char *name;
 	bool export;
 };

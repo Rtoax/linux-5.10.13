@@ -13,7 +13,7 @@ extern char bpf_preload_umd_end;
 static int preload(struct bpf_preload_info *obj);
 static int finish(void);
 
-static struct bpf_preload_ops umd_ops = {   /*  */
+static struct bpf_preload_ops umd_ops = {
 	.info.driver_name = "bpf_preload",
 	.preload = preload,
 	.finish = finish,
@@ -86,6 +86,6 @@ static void __exit fini_umd(void)
 	umd_ops.info.tgid = NULL;
 	umd_unload_blob(&umd_ops.info);
 }
-late_initcall(load_umd);    /*  */
+late_initcall(load_umd);
 module_exit(fini_umd);
 MODULE_LICENSE("GPL");

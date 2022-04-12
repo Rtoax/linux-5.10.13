@@ -95,7 +95,7 @@ struct inet_frag_queue {
 	struct rcu_head		rcu;
 };
 
-struct inet_frags { /*  */
+struct inet_frags {
 	unsigned int		qsize;
 
 	void			(*constructor)(struct inet_frag_queue *q,

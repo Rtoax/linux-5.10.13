@@ -25,7 +25,7 @@ static inline int page_is_file_lru(struct page *page)
 }
 
 /**
- *  
+ *
  */
 static __always_inline void __update_lru_size(struct lruvec *lruvec,
 				enum lru_list lru, enum zone_type zid,
@@ -48,13 +48,13 @@ static __always_inline void update_lru_size(struct lruvec *lruvec,
 }
 
 /**
- *  添加至 lruvec 对应的 类别 链表中 
+ *  添加至 lruvec 对应的 类别 链表中
  */
-static __always_inline void add_page_to_lru_list(struct page *page, /*  */
+static __always_inline void add_page_to_lru_list(struct page *page,
 				struct lruvec *lruvec, enum lru_list lru)
 {
 	update_lru_size(lruvec, lru, page_zonenum(page), thp_nr_pages(page));
-	list_add(&page->lru, &lruvec->lists[lru]);  
+	list_add(&page->lru, &lruvec->lists[lru]);
 }
 
 static __always_inline void add_page_to_lru_list_tail(struct page *page,

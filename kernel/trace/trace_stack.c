@@ -327,7 +327,7 @@ stack_trace_call(unsigned long ip, unsigned long parent_ip,
 	preempt_enable_notrace();
 }
 
-static struct ftrace_ops __read_mostly trace_ops  =/*  */
+static struct ftrace_ops __read_mostly trace_ops  =
 {
 	.func = stack_trace_call,
 	.flags = FTRACE_OPS_FL_RECURSION_SAFE,
@@ -550,7 +550,7 @@ stack_trace_sysctl(struct ctl_table *table, int write, void *buffer,
 	return ret;
 }
 
-static char __initdata stack_trace_filter_buf[COMMAND_LINE_SIZE+1] ;  /*  */
+static char __initdata stack_trace_filter_buf[COMMAND_LINE_SIZE+1] ;
 
 static __init int enable_stacktrace(char *str)
 {
@@ -564,7 +564,7 @@ static __init int enable_stacktrace(char *str)
 }
 __setup("stacktrace", enable_stacktrace);
 
-static __init int stack_trace_init(void)    /*  */
+static __init int stack_trace_init(void)
 {
 	int ret;
 
@@ -578,7 +578,7 @@ static __init int stack_trace_init(void)    /*  */
     /* /sys/kernel/debug/tracing/stack_trace */
 	trace_create_file("stack_trace", 0444, NULL,
 			NULL, &stack_trace_fops);
-    
+
 #ifdef CONFIG_DYNAMIC_FTRACE
     /* /sys/kernel/debug/tracing/stack_trace_filter */
 	trace_create_file("stack_trace_filter", 0644, NULL,

@@ -69,7 +69,7 @@ static int map_irq_stack(unsigned int cpu)
 }
 #endif
 
-int irq_init_percpu_irqstack(unsigned int cpu)  /*  */
+int irq_init_percpu_irqstack(unsigned int cpu)
 {
 	if (per_cpu(hardirq_stack_ptr, cpu))
 		return 0;
@@ -77,7 +77,7 @@ int irq_init_percpu_irqstack(unsigned int cpu)  /*  */
 }
 
 /**
- *  
+ *
  */
 void do_softirq_own_stack(void)
 {

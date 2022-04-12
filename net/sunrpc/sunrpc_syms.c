@@ -133,7 +133,7 @@ cleanup_sunrpc(void)
 	rpc_destroy_mempool();
 	unregister_pernet_subsys(&sunrpc_net_ops);
 	auth_domain_cleanup();
-#if IS_ENABLED(CONFIG_SUNRPC_DEBUG) /*  */
+#if IS_ENABLED(CONFIG_SUNRPC_DEBUG)
 	rpc_unregister_sysctl();
 #endif
 	rcu_barrier(); /* Wait for completion of call_rcu()'s */

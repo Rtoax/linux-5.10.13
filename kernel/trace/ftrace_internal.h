@@ -43,7 +43,7 @@ int ftrace_ops_test(struct ftrace_ops *ops, unsigned long ip, void *regs);
 extern int ftrace_graph_active;
 void update_function_graph_func(void);
 #else /* !CONFIG_FUNCTION_GRAPH_TRACER */
-/*  */
+
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 
 #else /* !CONFIG_FUNCTION_TRACER */

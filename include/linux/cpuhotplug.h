@@ -49,12 +49,12 @@ enum cpuhp_state {
 	CPUHP_ACPI_CPUDRV_DEAD,
 	CPUHP_S390_PFAULT_DEAD,
 	CPUHP_BLK_MQ_DEAD,
-	CPUHP_FS_BUFF_DEAD,         /*  */
+	CPUHP_FS_BUFF_DEAD,
 	CPUHP_PRINTK_DEAD,
 	CPUHP_MM_MEMCQ_DEAD,
 	CPUHP_PERCPU_CNT_DEAD,
 	CPUHP_RADIX_DEAD,
-	CPUHP_PAGE_ALLOC_DEAD,      /*  */
+	CPUHP_PAGE_ALLOC_DEAD,
 	CPUHP_NET_DEV_DEAD,
 	CPUHP_PCI_XGENE_DEAD,
 	CPUHP_IOMMU_INTEL_DEAD,
@@ -405,7 +405,7 @@ static inline int cpuhp_state_remove_instance_nocalls(enum cpuhp_state state,
 #ifdef CONFIG_SMP
 void cpuhp_online_idle(enum cpuhp_state state);
 #else
-/*  */
+
 #endif
 
 #endif

@@ -769,4 +769,4 @@ static __init int gcov_fs_init(void)
 	gcov_enable_events();
 	return 0;
 }
-device_initcall(gcov_fs_init);  /*  */
+device_initcall(gcov_fs_init);

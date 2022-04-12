@@ -40,7 +40,7 @@ static void tick_resume_broadcast_oneshot(struct clock_event_device *bc);
 static void tick_broadcast_oneshot_offline(unsigned int cpu);
 # endif
 #else
-/*  */
+
 #endif
 
 /*
@@ -261,8 +261,8 @@ int tick_receive_broadcast(void)
 /*
  * Broadcast the event to the cpus, which are set in the mask (mangled).
  *
- * calls the `broadcast` function of the given clock events which 
- * sends [IPI](https://en.wikipedia.org/wiki/Inter-processor_interrupt) 
+ * calls the `broadcast` function of the given clock events which
+ * sends [IPI](https://en.wikipedia.org/wiki/Inter-processor_interrupt)
  * interrupt to the set of the processors. RToax
  */
 static bool tick_do_broadcast(struct cpumask *mask)
@@ -437,7 +437,7 @@ EXPORT_SYMBOL_GPL(tick_broadcast_control);
 void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
 {
     /**
-     *  
+     *
      */
 	if (!broadcast)
 		dev->event_handler = tick_handle_periodic;
@@ -998,14 +998,14 @@ bool tick_broadcast_oneshot_available(void)
 }
 
 #else
-/*  */
+
 #endif
 /**
- *  
+ *
  */
-void __init tick_broadcast_init(void)   /*  */
+void __init tick_broadcast_init(void)
 {
-	zalloc_cpumask_var(&tick_broadcast_mask, GFP_NOWAIT);   /*  */
+	zalloc_cpumask_var(&tick_broadcast_mask, GFP_NOWAIT);
 	zalloc_cpumask_var(&tick_broadcast_on, GFP_NOWAIT);
 	zalloc_cpumask_var(&tmpmask, GFP_NOWAIT);
 #ifdef CONFIG_TICK_ONESHOT

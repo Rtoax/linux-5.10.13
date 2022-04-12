@@ -16,9 +16,10 @@
  *
  * Some macro usage:
  * - SYM_FUNC_START/END:Define functions in the symbol table.
- * - idtentry:		Define exception entry points.*
- * 
- * 系统调用或中断处理在被 Linux 内核调用前需要一些准备。 
+ * - idtentry:		Define exception entry points.
+*
+ *
+ * 系统调用或中断处理在被 Linux 内核调用前需要一些准备。
  * 1. 宏 `idtentry` 完成异常处理被执行前的所需准备，
  * 2. 宏 `interrupt` 完成中断处理被调用前的所需准备 ，
  * 3. `entry_SYSCALL_64` 完成系统调用执行前的所需准备。
@@ -52,7 +53,7 @@
 .section .entry.text, "ax"
 
 #ifdef CONFIG_PARAVIRT_XXL
-SYM_CODE_START(native_usergs_sysret64)  /*  */
+SYM_CODE_START(native_usergs_sysret64)
 	UNWIND_HINT_EMPTY
 	swapgs
 	sysretq
@@ -1005,7 +1006,7 @@ SYM_CODE_START_LOCAL(paranoid_entry)
 	 * MSR_GS_BASE < 0 : kernel mode
 	 * MSR_GS_BASE >=0 : user mode, 需要 SWAPGS
 	 */
-	movl	$MSR_GS_BASE, %ecx  
+	movl	$MSR_GS_BASE, %ecx
 	rdmsr
 	testl	%edx, %edx
 	jns	.Lparanoid_entry_swapgs
@@ -1121,8 +1122,8 @@ SYM_CODE_START_LOCAL(error_entry)
 .Lerror_entry_from_usermode_after_swapgs:
 	/* Put us onto the real thread stack. */
 	popq	%r12				/* save return addr in %12 */
-	movq	%rsp, %rdi			/* arg0 = pt_regs pointer */
-	call	sync_regs           /*  */
+	movq	%rsp, %rdi			/* arg0regs pointer */
+	call	sync_regs
 	movq	%rax, %rsp			/* switch stack */
 	ENCODE_FRAME_POINTER
 	pushq	%r12
@@ -1441,7 +1442,7 @@ first_nmi: //第一次一定是 kernel mode
     //|         CS             |
     //|         RIP            |
     //+------------------------+
-    
+
     //+------------------------+
     //|         SS             |
     //|         RSP            |
@@ -1452,11 +1453,11 @@ first_nmi: //第一次一定是 kernel mode
     //|          1(0)          |
     //+------------------------+
 
-	/* Leave room for the "iret" frame 
+	/* Leave room for the "iret" frame
         allocate yet another `40` bytes on the stack*/
 	subq	$(5*8), %rsp
 
-	/* Copy the "original" frame to the "outermost" frame 
+	/* Copy the "original" frame to the "outermost" frame
     pushes the copy of the original stack frame after the allocated space */
 	.rept 5
 	pushq	11*8(%rsp)
@@ -1537,7 +1538,7 @@ repeat_nmi:
     //| Saved RIP               |
     //+-------------------------+
 
-    
+
 end_repeat_nmi:
 
 	/*
@@ -1582,7 +1583,7 @@ end_repeat_nmi:
 	jmp	nmi_restore
 
 nmi_no_fsgsbase:
-	/* EBX == 0 -> invoke SWAPGS 
+	/* EBX == 0 -> invoke SWAPGS
     `0` if we have used `swapgs` instruction and `1` if we didn't use it */
 	testl	%ebx, %ebx
 	jnz	nmi_restore
@@ -1591,9 +1592,9 @@ nmi_swapgs: //EBX contains `1`
 	SWAPGS_UNSAFE_STACK
 
 //nmi_restore:
-//1.restore general purpose registers, 
-//2.clear allocated space on the stack for this registers, 
-//3.clear our temporary variable 
+//1.restore general purpose registers,
+//2.clear allocated space on the stack for this registers,
+//3.clear our temporary variable
 //4.exit from the interrupt handler
 nmi_restore:    //EBX contains `0`
 	POP_REGS

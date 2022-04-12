@@ -61,7 +61,7 @@ static bool __read_mostly enable_vma_readahead  = true;
 #define INC_CACHE_INFO(x)	data_race(swap_cache_info.x++)
 #define ADD_CACHE_INFO(x, nr)	data_race(swap_cache_info.x += (nr))
 
-static struct { /*  */
+static struct {
 	unsigned long add_total;
 	unsigned long del_total;
 	unsigned long find_success;
@@ -211,7 +211,7 @@ void __delete_from_swap_cache(struct page *page,
  * @page: page we want to move to swap
  *
  * Allocate swap space for the page and add the page to the
- * swap cache.  Caller needs to hold the page lock. 
+ * swap cache.  Caller needs to hold the page lock.
  *
  * 分配交换空间
  */
@@ -224,7 +224,7 @@ int add_to_swap(struct page *page)
 	VM_BUG_ON_PAGE(!PageUptodate(page), page);
 
     /**
-     *  
+     *
      */
 	entry = get_swap_page(page);
 	if (!entry.val)
@@ -318,9 +318,9 @@ void clear_shadow_from_swap_cache(int type, unsigned long begin,
 	}
 }
 
-/* 
- * If we are the only user, then try to free up the swap cache. 
- * 
+/*
+ * If we are the only user, then try to free up the swap cache.
+ *
  * Its ok to check for PageSwapCache without the page lock
  * here because we are going to recheck again inside
  * try_to_free_swap() _with_ the lock.
@@ -334,7 +334,7 @@ static inline void free_swap_cache(struct page *page)
 	}
 }
 
-/* 
+/*
  * Perform a free_page(), also freeing any swap cache associated with
  * this page if it is the last user of the page.
  */
@@ -382,7 +382,7 @@ struct page *lookup_swap_cache(swp_entry_t entry, struct vm_area_struct *vma,
 	if (!si)
 		return NULL;
 
-    /*  */
+
 	page = find_get_page(swap_address_space(entry), swp_offset(entry));
 	put_swap_device(si);
 

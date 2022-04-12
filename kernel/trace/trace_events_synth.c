@@ -2100,4 +2100,4 @@ static __init int trace_events_synth_init(void)
 	return err;
 }
 
-fs_initcall(trace_events_synth_init);   /*  */
+fs_initcall(trace_events_synth_init);

@@ -14,7 +14,7 @@ OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 
 #ifdef CONFIG_X86_64
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(startup_64)   /*  */
+ENTRY(startup_64)
 #else
 OUTPUT_ARCH(i386)
 ENTRY(startup_32)
@@ -31,7 +31,7 @@ SECTIONS
 	. = 0;
 	.head.text : {  /* __HEAD 包含了`startup_32` */
 		_head = . ;
-		HEAD_TEXT   /*  */
+		HEAD_TEXT
 		_ehead = . ;
 	}
     /**
@@ -59,13 +59,13 @@ SECTIONS
     /**
      *
      */
-	.rodata : { /*  */
+	.rodata : {
 		_rodata = . ;
 		*(.rodata)	 /* read-only data */
 		*(.rodata.*)
 		_erodata = . ;
 	}
-	.data :	{   /*  */
+	.data :	{
 		_data = . ;
 		*(.data)
 		*(.data.*)
@@ -73,7 +73,7 @@ SECTIONS
 		_edata = . ;
 	}
 	. = ALIGN(L1_CACHE_BYTES);
-	.bss : {    /*  */
+	.bss : {
 		_bss = . ;
 		*(.bss)
 		*(.bss.*)

@@ -92,7 +92,7 @@ enum probe_type {
  * can export information and configuration variables that are independent
  * of any specific device.
  */
-struct device_driver {  /*  */
+struct device_driver {
 	const char		*name;
 	struct bus_type		*bus;
 
@@ -287,6 +287,6 @@ static int __init __driver##_init(void) \
 { \
 	return __register(&(__driver) , ##__VA_ARGS__); \
 } \
-device_initcall(__driver##_init);   /*  */
+device_initcall(__driver##_init);
 
 #endif	/* _DEVICE_DRIVER_H_ */

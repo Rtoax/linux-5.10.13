@@ -338,7 +338,7 @@ extern int platform_dma_configure(struct device *dev);
 #define USE_PLATFORM_PM_SLEEP_OPS
 #endif
 
-#ifndef CONFIG_SUPERH   /*  */
+#ifndef CONFIG_SUPERH
 /*
  * REVISIT: This stub is needed for all non-SuperH users of early platform
  * drivers. It should go away once we introduce the new platform_device-based

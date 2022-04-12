@@ -20,19 +20,19 @@
 void __init driver_init(void)   /*驱动初始化  */
 {
 	/* These are the core pieces */
-	devtmpfs_init();    /*  */
+	devtmpfs_init();
 	devices_init();     /* 设备初始化：字符，块， */
-	buses_init();       /*  */
-	classes_init();     /*  */
-	firmware_init();    /*  */
-	hypervisor_init();  /*  */
+	buses_init();
+	classes_init();
+	firmware_init();
+	hypervisor_init();
 
 	/* These are also core pieces, but must come after the
 	 * core core pieces.
 	 */
-	of_core_init();     /*  */
-	platform_bus_init();/*  */
-	cpu_dev_init();     /*  */
-	memory_dev_init();  /*  */
-	container_dev_init();/*  */
+	of_core_init();
+	platform_bus_init();
+	cpu_dev_init();
+	memory_dev_init();
+	container_dev_init();
 }

@@ -597,13 +597,13 @@ void kunit_cleanup(struct kunit *test)
 }
 EXPORT_SYMBOL_GPL(kunit_cleanup);
 
-static int __init kunit_init(void)    /*  */
+static int __init kunit_init(void)
 {
 	kunit_debugfs_init();
 
 	return 0;
 }
-late_initcall(kunit_init);  /*  *//* 测试 运行实例 */
+late_initcall(kunit_init);  /* 测试 运行实例 */
 
 static void __exit kunit_exit(void)
 {

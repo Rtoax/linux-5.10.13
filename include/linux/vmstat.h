@@ -140,7 +140,7 @@ extern void vm_events_fold_cpu(int cpu);
 /*
  * Zone and node-based page accounting with per cpu differentials.
  */
-extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];   /*  */
+extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 
@@ -225,7 +225,7 @@ static inline unsigned long global_node_page_state(enum node_stat_item item)
  */
 static inline unsigned long zone_page_state(struct zone *zone, enum zone_stat_item item)
 {
-	long x = atomic_long_read(&zone->vm_stat[item]);    /*  */
+	long x = atomic_long_read(&zone->vm_stat[item]);
 #ifdef CONFIG_SMP
     /**
      *  SMP 为什么会是负数
@@ -312,7 +312,7 @@ int calculate_pressure_threshold(struct zone *zone);
 int calculate_normal_threshold(struct zone *zone);
 void set_pgdat_percpu_threshold(pg_data_t *pgdat,
 				int (*calculate_pressure)(struct zone *));
-#else /* CONFIG_SMP *//*  */
+#else /* CONFIG_SMP */
 
 /*
  * We do not maintain differentials in a single processor configuration.

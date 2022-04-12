@@ -392,7 +392,7 @@ static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
 
 	rcu_read_lock();
 	for_each_process_thread(g, t) {
-		if (start == end) { /*  */
+		if (start == end) {
 			ret = -EAGAIN;
 			goto unlock;
 		}

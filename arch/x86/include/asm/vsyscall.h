@@ -16,7 +16,7 @@ extern void set_vsyscall_pgtable_user_bits(pgd_t *root);
 extern bool emulate_vsyscall(unsigned long error_code,
 			     struct pt_regs *regs, unsigned long address);
 #else
-/*  */
+
 #endif
 
 #endif /* _ASM_X86_VSYSCALL_H */

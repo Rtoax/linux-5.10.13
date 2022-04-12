@@ -33,14 +33,14 @@ int __read_mostly iommu_merge  = 0;
 int __read_mostly no_iommu ;
 /* Set this to 1 if there is a HW IOMMU in the system */
 int __read_mostly iommu_detected  = 0;
-    /* arch/x86/kernel/vmlinux.lds.S:303 ; arch/x86/include/asm/iommu_table.h:54: __IOMMU_INIT *//*  */
+    /* arch/x86/kernel/vmlinux.lds.S:303 ; arch/x86/include/asm/iommu_table.h:54: __IOMMU_INIT */
 extern struct iommu_table_entry __iommu_table[], __iommu_table_end[];   /* IOMMU */
 
 
 /**
- *  
+ *
  */
-void __init pci_iommu_alloc(void)   /*IOMMU分配  *//*  */
+void __init pci_iommu_alloc(void)   /*IOMMU分配  */
 {
 	struct iommu_table_entry *p;
 
@@ -50,8 +50,8 @@ void __init pci_iommu_alloc(void)   /*IOMMU分配  *//*  */
 	for (p = __iommu_table; p < __iommu_table_end; p++) {
 		if (p && p->detect && p->detect() > 0) {
 			p->flags |= IOMMU_DETECTED;
-			if (p->early_init)  /*  */
-                
+			if (p->early_init)
+
                 /**
                  *  这里具体是哪个函数？
                  */

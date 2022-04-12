@@ -572,7 +572,7 @@ void __pm_pr_dbg(bool defer, const char *fmt, ...)
 }
 
 #else /* !CONFIG_PM_SLEEP_DEBUG */
-/*  */
+
 #endif /* CONFIG_PM_SLEEP_DEBUG */
 
 struct kobject *power_kobj;

@@ -160,12 +160,12 @@ static const struct file_operations socket_file_ops = { /* socket */
      */
 	socket_file_ops.poll =		sock_poll,
 	socket_file_ops.unlocked_ioctl = sock_ioctl,
-	
+
 #ifdef CONFIG_COMPAT
 	socket_file_ops.compat_ioctl = compat_sock_ioctl,
 #endif
     /**
-     *  
+     *
      */
 	socket_file_ops.mmap =		sock_mmap,
 	socket_file_ops.release =	sock_close,
@@ -194,7 +194,7 @@ static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO]  
     [PF_NETLINK]    = &netlink_family_ops
 
     /* MORE */
-};    
+};
 
 /*
  * Support routines.
@@ -501,7 +501,7 @@ struct socket *sock_from_file(struct file *file, int *err)
     /**
      *  如果是 socket， 返回 sock
      */
-	if (file->f_op == &socket_file_ops) /*  */
+	if (file->f_op == &socket_file_ops)
 		return file->private_data;	/* set in sock_map_fd, = struct socket *sock 结构 */
 
 	*err = -ENOTSOCK;
@@ -610,7 +610,7 @@ static int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
 /**
  *  socket(2) inode operation
  */
-static const struct inode_operations sockfs_inode_ops = {   /*  */
+static const struct inode_operations sockfs_inode_ops = {
 	.listxattr = sockfs_listxattr,
 	.setattr = sockfs_setattr,
 };
@@ -637,7 +637,7 @@ struct socket *sock_alloc(void) /* 分配 inode */
 	sock = SOCKET_I(inode); /* container_of */
 
     /**
-     *  
+     *
      */
 	inode->i_ino = get_next_ino();
 	inode->i_mode = S_IFSOCK | S_IRWXUGO;
@@ -711,7 +711,7 @@ INDIRECT_CALLABLE_DECLARE(int inet6_sendmsg(struct socket *, struct msghdr *,
 					    size_t));
 
 /* sendto(...) */
-static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)   
+static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
 {
     /* 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是 inet_sendmsg */
     /* 按照 优先级，
@@ -957,7 +957,7 @@ INDIRECT_CALLABLE_DECLARE(int inet_recvmsg(struct socket *, struct msghdr *,
 INDIRECT_CALLABLE_DECLARE(int inet6_recvmsg(struct socket *, struct msghdr *,
 					    size_t, int));
 /**
- *  
+ *
  */
 static inline int sock_recvmsg_nosec(struct socket *sock, struct msghdr *msg,
 				     int flags)
@@ -983,7 +983,7 @@ int sock_recvmsg(struct socket *sock, struct msghdr *msg, int flags)
      */
 	int err = security_socket_recvmsg(sock, msg, msg_data_left(msg), flags);
     /**
-     *  
+     *
      */
 	return err ?: sock_recvmsg_nosec(sock, msg, flags);
 }
@@ -1355,11 +1355,11 @@ static __poll_t sock_poll(struct file *file, poll_table *wait)
 		return 0;
 
     /**
-     *  
+     *
      */
 	if (sk_can_busy_loop(sock->sk)) {
         /**
-         *  
+         *
          */
 		/* poll once if requested by the syscall */
 		if (events & POLL_BUSY_LOOP)
@@ -1372,7 +1372,7 @@ static __poll_t sock_poll(struct file *file, poll_table *wait)
     /**
      *  TODO 2021年7月15日22:45:30
      *
-     *  
+     *
      */
 	return sock->ops->poll(file, sock, wait) | flag;
 }
@@ -1539,8 +1539,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	/* Now protected by module ref count */
 	rcu_read_unlock();
 
-    /* 如 
-     *  AF_INET->inet_family_ops->inet_create() 
+    /* 如
+     *  AF_INET->inet_family_ops->inet_create()
      *  AF_UNIX->unix_family_ops->unix_create()
      *  AF_PACKET->packet_family_ops->packet_create()
      */
@@ -1635,9 +1635,9 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 	flags = type & ~SOCK_TYPE_MASK;
 	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
 		return -EINVAL;
-    
+
 	type &= SOCK_TYPE_MASK;
-    
+
     /* 标志位 */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
@@ -1654,14 +1654,14 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 }
 
 /**
- *  
+ *
  */
 /* socket 系统调用 */
 int socket(int domain, int type, int protocol){ /* ++ */ }
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
     /**
-     *  
+     *
      */
 	return __sys_socket(family, type, protocol);
 }
@@ -1801,7 +1801,7 @@ int __sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
             						   addrlen);
 			if (!err) {
                 /**
-                 *  
+                 *
                  *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_bind()
                  *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_bind()
                  *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
@@ -1822,7 +1822,7 @@ int bind(int socket, const struct sockaddr *umyaddr, socklen_t addrlen);
 SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
 {
     /**
-     *  
+     *
      */
 	return __sys_bind(fd, umyaddr, addrlen);
 }
@@ -1851,7 +1851,7 @@ int __sys_listen(int fd, int backlog)
 		err = security_socket_listen(sock, backlog);
 		if (!err)
             /**
-             *  
+             *
              *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
              *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
              *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
@@ -1872,7 +1872,7 @@ int listen(int s, int backlog);
 SYSCALL_DEFINE2(listen, int, fd, int, backlog)
 {
     /**
-     *  
+     *
      */
 	return __sys_listen(fd, backlog);
 }
@@ -2013,7 +2013,7 @@ int __sys_accept4(int fd, struct sockaddr __user *upeer_sockaddr,
 	struct fd f;
 
     /**
-     *  
+     *
      */
 	f = fdget(fd);
 	if (f.file) {
@@ -2043,7 +2043,7 @@ SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
 		int __user *, upeer_addrlen)
 {
     /**
-     *  
+     *
      */
 	return __sys_accept4(fd, upeer_sockaddr, upeer_addrlen, 0);
 }
@@ -2081,7 +2081,7 @@ int __sys_connect_file(struct file *_file, struct sockaddr_storage *address,
 		goto out;
 
     /**
-     *  
+     *
      *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
      *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
      *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
@@ -2114,7 +2114,7 @@ int __sys_connect(int __fd, struct sockaddr __user *uservaddr, int addrlen)
 		ret = move_addr_to_kernel(uservaddr, addrlen, &address);
 		if (!ret)
             /**
-             *  
+             *
              */
 			ret = __sys_connect_file(f.file, &address, addrlen, 0);
 		fdput(f);
@@ -2130,7 +2130,7 @@ int connect(int sockfd, const struct sockaddr *uservaddr, socklen_t addrlen);
 SYSCALL_DEFINE3(connect, int, __fd, struct sockaddr __user *, uservaddr, int, addrlen)
 {
     /**
-     *  
+     *
      */
 	return __sys_connect(__fd, uservaddr, addrlen);
 }
@@ -2213,7 +2213,7 @@ SYSCALL_DEFINE3(getpeername, int, fd, struct sockaddr __user *, usockaddr,
  *	Send a datagram to a given address. We move the address into kernel
  *	space and check the user space data area is readable before invoking
  *	the protocol.
- */ /*  */
+ */
 int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		 struct sockaddr __user *addr,  int addr_len)
 {
@@ -2303,19 +2303,19 @@ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
 	int err, err2;
 	int fput_needed;
     /**
-     *  
+     *
      */
 	err = import_single_range(READ, ubuf, size, &iov, &msg.msg_iter);
 	if (unlikely(err))
 		return err;
     /**
-     *  
+     *
      */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
     /**
-     *  
+     *
      */
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
@@ -2332,7 +2332,7 @@ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
      */
     err = sock_recvmsg(sock, &msg, flags);
     /**
-     *  
+     *
      */
 	if (err >= 0 && addr != NULL) {
 		err2 = move_addr_to_user(&address,

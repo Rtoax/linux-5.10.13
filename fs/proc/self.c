@@ -38,7 +38,7 @@ static const struct inode_operations proc_self_inode_operations = { /* /proc/sel
 	.get_link	= proc_self_get_link,
 };
 
-static unsigned __ro_after_init self_inum ;/*  */
+static unsigned __ro_after_init self_inum ;
 
 int proc_setup_self(struct super_block *s)
 {
@@ -74,7 +74,7 @@ int proc_setup_self(struct super_block *s)
 	return ret;
 }
 
-void __init proc_self_init(void)    /*  */
+void __init proc_self_init(void)
 {
 	proc_alloc_inum(&self_inum);
 }

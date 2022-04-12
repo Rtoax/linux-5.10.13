@@ -64,7 +64,7 @@ static int madvise_need_mmap_write(int behavior)
  * We can potentially split a vm area into separate
  * areas, each area with its own behavior.
  *
- * 
+ *
  */
 static long madvise_behavior(struct vm_area_struct *vma,
         		     struct vm_area_struct **prev,
@@ -95,7 +95,7 @@ static long madvise_behavior(struct vm_area_struct *vma,
 		}
 		new_flags &= ~VM_DONTCOPY;
 		break;
-	case MADV_WIPEONFORK:   /*  */
+	case MADV_WIPEONFORK:
 		/* MADV_WIPEONFORK is only supported on anonymous memory. */
 		if (vma->vm_file || vma->vm_flags & VM_SHARED) {
 			error = -EINVAL;
@@ -478,7 +478,7 @@ regular_page:
 	return 0;
 }
 
-static const struct mm_walk_ops cold_walk_ops = {   /*  */
+static const struct mm_walk_ops cold_walk_ops = {
 	.pmd_entry = madvise_cold_or_pageout_pte_range,
 };
 
@@ -926,7 +926,7 @@ static int madvise_inject_error(int behavior,
 #endif
 
 /**
- *  
+ *
  */
 static long
 madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
@@ -1168,7 +1168,7 @@ out:
 /**
  *  madvise(2) 系统调用
  *
- *  
+ *
  */
 int madvise(void *addr, size_t length, int advice);
 SYSCALL_DEFINE3(madvise, unsigned long, start, size_t, len_in, int, behavior)

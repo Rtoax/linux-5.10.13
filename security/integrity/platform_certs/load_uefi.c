@@ -180,4 +180,4 @@ static int __init load_uefi_certs(void)
 
 	return rc;
 }
-late_initcall(load_uefi_certs); /*  */
+late_initcall(load_uefi_certs);

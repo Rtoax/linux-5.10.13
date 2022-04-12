@@ -196,7 +196,7 @@ static int inet_autobind(struct sock *sk)
 /*
  *	Move a socket into listening state.
  */
-int inet_listen(struct socket *__socket, int backlog)   /*  */
+int inet_listen(struct socket *__socket, int backlog)
 {
 	struct sock *sk = __socket->sk;
 	unsigned char old_state;
@@ -228,21 +228,21 @@ int inet_listen(struct socket *__socket, int backlog)   /*  */
 		    (tcp_fastopen & TFO_SERVER_ENABLE) &&
 		    !inet_csk(sk)->icsk_accept_queue.fastopenq.max_qlen) {
 		    /**
-             *  
+             *
              */
 			fastopen_queue_tune(sk, backlog);
 			tcp_fastopen_init_key_once(sock_net(sk));
 		}
 
         /**
-         *  
+         *
          */
 		err = inet_csk_listen_start(sk, backlog);
 		if (err)
 			goto out;
 
         /**
-         *  
+         *
          */
 		tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_LISTEN_CB, 0, NULL);
 	}
@@ -280,7 +280,7 @@ lookup_protocol:
 	rcu_read_lock();
 
     /**
-     *  
+     *
      */
 	list_for_each_entry_rcu(answer, &inetsw[sock->type], list) {
 
@@ -327,7 +327,7 @@ lookup_protocol:
 		goto out_rcu_unlock;
 
     /**
-     *  
+     *
      */
 	sock->ops = answer->ops;
 	answer_prot = answer->prot;
@@ -339,7 +339,7 @@ lookup_protocol:
 	err = -ENOBUFS;
 
     /**
-     *  申请 sock 
+     *  申请 sock
      */
 	sk = sk_alloc(net, PF_INET, GFP_KERNEL, answer_prot, kern); /* 申请 struct sock */
 	if (!sk)
@@ -352,7 +352,7 @@ lookup_protocol:
     /**
      *  强转
      */
-	inet = inet_sk(sk); /*  */
+	inet = inet_sk(sk);
 	inet->is_icsk = (INET_PROTOSW_ICSK & answer_flags) != 0;
 
 	inet->nodefrag = 0;
@@ -371,19 +371,19 @@ lookup_protocol:
 	inet->inet_id = 0;
 
     /**
-     *  
+     *
      */
 	sock_init_data(sock, sk);
 
     /**
-     *  
+     *
      */
 	sk->sk_destruct	   = inet_sock_destruct;
 	sk->sk_protocol	   = protocol;
 	sk->sk_backlog_rcv = sk->sk_prot->backlog_rcv;
 
     /**
-     *  
+     *
      */
 	inet->uc_ttl	= -1;
 	inet->mc_loop	= 1;
@@ -441,7 +441,7 @@ out_rcu_unlock:
 int inet_release(struct socket *__socket)
 {
     /**
-     *  
+     *
      */
 	struct sock *sk = __socket->sk;
 
@@ -482,7 +482,7 @@ int inet_bind(struct socket *__socket, struct sockaddr *uaddr, int addr_len)
 	int err;
 
     /**
-     *  
+     *
      */
 	/* If the socket has its own bind function then use it. (RAW) */
 	if (sk->sk_prot->bind) {
@@ -499,21 +499,21 @@ int inet_bind(struct socket *__socket, struct sockaddr *uaddr, int addr_len)
 		return err;
 
     /**
-     *  
+     *
      */
 	return __inet_bind(sk, uaddr, addr_len, BIND_WITH_LOCK);
 }
 EXPORT_SYMBOL(inet_bind);
 
 /**
- *  
+ *
  */
 int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len, u32 flags)
 {
 	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
 
     /**
-     *  
+     *
      */
 	struct inet_sock *inet = inet_sk(sk);
 	struct net *net = sock_net(sk);
@@ -572,14 +572,14 @@ int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len, u32 flags
 		goto out_release_sock;
 
     /**
-     *  
+     *
      */
 	inet->inet_rcv_saddr = inet->inet_saddr = addr->sin_addr.s_addr;
 	if (chk_addr_ret == RTN_MULTICAST || chk_addr_ret == RTN_BROADCAST)
 		inet->inet_saddr = 0;  /* Use device */
 
 	/**
-	 *  Make sure we are allowed to bind here. 
+	 *  Make sure we are allowed to bind here.
 	 */
 	if (snum || !(inet->bind_address_no_port ||
 		      (flags & BIND_FORCE_ADDRESS_NO_PORT))) {
@@ -598,7 +598,7 @@ int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len, u32 flags
 	}
 
     /**
-     *  
+     *
      */
 	if (inet->inet_rcv_saddr)
 		sk->sk_userlocks |= SOCK_BINDADDR_LOCK;
@@ -606,7 +606,7 @@ int __inet_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len, u32 flags
 		sk->sk_userlocks |= SOCK_BINDPORT_LOCK;
 
     /**
-     *  
+     *
      */
     inet->inet_sport = htons(inet->inet_num);
 	inet->inet_daddr = 0;
@@ -695,7 +695,7 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 			return -EINVAL;
 
         /**
-         *  
+         *
          *  AF_INET:    不能返回任何IPV6相关的地址信息
          *  AF_INET6:   不能返回任何IPV4地址信息
          *  AF_UNSPEC:  意味着函数返回的是适用于指定主机名和服务名且适合任何协议族的地址
@@ -711,7 +711,7 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 		}
 	}
     /**
-     *  
+     *
      */
 	switch (__socket->state) {
 	default:
@@ -742,7 +742,7 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 			goto out;
 
         /**
-         *  
+         *
          */
 		if (BPF_CGROUP_PRE_CONNECT_ENABLED(sk)) {
             /**
@@ -755,7 +755,7 @@ int __inet_stream_connect(struct socket *__socket, struct sockaddr *uaddr,
 		}
 
         /**
-         *  
+         *
          * tcp_prot.tcp_v4_connect()
          * udp_prot.ip4_datagram_connect()
          * raw_prot.ip4_datagram_connect()
@@ -832,7 +832,7 @@ int inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 
 	lock_sock(sock->sk);
     /**
-     *  
+     *
      */
 	err = __inet_stream_connect(sock, uaddr, addr_len, flags, 0);
 	release_sock(sock->sk);
@@ -866,33 +866,33 @@ int inet_accept(struct socket *__socket, struct socket *newsock, int flags,
 	lock_sock(sk2);
 
     /**
-     *  
+     *
      */
 	sock_rps_record_flow(sk2);
 
     /**
-     *  
+     *
      */
 	WARN_ON(!((1 << sk2->sk_state) &
     		  (TCPF_ESTABLISHED | TCPF_SYN_RECV |
     		  TCPF_CLOSE_WAIT | TCPF_CLOSE)));
 
     /**
-     *  
+     *
      */
 	sock_graft(sk2, newsock);
 
     /**
-     *  
+     *
      */
 	newsock->state = SS_CONNECTED;
 	err = 0;
-    
+
     /**
-     *  
+     *
      */
 	release_sock(sk2);
-    
+
 do_err:
 	return err;
 }
@@ -990,7 +990,7 @@ int inet_recvmsg(struct socket *sock, struct msghdr *msg, size_t size,
 	if (likely(!(flags & MSG_ERRQUEUE)))
 		sock_rps_record_flow(sk);
     /**
-     *  
+     *
      */
 	err = INDIRECT_CALL_2(sk->sk_prot->recvmsg, tcp_recvmsg, udp_recvmsg,
 			      sk, msg, size, flags & MSG_DONTWAIT,
@@ -1271,9 +1271,9 @@ static const struct net_proto_family inet_family_ops = {    /* IPv4 */
 /* Upon startup we insert all the elements in inetsw_array[] into
  * the linked list inetsw.
  *
- * 协议 
+ * 协议
  */
-static struct inet_protosw inetsw_array[] = /*  */
+static struct inet_protosw inetsw_array[] =
 {
     {
         inetsw_array[].type =       SOCK_STREAM,
@@ -1311,9 +1311,9 @@ static struct inet_protosw inetsw_array[] = /*  */
 #define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)
 
 /**
- *  
+ *
  */
-void inet_register_protosw(struct inet_protosw *p)  /*  */
+void inet_register_protosw(struct inet_protosw *p)
 {
 	struct list_head *lh;
 	struct inet_protosw *answer;
@@ -2049,7 +2049,7 @@ static int ipv4_proc_init(void);
  *	IP protocol layer initialiser
  */
 
-static struct packet_offload __read_mostly ip_packet_offload  = {/*  */
+static struct packet_offload __read_mostly ip_packet_offload  = {
 	.type = cpu_to_be16(ETH_P_IP),
 	.callbacks = {
 		.gso_segment = inet_gso_segment,
@@ -2106,19 +2106,19 @@ static int __init inet_init(void)   /* inet 初始化 */
 
 	sock_skb_cb_check_size(sizeof(struct inet_skb_parm));
 
-	rc = proto_register(&tcp_prot, 1);  /*  */
+	rc = proto_register(&tcp_prot, 1);
 	if (rc)
 		goto out;
 
-	rc = proto_register(&udp_prot, 1);  /*  */
+	rc = proto_register(&udp_prot, 1);
 	if (rc)
 		goto out_unregister_tcp_proto;
 
-	rc = proto_register(&raw_prot, 1);  /*  */
+	rc = proto_register(&raw_prot, 1);
 	if (rc)
 		goto out_unregister_udp_proto;
 
-	rc = proto_register(&ping_prot, 1); /*  */
+	rc = proto_register(&ping_prot, 1);
 	if (rc)
 		goto out_unregister_raw_proto;
 
@@ -2126,7 +2126,7 @@ static int __init inet_init(void)   /* inet 初始化 */
 	 *	Tell SOCKET that we are alive...
 	 */
 
-	(void)sock_register(&inet_family_ops);/*  */
+	(void)sock_register(&inet_family_ops);
 
 #ifdef CONFIG_SYSCTL
 	ip_static_sysctl_init();
@@ -2142,7 +2142,7 @@ static int __init inet_init(void)   /* inet 初始化 */
 		pr_crit("%s: Cannot add UDP protocol\n", __func__);
 	if (inet_add_protocol(&tcp_protocol, IPPROTO_TCP) < 0)
 		pr_crit("%s: Cannot add TCP protocol\n", __func__);
-#ifdef CONFIG_IP_MULTICAST  /*  */
+#ifdef CONFIG_IP_MULTICAST
 	if (inet_add_protocol(&igmp_protocol, IPPROTO_IGMP) < 0)
 		pr_crit("%s: Cannot add IGMP protocol\n", __func__);
 #endif
@@ -2189,7 +2189,7 @@ static int __init inet_init(void)   /* inet 初始化 */
 	/*
 	 *	Initialise the multicast router
 	 */
-#if defined(CONFIG_IP_MROUTE)   /*  */
+#if defined(CONFIG_IP_MROUTE)
 	if (ip_mr_init())
 		pr_crit("%s: Cannot init ipv4 mroute\n", __func__);
 #endif
@@ -2203,7 +2203,7 @@ static int __init inet_init(void)   /* inet 初始化 */
 	if (init_ipv4_mibs())
 		pr_crit("%s: Cannot init ipv4 mibs\n", __func__);
 
-	ipv4_proc_init();   /*  */
+	ipv4_proc_init();
 
 	ipfrag_init();      /* IP 分段 */
 
@@ -2228,19 +2228,19 @@ fs_initcall(inet_init); /* INET 初始化 */
 /* ------------------------------------------------------------------------ */
 
 #ifdef CONFIG_PROC_FS
-static int __init ipv4_proc_init(void)  /*  */
+static int __init ipv4_proc_init(void)
 {
 	int rc = 0;
 
-	if (raw_proc_init())    /*  */
+	if (raw_proc_init())
 		goto out_raw;
-	if (tcp4_proc_init())   /*  */
+	if (tcp4_proc_init())
 		goto out_tcp;
-	if (udp4_proc_init())   /*  */
+	if (udp4_proc_init())
 		goto out_udp;
-	if (ping_proc_init())   /*  */
+	if (ping_proc_init())
 		goto out_ping;
-	if (ip_misc_proc_init())/*  */
+	if (ip_misc_proc_init())
 		goto out_misc;
 out:
 	return rc;
@@ -2258,5 +2258,5 @@ out_raw:
 }
 
 #else /* CONFIG_PROC_FS */
-/*  */
+
 #endif /* CONFIG_PROC_FS */

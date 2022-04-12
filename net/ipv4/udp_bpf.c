@@ -11,7 +11,7 @@ enum {
 	UDP_BPF_NUM_PROTS,
 };
 
-static struct proto __read_mostly *udpv6_prot_saved ;/*  */
+static struct proto __read_mostly *udpv6_prot_saved ;
 static DEFINE_SPINLOCK(udpv6_prot_lock);
 static struct proto udp_bpf_prots[UDP_BPF_NUM_PROTS];
 

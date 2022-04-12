@@ -21,7 +21,7 @@ struct cpumap {
 	unsigned long		managed_map[IRQ_MATRIX_SIZE];
 };
 
-struct irq_matrix { /*  */
+struct irq_matrix {
 	unsigned int		matrix_bits;
 	unsigned int		alloc_start;
 	unsigned int		alloc_end;

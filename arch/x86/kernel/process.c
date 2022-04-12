@@ -92,13 +92,13 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
      *  直接拷贝
      */
 	memcpy(dst, src, arch_task_struct_size);
-    
+
 #ifdef CONFIG_VM86
 //	dst->thread.vm86 = NULL;
 #endif
 
     /**
-     *  
+     *
      */
 	return fpu__copy(dst, src);
 }
@@ -119,7 +119,7 @@ void exit_thread(struct task_struct *tsk)
 	fpu__drop(fpu);
 }
 
-static int set_new_tls(struct task_struct *p, unsigned long tls)    /*  */
+static int set_new_tls(struct task_struct *p, unsigned long tls)
 {
 	struct user_desc __user *utls = (struct user_desc __user *)tls;
 
@@ -136,7 +136,7 @@ static int set_new_tls(struct task_struct *p, unsigned long tls)    /*  */
  */
 int copy_thread_tls(); /* +++ linux-5.0 */
 int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
-		struct task_struct *p, unsigned long tls)   /*  */
+		struct task_struct *p, unsigned long tls)
 {
 	struct inactive_task_frame *frame;
 	struct fork_frame *rtoax_fork_frame;
@@ -171,7 +171,7 @@ int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
 
 #ifdef CONFIG_X86_64
     /**
-     *  
+     *
      */
 	current_save_fsgs();
 	p->thread.fsindex = current->thread.fsindex;
@@ -184,7 +184,7 @@ int copy_thread(unsigned long clone_flags, unsigned long sp, unsigned long arg,
      */
 	savesegment(es, p->thread.es);
 	savesegment(ds, p->thread.ds);
-    
+
 #else
 //	p->thread.sp0 = (unsigned long) (childregs + 1);
 //	/*
@@ -344,7 +344,7 @@ static int set_cpuid_mode(struct task_struct *task, unsigned long cpuid_enabled)
 /*
  * Called immediately after a successful exec.
  */
-void arch_setup_new_exec(void)  /*  */
+void arch_setup_new_exec(void)
 {
 	/* If cpuid was previously disabled for this task, re-enable it. */
 	if (test_thread_flag(TIF_NOCPUID))
@@ -644,7 +644,7 @@ static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 }
 
 /**
- *  
+ *
  */
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
@@ -1000,7 +1000,7 @@ unsigned long get_wchan(struct task_struct *p)
 		if (fp < bottom || fp > top)
 			goto out;
 		ip = READ_ONCE_NOCHECK(*(unsigned long *)(fp + sizeof(unsigned long)));
-		if (!in_sched_functions(ip)) {  /*  */
+		if (!in_sched_functions(ip)) {
 			ret = ip;
 			goto out;
 		}

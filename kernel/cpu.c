@@ -97,7 +97,7 @@ static inline void cpuhp_lock_release(bool bringup)
 	lock_map_release(bringup ? &cpuhp_state_up_map : &cpuhp_state_down_map);
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -368,7 +368,7 @@ void cpu_hotplug_enable(void)
 EXPORT_SYMBOL_GPL(cpu_hotplug_enable);
 
 #else
-/*  */
+
 #endif	/* CONFIG_HOTPLUG_CPU */
 
 /*
@@ -436,7 +436,7 @@ bool cpu_smt_possible(void)
 }
 EXPORT_SYMBOL_GPL(cpu_smt_possible);
 #else
-/*  */
+
 #endif
 
 static inline enum cpuhp_state
@@ -797,7 +797,7 @@ static struct smp_hotplug_thread cpuhp_threads = {
 	.selfparking		= true,
 };
 
-void __init cpuhp_threads_init(void)    /*  */
+void __init cpuhp_threads_init(void)
 {
 	BUG_ON(smpboot_register_percpu_thread(&cpuhp_threads));
 	kthread_unpark(this_cpu_read(cpuhp_state.thread));
@@ -1128,7 +1128,7 @@ void smp_shutdown_nonboot_cpus(unsigned int primary_cpu)
 }
 
 #else
-/*  */
+
 #endif /*CONFIG_HOTPLUG_CPU*/
 
 /**
@@ -1160,7 +1160,7 @@ void notify_cpu_starting(unsigned int cpu)
  * Called from the idle task. Wake up the controlling task which brings the
  * hotplug thread of the upcoming CPU up and then delegates the rest of the
  * online bringup to the hotplug thread.
- *//*  */
+ */
 void cpuhp_online_idle(enum cpuhp_state state)
 {
 	struct cpuhp_cpu_state *st = this_cpu_ptr(&cpuhp_state);
@@ -1245,7 +1245,7 @@ out:
 /**
  *
  */
-static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
+static int cpu_up(unsigned int cpu, enum cpuhp_state target)
 {
 	int err = 0;
 
@@ -1262,7 +1262,7 @@ static int cpu_up(unsigned int cpu, enum cpuhp_state target)    /*  */
 	if (err)
 		return err;
 
-	cpu_maps_update_begin();    /*  */
+	cpu_maps_update_begin();
 
 	if (cpu_hotplug_disabled) {
 		err = -EBUSY;
@@ -1505,7 +1505,7 @@ int __boot_cpu_id;
 #endif /* CONFIG_SMP */
 
 /* Boot processor state steps */
-static struct cpuhp_step cpuhp_hp_states[] = {  /*  */
+static struct cpuhp_step cpuhp_hp_states[] = {
 	[CPUHP_OFFLINE] = {
 		.name			= "offline",
 		.startup.single		= NULL,
@@ -2325,7 +2325,7 @@ __store_smt_control(struct device *dev, struct device_attribute *attr,
 }
 
 #else /* !CONFIG_HOTPLUG_SMT */
-/*  */
+
 #endif /* CONFIG_HOTPLUG_SMT */
 
 static const char *smt_states[] = {
@@ -2401,7 +2401,7 @@ static int __init cpuhp_sysfs_init(void)
 	}
 	return 0;
 }
-device_initcall(cpuhp_sysfs_init);  /*  */
+device_initcall(cpuhp_sysfs_init);
 #endif /* CONFIG_SYSFS && CONFIG_HOTPLUG_CPU */
 
 /*
@@ -2438,7 +2438,7 @@ EXPORT_SYMBOL(cpu_all_bits);
 #ifdef CONFIG_INIT_ALL_POSSIBLE
 struct cpumask __read_mostly __cpu_possible_mask = {CPU_BITS_ALL};
 #else
-/*  */
+
 #endif
 EXPORT_SYMBOL(__cpu_possible_mask);
 
@@ -2481,7 +2481,7 @@ void init_cpu_online(const struct cpumask *src)
 	cpumask_copy(&__cpu_online_mask, src);
 }
 
-void set_cpu_online(unsigned int cpu, bool online)/*  */
+void set_cpu_online(unsigned int cpu, bool online)
 {
 	/*
 	 * atomic_inc/dec() is required to handle the horrid abuse of this
@@ -2512,8 +2512,8 @@ void __init boot_cpu_init(void)
 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
 	set_cpu_online(cpu, true);      /* 在线,  */
 	set_cpu_active(cpu, true);      /* 激活 */
-	set_cpu_present(cpu, true);     /*  */
-	set_cpu_possible(cpu, true);    /*  */
+	set_cpu_present(cpu, true);
+	set_cpu_possible(cpu, true);
 
 #ifdef CONFIG_SMP
 	__boot_cpu_id = cpu;/* 启动使用的 CPU */

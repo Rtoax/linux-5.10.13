@@ -38,7 +38,7 @@ static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
  * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
  * arch-independent format
  */
-static inline unsigned swp_type(swp_entry_t entry)  /*  */
+static inline unsigned swp_type(swp_entry_t entry)
 {
 	return (entry.val >> SWP_TYPE_SHIFT);
 }
@@ -77,7 +77,7 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
     /* 强转 */
 	arch_entry = __pte_to_swp_entry(pte);
 
-    /*  */
+
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 
@@ -139,7 +139,7 @@ static inline struct page *device_private_entry_to_page(swp_entry_t entry)
 	return pfn_to_page(swp_offset(entry));
 }
 #else /* CONFIG_DEVICE_PRIVATE */
-/*  */
+
 #endif /* CONFIG_DEVICE_PRIVATE */
 
 #ifdef CONFIG_MIGRATION
@@ -190,7 +190,7 @@ extern void migration_entry_wait(struct mm_struct *mm, pmd_t *pmd,
 extern void migration_entry_wait_huge(struct vm_area_struct *vma,
 		struct mm_struct *mm, pte_t *pte);
 #else
-/*  */
+
 #endif
 
 struct page_vma_mapped_walk;
@@ -227,7 +227,7 @@ static inline int is_pmd_migration_entry(pmd_t pmd)
 	return !pmd_present(pmd) && is_migration_entry(pmd_to_swp_entry(pmd));
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMORY_FAILURE
@@ -259,7 +259,7 @@ static inline void num_poisoned_pages_dec(void)
 }
 
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION) || \
@@ -269,7 +269,7 @@ static inline int non_swap_entry(swp_entry_t entry)
 	return swp_type(entry) >= MAX_SWAPFILES;
 }
 #else
-/*  */
+
 #endif
 
 #endif /* CONFIG_MMU */

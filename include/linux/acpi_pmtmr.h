@@ -35,7 +35,7 @@ static inline u32 acpi_pm_read_early(void)
 }
 
 #else
-/*  */
+
 #endif
 
 #endif

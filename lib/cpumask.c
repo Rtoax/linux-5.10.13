@@ -111,7 +111,7 @@ EXPORT_SYMBOL(cpumask_next_wrap);
  * CONFIG_CPUMASK_OFFSTACK=n, so does code elimination in that case
  * too.
  *//* 在指定的 NODE上分配 cpumask 结构内存 */
-bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node) /*  */
+bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node)
 {
 	*mask = kmalloc_node(cpumask_size(), flags, node);
 
@@ -148,7 +148,7 @@ bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 }
 EXPORT_SYMBOL(alloc_cpumask_var);
 
-bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)   /*  */
+bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 {
 	return alloc_cpumask_var(mask, flags | __GFP_ZERO);
 }

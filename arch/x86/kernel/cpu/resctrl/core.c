@@ -1034,7 +1034,7 @@ static int __init resctrl_late_init(void)
 	return 0;
 }
 
-late_initcall(resctrl_late_init);   /*  */
+late_initcall(resctrl_late_init);
 
 static void __exit resctrl_exit(void)
 {

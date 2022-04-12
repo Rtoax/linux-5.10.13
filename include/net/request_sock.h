@@ -27,7 +27,7 @@ struct proto;
 struct request_sock_ops {
 	int		family;
 	unsigned int	obj_size;
-	struct kmem_cache	*slab;  /*  */
+	struct kmem_cache	*slab;
 	char		*slab_name;
 	int		(*rtx_syn_ack)(const struct sock *sk,
 				       struct request_sock *req);
@@ -51,7 +51,7 @@ struct saved_syn {
 /**
  *  struct request_sock - mini sock to represent a connection request
  *
- *  
+ *
  */
 struct request_sock {
 	struct sock_common		__req_common;
@@ -188,13 +188,13 @@ struct request_sock_queue {
 	atomic_t		young;
 
     /**
-     *  
+     *
      */
 	struct request_sock	*rskq_accept_head;
 	struct request_sock	*rskq_accept_tail;
 
     /**
-     *  
+     *
      */
 	struct fastopen_queue	fastopenq;  /* Check max_qlen != 0 to determine
 					     * if TFO is enabled.
@@ -220,10 +220,10 @@ static inline struct request_sock *reqsk_queue_remove(struct request_sock_queue 
 	struct request_sock *req;
 
     /**
-     *  
+     *
      */
 	spin_lock_bh(&queue->rskq_lock);
-    
+
     /**
      *  从请求队列中取一个
      */
@@ -233,7 +233,7 @@ static inline struct request_sock *reqsk_queue_remove(struct request_sock_queue 
          *  backlog--
          */
 		sk_acceptq_removed(parent);
-        
+
 		WRITE_ONCE(queue->rskq_accept_head, req->dl_next);
 		if (queue->rskq_accept_head == NULL)
 			queue->rskq_accept_tail = NULL;

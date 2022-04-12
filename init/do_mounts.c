@@ -477,7 +477,7 @@ retry:
 out:
 	put_page(page);
 }
- 
+
 #ifdef CONFIG_ROOT_NFS
 
 #define NFSROOT_TIMEOUT_MIN	5
@@ -555,7 +555,7 @@ static int __init mount_cifs_root(void)
 #endif
 
 /**
- *  
+ *
  */
 void __init mount_root(void)
 {
@@ -574,7 +574,7 @@ void __init mount_root(void)
 	}
 #endif
     /**
-     *  
+     *
      */
 #ifdef CONFIG_BLOCK
 	{
@@ -636,7 +636,7 @@ void __init prepare_namespace(void)
 	}
 
     /**
-     *  
+     *
      */
 	mount_root();
 out:
@@ -646,7 +646,7 @@ out:
 }
 
 static bool is_tmpfs;
-static int rootfs_init_fs_context(struct fs_context *fc)    /*  */
+static int rootfs_init_fs_context(struct fs_context *fc)
 {
 	if (IS_ENABLED(CONFIG_TMPFS) && is_tmpfs)
 		return shmem_init_fs_context(fc);
@@ -660,7 +660,7 @@ struct file_system_type rootfs_fs_type = {  /* 根文件系统 */
 	.kill_sb	= kill_litter_super,
 };
 
-void __init init_rootfs(void)   /*  */
+void __init init_rootfs(void)
 {
 	if (IS_ENABLED(CONFIG_TMPFS) && !saved_root_name[0] &&
 		(!root_fs_names || strstr(root_fs_names, "tmpfs")))

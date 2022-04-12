@@ -301,7 +301,7 @@ static long calc_load_nohz_read(void)
  * Once we've updated the global active value, we need to apply the exponential
  * weights adjusted to the number of cycles missed.
  */
-static void calc_global_nohz(void)  /*  */
+static void calc_global_nohz(void)
 {
 	unsigned long sample_window;
 	long delta, active, n;
@@ -335,7 +335,7 @@ static void calc_global_nohz(void)  /*  */
 	calc_load_idx++;
 }
 #else /* !CONFIG_NO_HZ_COMMON */
-/*  */
+
 #endif /* CONFIG_NO_HZ_COMMON */
 
 /*

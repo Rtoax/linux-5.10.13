@@ -66,7 +66,7 @@
 #define NOTES_HEADERS		:text :note
 #define NOTES_HEADERS_RESTORE	__restore_ph : { *(.__restore_ph) } :text
 #else
-/*  */
+
 #endif
 
 /*
@@ -78,7 +78,7 @@
 #define RO_EXCEPTION_TABLE	EXCEPTION_TABLE(RO_EXCEPTION_TABLE_ALIGN)
     /* arch/x86/include/asm/asm.h _ASM_EXTABLE_HANDLE */
 #else
-/*  */
+
 #endif
 
 /* Align . to a 8 byte boundary equals to maximum function alignment. */
@@ -118,7 +118,7 @@
 #else
 #define STRUCT_ALIGNMENT 32
 #endif
-#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)  /*  */
+#define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
 /*
  * The order of the sched class addresses are important, as they are
@@ -132,7 +132,7 @@
 	*(__fair_sched_class)	/* CFS *//* fair_sched_class */		\
 	*(__rt_sched_class)		/* 实时 *//*  rt_sched_class*/	\
 	*(__dl_sched_class)		/* deadline *//* dl_sched_class */	\
-	*(__stop_sched_class)	/*  *//* stop_sched_class */		\
+	*(__stop_sched_class)	/* stop_sched_class */		\
 	__end_sched_classes = .;    /* ffffffff82afdae0 */
 
 /* The actual configuration determine if the init/exit sections
@@ -143,14 +143,14 @@
 #define CPU_KEEP(sec)    *(.cpu##sec)
 #define CPU_DISCARD(sec)
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_MEMORY_HOTPLUG)
 #define MEM_KEEP(sec)    *(.mem##sec)   /* 例: .memexit.rodata */
 #define MEM_DISCARD(sec)
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
@@ -164,7 +164,7 @@
  * so that the same stub location may have different protocols
  * and not mess up with C verifiers.
  *
- * ftrace调用站点记录到一个部分，该部分的名称取决于所使用的编译器选项。 
+ * ftrace调用站点记录到一个部分，该部分的名称取决于所使用的编译器选项。
  * 给定的内核映像将仅使用一个映像，即FTRACE_CALLSITE_SECTION。 我们在这
  * 里捕获了所有它们，以避免FTRACE_CALLSITE_SECTION定义的头依赖。
  * 还需要使ftrace_stub_graph指向ftrace_stub，以便同一存根位置可能具有不
@@ -173,22 +173,22 @@
 /**
  *  记录 ftrace mcount 节
  */
-#define MCOUNT_REC()	. = ALIGN(8);	/*  */			\
+#define MCOUNT_REC()	. = ALIGN(8);				\
 			__start_mcount_loc = .;		/* ffffffff83dfa990 */	\
 			KEEP(*(__mcount_loc))			\
 			KEEP(*(__patchable_function_entries))	\
 			__stop_mcount_loc = .;		/* ffffffff83e4a800 */	\
 			ftrace_stub_graph = ftrace_stub;
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_TRACE_BRANCH_PROFILING    /*  */
-#define LIKELY_PROFILE()	__start_annotated_branch_profile = .;/*  */	\
-				KEEP(*(_ftrace_annotated_branch))	/*  */\
-				__stop_annotated_branch_profile = .;    /*  */
+#ifdef CONFIG_TRACE_BRANCH_PROFILING
+#define LIKELY_PROFILE()	__start_annotated_branch_profile = .;	\
+				KEEP(*(_ftrace_annotated_branch))	\
+				__stop_annotated_branch_profile = .;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_PROFILE_ALL_BRANCHES
@@ -196,16 +196,16 @@
 				KEEP(*(_ftrace_branch))			\
 				__stop_branch_profile = .;
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_KPROBES   /*  */
-#define KPROBE_BLACKLIST()	. = ALIGN(8);		/*  */		      \
+#ifdef CONFIG_KPROBES
+#define KPROBE_BLACKLIST()	. = ALIGN(8);				      \
 				__start_kprobe_blacklist = .;		      \
 				KEEP(*(_kprobe_blacklist))		/* arch/x86/include/asm/asm.h _ASM_NOKPROBE */      \
 				__stop_kprobe_blacklist = .;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_FUNCTION_ERROR_INJECTION
@@ -214,7 +214,7 @@
 			KEEP(*(_error_injection_whitelist))		      \
 			__stop_error_injection_whitelist = .;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_EVENT_TRACING
@@ -227,20 +227,20 @@
 			KEEP(*(_ftrace_eval_map))			\
 			__stop_ftrace_eval_maps = .;    /* ffffffff83e7b020 */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_TRACING
     /* ffffffff8365dcc8 - ffffffff8365dcc8 */
 #define TRACE_PRINTKS()	 __start___trace_bprintk_fmt = .; /* ffffffff8365dcc8 */     \
 			 KEEP(*(__trace_printk_fmt)) /* Trace_printk fmt' pointer */ \
-			 __stop___trace_bprintk_fmt = .;    /* ffffffff8365dcc8 */ 
+			 __stop___trace_bprintk_fmt = .;    /* ffffffff8365dcc8 */
     /* ffffffff83662de0 - ffffffff83663230 */
 #define TRACEPOINT_STR() __start___tracepoint_str = .;	/* ffffffff83662de0 */\
 			 KEEP(*(__tracepoint_str)) /* Trace_printk fmt' pointer */ \
 			 __stop___tracepoint_str = .;   /* ffffffff83663230 */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_FTRACE_SYSCALLS
@@ -250,17 +250,17 @@
 			 KEEP(*(__syscalls_metadata))			\
 			 __stop_syscalls_metadata = .;      /* ffffffff83e7bd50 */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_BPF_EVENTS
     /* ffffffff8365dce0 - ffffffff83662de0 */
-#define BPF_RAW_TP() STRUCT_ALIGN();	/*  */				\
+#define BPF_RAW_TP() STRUCT_ALIGN();					\
 			 __start__bpf_raw_tp = .;	/* ffffffff8365dce0 */		\
-			 KEEP(*(__bpf_raw_tp_map))	/*  */		\
+			 KEEP(*(__bpf_raw_tp_map))			\
 			 __stop__bpf_raw_tp = .;    /* ffffffff83662de0 */
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_SERIAL_EARLYCON
@@ -269,7 +269,7 @@
 			 KEEP(*(__earlycon_table))		\
 			 __earlycon_table_end = .;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_SECURITY
@@ -282,7 +282,7 @@
 			KEEP(*(.early_lsm_info.init))			\
 			__end_early_lsm_info = .;
 #else
-/*  */
+
 #endif
 
 #define ___OF_TABLE(cfg, name)	_OF_TABLE_##cfg(name)
@@ -309,7 +309,7 @@
 	KEEP(*(__##name##_acpi_probe_table))				\
 	__##name##_acpi_probe_table_end = .;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_THERMAL   /* thermal */
@@ -319,37 +319,37 @@
 	KEEP(*(__##name##_thermal_table))				\
 	__##name##_thermal_table_end = .;
 #else
-/*  */
+
 #endif
 
-#define KERNEL_DTB()	/*  */						\
-	STRUCT_ALIGN();		/*  */					\
-	__dtb_start = .;	/*  */					\
-	KEEP(*(.dtb.init.rodata))   /*  */					\
-	__dtb_end = .;      /*  */
+#define KERNEL_DTB()							\
+	STRUCT_ALIGN();							\
+	__dtb_start = .;						\
+	KEEP(*(.dtb.init.rodata))   					\
+	__dtb_end = .;
 
 /*
  * .data section
  */
     /*  - ffffffff83663230 */
-#define DATA_DATA		/*  */					\
+#define DATA_DATA							\
 	*(.xiptext)			/* include/linux/mtd/xip.h __xipram */				\
-	*(DATA_MAIN)		/*  */					\
+	*(DATA_MAIN)							\
 	*(.ref.data)		/* include/linux/init.h __REFDATA */					\
 	*(.data..shared_aligned) /* percpu related */			\
 	MEM_KEEP(init.data*)	/* include/linux/init.h __meminitdata */					\
 	                        /* include/linux/init.h __MEMINITDATA */					\
 	MEM_KEEP(exit.data*)	/* include/linux/init.h __memexitdata */					\
-	*(.data.unlikely)		/*  */				\
+	*(.data.unlikely)						\
 	__start_once = .;	/* ffffffff83630f28 */					\
-	*(.data.once)		/*  */					\
+	*(.data.once)							\
 	__end_once = .;		/* ffffffff83631184 */					\
-	STRUCT_ALIGN();		/*  */					\
-	*(__tracepoints)	/*  */					\
+	STRUCT_ALIGN();							\
+	*(__tracepoints)						\
 	/* implement dynamic printk debug */				\
 	. = ALIGN(8);							\
 	__start___dyndbg = .;/* ffffffff836408a8 */						\
-	KEEP(*(__dyndbg))	/*  */					\
+	KEEP(*(__dyndbg))						\
 	__stop___dyndbg = .;/* ffffffff8365dcc8 */						\
 	LIKELY_PROFILE()	/* 这个我没有编译 */	       				\
 	BRANCH_PROFILE()	/* 这个我没有编译 */					\
@@ -374,28 +374,28 @@
 	                            /* include/linux/linkage.h __PAGE_ALIGNED_DATA */				\
 	. = ALIGN(page_align);
 
-#define READ_MOSTLY_DATA(align)		/*  */				\
-	. = ALIGN(align);				/*  */		\
+#define READ_MOSTLY_DATA(align)						\
+	. = ALIGN(align);						\
 	*(.data..read_mostly)			/* arch/x86/include/asm/cache.h __read_mostly */			\
-	. = ALIGN(align);/*  */
+	. = ALIGN(align);
 
-#define CACHELINE_ALIGNED_DATA(align)	/*  */				\
-	. = ALIGN(align);					/*  */	\
+#define CACHELINE_ALIGNED_DATA(align)					\
+	. = ALIGN(align);						\
 	*(.data..cacheline_aligned)         /* include/linux/cache.h __cacheline_aligned */
 
 
 /* init_task 在栈中的位置 */
 #define INIT_TASK_DATA(align/* 32K */)						\
 	. = ALIGN(align);						\
-	__start_init_task = .;		/*  */				\
+	__start_init_task = .;						\
 	init_thread_union = .;		/* ffffffff82c00000 */			\
 	                            /* union 和 stack 起始地址显然需要一样 */  \
 	init_stack = .;				/* ffffffff82c00000 */			\
-	                            /*  */  \
+	                              \
 	KEEP(*(.data..init_task))	/* include/linux/init_task.h  __init_task_data */				\
-	                            /*  */  \
+	                              \
 	KEEP(*(.data..init_thread_info))	/* include/linux/init_task.h __init_thread_info */			\
-	                            /*  */  \
+	                              \
 	. = __start_init_task + THREAD_SIZE/* 跳过 init_task 栈地址，共 32Kb  */;				\
 	__end_init_task = .;        /* ffffffff82c08000 */
 
@@ -419,7 +419,7 @@
 #define RO_AFTER_INIT_DATA						\
 	. = ALIGN(8);							\
 	__start_ro_after_init = .;					\
-	*(.data..ro_after_init)		/*  */				\
+	*(.data..ro_after_init)						\
 	JUMP_TABLE_DATA							\
 	STATIC_CALL_DATA						\
 	__end_ro_after_init = .;
@@ -445,15 +445,15 @@
 		/* ffffffff82afd720 - ffffffff82afdae0 */                            \
 		SCHED_DATA					/* 调度类是只读的 */	\
 		RO_AFTER_INIT_DATA	/* Read only after init */	\
-		
+
 		. = ALIGN(8);						\
 		__start___tracepoints_ptrs = .;	/* ffffffff82b2c7c8 */			\
 		KEEP(*(__tracepoints_ptrs)) /* Tracepoints: pointer array */\
 		                            /* include/linux/tracepoint.h __TRACEPOINT_ENTRY */ \
-		                            /*  */ \
-		                            /*  */ \
-		                            /*  */ \
-		                            /*  */ \
+		                             \
+		                             \
+		                             \
+		                             \
 		__stop___tracepoints_ptrs = .;	/* ffffffff82b2d214 */			\
 		*(__tracepoints_strings)/* Tracepoints: strings */	\
 		                            /* include/linux/tracepoint.h  DEFINE_TRACE_FN */ \
@@ -461,38 +461,38 @@
 	}								\
 									\
 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
-		*(.rodata1)		/*  */				\
+		*(.rodata1)						\
 	}								\
 									\
 	/* PCI quirks */						\
     /* ffffffff82b31660 - ffffffff82b34850 */ \
 	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
 	                /* include/linux/pci.h  */\
-	                /*  */\
-	                /*  */\
-	                /*  */\
-	                /*  */\
+	                \
+	                \
+	                \
+	                \
 		__start_pci_fixups_early = .;	/* ffffffff82b31660 */			\
 		KEEP(*(.pci_fixup_early))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_EARLY */		\
-		__end_pci_fixups_early = .;		/*  */		\
+		__end_pci_fixups_early = .;				\
 		__start_pci_fixups_header = .;	/* ffffffff82b31db0 */			\
 		KEEP(*(.pci_fixup_header))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_HEADER */		\
-		__end_pci_fixups_header = .;	/*  */			\
+		__end_pci_fixups_header = .;				\
 		__start_pci_fixups_final = .;	/* ffffffff82b32ef0 */			\
 		KEEP(*(.pci_fixup_final))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_FINAL */		\
-		__end_pci_fixups_final = .;		/*  */		\
+		__end_pci_fixups_final = .;				\
 		__start_pci_fixups_enable = .;	/* ffffffff82b34340 */			\
 		KEEP(*(.pci_fixup_enable))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_ENABLE */		\
-		__end_pci_fixups_enable = .;	/*  */			\
+		__end_pci_fixups_enable = .;				\
 		__start_pci_fixups_resume = .;	/* ffffffff82b34370 */			\
 		KEEP(*(.pci_fixup_resume))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_RESUME */		\
-		__end_pci_fixups_resume = .;	/*  */			\
+		__end_pci_fixups_resume = .;				\
 		__start_pci_fixups_resume_early = .;			\
 		KEEP(*(.pci_fixup_resume_early))/* include/linux/pci.h  DECLARE_PCI_FIXUP_RESUME_EARLY */	\
-		__end_pci_fixups_resume_early = .;/*  */			\
+		__end_pci_fixups_resume_early = .;			\
 		__start_pci_fixups_suspend = .;				\
 		KEEP(*(.pci_fixup_suspend))		/* include/linux/pci.h  DECLARE_PCI_FIXUP_SUSPEND */		\
-		__end_pci_fixups_suspend = .;	/*  */			\
+		__end_pci_fixups_suspend = .;				\
 		__start_pci_fixups_suspend_late = .;			\
 		KEEP(*(.pci_fixup_suspend_late))/* include/linux/pci.h  DECLARE_PCI_FIXUP_SUSPEND_LATE */	\
 		__end_pci_fixups_suspend_late = .;			\
@@ -638,27 +638,27 @@
  * code elimination is enabled, so these sections should be converted
  * to use ".." first.
  */
-#define TEXT_TEXT						/*  */	\
-		ALIGN_FUNCTION();				/*  */	\
-		/*  */	\
-		*(.text.hot .text.hot.*)		/*  */		\
-		/*  */	\
-		*(TEXT_MAIN .text.fixup)		/*  */		\
-		/*  */	\
-		*(.text.unlikely .text.unlikely.*)	/*  */		\
-		/*  */	\
-		*(.text.unknown .text.unknown.*)	/*  */		\
+#define TEXT_TEXT							\
+		ALIGN_FUNCTION();					\
+			\
+		*(.text.hot .text.hot.*)				\
+			\
+		*(TEXT_MAIN .text.fixup)				\
+			\
+		*(.text.unlikely .text.unlikely.*)			\
+			\
+		*(.text.unknown .text.unknown.*)			\
 		    \
 		/* ffffffff81ee4328 - ffffffff81ee7c7f */ \
-		NOINSTR_TEXT						/*  */\
-		/*  */	\
-		*(.text..refcount)					/*  */\
-		/*  */	\
+		NOINSTR_TEXT						\
+			\
+		*(.text..refcount)					\
+			\
 		*(.ref.text)				/* __ref __REF */		\
-		/*  */	\
-	MEM_KEEP(init.text*)			/* .meminit.text* */		/*  */	\
-		/*  */	\
-	MEM_KEEP(exit.text*)			/* .memexit.text* */		/*  */	\
+			\
+	MEM_KEEP(init.text*)			/* .meminit.text* */			\
+			\
+	MEM_KEEP(exit.text*)			/* .memexit.text* */			\
 
 
 /* sched.text is aling to function alignment to secure we have same
@@ -724,12 +724,12 @@
 /*
  * Exception table
  */
-#define EXCEPTION_TABLE(align)		/*  */				\
+#define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\
 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
-		__start___ex_table = .;		/*  */			\
+		__start___ex_table = .;					\
 		KEEP(*(__ex_table))			/* arch/x86/include/asm/asm.h _ASM_EXTABLE_HANDLE */		\
-		__stop___ex_table = .;		/*  */			\
+		__stop___ex_table = .;					\
 	}
 
 /*
@@ -741,8 +741,8 @@
 		__start_BTF = .;					\
 		KEEP(*(.BTF))		/* tools/lib/bpf/btf.h BTF_ELF_SEC = ".BTF" */\
                             /* tools/lib/bpf/btf.h BTF_EXT_ELF_SEC = ".BTF.ext" */\
-		                    /*  */\
-		                    /*  */\
+		                    \
+		                    \
 		__stop_BTF = .;						\
 	}								\
 	. = ALIGN(4);							\
@@ -753,7 +753,7 @@
 		                    \
 	}
 #else
-/*  */
+
 #endif
 
 /*
@@ -775,7 +775,7 @@
 			KEEP(*(.init_array))		   \
 			__ctors_end = .;        /* ffffffff83dfa990 */
 #else
-/*  */
+
 #endif
 
 /* ffffffff83df6ae0 - ffffffff83e800f0 */
@@ -810,8 +810,8 @@
 #define INIT_TEXT	/* __init + __INIT */						\
 	*(.init.text .init.text.*)	/* include/linux/init.h __init (.init.text)*/\
 	                            /* include/linux/init.h __INIT (.init.text)*/\
-	*(.text.startup)/*  */						\
-	MEM_DISCARD(init.text*)     /*  */
+	*(.text.startup)						\
+	MEM_DISCARD(init.text*)
 
 #define EXIT_DATA							\
 	*(.exit.data .exit.data.*)					\
@@ -922,25 +922,25 @@
 	. = ALIGN(8);							\
 	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
 		__start___bug_table = .;	/* ffffffff83675580 */			\
-		KEEP(*(__bug_table))		/*  */			\
+		KEEP(*(__bug_table))					\
 		__stop___bug_table = .;		/* ffffffff836974b0 */			\
 	}
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_UNWINDER_ORC  /*  */
+#ifdef CONFIG_UNWINDER_ORC
 #define ORC_UNWIND_TABLE	/* ffffffff836974b0 - ffffffff83bda604 */					\
 	. = ALIGN(4);							\
 	.orc_unwind_ip : AT(ADDR(.orc_unwind_ip) - LOAD_OFFSET) {	\
 		__start_orc_unwind_ip = .;	/* ffffffff836974b0 */			\
-		KEEP(*(.orc_unwind_ip))		/*  */			\
+		KEEP(*(.orc_unwind_ip))					\
 		__stop_orc_unwind_ip = .;	/* ffffffff83895500 */			\
 	}								\
 	. = ALIGN(2);							\
 	.orc_unwind : AT(ADDR(.orc_unwind) - LOAD_OFFSET) {		\
 		__start_orc_unwind = .;		/* ffffffff83895500 */			\
-		KEEP(*(.orc_unwind))		/*  */			\
+		KEEP(*(.orc_unwind))					\
 		__stop_orc_unwind = .;		/* ffffffff83b92578 */			\
 	}								\
 	. = ALIGN(4);							\
@@ -951,32 +951,32 @@
 		orc_lookup_end = .;			/* ffffffff83bda604 */		\
 	}
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_PM_TRACE  /*  */
+#ifdef CONFIG_PM_TRACE
         /* ffffffff82b34850 - ffffffff82b348c8 */
 #define TRACEDATA							\
 	. = ALIGN(4);							\
-	.tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {	/*  */	\
+	.tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {		\
 		__tracedata_start = .;	/* ffffffff82b34850 */				\
 		KEEP(*(.tracedata))		/* arch/x86/include/asm/pm-trace.h TRACE_RESUME */			\
 		__tracedata_end = .;	/* ffffffff82b348c8 */				\
 	}
 #else
-/*  */
+
 #endif
 
-#define NOTES				/*  */				\
+#define NOTES								\
 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
-		__start_notes = .;		/*  */			\
+		__start_notes = .;					\
 		KEEP(*(.note.*))		/* include/linux/elfnote.h _ELFNOTE */	\
 		                        /* arch/x86/entry/vdso/vdso-layout.lds.S */  \
 		                        /* arch/x86/um/vdso/vdso-layout.lds.S */  \
 		                        /* tools/perf/util/symbol.h #define SDT_NOTE_SCN  ".note.stapsdt" */\
 		                        /* tools/perf/util/symbol-elf.c ".note.gnu.build-id" */\
 		                        /* tools/perf/bench/mem-memcpy-x86-64-asm.S  .note.GNU-stack */	\
-		__stop_notes = .;		/*  */			\
+		__stop_notes = .;					\
 	} NOTES_HEADERS							\
 	NOTES_HEADERS_RESTORE
 
@@ -992,7 +992,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 #define INIT_SETUP(initsetup_align)					\
 		. = ALIGN(initsetup_align);				\
 		__setup_start = .;		/* ffffffff83e800f0 */			\
-		KEEP(*(.init.setup))	/*  */				\
+		KEEP(*(.init.setup))					\
 		__setup_end = .;        /* ffffffff83e82298 */
 
 #define INIT_CALLS_LEVEL(level)						\
@@ -1024,7 +1024,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 #define KUNIT_TABLE()							\
 		. = ALIGN(8);						\
 		__kunit_suites_start = .;	/* ffffffff83e800f0 */			\
-		KEEP(*(.kunit_test_suites))	/*  */			\
+		KEEP(*(.kunit_test_suites))				\
 		__kunit_suites_end = .;     /* ffffffff83e800f0 */
 
 #ifdef CONFIG_BLK_DEV_INITRD
@@ -1035,7 +1035,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 	. = ALIGN(8);							\
 	KEEP(*(.init.ramfs.info))
 #else
-/*  */
+
 #endif
 
 /*
@@ -1052,7 +1052,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 	*(.data..percpu..decrypted)					\
 	. = ALIGN(PAGE_SIZE);
 #else
-/*  */
+
 #endif
 
 
@@ -1089,7 +1089,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 //	*(.eh_frame)
 # endif
 #else
-/*  */
+
 #endif
 
 #define COMMON_DISCARDS							\
@@ -1153,7 +1153,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
  * Note that this macros defines __per_cpu_load as an absolute symbol.
  * If there is no need to put the percpu section at a predetermined
  * address, use PERCPU_SECTION.
- */ 
+ */
 /* include/linux/percpu-defs.h __percpu */
 /* ffffffff83bdc000 -  */
 #define PERCPU_VADDR(cacheline, vaddr, phdr)				\
@@ -1216,7 +1216,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 	BUG_TABLE							\
 
 /**
- *  
+ *
  */     /* ffffffff83c12000 - ffffffff83cb7eb1 */
 /**
  *  ffffffff83c12000 T _sinittext
@@ -1237,7 +1237,7 @@ ffffffff83e80330 t __setup_vsyscall_setup
 	}
 
 /**
- *  
+ *
  */
 #define INIT_DATA_SECTION(initsetup_align)				\
 	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {	/* include/linux/init.h __initdata */	\
@@ -1245,11 +1245,11 @@ ffffffff83e80330 t __setup_vsyscall_setup
 	                                                    /* arch/x86/realmode/rmpiggy.S */	\
 	                                                    /* arch/x86/platform/pvh/head.S */	\
 	                                                    /* arch/x86/kernel/alternative.c */ \
-		INIT_DATA			/* ffffffff83df6ae0 - ffffffff83e800f0 *//*  */			\
-		INIT_SETUP(initsetup_align)	/* ffffffff83e800f0 - ffffffff83e82298 *//*  */			\
-		INIT_CALLS			/*  */			\
-		CON_INITCALL		/*  */				\
-		INIT_RAM_FS			/*  */			\
+		INIT_DATA			/* ffffffff83df6ae0 - ffffffff83e800f0 */			\
+		INIT_SETUP(initsetup_align)	/* ffffffff83e800f0 - ffffffff83e82298 */			\
+		INIT_CALLS						\
+		CON_INITCALL						\
+		INIT_RAM_FS						\
 	}
 
 #define BSS_SECTION(sbss_align, bss_align, stop_align)			\

@@ -55,7 +55,7 @@ typedef unsigned long (*genpool_algo_t)(unsigned long *map,
 /*
  *  General purpose special memory pool descriptor.
  */
-struct gen_pool {   /*  */
+struct gen_pool {
 	spinlock_t lock;
 	struct list_head chunks;	/* list of chunks in this pool */
 	int min_alloc_order;		/* minimum allocation order */

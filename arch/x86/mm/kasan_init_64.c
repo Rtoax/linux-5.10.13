@@ -298,7 +298,7 @@ KASAN就是其中一种。KASAN的使用真的很简单。但是我是一个追�
 以及自己阅读代码揣摩其中的意思。本文章作为抛准引玉，如果有不合理的地方还请指正。
 
 */
-void __init kasan_early_init(void)  /*  */
+void __init kasan_early_init(void)
 {
 	int i;
 	pteval_t pte_val = __pa_nodebug(kasan_early_shadow_page) |
@@ -440,7 +440,7 @@ void __init kasan_init(void)
 		set_pte(&kasan_early_shadow_pte[i], pte);
 	}
 	/* Flush TLBs again to be sure that write protection applied. */
-    /*  */
+
 	__flush_tlb_all();
 
 	init_task.kasan_depth = 0;

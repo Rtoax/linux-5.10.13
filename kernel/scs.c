@@ -46,7 +46,7 @@ static void scs_free(void *s)
 	kmem_cache_free(scs_cache, s);
 }
 
-void __init scs_init(void)  /*  */
+void __init scs_init(void)
 {
 	scs_cache = kmem_cache_create("scs_cache", SCS_SIZE, 0, 0, NULL);
 }

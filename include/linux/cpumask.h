@@ -107,7 +107,7 @@ extern atomic_t __num_online_cpus;
  * concurrent CPU hotplug operations unless invoked from a cpuhp_lock held
  * region.
  */
-static inline unsigned int num_online_cpus(void)    /*  */
+static inline unsigned int num_online_cpus(void)
 {
 	return atomic_read(&__num_online_cpus);
 }
@@ -147,7 +147,7 @@ static inline unsigned int cpumask_check(unsigned int cpu)
 
 #if NR_CPUS == 1
 /* Uniprocessor.  Assume all masks are "1". */
-/*  */
+
 #else
 /**
  * cpumask_first - get the first cpu in a cpumask
@@ -201,7 +201,7 @@ int cpumask_any_and_distribute(const struct cpumask *src1p,
  *
  * After the loop, cpu is >= nr_cpu_ids.
  */
-#define for_each_cpu(cpu, mask)		/*  */		\
+#define for_each_cpu(cpu, mask)				\
 	for ((cpu) = -1;				\
 		(cpu) = cpumask_next((cpu), (mask)),	\
 		(cpu) < nr_cpu_ids;)
@@ -693,8 +693,8 @@ static inline bool cpumask_available(cpumask_var_t mask)
 	return mask != NULL;
 }
 
-#else/*  */
-/*  */
+#else
+
 #endif /* CONFIG_CPUMASK_OFFSTACK */
 
 /* It's common to want to use cpu_all_mask in struct member initializers,
@@ -729,7 +729,7 @@ set_cpu_possible(unsigned int cpu, bool possible)
 }
 
 /**
- *  
+ *
  */
 static inline void
 set_cpu_present(unsigned int cpu, bool present)

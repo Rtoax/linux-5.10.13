@@ -875,4 +875,4 @@ static int __init dev_map_init(void)
 	return 0;
 }
 
-subsys_initcall(dev_map_init);  /*  */
+subsys_initcall(dev_map_init);

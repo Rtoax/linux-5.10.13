@@ -700,13 +700,13 @@ static inline u64 acpi_arch_get_root_pointer(void)
 #endif
 
 #else	/* !CONFIG_ACPI */
-/*  */
+
 #endif	/* !CONFIG_ACPI */
 
 #ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
 int acpi_ioapic_add(acpi_handle root);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI
@@ -725,10 +725,10 @@ acpi_status acpi_os_prepare_extended_sleep(u8 sleep_state,
 #ifndef CONFIG_IA64
 void arch_reserve_mem_area(acpi_physical_address addr, size_t size);
 #else
-/*  */
+
 #endif /* CONFIG_X86 */
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
@@ -738,7 +738,7 @@ int acpi_subsys_runtime_suspend(struct device *dev);
 int acpi_subsys_runtime_resume(struct device *dev);
 int acpi_dev_pm_attach(struct device *dev, bool power_on);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_PM_SLEEP)
@@ -752,7 +752,7 @@ int acpi_subsys_poweroff(struct device *dev);
 void acpi_ec_mark_gpe_for_wake(void);
 void acpi_ec_set_gpe_wake_mask(u8 action);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI
@@ -760,7 +760,7 @@ void acpi_ec_set_gpe_wake_mask(u8 action);
 void acpi_handle_printk(const char *level, acpi_handle handle,
 			const char *fmt, ...);
 #else	/* !CONFIG_ACPI */
-/*  */
+
 #endif	/* !CONFIG_ACPI */
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_DYNAMIC_DEBUG)
@@ -812,7 +812,7 @@ bool acpi_gpio_get_irq_resource(struct acpi_resource *ares,
 				struct acpi_resource_gpio **agpio);
 int acpi_dev_gpio_irq_get(struct acpi_device *adev, int index);
 #else
-/*  */
+
 #endif
 
 /* Device properties */
@@ -923,39 +923,39 @@ int __acpi_probe_device_table(struct acpi_probe_entry *start, int nr);
 					   &ACPI_PROBE_TABLE(t)));	\
 	})
 #else
-/*  */
+
 
 #endif
 
 #ifdef CONFIG_ACPI_TABLE_UPGRADE
 void acpi_table_upgrade(void);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_ACPI_WATCHDOG)
 extern bool acpi_has_watchdog(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI_SPCR_TABLE
 extern bool qdf2400_e44_present;
 int acpi_parse_spcr(bool enable_earlycon, bool enable_console);
 #else
-/*  */
+
 #endif
 
 #if IS_ENABLED(CONFIG_ACPI_GENERIC_GSI)
 int acpi_irq_get(acpi_handle handle, unsigned int index, struct resource *res);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI_LPIT
 int lpit_read_residency_count_address(u64 *address);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI_PPTT
@@ -965,13 +965,13 @@ int find_acpi_cpu_topology_package(unsigned int cpu);
 int find_acpi_cpu_topology_hetero_id(unsigned int cpu);
 int find_acpi_cpu_cache_topology(unsigned int cpu, int level);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ACPI
 extern int acpi_platform_notify(struct device *dev, enum kobject_action action);
 #else
-/*  */
+
 #endif
 
 #endif	/*_LINUX_ACPI_H*/

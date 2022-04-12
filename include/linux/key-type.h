@@ -60,7 +60,7 @@ struct key_match_data {
 /*
  * kernel managed key type definition
  */
-struct key_type {   /*  */
+struct key_type {
 	/* name of the type */
 	const char *name;
 

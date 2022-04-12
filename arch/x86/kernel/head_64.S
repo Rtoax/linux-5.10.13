@@ -132,7 +132,7 @@ SYM_CODE_START_NOALIGN(startup_64)
 	 */
 	leaq	_text(%rip), %rdi
 	pushq	%rsi
-	call	__startup_64    /*  */
+	call	__startup_64
 	popq	%rsi
 
 	/**
@@ -143,7 +143,7 @@ SYM_CODE_START_NOALIGN(startup_64)
 	jmp 1f
 SYM_CODE_END(startup_64)
 
-SYM_CODE_START(secondary_startup_64)    /*  */
+SYM_CODE_START(secondary_startup_64)
 	UNWIND_HINT_EMPTY
 	/*
 	 * At this point the CPU runs in 64bit mode CS.L = 1 CS.D = 0,
@@ -179,7 +179,7 @@ SYM_INNER_LABEL(secondary_startup_64_no_verify, SYM_L_GLOBAL)
 	 * added to the initial pgdir entry that will be programmed into CR3.
 	 */
 	pushq	%rsi
-	call	__startup_secondary_64  /*  */
+	call	__startup_secondary_64
 	popq	%rsi
 
 	/* Form the CR3 value being sure to include the CR3 modifier */
@@ -561,7 +561,7 @@ SYM_CODE_END(vc_no_ghcb)
 #define SYM_DATA_START_PTI_ALIGNED(name) \
 	SYM_START(name, SYM_L_GLOBAL, .balign 2 * PAGE_SIZE)
 #else
-/*  */
+
 #endif
 
 /* Automate the creation of 1 to 1 mapping pmd entries */

@@ -191,12 +191,12 @@ static const struct file_operations fops_init_pkru = {
 };
 
 static int __init create_init_pkru_value(void)
-{   /*  */
+{
 	debugfs_create_file("init_pkru", S_IRUSR | S_IWUSR,
 			arch_debugfs_dir, NULL, &fops_init_pkru);
 	return 0;
 }
-late_initcall(create_init_pkru_value);  /*  */
+late_initcall(create_init_pkru_value);
 
 static __init int setup_init_pkru(char *opt)
 {

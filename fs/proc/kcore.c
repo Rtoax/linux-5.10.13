@@ -613,7 +613,7 @@ static void __init proc_kcore_text_init(void)
 	kclist_add(&kcore_text, _text, _end - _text, KCORE_TEXT);
 }
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
@@ -629,7 +629,7 @@ static void __init add_modules_range(void)
 	}
 }
 #else
-/*  */
+
 #endif
 //    $ sudo objdump -a /proc/kcore
 ///proc/kcore：     文件格式 elf64-x86-64

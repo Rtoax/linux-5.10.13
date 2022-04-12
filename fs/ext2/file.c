@@ -90,26 +90,26 @@ out_unlock:
  */
 static vm_fault_t ext2_dax_fault(struct vm_fault *vmf)
 {
-    /*  */
+
 	struct inode *inode = file_inode(vmf->vma->vm_file);
 	struct ext2_inode_info *ei = EXT2_I(inode);
 	vm_fault_t ret;
 	bool write = (vmf->flags & FAULT_FLAG_WRITE) && (vmf->vma->vm_flags & VM_SHARED);
 
-    /*  */
+
 	if (write) {
 		sb_start_pagefault(inode->i_sb);    /* superblock 的写访问 */
-		file_update_time(vmf->vma->vm_file);/*  */
+		file_update_time(vmf->vma->vm_file);
 	}
 
-    /*  */
+
 	down_read(&ei->dax_sem);
 
 	ret = dax_iomap_fault(vmf, PE_SIZE_PTE, NULL, NULL, &ext2_iomap_ops);
 
 	up_read(&ei->dax_sem);
 
-    /*  */
+
 	if (write)
 		sb_end_pagefault(inode->i_sb);
 	return ret;
@@ -185,7 +185,7 @@ static ssize_t ext2_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	return generic_file_write_iter(iocb, from);
 }
 /**
- *  
+ *
  */
 const struct file_operations ext2_file_operations = {
 	.llseek		= generic_file_llseek,

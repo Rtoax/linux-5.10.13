@@ -149,7 +149,7 @@ static const struct neigh_ops arp_direct_ops = {
 	.connected_output =	neigh_direct_output,
 };
 
-struct neigh_table arp_tbl = {  /*  */
+struct neigh_table arp_tbl = {
 	.family		= AF_INET,
 	.key_len	= 4,
 	.protocol	= cpu_to_be16(ETH_P_IP),
@@ -1285,21 +1285,21 @@ void arp_ifdown(struct net_device *dev)
  *	Called once on startup.
  */
 
-static struct packet_type __read_mostly arp_packet_type  = {/*  */
+static struct packet_type __read_mostly arp_packet_type  = {
 	.type =	cpu_to_be16(ETH_P_ARP),
 	.func =	arp_rcv,
 };
 
 static int arp_proc_init(void);
 
-void __init arp_init(void)  /*  */
+void __init arp_init(void)
 {
 	neigh_table_init(NEIGH_ARP_TABLE, &arp_tbl);
 
 	dev_add_pack(&arp_packet_type);
 	arp_proc_init();    /* /proc/net/arp */
 #ifdef CONFIG_SYSCTL
-	neigh_sysctl_register(NULL, &arp_tbl.parms, NULL);  /*  */
+	neigh_sysctl_register(NULL, &arp_tbl.parms, NULL);
 #endif
 	register_netdevice_notifier(&arp_netdev_notifier);
 }
@@ -1390,7 +1390,7 @@ static void arp_format_pneigh_entry(struct seq_file *seq,
 
 static int arp_seq_show(struct seq_file *seq, void *v)
 {
-//# more /proc/net/arp 
+//# more /proc/net/arp
 //IP address       HW type     Flags       HW address            Mask     Device
 //10.170.6.9       0x1         0x2         28:6e:d4:88:c7:1c     *        eth0
 //10.170.6.14      0x1         0x2         28:6e:d4:88:c7:23     *        eth0
@@ -1453,5 +1453,5 @@ static int __init arp_proc_init(void)   /* /proc/net/arp */
 }
 
 #else /* CONFIG_PROC_FS */
-/*  */
+
 #endif /* CONFIG_PROC_FS */

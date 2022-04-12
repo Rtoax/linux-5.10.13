@@ -401,4 +401,4 @@ static int __init amd_postcore_init(void)
 	return 0;
 }
 
-postcore_initcall(amd_postcore_init);   /*  */
+postcore_initcall(amd_postcore_init);

@@ -45,9 +45,9 @@ static struct key_tag init_net_key_domain = { .usage = REFCOUNT_INIT(1) };
 #endif
 
 /**
- *  
+ *
  */
-struct net init_net = { /*  */
+struct net init_net = {
 	init_net.count		= REFCOUNT_INIT(1),
 	init_net.dev_base_head	= LIST_HEAD_INIT(init_net.dev_base_head),
 #ifdef CONFIG_KEYS
@@ -406,7 +406,7 @@ static void dec_net_namespaces(struct ucounts *ucounts)
 	dec_ucount(ucounts, UCOUNT_NET_NAMESPACES);
 }
 
-static struct kmem_cache __ro_after_init *net_cachep ;/*  */
+static struct kmem_cache __ro_after_init *net_cachep ;
 static struct workqueue_struct *netns_wq;
 
 static struct net *net_alloc(void)
@@ -674,7 +674,7 @@ struct net *get_net_ns_by_fd(int fd)
 }
 
 #else
-/*  */
+
 #endif
 EXPORT_SYMBOL_GPL(get_net_ns_by_fd);
 
@@ -1104,7 +1104,7 @@ static int __init net_ns_init(void)
 	rcu_assign_pointer(init_net.gen, ng);
 
 	preempt_disable();
-	__net_gen_cookie(&init_net);    /*  */
+	__net_gen_cookie(&init_net);
 	preempt_enable();
 
 	down_write(&pernet_ops_rwsem);
@@ -1127,7 +1127,7 @@ static int __init net_ns_init(void)
 
 pure_initcall(net_ns_init);
 
-#ifdef CONFIG_NET_NS    /*  */
+#ifdef CONFIG_NET_NS
 static int __register_pernet_operations(struct list_head *list,
 					struct pernet_operations *ops)
 {

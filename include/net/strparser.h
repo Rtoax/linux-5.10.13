@@ -61,7 +61,7 @@ static inline struct strp_msg *strp_msg(struct sk_buff *skb)
 }
 
 /* Structure for an attached lower socket */
-struct strparser {  /*  */
+struct strparser {
 	struct sock *sk;
 
 	u32 stopped : 1;

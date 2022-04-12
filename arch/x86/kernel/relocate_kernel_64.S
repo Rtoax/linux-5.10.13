@@ -40,7 +40,7 @@
 	.text
 	.align PAGE_SIZE
 	.code64
-SYM_CODE_START_NOALIGN(relocate_kernel) /*  */
+SYM_CODE_START_NOALIGN(relocate_kernel)
 	UNWIND_HINT_EMPTY
 	/*
 	 * %rdi indirection_page

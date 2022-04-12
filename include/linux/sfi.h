@@ -188,7 +188,7 @@ static inline void disable_sfi(void)
 
 #else /* !CONFIG_SFI */
 
-/*  */
+
 
 #endif /* !CONFIG_SFI */
 

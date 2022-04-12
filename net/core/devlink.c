@@ -10341,4 +10341,4 @@ out:
 	return err;
 }
 
-subsys_initcall(devlink_init);  /*  */
+subsys_initcall(devlink_init);

@@ -25,7 +25,7 @@ static inline void taskstats_tgid_free(struct signal_struct *sig)
 extern void taskstats_exit(struct task_struct *, int group_dead);
 extern void taskstats_init_early(void);
 #else
-/*  */
+
 #endif /* CONFIG_TASKSTATS */
 
 #endif

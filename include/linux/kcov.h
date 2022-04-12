@@ -54,7 +54,7 @@ static inline void kcov_remote_start_usb(u64 id)
 
 #else
 
-/*  */
+
 
 #endif /* CONFIG_KCOV */
 #endif /* _LINUX_KCOV_H */

@@ -200,7 +200,7 @@ struct trace_event_fields {
 };
 
 /**
- *  
+ *
  */
 struct trace_event_class {
 	const char		*system;
@@ -220,7 +220,7 @@ extern int trace_event_reg(struct trace_event_call *event,
 			    enum trace_reg type, void *data);
 
 /**
- *  
+ *
  */
 struct trace_event_buffer {
 	struct trace_buffer		*buffer;
@@ -271,9 +271,9 @@ enum {
 #define TRACE_EVENT_FL_UKPROBE (TRACE_EVENT_FL_KPROBE | TRACE_EVENT_FL_UPROBE)
 
 /**
- *  
+ *
  */
-struct trace_event_call {   /*  */
+struct trace_event_call {
 	struct list_head	list;
 	struct trace_event_class *class;
 	union {
@@ -630,7 +630,7 @@ int bpf_get_perf_event_info(const struct perf_event *event, u32 *prog_id,
 			    u32 *fd_type, const char **buf,
 			    u64 *probe_offset, u64 *probe_addr);
 #else
-/*  */
+
 #endif
 
 enum {

@@ -41,7 +41,7 @@ static inline gid_t __kgid_val(kgid_t gid)
 	return gid.val;
 }
 #else
-/*  */
+
 #endif
 
 #define GLOBAL_ROOT_UID KUIDT_INIT(0)

@@ -313,15 +313,17 @@ u64 ring_buffer_event_time_stamp(struct ring_buffer_event *event)
 #define RB_MISSED_STORED	(1 << 30)
 
 /**
- *  
+ *
  */
 struct buffer_data_page {
-    /** 
+    /**
+
      *  时间戳
      */
 	u64		 time_stamp;	/* page time stamp */
 	local_t		 commit;	/* write committed index */
-    /** 
+    /**
+
      *  数据
      */
 	unsigned char	RB_ALIGN_DATA data[] ;	/* data of buffer page */
@@ -337,14 +339,16 @@ struct buffer_data_page {
  */
 struct buffer_page {
     /**
-     * 分配时，在 `__rb_allocate_pages()` 中添加到临时链表
+
+ * 分配时，在 `__rb_allocate_pages()` 中添加到临时链表
      */
 	struct list_head list;		/* list of buffer pages */
 	local_t		 write;		/* index for next write */
 	unsigned	 read;		/* index for next read */
 	local_t		 entries;	/* entries on this page */
 	unsigned long	 real_end;	/* real end of data */
-    /** 
+    /**
+
      *  可能在 `rb_allocate_cpu_buffer()` 分配了一个 page - order=0
      */
 	struct buffer_data_page *page;	/* Actual data page */
@@ -500,7 +504,7 @@ typedef struct rb_time_struct rb_time_t;
 /*
  * head_page == tail_page && head == tail then buffer is empty.
  */
-struct ring_buffer_per_cpu {    /*  */
+struct ring_buffer_per_cpu {
 	int				cpu;
 	atomic_t			record_disabled;
 	atomic_t			resize_disabled;
@@ -509,8 +513,9 @@ struct ring_buffer_per_cpu {    /*  */
 	arch_spinlock_t			lock;
 	struct lock_class_key		lock_key;
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	struct buffer_data_page		*free_page;
 	unsigned long			nr_pages;
@@ -518,13 +523,13 @@ struct ring_buffer_per_cpu {    /*  */
 	struct list_head		*pages;
 
     /**
-     *  
+     *
      */
 	struct buffer_page		*head_page;	/* read from head */
 	struct buffer_page		*tail_page;	/* write to tail */
 	struct buffer_page		*commit_page;	/* committed pages */
 	struct buffer_page		*reader_page;
-    
+
 	unsigned long			lost_events;
 	unsigned long			last_overrun;
 	unsigned long			nest;
@@ -548,7 +553,7 @@ struct ring_buffer_per_cpu {    /*  */
 	long				nr_pages_to_update;
 
     /**
-     *  
+     *
      */
 	struct list_head		new_pages; /* new pages to add */
 	struct work_struct		update_pages_work;
@@ -560,9 +565,9 @@ struct ring_buffer_per_cpu {    /*  */
 /**
  *  trace buffer
  *  1. ftrace
- *  2. 
+ *  2.
  */
-struct trace_buffer {   /*  */
+struct trace_buffer {
 	unsigned			flags;
 	int				cpus;
 	atomic_t			record_disabled;
@@ -572,14 +577,16 @@ struct trace_buffer {   /*  */
 
 	struct mutex			mutex;
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	struct ring_buffer_per_cpu	**buffers;
 
 	struct hlist_node		node;
 
-    /** 
+    /**
+
      *  时钟
      *  trace_clock_local() in __ring_buffer_alloc()
      *  or set by ring_buffer_set_clock()
@@ -1469,7 +1476,7 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
 	return 0;
 }
 /**
- *  
+ *
  */
 static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 {
@@ -1510,7 +1517,8 @@ static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 	for (i = 0; i < nr_pages; i++) {
 		struct page *page;
 
-        /** 
+        /**
+
          *  分配一个 buffer page
          */
 		bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
@@ -1518,7 +1526,8 @@ static int __rb_allocate_pages(long nr_pages, struct list_head *pages, int cpu)
 		if (!bpage)
 			goto free_pages;
 
-        /** 
+        /**
+
          *  添加到临时链表
          */
 		list_add(&bpage->list, pages);
@@ -1561,7 +1570,8 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
 
 	WARN_ON(!nr_pages);
 
-    /** 
+    /**
+
      *  分配
      */
 	if (__rb_allocate_pages(nr_pages, &tmp_list_pages, cpu_buffer->cpu))
@@ -1573,7 +1583,8 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
 	 * other pages.
 	 */
 	cpu_buffer->pages = tmp_list_pages.next;
-    /** 
+    /**
+
      *  清空链表
      */
 	list_del(&tmp_list_pages);
@@ -1618,14 +1629,16 @@ rb_allocate_cpu_buffer(struct trace_buffer *buffer, long nr_pages, int cpu)
 
 	cpu_buffer->reader_page = bpage;
 
-    /** 
+    /**
+
      *  分配一个页？
      */
 	page = alloc_pages_node(cpu_to_node(cpu), GFP_KERNEL, 0);
 	if (!page)
 		goto fail_free_reader;
 
-    /** 
+    /**
+
      *  转为虚拟地址
      */
 	bpage->page = page_address(page);
@@ -1634,7 +1647,8 @@ rb_allocate_cpu_buffer(struct trace_buffer *buffer, long nr_pages, int cpu)
 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
 	INIT_LIST_HEAD(&cpu_buffer->new_pages);
 
-    /** 
+    /**
+
      *  分配 pages
      */
 	ret = rb_allocate_pages(cpu_buffer, nr_pages);
@@ -1646,7 +1660,7 @@ rb_allocate_cpu_buffer(struct trace_buffer *buffer, long nr_pages, int cpu)
 	cpu_buffer->tail_page = cpu_buffer->commit_page = cpu_buffer->head_page;
 
     /**
-     *  
+     *
      */
 	rb_head_page_activate(cpu_buffer);
 
@@ -1710,7 +1724,8 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 	if (!zalloc_cpumask_var(&buffer->cpumask, GFP_KERNEL))
 		goto fail_free_buffer;
 
-    /** 
+    /**
+
      *  需要分配多少个 page
      */
 	nr_pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
@@ -1718,8 +1733,9 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 	buffer->clock = trace_clock_local;
 	buffer->reader_lock_key = key;
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	init_irq_work(&buffer->irq_work.work, rb_wake_up_waiters);
 	init_waitqueue_head(&buffer->irq_work.waiters);
@@ -1730,7 +1746,8 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 
 	buffer->cpus = nr_cpu_ids;
 
-    /** 
+    /**
+
      *  分配指针
      */
 	bsize = sizeof(void *) * nr_cpu_ids;
@@ -1742,8 +1759,9 @@ struct trace_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
 	cpu = raw_smp_processor_id();
 	cpumask_set_cpu(cpu, buffer->cpumask);
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	buffer->buffers[cpu] = rb_allocate_cpu_buffer(buffer, nr_pages, cpu);
 	if (!buffer->buffers[cpu])
@@ -2834,7 +2852,7 @@ static unsigned rb_calculate_event_length(unsigned length)
 		length++;
 
     /**
-     *  
+     *
      */
 	if (length > RB_MAX_SMALL_DATA || RB_FORCE_8BYTE_ALIGNMENT)
 		length += sizeof(event.array[0]);
@@ -3283,7 +3301,7 @@ int ring_buffer_unlock_commit(struct trace_buffer *buffer,
 	trace_recursive_unlock(cpu_buffer);
 
     /**
-     *  
+     *
      */
 	preempt_enable_notrace();
 
@@ -3539,8 +3557,9 @@ rb_reserve_next_event(struct trace_buffer *buffer,
 struct ring_buffer_event *
 ring_buffer_lock_reserve(struct trace_buffer *buffer, unsigned long length)
 {
-    /** 
-     *  
+    /**
+
+     *
      */
 	struct ring_buffer_per_cpu *cpu_buffer;
 	struct ring_buffer_event *event;
@@ -3569,7 +3588,7 @@ ring_buffer_lock_reserve(struct trace_buffer *buffer, unsigned long length)
 		goto out;
 
     /**
-     *  
+     *
      */
 	event = rb_reserve_next_event(buffer, cpu_buffer, length);
 	if (!event)
@@ -5097,7 +5116,7 @@ void ring_buffer_reset(struct trace_buffer *buffer)
 	int cpu;
 
     /**
-     *  
+     *
      */
 	for_each_buffer_cpu(buffer, cpu) {
 		cpu_buffer = buffer->buffers[cpu];
@@ -5115,7 +5134,7 @@ void ring_buffer_reset(struct trace_buffer *buffer)
 	synchronize_rcu();
 
     /**
-     *  
+     *
      */
 	for_each_buffer_cpu(buffer, cpu) {
 		cpu_buffer = buffer->buffers[cpu];
@@ -5625,7 +5644,7 @@ struct rb_test_data {
 	int			cnt;
 };
 
-static struct rb_test_data __initdata rb_data[NR_CPUS] ;/*  */
+static struct rb_test_data __initdata rb_data[NR_CPUS] ;
 
 /* 1 meg per cpu */
 #define RB_TEST_BUFFER_SIZE	1048576
@@ -5714,7 +5733,7 @@ static __init int rb_test(void *arg)
 	struct rb_test_data *data = arg;
 
 	while (!kthread_should_stop()) {
-		rb_write_something(data, false);    /*  */
+		rb_write_something(data, false);
 		data->cnt++;
 
 		set_current_state(TASK_INTERRUPTIBLE);
@@ -5889,7 +5908,7 @@ static __init int test_ringbuffer(void)
 		pr_info("  recorded len bytes:   %ld\n", total_len);
 		pr_info(" recorded size bytes:   %ld\n", total_size);
 		if (total_lost)
-			pr_info(" With dropped events, record len and size may not match\n"
+			pr_info(" With dropped eventsrd len and size may not match\n"
 				" alloced and written from above\n");
 		if (!total_lost) {
 			if (RB_WARN_ON(buffer, total_len != total_alloc ||
@@ -5908,5 +5927,5 @@ static __init int test_ringbuffer(void)
 	return 0;
 }
 
-late_initcall(test_ringbuffer); /*  */
+late_initcall(test_ringbuffer);
 #endif /* CONFIG_RING_BUFFER_STARTUP_TEST */

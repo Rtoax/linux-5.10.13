@@ -41,7 +41,7 @@ extern void __init gart_parse_options(char *);
 extern int gart_iommu_hole_init(void);
 
 #else
-/*  */
+
 #endif
 
 extern int agp_amd64_init(void);

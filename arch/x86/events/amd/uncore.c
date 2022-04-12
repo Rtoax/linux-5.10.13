@@ -667,4 +667,4 @@ fail_nb:
 
 	return ret;
 }
-device_initcall(amd_uncore_init);   /*  */
+device_initcall(amd_uncore_init);

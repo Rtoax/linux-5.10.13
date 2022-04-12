@@ -10,7 +10,7 @@
 
 #include <linux/list.h>
 
-struct syscore_ops {    /*  */
+struct syscore_ops {
 	struct list_head node;
 	int (*suspend)(void);
 	void (*resume)(void);

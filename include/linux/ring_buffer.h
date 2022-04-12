@@ -12,7 +12,7 @@ struct ring_buffer_iter;
 /*
  * Don't refer to this struct directly, use functions below.
  */
-struct ring_buffer_event {  /*  */
+struct ring_buffer_event {
     /**
      *  这两个字段表示头
      */

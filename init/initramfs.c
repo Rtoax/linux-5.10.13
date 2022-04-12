@@ -180,7 +180,7 @@ static void __init parse_header(char *s)
 
 /* FSM */
 
-static  enum  state {/*  */
+static  enum  state {
 	Start,
 	Collect,
 	GotHeader,
@@ -521,7 +521,7 @@ static int __init retain_initrd_param(char *str)
 }
 __setup("retain_initrd", retain_initrd_param);
 
-#ifdef CONFIG_ARCH_HAS_KEEPINITRD   /*  */
+#ifdef CONFIG_ARCH_HAS_KEEPINITRD
 static int __init keepinitrd_setup(char *__unused)
 {
 	do_retain_initrd = 1;
@@ -572,7 +572,7 @@ static bool __init kexec_free_initrd(void)
 	return true;
 }
 #else
-/*  */
+
 #endif /* CONFIG_KEXEC_CORE */
 
 #ifdef CONFIG_BLK_DEV_RAM
@@ -606,7 +606,7 @@ static int __init populate_rootfs(void)
 	if (err)
 		panic("%s", err); /* Failed to decompress INTERNAL initramfs */
 
-	if (!initrd_start || IS_ENABLED(CONFIG_INITRAMFS_FORCE))    /*  */
+	if (!initrd_start || IS_ENABLED(CONFIG_INITRAMFS_FORCE))
 		goto done;
 
 	if (IS_ENABLED(CONFIG_BLK_DEV_RAM))
@@ -636,4 +636,4 @@ done:
 	flush_delayed_fput();
 	return 0;
 }
-rootfs_initcall(populate_rootfs);   /*  */
+rootfs_initcall(populate_rootfs);

@@ -120,7 +120,7 @@ struct kernfs_elem_attr {
  * accessible.  Dereferencing elem or any other outer entity requires
  * active reference.
  */
-struct kernfs_node {    /*  */
+struct kernfs_node {
 	atomic_t		count;
 	atomic_t		active;
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
@@ -165,7 +165,7 @@ struct kernfs_node {    /*  */
  * the exact operation requested.  An active reference is held for each
  * kernfs_node parameter.
  */
-struct kernfs_syscall_ops { /*  */
+struct kernfs_syscall_ops {
 	int (*show_options)(struct seq_file *sf, struct kernfs_root *root);
 
 	int (*mkdir)(struct kernfs_node *parent, const char *name,
@@ -178,7 +178,7 @@ struct kernfs_syscall_ops { /*  */
 };
 
 /**
- *  
+ *
  */
 struct kernfs_root {
 	/* published fields */
@@ -414,7 +414,7 @@ void kernfs_init(void);
 struct kernfs_node *kernfs_find_and_get_node_by_id(struct kernfs_root *root,
 						   u64 id);
 #else	/* CONFIG_KERNFS */
-/*  */
+
 #endif	/* CONFIG_KERNFS */
 
 /**

@@ -105,7 +105,7 @@ static inline void cpu_timer_setexpires(struct cpu_timer *ctmr, u64 exp)
  * @nextevt:		Earliest-expiration cache
  * @tqhead:		timerqueue head for cpu_timers
  */
-struct posix_cputimer_base {    /*  */
+struct posix_cputimer_base {
 	u64			nextevt;
     /**
      *  红黑树
@@ -140,7 +140,7 @@ struct posix_cputimers_work {   /* 任务工作的 容器 */
 };
 
 /**
- *  
+ *
  */
 static inline void posix_cputimers_init(struct posix_cputimers *pct)
 {

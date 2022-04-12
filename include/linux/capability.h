@@ -212,7 +212,7 @@ extern bool ns_capable(struct user_namespace *ns, int cap);
 extern bool ns_capable_noaudit(struct user_namespace *ns, int cap);
 extern bool ns_capable_setid(struct user_namespace *ns, int cap);
 #else
-/*  */
+
 
 #endif /* CONFIG_MULTIUSER */
 extern bool privileged_wrt_inode_uidgid(struct user_namespace *ns, const struct inode *inode);
@@ -225,7 +225,7 @@ static inline bool perfmon_capable(void)
 }
 
 /**
- *  
+ *
  */
 static inline bool bpf_capable(void)
 {

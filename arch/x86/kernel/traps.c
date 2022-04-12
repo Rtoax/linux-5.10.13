@@ -98,7 +98,7 @@ __always_inline int is_valid_bugaddr(unsigned long addr)
 
 /**
  *  如果来自用户模式： 返回 -1, 否则 返回 0
- *  
+ *
  */
 static nokprobe_inline int
 do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str,
@@ -154,7 +154,7 @@ static void show_signal(struct task_struct *tsk, int signr,
 
 
 /**
- *  
+ *
  */
 static void
 do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
@@ -164,7 +164,7 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 
     /**
      *  如果来自用户模式： 返回 -1, 否则 返回 0
-     *  
+     *
      */
 	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))
 		return;
@@ -179,13 +179,13 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 }
 NOKPROBE_SYMBOL(do_trap);
 
-/*  */
+
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 	unsigned long trapnr, int signr, int sicode, void __user *addr)
 {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
 
-    /*  */
+
 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) !=
 			NOTIFY_STOP) {
 		cond_local_irq_enable(regs);
@@ -636,15 +636,15 @@ exit:
  *  1. kgdb
  *  2. kprobe
  *      83 c0 04    add eax, 0x4
- *      cc c0 04    
+ *      cc c0 04
  *      ^^
  *      text_poke() `0xcc = breakpoint instruction (int3)`
- *      do_int3() 
+ *      do_int3()
  *      -> notify_die()
  *          ...
  *          kprobe_exceptions_nb
- *        
- *  3. 
+ *
+ *  3.
  */
 static bool do_int3(struct pt_regs *regs)
 {
@@ -681,7 +681,7 @@ static void do_int3_user(struct pt_regs *regs)
 		return;
 
     /**
-     *  
+     *
      */
 	cond_local_irq_enable(regs);
 
@@ -689,7 +689,7 @@ static void do_int3_user(struct pt_regs *regs)
      *  处理 SIGTRAP
      */
 	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
-    
+
 	cond_local_irq_disable(regs);
 }
 
@@ -739,7 +739,7 @@ DEFINE_IDTENTRY_RAW(exc_int3)
          */
 		if (!do_int3(regs))
 			die("int3", regs, 0);
-        
+
 		instrumentation_end();
 		idtentry_exit_nmi(regs, irq_state);
 	}
@@ -967,7 +967,7 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 		dr6 &= ~DR_STEP;
 
     /**
-     *  
+     *
      */
 	if (kprobe_debug_handler(regs))
 		goto out;
@@ -1072,7 +1072,7 @@ out:
 
 
 /**
- *  
+ *
  */
 #ifdef CONFIG_X86_64
 void exc_debug(struct pt_regs *regs){/* 我加的 */}
@@ -1080,7 +1080,7 @@ void exc_debug(struct pt_regs *regs){/* 我加的 */}
 DEFINE_IDTENTRY_DEBUG(exc_debug)
 {
     /**
-     *  
+     *
      */
 	exc_debug_kernel(regs, debug_read_clear_dr6());
 }
@@ -1240,15 +1240,15 @@ DEFINE_IDTENTRY_SW(iret_error)
 #endif
 
 /**
- *  
+ *
  */
 void __init trap_init(void) /* 陷阱初始化 : 执行 `non-early` 异常处理*/
 {
 	/* Init cpu_entry_area before IST entries are set up */
-	setup_cpu_entry_areas();    /*  */
+	setup_cpu_entry_areas();
 
 	/* Init GHCB memory pages when running as an SEV-ES guest */
-	sev_es_init_vc_handling();  /*  */
+	sev_es_init_vc_handling();
 
     /* 中断描述附表 0-32 */
 	idt_setup_traps();  /* 中断描述附表 */
@@ -1256,10 +1256,10 @@ void __init trap_init(void) /* 陷阱初始化 : 执行 `non-early` 异常处理
 	/*
 	 * Should be a barrier for any external CPU state:
 	 */
-	cpu_init(); /*  */
+	cpu_init();
 
     /**
-     *  
+     *
      */
 	idt_setup_ist_traps();  /* 中断栈表 irq stack table */
 }

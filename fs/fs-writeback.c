@@ -1020,7 +1020,7 @@ static int __init cgroup_writeback_init(void)
 fs_initcall(cgroup_writeback_init);
 
 #else	/* CONFIG_CGROUP_WRITEBACK */
-/*  */
+
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
 /*

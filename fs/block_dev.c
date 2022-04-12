@@ -681,13 +681,13 @@ static loff_t block_llseek(struct file *file, loff_t offset, int whence)
 	inode_unlock(bd_inode);
 	return retval;
 }
-	
+
 int blkdev_fsync(struct file *filp, loff_t start, loff_t end, int datasync)
 {
 	struct inode *bd_inode = bdev_file_inode(filp);
 	struct block_device *bdev = I_BDEV(bd_inode);
 	int error;
-	
+
 	error = file_write_and_wait_range(filp, start, end);
 	if (error)
 		return error;
@@ -857,7 +857,7 @@ static struct file_system_type bd_type /* 块设备 */= {
 	.kill_sb	= kill_anon_super,
 };
 
-struct super_block __read_mostly *blockdev_superblock ;/*  */
+struct super_block __read_mostly *blockdev_superblock ;
 EXPORT_SYMBOL_GPL(blockdev_superblock);
 
 void __init bdev_cache_init(void)   /*  块设备*/
@@ -963,7 +963,7 @@ void bdput(struct block_device *bdev)
 }
 
 EXPORT_SYMBOL(bdput);
- 
+
 static struct block_device *bd_acquire(struct inode *inode)
 {
 	struct block_device *bdev;

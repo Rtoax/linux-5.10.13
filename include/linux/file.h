@@ -36,14 +36,14 @@ static inline void fput_light(struct file *file, int fput_needed)
 /**
  *  打开的文件
  */
-struct fd { /*  */
+struct fd {
 	struct file *file;
 	unsigned int flags;
 };
 #define FDPUT_FPUT       1
 #define FDPUT_POS_UNLOCK 2
 
-static inline void fdput(struct fd fd)  /*  */
+static inline void fdput(struct fd fd)
 {
 	if (fd.flags & FDPUT_FPUT)
 		fput(fd.file);
@@ -64,7 +64,7 @@ static inline struct fd __to_fd(unsigned long v)
 }
 
 /**
- *  
+ *
  */
 static inline struct fd fdget(unsigned int fd)/* fd -> struct fd */
 {

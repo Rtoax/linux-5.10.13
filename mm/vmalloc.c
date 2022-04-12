@@ -50,7 +50,7 @@ bool is_vmalloc_addr(const void *x)
 }
 EXPORT_SYMBOL(is_vmalloc_addr);
 
-struct vfree_deferred { /*  */
+struct vfree_deferred {
 	struct llist_head list;
 	struct work_struct wq;
 };
@@ -70,7 +70,7 @@ static void free_work(struct work_struct *w)
 /*** Page table manipulation functions ***/
 
 /**
- *  
+ *
  */
 static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			     pgtbl_mod_mask *mask)
@@ -78,12 +78,12 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	pte_t *pte;
 
     /**
-     *  
+     *
      */
 	pte = pte_offset_kernel(pmd, addr);
 	do {
         /**
-         *  
+         *
          */
 		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
 		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
@@ -115,7 +115,7 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			continue;
 
         /**
-         *  
+         *
          */
 		vunmap_pte_range(pmd, addr, next, mask);
 
@@ -148,7 +148,7 @@ static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 			continue;
 
         /**
-         *  
+         *
          */
 		vunmap_pmd_range(pud, addr, next, mask);
 	} while (pud++, addr = next, addr != end);
@@ -179,7 +179,7 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			continue;
 
         /**
-         *  
+         *
          */
 		vunmap_pud_range(p4d, addr, next, mask);
 	} while (p4d++, addr = next, addr != end);
@@ -209,7 +209,7 @@ void unmap_kernel_range_noflush(unsigned long start, unsigned long size)
 	BUG_ON(addr >= end);
 
     /**
-     *  
+     *
      */
 	pgd = pgd_offset_k(addr);
 	do {
@@ -220,7 +220,7 @@ void unmap_kernel_range_noflush(unsigned long start, unsigned long size)
 			continue;
 
         /**
-         *  
+         *
          */
 		vunmap_p4d_range(pgd, addr, next, &mask);
 	} while (pgd++, addr = next, addr != end);
@@ -242,14 +242,14 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 	/*
 	 * nr is a running index into the array which helps higher level
 	 * callers keep track of where we're up to.
-	 * 
+	 *
 	 */
 	pte = pte_alloc_kernel_track(pmd, addr, mask);
 	if (!pte)
 		return -ENOMEM;
 
     /**
-     *  
+     *
      */
     do {
 		struct page *__page = pages[*nr];
@@ -267,14 +267,14 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 
     /**
-     *  
+     *
      */
 	*mask |= PGTBL_PTE_MODIFIED;
 	return 0;
 }
 
 /**
- *  
+ *
  */
 static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
@@ -288,12 +288,12 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr,
 		return -ENOMEM;
 
     /**
-     *  
+     *
      */
     do {
 		next = pmd_addr_end(addr, end);
         /**
-         *  
+         *
          */
 		if (vmap_pte_range(pmd, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
@@ -312,24 +312,24 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
 	unsigned long next;
 
     /**
-     *  
+     *
      */
 	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
 	if (!pud)
 		return -ENOMEM;
 
     /**
-     *  
+     *
      */
     do {
 		next = pud_addr_end(addr, end);
         /**
-         *  
+         *
          */
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
     /**
-     *  
+     *
      */
     } while (pud++, addr = next, addr != end);
 	return 0;
@@ -346,27 +346,27 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
 	unsigned long next;
 
     /**
-     *  
+     *
      */
 	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
 	if (!p4d)
 		return -ENOMEM;
 
     /**
-     *  
+     *
      */
 	do {
 		next = p4d_addr_end(addr, end);
 
         /**
-         *  
+         *
          */
 		if (vmap_pud_range(p4d, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (p4d++, addr = next, addr != end);
 
     /**
-     *  
+     *
      */
 	return 0;
 }
@@ -416,19 +416,19 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
 			mask |= PGTBL_PGD_MODIFIED;
 
         /**
-         *  映射 p4d 
+         *  映射 p4d
          */
 		err = vmap_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
 		if (err)
 			return err;
 
     /**
-     *  
+     *
      */
 	} while (pgd++, addr = next, addr != end);
 
     /**
-     *  
+     *
      */
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
 		arch_sync_kernel_mappings(start, end);
@@ -451,7 +451,7 @@ int map_kernel_range(unsigned long start, unsigned long size, pgprot_t prot,
 	ret = map_kernel_range_noflush(start, size, prot, pages);
 
     /**
-     *  
+     *
      */
 	flush_cache_vmap(start, start + size);
 	return ret;
@@ -475,9 +475,9 @@ int is_vmalloc_or_module_addr(const void *x)
 /*
  * Walk a vmap address to the struct page it maps.
  *
- *  
+ *
  */
-struct page *vmalloc_to_page(const void *vmalloc_addr)  /*  */
+struct page *vmalloc_to_page(const void *vmalloc_addr)
 {
 	unsigned long addr = (unsigned long) vmalloc_addr;
 	struct page *page = NULL;
@@ -525,9 +525,9 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)  /*  */
 	if (pte_present(pte))
 		page = pte_page(pte);
 	pte_unmap(ptep);
-    
+
 	return page;
-    
+
 }
 EXPORT_SYMBOL(vmalloc_to_page);
 
@@ -552,7 +552,7 @@ static DEFINE_SPINLOCK(free_vmap_area_lock);
 
 /* Export for kexec only */
 /**
- *  
+ *
  */
 static struct list_head vmap_area_list; /* +++ */
 LIST_HEAD(vmap_area_list);
@@ -561,7 +561,7 @@ static struct llist_node vmap_purge_list; /* +++ */
 static LLIST_HEAD(vmap_purge_list);
 
 /**
- *  vmalloc 管理区的 红黑树 
+ *  vmalloc 管理区的 红黑树
  */
 static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
 static bool __read_mostly vmap_initialized ; /* 根 */
@@ -643,9 +643,9 @@ unsigned long vmalloc_nr_pages(void)
 }
 
 /**
- *  
+ *
  */
-static struct vmap_area *__find_vmap_area(unsigned long addr)   /*  */
+static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
 	struct rb_node *n = vmap_area_root.rb_node;
 
@@ -864,7 +864,7 @@ insert_vmap_area(struct vmap_area *va,
 	struct rb_node *parent;
 
     /**
-     *  
+     *
      */
 	link = find_va_links(va, root, NULL, &parent);  /* 找到对应的红黑树节点 */
 	if (link)
@@ -872,7 +872,7 @@ insert_vmap_area(struct vmap_area *va,
 }
 
 /**
- *  
+ *
  */
 static void
 insert_vmap_area_augment(struct vmap_area *va,
@@ -883,7 +883,7 @@ insert_vmap_area_augment(struct vmap_area *va,
 	struct rb_node *parent;
 
     /**
-     *  
+     *
      */
 	if (from)
 		link = find_va_links(va, NULL, from, &parent);
@@ -891,7 +891,7 @@ insert_vmap_area_augment(struct vmap_area *va,
 		link = find_va_links(va, root, NULL, &parent);
 
     /**
-     *  
+     *
      */
 	if (link) {
 		link_va(va, root, parent, link, head);
@@ -999,15 +999,15 @@ insert:
 }
 
 /**
- *  
+ *
  */
 static __always_inline bool
 is_within_this_va(struct vmap_area *va, unsigned long size,
-	unsigned long align, unsigned long vstart)  /*  */
+	unsigned long align, unsigned long vstart)
 {
 	unsigned long nva_start_addr;
 
-    /*  */
+
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
 	else
@@ -1019,7 +1019,7 @@ is_within_this_va(struct vmap_area *va, unsigned long size,
 		return false;
 
     /**
-     *  
+     *
      */
 	return (nva_start_addr + size <= va->va_end);   /* 在 VA 区间内 */
 }
@@ -1046,23 +1046,23 @@ find_vmap_lowest_match(unsigned long size,
 	length = size + align - 1;
 
     /**
-     *  
+     *
      */
 	while (node) {
 		va = rb_entry(node, struct vmap_area, rb_node);
 
         /**
-         *  左子树的大小的和 
+         *  左子树的大小的和
          */
 		if (get_subtree_max_size(node->rb_left) >= length && vstart < va->va_start) {
 
-            /*  */
+
 			node = node->rb_left;
-            
+
 		} else {
-            
+
             /**
-             *  在这个区间内 
+             *  在这个区间内
              */
 			if (is_within_this_va(va, size, align, vstart))
 				return va;
@@ -1084,19 +1084,19 @@ find_vmap_lowest_match(unsigned long size,
 			 * that will satisfy the search criteria. It can happen
 			 * only once due to "vstart" restriction.
 			 *
-			 * 
+			 *
 			 */
 			while ((node = rb_parent(node))) {
 				va = rb_entry(node, struct vmap_area, rb_node);
 
                 /**
-                 *  
+                 *
                  */
 				if (is_within_this_va(va, size, align, vstart))
 					return va;
 
                 /**
-                 *  
+                 *
                  */
 				if (get_subtree_max_size(node->rb_right) >= length &&
 						vstart <= va->va_start) {
@@ -1185,7 +1185,7 @@ classify_va_fit_type(struct vmap_area *va,
 static __always_inline int
 adjust_va_to_fit_type(struct vmap_area *va,
 	unsigned long nva_start_addr, unsigned long size,
-	enum fit_type type)/*  */
+	enum fit_type type)
 {
 	struct vmap_area *lva = NULL;
 
@@ -1197,7 +1197,7 @@ adjust_va_to_fit_type(struct vmap_area *va,
 		 * V      NVA      V
 		 * |---------------|
 		 */
-		unlink_va(va, &free_vmap_area_root);    /*  */
+		unlink_va(va, &free_vmap_area_root);
 		kmem_cache_free(vmap_area_cachep, va);
 	} else if (type == LE_FIT_TYPE) {
 		/*
@@ -1298,14 +1298,14 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 	int ret;
 
     /**
-     *  
+     *
      */
-	va = find_vmap_lowest_match(size, align, vstart);   /*  */
+	va = find_vmap_lowest_match(size, align, vstart);
 	if (unlikely(!va))
 		return vend;
 
     /**
-     *  对齐 
+     *  对齐
      */
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
@@ -1313,7 +1313,7 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 		nva_start_addr = ALIGN(vstart, align);
 
 	/**
-	 *  Check the "vend" restriction. 
+	 *  Check the "vend" restriction.
 	 */
 	if (nva_start_addr + size > vend)
 		return vend;
@@ -1392,7 +1392,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	 * Only scan the relevant parts containing pointers to other objects
 	 * to avoid false negatives.
 	 */
-	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask);   /*  */
+	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask);
 
 retry:
 	/*
@@ -1412,18 +1412,18 @@ retry:
 	 */
 	pva = NULL;
 
-	if (!this_cpu_read(ne_fit_preload_node))    /*  */
+	if (!this_cpu_read(ne_fit_preload_node))
 		/*
 		 * Even if it fails we do not really care about that.
 		 * Just proceed as it is. If needed "overflow" path
 		 * will refill the cache we allocate from.
 		 *
-		 * 
+		 *
 		 */
 		pva = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 
     /**
-     *  
+     *
      */
 	spin_lock(&free_vmap_area_lock);
 
@@ -1436,8 +1436,8 @@ retry:
 	 *
 	 * 从 vmalloc 区间找出 size 这么一块空闲区域 荣涛 2021年7月5日16:17:46
 	 */
-	addr = __alloc_vmap_area(size, align, vstart, vend);    /*  */
-    
+	addr = __alloc_vmap_area(size, align, vstart, vend);
+
 	spin_unlock(&free_vmap_area_lock);
 
 	if (unlikely(addr == vend))
@@ -1463,7 +1463,7 @@ retry:
 	BUG_ON(va->va_end > vend);
 
     /**
-     *  
+     *
      */
     /* kasan overflow监控 */
 	ret = kasan_populate_vmalloc(addr, size);
@@ -1670,7 +1670,7 @@ static void free_unmap_vmap_area(struct vmap_area *va)
 	flush_cache_vunmap(va->va_start, va->va_end);
 
     /**
-     *  
+     *
      */
 	unmap_kernel_range_noflush(va->va_start, va->va_end - va->va_start);
 
@@ -1678,17 +1678,17 @@ static void free_unmap_vmap_area(struct vmap_area *va)
 		flush_tlb_kernel_range(va->va_start, va->va_end);
 
     /**
-     *  
+     *
      */
 	free_vmap_area_noflush(va);
 }
 
-static struct vmap_area *find_vmap_area(unsigned long addr) /*  */
+static struct vmap_area *find_vmap_area(unsigned long addr)
 {
 	struct vmap_area *va;
 
 	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area(addr);    /*  */
+	va = __find_vmap_area(addr);
 	spin_unlock(&vmap_area_lock);
 
 	return va;
@@ -1721,15 +1721,15 @@ static struct vmap_area *find_vmap_area(unsigned long addr) /*  */
 #define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
 
 /**
- *  
+ *
  */
-struct vmap_block_queue {   /*  */
+struct vmap_block_queue {
 	spinlock_t lock;
 	struct list_head free;
 };
 
 /**
- *  
+ *
  */
 struct vmap_block {
 	spinlock_t lock;
@@ -1766,7 +1766,7 @@ static unsigned long addr_to_vb_idx(unsigned long addr)
 }
 
 /**
- *  
+ *
  */
 static void *vmap_block_vaddr(unsigned long va_start, unsigned long pages_off)
 {
@@ -1802,7 +1802,7 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 		return ERR_PTR(-ENOMEM);
 
     /**
-     *  
+     *
      */
 	va = alloc_vmap_area(VMAP_BLOCK_SIZE, VMAP_BLOCK_SIZE,
         					VMALLOC_START, VMALLOC_END,
@@ -1835,7 +1835,7 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 	spin_lock(&vbq->lock);
 
     /**
-     *  
+     *
      */
 	list_add_tail_rcu(&vb->free_list, &vbq->free);
 	spin_unlock(&vbq->lock);
@@ -1987,7 +1987,7 @@ static void vb_free(unsigned long addr, unsigned long size)
 }
 
 /**
- *  
+ *
  */
 static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 {
@@ -1999,7 +1999,7 @@ static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 	might_sleep();
 
     /**
-     *  
+     *
      */
 	for_each_possible_cpu(cpu) {
 		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
@@ -2133,7 +2133,7 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node)
 }
 EXPORT_SYMBOL(vm_map_ram);
 
-static struct vm_struct __initdata *vmlist ;/*  */
+static struct vm_struct __initdata *vmlist ;
 
 /**
  * vm_area_add_early - add vmap area early during boot
@@ -2255,15 +2255,15 @@ void __init vmalloc_init(void)  /* vmalloc 初始化 initializes `vmalloc` */
 	}
 
 	/**
-	 *  Import existing vmlist entries. 
-	 * 
+	 *  Import existing vmlist entries.
+	 *
 	 *  遍历整个 vm 空间，分配 vmap_area 结构，并添加至 红黑树 和 链表中
 	 */
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
 		va = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
 		if (WARN_ON_ONCE(!va))
 			continue;
-        /*  */
+
 		va->va_start = (unsigned long)tmp->addr;
 		va->va_end = va->va_start + tmp->size;
 		va->vm = tmp;
@@ -2295,7 +2295,7 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
 }
 
 /**
- *  
+ *
  */
 static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
 	struct vmap_area *va, unsigned long flags, const void *caller)
@@ -2308,16 +2308,16 @@ static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
 }
 
 /**
- *  
+ *
  */
 static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
-			      unsigned long flags, const void *caller)  /*  */
+			      unsigned long flags, const void *caller)
 {
 	spin_lock(&vmap_area_lock);
     /**
-     *  
+     *
      */
-	setup_vmalloc_vm_locked(vm, va, flags, caller); /*  */
+	setup_vmalloc_vm_locked(vm, va, flags, caller);
 	spin_unlock(&vmap_area_lock);
 }
 
@@ -2354,7 +2354,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 
     /**
-     *  分配一个 area 结构 
+     *  分配一个 area 结构
      */
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
@@ -2364,7 +2364,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 		size += PAGE_SIZE;
 
     /**
-     *  从 vmalloc 区间分配 
+     *  从 vmalloc 区间分配
      */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {
@@ -2373,21 +2373,21 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	}
 
     /**
-     *  
+     *
      */
     /* kasan： 设置 redzone */
 	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
 
     /**
-     *  
+     *
      */
 	setup_vmalloc_vm(area, va, flags, caller);
 
-	return area;    /*  */
+	return area;
 }
 
 /**
- *  
+ *
  */
 struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
 				       unsigned long start, unsigned long end,
@@ -2408,7 +2408,7 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
  *
  * Return: the area descriptor on success or %NULL on failure.
  */
-struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)  /*  */
+struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
 {
 	return __get_vm_area_node(size, 1, flags, VMALLOC_START, VMALLOC_END,
 				  NUMA_NO_NODE, GFP_KERNEL,
@@ -2432,7 +2432,7 @@ struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
  *
  * Return: the area descriptor on success or %NULL on failure.
  */
-struct vm_struct *find_vm_area(const void *addr)    /*  */
+struct vm_struct *find_vm_area(const void *addr)
 {
 	struct vmap_area *va;
 
@@ -2462,7 +2462,7 @@ struct vm_struct *remove_vm_area(const void *addr)
 	spin_lock(&vmap_area_lock);
 
     /**
-     *  
+     *
      */
 	va = __find_vmap_area((unsigned long)addr);
 	if (va && va->vm) {
@@ -2474,7 +2474,7 @@ struct vm_struct *remove_vm_area(const void *addr)
 		kasan_free_shadow(vm);
 
         /**
-         *  
+         *
          */
 		free_unmap_vmap_area(va);
 
@@ -2496,7 +2496,7 @@ static inline void set_area_direct_map(const struct vm_struct *area,
 }
 
 /**
- *  vfree 的 虚拟地址的 映射解除 
+ *  vfree 的 虚拟地址的 映射解除
  */
 /* Handle removing and resetting vm mappings related to the vm_struct. */
 static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
@@ -2507,7 +2507,7 @@ static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
 	int i;
 
     /**
-     *  
+     *
      */
 	remove_vm_area(area->addr);
 
@@ -2545,7 +2545,7 @@ static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
 	 */
 	set_area_direct_map(area, set_direct_map_invalid_noflush);
     /**
-     *  
+     *
      */
 	_vm_unmap_aliases(start, end, flush_dmap);
 	set_area_direct_map(area, set_direct_map_default_noflush);
@@ -2589,7 +2589,7 @@ static void __vunmap(const void *addr, int deallocate_pages)
 		int i;
 
         /**
-         *  
+         *
          */
 		for (i = 0; i < area->nr_pages; i++) {
 			struct page *page = area->pages[i];
@@ -2600,7 +2600,7 @@ static void __vunmap(const void *addr, int deallocate_pages)
 		atomic_long_sub(area->nr_pages, &nr_vmalloc_pages);
 
         /**
-         *  
+         *
          */
 		kvfree(area->pages);
 	}
@@ -2650,7 +2650,7 @@ static void __vfree(const void *addr)
 		__vfree_deferred(addr);
 	else
         /**
-         *  
+         *
          */
 		__vunmap(addr, 1);
 }
@@ -2684,7 +2684,7 @@ void vfree(const void *addr)
 		return;
 
     /**
-     *  
+     *
      */
 	__vfree(addr);
 }
@@ -2817,7 +2817,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
      *  分配 page 数据结构
      */
 	/**
-	 *  Please note that the recursion is strictly bounded. 
+	 *  Please note that the recursion is strictly bounded.
 	 *  请注意，递归是严格有界的
 	 */
 	if (array_size > PAGE_SIZE) {
@@ -2826,7 +2826,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
          *  但是需要注意终止条件
          */
 		pages = __vmalloc_node(array_size, 1, nested_gfp, node, area->caller);
-        
+
 	} else {
 	    /**
 	     *  分配 页 二维指针 数据结构
@@ -2835,7 +2835,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	}
 
     /**
-     *  
+     *
      */
 	if (!pages) {
 		remove_vm_area(area->addr);
@@ -2876,13 +2876,13 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
          *  页面放到管理区
          */
 		area->pages[i] = page;
-        
+
 		if (gfpflags_allow_blocking(gfp_mask))
 			cond_resched();
 	}
 
     /**
-     *  
+     *
      */
     atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 
@@ -2942,7 +2942,7 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		goto fail;
 
     /**
-     *  
+     *
      */
 	area = __get_vm_area_node(real_size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);
@@ -2950,7 +2950,7 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		goto fail;
 
     /**
-     *  
+     *
      */
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
 	if (!addr)
@@ -3001,7 +3001,7 @@ void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, int node, const void *caller)
 {
     /**
-     *  
+     *
      */
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
 				gfp_mask, PAGE_KERNEL, 0, node, caller);

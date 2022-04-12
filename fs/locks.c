@@ -242,7 +242,7 @@ static DEFINE_HASHTABLE(blocked_hash, BLOCKED_HASH_BITS);
  */
 static DEFINE_SPINLOCK(blocked_lock_lock);
 
-static struct kmem_cache __read_mostly *flctx_cache ;/*  */
+static struct kmem_cache __read_mostly *flctx_cache ;
 static struct kmem_cache __read_mostly *filelock_cache ;
 
 static struct file_lock_context *
@@ -2675,7 +2675,7 @@ struct locks_iterator {
 
 static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 			    loff_t id, char *pfx)
-{//    $ sudo cat /proc/locks 
+{//    $ sudo cat /proc/locks
 //    [sudo] rongtao 的密码：
 //    1: POSIX  ADVISORY  READ  1932 fd:00:5053436 4 4
 //    2: FLOCK  ADVISORY  WRITE 1972 fd:00:70676918 0 EOF
@@ -2759,7 +2759,7 @@ static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 
 static int locks_show(struct seq_file *f, void *v)    /* sudo cat /proc/locks */
 {
-//    $ sudo cat /proc/locks 
+//    $ sudo cat /proc/locks
 //    [sudo] rongtao 的密码：
 //    1: POSIX  ADVISORY  READ  1932 fd:00:5053436 4 4
 //    2: FLOCK  ADVISORY  WRITE 1972 fd:00:70676918 0 EOF
@@ -2859,7 +2859,7 @@ static int __init proc_locks_init(void)
 			sizeof(struct locks_iterator), NULL);
 	return 0;
 }
-fs_initcall(proc_locks_init);  /* sudo cat /proc/locks */ 
+fs_initcall(proc_locks_init);  /* sudo cat /proc/locks */
 #endif
 
 static int __init filelock_init(void)
@@ -2882,4 +2882,4 @@ static int __init filelock_init(void)
 	lease_notifier_chain_init();
 	return 0;
 }
-core_initcall(filelock_init);   /*  */
+core_initcall(filelock_init);

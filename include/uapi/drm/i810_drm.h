@@ -183,7 +183,7 @@ typedef struct _drm_i810_sarea {
 	int texAge;		/* last time texture was uploaded */
 	int last_enqueue;	/* last time a buffer was enqueued */
 	int last_dispatch;	/* age of the most recently dispatched buffer */
-	int last_quiescent;	/*  */
+	int last_quiescent;
 	int ctxOwner;		/* last context to upload state */
 
 	int vertex_prim;

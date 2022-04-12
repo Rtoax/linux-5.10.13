@@ -215,7 +215,7 @@ static int copy_to(void *target, void *src, size_t size, int userbuf)
 	return 0;
 }
 
-#ifdef CONFIG_PROC_VMCORE_DEVICE_DUMP   /*  */
+#ifdef CONFIG_PROC_VMCORE_DEVICE_DUMP
 static int vmcoredd_copy_dumps(void *dst, u64 start, size_t size, int userbuf)
 {
 	struct vmcoredd_node *dump;
@@ -661,7 +661,7 @@ fail:
 	return -EAGAIN;
 }
 #else
-/*  */
+
 #endif
 
 static const struct proc_ops vmcore_proc_ops = {
@@ -1557,7 +1557,7 @@ static int __init vmcore_init(void)
 		proc_vmcore->size = vmcore_size;
 	return 0;
 }
-fs_initcall(vmcore_init);   /*  */
+fs_initcall(vmcore_init);
 
 /* Cleanup function for vmcore module. */
 void vmcore_cleanup(void)

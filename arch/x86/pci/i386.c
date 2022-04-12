@@ -370,7 +370,7 @@ static int __init pcibios_assign_resources(void)
  * called in fs_initcall (one below subsys_initcall),
  * give a chance for motherboard reserve resources
  */
-fs_initcall(pcibios_assign_resources);  /*  */
+fs_initcall(pcibios_assign_resources);
 
 void pcibios_resource_survey_bus(struct pci_bus *bus)
 {
@@ -403,7 +403,7 @@ void __init pcibios_resource_survey(void)
     }
 
 	e820__reserve_resources_late();
-    
+
 	/*
 	 * Insert the IO APIC resources after PCI initialization has
 	 * occurred to handle IO APICS that are mapped in on a BAR in

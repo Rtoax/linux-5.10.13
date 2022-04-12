@@ -81,7 +81,7 @@ static int is_vsmp_box(void)
 }
 
 #else
-/*  */
+
 #endif
 
 static void __init vsmp_cap_cpus(void)

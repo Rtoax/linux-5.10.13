@@ -74,7 +74,7 @@ static inline int ep_op_has_event(int op)
 }
 
 #else
-/*  */
+
 #endif
 
 #endif /* #ifndef _LINUX_EVENTPOLL_H */

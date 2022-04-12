@@ -148,7 +148,7 @@
 	_ASM_PTR (entry);					\
 	.popsection
 # else
-/*  */
+
 # endif
 
 #else /* ! __ASSEMBLY__ */

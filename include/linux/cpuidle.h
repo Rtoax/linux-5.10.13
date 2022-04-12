@@ -173,7 +173,7 @@ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
 static inline struct cpuidle_device *cpuidle_get_device(void)
 {return __this_cpu_read(cpuidle_devices); }
 #else
-/*  */
+
 #endif
 
 /* kernel/sched/idle.c */
@@ -191,7 +191,7 @@ static inline void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, 
 #if defined(CONFIG_CPU_IDLE) && defined(CONFIG_ARCH_HAS_CPU_RELAX)
 void cpuidle_poll_state_init(struct cpuidle_driver *drv);
 #else
-/*  */
+
 #endif
 
 /******************************

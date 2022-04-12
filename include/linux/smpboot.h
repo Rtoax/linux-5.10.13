@@ -28,7 +28,7 @@ struct smpboot_thread_data;
  * @selfparking:	Thread is not parked by the park function.
  * @thread_comm:	The base name of the thread
  */
-struct smp_hotplug_thread { /*  */
+struct smp_hotplug_thread {
 	struct task_struct		* __percpu *store;
 	struct list_head		list;
 	int				(*thread_should_run)(unsigned int cpu);

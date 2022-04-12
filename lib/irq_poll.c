@@ -12,7 +12,7 @@
 #include <linux/irq_poll.h>
 #include <linux/delay.h>
 
-static unsigned int __read_mostly irq_poll_budget  = 256;/*  */
+static unsigned int __read_mostly irq_poll_budget  = 256;
 
 static DEFINE_PER_CPU(struct list_head, blk_cpu_iopoll);
 
@@ -200,24 +200,24 @@ static int irq_poll_cpu_dead(unsigned int cpu)
 }
 
 /**
- *  
+ *
  */
 static __init int irq_poll_setup(void)
 {
 	int i;
 
     /**
-     *  
+     *
      */
 	for_each_possible_cpu(i) {
 		INIT_LIST_HEAD(&per_cpu(blk_cpu_iopoll, i));
     }
 
     /**
-     *  
+     *
      */
 	open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
 	cpuhp_setup_state_nocalls(CPUHP_IRQ_POLL_DEAD, "irq_poll:dead", NULL, irq_poll_cpu_dead);
 	return 0;
 }
-subsys_initcall(irq_poll_setup);    /*  */
+subsys_initcall(irq_poll_setup);

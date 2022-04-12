@@ -54,7 +54,7 @@ struct inactive_task_frame {    /* 任务 frame */
 	unsigned long ret_addr;
 };
 
-struct fork_frame { /*  */
+struct fork_frame {
 	struct inactive_task_frame frame;
 	struct pt_regs regs;
 };
@@ -64,7 +64,7 @@ struct fork_frame { /*  */
  *
  *  switch_to(prev, next, prev);
  *
- *  
+ *
  */
 #define switch_to(prev, next, last)					\
 do {									\

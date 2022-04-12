@@ -342,7 +342,7 @@ void irqentry_exit_to_user_mode(struct pt_regs *regs);
 
 #ifndef irqentry_state
 typedef struct irqentry_state {
-	bool	exit_rcu;   /*  */
+	bool	exit_rcu;
 } irqentry_state_t;
 #endif
 

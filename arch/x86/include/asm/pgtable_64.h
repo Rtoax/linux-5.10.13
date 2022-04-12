@@ -27,11 +27,11 @@ extern pmd_t level2_kernel_pgt[512];
 extern pmd_t level2_fixmap_pgt[512];
 extern pmd_t level2_ident_pgt[512];
 extern pte_t level1_fixmap_pgt[512 * FIXMAP_PMD_NUM];
-extern pgd_t init_top_pgt[];/*  */
+extern pgd_t init_top_pgt[];
 
 /**
  *  KPTI - Kernel Page-Table Isolation 内核页表隔离
- *  
+ *
  *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
  */
 #define swapper_pg_dir init_top_pgt/* CR3 - 一级页表 arch/x86/kernel/head_64.S */
@@ -86,7 +86,7 @@ static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
 	native_set_pte(ptep, pte);
 }
 
-static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)   /*  */
+static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 {
 	WRITE_ONCE(*pmdp, pmd);
 }
@@ -241,7 +241,7 @@ static inline void native_pgd_clear(pgd_t *pgd)
 	(~(unsigned long)(offset) << SWP_OFFSET_SHIFT >> SWP_TYPE_BITS) \
 	| ((unsigned long)(type) << (64-SWP_TYPE_BITS)) })
 
-/*  */
+
 #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
 #define __pmd_to_swp_entry(pmd)		((swp_entry_t) { pmd_val((pmd)) })
 #define __swp_entry_to_pte(x)		((pte_t) { .pte = (x).val })
@@ -265,7 +265,7 @@ extern void cleanup_highmap(void);
 /**
  *  参见 https://rtoax.blog.csdn.net/article/details/119038040
  */
-#define vmemmap ((struct page *)VMEMMAP_START)  /*  */
+#define vmemmap ((struct page *)VMEMMAP_START)
 
 extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
 extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);

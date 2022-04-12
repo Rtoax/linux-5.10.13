@@ -291,4 +291,4 @@ static int __init big_key_init(void)
 	return register_key_type(&key_type_big_key);
 }
 
-late_initcall(big_key_init);    /*  */
+late_initcall(big_key_init);

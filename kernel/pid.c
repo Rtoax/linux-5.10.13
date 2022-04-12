@@ -86,18 +86,18 @@ struct pid_namespace init_pid_ns = {/* 初始的 PID 命名空间(资源名称�
 	 *
 	 */
 	init_pid_ns.kref = KREF_INIT(2),
-	init_pid_ns.idr = IDR_INIT(init_pid_ns.idr),/*  */
+	init_pid_ns.idr = IDR_INIT(init_pid_ns.idr),
 	/**
 	 *
 	 */
-	init_pid_ns.pid_allocated = PIDNS_ADDING,/*  */
+	init_pid_ns.pid_allocated = PIDNS_ADDING,
 	init_pid_ns.level = 0,
 	/**
 	 * @brief 收割者
 	 *
 	 */
-	init_pid_ns.child_reaper = &init_task,/*  */
-	init_pid_ns.user_ns = &init_user_ns,/*  */
+	init_pid_ns.child_reaper = &init_task,
+	init_pid_ns.user_ns = &init_user_ns,
 	init_pid_ns.ns.inum = PROC_PID_INIT_INO,
 #ifdef CONFIG_PID_NS
 	init_pid_ns.ns.ops = &pidns_operations,
@@ -588,7 +588,7 @@ EXPORT_SYMBOL_GPL(pid_nr_ns);
  *  分配一个虚拟的 PID
  *  虚拟的PID 是从 当前 进程的 命名空间的角度来看的。
  */
-pid_t pid_vnr(struct pid *pid)  /*  */
+pid_t pid_vnr(struct pid *pid)
 {
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }

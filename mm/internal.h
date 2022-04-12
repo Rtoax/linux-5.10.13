@@ -85,7 +85,7 @@ static inline bool page_evictable(struct page *page)
 	/* Prevent address_space of inode and swap cache from being freed */
 	rcu_read_lock();
 
-    /*  */
+
 	ret = !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);
 	rcu_read_unlock();
 	return ret;
@@ -148,7 +148,7 @@ struct alloc_context {  /* 分配 page 的信息 */
     /**
      *
      */
-	struct zoneref *preferred_zoneref;  /*  */
+	struct zoneref *preferred_zoneref;
 	int migratetype;
 
 	/*
@@ -185,7 +185,7 @@ struct alloc_context {  /* 分配 page 的信息 */
  *
  * Assumption: *_mem_map is contiguous at least up to MAX_ORDER
  */
-static inline unsigned long  /*  */
+static inline unsigned long
 __find_buddy_pfn(unsigned long page_pfn, unsigned int order)
 {
 	return page_pfn ^ (1 << order); /* 0xffff^0x1 = 0xfffe */
@@ -451,7 +451,7 @@ vma_address(struct page *page, struct vm_area_struct *vma)
 	/* page should be within @vma mapping range */
 	VM_BUG_ON_VMA(end < vma->vm_start || start >= vma->vm_end, vma);
 
-    /*  */
+
 	return max(start, vma->vm_start);
 }
 
@@ -560,19 +560,19 @@ static inline void mminit_validate_memmodel_limits(unsigned long *start_pfn,
 {
 }
 #endif /* CONFIG_SPARSEMEM */
-/*  */
+
 #define NODE_RECLAIM_NOSCAN	-2
-/*  */
+
 #define NODE_RECLAIM_FULL	-1
-/*  */
+
 #define NODE_RECLAIM_SOME	0
-/*  */
+
 #define NODE_RECLAIM_SUCCESS	1
 
 #ifdef CONFIG_NUMA
 extern int node_reclaim(struct pglist_data *, gfp_t, unsigned int);
 #else
-/*  */
+
 #endif
 
 extern int hwpoison_filter(struct page *p);
@@ -612,7 +612,7 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone, struct list_head *
 #ifdef CONFIG_MMU
 #define ALLOC_OOM		0x08 /* 用于补偿 OOM 进程或者线程 */
 #else
-/*  */
+
 #endif
 
 #define ALLOC_HARDER    0x10 /* try to alloc harder 紧急情况下可以访问预留内存 */
@@ -623,7 +623,7 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone, struct list_head *
 #ifdef CONFIG_ZONE_DMA32
 #define ALLOC_NOFRAGMENT    0x100 /* avoid mixing pageblock types 避免混合页面块类型 */
 #else
-/*  */
+
 #endif
 /**
  *  唤醒 kswapd
@@ -645,7 +645,7 @@ void try_to_unmap_flush(void);
 void try_to_unmap_flush_dirty(void);
 void flush_tlb_batched_pending(struct mm_struct *mm);
 #else
-/*  */
+
 #endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
 
 extern const struct trace_print_flags pageflag_names[];

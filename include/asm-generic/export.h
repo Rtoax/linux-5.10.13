@@ -82,7 +82,7 @@ __kstrtab_\name:
 #define __EXPORT_SYMBOL(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
 #endif
 
-#define EXPORT_SYMBOL(name)	/*  */				\
+#define EXPORT_SYMBOL(name)					\
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name),)
 #define EXPORT_SYMBOL_GPL(name) 				\
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name), _gpl)

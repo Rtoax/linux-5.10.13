@@ -135,7 +135,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #define __annotate_jump_table __section(".rodata..c_jump_table")
 
 #else
-/*  */
+
 #endif
 
 #ifndef ASM_UNREACHABLE

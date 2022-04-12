@@ -651,4 +651,4 @@ static int __init pageowner_init(void)
 
 	return 0;
 }
-late_initcall(pageowner_init)   /*  */
+late_initcall(pageowner_init)

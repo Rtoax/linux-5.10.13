@@ -15,7 +15,7 @@ enum kcmp_type {
 	KCMP_SYSVSEM,
 	KCMP_EPOLL_TFD,
 
-	KCMP_TYPES, /*  */
+	KCMP_TYPES,
 };
 
 /* Slot for KCMP_EPOLL_TFD */

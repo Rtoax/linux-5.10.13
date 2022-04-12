@@ -495,7 +495,7 @@ void bio_associate_blkg_from_css(struct bio *bio,
 				 struct cgroup_subsys_state *css);
 void bio_clone_blkg_association(struct bio *dst, struct bio *src);
 #else	/* CONFIG_BLK_CGROUP */
-/*  */
+
 #endif	/* CONFIG_BLK_CGROUP */
 
 #ifdef CONFIG_HIGHMEM
@@ -675,11 +675,11 @@ static inline void bio_inc_remaining(struct bio *bio)
 #define BIO_POOL_SIZE 2
 
 /**
- *  
+ *
  */
-struct bio_set {    /*  */
+struct bio_set {
     /**
-     *  
+     *
      */
 	struct kmem_cache *bio_slab;
 	unsigned int front_pad;
@@ -738,7 +738,7 @@ extern void bioset_integrity_free(struct bio_set *);
 extern void bio_integrity_init(void);
 
 #else /* CONFIG_BLK_DEV_INTEGRITY */
-/*  */
+
 #endif /* CONFIG_BLK_DEV_INTEGRITY */
 
 /*

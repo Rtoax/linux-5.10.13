@@ -25,7 +25,7 @@ struct worker_pool;
  *
  * worker 类似于流水线的工人，work 类似于工人的工作
  */
-struct worker { /*  */
+struct worker {
 	/* on idle list while idle, on busy hash table while busy */
 	union {
 		struct list_head	entry;	/* L: while idle */
@@ -57,7 +57,7 @@ struct worker { /*  */
      *
      *  API
      *  在 `worker_thread()` 中判断；
-     *  
+     *
      */
 	struct list_head	scheduled;	/* L: scheduled works */
 

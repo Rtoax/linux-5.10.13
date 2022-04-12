@@ -58,7 +58,7 @@ struct pid_namespace;
 extern void mq_clear_sbinfo(struct ipc_namespace *ns);
 extern void mq_put_mnt(struct ipc_namespace *ns);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_SYSVIPC
@@ -70,7 +70,7 @@ void sem_exit_ns(struct ipc_namespace *ns);
 void msg_exit_ns(struct ipc_namespace *ns);
 void shm_exit_ns(struct ipc_namespace *ns);
 #else
-/*  */
+
 #endif
 
 /*
@@ -111,7 +111,7 @@ void __init ipc_init_proc_interface(const char *path, const char *header,
 		int ids, int (*show)(struct seq_file *, void *));
 struct pid_namespace *ipc_seq_pid_ns(struct seq_file *);
 #else
-/*  */
+
 #endif
 
 #define IPC_SEM_IDS	0

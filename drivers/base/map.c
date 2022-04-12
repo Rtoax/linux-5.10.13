@@ -26,7 +26,7 @@ struct probe {
 	void *data;
 };
 #endif
-struct kobj_map {   /*  */
+struct kobj_map {
 	struct probe {
 		struct probe *next;
 		dev_t dev;
@@ -142,7 +142,7 @@ retry:
 	return NULL;
 }
 
-struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock)/*  */
+struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock)
 {
 	struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
 	struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);

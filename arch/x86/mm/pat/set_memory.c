@@ -112,7 +112,7 @@ static void split_page_count(int level)
 void arch_report_meminfo(struct seq_file *m)
 {
 	seq_printf(m, "DirectMap4k:    %8lu kB\n", direct_pages_count[PG_LEVEL_4K] << 2);
-    
+
 #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
 	seq_printf(m, "DirectMap2M:    %8lu kB\n", direct_pages_count[PG_LEVEL_2M] << 11);
 #else
@@ -122,10 +122,10 @@ void arch_report_meminfo(struct seq_file *m)
 		seq_printf(m, "DirectMap1G:    %8lu kB\n", direct_pages_count[PG_LEVEL_1G] << 20);
 }
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_X86_CPA_STATISTICS    /*  */
+#ifdef CONFIG_X86_CPA_STATISTICS
 
 static unsigned long cpa_1g_checked;
 static unsigned long cpa_1g_sameprot;
@@ -196,9 +196,9 @@ static int __init cpa_stats_init(void)
 			    &cpastats_fops);
 	return 0;
 }
-late_initcall(cpa_stats_init);  /*  */
+late_initcall(cpa_stats_init);
 #else
-/*  */
+
 #endif
 
 
@@ -237,7 +237,7 @@ static bool __cpa_pfn_in_highmap(unsigned long pfn)
 }
 
 #else
-/*  */
+
 #endif
 
 /*
@@ -409,7 +409,7 @@ static pgprotval_t protect_pci_bios(unsigned long spfn, unsigned long epfn)
 	return 0;
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -486,7 +486,7 @@ static pgprotval_t protect_kernel_text_ro(unsigned long start,
 	return 0;
 }
 #else
-/*  */
+
 #endif
 
 static inline bool conflicts(pgprot_t prot, pgprotval_t val)
@@ -566,7 +566,7 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long start,
 /*
  * Lookup the page table entry for a virtual address in a specific pgd.
  * Return a pointer to the entry and the level of the mapping.
- */ /*  */
+ */
 pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address,
 			     unsigned int *level)
 {
@@ -1955,7 +1955,7 @@ int set_memory_4k(unsigned long addr, int numpages)
 					__pgprot(0), 1, 0, NULL);
 }
 
-int set_memory_nonglobal(unsigned long addr, int numpages)  /*  */
+int set_memory_nonglobal(unsigned long addr, int numpages)
 {
 	return change_page_attr_clear(&addr, numpages,
 				      __pgprot(_PAGE_GLOBAL), 0);

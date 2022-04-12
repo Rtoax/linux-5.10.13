@@ -487,7 +487,7 @@ static void __exit microcode_dev_exit(void)
 	misc_deregister(&microcode_dev);
 }
 #else
-/*  */
+
 #endif
 
 /* fake device for request_firmware */
@@ -914,4 +914,4 @@ int __init microcode_init(void)
 
 }
 fs_initcall(save_microcode_in_initrd);
-late_initcall(microcode_init);  /*  */
+late_initcall(microcode_init);

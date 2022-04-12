@@ -241,4 +241,4 @@ static int __init init_percpu_stats_debugfs(void)
 	return 0;
 }
 
-late_initcall(init_percpu_stats_debugfs);   /*  */
+late_initcall(init_percpu_stats_debugfs);

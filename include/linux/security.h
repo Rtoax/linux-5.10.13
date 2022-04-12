@@ -457,7 +457,7 @@ int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen);
 int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen);
 int security_locked_down(enum lockdown_reason what);
 #else /* CONFIG_SECURITY */
-/*  */
+
 #endif	/* CONFIG_SECURITY */
 
 #if defined(CONFIG_SECURITY) && defined(CONFIG_WATCH_QUEUE)
@@ -465,13 +465,13 @@ int security_post_notification(const struct cred *w_cred,
 			       const struct cred *cred,
 			       struct watch_notification *n);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_SECURITY) && defined(CONFIG_KEY_NOTIFICATIONS)
 int security_watch_key(struct key *key);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_SECURITY_NETWORK
@@ -526,7 +526,7 @@ void security_sctp_sk_clone(struct sctp_endpoint *ep, struct sock *sk,
 			    struct sock *newsk);
 
 #else	/* CONFIG_SECURITY_NETWORK */
-/*  */
+
 #endif	/* CONFIG_SECURITY_NETWORK */
 
 #ifdef CONFIG_SECURITY_INFINIBAND
@@ -535,7 +535,7 @@ int security_ib_endport_manage_subnet(void *sec, const char *name, u8 port_num);
 int security_ib_alloc_security(void **sec);
 void security_ib_free_security(void *sec);
 #else	/* CONFIG_SECURITY_INFINIBAND */
-/*  */
+
 #endif	/* CONFIG_SECURITY_INFINIBAND */
 
 #ifdef CONFIG_SECURITY_NETWORK_XFRM
@@ -558,7 +558,7 @@ int security_xfrm_decode_session(struct sk_buff *skb, u32 *secid);
 void security_skb_classify_flow(struct sk_buff *skb, struct flowi *fl);
 
 #else	/* CONFIG_SECURITY_NETWORK_XFRM */
-/*  */
+
 #endif	/* CONFIG_SECURITY_NETWORK_XFRM */
 
 #ifdef CONFIG_SECURITY_PATH
@@ -579,7 +579,7 @@ int security_path_chmod(const struct path *path, umode_t mode);
 int security_path_chown(const struct path *path, kuid_t uid, kgid_t gid);
 int security_path_chroot(const struct path *path);
 #else	/* CONFIG_SECURITY_PATH */
-/*  */
+
 #endif	/* CONFIG_SECURITY_PATH */
 
 #ifdef CONFIG_KEYS
@@ -592,7 +592,7 @@ int security_key_permission(key_ref_t key_ref, const struct cred *cred,
 int security_key_getsecurity(struct key *key, char **_buffer);
 
 #else
-/*  */
+
 #endif
 #endif /* CONFIG_KEYS */
 
@@ -604,7 +604,7 @@ int security_audit_rule_match(u32 secid, u32 field, u32 op, void *lsmrule);
 void security_audit_rule_free(void *lsmrule);
 
 #else
-/*  */
+
 #endif /* CONFIG_SECURITY */
 #endif /* CONFIG_AUDIT */
 
@@ -621,7 +621,7 @@ struct dentry *securityfs_create_symlink(const char *name,
 extern void securityfs_remove(struct dentry *dentry);
 
 #else /* CONFIG_SECURITYFS */
-/*  */
+
 #endif
 
 #ifdef CONFIG_BPF_SYSCALL
@@ -638,7 +638,7 @@ extern void security_bpf_map_free(struct bpf_map *map);
 extern int security_bpf_prog_alloc(struct bpf_prog_aux *aux);
 extern void security_bpf_prog_free(struct bpf_prog_aux *aux);
 #else
-/*  */
+
 #endif /* CONFIG_SECURITY */
 #endif /* CONFIG_BPF_SYSCALL */
 
@@ -653,7 +653,7 @@ extern void security_perf_event_free(struct perf_event *event);
 extern int security_perf_event_read(struct perf_event *event);
 extern int security_perf_event_write(struct perf_event *event);
 #else
-/*  */
+
 #endif /* CONFIG_SECURITY */
 #endif /* CONFIG_PERF_EVENTS */
 

@@ -68,7 +68,7 @@
 
 #include <trace/events/vmscan.h>
 
-struct cgroup_subsys __read_mostly memory_cgrp_subsys ;/*  */
+struct cgroup_subsys __read_mostly memory_cgrp_subsys ;
 EXPORT_SYMBOL(memory_cgrp_subsys);
 
 /**
@@ -120,7 +120,7 @@ struct mem_cgroup_tree {
 	struct mem_cgroup_tree_per_node *rb_tree_per_node[MAX_NUMNODES];
 };
 
-static struct mem_cgroup_tree __read_mostly soft_limit_tree ;/*  */
+static struct mem_cgroup_tree __read_mostly soft_limit_tree ;
 
 /* for OOM */
 struct mem_cgroup_eventfd_list {
@@ -1399,7 +1399,7 @@ struct lruvec *mem_cgroup_page_lruvec(struct page *page, struct pglist_data *pgd
 	if (!memcg)
 		memcg = root_mem_cgroup;
 
-    /*  */
+
 	mz = mem_cgroup_page_nodeinfo(memcg, page);
 
 	lruvec = &mz->lruvec;
@@ -2267,7 +2267,7 @@ static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
 				     struct mem_cgroup *root_memcg);
 
 #else
-/*  */
+
 #endif
 
 /**
@@ -3851,7 +3851,7 @@ static void memcg_free_kmem(struct mem_cgroup *memcg)
 		memcg_offline_kmem(memcg);
 }
 #else
-/*  */
+
 #endif /* CONFIG_MEMCG_KMEM */
 
 static int memcg_update_kmem_max(struct mem_cgroup *memcg,
@@ -7266,7 +7266,7 @@ static int __init mem_cgroup_init(void)
 
 	return 0;
 }
-subsys_initcall(mem_cgroup_init);   /*  */
+subsys_initcall(mem_cgroup_init);
 
 #ifdef CONFIG_MEMCG_SWAP
 static struct mem_cgroup *mem_cgroup_id_get_online(struct mem_cgroup *memcg)

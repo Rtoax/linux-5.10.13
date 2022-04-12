@@ -6,7 +6,7 @@
 #include <linux/mm.h>
 #include <asm/elf.h>
 
-static struct vm_area_struct gate_vma;/*  */
+static struct vm_area_struct gate_vma;
 
 static int __init gate_vma_init(void)
 {

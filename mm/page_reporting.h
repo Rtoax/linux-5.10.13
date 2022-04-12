@@ -16,7 +16,7 @@
 DECLARE_STATIC_KEY_FALSE(page_reporting_enabled);
 void __page_reporting_notify(void);
 
-static inline bool page_reported(struct page *page) /*  */
+static inline bool page_reported(struct page *page)
 {
 	return static_branch_unlikely(&page_reporting_enabled) &&
 	       PageReported(page);

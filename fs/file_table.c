@@ -33,12 +33,12 @@
 #include "internal.h"
 
 /* sysctl tunables... */
-struct files_stat_struct files_stat /*  */= {
+struct files_stat_struct files_stat = {
 	.max_files = NR_FILE
 };
 
 /* SLAB cache for file structures */
-static struct kmem_cache __read_mostly *filp_cachep ;/*  */
+static struct kmem_cache __read_mostly *filp_cachep ;
 
 static struct percpu_counter __cacheline_aligned_in_smp nr_files ;
 
@@ -268,7 +268,7 @@ EXPORT_SYMBOL(alloc_file_pseudo);
 /**
  *  克隆，使用同一个文件生成的 file 结构
  */
-struct file *alloc_file_clone(struct file *base, int flags, const struct file_operations *fops) /*  */
+struct file *alloc_file_clone(struct file *base, int flags, const struct file_operations *fops)
 {
     /**
      *
@@ -384,7 +384,7 @@ void fput_many(struct file *file, unsigned int refs)
 	}
 }
 
-void fput(struct file *file)    /*  */
+void fput(struct file *file)
 {
 	fput_many(file, 1);
 }
@@ -419,10 +419,10 @@ void __init files_init(void)    /* 打开的文件缓存 */
  * One file with associated inode and dcache is very roughly 1K. Per default
  * do not use more than 10% of our memory for files.
  */
-void __init files_maxfiles_init(void)   /*  */
+void __init files_maxfiles_init(void)
 {
 	unsigned long n;
-	unsigned long nr_pages = totalram_pages();  /*  */
+	unsigned long nr_pages = totalram_pages();
 	unsigned long memreserve = (nr_pages - nr_free_pages()) * 3/2;
 
 	memreserve = min(memreserve, nr_pages - 1);

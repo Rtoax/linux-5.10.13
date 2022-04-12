@@ -206,14 +206,14 @@ static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
 }
 
 #else /* !CONFIG_NUMA */
-/*  */
+
 #endif /* CONFIG_NUMA */
 #endif /* CONFIG_HAVE_ARCH_NODEDATA_EXTENSION */
 
 #ifdef CONFIG_HAVE_BOOTMEM_INFO_NODE
 extern void __init register_page_bootmem_info_node(struct pglist_data *pgdat);
 #else
-/*  */
+
 #endif
 extern void put_page_bootmem(struct page *page);
 extern void get_page_bootmem(unsigned long ingo, struct page *page,
@@ -226,7 +226,7 @@ void mem_hotplug_begin(void);
 void mem_hotplug_done(void);
 
 #else /* ! CONFIG_MEMORY_HOTPLUG */
-/*  */
+
 #endif /* ! CONFIG_MEMORY_HOTPLUG */
 
 #if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
@@ -249,7 +249,7 @@ void pgdat_resize_init(struct pglist_data *pgdat)
 	spin_lock_init(&pgdat->node_size_lock);
 }
 #else /* !(CONFIG_MEMORY_HOTPLUG || CONFIG_DEFERRED_STRUCT_PAGE_INIT) */
-/*  */
+
 #endif /* !(CONFIG_MEMORY_HOTPLUG || CONFIG_DEFERRED_STRUCT_PAGE_INIT) */
 
 #ifdef CONFIG_MEMORY_HOTREMOVE
@@ -261,7 +261,7 @@ extern void __remove_memory(int nid, u64 start, u64 size);
 extern int offline_and_remove_memory(int nid, u64 start, u64 size);
 
 #else
-/*  */
+
 #endif /* CONFIG_MEMORY_HOTREMOVE */
 
 extern void set_zone_contiguous(struct zone *zone);

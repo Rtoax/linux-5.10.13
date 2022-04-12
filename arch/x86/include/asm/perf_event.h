@@ -413,7 +413,7 @@ struct pebs_xmm {
 #ifdef CONFIG_X86_LOCAL_APIC
 extern u32 get_ibs_caps(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_PERF_EVENTS
@@ -470,7 +470,7 @@ extern void perf_get_x86_pmu_capability(struct x86_pmu_capability *cap);
 extern void perf_check_microcode(void);
 extern int x86_perf_rdpmc_index(struct perf_event *event);
 #else
-/*  */
+
 #endif
 
 extern struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr);
@@ -482,7 +482,7 @@ extern void intel_pt_handle_vmx(int on);
  extern void amd_pmu_enable_virt(void);
  extern void amd_pmu_disable_virt(void);
 #else
- /*  */
+
 #endif
 
 #define arch_perf_out_copy_user copy_from_user_nmi

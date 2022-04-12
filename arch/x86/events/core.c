@@ -1532,7 +1532,7 @@ void perf_event_print_debug(void)
 }
 
 /**
- *  
+ *
  */
 void x86_pmu_stop(struct perf_event *event, int flags)
 {
@@ -1933,7 +1933,7 @@ static void _x86_pmu_read(struct perf_event *event)
 	x86_perf_event_update(event);
 }
 
-static int __init init_hw_perf_events(void) /*  */
+static int __init init_hw_perf_events(void)
 {
 	struct x86_pmu_quirk *quirk;
 	int err;
@@ -1942,7 +1942,7 @@ static int __init init_hw_perf_events(void) /*  */
 
 	switch (boot_cpu_data.x86_vendor) {
 	case X86_VENDOR_INTEL:
-		err = intel_pmu_init(); /*  */
+		err = intel_pmu_init();
 		break;
 	case X86_VENDOR_AMD:
 		err = amd_pmu_init();
@@ -2051,13 +2051,13 @@ out:
 early_initcall(init_hw_perf_events);
 
 /**
- *  
+ *
  */
 static void x86_pmu_read(struct perf_event *event)
 {
     /**
      *  ??? 2021年8月30日18:02:21
-     *  
+     *
      */
 	static_call(x86_pmu_read)(event);
 }
@@ -2471,7 +2471,7 @@ static int x86_pmu_aux_output_match(struct perf_event *event)
 }
 
 /**
- *  
+ *
  */
 static struct pmu pmu /* 性能监控单元 */= {
 	pmu.pmu_enable		= x86_pmu_enable,
@@ -2647,7 +2647,7 @@ perf_callchain_user32(struct pt_regs *regs, struct perf_callchain_entry_ctx *ent
 	return 1;
 }
 #else
-/*  */
+
 #endif
 
 void

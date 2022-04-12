@@ -87,7 +87,7 @@ static int __init em_debug_init(void)
 }
 core_initcall(em_debug_init);
 #else /* CONFIG_DEBUG_FS */
-/*  */
+
 #endif
 
 static int em_create_perf_table(struct device *dev, struct em_perf_domain *pd,

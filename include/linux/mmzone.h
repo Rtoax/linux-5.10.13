@@ -63,7 +63,7 @@ enum migratetype {/* page 迁移类型 */
 #ifdef CONFIG_MEMORY_ISOLATION
 	MIGRATE_ISOLATE,	/* can't allocate from here */
 #endif
-	MIGRATE_TYPES   /*  */
+	MIGRATE_TYPES
 };
 
 /* In mm/page_alloc.c; keep in sync also with show_migration_types() there */
@@ -73,7 +73,7 @@ extern const char * const migratetype_names[MIGRATE_TYPES];
 #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)    /* 连续内存管理 */
 #  define is_migrate_cma_page(_page) (get_pageblock_migratetype(_page) == MIGRATE_CMA)
 #else
-/*  */
+
 #endif
 
 static inline bool is_migrate_movable(int mt)
@@ -90,7 +90,7 @@ extern int page_group_by_mobility_disabled;
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
 
 #define get_pageblock_migratetype(page)		/* 连续内存管理  */			\
-	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)/*  */
+	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)
 
 
 /**
@@ -157,7 +157,7 @@ struct zone_padding {
 } ____cacheline_internodealigned_in_smp;
 #define ZONE_PADDING(name)	struct zone_padding name;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_NUMA
@@ -177,7 +177,7 @@ enum numa_stat_item {
 	NR_VM_NUMA_STAT_ITEMS
 };
 #else
-/*  */
+
 #endif
 
 /**
@@ -381,7 +381,7 @@ struct lruvec {
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
 
-    /*  */
+
 #ifdef CONFIG_MEMCG
 	struct pglist_data *pgdat;
 #endif
@@ -408,7 +408,7 @@ enum zone_watermarks {  /* ZONE 的水位: 可用内存==水 */
 	WMARK_MIN,  /* 最低水位 */
 	WMARK_LOW,  /* 低水位 */
 	WMARK_HIGH, /* 高水位 */
-	NR_WMARK    /*  */
+	NR_WMARK
 };
 
 /*
@@ -650,7 +650,7 @@ struct zone {   /* 内存 ZONE */
      *  zone->watermark_boost 在 boost_watermark() 中被提高。
      *  zone->watermark_boost 在 balance_pgdat() 中被恢复。
      */
-	unsigned long watermark_boost;      /*  */
+	unsigned long watermark_boost;
 
 	unsigned long nr_reserved_highatomic;
 
@@ -767,7 +767,7 @@ struct zone {   /* 内存 ZONE */
 	int initialized;/* 是否初始化 */
 
 	/* Write-intensive fields used from the page allocator */
-	ZONE_PADDING(_pad1_)    /*  */
+	ZONE_PADDING(_pad1_)
 
     /**
      *  free areas of different sizes
@@ -784,7 +784,7 @@ struct zone {   /* 内存 ZONE */
      *  |MAX_ORDER-1|
      *  +-----------+
      */
-	struct free_area	free_area[MAX_ORDER];   /*  */
+	struct free_area	free_area[MAX_ORDER];
 
 	/* zone flags, see below */
 	unsigned long		flags;
@@ -1051,7 +1051,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 *
 	 * 里面是一个 zoneref 数组
 	 */
-	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];  /*  */
+	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];
 
 	int nr_zones; /* number of populated zones in this node 此节点中的人口稠密区数 */
 
@@ -1107,7 +1107,7 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	wait_queue_head_t pfmemalloc_wait;
 	struct task_struct *kswapd;	/* Protected by mem_hotplug_begin/end() */
 
-    /*  */
+
 	int kswapd_order;
 
     /**
@@ -1324,7 +1324,7 @@ static inline bool populated_zone(struct zone *zone)
 }
 
 #ifdef CONFIG_NUMA
-static inline int zone_to_nid(struct zone *zone)    /*  */
+static inline int zone_to_nid(struct zone *zone)
 {
 	return zone->node;
 }
@@ -1334,7 +1334,7 @@ static inline void zone_set_nid(struct zone *zone, int nid)
 	zone->node = nid;
 }
 #else
-/*  */
+
 #endif
 
 extern int movable_zone;
@@ -1908,7 +1908,7 @@ static inline unsigned long next_present_section_nr(unsigned long section_nr)
 
 void sparse_init(void);
 #else
-/*  */
+
 #endif /* CONFIG_SPARSEMEM */
 
 /*

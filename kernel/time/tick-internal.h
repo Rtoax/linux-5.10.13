@@ -73,11 +73,11 @@ extern int tick_broadcast_update_freq(struct clock_event_device *dev, u32 freq);
 extern struct tick_device *tick_get_broadcast_device(void);
 extern struct cpumask *tick_get_broadcast_mask(void);
 # else /* !CONFIG_GENERIC_CLOCKEVENTS_BROADCAST: */
-/*  */
+
 # endif /* !CONFIG_GENERIC_CLOCKEVENTS_BROADCAST */
 
 #else /* !GENERIC_CLOCKEVENTS: */
-/*  */
+
 #endif /* !GENERIC_CLOCKEVENTS */
 
 /* Oneshot related functions */
@@ -95,7 +95,7 @@ extern void tick_clock_notify(void);
 extern int tick_check_oneshot_change(int allow_nohz);
 extern int tick_init_highres(void);
 #else /* !CONFIG_TICK_ONESHOT: */
-/*  */
+
 #endif /* !CONFIG_TICK_ONESHOT */
 
 /* Functions related to oneshot broadcasting */
@@ -106,20 +106,20 @@ extern void tick_check_oneshot_broadcast_this_cpu(void);
 bool tick_broadcast_oneshot_available(void);
 extern struct cpumask *tick_get_broadcast_oneshot_mask(void);
 #else /* !(BROADCAST && ONESHOT): */
-/*  */
+
 #endif /* !(BROADCAST && ONESHOT) */
 
 #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_HOTPLUG_CPU)
 extern void tick_broadcast_offline(unsigned int cpu);
 #else
-/*  */
+
 #endif
 
 /* NO_HZ_FULL internal */
 #ifdef CONFIG_NO_HZ_FULL    /* no-hz 减少调度时钟中断 */
 extern void tick_nohz_init(void);
 # else
-/*  */
+
 #endif
 
 #ifdef CONFIG_NO_HZ_COMMON
@@ -129,7 +129,7 @@ extern void timers_update_nohz(void);
 extern struct static_key_false timers_migration_enabled;
 # endif
 #else /* CONFIG_NO_HZ_COMMON */
-/*  */
+
 #endif
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);

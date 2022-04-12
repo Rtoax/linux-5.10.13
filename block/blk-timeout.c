@@ -34,7 +34,7 @@ static int __init fail_io_timeout_debugfs(void)
 	return PTR_ERR_OR_ZERO(dir);
 }
 
-late_initcall(fail_io_timeout_debugfs); /*  */
+late_initcall(fail_io_timeout_debugfs);
 
 ssize_t part_timeout_show(struct device *dev, struct device_attribute *attr,
 			  char *buf)
@@ -88,7 +88,7 @@ void blk_abort_request(struct request *req)
 }
 EXPORT_SYMBOL_GPL(blk_abort_request);
 
-static unsigned long __read_mostly blk_timeout_mask ;/*  */
+static unsigned long __read_mostly blk_timeout_mask ;
 
 static int __init blk_timeout_init(void)
 {

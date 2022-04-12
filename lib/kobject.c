@@ -186,7 +186,7 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 EXPORT_SYMBOL_GPL(kobject_get_path);
 
 /* add the kobject to its kset's list */
-static void kobj_kset_join(struct kobject *kobj)    /*  */
+static void kobj_kset_join(struct kobject *kobj)
 {
 	if (!kobj->kset)
 		return;
@@ -367,7 +367,7 @@ EXPORT_SYMBOL(kobject_set_name);
  * to kobject_put(), not by a call to kfree directly to ensure that all of
  * the memory is cleaned up properly.
  *
- * 
+ *
  */
 void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 {
@@ -403,7 +403,7 @@ EXPORT_SYMBOL(kobject_init);
 
 
 /**
- *  
+ *
  */
 /*static ?  */
 int kobject_add_varg(struct kobject *kobj,
@@ -764,7 +764,7 @@ static void kobject_delayed_cleanup(struct work_struct *work)
 static void kobject_release(struct kref *kref)
 {
     /**
-     *  
+     *
      */
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
@@ -827,7 +827,7 @@ static struct kobj_type dynamic_kobj_ktype = {
  * call to kobject_put() and not kfree(), as kobject_init() has
  * already been called on this structure.
  */
-struct kobject *kobject_create(void)    /*  */
+struct kobject *kobject_create(void)
 {
 	struct kobject *kobj;
 
@@ -857,7 +857,7 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	struct kobject *kobj;
 	int retval;
 
-	kobj = kobject_create();    /*  */
+	kobj = kobject_create();
 	if (!kobj)
 		return NULL;
 
@@ -963,7 +963,7 @@ struct kobject *kset_find_obj(struct kset *kset, const char *name)
 	spin_lock(&kset->list_lock);
 
     /**
-     *  
+     *
      */
 	list_for_each_entry(k, &kset->list, entry) {
 		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {

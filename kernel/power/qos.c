@@ -421,7 +421,7 @@ static int __init cpu_latency_qos_init(void)
 
 	return ret;
 }
-late_initcall(cpu_latency_qos_init);    /*  */
+late_initcall(cpu_latency_qos_init);
 #endif /* CONFIG_CPU_IDLE */
 
 /* Definitions related to the frequency QoS below. */

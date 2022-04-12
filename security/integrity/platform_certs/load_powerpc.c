@@ -93,4 +93,4 @@ static int __init load_powerpc_certs(void)
 
 	return rc;
 }
-late_initcall(load_powerpc_certs);  /*  */
+late_initcall(load_powerpc_certs);

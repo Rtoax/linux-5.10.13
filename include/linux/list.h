@@ -42,7 +42,7 @@ extern bool __list_add_valid(struct list_head *new,
 			      struct list_head *next);
 extern bool __list_del_entry_valid(struct list_head *entry);
 #else
-/*  */
+
 #endif
 
 /*
@@ -61,7 +61,7 @@ static inline void __list_add(struct list_head *new,
 	next->prev = new;
 	new->next = next;
 	new->prev = prev;
-	WRITE_ONCE(prev->next, new);    /*  */
+	WRITE_ONCE(prev->next, new);
 }
 
 /**
@@ -135,8 +135,8 @@ static inline void __list_del_entry(struct list_head *entry)
 static inline void list_del(struct list_head *entry)
 {
 	__list_del_entry(entry);
-	entry->next = LIST_POISON1; /*  */
-	entry->prev = LIST_POISON2; /*  */
+	entry->next = LIST_POISON1;
+	entry->prev = LIST_POISON2;
 }
 
 /**
@@ -149,7 +149,7 @@ static inline void list_del(struct list_head *entry)
 static inline void list_replace(struct list_head *old,
 				struct list_head *new)
 {
-    /*  */
+
 	new->next = old->next;
 	new->next->prev = new;
 	new->prev = old->prev;
@@ -180,7 +180,7 @@ static inline void list_swap(struct list_head *entry1,
 {
 	struct list_head *pos = entry2->prev;
 
-	list_del(entry2);   /*  */
+	list_del(entry2);
 	list_replace(entry1, entry2);
 	if (pos == entry1)
 		pos = entry2;
@@ -1038,5 +1038,5 @@ static inline void list_del_range(struct list_head *begin,
  */
 #define list_for_each_from(pos, head) \
 	for (; pos != (head); pos = pos->next)
-	
+
 #endif

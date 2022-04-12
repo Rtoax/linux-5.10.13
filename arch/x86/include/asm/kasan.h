@@ -29,7 +29,7 @@
 void __init kasan_early_init(void);
 void __init kasan_init(void);
 #else
-/*  */
+
 #endif
 
 #endif

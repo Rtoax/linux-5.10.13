@@ -25,7 +25,7 @@
  * sg element.
  *
  * struct vring_virtqueue;
- * 
+ *
  */
 struct virtqueue {  /* virtio 队列 */
     /**
@@ -48,13 +48,13 @@ struct virtqueue {  /* virtio 队列 */
      *  从0开始的 索引
      */
 	unsigned int index;
-    
+
     /**
      *  期望能匹配的 元素个数
      */
 	unsigned int num_free;
     /**
-     *  要使用的 virtqueue 实现的指针。 
+     *  要使用的 virtqueue 实现的指针。
      */
 	void *priv;
 };
@@ -130,15 +130,15 @@ dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq);
  * @features: the features supported by both driver and device.
  * @priv: private pointer for the driver's use.
  *
- * 一个使用 virtio 的设备  
+ * 一个使用 virtio 的设备
  */
-struct virtio_device {  /*  */
+struct virtio_device {
     /**
      *  在 virtio bus总线上的唯一位置
      */
 	int index;
     /**
-     *  
+     *
      */
 	bool failed;
 	bool config_enabled;

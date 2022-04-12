@@ -616,4 +616,4 @@ static __init int bts_init(void)    /* Branch Tracking Store (BTS **分支跟踪
 
 	return perf_pmu_register(&bts_pmu, "intel_bts", -1);
 }
-arch_initcall(bts_init);    /*  */
+arch_initcall(bts_init);

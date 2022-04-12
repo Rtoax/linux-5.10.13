@@ -189,7 +189,7 @@ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
 bool is_hugetlb_entry_migration(pte_t pte);
 
 #else /* !CONFIG_HUGETLB_PAGE */
-/*  */
+
 #endif /* !CONFIG_HUGETLB_PAGE */
 /*
  * hugepages at page global directory. If arch support
@@ -210,7 +210,7 @@ static inline int pgd_write(pgd_t pgd)
 }
 #endif
 
-#define HUGETLB_ANON_FILE "anon_hugepage"   /*  */
+#define HUGETLB_ANON_FILE "anon_hugepage"
 
 enum {
 	/*
@@ -226,7 +226,7 @@ enum {
 };
 
 #ifdef CONFIG_HUGETLBFS
-struct hugetlbfs_sb_info {  /*  */
+struct hugetlbfs_sb_info {
 	long	max_inodes;   /* inodes allowed */
 	long	free_inodes;  /* inodes free */
 	spinlock_t	stat_lock;
@@ -274,7 +274,7 @@ static inline struct hstate *hstate_inode(struct inode *i)  /* 从inode到 huget
 	return HUGETLBFS_SB(i->i_sb)->hstate;
 }
 #else /* !CONFIG_HUGETLBFS */
-/*  */
+
 #endif /* !CONFIG_HUGETLBFS */
 
 #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
@@ -355,7 +355,7 @@ static inline struct hstate *hstate_sizelog(int page_size_log)
 	return size_to_hstate(1UL << page_size_log);
 }
 
-static inline struct hstate *hstate_vma(struct vm_area_struct *vma) /*  */
+static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
 {
 	return hstate_file(vma->vm_file);   /* 如果是大页，一定有文件 */
 }
@@ -467,7 +467,7 @@ static inline bool arch_hugetlb_migration_supported(struct hstate *h)
 }
 #endif
 #else
-/*  */
+
 #endif
 
 static inline bool hugepage_migration_supported(struct hstate *h)
@@ -579,7 +579,7 @@ static inline void huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
 #endif
 
 #else	/* CONFIG_HUGETLB_PAGE */
-/*  */
+
 #endif	/* CONFIG_HUGETLB_PAGE */
 
 static inline spinlock_t *huge_pte_lock(struct hstate *h,
@@ -596,7 +596,7 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
 extern void __init hugetlb_cma_reserve(int order);
 extern void __init hugetlb_cma_check(void);
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_HUGETLB_H */

@@ -194,7 +194,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 }
 
 #else
-/*  */
+
 #endif
 
 #ifndef SYSCALL_DEFINE0
@@ -212,58 +212,58 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 /* SYSCALL_DEFINE0(rtoax0) 将展开为 */
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
-static const char *types__rtoax0[] = {			
-};							
+static const char *types__rtoax0[] = {
+};
 static const char *args__rtoax0[] = {
-};							
+};
 
-static struct syscall_metadata __syscall_meta__rtoax0;      
+static struct syscall_metadata __syscall_meta__rtoax0;
 static struct trace_event_call __used event_enter__rtoax0 = {/* 系统调用进入 */
-    event_enter__rtoax0.class        = &event_class_syscall_enter,   
-    {                           
-        event_enter__rtoax0.name     = "sys_enter_rtoax0",    
-    },                          
-    event_enter__rtoax0.event.funcs  = &enter_syscall_print_funcs,   
+    event_enter__rtoax0.class        = &event_class_syscall_enter,
+    {
+        event_enter__rtoax0.name     = "sys_enter_rtoax0",
+    },
+    event_enter__rtoax0.event.funcs  = &enter_syscall_print_funcs,
     event_enter__rtoax0.data         = (void *)&__syscall_meta__rtoax0,
-    event_enter__rtoax0.flags        = TRACE_EVENT_FL_CAP_ANY,   
-};                              
+    event_enter__rtoax0.flags        = TRACE_EVENT_FL_CAP_ANY,
+};
 static struct trace_event_call __used __section("_ftrace_events") *__event_enter__rtoax0 = &event_enter__rtoax0;
 
-static struct syscall_metadata __syscall_meta__rtoax0;      
+static struct syscall_metadata __syscall_meta__rtoax0;
 static struct trace_event_call __used event_exit__rtoax0 = {/* 系统调用退出 */
-    event_exit__rtoax0.class         = &event_class_syscall_exit,    
-    {                           
-        event_exit__rtoax0.name      = "sys_exit_rtoax0", 
-    },                          
-    event_exit__rtoax0.event.funcs   = &exit_syscall_print_funcs,    
+    event_exit__rtoax0.class         = &event_class_syscall_exit,
+    {
+        event_exit__rtoax0.name      = "sys_exit_rtoax0",
+    },
+    event_exit__rtoax0.event.funcs   = &exit_syscall_print_funcs,
     event_exit__rtoax0.data          = (void *)&__syscall_meta__rtoax0,
-    event_exit__rtoax0.flags         = TRACE_EVENT_FL_CAP_ANY,  
-};                              
+    event_exit__rtoax0.flags         = TRACE_EVENT_FL_CAP_ANY,
+};
 static struct trace_event_call __used __section("_ftrace_events") *__event_exit__rtoax0 = &event_exit__rtoax0;
 
-static struct syscall_metadata __used __syscall_meta__rtoax0 = {				
-    __syscall_meta__rtoax0.name 		    = "sys_rtoax0",			
-    __syscall_meta__rtoax0.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls() */	
-    __syscall_meta__rtoax0.nb_args 	    = 0,				
-    __syscall_meta__rtoax0.types		    = 0 ? types__rtoax0 : NULL,	
-    __syscall_meta__rtoax0.args		    = 0 ? args__rtoax0 : NULL,	
-    __syscall_meta__rtoax0.enter_event	= &event_enter__rtoax0,		
-    __syscall_meta__rtoax0.exit_event	= &event_exit__rtoax0,		
-    __syscall_meta__rtoax0.enter_fields	= LIST_HEAD_INIT(__syscall_meta__rtoax0.enter_fields), 
-};							
+static struct syscall_metadata __used __syscall_meta__rtoax0 = {
+    __syscall_meta__rtoax0.name 		    = "sys_rtoax0",
+    __syscall_meta__rtoax0.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls() */
+    __syscall_meta__rtoax0.nb_args 	    = 0,
+    __syscall_meta__rtoax0.types		    = 0 ? types__rtoax0 : NULL,
+    __syscall_meta__rtoax0.args		    = 0 ? args__rtoax0 : NULL,
+    __syscall_meta__rtoax0.enter_event	= &event_enter__rtoax0,
+    __syscall_meta__rtoax0.exit_event	= &event_exit__rtoax0,
+    __syscall_meta__rtoax0.enter_fields	= LIST_HEAD_INIT(__syscall_meta__rtoax0.enter_fields),
+};
 static struct syscall_metadata __used __section("__syscalls_metadata") *__p_syscall_meta__rtoax0 = &__syscall_meta__rtoax0;
-//. = ALIGN(8); 
-//__start_syscalls_metadata = .; 
-//KEEP(*(__syscalls_metadata)) 
-//__stop_syscalls_metadata = .; 
+//. = ALIGN(8);
+//__start_syscalls_metadata = .;
+//KEEP(*(__syscalls_metadata))
+//__stop_syscalls_metadata = .;
 
 
 asmlinkage long sys_rtoax0(void);
 
 #ifdef CONFIG_FUNCTION_ERROR_INJECTION
-static struct error_injection_entry __used __section("_error_injection_whitelist") _eil_addr_sys_rtoax0 = {						
-		_eil_addr_sys_rtoax0.addr = (unsigned long)sys_rtoax0,				
-		_eil_addr_sys_rtoax0.etype = EI_ETYPE_ERRNO,				
+static struct error_injection_entry __used __section("_error_injection_whitelist") _eil_addr_sys_rtoax0 = {
+		_eil_addr_sys_rtoax0.addr = (unsigned long)sys_rtoax0,
+		_eil_addr_sys_rtoax0.etype = EI_ETYPE_ERRNO,
 	};
 #endif
 
@@ -304,71 +304,71 @@ asmlinkage long sys_rtoax0(void)
 //SYSCALL_DEFINEx(1, _rtoax1, int, fd)
 //SYSCALL_METADATA(_rtoax1, 1, int, fd)
 
-static const char *types__rtoax1[] = {			
+static const char *types__rtoax1[] = {
     "int"
-};							
-static const char *args__rtoax1[] = {			
-    "fd"	
-};							
+};
+static const char *args__rtoax1[] = {
+    "fd"
+};
 
-static struct syscall_metadata __syscall_meta__rtoax1;      
+static struct syscall_metadata __syscall_meta__rtoax1;
 static struct trace_event_call __used event_enter__rtoax1 = {/* 系统调用进入 */
-    event_enter__rtoax1.class        = &event_class_syscall_enter,   
-    {                           
-        event_enter__rtoax1.name     = "sys_enter_rtoax1",    
-    },                          
-    event_enter__rtoax1.event.funcs  = &enter_syscall_print_funcs,   
+    event_enter__rtoax1.class        = &event_class_syscall_enter,
+    {
+        event_enter__rtoax1.name     = "sys_enter_rtoax1",
+    },
+    event_enter__rtoax1.event.funcs  = &enter_syscall_print_funcs,
     event_enter__rtoax1.data         = (void *)&__syscall_meta__rtoax1,
-    event_enter__rtoax1.flags        = TRACE_EVENT_FL_CAP_ANY,   
-};                              
+    event_enter__rtoax1.flags        = TRACE_EVENT_FL_CAP_ANY,
+};
 static struct trace_event_call __used __section("_ftrace_events") *__event_enter__rtoax1 = &event_enter__rtoax1;
 
-static struct syscall_metadata __syscall_meta__rtoax1;      
+static struct syscall_metadata __syscall_meta__rtoax1;
 static struct trace_event_call __used event_exit__rtoax1 = {/* 系统调用退出 */
-    event_exit__rtoax1.class         = &event_class_syscall_exit,    
-    {                           
-        event_exit__rtoax1.name      = "sys_exit_rtoax1", 
-    },                          
-    event_exit__rtoax1.event.funcs   = &exit_syscall_print_funcs,    
+    event_exit__rtoax1.class         = &event_class_syscall_exit,
+    {
+        event_exit__rtoax1.name      = "sys_exit_rtoax1",
+    },
+    event_exit__rtoax1.event.funcs   = &exit_syscall_print_funcs,
     event_exit__rtoax1.data          = (void *)&__syscall_meta__rtoax1,
-    event_exit__rtoax1.flags         = TRACE_EVENT_FL_CAP_ANY,  
-};                              
+    event_exit__rtoax1.flags         = TRACE_EVENT_FL_CAP_ANY,
+};
 static struct trace_event_call __used __section("_ftrace_events") *__event_exit__rtoax1 = &event_exit__rtoax1;
 
-static struct syscall_metadata __used __syscall_meta__rtoax1 = {				
-	__syscall_meta__rtoax1.name 		= "sys_rtoax1",			
-	__syscall_meta__rtoax1.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls()*/	
-	__syscall_meta__rtoax1.nb_args 	= 1,				
-	__syscall_meta__rtoax1.types		= 1 ? types__rtoax1 : NULL,	
-	__syscall_meta__rtoax1.args		= 1 ? args__rtoax1 : NULL,	
-	__syscall_meta__rtoax1.enter_event	= &event_enter__rtoax1,		
-	__syscall_meta__rtoax1.exit_event	= &event_exit__rtoax1,		
-	__syscall_meta__rtoax1.enter_fields	= LIST_HEAD_INIT(__syscall_meta__rtoax1.enter_fields), 
-};							
+static struct syscall_metadata __used __syscall_meta__rtoax1 = {
+	__syscall_meta__rtoax1.name 		= "sys_rtoax1",
+	__syscall_meta__rtoax1.syscall_nr	= -1,	/* Filled in at boot -> init_ftrace_syscalls()*/
+	__syscall_meta__rtoax1.nb_args 	= 1,
+	__syscall_meta__rtoax1.types		= 1 ? types__rtoax1 : NULL,
+	__syscall_meta__rtoax1.args		= 1 ? args__rtoax1 : NULL,
+	__syscall_meta__rtoax1.enter_event	= &event_enter__rtoax1,
+	__syscall_meta__rtoax1.exit_event	= &event_exit__rtoax1,
+	__syscall_meta__rtoax1.enter_fields	= LIST_HEAD_INIT(__syscall_meta__rtoax1.enter_fields),
+};
 static struct syscall_metadata __used __section("__syscalls_metadata") *__p_syscall_meta__rtoax1 = &__syscall_meta__rtoax1;
 
 
 _Pragma("GCC diagnostic push");
 __diag_GCC_8(__diag_GCC_ignore "-Wattribute-alias");
 
-asmlinkage long sys_rtoax1(int fd)  __attribute__((alias("__se_sys_rtoax1")));    
+asmlinkage long sys_rtoax1(int fd)  __attribute__((alias("__se_sys_rtoax1")));
 
 #ifdef CONFIG_FUNCTION_ERROR_INJECTION
-static struct error_injection_entry __used __section("_error_injection_whitelist") _eil_addr_sys_rtoax1 = {						
-		_eil_addr_sys_rtoax1.addr = (unsigned long)sys_rtoax1,				
-		_eil_addr_sys_rtoax1.etype = EI_ETYPE_ERRNO,				
+static struct error_injection_entry __used __section("_error_injection_whitelist") _eil_addr_sys_rtoax1 = {
+		_eil_addr_sys_rtoax1.addr = (unsigned long)sys_rtoax1,
+		_eil_addr_sys_rtoax1.etype = EI_ETYPE_ERRNO,
 	};
 #endif
 
 static inline long __do_sys_rtoax1(int fd);
-asmlinkage long __se_sys_rtoax1(long fd); 
-asmlinkage long __se_sys_rtoax1(long fd)  
-{                               
+asmlinkage long __se_sys_rtoax1(long fd);
+asmlinkage long __se_sys_rtoax1(long fd)
+{
     long ret = __do_sys_rtoax1((__force int)fd);
-//    __MAP(x,__SC_TEST,__VA_ARGS__);             
-//    __PROTECT(x, ret,__MAP(x,__SC_ARGS,__VA_ARGS__));   
-    return ret;                     
-}                               
+//    __MAP(x,__SC_TEST,__VA_ARGS__);
+//    __PROTECT(x, ret,__MAP(x,__SC_ARGS,__VA_ARGS__));
+    return ret;
+}
 _Pragma("GCC diagnostic pop");
 static inline long __do_sys_rtoax1(int fd)
 {
@@ -1390,8 +1390,8 @@ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *r
 asmlinkage long sys_ipc(unsigned int call, int first, unsigned long second,
 		unsigned long third, void __user *ptr, long fifth);
 
-/* obsolete: mm/ 
-void *mmap(void *addr, size_t length, 
+/* obsolete: mm/
+void *mmap(void *addr, size_t length,
             int prot, int flags,
             int fd, off_t offset);
         */
@@ -1431,7 +1431,7 @@ int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len);
 #ifdef CONFIG_ADVISE_SYSCALLS
 int ksys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice);
 #else
-/*  */
+
 #endif
 unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,

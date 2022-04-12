@@ -446,7 +446,7 @@ _DEFINE_PRINTKRB(printk_rb_static, CONFIG_LOG_BUF_SHIFT - PRB_AVGBITS, PRB_AVGBI
 static struct printk_ringbuffer printk_rb_dynamic;
 
 /**
- *  
+ *
  */
 static struct printk_ringbuffer *prb = &printk_rb_static;
 
@@ -455,7 +455,7 @@ static struct printk_ringbuffer *prb = &printk_rb_static;
  * per_cpu_areas are initialised. This variable is set to true when
  * it's safe to access per-CPU data.
  */
-static bool __read_mostly __printk_percpu_data_ready ;/*  */
+static bool __read_mostly __printk_percpu_data_ready ;
 
 bool printk_percpu_data_ready(void)
 {
@@ -538,7 +538,7 @@ static int log_store(u32 caller_id, int facility, int level,
 		memcpy(&r.text_buf[text_len], trunc_msg, trunc_msg_len);
 
     /**
-     *  
+     *
      */
 	r.info->text_len = text_len + trunc_msg_len;
 	r.info->facility = facility;
@@ -1097,11 +1097,11 @@ static void __init log_buf_add_cpu(void)//increase size of the buffer for every 
 //static inline void log_buf_add_cpu(void) {}
 #endif /* CONFIG_SMP */
 
-static void __init set_percpu_data_ready(void)  /*  */
+static void __init set_percpu_data_ready(void)
 {
-	printk_safe_init(); /*  */
+	printk_safe_init();
 	/* Make sure we set this flag only after printk_safe() init is done */
-	barrier();  /*  */
+	barrier();
 	__printk_percpu_data_ready = true;
 }
 
@@ -1133,13 +1133,13 @@ static unsigned int __init add_to_rb(struct printk_ringbuffer *rb,
 static char __initdata setup_text_buf[LOG_LINE_MAX] ;
 
 /*
-    The `setup_log_buf` function setups kernel cyclic buffer and its length depends on 
-    the `CONFIG_LOG_BUF_SHIFT` configuration option. As we can read from the documentation 
-    of the `CONFIG_LOG_BUF_SHIFT` it can be between `12` and `21`. 
+    The `setup_log_buf` function setups kernel cyclic buffer and its length depends on
+    the `CONFIG_LOG_BUF_SHIFT` configuration option. As we can read from the documentation
+    of the `CONFIG_LOG_BUF_SHIFT` it can be between `12` and `21`.
 
-    setups the [printk] log buffer 
+    setups the [printk] log buffer
 */
-void __init setup_log_buf(int early)    /*  */
+void __init setup_log_buf(int early)
 {
 	struct printk_info *new_infos;
 	unsigned int new_descs_count;
@@ -1961,7 +1961,7 @@ static inline u32 printk_caller_id(void)
 }
 
 /**
- *  
+ *
  */
 static size_t log_output(int facility, int level, enum log_flags lflags,
 			 const struct dev_printk_info *dev_info,
@@ -1988,7 +1988,7 @@ static size_t log_output(int facility, int level, enum log_flags lflags,
 	}
 
     /**
-     *  
+     *
      */
 	/* Store it in the record log */
 	return log_store(caller_id, facility, level, lflags, 0,
@@ -1996,7 +1996,7 @@ static size_t log_output(int facility, int level, enum log_flags lflags,
 }
 
 /**
- *  
+ *
  */
 /* Must be called under logbuf_lock. */
 int vprintk_store(int facility, int level,
@@ -2055,7 +2055,7 @@ int vprintk_store(int facility, int level,
 }
 
 /**
- *  
+ *
  */
 asmlinkage int vprintk_emit(int facility, int level,
 			    const struct dev_printk_info *dev_info,
@@ -2116,7 +2116,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 EXPORT_SYMBOL(vprintk);
 
 /**
- *  
+ *
  */
 int vprintk_default(const char *fmt, va_list args)
 {
@@ -2164,7 +2164,7 @@ asmlinkage __visible int printk(const char *fmt, ...)
 EXPORT_SYMBOL(printk);
 
 #else /* CONFIG_PRINTK */
-/*  */
+
 #endif /* CONFIG_PRINTK */
 
 #ifdef CONFIG_EARLY_PRINTK
@@ -3052,7 +3052,7 @@ static int __init printk_late_init(void)
 	WARN_ON(ret < 0);
 	return 0;
 }
-late_initcall(printk_late_init);    /*  */
+late_initcall(printk_late_init);
 
 #if defined CONFIG_PRINTK
 /*

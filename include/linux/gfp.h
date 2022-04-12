@@ -56,7 +56,7 @@ struct vm_area_struct;
 /**
  *  该标志请求分配发生在可进程 DMA 的内存区段中
  */
-#define __GFP_DMA	((__force gfp_t)___GFP_DMA) /*  */
+#define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 /**
  *  分配的内存可位于高端内存
  */
@@ -94,7 +94,7 @@ struct vm_area_struct;
  */
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE/* 0x10 */)   /* 可回收 */
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
-#define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)   /*  */
+#define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT) /* memory control */
 
@@ -553,7 +553,7 @@ static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
 	if (unlikely(flags & __GFP_THISNODE))
 		return ZONELIST_NOFALLBACK;
 #endif
-	return ZONELIST_FALLBACK;   /*  */
+	return ZONELIST_FALLBACK;
 }
 
 /*
@@ -567,7 +567,7 @@ static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
  */
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
-	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);    /*  */
+	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
 }
 
 #ifndef HAVE_ARCH_FREE_PAGE
@@ -634,7 +634,7 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned in
 	return __alloc_pages_node(nid, gfp_mask, order);
 }
 
-#ifdef CONFIG_NUMA/*  */
+#ifdef CONFIG_NUMA
 extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
 
 /**
@@ -646,7 +646,7 @@ alloc_pages(gfp_t gfp_mask, unsigned int order)/* 分配 pages */
     /**
      *
      */
-	return alloc_pages_current(gfp_mask, order);    /*  */
+	return alloc_pages_current(gfp_mask, order);
 }
 
 /**

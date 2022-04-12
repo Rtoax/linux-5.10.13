@@ -138,7 +138,7 @@ void kcsan_end_scoped_access(struct kcsan_scoped_access *sa);
 
 
 #else /* CONFIG_KCSAN */
-/*  */
+
 #endif /* CONFIG_KCSAN */
 
 #ifdef __SANITIZE_THREAD__

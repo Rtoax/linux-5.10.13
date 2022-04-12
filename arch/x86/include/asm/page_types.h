@@ -7,9 +7,9 @@
 #include <linux/mem_encrypt.h>
 
 /* PAGE_SHIFT determines the page size */
-#define PAGE_SHIFT      /*  */	12  
+#define PAGE_SHIFT      	12
 #define PAGE_SIZE       /* 0x0000 0000 0000 1000 = 4096 */	(_AC(1,UL) << PAGE_SHIFT)
-#define PAGE_MASK       /* 0xffff ffff ffff f000 */	(~(PAGE_SIZE/*  */-1))
+#define PAGE_MASK       /* 0xffff ffff ffff f000 */	(~(PAGE_SIZE-1))
 
 #define PMD_PAGE_SIZE   /* 0x0000 0000 0020 0000 */	(_AC(1, UL) << PMD_SHIFT/* 21 */)   /* 2兆字节 */
 #define PMD_PAGE_MASK   /* 0xffff ffff ffe0 0000 */	(~(PMD_PAGE_SIZE-1))
@@ -19,7 +19,7 @@
 
 #define __VIRTUAL_MASK  /* 0x0000 7FFF FFFF FFFF 或*/\
                         /* 0x00FF FFFF FFFF FFFF */((1UL << __VIRTUAL_MASK_SHIFT/* 47|56 */) - 1)
-                        
+
 
 /* Cast *PAGE_MASK to a signed type so that it is sign-extended if
    virtual addresses are 32-bits but physical addresses are larger
@@ -43,10 +43,10 @@
 #define __PHYSICAL_START/* 0x0000 0000 0100 0000 */	ALIGN(CONFIG_PHYSICAL_START/* 0x0000 0000 0100 0000 */, \
 				                                              CONFIG_PHYSICAL_ALIGN/* 0x200000 */)
 
-/* 0xffff ffff 8000 0000 + 
-   0x0000 0000 0100 0000 = 
+/* 0xffff ffff 8000 0000 +
+   0x0000 0000 0100 0000 =
    0xffff ffff 8100 0000   */
-#define __START_KERNEL  /* 0xffff ffff 8100 0000 */(__START_KERNEL_map + __PHYSICAL_START) 
+#define __START_KERNEL  /* 0xffff ffff 8100 0000 */(__START_KERNEL_map + __PHYSICAL_START)
 
 //Linux内核的基本物理地址- 0x1000000;
 //Linux内核的基本虚拟地址- 0xffffffff81000000
@@ -65,7 +65,7 @@
 #include <asm/page_64_types.h>
 #define IOREMAP_MAX_ORDER       (PUD_SHIFT)
 #else
-/*  */
+
 #endif	/* CONFIG_X86_64 */
 
 #ifndef __ASSEMBLY__

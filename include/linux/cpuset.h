@@ -37,7 +37,7 @@ extern struct static_key_false cpusets_enabled_key;
 /**
  *
  */
-static inline bool cpusets_enabled(void)    /*  */
+static inline bool cpusets_enabled(void)
 {
 	return static_branch_unlikely(&cpusets_enabled_key);
 }
@@ -171,7 +171,7 @@ static inline void set_mems_allowed(nodemask_t nodemask)
 }
 
 #else /* !CONFIG_CPUSETS */
-/*  */
+
 #endif /* !CONFIG_CPUSETS */
 
 #endif /* _LINUX_CPUSET_H */

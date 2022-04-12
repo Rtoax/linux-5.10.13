@@ -214,7 +214,7 @@ EXPORT_SYMBOL_GPL(rcu_inkernel_boot_has_ended);
  * useful just after a change in mode for these primitives, and
  * during early boot.
  */
-void rcu_test_sync_prims(void)  /*  */
+void rcu_test_sync_prims(void)
 {
 	if (!IS_ENABLED(CONFIG_PROVE_RCU))
 		return;
@@ -570,9 +570,9 @@ static int rcu_verify_early_boot_tests(void)
 
 	return ret;
 }
-late_initcall(rcu_verify_early_boot_tests); /*  */
+late_initcall(rcu_verify_early_boot_tests);
 #else
-/*  */
+
 #endif /* CONFIG_PROVE_RCU */
 
 #include "tasks.h"

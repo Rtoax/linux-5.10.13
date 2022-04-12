@@ -94,7 +94,7 @@ struct net {    /* 网络命名空间 */
 	struct ns_common	ns;
 
 	struct list_head 	dev_base_head;
-	struct proc_dir_entry 	*proc_net;  /*  */
+	struct proc_dir_entry 	*proc_net;
 	struct proc_dir_entry 	*proc_net_stat;
 
 #ifdef CONFIG_SYSCTL
@@ -126,7 +126,7 @@ struct net {    /* 网络命名空间 */
 	struct netns_unix	unx;
 	struct netns_nexthop	nexthop;
 	struct netns_ipv4	ipv4;
-#if IS_ENABLED(CONFIG_IPV6) /*  */
+#if IS_ENABLED(CONFIG_IPV6)
 	struct netns_ipv6	ipv6;
 #endif
 #if IS_ENABLED(CONFIG_IEEE802154_6LOWPAN)
@@ -283,7 +283,7 @@ static inline int check_net(const struct net *net)
 void net_drop_ns(void *);
 
 #else
-/*  */
+
 #endif
 
 
@@ -323,7 +323,7 @@ static inline struct net *read_pnet(const possible_net_t *pnet)
 #define __net_initdata
 #define __net_initconst
 #else
-/*  */
+
 #endif
 
 int peernet2id_alloc(struct net *net, struct net *peer, gfp_t gfp);
@@ -335,7 +335,7 @@ struct net *get_net_ns_by_id(const struct net *net, int id);
  *  pernet_operations包含init和exit函数，
  *  init函数在创建netnamespace时调用，exit在销毁netnamespace时调用
  */
-struct pernet_operations {  /*  */
+struct pernet_operations {
 	struct list_head list;
 	/*
 	 * Below methods are called without any exclusive locks.
@@ -363,7 +363,7 @@ struct pernet_operations {  /*  */
 	void (*pre_exit)(struct net *net);
 	void (*exit)(struct net *net);
 	void (*exit_batch)(struct list_head *net_exit_list);
-    
+
 	unsigned int *id;
 	size_t size;
 };
@@ -401,7 +401,7 @@ struct ctl_table_header *register_net_sysctl(struct net *net, const char *path,
 					     struct ctl_table *table);
 void unregister_net_sysctl_table(struct ctl_table_header *header);
 #else
-/*  */
+
 #endif
 
 static inline int rt_genid_ipv4(const struct net *net)

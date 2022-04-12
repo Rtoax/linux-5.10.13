@@ -142,7 +142,7 @@ static void release_memory_resource(struct resource *res)
 
 #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
 /**
- *  
+ *
  */
 void get_page_bootmem(unsigned long info,  struct page *page, unsigned long type)
 {
@@ -231,7 +231,7 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
 	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
 
     /**
-     *  
+     *
      */
 	register_page_bootmem_memmap(section_nr, memmap, PAGES_PER_SECTION/*x86-64=0x8000; arm64=0x40000*/);
 
@@ -246,7 +246,7 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
 	page = virt_to_page(usage);
 
     /**
-     *  
+     *
      */
 	mapsize = PAGE_ALIGN(mem_section_usage_size()) >> PAGE_SHIFT;
 
@@ -259,9 +259,9 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
 #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
 
 /**
- *  
+ *
  */
-void __init register_page_bootmem_info_node(struct pglist_data *pgdat)/*  */
+void __init register_page_bootmem_info_node(struct pglist_data *pgdat)
 {
 	unsigned long i, pfn, end_pfn, nr_pages;
 	int node = pgdat->node_id;
@@ -472,7 +472,7 @@ static void shrink_zone_span(struct zone *zone, unsigned long start_pfn,
 }
 
 /**
- *  
+ *
  */
 static void update_pgdat_span(struct pglist_data *pgdat)
 {
@@ -480,10 +480,10 @@ static void update_pgdat_span(struct pglist_data *pgdat)
 	struct zone *zone;
 
     /**
-     *  
+     *
      */
 	for (zone = pgdat->node_zones; zone < pgdat->node_zones + MAX_NR_ZONES; zone++) {
-        
+
 		unsigned long zone_end_pfn = zone->zone_start_pfn + zone->spanned_pages;
 
 		/* No need to lock the zones, they can't change. */
@@ -547,7 +547,7 @@ void __ref remove_pfn_range_from_zone(struct zone *zone,
 }
 
 /**
- *  
+ *
  */
 static void __remove_section(unsigned long pfn, unsigned long nr_pages,
 			     unsigned long map_offset,
@@ -784,7 +784,7 @@ static struct zone *default_kernel_zone_for_pfn(int nid, unsigned long start_pfn
 			return zone;
 	}
     /**
-     *  
+     *
      */
 	return &pgdat->node_zones[ZONE_NORMAL];
 }
@@ -796,7 +796,7 @@ static inline struct zone *default_zone_for_pfn(int nid, unsigned long start_pfn
 	struct zone *movable_zone = &NODE_DATA(nid)->node_zones[ZONE_MOVABLE];
 
     /**
-     *  
+     *
      */
 	bool in_kernel = zone_intersects(kernel_zone, start_pfn, nr_pages);
 	bool in_movable = zone_intersects(movable_zone, start_pfn, nr_pages);
@@ -829,7 +829,7 @@ struct zone * zone_for_pfn_range(int online_type, int nid, unsigned start_pfn,
 }
 
 /**
- *  
+ *
  */
 int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
 		       int online_type, int nid)
@@ -907,7 +907,7 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
      *  启动
      */
 	kswapd_run(nid);
-	kcompactd_run(nid); /*  */
+	kcompactd_run(nid);
 
 	writeback_set_ratelimit();
 
@@ -1042,7 +1042,7 @@ out:
 
 /*
  * Users of this function always want to online/register the node
- */ /*  */
+ */
 int try_online_node(int nid)
 {
 	int ret;
@@ -1457,7 +1457,7 @@ static void node_states_check_changes_offline(unsigned long nr_pages,
 		present_pages += pgdat->node_zones[zt].present_pages;
 
     /**
-     *  
+     *
      */
 	if (zone_idx(zone) <= ZONE_NORMAL && nr_pages >= present_pages)
 		arg->status_change_nid_normal = zone_to_nid(zone);
@@ -1663,11 +1663,11 @@ int __ref offline_pages(unsigned long start_pfn, unsigned long nr_pages)
 	node_states_clear_node(node, &arg);
 	if (arg.status_change_nid >= 0) {
         /**
-         *  
+         *
          */
 		kswapd_stop(node);
         /**
-         *  
+         *
          */
 		kcompactd_stop(node);
 	}

@@ -74,7 +74,7 @@ enum hugetlb_param {
 	Opt_uid,
 };
 
-static const struct fs_parameter_spec hugetlb_fs_parameters[] = {   /*  */
+static const struct fs_parameter_spec hugetlb_fs_parameters[] = {
 	fsparam_u32   ("gid",		Opt_gid),
 	fsparam_string("min_size",	Opt_min_size),
 	fsparam_u32   ("mode",		Opt_mode),
@@ -98,7 +98,7 @@ static inline void hugetlb_drop_vma_policy(struct vm_area_struct *vma)
 	mpol_cond_put(vma->vm_policy);
 }
 #else
-/*  */
+
 #endif
 
 static void huge_pagevec_release(struct pagevec *pvec)
@@ -1155,7 +1155,7 @@ static void init_once(void *foo)
 }
 
 /**
- *  
+ *
  */
 const struct file_operations hugetlbfs_file_operations = {  /* 大页内存 hugetlbfs 文件操作符 */
 	hugetlbfs_file_operations.read_iter		= hugetlbfs_read_iter,
@@ -1167,7 +1167,7 @@ const struct file_operations hugetlbfs_file_operations = {  /* 大页内存 huge
 };
 
 /**
- *  
+ *
  */
 static const struct inode_operations hugetlbfs_dir_inode_operations = {
 	hugetlbfs_dir_inode_operations.create		= hugetlbfs_create,
@@ -1184,14 +1184,14 @@ static const struct inode_operations hugetlbfs_dir_inode_operations = {
 };
 
 /**
- *  
+ *
  */
 static const struct inode_operations hugetlbfs_inode_operations = {
 	hugetlbfs_inode_operations.setattr	= hugetlbfs_setattr,
 };
 
 /**
- *  
+ *
  */
 static const struct super_operations hugetlbfs_ops = {
 	hugetlbfs_ops.alloc_inode    = hugetlbfs_alloc_inode,
@@ -1454,7 +1454,7 @@ static int get_hstate_idx(int page_size_log)
 /*
  * Note that size should be aligned to proper hugepage size in caller side,
  * otherwise hugetlb_reserve_pages reserves one less hugepages than intended.
- */ /*  */
+ */
 struct file *hugetlb_file_setup(const char *name, size_t size,
 				vm_flags_t acctflag, struct user_struct **user,
 				int creat_flags, int page_size_log)
@@ -1469,7 +1469,7 @@ struct file *hugetlb_file_setup(const char *name, size_t size,
 		return ERR_PTR(-ENODEV);
 
 	*user = NULL;
-	mnt = hugetlbfs_vfsmount[hstate_idx];   /*  */
+	mnt = hugetlbfs_vfsmount[hstate_idx];
 	if (!mnt)
 		return ERR_PTR(-ENOENT);
 

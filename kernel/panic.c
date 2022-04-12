@@ -544,7 +544,7 @@ void oops_enter(void)
  */
 static u64 oops_id;
 
-static int init_oops_id(void)   /*  */
+static int init_oops_id(void)
 {
 	if (!oops_id)
 		get_random_bytes(&oops_id, sizeof(oops_id));
@@ -553,7 +553,7 @@ static int init_oops_id(void)   /*  */
 
 	return 0;
 }
-late_initcall(init_oops_id);    /*  */
+late_initcall(init_oops_id);
 
 static void print_oops_end_marker(void)
 {

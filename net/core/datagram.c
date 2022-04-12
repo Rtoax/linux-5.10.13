@@ -135,7 +135,7 @@ out_noerr:
 }
 EXPORT_SYMBOL(__skb_wait_for_more_packets);
 /**
- *  
+ *
  */
 static struct sk_buff *skb_set_peeked(struct sk_buff *skb)
 {
@@ -148,7 +148,7 @@ static struct sk_buff *skb_set_peeked(struct sk_buff *skb)
 	if (!skb_shared(skb))
 		goto done;
     /**
-     *  
+     *
      */
 	nskb = skb_clone(skb, GFP_ATOMIC);
 	if (!nskb)
@@ -168,13 +168,13 @@ done:
 	return skb;
 }
 /**
- *  
+ *
  */
-struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,  /*  */
-					  struct sk_buff_head *queue,   /*  */
-					  unsigned int flags,       /*  */
-					  int *off, int *err,       /*  */
-					  struct sk_buff **last)    /*  */
+struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,
+					  struct sk_buff_head *queue,
+					  unsigned int flags,
+					  int *off, int *err,
+					  struct sk_buff **last)
 {
 	bool peek_at_off = false;
 	struct sk_buff *skb;
@@ -198,7 +198,7 @@ struct sk_buff *__skb_try_recv_from_queue(struct sock *sk,  /*  */
 			}
 			if (!skb->len) {
                 /**
-                 *  
+                 *
                  */
 				skb = skb_set_peeked(skb);
 				if (IS_ERR(skb)) {

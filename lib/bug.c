@@ -123,7 +123,7 @@ void module_bug_cleanup(struct module *mod)
 }
 
 #else
-/*  */
+
 #endif
 
 struct bug_entry *find_bug(unsigned long bugaddr)

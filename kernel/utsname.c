@@ -15,7 +15,7 @@
 #include <linux/proc_ns.h>
 #include <linux/sched/task.h>
 
-static struct kmem_cache __ro_after_init *uts_ns_cache ;/*  */
+static struct kmem_cache __ro_after_init *uts_ns_cache ;
 
 static struct ucounts *inc_uts_namespaces(struct user_namespace *ns)
 {

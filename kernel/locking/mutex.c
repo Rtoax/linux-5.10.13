@@ -37,7 +37,7 @@
 #endif
 
 /**
- *  
+ *
  */
 void
 __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
@@ -45,7 +45,7 @@ __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 	atomic_long_set(&lock->owner, 0);
 	spin_lock_init(&lock->wait_lock);
 	INIT_LIST_HEAD(&lock->wait_list);
-    
+
 #ifdef CONFIG_MUTEX_SPIN_ON_OWNER
 	osq_lock_init(&lock->osq);  ///* Spinner MCS lock 乐观自旋 */
 #endif
@@ -64,18 +64,18 @@ EXPORT_SYMBOL(__mutex_init);
  * Bit2 indicates handoff has been done and we're waiting for pickup.
  */
 /**
- *  表示等待队列里有等待者，解锁的时候必须唤醒这些等候的进程 
+ *  表示等待队列里有等待者，解锁的时候必须唤醒这些等候的进程
  */
-#define MUTEX_FLAG_WAITERS	0x01    
+#define MUTEX_FLAG_WAITERS	0x01
 /**
  *  对互斥锁的等待队列中的第一个等待者会设置这个标志位
  *  锁持有者在解锁的时候，把锁直接传递给 第一个等待者
  */
-#define MUTEX_FLAG_HANDOFF	0x02    /*  */
+#define MUTEX_FLAG_HANDOFF	0x02
 /**
  *  表示锁的传递已完成
  */
-#define MUTEX_FLAG_PICKUP	0x04    /*  */
+#define MUTEX_FLAG_PICKUP	0x04
 
 #define MUTEX_FLAGS		0x07
 
@@ -126,7 +126,7 @@ static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
      *  锁持有者
      */
 	owner = atomic_long_read(&lock->owner);
-    
+
 	for (;;) { /* must loop, can race against a flag */
 		unsigned long old, flags = __owner_flags(owner);
 		unsigned long task = owner & ~MUTEX_FLAGS;
@@ -139,7 +139,7 @@ static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
 				break;
 
 			flags &= ~MUTEX_FLAG_PICKUP;
-            
+
 		} else {
 #ifdef CONFIG_DEBUG_MUTEXES
 			DEBUG_LOCKS_WARN_ON(flags & MUTEX_FLAG_PICKUP);
@@ -194,7 +194,7 @@ static __always_inline bool __mutex_trylock_fast(struct mutex *lock)
 	unsigned long zero = 0UL;
 
     /**
-     *  
+     *
      */
 	if (atomic_long_try_cmpxchg_acquire(&lock->owner, &zero, curr))
 		return true;
@@ -704,7 +704,7 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		      const bool use_ww_ctx, struct mutex_waiter *waiter)
 {
     /**
-     *  
+     *
      */
 	if (!waiter) {
 		/*
@@ -732,7 +732,7 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 	}
 
     /**
-     *  
+     *
      */
 	for (;;) {
 		struct task_struct *owner;
@@ -824,7 +824,7 @@ void __sched mutex_unlock(struct mutex *lock)
 		return;
 #endif
     /**
-     *  慢速路径 - 
+     *  慢速路径 -
      */
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }
@@ -1138,7 +1138,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		 * wait_lock. This ensures the lock cancellation is ordered
 		 * against mutex_unlock() and wake-ups do not go missing.
 		 *
-		 * 
+		 *
 		 */
 		if (signal_pending_state(state, current)) {
 			ret = -EINTR;
@@ -1372,11 +1372,11 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	struct task_struct *next = NULL;
 
     /**
-     *  
+     *
      */
 	DEFINE_WAKE_Q(wake_q);
     struct wake_q_head wake_q = { WAKE_Q_TAIL, &wake_q.first };//+++
-    
+
 	unsigned long owner;
 
 	mutex_release(&lock->dep_map, ip);
@@ -1393,7 +1393,7 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	owner = atomic_long_read(&lock->owner);
 
     /**
-     *  
+     *
      */
 	for (;;) {
 		unsigned long old;
@@ -1446,7 +1446,7 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	}
 
     /**
-     *  
+     *
      */
 	if (owner & MUTEX_FLAG_HANDOFF)
 		__mutex_handoff(lock, next);

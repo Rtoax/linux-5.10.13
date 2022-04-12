@@ -186,7 +186,7 @@ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
 struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
 void cpufreq_cpu_put(struct cpufreq_policy *policy);
 #else
-/*  */
+
 #endif
 
 static inline bool policy_is_inactive(struct cpufreq_policy *policy)
@@ -220,7 +220,7 @@ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
 void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
 void cpufreq_disable_fast_switch(struct cpufreq_policy *policy);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_CPU_FREQ_STAT
@@ -229,7 +229,7 @@ void cpufreq_stats_free_table(struct cpufreq_policy *policy);
 void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
 				     unsigned int new_freq);
 #else
-/*  */
+
 #endif /* CONFIG_CPU_FREQ_STAT */
 
 /*********************************************************************
@@ -447,7 +447,7 @@ void cpufreq_suspend(void);
 void cpufreq_resume(void);
 int cpufreq_generic_suspend(struct cpufreq_policy *policy);
 #else
-/*  */
+
 #endif
 
 /*********************************************************************
@@ -475,7 +475,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
 		struct cpufreq_freqs *freqs, int transition_failed);
 
 #else /* CONFIG_CPU_FREQ */
-/*  */
+
 #endif /* !CONFIG_CPU_FREQ */
 
 /**
@@ -630,7 +630,7 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
 void dev_pm_opp_free_cpufreq_table(struct device *dev,
 				   struct cpufreq_frequency_table **table);
 #else
-/*  */
+
 #endif
 
 /*
@@ -944,14 +944,14 @@ static inline int cpufreq_table_count_valid_entries(const struct cpufreq_policy 
 	return count;
 }
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
 void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
 			struct cpufreq_governor *old_gov);
 #else
-/*  */
+
 #endif
 
 extern void arch_freq_prepare_all(void);

@@ -36,7 +36,7 @@ typedef void * ptr_t;
  *   @initial_ns: return the initial namespace (i.e. init_net_ns)
  *   @drop_ns: drops a reference to namespace
  */
-struct kobj_ns_type_operations {/*  */
+struct kobj_ns_type_operations {
 	enum kobj_ns_type type;
 	bool (*current_may_mount)(void);
 	ptr_t (*grab_current_ns)(void);

@@ -974,7 +974,7 @@ int udp_push_pending_frames(struct sock *sk)
 		goto out;
 
     /**
-     *  
+     *
      */
 	err = udp_send_skb(skb, fl4, &inet->cork.base);
 
@@ -985,9 +985,9 @@ out:
 }
 EXPORT_SYMBOL(udp_push_pending_frames);
 /**
- *  
+ *
  */
-static int __udp_cmsg_send(struct cmsghdr *cmsg, u16 *gso_size) /*  */
+static int __udp_cmsg_send(struct cmsghdr *cmsg, u16 *gso_size)
 {
 	switch (cmsg->cmsg_type) {
 	case UDP_SEGMENT:
@@ -1017,7 +1017,7 @@ int udp_cmsg_send(struct sock *sk, struct msghdr *msg, u16 *gso_size)
 			continue;
 		}
         /**
-         *  
+         *
          */
 		err = __udp_cmsg_send(cmsg, gso_size);
 		if (err)
@@ -1031,7 +1031,7 @@ EXPORT_SYMBOL_GPL(udp_cmsg_send);
 /**
  *  UDP 发送数据
  */
-int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
+int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 {
 	struct inet_sock *inet = inet_sk(sk);
 	struct udp_sock *up = udp_sk(sk);
@@ -1053,7 +1053,7 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 	struct ip_options_data opt_copy;
 
     /**
-     *  
+     *
      */
 	if (len > 0xFFFF)
 		return -EMSGSIZE;
@@ -1069,7 +1069,7 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 
 	getfrag = is_udplite ? udplite_getfrag : ip_generic_getfrag;
     /**
-     *  
+     *
      */
 	fl4 = &inet->cork.fl.u.ip4;
 	if (up->pending) {
@@ -1118,7 +1118,7 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 	ipcm_init_sk(&ipc, inet);
 	ipc.gso_size = up->gso_size;
     /**
-     *  
+     *
      */
 	if (msg->msg_controllen) {
 		err = udp_cmsg_send(sk, msg, &ipc.gso_size);
@@ -1180,9 +1180,9 @@ int udp_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)    /*  */
 		tos |= RTO_ONLINK;
 		connected = 0;
 	}
-        
+
     /**
-     *  
+     *
      */
 	if (ipv4_is_multicast(daddr)) {
 		if (!ipc.oif || netif_index_is_l3_master(sock_net(sk), ipc.oif))
@@ -1507,7 +1507,7 @@ static void udp_skb_dtor_locked(struct sock *sk, struct sk_buff *skb)
  * These busylock can be allocated on a per cpu manner, instead of a
  * per socket one (that would consume a cache line per socket)
  */
-static int __read_mostly udp_busylocks_log ; /*  */
+static int __read_mostly udp_busylocks_log ;
 static spinlock_t __read_mostly *udp_busylocks ;
 
 static spinlock_t *busylock_acquire(void *ptr)
@@ -1732,7 +1732,7 @@ int udp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 }
 EXPORT_SYMBOL(udp_ioctl);
 /**
- *  
+ *
  */
 struct sk_buff *__skb_recv_udp(struct sock *sk, unsigned int flags,
 			       int noblock, int *off, int *err)
@@ -1781,12 +1781,12 @@ struct sk_buff *__skb_recv_udp(struct sock *sk, unsigned int flags,
 			spin_lock(&sk_queue->lock);
 			skb_queue_splice_tail_init(sk_queue, queue);
             /**
-             *  
+             *
              */
 			skb = __skb_try_recv_from_queue(sk, queue, flags, off,
 							err, &last);
             /**
-             *  
+             *
              */
 			if (skb && !(flags & MSG_PEEK))
 				udp_skb_dtor_locked(sk, skb);
@@ -1834,17 +1834,17 @@ int udp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int noblock,
 
 try_again:
     /**
-     *  
+     *
      */
 	off = sk_peek_offset(sk, flags);
     /**
-     *  
+     *
      */
 	skb = __skb_recv_udp(sk, flags, noblock, &off, &err);
 	if (!skb)
 		return err;
     /**
-     *  
+     *
      */
 	ulen = udp_skb_len(skb);
 	copied = len;
@@ -1893,7 +1893,7 @@ try_again:
 		UDP_INC_STATS(sock_net(sk),
 			      UDP_MIB_INDATAGRAMS, is_udplite);
     /**
-     *  
+     *
      */
 	sock_recv_ts_and_drops(msg, sk, skb);
 
@@ -1910,7 +1910,7 @@ try_again:
 							(struct sockaddr *)sin);
 	}
     /**
-     *  
+     *
      */
 	if (udp_sk(sk)->gro_enabled)
 		udp_cmsg_recv(msg, sk, skb);
@@ -2873,7 +2873,7 @@ int udp_abort(struct sock *sk, int err)
 EXPORT_SYMBOL_GPL(udp_abort);
 
 /**
- *  
+ *
  */
 struct proto udp_prot = {
 	udp_prot.name			= "UDP",

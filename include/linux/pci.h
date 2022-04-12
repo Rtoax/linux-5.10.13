@@ -86,7 +86,7 @@ enum pci_mmap_state {
 };
 
 /* For PCI devices, the region numbers are assigned this way: */
-enum {  /*  */
+enum {
 	/* #0-5: standard PCI resources */
 	PCI_STD_RESOURCES,
 	PCI_STD_RESOURCE_END = PCI_STD_RESOURCES + PCI_STD_NUM_BARS - 1,
@@ -305,8 +305,8 @@ struct pci_sriov;
 struct pci_p2pdma;
 
 /**
- *  The pci_dev structure describes PCI devices 
- *  
+ *  The pci_dev structure describes PCI devices
+ *
  *  每个 PCI 外设由一个总线编号，一个设备编号，一个功能编号来标识
  *  0000:00:14.0 -> 0x00a0
  *  域 16位
@@ -336,21 +336,21 @@ struct pci_p2pdma;
  * -------查找---------
  * pci_get_device() - 查找特定 PCI 设备
  * pci_get_subsys() - 同上，不同在于入参
- * pci_get_slot() - 
+ * pci_get_slot() -
  * -------使能---------
  * pci_enable_device() - 激活 PCI  设备
  * -------配置---------
- * pci_read_config_byte() -  
- * pci_read_config_word() - 
- * pci_read_config_dword() - 
- * pci_write_config_byte() -  
- * pci_write_config_word() - 
- * pci_write_config_dword() - 
+ * pci_read_config_byte() -
+ * pci_read_config_word() -
+ * pci_read_config_dword() -
+ * pci_write_config_byte() -
+ * pci_write_config_word() -
+ * pci_write_config_dword() -
  * -------IO区域---------
  * PCI 设备的IO区域已经被集成到通用资源管理
- * pci_resource_start() - 
- * pci_resource_end() - 
- * pci_resource_flags() - 
+ * pci_resource_start() -
+ * pci_resource_end() -
+ * pci_resource_flags() -
  *  资源标志用来定义单个资源的某些特性
  *  IORESOURCE_IO
  *  IORESOURCE_MEM
@@ -467,9 +467,9 @@ struct pci_dev {
 
     /**
      * PCI 设备的IO区域已经被集成到通用资源管理
-     * pci_resource_start() - 
-     * pci_resource_end() - 
-     * pci_resource_flags() - 
+     * pci_resource_start() -
+     * pci_resource_end() -
+     * pci_resource_flags() -
      *  资源标志用来定义单个资源的某些特性
      *  IORESOURCE_IO
      *  IORESOURCE_MEM
@@ -540,7 +540,7 @@ struct pci_dev {
 #ifdef CONFIG_HOTPLUG_PCI_PCIE
 	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
 #endif
-#ifdef CONFIG_PCIE_PTM  /*  */
+#ifdef CONFIG_PCIE_PTM
 	unsigned int	ptm_root:1;
 	unsigned int	ptm_enabled:1;
 	u8		ptm_granularity;
@@ -770,7 +770,7 @@ static inline bool pci_dev_msi_enabled(struct pci_dev *pci_dev)
 	return pci_dev->msi_enabled || pci_dev->msix_enabled;
 }
 #else
-/*  */
+
 #endif
 
 /* Error values that may be returned by PCI functions */
@@ -809,7 +809,7 @@ static inline int pcibios_err_to_errno(int err)
 /* Low-level architecture-dependent routines */
 
 /**
- *  
+ *
  *  参见 `pci_raw_ops`
  */
 struct pci_ops {
@@ -955,7 +955,7 @@ struct pci_driver {
 	const char		*name;
 
     /**
-     *  
+     *
      */
 	const struct pci_device_id *id_table;	/* Must be non-NULL for probe to be called */
 
@@ -976,7 +976,7 @@ struct pci_driver {
      */
 	int  (*resume)(struct pci_dev *dev);	/* Device woken up */
     /**
-     *  
+     *
      */
 	void (*shutdown)(struct pci_dev *dev);
 	int  (*sriov_configure)(struct pci_dev *dev, int num_vfs); /* On PF */
@@ -1150,7 +1150,7 @@ void pci_destroy_slot(struct pci_slot *slot);
 #ifdef CONFIG_SYSFS
 void pci_dev_assign_slot(struct pci_dev *dev);
 #else
-/*  */
+
 #endif
 int pci_scan_slot(struct pci_bus *bus, int devfn);
 struct pci_dev *pci_scan_single_device(struct pci_bus *bus, int devfn);
@@ -1489,7 +1489,7 @@ int __must_check __pci_register_driver(struct pci_driver *, struct module *,
 				       const char *mod_name);
 
 /**
- *  pci_register_driver() must be a macro so KBUILD_MODNAME can be expanded 
+ *  pci_register_driver() must be a macro so KBUILD_MODNAME can be expanded
  *
  *  PCI 驱动程序 注册函数
  *  成功 - 返回0
@@ -1573,8 +1573,8 @@ int pci_set_vga_state(struct pci_dev *pdev, bool decode,
 
 /**
  *  MSI - Message Signal Interrupt
- *  
- *  
+ *
+ *
  */
 struct msix_entry {
 	u32	vector;	/* Kernel uses to write allocated vector */
@@ -1792,7 +1792,7 @@ pci_release_mem_regions(struct pci_dev *pdev)
 }
 
 #else /* CONFIG_PCI is not enabled */
-/*  */
+
 #endif /* CONFIG_PCI */
 
 static inline int
@@ -1994,7 +1994,7 @@ enum pci_fixup_pass {
 #ifdef CONFIG_PCI_QUIRKS
 void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev);
 #else
-/*  */
+
 #endif
 
 void __iomem *pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
@@ -2039,7 +2039,7 @@ resource_size_t pcibios_default_alignment(void);
 void __init pci_mmcfg_early_init(void);
 void __init pci_mmcfg_late_init(void);
 #else
-/*  */
+
 #endif
 
 int pci_ext_cfg_avail(void);
@@ -2070,7 +2070,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs);
 int pcibios_sriov_disable(struct pci_dev *pdev);
 resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
@@ -2270,7 +2270,7 @@ struct irq_domain *pci_host_bridge_of_msi_domain(struct pci_bus *bus);
 struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus);
 
 #else	/* CONFIG_OF */
-/*  */
+
 #endif  /* CONFIG_OF */
 
 static inline struct device_node *
@@ -2291,7 +2291,7 @@ void
 pci_msi_register_fwnode_provider(struct fwnode_handle *(*fn)(struct device *));
 bool pci_pr3_present(struct pci_dev *pdev);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_EEH

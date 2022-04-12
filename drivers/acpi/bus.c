@@ -1122,7 +1122,7 @@ static acpi_status acpi_bus_table_handler(u32 event, void *table, void *context)
 	return acpi_sysfs_table_handler(event, table, context);
 }
 
-static int __init acpi_bus_init(void)   /*  */
+static int __init acpi_bus_init(void)
 {
 	int result;
 	acpi_status status;

@@ -109,7 +109,7 @@ extern ssize_t single_hugepage_flag_show(struct kobject *kobj,
 				enum transparent_hugepage_flag flag);
 extern struct kobj_attribute shmem_enabled_attr;
 
-#define HPAGE_PMD_ORDER  /* 9 */ (HPAGE_PMD_SHIFT/* 21 */-PAGE_SHIFT/* 12 */)    /*  */
+#define HPAGE_PMD_ORDER  /* 9 */ (HPAGE_PMD_SHIFT/* 21 */-PAGE_SHIFT/* 12 */)
 #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -129,7 +129,7 @@ extern unsigned long transparent_hugepage_flags;
  */
 static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
 {
-	if (vma->vm_flags & VM_NOHUGEPAGE)  /*  */
+	if (vma->vm_flags & VM_NOHUGEPAGE)
 		return false;
 
 	if (vma_is_temporary_stack(vma))
@@ -335,7 +335,7 @@ static inline struct list_head *page_deferred_list(struct page *page)
 }
 
 #else /* CONFIG_TRANSPARENT_HUGEPAGE */
-/*  */
+
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 /**

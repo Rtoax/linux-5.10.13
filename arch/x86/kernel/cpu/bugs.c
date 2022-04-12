@@ -76,7 +76,7 @@ EXPORT_SYMBOL_GPL(mds_user_clear);
 DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
 EXPORT_SYMBOL_GPL(mds_idle_clear);
 
-void __init check_bugs(void)    /*  */
+void __init check_bugs(void)
 {
 	identify_boot_cpu();
 

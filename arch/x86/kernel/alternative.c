@@ -168,7 +168,7 @@ static const unsigned char * const k7_nops[ASM_NOP_MAX+2] =
 #endif
 
 #ifdef P6_NOP1
-static const unsigned char p6nops[] =   /*  */
+static const unsigned char p6nops[] =
 {
 	P6_NOP1,
 	P6_NOP2,
@@ -180,9 +180,9 @@ static const unsigned char p6nops[] =   /*  */
 	P6_NOP8,
 	P6_NOP5_ATOMIC
 };
-static const unsigned char * const p6_nops[ASM_NOP_MAX+2] =/*  */
+static const unsigned char * const p6_nops[ASM_NOP_MAX+2] =
 {
-	NULL,                                   /*  */
+	NULL,
 	p6nops,                                 /* 0x90 */
 	p6nops + 1,                             /* 0x66,0x90 */
 	p6nops + 1 + 2,                         /* 0x0f,0x1f,0x00 */
@@ -197,7 +197,7 @@ static const unsigned char * const p6_nops[ASM_NOP_MAX+2] =/*  */
 
 /* Initialize these to a safe default */
 #ifdef CONFIG_X86_64
-const unsigned char * const *ideal_nops = p6_nops;  /*  */
+const unsigned char * const *ideal_nops = p6_nops;
 #else
 const unsigned char * const *ideal_nops = intel_nops;
 #endif
@@ -967,7 +967,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
     /**
      *  代码注入
      */
-	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);  /*  */
+	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);
 
 	kasan_enable_current();
 
@@ -1514,7 +1514,7 @@ void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const voi
  * e8 37 2e 00 00 callq ffffffff810f7430 <ftrace_caller>
  */
 void /*__ref ---- 我把 __ref 注释掉了 */
-text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)    /*  */
+text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)
 {
 	struct text_poke_loc tp;
 

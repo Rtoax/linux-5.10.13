@@ -55,7 +55,7 @@ void rmap_walk_ksm(struct page *page, struct rmap_walk_control *rwc);
 void ksm_migrate_page(struct page *newpage, struct page *oldpage);
 
 #else  /* !CONFIG_KSM */
-/*  */
+
 #endif /* !CONFIG_KSM */
 
 #endif /* __LINUX_KSM_H */

@@ -389,7 +389,7 @@ static int genl_validate_ops(const struct genl_family *family)
  *
  * Return 0 on success or a negative error code.
  */
-int genl_register_family(struct genl_family *family)    /*  */
+int genl_register_family(struct genl_family *family)
 {
 	int err, i;
 	int start = GENL_START_ALLOC, end = GENL_MAX_ID;

@@ -35,7 +35,7 @@
 #include "internal.h"
 
 /* Maximum number of mounts in a mount namespace */
-unsigned int __read_mostly sysctl_mount_max  = 100000;/*  */
+unsigned int __read_mostly sysctl_mount_max  = 100000;
 
 static unsigned int __read_mostly m_hash_mask ;
 static unsigned int __read_mostly m_hash_shift ;
@@ -68,7 +68,7 @@ static DEFINE_IDA(mnt_group_ida);
 /**
  *  节点为 struct mount.mnt_hash
  */
-static struct hlist_head __read_mostly *mount_hashtable ;    /*  */
+static struct hlist_head __read_mostly *mount_hashtable ;
 /**
  *  节点为 struct mountpoint.m_hash
  */
@@ -92,7 +92,7 @@ EXPORT_SYMBOL_GPL(fs_kobj);
  */
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 /**
- *  
+ *
  */
 static inline struct hlist_head *m_hash(struct vfsmount *mnt, struct dentry *dentry)
 {
@@ -100,7 +100,7 @@ static inline struct hlist_head *m_hash(struct vfsmount *mnt, struct dentry *den
 	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
 	tmp = tmp + (tmp >> m_hash_shift);
     /**
-     *  
+     *
      */
 	return &mount_hashtable[tmp & m_hash_mask];
 }
@@ -621,7 +621,7 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 	struct mount *p;
 
     /**
-     *  
+     *
      */
 	hlist_for_each_entry_rcu(p, head, mnt_hash)
 		if (&p->mnt_parent->mnt == mnt && p->mnt_mountpoint == dentry)
@@ -959,7 +959,7 @@ static struct mount *skip_mnt_tree(struct mount *p)
  *
  * Note that this does not attach the mount to anything.
  */
-struct vfsmount *vfs_create_mount(struct fs_context *fc)    /*  */
+struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {
 	struct mount *mnt;
 
@@ -987,7 +987,7 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)    /*  */
 EXPORT_SYMBOL(vfs_create_mount);
 
 struct vfsmount *fc_mount(struct fs_context *fc)
-{   /*  */
+{
 	int err = vfs_get_tree(fc);
 	if (!err) {
 		up_write(&fc->root->d_sb->s_umount);
@@ -2866,7 +2866,7 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	if (!fstype)
 		return -EINVAL;
     /**
-     *  
+     *
      */
 	type = get_fs_type(fstype);
 	if (!type)
@@ -3153,7 +3153,7 @@ static char *copy_mount_string(const void __user *data)
  * Therefore, if this magic number is present, it carries no information
  * and must be discarded.
  *
- *  
+ *
  */
 int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page)
@@ -3221,14 +3221,14 @@ int path_mount(const char *dev_name, struct path *path,
 			    SB_LAZYTIME |
 			    SB_I_VERSION);
     /**
-     *  
+     *
      */
 	if ((flags & (MS_REMOUNT | MS_BIND)) == (MS_REMOUNT | MS_BIND))
 		return do_reconfigure_mnt(path, mnt_flags);
 	if (flags & MS_REMOUNT)
 		return do_remount(path, flags, sb_flags, mnt_flags, data_page);
     /**
-     *  
+     *
      */
     if (flags & MS_BIND)
 		return do_loopback(path, dev_name, flags & MS_REC);
@@ -3237,7 +3237,7 @@ int path_mount(const char *dev_name, struct path *path,
 	if (flags & MS_MOVE)
 		return do_move_mount_old(path, dev_name);
     /**
-     *  
+     *
      */
 	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
 			    data_page);
@@ -3396,7 +3396,7 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	q = new;
 
     /**
-     *  
+     *
      */
 	while (p) {
 		q->mnt_ns = new_ns;
@@ -3421,7 +3421,7 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	namespace_unlock();
 
     /**
-     *  
+     *
      */
 	if (rootmnt)
 		mntput(rootmnt);
@@ -3481,28 +3481,28 @@ SYSCALL_DEFINE5(mount, char __user *, source, char __user *, target,
 	char *kernel_dev;
 	void *options;
     /**
-     *  
+     *
      */
 	kernel_type = copy_mount_string(type);
 	ret = PTR_ERR(kernel_type);
 	if (IS_ERR(kernel_type))
 		goto out_type;
     /**
-     *  
+     *
      */
 	kernel_dev = copy_mount_string(source);
 	ret = PTR_ERR(kernel_dev);
 	if (IS_ERR(kernel_dev))
 		goto out_dev;
     /**
-     *  
+     *
      */
 	options = copy_mount_options(data);
 	ret = PTR_ERR(options);
 	if (IS_ERR(options))
 		goto out_data;
     /**
-     *  
+     *
      */
 	ret = do_mount(kernel_dev, target, kernel_type, flags, options);
 
@@ -3775,27 +3775,27 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 	if (!may_mount())
 		return -EPERM;
     /**
-     *  
+     *
      */
 	error = user_path_at(AT_FDCWD, new_root,
 			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &new);
 	if (error)
 		goto out0;
     /**
-     *  
+     *
      */
 	error = user_path_at(AT_FDCWD, put_old,
 			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &old);
 	if (error)
 		goto out1;
     /**
-     *  
+     *
      */
 	error = security_sb_pivotroot(&old, &new);
 	if (error)
 		goto out2;
     /**
-     *  
+     *
      */
 	get_fs_root(current->fs, &root);
 	old_mp = lock_mount(&old);
@@ -3803,7 +3803,7 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 	if (IS_ERR(old_mp))
 		goto out3;
     /**
-     *  
+     *
      */
 	error = -EINVAL;
 	new_mnt = real_mount(new.mnt);
@@ -3873,7 +3873,7 @@ out0:
 	return error;
 }
 
-static void __init init_mount_tree(void)    /*  */
+static void __init init_mount_tree(void)
 {
 	struct vfsmount *mnt;
 	struct mount *m;
@@ -3903,7 +3903,7 @@ static void __init init_mount_tree(void)    /*  */
 	set_fs_root(current->fs, &root);
 }
 /**
- *  
+ *
  */
 void __init mnt_init(void)  /* 挂载 */
 {
@@ -3924,7 +3924,7 @@ void __init mnt_init(void)  /* 挂载 */
 				HASH_ZERO,
 				&m_hash_shift, &m_hash_mask, 0, 0);
     /**
-     *  
+     *
      */
     mountpoint_hashtable = alloc_large_system_hash("Mountpoint-cache",
 				sizeof(struct hlist_head),
@@ -3936,12 +3936,12 @@ void __init mnt_init(void)  /* 挂载 */
 		panic("Failed to allocate mount hash table\n");
 
     /**
-     *  
+     *
      */
 	kernfs_init();  /* kernfd 缓存 */
 
     /**
-     *  
+     *
      */
 	err = sysfs_init(); /* sysfs 缓存申请与 文件系统注册 */
 	if (err)
@@ -3954,9 +3954,9 @@ void __init mnt_init(void)  /* 挂载 */
 	fs_kobj = kobject_create_and_add("fs"/* /sys/fs */, NULL/* 为空标识 /sys */);
 	if (!fs_kobj)
 		printk(KERN_WARNING "%s: kobj create error\n", __func__);
-	shmem_init();   /*  */
-	init_rootfs();  /*  */
-	init_mount_tree();  /*  */
+	shmem_init();
+	init_rootfs();
+	init_mount_tree();
 }
 
 void put_mnt_ns(struct mnt_namespace *ns)
@@ -4161,14 +4161,14 @@ static void mntns_put(struct ns_common *ns)
 	put_mnt_ns(to_mnt_ns(ns));
 }
 /**
- *  
+ *
  */
 static int mntns_install(struct nsset *_nsset, struct ns_common *ns)
 {
 	struct nsproxy *nsproxy = _nsset->nsproxy;
 	struct fs_struct *fs = _nsset->fs;
     /**
-     *  
+     *
      */
 	struct mnt_namespace *mnt_ns = to_mnt_ns(ns), *old_mnt_ns;
 	struct user_namespace *user_ns = _nsset->cred->user_ns;
@@ -4210,7 +4210,7 @@ static int mntns_install(struct nsset *_nsset, struct ns_common *ns)
 		return err;
 	}
     /**
-     *  
+     *
      */
 	put_mnt_ns(old_mnt_ns);
 

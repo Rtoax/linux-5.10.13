@@ -60,7 +60,7 @@ struct mem_cgroup_reclaim_cookie {
 
 /**
  * @brief ID
- * 
+ *
  */
 struct mem_cgroup_id {
 	int id;
@@ -121,7 +121,7 @@ struct mem_cgroup_per_node {
 
 	/* Subtree VM stats (batched updates) */
 	struct lruvec_stat __percpu *lruvec_stat_cpu;
-    
+
 	atomic_long_t		lruvec_stat[NR_VM_NODE_STAT_ITEMS];
 
 	unsigned long		lru_zone_size[MAX_NR_ZONES][NR_LRU_LISTS];
@@ -217,9 +217,9 @@ struct obj_cgroup {
  * page cache and RSS per cgroup. We would eventually like to provide
  * statistics based on the statistics developed by Rik Van Riel for clock-pro,
  * to help the administrator determine what knobs to tune.
- * 
+ *
  *  内存子系统 的资源控制统计信息结构
- * 
+ *
  * 内存控制器数据结构，控制每个cgroup的 pagecache 和 RSS。
  */
 struct mem_cgroup {
@@ -235,7 +235,7 @@ struct mem_cgroup {
 	struct page_counter memory;		/* Both v1 & v2 */
 
     /**
-     *  
+     *
      */
 	union {
 		struct page_counter swap;	/* v2 only */
@@ -247,13 +247,13 @@ struct mem_cgroup {
 	struct page_counter tcpmem;		/* v1 only */
 
     /**
-     *  
+     *
      */
 	/* Range enforcement for interrupt charges */
 	struct work_struct high_work;
 
     /**
-     *  
+     *
      */
 	unsigned long soft_limit;
 
@@ -481,7 +481,7 @@ void mem_cgroup_uncharge_list(struct list_head *page_list);
 void mem_cgroup_migrate(struct page *oldpage, struct page *newpage);
 
 /**
- *  
+ *
  */
 static struct mem_cgroup_per_node *
 mem_cgroup_nodeinfo(struct mem_cgroup *memcg, int nid)
@@ -524,7 +524,7 @@ static inline struct lruvec *mem_cgroup_lruvec(struct mem_cgroup *memcg,
      */
 	mz = mem_cgroup_nodeinfo(memcg, pgdat->node_id);
 	lruvec = &mz->lruvec;
-    
+
 out:
 	/*
 	 * Since a node can be onlined after the mem_cgroup was created,
@@ -533,7 +533,7 @@ out:
 	 */
 	if (unlikely(lruvec->pgdat != pgdat))
 		lruvec->pgdat = pgdat;
-    
+
 	return lruvec;
 }
 
@@ -649,14 +649,14 @@ static inline bool mm_match_cgroup(struct mm_struct *mm,
 	struct mem_cgroup *task_memcg;
 	bool match = false;
 
-	rcu_read_lock();    /*  */
+	rcu_read_lock();
 
     task_memcg = mem_cgroup_from_task(rcu_dereference(mm->owner));
 	if (task_memcg)
 		match = mem_cgroup_is_descendant(task_memcg, memcg);
 
-    rcu_read_unlock();  /*  */
-    
+    rcu_read_unlock();
+
 	return match;
 }
 
@@ -699,7 +699,7 @@ void mem_cgroup_print_oom_context(struct mem_cgroup *memcg,
 
 void mem_cgroup_print_oom_meminfo(struct mem_cgroup *memcg);
 
-static inline void mem_cgroup_enter_user_fault(void)    /*  */
+static inline void mem_cgroup_enter_user_fault(void)
 {
 	WARN_ON(current->in_user_fault);
 	current->in_user_fault = 1;
@@ -807,7 +807,7 @@ static inline void mod_memcg_page_state(struct page *page,
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long lruvec_page_state(struct lruvec *lruvec, enum node_stat_item idx)
 {
@@ -828,17 +828,17 @@ static inline unsigned long lruvec_page_state(struct lruvec *lruvec, enum node_s
      */
 	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
 	x = atomic_long_read(&pn->lruvec_stat[idx]);
-    
+
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
 #endif
-    
+
 	return x;
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 						    enum node_stat_item idx)
@@ -867,7 +867,7 @@ void __mod_lruvec_slab_state(void *p, enum node_stat_item idx, int val);
 void mod_memcg_obj_state(void *p, int idx, int val);
 
 /**
- *  
+ *
  */
 static inline void mod_lruvec_slab_state(void *p, enum node_stat_item idx, int val)
 {
@@ -898,7 +898,7 @@ static inline void mod_lruvec_state(struct lruvec *lruvec,
 	local_irq_restore(flags);
 }
 
-/*  */
+
 static inline void __mod_lruvec_page_state(struct page *page,
 					   enum node_stat_item idx, int val)
 {
@@ -1011,7 +1011,7 @@ void mem_cgroup_split_huge_fixup(struct page *head);
 #endif
 
 #else /* CONFIG_MEMCG */
-/*  */
+
 
 #endif /* CONFIG_MEMCG */
 
@@ -1165,7 +1165,7 @@ static inline void mem_cgroup_track_foreign_dirty(struct page *page,
 void mem_cgroup_flush_foreign(struct bdi_writeback *wb);
 
 #else	/* CONFIG_CGROUP_WRITEBACK */
-/*  */
+
 
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
@@ -1197,7 +1197,7 @@ extern int memcg_expand_shrinker_maps(int new_id);
 extern void memcg_set_shrinker_bit(struct mem_cgroup *memcg,
 				   int nid, int shrinker_id);
 #else
-/*  */
+
 
 #endif
 
@@ -1276,7 +1276,7 @@ static inline int memcg_cache_id(struct mem_cgroup *memcg)
 struct mem_cgroup *mem_cgroup_from_obj(void *p);
 
 #else
-/*  */
+
 
 #endif /* CONFIG_MEMCG_KMEM */
 

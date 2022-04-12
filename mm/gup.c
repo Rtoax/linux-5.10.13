@@ -635,7 +635,7 @@ retry_locked:
 }
 
 /* 在`follow_p4d_mask()`中被调用 */
-static struct page *follow_pud_mask(struct vm_area_struct *vma, /*  */
+static struct page *follow_pud_mask(struct vm_area_struct *vma,
 				    unsigned long address, p4d_t *p4dp,
 				    unsigned int flags,
 				    struct follow_page_context *ctx)
@@ -766,7 +766,8 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 }
 
 /**
- * 通过 虚拟地址 address 查找相应的 物理页面
+ *
+ 通过 虚拟地址 address 查找相应的 物理页面
  */
 struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 			 unsigned int foll_flags)
@@ -1043,8 +1044,8 @@ static long __get_user_pages(struct mm_struct *mm,
 
 		/* first iteration or cross vma bound */
         /* 地址跨区域的处理 */
-		if (!vma || start >= vma->vm_end) {
-            /*  */
+		if (!vma |t >= vma->vm_end) {
+
 			vma = find_extend_vma(mm, start);   /* 查找并扩展vma */
 			if (!vma && in_gate_area(mm, start)) {
 				ret = get_gate_page(mm, start & PAGE_MASK,
@@ -1347,13 +1348,13 @@ retry:
 		 * start trying again otherwise it can loop forever.
 		 */
 
-		if (fatal_signal_pending(current)) {    /*  */
+		if (fatal_signal_pending(current)) {
 			if (!pages_done)
 				pages_done = -EINTR;
 			break;
 		}
 
-		ret = mmap_read_lock_killable(mm);  /*  */
+		ret = mmap_read_lock_killable(mm);
 		if (ret) {
 			BUG_ON(ret > 0);
 			if (!pages_done)
@@ -1530,8 +1531,8 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 		mmap_read_unlock(mm);
 	return ret;	/* 0 or negative error code */
 }
-#else /* CONFIG_MMU */
-/*  */
+/* CONFIG_MMU */
+
 #endif /* !CONFIG_MMU */
 
 /**
@@ -1933,7 +1934,7 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
 	if (!is_valid_gup_flags(gup_flags))
 		return -EINVAL;
 
-    /*  */
+
 	return __gup_longterm_locked(current->mm, start, nr_pages,
 				     pages, vmas, gup_flags | FOLL_TOUCH);
 }

@@ -849,7 +849,7 @@ struct bpf_stack_build_id {
 /**
  *
  */
-union bpf_attr {    /*  */
+union bpf_attr {
     /**
      *  BPF_MAP_CREATE
      */

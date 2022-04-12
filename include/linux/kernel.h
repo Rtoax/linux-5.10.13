@@ -30,7 +30,7 @@
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
 /* @a is a power of 2 value */
-#define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))    /*  */
+#define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
 #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
@@ -189,7 +189,7 @@ struct completion;
 struct pt_regs;
 struct user;
 
-#ifdef CONFIG_PREEMPT_VOLUNTARY /*  */
+#ifdef CONFIG_PREEMPT_VOLUNTARY
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
@@ -215,7 +215,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  *
  * 简单地说，如果没有调试的需求(绝大多数下你平常跑的系统都是release版本的kernel)，
  * 那么这个宏(或者函数，称谓并不重要)什么实质性的活都不干，内核只是用它来做一件事，
- * 就是提醒你，调用该函数的函数可能会sleep，这个跟其名字也是匹配的: 
+ * 就是提醒你，调用该函数的函数可能会sleep，这个跟其名字也是匹配的:
  * The function calling might_sleep() might sleep。
  */
 # define might_sleep() \
@@ -229,7 +229,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
 	do { __cant_sleep(__FILE__, __LINE__, 0); } while (0)
 
 /**
- *  
+ *
  */
 # define sched_annotate_sleep()	(current->task_state_change = 0)
 /**
@@ -250,7 +250,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  */
 # define non_block_end() WARN_ON(current->non_block_count-- == 0)
 #else
-/*  */
+
 #endif
 
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
@@ -259,7 +259,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
 # define cant_migrate()		cant_sleep()
 #else
   /* Placeholder for now */
-/*  */
+
 #endif
 
 /**
@@ -309,7 +309,7 @@ static inline u32 reciprocal_scale(u32 val, u32 ep_ro)
 #define might_fault() __might_fault(__FILE__, __LINE__)
 void __might_fault(const char *file, int line);
 #else
-/*  */
+
 #endif
 
 extern struct atomic_notifier_head panic_notifier_list;
@@ -472,19 +472,19 @@ extern int num_to_str(char *buf, int size,
 
 extern  int sprintf(char *buf, const char * fmt, ...);
 extern  int vsprintf(char *buf, const char *, va_list);
-extern 
+extern
 int snprintf(char *buf, size_t size, const char *fmt, ...);
-extern 
+extern
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-extern 
+extern
 int scnprintf(char *buf, size_t size, const char *fmt, ...);
-extern 
+extern
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 extern  __malloc
 char *kasprintf(gfp_t gfp, const char *fmt, ...);
 extern  __malloc
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
-extern 
+extern
 const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
 
 extern __scanf(2, 3)
@@ -520,7 +520,7 @@ static inline u32 int_sqrt64(u64 x)
 #ifdef CONFIG_SMP
 extern unsigned int sysctl_oops_all_cpu_backtrace;
 #else
-/*  */
+
 #endif /* CONFIG_SMP */
 
 extern void bust_spinlocks(int yes);
@@ -676,7 +676,7 @@ void tracing_snapshot_alloc(void);
 extern void tracing_start(void);
 extern void tracing_stop(void);
 
-static inline 
+static inline
 void ____trace_printk_check_format(const char *fmt, ...)
 {
 }
@@ -739,10 +739,10 @@ do {									\
 		__trace_printk(_THIS_IP_, fmt, ##args);			\
 } while (0)
 
-extern 
+extern
 int __trace_bprintk(unsigned long ip, const char *fmt, ...);
 
-extern 
+extern
 int __trace_printk(unsigned long ip, const char *fmt, ...);
 
 /**
@@ -810,7 +810,7 @@ __ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
 
 extern void ftrace_dump(enum ftrace_dump_mode oops_dump_mode);
 #else
-/*  */
+
 #endif /* CONFIG_TRACING */
 
 /* This counts to 12. Any more, it will return 13th argument. */

@@ -107,6 +107,6 @@ extern void hpet_unregister_irq_handler(rtc_irq_handler handler);
 #endif /* CONFIG_HPET_EMULATE_RTC */
 
 #else /* CONFIG_HPET_TIMER */
-/*  */
+
 #endif
 #endif /* _ASM_X86_HPET_H */

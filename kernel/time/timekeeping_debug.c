@@ -41,7 +41,7 @@ static int __init tk_debug_sleep_time_init(void)
 			    &tk_debug_sleep_time_fops);
 	return 0;
 }
-late_initcall(tk_debug_sleep_time_init);    /*  */
+late_initcall(tk_debug_sleep_time_init);
 
 void tk_debug_account_sleep_time(const struct timespec64 *t)
 {

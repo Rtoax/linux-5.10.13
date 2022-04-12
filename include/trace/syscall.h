@@ -45,7 +45,7 @@ static inline void syscall_tracepoint_update(struct task_struct *p)
 		clear_tsk_thread_flag(p, TIF_SYSCALL_TRACEPOINT);
 }
 #else
-/*  */
+
 #endif
 
 #endif /* _TRACE_SYSCALL_H */

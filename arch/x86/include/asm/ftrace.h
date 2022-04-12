@@ -50,7 +50,7 @@ static inline void arch_ftrace_set_direct_caller(struct pt_regs *regs, unsigned 
 
 #ifdef CONFIG_DYNAMIC_FTRACE
 
-struct dyn_arch_ftrace {/*  */
+struct dyn_arch_ftrace {
 	/* No extra data needed for x86 */
 };
 

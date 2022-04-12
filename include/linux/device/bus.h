@@ -79,7 +79,7 @@ struct fwnode_handle;
  * default attributes, the bus' methods, PM operations, and the driver core's
  * private data.
  */
-struct bus_type {   /*  */
+struct bus_type {
 	const char		*name;
 	const char		*dev_name;
 	struct device		*dev_root;

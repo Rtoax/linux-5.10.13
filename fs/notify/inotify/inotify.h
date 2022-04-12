@@ -12,7 +12,7 @@ struct inotify_event_info {
 	char name[];
 };
 
-struct inotify_inode_mark { /*  */
+struct inotify_inode_mark {
 	struct fsnotify_mark fsn_mark;
 	int wd;
 };

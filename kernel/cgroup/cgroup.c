@@ -137,7 +137,7 @@ extern struct cgroup_subsys pids_cgrp_subsys;
 extern struct cgroup_subsys rdma_cgrp_subsys;
 #endif
 
-struct cgroup_subsys *cgroup_subsys[] = {   /*  */
+struct cgroup_subsys *cgroup_subsys[] = {
 #include <linux/cgroup_subsys.h>
 };
 #undef SUBSYS
@@ -3386,7 +3386,7 @@ static int cgroup_enable_threaded(struct cgroup *cgrp)
 	return ret;
 }
 
-static int cgroup_type_show(struct seq_file *seq, void *v)   /*  */
+static int cgroup_type_show(struct seq_file *seq, void *v)
 {
 	struct cgroup *cgrp = seq_css(seq)->cgroup;
 
@@ -5747,9 +5747,9 @@ int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
   extern struct cgroup_subsys rdma_cgrp_subsys;
 #endif
 
-	static struct cgroup_fs_context __initdata ctx;/*  */
-	struct cgroup_subsys *ss;   /*  */
-	int i;  /*  */
+	static struct cgroup_fs_context __initdata ctx;
+	struct cgroup_subsys *ss;
+	int i;
 
 	ctx.root = &cgrp_dfl_root;
 	init_cgroup_root(&ctx);
@@ -5806,7 +5806,7 @@ int __init cgroup_init_early(void)/* cgroup 初始化 提前批 */
 	return 0;
 }
 
-static u16 __initdata cgroup_disable_mask ;/*  */
+static u16 __initdata cgroup_disable_mask ;
 
 /**
  * cgroup_init - cgroup initialization
@@ -5814,7 +5814,7 @@ static u16 __initdata cgroup_disable_mask ;/*  */
  * Register cgroup filesystem and /proc file, and initialize
  * any subsystems that didn't request early init.
  */
-int __init cgroup_init(void)    /*  */
+int __init cgroup_init(void)
 {
 	struct cgroup_subsys *ss;
 	int ssid;
@@ -6194,7 +6194,7 @@ static void cgroup_css_set_put_fork(struct kernel_clone_args *kargs)
  * callback returns an error, the fork aborts with that error code. This
  * allows for a cgroup subsystem to conditionally allow or deny new forks.
  */
-int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs) /*  */
+int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs)
 {
 	struct cgroup_subsys *ss;
 	int i, j, ret;
@@ -6212,7 +6212,7 @@ int cgroup_can_fork(struct task_struct *child, struct kernel_clone_args *kargs) 
 	return 0;
 
 out_revert:
-	for_each_subsys(ss, j) {    /*  */
+	for_each_subsys(ss, j) {
 		if (j >= i)
 			break;
 		if (ss->cancel_fork)

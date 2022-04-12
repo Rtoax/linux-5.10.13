@@ -958,7 +958,7 @@ static int __init ramoops_init(void)
 
 	return ret;
 }
-postcore_initcall(ramoops_init);    /*  */
+postcore_initcall(ramoops_init);
 
 static void __exit ramoops_exit(void)
 {

@@ -26,7 +26,7 @@
 #include <asm/trace/irq_vectors.h>
 
 /**
- *  
+ *
  */
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 irq_cpustat_t irq_stat;//+++
@@ -60,7 +60,7 @@ void ack_bad_irq(unsigned int irq)
 /*
  * /proc/interrupts printing for arch specific interrupts
  *
- *  
+ *
  *  NMI:      28669      17014         51         53   Non-maskable interrupts
  *  LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
  *  SPU:          0          0          0          0   Spurious interrupts
@@ -71,7 +71,7 @@ void ack_bad_irq(unsigned int irq)
  *  CAL:     332272    3971016     646975     646934   Function call interrupts
  *  [...]
  */
-int arch_show_interrupts(struct seq_file *p, int prec)/*  */
+int arch_show_interrupts(struct seq_file *p, int prec)
 {
 	int j;
 
@@ -126,7 +126,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
      *  re-调度中断
      */
 	seq_puts(p, "  Rescheduling interrupts\n");
-    
+
 	seq_printf(p, "%*s: ", prec, "CAL");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);
@@ -145,7 +145,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
     }
 	seq_puts(p, "  Thermal event interrupts\n");
 #endif
-#ifdef CONFIG_X86_MCE_THRESHOLD /*  */     
+#ifdef CONFIG_X86_MCE_THRESHOLD
 	seq_printf(p, "%*s: ", prec, "THR");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
@@ -200,7 +200,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)/*  */
 #if defined(CONFIG_X86_IO_APIC)
 	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
 #endif
-#ifdef CONFIG_HAVE_KVM  /*  */
+#ifdef CONFIG_HAVE_KVM
 	seq_printf(p, "%*s: ", prec, "PIN");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->kvm_posted_intr_ipis);
@@ -239,7 +239,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
 		sum += irq_stats(cpu)->x86_platform_ipis;
 #endif
 #ifdef CONFIG_SMP
-	sum += irq_stats(cpu)->irq_resched_count;   /*  */
+	sum += irq_stats(cpu)->irq_resched_count;
 	sum += irq_stats(cpu)->irq_call_count;
 #endif
 #ifdef CONFIG_X86_THERMAL_VECTOR
@@ -262,19 +262,19 @@ u64 arch_irq_stat(void)
 }
 
 /**
- *  
+ *
  */
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
 {
     /**
-     *  
+     *
      */
 	if (IS_ENABLED(CONFIG_X86_64))
 		run_irq_on_irqstack_cond(desc->handle_irq, desc, regs);
 	else
         /**
-         *  
+         *
          */
 		__handle_irq(desc, regs);
 }
@@ -288,7 +288,7 @@ void common_interrupt(struct pt_regs *regs, u8 vector){/* 这是新版本的 do_
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
     /**
-     *  
+     *
      */
 	struct pt_regs *old_regs = set_irq_regs(regs);//返回被保存的 `per-cpu` 中断寄存器指针
 	struct irq_desc *desc;
@@ -297,21 +297,21 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "IRQ failed to wake up RCU");
 
     /**
-     *  
+     *
      */
 	desc = __this_cpu_read(vector_irq[vector]);
 
     /**
-     *  
+     *
      */
 	if (likely(!IS_ERR_OR_NULL(desc))) {
         /**
-         *  
+         *
          */
 		handle_irq(desc, regs);
 
     /**
-     *  
+     *
      */
 	} else {
 		ack_APIC_irq();
@@ -326,7 +326,7 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 	}
 
     /**
-     *  
+     *
      */
 	set_irq_regs(old_regs);
 }

@@ -98,7 +98,7 @@ static void tick_periodic(int cpu)
 	}
 
     /**
-     *  
+     *
      */
 	update_process_times(user_mode(get_irq_regs()));
 	profile_tick(CPU_PROFILING);
@@ -285,7 +285,7 @@ static void tick_setup_device(struct tick_device *td,
 }
 
 /**
- *  
+ *
  */
 void tick_install_replacement(struct clock_event_device *newdev)
 {
@@ -589,6 +589,6 @@ void tick_unfreeze(void)
  */
 void __init tick_init(void) /* 滴答控制 */
 {
-	tick_broadcast_init();  /*  */
+	tick_broadcast_init();
 	tick_nohz_init();       /* no-hz 减少时钟中断次数 */
 }

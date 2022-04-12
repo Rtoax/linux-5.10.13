@@ -79,7 +79,7 @@ unsigned int swiotlb_max_segment(void);
 size_t swiotlb_max_mapping_size(struct device *dev);
 bool is_swiotlb_active(void);
 #else
-/*  */
+
 #endif /* CONFIG_SWIOTLB */
 
 extern void swiotlb_print_info(void);

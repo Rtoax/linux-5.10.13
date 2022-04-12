@@ -399,7 +399,7 @@ static inline struct page *find_or_create_page(struct address_space *mapping,
 					pgoff_t index, gfp_t gfp_mask)
 {
     /**
-     *  
+     *
      */
 	return pagecache_get_page(mapping, index,
 					FGP_LOCK|FGP_ACCESSED|FGP_CREAT,
@@ -524,12 +524,12 @@ static inline pgoff_t page_to_index(struct page *page)
  * Get the offset in PAGE_SIZE. 获取页内偏移
  * (TODO: hugepage should have ->index in PAGE_SIZE)
  */
-static inline pgoff_t page_to_pgoff(struct page *page)  
+static inline pgoff_t page_to_pgoff(struct page *page)
 {
 	if (unlikely(PageHeadHuge(page)))
 		return page->index << compound_order(page);
 
-    /*  */
+
 	return page_to_index(page);
 }
 
@@ -671,7 +671,7 @@ static inline int lock_page_or_retry(struct page *page, struct mm_struct *mm,
 extern void wait_on_page_bit(struct page *page, int bit_nr);
 extern int wait_on_page_bit_killable(struct page *page, int bit_nr);
 
-/* 
+/*
  * Wait for a page to be unlocked.
  *
  * This must be called with the caller "holding" the page,
@@ -841,7 +841,7 @@ void page_cache_async_ra(struct readahead_control *, struct file_ra_state *,
  * performance.
  *
  * 当缓存 miss 发生时被调用；
- * 
+ *
  */
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
@@ -851,7 +851,7 @@ void page_cache_sync_readahead(struct address_space *mapping,
 	DEFINE_READAHEAD(ractl, file, mapping, index);
 
     /**
-     *  
+     *
      */
 	page_cache_sync_ra(&ractl, ra, req_count);
 }

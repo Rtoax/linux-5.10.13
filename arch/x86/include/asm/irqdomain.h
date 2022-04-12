@@ -32,7 +32,7 @@ enum ioapic_domain_type {
 };
 
 /**
- *  
+ *
  */
 struct ioapic_domain_cfg {
 	enum ioapic_domain_type		type;
@@ -58,7 +58,7 @@ void x86_create_pci_msi_domain(void);
 struct irq_domain *native_create_pci_msi_domain(void);
 extern struct irq_domain *x86_pci_msi_default_domain;
 #else
-/*  */
+
 #endif
 
 #endif

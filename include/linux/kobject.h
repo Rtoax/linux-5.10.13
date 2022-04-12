@@ -64,28 +64,28 @@ enum kobject_action {
 /**
  *  kobject 是组成设备模型的基本结构
  *  kobject 对自身不感兴趣，它存在的意义是，把高级对象连接到设备模型上
- *  
+ *
  *  起初他只是被理解为一个简单的引用计数，但是随着发展，他的任务越来越多，因此有许多成员
  *  其中包括：
  *      1. 对象的引用计数
  *      2. sysfs 表述
  *          sysfs 中显示的每一个对象，都对应一个 kobject，被用来与内核交互并创建它的可见表述。
- *          /sys/fs 中的一个 dentry 
+ *          /sys/fs 中的一个 dentry
  *      3. 数据结构关联
  *      4. 热插拔事件处理
  *
- *  /sys/fs 中的一个 dentry 
+ *  /sys/fs 中的一个 dentry
  */
 struct kobject {    /* 驱动设备的 父类 */
     /**
-     *  
+     *
      */
 	const char		*name;
 
     /**
      *  在 `kset->list` 链表中的节点
      */
-	struct list_head	entry;  /*  */
+	struct list_head	entry;
 
     /**
      *  父节点
@@ -93,17 +93,17 @@ struct kobject {    /* 驱动设备的 父类 */
 	struct kobject		*parent;
 
     /**
-     *  
+     *
      */
 	struct kset		*kset;
 
     /**
      *  get_ktype() - 获取
      */
-	struct kobj_type	*ktype; /*  */
+	struct kobj_type	*ktype;
 
     /**
-     *  
+     *
      */
 	struct kernfs_node	*sd; /* sysfs directory entry */
 
@@ -111,13 +111,13 @@ struct kobject {    /* 驱动设备的 父类 */
      *  引用计数
      */
 	struct kref		kref;
-    
+
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
 	struct delayed_work	release;
 #endif
 
     /**
-     *  
+     *
      */
 	unsigned int state_initialized:1;
 	unsigned int state_in_sysfs:1;
@@ -126,9 +126,9 @@ struct kobject {    /* 驱动设备的 父类 */
 	unsigned int uevent_suppress:1;
 };
 
-//extern 
+//extern
 int kobject_set_name(struct kobject *kobj, const char *name, ...);
-//extern 
+//extern
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 			   va_list vargs);
 
@@ -183,21 +183,21 @@ static inline bool kobject_has_children(struct kobject *kobj)
 }
 
 /**
- *  
+ *
  */
-struct kobj_type {  /*  */
+struct kobj_type {
     /**
-     *  
+     *
      */
 	void (*release)(struct kobject *kobj);
 
     /**
-     *  
+     *
      */
 	const struct sysfs_ops *sysfs_ops;
 
     /**
-     *  
+     *
      */
 	struct attribute **default_attrs;	/* use default_groups instead */
 	const struct attribute_group **default_groups;
@@ -207,7 +207,7 @@ struct kobj_type {  /*  */
 };
 
 /**
- *  
+ *
  */
 struct kobj_uevent_env {
 	char *argv[3];
@@ -218,7 +218,7 @@ struct kobj_uevent_env {
 };
 
 /**
- *  
+ *
  */
 struct kset_uevent_ops {
 	int (* const filter)(struct kset *kset, struct kobject *kobj);
@@ -258,21 +258,21 @@ struct sock;
  *
  *  kobject 的集合
  */
-struct kset {   
+struct kset {
     /**
      *  串联所有 `kobject.entry` 的链表头
      */
 	struct list_head list;  /* */
     /**
-     *  
+     *
      */
 	spinlock_t list_lock;   /* 保护 list 链表 */
     /**
-     *  
+     *
      */
 	struct kobject kobj;
     /**
-     *  
+     *
      */
 	const struct kset_uevent_ops *uevent_ops;
 } __randomize_layout;
@@ -300,7 +300,7 @@ static inline void kset_put(struct kset *k)
 }
 
 /**
- *  
+ *
  */
 static inline struct kobj_type *get_ktype(struct kobject *kobj)
 {

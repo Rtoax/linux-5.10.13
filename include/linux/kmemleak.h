@@ -55,7 +55,7 @@ static inline void kmemleak_erase(void **ptr)
 }
 
 #else
-/*  */
+
 #endif	/* CONFIG_DEBUG_KMEMLEAK */
 
 #endif	/* __KMEMLEAK_H */

@@ -282,7 +282,7 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
  * passed in files structure.
  * errorp will be valid only when the returned files_struct is NULL.
  */
-struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)   /*  */
+struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)
 {
 	struct files_struct *newf;
 	struct file **old_fds, **new_fds;
@@ -343,7 +343,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 		open_files = sane_fdtable_size(old_fdt, max_fds);
 	}
 
-	copy_fd_bitmaps(new_fdt, old_fdt, open_files);  /*  */
+	copy_fd_bitmaps(new_fdt, old_fdt, open_files);
 
 	old_fds = old_fdt->fd;
 	new_fds = new_fdt->fd;
@@ -460,7 +460,7 @@ void exit_files(struct task_struct *tsk)
 }
 
 struct files_struct init_files /* init_task.files 打开的文件 */= {
-	init_files.count		= ATOMIC_INIT(1),/*  */
+	init_files.count		= ATOMIC_INIT(1),
 	init_files.fdt		= &init_files.fdtab,
 	init_files.fdtab		= {
 		.max_fds	= NR_OPEN_DEFAULT,
@@ -490,7 +490,7 @@ static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
 /*
  * allocate a file descriptor, mark it busy.分配一个 FD
  */
-int __alloc_fd(struct files_struct *files,/*  */
+int __alloc_fd(struct files_struct *files,
 	       unsigned start, unsigned end, unsigned flags)
 {
 	unsigned int fd;
@@ -532,7 +532,7 @@ repeat:
 
 	__set_open_fd(fd, fdt);/* 给 bitmaps 置位 */
 	if (flags & O_CLOEXEC)
-		__set_close_on_exec(fd, fdt);/*  */
+		__set_close_on_exec(fd, fdt);
 	else
 		__clear_close_on_exec(fd, fdt);
 	error = fd;
@@ -621,7 +621,7 @@ void __fd_install(struct files_struct *files, unsigned int fd,
 		spin_lock(&files->file_lock);
 
         /**
-         *  
+         *
          */
 		fdt = files_fdtable(files); /* fdt = files->fdt */
 		BUG_ON(fdt->fd[fd] != NULL);
@@ -847,7 +847,7 @@ static struct file *__fget_files(struct files_struct *files, unsigned int fd,
 
 	rcu_read_lock();
 loop:
-	file = fcheck_files(files, fd); /*  */
+	file = fcheck_files(files, fd);
 	if (file) {
 		/* File object ref couldn't be taken.
 		 * dup2() atomicity guarantee is the reason
@@ -874,7 +874,7 @@ struct file *fget_many(unsigned int fd, unsigned int refs)
 	return __fget(fd, FMODE_PATH, refs);
 }
 
-struct file *fget(unsigned int fd)  /*  */
+struct file *fget(unsigned int fd)
 {
 	return __fget(fd, FMODE_PATH, 1);
 }
@@ -920,11 +920,11 @@ static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 	struct file *_file;
 
     /**
-     *  
+     *
      */
 	if (atomic_read(&files->count) == 1) {/* 第一次使用这个 fd */
         /**
-         *  
+         *
          */
 		_file = __fcheck_files(files, fd);
 		if (!_file || unlikely(_file->f_mode & mask))
@@ -939,7 +939,7 @@ static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 }
 
 /**
- *  
+ *
  */
 unsigned long __fdget(unsigned int fd)
 {

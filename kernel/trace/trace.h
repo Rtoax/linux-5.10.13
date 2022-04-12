@@ -285,7 +285,7 @@ struct cond_snapshot {
  * highest level data structure that individual tracers deal with.
  * They have on/off state as well:
  */
-struct trace_array {    /*  */
+struct trace_array {
 	struct list_head	list;
 	char			*name;
 	struct array_buffer	array_buffer;
@@ -306,7 +306,7 @@ struct trace_array {    /*  */
 #endif
 #if defined(CONFIG_TRACER_MAX_TRACE) || defined(CONFIG_HWLAT_TRACER)
 	unsigned long		max_latency;
-#ifdef CONFIG_FSNOTIFY  /*  */
+#ifdef CONFIG_FSNOTIFY
 	struct dentry		*d_max_latency;
 	struct work_struct	fsnotify_work;
 	struct irq_work		fsnotify_irqwork;
@@ -471,7 +471,7 @@ extern void __ftrace_bad_type(void);
  * The bit is the bit index that sets its value on the
  * flags value in struct tracer_flags.
  */
-struct tracer_opt { /*  */
+struct tracer_opt {
 	const char	*name; /* Will appear on the trace_options file */
 	u32		bit; /* Mask assigned in val field in tracer_flags */
 };
@@ -517,7 +517,7 @@ struct trace_option_dentry {
  * @set_flag: signals one of your private flags changed (trace_options file)
  * @flags: your private flags
  */
-struct tracer { /*  */
+struct tracer {
 	const char		*name;
 	int			    (*init)(struct trace_array *tr);
 	void			(*reset)(struct trace_array *tr);
@@ -810,7 +810,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace);
 void set_graph_array(struct trace_array *tr);
 
 /**
- *  
+ *
  */
 void tracing_start_cmdline_record(void);
 void tracing_stop_cmdline_record(void);
@@ -864,14 +864,14 @@ void update_max_tr_single(struct trace_array *tr,
 void latency_fsnotify(struct trace_array *tr);
 
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_STACKTRACE
 void __trace_stack(struct trace_array *tr, unsigned long flags, int skip,
 		   int pc);
 #else
-/*  */
+
 #endif /* CONFIG_STACKTRACE */
 
 extern u64 ftrace_now(int cpu);
@@ -886,7 +886,7 @@ extern unsigned long ftrace_number_of_pages;
 extern unsigned long ftrace_number_of_groups;
 void ftrace_init_trace_array(struct trace_array *tr);
 #else
-/*  */
+
 #endif
 #define DYN_FTRACE_TEST_NAME trace_selftest_dynamic_test_func
 extern int DYN_FTRACE_TEST_NAME(void);
@@ -961,9 +961,9 @@ enum {
 struct ftrace_hash {
 	unsigned long		size_bits;  /* 默认值为 10 (1<<10=1024), hash桶的大小 */
 	struct hlist_head	*buckets;   /* 节点为`struct ftrace_func_entry` */
-	unsigned long		count;      /*  */
-	unsigned long		flags;      /*  */
-	struct rcu_head		rcu;        /*  */
+	unsigned long		count;
+	unsigned long		flags;
+	struct rcu_head		rcu;
 };
 
 struct ftrace_func_entry *
@@ -1095,7 +1095,7 @@ static inline int ftrace_graph_notrace_addr(unsigned long addr)
 	return ret;
 }
 #else
-/*  */
+
 #endif /* CONFIG_DYNAMIC_FTRACE */
 
 extern unsigned int fgraph_max_depth;
@@ -1110,12 +1110,12 @@ static inline bool ftrace_graph_ignore_func(struct ftrace_graph_ent *trace)
 }
 
 #else /* CONFIG_FUNCTION_GRAPH_TRACER */
-/*  */
+
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 
 extern struct list_head ftrace_pids;
 
-#ifdef CONFIG_FUNCTION_TRACER/*  */
+#ifdef CONFIG_FUNCTION_TRACER
 
 #define FTRACE_PID_IGNORE	-1
 #define FTRACE_PID_TRACE	-2
@@ -1152,7 +1152,7 @@ void ftrace_clear_pids(struct trace_array *tr);
 int init_function_trace(void);
 void ftrace_pid_follow_fork(struct trace_array *tr, bool enable);
 #else
-/*  */
+
 #endif /* CONFIG_FUNCTION_TRACER */
 
 #if defined(CONFIG_FUNCTION_TRACER) && defined(CONFIG_DYNAMIC_FTRACE)
@@ -1209,7 +1209,7 @@ extern int ftrace_set_filter(struct ftrace_ops *ops, unsigned char *buf,
 extern int ftrace_set_notrace(struct ftrace_ops *ops, unsigned char *buf,
 			      int len, int reset);
 #else
-/*  */
+
 #endif /* CONFIG_FUNCTION_TRACER && CONFIG_DYNAMIC_FTRACE */
 
 bool ftrace_event_is_function(struct trace_event_call *call);
@@ -1260,7 +1260,7 @@ extern int trace_get_user(struct trace_parser *parser, const char __user *ubuf,
 # define FGRAPH_FLAGS						\
 		C(DISPLAY_GRAPH,	"display-graph"),
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_BRANCH_TRACER
@@ -1353,9 +1353,9 @@ enum trace_iterator_flags { TRACE_FLAGS };
 #define TRACE_ITER_SYM_MASK \
 	(TRACE_ITER_PRINT_PARENT|TRACE_ITER_SYM_OFFSET|TRACE_ITER_SYM_ADDR)
 
-extern struct tracer nop_trace; /*  */
+extern struct tracer nop_trace;
 
-#ifdef CONFIG_BRANCH_TRACER /*  */
+#ifdef CONFIG_BRANCH_TRACER
 extern int enable_branch_tracing(struct trace_array *tr);
 extern void disable_branch_tracing(void);
 static inline int trace_branch_enable(struct trace_array *tr)
@@ -1370,13 +1370,13 @@ static inline void trace_branch_disable(void)
 	disable_branch_tracing();
 }
 #else
-/*  */
+
 #endif /* CONFIG_BRANCH_TRACER */
 
 /* set ring buffers to default size if not already done so */
 int tracing_update_buffers(void);
 
-struct ftrace_event_field { /*  */
+struct ftrace_event_field {
 	struct list_head	link;
 	const char		*name;
 	const char		*type;
@@ -1994,37 +1994,37 @@ int perf_ftrace_event_register(struct trace_event_call *call,
 void init_ftrace_syscalls(void);
 const char *get_syscall_name(int syscall);
 #else
-/*  */
+
 #endif
 
-#ifdef CONFIG_EVENT_TRACING /*  */
+#ifdef CONFIG_EVENT_TRACING
 void trace_event_init(void);
 void trace_event_eval_update(struct trace_eval_map **map, int len);
 /* Used from boot time tracer */
 extern int ftrace_set_clr_event(struct trace_array *tr, char *buf, int set);
 extern int trigger_process_regex(struct trace_event_file *file, char *buff);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_TRACER_SNAPSHOT
 void tracing_snapshot_instance(struct trace_array *tr);
 int tracing_alloc_snapshot_instance(struct trace_array *tr);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_PREEMPT_TRACER
 void tracer_preempt_on(unsigned long a0, unsigned long a1);
 void tracer_preempt_off(unsigned long a0, unsigned long a1);
 #else
-/*  */
+
 #endif
 #ifdef CONFIG_IRQSOFF_TRACER
 void tracer_hardirqs_on(unsigned long a0, unsigned long a1);
 void tracer_hardirqs_off(unsigned long a0, unsigned long a1);
 #else
-/*  */
+
 #endif
 
 extern struct trace_iterator *tracepoint_print_iter;

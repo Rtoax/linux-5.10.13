@@ -92,7 +92,7 @@ extern struct mempolicy *__mpol_dup(struct mempolicy *pol);
 static inline struct mempolicy *mpol_dup(struct mempolicy *pol) /* 复制 内存numa 策略 */
 {
 	if (pol)
-		pol = __mpol_dup(pol);  /*  */
+		pol = __mpol_dup(pol);
 	return pol;
 }
 
@@ -205,6 +205,6 @@ extern int mpol_misplaced(struct page *, struct vm_area_struct *, unsigned long)
 extern void mpol_put_task_policy(struct task_struct *);
 
 #else
-/*  */
+
 #endif /* CONFIG_NUMA */
 #endif

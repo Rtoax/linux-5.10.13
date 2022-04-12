@@ -16,7 +16,7 @@
  *		Alan Cox	:	Cleaned up, and sorted types.
  *		Pedro Roque	:	inet6 protocols
  */
- 
+
 #ifndef _PROTOCOL_H
 #define _PROTOCOL_H
 
@@ -70,7 +70,7 @@ struct inet6_protocol {
 #define INET6_PROTO_FINAL	0x2
 #endif
 
-struct net_offload {    /*  */
+struct net_offload {
 	struct offload_callbacks callbacks;
 	unsigned int		 flags;	/* Flags used by IPv6 for now */
 };
@@ -78,7 +78,7 @@ struct net_offload {    /*  */
 #define INET6_PROTO_GSO_EXTHDR	0x1
 
 /**
- *  
+ *
  *  在 `inet_register_protosw()` 挂入链表 `inetsw[]`
  *  在 `inet_init()` 中初始化 链表 `inetsw[]`
  *  有个静态变量 `inetsw_array[]`
@@ -95,15 +95,15 @@ struct inet_protosw {   /* IP 协议网络接口 */
 	unsigned short	 protocol; /* This is the L4 protocol number.  */
 
     /**
-     *  
+     *
      */
 	struct proto	 *prot;
 
     /**
-     *  
+     *
      */
 	const struct proto_ops *ops;
-  
+
 	unsigned char	 flags;      /* See INET_PROTOSW_* below.  */
 };
 #define INET_PROTOSW_REUSE 0x01	     /* Are ports automatically reusable? */

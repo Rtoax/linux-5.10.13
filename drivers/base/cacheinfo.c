@@ -671,4 +671,4 @@ static int __init cacheinfo_sysfs_init(void)
 				 "base/cacheinfo:online",
 				 cacheinfo_cpu_online, cacheinfo_cpu_pre_down);
 }
-device_initcall(cacheinfo_sysfs_init);  /*  */
+device_initcall(cacheinfo_sysfs_init);

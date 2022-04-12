@@ -37,7 +37,7 @@
  * bus_type/class to be statically allocated safely.  Nothing outside of the
  * driver core should ever touch these fields.
  */
-struct subsys_private { /*  */
+struct subsys_private {
 	struct kset subsys;
 	struct kset *devices_kset;
 	struct list_head interfaces;
@@ -55,7 +55,7 @@ struct subsys_private { /*  */
 };
 #define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
 
-struct driver_private { /*  */
+struct driver_private {
 	struct kobject kobj;
 	struct klist klist_devices;
 	struct klist_node knode_bus;
@@ -173,7 +173,7 @@ static inline void module_remove_driver(struct device_driver *drv) { }
 #ifdef CONFIG_DEVTMPFS
 extern int devtmpfs_init(void);
 #else
-/*  */
+
 #endif
 
 /* Device links support */

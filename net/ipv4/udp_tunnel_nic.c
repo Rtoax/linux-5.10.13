@@ -641,7 +641,7 @@ err_cancel:
 	return -EMSGSIZE;
 }
 
-static const struct udp_tunnel_nic_ops __udp_tunnel_nic_ops = { /*  */
+static const struct udp_tunnel_nic_ops __udp_tunnel_nic_ops = {
 	.get_port	= __udp_tunnel_nic_get_port,
 	.set_port_priv	= __udp_tunnel_nic_set_port_priv,
 	.add_port	= __udp_tunnel_nic_add_port,
@@ -880,7 +880,7 @@ release_dev:
 	dev_put(dev);
 }
 
-static int  /*  */
+static int
 udp_tunnel_nic_netdevice_event(struct notifier_block *unused,
 			       unsigned long event, void *ptr)
 {
@@ -956,7 +956,7 @@ err_unset_ops:
 	destroy_workqueue(udp_tunnel_nic_workqueue);
 	return err;
 }
-late_initcall(udp_tunnel_nic_init_module);  /*  */
+late_initcall(udp_tunnel_nic_init_module);
 
 static void __exit udp_tunnel_nic_cleanup_module(void)
 {

@@ -44,7 +44,7 @@ struct pid_namespace {  /* pid 隔离 namespace */
     /**
      *  收割者
      */
-	struct task_struct *child_reaper;   /*  */
+	struct task_struct *child_reaper;
     /**
      *  created in `create_pid_namespace()`
      *  init_pid_ns 分配 `pid_idr_init()`
@@ -86,7 +86,7 @@ extern struct pid_namespace init_pid_ns;
  * disable_pid_allocation
  *
  */
-#define PIDNS_ADDING (1U << 31) /*  */
+#define PIDNS_ADDING (1U << 31)
 
 #ifdef CONFIG_PID_NS
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
@@ -103,7 +103,7 @@ extern int reboot_pid_ns(struct pid_namespace *pid_ns, int cmd);
 extern void put_pid_ns(struct pid_namespace *ns);
 
 #else /* !CONFIG_PID_NS */
-/*  */
+
 #endif /* CONFIG_PID_NS */
 
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);

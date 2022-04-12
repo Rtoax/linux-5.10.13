@@ -172,7 +172,7 @@ static __init int setup_apicpmtimer(char *s)
 __setup("apicpmtimer", setup_apicpmtimer);
 #endif
 
-unsigned long __ro_after_init mp_lapic_addr ;/*  */
+unsigned long __ro_after_init mp_lapic_addr ;
 int __ro_after_init disable_apic ;
 /* Disable local APIC timer from the kernel commandline or via dmi quirk */
 static int __initdata disable_apic_timer ;
@@ -199,7 +199,7 @@ unsigned int lapic_timer_period = 0;
 
 static void apic_pm_activate(void);
 
-static unsigned long __ro_after_init apic_phys ;/*  */
+static unsigned long __ro_after_init apic_phys ;
 
 /*
  * Get the LAPIC version
@@ -1912,7 +1912,7 @@ static __init void try_to_enable_x2apic(int remap_mode)
 /**
  *
  */
-void __init check_x2apic(void)  /*  */
+void __init check_x2apic(void)
 {
 	if (x2apic_enabled()) {
 		pr_info("x2apic: enabled by BIOS, switching to x2apic ops\n");
@@ -2773,7 +2773,7 @@ core_initcall(init_lapic_sysfs);
 
 #else	/* CONFIG_PM */
 
-/*  */
+
 
 #endif	/* CONFIG_PM */
 
@@ -2909,7 +2909,7 @@ static int __init lapic_insert_resource(void)
  * need call insert after e820__reserve_resources()
  * that is using request_resource
  */
-late_initcall(lapic_insert_resource);   /*  */
+late_initcall(lapic_insert_resource);
 
 static int __init apic_set_disabled_cpu_apicid(char *arg)
 {

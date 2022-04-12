@@ -67,7 +67,7 @@ struct mode_info {
 	u16 depth;		/* Bits per pixel, 0 for text mode */
 };
 
-struct card_info {  /*  */
+struct card_info {
 	const char *card_name;
 	int (*set_mode)(struct mode_info *mode);
 	int (*probe)(void);

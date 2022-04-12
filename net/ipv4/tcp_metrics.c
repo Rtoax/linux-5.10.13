@@ -85,7 +85,7 @@ struct tcpm_hash_bucket {
 	struct tcp_metrics_block __rcu	*chain;
 };
 
-static struct tcpm_hash_bucket	__read_mostly *tcp_metrics_hash ;/*  */
+static struct tcpm_hash_bucket	__read_mostly *tcp_metrics_hash ;
 static unsigned int		__read_mostly tcp_metrics_hash_log ;
 
 static DEFINE_SPINLOCK(tcp_metrics_lock);
@@ -1022,7 +1022,7 @@ static __net_initdata struct pernet_operations tcp_net_metrics_ops = {
 	.exit_batch	=	tcp_net_metrics_exit_batch,
 };
 
-void __init tcp_metrics_init(void)  /*  */
+void __init tcp_metrics_init(void)
 {
 	int ret;
 

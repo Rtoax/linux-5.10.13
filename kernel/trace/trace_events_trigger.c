@@ -1655,7 +1655,7 @@ static __init int register_trigger_traceon_traceoff_cmds(void)
 	return ret;
 }
 
-__init int register_trigger_cmds(void)  /*  */
+__init int register_trigger_cmds(void)
 {
 	register_trigger_traceon_traceoff_cmds();
 	register_trigger_snapshot_cmd();

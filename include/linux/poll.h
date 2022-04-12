@@ -31,7 +31,7 @@ extern struct ctl_table epoll_table[]; /* for sysctl */
 
 struct poll_table_struct;
 
-/* 
+/*
  * structures and helpers for f_op->poll implementations
  */
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
@@ -39,7 +39,7 @@ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_
 /*
  * Do not touch the structure directly, use the access functions
  * poll_does_not_wait() and poll_requested_events() instead.
- * 
+ *
  *  一般是在 设备驱动的 (*poll) 回调中使用 poll_wait
  */
 typedef struct poll_table_struct {  /* 轮询表 */
@@ -59,12 +59,12 @@ typedef struct poll_table_struct {  /* 轮询表 */
 static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
 {
     /**
-     *  
+     *
      *  _qproc 使用 `init_poll_funcptr()` 赋值
      *  --------------
      *  epoll - ep_ptable_queue_proc() 在 `ep_insert()` 中添加
      *  poll,select - __pollwait() 在 `poll_initwait()` 中添加
-     *  perf_event - 
+     *  perf_event -
      */
 	if (p && p->_qproc && wait_address)
 		p->_qproc(filp, wait_address, p);
@@ -92,7 +92,7 @@ static inline __poll_t poll_requested_events(const poll_table *p)
 }
 
 /**
- *  
+ *
  */
 static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
 {
@@ -107,22 +107,22 @@ static inline bool file_can_poll(struct file *file)
 {
     /**
      *  其中如下的 poll 回调
-     *  
+     *
      *  socket_file_ops.poll = sock_poll()
      */
 	return file->f_op->poll;
 }
 
 /**
- *  
+ *
  */
-static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)    /*  */
+static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
 {
 	if (unlikely(!file->f_op->poll))
 		return DEFAULT_POLLMASK;
 
     /**
-     *  
+     *
      *  socket_file_ops.poll = sock_poll()
      *  eventpoll_fops.poll = ep_eventpoll_poll()
      */
@@ -130,7 +130,7 @@ static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
 }
 
 /**
- *  
+ *
  */
 struct poll_table_entry {   /* 轮询表项 */
     /**
@@ -139,7 +139,7 @@ struct poll_table_entry {   /* 轮询表项 */
 	struct file *filp;      /* 文件指针 */
 	__poll_t key;           /* key */
     /**
-     *  
+     *
      */
 	wait_queue_entry_t wait;/* 等待队列 entry */
 	wait_queue_head_t *wait_address;    /* 等待队列 */
@@ -150,11 +150,11 @@ struct poll_table_entry {   /* 轮询表项 */
  */
 struct poll_wqueues {   /* 轮询等待队列 */
 	poll_table pt;      /* 回调+key */
-	struct poll_table_page *table;      /*  */
-	struct task_struct *polling_task;   /*  */
+	struct poll_table_page *table;
+	struct task_struct *polling_task;
 	int triggered;      /* 被触发 */
-	int error;          /*  */
-	int inline_index;   /*  */
+	int error;
+	int inline_index;
 	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
 };
 

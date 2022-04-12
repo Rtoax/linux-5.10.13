@@ -27,7 +27,7 @@
 /**
  *  存放 fd 文件描述符的表
  */
-struct fdtable {    /*  */
+struct fdtable {
 	unsigned int max_fds;
     /**
      *  这是一个数组
@@ -61,11 +61,11 @@ struct files_struct {/* 打开的文件 */
 	wait_queue_head_t resize_wait;
 
     /**
-     *  
+     *
      */
 	struct fdtable __rcu *fdt;
 	struct fdtable fdtab;
-    
+
     /*
      * written part on a separate cache line in SMP
      */
@@ -75,7 +75,7 @@ struct files_struct {/* 打开的文件 */
 	unsigned long open_fds_init[1];
 	unsigned long full_fds_bits_init[1];
     /**
-     *  
+     *
      */
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
@@ -109,7 +109,7 @@ static inline struct file *fcheck_files(struct files_struct *files, unsigned int
 	RCU_LOCKDEP_WARN(!rcu_read_lock_held() &&
 			   !lockdep_is_held(&files->file_lock),
 			   "suspicious rcu_dereference_check() usage");
-	return __fcheck_files(files, fd);   /*  */
+	return __fcheck_files(files, fd);
 }
 
 /*

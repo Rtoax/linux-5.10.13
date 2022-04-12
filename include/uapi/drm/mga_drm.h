@@ -218,7 +218,7 @@ typedef struct _drm_mga_sarea {
 	drm_mga_age_t last_frame;
 	unsigned int last_enqueue;	/* last time a buffer was enqueued */
 	unsigned int last_dispatch;	/* age of the most recently dispatched buffer */
-	unsigned int last_quiescent;	/*  */
+	unsigned int last_quiescent;
 
 	/* LRU lists for texture memory in agp space and on the card.
 	 */

@@ -1659,7 +1659,7 @@ static int __init init_blk_tracer(void)
 	return 0;
 }
 
-device_initcall(init_blk_tracer);   /*  */
+device_initcall(init_blk_tracer);
 
 static int blk_trace_remove_queue(struct request_queue *q)
 {

@@ -112,7 +112,7 @@
  *	in /proc for a task before it execs a suid executable.
  */
 
-static u8 __ro_after_init nlink_tid ;/*  */
+static u8 __ro_after_init nlink_tid ;
 static u8 __ro_after_init nlink_tgid ;
 
 struct pid_entry {  /* /proc/PID/ */
@@ -2640,7 +2640,7 @@ static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 	return d_splice_alias(inode, dentry);
 }
 
-static struct dentry *proc_pident_lookup(struct inode *dir, 
+static struct dentry *proc_pident_lookup(struct inode *dir,
 					 struct dentry *dentry,
 					 const struct pid_entry *p,
 					 const struct pid_entry *end)
@@ -2840,7 +2840,7 @@ static const struct pid_entry attr_dir_stuff[] = {
 
 static int proc_attr_dir_readdir(struct file *file, struct dir_context *ctx)
 {
-	return proc_pident_readdir(file, ctx, 
+	return proc_pident_readdir(file, ctx,
 				   attr_dir_stuff, ARRAY_SIZE(attr_dir_stuff));
 }
 
@@ -2871,7 +2871,7 @@ static struct dentry *proc_attr_dir_lookup(struct inode *dir,
 				  attr_dir_stuff + ARRAY_SIZE(attr_dir_stuff));
 }
 /**
- *  
+ *
  */
 static const struct inode_operations proc_attr_dir_inode_operations = {
 	.lookup		= proc_attr_dir_lookup,
@@ -3251,7 +3251,7 @@ static const struct pid_entry tgid_base_stuff[] = {
 #endif
 #ifdef CONFIG_SECURITY
     /**
-     *  
+     *
      */
 	DIR("attr",       S_IRUGO|S_IXUGO, proc_attr_dir_inode_operations, proc_attr_dir_operations),
 #endif
@@ -3585,11 +3585,11 @@ static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
 	LNK("exe",       proc_exe_link),
 	REG("mounts",    S_IRUGO, proc_mounts_operations),
 	REG("mountinfo",  S_IRUGO, proc_mountinfo_operations),
-#ifdef CONFIG_PROC_PAGE_MONITOR /*  */
+#ifdef CONFIG_PROC_PAGE_MONITOR
 	REG("clear_refs", S_IWUSR, proc_clear_refs_operations),
 	REG("smaps",     S_IRUGO, proc_pid_smaps_operations),
 	REG("smaps_rollup", S_IRUGO, proc_pid_smaps_rollup_operations),
-	REG("pagemap",    S_IRUSR, proc_pagemap_operations),    /*  */
+	REG("pagemap",    S_IRUSR, proc_pagemap_operations),
 #endif
 #ifdef CONFIG_SECURITY
 	DIR("attr",      S_IRUGO|S_IXUGO, proc_attr_dir_inode_operations, proc_attr_dir_operations),
@@ -3626,7 +3626,7 @@ static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
 	REG("make-it-fail", S_IRUGO|S_IWUSR, proc_fault_inject_operations),
 	REG("fail-nth", 0644, proc_fail_nth_operations),
 #endif
-#ifdef CONFIG_TASK_IO_ACCOUNTING /*  */
+#ifdef CONFIG_TASK_IO_ACCOUNTING
 	ONE("io",	S_IRUSR, proc_tid_io_accounting),
 #endif
 #ifdef CONFIG_USER_NS
@@ -3879,6 +3879,6 @@ static const struct file_operations proc_task_operations = {
 
 void __init set_proc_pid_nlink(void)
 {
-	nlink_tid = pid_entry_nlink(tid_base_stuff, ARRAY_SIZE(tid_base_stuff));/*  */
+	nlink_tid = pid_entry_nlink(tid_base_stuff, ARRAY_SIZE(tid_base_stuff));
 	nlink_tgid = pid_entry_nlink(tgid_base_stuff, ARRAY_SIZE(tgid_base_stuff));
 }

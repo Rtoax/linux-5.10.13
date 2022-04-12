@@ -50,13 +50,13 @@ struct hstate hstates[HUGE_MAX_HSTATE];
 #ifdef CONFIG_CMA
 static struct cma *hugetlb_cma[MAX_NUMNODES];
 #endif
-static unsigned long __initdata hugetlb_cma_size ;/*  */
+static unsigned long __initdata hugetlb_cma_size ;
 
 /*
  * Minimum page order among possible hugepage sizes, set to a proper value
  * at boot time.
  */
-static unsigned int __read_mostly minimum_order  = UINT_MAX;/*  */
+static unsigned int __read_mostly minimum_order  = UINT_MAX;
 
 __initdata LIST_HEAD(huge_boot_pages);
 
@@ -759,7 +759,7 @@ static pgoff_t vma_hugecache_offset(struct hstate *h,
 	return ((address - vma->vm_start) >> huge_page_shift(h)) +
 			(vma->vm_pgoff >> huge_page_order(h));
 }
-        /*  */
+
 pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
 				     unsigned long address)
 {
@@ -3103,11 +3103,11 @@ static void __init hugetlb_register_all_nodes(void)
 }
 #else	/* !CONFIG_NUMA */
 
-/*  */
+
 
 #endif
 
-static int __init hugetlb_init(void)    /*  */
+static int __init hugetlb_init(void)
 {
 	int i;
 
@@ -3171,7 +3171,7 @@ static int __init hugetlb_init(void)    /*  */
 		mutex_init(&hugetlb_fault_mutex_table[i]);
 	return 0;
 }
-subsys_initcall(hugetlb_init);  /*  */
+subsys_initcall(hugetlb_init);
 
 /* Overwritten by architectures with more huge page sizes */
 bool __init __attribute((weak)) arch_hugetlb_valid_size(unsigned long size)
@@ -4451,12 +4451,12 @@ u32 hugetlb_fault_mutex_hash(struct address_space *mapping, pgoff_t idx)
  * For uniprocesor systems we always use a single mutex, so just
  * return 0 and avoid the hashing overhead.
  */
-    /*  */
+
 
 #endif
 
 /**
- *  hugetlb fault 处理函数 
+ *  hugetlb fault 处理函数
  */
 vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 			unsigned long address, unsigned int flags)
@@ -4506,7 +4506,7 @@ vm_fault_t hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
     /**
      *  分配 大页
      */
-	ptep = huge_pte_alloc(mm, haddr, huge_page_size(h));    /*  */
+	ptep = huge_pte_alloc(mm, haddr, huge_page_size(h));
 	if (!ptep) {
 		i_mmap_unlock_read(mapping);
 		return VM_FAULT_OOM;
@@ -5403,8 +5403,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
 	pud_t *pud;
 	pte_t *pte = NULL;
 
-	pgd = pgd_offset(mm, addr);     /*  */
-	p4d = p4d_alloc(mm, pgd, addr); /*  */
+	pgd = pgd_offset(mm, addr);
+	p4d = p4d_alloc(mm, pgd, addr);
 	if (!p4d)
 		return NULL;
 	pud = pud_alloc(mm, p4d, addr);
@@ -5432,7 +5432,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
  * address @addr, or NULL if a !p*d_present() entry is encountered and the
  * size @sz doesn't match the hugepage size at this level of the page
  * table.
- */ /*  */
+ */
 pte_t *huge_pte_offset(struct mm_struct *mm,
 		       unsigned long addr, unsigned long sz)
 {
@@ -5615,7 +5615,7 @@ void move_hugetlb_state(struct page *oldpage, struct page *newpage, int reason)
 }
 
 #ifdef CONFIG_CMA
-static bool __initdata cma_reserve_called ;/*  */
+static bool __initdata cma_reserve_called ;
 
 static int __init cmdline_parse_hugetlb_cma(char *p)
 {
@@ -5625,7 +5625,7 @@ static int __init cmdline_parse_hugetlb_cma(char *p)
 
 early_param("hugetlb_cma", cmdline_parse_hugetlb_cma);
 
-/*  */
+
 void __init hugetlb_cma_reserve(int order)
 {
 	unsigned long size, reserved, per_node;

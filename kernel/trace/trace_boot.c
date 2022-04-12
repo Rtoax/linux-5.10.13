@@ -352,4 +352,4 @@ static int __init trace_boot_init(void)
  * Start tracing at the end of core-initcall, so that it starts tracing
  * from the beginning of postcore_initcall.
  */
-core_initcall_sync(trace_boot_init);    /*  */
+core_initcall_sync(trace_boot_init);

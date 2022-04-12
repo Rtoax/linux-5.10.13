@@ -553,7 +553,7 @@ static void __net_exit netns_bpf_pernet_pre_exit(struct net *net)
 	mutex_unlock(&netns_bpf_mutex);
 }
 
-static struct pernet_operations __net_initdata netns_bpf_pernet_ops  = {/*  */
+static struct pernet_operations __net_initdata netns_bpf_pernet_ops  = {
 	.init = netns_bpf_pernet_init,
 	.pre_exit = netns_bpf_pernet_pre_exit,
 };

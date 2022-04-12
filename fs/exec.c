@@ -269,7 +269,7 @@ static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
 /**
  *
  */
-static int __bprm_mm_init(struct linux_binprm *bprm)    /*  */
+static int __bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
 	struct vm_area_struct *vma = NULL;
@@ -322,7 +322,7 @@ static bool valid_arg_len(struct linux_binprm *bprm, long len)
 }
 
 #else
-/*  */
+
 #endif /* CONFIG_MMU */
 
 /*
@@ -331,12 +331,12 @@ static bool valid_arg_len(struct linux_binprm *bprm, long len)
  * flags, permissions, and offset, so we use temporary values.  We'll update
  * them later in setup_arg_pages().
  */
-static int bprm_mm_init(struct linux_binprm *bprm)  /*  */
+static int bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
 	struct mm_struct *mm = NULL;
 
-	bprm->mm = mm = mm_alloc(); /*  */
+	bprm->mm = mm = mm_alloc();
 	err = -ENOMEM;
 	if (!mm)
 		goto err;
@@ -352,7 +352,7 @@ static int bprm_mm_init(struct linux_binprm *bprm)  /*  */
     /**
      *  分配vma，并将其加入 mm中
      */
-	err = __bprm_mm_init(bprm); /*  */
+	err = __bprm_mm_init(bprm);
 	if (err)
 		goto err;
 
@@ -836,7 +836,7 @@ out_unlock:
 EXPORT_SYMBOL(setup_arg_pages);
 
 #else
-/*  */
+
 #endif /* CONFIG_MMU */
 /**
  *  execv 过程打开可执行文件
@@ -935,7 +935,7 @@ static int exec_mmap(struct mm_struct *mm)  /* 见`execve()` */
 	old_mm = current->mm;   /* 老的 mm 结构存在 */
 	exec_mm_release(tsk, old_mm);
 	if (old_mm)
-		sync_mm_rss(old_mm);    /*  */
+		sync_mm_rss(old_mm);
 
     /**
      *
@@ -980,7 +980,7 @@ static int exec_mmap(struct mm_struct *mm)  /* 见`execve()` */
      *  我真的要换 mm_struct 结构啦？
      *  调用 switch_mm(prev, next, current)
      */
-	activate_mm(active_mm, mm); /*  */
+	activate_mm(active_mm, mm);
 	if (IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
 		local_irq_enable();
 	tsk->mm->vmacache_seqnum = 0;
@@ -998,7 +998,7 @@ static int exec_mmap(struct mm_struct *mm)  /* 见`execve()` */
 	return 0;
 }
 
-static int de_thread(struct task_struct *tsk)   /*  */
+static int de_thread(struct task_struct *tsk)
 {
 	struct signal_struct *sig = tsk->signal;
 	struct sighand_struct *oldsighand = tsk->sighand;
@@ -1231,7 +1231,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	 *
 	 * 必须在`exec_mmap()`前执行
 	 */
-	set_mm_exe_file(bprm->mm, bprm->file);  /*  */
+	set_mm_exe_file(bprm->mm, bprm->file);
 
 	/* If the binary is not readable then enforce mm->dumpable=0
      如果不可读 */
@@ -1286,7 +1286,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	 * 我们必须在更改进程是否可转储（在setup_new_exec中）之前应用CLOEXEC，
 	 * 以避免与用户空间中的进程发生争执，以尝试访问正在执行exec（2）的进程的应关闭文件描述符。
 	 */
-	/*  */
+
 	do_close_on_exec(me->files);
 
 	if (bprm->secureexec) {
@@ -1393,14 +1393,14 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
 }
 EXPORT_SYMBOL(would_dump);
 
-void setup_new_exec(struct linux_binprm * bprm) /*  */
+void setup_new_exec(struct linux_binprm * bprm)
 {
 	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
 
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
 
-	arch_setup_new_exec();  /*  */
+	arch_setup_new_exec();
 
 	/* Set the new mm task size. We have to do that late because it may
 	 * depend on TIF_32BIT which is only updated in flush_thread() on
@@ -1467,14 +1467,14 @@ static void free_bprm(struct linux_binprm *bprm)
 /**
  *  分配用于保存 args 的数据结构
  */
-static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)   /*  */
+static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
 	int retval = -ENOMEM;
 	if (!bprm)
 		goto out;
 
-	if (fd == AT_FDCWD || filename->name[0] == '/') {   /*  */
+	if (fd == AT_FDCWD || filename->name[0] == '/') {
 		bprm->filename = filename->name;
 	} else {
 		if (filename->name[0] == '\0')  /* 文件名为空 */
@@ -1617,7 +1617,7 @@ static int bprm_creds_from_file(struct linux_binprm *bprm)
  *
  * This may be called multiple times for binary chains (scripts for example).
  */
-static int prepare_binprm(struct linux_binprm *bprm)    /*  */
+static int prepare_binprm(struct linux_binprm *bprm)
 {
 	loff_t pos = 0;
 
@@ -1670,7 +1670,7 @@ EXPORT_SYMBOL(remove_arg_zero);
 /*
  * cycle the list of binary formats handler, until one recognizes the image
  */
-static int search_binary_handler(struct linux_binprm *bprm) /*  */
+static int search_binary_handler(struct linux_binprm *bprm)
 {
 	bool need_retry = IS_ENABLED(CONFIG_MODULES);
 	struct linux_binfmt *fmt;
@@ -1706,7 +1706,7 @@ static int search_binary_handler(struct linux_binprm *bprm) /*  */
          *  加载二进制文件
          *  elf_format.load_binary = load_elf_binary() -> start_thread(ip=elf_entry)
          */
-		retval = fmt->load_binary(bprm);    /*  */
+		retval = fmt->load_binary(bprm);
 
 		read_lock(&binfmt_lock);
 		put_binfmt(fmt);
@@ -1781,13 +1781,13 @@ static int exec_binprm(struct linux_binprm *bprm)
     /**
      *  跟踪点
      */
-	trace_sched_process_exec(current, old_pid, bprm);   /*  */
-	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);  /*  */
+	trace_sched_process_exec(current, old_pid, bprm);
+	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 
     /**
      *
      */
-	proc_exec_connector(current);   /*  */
+	proc_exec_connector(current);
 	return 0;
 }
 
@@ -1808,26 +1808,26 @@ static int bprm_execve(struct linux_binprm *bprm,
 	/*
 	 * Cancel any io_uring activity across execve
 	 */
-	io_uring_task_cancel(); /*  */
+	io_uring_task_cancel();
 
     /**
      *
      */
-	retval = unshare_files(&displaced); /*  */
+	retval = unshare_files(&displaced);
 	if (retval)
 		return retval;
 
     /**
      *
      */
-	retval = prepare_bprm_creds(bprm);  /*  */
+	retval = prepare_bprm_creds(bprm);
 	if (retval)
 		goto out_files;
 
     /**
      *  检测不安全的 exec
      */
-	check_unsafe_exec(bprm);    /*  */
+	check_unsafe_exec(bprm);
 
     /**
      *  标记父进程正在 execv
@@ -1918,7 +1918,7 @@ out_files:
 static int do_execveat_common(int fd, struct filename *filename,
 			      struct user_arg_ptr argv,
 			      struct user_arg_ptr envp,
-			      int flags)/*  */
+			      int flags)
 {
     /**
      *  保存args?
@@ -1943,12 +1943,12 @@ static int do_execveat_common(int fd, struct filename *filename,
 
 	/* We're below the limit (still or again), so we don't want to make
 	 * further execve() calls fail. */
-	current->flags &= ~PF_NPROC_EXCEEDED;/*  */
+	current->flags &= ~PF_NPROC_EXCEEDED;
 
     /**
      *  分配
      */
-	bprm = alloc_bprm(fd, filename);    /*  */
+	bprm = alloc_bprm(fd, filename);
 	if (IS_ERR(bprm)) {
 		retval = PTR_ERR(bprm);
 		goto out_ret;
@@ -2064,7 +2064,7 @@ out_ret:
  */
 static int do_execve(struct filename *filename,
 	const char __user *const __user *__argv,
-	const char __user *const __user *__envp)/*  */
+	const char __user *const __user *__envp)
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
@@ -2079,7 +2079,7 @@ static int do_execveat(int fd, struct filename *filename,
 		const char __user *const __user *__envp,
 		int flags)
 {
-	struct user_arg_ptr argv = { .ptr.native = __argv };    /*  */
+	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };
 
 	return do_execveat_common(fd, filename, argv, envp, flags);
@@ -2151,7 +2151,7 @@ void set_dumpable(struct mm_struct *mm, int value)
  *  execve(2)
  */
 int execve(const char *filename, char *const argv [], char *const envp[]){} /* +++ */
-SYSCALL_DEFINE3(execve, /*  */
+SYSCALL_DEFINE3(execve,
 		const char __user *, filename,
 		const char __user *const __user *, argv,
 		const char __user *const __user *, envp)
@@ -2159,10 +2159,10 @@ SYSCALL_DEFINE3(execve, /*  */
     /**
      *  加载运行二进制文件
      */
-	return do_execve(getname(filename), argv, envp);    /*  */
+	return do_execve(getname(filename), argv, envp);
 }
 
-/*  */
+
 SYSCALL_DEFINE5(execveat,
 		int, fd, const char __user *, filename,
 		const char __user *const __user *, argv,

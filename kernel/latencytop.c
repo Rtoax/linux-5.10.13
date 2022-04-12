@@ -59,7 +59,7 @@
 static DEFINE_RAW_SPINLOCK(latency_lock);
 
 #define MAXLR 128
-static struct latency_record latency_record[MAXLR]; /*  */
+static struct latency_record latency_record[MAXLR];
 
 int latencytop_enabled;
 
@@ -255,7 +255,7 @@ static int lstats_open(struct inode *inode, struct file *filp)
 	return single_open(filp, lstats_show, NULL);
 }
 
-static const struct proc_ops lstats_proc_ops = {    /*  */
+static const struct proc_ops lstats_proc_ops = {
 	.proc_open	= lstats_open,
 	.proc_read	= seq_read,
 	.proc_write	= lstats_write,
@@ -263,7 +263,7 @@ static const struct proc_ops lstats_proc_ops = {    /*  */
 	.proc_release	= single_release,
 };
 
-static int __init init_lstats_procfs(void)  /*  */
+static int __init init_lstats_procfs(void)
 {
 	proc_create("latency_stats", 0644, NULL, &lstats_proc_ops);
 	return 0;
@@ -280,4 +280,4 @@ int sysctl_latencytop(struct ctl_table *table, int write, void *buffer,
 
 	return err;
 }
-device_initcall(init_lstats_procfs);    /*  */
+device_initcall(init_lstats_procfs);

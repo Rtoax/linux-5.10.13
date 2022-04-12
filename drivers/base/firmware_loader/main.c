@@ -1569,5 +1569,5 @@ static void __exit firmware_class_exit(void)
 	unregister_sysfs_loader();
 }
 
-fs_initcall(firmware_class_init);   /*  */
+fs_initcall(firmware_class_init);
 module_exit(firmware_class_exit);

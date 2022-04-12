@@ -169,7 +169,7 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	     i < memblock_type->cnt;					\
 	     i++, rgn = &memblock_type->regions[i])
 
-#define memblock_dbg(fmt, ...)		/*  */				\
+#define memblock_dbg(fmt, ...)						\
 	do {								\
 		if (memblock_debug)					\
 			pr_info(fmt, ##__VA_ARGS__);			\
@@ -187,7 +187,7 @@ static enum memblock_flags __init_memblock choose_memblock_flags(void)
 }
 
 /* adjust *@size so that (@base + *@size) doesn't overflow, return new size */
-static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)/*  */
+static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 {
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
@@ -601,7 +601,7 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
  *
  * Insert new memblock region [@base, @base + @size) into @type at @idx.
  * @type must already have extra room to accommodate the new region.
- *//*  */
+ */
 static void __init_memblock memblock_insert_region(struct memblock_type *type,
 						   int idx, phys_addr_t base,
 						   phys_addr_t size,
@@ -872,7 +872,7 @@ int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
  *
  * Return:
  * 0 on success, -errno on failure.
- *//*  */
+ */
 static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 					phys_addr_t base, phys_addr_t size,
 					int *start_rgn, int *end_rgn)
@@ -1017,7 +1017,7 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)/* 内�
  * This function isolates region [@base, @base + @size), and sets/clears flag
  *
  * Return: 0 on success, -errno on failure.
- *//*  */
+ */
 static int __init_memblock memblock_setclr_flag(phys_addr_t base,
 				phys_addr_t size, int set, int flag)
 {
@@ -1060,7 +1060,7 @@ int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size)
  *
  * Return: 0 on success, -errno on failure.
  */
-int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size)/*  */
+int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size)
 {
 	return memblock_setclr_flag(base, size, 0, MEMBLOCK_HOTPLUG);
 }
@@ -2180,7 +2180,7 @@ static unsigned long __init __free_memory_core(phys_addr_t start,/* 从 start �
 /**
   *
   */
-static unsigned long __init free_low_memory_core_early(void)/*  */
+static unsigned long __init free_low_memory_core_early(void)
 {
 	unsigned long count = 0;
 	phys_addr_t start, end;
@@ -2211,7 +2211,7 @@ static unsigned long __init free_low_memory_core_early(void)/*  */
 	return count;
 }
 
-static int __initdata reset_managed_pages_done ;/*  */
+static int __initdata reset_managed_pages_done ;
 
 /**
  *  所有 zone 管理 页  置零
@@ -2233,7 +2233,7 @@ void __init reset_all_zones_managed_pages(void)/* 重置所有的 ZONE 管理页
 {
 	struct pglist_data *pgdat;
 
-	if (reset_managed_pages_done)/*  */
+	if (reset_managed_pages_done)
 		return;
 
     /**

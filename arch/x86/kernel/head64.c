@@ -70,7 +70,7 @@ EXPORT_SYMBOL(vmemmap_base);
  * GDT used on the boot CPU before switching to virtual addresses.
  */
 static struct desc_struct startup_gdt[GDT_ENTRIES] = {  /* 启动全局描述附表 */
-	[GDT_ENTRY_KERNEL32_CS]/*  */         = GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
+	[GDT_ENTRY_KERNEL32_CS]         = GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
 	[GDT_ENTRY_KERNEL_CS]/* 代码段 */           = GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
 	[GDT_ENTRY_KERNEL_DS]/* 数据段 */           = GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
 };
@@ -125,7 +125,7 @@ static bool __head check_la57_support(unsigned long physaddr)
 	return true;
 }
 #else
-/*  */
+
 #endif
 
 /* Code in __startup_64() can be relocated during execution, but the compiler
@@ -133,7 +133,7 @@ static bool __head check_la57_support(unsigned long physaddr)
  * that function. Clang actually does not generate them, which leads to
  * boot-time crashes. To work around this problem, every global pointer must
  * be adjusted using fixup_pointer().
- */ /*  */
+ */
 unsigned long __head __startup_64(unsigned long physaddr,
 				  struct boot_params *bp)
 {
@@ -141,9 +141,9 @@ unsigned long __head __startup_64(unsigned long physaddr,
 	unsigned long load_delta, *p;
 	unsigned long pgtable_flags;
 	pgdval_t *pgd;  /* 全局描述符表 */
-	p4dval_t *p4d;  /*  */
-	pudval_t *pud;  /*  */
-	pmdval_t *pmd, pmd_entry;   /*  */
+	p4dval_t *p4d;
+	pudval_t *pud;
+	pmdval_t *pmd, pmd_entry;
 	pteval_t *mask_ptr; /* 页表项 */
 	bool la57;
 	int i;
@@ -152,7 +152,7 @@ unsigned long __head __startup_64(unsigned long physaddr,
 	la57 = check_la57_support(physaddr);
 
 	/* Is the address too large? */
-	if (physaddr >> MAX_PHYSMEM_BITS)   /*  */
+	if (physaddr >> MAX_PHYSMEM_BITS)
 		for (;;);
 
 	/*
@@ -175,7 +175,7 @@ unsigned long __head __startup_64(unsigned long physaddr,
 		for (;;);
 
 	/* Activate Secure Memory Encryption (SME) if supported and enabled */
-	sme_enable(bp); /*  */
+	sme_enable(bp);
 
 	/* Include the SME encryption mask in the fixup value */
 	load_delta += sme_get_me_mask();
@@ -314,7 +314,7 @@ unsigned long __head __startup_64(unsigned long physaddr,
 	return sme_get_me_mask();
 }
 
-unsigned long __startup_secondary_64(void)  /*  */
+unsigned long __startup_secondary_64(void)
 {
 	/*
 	 * Return the SME(Security Memory ..) encryption mask (if SME is active) to be used as a
@@ -327,7 +327,7 @@ unsigned long __startup_secondary_64(void)  /*  */
 重置了所有的全局页目录项，同时向 `cr3` 中重新写入了的全局页目录表的地址*/
 static void __init reset_early_page_tables(void)
 {
-	memset(early_top_pgt, 0, sizeof(pgd_t)*(PTRS_PER_PGD-1));   /*  */
+	memset(early_top_pgt, 0, sizeof(pgd_t)*(PTRS_PER_PGD-1));
 	next_early_pgt = 0;
 	write_cr3(__sme_pa_nodebug(early_top_pgt)); /* 写到 CR3 里 */
 }
@@ -548,7 +548,7 @@ x86_64_start_kernel(char * real_mode_data)
 	 */
 	sme_early_init();
 
-    /*  */
+
 	kasan_early_init();
 
     /**
@@ -627,7 +627,7 @@ void __init x86_64_start_reservations(char *real_mode_data)
  * configured which require certain CPU state to be setup already (like TSS),
  * which also hasn't happened yet in early CPU bringup.
  */
-static gate_desc __page_aligned_data bringup_idt_table[NUM_EXCEPTION_VECTORS] ;/*  */
+static gate_desc __page_aligned_data bringup_idt_table[NUM_EXCEPTION_VECTORS] ;
 
 static struct desc_ptr bringup_idt_descr = {
 	.size		= (NUM_EXCEPTION_VECTORS * sizeof(gate_desc)) - 1,
@@ -640,8 +640,8 @@ static void set_bringup_idt_handler(gate_desc *idt, int n, void *handler)   /* �
 	struct idt_data data;
 	gate_desc desc;
 
-	init_idt_data(&data, n, handler);   /*  */
-	idt_init_desc(&desc, &data);        /*  */
+	init_idt_data(&data, n, handler);
+	idt_init_desc(&desc, &data);
 	native_write_idt_entry(idt, n, &desc);  /* 写入 idt 中 */
 #endif
 }
@@ -666,7 +666,7 @@ static void startup_64_load_idt(unsigned long physbase) /* 加载中断描述附
 }
 
 /* This is used when running on kernel addresses */
-void early_setup_idt(void)  /*  */
+void early_setup_idt(void)
 {
 	/* VMM Communication Exception */
 	if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT))
@@ -678,7 +678,7 @@ void early_setup_idt(void)  /*  */
 
 /*
  * Setup boot CPU state needed before kernel switches to virtual addresses.
- *//*  */
+ */
 void __head startup_64_setup_env(unsigned long physbase)
 {
 	/* Load GDT */

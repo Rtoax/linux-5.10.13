@@ -17,7 +17,7 @@ static unsigned long __used					\
 # define __kprobes	__section(".kprobes.text")  /* KPROBES_TEXT */
 # define nokprobe_inline	__always_inline
 #else
-/*  */
+
 #endif
 #endif /* defined(__KERNEL__) && !defined(__ASSEMBLY__) */
 

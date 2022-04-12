@@ -31,7 +31,7 @@
  * and the pci-dma.c will take care of the rest.
  */
 
-struct iommu_table_entry {  /*  */
+struct iommu_table_entry {
 	initcall_t	detect;
 	initcall_t	depend;
 	void		(*early_init)(void); /* No memory allocate available. */

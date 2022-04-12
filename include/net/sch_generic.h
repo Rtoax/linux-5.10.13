@@ -62,7 +62,7 @@ struct qdisc_skb_head {
  *  默认排队方式 `default_qdisc_ops = &pfifo_fast_ops`
  *                              还有 `fq_codel_qdisc_ops`
  */
-struct Qdisc {  /*  */
+struct Qdisc {
 	int 			(*enqueue)(struct sk_buff *skb,
         					   struct Qdisc *sch,
         					   struct sk_buff **to_free);
@@ -244,7 +244,7 @@ enum qdisc_class_ops_flags {
 };
 
 /**
- *  
+ *
  */
 struct Qdisc_ops {  /* 排队规则 queueing disciplining，流量控制的基础 */
 	struct Qdisc_ops	*next;
@@ -666,7 +666,7 @@ void qdisc_offload_graft_helper(struct net_device *dev, struct Qdisc *sch,
 				enum tc_setup_type type, void *type_data,
 				struct netlink_ext_ack *extack);
 #else
-/*  */
+
 #endif
 struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
 			  const struct Qdisc_ops *ops,

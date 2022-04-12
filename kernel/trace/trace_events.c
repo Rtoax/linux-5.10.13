@@ -42,7 +42,7 @@ static bool eventdir_initialized;
 
 #define GFP_TRACE (GFP_KERNEL | __GFP_ZERO)
 
-static struct kmem_cache *field_cachep; /*  */
+static struct kmem_cache *field_cachep;
 static struct kmem_cache *file_cachep;
 
 static inline int system_refcount(struct event_subsystem *system)
@@ -3145,7 +3145,7 @@ static __init int register_event_cmds(void)
 	return ret;
 }
 #else
-/*  */
+
 #endif /* CONFIG_DYNAMIC_FTRACE */
 
 /*
@@ -3213,7 +3213,7 @@ static void __add_event_to_tracers(struct trace_event_call *call)
 extern struct trace_event_call *__start_ftrace_events[];
 extern struct trace_event_call *__stop_ftrace_events[];
 
-static char __initdata bootup_event_buf[COMMAND_LINE_SIZE] ;/*  */
+static char __initdata bootup_event_buf[COMMAND_LINE_SIZE] ;
 
 static __init int setup_trace_event(char *str)
 {
@@ -3369,7 +3369,7 @@ int event_trace_del_tracer(struct trace_array *tr)
 	return 0;
 }
 
-static __init int event_trace_memsetup(void)    /*  */
+static __init int event_trace_memsetup(void)
 {
 	field_cachep = KMEM_CACHE(ftrace_event_field, SLAB_PANIC);
 	file_cachep = KMEM_CACHE(trace_event_file, SLAB_PANIC);
@@ -3527,12 +3527,12 @@ __init int event_trace_init(void)
 void __init trace_event_init(void)  /*trace  */
 {
 	event_trace_memsetup(); /* kmem_cache_create */
-	init_ftrace_syscalls(); /*  */
-	event_trace_enable();   /*  */
-	event_trace_init_fields();  /*  */
+	init_ftrace_syscalls();
+	event_trace_enable();
+	event_trace_init_fields();
 }
 
-#ifdef CONFIG_EVENT_TRACE_STARTUP_TEST  /*  */
+#ifdef CONFIG_EVENT_TRACE_STARTUP_TEST
 
 static DEFINE_SPINLOCK(test_spinlock);
 static DEFINE_SPINLOCK(test_spinlock_irq);
@@ -3743,7 +3743,7 @@ function_test_events_call(unsigned long ip, unsigned long parent_ip,
 	preempt_enable_notrace();
 }
 
-static struct ftrace_ops __initdata trace_ops   =  /*  */
+static struct ftrace_ops __initdata trace_ops   =
 {
 	.func = function_test_events_call,
 	.flags = FTRACE_OPS_FL_RECURSION_SAFE,
@@ -3767,7 +3767,7 @@ static __init void event_trace_self_test_with_function(void)
 	unregister_ftrace_function(&trace_ops);
 }
 #else
-/*  */
+
 #endif
 
 static __init int event_trace_self_tests_init(void)
@@ -3780,6 +3780,6 @@ static __init int event_trace_self_tests_init(void)
 	return 0;
 }
 
-late_initcall(event_trace_self_tests_init);   /*  */
+late_initcall(event_trace_self_tests_init);
 
 #endif

@@ -1273,7 +1273,7 @@ static int __init qrtr_proto_init(void)
 
 	return rc;
 }
-postcore_initcall(qrtr_proto_init); /*  */
+postcore_initcall(qrtr_proto_init);
 
 static void __exit qrtr_proto_fini(void)
 {

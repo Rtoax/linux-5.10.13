@@ -17,7 +17,7 @@ typedef struct kernel_siginfo {
  * Real Time signals may be queued.
  */
 
-struct sigqueue {   /*  */
+struct sigqueue {
 	struct list_head list;
 	int flags;
 	kernel_siginfo_t info;
@@ -56,7 +56,7 @@ struct k_sigaction {
 #endif
 };
 
-#ifdef CONFIG_OLD_SIGACTION /*  */
+#ifdef CONFIG_OLD_SIGACTION
 struct old_sigaction {
 	__sighandler_t sa_handler;
 	old_sigset_t sa_mask;

@@ -82,7 +82,7 @@
 #include <asm/stacktrace.h>
 #include <asm/io.h>
 #endif
-#ifdef CONFIG_SPARC /*  */
+#ifdef CONFIG_SPARC
 #include <asm/setup.h>
 #endif
 #ifdef CONFIG_BSD_PROCESS_ACCT
@@ -97,10 +97,10 @@
 #ifdef CONFIG_CHR_DEV_SG
 #include <scsi/sg.h>
 #endif
-#ifdef CONFIG_STACKLEAK_RUNTIME_DISABLE /*  */
+#ifdef CONFIG_STACKLEAK_RUNTIME_DISABLE
 #include <linux/stackleak.h>
 #endif
-#ifdef CONFIG_LOCKUP_DETECTOR   /*  */
+#ifdef CONFIG_LOCKUP_DETECTOR
 #include <linux/nmi.h>
 #endif
 
@@ -576,12 +576,12 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
 	int *i, vleft, first = 1, err = 0;
 	size_t left;
 	char *p;
-	
+
 	if (!tbl_data || !table->maxlen || !*lenp || (*ppos && !write)) {
 		*lenp = 0;
 		return 0;
 	}
-	
+
 	i = (int *) tbl_data;
 	vleft = table->maxlen / sizeof(*i);
 	left = *lenp;
@@ -793,7 +793,7 @@ static int do_proc_douintvec(struct ctl_table *table, int write,
  * @ppos: file position
  *
  * Reads/writes up to table->maxlen/sizeof(unsigned int) integer
- * values from/to the user buffer, treated as an ASCII string. 
+ * values from/to the user buffer, treated as an ASCII string.
  *
  * Returns 0 on success.
  */
@@ -1104,7 +1104,7 @@ static int proc_dostring_coredump(struct ctl_table *table, int write,
  *  SysRq 魔法键
  *
  *  echo 1 > /proc/sys/kernel/sysrq 打开功能
- *  
+ *
  */
 static int sysrq_sysctl_handler(struct ctl_table *table, int write,
 				void *buffer, size_t *lenp, loff_t *ppos)
@@ -1332,7 +1332,7 @@ static int do_proc_dointvec_ms_jiffies_conv(bool *negp, unsigned long *lvalp,
  * @ppos: file position
  *
  * Reads/writes up to table->maxlen/sizeof(unsigned int) integer
- * values from/to the user buffer, treated as an ASCII string. 
+ * values from/to the user buffer, treated as an ASCII string.
  * The values read are assumed to be in seconds, and are converted into
  * jiffies.
  *
@@ -1354,8 +1354,8 @@ int proc_dointvec_jiffies(struct ctl_table *table, int write,
  * @ppos: pointer to the file position
  *
  * Reads/writes up to table->maxlen/sizeof(unsigned int) integer
- * values from/to the user buffer, treated as an ASCII string. 
- * The values read are assumed to be in 1/USER_HZ seconds, and 
+ * values from/to the user buffer, treated as an ASCII string.
+ * The values read are assumed to be in 1/USER_HZ seconds, and
  * are converted into jiffies.
  *
  * Returns 0 on success.
@@ -1377,8 +1377,8 @@ int proc_dointvec_userhz_jiffies(struct ctl_table *table, int write,
  * @ppos: the current position in the file
  *
  * Reads/writes up to table->maxlen/sizeof(unsigned int) integer
- * values from/to the user buffer, treated as an ASCII string. 
- * The values read are assumed to be in 1/1000 seconds, and 
+ * values from/to the user buffer, treated as an ASCII string.
+ * The values read are assumed to be in 1/1000 seconds, and
  * are converted into jiffies.
  *
  * Returns 0 on success.
@@ -1561,7 +1561,7 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 }
 
 #else /* CONFIG_PROC_SYSCTL */
-/*  */
+
 #endif /* CONFIG_PROC_SYSCTL */
 
 #if defined(CONFIG_SYSCTL)
@@ -1599,7 +1599,7 @@ int proc_do_static_key(struct ctl_table *table, int write,
 /**
  *  /proc/sys/kernel/
  *
- *  
+ *
  */
 static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	{
@@ -1668,7 +1668,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/sched_tunable_scaling
          *
-         *  
+         *
          */
 		.procname	= "sched_tunable_scaling",
 		.data		= &sysctl_sched_tunable_scaling,
@@ -1728,7 +1728,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/numa_balancing_scan_delay_ms
          *
-         *  
+         *
          */
 		.procname	= "numa_balancing_scan_delay_ms",
 		.data		= &sysctl_numa_balancing_scan_delay,
@@ -1740,7 +1740,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "numa_balancing_scan_period_min_ms",
 		.data		= &sysctl_numa_balancing_scan_period_min,
@@ -1752,7 +1752,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "numa_balancing_scan_period_max_ms",
 		.data		= &sysctl_numa_balancing_scan_period_max,
@@ -1764,7 +1764,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "numa_balancing_scan_size_mb",
 		.data		= &sysctl_numa_balancing_scan_size,
@@ -1777,7 +1777,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "numa_balancing",
 		.data		= NULL, /* filled in by handler */
@@ -1793,7 +1793,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_rt_period_us",
 		.data		= &sysctl_sched_rt_period,
@@ -1805,7 +1805,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_rt_runtime_us",
 		.data		= &sysctl_sched_rt_runtime,
@@ -1817,7 +1817,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_deadline_period_max_us",
 		.data		= &sysctl_sched_dl_period_max,
@@ -1829,7 +1829,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_deadline_period_min_us",
 		.data		= &sysctl_sched_dl_period_min,
@@ -1841,7 +1841,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_rr_timeslice_ms",
 		.data		= &sysctl_sched_rr_timeslice,
@@ -1854,7 +1854,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_util_clamp_min",
 		.data		= &sysctl_sched_uclamp_util_min,
@@ -1866,7 +1866,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_util_clamp_max",
 		.data		= &sysctl_sched_uclamp_util_max,
@@ -1878,7 +1878,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_util_clamp_min_rt_default",
 		.data		= &sysctl_sched_uclamp_util_min_rt_default,
@@ -1892,7 +1892,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sched_autogroup_enabled",
 		.data		= &sysctl_sched_autogroup_enabled,
@@ -1923,7 +1923,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/sched_energy_aware
          *
-         *  
+         *
          */
 		.procname	= "sched_energy_aware",
 		.data		= &sysctl_sched_energy_aware,
@@ -1939,7 +1939,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "prove_locking",
 		.data		= &prove_locking,
@@ -1953,7 +1953,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "lock_stat",
 		.data		= &lock_stat,
@@ -1966,7 +1966,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "panic",
 		.data		= &panic_timeout,
@@ -1979,7 +1979,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "core_uses_pid",
 		.data		= &core_uses_pid,
@@ -1987,11 +1987,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-	{   
+	{
 	    /**
          *  /proc/sys/kernel/core_pattern
          *
-         *  
+         *
          */
 		.procname	= "core_pattern",
 		.data		= core_pattern,
@@ -2003,7 +2003,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "core_pipe_limit",
 		.data		= &core_pipe_limit,
@@ -2017,7 +2017,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "tainted",
 		.maxlen 	= sizeof(long),
@@ -2028,7 +2028,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "sysctl_writes_strict",
 		.data		= &sysctl_writes_strict,
@@ -2044,7 +2044,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "latencytop",
 		.data		= &latencytop_enabled,
@@ -2058,7 +2058,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "real-root-dev",
 		.data		= &real_root_dev,
@@ -2071,7 +2071,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "print-fatal-signals",
 		.data		= &print_fatal_signals,
@@ -2084,7 +2084,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "reboot-cmd",
 		.data		= reboot_command,
@@ -2096,7 +2096,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	    /**
          *  /proc/sys/kernel/
          *
-         *  
+         *
          */
 		.procname	= "stop-a",
 		.data		= &stop_a_enabled,
@@ -2254,10 +2254,10 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
      *  SysRq 魔法键
      *
      *  echo 1 > /proc/sys/kernel/sysrq 打开功能
-     *  
+     *
      *  -------------------------------------------
      *  /proc/sysrq-trigger - 见 `sysrq_init_procfs()`
-     *  
+     *
      */
 	{
 		.procname	= "sysrq",
@@ -2998,7 +2998,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	},
 	/**
 	 * @brief echo 3 > /proc/sys/vm/drop_caches
-	 * 
+	 *
 	 */
 	{
 		.procname	= "drop_caches",
@@ -3388,7 +3388,7 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 		.proc_handler	= proc_dointvec,
 	},
 #endif
-#ifdef CONFIG_DNOTIFY   /*  */
+#ifdef CONFIG_DNOTIFY
 	{
 		.procname	= "dir-notify-enable",
 		.data		= &dir_notify_enable,
@@ -3429,7 +3429,7 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 		.mode		= 0555,
 		.child		= inotify_table,
 	},
-#endif	
+#endif
 #ifdef CONFIG_EPOLL
 	{
 		.procname	= "epoll",
@@ -3550,7 +3550,7 @@ static struct ctl_table dev_table[] = {
 	{ }
 };
 
-static struct ctl_table sysctl_base_table[] = { /*  */
+static struct ctl_table sysctl_base_table[] = {
 	{
 		.procname	= "kernel", /* /proc/sys/kernel/ */
 		.mode		= 0555,
@@ -3573,7 +3573,7 @@ static struct ctl_table sysctl_base_table[] = { /*  */
 	},
 	{
 		.procname	= "dev",    /* /proc/sys/dev/ */
-		.mode		= 0555, 
+		.mode		= 0555,
 		.child		= dev_table,
 	},
 	{ }

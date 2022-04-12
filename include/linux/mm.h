@@ -56,7 +56,7 @@ static inline void set_max_mapnr(unsigned long limit)
 static inline void set_max_mapnr(unsigned long limit) { }
 #endif
 
-extern atomic_long_t _totalram_pages;   /*  */
+extern atomic_long_t _totalram_pages;
 static inline unsigned long totalram_pages(void)    /* 所有 RAM 的 pages */
 {
 	return (unsigned long)atomic_long_read(&_totalram_pages);
@@ -83,7 +83,7 @@ extern int page_cluster;
 #ifdef CONFIG_SYSCTL
 extern int sysctl_legacy_va_layout;
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_HAVE_ARCH_MMAP_RND_BITS
@@ -159,7 +159,7 @@ static inline void __mm_zero_struct_page(struct page *page)
     /* 根据大小清空 page 结构 */
 	switch (sizeof(struct page)) {
 	case 80:
-		_pp[9] = 0; /*  */
+		_pp[9] = 0;
 		fallthrough;
 	case 72:
 		_pp[8] = 0;
@@ -237,7 +237,7 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *);
 void vm_area_free(struct vm_area_struct *);
 
 #ifndef CONFIG_MMU
-/*  */
+
 #endif
 
 /*
@@ -284,7 +284,7 @@ void vm_area_free(struct vm_area_struct *);
 #ifdef CONFIG_MEM_SOFT_DIRTY
 # define VM_SOFTDIRTY	0x08000000	/* Not soft dirty clean area */
 #else
-/*  */
+
 #endif
 
 #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
@@ -501,10 +501,10 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
  *
  *  缺页异常 数据结构
  *  常常用于填充相应的参数并且传递给进程地址空间的 fault() 回调含糊中
- * 
+ *
  *  主缺页：从交换分区中读取数据，见`VM_FAULT_MAJOR`
  *  次缺页：从内存中直接分配页面
- */ 
+ */
 struct vm_fault {       /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
 
@@ -526,7 +526,7 @@ struct vm_fault {       /* 缺页异常/中断 */
 	pud_t *pud;			/* Pointer to pud entry matching
     					 * the 'address'
     					 */
-    /* 发生缺页时，address 对应的 pte 的内容 */					 
+    /* 发生缺页时，address 对应的 pte 的内容 */
 	pte_t orig_pte;			/* Value of PTE at the time of fault */
 
     /* 处理写时复制时用的页面 */
@@ -543,13 +543,13 @@ struct vm_fault {       /* 缺页异常/中断 */
 					 * the 'address'. NULL if the page
 					 * table hasn't been allocated.
 					 */
-	/* 保护页表的自旋锁 */				 
+	/* 保护页表的自旋锁 */
 	spinlock_t *ptl;		/* Page table lock.
 					 * Protects pte page table if 'pte'
 					 * is not NULL, otherwise pmd.
 					 */
 
-    /*  */                 
+
 	pgtable_t prealloc_pte;		/* Pre-allocated pte page table.
 					 * vm_ops->map_pages() calls
 					 * alloc_set_pte() from atomic context.
@@ -574,7 +574,7 @@ enum page_entry_size {
 typedef struct mempolicy * pmempolicy_t; /* 我加的 */
 
 /**
- *  
+ *
  */
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
@@ -603,9 +603,9 @@ struct vm_operations_struct {
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 
 	/**
-	 *  same as page_mkwrite when using VM_PFNMAP|VM_MIXEDMAP 
-	 *  
-	 *  
+	 *  same as page_mkwrite when using VM_PFNMAP|VM_MIXEDMAP
+	 *
+	 *
 	 */
 	vm_fault_t (*pfn_mkwrite)(struct vm_fault *vmf);
 
@@ -656,12 +656,12 @@ struct vm_operations_struct {
 typedef struct page *ppage_t;/* 我加的 */
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
 {
-	static const struct vm_operations_struct dummy_vm_ops = {}; /*  */
+	static const struct vm_operations_struct dummy_vm_ops = {};
 
 	memset(vma, 0, sizeof(*vma));
 	vma->vm_mm = mm;
 	vma->vm_ops = &dummy_vm_ops;    /* 默认为 非匿名 */
-	INIT_LIST_HEAD(&vma->anon_vma_chain);   /*  */
+	INIT_LIST_HEAD(&vma->anon_vma_chain);
 }
 
 static inline void vma_set_anonymous(struct vm_area_struct *vma)
@@ -689,7 +689,7 @@ static inline bool vma_is_temporary_stack(struct vm_area_struct *vma)
 }
 
 static inline bool vma_is_foreign(struct vm_area_struct *vma)/* vma 不是自己本进程的 */
-{/*  */
+{
 	if (!current->mm)
 		return true;
 
@@ -711,7 +711,7 @@ static inline bool vma_is_accessible(struct vm_area_struct *vma)
  */
 bool vma_is_shmem(struct vm_area_struct *vma);
 #else
-/*  */
+
 #endif
 
 int vma_is_stack_for_current(struct vm_area_struct *vma);
@@ -787,7 +787,7 @@ unsigned long vmalloc_to_pfn(const void *addr);
 extern bool is_vmalloc_addr(const void *x);
 extern int is_vmalloc_or_module_addr(const void *x);
 #else
-/*  */
+
 #endif
 
 extern void *kvmalloc_node(size_t size, gfp_t flags, int node);
@@ -860,7 +860,7 @@ int __page_mapcount(struct page *page);
  * They use this place in struct page differently.
  *
  *
- *  通常情况下，page_count(page) == page_mapcount(page) 
+ *  通常情况下，page_count(page) == page_mapcount(page)
  *          即   page->_refcount = page->_mapcount + 1
  */
 static inline int page_mapcount(struct page *page)
@@ -874,7 +874,7 @@ static inline int page_mapcount(struct page *page)
 int total_mapcount(struct page *page);
 int page_trans_huge_mapcount(struct page *page, int *total_mapcount);
 #else
-/*  */
+
 #endif
 
 static inline struct page *virt_to_head_page(const void *x)
@@ -1103,21 +1103,21 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
  *  +----------+---------+----------+--------+----------+
  *
  *  struct page->flags
- * 
- * 63    62 61  60 59             44 43                                               0  
+ *
+ * 63    62 61  60 59             44 43                                               0
  *  +------+------+-----------------+-------------------------------------------------+
  *  | node | zone |    LAST_CPUPID  |                   flags                         |
  *  +------+------+-----------------+-------------------------------------------------+
  *
  *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
- * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+ * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
  */
 #define ZONES_MASK          /* 0x7 */  ((1UL << ZONES_WIDTH/* 3 */) - 1)
 #define NODES_MASK          /* 0x1FF */  ((1UL << NODES_WIDTH/* 10 */) - 1)
 #define SECTIONS_MASK       /* 0x0 */	((1UL << SECTIONS_WIDTH/* 0 */) - 1)
 #define LAST_CPUPID_MASK    /* 0x */  ((1UL << LAST_CPUPID_SHIFT/* 21 */) - 1)
-#define KASAN_TAG_MASK      /*  */  ((1UL << KASAN_TAG_WIDTH) - 1)
-#define ZONEID_MASK         /*  */  ((1UL << ZONEID_SHIFT) - 1)
+#define KASAN_TAG_MASK        ((1UL << KASAN_TAG_WIDTH) - 1)
+#define ZONEID_MASK           ((1UL << ZONEID_SHIFT) - 1)
 
 static inline enum zone_type page_zonenum(const struct page *page)/* page 到 ZONE number */
 {
@@ -1133,7 +1133,7 @@ static inline bool is_zone_device_page(const struct page *page)
 extern void memmap_init_zone_device(struct zone *, unsigned long,
 				    unsigned long, struct dev_pagemap *);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_DEV_PAGEMAP_OPS
@@ -1159,7 +1159,7 @@ static inline bool page_is_devmap_managed(struct page *page)
 void put_devmap_managed_page(struct page *page);
 
 #else /* CONFIG_DEV_PAGEMAP_OPS */
-/*  */
+
 #endif /* CONFIG_DEV_PAGEMAP_OPS */
 
 static inline bool is_device_private_page(const struct page *page)
@@ -1184,9 +1184,9 @@ static inline bool is_pci_p2pdma_page(const struct page *page)
 
 /**
  *  引用计数
- *  page->_refcount++ 
+ *  page->_refcount++
  */
-static inline void get_page(struct page *page)  
+static inline void get_page(struct page *page)
 {
 	page = compound_head(page);
 	/*
@@ -1331,7 +1331,7 @@ static inline int page_zone_id(struct page *page)
 #ifdef NODE_NOT_IN_PAGE_FLAGS
 extern int page_to_nid(const struct page *page);
 #else
-static inline int page_to_nid(const struct page *page)  /*  */
+static inline int page_to_nid(const struct page *page)
 {
 	struct page *p = (struct page *)page;
 
@@ -1404,7 +1404,7 @@ static inline void page_cpupid_reset_last(struct page *page)
 }
 #endif /* LAST_CPUPID_NOT_IN_PAGE_FLAGS */
 #else /* !CONFIG_NUMA_BALANCING */
-/*  */
+
 #endif /* CONFIG_NUMA_BALANCING */
 
 #ifdef CONFIG_KASAN_SW_TAGS
@@ -1424,7 +1424,7 @@ static inline void page_kasan_tag_reset(struct page *page)
 	page_kasan_tag_set(page, 0xff);
 }
 #else
-/*  */
+
 #endif
 
 /**
@@ -1466,14 +1466,14 @@ static inline unsigned long page_to_section(const struct page *page)
  *  +----------+---------+----------+--------+----------+
  *
  *  struct page->flags
- * 
- * 63    62 61  60 59             44 43                                               0  
+ *
+ * 63    62 61  60 59             44 43                                               0
  *  +------+------+-----------------+-------------------------------------------------+
  *  | node | zone |    LAST_CPUPID  |                   flags                         |
  *  +------+------+-----------------+-------------------------------------------------+
  *
  *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
- * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
+ * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
  *
  * 根据配置有不同的可能，大致的布局如下
  * +----------+---------+----------+--------+----------+
@@ -1520,7 +1520,7 @@ static inline struct mem_cgroup *page_memcg_rcu(struct page *page)
 	return READ_ONCE(page->mem_cgroup);
 }
 #else
-/*  */
+
 #endif
 
 /*
@@ -1528,7 +1528,7 @@ static inline struct mem_cgroup *page_memcg_rcu(struct page *page)
  */
 #include <linux/vmstat.h>
 
-static __always_inline void *lowmem_page_address(const struct page *page)   /*  */
+static __always_inline void *lowmem_page_address(const struct page *page)
 {
 	return page_to_virt(page);
 }
@@ -1568,7 +1568,7 @@ extern struct address_space *page_mapping(struct page *page);
 extern struct address_space *__page_file_mapping(struct page *);
 
 static inline
-struct address_space *page_file_mapping(struct page *page)  /*  */
+struct address_space *page_file_mapping(struct page *page)
 {
 	if (unlikely(PageSwapCache(page)))
 		return __page_file_mapping(page);
@@ -1626,7 +1626,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
  */
 extern void pagefault_out_of_memory(void);
 
-#define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK/* ~0xffff ffff ffff f000 = 0x0000 0000 0000 0ffff */)   
+#define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK/* ~0xffff ffff ffff f000 = 0x0000 0000 0000 0ffff */)
 #define offset_in_thp(page, p)	((unsigned long)(p) & (thp_size(page) - 1))
 
 /*
@@ -1640,7 +1640,7 @@ extern void show_free_areas(unsigned int flags, nodemask_t *nodemask);
 #ifdef CONFIG_MMU
 extern bool can_do_mlock(void);
 #else
-/*  */
+
 #endif
 extern int user_shm_lock(size_t, struct user_struct *);
 extern void user_shm_unlock(size_t, struct user_struct *);
@@ -1702,7 +1702,7 @@ void unmap_mapping_pages(struct address_space *mapping,
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows);
 #else
-/*  */
+
 #endif
 
 static inline void unmap_shared_mapping_range(struct address_space *mapping,
@@ -1884,7 +1884,7 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 
 void mm_trace_rss_stat(struct mm_struct *mm, int member, long count);
 
-static inline void add_mm_counter(struct mm_struct *mm, int member, long value) /*  */
+static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {
 	long count = atomic_long_add_return(value, &mm->rss_stat.count[member]);
 
@@ -1968,7 +1968,7 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 #if defined(SPLIT_RSS_COUNTING)
 void sync_mm_rss(struct mm_struct *mm);
 #else
-/*  */
+
 #endif
 
 
@@ -1978,7 +1978,7 @@ extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 			       spinlock_t **ptl);
 
 /**
- *  
+ *
  */
 static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 				    spinlock_t **ptl)
@@ -2064,7 +2064,7 @@ static inline unsigned long mm_pgtables_bytes(const struct mm_struct *mm)
 	return atomic_long_read(&mm->pgtables_bytes);
 }
 
-static inline void mm_inc_nr_ptes(struct mm_struct *mm) /*  */
+static inline void mm_inc_nr_ptes(struct mm_struct *mm)
 {
 	atomic_long_add(PTRS_PER_PTE/* 512 */ * sizeof(pte_t), &mm->pgtables_bytes);
 }
@@ -2094,7 +2094,7 @@ static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)
 {
     /**
-     *  1. 如果 pgd 项不存在，分配 p4d 
+     *  1. 如果 pgd 项不存在，分配 p4d
      *      1.1 如果p4d 分配失败，返回 NULL
      *      1.2 如果p4d 分配成功，返回 p4d 项
      */
@@ -2209,7 +2209,7 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 #define pte_offset_map_lock(mm, pmd, address, ptlp)	    \
 ({							\
 	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\
-	pte_t *_____pte = pte_offset_map(pmd, address);	/*  */\
+	pte_t *_____pte = pte_offset_map(pmd, address);	\
 	*(ptlp) = __ptl;				\
 	spin_lock(__ptl);				\
 	_____pte;						\
@@ -2386,7 +2386,7 @@ static inline unsigned long free_initmem_default(int poison)
 }
 
 /**
- *  
+ *
  */
 static inline unsigned long get_num_physpages(void) /* 物理页面 */
 {
@@ -2432,7 +2432,7 @@ extern void get_pfn_range_for_nid(unsigned int nid,
 extern unsigned long find_min_pfn_with_active_regions(void);
 
 #ifndef CONFIG_NEED_MULTIPLE_NODES
-/*  */
+
 #else
 /* please see mm/page_alloc.c */
 extern int __meminit early_pfn_to_nid(unsigned long pfn);
@@ -2454,7 +2454,7 @@ extern long si_mem_available(void);
 extern void si_meminfo(struct sysinfo * val);
 extern void si_meminfo_node(struct sysinfo *val, int nid);
 
-extern 
+extern
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 
 extern void setup_per_cpu_pageset(void);
@@ -2487,7 +2487,7 @@ struct vm_area_struct *vma_interval_tree_iter_next(struct vm_area_struct *node,
 	     vma; vma = vma_interval_tree_iter_next(vma, start, last))
 
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
-				   struct rb_root_cached *root);    /*  */
+				   struct rb_root_cached *root);
 void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 				   struct rb_root_cached *root);
 struct anon_vma_chain *
@@ -2547,7 +2547,7 @@ static inline int check_data_rlimit(unsigned long rlim,
     |  ...  |
     |       |
     +-------+ end_data
-    |       |     
+    |       |
     |  data |   数据段
     |       |
     +-------+ start_data
@@ -2600,13 +2600,13 @@ extern int do_madvise(struct mm_struct *mm, unsigned long start, size_t len_in, 
 #ifdef CONFIG_MMU
 extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);
-static inline void mm_populate(unsigned long addr, unsigned long len)   /*  */
+static inline void mm_populate(unsigned long addr, unsigned long len)
 {
 	/* Ignore errors 在地址空间范围内填充和/或锁定页面。 */
 	(void) __mm_populate(addr, len, 1);
 }
 #else
-/*  */
+
 #endif
 
 /* These take the mm semaphore themselves */
@@ -2618,12 +2618,13 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long);
 
 /**
- * unmap 结构
+ *
+ unmap 结构
  *
  *  arch_get_unmapped_area_topdown() 中使用
  *
  */
-struct vm_unmapped_area_info {  
+struct vm_unmapped_area_info {
 #define VM_UNMAPPED_AREA_TOPDOWN 1  /* flags 默认 */
 	unsigned long flags;
 	unsigned long length;
@@ -2681,10 +2682,10 @@ static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * m
 }
 
 /**
- *  stack 和 mmap 之间有一部分 guard gap 
+ *  stack 和 mmap 之间有一部分 guard gap
  *  见 https://rtoax.blog.csdn.net/article/details/118602363
  */
-static inline unsigned long vm_start_gap(struct vm_area_struct *vma)    /*  */
+static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {
 	unsigned long vm_start = vma->vm_start;
 
@@ -2697,7 +2698,7 @@ static inline unsigned long vm_start_gap(struct vm_area_struct *vma)    /*  */
 	return vm_start;
 }
 
-static inline unsigned long vm_end_gap(struct vm_area_struct *vma)  /*  */
+static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
 {
 	unsigned long vm_end = vma->vm_end;
 
@@ -2735,8 +2736,8 @@ static inline bool range_in_vma(struct vm_area_struct *vma,
 #ifdef CONFIG_MMU
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 void vma_set_page_prot(struct vm_area_struct *vma);
-#else
-/*  */
+
+
 #endif
 
 #ifdef CONFIG_NUMA_BALANCING
@@ -2897,8 +2898,8 @@ extern int apply_to_existing_page_range(struct mm_struct *mm,
 #ifdef CONFIG_PAGE_POISONING
 extern bool page_poisoning_enabled(void);
 extern void kernel_poison_pages(struct page *page, int numpages, int enable);
-#else
-/*  */
+
+
 #endif
 
 #ifdef CONFIG_INIT_ON_ALLOC_DEFAULT_ON
@@ -2927,16 +2928,16 @@ static inline bool want_init_on_free(void)
 
 #ifdef CONFIG_DEBUG_PAGEALLOC
 extern void init_debug_pagealloc(void);
-#else
-/*  */
+
+
 #endif
-extern bool _debug_pagealloc_enabled_early; /*  */
+extern bool _debug_pagealloc_enabled_early;
 DECLARE_STATIC_KEY_FALSE(_debug_pagealloc_enabled);
 
-static inline bool debug_pagealloc_enabled(void)    /*  */
+static inline bool debug_pagealloc_enabled(void)
 {
-	return IS_ENABLED(CONFIG_DEBUG_PAGEALLOC) &&
-		_debug_pagealloc_enabled_early; /*  */
+	return IS_ENABLED(CONFIG_DEBUG_PAC) &&
+		_debug_pagealloc_enabled_early;
 }
 
 /*
@@ -2966,8 +2967,8 @@ kernel_map_pages(struct page *page, int numpages, int enable)
 #ifdef CONFIG_HIBERNATION
 extern bool kernel_page_present(struct page *page);
 #endif	/* CONFIG_HIBERNATION */
-#else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-/*  */
+/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+
 #endif	/* CONFIG_HIBERNATION */
 #endif	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
 
@@ -2975,8 +2976,8 @@ extern bool kernel_page_present(struct page *page);
 extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
 extern int in_gate_area_no_mm(unsigned long addr);
 extern int in_gate_area(struct mm_struct *mm, unsigned long addr);
-#else
-/*  */
+
+
 #endif	/* __HAVE_ARCH_GATE_AREA */
 
 extern bool process_shares_mm(struct task_struct *p, struct mm_struct *mm);
@@ -2999,8 +3000,8 @@ extern int randomize_va_space;
 const char * arch_vma_name(struct vm_area_struct *vma);
 #ifdef CONFIG_MMU
 void print_vma_addr(char *prefix, unsigned long rip);
-#else
-/*  */
+
+
 #endif
 
 void *sparse_buffer_alloc(unsigned long size);
@@ -3127,21 +3128,21 @@ static inline bool debug_guardpage_enabled(void)
 	return static_branch_unlikely(&_debug_guardpage_enabled);
 }
 
-static inline bool page_is_guard(struct page *page) /*  */
+static inline bool page_is_guard(struct page *page)
 {
-	if (!debug_guardpage_enabled()) /*  */
+	if (!debug_guardpage_enabled())
 		return false;
 
 	return PageGuard(page); /* 标志位置位 ?? */
 }
-#else
-/*  */
+
+
 #endif /* CONFIG_DEBUG_PAGEALLOC */
 
 #if MAX_NUMNODES > 1
 void __init setup_nr_node_ids(void);
-#else
-/*  */
+
+
 #endif
 
 extern int memcmp_pages(struct page *page1, struct page *page2);

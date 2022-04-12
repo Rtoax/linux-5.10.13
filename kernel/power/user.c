@@ -437,15 +437,15 @@ static const struct file_operations snapshot_fops = {
 #endif
 };
 
-static struct miscdevice snapshot_device = {    /*  */
+static struct miscdevice snapshot_device = {
 	.minor = SNAPSHOT_MINOR,
 	.name = "snapshot",
 	.fops = &snapshot_fops,
 };
 
-static int __init snapshot_device_init(void)    /*  */
+static int __init snapshot_device_init(void)
 {
 	return misc_register(&snapshot_device);
 };
 
-device_initcall(snapshot_device_init);  /*  */
+device_initcall(snapshot_device_init);

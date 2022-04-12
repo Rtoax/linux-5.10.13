@@ -547,4 +547,4 @@ static int __init strp_dev_init(void)
 
 	return 0;
 }
-device_initcall(strp_dev_init); /*  */
+device_initcall(strp_dev_init);

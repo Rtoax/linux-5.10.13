@@ -555,7 +555,7 @@ extern int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 extern bool force_irqthreads;
 # endif
 #else
-/*  */
+
 #endif
 
 #ifndef local_softirq_pending
@@ -823,7 +823,7 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
 }
 #else
-/*  */
+
 #endif
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
@@ -831,7 +831,7 @@ extern void __tasklet_schedule(struct tasklet_struct *t);
 /**
  *  普通优先级 来调度执行 tasklet，
  */
-static inline void tasklet_schedule(struct tasklet_struct *t)   /*  */
+static inline void tasklet_schedule(struct tasklet_struct *t)
 {
     /**
      *  设置 已被调度，正准备运行 标志位
@@ -848,7 +848,7 @@ extern void __tasklet_hi_schedule(struct tasklet_struct *t);
 /**
  *  高优先级 调度执行 tasklet
  */
-static inline void tasklet_hi_schedule(struct tasklet_struct *t)    /*  */
+static inline void tasklet_hi_schedule(struct tasklet_struct *t)
 {
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
 		__tasklet_hi_schedule(t);
@@ -932,7 +932,7 @@ extern void tasklet_setup(struct tasklet_struct *t,
  */
 
 #if !defined(CONFIG_GENERIC_IRQ_PROBE)
-/*  */
+
 #else
 extern unsigned long probe_irq_on(void);	/* returns 0 on failure */
 extern int probe_irq_off(unsigned long);	/* returns 0 or negative on failure */
@@ -943,7 +943,7 @@ extern unsigned int probe_irq_mask(unsigned long);	/* returns mask of ISA interr
 /* Initialize /proc/irq/ */
 extern void init_irq_proc(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_IRQ_TIMINGS

@@ -999,7 +999,7 @@ static unsigned int tcp_established_options(struct sock *sk, struct sk_buff *skb
  * to process all sockets that eventually need to send more skbs.
  * We use one tasklet per cpu, with its own queue of sockets.
  */
-struct tsq_tasklet {    /*  */
+struct tsq_tasklet {
 	struct tasklet_struct	tasklet;
 
     /**
@@ -1015,7 +1015,7 @@ static DEFINE_PER_CPU(struct tsq_tasklet, tsq_tasklet);
 struct tsq_tasklet tsq_tasklet; //++++
 
 /**
- *  
+ *
  */
 static void tcp_tsq_write(struct sock *sk)
 {
@@ -1025,7 +1025,7 @@ static void tcp_tsq_write(struct sock *sk)
 		struct tcp_sock *tp = tcp_sk(sk);
 
         /**
-         *  
+         *
          */
 		if (tp->lost_out > tp->retrans_out && tp->snd_cwnd > tcp_packets_in_flight(tp)) {
 			tcp_mstamp_refresh(tp);
@@ -1037,7 +1037,7 @@ static void tcp_tsq_write(struct sock *sk)
 }
 
 /**
- *  
+ *
  */
 static void tcp_tsq_handler(struct sock *sk)
 {
@@ -1047,7 +1047,7 @@ static void tcp_tsq_handler(struct sock *sk)
 		tcp_tsq_write(sk);
 	else if (!test_and_set_bit(TCP_TSQ_DEFERRED, &sk->sk_tsq_flags))
 		sock_hold(sk);
-    
+
 	bh_unlock_sock(sk);
 }
 /*
@@ -1062,19 +1062,19 @@ static void tcp_tsq_handler(struct sock *sk)
 static void tcp_tasklet_func(unsigned long data)
 {
     /**
-     *  
+     *
      */
 	struct tsq_tasklet *tsq = (struct tsq_tasklet *)data;
 	LIST_HEAD(list);
     struct list_head list; //+++
-    
+
 	unsigned long flags;
 	struct list_head *q, *n;
 	struct tcp_sock *tp;
 	struct sock *sk;
 
     /**
-     *  
+     *
      */
 	local_irq_save(flags);
     /**
@@ -1099,11 +1099,11 @@ static void tcp_tasklet_func(unsigned long data)
          */
 		sk = (struct sock *)tp;
 		smp_mb__before_atomic();
-        
+
 		clear_bit(TSQ_QUEUED, &sk->sk_tsq_flags);
 
         /**
-         *  
+         *
          */
 		tcp_tsq_handler(sk);
 		sk_free(sk);
@@ -1166,7 +1166,7 @@ EXPORT_SYMBOL(tcp_release_cb);
 /**
  *  TCP 的 tasklet 初始化
  */
-void __init tcp_tasklet_init(void)  /*  */
+void __init tcp_tasklet_init(void)
 {
 	int i;
 
@@ -3906,7 +3906,7 @@ int tcp_connect(struct sock *sk)
 	tcp_init_nondata_skb(buff, tp->write_seq++, TCPHDR_SYN);
 
     /**
-     *  
+     *
      */
 	tcp_mstamp_refresh(tp);
 
@@ -3916,13 +3916,13 @@ int tcp_connect(struct sock *sk)
 	tp->retrans_stamp = tcp_time_stamp(tp);
 
     /**
-     *  
+     *
      */
 	tcp_connect_queue_skb(sk, buff);
 	tcp_ecn_send_syn(sk, buff);
 
     /**
-     *  
+     *
      */
 	tcp_rbtree_insert(&sk->tcp_rtx_queue, buff);
 
@@ -3939,7 +3939,7 @@ int tcp_connect(struct sock *sk)
 	tp->pushed_seq = tp->write_seq;
 
     /**
-     *  
+     *
      */
 	buff = tcp_send_head(sk);
 	if (unlikely(buff)) {

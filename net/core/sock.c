@@ -1645,7 +1645,7 @@ static void sock_copy(struct sock *nsk, const struct sock *osk)
 }
 
 /**
- *  
+ *
  */
 static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		int family)
@@ -1719,13 +1719,13 @@ static void sk_prot_free(struct proto *prot, struct sock *sk)
  *	@priority: for allocation (%GFP_KERNEL, %GFP_ATOMIC, etc)
  *	@prot: struct proto associated with this new sock instance
  *	@kern: is this to be a kernel socket?
- */ /*  */
+ */
 struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		                struct proto *prot, int kern)
 {
 	struct sock *sk;
     /**
-     *  从 slab 或 kmalloc 申请 
+     *  从 slab 或 kmalloc 申请
      */
 	sk = sk_prot_alloc(prot, priority | __GFP_ZERO, family);
 	if (sk) {
@@ -1734,11 +1734,11 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		 * See comment in struct sock definition to understand
 		 * why we need sk_prot_creator -acme
 		 *
-         *  
+         *
          */
 		sk->sk_prot = sk->sk_prot_creator = prot;
 		sk->sk_kern_sock = kern;
-        
+
 		sock_lock_init(sk);
 		sk->sk_net_refcnt = kern ? 0 : 1;
 		if (likely(sk->sk_net_refcnt)) {
@@ -1755,7 +1755,7 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		mem_cgroup_sk_alloc(sk);
 
         /**
-         *  
+         *
          */
 		cgroup_sk_alloc(&sk->sk_cgrp_data);
 		sock_update_classid(&sk->sk_cgrp_data);
@@ -2367,7 +2367,7 @@ struct sk_buff *sock_alloc_send_skb(struct sock *sk, unsigned long size,
 }
 EXPORT_SYMBOL(sock_alloc_send_skb);
 /**
- *  
+ *
  */
 int __sock_cmsg_send(struct sock *sk, struct msghdr *msg, struct cmsghdr *cmsg,
 		     struct sockcm_cookie *sockc)
@@ -2972,7 +2972,7 @@ void sk_stop_timer_sync(struct sock *sk, struct timer_list *timer)
 EXPORT_SYMBOL(sk_stop_timer_sync);
 
 /**
- *  
+ *
  */
 void sock_init_data(struct socket *sock, struct sock *sk)
 {
@@ -2985,7 +2985,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 	sk->sk_rcvbuf		=	sysctl_rmem_default;    /* 读 buffer 大小 */
 	sk->sk_sndbuf		=	sysctl_wmem_default;    /* 写 buffer 大小 */
 	sk->sk_state		=	TCP_CLOSE;
-    
+
 	sk_set_socket(sk, sock);
 
 	sock_set_flag(sk, SOCK_ZAPPED);
@@ -3073,7 +3073,7 @@ void lock_sock_nested(struct sock *sk, int subclass)
 EXPORT_SYMBOL(lock_sock_nested);
 
 /**
- *  
+ *
  */
 void release_sock(struct sock *sk)
 {
@@ -3396,7 +3396,7 @@ static __init int net_inuse_init(void)
 	return 0;
 }
 
-core_initcall(net_inuse_init);  /*  */
+core_initcall(net_inuse_init);
 
 static int assign_proto_idx(struct proto *prot)
 {
@@ -3417,7 +3417,7 @@ static void release_proto_idx(struct proto *prot)
 		clear_bit(prot->inuse_idx, proto_inuse_idx);
 }
 #else
-/*  */
+
 #endif
 
 static void tw_prot_cleanup(struct timewait_sock_ops *twsk_prot)
@@ -3440,7 +3440,7 @@ static void req_prot_cleanup(struct request_sock_ops *rsk_prot)
 	rsk_prot->slab = NULL;
 }
 
-static int req_prot_init(const struct proto *prot)  /*  */
+static int req_prot_init(const struct proto *prot)
 {
 	struct request_sock_ops *rsk_prot = prot->rsk_prot;
 

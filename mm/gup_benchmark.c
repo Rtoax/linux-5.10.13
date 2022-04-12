@@ -207,4 +207,4 @@ static int gup_benchmark_init(void)
 	return 0;
 }
 
-late_initcall(gup_benchmark_init);  /*  */
+late_initcall(gup_benchmark_init);

@@ -246,7 +246,7 @@ static int __init irq_pm_init_ops(void)
 	return 0;
 }
 
-device_initcall(irq_pm_init_ops);   /*  */
+device_initcall(irq_pm_init_ops);
 
 /**
  * resume_device_irqs - enable interrupt lines disabled by suspend_device_irqs()

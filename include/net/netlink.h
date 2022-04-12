@@ -312,7 +312,7 @@ enum nla_policy_validation {
  *	[ATTR_GOO] = NLA_POLICY_BITFIELD32(myvalidflags),
  * };
  */
-struct nla_policy { /*  */
+struct nla_policy {
 	u8		type;
 	u8		validation_type;
 	u16		len;

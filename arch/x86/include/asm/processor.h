@@ -87,7 +87,7 @@ struct cpuinfo_x86 {/* x86 架构 CPU 信息 */
 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
 	int			x86_tlbsize;
 #endif
-#ifdef CONFIG_X86_VMX_FEATURE_NAMES /*  */
+#ifdef CONFIG_X86_VMX_FEATURE_NAMES
 	__u32			vmx_capability[NVMXINTS];
 #endif
 	__u8			x86_virt_bits;
@@ -159,9 +159,9 @@ enum cpuid_regs_idx {
 #define X86_VENDOR_CYRIX	1/* 赛瑞克斯 */
 #define X86_VENDOR_AMD		2/* AMD */
 #define X86_VENDOR_UMC		3/* 联华电子 */
-#define X86_VENDOR_CENTAUR	5/*  */
-#define X86_VENDOR_TRANSMETA	7/*  */
-#define X86_VENDOR_NSC		8/*  */
+#define X86_VENDOR_CENTAUR	5
+#define X86_VENDOR_TRANSMETA	7
+#define X86_VENDOR_NSC		8
 #define X86_VENDOR_HYGON	9/* 海光国产 */
 #define X86_VENDOR_ZHAOXIN	10/* 兆芯，国资控股 */
 #define X86_VENDOR_NUM		11/* 别的厂商还不认了？ */
@@ -171,8 +171,8 @@ enum cpuid_regs_idx {
 /*
  * capabilities of CPUs
  */
-extern struct cpuinfo_x86	boot_cpu_data;  /*  */
-extern struct cpuinfo_x86	new_cpu_data;   /*  */
+extern struct cpuinfo_x86	boot_cpu_data;
+extern struct cpuinfo_x86	new_cpu_data;
 
 extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
@@ -272,7 +272,7 @@ static inline unsigned long native_read_cr3_pa(void)
 //
 //这些字段有着如下的意义：
 //
-//* 第 0 到第 2 位 - 忽略； 
+//* 第 0 到第 2 位 - 忽略；
 //* 第 12 位到第 51 位 - 存储最高层分页结构的地址；
 //* 第 3 位 到第 4 位 - PWT 或 Page-Level Writethrough 和 PCD 或 Page-level Cache Disable 显示。
 //                        这些位控制页或者页表被硬件缓存处理的方式；
@@ -514,15 +514,15 @@ struct perf_event;
  */
 struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	/**
-	 *  Cached TLS descriptors: 
+	 *  Cached TLS descriptors:
 	 */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
-    
+
 #ifdef CONFIG_X86_32
 //	unsigned long		sp0;
 #endif
 
-	unsigned long		sp; /*  */
+	unsigned long		sp;
 
 #ifdef CONFIG_X86_32
 //	unsigned long		sysenter_cs;
@@ -551,15 +551,15 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 
 	/* Debug status used for traps, single steps, etc... */
 	unsigned long           virtual_dr6;
-    
+
 	/* Keep track of the exact dr7 value set by the user */
 	unsigned long           ptrace_dr7;
-    
+
 	/* Fault info: */
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
-    
+
 #ifdef CONFIG_VM86
 	/* Virtual 86 mode info */
 //	struct vm86		*vm86;
@@ -699,7 +699,7 @@ static inline unsigned int cpuid_ecx(unsigned int op)   /* 获取寄存器值 */
 {
 	unsigned int eax, ebx, ecx, edx;
 
-	cpuid(op, &eax, &ebx, &ecx, &edx);/*  */
+	cpuid(op, &eax, &ebx, &ecx, &edx);
 
 	return ecx;
 }
@@ -726,7 +726,7 @@ extern int sysenter_setup(void);
 
 
 /* Defined in head.S */
-extern struct desc_ptr		early_gdt_descr;    /*  */
+extern struct desc_ptr		early_gdt_descr;
 
 extern void switch_to_new_gdt(int);
 extern void load_direct_gdt(int);

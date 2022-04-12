@@ -197,7 +197,7 @@ static ssize_t notes_read(struct file *filp, struct kobject *kobj,
 	return count;
 }
 
-static struct bin_attribute __ro_after_init notes_attr   = {/*  */
+static struct bin_attribute __ro_after_init notes_attr   = {
 	.attr = {
 		.name = "notes",
 		.mode = S_IRUGO,
@@ -205,16 +205,16 @@ static struct bin_attribute __ro_after_init notes_attr   = {/*  */
 	.read = &notes_read,
 };
 
-struct kobject *kernel_kobj;    /*  */
+struct kobject *kernel_kobj;
 EXPORT_SYMBOL_GPL(kernel_kobj);
 
 /**
- *  
+ *
  */
 static struct attribute * kernel_attrs[] = {
 	&fscaps_attr.attr,
 	&uevent_seqnum_attr.attr,
-#ifdef CONFIG_UEVENT_HELPER /*  */
+#ifdef CONFIG_UEVENT_HELPER
 	&uevent_helper_attr.attr,
 #endif
 #ifdef CONFIG_PROFILING

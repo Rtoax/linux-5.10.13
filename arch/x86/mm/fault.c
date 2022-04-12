@@ -123,7 +123,7 @@ is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
 	if (error_code & X86_PF_INSTR)
 		return 0;
 
-	instr = (void *)convert_ip_to_linear(current, regs);    /*  */
+	instr = (void *)convert_ip_to_linear(current, regs);
 	max_instr = instr + 15;
 
 	if (user_mode(regs) && instr >= (unsigned char *)TASK_SIZE_MAX)
@@ -132,7 +132,7 @@ is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
 	while (instr < max_instr) {
 		unsigned char opcode;
 
-		if (get_kernel_nofault(opcode, instr))  /*  */
+		if (get_kernel_nofault(opcode, instr))
 			break;
 
 		instr++;
@@ -503,7 +503,7 @@ static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
 		 name, index, addr, (desc.limit0 | (desc.limit1 << 16)));
 }
 
-static void /*  */
+static void
 show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address)
 {
 	if (!oops_may_print())
@@ -514,7 +514,7 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long ad
 		pgd_t *pgd;
 		pte_t *pte;
 
-		pgd = __va(read_cr3_pa());  /*  */
+		pgd = __va(read_cr3_pa());
 		pgd += pgd_index(address);
 
 		pte = lookup_address_in_pgd(pgd, address, &level);
@@ -1087,7 +1087,7 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 	if (!pte_present(*pte)) /* 是否存在 */
 		return 0;   /* 如果不存在，返回0 */
 
-    /*  */
+
 	ret = spurious_kernel_fault_check(error_code, pte);
 	if (!ret)
 		return 0;
@@ -1123,12 +1123,12 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 	 * Make sure to check the VMA so that we do not perform
 	 * faults just to hit a X86_PF_PK as soon as we fill in a
 	 * page.
-	 */ /*  */
+	 */
 	if (!arch_vma_access_permitted(vma, (error_code & X86_PF_WRITE),
 				       (error_code & X86_PF_INSTR), foreign))
 		return 1;
 
-	if (error_code & X86_PF_WRITE) {    /*  */
+	if (error_code & X86_PF_WRITE) {
 		/* write, present and write, not present: */
 		if (unlikely(!(vma->vm_flags & VM_WRITE)))
 			return 1;
@@ -1227,7 +1227,7 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 	 *
 	 * Don't take the mm semaphore here. If we fixup a prefetch
 	 * fault we could otherwise deadlock:
-	 */ /*  */
+	 */
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
 NOKPROBE_SYMBOL(do_kern_addr_fault);
@@ -1307,7 +1307,7 @@ void do_user_addr_fault(struct pt_regs *regs,
 			local_irq_enable(); /* 开启中断 */
 	}
 
-    /*  */
+
 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
 
 	if (hw_error_code & X86_PF_WRITE)
@@ -1370,7 +1370,7 @@ retry:
      */
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
-		bad_area(regs, hw_error_code, address); /*  */
+		bad_area(regs, hw_error_code, address);
 		return;
 	}
 
@@ -1533,7 +1533,7 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
  */
 void do_page_fault(struct pt_regs *regs, int error_code){/* +++ */}
 void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* +++ */}
-DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
+DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 {
     struct pt_regs *regs/* 我加的 */;
     int error_code/* 我加的 */;
@@ -1588,6 +1588,6 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)/*  */
 
 	instrumentation_end();
 
-    /*  */
+
 	irqentry_exit(regs, state);
 }

@@ -149,7 +149,7 @@ extern raw_spinlock_t devtree_lock;
 
 #define OF_BAD_ADDR	((u64)-1)
 
-#ifdef CONFIG_OF    /*  */
+#ifdef CONFIG_OF
 void of_core_init(void);
 
 static inline bool is_of_node(const struct fwnode_handle *fwnode)
@@ -559,7 +559,7 @@ int of_map_id(struct device_node *np, u32 id,
 	       struct device_node **target, u32 *id_out);
 
 #else /* CONFIG_OF */
-/*  */
+
 #endif /* CONFIG_OF */
 
 /* Default string compare functions, Allow arch asm/prom.h to override */
@@ -578,13 +578,13 @@ static inline int of_prop_val_eq(struct property *p1, struct property *p2)
 #if defined(CONFIG_OF) && defined(CONFIG_NUMA)
 extern int of_node_to_nid(struct device_node *np);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_OF_NUMA
 extern int of_numa_init(void);
 #else
-/*  */
+
 #endif
 
 static inline struct device_node *of_find_matching_node(
@@ -966,7 +966,7 @@ static inline int of_changeset_update_property(struct of_changeset *ocs,
 	return of_changeset_action(ocs, OF_RECONFIG_UPDATE_PROPERTY, np, prop);
 }
 #else /* CONFIG_OF_DYNAMIC */
-/*  */
+
 #endif /* CONFIG_OF_DYNAMIC */
 
 /**
@@ -1007,7 +1007,7 @@ int of_overlay_notifier_register(struct notifier_block *nb);
 int of_overlay_notifier_unregister(struct notifier_block *nb);
 
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_OF_H */

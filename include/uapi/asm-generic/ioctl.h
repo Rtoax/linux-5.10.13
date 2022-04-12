@@ -77,7 +77,7 @@
 #endif
 
 /**
- *  
+ *
  *    31 30 29                   16 15             8 7               0
  *    +----+-----------------------+----------------+----------------+
  *    |dir |          size         |      type      |     number     |
@@ -100,14 +100,14 @@
  * NOTE: _IOW means userland is writing and kernel is reading. _IOR
  * means userland is reading and kernel is writing.
  *
- *  
+ *
  *    31 30 29                   16 15             8 7               0
  *    +----+-----------------------+----------------+----------------+
  *    |dir |          size         |      type      |     number     |
  *    +----+-----------------------+----------------+----------------+
  *  direction
  */
-#define _IO(type,nr)		    _IOC(_IOC_NONE/*  */,(type),(nr),0)
+#define _IO(type,nr)		    _IOC(_IOC_NONE,(type),(nr),0)
 #define _IOR(type,nr,size)	    _IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
 #define _IOW(type,nr,size)	    _IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
 #define _IOWR(type,nr,size)	    _IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
@@ -115,8 +115,8 @@
 #define _IOW_BAD(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),sizeof(size))
 #define _IOWR_BAD(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),sizeof(size))
 
-/* used to decode ioctl numbers.. 
- **  
+/* used to decode ioctl numbers..
+ **
  *    31 30 29                   16 15             8 7               0
  *    +----+-----------------------+----------------+----------------+
  *    |dir |          size         |      type      |     number     |

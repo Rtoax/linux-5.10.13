@@ -822,7 +822,7 @@ out:
 	}
 	return sk;
 }
-            /*  */
+
 static int unix_create(struct net *net, struct socket *sock, int protocol,
 		       int kern)
 {
@@ -845,7 +845,7 @@ static int unix_create(struct net *net, struct socket *sock, int protocol,
 	case SOCK_DGRAM:    /* 数据包 */
 		sock->ops = &unix_dgram_ops;
 		break;
-	case SOCK_SEQPACKET:    /*  */
+	case SOCK_SEQPACKET:
 		sock->ops = &unix_seqpacket_ops;
 		break;
 	default:
@@ -1231,7 +1231,7 @@ static long unix_wait_for_peer(struct sock *other, long timeo)
 }
 
 /**
- *  
+ *
  */
 static int unix_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 			       int addr_len, int flags)
@@ -2043,7 +2043,7 @@ err:
 		scm_destroy(&scm);
 	return err;
 }
-            /*  */
+
 static int unix_seqpacket_sendmsg(struct socket *sock, struct msghdr *msg,
 				  size_t len)
 {
@@ -2062,7 +2062,7 @@ static int unix_seqpacket_sendmsg(struct socket *sock, struct msghdr *msg,
 
 	return unix_dgram_sendmsg(sock, msg, len);
 }
-            /*  */
+
 static int unix_seqpacket_recvmsg(struct socket *sock, struct msghdr *msg,
 				  size_t size, int flags)
 {
@@ -2931,7 +2931,7 @@ static struct pernet_operations unix_net_ops = {    /* UNIX */
 	.exit = unix_net_exit,
 };
 
-static int __init af_unix_init(void)    /*  */
+static int __init af_unix_init(void)
 {
 	int rc = -1;
 
@@ -2944,7 +2944,7 @@ static int __init af_unix_init(void)    /*  */
 	}
 
 	sock_register(&unix_family_ops);        /* 注册协议族 */
-	register_pernet_subsys(&unix_net_ops);  /*  */
+	register_pernet_subsys(&unix_net_ops);
 out:
 	return rc;
 }

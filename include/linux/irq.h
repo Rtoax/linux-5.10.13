@@ -144,7 +144,7 @@ struct irq_domain;
  * @msi_desc:		MSI descriptor
  * @ipi_offset:		Offset of first IPI target cpu in @affinity. Optional.
  */
-struct irq_common_data {    /*  */
+struct irq_common_data {
 
     /**
      *  state_use_accessors
@@ -190,23 +190,23 @@ struct irq_data {   /* 每个 irq 芯片数据传递到芯片功能 */
 	unsigned long		hwirq;  /* 硬件中断号 */
 
     /**
-     *  
+     *
      */
-	struct irq_common_data	*common;    /*  */
+	struct irq_common_data	*common;
 
     /**
      *  硬件中断控制器底层操作相关的方法集
      */
-	struct irq_chip		*chip;      /*  */
+	struct irq_chip		*chip;
 
     /**
-     *  
+     *
      */
-	struct irq_domain	*domain;    /*  */
+	struct irq_domain	*domain;
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
 	struct irq_data		*parent_data;
 #endif
-	void			*chip_data;     /*  */
+	void			*chip_data;
 };
 
 /*
@@ -247,9 +247,9 @@ struct irq_data {   /* 每个 irq 芯片数据传递到芯片功能 */
  * 对应字段 `irq_data.irq_common_data.state_use_accessors`
  */
 enum {
-    /** 
-     *  表示中断触发类型，如上升沿触发，或者下降沿触发 
-     *  
+    /**
+     *  表示中断触发类型，如上升沿触发，或者下降沿触发
+     *
      */
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
@@ -382,7 +382,7 @@ static inline bool irqd_irq_masked(struct irq_data *d)
 }
 
 /**
- *  
+ *
  */
 static inline bool irqd_irq_inprogress(struct irq_data *d)
 {
@@ -538,16 +538,16 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  * @irq_nmi_teardown:	function called from core code after disabling an NMI
  * @flags:		chip specific flags
  *
- *  为中断控制器驱动提供通用 API 
+ *  为中断控制器驱动提供通用 API
  *
  *  硬件中断控制器底层操作相关的方法集
  */
 struct irq_chip {   /* 硬件中断 chip 描述符 */
     /**
-     *  
+     *
      */
 	struct device	*parent_device;
-    
+
 	const char	*name;  /* 设备名称， 用作 /proc/interrupts 中 */
 
     /**
@@ -563,7 +563,7 @@ struct irq_chip {   /* 硬件中断 chip 描述符 */
     /**
      *  使能一个中断
      */
-	void		(*irq_enable)(struct irq_data *data);   /*  */
+	void		(*irq_enable)(struct irq_data *data);
 
     /**
      *  关闭一个中断

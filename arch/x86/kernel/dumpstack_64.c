@@ -173,7 +173,7 @@ bool noinstr get_stack_info_noinstr(unsigned long *stack, struct task_struct *ta
 	return false;
 }
 
-    /*  */
+
 int get_stack_info(unsigned long *stack, struct task_struct *task,
 		   struct stack_info *info, unsigned long *visit_mask)
 {

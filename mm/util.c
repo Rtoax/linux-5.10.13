@@ -557,7 +557,7 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
  */
 unsigned long vm_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
-	unsigned long flag, unsigned long offset)   /*  */
+	unsigned long flag, unsigned long offset)
 {
 	if (unlikely(offset + PAGE_ALIGN(len) < offset))
 		return -EINVAL;

@@ -56,7 +56,7 @@ bool trace_module_has_bad_taint(struct module *mod);
 extern int register_tracepoint_module_notifier(struct notifier_block *nb);
 extern int unregister_tracepoint_module_notifier(struct notifier_block *nb);
 #else
-/*  */
+
 #endif /* CONFIG_MODULES */
 
 /*
@@ -71,7 +71,7 @@ static inline void tracepoint_synchronize_unregister(void)
 	synchronize_rcu();
 }
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
@@ -98,7 +98,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	    "	.long 	__tracepoint_" #name " - .		\n"	\
 	    "	.previous					\n")
 #else
-/*  */
+
 #endif
 
 #endif /* _LINUX_TRACEPOINT_H */
@@ -263,7 +263,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
  * structures, so we create an array of pointers that will be used for iteration
  * on the tracepoints.
  */
-#define DEFINE_TRACE_FN(_name, _reg, _unreg, proto, args)	/*  */	\
+#define DEFINE_TRACE_FN(_name, _reg, _unreg, proto, args)		\
 	static const char __tpstrtab_##_name[]				\
 	__section("__tracepoints_strings") = #_name;			\
 	extern struct static_call_key STATIC_CALL_KEY(tp_func_##_name);	\
@@ -309,7 +309,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 
 #else /* !TRACEPOINTS_ENABLED */
-/*  */
+
 #endif /* TRACEPOINTS_ENABLED */
 
 #ifdef CONFIG_TRACING

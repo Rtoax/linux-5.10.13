@@ -353,7 +353,7 @@ static struct kmem_cache *vm_area_cachep;
 /* SLAB cache for mm_struct structures (tsk->mm) */
 static struct kmem_cache *mm_cachep;
 
-struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)  /*  */
+struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 {
 	struct vm_area_struct *vma;
 
@@ -364,7 +364,7 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)  /*  */
 }
 /* 复制一个 vma 结构
 当 拆分一个 vma 时候，将使用这个接口*/
-struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig) /*  */
+struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 {
 	struct vm_area_struct *new = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);/* 分配内存 */
 
@@ -550,7 +550,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
     /**
      *  大页内存
      */
-	retval = khugepaged_fork(mm, oldmm);/*  */
+	retval = khugepaged_fork(mm, oldmm);
 	if (retval)
 		goto out;
 
@@ -596,12 +596,12 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
         /* 赋值 */
 		tmp->vm_mm = mm;
 
-        /*  */
+
 		retval = dup_userfaultfd(tmp, &uf);
 		if (retval)
 			goto fail_nomem_anon_vma_fork;
 
-        /*  */
+
 		if (tmp->vm_flags & VM_WIPEONFORK/* 擦除 */) {
 			/*
 			 * VM_WIPEONFORK gets a clean slate in the child.
@@ -749,7 +749,7 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 	pgd_free(mm, mm->pgd);
 }
 #else
-/*  */
+
 #endif /* CONFIG_MMU */
 
 static void check_mm(struct mm_struct *mm)
@@ -871,10 +871,10 @@ void __init __weak arch_task_cache_init(void) { }
  *
  *  当前可以拥有的最大进程数
  */
-static void set_max_threads(unsigned int max_threads_suggested) /*  */
+static void set_max_threads(unsigned int max_threads_suggested)
 {
 	u64 threads;
-	unsigned long nr_pages = totalram_pages();  /*  */
+	unsigned long nr_pages = totalram_pages();
 
 	/*
 	 * The number of threads shall be limited such that the thread
@@ -898,7 +898,7 @@ static void set_max_threads(unsigned int max_threads_suggested) /*  */
 /**
  *
  */
-int __read_mostly arch_task_struct_size ;/*  */
+int __read_mostly arch_task_struct_size ;
 #endif
 
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
@@ -925,7 +925,7 @@ static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
 #endif /* CONFIG_ARCH_TASK_STRUCT_ALLOCATOR */
 
 //allocates cache for the `task_struct`
-void __init fork_init(void)/*  */
+void __init fork_init(void)
 {
 	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
@@ -974,7 +974,7 @@ void __init fork_init(void)/*  */
 			  NULL, free_vm_stack_cache);
 #endif
 
-	scs_init(); /*  */
+	scs_init();
 
 	lockdep_init_task(&init_task);  /* 死锁检测 */
 	uprobes_init(); /* uprobes trace工具 */
@@ -1001,7 +1001,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)/* 设置越界检测 以�
 
 	unsigned long *stackend;
 
-	stackend = end_of_stack(tsk);   /*  */
+	stackend = end_of_stack(tsk);
 	*stackend = STACK_END_MAGIC;	/* for overflow detection 越界检测*/
 }
 
@@ -1013,7 +1013,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
 	unsigned long *stack;
-	struct vm_struct __maybe_unused *stack_vm_area ;/*  */
+	struct vm_struct __maybe_unused *stack_vm_area ;
 	int err;
 
 	if (node == NUMA_NO_NODE)
@@ -1087,7 +1087,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
     /**
      *  为空
      */
-	setup_thread_stack(tsk, orig);  /*  */
+	setup_thread_stack(tsk, orig);
 
     /**
      *  标志位 设置
@@ -1217,8 +1217,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
      *  初始化一系列的数据结构，字段
      */
 	mm->mmap = NULL;    /* VMA list */
-	mm->mm_rb = RB_ROOT;    /*  */
-	mm->vmacache_seqnum = 0;    /*  */
+	mm->mm_rb = RB_ROOT;
+	mm->vmacache_seqnum = 0;
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	seqcount_init(&mm->write_protect_seq);
@@ -1297,7 +1297,7 @@ struct mm_struct *mm_alloc(void)    /* 分配MM结构 */
 		return NULL;
 
 	memset(mm, 0, sizeof(*mm));
-	return mm_init(mm, current, current_user_ns());/*  */
+	return mm_init(mm, current, current_user_ns());
 }
 
 static inline void __mmput(struct mm_struct *mm)
@@ -1482,7 +1482,7 @@ static void complete_vfork_done(struct task_struct *tsk)
 }
 
 static int wait_for_vfork_done(struct task_struct *child,
-				struct completion *vfork)   /*  */
+				struct completion *vfork)
 {
 	int killed;
 
@@ -1520,7 +1520,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	uprobe_free_utask(tsk);
 
 	/* Get rid of any cached register state */
-	deactivate_mm(tsk, mm); /*  */
+	deactivate_mm(tsk, mm);
 
 	/*
 	 * Signal userspace if we're not exiting with a core dump
@@ -1546,7 +1546,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	 * Also kthread_stop() uses this completion for synchronization.
 	 */
 	if (tsk->vfork_done)
-		complete_vfork_done(tsk);   /*  */
+		complete_vfork_done(tsk);
 }
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
@@ -1600,7 +1600,7 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
      *  映射部分
      *
      */
-	err = dup_mmap(mm, oldmm);  /*  */
+	err = dup_mmap(mm, oldmm);
 	if (err)
 		goto free_pt;
 
@@ -1698,10 +1698,10 @@ fail_nomem:
 /**
  *  复制父进程的 fs_struct 数据结构信息
  */
-static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
+static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct fs_struct *fs = current->fs;
-	if (clone_flags & CLONE_FS) {   /*  */
+	if (clone_flags & CLONE_FS) {
 		/* tsk->fs is already what we want */
 		spin_lock(&fs->lock);
 		if (fs->in_exec) {
@@ -1716,7 +1716,7 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)  /*  */
     /**
      *  拷贝文件系统
      */
-	tsk->fs = copy_fs_struct(fs);   /*  */
+	tsk->fs = copy_fs_struct(fs);
 	if (!tsk->fs)
 		return -ENOMEM;
 	return 0;
@@ -1758,7 +1758,7 @@ out:
 /**
  *  pthread_create 并没有这个选项
  */
-static int copy_io(unsigned long clone_flags, struct task_struct *tsk)  /*  */
+static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 {
     /**
      *  块设备
@@ -1799,7 +1799,7 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)  /*  */
 /**
  *
  */
-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk) /*  */
+static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct sighand_struct *sig;
 
@@ -1996,7 +1996,7 @@ static inline void
 init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 {
 	if (type == PIDTYPE_PID)
-		task->thread_pid = pid; /*  */
+		task->thread_pid = pid;
 	else
 		task->signal->pids[type] = pid;
 }
@@ -2129,7 +2129,7 @@ static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
 /**
  *
  */
-const struct file_operations pidfd_fops = { /*  */
+const struct file_operations pidfd_fops = {
 	pidfd_fops.release = pidfd_release,
 	pidfd_fops.poll = pidfd_poll,
 #ifdef CONFIG_PROC_FS
@@ -2179,11 +2179,10 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
  *
- *
+ * 复制进程，并不运行
  */
 static __latent_entropy
-struct task_struct *copy_process(   /* 复制进程，并不运行 */
-            					struct pid *pid,
+struct task_struct *copy_process(struct pid *pid,
             					int trace,
             					int node,
             					struct kernel_clone_args *args)
@@ -2308,11 +2307,11 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	 * to any of the bad_fork_* labels. This is to avoid freeing
 	 * p->set_child_tid which is (ab)used as a kthread's data pointer for
 	 * kernel threads (PF_KTHREAD).
-	 *//*  */
+	 */
 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
 	/*
 	 * Clear TID on mm_release()?
-	 *//*  */
+	 */
 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
     /**
@@ -2323,7 +2322,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
     /**
      *  互斥锁初始化
      */
-	rt_mutex_init_task(p);  /*  */
+	rt_mutex_init_task(p);
 
 	lockdep_assert_irqs_enabled();  /* 死锁检测 */
 
@@ -2372,7 +2371,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
      */
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
-	rcu_copy_process(p);    /*  */
+	rcu_copy_process(p);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock); /* 初始化spinlock */
 
@@ -2450,7 +2449,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	}
 #endif
 
-#ifdef CONFIG_CPUSETS   /*  */
+#ifdef CONFIG_CPUSETS
 	p->cpuset_mem_spread_rotor = NUMA_NO_NODE;
 	p->cpuset_slab_spread_rotor = NUMA_NO_NODE;
 	seqcount_spinlock_init(&p->mems_allowed_seq, &p->alloc_lock);
@@ -2583,7 +2582,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
      *
      *  复制父进程的 pt_regs 结构到子进程，描述寄存器全部信息
      */
-	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls); /*  */
+	retval = copy_thread(clone_flags, args->stack, args->stack_size, p, args->tls);
     retval = copy_thread_tls(); /* +++ linux-5.0 */
 	if (retval)
 		goto bad_fork_cleanup_io;
@@ -2591,7 +2590,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
     /**
      *
      */
-	stackleak_task_init(p); /*  */
+	stackleak_task_init(p);
 
     /**
      *	不是系统第一个静态 pid
@@ -2621,7 +2620,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 			goto bad_fork_free_pid;
 
 		pidfd = retval;
-        /*  */
+
 		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid, O_RDWR | O_CLOEXEC);
 		if (IS_ERR(pidfile)) {
 			put_unused_fd(pidfd);
@@ -2630,7 +2629,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 		}
 		get_pid(pid);	/* held by pidfile now */
 
-		retval = put_user(pidfd, args->pidfd);  /*  */
+		retval = put_user(pidfd, args->pidfd);
 		if (retval)
 			goto bad_fork_put_pidfd;
 	}
@@ -2665,7 +2664,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
      *  设置group——leader 和TGID
      */
 	/* ok, now we should be set up.. */
-	p->pid = pid_nr(pid);   /*  */
+	p->pid = pid_nr(pid);
     /**
      *  子进程归属于父进程线程组
      */
@@ -2695,7 +2694,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	 * between here and cgroup_post_fork() if an organisation operation is in
 	 * progress.
 	 */
-	retval = cgroup_can_fork(p, args);  /*  */
+	retval = cgroup_can_fork(p, args);
 	if (retval)
 		goto bad_fork_put_pidfd;
 
@@ -2707,7 +2706,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	 * visible to the system.
 	 */
 
-	p->start_time = ktime_get_ns(); /*  */
+	p->start_time = ktime_get_ns();
 	p->start_boottime = ktime_get_boottime_ns();
 
 	/*
@@ -2740,12 +2739,12 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
 	 *
 	 * 限制 系统调用
 	 */
-	copy_seccomp(p);    /*  */
+	copy_seccomp(p);
 
     /**
      *
      */
-	rseq_fork(p, clone_flags);  /*  */
+	rseq_fork(p, clone_flags);
 
 	/**
 	 * Don't start children in a dying pid namespace
@@ -2774,7 +2773,7 @@ struct task_struct *copy_process(   /* 复制进程，并不运行 */
     /**
      *  把新进程添加到 进程管理 的流程里
      */
-	init_task_pid_links(p); /*  */
+	init_task_pid_links(p);
 
     /**
      *
@@ -2970,7 +2969,7 @@ static inline void init_idle_pids(struct task_struct *idle)
 
 	for (type = PIDTYPE_PID; type < PIDTYPE_MAX; ++type) {
 		INIT_HLIST_NODE(&idle->pid_links[type]); /* not really needed */
-		init_task_pid(idle, type, &init_struct_pid);    /*  */
+		init_task_pid(idle, type, &init_struct_pid);
 	}
 }
 
@@ -2990,7 +2989,7 @@ struct task_struct *fork_idle(int cpu)
 	return task;
 }
 
-struct mm_struct *copy_init_mm(void)    /*  */
+struct mm_struct *copy_init_mm(void)
 {
 	return dup_mm(NULL, &init_mm);
 }

@@ -204,7 +204,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	struct inet_sock *inet = inet_sk(sk);
 
     /**
-     *  
+     *
      */
 	struct tcp_sock *tp = tcp_sk(sk);
 	__be16 orig_sport, orig_dport;
@@ -227,7 +227,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	nexthop = daddr = usin->sin_addr.s_addr;
 
     /**
-     *  
+     *
      */
 	inet_opt = rcu_dereference_protected(inet->inet_opt, lockdep_sock_is_held(sk));
 	if (inet_opt && inet_opt->opt.srr) {
@@ -243,12 +243,12 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	orig_dport = usin->sin_port;
 
     /**
-     *  
+     *
      */
 	fl4 = &inet->cork.fl.u.ip4;
 
     /**
-     *  
+     *
      */
 	rt = ip_route_connect(fl4, nexthop, inet->inet_saddr,
         			      RT_CONN_FLAGS(sk), sk->sk_bound_dev_if,
@@ -274,7 +274,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	sk_rcv_saddr_set(sk, inet->inet_saddr);
 
     /**
-     *  
+     *
      */
 	if (tp->rx_opt.ts_recent_stamp && inet->inet_daddr != daddr) {
 		/* Reset inherited state */
@@ -306,7 +306,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	sk_set_txhash(sk);
 
     /**
-     *  
+     *
      */
 	rt = ip_route_newports(fl4, rt, orig_sport, orig_dport,
 			                inet->inet_sport, inet->inet_dport, sk);
@@ -321,7 +321,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	rt = NULL;
 
     /**
-     *  
+     *
      */
 	if (likely(!tp->repair)) {
 		if (!tp->write_seq)
@@ -343,7 +343,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		goto failure;
 
     /**
-     *  
+     *
      */
 	err = tcp_connect(sk);
 
@@ -2802,7 +2802,7 @@ void tcp4_proc_exit(void)
 struct proto tcp_prot = {   /* TCP 协议 */
 	tcp_prot.name			= "TCP",
 	tcp_prot.owner			= THIS_MODULE,
-	tcp_prot.close			= tcp_close,    /*  */
+	tcp_prot.close			= tcp_close,
 	tcp_prot.pre_connect		= tcp_v4_pre_connect,
 	tcp_prot.connect		= tcp_v4_connect,
 	tcp_prot.disconnect		= tcp_disconnect,
@@ -3042,7 +3042,7 @@ static void __init bpf_iter_register(void)
 
 #endif
 
-void __init tcp_v4_init(void)   /*  */
+void __init tcp_v4_init(void)
 {
 	if (register_pernet_subsys(&tcp_sk_ops))
 		panic("Failed to create the TCP control socket.\n");

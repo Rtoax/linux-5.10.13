@@ -22,7 +22,7 @@ static DEFINE_MUTEX(param_lock);
 #ifdef CONFIG_MODULES
 #define KPARAM_MUTEX(mod)	((mod) ? &(mod)->param_lock : &param_lock)
 #else
-/*  */
+
 #endif
 
 static inline void check_kparam_locked(struct module *mod)
@@ -30,7 +30,7 @@ static inline void check_kparam_locked(struct module *mod)
 	BUG_ON(!mutex_is_locked(KPARAM_MUTEX(mod)));
 }
 #else
-/*  */
+
 #endif /* !CONFIG_SYSFS */
 
 /* This just allows us to keep track of which parameters are kmalloced. */
@@ -693,7 +693,7 @@ int module_param_sysfs_setup(struct module *mod,
 	int i, err;
 	bool params = false;
     /**
-     *  
+     *
      */
 	for (i = 0; i < num_params; i++) {
 		if (kparam[i].perm == 0)
@@ -709,7 +709,7 @@ int module_param_sysfs_setup(struct module *mod,
 	if (!params)
 		return 0;
     /**
-     *  
+     *
      */
 	/* Create the param group. */
 	err = sysfs_create_group(&mod->mkobj.kobj, &mod->mkobj.mp->grp);
@@ -886,7 +886,7 @@ static ssize_t module_attr_show(struct kobject *kobj,
 	if (!attribute->show)
 		return -EIO;
     /**
-     *  
+     *
      */
 	ret = attribute->show(attribute, mk, buf);
 
@@ -912,7 +912,7 @@ static ssize_t module_attr_store(struct kobject *kobj,
 	return ret;
 }
 /**
- *  
+ *
  */
 static const struct sysfs_ops module_sysfs_ops = {
 	.show = module_attr_show,
@@ -943,7 +943,7 @@ static void module_kobj_release(struct kobject *kobj)
 	complete(mk->kobj_completion);
 }
 /**
- *  
+ *
  */
 struct kobj_type module_ktype = {
 	.release   =	module_kobj_release,

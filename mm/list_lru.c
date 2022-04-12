@@ -78,7 +78,7 @@ out:
 	return l;
 }
 #else
-/*  */
+
 #endif /* CONFIG_MEMCG_KMEM */
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item)
@@ -546,7 +546,7 @@ void memcg_drain_all_list_lrus(int src_idx, struct mem_cgroup *dst_memcg)
 	mutex_unlock(&list_lrus_mutex);
 }
 #else
-/*  */
+
 #endif /* CONFIG_MEMCG_KMEM */
 
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,

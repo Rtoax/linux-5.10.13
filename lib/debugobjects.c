@@ -85,11 +85,11 @@ static int		__read_mostly	debug_objects_maxchain ;
 static int __maybe_unused __read_mostly	debug_objects_maxchecked ;
 static int		__read_mostly	debug_objects_fixups ;
 static int		__read_mostly	debug_objects_warnings ;
-static int		__read_mostly	debug_objects_enabled 
+static int		__read_mostly	debug_objects_enabled
 				= CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT;
-static int		__read_mostly	debug_objects_pool_size 
+static int		__read_mostly	debug_objects_pool_size
 				= ODEBUG_POOL_SIZE;
-static int		__read_mostly	debug_objects_pool_min_level 
+static int		__read_mostly	debug_objects_pool_min_level
 				= ODEBUG_POOL_MIN_LEVEL;
 static const struct debug_obj_descr __read_mostly *descr_test  ;
 static struct kmem_cache	__read_mostly *obj_cache ;
@@ -549,7 +549,7 @@ static void debug_object_is_on_stack(void *addr, int onstack)
 }
 
 /**
- *  
+ *
  */
 static void
 __debug_object_init(void *addr, const struct debug_obj_descr *descr, int onstack)
@@ -1063,7 +1063,7 @@ static int __init debug_objects_init_debugfs(void)
 __initcall(debug_objects_init_debugfs);
 
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_DEBUG_OBJECTS_SELFTEST
@@ -1282,7 +1282,7 @@ out:
 	local_irq_restore(flags);
 }
 #else
-/*  */
+
 #endif
 
 /*

@@ -29,7 +29,7 @@
 
 #define CSD_TYPE(_csd)	((_csd)->flags & CSD_FLAG_TYPE_MASK)
 
-struct call_function_data { /*  */
+struct call_function_data {
 	call_single_data_t	__percpu *csd;
 	cpumask_var_t		cpumask;
 	cpumask_var_t		cpumask_ipi;
@@ -605,7 +605,7 @@ call:
 EXPORT_SYMBOL_GPL(smp_call_function_any);
 
 /**
- *  
+ *
  */
 static void smp_call_function_many_cond(const struct cpumask *mask,
 					smp_call_func_t func, void *info,
@@ -664,7 +664,7 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
 	cpumask_clear(cfd->cpumask_ipi);
 
     /**
-     *  
+     *
      */
 	for_each_cpu(cpu, cfd->cpumask) {
 		call_single_data_t *csd = per_cpu_ptr(cfd->csd, cpu);
@@ -686,7 +686,7 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
 		csd->dst = cpu;
 #endif
         /**
-         *  
+         *
          */
 		if (llist_add(&csd->llist, &per_cpu(call_single_queue, cpu)))
 			__cpumask_set_cpu(cpu, cfd->cpumask_ipi);
@@ -808,33 +808,33 @@ static int __init maxcpus(char *str)
 early_param("maxcpus", maxcpus);
 
 /* Setup number of possible processor ids */
-unsigned int __read_mostly nr_cpu_ids  = NR_CPUS;    /*  */
+unsigned int __read_mostly nr_cpu_ids  = NR_CPUS;
 EXPORT_SYMBOL(nr_cpu_ids);
 
 /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
-void __init setup_nr_cpu_ids(void)  /*  */
+void __init setup_nr_cpu_ids(void)
 {
 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
 }
 
 /**
- *  Called by boot processor to activate the rest. 
+ *  Called by boot processor to activate the rest.
  *
- *  
+ *
  */
 void __init smp_init(void)
 {
 	int num_nodes, num_cpus;
 
 	idle_threads_init();    /* idle 线程 */
-	cpuhp_threads_init();   /*  */
+	cpuhp_threads_init();
 
 	pr_info("Bringing up secondary CPUs ...\n");
 
-	bringup_nonboot_cpus(setup_max_cpus);   /*  */
+	bringup_nonboot_cpus(setup_max_cpus);
 
     /**
-     *  
+     *
      */
 	num_nodes = num_online_nodes(); /* NODE 数 */
 	num_cpus  = num_online_cpus();  /* CPU 数 */

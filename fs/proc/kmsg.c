@@ -49,7 +49,7 @@ static __poll_t kmsg_poll(struct file *file, poll_table *wait)
 }
 
 
-static const struct proc_ops kmsg_proc_ops = {  /*  */
+static const struct proc_ops kmsg_proc_ops = {
 	.proc_flags	= PROC_ENTRY_PERMANENT,
 	.proc_read	= kmsg_read,
 	.proc_poll	= kmsg_poll,

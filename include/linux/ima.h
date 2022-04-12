@@ -51,7 +51,7 @@ static inline const char * const *arch_get_ima_policy(void)
 #endif
 
 #else
-/*  */
+
 #endif /* CONFIG_IMA */
 
 #ifndef CONFIG_IMA_KEXEC
@@ -67,7 +67,7 @@ extern void ima_post_key_create_or_update(struct key *keyring,
 					  const void *payload, size_t plen,
 					  unsigned long flags, bool create);
 #else
-/*  */
+
 #endif  /* CONFIG_IMA_MEASURE_ASYMMETRIC_KEYS */
 
 #ifdef CONFIG_IMA_APPRAISE
@@ -77,12 +77,12 @@ extern int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
 		       const void *xattr_value, size_t xattr_value_len);
 extern int ima_inode_removexattr(struct dentry *dentry, const char *xattr_name);
 #else
-/*  */
+
 #endif /* CONFIG_IMA_APPRAISE */
 
 #if defined(CONFIG_IMA_APPRAISE) && defined(CONFIG_INTEGRITY_TRUSTED_KEYRING)
 extern bool ima_appraise_signature(enum kernel_read_file_id func);
 #else
-/*  */
+
 #endif /* CONFIG_IMA_APPRAISE && CONFIG_INTEGRITY_TRUSTED_KEYRING */
 #endif /* _LINUX_IMA_H */

@@ -38,7 +38,7 @@
 #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
 					 * in linux/sched.h */
 
-struct taskstats {  /*  */
+struct taskstats {
 
 	/* The version number of this struct. This field is always set to
 	 * TAKSTATS_VERSION, which is defined in <linux/taskstats.h>.

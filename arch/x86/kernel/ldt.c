@@ -40,7 +40,7 @@ static inline void *ldt_slot_va(int slot)
 }
 
 /**
- *  
+ *
  */
 void load_mm_ldt(struct mm_struct *mm)
 {
@@ -381,7 +381,7 @@ static void unmap_ldt_struct(struct mm_struct *mm, struct ldt_struct *ldt)
 }
 
 #else /* !CONFIG_PAGE_TABLE_ISOLATION */
-/*  */
+
 #endif /* CONFIG_PAGE_TABLE_ISOLATION */
 
 static void free_ldt_pgtables(struct mm_struct *mm)

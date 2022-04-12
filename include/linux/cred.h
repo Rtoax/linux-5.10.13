@@ -67,7 +67,7 @@ extern void set_groups(struct cred *, struct group_info *);
 extern bool may_setgroups(void);
 extern void groups_sort(struct group_info *);
 #else
-/*  */
+
 #endif
 
 /*
@@ -100,12 +100,12 @@ struct cred {   /* 任务的安全上下文 */
 #ifdef CONFIG_DEBUG_CREDENTIALS
 	atomic_t	subscribers;	/* number of processes subscribed */
 	void		*put_addr;
-	unsigned	magic;      /*  */
+	unsigned	magic;
 #define CRED_MAGIC	0x43736564
 #define CRED_MAGIC_DEAD	0x44656144
 #endif
     /**
-     *  
+     *
      */
 	kuid_t		uid;		/* real UID of the task */
 	kgid_t		gid;		/* real GID of the task */
@@ -113,11 +113,11 @@ struct cred {   /* 任务的安全上下文 */
 	kgid_t		sgid;		/* saved GID of the task */
 	kuid_t		euid;		/* effective UID of the task */
 	kgid_t		egid;		/* effective GID of the task */
-	kuid_t		fsuid;		/* UID for VFS ops */   /*  */
+	kuid_t		fsuid;		/* UID for VFS ops */
 	kgid_t		fsgid;		/* GID for VFS ops */
 	unsigned	securebits;	/* SUID-less security management */
     /**
-     *  
+     *
      */
 	kernel_cap_t	cap_inheritable; /* caps our children can inherit */
 	kernel_cap_t	cap_permitted;	/* caps we're permitted */
@@ -139,15 +139,15 @@ struct cred {   /* 任务的安全上下文 */
 	void		*security;	/* subjective LSM security */
 #endif
     /**
-     *  
+     *
      */
 	struct user_struct *user;	/* real user ID subscription */
     /**
-     *  
+     *
      */
     struct user_namespace *user_ns; /* user_ns the caps and keyrings are relative to. */
     /**
-     *  
+     *
      */
 	struct group_info *group_info;	/* supplementary groups for euid/fsgid */
 	/* RCU deletion */
@@ -376,7 +376,7 @@ static inline void put_cred(const struct cred *_cred)
 #define task_uid(task)		(task_cred_xxx((task), uid))
 #define task_euid(task)		(task_cred_xxx((task), euid))
 
-#define current_cred_xxx(xxx)	/*  */		\
+#define current_cred_xxx(xxx)			\
 ({						\
 	current_cred()->xxx;			\
 })

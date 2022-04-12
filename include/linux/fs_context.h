@@ -26,7 +26,7 @@ struct user_namespace;
 struct vfsmount;
 struct path;
 
-enum fs_context_purpose {   /*  */
+enum fs_context_purpose {
 	FS_CONTEXT_FOR_MOUNT,		/* New superblock for explicit mount */
 	FS_CONTEXT_FOR_SUBMOUNT,	/* New superblock for automatic submount */
 	FS_CONTEXT_FOR_RECONFIGURE,	/* Superblock reconfiguration (remount) */
@@ -35,7 +35,7 @@ enum fs_context_purpose {   /*  */
 /*
  * Userspace usage phase for fsopen/fspick.
  */
-enum fs_context_phase { /*  */
+enum fs_context_phase {
 	FS_CONTEXT_CREATE_PARAMS,	/* Loading params for sb creation */
 	FS_CONTEXT_CREATING,		/* A superblock is being created */
 	FS_CONTEXT_AWAITING_MOUNT,	/* Superblock created, awaiting fsmount() */

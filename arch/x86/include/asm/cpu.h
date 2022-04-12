@@ -13,7 +13,7 @@
 extern void prefill_possible_map(void);
 
 #else /* CONFIG_SMP */
-/*  */
+
 #endif /* CONFIG_SMP */
 
 struct x86_cpu {
@@ -23,7 +23,7 @@ struct x86_cpu {
 #ifdef CONFIG_HOTPLUG_CPU
 extern int arch_register_cpu(int num);
 extern void arch_unregister_cpu(int);
-extern void start_cpu0(void);   /*  */
+extern void start_cpu0(void);
 #ifdef CONFIG_DEBUG_HOTPLUG_CPU0
 extern int _debug_hotplug_cpu(int cpu, int action);
 #endif
@@ -40,11 +40,11 @@ extern void switch_to_sld(unsigned long tifn);
 extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
 extern bool handle_guest_split_lock(unsigned long ip);
 #else
-/*  */
+
 #endif
 #ifdef CONFIG_IA32_FEAT_CTL
 void init_ia32_feat_ctl(struct cpuinfo_x86 *c);
 #else
-/*  */
+
 #endif
 #endif /* _ASM_X86_CPU_H */

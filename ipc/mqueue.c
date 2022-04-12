@@ -130,7 +130,7 @@ struct ext_wait_queue {		/* queue of sleeping tasks */
 	int state;		/* one of STATE_* values */
 };
 
-struct mqueue_inode_info {  /*  */
+struct mqueue_inode_info {
 	spinlock_t lock;
 	struct inode vfs_inode;
 	wait_queue_head_t wait_q;
@@ -878,12 +878,12 @@ static int prepare_open(struct dentry *dentry, int oflag, int ro,
 
 /**
  * @brief 创建或打开消息队列文件
- * 
- * @param u_name 
- * @param oflag 
- * @param mode 
- * @param attr 
- * @return int 
+ *
+ * @param u_name
+ * @param oflag
+ * @param mode
+ * @param attr
+ * @return int
  */
 static int do_mq_open(const char __user *u_name, int oflag, umode_t mode,
 		      struct mq_attr *attr)
@@ -914,7 +914,7 @@ static int do_mq_open(const char __user *u_name, int oflag, umode_t mode,
 	path.mnt = mntget(mnt);
 	/**
 	 * @brief 打开
-	 * 
+	 *
 	 */
 	error = prepare_open(path.dentry, oflag, ro, mode, name, attr);
 	if (!error) {
@@ -939,12 +939,12 @@ out_putname:
 }
 
 /**
- * @brief 
- * 
- * @param name 
- * @param oflag 
- * @param mode 
- * @param attr 
+ * @brief
+ *
+ * @param name
+ * @param oflag
+ * @param mode
+ * @param attr
  * @return mqd_t 返回一个句柄
  */
 mqd_t mq_open(const char *name, int oflag);
@@ -961,10 +961,10 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, umode_t, mode,
 }
 
 /**
- * @brief 
- * 
- * @param name 
- * @return int 
+ * @brief
+ *
+ * @param name
+ * @return int
  */
 int mq_unlink(const char *name);
 SYSCALL_DEFINE1(mq_unlink, const char __user *, u_name)
@@ -1075,13 +1075,13 @@ static inline void pipelined_receive(struct wake_q_head *wake_q,
 
 /**
  * @brief 超时 发送
- * 
- * @param mqdes 
- * @param u_msg_ptr 
- * @param msg_len 
- * @param msg_prio 
- * @param ts 
- * @return int 
+ *
+ * @param mqdes
+ * @param u_msg_ptr
+ * @param msg_len
+ * @param msg_prio
+ * @param ts
+ * @return int
  */
 static int do_mq_timedsend(mqd_t mqdes, const char __user *u_msg_ptr,
 		size_t msg_len, unsigned int msg_prio,
@@ -1110,7 +1110,7 @@ static int do_mq_timedsend(mqd_t mqdes, const char __user *u_msg_ptr,
 
 	/**
 	 * @brief 获取fd结构
-	 * 
+	 *
 	 */
 	f = fdget(mqdes);
 	if (unlikely(!f.file)) {
@@ -1137,7 +1137,7 @@ static int do_mq_timedsend(mqd_t mqdes, const char __user *u_msg_ptr,
 	}
 
 	/* First try to allocate memory, before doing anything with
-	 * existing queues. 
+	 * existing queues.
 	 * 从用户台拷贝数据
 	 */
 	msg_ptr = load_msg(u_msg_ptr, msg_len);
@@ -1186,19 +1186,19 @@ static int do_mq_timedsend(mqd_t mqdes, const char __user *u_msg_ptr,
 	} else {
 		/**
 		 * @brief 获取接受者并发送
-		 * 
+		 *
 		 */
 		receiver = wq_get_first_waiter(info, RECV);
 		if (receiver) {
 			/**
 			 * @brief 有接受者，直接使用管道发送
-			 * 
+			 *
 			 */
 			pipelined_send(&wake_q, info, msg_ptr, receiver);
 		} else {
 			/**
 			 * @brief 否则直接向消息队列发送
-			 * 
+			 *
 			 */
 			/* adds message to the queue */
 			ret = msg_insert(msg_ptr, info);
@@ -1276,7 +1276,7 @@ static int do_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
 
 	/**
 	 * @brief 锁定
-	 * 
+	 *
 	 */
 	spin_lock(&info->lock);
 
@@ -1290,7 +1290,7 @@ static int do_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
 
 	/**
 	 * @brief 当前消息数量 为0
-	 * 
+	 *
 	 */
 	if (info->attr.mq_curmsgs == 0) {
 		if (f.file->f_flags & O_NONBLOCK) {
@@ -1307,7 +1307,7 @@ static int do_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
 	} else {
 		/**
 		 * @brief 消息数不为0
-		 * 
+		 *
 		 */
 		DEFINE_WAKE_Q(wake_q);
 
@@ -1338,14 +1338,14 @@ out:
 }
 
 /**
- * @brief 
- * 
- * @param mqdes 
- * @param msg_ptr 
- * @param msg_len 
- * @param msg_prio 
- * @param abs_timeout 
- * @return int 
+ * @brief
+ *
+ * @param mqdes
+ * @param msg_ptr
+ * @param msg_len
+ * @param msg_prio
+ * @param abs_timeout
+ * @return int
  */
 int mq_timedsend(mqd_t mqdes, const char *msg_ptr,
                      size_t msg_len, unsigned int msg_prio,
@@ -1366,13 +1366,13 @@ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
 
 /**
  * @brief 接收消息队列消息
- * 
- * @param mqdes 
- * @param msg_ptr 
- * @param msg_len 
- * @param msg_prio 
- * @param abs_timeout 
- * @return ssize_t 
+ *
+ * @param mqdes
+ * @param msg_ptr
+ * @param msg_len
+ * @param msg_prio
+ * @param abs_timeout
+ * @return ssize_t
  */
 ssize_t mq_timedreceive(mqd_t mqdes, char *msg_ptr,
                           size_t msg_len, unsigned int *msg_prio,
@@ -1420,13 +1420,13 @@ static int do_mq_notify(mqd_t mqdes, const struct sigevent *notification)
 		}
 		/**
 		 * @brief 见 man mq_notify(2) 中的示例
-		 * 
+		 *
 		 */
 		if (notification->sigev_notify == SIGEV_THREAD) {
 			long timeo;
 
 			/**
-			 * @brief 
+			 * @brief
 			 * 为啥会使用 sk_buff 结构? 因为使用netlink架构
 			 */
 			/* create the notify skb */
@@ -1451,8 +1451,8 @@ retry:
 				goto out;
 			}
 			/**
-			 * @brief 
-			 * 
+			 * @brief
+			 *
 			 */
 			sock = netlink_getsockbyfilp(f.file);
 			fdput(f);
@@ -1462,7 +1462,7 @@ retry:
 			}
 
 			/**
-			 * @brief 
+			 * @brief
 			 * 因为使用的netlink
 			 */
 			timeo = MAX_SCHEDULE_TIMEOUT;
@@ -1505,7 +1505,7 @@ retry:
 			break;
 		/**
 		 * @brief 使用回调函数
-		 * 
+		 *
 		 */
 		case SIGEV_THREAD:
 			info->notify_sock = sock;
@@ -1516,7 +1516,7 @@ retry:
 			break;
 		/**
 		 * @brief 使用信号
-		 * 
+		 *
 		 */
 		case SIGEV_SIGNAL:
 			info->notify.sigev_signo = notification->sigev_signo;
@@ -1545,10 +1545,10 @@ free_skb:
 
 /**
  * @brief 注册一个毁回调函数，当一个消息可用了，会被通知
- * 
- * @param mqdes 
- * @param sevp 
- * @return int 
+ *
+ * @param mqdes
+ * @param sevp
+ * @return int
  */
 int mq_notify(mqd_t mqdes, const struct sigevent *sevp);
 SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
@@ -1588,7 +1588,7 @@ static int do_mq_getsetattr(int mqdes, struct mq_attr *new, struct mq_attr *old)
 
 	/**
 	 * @brief 直接赋值
-	 * 
+	 *
 	 */
 	if (old) {
 		*old = info->attr;
@@ -1596,7 +1596,7 @@ static int do_mq_getsetattr(int mqdes, struct mq_attr *new, struct mq_attr *old)
 	}
 	/**
 	 * @brief 设置新的值
-	 * 
+	 *
 	 */
 	if (new) {
 		audit_mq_getsetattr(mqdes, new);
@@ -1616,12 +1616,12 @@ static int do_mq_getsetattr(int mqdes, struct mq_attr *new, struct mq_attr *old)
 }
 
 /**
- * @brief 
- * 
- * @param mqdes 
- * @param newattr 
- * @param oldattr 
- * @return int 
+ * @brief
+ *
+ * @param mqdes
+ * @param newattr
+ * @param oldattr
+ * @return int
  */
 int mq_getsetattr(mqd_t mqdes, const struct mq_attr *newattr,
                         struct mq_attr *oldattr);
@@ -1642,8 +1642,8 @@ SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
 		old = &omqstat;
 
 	/**
-	 * @brief 
-	 * 
+	 * @brief
+	 *
 	 */
 	ret = do_mq_getsetattr(mqdes, new, old);
 	if (ret || !old)
@@ -1815,7 +1815,7 @@ static const struct fs_context_operations mqueue_fs_context_ops = {
 	.get_tree	= mqueue_get_tree,
 };
 
-static struct file_system_type mqueue_fs_type = {   /*  */
+static struct file_system_type mqueue_fs_type = {
 	.name			= "mqueue",
 	.init_fs_context	= mqueue_init_fs_context,
 	.kill_sb		= kill_litter_super,
@@ -1824,9 +1824,9 @@ static struct file_system_type mqueue_fs_type = {   /*  */
 
 /**
  * @brief 消息队列命名空间
- * 
- * @param ns 
- * @return int 
+ *
+ * @param ns
+ * @return int
  */
 int mq_init_ns(struct ipc_namespace *ns)
 {
@@ -1862,7 +1862,7 @@ static int __init init_mqueue_fs(void)
 
 	/**
 	 * @brief 分配一个 消息队列 inode
-	 * 
+	 *
 	 */
 	mqueue_inode_cachep = kmem_cache_create("mqueue_inode_cache",
 				sizeof(struct mqueue_inode_info), 0,
@@ -1875,7 +1875,7 @@ static int __init init_mqueue_fs(void)
 
 	/**
 	 * @brief 注册文件系统
-	 * 
+	 *
 	 */
 	error = register_filesystem(&mqueue_fs_type);
 	if (error)
@@ -1885,7 +1885,7 @@ static int __init init_mqueue_fs(void)
 
 	/**
 	 * @brief 消息队列初始化命名空间
-	 * 
+	 *
 	 */
 	error = mq_init_ns(&init_ipc_ns);
 	if (error)
@@ -1903,6 +1903,6 @@ out_sysctl:
 }
 /**
  * @brief 内核初始化过程被调用
- * 
+ *
  */
 device_initcall(init_mqueue_fs);    /* 消息队列 FS */

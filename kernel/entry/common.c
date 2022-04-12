@@ -26,9 +26,9 @@ static __always_inline void enter_from_user_mode(struct pt_regs *regs)  /* TODO 
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
 	user_exit_irqoff();
 
-	instrumentation_begin();    /*  */
-	trace_hardirqs_off_finish();/*  */
-	instrumentation_end();      /*  */
+	instrumentation_begin();
+	trace_hardirqs_off_finish();
+	instrumentation_end();
 }
 
 static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
@@ -40,7 +40,7 @@ static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
 		audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
 	}
 }
-            /*  */
+
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 				unsigned long ti_work)
 {
@@ -78,7 +78,7 @@ __syscall_enter_from_user_work(struct pt_regs *regs, long syscall)
 
 	ti_work = READ_ONCE(current_thread_info()->flags);
 	if (ti_work & SYSCALL_ENTER_WORK)
-		syscall = syscall_trace_enter(regs, syscall, ti_work);  /*  */
+		syscall = syscall_trace_enter(regs, syscall, ti_work);
 
 	return syscall;
 }
@@ -88,11 +88,11 @@ long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall)
 	return __syscall_enter_from_user_work(regs, syscall);
 }
 
-noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)   /*  */
+noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 {
 	long ret;
 
-	enter_from_user_mode(regs); /*  */
+	enter_from_user_mode(regs);
 
 	instrumentation_begin();
 	local_irq_enable();
@@ -122,7 +122,7 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
  *    mitigations, etc.
  * 4) Tell lockdep that interrupts are enabled
  */
-static __always_inline void exit_to_user_mode(void) /*  */
+static __always_inline void exit_to_user_mode(void)
 {
 	instrumentation_begin();
 	trace_hardirqs_on_prepare();
@@ -130,7 +130,7 @@ static __always_inline void exit_to_user_mode(void) /*  */
 	instrumentation_end();
 
 	user_enter_irqoff();
-	arch_exit_to_user_mode();   /*  */
+	arch_exit_to_user_mode();
 	lockdep_hardirqs_on(CALLER_ADDR0);
 }
 
@@ -258,19 +258,19 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 		syscall_exit_work(regs, cached_flags);
 }
 
-__visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)  /*  */
+__visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
 	instrumentation_begin();
 	syscall_exit_to_user_mode_prepare(regs);
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 	instrumentation_end();
-	exit_to_user_mode();    /*  */
+	exit_to_user_mode();
 }
 
 noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)    /* 用户态的irq */
 {
-	enter_from_user_mode(regs); /*  */
+	enter_from_user_mode(regs);
 }
 
 noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)

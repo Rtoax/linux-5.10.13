@@ -62,7 +62,7 @@ static DEFINE_MUTEX(espfix_init_mutex);
 #define ESPFIX_MAX_PAGES  DIV_ROUND_UP(CONFIG_NR_CPUS, ESPFIX_STACKS_PER_PAGE)
 static void *espfix_pages[ESPFIX_MAX_PAGES];
 
-static  __page_aligned_bss pud_t espfix_pud_page[PTRS_PER_PUD]/*  */
+static  __page_aligned_bss pud_t espfix_pud_page[PTRS_PER_PUD]
 	/*__aligned(PAGE_SIZE), 我注释掉的*/;
 
 static unsigned int page_random, slot_random;
@@ -114,7 +114,7 @@ static void init_espfix_random(void)    /* returns random locations for the `esp
 }
 
 //prevents leaking of `31:16` bits of the `esp` register during returning to 16-bit stack.
-void __init init_espfix_bsp(void)   /*  */
+void __init init_espfix_bsp(void)
 {
 	pgd_t *pgd;
 	p4d_t *p4d;
@@ -126,17 +126,17 @@ void __init init_espfix_bsp(void)   /*  */
     //install `espfix` page upper directory into the kernel page directory
 	p4d_populate(&init_mm, p4d, espfix_pud_page);
 
-	/* Randomize the locations 
+	/* Randomize the locations
         returns random locations for the `espfix` page */
-	init_espfix_random();   /*  */
+	init_espfix_random();
 
 	/* The rest is the same as for any other processor .
         enables the `espfix` for the current CPU*/
-	init_espfix_ap(0);  /*  */
+	init_espfix_ap(0);
 }
 
 //enables the `espfix` for the current CPU
-void init_espfix_ap(int cpu)    /*  */
+void init_espfix_ap(int cpu)
 {
 	unsigned int page;
 	unsigned long addr;

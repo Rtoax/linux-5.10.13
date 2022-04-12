@@ -173,7 +173,7 @@ struct stable_node {
              *  当 head == migrate_nodes 时，标识这是一个临时节点，主要用于 NUMA  系统
              */
 			struct list_head *head;
-            
+
 			struct {
                 /**
                  *  用于添加到链式稳定节点的 hlist 中
@@ -213,7 +213,7 @@ struct stable_node {
 	int rmap_hlist_len;
 
     /**
-     *  内存节点编号 
+     *  内存节点编号
      */
 #ifdef CONFIG_NUMA
 	int nid;
@@ -243,7 +243,7 @@ struct rmap_item {  /* 虚拟地址的 反向映射项 */
 	struct rmap_item *rmap_list;
 
     /**
-     *  
+     *
      */
 	union {
 	    /**
@@ -323,14 +323,14 @@ struct hlist_head mm_slots_hash[1 << (MM_SLOTS_HASH_BITS)] = //+++
 
 
 /**
- *  
+ *
  */
 static struct mm_slot ksm_mm_head = {
 	ksm_mm_head.mm_list = LIST_HEAD_INIT(ksm_mm_head.mm_list),
 };
 
 /**
- *  
+ *
  */
 static struct ksm_scan ksm_scan = {
 	ksm_scan.mm_slot = &ksm_mm_head,
@@ -340,22 +340,22 @@ static struct kmem_cache *rmap_item_cache;
 static struct kmem_cache *stable_node_cache;
 static struct kmem_cache *mm_slot_cache;
 
-/* The number of nodes in the stable tree 
+/* The number of nodes in the stable tree
   /sys/kernel/mm/ksm/pages_shared */
 static unsigned long ksm_pages_shared;
 
-/* The number of page slots additionally sharing those nodes 
+/* The number of page slots additionally sharing those nodes
   /sys/kernel/mm/ksm/pages_sharing */
 static unsigned long ksm_pages_sharing;
 
-/* The number of nodes in the unstable tree 
+/* The number of nodes in the unstable tree
   /sys/kernel/mm/ksm/pages_unshared */
 static unsigned long ksm_pages_unshared;
 
 /* The number of rmap_items in use: to calculate pages_volatile */
 static unsigned long ksm_rmap_items;
 
-/* The number of stable_node chains 
+/* The number of stable_node chains
   /sys/kernel/mm/ksm/stable_node_chains */
 static unsigned long ksm_stable_node_chains;
 
@@ -363,7 +363,7 @@ static unsigned long ksm_stable_node_chains;
   /sys/kernel/mm/ksm/stable_node_dups */
 static unsigned long ksm_stable_node_dups;
 
-/* Delay in pruning stale stable_node_dups in the stable_node_chains 
+/* Delay in pruning stale stable_node_dups in the stable_node_chains
   /sys/kernel/mm/ksm/stable_node_chains_prune_millisecs */
 static int ksm_stable_node_chains_prune_millisecs = 2000;
 
@@ -377,7 +377,7 @@ static unsigned int ksm_thread_pages_to_scan = 100;
 static unsigned int ksm_thread_sleep_millisecs = 20;
 
 /* Checksum of an empty (zeroed) page */
-static unsigned int __read_mostly zero_checksum ;/*  */
+static unsigned int __read_mostly zero_checksum ;
 
 /* Whether to merge empty (zeroed) pages with actual zero pages */
 static bool __read_mostly ksm_use_zero_pages ;
@@ -391,17 +391,17 @@ static int ksm_nr_node_ids = 1;
 //#define ksm_nr_node_ids		1
 #endif
 
-#define KSM_RUN_STOP	0   /*  */
+#define KSM_RUN_STOP	0
 #define KSM_RUN_MERGE	1   /* 合并 */
 #define KSM_RUN_UNMERGE	2   /* 不合并 */
-#define KSM_RUN_OFFLINE	4   /*  */
+#define KSM_RUN_OFFLINE	4
 
 ///sys/kernel/mm/ksm/run
 static unsigned long ksm_run = KSM_RUN_STOP;
 static void wait_while_offlining(void);
 
 /**
- *  
+ *
  */
 static DECLARE_WAIT_QUEUE_HEAD(ksm_thread_wait);
 static DECLARE_WAIT_QUEUE_HEAD(ksm_iter_wait);
@@ -474,7 +474,7 @@ static __always_inline bool is_stable_node_dup(struct stable_node *dup)
 }
 
 /**
- *  
+ *
  */
 static inline void stable_node_chain_add_dup(struct stable_node *dup,
 					     struct stable_node *chain)
@@ -614,7 +614,7 @@ static int break_ksm(struct vm_area_struct *vma, unsigned long addr)
 			break;
 
         /**
-         *  
+         *
          */
 		if (PageKsm(page))
             /**
@@ -669,7 +669,7 @@ static struct vm_area_struct *find_mergeable_vma(struct mm_struct *mm,
 		return NULL;
 
     /**
-     *  
+     *
      */
 	vma = find_vma(mm, addr);
 	if (!vma || vma->vm_start > addr)
@@ -701,12 +701,12 @@ static void break_cow(struct rmap_item *rmap_item)
 	mmap_read_lock(mm);
 
     /**
-     *  
+     *
      */
 	vma = find_mergeable_vma(mm, addr);
 	if (vma)
         /**
-         *  
+         *
          */
 		break_ksm(vma, addr);
 	mmap_read_unlock(mm);
@@ -751,7 +751,7 @@ static inline int get_kpfn_nid(unsigned long kpfn)
 }
 
 /**
- *  
+ *
  */
 static struct stable_node *alloc_stable_node_chain(struct stable_node *dup,
 						   struct rb_root *root)
@@ -787,7 +787,7 @@ static struct stable_node *alloc_stable_node_chain(struct stable_node *dup,
 }
 
 /**
- *  
+ *
  */
 static inline void free_stable_node_chain(struct stable_node *chain,
 					  struct rb_root *root)
@@ -1027,7 +1027,7 @@ static int unmerge_ksm_pages(struct vm_area_struct *vma,
 }
 
 /**
-  *  
+  *
   */
 static inline struct stable_node *page_stable_node(struct page *page)   /* 获取 page->mapping 结构 */
 {
@@ -1205,7 +1205,7 @@ static u32 calc_checksum(struct page *page)
 }
 
 /**
- *  
+ *
  * 对 vma 写保护操作，即 PTE 设置为 只读
  *
  * @vma         page 对应的vma
@@ -1281,10 +1281,10 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *_page, pt
 		 *
 		 * See Documentation/vm/mmu_notifier.rst
 		 *
-		 * 清空PTE内容，并刷新响应的TLB 
+		 * 清空PTE内容，并刷新响应的TLB
 		 */
 		entry = ptep_clear_flush(vma, pvmw.address, pvmw.pte);
-        
+
 		/*
 		 * Check that no O_DIRECT or similar I/O is in progress on the
 		 * page
@@ -1293,7 +1293,7 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *_page, pt
          *
          * 1. 确认没有其他人获取该页面
          * 2. 将指向该页面的 PTE 编程只读属性
-		 * 
+		 *
          *  _refcount 有以下四种来源：
          *  =============================================
          *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
@@ -1317,17 +1317,17 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *_page, pt
          *              dio_get_page()
          *                dio_refill_pages()
          *                  iov_iter_get_pages()
-         *                    get_user_pages_fast() --- 增加 page->_refcount, 
+         *                    get_user_pages_fast() --- 增加 page->_refcount,
          *
          *  因此在没有 DIRECT_IO 情况，上述公式变为：
          *   page->_mapcount + 1 + PageSwapCache(_page) == page->_refcount
          *
-         *  那么 +1 是哪里来的呢？因为 
+         *  那么 +1 是哪里来的呢？因为
          *
          *  scan_get_next_rmap_item()
-         *    follow_page() --- 增加 page->_refcount, 
-         *  
-         *  综上，为了在当前场景下判断是否有 DIRECT_IO 读写的情况，上述公式变为 
+         *    follow_page() --- 增加 page->_refcount,
+         *
+         *  综上，为了在当前场景下判断是否有 DIRECT_IO 读写的情况，上述公式变为
          *  page->_mapcount + 1 + 1 + PageSwapCache(_page) == page->_refcount
          *
          *  ==>>
@@ -1347,16 +1347,16 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *_page, pt
 			set_page_dirty(_page);
 
         /**
-         *  
+         *
          */
 		if (pte_protnone(entry))
 			entry = pte_mkclean(pte_clear_savedwrite(entry));
 		else
 			entry = pte_mkclean(pte_wrprotect(entry));
-        
+
 		set_pte_at_notify(mm, pvmw.address, pvmw.pte, entry);
 	}
-                        
+
 	*orig_pte = *pvmw.pte;
 	err = 0;
 
@@ -1396,7 +1396,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 		goto out;
 
     /**
-     *  
+     *
      */
 	pmd = mm_find_pmd(mm, addr);
 	if (!pmd)
@@ -1440,7 +1440,7 @@ static int replace_page(struct vm_area_struct *vma, struct page *page,
 	ptep_clear_flush(vma, addr, ptep);
 
     /**
-     *  
+     *
      */
 	set_pte_at_notify(mm, addr, ptep, newpte);
 
@@ -1461,7 +1461,7 @@ out:
  * try_to_merge_one_page - take two pages and merge them into one
  *
  * @vma: the vma that holds the pte pointing to page
- * @page: the PageAnon page that we want to replace with kpage - 
+ * @page: the PageAnon page that we want to replace with kpage -
  * @kpage: the PageKsm page that we want to map instead of page,
  *         or NULL the first time when we want to use page as kpage.
  *
@@ -1497,9 +1497,10 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 	 * then come back to this page when it is unlocked.
 	 *
 	 * 尝试获取页锁，
-	 **
+	 *
+*
 	 * 为什么 try 而不是 lock_page 呢？
-	 * 
+	 *
 	 */
 	if (!trylock_page(page))
 		goto out;
@@ -1545,8 +1546,8 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 				SetPageDirty(page);
 			err = 0;
 
-         
-		} 
+
+		}
         /**
          *  再次比较 page 和 kpage 内容是否一致
          */
@@ -1558,7 +1559,7 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
 	}
 
     /**
-     *  
+     *
      */
 	if ((vma->vm_flags & VM_LOCKED) && kpage && !err) {
 		munlock_vma_page(page);
@@ -1642,7 +1643,7 @@ static struct page *try_to_merge_two_pages(struct rmap_item *rmap_item,
 	int err;
 
     /**
-     *  
+     *
      */
 	err = try_to_merge_with_ksm_page(rmap_item, page, NULL);
 	if (!err) {
@@ -1758,9 +1759,9 @@ static struct page *stable_node_dup(struct stable_node **_stable_node_dup,
 			 * deduplication limit so drop the chain.
 			 */
 			rb_replace_node(&stable_node->node, &found->node, root);
-            
+
 			free_stable_node(stable_node);
-            
+
 			ksm_stable_node_chains--;
 			ksm_stable_node_dups--;
 			/*
@@ -1838,7 +1839,7 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 	struct stable_node *___stable_node = *_stable_node;
 
     /**
-     *  
+     *
      */
 	if (!is_stable_node_chain(___stable_node)) {
 
@@ -1849,7 +1850,7 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 			*_stable_node_dup = ___stable_node;
 			return get_ksm_page(___stable_node, GET_KSM_PAGE_NOLOCK);
 		}
-        
+
 		/*
 		 * _stable_node_dup set to NULL means the stable_node
 		 * reached the ksm_max_page_sharing limit.
@@ -1864,14 +1865,14 @@ static struct page *__stable_node_chain(struct stable_node **_stable_node_dup,
 /**
  *  prune: 修剪
  *
- *  
+ *
  */
 static __always_inline struct page *chain_prune(struct stable_node **s_n_d,
                          						struct stable_node **s_n,
                          						struct rb_root *root)
 {
     /**
-     *  
+     *
      */
 	return __stable_node_chain(s_n_d, s_n, root, true);
 }
@@ -1921,7 +1922,7 @@ again:
 	parent = NULL;
 
     /**
-     *  
+     *
      */
 	while (*new) {
 		struct page *tree_page;
@@ -1932,7 +1933,7 @@ again:
 		stable_node_any = NULL;
 
         /**
-         *  
+         *
          */
 		tree_page = chain_prune(&stable_node_dup, &stable_node,	root);
 		/*
@@ -2047,7 +2048,7 @@ again:
 				 * so re-evaluate parent and new.
 				 */
 				goto again;
-            
+
 			unlock_page(tree_page);
 
 			if (get_kpfn_nid(stable_node_dup->kpfn) !=
@@ -2063,7 +2064,7 @@ again:
 		return NULL;
 
     /**
-     *  
+     *
      */
 	list_del(&page_node->list);
 	DO_NUMA(page_node->nid = nid);
@@ -2104,15 +2105,15 @@ replace:
 			rb_erase(&stable_node_dup->node, root);
 			page = NULL;
 		}
-	} 
+	}
     /**
-     *  
+     *
      */
     else {
 		VM_BUG_ON(!is_stable_node_chain(stable_node));
 
         /**
-         *  
+         *
          */
 		__stable_node_dup_del(stable_node_dup);
 		if (page_node) {
@@ -2130,7 +2131,7 @@ replace:
 	}
 
     /**
-     *  
+     *
      */
 	stable_node_dup->head = &migrate_nodes;
 	list_add(&stable_node_dup->list, stable_node_dup->head);
@@ -2313,7 +2314,7 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 	new = &root->rb_node;
 
     /**
-     *  
+     *
      */
 	while (*new) {
 		struct rmap_item *tree_rmap_item;
@@ -2348,7 +2349,7 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 			new = &parent->rb_right;
 
         /**
-         *  
+         *
          */
 		} else if (!ksm_merge_across_nodes && page_to_nid(tree_page) != nid) {
 			/*
@@ -2360,7 +2361,7 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 			return NULL;
 
         /**
-         *  
+         *
          */
 		} else {
 			*tree_pagep = tree_page;
@@ -2369,7 +2370,7 @@ struct rmap_item *unstable_tree_search_insert(struct rmap_item *rmap_item,
 	}
 
     /**
-     *  
+     *
      */
 	rmap_item->address |= UNSTABLE_FLAG;
 	rmap_item->address |= (ksm_scan.seqnr & SEQNR_MASK);
@@ -2441,7 +2442,7 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	bool max_page_sharing_bypass = false;
 
     /**
-     *  
+     *
      */
 	stable_node = page_stable_node(page);
 	if (stable_node) {
@@ -2474,7 +2475,7 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	}
 
     /**
-     *  
+     *
      */
 	remove_rmap_item_from_tree(rmap_item);
 
@@ -2507,9 +2508,9 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	 */
 	checksum = calc_checksum(page);
 
-    
+
     /**
-     *  
+     *
      */
 	if (rmap_item->oldchecksum != checksum) {
 		rmap_item->oldchecksum = checksum;
@@ -2546,17 +2547,17 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	}
 
     /**
-     *  
+     *
      */
 	tree_rmap_item = unstable_tree_search_insert(rmap_item, page, &tree_page);
 	if (tree_rmap_item) {
 		bool split;
 
         /**
-         *  
+         *
          */
 		kpage = try_to_merge_two_pages(rmap_item, page, tree_rmap_item, tree_page);
-        
+
 		/*
 		 * If both pages we tried to merge belong to the same compound
 		 * page, then we actually ended up increasing the reference
@@ -2679,7 +2680,7 @@ static struct rmap_item *scan_get_next_rmap_item(struct page **page)
 			struct page *page;
 
             /**
-             *  
+             *
              */
 			list_for_each_entry_safe(stable_node, next, &migrate_nodes, list) {
 				page = get_ksm_page(stable_node, GET_KSM_PAGE_NOLOCK);
@@ -2819,10 +2820,10 @@ static void ksm_do_scan(unsigned int scan_npages)
 	struct page *_page;
 
     /**
-     *  
+     *
      */
-	while (scan_npages-- && likely(!freezing(current))) {
-		cond_resched(); /*  */
+	while (scan_npage likely(!freezing(current))) {
+		cond_resched();
 
         /**
          *  获取一个合适的匿名页面
@@ -2835,7 +2836,7 @@ static void ksm_do_scan(unsigned int scan_npages)
          *  在稳定和不稳定的红黑树中 查找是否由可合并的对象
          */
 		cmp_and_merge_page(_page, _rmap_item);    /* 比较并且合并 页 */
-        
+
 		put_page(_page);
 	}
 }
@@ -2846,7 +2847,7 @@ static void ksm_do_scan(unsigned int scan_npages)
 static int ksmd_should_run(void)    /* 是否该运行 */
 {
     /**
-     *  如果启动标志被设置，并且 
+     *  如果启动标志被设置，并且
      */
 	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
 }
@@ -2869,10 +2870,10 @@ static int ksm_scan_thread(void *nothing)   /* 扫描页表，同页合并 */
 	set_user_nice(current, 5);
 
     /**
-     *  
+     *
      */
 	while (!kthread_should_stop()) {
-        
+
 		mutex_lock(&ksm_thread_mutex);
 
         wait_while_offlining();
@@ -2882,7 +2883,7 @@ static int ksm_scan_thread(void *nothing)   /* 扫描页表，同页合并 */
              *  扫描，尝试贺词能够 scan_npages 个页面
              */
 			ksm_do_scan(ksm_thread_pages_to_scan);  /* 执行扫描 */
-        
+
 		mutex_unlock(&ksm_thread_mutex);
 
 		try_to_freeze();
@@ -2901,7 +2902,7 @@ static int ksm_scan_thread(void *nothing)   /* 扫描页表，同页合并 */
 }
 
 /**
- *  
+ *
  */
 int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		unsigned long end, int advice, unsigned long *vm_flags)
@@ -2936,7 +2937,7 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 #endif
 
         /**
-         *  
+         *
          */
 		if (!test_bit(MMF_VM_MERGEABLE, &mm->flags)) {
 			err = __ksm_enter(mm);
@@ -2977,7 +2978,7 @@ int __ksm_enter(struct mm_struct *mm)
 	int needs_wakeup;
 
     /**
-     *  
+     *
      */
 	mm_slot = alloc_mm_slot();
 	if (!mm_slot)
@@ -2988,7 +2989,7 @@ int __ksm_enter(struct mm_struct *mm)
 
 	spin_lock(&ksm_mmlist_lock);
 	insert_to_mm_slots_hash(mm, mm_slot);
-    
+
 	/*
 	 * When KSM_RUN_MERGE (or KSM_RUN_STOP),
 	 * insert just behind the scanning cursor, to let the area settle
@@ -3003,7 +3004,7 @@ int __ksm_enter(struct mm_struct *mm)
 		list_add_tail(&mm_slot->mm_list, &ksm_mm_head.mm_list);
 	else
 		list_add_tail(&mm_slot->mm_list, &ksm_scan.mm_slot->mm_list);
-    
+
 	spin_unlock(&ksm_mmlist_lock);
 
     /**
@@ -3012,7 +3013,7 @@ int __ksm_enter(struct mm_struct *mm)
 	set_bit(MMF_VM_MERGEABLE, &mm->flags);
 
     /**
-     *  
+     *
      */
 	mmgrab(mm);
 
@@ -3121,11 +3122,11 @@ void rmap_walk_ksm(struct page *page, struct rmap_walk_control *rwc)
     /**
      *  获取 page->mapping 结构，即为 struct anon_vma 结构
      */
-	stable_node = page_stable_node(page);   
+	stable_node = page_stable_node(page);
 	if (!stable_node)
 		return;
-again:
-    /*  */
+agai
+
 	hlist_for_each_entry(rmap_item, &stable_node->hlist, hlist) {
 		struct anon_vma *anon_vma = rmap_item->anon_vma;
 		struct anon_vma_chain *vmac;
@@ -3151,7 +3152,7 @@ again:
 
 			if (addr < vma->vm_start || addr >= vma->vm_end)
 				continue;
-            
+
 			/*
 			 * Initially we examine only the vma which covers this
 			 * rmap_item; but later, if there is still work to do,
@@ -3327,8 +3328,8 @@ static int ksm_memory_callback(struct notifier_block *self,
 	}
 	return NOTIFY_OK;
 }
-#else
-/*  */
+
+
 #endif /* CONFIG_MEMORY_HOTREMOVE */
 
 #ifdef CONFIG_SYSFS
@@ -3685,7 +3686,7 @@ static int __init ksm_init(void)    /* 同页合并 */
 	/* Default to false for backwards compatibility */
 	ksm_use_zero_pages = false;
 
-	err = ksm_slab_init();  /*  */
+	err = ksm_slab_init();
 	if (err)
 		goto out;
 
@@ -3711,7 +3712,7 @@ static int __init ksm_init(void)    /* 同页合并 */
 
 #endif /* CONFIG_SYSFS */
 
-#ifdef CONFIG_MEMORY_HOTREMOVE  /*  */
+#ifdef CONFIG_MEMORY_HOTREMOVE
 	/* There is no significance to this priority 100 */
 	hotplug_memory_notifier(ksm_memory_callback, 100);
 #endif

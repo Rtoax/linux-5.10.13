@@ -55,7 +55,7 @@ __visible noinstr void do_syscall_64(unsigned long nr, struct pt_regs *regs)
 #endif
 	}
 	instrumentation_end();
-	syscall_exit_to_user_mode(regs);    /*  */
+	syscall_exit_to_user_mode(regs);
 }
 #endif
 
@@ -101,7 +101,7 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 
 static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 {
-	unsigned int nr = syscall_32_enter(regs);/*  */
+	unsigned int nr = syscall_32_enter(regs);
 	int res;
 
 	/*
@@ -233,7 +233,7 @@ noinstr bool idtentry_enter_nmi(struct pt_regs *regs)
 }
 
 /**
- *  
+ *
  */
 noinstr void idtentry_exit_nmi(struct pt_regs *regs, bool restore)
 {

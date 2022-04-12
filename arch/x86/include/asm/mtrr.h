@@ -31,7 +31,7 @@
  * The following functions are for use by other drivers that cannot use
  * arch_phys_wc_add and arch_phys_wc_del.
  */
-#ifdef CONFIG_MTRR /*  */
+#ifdef CONFIG_MTRR
 extern u8 mtrr_type_lookup(u64 addr, u64 end, u8 *uniform);
 extern void mtrr_save_fixed_ranges(void *);
 extern void mtrr_save_state(void);
@@ -50,7 +50,7 @@ extern void mtrr_bp_restore(void);
 extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
 extern int amd_special_default_mtrr(void);
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_COMPAT

@@ -29,6 +29,6 @@ void proc_comm_connector(struct task_struct *task);
 void proc_coredump_connector(struct task_struct *task);
 void proc_exit_connector(struct task_struct *task);
 #else
-/*  */
+
 #endif	/* CONFIG_PROC_EVENTS */
 #endif	/* CN_PROC_H */

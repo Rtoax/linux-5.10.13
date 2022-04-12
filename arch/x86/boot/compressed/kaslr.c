@@ -94,9 +94,9 @@ static int num_immovable_mem;
 enum mem_avoid_index {
 	MEM_AVOID_ZO_RANGE = 0,
 	MEM_AVOID_INITRD,       /* initrd: 初始RAM磁盘（initrd）是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程 */
-	MEM_AVOID_CMDLINE,      /*  */
-	MEM_AVOID_BOOTPARAMS,   /*  */
-	MEM_AVOID_MEMMAP_BEGIN, /*  */
+	MEM_AVOID_CMDLINE,
+	MEM_AVOID_BOOTPARAMS,
+	MEM_AVOID_MEMMAP_BEGIN,
 	MEM_AVOID_MEMMAP_END = MEM_AVOID_MEMMAP_BEGIN + MAX_MEMMAP_REGIONS - 1,
 	MEM_AVOID_MAX,
 };
@@ -766,7 +766,7 @@ process_efi_entries(unsigned long minimum, unsigned long image_size)
 	return true;
 }
 #else
-/*  */
+
 #endif
 
 static void process_e820_entries(unsigned long minimum,

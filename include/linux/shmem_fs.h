@@ -69,7 +69,7 @@ extern int shmem_lock(struct file *file, int lock, struct user_struct *user);
 #ifdef CONFIG_SHMEM
 extern bool shmem_mapping(struct address_space *mapping);
 #else
-/*  */
+
 #endif /* CONFIG_SHMEM */
 extern void shmem_unlock_mapping(struct address_space *mapping);
 extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
@@ -126,7 +126,7 @@ extern int shmem_mfill_zeropage_pte(struct mm_struct *dst_mm,
 				    struct vm_area_struct *dst_vma,
 				    unsigned long dst_addr);
 #else
-/*  */
+
 #endif
 
 #endif

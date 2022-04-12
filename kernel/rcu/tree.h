@@ -147,7 +147,7 @@ union rcu_noqs {
 };
 
 /* Per-CPU data for read-copy update. */
-struct rcu_data {   /*  */
+struct rcu_data {
 	/* 1) quiescent-state and grace-period handling : */
 	unsigned long	gp_seq;		/* Track rsp->gp_seq counter. */
 	unsigned long	gp_seq_needed;	/* Track furthest future GP request. */
@@ -208,14 +208,14 @@ struct rcu_data {   /*  */
 	unsigned long nocb_gp_adv_time;	/* Last call_rcu() CB adv (jiffies). */
 
 	/* The following fields are used by call_rcu, hence own cacheline. */
-	raw_spinlock_t ____cacheline_internodealigned_in_smp nocb_bypass_lock ;/*  */
+	raw_spinlock_t ____cacheline_internodealigned_in_smp nocb_bypass_lock ;
 	struct rcu_cblist nocb_bypass;	/* Lock-contention-bypass CB list. */
 	unsigned long nocb_bypass_first; /* Time (jiffies) of first enqueue. */
 	unsigned long nocb_nobypass_last; /* Last ->cblist enqueue (jiffies). */
 	int nocb_nobypass_count;	/* # ->cblist enqueues at ^^^ time. */
 
 	/* The following fields are used by GP kthread, hence own cacheline. */
-	raw_spinlock_t ____cacheline_internodealigned_in_smp nocb_gp_lock ;/*  */
+	raw_spinlock_t ____cacheline_internodealigned_in_smp nocb_gp_lock ;
 	struct timer_list nocb_bypass_timer; /* Force nocb_bypass flush. */
 	u8 nocb_gp_sleep;		/* Is the nocb GP thread asleep? */
 	u8 nocb_gp_bypass;		/* Found a bypass on last scan? */
@@ -375,7 +375,7 @@ struct rcu_state {
 	const char *name;			/* Name of structure. */
 	char abbr;				/* Abbreviated name. */
 
-	raw_spinlock_t ____cacheline_internodealigned_in_smp ofl_lock ;/*  */
+	raw_spinlock_t ____cacheline_internodealigned_in_smp ofl_lock ;
 						/* Synchronize offline with */
 						/*  GP pre-initialization. */
 };
@@ -415,7 +415,7 @@ struct rcu_state {
 #define RCU_NAME RCU_NAME_RAW
 #else /* #ifdef CONFIG_TRACING */
 static char rcu_name[] = RCU_NAME_RAW;
-static const char __used __tracepoint_string *tp_rcu_varname  = rcu_name;/*  */
+static const char __used __tracepoint_string *tp_rcu_varname  = rcu_name;
 #define RCU_NAME rcu_name
 #endif /* #else #ifdef CONFIG_TRACING */
 

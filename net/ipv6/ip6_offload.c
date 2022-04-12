@@ -366,7 +366,7 @@ static int ip4ip6_gro_complete(struct sk_buff *skb, int nhoff)
 	return inet_gro_complete(skb, nhoff);
 }
 
-static struct packet_offload __read_mostly ipv6_packet_offload  = {/*  */
+static struct packet_offload __read_mostly ipv6_packet_offload  = {
 	.type = cpu_to_be16(ETH_P_IPV6),
 	.callbacks = {
 		.gso_segment = ipv6_gso_segment,
@@ -442,4 +442,4 @@ static int __init ipv6_offload_init(void)
 	return 0;
 }
 
-fs_initcall(ipv6_offload_init); /*  */
+fs_initcall(ipv6_offload_init);

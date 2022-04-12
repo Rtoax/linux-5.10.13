@@ -54,11 +54,11 @@ struct pci_device_id {
 	__u32 subvendor, subdevice;	/* Subsystem ID's or PCI_ANY_ID */
     /**
      *  指定驱动程序支持一种 PCI 类class设备
-     *  
+     *
      */
 	__u32 class, class_mask;	/* (class,subclass,prog-if) triplet */
     /**
-     *  
+     *
      */
 	kernel_ulong_t driver_data;	/* Data private to the driver */
 };
@@ -228,7 +228,7 @@ struct css_device_id {
 
 #define ACPI_ID_LEN	9
 
-struct acpi_device_id { /*  */
+struct acpi_device_id {
 	__u8 id[ACPI_ID_LEN];
 	kernel_ulong_t driver_data;
 	__u32 cls;
@@ -447,7 +447,7 @@ struct bcma_device_id {
 #define BCMA_ANY_REV		0xFF
 #define BCMA_ANY_CLASS		0xFF
 
-struct virtio_device_id {   /*  */
+struct virtio_device_id {
 	__u32 device;   /* 设备 */
 	__u32 vendor;   /* 厂商 */
 };

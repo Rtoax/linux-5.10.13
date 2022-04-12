@@ -142,7 +142,7 @@ struct va_format {
 })
 
 #ifdef CONFIG_EARLY_PRINTK
-extern asmlinkage 
+extern asmlinkage
 void early_printk(const char *fmt, ...);
 #else
 static inline  __cold
@@ -161,12 +161,12 @@ extern void printk_nmi_direct_exit(void);
 struct dev_printk_info;
 
 #ifdef CONFIG_PRINTK
-asmlinkage 
+asmlinkage
 int vprintk_emit(int facility, int level,
 		 const struct dev_printk_info *dev_info,
 		 const char *fmt, va_list args);
 
-asmlinkage 
+asmlinkage
 int vprintk(const char *fmt, va_list args);
 
 asmlinkage  __cold
@@ -210,7 +210,7 @@ extern asmlinkage void dump_stack(void) __cold;
 extern void printk_safe_flush(void);
 extern void printk_safe_flush_on_panic(void);
 #else
-/*  */
+
 #endif
 
 extern int kptr_restrict;
@@ -291,7 +291,7 @@ extern int kptr_restrict;
  * generate the format string.
  */
 #define pr_notice(fmt, ...) \
-	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)/*  */
+	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 /**
  * pr_info - Print an info-level message
  * @fmt: format string
@@ -508,7 +508,7 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
 			   int prefix_type, int rowsize, int groupsize,
 			   const void *buf, size_t len, bool ascii);
 #else
-/*  */
+
 #endif
 
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
@@ -523,7 +523,7 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
 //	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
 //		       groupsize, buf, len, ascii)
 #else
-/*  */
+
 #endif
 
 /**

@@ -117,7 +117,7 @@ enum pageflags {
 	PG_dirty,       /* 页面内容发生过改变，但是还没有和外部存储器进行同步 */
 	PG_lru,         /* 最近最少使用 zone->inactive_list */
 	PG_active,      /* 是否活跃，和`PG_referenced`用于控制页面的活跃程序，在 kswapd 中使用 */
-	PG_workingset,  /*  */
+	PG_workingset,
 	PG_waiters,		/* 标识有进程正在等待这个页面。Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */
 	PG_error,       /* 页面操作过程发生过错误 */
 	PG_slab,        /* 页面用于slab */
@@ -142,13 +142,13 @@ enum pageflags {
 	PG_hwpoison,    /* hardware poisoned page. Don't touch */
 #endif
 #if defined(CONFIG_IDLE_PAGE_TRACKING) && defined(CONFIG_64BIT)
-	PG_young,       /*  */
-	PG_idle,        /*  */
+	PG_young,
+	PG_idle,
 #endif
 #ifdef CONFIG_64BIT
-	PG_arch_2,      /*  */
+	PG_arch_2,
 #endif
-	__NR_PAGEFLAGS, /*  */
+	__NR_PAGEFLAGS,
 
 	/* Filesystems */
 	PG_checked = PG_owner_priv_1,
@@ -203,7 +203,7 @@ static inline struct page *compound_head(struct page *page) /* compound:化合�
 	unsigned long head = READ_ONCE(page->compound_head);
 
 	if (unlikely(head & 1))
-		return (struct page *) (head - 1);  /*  */
+		return (struct page *) (head - 1);
 	return page;
 }
 
@@ -229,7 +229,7 @@ static inline int PagePoisoned(const struct page *page)
 #ifdef CONFIG_DEBUG_VM
 void page_init_poison(struct page *page, size_t size);
 #else
-/*  */
+
 #endif
 
 /*
@@ -1496,7 +1496,7 @@ static __always_inline int PageSwapCache(struct page *page)
 SETPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 CLEARPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
 #else
-/*  */
+
 #endif
 
 PAGEFLAG(Unevictable, unevictable, PF_HEAD)
@@ -1508,13 +1508,13 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_ARCH_USES_PG_UNCACHED
 PAGEFLAG(Uncached, uncached, PF_NO_COMPOUND)
 #else
-/*  */
+
 #endif
 
 #ifdef CONFIG_MEMORY_FAILURE
@@ -1525,7 +1525,7 @@ TESTSCFLAG(HWPoison, hwpoison, PF_ANY){}
 
 extern bool take_page_off_buddy(struct page *page);
 #else
-/*  */
+
 #endif
 
 
@@ -1800,7 +1800,7 @@ static inline int PageUptodate(struct page *page)
 /**
  *  设置   PG_uptodate 位，标识内容有效
  */
-static __always_inline void __SetPageUptodate(struct page *page)    /*  */
+static __always_inline void __SetPageUptodate(struct page *page)
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
 	smp_wmb();
@@ -1926,7 +1926,7 @@ static inline int PageTransHuge(struct page *page)
  * PageTransCompound 对透明大页面和 Hugetlbfs 页面都返回 true，
  * 因此只有在知道不涉及 Hugetlbfs 页面时才应该调用它。
  */
-static inline int PageTransCompound(struct page *page)  /*  */
+static inline int PageTransCompound(struct page *page)
 {
 	return PageCompound(page);
 }

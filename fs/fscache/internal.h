@@ -147,10 +147,10 @@ extern void fscache_invalidate_writes(struct fscache_cookie *);
  * proc.c
  */
 #ifdef CONFIG_PROC_FS
-extern int __init fscache_proc_init(void);  /*  */
+extern int __init fscache_proc_init(void);
 extern void fscache_proc_cleanup(void);
 #else
-/*  */
+
 #endif
 
 /*

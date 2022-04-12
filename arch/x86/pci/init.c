@@ -22,7 +22,7 @@ static __init int pci_arch_init(void)
 		return 0;
 
     /**
-     *  
+     *
      */
 	pci_pcbios_init();
 
@@ -44,4 +44,4 @@ static __init int pci_arch_init(void)
 
 	return 0;
 }
-arch_initcall(pci_arch_init);   /*  */
+arch_initcall(pci_arch_init);

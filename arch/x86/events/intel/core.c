@@ -4902,7 +4902,7 @@ static const struct attribute_group *attr_update[] = {
 
 static struct attribute *empty_attrs;
 
-__init int intel_pmu_init(void) /*  */
+__init int intel_pmu_init(void)
 {
 	struct attribute **extra_skl_attr = &empty_attrs;
 	struct attribute **extra_attr = &empty_attrs;

@@ -80,7 +80,7 @@ static const struct genl_multicast_group acpi_event_mcgrps[] = {
 	{ .name = ACPI_GENL_MCAST_GROUP_NAME, },
 };
 
-static struct genl_family __ro_after_init acpi_event_genl_family  = {/*  */
+static struct genl_family __ro_after_init acpi_event_genl_family  = {
 	.module = THIS_MODULE,
 	.name = ACPI_GENL_FAMILY_NAME,
 	.version = ACPI_GENL_VERSION,
@@ -148,7 +148,7 @@ static int __init acpi_event_genetlink_init(void)
 }
 
 #else
-/*  */
+
 #endif
 
 static int __init acpi_event_init(void)

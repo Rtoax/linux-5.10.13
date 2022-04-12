@@ -153,7 +153,7 @@ static int __init alloc_node_page_ext(int nid)/* 分配 NUMA 页扩展  */
 
 	table_size = page_ext_size/* 页扩展大小 =8 */ * nr_pages;/* 页表 总大小 */
 
-	base = memblock_alloc_try_nid(/*  */
+	base = memblock_alloc_try_nid(
 			table_size, PAGE_SIZE/* 4K */, __pa(MAX_DMA_ADDRESS),
 			MEMBLOCK_ALLOC_ACCESSIBLE/* 0 */, nid);
 	if (!base)
@@ -163,7 +163,7 @@ static int __init alloc_node_page_ext(int nid)/* 分配 NUMA 页扩展  */
 	return 0;
 }
 
-void __init page_ext_init_flatmem(void)/*  */
+void __init page_ext_init_flatmem(void)
 {
 
 	int nid, fail;

@@ -75,7 +75,7 @@ static struct kmem_cache *lsm_file_cache;
 static struct kmem_cache *lsm_inode_cache;
 
 char *lsm_names;
-static struct lsm_blob_sizes __lsm_ro_after_init blob_sizes ;/*  */
+static struct lsm_blob_sizes __lsm_ro_after_init blob_sizes ;
 
 /* Boot-time LSM user choice */
 static __initdata const char *chosen_lsm_order;
@@ -400,7 +400,7 @@ int __init security_init(void)  /*安全模块初始化  */
 	}
 
 	/* Load LSMs in specified order. */
-	ordered_lsm_init(); /*  */
+	ordered_lsm_init();
 
 	return 0;
 }
@@ -600,7 +600,7 @@ int lsm_inode_alloc(struct inode *inode)
  *
  * Returns 0, or -ENOMEM if memory can't be allocated.
  */
-static int lsm_task_alloc(struct task_struct *task) /*  */
+static int lsm_task_alloc(struct task_struct *task)
 {
 	if (blob_sizes.lbs_task == 0) {
 		task->security = NULL;
@@ -748,7 +748,7 @@ int security_binder_transfer_file(struct task_struct *from,
 int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
 {
     /**
-     *  
+     *
      */
 	return call_int_hook(ptrace_access_check, 0, child, mode);
 }
@@ -804,7 +804,7 @@ int security_settime64(const struct timespec64 *ts, const struct timezone *tz)
 	return call_int_hook(settime, 0, ts, tz);
 }
 
-int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)  /*  */
+int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
 	struct security_hook_list *hp;
 	int cap_sys_admin = 1;
@@ -1607,7 +1607,7 @@ int security_file_open(struct file *file)
 	if (ret)
 		return ret;
     /**
-     *  
+     *
      */
 	return fsnotify_perm(file, MAY_OPEN);
 }
@@ -1823,7 +1823,7 @@ int security_task_setscheduler(struct task_struct *p)
 int security_task_getscheduler(struct task_struct *p)
 {
     /**
-     *  
+     *
      */
 	return call_int_hook(task_getscheduler, 0, p);
 }
@@ -2137,8 +2137,8 @@ int security_socket_create(int family, int type, int protocol, int kern)
 {
     /* selinux_socket_create() */
     /* apparmor_socket_create() */
-    /*  */
-	return call_int_hook(socket_create, 0, family, type, protocol, kern);   
+
+	return call_int_hook(socket_create, 0, family, type, protocol, kern);
 }
 
 int security_socket_post_create(struct socket *sock, int family,
@@ -2541,7 +2541,7 @@ int security_audit_rule_match(u32 secid, u32 field, u32 op, void *lsmrule)
 
 #ifdef CONFIG_BPF_SYSCALL
 /**
- *  LSM - 安全模块， 提供了方便使用的抽象层 
+ *  LSM - 安全模块， 提供了方便使用的抽象层
  *  一共 7 个钩子
  */
 /**
@@ -2568,7 +2568,7 @@ int security_bpf_prog(struct bpf_prog *prog)
 /**
  *  初始化 BPF 映射中的安全字段
  */
-int security_bpf_map_alloc(struct bpf_map *map) /*  */
+int security_bpf_map_alloc(struct bpf_map *map)
 {
 	return call_int_hook(bpf_map_alloc_security, 0, map);
 }

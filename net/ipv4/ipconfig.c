@@ -116,7 +116,7 @@ int __initdata ic_set_manually  = 0;		/* IPconfig parameters set manually */
 static int __initdata ic_enable ;		/* IP config enabled? */
 
 /* Protocol choice */
-int __initdata ic_proto_enabled  = 0 /*  */
+int __initdata ic_proto_enabled  = 0
 #ifdef IPCONFIG_BOOTP
 			| IC_BOOTP
 #endif
@@ -166,7 +166,7 @@ static u8 ic_domain[64];		/* DNS (not NIS) domain name */
  */
 
 /* Name of user-selected boot device */
-static char __initdata user_dev_name[IFNAMSIZ]  = { 0, };/*  */
+static char __initdata user_dev_name[IFNAMSIZ]  = { 0, };
 
 /* Protocols supported by available interfaces */
 static int __initdata ic_proto_have_if ;
@@ -1323,7 +1323,7 @@ static int pnp_seq_show(struct seq_file *seq, void *v)
 }
 
 /* Create the /proc/net/ipconfig directory */
-static int __init ipconfig_proc_net_init(void)  /*  */
+static int __init ipconfig_proc_net_init(void)
 {
 	ipconfig_dir = proc_net_mkdir(&init_net, "ipconfig", init_net.proc_net);
 	if (!ipconfig_dir)
@@ -1434,7 +1434,7 @@ static int __init wait_for_devices(void)
  *	IP Autoconfig dispatcher.
  */
 
-static int __init ip_auto_config(void)  /*  */
+static int __init ip_auto_config(void)
 {
 	__be32 addr;
 #ifdef IPCONFIG_DYNAMIC
@@ -1620,7 +1620,7 @@ static int __init ip_auto_config(void)  /*  */
 	return err;
 }
 
-late_initcall(ip_auto_config);  /*  */
+late_initcall(ip_auto_config);
 
 
 /*
