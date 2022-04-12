@@ -35,6 +35,11 @@ static void __section(".inittext") serial_putchar(int ch)
 	outb(ch, early_serial_base + TXR);
 }
 
+/**
+ * 在 .inittext 节中
+ * https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/setup.ld
+ *
+ */
 static void __section(".inittext") bios_putchar(int ch)
 {
 	struct biosregs ireg;

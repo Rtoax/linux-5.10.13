@@ -16,6 +16,11 @@
 #include "boot.h"
 #include "string.h"
 
+/**
+ * @brief
+ *
+ * @param reg
+ */
 void initregs(struct biosregs *reg)
 {
 	memset(reg, 0, sizeof(*reg));

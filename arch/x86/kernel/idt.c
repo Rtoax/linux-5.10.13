@@ -232,8 +232,11 @@ static const __initconst struct idt_data apic_idts[] = {
 /* Must be page-aligned because the real IDT is used in the cpu entry area */
 /**
  *  中断描述符表
+ *  中断描述符表, 所有中断 256
+ *
+ * IDT_ENTRIES = 256
  */
-static gate_desc __page_aligned_bss idt_table[IDT_ENTRIES/*256*/] ;    /* 中断描述符表, 所有中断 256 */
+static gate_desc __page_aligned_bss idt_table[IDT_ENTRIES];
 
 /**
  *  中断描述符表描述符
@@ -260,7 +263,7 @@ void load_current_idt(void)
  *  拷贝中断描述符表
  */
 static __init void
-idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size/* 个数 */, bool sys)/*  */
+idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys)
 {
     /* 门 */
 	gate_desc desc;
@@ -269,17 +272,19 @@ idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size/* 个数
         /**
          *  初始化
          */
-		idt_init_desc(&desc, t);    /*  */
+		idt_init_desc(&desc, t);
         /**
-         *  将 desc 拷贝至 idt 对应 vector 中
+         *  将 desc 拷贝至 idt 对应 vector 中(写入 CPU)
          */
-		write_idt_entry(idt, t->vector, &desc); /* 写入 CPU */
+		write_idt_entry(idt, t->vector, &desc);
 		if (sys)
 			set_bit(t->vector, system_vectors);
 	}
 }
 
 /**
+ * @brief
+ *
  * @n       中断号
  * @addr    中断/异常处理函数的基地址
  */
@@ -287,10 +292,16 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 {
 	struct idt_data data;
 
-    /* 生成一个中断门(赋值) */
-	init_idt_data(&data, n/* 中断号 */, addr/* 处理地址 */);
+    /**
+     * @brief 生成一个中断门(赋值)
+     *
+     */
+	init_idt_data(&data, n, addr);
 
-    //将中断门插入至 `IDT` 表中
+    /**
+     * @brief 将中断门插入至 `IDT` 表中
+     *
+     */
 	idt_setup_from_table(idt_table, &data, 1, false);
 }
 
@@ -300,8 +311,10 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
  * On X8664 these traps do not use interrupt stacks as they can't work
  * before cpu_init() is invoked and sets up TSS. The IST variants are
  * installed after that.
+ *
+ * 中断描述符表
  */
-void __init idt_setup_early_traps(void)/* 中断描述符表 */
+void __init idt_setup_early_traps(void)
 {
     /**
      *  拷贝
@@ -438,14 +451,19 @@ void __init idt_setup_apic_and_irq_gates(void)
 void __init idt_setup_early_handler(void)
 {
 	int i;
-    //在整个初期设置阶段，中断是禁用的
-    //`early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
-	for (i = 0; i < NUM_EXCEPTION_VECTORS/* 32 */; i++)
+    /**
+     * 在整个初期设置阶段，中断是禁用的
+     * early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
+	 *
+	 * NUM_EXCEPTION_VECTORS=32
+     */
+	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
 		set_intr_gate(i, early_idt_handler_array[i]);
+
 #ifdef CONFIG_X86_32
     /* 忽略32 - 255 */
-//	for ( ; i < NR_VECTORS; i++)
-//		set_intr_gate(i, early_ignore_irq);
+	for ( ; i < NR_VECTORS; i++)
+		set_intr_gate(i, early_ignore_irq);
 #endif
 
     /**

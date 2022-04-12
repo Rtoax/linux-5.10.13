@@ -129,7 +129,7 @@ static const struct cpu_dev default_cpu = {
 };
 
 static const struct cpu_dev *this_cpu = &default_cpu;
-struct gdt_page __percpu gdt_page; /* 我加的 */
+struct gdt_page __percpu gdt_page; /* +++ */
 
 /**
  * @brief

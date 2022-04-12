@@ -385,11 +385,11 @@ static void handle_mem_options(void)
  * Since the above two ranges need to be avoided and they are adjacent,
  * they can be merged, resulting in: [input, output+init_size) which
  * becomes the MEM_AVOID_ZO_RANGE below.
- *//**
+ *
  *  在初始化与身份页表相关的内容之后，我们可以选择一个随机的内存位置来提取内核映像。
  *  但是，正如您可能已经猜到的，我们不能只选择任何地址。有一些重新存储的内存区域，
  *  这些区域被重要的东西占用，例如initrd和内核命令行，必须避免。
- *  该mem_avoid_init功能将帮助我们做到这一点：
+ *  该 mem_avoid_init 功能将帮助我们做到这一点：
  *
  *  所有不安全的内存区域将被收集在一个称为数组中 mem_avoid
  */
@@ -885,7 +885,7 @@ void choose_random_location(unsigned long input,
 	if (cmdline_find_option_bool("nokaslr")) {
 		warn("KASLR disabled: 'nokaslr' on cmdline.");
         /**
-         * 内核的加载地址不会随机化
+         * 内核的加载地址不会随机化
          */
 		return;
 	}
@@ -922,26 +922,31 @@ void choose_random_location(unsigned long input,
 	/* Make sure minimum is aligned. */
 	min_addr = ALIGN(min_addr, CONFIG_PHYSICAL_ALIGN);
 
-	/* Walk available memory entries to find a random address.
-        选择要加载内核的随机物理地址
-        现在，我们有一个随机的物理地址将内核解压缩到该地址
+	/**
+	 * Walk available memory entries to find a random address.
+     * 选择要加载内核的随机物理地址
+     * 现在，我们有一个随机的物理地址将内核解压缩到该地址
      */
 	random_addr = find_random_phys_addr(min_addr, output_size);
 	if (!random_addr) {
 		warn("Physical KASLR disabled: no suitable memory region!");
 	} else {
 		/* Update the new physical address location. */
-        //在内核解压器选择了随机内存区域后，新的恒等映射页会为这个区域按需建立
-        //`output`会存放内核将会解压的一个内存区域的基地址
-        //但是现在，我们只是随机化了物理地址
+        /**
+		 * 在内核解压器选择了随机内存区域后，新的恒等映射页会为这个区域按需建立
+         * `output`会存放内核将会解压的一个内存区域的基地址
+         * 但是现在，我们只是随机化了物理地址
+		 */
 		if (*output != random_addr)
 			*output = random_addr;
 	}
 
 	/* Pick random virtual address starting from LOAD_PHYSICAL_ADDR. */
-    //虚拟地址也应该被随机化
-    //在x86_64架构上随机化虚拟地址
-    //在x86_64以外的架构中，随机化的物理和虚拟地址是相同的
+    /**
+	 * 虚拟地址也应该被随机化
+	 * 在x86_64架构上随机化虚拟地址
+	 * 在x86_64以外的架构中，随机化的物理和虚拟地址是相同的
+	 */
 	if (IS_ENABLED(CONFIG_X86_64))
 		random_addr = find_random_virt_addr(LOAD_PHYSICAL_ADDR/*100000*/, output_size);
 	*virt_addr = random_addr;

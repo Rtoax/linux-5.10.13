@@ -15,7 +15,11 @@
 #include "boot.h"
 #include "string.h"
 
-struct boot_parameters __attribute__((aligned(16))) boot_params ;/* page0 */
+/**
+ * @brief 所谓的 零 页 page0
+ *
+ */
+struct boot_parameters __attribute__((aligned(16))) boot_params;
 
 char *HEAP = _end;
 char *heap_end = _end;		/* Default end of heap = no heap */
@@ -24,14 +28,15 @@ char *heap_end = _end;		/* Default end of heap = no heap */
  * Copy the header into the boot parameter block.  Since this
  * screws up the old-style command line protocol, adjust by
  * filling in the new-style command line pointer instead.
+ * 它将内核设置标头复制到 arch/x86/include/uapi/asm/bootparam.h 标
+ * 头文件中 boot_params 定义的结构的相应字段中。
+ *
+ * copy_boot_params做两件事：
+ * 1. 它hdr从header.S复制到结构中的setup_header字段boot_params。
+ * 2. 如果内核已加载旧的命令行协议，它将更新指向内核命令行的指针。
+ *
+ * https://www.kernel.org/doc/Documentation/x86/boot.txt
  */
-//它将内核设置标头复制到 arch/x86/include/uapi/asm/bootparam.h 标头文件中 boot_params 定义的结构的相应字段中。
-//
-//copy_boot_params做两件事：
-//
-// 它hdr从header.S复制到结构中的setup_header字段boot_params。
-// 如果内核已加载旧的命令行协议，它将更新指向内核命令行的指针。
-
 static void copy_boot_params(void)
 {
 	struct old_cmdline {
@@ -43,12 +48,14 @@ static void copy_boot_params(void)
 
 	BUILD_BUG_ON(sizeof(boot_params) != 4096);
 
-    /* setup_header hdr
-        该结构包含与linux引导协议中定义的字段相同的字段，并由引导加载程序以及内核编译/构建时填充
-        arch/x86/boot/copy.S:memcpy
-            ax 将包含的地址 boot_params.hdr
-            dx 将包含的地址 hdr
-            cx将包含hdr以字节为单位的大小。*/
+    /**
+	 * setup_header hdr
+     * 该结构包含与linux引导协议中定义的字段相同的字段，并由引导加载程序以及内核编译/构建时填充
+     *  arch/x86/boot/copy.S:memcpy
+     *       ax 将包含的地址 boot_params.hdr
+     *       dx 将包含的地址 hdr
+     *       cx 将包含hdr以字节为单位的大小。
+	 */
 	memcpy(&boot_params.hdr, &hdr, sizeof(hdr));
 
 	if (!boot_params.hdr.cmd_line_ptr &&
@@ -146,10 +153,10 @@ static void init_heap(void)
 
         /**
          *  并loadflags在设置了该标志的情况下计算堆栈的结尾
-         *  stack_end = esp - STACK_SIZE
+         *  stack_end = esp - STACK_SIZE(1024)
          */
 		asm("leal %P1(%%esp),%0"
-		    : "=r" (stack_end) : "i" (-STACK_SIZE/* 1024 */));
+		    : "=r" (stack_end) : "i" (-STACK_SIZE));
 
         /**
          *  heap_end = heap_end_ptr(=_end) + 512（0x200h）

@@ -263,21 +263,44 @@ SYM_INNER_LABEL(secondary_startup_64_no_verify, SYM_L_GLOBAL)
 	 * Setup a boot time stack - Any secondary CPU will have lost its stack
 	 * by now because the cr3-switch above unmaps the real-mode stack
 	 */
-	movq initial_stack(%rip), %rsp  /*  */
+	movq initial_stack(%rip), %rsp
 
 	/* Setup and Load IDT */
 	pushq	%rsi
-	call	early_setup_idt /*  */
+	call	early_setup_idt
 	popq	%rsi
 
-	/* Check if nx is implemented */
+	/* Check if nx is implemented
+	 *
+	 * put 0x80000001 value to the eax and execute cpuid instruction
+	 * for getting the extended processor info and feature bits
+	 */
 	movl	$0x80000001, %eax
 	cpuid
 	movl	%edx,%edi
 
-	/* Setup EFER (Extended Feature Enable Register) */
+	/**
+	 * Setup EFER (Extended Feature Enable Register)
+	 */
 	movl	$MSR_EFER, %ecx
 	rdmsr
+	/*
+	https://0xax.gitbooks.io/linux-insides/content/Initialization/linux-initialization-1.html
+
+	63                                                                              32
+	--------------------------------------------------------------------------------
+	|                                                                               |
+	|                                Reserved MBZ                                   |
+	|                                                                               |
+	--------------------------------------------------------------------------------
+	31                            16  15      14      13   12  11   10  9  8 7  1   0
+	--------------------------------------------------------------------------------
+	|                              | T |       |       |    |   |   |   |   |   |   |
+	| Reserved MBZ                 | C | FFXSR | LMSLE |SVME|NXE|LMA|MBZ|LME|RAZ|SCE|
+	|                              | E |       |       |    |   |   |   |   |   |   |
+	--------------------------------------------------------------------------------
+	By the setting SCE bit we enable SYSCALL and SYSRET instructions
+	*/
 	btsl	$_EFER_SCE, %eax	/* Enable System Call */
 	btl	$20,%edi		/* No Execute supported? */
 	jnc     1f
@@ -286,6 +309,19 @@ SYM_INNER_LABEL(secondary_startup_64_no_verify, SYM_L_GLOBAL)
 1:	wrmsr				/* Make changes effective */
 
 	/* Setup cr0 */
+	/**
+	* X86_CR0_PE: 系统处于保护模式;
+	* X86_CR0_MP: 控制了在 cr0中使用 TS 标志的 WAIT/FWAIT 指令的交互;
+	* X86_CR0_ET: 在386上，它允许指定外部数学协处理器是80287还是80387;
+	* X86_CR0_NE: 启用内部 x87浮点错误报告，否则启用 PC 风格的 x87错误检测;
+	* X86_CR0_WP: 当设置权限级别为0时，CPU 不能写只读页面;
+	* X86_CR0_AM: 如果 AM 设置，AC 标志(在 EFLAGS 寄存器中)设置，特权级别为3，则启用 X86_CR0_AM 对齐检查;
+	* X86_CR0_PG: enable 分页。
+	*
+	* #define CR0_STATE	(X86_CR0_PE | X86_CR0_MP | X86_CR0_ET | \
+	*			X86_CR0_NE | X86_CR0_WP | X86_CR0_AM | \
+	*			X86_CR0_PG)
+	*/
 	movl	$CR0_STATE, %eax
 	/* Make changes effective */
 	movq	%rax, %cr0
@@ -342,7 +378,7 @@ SYM_CODE_END(secondary_startup_64)
  * up already except stack. We just set up stack here. Then call
  * start_secondary() via .Ljump_to_C_code.
  */
-SYM_CODE_START(start_cpu0)  /*  */
+SYM_CODE_START(start_cpu0)
 	UNWIND_HINT_EMPTY
 	movq	initial_stack(%rip), %rsp
 	jmp	.Ljump_to_C_code
@@ -394,6 +430,16 @@ SYM_DATA(initial_vc_handler,	.quad handle_vc_boot_ghcb)
 /*
  * The SIZEOF_PTREGS gap is a convention which helps the in-kernel unwinder
  * reliably detect the end of the stack.
+ *
+ * arch/x86/include/asm/page_64_types.h
+ * ----------------------------------------
+ * #ifdef CONFIG_KASAN
+ * #define KASAN_STACK_ORDER 1
+ * #else
+ * #define KASAN_STACK_ORDER 0
+ * #endif
+ * #define THREAD_SIZE_ORDER       (2 + KASAN_STACK_ORDER)
+ * #define THREAD_SIZE  (PAGE_SIZE << THREAD_SIZE_ORDER)
  */
 SYM_DATA(initial_stack, .quad init_thread_union + THREAD_SIZE - SIZEOF_PTREGS)
 	__FINITDATA

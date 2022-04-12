@@ -56,9 +56,15 @@ struct task_struct;
 /**
  *  线程信息
  */
-struct thread_info {    /*  */
-	unsigned long		flags;		/* low level flags *//* TIF_XXX: maybe TIF_NEED_RESCHED */
-	u32			status;		/* thread synchronous flags */
+struct thread_info {
+	/**
+	 * @brief low level flags
+	 *
+	 * TIF_XXX: maybe TIF_NEED_RESCHED
+	 */
+	unsigned long		flags;
+	/* thread synchronous flags */
+	u32			status;
 };
 
 #define INIT_THREAD_INFO(tsk)			\

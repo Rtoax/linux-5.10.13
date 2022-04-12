@@ -10,7 +10,23 @@
  * Do not add new entries to this file unless the definitions are shared
  * between multiple compilation units.
  */
+/*
+General view of the EFER is following:
+https://0xax.gitbooks.io/linux-insides/content/Initialization/linux-initialization-1.html
 
+63                                                                              32
+ --------------------------------------------------------------------------------
+|                                                                               |
+|                                Reserved MBZ                                   |
+|                                                                               |
+ --------------------------------------------------------------------------------
+31                            16  15      14      13   12  11   10  9  8 7  1   0
+ --------------------------------------------------------------------------------
+|                              | T |       |       |    |   |   |   |   |   |   |
+| Reserved MBZ                 | C | FFXSR | LMSLE |SVME|NXE|LMA|MBZ|LME|RAZ|SCE|
+|                              | E |       |       |    |   |   |   |   |   |   |
+ --------------------------------------------------------------------------------
+*/
 /* x86-64 specific MSRs */
 #define MSR_EFER		0xc0000080 /* extended feature register */
 #define MSR_STAR		0xc0000081 /* legacy mode SYSCALL target */

@@ -86,10 +86,13 @@ static struct desc_ptr startup_gdt_descr = {
 
 #define __head	__section(".head.text")
 
-                    /* 返回传递的参数的物理地址 */
+/**
+ * 返回传递的参数的物理地址
+ */
 static void __head *fixup_pointer(void *ptr, unsigned long physaddr)
-{   
-	return ptr - (void *)_text + (void *)physaddr;  /* 代码段加上物理地址 */
+{
+	/* 代码段加上物理地址 */
+	return ptr - (void *)_text + (void *)physaddr;
 }
 
 static unsigned long __head *fixup_long(void *ptr, unsigned long physaddr)
@@ -156,16 +159,20 @@ unsigned long __head __startup_64(unsigned long physaddr,
 	 * Compute the delta between the address I am compiled to run at
 	 * and the address I am actually running at.
 	 *
-	 * 由于启用了kASLR，startup_64因此加载的地址例程可能与编译后要运行的地址不同，
+	 * 由于启用了kASLR，startup_64 因此加载的地址例程可能与编译后要运行的地址不同，
 	 * 因此我们需要使用以下代码来计算增量：
 	 * load_delta包含了要编译在其上运行的地址与实际加载的地址之间的增量
 	 */
 	load_delta = physaddr - (unsigned long)(_text - __START_KERNEL_map);
 
-	/* Is the address not 2M aligned? 
-        检查_text地址是否正确对齐了2兆字节*/
+	/* Is the address not 2M aligned?
+     * 检查_text地址是否正确对齐了2兆字节
+	 */
 	if (load_delta & ~PMD_PAGE_MASK)
-		for (;;); //如果_text地址未对齐2兆字节，则进入无限循环
+		/**
+		 * 如果_text地址未对齐2兆字节，则进入无限循环
+		 */
+		for (;;);
 
 	/* Activate Secure Memory Encryption (SME) if supported and enabled */
 	sme_enable(bp); /*  */
@@ -187,7 +194,7 @@ unsigned long __head __startup_64(unsigned long physaddr,
 		p4d = fixup_pointer(&level4_kernel_pgt, physaddr);
 		p4d[511] += load_delta;
 	}
-    
+
     /* 修复页表中的物理地址 */
 	pud = fixup_pointer(&level3_kernel_pgt, physaddr);
 	pud[510] += load_delta;
@@ -316,7 +323,7 @@ unsigned long __startup_secondary_64(void)  /*  */
 	return sme_get_me_mask();
 }
 
-/* Wipe all early page tables except for the kernel symbol map 
+/* Wipe all early page tables except for the kernel symbol map
 重置了所有的全局页目录项，同时向 `cr3` 中重新写入了的全局页目录表的地址*/
 static void __init reset_early_page_tables(void)
 {
@@ -403,13 +410,13 @@ static bool __init early_make_pgtable(unsigned long address)
 	pmdval_t pmd;
 
 	pmd = (physaddr & PMD_MASK) + early_pmd_flags;
-    
+
             /* Create a new PMD entry */
 	return __early_make_pgtable(address, pmd);
 }
 
 /**
- *  
+ *
  */
 void __init do_early_exception(struct pt_regs *regs, int trapnr)
 {
@@ -425,7 +432,7 @@ void __init do_early_exception(struct pt_regs *regs, int trapnr)
 	early_fixup_exception(regs, trapnr);
 }
 
-/* Don't add a printk in there. printk relies on the PDA which is not initialized 
+/* Don't add a printk in there. printk relies on the PDA which is not initialized
    yet. */
 static void __init clear_bss(void)
 {
@@ -480,19 +487,25 @@ static void __init copy_bootdata(char *real_mode_data)
 }
 
 /**
- *  从汇编中跳转过来的 arch/x86/kernel/head_64.S
+ * 从汇编中跳转过来的 arch/x86/kernel/head_64.S
+ *
+ * real_mode_data = boot_params
  */
-//real_mode_data = boot_params
-asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
+asmlinkage __visible void __init
+x86_64_start_kernel(char * real_mode_data)
 {
 	/*
 	 * Build-time sanity checks on the kernel image and module
 	 * area mappings. (these are purely build-time and produce no code)
+	 *
+	 * 模块的虚拟地址不能低于内核 text 段基地址 `__START_KERNEL_map`
 	 */
-	//模块的虚拟地址不能低于内核 text 段基地址 `__START_KERNEL_map`
 	BUILD_BUG_ON(MODULES_VADDR < __START_KERNEL_map);
 
-    //模块的内核 text 段的空间大小不能小于内核镜像大小
+    /**
+     * @brief 模块的内核 text 段的空间大小不能小于内核镜像大小
+     *
+     */
 	BUILD_BUG_ON(MODULES_VADDR - __START_KERNEL_map < KERNEL_IMAGE_SIZE);
 	BUILD_BUG_ON(MODULES_LEN + KERNEL_IMAGE_SIZE > 2*PUD_SIZE);
 	BUILD_BUG_ON((__START_KERNEL_map & ~PMD_MASK) != 0);
@@ -502,24 +515,35 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 				(__START_KERNEL & PGDIR_MASK)));
 	BUILD_BUG_ON(__fix_to_virt(__end_of_fixed_addresses) <= MODULES_END);
 
-    //存储了每个CPU中 `cr4` 的Shadow Copy
-    //上下文切换可能会修改 `cr4` 中的位，因此需要保存每个CPU中 `cr4` 的内容
+    /**
+     * 存储了每个CPU中 `cr4` 的Shadow Copy
+     * 上下文切换可能会修改 `cr4` 中的位，因此需要保存每个CPU中 `cr4` 的内容
+     */
 	cr4_init_shadow();
 
-	/* Kill off the identity-map trampoline 
-    重置了所有的全局页目录项，同时向 `cr3` 中重新写入了的全局页目录表的地址*/
+	/**
+	 * Kill off the identity-map trampoline
+     * 重置了所有的全局页目录项，同时向 `cr3` 中重新写入了的全局页目录表的地址
+	 */
 	reset_early_page_tables();
 
-    /* 清空 BSS 段 - 静态全局变量 */
+    /**
+     * 清空 BSS 段 - 静态全局变量
+     *
+     */
 	clear_bss();
 
-    /*  */
+    /**
+     *
+     *
+     */
 	clear_page(init_top_pgt);
 
 	/*
 	 * SME support may update early_pmd_flags to include the memory
 	 * encryption mask, so it needs to be called before anything
 	 * that may generate a page fault.
+	 *
 	 * 安全内存加密(SME)的功能???
 	 */
 	sme_early_init();
@@ -527,11 +551,16 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
     /*  */
 	kasan_early_init();
 
-    /*  */
+    /**
+     *
+     *
+     */
 	idt_setup_early_handler();
 
-    //real_mode_data = `boot_params` 结构体
-    //对 boot_params 物理地址进行直接映射后的 boot_params 虚拟地址
+    /**
+     * real_mode_data = `boot_params` 结构体
+     * 对 boot_params 物理地址进行直接映射后的 boot_params 虚拟地址
+     */
 	copy_bootdata(__va(real_mode_data));
 
 	/*
@@ -547,31 +576,30 @@ asmlinkage __visible void __init x86_64_start_kernel(char * real_mode_data)
 	init_top_pgt[511] = early_top_pgt[511];
 
     /**
-     *  
+     *
      */
-	x86_64_start_reservations(real_mode_data);  /*  */
+	x86_64_start_reservations(real_mode_data);
 }
 
 
 /**
- *  
+ * real_mode_data = `boot_params` 结构体
  */
-//real_mode_data = `boot_params` 结构体
 void __init x86_64_start_reservations(char *real_mode_data)
 {
-	/* version is always not zero if it is copied 
+	/* version is always not zero if it is copied
        如果它为0，则再次调用 `copy_bootdata`，并传入 `real_mode_data` 的虚拟地址
     */
 	if (!boot_params.hdr.version)
 		copy_bootdata(__va(real_mode_data));
 
     /**
-     *  
+     *
      */
 	x86_early_init_platform_quirks();
 
     /**
-     *  
+     *
      */
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_INTEL_MID:/* 手机网络设备 */
@@ -582,7 +610,7 @@ void __init x86_64_start_reservations(char *real_mode_data)
 	}
 
     /**
-     *  
+     *
      */
 	start_kernel();
 }

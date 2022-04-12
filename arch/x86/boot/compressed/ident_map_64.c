@@ -42,8 +42,10 @@ extern unsigned long get_cmd_line_ptr(void);
 /* Used by PAGE_KERN* macros: */
 pteval_t __read_mostly __default_kernel_pte_mask  = ~0;
 
-/* Used to track our page table allocation area. 
-    缓冲区在此结构体中 */
+/**
+ * Used to track our page table allocation area.
+ * 缓冲区在此结构体中
+ */
 struct alloc_pgt_data {
 	unsigned char *pgt_buf;
 	unsigned long pgt_buf_size;
@@ -111,11 +113,10 @@ static void add_identity_map(unsigned long start, unsigned long end)
 
 /* Locates and clears a region for a new top level page table. */
 /**
-正如你可能从以前的部分请记住，我们已经成立了页表覆盖范围0到4G。
-因为我们可能会生成4 GB范围以外的随机地址，所以不会这样做。
-因此，该initialize_identity_maps函数为新的页表条目初始化内存。
-
-*/
+ * 正如你可能从以前的部分请记住，我们已经成立了页表覆盖范围 0 到 4G。
+ * 因为我们可能会生成 4 GB 范围以外的随机地址，所以不会这样做。
+ * 因此，该 initialize_identity_maps 函数为新的页表条目初始化内存。
+ */
 void initialize_identity_maps(void *rmode)
 {
 	unsigned long cmdline;
@@ -123,7 +124,9 @@ void initialize_identity_maps(void *rmode)
 	/* Exclude the encryption mask from __PHYSICAL_MASK */
 	physical_mask &= ~sme_me_mask;
 
-    //首先初始化 x86_mapping_info 称为 mapping_info 的结构实例
+    /**
+	 * 首先初始化 x86_mapping_info 称为 mapping_info 的结构实例
+	 */
 	/* Init mapping_info with run-time function/buffer pointers. */
 	mapping_info.alloc_pgt_page = alloc_pgt_page;
 	mapping_info.context = &pgt_data;
@@ -154,20 +157,24 @@ void initialize_identity_maps(void *rmode)
 	 */
 	top_level_pgt = read_cr3_pa();
 	if (p4d_offset((pgd_t *)top_level_pgt, 0) == (p4d_t *)_pgtable) {
-        //如果引导加载器在`startup_32`引导内核，
-        //`pgdt_data.pgdt_buf`会指向已经在 [arch/x86/boot/compressed/head_64.S] 初始化的页表的末尾
+        /**
+		 * 如果引导加载器在`startup_32`引导内核，
+         * `pgdt_data.pgdt_buf`会指向已经在 [arch/x86/boot/compressed/head_64.S] 初始化的页表的末尾
+		 */
 		pgt_data.pgt_buf = _pgtable + BOOT_INIT_PGT_SIZE;
 		pgt_data.pgt_buf_size = BOOT_PGT_SIZE - BOOT_INIT_PGT_SIZE;
 		memset(pgt_data.pgt_buf, 0, pgt_data.pgt_buf_size);
 	} else {
-        //如果引导加载器用64位引导协议并在`startup_64`加载内核，
-        //早期页表应该由引导加载器建立，并且`_pgtable`会被重写
+        /**
+		 * 如果引导加载器用64位引导协议并在`startup_64`加载内核，
+         * 早期页表应该由引导加载器建立，并且`_pgtable`会被重写
+		 */
 		pgt_data.pgt_buf = _pgtable;
 		pgt_data.pgt_buf_size = BOOT_PGT_SIZE;
 		memset(pgt_data.pgt_buf, 0, pgt_data.pgt_buf_size);
 		top_level_pgt = (unsigned long)alloc_pgt_page(&pgt_data);
 	}
-    
+
 
 	/*
 	 * New page-table is set up - map the kernel image, boot_params and the

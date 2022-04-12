@@ -51,7 +51,7 @@ static inline void fill_ldt(struct desc_struct *desc, const struct user_desc *in
 }
 
 /**
- * @brief
+ * @brief 全局描述符表
  *
  * definition of the `gdt_page` in the [arch/x86/kernel/head_64.S]
  *

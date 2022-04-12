@@ -227,10 +227,13 @@ struct jailhouse_setup_data {
 	} __attribute__((packed)) v2;
 } __attribute__((packed));
 
-/* The so-called "zeropage" */
-/* 我把 `boot_params` 改名为 `boot_parameters` */
-
-struct boot_parameters {/* 所谓的零 页 page0 */
+/**
+ * The so-called "zeropage" - 所谓的零 页 page0
+ * 我把 `boot_params` 改名为 `boot_parameters`
+ *
+ * https://www.kernel.org/doc/Documentation/x86/boot.txt
+ */
+struct boot_parameters {
 	struct screen_info screen_info;			/* 0x000 */
 	struct apm_bios_info apm_bios_info;		/* 0x040 */
 	__u8  _pad2[4];					/* 0x054 */

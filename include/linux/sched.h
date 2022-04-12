@@ -843,7 +843,7 @@ struct wake_q_node {
 //|      thread_info      |<----------->|     task_struct    |
 //+-----------------------+             +--------------------+
 struct task_struct {    /* PCB */
-#ifdef CONFIG_THREAD_INFO_IN_TASK   /*  */
+#ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
 	 * For reasons of header soup (see current_thread_info()), this
 	 * must be the first element of task_struct.
@@ -2183,22 +2183,41 @@ extern void ia64_set_curr_task(int cpu, struct task_struct *p);
 
 void yield(void);
 
-//+-----------------------+
-//|        stack          |
-//|_______________________|
-//|          |            |
-//|__________↓____________|             +--------------------+
-//|                       |             |                    |
-//|      thread_info      |<----------->|     task_struct    |
-//+-----------------------+             +--------------------+
-union thread_union {    /*  */
+/**
+ * @brief 内核栈
+ *
+ * +-----------------------+
+ * |        stack          |
+ * |_______________________|
+ * |          |            |
+ * |__________↓____________|             +--------------------+
+ * |                       |             |                    |
+ * |      thread_info      |<----------->|     task_struct    |
+ * +-----------------------+             +--------------------+
+ *
+ * 参见 INIT_TASK_DATA/init_thread_union
+ */
+union thread_union {
 #ifndef CONFIG_ARCH_TASK_STRUCT_ON_STACK
 	struct task_struct task;
 #endif
 #ifndef CONFIG_THREAD_INFO_IN_TASK
-	struct thread_info thread_info; /*  */
+	struct thread_info thread_info;
 #endif
-	unsigned long stack[THREAD_SIZE/* 32K *//sizeof(long)];
+	/**
+	 * THREAD_SIZE : 32K
+	 *
+	 * arch/x86/include/asm/page_64_types.h
+	 * ----------------------------------------
+	 * #ifdef CONFIG_KASAN
+	 * #define KASAN_STACK_ORDER 1
+	 * #else
+	 * #define KASAN_STACK_ORDER 0
+	 * #endif
+	 * #define THREAD_SIZE_ORDER       (2 + KASAN_STACK_ORDER)
+	 * #define THREAD_SIZE  (PAGE_SIZE << THREAD_SIZE_ORDER)
+	 */
+	unsigned long stack[THREAD_SIZE/sizeof(long)];
 };
 
 #ifndef CONFIG_THREAD_INFO_IN_TASK
