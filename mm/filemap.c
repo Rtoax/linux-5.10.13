@@ -967,7 +967,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 EXPORT_SYMBOL(add_to_page_cache_locked);
 
 /**
- *
+ * 将 pagecache 添加到 lru 链表
  */
 int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 				pgoff_t offset, gfp_t gfp_mask)
@@ -995,6 +995,9 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 		WARN_ON_ONCE(PageActive(page));
 		if (!(gfp_mask & __GFP_WRITE) && shadow)
 			workingset_refault(page, shadow);
+		/**
+		 * 添加到 lru 链表
+		 */
 		lru_cache_add(page);
 	}
 	return ret;
