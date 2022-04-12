@@ -293,6 +293,9 @@ SYM_FUNC_END(__switch_to_asm)
 SYM_CODE_START(ret_from_fork)
 	UNWIND_HINT_EMPTY
 	movq	%rax, %rdi
+	/**
+	 *
+	 */
 	call	schedule_tail			/* rdi: 'prev' task parameter */
 
 	testq	%rbx, %rbx			/* from kernel_thread? */

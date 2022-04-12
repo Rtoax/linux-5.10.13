@@ -3953,9 +3953,12 @@ static inline void balance_callback(struct rq *rq)
 
 /**
  * schedule_tail - first thing a freshly forked thread must call.
+ * 一个新的 fork 进程必须执行
+ *
  * @prev: the thread we just switched away from.
  */
-asmlinkage __visible void schedule_tail(struct task_struct *prev)
+asmlinkage __visible void
+schedule_tail(struct task_struct *prev)
 	__releases(rq->lock)
 {
 	struct rq *rq;

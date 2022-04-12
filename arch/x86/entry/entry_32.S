@@ -831,6 +831,8 @@ SYM_FUNC_END(schedule_tail_wrapper)
  * eax: prev task we switched from
  * ebx: kernel thread func (NULL for user thread)
  * edi: kernel thread arg
+ *
+ * 见 copy_thread()
  */
 .pushsection .text, "ax"
 SYM_CODE_START(ret_from_fork)

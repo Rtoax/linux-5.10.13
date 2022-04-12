@@ -104,6 +104,9 @@ static unsigned int __read_mostly d_hash_shift ;
  */
 static struct hlist_bl_head __read_mostly*dentry_hashtable ;/* 目录的哈希表 */
 
+/**
+ * 获取 dentry_hashtable 桶中的一项
+ */
 static inline struct hlist_bl_head *d_hash(unsigned int hash)
 {
 	return dentry_hashtable + (hash >> d_hash_shift);
@@ -330,6 +333,10 @@ void release_dentry_name_snapshot(struct name_snapshot *name)
 }
 EXPORT_SYMBOL(release_dentry_name_snapshot);
 
+/**
+ * 设置 dentry inode 和 flags
+ * 
+ */
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
 					  unsigned type_flags)
@@ -505,6 +512,9 @@ static void ___d_drop(struct dentry *dentry)
 	if (unlikely(IS_ROOT(dentry)))
 		b = &dentry->d_sb->s_roots;
 	else
+		/**
+		 * 从 dentry_hashtable 桶中获取 一项
+		 */
 		b = d_hash(dentry->d_name.hash);
 
 	hlist_bl_lock(b);
@@ -1956,6 +1966,9 @@ type_determined:
 	return add_flags;
 }
 
+/**
+ *
+ */
 static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 {
 	unsigned add_flags = d_flags_for_inode(inode);
@@ -1969,6 +1982,10 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 		this_cpu_dec(nr_dentry_negative);
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 	raw_write_seqcount_begin(&dentry->d_seq);
+	/**
+	 *
+	 *
+	 */
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	raw_write_seqcount_end(&dentry->d_seq);
 	fsnotify_update_flags(dentry);
@@ -2258,6 +2275,8 @@ static inline bool d_same_name(const struct dentry *dentry,
  *
  * NOTE! The caller *has* to check the resulting dentry against the sequence
  * number we've returned before using any of the resulting dentry state!
+ *
+ * 从 dentry_hashtable 中查找 dentry
  */
 struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name,
@@ -2265,6 +2284,9 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
 {
 	u64 hashlen = name->hash_len;
 	const unsigned char *str = name->name;
+	/**
+	 * 从 dentry_hashtable 桶中获取一项
+	 */
 	struct hlist_bl_head *b = d_hash(hashlen_hash(hashlen));
 	struct hlist_bl_node *node;
 	struct dentry *dentry;
@@ -2505,6 +2527,9 @@ void d_delete(struct dentry * dentry)
 }
 EXPORT_SYMBOL(d_delete);
 
+/**
+ * 添加 dentry 到 dentry_hashtable 中
+ */
 static void __d_rehash(struct dentry *entry)
 {
 	struct hlist_bl_head *b = d_hash(entry->d_name.hash);
@@ -2519,6 +2544,8 @@ static void __d_rehash(struct dentry *entry)
  * @entry: dentry to add to the hash
  *
  * Adds a dentry to the hash according to its name.
+ *
+ * 添加 dentry 到 dentry_hashtable 中
  */
 
 void d_rehash(struct dentry * entry)
