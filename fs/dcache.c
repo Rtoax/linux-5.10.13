@@ -363,10 +363,11 @@ void release_dentry_name_snapshot(struct name_snapshot *name)
 EXPORT_SYMBOL(release_dentry_name_snapshot);
 
 /**
- * 设置 dentry inode 和 flags
+ * 设置 dentry 的 inode 和 flags
  *
  */
-static inline void __d_set_inode_and_type(struct dentry *dentry,
+static inline void
+__d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
 					  unsigned type_flags)
 {
@@ -376,6 +377,10 @@ static inline void __d_set_inode_and_type(struct dentry *dentry,
 	flags = READ_ONCE(dentry->d_flags);
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	flags |= type_flags;
+	/**
+	 * @brief 设置 dentry 的 flags
+	 *
+	 */
 	smp_store_release(&dentry->d_flags, flags);
 }
 
@@ -459,6 +464,11 @@ static void dentry_unlink_inode(struct dentry * dentry)
 	WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
 
 
+/**
+ * @brief 添加到 lru 链表
+ *
+ * @param dentry
+ */
 static void d_lru_add(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, 0);
@@ -475,6 +485,11 @@ static void d_lru_add(struct dentry *dentry)
 	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
+/**
+ * @brief 从 lru 中删除
+ *
+ * @param dentry
+ */
 static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
@@ -482,6 +497,10 @@ static void d_lru_del(struct dentry *dentry)
 	this_cpu_dec(nr_dentry_unused);
 	if (d_is_negative(dentry))
 		this_cpu_dec(nr_dentry_negative);
+	/**
+	 * @brief 从链表中删除
+	 *
+	 */
 	WARN_ON_ONCE(!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
@@ -2003,13 +2022,31 @@ void d_set_fallthru(struct dentry *dentry)
 }
 EXPORT_SYMBOL(d_set_fallthru);
 
+/**
+ * @brief 从 inode 获取 dentry 的 flags
+ *
+ * @param inode
+ * @return unsigned
+ */
 static unsigned d_flags_for_inode(struct inode *inode)
 {
+	/**
+	 * @brief 默认值为常规文件
+	 *
+	 */
 	unsigned add_flags = DCACHE_REGULAR_TYPE;
 
+	/**
+	 * 没有对应的 inode ，也就是文件不存在
+	 * 这对应 negative dentry
+	 */
 	if (!inode)
 		return DCACHE_MISS_TYPE;
 
+	/**
+	 * @brief inode 是文件夹
+	 *
+	 */
 	if (S_ISDIR(inode->i_mode)) {
 		add_flags = DCACHE_DIRECTORY_TYPE;
 		if (unlikely(!(inode->i_opflags & IOP_LOOKUP))) {
@@ -2040,6 +2077,7 @@ type_determined:
 
 /**
  *
+ * instantiate: 例示
  */
 static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 {
@@ -2052,11 +2090,16 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	 */
 	if (dentry->d_flags & DCACHE_LRU_LIST)
 		this_cpu_dec(nr_dentry_negative);
+
+	/**
+	 * @brief
+	 *
+	 */
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 	raw_write_seqcount_begin(&dentry->d_seq);
+
 	/**
-	 *
-	 *
+	 * 设置 dentry 的 inode 和 flags
 	 */
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	raw_write_seqcount_end(&dentry->d_seq);
@@ -2154,7 +2197,7 @@ static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 
 	spin_lock(&dentry->d_lock);
     /**
-     *
+     * 设置 dentry 的 inode 和 flags
      */
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
@@ -2807,6 +2850,10 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 		unsigned add_flags = d_flags_for_inode(inode);
 		hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 		raw_write_seqcount_begin(&dentry->d_seq);
+		/**
+		 * @brief 设置 dentry 的 inode 和 flags
+		 *
+		 */
 		__d_set_inode_and_type(dentry, inode, add_flags);
 		raw_write_seqcount_end(&dentry->d_seq);
 		fsnotify_update_flags(dentry);

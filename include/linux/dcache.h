@@ -248,9 +248,12 @@ struct dentry_operations {
 #define DCACHE_LRU_LIST			0x00080000
 
 #define DCACHE_ENTRY_TYPE		0x00700000
+/**
+ * @brief Negative dentry
+ */
 #define DCACHE_MISS_TYPE		0x00000000 /* Negative dentry (maybe fallthru to nowhere) */
 #define DCACHE_WHITEOUT_TYPE		0x00100000 /* Whiteout dentry (stop pathwalk) */
-#define DCACHE_DIRECTORY_TYPE		0x00200000 /* Normal directory */
+#define DCACHE_DIRECTORY_TYPE		0x00200000 /* Normal directory 文件夹 */
 #define DCACHE_AUTODIR_TYPE		0x00300000 /* Lookupless directory (presumed automount) */
 #define DCACHE_REGULAR_TYPE		0x00400000 /* Regular file type (or fallthru to such) */
 #define DCACHE_SPECIAL_TYPE		0x00500000 /* Other file type (or fallthru to such) */
@@ -438,6 +441,9 @@ static inline unsigned __d_entry_type(const struct dentry *dentry)
 
 static inline bool d_is_miss(const struct dentry *dentry)
 {
+	/**
+	 * DCACHE_MISS_TYPE = 0x00000000
+	 */
 	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
 }
 
@@ -491,6 +497,11 @@ static inline bool d_is_file(const struct dentry *dentry)
 static inline bool d_is_negative(const struct dentry *dentry)
 {
 	// TODO: check d_is_whiteout(dentry) also.
+	/**
+	 * @brief DCACHE_MISS_TYPE = 0x00000000
+	 *
+	 * @return return
+	 */
 	return d_is_miss(dentry);
 }
 
