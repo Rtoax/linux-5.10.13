@@ -335,7 +335,7 @@ EXPORT_SYMBOL(release_dentry_name_snapshot);
 
 /**
  * 设置 dentry inode 和 flags
- * 
+ *
  */
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
@@ -1810,6 +1810,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 
 /**
  * d_alloc	-	allocate a dcache entry
+ *
  * @parent: parent of entry to allocate
  * @name: qstr of the name
  *
@@ -1836,12 +1837,24 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 }
 EXPORT_SYMBOL(d_alloc);
 
+/**
+ * @brief
+ *
+ * @param sb
+ * @return struct dentry*
+ */
 struct dentry *d_alloc_anon(struct super_block *sb)
 {
 	return __d_alloc(sb, NULL);
 }
 EXPORT_SYMBOL(d_alloc_anon);
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @return struct dentry*
+ */
 struct dentry *d_alloc_cursor(struct dentry * parent)
 {
 	struct dentry *dentry = d_alloc_anon(parent->d_sb);
@@ -1854,6 +1867,7 @@ struct dentry *d_alloc_cursor(struct dentry * parent)
 
 /**
  * d_alloc_pseudo - allocate a dentry (for lookup-less filesystems)
+ *
  * @sb: the superblock
  * @name: qstr of the name
  *
@@ -1875,6 +1889,13 @@ struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 	return dentry;
 }
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param name
+ * @return struct dentry*
+ */
 struct dentry *d_alloc_name(struct dentry *parent, const char *name)
 {
 	struct qstr q;
@@ -2586,6 +2607,14 @@ static void d_wait_lookup(struct dentry *dentry)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param name
+ * @param wq
+ * @return struct dentry*
+ */
 struct dentry *d_alloc_parallel(struct dentry *parent,
 				const struct qstr *name,
 				wait_queue_head_t *wq)
