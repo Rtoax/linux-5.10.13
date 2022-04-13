@@ -212,6 +212,10 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
 	if (page_has_private(page) && !try_to_release_page(page, 0))
 		return 0;
 
+	/**
+	 * @brief
+	 *
+	 */
 	ret = remove_mapping(mapping, page);
 
 	return ret;
@@ -246,7 +250,7 @@ int generic_error_remove_page(struct address_space *mapping, struct page *page)
 }
 EXPORT_SYMBOL(generic_error_remove_page);
 
-/*
+/**
  * Safely invalidate one page from its pagecache mapping.
  * It only drops clean, unused pages. The page must be locked.
  *
@@ -261,6 +265,11 @@ int invalidate_inode_page(struct page *page)
 		return 0;
 	if (page_mapped(page))
 		return 0;
+	/**
+	 * @brief
+	 *
+	 * @return return
+	 */
 	return invalidate_complete_page(mapping, page);
 }
 
@@ -529,13 +538,13 @@ void truncate_inode_pages_final(struct address_space *mapping)
 EXPORT_SYMBOL(truncate_inode_pages_final);
 
 /**
- * @brief 
- * 
- * @param mapping 
- * @param start 
- * @param end 
- * @param nr_pagevec 
- * @return unsigned 
+ * @brief 释放 inode 的所有 未锁定的 pages
+ *
+ * @param mapping
+ * @param start
+ * @param end
+ * @param nr_pagevec
+ * @return unsigned
  */
 static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t end, unsigned long *nr_pagevec)
@@ -547,10 +556,22 @@ static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 	unsigned long count = 0;
 	int i;
 
+	/**
+	 * @brief 初始化一个 多页的容器
+	 *
+	 */
 	pagevec_init(&pvec);
+	/**
+	 * pagevec_lookup_entries(): 从 xarray 中获取
+	 *
+	 */
 	while (index <= end && pagevec_lookup_entries(&pvec, mapping, index,
 			min(end - index, (pgoff_t)PAGEVEC_SIZE - 1) + 1,
 			indices)) {
+		/**
+		 * @brief 遍历获取到的 pages
+		 *
+		 */
 		for (i = 0; i < pagevec_count(&pvec); i++) {
 			struct page *page = pvec.pages[i];
 
@@ -598,8 +619,8 @@ static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 				pagevec_release(&pvec);
 			}
 			/**
-			 * @brief 
-			 * 
+			 * @brief
+			 *
 			 */
 			ret = invalidate_inode_page(page);
 			unlock_page(page);
@@ -628,6 +649,7 @@ static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
 
 /**
  * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
+ *
  * @mapping: the address_space which holds the pages to invalidate
  * @start: the offset 'from' which to invalidate
  * @end: the offset 'to' which to invalidate (inclusive)
@@ -640,6 +662,8 @@ static unsigned long __invalidate_mapping_pages(struct address_space *mapping,
  * pagetables.
  *
  * Return: the number of the pages that were invalidated
+ *
+ * 释放 inode 的所有 未锁定的 pages
  */
 unsigned long invalidate_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t end)

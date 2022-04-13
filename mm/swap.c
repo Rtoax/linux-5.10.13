@@ -1174,6 +1174,10 @@ unsigned pagevec_lookup_entries(struct pagevec *pvec,
 				pgoff_t start, unsigned nr_entries,
 				pgoff_t *indices)
 {
+	/**
+	 * @brief 从 address_space 获取 page
+	 * 从 xarray（类似于基数树）中读取
+	 */
 	pvec->nr = find_get_entries(mapping, start, nr_entries,
 				    pvec->pages, indices);
 	return pagevec_count(pvec);

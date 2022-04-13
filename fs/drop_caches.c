@@ -16,9 +16,9 @@ int sysctl_drop_caches;
 
 /**
  * @brief echo 1 > /proc/sys/vm/drop_caches 或者 echo 3
- * 
- * @param sb 
- * @param unused 
+ *
+ * @param sb
+ * @param unused
  */
 static void drop_pagecache_sb(struct super_block *sb, void *unused)
 {
@@ -27,7 +27,7 @@ static void drop_pagecache_sb(struct super_block *sb, void *unused)
 	spin_lock(&sb->s_inode_list_lock);
 	/**
 	 * @brief 便利super block 所有inode
-	 * 
+	 *
 	 */
 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
 		spin_lock(&inode->i_lock);
@@ -35,7 +35,7 @@ static void drop_pagecache_sb(struct super_block *sb, void *unused)
 		 * We must skip inodes in unusual state. We may also skip
 		 * inodes without pages but we deliberately won't in case
 		 * we need to reschedule to avoid softlockups.
-		 * 
+		 *
 		 * 不能回收的条件
 		 */
 		if ((inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW)) ||
@@ -49,9 +49,10 @@ static void drop_pagecache_sb(struct super_block *sb, void *unused)
 
 		/**
 		 * @brief 释放 inode 的pages
-		 * 
+		 *
 		 */
 		invalidate_mapping_pages(inode->i_mapping, 0, -1);
+
 		iput(toput_inode);
 		toput_inode = inode;
 
@@ -63,13 +64,13 @@ static void drop_pagecache_sb(struct super_block *sb, void *unused)
 }
 /**
  * @brief echo 3 > /proc/sys/vm/drop_caches
- * 
- * @param table 
- * @param write 
- * @param buffer 
- * @param length 
- * @param ppos 
- * @return int 
+ *
+ * @param table
+ * @param write
+ * @param buffer
+ * @param length
+ * @param ppos
+ * @return int
  */
 int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
@@ -84,7 +85,7 @@ int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 
 		/**
 		 * @brief 回收 pagecache
-		 * 
+		 *
 		 */
 		if (sysctl_drop_caches & 1) {
 			iterate_supers(drop_pagecache_sb, NULL);
@@ -92,7 +93,7 @@ int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 		}
 		/**
 		 * @brief 回收slab
-		 * 
+		 *
 		 */
 		if (sysctl_drop_caches & 2) {
 			drop_slab();

@@ -475,10 +475,14 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
  * 用于管理文件（struct inode)映射到内存的页面(struct page)
  */
 struct address_space {
-	struct inode		*host;      /* owner: inode, block_device拥有它的节点 */
+	/**
+	 * @brief owner: inode, block_device拥有它的节点
+	 *
+	 */
+	struct inode		*host;
 
     /**
-     *  cache pages
+     *  cache pages 基数树
      */
 	struct xarray		i_pages;
 	gfp_t			    gfp_mask;
@@ -487,13 +491,21 @@ struct address_space {
 	/* number of thp, only for non-shmem files */
 	atomic_t		    nr_thps;
 #endif
-    /* 文件缓存的树？ */
-	struct rb_root_cached	i_mmap; /* tree of private and shared mappings 优先搜索树的树根*/
+    /**
+	 * 文件缓存的树？
+	 * tree of private and shared mappings 优先搜索树的树根
+	 */
+	struct rb_root_cached	i_mmap;
 	struct rw_semaphore	i_mmap_rwsem;
 	unsigned long		nrpages;        /* number of total pages 页总数*/
 	unsigned long		nrexceptional;
 	pgoff_t			    writeback_index;    /* writeback starts here 回写的起始偏移*/
-	const struct address_space_operations *a_ops;   /* methods  操作该文件映射到内存的页面，比如把内存中的修改写回文件、从文件中读入数据到页面缓冲等*/
+	/**
+	 * @brief methods
+	 * 操作该文件映射到内存的页面，比如把内存中的修改写回文件、从文件中读入数据到页面缓冲等
+	 *
+	 */
+	const struct address_space_operations *a_ops;
 	unsigned long		flags;          /* error bits/gfp mask ，gfp_mask掩码与错误标识 */
 	errseq_t		    wb_err;
 	spinlock_t		    private_lock;

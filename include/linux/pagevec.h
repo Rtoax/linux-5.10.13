@@ -18,11 +18,13 @@ struct page;
 struct address_space;
 
 /**
+ * @brief 多页的容器
+ *
  *  页向量，借助一个数组来保存特定数目的页，
  *  可以对这些页面执行同样的操作
  *  页面会以 批处理 的方式执行，比单独处理一个页面的效率高。
  */
-struct pagevec {    /* 多页的容器 */
+struct pagevec {
 	unsigned char nr;
 	bool percpu_pvec_drained;
 	struct page *pages[PAGEVEC_SIZE];

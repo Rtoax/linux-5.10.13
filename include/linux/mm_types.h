@@ -85,9 +85,10 @@ struct page {   /* 物理页 */
      *
      *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
      * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
+	 *
+	 * 见 `set_page_links()`
+	 * flags -> enum pageflags
      */
-    // 见 `set_page_links()`
-    //flags -> enum pageflags
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
 	/*

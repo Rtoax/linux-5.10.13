@@ -104,8 +104,7 @@ int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
 	for (loop = 0; loop < npages; loop++) {
 		struct page *page = pages + loop;
 
-		ret = add_to_page_cache_lru(page, inode->i_mapping, loop,
-					gfp);
+		ret = add_to_page_cache_lru(page, inode->i_mapping, loop, gfp);
 		if (ret < 0)
 			goto add_error;
 

@@ -969,7 +969,8 @@ EXPORT_SYMBOL(add_to_page_cache_locked);
 /**
  * 将 pagecache 添加到 lru 链表
  */
-int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+int add_to_page_cache_lru(struct page *page,
+				struct address_space *mapping,
 				pgoff_t offset, gfp_t gfp_mask)
 {
 	void *shadow = NULL;
@@ -1951,6 +1952,10 @@ unsigned find_get_entries(struct address_space *mapping,
 			  pgoff_t start, unsigned int nr_entries,
 			  struct page **entries, pgoff_t *indices)
 {
+	/**
+	 * struct xarray i_pages
+	 *
+	 */
 	XA_STATE(xas, &mapping->i_pages, start);
 	struct page *page;
 	unsigned int ret = 0;
@@ -1959,6 +1964,11 @@ unsigned find_get_entries(struct address_space *mapping,
 		return 0;
 
 	rcu_read_lock();
+
+	/**
+	 * @brief 遍历所有 page
+	 *
+	 */
 	xas_for_each(&xas, page, ULONG_MAX) {
 		if (xas_retry(&xas, page))
 			continue;
@@ -1986,6 +1996,10 @@ unsigned find_get_entries(struct address_space *mapping,
 			nr_entries = ret + 1;
 		}
 export:
+		/**
+		 * @brief 赋值
+		 *
+		 */
 		indices[ret] = xas.xa_index;
 		entries[ret] = page;
 		if (++ret == nr_entries)
@@ -2523,6 +2537,10 @@ no_cached_page:
 			error = -ENOMEM;
 			goto out;
 		}
+		/**
+		 * @brief 添加到 lru 链表
+		 *
+		 */
 		error = add_to_page_cache_lru(page, mapping, index,
 				mapping_gfp_constraint(mapping, GFP_KERNEL));
 		if (error) {

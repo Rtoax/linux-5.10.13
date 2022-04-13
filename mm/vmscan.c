@@ -941,7 +941,8 @@ static pageout_t pageout(struct page *page, struct address_space *mapping)
  *
  * 尝试分离 page->mapping
  */
-static int __remove_mapping(struct address_space *mapping, struct page *page,
+static int
+__remove_mapping(struct address_space *mapping, struct page *page,
 			    bool reclaimed, struct mem_cgroup *target_memcg)
 {
 	unsigned long flags;
@@ -987,7 +988,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page,
 	}
 
     /**
-     *
+     *	swap
      */
 	if (PageSwapCache(page)) {
 		swp_entry_t swap = { .val = page_private(page) };
