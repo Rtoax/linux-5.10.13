@@ -62,7 +62,7 @@ extern const struct qstr slash_name;
 /**
  * @brief # cat /proc/sys/fs/dentry-state
  * 			30714	84	45	0	29	0
- * 
+ *
  */
 struct dentry_stat_t {
 	long nr_dentry;
@@ -104,7 +104,7 @@ struct dentry {
 
     /**
      *  系统为 dentry 结构的hash表，
-     *  利用 文件路径快速查 hash 表 dentry_hashtable 
+     *  利用 文件路径快速查 hash 表 dentry_hashtable
      *  可以快速找到与之对应的 inode 结构
      */
 	struct hlist_bl_node d_hash;	/* lookup hash list */
@@ -115,25 +115,25 @@ struct dentry {
 	struct dentry *d_parent;	/* parent directory */
 
     /**
-     *  
+     *
      */
 	struct qstr d_name;
 
     /**
-     *  
+     *
      */
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */
 
     /**
-     *  
+     *
      */
     unsigned char d_iname[DNAME_INLINE_LEN];	/* small names */
 
 	/* Ref lookup also touches following */
 	struct lockref d_lockref;	/* per-dentry lock and refcount */
     /**
-     *  
+     *
      */
 	const struct dentry_operations *d_op;
 	struct super_block *d_sb;	/* The root of the dentry tree */
@@ -172,7 +172,7 @@ enum dentry_d_lock_class
 };
 
 /**
- *  
+ *
  */
 struct dentry_operations {
 	int (*d_revalidate)(struct dentry *, unsigned int);
@@ -186,7 +186,7 @@ struct dentry_operations {
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
     /**
-     *  
+     *
      */
 	pchar_t (*d_dname)(struct dentry *, char *, int);
 	vfsmount_t (*d_automount)(struct path *);
@@ -313,7 +313,7 @@ extern int path_has_submounts(const struct path *);
  * This adds the entry to the hash queues.
  */
 extern void d_rehash(struct dentry *);
- 
+
 extern void d_add(struct dentry *, struct inode *);
 
 /* used for rename() and baskets */
@@ -336,7 +336,7 @@ static inline unsigned d_count(const struct dentry *dentry)
 /*
  * helper function for dentry_operations.d_dname() members
  */
-extern 
+extern
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
 extern char *__d_path(const struct path *, const struct path *, char *, int);
@@ -352,7 +352,7 @@ extern char *dentry_path(struct dentry *, char *, int);
  *	@dentry: dentry to get a reference to
  *
  *	Given a dentry or %NULL pointer increment the reference count
- *	if appropriate and return the dentry. A dentry will not be 
+ *	if appropriate and return the dentry. A dentry will not be
  *	destroyed when it has references.
  */
 static inline struct dentry *dget_dlock(struct dentry *dentry)
@@ -377,7 +377,7 @@ extern struct dentry *dget_parent(struct dentry *dentry);
  *
  *	Returns true if the dentry passed is not currently hashed.
  */
- 
+
 static inline int d_unhashed(const struct dentry *dentry)
 {
 	return hlist_bl_unhashed(&dentry->d_hash);
@@ -481,6 +481,13 @@ static inline bool d_is_file(const struct dentry *dentry)
 	return d_is_reg(dentry) || d_is_special(dentry);
 }
 
+/**
+ * @brief
+ *
+ * @param dentry
+ * @return true
+ * @return false
+ */
 static inline bool d_is_negative(const struct dentry *dentry)
 {
 	// TODO: check d_is_whiteout(dentry) also.

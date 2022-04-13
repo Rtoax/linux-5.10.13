@@ -128,6 +128,19 @@ struct dentry_stat_t dentry_stat = {
 	.age_limit = 45,
 };
 
+/**
+ * @brief dentry 计数
+ *
+ * 参见函数 __d_alloc
+ *
+ * CSDN： Dentry negativity/negative dentry
+ * https://rtoax.blog.csdn.net/article/details/124149585
+ *
+ * 而negative dentry则不太一样：这是指文件树lookup过程中失败的项目在memory中的记录。
+ * 如果用户敲入“more cowbell”命令并且当前目录下没有cowbell这个文件，那么kernel就会相
+ * 应创建一个negative dentry。如果我们这个假象用户很固执，一直重复键入这个命令，kernel
+ * 就可以以更快的方式来告诉用户“这个文件不存在”，尽管用户更早看到这个消息其实也不会怎么开心。
+ */
 static DEFINE_PER_CPU(long, nr_dentry);
 static DEFINE_PER_CPU(long, nr_dentry_unused);
 static DEFINE_PER_CPU(long, nr_dentry_negative);
@@ -164,6 +177,19 @@ static long get_nr_dentry_unused(void)
 	return sum < 0 ? 0 : sum;
 }
 
+/**
+ * @brief 获取 所有 CPU 的 nr_dentry_negative 和
+ *
+ * @return long
+ *
+ * CSDN： Dentry negativity/negative dentry
+ * https://rtoax.blog.csdn.net/article/details/124149585
+ *
+ * 而negative dentry则不太一样：这是指文件树lookup过程中失败的项目在memory中的记录。
+ * 如果用户敲入“more cowbell”命令并且当前目录下没有cowbell这个文件，那么kernel就会相
+ * 应创建一个negative dentry。如果我们这个假象用户很固执，一直重复键入这个命令，kernel
+ * 就可以以更快的方式来告诉用户“这个文件不存在”，尽管用户更早看到这个消息其实也不会怎么开心。
+ */
 static long get_nr_dentry_negative(void)
 {
 	int i;
@@ -175,7 +201,7 @@ static long get_nr_dentry_negative(void)
 	return sum < 0 ? 0 : sum;
 }
 /**
- * @brief
+ * @brief /proc/sys/fs/dentry-state
  *
  * @param table
  * @param write
@@ -183,6 +209,9 @@ static long get_nr_dentry_negative(void)
  * @param lenp
  * @param ppos
  * @return int
+ *
+ * CSDN： Dentry negativity/negative dentry
+ * https://rtoax.blog.csdn.net/article/details/124149585
  */
 int proc_nr_dentry(struct ctl_table *table, int write, void *buffer,
 		   size_t *lenp, loff_t *ppos)
@@ -357,6 +386,10 @@ static inline void __d_clear_type_and_inode(struct dentry *dentry)
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	WRITE_ONCE(dentry->d_flags, flags);
 	dentry->d_inode = NULL;
+	/**
+	 * @brief
+	 *
+	 */
 	if (dentry->d_flags & DCACHE_LRU_LIST)
 		this_cpu_inc(nr_dentry_negative);
 }
@@ -420,13 +453,23 @@ static void dentry_unlink_inode(struct dentry * dentry)
  *
  * These helper functions make sure we always follow the
  * rules. d_lock must be held by the caller.
+ *
  */
-#define D_FLAG_VERIFY(dentry,x) WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
+#define D_FLAG_VERIFY(dentry,x) \
+	WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
+
+
 static void d_lru_add(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, 0);
 	dentry->d_flags |= DCACHE_LRU_LIST;
+	/**
+	 * @brief
+	 */
 	this_cpu_inc(nr_dentry_unused);
+	/**
+	 * @brief
+	 */
 	if (d_is_negative(dentry))
 		this_cpu_inc(nr_dentry_negative);
 	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
@@ -1740,6 +1783,10 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	char *dname;
 	int err;
 
+	/**
+	 * @brief 从 slab 中分配
+	 *
+	 */
 	dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
 	if (!dentry)
 		return NULL;
@@ -1803,6 +1850,10 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 		}
 	}
 
+	/**
+	 * @brief 计数
+	 *
+	 */
 	this_cpu_inc(nr_dentry);
 
 	return dentry;
