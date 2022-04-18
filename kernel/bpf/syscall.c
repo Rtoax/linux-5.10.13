@@ -4845,7 +4845,7 @@ out_prog_put:
 }
 
 /**
- * @brief bpf 系统调用
+ * @brief bpf(2) 系统调用
  *
  * @param cmd
  * @param attr
@@ -4855,7 +4855,8 @@ out_prog_put:
 int bpf(int cmd, union bpf_attr *attr, unsigned int size){}//+++
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
 {
-	union bpf_attr attr;    /* 存放 用户 uattr */
+	/* 存放 用户 uattr */
+	union bpf_attr attr;
 	int err;
 
     /**
@@ -4872,9 +4873,9 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 		return err;
 
     /**
-     *
+     *	取 一个 bpf_attr 大小
      */
-	size = min_t(u32, size, sizeof(attr));  /* 取 一个 bpf_attr 大小 */
+	size = min_t(u32, size, sizeof(attr));
 
 	/* copy attributes from user space, may be less than sizeof(bpf_attr) */
 	memset(&attr, 0, sizeof(attr));

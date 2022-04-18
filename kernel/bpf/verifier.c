@@ -25,12 +25,55 @@
 
 #include "disasm.h"
 
+/**
+ * @brief 验证器 操作函数
+ *
+ */
 static const struct bpf_verifier_ops * const bpf_verifier_ops[] = {
 #define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
 	[_id] = & _name ## _verifier_ops,
 #define BPF_MAP_TYPE(_id, _ops)
 #define BPF_LINK_TYPE(_id, _name)
 #include <linux/bpf_types.h>
+	/* 展开 */
+	[BPF_PROG_TYPE_SOCKET_FILTER] = & sk_filter_verifier_ops,
+	[BPF_PROG_TYPE_SCHED_CLS] = & tc_cls_act_verifier_ops,
+	[BPF_PROG_TYPE_SCHED_ACT] = & tc_cls_act_verifier_ops,
+	[BPF_PROG_TYPE_XDP] = & xdp_verifier_ops,
+
+	[BPF_PROG_TYPE_CGROUP_SKB] = & cg_skb_verifier_ops,
+	[BPF_PROG_TYPE_CGROUP_SOCK] = & cg_sock_verifier_ops,
+	[BPF_PROG_TYPE_CGROUP_SOCK_ADDR] = & cg_sock_addr_verifier_ops,
+
+	[BPF_PROG_TYPE_LWT_IN] = & lwt_in_verifier_ops,
+	[BPF_PROG_TYPE_LWT_OUT] = & lwt_out_verifier_ops,
+	[BPF_PROG_TYPE_LWT_XMIT] = & lwt_xmit_verifier_ops,
+	[BPF_PROG_TYPE_LWT_SEG6LOCAL] = & lwt_seg6local_verifier_ops,
+	[BPF_PROG_TYPE_SOCK_OPS] = & sock_ops_verifier_ops,
+	[BPF_PROG_TYPE_SK_SKB] = & sk_skb_verifier_ops,
+	[BPF_PROG_TYPE_SK_MSG] = & sk_msg_verifier_ops,
+	[BPF_PROG_TYPE_FLOW_DISSECTOR] = & flow_dissector_verifier_ops,
+
+	[BPF_PROG_TYPE_KPROBE] = & kprobe_verifier_ops,
+	[BPF_PROG_TYPE_TRACEPOINT] = & tracepoint_verifier_ops,
+	[BPF_PROG_TYPE_PERF_EVENT] = & perf_event_verifier_ops,
+	[BPF_PROG_TYPE_RAW_TRACEPOINT] = & raw_tracepoint_verifier_ops,
+	[BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE] = & raw_tracepoint_writable_verifier_ops,
+	[BPF_PROG_TYPE_TRACING] = & tracing_verifier_ops,
+
+	[BPF_PROG_TYPE_CGROUP_DEVICE] = & cg_dev_verifier_ops,
+	[BPF_PROG_TYPE_CGROUP_SYSCTL] = & cg_sysctl_verifier_ops,
+	[BPF_PROG_TYPE_CGROUP_SOCKOPT] = & cg_sockopt_verifier_ops,
+
+	[BPF_PROG_TYPE_LIRC_MODE2] = & lirc_mode2_verifier_ops,
+
+	[BPF_PROG_TYPE_SK_REUSEPORT] = & sk_reuseport_verifier_ops,
+	[BPF_PROG_TYPE_SK_LOOKUP] = & sk_lookup_verifier_ops,
+
+	[BPF_PROG_TYPE_STRUCT_OPS] = & bpf_struct_ops_verifier_ops,
+	[BPF_PROG_TYPE_EXT] = & bpf_extension_verifier_ops,
+
+	[BPF_PROG_TYPE_LSM] = & lsm_verifier_ops,
 #undef BPF_PROG_TYPE
 #undef BPF_MAP_TYPE
 #undef BPF_LINK_TYPE
@@ -10183,6 +10226,14 @@ static int bpf_adj_linfo_after_remove(struct bpf_verifier_env *env, u32 off,
 	return 0;
 }
 
+/**
+ * @brief 移除 指令
+ *
+ * @param env
+ * @param off
+ * @param cnt
+ * @return int
+ */
 static int verifier_remove_insns(struct bpf_verifier_env *env, u32 off, u32 cnt)
 {
 	struct bpf_insn_aux_data *aux_data = env->insn_aux_data;
@@ -10192,6 +10243,11 @@ static int verifier_remove_insns(struct bpf_verifier_env *env, u32 off, u32 cnt)
 	if (bpf_prog_is_dev_bound(env->prog->aux))
 		bpf_prog_offload_remove_insns(env, off, cnt);
 
+	/**
+	 * @brief 移除指令
+	 * （如此移除，是不是性能很差？ 荣涛 2022-04-18）
+	 *
+	 */
 	err = bpf_remove_insns(env->prog, off, cnt);
 	if (err)
 		return err;
@@ -10276,6 +10332,12 @@ static void opt_hard_wire_dead_code_branches(struct bpf_verifier_env *env)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param env
+ * @return int
+ */
 static int opt_remove_dead_code(struct bpf_verifier_env *env)
 {
 	struct bpf_insn_aux_data *aux_data = env->insn_aux_data;
@@ -10300,6 +10362,12 @@ static int opt_remove_dead_code(struct bpf_verifier_env *env)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param env
+ * @return int
+ */
 static int opt_remove_nops(struct bpf_verifier_env *env)
 {
 	const struct bpf_insn ja = BPF_JMP_IMM(BPF_JA, 0, 0, 0);
@@ -10440,6 +10508,9 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 
 	insn = env->prog->insnsi + delta;
 
+	/**
+	 *	遍历所有指令
+	 */
 	for (i = 0; i < insn_cnt; i++, insn++) {
 		bpf_convert_ctx_access_t convert_ctx_access;
 
@@ -10474,6 +10545,10 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
 			};
 
 			cnt = ARRAY_SIZE(patch);
+			/**
+			 *
+			 *
+			 */
 			new_prog = bpf_patch_insn_data(env, i + delta, patch, cnt);
 			if (!new_prog)
 				return -ENOMEM;
@@ -11345,8 +11420,10 @@ out:
 	return ret;
 }
 
-/* Verify all global functions in a BPF program one by one based on their BTF.
+/**
+ * Verify all global functions in a BPF program one by one based on their BTF.
  * All global functions must pass verification. Otherwise the whole program is rejected.
+ *
  * Consider:
  * int bar(int);
  * int foo(int f)
@@ -11752,6 +11829,12 @@ int bpf_check_attach_target(struct bpf_verifier_log *log,
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param env
+ * @return int
+ */
 static int check_attach_btf_id(struct bpf_verifier_env *env)
 {
 	struct bpf_prog *prog = env->prog;
@@ -11860,6 +11943,10 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	      union bpf_attr __user *uattr)
 {
 	u64 start_time = ktime_get_ns();
+	/**
+	 *
+	 *
+	 */
 	struct bpf_verifier_env *env;
 	struct bpf_verifier_log *log;
 	int i, len, ret = -EINVAL;
@@ -11877,7 +11964,15 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		return -ENOMEM;
 	log = &env->log;
 
+	/**
+	 * @brief bpf 注入程序长度
+	 *
+	 */
 	len = (*prog)->len;
+	/**
+	 * @brief 指令辅助数据
+	 *
+	 */
 	env->insn_aux_data =
 		vzalloc(array_size(sizeof(struct bpf_insn_aux_data), len));
 	ret = -ENOMEM;
@@ -11890,6 +11985,10 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	env->ops = bpf_verifier_ops[env->prog->type];
 	is_priv = bpf_capable();
 
+	/**
+	 * 获取 btf
+	 *
+	 */
 	bpf_get_btf_vmlinux();
 
 	/* grab the mutex to protect few globals used by verifier */
@@ -11932,6 +12031,10 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	if (attr->prog_flags & BPF_F_ANY_ALIGNMENT)
 		env->strict_alignment = false;
 
+	/**
+	 * @brief
+	 *
+	 */
 	env->allow_ptr_leaks = bpf_allow_ptr_leaks();
 	env->allow_ptr_to_map_access = bpf_allow_ptr_to_map_access();
 	env->bypass_spec_v1 = bpf_bypass_spec_v1();
@@ -12008,7 +12111,7 @@ skip_full_check:
 	kvfree(env->explored_states);
 
     /**
-     *
+     *	检查栈深度
      */
 	if (ret == 0)
 		ret = check_max_stack_depth(env);
@@ -12051,6 +12154,9 @@ skip_full_check:
 	if (ret == 0)
 		ret = fixup_call_args(env);
 
+	/**
+	 * 校验时间
+	 */
 	env->verification_time = ktime_get_ns() - start_time;
 
     /**

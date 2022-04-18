@@ -501,6 +501,10 @@ BPF_CALL_3(bpf_get_stackid, struct pt_regs *, regs, struct bpf_map *, map,
 	return __bpf_get_stackid(map, trace, flags);
 }
 
+/**
+ * @brief
+ *
+ */
 const struct bpf_func_proto bpf_get_stackid_proto = {
 	.func		= bpf_get_stackid,
 	.gpl_only	= true,

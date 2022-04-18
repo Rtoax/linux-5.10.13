@@ -518,10 +518,21 @@ struct bpf_prog *bpf_patch_insn_single(struct bpf_prog *prog, u32 off,
 	return prog_adj;
 }
 
+/**
+ * @brief 移除指令
+ *
+ * @param prog
+ * @param off
+ * @param cnt
+ * @return int
+ */
 int bpf_remove_insns(struct bpf_prog *prog, u32 off, u32 cnt)
 {
-	/* Branch offsets can't overflow when program is shrinking, no need
+	/**
+	 * Branch offsets can't overflow when program is shrinking, no need
 	 * to call bpf_adj_branches(..., true) here
+	 *
+	 * 如此移除，是不是性能很差？ 荣涛 2022-04-18
 	 */
 	memmove(prog->insnsi + off, prog->insnsi + off + cnt,
 		sizeof(struct bpf_insn) * (prog->len - off - cnt));
