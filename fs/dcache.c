@@ -317,6 +317,11 @@ static inline struct external_name *external_name(struct dentry *dentry)
 	return container_of(dentry->d_name.name, struct external_name, name[0]);
 }
 
+/**
+ * @brief 释放 dentry
+ *
+ * @param head
+ */
 static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
@@ -399,6 +404,11 @@ static inline void __d_clear_type_and_inode(struct dentry *dentry)
 		this_cpu_inc(nr_dentry_negative);
 }
 
+/**
+ * @brief 释放 dentry
+ *
+ * @param dentry
+ */
 static void dentry_free(struct dentry *dentry)
 {
 	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
@@ -480,8 +490,13 @@ static void d_lru_add(struct dentry *dentry)
 	/**
 	 * @brief
 	 */
-	if (d_is_negative(dentry))
+	if (d_is_negative(dentry)) {
 		this_cpu_inc(nr_dentry_negative);
+		/**
+		 * 可以在这里添加 对 negative dentry 的处理？
+		 *
+		 */
+	}
 	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
@@ -643,6 +658,11 @@ static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
 	}
 }
 
+/**
+ * @brief 直接清理
+ *
+ * @param dentry
+ */
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
@@ -944,7 +964,7 @@ static inline bool fast_dput(struct dentry *dentry)
  */
 
 /*
- * dput - release a dentry
+ * dput - release a dentry 释放一个目录
  * @dentry: dentry to release
  *
  * Release a dentry. This will drop the usage count and if appropriate
@@ -952,7 +972,7 @@ static inline bool fast_dput(struct dentry *dentry)
  * releasing its resources. If the parent dentries were scheduled for release
  * they too may now get deleted.
  */
-void dput(struct dentry *dentry)    /* 释放一个目录 */
+void dput(struct dentry *dentry)
 {
 	while (dentry) {
 		might_sleep();
@@ -971,6 +991,10 @@ void dput(struct dentry *dentry)    /* 释放一个目录 */
 			return;
 		}
 
+		/**
+		 * @brief 释放 dentry
+		 *
+		 */
 		dentry = dentry_kill(dentry);
 	}
 }
@@ -1210,6 +1234,11 @@ out:
 	return false;
 }
 
+/**
+ * @brief 这是从 lru 链表中清理
+ *
+ * @param list
+ */
 void shrink_dentry_list(struct list_head *list)
 {
 	while (!list_empty(list)) {
@@ -1315,6 +1344,10 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 
 	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc,
 				     dentry_lru_isolate, &dispose);
+	/**
+	 * @brief 回收
+	 *
+	 */
 	shrink_dentry_list(&dispose);
 	return freed;
 }
@@ -1900,6 +1933,11 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	 */
 	__dget_dlock(parent);
 	dentry->d_parent = parent;
+
+	/**
+	 * @brief 添加到父目录的 d_subdirs 结构链表中
+	 *
+	 */
 	list_add(&dentry->d_child, &parent->d_subdirs);
 	spin_unlock(&parent->d_lock);
 
