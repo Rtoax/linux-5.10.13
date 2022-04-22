@@ -726,9 +726,9 @@ static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
 		};
 
         /**
-         *
+         *	收缩 slab ， 进行回收
          */
-		ret = do_shrink_slab(&sc, shrinker, priority);  /* 收缩 slab ， 进行回收 */
+		ret = do_shrink_slab(&sc, shrinker, priority);
 		if (ret == SHRINK_EMPTY)
 			ret = 0;
 		freed += ret;

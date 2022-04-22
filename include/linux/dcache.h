@@ -141,10 +141,16 @@ struct dentry {
 	void *d_fsdata;			/* fs-specific data */
 
 	union {
+		/**
+		 * LRU 链表节点
+		 */
 		struct list_head d_lru;		/* LRU list */
 		wait_queue_head_t *d_wait;	/* in-lookup ones only */
 	};
 	struct list_head d_child;	/* child of parent list */
+	/**
+	 *	子目录的 dentry 结构
+	 */
 	struct list_head d_subdirs;	/* our children */
 	/*
 	 * d_alias and d_rcu can share memory

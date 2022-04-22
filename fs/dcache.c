@@ -1926,6 +1926,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	struct dentry *dentry = __d_alloc(parent->d_sb, name);
 	if (!dentry)
 		return NULL;
+
 	spin_lock(&parent->d_lock);
 	/*
 	 * don't need child lock because it is not subject
