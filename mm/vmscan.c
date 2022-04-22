@@ -405,7 +405,11 @@ void free_prealloced_shrinker(struct shrinker *shrinker)
 }
 
 /**
- *  注册
+ * 添加到 shrinker_list
+ *
+ * 内存不足触发内存回收时，shrink_slab会把挂载在shrinker_list链上的slab收割函数执行一遍，
+ * 其中 dentry slab 的收割机属于vfs层，mount的时候在alloc_sb的时候会挂到shrinker_list收割机链表里，
+ * 最终是执行 prune_dcache_sb 去回收 dentry cache 内存。
  */
 void register_shrinker_prepared(struct shrinker *shrinker)
 {
