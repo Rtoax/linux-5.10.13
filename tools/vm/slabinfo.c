@@ -1217,6 +1217,10 @@ static void read_slab_dir(void)
 			slab->cpu_slabs = get_obj("cpu_slabs");
 			slab->destroy_by_rcu = get_obj("destroy_by_rcu");
 			slab->hwcache_align = get_obj("hwcache_align");
+			/**
+			 * @brief /sys/kernel/slab/dentry/object_size
+			 *
+			 */
 			slab->object_size = get_obj("object_size");
 			slab->objects = get_obj("objects");
 			slab->objects_partial = get_obj("objects_partial");

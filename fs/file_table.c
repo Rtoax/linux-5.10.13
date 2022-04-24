@@ -285,6 +285,10 @@ struct file *alloc_file_clone(struct file *base, int flags, const struct file_op
  */
 static void __fput(struct file *file)
 {
+	/**
+	 * @brief 从打开的文件 获取 dentry 结构
+	 *
+	 */
 	struct dentry *dentry = file->f_path.dentry;
 	struct vfsmount *mnt = file->f_path.mnt;
 	struct inode *inode = file->f_inode;
@@ -322,6 +326,10 @@ static void __fput(struct file *file)
 		put_write_access(inode);
 		__mnt_drop_write(mnt);
 	}
+	/**
+	 * @brief
+	 *
+	 */
 	dput(dentry);
 	if (unlikely(mode & FMODE_NEED_UNMOUNT))
 		dissolve_on_fput(mnt);
@@ -330,6 +338,10 @@ out:
 	file_free(file);
 }
 
+/**
+ * @brief
+ *
+ */
 static LLIST_HEAD(delayed_fput_list);
 static void delayed_fput(struct work_struct *unused)
 {
@@ -340,6 +352,11 @@ static void delayed_fput(struct work_struct *unused)
 		__fput(f);
 }
 
+/**
+ * @brief
+ *
+ * @param work
+ */
 static void ____fput(struct callback_head *work)
 {
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
@@ -363,12 +380,22 @@ EXPORT_SYMBOL_GPL(flush_delayed_fput);
 
 static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 
+/**
+ * @brief
+ *
+ * @param file
+ * @param refs
+ */
 void fput_many(struct file *file, unsigned int refs)
 {
 	if (atomic_long_sub_and_test(refs, &file->f_count)) {
 		struct task_struct *task = current;
 
 		if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
+			/**
+			 * @brief 添加 ____fput
+			 *
+			 */
 			init_task_work(&file->f_u.fu_rcuhead, ____fput);
 			if (!task_work_add(task, &file->f_u.fu_rcuhead, TWA_RESUME))
 				return;

@@ -2813,6 +2813,10 @@ static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 	unsigned long tid;
 	struct obj_cgroup *objcg = NULL;
 
+	/**
+	 * @brief 这里转变了？
+	 *
+	 */
 	s = slab_pre_alloc_hook(s, &objcg, 1, gfpflags);
 	if (!s)
 		return NULL;
@@ -2893,13 +2897,27 @@ redo:
 	return object;
 }
 
-
+/**
+ * @brief
+ *
+ * @param s
+ * @param gfpflags
+ * @param addr
+ * @return __always_inline*
+ */
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 		gfp_t gfpflags, unsigned long addr)
 {
 	return slab_alloc_node(s, gfpflags, NUMA_NO_NODE, addr);
 }
 
+/**
+ * @brief
+ *
+ * @param s
+ * @param gfpflags
+ * @return void*
+ */
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	void *ret = slab_alloc(s, gfpflags, _RET_IP_);

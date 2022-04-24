@@ -115,6 +115,13 @@ static unsigned long super_cache_scan(struct shrinker *shrink,
 	return freed;
 }
 
+/**
+ * @brief /sys/kernel/slab/dentry/total_objects
+ *
+ * @param shrink
+ * @param sc
+ * @return unsigned long
+ */
 static unsigned long super_cache_count(struct shrinker *shrink,
 				       struct shrink_control *sc)
 {
@@ -150,6 +157,10 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 	if (!total_objects)
 		return SHRINK_EMPTY;
 
+	/**
+	 * @brief vm.vfs_cache_pressure
+	 *
+	 */
 	total_objects = vfs_pressure_ratio(total_objects);
 	return total_objects;
 }

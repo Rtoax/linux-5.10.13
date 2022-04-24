@@ -3389,11 +3389,11 @@ slab_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
 }
 
 /**
- *
+ *	关闭中断的情况下被调用
  */
 static __always_inline void *
 __do_cache_alloc(struct kmem_cache *cache, gfp_t flags)
-{/* 关闭中断的情况下被调用 */
+{
 	void *objp;
 
 	if (current->mempolicy || cpuset_do_slab_mem_spread()) {

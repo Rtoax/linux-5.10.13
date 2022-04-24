@@ -136,6 +136,11 @@ struct dentry {
      *
      */
 	const struct dentry_operations *d_op;
+
+	/**
+	 * @brief 所属的 super block
+	 *
+	 */
 	struct super_block *d_sb;	/* The root of the dentry tree */
 	unsigned long d_time;		/* used by d_revalidate */
 	void *d_fsdata;			/* fs-specific data */
@@ -147,7 +152,13 @@ struct dentry {
 		struct list_head d_lru;		/* LRU list */
 		wait_queue_head_t *d_wait;	/* in-lookup ones only */
 	};
+
+	/**
+	 * @brief
+	 *
+	 */
 	struct list_head d_child;	/* child of parent list */
+
 	/**
 	 *	子目录的 dentry 结构
 	 */
@@ -265,7 +276,7 @@ struct dentry_operations {
 #define DCACHE_SPECIAL_TYPE		0x00500000 /* Other file type (or fallthru to such) */
 #define DCACHE_SYMLINK_TYPE		0x00600000 /* Symlink (or fallthru to such) */
 
-#define DCACHE_MAY_FREE			0x00800000
+#define DCACHE_MAY_FREE			0x00800000 /* ?? */
 #define DCACHE_FALLTHRU			0x01000000 /* Fall through to lower layer */
 #define DCACHE_NOKEY_NAME		0x02000000 /* Encrypted name encoded without key */
 #define DCACHE_OP_REAL			0x04000000
@@ -574,6 +585,12 @@ static inline bool d_is_fallthru(const struct dentry *dentry)
 
 extern int sysctl_vfs_cache_pressure;
 
+/**
+ * @brief vm.vfs_cache_pressure
+ *
+ * @param val
+ * @return unsigned long
+ */
 static inline unsigned long vfs_pressure_ratio(unsigned long val)
 {
 	return mult_frac(val, sysctl_vfs_cache_pressure, 100);

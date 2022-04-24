@@ -619,6 +619,11 @@ static void drop_links(struct nameidata *nd)
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param nd
+ */
 static void terminate_walk(struct nameidata *nd)
 {
 	drop_links(nd);
@@ -2355,7 +2360,9 @@ static int handle_lookup_down(struct nameidata *nd)
 			nd->path.dentry, nd->inode, nd->seq));
 }
 
-/* Returns 0 and nd will be valid on success; Retuns error, otherwise. */
+/**
+ * Returns 0 and nd will be valid on success; Retuns error, otherwise.
+ */
 static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path)
 {
 	const char *s = path_init(nd, flags);

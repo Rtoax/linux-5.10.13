@@ -849,8 +849,15 @@ void __init setup_kmalloc_cache_index_table(void)
 	}
 }
 
+/**
+ * @brief 创建缓存
+ *
+ * @param idx
+ * @param type
+ * @param flags
+ */
 static void __init
-new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)    /* 创建缓存 */
+new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
 {
 	if (type == KMALLOC_RECLAIM)
 		flags |= SLAB_RECLAIM_ACCOUNT;

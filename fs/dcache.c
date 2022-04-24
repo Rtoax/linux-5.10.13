@@ -70,6 +70,8 @@
  *
  * If no ancestor relationship:
  * arbitrary, since it's serialized on rename_lock
+ *
+ * vm.vfs_cache_pressure
  */
 int __read_mostly sysctl_vfs_cache_pressure  = 100;
 EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
@@ -497,6 +499,10 @@ static void d_lru_add(struct dentry *dentry)
 		 *
 		 */
 	}
+	/**
+	 * @brief 添加到 LRU 链表
+	 *
+	 */
 	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
@@ -519,6 +525,11 @@ static void d_lru_del(struct dentry *dentry)
 	WARN_ON_ONCE(!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
+/**
+ * @brief 从 链表 中删除
+ *
+ * @param dentry
+ */
 static void d_shrink_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_SHRINK_LIST | DCACHE_LRU_LIST);
@@ -551,6 +562,13 @@ static void d_lru_isolate(struct list_lru_one *lru, struct dentry *dentry)
 	list_lru_isolate(lru, &dentry->d_lru);
 }
 
+/**
+ * @brief
+ *
+ * @param lru
+ * @param dentry
+ * @param list
+ */
 static void d_lru_shrink_move(struct list_lru_one *lru, struct dentry *dentry,
 			      struct list_head *list)
 {
@@ -700,7 +718,15 @@ static void __dentry_kill(struct dentry *dentry)
 		dentry->d_op->d_release(dentry);
 
 	spin_lock(&dentry->d_lock);
+	/**
+	 * @brief 正在 shrink list ??
+	 *
+	 */
 	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
+		/**
+		 * @brief
+		 *
+		 */
 		dentry->d_flags |= DCACHE_MAY_FREE;
 		can_free = false;
 	}
@@ -748,6 +774,15 @@ static inline struct dentry *lock_parent(struct dentry *dentry)
 	return __lock_parent(dentry);
 }
 
+/**
+ * @brief
+ *
+ * retain: 保持
+ *
+ * @param dentry
+ * @return true
+ * @return false
+ */
 static inline bool retain_dentry(struct dentry *dentry)
 {
 	WARN_ON(d_in_lookup(dentry));
@@ -769,7 +804,16 @@ static inline bool retain_dentry(struct dentry *dentry)
 
 	/* retain; LRU fodder */
 	dentry->d_lockref.count--;
+
+	/**
+	 * @brief 如果没有在 LRU 链表中，那么放到 LRU 链表
+	 *
+	 */
 	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST)))
+		/**
+		 * @brief 添加到 LRU 链表
+		 *
+		 */
 		d_lru_add(dentry);
 	else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
 		dentry->d_flags |= DCACHE_REFERENCED;
@@ -986,6 +1030,10 @@ void dput(struct dentry *dentry)
 		/* Slow case: now with the dentry lock held */
 		rcu_read_unlock();
 
+		/**
+		 * @brief 可能先将其放到 LRU 里
+		 *
+		 */
 		if (likely(retain_dentry(dentry))) {
 			spin_unlock(&dentry->d_lock);
 			return;
@@ -1007,8 +1055,18 @@ __must_hold(&dentry->d_lock)
 		/* let the owner of the list it's on deal with it */
 		--dentry->d_lockref.count;
 	} else {
+		/**
+		 * @brief 在 LRU 链表中
+		 *
+		 */
 		if (dentry->d_flags & DCACHE_LRU_LIST)
 			d_lru_del(dentry);
+		/**
+		 * 如果 dentry->d_lockref.count == 1
+		 * 那么：
+		 *	--dentry->d_lockref.count
+		 * 添加到 LRU 链表中
+		 */
 		if (!--dentry->d_lockref.count)
 			d_shrink_add(dentry, list);
 	}
@@ -1247,22 +1305,53 @@ void shrink_dentry_list(struct list_head *list)
 		dentry = list_entry(list->prev, struct dentry, d_lru);
 		spin_lock(&dentry->d_lock);
 		rcu_read_lock();
+
+		/**
+		 * @brief 锁定 dentry 失败
+		 *
+		 */
 		if (!shrink_lock_dentry(dentry)) {
 			bool can_free = false;
 			rcu_read_unlock();
+			/**
+			 * @brief 从链表中删除
+			 *
+			 */
 			d_shrink_del(dentry);
+			/**
+			 * @brief dentry->d_lockref.count < 0 可以释放
+			 *
+			 */
 			if (dentry->d_lockref.count < 0)
 				can_free = dentry->d_flags & DCACHE_MAY_FREE;
 			spin_unlock(&dentry->d_lock);
+			/**
+			 * @brief 释放 dentry
+			 *
+			 * 不满足 can_free 的 dentry 到哪里去了?
+			 */
 			if (can_free)
 				dentry_free(dentry);
 			continue;
 		}
 		rcu_read_unlock();
+		/**
+		 * @brief 从链表中删除
+		 *
+		 */
 		d_shrink_del(dentry);
 		parent = dentry->d_parent;
+
+		/**
+		 * @brief
+		 *
+		 */
 		if (parent != dentry)
 			__dput_to_list(parent, list);
+		/**
+		 * @brief 释放内存
+		 *
+		 */
 		__dentry_kill(dentry);
 	}
 }
@@ -1319,6 +1408,10 @@ static enum lru_status dentry_lru_isolate(struct list_head *item,
 		return LRU_ROTATE;
 	}
 
+	/**
+	 * @brief 可释放
+	 *
+	 */
 	d_lru_shrink_move(lru, dentry, freeable);
 	spin_unlock(&dentry->d_lock);
 
@@ -1342,6 +1435,10 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 	LIST_HEAD(dispose);
 	long freed;
 
+	/**
+	 * @brief 从 LRU 链表里选取合适的 dentry 放到 dispose 链表中
+	 *
+	 */
 	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc,
 				     dentry_lru_isolate, &dispose);
 	/**
@@ -1352,6 +1449,15 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 	return freed;
 }
 
+/**
+ * @brief
+ *
+ * @param item
+ * @param lru
+ * @param lru_lock
+ * @param arg
+ * @return enum lru_status
+ */
 static enum lru_status dentry_lru_isolate_shrink(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
 {
@@ -1387,7 +1493,16 @@ void shrink_dcache_sb(struct super_block *sb)
 
 		list_lru_walk(&sb->s_dentry_lru,
 			dentry_lru_isolate_shrink, &dispose, 1024);
+
+		/**
+		 * @brief 回收
+		 *
+		 */
 		shrink_dentry_list(&dispose);
+	/**
+	 * @brief s_dentry_lru > 0, 那么继续
+	 *
+	 */
 	} while (list_lru_count(&sb->s_dentry_lru) > 0);
 }
 EXPORT_SYMBOL(shrink_dcache_sb);
@@ -2755,6 +2870,11 @@ struct dentry *d_alloc_parallel(struct dentry *parent,
 	unsigned int hash = name->hash;
 	struct hlist_bl_head *b = in_lookup_hash(parent, hash);
 	struct hlist_bl_node *node;
+
+	/**
+	 * @brief 分配 new dentry
+	 *
+	 */
 	struct dentry *new = d_alloc(parent, name);
 	struct dentry *dentry;
 	unsigned seq, r_seq, d_seq;
@@ -2766,6 +2886,10 @@ retry:
 	rcu_read_lock();
 	seq = smp_load_acquire(&parent->d_inode->i_dir_seq);
 	r_seq = read_seqbegin(&rename_lock);
+	/**
+	 * @brief 查找
+	 *
+	 */
 	dentry = __d_lookup_rcu(parent, name, &d_seq);
 	if (unlikely(dentry)) {
 		if (!lockref_get_not_dead(&dentry->d_lockref)) {
@@ -2778,6 +2902,10 @@ retry:
 			goto retry;
 		}
 		rcu_read_unlock();
+		/**
+		 * @brief 释放刚刚分配的 dentry
+		 *
+		 */
 		dput(new);
 		return dentry;
 	}
@@ -2848,6 +2976,11 @@ retry:
 	/* we can't take ->d_lock here; it's OK, though. */
 	new->d_flags |= DCACHE_PAR_LOOKUP;
 	new->d_wait = wq;
+
+	/**
+	 * @brief 添加到 RCU 链表
+	 *
+	 */
 	hlist_bl_add_head_rcu(&new->d_u.d_in_lookup_hash, b);
 	hlist_bl_unlock(b);
 	return new;
