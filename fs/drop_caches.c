@@ -88,6 +88,10 @@ int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 		 *
 		 */
 		if (sysctl_drop_caches & 1) {
+			/**
+			 * @brief 遍历所有 super_blocks 并执行 drop_pagecache_sb()
+			 *
+			 */
 			iterate_supers(drop_pagecache_sb, NULL);
 			count_vm_event(DROP_PAGECACHE);
 		}

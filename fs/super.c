@@ -659,6 +659,11 @@ void drop_super_exclusive(struct super_block *sb)
 }
 EXPORT_SYMBOL(drop_super_exclusive);
 
+/**
+ * @brief 遍历所有 super_blocks
+ *
+ * @param f
+ */
 static void __iterate_supers(void (*f)(struct super_block *))
 {
 	struct super_block *sb, *p = NULL;

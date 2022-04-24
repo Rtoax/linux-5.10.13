@@ -25,12 +25,12 @@
 /**
  *  可参考 vmstat
  */
-enum vm_event_item { 
-        PGPGIN, 
-        PGPGOUT, 
-        PSWPIN, 
+enum vm_event_item {
+        PGPGIN,
+        PGPGOUT,
+        PSWPIN,
         PSWPOUT,
-        
+
 #if 0   /* 根据我的配置，我把他展开了 */
 		FOR_ALL_ZONES(PGALLOC),
 		FOR_ALL_ZONES(ALLOCSTALL),
@@ -41,13 +41,13 @@ enum vm_event_item {
         PGALLOC_NORMAL,
         PGALLOC_HIGH,
         PGALLOC_MOVABLE,
-        
+
         ALLOCSTALL_DMA,
         ALLOCSTALL_DMA32,
         ALLOCSTALL_NORMAL,
         ALLOCSTALL_HIGH,
         ALLOCSTALL_MOVABLE,
-        
+
         PGSCAN_SKIP_DMA,
         PGSCAN_SKIP_DMA32,
         PGSCAN_SKIP_NORMAL,
@@ -74,6 +74,10 @@ enum vm_event_item {
 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_INODESTEAL,
 		KSWAPD_LOW_WMARK_HIT_QUICKLY, KSWAPD_HIGH_WMARK_HIT_QUICKLY,
 		PAGEOUTRUN, PGROTATED,
+		/**
+		 * echo 3 > /proc/sys/vm/drop_caches
+		 *
+		 */
 		DROP_PAGECACHE, DROP_SLAB,
 		OOM_KILL,
 #ifdef CONFIG_NUMA_BALANCING
@@ -99,7 +103,7 @@ enum vm_event_item {
 #ifdef CONFIG_HUGETLB_PAGE
 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
 #endif
-        
+
         /**
          *  不可驱逐
          */
