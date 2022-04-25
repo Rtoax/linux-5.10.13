@@ -153,8 +153,12 @@ enum pageflags {
 	/* Filesystems */
 	PG_checked = PG_owner_priv_1,
 
-	/* SwapBacked */
-	PG_swapcache = PG_owner_priv_1,	/* 页面处于交换缓存中，Swap page: swp_entry_t in private */
+	/**
+     * SwapBacked
+     *
+     * 页面处于交换缓存中，Swap page: swp_entry_t in private
+     */
+	PG_swapcache = PG_owner_priv_1,
 
 	/* Two page bits are conscripted by FS-Cache to maintain local caching
 	 * state.  These bits are set on pages belonging to the netfs's inodes
@@ -198,7 +202,11 @@ enum pageflags {
 
 struct page;	/* forward declaration */
 
-static inline struct page *compound_head(struct page *page) /* compound:化合物 */
+/**
+ *
+ * compound:化合物
+ */
+static inline struct page *compound_head(struct page *page)
 {
 	unsigned long head = READ_ONCE(page->compound_head);
 
@@ -1472,13 +1480,11 @@ static __always_inline int TestClearPageReadahead(struct page *page) {
 /*
  * Must use a macro here due to header dependency issues. page_zone() is not
  * available at this point.
- */{}
-//#define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
-{}
+ */
+#define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
 #else
 PAGEFLAG_FALSE(HighMem)
 #endif
-{}
 
 #ifdef CONFIG_SWAP
 /**

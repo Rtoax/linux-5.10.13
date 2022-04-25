@@ -487,29 +487,49 @@ struct address_space {
 	struct xarray		i_pages;
 	gfp_t			    gfp_mask;
 	atomic_t		    i_mmap_writable;
+
 #ifdef CONFIG_READ_ONLY_THP_FOR_FS
 	/* number of thp, only for non-shmem files */
 	atomic_t		    nr_thps;
 #endif
     /**
 	 * 文件缓存的树？
-	 * tree of private and shared mappings 优先搜索树的树根
+	 * 优先搜索树的树根
+	 * tree of private and shared mappings
 	 */
 	struct rb_root_cached	i_mmap;
 	struct rw_semaphore	i_mmap_rwsem;
-	unsigned long		nrpages;        /* number of total pages 页总数*/
+	/**
+	 * @brief number of total pages 页总数
+	 *
+	 */
+	unsigned long		nrpages;
 	unsigned long		nrexceptional;
-	pgoff_t			    writeback_index;    /* writeback starts here 回写的起始偏移*/
+	/**
+	 * @brief writeback starts here 回写的起始偏移
+	 *
+	 */
+	pgoff_t			    writeback_index;
 	/**
 	 * @brief methods
-	 * 操作该文件映射到内存的页面，比如把内存中的修改写回文件、从文件中读入数据到页面缓冲等
+	 * 操作该文件映射到内存的页面
+	 *
+	 * 比如把内存中的修改写回文件、从文件中读入数据到页面缓冲等
 	 *
 	 */
 	const struct address_space_operations *a_ops;
-	unsigned long		flags;          /* error bits/gfp mask ，gfp_mask掩码与错误标识 */
+	/**
+	 * @brief error bits/gfp mask ，gfp_mask掩码与错误标识
+	 *
+	 */
+	unsigned long		flags;
 	errseq_t		    wb_err;
 	spinlock_t		    private_lock;
-	struct list_head	private_list;   /* ditto 私有address_space链表*/
+	/**
+	 * @brief ditto 私有address_space链表
+	 *
+	 */
+	struct list_head	private_list;
 	void			    *private_data;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 	/*

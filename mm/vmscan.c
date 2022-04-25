@@ -1004,12 +1004,16 @@ __remove_mapping(struct address_space *mapping, struct page *page,
 		if (reclaimed && !mapping_exiting(mapping))
 			shadow = workingset_eviction(page, target_memcg);
 
+		/**
+		 * @brief Swap 也有 pagecache?
+		 *
+		 */
         __delete_from_swap_cache(page, swap, shadow);
 		xa_unlock_irqrestore(&mapping->i_pages, flags);
 		put_swap_page(page, swap);
 
     /**
-     *
+     *	filemap pagecache
      */
 	} else {
 		void (*freepage)(struct page *);
@@ -2363,7 +2367,6 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
      *  定义临时链表
      */
 	LIST_HEAD(__page_list);
-    struct list_head __page_list; //+++
 
 	unsigned long nr_scanned;
 	unsigned int nr_reclaimed = 0;
@@ -2392,10 +2395,10 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
          *
          *  解释一波
          *  ====================================
-         *  若当前页面税收这是直接页面回收并且 有大量的已分离页面，
+         *  若当前页面 是直接页面回收 并且 有大量的已分离页面，
          *  说明可能有很多进程正在做页面回收，而且有不少的进程已经触发了直接页面回收
-         *  这回导致不必要的内存抖动并触发 OOM killer 机制，
-         *  隐私可以让直接页面回收者先睡眠 100ms
+         *  这会导致不必要的内存抖动 并触发 OOM killer 机制，
+         *  因此，可以让直接页面回收者先睡眠 100ms
          */
 		/* wait a bit for the reclaimer. */
 		msleep(100);
@@ -2684,7 +2687,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 }
 
 /**
- *
+ *	回收页面
  */
 unsigned long reclaim_pages(struct list_head *page_list)
 {

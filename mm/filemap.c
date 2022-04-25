@@ -239,6 +239,10 @@ void __delete_from_page_cache(struct page *page, void *shadow)
 {
 	struct address_space *mapping = page->mapping;
 
+	/**
+	 * tracepoint:filemap:mm_filemap_delete_from_page_cache
+	 *
+	 */
 	trace_mm_filemap_delete_from_page_cache(page);
 
     /**
@@ -353,6 +357,12 @@ static void page_cache_delete_batch(struct address_space *mapping,
 	mapping->nrpages -= total_pages;
 }
 
+/**
+ * @brief 批量处理 filemap pagecache
+ *
+ * @param mapping
+ * @param pvec
+ */
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct pagevec *pvec)
 {
@@ -364,6 +374,10 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 
 	xa_lock_irqsave(&mapping->i_pages, flags);
 	for (i = 0; i < pagevec_count(pvec); i++) {
+		/**
+		 * tracepoint:filemap:mm_filemap_delete_from_page_cache
+		 *
+		 */
 		trace_mm_filemap_delete_from_page_cache(pvec->pages[i]);
 
 		unaccount_page_cache_page(mapping, pvec->pages[i]);
@@ -857,7 +871,14 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 EXPORT_SYMBOL_GPL(replace_page_cache_page);
 
 /**
+ * @brief
  *
+ * @param page
+ * @param mapping
+ * @param offset
+ * @param gfp
+ * @param shadowp
+ * @return noinline
  */
 noinline int __add_to_page_cache_locked(struct page *page,
 					struct address_space *mapping,
@@ -916,6 +937,10 @@ noinline int __add_to_page_cache_locked(struct page *page,
 			}
 		}
 
+		/**
+		 * @brief 添加到 基数树 xarray
+		 *
+		 */
 		xas_store(&xas, page);
 		if (xas_error(&xas))
 			goto unlock;
@@ -936,6 +961,10 @@ unlock:
 		goto error;
 	}
 
+	/**
+	 * tracepoint:filemap:mm_filemap_add_to_page_cache
+	 *
+	 */
 	trace_mm_filemap_add_to_page_cache(page);
 	return 0;
 error:
@@ -967,7 +996,13 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 EXPORT_SYMBOL(add_to_page_cache_locked);
 
 /**
- * 将 pagecache 添加到 lru 链表
+ * @brief 将 pagecache 添加到 lru 链表
+ *
+ * @param page
+ * @param mapping
+ * @param offset
+ * @param gfp_mask
+ * @return int
  */
 int add_to_page_cache_lru(struct page *page,
 				struct address_space *mapping,
@@ -1007,7 +1042,7 @@ EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
 
 #ifdef CONFIG_NUMA
 /**
- *
+ * 分配 page cache
  */
 struct page *__page_cache_alloc(gfp_t gfp)
 {
@@ -1742,6 +1777,10 @@ struct page *find_get_entry(struct address_space *mapping, pgoff_t index)
 	rcu_read_lock();
 repeat:
 	xas_reset(&xas);
+	/**
+	 * @brief
+	 *
+	 */
 	page = xas_load(&xas);
 	if (xas_retry(&xas, page))
 		goto repeat;
@@ -1805,6 +1844,7 @@ repeat:
 
 /**
  * pagecache_get_page - Find and get a reference to a page.
+ *
  * @mapping: The address_space to search.
  * @index: The page index.
  * @fgp_flags: %FGP flags modify how the page is returned.
@@ -1834,8 +1874,11 @@ repeat:
  * If there is a page cache page, it is returned with an increased refcount.
  *
  * Return: The found page or %NULL otherwise.
+ *
+ * 查找 并 获取 一个 page 引用
  */
-struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
+struct page *
+pagecache_get_page(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp_mask)
 {
 	struct page *page;
@@ -1880,6 +1923,10 @@ repeat:
 		page = find_subpage(page, index);
 
 no_page:
+	/**
+	 * @brief 在 基数树中 创建 pagecache
+	 *
+	 */
 	if (!page && (fgp_flags & FGP_CREAT)) {
 		int err;
 		if ((fgp_flags & FGP_WRITE) && mapping_can_writeback(mapping))
@@ -1888,7 +1935,7 @@ no_page:
 			gfp_mask &= ~__GFP_FS;
 
         /**
-         *
+         *	分配新的 page cache
          */
 		page = __page_cache_alloc(gfp_mask);
 		if (!page)
@@ -1901,6 +1948,10 @@ no_page:
 		if (fgp_flags & FGP_ACCESSED)
 			__SetPageReferenced(page);
 
+		/**
+		 * @brief
+		 *
+		 */
 		err = add_to_page_cache_lru(page, mapping, index, gfp_mask);
 		if (unlikely(err)) {
 			put_page(page);
@@ -2834,6 +2885,10 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 		 * waiting for the lock.
 		 */
 		fpin = do_async_mmap_readahead(vmf, page);
+	/**
+	 * @brief 失败
+	 *
+	 */
 	} else if (!page) {
 		/* No page in the page cache at all */
 		count_vm_event(PGMAJFAULT);
@@ -2841,6 +2896,10 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 		ret = VM_FAULT_MAJOR;
 		fpin = do_sync_mmap_readahead(vmf);
 retry_find:
+		/**
+		 * @brief
+		 *
+		 */
 		page = pagecache_get_page(mapping, offset,
 					  FGP_CREAT|FGP_FOR_MMAP,
 					  vmf->gfp_mask);

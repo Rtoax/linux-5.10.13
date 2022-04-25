@@ -500,7 +500,9 @@ static inline struct page *read_mapping_page(struct address_space *mapping,
 	return read_cache_page(mapping, index, NULL, data);
 }
 
-/*
+/**
+ * Page 在 radix-tree 中 的索引
+ *
  * Get index of the page with in radix-tree
  * (TODO: remove once hugetlb pages will have ->index in PAGE_SIZE)
  */

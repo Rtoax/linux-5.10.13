@@ -67,10 +67,10 @@ struct mem_cgroup;
 #endif
 
 /**
- * @brief
+ * @brief 物理页
  *
  */
-struct page {   /* 物理页 */
+struct page {
     /**
      *  +----------+---------+----------+--------+----------+
      *  |  section |   node  |   zone   |  ...   |   flag   |
@@ -98,7 +98,12 @@ struct page {   /* 物理页 */
 	 * avoid collision and false-positive PageTail().
 	 */
 	union {
-		struct {	/* Page cache and anonymous pages 页缓存 和 匿名页(管理匿名页面/文件映射页面) */
+		/**
+		 * @brief Page cache and anonymous pages
+		 *
+		 * 页缓存 和 匿名页(管理匿名页面/文件映射页面)
+		 */
+		struct {
 			/**
 			 * @lru: Pageout list, eg. active_list protected by
 			 * pgdat->lru_lock.  Sometimes used as a generic list
@@ -140,8 +145,9 @@ struct page {   /* 物理页 */
              *      bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
              *      bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
              *
-             * 通过mapping恢复anon_vma的方法：anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
-            */
+             * 通过mapping恢复anon_vma的方法：
+			 *  anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
+             */
 			struct address_space *mapping;
 
             /**
@@ -173,15 +179,22 @@ struct page {   /* 物理页 */
 			unsigned long private;
 		};
 
-		struct {	/* page_pool used by netstack 页池 */
+		/**
+		 * @brief  page_pool used by netstack 页池
+		 *
+		 */
+		struct {
 			/**
 			 * @dma_addr: might require a 64-bit value even on
 			 * 32-bit architectures.
 			 */
 			dma_addr_t dma_addr;
 		};
-
-		struct {	/* slab, slob and slub 被slab使用 */
+		/**
+		 * @brief slab, slob and slub 被slab使用
+		 *
+		 */
+		struct {
 			union {
                 /**
                  *  slab_list 是 full/partial/empty 链表头的节点
@@ -193,8 +206,8 @@ struct page {   /* 物理页 */
 					int pages;	/* Nr of pages left */
 					int pobjects;	/* Approximate count */
 #else
-//					short int pages;
-//					short int pobjects;
+					short int pages;
+					short int pobjects;
 #endif
 				};
 			};
@@ -355,8 +368,9 @@ struct page {   /* 物理页 */
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
+	/* page 的虚拟地址 */
 	void *virtual;
-    /* page 的虚拟地址 *//* Kernel virtual address (NULL if not kmapped, ie. highmem) */
+    /* Kernel virtual address (NULL if not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
 
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
