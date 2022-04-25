@@ -2906,6 +2906,13 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra1		= &one_ul,
 	},
 	{
+		/**
+		 * @brief /proc/sys/vm/dirty_ratio
+		 *
+		 * 是可以用脏数据填充的绝对最大系统内存量，当系统到达此点时，必须将所有脏数据提交到磁盘，
+		 * 同时所有新的I/O块都会被阻塞，直到脏数据被写入磁盘。这通常是长I/O卡顿的原因，但这也是
+		 * 保证内存中不会存在过量脏数据的保护机制。
+		 */
 		.procname	= "dirty_ratio",
 		.data		= &vm_dirty_ratio,
 		.maxlen		= sizeof(vm_dirty_ratio),

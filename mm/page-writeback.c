@@ -71,6 +71,7 @@ static long ratelimit_pages = 32;
 /**
  * Start background writeback (via writeback threads) at this percentage
  * /proc/sys/vm/dirty_background_ratio
+ *
  * 文件系统缓存脏页数量达到系统内存百分之多少时（vm.dirty_background_ratio%）就会
  * 触发pdflush/flush/kdmflush等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
  */
@@ -82,6 +83,8 @@ int dirty_background_ratio = 10;
  *
  * 脏页数量超过这个数值，内核回写线程开始回写脏页
  * /proc/sys/vm/dirty_background_bytes
+ *
+ * 和vm.dirty_background_ratio参数一样，这里是大小
  */
 unsigned long dirty_background_bytes;
 
@@ -93,6 +96,12 @@ int vm_highmem_is_dirtyable;
 
 /*
  * The generator of dirty data starts writeback at this percentage
+ *
+ * @brief /proc/sys/vm/dirty_ratio
+ *
+ * 是可以用脏数据填充的绝对最大系统内存量，当系统到达此点时，必须将所有脏数据提交到磁盘，
+ * 同时所有新的I/O块都会被阻塞，直到脏数据被写入磁盘。这通常是长I/O卡顿的原因，但这也是
+ * 保证内存中不会存在过量脏数据的保护机制。
  */
 int vm_dirty_ratio = 20;
 
@@ -524,6 +533,15 @@ int dirty_background_bytes_handler(struct ctl_table *table, int write,
 	return ret;
 }
 
+/*
+ * The generator of dirty data starts writeback at this percentage
+ *
+ * @brief /proc/sys/vm/dirty_ratio
+ *
+ * 是可以用脏数据填充的绝对最大系统内存量，当系统到达此点时，必须将所有脏数据提交到磁盘，
+ * 同时所有新的I/O块都会被阻塞，直到脏数据被写入磁盘。这通常是长I/O卡顿的原因，但这也是
+ * 保证内存中不会存在过量脏数据的保护机制。
+ */
 int dirty_ratio_handler(struct ctl_table *table, int write, void *buffer,
 		size_t *lenp, loff_t *ppos)
 {
@@ -538,6 +556,11 @@ int dirty_ratio_handler(struct ctl_table *table, int write, void *buffer,
 	return ret;
 }
 
+/**
+ * @brief /proc/sys/vm/dirty_bytes
+ *
+ * 和vm.dirty_ratio参数一样，这里是大小
+ */
 int dirty_bytes_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos)
 {
