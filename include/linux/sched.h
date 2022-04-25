@@ -1657,9 +1657,14 @@ struct task_struct {    /* PCB */
 	/*
 	 * When (nr_dirtied >= nr_dirtied_pause), it's time to call
 	 * balance_dirty_pages() for a dirty throttling pause:
+	 *
+	 * 当 nr_dirtied >= nr_dirtied_pause 那么就可以调用 balance_dirty_pages() 了
+	 *
+	 * balance_dirty_pages_ratelimited()
 	 */
 	int				nr_dirtied;
 	int				nr_dirtied_pause;
+
 	/* Start of a write-and-pause period: */
 	unsigned long			dirty_paused_when;
 

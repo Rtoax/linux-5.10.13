@@ -1742,6 +1742,9 @@ free_running:
 		 * do a reset, as it may be a light dirtier.
 		 */
 		if (pause < min_pause) {
+			/**
+			 * tracepoint:writeback:balance_dirty_pages
+			 */
 			trace_balance_dirty_pages(wb,
 						  sdtc->thresh,
 						  sdtc->bg_thresh,
@@ -1771,6 +1774,9 @@ free_running:
 		}
 
 pause:
+		/**
+		 * tracepoint:writeback:balance_dirty_pages
+		 */
 		trace_balance_dirty_pages(wb,
 					  sdtc->thresh,
 					  sdtc->bg_thresh,
