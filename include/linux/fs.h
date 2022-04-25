@@ -1920,7 +1920,7 @@ struct file_operations {    /* 文件操作符 */
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 
     /**
-     *
+     *	xfs - xfs_file_mmap()
      */
 	int (*mmap) (struct file *, struct vm_area_struct *);
 

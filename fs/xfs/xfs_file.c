@@ -1366,7 +1366,7 @@ xfs_filemap_map_pages(
 	xfs_iunlock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
 }
 /**
- *  mmap
+ *  xfs
  */
 static const struct vm_operations_struct xfs_file_vm_ops = {
 	.fault		= xfs_filemap_fault,
@@ -1376,6 +1376,13 @@ static const struct vm_operations_struct xfs_file_vm_ops = {
 	.pfn_mkwrite	= xfs_filemap_pfn_mkwrite,
 };
 
+/**
+ * @brief xfs vma mmap
+ *
+ * @param file
+ * @param vma
+ * @return STATIC
+ */
 STATIC int
 xfs_file_mmap(
 	struct file		*file,
@@ -1400,7 +1407,7 @@ xfs_file_mmap(
 	return 0;
 }
 /**
- *
+ *	文件操作符
  */
 const struct file_operations xfs_file_operations = {
 	.llseek		= xfs_file_llseek,
@@ -1413,6 +1420,10 @@ const struct file_operations xfs_file_operations = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl	= xfs_file_compat_ioctl,
 #endif
+	/**
+	 * @brief mmap
+	 *
+	 */
 	.mmap		= xfs_file_mmap,
 	.mmap_supported_flags = MAP_SYNC,
 	.open		= xfs_file_open,
