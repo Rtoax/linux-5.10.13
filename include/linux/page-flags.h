@@ -1534,7 +1534,7 @@ extern bool take_page_off_buddy(struct page *page);
 
 #endif
 
-
+#define __rtoax_gcc_compile_with_E__ 1
 #if __rtoax_gcc_compile_with_E__
 
 static __always_inline void SetPageSwapCache(struct page *page) {
@@ -1548,14 +1548,11 @@ static __always_inline void ClearPageSwapCache(struct page *page) {
     ); }
     )->flags); }
 
-
-
-
-
-
-static __always_inline int PageUnevictable(struct page *page) {
+static __always_inline int PageUnevictable(struct page *page)
+{
     return test_bit(PG_unevictable, &({ VM_BUG_ON_PGFLAGS(PagePoisoned(compound_head(page)), compound_head(page)); compound_head(page); }
-    )->flags); }
+    )->flags);
+}
 
 static __always_inline void SetPageUnevictable(struct page *page) {
     set_bit(PG_unevictable, &({ VM_BUG_ON_PGFLAGS(PagePoisoned(compound_head(page)), compound_head(page)); compound_head(page); }

@@ -65,7 +65,7 @@ struct page *find_lock_entry(struct address_space *mapping, pgoff_t index);
 
 /**
  * page_evictable - test whether a page is evictable
- *                  测试页面是否可驱逐
+ *                  测试页面是否可回收
  *
  * @page: the page to test
  *

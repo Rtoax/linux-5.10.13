@@ -323,7 +323,7 @@ enum lru_list { /* 最近最少使用 list */
 	LRU_ACTIVE_ANON     /* 活跃的匿名页面 */= LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE   /* 不活跃的文件映射页面 */= LRU_BASE + LRU_FILE,
 	LRU_ACTIVE_FILE     /* 活跃的文件映射页面 */= LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,    /* 不可驱逐/不可回收, 见 AS_UNEVICTABLE */
+	LRU_UNEVICTABLE,    /* 不可回收/不可回收, 见 AS_UNEVICTABLE */
 	NR_LRU_LISTS
 };
 

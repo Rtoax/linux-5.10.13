@@ -3043,7 +3043,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
         /* page->mapping = anon_vma */
 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
 
-        /* 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可驱逐性 */
+        /* 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可回收性 */
 		lru_cache_add_inactive_or_unevictable(new_page, vma);
 
 		/*

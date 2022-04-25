@@ -29,8 +29,8 @@
  * whereas active pages are demoted to the inactive list when the
  * active list grows too big.
  *
- * 每个节点为文件页维护两个时钟列表：非活动列表 和 活动列表。 
- * 新出现的 fault 页面从非活动列表的头部开始，页面回收从尾部开始扫描页面。 
+ * 每个节点为文件页维护两个时钟列表：非活动列表 和 活动列表。
+ * 新出现的 fault 页面从非活动列表的头部开始，页面回收从尾部开始扫描页面。
  * 在非活动列表上多次访问的页面被提升到活动列表，以保护它们不被回收，
  * 而当活动列表增长过大时，活动页面被降级到非活动列表。
  *
@@ -66,7 +66,7 @@
  * the set could fit into memory if it weren't for the currently
  * active pages - which may be used more, hopefully less frequently:
  *
- * 然而，平均访问距离可能大于非活动列表，但小于内存大小。 
+ * 然而，平均访问距离可能大于非活动列表，但小于内存大小。
  * 在这种情况下，如果不是用于当前活动的页面，则该集合可以适合内存 - 可能会使用更多，希望不那么频繁：
  *
  *      +-memory available to cache-+
@@ -113,7 +113,7 @@
  * 2. Moving one inactive page N page slots towards the tail of the
  *    list requires at least N inactive page accesses.
  *
- * 1. 任意两个时间点之间的驱逐和激活的总和表示在两者之间访问的非活动页面的最小数量。
+ * 1. 任意两个时间点之间的回收和激活的总和表示在两者之间访问的非活动页面的最小数量。
  *
  * 2. 向列表尾部移动一个非活动页面 N 页槽至少需要 N 个非活动页面访问。
  *
@@ -138,7 +138,7 @@
  *  a b | c d e f g h i | J K L M N |
  *      +---------------+-----------+
  *
- * 2. 此外，在页面被驱逐时测量驱逐和激活的总和 (E)，
+ * 2. 此外，在页面被回收时测量回收和激活的总和 (E)，
  *      并将其与页面 fault 返回内存时的另一次读取 (R) 进行比较，
  *      这表明该页面的最小访问次数 没有缓存。 这称为 refault distance 。
  *
@@ -168,8 +168,8 @@
  * in between accesses, but activated instead.  And on a full system,
  * the only thing eating into inactive list space is active pages.
  *
- * 换句话说，refault distance（缓存外）可以看作是非活动列表空间（缓存内）的不足。 
- * 如果非活动列表有 (R - E) 个更多的页槽，则该页不会在访问之间被逐出，而是被激活。 
+ * 换句话说，refault distance（缓存外）可以看作是非活动列表空间（缓存内）的不足。
+ * 如果非活动列表有 (R - E) 个更多的页槽，则该页不会在访问之间被逐出，而是被激活。
  * 在一个完整的系统上，唯一占用非活动列表空间的是活动页面。
  *
  ********************************************************************
@@ -297,7 +297,7 @@ void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages)
 	 */
 	do {
         /**
-         *  
+         *
          */
 		atomic_long_add(nr_pages, &lruvec->nonresident_age);
 	} while ((lruvec = parent_lruvec(lruvec)));
@@ -330,7 +330,7 @@ void *workingset_eviction(struct page *page, struct mem_cgroup *target_memcg)
 	eviction = atomic_long_read(&lruvec->nonresident_age);
 
     /**
-     *  
+     *
      */
 	return pack_shadow(memcgid, pgdat, eviction, PageWorkingset(page));
 }
@@ -360,7 +360,7 @@ void workingset_refault(struct page *page, void *shadow)
 	int memcgid;
 
     /**
-     *  
+     *
      */
 	unpack_shadow(shadow, &memcgid, &pgdat, &eviction, &workingset);
 
@@ -483,7 +483,7 @@ void workingset_activation(struct page *page)
 	lruvec = mem_cgroup_page_lruvec(page, page_pgdat(page));
 
     /**
-     *  
+     *
      */
 	workingset_age_nonresident(lruvec, thp_nr_pages(page));
 out:

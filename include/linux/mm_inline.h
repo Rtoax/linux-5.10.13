@@ -97,6 +97,10 @@ static __always_inline enum lru_list page_off_lru(struct page *page)
 {
 	enum lru_list lru;
 
+	/**
+	 * @brief PG_unevictable 不可回收
+	 *
+	 */
 	if (PageUnevictable(page)) {
 		__ClearPageUnevictable(page);
 		lru = LRU_UNEVICTABLE;
@@ -122,13 +126,13 @@ static __always_inline enum lru_list page_lru(struct page *page)
 	enum lru_list lru;
 
     /**
-     *  不可驱逐的
+     *  不可回收的
      */
 	if (PageUnevictable(page))
 		lru = LRU_UNEVICTABLE;
 	else {
         /**
-         *  可驱逐
+         *  可回收
          */
 		lru = page_lru_base_type(page);
         /**

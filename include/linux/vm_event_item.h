@@ -105,7 +105,7 @@ enum vm_event_item {
 #endif
 
         /**
-         *  不可驱逐
+         *  不可回收
          */
 		UNEVICTABLE_PGCULLED,	/* culled(扑杀) to noreclaim list */
 		UNEVICTABLE_PGSCANNED,	/* scanned for reclaimability */

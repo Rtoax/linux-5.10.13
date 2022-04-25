@@ -546,7 +546,7 @@ EXPORT_SYMBOL(lru_cache_add);
  * Place @page on the inactive or unevictable LRU list, depending on its
  * evictability.
  *
- * 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可驱逐性。
+ * 将@page放在不活跃或无法定罪的 LRU 列表中，具体取决于其可回收性。
  */
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					 struct vm_area_struct *vma)
@@ -1101,7 +1101,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
 	 *   b) do PageLRU check before lock [clear_page_mlock]
 	 *
 	 * ==============================================
-	 * 物理页称为 可驱逐 页 有下面两种方法
+	 * 物理页称为 可回收 页 有下面两种方法
 	 * 1) munlock(2): 也就是没被锁定的页面
 	 * 2) 在获取LRU锁之前，先将页面放到更正 LRU，然后
      *  a) 用锁检查 PageLRU [check_move_unevictable_pages]
@@ -1155,7 +1155,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
 		ClearPageActive(page);
 		SetPageUnevictable(page);
 
-        /* 可驱逐 */
+        /* 可回收 */
 		if (!was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
 	}
