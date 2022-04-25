@@ -570,8 +570,10 @@ enum page_entry_size {
  * These are the virtual MM functions - opening of an area, closing and
  * unmapping it (needed to keep files on disk up-to-date etc), pointer
  * to the functions called when a no-page or a wp-page exception occurs.
- */ /* vma操作符 */
-typedef struct mempolicy * pmempolicy_t; /* 我加的 */
+ *
+ * vma操作符
+ */
+typedef struct mempolicy * pmempolicy_t; /* +++ */
 
 /**
  *
@@ -579,7 +581,11 @@ typedef struct mempolicy * pmempolicy_t; /* 我加的 */
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
-	int (*split)(struct vm_area_struct * area, unsigned long addr); /* 拆分一个 vma结构，例 free() */
+	/**
+	 * @brief 拆分一个 vma结构，例 free()
+	 *
+	 */
+	int (*split)(struct vm_area_struct * area, unsigned long addr);
 	int (*mremap)(struct vm_area_struct * area);
 	vm_fault_t (*fault)(struct vm_fault *vmf);
 	vm_fault_t (*huge_fault)(struct vm_fault *vmf,

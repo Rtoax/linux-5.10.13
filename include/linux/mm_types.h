@@ -522,6 +522,8 @@ struct vm_area_struct { /* VMA */
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
 
 	/**
+	 * VMA 操作
+	 *
 	 *  Function pointers to deal with this struct.
 	 *  匿名页面该项 为 NULL
 	 *
@@ -579,7 +581,7 @@ struct vm_area_struct { /* VMA */
      * security/selinux/selinuxfs.c:   sel_mmap_policy_ops
      *
 	 */
-	const struct vm_operations_struct *vm_ops;  /* VMA 操作 */
+	const struct vm_operations_struct *vm_ops;
 
 	/* Information about our backing store: */
     /**
