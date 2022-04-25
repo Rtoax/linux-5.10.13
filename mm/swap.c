@@ -60,7 +60,7 @@ static DEFINE_PER_CPU(struct lru_rotate, lru_rotate) = {
  */
 struct lru_pvecs {  /* 被禁止抢占保护(中断仍旧有效) */
 	local_lock_t lock;
-	struct pagevec/* 多页的容器 */ lru_add;
+	struct pagevec lru_add;
 	struct pagevec lru_deactivate_file;
 	struct pagevec lru_deactivate;
 	struct pagevec lru_lazyfree;
