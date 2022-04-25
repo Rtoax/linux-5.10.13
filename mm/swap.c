@@ -1137,6 +1137,10 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
      */
 	if (page_evictable(page)) {
 
+		/**
+		 * @brief 获取 page 所在 LRU 链表 枚举值
+		 *
+		 */
 		lru = page_lru(page);
 		/**
 		 * @brief 不可回收

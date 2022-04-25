@@ -317,6 +317,9 @@ static __always_inline bool vmstat_item_in_bytes(int idx)
  *  用于页面回收的 最近最少使用 枚举
  *
  * pglist_data.lruvec.lists[NR_LRU_LISTS]
+ *
+ * 参见接口
+ * page_lru()
  */
 enum lru_list { /* 最近最少使用 list */
 	LRU_INACTIVE_ANON   /* 不活跃的匿名页面 */ = LRU_BASE,
