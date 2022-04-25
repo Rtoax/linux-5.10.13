@@ -68,6 +68,11 @@ struct lru_pvecs {  /* 被禁止抢占保护(中断仍旧有效) */
 	struct pagevec activate_page;
 #endif
 };
+
+/**
+ * @brief 每个 CPU 都有一个 pageCache LRU 链表
+ *
+ */
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
@@ -205,7 +210,15 @@ int get_kernel_page(unsigned long start, int write, struct page **pages)
 }
 EXPORT_SYMBOL_GPL(get_kernel_page);
 
-static void pagevec_lru_move_fn(struct pagevec *pvec,
+/**
+ * @brief
+ *
+ * @param pvec
+ * @param move_fn
+ * @param arg
+ */
+static void
+pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec, void *arg),
 	void *arg)
 {
@@ -214,7 +227,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	struct lruvec *lruvec;
 	unsigned long flags = 0;
 
-    /* 遍历 pagevec 中的所有链表 */
+    /* 遍历 pagevec 中的所有 page */
 	for (i = 0; i < pagevec_count(pvec); i++) {
 
         /* 取一个 page */
@@ -503,11 +516,22 @@ void lru_cache_add(struct page *page)
 	get_page(page);
 
 	local_lock(&lru_pvecs.lock);
+	/**
+	 * @brief 每个 CPU 都有一个 LRU 链表
+	 *
+	 */
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
 
-    /* 添加到 pagevec 链表 */
+    /**
+     * @brief 添加到 pagevec 链表
+     *
+	 * !pagevec_add(pvec, page): 如果 pagevec 没有空间了
+     */
 	if (!pagevec_add(pvec, page) || PageCompound(page)) {
-        /* 如果 pagevec 没有空间了 */
+        /**
+         * @brief
+         *
+         */
 		__pagevec_lru_add(pvec);
     }
 	local_unlock(&lru_pvecs.lock);
@@ -1107,23 +1131,33 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
     /* 见上面的  注释 */
 	smp_mb__after_atomic();
 
-    /* 可驱逐 */
-	if (page_evictable(page)) { /* 内部调用 PageMlocked() */
+    /**
+     * @brief 可回收
+     *	内部调用 PageMlocked()
+     */
+	if (page_evictable(page)) {
 
 		lru = page_lru(page);
-		if (was_unevictable)/* 不可驱逐 */
+		/**
+		 * @brief 不可回收
+		 *
+		 */
+		if (was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
 
-    /* 不可驱逐 */
+    /**
+     * @brief 不可回收
+     *
+     */
     } else {
 
-		lru = LRU_UNEVICTABLE;  /* 不可驱逐 */
+		lru = LRU_UNEVICTABLE;
 		ClearPageActive(page);
 		SetPageUnevictable(page);
 
         /* 可驱逐 */
 		if (!was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGCULLED/* 扑杀 */, nr_pages);
+			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
 	}
 
     /**
@@ -1131,6 +1165,10 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
      */
 	add_page_to_lru_list(page, lruvec, lru);
 
+	/**
+	 * tracepoint:pagemap:mm_lru_insertion
+	 *
+	 */
 	trace_mm_lru_insertion(page, lru);
 }
 
@@ -1138,7 +1176,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec, void 
  * Add the passed pages to the LRU, then drop the caller's refcount
  * on them.  Reinitialises the caller's pagevec.
  *
- * 原有 的 链表添加
+ * 链表添加
  */
 void __pagevec_lru_add(struct pagevec *pvec)
 {

@@ -329,6 +329,10 @@ enum lru_list { /* 最近最少使用 list */
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
+/**
+ * 表明 LRU_ACTIVE_FILE 之前的都可以回收
+ *
+ */
 #define for_each_evictable_lru(lru) for (lru = 0; lru <= LRU_ACTIVE_FILE; lru++)
 
 static inline bool is_file_lru(enum lru_list lru)

@@ -113,8 +113,9 @@ struct mem_cgroup_per_node {
 
     /**
      *  LRU 链表
+	 * 用于 页面回收 的链表集合
      */
-	struct lruvec		lruvec; /* 用于 页面回收 的链表集合 */
+	struct lruvec		lruvec;
 
 	/* Legacy local VM stats */
 	struct lruvec_stat __percpu *lruvec_stat_local;
