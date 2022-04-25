@@ -8,7 +8,7 @@
  ****************************************************************
  **
  **  WARNING:
- **  The values in this file are exported to user space via 
+ **  The values in this file are exported to user space via
  **  the sysctl() binary interface.  Do *NOT* change the
  **  numbering of any existing values here, and do not change
  **  any numbers within any one set of values.  If you have to
@@ -108,7 +108,7 @@ enum
 
 	KERN_RTSIGNR=32,	/* Number of rt sigs queued */
 	KERN_RTSIGMAX=33,	/* Max queuable */
-	
+
 	KERN_SHMMAX=34,         /* long: Maximum shared memory segment */
 	KERN_MSGMAX=35,         /* int: Maximum size of a messege */
 	KERN_MSGMNB=36,         /* int: Maximum message queue size */
@@ -171,7 +171,7 @@ enum
 	VM_UNUSED8=8,		/* was: struct: Control kswapd behaviour */
 	VM_UNUSED9=9,		/* was: struct: Set page table cache parameters */
 	VM_PAGE_CLUSTER=10,	/* int: set number of pages to swap together */
-	VM_DIRTY_BACKGROUND=11,	/* dirty_background_ratio */
+	VM_DIRTY_BACKGROUND=11,	/*  */
 	VM_DIRTY_RATIO=12,	/* dirty_ratio */
 	VM_DIRTY_WB_CS=13,	/* dirty_writeback_centisecs */
 	VM_DIRTY_EXPIRE_CS=14,	/* dirty_expire_centisecs */
@@ -516,7 +516,7 @@ enum
 	NET_IPV4_NF_CONNTRACK_COUNT=27,
 	NET_IPV4_NF_CONNTRACK_CHECKSUM=28,
 };
- 
+
 /* /proc/sys/net/ipv6 */
 enum {
 	NET_IPV6_CONF=16,

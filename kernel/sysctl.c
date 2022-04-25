@@ -2883,6 +2883,12 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra1		= SYSCTL_ZERO,
 	},
 	{
+		/**
+		 * @brief /proc/sys/vm/dirty_background_ratio
+		 *
+		 * 文件系统缓存脏页数量达到系统内存百分之多少时（vm.dirty_background_ratio%）
+		 * 就会触发pdflush/flush/kdmflush等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
+		 */
 		.procname	= "dirty_background_ratio",
 		.data		= &dirty_background_ratio,
 		.maxlen		= sizeof(dirty_background_ratio),

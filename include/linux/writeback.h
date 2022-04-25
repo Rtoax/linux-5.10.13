@@ -186,7 +186,7 @@ static inline void wb_domain_size_changed(struct wb_domain *dom)
 
 /*
  * fs/fs-writeback.c
- */	
+ */
 struct bdi_writeback;
 void writeback_inodes_sb(struct super_block *, enum wb_reason reason);
 void writeback_inodes_sb_nr(struct super_block *, unsigned long nr,
@@ -363,7 +363,7 @@ extern int vm_highmem_is_dirtyable;
 extern int block_dump;
 extern int laptop_mode;
 
-int dirty_background_ratio_handler(struct ctl_table *table, int write,
+int _handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos);
 int dirty_background_bytes_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos);

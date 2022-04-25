@@ -68,8 +68,11 @@ static long ratelimit_pages = 32;
 
 /* The following parameters are exported via /proc/sys/vm */
 
-/*
+/**
  * Start background writeback (via writeback threads) at this percentage
+ * /proc/sys/vm/dirty_background_ratio
+ * 文件系统缓存脏页数量达到系统内存百分之多少时（vm.dirty_background_ratio%）就会
+ * 触发pdflush/flush/kdmflush等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
  */
 int dirty_background_ratio = 10;
 
@@ -78,6 +81,7 @@ int dirty_background_ratio = 10;
  * dirty_background_ratio * the amount of dirtyable memory
  *
  * 脏页数量超过这个数值，内核回写线程开始回写脏页
+ * /proc/sys/vm/dirty_background_bytes
  */
 unsigned long dirty_background_bytes;
 
@@ -369,9 +373,17 @@ static void domain_dirty_limits(struct dirty_throttle_control *dtc)
 	const unsigned long available_memory = dtc->avail;
 	struct dirty_throttle_control *gdtc = mdtc_gdtc(dtc);
 	unsigned long bytes = vm_dirty_bytes;
+
+	/**
+	 * @brief /proc/sys/vm/dirty_background_bytes
+	 */
 	unsigned long bg_bytes = dirty_background_bytes;
+
 	/* convert ratios to per-PAGE_SIZE for higher precision */
 	unsigned long ratio = (vm_dirty_ratio * PAGE_SIZE) / 100;
+	/**
+	 * @brief /proc/sys/vm/dirty_background_ratio
+	 */
 	unsigned long bg_ratio = (dirty_background_ratio * PAGE_SIZE) / 100;
 	unsigned long thresh;
 	unsigned long bg_thresh;
@@ -400,6 +412,10 @@ static void domain_dirty_limits(struct dirty_throttle_control *dtc)
 	else
 		thresh = (ratio * available_memory) / PAGE_SIZE;
 
+	/**
+	 * @brief 计算门限
+	 *
+	 */
 	if (bg_bytes)
 		bg_thresh = DIV_ROUND_UP(bg_bytes, PAGE_SIZE);
 	else
@@ -482,6 +498,10 @@ bool node_dirty_ok(struct pglist_data *pgdat)
 	return nr_pages <= limit;
 }
 
+/**
+ * @brief /proc/sys/vm/dirty_background_bytes
+ *
+ */
 int dirty_background_ratio_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos)
 {
