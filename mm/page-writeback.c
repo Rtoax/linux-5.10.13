@@ -73,7 +73,7 @@ static long ratelimit_pages = 32;
  * /proc/sys/vm/dirty_background_ratio
  *
  * 文件系统缓存脏页数量达到系统内存百分之多少时（vm.dirty_background_ratio%）就会
- * 触发pdflush/flush/kdmflush等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
+ * 触发 pdflush/flush/kdmflush 等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
  */
 int dirty_background_ratio = 10;
 
@@ -120,6 +120,12 @@ EXPORT_SYMBOL_GPL(dirty_writeback_interval);
 
 /*
  * The longest time for which data is allowed to remain dirty
+ *
+ * @brief /proc/sys/vm/dirty_expire_centisecs
+ *
+ * 指定脏数据能存活的时间。在这里它的值是30秒。
+ * 当 pdflush 在运行的时候，他们会检查是否有数据超过这个时限，
+ * 如果有则会把它异步地写到磁盘中。毕竟数据在内存里待太久也会有丢失风险。
  */
 unsigned int dirty_expire_interval = 30 * 100; /* centiseconds */
 
@@ -522,6 +528,11 @@ int dirty_background_ratio_handler(struct ctl_table *table, int write,
 	return ret;
 }
 
+/**
+ * @brief /proc/sys/vm/dirty_background_bytes
+ *
+ * 和vm.dirty_background_ratio参数一样，这里是大小
+ */
 int dirty_background_bytes_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos)
 {

@@ -2887,7 +2887,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		 * @brief /proc/sys/vm/dirty_background_ratio
 		 *
 		 * 文件系统缓存脏页数量达到系统内存百分之多少时（vm.dirty_background_ratio%）
-		 * 就会触发pdflush/flush/kdmflush等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
+		 * 就会触发 pdflush/flush/kdmflush 等后台回写进程运行，将一定缓存的脏页异步地刷入磁盘
 		 */
 		.procname	= "dirty_background_ratio",
 		.data		= &dirty_background_ratio,
@@ -2898,6 +2898,11 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra2		= &one_hundred,
 	},
 	{
+		/**
+		 * @brief /proc/sys/vm/dirty_background_bytes
+		 *
+		 * 和 vm.dirty_background_ratio 参数一样，这里是大小
+		 */
 		.procname	= "dirty_background_bytes",
 		.data		= &dirty_background_bytes,
 		.maxlen		= sizeof(dirty_background_bytes),
@@ -2930,6 +2935,11 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra1		= &dirty_bytes_min,
 	},
 	{
+		/**
+		 * @brief /proc/sys/vm/dirty_writeback_centisecs
+		 *
+		 * 指定多长时间 pdflush 这些进程会唤醒一次，然后检查是否有缓存需要清理。
+		 */
 		.procname	= "dirty_writeback_centisecs",
 		.data		= &dirty_writeback_interval,
 		.maxlen		= sizeof(dirty_writeback_interval),
@@ -2937,6 +2947,13 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.proc_handler	= dirty_writeback_centisecs_handler,
 	},
 	{
+		/**
+		 * @brief /proc/sys/vm/dirty_expire_centisecs
+		 *
+		 * 指定脏数据能存活的时间。在这里它的值是30秒。
+		 * 当 pdflush 在运行的时候，他们会检查是否有数据超过这个时限，
+		 * 如果有则会把它异步地写到磁盘中。毕竟数据在内存里待太久也会有丢失风险。
+		 */
 		.procname	= "dirty_expire_centisecs",
 		.data		= &dirty_expire_interval,
 		.maxlen		= sizeof(dirty_expire_interval),

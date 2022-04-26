@@ -4815,20 +4815,7 @@ void mem_cgroup_flush_foreign(struct bdi_writeback *wb)
 }
 
 #else	/* CONFIG_CGROUP_WRITEBACK */
-
-static int memcg_wb_domain_init(struct mem_cgroup *memcg, gfp_t gfp)
-{
-	return 0;
-}
-
-static void memcg_wb_domain_exit(struct mem_cgroup *memcg)
-{
-}
-
-static void memcg_wb_domain_size_changed(struct mem_cgroup *memcg)
-{
-}
-
+/*  */
 #endif	/* CONFIG_CGROUP_WRITEBACK */
 
 /*

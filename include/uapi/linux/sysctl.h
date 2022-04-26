@@ -175,7 +175,7 @@ enum
 	VM_DIRTY_RATIO=12,	/* dirty_ratio */
 	VM_DIRTY_WB_CS=13,	/* dirty_writeback_centisecs */
 	VM_DIRTY_EXPIRE_CS=14,	/* dirty_expire_centisecs */
-	VM_NR_PDFLUSH_THREADS=15, /* nr_pdflush_threads */
+	VM_NR_PDFLUSH_THREADS=15, /* nr_pdflush_threads, ##no longer used##  */
 	VM_OVERCOMMIT_RATIO=16, /* percent of RAM to allow overcommit in */
 	VM_PAGEBUF=17,		/* struct: Control pagebuf parameters */
 	VM_HUGETLB_PAGES=18,	/* int: Number of available Huge Pages */
