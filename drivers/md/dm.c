@@ -1840,6 +1840,10 @@ static struct mapped_device *alloc_dev(int minor)
 	add_disk_no_queue_reg(md->disk);
 	format_dev_t(md->name, MKDEV(_major, minor));
 
+	/**
+	 * @brief
+	 *
+	 */
 	md->wq = alloc_workqueue("kdmflush", WQ_MEM_RECLAIM, 0);
 	if (!md->wq)
 		goto bad;

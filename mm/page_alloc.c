@@ -387,9 +387,7 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 };
 
 /**
- *  见 init_per_zone_wmark_min()
- *
- *  范围在 128KB - 64MB
+ * 内存回收的min水位线, 范围在 128KB - 64MB, 见 init_per_zone_wmark_min()
  */
 int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;

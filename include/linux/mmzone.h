@@ -94,9 +94,10 @@ extern int page_group_by_mobility_disabled;
 
 
 /**
- *  伙伴系统
+ * 伙伴系统
+ * 每个zone中都有 MAX_ORDER 个此数据结构
  */
-struct free_area {  /* 每个zone中都有 MAX_ORDER 个此数据结构 */
+struct free_area {
     /**
      *  迁移类型链表
      *
@@ -779,14 +780,14 @@ struct zone {   /* 内存 ZONE */
     /**
      *  free areas of different sizes
      *
-     *  +-----------+
-     *  |     0     |  / 不可移动的页面
-     *  +-----------+ /
-     *  |     1     |--- 可回收的页面
-     *  +-----------+ \
-     *  |     2     |  \ 可移动的页面
-     *  +-----------+
-     *  |    ...    |
+     *  +-----------+   /
+     *  |     0     |  / 不可移动的页面 MIGRATE_UNMOVABLE
+     *  +-----------+ /  可移动的页面 MIGRATE_MOVABLE
+     *  |     1     |--- 可回收的页面 MIGRATE_RECLAIMABLE
+     *  +-----------+ \  per CPU 页 MIGRATE_PCPTYPES
+     *  |     2     |  \ MIGRATE_HIGHATOMIC=MIGRATE_PCPTYPES
+     *  +-----------+   \连续内存区管理 MIGRATE_CMA
+     *  |    ...    |    MIGRATE_ISOLATE
      *  +-----------+
      *  |MAX_ORDER-1|
      *  +-----------+
@@ -871,6 +872,10 @@ struct zone {   /* 内存 ZONE */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_stat[NR_VM_NUMA_STAT_ITEMS];
 
+	/**
+	 * 这里可以添加一些参数进行优化，如：
+	 * atomic_t		pagecache_reclaim;
+	 */
 } ____cacheline_internodealigned_in_smp;
 
 
