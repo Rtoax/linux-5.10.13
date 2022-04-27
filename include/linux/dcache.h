@@ -148,6 +148,7 @@ struct dentry {
 	union {
 		/**
 		 * LRU 链表节点
+		 * LRU 链表头为 super_block.s_dentry_lru, 见 d_lru_add()
 		 */
 		struct list_head d_lru;		/* LRU list */
 		wait_queue_head_t *d_wait;	/* in-lookup ones only */

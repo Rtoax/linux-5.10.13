@@ -42,6 +42,13 @@ static inline bool list_lru_memcg_aware(struct list_lru *lru)
 	return lru->memcg_aware;
 }
 
+/**
+ * @brief
+ *
+ * @param nlru
+ * @param idx
+ * @return struct list_lru_one*
+ */
 static inline struct list_lru_one *
 list_lru_from_memcg_idx(struct list_lru_node *nlru, int idx)
 {
@@ -57,6 +64,14 @@ list_lru_from_memcg_idx(struct list_lru_node *nlru, int idx)
 	return &nlru->lru;
 }
 
+/**
+ * @brief
+ *
+ * @param nlru
+ * @param ptr
+ * @param memcg_ptr
+ * @return struct list_lru_one*
+ */
 static inline struct list_lru_one *
 list_lru_from_kmem(struct list_lru_node *nlru, void *ptr,
 		   struct mem_cgroup **memcg_ptr)
@@ -67,6 +82,10 @@ list_lru_from_kmem(struct list_lru_node *nlru, void *ptr,
 	if (!nlru->memcg_lrus)
 		goto out;
 
+	/**
+	 * @brief 属于哪个 memory cgroup
+	 *
+	 */
 	memcg = mem_cgroup_from_obj(ptr);
 	if (!memcg)
 		goto out;
@@ -81,21 +100,59 @@ out:
 
 #endif /* CONFIG_MEMCG_KMEM */
 
+/**
+ * @brief 添加到 LRU 链表
+ *
+ * @param lru
+ * @param item
+ * @return true
+ * @return false
+ */
 bool list_lru_add(struct list_lru *lru, struct list_head *item)
 {
+	/**
+	 * @brief 获取 Node ID
+	 *
+	 */
 	int nid = page_to_nid(virt_to_page(item));
+
+	/**
+	 * @brief 每个节点都条有一个 单独的 list_lru_node
+	 *
+	 */
 	struct list_lru_node *nlru = &lru->node[nid];
 	struct mem_cgroup *memcg;
 	struct list_lru_one *l;
 
 	spin_lock(&nlru->lock);
+
+	/**
+	 * @brief 是否为空，为空才操作
+	 *
+	 */
 	if (list_empty(item)) {
+		/**
+		 * @brief 获取 list_lru_one
+		 *
+		 */
 		l = list_lru_from_kmem(nlru, item, &memcg);
+		/**
+		 * @brief 添加到链表尾
+		 *
+		 */
 		list_add_tail(item, &l->list);
-		/* Set shrinker bit if the first element was added */
+		/**
+		 * @brief Set shrinker bit if the first element was added
+		 *
+		 * 如果是第一个节点，设置标记位
+		 */
 		if (!l->nr_items++)
 			memcg_set_shrinker_bit(memcg, nid,
 					       lru_shrinker_id(lru));
+		/**
+		 * @brief 添加了一个元素
+		 *
+		 */
 		nlru->nr_items++;
 		spin_unlock(&nlru->lock);
 		return true;
@@ -105,6 +162,14 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 }
 EXPORT_SYMBOL_GPL(list_lru_add);
 
+/**
+ * @brief 从 LRU 链表删除
+ *
+ * @param lru
+ * @param item
+ * @return true
+ * @return false
+ */
 bool list_lru_del(struct list_lru *lru, struct list_head *item)
 {
 	int nid = page_to_nid(virt_to_page(item));
@@ -112,6 +177,10 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item)
 	struct list_lru_one *l;
 
 	spin_lock(&nlru->lock);
+	/**
+	 * @brief 是否不为空，不为空才操作
+	 *
+	 */
 	if (!list_empty(item)) {
 		l = list_lru_from_kmem(nlru, item, NULL);
 		list_del_init(item);

@@ -1551,10 +1551,12 @@ struct super_block {    /* 超级块 */
 	 */
 	struct user_namespace *s_user_ns;
 
-	/*
+	/**
 	 * The list_lru structure is essentially just a pointer to a table
 	 * of per-node lru lists, each of which has its own spinlock.
 	 * There is no need to put them into separate cachelines.
+	 *
+	 * 节点为 dentry->d_lru, 见 d_lru_add()
 	 */
 	struct list_lru		s_dentry_lru;
 	struct list_lru		s_inode_lru;

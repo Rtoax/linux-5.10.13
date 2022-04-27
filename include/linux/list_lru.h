@@ -25,6 +25,10 @@ enum lru_status {
 				   internally, but has to return locked. */
 };
 
+/**
+ * @brief LRU 链表节点
+ *
+ */
 struct list_lru_one {
 	struct list_head	list;
 	/* may become negative during memcg reparenting */
@@ -37,11 +41,21 @@ struct list_lru_memcg {
 	struct list_lru_one	*lru[];
 };
 
+/**
+ * @brief LRU 链表节点
+ *
+ */
 struct list_lru_node {
-	/* protects all lists on the node, including per cgroup */
+	/**
+	 * protects all lists on the node, including per cgroup
+	 * 保护 list_lru_node.lru, 见 list_lru_add()
+	 */
 	spinlock_t		lock;
-	/* global list, used for the root cgroup in cgroup aware lrus */
+	/**
+	 * global list, used for the root cgroup in cgroup aware lrus
+	 */
 	struct list_lru_one	lru;
+
 #ifdef CONFIG_MEMCG_KMEM
 	/* for cgroup aware lrus points to per cgroup lists, otherwise NULL */
 	struct list_lru_memcg	__rcu *memcg_lrus;
@@ -55,7 +69,12 @@ struct list_lru_node {
  *
  */
 struct list_lru {
+	/**
+	 * 这是一个节点 NUMA 个数的数组，见 list_lru_add()
+	 *
+	 */
 	struct list_lru_node	*node;
+
 #ifdef CONFIG_MEMCG_KMEM
 	struct list_head	list;
 	int			shrinker_id;
