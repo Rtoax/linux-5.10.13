@@ -51,8 +51,8 @@ struct list_lru_node {
 
 /**
  * @brief Long time rarely use
- * 
- * 
+ *
+ *
  */
 struct list_lru {
 	struct list_lru_node	*node;
