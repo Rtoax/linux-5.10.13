@@ -18,6 +18,11 @@
 static LIST_HEAD(list_lrus);
 static DEFINE_MUTEX(list_lrus_mutex);
 
+/**
+ * @brief 添加到 全局链表
+ *
+ * @param lru
+ */
 static void list_lru_register(struct list_lru *lru)
 {
 	mutex_lock(&list_lrus_mutex);
@@ -350,6 +355,11 @@ unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
 }
 EXPORT_SYMBOL_GPL(list_lru_walk_node);
 
+/**
+ * @brief 初始化 LRU
+ *
+ * @param l
+ */
 static void init_one_lru(struct list_lru_one *l)
 {
 	INIT_LIST_HEAD(&l->list);
@@ -615,9 +625,25 @@ void memcg_drain_all_list_lrus(int src_idx, struct mem_cgroup *dst_memcg)
 	mutex_unlock(&list_lrus_mutex);
 }
 #else
+static int memcg_init_list_lru(struct list_lru *lru, bool memcg_aware)
+{
+    return 0;
+}
 
+static void memcg_destroy_list_lru(struct list_lru *lru)
+{
+}
 #endif /* CONFIG_MEMCG_KMEM */
 
+/**
+ * @brief 初始化 LRU 链表
+ *
+ * @param lru
+ * @param memcg_aware
+ * @param key
+ * @param shrinker
+ * @return int
+ */
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key, struct shrinker *shrinker)
 {
@@ -632,17 +658,33 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 #endif
 	memcg_get_cache_ids();
 
+	/**
+	 * @brief 为所有 NODE 分配
+	 *
+	 */
 	lru->node = kcalloc(nr_node_ids, sizeof(*lru->node), GFP_KERNEL);
 	if (!lru->node)
 		goto out;
 
+	/**
+	 * @brief 遍历所有 NODE
+	 *
+	 */
 	for_each_node(i) {
 		spin_lock_init(&lru->node[i].lock);
 		if (key)
 			lockdep_set_class(&lru->node[i].lock, key);
+		/**
+		 * @brief 初始化一个 LRU
+		 *
+		 */
 		init_one_lru(&lru->node[i].lru);
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	err = memcg_init_list_lru(lru, memcg_aware);
 	if (err) {
 		kfree(lru->node);
@@ -651,6 +693,10 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		goto out;
 	}
 
+	/**
+	 * @brief 加入到全局链表
+	 *
+	 */
 	list_lru_register(lru);
 out:
 	memcg_put_cache_ids();
@@ -658,6 +704,11 @@ out:
 }
 EXPORT_SYMBOL_GPL(__list_lru_init);
 
+/**
+ * @brief LRU 销毁
+ *
+ * @param lru
+ */
 void list_lru_destroy(struct list_lru *lru)
 {
 	/* Already destroyed or not yet initialized? */
