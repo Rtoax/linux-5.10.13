@@ -483,6 +483,16 @@ static int cgroup_pidlist_show(struct seq_file *s, void *v)
 	return 0;
 }
 
+/**
+ * @brief echo PID > /sys/fs/cgroup/xxxx/tasks
+ *
+ * @param of
+ * @param buf
+ * @param nbytes
+ * @param off
+ * @param threadgroup
+ * @return ssize_t
+ */
 static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 				     char *buf, size_t nbytes, loff_t off,
 				     bool threadgroup)
@@ -497,6 +507,10 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 	if (!cgrp)
 		return -ENODEV;
 
+	/**
+	 * @brief echo PID > /sys/fs/cgroup/xxxx/tasks
+	 *
+	 */
 	task = cgroup_procs_write_start(buf, threadgroup, &locked);
 	ret = PTR_ERR_OR_ZERO(task);
 	if (ret)
@@ -516,6 +530,10 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 	if (ret)
 		goto out_finish;
 
+	/**
+	 * @brief echo PID > /sys/fs/cgroup/xxxx/tasks
+	 *
+	 */
 	ret = cgroup_attach_task(cgrp, task, threadgroup);
 
 out_finish:
@@ -532,6 +550,15 @@ static ssize_t cgroup1_procs_write(struct kernfs_open_file *of,
 	return __cgroup1_procs_write(of, buf, nbytes, off, true);
 }
 
+/**
+ * @brief echo PID > /sys/fs/cgroup/xxxx/tasks
+ *
+ * @param of
+ * @param buf
+ * @param nbytes
+ * @param off
+ * @return ssize_t
+ */
 static ssize_t cgroup1_tasks_write(struct kernfs_open_file *of,
 				   char *buf, size_t nbytes, loff_t off)
 {
@@ -627,6 +654,10 @@ struct cftype cgroup1_base_files[] = {
 		.seq_show = cgroup_sane_behavior_show,
 	},
 	{
+		/**
+		 * @brief /sys/fs/cgroup/xxxx/tasks
+		 *
+		 */
 		.name = "tasks",
 		.seq_start = cgroup_pidlist_start,
 		.seq_next = cgroup_pidlist_next,
@@ -641,6 +672,11 @@ struct cftype cgroup1_base_files[] = {
 		.write_u64 = cgroup_write_notify_on_release,
 	},
 	{
+		/**
+		 * @brief /sys/fs/cgroup/xxxx/release_agent
+		 *
+		 * echo "/sbin/new_release_agent" > /sys/fs/cgroup/rg1/release_agent
+		 */
 		.name = "release_agent",
 		.flags = CFTYPE_ONLY_ON_ROOT,
 		.seq_show = cgroup_release_agent_show,

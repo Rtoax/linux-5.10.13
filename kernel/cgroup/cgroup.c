@@ -2737,6 +2737,8 @@ int cgroup_migrate(struct task_struct *leader, bool threadgroup,
  * @threadgroup: attach the whole threadgroup?
  *
  * Call holding cgroup_mutex and cgroup_threadgroup_rwsem.
+ *
+ * echo PID > /sys/fs/cgroup/xxxx/tasks
  */
 int cgroup_attach_task(struct cgroup *dst_cgrp, struct task_struct *leader,
 		       bool threadgroup)

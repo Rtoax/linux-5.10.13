@@ -918,9 +918,9 @@ void __init __weak arch_call_rest_init(void)
 }
 
 /**
- *  内核入口
+ *  内核入口 - 启动内核
  */
-asmlinkage __visible void __init __no_sanitize_address start_kernel(void)/* 启动内核 */
+asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
 	char *command_line; //内核命令行的全局指针
 	char *after_dashes; //包含`parse_args`函数通过输入字符串中的参数'name=value'，寻找特定的关键字和调用正确的处理程序

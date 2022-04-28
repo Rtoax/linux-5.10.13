@@ -80,12 +80,29 @@ enum {
 
 /* bits in struct cgroup flags field */
 enum {
-	/* Control Group requires release notifications to userspace */
+	/**
+	 * Control Group requires release notifications to userspace
+	 *
+	 * https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v1/cgroups.html
+	 * ------
+	 * 如果在 cgroup 中启用了 notify_on_release 标志 (1)，那么每当 cgroup 中的最后
+	 * 一个任务离开（退出或附加到某个其他 cgroup）并且该 cgroup 的最后一个子 cgroup 被
+	 * 删除时，内核运行由指定的命令该层次结构的根目录中的“release_agent”文件的内容，提供
+	 * 废弃 cgroup 的路径名（相对于 cgroup 文件系统的挂载点）。这可以自动删除废弃的 cgroup。
+	 * 系统启动时 root cgroup 中 notify_on_release 的默认值是禁用 (0)。其他 cgroup
+	 * 在创建时的默认值是它们父母的 notify_on_release 设置的当前值。cgroup 层次结构的
+	 * release_agent 路径的默认值为空。
+	 */
 	CGRP_NOTIFY_ON_RELEASE,
 	/*
 	 * Clone the parent's configuration when creating a new child
 	 * cpuset cgroup.  For historical reasons, this option can be
 	 * specified at mount time and thus is implemented here.
+	 *
+	 * https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v1/cgroups.html
+	 * ------
+	 * 此标志仅影响 cpuset 控制器。如果在 cgroup 中启用了 clone_children 标志 (1)，
+	 * 则新的 cpuset cgroup 将在初始化期间从父级复制其配置。
 	 */
 	CGRP_CPUSET_CLONE_CHILDREN,
 
@@ -470,6 +487,18 @@ struct cgroup_freezer_state {
  *                                                                   |        attach       |
  *                                                                   |         ....        |
  *                                                                   +---------------------+
+ *
+ * https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v1/cgroups.html
+ * ------
+ * 就其本身而言，cgroups 的唯一用途是用于简单的作业跟踪。
+ *
+ * 1. 系统中的每个任务都有一个指向 css_set 的引用计数指针。
+ * 2. css_set 包含一组指向 cgroup_subsys_state 对象的引用计数指针，一个用于系统中注册的每个 cgroup 子系统。
+ *   从任务到每个层次结构中它是其成员的 cgroup 之间没有直接链接，但这可以通过 cgroup_subsys_state 对象跟踪指针
+ *   来确定。这是因为访问子系统状态预计会经常发生在性能关键代码中，而需要任务的实际 cgroup 分配（特别是在 cgroup
+ *   之间移动）的操作不太常见。链表使用 css_set 贯穿每个 task_struct 的 cg_list 字段，锚定在 css_set->tasks。
+ * 3. 可以挂载 cgroup 层次文件系统，以便从用户空间进行浏览和操作。
+ * 4. 您可以列出附加到任何 cgroup 的所有任务（按 PID）。
  */
 struct cgroup {
 	/* self css with NULL ->ss, points back to this cgroup */
