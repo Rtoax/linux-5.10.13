@@ -97,6 +97,13 @@
 #define BIT(name)		(1ULL << KPF_##name)
 #define BITS_COMPOUND		(BIT(COMPOUND_HEAD) | BIT(COMPOUND_TAIL))
 
+/**
+ * @brief
+ *
+ * 可参见：
+ * 1. 文件 include/uapi/linux/kernel-page-flags.h
+ * 2. 链接：https://www.kernel.org/doc/html/latest/admin-guide/mm/pagemap.html
+ */
 static const char * const page_flag_names[] = {
 	[KPF_LOCKED]		= "L:locked",
 	[KPF_ERROR]		= "E:error",

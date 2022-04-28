@@ -129,6 +129,13 @@ static inline u64 kpf_copy_bit(u64 kflags, int ubit, int kbit)
 	return ((kflags >> kbit) & 1) << ubit;
 }
 
+/**
+ * @brief
+ *
+ * 可参见：
+ * 1. 文件 include/uapi/linux/kernel-page-flags.h
+ * 2. 链接：https://www.kernel.org/doc/html/latest/admin-guide/mm/pagemap.html
+ */
 u64 stable_page_flags(struct page *page)
 {
 	u64 k;
