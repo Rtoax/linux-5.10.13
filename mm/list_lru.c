@@ -488,6 +488,11 @@ static int memcg_init_list_lru_node(struct list_lru_node *nlru)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param nlru
+ */
 static void memcg_destroy_list_lru_node(struct list_lru_node *nlru)
 {
 	struct list_lru_memcg *memcg_lrus;
@@ -496,6 +501,10 @@ static void memcg_destroy_list_lru_node(struct list_lru_node *nlru)
 	 * and nobody can use it. So, there is no need to use kvfree_rcu_local().
 	 */
 	memcg_lrus = rcu_dereference_protected(nlru->memcg_lrus, true);
+	/**
+	 * @brief
+	 *
+	 */
 	__memcg_destroy_list_lru_node(memcg_lrus, 0, memcg_nr_cache_ids);
 	kvfree(memcg_lrus);
 }
@@ -578,6 +587,11 @@ fail:
 	return -ENOMEM;
 }
 
+/**
+ * @brief 销毁 lru 链表
+ *
+ * @param lru
+ */
 static void memcg_destroy_list_lru(struct list_lru *lru)
 {
 	int i;
@@ -585,8 +599,13 @@ static void memcg_destroy_list_lru(struct list_lru *lru)
 	if (!list_lru_memcg_aware(lru))
 		return;
 
-	for_each_node(i)
+	/**
+	 * @brief 遍历所有 NUMA node
+	 *
+	 */
+	for_each_node(i) {
 		memcg_destroy_list_lru_node(&lru->node[i]);
+	}
 }
 
 static int memcg_update_list_lru(struct list_lru *lru,
@@ -789,8 +808,16 @@ void list_lru_destroy(struct list_lru *lru)
 
 	memcg_get_cache_ids();
 
+	/**
+	 * @brief 从全局链表中删除
+	 *
+	 */
 	list_lru_unregister(lru);
 
+	/**
+	 * @brief 销毁 lru
+	 *
+	 */
 	memcg_destroy_list_lru(lru);
 	kfree(lru->node);
 	lru->node = NULL;

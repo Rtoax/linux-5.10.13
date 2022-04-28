@@ -251,6 +251,15 @@ list_lru_shrink_walk_irq(struct list_lru *lru, struct shrink_control *sc,
 				     &sc->nr_to_scan);
 }
 
+/**
+ * @brief 遍历所有节点的 walk
+ *
+ * @param lru
+ * @param isolate
+ * @param cb_arg
+ * @param nr_to_walk
+ * @return unsigned long
+ */
 static inline unsigned long
 list_lru_walk(struct list_lru *lru, list_lru_walk_cb isolate,
 	      void *cb_arg, unsigned long nr_to_walk)
@@ -258,6 +267,10 @@ list_lru_walk(struct list_lru *lru, list_lru_walk_cb isolate,
 	long isolated = 0;
 	int nid;
 
+	/**
+	 * @brief 遍历所有节点
+	 *
+	 */
 	for_each_node_state(nid, N_NORMAL_MEMORY) {
 		isolated += list_lru_walk_node(lru, nid, isolate,
 					       cb_arg, &nr_to_walk);

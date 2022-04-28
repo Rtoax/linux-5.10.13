@@ -1552,6 +1552,10 @@ void shrink_dcache_sb(struct super_block *sb)
 	do {
 		LIST_HEAD(dispose);
 
+		/**
+		 * @brief 遍历所有节点
+		 *
+		 */
 		list_lru_walk(&sb->s_dentry_lru,
 			dentry_lru_isolate_shrink, &dispose, 1024);
 
