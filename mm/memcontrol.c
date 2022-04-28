@@ -3655,6 +3655,13 @@ enum {
 	RES_SOFT_LIMIT,
 };
 
+/**
+ * @brief
+ *
+ * @param css
+ * @param cft
+ * @return u64
+ */
 static u64 mem_cgroup_read_u64(struct cgroup_subsys_state *css,
 			       struct cftype *cft)
 {
@@ -3679,16 +3686,28 @@ static u64 mem_cgroup_read_u64(struct cgroup_subsys_state *css,
 	}
 
 	switch (MEMFILE_ATTR(cft->private)) {
+	/**
+	 * @brief
+	 *
+	 */
 	case RES_USAGE:
 		if (counter == &memcg->memory)
 			return (u64)mem_cgroup_usage(memcg, false) * PAGE_SIZE;
 		if (counter == &memcg->memsw)
 			return (u64)mem_cgroup_usage(memcg, true) * PAGE_SIZE;
 		return (u64)page_counter_read(counter) * PAGE_SIZE;
+	/**
+	 * @brief memory.kmem.limit_in_bytes
+	 *
+	 */
 	case RES_LIMIT:
 		return (u64)counter->max * PAGE_SIZE;
 	case RES_MAX_USAGE:
 		return (u64)counter->watermark * PAGE_SIZE;
+	/**
+	 * @brief memory.kmem.failcnt
+	 *
+	 */
 	case RES_FAILCNT:
 		return counter->failcnt;
 	case RES_SOFT_LIMIT:
@@ -5085,6 +5104,10 @@ static struct cftype mem_cgroup_legacy_files[] = {
 		.read_u64 = mem_cgroup_hierarchy_read,
 	},
 	{
+		/**
+		 * an interface for event_fd()
+		 * This knob is not available on CONFIG_PREEMPT_RT systems.
+		 */
 		.name = "cgroup.event_control",		/* XXX: for compat */
 		.write = memcg_write_event_control,
 		.flags = CFTYPE_NO_PREFIX | CFTYPE_WORLD_WRITABLE,
@@ -5115,12 +5138,22 @@ static struct cftype mem_cgroup_legacy_files[] = {
 	},
 #endif
 	{
+		/**
+		 * @brief memory.kmem.limit_in_bytes
+		 *
+		 * This knob is deprecated and writing to it will return -ENOTSUPP.
+		 */
 		.name = "kmem.limit_in_bytes",
 		.private = MEMFILE_PRIVATE(_KMEM, RES_LIMIT),
 		.write = mem_cgroup_write,
 		.read_u64 = mem_cgroup_read_u64,
 	},
 	{
+		/**
+		 * @brief memory.kmem.usage_in_bytes
+		 *
+		 * show current kernel memory allocation
+		 */
 		.name = "kmem.usage_in_bytes",
 		.private = MEMFILE_PRIVATE(_KMEM, RES_USAGE),
 		.read_u64 = mem_cgroup_read_u64,

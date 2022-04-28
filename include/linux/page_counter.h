@@ -7,11 +7,11 @@
 #include <asm/page.h>
 
 /**
- *  
+ * page 计数器
  */
 struct page_counter {
     /**
-     *  
+     *
      */
 	atomic_long_t usage;
 	unsigned long min;
@@ -20,7 +20,7 @@ struct page_counter {
 	unsigned long max;
 
     /**
-     *  
+     *
      */
 	struct page_counter *parent;
 
