@@ -206,6 +206,13 @@ void list_lru_isolate(struct list_lru_one *list, struct list_head *item)
 }
 EXPORT_SYMBOL_GPL(list_lru_isolate);
 
+/**
+ * @brief 移动 LRU 链表节点到 head 中
+ *
+ * @param list
+ * @param item
+ * @param head
+ */
 void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
 			   struct list_head *head)
 {
@@ -239,6 +246,16 @@ unsigned long list_lru_count_node(struct list_lru *lru, int nid)
 }
 EXPORT_SYMBOL_GPL(list_lru_count_node);
 
+/**
+ * @brief
+ *
+ * @param nlru
+ * @param memcg_idx
+ * @param isolate
+ * @param cb_arg 传过来的，要传给 isolate() 回调函数
+ * @param nr_to_walk
+ * @return unsigned
+ */
 static unsigned long
 __list_lru_walk_one(struct list_lru_node *nlru, int memcg_idx,
 		    list_lru_walk_cb isolate, void *cb_arg,
@@ -251,6 +268,10 @@ __list_lru_walk_one(struct list_lru_node *nlru, int memcg_idx,
 
 	l = list_lru_from_memcg_idx(nlru, memcg_idx);
 restart:
+	/**
+	 * @brief list_lru_one.list 为 LRU 链表头
+	 *
+	 */
 	list_for_each_safe(item, n, &l->list) {
 		enum lru_status ret;
 
@@ -262,11 +283,22 @@ restart:
 			break;
 		--*nr_to_walk;
 
+		/**
+		 * @brief 执行回调函数
+		 *
+		 * 在 dentry cache 中可能对应
+		 * 1. dentry_lru_isolate(), item 对应 struct dentry
+		 * 		struct dentry *dentry = container_of(item, struct dentry, d_lru);
+		 */
 		ret = isolate(item, l, &nlru->lock, cb_arg);
 		switch (ret) {
 		case LRU_REMOVED_RETRY:
 			assert_spin_locked(&nlru->lock);
 			fallthrough;
+		/**
+		 * @brief 需要从 LRU 中移除
+		 *
+		 */
 		case LRU_REMOVED:
 			isolated++;
 			nlru->nr_items--;
@@ -278,11 +310,23 @@ restart:
 			if (ret == LRU_REMOVED_RETRY)
 				goto restart;
 			break;
+		/**
+		 * @brief 移动到链表尾，可能后续将被淘汰
+		 *
+		 */
 		case LRU_ROTATE:
 			list_move_tail(item, &l->list);
 			break;
+		/**
+		 * @brief 跳过
+		 *
+		 */
 		case LRU_SKIP:
 			break;
+		/**
+		 * @brief 重试
+		 *
+		 */
 		case LRU_RETRY:
 			/*
 			 * The lru lock has been dropped, our list traversal is
@@ -297,8 +341,18 @@ restart:
 	return isolated;
 }
 
-unsigned long
-list_lru_walk_one(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
+/**
+ * @brief
+ *
+ * @param lru
+ * @param nid
+ * @param memcg
+ * @param isolate
+ * @param cb_arg
+ * @param nr_to_walk
+ * @return unsigned long
+ */
+unsigned long list_lru_walk_one(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
 		  list_lru_walk_cb isolate, void *cb_arg,
 		  unsigned long *nr_to_walk)
 {
@@ -306,6 +360,10 @@ list_lru_walk_one(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
 	unsigned long ret;
 
 	spin_lock(&nlru->lock);
+	/**
+	 * @brief
+	 *
+	 */
 	ret = __list_lru_walk_one(nlru, memcg_cache_id(memcg), isolate, cb_arg,
 				  nr_to_walk);
 	spin_unlock(&nlru->lock);
@@ -328,6 +386,16 @@ list_lru_walk_one_irq(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
 	return ret;
 }
 
+/**
+ * @brief walk 一个 numa node 的 LRU 链表
+ *
+ * @param lru
+ * @param nid
+ * @param isolate
+ * @param cb_arg
+ * @param nr_to_walk
+ * @return unsigned long
+ */
 unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
 				 list_lru_walk_cb isolate, void *cb_arg,
 				 unsigned long *nr_to_walk)
@@ -335,6 +403,10 @@ unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
 	long isolated = 0;
 	int memcg_idx;
 
+	/**
+	 * @brief
+	 *
+	 */
 	isolated += list_lru_walk_one(lru, nid, NULL, isolate, cb_arg,
 				      nr_to_walk);
 	if (*nr_to_walk > 0 && list_lru_memcg_aware(lru)) {

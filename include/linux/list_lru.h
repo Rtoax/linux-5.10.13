@@ -16,13 +16,23 @@ struct mem_cgroup;
 
 /* list_lru_walk_cb has to always return one of those */
 enum lru_status {
-	LRU_REMOVED,		/* item removed from list */
-	LRU_REMOVED_RETRY,	/* item removed, but lock has been
-				   dropped and reacquired */
-	LRU_ROTATE,		/* item referenced, give another pass */
-	LRU_SKIP,		/* item cannot be locked, skip */
-	LRU_RETRY,		/* item not freeable. May drop the lock
-				   internally, but has to return locked. */
+	/**
+	 * item removed from list
+	 */
+	LRU_REMOVED,
+	/**
+	 * item removed, but lock has been dropped and reacquired
+	 */
+	LRU_REMOVED_RETRY,
+	/* item referenced, give another pass */
+	LRU_ROTATE,
+	/* item cannot be locked, skip */
+	LRU_SKIP,
+	/**
+	 * item not freeable. May drop the lock
+	 * internally, but has to return locked.
+	 */
+	LRU_RETRY,
 };
 
 /**
@@ -30,6 +40,13 @@ enum lru_status {
  *
  */
 struct list_lru_one {
+	/**
+	 * @brief LRU 链表头
+	 *
+	 * 1. dcache 中 对应 struct dentry.d_lru 链表头, 见：
+	 * 	* __list_lru_walk_one(), dentry_lru_isolate()
+	 *
+	 */
 	struct list_head	list;
 	/* may become negative during memcg reparenting */
 	long			nr_items;
@@ -66,7 +83,13 @@ struct list_lru_node {
 /**
  * @brief Long time rarely use
  *
- *
+ * https://www.jianshu.com/p/1f8e36285539
+ * -------------------------------------------------------------------
+ * 用一个双向链表记录访问时间，因为链表插入删除高效，时间新的在前面，旧的在后面。
+ * 用一个哈希表记录缓存(key, value)，哈希查找近似O(1)，发生哈希冲突时最坏O(n)，
+ * 同时哈希表中得记录 (key, (value, key_ptr))，key_ptr 是key在链表中的地址，
+ * 为了能在O(1)时间内找到该节点，并把节点提升到表头。
+ * 链表中的key，能快速找到hash中的value，并删除。
  */
 struct list_lru {
 	/**

@@ -238,7 +238,7 @@ struct dentry_operations {
       * dentry into place and return that dentry rather than the passed one,
       * typically using d_splice_alias. */
 
-#define DCACHE_REFERENCED		0x00000040 /* Recently used, don't discard. */
+#define DCACHE_REFERENCED		0x00000040 /* 最近被使用过 Recently used, don't discard. */
 
 #define DCACHE_DONTCACHE		0x00000080 /* Purge from memory on final dput() */
 

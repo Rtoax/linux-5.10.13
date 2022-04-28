@@ -563,7 +563,7 @@ static void d_lru_isolate(struct list_lru_one *lru, struct dentry *dentry)
 }
 
 /**
- * @brief
+ * @brief 将 dentry 从 LRU 链表移动到 list 链表
  *
  * @param lru
  * @param dentry
@@ -573,9 +573,22 @@ static void d_lru_shrink_move(struct list_lru_one *lru, struct dentry *dentry,
 			      struct list_head *list)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
+	/**
+	 * @brief 设置标志位
+	 *
+	 */
 	dentry->d_flags |= DCACHE_SHRINK_LIST;
+	/**
+	 * @brief 如果是 negative dentry
+	 *
+	 * @return if() this_cpu_dec(nr_dentry_negative)
+	 */
 	if (d_is_negative(dentry))
 		this_cpu_dec(nr_dentry_negative);
+	/**
+	 * @brief 从 LRU 移动到 list
+	 *
+	 */
 	list_lru_isolate_move(lru, &dentry->d_lru, list);
 }
 
@@ -1314,12 +1327,13 @@ void shrink_dentry_list(struct list_head *list)
 			bool can_free = false;
 			rcu_read_unlock();
 			/**
-			 * @brief 从链表中删除
+			 * @brief 从链表中删除，注意，此时 dentry 在 链表 list 中
 			 *
 			 */
 			d_shrink_del(dentry);
 			/**
-			 * @brief dentry->d_lockref.count < 0 可以释放
+			 * dentry->d_lockref.count < 0 并且设置了 DCACHE_MAY_FREE 标志，
+			 * 表示可以释放
 			 *
 			 */
 			if (dentry->d_lockref.count < 0)
@@ -1336,7 +1350,7 @@ void shrink_dentry_list(struct list_head *list)
 		}
 		rcu_read_unlock();
 		/**
-		 * @brief 从链表中删除
+		 * @brief 从链表中删除，注意，此时 dentry 在 链表 list 中
 		 *
 		 */
 		d_shrink_del(dentry);
@@ -1356,9 +1370,28 @@ void shrink_dentry_list(struct list_head *list)
 	}
 }
 
-static enum lru_status dentry_lru_isolate(struct list_head *item,
+/**
+ * @brief
+ *
+ * 本函数在 __list_lru_walk_one() 被调用
+ *
+ * @param item
+ * @param lru
+ * @param lru_lock
+ * @param arg
+ * @return enum lru_status
+ */
+static enum lru_status
+dentry_lru_isolate(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
 {
+	/**
+	 * @brief 可释放的 dentry 链表
+	 *
+	 * 如：
+	 * 1. 在 prune_dcache_sb() 函数传过来的 dispose 链表
+	 *
+	 */
 	struct list_head *freeable = arg;
 	struct dentry	*dentry = container_of(item, struct dentry, d_lru);
 
@@ -1367,6 +1400,8 @@ static enum lru_status dentry_lru_isolate(struct list_head *item,
 	 * we are inverting the lru lock/dentry->d_lock here,
 	 * so use a trylock. If we fail to get the lock, just skip
 	 * it
+	 *
+	 * 获取锁失败，那么直接跳过这个 dentry ，返回 LRU_SKIP
 	 */
 	if (!spin_trylock(&dentry->d_lock))
 		return LRU_SKIP;
@@ -1375,13 +1410,26 @@ static enum lru_status dentry_lru_isolate(struct list_head *item,
 	 * Referenced dentries are still in use. If they have active
 	 * counts, just remove them from the LRU. Otherwise give them
 	 * another pass through the LRU.
+	 *
+	 * 引用的 dentry 仍然被使用，所以 dentry->d_lockref.count > 0, 如果
+	 * 有激活的 count 计数，直接从 LRU 中移除。
 	 */
 	if (dentry->d_lockref.count) {
 		d_lru_isolate(lru, dentry);
 		spin_unlock(&dentry->d_lock);
+		/**
+		 * @brief 从 LRU 移除
+		 *
+		 */
 		return LRU_REMOVED;
 	}
 
+	/**
+	 * 这里 dentry->d_lockref.count == 0
+	 *
+	 * DCACHE_REFERENCED： 最近被使用过
+	 *
+	 */
 	if (dentry->d_flags & DCACHE_REFERENCED) {
 		dentry->d_flags &= ~DCACHE_REFERENCED;
 		spin_unlock(&dentry->d_lock);
@@ -1404,17 +1452,24 @@ static enum lru_status dentry_lru_isolate(struct list_head *item,
 		 * operating only with stack provided lists after they are
 		 * properly isolated from the main list.  It is thus, always a
 		 * local access.
+		 *
+		 * 这个意思是 将 dentry 在 LRU 链表里的位置变化一下，放到 LRU 链表尾
 		 */
 		return LRU_ROTATE;
 	}
 
 	/**
-	 * @brief 可释放
+	 * @brief 可释放，将 denry 从 lru 移动到 freeable 中
 	 *
 	 */
 	d_lru_shrink_move(lru, dentry, freeable);
+
 	spin_unlock(&dentry->d_lock);
 
+	/**
+	 * @brief 从 LRU 移除
+	 *
+	 */
 	return LRU_REMOVED;
 }
 
@@ -1437,6 +1492,7 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 
 	/**
 	 * @brief 从 LRU 链表里选取合适的 dentry 放到 dispose 链表中
+	 * 放到 dispose 中的 dentry 将被 释放或者他用
 	 *
 	 */
 	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc,
@@ -1458,7 +1514,8 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
  * @param arg
  * @return enum lru_status
  */
-static enum lru_status dentry_lru_isolate_shrink(struct list_head *item,
+static enum lru_status
+dentry_lru_isolate_shrink(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
 {
 	struct list_head *freeable = arg;
