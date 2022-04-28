@@ -2096,6 +2096,13 @@ fail:
 }
 EXPORT_SYMBOL(lookup_bdev);
 
+/**
+ * @brief
+ *
+ * @param bdev
+ * @param kill_dirty
+ * @return int
+ */
 int __invalidate_device(struct block_device *bdev, bool kill_dirty)
 {
 	struct super_block *sb = get_super(bdev);

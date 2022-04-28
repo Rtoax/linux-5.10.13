@@ -1529,6 +1529,10 @@ dentry_lru_isolate_shrink(struct list_head *item,
 	if (!spin_trylock(&dentry->d_lock))
 		return LRU_SKIP;
 
+	/**
+	 * @brief 将这个 dentry 从 LRU 链表移动到 freeable 中
+	 *
+	 */
 	d_lru_shrink_move(lru, dentry, freeable);
 	spin_unlock(&dentry->d_lock);
 
