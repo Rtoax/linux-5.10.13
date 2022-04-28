@@ -6820,7 +6820,7 @@ SYSCALL_DEFINE0(sched_yield)
  *  在内核态运行的程序可调用 cond_resched 主动让出cpu，防止其在内核态执行
  *  时间过长导致可能发生的soft lockup或者造成较大的调度延迟。
  */
-int __sched _cond_resched(void) /* 重新调度 */
+int __sched _cond_resched(void)
 {
 	if (should_resched(0)) {
 		preempt_schedule_common();

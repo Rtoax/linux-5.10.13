@@ -73,6 +73,13 @@ static inline bool __preempt_count_dec_and_test(void)
 	return !pc || !READ_ONCE(ti->preempt_count);
 }
 
+/**
+ * @brief
+ *
+ * @param preempt_offset: =0 可以抢占，!=0 不可以抢占
+ * @return true
+ * @return false
+ */
 static inline bool should_resched(int preempt_offset)
 {
 	u64 pc = READ_ONCE(current_thread_info()->preempt_count);

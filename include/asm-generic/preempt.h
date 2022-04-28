@@ -7,11 +7,11 @@
 #define PREEMPT_ENABLED	(0)
 
 /**
- *
+ * 是否可抢占
  */
 static __always_inline int preempt_count(void)
 {
-	return READ_ONCE(current_thread_info()->preempt_count);/* 是否可抢占 */
+	return READ_ONCE(current_thread_info()->preempt_count);
 }
 
 static __always_inline volatile int *preempt_count_ptr(void)
