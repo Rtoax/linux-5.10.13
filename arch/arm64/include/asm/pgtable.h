@@ -24,6 +24,10 @@
 #define VMALLOC_START		(MODULES_END)
 #define VMALLOC_END		(- PUD_SIZE - VMEMMAP_SIZE - SZ_64K)
 
+/**
+ * @brief 稀疏内存模型会用到，见 `__pfn_to_page()`
+ *
+ */
 #define vmemmap			((struct page *)VMEMMAP_START - (memstart_addr >> PAGE_SHIFT))
 
 #define FIRST_USER_ADDRESS	0UL
@@ -61,7 +65,7 @@
  * malloc() 后，实际上先返回系统零页。
  *  1. 当 读 数据时，将使用这个 系统零页；
  *  2. 当 发生写 时，才进入缺页中断，进行写时复制；
- *  
+ *
  */
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
 #define ZERO_PAGE(vaddr)	phys_to_page(__pa_symbol(empty_zero_page))
@@ -538,7 +542,7 @@ extern pgd_t init_pg_end[];
  *  内核空间: TTBR1 寄存器获取 内核页表的基地址(swapper_pg_dir)
  *
  *  KPTI - Kernel Page-Table Isolation 内核页表隔离
- *  
+ *
  *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
  */
 extern pgd_t swapper_pg_dir[PTRS_PER_PGD];

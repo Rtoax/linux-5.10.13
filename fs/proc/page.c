@@ -113,6 +113,10 @@ static ssize_t kpagecount_read(struct file *file, char __user *buf,
 	return ret;
 }
 
+/**
+ * @brief /proc/kpagecount
+ *
+ */
 static const struct proc_ops kpagecount_proc_ops = {
 	.proc_lseek	= mem_lseek,
 	.proc_read	= kpagecount_read,

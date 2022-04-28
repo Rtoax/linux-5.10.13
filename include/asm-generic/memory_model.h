@@ -35,6 +35,8 @@
 
 /**
  * supports 3 memory models.  平坦内存
+ *
+ * 这可能要考虑到 分段 和 分页，如果 整个物理内存可以分成一个 段，那么就可以认为是平坦模型
  */
 #if defined(CONFIG_FLATMEM)
 
