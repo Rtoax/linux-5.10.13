@@ -683,7 +683,12 @@ static __always_inline int PageTransCompoundMap(struct page *page);
  static __always_inline void __ClearPageTransCompoundMap(struct page *page);
  static __always_inline void __SetPageTransCompoundMap(struct page *page);
 
-
+/**
+ * @brief page 在伙伴系统中
+ *
+ * @param page
+ * @return __always_inline
+ */
 static __always_inline int PageBuddy(struct page *page);
  static __always_inline void SetPageBuddy(struct page *page);
  static __always_inline void ClearPageBuddy(struct page *page);

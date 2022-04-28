@@ -865,7 +865,7 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 #endif
 
 /**
- *
+ * 设置 Buddy order
  */
 static inline void set_buddy_order(struct page *page, unsigned int order)
 {
@@ -999,7 +999,7 @@ del_page_from_free_list(struct page *page, struct zone *zone,
 	list_del(&page->lru);
 
     /**
-     *
+     * 清理 buddy flag
      */
 	__ClearPageBuddy(page);
 
@@ -1011,7 +1011,7 @@ del_page_from_free_list(struct page *page, struct zone *zone,
     /**
      *  链表中少了一个元素
      */
-	zone->free_area[order].nr_free--;   /* 删除 */
+	zone->free_area[order].nr_free--;
 }
 
 /*
@@ -1066,8 +1066,9 @@ buddy_merge_likely(unsigned long pfn, unsigned long buddy_pfn,
  * triggers coalescing into a block of larger size.
  *
  * -- nyc
+ *
+ * 伙伴系统的 页 释放 函数
  */
-/* 伙伴系统的 页 释放 函数 */
 static inline void __free_one_page(struct page *page,
                              		unsigned long pfn,
                              		struct zone *zone, unsigned int order,
@@ -1171,7 +1172,7 @@ continue_merging:
 done_merging:   /* 合并 */
 
     /**
-     *
+     * 设置 order 和 page buddy flag
      */
 	set_buddy_order(page, order);
 
@@ -2407,7 +2408,7 @@ static inline void expand(struct zone *zone, struct page *page,
 		add_to_free_list(&page[size], zone, high, migratetype);
 
         /**
-         *  重新设置下这个page 的order
+         *  重新设置下这个page 的order, 并设置 page buddy flag
          */
 		set_buddy_order(&page[size], high);
 	}
@@ -10808,6 +10809,9 @@ static void break_down_buddy_pages(struct zone *zone, struct page *page,
 
 		if (current_buddy != target) {
 			add_to_free_list(current_buddy, zone, high, migratetype);
+			/**
+			 * 重新设置下这个page 的order, 并设置 page buddy flag
+			 */
 			set_buddy_order(current_buddy, high);
 			page = next_page;
 		}
