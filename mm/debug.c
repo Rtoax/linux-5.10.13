@@ -42,6 +42,12 @@ const struct trace_print_flags vmaflag_names[] = {
 	{0, NULL}
 };
 
+/**
+ * @brief 转储 page 结构
+ *
+ * @param page
+ * @param reason
+ */
 void __dump_page(struct page *page, const char *reason)
 {
 	struct page *head = compound_head(page);

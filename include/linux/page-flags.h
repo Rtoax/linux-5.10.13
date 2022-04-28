@@ -1733,7 +1733,7 @@ static __always_inline void __ClearPageReported(struct page *page)
  * 见`struct page->mapping[0-1]`
  */
 #define PAGE_MAPPING_ANON	    0x1 /* 匿名页面 */
-#define PAGE_MAPPING_MOVABLE	0x2
+#define PAGE_MAPPING_MOVABLE	0x2 /* 可迁移页面 */
 #define PAGE_MAPPING_KSM	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 #define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
@@ -1743,10 +1743,12 @@ static __always_inline int PageMappingFlags(struct page *page)
 }
 
 /**
+ * 匿名页面: malloc/mmap
+ *
  *  如果为匿名页面 返回 true
  *  否则返回 false
  */
-static __always_inline int PageAnon(struct page *page)  /* 匿名页面: malloc/mmap */
+static __always_inline int PageAnon(struct page *page)
 {
 	page = compound_head(page);
 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;

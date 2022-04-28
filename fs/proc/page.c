@@ -163,6 +163,10 @@ u64 stable_page_flags(struct page *page)
 	 */
 	if (!PageSlab(page) && page_mapped(page))
 		u |= 1 << KPF_MMAP;
+	/**
+	 * @brief 匿名页面
+	 *
+	 */
 	if (PageAnon(page))
 		u |= 1 << KPF_ANON;
 	if (PageKsm(page))
@@ -183,10 +187,16 @@ u64 stable_page_flags(struct page *page)
 	 * pages or pages allocated by drivers with __GFP_COMP) because it
 	 * just checks PG_head/PG_tail, so we need to check PageLRU/PageAnon
 	 * to make sure a given page is a thp, not a non-huge compound page.
+	 *
+	 * 如果是 混合页面
 	 */
 	else if (PageTransCompound(page)) {
 		struct page *head = compound_head(page);
 
+		/**
+		 * @brief 在 LRU 链表里 或 为匿名页面
+		 * 那么为透明大页
+		 */
 		if (PageLRU(head) || PageAnon(head))
 			u |= 1 << KPF_THP;
 		else if (is_huge_zero_page(head)) {
