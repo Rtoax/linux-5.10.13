@@ -21,6 +21,11 @@
 #define KPMMASK (KPMSIZE - 1)
 #define KPMBITS (KPMSIZE * BITS_PER_BYTE)
 
+/**
+ * @brief 获取 page 最大 帧号
+ *
+ * @return unsigned long
+ */
 static inline unsigned long get_max_dump_pfn(void)
 {
 #ifdef CONFIG_SPARSEMEM
@@ -40,10 +45,17 @@ static inline unsigned long get_max_dump_pfn(void)
  *
  * Each entry is a u64 representing the corresponding
  * physical page count.
+ *
+ * 查看：
+ * $ sudo hexdump -C /proc/kpagecount | nl
  */
 static ssize_t kpagecount_read(struct file *file, char __user *buf,
 			     size_t count, loff_t *ppos)
 {
+	/**
+	 * @brief 获取 page 最大 帧号
+	 *
+	 */
 	const unsigned long max_dump_pfn = get_max_dump_pfn();
 	u64 __user *out = (u64 __user *)buf;
 	struct page *ppage;
@@ -57,8 +69,16 @@ static ssize_t kpagecount_read(struct file *file, char __user *buf,
 		return -EINVAL;
 	if (src >= max_dump_pfn * KPMSIZE)
 		return 0;
+	/**
+	 * @brief
+	 *
+	 */
 	count = min_t(unsigned long, count, (max_dump_pfn * KPMSIZE) - src);
 
+	/**
+	 * @brief
+	 *
+	 */
 	while (count > 0) {
 		/*
 		 * TODO: ZONE_DEVICE support requires to identify
@@ -71,6 +91,10 @@ static ssize_t kpagecount_read(struct file *file, char __user *buf,
 		else
 			pcount = page_mapcount(ppage);
 
+		/**
+		 * @brief
+		 *
+		 */
 		if (put_user(pcount, out)) {
 			ret = -EFAULT;
 			break;
@@ -224,6 +248,11 @@ u64 stable_page_flags(struct page *page)
 	return u;
 };
 
+/**
+ * @brief /proc/kpageflags
+ *
+ * https://www.kernel.org/doc/html/latest/admin-guide/mm/pagemap.html
+ */
 static ssize_t kpageflags_read(struct file *file, char __user *buf,
 			     size_t count, loff_t *ppos)
 {
@@ -248,6 +277,10 @@ static ssize_t kpageflags_read(struct file *file, char __user *buf,
 		 */
 		ppage = pfn_to_online_page(pfn);
 
+		/**
+		 * @brief
+		 *
+		 */
 		if (put_user(stable_page_flags(ppage), out)) {
 			ret = -EFAULT;
 			break;
@@ -266,6 +299,11 @@ static ssize_t kpageflags_read(struct file *file, char __user *buf,
 	return ret;
 }
 
+/**
+ * @brief /proc/kpageflags
+ *
+ * https://www.kernel.org/doc/html/latest/admin-guide/mm/pagemap.html
+ */
 static const struct proc_ops kpageflags_proc_ops = {
 	.proc_lseek	= mem_lseek,
 	.proc_read	= kpageflags_read,
@@ -326,6 +364,15 @@ static const struct proc_ops kpagecgroup_proc_ops = {
 };
 #endif /* CONFIG_MEMCG */
 
+/**
+ * @brief
+ *
+ * 1. /proc/kpagecount
+ * 2. /proc/kpageflags
+ * 3. /proc/kpagecgroup
+ *
+ * https://www.kernel.org/doc/html/latest/admin-guide/mm/pagemap.html
+ */
 static int __init proc_page_init(void)
 {
 	proc_create("kpagecount", S_IRUSR, NULL, &kpagecount_proc_ops); // /proc/kpagecount
