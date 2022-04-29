@@ -48,6 +48,8 @@
 /**
  * @brief
  *
+ * https://zhuanlan.zhihu.com/p/408292834
+ * ----------------------------------------
  * shadow memory检测原理的实现主要就是__asan_load##size()和__asan_store##size()函数的实现。
  * 那么KASAN是如何根据访问的address以及对应的shadow memory的状态值来判断访问是否合法呢？
  * 首先看一种最简单的情况。访问8 bytes内存。
@@ -68,13 +70,35 @@ static __always_inline bool memory_is_poisoned_1(unsigned long addr)
 	s8 shadow_value = *(s8 *)kasan_mem_to_shadow((void *)addr);
 
 	/**
-	 * shadow_value != 0: 表示 invalid
-	 *
+	 * shadow_value != 0: 表示 有字节是 invalid
+	 * shadow_value == 0: 表示 valid
 	 */
 	if (unlikely(shadow_value)) {
 		/**
-		 * addr & 7是计算访问地址相对于8字节对齐地址的偏移。
+		 * addr & 7 是计算访问地址相对于 8字节 对齐地址的 偏移。
 		 *
+		 * 假设：
+		 * addr = 11(十进制) = 1011(二进制)
+		 * last_accessible_byte = 3
+		 * 内存结构如下：
+		 *   8          11               15
+		 * +---+---+---+---+---+---+---+---+
+		 * |   |   |   |   |   |   |   |   |
+		 * +---+---+---+---+---+---+---+---+
+		 * |<addr&7=3 >| ^
+		 *               |
+		 *              addr
+		 *
+		 * 假设现在的 对应的 shadow memory 值为5，说明前五个字节有效，
+		 * 内存情况如下（X为无效地址）：
+		 *
+		 *   8          11               15
+		 * +---+---+---+---+---+---+---+---+
+		 * |   |   |   |   |   | X | X | X |
+		 * +---+---+---+---+---+---+---+---+
+		 *
+		 * (last_accessible_byte = 3) <= (shadow_value = 5)
+		 * 说明本次访问没问题。
 		 */
 		s8 last_accessible_byte = addr & KASAN_SHADOW_MASK/* 0000 0111 */;
 		return unlikely(last_accessible_byte >= shadow_value);
@@ -88,20 +112,53 @@ static __always_inline bool memory_is_poisoned_1(unsigned long addr)
  *
  * @param addr
  * @param size
- * @return __always_inline
+ * @return
  */
 static __always_inline bool memory_is_poisoned_2_4_8(unsigned long addr,
 						unsigned long size)
 {
+	/**
+	 * @brief 第一个字节
+	 *
+	 */
 	u8 *shadow_addr = (u8 *)kasan_mem_to_shadow((void *)addr);
 
 	/*
 	 * Access crosses 8(shadow size)-byte boundary. Such access maps
 	 * into 2 shadow bytes, so we need to check them both.
+	 *
+	 * addr & 7 是计算访问地址相对于8字节对齐地址的偏移。
+	 *
+	 * 假设：
+	 * -------------------------------------------------------------------
+	 * 示例1：（此情况 if 判断不成立）
+	 *  addr = 11(十进制) = 1011(二进制)
+	 *  size = 2（两字节）
+	 *  addr + size - 1 = 12(十进制) = 1100(二进制)
+	 *  (addr + size - 1) & KASAN_SHADOW_MASK = 4(十进制) = 0100(二进制)
+	 *
+	 * -------------------------------------------------------------------
+	 * 示例2：（此情况 if 判断成立）
+	 *  addr = 15(十进制) = 1111(二进制)
+	 *  size = 2（两字节）
+	 *  addr + size - 1 = 16(十进制) = 1 0000(二进制)
+	 *  (addr + size - 1) & KASAN_SHADOW_MASK = 0(十进制) = 0000(二进制)
+	 *
+	 * 内存结构如下：
+	 * | 8          11               15| 16                          23|
+	 * +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+	 * |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+	 * +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+	 *
+	 * TODO 2022-04-29
 	 */
 	if (unlikely(((addr + size - 1) & KASAN_SHADOW_MASK/* 0000 0111 */) < size - 1))
 		return *shadow_addr || memory_is_poisoned_1(addr + size - 1);
 
+	/**
+	 * @brief 最后一个字节
+	 *
+	 */
 	return memory_is_poisoned_1(addr + size - 1);
 }
 
@@ -228,6 +285,10 @@ static __always_inline bool check_memory_region_inline(unsigned long addr,
 		return !kasan_report(addr, size, write, ret_ip);
 	}
 
+	/**
+	 * @brief 检查是否有毒，是否为有效内存访问
+	 *
+	 */
 	if (likely(!memory_is_poisoned(addr, size)))
 		return true;
 
