@@ -233,8 +233,18 @@ void kasan_alloc_pages(struct page *page, unsigned int order)
 	kasan_unpoison_shadow(page_address(page), PAGE_SIZE << order);
 }
 
+/**
+ * @brief 释放page 过程 清理 kasan shadow
+ *
+ * @param page
+ * @param order
+ */
 void kasan_free_pages(struct page *page, unsigned int order)
 {
+	/**
+	 * @brief 不能时高端内存
+	 *
+	 */
 	if (likely(!PageHighMem(page)))
 		kasan_poison_shadow(page_address(page),
 				PAGE_SIZE << order,

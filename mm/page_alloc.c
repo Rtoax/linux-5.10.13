@@ -481,6 +481,10 @@ static DEFINE_STATIC_KEY_TRUE(deferred_pages);
  */
 static inline void kasan_free_nondeferred_pages(struct page *page, int order)
 {
+	/**
+	 * @brief
+	 *
+	 */
 	if (!static_branch_unlikely(&deferred_pages))
 		kasan_free_pages(page, order);
 }
@@ -1396,6 +1400,10 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	if (debug_pagealloc_enabled_static())
 		kernel_map_pages(page, 1 << order, 0);
 
+	/**
+	 * @brief
+	 *
+	 */
 	kasan_free_nondeferred_pages(page, order);
 
 	return true;
@@ -1579,7 +1587,7 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	page_cpupid_reset_last(page);
 
     /**
-     *
+     * kasan shadow 重置
      */
 	page_kasan_tag_reset(page);
 
