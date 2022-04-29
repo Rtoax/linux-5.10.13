@@ -360,6 +360,15 @@ xfs_validate_sb_common(
 		}
 	}
 
+	/**
+	 * @brief 补丁： xfs: catch bad stripe alignment configurations
+	 *
+	 * 捕获错误的条带对齐配置
+	 * 补丁URL： https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/fs/xfs?h=v4.19.240&id=fa4ca9c5574605d1e48b7e617705230a0640b6da
+	 *
+	 * 条带信息查看： xfs_info
+	 *
+	 */
 	if (sbp->sb_unit) {
 		if (!xfs_sb_version_hasdalign(sbp) ||
 		    sbp->sb_unit > sbp->sb_width ||
