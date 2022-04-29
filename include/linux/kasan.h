@@ -29,10 +29,50 @@ extern p4d_t kasan_early_shadow_p4d[MAX_PTRS_PER_P4D];
 int kasan_populate_early_shadow(const void *shadow_start,
 				const void *shadow_end);
 
+/**
+ * @brief
+ *
+ * shadow memory检测原理的实现主要就是__asan_load##size()和__asan_store##size()函数的实现。
+ * 那么KASAN是如何根据访问的address以及对应的shadow memory的状态值来判断访问是否合法呢？
+ * 首先看一种最简单的情况。访问8 bytes内存。
+ *
+ *	long *addr = (long *)0xffff800012345678;
+ *	*addr = 0;
+ *
+ * 以上代码是访问8 bytes情况，检测原理如下：
+ *
+ *  long *addr = (long *)0xffff800012345678;
+ *  char *shadow = (char *)(((unsigned long)addr >> 3) + KASAN_SHADOW_OFFSE);
+ *  if (*shadow)
+ *    report_bug();
+ *  *addr = 0;
+ *
+ * +----+ 0xffffffffffffffff
+ * |	|
+ * |	|
+ * |	|
+ * |	|
+ * |	|
+ * |	|
+ * |	|
+ * |	|
+ * +----+ 0xdffffc0000000000UL(KASAN_SHADOW_OFFSET)
+ * |	|
+ * |	|
+ * |....|
+ * |	| addr
+ * |	|
+ * +----+ 0x0000000000000000
+ *
+ */
 static inline void *kasan_mem_to_shadow(const void *addr)
 {
-	return (void *)((unsigned long)addr >> KASAN_SHADOW_SCALE_SHIFT)
-		+ KASAN_SHADOW_OFFSET;
+	/**
+	 * @brief char *shadow = (char *)(((unsigned long)addr >> 3) + KASAN_SHADOW_OFFSE);
+	 *
+	 */
+	return (void *)((unsigned long)addr >> KASAN_SHADOW_SCALE_SHIFT/*3*/)
+		+ KASAN_SHADOW_OFFSET/*0xdffffc0000000000UL*/;
 }
 
 /* Enable reporting bugs after kasan_disable_current() */

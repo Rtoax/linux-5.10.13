@@ -73,7 +73,7 @@
  * significantly, so double the (minimum) stack size when they are in use.
  */
 #ifdef CONFIG_KASAN
-#define KASAN_SHADOW_OFFSET	_AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
+#define KASAN_SHADOW_OFFSET/*0xdffffc0000000000UL*/	_AC(CONFIG_KASAN_SHADOW_OFFSET/*0xdffffc0000000000*/, UL)
 #define KASAN_SHADOW_END	((UL(1) << (64 - KASAN_SHADOW_SCALE_SHIFT)) \
 					+ KASAN_SHADOW_OFFSET)
 #define KASAN_THREAD_SHIFT	1

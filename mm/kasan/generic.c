@@ -45,19 +45,51 @@
  * perform better optimizations in each of __asan_loadX/__assn_storeX
  * depending on memory access size X.
  */
-
+/**
+ * @brief
+ *
+ * shadow memory检测原理的实现主要就是__asan_load##size()和__asan_store##size()函数的实现。
+ * 那么KASAN是如何根据访问的address以及对应的shadow memory的状态值来判断访问是否合法呢？
+ * 首先看一种最简单的情况。访问8 bytes内存。
+ *
+ *	long *addr = (long *)0xffff800012345678;
+ *	*addr = 0;
+ *
+ * 以上代码是访问8 bytes情况，检测原理如下：
+ *
+ *  long *addr = (long *)0xffff800012345678;
+ *  char *shadow = (char *)(((unsigned long)addr >> 3) + KASAN_SHADOW_OFFSE);
+ *  if (*shadow)
+ *    report_bug();
+ *  *addr = 0;
+ */
 static __always_inline bool memory_is_poisoned_1(unsigned long addr)
 {
 	s8 shadow_value = *(s8 *)kasan_mem_to_shadow((void *)addr);
 
+	/**
+	 * shadow_value != 0: 表示 invalid
+	 *
+	 */
 	if (unlikely(shadow_value)) {
-		s8 last_accessible_byte = addr & KASAN_SHADOW_MASK;
+		/**
+		 * addr & 7是计算访问地址相对于8字节对齐地址的偏移。
+		 *
+		 */
+		s8 last_accessible_byte = addr & KASAN_SHADOW_MASK/* 0000 0111 */;
 		return unlikely(last_accessible_byte >= shadow_value);
 	}
 
 	return false;
 }
 
+/**
+ * @brief
+ *
+ * @param addr
+ * @param size
+ * @return __always_inline
+ */
 static __always_inline bool memory_is_poisoned_2_4_8(unsigned long addr,
 						unsigned long size)
 {
@@ -67,7 +99,7 @@ static __always_inline bool memory_is_poisoned_2_4_8(unsigned long addr,
 	 * Access crosses 8(shadow size)-byte boundary. Such access maps
 	 * into 2 shadow bytes, so we need to check them both.
 	 */
-	if (unlikely(((addr + size - 1) & KASAN_SHADOW_MASK) < size - 1))
+	if (unlikely(((addr + size - 1) & KASAN_SHADOW_MASK/* 0000 0111 */) < size - 1))
 		return *shadow_addr || memory_is_poisoned_1(addr + size - 1);
 
 	return memory_is_poisoned_1(addr + size - 1);
@@ -145,6 +177,13 @@ static __always_inline bool memory_is_poisoned_n(unsigned long addr,
 	return false;
 }
 
+/**
+ * @brief
+ *
+ * @param addr
+ * @param size
+ * @return __always_inline
+ */
 static __always_inline bool memory_is_poisoned(unsigned long addr, size_t size)
 {
 	if (__builtin_constant_p(size)) {
@@ -165,6 +204,15 @@ static __always_inline bool memory_is_poisoned(unsigned long addr, size_t size)
 	return memory_is_poisoned_n(addr, size);
 }
 
+/**
+ * @brief
+ *
+ * @param addr
+ * @param size
+ * @param write
+ * @param ret_ip
+ * @return __always_inline
+ */
 static __always_inline bool check_memory_region_inline(unsigned long addr,
 						size_t size, bool write,
 						unsigned long ret_ip)
@@ -228,6 +276,19 @@ void __asan_unregister_globals(struct kasan_global *globals, size_t size)
 }
 EXPORT_SYMBOL(__asan_unregister_globals);
 
+/**
+ * `KASAN`的原理是利用额外的内存标记可用内存的状态。这部分额外的内存被称作`shadow memory`（影子区）。
+ * `KASAN`将`1/8`的内存用作shadow memory。使用特殊的`magic num`填充shadow memory，在每一次`load/store`
+ * （`load/store`检查指令由编译器插入）内存的时候检测对应的`shadow memory`确定操作是否`valid`。
+ * 连续`8 bytes`内存（8 bytes align）使用`1 byte shadow memory`标记。如果`8 bytes`内存都可以访问，
+ * 则shadow memory的值为0；如果连续N(`1 =< N <= 7`) bytes可以访问，则`shadow memory`的值为N；
+ * 如果8 bytes内存访问都是invalid，则shadow memory的值为负数。
+ *
+ * 在代码运行时，每一次memory access都会检测对应的shawdow memory的值是否valid。
+ * 这就需要编译器为我们做些工作。编译的时候，在每一次memory access前编译器会帮我们
+ * 插入__asan_load##size()或者__asan_store##size()函数调用（size是访问内存字节的数量）。
+ * 这也是要求更新版本gcc的原因，只有更新的版本才支持自动插入。
+ */
 #define DEFINE_ASAN_LOAD_STORE(size)					\
 	void __asan_load##size(unsigned long addr)			\
 	{								\
@@ -252,6 +313,103 @@ DEFINE_ASAN_LOAD_STORE(4);
 DEFINE_ASAN_LOAD_STORE(8);
 DEFINE_ASAN_LOAD_STORE(16);
 
+/**
+ * @brief 上面宏展开结果
+ *
+ */
+#if 1
+void __asan_load1(unsigned long addr)
+{
+	check_memory_region_inline(addr, 1, false, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_load1);
+ __alias(__asan_load1) void __asan_load1_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_load1_noabort);
+void __asan_store1(unsigned long addr)
+{
+	check_memory_region_inline(addr, 1, true, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_store1);
+ __alias(__asan_store1) void __asan_store1_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_store1_noabort);
+
+void __asan_load2(unsigned long addr)
+{
+	check_memory_region_inline(addr, 2, false, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_load2);
+ __alias(__asan_load2) void __asan_load2_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_load2_noabort);
+void __asan_store2(unsigned long addr)
+{
+	check_memory_region_inline(addr, 2, true, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_store2);
+ __alias(__asan_store2) void __asan_store2_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_store2_noabort);
+
+void __asan_load4(unsigned long addr)
+{
+	check_memory_region_inline(addr, 4, false, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_load4);
+ __alias(__asan_load4) void __asan_load4_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_load4_noabort);
+void __asan_store4(unsigned long addr)
+{
+	check_memory_region_inline(addr, 4, true, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_store4);
+ __alias(__asan_store4) void __asan_store4_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_store4_noabort);
+
+void __asan_load8(unsigned long addr)
+{
+	check_memory_region_inline(addr, 8, false, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_load8);
+ __alias(__asan_load8) void __asan_load8_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_load8_noabort);
+void __asan_store8(unsigned long addr)
+{
+	check_memory_region_inline(addr, 8, true, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_store8);
+ __alias(__asan_store8) void __asan_store8_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_store8_noabort);
+
+void __asan_load16(unsigned long addr)
+{
+	check_memory_region_inline(addr, 16, false, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_load16);
+ __alias(__asan_load16) void __asan_load16_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_load16_noabort);
+void __asan_store16(unsigned long addr)
+{
+	check_memory_region_inline(addr, 16, true, _RET_IP_);
+}
+EXPORT_SYMBOL(__asan_store16);
+ __alias(__asan_store16) void __asan_store16_noabort(unsigned long);
+
+EXPORT_SYMBOL(__asan_store16_noabort);
+#endif
+
+/**
+ * @brief
+ *
+ * @param addr
+ * @param size
+ */
 void __asan_loadN(unsigned long addr, size_t size)
 {
 	check_memory_region(addr, size, false, _RET_IP_);

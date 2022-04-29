@@ -6,7 +6,7 @@
 #include <linux/stackdepot.h>
 
 #define KASAN_SHADOW_SCALE_SIZE (1UL << KASAN_SHADOW_SCALE_SHIFT/* 3 */)
-#define KASAN_SHADOW_MASK       (KASAN_SHADOW_SCALE_SIZE - 1)
+#define KASAN_SHADOW_MASK       (KASAN_SHADOW_SCALE_SIZE - 1)/* 0000 0111 */
 
 #define KASAN_TAG_KERNEL	0xFF /* native kernel pointers tag */
 #define KASAN_TAG_INVALID	0xFE /* inaccessible memory tag */
@@ -235,6 +235,19 @@ void __asan_handle_no_return(void);
 void __asan_alloca_poison(unsigned long addr, size_t size);
 void __asan_allocas_unpoison(const void *stack_top, const void *stack_bottom);
 
+/**
+ * `KASAN`的原理是利用额外的内存标记可用内存的状态。这部分额外的内存被称作`shadow memory`（影子区）。
+ * `KASAN`将`1/8`的内存用作shadow memory。使用特殊的`magic num`填充shadow memory，在每一次`load/store`
+ * （`load/store`检查指令由编译器插入）内存的时候检测对应的`shadow memory`确定操作是否`valid`。
+ * 连续`8 bytes`内存（8 bytes align）使用`1 byte shadow memory`标记。如果`8 bytes`内存都可以访问，
+ * 则shadow memory的值为0；如果连续N(`1 =< N <= 7`) bytes可以访问，则`shadow memory`的值为N；
+ * 如果8 bytes内存访问都是invalid，则shadow memory的值为负数。
+ *
+ * 在代码运行时，每一次memory access都会检测对应的shawdow memory的值是否valid。
+ * 这就需要编译器为我们做些工作。编译的时候，在每一次memory access前编译器会帮我们
+ * 插入__asan_load##size()或者__asan_store##size()函数调用（size是访问内存字节的数量）。
+ * 这也是要求更新版本gcc的原因，只有更新的版本才支持自动插入。
+ */
 void __asan_load1(unsigned long addr);
 void __asan_store1(unsigned long addr);
 void __asan_load2(unsigned long addr);
