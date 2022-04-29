@@ -2494,23 +2494,52 @@ static bool check_new_pages(struct page *page, unsigned int order)
 	return false;
 }
 
+/**
+ * @brief
+ *
+ * @param page
+ * @param order
+ * @param gfp_flags
+ */
 inline void post_alloc_hook(struct page *page, unsigned int order,
 				gfp_t gfp_flags)
 {
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 
+	/**
+	 * @brief 架构相关
+	 *
+	 */
 	arch_alloc_page(page, order);
 	if (debug_pagealloc_enabled_static())
 		kernel_map_pages(page, 1 << order, 1);
+
+	/**
+	 * @brief
+	 *
+	 */
 	kasan_alloc_pages(page, order);
+
 	kernel_poison_pages(page, 1 << order, 1);
 	set_page_owner(page, order, gfp_flags);
 }
 
+/**
+ * @brief
+ *
+ * @param page
+ * @param order
+ * @param gfp_flags
+ * @param alloc_flags
+ */
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
 							unsigned int alloc_flags)
 {
+	/**
+	 * @brief 钩子
+	 *
+	 */
 	post_alloc_hook(page, order, gfp_flags);
 
 	if (!free_pages_prezeroed() && want_init_on_alloc(gfp_flags))
@@ -4810,9 +4839,13 @@ try_this_zone:
 				        gfp_mask, alloc_flags, ac->migratetype);
 
         /**
-         *  回收成功
+         *  分配成功
          */
-		if (page) { /* 分配成功 */
+		if (page) {
+			/**
+			 * @brief 预处理
+			 *
+			 */
 			prep_new_page(page, order, gfp_mask, alloc_flags);
 
 			/*
@@ -4822,9 +4855,16 @@ try_this_zone:
 			if (unlikely(order && (alloc_flags & ALLOC_HARDER)))
 				reserve_highatomic_pageblock(page, zone, order);
 
-			return page;/* 返回分配的物理页 */
+			/**
+			 * @brief 返回分配的物理页
+			 *
+			 */
+			return page;
 
-		} else { /* 分配失败 */
+		/**
+		 * 分配失败
+		 */
+		} else {
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 			/* Try again if zone has deferred pages */
 			if (static_branch_unlikely(&deferred_pages)) {

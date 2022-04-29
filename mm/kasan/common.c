@@ -112,6 +112,7 @@ void *memcpy(void *dest, const void *src, size_t len)
 /*
  * Poisons the shadow memory for 'size' bytes starting from 'addr'.
  * Memory addresses should be aligned to KASAN_SHADOW_SCALE_SIZE.
+ *
  */
 void kasan_poison_shadow(const void *address, size_t size, u8 value)
 {
@@ -124,12 +125,26 @@ void kasan_poison_shadow(const void *address, size_t size, u8 value)
 	 */
 	address = reset_tag(address);
 
+	/**
+	 * @brief
+	 *
+	 */
 	shadow_start = kasan_mem_to_shadow(address);
 	shadow_end = kasan_mem_to_shadow(address + size);
 
+	/**
+	 * @brief 设置这块内存的 kasan shadow
+	 *
+	 */
 	__memset(shadow_start, value, shadow_end - shadow_start);
 }
 
+/**
+ * @brief 分配一个 page 时，kasan 使能这块内存
+ *
+ * @param address
+ * @param size
+ */
 void kasan_unpoison_shadow(const void *address, size_t size)
 {
 	u8 tag = get_tag(address);
@@ -141,15 +156,19 @@ void kasan_unpoison_shadow(const void *address, size_t size)
 	 */
 	address = reset_tag(address);
 
+	/**
+	 * @brief
+	 *
+	 */
 	kasan_poison_shadow(address, size, tag);
 
-	if (size & KASAN_SHADOW_MASK) {
+	if (size & KASAN_SHADOW_MASK/* 0000 0111 */) {
 		u8 *shadow = (u8 *)kasan_mem_to_shadow(address + size);
 
 		if (IS_ENABLED(CONFIG_KASAN_SW_TAGS))
 			*shadow = tag;
 		else
-			*shadow = size & KASAN_SHADOW_MASK;
+			*shadow = size & KASAN_SHADOW_MASK/* 0000 0111 */;
 	}
 }
 
@@ -180,6 +199,12 @@ asmlinkage void kasan_unpoison_task_stack_below(const void *watermark)
 	kasan_unpoison_shadow(base, watermark - base);
 }
 
+/**
+ * @brief
+ *
+ * @param page
+ * @param order
+ */
 void kasan_alloc_pages(struct page *page, unsigned int order)
 {
 	u8 tag;
@@ -188,9 +213,23 @@ void kasan_alloc_pages(struct page *page, unsigned int order)
 	if (unlikely(PageHighMem(page)))
 		return;
 
+	/**
+	 * @brief 获取一个随即 tag
+	 *
+	 */
 	tag = random_tag();
+
+	/**
+	 * @brief 设置 page.flags 中 kasan 标志位
+	 *
+	 */
 	for (i = 0; i < (1 << order); i++)
 		page_kasan_tag_set(page + i, tag);
+
+	/**
+	 * @brief 将这个 page 的 shadow 生效
+	 *
+	 */
 	kasan_unpoison_shadow(page_address(page), PAGE_SIZE << order);
 }
 

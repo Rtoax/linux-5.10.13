@@ -73,7 +73,7 @@
 #endif
 
 #ifdef CONFIG_KASAN_SW_TAGS
-//#define KASAN_TAG_WIDTH 8
+#define KASAN_TAG_WIDTH 8
 #else
 #define KASAN_TAG_WIDTH 0
 #endif
