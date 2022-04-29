@@ -30,6 +30,8 @@
  *     with this page, before we will be able to setup normal shadow memory.
  *   - Latter it reused it as zero shadow to cover large ranges of memory
  *     that allowed to access, but not handled by kasan (vmalloc/vmemmap ...).
+ *
+ * KASAN 零页
  */
 unsigned char kasan_early_shadow_page[PAGE_SIZE] __page_aligned_bss;
 

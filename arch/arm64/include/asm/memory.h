@@ -73,6 +73,18 @@
  * significantly, so double the (minimum) stack size when they are in use.
  */
 #ifdef CONFIG_KASAN
+/**
+ * 当打开KASAN的时候，KASAN区域位于kernel space首地址处，从0xffff_0000_0000_0000地址开始，大小是32TB。
+ * shadow memory和kernel address转换关系是：
+ *
+ *   shadow_addr = (kaddr >> 3) + KASAN_SHADOW_OFFSE。
+ *
+ * 为了将
+ * [0xffff_0000_0000_0000, 0xffff_ffff_ffff_ffff]和
+ * [0xffff_0000_0000_0000, 0xffff_1fff_ffff_ffff]对应起来，
+ * 因此计算 KASAN_SHADOW_OFFSE 的值为 0xdfff_2000_0000_0000。
+ *
+ */
 #define KASAN_SHADOW_OFFSET/*0xdffffc0000000000UL*/	_AC(CONFIG_KASAN_SHADOW_OFFSET/*0xdffffc0000000000*/, UL)
 #define KASAN_SHADOW_END	((UL(1) << (64 - KASAN_SHADOW_SCALE_SHIFT)) \
 					+ KASAN_SHADOW_OFFSET)

@@ -96,6 +96,15 @@ static pud_t *__init kasan_pud_offset(p4d_t *p4dp, unsigned long addr, int node,
 	return early ? pud_offset_kimg(p4dp, addr) : pud_offset(p4dp, addr);
 }
 
+/**
+ * @brief
+ *
+ * @param pmdp
+ * @param addr
+ * @param end
+ * @param node
+ * @param early
+ */
 static void __init kasan_pte_populate(pmd_t *pmdp, unsigned long addr,
 				      unsigned long end, int node, bool early)
 {
@@ -109,10 +118,23 @@ static void __init kasan_pte_populate(pmd_t *pmdp, unsigned long addr,
 		if (!early)
 			memset(__va(page_phys), KASAN_SHADOW_INIT, PAGE_SIZE);
 		next = addr + PAGE_SIZE;
+		/**
+		 * @brief Set the pte object
+		 *
+		 */
 		set_pte(ptep, pfn_pte(__phys_to_pfn(page_phys), PAGE_KERNEL));
 	} while (ptep++, addr = next, addr != end && pte_none(READ_ONCE(*ptep)));
 }
 
+/**
+ * @brief
+ *
+ * @param pudp
+ * @param addr
+ * @param end
+ * @param node
+ * @param early
+ */
 static void __init kasan_pmd_populate(pud_t *pudp, unsigned long addr,
 				      unsigned long end, int node, bool early)
 {
@@ -125,6 +147,15 @@ static void __init kasan_pmd_populate(pud_t *pudp, unsigned long addr,
 	} while (pmdp++, addr = next, addr != end && pmd_none(READ_ONCE(*pmdp)));
 }
 
+/**
+ * @brief
+ *
+ * @param p4dp
+ * @param addr
+ * @param end
+ * @param node
+ * @param early
+ */
 static void __init kasan_pud_populate(p4d_t *p4dp, unsigned long addr,
 				      unsigned long end, int node, bool early)
 {
@@ -137,6 +168,15 @@ static void __init kasan_pud_populate(p4d_t *p4dp, unsigned long addr,
 	} while (pudp++, addr = next, addr != end && pud_none(READ_ONCE(*pudp)));
 }
 
+/**
+ * @brief
+ *
+ * @param pgdp
+ * @param addr
+ * @param end
+ * @param node
+ * @param early
+ */
 static void __init kasan_p4d_populate(pgd_t *pgdp, unsigned long addr,
 				      unsigned long end, int node, bool early)
 {
@@ -149,6 +189,14 @@ static void __init kasan_p4d_populate(pgd_t *pgdp, unsigned long addr,
 	} while (p4dp++, addr = next, addr != end);
 }
 
+/**
+ * @brief
+ *
+ * @param addr
+ * @param end
+ * @param node
+ * @param early
+ */
 static void __init kasan_pgd_populate(unsigned long addr, unsigned long end,
 				      int node, bool early)
 {
@@ -162,7 +210,12 @@ static void __init kasan_pgd_populate(unsigned long addr, unsigned long end,
 	} while (pgdp++, addr = next, addr != end);
 }
 
-/* The early shadow maps everything to a single page of zeroes */
+/**
+ * The early shadow maps everything to a single page of zeroes
+ *
+ * 在kasan_early_init()函数中，将所有的KASAN区域映射到kasan_zero_page物理页面。
+ * 因此系统启动初期，KASAN并不能工作。
+ */
 asmlinkage void __init kasan_early_init(void)
 {
 	BUILD_BUG_ON(KASAN_SHADOW_OFFSET !=
@@ -170,6 +223,10 @@ asmlinkage void __init kasan_early_init(void)
 	BUILD_BUG_ON(!IS_ALIGNED(_KASAN_SHADOW_START(VA_BITS), PGDIR_SIZE));
 	BUILD_BUG_ON(!IS_ALIGNED(_KASAN_SHADOW_START(VA_BITS_MIN), PGDIR_SIZE));
 	BUILD_BUG_ON(!IS_ALIGNED(KASAN_SHADOW_END, PGDIR_SIZE));
+	/**
+	 * @brief
+	 *
+	 */
 	kasan_pgd_populate(KASAN_SHADOW_START, KASAN_SHADOW_END, NUMA_NO_NODE,
 			   true);
 }
@@ -208,6 +265,11 @@ static void __init clear_pgds(unsigned long start,
 		set_pgd(pgd_offset_k(start), __pgd(0));
 }
 
+/**
+ * @brief 建立的映射关系
+ *
+ * kasan_init()函数执行结束就预示着KASAN的正常工作
+ */
 void __init kasan_init(void)
 {
 	u64 kimg_shadow_start, kimg_shadow_end;
@@ -215,9 +277,17 @@ void __init kasan_init(void)
 	phys_addr_t pa_start, pa_end;
 	u64 i;
 
+	/**
+	 * @brief 代码段
+	 *
+	 */
 	kimg_shadow_start = (u64)kasan_mem_to_shadow(_text) & PAGE_MASK;
 	kimg_shadow_end = PAGE_ALIGN((u64)kasan_mem_to_shadow(_end));
 
+	/**
+	 * @brief Modules 模块区
+	 *
+	 */
 	mod_shadow_start = (u64)kasan_mem_to_shadow((void *)MODULES_VADDR);
 	mod_shadow_end = (u64)kasan_mem_to_shadow((void *)MODULES_END);
 

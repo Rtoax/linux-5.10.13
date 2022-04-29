@@ -203,6 +203,13 @@ static inline p4d_t *early_p4d_offset(pgd_t *pgd, unsigned long addr)
 	return (p4d_t *)p4d + p4d_index(addr);
 }
 
+/**
+ * @brief
+ *
+ * @param pgd
+ * @param addr
+ * @param end
+ */
 static void __init kasan_early_p4d_populate(pgd_t *pgd,
 		unsigned long addr,
 		unsigned long end)
@@ -287,17 +294,16 @@ static void __init kasan_shallow_populate_pgds(void *start, void *end)
 	} while (pgd++, addr = next, addr != (unsigned long)end);
 }
 
-/*
-KASAN是一个动态检测内存错误的工具。KASAN可以检测全局变量、栈、堆分配的内存发生越界访问等问题。
-功能比SLUB DEBUG齐全并且支持实时检测。越界访问的严重性和危害性通过我之前的文章（SLUB DEBUG技术）
-应该有所了解。正是由于SLUB DEBUG缺陷，因此我们需要一种更加强大的检测工具。难道你不想吗？
-KASAN就是其中一种。KASAN的使用真的很简单。但是我是一个追求刨根问底的人。仅仅止步于使用的层面，
-我是不愿意的，只有更清楚的了解实现原理才能更加熟练的使用工具。不止是KASAN，其他方面我也是这么认为。
-但是，说实话，写这篇文章是有点底气不足的。因为从我查阅的资料来说，国内没有一篇文章说KASAN的工作原理，
-国外也是没有什么文章关注KASAN的原理。大家好像都在说How to use。由于本人水平有限，就根据现有的资料
-以及自己阅读代码揣摩其中的意思。本文章作为抛准引玉，如果有不合理的地方还请指正。
-
-*/
+/**
+ * KASAN是一个动态检测内存错误的工具。KASAN可以检测全局变量、栈、堆分配的内存发生越界访问等问题。
+ * 功能比SLUB DEBUG齐全并且支持实时检测。越界访问的严重性和危害性通过我之前的文章（SLUB DEBUG技术）
+ * 应该有所了解。正是由于SLUB DEBUG缺陷，因此我们需要一种更加强大的检测工具。难道你不想吗？
+ * KASAN就是其中一种。KASAN的使用真的很简单。但是我是一个追求刨根问底的人。仅仅止步于使用的层面，
+ * 我是不愿意的，只有更清楚的了解实现原理才能更加熟练的使用工具。不止是KASAN，其他方面我也是这么认为。
+ * 但是，说实话，写这篇文章是有点底气不足的。因为从我查阅的资料来说，国内没有一篇文章说KASAN的工作原理，
+ * 国外也是没有什么文章关注KASAN的原理。大家好像都在说How to use。由于本人水平有限，就根据现有的资料
+ * 以及自己阅读代码揣摩其中的意思。本文章作为抛准引玉，如果有不合理的地方还请指正。
+ */
 void __init kasan_early_init(void)
 {
 	int i;
@@ -329,7 +335,9 @@ void __init kasan_early_init(void)
 	kasan_map_early_shadow(init_top_pgt);
 }
 
-/* Kernel Address Sanitizer,动态检测内存错误 */
+/**
+ * Kernel Address Sanitizer,动态检测内存错误
+ */
 void __init kasan_init(void)
 {
 	int i;
@@ -359,7 +367,16 @@ void __init kasan_init(void)
 				__pgd(__pa(tmp_p4d_table) | _KERNPG_TABLE));
 	}
 
+	/**
+	 * @brief 从 early_top_pgt 加载 CR3
+	 *
+	 */
 	load_cr3(early_top_pgt);
+
+	/**
+	 * @brief 刷新 TLB
+	 *
+	 */
 	__flush_tlb_all();
 
 	clear_pgds(KASAN_SHADOW_START & PGDIR_MASK, KASAN_SHADOW_END);
@@ -367,6 +384,10 @@ void __init kasan_init(void)
 	kasan_populate_early_shadow((void *)(KASAN_SHADOW_START & PGDIR_MASK),
 			kasan_mem_to_shadow((void *)PAGE_OFFSET));
 
+	/**
+	 * @brief e820
+	 *
+	 */
 	for (i = 0; i < E820_MAX_ENTRIES; i++) {
 		if (pfn_mapped[i].end == 0)
 			break;
