@@ -772,6 +772,9 @@ void set_personality_ia32(bool x32)
 EXPORT_SYMBOL_GPL(set_personality_ia32);
 
 #ifdef CONFIG_CHECKPOINT_RESTORE
+/**
+ * vDSO
+ */
 static long prctl_map_vdso(const struct vdso_image *image, unsigned long addr)
 {
 	int ret;

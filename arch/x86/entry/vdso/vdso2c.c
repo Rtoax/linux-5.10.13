@@ -78,6 +78,9 @@ enum {
 	sym_timens_page,
 };
 
+/**
+ *
+ */
 const int special_pages[] = {
 	sym_vvar_page,
 	sym_pvclock_page,
