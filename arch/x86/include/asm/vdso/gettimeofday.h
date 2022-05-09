@@ -20,6 +20,9 @@
 #include <asm/pvclock.h>
 #include <clocksource/hyperv_timer.h>
 
+/**
+ * vDSO: _vdso_data
+ */
 #define __vdso_data (VVAR(_vdso_data))
 #define __timens_vdso_data (TIMENS(_vdso_data))
 
@@ -241,9 +244,15 @@ static u64 vread_hvclock(void)
 }
 #endif
 
+/**
+ * 直接从硬件中获取硬件 计数
+ */
 static inline u64 __arch_get_hw_counter(s32 clock_mode,
 					const struct vdso_data *vd)
 {
+	/**
+	 * 使用 rdtsc 指令读取
+	 */
 	if (likely(clock_mode == VDSO_CLOCKMODE_TSC))
 		return (u64)rdtsc_ordered();
 	/*
@@ -267,6 +276,9 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
 	return U64_MAX;
 }
 
+/**
+ * vDSO: get vdso_data
+ */
 static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
 {
 	return __vdso_data;

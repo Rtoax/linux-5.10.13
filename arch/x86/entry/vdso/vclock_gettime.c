@@ -38,11 +38,20 @@ __kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__v
 extern int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts);
 extern int __vdso_clock_getres(clockid_t clock, struct __kernel_timespec *res);
 
+/**
+ * vDSO clock_gettime()
+ */
 int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
 {
+	/**
+	 *
+	 */
 	return __cvdso_clock_gettime(clock, ts);
 }
 
+/**
+ * clock_gettime 别名
+ */
 int clock_gettime(clockid_t, struct __kernel_timespec *)
 	__attribute__((weak, alias("__vdso_clock_gettime")));
 

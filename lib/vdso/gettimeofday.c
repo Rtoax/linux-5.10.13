@@ -95,7 +95,11 @@ static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
 
 #endif
 
-static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
+/**
+ *
+ */
+static __always_inline int
+do_hres(const struct vdso_data *vd, clockid_t clk,
 				   struct __kernel_timespec *ts)
 {
 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
@@ -129,6 +133,9 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 		if (unlikely(!vdso_clocksource_ok(vd)))
 			return -1;
 
+		/**
+		 *
+		 */
 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
 		if (unlikely(!vdso_cycles_ok(cycles)))
 			return -1;
@@ -208,6 +215,9 @@ static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
 	return 0;
 }
 
+/**
+ * vDSO:
+ */
 static __always_inline int
 __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
 			     struct __kernel_timespec *ts)
@@ -231,10 +241,15 @@ __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
 		vd = &vd[CS_RAW];
 	else
 		return -1;
-
+	/**
+	 *
+	 */
 	return do_hres(vd, clock, ts);
 }
 
+/**
+ * vDSO
+ */
 static __maybe_unused int
 __cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock,
 			   struct __kernel_timespec *ts)
@@ -246,9 +261,15 @@ __cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock,
 	return 0;
 }
 
+/**
+ * vDSO: clock_gettime()
+ */
 static __maybe_unused int
 __cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
 {
+	/**
+	 *
+	 */
 	return __cvdso_clock_gettime_data(__arch_get_vdso_data(), clock, ts);
 }
 
