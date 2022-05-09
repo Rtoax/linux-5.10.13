@@ -53,9 +53,26 @@ void __init init_vdso_image(const struct vdso_image *image)
 						image->alt_len));
 }
 
+/**
+ * [vvar]
+ */
 static const struct vm_special_mapping vvar_mapping;
 struct linux_binprm;
 
+/**
+ * vDSO 发生缺页中断时候,直接吧这个页给过去
+ *
+ * 调用栈
+ *  vdso_fault+1
+    __do_fault+51
+    do_read_fault+230
+    do_fault+197
+    __handle_mm_fault+971
+    handle_mm_fault+197
+    do_user_addr_fault+443
+    exc_page_fault+98
+    asm_exc_page_fault+30
+ */
 static vm_fault_t vdso_fault(const struct vm_special_mapping *sm,
 		      struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -64,6 +81,9 @@ static vm_fault_t vdso_fault(const struct vm_special_mapping *sm,
 	if (!image || (vmf->pgoff << PAGE_SHIFT) >= image->size)
 		return VM_FAULT_SIGBUS;
 
+	/**
+	 * 直接返回这个 page
+	 */
 	vmf->page = virt_to_page(image->data + (vmf->pgoff << PAGE_SHIFT));
 	get_page(vmf->page);
 	return 0;
@@ -241,11 +261,19 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 	return VM_FAULT_SIGBUS;
 }
 
+/**
+ * /proc/PID/maps
+ * [vdso]
+ */
 static const struct vm_special_mapping vdso_mapping = {
 	.name = "[vdso]",
 	.fault = vdso_fault,
 	.mremap = vdso_mremap,
 };
+/**
+ * /proc/PID/maps
+ * [vvar]
+ */
 static const struct vm_special_mapping vvar_mapping = {
 	.name = "[vvar]",
 	.fault = vvar_fault,
@@ -302,6 +330,9 @@ static int map_vdso(const struct vdso_image *image, unsigned long addr)
 		ret = PTR_ERR(vma);
 		do_munmap(mm, text_start, image->size, NULL);
 	} else {
+		/**
+		 * 安装这个 vdso 和 image
+		 */
 		current->mm->context.vdso = (void __user *)text_start;
 		current->mm->context.vdso_image = image;
 	}
