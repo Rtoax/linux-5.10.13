@@ -13,6 +13,7 @@
 
 /*
  * This controls what userland symbols we export from the vDSO.
+ * vDSO
  */
 VERSION {
 	LINUX_2.6 {
