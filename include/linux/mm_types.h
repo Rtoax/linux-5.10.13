@@ -1057,6 +1057,9 @@ enum vm_fault_reason {
 	{ VM_FAULT_DONE_COW,            "DONE_COW" },	\
 	{ VM_FAULT_NEEDDSYNC,           "NEEDDSYNC" }
 
+/**
+ * vDSO
+ */
 struct vm_special_mapping {
 	const char *name;	/* The name, e.g. "[vdso]". */
 

@@ -25,6 +25,9 @@ typedef struct {
 	void		*sigpage;
 #endif
 	refcount_t	pinned;
+	/**
+	 * vDSO:
+	 */
 	void		*vdso;
 	unsigned long	flags;
 } mm_context_t;

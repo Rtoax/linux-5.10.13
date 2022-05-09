@@ -88,6 +88,9 @@ static union {
  */
 struct vdso_data *vdso_data = vdso_data_store.data;
 
+/**
+ * vDSO
+ */
 static int __vdso_remap(enum vdso_abi abi,
 			const struct vm_special_mapping *sm,
 			struct vm_area_struct *new_vma)
@@ -99,6 +102,9 @@ static int __vdso_remap(enum vdso_abi abi,
 	if (vdso_size != new_size)
 		return -EINVAL;
 
+	/**
+	 * 重新赋值
+	 */
 	current->mm->context.vdso = (void *)new_vma->vm_start;
 
 	return 0;
@@ -245,6 +251,9 @@ static int vvar_mremap(const struct vm_special_mapping *sm,
 	return 0;
 }
 
+/**
+ * vDSO
+ */
 static int __setup_additional_pages(enum vdso_abi abi,
 				    struct mm_struct *mm,
 				    struct linux_binprm *bprm,
@@ -276,6 +285,9 @@ static int __setup_additional_pages(enum vdso_abi abi,
 		gp_flags = VM_ARM64_BTI;
 
 	vdso_base += VVAR_NR_PAGES * PAGE_SIZE;
+	/**
+	 * vDSO
+	 */
 	mm->context.vdso = (void *)vdso_base;
 	ret = _install_special_mapping(mm, vdso_base, vdso_text_len,
 				       VM_READ|VM_EXEC|gp_flags|
@@ -468,6 +480,9 @@ out:
 }
 #endif /* CONFIG_COMPAT */
 
+/**
+ * 给 current->mm.context->vdso 赋值
+ */
 static int vdso_mremap(const struct vm_special_mapping *sm,
 		struct vm_area_struct *new_vma)
 {
@@ -479,6 +494,9 @@ enum aarch64_map {
 	AA64_MAP_VDSO,
 };
 
+/**
+ * vDSO
+ */
 static struct vm_special_mapping aarch64_vdso_maps[] __ro_after_init = {
 	[AA64_MAP_VVAR] = {
 		.name	= "[vvar]",
@@ -500,6 +518,9 @@ static int __init vdso_init(void)
 }
 arch_initcall(vdso_init);
 
+/**
+ * vDSO
+ */
 int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	struct mm_struct *mm = current->mm;

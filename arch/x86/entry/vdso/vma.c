@@ -393,6 +393,9 @@ static unsigned long vdso_addr(unsigned long start, unsigned len)
 	return addr;
 }
 
+/**
+ * vDSO
+ */
 static int map_vdso_randomized(const struct vdso_image *image)
 {
 	unsigned long addr = vdso_addr(current->mm->start_stack, image->size-image->sym_vvar_start);
@@ -437,6 +440,9 @@ static int load_vdso32(void)
 #endif
 
 #ifdef CONFIG_X86_64
+/**
+ * vDSO
+ */
 int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	if (!vdso64_enabled)

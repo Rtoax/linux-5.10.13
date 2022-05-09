@@ -38,7 +38,13 @@ typedef struct {    /* MMU 硬件上下文 */
 #endif
 
 	struct mutex lock;
+	/**
+	 * vDSO: 用户态
+	 */
 	void __user *vdso;			/* vdso base address */
+	/**
+	 * vDSO: vdso_image
+	 */
 	const struct vdso_image *vdso_image;	/* vdso image in use */
 
 	atomic_t perf_rdpmc_allowed;	/* nonzero if rdpmc is allowed */
