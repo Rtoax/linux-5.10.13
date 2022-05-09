@@ -86,6 +86,8 @@ struct vdso_timestamp {
  * real system wide VVAR page, read host time and add the per clock offset.
  * For clocks which are not affected by time namespace adjustment the
  * offset must be zero.
+ *
+ * vDSO 数据
  */
 struct vdso_data {
 	u32			seq;
