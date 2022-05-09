@@ -330,10 +330,10 @@ extern bool mmap_address_hint_valid(unsigned long addr, unsigned long len);
 
 #ifdef CONFIG_X86_32
 
-//#define __STACK_RND_MASK(is32bit) (0x7ff)
-//#define STACK_RND_MASK (0x7ff)
-//
-//#define ARCH_DLINFO		ARCH_DLINFO_IA32
+#define __STACK_RND_MASK(is32bit) (0x7ff)
+#define STACK_RND_MASK (0x7ff)
+
+#define ARCH_DLINFO		ARCH_DLINFO_IA32
 
 /* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
 
@@ -371,6 +371,7 @@ else									\
 
 #endif /* !CONFIG_X86_32 */
 
+/* vDSO */
 #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
 
 #define VDSO_ENTRY							\
