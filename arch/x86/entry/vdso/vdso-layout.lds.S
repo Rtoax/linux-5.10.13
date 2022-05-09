@@ -16,6 +16,10 @@ SECTIONS
 	 * segment.
 	 */
 
+	/**
+	 * [vvar]共 4 页
+	 *
+	 */
 	vvar_start /* required_syms */= . - 4 * PAGE_SIZE;
 	vvar_page  /* required_syms */= vvar_start;
 

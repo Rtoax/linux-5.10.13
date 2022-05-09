@@ -386,6 +386,7 @@ SECTIONS
 	.vvar : AT(ADDR(.vvar) - 0xffffffff80000000) 
 	{
 		__vvar_beginning_hack = .;
+		// _vdso_data_offset = 128
 		. = __vvar_beginning_hack + 128; *(.vvar__vdso_data)
 		. = __vvar_beginning_hack + (1 << 12);
 	} :data

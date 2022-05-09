@@ -38,6 +38,11 @@ enum vdso_abi {
 };
 
 enum vvar_pages {
+	/**
+	 * 数据
+	 * vdso_data
+	 * timens_page
+	 */
 	VVAR_DATA_PAGE_OFFSET,
 	VVAR_TIMENS_PAGE_OFFSET,
 	VVAR_NR_PAGES,
@@ -71,11 +76,16 @@ static struct vdso_abi_info vdso_info[] __ro_after_init = {
 
 /*
  * The vDSO data page.
+ * vdso_data 保存在了一个 page 大小的空间内，从 /proc/PID/maps 也可以看出
  */
 static union {
 	struct vdso_data	data[CS_BASES];
 	u8			page[PAGE_SIZE];
 } vdso_data_store __page_aligned_data;
+
+/**
+ * vdso_data
+ */
 struct vdso_data *vdso_data = vdso_data_store.data;
 
 static int __vdso_remap(enum vdso_abi abi,
@@ -185,6 +195,11 @@ static struct page *find_timens_vvar_page(struct vm_area_struct *vma)
 }
 #endif
 
+/**
+ * vvar_fault
+ *
+ * 包含 timens_page, vdso_data
+ */
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 			     struct vm_area_struct *vma, struct vm_fault *vmf)
 {

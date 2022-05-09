@@ -44,10 +44,16 @@ unsigned int __read_mostly vclocks_used ;
 unsigned int __read_mostly vdso64_enabled = 1;
 #endif
 
+/**
+ * 初始化 vdso_image_64
+ */
 void __init init_vdso_image(const struct vdso_image *image)
 {
 	BUG_ON(image->size % PAGE_SIZE != 0);
 
+	/**
+	 * alternatives
+	 */
 	apply_alternatives((struct alt_instr *)(image->data + image->alt),
 			   (struct alt_instr *)(image->data + image->alt +
 						image->alt_len));
@@ -444,11 +450,11 @@ int compat_arch_setup_additional_pages(struct linux_binprm *bprm,
 				       int uses_interp)
 {
 #ifdef CONFIG_X86_X32_ABI
-//	if (test_thread_flag(TIF_X32)) {
-//		if (!vdso64_enabled)
-//			return 0;
-//		return map_vdso_randomized(&vdso_image_x32);
-//	}
+	if (test_thread_flag(TIF_X32)) {
+		if (!vdso64_enabled)
+			return 0;
+		return map_vdso_randomized(&vdso_image_x32);
+	}
 #endif
 #ifdef CONFIG_IA32_EMULATION
 	return load_vdso32();
@@ -458,10 +464,10 @@ int compat_arch_setup_additional_pages(struct linux_binprm *bprm,
 }
 #endif
 #else
-//int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
-//{
-//	return load_vdso32();
-//}
+int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+{
+	return load_vdso32();
+}
 #endif
 
 #ifdef CONFIG_X86_64
@@ -472,6 +478,9 @@ static __init int vdso_setup(char *s)
 }
 __setup("vdso=", vdso_setup);
 
+/**
+ * 初始化 vDSO
+ */
 static int __init init_vdso(void)
 {
 	BUILD_BUG_ON(VDSO_CLOCKMODE_MAX >= 32);
@@ -479,7 +488,7 @@ static int __init init_vdso(void)
 	init_vdso_image(&vdso_image_64);
 
 #ifdef CONFIG_X86_X32_ABI
-//	init_vdso_image(&vdso_image_x32);
+	init_vdso_image(&vdso_image_x32);
 #endif
 
 	return 0;

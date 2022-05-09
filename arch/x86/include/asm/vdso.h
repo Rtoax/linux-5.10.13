@@ -10,10 +10,16 @@
 
 #include <linux/mm_types.h>
 
-struct vdso_image { /* vDSO */
+/**
+ * vDSO
+ */
+struct vdso_image {
 	void *data;
 	unsigned long size;   /* Always a multiple of PAGE_SIZE */
 
+	/**
+	 * see init_vdso_image()
+	 */
 	unsigned long alt, alt_len;
 
 	long sym_vvar_start;  /* Negative offset to the vvar area */
@@ -34,7 +40,7 @@ extern const struct vdso_image vdso_image_64;
 #endif
 
 #ifdef CONFIG_X86_X32
-//extern const struct vdso_image vdso_image_x32;
+extern const struct vdso_image vdso_image_x32;
 #endif
 
 #if defined CONFIG_X86_32 || defined CONFIG_COMPAT

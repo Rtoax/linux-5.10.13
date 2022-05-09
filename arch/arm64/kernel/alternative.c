@@ -132,6 +132,9 @@ static void clean_dcache_range_nopatch(u64 start, u64 end)
 	} while (cur += d_size, cur < end);
 }
 
+/**
+ * TODO: 2022年5月9日 vDSO 看过来
+ */
 static void __apply_alternatives(void *alt_region,  bool is_module,
 				 unsigned long *feature_mask)
 {
