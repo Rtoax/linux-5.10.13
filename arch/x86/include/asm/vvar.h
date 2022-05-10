@@ -40,6 +40,12 @@ extern char __vvar_page;
 #define VVAR(name) (vvar_ ## name)
 #define TIMENS(name) (timens_ ## name)
 
+/**
+ * DEFINE_VVAR(struct vdso_data, _vdso_data);
+ * 展开：
+ * struct vdso_data _vdso_data[CS_BASES]\
+ *	__attribute__((section(".vvar__vdso_data"), aligned(16))) __visible
+ */
 #define DEFINE_VVAR(type, name)						\
 	type name[CS_BASES]						\
 	__attribute__((section(".vvar_" #name), aligned(16))) __visible

@@ -25,18 +25,21 @@
 struct arch_vdso_data {};
 #endif
 
-#define VDSO_BASES	(CLOCK_TAI + 1)
-#define VDSO_HRES	(BIT(CLOCK_REALTIME)		| \
-			 BIT(CLOCK_MONOTONIC)		| \
-			 BIT(CLOCK_BOOTTIME)		| \
-			 BIT(CLOCK_TAI))
-#define VDSO_COARSE	(BIT(CLOCK_REALTIME_COARSE)	| \
-			 BIT(CLOCK_MONOTONIC_COARSE))
-#define VDSO_RAW	(BIT(CLOCK_MONOTONIC_RAW))
+#define VDSO_BASES	/*12*/(CLOCK_TAI/*11*/ + 1)
+#define VDSO_HRES	/*0000 1000 1000 0011*/\
+			(BIT(CLOCK_REALTIME/*0*/)		| \
+			 BIT(CLOCK_MONOTONIC/*1*/)		| \
+			 BIT(CLOCK_BOOTTIME/*7*/)		| \
+			 BIT(CLOCK_TAI/*11*/))
+#define VDSO_COARSE	/*0000 0000 0110 0000*/\
+			(BIT(CLOCK_REALTIME_COARSE/*5*/)	| \
+			 BIT(CLOCK_MONOTONIC_COARSE/*6*/))
+#define VDSO_RAW	/*0000 0000 0001 0000*/\
+			(BIT(CLOCK_MONOTONIC_RAW/*4*/))
 
 #define CS_HRES_COARSE	0
 #define CS_RAW		1
-#define CS_BASES	(CS_RAW + 1)
+#define CS_BASES	(CS_RAW + 1) /* =2 */
 
 /**
  * struct vdso_timestamp - basetime per clock_id

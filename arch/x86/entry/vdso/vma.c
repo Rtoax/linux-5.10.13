@@ -32,6 +32,9 @@
 	const size_t name ## _offset = offset;
 #include <asm/vvar.h>
 
+/**
+ *
+ */
 struct vdso_data *arch_get_vdso_data(void *vvar_page)
 {
 	return (struct vdso_data *)(vvar_page + _vdso_data_offset);
@@ -186,6 +189,9 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
 
 #endif
 
+/**
+ *
+ */
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		      struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -209,6 +215,9 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 	if (sym_offset == 0)
 		return VM_FAULT_SIGBUS;
 
+	/**
+	 * vvar_page
+	 */
 	if (sym_offset == image->sym_vvar_page) {
 		struct page *timens_page = find_timens_vvar_page(vma);
 
@@ -240,6 +249,9 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		}
 
 		return vmf_insert_pfn(vma, vmf->address, pfn);
+	/**
+	 * pvclock
+	 */
 	} else if (sym_offset == image->sym_pvclock_page) {
 		struct pvclock_vsyscall_time_info *pvti =
 			pvclock_get_pvti_cpu0_va();
@@ -248,12 +260,18 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 					__pa(pvti) >> PAGE_SHIFT,
 					pgprot_decrypted(vma->vm_page_prot));
 		}
+	/**
+	 * hvclock
+	 */
 	} else if (sym_offset == image->sym_hvclock_page) {
 		struct ms_hyperv_tsc_page *tsc_pg = hv_get_tsc_page();
 
 		if (tsc_pg && vclock_was_used(VDSO_CLOCKMODE_HVCLOCK))
 			return vmf_insert_pfn(vma, vmf->address,
 					virt_to_phys(tsc_pg) >> PAGE_SHIFT);
+	/**
+	 * timens
+	 */
 	} else if (sym_offset == image->sym_timens_page) {
 		struct page *timens_page = find_timens_vvar_page(vma);
 

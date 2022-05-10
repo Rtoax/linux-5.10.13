@@ -189,6 +189,9 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
 
 #endif
 
+/**
+ * vDSO
+ */
 static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
 				     struct __kernel_timespec *ts)
 {
@@ -231,14 +234,20 @@ __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
 	/*
 	 * Convert the clockid to a bitmask and use it to check which
 	 * clocks are handled in the VDSO directly.
+	 *
+	 * 选用哪种 clockid
 	 */
 	msk = 1U << clock;
 	if (likely(msk & VDSO_HRES))
-		vd = &vd[CS_HRES_COARSE];
+		vd = &vd[CS_HRES_COARSE/*0*/];
+	/**
+	 * COARSE: 粗
+	 * 这不会调用硬件指令
+	 */
 	else if (msk & VDSO_COARSE)
 		return do_coarse(&vd[CS_HRES_COARSE], clock, ts);
 	else if (msk & VDSO_RAW)
-		vd = &vd[CS_RAW];
+		vd = &vd[CS_RAW/*1*/];
 	else
 		return -1;
 	/**
@@ -351,6 +360,9 @@ __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
 	return t;
 }
 
+/**
+ *
+ */
 static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time)
 {
 	return __cvdso_time_data(__arch_get_vdso_data(), time);

@@ -175,6 +175,7 @@ static struct timens_offset offset_from_ts(struct timespec64 off)
  *
  * Timens page has vdso_data->clock_mode set to VDSO_CLOCKMODE_TIMENS which
  * enforces the time namespace handling path.
+ *
  */
 static void timens_setup_vdso_data(struct vdso_data *vdata,
 				   struct time_namespace *ns)
@@ -185,6 +186,11 @@ static void timens_setup_vdso_data(struct vdso_data *vdata,
 
 	vdata->seq			= 1;
 	vdata->clock_mode		= VDSO_CLOCKMODE_TIMENS;
+
+	/**
+	 * monotonic: 单调的
+	 * boottime: 启动时间
+	 */
 	offset[CLOCK_MONOTONIC]		= monotonic;
 	offset[CLOCK_MONOTONIC_RAW]	= monotonic;
 	offset[CLOCK_MONOTONIC_COARSE]	= monotonic;
@@ -217,8 +223,15 @@ static void timens_set_vvar_page(struct task_struct *task,
 		goto out;
 
 	ns->frozen_offsets = true;
+
+	/**
+	 *
+	 */
 	vdata = arch_get_vdso_data(page_address(ns->vvar_page));
 
+	/**
+	 * CS_BASES = 2
+	 */
 	for (i = 0; i < CS_BASES; i++)
 		timens_setup_vdso_data(&vdata[i], ns);
 

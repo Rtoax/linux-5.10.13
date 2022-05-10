@@ -11,6 +11,9 @@
 #include <asm/vvar.h>
 
 DEFINE_VVAR(struct vdso_data, _vdso_data);
+/* 展开 */
+struct vdso_data _vdso_data[CS_BASES]\
+	__attribute__((section(".vvar__vdso_data"), aligned(16))) __visible
 /*
  * Update the vDSO data page to keep in sync with kernel timekeeping.
  */
