@@ -9,11 +9,26 @@
 #include <vdso/datapage.h>
 #include <asm/vgtod.h>
 #include <asm/vvar.h>
+/**
+ * 展开 asm/vvar.h
+ * #define DECLARE_VVAR(offset, type, name)				\
+ *	extern type vvar_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ *	extern type timens_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+ * >>>>>
+ * extern struct vdso_data vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * extern struct vdso_data timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * Rong Tao 2022.05.10
+ */
+extern struct vdso_data vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+extern struct vdso_data timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
 
 DEFINE_VVAR(struct vdso_data, _vdso_data);
 /* 展开 */
 struct vdso_data _vdso_data[CS_BASES]\
-	__attribute__((section(".vvar__vdso_data"), aligned(16))) __visible
+	__attribute__((section(".vvar__vdso_data"), aligned(16))) __visible;
 /*
  * Update the vDSO data page to keep in sync with kernel timekeeping.
  */

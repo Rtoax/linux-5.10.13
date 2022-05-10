@@ -61,7 +61,15 @@ targets += $(vdso_img_sodbg) $(vdso_img-y:%=vdso%.so)
 
 CPPFLAGS_vdso.lds += -P -C
 
-# ldd /usr/bin/ls
+# 查看: ldd /usr/bin/ls
+# 会依赖 linux-vdso.so.1
+# man ld
+# -soname=name
+#    When creating an ELF shared object, set the internal DT_SONAME field to the specified
+#    name.  When an executable is linked with a shared object which has a DT_SONAME field,
+#    then when the executable is run the dynamic linker will attempt to load the shared
+#    object specified by the DT_SONAME field rather than the using the file name given to the
+#    linker.
 VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -soname linux-vdso.so.1 --no-undefined \
 			-z max-page-size=4096
 

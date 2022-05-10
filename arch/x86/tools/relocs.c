@@ -113,6 +113,9 @@ static int is_reloc(enum symtype type, const char *sym_name)
 		!regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
 }
 
+/**
+ * 重定位
+ */
 static void regex_init(int use_real_mode)
 {
         char errbuf[128];

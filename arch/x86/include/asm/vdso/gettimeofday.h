@@ -15,13 +15,30 @@
 #include <uapi/linux/time.h>
 #include <asm/vgtod.h>
 #include <asm/vvar.h>
+/**
+ * 展开 asm/vvar.h
+ * #define DECLARE_VVAR(offset, type, name)				\
+ *	extern type vvar_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ *	extern type timens_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+ * >>>>>
+ * extern struct vdso_data vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * extern struct vdso_data timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * Rong Tao 2022.05.10
+ */
+extern struct vdso_data vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+extern struct vdso_data timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
 #include <asm/unistd.h>
 #include <asm/msr.h>
 #include <asm/pvclock.h>
 #include <clocksource/hyperv_timer.h>
 
 /**
- * vDSO: _vdso_data
+ * vDSO data
+ * __vdso_data -> vvar__vdso_data
+ * __timens_vdso_data -> vvar__timens_vdso_data
  */
 #define __vdso_data (VVAR(_vdso_data))
 #define __timens_vdso_data (TIMENS(_vdso_data))
@@ -61,8 +78,14 @@ extern struct ms_hyperv_tsc_page hvclock_page
 #endif
 
 #ifdef CONFIG_TIME_NS
+/**
+ * TIMENS
+ */
 static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
 {
+	/**
+	 * return vvar__timens_vdso_data
+	 */
 	return __timens_vdso_data;
 }
 #endif
@@ -281,6 +304,9 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
  */
 static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
 {
+	/**
+	 * return vvar__vdso_data
+	 */
 	return __vdso_data;
 }
 

@@ -63,11 +63,17 @@ static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
 	vdso_ts = &vd->basetime[clk];
 
 	do {
+		/**
+		 * 读屏障
+		 */
 		seq = vdso_read_begin(vd);
 
 		if (unlikely(!vdso_clocksource_ok(vd)))
 			return -1;
 
+		/**
+		 * 从硬件读
+		 */
 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
 		if (unlikely(!vdso_cycles_ok(cycles)))
 			return -1;
@@ -160,6 +166,9 @@ do_hres(const struct vdso_data *vd, clockid_t clk,
 static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
 			    struct __kernel_timespec *ts)
 {
+	/**
+	 *
+	 */
 	const struct vdso_data *vd = __arch_get_timens_vdso_data();
 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
 	const struct timens_offset *offs = &vdns->offset[clk];
@@ -168,7 +177,13 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
 	s32 seq;
 
 	do {
+		/**
+		 * 读屏障
+		 */
 		seq = vdso_read_begin(vd);
+		/**
+		 *
+		 */
 		sec = vdso_ts->sec;
 		nsec = vdso_ts->nsec;
 	} while (unlikely(vdso_read_retry(vd, seq)));

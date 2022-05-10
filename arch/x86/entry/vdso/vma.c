@@ -21,6 +21,21 @@
 #include <asm/proto.h>
 #include <asm/vdso.h>
 #include <asm/vvar.h>
+/**
+ * 展开 asm/vvar.h
+ * #define DECLARE_VVAR(offset, type, name)				\
+ *	extern type vvar_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ *	extern type timens_ ## name[CS_BASES]				\
+ *	__attribute__((visibility("hidden")));				\
+ * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+ * >>>>>
+ * extern type vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * extern type timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+ * Rong Tao 2022.05.10
+ */
+extern type vvar__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+extern type timens__vdso_data[CS_BASES] __attribute__((visibility("hidden")));
 #include <asm/tlb.h>
 #include <asm/page.h>
 #include <asm/desc.h>
@@ -31,6 +46,14 @@
 #define EMIT_VVAR(name, offset)	\
 	const size_t name ## _offset = offset;
 #include <asm/vvar.h>
+/**
+ * 展开 asm/vvar.h
+ * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+ * >>>>>
+ * const size_t _vdso_data_offset = 128;
+ * Rong Tao 2022.05.10
+ */
+const size_t _vdso_data_offset = 128;
 
 /**
  *

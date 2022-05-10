@@ -262,6 +262,14 @@ SECTIONS
 		*(.vvar_ ## name)
 
 #include <asm/vvar.h>
+		/**
+		 * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+		 * 展开为：
+		 * . = __vvar_beginning_hack + 128
+		 * *(.vvar__vdso_data)
+		 */
+		. = __vvar_beginning_hack + 128;
+		*(.vvar__vdso_data)
         /**
          *  ffffffff83bdb080 D _vdso_data
          */

@@ -22,20 +22,31 @@ static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
 {
 	u32 seq;
 
+	/**
+	 * 上面读的命令必须都读完
+	 */
 	smp_rmb();
 	seq = READ_ONCE(vd->seq);
 	return seq != start;
 }
 
+/**
+ * 开始写
+ */
 static __always_inline void vdso_write_begin(struct vdso_data *vd)
 {
 	/*
 	 * WRITE_ONCE it is required otherwise the compiler can validly tear
 	 * updates to vd[x].seq and it is possible that the value seen by the
 	 * reader it is inconsistent.
+	 *
+	 * 序号 + 1
 	 */
 	WRITE_ONCE(vd[CS_HRES_COARSE].seq, vd[CS_HRES_COARSE].seq + 1);
 	WRITE_ONCE(vd[CS_RAW].seq, vd[CS_RAW].seq + 1);
+	/**
+	 * 上面的命令必须都写完
+	 */
 	smp_wmb();
 }
 

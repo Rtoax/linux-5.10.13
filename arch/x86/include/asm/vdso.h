@@ -22,6 +22,9 @@ struct vdso_image {
 	 */
 	unsigned long alt, alt_len;
 
+	/**
+	 *
+	 */
 	long sym_vvar_start;  /* Negative offset to the vvar area */
 
 	long sym_vvar_page;

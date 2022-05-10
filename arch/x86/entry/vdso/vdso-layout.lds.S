@@ -26,6 +26,14 @@ SECTIONS
 	/* Place all vvars at the offsets in asm/vvar.h. */
 #define EMIT_VVAR(name, offset) vvar_ ## name = vvar_page + offset;
 #include <asm/vvar.h>
+	/**
+	 * 展开 asm/vvar.h
+	 * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+	 * >>>>>
+	 * vvar__vdso_data = vvar_page + 128;
+	 * Rong Tao 2022.05.10
+	 */
+	vvar__vdso_data = vvar_page + 128;
 #undef EMIT_VVAR
 
 	pvclock_page = vvar_start + PAGE_SIZE;
@@ -36,6 +44,14 @@ SECTIONS
 	/* Place all vvars in timens too at the offsets in asm/vvar.h. */
 #define EMIT_VVAR(name, offset) timens_ ## name = timens_page + offset;
 #include <asm/vvar.h>
+	/**
+	 * 展开 asm/vvar.h
+	 * DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+	 * >>>>>
+	 * timens__vdso_data = timens_page + 128;
+	 * Rong Tao 2022.05.10
+	 */
+	timens__vdso_data = timens_page + 128;
 #undef EMIT_VVAR
 
 	. = SIZEOF_HEADERS;
