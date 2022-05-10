@@ -19,7 +19,7 @@
 #ifdef CONFIG_COMPAT_VDSO   
 #define VDSO_DEFAULT	0
 #else
-//#define VDSO_DEFAULT	1
+#define VDSO_DEFAULT	1
 #endif
 
 /*
@@ -48,7 +48,7 @@ static int __init vdso32_setup(char *s)
 __setup("vdso32=", vdso32_setup);
 
 #ifdef CONFIG_X86_32
-//__setup_param("vdso=", vdso_setup, vdso32_setup, 0);
+__setup_param("vdso=", vdso_setup, vdso32_setup, 0);
 #endif
 
 int __init sysenter_setup(void)
@@ -66,6 +66,9 @@ subsys_initcall(sysenter_setup);
 /* Register vsyscall32 into the ABI table */
 #include <linux/sysctl.h>
 
+/**
+ * /proc/sys/abi/vsyscall32
+ */
 static struct ctl_table abi_table2[] = {
 	{
 		.procname	= "vsyscall32",
@@ -79,6 +82,9 @@ static struct ctl_table abi_table2[] = {
 	{}
 };
 
+/**
+ * /proc/sys/abi/
+ */
 static struct ctl_table abi_root_table2[] = {
 	{
 		.procname = "abi",
