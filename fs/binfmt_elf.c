@@ -269,6 +269,12 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	 * AUXV.
 	 * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT() in
 	 * ARCH_DLINFO changes
+	 *
+	 * 可参见 glibc 代码 _dl_sysdep_start() 函数加载 vDSO 过程
+	 * elf/dl-sysdep.c
+	 * --------------------------------
+	 * case AT_SYSINFO_EHDR:
+	 *	GLRO(dl_sysinfo_dso) = (void *) av->a_un.a_val;
 	 */
 	ARCH_DLINFO;
 #endif
@@ -326,8 +332,8 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 
 	/* Point sp at the lowest address on the stack */
 #ifdef CONFIG_STACK_GROWSUP
-//	sp = (elf_addr_t __user *)bprm->p - items - ei_index;
-//	bprm->exec = (unsigned long)sp; /* XXX: PARISC HACK */
+	sp = (elf_addr_t __user *)bprm->p - items - ei_index;
+	bprm->exec = (unsigned long)sp; /* XXX: PARISC HACK */
 #else
 	sp = (elf_addr_t __user *)bprm->p;
 #endif
