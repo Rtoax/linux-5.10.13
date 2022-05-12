@@ -1,0 +1,10 @@
+# 编译 vdso2c
+# make -f Makefile.vdso2c
+#
+all: vdso2c.out
+
+vdso2c.out:
+	gcc -o vdso2c.out vdso2c.c -I .
+
+clean:
+	rm -f vdso2c.out
