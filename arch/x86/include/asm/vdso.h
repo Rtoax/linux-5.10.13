@@ -14,6 +14,10 @@
  * vDSO
  */
 struct vdso_image {
+	/**
+	 * =raw_data:
+	 * 参见: arch/x86/entry/vdso/vdso2c.h
+	 */
 	void *data;
 	unsigned long size;   /* Always a multiple of PAGE_SIZE */
 
