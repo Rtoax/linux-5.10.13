@@ -433,6 +433,7 @@
 	. = ALIGN((align));						\
 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
 		__start_rodata = .;	/* ffffffff82400000 */				\
+		/* vDSO: vdso_image_64 ffffffff82403f20 */\
 		*(.rodata) *(.rodata.*)		/* __annotate_jump_table = ".rodata..c_jump_table"*/\
 		                            /* __INITRODATA_OR_MODULE = ".rodata" */\
 		                            /* C_JUMP_TABLE_SECTION = ".rodata..c_jump_table" */\

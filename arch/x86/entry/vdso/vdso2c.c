@@ -58,6 +58,8 @@
 #include <fcntl.h>
 #include <err.h>
 
+#include <stdbool.h>
+
 #include <sys/mman.h>
 #include <sys/types.h>
 
@@ -93,7 +95,15 @@ struct vdso_sym {
 	bool export;
 };
 
+/**
+ * 可能是
+ * vdso_image_32
+ * vdso_image_64
+ */
 struct vdso_sym required_syms[] = {
+	/**
+	 * vvar_start
+	 */
 	[sym_vvar_start] = {"vvar_start", true},
 	[sym_vvar_page] = {"vvar_page", true},
 	[sym_pvclock_page] = {"pvclock_page", true},
@@ -146,6 +156,9 @@ extern void bad_put_le(void);
 #define PUT_LE(x, val)					\
 	PLE(x, val, 64, PLE(x, val, 32, PLE(x, val, 16, LAST_PLE(x, val))))
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+#endif
 
 #define NSYMS ARRAY_SIZE(required_syms)
 

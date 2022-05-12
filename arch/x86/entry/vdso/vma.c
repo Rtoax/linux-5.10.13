@@ -349,10 +349,14 @@ static int map_vdso(const struct vdso_image *image, unsigned long addr)
 		goto up_fail;
 	}
 
+	/**
+	 * Why?
+	 */
 	text_start = addr - image->sym_vvar_start;
 
 	/*
 	 * MAYWRITE to allow gdb to COW and set breakpoints
+	 * 读 + 执行 [vdso]
 	 */
 	vma = _install_special_mapping(mm,
 				       text_start,
@@ -366,6 +370,9 @@ static int map_vdso(const struct vdso_image *image, unsigned long addr)
 		goto up_fail;
 	}
 
+	/**
+	 * 只读 [vvar]
+	 */
 	vma = _install_special_mapping(mm,
 				       addr,
 				       -image->sym_vvar_start,
