@@ -1572,7 +1572,8 @@ out_free_interp:
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
     /**
-     *  设置辅助向量
+     *
+     ** 设置辅助向量
      *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
      *  附带了传递给动态连接器的程序相关的特定信息。
      *

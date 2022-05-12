@@ -1020,11 +1020,17 @@ static const struct file_operations proc_environ_operations = {
 	.release	= mem_release,
 };
 
+/**
+ * /proc/self/auxv
+ */
 static int auxv_open(struct inode *inode, struct file *file)
 {
 	return __mem_open(inode, file, PTRACE_MODE_READ_FSCREDS);
 }
 
+/**
+ * /proc/self/auxv
+ */
 static ssize_t auxv_read(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
 {
@@ -1040,6 +1046,9 @@ static ssize_t auxv_read(struct file *file, char __user *buf,
 				       nwords * sizeof(mm->saved_auxv[0]));
 }
 
+/**
+ * /proc/self/auxv
+ */
 static const struct file_operations proc_auxv_operations = {
 	.open		= auxv_open,
 	.read		= auxv_read,
