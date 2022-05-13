@@ -18,6 +18,9 @@ __PAGE_ALIGNED_DATA
 __vsyscall_page:    /* ffffffff82c09000 */
 
 	mov $__NR_gettimeofday, %rax
+	/**
+	 * vsyscall 将 int80 转化为了 syscall 指令
+	 */
 	syscall
 	ret
 

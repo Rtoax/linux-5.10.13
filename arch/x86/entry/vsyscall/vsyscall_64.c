@@ -304,6 +304,9 @@ static const char *gate_vma_name(struct vm_area_struct *vma)
 {
 	return "[vsyscall]";
 }
+/**
+ * vsyscall
+ */
 static const struct vm_operations_struct gate_vma_ops = {
 	.name = gate_vma_name,
 };
@@ -311,6 +314,9 @@ static struct vm_area_struct __ro_after_init gate_vma  /* vsyscall */= {
 	.vm_start	= VSYSCALL_ADDR,
 	.vm_end		= VSYSCALL_ADDR + PAGE_SIZE,
 	.vm_page_prot	= PAGE_READONLY_EXEC,
+	/**
+	 * 但是 /proc/PID/maps 显示为啥 不可读
+	 */
 	.vm_flags	= VM_READ | VM_EXEC,    /* 只读+可执行 */
 	.vm_ops		= &gate_vma_ops,
 };

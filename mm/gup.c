@@ -1047,6 +1047,9 @@ static long __get_user_pages(struct mm_struct *mm,
 		if (!vma |t >= vma->vm_end) {
 
 			vma = find_extend_vma(mm, start);   /* 查找并扩展vma */
+			/**
+			 * [vsyscall]
+			 */
 			if (!vma && in_gate_area(mm, start)) {
 				ret = get_gate_page(mm, start & PAGE_MASK,
 						gup_flags, &vma,
