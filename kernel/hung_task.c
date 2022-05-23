@@ -97,6 +97,9 @@ static struct notifier_block panic_block = {
 	.notifier_call = hung_task_panic,
 };
 
+/**
+ * hung task
+ */
 static void check_hung_task(struct task_struct *t, unsigned long timeout)
 {
 	unsigned long switch_count = t->nvcsw + t->nivcsw;
@@ -135,6 +138,8 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
 	/*
 	 * Ok, the task did not get scheduled for more than 2 minutes,
 	 * complain:
+	 *
+	 * 这个进程 2 分钟r没有被调度了
 	 */
 	if (sysctl_hung_task_warnings) {
 		if (sysctl_hung_task_warnings > 0)
@@ -147,6 +152,9 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
 			init_utsname()->version);
 		pr_err("\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\""
 			" disables this message.\n");
+		/**
+		 *
+		 */
 		sched_show_task(t);
 		hung_task_show_lock = true;
 
@@ -206,6 +214,9 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
 
 	hung_task_show_lock = false;
 	rcu_read_lock();
+	/**
+	 * 遍历所有 进程
+	 */
 	for_each_process_thread(g, t) {
 		if (!max_count--)
 			goto unlock;
@@ -220,9 +231,15 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
 	}
  unlock:
 	rcu_read_unlock();
+	/**
+	 * 显示所有 lock
+	 */
 	if (hung_task_show_lock)
 		debug_show_all_locks();
 
+	/**
+	 * 显示所有调用栈
+	 */
 	if (hung_task_show_all_bt) {
 		hung_task_show_all_bt = false;
 		trigger_all_cpu_backtrace();

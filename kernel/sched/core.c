@@ -7160,6 +7160,9 @@ SYSCALL_DEFINE2(sched_rr_get_interval_time32, pid_t, pid,
 }
 #endif
 
+/**
+ *
+ */
 void sched_show_task(struct task_struct *p)
 {
 	unsigned long free = 0;
