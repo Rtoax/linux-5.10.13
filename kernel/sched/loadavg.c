@@ -351,6 +351,8 @@ static void calc_global_nohz(void)
  * CPUs have updated calc_load_tasks.
  *
  * Called from the global timer code.
+ *
+ * sudo bpftrace -e 'kprobe:calc_global_load {printf("---\n");}'
  */
 void calc_global_load(void)
 {
