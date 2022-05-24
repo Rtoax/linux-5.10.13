@@ -2591,7 +2591,14 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 }
 
 /**
+ * 其中TTWU_QUEUE是内核调度的其中一个feature，默认是打开的（true），
+ * 可以控制在远程唤醒时是否允许向目标CPU触发IPI中断，如果不允许远程唤醒，
+ * 则需要通过对目标CPU的运行队列加锁进行处理。可知TTWU_QUEUE就是为了减少
+ * 运行队列的锁竞争，用中断代替。
  *
+ * see /sys/kernel/debug/sched/features
+ *
+ * https://lore.kernel.org/lkml/1323275027.32012.114.camel@twins/
  */
 static void
 ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
@@ -2601,6 +2608,9 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 
 	lockdep_assert_held(&rq->lock);
 
+	/**
+	 *
+	 */
 	if (p->sched_contributes_to_load)
 		rq->nr_uninterruptible--;
 
@@ -2797,6 +2807,14 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 #endif /* CONFIG_SMP */
 
 /**
+ * 其中TTWU_QUEUE是内核调度的其中一个feature，默认是打开的（true），
+ * 可以控制在远程唤醒时是否允许向目标CPU触发IPI中断，如果不允许远程唤醒，
+ * 则需要通过对目标CPU的运行队列加锁进行处理。可知TTWU_QUEUE就是为了减少
+ * 运行队列的锁竞争，用中断代替。
+ *
+ * see /sys/kernel/debug/sched/features
+ *
+ * https://lore.kernel.org/lkml/1323275027.32012.114.camel@twins/
  *
  */
 static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
