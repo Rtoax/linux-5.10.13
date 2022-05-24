@@ -2609,7 +2609,7 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 	lockdep_assert_held(&rq->lock);
 
 	/**
-	 *
+	 * 注意 sched_contributes_to_load 的计算即可
 	 */
 	if (p->sched_contributes_to_load)
 		rq->nr_uninterruptible--;
@@ -4927,11 +4927,20 @@ static void __sched notrace __schedule(bool preempt)
 		if (signal_pending_state(prev_state, prev)) {
 			prev->state = TASK_RUNNING;
 		} else {
+			/**
+			 * 进程被调度时候，是否对load 有贡献
+			 * 1. 不可中断的睡眠
+			 * 2. 设置了 TASK_NOLOAD 的不会记录 loadavg
+			 * 3. PF_FROZEN: 系统 挂起
+			 */
 			prev->sched_contributes_to_load =
 				(prev_state & TASK_UNINTERRUPTIBLE) &&
 				!(prev_state & TASK_NOLOAD) &&
 				!(prev->flags & PF_FROZEN);
 
+			/**
+			 * 记录这个 D 进程, 这将被用于计算 /proc/loadavg
+			 */
 			if (prev->sched_contributes_to_load)
 				rq->nr_uninterruptible++;
 

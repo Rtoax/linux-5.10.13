@@ -2097,6 +2097,9 @@ EXPORT_SYMBOL(schedule_timeout_uninterruptible);
  */
 signed long __sched schedule_timeout_idle(signed long timeout)
 {
+	/**
+	 * 调度超时, D 状态进程，但是不计算在 loadavg 里
+	 */
 	__set_current_state(TASK_IDLE);
 	return schedule_timeout(timeout);
 }

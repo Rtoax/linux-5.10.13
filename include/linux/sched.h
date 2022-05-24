@@ -137,6 +137,19 @@ struct io_uring_task;
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
+/**
+ * 以往系统设计，使用 TASK_INTERRUPTIBLE 来使 kthreads 空闲并等待“工作”，
+ * 因为 TASK_UNINTERRUPTIBLE 会导致负载增加。但让所有空闲的 kthread 都也
+ * 接入负载计算，这显得不合理。
+ *
+ * 因为空闲时 kthreads 的所有信号都被屏蔽，大多数情况下这样的设计及工作机
+ * 制是没有问题的。但是有一些站点会导致此问题，必须使用
+ * TASK_UNINTERRUPTIBLE，除了 loadavg 负载计算。
+ *
+ * 所以在后面较新版本的内核中，新增了一补丁，提供了 TASK_NOLOAD ，与
+ * TASK_UNINTERRUPTIBLE 结合使用时，避免了 loadavg 清算。在实际的使用场景中，
+ * 大多数站点会存在 kthreads 想要闲置，等待工作的循环，因此也引入了TASK_IDLE.
+ */
 #define TASK_NOLOAD			0x0400
 #define TASK_NEW			0x0800  /* linux-4.8添加 保证进程不会被运行 */
 #define TASK_STATE_MAX			0x1000
@@ -145,7 +158,9 @@ struct io_uring_task;
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
 #define TASK_TRACED			(TASK_WAKEKILL | __TASK_TRACED)
-
+/**
+ * See TASK_NOLOAD
+ */
 #define TASK_IDLE			(TASK_UNINTERRUPTIBLE | TASK_NOLOAD)
 
 /* Convenience macros for the sake of wake_up(): */
@@ -1137,6 +1152,9 @@ struct task_struct {    /* PCB */
 
 	/* Scheduler bits, serialized by scheduler locks: */
 	unsigned			sched_reset_on_fork:1;
+	/**
+	 * /proc/loadavg 计算会不会记录这个进程
+	 */
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
 
@@ -1972,6 +1990,9 @@ static inline unsigned int task_state_index(struct task_struct *tsk)
 
 	BUILD_BUG_ON_NOT_POWER_OF_2(TASK_REPORT_MAX);
 
+	/**
+	 *
+	 */
 	if (tsk_state == TASK_IDLE)
 		state = TASK_REPORT_IDLE;
 

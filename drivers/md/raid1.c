@@ -1331,6 +1331,9 @@ static void raid1_write_request(struct mddev *mddev, struct bio *bio,
 
 		DEFINE_WAIT(w);
 		for (;;) {
+			/**
+			 * TASK_IDLE 不计入 loadavg
+			 */
 			prepare_to_wait(&conf->wait_barrier,
 					&w, TASK_IDLE);
 			if (!md_cluster_ops->area_resyncing(mddev, WRITE,

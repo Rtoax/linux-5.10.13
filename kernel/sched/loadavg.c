@@ -17,6 +17,8 @@
  * The global load average is an exponentially decaying average of nr_running +
  * nr_uninterruptible.
  *
+ * load average = nr_running + nr_uninterruptible
+ *
  * Once every LOAD_FREQ:
  *
  *   nr_active = 0;
@@ -80,7 +82,13 @@ long calc_load_fold_active(struct rq *this_rq, long adjust)
 {
 	long nr_active, delta = 0;
 
+	/**
+	 * 正在运行进程数 - 调控
+	 */
 	nr_active = this_rq->nr_running - adjust;
+	/**
+	 * (unsigned long) -> (long) 说明可能是负数？
+	 */
 	nr_active += (long)this_rq->nr_uninterruptible;
 
 	if (nr_active != this_rq->calc_load_active) {

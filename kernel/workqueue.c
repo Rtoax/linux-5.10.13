@@ -3160,7 +3160,7 @@ sleep:
 	worker_enter_idle(worker);
 
     /**
-     *
+     * D 进程，但是不计算在 loadavg 中
      */
 	__set_current_state(TASK_IDLE);
 
