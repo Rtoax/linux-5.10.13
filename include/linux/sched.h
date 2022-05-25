@@ -1157,6 +1157,13 @@ struct task_struct {    /* PCB */
 	 */
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
+	/**
+	 * https://lkml.kernel.org/lkml/20201123121844.330555813@linuxfoundation.org/
+	 *
+	 * unsigned			sched_remote_wakeup:1;
+	 *
+	 * 移动到下面
+	 */
 
 #ifdef CONFIG_PSI   //PSI (Pressure Stall Information)评估系统资源压力
 	unsigned			sched_psi_wake_requeue:1;
@@ -1179,6 +1186,8 @@ struct task_struct {    /* PCB */
 	 *
 	 * guarantees all stores of 'current' are visible before
 	 * ->sched_remote_wakeup gets used, so it can be in this word.
+	 *
+	 * https://lkml.kernel.org/lkml/20201123121844.330555813@linuxfoundation.org/
 	 */
 	unsigned			sched_remote_wakeup:1;
 
