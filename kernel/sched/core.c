@@ -1814,6 +1814,10 @@ static struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
 
 	rq_lock(rq, rf);
 	BUG_ON(task_cpu(p) != new_cpu);
+	/**
+	 * 入队: enqueue_task(rq, p, flags);
+	 * 并设置标记：进程正在就绪队列中运行
+	 */
 	activate_task(rq, p, 0);
 	check_preempt_curr(rq, p, 0);
 
@@ -2556,10 +2560,20 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
      */
 	check_preempt_curr(rq, p, wake_flags);
 
+	/**
+	 * 莫挨老子，老子正在运行
+	 */
 	p->state = TASK_RUNNING;
+	/**
+	 * 唤醒结束，开始点 trace_sched_waking
+	 */
 	trace_sched_wakeup(p);
 
 #ifdef CONFIG_SMP
+	/**
+	 * task_woken_dl()
+	 * task_woken_rt()
+	 */
 	if (p->sched_class->task_woken) {
 		/*
 		 * Our task @p is fully woken up and running; so its safe to
@@ -2612,6 +2626,9 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 	 * 注意 sched_contributes_to_load 的计算即可
 	 */
 	if (p->sched_contributes_to_load)
+		/**
+		 * 这将被用于计算 loadavg
+		 */
 		rq->nr_uninterruptible--;
 
 #ifdef CONFIG_SMP
@@ -2624,9 +2641,10 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 		atomic_dec(&task_rq(p)->nr_iowait);
 	}
 
-    /**
-     *
-     */
+	/**
+	 * 入队: enqueue_task(rq, p, flags);
+	 * 并设置标记：进程正在就绪队列中运行
+	 */
 	activate_task(rq, p, en_flags);
 
     /**

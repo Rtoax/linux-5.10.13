@@ -4344,7 +4344,13 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
      *
      */
 	se_update_runnable(se);
+	/**
+	 *
+	 */
 	update_cfs_group(se);
+	/**
+	 *
+	 */
 	account_entity_enqueue(cfs_rq, se);
 
     /**
@@ -5711,6 +5717,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
+		/**
+		 * 获取 cfs 队列
+		 */
 		cfs_rq = cfs_rq_of(se);
 
         /**
@@ -5718,6 +5727,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
          */
 		enqueue_entity(cfs_rq, se, flags);
 
+		/**
+		 *
+		 */
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
 
