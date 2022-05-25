@@ -101,8 +101,14 @@ static inline void psi_dequeue(struct task_struct *p, bool sleep)
 	psi_task_change(p, clear, set);
 }
 
+/**
+ *
+ */
 static inline void psi_ttwu_dequeue(struct task_struct *p)
 {
+	/**
+	 * Pressure Stall Information - PSI??
+	 */
 	if (static_branch_likely(&psi_disabled))
 		return;
 	/*

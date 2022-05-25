@@ -48,6 +48,8 @@ SCHED_FEAT(NONTASK_CAPACITY, true)
 /*
  * Queue remote wakeups on the target CPU and process them
  * using the scheduler IPI. Reduces rq->lock contention/bounces.
+ *
+ * Try To Wake Up - TTWU
  */
 SCHED_FEAT(TTWU_QUEUE, true)
 

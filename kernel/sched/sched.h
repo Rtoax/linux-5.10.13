@@ -1852,6 +1852,9 @@ static __always_inline bool static_branch_##name(struct static_key *key) \
 #include "features.h"
 #undef SCHED_FEAT
 
+/**
+ * sched 特性
+ */
 extern struct static_key sched_feat_keys[__SCHED_FEAT_NR];
 #define sched_feat(x) (static_branch_##x(&sched_feat_keys[__SCHED_FEAT_##x]))
 

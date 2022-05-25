@@ -2730,11 +2730,22 @@ void send_call_function_single_ipi(int cpu)
  */
 static void __ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 {
+	/**
+	 * 获取 CPU 的 runqueue
+	 */
 	struct rq *rq = cpu_rq(cpu);
 
+	/**
+	 * 是否发生迁移了，从一个 CPU 转到 另一个 CPU
+	 *
+	 */
 	p->sched_remote_wakeup = !!(wake_flags & WF_MIGRATED);
 
 	WRITE_ONCE(rq->ttwu_pending, 1);
+
+	/**
+	 * 插入
+	 */
 	__smp_call_single_queue(cpu, &p->wake_entry.llist);
 }
 
@@ -2772,6 +2783,8 @@ static inline bool ttwu_queue_cond(int cpu, int wake_flags)
 	/*
 	 * If the CPU does not share cache, then queue the task on the
 	 * remote rqs wakelist to avoid accessing remote data.
+	 *
+	 * 是否共享 LLC cache，如果不共享，返回 true
 	 */
 	if (!cpus_share_cache(smp_processor_id(), cpu))
 		return true;
@@ -2781,6 +2794,7 @@ static inline bool ttwu_queue_cond(int cpu, int wake_flags)
 	 * CPU then use the wakelist to offload the task activation to
 	 * the soon-to-be-idle CPU as the current CPU is likely busy.
 	 * nr_running is checked to avoid unnecessary task stacking.
+	 *
 	 */
 	if ((wake_flags & WF_ON_CPU) && cpu_rq(cpu)->nr_running <= 1)
 		return true;
@@ -2788,8 +2802,15 @@ static inline bool ttwu_queue_cond(int cpu, int wake_flags)
 	return false;
 }
 
+/**
+ *
+ */
 static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 {
+	/**
+	 * 1. 是否有 TTWU 特性
+	 * 2. 
+	 */
 	if (sched_feat(TTWU_QUEUE) && ttwu_queue_cond(cpu, wake_flags)) {
 		if (WARN_ON_ONCE(cpu == smp_processor_id()))
 			return false;
@@ -2822,6 +2843,10 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 	struct rq *rq = cpu_rq(cpu);
 	struct rq_flags rf;
 
+	/**
+	 * 插入 wake list
+	 * 如果插入成功，直接返回
+	 */
 	if (ttwu_queue_wakelist(p, cpu, wake_flags))
 		return;
 
@@ -2956,6 +2981,8 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
  *	   %false otherwise.
  *
  * 唤醒进程
+ *
+ * TTWU - try_to_wake_up
  */
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
@@ -2985,6 +3012,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 		success = 1;
 		trace_sched_waking(p);
+		/**
+		 * 直接将 state 设置为 TASK_RUNNING
+		 */
 		p->state = TASK_RUNNING;
 		trace_sched_wakeup(p);
 		goto out;
@@ -3009,6 +3039,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	if (!(p->state & state))
 		goto unlock;
 
+	/**
+	 * 开始跟踪
+	 */
 	trace_sched_waking(p);
 
 	/* We're going to change ->state: */
@@ -3036,7 +3069,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 *
 	 * A similar smb_rmb() lives in try_invoke_on_locked_down_task().
 	 *
-     *
+     * 在 读 p->on_rq 之前，p->state 需要读写完成
      */
 	smp_rmb();
 
@@ -3066,6 +3099,11 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * Form a control-dep-acquire with p->on_rq == 0 above, to ensure
 	 * schedule()'s deactivate_task() has 'happened' and p will no longer
 	 * care about it's own p->state. See the comment in __schedule().
+	 *
+	 * ========================
+	 * 可以认为定义为 smp_rmb(), [https://lkml.org/lkml/2016/5/25/5]
+	 *
+	 * 确保加载  p->on_cpu 之后，加载 p->on_rq
 	 */
 	smp_acquire__after_ctrl_dep();
 
@@ -3074,6 +3112,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * == 0), which means we need to do an enqueue, change p->state to
 	 * TASK_WAKING such that we can unlock p->pi_lock before doing the
 	 * enqueue, such as ttwu_queue_wakelist().
+	 *
+	 * 正在被唤醒
 	 */
 	p->state = TASK_WAKING;
 
@@ -3083,6 +3123,10 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * which potentially sends an IPI instead of spinning on p->on_cpu to
 	 * let the waker make forward progress. This is safe because IRQs are
 	 * disabled and the IPI will deliver after on_cpu is cleared.
+	 *
+	 * 如果隶属(remote) CPU 仍然在 schedule() 中作为 prev，考虑将 p 放到
+	 * remote CPU 的 wake_list 中。这是安全的，因为 IRQ 被禁用并且 IPI 将
+	 * 在 on_cpu 被清除后交付。
 	 *
 	 * Ensure we load task_cpu(p) after p->on_cpu:
 	 *
@@ -3102,19 +3146,23 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	/*
 	 * If the owning (remote) CPU is still in the middle of schedule() with
-	 * this task as prev, wait until its done referencing the task.
+	 * this task as prev, (上面 ttwu_queue_wakelist 入队失败，那么 等待)wait
+	 * until its done referencing the task. (直到引用结束)
 	 *
 	 * Pairs with the smp_store_release() in finish_task().
 	 *
 	 * This ensures that tasks getting woken will be fully ordered against
 	 * their previous state and preserve Program Order.
+	 *
 	 */
 	smp_cond_load_acquire(&p->on_cpu, !VAL);
 
     /**
      *  调用调度类的 select_task_rq()
+	 *  选择一个 runqueue
      */
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags);
+	/* CPU 发生了变化 */
 	if (task_cpu(p) != cpu) {
 		if (p->in_iowait) {
 			delayacct_blkio_end(p);
@@ -3122,15 +3170,21 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		}
 
 		wake_flags |= WF_MIGRATED;
+		/**
+		 *
+		 */
 		psi_ttwu_dequeue(p);
 		set_task_cpu(p, cpu);
 	}
-#else
+#else // !CONFIG_SMP
+	/**
+	 * 
+	 */
 	cpu = task_cpu(p);
 #endif /* CONFIG_SMP */
 
     /**
-     *
+     * 添加到队列
      */
 	ttwu_queue(p, cpu, wake_flags);
 unlock:
