@@ -205,6 +205,7 @@ static const struct bpf_verifier_ops * const bpf_verifier_ops[] = {
  *
  *  eBPF 验证器 2021年9月1日
  *
+ * https://www.kernel.org/doc/html/latest/bpf/verifier.html
  *  第一项检查 - 静态分析
  *      创建 有向无环图(DAG) ，并执行深度优先搜索(DFS) 确保程序不包含危险路径
  *      1. 程序不包含控制循环
@@ -554,6 +555,12 @@ static bool is_ptr_cast_function(enum bpf_func_id func_id)
 static const char * const reg_type_str[] = {
 	[NOT_INIT]		= "?",
 	[SCALAR_VALUE]		= "inv",
+	/**
+	 * At the start of the program the register R1 contains a
+	 * pointer to context and has type PTR_TO_CTX.
+	 *
+	 * https://www.kernel.org/doc/html/latest/bpf/verifier.html
+	 */
 	[PTR_TO_CTX]		= "ctx",
 	[CONST_PTR_TO_MAP]	= "map_ptr",
 	[PTR_TO_MAP_VALUE]	= "map_value",
