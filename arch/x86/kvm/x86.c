@@ -9114,6 +9114,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		kvm_x86_ops.request_immediate_exit(vcpu);
 	}
 
+	/**
+	 * sudo bpftrace -e 'tracepoint:kvm:kvm_entry{printf("comm = %s\n", comm);}'
+	 */
 	trace_kvm_entry(vcpu);
 
 	fpregs_assert_state_consistent();

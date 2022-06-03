@@ -7192,9 +7192,10 @@ reenter_guest:
 	if (unlikely((u16)vmx->exit_reason == EXIT_REASON_MCE_DURING_VMENTRY))
 		kvm_machine_check();
 
-    /**
-     *  KVM 退出追踪
-     */
+	/**
+	 *  KVM 退出
+	 *  sudo bpftrace -e 'tracepoint:kvm:kvm_exit{printf("comm = %s\n", comm);}'
+	 */
 	trace_kvm_exit(vmx->exit_reason, vcpu, KVM_ISA_VMX);
 
 	if (unlikely(vmx->exit_reason & VMX_EXIT_REASONS_FAILED_VMENTRY))
