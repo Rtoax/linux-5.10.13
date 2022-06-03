@@ -2197,6 +2197,9 @@ int migrate_swap(struct task_struct *cur, struct task_struct *p,
 	if (!cpumask_test_cpu(arg.src_cpu, arg.dst_task->cpus_ptr))
 		goto out;
 
+	/**
+	 * tracepoint:sched:sched_swap_numa
+	 */
 	trace_sched_swap_numa(cur, arg.src_cpu, p, arg.dst_cpu);
 	ret = stop_two_cpus(arg.dst_cpu, arg.src_cpu, migrate_swap_stop, &arg);
 
