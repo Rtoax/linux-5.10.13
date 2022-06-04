@@ -2298,6 +2298,11 @@ static __init int vmx_disabled_by_bios(void)
 	       !boot_cpu_has(X86_FEATURE_VMX);
 }
 
+/**
+ * Turn VMX
+ * 1. set cr4 vmxe bit
+ * 2. Call VMXON
+ */
 static int kvm_cpu_vmxon(u64 vmxon_pointer)
 {
 	u64 msr;
@@ -2320,6 +2325,10 @@ fault:
 	return -EFAULT;
 }
 
+/**
+ * 开启 VMX
+ * 设置 CR4 的 VMXE 位
+ */
 static int hardware_enable(void)
 {
 	int cpu = raw_smp_processor_id();
@@ -2337,6 +2346,11 @@ static int hardware_enable(void)
 	    !hv_get_vp_assist_page(cpu))
 		return -EFAULT;
 
+	/**
+	 * vmx on
+	 * 1. set cr4 vmxe bit.
+	 * 2. call vmxon
+	 */
 	r = kvm_cpu_vmxon(phys_addr);
 	if (r)
 		return r;

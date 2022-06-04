@@ -107,6 +107,14 @@ static const struct kvm_io_device_ops coalesced_mmio_ops = {
 	.destructor = coalesced_mmio_destructor,
 };
 
+/**
+ * 对 合并 MMIO 初始化
+ * 主要就是分配一个内存页，
+ * 合并 MMIO 指的是将 MMIO 的写请求放到一个环中，
+ * 等到其他时间产生或者是环满了并产生VM Exit 时在处理
+ *
+ * coalesced: 合并的
+ */
 int kvm_coalesced_mmio_init(struct kvm *kvm)
 {
 	struct page *page;

@@ -517,6 +517,8 @@ struct kvm_memslots {
 
 /**
  *  KVM 虚拟机
+ *  每个虚拟机都有这个结构
+ *  在 ioctl(KVM_CREATE_VM, ...) 时候创建, see kvm_dev_ioctl_create_vm()
  */
 struct kvm {
 	spinlock_t mmu_lock;

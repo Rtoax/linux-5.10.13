@@ -97,6 +97,9 @@ EXPORT_SYMBOL_GPL(halt_poll_ns_shrink);
 
 DEFINE_MUTEX(kvm_lock);
 static DEFINE_RAW_SPINLOCK(kvm_count_lock);
+/**
+ * 所有虚机都会在这个链表上
+ */
 LIST_HEAD(vm_list);
 
 static cpumask_var_t cpus_hardware_enabled;
@@ -632,6 +635,9 @@ static int kvm_init_mmu_notifier(struct kvm *kvm)
 
 #endif /* CONFIG_MMU_NOTIFIER && KVM_ARCH_WANT_MMU_NOTIFIER */
 
+/**
+ * 为虚拟机分配内存槽位
+ */
 static struct kvm_memslots *kvm_alloc_memslots(void)
 {
 	int i;
@@ -745,6 +751,9 @@ void __weak kvm_arch_pre_destroy_vm(struct kvm *kvm)
 {
 }
 
+/**
+ * KVM_CREATE_VM
+ */
 static struct kvm *kvm_create_vm(unsigned long type)
 {
 	struct kvm *kvm = kvm_arch_alloc_vm();
@@ -756,6 +765,10 @@ static struct kvm *kvm_create_vm(unsigned long type)
 
 	spin_lock_init(&kvm->mmu_lock);
 	mmgrab(current->mm);
+	/**
+	 * 例如 current = qemu_kvm
+	 * 虚拟机的内存也就是Qemu进程的虚拟内存
+	 */
 	kvm->mm = current->mm;
 	kvm_eventfd_init(kvm);
 	mutex_init(&kvm->lock);
@@ -772,6 +785,9 @@ static struct kvm *kvm_create_vm(unsigned long type)
 
 	refcount_set(&kvm->users_count, 1);
 	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
+		/**
+		 * 为虚拟机分配内存槽位
+		 */
 		struct kvm_memslots *slots = kvm_alloc_memslots();
 
 		if (!slots)
@@ -781,6 +797,9 @@ static struct kvm *kvm_create_vm(unsigned long type)
 		rcu_assign_pointer(kvm->memslots[i], slots);
 	}
 
+	/**
+	 * 
+	 */
 	for (i = 0; i < KVM_NR_BUSES; i++) {
 		rcu_assign_pointer(kvm->buses[i],
 			kzalloc(sizeof(struct kvm_io_bus), GFP_KERNEL_ACCOUNT));
@@ -794,6 +813,10 @@ static struct kvm *kvm_create_vm(unsigned long type)
 	if (r)
 		goto out_err_no_arch_destroy_vm;
 
+	/**
+	 * 开启 VMX 模式
+	 * 在创建第一个虚拟机的时候对每个 CPU 调用 hardware_enable_nolock()
+	 */
 	r = hardware_enable_all();
 	if (r)
 		goto out_err_no_disable;
@@ -802,6 +825,10 @@ static struct kvm *kvm_create_vm(unsigned long type)
 	INIT_HLIST_HEAD(&kvm->irq_ack_notifier_list);
 #endif
 
+	/**
+	 * 编译选项决定的函数
+	 * 当 Linux 内存子系统在金聪一些页面管理的时候会调用这里注册的回调函数
+	 */
 	r = kvm_init_mmu_notifier(kvm);
 	if (r)
 		goto out_err_no_mmu_notifier;
@@ -811,6 +838,9 @@ static struct kvm *kvm_create_vm(unsigned long type)
 		goto out_err;
 
 	mutex_lock(&kvm_lock);
+	/**
+	 * 所有虚拟机都在这个链表上
+	 */
 	list_add(&kvm->vm_list, &vm_list);
 	mutex_unlock(&kvm_lock);
 
@@ -4157,16 +4187,32 @@ static struct file_operations kvm_vm_fops = {
 	KVM_COMPAT(kvm_vm_compat_ioctl),
 };
 
+/**
+ * kvm_dev_ioctl()
+ * case KVM_CREATE_VM:
+ */
 static int kvm_dev_ioctl_create_vm(unsigned long type)
 {
 	int r;
+	/**
+	 * 虚拟机，每个虚拟机都有的这个结构
+	 */
 	struct kvm *kvm;
 	struct file *file;
 
+	/**
+	 * 
+	 */
 	kvm = kvm_create_vm(type);
 	if (IS_ERR(kvm))
 		return PTR_ERR(kvm);
 #ifdef CONFIG_KVM_MMIO
+	/**
+	 * 对 合并 MMIO 初始化
+	 * 主要就是分配一个内存页，
+	 * 合并 MMIO 指的是将 MMIO 的写请求放到一个环中，
+	 * 等到其他时间产生或者是环满了并产生VM Exit 时在处理
+	 */
 	r = kvm_coalesced_mmio_init(kvm);
 	if (r < 0)
 		goto put_kvm;
@@ -4214,6 +4260,9 @@ static long kvm_dev_ioctl(struct file *filp,
 			goto out;
 		r = KVM_API_VERSION;
 		break;
+	/**
+	 * 创建虚机
+	 */
 	case KVM_CREATE_VM:
 		r = kvm_dev_ioctl_create_vm(arg);
 		break;
@@ -4318,6 +4367,10 @@ static void hardware_disable_all(void)
 	raw_spin_unlock(&kvm_count_lock);
 }
 
+/**
+ * 开启 VMX 模式
+ * 在创建第一个虚拟机的时候对每个 CPU 调用 hardware_enable_nolock()
+ */
 static int hardware_enable_all(void)
 {
 	int r = 0;
@@ -4325,8 +4378,14 @@ static int hardware_enable_all(void)
 	raw_spin_lock(&kvm_count_lock);
 
 	kvm_usage_count++;
+	/**
+	 * 内核第一次创建虚机的时候会调用这个函数
+	 */
 	if (kvm_usage_count == 1) {
 		atomic_set(&hardware_enable_failed, 0);
+		/**
+		 * 在每个 cpu 上执行 hardware_enable_nolock
+		 */
 		on_each_cpu(hardware_enable_nolock, NULL, 1);
 
 		if (atomic_read(&hardware_enable_failed)) {
