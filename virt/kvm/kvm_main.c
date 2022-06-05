@@ -3275,6 +3275,9 @@ static int kvm_vcpu_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+/**
+ * vcpu operations
+ */
 static struct file_operations kvm_vcpu_fops = {
 	.release        = kvm_vcpu_release,
 	.unlocked_ioctl = kvm_vcpu_ioctl,
@@ -3291,6 +3294,9 @@ static int create_vcpu_fd(struct kvm_vcpu *vcpu)
 	char name[8 + 1 + ITOA_MAX_LEN + 1];
 
 	snprintf(name, sizeof(name), "kvm-vcpu:%d", vcpu->vcpu_id);
+	/**
+	 * vcpu fd
+	 */
 	return anon_inode_getfd(name, &kvm_vcpu_fops, vcpu, O_RDWR | O_CLOEXEC);
 }
 
@@ -3389,6 +3395,10 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 
 	/* Now it's all set up, let userspace reach it */
 	kvm_get_kvm(kvm);
+
+	/**
+	 *
+	 */
 	r = create_vcpu_fd(vcpu);
 	if (r < 0) {
 		kvm_put_kvm_no_destroy(kvm);
@@ -3435,7 +3445,7 @@ static int kvm_vcpu_ioctl_set_sigmask(struct kvm_vcpu *vcpu, sigset_t *sigset)
 }
 
 /**
- *
+ * vcpu file operation ioctl()
  */
 static long kvm_vcpu_ioctl(struct file *filp,
 			   unsigned int ioctl, unsigned long arg)

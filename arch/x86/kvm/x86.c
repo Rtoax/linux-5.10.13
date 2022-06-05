@@ -10076,6 +10076,7 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
 
 /**
  *  创建 vcpu
+ *  Called in kvm_vm_ioctl_create_vcpu()
  */
 int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 {

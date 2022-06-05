@@ -7257,7 +7257,7 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
 }
 
 /**
- *
+ * Called in kvm_arch_vcpu_create()
  */
 static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 {
