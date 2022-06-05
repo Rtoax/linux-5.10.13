@@ -4180,8 +4180,14 @@ static long kvm_vm_compat_ioctl(struct file *filp,
 }
 #endif
 
+/**
+ * kvm anon file operation
+ */
 static struct file_operations kvm_vm_fops = {
 	.release        = kvm_vm_release,
+	/**
+	 * ioctl
+	 */
 	.unlocked_ioctl = kvm_vm_ioctl,
 	.llseek		= noop_llseek,
 	KVM_COMPAT(kvm_vm_compat_ioctl),
@@ -4221,6 +4227,9 @@ static int kvm_dev_ioctl_create_vm(unsigned long type)
 	if (r < 0)
 		goto put_kvm;
 
+	/**
+	 * anon file for KVM VM
+	 */
 	file = anon_inode_getfile("kvm-vm", &kvm_vm_fops, kvm, O_RDWR);
 	if (IS_ERR(file)) {
 		put_unused_fd(r);
