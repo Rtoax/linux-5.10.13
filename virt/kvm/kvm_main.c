@@ -2745,6 +2745,10 @@ int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
 }
 EXPORT_SYMBOL_GPL(kvm_write_guest_offset_cached);
 
+/**
+ * 在Host中，用run_delay计算出来Guest的steal time，并通过kvm_write_guest_cached
+ * 告诉Guest（前文中Guest向Host注册的地址，Host直接修改）。
+ */
 int kvm_write_guest_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
 			   void *data, unsigned long len)
 {

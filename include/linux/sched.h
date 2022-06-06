@@ -358,7 +358,13 @@ struct sched_info {
 	/* # of times we have run on this CPU: */
 	unsigned long			pcount;
 
-	/* Time spent waiting on a runqueue: */
+	/**
+	 * Time spent waiting on a runqueue:
+	 *
+	 * task等待的时间，也就是没有执行的时间
+	 * 例如：
+	 *  1. Guest的qemu被切换走的时间
+	 */
 	unsigned long long		run_delay;
 
 	/* Timestamps: */

@@ -2661,6 +2661,10 @@ static void kvm_setup_pvclock_page(struct kvm_vcpu *v)
 		++guest_hv_clock.version;  /* first time write, random junk */
 
 	vcpu->hv_clock.version = guest_hv_clock.version + 1;
+
+	/**
+	 *
+	 */
 	kvm_write_guest_cached(v->kvm, &vcpu->pv_time,
 				&vcpu->hv_clock,
 				sizeof(vcpu->hv_clock.version));
@@ -2677,6 +2681,9 @@ static void kvm_setup_pvclock_page(struct kvm_vcpu *v)
 
 	trace_kvm_pvclock_update(v->vcpu_id, &vcpu->hv_clock);
 
+	/**
+	 *
+	 */
 	kvm_write_guest_cached(v->kvm, &vcpu->pv_time,
 				&vcpu->hv_clock,
 				sizeof(vcpu->hv_clock));
@@ -3004,6 +3011,17 @@ static void kvm_vcpu_flush_tlb_guest(struct kvm_vcpu *vcpu)
 	kvm_x86_ops.tlb_flush_guest(vcpu);
 }
 
+/**
+ * “Steal 时间”（也称为“偷窃”时间）仅在云环境（如AWS）或 VMWare 环境中相关，
+ * 在云环境中，多个虚拟机将在一个基础物理主机上运行。在这种情况下，CPU 资源
+ * 将在多个虚拟机之间共享。虚拟机管理程序是一项将在虚拟机之间分配基础物理主
+ * 机的 CPU 资源和其他资源的技术。
+ *
+ * “Steal 时间”（或“被盗时间”）是仅与虚拟化环境相关。它表示真正的 CPU 对当前
+ * 虚拟机不可用的时间-虚拟机管理程序从该VM“偷走”了该 CPU（用于运行另一个VM，
+ * 或用于其自身需求）。如果特定虚拟机上的“Steal 时间”很高，则表明该虚拟机在过
+ * 载或者负荷较大的物理主机上运行。
+ */
 static void record_steal_time(struct kvm_vcpu *vcpu)
 {
 	struct kvm_host_map map;
@@ -3017,6 +3035,10 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
 			&map, &vcpu->arch.st.cache, false))
 		return;
 
+	/**
+	 * 在vCPU开始执行之前，计算run delay的信息，保存差值到steal time中，
+	 * 通过共享内存同步给虚拟机，在虚拟机中即可以通过共享内存获取到steal time。
+	 */
 	st = map.hva +
 		offset_in_page(vcpu->arch.st.msr_val & KVM_STEAL_VALID_BITS);
 

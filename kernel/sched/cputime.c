@@ -202,17 +202,24 @@ void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 
 /*
  * Account for involuntary wait time.
+ * 考虑非自愿等待时间。
+ *
  * @cputime: the CPU time spent in involuntary wait
  */
 void account_steal_time(u64 cputime)
 {
 	u64 *cpustat = kcpustat_this_cpu->cpustat;
 
+	/**
+	 * 虚拟机环境被 Host 偷走的 Guest 时间,见 docs/steal-time.md
+	 */
 	cpustat[CPUTIME_STEAL] += cputime;
 }
 
 /*
  * Account for idle time.
+ * 计算空闲时间
+ *
  * @cputime: the CPU time spent in idle wait
  */
 void account_idle_time(u64 cputime)
@@ -233,6 +240,9 @@ void account_idle_time(u64 cputime)
  */
 static __always_inline u64 steal_account_process_time(u64 maxtime)
 {
+	/**
+	 * 半虚拟化
+	 */
 #ifdef CONFIG_PARAVIRT
 	if (static_key_false(&paravirt_steal_enabled)) {
 		u64 steal;
@@ -240,6 +250,9 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 		steal = paravirt_steal_clock(smp_processor_id());
 		steal -= this_rq()->prev_steal_time;
 		steal = min(steal, maxtime);
+		/**
+		 * 统计 steal 时间
+		 */
 		account_steal_time(steal);
 		this_rq()->prev_steal_time += steal;
 

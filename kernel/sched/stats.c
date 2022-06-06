@@ -79,6 +79,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
  * This means 2 is cpu 0.
  * In a hotplugged system some CPUs, including cpu 0, may be missing so we have
  * to use cpumask_* to iterate over the CPUs.
+ *
+ * /proc/PID/schedstat
  */
 static void *schedstat_start(struct seq_file *file, loff_t *offset)
 {
@@ -113,6 +115,9 @@ static void schedstat_stop(struct seq_file *file, void *data)
 {
 }
 
+/**
+ * /proc/schedstat
+ */
 static const struct seq_operations schedstat_sops = {
 	.start = schedstat_start,
 	.next  = schedstat_next,
@@ -122,6 +127,9 @@ static const struct seq_operations schedstat_sops = {
 
 static int __init proc_schedstat_init(void)
 {
+	/**
+	 * /proc/schedstat
+	 */
 	proc_create_seq("schedstat", 0, NULL, &schedstat_sops);
 	return 0;
 }

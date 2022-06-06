@@ -62,6 +62,9 @@ early_param("no-steal-acc", parse_no_stealacc);
 
 static DEFINE_PER_CPU_DECRYPTED(struct kvm_vcpu_pv_apf_data, apf_reason) __aligned(64);
 DEFINE_PER_CPU_DECRYPTED(struct kvm_steal_time, steal_time) __aligned(64) __visible;
+/**
+ * Steal Time
+ */
 static int has_steal_clock = 0;
 
 /*
@@ -299,6 +302,9 @@ static void __init paravirt_ops_setup(void)
 #endif
 }
 
+/**
+ * 
+ */
 static void kvm_register_steal_time(void)
 {
 	int cpu = smp_processor_id();
@@ -307,6 +313,10 @@ static void kvm_register_steal_time(void)
 	if (!has_steal_clock)
 		return;
 
+	/**
+	 * 原理和kvm clock一样：通过写MSR，把per_cpu变量steal_time的物理地址
+	 * （Guest Physical Address）告诉Host。
+	 */
 	wrmsrl(MSR_KVM_STEAL_TIME, (slow_virt_to_phys(st) | KVM_MSR_ENABLED));
 	pr_info("stealtime: cpu %d, msr %llx\n", cpu,
 		(unsigned long long) slow_virt_to_phys(st));
@@ -360,6 +370,10 @@ static void kvm_guest_cpu_init(void)
 	}
 
 	if (has_steal_clock)
+		/**
+		 * 通过写MSR，把per_cpu变量steal_time的物理地址
+		 * （Guest Physical Address）告诉Host。
+		 */
 		kvm_register_steal_time();
 }
 
@@ -639,6 +653,10 @@ static void kvm_flush_tlb_others(const struct cpumask *cpumask,
 	native_flush_tlb_others(flushmask, info);
 }
 
+/**
+ * 初始化 guest
+ *
+ */
 static void __init kvm_guest_init(void)
 {
 	int i;
@@ -648,6 +666,9 @@ static void __init kvm_guest_init(void)
 	for (i = 0; i < KVM_TASK_SLEEP_HASHSIZE; i++)
 		raw_spin_lock_init(&async_pf_sleepers[i].lock);
 
+	/**
+	 * 是否有这个 feature
+	 */
 	if (kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
 		has_steal_clock = 1;
 		pv_ops.time.steal_clock = kvm_steal_clock;

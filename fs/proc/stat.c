@@ -161,6 +161,9 @@ static int show_stat(struct seq_file *p, void *v)
 		iowait		+= get_iowait_time(&kcpustat, i);
 		irq		+= cpustat[CPUTIME_IRQ];
 		softirq		+= cpustat[CPUTIME_SOFTIRQ];
+		/**
+		 * 虚拟机环境被 Host 偷走的 Guest 时间,见 docs/steal-time.md
+		 */
 		steal		+= cpustat[CPUTIME_STEAL];
 		guest		+= cpustat[CPUTIME_GUEST];
 		guest_nice	+= cpustat[CPUTIME_GUEST_NICE];
@@ -214,6 +217,9 @@ static int show_stat(struct seq_file *p, void *v)
 		iowait		= get_iowait_time(&kcpustat, i);
 		irq		= cpustat[CPUTIME_IRQ];
 		softirq		= cpustat[CPUTIME_SOFTIRQ];
+		/**
+		 * Steal Time
+		 */
 		steal		= cpustat[CPUTIME_STEAL];
 		guest		= cpustat[CPUTIME_GUEST];
 		guest_nice	= cpustat[CPUTIME_GUEST_NICE];
@@ -273,6 +279,9 @@ static int stat_open(struct inode *inode, struct file *file)
 	return single_open_size(file, show_stat, NULL, size);
 }
 
+/**
+ * /proc/stat
+ */
 static const struct proc_ops stat_proc_ops = {
 	.proc_flags	= PROC_ENTRY_PERMANENT,
 	.proc_open	= stat_open,

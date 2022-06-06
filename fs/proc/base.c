@@ -478,6 +478,10 @@ static int proc_pid_schedstat(struct seq_file *m, struct pid_namespace *ns,
 	if (unlikely(!sched_info_on()))
 		seq_puts(m, "0 0 0\n");
 	else
+		/**
+		 * 1. 总共运行的时间
+		 * 2. 
+		 */
 		seq_printf(m, "%llu %llu %lu\n",
 		   (unsigned long long)task->se.sum_exec_runtime,
 		   (unsigned long long)task->sched_info.run_delay,
@@ -3280,6 +3284,9 @@ static const struct pid_entry tgid_base_stuff[] = {
 	ONE("stack",      S_IRUSR, proc_pid_stack),
 #endif
 #ifdef CONFIG_SCHED_INFO
+	/**
+	 * /proc/self/schedstat
+	 */
 	ONE("schedstat",  S_IRUGO, proc_pid_schedstat),
 #endif
 #ifdef CONFIG_LATENCYTOP

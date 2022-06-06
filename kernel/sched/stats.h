@@ -196,9 +196,18 @@ static void sched_info_arrive(struct rq *rq, struct task_struct *t)
 {
 	unsigned long long now = rq_clock(rq), delta = 0;
 
+	/**
+	 * 当task被调度到的时候，因为记录了它的上一次被动切换的时间，即可计算出
+	 * 来这段时间差，就算出来了这段run delay的时间。
+	 */
 	if (t->sched_info.last_queued)
 		delta = now - t->sched_info.last_queued;
 	sched_info_reset_dequeued(t);
+	/**
+	 * 内核把一个task被切换走，要么是task主动发起的，要么是被动的。如果task
+	 * 依然是RUNNING状态的话，那么它必然是被动切换走的：即task还想继续运行，
+	 * 但是没有得到调度。那么到达下一次执行的时间间隔就是run delay。
+	 */
 	t->sched_info.run_delay += delta;
 	t->sched_info.last_arrival = now;
 	t->sched_info.pcount++;
@@ -215,6 +224,9 @@ static inline void sched_info_queued(struct rq *rq, struct task_struct *t)
 {
 	if (sched_info_on()) {
 		if (!t->sched_info.last_queued)
+			/**
+			 * 记录它的last_queued的时间戳。
+			 */
 			t->sched_info.last_queued = rq_clock(rq);
 	}
 }
@@ -233,6 +245,14 @@ static inline void sched_info_depart(struct rq *rq, struct task_struct *t)
 
 	rq_sched_info_depart(rq, delta);
 
+	/**
+	 * 在一个task被切换走的时候，它依然是RUNNING状态的话，那么就会记录它的
+	 * last_queued的时间戳。
+	 *
+	 * 内核把一个task被切换走，要么是task主动发起的，要么是被动的。如果task
+	 * 依然是RUNNING状态的话，那么它必然是被动切换走的：即task还想继续运行，
+	 * 但是没有得到调度。那么到达下一次执行的时间间隔就是run delay。
+	 */
 	if (t->state == TASK_RUNNING)
 		sched_info_queued(rq, t);
 }
