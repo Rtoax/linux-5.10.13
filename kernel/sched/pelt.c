@@ -149,12 +149,20 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	u64 periods;
 
     /**
-	 *  d0
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 *
+	 *  d0: period_contrib 存放上一次周期总数不能凑成一个周期（1024us）的
+	 *      剩余时间
 	 */
 	delta += sa->period_contrib;
 
     /**
 	 *  periods 表示有多少个完整的周期
+	 *  上图中 d2 所占的整周期数
 	 */
 	periods = delta / 1024; /* A period is 1024us (~1ms) */
 
@@ -164,6 +172,7 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	if (periods) {
         /**
          * 计算第 n 个周期的衰减值
+		 * load_sum = (load_sum * runnable_avg_yN_inv[31] >> 32)
          */
 		sa->load_sum = decay_load(sa->load_sum, periods);
 
@@ -179,6 +188,14 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 
 		/*
 		 * Step 2
+		 *
+		 *      d0   d1          d2           d3
+		 *       ^   ^           ^            ^
+		 *       |   |           |            |
+		 *     |<->|<->|<----------------->|<--->|
+		 * ... |---x---|------| ... |------|-----x (now)
+		 *
+		 *  d3
 		 */
 		delta %= 1024;
 		if (load) {
@@ -198,6 +215,16 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 			contrib = __accumulate_pelt_segments(periods, 1024 - sa->period_contrib, delta);
 		}
 	}
+    /**
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 *
+	 *  d3: period_contrib 存放上一次周期总数不能凑成一个周期（1024us）的
+	 *      剩余时间
+	 */
 	sa->period_contrib = delta;
 
     /**
@@ -258,8 +285,14 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	u64 delta;
 
     /**
-     *  
-     */
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 *
+	 *     |<---------- delta -------------->|
+	 */
 	delta = now - sa->last_update_time;
     
 	/*
@@ -279,13 +312,28 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 *
 	 * 计算有多少个 1024ns 周期 ，
 	 * 用 1024ns 近似为 1us ，使用 移位操作加快计算
+	 *
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 *
+	 *
 	 */
 	delta >>= 10;
 	if (!delta)
 		return 0;
 
     /**
-	 *  
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 *                                 ^
+	 *                                 |
+	 *                          last_update_time
 	 */
 	sa->last_update_time += delta << 10;
 
@@ -341,14 +389,21 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
  * time segment because they use the same clock. This means that we can use
  * the period_contrib of cfs_rq when updating the sched_avg of a sched_entity
  * if it's more convenient.
+ *
+ * 计算工作负载 之和
  */
 static __always_inline void
 ___update_load_avg(struct sched_avg *sa, unsigned long load)
 {
+	/**
+	 * LOAD_AVG_MAX=47742
+	 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
+	 */
 	u32 divider = get_pelt_divider(sa);
 
 	/*
 	 * Step 2: update *_avg.
+	 *
 	 */
 	sa->load_avg = div_u64(load * sa->load_sum, divider);
 	sa->runnable_avg = div_u64(sa->runnable_sum, divider);

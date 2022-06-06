@@ -39,6 +39,10 @@ update_irq_load_avg(struct rq *rq, u64 running)
 
 static inline u32 get_pelt_divider(struct sched_avg *avg)
 {
+	/**
+	 *  LOAD_AVG_MAX=47742
+	 *  表示在 无限个周期里，历史累计衰减时间的最大值是多少。
+	 */
 	return LOAD_AVG_MAX - 1024 + avg->period_contrib;
 }
 
@@ -121,6 +125,10 @@ static inline void update_rq_clock_pelt(struct rq *rq, s64 delta)
  */
 static inline void update_idle_rq_clock_pelt(struct rq *rq)
 {
+	/**
+	 *  LOAD_AVG_MAX=47742
+	 *  表示在 无限个周期里，历史累计衰减时间的最大值是多少。
+	 */
 	u32 divider = ((LOAD_AVG_MAX - 1024) << SCHED_CAPACITY_SHIFT) - LOAD_AVG_MAX;
 	u32 util_sum = rq->cfs.avg.util_sum;
 	util_sum += rq->avg_rt.util_sum;

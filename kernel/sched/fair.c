@@ -3207,7 +3207,11 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 #ifdef CONFIG_SMP
 	do {
-		u32 divider = get_pelt_divider(&se->avg);   /* divider:分频器 */
+		/**
+		 * LOAD_AVG_MAX=47742
+		 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
+		 */
+		u32 divider = get_pelt_divider(&se->avg);
 
 		se->avg.load_avg = div_u64(se_weight(se) * se->avg.load_sum, divider);
 	} while (0);
@@ -3559,6 +3563,9 @@ update_tg_cfs_util(struct cfs_rq *cfs_rq, struct sched_entity *se, struct cfs_rq
 	/*
 	 * cfs_rq->avg.period_contrib can be used for both cfs_rq and se.
 	 * See ___update_load_avg() for details.
+	 *
+	 * LOAD_AVG_MAX=47742
+	 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
 	 */
 	divider = get_pelt_divider(&cfs_rq->avg);
 
@@ -3584,6 +3591,9 @@ update_tg_cfs_runnable(struct cfs_rq *cfs_rq, struct sched_entity *se, struct cf
 	/*
 	 * cfs_rq->avg.period_contrib can be used for both cfs_rq and se.
 	 * See ___update_load_avg() for details.
+	 *
+	 * LOAD_AVG_MAX=47742
+	 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
 	 */
 	divider = get_pelt_divider(&cfs_rq->avg);
 
@@ -3613,6 +3623,10 @@ update_tg_cfs_load(struct cfs_rq *cfs_rq, struct sched_entity *se, struct cfs_rq
 	/*
 	 * cfs_rq->avg.period_contrib can be used for both cfs_rq and se.
 	 * See ___update_load_avg() for details.
+	 *
+	 * LOAD_AVG_MAX=47742
+	 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
+	 *
 	 */
 	divider = get_pelt_divider(&cfs_rq->avg);
 
@@ -3751,6 +3765,10 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
 
 	if (cfs_rq->removed.nr) {
 		unsigned long r;
+		/**
+		 * LOAD_AVG_MAX=47742
+		 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
+		 */
 		u32 divider = get_pelt_divider(&cfs_rq->avg);
 
 		raw_spin_lock(&cfs_rq->removed.lock);
@@ -3782,6 +3800,9 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
 		decayed = 1;
 	}
 
+	/**
+	 *
+	 */
 	decayed |= __update_load_avg_cfs_rq(now, cfs_rq);
 
 #ifndef CONFIG_64BIT
@@ -3805,6 +3826,10 @@ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 	/*
 	 * cfs_rq->avg.period_contrib can be used for both cfs_rq and se.
 	 * See ___update_load_avg() for details.
+	 *
+	 **
+	 * LOAD_AVG_MAX=47742
+	 * divider = LOAD_AVG_MAX - 1024 + avg->period_contrib;
 	 */
 	u32 divider = get_pelt_divider(&cfs_rq->avg);
 
@@ -3895,6 +3920,9 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 	if (se->avg.last_update_time && !(flags & SKIP_AGE_LOAD))
 		__update_load_avg_se(now, cfs_rq, se);
 
+	/**
+	 *
+	 */
 	decayed  = update_cfs_rq_load_avg(now, cfs_rq);
 	decayed |= propagate_entity_load_avg(se);
 

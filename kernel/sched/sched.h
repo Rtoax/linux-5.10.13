@@ -1154,6 +1154,7 @@ struct rq {
 	unsigned long		cpu_capacity;
     /**
      *  CPU 最高的量化计算能力，系统中拥有最强 处理器能力 的 CPU 通常量化为 1024
+	 *  默认 SCHED_CAPACITY_SCALE= 1024
      */
 	unsigned long		cpu_capacity_orig;
 
