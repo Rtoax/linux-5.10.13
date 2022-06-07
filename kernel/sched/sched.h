@@ -1225,7 +1225,10 @@ struct rq {
 	u64			prev_steal_time_rq;
 #endif
 
-	/* calc_load related fields */
+	/**
+	 * calc_load related fields
+	 * 用于计算负载 loadavg
+	 */
 	unsigned long		calc_load_update;
 	long			calc_load_active;
 

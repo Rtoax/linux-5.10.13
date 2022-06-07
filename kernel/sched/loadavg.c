@@ -58,6 +58,9 @@
  */
 
 /* Variables and functions for calc_load */
+/**
+ *
+ */
 atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
 unsigned long avenrun[3];   /* 为啥没有加锁？ 一分钟，五分钟，十五分钟的平均负载 */
@@ -78,6 +81,10 @@ void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
 	loads[2] = (avenrun[2] + offset) << shift;
 }
 
+/**
+ *
+ *
+ */
 long calc_load_fold_active(struct rq *this_rq, long adjust)
 {
 	long nr_active, delta = 0;
@@ -91,6 +98,9 @@ long calc_load_fold_active(struct rq *this_rq, long adjust)
 	 */
 	nr_active += (long)this_rq->nr_uninterruptible;
 
+	/**
+	 *
+	 */
 	if (nr_active != this_rq->calc_load_active) {
 		delta = nr_active - this_rq->calc_load_active;
 		this_rq->calc_load_active = nr_active;
@@ -239,14 +249,23 @@ static inline int calc_load_read_idx(void)
 	return calc_load_idx & 1;
 }
 
+/**
+ * Update loadavg from runqueue
+ */
 static void calc_load_nohz_fold(struct rq *rq)
 {
 	long delta;
 
+	/**
+	 *
+	 */
 	delta = calc_load_fold_active(rq, 0);
 	if (delta) {
 		int idx = calc_load_write_idx();
 
+		/**
+		 * +
+		 */
 		atomic_long_add(delta, &calc_load_nohz[idx]);
 	}
 }
@@ -289,6 +308,9 @@ void calc_load_nohz_stop(void)
 		this_rq->calc_load_update += LOAD_FREQ;
 }
 
+/**
+ * 读取 delta
+ */
 static long calc_load_nohz_read(void)
 {
 	int idx = calc_load_read_idx();
