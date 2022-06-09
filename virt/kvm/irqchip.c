@@ -72,7 +72,7 @@ int kvm_send_userspace_msi(struct kvm *kvm, struct kvm_msi *msi)
 }
 
 /**
- * 记录中断
+ * 记录中断, 触发中断
  *
  * Return value:
  *  < 0   Interrupt was ignored (masked or not delivered for other reasons)

@@ -423,7 +423,7 @@ EXPORT_SYMBOL_GPL(kvm_intr_is_single_vcpu);
 	IOAPIC_ROUTING_ENTRY(irq), PIC_ROUTING_ENTRY(irq)
 
 /**
- *  
+ *  默认路由
  */
 static const struct kvm_irq_routing_entry default_routing[] = {
     /**
