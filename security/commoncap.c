@@ -911,6 +911,8 @@ int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file)
  *
  * This is used to make sure security xattrs don't get updated or set by those
  * who aren't privileged to do so.
+ *
+ *
  */
 int cap_inode_setxattr(struct dentry *dentry, const char *name,
 		       const void *value, size_t size, int flags)

@@ -37,22 +37,34 @@ xfs_xattr_get(const struct xattr_handler *handler, struct dentry *unused,
 	return args.valuelen;
 }
 
+/**
+ * setxattr(2);
+ */
 static int
 xfs_xattr_set(const struct xattr_handler *handler, struct dentry *unused,
 		struct inode *inode, const char *name, const void *value,
 		size_t size, int flags)
 {
+	/**
+	 *
+	 */
 	struct xfs_da_args	args = {
 		.dp		= XFS_I(inode),
 		.attr_filter	= handler->flags,
 		.attr_flags	= flags,
 		.name		= name,
 		.namelen	= strlen(name),
+		/**
+		 * 这是什么
+		 */
 		.value		= (void *)value,
 		.valuelen	= size,
 	};
 	int			error;
 
+	/**
+	 *
+	 */
 	error = xfs_attr_set(&args);
 	if (!error && (handler->flags & XFS_ATTR_ROOT))
 		xfs_forget_acl(inode, name);
@@ -73,6 +85,9 @@ static const struct xattr_handler xfs_xattr_trusted_handler = {
 	.set	= xfs_xattr_set,
 };
 
+/**
+ * secutiry.
+ */
 static const struct xattr_handler xfs_xattr_security_handler = {
 	.prefix	= XATTR_SECURITY_PREFIX,
 	.flags	= XFS_ATTR_SECURE,
@@ -80,6 +95,9 @@ static const struct xattr_handler xfs_xattr_security_handler = {
 	.set	= xfs_xattr_set,
 };
 
+/**
+ * xfs xattr set/get
+ */
 const struct xattr_handler *xfs_xattr_handlers[] = {
 	&xfs_xattr_user_handler,
 	&xfs_xattr_trusted_handler,

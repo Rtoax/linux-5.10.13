@@ -3132,6 +3132,9 @@ static int selinux_inode_permission(struct inode *inode, int mask)
 	return rc;
 }
 
+/**
+ *
+ */
 static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
 {
 	const struct cred *cred = current_cred();
@@ -3177,6 +3180,9 @@ static bool has_cap_mac_admin(bool audit)
 	return true;
 }
 
+/**
+ *
+ */
 static int selinux_inode_setxattr(struct dentry *dentry, const char *name,
 				  const void *value, size_t size, int flags)
 {
@@ -3187,6 +3193,9 @@ static int selinux_inode_setxattr(struct dentry *dentry, const char *name,
 	u32 newsid, sid = current_sid();
 	int rc = 0;
 
+	/**
+	 * XATTR_NAME_SELINUX
+	 */
 	if (strcmp(name, XATTR_NAME_SELINUX)) {
 		rc = cap_inode_setxattr(dentry, name, value, size, flags);
 		if (rc)

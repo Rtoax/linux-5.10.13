@@ -265,6 +265,8 @@ xfs_attr_set_shortform(
 
 /*
  * Set the attribute specified in @args.
+ *
+ * 设置 属性
  */
 int
 xfs_attr_set_args(
@@ -324,6 +326,9 @@ xfs_attr_set_args(
 			return error;
 	}
 
+	/**
+	 *
+	 */
 	error = xfs_attr_node_addname(args);
 	return error;
 }
@@ -386,6 +391,8 @@ xfs_attr_remove_args(
 /*
  * Note: If args->value is NULL the attribute will be removed, just like the
  * Linux ->setattr API.
+ *
+ * 设置 xattr 文件属性
  */
 int
 xfs_attr_set(
@@ -416,6 +423,9 @@ xfs_attr_set(
 	 */
 	args->op_flags = XFS_DA_OP_OKNOENT;
 
+	/**
+	 * 如果 value 不为空(value 是用户态传过来的)
+	 */
 	if (args->value) {
 		XFS_STATS_INC(mp, xs_attr_set);
 
@@ -470,14 +480,26 @@ xfs_attr_set(
 		if (error)
 			goto out_trans_cancel;
 
+		/**
+		 *
+		 */
 		error = xfs_has_attr(args);
+		/**
+		 * 创建
+		 */
 		if (error == -EEXIST && (args->attr_flags & XATTR_CREATE))
 			goto out_trans_cancel;
+		/**
+		 * 替换
+		 */
 		if (error == -ENOATTR && (args->attr_flags & XATTR_REPLACE))
 			goto out_trans_cancel;
 		if (error != -ENOATTR && error != -EEXIST)
 			goto out_trans_cancel;
 
+		/**
+		 * 设置
+		 */
 		error = xfs_attr_set_args(args);
 		if (error)
 			goto out_trans_cancel;
@@ -917,6 +939,9 @@ xfs_attr_node_addname(
 	struct xfs_inode	*dp;
 	int			retval, error;
 
+	/**
+	 * tracepoint:xfs:xfs_attr_node_addname
+	 */
 	trace_xfs_attr_node_addname(args);
 
 	/*

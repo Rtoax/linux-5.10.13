@@ -61,6 +61,11 @@ xattr_resolve_name(struct inode *inode, const char **name)
 			return ERR_PTR(-EIO);
 		return ERR_PTR(-EOPNOTSUPP);
 	}
+	/**
+	 * 遍历这个 inode 的所有 superblock handlers
+	 *
+	 * 各种文件系统，如 xfs
+	 */
 	for_each_xattr_handler(handlers, handler) {
 		const char *n;
 
@@ -161,6 +166,9 @@ xattr_supported_namespace(struct inode *inode, const char *prefix)
 }
 EXPORT_SYMBOL(xattr_supported_namespace);
 
+/**
+ * 设置
+ */
 int
 __vfs_setxattr(struct dentry *dentry, struct inode *inode, const char *name,
 	       const void *value, size_t size, int flags)
@@ -174,6 +182,12 @@ __vfs_setxattr(struct dentry *dentry, struct inode *inode, const char *name,
 		return -EOPNOTSUPP;
 	if (size == 0)
 		value = "";  /* empty EA, do not remove */
+	/**
+	 * 回调函数
+	 * 不同的 inode 有不同的回调函数
+	 *
+	 * xfs: xfs_xattr_set()
+	 */
 	return handler->set(handler, dentry, inode, name, value, size, flags);
 }
 EXPORT_SYMBOL(__vfs_setxattr);
@@ -199,12 +213,21 @@ int __vfs_setxattr_noperm(struct dentry *dentry, const char *name,
 {
 	struct inode *inode = dentry->d_inode;
 	int error = -EAGAIN;
+
+	/**
+	 * 是否有 security. 前缀
+	 *
+	 * 如: security.selinux
+	 */
 	int issec = !strncmp(name, XATTR_SECURITY_PREFIX,
 				   XATTR_SECURITY_PREFIX_LEN);
 
 	if (issec)
 		inode->i_flags &= ~S_NOSEC;
 	if (inode->i_opflags & IOP_XATTR) {
+		/**
+		 * 设置
+		 */
 		error = __vfs_setxattr(dentry, inode, name, value, size, flags);
 		if (!error) {
 			fsnotify_xattr(dentry);
@@ -218,9 +241,18 @@ int __vfs_setxattr_noperm(struct dentry *dentry, const char *name,
 	if (error == -EAGAIN) {
 		error = -EOPNOTSUPP;
 
+		/**
+		 * 设置安全上下文
+		 */
 		if (issec) {
+			/**
+			 * 获取 security.selinux 中 'selinux'
+			 */
 			const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
 
+			/**
+			 * 设置
+			 */
 			error = security_inode_setsecurity(inode, suffix, value,
 							   size, flags);
 			if (!error)
@@ -255,6 +287,11 @@ __vfs_setxattr_locked(struct dentry *dentry, const char *name,
 	if (error)
 		return error;
 
+	/**
+	 * selinux: selinux_inode_setxattr()
+	 *
+	 * SELinux 检测，你有权限设置 xattr 吗?
+	 */
 	error = security_inode_setxattr(dentry, name, value, size, flags);
 	if (error)
 		goto out;
@@ -263,6 +300,9 @@ __vfs_setxattr_locked(struct dentry *dentry, const char *name,
 	if (error)
 		goto out;
 
+	/**
+	 * 设置
+	 */
 	error = __vfs_setxattr_noperm(dentry, name, value, size, flags);
 
 out:
@@ -270,6 +310,9 @@ out:
 }
 EXPORT_SYMBOL_GPL(__vfs_setxattr_locked);
 
+/**
+ *
+ */
 int
 vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
 		size_t size, int flags)
@@ -280,6 +323,9 @@ vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
 
 retry_deleg:
 	inode_lock(inode);
+	/**
+	 *
+	 */
 	error = __vfs_setxattr_locked(dentry, name, value, size, flags,
 	    &delegated_inode);
 	inode_unlock(inode);
@@ -506,6 +552,8 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
 
 /*
  * Extended attribute SET operations
+ *
+ * setxattr(2)
  */
 static long
 setxattr(struct dentry *d, const char __user *name, const void __user *value,
@@ -534,9 +582,17 @@ setxattr(struct dentry *d, const char __user *name, const void __user *value,
 			error = -EFAULT;
 			goto out;
 		}
+		/**
+		 * system.posix_acl_access
+		 * system.posix_acl_default
+		 */
 		if ((strcmp(kname, XATTR_NAME_POSIX_ACL_ACCESS) == 0) ||
 		    (strcmp(kname, XATTR_NAME_POSIX_ACL_DEFAULT) == 0))
 			posix_acl_fix_xattr_from_user(kvalue, size);
+
+		/**
+		 * security.capability
+		 */
 		else if (strcmp(kname, XATTR_NAME_CAPS) == 0) {
 			error = cap_convert_nscap(d, &kvalue, size);
 			if (error < 0)
@@ -545,6 +601,9 @@ setxattr(struct dentry *d, const char __user *name, const void __user *value,
 		}
 	}
 
+	/**
+	 * security.selinux
+	 */
 	error = vfs_setxattr(d, kname, kvalue, size, flags);
 out:
 	kvfree(kvalue);
@@ -552,6 +611,9 @@ out:
 	return error;
 }
 
+/**
+ *
+ */
 static int path_setxattr(const char __user *pathname,
 			 const char __user *name, const void __user *value,
 			 size_t size, int flags, unsigned int lookup_flags)
@@ -564,6 +626,9 @@ retry:
 		return error;
 	error = mnt_want_write(path.mnt);
 	if (!error) {
+		/**
+		 *
+		 */
 		error = setxattr(path.dentry, name, value, size, flags);
 		mnt_drop_write(path.mnt);
 	}
@@ -575,10 +640,16 @@ retry:
 	return error;
 }
 
+/**
+ * setxattr(2)
+ */
 SYSCALL_DEFINE5(setxattr, const char __user *, pathname,
 		const char __user *, name, const void __user *, value,
 		size_t, size, int, flags)
 {
+	/**
+	 *
+	 */
 	return path_setxattr(pathname, name, value, size, flags, LOOKUP_FOLLOW);
 }
 
