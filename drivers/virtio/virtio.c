@@ -297,6 +297,9 @@ static int virtio_dev_remove(struct device *_d)
 	return 0;
 }
 
+/**
+ *
+ */
 static struct bus_type virtio_bus = {   /* virtio  */
 	.name  = "virtio",
 	.match = virtio_dev_match,

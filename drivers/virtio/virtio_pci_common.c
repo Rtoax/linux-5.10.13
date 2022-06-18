@@ -516,11 +516,14 @@ static void virtio_pci_release_dev(struct device *_d)
 }
 
 /**
- *  
+ * PCI 扫描的时候会扫描到这个设备
  */
 static int virtio_pci_probe(struct pci_dev *pci_dev,
 			    const struct pci_device_id *id)
 {
+	/**
+	 * virtio_pci_device 表示 Virt PCI 代理设备
+	 */
 	struct virtio_pci_device *vp_dev, *reg_dev = NULL;
 	int rc;
 
@@ -537,7 +540,7 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	spin_lock_init(&vp_dev->lock);
 
     /**
-     *  
+     *
      */
 	/* enable the device */
 	rc = pci_enable_device(pci_dev);
@@ -552,6 +555,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 		if (rc)
 			goto err_probe;
 	} else {
+		/**
+		 * 初始化该 PCI 设备对应的 virtio 设备
+		 */
 		rc = virtio_pci_modern_probe(vp_dev);
 		if (rc == -ENODEV)
 			rc = virtio_pci_legacy_probe(vp_dev);
@@ -562,7 +568,7 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	pci_set_master(pci_dev);
 
     /**
-     *  
+     * 将 virtio 设备注册到 系统中
      */
 	rc = register_virtio_device(&vp_dev->vdev);
 	reg_dev = vp_dev;
@@ -631,6 +637,10 @@ static int virtio_pci_sriov_configure(struct pci_dev *pci_dev, int num_vfs)
 	return num_vfs;
 }
 
+/**
+ * virtio pci 设备
+ * PCI 扫描的时候会扫描到这个设备
+ */
 static struct pci_driver virtio_pci_driver = {
 	.name		= "virtio-pci",
 	.id_table	= virtio_pci_id_table,
