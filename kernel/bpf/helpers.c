@@ -188,6 +188,9 @@ BPF_CALL_0(bpf_get_current_pid_tgid)
 	return (u64) task->tgid << 32 | task->pid;
 }
 
+/**
+ * Get pid/tgid
+ */
 const struct bpf_func_proto bpf_get_current_pid_tgid_proto = {
 	.func		= bpf_get_current_pid_tgid,
 	.gpl_only	= false,
