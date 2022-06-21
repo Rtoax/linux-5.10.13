@@ -2709,6 +2709,9 @@ seqretry:
  * question. If the dentry is found its reference count is incremented and the
  * dentry is returned. The caller must use dput to free the entry when it has
  * finished using it. %NULL is returned if the dentry does not exist.
+ *
+ * see also bcc/tools/dcstat.py
+ * test with `while :; do cd `mktemp -u /tmp/rongXXXXXXXXX` 2>/dev/null; done`
  */
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 {
