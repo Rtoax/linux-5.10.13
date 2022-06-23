@@ -3477,6 +3477,14 @@ static long kvm_vcpu_ioctl(struct file *filp,
 	if (mutex_lock_killable(&vcpu->mutex))
 		return -EINTR;
 	switch (ioctl) {
+	/**
+	 * run = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, vcpufd, 0);
+	 * ret = ioctl(vcpufd, KVM_RUN, NULL);
+	 * switch (run->exit_reason) {
+	 *	case KVM_EXIT_HLT:
+	 *	case KVM_EXIT_IO:
+	 *	...
+	 */
 	case KVM_RUN: {
 		struct pid *oldpid;
 		r = -EINVAL;
@@ -3497,7 +3505,13 @@ static long kvm_vcpu_ioctl(struct file *filp,
 				synchronize_rcu();
 			put_pid(oldpid);
 		}
+		/**
+		 *
+		 */
 		r = kvm_arch_vcpu_ioctl_run(vcpu);
+		/**
+		 * exit to Userspace
+		 */
 		trace_kvm_userspace_exit(vcpu->run->exit_reason, r);
 		break;
 	}
@@ -5200,6 +5214,9 @@ out_fail:
 }
 EXPORT_SYMBOL_GPL(kvm_init);
 
+/**
+ *
+ */
 void kvm_exit(void)
 {
 	debugfs_remove_recursive(kvm_debugfs_dir);

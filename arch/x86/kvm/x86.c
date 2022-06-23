@@ -9489,7 +9489,14 @@ static void kvm_put_guest_fpu(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ * run = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, vcpufd, 0);
+ * ret = ioctl(vcpufd, KVM_RUN, NULL);
+ * switch (run->exit_reason) {
+ *	case KVM_EXIT_HLT:
+ *	case KVM_EXIT_IO:
+ *	...
+ *
+ * KVM_RUN will call this API
  */
 int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 {
@@ -9558,7 +9565,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 		r = -EINTR;
 	else
         /**
-         *  
+         *
          */
 		r = vcpu_run(vcpu);
 
