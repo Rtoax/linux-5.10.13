@@ -4809,6 +4809,11 @@ static int init_user_reserve(void)
 
 	free_kbytes = global_zone_page_state(NR_FREE_PAGES) << (PAGE_SHIFT - 10);
 
+	/**
+	 * 预留内存
+	 * 1. 总 free_kbytes 的 1/32
+	 * 2. 128 MB
+	 */
 	sysctl_user_reserve_kbytes = min(free_kbytes / 32, 1UL << 17);
 	return 0;
 }
