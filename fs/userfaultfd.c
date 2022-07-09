@@ -1343,14 +1343,23 @@ static ssize_t userfaultfd_read(struct file *file, char __user *buf,
 	}
 }
 
+/**
+ * wake_userfault 唤醒 fault 线程
+ */
 static void __wake_userfault(struct userfaultfd_ctx *ctx,
 			     struct userfaultfd_wake_range *range)
 {
 	spin_lock_irq(&ctx->fault_pending_wqh.lock);
 	/* wake all in the range and autoremove */
+	/**
+	 * 唤醒
+	 */
 	if (waitqueue_active(&ctx->fault_pending_wqh))
 		__wake_up_locked_key(&ctx->fault_pending_wqh, TASK_NORMAL,
 				     range);
+	/**
+	 * 唤醒
+	 */
 	if (waitqueue_active(&ctx->fault_wqh))
 		__wake_up(&ctx->fault_wqh, TASK_NORMAL, 1, range);
 	spin_unlock_irq(&ctx->fault_pending_wqh.lock);
@@ -1789,6 +1798,8 @@ out:
 /*
  * userfaultfd_wake may be used in combination with the
  * UFFDIO_*_MODE_DONTWAKE to wakeup userfaults in batches.
+ *
+ * 唤醒 fault 线程
  */
 static int userfaultfd_wake(struct userfaultfd_ctx *ctx,
 			    unsigned long arg)
@@ -1815,6 +1826,9 @@ static int userfaultfd_wake(struct userfaultfd_ctx *ctx,
 	 */
 	VM_BUG_ON(!range.len);
 
+	/**
+	 * 直接调用 wake_userfault 唤醒 fault 线程
+	 */
 	wake_userfault(ctx, &range);
 	ret = 0;
 
@@ -2088,6 +2102,9 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 	case UFFDIO_UNREGISTER:
 		ret = userfaultfd_unregister(ctx, arg);
 		break;
+	/**
+	 * 直接调用 wake_userfault 唤醒 fault 线程
+	 */
 	case UFFDIO_WAKE:
 		ret = userfaultfd_wake(ctx, arg);
 		break;
