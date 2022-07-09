@@ -141,6 +141,9 @@ out_release:
 	goto out;
 }
 
+/**
+ *
+ */
 static int mfill_zeropage_pte(struct mm_struct *dst_mm,
 			      pmd_t *dst_pmd,
 			      struct vm_area_struct *dst_vma,
@@ -411,6 +414,9 @@ extern ssize_t __mcopy_atomic_hugetlb(struct mm_struct *dst_mm,
 				      bool zeropage);
 #endif /* CONFIG_HUGETLB_PAGE */
 
+/**
+ *
+ */
 static __always_inline ssize_t mfill_atomic_pte(struct mm_struct *dst_mm,
 						pmd_t *dst_pmd,
 						struct vm_area_struct *dst_vma,
@@ -454,6 +460,9 @@ static __always_inline ssize_t mfill_atomic_pte(struct mm_struct *dst_mm,
 	return err;
 }
 
+/**
+ * 分配物理内存，并将用数据 copy 过去
+ */
 static __always_inline ssize_t __mcopy_atomic(struct mm_struct *dst_mm,
 					      unsigned long dst_start,
 					      unsigned long src_start,
@@ -576,6 +585,9 @@ retry:
 		BUG_ON(pmd_none(*dst_pmd));
 		BUG_ON(pmd_trans_huge(*dst_pmd));
 
+		/**
+		 *
+		 */
 		err = mfill_atomic_pte(dst_mm, dst_pmd, dst_vma, dst_addr,
 				       src_addr, &page, zeropage, wp_copy);
 		cond_resched();
@@ -622,6 +634,9 @@ out:
 	return copied ? copied : err;
 }
 
+/**
+ * 分配物理内存，并将用数据 copy 过去
+ */
 ssize_t mcopy_atomic(struct mm_struct *dst_mm, unsigned long dst_start,
 		     unsigned long src_start, unsigned long len,
 		     bool *mmap_changing, __u64 mode)

@@ -1356,6 +1356,9 @@ static void __wake_userfault(struct userfaultfd_ctx *ctx,
 	spin_unlock_irq(&ctx->fault_pending_wqh.lock);
 }
 
+/**
+ *  唤醒 fault 线程
+ */
 static __always_inline void wake_userfault(struct userfaultfd_ctx *ctx,
 					   struct userfaultfd_wake_range *range)
 {
@@ -1819,6 +1822,10 @@ out:
 	return ret;
 }
 
+/**
+ * 该API用于向以分配的 page 中预先写入数据，
+ * 这个写入操作位于原 fault 线程读写数据之前。
+ */
 static int userfaultfd_copy(struct userfaultfd_ctx *ctx,
 			    unsigned long arg)
 {
@@ -1827,6 +1834,9 @@ static int userfaultfd_copy(struct userfaultfd_ctx *ctx,
 	struct uffdio_copy __user *user_uffdio_copy;
 	struct userfaultfd_wake_range range;
 
+	/**
+	 * 用户态数据
+	 */
 	user_uffdio_copy = (struct uffdio_copy __user *) arg;
 
 	ret = -EAGAIN;
@@ -1852,6 +1862,9 @@ static int userfaultfd_copy(struct userfaultfd_ctx *ctx,
 		goto out;
 	if (uffdio_copy.mode & ~(UFFDIO_COPY_MODE_DONTWAKE|UFFDIO_COPY_MODE_WP))
 		goto out;
+	/**
+	 * 调用 mcopy_atomic (mm/userfaultfd.c) 分配物理内存，并将用户提供的数据 copy 过去
+	 */
 	if (mmget_not_zero(ctx->mm)) {
 		ret = mcopy_atomic(ctx->mm, uffdio_copy.dst, uffdio_copy.src,
 				   uffdio_copy.len, &ctx->mmap_changing,
@@ -1869,6 +1882,9 @@ static int userfaultfd_copy(struct userfaultfd_ctx *ctx,
 	range.len = ret;
 	if (!(uffdio_copy.mode & UFFDIO_COPY_MODE_DONTWAKE)) {
 		range.start = uffdio_copy.dst;
+		/**
+		 *  唤醒 fault 线程
+		 */
 		wake_userfault(ctx, &range);
 	}
 	ret = range.len == uffdio_copy.len ? 0 : -EAGAIN;
@@ -2075,6 +2091,10 @@ static long userfaultfd_ioctl(struct file *file, unsigned cmd,
 	case UFFDIO_WAKE:
 		ret = userfaultfd_wake(ctx, arg);
 		break;
+	/**
+	 * 该API用于向以分配的 page 中预先写入数据，
+	 * 这个写入操作位于原 fault 线程读写数据之前。
+	 */
 	case UFFDIO_COPY:
 		ret = userfaultfd_copy(ctx, arg);
 		break;
