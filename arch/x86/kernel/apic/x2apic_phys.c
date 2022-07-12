@@ -39,6 +39,12 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
 	return x2apic_enabled() && (x2apic_phys || x2apic_fadt_phys());
 }
 
+/**
+ * @brief
+ *
+ * @param cpu
+ * @param vector
+ */
 static void x2apic_send_IPI(int cpu, int vector)
 {
 	u32 dest = per_cpu(x86_cpu_to_apicid, cpu);
@@ -115,6 +121,13 @@ int x2apic_apic_id_registered(void)
 	return 1;
 }
 
+/**
+ * @brief
+ *
+ * @param apicid
+ * @param vector
+ * @param dest
+ */
 void __x2apic_send_IPI_dest(unsigned int apicid, int vector, unsigned int dest)
 {
 	unsigned long cfg = __prepare_ICR(0, vector, dest);

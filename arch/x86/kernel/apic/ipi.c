@@ -74,6 +74,9 @@ void native_smp_send_reschedule(int cpu)
 	apic->send_IPI(cpu, RESCHEDULE_VECTOR);
 }
 
+/**
+ *
+ */
 void native_send_call_func_single_ipi(int cpu)
 {
 	apic->send_IPI(cpu, CALL_FUNCTION_SINGLE_VECTOR);

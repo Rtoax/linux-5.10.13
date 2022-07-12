@@ -230,6 +230,12 @@ static inline u32 native_safe_x2apic_wait_icr_idle(void)
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param low
+ * @param id
+ */
 static inline void native_x2apic_icr_write(u32 low, u32 id)
 {
 	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), ((__u64) id) << 32 | low);

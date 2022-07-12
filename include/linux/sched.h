@@ -1193,6 +1193,8 @@ struct task_struct {    /* PCB */
 	 * guarantees all stores of 'current' are visible before
 	 * ->sched_remote_wakeup gets used, so it can be in this word.
 	 *
+	 * 是否发生迁移了，从一个 CPU 转到 另一个 CPU
+	 *
 	 * https://lkml.kernel.org/lkml/20201123121844.330555813@linuxfoundation.org/
 	 */
 	unsigned			sched_remote_wakeup:1;

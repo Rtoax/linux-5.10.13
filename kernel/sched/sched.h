@@ -2063,8 +2063,8 @@ struct sched_class {
     /**
      *  为进程选择一个 最优的 CPU 就绪队列
      *
-     *  select_task_rq_idle()
-     *  select_task_rq_fair()
+     *  select_task_rq_idle() -- 直接返回 return task_cpu(p);
+     *  select_task_rq_fair() -- 选择最合适的调度域中最悠闲的 CPU
      *  select_task_rq_rt()
      *  select_task_rq_dl()
      *  select_task_rq_stop()

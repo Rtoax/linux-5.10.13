@@ -2448,8 +2448,8 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
      */
 	if (p->nr_cpus_allowed > 1)
         /**
-         *  select_task_rq_idle()
-         *  select_task_rq_fair()
+         *  select_task_rq_idle() -- 直接返回 return task_cpu(p);
+         *  select_task_rq_fair() -- 选择最合适的调度域中最悠闲的 CPU
          *  select_task_rq_rt()
          *  select_task_rq_dl()
          *  select_task_rq_stop()
@@ -2574,6 +2574,8 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 
 #ifdef CONFIG_SMP
 	/**
+	 * 只有这两个
+	 *
 	 * task_woken_dl()
 	 * task_woken_rt()
 	 */
@@ -2597,6 +2599,9 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 		u64 delta = rq_clock(rq) - rq->idle_stamp;
 		u64 max = 2*rq->max_idle_balance_cost;
 
+		/**
+		 * 更新 loadavg
+		 */
 		update_avg(&rq->avg_idle, delta);
 
 		if (rq->avg_idle > max)
@@ -2608,9 +2613,9 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 }
 
 /**
- * 其中TTWU_QUEUE是内核调度的其中一个feature，默认是打开的（true），
- * 可以控制在远程唤醒时是否允许向目标CPU触发IPI中断，如果不允许远程唤醒，
- * 则需要通过对目标CPU的运行队列加锁进行处理。可知TTWU_QUEUE就是为了减少
+ * 其中 TTWU_QUEUE 是内核调度的其中一个 feature，默认是打开的（true），
+ * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
+ * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了减少
  * 运行队列的锁竞争，用中断代替。
  *
  * see /sys/kernel/debug/sched/features
@@ -2691,6 +2696,11 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	if (task_on_rq_queued(p)) {
 		/* check_preempt_curr() may use rq clock */
 		update_rq_clock(rq);
+
+		/**
+		 *
+		 *
+		 */
 		ttwu_do_wakeup(rq, p, wake_flags, &rf);
 		ret = 1;
 	}
@@ -2700,6 +2710,24 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 }
 
 #ifdef CONFIG_SMP
+/**
+ * 该函数会被 swapper/xx(idle 进程) 调用
+ *
+ * sudo bpftrace -e 'kprobe:sched_ttwu_pending { printf("%s\n", comm);@[kstack] = count();}'
+ *
+ * 一个调用栈示例
+ *
+ *	sched_ttwu_pending+1
+ *  __sysvec_call_function_single+41
+ *  sysvec_call_function_single+109
+ *  asm_sysvec_call_function_single+18
+ *  finish_task_switch.isra.0+190
+ *  __schedule+526
+ *  schedule_idle+38
+ *  do_idle+176
+ *  cpu_startup_entry+25
+ *  secondary_startup_64_no_verify+194
+ */
 void sched_ttwu_pending(void *arg)
 {
 	struct llist_node *llist = arg;
@@ -2720,6 +2748,10 @@ void sched_ttwu_pending(void *arg)
 	rq_lock_irqsave(rq, &rf);
 	update_rq_clock(rq);
 
+	/**
+	 *
+	 * 在 __ttwu_queue_wakelist() 中加入链表
+	 */
 	llist_for_each_entry_safe(p, t, llist, wake_entry.llist) {
 		if (WARN_ON_ONCE(p->on_cpu))
 			smp_cond_load_acquire(&p->on_cpu, !VAL);
@@ -2727,20 +2759,59 @@ void sched_ttwu_pending(void *arg)
 		if (WARN_ON_ONCE(task_cpu(p) != cpu_of(rq)))
 			set_task_cpu(p, cpu_of(rq));
 
+		/**
+		 * sched_remote_wakeup: 是否发生迁移了，从一个 CPU 转到 另一个 CPU
+		 */
 		ttwu_do_activate(rq, p, p->sched_remote_wakeup ? WF_MIGRATED : 0, &rf);
 	}
 
 	rq_unlock_irqrestore(rq, &rf);
 }
 
+/**
+ * 发送一个简单的 IPI
+ *
+ * 跟踪脚本：
+ * sudo bpftrace -e 'kprobe:send_call_function_single_ipi { printf("%s\n", comm);@[kstack] = count();}'
+ *
+ * 输出证明：所有进程都可能调用这个函数，
+ * gnome-shell
+ * swapper/9
+ * kworker/1:1H
+ * terminator
+ * Xorg
+ * Xorg
+ * gnome-shell
+ * terminator
+ * Xorg
+ * gnome-shell
+ * ...
+ *
+ * 一个调用栈示例：
+ *	send_call_function_single_ipi+1
+ *  generic_exec_single+80
+ *  smp_call_function_single_async+30
+ *  update_process_times+176
+ *  tick_sched_handle+34
+ *  tick_sched_timer+97
+ *  __hrtimer_run_queues+295
+ *  hrtimer_interrupt+252
+ *  __sysvec_apic_timer_interrupt+89
+ *  sysvec_apic_timer_interrupt+55
+ *  asm_sysvec_apic_timer_interrupt+18
+ */
 void send_call_function_single_ipi(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 
-	if (!set_nr_if_polling(rq->idle))
+	if (!set_nr_if_polling(rq->idle)) {
+		/**
+		 * wrmsrl
+		 */
 		arch_send_call_function_single_ipi(cpu);
-	else
+	} else {
 		trace_sched_wake_idle_without_ipi(cpu);
+	}
 }
 
 /*
@@ -2748,6 +2819,13 @@ void send_call_function_single_ipi(int cpu)
  * necessary. The wakee CPU on receipt of the IPI will queue the task
  * via sched_ttwu_wakeup() for activation so the wakee incurs the cost
  * of the wakeup instead of the waker.
+ *
+ * 将 task 插入 目标 CPU 的 wake_list，并且 如果有必要 用 IPI 唤醒 CPU。
+ * 接收到 IPI 的唤醒 CPU 将通过 sched_ttwu_wakeup() 对任务进行排队以进行激活，
+ * 因此 wakee 会产生唤醒成本，而不是 waker 。
+ *
+ * employee：员工 => wakee：
+ * employer：雇主 => waker：
  */
 static void __ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 {
@@ -2762,10 +2840,14 @@ static void __ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags
 	 */
 	p->sched_remote_wakeup = !!(wake_flags & WF_MIGRATED);
 
+	/**
+	 *
+	 */
 	WRITE_ONCE(rq->ttwu_pending, 1);
 
 	/**
 	 * 插入
+	 * 在 sched_ttwu_pending() 中遍历
 	 */
 	__smp_call_single_queue(cpu, &p->wake_entry.llist);
 }
@@ -2829,8 +2911,8 @@ static inline bool ttwu_queue_cond(int cpu, int wake_flags)
 static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 {
 	/**
-	 * 1. 是否有 TTWU 特性
-	 * 2. 
+	 * 1. 是否有 TTWU_QUEUE 特性 (/sys/kernel/debug/sched/features)
+	 * 2.
 	 */
 	if (sched_feat(TTWU_QUEUE) && ttwu_queue_cond(cpu, wake_flags)) {
 		if (WARN_ON_ONCE(cpu == smp_processor_id()))
@@ -2849,12 +2931,20 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 #endif /* CONFIG_SMP */
 
 /**
- * 其中TTWU_QUEUE是内核调度的其中一个feature，默认是打开的（true），
- * 可以控制在远程唤醒时是否允许向目标CPU触发IPI中断，如果不允许远程唤醒，
- * 则需要通过对目标CPU的运行队列加锁进行处理。可知TTWU_QUEUE就是为了减少
- * 运行队列的锁竞争，用中断代替。
+ * 其中 TTWU_QUEUE 是内核调度的其中一个 feature ，默认是打开的（true），
+ * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
+ * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了
+ * 	“减少运行队列的锁竞争，用中断代替”。
  *
  * see /sys/kernel/debug/sched/features
+ *
+ * 示例输出：（实际在一行）
+ *
+ * GENTLE_FAIR_SLEEPERS START_DEBIT NO_NEXT_BUDDY LAST_BUDDY CACHE_HOT_BUDDY
+ * WAKEUP_PREEMPTION NO_HRTICK NO_HRTICK_DL NO_DOUBLE_TICK NONTASK_CAPACITY
+ * TTWU_QUEUE SIS_PROP NO_WARN_DOUBLE_CLOCK RT_PUSH_IPI NO_RT_RUNTIME_SHARE
+ * NO_LB_MIN ATTACH_AGE_LOAD WA_IDLE WA_WEIGHT WA_BIAS UTIL_EST UTIL_EST_FASTUP
+ * NO_LATENCY_WARN ALT_PERIOD BASE_SLICE
  *
  * https://lore.kernel.org/lkml/1323275027.32012.114.camel@twins/
  *
@@ -3004,6 +3094,23 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
  * 唤醒进程
  *
  * TTWU - try_to_wake_up
+ *
+ * 一个调用栈示例
+ * @stack[
+        try_to_wake_up+1
+        hrtimer_wakeup+30
+        __hrtimer_run_queues+295
+        hrtimer_interrupt+252
+        __sysvec_apic_timer_interrupt+89
+        sysvec_apic_timer_interrupt+109
+        asm_sysvec_apic_timer_interrupt+18
+        cpuidle_enter_state+210
+        cpuidle_enter+41
+        cpuidle_idle_call+296
+        do_idle+123
+        cpu_startup_entry+25
+        secondary_startup_64_no_verify+194
+    ]: 225
  */
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
@@ -3014,9 +3121,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	preempt_disable();  /* 禁止抢占 */
 
     /**
-     *
+     * 当前线程
      */
-	if (p == current) {/* 当前线程 */
+	if (p == current) {
 		/*
 		 * We're waking current, this means 'p->on_rq' and 'task_cpu(p)
 		 * == smp_processor_id()'. Together this means we can special
@@ -3041,6 +3148,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		goto out;
 	}
 
+	/**
+     * 如果不是当前线程，从此继续运行
+     */
 	/*
 	 * If we are going to wake up a thread waiting for CONDITION we
 	 * need to ensure that CONDITION=1 done by the caller can not be
@@ -3181,6 +3291,13 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
     /**
      *  调用调度类的 select_task_rq()
 	 *  选择一个 runqueue
+	 *
+	 * 如
+	 * select_task_rq_idle() -- 直接返回 return task_cpu(p);
+	 * select_task_rq_fair() -- 选择最合适的调度域中最悠闲的 CPU
+	 * select_task_rq_rt()
+	 * select_task_rq_dl()
+	 * select_task_rq_stop()
      */
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags);
 	/* CPU 发生了变化 */
@@ -3195,11 +3312,15 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		 *
 		 */
 		psi_ttwu_dequeue(p);
+		/**
+		 * 设置 task 的 CPU
+		 */
 		set_task_cpu(p, cpu);
 	}
 #else // !CONFIG_SMP
 	/**
-	 * 
+	 * 如果是 非 SMP 的，直接获取 CPU
+	 * 这里几乎不会被执行
 	 */
 	cpu = task_cpu(p);
 #endif /* CONFIG_SMP */
