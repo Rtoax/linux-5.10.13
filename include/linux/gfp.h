@@ -547,12 +547,24 @@ static inline enum zone_type gfp_zone(gfp_t flags)  /* 从 flags 获取来自哪
 /**
  *  zonelist
  */
+/**
+ * pglist 的 node_zonelists[] 里面包含两个zonelist，一个是有本node的zone组成的，
+ * 另一个是本node分配不到内存的时候的可选zone组成，类似一个退路，术语叫fallback，
+ * 能从本node分到内存就是numa hit，从备选node分配内存就是numa miss了，
+ *
+ * ZONELIST_FALLBACK 是备选的，ZONELIST_NOFALLBACK 是本地的，
+ *
+ * cat /sys/devices/system/node/node0/numastat 节点能看 hit miss 的次数
+ *
+ */
 static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
 {
 #ifdef CONFIG_NUMA
 	if (unlikely(flags & __GFP_THISNODE))
+		// 1
 		return ZONELIST_NOFALLBACK;
 #endif
+	// 0
 	return ZONELIST_FALLBACK;
 }
 
@@ -567,6 +579,8 @@ static inline int gfp_zonelist(gfp_t flags) /* 使用哪个 zonelist */
  */
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
+	// ZONELIST_FALLBACK = 0
+	// ZONELIST_NOFALLBACK = 1
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
 }
 

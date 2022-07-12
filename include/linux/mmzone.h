@@ -165,6 +165,7 @@ struct zone_padding {
 /**
  *  NUMA 统计信息
  *
+ *  node_read_numastat()
  *  node_page_state_add()
  *  global_node_page_state()
  */
@@ -974,7 +975,13 @@ static inline bool zone_intersects(struct zone *zone,
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES/* NODE个数 */ * MAX_NR_ZONES/* ZONE个数 */)
 
 /**
+ * pglist 的 node_zonelists[] 里面包含两个zonelist，一个是有本node的zone组成的，
+ * 另一个是本node分配不到内存的时候的可选zone组成，类似一个退路，术语叫fallback，
+ * 能从本node分到内存就是numa hit，从备选node分配内存就是numa miss了，
  *
+ * ZONELIST_FALLBACK 是备选的，ZONELIST_NOFALLBACK 是本地的，
+ *
+ * cat /sys/devices/system/node/node0/numastat 节点能看 hit miss 的次数
  */
 enum {
 	/**
@@ -989,6 +996,7 @@ enum {
 	 * restrict the allocations to a single node for __GFP_THISNODE.
 	 *
 	 * NUMA 区域列表翻了一番，因为我们需要区域列表来限制对 __GFP_THISNODE 的单个节点的分配。
+	 * 参见 NUMA_MISS
 	 */
 	ZONELIST_NOFALLBACK,	/* zonelist without fallback (__GFP_THISNODE) */
 #endif
@@ -1062,6 +1070,15 @@ typedef struct pglist_data {/* 描述 NUMA 内存布局 */
 	 * 通常第一个zone 是当前 node 的 node_zones 的引用
 	 *
 	 * 里面是一个 zoneref 数组
+	 *
+	 * ========================================================================
+	 * pglist 的 node_zonelists[] 里面包含两个zonelist，一个是有本node的zone组成的，
+	 * 另一个是本node分配不到内存的时候的可选zone组成，类似一个退路，术语叫fallback，
+	 * 能从本node分到内存就是numa hit，从备选node分配内存就是numa miss了，
+	 *
+	 * ZONELIST_FALLBACK 是备选的，ZONELIST_NOFALLBACK 是本地的，
+	 *
+	 * cat /sys/devices/system/node/node0/numastat 节点能看 hit miss 的次数
 	 */
 	struct zonelist node_zonelists[MAX_ZONELISTS/* 2 */];
 

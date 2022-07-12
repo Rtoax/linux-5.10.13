@@ -3867,9 +3867,16 @@ static inline void zone_statistics(struct zone *preferred_zone, struct zone *z)
 	if (zone_to_nid(z) != numa_node_id())
 		local_stat = NUMA_OTHER;
 
+	/**
+	 * 在同一节点分配内存
+	 */
 	if (zone_to_nid(z) == zone_to_nid(preferred_zone))
 		__inc_numa_state(z, NUMA_HIT);
 	else {
+	/**
+	 * 跨节点分配内存
+	 * 参见 cat /sys/devices/system/node/node0/numastat 看 hit miss 的次数
+	 */
 		__inc_numa_state(z, NUMA_MISS);
 		__inc_numa_state(preferred_zone, NUMA_FOREIGN);
 	}
@@ -3933,6 +3940,7 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	if (page) {
         /* 分配成功后进行统计 */
 		__count_zid_vm_events(PGALLOC, page_zonenum(page), 1);
+		/* 统计信息 */
 		zone_statistics(preferred_zone, zone);
 	}
 	local_irq_restore(flags);
@@ -7046,7 +7054,13 @@ static void build_zonelists_in_node_order(pg_data_t *pgdat, int *node_order,
 	int i;
 
 	/**
-	 * @brief
+	 * pglist 的 node_zonelists[] 里面包含两个zonelist，一个是有本node的zone组成的，
+	 * 另一个是本node分配不到内存的时候的可选zone组成，类似一个退路，术语叫fallback，
+	 * 能从本node分到内存就是numa hit，从备选node分配内存就是numa miss了，
+	 *
+	 * ZONELIST_FALLBACK 是备选的，ZONELIST_NOFALLBACK 是本地的，
+	 *
+	 * cat /sys/devices/system/node/node0/numastat 节点能看 hit miss 的次数
 	 *
 	 */
 	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
@@ -7079,6 +7093,16 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
 	struct zoneref *zonerefs;
 	int nr_zones;
 
+	/**
+	 * pglist 的 node_zonelists[] 里面包含两个zonelist，一个是有本node的zone组成的，
+	 * 另一个是本node分配不到内存的时候的可选zone组成，类似一个退路，术语叫fallback，
+	 * 能从本node分到内存就是numa hit，从备选node分配内存就是numa miss了，
+	 *
+	 * ZONELIST_FALLBACK 是备选的，ZONELIST_NOFALLBACK 是本地的，
+	 *
+	 * cat /sys/devices/system/node/node0/numastat 节点能看 hit miss 的次数
+	 *
+	 */
 	zonerefs = pgdat->node_zonelists[ZONELIST_NOFALLBACK]._zonerefs;
 
 	/**
