@@ -2711,9 +2711,16 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 
 #ifdef CONFIG_SMP
 /**
- * 该函数会被 swapper/xx(idle 进程) 调用
+ * 见 try_to_wake_up() 中对 smp_rmb() 的注释
  *
+ * sched_ttwu_pending()			try_to_wake_up()
+ *   STORE p->on_rq = 1			  LOAD p->state
+ *   UNLOCK rq->lock
+ *
+ * ============================================
  * sudo bpftrace -e 'kprobe:sched_ttwu_pending { printf("%s\n", comm);@[kstack] = count();}'
+ *
+ * 该函数会被 swapper/xx(idle 进程) 调用
  *
  * 一个调用栈示例
  *
@@ -2846,7 +2853,7 @@ static void __ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags
 	WRITE_ONCE(rq->ttwu_pending, 1);
 
 	/**
-	 * 插入
+	 * 插入 并发送 IPI 中断
 	 * 在 sched_ttwu_pending() 中遍历
 	 */
 	__smp_call_single_queue(cpu, &p->wake_entry.llist);
@@ -3200,7 +3207,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 *
 	 * A similar smb_rmb() lives in try_invoke_on_locked_down_task().
 	 *
-     * 在 读 p->on_rq 之前，p->state 需要读写完成
+     * 在 读 p->on_rq 之前，p->state 需要读完成
      */
 	smp_rmb();
 
@@ -3307,6 +3314,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 			atomic_dec(&task_rq(p)->nr_iowait);
 		}
 
+		/* CPU 发生了变化，设置标志位 */
 		wake_flags |= WF_MIGRATED;
 		/**
 		 *
@@ -3329,6 +3337,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
      * 添加到队列
      */
 	ttwu_queue(p, cpu, wake_flags);
+
 unlock:
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 out:

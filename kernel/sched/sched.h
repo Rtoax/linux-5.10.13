@@ -1946,6 +1946,15 @@ static inline int task_on_rq_migrating(struct task_struct *p)
  */
 #define WF_SYNC			0x01		/* Waker goes to sleep after wakeup */
 #define WF_FORK			0x02		/* Child wakeup after fork */
+/**
+ * CPU 发生了变化
+ *
+ *     设置                                  读取
+ * try_to_wake_up()                 __ttwu_queue_wakelist()
+ *
+ *                                   >> p->sched_remote_wakeup =
+ *                                        !!(wake_flags & WF_MIGRATED);
+ */
 #define WF_MIGRATED		0x04		/* Internal use, task got migrated */
 #define WF_ON_CPU		0x08		/* Wakee is on_cpu */
 

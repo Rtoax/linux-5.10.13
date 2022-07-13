@@ -253,6 +253,11 @@ static __always_inline void csd_unlock(call_single_data_t *csd)
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(call_single_data_t, csd_data);
 
+/**
+ * 插入 并发送 IPI 中断
+ *
+ * 在 sched_ttwu_pending() 中遍历
+ */
 void __smp_call_single_queue(int cpu, struct llist_node *node)
 {
 	/*
@@ -300,6 +305,10 @@ static int generic_exec_single(int cpu, call_single_data_t *csd)
 		return -ENXIO;
 	}
 
+	/**
+	 * 插入 并发送 IPI 中断
+	 * 在 sched_ttwu_pending() 中遍历
+	 */
 	__smp_call_single_queue(cpu, &csd->llist);
 
 	return 0;

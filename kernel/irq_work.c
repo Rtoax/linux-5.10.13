@@ -99,9 +99,15 @@ bool irq_work_queue_on(struct irq_work *work, int cpu)
 		return false;
 
 	preempt_disable();
+
 	if (cpu != smp_processor_id()) {
 		/* Arch remote IPI send/receive backend aren't NMI safe */
 		WARN_ON_ONCE(in_nmi());
+
+		/**
+		 * 插入 并发送 IPI 中断
+		 * 在 sched_ttwu_pending() 中遍历
+		 */
 		__smp_call_single_queue(cpu, &work->llnode);
 	} else {
 		__irq_work_queue_local(work);
