@@ -335,6 +335,7 @@ struct vm_area_struct;
  */
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
+/* 不允许直接内存回收:开启物理 IO 或者 文件系统回调 */
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
 
 /**
