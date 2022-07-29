@@ -561,6 +561,7 @@ static unsigned long calc_trampoline_call_offset(bool save_regs)
 	unsigned long start_offset;
 	unsigned long call_offset;
 
+	/* 是否保存 寄存器 */
 	if (save_regs) {
 		start_offset = (unsigned long)ftrace_regs_caller;
 		call_offset = (unsigned long)ftrace_regs_call;

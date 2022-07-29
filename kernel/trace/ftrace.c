@@ -1643,7 +1643,7 @@ static int ftrace_cmp_recs(const void *a, const void *b)    /* 比较函数 */
 }
 
 /**
- *
+ * 查找对应的 IP
  */
 static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 {
@@ -1656,15 +1656,18 @@ static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 
     /**
      *  遍历 pg 单链表
+	 * sudo bpftrace -e 'BEGIN { printf("%lx\n", kaddr("ftrace_pages_start")); }'
      */
 	for (pg = ftrace_pages_start; pg; pg = pg->next) {
 
         /* start-end 不在这个 pg 内 */
 		if (end < pg->records[0].ip ||
-		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE/* x86下=5, AArch64=4 */))
+			/* MCOUNT_INSN_SIZE: x86=5, AArch64=4 */
+		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE))
 			continue;
         /**
          *  二分查找
+		 * 找到函数对应的 _mcount() 地址
          */
 		rec = bsearch(&key, pg->records, pg->index,
 			      sizeof(struct dyn_ftrace),
@@ -5268,6 +5271,9 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 	return ret;
 }
 
+/**
+ *
+ */
 static int
 ftrace_set_addr(struct ftrace_ops *ops, unsigned long ip, int remove,
 		int reset, int enable)
@@ -5306,6 +5312,8 @@ static struct list_head ftrace_direct_funcs; //+++
  * This is useful for the function_graph tracer, as it may need to
  * do adjustments if it traced a location that also has a direct
  * trampoline attached to it.
+ *
+ * 检测是否为已经注册的定西哪个 caller，这是将被调用的函数
  */
 struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
 {
@@ -5371,7 +5379,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
 	ret = -ENODEV;
     /**
-     *  查找这个 函数
+     *  查找这个 函数的 mcount() 的地址
      */
 	rec = lookup_rec(ip, ip);
 	if (!rec)
@@ -5482,6 +5490,9 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 			ftrace_set_filter_ip(&direct_ops, ip, 1, 0);
 	}
 
+	/**
+	 * 失败
+	 */
 	if (ret) {
 		kfree(entry);
         /**
@@ -7946,7 +7957,7 @@ int ftrace_is_dead(void)
  *       with "notrace", otherwise it will go into a
  *       recursive loop.
  *
- *
+ * 注册一个 ftrace 剖析函数
  */
 int register_ftrace_function(struct ftrace_ops *ops)    /*  注册 ftrace*/
 {
