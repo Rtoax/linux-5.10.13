@@ -518,6 +518,9 @@ static inline long branch_imm_common(unsigned long pc, unsigned long addr,
 	return offset;
 }
 
+/**
+ * 获取分支指令常量
+ */
 u32 __kprobes aarch64_insn_gen_branch_imm(unsigned long pc, unsigned long addr,
 					  enum aarch64_insn_branch_type type)
 {

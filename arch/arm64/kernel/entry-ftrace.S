@@ -227,6 +227,7 @@ SYM_CODE_END(ftrace_graph_caller)
  * This function makes calls, if enabled, to:
  *     - tracer function to probe instrumented function's entry,
  *     - ftrace_graph_caller to set up an exit hook
+ * 打开动态追踪
  */
 SYM_FUNC_START(_mcount)
 	mcount_enter

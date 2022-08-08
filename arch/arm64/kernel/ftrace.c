@@ -295,12 +295,17 @@ void prepare_ftrace_return(unsigned long self_addr, unsigned long *parent,
 /*
  * Turn on/off the call to ftrace_graph_caller() in ftrace_caller()
  * depending on @enable.
+ *
+ * ftrace 修改代码
  */
 static int ftrace_modify_graph_caller(bool enable)
 {
 	unsigned long pc = (unsigned long)&ftrace_graph_call;
 	u32 branch, nop;
 
+	/**
+	 * 准备修改代码
+	 */
 	branch = aarch64_insn_gen_branch_imm(pc,
 					     (unsigned long)ftrace_graph_caller,
 					     AARCH64_INSN_BRANCH_NOLINK);
