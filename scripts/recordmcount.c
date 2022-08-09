@@ -32,6 +32,23 @@
 #include <string.h>
 #include <unistd.h>
 
+
+
+#if defined(DEBUG)
+#define ldebug(fmt...) do {		\
+		fprintf(stdout, "\033[32m[%s:%d]\033[m ", __func__, __LINE__);	\
+		fprintf(stdout, fmt);	\
+	} while(0)
+#define lerror(fmt...) do {		\
+		fprintf(stdout, "\031[32m[%s:%d]\033[m ", __func__, __LINE__);	\
+		fprintf(stdout, fmt);	\
+	} while(0)
+#else
+#define ldebug(fmt...) do {} while(0)
+#define lerror(fmt...) do {} while(0)
+#endif
+
+
 #ifndef EM_AARCH64
 #define EM_AARCH64	183
 #define R_AARCH64_NONE		0
@@ -324,6 +341,8 @@ static int write_file(const char *fname)
 
 	sprintf(tmp_file, "%s.rc", fname);
 
+	ldebug("create %s\n", tmp_file);
+
 	/*
 	 * After reading the entire file into memory, delete it
 	 * and write it back, to prevent weird side effects of modifying
@@ -353,6 +372,9 @@ static int write_file(const char *fname)
 		perror(fname);
 		return -1;
 	}
+
+	ldebug("rename %s to %s\n", tmp_file, fname);
+
 	return 0;
 }
 
@@ -406,6 +428,7 @@ static uint32_t (*w2)(uint16_t);
 /* Names of the sections that could contain calls to mcount. */
 static int is_mcounted_section_name(char const *const txtname)
 {
+	ldebug("\n");
 	return strncmp(".text",          txtname, 5) == 0 ||
 		strcmp(".init.text",     txtname) == 0 ||
 		strcmp(".ref.text",      txtname) == 0 ||
@@ -484,6 +507,8 @@ static int do_file(char const *const fname)
 	if (!ehdr)
 		goto out;
 
+	ldebug("mmap: %s\n", fname);
+
 	w = w4nat;
 	w2 = w2nat;
 	w8 = w8nat;
@@ -505,6 +530,7 @@ static int do_file(char const *const fname)
 		push_arm = push_arm_le;
 		ideal_nop2_thumb = ideal_nop2_thumb_le;
 		push_bl_mcount_thumb = push_bl_mcount_thumb_le;
+		ldebug("ELFDATA2LSB\n");
 		break;
 	case ELFDATA2MSB:
 		if (*(unsigned char const *)&endian != 0) {
@@ -518,14 +544,18 @@ static int do_file(char const *const fname)
 		push_arm = push_arm_be;
 		ideal_nop2_thumb = ideal_nop2_thumb_be;
 		push_bl_mcount_thumb = push_bl_mcount_thumb_be;
+		ldebug("ELFDATA2MSB\n");
 		break;
 	}  /* end switch */
+
 	if (memcmp(ELFMAG, ehdr->e_ident, SELFMAG) != 0 ||
 	    w2(ehdr->e_type) != ET_REL ||
 	    ehdr->e_ident[EI_VERSION] != EV_CURRENT) {
 		fprintf(stderr, "unrecognized ET_REL file %s\n", fname);
 		goto out;
 	}
+
+	ldebug("%s is ET_REL\n", fname);
 
 	gpfx = '_';
 	switch (w2(ehdr->e_machine)) {
@@ -534,6 +564,7 @@ static int do_file(char const *const fname)
 			w2(ehdr->e_machine), fname);
 		goto out;
 	case EM_386:
+		ldebug("EM_386\n");
 		reltype = R_386_32;
 		rel_type_nop = R_386_NONE;
 		make_nop = make_nop_x86;
@@ -542,6 +573,7 @@ static int do_file(char const *const fname)
 		gpfx = 0;
 		break;
 	case EM_ARM:
+		ldebug("EM_ARM\n");
 		reltype = R_ARM_ABS32;
 		altmcount = "__gnu_mcount_nc";
 		make_nop = make_nop_arm;
@@ -550,6 +582,7 @@ static int do_file(char const *const fname)
 		gpfx = 0;
 		break;
 	case EM_AARCH64:
+		ldebug("EM_AARCH64\n");
 		reltype = R_AARCH64_ABS64;
 		make_nop = make_nop_arm64;
 		rel_type_nop = R_AARCH64_NONE;
@@ -564,6 +597,7 @@ static int do_file(char const *const fname)
 	case EM_SH:	reltype = R_SH_DIR32; gpfx = 0; break;
 	case EM_SPARCV9: reltype = R_SPARC_64; break;
 	case EM_X86_64:
+		ldebug("EM_X86_64\n");
 		make_nop = make_nop_x86;
 		ideal_nop = ideal_nop5_x86_64;
 		reltype = R_X86_64_64;
@@ -579,6 +613,7 @@ static int do_file(char const *const fname)
 			ehdr->e_ident[EI_CLASS], fname);
 		goto out;
 	case ELFCLASS32:
+		ldebug("ELFCLASS32\n");
 		if (w2(ehdr->e_ehsize) != sizeof(Elf32_Ehdr)
 		||  w2(ehdr->e_shentsize) != sizeof(Elf32_Shdr)) {
 			fprintf(stderr,
@@ -593,6 +628,7 @@ static int do_file(char const *const fname)
 			goto out;
 		break;
 	case ELFCLASS64: {
+		ldebug("ELFCLASS64\n");
 		Elf64_Ehdr *const ghdr = (Elf64_Ehdr *)ehdr;
 		if (w2(ghdr->e_ehsize) != sizeof(Elf64_Ehdr)
 		||  w2(ghdr->e_shentsize) != sizeof(Elf64_Shdr)) {
@@ -610,11 +646,15 @@ static int do_file(char const *const fname)
 			Elf64_r_info = MIPS64_r_info;
 			is_fake_mcount64 = MIPS64_is_fake_mcount;
 		}
-		if (do64(ghdr, fname, reltype) < 0)
+		if (do64(ghdr, fname, reltype) < 0) {
+			lerror("do64 failed\n");
 			goto out;
+		}
 		break;
 	}
 	}  /* end switch */
+
+	ldebug("ready to write %s\n", fname);
 
 	rc = write_file(fname);
 out:
@@ -662,6 +702,12 @@ int main(int argc, char *argv[])
 		    strcmp(file + (len - ftrace_size), ftrace) == 0)
 			continue;
 
+		ldebug("handle: %s\n", file);
+
+		/**
+		 * 处理一个目标文件
+		 *
+		 */
 		if (do_file(file)) {
 			fprintf(stderr, "%s: failed\n", file);
 			++n_error;
