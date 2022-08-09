@@ -443,6 +443,12 @@ static uint_t *sift_rel_mcount(uint_t *mlocp,
 			uint_t const addend =
 				_w(_w(relp->r_offset) - recval + mcount_adjust);
 
+			ldebug("addend %lx = %ld - %d + %d\n",
+				addend,
+				_w(_w(relp->r_offset)),
+				recval,
+				mcount_adjust);
+
 			mrelp->r_offset = _w(offbase
 				+ ((void *)mlocp - (void *)mloc0));
 

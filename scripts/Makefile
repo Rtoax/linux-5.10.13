@@ -1,6 +1,7 @@
 
 
 all:
+	gcc ./recordmcount.test.c -DHAS_MAIN -pg -o recordmcount.test.out
 	gcc ./recordmcount.test.c -c -pg -o recordmcount.test.o
 	#gcc ./recordmcount.c -c -pg -o recordmcount.test.o
 	cp recordmcount.test.o recordmcount.o
