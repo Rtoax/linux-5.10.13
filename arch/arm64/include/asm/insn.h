@@ -291,6 +291,21 @@ static __always_inline u32 aarch64_insn_get_##abbr##_value(void)	\
 	return (val);							\
 }
 
+/**
+ * 展开示例
+ * 用 gcc -E 可预展开
+ */
+static __always_inline bool aarch64_insn_is_bl(u32 code)
+{
+	BUILD_BUG_ON(~(0xFC000000) & (0x94000000));
+	return (code & (0xFC000000)) == (0x94000000);
+}
+static __always_inline u32 aarch64_insn_get_bl_value(void)
+{
+	return 0x94000000;
+}
+
+
 __AARCH64_INSN_FUNCS(adr,	0x9F000000, 0x10000000)
 __AARCH64_INSN_FUNCS(adrp,	0x9F000000, 0x90000000)
 __AARCH64_INSN_FUNCS(prfm,	0x3FC00000, 0x39800000)

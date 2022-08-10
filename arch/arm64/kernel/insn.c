@@ -144,12 +144,12 @@ static int __kprobes __aarch64_insn_write(void *addr, __le32 insn)
 
 	raw_spin_lock_irqsave(&patch_lock, flags);
     /**
-     *  
+     *
      */
 	waddr = patch_map(addr, FIX_TEXT_POKE0);
 
     /**
-     *  
+     *
      */
 	ret = copy_to_kernel_nofault(waddr, &insn, AARCH64_INSN_SIZE);
 
@@ -195,10 +195,10 @@ bool __kprobes aarch64_insn_is_branch(u32 insn)
 
 /**
  * @brief ftrace开启替换代码
- * 
- * @param addr 
- * @param insn 
- * @return int 
+ *
+ * @param addr
+ * @param insn
+ * @return int
  */
 int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 {
@@ -235,7 +235,7 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
 	/* The first CPU becomes master */
 	if (atomic_inc_return(&pp->cpu_count) == 1) {
         /**
-         *  
+         *
          */
 		for (i = 0; ret == 0 && i < pp->insn_cnt; i++)
 			ret = aarch64_insn_patch_text_nosync(pp->text_addrs[i],
@@ -252,12 +252,12 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
 }
 
 /**
- *  
+ *
  */
 int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 {
     /**
-     *  
+     *
      */
 	struct aarch64_insn_patch patch = {
 		patch.text_addrs = addrs,
@@ -270,7 +270,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	return stop_machine_cpuslocked(aarch64_insn_patch_text_cb, &patch, cpu_online_mask);
 }
@@ -364,6 +364,14 @@ u64 aarch64_insn_decode_immediate(enum aarch64_insn_imm_type type, u32 insn)
 	return (insn >> shift) & mask;
 }
 
+/**
+ * @brief 生成一条指令
+ *
+ * @param type
+ * @param insn 指令，如 bl 0x94000000
+ * @param imm
+ * @return u32
+ */
 u32 __kprobes aarch64_insn_encode_immediate(enum aarch64_insn_imm_type type,
 				  u32 insn, u64 imm)
 {
@@ -498,6 +506,9 @@ static u32 aarch64_insn_encode_ldst_size(enum aarch64_insn_size_type type,
 	return insn;
 }
 
+/**
+ * 计算偏移
+ */
 static inline long branch_imm_common(unsigned long pc, unsigned long addr,
 				     long range)
 {
@@ -538,6 +549,7 @@ u32 __kprobes aarch64_insn_gen_branch_imm(unsigned long pc, unsigned long addr,
 
 	switch (type) {
 	case AARCH64_INSN_BRANCH_LINK:
+		// insn = 0x94000000
 		insn = aarch64_insn_get_bl_value();
 		break;
 	case AARCH64_INSN_BRANCH_NOLINK:
@@ -548,6 +560,7 @@ u32 __kprobes aarch64_insn_gen_branch_imm(unsigned long pc, unsigned long addr,
 		return AARCH64_BREAK_FAULT;
 	}
 
+	/* 计算  */
 	return aarch64_insn_encode_immediate(AARCH64_INSN_IMM_26, insn,
 					     offset >> 2);
 }
