@@ -7221,6 +7221,8 @@ void __init ftrace_free_init_mem(void)
 		KEEP(*(__mcount_loc))
 		KEEP(*(__patchable_function_entries))
 	__stop_mcount_loc = .;
+
+	见 scripts/recordmcount.c .rela__mcount_loc 和 __mcount_loc
 	*/
 extern unsigned long __start_mcount_loc[];
 extern unsigned long __stop_mcount_loc[];

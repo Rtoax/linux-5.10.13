@@ -172,6 +172,7 @@
  *//* ffffffff83dfa990 - ffffffff83e4a800 */
 /**
  *  记录 ftrace mcount 节
+ * 见 scripts/recordmcount.c .rela__mcount_loc 和 __mcount_loc
  */
 #define MCOUNT_REC()	. = ALIGN(8);				\
 			__start_mcount_loc = .;		/* ffffffff83dfa990 */	\
