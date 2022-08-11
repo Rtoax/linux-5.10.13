@@ -86,7 +86,7 @@ static __always_inline int text_opcode_size(u8 opcode)
 	__CASE(JMP32);  /* JMP32_INSN_OPCODE */
 	__CASE(JMP8);   /* JMP8_INSN_OPCODE */
 	}
-#else
+#else // __CASE 展开
 	switch(opcode) {
     /**
      *  int3
