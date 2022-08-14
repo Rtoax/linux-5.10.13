@@ -138,6 +138,9 @@ static void page_cache_delete(struct address_space *mapping,
 	xas_store(&xas, shadow);
 	xas_init_marks(&xas);
 
+	/**
+	 * file map page
+	 */
 	page->mapping = NULL;
 	/* Leave page->index set: truncation lookup relies upon it */
 
@@ -3682,6 +3685,9 @@ EXPORT_SYMBOL(generic_file_write_iter);
  */
 int try_to_release_page(struct page *page, gfp_t gfp_mask)
 {
+	/*
+	 * mapping
+	 */
 	struct address_space * const mapping = page->mapping;
 
 	BUG_ON(!PageLocked(page));
