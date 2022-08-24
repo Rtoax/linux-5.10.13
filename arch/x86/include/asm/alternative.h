@@ -57,14 +57,6 @@
 	".long 999b - .\n\t"					\
 	".popsection\n\t"
 
-struct alt_instr {
-	s32 instr_offset;	/* original instruction */
-	s32 repl_offset;	/* offset to replacement instruction */
-	u16 cpuid;		/* cpuid bit set for replacement */
-	u8  instrlen;		/* length of original instruction */
-	u8  replacementlen;	/* length of new instruction */
-	u8  padlen;		/* length of build-time padding */
-} __packed;
 
 /*
  * Debug flag that can be tested to see whether alternative
@@ -149,6 +141,14 @@ extern bool skip_smp_alternatives;
 	b_replacement(num)":\n\t" newinstr "\n" e_replacement(num) ":\n"
 
 /* alternative assembly primitive: */
+/**
+ * 内核也有一个方法实现功能选择:alternative instruction可选指令替换，
+ * 它可以在内核启动时候决定哪种指令方式是最优的。
+ *
+ * 展开参见
+ * https://github.com/faxiang1230/Demo/blob/master/kernel/alternative-instruction/macro.c
+ * https://blog.csdn.net/faxiang1230/article/details/104149329
+ */
 #define ALTERNATIVE(oldinstr, newinstr, feature)			\
 	OLDINSTR(oldinstr, 1)						\
 	".pushsection .altinstructions,\"a\"\n"				\
@@ -157,6 +157,48 @@ extern bool skip_smp_alternatives;
 	".pushsection .altinstr_replacement, \"ax\"\n"			\
 	ALTINSTR_REPLACEMENT(newinstr, feature, 1)			\
 	".popsection\n"
+
+// 从上边挪下来的
+struct alt_instr {
+	s32 instr_offset;	/* original instruction */
+	s32 repl_offset;	/* offset to replacement instruction */
+	u16 cpuid;		/* cpuid bit set for replacement */
+	u8  instrlen;		/* length of original instruction */
+	u8  replacementlen;	/* length of new instruction */
+	u8  padlen;		/* length of build-time padding */
+} __packed;
+
+#if __Rong_Tao_debug__________
+// https://blog.csdn.net/faxiang1230/article/details/104149329
+#define mb() asm volatile(ALTERNATIVE("lock; addl $0,0(%%esp)", "mfence", \
+			                      X86_FEATURE_XMM2) ::: "memory", "cc")
+// mb() 展开为
+void fun()
+{
+asm volatile("
+661:
+	lock; addl $0,0(%%esp) // 原始指令
+662:
+	// 如果优化指令长度大于原始指令长度，使用 nop 在原始指令后面填充，最后原始指令>=优化指令长度
+	.skip -(((6651f-6641f)-(662b-661b)) > 0) * ((6651f-6641f)-(662b-661b)),0x90
+663:
+	// 创建一个新的 section
+	.pushsection .altinstructions,"a"
+	// 中间整个是 alt_instr 对象，管理如何修改指令
+	.long 661b - .
+	.long 6641f - .
+	.word X86_FEATURE_XMM2
+	.byte 663b-661b
+	.byte 6651f-6641f
+	.byte 663b-662b
+	.popsection
+	.pushsection .altinstr_replacement, "ax"
+6641:
+	mfence
+6651:
+	.popsection" ::: "memory", "cc");
+}
+#endif
 
 #define ALTERNATIVE_2(oldinstr, newinstr1, feature1, newinstr2, feature2)\
 	OLDINSTR_2(oldinstr, 1, 2)					\
