@@ -143,13 +143,20 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 	__le32 *origptr, *updptr;
 	alternative_cb_t alt_cb;
 
+	/**
+	 * 遍历所有 alternative
+	 *
+	 */
 	for (alt = region->begin; alt < region->end; alt++) {
 		int nr_inst;
 
+		/**
+		 * 检测 cpu 特性
+		 */
 		if (!test_bit(alt->cpufeature, feature_mask))
 			continue;
 
-		/* Use ARM64_CB_PATCH as an unconditional patch */
+		/* Use ARM64_CB_PATCH(ARM64_NCAPS) as an unconditional patch */
 		if (alt->cpufeature < ARM64_CB_PATCH &&
 		    !cpus_have_cap(alt->cpufeature))
 			continue;
@@ -159,17 +166,23 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 		else
 			BUG_ON(alt->alt_len != alt->orig_len);
 
+		/**
+		 * 开始替换
+		 */
 		pr_info_once("patching kernel code\n");
 
 		origptr = ALT_ORIG_PTR(alt);
 		updptr = is_module ? origptr : lm_alias(origptr);
 		nr_inst = alt->orig_len / AARCH64_INSN_SIZE;
 
+		// CPU 支持的特性
 		if (alt->cpufeature < ARM64_CB_PATCH)
 			alt_cb = patch_alternative;
 		else
 			alt_cb  = ALT_REPL_PTR(alt);
 
+		// 调用回调函数
+		// 如果是支持的 CPU 特性，调用 patch_alternative()
 		alt_cb(alt, origptr, updptr, nr_inst);
 
 		if (!is_module) {
@@ -236,9 +249,18 @@ void __init apply_alternatives_all(void)
  * This is called very early in the boot process (directly after we run
  * a feature detect on the boot CPU). No need to worry about other CPUs
  * here.
+ *
+ * 启动过程调用这个函数，根据 CPU 特性修改指令
  */
 void __init apply_boot_alternatives(void)
 {
+	/**
+	 * 见
+	 * arch/arm64/kernel/vmlinux.lds.S
+	 * arch/x86/kernel/vmlinux.lds.S
+	 *
+	 * 这将遍历所有在 begin 和 end 之间的 struct alt_instr { ... }
+	 */
 	struct alt_region region = {
 		.begin	= (struct alt_instr *)__alt_instructions,
 		.end	= (struct alt_instr *)__alt_instructions_end,

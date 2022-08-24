@@ -447,6 +447,9 @@ void __init smp_cpus_done(unsigned int max_cpus)
 	mark_linear_text_alias_ro();
 }
 
+/**
+ * 在 start_kernel() 中被调用
+ */
 void __init smp_prepare_boot_cpu(void)
 {
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
@@ -456,6 +459,8 @@ void __init smp_prepare_boot_cpu(void)
 	 * We now know enough about the boot CPU to apply the
 	 * alternatives that cannot wait until interrupt handling
 	 * and/or scheduling is enabled.
+	 *
+	 * 使用 alternative 更新 指令
 	 */
 	apply_boot_alternatives();
 
@@ -528,7 +533,7 @@ static int __init smp_cpu_setup(int cpu)
 }
 
 /**
- *  
+ *
  */
 static bool __initdata bootcpu_valid ;
 static unsigned int cpu_count = 1;
@@ -717,7 +722,7 @@ void __init smp_init_cpus(void)
 	int i;
 
     /**
-     *  
+     *
      */
 	if (acpi_disabled)
 		of_parse_and_init_cpus();
@@ -725,7 +730,7 @@ void __init smp_init_cpus(void)
 		acpi_parse_and_init_cpus();
 
     /**
-     *  
+     *
      */
 	if (cpu_count > nr_cpu_ids)
 		pr_warn("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
@@ -747,7 +752,7 @@ void __init smp_init_cpus(void)
 		if (cpu_logical_map(i) != INVALID_HWID) {
 
             /**
-             *  
+             *
              */
 			if (smp_cpu_setup(i))
 				set_cpu_logical_map(i, INVALID_HWID);
@@ -756,7 +761,7 @@ void __init smp_init_cpus(void)
 }
 
 /**
- *  
+ *
  */
 void __init smp_prepare_cpus(unsigned int max_cpus)
 {
@@ -766,7 +771,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 	unsigned int this_cpu;
 
     /**
-     *  
+     *
      */
 	init_cpu_topology();
 
@@ -807,12 +812,12 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 			continue;
 
         /**
-         *  
+         *
          */
 		set_cpu_present(cpu, true);
 
         /**
-         *  
+         *
          */
 		numa_store_cpu_info(cpu);
 	}

@@ -148,6 +148,15 @@ extern bool skip_smp_alternatives;
  * 展开参见
  * https://github.com/faxiang1230/Demo/blob/master/kernel/alternative-instruction/macro.c
  * https://blog.csdn.net/faxiang1230/article/details/104149329
+ *
+ * ALTERNATIVE宏会在链接阶段创建两个特殊的
+ * section .altinstructions 和 .altinstr_replacement,
+ * 而且 arch/x86/kernel/vmlinux.lds.S 脚本将两个section顺序放在一起，所以可使用偏移来计
+ * 算指令地址。
+ *
+ * 在内核启动的时候会调用 apply_alternatives() 开始修改指令，
+ * 遍历 .altinstructions 节中的内容，判断当前 cpu 是否支持该特性来决定是否应该使用优化指令
+ * 来覆盖原始指令
  */
 #define ALTERNATIVE(oldinstr, newinstr, feature)			\
 	OLDINSTR(oldinstr, 1)						\
@@ -172,6 +181,10 @@ struct alt_instr {
 // https://blog.csdn.net/faxiang1230/article/details/104149329
 #define mb() asm volatile(ALTERNATIVE("lock; addl $0,0(%%esp)", "mfence", \
 			                      X86_FEATURE_XMM2) ::: "memory", "cc")
+void fun()
+{
+	mb();
+}
 // mb() 展开为
 void fun()
 {
