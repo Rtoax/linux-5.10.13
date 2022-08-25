@@ -855,6 +855,10 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
 /**
  *  为啥要用全局变量？ 因为，修改 内核 的代码段，是有保护的
  *
+ * 在 poking_init() 中初始化
+ *
+ * poking_mm 指向 idle 进程的 mm 结构， copy_init_mm();
+ * poking_addr 指向 TASK_UNMAPPED_BASE
  */
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
@@ -966,6 +970,7 @@ static void *__text_poke(void *addr, const void *opcode, size_t len)
 
     /**
      *  代码注入
+	 * 也就是 替换代码，在用户太可以使用 pwrite() 完成
      */
 	memcpy((u8 *)poking_addr + offset_in_page(addr), opcode, len);
 

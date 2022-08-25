@@ -780,12 +780,14 @@ void __init init_mem_mapping(void)
 /*
  * Initialize an mm_struct to be used during poking and a pointer to be used
  * during patching修补.
+ *
  */
 void __init poking_init(void)
 {
 	spinlock_t *ptl;
 	pte_t *ptep;
 
+	// 直接使用 idle 进程的 mm 结构
 	poking_mm = copy_init_mm();
 	BUG_ON(!poking_mm);
 
@@ -793,9 +795,13 @@ void __init poking_init(void)
 	 * Randomize the poking address, but make sure that the following page
 	 * will be mapped at the same PMD. We need 2 pages, so find space for 3,
 	 * and adjust the address if the PMD ends after the first one.
+	 *
+	 * 获取一个固定地址， poking_addr 在初始化后，只读。
+	 * 这在 __text_poke() 被使用
 	 */
 	poking_addr = TASK_UNMAPPED_BASE;
 	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE))
+		// 随即化地址
 		poking_addr += (kaslr_get_random_long("Poking") & PAGE_MASK) %
 			(TASK_SIZE - TASK_UNMAPPED_BASE - 3 * PAGE_SIZE);
 
