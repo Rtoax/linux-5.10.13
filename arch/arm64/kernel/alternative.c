@@ -94,6 +94,14 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 	return insn;
 }
 
+/**
+ * alternative 指令替换
+ *
+ * @param alt - 对应的 alt_instr 结构，在 宏定义 ALTERNATIVE() 中创建
+ * @param origptr - 原始指令
+ * @param updptr - 原始指令的地址
+ * @param nr_inst - 指令个数
+ */
 static void patch_alternative(struct alt_instr *alt,
 			      __le32 *origptr, __le32 *updptr, int nr_inst)
 {
@@ -102,9 +110,15 @@ static void patch_alternative(struct alt_instr *alt,
 
 	replptr = ALT_REPL_PTR(alt);
 	for (i = 0; i < nr_inst; i++) {
+		// aarch64 固定指令长度为 4
 		u32 insn;
 
+		/**
+		 * 获取 alt 指令
+		 */
 		insn = get_alt_insn(alt, origptr + i, replptr + i);
+
+		// 进行替换，也就是写入代码段内存
 		updptr[i] = cpu_to_le32(insn);
 	}
 }
@@ -134,6 +148,7 @@ static void clean_dcache_range_nopatch(u64 start, u64 end)
 
 /**
  * TODO: 2022年5月9日 vDSO 看过来
+ * 解释TODO： 因为 vDSO 是需要 CPU 特性的加入，如 rdtsc，所以需要 alternative
  */
 static void __apply_alternatives(void *alt_region,  bool is_module,
 				 unsigned long *feature_mask)
@@ -171,6 +186,9 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 		 */
 		pr_info_once("patching kernel code\n");
 
+		/**
+		 * 原始指令的地址
+		 */
 		origptr = ALT_ORIG_PTR(alt);
 		updptr = is_module ? origptr : lm_alias(origptr);
 		nr_inst = alt->orig_len / AARCH64_INSN_SIZE;

@@ -167,7 +167,11 @@ extern bool skip_smp_alternatives;
 	ALTINSTR_REPLACEMENT(newinstr, feature, 1)			\
 	".popsection\n"
 
-// 从上边挪下来的
+/**
+ * 从上边挪下来的
+ * 该结构在 ALTERNATIVE() 宏中生成
+ * 该结构在 patch_alternative() 中使用(arm64)
+ */
 struct alt_instr {
 	s32 instr_offset;	/* original instruction */
 	s32 repl_offset;	/* offset to replacement instruction */
