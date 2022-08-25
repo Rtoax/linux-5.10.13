@@ -1621,6 +1621,10 @@ blk_tracer_set_flag(struct trace_array *tr, u32 old_flags, u32 bit, int set)
 	return 0;
 }
 
+/**
+ * blktrace
+ * 作者 Jens Axboe,  io_uring 的作者
+ */
 static struct tracer __read_mostly blk_tracer  = {
 	.name		= "blk",
 	.init		= blk_tracer_init,
@@ -1643,6 +1647,9 @@ static struct trace_event trace_blk_event = {
 	.funcs		= &trace_blk_event_funcs,
 };
 
+/**
+ * 初始化 blktrace
+ */
 static int __init init_blk_tracer(void)
 {
 	if (!register_trace_event(&trace_blk_event)) {
