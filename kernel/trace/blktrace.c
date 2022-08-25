@@ -300,6 +300,9 @@ record_it:
 		if (pdu_len)
 			memcpy((void *)t + sizeof(*t) + cgid_len, pdu_data, pdu_len);
 
+		/**
+		 * 提交
+		 */
 		if (blk_tracer) {
 			trace_buffer_unlock_commit(blk_tr, buffer, event, 0, pc);
 			return;
@@ -343,6 +346,9 @@ static void blk_trace_cleanup(struct blk_trace *bt)
 	put_probe_ref();
 }
 
+/**
+ * 释放 blktrace 设置创建的 buffer 删除相关文件节点，并去注册 trace events
+ */
 static int __blk_trace_remove(struct request_queue *q)
 {
 	struct blk_trace *bt;
@@ -358,6 +364,9 @@ static int __blk_trace_remove(struct request_queue *q)
 	return 0;
 }
 
+/**
+ * 释放 blktrace 设置创建的 buffer 删除相关文件节点，并去注册 trace events
+ */
 int blk_trace_remove(struct request_queue *q)
 {
 	int ret;
@@ -530,6 +539,9 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 	if (bdev && !bdev_is_partition(bdev))
 		dir = q->debugfs_dir;
 	else
+		/**
+		 * 在 /sys/kernel/debug/block 目录下创建设备名称对应目录
+		 */
 		bt->dir = dir = debugfs_create_dir(buts->name, blk_debugfs_root);
 
 	/*
@@ -549,11 +561,42 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 	INIT_LIST_HEAD(&bt->running_list);
 
 	ret = -EIO;
+
+	/**
+	 * 在 /sys/kernel/debug/block/[sda6]/ 下创建 dropped 节点, 如
+	 *
+	 * /sys/kernel/debug/block/nvme0n1/
+	 *
+	 * 如何证明：
+	 *
+	 * sudo bpftrace -e 'kprobe:debugfs_create_file { printf("%s\n", str(arg0)); }'
+	 *
+	 * dropped
+	 * msg
+	 * trace0
+	 * trace1
+	 * trace2
+	 * trace3
+	 * trace4
+	 * trace5
+	 * trace6
+	 * trace7
+	 * trace8
+	 * trace9
+	 * trace10
+	 * trace11  <--- 我有 12 个 CPU
+	 */
 	bt->dropped_file = debugfs_create_file("dropped", 0444, dir, bt,
 					       &blk_dropped_fops);
 
+	/**
+	 * 在 /sys/kernel/debug/block/[sda6]/ 下创建 msg 节点
+	 */
 	bt->msg_file = debugfs_create_file("msg", 0222, dir, bt, &blk_msg_fops);
 
+	/**
+	 * 为每个CPU创建 /sys/kernel/debug/block/sda6/tracex 对应 relay channel
+	 */
 	bt->rchan = relay_open("trace", dir, buts->buf_size,
 				buts->buf_nr, &blk_relay_callbacks, bt);
 	if (!bt->rchan)
@@ -584,6 +627,9 @@ err:
 	return ret;
 }
 
+/**
+ * BLKTRACESETUP
+ */
 static int __blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 			     struct block_device *bdev, char __user *arg)
 {
@@ -653,6 +699,9 @@ static int compat_blk_trace_setup(struct request_queue *q, char *name,
 }
 #endif
 
+/**
+ * 执行 blktrace 的开关操作，停止过后将 per cpu 的 relay channel 强制flush出来。
+ */
 static int __blk_trace_startstop(struct request_queue *q, int start)
 {
 	int ret;
@@ -687,6 +736,8 @@ static int __blk_trace_startstop(struct request_queue *q, int start)
 			spin_lock_irq(&running_trace_lock);
 			list_del_init(&bt->running_list);
 			spin_unlock_irq(&running_trace_lock);
+
+			// flush
 			relay_flush(bt->rchan);
 			ret = 0;
 		}
@@ -719,6 +770,8 @@ EXPORT_SYMBOL_GPL(blk_trace_startstop);
  * @cmd:	the ioctl cmd
  * @arg:	the argument data, if any
  *
+ * 处理BLKTRACESETUP/BLKTRACESTART/BLKTRACESTOP/BLKTRACETEARDOWN四种情况，
+ * 分别表示配置、开始、停止、释放资源。
  **/
 int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
 {
@@ -733,6 +786,7 @@ int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
 	mutex_lock(&q->debugfs_mutex);
 
 	switch (cmd) {
+	// 配置
 	case BLKTRACESETUP:
 		bdevname(bdev, b);
 		ret = __blk_trace_setup(q, b, bdev->bd_dev, bdev, arg);
@@ -743,12 +797,15 @@ int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
 		ret = compat_blk_trace_setup(q, b, bdev->bd_dev, bdev, arg);
 		break;
 #endif
+	// 开始
 	case BLKTRACESTART:
 		start = 1;
 		fallthrough;
+	// 停止
 	case BLKTRACESTOP:
 		ret = __blk_trace_startstop(q, start);
 		break;
+	// 释放资源
 	case BLKTRACETEARDOWN:
 		ret = __blk_trace_remove(q);
 		break;
@@ -1515,6 +1572,12 @@ static void blk_tracer_reset(struct trace_array *tr)
 	blk_tracer_stop(tr);
 }
 
+/**
+ * 示例命令
+ *
+ * $ sudo blktrace -d /dev/nvme0n1 -o - | blkparse -i -
+ *
+ */
 static const struct {
 	const char *act[2];
 	void	   (*print)(struct trace_seq *s, const struct trace_entry *ent,
@@ -1549,6 +1612,7 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
 	bool has_cg;
 
 	t	   = te_blk_io_trace(iter->ent);
+	// what表示是什么操作类型？
 	what	   = (t->action & ((1 << BLK_TC_SHIFT) - 1)) & ~__BLK_TA_CGROUP;
 	long_act   = !!(tr->trace_flags & TRACE_ITER_VERBOSE);
 	log_action = classic ? &blk_log_action_classic : &blk_log_action;
@@ -1560,10 +1624,13 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
 		return trace_handle_return(s);
 	}
 
+	// what为0表示未知操作类型
 	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
 		trace_seq_printf(s, "Unknown action %x\n", what);
 	else {
+		// 首先调用 blk_long_action_classic 或者 blk_long_action 打印
 		log_action(iter, what2act[what].act[long_act], has_cg);
+		// 然后在调用具体 action 对应的 函数打印细节。
 		what2act[what].print(s, iter->ent, has_cg);
 	}
 
@@ -1649,14 +1716,30 @@ static struct trace_event trace_blk_event = {
 
 /**
  * 初始化 blktrace
+ * 开机时将被调用， start_kernel() 最后
+ *
+ * blk跟踪器作为Linux ftrace的一个跟踪器，主要跟踪Linux Block层相关操作。
+ *
+ * 1. blktrace在运行的时候会在/sys/kernel/debug/block下面设备名称对应的目录，
+ *    并生成四个文件droppeed/msg/trace0/trace2。
+ * 2. blktrace通过ioctl对内核进行设置，从而抓取log。
+ * 3. blktrace针对系统每个CPU绑定一个线程来收集相应数据。
  */
 static int __init init_blk_tracer(void)
 {
+	/**
+	 * 注册输出函数
+	 * register output for an event type
+	 */
 	if (!register_trace_event(&trace_blk_event)) {
 		pr_warn("Warning: could not register block events\n");
 		return 1;
 	}
 
+	/**
+	 * 注册 tracer
+	 * register a tracer with the ftrace system.
+	 */
 	if (register_tracer(&blk_tracer) != 0) {
 		pr_warn("Warning: could not register the block tracer\n");
 		unregister_trace_event(&trace_blk_event);

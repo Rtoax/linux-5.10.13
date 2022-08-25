@@ -550,8 +550,12 @@ static int blkdev_common_ioctl(struct block_device *bdev, fmode_t mode,
 		return 0;
 	case BLKRRPART:
 		return blkdev_reread_part(bdev);
+
+	// 开始
 	case BLKTRACESTART:
+	// 停止
 	case BLKTRACESTOP:
+	// 释放资源
 	case BLKTRACETEARDOWN:
 		return blk_trace_ioctl(bdev, cmd, argp);
 	case IOC_PR_REGISTER:
@@ -576,6 +580,11 @@ static int blkdev_common_ioctl(struct block_device *bdev, fmode_t mode,
  * to handle all incompatible commands in both functions.
  *
  * New commands must be compatible and go into blkdev_common_ioctl
+ *
+ * 如：
+ * 3 = open("/dev/sda6", O_RDONLY|O_NONBLOCK)
+ * ioctl(3, BLKTRACESETUP, {act_mask=65535,
+ * ioctl(3, BLKTRACESTART, 0x608c20)
  */
 int blkdev_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
 			unsigned long arg)
@@ -612,6 +621,7 @@ int blkdev_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
 		return put_u64(argp, i_size_read(bdev->bd_inode));
 
 	/* Incompatible alignment on i386 */
+	// 配置
 	case BLKTRACESETUP:
 		return blk_trace_ioctl(bdev, cmd, argp);
 	default:

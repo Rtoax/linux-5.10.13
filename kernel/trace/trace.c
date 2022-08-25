@@ -2038,6 +2038,10 @@ int __init register_tracer(struct tracer *type)
 
 	type->next = trace_types;
 	trace_types = type;
+
+	/**
+	 *
+	 */
 	add_tracer_options(&global_trace, type);
 
  out:
