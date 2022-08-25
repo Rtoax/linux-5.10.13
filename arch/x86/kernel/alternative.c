@@ -859,6 +859,8 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
  *
  * poking_mm 指向 idle 进程的 mm 结构， copy_init_mm();
  * poking_addr 指向 TASK_UNMAPPED_BASE
+ *
+ * $ sudo bpftrace -e 'BEGIN { printf("%lx\n", kaddr("poking_addr")); }'
  */
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
