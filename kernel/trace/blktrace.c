@@ -618,6 +618,10 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 	bt->trace_state = Blktrace_setup;
 
 	rcu_assign_pointer(q->blk_trace, bt);
+
+	/**
+	 * 注册 tracepoint
+	 */
 	get_probe_ref();
 
 	ret = 0;
@@ -1200,10 +1204,42 @@ void blk_add_driver_data(struct request_queue *q,
 }
 EXPORT_SYMBOL_GPL(blk_add_driver_data);
 
+
 static void blk_register_tracepoints(void)
 {
 	int ret;
 
+	/**
+	 * $ sudo bpftrace -l | grep tracepoint | grep block
+	 *
+	 * [...]
+	 * tracepoint:block:block_bio_backmerge
+	 * tracepoint:block:block_bio_bounce
+	 * tracepoint:block:block_bio_complete
+	 * tracepoint:block:block_bio_frontmerge
+	 * tracepoint:block:block_bio_queue
+	 * tracepoint:block:block_bio_remap
+	 * tracepoint:block:block_dirty_buffer
+	 * tracepoint:block:block_getrq
+	 * tracepoint:block:block_plug
+	 * tracepoint:block:block_rq_complete
+	 * tracepoint:block:block_rq_error
+	 * tracepoint:block:block_rq_insert
+	 * tracepoint:block:block_rq_issue
+	 * tracepoint:block:block_rq_merge
+	 * tracepoint:block:block_rq_remap
+	 * tracepoint:block:block_rq_requeue
+	 * tracepoint:block:block_split
+	 * tracepoint:block:block_touch_buffer
+	 * tracepoint:block:block_unplug
+	 * [...]
+	 *
+	 * 如何追踪？
+	 *
+	 * $ sudo bpftrace -e 'tracepoint:block:* { @[probe] = count(); }'
+	 */
+
+	// 打开 tracepoint ？
 	ret = register_trace_block_rq_insert(blk_add_trace_rq_insert, NULL);
 	WARN_ON(ret);
 	ret = register_trace_block_rq_issue(blk_add_trace_rq_issue, NULL);
@@ -1583,20 +1619,30 @@ static const struct {
 	void	   (*print)(struct trace_seq *s, const struct trace_entry *ent,
 			    bool has_cg);
 } what2act[] = {
+	// tracepoint:block:block_bio_queue
 	[__BLK_TA_QUEUE]	= {{  "Q", "queue" },	   blk_log_generic },
+	// tracepoint:block:block_bio_backmerge
 	[__BLK_TA_BACKMERGE]	= {{  "M", "backmerge" },  blk_log_generic },
+	// tracepoint:block:block_bio_frontmerge
 	[__BLK_TA_FRONTMERGE]	= {{  "F", "frontmerge" }, blk_log_generic },
+	// tracepoint:block:block_getrq
 	[__BLK_TA_GETRQ]	= {{  "G", "getrq" },	   blk_log_generic },
 	[__BLK_TA_SLEEPRQ]	= {{  "S", "sleeprq" },	   blk_log_generic },
 	[__BLK_TA_REQUEUE]	= {{  "R", "requeue" },	   blk_log_with_error },
 	[__BLK_TA_ISSUE]	= {{  "D", "issue" },	   blk_log_generic },
+	// tracepoint:block:block_bio_complete
 	[__BLK_TA_COMPLETE]	= {{  "C", "complete" },   blk_log_with_error },
+	// tracepoint:block:block_plug
 	[__BLK_TA_PLUG]		= {{  "P", "plug" },	   blk_log_plug },
+	// tracepoint:block:block_unplug
 	[__BLK_TA_UNPLUG_IO]	= {{  "U", "unplug_io" },  blk_log_unplug },
 	[__BLK_TA_UNPLUG_TIMER]	= {{ "UT", "unplug_timer" }, blk_log_unplug },
 	[__BLK_TA_INSERT]	= {{  "I", "insert" },	   blk_log_generic },
+	// tracepoint:block:block_split
 	[__BLK_TA_SPLIT]	= {{  "X", "split" },	   blk_log_split },
+	// tracepoint:block:block_bio_bounce
 	[__BLK_TA_BOUNCE]	= {{  "B", "bounce" },	   blk_log_generic },
+	// tracepoint:block:block_bio_remap
 	[__BLK_TA_REMAP]	= {{  "A", "remap" },	   blk_log_remap },
 };
 
@@ -1789,6 +1835,10 @@ static int blk_trace_setup_queue(struct request_queue *q,
 	blk_trace_setup_lba(bt, bdev);
 
 	rcu_assign_pointer(q->blk_trace, bt);
+
+	/**
+	 * 注册 tracepoint
+	 */
 	get_probe_ref();
 	return 0;
 

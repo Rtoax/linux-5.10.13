@@ -212,7 +212,7 @@ int blk_status_to_errno(blk_status_t status)
 {
 	int idx = (__force int)status;
     /**
-     *  
+     *
      */
 	if (WARN_ON_ONCE(idx >= ARRAY_SIZE(blk_errors)))
 		return -EIO;
@@ -636,7 +636,7 @@ struct request *blk_get_request(struct request_queue *q, unsigned int op,
 	WARN_ON_ONCE(flags & ~(BLK_MQ_REQ_NOWAIT | BLK_MQ_REQ_PM));
 
     /**
-     *  
+     *
      */
 	req = blk_mq_alloc_request(q, op, flags);
 	if (!IS_ERR(req) && q->mq_ops->initialize_rq_fn)
@@ -764,6 +764,8 @@ static inline int blk_partition_remap(struct bio *bio)
 		if (bio_check_eod(bio, part_nr_sects_read(p)))
 			goto out;
 		bio->bi_iter.bi_sector += p->start_sect;
+
+		// tracepoint:block:block_bio_remap
 		trace_block_bio_remap(bio->bi_disk->queue, bio, part_devt(p),
 				      bio->bi_iter.bi_sector - p->start_sect);
 	}
@@ -912,6 +914,8 @@ static noinline_for_stack bool submit_bio_checks(struct bio *bio)
 	blkcg_bio_issue_init(bio);
 
 	if (!bio_flagged(bio, BIO_TRACE_COMPLETION)) {
+
+		// tracepoint:block:block_bio_queue
 		trace_block_bio_queue(q, bio);
 		/* Now that enqueuing has been traced, we need to trace
 		 * completion as well.

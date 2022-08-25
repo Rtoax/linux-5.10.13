@@ -188,6 +188,8 @@ DECLARE_EVENT_CLASS(block_rq,
  * into queue @q.  The fields in the operation request @rq struct can
  * be examined to determine which device and sectors the pending
  * operation would access.
+ *
+ * register_trace_block_rq_insert()
  */
 DEFINE_EVENT(block_rq, block_rq_insert,
 
@@ -367,6 +369,8 @@ DEFINE_EVENT(block_bio_merge, block_bio_frontmerge,
  * @bio: new block operation
  *
  * About to place the block IO operation @bio into queue @q.
+ *
+ * tracepoint:block:block_bio_queue
  */
 TRACE_EVENT(block_bio_queue,
 
