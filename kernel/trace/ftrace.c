@@ -5300,11 +5300,12 @@ ftrace_set_hash(struct ftrace_ops *ops, unsigned char *buf, int len,
 		ret = -EINVAL;
 		goto out_regex_unlock;
 	}
-    /*
-        kprobe 情况: kprobe->addr = 被探测点的地址
-    */
+    /**
+	 * kprobe 情况: kprobe->addr = 被探测点的地址
+	 */
 	if (ip) {
-		ret = ftrace_match_addr(hash, ip, remove);  /* 根据remove，从哈希桶中 插入或者删除 */
+		/* 根据remove，从哈希桶中 插入或者删除 */
+		ret = ftrace_match_addr(hash, ip, remove);
 		if (ret < 0)
 			goto out_regex_unlock;
 	}
@@ -5414,7 +5415,7 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  * 				     (unsigned long)my_tramp);
  * }
  *
- * @ip - 内核函数
+ * @ip - 内核函数对应的 mcount() 位置处的 nop
  * @addr - ftrace 回调,也就是指令 call mcount() 位置处将要被执行的函数
  *
  * 参见 https://github.com/rtoax/test-linux ftrace示例
