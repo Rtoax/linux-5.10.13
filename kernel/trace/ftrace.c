@@ -1157,6 +1157,10 @@ bool is_ftrace_trampoline(unsigned long addr)
  *  分配 ftrace page
  */
 struct ftrace_page {
+	/**
+	 * 每个 page 组成一个链表，在 ftrace_allocate_pages() 创建这个链表
+	 *
+	 */
 	struct ftrace_page	*next;
     /**
      *  ftrace pages
@@ -1171,7 +1175,7 @@ struct ftrace_page {
 };
 
 /**
- * @brief
+ * @brief 在为 ftrace 分配的内存页中存放这个数据结构
  *
  */
 #define ENTRY_SIZE sizeof(struct dyn_ftrace)
@@ -3332,6 +3336,7 @@ static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 
 /**
  *  为 ftrace 分配内存
+ * 分配一个 page，并返回可以存放多少个 struct dyn_ftrace {}
  */
 static int ftrace_allocate_records(struct ftrace_page *pg, int count)
 {
@@ -3353,6 +3358,8 @@ static int ftrace_allocate_records(struct ftrace_page *pg, int count)
 		order--;
 
  again:
+
+	// 分配一页
 	pg->records = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
 
 	if (!pg->records) {
@@ -3366,9 +3373,11 @@ static int ftrace_allocate_records(struct ftrace_page *pg, int count)
 	ftrace_number_of_pages += 1 << order;
 	ftrace_number_of_groups++;
 
+	// #define ENTRY_SIZE sizeof(struct dyn_ftrace)
 	cnt = (PAGE_SIZE << order) / ENTRY_SIZE;
 	pg->size = cnt;
 
+	// 最后一页很可能装不满
 	if (cnt > count)
 		cnt = count;
 
@@ -3401,13 +3410,15 @@ static struct ftrace_page *ftrace_allocate_pages(unsigned long num_to_init)
 	 * waste as little space as possible.
 	 */
 	for (;;) {
-        /* 分配内存页 */
+		/**
+		 * 分配一个 page，并返回可以存放多少个 struct dyn_ftrace {}
+		 */
 		cnt = ftrace_allocate_records(pg, num_to_init);
 		if (cnt < 0)
 			goto free_pages;
 		/**
 		 * @brief 必须分配成功
-		 *
+		 * 如果分配够了，直接推出这个循环
 		 */
 		num_to_init -= cnt;
 		if (!num_to_init)
@@ -6560,6 +6571,7 @@ static int ftrace_process_locs(struct module *mod,
 
     /**
      *  为 ftrace 分配 页
+	 *  这些页面组成一个链表
      */
     /* 分配 ftrace_page */
 	start_pg = ftrace_allocate_pages(count);    /* 分配pages */
@@ -6573,11 +6585,17 @@ static int ftrace_process_locs(struct module *mod,
 	 * modules will free them when they are removed.
 	 * Force a new page to be allocated for modules.
 	 */
-	if (!mod) { /* 不在模块中 */
+	/**
+	 * 不在模块中，那么是系统初始化，为全局变量 ftrace_pages 和 ftrace_pages_start 赋值
+	 */
+	if (!mod) {
 		WARN_ON(ftrace_pages || ftrace_pages_start);
 		/* First initialization */
 		ftrace_pages = ftrace_pages_start = start_pg;
-	} else {    /* 在模块中 */
+	/**
+	 * 如果是在模块中，那么分配了新页面，需要将这个页面挂到链表结尾
+	 */
+	} else {
 		if (!ftrace_pages)
 			goto out;
 
@@ -6587,18 +6605,21 @@ static int ftrace_process_locs(struct module *mod,
 				ftrace_pages = ftrace_pages->next;
 		}
 
+		// 将新页面插入链表结尾
 		ftrace_pages->next = start_pg;
 	}
 
     /**
      *  遍历整个 ftrace 区间
+	 *  也就是所有的 mcount 的地址，这是在 recordmcount.c 中记录的
      */
 	p = start;
 	pg = start_pg;
 	while (p < end) {   /* 遍历整个 ftrace mcount 区间 */
-
         /**
          *  x86: addr = *p++
+		 *  arm64: addr = *p++
+		 *         addr = *p++ + AARCH64_INSN_SIZE if IS_ENABLED(CONFIG_DYNAMIC_FTRACE_WITH_REGS)
          */
 		addr = ftrace_call_adjust(*p++);
 
@@ -6611,7 +6632,8 @@ static int ftrace_process_locs(struct module *mod,
 		if (!addr)
 			continue;
 
-		if (pg->index == pg->size) {    /* 这个pg满了以后，下一个pg */
+		/* 这个pg满了以后，下一个pg */
+		if (pg->index == pg->size) {
 			/* We should have allocated enough */
 			if (WARN_ON(!pg->next))
 				break;
@@ -6623,7 +6645,11 @@ static int ftrace_process_locs(struct module *mod,
          *  index 计数
          */
 		rec = &pg->records[pg->index++];
-		rec->ip = addr; /* 记录这个 addr */
+
+		/**
+		 * 记录这个 addr，也就是 函数开头的 mcount()/_mcount() 的地址
+		 */
+		rec->ip = addr;
 	}
 
 	/* We should have used all pages */

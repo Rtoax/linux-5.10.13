@@ -547,6 +547,7 @@ enum {
 struct dyn_ftrace {
     /**
      *  指向 函数地址 address of mcount call-site
+	 *  也就是每个函数开头 mcount()/_mcount() 的地址, 在 ftrace_process_locs() 赋值
      */
 	unsigned long		ip; /* address of mcount call-site */
     /**
