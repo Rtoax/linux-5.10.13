@@ -148,7 +148,7 @@ ftrace_modify_code_direct(unsigned long ip, const char *old_code,
 }
 
 /**
- *
+ * 将指令替换为 nop
  */
 int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long addr)
 {
@@ -156,9 +156,10 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 	const char *new, *old;
 
     /**
-     *
+     * 获取老指令
      */
 	old = ftrace_call_replace(ip, addr);
+	// 获取一个 nop 指令
 	new = ftrace_nop_replace();
 
 	/*
@@ -170,6 +171,7 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 	 * just modify the code directly.
 	 */
 	if (addr == MCOUNT_ADDR)
+		// 用 nop 替换老指令
 		return ftrace_modify_code_direct(ip, old, new);
 
 	/*

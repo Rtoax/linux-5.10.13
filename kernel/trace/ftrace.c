@@ -2809,7 +2809,7 @@ struct dyn_ftrace *ftrace_rec_iter_record(struct ftrace_rec_iter *iter)
 }
 
 /**
- *
+ * 将一个 mcount() 替换为 nop 指令
  */
 static int
 ftrace_nop_initialize(struct module *mod, struct dyn_ftrace *rec)
@@ -2820,7 +2820,7 @@ ftrace_nop_initialize(struct module *mod, struct dyn_ftrace *rec)
 		return 0;
 
     /**
-     *
+     * 将 rec->ip 指向的地址，替换成 nop 指令
      */
 	ret = ftrace_init_nop(mod, rec);
 	if (ret) {
@@ -3276,7 +3276,7 @@ ops_references_rec(struct ftrace_ops *ops, struct dyn_ftrace *rec)
 
 
 /**
- *  初始化后的更新
+ * 初始化后的更新 - 将 mcount() 都替换成 nop 指令
  */
 static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 {
@@ -3303,14 +3303,23 @@ static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 	if (mod)
 		rec_flags |= FTRACE_FL_DISABLED;
 
+	/**
+	 * 遍历所有为 ftrace 分配的 pages
+	 *
+	 */
 	for (pg = new_pgs; pg; pg = pg->next) {
 
+		/**
+		 * 遍历这个 page 中 已经使用 的内容
+		 *
+		 */
 		for (i = 0; i < pg->index; i++) {
 
 			/* If something went wrong, bail without enabling anything */
 			if (unlikely(ftrace_disabled))
 				return -1;
 
+			// 获取 dyn_ftrace { } 结构
 			p = &pg->records[i];
 			p->flags = rec_flags;
 
@@ -3318,7 +3327,9 @@ static int ftrace_update_code(struct module *mod, struct ftrace_page *new_pgs)
 			 * Do the initial record conversion from mcount jump
 			 * to the NOP instructions.
 			 *
-			 * mcount 跳转到 NOP 地址
+			 * mcount 替换为 NOP 指令
+			 * 也就是说，系统初始化后，在 ftrace 打开之前，mcount() 位置的代码被替换为 nop
+			 * 这对性能的影响是非常小的。
 			 */
 			if (!__is_defined(CC_USING_NOP_MCOUNT) && !ftrace_nop_initialize(mod, p))
 				break;
@@ -5933,19 +5944,28 @@ ftrace_set_early_filter(struct ftrace_ops *ops, char *buf, int enable)
 	ftrace_ops_init(ops);
 
 	while (buf) {
+		// strsep(3): extract token from string
 		func = strsep(&buf, ",");
 		ftrace_set_regex(ops, func, strlen(func), 0, enable);
 	}
 }
 
 /**
- *
+ * 过滤
  */
-static void __init set_ftrace_early_filters(void)   /* 过滤 */
+static void __init set_ftrace_early_filters(void)
 {
+	/**
+	 * 命令行 ftrace_filter=
+	 *
+	 */
 	if (ftrace_filter_buf[0])
 		ftrace_set_early_filter(&global_ops, ftrace_filter_buf, 1);
 
+	/**
+	 * 命令行 ftrace_notrace=
+	 *
+	 */
     if (ftrace_notrace_buf[0])
 		ftrace_set_early_filter(&global_ops, ftrace_notrace_buf, 0);
 
@@ -6542,7 +6562,9 @@ static int ftrace_cmp_ips(const void *a, const void *b)
 }
 
 /**
- *  处理 所有 mcount()
+ * 处理 所有 mcount()
+ * 1. 为记录 mcount() 的结构 dyn_ftrace {} 分配 pages
+ * 2. 并 将 mcount() 都替换成 nop 指令
  */
 static int ftrace_process_locs(struct module *mod,
                  			       unsigned long *start,
@@ -6670,7 +6692,7 @@ static int ftrace_process_locs(struct module *mod,
 		local_irq_save(flags);
 
     /**
-     *  更新 ftrace
+     *  更新 ftrace - 将 mcount() 都替换成 nop 指令
      */
 	ftrace_update_code(mod, start_pg);
 
@@ -6954,8 +6976,10 @@ void ftrace_module_init(struct module *mod)
 	if (ftrace_disabled || !mod->num_ftrace_callsites)
 		return;
     /**
-     *
-     */
+	 * 处理 所有 mcount()
+	 * 1. 为记录 mcount() 的结构 dyn_ftrace {} 分配 pages
+	 * 2. 并 将 mcount() 都替换成 nop 指令
+	 */
 	ftrace_process_locs(mod, mod->ftrace_callsites,
 			    mod->ftrace_callsites + mod->num_ftrace_callsites);
 }
@@ -7305,8 +7329,10 @@ void __init ftrace_init(void)   /* g故障调试性能分析  */
 	last_ftrace_enabled = ftrace_enabled = 1;   /* 默认开启 */
 
     /**
-     *  进行处理,所有函数对应的 mcount 函数都要进行处理
-     */
+	 * 处理 所有 mcount()
+	 * 1. 为记录 mcount() 的结构 dyn_ftrace {} 分配 pages
+	 * 2. 并 将 mcount() 都替换成 nop 指令
+	 */
 	ret = ftrace_process_locs(NULL,
             				  __start_mcount_loc,
             				  __stop_mcount_loc);
