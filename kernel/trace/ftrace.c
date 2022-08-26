@@ -3378,6 +3378,7 @@ static int ftrace_allocate_records(struct ftrace_page *pg, int count)
 
 /**
  *  为 ftrace 分配内存
+ * 用于存放
  */
 static struct ftrace_page *ftrace_allocate_pages(unsigned long num_to_init)
 {
@@ -6550,6 +6551,7 @@ static int ftrace_process_locs(struct module *mod,
      */
 	count = end - start;    /* 计算数量 */
 
+	// 没有 __mcount_loc，直接返回
 	if (!count)
 		return 0;
 
@@ -7257,9 +7259,11 @@ void __init ftrace_init(void)   /* g故障调试性能分析  */
 	if (ret)
 		goto failed;
 
-    /**
-     *  个数
-     */
+	/**
+	 *  个数
+	 * 见 scripts/recordmcount.c .rela__mcount_loc 和 __mcount_loc
+	 * 记录 ftrace mcount 节
+	 */
 	count = __stop_mcount_loc - __start_mcount_loc;
 	if (!count) {
 		pr_info("ftrace: No functions to be traced?\n");
