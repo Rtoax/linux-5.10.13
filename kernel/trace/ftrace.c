@@ -5951,7 +5951,7 @@ ftrace_set_early_filter(struct ftrace_ops *ops, char *buf, int enable)
 }
 
 /**
- * 过滤
+ * 根据内核命令行参数 过滤
  */
 static void __init set_ftrace_early_filters(void)
 {
