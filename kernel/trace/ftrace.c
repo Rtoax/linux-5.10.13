@@ -2578,15 +2578,30 @@ unsigned long ftrace_find_rec_direct(unsigned long ip)
 	return entry->direct;
 }
 
+/**
+ * @brief 调用 direct 自定义 mcount()
+ *
+ * @param ip
+ * @param pip
+ * @param ops
+ * @param regs
+ */
 static void call_direct_funcs(unsigned long ip, unsigned long pip,
 			      struct ftrace_ops *ops, struct pt_regs *regs)
 {
 	unsigned long addr;
 
+	/**
+	 * addr 为 自定义的 mcount()
+	 *
+	 */
 	addr = ftrace_find_rec_direct(ip);
 	if (!addr)
 		return;
 
+	/**
+	 *
+	 */
 	arch_ftrace_set_direct_caller(regs, addr);
 }
 /**
