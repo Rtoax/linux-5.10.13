@@ -77,7 +77,24 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
 		     void *buffer, size_t *lenp, loff_t *ppos);
 
 struct ftrace_ops;
-
+ /**
+ *  一个跳板函数
+ *  ------------------------
+ *  schedule
+ *    push %rbp
+ *    mov %rsp,%rbp
+ *    call ftrace_caller -----> ftrace_caller: (mcount)
+ *                                save regs
+ *                                load args
+ *                              ftrace_call:
+ *                                call ftrace_stub <--> ftrace_ops.func
+ *                                restore regs
+ *                              ftrace_stub:
+ *                                retq
+ *
+ *
+ *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
+ */
 typedef void (*ftrace_func_t)(unsigned long ip, unsigned long parent_ip,
 			      struct ftrace_ops *op, struct pt_regs *regs);
 
@@ -376,9 +393,19 @@ extern void ftrace_stub(unsigned long a0, unsigned long a1,
 
 #endif /* CONFIG_FUNCTION_TRACER */
 
+/**
+ *
+ * 可能在如下函数中分配
+ * ---------------------------------
+ * 1. register_ftrace_direct()
+ *
+ */
 struct ftrace_func_entry {
 	struct hlist_node hlist;/* hash table 为`struct ftrace_hash` */
+
+	// ip - 被跟踪的函数地址
 	unsigned long ip;
+	// 如 mcount() 要被执行的函数地址
 	unsigned long direct; /* for direct lookup only */
 };
 
@@ -548,6 +575,7 @@ struct dyn_ftrace {
     /**
      *  指向 函数地址 address of mcount call-site
 	 *  也就是每个函数开头 mcount()/_mcount() 的地址, 在 ftrace_process_locs() 赋值
+	 *  或者说是 函数本身的地址
      */
 	unsigned long		ip; /* address of mcount call-site */
     /**

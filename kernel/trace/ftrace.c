@@ -358,6 +358,7 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 
 	if (!core_kernel_data((unsigned long)ops))
 		ops->flags |= FTRACE_OPS_FL_DYNAMIC;
+
     /**
      *	添加到全局链表
      */
@@ -1637,17 +1638,40 @@ static int ftrace_cmp_recs(const void *a, const void *b)    /* 比较函数 */
 	const struct dyn_ftrace *rec = b;
 
     /**
-     *
+	 * ...  <-------- key->ip == key->flags
+	 * ...
+	 * function:
+	 *   ...
+	 *   ...
+	 *   call mcount()
+	 *   ...
+	 *   ...
+	 * ...
+	 *
+     * 查找下一个
      */
 	if (key->flags < rec->ip)
 		return -1;
+
+	/**
+	 * function:
+	 *   ...
+	 *   ...
+	 *   call mcount()
+	 *   ...
+	 *   ...     <-------- key->ip
+	 * ...
+	 *
+	 * 查找上一个
+	 */
 	if (key->ip >= rec->ip + MCOUNT_INSN_SIZE)
 		return 1;
+
 	return 0;
 }
 
 /**
- * 查找对应的 IP
+ * 查找对应的 mcount() IP addr
  */
 static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
 {
@@ -1664,9 +1688,12 @@ static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
      */
 	for (pg = ftrace_pages_start; pg; pg = pg->next) {
 
-        /* start-end 不在这个 pg 内 */
+        /**
+		 * start ～ end 不在这个 pg 内，找下一个 page
+		 *
+		 * MCOUNT_INSN_SIZE: x86=5, AArch64=4
+		 */
 		if (end < pg->records[0].ip ||
-			/* MCOUNT_INSN_SIZE: x86=5, AArch64=4 */
 		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE))
 			continue;
         /**
@@ -2534,6 +2561,8 @@ int ftrace_direct_func_count;
 /*
  * Search the direct_functions hash to see if the given instruction pointer
  * has a direct caller attached to it.
+ *
+ * 在已经插入的 direct ftrace 中查找这个函数是否被 ftrace
  */
 unsigned long ftrace_find_rec_direct(unsigned long ip)
 {
@@ -5382,9 +5411,9 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  * }
  *
  * @ip - 内核函数
- * @addr - ftrace 回调
+ * @addr - ftrace 回调,也就是指令 call mcount() 位置处将要被执行的函数
  *
- * 参见 https://gitee.com/rtoax/test-linux ftrace示例
+ * 参见 https://github.com/rtoax/test-linux ftrace示例
  */
 int register_ftrace_direct(unsigned long ip, unsigned long addr)
 {
@@ -5396,13 +5425,18 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
 	mutex_lock(&direct_mutex);
 
-	/* See if there's a direct function at @ip already */
+	/**
+	 * See if there's a direct function at @ip already
+	 *
+	 * direct ftrace 只能有一个 挂入的 ftrace，如果有，那么直接返回
+	 */
 	if (ftrace_find_rec_direct(ip))
 		goto out_unlock;
 
 	ret = -ENODEV;
+
     /**
-     *  查找这个 函数的 mcount() 的地址
+     *  查找这个 函数的 dyn_ftrace 结构
      */
 	rec = lookup_rec(ip, ip);
 	if (!rec)
@@ -5427,8 +5461,10 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	}
 
 	ret = -ENOMEM;
+
     /**
-     *  如果为空，赋值一个 hash 表
+     *  1. 如果 direct_functions 为空，
+	 *  2. 或者 个数超限
      */
 	if (ftrace_hash_empty(direct_functions) ||
 	    direct_functions->count > 2 * (1 << direct_functions->size_bits)) {
@@ -5455,6 +5491,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  分配 entry
+	 *  struct ftrace_func_entry {}
      */
 	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
 	if (!entry)
@@ -5485,9 +5522,12 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  初始化 entry
+	 *
+	 * ip - 被跟踪的函数地址
+	 * addr - 如 mcount() 要被执行的函数地址
      */
 	entry->ip = ip;
-	entry->direct = addr;
+	entry->direct = addr; // direct: for direct lookup only
 
     /**
      *  添加到hash表
@@ -5753,6 +5793,8 @@ EXPORT_SYMBOL_GPL(modify_ftrace_direct);
  * If @ip is NULL, it failes to update filter.
  *
  * 设置 address 到 filter hash 中
+ *
+ * ip - 为 被 ftrace 的内核函数地址
  */
 int ftrace_set_filter_ip(struct ftrace_ops *ops, unsigned long ip,
 			 int remove, int reset)
@@ -7352,7 +7394,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  */
 }
 
 /**
- * @brief	更新 蹦床
+ * @brief	更新/分配 蹦床/跳板
  *
  * @param ops
  */
