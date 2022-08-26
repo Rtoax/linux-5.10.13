@@ -5335,6 +5335,10 @@ ftrace_set_addr(struct ftrace_ops *ops, unsigned long ip, int remove,
 
 #ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
 
+/**
+ * 表示一个自定义的 mcount() 函数地址
+ *
+ */
 struct ftrace_direct_func {
 	struct list_head	next;
     /**
@@ -5342,7 +5346,7 @@ struct ftrace_direct_func {
      */
 	unsigned long		addr;
     /**
-     *
+     * 被引用的次数
      */
 	int			count;
 };
@@ -5537,7 +5541,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
     /**
      *
      */
-	ret = ftrace_set_filter_ip(&direct_ops, ip, 0, 0);
+	ret = ftrace_set_filter_ip(&direct_ops, ip, 0/*remove*/, 0/*reset*/);
 	if (ret)
 		remove_hash_entry(direct_functions, entry);
 
@@ -5784,6 +5788,9 @@ EXPORT_SYMBOL_GPL(modify_ftrace_direct);
 
 /**
  * ftrace_set_filter_ip - set a function to filter on in ftrace by address
+ *
+ * 设置一个函数以在 ftrace 中按地址过滤
+ *
  * @ops - the ops to set the filter with
  * @ip - the address to add to or remove from the filter.
  * @remove - non zero to remove the ip from the filter
