@@ -7351,11 +7351,6 @@ void __init ftrace_init(void)   /* g故障调试性能分析  */
 	ftrace_disabled = 1;
 }
 
-/* Do nothing if arch does not support this */
-//void __weak arch_ftrace_update_trampoline(struct ftrace_ops *ops)
-//{
-//}
-
 /**
  * @brief	更新 蹦床
  *
