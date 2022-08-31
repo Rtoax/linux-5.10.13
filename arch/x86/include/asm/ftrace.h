@@ -41,6 +41,13 @@ static inline unsigned long ftrace_call_adjust(unsigned long addr)
  * differentiated in the ftrace_caller trampoline. To do this, we
  * place the direct caller in the ORIG_AX part of pt_regs. This
  * tells the ftrace_caller that there's a direct caller.
+ *
+ * 当 ftrace 注册的调用者正在跟踪同样由 register_ftrace_direct() 调用设置
+ * 的函数时，需要在 ftrace_caller trampoline 中对其进行区分。 为此，我们将
+ * 直接调用者放在 pt_regs 的 ORIG_AX 部分。 这告诉 ftrace_caller 有一个直
+ * 接调用者。
+ *
+ * 见 ftrace_64.S: ftrace_regs_call()
  */
 static inline void arch_ftrace_set_direct_caller(struct pt_regs *regs, unsigned long addr)
 {

@@ -2579,12 +2579,7 @@ unsigned long ftrace_find_rec_direct(unsigned long ip)
 }
 
 /**
- * @brief 调用 direct 自定义 mcount()
- *
- * @param ip
- * @param pip
- * @param ops
- * @param regs
+ * 调用 direct 自定义 mcount()
  */
 static void call_direct_funcs(unsigned long ip, unsigned long pip,
 			      struct ftrace_ops *ops, struct pt_regs *regs)
@@ -7490,6 +7485,7 @@ void ftrace_reset_array_ops(struct trace_array *tr)
 {
 	tr->ops->func = ftrace_stub;
 }
+
 /**
  *
  */
@@ -7513,7 +7509,7 @@ __ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 	preempt_disable_notrace();
 
     /**
-     *
+     * 遍历所有 ftrace 操作符
      */
 	do_for_each_ftrace_op(op, ftrace_ops_list) {
 		/* Stub functions don't need to be called nor tested */
@@ -7535,10 +7531,9 @@ __ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 				goto out;
 			}
             /**
-             *  执行的 trace 回调函数
-             *  这个函数是用户注册上来的
+			 * direct_ops: call_direct_funcs()
              */
-			op->func(ip, parent_ip, op, regs);  /* 正经的调用 */
+			op->func(ip, parent_ip, op, regs);
 		}
 	} while_for_each_ftrace_op(op);
 out:

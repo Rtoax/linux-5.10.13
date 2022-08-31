@@ -30,3 +30,12 @@ register_ftrace_function
 	ftrace_startup
 		[see above]
 ```
+
+## __ftrace_ops_list_func
+
+```
+ftrace_ops_list_func
+	__ftrace_ops_list_func
+		op->func()
+			direct_ops: call_direct_funcs()
+```
