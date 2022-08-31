@@ -144,7 +144,7 @@ static unsigned int get_symbol_offset(unsigned long pos)
 	return name - kallsyms_names;
 }
 
-/** 
+/**
  *  返回符号地址
  */
 static unsigned long kallsyms_sym_address(int idx)
@@ -168,7 +168,7 @@ static unsigned long kallsyms_sym_address(int idx)
 }
 
 /**
- *  Lookup the address for this symbol. Returns 0 if not found. 
+ *  Lookup the address for this symbol. Returns 0 if not found.
  *
  *  遍历 内核符号表， name 为函数名
  */
@@ -178,34 +178,37 @@ unsigned long kallsyms_lookup_name(const char *name)
 	unsigned long i;
 	unsigned int off;
 
-    /** 
+    /**
+
      *  内核符号表个数
      */
 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
         /**
          *  从内核符号表中查找这个 函数名
-         *  并获取 
+         *  并获取
          */
 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
 
-        /** 
+        /**
+
          *  和内核符号表的函数匹配上了
          */
 		if (strcmp(namebuf, name) == 0)
             /**
-             *  
+             *
              */
 			return kallsyms_sym_address(i);
 	}
 
-    /** 
+    /**
+
      *  没匹配上，就从 外部模块查找
      */
 	return module_kallsyms_lookup_name(name);
 }
 
-/** 
- *  
+/**
+ *
  */
 int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
 				      unsigned long),
@@ -216,6 +219,9 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
 	unsigned int off;
 	int ret;
 
+	/**
+	 * 遍历所有符号
+	 */
 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
 		ret = fn(data, namebuf, NULL, kallsyms_sym_address(i));
@@ -226,7 +232,7 @@ int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
 }
 
 /**
- *  
+ *
  */
 static unsigned long get_symbol_pos(unsigned long addr,
 				    unsigned long *symbolsize,
