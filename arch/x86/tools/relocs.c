@@ -141,6 +141,7 @@ static void regex_init(int use_real_mode)
         }
 }
 
+// GELF_ST_TYPE(sym->st_info)
 static const char *sym_type(unsigned type)
 {
 	static const char *type_name[] = {
@@ -161,6 +162,7 @@ static const char *sym_type(unsigned type)
 	return name;
 }
 
+// GELF_ST_BIND(sym->st_info)
 static const char *sym_bind(unsigned bind)
 {
 	static const char *bind_name[] = {
