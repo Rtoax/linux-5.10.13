@@ -181,6 +181,23 @@ SYM_INNER_LABEL(ftrace_graph_call, SYM_L_GLOBAL)
  * This is weak to keep gas from relaxing the jumps.
  * It is also used to copy the retq for trampolines.
  */
+/**
+* Direct return
+*
+*  将替换 `ftrace_stub()`, 举例：
+*  ------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 SYM_INNER_LABEL_ALIGN(ftrace_stub, SYM_L_WEAK)
 	retq
 SYM_FUNC_END(ftrace_epilogue)

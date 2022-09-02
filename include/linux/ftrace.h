@@ -694,6 +694,7 @@ extern int ftrace_dyn_arch_init(void);
 extern void ftrace_replace_code(int enable);
 extern int ftrace_update_ftrace_func(ftrace_func_t func);
 extern void ftrace_caller(void);    /* arch/x86/kernel/ftrace_64.S */
+
 #if RTOAX/* arch/x86/kernel/ftrace_64.S */
 SYM_FUNC_START(ftrace_caller)
 	/* save_mcount_regs fills in first two parameters */

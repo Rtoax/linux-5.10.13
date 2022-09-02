@@ -320,6 +320,23 @@ SYM_FUNC_END(ftrace_graph_caller)
 #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_REGS */
 
+/**
+* Direct return
+*
+*  将替换 `ftrace_stub()`, 举例：
+*  ------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 SYM_FUNC_START(ftrace_stub)
 	ret
 SYM_FUNC_END(ftrace_stub)

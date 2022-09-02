@@ -461,6 +461,23 @@ SECTIONS
 			KEEP(*(__patchable_function_entries))
 		__stop_mcount_loc = .;
 
+		/**
+		* Direct return
+		*
+		*  将替换 `ftrace_stub()`, 举例：
+		*  ------------------------
+		*  schedule
+		*    push %rbp
+		*    mov %rsp,%rbp
+		*    call ftrace_caller -----> ftrace_caller: (mcount)
+		*                                save regs
+		*                                load args
+		*                              ftrace_call:
+		*                                call ftrace_stub <--> ftrace_ops.func
+		*                                restore regs
+		*                              ftrace_stub:
+		*                                retq
+		*/
 		ftrace_stub_graph = ftrace_stub;
 
 		*(.init.rodata .init.rodata.*)
