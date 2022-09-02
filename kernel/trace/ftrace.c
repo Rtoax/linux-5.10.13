@@ -327,7 +327,7 @@ static int remove_ftrace_ops(struct ftrace_ops __rcu **list,
 static void ftrace_update_trampoline(struct ftrace_ops *ops);
 
 /**
- *  注册 ftrace 函数
+ *  注册 ftrace ops
  */
 int __register_ftrace_function(struct ftrace_ops *ops)
 {
@@ -388,16 +388,16 @@ int __register_ftrace_function(struct ftrace_ops *ops)
 		ops->func = ftrace_pid_func;
 
     /**
-     *  更新蹦床，也就是mcount？或者fentry？
+     *  更新跳板，也就是mcount？或者fentry？
 	 * 在这里替换指令为 call 或者 jmp ?
      */
-	ftrace_update_trampoline(ops);  /* 更新蹦床 */
+	ftrace_update_trampoline(ops);
 
     /**
-     *  更新
+     *  更新函数
      */
 	if (ftrace_enabled)
-		update_ftrace_function();   /* 更新函数 */
+		update_ftrace_function();
 
 	return 0;
 }
@@ -2681,7 +2681,7 @@ unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)
 	unsigned long addr;
 
 	/* Direct calls take precedence over trampolines */
-	if (rec->flags & FTRACE_FL_DIRECT_EN) { /* 直接返回这个蹦床 */
+	if (rec->flags & FTRACE_FL_DIRECT_EN) { /* 直接返回这个跳板 */
 		addr = ftrace_find_rec_direct(rec->ip);
 		if (addr)
 			return addr;
@@ -5427,7 +5427,7 @@ struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
  *  -ENODEV - @ip does not point to a ftrace nop location (or not supported)
  *  -ENOMEM - There was an allocation failure.
  *
- * 直接调用一个蹦床，调用方法可参考 sample/ftrace/ftrace-direct.c
+ * 直接调用一个跳板，调用方法可参考 sample/ftrace/ftrace-direct.c
  *
  * static int __init ftrace_direct_init(void)
  * {
@@ -7432,7 +7432,7 @@ void __init ftrace_init(void)   /* g故障调试性能分析  */
 }
 
 /**
- * @brief	更新/分配 蹦床/跳板
+ * @brief	更新/分配 跳板/跳板
  *
  * @param ops
  */
@@ -7442,7 +7442,7 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops)
 
     /**
      *  架构相关
-	 * 	这会替换 蹦床 -> 可以理解为 用 call func 替换 call mcount
+	 * 	这会替换 跳板 -> 可以理解为 用 call func 替换 call mcount
      */
 	arch_ftrace_update_trampoline(ops);
 
@@ -8092,21 +8092,21 @@ int ftrace_is_dead(void)
  *
  * 注册一个 ftrace 剖析函数
  */
-int register_ftrace_function(struct ftrace_ops *ops)    /*  注册 ftrace*/
+int register_ftrace_function(struct ftrace_ops *ops)
 {
 	int ret = -1;
 
     /**
      *	初始化 ops
      */
-	ftrace_ops_init(ops);   /* 初始化 */
+	ftrace_ops_init(ops);
 
 	mutex_lock(&ftrace_lock);
 
     /**
-     *	核心函数
+     *	核心函数: 启动这个 ftrace
      */
-	ret = ftrace_startup(ops, 0);   /* 启动这个 ftrace */
+	ret = ftrace_startup(ops, 0);
 
 	mutex_unlock(&ftrace_lock);
 

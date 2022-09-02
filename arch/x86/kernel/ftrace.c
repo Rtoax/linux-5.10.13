@@ -442,7 +442,7 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 
 	/* Copy ftrace_caller onto the trampoline memory */
     /**
-	 * 将函数拷贝到 蹦床中
+	 * 将函数拷贝到 跳板中
 	 */
 	ret = copy_from_kernel_nofault(trampoline, (void *)start_offset, size);
 	if (WARN_ON(ret < 0))
@@ -579,7 +579,7 @@ static unsigned long calc_trampoline_call_offset(bool save_regs)
 	return call_offset - start_offset;
 }
 /**
- *  架构相关：更新 蹦床
+ *  架构相关：更新 跳板
  */
 void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 {
@@ -591,10 +591,10 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 
 	if (!ops->trampoline) {
 		/**
-		 * @brief 如果没有蹦床，创建新的蹦床
+		 * @brief 如果没有跳板，创建新的跳板
 		 *
 		 */
-		ops->trampoline = create_trampoline(ops, &size);    /* 创建蹦床 */
+		ops->trampoline = create_trampoline(ops, &size);
 		if (!ops->trampoline)
 			return;
 		ops->trampoline_size = size;
@@ -608,7 +608,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	if (!(ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP))
 		return;
     /**
-     *  计算蹦床的偏移量
+     *  计算跳板的偏移量
 	 *  例如： mcount 为 5 ???? 显然不是 MCOUNT_INSN_SIZE=5
      */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);

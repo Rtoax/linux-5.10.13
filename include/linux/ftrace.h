@@ -326,7 +326,7 @@ struct ftrace_ops {
     /**
      * 对比 mcount()
      */
-	unsigned long			trampoline; /* 蹦床 */
+	unsigned long			trampoline; /* 跳板 */
 	unsigned long			trampoline_size;
 	struct list_head		list;
 #endif

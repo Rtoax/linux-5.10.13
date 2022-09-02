@@ -703,7 +703,7 @@ static void __init memory_map_bottom_up(unsigned long map_start,
  * area. This limits the randomization granularity to 1GB for both 4-level
  * and 5-level paging.
  *
- *  trampoline: 蹦床
+ *  trampoline: 跳板
  */
 static void __init init_trampoline(void)
 {
@@ -733,7 +733,7 @@ void __init init_mem_mapping(void)
 	/* the ISA range is always mapped regardless of memory holes */
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
-	/* Init the trampoline(蹦床), possibly with KASLR(地址空间配置随机加载) memory offset */
+	/* Init the trampoline(跳板), possibly with KASLR(地址空间配置随机加载) memory offset */
 	init_trampoline();
 
 	/*
