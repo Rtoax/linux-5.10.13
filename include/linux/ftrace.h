@@ -573,6 +573,7 @@ enum {
 #define FTRACE_REF_MAX_SHIFT	23
 #define FTRACE_REF_MAX		((1UL << FTRACE_REF_MAX_SHIFT) - 1)
 
+// 0-23 bits is a counter
 #define ftrace_rec_count(rec)	((rec)->flags & FTRACE_REF_MAX)
 
 /**
@@ -587,6 +588,9 @@ struct dyn_ftrace {
 	unsigned long		ip; /* address of mcount call-site */
     /**
      *  FTRACE_FL_XXX
+	 *
+	 *  0-23 bits is a counter
+	 *  23-..
      */
 	unsigned long		flags;
 

@@ -5797,6 +5797,9 @@ int modify_ftrace_direct(unsigned long ip,
 	 * then it can be changed directly by the architecture.
 	 * If there is another caller, then we just need to change the
 	 * direct caller helper to point to @new_addr.
+	 *
+	 * 1. 如果当前只有一个 callback 在 rec->ip 位置，那么可以直接修改；
+	 * 2. 如果有别的 caller，仅仅只改变 direct 指向新的 地址；
 	 */
 	if (ftrace_rec_count(rec) == 1) {
 		ret = ftrace_modify_direct_caller(entry, rec, old_addr, new_addr);
