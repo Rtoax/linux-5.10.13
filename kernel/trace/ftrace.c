@@ -1104,6 +1104,21 @@ static const struct ftrace_hash empty_hash = {  /* 空 */
  *
  */
 struct ftrace_ops global_ops = {
+    /**
+     *  将替换 `ftrace_stub()`, 举例：
+     *  ------------------------
+     *  schedule
+     *    push %rbp
+     *    mov %rsp,%rbp
+     *    call ftrace_caller -----> ftrace_caller: (mcount)
+     *                                save regs
+     *                                load args
+     *                              ftrace_call:
+     *                                call ftrace_stub <--> ftrace_ops.func
+     *                                restore regs
+     *                              ftrace_stub:
+     *                                retq
+     */
 	global_ops.func				= ftrace_stub,
 	global_ops.local_hash.notrace_hash	= EMPTY_HASH,
 	global_ops.local_hash.filter_hash		= EMPTY_HASH,
@@ -2603,11 +2618,30 @@ static void call_direct_funcs(unsigned long ip, unsigned long pip,
 	 */
 	arch_ftrace_set_direct_caller(regs, addr);
 }
+
 /**
+ * direct 操作符
  *
+ * 这将注册到内核
  */
 struct ftrace_ops direct_ops = {
+    /**
+     *  将替换 `ftrace_stub()`, 举例：
+     *  ------------------------
+     *  schedule
+     *    push %rbp
+     *    mov %rsp,%rbp
+     *    call ftrace_caller -----> ftrace_caller: (mcount)
+     *                                save regs
+     *                                load args
+     *                              ftrace_call:
+     *                                call ftrace_stub <--> ftrace_ops.func
+     *                                restore regs
+     *                              ftrace_stub:
+     *                                retq
+     */
 	direct_ops.func		= call_direct_funcs,
+
 	direct_ops.flags		= FTRACE_OPS_FL_IPMODIFY | FTRACE_OPS_FL_RECURSION_SAFE
 			  | FTRACE_OPS_FL_DIRECT | FTRACE_OPS_FL_SAVE_REGS
 			  | FTRACE_OPS_FL_PERMANENT,
@@ -4823,6 +4857,22 @@ register_ftrace_function_probe(char *glob, struct trace_array *tr,
 			return -ENOMEM;
 		}
 		probe->probe_ops = probe_ops;
+
+		/**
+		 *  将替换 `ftrace_stub()`, 举例：
+		 *  ------------------------
+		 *  schedule
+		 *    push %rbp
+		 *    mov %rsp,%rbp
+		 *    call ftrace_caller -----> ftrace_caller: (mcount)
+		 *                                save regs
+		 *                                load args
+		 *                              ftrace_call:
+		 *                                call ftrace_stub <--> ftrace_ops.func
+		 *                                restore regs
+		 *                              ftrace_stub:
+		 *                                retq
+		 */
 		probe->ops.func = function_trace_probe_call;
 		probe->tr = tr;
 		ftrace_ops_init(&probe->ops);

@@ -589,6 +589,7 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	unsigned int size;
 	const char *_new;
 
+	// 如果每指定跳板函数
 	if (!ops->trampoline) {
 		/**
 		 * @brief 如果没有跳板，创建新的跳板

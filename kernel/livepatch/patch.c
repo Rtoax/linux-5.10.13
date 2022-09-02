@@ -218,7 +218,21 @@ static int klp_patch_func(struct klp_func *func)
 
         /**
          *  ftrace 发生时，将被回调的函数
-         */
+         *
+		 *  将替换 `ftrace_stub()`, 举例：
+		 *  ------------------------
+		 *  schedule
+		 *    push %rbp
+		 *    mov %rsp,%rbp
+		 *    call ftrace_caller -----> ftrace_caller: (mcount)
+		 *                                save regs
+		 *                                load args
+		 *                              ftrace_call:
+		 *                                call ftrace_stub <--> ftrace_ops.func
+		 *                                restore regs
+		 *                              ftrace_stub:
+		 *                                retq
+		 */
 		ops->fops.func = klp_ftrace_handler;
         /**
          *
