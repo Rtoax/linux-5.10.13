@@ -394,14 +394,21 @@ extern void ftrace_stub(unsigned long a0, unsigned long a1,
 #endif /* CONFIG_FUNCTION_TRACER */
 
 /**
- *
  * 可能在如下函数中分配
+ * 每次注册 ftrace 都会分配一个新的 struct ftrace_func_entry {}
  * ---------------------------------
  * 1. register_ftrace_direct()
  *
  */
 struct ftrace_func_entry {
-	struct hlist_node hlist;/* hash table 为`struct ftrace_hash` */
+	/**
+	 * hash table 为`struct ftrace_hash`
+	 *
+	 * 可能的头为：
+	 * ----------------------------
+	 * 1. direct_functions
+	 */
+	struct hlist_node hlist;
 
 	// ip - 被跟踪的函数地址
 	unsigned long ip;

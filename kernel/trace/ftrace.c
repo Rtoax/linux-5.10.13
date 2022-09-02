@@ -143,9 +143,10 @@ static void ftrace_ops_list_func(unsigned long ip, unsigned long parent_ip,
 /**
  *	初始化 ftrace_ops
  */
-static inline void ftrace_ops_init(struct ftrace_ops *ops)  /* 是否已经初始化 */
+static inline void ftrace_ops_init(struct ftrace_ops *ops)
 {
 #ifdef CONFIG_DYNAMIC_FTRACE
+	// 是否已经初始化
 	if (!(ops->flags & FTRACE_OPS_FL_INITIALIZED)) {
 		mutex_init(&ops->local_hash.regex_lock);
 		ops->func_hash = &ops->local_hash;
@@ -2554,6 +2555,9 @@ ftrace_find_tramp_ops_new(struct dyn_ftrace *rec)
 
 #ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
 /* Protected by rcu_tasks for reading, and direct_mutex for writing */
+/**
+ * 节点为 ftrace_func_entry
+ */
 static struct ftrace_hash *direct_functions = EMPTY_HASH;
 static DEFINE_MUTEX(direct_mutex);
 int ftrace_direct_func_count;
@@ -5351,8 +5355,12 @@ ftrace_set_addr(struct ftrace_ops *ops, unsigned long ip, int remove,
 /**
  * 表示一个自定义的 mcount() 函数地址
  *
+ * 这个函数不会很多，所以用链表结构？
  */
 struct ftrace_direct_func {
+	/**
+	 * 链表头为 ftrace_direct_funcs
+	 */
 	struct list_head	next;
     /**
      *  ftrace 的回调函数
@@ -5364,10 +5372,10 @@ struct ftrace_direct_func {
 	int			count;
 };
 /**
- *  保存所有 ftrace 会掉函数
+ *  保存所有 ftrace 回调函数
+ *  节点为 ftrace_direct_func.next
  */
 static LIST_HEAD(ftrace_direct_funcs);
-static struct list_head ftrace_direct_funcs; //+++
 
 /**
  * ftrace_find_direct_func - test an address if it is a registered direct caller
@@ -5454,6 +5462,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  查找这个 函数的 dyn_ftrace 结构
+	 *  如果没有，直接返回
      */
 	rec = lookup_rec(ip, ip);
 	if (!rec)
@@ -5468,6 +5477,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  确保 IP 在准确的位置
+	 *  纠正 ip 是否真的为 mcount() 该在的位置
      */
 	/* Make sure the ip points to the exact record */
 	if (ip != rec->ip) {
@@ -5516,7 +5526,10 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 
     /**
      *  查找 direct 函数，也就是 ftrace 的回调函数
+	 *
 	 * addr 函数可能在 模块 中插入
+	 *
+	 * 这个 自定义 mcount() 可能已经存在了
      */
 	direct = ftrace_find_direct_func(addr);
 	if (!direct) {
@@ -5531,16 +5544,16 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 		direct->addr = addr;
 		direct->count = 0;
         /**
-         *  添加到链表
+         *  把这个 自定义的 mcount() 添加到链表
          */
 		list_add_rcu(&direct->next, &ftrace_direct_funcs);
 		ftrace_direct_func_count++;
 	}
 
     /**
-     *  初始化 entry
+     *  初始化 entry, 这表示一个被跟踪的函数
 	 *
-	 * ip - 被跟踪的函数地址
+	 * ip - 被跟踪的函数地址(对应的 mcount() 位置地址)
 	 * addr - 如 mcount() 要被执行的函数地址
      */
 	entry->ip = ip;
@@ -5552,14 +5565,15 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	__add_hash_entry(direct_functions, entry);
 
     /**
-     *
+     * ftrace_set_filter_ip() 函数不允许被追踪
+	 * $ sudo bpftrace -l | grep ftrace_set_filter_ip 没有任何输出
      */
 	ret = ftrace_set_filter_ip(&direct_ops, ip, 0/*remove*/, 0/*reset*/);
 	if (ret)
 		remove_hash_entry(direct_functions, entry);
 
     /**
-     *
+     * 如果 ftrace_set_filter_ip() 执行成功
      */
 	if (!ret && !(direct_ops.flags & FTRACE_OPS_FL_ENABLED)) {
         /**
@@ -5576,7 +5590,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	if (ret) {
 		kfree(entry);
         /**
-         *  没人用这个 direct
+         *  没人用这个 direct，那么可以释放了
          */
 		if (!direct->count) {
 			list_del_rcu(&direct->next);
@@ -5814,15 +5828,16 @@ EXPORT_SYMBOL_GPL(modify_ftrace_direct);
  *
  * 设置 address 到 filter hash 中
  *
- * ip - 为 被 ftrace 的内核函数地址
+ * ip - 为 被 ftrace 的内核函数地址(对应 mcount() 地址)
  */
 int ftrace_set_filter_ip(struct ftrace_ops *ops, unsigned long ip,
 			 int remove, int reset)
 {
-	ftrace_ops_init(ops);   /* 初始化 */
+	/* 初始化一些元素 */
+	ftrace_ops_init(ops);
     /*
-        kprobe -> 对应 addr
-    */
+	 * kprobe -> 对应 addr
+	 */
 	return ftrace_set_addr(ops, ip, remove, reset, 1);
 }
 EXPORT_SYMBOL_GPL(ftrace_set_filter_ip);
