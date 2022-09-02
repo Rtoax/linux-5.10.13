@@ -2668,8 +2668,10 @@ unsigned long ftrace_get_addr_new(struct dyn_ftrace *rec)
  * represents the current state of the function.
  *
  * Returns the address of the trampoline that is currently being called
+ *
+ * 获取已经存在的 call 地址
  */
-unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)    /* 获取已经存在的 call 地址 */
+unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)
 {
 	struct ftrace_ops *ops;
 	unsigned long addr;

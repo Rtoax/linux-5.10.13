@@ -324,7 +324,7 @@ struct ftrace_ops {
 	struct ftrace_ops_hash		*func_hash;
 	struct ftrace_ops_hash		old_hash;
     /**
-     *
+     * 对比 mcount()
      */
 	unsigned long			trampoline; /* 蹦床 */
 	unsigned long			trampoline_size;
