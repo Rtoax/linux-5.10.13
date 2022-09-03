@@ -402,7 +402,20 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	/**
 	 * @brief 不保存寄存器
 	 *
-	 */
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:
+	*                                call ftrace_stub <--> ftrace_ops.func
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq
+	*/
 	} else {
 		start_offset = (unsigned long)ftrace_caller;
 		end_offset = (unsigned long)ftrace_caller_end;
@@ -412,10 +425,10 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	}
 
 	/**
-	 * @brief	计算代码大小
-	 *
+	 * 计算 ftrace_caller() 代码大小
+	 * ftrace_caller_end - ftrace_caller
 	 */
-	size = end_offset - start_offset;   //ftrace_caller_end - ftrace_caller
+	size = end_offset - start_offset;
 
 	/*
 	 * Allocate enough size to store the ftrace_caller code,
@@ -563,7 +576,21 @@ static unsigned long calc_trampoline_call_offset(bool save_regs)
 	unsigned long start_offset;
 	unsigned long call_offset;
 
-	/* 是否保存 寄存器 */
+	/**
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:
+	*                                call ftrace_stub <--> ftrace_ops.func
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq
+	*/
 	if (save_regs) {
 		start_offset = (unsigned long)ftrace_regs_caller;
 		call_offset = (unsigned long)ftrace_regs_call;

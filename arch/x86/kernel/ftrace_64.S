@@ -141,7 +141,21 @@ EXPORT_SYMBOL(__fentry__)
 
 /**
  *	ftrace_caller
- */
+*
+*  Example:
+*  -----------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 SYM_FUNC_START(ftrace_caller)
 	/* save_mcount_regs fills in first two parameters */
 	save_mcount_regs

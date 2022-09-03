@@ -87,6 +87,22 @@ SYM_CODE_START(ftrace_regs_caller)
 	b	ftrace_common
 SYM_CODE_END(ftrace_regs_caller)
 
+/**
+*
+*  Example:
+*  -----------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 SYM_CODE_START(ftrace_caller)
 	ftrace_regs_entry	0
 	b	ftrace_common
@@ -278,7 +294,21 @@ NOKPROBE(_mcount)
  * makes calls to:
  *     - tracer function to probe instrumented function's entry,
  *     - ftrace_graph_caller to set up an exit hook
- */
+*
+*  Example:
+*  -----------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 SYM_FUNC_START(ftrace_caller)
 	mcount_enter
 

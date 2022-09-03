@@ -53,7 +53,21 @@ static int ftrace_modify_code(unsigned long pc, u32 old, u32 new,
 
 /*
  * Replace tracer function in ftrace_caller()
- */
+*
+*  Example:
+*  -----------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 int ftrace_update_ftrace_func(ftrace_func_t func)
 {
 	unsigned long pc;
