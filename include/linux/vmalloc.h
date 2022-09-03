@@ -123,10 +123,6 @@ extern void vm_unmap_aliases(void);
 extern void __init vmalloc_init(void);
 extern unsigned long vmalloc_nr_pages(void);
 #else
-//static inline void vmalloc_init(void)
-//{
-//}
-//static inline unsigned long vmalloc_nr_pages(void) { return 0; }
 #endif
 
 extern void *vmalloc(unsigned long size);
@@ -211,25 +207,14 @@ static inline void set_vm_flush_reset_perms(void *addr)
 {
 	struct vm_struct *vm = find_vm_area(addr);
 
+	/*
+	* Memory with VM_FLUSH_RESET_PERMS cannot be freed in an interrupt or with
+	* vfree_atomic().
+	*/
 	if (vm)
 		vm->flags |= VM_FLUSH_RESET_PERMS;
 }
 #else
-//static inline int
-//map_kernel_range_noflush(unsigned long start, unsigned long size,
-//			pgprot_t prot, struct page **pages)
-//{
-//	return size >> PAGE_SHIFT;
-//}
-//#define map_kernel_range map_kernel_range_noflush
-//static inline void
-//unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
-//{
-//}
-//#define unmap_kernel_range unmap_kernel_range_noflush
-//static inline void set_vm_flush_reset_perms(void *addr)
-//{
-//}
 #endif
 
 /* for /dev/kmem */

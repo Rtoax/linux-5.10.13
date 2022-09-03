@@ -7497,8 +7497,8 @@ static void ftrace_update_trampoline(struct ftrace_ops *ops)
 	arch_ftrace_update_trampoline(ops);
 
 	/**
-	 * @brief
-	 *
+	 * 1. trampoline not 0
+	 * 2. trampoline Updated
 	 */
 	if (ops->trampoline && ops->trampoline != trampoline &&
 	    (ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP)) {

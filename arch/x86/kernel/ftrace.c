@@ -449,7 +449,7 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 
 	/**
 	 * @brief 需要的页数
-	 *
+	 * one page at least
 	 */
 	npages = DIV_ROUND_UP(*tramp_size, PAGE_SIZE);
 
@@ -461,6 +461,21 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	if (WARN_ON(ret < 0))
 		goto fail;
 
+	/*
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:
+	*                                call ftrace_stub <--> ftrace_ops.func
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq   <<<< HERE (ip)
+	*/
 	ip = trampoline + size;
 
 	/* The trampoline ends with ret(q) */
@@ -493,6 +508,9 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	 * the global function_trace_op variable.
 	 */
 
+	/**
+	 * Store the ftrace_ops {} in the end of  'trampoline'
+	 */
 	ptr = (unsigned long *)(trampoline + size + RET_SIZE);
 	*ptr = (unsigned long)ops;
 
@@ -514,26 +532,55 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 
 	/* put in the call to the function */
 	mutex_lock(&text_mutex);
+
+	/*
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)<<=== start_offset
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:           <<=== call_offset
+	*                                call ftrace_stub
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq
+	*/
 	call_offset -= start_offset;
+
+	/**
+	 *  ftrace_stub() -> func()
+	 */
 	memcpy(trampoline + call_offset,
 	       text_gen_insn(CALL_INSN_OPCODE,
 			     trampoline + call_offset,
 			     ftrace_ops_get_func(ops)), CALL_INSN_SIZE);
+
 	mutex_unlock(&text_mutex);
 
 	/* ALLOC_TRAMP flags lets us know we created it */
 	ops->flags |= FTRACE_OPS_FL_ALLOC_TRAMP;
 
 	/**
-	 * @brief
+	 * set vm->flags VM_FLUSH_RESET_PERMS
 	 *
+	 * Memory with VM_FLUSH_RESET_PERMS cannot be freed in an interrupt or with
+	 * vfree_atomic().
 	 */
 	set_vm_flush_reset_perms(trampoline);
 
 	if (likely(system_state != SYSTEM_BOOTING))
 		set_memory_ro((unsigned long)trampoline, npages);
+
+	/**
+	 * Add execute permission
+	 */
 	set_memory_x((unsigned long)trampoline, npages);
+
 	return (unsigned long)trampoline;
+
 fail:
 	tramp_free(trampoline);
 	return 0;
@@ -638,18 +685,37 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	/**
 	 *  计算跳板的偏移量
 	 *  例如： mcount 为 5 ???? 显然不是 MCOUNT_INSN_SIZE=5
+	 *
+	*
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:
+	*                                call ftrace_stub <--> ftrace_ops.func
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq
+	*
+	 * offset = ftrace_call - ftrace_caller
 	 */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);
 
 	/**
 	 * @brief 将要被修改的 IP 地址
 	 *
+	 * ip -> ftrace_call
 	 */
 	ip = ops->trampoline + offset;
 
 	/**
 	 * @brief 将要执行的函数（将 ip 替换为 func）
 	 *
+	 * registered function
 	 */
 	func = ftrace_ops_get_func(ops);
 
@@ -660,12 +726,32 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	 *  这是如何保证安全性的，libcareplus  借鉴
 	 *
 	 *  new 为生成的新的指令
+	 *
+	*
+	*  Example:
+	*  -----------------------------
+	*  schedule
+	*    push %rbp
+	*    mov %rsp,%rbp
+	*    call ftrace_caller -----> ftrace_caller: (mcount)
+	*                                save regs
+	*                                load args
+	*                              ftrace_call:
+	*                                call ftrace_stub <--> ftrace_ops.func
+	*                                restore regs
+	*                              ftrace_stub:
+	*                                retq
+	*
+	*  Generate call insn: call func()
 	 */
 	_new = ftrace_call_replace(ip, (unsigned long)func);
+
 	/**
 	 *  下面时如何进行替换的？
+	 *  Replace ftrace_stub() to func()
 	 */
 	text_poke_bp((void *)ip, _new, MCOUNT_INSN_SIZE, NULL);
+
 	mutex_unlock(&text_mutex);
 }
 
