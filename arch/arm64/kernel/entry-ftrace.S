@@ -118,7 +118,7 @@ SYM_CODE_START(ftrace_common)
 	mov	x3, sp				// regs
 
 SYM_INNER_LABEL(ftrace_call, SYM_L_GLOBAL)
-	bl	ftrace_stub
+	bl	ftrace_stub  // call ftrace_stub
 
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 SYM_INNER_LABEL(ftrace_graph_call, SYM_L_GLOBAL) // ftrace_graph_caller();
