@@ -4476,6 +4476,7 @@ struct btf *libbpf_find_kernel_btf(void)
 		const char *path_fmt;
 		bool raw_btf;
 	} locations[] = {
+		// BTF format
 		/* try canonical vmlinux BTF through sysfs first */
 		{ "/sys/kernel/btf/vmlinux", true /* raw BTF */ },
 		/* fall back to trying to find vmlinux ELF on disk otherwise */
@@ -4494,12 +4495,14 @@ struct btf *libbpf_find_kernel_btf(void)
 
 	uname(&buf);
 
+	// for each
 	for (i = 0; i < ARRAY_SIZE(locations); i++) {
 		snprintf(path, PATH_MAX, locations[i].path_fmt, buf.release);
 
 		if (access(path, R_OK))
 			continue;
 
+		// parse BTF file
 		if (locations[i].raw_btf)
 			btf = btf__parse_raw(path);
 		else

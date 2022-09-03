@@ -2810,6 +2810,7 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 		if (elf_sec_hdr(obj, scn, &sh))
 			return -LIBBPF_ERRNO__FORMAT;
 
+		// Handle .symtab
 		if (sh.sh_type == SHT_SYMTAB) {
 			if (obj->efile.symbols) {
 				pr_warn("elf: multiple symbol tables in %s\n", obj->path);
@@ -2849,20 +2850,26 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 			 (int)sh.sh_link, (unsigned long)sh.sh_flags,
 			 (int)sh.sh_type);
 
+		// LICENSE
 		if (strcmp(name, "license") == 0) {
 			err = bpf_object__init_license(obj, data->d_buf, data->d_size);
 			if (err)
 				return err;
+		// Version
 		} else if (strcmp(name, "version") == 0) {
 			err = bpf_object__init_kversion(obj, data->d_buf, data->d_size);
 			if (err)
 				return err;
+		// maps for each object
 		} else if (strcmp(name, "maps") == 0) {
 			obj->efile.maps_shndx = idx;
+		// .maps
 		} else if (strcmp(name, MAPS_ELF_SEC) == 0) {
 			obj->efile.btf_maps_shndx = idx;
+		// .BTF
 		} else if (strcmp(name, BTF_ELF_SEC) == 0) {
 			btf_data = data;
+		// .BTF.ext
 		} else if (strcmp(name, BTF_EXT_ELF_SEC) == 0) {
 			btf_ext_data = data;
 		} else if (sh.sh_type == SHT_SYMTAB) {
@@ -2887,6 +2894,7 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 				pr_info("elf: skipping unrecognized data section(%d) %s\n",
 					idx, name);
 			}
+		// REL
 		} else if (sh.sh_type == SHT_REL) {
 			int nr_sects = obj->efile.nr_reloc_sects;
 			void *sects = obj->efile.reloc_sects;
@@ -2912,6 +2920,7 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 
 			obj->efile.reloc_sects[nr_sects].shdr = sh;
 			obj->efile.reloc_sects[nr_sects].data = data;
+		// .bss
 		} else if (sh.sh_type == SHT_NOBITS && strcmp(name, BSS_SEC) == 0) {
 			obj->efile.bss = data;
 			obj->efile.bss_shndx = idx;
@@ -6561,7 +6570,7 @@ static int bpf_object__collect_relos(struct bpf_object *obj)
 
 	for (i = 0; i < obj->nr_programs; i++) {
 		struct bpf_program *p = &obj->programs[i];
-		
+
 		if (!p->nr_reloc)
 			continue;
 
@@ -6861,6 +6870,9 @@ bpf_object__load_progs(struct bpf_object *obj, int log_level)
 
 static const struct bpf_sec_def *find_sec_def(const char *sec_name);
 
+/**
+ * Open BPF object ELF file
+ */
 static struct bpf_object *
 __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 		   const struct bpf_object_open_opts *opts)
@@ -6871,6 +6883,7 @@ __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 	char tmp_name[64];
 	int err;
 
+	// ELF check
 	if (elf_version(EV_CURRENT) == EV_NONE) {
 		pr_warn("failed to init libelf for %s\n",
 			path ? : "(mem buf)");
@@ -6892,6 +6905,7 @@ __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 		pr_debug("loading object '%s' from buffer\n", obj_name);
 	}
 
+	// Create object
 	obj = bpf_object__new(path, obj_buf, obj_buf_sz, obj_name);
 	if (IS_ERR(obj))
 		return obj;
@@ -6903,8 +6917,13 @@ __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 			return ERR_PTR(-ENOMEM);
 	}
 
+	// Initial
 	err = bpf_object__elf_init(obj);
+
+	// Just support little endian
 	err = err ? : bpf_object__check_endianness(obj);
+
+
 	err = err ? : bpf_object__elf_collect(obj);
 	err = err ? : bpf_object__collect_externs(obj);
 	err = err ? : bpf_object__finalize_btf(obj);
