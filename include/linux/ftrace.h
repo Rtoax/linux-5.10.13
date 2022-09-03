@@ -323,9 +323,10 @@ struct ftrace_ops {
 	struct ftrace_ops_hash		local_hash;
 	struct ftrace_ops_hash		*func_hash;
 	struct ftrace_ops_hash		old_hash;
-    /**
-     * 对比 mcount()
-     */
+	/**
+	 * 对比 mcount()
+	 * trampoline = create_trampoline()
+	 */
 	unsigned long			trampoline; /* 跳板 */
 	unsigned long			trampoline_size;
 	struct list_head		list;

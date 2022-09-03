@@ -38,7 +38,7 @@
 static int ftrace_poke_late = 0;
 
 int ftrace_arch_code_modify_prepare(void)   /*准备工作  */
-    __acquires(&text_mutex)
+	__acquires(&text_mutex)
 {
 	/*
 	 * Need to grab text_mutex to prevent a race from module loading
@@ -51,7 +51,7 @@ int ftrace_arch_code_modify_prepare(void)   /*准备工作  */
 }
 
 int ftrace_arch_code_modify_post_process(void)
-    __releases(&text_mutex)
+	__releases(&text_mutex)
 {
 	/*
 	 * ftrace_make_{call,nop}() may be called during
@@ -71,9 +71,9 @@ int ftrace_arch_code_modify_post_process(void)
  */
 static const char *ftrace_nop_replace(void)
 {
-    /**
-     *  nop 指令
-     */
+	/**
+	 *  nop 指令
+	 */
 	return ideal_nops[NOP_ATOMIC5]; /* 0x0f,0x1f,0x44,0x00,0 */
 }
 /**
@@ -155,9 +155,9 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
 	unsigned long ip = rec->ip;
 	const char *new, *old;
 
-    /**
-     * 获取老指令
-     */
+	/**
+	 * 获取老指令
+	 */
 	old = ftrace_call_replace(ip, addr);
 	// 获取一个 nop 指令
 	new = ftrace_nop_replace();
@@ -223,20 +223,20 @@ int ftrace_update_ftrace_func(ftrace_func_t func)   /*  更新函数*/
 	unsigned long ip;
 	const char *new;
 
-    /*
-    call ftrace_call 替换为>>
-    call func -> ftrace_ops_list_func
-    并把它写到 mcount
-    */
-    ip = (unsigned long)(&ftrace_call); /* arch/x86/kernel/ftrace_64.S */
+	/*
+	call ftrace_call 替换为>>
+	call func -> ftrace_ops_list_func
+	并把它写到 mcount
+	*/
+	ip = (unsigned long)(&ftrace_call); /* arch/x86/kernel/ftrace_64.S */
 	new = ftrace_call_replace(ip, (unsigned long)func); /* 用 func 替换 ftrace_call */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
-    /*
-    call ftrace_regs_call 替换为>>
-    call func -> ftrace_regs_call
-    并把它写到 mcount
-    */
+	/*
+	call ftrace_regs_call 替换为>>
+	call func -> ftrace_regs_call
+	并把它写到 mcount
+	*/
 	ip = (unsigned long)(&ftrace_regs_call);
 	new = ftrace_call_replace(ip, (unsigned long)func); /* 替换 */
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
@@ -251,7 +251,7 @@ void ftrace_replace_code(int enable)
 	const char *new, *old;
 	int ret;
 
-    /* 遍历 ftrace_pages_start */
+	/* 遍历 ftrace_pages_start */
 	for_ftrace_rec_iter(iter) {
 		rec = ftrace_rec_iter_record(iter); /* 获取 动态 ftrace 结构 */
 
@@ -271,7 +271,7 @@ void ftrace_replace_code(int enable)
 			break;
 		}
 
-        /* 确认 */
+	    /* 确认 */
 		ret = ftrace_verify_code(rec->ip, old);
 		if (ret) {
 			ftrace_bug(ret, rec);
@@ -279,7 +279,7 @@ void ftrace_replace_code(int enable)
 		}
 	}
 
-    /* 遍历所有 ftrace pages */
+	/* 遍历所有 ftrace pages */
 	for_ftrace_rec_iter(iter) {
 		rec = ftrace_rec_iter_record(iter); /* entry */
 
@@ -454,7 +454,7 @@ create_trampoline(struct ftrace_ops *ops, unsigned int *tramp_size)
 	npages = DIV_ROUND_UP(*tramp_size, PAGE_SIZE);
 
 	/* Copy ftrace_caller onto the trampoline memory */
-    /**
+	/**
 	 * 将函数拷贝到 跳板中
 	 */
 	ret = copy_from_kernel_nofault(trampoline, (void *)start_offset, size);
@@ -635,10 +635,10 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	 */
 	if (!(ops->flags & FTRACE_OPS_FL_ALLOC_TRAMP))
 		return;
-    /**
-     *  计算跳板的偏移量
+	/**
+	 *  计算跳板的偏移量
 	 *  例如： mcount 为 5 ???? 显然不是 MCOUNT_INSN_SIZE=5
-     */
+	 */
 	offset = calc_trampoline_call_offset(ops->flags & FTRACE_OPS_FL_SAVE_REGS);
 
 	/**
@@ -662,9 +662,9 @@ void arch_ftrace_update_trampoline(struct ftrace_ops *ops)
 	 *  new 为生成的新的指令
 	 */
 	_new = ftrace_call_replace(ip, (unsigned long)func);
-    /**
-     *  下面时如何进行替换的？
-     */
+	/**
+	 *  下面时如何进行替换的？
+	 */
 	text_poke_bp((void *)ip, _new, MCOUNT_INSN_SIZE, NULL);
 	mutex_unlock(&text_mutex);
 }
