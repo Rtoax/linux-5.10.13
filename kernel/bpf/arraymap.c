@@ -169,11 +169,19 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 	if (ret < 0)
 		return ERR_PTR(ret);
 
-	/* allocate all map elements and zero-initialize them */
+	/**
+	 * allocate all map elements and zero-initialize them
+	 *
+	 */
 	if (attr->map_flags & BPF_F_MMAPABLE) {
 		void *data;
 
-		/* kmalloc'ed memory can't be mmap'ed, use explicit vmalloc */
+		/**
+		 * kmalloc'ed memory can't be mmap'ed, use explicit vmalloc
+		 *
+		 * 2022.09.04 - Rong Tao
+		 * I don't know why kmalloc()'ed memory can't be mmap'ed?
+		 */
 		data = bpf_map_area_mmapable_alloc(array_size, numa_node);
 		if (!data) {
 			bpf_map_charge_finish(&mem);

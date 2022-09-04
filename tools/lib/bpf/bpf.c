@@ -80,7 +80,7 @@ static inline int sys_bpf_prog_load(union bpf_attr *attr, unsigned int size)
 }
 
 /**
- *  
+ *  BPF_MAP_CREATE
  */
 int bpf_create_map_xattr(const struct bpf_create_map_attr *create_attr)
 {
@@ -98,14 +98,14 @@ int bpf_create_map_xattr(const struct bpf_create_map_attr *create_attr)
 	attr.map_flags = create_attr->map_flags;
 
     /**
-     *  
+     *
      */
 	if (create_attr->name)
 		memcpy(attr.map_name, create_attr->name,
 		       min(strlen(create_attr->name), BPF_OBJ_NAME_LEN - 1));
 
     /**
-     *  
+     *
      */
     attr.numa_node = create_attr->numa_node;
 	attr.btf_fd = create_attr->btf_fd;
@@ -114,7 +114,7 @@ int bpf_create_map_xattr(const struct bpf_create_map_attr *create_attr)
 	attr.map_ifindex = create_attr->map_ifindex;
 
     /**
-     *  
+     *
      */
 	if (attr.map_type == BPF_MAP_TYPE_STRUCT_OPS)
 		attr.btf_vmlinux_value_type_id =
@@ -163,7 +163,7 @@ int bpf_create_map(enum bpf_map_type map_type, int key_size,
 	map_attr.max_entries = max_entries;
 
     /**
-     *  
+     *
      */
 	return bpf_create_map_xattr(&map_attr);
 }
@@ -404,16 +404,16 @@ int bpf_verify_program(enum bpf_prog_type type, const struct bpf_insn *insns,
  * @key - 要更新键的指针
  * @value - 存入的值
  * @flags - 更新映射的方式
- *      BPF_ANY - 
+ *      BPF_ANY -
  *      BPF_NOEXIST
- *      BPF_EXIST   
+ *      BPF_EXIST
  */
 int bpf_map_update_elem(int fd, const void *key, const void *value, __u64 flags)
 {
 	union bpf_attr attr;
 
     /**
-     *  
+     *
      */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
@@ -422,7 +422,7 @@ int bpf_map_update_elem(int fd, const void *key, const void *value, __u64 flags)
 	attr.flags = flags;
 
     /**
-     *  
+     *
      */
 	return sys_bpf(BPF_MAP_UPDATE_ELEM, &attr, sizeof(attr));
 }
@@ -432,14 +432,14 @@ int bpf_map_update_elem(int fd, const void *key, const void *value, __u64 flags)
  *
  * @fd - 指向已定义映射
  * @key - 要更新键的指针
- * @value - 存入的值 
+ * @value - 存入的值
  */
 int bpf_map_lookup_elem(int fd, const void *key, void *value)
 {
 	union bpf_attr attr;
 
     /**
-     *  
+     *
      */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
@@ -454,11 +454,11 @@ int bpf_map_lookup_elem(int fd, const void *key, void *value)
  *
  * @fd - 指向已定义映射
  * @key - 要更新键的指针
- * @value - 存入的值 
+ * @value - 存入的值
  * @flags - 更新映射的方式?
- *      BPF_ANY - 
+ *      BPF_ANY -
  *      BPF_NOEXIST
- *      BPF_EXIST   
+ *      BPF_EXIST
  */
 int bpf_map_lookup_elem_flags(int fd, const void *key, void *value, __u64 flags)
 {
@@ -478,7 +478,7 @@ int bpf_map_lookup_elem_flags(int fd, const void *key, void *value, __u64 flags)
  *
  * @fd - 指向已定义映射
  * @key - 键的指针
- * @value - 查找的值  
+ * @value - 查找的值
  */
 int bpf_map_lookup_and_delete_elem(int fd, const void *key, void *value)
 {
@@ -493,7 +493,7 @@ int bpf_map_lookup_and_delete_elem(int fd, const void *key, void *value)
 }
 
 /**
- *  
+ *
  *  删除 BPF 映射元素
  *
  * @fd - 指向已定义映射
@@ -504,7 +504,7 @@ int bpf_map_delete_elem(int fd, const void *key)
 	union bpf_attr attr;
 
     /**
-     *  
+     *
      */
 	memset(&attr, 0, sizeof(attr));
 	attr.map_fd = fd;
@@ -516,10 +516,10 @@ int bpf_map_delete_elem(int fd, const void *key)
 /**
  *  迭代 BPF 映射元素
  *      在 BPF 程序中查找任意元素
- *  
+ *
  * @fd - 指向已定义映射
- * @key - 
- * @next_key - 
+ * @key -
+ * @next_key -
  */
 int bpf_map_get_next_key(int fd, const void *key, void *next_key)
 {

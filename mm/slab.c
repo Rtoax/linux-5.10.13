@@ -3816,6 +3816,9 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
 	cachep = kmalloc_slab(size, flags); /* 查找句柄 */
 	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
 		return cachep;
+	/**
+	 *
+	 */
 	ret = slab_alloc(cachep, flags, caller);
 
 	ret = kasan_kmalloc(cachep, ret, size, flags);
@@ -3825,6 +3828,9 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
 	return ret;
 }
 
+/**
+ *
+ */
 void *__kmalloc(size_t size, gfp_t flags)
 {
 	return __do_kmalloc(size, flags, _RET_IP_);

@@ -13,6 +13,10 @@ struct bpf_iter_meta {
 	__u64 seq_num;
 };
 
+/**
+ * BPF_MAP_CREATE
+ *
+ */
 struct bpf_map {
 	__u32 id;
 	char name[16];

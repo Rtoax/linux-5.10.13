@@ -507,7 +507,8 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  *	Try really hard to succeed the allocation but fail
  *	eventually.
  *
- *
+ * ----------------------------------------------------------
+ * kmalloc'ed memory can't be mmap'ed, see array_map_alloc()
  */
 static __always_inline void *kmalloc(size_t size, gfp_t flags)
 {

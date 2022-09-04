@@ -64,7 +64,11 @@ static spinlock_t link_idr_lock = __SPIN_LOCK_UNLOCKED(link_idr_lock);//+++
 
 int __read_mostly sysctl_unprivileged_bpf_disabled ;
 
+/**
+ * BPF map type
+ */
 static const struct bpf_map_ops * const bpf_map_types[] = {
+#if 0
 #define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type)
 #define BPF_MAP_TYPE(_id, _ops) \
 	[_id] = &_ops,
@@ -74,7 +78,7 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
 /**
  *  展开 #include <linux/bpf_types.h>
  */
-#ifdef __rtoax_debug______________________________________________________ /*+展开+++*/
+#else /*+展开+++*/
     [BPF_MAP_TYPE_ARRAY] = &array_map_ops,
     [BPF_MAP_TYPE_PERCPU_ARRAY] = &percpu_array_map_ops,
     [BPF_MAP_TYPE_PROG_ARRAY] = &prog_array_map_ops,
@@ -121,7 +125,8 @@ static const struct bpf_map_ops * const bpf_map_types[] = {
     [BPF_MAP_TYPE_STRUCT_OPS] = &bpf_struct_ops_map_ops,
 #endif
     [BPF_MAP_TYPE_RINGBUF] = &ringbuf_map_ops,
-#endif /*__rtoax_debug______________________________________________________*/
+
+#endif
 
 #undef BPF_PROG_TYPE
 #undef BPF_MAP_TYPE
@@ -183,6 +188,7 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
 
     /**
      *  获取 映射类型对应的操作符
+	 * BPF_MAP_TYPE_ARRAY: array_map_ops
      */
 	ops = bpf_map_types[type];
 	if (!ops)
@@ -192,6 +198,9 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
      *  进行分配检查
      */
 	if (ops->map_alloc_check) { /* 分配内存前的参数检测 */
+		/**
+		 * BPF_MAP_TYPE_ARRAY: array_map_alloc_check()
+		 */
 		err = ops->map_alloc_check(attr);
 		if (err)
 			return ERR_PTR(err);
@@ -205,6 +214,8 @@ static struct bpf_map *find_and_alloc_map(union bpf_attr *attr)
 
     /**
      *  分配内存
+	 *
+	 * BPF_MAP_TYPE_ARRAY: array_map_alloc()
      */
 	map = ops->map_alloc(attr); /* 分配 例如:kzmalloc() */
 	if (IS_ERR(map))
@@ -511,6 +522,9 @@ void *bpf_map_area_alloc(u64 size, int numa_node)
 	return __bpf_map_area_alloc(size, numa_node, false);
 }
 
+/**
+ *
+ */
 void *bpf_map_area_mmapable_alloc(u64 size, int numa_node)
 {
 	return __bpf_map_area_alloc(size, numa_node, true);
