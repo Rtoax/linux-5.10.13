@@ -2514,6 +2514,8 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
  * @param attr
  * @param uattr
  * @return int
+ *
+ * BPF_PROG_LOAD
  */
 static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 {

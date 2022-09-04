@@ -18,6 +18,7 @@ int main(int ac, char **argv)
 
 	snprintf(filename, sizeof(filename), "%s_kern.o", argv[0]);
 
+	// BPF_PROG_LOAD
 	if (bpf_prog_load(filename, BPF_PROG_TYPE_SOCKET_FILTER,
 			  &obj, &prog_fd))
 		return 1;

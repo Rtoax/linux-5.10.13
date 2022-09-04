@@ -298,6 +298,9 @@ int bpf_load_program_xattr(const struct bpf_load_program_attr *load_attr,
 		       min(strlen(load_attr->name), BPF_OBJ_NAME_LEN - 1));
 	attr.prog_flags = load_attr->prog_flags;
 
+	/**
+	 * BPF_PROG_LOAD
+	 */
 	fd = sys_bpf_prog_load(&attr, sizeof(attr));
 	if (fd >= 0)
 		return fd;
@@ -335,6 +338,7 @@ int bpf_load_program_xattr(const struct bpf_load_program_attr *load_attr,
 			break;
 		}
 
+		// BPF_PROG_LOAD
 		fd = sys_bpf_prog_load(&attr, sizeof(attr));
 
 		if (fd >= 0)
@@ -349,6 +353,8 @@ int bpf_load_program_xattr(const struct bpf_load_program_attr *load_attr,
 	attr.log_size = log_buf_sz;
 	attr.log_level = 1;
 	log_buf[0] = 0;
+
+	// BPF_PROG_LOAD
 	fd = sys_bpf_prog_load(&attr, sizeof(attr));
 done:
 	free(finfo);
@@ -394,6 +400,7 @@ int bpf_verify_program(enum bpf_prog_type type, const struct bpf_insn *insns,
 	attr.kern_version = kern_version;
 	attr.prog_flags = prog_flags;
 
+	// BPF_PROG_LOAD
 	return sys_bpf_prog_load(&attr, sizeof(attr));
 }
 

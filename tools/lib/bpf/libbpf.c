@@ -6684,6 +6684,7 @@ retry_load:
 		*log_buf = 0;
 	}
 
+	// BPF_PROG_LOAD
 	ret = bpf_load_program_xattr(&load_attr, log_buf, log_buf_size);
 
 	if (ret >= 0) {
