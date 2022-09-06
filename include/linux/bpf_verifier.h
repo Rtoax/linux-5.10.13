@@ -400,6 +400,11 @@ struct bpf_verifier_env {
 	bool bypass_spec_v1;
 	bool bypass_spec_v4;
 	bool seen_direct_write;
+
+	/**
+	 * 验证器使用 insn_aux_data[] 在验证期间存储临时数据，并存储验证后运行的通行证信息，
+	 * 如死代码清理。
+	 */
 	struct bpf_insn_aux_data *insn_aux_data; /* array of per-insn state */
 	const struct bpf_line_info *prev_linfo;
 	struct bpf_verifier_log log;

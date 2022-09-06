@@ -4815,6 +4815,14 @@ static void clear_caller_saved_regs(struct bpf_verifier_env *env,
 	}
 }
 
+/**
+ * @brief 检测函数调用
+ *
+ * @param env
+ * @param insn
+ * @param insn_idx
+ * @return int
+ */
 static int check_func_call(struct bpf_verifier_env *env, struct bpf_insn *insn,
 			   int *insn_idx)
 {
@@ -4830,6 +4838,7 @@ static int check_func_call(struct bpf_verifier_env *env, struct bpf_insn *insn,
 		return -E2BIG;
 	}
 
+	// 获取目标指令
 	target_insn = *insn_idx + insn->imm;
 	subprog = find_subprog(env, target_insn + 1);
 	if (subprog < 0) {
@@ -8091,8 +8100,11 @@ static int push_insn(int t, int w, int e, struct bpf_verifier_env *env,
 	return 0;
 }
 
-/* non-recursive depth-first-search to detect loops in BPF program
+/**
+ * non-recursive depth-first-search to detect loops in BPF program
  * loop == back-edge in directed graph
+ *
+ * 非递归深度优先搜索以检测 BPF 程序循环中的循环 == 有向图中的 back-edge
  */
 static int check_cfg(struct bpf_verifier_env *env)
 {
@@ -8121,12 +8133,21 @@ peek_stack:
 		goto check_state;
 	t = insn_stack[env->cfg.cur_stack - 1];
 
+	/**
+	 * @brief 如果是 jmp 跳转
+	 *
+	 */
 	if (BPF_CLASS(insns[t].code) == BPF_JMP ||
 	    BPF_CLASS(insns[t].code) == BPF_JMP32) {
+
+		// 获取指令
 		u8 opcode = BPF_OP(insns[t].code);
 
+		// 推出
 		if (opcode == BPF_EXIT) {
 			goto mark_explored;
+
+		// 调用
 		} else if (opcode == BPF_CALL) {
 			ret = push_insn(t, t + 1, FALLTHROUGH, env, false);
 			if (ret == 1)
@@ -8181,6 +8202,8 @@ peek_stack:
 			else if (ret < 0)
 				goto err_free;
 		}
+
+	// 如果不是跳转至指令
 	} else {
 		/* all other non-branch instructions with single
 		 * fall-through edge
@@ -9334,6 +9357,12 @@ static bool reg_type_mismatch(enum bpf_reg_type src, enum bpf_reg_type prev)
 			       !reg_type_mismatch_ok(prev));
 }
 
+/**
+ * @brief
+ *
+ * @param env
+ * @return int
+ */
 static int do_check(struct bpf_verifier_env *env)
 {
 	bool pop_log = !(env->log.level & BPF_LOG_LEVEL2);
@@ -9424,6 +9453,10 @@ static int do_check(struct bpf_verifier_env *env)
 		env->insn_aux_data[env->insn_idx].seen = env->pass_cnt;
 		prev_insn_idx = env->insn_idx;
 
+		/**
+		 * @brief
+		 *
+		 */
 		if (class == BPF_ALU || class == BPF_ALU64) {
 			err = check_alu_op(env, insn);
 			if (err)
@@ -9538,10 +9571,16 @@ static int do_check(struct bpf_verifier_env *env)
 			if (err)
 				return err;
 
+		/**
+		 * @brief 跳转指令
+		 *
+		 */
 		} else if (class == BPF_JMP || class == BPF_JMP32) {
 			u8 opcode = BPF_OP(insn->code);
 
 			env->jmps_processed++;
+
+			// 调用
 			if (opcode == BPF_CALL) {
 				if (BPF_SRC(insn->code) != BPF_K ||
 				    insn->off != 0 ||
@@ -9559,6 +9598,7 @@ static int do_check(struct bpf_verifier_env *env)
 					verbose(env, "function calls are not allowed while holding a lock\n");
 					return -EINVAL;
 				}
+
 				if (insn->src_reg == BPF_PSEUDO_CALL)
 					err = check_func_call(env, insn, &env->insn_idx);
 				else
@@ -9566,6 +9606,7 @@ static int do_check(struct bpf_verifier_env *env)
 				if (err)
 					return err;
 
+			//
 			} else if (opcode == BPF_JA) {
 				if (BPF_SRC(insn->code) != BPF_K ||
 				    insn->imm != 0 ||
@@ -9579,6 +9620,7 @@ static int do_check(struct bpf_verifier_env *env)
 				env->insn_idx += insn->off + 1;
 				continue;
 
+			// 退出
 			} else if (opcode == BPF_EXIT) {
 				if (BPF_SRC(insn->code) != BPF_K ||
 				    insn->imm != 0 ||
@@ -11334,7 +11376,8 @@ static void free_states(struct bpf_verifier_env *env)
 	}
 }
 
-/* The verifier is using insn_aux_data[] to store temporary data during
+/**
+ * The verifier is using insn_aux_data[] to store temporary data during
  * verification and to store information for passes that run after the
  * verification like dead code sanitization. do_check_common() for subprogram N
  * may analyze many other subprograms. sanitize_insn_aux_data() clears all
@@ -11344,6 +11387,24 @@ static void free_states(struct bpf_verifier_env *env)
  * insn_aux_data was touched. These variables are compared to clear temporary
  * data from failed pass. For testing and experiments do_check_common() can be
  * run multiple times even when prior attempt to verify is unsuccessful.
+ *
+ * 验证器使用 insn_aux_data[] 在验证期间存储临时数据，并存储验证后运行的通行证信息，
+ * 如死代码清理。
+ *
+ * 子程序 N 的 do_check_common() 可以分析许多其他子程序。 sanitize_insn_aux_data()
+ * 在do_check_common() 发现子程序N 无法独立验证后清除所有临时数据。
+ *
+ * pass_cnt 计算 do_check_common() 运行的次数，并且 insn->aux->seen 告诉 pass
+ * 编号 insn_aux_data 被触及。
+ *
+ * 比较这些变量以清除失败传递中的临时数据。 对于测试和实验，即使之前的验证尝试不成功，
+ * 也可以多次运行 do_check_common()。
+ */
+
+/**
+ * @brief 在do_check_common() 发现子程序 N 无法独立验证后清除所有临时数据。
+ *
+ * @param env
  */
 static void sanitize_insn_aux_data(struct bpf_verifier_env *env)
 {
@@ -11370,6 +11431,8 @@ static int do_check_common(struct bpf_verifier_env *env, int subprog)
 	int ret, i;
 
 	env->prev_linfo = NULL;
+
+	// pass_cnt 计算 do_check_common() 运行的次数
 	env->pass_cnt++;
 
 	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
@@ -11418,7 +11481,12 @@ static int do_check_common(struct bpf_verifier_env *env, int subprog)
 			goto out;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	ret = do_check(env);
+
 out:
 	/* check for NULL is necessary, since cur_state can be freed inside
 	 * do_check() under memory pressure.
@@ -11455,6 +11523,10 @@ out:
  * will be assumed that bar() already verified successfully and call to bar()
  * from foo() will be checked for type match only. Later bar() will be verified
  * independently to check that it's safe for R1=any_scalar_value.
+ *
+ * foo() 将首先验证 R1=any_scalar_value 。 在验证期间，将假定 bar() 已经成功验证，
+ * 并且从 foo() 调用 bar() 将仅检查类型匹配。 稍后将独立验证 bar() 以检查
+ * R1=any_scalar_value 是否安全。
  */
 static int do_check_subprogs(struct bpf_verifier_env *env)
 {
@@ -11469,6 +11541,10 @@ static int do_check_subprogs(struct bpf_verifier_env *env)
 			continue;
 		env->insn_idx = env->subprog_info[i].start;
 		WARN_ON_ONCE(env->insn_idx == 0);
+		/**
+		 * @brief
+		 *
+		 */
 		ret = do_check_common(env, i);
 		if (ret) {
 			return ret;
