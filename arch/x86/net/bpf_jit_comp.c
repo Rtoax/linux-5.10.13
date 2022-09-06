@@ -789,6 +789,24 @@ static void detect_reg_usage(struct bpf_insn *insn, int insn_cnt,
 	}
 }
 
+/**
+ * @brief bpf jit
+ *
+ * @param bpf_prog
+ * @param addrs
+ * @param image
+ * @param oldproglen
+ * @param ctx
+ * @return int
+ *
+ * $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
+ *
+ * do_jit+1
+ * bpf_int_jit_compile+329
+ * bpf_prog_select_runtime+267
+ * bpf_prog_load+1191
+ * __sys_bpf+431
+ */
 static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 		  int oldproglen, struct jit_context *ctx)
 {
@@ -2043,6 +2061,15 @@ skip_init_addrs:
 	 * pass to emit the final image.
 	 */
 	for (pass = 0; pass < 20 || image; pass++) {
+		/**
+		* $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
+		*
+		* do_jit+1
+		* bpf_int_jit_compile+329
+		* bpf_prog_select_runtime+267
+		* bpf_prog_load+1191
+		* __sys_bpf+431
+		*/
 		proglen = do_jit(prog, addrs, image, oldproglen, &ctx);
 		if (proglen <= 0) {
 out_image:

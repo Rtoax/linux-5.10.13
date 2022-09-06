@@ -958,8 +958,21 @@ int bpf_get_file_flag(int flags)    /* 读写权限 */
 		   offsetof(union bpf_attr, CMD##_LAST_FIELD) - \
 		   sizeof(attr->CMD##_LAST_FIELD)) != NULL
 
-/* dst and src must have at least "size" number of bytes.
+/**
+ * dst and src must have at least "size" number of bytes.
  * Return strlen on success and < 0 on error.
+ *
+ * $ sudo bpftrace -e 'kprobe:bpf_obj_name_cpy { printf("%s\n", str(arg1)); }'
+ *
+ * $ sudo /usr/share/bpftrace/tools/execsnoop.bt
+ *
+ * join
+ * elapsed
+ * printf
+ *
+ * BEGIN
+ * sys_enter_execv
+ * sys_enter_execv
  */
 int bpf_obj_name_cpy(char *dst, const char *src, unsigned int size)
 {
@@ -1094,8 +1107,21 @@ static int map_create(union bpf_attr *attr)
 		return PTR_ERR(map);
 
     /**
-     *
-     */
+	* dst and src must have at least "size" number of bytes.
+	* Return strlen on success and < 0 on error.
+	*
+	* $ sudo bpftrace -e 'kprobe:bpf_obj_name_cpy { printf("%s\n", str(arg1)); }'
+	*
+	* $ sudo /usr/share/bpftrace/tools/execsnoop.bt
+	*
+	* join
+	* elapsed
+	* printf
+	*
+	* BEGIN
+	* sys_enter_execv
+	* sys_enter_execv
+	*/
 	err = bpf_obj_name_cpy(map->name, attr->map_name,
 			               sizeof(attr->map_name));
 	if (err < 0)
@@ -1952,6 +1978,54 @@ static const struct bpf_prog_ops * const bpf_prog_types[] = {
 #define BPF_MAP_TYPE(_id, _ops)
 #define BPF_LINK_TYPE(_id, _name)
 #include <linux/bpf_types.h>
+/**
+ * @brief 展开 bpf_types.h
+ * +++++++++
+ */
+[BPF_PROG_TYPE_SOCKET_FILTER] = & sk_filter_prog_ops,
+[BPF_PROG_TYPE_SCHED_CLS] = & tc_cls_act_prog_ops,
+[BPF_PROG_TYPE_SCHED_ACT] = & tc_cls_act_prog_ops,
+[BPF_PROG_TYPE_XDP] = & xdp_prog_ops,
+
+[BPF_PROG_TYPE_CGROUP_SKB] = & cg_skb_prog_ops,
+[BPF_PROG_TYPE_CGROUP_SOCK] = & cg_sock_prog_ops,
+[BPF_PROG_TYPE_CGROUP_SOCK_ADDR] = & cg_sock_addr_prog_ops,
+
+[BPF_PROG_TYPE_LWT_IN] = & lwt_in_prog_ops,
+[BPF_PROG_TYPE_LWT_OUT] = & lwt_out_prog_ops,
+[BPF_PROG_TYPE_LWT_XMIT] = & lwt_xmit_prog_ops,
+[BPF_PROG_TYPE_LWT_SEG6LOCAL] = & lwt_seg6local_prog_ops,
+[BPF_PROG_TYPE_SOCK_OPS] = & sock_ops_prog_ops,
+[BPF_PROG_TYPE_SK_SKB] = & sk_skb_prog_ops,
+[BPF_PROG_TYPE_SK_MSG] = & sk_msg_prog_ops,
+[BPF_PROG_TYPE_FLOW_DISSECTOR] = & flow_dissector_prog_ops,
+
+
+[BPF_PROG_TYPE_KPROBE] = & kprobe_prog_ops,
+[BPF_PROG_TYPE_TRACEPOINT] = & tracepoint_prog_ops,
+[BPF_PROG_TYPE_PERF_EVENT] = & perf_event_prog_ops,
+[BPF_PROG_TYPE_RAW_TRACEPOINT] = & raw_tracepoint_prog_ops,
+[BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE] = & raw_tracepoint_writable_prog_ops,
+[BPF_PROG_TYPE_TRACING] = & tracing_prog_ops,
+
+
+[BPF_PROG_TYPE_CGROUP_DEVICE] = & cg_dev_prog_ops,
+[BPF_PROG_TYPE_CGROUP_SYSCTL] = & cg_sysctl_prog_ops,
+[BPF_PROG_TYPE_CGROUP_SOCKOPT] = & cg_sockopt_prog_ops,
+
+
+[BPF_PROG_TYPE_LIRC_MODE2] = & lirc_mode2_prog_ops,
+
+
+[BPF_PROG_TYPE_SK_REUSEPORT] = & sk_reuseport_prog_ops,
+[BPF_PROG_TYPE_SK_LOOKUP] = & sk_lookup_prog_ops,
+
+
+[BPF_PROG_TYPE_STRUCT_OPS] = & bpf_struct_ops_prog_ops,
+[BPF_PROG_TYPE_EXT] = & bpf_extension_prog_ops,
+
+[BPF_PROG_TYPE_LSM] = & lsm_prog_ops,
+
 #undef BPF_PROG_TYPE
 #undef BPF_MAP_TYPE
 #undef BPF_LINK_TYPE
@@ -2515,10 +2589,17 @@ static bool is_perfmon_prog_type(enum bpf_prog_type prog_type)
  * @param uattr
  * @return int
  *
- * BPF_PROG_LOAD
+ * bpf(BPF_PROG_LOAD, ...)
  */
 static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 {
+	/**
+	 * BPF_PROG_TYPE_KPROBE
+	 * BPF_PROG_TYPE_TRACEPOINT
+	 * BPF_PROG_TYPE_XDP
+	 * ...
+	 *
+	 */
 	enum bpf_prog_type type = attr->prog_type;
 
 	/**
@@ -2628,7 +2709,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	err = -EFAULT;
 
     /**
-     *
+     * 从用户空间拷贝指令
      */
 	if (copy_from_user(prog->insns, u64_to_user_ptr(attr->insns),
 			   bpf_prog_insn_size(prog)) != 0)
@@ -2652,6 +2733,23 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		goto free_prog;
 
 	prog->aux->load_time = ktime_get_boottime_ns();
+
+    /**
+	* dst and src must have at least "size" number of bytes.
+	* Return strlen on success and < 0 on error.
+	*
+	* $ sudo bpftrace -e 'kprobe:bpf_obj_name_cpy { printf("%s\n", str(arg1)); }'
+	*
+	* $ sudo /usr/share/bpftrace/tools/execsnoop.bt
+	*
+	* join
+	* elapsed
+	* printf
+	*
+	* BEGIN
+	* sys_enter_execv
+	* sys_enter_execv
+	*/
 	err = bpf_obj_name_cpy(prog->aux->name, attr->prog_name,
 			                sizeof(attr->prog_name));
 	if (err < 0)
