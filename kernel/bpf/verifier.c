@@ -1576,6 +1576,11 @@ static int check_subprogs(struct bpf_verifier_env *env)
 	/* now check that all jumps are within the same subprog */
 	subprog_start = subprog[cur_subprog].start;
 	subprog_end = subprog[cur_subprog + 1].start;
+
+	/**
+	 * @brief 遍历所有指令
+	 *
+	 */
 	for (i = 0; i < insn_cnt; i++) {
 		u8 code = insn[i].code;
 
@@ -1583,14 +1588,19 @@ static int check_subprogs(struct bpf_verifier_env *env)
 		    insn[i].imm == BPF_FUNC_tail_call &&
 		    insn[i].src_reg != BPF_PSEUDO_CALL)
 			subprog[cur_subprog].has_tail_call = true;
+
 		if (BPF_CLASS(code) == BPF_LD &&
 		    (BPF_MODE(code) == BPF_ABS || BPF_MODE(code) == BPF_IND))
 			subprog[cur_subprog].has_ld_abs = true;
+
 		if (BPF_CLASS(code) != BPF_JMP && BPF_CLASS(code) != BPF_JMP32)
 			goto next;
+
 		if (BPF_OP(code) == BPF_EXIT || BPF_OP(code) == BPF_CALL)
 			goto next;
+
 		off = i + insn[i].off + 1;
+
 		if (off < subprog_start || off >= subprog_end) {
 			verbose(env, "jump out of range from insn %d to %d\n", i, off);
 			return -EINVAL;
@@ -11989,6 +11999,11 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		env->insn_aux_data[i].orig_idx = i;
 	}
 	env->prog = *prog;
+
+	/**
+	 * 如：
+	 * [BPF_PROG_TYPE_KPROBE] = & kprobe_verifier_ops,
+	 */
 	env->ops = bpf_verifier_ops[env->prog->type];
 	is_priv = bpf_capable();
 
