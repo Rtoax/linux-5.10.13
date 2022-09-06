@@ -2808,6 +2808,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	perf_event_bpf_event(prog, PERF_BPF_EVENT_PROG_LOAD, 0);
 	bpf_audit_prog(prog, BPF_AUDIT_LOAD);
 
+	/**
+	 * @brief 分配一个 fd
+	 *
+	 */
 	err = bpf_prog_new_fd(prog);
 	if (err < 0)
 		bpf_prog_put(prog);
