@@ -216,6 +216,7 @@ COMPAT_SYSCALL_DEFINE2(ftruncate, unsigned int, fd, compat_ulong_t, length)
 }
 #endif
 
+// fallocate(2): manipulate file space 操纵文件空间
 int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 {
 	struct inode *inode = file_inode(file);
@@ -296,6 +297,14 @@ int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 		return -EOPNOTSUPP;
 
 	file_start_write(file);
+
+	/**
+	 * blkdev_fallocate()
+	 * btrfs_fallocate()
+	 * ext4_fallocate()
+	 * fuse_file_fallocate()
+	 * xfs_file_fallocate()
+	 */
 	ret = file->f_op->fallocate(file, mode, offset, len);
 
 	/*
@@ -313,6 +322,7 @@ int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 }
 EXPORT_SYMBOL_GPL(vfs_fallocate);
 
+// manipulate file space 操纵文件空间
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
 	struct fd f = fdget(fd);
@@ -325,6 +335,25 @@ int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 	return error;
 }
 
+/**
+ * @brief manipulate file space 操纵文件空间
+ *
+ * 这是一个不可移植的、特定于 Linux 的系统调用。 有关确保为文件分配空间的可移植的 POSIX.1
+ * 指定的方法，请参阅 posix_fallocate(3)。
+ *
+ * fallocate() 允许调用者直接操作为 fd 引用的文件分配的磁盘空间，字节范围从 offset 开始，
+ * 持续到 len 个字节。
+ *
+ * mode 参数确定要在给定范围上执行的操作。 支持的操作的详细信息在下面的小节中给出。
+ *
+ * @param fd
+ * @param mode FALLOC_FL_KEEP_SIZE, FALLOC_FL_UNSHARE ...
+ *             fallocate() 的默认操作（即模式为零）在 offset 和 len 指定的范围内分配
+ *             磁盘空间。
+ * @param offset
+ * @param len
+ * @return int
+ */
 int fallocate(int fd, int mode, off_t offset, off_t len){}//++++
 SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 {

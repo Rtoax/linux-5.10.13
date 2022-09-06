@@ -844,6 +844,10 @@ xfs_break_layouts(
 		 FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE |	\
 		 FALLOC_FL_INSERT_RANGE | FALLOC_FL_UNSHARE_RANGE)
 
+/**
+ * fallocate(2) for xfs
+ * fallocate(2): manipulate file space 操纵文件空间
+ */
 STATIC long
 xfs_file_fallocate(
 	struct file		*file,
@@ -923,7 +927,9 @@ xfs_file_fallocate(
 		error = xfs_collapse_file_space(ip, offset, len);
 		if (error)
 			goto out_unlock;
+
 	} else if (mode & FALLOC_FL_INSERT_RANGE) {
+
 		loff_t		isize = i_size_read(inode);
 
 		if (!xfs_is_falloc_aligned(ip, offset, len)) {
@@ -947,9 +953,12 @@ xfs_file_fallocate(
 			goto out_unlock;
 		}
 		do_file_insert = true;
+
 	} else {
+
 		flags |= XFS_PREALLOC_SET;
 
+		// fallocate() 的默认操作（即模式为零）在 offset 和 len 指定的范围内分配磁盘空间。
 		if (!(mode & FALLOC_FL_KEEP_SIZE) &&
 		    offset + len > i_size_read(inode)) {
 			new_size = offset + len;
@@ -1009,7 +1018,11 @@ xfs_file_fallocate(
 	if (error)
 		goto out_unlock;
 
-	/* Change file size if needed */
+	/**
+	 * Change file size if needed
+	 *
+	 * fallocate() 的默认操作（即模式为零）在 offset 和 len 指定的范围内分配磁盘空间。
+	 */
 	if (new_size) {
 		struct iattr iattr;
 
