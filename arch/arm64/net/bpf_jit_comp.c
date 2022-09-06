@@ -422,6 +422,8 @@ static int add_exception_handler(const struct bpf_insn *insn,
  * 0  - successfully JITed an 8-byte eBPF instruction.
  * >0 - successfully JITed a 16-byte eBPF instruction.
  * <0 - failed to JIT.
+ *
+ * 和 x86_64 类似
  */
 static int build_insn(const struct bpf_insn *insn, struct jit_ctx *ctx,
 		      bool extra_pass)
@@ -906,6 +908,13 @@ emit_cond_jmp:
 	return 0;
 }
 
+/**
+ * @brief
+ *
+ * @param ctx
+ * @param extra_pass
+ * @return int
+ */
 static int build_body(struct jit_ctx *ctx, bool extra_pass)
 {
 	const struct bpf_prog *prog = ctx->prog;
@@ -919,6 +928,8 @@ static int build_body(struct jit_ctx *ctx, bool extra_pass)
 	 * [....]
 	 * - offset[3] - offset of the end of 3rd instruction,
 	 *   start of 4th instruction
+	 *
+	 * 遍历所有指令
 	 */
 	for (i = 0; i < prog->len; i++) {
 		const struct bpf_insn *insn = &prog->insnsi[i];
@@ -975,6 +986,12 @@ struct arm64_jit_data {
 	struct jit_ctx ctx;
 };
 
+/**
+ * @brief
+ *
+ * @param prog
+ * @return struct bpf_prog*
+ */
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
 	int image_size, prog_size, extable_size;
@@ -1035,12 +1052,15 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 		goto out_off;
 	}
 
+	// prologue: 序幕
 	if (build_prologue(&ctx, was_classic)) {
 		prog = orig_prog;
 		goto out_off;
 	}
 
 	ctx.epilogue_offset = ctx.idx;
+
+	// epilogue: 结语
 	build_epilogue(&ctx);
 
 	extable_size = prog->aux->num_exentries *

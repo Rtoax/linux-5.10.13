@@ -17,6 +17,14 @@
 #include <asm/text-patching.h>
 #include <asm/asm-prototypes.h>
 
+/**
+ * @brief 解析一条指令到 prog 指向的内存里
+ *
+ * @param ptr
+ * @param bytes
+ * @param len
+ * @return u8*
+ */
 static u8 *emit_code(u8 *ptr, u32 bytes, unsigned int len)
 {
 	if (len == 1)
@@ -816,9 +824,17 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 	int insn_cnt = bpf_prog->len;
 	bool tail_call_seen = false;
 	bool seen_exit = false;
+
+	// 内存大小
+	// 128 * 64 = 8192
 	u8 temp[BPF_MAX_INSN_SIZE + BPF_INSN_SAFETY];
 	int i, cnt = 0, excnt = 0;
 	int proglen = 0;
+
+	/**
+	 * @brief JIT 将解析的指令s 写到这个内存区
+	 *
+	 */
 	u8 *prog = temp;
 
 	detect_reg_usage(insn, insn_cnt, callee_regs_used,
@@ -827,12 +843,17 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 	/* tail call's presence in current prog implies it is reachable */
 	tail_call_reachable |= tail_call_seen;
 
+	// prologue: 序幕
 	emit_prologue(&prog, bpf_prog->aux->stack_depth,
 		      bpf_prog_was_classic(bpf_prog), tail_call_reachable,
 		      bpf_prog->aux->func_idx != 0);
 	push_callee_regs(&prog, callee_regs_used);
 	addrs[0] = prog - temp;
 
+	/**
+	 * @brief 遍历所有指令
+	 *
+	 */
 	for (i = 1; i <= insn_cnt; i++, insn++) {
 		const s32 imm32 = insn->imm;
 		u32 dst_reg = insn->dst_reg;
@@ -845,6 +866,10 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 
 		switch (insn->code) {
 			/* ALU */
+		/**
+		 * @brief 算术指令
+		 *
+		 */
 		case BPF_ALU | BPF_ADD | BPF_X:
 		case BPF_ALU | BPF_SUB | BPF_X:
 		case BPF_ALU | BPF_AND | BPF_X:
@@ -1034,6 +1059,10 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 			break;
 		}
 			/* Shifts */
+		/**
+		 * @brief 位移指令
+		 *
+		 */
 		case BPF_ALU | BPF_LSH | BPF_K:
 		case BPF_ALU | BPF_RSH | BPF_K:
 		case BPF_ALU | BPF_ARSH | BPF_K:
@@ -1266,6 +1295,10 @@ xadd:			if (is_imm8(insn->off))
 			break;
 
 			/* call */
+		/**
+		 * @brief 调用指令
+		 *
+		 */
 		case BPF_JMP | BPF_CALL:
 			func = (u8 *) __bpf_call_base + imm32;
 			if (tail_call_reachable) {
@@ -1292,6 +1325,10 @@ xadd:			if (is_imm8(insn->off))
 			break;
 
 			/* cond jump */
+		/**
+		 * @brief 跳转指令
+		 *
+		 */
 		case BPF_JMP | BPF_JEQ | BPF_X:
 		case BPF_JMP | BPF_JNE | BPF_X:
 		case BPF_JMP | BPF_JGT | BPF_X:
@@ -1503,7 +1540,8 @@ emit_jmp:
 		proglen += ilen;
 		addrs[i] = proglen;
 		prog = temp;
-	}
+
+	} // for (i = 1; i <= insn_cnt; i++, insn++)
 
 	if (image && excnt != bpf_prog->aux->num_exentries) {
 		pr_err("extable is not populated\n");
@@ -1990,6 +2028,15 @@ struct x64_jit_data {
 	struct jit_context ctx;
 };
 
+/**
+* $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
+*
+* do_jit+1
+* bpf_int_jit_compile+329
+* bpf_prog_select_runtime+267
+* bpf_prog_load+1191
+* __sys_bpf+431
+*/
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
 	struct bpf_binary_header *header = NULL;

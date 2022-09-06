@@ -2781,7 +2781,14 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 
     /**
      *
-     */
+	* $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
+	*
+	* do_jit+1
+	* bpf_int_jit_compile+329
+	* bpf_prog_select_runtime+267
+	* bpf_prog_load+1191
+	* __sys_bpf+431
+	*/
 	prog = bpf_prog_select_runtime(prog, &err);
 	if (err < 0)
 		goto free_used_maps;
