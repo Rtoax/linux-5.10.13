@@ -2036,7 +2036,12 @@ struct x64_jit_data {
 * bpf_prog_select_runtime+267
 * bpf_prog_load+1191
 * __sys_bpf+431
-*/
+*
+ * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
+ *
+ * @param prog
+ * @return struct bpf_prog*
+ */
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
 	struct bpf_binary_header *header = NULL;

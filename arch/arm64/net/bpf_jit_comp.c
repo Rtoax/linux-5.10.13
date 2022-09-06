@@ -987,7 +987,7 @@ struct arm64_jit_data {
 };
 
 /**
- * @brief
+ * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
  *
  * @param prog
  * @return struct bpf_prog*

@@ -2296,6 +2296,12 @@ bool bpf_jit_needs_zext(void)
 	return true;
 }
 
+/**
+ * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
+ *
+ * @param prog
+ * @return struct bpf_prog*
+ */
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
 	struct bpf_binary_header *header = NULL;
