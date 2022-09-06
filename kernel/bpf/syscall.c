@@ -2131,6 +2131,11 @@ static int bpf_prog_alloc_id(struct bpf_prog *prog)
 
 	idr_preload(GFP_KERNEL);
 	spin_lock_bh(&prog_idr_lock);
+
+	/**
+	 * @brief 获取一个 ID
+	 *
+	 */
 	id = idr_alloc_cyclic(&prog_idr, prog, 1, INT_MAX, GFP_ATOMIC);
 	if (id > 0)
 		prog->aux->id = id;
