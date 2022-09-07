@@ -683,13 +683,17 @@ noinline void __ref rest_init(void)
 	struct task_struct *tsk;
 	int pid;
 
-	rcu_scheduler_starting();   /* 调度器启动 */
+	/* 调度器启动 */
+	rcu_scheduler_starting();
+
 	/*
 	 * We need to spawn init first so that it obtains pid 1, however
 	 * the init task will end up wanting to create kthreads, which, if
 	 * we schedule it before we create kthreadd, will OOPS.
-	 *//* 创建内核线程 `PID = 1` for `init` */
-	pid = kernel_thread(kernel_init, NULL, CLONE_FS);/* init/systemd 内核线程 PID=1*/
+	 */
+	/* 创建内核线程 `PID = 1` for `init` */
+	/* init/systemd 内核线程 PID=1*/
+	pid = kernel_thread(kernel_init, NULL, CLONE_FS);
 	/*
 	 * Pin init on the boot CPU. Task migration is not properly working
 	 * until sched_init_smp() has been run. It will set the allowed
@@ -704,11 +708,12 @@ noinline void __ref rest_init(void)
 	numa_default_policy();
 
     //`PID = 2` for `kthreadd`
-	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);    /* kthreadd 内核线程 PID=2 */
+	/* kthreadd 内核线程 PID=2 */
+	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 
 	rcu_read_lock();//marks the beginning of an [RCU] read-side critical section
 
-        //returns pointer to the `task_struct` by the given pid
+	//returns pointer to the `task_struct` by the given pid
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 
 	rcu_read_unlock();//marks the end of an RCU read-side critical section
@@ -723,7 +728,8 @@ noinline void __ref rest_init(void)
 	system_state = SYSTEM_SCHEDULING;
 
     //Completions is a code synchronization mechanism
-	complete(&kthreadd_done);   /* kernel_init 中 等待 此处完成 */
+	/* kernel_init 中 等待 此处完成 */
+	complete(&kthreadd_done);
 
 	/*
 	 * The boot idle thread must execute schedule()
@@ -905,7 +911,7 @@ static void __init mm_init(void)/* 内存管理初始化 */
 }
 
 /**
- *
+ * start_kernel() 最后的调用
  */
 void __init __weak arch_call_rest_init(void)
 {
@@ -1581,14 +1587,15 @@ void __weak free_initmem(void)
 }
 
 /**
- *
+ * 执行操作系统的 第一个线程
+ * init/systemd 内核线程 PID=1
  */
-static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个线程 */
+static int __ref kernel_init(void *unused)
 {
 	int ret;
 
     //waits for the completion of the `kthreadd` setup
-	kernel_init_freeable(); /* 等待 rest_init() 中的 complete(&kthreadd_done); 执行 */
+	kernel_init_freeable();
 
 	/* need to finish all async __init code before freeing the memory */
     //waits until all asynchronous function calls have been done
@@ -1606,10 +1613,13 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 	/*
 	 * Kernel mappings are now finalized - update the userspace page-table
 	 * to finalize PTI.
+	 *
+	 * PTI:页表隔离
 	 */
-	pti_finalize(); /* PTI:页表隔离 */
+	pti_finalize();
 
-	system_state = SYSTEM_RUNNING;  /* 系统运行 */
+	/* 系统运行 */
+	system_state = SYSTEM_RUNNING;
 
 	numa_default_policy();
 
@@ -1635,7 +1645,8 @@ static int __ref kernel_init(void *unused)  /* 执行操作系统的 第一个�
 	 * tries to run the `init` process
 	 */
 	if (execute_command) {
-		ret = run_init_process(execute_command);    /* 运行第一个线程 init -> systemd */
+		/* 运行第一个线程 init -> systemd */
+		ret = run_init_process(execute_command);
 		if (!ret)
 			return 0;
 		panic("Requested init %s failed (error %d).",
@@ -1683,6 +1694,7 @@ void __init console_on_rootfs(void)
 }
 
 /**
+ * 等待 rest_init() 中的 complete(&kthreadd_done); 执行
  *
  */
 static noinline void __init kernel_init_freeable(void)
@@ -1722,7 +1734,11 @@ static noinline void __init kernel_init_freeable(void)
 	smp_init();
 	sched_init_smp();   /* initialize scheduler */
 
+	/**
+	 *
+	 */
 	padata_init();
+
 	page_alloc_init_late();
 	/* Initialize page ext after all struct pages are initialized. */
 	page_ext_init();
@@ -1732,6 +1748,11 @@ static noinline void __init kernel_init_freeable(void)
      * Now we can finally start doing some real work..
      */
 
+	/**
+	 * do_initcall_level()
+	 *   do_one_initcall()
+	 *     bpf_init() ...
+	 */
 	do_basic_setup();
 
 	kunit_run_all_tests();

@@ -829,7 +829,8 @@ static int __init bpf_init(void)
 
 	mutex_init(&bpf_preload_lock);
 
-	ret = sysfs_create_mount_point(fs_kobj, "bpf"); /* /sys/fs/bpf/ */
+	/* /sys/fs/bpf/ */
+	ret = sysfs_create_mount_point(fs_kobj, "bpf");
 	if (ret)
 		return ret;
 
