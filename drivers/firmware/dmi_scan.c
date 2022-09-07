@@ -789,11 +789,14 @@ static int __init dmi_init(void)
 	 * Set up dmi directory at /sys/firmware/dmi. This entry should stay
 	 * even after farther error, as it can be used by other modules like
 	 * dmi-sysfs.
+	 *
+	 * /sys/firmware/dmi/
 	 */
 	dmi_kobj = kobject_create_and_add("dmi", firmware_kobj);
 	if (!dmi_kobj)
 		goto err;
 
+	// /sys/firmware/dmi/tables/
 	tables_kobj = kobject_create_and_add("tables", dmi_kobj);
 	if (!tables_kobj)
 		goto err;
@@ -804,12 +807,20 @@ static int __init dmi_init(void)
 
 	bin_attr_smbios_entry_point.size = smbios_entry_point_size;
 	bin_attr_smbios_entry_point.private = smbios_entry_point;
+	/**
+	 * /sys/firmware/dmi/tables/smbios_entry_point
+	 *
+	 */
 	ret = sysfs_create_bin_file(tables_kobj, &bin_attr_smbios_entry_point);
 	if (ret)
 		goto err_unmap;
 
 	bin_attr_DMI.size = dmi_len;
 	bin_attr_DMI.private = dmi_table;
+	/**
+	 * /sys/firmware/dmi/tables/DMI
+	 *
+	 */
 	ret = sysfs_create_bin_file(tables_kobj, &bin_attr_DMI);
 	if (!ret)
 		return 0;
