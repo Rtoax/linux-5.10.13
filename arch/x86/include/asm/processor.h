@@ -337,6 +337,12 @@ static inline void load_cr3(pgd_t *pgdir)/* CR3 寄存器保存全局页表 */
 //
 //} __attribute__((packed));
 #else
+/**
+ * @brief 任务状态段TSS（Task-state segment）是一块104字节的内存，用于存储大部分寄存器的值。
+ * CPU中无进程和线程的概念（这是操作系统的概念），CPU中只有任务概念（任务对应操作系统的线程）。
+ * 1个CPU核只有一个TR寄存器，存储了当前TSS。
+ *
+ */
 struct x86_hw_tss { /* `Task State Segments` */
 	u32			reserved1;
 	u64			sp0;
@@ -434,13 +440,19 @@ struct x86_io_bitmap {
 	unsigned long		mapall[IO_BITMAP_LONGS + 1];
 };
 
-struct tss_struct { /* `Task State Segments` */
+/**
+ * @brief 任务状态段TSS（Task-state segment）是一块104字节的内存，用于存储大部分寄存器的值。
+ * CPU中无进程和线程的概念（这是操作系统的概念），CPU中只有任务概念（任务对应操作系统的线程）。
+ * 1个CPU核只有一个TR寄存器，存储了当前TSS。
+ *
+ */
+struct tss_struct {
 	/*
 	 * The fixed hardware portion.  This must not cross a page boundary
 	 * at risk of violating the SDM's advice and potentially triggering
 	 * errata.
 	 */
-	struct x86_hw_tss	x86_tss;    /* `Task State Segments` */
+	struct x86_hw_tss	x86_tss;
 
 	struct x86_io_bitmap	io_bitmap;
 } __aligned(PAGE_SIZE);

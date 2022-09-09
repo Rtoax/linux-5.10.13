@@ -52,6 +52,10 @@
  * so they are allowed to end up in the .data..cacheline_aligned
  * section. Since TSS's are completely CPU-local, we want them
  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
+ *
+ * @brief 任务状态段TSS（Task-state segment）是一块104字节的内存，用于存储大部分寄存器的值。
+ * CPU中无进程和线程的概念（这是操作系统的概念），CPU中只有任务概念（任务对应操作系统的线程）。
+ * 1个CPU核只有一个TR寄存器，存储了当前TSS。
  */
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {
