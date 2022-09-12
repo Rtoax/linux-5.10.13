@@ -54,9 +54,9 @@ int array_map_alloc_check(union bpf_attr *attr)
 	int numa_node = bpf_map_attr_numa_node(attr);
 
 	/* check sanity of attributes */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (attr->max_entries == 0 || attr->key_size != 4 ||
 	    attr->value_size == 0 ||
 	    attr->map_flags & ~ARRAY_CREATE_FLAG_MASK ||
@@ -64,23 +64,23 @@ int array_map_alloc_check(union bpf_attr *attr)
 	    (percpu && numa_node != NUMA_NO_NODE))
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (attr->map_type != BPF_MAP_TYPE_ARRAY &&
 	    attr->map_flags & (BPF_F_MMAPABLE | BPF_F_INNER_MAP))
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (attr->map_type != BPF_MAP_TYPE_PERF_EVENT_ARRAY &&
 	    attr->map_flags & BPF_F_PRESERVE_ELEMS)
 		return -EINVAL;
 
-    /**
-     *  检查大小
-     */
+	/**
+	 *  检查大小
+	 */
 	if (attr->value_size > KMALLOC_MAX_SIZE)
 		/* if value_size is bigger, the user space won't be able to
 		 * access the elements.
@@ -95,29 +95,29 @@ int array_map_alloc_check(union bpf_attr *attr)
  */
 static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 {
-    /**
-     *  per CPU 类型
-     */
+	/**
+	 *  per CPU 类型
+	 */
 	bool percpu = attr->map_type == BPF_MAP_TYPE_PERCPU_ARRAY;
 	int ret, numa_node = bpf_map_attr_numa_node(attr);
 	u32 elem_size, index_mask, max_entries;
 	bool bypass_spec_v1 = bpf_bypass_spec_v1();
 	u64 cost, array_size, mask64;
 
-    /**
-     *  映射的内存
-     */
+	/**
+	 *  映射的内存
+	 */
 	struct bpf_map_memory mem;
 	struct bpf_array *array;
 
-    /**
-     *  元素大小
-     */
+	/**
+	 *  元素大小
+	 */
 	elem_size = round_up(attr->value_size, 8);
 
-    /**
-     *  最大个数
-     */
+	/**
+	 *  最大个数
+	 */
 	max_entries = attr->max_entries;
 
 	/* On 32 bit archs roundup_pow_of_two() with max_entries that has
@@ -139,9 +139,9 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 			return ERR_PTR(-E2BIG);
 	}
 
-    /**
-     *  array 数组大小
-     */
+	/**
+	 *  array 数组大小
+	 */
 	array_size = sizeof(*array);
 	if (percpu) {
 		array_size += (u64) max_entries * sizeof(void *);
@@ -162,9 +162,9 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 	if (percpu)
 		cost += (u64)attr->max_entries * elem_size * num_possible_cpus();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = bpf_map_charge_init(&mem, cost);
 	if (ret < 0)
 		return ERR_PTR(ret);
@@ -190,13 +190,13 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 		array = data + PAGE_ALIGN(sizeof(struct bpf_array))
 			- offsetof(struct bpf_array, value);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else {
-        /**
-         *
-         */
+	    /**
+	     *
+	     */
 		array = bpf_map_area_alloc(array_size, numa_node);
 	}
 	if (!array) {
@@ -209,14 +209,14 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 	/* copy mandatory map attributes */
 	bpf_map_init_from_attr(&array->map, attr);
 
-    /**
-     *  拷贝，并将  mem 清零
-     */
+	/**
+	 *  拷贝，并将  mem 清零
+	 */
 	bpf_map_charge_move(&array->map.memory, &mem);
 
-    /**
-     *  元素大小
-     */
+	/**
+	 *  元素大小
+	 */
 	array->elem_size = elem_size;
 
 	if (percpu && bpf_array_alloc_percpu(array)) {
@@ -225,9 +225,9 @@ static struct bpf_map *array_map_alloc(union bpf_attr *attr)
 		return ERR_PTR(-ENOMEM);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return &array->map;
 }
 
@@ -814,16 +814,16 @@ int bpf_fd_array_map_update_elem(struct bpf_map *map, struct file *map_file,
 
 	ufd = *(u32 *)value;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	new_ptr = map->ops->map_fd_get_ptr(map, map_file, ufd);
 	if (IS_ERR(new_ptr))
 		return PTR_ERR(new_ptr);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (map->ops->map_poke_run) {
 		mutex_lock(&array->aux->poke_mutex);
 		old_ptr = xchg(array->ptrs + index, new_ptr);
@@ -833,9 +833,9 @@ int bpf_fd_array_map_update_elem(struct bpf_map *map, struct file *map_file,
 		old_ptr = xchg(array->ptrs + index, new_ptr);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (old_ptr)
 		map->ops->map_fd_put_ptr(old_ptr);
 	return 0;
