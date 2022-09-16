@@ -160,85 +160,85 @@ ftrace_func_t ftrace_ops_get_func(struct ftrace_ops *ops);
  * struct ftrace_ops.flags
  */
 enum {
-    /**
-     *  set by ftrace, when ops is recording
-     */
+	/**
+	 *  set by ftrace, when ops is recording
+	 */
 	FTRACE_OPS_FL_ENABLED			= BIT(0),
 	/**
-     *  set by ftrace when ops is dynamically allocated
-     */
+	 *  set by ftrace when ops is dynamically allocated
+	 */
 	FTRACE_OPS_FL_DYNAMIC			= BIT(1),
-    /**
-     *  set by caller, to record regs
-     *  fails if saving regs is not supported
-     */
+	/**
+	 *  set by caller, to record regs
+	 *  fails if saving regs is not supported
+	 */
 	FTRACE_OPS_FL_SAVE_REGS			= BIT(2),
-    /**
-     *  set by caller, save regs if supported
-     *  doesn’t fail register if not supported
-     */
+	/**
+	 *  set by caller, save regs if supported
+	 *  doesn’t fail register if not supported
+	 */
 	FTRACE_OPS_FL_SAVE_REGS_IF_SUPPORTED	= BIT(3),
-    /**
-     *  If ftrace_ops.func handles recursion
-     *  Otherwise, ftrace will handle it
-     */
+	/**
+	 *  If ftrace_ops.func handles recursion
+	 *  Otherwise, ftrace will handle it
+	 */
 	FTRACE_OPS_FL_RECURSION_SAFE		= BIT(4),
-    /**
-     *  used by ftrace for stub functions
-     *  ftrace 用于存根函数
-     */
+	/**
+	 *  used by ftrace for stub functions
+	 *  ftrace 用于存根函数
+	 */
 	FTRACE_OPS_FL_STUB			= BIT(5),
-    /**
-     *  used by ftrace when ftrace_ops is first used
-     */
+	/**
+	 *  used by ftrace when ftrace_ops is first used
+	 */
 	FTRACE_OPS_FL_INITIALIZED		= BIT(6),
-    /**
-     *  ftrace_ops has been deleted
-     *  used by ftrace buffer instances
-     */
+	/**
+	 *  ftrace_ops has been deleted
+	 *  used by ftrace buffer instances
+	 */
 	FTRACE_OPS_FL_DELETED			= BIT(7),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_ADDING			= BIT(8),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_REMOVING			= BIT(9),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_MODIFYING			= BIT(10),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_ALLOC_TRAMP		= BIT(11),
-    /**
-     *  ops可以修改IP寄存器。 这只能用 SAVE_REGS 设置。
+	/**
+	 *  ops可以修改IP寄存器。 这只能用 SAVE_REGS 设置。
 	 *  如果另一个具有此标志集的操作已注册此操作将注册的任何功能，
 	 *  则此操作将无法注册或 set_filter_ip。
-     */
+	 */
 	FTRACE_OPS_FL_IPMODIFY			= BIT(12),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_PID			= BIT(13),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_RCU			= BIT(14),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_TRACE_ARRAY		= BIT(15),
-    /**
-     *	Set when the ops is permanent and should not be affected by
+	/**
+	 *	Set when the ops is permanent and should not be affected by
  	 *  ftrace_enabled.
-     */
+	 */
 	FTRACE_OPS_FL_PERMANENT                 = BIT(16),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_OPS_FL_DIRECT			= BIT(17),
 };
 
@@ -246,10 +246,10 @@ enum {
 /* The hash used to know what functions callbacks trace */
 struct ftrace_ops_hash {
 	struct ftrace_hash __rcu	*notrace_hash;  /*Functions in notrace_hash will not be traced
-                                                  even if they exist in filter_hash.
-                                                  empty means OK to trace all */
+	                                              even if they exist in filter_hash.
+	                                              empty means OK to trace all */
 	struct ftrace_hash __rcu	*filter_hash;   /* what functions to trace
-                                                  empty means to trace all */
+	                                              empty means to trace all */
 	struct mutex			regex_lock;         /* used to protect the hashes */
 };
 
@@ -283,42 +283,45 @@ void ftrace_free_mem(struct module *mod, void *start, void *end);
  * 2. kprobes
  */
 struct ftrace_ops {
-    /**
-     *  将替换 `ftrace_stub()`
-     *  ------------------------
-     *  schedule
-     *    push %rbp
-     *    mov %rsp,%rbp
-     *    call ftrace_caller -----> ftrace_caller: (mcount)
-     *                                save regs
-     *                                load args
-     *                              ftrace_call:
-     *                                call ftrace_stub <--> ftrace_ops.func
-     *                                restore regs
-     *                              ftrace_stub:
-     *                                retq
-     *
-     *
-     *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
-     */
+	/**
+	 *  将替换 `ftrace_stub()`
+	 *  ------------------------
+	 *  schedule
+	 *    push %rbp
+	 *    mov %rsp,%rbp
+	 *    call ftrace_caller -----> ftrace_caller: (mcount)
+	 *                                save regs
+	 *                                load args
+	 *                              ftrace_call:
+	 *                                call ftrace_stub <--> ftrace_ops.func
+	 *                                restore regs
+	 *                              ftrace_stub:
+	 *                                retq
+	 *
+	 *
+	 *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
+	 *
+	 *
+	 * ftrace_list_end.func = ftrace_stub()
+	 */
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
-    /**
-     *	标志
-     */
+	/**
+	 *	标志
+	 */
 	unsigned long			flags;  /* FTRACE_OPS_FL_ENABLED ... */
 	/**
 	 * 私有变量
 	 *
 	 */
 	void				*private;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ftrace_func_t			saved_func;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 #ifdef CONFIG_DYNAMIC_FTRACE
 	struct ftrace_ops_hash		local_hash;
 	struct ftrace_ops_hash		*func_hash;
@@ -551,17 +554,17 @@ bool is_ftrace_trampoline(unsigned long addr);
  * struct dyn_ftrace.flags
  */
 enum {
-    /**
-     *  函数 正在被追踪
-     */
+	/**
+	 *  函数 正在被追踪
+	 */
 	FTRACE_FL_ENABLED	= (1UL << 31),
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	FTRACE_FL_REGS		= (1UL << 30),
 	/**
-     *
-     */
+	 *
+	 */
 	FTRACE_FL_REGS_EN	= (1UL << 29),
 	FTRACE_FL_TRAMP		= (1UL << 28),
 	FTRACE_FL_TRAMP_EN	= (1UL << 27),
@@ -581,23 +584,23 @@ enum {
  *  ftrace
  */
 struct dyn_ftrace {
-    /**
-     *  指向 函数地址 address of mcount call-site
+	/**
+	 *  指向 函数地址 address of mcount call-site
 	 *  也就是每个函数开头 mcount()/_mcount() 的地址, 在 ftrace_process_locs() 赋值
 	 *  或者说是 函数本身的地址
-     */
+	 */
 	unsigned long		ip; /* address of mcount call-site */
-    /**
-     *  FTRACE_FL_XXX
+	/**
+	 *  FTRACE_FL_XXX
 	 *
 	 *  0-23 bits is a counter
 	 *  23-..
-     */
+	 */
 	unsigned long		flags;
 
-    /**
-     *  x86 和 arm64 均为空
-     */
+	/**
+	 *  x86 和 arm64 均为空
+	 */
 	struct dyn_arch_ftrace	arch;
 };
 
@@ -709,9 +712,9 @@ SYM_INNER_LABEL(ftrace_caller_op_ptr, SYM_L_GLOBAL)
 	movq $0, %rcx
 
 SYM_INNER_LABEL(ftrace_call, SYM_L_GLOBAL)
-    /**
-     *  ftrace注册后，这个函数将被替换为 ftrace_ops.func
-     */
+	/**
+	 *  ftrace注册后，这个函数将被替换为 ftrace_ops.func
+	 */
 	call ftrace_stub
 
 	restore_mcount_regs
