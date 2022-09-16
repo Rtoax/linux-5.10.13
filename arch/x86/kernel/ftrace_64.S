@@ -39,6 +39,15 @@
  * it. For this reason, the size of the pt_regs structure will be
  * allocated on the stack and the required mcount registers will
  * be saved in the locations that pt_regs has them in.
+ *
+ * gdb 调试内核看起来是这样的
+ *
+ * Dump of assembler code for function start_kernel:
+ * => 0xffffffff83429536 <+0>:	call   0xffffffff81067c70 <__fentry__> nops ==>> ftrace_caller
+ *    0xffffffff8342953b <+5>:	push   %rbp
+ *    0xffffffff8342953c <+6>:	mov    $0xffffffff82a1a9c0,%rdi
+ *    0xffffffff83429543 <+13>:	sub    $0x18,%rsp
+ *    0xffffffff83429547 <+17>:	mov    %gs:0x28,%rax
  */
 
 /*
@@ -134,6 +143,16 @@
  */
 #ifdef CONFIG_DYNAMIC_FTRACE
 
+/**
+ * gdb 调试内核看起来是这样的
+ *
+ * Dump of assembler code for function start_kernel:
+ * => 0xffffffff83429536 <+0>:	call   0xffffffff81067c70 <__fentry__> nops ==>> ftrace_caller
+ *    0xffffffff8342953b <+5>:	push   %rbp
+ *    0xffffffff8342953c <+6>:	mov    $0xffffffff82a1a9c0,%rdi
+ *    0xffffffff83429543 <+13>:	sub    $0x18,%rsp
+ *    0xffffffff83429547 <+17>:	mov    %gs:0x28,%rax
+ */
 SYM_FUNC_START(__fentry__)
 	retq
 SYM_FUNC_END(__fentry__)
@@ -324,6 +343,15 @@ SYM_FUNC_END(ftrace_regs_caller)
 
 /**
  *	! CONFIG_DYNAMIC_FTRACE
+ *
+ * gdb 调试内核看起来是这样的
+ *
+ * Dump of assembler code for function start_kernel:
+ * => 0xffffffff83429536 <+0>:	call   0xffffffff81067c70 <__fentry__> nops ==>> ftrace_caller
+ *    0xffffffff8342953b <+5>:	push   %rbp
+ *    0xffffffff8342953c <+6>:	mov    $0xffffffff82a1a9c0,%rdi
+ *    0xffffffff83429543 <+13>:	sub    $0x18,%rsp
+ *    0xffffffff83429547 <+17>:	mov    %gs:0x28,%rax
  */
 SYM_FUNC_START(__fentry__)
 	cmpq $ftrace_stub, ftrace_trace_function

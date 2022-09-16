@@ -1684,6 +1684,16 @@ static int decode_sections(struct objtool_file *file)
 	return 0;
 }
 
+/**
+ * gdb 调试内核看起来是这样的
+ *
+ * Dump of assembler code for function start_kernel:
+ * => 0xffffffff83429536 <+0>:	call   0xffffffff81067c70 <__fentry__> nops ==>> ftrace_caller
+ *    0xffffffff8342953b <+5>:	push   %rbp
+ *    0xffffffff8342953c <+6>:	mov    $0xffffffff82a1a9c0,%rdi
+ *    0xffffffff83429543 <+13>:	sub    $0x18,%rsp
+ *    0xffffffff83429547 <+17>:	mov    %gs:0x28,%rax
+ */
 static bool is_fentry_call(struct instruction *insn)
 {
 	if (insn->type == INSN_CALL && insn->call_dest &&
