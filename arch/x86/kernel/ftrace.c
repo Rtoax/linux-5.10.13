@@ -218,27 +218,47 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
 	return -EINVAL;
 }
 
-int ftrace_update_ftrace_func(ftrace_func_t func)   /*  更新函数*/
+ /**
+ *  更新函数
+ *  ------------------------
+ *  schedule
+ *    push %rbp
+ *    mov %rsp,%rbp
+ *    call ftrace_caller -----> ftrace_caller: (mcount)
+ *                                save regs
+ *                                load args
+ *                              ftrace_call:
+ *                                call ftrace_stub <--> ftrace_ops.func
+ *                                restore regs                     ^^^^
+ *                              ftrace_stub:
+ *                                retq
+ *
+ *
+ *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
+ */
+int ftrace_update_ftrace_func(ftrace_func_t func)
 {
 	unsigned long ip;
 	const char *new;
 
-	/*
-	call ftrace_call 替换为>>
-	call func -> ftrace_ops_list_func
-	并把它写到 mcount
-	*/
-	ip = (unsigned long)(&ftrace_call); /* arch/x86/kernel/ftrace_64.S */
-	new = ftrace_call_replace(ip, (unsigned long)func); /* 用 func 替换 ftrace_call */
+	/**
+	 * call ftrace_call 替换为>>
+	 * call func -> ftrace_ops_list_func
+	 * 并把它写到 mcount
+	 */
+	/* ftrace_call: arch/x86/kernel/ftrace_64.S */
+	ip = (unsigned long)(&ftrace_call);
+	/* 用 func 替换 ftrace_call */
+	new = ftrace_call_replace(ip, (unsigned long)func);
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
-	/*
-	call ftrace_regs_call 替换为>>
-	call func -> ftrace_regs_call
-	并把它写到 mcount
-	*/
+	/**
+	 * call ftrace_regs_call 替换为>>
+	 * call func -> ftrace_regs_call
+	 * 并把它写到 mcount
+	 */
 	ip = (unsigned long)(&ftrace_regs_call);
-	new = ftrace_call_replace(ip, (unsigned long)func); /* 替换 */
+	new = ftrace_call_replace(ip, (unsigned long)func);
 	text_poke_bp((void *)ip, new, MCOUNT_INSN_SIZE, NULL);
 
 	return 0;
@@ -253,11 +273,13 @@ void ftrace_replace_code(int enable)
 
 	/* 遍历 ftrace_pages_start */
 	for_ftrace_rec_iter(iter) {
-		rec = ftrace_rec_iter_record(iter); /* 获取 动态 ftrace 结构 */
+		/* 获取 动态 ftrace 结构 */
+		rec = ftrace_rec_iter_record(iter);
 
 
 		switch (ftrace_test_record(rec, enable)) {
-		case FTRACE_UPDATE_IGNORE:    /* 忽略 */
+		/* 忽略 */
+		case FTRACE_UPDATE_IGNORE:
 		default:
 			continue;
 
@@ -265,7 +287,8 @@ void ftrace_replace_code(int enable)
 			old = ftrace_nop_replace(); /* 0x0f,0x1f,0x44,0x00,0 */
 			break;
 
-		case FTRACE_UPDATE_MODIFY_CALL:   /* 更新 */
+		/* 更新 */
+		case FTRACE_UPDATE_MODIFY_CALL:
 		case FTRACE_UPDATE_MAKE_NOP:
 			old = ftrace_call_replace(rec->ip, ftrace_get_addr_curr(rec));
 			break;
