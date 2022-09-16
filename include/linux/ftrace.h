@@ -301,8 +301,12 @@ struct ftrace_ops {
 	 *
 	 *  可能等于 `klp_ftrace_handler()`,在 `klp_patch_func()` 中赋值
 	 *
-	 *
+	 * 一些 func 示例
+	 * ================
 	 * ftrace_list_end.func = ftrace_stub()
+	 *
+	 * ftrace_ops_list_func()
+	 * ftrace_trace_function()
 	 */
 	ftrace_func_t			func;
 	struct ftrace_ops __rcu		*next;
