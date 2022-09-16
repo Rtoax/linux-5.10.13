@@ -34,7 +34,7 @@
 #define DEFAULT_TRACER  "function_graph"
 
 /**
- *  
+ *
  */
 struct perf_ftrace {
 	struct evlist		*evlist;
@@ -52,10 +52,10 @@ struct perf_ftrace {
 	int			graph_nosleep_time;
 	int			graph_noirqs;
 	int			graph_verbose;
-    /**
-     *  tracing thresh
-     *  /sys/kernel/debug/tracing/tracing_thresh
-     */
+	/**
+	 *  tracing thresh
+	 *  /sys/kernel/debug/tracing/tracing_thresh
+	 */
 	int			graph_thresh;
 	unsigned int		initial_delay;
 };
@@ -262,13 +262,13 @@ static void reset_tracing_options(struct perf_ftrace *ftrace __maybe_unused)
 }
 
 /**
- *  
+ *
  */
 static int reset_tracing_files(struct perf_ftrace __maybe_unused *ftrace )
 {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (write_tracing_file("tracing_on", "0") < 0)
 		return -1;
 
@@ -392,6 +392,13 @@ static int set_tracing_filters(struct perf_ftrace *ftrace)
 {
 	int ret;
 
+	/**
+	 *  cd /sys/kernel/debug/tracing/
+	 *  echo 1 > tracing_on
+	 *  echo "*sched*" > set_ftrace_filter
+	 *  echo function_graph > current_tracer
+	 *  cat trace
+	 */
 	ret = __set_tracing_filter("set_ftrace_filter", &ftrace->filters);
 	if (ret < 0)
 		return ret;
@@ -505,10 +512,10 @@ static int set_tracing_thresh(struct perf_ftrace *ftrace)
 
 	if (ftrace->graph_thresh == 0)
 		return 0;
-    /**
-     *  tracing thresh
-     *  /sys/kernel/debug/tracing/tracing_thresh
-     */
+	/**
+	 *  tracing thresh
+	 *  /sys/kernel/debug/tracing/tracing_thresh
+	 */
 	ret = write_tracing_file_int("tracing_thresh", ftrace->graph_thresh);
 	if (ret < 0)
 		return ret;
@@ -632,7 +639,7 @@ static int __cmd_ftrace(struct perf_ftrace *ftrace, int argc, const char **argv)
 
 	setup_pager();
 
-    ///sys/kernel/debug/tracing/trace_pipe
+	///sys/kernel/debug/tracing/trace_pipe
 	trace_file = get_tracing_file("trace_pipe");
 	if (!trace_file) {
 		pr_err("failed to open trace_pipe\n");
@@ -859,9 +866,9 @@ static int parse_graph_tracer_opts(const struct option *opt,
 		{ .name = "noirqs",		.value_ptr = &ftrace->graph_noirqs },
 		{ .name = "verbose",		.value_ptr = &ftrace->graph_verbose },
 		/**
-         *  tracing thresh
-         *  /sys/kernel/debug/tracing/tracing_thresh
-         */
+	     *  tracing thresh
+	     *  /sys/kernel/debug/tracing/tracing_thresh
+	     */
 		{ .name = "thresh",		.value_ptr = &ftrace->graph_thresh },
 		{ .name = "depth",		.value_ptr = &ftrace->graph_depth },
 		{ .name = NULL, }
