@@ -1200,8 +1200,10 @@ struct ftrace_page {
 
 
 /**
- *  ftrace 起始地址
+ * ftrace 起始地址
  * 初始化位置 ftrace_process_locs()
+ *
+ * /sys/kernel/debug/tracing/available_filter_functions 从此获取
  */
 static struct ftrace_page	*ftrace_pages_start;
 
@@ -4002,6 +4004,9 @@ ftrace_avail_open(struct inode *inode, struct file *file)
 	if (!iter)
 		return -ENOMEM;
 
+	/**
+	 * /sys/kernel/debug/tracing/available_filter_functions
+	 */
 	iter->pg = ftrace_pages_start;
 	iter->ops = &global_ops;
 
