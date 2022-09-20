@@ -102,17 +102,17 @@ static int elf_core_dump(struct coredump_params *cprm);
  */
 static struct linux_binfmt elf_format = {
 	.module		= THIS_MODULE,
-    /**
-     *  加载elf
-     */
+	/**
+	 *  加载elf
+	 */
 	.load_binary	= load_elf_binary,
 	/**
 	 *  加载库文件
 	 */
 	.load_shlib	= load_elf_library,
 	/**
-     *  生成 core dump文件
-     */
+	 *  生成 core dump文件
+	 */
 	.core_dump	= elf_core_dump,
 	.min_coredump	= ELF_EXEC_PAGESIZE,
 };
@@ -278,14 +278,14 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	 */
 	ARCH_DLINFO;
 #endif
-    /**
-     *  设置辅助向量
-     *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
-     *  附带了传递给动态连接器的程序相关的特定信息。
-     *
-     *  查看方式：
-     *  $ hexdump -x /proc/self/auxv
-     */
+	/**
+	 *  设置辅助向量
+	 *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
+	 *  附带了传递给动态连接器的程序相关的特定信息。
+	 *
+	 *  查看方式：
+	 *  $ hexdump -x /proc/self/auxv
+	 */
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
@@ -399,18 +399,18 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 {
 	unsigned long map_addr;
 
-    /**
-     *  文件中占用的大小 + 虚拟地址
-     */
+	/**
+	 *  文件中占用的大小 + 虚拟地址
+	 */
 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
-    /**
-     *  文件中的偏移量 - 虚拟地址
-     */
+	/**
+	 *  文件中的偏移量 - 虚拟地址
+	 */
 	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	addr = ELF_PAGESTART(addr);
 	size = ELF_PAGEALIGN(size);
 
@@ -428,13 +428,13 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	* the end. (which unmap is needed for ELF images with holes.)
 	*/
 	if (total_size) {
-        /**
-         *  大小
-         */
+		/**
+		 *  大小
+		 */
 		total_size = ELF_PAGEALIGN(total_size);
-        /**
-         *  映射
-         */
+		/**
+		 *  映射
+		 */
 		map_addr = vm_mmap(filep, addr, total_size, prot, type, off);
 		if (!BAD_ADDR(map_addr))
 			vm_munmap(map_addr+size, total_size-size);
@@ -446,9 +446,9 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 		pr_info("%d (%s): Uhuuh, elf segment at %px requested but the memory is mapped already\n",
 			task_pid_nr(current), current->comm, (void *)addr);
 
-    /**
-     *  返回映射地址
-     */
+	/**
+	 *  返回映射地址
+	 */
 	return(map_addr);
 }
 /**
@@ -458,9 +458,9 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 {
 	int i, first_idx = -1, last_idx = -1;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for (i = 0; i < nr; i++) {
 		if (cmds[i].p_type == PT_LOAD) {
 			last_idx = i;
@@ -471,23 +471,23 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 	if (first_idx == -1)
 		return 0;
 
-    /**
-     *  最后一个虚拟地址 + 最后一个内存大小 - 第一个内存地址
-     *  这计算，是 ELF 的光！！！！
-     *
-     *  +---+
-     *  |   |
-     *  |   | <-----------------------------
-     *  |   |      last.p_memsz         ^
-     *  |   | <--- last.p_vaddr         |
-     *  |   |                           |
-     *  |   |                       return value
-     *  |   |                           |
-     *  |   |                           |
-     *  |   |                          \|
-     *  |   | <--- first.p_vaddr -----------
-     *  +---+
-     */
+	/**
+	 *  最后一个虚拟地址 + 最后一个内存大小 - 第一个内存地址
+	 *  这计算，是 ELF 的光！！！！
+	 *
+	 *  +---+
+	 *  |   |
+	 *  |   | <-----------------------------
+	 *  |   |      last.p_memsz         ^
+	 *  |   | <--- last.p_vaddr         |
+	 *  |   |                           |
+	 *  |   |                       return value
+	 *  |   |                           |
+	 *  |   |                           |
+	 *  |   |                          \|
+	 *  |   | <--- first.p_vaddr -----------
+	 *  +---+
+	 */
 	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
 				ELF_PAGESTART(cmds[first_idx].p_vaddr);
 }
@@ -498,9 +498,9 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 {
 	ssize_t rv;
 
-    /**
-     *  读
-     */
+	/**
+	 *  读
+	 */
 	rv = kernel_read(file, buf, len, &pos);
 	if (unlikely(rv != len)) {
 		return (rv < 0) ? rv : -EIO;
@@ -557,16 +557,16 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	if (size == 0 || size > 65536 || size > ELF_MIN_ALIGN)
 		goto out;
 
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	elf_phdata = kmalloc(size, GFP_KERNEL);
 	if (!elf_phdata)
 		goto out;
 
-    /**
-     *  加载程序头
-     */
+	/**
+	 *  加载程序头
+	 */
 	/* Read in the program headers */
 	retval = elf_read(elf_file, elf_phdata, size, elf_ex->e_phoff);
 	if (retval < 0) {
@@ -659,9 +659,9 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 {
 	int prot = 0;
 
-    /**
-     *  读写执行
-     */
+	/**
+	 *  读写执行
+	 */
 	if (p_flags & PF_R)
 		prot |= PROT_READ;
 	if (p_flags & PF_W)
@@ -669,9 +669,9 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 	if (p_flags & PF_X)
 		prot |= PROT_EXEC;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return arch_elf_adjust_prot(prot, arch_state, has_interp, is_interp);
 }
 
@@ -935,14 +935,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long __maybe_unused reloc_func_desc  = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 
-    /**
-     *  程序头
-     */
+	/**
+	 *  程序头
+	 */
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
 
-    /**
-     *  解释器
-     */
+	/**
+	 *  解释器
+	 */
 	struct elfhdr *interp_elf_ex = NULL;
 	struct arch_elf_state arch_state = INIT_ARCH_ELF_STATE;
 	struct mm_struct *mm;
@@ -950,42 +950,42 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	retval = -ENOEXEC;
 
-    /**
-     *  判断格式
-     */
+	/**
+	 *  判断格式
+	 */
 	/* First of all, some simple consistency checks */
 	if (memcmp(elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
 
-    /**
-     *  exec 和 dyn 才能加载
-     */
+	/**
+	 *  exec 和 dyn 才能加载
+	 */
 	if (elf_ex->e_type != ET_EXEC && elf_ex->e_type != ET_DYN)
 		goto out;
-    /**
-     *  检测架构
-     */
+	/**
+	 *  检测架构
+	 */
 	if (!elf_check_arch(elf_ex))
 		goto out;
-    /**
-     *  ???
-     */
+	/**
+	 *  ???
+	 */
 	if (elf_check_fdpic(elf_ex))
 		goto out;
 	if (!bprm->file->f_op->mmap)
 		goto out;
 
-    /**
-     *  加载 elf程序 头
-     */
+	/**
+	 *  加载 elf程序 头
+	 */
 	elf_phdata = load_elf_phdrs(elf_ex, bprm->file);
 	if (!elf_phdata)
 		goto out;
 
 	elf_ppnt = elf_phdata;
-    /**
-     *  遍历 elf 头信息
-     */
+	/**
+	 *  遍历 elf 头信息
+	 */
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		char *elf_interpreter;
 
@@ -994,9 +994,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			continue;
 		}
 
-        /**
-         *  查找 解释器
-         */
+		/**
+		 *  查找 解释器
+		 */
 		if (elf_ppnt->p_type != PT_INTERP)
 			continue;
 
@@ -1009,14 +1009,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_ph;
 
 		retval = -ENOMEM;
-        /**
-         *  解释器，分配解释器名称字符串
-         */
+		/**
+		 *  解释器，分配解释器名称字符串
+		 */
 		elf_interpreter = kmalloc(elf_ppnt->p_filesz, GFP_KERNEL);
 		if (!elf_interpreter)
 			goto out_free_ph;
 
-        /* 读取分配器名称字符串 */
+		/* 读取分配器名称字符串 */
 		retval = elf_read(bprm->file, elf_interpreter, elf_ppnt->p_filesz,
 				  elf_ppnt->p_offset);
 		if (retval < 0)
@@ -1027,12 +1027,12 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 			goto out_free_interp;
 
-        /**
-         *  打开 解释器文件
-         */
+		/**
+		 *  打开 解释器文件
+		 */
 		interpreter = open_exec(elf_interpreter);
 
-        /* 释放解释器名称字符串 */
+		/* 释放解释器名称字符串 */
 		kfree(elf_interpreter);
 		retval = PTR_ERR(interpreter);
 		if (IS_ERR(interpreter))
@@ -1044,9 +1044,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		 */
 		would_dump(bprm, interpreter);
 
-        /**
-         *  解释器的ELF头
-         */
+		/**
+		 *  解释器的ELF头
+		 */
 		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
 		if (!interp_elf_ex) {
 			retval = -ENOMEM;
@@ -1068,17 +1068,17 @@ out_free_interp:
 
 	elf_ppnt = elf_phdata;
 
-    /**
-     *  遍历所有程序头
-     */
+	/**
+	 *  遍历所有程序头
+	 */
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++)
-        /**
-         *  程序头类型
-         */
+		/**
+		 *  程序头类型
+		 */
 		switch (elf_ppnt->p_type) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		case PT_GNU_STACK:
 			if (elf_ppnt->p_flags & PF_X)
 				executable_stack = EXSTACK_ENABLE_X;
@@ -1086,16 +1086,16 @@ out_free_interp:
 				executable_stack = EXSTACK_DISABLE_X;
 			break;
 
-        /**
-         *  #define PT_LOPROC  0x70000000
-         *  #define PT_HIPROC  0x7fffffff
-         *  PT_LOPROC - PT_HIPROC:  此包含范围内的值保留用于特定于处理器的语义。
-         *  refs: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
-         */
+		/**
+		 *  #define PT_LOPROC  0x70000000
+		 *  #define PT_HIPROC  0x7fffffff
+		 *  PT_LOPROC - PT_HIPROC:  此包含范围内的值保留用于特定于处理器的语义。
+		 *  refs: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
+		 */
 		case PT_LOPROC ... PT_HIPROC:
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			retval = arch_elf_pt_proc(elf_ex, elf_ppnt,
 						  bprm->file, false,
 						  &arch_state);
@@ -1104,9 +1104,9 @@ out_free_interp:
 			break;
 		}
 
-    /**
-     *  解释器可用
-     */
+	/**
+	 *  解释器可用
+	 */
 	/* Some simple consistency checks for the interpreter */
 	if (interpreter) {
 		retval = -ELIBBAD;
@@ -1127,21 +1127,21 @@ out_free_interp:
 		/* Pass PT_LOPROC..PT_HIPROC headers to arch code */
 		elf_property_phdata = NULL;
 		elf_ppnt = interp_elf_phdata;
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
 			switch (elf_ppnt->p_type) {
 			case PT_GNU_PROPERTY:
 				elf_property_phdata = elf_ppnt;
 				break;
 
-            /**
-             *  #define PT_LOPROC  0x70000000
-             *  #define PT_HIPROC  0x7fffffff
-             *  PT_LOPROC - PT_HIPROC:  此包含范围内的值保留用于特定于处理器的语义。
-             *  refs: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
-             */
+			/**
+			 *  #define PT_LOPROC  0x70000000
+			 *  #define PT_HIPROC  0x7fffffff
+			 *  PT_LOPROC - PT_HIPROC:  此包含范围内的值保留用于特定于处理器的语义。
+			 *  refs: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
+			 */
 			case PT_LOPROC ... PT_HIPROC:
 				retval = arch_elf_pt_proc(interp_elf_ex,
 							  elf_ppnt, interpreter,
@@ -1152,7 +1152,7 @@ out_free_interp:
 			}
 	}
 
-    /* 读取属性值 */
+	/* 读取属性值 */
 	retval = parse_elf_properties(interpreter ?: bprm->file,
 				      elf_property_phdata, &arch_state);
 	if (retval)
@@ -1171,10 +1171,10 @@ out_free_interp:
 		goto out_free_dentry;
 
 	/* Flush all traces of the currently running executable */
-    /**
-     *  开始执行
-     *  将交换 mm 结构
-     */
+	/**
+	 *  开始执行
+	 *  将交换 mm 结构
+	 */
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
@@ -1198,9 +1198,9 @@ out_free_interp:
 	if (retval < 0)
 		goto out_free_dentry;
 
-    /**
-     *  都初始化为 0
-     */
+	/**
+	 *  都初始化为 0
+	 */
 	elf_bss = 0;
 	elf_brk = 0;
 
@@ -1220,23 +1220,33 @@ out_free_interp:
 		unsigned long total_size = 0;
 		unsigned long alignment;
 
-        /**
-         *  可加载段
-         *
-         *  指定一个可加载的段，由p_filesz和描述p_memsz。
-         *  文件中的字节映射到内存段的开头。
-         *  如果段的内存大小 ( p_memsz) 大于文件大小 ( p_filesz)，
-         *  则定义额外的字节以保存值 0 并跟随段的初始化区域。
-         *  文件大小不能大于内存大小。
-         *  程序头表中的可加载段条目以升序显示，按p_vaddr成员排序。
-         *  ref: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
-         */
+		/**
+		 *  可加载段
+		 *
+		 *  指定一个可加载的段，由p_filesz和描述p_memsz。
+		 *  文件中的字节映射到内存段的开头。
+		 *  如果段的内存大小 ( p_memsz) 大于文件大小 ( p_filesz)，
+		 *  则定义额外的字节以保存值 0 并跟随段的初始化区域。
+		 *  文件大小不能大于内存大小。
+		 *  程序头表中的可加载段条目以升序显示，按p_vaddr成员排序。
+		 *  ref: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
+		 *
+		 *   LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+		 *                  0x0000000000002338 0x0000000000002338  R      0x1000
+		 *   LOAD           0x0000000000003000 0x0000000000403000 0x0000000000403000
+		 *                  0x000000000000f005 0x000000000000f005  R E    0x1000
+		 *   LOAD           0x0000000000013000 0x0000000000413000 0x0000000000413000
+		 *                  0x0000000000007aa4 0x0000000000007aa4  R      0x1000
+		 *   LOAD           0x000000000001ac00 0x000000000041bc00 0x000000000041bc00
+		 *                  0x0000000000000d68 0x0000000000000fb0  RW     0x1000
+		 *
+		 */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
 
-        /**
-         *  brk 位置 大于 bss
-         */
+		/**
+		 *  brk 位置 大于 bss
+		 */
 		if (unlikely (elf_brk > elf_bss)) {
 			unsigned long nbyte;
 
@@ -1264,20 +1274,20 @@ out_free_interp:
 			}
 		}
 
-        /**
-         *  权限
-         */
+		/**
+		 *  权限
+		 */
 		elf_prot = make_prot(elf_ppnt->p_flags, &arch_state,
 				     !!interpreter, false);
 
-        /**
-         *  私有的，拒绝写，可执行的
-         */
+		/**
+		 *  私有的，拒绝写，可执行的
+		 */
 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
 
-        /**
-         *  p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
-         */
+		/**
+		 *  p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
+		 */
 		vaddr = elf_ppnt->p_vaddr;
 		/*
 		 * If we are loading ET_EXEC or we have already performed
@@ -1285,14 +1295,14 @@ out_free_interp:
 		 *  如果是 可执行文件 或者已经计算动态加载段地址
 		 */
 		if (elf_ex->e_type == ET_EXEC || load_addr_set) {
-            /**
-             *  MAP_FIXED标志的一个特性是：
-             *  如果你指定的地址和已有的线性区重叠，那么就抛弃已有的线性区映射。
-             */
+			/**
+			 *  MAP_FIXED标志的一个特性是：
+			 *  如果你指定的地址和已有的线性区重叠，那么就抛弃已有的线性区映射。
+			 */
 			elf_flags |= MAP_FIXED;
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		} else if (elf_ex->e_type == ET_DYN) {
 			/*
 			 * This logic is run once for the first LOAD Program
@@ -1325,35 +1335,35 @@ out_free_interp:
 			 * without MAP_FIXED).
 			 */
 			if (interpreter) {
-                /**
-                 *  加载的偏移量
-                 */
+				/**
+				 *  加载的偏移量
+				 */
 				load_bias = ELF_ET_DYN_BASE;    /* 从这个固定位置映射 */
-                /**
-                 *  随机
-                 *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
-                 */
+				/**
+				 *  随机
+				 *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
+				 */
 				if (current->flags & PF_RANDOMIZE)
 					load_bias += arch_mmap_rnd();   /* 加上随机位置 */
 
-                /**
-                 *  对齐
-                 */
+				/**
+				 *  对齐
+				 */
 				alignment = maximum_alignment(elf_phdata, elf_ex->e_phnum);
 				if (alignment)
-                    /**
-                     *  把 偏移量对齐
-                     */
+				    /**
+				     *  把 偏移量对齐
+				     */
 					load_bias &= ~(alignment - 1);
-                /**
-                 *  MAP_FIXED标志的一个特性是：
-                 *  如果你指定的地址和已有的线性区重叠，那么就抛弃已有的线性区映射。
-                 */
+				/**
+				 *  MAP_FIXED标志的一个特性是：
+				 *  如果你指定的地址和已有的线性区重叠，那么就抛弃已有的线性区映射。
+				 */
 				elf_flags |= MAP_FIXED;
 			} else
-                /**
-                 *  没有解释器，加载偏移为 0?? why??
-                 */
+				/**
+				 *  没有解释器，加载偏移为 0?? why??
+				 */
 				load_bias = 0;
 
 			/*
@@ -1381,23 +1391,23 @@ out_free_interp:
 			 */
 			load_bias = ELF_PAGESTART(load_bias - vaddr);
 
-            /**
-             *  最后一个虚拟地址 + 最后一个内存大小 - 第一个内存地址
-             *  这计算，是 ELF 的光！！！！
-             *
-             *  +---+
-             *  |   |
-             *  |   | <-----------------------------
-             *  |   |      last.p_memsz         ^
-             *  |   | <--- last.p_vaddr         |
-             *  |   |                           |
-             *  |   |                       return value
-             *  |   |                           |
-             *  |   |                           |
-             *  |   |                          \|
-             *  |   | <--- first.p_vaddr -----------
-             *  +---+
-             */
+			/**
+			 *  最后一个虚拟地址 + 最后一个内存大小 - 第一个内存地址
+			 *  这计算，是 ELF 的光！！！！
+			 *
+			 *  +---+
+			 *  |   |
+			 *  |   | <-----------------------------
+			 *  |   |      last.p_memsz         ^
+			 *  |   | <--- last.p_vaddr         |
+			 *  |   |                           |
+			 *  |   |                       return value
+			 *  |   |                           |
+			 *  |   |                           |
+			 *  |   |                          \|
+			 *  |   | <--- first.p_vaddr -----------
+			 *  +---+
+			 */
 			total_size = total_mapping_size(elf_phdata,
 							elf_ex->e_phnum);
 			if (!total_size) {
@@ -1406,12 +1416,12 @@ out_free_interp:
 			}
 		}
 
-        /**
-         *  正经的映射 二进制可执行文件
-         *
-         *  起始地址需要注意 load_bias + vaddr 是上面计算出来的
-         *  返回映射虚拟地址
-         */
+		/**
+		 *  正经的映射 二进制可执行文件
+		 *
+		 *  起始地址需要注意 load_bias + vaddr 是上面计算出来的
+		 *  返回映射虚拟地址
+		 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
 		if (BAD_ADDR(error)) {
@@ -1420,44 +1430,44 @@ out_free_interp:
 			goto out_free_dentry;
 		}
 
-        /**
-         *  加载地址，程序第一次遍历时候， load_addr_set=0
-         */
+		/**
+		 *  加载地址，程序第一次遍历时候， load_addr_set=0
+		 */
 		if (!load_addr_set) {
-            /**
-             *  下次不运行了hao'ma?
-             */
+			/**
+			 *  下次不运行了hao'ma?
+			 */
 			load_addr_set = 1;
-            /**
-             *  加载地址 = 虚拟地址 - 偏移
-             */
+			/**
+			 *  加载地址 = 虚拟地址 - 偏移
+			 */
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
-            /**
-             *  如果是动态段
-             */
+			/**
+			 *  如果是动态段
+			 */
 			if (elf_ex->e_type == ET_DYN) {
-                /**
-                 *  偏移 = 被映射的地址 - 计算出来的虚拟地址
-                 */
+				/**
+				 *  偏移 = 被映射的地址 - 计算出来的虚拟地址
+				 */
 				load_bias += error -
 				             ELF_PAGESTART(load_bias + vaddr);
-                /**
-                 *  真正被加载到的虚拟地址
-                 */
+				/**
+				 *  真正被加载到的虚拟地址
+				 */
 				load_addr += load_bias;
-                /**
-                 *  因为是 动态段，那么就需要重定位喽
-                 */
+				/**
+				 *  因为是 动态段，那么就需要重定位喽
+				 */
 				reloc_func_desc = load_bias;
 			}
 		}
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		k = elf_ppnt->p_vaddr;
-        /**
-         *  可执行
-         */
+		/**
+		 *  可执行
+		 */
 		if ((elf_ppnt->p_flags & PF_X) && k < start_code)
 			start_code = k;
 		if (start_data < k)
@@ -1489,13 +1499,13 @@ out_free_interp:
 			bss_prot = elf_prot;
 			elf_brk = k;
 		}
-    /**
-     *  遍历所有 程序头结束
-     */
+	/**
+	 *  遍历所有 程序头结束
+	 */
 	}
-    /**
-     *  全部都要偏移一个随机地址，安全呗
-     */
+	/**
+	 *  全部都要偏移一个随机地址，安全呗
+	 */
 	e_entry = elf_ex->e_entry + load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
@@ -1517,11 +1527,11 @@ out_free_interp:
 		goto out_free_dentry;
 	}
 
-    /* 指定了解释器 */
+	/* 指定了解释器 */
 	if (interpreter) {
-        /**
-         *  加载解释器
-         */
+		/**
+		 *  加载解释器
+		 */
 		elf_entry = load_elf_interp(interp_elf_ex,
 					    interpreter,
 					    load_bias, interp_elf_phdata,
@@ -1539,9 +1549,9 @@ out_free_interp:
 					(int)elf_entry : -EINVAL;
 			goto out_free_dentry;
 		}
-        /**
-         *  重定位
-         */
+		/**
+		 *  重定位
+		 */
 		reloc_func_desc = interp_load_addr;
 
 		allow_write_access(interpreter);
@@ -1549,9 +1559,9 @@ out_free_interp:
 
 		kfree(interp_elf_ex);
 		kfree(interp_elf_phdata);
-    /**
-     *  没指定 解释器
-     */
+	/**
+	 *  没指定 解释器
+	 */
 	} else {
 		elf_entry = e_entry;
 		if (BAD_ADDR(elf_entry)) {
@@ -1562,7 +1572,7 @@ out_free_interp:
 
 	kfree(elf_phdata);
 
-    /* 设置进程 */
+	/* 设置进程 */
 	set_binfmt(&elf_format);
 
 #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
@@ -1571,24 +1581,24 @@ out_free_interp:
 		goto out;
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
-    /**
-     *
-     ** 设置辅助向量
-     *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
-     *  附带了传递给动态连接器的程序相关的特定信息。
-     *
-     *  查看方式：
-     *  $ hexdump -x /proc/self/auxv
-     */
-    /* 创建 elf table TODO */
+	/**
+	 *
+	 ** 设置辅助向量
+	 *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
+	 *  附带了传递给动态连接器的程序相关的特定信息。
+	 *
+	 *  查看方式：
+	 *  $ hexdump -x /proc/self/auxv
+	 */
+	/* 创建 elf table TODO */
 	retval = create_elf_tables(bprm, elf_ex,
 			  load_addr, interp_load_addr, e_entry);
 	if (retval < 0)
 		goto out;
 
-    /**
-     *  程序被加载进内存，辅助向量被填充号之后，控制权就交给了动态连接器
-     */
+	/**
+	 *  程序被加载进内存，辅助向量被填充号之后，控制权就交给了动态连接器
+	 */
 	mm = current->mm;
 	mm->end_code = end_code;
 	mm->start_code = start_code;
@@ -1596,9 +1606,9 @@ out_free_interp:
 	mm->end_data = end_data;
 	mm->start_stack = bprm->p;
 
-    /**
-     *  如果开启了 随机 标志
-     */
+	/**
+	 *  如果开启了 随机 标志
+	 */
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
 		/*
 		 * For architectures with ELF randomization, when executing
@@ -1612,18 +1622,18 @@ out_free_interp:
 			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
 		}
 
-        /**
-         *  随机化 brk
-         */
+		/**
+		 *  随机化 brk
+		 */
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
 #endif
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (current->personality & MMAP_PAGE_ZERO) {
 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
 		   and some applications "depend" upon this behavior.
@@ -1633,9 +1643,9 @@ out_free_interp:
 				MAP_FIXED | MAP_PRIVATE, 0);
 	}
 
-    /**
-     *  获取当前的寄存器，注意，这是一个指针，会直接修改当前进程的寄存器
-     */
+	/**
+	 *  获取当前的寄存器，注意，这是一个指针，会直接修改当前进程的寄存器
+	 */
 	regs = current_pt_regs();   /* 当前的寄存器 */
 #ifdef ELF_PLAT_INIT
 	/*
@@ -1651,18 +1661,18 @@ out_free_interp:
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	finalize_exec(bprm);
 
-    /**
-     *  这个函数时架构相关的
-     *  当前进程的程序计数器 ip=elf_entry 也就是定位到了客户自行ELF文件中
-     *
-     *  从当前的位置开始执行新的程序
-     *  需要填入：当前寄存器的值，程序elf入口点，
-     */
+	/**
+	 *  这个函数时架构相关的
+	 *  当前进程的程序计数器 ip=elf_entry 也就是定位到了客户自行ELF文件中
+	 *
+	 *  从当前的位置开始执行新的程序
+	 *  需要填入：当前寄存器的值，程序elf入口点，
+	 */
 	start_thread(regs, elf_entry, bprm->p); /* 给寄存器赋值 */
 	retval = 0;
 out:
@@ -1732,9 +1742,9 @@ static int load_elf_library(struct file *file)
 		eppnt++;
 
 	/* Now use mmap to map the library into memory. */
-    /* 将共享库映射进进程地址空间
+	/* 将共享库映射进进程地址空间
 
-    */
+	*/
 	error = vm_mmap(file,
 			ELF_PAGESTART(eppnt->p_vaddr),
 			(eppnt->p_filesz +
