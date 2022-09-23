@@ -401,15 +401,76 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 
 	/**
 	 *  文件中占用的大小 + 虚拟地址
+	 *
+	 *  ELF_PAGEOFFSET 获取页偏移
+	 *
+	 * #########################################################################
+	 * elf_map() 只映射了 ld-linux 和 SELF，见：
+	 * https://github.com/Rtoax/test-linux/blob/main/elf/scripts/bpftrace/elf_map.bt
+	 *
+	 * 以下内容为笔记，实际上 elf_map() 并不会映射共享库（如 libc.so.6）
+	 *
+	 * x86_64
+	 * getpagesize() = 4096 = 0x1000 = 4K
+	 * =========================================================================
+	 * $ readelf -l /usr/lib64/libc.so.6
+	 *
+	 * Program Headers:
+	 *   Type           Offset             VirtAddr           PhysAddr
+	 *                 FileSiz            MemSiz              Flags  Align
+	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000027ed8 0x0000000000027ed8  R      0x1000
+	 *   LOAD           0x0000000000028000 0x0000000000028000 0x0000000000028000
+	 *                  0x00000000001742fc 0x00000000001742fc  R E    0x1000
+	 *   LOAD           0x000000000019d000 0x000000000019d000 0x000000000019d000
+	 *                  0x0000000000057df8 0x0000000000057df8  R      0x1000
+	 *   LOAD           0x00000000001f58d0 0x00000000001f68d0 0x00000000001f68d0
+	 *                  0x0000000000004fb8 0x00000000000126e0  RW     0x1000
+	 *
+	 * $ cat /proc/self/maps
+	 * ...
+	 * 7f57f81bd000-7f57f81e5000 r--p 00000000 fd:00 67244016	/usr/lib64/libc.so.6
+	 * 7f57f81e5000-7f57f835a000 r-xp 00028000 fd:00 67244016	/usr/lib64/libc.so.6 << LOAD
+	 * 7f57f835a000-7f57f83b2000 r--p 0019d000 fd:00 67244016	/usr/lib64/libc.so.6
+	 * 7f57f83b2000-7f57f83b3000 ---p 001f5000 fd:00 67244016	/usr/lib64/libc.so.6
+	 * 7f57f83b3000-7f57f83b7000 r--p 001f5000 fd:00 67244016	/usr/lib64/libc.so.6
+	 * 7f57f83b7000-7f57f83b9000 rw-p 001f9000 fd:00 67244016	/usr/lib64/libc.so.6
+	 *
+	 *
+	 * aarch64
+	 * getpagesize() = 65536 = 0x10000 = 64K
+	 * =========================================================================
+	 * $ readelf -l /usr/lib64/libc.so.6
+	 *
+	 * Program Headers:
+	 *   Type           Offset             VirtAddr           PhysAddr
+	 *                 FileSiz            MemSiz              Flags  Align
+	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000159c14 0x0000000000159c14  R E    0x10000
+	 *   LOAD           0x000000000015cbc0 0x000000000016cbc0 0x000000000016cbc0
+	 *                  0x0000000000004a10 0x00000000000083c8  RW     0x10000
+	 *
+	 * $ cat /proc/self/maps
+	 * ffff8f280000-ffff8f3e0000 r-xp 00000000 fd:00 150995520	/usr/lib64/libc-2.28.so
+	 * ffff8f3e0000-ffff8f3f0000 r--p 00150000 fd:00 150995520	/usr/lib64/libc-2.28.so
+	 * ffff8f3f0000-ffff8f400000 rw-p 00160000 fd:00 150995520	/usr/lib64/libc-2.28.so
+	 *
+	 * size = 0x0000000000004a10 + ELF_PAGEOFFSET(0x000000000016cbc0)
+	 * 		= 0x0000000000004a10 + 0x000000000000cbc0
+	 * 		= 0x00000000000115d0
+	 * off	= 0x000000000015cbc0 - 0x000000000000cbc0
+	 * 		= 0x0000000000150000
 	 */
 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
+
 	/**
 	 *  文件中的偏移量 - 虚拟地址
 	 */
 	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
 
 	/**
-	 *
+	 * aarch64
+	 * =========================================================================
 	 */
 	addr = ELF_PAGESTART(addr);
 	size = ELF_PAGEALIGN(size);
@@ -1240,6 +1301,7 @@ out_free_interp:
 		 *   LOAD           0x000000000001ac00 0x000000000041bc00 0x000000000041bc00
 		 *                  0x0000000000000d68 0x0000000000000fb0  RW     0x1000
 		 *
+		 * 必须是 PT_LOAD 才会被加载进内存
 		 */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
@@ -1421,6 +1483,10 @@ out_free_interp:
 		 *
 		 *  起始地址需要注意 load_bias + vaddr 是上面计算出来的
 		 *  返回映射虚拟地址
+		 *
+		 *  vaddr = elf_ppnt->p_vaddr;
+		 *
+		 * sudo bpftrace -e 'kprobe:elf_map { printf("%lx\n", arg2); }
 		 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
@@ -1742,9 +1808,9 @@ static int load_elf_library(struct file *file)
 		eppnt++;
 
 	/* Now use mmap to map the library into memory. */
-	/* 将共享库映射进进程地址空间
-
-	*/
+	/**
+	 * 将共享库映射进进程地址空间
+	 */
 	error = vm_mmap(file,
 			ELF_PAGESTART(eppnt->p_vaddr),
 			(eppnt->p_filesz +
