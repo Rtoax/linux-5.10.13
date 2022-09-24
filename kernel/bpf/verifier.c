@@ -297,6 +297,9 @@ struct bpf_call_arg_meta {
 	u32 ret_btf_id;
 };
 
+/**
+ * /sys/kernel/btf/vmlinux
+ */
 struct btf *btf_vmlinux;
 
 static DEFINE_MUTEX(bpf_verifier_lock);
@@ -1508,6 +1511,9 @@ static int find_subprog(struct bpf_verifier_env *env, int off)
 
 }
 
+/**
+ * 存在子程序时，保存要调用或者跳转的立即数
+ */
 static int add_subprog(struct bpf_verifier_env *env, int off)
 {
 	int insn_cnt = env->prog->len;
@@ -1517,21 +1523,34 @@ static int add_subprog(struct bpf_verifier_env *env, int off)
 		verbose(env, "call to invalid destination\n");
 		return -EINVAL;
 	}
+
+	/**
+	 * 可能已经存在了，直接返回成功
+	 */
 	ret = find_subprog(env, off);
 	if (ret >= 0)
 		return 0;
+
+	/**
+	 * 太多的子程序
+	 */
 	if (env->subprog_cnt >= BPF_MAX_SUBPROGS) {
 		verbose(env, "too many subprograms\n");
 		return -E2BIG;
 	}
+	/**
+	 * 保存并排序所有子程序
+	 * 这里的性能有待提升
+	 */
 	env->subprog_info[env->subprog_cnt++].start = off;
 	sort(env->subprog_info, env->subprog_cnt,
 	     sizeof(env->subprog_info[0]), cmp_subprogs, NULL);
+
 	return 0;
 }
 
 /**
- * @brief
+ * @brief 检查子程序
  *
  * @param env
  * @return int
@@ -1550,8 +1569,10 @@ static int check_subprogs(struct bpf_verifier_env *env)
 
 	/* determine subprog starts. The end is one before the next starts */
 	for (i = 0; i < insn_cnt; i++) {
+		// 当 jmp 或者 call 的时候，才代表有 子程序
 		if (insn[i].code != (BPF_JMP | BPF_CALL))
 			continue;
+		// 源寄存器
 		if (insn[i].src_reg != BPF_PSEUDO_CALL)
 			continue;
 		if (!env->bpf_capable) {
@@ -1559,6 +1580,10 @@ static int check_subprogs(struct bpf_verifier_env *env)
 				"function calls to other bpf functions are allowed for CAP_BPF and CAP_SYS_ADMIN\n");
 			return -EPERM;
 		}
+
+		/**
+		 * 保存要调用或者跳转的立即数
+		 */
 		ret = add_subprog(env, i + insn[i].imm + 1);
 		if (ret < 0)
 			return ret;
@@ -1584,6 +1609,9 @@ static int check_subprogs(struct bpf_verifier_env *env)
 	for (i = 0; i < insn_cnt; i++) {
 		u8 code = insn[i].code;
 
+		/**
+		 * JMP|CALL 指令
+		 */
 		if (code == (BPF_JMP | BPF_CALL) &&
 		    insn[i].imm == BPF_FUNC_tail_call &&
 		    insn[i].src_reg != BPF_PSEUDO_CALL)
@@ -1593,12 +1621,18 @@ static int check_subprogs(struct bpf_verifier_env *env)
 		    (BPF_MODE(code) == BPF_ABS || BPF_MODE(code) == BPF_IND))
 			subprog[cur_subprog].has_ld_abs = true;
 
+		/**
+		 * 如果 != JMP
+		 */
 		if (BPF_CLASS(code) != BPF_JMP && BPF_CLASS(code) != BPF_JMP32)
 			goto next;
 
 		if (BPF_OP(code) == BPF_EXIT || BPF_OP(code) == BPF_CALL)
 			goto next;
 
+		/**
+		 *
+		 */
 		off = i + insn[i].off + 1;
 
 		if (off < subprog_start || off >= subprog_end) {
@@ -1616,6 +1650,9 @@ next:
 				verbose(env, "last insn is not an exit or jmp\n");
 				return -EINVAL;
 			}
+			/**
+			 * 进入下一个 子程序
+			 */
 			subprog_start = subprog_end;
 			cur_subprog++;
 			if (cur_subprog < env->subprog_cnt)
@@ -8262,6 +8299,9 @@ static int check_abnormal_return(struct bpf_verifier_env *env)
 #define MIN_BPF_FUNCINFO_SIZE	8
 #define MAX_FUNCINFO_REC_SIZE	252
 
+/**
+ *
+ */
 static int check_btf_func(struct bpf_verifier_env *env,
 			  const union bpf_attr *attr,
 			  union bpf_attr __user *uattr)
@@ -8529,6 +8569,9 @@ err_free:
 	return err;
 }
 
+/**
+ * 检查 btf 信息
+ */
 static int check_btf_info(struct bpf_verifier_env *env,
 			  const union bpf_attr *attr,
 			  union bpf_attr __user *uattr)
@@ -8541,16 +8584,23 @@ static int check_btf_info(struct bpf_verifier_env *env,
 			return -EINVAL;
 		return 0;
 	}
-
+	/**
+	 *
+	 */
 	btf = btf_get_by_fd(attr->prog_btf_fd);
 	if (IS_ERR(btf))
 		return PTR_ERR(btf);
 	env->prog->aux->btf = btf;
 
+	/**
+	 *
+	 */
 	err = check_btf_func(env, attr, uattr);
 	if (err)
 		return err;
-
+	/**
+	 *
+	 */
 	err = check_btf_line(env, attr, uattr);
 	if (err)
 		return err;
@@ -12001,6 +12051,8 @@ static int check_attach_btf_id(struct bpf_verifier_env *env)
 /**
  * @brief
  *
+ * /sys/kernel/btf/vmlinux
+ *
  * @return struct btf*
  */
 struct btf *bpf_get_btf_vmlinux(void)
@@ -12079,13 +12131,14 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	/**
 	 * 如：
 	 * [BPF_PROG_TYPE_KPROBE] = & kprobe_verifier_ops,
+	 * [BPF_PROG_TYPE_TRACING] = & tracing_verifier_ops,
 	 */
 	env->ops = bpf_verifier_ops[env->prog->type];
 	is_priv = bpf_capable();
 
 	/**
 	 * 获取 btf
-	 *
+	 * /sys/kernel/btf/vmlinux
 	 */
 	bpf_get_btf_vmlinux();
 
@@ -12120,7 +12173,7 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	}
 
 	/**
-	 * @brief
+	 * @brief 严格的对齐
 	 *
 	 */
 	env->strict_alignment = !!(attr->prog_flags & BPF_F_STRICT_ALIGNMENT);
@@ -12142,9 +12195,9 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	if (is_priv)
 		env->test_state_freq = attr->prog_flags & BPF_F_TEST_STATE_FREQ;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (bpf_prog_is_dev_bound(env->prog->aux)) {
 		ret = bpf_prog_offload_verifier_prep(env->prog);
 		if (ret)
@@ -12158,59 +12211,59 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	if (!env->explored_states)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 * 检查子程序
+	 */
 	ret = check_subprogs(env);
 	if (ret < 0)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 * 检查 btf 信息
+	 */
 	ret = check_btf_info(env, attr, uattr);
 	if (ret < 0)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = check_attach_btf_id(env);
 	if (ret)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = resolve_pseudo_ldimm64(env);
 	if (ret < 0)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = check_cfg(env);
 	if (ret < 0)
 		goto skip_full_check;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = do_check_subprogs(env);
 	ret = ret ?: do_check_main(env);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (ret == 0 && bpf_prog_is_dev_bound(env->prog->aux))
 		ret = bpf_prog_offload_finalize(env);
 
 skip_full_check:
 	kvfree(env->explored_states);
 
-    /**
-     *	检查栈深度
-     */
+	/**
+	 *	检查栈深度
+	 */
 	if (ret == 0)
 		ret = check_max_stack_depth(env);
 
@@ -12227,16 +12280,16 @@ skip_full_check:
 			sanitize_dead_code(env);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (ret == 0)
 		/* program is valid, convert *(u32*)(ctx + off) accesses */
 		ret = convert_ctx_accesses(env);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (ret == 0)
 		ret = fixup_bpf_calls(env);
 
@@ -12257,9 +12310,9 @@ skip_full_check:
 	 */
 	env->verification_time = ktime_get_ns() - start_time;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	print_verification_stats(env);
 
 	if (log->level && bpf_verifier_log_full(log))

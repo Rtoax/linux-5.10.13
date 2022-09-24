@@ -193,6 +193,7 @@ struct bpf_map {
      *
      */
 	struct bpf_map_memory memory;
+	// BPF_OBJ_NAME_LEN = 16U
 	char name[BPF_OBJ_NAME_LEN];
 	u32 btf_vmlinux_value_type_id;
 	bool bypass_spec_v1;

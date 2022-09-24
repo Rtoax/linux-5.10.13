@@ -547,7 +547,10 @@ struct bpf_prog {
 	struct sock_fprog_kern	*orig_prog;	/* Original BPF program */
 	unsigned int		(*bpf_func)(const void *ctx,
 					    const struct bpf_insn *insn);
-	/* Instructions for interpreter */
+	/**
+	 * Instructions for interpreter
+	 * 解释器？
+	 */
 	struct sock_filter	insns[0];
 	struct bpf_insn		insnsi[];
 };
@@ -759,6 +762,9 @@ static inline u32 bpf_prog_tag_scratch_size(const struct bpf_prog *prog)
 			sizeof(__be64) + 1, SHA1_BLOCK_SIZE);
 }
 
+/**
+ * 获取 bpf 程序大小
+ */
 static inline unsigned int bpf_prog_size(unsigned int proglen)
 {
 	return max(sizeof(struct bpf_prog),

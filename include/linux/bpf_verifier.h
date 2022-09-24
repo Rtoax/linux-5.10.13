@@ -382,6 +382,7 @@ struct bpf_verifier_env {
 	 * @brief such as
 	 *
 	 * [BPF_PROG_TYPE_KPROBE] = & kprobe_verifier_ops,
+	 * [BPF_PROG_TYPE_TRACING] = & tracing_verifier_ops,
 	 */
 	const struct bpf_verifier_ops *ops;
 	struct bpf_verifier_stack_elem *head; /* stack of verifier states to be processed */

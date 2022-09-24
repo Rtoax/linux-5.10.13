@@ -2031,12 +2031,18 @@ static const struct bpf_prog_ops * const bpf_prog_types[] = {
 #undef BPF_LINK_TYPE
 };
 
+/**
+ * 可能是 socket 或者 tracing
+ * find program type: socket_filter vs tracing_filter
+ */
 static int find_prog_type(enum bpf_prog_type type, struct bpf_prog *prog)
 {
 	const struct bpf_prog_ops *ops;
 
 	if (type >= ARRAY_SIZE(bpf_prog_types))
 		return -EINVAL;
+
+	/*  */
 	type = array_index_nospec(type, ARRAY_SIZE(bpf_prog_types));
 	ops = bpf_prog_types[type];
 	if (!ops)
@@ -2046,6 +2052,10 @@ static int find_prog_type(enum bpf_prog_type type, struct bpf_prog *prog)
 		prog->aux->ops = ops;
 	else
 		prog->aux->ops = &bpf_offload_prog_ops;
+
+	/**
+	 * 是哪种 bpf 程序
+	 */
 	prog->type = type;
 	return 0;
 }
@@ -2441,13 +2451,13 @@ static void bpf_prog_load_fixup_attach_type(union bpf_attr *attr)
 }
 
 /**
- * @brief
+ * @brief 检测 程序类型和 attach 类型是不是能对的上
  *
  * @param prog_type
  * @param expected_attach_type
  * @param btf_id
  * @param prog_fd
- * @return int
+ * @return 对不上，返回 -EINVAL
  */
 static int
 bpf_prog_load_check_attach(enum bpf_prog_type prog_type,
@@ -2663,7 +2673,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	bpf_prog_load_fixup_attach_type(attr);
 
     /**
-     *
+     * 检测 程序类型和 attach 类型是不是能对的上
      */
 	if (bpf_prog_load_check_attach(type, attr->expected_attach_type,
 				       attr->attach_btf_id,
@@ -2680,6 +2690,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 
 	prog->expected_attach_type = attr->expected_attach_type;
 	prog->aux->attach_btf_id = attr->attach_btf_id;
+
+	/**
+	 * 往 bpf 程序上 attach
+	 */
 	if (attr->attach_prog_fd) {
 		struct bpf_prog *dst_prog;
 
@@ -2732,7 +2746,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 			goto free_prog;
 	}
 
-	/* find program type: socket_filter vs tracing_filter */
+	/**
+	 * find program type: socket_filter vs tracing_filter
+	 * 可能是 socket 或者 tracing
+	 */
 	err = find_prog_type(type, prog);
 	if (err < 0)
 		goto free_prog;
@@ -2742,6 +2759,8 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
     /**
 	* dst and src must have at least "size" number of bytes.
 	* Return strlen on success and < 0 on error.
+	*
+	* 将 prog->aux->name 拷贝到 attr->prog_name 中
 	*
 	* $ sudo bpftrace -e 'kprobe:bpf_obj_name_cpy { printf("%s\n", str(arg1)); }'
 	*
@@ -2754,6 +2773,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	* BEGIN
 	* sys_enter_execv
 	* sys_enter_execv
+	*
 	*/
 	err = bpf_obj_name_cpy(prog->aux->name, attr->prog_name,
 			                sizeof(attr->prog_name));

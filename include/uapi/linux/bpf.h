@@ -934,6 +934,12 @@ union bpf_attr {
 		__aligned_u64	log_buf;	/* user supplied buffer */
 		__u32		kern_version;	/* not used */
 		__u32		prog_flags;
+
+		/**
+		 * 程序名
+		 * sudo bpftrace -e 'kprobe:bpf_obj_name_cpy {
+		 * 		printf("%s %s\n", str(arg1), str(arg2)); }'
+		 */
 		char		prog_name[BPF_OBJ_NAME_LEN];
 		__u32		prog_ifindex;	/* ifindex of netdev to prep for */
 		/* For some prog types expected attach type must be known at
