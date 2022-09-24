@@ -303,6 +303,10 @@
 
 #define GDT_SIZE			(GDT_ENTRIES*8)//=16*8
 #define GDT_ENTRY_TLS_ENTRIES		3
+/**
+ * 8: desc_struct 数据结构大小为 8bytes
+ * 参见结构： struct thread_struct {}
+ */
 #define TLS_SIZE			(GDT_ENTRY_TLS_ENTRIES* 8)
 
 #ifdef CONFIG_X86_64

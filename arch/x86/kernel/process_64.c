@@ -653,6 +653,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 
 	/**
 	 *  Reload sp0.
+	 * 换栈帧
 	 */
 	update_task_stack(next_p);
 

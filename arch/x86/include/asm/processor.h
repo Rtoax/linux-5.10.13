@@ -527,17 +527,18 @@ struct perf_event;
 struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	/**
 	 *  Cached TLS descriptors:
+	 *  GDT_ENTRY_TLS_ENTRIES = 3
 	 */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
 
 #ifdef CONFIG_X86_32
-//	unsigned long		sp0;
+	unsigned long		sp0;
 #endif
 
 	unsigned long		sp;
 
 #ifdef CONFIG_X86_32
-//	unsigned long		sysenter_cs;
+	unsigned long		sysenter_cs;
 #else
 
 	unsigned short		es;
@@ -554,8 +555,8 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 	 * XXX: this could presumably be unsigned short.  Alternatively,
 	 * 32-bit kernels could be taught to use fsindex instead.
 	 */
-//	unsigned long fs;
-//	unsigned long gs;
+	unsigned long fs;
+	unsigned long gs;
 #endif
 
 	/* Save middle states of ptrace breakpoints */
