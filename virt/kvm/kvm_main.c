@@ -798,7 +798,7 @@ static struct kvm *kvm_create_vm(unsigned long type)
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	for (i = 0; i < KVM_NR_BUSES; i++) {
 		rcu_assign_pointer(kvm->buses[i],
@@ -4235,7 +4235,7 @@ static int kvm_dev_ioctl_create_vm(unsigned long type)
 	struct file *file;
 
 	/**
-	 * 
+	 *
 	 */
 	kvm = kvm_create_vm(type);
 	if (IS_ERR(kvm))

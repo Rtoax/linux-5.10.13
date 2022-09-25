@@ -86,7 +86,7 @@ struct kvm_debug_guest {
 
 
 /**
- *  for KVM_CREATE_MEMORY_REGION 
+ *  for KVM_CREATE_MEMORY_REGION
  *
  *  供用户空间描述申请创建的内存条信息
  *  VMM 需要为虚拟机分配内存条
@@ -97,7 +97,7 @@ struct kvm_memory_region {
      */
 	__u32 slot;
     /**
-     *  
+     *
      */
 	__u32 flags;
     /**
@@ -111,7 +111,7 @@ struct kvm_memory_region {
 };
 
 /**
- *  for KVM_SET_USER_MEMORY_REGION 
+ *  for KVM_SET_USER_MEMORY_REGION
  *
  *  描述一块 虚拟 内存条
  */
@@ -149,7 +149,7 @@ struct kvm_userspace_memory_region {
 #define KVM_MEM_READONLY	(1UL << 1)
 
 /**
- *  for KVM_IRQ_LINE 
+ *  for KVM_IRQ_LINE
  *  管脚号 和 管脚电平信息
  *  承载模拟设备和模拟中断芯片之间的中断信息的传递
  */
@@ -178,7 +178,7 @@ struct kvm_irq_level {
 };
 
 /**
- *  
+ *
  */
 struct kvm_irqchip {
 	__u32 chip_id;
@@ -316,13 +316,13 @@ struct kvm_hyperv_exit {
 #define KVM_INTERNAL_ERROR_UNEXPECTED_EXIT_REASON	4
 
 /**
- *  for KVM_RUN, returned by mmap(vcpu_fd, offset=0) 
- *  
+ *  for KVM_RUN, returned by mmap(vcpu_fd, offset=0)
+ *
  */
 struct kvm_run {
 	/* in */
     /**
-     *  
+     *
      */
 	__u8 request_interrupt_window;
 	__u8 immediate_exit;
@@ -330,7 +330,7 @@ struct kvm_run {
 
 	/* out */
     /**
-     *  
+     *
      */
 	__u32 exit_reason;
 	__u8 ready_for_interrupt_injection;
@@ -347,7 +347,7 @@ struct kvm_run {
 	__u64 psw_addr; /* psw lower half */
 #endif
     /**
-     *  
+     *
      */
 	union {
 		/* KVM_EXIT_UNKNOWN */
@@ -366,7 +366,7 @@ struct kvm_run {
 		} ex;
 
         /**
-         *  
+         *
          */
 		/* KVM_EXIT_IO */
 		struct {
@@ -805,6 +805,19 @@ enum {
 
 #define KVM_IOEVENTFD_VALID_FLAG_MASK  ((1 << kvm_ioeventfd_flag_nr_max) - 1)
 
+/**
+ * ioeventfd 用来表示一个 eventfd 和地址的关联
+ *
+ * ioeventfd 是 虚拟机内部操作系统通知 KVM/QEMU 的快捷通道
+ * irqfd 是 KVM/QEMU 通知虚拟机内部操作系统的快捷通道
+ *
+ * +----------+      irqfd     +----------+
+ * |          | -------------> |          |
+ * | KVM/QEMU |                |     VM   |
+ * |          | <------------- |          |
+ * +----------+    ioeventfd   +----------+
+ *
+ */
 struct kvm_ioeventfd {
 	__u64 datamatch;
 	__u64 addr;        /* legal pio/mmio address */
@@ -1230,6 +1243,18 @@ struct kvm_xen_hvm_config {
  */
 #define KVM_IRQFD_FLAG_RESAMPLE (1 << 1)
 
+/**
+ * ioeventfd 是 虚拟机内部操作系统通知 KVM/QEMU 的快捷通道
+ * irqfd 是 KVM/QEMU 通知虚拟机内部操作系统的快捷通道
+ *
+ * +----------+      irqfd     +----------+
+ * |          | -------------> |          |
+ * | KVM/QEMU |                |     VM   |
+ * |          | <------------- |          |
+ * +----------+    ioeventfd   +----------+
+ *
+ * KVM_IRQFD
+ */
 struct kvm_irqfd {
 	__u32 fd;
 	__u32 gsi;
@@ -1408,7 +1433,7 @@ struct kvm_s390_ucas_mapping {
 
 /* Device model IOC */
 /**
- *  
+ *
  */
 #define KVM_CREATE_IRQCHIP        _IO(KVMIO,   0x60)
 #define KVM_IRQ_LINE              _IOW(KVMIO,  0x61, struct kvm_irq_level)

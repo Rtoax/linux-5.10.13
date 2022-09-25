@@ -278,6 +278,18 @@ int  __attribute__((weak)) kvm_arch_update_irqfd_routing(
 }
 #endif
 
+/**
+ * ioeventfd 是 虚拟机内部操作系统通知 KVM/QEMU 的快捷通道
+ * irqfd 是 KVM/QEMU 通知虚拟机内部操作系统的快捷通道
+ *
+ * +----------+      irqfd     +----------+
+ * |          | -------------> |          |
+ * | KVM/QEMU |                |     VM   |
+ * |          | <------------- |          |
+ * +----------+    ioeventfd   +----------+
+ *
+ * KVM_IRQFD
+ */
 static int
 kvm_irqfd_assign(struct kvm *kvm, struct kvm_irqfd *args)
 {
@@ -299,6 +311,8 @@ kvm_irqfd_assign(struct kvm *kvm, struct kvm_irqfd *args)
 		return -ENOMEM;
 
 	irqfd->kvm = kvm;
+
+	/* 全局中断号 */
 	irqfd->gsi = args->gsi;
 	INIT_LIST_HEAD(&irqfd->list);
 	INIT_WORK(&irqfd->inject, irqfd_inject);
@@ -311,6 +325,7 @@ kvm_irqfd_assign(struct kvm *kvm, struct kvm_irqfd *args)
 		goto out;
 	}
 
+	/* 获取 eventfd_ctx */
 	eventfd = eventfd_ctx_fileget(f.file);
 	if (IS_ERR(eventfd)) {
 		ret = PTR_ERR(eventfd);
@@ -465,7 +480,7 @@ bool kvm_irq_has_notifier(struct kvm *kvm, unsigned irqchip, unsigned pin)
 EXPORT_SYMBOL_GPL(kvm_irq_has_notifier);
 
 /**
- *  
+ *
  */
 void kvm_notify_acked_gsi(struct kvm *kvm, int gsi)
 {
@@ -474,7 +489,7 @@ void kvm_notify_acked_gsi(struct kvm *kvm, int gsi)
 	hlist_for_each_entry_rcu(kian, &kvm->irq_ack_notifier_list, link) {
 		if (kian->gsi == gsi)
             /**
-             *  
+             *
              */
 			kian->irq_acked(kian);
     }
@@ -569,6 +584,20 @@ kvm_irqfd_deassign(struct kvm *kvm, struct kvm_irqfd *args)
 	return 0;
 }
 
+/**
+ * ioctl(KVM_IRQFD)
+ *
+ * ioeventfd 是 虚拟机内部操作系统通知 KVM/QEMU 的快捷通道
+ * irqfd 是 KVM/QEMU 通知虚拟机内部操作系统的快捷通道
+ *
+ * +----------+      irqfd     +----------+
+ * |          | -------------> |          |
+ * | KVM/QEMU |                |     VM   |
+ * |          | <------------- |          |
+ * +----------+    ioeventfd   +----------+
+ *
+ * KVM_IRQFD
+ */
 int
 kvm_irqfd(struct kvm *kvm, struct kvm_irqfd *args)
 {
