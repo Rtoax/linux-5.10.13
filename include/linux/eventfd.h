@@ -21,6 +21,12 @@
  * to re-use O_* flags that couldn't possibly have a meaning
  * from eventfd, in order to leave a free define-space for
  * shared O_* flags.
+ *
+ * EFD_SEMAPHORE： 一次只能处理一个,在 man 中有：
+ *
+ * If EFD_SEMAPHORE was specified and the eventfd counter has a nonzero value,
+ * then a read(2) returns 8 bytes containing the value 1, and the counter's
+ * value is decremented by 1.
  */
 #define EFD_SEMAPHORE (1 << 0)
 #define EFD_CLOEXEC O_CLOEXEC
@@ -56,7 +62,7 @@ static inline bool eventfd_signal_count(void)
  * pretend to work in !CONFIG_EVENTFD configurations. Namely, AIO.
  */
     /**
-         *  
+         *
          */
 #endif
 

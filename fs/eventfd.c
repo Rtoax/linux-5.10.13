@@ -123,8 +123,10 @@ static int eventfd_release(struct inode *inode, struct file *file)
 	eventfd_ctx_put(ctx);
 	return 0;
 }
-
-static __poll_t eventfd_poll(struct file *file, poll_table *wait)   /* poll */
+/**
+ * eventfd(2)'s file ops.poll
+ */
+static __poll_t eventfd_poll(struct file *file, poll_table *wait)
 {
 	struct eventfd_ctx *ctx = file->private_data;
 	__poll_t events = 0;
@@ -132,7 +134,13 @@ static __poll_t eventfd_poll(struct file *file, poll_table *wait)   /* poll */
 
 	poll_wait(file, &ctx->wqh, wait);   /* wait->_qproc() */
 
-	/*
+	/**
+	 * 下面一段评论来自 commit a484c3dd9426("eventfd: document lockless
+	 * access in eventfd_poll")，该提交消除了 提交 e22553e2a25e 的 一个bug。
+	 *
+	 * 结合 commit e22553e2a25e("eventfd: don't take the spinlock in
+	 * eventfd_poll") 来看，这次提交删除了 保护 count 的自旋锁。
+	 *
 	 * All writes to ctx->count occur within ctx->wqh.lock.  This read
 	 * can be done outside ctx->wqh.lock because we know that poll_wait
 	 * takes that lock (through add_wait_queue) if our caller will sleep.
@@ -172,16 +180,28 @@ static __poll_t eventfd_poll(struct file *file, poll_table *wait)   /* poll */
 	 */
 	count = READ_ONCE(ctx->count);
 
+	/* 写入操作 */
 	if (count > 0)
 		events |= EPOLLIN;
+	/* 发生错误 */
 	if (count == ULLONG_MAX)
 		events |= EPOLLERR;
+	/* 读操作 */
 	if (ULLONG_MAX - 1 > count)
 		events |= EPOLLOUT;
 
 	return events;
 }
 
+/**
+ * 读取可以处理的事件个数
+ *
+ * EFD_SEMAPHORE： 一次只能处理一个,在 man 中有：
+ *
+ * If EFD_SEMAPHORE was specified and the eventfd counter has a nonzero value,
+ * then a read(2) returns 8 bytes containing the value 1, and the counter's
+ * value is decremented by 1.
+ */
 static void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt)
 {
 	*cnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
@@ -207,6 +227,8 @@ int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_entry_t *w
 	unsigned long flags;
 
 	spin_lock_irqsave(&ctx->wqh.lock, flags);
+
+	/* 获取可以处理的事件个数 */
 	eventfd_ctx_do_read(ctx, cnt);
 	__remove_wait_queue(&ctx->wqh, wait);
 	if (*cnt != 0 && waitqueue_active(&ctx->wqh))
@@ -217,6 +239,9 @@ int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_entry_t *w
 }
 EXPORT_SYMBOL_GPL(eventfd_ctx_remove_wait_queue);
 
+/**
+ * eventfd(2)'s file ops.read_iter
+ */
 static ssize_t eventfd_read(struct kiocb *iocb, struct iov_iter *to)
 {
 	struct file *file = iocb->ki_filp;
@@ -227,17 +252,25 @@ static ssize_t eventfd_read(struct kiocb *iocb, struct iov_iter *to)
 	if (iov_iter_count(to) < sizeof(ucnt))
 		return -EINVAL;
 	spin_lock_irq(&ctx->wqh.lock);
+
+	/* 如果没有事件，那么就需要处理 */
 	if (!ctx->count) {
 		if ((file->f_flags & O_NONBLOCK) ||
 		    (iocb->ki_flags & IOCB_NOWAIT)) {
 			spin_unlock_irq(&ctx->wqh.lock);
 			return -EAGAIN;
 		}
+
+		/* 将当前进程加入等待队列 */
 		__add_wait_queue(&ctx->wqh, &wait);
+
+		/* 没有事件，那么进入漫长的等待 */
 		for (;;) {
 			set_current_state(TASK_INTERRUPTIBLE);
 			if (ctx->count)
 				break;
+
+			/* 如果有挂起的信号 */
 			if (signal_pending(current)) {
 				__remove_wait_queue(&ctx->wqh, &wait);
 				__set_current_state(TASK_RUNNING);
@@ -245,22 +278,55 @@ static ssize_t eventfd_read(struct kiocb *iocb, struct iov_iter *to)
 				return -ERESTARTSYS;
 			}
 			spin_unlock_irq(&ctx->wqh.lock);
+
+			/* 没有事件，需要让出 cpu */
 			schedule();
 			spin_lock_irq(&ctx->wqh.lock);
 		}
+
+		/* 有事件了，从上面的循环 break，并从等待队列中移除 */
 		__remove_wait_queue(&ctx->wqh, &wait);
+
+		/* 当前进程正在运行 */
 		__set_current_state(TASK_RUNNING);
 	}
+
+	/**
+	 * 处理事件： 这是 eventfd read 的核心函数，返回可以处理的事件个数
+	 *
+	 * 标志位 EFD_SEMAPHORE： 一次只能处理一个,在 man 中有：
+	 *
+	 * If EFD_SEMAPHORE was specified and the eventfd counter has a nonzero value,
+	 * then a read(2) returns 8 bytes containing the value 1, and the counter's
+	 * value is decremented by 1.
+	 */
 	eventfd_ctx_do_read(ctx, &ucnt);
+
 	if (waitqueue_active(&ctx->wqh))
 		wake_up_locked_poll(&ctx->wqh, EPOLLOUT);
 	spin_unlock_irq(&ctx->wqh.lock);
+
+	/**
+	 *
+	 */
 	if (unlikely(copy_to_iter(&ucnt, sizeof(ucnt), to) != sizeof(ucnt)))
 		return -EFAULT;
 
 	return sizeof(ucnt);
 }
 
+/**
+ * eventfd(2)'s file ops.write
+ *
+ * 在用户态可以：
+ *
+ * ssize_t s;
+ * uint64_t u = 10;
+ *
+ * s = write(efd, &u, sizeof(uint64_t));
+ *
+ * read(2) 可以读取到 10
+ */
 static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t count,
 			     loff_t *ppos)
 {
@@ -271,18 +337,28 @@ static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t c
 
 	if (count < sizeof(ucnt))
 		return -EINVAL;
+
+	/* 从用户台复制一个 uint64_t */
 	if (copy_from_user(&ucnt, buf, sizeof(ucnt)))
 		return -EFAULT;
+
+	/* 撑死了 */
 	if (ucnt == ULLONG_MAX)
 		return -EINVAL;
+
 	spin_lock_irq(&ctx->wqh.lock);
 	res = -EAGAIN;
+
+	/* 可以放下 */
 	if (ULLONG_MAX - ctx->count > ucnt)
 		res = sizeof(ucnt);
+	/* 放不下了，并且是阻塞模式，那就要等读的那边处理一些，能放下了再方 */
 	else if (!(file->f_flags & O_NONBLOCK)) {
 		__add_wait_queue(&ctx->wqh, &wait);
 		for (res = 0;;) {
 			set_current_state(TASK_INTERRUPTIBLE);
+
+			/* 能放下了，就退出循环 */
 			if (ULLONG_MAX - ctx->count > ucnt) {
 				res = sizeof(ucnt);
 				break;
@@ -298,8 +374,12 @@ static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t c
 		__remove_wait_queue(&ctx->wqh, &wait);
 		__set_current_state(TASK_RUNNING);
 	}
+
+	/* 加到 count 计数上 */
 	if (likely(res > 0)) {
 		ctx->count += ucnt;
+
+		/* 有人在等待队列上等待事件，那么通知一声 */
 		if (waitqueue_active(&ctx->wqh))
 			wake_up_locked_poll(&ctx->wqh, EPOLLIN);
 	}
@@ -321,6 +401,10 @@ static void eventfd_show_fdinfo(struct seq_file *m, struct file *f)
 }
 #endif
 
+/**
+ * eventfd(2)'s file ops
+ * 在 do_eventfd() 中设置
+ */
 static const struct file_operations eventfd_fops = {
 #ifdef CONFIG_PROC_FS
 	.show_fdinfo	= eventfd_show_fdinfo,
@@ -401,6 +485,10 @@ struct eventfd_ctx *eventfd_ctx_fileget(struct file *file)
 }
 EXPORT_SYMBOL_GPL(eventfd_ctx_fileget);
 
+/**
+ * eventfd(2)
+ * int eventfd(unsigned int initval, int flags);
+ */
 static int do_eventfd(unsigned int count, int flags)
 {
 	struct eventfd_ctx *ctx;
@@ -430,6 +518,7 @@ static int do_eventfd(unsigned int count, int flags)
 	if (fd < 0)
 		goto err;
 
+	/* 设置 file 结构的 ops，这是关键 */
 	file = anon_inode_getfile("[eventfd]", &eventfd_fops, ctx, flags);
 	if (IS_ERR(file)) {
 		put_unused_fd(fd);
@@ -445,6 +534,10 @@ err:
 	return fd;
 }
 
+/**
+ * eventfd(2)
+ * int eventfd(unsigned int initval, int flags);
+ */
 SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
 {
 	return do_eventfd(count, flags);

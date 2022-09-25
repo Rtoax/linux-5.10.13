@@ -1026,6 +1026,7 @@ struct file {
     /**
      *  文件描述符操作符
      *  namespace -> ns_file_operations, see proc_ns_file()
+	 *  eventfd(2) -> eventfd_fops, see do_eventfd()
      */
 	const struct file_operations	*f_op;  /* 文件操作符 */
 
@@ -1076,6 +1077,7 @@ struct file {
     /**
      *  epoll(2) 中对应 struct eventpoll 结构
      *  socket(2) 中对应 struct socket 结构
+	 *  eventfd(2) 中对应 struct eventfd_ctx 结构
      *  perf_event_open(2) 中对应 struct perf_event *group_leader 结构
      *  io_uring(2) 中对应 struct io_ring_ctx * 结构
      *  __bpf_map_get() 中对应 struct bpf_map * 结构
@@ -1084,7 +1086,7 @@ struct file {
      *  pid 中对应 struct pid * 结构
      *  userfaultfd(2) 中对应 struct userfaultfd_ctx * 结构，见 userfaultfd(2)
      *  /proc/PID/mem 中对应 struct mm_struct * 结构，见 __mem_open(), mem_rw()
-	 *  kvm 中对应 
+	 *  kvm 中对应
      *  [...]
      */
 	void			*private_data;
