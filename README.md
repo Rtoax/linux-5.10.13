@@ -3,18 +3,13 @@ Linux内核完全注释
 
 # Linux-5.10.13
 
-注意：此代码不可编译
-代码更新：
+> 注意：此代码不可编译
 
-* GitHub: [https://github.com/Rtoax/linux-5.10.13](https://github.com/Rtoax/linux-5.10.13)
-* Gitee: [https://gitee.com/rtoax/linux-5.10.13](https://gitee.com/rtoax/linux-5.10.13)
-* CodeChina: [https://codechina.csdn.net/Rong_Toa/linux-5.10.13/](https://codechina.csdn.net/Rong_Toa/linux-5.10.13/) - 停更
-
-
+## 包含内容
 
 * 注释掉了为空的函数
 * 删除掉了"不相关"代码
-* arch 只保留 x86_64 和 arm64
+* arch 只保留 `x86_64` 和 `arm64`
 * 删除重声明的结构，如 `list_head`
 * 删除 `BITS_PER_LONG == 32` 分支代码, 恒为假
 * 保留 `BITS_PER_LONG == 64` 分支代码, 恒为真
@@ -22,6 +17,7 @@ Linux内核完全注释
 * 保留 `__LITTLE_ENDIAN` 分支代码, 恒为真
 * 删除或注释 `CONFIG_X86_32` 部分代码, 保留 `CONFIG_X86_64`
 * 具体配置请参见 `config.h` 或 `config`
+
 
 # 注释来源
 
@@ -39,9 +35,8 @@ Linux内核完全注释
 
 ## 配置
 
-* CONFIG_SMP
-* CONFIG_X86_64
-* 具体见 `./config` 文件
+见 `config` 文件
+
 
 # 原 README
 
