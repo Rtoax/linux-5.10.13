@@ -823,7 +823,15 @@ struct perf_event {
 	struct mutex			mmap_mutex;
 	atomic_t			mmap_count;
 
+	/**
+	 * 如果需要读取perf_event的sample类型的数据，需要先给perf_event分配一个对应的
+	 * ringbuffer，为了减少开销这个ringbuffer会被mmap映射成用户态地址。
+	 *
+	 * 如果perf_event支持 inherit 属性，那么它所有的子进程上继承的perf_event的
+	 * sample数据，都会保存到父perf_event的ringbuffer中。
+	 */
 	struct perf_buffer		*rb;
+
 	/**
 	 *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
 	 *  使用 `perf_buffer.event_lock` 保护这个链表

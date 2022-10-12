@@ -9505,7 +9505,10 @@ static int perf_swevent_init(struct perf_event *event)
 	return 0;
 }
 
-static struct pmu/* 性能监控单元 */ perf_swevent = {
+/**
+ * 软件 software 性能监控单元
+ */
+static struct pmu perf_swevent = {
 	.task_ctx_nr	= perf_sw_context,
 
 	.capabilities	= PERF_PMU_CAP_NO_NMI,
@@ -13301,21 +13304,36 @@ static struct notifier_block perf_reboot_notifier = {
 	.priority = INT_MIN,
 };
 
-void __init perf_event_init(void)   /* 在 start_kernel 中调用 */
+/**
+ *在 start_kernel 中调用
+ */
+void __init perf_event_init(void)
 {
 	int ret;
 
+	/* 初始化idr，给动态type的pmu来分配 */
 	idr_init(&pmu_idr);
 
 	perf_event_init_all_cpus();
 	init_srcu_struct(&pmus_srcu);
+
+	/**
+	 * 注册 PMU - 性能监控单元
+	 */
 	perf_pmu_register(&perf_swevent, "software", PERF_TYPE_SOFTWARE);
 	perf_pmu_register(&perf_cpu_clock, NULL, -1);
 	perf_pmu_register(&perf_task_clock, NULL, -1);
+
+	/**
+	 * 注册"tracepoint" pmu
+	 */
 	perf_tp_register();
 	perf_event_init_cpu(smp_processor_id());
 	register_reboot_notifier(&perf_reboot_notifier);
 
+	/**
+	 * 注册"breakpoint" pmu
+	 */
 	ret = init_hw_breakpoint();
 	WARN(ret, "hw_breakpoint initialization failed with: %d", ret);
 

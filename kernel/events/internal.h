@@ -11,7 +11,8 @@
 #define RING_BUFFER_WRITABLE		0x01
 
 /**
- *
+ * 如果需要读取perf_event的sample类型的数据，需要先给perf_event分配一个对应的
+ * ringbuffer，为了减少开销这个ringbuffer会被mmap映射成用户态地址。
  */
 struct perf_buffer {
 	refcount_t			refcount;

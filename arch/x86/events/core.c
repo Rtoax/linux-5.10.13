@@ -1993,14 +1993,14 @@ static int __init init_hw_perf_events(void)
 
 	pmu.attr_update = x86_pmu.attr_update;
 
-    //我的打印
-    //[    0.320139] ... version:                2
-    //[    0.320140] ... bit width:              48
-    //[    0.320141] ... generic registers:      4
-    //[    0.320142] ... value mask:             0000ffffffffffff
-    //[    0.320143] ... max period:             000000007fffffff
-    //[    0.320144] ... fixed-purpose events:   3
-    //[    0.320145] ... event mask:             000000070000000f
+	//我的打印
+	//[    0.320139] ... version:                2
+	//[    0.320140] ... bit width:              48
+	//[    0.320141] ... generic registers:      4
+	//[    0.320142] ... value mask:             0000ffffffffffff
+	//[    0.320143] ... max period:             000000007fffffff
+	//[    0.320144] ... fixed-purpose events:   3
+	//[    0.320145] ... event mask:             000000070000000f
 	pr_info("... version:                %d\n",     x86_pmu.version);
 	pr_info("... bit width:              %d\n",     x86_pmu.cntval_bits);
 	pr_info("... generic registers:      %d\n",     x86_pmu.num_counters);
@@ -2055,10 +2055,10 @@ early_initcall(init_hw_perf_events);
  */
 static void x86_pmu_read(struct perf_event *event)
 {
-    /**
-     *  ??? 2021年8月30日18:02:21
-     *
-     */
+	/**
+	 *  ??? 2021年8月30日18:02:21
+	 *
+	 */
 	static_call(x86_pmu_read)(event);
 }
 
