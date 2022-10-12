@@ -10904,7 +10904,10 @@ free_dev:
 static struct lock_class_key cpuctx_mutex;
 static struct lock_class_key cpuctx_lock;
 
-int perf_pmu_register(struct pmu *pmu, const char *name, int type)  /* 注册性能管理单元 */
+/**
+ * 注册性能管理单元
+ */
+int perf_pmu_register(struct pmu *pmu, const char *name, int type)
 {
 	int cpu, ret, max = PERF_TYPE_MAX;
 
@@ -10959,26 +10962,33 @@ skip_type:
 		hw_context_taken = 1;
 	}
 	/* 遍历 pmus 链表 */
-	pmu->pmu_cpu_context = find_pmu_context(pmu->task_ctx_nr);  /* 已存在 CPU ctx */
+	pmu->pmu_cpu_context = find_pmu_context(pmu->task_ctx_nr);
 	if (pmu->pmu_cpu_context)
 		goto got_cpu_context;   /* 已存在，就不用分配了 */
 
 	ret = -ENOMEM;
-	pmu->pmu_cpu_context = alloc_percpu(struct perf_cpu_context);   /* 分配 */
+	/* 分配 per CPU 变量 */
+	pmu->pmu_cpu_context = alloc_percpu(struct perf_cpu_context);
 	if (!pmu->pmu_cpu_context)
 		goto free_dev;  /* 申请失败就退出 */
 
 	for_each_possible_cpu(cpu) {    /* 遍历 CPU */
 		struct perf_cpu_context *cpuctx;
 
-		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);    /* 1.获取 CPU 的ctx */
-		__perf_event_init_context(&cpuctx->ctx);            /* 2.初始化这个ctx */
-		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex);/*3.初始化lockdep  */
+		/* 1.获取 CPU 的ctx */
+		cpuctx = per_cpu_ptr(pmu->pmu_cpu_context, cpu);
+		/* 2.初始化这个ctx */
+		__perf_event_init_context(&cpuctx->ctx);
+		/*3.初始化lockdep */
+		lockdep_set_class(&cpuctx->ctx.mutex, &cpuctx_mutex);
 		lockdep_set_class(&cpuctx->ctx.lock, &cpuctx_lock);
-		cpuctx->ctx.pmu = pmu;                              /* 4.指向这个PMU */
-		cpuctx->online = cpumask_test_cpu(cpu, perf_online_mask);/* 5.是否在线标记 */
+		/* 4.指向这个PMU */
+		cpuctx->ctx.pmu = pmu;
+		/* 5.是否在线标记 */
+		cpuctx->online = cpumask_test_cpu(cpu, perf_online_mask);
 
-		__perf_mux_hrtimer_init(cpuctx, cpu);               /* 6.高精度定时器，function=perf_mux_hrtimer_handler */
+		/* 6.高精度定时器，function=perf_mux_hrtimer_handler */
+		__perf_mux_hrtimer_init(cpuctx, cpu);
 
 		cpuctx->heap_size = ARRAY_SIZE(cpuctx->heap_default);
 		cpuctx->heap = cpuctx->heap_default;    /* 默认使用2个 */
