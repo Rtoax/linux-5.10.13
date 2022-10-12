@@ -356,6 +356,15 @@ enum perf_event_read_format {
 	PERF_FORMAT_TOTAL_TIME_ENABLED		= 1U << 0,
 	PERF_FORMAT_TOTAL_TIME_RUNNING		= 1U << 1,
 	PERF_FORMAT_ID				= 1U << 2,
+	/**
+	 * inherit 属性指定: 如果 perf_event 绑定的task创建子进程，event自动
+	 * 的对子进程也进行追踪。这在实际使用时是非常有用的，我们追踪一个app，随后
+	 * 它创建出的子进程/线程都能自动的被追踪。
+	 *
+	 * 父进程中所有 attr.inherit=1 的 event 被子进程所继承和复制，在使用
+	 * PERF_FORMAT_GROUP 读event的count值时，会把inherit所有子进程的值累
+	 * 加进来。
+	 */
 	PERF_FORMAT_GROUP			= 1U << 3,
 
 	PERF_FORMAT_MAX = 1U << 4,		/* non-ABI */
@@ -401,7 +410,33 @@ struct perf_event_attr {
 	__u64			sample_type;
 	__u64			read_format;
 
+				/**
+				 * attr.disabled属性决定了perf_event的初始化状态(disable/enable)。
+				 * 只有perf_event为enable以后才能参与schedule，在schedule过程中
+				 * perf_event被使能时为active，关闭后恢复成enbale/inactive状态。
+				 *
+				 * 如果 attr.disabled = 1
+				 *   event->state 的初始值 PERF_EVENT_STATE_OFF
+				 * 如果 attr.disabled = 0
+				 *   event->state 的初始值 PERF_EVENT_STATE_INACTIVE
+				 *
+				 * perf_event变成enable状态有3种方法：
+				 * 1、attr.disabled = 0；
+				 * 2、attr.disabled = 1，创建后使用ioctl的PERF_EVENT_IOC_ENABLE命令
+				 *    来使能；
+				 * 3、attr.disabled = 1，attr.enable_on_exec = 1。
+				 *    这样使用execl执行新程序时使能event，这是一种非常巧妙的同步手段；
+				 */
 	__u64			disabled       :  1, /* off by default        */
+				/**
+				 * inherit 属性指定: 如果 perf_event 绑定的task创建子进程，event自动
+				 * 的对子进程也进行追踪。这在实际使用时是非常有用的，我们追踪一个app，随后
+				 * 它创建出的子进程/线程都能自动的被追踪。
+				 *
+				 * 父进程中所有 attr.inherit=1 的 event 被子进程所继承和复制，在使用
+				 * PERF_FORMAT_GROUP 读event的count值时，会把inherit所有子进程的值累
+				 * 加进来。
+				 */
 				inherit	       :  1, /* children inherit it   */
 				pinned	       :  1, /* must always be on PMU */
 				exclusive      :  1, /* only group on PMU     */
@@ -413,6 +448,15 @@ struct perf_event_attr {
 				comm	       :  1, /* include comm data     */
 				freq           :  1, /* use freq, not period  */
 				inherit_stat   :  1, /* per task counts       */
+
+				/**
+				 * perf_event变成enable状态有3种方法：
+				 * 1、attr.disabled = 0；
+				 * 2、attr.disabled = 1，创建后使用ioctl的PERF_EVENT_IOC_ENABLE命令
+				 *    来使能；
+				 * 3、attr.disabled = 1，attr.enable_on_exec = 1。
+				 *    这样使用execl执行新程序时使能event，这是一种非常巧妙的同步手段；
+				 */
 				enable_on_exec :  1, /* next exec enables     */
 				task           :  1, /* trace fork/exit       */
 				watermark      :  1, /* wakeup_watermark      */

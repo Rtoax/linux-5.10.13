@@ -659,7 +659,7 @@ static void perf_event_update_sibling_time(struct perf_event *leader)
 
 	for_each_sibling_event(sibling, leader) {
 		perf_event_update_time(sibling);
-    }
+	}
 }
 
 static void
@@ -1886,9 +1886,9 @@ static bool perf_event_validate_size(struct perf_event *event)
 	__perf_event_read_size(event, event->group_leader->nr_siblings + 1);
 	__perf_event_header_size(event, event->attr.sample_type & ~PERF_SAMPLE_READ);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_event__id_header_size(event);
 
 	/*
@@ -2030,7 +2030,7 @@ static void perf_put_aux_event(struct perf_event *event)
 
 static bool perf_need_aux_event(struct perf_event *event)
 {
-    /* 生成AUX记录而不是事件 */
+	/* 生成AUX记录而不是事件 */
 	return !!event->attr.aux_output || !!event->attr.aux_sample_size;
 }
 
@@ -2960,9 +2960,9 @@ out:
 	}
 	raw_spin_unlock_irq(&ctx->lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	event_function_call(event, __perf_event_enable, NULL);
 }
 
@@ -3003,9 +3003,9 @@ static int __perf_event_stop(void *info)
 	if (READ_ONCE(event->oncpu) != smp_processor_id())
 		return -EAGAIN;
 
-    /**
-     *  x86 -> x86_pmu_stop()
-     */
+	/**
+	 *  x86 -> x86_pmu_stop()
+	 */
 	event->pmu->stop(event, PERF_EF_UPDATE);
 
 	/*
@@ -3018,9 +3018,9 @@ static int __perf_event_stop(void *info)
 	 * while restarting.
 	 */
 	if (sd->restart)
-        /**
-         *  x86 -> x86_pmu_start()
-         */
+		/**
+		 *  x86 -> x86_pmu_start()
+		 */
 		event->pmu->start(event, 0);
 
 	return 0;
@@ -3744,6 +3744,8 @@ static void perf_event_context_sched_in(struct perf_event_context *ctx,
 	 */
 	if (!RB_EMPTY_ROOT(&ctx->pinned_groups.tree))
 		cpu_ctx_sched_out(cpuctx, EVENT_FLEXIBLE);
+
+	/*  */
 	perf_event_sched_in(cpuctx, ctx, task);
 
 	if (cpuctx->sched_cb_usage && pmu->sched_task)
@@ -3782,6 +3784,7 @@ void __perf_event_task_sched_in(struct task_struct *prev,
 	if (atomic_read(this_cpu_ptr(&perf_cgroup_events)))
 		perf_cgroup_sched_in(prev, task);
 
+	/* (perf_hw_context = 0, perf_sw_context = 1) */
 	for_each_task_context_nr(ctxn) {
 		ctx = task->perf_event_ctxp[ctxn];
 		if (likely(!ctx))
@@ -4193,14 +4196,14 @@ static void __perf_event_read(void *info)
 		update_cgrp_time_from_event(event);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_event_update_time(event);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (data->group)
 		perf_event_update_sibling_time(event);
 
@@ -4213,19 +4216,19 @@ static void __perf_event_read(void *info)
 		goto unlock;
 	}
 
-    /**
+	/**
 	 * 体系结构相关，x86 平台为 x86_pmu_start_txn()
 	 */
 	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
 
-    /**
+	/**
 	 * 体系结构相关，x86 平台为 x86_pmu_read()
 	 */
 	pmu->read(event);
 
-    /**
-     *  遍历所有 兄弟事件
-     */
+	/**
+	 *  遍历所有 兄弟事件
+	 */
 	for_each_sibling_event(sub, event) {
 		if (sub->state == PERF_EVENT_STATE_ACTIVE) {
 			/*
@@ -4238,7 +4241,7 @@ static void __perf_event_read(void *info)
 		}
 	}
 
-    /**
+	/**
 	 * 体系结构相关，x86 平台为 x86_pmu_commit_txn()
 	 */
 	data->ret = pmu->commit_txn(pmu);
@@ -4362,9 +4365,9 @@ again:
 
 		preempt_disable();
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		event_cpu = __perf_event_read_cpu(event, event_cpu);
 
 		/*
@@ -5060,31 +5063,31 @@ static u64 __perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *
 
 	mutex_lock(&event->child_mutex);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	(void)perf_event_read(event, false);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	total += perf_event_count(event);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	*enabled += event->total_time_enabled +
 			atomic64_read(&event->child_total_time_enabled);
 	*running += event->total_time_running +
 			atomic64_read(&event->child_total_time_running);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_for_each_entry(child, &event->child_list, child_list) {
 	    /**
-         *
-         */
+		 *
+		 */
 		(void)perf_event_read(child, false);
 		total += perf_event_count(child);
 		*enabled += child->total_time_enabled;
@@ -5211,14 +5214,14 @@ static int perf_read_one(struct perf_event *event,
 	u64 values[4];
 	int n = 0;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	values[n++] = __perf_event_read_value(event, &enabled, &running);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
 		values[n++] = enabled;
 	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
@@ -5269,9 +5272,9 @@ __perf_read(struct perf_event *event, char __user *buf, size_t count)
 	if (read_format & PERF_FORMAT_GROUP)
 		ret = perf_read_group(event, read_format, buf);
 	else
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		ret = perf_read_one(event, read_format, buf);
 
 	return ret;
@@ -5293,9 +5296,9 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 
 	ctx = perf_event_ctx_lock(event);
 
-    /**
-     *  读
-     */
+	/**
+	 *  读
+	 */
 	ret = __perf_read(event, buf, count);
 	perf_event_ctx_unlock(event, ctx);
 
@@ -5311,9 +5314,9 @@ static __poll_t perf_poll(struct file *file, poll_table *wait)
 	struct perf_buffer *rb;
 	__poll_t events = EPOLLHUP;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	poll_wait(file, &event->waitq, wait);
 
 	if (is_event_hup(event))
@@ -5499,9 +5502,9 @@ static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned lon
 	void (*func)(struct perf_event *);
 	u32 flags = arg;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	switch (cmd) {
 	case PERF_EVENT_IOC_ENABLE:
 		func = _perf_event_enable;
@@ -5589,9 +5592,9 @@ static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned lon
 		return -ENOTTY;
 	}
 
-    /**
-     *  调用
-     */
+	/**
+	 *  调用
+	 */
 	if (flags & PERF_IOC_FLAG_GROUP)
 		perf_event_for_each(event, func);
 	else
@@ -5615,9 +5618,9 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return ret;
 
 	ctx = perf_event_ctx_lock(event);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = _perf_ioctl(event, cmd, arg);
 	perf_event_ctx_unlock(event, ctx);
 
@@ -5849,10 +5852,10 @@ static void ring_buffer_attach(struct perf_event *event, struct perf_buffer *rb)
 		}
 
 		spin_lock_irqsave(&rb->event_lock, flags);
-        /**
-         *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
-         *  在 `ring_buffer_attach()` 中删除或添加至链表
-         */
+		/**
+		 *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
+		 *  在 `ring_buffer_attach()` 中删除或添加至链表
+		 */
 		list_add_rcu(&event->rb_entry, &rb->event_list);
 		spin_unlock_irqrestore(&rb->event_lock, flags);
 	}
@@ -5868,9 +5871,9 @@ static void ring_buffer_attach(struct perf_event *event, struct perf_buffer *rb)
 	 * not in for the data anyway.
 	 */
 	if (has_aux(event))
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		perf_event_stop(event, 0);
 
 	rcu_assign_pointer(event->rb, rb);
@@ -6078,9 +6081,9 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 	unsigned long user_locked, user_lock_limit;
 	struct user_struct *user = current_user();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct perf_buffer *rb = NULL;
 	unsigned long locked, lock_limit;
 	unsigned long vma_size;
@@ -6103,9 +6106,9 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 	if (ret)
 		return ret;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	vma_size = vma->vm_end - vma->vm_start;
 
 	if (vma->vm_pgoff == 0) {
@@ -6175,9 +6178,9 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
 	if (nr_pages != 0 && !is_power_of_2(nr_pages))
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (vma_size != PAGE_SIZE * (1 + nr_pages))
 		return -EINVAL;
 
@@ -6247,9 +6250,9 @@ accounting:
 	if (vma->vm_flags & VM_WRITE)
 		flags |= RING_BUFFER_WRITABLE;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!rb) {
 		rb = rb_alloc(nr_pages,
 			      event->attr.watermark ? event->attr.wakeup_watermark : 0,
@@ -6264,24 +6267,24 @@ accounting:
 		rb->mmap_user = get_current_user();
 		rb->mmap_locked = extra;
 
-        /**
-         *  ring buffer 绑定 event
-         */
+		/**
+		 *  ring buffer 绑定 event
+		 */
 		ring_buffer_attach(event, rb);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		perf_event_init_userpage(event);
 		perf_event_update_userpage(event);
 	}
-    /**
-     *
-     */
-    else {
-        /**
-         *
-         */
+	/**
+	 *
+	 */
+	else {
+		/**
+		 *
+		 */
 		ret = rb_alloc_aux(rb, event, vma->vm_pgoff, nr_pages,
 				   event->attr.aux_watermark, flags);
 		if (!ret)
@@ -6336,18 +6339,18 @@ static const struct file_operations perf_fops = {
 	perf_fops.llseek			= no_llseek,
 	perf_fops.release		= perf_release,
 	/**
-     *
-     */
+	 *
+	 */
 	perf_fops.read			= perf_read,
 	perf_fops.poll			= perf_poll,
 	/**
-     *
-     */
+	 *
+	 */
 	perf_fops.unlocked_ioctl		= perf_ioctl,
 	perf_fops.compat_ioctl		= perf_compat_ioctl,
 	/**
-     *  映射 perf ring buffer
-     */
+	 *  映射 perf ring buffer
+	 */
 	perf_fops.mmap			= perf_mmap,
 	perf_fops.fasync			= perf_fasync,
 };
@@ -7402,9 +7405,9 @@ static void perf_iterate_sb_cpu(perf_iterate_f output, void *data)
 	struct pmu_event_list *pel = this_cpu_ptr(&pmu_sb_events);
 	struct perf_event *event;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_for_each_entry_rcu(event, &pel->list, sb_list) {
 		/*
 		 * Skip events that are not fully formed yet; ensure that
@@ -7448,14 +7451,14 @@ perf_iterate_sb(perf_iterate_f output, void *data,
 		goto done;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_iterate_sb_cpu(output, data);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_task_context_nr(ctxn) {
 		ctx = rcu_dereference(current->perf_event_ctxp[ctxn]);
 		if (ctx)
@@ -7508,20 +7511,20 @@ void perf_event_exec(void)
 	int ctxn;
 
 	rcu_read_lock();
-    /**
-     *  遍历硬件、软件
-     */
+	/**
+	 *  遍历硬件、软件
+	 */
 	for_each_task_context_nr(ctxn) {
 		ctx = current->perf_event_ctxp[ctxn];
 		if (!ctx)
 			continue;
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		perf_event_enable_on_exec(ctxn);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		perf_iterate_ctx(ctx, perf_event_addr_filters_exec, NULL, true);
 	}
 	rcu_read_unlock();
@@ -7918,9 +7921,9 @@ void perf_event_namespaces(struct task_struct *task)
 
 	ns_link_info = namespaces_event.event_id.link_info;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_fill_ns_link_info(&ns_link_info[MNT_NS_INDEX],
 			       task, &mntns_operations);
 
@@ -8669,9 +8672,9 @@ void perf_event_ksymbol(u16 ksym_type, u64 addr, u32 len, bool unregister,
 	if (unregister)
 		flags |= PERF_RECORD_KSYMBOL_FLAGS_UNREGISTER;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ksymbol_event = (struct perf_ksymbol_event){
 		.name = name,
 		.name_len = name_len,
@@ -8844,15 +8847,15 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	u64 padding = 0;
 	int ret;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!perf_event_text_poke_match(event))
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_event_header__init_id(&text_poke_event->event_id.header, &sample, event);
 
 	/**
@@ -8864,9 +8867,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 	if (ret)
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_output_put(&handle, text_poke_event->event_id);
 	perf_output_put(&handle, text_poke_event->old_len);
 	perf_output_put(&handle, text_poke_event->new_len);
@@ -8879,9 +8882,9 @@ static void perf_event_text_poke_output(struct perf_event *event, void *data)
 
 	perf_event__output_id_sample(event, &handle, &sample);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_output_end(&handle);
 }
 
@@ -8901,9 +8904,9 @@ void perf_event_text_poke(const void *addr, const void *old_bytes,
 	tot += sizeof(text_poke_event.new_len) + new_len;
 	pad  = ALIGN(tot, sizeof(u64)) - tot;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	text_poke_event = (struct perf_text_poke_event){
 		.old_bytes    = old_bytes,
 		.new_bytes    = new_bytes,
@@ -10919,7 +10922,7 @@ int perf_pmu_register(struct pmu *pmu, const char *name, int type)  /* 注册性
 		if (type >= 0)
 			max = type;
 
-        /* 分配一个ID */
+		/* 分配一个ID */
 		ret = idr_alloc(&pmu_idr, pmu, max, 0, GFP_KERNEL);
 		if (ret < 0)
 			goto free_pdc;
@@ -10952,7 +10955,7 @@ skip_type:
 
 		hw_context_taken = 1;
 	}
-    /* 遍历 pmus 链表 */
+	/* 遍历 pmus 链表 */
 	pmu->pmu_cpu_context = find_pmu_context(pmu->task_ctx_nr);  /* 已存在 CPU ctx */
 	if (pmu->pmu_cpu_context)
 		goto got_cpu_context;   /* 已存在，就不用分配了 */
@@ -10998,13 +11001,13 @@ got_cpu_context:
 		}
 	}
 
-    /* 使能 */
+	/* 使能 */
 	if (!pmu->pmu_enable) {
 		pmu->pmu_enable  = perf_pmu_nop_void;
 		pmu->pmu_disable = perf_pmu_nop_void;
 	}
 
-    /* 检测周期 ioctl(PERF_EVENT_IOC_PERIOD) */
+	/* 检测周期 ioctl(PERF_EVENT_IOC_PERIOD) */
 	if (!pmu->check_period)
 		pmu->check_period = perf_event_nop_int;
 
@@ -11104,11 +11107,11 @@ static int perf_try_init_event(struct pmu *pmu, struct perf_event *event)
 
 	event->pmu = pmu;
 
-    /**
-    perf_swevent -> perf_swevent_init
-    perf_cpu_clock -> cpu_clock_event_init
-    perf_kprobe -> perf_kprobe_event_init
-    */
+	/**
+	perf_swevent -> perf_swevent_init
+	perf_cpu_clock -> cpu_clock_event_init
+	perf_kprobe -> perf_kprobe_event_init
+	*/
 	ret = pmu->event_init(event);
 
 	if (ctx)
@@ -11162,9 +11165,9 @@ static struct pmu *perf_init_event(struct perf_event *event)
 again:
 	rcu_read_lock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pmu = idr_find(&pmu_idr, type);
 	rcu_read_unlock();
 	if (pmu) {
@@ -11180,13 +11183,13 @@ again:
 		goto unlock;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_for_each_entry_rcu(pmu, &pmus, entry, lockdep_is_held(&pmus_srcu)) {
 	    /**
-         *
-         */
+		 *
+		 */
 		ret = perf_try_init_event(pmu, event);
 		if (!ret)
 			goto unlock;
@@ -11335,9 +11338,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		 perf_overflow_handler_t overflow_handler,
 		 void *context, int cgroup_fd)
 {
-    /**
-     *  性能管理单元
-     */
+	/**
+	 *  性能管理单元
+	 */
 	struct pmu *pmu;
 	struct perf_event *event;
 	struct hw_perf_event *hwc;
@@ -11348,9 +11351,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 			return ERR_PTR(-EINVAL);
 	}
 
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	event = kzalloc(sizeof(*event), GFP_KERNEL);
 	if (!event)
 		return ERR_PTR(-ENOMEM);
@@ -11396,9 +11399,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 
 	event->state		= PERF_EVENT_STATE_INACTIVE;
 
-    /**
-     *  是否绑定 task_struct
-     */
+	/**
+	 *  是否绑定 task_struct
+	 */
 	if (task) {
 		event->attach_state = PERF_ATTACH_TASK;
 		/*
@@ -11411,9 +11414,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 
 	event->clock = &local_clock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (parent_event)
 		event->clock = parent_event->clock;
 
@@ -11443,9 +11446,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		event->overflow_handler_context = NULL;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_event__state_init(event);
 
 	pmu = NULL;
@@ -11468,9 +11471,9 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 	if (!has_branch_stack(event))
 		event->attr.branch_sample_type = 0;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pmu = perf_init_event(event);
 	if (IS_ERR(pmu)) {
 		err = PTR_ERR(pmu);
@@ -11492,29 +11495,29 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		goto err_pmu;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (cgroup_fd != -1) {
 		err = perf_cgroup_connect(cgroup_fd, event, attr, group_leader);
 		if (err)
 			goto err_pmu;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	err = exclusive_event_init(event);
 	if (err)
 		goto err_pmu;
 
-    /**
-     *  filter
-     */
+	/**
+	 *  filter
+	 */
 	if (has_addr_filter(event)) {
 		event->addr_filter_ranges = kcalloc(pmu->nr_addr_filters,
-                						    sizeof(struct perf_addr_filter_range),
-                						    GFP_KERNEL);
+			    						    sizeof(struct perf_addr_filter_range),
+			    						    GFP_KERNEL);
 		if (!event->addr_filter_ranges) {
 			err = -ENOMEM;
 			goto err_per_task;
@@ -11538,14 +11541,14 @@ perf_event_alloc(struct perf_event_attr *attr, int cpu,
 		event->addr_filters_gen = 1;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!event->parent) {
 		if (event->attr.sample_type & PERF_SAMPLE_CALLCHAIN) {
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			err = get_callchain_buffers(attr->sample_max_stack);
 			if (err)
 				goto err_addr_filters;
@@ -11851,12 +11854,34 @@ again:
 }
 
 /**
- * sys_perf_event_open - open a performance event, associate it to a task/cpu
+ * perf_event_open(2) - open a performance event, associate it to a task/cpu
  *
  * @attr_uptr:	event_id type attributes for monitoring/sampling
  * @pid:		target pid
+ *                  pid == 0: event绑定到当前进程；
+ *                  pid > 0: event绑定到指定进程；
+ *                  pid == -1: event绑定到当前cpu的所有进程。
  * @cpu:		target cpu
- * @group_fd:		group leader event fd
+ *                  cpu >= 0: event绑定到指定cpu；
+ *                  cpu == -1: event绑定到所有cpu；
+ * @group_fd:	group leader event fd
+ *                  使用 group_fd 参数来指定 perf_event 的 group_leader：
+ *                  group_fd >= 0 指定对于的 perf_event 为当前 group_leader，
+ *                  group_fd == -1 创建新的 group_leader
+ *
+ * 在同时指定的情况下task维度优先于cpu维度，所以pid、cpu组合起来有以下几种情况：
+ * -----------------------------------------------------------------------------
+ * 组合1：pid >= 0, cpu >= 0。perf_event绑定到task维度的context。task在得到cpu调度
+ *       运行的时候，context上挂载的本task相关的perf_event也开始运行。
+ *       但是如果event指定的cpu不等于当前运行的cpu，event不会得到执行，这样就符合了这个
+ *       组合的含义；
+ * 组合2：pid >= 0, cpu == -1。perf_event绑定到task维度的context。只要task得到调度，
+ *       该perf_event就会得到执行；
+ * 组合3：pid == -1, cpu >= 0。perf_event绑定到cpu维度的context。只要该cpu运行，该
+ *       perf_event就会得到执行。目前只有在cpu online的情况下才能绑定perf_event，
+ *       cpu hotplug支持可能会有问题；
+ * 组合4：pid == -1, cpu == -1。这种组合目前是非法的，相当于整系统所有cpu、所有进程。
+ *
  *
  * 用户态 API
  * https://rtoax.blog.csdn.net/article/details/117040529
@@ -11869,15 +11894,15 @@ again:
  *                     unsigned long flags);
  */
 int perf_event_open(struct perf_event_attr *attr,
-                     pid_t pid, int cpu, int group_fd,
-                     unsigned long flags);
+			         pid_t pid, int cpu, int group_fd,
+			         unsigned long flags) {}
 SYSCALL_DEFINE5(perf_event_open,
 		struct perf_event_attr __user *, attr_uptr,
 		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct perf_event *group_leader = NULL, *output_event = NULL;
 	struct perf_event *event, *sibling;
 	struct perf_event_attr attr;
@@ -11901,9 +11926,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (err)
 		return err;
 
-    /**
-     *  拷贝
-     */
+	/**
+	 *  拷贝
+	 */
 	err = perf_copy_attr(attr_uptr, &attr); /* 拷贝 */
 	if (err)
 		return err;
@@ -11920,9 +11945,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	}
 
 	if (attr.freq) {
-        /**
-         *  /proc/sys/kernel/perf_event_max_sample_rate
-         */
+		/**
+		 *  /proc/sys/kernel/perf_event_max_sample_rate
+		 */
 		if (attr.sample_freq > sysctl_perf_event_sample_rate)
 			return -EINVAL;
 	} else {
@@ -11937,9 +11962,9 @@ SYSCALL_DEFINE5(perf_event_open,
 			return err;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	err = security_locked_down(LOCKDOWN_PERF);
 	if (err && (attr.sample_type & PERF_SAMPLE_REGS_INTR))
 		/* REGS_INTR can leak data, lockdown must prevent this */
@@ -11959,24 +11984,24 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (flags & PERF_FLAG_FD_CLOEXEC)
 		f_flags |= O_CLOEXEC;
 
-    /**
-     *  获取 fd
-     */
+	/**
+	 *  获取 fd
+	 */
 	event_fd = get_unused_fd_flags(f_flags);
 	if (event_fd < 0)
 		return event_fd;
 
-    /**
-     *  其他利用 系统调用 perf_event_open 打开的 fd
-     */
+	/**
+	 *  其他利用 系统调用 perf_event_open 打开的 fd
+	 */
 	if (group_fd != -1) {
 		err = perf_fget_light(group_fd, &group);
 		if (err)
 			goto err_fd;
 
-        /**
-         *  领头人
-         */
+		/**
+		 *  领头人
+		 */
 		group_leader = group.file->private_data;
 		if (flags & PERF_FLAG_FD_OUTPUT)
 			output_event = group_leader;
@@ -11984,9 +12009,9 @@ SYSCALL_DEFINE5(perf_event_open,
 			group_leader = NULL;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (pid != -1 && !(flags & PERF_FLAG_PID_CGROUP)) {
 		task = find_lively_task_by_vpid(pid);
 		if (IS_ERR(task)) {
@@ -11995,9 +12020,9 @@ SYSCALL_DEFINE5(perf_event_open,
 		}
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (task && group_leader &&
 	    group_leader->attr.inherit != attr.inherit) {
 		err = -EINVAL;
@@ -12007,22 +12032,22 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (flags & PERF_FLAG_PID_CGROUP)
 		cgroup_fd = pid;
 
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	event = perf_event_alloc(&attr, cpu, task, group_leader, NULL, NULL, NULL, cgroup_fd);
 	if (IS_ERR(event)) {
 		err = PTR_ERR(event);
 		goto err_task;
 	}
 
-    /**
-     *  是采样事件
-     */
+	/**
+	 *  是采样事件
+	 */
 	if (is_sampling_event(event)) {
-        /**
-         *  采样事件必须可以中断
-         */
+		/**
+		 *  采样事件必须可以中断
+		 */
 		if (event->pmu->capabilities & PERF_PMU_CAP_NO_INTERRUPT) {
 			err = -EOPNOTSUPP;
 			goto err_alloc;
@@ -12035,9 +12060,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	 */
 	pmu = event->pmu;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (attr.use_clockid) {
 		err = perf_event_set_clock(event, attr.clockid);
 		if (err)
@@ -12047,9 +12072,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	if (pmu->task_ctx_nr == perf_sw_context)
 		event->event_caps |= PERF_EV_CAP_SOFTWARE;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (group_leader) {
 		if (is_software_event(event) &&
 		    !in_software_context(group_leader)) {
@@ -12132,18 +12157,18 @@ SYSCALL_DEFINE5(perf_event_open,
 			goto err_context;
 	}
 
-    /**
-     *  输出
-     */
+	/**
+	 *  输出
+	 */
 	if (output_event) {
 		err = perf_event_set_output(event, output_event);
 		if (err)
 			goto err_context;
 	}
 
-    /**
-     *  打开匿名文件
-     */
+	/**
+	 *  打开匿名文件
+	 */
 	event_file = anon_inode_getfile("[perf_event]", &perf_fops, event, f_flags);
 	if (IS_ERR(event_file)) {
 		err = PTR_ERR(event_file);
@@ -12216,9 +12241,9 @@ SYSCALL_DEFINE5(perf_event_open,
 		goto err_locked;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!perf_event_validate_size(event)) {
 		err = -E2BIG;
 		goto err_locked;
@@ -12315,14 +12340,14 @@ SYSCALL_DEFINE5(perf_event_open,
 	perf_event__header_size(event);
 	perf_event__id_header_size(event);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	event->owner = current;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_install_in_context(ctx, event, event->cpu);
 	perf_unpin_context(ctx);
 
@@ -12337,9 +12362,9 @@ SYSCALL_DEFINE5(perf_event_open,
 
 	mutex_lock(&current->perf_event_mutex);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_add_tail(&event->owner_entry, &current->perf_event_list);
 	mutex_unlock(&current->perf_event_mutex);
 
@@ -12351,9 +12376,9 @@ SYSCALL_DEFINE5(perf_event_open,
 	 */
 	fdput(group);
 
-    /**
-     *  绑定 fd 和 file
-     */
+	/**
+	 *  绑定 fd 和 file
+	 */
 	fd_install(event_fd, event_file);
 	return event_fd;
 
@@ -13322,7 +13347,7 @@ static int __init perf_event_sysfs_init(void)   /* 初始化 perf event sysfs */
 
 	mutex_lock(&pmus_lock);
 
-    /* /sys/bus/event_source/ */
+	/* /sys/bus/event_source/ */
 	ret = bus_register(&pmu_bus);
 	if (ret)
 		goto unlock;

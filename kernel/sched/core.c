@@ -193,10 +193,10 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	for (;;) {
 		rq = task_rq(p);
 		raw_spin_lock(&rq->lock);
-        /**
-         *  如果获取到队列，并且进程没有正在迁移中
-         *  那么就可以 加锁 后 直接返回这个运行队列
-         */
+		/**
+		 *  如果获取到队列，并且进程没有正在迁移中
+		 *  那么就可以 加锁 后 直接返回这个运行队列
+		 */
 		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
 			rq_pin_lock(rq, rf);
 			return rq;
@@ -326,21 +326,21 @@ void update_rq_clock(struct rq *rq)
 	rq->clock_update_flags |= RQCF_UPDATED;
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
 	if (delta < 0)
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	rq->clock += delta;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	update_rq_clock_task(rq, delta);
 }
 
@@ -594,9 +594,9 @@ void wake_up_q(struct wake_q_head *head)
 	while (node != WAKE_Q_TAIL) {
 		struct task_struct *task;
 
-        /**
-         *  获取 task_struct 结构
-         */
+		/**
+		 *  获取 task_struct 结构
+		 */
 		task = container_of(node, struct task_struct, wake_q);
 		BUG_ON(!task);
 		/* Task can safely be re-inserted now: */
@@ -628,9 +628,9 @@ void resched_curr(struct rq *rq)
 
 	lockdep_assert_held(&rq->lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (test_tsk_need_resched(curr))    /* 是否需要重新调度 */
 		return;
 
@@ -638,9 +638,9 @@ void resched_curr(struct rq *rq)
 
 	if (cpu == smp_processor_id()) {
 
-        /**
-         *  设置需要调度
-         */
+		/**
+		 *  设置需要调度
+		 */
 		set_tsk_need_resched(curr);
 		set_preempt_need_resched();
 		return;
@@ -872,7 +872,7 @@ int tg_nop(struct task_group *tg, void *data)
  */
 static void set_load_weight(struct task_struct *p, bool update_load)
 {
-    /* nice + 120 - 100 = nice + 20 */
+	/* nice + 120 - 100 = nice + 20 */
 	int prio = p->static_prio - MAX_RT_PRIO/* 100 */;    //calculate initial `prio`
 	struct load_weight *load = &p->se.load;
 
@@ -1598,9 +1598,9 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!(flags & ENQUEUE_RESTORE)) {
 		sched_info_queued(rq, p);
 		psi_enqueue(p, flags & ENQUEUE_WAKEUP);
@@ -1608,14 +1608,14 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 
 	uclamp_rq_inc(rq, p);
 
-    /**
-     *  调用调度类入队函数
-     *
-     * fair_sched_class.enqueue_task   = enqueue_task_fair
-     * rt_sched_class.enqueue_task     = enqueue_task_rt
-     * dl_sched_class.enqueue_task     = enqueue_task_dl
-     * idle_sched_class.enqueue_task   = NULL
-     */
+	/**
+	 *  调用调度类入队函数
+	 *
+	 * fair_sched_class.enqueue_task   = enqueue_task_fair
+	 * rt_sched_class.enqueue_task     = enqueue_task_rt
+	 * dl_sched_class.enqueue_task     = enqueue_task_dl
+	 * idle_sched_class.enqueue_task   = NULL
+	 */
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -1641,14 +1641,14 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
  */
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
-    /**
-     *  入队
-     */
+	/**
+	 *  入队
+	 */
 	enqueue_task(rq, p, flags);
 
-    /**
-     *  进程正在就绪队列中运行
-     */
+	/**
+	 *  进程正在就绪队列中运行
+	 */
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
@@ -1747,13 +1747,13 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->sched_class == rq->curr->sched_class)
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	else if (p->sched_class > rq->curr->sched_class)
 		resched_curr(rq);
 
@@ -1926,12 +1926,12 @@ void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 	if (running)
 		put_prev_task(rq, p);
 
-    /*
-        fair_sched_class.set_cpus_allowed   = set_cpus_allowed_common   拷贝 cpumask
-        rt_sched_class.set_cpus_allowed     = set_cpus_allowed_common
-        dl_sched_class.set_cpus_allowed     = set_cpus_allowed_dl
-        stop_sched_class.set_cpus_allowed   = set_cpus_allowed_common
-    */
+	/*
+		fair_sched_class.set_cpus_allowed   = set_cpus_allowed_common   拷贝 cpumask
+		rt_sched_class.set_cpus_allowed     = set_cpus_allowed_common
+		dl_sched_class.set_cpus_allowed     = set_cpus_allowed_dl
+		stop_sched_class.set_cpus_allowed   = set_cpus_allowed_common
+	*/
 	p->sched_class->set_cpus_allowed(p, new_mask);  /* 设置允许的 cpumask */
 
 	if (queued)
@@ -2007,7 +2007,7 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	if (cpumask_test_cpu(task_cpu(p), new_mask))
 		goto out;
 
-    /* 如果进程真该运行或者正在唤醒 */
+	/* 如果进程真该运行或者正在唤醒 */
 	if (task_running(rq, p) || p->state == TASK_WAKING) {
 		struct migration_arg arg = { p, dest_cpu };
 		/* Need help from migration thread: drop lock and wait. */
@@ -2072,9 +2072,9 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 	WARN_ON_ONCE(!cpu_online(new_cpu));
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	trace_sched_migrate_task(p, new_cpu);
 
 	if (task_cpu(p) != new_cpu) {
@@ -2442,18 +2442,18 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 {
 	lockdep_assert_held(&p->pi_lock);
 
-    /**
-     *  选择一个合适的 CPU
-     *  使用调度类的 队列选择 接口
-     */
+	/**
+	 *  选择一个合适的 CPU
+	 *  使用调度类的 队列选择 接口
+	 */
 	if (p->nr_cpus_allowed > 1)
-        /**
-         *  select_task_rq_idle() -- 直接返回 return task_cpu(p);
-         *  select_task_rq_fair() -- 选择最合适的调度域中最悠闲的 CPU
-         *  select_task_rq_rt()
-         *  select_task_rq_dl()
-         *  select_task_rq_stop()
-         */
+		/**
+		 *  select_task_rq_idle() -- 直接返回 return task_cpu(p);
+		 *  select_task_rq_fair() -- 选择最合适的调度域中最悠闲的 CPU
+		 *  select_task_rq_rt()
+		 *  select_task_rq_dl()
+		 *  select_task_rq_stop()
+		 */
 		cpu = p->sched_class->select_task_rq(p, cpu, sd_flags, wake_flags);
 	else
 		cpu = cpumask_any(p->cpus_ptr);
@@ -2469,9 +2469,9 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 	 *   not worry about this generic constraint ]
 	 */
 	if (unlikely(!is_cpu_allowed(p, cpu)))
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		cpu = select_fallback_rq(task_cpu(p), p);
 
 	return cpu;
@@ -2558,9 +2558,9 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 			   struct rq_flags *rf)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	check_preempt_curr(rq, p, wake_flags);
 
 	/**
@@ -2585,16 +2585,16 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 		 * drop the rq->lock, hereafter rq is only used for statistics.
 		 */
 		rq_unpin_lock(rq, rf);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		p->sched_class->task_woken(rq, p);
 		rq_repin_lock(rq, rf);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (rq->idle_stamp) {
 		u64 delta = rq_clock(rq) - rq->idle_stamp;
 		u64 max = 2*rq->max_idle_balance_cost;
@@ -2655,9 +2655,9 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 	 */
 	activate_task(rq, p, en_flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ttwu_do_wakeup(rq, p, wake_flags, rf);
 }
 
@@ -2971,9 +2971,9 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ttwu_do_activate(rq, p, wake_flags, &rf);
 	rq_unlock(rq, &rf);
 }
@@ -3104,20 +3104,20 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
  *
  * 一个调用栈示例
  * @stack[
-        try_to_wake_up+1
-        hrtimer_wakeup+30
-        __hrtimer_run_queues+295
-        hrtimer_interrupt+252
-        __sysvec_apic_timer_interrupt+89
-        sysvec_apic_timer_interrupt+109
-        asm_sysvec_apic_timer_interrupt+18
-        cpuidle_enter_state+210
-        cpuidle_enter+41
-        cpuidle_idle_call+296
-        do_idle+123
-        cpu_startup_entry+25
-        secondary_startup_64_no_verify+194
-    ]: 225
+		try_to_wake_up+1
+		hrtimer_wakeup+30
+		__hrtimer_run_queues+295
+		hrtimer_interrupt+252
+		__sysvec_apic_timer_interrupt+89
+		sysvec_apic_timer_interrupt+109
+		asm_sysvec_apic_timer_interrupt+18
+		cpuidle_enter_state+210
+		cpuidle_enter+41
+		cpuidle_idle_call+296
+		do_idle+123
+		cpu_startup_entry+25
+		secondary_startup_64_no_verify+194
+	]: 225
  */
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
@@ -3127,9 +3127,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	preempt_disable();  /* 禁止抢占 */
 
-    /**
-     * 当前线程
-     */
+	/**
+	 * 当前线程
+	 */
 	if (p == current) {
 		/*
 		 * We're waking current, this means 'p->on_rq' and 'task_cpu(p)
@@ -3156,8 +3156,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	}
 
 	/**
-     * 如果不是当前线程，从此继续运行
-     */
+	 * 如果不是当前线程，从此继续运行
+	 */
 	/*
 	 * If we are going to wake up a thread waiting for CONDITION we
 	 * need to ensure that CONDITION=1 done by the caller can not be
@@ -3166,14 +3166,14 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	smp_mb__after_spinlock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!(p->state & state))
 		goto unlock;
 
@@ -3207,8 +3207,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 *
 	 * A similar smb_rmb() lives in try_invoke_on_locked_down_task().
 	 *
-     * 在 读 p->on_rq 之前，p->state 需要读完成
-     */
+	 * 在 读 p->on_rq 之前，p->state 需要读完成
+	 */
 	smp_rmb();
 
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
@@ -3295,8 +3295,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 */
 	smp_cond_load_acquire(&p->on_cpu, !VAL);
 
-    /**
-     *  调用调度类的 select_task_rq()
+	/**
+	 *  调用调度类的 select_task_rq()
 	 *  选择一个 runqueue
 	 *
 	 * 如
@@ -3305,7 +3305,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * select_task_rq_rt()
 	 * select_task_rq_dl()
 	 * select_task_rq_stop()
-     */
+	 */
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags);
 	/* CPU 发生了变化 */
 	if (task_cpu(p) != cpu) {
@@ -3333,9 +3333,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	cpu = task_cpu(p);
 #endif /* CONFIG_SMP */
 
-    /**
-     * 添加到队列
-     */
+	/**
+	 * 添加到队列
+	 */
 	ttwu_queue(p, cpu, wake_flags);
 
 unlock:
@@ -3344,9 +3344,9 @@ out:
 	if (success)
 		ttwu_stat(p, task_cpu(p), wake_flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	preempt_enable();
 
 	return success;
@@ -3413,9 +3413,9 @@ bool try_invoke_on_locked_down_task(struct task_struct *p, bool (*func)(struct t
  */
 int wake_up_process(struct task_struct *p)
 {
-    /**
-     *  唤醒进程
-     */
+	/**
+	 *  唤醒进程
+	 */
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
 EXPORT_SYMBOL(wake_up_process);
@@ -3435,9 +3435,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq			= 0;
 
-    /**
-     *  调度实体初始化
-     */
+	/**
+	 *  调度实体初始化
+	 */
 	p->se.on_rq			= 0;
 	p->se.exec_start		= 0;
 	p->se.sum_exec_runtime		= 0;
@@ -3451,30 +3451,30 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 #endif
 
 #ifdef CONFIG_SCHEDSTATS
-    /**
-     *  调度统计
-     */
+	/**
+	 *  调度统计
+	 */
 	/* Even if schedstat is disabled, there should not be garbage */
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	RB_CLEAR_NODE(&p->dl.rb_node);  /* 清空红黑树节点 */
 
-    /* 为什么直接初始化 deadline???????????????????? */
+	/* 为什么直接初始化 deadline???????????????????? */
 
-    /**
-     *  初始化 deadline 调度实体
-     */
+	/**
+	 *  初始化 deadline 调度实体
+	 */
 	init_dl_task_timer(&p->dl);     /* 初始化 deadline hrtimer */
 	init_dl_inactive_task_timer(&p->dl);
 	__dl_clear_params(p);           /* 清理 deadline 参数 */
 
-    /**
-     *  初始化实时调度实体
-     */
+	/**
+	 *  初始化实时调度实体
+	 */
 	INIT_LIST_HEAD(&p->rt.run_list);
 	p->rt.timeout		= 0;
 	p->rt.time_slice	= sched_rr_timeslice;   /* 100Hz */
@@ -3489,9 +3489,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->capture_control = NULL;
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	init_numa_balancing(clone_flags, p);
 #ifdef CONFIG_SMP
 	p->wake_entry.u_flags = CSD_TYPE_TTWU;
@@ -3630,9 +3630,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 {
 	unsigned long flags;
 
-    /**
-     *  调度相关的有些信息不能和 父进程共用，进行初始化为 0
-     */
+	/**
+	 *  调度相关的有些信息不能和 父进程共用，进行初始化为 0
+	 */
 	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
 
 	/*
@@ -3660,9 +3660,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		} else if (PRIO_TO_NICE(p->static_prio) < 0)
 			p->static_prio = NICE_TO_PRIO(0);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		p->prio = p->normal_prio = __normal_prio(p);
 		set_load_weight(p, false);  /* 负载 */
 
@@ -3673,9 +3673,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		p->sched_reset_on_fork = 0;
 	}
 
-    /**
-     *  优先级判断 和 调度类选择
-     */
+	/**
+	 *  优先级判断 和 调度类选择
+	 */
 	if (dl_prio(p->prio))       /* 如果 优先级   小于 0*/
 		return -EAGAIN;
 	else if (rt_prio(p->prio))  /* 如果 优先级小于 100 */
@@ -3683,9 +3683,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	else                        /* 如果 优先级大于 100 ***大概率****/
 		p->sched_class = &fair_sched_class; /* 使用公平调度类 */
 
-    /**
-     *  初始化与子进程的调度实体 se 相关的成员
-     */
+	/**
+	 *  初始化与子进程的调度实体 se 相关的成员
+	 */
 	init_entity_runnable_average(&p->se);   /* 清零 */
 
 	/*
@@ -3706,11 +3706,11 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	 */
 	__set_task_cpu(p, smp_processor_id());
 
-    /**
-     *  调用调度类的 初始化
-     *  task_fork_fair()
-     *  task_fork_dl()
-     */
+	/**
+	 *  调用调度类的 初始化
+	 *  task_fork_fair()
+	 *  task_fork_dl()
+	 */
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);   /* ->task_fork_fair() */
 
@@ -3725,9 +3725,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 	p->on_cpu = 0;
 #endif
 
-    /**
-     *  x86 为 空
-     */
+	/**
+	 *  x86 为 空
+	 */
 	init_task_preempt_count(p);
 
 #ifdef CONFIG_SMP
@@ -3774,9 +3774,9 @@ void wake_up_new_task(struct task_struct *p)
 
 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p->state = TASK_RUNNING;
 
 #ifdef CONFIG_SMP
@@ -3791,36 +3791,36 @@ void wake_up_new_task(struct task_struct *p)
 	p->recent_used_cpu = task_cpu(p);
 	rseq_migrate(p);
 
-    /**
-     *  为子进程 设置即将要运行的 CPU,
-     */
+	/**
+	 *  为子进程 设置即将要运行的 CPU,
+	 */
 	__set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
 
 #endif
 
-    /**
-     *  获取当前进程的运行队列并上锁
-     */
+	/**
+	 *  获取当前进程的运行队列并上锁
+	 */
 	__rq = __task_rq_lock(p, &rf);
 
-    /**
-     *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
-     */
+	/**
+	 *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+	 */
 	update_rq_clock(__rq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	post_init_entity_util_avg(p);
 
-    /**
-     *  激活 task，添加到运行队列
-     *
-     *  调用 `enqueue_task` 把子进程添加到 调度器中
-     */
+	/**
+	 *  激活 task，添加到运行队列
+	 *
+	 *  调用 `enqueue_task` 把子进程添加到 调度器中
+	 */
 	activate_task(__rq, p, ENQUEUE_NOCLOCK);
 
-    /* tracepoint:sched:sched_wakeup_new */
+	/* tracepoint:sched:sched_wakeup_new */
 	trace_sched_wakeup_new(p);
 
 	check_preempt_curr(__rq, p, WF_FORK);
@@ -3832,16 +3832,16 @@ void wake_up_new_task(struct task_struct *p)
 		 * drop it.
 		 */
 		rq_unpin_lock(__rq, &rf);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		p->sched_class->task_woken(__rq, p);
 		rq_repin_lock(__rq, &rf);
 	}
 #endif
-    /**
-     *  开锁
-     */
+	/**
+	 *  开锁
+	 */
 	task_rq_unlock(__rq, p, &rf);
 }
 
@@ -4020,14 +4020,14 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 	rseq_preempt(prev);
 	fire_sched_out_preempt_notifiers(prev, next);
 
-    /**
-     *  设置下一个进程 next.on_cpu=1
-     */
+	/**
+	 *  设置下一个进程 next.on_cpu=1
+	 */
 	prepare_task(next);
 
-    /**
-     *  空
-     */
+	/**
+	 *  空
+	 */
 	prepare_arch_switch(next);
 }
 
@@ -4092,14 +4092,14 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	vtime_task_switch(prev);
 	perf_event_task_sched_in(prev, current);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	finish_task(prev);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
 	kcov_finish_switch(current);
@@ -4195,14 +4195,14 @@ schedule_tail(struct task_struct *prev)
 	 * PREEMPT_COUNT kernels).
 	 */
 
-    /**
-     *  打开本地中断
-     */
+	/**
+	 *  打开本地中断
+	 */
 	rq = finish_task_switch(prev);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	balance_callback(rq);
 	preempt_enable();
 
@@ -4224,9 +4224,9 @@ schedule_tail(struct task_struct *prev)
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	prepare_task_switch(rq, prev, next);
 
 	/*
@@ -4244,35 +4244,35 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 	 *   user ->   user   switch
 	 */
 	/**
-     *  下一个线程是 内核线程
-     */
+	 *  下一个线程是 内核线程
+	 */
 	if (!next->mm) {                                // to kernel
 		enter_lazy_tlb(prev->active_mm, next);
 
-        /**
-         *   active_mm 结构一直是内核 地址空间
-         */
+		/**
+		 *   active_mm 结构一直是内核 地址空间
+		 */
 		next->active_mm = prev->active_mm;
 
-        /**
-         *  之前的线程是 用户态线程 -> 增加 active_mm 引用计数
-         */
+		/**
+		 *  之前的线程是 用户态线程 -> 增加 active_mm 引用计数
+		 */
 		if (prev->mm)                           // from user
 			mmgrab(prev->active_mm);
-        /**
-         *  之前的线程是 内核态线程 -> 将 active_mm = NULL
-         */
+		/**
+		 *  之前的线程是 内核态线程 -> 将 active_mm = NULL
+		 */
 		else
 			prev->active_mm = NULL;
 
-    /**
-     *  下一个线程是 用户态线程
-     */
+	/**
+	 *  下一个线程是 用户态线程
+	 */
 	} else {   // to user
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		membarrier_switch_mm(rq, prev->active_mm, next->mm);
 
 		/*
@@ -4287,9 +4287,9 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 		 */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-        /**
-         *  上一个进程也是 内核进程
-         */
+		/**
+		 *  上一个进程也是 内核进程
+		 */
 		if (!prev->mm) {                        // from kernel
 			/* will mmdrop() in finish_task_switch(). */
 			rq->prev_mm = prev->active_mm;
@@ -4310,9 +4310,9 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 
 	barrier();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return finish_task_switch(prev);
 }
 
@@ -4430,15 +4430,15 @@ void sched_exec(void)
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 
-    /*
-        fair_sched_class.select_task_rq = select_task_rq_fair()
-    */
+	/*
+		fair_sched_class.select_task_rq = select_task_rq_fair()
+	*/
 	dest_cpu = p->sched_class->select_task_rq(p, task_cpu(p), SD_BALANCE_EXEC, 0);
 	if (dest_cpu == smp_processor_id())
 		goto unlock;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (likely(cpu_active(dest_cpu))) {
 		struct migration_arg arg = { p, dest_cpu };
 
@@ -4529,63 +4529,63 @@ void scheduler_tick(void)
 {
 	int cpu = smp_processor_id();
 
-    /**
-     *  获取当前 CPU 上的队列
-     */
+	/**
+	 *  获取当前 CPU 上的队列
+	 */
 	struct rq *rq = cpu_rq(cpu);
 
-    /**
-     *   获取运行队列上正在运行的进程
-     */
+	/**
+	 *   获取运行队列上正在运行的进程
+	 */
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
 	unsigned long thermal_pressure;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	arch_scale_freq_tick();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sched_clock_tick();
 
 	rq_lock(rq, &rf);
 
-    /**
-     *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
-     */
+	/**
+	 *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+	 */
 	update_rq_clock(rq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure);
 
-    /**
-     *  当前调度类 的 任务 tick
-     *
-     *  task_tick_idle()
-     *  task_tick_fair()
-     *  task_tick_dl()
-     *  task_tick_stop()
-     */
+	/**
+	 *  当前调度类 的 任务 tick
+	 *
+	 *  task_tick_idle()
+	 *  task_tick_fair()
+	 *  task_tick_dl()
+	 *  task_tick_stop()
+	 */
 	curr->sched_class->task_tick(rq, curr, 0);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	calc_global_load_tick(rq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	psi_task_tick(rq);
 
 	rq_unlock(rq, &rf);
@@ -4595,9 +4595,9 @@ void scheduler_tick(void)
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
 
-    /**
-     *  触发 负载均衡机制
-     */
+	/**
+	 *  触发 负载均衡机制
+	 */
 	trigger_load_balance(rq);
 #endif
 }
@@ -4774,9 +4774,9 @@ void preempt_count_add(int val)
 		return;
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__preempt_count_add(val);
 
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -4965,19 +4965,19 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 restart:
 	put_prev_task_balance(rq, prev, rf);
 
-    /**
-     *  遍历整个调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
-     */
+	/**
+	 *  遍历整个调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
+	 */
 	for_each_class(rtoax_class) {
-    	/**
-         *  从就绪队列中选择一个最优进程来执行
-         *
-         * pick_next_task_idle
-         * pick_next_task_fair
-         * pick_next_task_rt
-         * pick_next_task_dl
-         * pick_next_task_stop
-         */
+		/**
+		 *  从就绪队列中选择一个最优进程来执行
+		 *
+		 * pick_next_task_idle
+		 * pick_next_task_fair
+		 * pick_next_task_rt
+		 * pick_next_task_dl
+		 * pick_next_task_stop
+		 */
 		p = rtoax_class->pick_next_task(rq);
 		if (p)
 			return p;
@@ -5056,34 +5056,34 @@ static void __sched notrace __schedule(bool preempt)
 	struct rq *rq;
 	int cpu;
 
-    /**
-     *  获取当前 CPU
-     */
+	/**
+	 *  获取当前 CPU
+	 */
 	cpu = smp_processor_id();
 
-    /**
-     *  获取当前 CPU 运行队列
-     */
+	/**
+	 *  获取当前 CPU 运行队列
+	 */
 	rq = cpu_rq(cpu);
 
-    /**
-     *  prev 指向当前进程
-     */
+	/**
+	 *  prev 指向当前进程
+	 */
 	prev = rq->curr;
 
-    /**
-     *  判断当前进程是否处于 atomic 上下文中
-     *
-     *  如果处于，那么内核将告警
-     */
+	/**
+	 *  判断当前进程是否处于 atomic 上下文中
+	 *
+	 *  如果处于，那么内核将告警
+	 */
 	schedule_debug(prev, preempt);
 
 	if (sched_feat(HRTICK))
 		hrtick_clear(rq);
 
-    /**
-     *  关闭 本地 CPU 中断
-     */
+	/**
+	 *  关闭 本地 CPU 中断
+	 */
 	local_irq_disable();
 	rcu_note_context_switch(preempt);
 
@@ -5120,15 +5120,15 @@ static void __sched notrace __schedule(bool preempt)
 	 */
 	prev_state = prev->state;
 
-    /**
-     *  是否为抢占调度，即 是否中断返回前夕或者 系统调用返回用户空间 前夕发生的抢占调度
-     *  如果发生了抢占调度，下面的 if 不执行
-     */
+	/**
+	 *  是否为抢占调度，即 是否中断返回前夕或者 系统调用返回用户空间 前夕发生的抢占调度
+	 *  如果发生了抢占调度，下面的 if 不执行
+	 */
 	if (!preempt && prev_state) {
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (signal_pending_state(prev_state, prev)) {
 			prev->state = TASK_RUNNING;
 		} else {
@@ -5173,26 +5173,26 @@ static void __sched notrace __schedule(bool preempt)
 			}
 		}
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		switch_count = &prev->nvcsw;
 	}
 
-    /**
-     *  选择下一个合适的高优先级进程
-     */
+	/**
+	 *  选择下一个合适的高优先级进程
+	 */
 	next = pick_next_task(rq, prev, &rf);
 
-    /**
-     *  清除 TIF_NEED_RESCHED 标志位，表明接下来他不会被调度
-     */
+	/**
+	 *  清除 TIF_NEED_RESCHED 标志位，表明接下来他不会被调度
+	 */
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
-    /**
-     *  若选择出来的下一个进程和当前进程不是一个进程
-     */
+	/**
+	 *  若选择出来的下一个进程和当前进程不是一个进程
+	 */
 	if (likely(prev != next)) {
 		rq->nr_switches++;
 		/*
@@ -5218,26 +5218,26 @@ static void __sched notrace __schedule(bool preempt)
 
 		psi_sched_switch(prev, next, !task_on_rq_queued(prev));
 
-        /**
-         *  tracing
-         *
-         *  __schedule()
-         *    trace_sched_switch()
-         *      __traceiter_sched_switch()
-         */
+		/**
+		 *  tracing
+		 *
+		 *  __schedule()
+		 *    trace_sched_switch()
+		 *      __traceiter_sched_switch()
+		 */
 		trace_sched_switch(preempt, prev, next);
 
 		/* Also unlocks the rq: */
 
-        /**
-         *  切换到 next 进程
-         */
+		/**
+		 *  切换到 next 进程
+		 */
 		rq = context_switch(rq, prev, next, &rf);
 	}
-    /**
-     *
-     */
-    else {
+	/**
+	 *
+	 */
+	else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
 		rq_unlock_irq(rq, &rf);
 	}
@@ -5284,9 +5284,9 @@ static inline void sched_submit_work(struct task_struct *tsk)
 	 */
 	if (task_flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
 		preempt_disable();
-        /**
-         *  工作队列线程
-         */
+		/**
+		 *  工作队列线程
+		 */
 		if (task_flags & PF_WQ_WORKER)
 			wq_worker_sleeping(tsk);
 		else
@@ -5322,28 +5322,28 @@ asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sched_submit_work(tsk);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	do {
-        /**
-         *  关闭抢占
-         */
+		/**
+		 *  关闭抢占
+		 */
 		preempt_disable();
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		__schedule(false);
 
-        /**
-         *  打开抢占
-         */
+		/**
+		 *  打开抢占
+		 */
 		sched_preempt_enable_no_resched();
 
 	} while (need_resched());
@@ -5430,9 +5430,9 @@ static void __sched notrace preempt_schedule_common(void)
 		preempt_disable_notrace();
 		preempt_latency_start(1);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		__schedule(true);
 		preempt_latency_stop(1);
 		preempt_enable_no_resched_notrace();
@@ -5509,9 +5509,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
 		 */
 		prev_ctx = exception_enter();
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		__schedule(true);
 		exception_exit(prev_ctx);
 
@@ -5559,9 +5559,9 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 {
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 
-    /**
-     *  private 在 init_waitqueue_entry() 设置为 current
-     */
+	/**
+	 *  private 在 init_waitqueue_entry() 设置为 current
+	 */
 	return try_to_wake_up(curr->private/* 进程信息 */, mode, wake_flags);
 }
 EXPORT_SYMBOL(default_wake_function);
@@ -5750,7 +5750,7 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 		goto out_unlock;
 	}
 
-    /* 如果是 CFS */
+	/* 如果是 CFS */
 	queued = task_on_rq_queued(p);  /* 在队列里 */
 	running = task_current(rq, p);  /* 正在运行 */
 	if (queued)
@@ -5758,9 +5758,9 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	if (running)
 		put_prev_task(rq, p);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p->static_prio = NICE_TO_PRIO(nice);    /* nice + 120 */
 	set_load_weight(p, true);
 	old_prio = p->prio;
@@ -5776,11 +5776,11 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	 * lowered its priority, then reschedule its CPU:
 	 */
 	/*
-        fair_sched_class.prio_changed  =  prio_changed_fair
-        rt_sched_class.prio_changed    =  prio_changed_rt
-        dl_sched_class.prio_changed    =  prio_changed_dl
-        idle_sched_class.prio_changed  =  prio_changed_idle
-    */
+		fair_sched_class.prio_changed  =  prio_changed_fair
+		rt_sched_class.prio_changed    =  prio_changed_rt
+		dl_sched_class.prio_changed    =  prio_changed_dl
+		idle_sched_class.prio_changed  =  prio_changed_idle
+	*/
 	p->sched_class->prio_changed(rq, p, old_prio);  /* 修改调度类的优先级 */
 
 out_unlock:
@@ -5832,9 +5832,9 @@ SYSCALL_DEFINE1(nice, int, increment)   /*  修改nice值*/
 	if (retval)
 		return retval;
 
-    /**
-     *  设置
-     */
+	/**
+	 *  设置
+	 */
 	set_user_nice(current, nice);   /* 设置 */
 	return 0;
 }
@@ -5936,15 +5936,15 @@ static void __setscheduler_params(struct task_struct *p,
 
 	p->policy = policy;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (dl_policy(policy))
 		__setparam_dl(p, attr);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	else if (fair_policy(policy))
 		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
 
@@ -5969,9 +5969,9 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__setscheduler_params(p, attr);
 
 	/*
@@ -5982,9 +5982,9 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (keep_boost)
 		p->prio = rt_effective_prio(p, p->prio);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (dl_prio(p->prio))   /* 优先级 < 0 */
 		p->sched_class = &dl_sched_class;   /* deadline */
 	else if (rt_prio(p->prio))  /* 0-99 */
@@ -6013,13 +6013,13 @@ static bool check_same_owner(struct task_struct *p)
  *
  */
 static int __sched_setscheduler(struct task_struct *p,
-                    				const struct sched_attr *attr,
-                    				bool user, bool pi)
+		            				const struct sched_attr *attr,
+		            				bool user, bool pi)
 {
-    /*
-        deadline:   -1
-        otherwith:  99 - priority
-    */
+	/*
+		deadline:   -1
+		otherwith:  99 - priority
+	*/
 	int newprio = dl_policy(attr->sched_policy) ? MAX_DL_PRIO - 1 :
 		      MAX_RT_PRIO - 1 - attr->sched_priority;
 	int retval, oldprio, oldpolicy = -1, queued, running;
@@ -6066,13 +6066,13 @@ recheck:
 	 * Allow unprivileged RT tasks to decrease priority:
 	 */
 	if (user && !capable(CAP_SYS_NICE)) {
-        /* 公平调度 */
+		/* 公平调度 */
 		if (fair_policy(policy)) {
 			if (attr->sched_nice < task_nice(p) &&
 			    !can_nice(p, attr->sched_nice))
 				return -EPERM;
 		}
-        /* 实时调度 */
+		/* 实时调度 */
 		if (rt_policy(policy)) {
 			unsigned long rlim_rtprio =
 					task_rlimit(p, RLIMIT_RTPRIO);
@@ -6119,8 +6119,8 @@ recheck:
 		if (attr->sched_flags & SCHED_FLAG_SUGOV)
 			return -EINVAL;
 
-        //selinux_task_setscheduler
-        //cap_task_setscheduler
+		//selinux_task_setscheduler
+		//cap_task_setscheduler
 		retval = security_task_setscheduler(p);
 		if (retval)
 			return retval;
@@ -6250,9 +6250,9 @@ change:
 
 	prev_class = p->sched_class;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__setscheduler(rq, p, attr, pi);    /* 根据优先级设置调度类 */
 	__setscheduler_uclamp(p, attr);     /* 利用率管制 */
 
@@ -6299,9 +6299,9 @@ unlock:
 static int _sched_setscheduler(struct task_struct *p, int policy,
 			       const struct sched_param *param, bool check)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct sched_attr attr = {
 		attr.sched_policy   = policy,
 		attr.sched_priority = param->sched_priority,
@@ -6315,9 +6315,9 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 		attr.sched_policy = policy;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __sched_setscheduler(p, &attr, check, true);
 }
 /**
@@ -6335,9 +6335,9 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 int sched_setscheduler(struct task_struct *p, int policy,
 		                const struct sched_param *param)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return _sched_setscheduler(p, policy, param, true);
 }
 
@@ -6390,9 +6390,9 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
  */
 void sched_set_fifo(struct task_struct *p)
 {
-    /**
-     *  优先级为 50
-     */
+	/**
+	 *  优先级为 50
+	 */
 	struct sched_param sp = { sp.sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
@@ -6431,17 +6431,17 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 	if (!param || pid < 0)
 		return -EINVAL;
 
-    if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
+	if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
 		return -EFAULT;
 
 	rcu_read_lock();
 
 	retval = -ESRCH;
 
-    /**
-     *
-     */
-    p = find_process_by_pid(pid);   /* 获取进程 PCB */
+	/**
+	 *
+	 */
+	p = find_process_by_pid(pid);   /* 获取进程 PCB */
 	if (likely(p))
 		get_task_struct(p); /* 引用计数 */
 	rcu_read_unlock();
@@ -6515,9 +6515,9 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 	if (policy < 0)
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return do_sched_setscheduler(pid, policy, param);
 }
 
@@ -6533,9 +6533,9 @@ SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param 
 int sched_setparam(pid_t pid, const struct sched_param *param);
 SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return do_sched_setscheduler(pid, SETPARAM_POLICY, param);
 }
 
@@ -6602,9 +6602,9 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 	retval = -ESRCH;
 	rcu_read_lock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p = find_process_by_pid(pid);
 	if (p) {
 		retval = security_task_getscheduler(p);
@@ -6640,16 +6640,16 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 	if (!p)
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (task_has_rt_policy(p))
 		lp.sched_priority = p->rt_priority;
 
@@ -6726,17 +6726,17 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 
 	rcu_read_lock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p = find_process_by_pid(pid);
 	retval = -ESRCH;
 	if (!p)
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
@@ -6745,9 +6745,9 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 	if (p->sched_reset_on_fork)
 		kattr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (task_has_dl_policy(p))
 		__getparam_dl(p, &kattr);
 	else if (task_has_rt_policy(p))
@@ -6767,9 +6767,9 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 
 	rcu_read_unlock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return sched_attr_copy_to_user(uattr, &kattr, usize);
 
 out_unlock:
@@ -6852,8 +6852,8 @@ again:
 
 		cpuset_cpus_allowed(p, cpus_allowed);
 
-        /* 如果 `new_mask` 不是 `  cpus_allowed` 的子集
-            Returns 1 if *@src1p is a subset of *@src2p, else returns 0*/
+		/* 如果 `new_mask` 不是 `  cpus_allowed` 的子集
+		    Returns 1 if *@src1p is a subset of *@src2p, else returns 0*/
 		if (!cpumask_subset(new_mask, cpus_allowed)) {
 			/*
 			 * We must have raced with a concurrent cpuset
@@ -6906,17 +6906,17 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
 		return -ENOMEM;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	retval = get_user_cpu_mask(user_mask_ptr, len, new_mask);
 	if (retval == 0)
 		retval = sched_setaffinity(pid, new_mask);  /* 设置 */
 
-    /**
-     *
-     */
-    free_cpumask_var(new_mask);
+	/**
+	 *
+	 */
+	free_cpumask_var(new_mask);
 	return retval;
 }
 
@@ -6933,16 +6933,16 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
 
 	retval = -ESRCH;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p = find_process_by_pid(pid);   /* 查找PID */
 	if (!p)
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	retval = security_task_getscheduler(p);
 	if (retval)
 		goto out_unlock;
@@ -6983,9 +6983,9 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
 		return -ENOMEM;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = sched_getaffinity(pid, mask);
 	if (ret == 0) {
 		unsigned int retlen = min(len, cpumask_size());
@@ -7016,11 +7016,11 @@ static void do_sched_yield(void)
 	rq = this_rq_lock_irq(&rf);
 
 	schedstat_inc(rq->yld_count);
-    /*
-        fair_sched_class.yield_task = yield_task_fair
-        rt_sched_class.yield_task   = yield_task_rt
-        dl_sched_class.yield_task   = yield_task_dl
-    */
+	/*
+		fair_sched_class.yield_task = yield_task_fair
+		rt_sched_class.yield_task   = yield_task_rt
+		dl_sched_class.yield_task   = yield_task_dl
+	*/
 	current->sched_class->yield_task(rq);   /* 放弃 */
 
 	preempt_disable();
@@ -7322,26 +7322,26 @@ static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 	rq = task_rq_lock(p, &rf);
 	time_slice = 0;
 
-    /*
-        fair_sched_class.get_rr_interval = get_rr_interval_fair
-        rt_sched_class.get_rr_interval   = get_rr_interval_rt
-        dl_sched_class.get_rr_interval   = NULL
-        stop_sched_class.get_rr_interval = NULL
-    */
+	/*
+		fair_sched_class.get_rr_interval = get_rr_interval_fair
+		rt_sched_class.get_rr_interval   = get_rr_interval_rt
+		dl_sched_class.get_rr_interval   = NULL
+		stop_sched_class.get_rr_interval = NULL
+	*/
 	if (p->sched_class->get_rr_interval) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		time_slice = p->sched_class->get_rr_interval(rq, p);
-    }
+	}
 
 	task_rq_unlock(rq, p, &rf);
 
 	rcu_read_unlock();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	jiffies_to_timespec64(time_slice, t);
 	return 0;
 
@@ -7367,9 +7367,9 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 {
 	struct timespec64 t;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int retval = sched_rr_get_interval(pid, &t);
 
 	if (retval == 0)
@@ -8042,29 +8042,29 @@ void __init sched_init(void)    /* 调度初始化 */
 	BUG_ON(&dl_sched_class + 1 != &stop_sched_class);
 #endif
 
-    //initialization of the array of `waitqueues`:
+	//initialization of the array of `waitqueues`:
 	wait_bit_init();
 
-    //都支持`group scheduling`
+	//都支持`group scheduling`
 
-    //multiply this on `2` as we will need to allocate a space for two things:
-    //
-    //* 1. scheduler entity structure;
-    //* 2. `runqueue`.
+	//multiply this on `2` as we will need to allocate a space for two things:
+	//
+	//* 1. scheduler entity structure;
+	//* 2. `runqueue`.
 
-    //`CFS` or `Completely Fair Scheduler`, each process would receive `1/n` processor time
+	//`CFS` or `Completely Fair Scheduler`, each process would receive `1/n` processor time
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	ptr += 2 * nr_cpu_ids * sizeof(void **);
 #endif
 
-    //time-critical applications
+	//time-critical applications
 #ifdef CONFIG_RT_GROUP_SCHED
 	ptr += 2 * nr_cpu_ids * sizeof(void **);
 #endif
 	if (ptr) {
 		ptr = (unsigned long)kzalloc(ptr, GFP_NOWAIT);
 
-        // `se`, `rt_se`, `cfs_rq` and `rt_rq`
+		// `se`, `rt_se`, `cfs_rq` and `rt_rq`
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		root_task_group.se = (struct sched_entity **)ptr;
@@ -8098,7 +8098,7 @@ void __init sched_init(void)    /* 调度初始化 */
 	init_dl_bandwidth(&def_dl_bandwidth, global_rt_period(), global_rt_runtime());
 
 #ifdef CONFIG_SMP
-    // `root domain` initialization
+	// `root domain` initialization
 	init_defrootdomain();
 #endif
 
@@ -8106,8 +8106,8 @@ void __init sched_init(void)    /* 调度初始化 */
 	init_rt_bandwidth(&root_task_group.rt_bandwidth, global_rt_period(), global_rt_runtime());
 #endif /* CONFIG_RT_GROUP_SCHED */
 
-    //allocate `slab` cache for `task_group(s)` and initialize the `siblings` and
-    //          `children` lists of the root task group
+	//allocate `slab` cache for `task_group(s)` and initialize the `siblings` and
+	//          `children` lists of the root task group
 #ifdef CONFIG_CGROUP_SCHED
 	task_group_cache = KMEM_CACHE(task_group, 0);
 
@@ -8115,8 +8115,8 @@ void __init sched_init(void)    /* 调度初始化 */
 	INIT_LIST_HEAD(&root_task_group.children);
 	INIT_LIST_HEAD(&root_task_group.siblings);
 
-    //The `autogroup` feature is about automatic creation and population of a new
-    //task group during creation of a new session via [setsid]
+	//The `autogroup` feature is about automatic creation and population of a new
+	//task group during creation of a new session via [setsid]
 	autogroup_init(&init_task);
 #endif /* CONFIG_CGROUP_SCHED */
 
@@ -8204,7 +8204,7 @@ void __init sched_init(void)    /* 调度初始化 */
 	 */
 	init_idle(current, smp_processor_id());/* the first `init` process 转换成空闲进程 */
 
-    //Calculating next time period of the next calculation of CPU load
+	//Calculating next time period of the next calculation of CPU load
 	calc_load_update = jiffies + LOAD_FREQ/*5 sec*/;
 
 #ifdef CONFIG_SMP
@@ -8447,28 +8447,28 @@ struct task_group *sched_create_group(struct task_group *parent)
 {
 	struct task_group *tg;
 
-    /**
-     *  分配实例
-     */
+	/**
+	 *  分配实例
+	 */
 	tg = kmem_cache_alloc(task_group_cache, GFP_KERNEL | __GFP_ZERO);
 	if (!tg)
 		return ERR_PTR(-ENOMEM);
 
-    /**
-     *  创建CFS调度器 需要的组调度数据结构
-     */
+	/**
+	 *  创建CFS调度器 需要的组调度数据结构
+	 */
 	if (!alloc_fair_sched_group(tg, parent))
 		goto err;
 
-    /**
-     *  创建实时调度器 需要的组调度数据结构
-     */
+	/**
+	 *  创建实时调度器 需要的组调度数据结构
+	 */
 	if (!alloc_rt_sched_group(tg, parent))
 		goto err;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	alloc_uclamp_sched_group(tg, parent);
 
 	return tg;
@@ -8553,24 +8553,24 @@ static void sched_change_group(struct task_struct *tsk, int type)
 	 */
 	tg = container_of(task_css_check(tsk, cpu_cgrp_id, true), struct task_group, css);
 
-    /**
-     *
-     */
-    tg = autogroup_task_group(tsk, tg);
+	/**
+	 *
+	 */
+	tg = autogroup_task_group(tsk, tg);
 
 	tsk->sched_task_group = tg;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
-    /**
-     *  task_change_group_fair()
-     */
+	/**
+	 *  task_change_group_fair()
+	 */
 	if (tsk->sched_class->task_change_group)
 		tsk->sched_class->task_change_group(tsk, type);
 	else
 #endif
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		set_task_rq(tsk, task_cpu(tsk));
 }
 
@@ -8594,31 +8594,31 @@ void sched_move_task(struct task_struct *tsk)
 	rq = task_rq_lock(tsk, &rf);
 	update_rq_clock(rq);
 
-    /**
-     *  进程是否正在运行
-     */
+	/**
+	 *  进程是否正在运行
+	 */
 	running = task_current(rq, tsk);
 
-    /**
-     *  是否在就绪队列里或者正在运行
-     */
+	/**
+	 *  是否在就绪队列里或者正在运行
+	 */
 	queued = task_on_rq_queued(tsk);
 
-    /**
-     *  如果进程处于就绪态，暂时先退出就绪队列
-     */
+	/**
+	 *  如果进程处于就绪态，暂时先退出就绪队列
+	 */
 	if (queued)
 		dequeue_task(rq, tsk, queue_flags);
 
-    /**
-     *  如果进程正在运行，刚才已经调度 dequeue_task 将其移出就绪队列，在把他添加入就绪队列
-     */
+	/**
+	 *  如果进程正在运行，刚才已经调度 dequeue_task 将其移出就绪队列，在把他添加入就绪队列
+	 */
 	if (running)
 		put_prev_task(rq, tsk);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sched_change_group(tsk, TASK_MOVE_GROUP);
 
 	if (queued)
@@ -8756,15 +8756,15 @@ static void cpu_cgroup_attach(struct cgroup_taskset *tset)
 	struct task_struct *task;
 	struct cgroup_subsys_state *css;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	cgroup_taskset_for_each(task, css, tset) {
 	    /**
-         *  将进程迁移到组调度中
-         */
+		 *  将进程迁移到组调度中
+		 */
 		sched_move_task(task);
-    }
+	}
 }
 
 #ifdef CONFIG_UCLAMP_TASK_GROUP
@@ -9605,5 +9605,5 @@ const u32 sched_prio_to_wmult[40] = {
 
 void call_trace_sched_update_nr_running(struct rq *rq, int count)
 {
-        trace_sched_update_nr_running_tp(rq, count);
+		trace_sched_update_nr_running_tp(rq, count);
 }

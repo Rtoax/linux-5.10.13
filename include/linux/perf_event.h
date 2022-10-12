@@ -63,13 +63,13 @@ struct perf_guest_info_callbacks {
  *
  */
 struct perf_callchain_entry {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u64				nr;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u64				ip[]; /* /proc/sys/kernel/perf_event_max_stack */
 };
 
@@ -273,6 +273,10 @@ struct perf_event;
 #define PERF_PMU_CAP_NO_NMI			0x02
 #define PERF_PMU_CAP_AUX_NO_SG			0x04
 #define PERF_PMU_CAP_EXTENDED_REGS		0x08
+/**
+ * 如果pmu有 PERF_PMU_CAP_EXCLUSIVE 属性，表明它要么只能被绑定为 cpu维度、要么只能被绑定为
+ * task维度，不能混合绑定。
+ */
 #define PERF_PMU_CAP_EXCLUSIVE			0x10    /* 独占 */
 #define PERF_PMU_CAP_ITRACE			0x20
 #define PERF_PMU_CAP_HETEROGENEOUS_CPUS		0x40
@@ -283,11 +287,12 @@ struct perf_output_handle;
 
 /**
  * struct pmu - generic performance monitoring unit
+ * 性能监控单元
  *
  *  全局变量
  *  struct pmu pmu;
  */
-struct pmu {    /* 性能监控单元 */
+struct pmu {
 	struct list_head		entry;      /* 链表节点 */
 
 	struct module			*module;    /* 隶属模块 */
@@ -297,13 +302,28 @@ struct pmu {    /* 性能监控单元 */
 	const char			*name;  /* 名称 */
 	int				type;       /* 类型, PERF_TYPE_SOFTWARE .. */
 
-	/*
+	/**
 	 * various common per-pmu feature flags
+	 * 能力 PERF_PMU_CAP_NO_NMI ... (在上面200+行定义)
 	 */
-	int				capabilities;   /* 能力 PERF_PMU_CAP_NO_NMI ...*/
+	int				capabilities;
 
+	/**
+	 * 每个pmu拥有一个per_cpu的链表，perf_event 需要在哪个cpu上获取数据就加入到哪个cpu
+	 * 的链表上。
+	 * 如果event被触发，它会根据当前的运行cpu给对应链表上的所有perf_event推送数据。
+	 *
+	 * cpu维度的context：
+	 *  this_cpu_ptr(pmu->pmu_cpu_context->ctx)上链接的所有 perf_event 会根据绑定
+	 *  的 pmu，链接到pmu对应的per_cpu的->perf_events 链表上。
+	 *
+	 * task维度的context：
+	 *  this_cpu_ptr(pmu->pmu_cpu_context->task_ctx)上链接的所有 perf_event 会根
+	 *  据绑定的 pmu，链接到pmu对应的per_cpu的->perf_events 链表上。
+	 */
 	int __percpu			*pmu_disable_count;
 	struct perf_cpu_context __percpu *pmu_cpu_context;
+
 	atomic_t			exclusive_cnt; /* < 0: cpu; > 0: tsk 独占计数 */
 	int				task_ctx_nr;    /* perf_hw_context ... */
 	int				hrtimer_interval_ms;
@@ -391,8 +411,8 @@ struct pmu {    /* 性能监控单元 */
 	 *  value, must be preceded by a ->stop() with PERF_EF_UPDATE.
 	 *
 	 *  x86 -> x86_pmu_start()
-     *  x86 -> x86_pmu_stop()
-     */
+	 *  x86 -> x86_pmu_stop()
+	 */
 	void (*start)			(struct perf_event *event, int flags);
 	void (*stop)			(struct perf_event *event, int flags);
 
@@ -584,14 +604,20 @@ struct perf_addr_filter_range {
 
 /**
  * enum perf_event_state - the states of an event:
- *
+ * perf_event的状态(event->state)
  *
  */
 enum perf_event_state {
 	PERF_EVENT_STATE_DEAD		= -4,
 	PERF_EVENT_STATE_EXIT		= -3,
 	PERF_EVENT_STATE_ERROR		= -2,
+	/**
+	 * 如果 attr.disabled = 1，event->state 的初始值
+	 */
 	PERF_EVENT_STATE_OFF		= -1,
+	/**
+	 * 如果 attr.disabled = 0，event->state 的初始值
+	 */
 	PERF_EVENT_STATE_INACTIVE	=  0,
 	PERF_EVENT_STATE_ACTIVE		=  1,
 };
@@ -639,9 +665,9 @@ struct perf_buffer;
  */
 struct pmu_event_list {
 	raw_spinlock_t		lock;
-    /**
-     *  perf_event.sb_list 为链表节点
-     */
+	/**
+	 *  perf_event.sb_list 为链表节点
+	 */
 	struct list_head	list;
 };
 
@@ -652,7 +678,27 @@ struct pmu_event_list {
 /**
  * struct perf_event - performance event kernel representation:
  *
- *  性能事件
+ * 性能事件
+ * 对每一个event分配一个对应的perf_event结构,所有对event的操作都是围绕perf_event来展开的：
+ * 1. 通过perf_event_open系统调用分配到perf_event以后，会返回一个文件句柄fd，这样这个
+ *    perf_event结构可以通过read/write/ioctl/mmap通用文件接口来操作。
+ * 2. perf_event提供两种类型的trace数据：count和sample。count只是记录了event的发生次数，
+ *    sample记录了大量信息(比如：IP、ADDR、TID、TIME、CPU、BT)。
+ *    如果需要使用sample功能，需要给perf_event分配ringbuffer空间，并且把这部分空间通过
+ *    mmap映射到用户空间。这和定位问题时从粗到细的思路是相符的，首先从counter的比例上找出
+ *    问题热点在哪个模块，再使用详细记录抓取更多信息来进一步定位。具体分别对应“perf stat”
+ *    和“perf record/report”命令。
+ * 3. perf的开销应该是比ftrace要大的，因为它给每个event都独立一套数据结构perf_event，
+ *    对应独立的attr和pmu。在数据记录时的开销肯定大于ftrace，但是每个event的ringbuffer
+ *    是独立的所以也不需要ftrace复杂的ringbuffer操作。perf也有比ftrace开销小的地方，它的
+ *    sample数据存储的ringbuffer空间会通过mmap映射到到用户态，这样在读取数据的时候就会少
+ *    一次拷贝。不过perf的设计初衷也不是让成百上千的event同时使用，只会挑出一些event重点
+ *    debug。
+ *
+ * 真正的难点在于对event的组织，怎么把全局的event的资源，按照用户的需要分割成cpu维度/task维度。
+ *
+ * refs:
+ * https://blog.csdn.net/pwl999/article/details/81200439
  */
 struct perf_event {
 #ifdef CONFIG_PERF_EVENTS
@@ -666,6 +712,8 @@ struct perf_event {
 	/*
 	 * Locked for modification by both ctx->mutex and ctx->lock; holding
 	 * either sufficies for read.
+	 *
+	 * group leader使用->sibling_list 链表来连接所有的group member perf_event
 	 */
 	struct list_head		sibling_list;
 	struct list_head		active_list;
@@ -691,9 +739,25 @@ struct perf_event {
 	int				group_caps;
 
 	struct perf_event		*group_leader;
-	struct pmu			*pmu;   /* 性能监控单元 */
+	/**
+	 * 性能监控单元
+	 */
+	struct pmu			*pmu;
 	void				*pmu_private;
 
+	/**
+	 * 如果 attr.disabled = 1
+	 *   event->state 的初始值 PERF_EVENT_STATE_OFF
+	 * 如果 attr.disabled = 0
+	 *   event->state 的初始值 PERF_EVENT_STATE_INACTIVE
+	 *
+	 * perf_event变成enable状态有3种方法：
+	 * 1、attr.disabled = 0；
+	 * 2、attr.disabled = 1，创建后使用ioctl的PERF_EVENT_IOC_ENABLE命令
+	 *    来使能；
+	 * 3、attr.disabled = 1，attr.enable_on_exec = 1。
+	 *    这样使用execl执行新程序时使能event，这是一种非常巧妙的同步手段；
+	 */
 	enum perf_event_state		state;
 	unsigned int			attach_state;
 	local64_t			count;
@@ -745,14 +809,14 @@ struct perf_event {
 	int				oncpu;
 	int				cpu;
 
-    /**
-     *  链表节点，链表头为 `task_struct.perf_event_list`
-     */
+	/**
+	 *  链表节点，链表头为 `task_struct.perf_event_list`
+	 */
 	struct list_head		owner_entry;
 
-    /**
-     *  属于哪个进程
-     */
+	/**
+	 *  属于哪个进程
+	 */
 	struct task_struct		*owner;
 
 	/* mmap bits */
@@ -760,11 +824,11 @@ struct perf_event {
 	atomic_t			mmap_count;
 
 	struct perf_buffer		*rb;
-    /**
-     *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
-     *  使用 `perf_buffer.event_lock` 保护这个链表
-     *  在 `ring_buffer_attach()` 中删除或添加至链表
-     */
+	/**
+	 *  链表头为`perf_buffer.event_list`,链表节点为`perf_event.rb_entry`
+	 *  使用 `perf_buffer.event_lock` 保护这个链表
+	 *  在 `ring_buffer_attach()` 中删除或添加至链表
+	 */
 	struct list_head		rb_entry;
 	unsigned long			rcu_batches;
 	int				rcu_pending;
@@ -822,9 +886,9 @@ struct perf_event {
 #ifdef CONFIG_SECURITY
 	void *security;
 #endif
-    /**
-     *  pmu_event_list.list 为链表头
-     */
+	/**
+	 *  pmu_event_list.list 为链表头
+	 */
 	struct list_head		sb_list;
 #endif /* CONFIG_PERF_EVENTS */
 };
@@ -842,8 +906,9 @@ struct perf_event_groups {  /* 红黑树 */
  * struct perf_event_context - event context structure
  *
  * Used as a container for task events and CPU events as well:
+ * perf event上下文
  */
-struct perf_event_context { /* perf event上下文 */
+struct perf_event_context {
 	struct pmu			*pmu;
 	/*
 	 * Protect the states of the events in the list,
@@ -857,12 +922,26 @@ struct perf_event_context { /* perf event上下文 */
 	 */
 	struct mutex			mutex;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct list_head		active_ctx_list;
+
+	/**
+	 * perf_event 允许以 group 的形式来组织，context使用
+	 * ->pinned_groups/flexible_groups 链表来连接 group leader 的 perf_event；
+	 *
+	 * group 的作用: 是在 read count 的时候可以一次性读出group中所有perf_event的count。
+	 * perf_event_open()系统调用使用 group_fd 参数来指定 perf_event 的 group_leader：
+	 *  group_fd >= 0 指定对于的 perf_event 为当前 group_leader，
+	 *  group_fd == -1 创建新的 group_leader
+	 */
 	struct perf_event_groups	pinned_groups;
 	struct perf_event_groups	flexible_groups;
+
+	/**
+	 * cpu/task context使用 ->event_list 链表来连接所有的perf_event。
+	 */
 	struct list_head		event_list;
 
 	struct list_head		pinned_active;
@@ -891,12 +970,16 @@ struct perf_event_context { /* perf event上下文 */
 	/*
 	 * These fields let us detect when two contexts have both
 	 * been cloned (inherited) from a common ancestor.
+	 *
+	 * inherit 属性指定: 如果 perf_event 绑定的task创建子进程，event自动的对子进程也进行
+	 * 追踪。这在实际使用时是非常有用的，我们追踪一个app，随后它创建出的子进程/线程都能自动的
+	 * 被追踪。
 	 */
 	struct perf_event_context	*parent_ctx;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	u64				parent_gen;
 	u64				generation;
 	int				pin_count;
@@ -905,9 +988,9 @@ struct perf_event_context { /* perf event上下文 */
 	int				nr_cgroups;	 /* cgroup evts */
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	void				*task_ctx_data; /* pmu specific data */
 	struct rcu_head			rcu_head;
 };
@@ -920,14 +1003,21 @@ struct perf_event_context { /* perf event上下文 */
 
 /**
  * struct perf_event_cpu_context - per cpu event context structure
+ * CPU perf 上下文, 连接本 cpu 的相关 perf_event
  */
-struct perf_cpu_context {   /* CPU perf 上下文 */
+struct perf_cpu_context {
 	struct perf_event_context	ctx;
+	/**
+	 * 对于cpu维度的perf_event来说只要cpu online会一直运行，而对于task维度的 perf_event
+	 * 来说只有在task得到调度运行的时候event才能运行。所以在每个cpu上同时只能有一个task维度
+	 * 的perf_evnt得到执行，cpu维度的context使用了 pmu->pmu_cpu_context->task_ctx
+	 * 指针来保存当前运行的 task context。
+	 */
 	struct perf_event_context	*task_ctx;
 	int				active_oncpu;
 	int				exclusive;
 
-    /* 在 __perf_mux_hrtimer_init() 中初始化 */
+	/* 在 __perf_mux_hrtimer_init() 中初始化 */
 	raw_spinlock_t			hrtimer_lock;
 	struct hrtimer			hrtimer;
 	ktime_t				hrtimer_interval;
@@ -1183,9 +1273,9 @@ static inline bool is_sampling_event(struct perf_event *event)
  */
 static inline int is_software_event(struct perf_event *event)
 {
-    /**
-     *  软件事件
-     */
+	/**
+	 *  软件事件
+	 */
 	return event->event_caps & PERF_EV_CAP_SOFTWARE;
 }
 
@@ -1197,6 +1287,10 @@ static inline int in_software_context(struct perf_event *event)
 	return event->ctx->pmu->task_ctx_nr == perf_sw_context;
 }
 
+/**
+ * 如果pmu有 PERF_PMU_CAP_EXCLUSIVE 属性，表明它要么只能被绑定为 cpu维度、要么只能被绑定为
+ * task维度，不能混合绑定。
+ */
 static inline int is_exclusive_pmu(struct pmu *pmu)
 {
 	return pmu->capabilities & PERF_PMU_CAP_EXCLUSIVE;
@@ -1441,7 +1535,7 @@ static inline bool has_aux(struct perf_event *event)
 
 static inline bool is_write_backward(struct perf_event *event)
 {
-    /* Write ring buffer from end to beginning */
+	/* Write ring buffer from end to beginning */
 	return !!event->attr.write_backward;
 }
 
