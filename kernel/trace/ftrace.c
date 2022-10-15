@@ -125,8 +125,20 @@ static int __read_mostly ftrace_disabled ;/* =0 默认开启 */
 DEFINE_MUTEX(ftrace_lock);
 
 /**
- *
- */
+*  Example:
+*  -----------------------------
+*  schedule
+*    push %rbp
+*    mov %rsp,%rbp
+*    call ftrace_caller -----> ftrace_caller: (mcount)
+*                                save regs
+*                                load args
+*                              ftrace_call:
+*                                call ftrace_stub <--> ftrace_ops.func
+*                                restore regs
+*                              ftrace_stub:
+*                                retq
+*/
 struct ftrace_ops __rcu __read_mostly *ftrace_ops_list  = &ftrace_list_end;
 ftrace_func_t __read_mostly ftrace_trace_function  = ftrace_stub;
 struct ftrace_ops global_ops;

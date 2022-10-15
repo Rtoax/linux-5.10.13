@@ -235,6 +235,7 @@ SYM_CODE_END(ftrace_graph_caller)
 	add	\reg, \reg, #8
 	.endm
 
+/* 如果不是动态追踪 */
 #ifndef CONFIG_DYNAMIC_FTRACE
 /*
  * void _mcount(unsigned long return_address)
