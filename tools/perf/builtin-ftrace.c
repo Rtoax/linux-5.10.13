@@ -262,12 +262,12 @@ static void reset_tracing_options(struct perf_ftrace *ftrace __maybe_unused)
 }
 
 /**
- *
+ * 重置
  */
 static int reset_tracing_files(struct perf_ftrace __maybe_unused *ftrace )
 {
 	/**
-	 *
+	 * /sys/kernel/debug/tracing/tracing_on
 	 */
 	if (write_tracing_file("tracing_on", "0") < 0)
 		return -1;
@@ -662,6 +662,9 @@ static int __cmd_ftrace(struct perf_ftrace *ftrace, int argc, const char **argv)
 	read_tracing_file_to_stdout("trace");
 
 	if (!ftrace->initial_delay) {
+		/**
+		 * /sys/kernel/debug/tracing/tracing_on
+		 */
 		if (write_tracing_file("tracing_on", "1") < 0) {
 			pr_err("can't enable tracing\n");
 			goto out_close_fd;
@@ -672,6 +675,9 @@ static int __cmd_ftrace(struct perf_ftrace *ftrace, int argc, const char **argv)
 
 	if (ftrace->initial_delay) {
 		usleep(ftrace->initial_delay * 1000);
+		/**
+		 * /sys/kernel/debug/tracing/tracing_on
+		 */
 		if (write_tracing_file("tracing_on", "1") < 0) {
 			pr_err("can't enable tracing\n");
 			goto out_close_fd;
@@ -691,6 +697,9 @@ static int __cmd_ftrace(struct perf_ftrace *ftrace, int argc, const char **argv)
 		}
 	}
 
+	/**
+	 * /sys/kernel/debug/tracing/tracing_on
+	 */
 	write_tracing_file("tracing_on", "0");
 
 	if (workload_exec_errno) {
