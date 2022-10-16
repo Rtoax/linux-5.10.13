@@ -43,6 +43,7 @@ bool alternative_is_applied(u16 cpufeature)
  */
 static bool branch_insn_requires_update(struct alt_instr *alt, unsigned long pc)
 {
+	/* (void *)&(a)->alt_offset + (a)->alt_offset */
 	unsigned long replptr = (unsigned long)ALT_REPL_PTR(alt);
 	return !(pc >= replptr && pc <= (replptr + alt->alt_len));
 }
@@ -95,7 +96,7 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 }
 
 /**
- * alternative 指令替换
+ * alternative 指令替换，这是 arm64 alternative 功能的核心函数
  *
  * @param alt - 对应的 alt_instr 结构，在 宏定义 ALTERNATIVE() 中创建
  * @param origptr - 原始指令
@@ -108,6 +109,7 @@ static void patch_alternative(struct alt_instr *alt,
 	__le32 *replptr;
 	int i;
 
+	/* (void *)&(a)->alt_offset + (a)->alt_offset */
 	replptr = ALT_REPL_PTR(alt);
 	for (i = 0; i < nr_inst; i++) {
 		// aarch64 固定指令长度为 4
@@ -147,6 +149,8 @@ static void clean_dcache_range_nopatch(u64 start, u64 end)
 }
 
 /**
+ * alternative 在 arm64 上的实现
+ *
  * TODO: 2022年5月9日 vDSO 看过来
  * 解释TODO： 因为 vDSO 是需要 CPU 特性的加入，如 rdtsc，所以需要 alternative
  */
@@ -167,6 +171,7 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 
 		/**
 		 * 检测 cpu 特性
+		 * 如果不支持，直接跳过
 		 */
 		if (!test_bit(alt->cpufeature, feature_mask))
 			continue;
@@ -176,6 +181,7 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 		    !cpus_have_cap(alt->cpufeature))
 			continue;
 
+		/* ARM64_CB_PATCH: */
 		if (alt->cpufeature == ARM64_CB_PATCH)
 			BUG_ON(alt->alt_len != 0);
 		else
@@ -188,21 +194,40 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 
 		/**
 		 * 原始指令的地址
+		 * (void *)&(a)->orig_offset + (a)->orig_offset
 		 */
 		origptr = ALT_ORIG_PTR(alt);
+
+		/**
+		 * TODO：这里不明白。2022-10-16 21:01
+		 */
 		updptr = is_module ? origptr : lm_alias(origptr);
+
+		/**
+		 * 指令个数
+		 * arm64 左右指令长度均为 4 (AARCH64_INSN_SIZE)
+		 */
 		nr_inst = alt->orig_len / AARCH64_INSN_SIZE;
 
 		// CPU 支持的特性
 		if (alt->cpufeature < ARM64_CB_PATCH)
+			// 这是 arm64 alternative 功能的核心函数
 			alt_cb = patch_alternative;
 		else
+			/**
+			 * (void *)&(a)->alt_offset + (a)->alt_offset
+			 * 这里的意思是，如果超出了内和定义的特性范围，需要自定义回调函数
+			 * 所以，如果你在内和中搜索这个回调函数，是搜不到的。
+			 */
 			alt_cb  = ALT_REPL_PTR(alt);
 
 		// 调用回调函数
 		// 如果是支持的 CPU 特性，调用 patch_alternative()
 		alt_cb(alt, origptr, updptr, nr_inst);
 
+		/**
+		 * 清理缓存
+		 */
 		if (!is_module) {
 			clean_dcache_range_nopatch((u64)origptr,
 						   (u64)(origptr + nr_inst));
@@ -215,6 +240,9 @@ static void __apply_alternatives(void *alt_region,  bool is_module,
 	 */
 	if (!is_module) {
 		dsb(ish);
+		/**
+		 * 刷新所有指令缓存
+		 */
 		__flush_icache_all();
 		isb();
 
@@ -287,6 +315,7 @@ void __init apply_boot_alternatives(void)
 	/* If called on non-boot cpu things could go wrong */
 	WARN_ON(smp_processor_id() != 0);
 
+	/* 不是模块 */
 	__apply_alternatives(&region, false, &boot_capabilities[0]);
 }
 
@@ -299,8 +328,13 @@ void apply_alternatives_module(void *start, size_t length)
 	};
 	DECLARE_BITMAP(all_capabilities, ARM64_NPATCHABLE);
 
+	/**
+	 * 为什么所有的能力都置为 1？
+	 * 后面要作出修改
+	 */
 	bitmap_fill(all_capabilities, ARM64_NPATCHABLE);
 
+	/* true: ko 模块 */
 	__apply_alternatives(&region, true, &all_capabilities[0]);
 }
 #endif
