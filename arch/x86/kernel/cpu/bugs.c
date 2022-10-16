@@ -137,6 +137,10 @@ void __init check_bugs(void)
 
 	fpu__init_check_bugs();
 #else /* CONFIG_X86_64 */
+
+	/**
+	 * alternative insr replace
+	 */
 	alternative_instructions();
 
 	/*

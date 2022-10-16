@@ -185,6 +185,9 @@ SECTIONS
 	__exittext_end = .;
 
 	. = ALIGN(4);
+	/**
+	 * alternative 的 alt_instr 都放在这个 section
+	 */
 	.altinstructions : {
 		__alt_instructions = .;
 		*(.altinstructions)

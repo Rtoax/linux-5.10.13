@@ -268,6 +268,9 @@ static void __init_or_module add_nops(void *insns, unsigned int len)
 	}
 }
 
+/**
+ * alternative 的起始、结束地址
+ */
 extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
 extern s32 __smp_locks[], __smp_locks_end[];
 void text_poke_early(void *addr, const void *opcode, size_t len);
@@ -277,9 +280,14 @@ void text_poke_early(void *addr, const void *opcode, size_t len);
  */
 static inline bool is_jmp(const u8 opcode)
 {
+	// 0xeb jmp8 (upatch.git)
+	// 0xe9 jmpq
 	return opcode == 0xeb || opcode == 0xe9;
 }
 
+/**
+ * alternative: jmp 指令
+ */
 static void __init_or_module
 recompute_jump(struct alt_instr *a, u8 *orig_insn, u8 *repl_insn, u8 *insn_buff)
 {
@@ -287,25 +295,38 @@ recompute_jump(struct alt_instr *a, u8 *orig_insn, u8 *repl_insn, u8 *insn_buff)
 	s32 n_dspl, o_dspl;
 	int repl_len;
 
+	/**
+	 * jmp 指令的长度一定是 5
+	 */
 	if (a->replacementlen != 5)
 		return;
 
+	/* 保存原理的偏移地址 */
 	o_dspl = *(s32 *)(insn_buff + 1);
 
-	/* next_rip of the replacement JMP */
+	/* next_rip of the replacement JMP
+	 * jmp xxx 的下一条指令地址 */
 	next_rip = repl_insn + a->replacementlen;
-	/* target rip of the replacement JMP */
+	/* target rip of the replacement JMP
+	 * 原本要跳转到的位置 = 下一条指令地址 + 原来的偏移地址 */
 	tgt_rip  = next_rip + o_dspl;
+
+	/* 跳转的目的 和 现在指令 之间有多少字节 */
 	n_dspl = tgt_rip - orig_insn;
 
 	DPRINTK("target RIP: %px, new_displ: 0x%x", tgt_rip, n_dspl);
 
+	/* positive offset: jmp offset 中的 offset 为正数 */
 	if (tgt_rip - orig_insn >= 0) {
+
+		/* 获取 offset 的有效位？好像也不是
+		 * 这将决定使用 0xeb 还是 0xe9 作为 jmp 指令，参见 is_jmp() */
 		if (n_dspl - 2 <= 127)
 			goto two_byte_jmp;
 		else
 			goto five_byte_jmp;
-	/* negative offset */
+
+	/* negative offset: jmp offset 中的 offset 为负数 */
 	} else {
 		if (((n_dspl - 2) & 0xff) == (n_dspl - 2))
 			goto two_byte_jmp;
@@ -313,11 +334,16 @@ recompute_jump(struct alt_instr *a, u8 *orig_insn, u8 *repl_insn, u8 *insn_buff)
 			goto five_byte_jmp;
 	}
 
+	/**
+	 * 这里可以作为 upatch.git 开发的参考，非常重要的代码。2022-10-16 20:14
+	 */
+
 two_byte_jmp:
 	n_dspl -= 2;
 
 	insn_buff[0] = 0xeb;
 	insn_buff[1] = (s8)n_dspl;
+	// 补充空指令
 	add_nops(insn_buff + 2, 3);
 
 	repl_len = 2;
@@ -368,6 +394,9 @@ static void __init_or_module noinline optimize_nops(struct alt_instr *a, u8 *ins
  *
  * Marked "noinline" to cause control flow change and thus insn cache
  * to refetch changed I$ lines.
+ *
+ * 遍历所有 alternative 指令，并进行替换
+ * 其中 start - end 为一个 section 区间，这个 ELF section 存放 alt_instr 结构
  */
 void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 						  struct alt_instr *end)
@@ -385,6 +414,8 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 	 *
 	 * So be careful if you want to change the scan order to any other
 	 * order.
+	 *
+	 * 遍历这些指令
 	 */
 	for (a = start; a < end; a++) {
 		int insn_buff_sz = 0;
@@ -393,6 +424,10 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 		replacement = (u8 *)&a->repl_offset + a->repl_offset;
 		BUG_ON(a->instrlen > sizeof(insn_buff));
 		BUG_ON(a->cpuid >= (NCAPINTS + NBUGINTS) * 32);
+
+		/**
+		 * CPU 是否有这个特性，如果没有，那么将跳过这个 alt_instr {}
+		 */
 		if (!boot_cpu_has(a->cpuid)) {
 			if (a->padlen > 1)
 				optimize_nops(a, instr);
@@ -409,6 +444,7 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 		DUMP_BYTES(instr, a->instrlen, "%px: old_insn: ", instr);
 		DUMP_BYTES(replacement, a->replacementlen, "%px: rpl_insn: ", replacement);
 
+		// 将替换成的指令
 		memcpy(insn_buff, replacement, a->replacementlen);
 		insn_buff_sz = a->replacementlen;
 
@@ -417,6 +453,9 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 		 *
 		 * Instruction length is checked before the opcode to avoid
 		 * accessing uninitialized bytes for zero-length replacements.
+		 *
+		 * 长度 = 5, callq(oxe8) 指令时，更新这个指令
+		 * 我正在写的 upatch.git 工具可以参考这里 2022-10-16
 		 */
 		if (a->replacementlen == 5 && *insn_buff == 0xe8) {
 			*(s32 *)(insn_buff + 1) += replacement - instr;
@@ -425,9 +464,16 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 				(unsigned long)instr + *(s32 *)(insn_buff + 1) + 5);
 		}
 
+		/**
+		 * 如果是 jmp 指令
+		 * 我正在写的 upatch.git 工具可以参考这里 2022-10-16
+		 */
 		if (a->replacementlen && is_jmp(replacement[0]))
 			recompute_jump(a, instr, replacement, insn_buff);
 
+		/**
+		 * 被替换的指令长度 大于 替换的指令长度，需要补充一些 nop 指令
+		 */
 		if (a->instrlen > a->replacementlen) {
 			add_nops(insn_buff + a->replacementlen,
 				 a->instrlen - a->replacementlen);
@@ -435,6 +481,9 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 		}
 		DUMP_BYTES(insn_buff, insn_buff_sz, "%px: final_insn: ", instr);
 
+		/**
+		 * 替换这些指令，这是指令替换的关键函数，这完成了 alternative 功能指令替换的工作
+		 */
 		text_poke_early(instr, insn_buff, insn_buff_sz);
 	}
 }
@@ -704,6 +753,11 @@ static void __init int3_selftest(void)
 	unregister_die_notifier(&int3_exception_nb);
 }
 
+/**
+ * start_kernel()
+ *  ...
+ *   alternative_instructions()
+ */
 void __init alternative_instructions(void)
 {
 	int3_selftest();
@@ -712,6 +766,9 @@ void __init alternative_instructions(void)
 	 * The patching is not fully atomic, so try to avoid local
 	 * interruptions that might execute the to be patched code.
 	 * Other CPUs are not running.
+	 *
+	 * 关闭 不可屏蔽中断
+	 * 因为这个阶段中，不是完全原子的. 避免本地中断执行补丁代码
 	 */
 	stop_nmi();
 
@@ -726,6 +783,9 @@ void __init alternative_instructions(void)
 	 * patching.
 	 */
 
+	/**
+	 * 应用 alternative
+	 */
 	apply_alternatives(__alt_instructions, __alt_instructions_end);
 
 #ifdef CONFIG_SMP

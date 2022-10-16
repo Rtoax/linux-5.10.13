@@ -1236,6 +1236,12 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	delayacct_init();
 
 	poking_init();          /* ??? */
+
+	/**
+	 * 内部会初始化的内容
+	 *
+	 * alternative
+	 */
 	check_bugs();
 
 	acpi_subsystem_init();  /* 高级配置与电源管理 */

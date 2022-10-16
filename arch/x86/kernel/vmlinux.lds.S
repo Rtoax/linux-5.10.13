@@ -447,6 +447,9 @@ SECTIONS
 	 * Think locking instructions on spinlocks.
 	 */
 	. = ALIGN(8);
+	/**
+	 * alternative 的 alt_instr 都放在这个 section
+	 */
 	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
 		__alt_instructions = .;
 		*(.altinstructions)

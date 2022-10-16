@@ -594,6 +594,9 @@ SECTIONS
 		__parainstructions_end = .;
 	}
 	. = ALIGN(8);
+	/**
+	 * alternative 的 alt_instr 都放在这个 section
+	 */
 	.altinstructions : AT(ADDR(.altinstructions) - 0xffffffff80000000)
 	{
 		__alt_instructions = .;
