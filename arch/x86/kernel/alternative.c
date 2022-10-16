@@ -483,6 +483,9 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 
 		/**
 		 * 替换这些指令，这是指令替换的关键函数，这完成了 alternative 功能指令替换的工作
+		 * @instr: address to modify
+		 * @insn_buff: source of the copy
+		 * @insn_buff_sz: length to copy
 		 */
 		text_poke_early(instr, insn_buff, insn_buff_sz);
 	}
