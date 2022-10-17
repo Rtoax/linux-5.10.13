@@ -56,7 +56,11 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 
 	insn = le32_to_cpu(*altinsnptr);
 
+	/**
+	 * 如果是分支指令
+	 */
 	if (aarch64_insn_is_branch_imm(insn)) {
+		/* 获取偏移量 */
 		s32 offset = aarch64_get_branch_offset(insn);
 		unsigned long target;
 
@@ -71,6 +75,13 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 			offset = target - (unsigned long)insnptr;
 			insn = aarch64_set_branch_offset(insn, offset);
 		}
+	/**
+	 * ADR 指令将基于PC 相对偏移的地址值读取到寄存器中
+	 * ADRP 以页为单位的大范围的地址读取指令，这里的P就是page的意思。
+	 *
+	 * 通俗来讲，ADRP指令就是先进行PC+imm（偏移值）然后找到lable所在的一个4KB
+	 * 的页，然后取得label的基址，再进行偏移去寻址
+	 */
 	} else if (aarch64_insn_is_adrp(insn)) {
 		s32 orig_offset, new_offset;
 		unsigned long target;
@@ -84,6 +95,9 @@ static u32 get_alt_insn(struct alt_instr *alt, __le32 *insnptr, __le32 *altinsnp
 		target = align_down(altinsnptr, SZ_4K) + orig_offset;
 		new_offset = target - align_down(insnptr, SZ_4K);
 		insn = aarch64_insn_adrp_set_offset(insn, new_offset);
+	/**
+	 *
+	 */
 	} else if (aarch64_insn_uses_literal(insn)) {
 		/*
 		 * Disallow patching unhandled instructions using PC relative
