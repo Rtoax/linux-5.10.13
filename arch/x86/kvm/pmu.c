@@ -372,6 +372,9 @@ int kvm_pmu_rdpmc(struct kvm_vcpu *vcpu, unsigned idx, u64 *data)
 	if (!pmc)
 		return 1;
 
+	/**
+	 * X86_CR0_PE 保护模式
+	 */
 	if (!(kvm_read_cr4(vcpu) & X86_CR4_PCE) &&
 	    (kvm_x86_ops.get_cpl(vcpu) != 0) &&
 	    (kvm_read_cr0(vcpu) & X86_CR0_PE))

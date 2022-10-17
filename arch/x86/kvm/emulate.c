@@ -2663,6 +2663,9 @@ static int em_rsm(struct x86_emulate_ctxt *ctxt)
 
 	/* For the 64-bit case, this will clear EFER.LMA.  */
 	cr0 = ctxt->ops->get_cr(ctxt, 0);
+	/**
+	 * X86_CR0_PE 保护模式
+	 */
 	if (cr0 & X86_CR0_PE)
 		ctxt->ops->set_cr(ctxt, 0, cr0 & ~(X86_CR0_PG | X86_CR0_PE));
 

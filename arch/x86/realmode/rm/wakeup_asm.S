@@ -50,6 +50,9 @@ SYM_CODE_START(wakeup_start)
 	movw	$16, %cx
 	lgdtl	%cs:wakeup_gdt
 	movl	%cr0, %eax
+	/**
+	 * X86_CR0_PE 保护模式
+	 */
 	orb	$X86_CR0_PE, %al
 	movl	%eax, %cr0
 	ljmpw	$8, $2f
@@ -60,6 +63,9 @@ SYM_CODE_START(wakeup_start)
 	movw	%cx, %fs
 	movw	%cx, %gs
 
+	/**
+	 * X86_CR0_PE 保护模式
+	 */
 	andb	$~X86_CR0_PE, %al
 	movl	%eax, %cr0
 	LJMPW_RM(3f)

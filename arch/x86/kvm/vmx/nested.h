@@ -262,6 +262,10 @@ static inline bool nested_guest_cr0_valid(struct kvm_vcpu *vcpu, unsigned long v
 	if (to_vmx(vcpu)->nested.msrs.secondary_ctls_high &
 		SECONDARY_EXEC_UNRESTRICTED_GUEST &&
 	    nested_cpu_has2(vmcs12, SECONDARY_EXEC_UNRESTRICTED_GUEST))
+		/**
+		 * X86_CR0_PE 保护模式
+		 * X86_CR0_PG 分页
+		 */
 		fixed0 &= ~(X86_CR0_PE | X86_CR0_PG);
 
 	return fixed_bits_valid(val, fixed0, fixed1);

@@ -3890,6 +3890,9 @@ static int svm_check_intercept(struct kvm_vcpu *vcpu,
 			cr0 &= 0xfUL;
 			val &= 0xfUL;
 			/* lmsw can't clear PE - catch this here */
+			/**
+			 * X86_CR0_PE 保护模式
+			 */
 			if (cr0 & X86_CR0_PE)
 				val |= X86_CR0_PE;
 		}
@@ -4181,7 +4184,7 @@ static int svm_vm_init(struct kvm *kvm)
 }
 
 /**
- *  
+ *
  */
 static struct kvm_x86_ops __initdata svm_x86_ops  = {
 	.hardware_unsetup = svm_hardware_teardown,
