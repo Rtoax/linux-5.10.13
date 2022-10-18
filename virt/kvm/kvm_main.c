@@ -1606,6 +1606,16 @@ EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
  * the snapshot taken before and step 4 ensures that writes done after
  * exiting to userspace will be logged for the next call.
  *
+ * 1. 获取memslot脏页地址，这个地址包含了来嗯个 dirty_bitmap
+ * 2. 将第二个全部清空；
+ * 3. 将第一个 dirty bitmap 与第二个交换；
+ * 4. 将第二个 dirty bitmap 复制到用户态传入的参数中；
+ *
+ * 可参见 kvm_vm_ioctl_get_dirty_log() 函数注释。
+ *
+ * 注意：
+ *   在交换了两个脏页位图，并把脏页位图传到用户态后，需要再次设置页面的写保护，
+ *   以便记录接下来的写保护。
  */
 static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 {

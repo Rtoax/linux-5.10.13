@@ -151,7 +151,8 @@ struct kvm_userspace_memory_region {
  * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
  * 退回到 KVM 中。
  *
- * 使用 ioctl(KVM_GET_DIRTY_LOG) 获取脏页位图
+ * 使用 ioctl(KVM_GET_DIRTY_LOG) 获取脏页位图，它能够获得 VM 上次进行该调用之后到现在
+ * 之间的脏页情况。(见 kvm_get_dirty_log_protect())
  */
 #define KVM_MEM_LOG_DIRTY_PAGES	(1UL << 0)
 #define KVM_MEM_READONLY	(1UL << 1)
@@ -1420,9 +1421,11 @@ struct kvm_vfio_spapr_tce {
 /**
  * 使用 ioctl(KVM_GET_DIRTY_LOG) 获取脏页位图
  *
- * 当应用层需要指导虚拟机的内存访问情况时，通过这个 flag 获取脏页位图
+ * 1. 当应用层需要知道虚拟机的内存访问情况时，通过这个 flag 获取脏页位图。
+ * 2. ioctl(KVM_GET_DIRTY_LOG) 能够获得 VM 上次进行该调用之后到现在之间的脏页情况。
+ *    (见 kvm_get_dirty_log_protect())
  *
- * see also KVM_MEM_LOG_DIRTY_PAGES
+ * see also KVM_MEM_LOG_DIRTY_PAGES, kvm_get_dirty_log_protect()
  */
 #define KVM_GET_DIRTY_LOG         _IOW(KVMIO,  0x42, struct kvm_dirty_log)
 /* KVM_SET_MEMORY_ALIAS is obsolete: */
