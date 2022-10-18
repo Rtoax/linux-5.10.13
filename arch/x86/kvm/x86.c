@@ -101,7 +101,7 @@ static u64 __read_mostly efer_reserved_bits = ~((u64)EFER_SCE);
 static u64 __read_mostly cr4_reserved_bits = CR4_RESERVED_BITS;
 
 #define KVM_X2APIC_API_VALID_FLAGS (KVM_X2APIC_API_USE_32BIT_IDS | \
-                                    KVM_X2APIC_API_DISABLE_BROADCAST_QUIRK)
+	                                KVM_X2APIC_API_DISABLE_BROADCAST_QUIRK)
 
 static void update_cr8_intercept(struct kvm_vcpu *vcpu);
 static void process_nmi(struct kvm_vcpu *vcpu);
@@ -112,7 +112,7 @@ static void store_regs(struct kvm_vcpu *vcpu);
 static int sync_regs(struct kvm_vcpu *vcpu);
 
 /**
- *  可能等于 
+ *  可能等于
  *  1. `vmx_x86_ops`
  *  2. `svm_x86_ops`
  */
@@ -521,7 +521,7 @@ void kvm_deliver_exception_payload(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(kvm_deliver_exception_payload);
 
 /**
- *  
+ *
  */
 static void kvm_multiple_exception(struct kvm_vcpu *vcpu,
 		unsigned nr, bool has_error, u32 error_code,
@@ -645,9 +645,9 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, struct x86_exception *fault)
 	vcpu->arch.exception.nested_apf =
 		is_guest_mode(vcpu) && fault->async_page_fault;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (vcpu->arch.exception.nested_apf) {
 		vcpu->arch.apf.nested_apf_token = fault->address;
 		kvm_queue_exception_e(vcpu, PF_VECTOR, fault->error_code);
@@ -678,12 +678,12 @@ bool kvm_inject_emulated_page_fault(struct kvm_vcpu *vcpu,
 		kvm_mmu_invalidate_gva(vcpu, fault_mmu, fault->address,
 				            fault_mmu->root_hpa);
 
-    /**
-     *  注入
-     *  可能为：
-     *  kvm_inject_page_fault()
-     *  vmx_inject_page_fault_nested()
-     */
+	/**
+	 *  注入
+	 *  可能为：
+	 *  kvm_inject_page_fault()
+	 *  vmx_inject_page_fault_nested()
+	 */
 	fault_mmu->inject_page_fault(vcpu, fault);
 	return fault->nested_page_fault;
 }
@@ -829,15 +829,15 @@ bool pdptrs_changed(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(pdptrs_changed);
 
 /**
- *  
+ *
  */
 int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
 {
 	unsigned long old_cr0 = kvm_read_cr0(vcpu);
 	unsigned long pdptr_bits = X86_CR0_CD | X86_CR0_NW | X86_CR0_PG;
-    /**
-     *  分页 + 写保护
-     */
+	/**
+	 *  分页 + 写保护
+	 */
 	unsigned long update_bits = X86_CR0_PG | X86_CR0_WP;
 
 	cr0 |= X86_CR0_ET;
@@ -882,13 +882,13 @@ int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
 		kvm_async_pf_hash_reset(vcpu);
 	}
 
-    /**
-     *  CR0 有变化： 分页标志 和 写保护标志 是否有变化
-     */
+	/**
+	 *  CR0 有变化： 分页标志 和 写保护标志 是否有变化
+	 */
 	if ((cr0 ^ old_cr0) & update_bits)
-        /**
-         *  有变化 则进行调用
-         */
+	    /**
+	     *  有变化 则进行调用
+	     */
 		kvm_mmu_reset_context(vcpu);
 
 	if (((cr0 ^ old_cr0) & X86_CR0_CD) &&
@@ -1071,9 +1071,9 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 	}
 #endif
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (cr3 == kvm_read_cr3(vcpu) && !pdptrs_changed(vcpu)) {
 		if (!skip_tlb_flush) {
 			kvm_mmu_sync_roots(vcpu);
@@ -1082,29 +1082,29 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
 		return 0;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (is_long_mode(vcpu) && (cr3 & vcpu->arch.cr3_lm_rsvd_bits))
 		return 1;
-    /**
-     *  
-     */
-    else if (is_pae_paging(vcpu) && !load_pdptrs(vcpu, vcpu->arch.walk_mmu, cr3))
+	/**
+	 *
+	 */
+	else if (is_pae_paging(vcpu) && !load_pdptrs(vcpu, vcpu->arch.walk_mmu, cr3))
 		return 1;
 
-    /**
-     *  创建新的 PGD
-     */
+	/**
+	 *  创建新的 PGD
+	 */
 	kvm_mmu_new_pgd(vcpu, cr3, skip_tlb_flush, skip_tlb_flush);
-    /**
-     *  KVM 记录Guest 的根页目表地址
-     */
+	/**
+	 *  KVM 记录Guest 的根页目表地址
+	 */
 	vcpu->arch.cr3 = cr3;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_register_mark_available(vcpu, VCPU_EXREG_CR3);
 
 	return 0;
@@ -1546,7 +1546,7 @@ static int set_efer(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
 
 void kvm_enable_efer_bits(u64 mask)
 {
-       efer_reserved_bits &= ~mask;
+	   efer_reserved_bits &= ~mask;
 }
 EXPORT_SYMBOL_GPL(kvm_enable_efer_bits);
 
@@ -2306,7 +2306,7 @@ static void kvm_synchronize_tsc(struct kvm_vcpu *vcpu, u64 data)
 	 * TSC, we add elapsed time in this computation.  We could let the
 	 * compensation code attempt to catch up if we fall behind, but
 	 * it's better to try to match offsets from the beginning.
-         */
+	     */
 	if (synchronizing &&
 	    vcpu->arch.virtual_tsc_khz == kvm->arch.last_tsc_khz) {
 		if (!kvm_check_tsc_unstable()) {
@@ -4705,7 +4705,7 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
 }
 
 /**
- *  
+ *
  */
 long kvm_arch_vcpu_ioctl(struct file *filp,
 			 unsigned int ioctl, unsigned long arg)
@@ -4773,29 +4773,29 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
 		r = kvm_vcpu_ioctl_smi(vcpu);
 		break;
 	}
-    /**
-     *  cpuid
-     */
+	/**
+	 *  cpuid
+	 */
 	case KVM_SET_CPUID: {
 		struct kvm_cpuid __user *cpuid_arg = argp;
 		struct kvm_cpuid cpuid;
 
 		r = -EFAULT;
-        /**
-         *  复制
-         */
+	    /**
+	     *  复制
+	     */
 		if (copy_from_user(&cpuid, cpuid_arg, sizeof(cpuid)))
 			goto out;
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		r = kvm_vcpu_ioctl_set_cpuid(vcpu, &cpuid, cpuid_arg->entries);
 		break;
 	}
-    /**
-     *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
-     *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
-     */
+	/**
+	 *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
+	 *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
+	 */
 	case KVM_SET_CPUID2: {
 		struct kvm_cpuid2 __user *cpuid_arg = argp;
 		struct kvm_cpuid2 cpuid;
@@ -5279,11 +5279,15 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
 	 * Flush potentially hardware-cached dirty pages to dirty_bitmap.
 	 */
 	if (kvm_x86_ops.flush_log_dirty)
+		/**
+		 * VMX: vmx_flush_log_dirty()
+		 *
+		 */
 		kvm_x86_ops.flush_log_dirty(kvm);
 }
 
 /**
- *  
+ *
  */
 int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_event,
 			bool line_status)
@@ -5291,7 +5295,7 @@ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_event,
 	if (!irqchip_in_kernel(kvm))
 		return -ENXIO;
 
-    /**
+	/**
 	 *  向 8259A 发送 中断请求
 	 */
 	irq_event->status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
@@ -5487,7 +5491,7 @@ static int kvm_vm_ioctl_set_msr_filter(struct kvm *kvm, void __user *argp)
 }
 
 /**
- *  
+ *
  */
 long kvm_arch_vm_ioctl(struct file *filp,
 		       unsigned int ioctl, unsigned long arg)
@@ -5531,9 +5535,9 @@ set_identity_unlock:
 	case KVM_GET_NR_MMU_PAGES:
 		r = kvm_vm_ioctl_get_nr_mmu_pages(kvm);
 		break;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	case KVM_CREATE_IRQCHIP: {
 		mutex_lock(&kvm->lock);
 
@@ -5549,9 +5553,9 @@ set_identity_unlock:
 		if (r)
 			goto create_irqchip_unlock;
 
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		r = kvm_ioapic_init(kvm);
 		if (r) {
 			kvm_pic_destroy(kvm);
@@ -5591,9 +5595,9 @@ set_identity_unlock:
 	create_pit_unlock:
 		mutex_unlock(&kvm->lock);
 		break;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	case KVM_GET_IRQCHIP: {
 		/* 0: PIC master, 1: PIC slave, 2: IOAPIC */
 		struct kvm_irqchip *chip;
@@ -5618,9 +5622,9 @@ set_identity_unlock:
 		kfree(chip);
 		break;
 	}
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	case KVM_SET_IRQCHIP: {
 		/* 0: PIC master, 1: PIC slave, 2: IOAPIC */
 		struct kvm_irqchip *chip;
@@ -5967,7 +5971,7 @@ void kvm_get_segment(struct kvm_vcpu *vcpu,
 }
 
 /**
- *  
+ *
  */
 gpa_t translate_nested_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 			   struct x86_exception *exception)
@@ -5979,16 +5983,16 @@ gpa_t translate_nested_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 	/* NPT walks are always user-walks */
 	access |= PFERR_USER_MASK;
 
-    /**
-     *  可能为
-     *  nonpaging_gva_to_gpa()
-     *  paging64_gva_to_gpa()
-     *  paging32_gva_to_gpa()
-     *  ept_gva_to_gpa()
-     *  nonpaging_gva_to_gpa_nested()
-     *  paging64_gva_to_gpa_nested()
-     *  paging32_gva_to_gpa_nested()
-     */
+	/**
+	 *  可能为
+	 *  nonpaging_gva_to_gpa()
+	 *  paging64_gva_to_gpa()
+	 *  paging32_gva_to_gpa()
+	 *  ept_gva_to_gpa()
+	 *  nonpaging_gva_to_gpa_nested()
+	 *  paging64_gva_to_gpa_nested()
+	 *  paging32_gva_to_gpa_nested()
+	 */
 	t_gpa  = vcpu->arch.mmu->gva_to_gpa(vcpu, gpa, access, exception);
 
 	return t_gpa;
@@ -6380,7 +6384,7 @@ static int emulator_read_write_onepage(unsigned long addr, void *val,
 }
 
 /**
- *  
+ *
  */
 static int emulator_read_write(struct x86_emulate_ctxt *ctxt,
 			unsigned long addr,
@@ -6433,9 +6437,9 @@ static int emulator_read_write(struct x86_emulate_ctxt *ctxt,
 	vcpu->run->exit_reason = KVM_EXIT_MMIO;
 	vcpu->run->mmio.phys_addr = gpa;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	return ops->read_write_exit_mmio(vcpu, gpa, val, bytes);
 }
 
@@ -6450,7 +6454,7 @@ static int emulator_read_emulated(struct x86_emulate_ctxt *ctxt,
 }
 
 /**
- *  
+ *
  */
 static int emulator_write_emulated(struct x86_emulate_ctxt *ctxt,
 			    unsigned long addr,
@@ -7330,9 +7334,9 @@ int kvm_skip_emulated_instruction(struct kvm_vcpu *vcpu)
 	unsigned long rflags = kvm_x86_ops.get_rflags(vcpu);
 	int r;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = kvm_x86_ops.skip_emulated_instruction(vcpu);
 	if (unlikely(!r))
 		return 0;
@@ -7420,7 +7424,7 @@ static bool is_vmware_backdoor_opcode(struct x86_emulate_ctxt *ctxt)
 }
 
 /**
- *  
+ *
  */
 int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 			    int emulation_type, void *insn, int insn_len)
@@ -7463,20 +7467,20 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 
 		ctxt->ud = emulation_type & EMULTYPE_TRAP_UD;
 
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		trace_kvm_emulate_insn_start(vcpu);
 		++vcpu->stat.insn_emulation;
 
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		if (r != EMULATION_OK)  {
 			if ((emulation_type & EMULTYPE_TRAP_UD) ||
 			    (emulation_type & EMULTYPE_TRAP_UD_FORCED)) {
@@ -7501,9 +7505,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 		}
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if ((emulation_type & EMULTYPE_VMWARE_GP) &&
 	    !is_vmware_backdoor_opcode(ctxt)) {
 		kvm_queue_exception_e(vcpu, GP_VECTOR, 0);
@@ -7516,9 +7520,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	 * updating interruptibility state and injecting single-step #DBs.
 	 */
 	if (emulation_type & EMULTYPE_SKIP) {
-        /**
-         *  更新指令指针
-         */
+	    /**
+	     *  更新指令指针
+	     */
 		kvm_rip_write(vcpu, ctxt->_eip);
 		if (ctxt->eflags & X86_EFLAGS_RF)
 			kvm_set_rflags(vcpu, ctxt->eflags & ~X86_EFLAGS_RF);
@@ -7550,9 +7554,9 @@ restart:
 		ctxt->exception.address = 0;
 	}
 
-    /**
-     *  模拟 指令
-     */
+	/**
+	 *  模拟 指令
+	 */
 	r = x86_emulate_insn(ctxt);
 
 	if (r == EMULATION_INTERCEPTED)
@@ -7707,24 +7711,24 @@ static int kvm_fast_pio_in(struct kvm_vcpu *vcpu, int size,
 	unsigned long val;
 	int ret;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	/* For size less than 4 we merge, else we zero extend */
 	val = (size < 4) ? kvm_rax_read(vcpu) : 0;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	ret = emulator_pio_in(vcpu, size, port, &val, 1);
 	if (ret) {
 		kvm_rax_write(vcpu, val);
 		return ret;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	vcpu->arch.pio.linear_rip = kvm_get_linear_rip(vcpu);
 	vcpu->arch.complete_userspace_io = complete_fast_pio_in;
 
@@ -7738,17 +7742,17 @@ int kvm_fast_pio(struct kvm_vcpu *vcpu, int size, unsigned short port, int in)
 {
 	int ret;
 
-    /**
-     *  输入还是输出
-     */
+	/**
+	 *  输入还是输出
+	 */
 	if (in)
 		ret = kvm_fast_pio_in(vcpu, size, port);
 	else
 		ret = kvm_fast_pio_out(vcpu, size, port);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	return ret && kvm_skip_emulated_instruction(vcpu);
 }
 EXPORT_SYMBOL_GPL(kvm_fast_pio);
@@ -8142,7 +8146,7 @@ void kvm_arch_exit(void)
 }
 
 /**
- *  
+ *
  */
 int kvm_vcpu_halt(struct kvm_vcpu *vcpu)
 {
@@ -8932,7 +8936,7 @@ EXPORT_SYMBOL_GPL(__kvm_request_immediate_exit);
  * exiting to the userspace.  Otherwise, the value will be returned to the
  * userspace.
  *
- *  
+ *
  */
 static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 {
@@ -9075,9 +9079,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		}
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = kvm_mmu_reload(vcpu);
 	if (unlikely(r)) {
 		goto cancel_injection;
@@ -9085,9 +9089,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	preempt_disable();
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_x86_ops.prepare_guest_switch(vcpu);
 
 	/*
@@ -9155,9 +9159,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		vcpu->arch.switch_db_regs &= ~KVM_DEBUGREG_RELOAD;
 	}
 
-    /**
-     *  运行
-     */
+	/**
+	 *  运行
+	 */
 	exit_fastpath = kvm_x86_ops.run(vcpu);
 
 	/*
@@ -9190,9 +9194,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	vcpu->mode = OUTSIDE_GUEST_MODE;
 	smp_wmb();
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_x86_ops.handle_exit_irqoff(vcpu);
 
 	/*
@@ -9235,9 +9239,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	if (vcpu->arch.apic_attention)
 		kvm_lapic_sync_from_vapic(vcpu);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = kvm_x86_ops.handle_exit(vcpu, exit_fastpath);
 	return r;
 
@@ -9252,7 +9256,7 @@ out:
 }
 
 /**
- *  
+ *
  */
 static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 {
@@ -9262,10 +9266,10 @@ static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 		kvm_vcpu_block(vcpu);
 		vcpu->srcu_idx = srcu_read_lock(&kvm->srcu);
 
-        /**
-         *  vmx_x86_ops->vmx_post_block()
-         *  svm_x86_ops->svm_post_block()
-         */
+	    /**
+	     *  vmx_x86_ops->vmx_post_block()
+	     *  svm_x86_ops->svm_post_block()
+	     */
 		if (kvm_x86_ops.post_block)
 			kvm_x86_ops.post_block(vcpu);
 
@@ -9273,9 +9277,9 @@ static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
 			return 1;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_apic_accept_events(vcpu);
 	switch(vcpu->arch.mp_state) {
 	case KVM_MP_STATE_HALTED:
@@ -9304,7 +9308,7 @@ static inline bool kvm_vcpu_running(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 static int vcpu_run(struct kvm_vcpu *vcpu)
 {
@@ -9314,22 +9318,22 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
 	vcpu->srcu_idx = srcu_read_lock(&kvm->srcu);
 	vcpu->arch.l1tf_flush_l1d = true;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (;;) {
-        /**
-         *  正在运行
-         */
+	    /**
+	     *  正在运行
+	     */
 		if (kvm_vcpu_running(vcpu)) {
-            /**
-             *  enter Guest
-             */
+	        /**
+	         *  enter Guest
+	         */
 			r = vcpu_enter_guest(vcpu);
 		} else {
 		    /**
-             *  
-             */
+	         *
+	         */
 			r = vcpu_block(kvm, vcpu);
 		}
 
@@ -9512,13 +9516,13 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 			r = -EINTR;
 			goto out;
 		}
-        /**
-         *  for(;;) schedule();
-         */
+	    /**
+	     *  for(;;) schedule();
+	     */
 		kvm_vcpu_block(vcpu);
-        /**
-         *  
-         */
+	    /**
+	     *
+	     */
 		kvm_apic_accept_events(vcpu);
 		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
 		r = -EAGAIN;
@@ -9558,15 +9562,15 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 	} else
 		WARN_ON(vcpu->arch.pio.count || vcpu->mmio_needed);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (kvm_run->immediate_exit)
 		r = -EINTR;
 	else
-        /**
-         *
-         */
+	    /**
+	     *
+	     */
 		r = vcpu_run(vcpu);
 
 out:
@@ -10117,14 +10121,14 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 	else
 		vcpu->arch.mp_state = KVM_MP_STATE_UNINITIALIZED;
 
-    /**
-     *  设置 tsc
-     */
+	/**
+	 *  设置 tsc
+	 */
 	kvm_set_tsc_khz(vcpu, max_tsc_khz);
 
-    /**
-     *  创建 mmu
-     */
+	/**
+	 *  创建 mmu
+	 */
 	r = kvm_mmu_create(vcpu);
 	if (r < 0)
 		return r;
@@ -10140,21 +10144,21 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 
 	r = -ENOMEM;
 
-    /**
-     *  申请 page
-     */
+	/**
+	 *  申请 page
+	 */
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!page)
 		goto fail_free_lapic;
 
-    /**
-     *  programmed IO
-     */
+	/**
+	 *  programmed IO
+	 */
 	vcpu->arch.pio_data = page_address(page);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	vcpu->arch.mce_banks = kzalloc(KVM_MAX_MCE_BANKS * sizeof(u64) * 4,
 				       GFP_KERNEL_ACCOUNT);
 	if (!vcpu->arch.mce_banks)
@@ -10195,13 +10199,13 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 
 	kvm_hv_vcpu_init(vcpu);
 
-    /**
-     *  调用具体体系结构的 vcpu 创建 回调函数
-     *
-     *  VMX - vmx_create_vcpu
-     *  SVM - svm_create_vcpu
-     *  [...]
-     */
+	/**
+	 *  调用具体体系结构的 vcpu 创建 回调函数
+	 *
+	 *  VMX - vmx_create_vcpu
+	 *  SVM - svm_create_vcpu
+	 *  [...]
+	 */
 	r = kvm_x86_ops.vcpu_create(vcpu);
 	if (r)
 		goto free_guest_fpu;
@@ -10210,9 +10214,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 	vcpu->arch.msr_platform_info = MSR_PLATFORM_INFO_CPUID_FAULT;
 	kvm_vcpu_mtrr_init(vcpu);
 	vcpu_load(vcpu);
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_vcpu_reset(vcpu, false);
 	kvm_init_mmu(vcpu, false);
 	vcpu_put(vcpu);
@@ -10303,9 +10307,9 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 	vcpu->arch.nmi_pending = 0;
 	vcpu->arch.nmi_injected = false;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_clear_interrupt_queue(vcpu);
 	kvm_clear_exception_queue(vcpu);
 
@@ -10317,9 +10321,9 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	vcpu->arch.cr2 = 0;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_make_request(KVM_REQ_EVENT, vcpu);
 	vcpu->arch.apf.msr_en_val = 0;
 	vcpu->arch.apf.msr_int_val = 0;
@@ -10367,16 +10371,16 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 
 	vcpu->arch.ia32_xss = 0;
 
-    /**
-     *  vmx_vcpu_reset()
-     *  svm_vcpu_reset()
-     *  
-     */
+	/**
+	 *  vmx_vcpu_reset()
+	 *  svm_vcpu_reset()
+	 *
+	 */
 	kvm_x86_ops.vcpu_reset(vcpu, init_event);
 }
 
 /**
- *  
+ *
  */
 void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
 {
@@ -10385,9 +10389,9 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
 	kvm_get_segment(vcpu, &cs, VCPU_SREG_CS);
 	cs.selector = vector << 8;
 	cs.base = vector << 12;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	kvm_set_segment(vcpu, &cs, VCPU_SREG_CS);
 	kvm_rip_write(vcpu, 0);
 }
@@ -10556,7 +10560,7 @@ bool kvm_vcpu_is_reset_bsp(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(kvm_vcpu_is_reset_bsp);
 
 /**
- *  是 bootstrap Processor 处理器 - 
+ *  是 bootstrap Processor 处理器 -
  *  PS: 只能有一个处理器用于启动 内核
  */
 bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
@@ -11006,7 +11010,7 @@ static inline bool kvm_guest_apic_has_interrupt(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 {
@@ -11032,13 +11036,13 @@ static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 	     kvm_x86_ops.smi_allowed(vcpu, false)))
 		return true;
 
-    /**
-	 *  
+	/**
+	 *
 	 */
 	if (kvm_arch_interrupt_allowed(vcpu) &&
-        /**
-    	 *  
-    	 */
+	    /**
+		 *
+		 */
 	    (kvm_cpu_has_interrupt(vcpu) ||
 	    kvm_guest_apic_has_interrupt(vcpu)))
 		return true;
@@ -11055,7 +11059,7 @@ static inline bool kvm_vcpu_has_events(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  
+ *
  */
 int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 {

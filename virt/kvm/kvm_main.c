@@ -414,9 +414,9 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
 	vcpu->pid = NULL;
 	rcuwait_init(&vcpu->wait);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_async_pf_vcpu_init(vcpu);
 
 	vcpu->pre_pcpu = -1;
@@ -427,9 +427,9 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
 	vcpu->preempted = false;
 	vcpu->ready = false;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
 }
 
@@ -1267,19 +1267,19 @@ static int kvm_set_memslot(struct kvm *kvm,
 	if (r)
 		goto out_slots;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	update_memslots(slots, new, change);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	slots = install_new_memslots(kvm, as_id, slots);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_arch_commit_memory_region(kvm, mem, old, new, change);
 
 	kvfree(slots);
@@ -1344,18 +1344,18 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	as_id = mem->slot >> 16;
 	id = (u16)mem->slot;
 
-    /**
-     *  检查数值
-     */
+	/**
+	 *  检查数值
+	 */
 	/* General sanity checks */
 	if (mem->memory_size & (PAGE_SIZE - 1))
 		return -EINVAL;
 	if (mem->guest_phys_addr & (PAGE_SIZE - 1))
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* We can read the guest memory with __xxx_user() later on. */
 	if ((mem->userspace_addr & (PAGE_SIZE - 1)) ||
 	    (mem->userspace_addr != untagged_addr(mem->userspace_addr)) ||
@@ -1376,38 +1376,38 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	 * 这个槽位上是否已经有内存调了呢？
 	 */
 	tmp = id_to_memslot(__kvm_memslots(kvm, as_id), id);
-    /**
-     *  该槽位已经有内存条了
-     */
+	/**
+	 *  该槽位已经有内存条了
+	 */
 	if (tmp) {
 		old = *tmp;
 		tmp = NULL;
-    /**
-     *  当前slot没有内存条
-     */
+	/**
+	 *  当前slot没有内存条
+	 */
 	} else {
 		memset(&old, 0, sizeof(old));
 		old.id = id;
 	}
 
-    /**
-     *  内存大小为0，表示 删除 内存条
-     */
+	/**
+	 *  内存大小为0，表示 删除 内存条
+	 */
 	if (!mem->memory_size)
 		return kvm_delete_memslot(kvm, mem, &old, as_id);
 
-    /**
-     *  赋值
-     */
+	/**
+	 *  赋值
+	 */
 	new_slot.as_id = as_id;
 	new_slot.id = id;
-    /**
-     *   pfn
-     */
+	/**
+	 *   pfn
+	 */
 	new_slot.base_gfn = mem->guest_phys_addr >> PAGE_SHIFT;
-    /**
-     *  页数
-     */
+	/**
+	 *  页数
+	 */
 	new_slot.npages = mem->memory_size >> PAGE_SHIFT;
 	new_slot.flags = mem->flags;
 	new_slot.userspace_addr = mem->userspace_addr;
@@ -1415,42 +1415,42 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	if (new_slot.npages > KVM_MEM_MAX_NR_PAGES)
 		return -EINVAL;
 
-    /**
-     *  老 内存条 没有 page
-     */
+	/**
+	 *  老 内存条 没有 page
+	 */
 	if (!old.npages) {
-        /**
-         *  创建新的
-         */
+	    /**
+	     *  创建新的
+	     */
 		change = KVM_MR_CREATE;
-        /**
-         *  因为是创建，不是更新，所以 dirty 为空
-         */
+	    /**
+	     *  因为是创建，不是更新，所以 dirty 为空
+	     */
 		new_slot.dirty_bitmap = NULL;
 		memset(&new_slot.arch, 0, sizeof(new_slot.arch));
 
-    /**
-     *  老 内存条中有 pages，那么就需要更新现有的 内存条了
-     */
-    } else { /* Modify an existing slot. */
+	/**
+	 *  老 内存条中有 pages，那么就需要更新现有的 内存条了
+	 */
+	} else { /* Modify an existing slot. */
 		if ((new_slot.userspace_addr != old.userspace_addr) ||
 		    (new_slot.npages != old.npages) ||
 		    ((new_slot.flags ^ old.flags) & KVM_MEM_READONLY))
 			return -EINVAL;
 
-        /**
-         *  内存条起始页帧号不一样，那么标记为移动
-         */
+	    /**
+	     *  内存条起始页帧号不一样，那么标记为移动
+	     */
 		if (new_slot.base_gfn != old.base_gfn)
 			change = KVM_MR_MOVE;
-        /**
-         *  页帧号相同， flags 标志不一样，那么
-         */
+	    /**
+	     *  页帧号相同， flags 标志不一样，那么
+	     */
 		else if (new_slot.flags != old.flags)
 			change = KVM_MR_FLAGS_ONLY;
-        /**
-         *  否则就是 创建已经存在的一模一样的内存条，直接返回成功
-         */
+	    /**
+	     *  否则就是 创建已经存在的一模一样的内存条，直接返回成功
+	     */
 		else /* Nothing to change. */
 			return 0;
 
@@ -1459,14 +1459,14 @@ int __kvm_set_memory_region(struct kvm *kvm,
 		memcpy(&new_slot.arch, &old.arch, sizeof(new_slot.arch));
 	}
 
-    /**
-     *  如果是创建新的，或者是需要移动旧的到新的里
-     */
+	/**
+	 *  如果是创建新的，或者是需要移动旧的到新的里
+	 */
 	if ((change == KVM_MR_CREATE) || (change == KVM_MR_MOVE)) {
 		/* Check for overlaps(重叠) */
-        /**
-         *  遍历所有 内存条，检查 地址是不是 重叠
-         */
+	    /**
+	     *  遍历所有 内存条，检查 地址是不是 重叠
+	     */
 		kvm_for_each_memslot(tmp, __kvm_memslots(kvm, as_id)) {
 			if (tmp->id == id)
 				continue;
@@ -1480,11 +1480,11 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	if (!(new_slot.flags & KVM_MEM_LOG_DIRTY_PAGES))
 		new_slot.dirty_bitmap = NULL;
 
-    /**
+	/**
 	 * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags
 	 * KVM_MEM_LOG_DIRTY_PAGES
 	 * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
-     */
+	 */
 	else if (!new_slot.dirty_bitmap) {
 		/* 分配 bitmap */
 		r = kvm_alloc_dirty_bitmap(&new_slot);
@@ -1495,9 +1495,9 @@ int __kvm_set_memory_region(struct kvm *kvm,
 			bitmap_set(new_slot.dirty_bitmap, 0, new_slot.npages);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	r = kvm_set_memslot(kvm, mem, &old, &new_slot, as_id, change);
 	if (r)
 		goto out_bitmap;
@@ -1617,7 +1617,8 @@ EXPORT_SYMBOL_GPL(kvm_get_dirty_log);
  *   在交换了两个脏页位图，并把脏页位图传到用户态后，需要再次设置页面的写保护，
  *   以便记录接下来的写保护。
  */
-static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
+static int
+kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log __user *log)
 {
 	struct kvm_memslots *slots;
 	struct kvm_memory_slot *memslot;
@@ -1639,6 +1640,11 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 
 	dirty_bitmap = memslot->dirty_bitmap;
 
+	/**
+	 * arm64 为空
+	 * x86 调用 kvm_x86_ops.flush_log_dirty(kvm)
+	 *       VMX: vmx_flush_log_dirty()
+	 */
 	kvm_arch_sync_dirty_log(kvm, memslot);
 
 	n = kvm_dirty_bitmap_bytes(memslot);
@@ -1659,6 +1665,7 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 		 * (每个脏页位图，都占用 2 倍的内存空间, 参见 kvm_alloc_dirty_bitmap())
 		 */
 		dirty_bitmap_buffer = kvm_second_dirty_bitmap(memslot);
+		/* 清空第二份 bitmap */
 		memset(dirty_bitmap_buffer, 0, n);
 
 		spin_lock(&kvm->mmu_lock);
@@ -1666,11 +1673,21 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 			unsigned long mask;
 			gfn_t offset;
 
+			/* 跳过 非脏页 */
 			if (!dirty_bitmap[i])
 				continue;
 
 			flush = true;
+
+			/**
+			 * mask = dirty_bitmap[i]
+			 * dirty_bitmap[i] = 0
+			 */
 			mask = xchg(&dirty_bitmap[i], 0);
+
+			/**
+			 * 在第二份 birmap 中标记脏页
+			 */
 			dirty_bitmap_buffer[i] = mask;
 
 			offset = i * BITS_PER_LONG;
@@ -1683,6 +1700,7 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 	if (flush)
 		kvm_arch_flush_remote_tlbs_memslot(kvm, memslot);
 
+	/* 将第二份 bitmap 拷贝给用户态 */
 	if (copy_to_user(log->dirty_bitmap, dirty_bitmap_buffer, n))
 		return -EFAULT;
 	return 0;
@@ -1887,15 +1905,15 @@ static unsigned long __gfn_to_hva_many(struct kvm_memory_slot *slot, gfn_t gfn,
 	if (memslot_is_readonly(slot) && write)
 		return KVM_HVA_ERR_RO_BAD;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (nr_pages)
 		*nr_pages = slot->npages - (gfn - slot->base_gfn);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __gfn_to_hva_memslot(slot, gfn);
 }
 
@@ -2162,9 +2180,9 @@ kvm_pfn_t __gfn_to_pfn_memslot(struct kvm_memory_slot *slot, gfn_t gfn,
 			       bool atomic, bool *async, bool write_fault,
 			       bool *writable)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long addr = __gfn_to_hva_many(slot, gfn, NULL, write_fault);
 
 	if (addr == KVM_HVA_ERR_RO_BAD) {
@@ -2185,9 +2203,9 @@ kvm_pfn_t __gfn_to_pfn_memslot(struct kvm_memory_slot *slot, gfn_t gfn,
 		writable = NULL;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return hva_to_pfn(addr, atomic, async, write_fault, writable);
 }
 EXPORT_SYMBOL_GPL(__gfn_to_pfn_memslot);
@@ -2226,9 +2244,9 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_gfn_to_pfn_atomic);
  */
 kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return gfn_to_pfn_memslot(gfn_to_memslot(kvm, gfn), gfn);
 }
 EXPORT_SYMBOL_GPL(gfn_to_pfn);
@@ -2264,17 +2282,17 @@ static struct page *kvm_pfn_to_page(kvm_pfn_t pfn)
 	if (is_error_noslot_pfn(pfn))
 		return KVM_ERR_PTR_BAD_PAGE;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (kvm_is_reserved_pfn(pfn)) {
 		WARN_ON(1);
 		return KVM_ERR_PTR_BAD_PAGE;
 	}
 
-    /**
-     *  转为page
-     */
+	/**
+	 *  转为page
+	 */
 	return pfn_to_page(pfn);
 }
 
@@ -2285,14 +2303,14 @@ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
 {
 	kvm_pfn_t pfn;
 
-    /**
-     *  gfn to pfn（物理页帧号）
-     */
+	/**
+	 *  gfn to pfn（物理页帧号）
+	 */
 	pfn = gfn_to_pfn(kvm, gfn);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return kvm_pfn_to_page(pfn);
 }
 EXPORT_SYMBOL_GPL(gfn_to_page);
@@ -2948,23 +2966,23 @@ static int kvm_vcpu_check_block(struct kvm_vcpu *vcpu)
 	int ret = -EINTR;
 	int idx = srcu_read_lock(&vcpu->kvm->srcu);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (kvm_arch_vcpu_runnable(vcpu)) {
 		kvm_make_request(KVM_REQ_UNHALT, vcpu);
 		goto out;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (kvm_cpu_has_pending_timer(vcpu))
 		goto out;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (signal_pending(current))
 		goto out;
 
@@ -3018,29 +3036,29 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
 
 	prepare_to_rcuwait(&vcpu->wait);
 
-    /**
-     *  死循环
-     */
+	/**
+	 *  死循环
+	 */
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
-        /**
-         *  退出条件
-         */
+	    /**
+	     *  退出条件
+	     */
 		if (kvm_vcpu_check_block(vcpu) < 0)
 			break;
 
 		waited = true;
-        /**
-         *  调度
-         */
+	    /**
+	     *  调度
+	     */
 		schedule();
 	}
 	finish_rcuwait(&vcpu->wait);
 	cur = ktime_get();
 out:
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_arch_vcpu_unblocking(vcpu);
 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
 
@@ -3066,9 +3084,9 @@ out:
 		}
 	}
 
-    /**
-     *  唤醒 vcpu 跟踪
-     */
+	/**
+	 *  唤醒 vcpu 跟踪
+	 */
 	trace_kvm_vcpu_wakeup(block_ns, waited, vcpu_valid_wakeup(vcpu));
 	kvm_arch_vcpu_block_finish(vcpu);
 }
@@ -3081,9 +3099,9 @@ bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
 {
 	struct rcuwait *waitp;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	waitp = kvm_arch_vcpu_get_wait(vcpu);
 	if (rcuwait_wake_up(waitp)) {
 		WRITE_ONCE(vcpu->ready, true);
@@ -3108,26 +3126,26 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
 	int me;
 	int cpu = vcpu->cpu;
 
-    /**
-     *  唤醒 -
-     *  如果 VCPU 睡眠在等待队列上，则唤醒使其进入 CPU 的就绪任务队列
-     */
+	/**
+	 *  唤醒 -
+	 *  如果 VCPU 睡眠在等待队列上，则唤醒使其进入 CPU 的就绪任务队列
+	 */
 	if (kvm_vcpu_wake_up(vcpu))
 		return;
 
 	me = get_cpu();
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
-        /**
-         *  在 Guest 模式中，那么需要发送 IPI 核间中断，将 Guest VM-exit
-         *  在下一次 VM-Enter 完成中断注入
-         */
+	    /**
+	     *  在 Guest 模式中，那么需要发送 IPI 核间中断，将 Guest VM-exit
+	     *  在下一次 VM-Enter 完成中断注入
+	     */
 		if (kvm_arch_vcpu_should_kick(vcpu))
-            /**
-             *  发送核间中断
-             */
+	        /**
+	         *  发送核间中断
+	         */
 			smp_send_reschedule(cpu);
 	put_cpu();
 }
@@ -3377,16 +3395,16 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 	kvm->created_vcpus++;
 	mutex_unlock(&kvm->lock);
 
-    /**
-     *  预处理 - 架构相关
-     */
+	/**
+	 *  预处理 - 架构相关
+	 */
 	r = kvm_arch_vcpu_precreate(kvm, id);
 	if (r)
 		goto vcpu_decrement;
 
-    /**
-     *  分配数据结构
-     */
+	/**
+	 *  分配数据结构
+	 */
 	vcpu = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
 	if (!vcpu) {
 		r = -ENOMEM;
@@ -3395,28 +3413,28 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 
 	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
 
-    /**
-     *  分配 一个 page
-     */
+	/**
+	 *  分配 一个 page
+	 */
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!page) {
 		r = -ENOMEM;
 		goto vcpu_free;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	vcpu->run = page_address(page);
 
-    /**
-     *  初始化数据结构
-     */
+	/**
+	 *  初始化数据结构
+	 */
 	kvm_vcpu_init(vcpu, kvm, id);
 
-    /**
-     *  架构相关 - 创建
-     */
+	/**
+	 *  架构相关 - 创建
+	 */
 	r = kvm_arch_vcpu_create(vcpu);
 	if (r)
 		goto vcpu_free_run_page;
@@ -3695,9 +3713,9 @@ out_free1:
 		r = kvm_arch_vcpu_ioctl_set_fpu(vcpu, fpu);
 		break;
 	}
-    /**
-     *  架构相关
-     */
+	/**
+	 *  架构相关
+	 */
 	default:
 		r = kvm_arch_vcpu_ioctl(filp, ioctl, arg);
 	}
@@ -4004,15 +4022,15 @@ static long kvm_vm_ioctl(struct file *filp,
 	if (kvm->mm != current->mm)
 		return -EIO;
 	switch (ioctl) {
-    /**
-     *  创建 vcpu
-     */
+	/**
+	 *  创建 vcpu
+	 */
 	case KVM_CREATE_VCPU:
 		r = kvm_vm_ioctl_create_vcpu(kvm, arg);
 		break;
-    /**
-     *  使能能力
-     */
+	/**
+	 *  使能能力
+	 */
 	case KVM_ENABLE_CAP: {
 		struct kvm_enable_cap cap;
 
@@ -4022,9 +4040,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		r = kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
 		break;
 	}
-    /**
-     *  设置 KVM 内存条
-     */
+	/**
+	 *  设置 KVM 内存条
+	 */
 	case KVM_SET_USER_MEMORY_REGION: {
 		struct kvm_userspace_memory_region kvm_userspace_mem;
 
@@ -4087,9 +4105,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		r = kvm_irqfd(kvm, &data);
 		break;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	case KVM_IOEVENTFD: {
 		struct kvm_ioeventfd data;
 
@@ -4111,7 +4129,7 @@ static long kvm_vm_ioctl(struct file *filp,
 	}
 #endif
 #ifdef __KVM_HAVE_IRQ_LINE
-    /**
+	/**
 	 *  管脚号 和 管脚电平
 	 */
 	case KVM_IRQ_LINE_STATUS:
@@ -4122,9 +4140,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		if (copy_from_user(&irq_event, argp, sizeof(irq_event)))
 			goto out;
 
-        /**
-    	 *
-    	 */
+	    /**
+		 *
+		 */
 		r = kvm_vm_ioctl_irq_line(kvm, &irq_event,
 					ioctl == KVM_IRQ_LINE_STATUS);
 		if (r)
@@ -4193,7 +4211,7 @@ static long kvm_vm_ioctl(struct file *filp,
 	case KVM_CHECK_EXTENSION:
 		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
 		break;
-    /**
+	/**
 	 *
 	 */
 	default:
@@ -5130,7 +5148,7 @@ EXPORT_SYMBOL_GPL(kvm_get_running_vcpu);
  */
 struct kvm_vcpu * __percpu *kvm_get_running_vcpus(void)
 {
-        return &kvm_running_vcpu;
+	    return &kvm_running_vcpu;
 }
 
 struct kvm_cpu_compat_check {

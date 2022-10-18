@@ -267,20 +267,20 @@ struct kvm_vcpu {
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	struct preempt_notifier preempt_notifier;
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int cpu;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int vcpu_id; /* id given by userspace at creation */
 	int vcpu_idx; /* index in kvm->vcpus array */
 	int srcu_idx;
-    /**
-     *  IN_GUEST_MODE 等
-     */
+	/**
+	 *  IN_GUEST_MODE 等
+	 */
 	int mode;
 	u64 requests;
 	unsigned long guest_debug;
@@ -290,9 +290,9 @@ struct kvm_vcpu {
 
 	struct mutex mutex;
 
-    /**
-     *  kvm_vm_ioctl_create_vcpu() 中赋值
-     */
+	/**
+	 *  kvm_vm_ioctl_create_vcpu() 中赋值
+	 */
 	struct kvm_run *run;
 
 	struct rcuwait wait;
@@ -336,9 +336,9 @@ struct kvm_vcpu {
 	bool preempted;
 	bool ready;
 
-    /**
-     *  在 `kvm_arch_vcpu_create()` 中赋值
-     */
+	/**
+	 *  在 `kvm_arch_vcpu_create()` 中赋值
+	 */
 	struct kvm_vcpu_arch arch;
 };
 
@@ -365,30 +365,30 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
  *
  */
 struct kvm_memory_slot {
-    /**
-     *  用页帧号描述内存条的起始地址 kvm_memory_region.guest_phys_addr
-     */
+	/**
+	 *  用页帧号描述内存条的起始地址 kvm_memory_region.guest_phys_addr
+	 */
 	gfn_t base_gfn;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long npages;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long *dirty_bitmap;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct kvm_arch_memory_slot arch;
-    /**
-     *  内存分配的方式，由原来的在内核中分配 page改为在用户空间分配
-     *  这样，KVM Guest 就可以使用 Host 的虚拟内存机制，
-     */
+	/**
+	 *  内存分配的方式，由原来的在内核中分配 page改为在用户空间分配
+	 *  这样，KVM Guest 就可以使用 Host 的虚拟内存机制，
+	 */
 	unsigned long userspace_addr;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	u32 flags;
 	short id;
 	u16 as_id;
@@ -399,6 +399,9 @@ static inline unsigned long kvm_dirty_bitmap_bytes(struct kvm_memory_slot *memsl
 	return ALIGN(memslot->npages, BITS_PER_LONG) / 8;
 }
 
+/**
+ *
+ */
 static inline unsigned long *kvm_second_dirty_bitmap(struct kvm_memory_slot *memslot)
 {
 	unsigned long len = kvm_dirty_bitmap_bytes(memslot);
@@ -427,31 +430,31 @@ struct kvm_hv_sint {
  *
  */
 struct kvm_kernel_irq_routing_entry {
-    /**
-     *  理解为管脚号，如 IR0，IR1 等。。。
-     */
+	/**
+	 *  理解为管脚号，如 IR0，IR1 等。。。
+	 */
 	u32 gsi;
 	u32 type;
-    /**
-     *  当一个外设请求到来，KVM遍历这个表，匹配 GSI，如果匹配成功
-     *  调用这个回调函数。该函数如则注入中断
-     *
-     *  调用统一的接口 kvm_set_irq()
-     *
-     *  设置函数 `kvm_set_routing_entry()`
-     *  kvm_set_pic_irq() - 对应 8295A
-     *  kvm_set_ioapic_irq() - 对应 ioapic
-     *  kvm_set_msi() - 对应 MSI-X
-     *  kvm_hv_set_sint()
-     *  vgic_irqfd_set_irq()
-     */
+	/**
+	 *  当一个外设请求到来，KVM遍历这个表，匹配 GSI，如果匹配成功
+	 *  调用这个回调函数。该函数如则注入中断
+	 *
+	 *  调用统一的接口 kvm_set_irq()
+	 *
+	 *  设置函数 `kvm_set_routing_entry()`
+	 *  kvm_set_pic_irq() - 对应 8295A
+	 *  kvm_set_ioapic_irq() - 对应 ioapic
+	 *  kvm_set_msi() - 对应 MSI-X
+	 *  kvm_hv_set_sint()
+	 *  vgic_irqfd_set_irq()
+	 */
 	int (*set)(struct kvm_kernel_irq_routing_entry *e,
-    		   struct kvm *kvm, int irq_source_id, int level,
-    		   bool line_status);
-    /**
-     *
-     */
-    union {
+			   struct kvm *kvm, int irq_source_id, int level,
+			   bool line_status);
+	/**
+	 *
+	 */
+	union {
 		struct {
 			unsigned irqchip;
 			unsigned pin;
@@ -466,9 +469,9 @@ struct kvm_kernel_irq_routing_entry {
 		struct kvm_s390_adapter_int adapter;
 		struct kvm_hv_sint hv_sint;
 	};
-    /**
-     *  头为 `struct kvm_irq_routing_table.map`
-     */
+	/**
+	 *  头为 `struct kvm_irq_routing_table.map`
+	 */
 	struct hlist_node link;
 };
 
@@ -1183,9 +1186,9 @@ __gfn_to_memslot(struct kvm_memslots *slots, gfn_t gfn)
 static inline unsigned long
 __gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn)
 {
-    /**
-     *  获取 用户态虚拟地址
-     */
+	/**
+	 *  获取 用户态虚拟地址
+	 */
 	return slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE;
 }
 
