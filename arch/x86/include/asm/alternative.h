@@ -183,6 +183,7 @@ struct alt_instr {
 
 #if __Rong_Tao_debug__________
 // https://blog.csdn.net/faxiang1230/article/details/104149329
+// see also: docs/alternative-x86.c
 #define mb() asm volatile(ALTERNATIVE("lock; addl $0,0(%%esp)", "mfence", \
 			                      X86_FEATURE_XMM2) ::: "memory", "cc")
 void fun()

@@ -12,12 +12,12 @@
  */
 
 #ifdef CONFIG_X86_32
-//#define mb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "mfence", \
-//				      X86_FEATURE_XMM2) ::: "memory", "cc")
-//#define rmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "lfence", \
-//				       X86_FEATURE_XMM2) ::: "memory", "cc")
-//#define wmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "sfence", \
-//				       X86_FEATURE_XMM2) ::: "memory", "cc")
+#define mb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "mfence", \
+				      X86_FEATURE_XMM2) ::: "memory", "cc")
+#define rmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "lfence", \
+				       X86_FEATURE_XMM2) ::: "memory", "cc")
+#define wmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "sfence", \
+				       X86_FEATURE_XMM2) ::: "memory", "cc")
 #else
 /**
  *  读写内存屏障 - 用于 SMP 和 UP
@@ -64,7 +64,7 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 #define dma_wmb()	barrier()
 
 #ifdef CONFIG_X86_32
-//#define __smp_mb()	asm volatile("lock; addl $0,-4(%%esp)" ::: "memory", "cc")
+#define __smp_mb()	asm volatile("lock; addl $0,-4(%%esp)" ::: "memory", "cc")
 #else
 #define __smp_mb()	asm volatile("lock; addl $0,-4(%%rsp)" ::: "memory", "cc")
 #endif
