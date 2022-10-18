@@ -1697,6 +1697,8 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
  *   2. Write protect the corresponding page.
  *   3. Copy the snapshot to the userspace.
  *   4. Flush TLB's if needed.
+ *
+ * 获取脏页位图
  */
 static int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
 				      struct kvm_dirty_log *log)
@@ -4023,6 +4025,9 @@ static long kvm_vm_ioctl(struct file *filp,
 		r = kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_mem);
 		break;
 	}
+	/**
+	 * 获取脏页位图
+	 */
 	case KVM_GET_DIRTY_LOG: {
 		struct kvm_dirty_log log;
 
