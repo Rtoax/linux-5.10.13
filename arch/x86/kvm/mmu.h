@@ -125,9 +125,12 @@ static inline int kvm_mmu_do_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 					u32 err, bool prefault)
 {
 #ifdef CONFIG_RETPOLINE
-    /**
-     *  
-     */
+	/* 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+	 * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
+	 *
+	 * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+	 * 退回到 KVM 中。
+	 */
 	if (likely(vcpu->arch.mmu->page_fault == kvm_tdp_page_fault))
 		return kvm_tdp_page_fault(vcpu, cr2_or_gpa, err, prefault);
 #endif

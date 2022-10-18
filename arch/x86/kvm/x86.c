@@ -10869,6 +10869,9 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
 	return 0;
 }
 
+/**
+ * 应用一个 memslot flags 标记
+ */
 static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
 				     struct kvm_memory_slot *old,
 				     struct kvm_memory_slot *new,
@@ -10929,9 +10932,17 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
 	 * For small sptes, nothing is done if the dirty log is in the
 	 * initial-all-set state.  Otherwise, depending on whether pml
 	 * is enabled the D-bit or the W-bit will be cleared.
+	 *
+	 * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags
+	 * KVM_MEM_LOG_DIRTY_PAGES
+	 * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
 	 */
 	if (new->flags & KVM_MEM_LOG_DIRTY_PAGES) {
 		if (kvm_x86_ops.slot_enable_log_dirty) {
+			/**
+			 * 移除写权限
+			 * vmx: vmx_slot_enable_log_dirty()
+			 */
 			kvm_x86_ops.slot_enable_log_dirty(kvm, new);
 		} else {
 			int level =
@@ -10945,6 +10956,8 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
 			 * we still need to write-protect huge pages
 			 * so that the page split can happen lazily on
 			 * the first write to the huge page.
+			 *
+			 * 移除写权限
 			 */
 			kvm_mmu_slot_remove_write_access(kvm, new, level);
 		}

@@ -144,6 +144,12 @@ struct kvm_userspace_memory_region {
  * The bit 0 ~ bit 15 of kvm_memory_region::flags are visible for userspace,
  * other bits are reserved for kvm internal use which are defined in
  * include/linux/kvm_host.h.
+ *
+ * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
+ *
+ * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+ * 退回到 KVM 中。
  */
 #define KVM_MEM_LOG_DIRTY_PAGES	(1UL << 0)
 #define KVM_MEM_READONLY	(1UL << 1)

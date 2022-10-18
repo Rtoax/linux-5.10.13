@@ -968,8 +968,12 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
  */
 static int kvm_alloc_dirty_bitmap(struct kvm_memory_slot *memslot)
 {
+	/**
+	 * 实际分配的空间是实际所需要的 2 倍
+	 */
 	unsigned long dirty_bytes = 2 * kvm_dirty_bitmap_bytes(memslot);
 
+	/* 分配 bitmap */
 	memslot->dirty_bitmap = kvzalloc(dirty_bytes, GFP_KERNEL_ACCOUNT);
 	if (!memslot->dirty_bitmap)
 		return -ENOMEM;
@@ -1476,9 +1480,12 @@ int __kvm_set_memory_region(struct kvm *kvm,
 		new_slot.dirty_bitmap = NULL;
 
     /**
-     *
+	 * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags
+	 * KVM_MEM_LOG_DIRTY_PAGES
+	 * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
      */
 	else if (!new_slot.dirty_bitmap) {
+		/* 分配 bitmap */
 		r = kvm_alloc_dirty_bitmap(&new_slot);
 		if (r)
 			return r;
@@ -2819,11 +2826,17 @@ int kvm_clear_guest(struct kvm *kvm, gpa_t gpa, unsigned long len)
 }
 EXPORT_SYMBOL_GPL(kvm_clear_guest);
 
+/**
+ * 标记脏页
+ */
 void mark_page_dirty_in_slot(struct kvm_memory_slot *memslot, gfn_t gfn)
 {
 	if (memslot && memslot->dirty_bitmap) {
 		unsigned long rel_gfn = gfn - memslot->base_gfn;
 
+		/**
+		 * 设置 bitmap
+		 */
 		set_bit_le(rel_gfn, memslot->dirty_bitmap);
 	}
 }
@@ -2838,6 +2851,9 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
 }
 EXPORT_SYMBOL_GPL(mark_page_dirty);
 
+/**
+ * 标记脏页
+ */
 void kvm_vcpu_mark_page_dirty(struct kvm_vcpu *vcpu, gfn_t gfn)
 {
 	struct kvm_memory_slot *memslot;

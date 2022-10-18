@@ -270,7 +270,7 @@ static bool check_mmio_spte(struct kvm_vcpu *vcpu, u64 spte)
 }
 
 static gpa_t translate_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
-                                  struct x86_exception *exception)
+		                          struct x86_exception *exception)
 {
 	/* Check if guest physical address doesn't exceed guest maximum */
 	if (kvm_vcpu_is_illegal_gpa(vcpu, gpa)) {
@@ -278,7 +278,7 @@ static gpa_t translate_gpa(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 		return UNMAPPED_GVA;
 	}
 
-        return gpa;
+		return gpa;
 }
 
 static int is_cpuid_PSE36(void)
@@ -1129,11 +1129,16 @@ static bool spte_write_protect(u64 *sptep, bool pt_protect)
 
 	if (pt_protect)
 		spte &= ~SPTE_MMU_WRITEABLE;
+
+	/* slot_rmap_write_protect() 首先会调用 spte_write_protect(), 该函数判断
+	 * 如果当前页目录项不可写，那可以不作处理，如果有写权限，去掉写权限。*/
 	spte = spte & ~PT_WRITABLE_MASK;
 
 	return mmu_spte_update(sptep, spte);
 }
 
+/* slot_rmap_write_protect() 首先会调用 spte_write_protect(), 该函数判断
+ * 如果当前页目录项不可写，那可以不作处理，如果有写权限，去掉写权限。*/
 static bool __rmap_write_protect(struct kvm *kvm,
 				 struct kvm_rmap_head *rmap_head,
 				 bool pt_protect)
@@ -1682,22 +1687,22 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
 {
 	struct kvm_mmu_page *sp;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!direct)
 		sp->gfns = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_gfn_array_cache);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
 
 	/*
@@ -1706,13 +1711,13 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
 	 * comments in kvm_zap_obsolete_pages().
 	 */
 	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
-    /**
-     *  添加到链表
-     */
+	/**
+	 *  添加到链表
+	 */
 	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
 	return sp;
 }
@@ -2097,23 +2102,23 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
 
 	role.access = access;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!direct_mmu && vcpu->arch.mmu->root_level <= PT32_ROOT_LEVEL) {
 		quadrant = gaddr >> (PAGE_SHIFT + (PT64_PT_BITS * level));
 		quadrant &= (1 << ((PT32_PT_BITS - PT64_PT_BITS) * level)) - 1;
 		role.quadrant = quadrant;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_valid_sp(vcpu->kvm, sp, sp_list) {
 		if (sp->gfn != gfn) {
 			collisions++;
@@ -2152,9 +2157,9 @@ trace_get_page:
 
 	++vcpu->kvm->stat.mmu_cache_miss;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sp = kvm_mmu_alloc_page(vcpu, direct);
 
 	sp->gfn = gfn;
@@ -2173,9 +2178,9 @@ trace_get_page:
 		if (level > PG_LEVEL_4K && need_sync)
 			flush |= kvm_sync_pages(vcpu, gfn, &invalid_list);
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	trace_kvm_mmu_get_page(sp, true);
 
 	kvm_mmu_flush_or_zap(vcpu, &invalid_list, false, flush);
@@ -2948,20 +2953,20 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	if (WARN_ON(!VALID_PAGE(vcpu->arch.mmu->root_hpa)))
 		return RET_PF_RETRY;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	level = kvm_mmu_hugepage_adjust(vcpu, gfn, max_level, &pfn,
 					huge_page_disallowed, &req_level);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	trace_kvm_mmu_spte_requested(gpa, level, pfn);
 
-    /**
-     *  逐级遍历页表
-     */
+	/**
+	 *  逐级遍历页表
+	 */
 	for_each_shadow_entry(vcpu, gpa, it) {
 		/*
 		 * We cannot overwrite existing page tables with an NX
@@ -2970,28 +2975,28 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		if (nx_huge_page_workaround_enabled)
 			disallowed_hugepage_adjust(*it.sptep, gfn, it.level, &pfn, &level);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		base_gfn = gfn & ~(KVM_PAGES_PER_HPAGE(it.level) - 1);
 		if (it.level == level)
 			break;
 
 		drop_large_spte(vcpu, it.sptep);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (!is_shadow_present_pte(*it.sptep)) {
-            /**
-             *
-             */
+		    /**
+		     *
+		     */
 			sp = kvm_mmu_get_page(vcpu, base_gfn, it.addr,
 					      it.level - 1, true, ACC_ALL);
 
-            /**
-             *
-             */
+		    /**
+		     *
+		     */
 			link_shadow_page(vcpu, it.sptep, sp);
 			if (is_tdp && huge_page_disallowed &&
 			    req_level >= it.level)
@@ -2999,9 +3004,9 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		}
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = mmu_set_spte(vcpu, it.sptep, ACC_ALL,
 			   write, level, base_gfn, pfn, prefault,
 			   map_writable);
@@ -3047,20 +3052,20 @@ static bool handle_abnormal_pfn(struct kvm_vcpu *vcpu, gva_t gva, gfn_t gfn,
 				int *ret_val)
 {
 	/* The pfn is invalid, report the error! */
-    /**
-     *  pfn 错误
-     */
+	/**
+	 *  pfn 错误
+	 */
 	if (unlikely(is_error_pfn(pfn))) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		*ret_val = kvm_handle_bad_page(vcpu, gfn, pfn);
 		return true;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (unlikely(is_noslot_pfn(pfn)))
 		vcpu_cache_mmio_info(vcpu, gva, gfn, access & shadow_mmio_access_mask);
 
@@ -3103,6 +3108,11 @@ static bool page_fault_can_be_fast(u32 error_code)
 /*
  * Returns true if the SPTE was fixed successfully. Otherwise,
  * someone else modified the SPTE from its original value.
+ *
+ * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
+ * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+ * 退回到 KVM 中。
  */
 static bool
 fast_pf_fix_direct_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
@@ -3127,12 +3137,19 @@ fast_pf_fix_direct_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
 	if (cmpxchg64(sptep, old_spte, new_spte) != old_spte)
 		return false;
 
+	/**
+	 *
+	 */
 	if (is_writable_pte(new_spte) && !is_writable_pte(old_spte)) {
 		/*
 		 * The gfn of direct spte is stable since it is
 		 * calculated by sp->gfn.
 		 */
 		gfn = kvm_mmu_page_get_gfn(sp, sptep - sp->spt);
+
+		/**
+		 * 标记脏页 KVM_MEM_LOG_DIRTY_PAGES
+		 */
 		kvm_vcpu_mark_page_dirty(vcpu, gfn);
 	}
 
@@ -3247,9 +3264,9 @@ static int fast_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 
 	} while (true);
 
-    /**
-     *  追踪点
-     */
+	/**
+	 *  追踪点
+	 */
 	trace_fast_page_fault(vcpu, cr2_or_gpa, error_code, iterator.sptep, spte, ret);
 	walk_shadow_page_lockless_end(vcpu);
 
@@ -3351,9 +3368,9 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
 		spin_unlock(&vcpu->kvm->mmu_lock);
 		return INVALID_PAGE;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sp = kvm_mmu_get_page(vcpu, gfn, gva, level, direct, ACC_ALL);
 	++sp->root_count;
 
@@ -3370,35 +3387,35 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 	hpa_t root;
 	unsigned i;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (vcpu->kvm->arch.tdp_mmu_enabled) {
 		root = kvm_tdp_mmu_get_vcpu_root_hpa(vcpu);
 
 		if (!VALID_PAGE(root))
 			return -ENOSPC;
-        /**
-         *  ROOT Host Pysical Address
-         *  KVM 为 Guest 分配的专用页表的根页面的地址
-         *
-         *  在 `mmu_alloc_roots()` 中分配
-         *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
-         */
+		/**
+		 *  ROOT Host Pysical Address
+		 *  KVM 为 Guest 分配的专用页表的根页面的地址
+		 *
+		 *  在 `mmu_alloc_roots()` 中分配
+		 *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
+		 */
 		vcpu->arch.mmu->root_hpa = root;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else if (shadow_root_level >= PT64_ROOT_4LEVEL) {
 		root = mmu_alloc_root(vcpu, 0, 0, shadow_root_level, true);
 
 		if (!VALID_PAGE(root))
 			return -ENOSPC;
 		vcpu->arch.mmu->root_hpa = root;
-    /**
-     *
-     */
-    } else if (shadow_root_level == PT32E_ROOT_LEVEL) {
+	/**
+	 *
+	 */
+	} else if (shadow_root_level == PT32E_ROOT_LEVEL) {
 		for (i = 0; i < 4; ++i) {
 			MMU_WARN_ON(VALID_PAGE(vcpu->arch.mmu->pae_root[i]));
 
@@ -3410,7 +3427,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 		}
 		vcpu->arch.mmu->root_hpa = __pa(vcpu->arch.mmu->pae_root);
 
-    } else
+	} else
 		BUG();
 
 	/* root_pgd is ignored for direct MMUs. */
@@ -3429,9 +3446,9 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
 	hpa_t root;
 	int i;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	root_pgd = vcpu->arch.mmu->get_guest_pgd(vcpu);
 	root_gfn = root_pgd >> PAGE_SHIFT;
 
@@ -3519,9 +3536,9 @@ set_root_pgd:
  */
 static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (vcpu->arch.mmu->direct_map)
 		return mmu_alloc_direct_roots(vcpu);
 	else
@@ -3836,6 +3853,12 @@ static bool try_async_pf(struct kvm_vcpu *vcpu, bool prefault, gfn_t gfn,
 
 /**
  *   Guest 缺页异常
+ *
+ * 场景1. 脏页跟踪 KVM_MEM_LOG_DIRTY_PAGES
+ * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
+ * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+ * 退回到 KVM 中。
  */
 static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			     bool prefault, int max_level, bool is_tdp)
@@ -3848,27 +3871,27 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	kvm_pfn_t pfn;
 	int r;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (page_fault_handle_page_track(vcpu, error_code, gfn))
 		return RET_PF_EMULATE;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!is_tdp_mmu_root(vcpu->kvm, vcpu->arch.mmu->root_hpa)) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		r = fast_page_fault(vcpu, gpa, error_code);
 		if (r != RET_PF_INVALID)
 			return r;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	r = mmu_topup_memory_caches(vcpu, false);
 	if (r)
 		return r;
@@ -3879,38 +3902,38 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	if (try_async_pf(vcpu, prefault, gfn, gpa, &pfn, write, &map_writable))
 		return RET_PF_RETRY;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (handle_abnormal_pfn(vcpu, is_tdp ? 0 : gpa, gfn, pfn, ACC_ALL, &r))
 		return r;
 
 	r = RET_PF_RETRY;
 	spin_lock(&vcpu->kvm->mmu_lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (mmu_notifier_retry(vcpu->kvm, mmu_seq))
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	r = make_mmu_pages_available(vcpu);
 	if (r)
 		goto out_unlock;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (is_tdp_mmu_root(vcpu->kvm, vcpu->arch.mmu->root_hpa))
 		r = kvm_tdp_mmu_map(vcpu, gpa, error_code, map_writable, max_level,
 				    pfn, prefault);
-    /**
-     *
-     */
-    else
+	/**
+	 *
+	 */
+	else
 		r = __direct_map(vcpu, gpa, error_code, map_writable, max_level, pfn,
 				         prefault, is_tdp);
 
@@ -3950,27 +3973,27 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 
 	vcpu->arch.l1tf_flush_l1d = true;
 	if (!flags) {
-        /**
-         *  trace 跟踪点
-         */
+		/**
+		 *  trace 跟踪点
+		 */
 		trace_kvm_page_fault(fault_address, error_code);
 
 		if (kvm_event_needs_reinjection(vcpu))
 			kvm_mmu_unprotect_page_virt(vcpu, fault_address);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		r = kvm_mmu_page_fault(vcpu, fault_address, error_code, insn, insn_len);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else if (flags & KVM_PV_REASON_PAGE_NOT_PRESENT) {
 		vcpu->arch.apf.host_apf_flags = 0;
 		local_irq_disable();
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		kvm_async_pf_task_wait_schedule(fault_address);
 		local_irq_enable();
 	} else {
@@ -3981,8 +4004,11 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 }
 EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 
-/**
+/* 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
+ * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+ * 退回到 KVM 中。
  */
 int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		       bool prefault)
@@ -3998,9 +4024,9 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		if (kvm_mtrr_check_gfn_range_consistency(vcpu, base, page_num))
 			break;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return direct_page_fault(vcpu, gpa, error_code, prefault,
 				 max_level, true);
 }
@@ -4011,9 +4037,9 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 static void nonpaging_init_context(struct kvm_vcpu *vcpu,
 				   struct kvm_mmu *context)
 {
-    /**
-     *  实模式 Guest 缺页异常
-     */
+	/**
+	 *  实模式 Guest 缺页异常
+	 */
 	context->page_fault = nonpaging_page_fault;
 	context->gva_to_gpa = nonpaging_gva_to_gpa;
 	context->sync_page = nonpaging_sync_page;
@@ -4104,9 +4130,9 @@ static void __kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd,
 	 */
 	kvm_make_request(KVM_REQ_LOAD_MMU_PGD, vcpu);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!skip_mmu_sync || force_flush_and_sync_on_reuse)
 		kvm_make_request(KVM_REQ_MMU_SYNC, vcpu);
 	if (!skip_tlb_flush || force_flush_and_sync_on_reuse)
@@ -4194,138 +4220,138 @@ typedef guest_walker guest_walkerEPT;
 
 static gfn_t ept_gpte_to_gfn_lvl(u64 gpte, int lvl)
 {
-    return gpte_to_gfn_lvl();
+	return gpte_to_gfn_lvl();
 }
 
 static inline void ept_protect_clean_gpte(struct kvm_mmu *mmu, unsigned *access,
-          unsigned gpte)
+		  unsigned gpte)
 {
-    FNAME_protect_clean_gpte();
+	FNAME_protect_clean_gpte();
 }
 
 static inline int ept_is_present_gpte(unsigned long pte)
 {
-    return FNAME_is_present_gpte();
+	return FNAME_is_present_gpte();
 }
 
 static bool ept_is_bad_mt_xwr(struct rsvd_bits_validate *rsvd_check, u64 gpte)
 {
-    return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
+	return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
 }
 
 static bool ept_is_rsvd_bits_set(struct kvm_mmu *mmu, u64 gpte, int level)
 {
-    return FNAME_is_rsvd_bits_set();
+	return FNAME_is_rsvd_bits_set();
 }
 
 static int ept_cmpxchg_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-          u64 __user *ptep_user, unsigned index,
-          u64 orig_pte, u64 new_pte)
+		  u64 __user *ptep_user, unsigned index,
+		  u64 orig_pte, u64 new_pte)
 {
-    return FNAME_cmpxchg_gpte();
+	return FNAME_cmpxchg_gpte();
 }
 
 static bool ept_prefetch_invalid_gpte(struct kvm_vcpu *vcpu,
-      struct kvm_mmu_page *sp, u64 *spte,
-      u64 gpte)
+	  struct kvm_mmu_page *sp, u64 *spte,
+	  u64 gpte)
 {
-    return FNAME_prefetch_invalid_gpte();
+	return FNAME_prefetch_invalid_gpte();
 }
 
 static inline unsigned ept_gpte_access(u64 gpte)
 {
-    return FNAME_gpte_access();
+	return FNAME_gpte_access();
 }
 
 static int ept_update_accessed_dirty_bits(struct kvm_vcpu *vcpu,
-          struct kvm_mmu *mmu,
-          struct guest_walkerEPT *walker,
-          gpa_t addr, int write_fault)
+		  struct kvm_mmu *mmu,
+		  struct guest_walkerEPT *walker,
+		  gpa_t addr, int write_fault)
 {
-    return FNAME_update_accessed_dirty_bits();
+	return FNAME_update_accessed_dirty_bits();
 }
 
 static inline unsigned ept_gpte_pkeys(struct kvm_vcpu *vcpu, u64 gpte)
 {
-    return FNAME_gpte_pkeys();
+	return FNAME_gpte_pkeys();
 }
 
 static int ept_walk_addr_generic(struct guest_walkerEPT *walker,
-        struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-        gpa_t addr, u32 access)
+		struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
+		gpa_t addr, u32 access)
 {
-    return FNAME_walk_addr_generic();
+	return FNAME_walk_addr_generic();
 }
 
 static int ept_walk_addr(struct guest_walkerEPT *walker,
-       struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
+	   struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
 {
-    return ept_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
+	return ept_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
 }
 static bool
 ept_prefetch_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-       u64 *spte, u64 gpte, bool no_dirty_log)
+	   u64 *spte, u64 gpte, bool no_dirty_log)
 {
-    return FNAME_prefetch_gpte();
+	return FNAME_prefetch_gpte();
 }
 
 static void ept_update_pte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-         u64 *spte, const void *pte)
+		 u64 *spte, const void *pte)
 {
-    return FNAME_update_pte();
+	return FNAME_update_pte();
 }
 
 static bool ept_gpte_changed(struct kvm_vcpu *vcpu,
-    struct guest_walkerEPT *gw, int level)
+	struct guest_walkerEPT *gw, int level)
 {
-    return FNAME_gpte_changed();
+	return FNAME_gpte_changed();
 }
 
 static void ept_pte_prefetch(struct kvm_vcpu *vcpu, struct guest_walkerEPT *gw,
-    u64 *sptep)
+	u64 *sptep)
 {
-    return FNAME_pte_prefetch();
+	return FNAME_pte_prefetch();
 }
 
 static int ept_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
-    struct guest_walkerEPT *gw, u32 error_code,
-    int max_level, kvm_pfn_t pfn, bool map_writable,
-    bool prefault)
+	struct guest_walkerEPT *gw, u32 error_code,
+	int max_level, kvm_pfn_t pfn, bool map_writable,
+	bool prefault)
 {
-    return FNAME_fetch();
+	return FNAME_fetch();
 }
 static bool
 ept_is_self_change_mapping(struct kvm_vcpu *vcpu,
-         struct guest_walkerEPT *walker, bool user_fault,
-         bool *write_fault_to_shadow_pgtable)
+		 struct guest_walkerEPT *walker, bool user_fault,
+		 bool *write_fault_to_shadow_pgtable)
 {
-    return FNAME_is_self_change_mapping();
+	return FNAME_is_self_change_mapping();
 }
 static int ept_page_fault(struct kvm_vcpu *vcpu, gpa_t addr, u32 error_code,
-        bool prefault)
+		bool prefault)
 {
-    return FNAME_page_fault();
+	return FNAME_page_fault();
 }
 
 static gpa_t ept_get_level1_sp_gpa(struct kvm_mmu_page *sp)
 {
-    return FNAME_get_level1_sp_gpa();
+	return FNAME_get_level1_sp_gpa();
 }
 
 static void ept_invlpg(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa)
 {
-    FNAME_invlpg();
+	FNAME_invlpg();
 }
 
 
 static gpa_t ept_gva_to_gpa(struct kvm_vcpu *vcpu, gpa_t addr, u32 access,
-          struct x86_exception *exception)
+		  struct x86_exception *exception)
 {
-    return FNAME_gva_to_gpa();
+	return FNAME_gva_to_gpa();
 }
 static int ept_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
 {
-    return FNAME_sync_page();
+	return FNAME_sync_page();
 }
 
 #endif//__RTOAX________________________________________________________
@@ -4340,138 +4366,138 @@ typedef guest_walker guest_walker64;
 
 static gfn_t paging64_gpte_to_gfn_lvl(u64 gpte, int lvl)
 {
-    return gpte_to_gfn_lvl();
+	return gpte_to_gfn_lvl();
 }
 
 static inline void paging64_protect_clean_gpte(struct kvm_mmu *mmu, unsigned *access,
-          unsigned gpte)
+		  unsigned gpte)
 {
-    FNAME_protect_clean_gpte();
+	FNAME_protect_clean_gpte();
 }
 
 static inline int paging64_is_present_gpte(unsigned long pte)
 {
-    return FNAME_is_present_gpte();
+	return FNAME_is_present_gpte();
 }
 
 static bool paging64_is_bad_mt_xwr(struct rsvd_bits_validate *rsvd_check, u64 gpte)
 {
-    return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
+	return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
 }
 
 static bool paging64_is_rsvd_bits_set(struct kvm_mmu *mmu, u64 gpte, int level)
 {
-    return FNAME_is_rsvd_bits_set();
+	return FNAME_is_rsvd_bits_set();
 }
 
 static int paging64_cmpxchg_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-          u64 __user *ptep_user, unsigned index,
-          u64 orig_pte, u64 new_pte)
+		  u64 __user *ptep_user, unsigned index,
+		  u64 orig_pte, u64 new_pte)
 {
-    return FNAME_cmpxchg_gpte();
+	return FNAME_cmpxchg_gpte();
 }
 
 static bool paging64_prefetch_invalid_gpte(struct kvm_vcpu *vcpu,
-      struct kvm_mmu_page *sp, u64 *spte,
-      u64 gpte)
+	  struct kvm_mmu_page *sp, u64 *spte,
+	  u64 gpte)
 {
-    return FNAME_prefetch_invalid_gpte();
+	return FNAME_prefetch_invalid_gpte();
 }
 
 static inline unsigned paging64_gpte_access(u64 gpte)
 {
-    return FNAME_gpte_access();
+	return FNAME_gpte_access();
 }
 
 static int paging64_update_accessed_dirty_bits(struct kvm_vcpu *vcpu,
-          struct kvm_mmu *mmu,
-          struct guest_walkerEPT *walker,
-          gpa_t addr, int write_fault)
+		  struct kvm_mmu *mmu,
+		  struct guest_walkerEPT *walker,
+		  gpa_t addr, int write_fault)
 {
-    return FNAME_update_accessed_dirty_bits();
+	return FNAME_update_accessed_dirty_bits();
 }
 
 static inline unsigned paging64_gpte_pkeys(struct kvm_vcpu *vcpu, u64 gpte)
 {
-    return FNAME_gpte_pkeys();
+	return FNAME_gpte_pkeys();
 }
 
 static int paging64_walk_addr_generic(struct guest_walkerEPT *walker,
-        struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-        gpa_t addr, u32 access)
+		struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
+		gpa_t addr, u32 access)
 {
-    return FNAME_walk_addr_generic();
+	return FNAME_walk_addr_generic();
 }
 
 static int paging64_walk_addr(struct guest_walkerEPT *walker,
-       struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
+	   struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
 {
-    return paging64_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
+	return paging64_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
 }
 static bool
 paging64_prefetch_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-       u64 *spte, u64 gpte, bool no_dirty_log)
+	   u64 *spte, u64 gpte, bool no_dirty_log)
 {
-    return FNAME_prefetch_gpte();
+	return FNAME_prefetch_gpte();
 }
 
 static void paging64_update_pte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-         u64 *spte, const void *pte)
+		 u64 *spte, const void *pte)
 {
-    return FNAME_update_pte();
+	return FNAME_update_pte();
 }
 
 static bool paging64_gpte_changed(struct kvm_vcpu *vcpu,
-    struct guest_walkerEPT *gw, int level)
+	struct guest_walkerEPT *gw, int level)
 {
-    return FNAME_gpte_changed();
+	return FNAME_gpte_changed();
 }
 
 static void paging64_pte_prefetch(struct kvm_vcpu *vcpu, struct guest_walkerEPT *gw,
-    u64 *sptep)
+	u64 *sptep)
 {
-    return FNAME_pte_prefetch();
+	return FNAME_pte_prefetch();
 }
 
 static int paging64_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
-    struct guest_walkerEPT *gw, u32 error_code,
-    int max_level, kvm_pfn_t pfn, bool map_writable,
-    bool prefault)
+	struct guest_walkerEPT *gw, u32 error_code,
+	int max_level, kvm_pfn_t pfn, bool map_writable,
+	bool prefault)
 {
-    return FNAME_fetch();
+	return FNAME_fetch();
 }
 static bool
 paging64_is_self_change_mapping(struct kvm_vcpu *vcpu,
-         struct guest_walkerEPT *walker, bool user_fault,
-         bool *write_fault_to_shadow_pgtable)
+		 struct guest_walkerEPT *walker, bool user_fault,
+		 bool *write_fault_to_shadow_pgtable)
 {
-    return FNAME_is_self_change_mapping();
+	return FNAME_is_self_change_mapping();
 }
 static int paging64_page_fault(struct kvm_vcpu *vcpu, gpa_t addr, u32 error_code,
-        bool prefault)
+		bool prefault)
 {
-    return FNAME_page_fault();
+	return FNAME_page_fault();
 }
 
 static gpa_t paging64_get_level1_sp_gpa(struct kvm_mmu_page *sp)
 {
-    return FNAME_get_level1_sp_gpa();
+	return FNAME_get_level1_sp_gpa();
 }
 
 static void paging64_invlpg(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa)
 {
-    FNAME_invlpg();
+	FNAME_invlpg();
 }
 
 
 static gpa_t paging64_gva_to_gpa(struct kvm_vcpu *vcpu, gpa_t addr, u32 access,
-          struct x86_exception *exception)
+		  struct x86_exception *exception)
 {
-    return FNAME_gva_to_gpa();
+	return FNAME_gva_to_gpa();
 }
 static int paging64_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
 {
-    return FNAME_sync_page();
+	return FNAME_sync_page();
 }
 
 #endif //__RTOAX________________________________________________________
@@ -4486,138 +4512,138 @@ typedef guest_walker guest_walker32;
 
 static gfn_t paging32_gpte_to_gfn_lvl(u64 gpte, int lvl)
 {
-    return gpte_to_gfn_lvl();
+	return gpte_to_gfn_lvl();
 }
 
 static inline void paging32_protect_clean_gpte(struct kvm_mmu *mmu, unsigned *access,
-          unsigned gpte)
+		  unsigned gpte)
 {
-    FNAME_protect_clean_gpte();
+	FNAME_protect_clean_gpte();
 }
 
 static inline int paging32_is_present_gpte(unsigned long pte)
 {
-    return FNAME_is_present_gpte();
+	return FNAME_is_present_gpte();
 }
 
 static bool paging32_is_bad_mt_xwr(struct rsvd_bits_validate *rsvd_check, u64 gpte)
 {
-    return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
+	return FNAME_is_bad_mt_xwr(rsvd_check, gpte);
 }
 
 static bool paging32_is_rsvd_bits_set(struct kvm_mmu *mmu, u64 gpte, int level)
 {
-    return FNAME_is_rsvd_bits_set();
+	return FNAME_is_rsvd_bits_set();
 }
 
 static int paging32_cmpxchg_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-          u64 __user *ptep_user, unsigned index,
-          u64 orig_pte, u64 new_pte)
+		  u64 __user *ptep_user, unsigned index,
+		  u64 orig_pte, u64 new_pte)
 {
-    return FNAME_cmpxchg_gpte();
+	return FNAME_cmpxchg_gpte();
 }
 
 static bool paging32_prefetch_invalid_gpte(struct kvm_vcpu *vcpu,
-      struct kvm_mmu_page *sp, u64 *spte,
-      u64 gpte)
+	  struct kvm_mmu_page *sp, u64 *spte,
+	  u64 gpte)
 {
-    return FNAME_prefetch_invalid_gpte();
+	return FNAME_prefetch_invalid_gpte();
 }
 
 static inline unsigned paging32_gpte_access(u64 gpte)
 {
-    return FNAME_gpte_access();
+	return FNAME_gpte_access();
 }
 
 static int paging32_update_accessed_dirty_bits(struct kvm_vcpu *vcpu,
-          struct kvm_mmu *mmu,
-          struct guest_walkerEPT *walker,
-          gpa_t addr, int write_fault)
+		  struct kvm_mmu *mmu,
+		  struct guest_walkerEPT *walker,
+		  gpa_t addr, int write_fault)
 {
-    return FNAME_update_accessed_dirty_bits();
+	return FNAME_update_accessed_dirty_bits();
 }
 
 static inline unsigned paging32_gpte_pkeys(struct kvm_vcpu *vcpu, u64 gpte)
 {
-    return FNAME_gpte_pkeys();
+	return FNAME_gpte_pkeys();
 }
 
 static int paging32_walk_addr_generic(struct guest_walkerEPT *walker,
-        struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
-        gpa_t addr, u32 access)
+		struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
+		gpa_t addr, u32 access)
 {
-    return FNAME_walk_addr_generic();
+	return FNAME_walk_addr_generic();
 }
 
 static int paging32_walk_addr(struct guest_walkerEPT *walker,
-       struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
+	   struct kvm_vcpu *vcpu, gpa_t addr, u32 access)
 {
-    return paging32_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
+	return paging32_walk_addr_generic(walker, vcpu, vcpu->arch.mmu, addr, access);
 }
 static bool
 paging32_prefetch_gpte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-       u64 *spte, u64 gpte, bool no_dirty_log)
+	   u64 *spte, u64 gpte, bool no_dirty_log)
 {
-    return FNAME_prefetch_gpte();
+	return FNAME_prefetch_gpte();
 }
 
 static void paging32_update_pte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
-         u64 *spte, const void *pte)
+		 u64 *spte, const void *pte)
 {
-    return FNAME_update_pte();
+	return FNAME_update_pte();
 }
 
 static bool paging32_gpte_changed(struct kvm_vcpu *vcpu,
-    struct guest_walkerEPT *gw, int level)
+	struct guest_walkerEPT *gw, int level)
 {
-    return FNAME_gpte_changed();
+	return FNAME_gpte_changed();
 }
 
 static void paging32_pte_prefetch(struct kvm_vcpu *vcpu, struct guest_walkerEPT *gw,
-    u64 *sptep)
+	u64 *sptep)
 {
-    return FNAME_pte_prefetch();
+	return FNAME_pte_prefetch();
 }
 
 static int paging32_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
-    struct guest_walkerEPT *gw, u32 error_code,
-    int max_level, kvm_pfn_t pfn, bool map_writable,
-    bool prefault)
+	struct guest_walkerEPT *gw, u32 error_code,
+	int max_level, kvm_pfn_t pfn, bool map_writable,
+	bool prefault)
 {
-    return FNAME_fetch();
+	return FNAME_fetch();
 }
 static bool
 paging32_is_self_change_mapping(struct kvm_vcpu *vcpu,
-         struct guest_walkerEPT *walker, bool user_fault,
-         bool *write_fault_to_shadow_pgtable)
+		 struct guest_walkerEPT *walker, bool user_fault,
+		 bool *write_fault_to_shadow_pgtable)
 {
-    return FNAME_is_self_change_mapping();
+	return FNAME_is_self_change_mapping();
 }
 static int paging32_page_fault(struct kvm_vcpu *vcpu, gpa_t addr, u32 error_code,
-        bool prefault)
+		bool prefault)
 {
-    return FNAME_page_fault();
+	return FNAME_page_fault();
 }
 
 static gpa_t paging32_get_level1_sp_gpa(struct kvm_mmu_page *sp)
 {
-    return FNAME_get_level1_sp_gpa();
+	return FNAME_get_level1_sp_gpa();
 }
 
 static void paging32_invlpg(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa)
 {
-    FNAME_invlpg();
+	FNAME_invlpg();
 }
 
 
 static gpa_t paging32_gva_to_gpa(struct kvm_vcpu *vcpu, gpa_t addr, u32 access,
-          struct x86_exception *exception)
+		  struct x86_exception *exception)
 {
-    return FNAME_gva_to_gpa();
+	return FNAME_gva_to_gpa();
 }
 static int paging32_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
 {
-    return FNAME_sync_page();
+	return FNAME_sync_page();
 }
 
 #endif //__RTOAX________________________________________________________
@@ -5222,25 +5248,25 @@ static void shadow_mmu_init_context(struct kvm_vcpu *vcpu, struct kvm_mmu *conte
 				    u32 cr0, u32 cr4, u32 efer,
 				    union kvm_mmu_role new_role)
 {
-    /**
-     *  如果没有开启分页，说明 CPU现在处于 实模式
-     */
+	/**
+	 *  如果没有开启分页，说明 CPU现在处于 实模式
+	 */
 	if (!(cr0 & X86_CR0_PG))
 		nonpaging_init_context(vcpu, context);
-    /**
-     *
-     */
-    else if (efer & EFER_LMA)
+	/**
+	 *
+	 */
+	else if (efer & EFER_LMA)
 		paging64_init_context(vcpu, context);
-    /**
-     *
-     */
-    else if (cr4 & X86_CR4_PAE)
+	/**
+	 *
+	 */
+	else if (cr4 & X86_CR4_PAE)
 		paging32E_init_context(vcpu, context);
-    /**
-     *
-     */
-    else
+	/**
+	 *
+	 */
+	else
 		paging32_init_context(vcpu, context);
 
 	context->mmu_role.as_u64 = new_role.as_u64;
@@ -5257,9 +5283,9 @@ static void kvm_init_shadow_mmu(struct kvm_vcpu *vcpu, u32 cr0, u32 cr4, u32 efe
 	union kvm_mmu_role new_role =
 		kvm_calc_shadow_mmu_root_page_role(vcpu, false);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (new_role.as_u64 != context->mmu_role.as_u64)
 		shadow_mmu_init_context(vcpu, context, cr0, cr4, efer, new_role);
 }
@@ -5362,9 +5388,9 @@ static void init_kvm_softmmu(struct kvm_vcpu *vcpu)
 {
 	struct kvm_mmu *context = &vcpu->arch.root_mmu;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_init_shadow_mmu(vcpu,
 			    kvm_read_cr0_bits(vcpu, X86_CR0_PG),
 			    kvm_read_cr4_bits(vcpu, X86_CR4_PAE),
@@ -5443,20 +5469,20 @@ void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 			vcpu->arch.mmu->prev_roots[i] = KVM_MMU_ROOT_INFO_INVALID;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (mmu_is_nested(vcpu))
 		init_kvm_nested_mmu(vcpu);
-    /**
-     *  Two-Dimensional-Paging
-     */
+	/**
+	 *  Two-Dimensional-Paging
+	 */
 	else if (tdp_enabled)
 		init_kvm_tdp_mmu(vcpu);
-    /**
-     *
-     */
-    else
+	/**
+	 *
+	 */
+	else
 		init_kvm_softmmu(vcpu);
 }
 EXPORT_SYMBOL_GPL(kvm_init_mmu);
@@ -5491,34 +5517,34 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
 {
 	int r;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	r = mmu_topup_memory_caches(vcpu, !vcpu->arch.mmu->direct_map);
 	if (r)
 		goto out;
 
-    /**
-     *  准备影子页表的地址
-     */
+	/**
+	 *  准备影子页表的地址
+	 */
 	r = mmu_alloc_roots(vcpu);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	kvm_mmu_sync_roots(vcpu);
 	if (r)
 		goto out;
 
-    /**
-     *
-     */
-    kvm_mmu_load_pgd(vcpu);
+	/**
+	 *
+	 */
+	kvm_mmu_load_pgd(vcpu);
 
-    /**
-     *  vmx_flush_tlb_current()
-     *  svm_flush_tlb_current()
-     */
+	/**
+	 *  vmx_flush_tlb_current()
+	 *  svm_flush_tlb_current()
+	 */
 	kvm_x86_ops.tlb_flush_current(vcpu);
 out:
 	return r;
@@ -5541,7 +5567,7 @@ static void mmu_pte_write_new_pte(struct kvm_vcpu *vcpu,
 	if (sp->role.level != PG_LEVEL_4K) {
 		++vcpu->kvm->stat.mmu_pde_zapped;
 		return;
-        }
+		}
 
 	++vcpu->kvm->stat.mmu_pte_updated;
 	vcpu->arch.mmu->update_pte(vcpu, sp, spte, new);
@@ -5776,22 +5802,22 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 
 	r = RET_PF_INVALID;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (unlikely(error_code & PFERR_RSVD_MASK)) {
 		r = handle_mmio_page_fault(vcpu, cr2_or_gpa, direct);
 		if (r == RET_PF_EMULATE)
 			goto emulate;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (r == RET_PF_INVALID) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa, lower_32_bits(error_code), false);
 		if (WARN_ON_ONCE(r == RET_PF_INVALID))
 			return -EIO;
@@ -5829,9 +5855,9 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	if (!mmio_info_in_cache(vcpu, cr2_or_gpa, direct) && !is_guest_mode(vcpu))
 		emulation_type |= EMULTYPE_ALLOW_RETRY_PF;
 emulate:
-    /**
-     *  模拟 指令
-     */
+	/**
+	 *  模拟 指令
+	 */
 	return x86_emulate_instruction(vcpu, cr2_or_gpa, emulation_type, insn, insn_len);
 }
 EXPORT_SYMBOL_GPL(kvm_mmu_page_fault);
@@ -6244,9 +6270,14 @@ void kvm_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
 static bool slot_rmap_write_protect(struct kvm *kvm,
 				    struct kvm_rmap_head *rmap_head)
 {
+	/* slot_rmap_write_protect() 首先会调用 spte_write_protect(), 该函数判断
+	 * 如果当前页目录项不可写，那可以不作处理，如果有写权限，去掉写权限。*/
 	return __rmap_write_protect(kvm, rmap_head, false);
 }
 
+/**
+ * 移除写权限
+ */
 void kvm_mmu_slot_remove_write_access(struct kvm *kvm,
 				      struct kvm_memory_slot *memslot,
 				      int start_level)
@@ -6254,6 +6285,10 @@ void kvm_mmu_slot_remove_write_access(struct kvm *kvm,
 	bool flush;
 
 	spin_lock(&kvm->mmu_lock);
+
+	/* 修改 memslot 的所有页表项和页目录项都会调用 slot_rmap_write_protect()
+	 * slot_rmap_write_protect() 首先会调用 spte_write_protect(), 该函数判断
+	 * 如果当前页目录项不可写，那可以不作处理，如果有写权限，去掉写权限。*/
 	flush = slot_handle_level(kvm, memslot, slot_rmap_write_protect,
 				start_level, KVM_MAX_HUGEPAGE_LEVEL, false);
 	if (kvm->arch.tdp_mmu_enabled)
