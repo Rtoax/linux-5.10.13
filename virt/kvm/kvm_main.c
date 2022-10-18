@@ -970,6 +970,7 @@ static int kvm_alloc_dirty_bitmap(struct kvm_memory_slot *memslot)
 {
 	/**
 	 * 实际分配的空间是实际所需要的 2 倍
+	 * 这里的 2 参见 kvm_get_dirty_log_protect()
 	 */
 	unsigned long dirty_bytes = 2 * kvm_dirty_bitmap_bytes(memslot);
 
@@ -1643,6 +1644,10 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
 		 */
 		dirty_bitmap_buffer = dirty_bitmap;
 	} else {
+		/**
+		 * 获取第二份 bitmap
+		 * (每个脏页位图，都占用 2 倍的内存空间, 参见 kvm_alloc_dirty_bitmap())
+		 */
 		dirty_bitmap_buffer = kvm_second_dirty_bitmap(memslot);
 		memset(dirty_bitmap_buffer, 0, n);
 
