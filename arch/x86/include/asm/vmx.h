@@ -170,9 +170,18 @@ static inline int vmx_misc_mseg_revid(u64 vmx_misc)
 }
 
 /**
- *  VMCS Encodings 
+ *  VMCS Encodings
  *
  *  VM 上下文(vmcs) field
+ *
+ * VMCS 共 4KB， 有以下几个区
+ *
+ * 1. Guest State 区域：进行 VM Entry 时，虚拟机处理器的状态从这个区加载
+ * 2. Host State 区域：发生 VM Exit 时，却换到 VMM 上下文，处理器的状态从这个区加载
+ * 3. VM-Execution 区域：控制处理器在进入 VM Entry 之后的处理行为
+ * 4. VM-Exit 控制区：指定 VM 在发生 VMExit 时的行为，如寄存器的保存
+ * 5. VM-Entry 控制区：用来指定 VM 在发生 VM Entry 时的行为，如寄存器的加载
+ * 6. VM-Exit 信息区：包含最近产生的 VM Exit 信息，如退出原因以及相应的数据
  */
 enum vmcs_field {
 	VIRTUAL_PROCESSOR_ID            = 0x00000000,
@@ -210,7 +219,8 @@ enum vmcs_field {
 	PML_ADDRESS_HIGH		= 0x0000200f,
 	TSC_OFFSET                      = 0x00002010,
 	TSC_OFFSET_HIGH                 = 0x00002011,
-	/** 
+	/**
+
      *  在 APIC 中，物理 LAPIC 有一个页面大小的内存用来存放个寄存器的值，
      *  Intel 称这个页面为 APIC-access page, CPU 采用 mmap 的方式访问这些寄存器
      *  起初，一旦 Guest 访问这个页面，CPU将从Guest 模式切换到Host模式，KVM负责完成模拟，
@@ -224,7 +234,7 @@ enum vmcs_field {
      */
 	VIRTUAL_APIC_PAGE_ADDR          = 0x00002012,
 	VIRTUAL_APIC_PAGE_ADDR_HIGH     = 0x00002013,
-	
+
 	APIC_ACCESS_ADDR		= 0x00002014,
 	APIC_ACCESS_ADDR_HIGH		= 0x00002015,
 	POSTED_INTR_DESC_ADDR           = 0x00002016,
@@ -371,7 +381,7 @@ enum vmcs_field {
 	GUEST_CR4                       = 0x00006804,
 	GUEST_ES_BASE                   = 0x00006806,
 	/**
-     *  
+     *
      */
 	GUEST_CS_BASE                   = 0x00006808,
 	GUEST_SS_BASE                   = 0x0000680a,
@@ -403,7 +413,7 @@ enum vmcs_field {
 	HOST_IA32_SYSENTER_ESP          = 0x00006c10,
 	HOST_IA32_SYSENTER_EIP          = 0x00006c12,
 	/**
-     *  
+     *
      */
 	HOST_RSP                        = 0x00006c14,
 	HOST_RIP                        = 0x00006c16,
@@ -613,7 +623,7 @@ static inline u8 vmx_eptp_page_walk_level(u64 eptp)
 						 VMX_EPT_EXECUTABLE_MASK)
 
 /**
- *  
+ *
  */
 #define VMX_EPT_IDENTITY_PAGETABLE_ADDR		0xfffbc000ul
 
