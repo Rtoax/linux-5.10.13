@@ -4528,7 +4528,7 @@ static void init_vmcs(struct vcpu_vmx *vmx)
 }
 
 /**
- *
+ * 初始化 VMX VMCS Guest state 区域
  */
 static void vmx_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 {
