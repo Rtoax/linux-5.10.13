@@ -15,13 +15,13 @@
  *
  */
 struct vmcs_hdr {
-    /**
-     * 修正标识符
+	/**
+	 * 修正标识符
 	 * 标识不同的 vmcs 版本
-     */
+	 */
 	u32 revision_id:31;
 	/**
-	 * 
+	 *
 	 */
 	u32 shadow_vmcs:1;
 };
@@ -86,10 +86,10 @@ struct vmcs {
 	 * 当 VM 发生错误时候，会产生 VMX-abort
 	 */
 	u32 abort;
-    /**
-     *  见 `enum vmcs_field` 和 `vmcs_read64()`
+	/**
+	 *  见 `enum vmcs_field` 和 `vmcs_read64()`
 	 *  VMM 通过 vmread/vmwrite 在这里读写
-     */
+	 */
 	char data[];
 };
 
@@ -102,9 +102,9 @@ DECLARE_PER_CPU(struct vmcs *, current_vmcs);
  * used as a write-through cache of the corresponding VMCS fields.
  */
 struct vmcs_host_state {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long cr3;	/* May not match real cr3 */
 	unsigned long cr4;	/* May not match real cr4 */
 	unsigned long gs_base;
