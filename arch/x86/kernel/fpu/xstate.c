@@ -558,6 +558,33 @@ static void __xstate_dump_leaves(void)
 	}
 }
 
+/*
+kernel: XSAVE consistency problem, dumping leaves
+kernel: WARNING: CPU: 0 PID: 0 at arch/x86/kernel/fpu/xstate.c:593 do_extra_xstate_size_checks+0x111/0x12e
+kernel: Modules linked in:
+kernel: CPU: 0 PID: 0 Comm: swapper Not tainted 5.15.1300-0.el9.x86_64 #1
+kernel: RIP: 0010:do_extra_xstate_size_checks+0x111/0x12e
+kernel: Code: 0f 85 2f ff ff ff 3b 2d 86 25 9e 00 74 32 80 3d 62 04 56 01 00 75 15 48 c7 c7 30 d8 71 88 c6 05 52 04 56 01 01 e8 fc 55 00 00 <0f> 0b 83 3d 6f b3 00 01 00 74 0b 5b 5d 41>
+kernel: RSP: 0000:ffffffff88e03e88 EFLAGS: 00010082 ORIG_RAX: 0000000000000000
+kernel: RAX: 0000000000000000 RBX: 0000000000000a88 RCX: ffffffff89126808
+kernel: RDX: 0000000000000000 RSI: 00000000ffff7fff RDI: ffffffff88e66800
+kernel: RBP: 0000000000000988 R08: 0000000000000000 R09: ffffffff88e03cc0
+kernel: R10: ffffffff88e03cb8 R11: ffffffff891e6848 R12: 0000000000000010
+kernel: R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000000
+kernel: FS:  0000000000000000(0000) GS:ffffffff89822000(0000) knlGS:0000000000000000
+kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+kernel: CR2: ffff888000093cb0 CR3: 00000006568c2000 CR4: 00000000000406a0
+kernel: Call Trace:
+kernel:  <TASK>
+kernel:  ? fpu__init_system_xstate+0x156/0x338
+kernel:  ? fpu__init_system+0xff/0x12a
+kernel:  ? sld_setup+0xd8/0x1d1
+kernel:  ? early_identify_cpu.constprop.0+0x133/0x169
+kernel:  ? setup_arch+0x44/0x850
+kernel:  ? start_kernel+0x62/0x4a0
+kernel:  ? secondary_startup_64_no_verify+0xc2/0xcb
+kernel:  </TASK>
+*/
 #define XSTATE_WARN_ON(x) do {							\
 	if (WARN_ONCE(x, "XSAVE consistency problem, dumping leaves")) {	\
 		__xstate_dump_leaves();						\
