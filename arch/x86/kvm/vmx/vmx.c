@@ -848,7 +848,7 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	 */
 	if (is_guest_mode(vcpu))
 		eb |= get_vmcs12(vcpu)->exception_bitmap;
-		else {
+	else {
 		/*
 		 * If EPT is enabled, #PF is only trapped if MAXPHYADDR is mismatched
 		 * between guest and host.  In that case we only care about present
@@ -1236,7 +1236,7 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
 
 	}
 
-		if (vmx->nested.need_vmcs12_to_shadow_sync)
+	if (vmx->nested.need_vmcs12_to_shadow_sync)
 		nested_sync_vmcs12_to_shadow(vcpu);
 
 	if (vmx->guest_state_loaded)
