@@ -3768,7 +3768,7 @@ static int handle_mmio_page_fault(struct kvm_vcpu *vcpu, u64 addr, bool direct)
 }
 
 /**
- *
+ * 如果 KVM 页跟踪开启
  */
 static bool page_fault_handle_page_track(struct kvm_vcpu *vcpu,
 					 u32 error_code, gfn_t gfn)
@@ -3783,6 +3783,8 @@ static bool page_fault_handle_page_track(struct kvm_vcpu *vcpu,
 	/*
 	 * guest is writing the page which is write tracked which can
 	 * not be fixed by page fault handler.
+	 *
+	 * KVM 页跟踪开启了，那么直接返回 true
 	 */
 	if (kvm_page_track_is_active(vcpu, gfn, KVM_PAGE_TRACK_WRITE))
 		return true;
@@ -3872,7 +3874,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	int r;
 
 	/**
-	 *
+	 * 如果 KVM 页跟踪开启，那么这里直接返回 RET_PF_EMULATE
 	 */
 	if (page_fault_handle_page_track(vcpu, error_code, gfn))
 		return RET_PF_EMULATE;
@@ -3958,6 +3960,7 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa,
 
 /**
  *  KVM 处理一个缺页
+ *  脏页跟踪会用到这个函数，当开启脏页跟踪后，会设置页为写保护，如果发生写，会调用这个函数。
  */
 int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 				u64 fault_address, char *insn, int insn_len)
@@ -5790,6 +5793,7 @@ EXPORT_SYMBOL_GPL(kvm_mmu_unprotect_page_virt);
 
 /**
  *  EPT 缺页处理
+ *  脏页跟踪会用到这个函数，当开启脏页跟踪后，会设置页为写保护，如果发生写，会调用这个函数。
  */
 int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 		       void *insn, int insn_len)
@@ -5857,6 +5861,7 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 emulate:
 	/**
 	 *  模拟 指令
+	 *  emulation_type = EMULTYPE_PF
 	 */
 	return x86_emulate_instruction(vcpu, cr2_or_gpa, emulation_type, insn, insn_len);
 }

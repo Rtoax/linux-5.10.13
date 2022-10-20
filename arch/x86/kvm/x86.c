@@ -7540,6 +7540,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	}
 
 restart:
+	/**
+	 * 模拟缺页
+	 */
 	if (emulation_type & EMULTYPE_PF) {
 		/* Save the faulting GPA (cr2) in the address field */
 		ctxt->exception.address = cr2_or_gpa;
