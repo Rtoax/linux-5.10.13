@@ -32,9 +32,11 @@ extern pgd_t init_top_pgt[];
 /**
  *  KPTI - Kernel Page-Table Isolation 内核页表隔离
  *
- *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
+ *  KPTI 是把每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
  */
-#define swapper_pg_dir init_top_pgt/* CR3 - 一级页表 arch/x86/kernel/head_64.S */
+
+/* CR3 - 一级页表 arch/x86/kernel/head_64.S */
+#define swapper_pg_dir init_top_pgt
 
 extern void paging_init(void);
 static inline void sync_initial_page_table(void) { }

@@ -99,8 +99,8 @@ SYM_CODE_START_NOALIGN(startup_64)
     /**
      *  `_text` 是一个地址计数器,对于 [x86_64] 来说，它定义为 . = __START_KERNEL;
      *  __START_KERNEL = (__START_KERNEL_map + __PHYSICAL_START)
-     *  Linux 内核的物理基址 - `0x1000000`;
-     *  Linux 内核的虚拟基址 - `0xffffffff81000000`.
+     *  Linux 内核的物理基址 - `0x1000000`;(CONFIG_PHYSICAL_START=0x1000000)
+     *  Linux 内核的虚拟基址 - `0xffffffff81000000`.(__START_KERNEL_map = 0xffffffff80000000)
      *
      *  通过 %rip 进行相对寻址，实现 PIC code，这里假设随机选取的物理加载地址是
      *  output=32M， 随机选取的 virt_addr=128M(output/virt_addr 参考 extract_kernel 函数)，
@@ -138,6 +138,8 @@ SYM_CODE_START_NOALIGN(startup_64)
 	/**
 	 *  Form the CR3 value being sure to include the CR3 modifier
 	 *  虽然定义为 `0x1000000`，但是仍然有可能变化，例如启用 [kASLR]
+	 *  CONFIG_PHYSICAL_START = 0x1000000
+	 *  __START_KERNEL_map = 0xffffffff80000000
 	 */
 	addq	$(early_top_pgt - __START_KERNEL_map), %rax
 	jmp 1f
@@ -182,7 +184,10 @@ SYM_INNER_LABEL(secondary_startup_64_no_verify, SYM_L_GLOBAL)
 	call	__startup_secondary_64
 	popq	%rsi
 
-	/* Form the CR3 value being sure to include the CR3 modifier */
+	/* Form the CR3 value being sure to include the CR3 modifier
+	 *
+	 *  __START_KERNEL_map = 0xffffffff80000000
+	 */
 	addq	$(init_top_pgt - __START_KERNEL_map), %rax
 1:
 
@@ -669,6 +674,7 @@ SYM_DATA_START_PAGE_ALIGNED(level2_fixmap_pgt)
 	.fill	(512 - 4 - FIXMAP_PMD_NUM),8,0
 	pgtno = 0
 	.rept (FIXMAP_PMD_NUM)
+	/* __START_KERNEL_map = 0xffffffff80000000 */
 	.quad level1_fixmap_pgt + (pgtno << PAGE_SHIFT) - __START_KERNEL_map \
 		+ _PAGE_TABLE_NOENC;
 	pgtno = pgtno + 1

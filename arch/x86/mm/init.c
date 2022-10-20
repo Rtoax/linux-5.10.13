@@ -708,7 +708,8 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 static void __init init_trampoline(void)
 {
 #ifdef CONFIG_X86_64
-	if (!kaslr_memory_enabled())    /* 如果 KASLR 使能 */
+	/* 如果 KASLR 未使能 */
+	if (!kaslr_memory_enabled())
 		trampoline_pgd_entry = init_top_pgt[pgd_index(__PAGE_OFFSET)];
 	else
 		init_trampoline_kaslr();

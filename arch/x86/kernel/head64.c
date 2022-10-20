@@ -572,7 +572,11 @@ x86_64_start_kernel(char * real_mode_data)
 	 */
 	load_ucode_bsp();
 
-	/* set init_top_pgt kernel high mapping*/
+	/**
+	 * set init_top_pgt kernel high mapping
+	 *
+	 * 为什么是 511？
+	 */
 	init_top_pgt[511] = early_top_pgt[511];
 
     /**

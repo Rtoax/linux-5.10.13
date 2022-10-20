@@ -25,6 +25,8 @@
  *
  * Since there is only one init_mm in the entire system, keep it simple
  * and size this cpu_bitmask to NR_CPUS.
+ *
+ * 内核中只有一个 init_mm 结构。
  */
 struct mm_struct init_mm = {/* 初始的 mm_struct 结构 */
 	init_mm.mm_rb		= RB_ROOT,/* 红黑树 */
