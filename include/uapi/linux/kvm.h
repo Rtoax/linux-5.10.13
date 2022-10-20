@@ -148,7 +148,7 @@ struct kvm_userspace_memory_region {
  * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
  * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
- * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
+ * 当设置了这个标记后，所有的写访问都会产生 EPT violation 异常，产生 VM Exit
  * 退回到 KVM 中。
  *
  * 使用 ioctl(KVM_GET_DIRTY_LOG) 获取脏页位图，它能够获得 VM 上次进行该调用之后到现在
