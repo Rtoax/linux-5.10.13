@@ -92,21 +92,21 @@ struct kvm_debug_guest {
  *  VMM 需要为虚拟机分配内存条
  */
 struct kvm_memory_region {
-    /**
-     *  第几个内存条
-     */
+	/**
+	 *  第几个内存条
+	 */
 	__u32 slot;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u32 flags;
-    /**
-     *  表示这块内存条在Guest物理地址空间中的起始地址
-     */
+	/**
+	 *  表示这块内存条在Guest物理地址空间中的起始地址
+	 */
 	__u64 guest_phys_addr;
-    /**
-     *  内存条大小
-     */
+	/**
+	 *  内存条大小
+	 */
 	__u64 memory_size; /* bytes */
 };
 
@@ -116,29 +116,158 @@ struct kvm_memory_region {
  *  描述一块 虚拟 内存条
  */
 struct kvm_userspace_memory_region {
-    /**
-     *  内存槽 - 第几个内存条
-     *  如果这个插槽没有插入内存，那么相当于安装一个内存条
-     */
+	/**
+	 *  内存槽 - 第几个内存条
+	 *  如果这个插槽没有插入内存，那么相当于安装一个内存条
+	 */
 	__u32 slot;
-    /**
-     *  内存类型 ， 如 `KVM_MEM_READONLY`
-     */
+	/**
+	 *  内存类型 ， 如 `KVM_MEM_READONLY`
+	 */
 	__u32 flags;
-    /**
-     *  这块内存条映射到虚拟机的物理内存地址空间的起始地址
-     */
+	/**
+	 *  这块内存条映射到虚拟机的物理内存地址空间的起始地址
+	 */
 	__u64 guest_phys_addr;
-    /**
-     *  内存发小
-     */
+	/**
+	 *  内存大小
+	 * = 0，表示 删除 内存条（见 __kvm_set_memory_region()）
+	 */
 	__u64 memory_size; /* bytes */
-    /**
-     *  宿主机需要分配一块内存用于Guest的物理内存
-     *  这段内存在 Host 中的起始地址(HVA) 由该字段告知 KVM 子系统
-     */
+	/**
+	 *  宿主机需要分配一块内存用于Guest的物理内存
+	 *  这段内存在 Host 中的起始地址(HVA) 由该字段告知 KVM 子系统
+	 */
 	__u64 userspace_addr; /* start of the userspace allocated memory */
 };
+/* 上结构的一个追踪示例：
+ * 参见脚本： test-linux/kvm/memory/scripts/kvm_set_memory_region.py
+
+$ sudo ./kvm_set_memory_region.py
+Tracing __kvm_set_memory_region ... Hit Ctrl-C to end
+COMM             PID      SLOT     GPA              HVA              SIZE
+CPU 0/KVM        144716   32765    fee00000         7fbddca23000     4096
+CPU 0/KVM        144716   98301    fee00000         7fbddca23000     4096
+qemu-kvm         144716   0        0                7fbccbe00000     2147483648
+qemu-kvm         144716   1        100000000        7fbd4be00000     2147483648
+qemu-kvm         144716   2        fffc0000         7fbdd8200000     262144
+qemu-kvm         144716   3        feda0000         7fbccbea0000     131072
+qemu-kvm         144716   3        feda0000         7fbccbea0000     0
+qemu-kvm         144716   0        0                7fbccbe00000     0
+qemu-kvm         144716   0        0                7fbccbe00000     655360
+qemu-kvm         144716   3        c0000            7fbccbec0000     2146697216
+qemu-kvm         144716   65536    0                7fbccbe00000     2147483648
+qemu-kvm         144716   65537    feda0000         7fbccbea0000     131072
+qemu-kvm         144716   65538    fffc0000         7fbdd8200000     262144
+qemu-kvm         144716   65539    100000000        7fbd4be00000     2147483648
+qemu-kvm         144716   3        c0000            7fbccbec0000     0
+qemu-kvm         144716   3        c0000            7fbdd0200000     131072
+qemu-kvm         144716   4        e0000            7fbdd8220000     131072
+qemu-kvm         144716   5        100000           7fbccbf00000     2146435072
+qemu-kvm         144716   65536    0                7fbccbe00000     0
+qemu-kvm         144716   65536    0                7fbccbe00000     786432
+qemu-kvm         144716   65540    c0000            7fbdd0200000     131072
+qemu-kvm         144716   65541    e0000            7fbdd8220000     131072
+qemu-kvm         144716   65542    100000           7fbccbf00000     2146435072
+qemu-kvm         144716   65536    0                7fbccbe00000     0
+qemu-kvm         144716   65537    feda0000         7fbccbea0000     0
+qemu-kvm         144716   65536    0                7fbccbe00000     655360
+CPU 0/KVM        144716   3        c0000            7fbdd0200000     0
+CPU 0/KVM        144716   4        e0000            7fbdd8220000     0
+CPU 0/KVM        144716   5        100000           7fbccbf00000     0
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     98304
+CPU 0/KVM        144716   4        d8000            7fbdd0218000     32768
+CPU 0/KVM        144716   5        e0000            7fbdd8220000     65536
+CPU 0/KVM        144716   6        f0000            7fbccbef0000     2146500608
+CPU 0/KVM        144716   65540    c0000            7fbdd0200000     0
+CPU 0/KVM        144716   65541    e0000            7fbdd8220000     0
+CPU 0/KVM        144716   65542    100000           7fbccbf00000     0
+CPU 0/KVM        144716   65537    c0000            7fbccbec0000     98304
+CPU 0/KVM        144716   65540    d8000            7fbdd0218000     32768
+CPU 0/KVM        144716   65541    e0000            7fbdd8220000     65536
+CPU 0/KVM        144716   65542    f0000            7fbccbef0000     2146500608
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     0
+CPU 0/KVM        144716   4        d8000            7fbdd0218000     0
+CPU 0/KVM        144716   5        e0000            7fbdd8220000     0
+CPU 0/KVM        144716   6        f0000            7fbccbef0000     0
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     2146697216
+CPU 0/KVM        144716   65537    c0000            7fbccbec0000     0
+CPU 0/KVM        144716   65540    d8000            7fbdd0218000     0
+CPU 0/KVM        144716   65541    e0000            7fbdd8220000     0
+CPU 0/KVM        144716   65542    f0000            7fbccbef0000     0
+CPU 0/KVM        144716   65537    c0000            7fbccbec0000     2146697216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   0        0                7fbccbe00000     0
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     0
+CPU 0/KVM        144716   0        0                7fbccbe00000     2147483648
+CPU 0/KVM        144716   65536    0                7fbccbe00000     0
+CPU 0/KVM        144716   65537    c0000            7fbccbec0000     0
+CPU 0/KVM        144716   65536    0                7fbccbe00000     2147483648
+CPU 0/KVM        144716   0        0                7fbccbe00000     0
+CPU 0/KVM        144716   0        0                7fbccbe00000     655360
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     2146697216
+CPU 0/KVM        144716   5        fea00000         7fbcb0400000     65536
+CPU 0/KVM        144716   65537    fea00000         7fbcb0400000     65536
+CPU 0/KVM        144716   5        fea00000         7fbcb0400000     0
+CPU 0/KVM        144716   65537    fea00000         7fbcb0400000     0
+CPU 0/KVM        144716   5        fe800000         7fbcc8200000     262144
+CPU 0/KVM        144716   65537    fe800000         7fbcc8200000     262144
+CPU 0/KVM        144716   5        fe800000         7fbcc8200000     0
+CPU 0/KVM        144716   65537    fe800000         7fbcc8200000     0
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     0
+CPU 0/KVM        144716   3        c0000            7fbccbec0000     45056
+CPU 0/KVM        144716   5        cb000            7fbccbecb000     12288
+CPU 0/KVM        144716   6        ce000            7fbccbece000     40960
+CPU 0/KVM        144716   7        d8000            7fbccbed8000     98304
+CPU 0/KVM        144716   8        f0000            7fbccbef0000     65536
+CPU 0/KVM        144716   9        100000           7fbccbf00000     2146435072
+CPU 0/KVM        144716   65536    0                7fbccbe00000     0
+CPU 0/KVM        144716   65536    0                7fbccbe00000     786432
+CPU 0/KVM        144716   65537    c0000            7fbccbec0000     45056
+CPU 0/KVM        144716   65541    cb000            7fbccbecb000     12288
+CPU 0/KVM        144716   65542    ce000            7fbccbece000     40960
+CPU 0/KVM        144716   65543    d8000            7fbccbed8000     98304
+CPU 0/KVM        144716   65544    f0000            7fbccbef0000     65536
+CPU 0/KVM        144716   65545    100000           7fbccbf00000     2146435072
+CPU 0/KVM        144716   6        ce000            7fbccbece000     0
+CPU 0/KVM        144716   7        d8000            7fbccbed8000     0
+CPU 0/KVM        144716   6        ce000            7fbccbece000     106496
+CPU 0/KVM        144716   7        e8000            7fbccbee8000     32768
+CPU 0/KVM        144716   65542    ce000            7fbccbece000     0
+CPU 0/KVM        144716   65543    d8000            7fbccbed8000     0
+CPU 0/KVM        144716   65542    ce000            7fbccbece000     106496
+CPU 0/KVM        144716   65543    e8000            7fbccbee8000     32768
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     0
+CPU 0/KVM        144716   4        fb000000         7fbcb0600000     16777216
+CPU 0/KVM        144716   65540    fb000000         7fbcb0600000     16777216
+CPU 7/KVM        144716   10       a0000            7fbcb0600000     65536
+*/
 
 /*
  * The bit 0 ~ bit 15 of kvm_memory_region::flags are visible for userspace,
@@ -171,15 +300,15 @@ struct kvm_irq_level {
 	 */
 	union {
 	    /**
-    	 *  管脚号
-    	 */
+		 *  管脚号
+		 */
 		__u32 irq;
-        /**
-    	 *  中断注入状态
-    	 */
+		/**
+		 *  中断注入状态
+		 */
 		__s32 status;
 	};
-    /**
+	/**
 	 *  管脚电平
 	 *  1 - 高电平
 	 */
@@ -192,7 +321,7 @@ struct kvm_irq_level {
 struct kvm_irqchip {
 	__u32 chip_id;
 	__u32 pad;
-        union {
+		union {
 		char dummy[512];  /* reserving space */
 #ifdef __KVM_HAVE_PIT
 		struct kvm_pic_state pic;
@@ -330,17 +459,17 @@ struct kvm_hyperv_exit {
  */
 struct kvm_run {
 	/* in */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u8 request_interrupt_window;
 	__u8 immediate_exit;
 	__u8 padding1[6];
 
 	/* out */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u32 exit_reason;
 	__u8 ready_for_interrupt_injection;
 	__u8 if_flag;
@@ -355,9 +484,9 @@ struct kvm_run {
 	__u64 psw_mask; /* psw upper half */
 	__u64 psw_addr; /* psw lower half */
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		/* KVM_EXIT_UNKNOWN */
 		struct {
@@ -374,29 +503,29 @@ struct kvm_run {
 			__u32 error_code;
 		} ex;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		/* KVM_EXIT_IO */
 		struct {
 #define KVM_EXIT_IO_IN  0
 #define KVM_EXIT_IO_OUT 1
-            /**
-             *  表示读写
-             */
+			/**
+			 *  表示读写
+			 */
 			__u8 direction;
-            /**
-             *  读写宽度 1,2,4字节
-             */
+			/**
+			 *  读写宽度 1,2,4字节
+			 */
 			__u8 size; /* bytes */
 			__u16 port;
 			__u32 count;
-            /**
-             *  深入探索Linux虚拟化 P172
-             *  run_size = ioctl(kvm_fd, KVM_GET_VCPU_MAP_SIZE, 0)
-             *  vcpu->run = mmap(...,)
-             *  void *data = vcpu->run + vcpu->run->data_offset
-             */
+			/**
+			 *  深入探索Linux虚拟化 P172
+			 *  run_size = ioctl(kvm_fd, KVM_GET_VCPU_MAP_SIZE, 0)
+			 *  vcpu->run = mmap(...,)
+			 *  void *data = vcpu->run + vcpu->run->data_offset
+			 */
 			__u64 data_offset; /* relative to kvm_run start */
 		} io;
 		/* KVM_EXIT_DEBUG */
@@ -841,9 +970,9 @@ struct kvm_ioeventfd {
 #define KVM_X86_DISABLE_EXITS_PAUSE          (1 << 2)
 #define KVM_X86_DISABLE_EXITS_CSTATE         (1 << 3)
 #define KVM_X86_DISABLE_VALID_EXITS          (KVM_X86_DISABLE_EXITS_MWAIT | \
-                                              KVM_X86_DISABLE_EXITS_HLT | \
-                                              KVM_X86_DISABLE_EXITS_PAUSE | \
-                                              KVM_X86_DISABLE_EXITS_CSTATE)
+			                                  KVM_X86_DISABLE_EXITS_HLT | \
+			                                  KVM_X86_DISABLE_EXITS_PAUSE | \
+			                                  KVM_X86_DISABLE_EXITS_CSTATE)
 
 /* for KVM_ENABLE_CAP */
 struct kvm_enable_cap {
@@ -1434,6 +1563,8 @@ struct kvm_vfio_spapr_tce {
 #define KVM_GET_NR_MMU_PAGES      _IO(KVMIO,   0x45)
 /**
  *  为 KVM  Guest 创建一个内存条
+ * 参见脚本： test-linux/kvm/memory/scripts/kvm_set_memory_region.py
+ * 从上面脚本看，这其实也不一定是描述一个内存条。可能只是描述一块内存区域
  */
 #define KVM_SET_USER_MEMORY_REGION _IOW(KVMIO, 0x46, struct kvm_userspace_memory_region)
 #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)

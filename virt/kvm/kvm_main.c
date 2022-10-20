@@ -1327,6 +1327,7 @@ static int kvm_delete_memslot(struct kvm *kvm,
  * Must be called holding kvm->slots_lock for write.
  *
  * 给 KVM Guest 设置 内存条
+ * 参见脚本： test-linux/kvm/memory/scripts/kvm_set_memory_region.py
  */
 int __kvm_set_memory_region(struct kvm *kvm,
 			    const struct kvm_userspace_memory_region *mem)
@@ -1348,15 +1349,21 @@ int __kvm_set_memory_region(struct kvm *kvm,
 	 *  检查数值
 	 */
 	/* General sanity checks */
+	/* 至少要一页 */
 	if (mem->memory_size & (PAGE_SIZE - 1))
 		return -EINVAL;
+	/* GPA 必须页对齐 */
 	if (mem->guest_phys_addr & (PAGE_SIZE - 1))
 		return -EINVAL;
 
 	/**
+	 * We can read the guest memory with __xxx_user() later on.
 	 *
+	 * 需要满足几个条件：
+	 * 1. HVA 必须页对齐
+	 * 2.
+	 * 3. HVA 这块区域能访问
 	 */
-	/* We can read the guest memory with __xxx_user() later on. */
 	if ((mem->userspace_addr & (PAGE_SIZE - 1)) ||
 	    (mem->userspace_addr != untagged_addr(mem->userspace_addr)) ||
 	     !access_ok((void __user *)(unsigned long)mem->userspace_addr,
@@ -1364,6 +1371,8 @@ int __kvm_set_memory_region(struct kvm *kvm,
 		return -EINVAL;
 	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_MEM_SLOTS_NUM)
 		return -EINVAL;
+
+	/* 没有 long 越界 */
 	if (mem->guest_phys_addr + mem->memory_size < mem->guest_phys_addr)
 		return -EINVAL;
 
