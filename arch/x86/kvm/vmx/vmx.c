@@ -4506,6 +4506,7 @@ static void init_vmcs(struct vcpu_vmx *vmx)
 	set_cr4_guest_host_mask(vmx);
 
 	if (vmx->vpid != 0)
+		/* 将 虚拟处理器ID 写入 VMCS */
 		vmcs_write16(VIRTUAL_PROCESSOR_ID, vmx->vpid);
 
 	if (cpu_has_vmx_xsaves())

@@ -374,6 +374,9 @@ enum vmcs_field {
 	CR3_TARGET_VALUE1               = 0x0000600a,
 	CR3_TARGET_VALUE2               = 0x0000600c,
 	CR3_TARGET_VALUE3               = 0x0000600e,
+	/**
+	 * 见 struct vcpu_vmx.exit_qualification 结构
+	 */
 	EXIT_QUALIFICATION              = 0x00006400,
 	GUEST_LINEAR_ADDRESS            = 0x0000640a,
 	GUEST_CR0                       = 0x00006800,

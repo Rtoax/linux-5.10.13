@@ -66,16 +66,26 @@ static __always_inline void vmcs_checkl(unsigned long field)
 }
 
 /**
+ * @brief 读取 VMCS field
+ *
+ * @param field - 如 VIRTUAL_PROCESSOR_ID
+ *
  *  https://zhuanlan.zhihu.com/p/49257842
  *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
  *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
- *  的方法就是通过VMREAD和VMWRITE指令去访问。
+ *  的方法就是通过 VMREAD 和 VMWRITE 指令去访问。
+ *
  */
 static __always_inline unsigned long __vmcs_readl(unsigned long field)
 {
 	unsigned long value;
 
-	asm volatile("1: vmread %2, %1\n\t"
+	asm volatile(
+			/**
+			 * 读取 field 对应数值到 value
+			 *
+			 */
+			"1: vmread %2, %1\n\t"
 		     ".byte 0x3e\n\t" /* branch taken hint */
 		     "ja 3f\n\t"
 
@@ -83,6 +93,8 @@ static __always_inline unsigned long __vmcs_readl(unsigned long field)
 		      * VMREAD failed.  Push '0' for @fault, push the failing
 		      * @field, and bounce through the trampoline to preserve
 		      * volatile registers.
+			  *
+			  * vmread 失败
 		      */
 		     "push $0\n\t"
 		     "push %2\n\t"
@@ -115,6 +127,16 @@ static __always_inline u16 vmcs_read16(unsigned long field)
 	return __vmcs_readl(field);
 }
 
+/**
+ * @brief 读取 VMCS field
+ *
+ * @param field - 如 VIRTUAL_PROCESSOR_ID
+ *
+ *  https://zhuanlan.zhihu.com/p/49257842
+ *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
+ *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
+ *  的方法就是通过VMREAD和VMWRITE指令去访问。
+ */
 static __always_inline u32 vmcs_read32(unsigned long field)
 {
 	vmcs_check32(field);
