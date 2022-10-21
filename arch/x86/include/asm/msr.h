@@ -11,6 +11,17 @@
 #include <asm/cpumask.h>
 #include <uapi/asm/msr.h>
 
+/* MSR（Model Specific Register）是x86架构中的概念，指的是在x86架构处理器中，
+ * 一系列用于控制CPU运行、功能开关、调试、跟踪程序执行、监测CPU性能等方面的
+ * 寄存器。
+ *
+ * MSR寄存器的雏形开始于Intel 80386和80486处理器，到Intel Pentium处理器的时
+ * 候，Intel就正式引入RDMSR和WRMSR两个指令用于读和写MSR寄存器，这个时候MSR
+ * 就算被正式引入。在引入RDMSR和WRMSR指令的同时，也引入了CPUID指令，该指令
+ * 用于指明具体的CPU芯片中，哪些功能是可用的，或者这些功能对应的MSR寄存器是
+ * 否存在，软件可以通过CPUID指令查询某些功能是否在当前CPU上是否支持。
+ */
+
 struct msr {
 	union {
 		struct {
