@@ -431,6 +431,7 @@ static DEFINE_PER_CPU(struct list_head, loaded_vmcss_on_cpu);
 static DECLARE_BITMAP(vmx_vpid_bitmap, VMX_NR_VPIDS);
 static DEFINE_SPINLOCK(vmx_vpid_lock);
 
+/* 在 vmx_check_processor_compat() 中初始化 */
 struct vmcs_config vmcs_config;
 struct vmx_capability vmx_capability;
 
@@ -2621,7 +2622,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	}
 
 	/**
-	 *
+	 * 从 MSR 中读取信息
 	 */
 	rdmsr(MSR_IA32_VMX_BASIC, vmx_msr_low, vmx_msr_high);
 
@@ -2639,6 +2640,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	if (((vmx_msr_high >> 18) & 15) != 6)
 		return -EIO;
 
+	/**
+	 * @brief 初始化 VMCS 配置
+	 */
 	vmcs_conf->size = vmx_msr_high & 0x1fff;
 	vmcs_conf->order = get_order(vmcs_conf->size);
 	vmcs_conf->basic_cap = vmx_msr_high & ~0x1fff;
@@ -7478,8 +7482,11 @@ static int __init vmx_check_processor_compat(void)
 
 	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0)
 		return -EIO;
+
 	if (nested)
 		nested_vmx_setup_ctls_msrs(&vmcs_conf.nested, vmx_cap.ept);
+
+	/* 拷贝：为什么不直接赋值，非要再拷贝一次 */
 	if (memcmp(&vmcs_config, &vmcs_conf, sizeof(struct vmcs_config)) != 0) {
 		printk(KERN_ERR "kvm: CPU %d feature inconsistency!\n",
 				smp_processor_id());
@@ -8374,6 +8381,10 @@ static __init int hardware_setup(void)
 	return r;
 }
 
+/**
+ *
+ *
+ */
 static struct kvm_x86_init_ops __initdata vmx_init_ops  = {
 	.cpu_has_kvm_support = cpu_has_kvm_support,
 	.disabled_by_bios = vmx_disabled_by_bios,
@@ -8429,6 +8440,9 @@ static void vmx_exit(void)
 }
 module_exit(vmx_exit);
 
+/**
+ * 初始化 VMX
+ */
 static int __init vmx_init(void)
 {
 	int r, cpu;
@@ -8467,6 +8481,10 @@ static int __init vmx_init(void)
 	}
 #endif
 
+	/**
+	 * 用 VMX 初始化 KVM
+	 *
+	 */
 	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
 		     __alignof__(struct vcpu_vmx), THIS_MODULE);
 	if (r)

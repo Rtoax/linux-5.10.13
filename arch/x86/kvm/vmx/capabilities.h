@@ -51,6 +51,8 @@ struct nested_vmx_msrs {
 
 /**
  * VMCS 配置
+ *
+ * 初始化 setup_vmcs_config()
  */
 struct vmcs_config {
 	int size;
@@ -68,6 +70,8 @@ struct vmcs_config {
 	u32 vmentry_ctrl;
 	struct nested_vmx_msrs nested;
 };
+
+/* 在 vmx_check_processor_compat() 中初始化 */
 extern struct vmcs_config vmcs_config;
 
 struct vmx_capability {
