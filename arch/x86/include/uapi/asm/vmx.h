@@ -28,7 +28,7 @@
 
 #define VMX_EXIT_REASONS_FAILED_VMENTRY         0x80000000
 
-    
+
 /**
  *  鉴于 LAPIC 寄存器的访问非常频繁，所以 Intel 从硬件层面做出了很多支持
  *  比如 为 访问 LAPIC 寄存器增加了专门退出的原因，这样就不必首先进入缺页
@@ -76,6 +76,13 @@
 #define EXIT_REASON_TPR_BELOW_THRESHOLD 43
 #define EXIT_REASON_APIC_ACCESS         44
 #define EXIT_REASON_EOI_INDUCED         45
+/**
+ * VM 访问 GDTR 和 IDTR
+ *
+ * 疑问： 2022-10-21 19:17 荣涛
+ * VMM 可以根据 GDTR 获取 Guest OS 的段的特权等级、权限等，从而判定这个地址范围
+ * 是不是 Guest OS 的内核代码段，和数据段？
+ */
 #define EXIT_REASON_GDTR_IDTR           46
 #define EXIT_REASON_LDTR_TR             47
 #define EXIT_REASON_EPT_VIOLATION       48

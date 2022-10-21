@@ -6055,6 +6055,13 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	 */
 	[EXIT_REASON_TASK_SWITCH]             = handle_task_switch,
 	[EXIT_REASON_MCE_DURING_VMENTRY]      = handle_machine_check,
+	/**
+	 * VM 访问 GDTR 和 IDTR
+	 *
+	 * 疑问： 2022-10-21 19:17 荣涛
+	 * VMM 可以根据 GDTR 获取 Guest OS 的段的特权等级、权限等，从而判定这个地址范围
+	 * 是不是 Guest OS 的内核代码段，和数据段？
+	 */
 	[EXIT_REASON_GDTR_IDTR]		      = handle_desc,
 	[EXIT_REASON_LDTR_TR]		      = handle_desc,
 	/**
