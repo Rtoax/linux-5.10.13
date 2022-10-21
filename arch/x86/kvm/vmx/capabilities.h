@@ -50,10 +50,14 @@ struct nested_vmx_msrs {
 };
 
 /**
- *  
+ * VMCS 配置
  */
 struct vmcs_config {
 	int size;
+	/**
+	 * 一个 VMCS 结构分配内存时的 page order
+	 * 见 alloc_vmcs_cpu()
+	 */
 	int order;
 	u32 basic_cap;
 	u32 revision_id;

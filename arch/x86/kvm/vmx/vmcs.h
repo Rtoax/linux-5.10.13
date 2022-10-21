@@ -22,6 +22,7 @@ struct vmcs_hdr {
 	u32 revision_id:31;
 	/**
 	 *
+	 * 在 alloc_vmcs_cpu() 中赋值
 	 */
 	u32 shadow_vmcs:1;
 };
@@ -99,6 +100,10 @@ struct vmcs {
 	 */
 	char data[];
 };
+/**
+ * 初始化/分配： alloc_kvm_area()->alloc_vmcs_cpu()
+ *
+ */
 
 DECLARE_PER_CPU(struct vmcs *, current_vmcs);
 
@@ -136,6 +141,8 @@ struct vmcs_controls_shadow {
  * Track a VMCS that may be loaded on a certain CPU. If it is (cpu!=-1), also
  * remember whether it was VMLAUNCHed, and maintain a linked list of all VMCSs
  * loaded on this CPU (so we can clear them if the CPU goes down).
+ *
+ * 跟踪一个可能在特定 CPU 上加载的 VMCS
  */
 struct loaded_vmcs {
 	struct vmcs *vmcs;

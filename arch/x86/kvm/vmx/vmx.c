@@ -412,10 +412,15 @@ noinline void invept_error(unsigned long ext, u64 eptp, gpa_t gpa)
 			ext, eptp, gpa);
 }
 
+/**
+ * 每个 x86 CPU 都有一个 VMCS 结构，名称为 current_vmcs
+ *
+ * vmxarea 在 alloc_kvm_area() 初始化
+ */
 static DEFINE_PER_CPU(struct vmcs *, vmxarea);
-static struct vmcs *__percpu vmxarea;//+++
+static struct vmcs *__percpu vmxarea;
 DEFINE_PER_CPU(struct vmcs *, current_vmcs);
-struct vmcs *__percpu current_vmcs;//+++
+struct vmcs *__percpu current_vmcs;
 
 /*
  * We maintain a per-CPU linked-list of VMCS loaded on that CPU. This is needed
@@ -1351,6 +1356,13 @@ static void vmx_write_guest_kernel_gs_base(struct vcpu_vmx *vmx, u64 data)
 }
 #endif
 
+/**
+ * @brief 为 vcpu 加载 vmcs 结构
+ *
+ * @param vcpu - KVM vcpu 结构
+ * @param cpu - 逻辑 CPU
+ * @param buddy - 可能用于追踪 vmcs
+ */
 void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 			struct loaded_vmcs *buddy)
 {
@@ -1384,6 +1396,10 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 		 *  赋值
 		 */
 		per_cpu(current_vmcs, cpu) = vmx->loaded_vmcs->vmcs;
+
+		/**
+		 * 将分配的 VMCS 结构使用 vmptrld 命令加载
+		 */
 		vmcs_load(vmx->loaded_vmcs->vmcs);
 
 		/*
@@ -1396,6 +1412,10 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 	}
 
 	if (!already_loaded) {
+
+		/**
+		 * 获取当前 CPU 的 GDT
+		 */
 		void *gdt = get_current_gdt_ro();
 		unsigned long sysenter_esp;
 
@@ -1408,6 +1428,8 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
 		/*
 		 * Linux uses per-cpu TSS and GDT, so set these when switching
 		 * processors.  See 22.2.4.
+		 *
+		 * 设置 CPU 的 TSS(任务状态段) 和 GDT(全局描述符表)
 		 */
 		vmcs_writel(HOST_TR_BASE,
 			    (unsigned long)&get_cpu_entry_area(cpu)->tss.x86_tss);
@@ -2646,6 +2668,9 @@ struct vmcs *alloc_vmcs_cpu(bool shadow, int cpu, gfp_t flags)
 	struct page *pages;
 	struct vmcs *vmcs;
 
+	/**
+	 * 有的书里说 VMCS 大小为 4K，那这里的 order = 0
+	 */
 	pages = __alloc_pages_node(node, flags, vmcs_config.order);
 	if (!pages)
 		return NULL;
@@ -2740,13 +2765,20 @@ static void free_kvm_area(void)
 	}
 }
 
+/**
+ * @brief 分配 KVM 空间
+ */
 static __init int alloc_kvm_area(void)
 {
 	int cpu;
 
+	/**
+	 * 遍历所有 CPU，为每个 CPU 分配 VMCS 结构
+	 */
 	for_each_possible_cpu(cpu) {
 		struct vmcs *vmcs;
 
+		/* 分配 vmcs 内存 */
 		vmcs = alloc_vmcs_cpu(false, cpu, GFP_KERNEL);
 		if (!vmcs) {
 			free_kvm_area();
@@ -2766,6 +2798,10 @@ static __init int alloc_kvm_area(void)
 		if (static_branch_unlikely(&enable_evmcs))
 			vmcs->hdr.revision_id = vmcs_config.revision_id;
 
+		/**
+		 * 为 per-CPU 变量赋值
+		 *
+		 */
 		per_cpu(vmxarea, cpu) = vmcs;
 	}
 	return 0;

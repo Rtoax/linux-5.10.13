@@ -297,6 +297,11 @@ static inline void vmcs_clear(struct vmcs *vmcs)
 	vmx_asm1(vmclear, "m"(phys_addr), vmcs, phys_addr);
 }
 
+/**
+ * @brief 将分配的 VMCS 结构使用 vmptrld 命令加载
+ *
+ * @param vmcs - 使用 alloc_vmcs_cpu() 分配的 VMCS 结构
+ */
 static inline void vmcs_load(struct vmcs *vmcs)
 {
 	u64 phys_addr = __pa(vmcs);
