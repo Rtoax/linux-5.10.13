@@ -1243,14 +1243,14 @@ void hrtimer_cancel_wait_running(const struct hrtimer *timer)
 	spin_unlock_bh(&base->cpu_base->softirq_expiry_lock);
 }
 #else
-//static inline void
-//hrtimer_cpu_base_init_expiry_lock(struct hrtimer_cpu_base *base) { }
-//static inline void
-//hrtimer_cpu_base_lock_expiry(struct hrtimer_cpu_base *base) { }
-//static inline void
-//hrtimer_cpu_base_unlock_expiry(struct hrtimer_cpu_base *base) { }
-//static inline void hrtimer_sync_wait_running(struct hrtimer_cpu_base *base,
-//					     unsigned long flags) { }
+static inline void
+hrtimer_cpu_base_init_expiry_lock(struct hrtimer_cpu_base *base) { }
+static inline void
+hrtimer_cpu_base_lock_expiry(struct hrtimer_cpu_base *base) { }
+static inline void
+hrtimer_cpu_base_unlock_expiry(struct hrtimer_cpu_base *base) { }
+static inline void hrtimer_sync_wait_running(struct hrtimer_cpu_base *base,
+					     unsigned long flags) { }
 #endif
 
 /**

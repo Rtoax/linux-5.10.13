@@ -370,10 +370,10 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 #ifdef CONFIG_PREEMPT_RT
 void hrtimer_cancel_wait_running(const struct hrtimer *timer);
 #else
-//static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
-//{
-//	cpu_relax();
-//}
+static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
+{
+	cpu_relax();
+}
 #endif
 
 /* Exported timer functions: */
