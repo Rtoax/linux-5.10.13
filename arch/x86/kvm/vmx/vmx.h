@@ -265,6 +265,10 @@ struct vcpu_vmx {
 	int vpid;
 	bool emulation_required;
 
+	/**
+	 * VM_EXIT_REASON
+	 * VM Exit 信息区数据，记录 VM 退出到 VMM 的原因
+	 */
 	u32 exit_reason;
 
 	/* Posted interrupt descriptor */

@@ -7204,6 +7204,7 @@ reenter_guest:
 		return EXIT_FASTPATH_NONE;
 	}
 
+	/* 读取 VM 退出到 VMM 的原因 */
 	vmx->exit_reason = vmcs_read32(VM_EXIT_REASON);
 	if (unlikely((u16)vmx->exit_reason == EXIT_REASON_MCE_DURING_VMENTRY))
 		kvm_machine_check();

@@ -57,6 +57,13 @@ struct vmcs_hdr {
  *  5.[VM-entry control fields]
  *  6.[VM-exit information fields]
  *
+ * 1. Guest State 区域：进行 VM Entry 时，虚拟机处理器的状态从这个区加载
+ * 2. Host State 区域：发生 VM Exit 时，却换到 VMM 上下文，处理器的状态从这个区加载
+ * 3. VM-Execution 区域：控制处理器在进入 VM Entry 之后的处理行为
+ * 4. VM-Exit 控制区：指定 VM 在发生 VMExit 时的行为，如寄存器的保存
+ * 5. VM-Entry 控制区：用来指定 VM 在发生 VM Entry 时的行为，如寄存器的加载
+ * 6. VM-Exit 信息区：包含最近产生的 VM Exit 信息，如退出原因以及相应的数据
+ *
  *  1. [Guest-state area]，即vCPU的状态信息，包括vCPU的基本运行环境（如通用寄存器等）
  *      和一些非寄存器信息，如当前vCPU是否接收中断，是否有挂起的exception，VMCS的状态等等。
  *  2. [Host-state area]，即主机物理CPU的状态信息，因为物理CPU是在主机CPU和vCPU之间来回切换

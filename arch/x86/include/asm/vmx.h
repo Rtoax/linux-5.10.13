@@ -174,7 +174,7 @@ static inline int vmx_misc_mseg_revid(u64 vmx_misc)
  *
  *  VM 上下文(vmcs) field
  *
- * VMCS 共 4KB， 有以下几个区
+ * VMCS 共 4KB， 有以下几个区，具体参见 struct vmcs {} 结构体。
  *
  * 1. Guest State 区域：进行 VM Entry 时，虚拟机处理器的状态从这个区加载
  * 2. Host State 区域：发生 VM Exit 时，却换到 VMM 上下文，处理器的状态从这个区加载
@@ -220,7 +220,6 @@ enum vmcs_field {
 	TSC_OFFSET                      = 0x00002010,
 	TSC_OFFSET_HIGH                 = 0x00002011,
 	/**
-
      *  在 APIC 中，物理 LAPIC 有一个页面大小的内存用来存放个寄存器的值，
      *  Intel 称这个页面为 APIC-access page, CPU 采用 mmap 的方式访问这些寄存器
      *  起初，一旦 Guest 访问这个页面，CPU将从Guest 模式切换到Host模式，KVM负责完成模拟，
@@ -336,6 +335,10 @@ enum vmcs_field {
 	PLE_GAP                         = 0x00004020,
 	PLE_WINDOW                      = 0x00004022,
 	VM_INSTRUCTION_ERROR            = 0x00004400,
+	/**
+	 * VM Exit 信息区数据，记录 VM 退出到 VMM 的原因
+	 *
+	 */
 	VM_EXIT_REASON                  = 0x00004402,
 	VM_EXIT_INTR_INFO               = 0x00004404,
 	VM_EXIT_INTR_ERROR_CODE         = 0x00004406,
