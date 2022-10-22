@@ -267,6 +267,41 @@ static void __update_inv_weight(struct load_weight *lw)
  * weight/lw.weight <= 1, and therefore our shift will also be positive.
  *
  * 见 `calc_delta_fair()` 函数注释
+ *
+ * -----------------------------------------------------------------------------
+ * @delta_exec  该进程从上次调用 update_curr() 函数到现在的时间差
+ *
+ * 计算虚拟时间的核心函数
+ *
+ *              delta_exec * nice_0_weight
+ *  vruntime = -----------------------------
+ *                       weight
+ *
+ *                实际运行时间 * 1024
+ *           = -----------------------------
+ *                       weight -------> sched_prio_to_weight[] 之一
+ *
+ *  假设 某个进程 的 nice 值为 1，权重 820， delta_exec=10ms, 代入上式
+ *
+ *                    10ms * 1024
+ *  vruntime = -----------------------------
+ *                       820
+ *
+ *  为了计算高效， 函数 calc_delta_fair 使用 的计算方式变为乘法和位移运算
+ *
+ *  vruntime = (delta_exec * nice_0_weight * inv_weight) >> shift
+ *
+ *  将 inv_weight 代入
+ *                  2^32
+ *  inv_weight = ------------
+ *                 weight  -------> sched_prio_to_weight[] 之一
+ *
+ *
+ *              delta_exec * nice_0_weight * 2^32
+ *  vruntime = ------------------------------------ >> 32
+ *                           weight
+ *
+ *  使用 sched_prio_to_wmult[] 预先做了除法
  */
 static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
 {
@@ -760,6 +795,7 @@ static u64 __sched_period(unsigned long nr_running)
 {
 	/**
 	 *  当进程数目大于8时，则调度周期等于进程的数目乘以0.75ms
+	 *  sysctl_sched_min_granularity 在最新的内核中为什么找不到了？ sysctl -a
 	 */
 	if (unlikely(nr_running > sched_nr_latency))
 		return nr_running * sysctl_sched_min_granularity/*0.75ms*/;
@@ -938,6 +974,13 @@ void post_init_entity_util_avg(struct task_struct *p)
  * 3. curr->sum_exec_runtime += delta_exec; 更新当前进程总共执行的时间
  * 4. 通过 calc_delta_fair 计算当前进程虚拟时间
  * 5. 通过 update_min_vruntime 函数来更新CFS运行队列中最小的 vruntime 的值
+ *
+ * 那么都会从哪里调用这个函数呢？
+ *
+ * 1. schedule()
+ * 2. apic->softirq->__queue_work()->try_to_wake_up()
+ * 3. do_idle()->common_interrupt()->try_to_wake_up()
+ * 4. do_idle()->hrtimer_interrupt()->try_to_wake_up()
  */
 static void update_curr(struct cfs_rq *cfs_rq)
 {
@@ -966,6 +1009,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 
 	/**
 	 *  更新exec_start的值
+	 *  exec_start: 计算 调度实体 虚拟时间 的起始时间
 	 */
 	curr->exec_start = now;
 

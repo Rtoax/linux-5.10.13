@@ -7527,6 +7527,8 @@ void init_idle(struct task_struct *idle, int cpu)
 	raw_spin_lock(&rq->lock);
 
 	idle->state = TASK_RUNNING;
+
+	/* 计算 调度实体 虚拟时间 的起始时间 */
 	idle->se.exec_start = sched_clock();
 	idle->flags |= PF_IDLE;
 
