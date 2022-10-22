@@ -43,6 +43,9 @@
  * Note that VMRESUME/VMLAUNCH fall-through and return directly if
  * they VM-Fail, whereas a successful VM-Enter + VM-Exit will jump
  * to vmx_vmexit.
+ * 注意：
+ * 如果 VMRESUME/VMLAUNCH 执行错误会直接返回，
+ * 如果成功，伴随 VM-Enter + VM-Exit 会直接跳转到 vmx_vmexit
  */
 SYM_FUNC_START(vmx_vmenter)
 	/* EFLAGS.ZF is set if VMCS.LAUNCHED == 0 */
@@ -158,7 +161,10 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	/* Load guest RAX.  This kills the @regs pointer! */
 	mov VCPU_RAX(%_ASM_AX), %_ASM_AX
 
-	/* Enter guest mode */
+	/**
+	 * Enter guest mode
+	 * vmresume/vmlaunch
+	 */
 	call vmx_vmenter
 
 	/* Jump on VM-Fail. */
