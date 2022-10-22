@@ -259,6 +259,8 @@ dl_entity_preempt(struct sched_dl_entity *a, struct sched_dl_entity *b)
 
 /*
  * This is the priority-queue data structure of the RT scheduling class:
+ *
+ * MAX_RT_PRIO=100
  */
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1); /* include 1 bit for delimiter */

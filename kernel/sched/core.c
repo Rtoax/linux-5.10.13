@@ -3623,37 +3623,54 @@ int sysctl_schedstats(struct ctl_table *table, int write, void *buffer,
  * @clone_flags:
  * @p:      当前线程
  *
+ *  调用栈：
+ *    sched_fork+1
+ *    copy_process+1683
+ *    kernel_clone+151
+ *    __do_sys_clone+96
+ *    do_syscall_64+89
+ *
  *  Perform scheduler related setup. Assign this task to a CPU.
  *  调度 - 初始化与进程调度相关的数据结构 基本初始化
  */
-int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
+int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	unsigned long flags;
 
 	/**
+	 *  调度相关的初始化
 	 *  调度相关的有些信息不能和 父进程共用，进行初始化为 0
 	 */
-	__sched_fork(clone_flags, p);   /* 调度相关的初始化 */
+	__sched_fork(clone_flags, p);
 
 	/*
 	 * We mark the process as NEW here. This guarantees that
 	 * nobody will actually run it, and a signal or other external
 	 * event cannot wake it up and insert it on the runqueue either.
+	 *
+	 * 确保没有 CPU 会运行它的临时标志位
 	 */
-	p->state = TASK_NEW;    /* 确保没有 CPU 会运行它的临时标志位 */
+	p->state = TASK_NEW;
 
-	/*
+	/**
 	 * Make sure we do not leak PI boosting priority to the child.
+	 *
+	 * 继承父进程的优先级
 	 */
-	p->prio = current->normal_prio; /* 继承父进程的优先级 */
+	p->prio = current->normal_prio;
 
 	uclamp_fork(p);
 
-	/*
+	/**
 	 * Revert to default priority/policy on fork if requested.
+	 *
+	 * 重新设置调度
 	 */
-	if (unlikely(p->sched_reset_on_fork)) { /* 重新设置调度 */
-		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {   /* 有实时标志位 */
+	if (unlikely(p->sched_reset_on_fork)) {
+		/**
+		 * 有实时标志位
+		 */
+		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
 			p->policy = SCHED_NORMAL;
 			p->static_prio = NICE_TO_PRIO(0);
 			p->rt_priority = 0;
@@ -3684,9 +3701,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)    /* 调度 */
 		p->sched_class = &fair_sched_class; /* 使用公平调度类 */
 
 	/**
-	 *  初始化与子进程的调度实体 se 相关的成员
+	 *  初始化与子进程的调度实体 se 相关的成员,清零
 	 */
-	init_entity_runnable_average(&p->se);   /* 清零 */
+	init_entity_runnable_average(&p->se);
 
 	/*
 	 * The child is not yet in the pid-hash so no cgroup attach races,
