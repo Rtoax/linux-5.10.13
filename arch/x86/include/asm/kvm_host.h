@@ -1248,6 +1248,11 @@ struct kvm_x86_ops {
 
     /**
      *  运行
+	 *
+	 * 这是 VMEnter/VMExit 发生的函数
+	 *
+	 * 该函数在 vcpu_enter_guest() 中调用
+	 *  exit_fastpath = kvm_x86_ops.run(vcpu);
      */
 	enum exit_fastpath_completion (*run)(struct kvm_vcpu *vcpu);
 	int (*handle_exit)(struct kvm_vcpu *vcpu, enum exit_fastpath_completion exit_fastpath);

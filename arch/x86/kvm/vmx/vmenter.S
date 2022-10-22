@@ -114,8 +114,8 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	push %r13
 	push %r12
 #else
-//	push %edi
-//	push %esi
+	push %edi
+	push %esi
 #endif
 	push %_ASM_BX
 

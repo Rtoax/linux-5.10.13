@@ -1153,6 +1153,8 @@ static inline void pt_save_msr(struct pt_ctx *ctx, u32 addr_range)
 
 /**
  *  Guest VM-enter
+ *
+ * 这个代码已经很久没有改动了(linux-6.1)
  */
 static void pt_guest_enter(struct vcpu_vmx *vmx)
 {
@@ -1162,6 +1164,8 @@ static void pt_guest_enter(struct vcpu_vmx *vmx)
 	/*
 	 * GUEST_IA32_RTIT_CTL is already set in the VMCS.
 	 * Save host state before VM entry.
+	 *
+	 * 在进入 Guest 之前，保存 Host 的状态
 	 */
 	rdmsrl(MSR_IA32_RTIT_CTL, vmx->pt_desc.host.ctl);
 	if (vmx->pt_desc.guest.ctl & RTIT_CTL_TRACEEN) {
@@ -1184,7 +1188,11 @@ static void pt_guest_exit(struct vcpu_vmx *vmx)
 		pt_load_msr(&vmx->pt_desc.host, vmx->pt_desc.addr_range);
 	}
 
-	/* Reload host state (IA32_RTIT_CTL will be cleared on VM exit). */
+	/**
+	 * Reload host state (IA32_RTIT_CTL will be cleared on VM exit).
+	 *
+	 * 退出 Guest 前，恢复 Host 信息
+	 */
 	wrmsrl(MSR_IA32_RTIT_CTL, vmx->pt_desc.host.ctl);
 }
 
@@ -7021,11 +7029,17 @@ static fastpath_t vmx_exit_handlers_fastpath(struct kvm_vcpu *vcpu)
 
 /**
  *  arch/x86/kvm/vmx/vmenter.S - 汇编函数
+ *
+ * Run a vCPU via a transition to VMX guest mode
  */
 bool __vmx_vcpu_run(struct vcpu_vmx *vmx, unsigned long *regs, bool launched);
 
 /**
+ * VM Enter 和 Exit
  *
+ * The actual VMENTER/EXIT is in the .noinstr.text section
+ *
+ * 《深度探索 Linux 系统虚拟化》P11 vmx_vcpu_run() 函数解说
  */
 static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 					struct vcpu_vmx *vmx)
@@ -7056,11 +7070,17 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 	else if (static_branch_unlikely(&mds_user_clear))
 		mds_clear_cpu_buffers();
 
+	/**
+	 * 检查物理 CPU CR2 集群器和 VCPU 的 CR2 寄存器是不是相等
+	 * 如果不相等，使用 Guest CR2 更新 物理 CPU CR2
+	 *
+	 * PS：在缺页中，CR2 保存缺页地址。
+	 */
 	if (vcpu->arch.cr2 != native_read_cr2())
 		native_write_cr2(vcpu->arch.cr2);
 
 	/**
-	 *
+	 * Run a vCPU via a transition to VMX guest mode
 	 */
 	vmx->fail = __vmx_vcpu_run(vmx, (unsigned long *)&vcpu->arch.regs,
 				   vmx->loaded_vmcs->launched);
@@ -7091,7 +7111,12 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 }
 
 /**
+ * 切入/退出 虚拟机：VMENTER/VMEXIT
  *
+ * 见：《深度探索 Linux 系统虚拟化》P11
+ *
+ * 该函数在 vcpu_enter_guest() 中调用
+ *  exit_fastpath = kvm_x86_ops.run(vcpu);
  */
 static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
 {
@@ -7100,7 +7125,7 @@ static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
 	unsigned long cr3, cr4;
 
 /**
- *
+ * 准备进入 Guest
  */
 reenter_guest:
 	/* Record the guest's net vcpu time for enforced NMI injections. */
@@ -7161,7 +7186,7 @@ reenter_guest:
 	kvm_load_guest_xsave_state(vcpu);
 
 	/**
-	 *  进入 guest
+	 * 准备进入 guest，保存一些 Host 信息
 	 */
 	pt_guest_enter(vmx);
 
@@ -7237,7 +7262,7 @@ reenter_guest:
 	vmx_register_cache_reset(vcpu);
 
 	/**
-	 *
+	 * 恢复一些 Host 信息
 	 */
 	pt_guest_exit(vmx);
 
@@ -8125,7 +8150,10 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.tlb_flush_guest = vmx_flush_tlb_guest,
 
 	/**
+	 * 这是 VMEnter/VMExit 发生的函数
 	 *
+	 * 该函数在 vcpu_enter_guest() 中调用
+	 *  exit_fastpath = kvm_x86_ops.run(vcpu);
 	 */
 	vmx_x86_ops.run = vmx_vcpu_run,
 	.handle_exit = vmx_handle_exit,

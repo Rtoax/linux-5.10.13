@@ -9164,6 +9164,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	/**
 	 *  运行
+	 *  VMX: vmx_vcpu_run()
 	 */
 	exit_fastpath = kvm_x86_ops.run(vcpu);
 
