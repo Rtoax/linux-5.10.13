@@ -1638,6 +1638,11 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 
 /**
  *  激活进程
+ *
+ * fork/clone
+ *   kernel_clone
+ *     wake_up_new_task
+ *       activate_task
  */
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -3782,7 +3787,13 @@ unsigned long to_ratio(u64 period, u64 runtime)
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
  *
+ * fork/clone
+ *   kernel_clone
+ *     wake_up_new_task
+ *
  * 添加到调度器中
+ *  唤醒 新进程 ，将进程 添加到运行队列
+ *  这里唤醒新的 task 这就是为什么 fork 返回两次
  */
 void wake_up_new_task(struct task_struct *p)
 {
@@ -3792,7 +3803,7 @@ void wake_up_new_task(struct task_struct *p)
 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
 
 	/**
-	 *
+	 * 将进程状态设置为 RUNNING
 	 */
 	p->state = TASK_RUNNING;
 
@@ -3837,7 +3848,9 @@ void wake_up_new_task(struct task_struct *p)
 	 */
 	activate_task(__rq, p, ENQUEUE_NOCLOCK);
 
-	/* tracepoint:sched:sched_wakeup_new */
+	/**
+	 * tracepoint:sched:sched_wakeup_new
+	 */
 	trace_sched_wakeup_new(p);
 
 	check_preempt_curr(__rq, p, WF_FORK);

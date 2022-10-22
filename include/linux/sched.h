@@ -488,62 +488,62 @@ struct util_est {   /* 评估利用率 */
  */
 struct sched_avg {
 
-    /**
-     *  上一次 更新 时间点，用于计算时间间隔
-     */
+	/**
+	 *  上一次 更新 时间点，用于计算时间间隔
+	 */
 	u64				last_update_time;
 
-    /**
-     *  对于调度实体和调度队列来说，这个数值是有区别的
-     *  对于调度实体：它统计的仅仅是时间；
-     *  对于调度队列：它统计的是工作负载，即 时间 * 权重
-     */
+	/**
+	 *  对于调度实体和调度队列来说，这个数值是有区别的
+	 *  对于调度实体：它统计的仅仅是时间；
+	 *  对于调度队列：它统计的是工作负载，即 时间 * 权重
+	 */
 	u64				load_sum;
 
-    /**
-     *  对于调度实体：它是在就绪队列里可运行状态下的累计衰减总时间
-     *  对于调度队列：它统计就绪队列里所有可运行状态下进程的累计工作总负载
-     */
+	/**
+	 *  对于调度实体：它是在就绪队列里可运行状态下的累计衰减总时间
+	 *  对于调度队列：它统计就绪队列里所有可运行状态下进程的累计工作总负载
+	 */
 	u64				runnable_sum;
 
-    /**
-     *  调度实体：正在运行状态下的累计衰减总时间，使用 cfs_rq->curr == se 判断当前进程是否正在运行
-     *  调度队列：整个就绪队列中所有处于运行状态进程的累计衰减总时间，
-     *              只要就绪队列里有正在运行的进程，他就会计算和累加
-     */
+	/**
+	 *  调度实体：正在运行状态下的累计衰减总时间，使用 cfs_rq->curr == se 判断当前进程是否正在运行
+	 *  调度队列：整个就绪队列中所有处于运行状态进程的累计衰减总时间，
+	 *              只要就绪队列里有正在运行的进程，他就会计算和累加
+	 */
 	u32				util_sum;
 
-    /**
-     *  存放 上一次时间采样时，不能凑成一个 周期 1024us 的剩余时间 `d1`
-     *
-     *  见 `accumulate_sum()` 中的 `d0`
-     *
-     *      d0   d1          d2           d3
-     *       ^   ^           ^            ^
-     *       |   |           |            |
-     *     |<->|<->|<----------------->|<--->|
-     * ... |---x---|------| ... |------|-----x (now)
-     */
+	/**
+	 *  存放 上一次时间采样时，不能凑成一个 周期 1024us 的剩余时间 `d1`
+	 *
+	 *  见 `accumulate_sum()` 中的 `d0`
+	 *
+	 *      d0   d1          d2           d3
+	 *       ^   ^           ^            ^
+	 *       |   |           |            |
+	 *     |<->|<->|<----------------->|<--->|
+	 * ... |---x---|------| ... |------|-----x (now)
+	 */
 	u32				period_contrib;
 
-    /**
-     *  对于调度实体来说：它是可运行状态下的量化负载。在负载均衡算法中，使用该成员来衡量一个进程的负载共享值
-     *                      如衡量迁移进程的负载量
-     *  对于调度队列来说：它是调度队列中总的量化负载
-     */
+	/**
+	 *  对于调度实体来说：它是可运行状态下的量化负载。在负载均衡算法中，使用该成员来衡量一个进程的负载共享值
+	 *                      如衡量迁移进程的负载量
+	 *  对于调度队列来说：它是调度队列中总的量化负载
+	 */
 	unsigned long			load_avg;       /* runnable% * scale_load_down(load) */
 
-    /**
-     *  对于调度实体来说：它是可运行状态下的量化负载，等于 load_avg
-     *  对于调度队列来说：它统计就绪队列里所有可运行状态下进程的总量化负载，在 SMP 负载均衡算法中，该成员来
-     *                      比较CPU 的负载大小(用于衡量 CPU 是否繁忙)
-     */
+	/**
+	 *  对于调度实体来说：它是可运行状态下的量化负载，等于 load_avg
+	 *  对于调度队列来说：它统计就绪队列里所有可运行状态下进程的总量化负载，在 SMP 负载均衡算法中，该成员来
+	 *                      比较CPU 的负载大小(用于衡量 CPU 是否繁忙)
+	 */
 	unsigned long			runnable_avg;   /* runnable% * SCHED_CAPACITY_SCALE */
 
-    /**
-     *  实际算力
-     *  通常用于体现一个调度实体或者 CPU 的实际算力需求，类似于 CPU 使用率的概念。
-     */
+	/**
+	 *  实际算力
+	 *  通常用于体现一个调度实体或者 CPU 的实际算力需求，类似于 CPU 使用率的概念。
+	 */
 	unsigned long			util_avg;       /* running% * SCHED_CAPACITY_SCALE */
 	struct util_est			util_est;   /* 评估利用率 */
 } ____cacheline_aligned;
@@ -594,74 +594,75 @@ struct sched_statistics {   /* 调度统计 */
  *  采用CFS算法调度的普通非实时进程的调度实体
  */
 struct sched_entity {
-    /**
-     *  For load-balancing:
-     *  记录调度实体的权重
-     */
+	/**
+	 *  For load-balancing:
+	 *  记录调度实体的权重
+	 */
 	struct load_weight		load;
 
-    /**
-     *  cfs_rq.tasks_timeline , 标识该调度实体在红黑树中的节点
-     */
+	/**
+	 *  cfs_rq.tasks_timeline , 标识该调度实体在红黑树中的节点
+	 */
 	struct rb_node			run_node;
 
-    /**
-     *  在就绪队列中有个链表， rq.cfs_tasks
-     *  调度实体添加到就绪队列后，会添加到该链表中
-     */
+	/**
+	 *  在就绪队列中有个链表， rq.cfs_tasks
+	 *  调度实体添加到就绪队列后，会添加到该链表中
+	 */
 	struct list_head		group_node;
 
-    /**
+	/**
 	 * 是否在运行队列中
 	 *
-     *  进程进入就绪队列时(调用`enqueue_entity()`), on_rq 会被 设置为 1；
-     *  当该进程处于睡眠等原因退出就绪队列时(调用`dequeue_entity()`), on_rq 会被清 0
-     */
+	 *  进程进入就绪队列时(调用`enqueue_entity()`), on_rq 会被 设置为 1；
+	 *  当该进程处于睡眠等原因退出就绪队列时(调用`dequeue_entity()`), on_rq 会被清 0
+	 */
 	unsigned int			on_rq;
 
-    /**
-     *  计算 调度实体 虚拟时间 的起始时间
-     */
+	/**
+	 *  计算 调度实体 虚拟时间 的起始时间
+	 */
 	u64				exec_start;
-    /**
-     *  调度实体的总运行时间，这是真实时间
-     */
+	/**
+	 *  调度实体的总运行时间，这是真实时间
+	 */
 	u64				sum_exec_runtime;
 
-    /**
-     *  调度实体的 虚拟运行时间
-     *
-     *  权重不同的2个进程的实际执行时间是不相等的，但是 CFS 想保证每个进程运行时间相等，
-     *  因此 CFS 引入了虚拟时间的概念。虚拟时间(vriture_runtime)和实际时间(wall_time)转换公式如下：
-     *
-     *  vriturl_runtime = (wall_time * NICE0_TO_weight) / weight
-     *
-     *  NICE0_TO_weight 代表的是 nice 值等于0对应的权重，即1024，weight 是该任务对应的权重。
-     *  权重越大的进程获得的虚拟运行时间越小，那么它将被调度器所调度的机会就越大，
-     *  所以，CFS 每次调度原则是：总是选择 vriture_runtime 最小的任务来调度。
-     *
-     *  见 `calc_delta_fair()`
-     */
+	/**
+	 *  调度实体的 虚拟运行时间
+	 *
+	 *  权重不同的2个进程的实际执行时间是不相等的，但是 CFS 想保证每个进程运行时间相等，
+	 *  因此 CFS 引入了虚拟时间的概念。虚拟时间(vriture_runtime)和实际时间(wall_time)
+	 *  转换公式如下：
+	 *
+	 *  vriturl_runtime = (wall_time * NICE0_TO_weight) / weight
+	 *
+	 *  NICE0_TO_weight 代表的是 nice 值等于0对应的权重，即1024，weight 是该任务对应的权重。
+	 *  权重越大的进程获得的虚拟运行时间越小，那么它将被调度器所调度的机会就越大，
+	 *  所以，CFS 每次调度原则是：总是选择 vriture_runtime 最小的任务来调度。
+	 *
+	 *  见 `calc_delta_fair()`
+	 */
 	u64				vruntime;
 
-    /**
-     *  上一次统计调度实体 运行的总时间
-     */
+	/**
+	 *  上一次统计调度实体 运行的总时间
+	 */
 	u64				prev_sum_exec_runtime;
 
-    /**
-     *  该调度实体发生迁移的次数
-     */
+	/**
+	 *  该调度实体发生迁移的次数
+	 */
 	u64				nr_migrations;
 
-    /**
-     *  调度统计
-     */
+	/**
+	 *  调度统计
+	 */
 	struct sched_statistics		statistics;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int				depth;
 	struct sched_entity		*parent;
@@ -696,9 +697,9 @@ struct sched_entity {
  */
 struct sched_rt_entity {
 
-    /**
-     *  链表头 rt_rq.active.queue[MAX_RT_PRIO]
-     */
+	/**
+	 *  链表头 rt_rq.active.queue[MAX_RT_PRIO]
+	 */
 	struct list_head		run_list;
 
 	unsigned long			timeout;
@@ -723,9 +724,9 @@ struct sched_rt_entity {
  */
 struct sched_dl_entity {
 
-    /**
-     *  树根为 dl_rq.root
-     */
+	/**
+	 *  树根为 dl_rq.root
+	 */
 	struct rb_node			rb_node;
 
 	/*
@@ -886,42 +887,42 @@ struct task_struct {    /* PCB */
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: 例如: PF_IDLE */
 	unsigned int			flags;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned int			ptrace;
 
 #ifdef CONFIG_SMP
-    /**
-     *  标识进程正处于运行状态
-     */
+	/**
+	 *  标识进程正处于运行状态
+	 */
 	int				on_cpu;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct __call_single_node	wake_entry;
 
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* Current CPU: */
-    /**
-     *  正运行在哪个CPU上
-     *  __set_task_cpu()
-     */
+	/**
+	 *  正运行在哪个CPU上
+	 *  __set_task_cpu()
+	 */
 	unsigned int			cpu;
 #endif
-    /**
-     *  flips: 翻转
-     *
-     *  用于 wake affine 特性 , 见 `record_wakee()`
-     */
+	/**
+	 *  flips: 翻转
+	 *
+	 *  用于 wake affine 特性 , 见 `record_wakee()`
+	 */
 	unsigned int			wakee_flips;
-    /**
-     *  记录上一次 wakee_flips 的时间
-     */
+	/**
+	 *  记录上一次 wakee_flips 的时间
+	 */
 	unsigned long			wakee_flip_decay_ts;
-    /**
-     *  标识上一次唤醒哪个进程
-     */
+	/**
+	 *  标识上一次唤醒哪个进程
+	 */
 	struct task_struct		*last_wakee;
 
 	/*
@@ -934,103 +935,103 @@ struct task_struct {    /* PCB */
 	 * 记录进程最长运行的 CPU，见 `select_idle_sibling()`
 	 */
 	int				recent_used_cpu;
-    /**
-     *  表示进程上一次运行在哪个 CPU上
-     */
+	/**
+	 *  表示进程上一次运行在哪个 CPU上
+	 */
 	int				wake_cpu;
 #endif
 
-    /**
-     *  是否在运行队列里，用于设置进程的状态，标识调度实体是否在就绪队列中接收调度。
-     *  支持的状态如下：
-     *
-     *  TASK_ON_RQ_QUEUED       进程正在就绪队列中运行
-     *  TASK_ON_RQ_MIGRATING    处于迁移过程中的进程，它可能不在就绪队列里
-     */
+	/**
+	 *  是否在运行队列里，用于设置进程的状态，标识调度实体是否在就绪队列中接收调度。
+	 *  支持的状态如下：
+	 *
+	 *  TASK_ON_RQ_QUEUED       进程正在就绪队列中运行
+	 *  TASK_ON_RQ_MIGRATING    处于迁移过程中的进程，它可能不在就绪队列里
+	 */
 	int				on_rq;
 
-    /**
-     *  MAX_PRIO:140
-     *  MAX_RT_PRIO:100
-     *  nice:[-20,19]
-     *
-     *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
-     */
-    /**
-     *  The higher priority allows to get more time to run.
-     *  `dynamic priority` which can't be changed during lifetime of
-     *  a process based on its static priority and interactivity(交互性) of the process.
-     *
-     *  prio: 动态优先级：
-     *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
-     *        取值范围: [0,MAX_PRIO-1],即[0,139]
-     *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]
-     *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
-     *
-     */
+	/**
+	 *  MAX_PRIO:140
+	 *  MAX_RT_PRIO:100
+	 *  nice:[-20,19]
+	 *
+	 *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
+	 */
+	/**
+	 *  The higher priority allows to get more time to run.
+	 *  `dynamic priority` which can't be changed during lifetime of
+	 *  a process based on its static priority and interactivity(交互性) of the process.
+	 *
+	 *  prio: 动态优先级：
+	 *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
+	 *        取值范围: [0,MAX_PRIO-1],即[0,139]
+	 *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]
+	 *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
+	 *
+	 */
 	int				prio;
-    /**
-     *  static_prio: 静态优先级
-     *  initial priority most likely well-known to you `nice value`
-     *  This value does not changed by the kernel if a user will not change it.
-     *
-     *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
-     *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
-     *        调整后的优先级为动态优先级(prio)
-     *        计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
-     *        静态优先级与nice 关系
-     *        static_prio=MAX_RT_PRIO(100)+nice+20
-     *
-     */
+	/**
+	 *  static_prio: 静态优先级
+	 *  initial priority most likely well-known to you `nice value`
+	 *  This value does not changed by the kernel if a user will not change it.
+	 *
+	 *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
+	 *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
+	 *        调整后的优先级为动态优先级(prio)
+	 *        计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
+	 *        静态优先级与nice 关系
+	 *        static_prio=MAX_RT_PRIO(100)+nice+20
+	 *
+	 */
 	int				static_prio;
-    /**
-     *  normal_prio: 归一化优先级
-     *  based on the value of the `static_prio` too,
-     *  but also it depends on the scheduling policy of a process.
-     *
-     *      根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的 normal_prio
-     *      对普通进程来说， normal_prio == static_prio
-     *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
-     *
-     */
+	/**
+	 *  normal_prio: 归一化优先级
+	 *  based on the value of the `static_prio` too,
+	 *  but also it depends on the scheduling policy of a process.
+	 *
+	 *      根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的 normal_prio
+	 *      对普通进程来说， normal_prio == static_prio
+	 *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
+	 *
+	 */
 	int				normal_prio;
 
-    /**
-     *  rt_priority: 实时优先级
-     *      实时优先级只对实时进程有效
-     *        实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
-     *        也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
-     *
-     */
+	/**
+	 *  rt_priority: 实时优先级
+	 *      实时优先级只对实时进程有效
+	 *        实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
+	 *        也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
+	 *
+	 */
 	unsigned int			rt_priority;
 
-    /**
-     *  操作函数 - 调度类
-     *
-     *  rt_sched_class
-     *  fair_sched_class
-     */
+	/**
+	 *  操作函数 - 调度类
+	 *
+	 *  rt_sched_class
+	 *  fair_sched_class
+	 */
 	const struct sched_class	*sched_class;
 
-    /**
-     *  调度实体
-     */
+	/**
+	 *  调度实体
+	 */
 	struct sched_entity		se;
-    /**
-     *  实时调度实体
-     */
+	/**
+	 *  实时调度实体
+	 */
 	struct sched_rt_entity		rt;
 
 #ifdef CONFIG_CGROUP_SCHED
-    /**
-     *  组调度
-     */
+	/**
+	 *  组调度
+	 */
 	struct task_group		*sched_task_group;
 #endif
-    /**
-     *
-     */
-    struct sched_dl_entity		dl;
+	/**
+	 *
+	 */
+	struct sched_dl_entity		dl;
 
 #ifdef CONFIG_UCLAMP_TASK
 	/*
@@ -1053,20 +1054,20 @@ struct task_struct {    /* PCB */
 #ifdef CONFIG_BLK_DEV_IO_TRACE
 	unsigned int			btrace_seq;
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned int			policy;
 
-    /**
-     *  CPU 亲和性
-     *  进程允许运行 CPU 的个数
-     */
+	/**
+	 *  CPU 亲和性
+	 *  进程允许运行 CPU 的个数
+	 */
 	int				nr_cpus_allowed;
 	const cpumask_t			*cpus_ptr;
-    /**
-     *  允许运行的 CPU 位图 - sched_getaffinity()
-     */
+	/**
+	 *  允许运行的 CPU 位图 - sched_getaffinity()
+	 */
 	cpumask_t			cpus_mask;
 
 #ifdef CONFIG_PREEMPT_RCU
@@ -1092,58 +1093,58 @@ struct task_struct {    /* PCB */
 	struct list_head		trc_holdout_list;
 #endif /* #ifdef CONFIG_TASKS_TRACE_RCU */
 
-    /**
-     *  调度相关信息
-     */
+	/**
+	 *  调度相关信息
+	 */
 	struct sched_info		sched_info;
 
-    /**
-     *  任务链表
-     */
+	/**
+	 *  任务链表
+	 */
 	struct list_head		tasks;
 
 #ifdef CONFIG_SMP
-    /* 优先级队列 */
+	/* 优先级队列 */
 	struct plist_node		pushable_tasks;
-    /* deadline 任务 */
+	/* deadline 任务 */
 	struct rb_node			pushable_dl_tasks;
 #endif
 
-    /**
-     *  `mm` 指向进程地址空间
-     */
+	/**
+	 *  `mm` 指向进程地址空间
+	 */
 	struct mm_struct		*mm;
 
-    /**
-     *  `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间
-     *  见 context_switch()
-     */
+	/**
+	 *  `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间
+	 *  见 context_switch()
+	 */
 	struct mm_struct		*active_mm;
 
 	/* Per-thread vma caching: */
 	struct vmacache			vmacache;   /* vma 缓存 */
 
 #ifdef SPLIT_RSS_COUNTING
-    /**
-     *  对不同页面的统计计数
-     *  文件映射、匿名映射、交换
-     */
+	/**
+	 *  对不同页面的统计计数
+	 *  文件映射、匿名映射、交换
+	 */
 	struct task_rss_stat		rss_stat;
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int				exit_state;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int				exit_code;
 
-    /**
-     *  领头进程的判断标志，如`thread_group_leader()`
+	/**
+	 *  领头进程的判断标志，如`thread_group_leader()`
 	 * The exit_signal the parent process will be sent when the child exits.
 	 * parent 退出时，会将 exit_signal 发给 child
-     */
+	 */
 	int				exit_signal;
 	/* The signal sent when the parent dies: */
 	int				pdeath_signal;
@@ -1230,14 +1231,14 @@ struct task_struct {    /* PCB */
 
 	struct restart_block		restart_block;/* system call restart block */
 
-    /**
-     *  实际上的 线程ID，top -Hp tgid 后显示的 pid
-     */
+	/**
+	 *  实际上的 线程ID，top -Hp tgid 后显示的 pid
+	 */
 	pid_t				pid;
 
-    /**
-     * 实际上的 进程ID， 线程组 ID， top -Hp tgid
-     */
+	/**
+	 * 实际上的 进程ID， 线程组 ID， top -Hp tgid
+	 */
 	pid_t				tgid;
 
 #ifdef CONFIG_STACKPROTECTOR
@@ -1263,7 +1264,7 @@ struct task_struct {    /* PCB */
 	struct list_head		children;
 	struct list_head		sibling;
 
-    /* 线程组 领头 ,见`copy_process()` */
+	/* 线程组 领头 ,见`copy_process()` */
 	struct task_struct		*group_leader;
 
 	/*
@@ -1291,15 +1292,15 @@ struct task_struct {    /* PCB */
 	 */
 	struct pid			*thread_pid;/* PID的哈希表 /include/linux/pid.h*/
 
-    /**
-     *	链表头为 struct pid->tasks[PIDTYPE_MAX];
-     */
+	/**
+	 *	链表头为 struct pid->tasks[PIDTYPE_MAX];
+	 */
 	struct hlist_node		pid_links[PIDTYPE_MAX];
 	struct list_head		thread_group;/* 组 */
 	struct list_head		thread_node;
-    /**
-     *  vfork()
-     */
+	/**
+	 *  vfork()
+	 */
 	struct completion		*vfork_done;/* 等待vfork系统调用结束 */
 
 	/* CLONE_CHILD_SETTID: */
@@ -1307,9 +1308,9 @@ struct task_struct {    /* PCB */
 
 	/* CLONE_CHILD_CLEARTID: */
 	int __user			*clear_child_tid;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	u64				utime;
 	u64				stime;
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
@@ -1374,9 +1375,9 @@ struct task_struct {    /* PCB */
 	 * 线程名
 	 */
 	char				comm[TASK_COMM_LEN];
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct nameidata		*nameidata;
 
 #ifdef CONFIG_SYSVIPC
@@ -1392,16 +1393,16 @@ struct task_struct {    /* PCB */
 	/* Filesystem information: */
 	struct fs_struct		*fs;/* 文件系统 */
 
-    /**
-     *  打开的文件
-     */
+	/**
+	 *  打开的文件
+	 */
 	/* Open file information: */
 	struct files_struct		*files;/* 打开的文件 */
 
 #ifdef CONFIG_IO_URING
-    /**
-     *  io_uring_setup(2)
-     */
+	/**
+	 *  io_uring_setup(2)
+	 */
 	struct io_uring_task		*io_uring;  /* AIO 异步IO */
 #endif
 
@@ -1414,28 +1415,28 @@ struct task_struct {    /* PCB */
 	struct signal_struct		*signal;/* 进程信号 */
 	struct sighand_struct __rcu		*sighand;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sigset_t			blocked;
 	sigset_t			real_blocked;
 	/* Restored if set_restore_sigmask() was used: */
 	sigset_t			saved_sigmask;
 
-    /**
-     *  挂起的信号链表
-     */
+	/**
+	 *  挂起的信号链表
+	 */
 	struct sigpending		pending;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;
 	unsigned int			sas_ss_flags;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct callback_head		*task_works;
 
 #ifdef CONFIG_AUDIT
@@ -1445,9 +1446,9 @@ struct task_struct {    /* PCB */
 	kuid_t				loginuid;
 	unsigned int			sessionid;
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct seccomp			seccomp;    /* 限制系统调用 */
 
 	/* Thread group tracking: */
@@ -1460,9 +1461,9 @@ struct task_struct {    /* PCB */
 	/* Protection of the PI data structures: */
 	raw_spinlock_t			pi_lock;
 
-    /**
-     *  mutex 中 unlock 时会用到
-     */
+	/**
+	 *  mutex 中 unlock 时会用到
+	 */
 	struct wake_q_node		wake_q;
 
 #ifdef CONFIG_RT_MUTEXES
@@ -1533,9 +1534,9 @@ struct task_struct {    /* PCB */
 	unsigned long			ptrace_message;
 	kernel_siginfo_t		*last_siginfo;
 
-    /**
-     *  IO统计信息
-     */
+	/**
+	 *  IO统计信息
+	 */
 	struct task_io_accounting	ioac;   /* IO 统计信息 */
 
 #ifdef CONFIG_PSI
@@ -1566,7 +1567,7 @@ struct task_struct {    /* PCB */
 	 */
 	struct css_set __rcu		*cgroups;
 
-    /**
+	/**
 	 *  cg_list protected by css_set_lock and tsk->alloc_lock:
 	 *
 	 *  该链表的头为 struct css_set.mg_tasks
@@ -1589,21 +1590,21 @@ struct task_struct {    /* PCB */
 	unsigned int			futex_state;
 #endif
 #ifdef CONFIG_PERF_EVENTS
-    /**
-     * perf events task维度上下文, 软件+硬件 perf_event
+	/**
+	 * perf events task维度上下文, 软件+硬件 perf_event
 	 * 使用perf_event_context类型的链表来连接本task的相关perf_event。
 	 * 这样的链表共有两条(perf_hw_context = 0, perf_sw_context = 1)
-     */
+	 */
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
-    /* 保护链表 `perf_event_list` */
+	/* 保护链表 `perf_event_list` */
 	struct mutex			perf_event_mutex;
 
-    /**
-     *  链表头，链表节点为 `perf_event.owner_entry`
-     *  该链表使用 `perf_event_mutex` 保护
+	/**
+	 *  链表头，链表节点为 `perf_event.owner_entry`
+	 *  该链表使用 `perf_event_mutex` 保护
 	 *
 	 * perf_event_open: perf_event->->owner_entry 链表头
-     */
+	 */
 	struct list_head		perf_event_list;
 #endif
 #ifdef CONFIG_DEBUG_PREEMPT
@@ -1819,15 +1820,15 @@ struct task_struct {    /* PCB */
 	unsigned long			task_state_change;
 #endif
 
-    /**
-     *  当前进程是否能触发 page-fault，使用这个变量
-     *  接口函数为
-     *  pagefault_disable()
-     *      -> pagefault_disabled_inc()
-     *  pagefault_enable()
-     *      -> pagefault_disabled_dec()
-     */
-    int				pagefault_disabled; //
+	/**
+	 *  当前进程是否能触发 page-fault，使用这个变量
+	 *  接口函数为
+	 *  pagefault_disable()
+	 *      -> pagefault_disabled_inc()
+	 *  pagefault_enable()
+	 *      -> pagefault_disabled_dec()
+	 */
+	int				pagefault_disabled; //
 
 #ifdef CONFIG_MMU
 	struct task_struct		*oom_reaper_list;
@@ -1868,9 +1869,9 @@ struct task_struct {    /* PCB */
 	 */
 	randomized_struct_fields_end
 
-    /**
-     *  硬件上下文
-     */
+	/**
+	 *  硬件上下文
+	 */
 	/* CPU-specific state of this task: */
 	struct thread_struct		thread;/* 硬件上下文: 任务的 CPU 状态， 寄存器等信息 */
 
@@ -2171,7 +2172,7 @@ TASK_PFA_CLEAR(SPEC_IB_DISABLE, spec_ib_disable)
 
 TASK_PFA_TEST(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
 TASK_PFA_SET(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
-    {} /* ++++ */
+	{} /* ++++ */
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)
 {
