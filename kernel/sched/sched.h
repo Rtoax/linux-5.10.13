@@ -583,8 +583,10 @@ extern void set_task_rq_fair(struct sched_entity *se,
  * `SCHED_NORMAL`;
  * `SCHED_BATCH`;
  * `SCHED_IDLE`.
+ *
+ * 完全公平调度 运行队列
  */
-struct cfs_rq {     /* 完全公平调度 运行队列 */
+struct cfs_rq {
 	/**
 	 *  就绪队列的总权重
 	 */
@@ -622,7 +624,7 @@ struct cfs_rq {     /* 完全公平调度 运行队列 */
 	 *  CFS 红黑树的根
 	 *  对应 sched_entity.run_node
 	 */
-	struct rb_root_cached	tasks_timeline; /* 红黑树 */
+	struct rb_root_cached	tasks_timeline;
 
 	/*
 	 * 'curr' points to currently running entity on this cfs_rq.
@@ -1275,10 +1277,10 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 
 #else
 
-//static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
-//{
-//	return container_of(cfs_rq, struct rq, cfs);
-//}
+static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+{
+	return container_of(cfs_rq, struct rq, cfs);
+}
 #endif
 
 static inline int cpu_of(struct rq *rq)
@@ -1286,7 +1288,7 @@ static inline int cpu_of(struct rq *rq)
 #ifdef CONFIG_SMP
 	return rq->cpu;
 #else
-//	return 0;
+	return 0;
 #endif
 }
 
@@ -1304,11 +1306,14 @@ static inline void update_idle_core(struct rq *rq)
 
 #endif
 
+/**
+ * 每个 CPU 都有一个运行队列
+ */
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 struct rq __percpu runqueues; //+++
 
 /**
- *
+ * 获取某个 CPU 的调度队列
  */
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 

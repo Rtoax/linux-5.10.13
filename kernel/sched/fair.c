@@ -563,7 +563,8 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 static inline int entity_before(struct sched_entity *a,
 				struct sched_entity *b)
 {
-	return (s64)(a->vruntime - b->vruntime) < 0;    /* 红黑树使用虚拟时间进行排序 */
+	/* 红黑树使用虚拟时间进行排序 */
+	return (s64)(a->vruntime - b->vruntime) < 0;
 }
 
 /**
@@ -572,7 +573,8 @@ static inline int entity_before(struct sched_entity *a,
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);    /* 最左边的节点 */
+	/* 最左边的节点 */
+	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);
 
 	u64 vruntime = cfs_rq->min_vruntime;
 
@@ -615,6 +617,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 /*
  * Enqueue an entity into the rb-tree:
  *
+ * 插入红黑树
  * 步骤：
  * --------------------
  * 1. 从红黑树中找到 se 所应该在的位置
@@ -622,7 +625,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
  * 3. 将新进程的节点加入到红黑树中
  * 4. 为新插入的结点进行着色
  */
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 插入红黑树 */
+static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_root.rb_node;
 	struct rb_node *parent = NULL;
@@ -640,8 +643,11 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 		/*
 		 * We dont care about collisions. Nodes with
 		 * the same key stay together.
+		 *
+		 * 红黑树使用虚拟时间进行排序
+		 * if((se->vruntime - entry->vruntime) < 0)
 		 */
-		if (entity_before(se, entry)) { /* 使用虚拟时间进行排序的 */
+		if (entity_before(se, entry)) {
 			link = &parent->rb_left;
 		} else {
 			link = &parent->rb_right;
@@ -650,15 +656,17 @@ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    
 	}
 
 	/**
-	 *
 	 * 3. 将新进程的节点加入到红黑树中
 	 * 4. 为新插入的结点进行着色
 	 */
-	rb_link_node(&se->run_node, parent, link);  /* 插入红黑树 */
+	rb_link_node(&se->run_node, parent, link);
 	rb_insert_color_cached(&se->run_node, &cfs_rq->tasks_timeline, leftmost);
 }
 
-static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)    /* 从红黑树中删除 */
+/**
+ * 从红黑树中删除
+ */
+static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
 }
