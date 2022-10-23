@@ -4555,7 +4555,24 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  * This function gets called by the timer code, with HZ frequency.
  * We call it with interrupts disabled.
  *
- * 分时通过系统时钟中断调用
+ * 分时通过系统时钟中断调用，这个函数执行过程中，关闭中断
+ *
+ * 最频繁的调用栈示例
+ *    scheduler_tick+1
+ *    update_process_times+176
+ *    tick_sched_handle+34
+ *    tick_sched_timer+101
+ *    __hrtimer_run_queues+295
+ *    hrtimer_interrupt+252
+ *    __sysvec_apic_timer_interrupt+92
+ *    sysvec_apic_timer_interrupt+109
+ *    asm_sysvec_apic_timer_interrupt+22
+ *    cpuidle_enter_state+210
+ *    cpuidle_enter+41
+ *    cpuidle_idle_call+300
+ *    do_idle+123
+ *    cpu_startup_entry+25
+ *    secondary_startup_64_no_verify+195
  */
 void scheduler_tick(void)
 {

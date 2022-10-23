@@ -541,6 +541,49 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 
 #else	/* !CONFIG_FAIR_GROUP_SCHED */
 
+#define for_each_sched_entity(se) \
+        for (; se; se = NULL)
+
+static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
+{
+    return true;
+}
+
+static inline void list_del_leaf_cfs_rq(struct cfs_rq *cfs_rq)
+{
+}
+
+static inline void assert_list_leaf_cfs_rq(struct rq *rq)
+{
+}
+
+#define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos)  \
+        for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
+
+static inline struct sched_entity *parent_entity(struct sched_entity *se)
+{
+    return NULL;
+}
+
+static inline void
+find_matching_se(struct sched_entity **se, struct sched_entity **pse)
+{
+}
+
+static inline int tg_is_idle(struct task_group *tg)
+{
+    return 0;
+}
+
+static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
+{
+    return 0;
+}
+
+static int se_is_idle(struct sched_entity *se)
+{
+    return 0;
+}
 #endif	/* CONFIG_FAIR_GROUP_SCHED */
 
 static __always_inline
@@ -3451,10 +3494,10 @@ static void update_cfs_group(struct sched_entity *se)
 		return;
 
 #ifndef CONFIG_SMP
-//	shares = READ_ONCE(gcfs_rq->tg->shares);
-//
-//	if (likely(se->load.weight == shares))
-//		return;
+	shares = READ_ONCE(gcfs_rq->tg->shares);
+
+	if (likely(se->load.weight == shares))
+		return;
 #else
 	shares   = calc_group_shares(gcfs_rq);
 #endif
@@ -3463,6 +3506,10 @@ static void update_cfs_group(struct sched_entity *se)
 }
 
 #else /* CONFIG_FAIR_GROUP_SCHED */
+
+static inline void update_cfs_group(struct sched_entity *se)
+{
+}
 
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
@@ -11450,6 +11497,9 @@ static void rq_offline_fair(struct rq *rq)
  * parameters.
  *
  * 公平调度器如何处理时钟中断的
+ *
+ * scheduler_tick()
+ * 	curr->sched_class->task_tick() = task_tick_fair()
  */
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
@@ -11462,7 +11512,10 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 
 	/**
 	 *  遍历所有调度实体
-	 *  for (; se; se = se->parent)
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
 	    /**
