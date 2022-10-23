@@ -889,10 +889,12 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	 * SCHED_OTHER tasks have to update their load when changing their
 	 * weight
 	 */
-	if (update_load && p->sched_class == &fair_sched_class) {   /* CFS 调度：只使用 100-139 优先级 */
+	/* CFS 调度：只使用 100-139 优先级 */
+	if (update_load && p->sched_class == &fair_sched_class) {
 		reweight_task(p, prio);
+	/* RT 或其他 调度 */
 	} else {
-		load->weight = scale_load(sched_prio_to_weight[prio]);  /* RT 或其他 调度 */
+		load->weight = scale_load(sched_prio_to_weight[prio]);
 		load->inv_weight = sched_prio_to_wmult[prio];
 	}
 }
@@ -9625,7 +9627,9 @@ const int sched_prio_to_weight[40] = {
  * inv_weight = ------------
  *                 weight  -------> sched_prio_to_weight[] 之一
  *
- *  见函数 `set_load_weight()`
+ * 见函数
+ * `set_load_weight()`
+ * `calc_delta_fair()` vruntime 的计算
  */
 const u32 sched_prio_to_wmult[40] = {
  /* -20 */     48388,     59856,     76040,     92818,    118348/* =2^32/36291 */,

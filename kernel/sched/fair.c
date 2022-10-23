@@ -241,6 +241,9 @@ static void __update_inv_weight(struct load_weight *lw)
 {
 	unsigned long w;
 
+	/**
+	 * 大概率，这个数值为 sched_prio_to_wmult[nice]
+	 */
 	if (likely(lw->inv_weight))
 		return;
 
@@ -302,12 +305,20 @@ static void __update_inv_weight(struct load_weight *lw)
  *                           weight
  *
  *  使用 sched_prio_to_wmult[] 预先做了除法
+ *
+ *  vruntime = (delta_exec * nice_0_weight * sched_prio_to_wmult[nice]) >> 32
  */
-static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
+static u64
+__calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
 {
 	u64 fact = scale_load_down(weight);
+	/* WMULT_SHIFT = 32 */
 	int shift = WMULT_SHIFT;
 
+	/**
+	 * 更新 lw->inv_weight
+	 * 大概率，这个数值为 sched_prio_to_wmult[nice]
+	 */
 	__update_inv_weight(lw);
 
 	if (unlikely(fact >> 32)) {
@@ -732,12 +743,34 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 }
 #endif
 
-/*
+/**
+ * 计算虚拟时间的核心函数
+ *
  * delta /= w
  *
  * @delta  该进程从上次调用 update_curr() 函数到现在的时间差
  *
- * 计算虚拟时间的核心函数
+ * # vruntime 的意义
+ *
+ * 1. NICE = 0， vruntime 和真实时间过得一样快
+ *                         真实时间
+ *  -----------------###################--------------------------> 时间轴
+ *                         vruntime
+ *  -----------------*******************--------------------------> 时间轴
+ *
+ * 2. NICE < 0， 优先级高，vruntime 比真实时间过得一样慢
+ *                         真实时间
+ *  -----------------###################--------------------------> 时间轴
+ *                     vruntime
+ *  -----------------************---------------------------------> 时间轴
+ *
+ * 3. NICE > 0， 优先级低，vruntime 比真实时间过得一样快
+ *                         真实时间
+ *  -----------------###################--------------------------> 时间轴
+ *                     vruntime
+ *  -----------------**************************-------------------> 时间轴
+ *
+ * # 计算虚拟时间的核心函数
  *
  *              delta_exec * nice_0_weight
  *  vruntime = -----------------------------
@@ -768,11 +801,13 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
  *                           weight
  *
  *  使用 sched_prio_to_wmult[] 预先做了除法
+ *
+ *  vruntime = (delta_exec * nice_0_weight * sched_prio_to_wmult[nice]) >> 32
  */
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
 	/**
-	 *  参考权重 == 1024
+	 *  参考权重 == 1024，也就是 nice 值为 0 的进程
 	 */
 	if (unlikely(se->load.weight != NICE_0_LOAD))
 	    /**
@@ -3281,7 +3316,8 @@ void reweight_task(struct task_struct *p, int prio) /* 公平调度器权重 */
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	struct load_weight *load = &se->load;
-	unsigned long weight = scale_load/* << 10 */(sched_prio_to_weight[prio]);
+	/* << 10 */
+	unsigned long weight = scale_load(sched_prio_to_weight[prio]);
 
 	reweight_entity(cfs_rq, se, weight);
 	load->inv_weight = sched_prio_to_wmult[prio];

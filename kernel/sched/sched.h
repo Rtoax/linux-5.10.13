@@ -132,9 +132,9 @@ extern void call_trace_sched_update_nr_running(struct rq *rq, int count);
 	__w; \
 })
 #else
-//# define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
-//# define scale_load(w)		(w)
-//# define scale_load_down(w)	(w)
+# define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
+# define scale_load(w)		(w)
+# define scale_load_down(w)	(w)
 #endif
 
 /*
