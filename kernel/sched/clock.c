@@ -275,6 +275,7 @@ static u64 sched_clock_local(struct sched_clock_data *scd)
 	s64 delta;
 
 again:
+	/* 从 jiffies 获取当前时间 nano sec */
 	now = sched_clock();
 	delta = now - scd->tick_raw;
 	if (unlikely(delta < 0))
@@ -416,7 +417,12 @@ void sched_clock_tick(void)
 	lockdep_assert_irqs_disabled();
 
 	scd = this_scd();
+
+	/**
+	 * 获取时间
+	 */
 	__scd_stamp(scd);
+
 	sched_clock_local(scd);
 }
 

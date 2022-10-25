@@ -22,6 +22,18 @@
  *
  *  Move PELT related code from fair.c into this pelt.c file
  *  Author: Vincent Guittot <vincent.guittot@linaro.org>
+ *
+ * 3.8版本之前的内核CFS调度器在计算CPU load的时候采用的是跟踪每个运行队列上的负载
+ * （per-rq load tracking）。它并没有跟踪每一个任务的负载和利用率，只是关注整体CPU的负载。
+ * 这种粗略的负载跟踪算法显然无法为调度算法提供足够的支撑。
+ * 为了完美的满足上面的所有需求，Linux调度器在3.8版中引入了PELT（Per-entity load
+ * tracking）算法。
+ *
+ * 只有当内核准确地推测出每个进程对系统的需求，它才能最佳地完成调度任务。
+ * 进程对CPU的需求包括两个方面：
+ *
+ * 1. 任务的利用率（task utility）
+ * 2. 任务的负载（task load）
  */
 
 #include <linux/sched.h>
@@ -38,9 +50,9 @@ static u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
-    /**
-     *  如果时间 > 2016ms
-     */
+	/**
+	 *  如果时间 > 2016ms
+	 */
 	if (unlikely(n > LOAD_AVG_PERIOD * 63/* 63*32ms = 2016ms */))
 		return 0;
 
@@ -61,15 +73,15 @@ static u64 decay_load(u64 val, u64 n)
 		local_n %= LOAD_AVG_PERIOD;
 	}
 
-    /**
-     *  此时 val < 32
-     */
-    /**
-     *  val = (val*runnable_avg_yN_inv[local_n]>>32)
-     *
-     *  例
-     *  (100*runnable_avg_yN_inv[31]>>32) = 51
-     */
+	/**
+	 *  此时 val < 32
+	 */
+	/**
+	 *  val = (val*runnable_avg_yN_inv[local_n]>>32)
+	 *
+	 *  例
+	 *  (100*runnable_avg_yN_inv[31]>>32) = 51
+	 */
 	val = mul_u64_u32_shr(val, runnable_avg_yN_inv[local_n], 32);
 	return val;
 }
@@ -99,9 +111,9 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 
 	/*
 	 * c1 = d1 y^p
-     *
-     * 计算第 n 个周期的衰减值
-     */
+	 *
+	 * 计算第 n 个周期的衰减值
+	 */
 	c1 = decay_load((u64)d1, periods);
 
 	/*
@@ -148,7 +160,7 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	u32 contrib = (u32)delta; /* p == 0 -> delta < 1024 */
 	u64 periods;
 
-    /**
+	/**
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
@@ -160,7 +172,7 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	 */
 	delta += sa->period_contrib;
 
-    /**
+	/**
 	 *  periods 表示有多少个完整的周期
 	 *  上图中 d2 所占的整周期数
 	 */
@@ -170,20 +182,20 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	 * Step 1: decay old *_sum if we crossed period boundaries.
 	 */
 	if (periods) {
-        /**
-         * 计算第 n 个周期的衰减值
+		/**
+		 * 计算第 n 个周期的衰减值
 		 * load_sum = (load_sum * runnable_avg_yN_inv[31] >> 32)
-         */
+		 */
 		sa->load_sum = decay_load(sa->load_sum, periods);
 
-        /**
-         * 
-         */
+		/**
+		 *
+		 */
 		sa->runnable_sum = decay_load(sa->runnable_sum, periods);
-    
-        /**
-         * 总算力
-         */
+
+		/**
+		 * 总算力
+		 */
 		sa->util_sum = decay_load((u64)(sa->util_sum), periods);
 
 		/*
@@ -209,13 +221,13 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 			 * the below usage of @contrib to dissapear entirely,
 			 * so no point in calculating it.
 			 *
-			 * 
+			 *
 			 *
 			 */
 			contrib = __accumulate_pelt_segments(periods, 1024 - sa->period_contrib, delta);
 		}
 	}
-    /**
+	/**
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
@@ -227,20 +239,20 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	 */
 	sa->period_contrib = delta;
 
-    /**
-	 *  
+	/**
+	 *
 	 */
 	if (load)
 		sa->load_sum += load * contrib;
 
-    /**
-	 *  
+	/**
+	 *
 	 */
 	if (runnable)
 		sa->runnable_sum += runnable * contrib << SCHED_CAPACITY_SHIFT;
 
-    /**
-	 *  
+	/**
+	 *
 	 */
 	if (running)
 		sa->util_sum += contrib << SCHED_CAPACITY_SHIFT;
@@ -284,7 +296,7 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 {
 	u64 delta;
 
-    /**
+	/**
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
@@ -294,7 +306,7 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 *     |<---------- delta -------------->|
 	 */
 	delta = now - sa->last_update_time;
-    
+
 	/*
 	 * This should only happen when time goes backwards, which it
 	 * unfortunately does during sched clock init when we swap over to TSC.
@@ -325,7 +337,7 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	if (!delta)
 		return 0;
 
-    /**
+	/**
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
