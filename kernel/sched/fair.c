@@ -908,7 +908,11 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);    /* 默认6ms */
 
 	/**
-	 *  遍历 rq 中的所有调度实体
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
 		struct load_weight *load;
@@ -4460,6 +4464,21 @@ static inline bool cfs_bandwidth_used(void);
  *       ksys_write+241
  *       do_syscall_64+55
  *       entry_SYSCALL_64_after_hwframe+68
+ *
+ * 当执行一个 while (1); 循环的程序，调用栈为
+ *       enqueue_entity+1
+ *       enqueue_task_fair+139
+ *       enqueue_task+72
+ *       ttwu_do_activate+76
+ *       try_to_wake_up+466
+ *       complete+65
+ *       process_one_work+485
+ *       worker_thread+517
+ *       kthread+326
+ *       ret_from_fork+31
+ *
+ * 脚本
+ * sudo bpftrace -e 'kprobe:enqueue_entity { @[kstack] = count() }'
  */
 static void
 enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
@@ -4559,6 +4578,13 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 static void __clear_buddies_last(struct sched_entity *se)
 {
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 		if (cfs_rq->last != se)
@@ -4570,6 +4596,13 @@ static void __clear_buddies_last(struct sched_entity *se)
 
 static void __clear_buddies_next(struct sched_entity *se)
 {
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 		if (cfs_rq->next != se)
@@ -4581,6 +4614,13 @@ static void __clear_buddies_next(struct sched_entity *se)
 
 static void __clear_buddies_skip(struct sched_entity *se)
 {
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 		if (cfs_rq->skip != se)
@@ -4621,6 +4661,18 @@ static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
  *       __x64_sys_select+186
  *       do_syscall_64+55
  *       entry_SYSCALL_64_after_hwframe+68
+ *
+ * 当执行一个 while (1); 循环的程序，调用栈为
+ *       dequeue_entity+1
+ *       dequeue_task_fair+182
+ *       __schedule+770
+ *       schedule+67
+ *       worker_thread+196
+ *       kthread+326
+ *       ret_from_fork+31
+ *
+ * 脚本
+ * sudo bpftrace -e 'kprobe:dequeue_entity { @[kstack] = count() }'
  */
 static void
 dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
@@ -5170,6 +5222,14 @@ static bool throttle_cfs_rq(struct cfs_rq *cfs_rq)
 
 	task_delta = cfs_rq->h_nr_running;
 	idle_task_delta = cfs_rq->idle_h_nr_running;
+
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		struct cfs_rq *qcfs_rq = cfs_rq_of(se);
 		/* throttled entity or throttle-on-deactivate */
@@ -5233,8 +5293,11 @@ void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
 	idle_task_delta = cfs_rq->idle_h_nr_running;
 
 	/**
-	 *  遍历 父亲
-	 *  for (; se; se = se->parent)
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
 		if (se->on_rq)
@@ -5280,6 +5343,12 @@ unthrottle_throttle:
 	 * The cfs_rq_throttled() breaks in the above iteration can result in
 	 * incomplete leaf list maintenance, resulting in triggering the
 	 * assertion below.
+	 *
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -5876,8 +5945,11 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
 
 	/**
-	 *  for (; se; se = se->parent)
-	 *  遍历调度实体
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
 		if (se->on_rq)
@@ -5906,9 +5978,13 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	/**
-	 *
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
 	 */
-	for_each_sched_entity(se) { /* for (; se; se = se->parent) */
+	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
@@ -6011,6 +6087,8 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
+
+		/* 从红黑书中删除 */
 		dequeue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running--;
@@ -7455,6 +7533,13 @@ static void set_last_buddy(struct sched_entity *se)
 	if (entity_is_task(se) && unlikely(task_has_idle_policy(task_of(se))))
 		return;
 
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		if (SCHED_WARN_ON(!se->on_rq))
 			return;
@@ -7735,6 +7820,13 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	struct sched_entity *se = &prev->se;
 	struct cfs_rq *cfs_rq;
 
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		put_prev_entity(cfs_rq, se);
@@ -8600,6 +8692,14 @@ static void update_cfs_rq_h_load(struct cfs_rq *cfs_rq)
 		return;
 
 	WRITE_ONCE(cfs_rq->h_load_next, NULL);
+
+	/**
+	 *  遍历所有调度实体
+	 *  CONFIG_FAIR_GROUP_SCHED(组调度)
+	 *   => for (; se; se = se->parent)
+	 *  否则
+	 *   => for (; se; se = NULL)
+	 */
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		WRITE_ONCE(cfs_rq->h_load_next, se);
