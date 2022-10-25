@@ -5077,8 +5077,10 @@ restart:
  *
  * 调度器的核心函数
  *
- *  让调度器选择 和 千幻到一个合适的进程并运行，
+ *  让调度器选择 和 切换到一个合适的进程并运行，
+ *
  *  调度器的时机有一下三种：
+ *
  *  1. 阻塞操作: mutex, semaphore, waitqueue, etc.
  *  2. 中断返回前 和 系统调用返回用户空间时，检查 TIF_NEED_RESCHED 标志位是否需要调度
  *  3. 将要被唤醒的进程不会马上调用 schedule()，而是会被添加到 CFS 就绪队列中，
@@ -5086,13 +5088,11 @@ restart:
  *     那么被唤醒的进程什么时候会被调度呢？ 这要根据内核是否支持 抢占 CONFIG_PREEMPTION=y
  *
  *     3.1 可抢占
- *
  *      3.1.1 如果唤醒动作发生在系统调用或者异常处理上下文，在下一次调用 preempt_enable() 时
  *              会检查是否需要调度
  *      3.1.2 如果唤醒动作发生在硬件中断上下文，硬件中断处理返回前会检查是否要抢占当前进程；
  *
  *     3.2 不可抢占
- *
  *      3.2.1 当前进程调用 cond_resched() 时会检查是否要调度
  *      3.2.2 主动调用 schedule()
  */
@@ -5116,7 +5116,7 @@ static void __sched notrace __schedule(bool preempt)
 	rq = cpu_rq(cpu);
 
 	/**
-	 *  prev 指向当前进程
+	 *  prev 指向当前队列中正在运行的进程
 	 */
 	prev = rq->curr;
 
@@ -5202,17 +5202,17 @@ static void __sched notrace __schedule(bool preempt)
 			 *  当前进程是否处于主动调度，若主动调用了 schedule()，
 			 *  则调用 deactivate_task 把当前进程移除 就绪队列
 			 *
-			 * __schedule()			ttwu()
-			 *   prev_state = prev->state;    if (p->on_rq && ...)
-			 *   if (prev_state)		    goto out;
-			 *     p->on_rq = 0;		  smp_acquire__after_ctrl_dep();
-			 *				  p->state = TASK_WAKING
+			 * __schedule()                   ttwu()
+			 *   prev_state = prev->state;      if (p->on_rq && ...)
+			 *   if (prev_state)                  goto out;
+			 *     p->on_rq = 0;                smp_acquire__after_ctrl_dep();
+			 *                                  p->state = TASK_WAKING
 			 *
 			 * Where __schedule() and ttwu() have matching control dependencies.
 			 *
 			 * After this, schedule() must not care about p->state any more.
 			 *
-			 * 把当前进程移除 就绪队列
+			 * 把当前进程移除 就绪队列(从红黑树中删除)
 			 */
 			deactivate_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
