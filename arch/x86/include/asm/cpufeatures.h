@@ -140,6 +140,18 @@
 #define X86_FEATURE_AES			( 4*32+25) /* AES instructions */
 #define X86_FEATURE_XSAVE		( 4*32+26) /* XSAVE/XRSTOR/XSETBV/XGETBV instructions */
 #define X86_FEATURE_OSXSAVE		( 4*32+27) /* "" XSAVE instruction enabled in the OS */
+/**
+ * AVX指令集是Sandy Bridge和Larrabee架构下的新指令集。AVX是在之前的128位扩展到256位的
+ * 单指令多数据流。而Sandy Bridge的单指令多数据流演算单元扩展到256位的同时数据传输也获得
+ * 了提升，所以从理论上看CPU内核浮点运算性能提升到了2倍。
+ *
+ * Intel AVX指令集，在单指令多数据流计算性能增强的同时也沿用了的MMX/SSE指令集。不过和
+ * MMX/SSE的不同点在于增强的AVX指令，从指令的格式上就发生了很大的变化。x86(IA-32/Intel 64)
+ * 架构的基础上增加了prefix(Prefix)，所以实现了新的命令，也使更加复杂的指令得以实现，从而提
+ * 升了x86 CPU的性能。
+ *
+ * ref: https://baike.baidu.com/item/AVX%E6%8C%87%E4%BB%A4%E9%9B%86/8485825
+ */
 #define X86_FEATURE_AVX			( 4*32+28) /* Advanced Vector Extensions */
 #define X86_FEATURE_F16C		( 4*32+29) /* 16-bit FP conversions */
 #define X86_FEATURE_RDRAND		( 4*32+30) /* RDRAND instruction */

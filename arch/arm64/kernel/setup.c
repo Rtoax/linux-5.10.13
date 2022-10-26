@@ -282,7 +282,7 @@ u64 cpu_logical_map(int cpu)
 }
 
 /**
- *  
+ * start_kernel() 调用
  */
 void __init __no_sanitize_address setup_arch(char **cmdline_p)
 {
