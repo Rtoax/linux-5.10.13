@@ -4243,13 +4243,25 @@ EXPORT_SYMBOL(__dev_direct_xmit);
  *			Receiver routines
  *************************************************************************/
 
+/**
+ * 网卡最大接收数据包量，超过就丢包
+ *
+ * /proc/sys/net/core/netdev_max_backlog
+ */
 int __read_mostly netdev_max_backlog  = 1000;
 EXPORT_SYMBOL(netdev_max_backlog);
 
 int __read_mostly netdev_tstamp_prequeue  = 1;
+/**
+ * 中断下半部处理的最大数据包
+ */
 int __read_mostly netdev_budget  = 300;
 /* Must be at least 2 jiffes to guarantee 1 jiffy timeout */
 unsigned int __read_mostly netdev_budget_usecs = 2 * USEC_PER_SEC / HZ;
+
+/**
+ * napi 一次轮询的最大数据包数
+ */
 int __read_mostly weight_p  = 64;           /* old backlog weight */
 int __read_mostly dev_weight_rx_bias  = 1;  /* bias for backlog weight */
 int __read_mostly dev_weight_tx_bias  = 1;  /* bias for output_queue quota */

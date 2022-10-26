@@ -364,6 +364,7 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 		.proc_handler	= proc_do_dev_weight,
 	},
 	{
+		// /proc/sys/net/core/netdev_max_backlog
 		.procname	= "netdev_max_backlog", /* /proc/sys/net/core/ */
 		.data		= &netdev_max_backlog,
 		.maxlen		= sizeof(int),
