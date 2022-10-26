@@ -64,7 +64,7 @@ struct fork_frame {
  *
  *  switch_to(prev, next, prev);
  *
- *
+ *  切换进程 寄存器状态 和 代码栈
  */
 #define switch_to(prev, next, last)					\
 do {									\

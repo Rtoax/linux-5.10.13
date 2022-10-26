@@ -4249,12 +4249,16 @@ schedule_tail(struct task_struct *prev)
  *
  * 进程上下文切换
  *
+ *  schedule()
+ *    ->context_switch()
+ *
  * 主要涉及到两部分：
  *  1. 进程地址空间切换
  *  2. 处理器状态切换：
  */
 static __always_inline struct rq *
-context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
+context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next,
+	struct rq_flags *rf)
 {
 	/**
 	 *
@@ -4276,29 +4280,29 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 	 *   user ->   user   switch
 	 */
 	/**
-	 *  下一个线程是 内核线程
+	 * 下一个线程是 内核线程
 	 */
 	if (!next->mm) {                                // to kernel
 		enter_lazy_tlb(prev->active_mm, next);
 
 		/**
-		 *   active_mm 结构一直是内核 地址空间
+		 * active_mm 结构一直是内核 地址空间
 		 */
 		next->active_mm = prev->active_mm;
 
 		/**
-		 *  之前的线程是 用户态线程 -> 增加 active_mm 引用计数
+		 * 之前的线程是 用户态线程 -> 增加 active_mm 引用计数
 		 */
 		if (prev->mm)                           // from user
 			mmgrab(prev->active_mm);
 		/**
-		 *  之前的线程是 内核态线程 -> 将 active_mm = NULL
+		 * 之前的线程是 内核态线程 -> 将 active_mm = NULL
 		 */
 		else
 			prev->active_mm = NULL;
 
 	/**
-	 *  下一个线程是 用户态线程
+	 * 下一个线程是 用户态线程
 	 */
 	} else {   // to user
 
@@ -4336,7 +4340,7 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 	/**
 	 *  Here we just switch the register state and the stack.
 	 *
-	 *  切换进程
+	 *  切换进程 寄存器状态 和 代码栈
 	 */
 	switch_to(prev, next, prev);
 

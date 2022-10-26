@@ -1130,11 +1130,12 @@ struct task_struct {    /* PCB */
 
 	/**
 	 *  `mm` 指向进程地址空间
+	 *  内核线程的 mm 为空，见 context_switch() 中的判断
 	 */
 	struct mm_struct		*mm;
 
 	/**
-	 *  `active_mm` 指向像内核线程这样子不存在地址空间的有效地址空间
+	 *  `active_mm` 指向像 内核线程 这样不存在地址空间的有效地址空间
 	 *  见 context_switch()
 	 */
 	struct mm_struct		*active_mm;
