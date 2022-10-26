@@ -5016,10 +5016,13 @@ restart:
 
 	/**
 	 *  遍历整个调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
+	 *
+	 *  如 fair_sched_class
 	 */
 	for_each_class(rtoax_class) {
 		/**
 		 *  从就绪队列中选择一个最优进程来执行
+		 *  fair: 理想情况下，选择红黑数的最左子树
 		 *
 		 * pick_next_task_idle
 		 * pick_next_task_fair
@@ -5230,6 +5233,14 @@ static void __sched notrace __schedule(bool preempt)
 
 	/**
 	 *  选择下一个合适的高优先级进程
+	 *  从就绪队列中选择一个最优进程来执行
+	 *  fair: 理想情况下，选择红黑数的最左子树
+	 *
+	 * pick_next_task_idle
+	 * pick_next_task_fair
+	 * pick_next_task_rt
+	 * pick_next_task_dl
+	 * pick_next_task_stop
 	 */
 	next = pick_next_task(rq, prev, &rf);
 

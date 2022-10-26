@@ -4870,7 +4870,11 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	if (!left || (curr && entity_before(curr, left)))
 		left = curr;
 
-	se = left; /* ideally we run the leftmost entity */
+	/**
+	 * ideally we run the leftmost entity
+	 * 理想情况下，运行红黑树最左子树（也就是 vruntime 最小的节点）
+	 */
+	se = left;
 
 	/*
 	 * Avoid running the skip buddy, if running something else can
@@ -7660,6 +7664,14 @@ preempt:
 		set_last_buddy(se);
 }
 
+/**
+ * 从运行队列中挑选下一个即将运行的进程
+ *
+ * schedule()
+ *   ...
+ *   pick_next_task()
+ *     cfs: pick_next_task_fair()
+ */
 struct task_struct *
 pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
@@ -7752,7 +7764,7 @@ again:
 
 	goto done;
 simple:
-#endif
+#endif // CONFIG_FAIR_GROUP_SCHED
 	if (prev)
 		put_prev_task(rq, prev);
 
@@ -7772,7 +7784,7 @@ done: __maybe_unused;
 	 * one.
 	 */
 	list_move(&p->se.group_node, &rq->cfs_tasks);
-#endif
+#endif // CONFIG_SMP
 
 	if (hrtick_enabled(rq))
 		hrtick_start_fair(rq, p);
@@ -7807,6 +7819,14 @@ idle:
 	return NULL;
 }
 
+/**
+ * 从运行队列中挑选下一个即将运行的进程
+ *
+ * schedule()
+ *   ...
+ *   pick_next_task()
+ *     cfs: pick_next_task_fair()
+ */
 static struct task_struct *__pick_next_task_fair(struct rq *rq)
 {
 	return pick_next_task_fair(rq, NULL, NULL);

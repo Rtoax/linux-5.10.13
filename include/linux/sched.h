@@ -2469,10 +2469,11 @@ static inline int spin_needbreak(spinlock_t *lock)
 }
 
 /**
- *
+ * 检查是否需要继续调用 schedule(), 见 schedule()
  */
 static __always_inline bool need_resched(void)
 {
+	// #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
 	return unlikely(tif_need_resched());
 }
 
