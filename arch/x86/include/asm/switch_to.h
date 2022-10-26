@@ -62,7 +62,9 @@ struct fork_frame {
 /**
  *  在 context_switch() 中被调用，调用方式为
  *
- *  switch_to(prev, next, prev);
+ *  schedule()
+ *    ->context_switch()
+ *      ->switch_to(prev, next, prev);
  *
  *  切换进程 寄存器状态 和 代码栈
  */
