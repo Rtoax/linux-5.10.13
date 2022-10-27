@@ -4087,7 +4087,12 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
-	/* 获取上一个被调度出去的进程的 mm 结构 */
+	/**
+	 * 获取上一个被调度出去的进程的 mm 结构
+	 *
+	 *  只有 from kernel task to user task 的进程，prev_mm 会保存 kernel 的 active_mm
+	 *  也就是内核地址空间的 mm_struct 结构。
+	 */
 	struct rq *rq = this_rq();
 	struct mm_struct *mm = rq->prev_mm;
 	long prev_state;
@@ -4150,7 +4155,10 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	 *   provided by mmdrop(),
 	 * - a sync_core for SYNC_CORE.
 	 *
-	 * 如果 mm 不为空
+	 * 如果 mm 不为空，说明，从 内核进程 切换到 用户进程，这个 mm 指向内核进程的 active_mm
+	 * 结构，也就是内核地址空间的 mm_struct 结构。
+	 *
+	 * ？这里为什么会调用 mmdrop()，内核 mm 结构允许被释放吗？？ 2022-10-27 09:14
 	 */
 	if (mm) {
 		membarrier_mm_sync_core_before_usermode(mm);
@@ -4310,7 +4318,8 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 			prev->active_mm = NULL;
 
 	/**
-	 * 下一个线程是 用户态线程
+	 * 下一个进程是 用户态进程
+	 * 也就是 task->mm 不为空
 	 */
 	} else {   // to user
 
@@ -4332,7 +4341,8 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		/**
-		 *  上一个进程也是 内核进程
+		 * 上一个进程是 内核进程
+		 * from kernel to user
 		 */
 		if (!prev->mm) {                        // from kernel
 			/* will mmdrop() in finish_task_switch(). */

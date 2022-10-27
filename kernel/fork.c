@@ -783,6 +783,8 @@ static void check_mm(struct mm_struct *mm)
  * Called when the last reference to the mm
  * is dropped: either by a lazy thread or by
  * mmput. Free the page directory and the mm.
+ *
+ * 如果引用计数 == 0,那么可以释放这个 mm 结构了
  */
 void __mmdrop(struct mm_struct *mm)
 {

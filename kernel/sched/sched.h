@@ -1110,6 +1110,10 @@ struct rq {
 
 	/**
 	 *  进程切换时用于指向前任进程的mm
+	 *
+	 *  只有 from kernel task to user task 的进程，prev_mm 会保存 kernel 的 active_mm
+	 *  也就是内核地址空间的 mm_struct 结构。
+	 *
 	 *  这将在 finish_task_switch() 中进行进程切换对 prev 进程的收尾处理
 	 */
 	struct mm_struct	*prev_mm;

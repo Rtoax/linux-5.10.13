@@ -30,6 +30,8 @@ extern struct mm_struct *mm_alloc(void);
  *
  * See also <Documentation/vm/active_mm.rst> for an in-depth explanation
  * of &mm_struct.mm_count vs &mm_struct.mm_users.
+ *
+ * 如果有人再用，那么，保证 mm 结构不会被释放
  */
 static inline void mmgrab(struct mm_struct *mm)
 {
@@ -39,7 +41,7 @@ static inline void mmgrab(struct mm_struct *mm)
 extern void __mmdrop(struct mm_struct *mm);
 
 /**
- *
+ * 根据引用计数，决定是不是调用 __mmdrop()
  */
 static inline void mmdrop(struct mm_struct *mm)
 {
@@ -49,6 +51,7 @@ static inline void mmdrop(struct mm_struct *mm)
 	 * user-space, after storing to rq->curr.
 	 */
 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
+		// 如果引用计数 == 0,那么可以释放这个 mm 结构了
 		__mmdrop(mm);
 }
 
