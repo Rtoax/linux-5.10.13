@@ -1110,6 +1110,7 @@ struct rq {
 
 	/**
 	 *  进程切换时用于指向前任进程的mm
+	 *  这将在 finish_task_switch() 中进行进程切换对 prev 进程的收尾处理
 	 */
 	struct mm_struct	*prev_mm;
 

@@ -4087,6 +4087,7 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
+	/* 获取上一个被调度出去的进程的 mm 结构 */
 	struct rq *rq = this_rq();
 	struct mm_struct *mm = rq->prev_mm;
 	long prev_state;
@@ -4148,11 +4149,18 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitly
 	 *   provided by mmdrop(),
 	 * - a sync_core for SYNC_CORE.
+	 *
+	 * 如果 mm 不为空
 	 */
 	if (mm) {
 		membarrier_mm_sync_core_before_usermode(mm);
 		mmdrop(mm);
 	}
+
+	/**
+	 * prev 是 TASK_DEAD 进程
+	 *
+	 */
 	if (unlikely(prev_state == TASK_DEAD)) {
 		if (prev->sched_class->task_dead)
 			prev->sched_class->task_dead(prev);
@@ -4341,13 +4349,15 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 	 *  Here we just switch the register state and the stack.
 	 *
 	 *  切换进程 寄存器状态 和 代码栈
+	 *
+	 *  宏展开: prev = __switch_to_asm((prev), (next));
 	 */
 	switch_to(prev, next, prev);
 
 	barrier();
 
 	/**
-	 *
+	 * 此代码为 next 进程执行的代码，对 prev 进程作收尾工作
 	 */
 	return finish_task_switch(prev);
 }

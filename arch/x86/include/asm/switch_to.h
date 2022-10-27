@@ -91,10 +91,10 @@ static inline void update_task_stack(struct task_struct *task)
 {
 	/* sp0 always points to the entry trampoline stack, which is constant: */
 #ifdef CONFIG_X86_32
-//	if (static_cpu_has(X86_FEATURE_XENPV))
-//		load_sp0(task->thread.sp0);
-//	else
-//		this_cpu_write(cpu_tss_rw.x86_tss.sp1, task->thread.sp0);
+	if (static_cpu_has(X86_FEATURE_XENPV))
+		load_sp0(task->thread.sp0);
+	else
+		this_cpu_write(cpu_tss_rw.x86_tss.sp1, task->thread.sp0);
 #else
 	/*
 	 * x86-64 updates x86_tss.sp1 via cpu_current_top_of_stack. That
@@ -112,7 +112,7 @@ static inline void kthread_frame_init(struct inactive_task_frame *frame,
 {
 	frame->bx = fun;
 #ifdef CONFIG_X86_32
-//	frame->di = arg;
+	frame->di = arg;
 #else
 	frame->r12 = arg;
 #endif
