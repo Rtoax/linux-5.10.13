@@ -8260,6 +8260,13 @@ static struct bpf_link *attach_lsm(const struct bpf_sec_def *sec,
 static struct bpf_link *attach_iter(const struct bpf_sec_def *sec,
 				    struct bpf_program *prog);
 
+/**
+ * 这是在 samples/bpf/XXX_kern.c 中 SEC() 中传入的 section 名称， libbpf 会根据一定的
+ * 规则判定 eBPF 程序类型。
+ *
+ * 如：
+ * SEC("socket/2") SEC("socket2") 等将被识别为 BPF_PROG_TYPE_SOCKET_FILTER 类型。
+ */
 static const struct bpf_sec_def section_defs[] = {
 	BPF_PROG_SEC("socket",			BPF_PROG_TYPE_SOCKET_FILTER),
 	BPF_PROG_SEC("sk_reuseport",		BPF_PROG_TYPE_SK_REUSEPORT),
@@ -8424,6 +8431,10 @@ static const struct bpf_sec_def *find_sec_def(const char *sec_name)
 	return NULL;
 }
 
+/**
+ * 从类型转化为字符串
+ * BPF_PROG_TYPE_SOCKET_FILTER -> "socket"
+ */
 static char *libbpf_get_type_names(bool attach_type)
 {
 	int i, len = ARRAY_SIZE(section_defs) * MAX_TYPE_NAME_SIZE;
