@@ -359,6 +359,10 @@ struct bpf_map {
 
 enum extern_type {
 	EXT_UNKNOWN,
+	/**
+	 * KCONFIG_SEC = ".kconfig"
+	 * type = EXT_KCFG
+	 */
 	EXT_KCFG,
 	EXT_KSYM,
 };
@@ -439,12 +443,16 @@ struct bpf_object {
 		Elf_Data *st_ops_data;
 		size_t shstrndx; /* section index for section name strings */
 		size_t strtabidx;
+		// SHT_REL
 		struct {
 			GElf_Shdr shdr;
 			Elf_Data *data;
 		} *reloc_sects;
+		// SHT_REL
 		int nr_reloc_sects;
+		// "maps"
 		int maps_shndx;
+		// ".maps" section
 		int btf_maps_shndx;
 		__u32 btf_maps_sec_btf_id;
 		int text_shndx;
@@ -934,6 +942,9 @@ static int bpf_object__init_kern_struct_ops_maps(struct bpf_object *obj)
 	return 0;
 }
 
+/**
+ * STRUCT_OPS_SEC = ".struct_ops"
+ */
 static int bpf_object__init_struct_ops_maps(struct bpf_object *obj)
 {
 	const struct btf_type *type, *datasec;
@@ -945,6 +956,7 @@ static int bpf_object__init_struct_ops_maps(struct bpf_object *obj)
 	struct bpf_map *map;
 	__u32 i;
 
+	/* STRUCT_OPS_SEC = ".struct_ops" */
 	if (obj->efile.st_ops_shndx == -1)
 		return 0;
 
@@ -1400,6 +1412,9 @@ bpf_object__init_internal_map(struct bpf_object *obj, enum libbpf_map_type type,
 	return 0;
 }
 
+/**
+ * 数据段
+ */
 static int bpf_object__init_global_data_maps(struct bpf_object *obj)
 {
 	int err;
@@ -1425,6 +1440,11 @@ static int bpf_object__init_global_data_maps(struct bpf_object *obj)
 
 		obj->rodata_map_idx = obj->nr_maps - 1;
 	}
+
+	/**
+	 * .bss
+	 *
+	 */
 	if (obj->efile.bss_shndx >= 0) {
 		err = bpf_object__init_internal_map(obj, LIBBPF_MAP_BSS,
 						    obj->efile.bss_shndx,
@@ -1709,6 +1729,9 @@ static int bpf_object__read_kconfig_mem(struct bpf_object *obj,
 	return err;
 }
 
+/**
+ * KCONFIG_SEC = ".kconfig"
+ */
 static int bpf_object__init_kconfig_map(struct bpf_object *obj)
 {
 	struct extern_desc *last_ext = NULL, *ext;
@@ -1717,6 +1740,10 @@ static int bpf_object__init_kconfig_map(struct bpf_object *obj)
 
 	for (i = 0; i < obj->nr_extern; i++) {
 		ext = &obj->externs[i];
+		/**
+		 * KCONFIG_SEC = ".kconfig"
+		 * type = EXT_KCFG
+		 */
 		if (ext->type == EXT_KCFG)
 			last_ext = ext;
 	}
@@ -1736,6 +1763,13 @@ static int bpf_object__init_kconfig_map(struct bpf_object *obj)
 	return 0;
 }
 
+/**
+ * 处理 SEC("maps")
+ *
+ * 1. 统计 SEC("maps") 个数
+ * 2. 分配 map ...
+ * ...
+ */
 static int bpf_object__init_user_maps(struct bpf_object *obj, bool strict)
 {
 	Elf_Data *symbols = obj->efile.symbols;
@@ -1773,6 +1807,10 @@ static int bpf_object__init_user_maps(struct bpf_object *obj, bool strict)
 			continue;
 		if (sym.st_shndx != obj->efile.maps_shndx)
 			continue;
+
+		/**
+		 * 统计 SEC(".maps") 个数
+		 */
 		nr_maps++;
 	}
 	/* Assume equally sized map definitions */
@@ -1798,10 +1836,22 @@ static int bpf_object__init_user_maps(struct bpf_object *obj, bool strict)
 		if (sym.st_shndx != obj->efile.maps_shndx)
 			continue;
 
+		/**
+		 * 分配一个 map
+		 */
 		map = bpf_object__add_map(obj);
 		if (IS_ERR(map))
 			return PTR_ERR(map);
 
+		/**
+		 * 获取名称
+		 *
+		 * 如:
+		 * struct xxx {
+		 *  ...
+		 * } jmp_table SEC(".maps");
+		 *   ^^^^^^^^^
+		 */
 		map_name = elf_sym_str(obj, sym.st_name);
 		if (!map_name) {
 			pr_warn("failed to get map #%d name sym string for obj %s\n",
@@ -1814,9 +1864,12 @@ static int bpf_object__init_user_maps(struct bpf_object *obj, bool strict)
 		map->sec_offset = sym.st_value;
 		pr_debug("map '%s' (legacy): at sec_idx %d, offset %zu.\n",
 			 map_name, map->sec_idx, map->sec_offset);
+
+		/* 超出 ELF 文件范围了 */
 		if (sym.st_value + map_def_sz > data->d_size) {
 			pr_warn("corrupted maps section in %s: last map \"%s\" too small\n",
 				obj->path, map_name);
+			// 这里直接返回，没释放 map 吗？还是说在别的地方释放的
 			return -EINVAL;
 		}
 
@@ -2271,6 +2324,9 @@ static int bpf_object__init_user_btf_map(struct bpf_object *obj,
 	return parse_btf_map_def(obj, map, def, strict, false, pin_root_path);
 }
 
+/**
+ * ".maps" section
+ */
 static int bpf_object__init_user_btf_maps(struct bpf_object *obj, bool strict,
 					  const char *pin_root_path)
 {
@@ -2281,6 +2337,8 @@ static int bpf_object__init_user_btf_maps(struct bpf_object *obj, bool strict,
 	Elf_Data *data;
 	Elf_Scn *scn;
 
+	// SEC(".maps")
+	// .maps section
 	if (obj->efile.btf_maps_shndx < 0)
 		return 0;
 
@@ -2298,6 +2356,8 @@ static int bpf_object__init_user_btf_maps(struct bpf_object *obj, bool strict,
 		if (!btf_is_datasec(t))
 			continue;
 		name = btf__name_by_offset(obj->btf, t->name_off);
+
+		/* if name == ".maps" */
 		if (strcmp(name, MAPS_ELF_SEC) == 0) {
 			sec = t;
 			obj->efile.btf_maps_sec_btf_id = i;
@@ -2312,6 +2372,9 @@ static int bpf_object__init_user_btf_maps(struct bpf_object *obj, bool strict,
 
 	vlen = btf_vlen(sec);
 	for (i = 0; i < vlen; i++) {
+		/**
+		 *
+		 */
 		err = bpf_object__init_user_btf_map(obj, sec, i,
 						    obj->efile.btf_maps_shndx,
 						    data, strict,
@@ -2323,6 +2386,9 @@ static int bpf_object__init_user_btf_maps(struct bpf_object *obj, bool strict,
 	return 0;
 }
 
+/**
+ * 处理 "maps", ".maps", ".data", ".bss", ".kconfig", ".struct_ops" 等 section
+ */
 static int bpf_object__init_maps(struct bpf_object *obj,
 				 const struct bpf_object_open_opts *opts)
 {
@@ -2333,10 +2399,30 @@ static int bpf_object__init_maps(struct bpf_object *obj,
 	strict = !OPTS_GET(opts, relaxed_maps, false);
 	pin_root_path = OPTS_GET(opts, pin_root_path, NULL);
 
+	/**
+	 * 处理 SEC("maps")
+	 *
+	 * 1. 统计 SEC("maps") 个数
+	 * 2. 分配 map ...
+	 * ...
+	 */
 	err = bpf_object__init_user_maps(obj, strict);
+	/**
+	 *
+	 */
 	err = err ?: bpf_object__init_user_btf_maps(obj, strict, pin_root_path);
+	/**
+	 * 数据段
+	 */
 	err = err ?: bpf_object__init_global_data_maps(obj);
+	/**
+	 * KCONFIG_SEC = ".kconfig"
+	 */
 	err = err ?: bpf_object__init_kconfig_map(obj);
+
+	/**
+	 * STRUCT_OPS_SEC = ".struct_ops"
+	 */
 	err = err ?: bpf_object__init_struct_ops_maps(obj);
 	if (err)
 		return err;
@@ -2477,6 +2563,9 @@ out:
 	return 0;
 }
 
+/**
+ *
+ */
 static int bpf_object__finalize_btf(struct bpf_object *obj)
 {
 	int err;
@@ -2791,6 +2880,9 @@ static int cmp_progs(const void *_a, const void *_b)
 	return a->sec_insn_off < b->sec_insn_off ? -1 : 1;
 }
 
+/**
+ * 搜索 eBPF ELF 文件中的一些 section 等信息，并保存到 obj 中
+ */
 static int bpf_object__elf_collect(struct bpf_object *obj)
 {
 	Elf *elf = obj->efile.elf;
@@ -2887,6 +2979,7 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 			} else if (strcmp(name, RODATA_SEC) == 0) {
 				obj->efile.rodata = data;
 				obj->efile.rodata_shndx = idx;
+			/* STRUCT_OPS_SEC = ".struct_ops" */
 			} else if (strcmp(name, STRUCT_OPS_SEC) == 0) {
 				obj->efile.st_ops_data = data;
 				obj->efile.st_ops_shndx = idx;
@@ -2895,6 +2988,7 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 					idx, name);
 			}
 		// REL
+		// eBPF 没用 SHT_RELA 吗？
 		} else if (sh.sh_type == SHT_REL) {
 			int nr_sects = obj->efile.nr_reloc_sects;
 			void *sects = obj->efile.reloc_sects;
@@ -2942,6 +3036,9 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 	return bpf_object__init_btf(obj, btf_data, btf_ext_data);
 }
 
+/**
+ * 不在本 ELF 中定义的函数或变量
+ */
 static bool sym_is_extern(const GElf_Sym *sym)
 {
 	int bind = GELF_ST_BIND(sym->st_info);
@@ -3084,6 +3181,9 @@ static int find_int_btf_id(const struct btf *btf)
 	return 0;
 }
 
+/**
+ * 处理 eBPF ELF 中未定义的符号 - 外部数据
+ */
 static int bpf_object__collect_externs(struct bpf_object *obj)
 {
 	struct btf_type *sec, *kcfg_sec = NULL, *ksym_sec = NULL;
@@ -3104,13 +3204,19 @@ static int bpf_object__collect_externs(struct bpf_object *obj)
 	n = sh.sh_size / sh.sh_entsize;
 	pr_debug("looking for externs among %d symbols...\n", n);
 
+	/**
+	 * 遍历所有 symbol
+	 */
 	for (i = 0; i < n; i++) {
 		GElf_Sym sym;
 
 		if (!gelf_getsym(obj->efile.symbols, i, &sym))
 			return -LIBBPF_ERRNO__FORMAT;
+
+		/* 只遍历不在本 ELF 中定义的函数或变量 */
 		if (!sym_is_extern(&sym))
 			continue;
+
 		ext_name = elf_sym_str(obj, sym.st_name);
 		if (!ext_name || !ext_name[0])
 			continue;
@@ -3124,12 +3230,19 @@ static int bpf_object__collect_externs(struct bpf_object *obj)
 		memset(ext, 0, sizeof(*ext));
 		obj->nr_extern++;
 
+		/**
+		 * 查找这个符号的 BTF ID
+		 */
 		ext->btf_id = find_extern_btf_id(obj->btf, ext_name);
 		if (ext->btf_id <= 0) {
 			pr_warn("failed to find BTF for extern '%s': %d\n",
 				ext_name, ext->btf_id);
 			return ext->btf_id;
 		}
+
+		/**
+		 * 获取这个符号的类型，如 enum struct 等
+		 */
 		t = btf__type_by_id(obj->btf, ext->btf_id);
 		ext->name = btf__name_by_offset(obj->btf, t->name_off);
 		ext->sym_idx = i;
@@ -3144,6 +3257,10 @@ static int bpf_object__collect_externs(struct bpf_object *obj)
 		sec = (void *)btf__type_by_id(obj->btf, ext->sec_btf_id);
 		sec_name = btf__name_by_offset(obj->btf, sec->name_off);
 
+		/**
+		 * KCONFIG_SEC = ".kconfig"
+		 * type = EXT_KCFG
+		 */
 		if (strcmp(sec_name, KCONFIG_SEC) == 0) {
 			kcfg_sec = sec;
 			ext->type = EXT_KCFG;
@@ -3165,6 +3282,9 @@ static int bpf_object__collect_externs(struct bpf_object *obj)
 				pr_warn("extern (kcfg) '%s' type is unsupported\n", ext_name);
 				return -ENOTSUP;
 			}
+		/**
+		 * .ksyms
+		 */
 		} else if (strcmp(sec_name, KSYMS_SEC) == 0) {
 			ksym_sec = sec;
 			ext->type = EXT_KSYM;
@@ -5956,6 +6076,10 @@ bpf_object__relocate_data(struct bpf_object *obj, struct bpf_program *prog)
 			break;
 		case RELO_EXTERN:
 			ext = &obj->externs[relo->sym_off];
+			/**
+			 * KCONFIG_SEC = ".kconfig"
+			 * type = EXT_KCFG
+			 */
 			if (ext->type == EXT_KCFG) {
 				insn[0].src_reg = BPF_PSEUDO_MAP_VALUE;
 				insn[0].imm = obj->maps[obj->kconfig_map_idx].fd;
@@ -6503,6 +6627,9 @@ static int bpf_object__collect_map_relos(struct bpf_object *obj,
 		if (rel.r_offset - vi->offset < moff)
 			return -EINVAL;
 
+		/**
+		 *
+		 */
 		moff = rel.r_offset - vi->offset - moff;
 		/* here we use BPF pointer size, which is always 64 bit, as we
 		 * are parsing ELF that was built for BPF target
@@ -6544,10 +6671,16 @@ static int cmp_relocs(const void *_a, const void *_b)
 	return 0;
 }
 
+/**
+ * 重定位 SHT_REL
+ */
 static int bpf_object__collect_relos(struct bpf_object *obj)
 {
 	int i, err;
 
+	/**
+	 * SHT_REL
+	 */
 	for (i = 0; i < obj->efile.nr_reloc_sects; i++) {
 		GElf_Shdr *shdr = &obj->efile.reloc_sects[i].shdr;
 		Elf_Data *data = obj->efile.reloc_sects[i].data;
@@ -6873,6 +7006,12 @@ static const struct bpf_sec_def *find_sec_def(const char *sec_name);
 
 /**
  * Open BPF object ELF file
+ *
+ * 加载 eBPF ELF 文件
+ *
+ * 一种调用方式：(see samples/bpf/sockex3_user.c)
+ * bpf_object__open_file("sockex3_kern.o", NULL);
+ *    __bpf_object__open("sockex3_kern.o", ...)
  */
 static struct bpf_object *
 __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
@@ -6924,16 +7063,33 @@ __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 	// Just support little endian
 	err = err ? : bpf_object__check_endianness(obj);
 
-
+	/**
+	 * 搜索 eBPF ELF 文件中的一些 section 等信息，并保存到 obj 中
+	 */
 	err = err ? : bpf_object__elf_collect(obj);
+	/**
+	 * 处理 eBPF ELF 中未定义的符号 - 外部数据
+	 */
 	err = err ? : bpf_object__collect_externs(obj);
+	/**
+	 *
+	 */
 	err = err ? : bpf_object__finalize_btf(obj);
+	/**
+	 * 处理 "maps", ".maps", ".data", ".bss", ".kconfig", ".struct_ops" 等
+	 */
 	err = err ? : bpf_object__init_maps(obj, opts);
+	/**
+	 * 重定位 SHT_REL
+	 */
 	err = err ? : bpf_object__collect_relos(obj);
 	if (err)
 		goto out;
 	bpf_object__elf_finish(obj);
 
+	/**
+	 * 遍历目标文件中的所有程序
+	 */
 	bpf_object__for_each_program(prog, obj) {
 		prog->sec_def = find_sec_def(prog->sec_name);
 		if (!prog->sec_def)
@@ -6987,6 +7143,12 @@ struct bpf_object *bpf_object__open(const char *path)
 	return bpf_object__open_xattr(&attr);
 }
 
+/**
+ * 加载 eBPF ELF 文件
+ *
+ * 一种调用方式：(see samples/bpf/sockex3_user.c)
+ * bpf_object__open_file("sockex3_kern.o", NULL);
+ */
 struct bpf_object *
 bpf_object__open_file(const char *path, const struct bpf_object_open_opts *opts)
 {
@@ -7188,7 +7350,10 @@ static int bpf_object__resolve_externs(struct bpf_object *obj,
 
 	for (i = 0; i < obj->nr_extern; i++) {
 		ext = &obj->externs[i];
-
+		/**
+		 * KCONFIG_SEC = ".kconfig"
+		 * type = EXT_KCFG
+		 */
 		if (ext->type == EXT_KCFG &&
 		    strcmp(ext->name, "LINUX_KERNEL_VERSION") == 0) {
 			void *ext_val = kcfg_data + ext->kcfg.data_off;
@@ -8566,6 +8731,10 @@ static int bpf_object__collect_st_ops_relos(struct bpf_object *obj,
 				map->name, (unsigned long long)sym.st_value);
 			return -LIBBPF_ERRNO__FORMAT;
 		}
+
+		/**
+		 *
+		 */
 		insn_idx = sym.st_value / BPF_INSN_SZ;
 
 		member = find_member_by_offset(st_ops->type, moff * 8);

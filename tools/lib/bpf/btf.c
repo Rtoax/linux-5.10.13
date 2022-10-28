@@ -1096,6 +1096,9 @@ sort_vars:
 	return 0;
 }
 
+/**
+ *
+ */
 int btf__finalize_data(struct bpf_object *obj, struct btf *btf)
 {
 	int err = 0;
