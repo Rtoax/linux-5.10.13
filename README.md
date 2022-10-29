@@ -30,7 +30,9 @@ Linux内核完全注释
 7. 《基于名字空间的安全程序设计》
 8. 《Linux二进制分析》
 9. 《Qemu/KVM源码解析与应用》
-10. 还有很多
+10. https://github.com/rtoax/notes.git
+11. 还有很多
+
 
 
 ## 配置
