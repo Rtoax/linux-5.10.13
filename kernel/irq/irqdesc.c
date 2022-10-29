@@ -114,7 +114,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 
-    /* 设置高级别的 中断处理函数 */
+	/* 设置高级别的 中断处理函数 */
 	desc->handle_irq = handle_bad_irq;
 	desc->depth = 1;
 	desc->irq_count = 0;
@@ -123,7 +123,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	desc->name = NULL;
 	desc->owner = owner;
 
-    /* 设置 per-CPU IRQs 状态为 0 */
+	/* 设置 per-CPU IRQs 状态为 0 */
 	for_each_possible_cpu(cpu) {
 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;}
 
@@ -391,7 +391,7 @@ void irq_unlock_sparse(void)
 {
 	mutex_unlock(&sparse_irq_lock);
 }
-    /* 分配 中断描述符 */
+	/* 分配 中断描述符 */
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
 				   struct module *owner)
@@ -476,8 +476,8 @@ static void free_desc(unsigned int irq)
  *  分配
  */
 static int alloc_descs(unsigned int start, unsigned int cnt, int node,
-            		       const struct irq_affinity_desc *affinity,
-            		       struct module *owner)
+		    		       const struct irq_affinity_desc *affinity,
+		    		       struct module *owner)
 {
 	struct irq_desc *desc;
 	int i;
@@ -504,9 +504,9 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 			affinity++;
 		}
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		desc = alloc_desc(start + i, node, flags, mask, owner);
 		if (!desc)
 			goto err;
@@ -516,9 +516,9 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 		irq_add_debugfs_entry(start + i, desc);
 	}
 
-    /**
-     *  置位
-     */
+	/**
+	 *  置位
+	 */
 	bitmap_set(allocated_irqs, start, cnt);
 	return start;
 
@@ -545,8 +545,8 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 
 	/* Let arch update nr_irqs and return the nr of preallocated irqs */
 	initcnt = arch_probe_nr_irqs();
-    //[rongtao@localhost src]$ sudo dmesg | grep NR_IRQ
-    //[    0.000000] NR_IRQS:327936 nr_irqs:2464 0
+	//[rongtao@localhost src]$ sudo dmesg | grep NR_IRQ
+	//[    0.000000] NR_IRQS:327936 nr_irqs:2464 0
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
 
@@ -560,7 +560,7 @@ int __init early_irq_init(void) /* 初始化外部中断 */
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-        /* 申请内存 */
+		/* 申请内存 */
 		desc = alloc_desc(i, node, 0, NULL, NULL);
 		set_bit(i, allocated_irqs);
 		irq_insert_desc(i, desc);   /* 插入到 radix 树 */
@@ -595,9 +595,9 @@ int __init early_irq_init(void)
 
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);
-    /**
-     *  初始化
-     */
+	/**
+	 *  初始化
+	 */
 	for (i = 0; i < count; i++) {
 		desc[i].kstat_irqs = alloc_percpu(unsigned int);
 		alloc_masks(&desc[i], node);
@@ -606,9 +606,9 @@ int __init early_irq_init(void)
 		mutex_init(&desc[i].request_mutex);
 		desc_set_defaults(i, &desc[i], node, NULL, NULL);
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return arch_early_irq_init();
 }
 
@@ -671,6 +671,25 @@ void irq_init_desc(unsigned int irq)
  * generic_handle_irq - Invoke the handler for a particular irq
  * @irq:	The irq number to handle
  *
+ * -----------------------------------------------------------------------------
+ * GIC 中断流程
+ *
+ * notes/kernel/interrupts/gic.md
+ *
+ * 1. 当 GIC 检测到中断发生，将该中断标记为 pending 状态（等待）;
+ * 2. 对于 pending 状态的中断，仲裁单元会确定目标 CPU，并将中断请求发送到这个 CPU;
+ * 3. 对于每个 CPU，仲裁单元会从众多处于 pending 状态的中断中选择一个优先级最高的中断，发送
+ *    到目标CPU的CPU接口模块上；
+ * 4. CPU 接口模块会决定这个中断是否发送给CPU，如果该中断的优先级满足要求，GIC会发送一个中断
+ *    请求信号给该CPU；
+ * 5. 当一个CPU进入中断异常后，会读取 `GICC_IAR`来响应该中断(一般由 Linux 内核的中断处理
+ *    程序来度寄存器)。寄存器会返回硬件中断号(Hardware Interrupt ID)，对于 SIG(软件触发
+ *    的中断)来说，返回源CPU的ID(Souce Processor ID)。当 GIC 感知到软件读取了该寄存器后，
+ *    又分为如下情况：
+ * 	* 如果该中断处于 pending 状态，那么状态变为 active；
+ * 	* 如果该中断又重新产生，那么将 pending 状态变成 active and pending 状态；
+ * 	* 如果该中断处于 active 状态，将变成 active and pending 状态；
+ * 6. 当处理器完成中断服务，必须发送一个完成信号结束中断(End Of Interrupt, EOI) 给 GIC。
  */
 int generic_handle_irq(unsigned int irq)
 {
@@ -680,25 +699,25 @@ int generic_handle_irq(unsigned int irq)
 	if (!desc)
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	data = irq_desc_get_irq_data(desc);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (WARN_ON_ONCE(!in_irq() && handle_enforce_irqctx(data)))
 		return -EPERM;
 
-    /**
-     *  调用回调函数
-     *
-     *  handle_irq 在 __irq_do_set_handler() 中设置
-     *
-     *  x86 hpet 对应 handle_edge_irq()
-     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
-     */
+	/**
+	 *  调用回调函数
+	 *
+	 *  handle_irq 在 __irq_do_set_handler() 中设置
+	 *
+	 *  x86 hpet 对应 handle_edge_irq()
+	 *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+	 */
 	generic_handle_irq_desc(desc);
 
 	return 0;
@@ -716,31 +735,32 @@ EXPORT_SYMBOL_GPL(generic_handle_irq);
  * Returns:	0 on success, or -EINVAL if conversion has failed
  *
  * 调用 硬件中断所属的 domain 的处理函数
+ * 见 generic_handle_irq() 注释
  */
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
-    /**
-     *  保存中断前的 栈框
-     */
+	/**
+	 *  保存中断前的 栈框
+	 */
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
-    /**
-     *  如果没有中断域的话， 软中断号 == 硬中断号
-     */
+	/**
+	 *  如果没有中断域的话， 软中断号 == 硬中断号
+	 */
 	unsigned int irq = hwirq;
 	int ret = 0;
 
-    /**
-     *  进入中断上下文
-     */
+	/**
+	 *  进入中断上下文
+	 */
 	irq_enter();
 
 #ifdef CONFIG_IRQ_DOMAIN
 	if (lookup)
-        /**
-         *  查找 软中断号
-         */
+		/**
+		 *  查找 软中断号
+		 */
 		irq = irq_find_mapping(domain, hwirq);
 #endif
 
@@ -748,26 +768,26 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	 * Some hardware gives randomly wrong interrupts.  Rather
 	 * than crashing, do something sensible.
 	 *
-     *  中断号 错误
-     */
+	 *  中断号 错误
+	 */
 	if (unlikely(!irq || irq >= nr_irqs)) {
 		ack_bad_irq(irq);
 		ret = -EINVAL;
 	} else {
-        /**
-         *  中断号处理
-         */
+		/**
+		 *  中断号处理
+		 */
 		generic_handle_irq(irq);
 	}
 
-    /**
-     *
-     */
+	/**
+	 * 当处理器完成中断服务，必须发送一个完成信号结束中断(End Of Interrupt, EOI) 给 GIC？
+	 */
 	irq_exit();
 
-    /**
-     *  设置，这里不需要old 值
-     */
+	/**
+	 *  设置，这里不需要old 值
+	 */
 	set_irq_regs(old_regs);
 	return ret;
 }
@@ -872,9 +892,9 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 
 	mutex_lock(&sparse_irq_lock);
 
-    /**
-     *  查找第一个空间位
-     */
+	/**
+	 *  查找第一个空间位
+	 */
 	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS, from, cnt, 0);
 	ret = -EEXIST;
 	if (irq >=0 && start != irq)
@@ -885,9 +905,9 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		if (ret)
 			goto unlock;
 	}
-    /**
-     *  分配 irq_desc 数据结构(中断描述符)
-     */
+	/**
+	 *  分配 irq_desc 数据结构(中断描述符)
+	 */
 	ret = alloc_descs(start, cnt, node, affinity, owner);
 
 unlock:
@@ -965,9 +985,9 @@ struct irq_desc *
 __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 		    unsigned int check)
 {
-    /**
-     *  从 radix 树中查找
-     */
+	/**
+	 *  从 radix 树中查找
+	 */
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {

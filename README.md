@@ -30,9 +30,10 @@ Linux内核完全注释
 7. 《基于名字空间的安全程序设计》
 8. 《Linux二进制分析》
 9. 《Qemu/KVM源码解析与应用》
-10. https://github.com/rtoax/notes.git
+10. [Notes](https://github.com/rtoax/notes.git)
 11. 还有很多
 
+> 如果你看到源码注释中有`notes/`为前缀的注释，清参见上述 `Notes` 连接.
 
 
 ## 配置

@@ -66,7 +66,7 @@ union gic_base {
 };
 
 /**
- *  
+ *
  */
 struct gic_chip_data {
 	struct irq_chip chip;
@@ -121,7 +121,7 @@ static u8 __read_mostly gic_cpu_map[NR_GIC_CPU_IF] ;
 static DEFINE_STATIC_KEY_TRUE(supports_deactivate_key);
 
 /**
- *  
+ *
  */
 static struct gic_chip_data __read_mostly gic_data[CONFIG_ARM_GIC_MAX_NR] ;
 
@@ -339,20 +339,43 @@ static int gic_retrigger(struct irq_data *data)
 }
 
 /**
- *  
+ * GIC 中断流程
+ *
+ * notes/kernel/interrupts/gic.md
+ *
+ * 1. 当 GIC 检测到中断发生，将该中断标记为 pending 状态（等待）;
+ * 2. 对于 pending 状态的中断，仲裁单元会确定目标 CPU，并将中断请求发送到这个 CPU;
+ * 3. 对于每个 CPU，仲裁单元会从众多处于 pending 状态的中断中选择一个优先级最高的中断，发送
+ *    到目标CPU的CPU接口模块上；
+ * 4. CPU 接口模块会决定这个中断是否发送给CPU，如果该中断的优先级满足要求，GIC会发送一个中断
+ *    请求信号给该CPU；
+ * 5. 当一个CPU进入中断异常后，会读取 `GICC_IAR`来响应该中断(一般由 Linux 内核的中断处理
+ *    程序来度寄存器)。寄存器会返回硬件中断号(Hardware Interrupt ID)，对于 SIG(软件触发
+ *    的中断)来说，返回源CPU的ID(Souce Processor ID)。当 GIC 感知到软件读取了该寄存器后，
+ *    又分为如下情况：
+ * 	* 如果该中断处于 pending 状态，那么状态变为 active；
+ * 	* 如果该中断又重新产生，那么将 pending 状态变成 active and pending 状态；
+ * 	* 如果该中断处于 active 状态，将变成 active and pending 状态；
+ * 6. 当处理器完成中断服务，必须发送一个完成信号结束中断(End Of Interrupt, EOI) 给 GIC。
+ *
+ * 该函数包含了上述流程中的一些
  */
 static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 {
 	u32 irqstat, irqnr;
 	struct gic_chip_data *gic = &gic_data[0];
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 
 	do {
+		/**
+		 * 上述流程(5):当一个CPU进入中断异常后，会读取 `GICC_IAR`来响应该中断
+		 */
 		irqstat = readl_relaxed(cpu_base + GIC_CPU_INTACK);
+		/* 硬件中断号(Hardware Interrupt ID) */
 		irqnr = irqstat & GICC_IAR_INT_ID_MASK;
 
 		if (unlikely(irqnr >= 1020))
@@ -360,7 +383,7 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 
 		if (static_branch_likely(&supports_deactivate_key))
 			writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
-        
+
 		isb();
 
 		/*
@@ -382,9 +405,9 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 			this_cpu_write(sgi_intid, irqstat);
 		}
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		handle_domain_irq(gic->domain, irqnr, regs);
 	} while (1);
 }
@@ -1024,26 +1047,26 @@ static int gic_irq_domain_map(struct irq_domain *d, unsigned int irq, irq_hw_num
 	struct irq_data *irqd = irq_desc_get_irq_data(irq_to_desc(irq));
 
 	switch (hw) {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	case 0 ... 15:
 		irq_set_percpu_devid(irq);
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_percpu_devid_fasteoi_ipi,
 				    NULL, NULL);
 		break;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	case 16 ... 31:
 		irq_set_percpu_devid(irq);
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_percpu_devid_irq, NULL, NULL);
 		break;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	default:
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_fasteoi_irq, NULL, NULL);

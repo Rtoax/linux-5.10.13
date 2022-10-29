@@ -7,6 +7,27 @@
 #ifndef __LINUX_IRQCHIP_ARM_GIC_H
 #define __LINUX_IRQCHIP_ARM_GIC_H
 
+/**
+ * GIC 中断流程
+ *
+ * notes/kernel/interrupts/gic.md
+ *
+ * 1. 当 GIC 检测到中断发生，将该中断标记为 pending 状态（等待）;
+ * 2. 对于 pending 状态的中断，仲裁单元会确定目标 CPU，并将中断请求发送到这个 CPU;
+ * 3. 对于每个 CPU，仲裁单元会从众多处于 pending 状态的中断中选择一个优先级最高的中断，发送
+ *    到目标CPU的CPU接口模块上；
+ * 4. CPU 接口模块会决定这个中断是否发送给CPU，如果该中断的优先级满足要求，GIC会发送一个中断
+ *    请求信号给该CPU；
+ * 5. 当一个CPU进入中断异常后，会读取 `GICC_IAR`来响应该中断(一般由 Linux 内核的中断处理
+ *    程序来度寄存器)。寄存器会返回硬件中断号(Hardware Interrupt ID)，对于 SIG(软件触发
+ *    的中断)来说，返回源CPU的ID(Souce Processor ID)。当 GIC 感知到软件读取了该寄存器后，
+ *    又分为如下情况：
+ * 	* 如果该中断处于 pending 状态，那么状态变为 active；
+ * 	* 如果该中断又重新产生，那么将 pending 状态变成 active and pending 状态；
+ * 	* 如果该中断处于 active 状态，将变成 active and pending 状态；
+ * 6. 当处理器完成中断服务，必须发送一个完成信号结束中断(End Of Interrupt, EOI) 给 GIC。
+ */
+
 #define GIC_CPU_CTRL			0x00
 #define GIC_CPU_PRIMASK			0x04
 #define GIC_CPU_BINPOINT		0x08
@@ -37,6 +58,7 @@
 
 /**
  *  Interrupt ID 域
+ *  见本文件开头 "GIC 中断流程" 步骤 (5)
  */
 #define GICC_IAR_INT_ID_MASK		0x3ff
 #define GICC_INT_SPURIOUS		1023
