@@ -57,45 +57,45 @@ struct pt_regs;
  *  2. 数组，见 kernel/irq/irqdesc.c: irq_desc[]
  */
 struct irq_desc {   /* 中断描述符 */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct irq_common_data	irq_common_data;
 	struct irq_data		irq_data;
 	unsigned int __percpu	*kstat_irqs;    /* IRQs 状态 */
 
-    /**
-     *  在 __irq_do_set_handler() 中设置
-     *
-     *  x86 hpet 对应 handle_edge_irq()
-     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
-     */
+	/**
+	 *  在 __irq_do_set_handler() 中设置
+	 *
+	 *  x86 hpet 对应 handle_edge_irq()
+	 *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+	 */
 	irq_flow_handler_t	handle_irq; /* 处理函数 */
 	struct irqaction	*action;	/* IRQ action list */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned int		status_use_accessors;
 
-    /**
-     *  宏定义为 #define istate core_internal_state__do_not_mess_with_it
-     *
-     *  `IRQS_XXX` 例如 `IRQS_NMI`
-     */
-    union {
+	/**
+	 *  宏定义为 #define istate core_internal_state__do_not_mess_with_it
+	 *
+	 *  `IRQS_XXX` 例如 `IRQS_NMI`
+	 */
+	union {
 	unsigned int		core_internal_state__do_not_mess_with_it;
-    unsigned int        istate;//+++, 实际上为宏定义
-    };
+	unsigned int        istate;//+++, 实际上为宏定义
+	};
 
-    /**
-     *  嵌套的深度，
-     *      disable
-     *        disable
-     *        [...]
-     *        enable
-     *      enable
-     */
+	/**
+	 *  嵌套的深度，
+	 *      disable
+	 *        disable
+	 *        [...]
+	 *        enable
+	 *      enable
+	 */
 	unsigned int		depth;		/* nested irq disables */
 	unsigned int		wake_depth;	/* nested wake enables */
 	unsigned int		tot_count;
@@ -115,27 +115,27 @@ struct irq_desc {   /* 中断描述符 */
 #endif
 #endif
 
-    /**
-     *  位图，
-     *  每位表示正在处理 的共享 ONESHOT 类型中断的中断线程
-     *
-     *  当 该中断源 的所有 action 都执行完成时，desc->threads_oneshot 应为 0
-     */
+	/**
+	 *  位图，
+	 *  每位表示正在处理 的共享 ONESHOT 类型中断的中断线程
+	 *
+	 *  当 该中断源 的所有 action 都执行完成时，desc->threads_oneshot 应为 0
+	 */
 	unsigned long		threads_oneshot;
 
-    /**
-     *  表示正在运行的 中断线程 的个数
-     */
+	/**
+	 *  表示正在运行的 中断线程 的个数
+	 */
 	atomic_t		threads_active;
 
-    /**
-     *  见函数 `wake_threads_waitq()`, 有哪些进程会睡眠在此呢？
-     *
-     *  disable_irq()->synchronize_irq()->wait_event(desc->wait_for_threads,...)
-     *
-     *  disable_irq 函数会调用 synchronize_irq 函数等待所有被唤醒的
-     *      中断线程执行完毕，然后才真正的关闭中断。
-     */
+	/**
+	 *  见函数 `wake_threads_waitq()`, 有哪些进程会睡眠在此呢？
+	 *
+	 *  disable_irq()->synchronize_irq()->wait_event(desc->wait_for_threads,...)
+	 *
+	 *  disable_irq 函数会调用 synchronize_irq 函数等待所有被唤醒的
+	 *      中断线程执行完毕，然后才真正的关闭中断。
+	 */
 	wait_queue_head_t       wait_for_threads;
 
 #ifdef CONFIG_PM_SLEEP
@@ -165,9 +165,9 @@ struct irq_desc {   /* 中断描述符 */
 extern void irq_lock_sparse(void);
 extern void irq_unlock_sparse(void);
 #else
-//static inline void irq_lock_sparse(void) { }
-//static inline void irq_unlock_sparse(void) { }
-//extern struct irq_desc irq_desc[NR_IRQS];
+static inline void irq_lock_sparse(void) { }
+static inline void irq_unlock_sparse(void) { }
+extern struct irq_desc irq_desc[NR_IRQS];
 #endif
 
 static inline struct irq_desc *irq_data_to_desc(struct irq_data *data)
@@ -206,12 +206,12 @@ static inline void *irq_desc_get_handler_data(struct irq_desc *desc)
  */
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
-    /**
-     *  handle_irq 在 __irq_do_set_handler() 中设置
-     *
-     *  x86 hpet 对应 handle_edge_irq()
-     *  arm gic SPI(共享外设中断) 类型中断，对应 handle_fasteio_irq()
-     */
+	/**
+	 *  handle_irq 在 __irq_do_set_handler() 中设置
+	 *
+	 *  x86 hpet 对应 handle_edge_irq()
+	 *  arm gic SPI(共享外设中断) 类型中断，对应 handle_fasteio_irq()
+	 */
 	desc->handle_irq(desc);
 }
 /**

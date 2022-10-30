@@ -20,7 +20,7 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 
 #define GICP_ODMIN_SET			0x40
-#define   GICP_ODMI_INT_NUM_SHIFT	12
+#define GICP_ODMI_INT_NUM_SHIFT	12
 #define GICP_ODMIN_GM_EP_R0		0x110
 #define GICP_ODMIN_GM_EP_R1		0x114
 #define GICP_ODMIN_GM_EA_R0		0x108

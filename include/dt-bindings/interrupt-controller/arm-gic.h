@@ -10,7 +10,14 @@
 
 /* interrupt specifier cell 0 */
 
+/**
+ * SPI - 共享外设中断
+ */
 #define GIC_SPI 0
+
+/**
+ * PPI - 私有外设中断
+ */
 #define GIC_PPI 1
 
 /*

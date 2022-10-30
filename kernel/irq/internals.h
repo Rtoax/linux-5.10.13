@@ -14,7 +14,7 @@
 #ifdef CONFIG_SPARSE_IRQ
 # define IRQ_BITMAP_BITS	(NR_IRQS + 8196)
 #else
-//# define IRQ_BITMAP_BITS	NR_IRQS
+# define IRQ_BITMAP_BITS	NR_IRQS
 #endif
 
 /**
@@ -34,15 +34,15 @@ extern struct irqaction chained_action;
  * IRQTF_FORCED_THREAD  - irq action is force threaded
  */
 enum {
-    /**
-     *  中断处理线程应该运行
-     */
+	/**
+	 *  中断处理线程应该运行
+	 */
 	IRQTF_RUNTHREAD,
 	IRQTF_WARNED,
 	IRQTF_AFFINITY,
 	/**
-     *  强制 中断线程化
-     */
+	 *  强制 中断线程化
+	 */
 	IRQTF_FORCED_THREAD,
 };
 
@@ -63,26 +63,26 @@ enum {
  * 中断状态, irq_desc.istate 或 irq_desc.core_internal_state__do_not_mess_with_it
  */
 enum {
-    /* 表示某个 irq_desc 处于自动侦测状态 */
+	/* 表示某个 irq_desc 处于自动侦测状态 */
 	IRQS_AUTODETECT		= 0x00000001,
-    /* 表示某个 irq_desc 被视为 '伪中断'并被禁用 */
+	/* 表示某个 irq_desc 被视为 '伪中断'并被禁用 */
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
-    /* 表示某个 irq_desc 正轮询调用 action */
+	/* 表示某个 irq_desc 正轮询调用 action */
 	IRQS_POLL_INPROGRESS	= 0x00000008,
-    /* 表示只执行一次 */
+	/* 表示只执行一次 */
 	IRQS_ONESHOT		= 0x00000020,
-    /* 重新发一次中断 */
+	/* 重新发一次中断 */
 	IRQS_REPLAY		= 0x00000040,
-    /**
-     *  表示某个 irq_desc 处于等待状态
-     *  IRQ 探测是通过为每个缺少中断处理例程的 IRQ 设置 IRQS_WAITING 状态位 来完成的
-     *  当中断产生时，因为没有注册处理例程， do_IRQ 清除该标志位后返回。
-     *  当 probe_irq_off() 被一个驱动程序调用的时候，只需要搜索那些 没有设置 IRQS_WAITING 位的 IRQ
-     */
+	/**
+	 *  表示某个 irq_desc 处于等待状态
+	 *  IRQ 探测是通过为每个缺少中断处理例程的 IRQ 设置 IRQS_WAITING 状态位 来完成的
+	 *  当中断产生时，因为没有注册处理例程， do_IRQ 清除该标志位后返回。
+	 *  当 probe_irq_off() 被一个驱动程序调用的时候，只需要搜索那些 没有设置 IRQS_WAITING 位的 IRQ
+	 */
 	IRQS_WAITING		= 0x00000080,
-    /* 表示该中断比挂起 */
+	/* 表示该中断比挂起 */
 	IRQS_PENDING		= 0x00000200,
-    /* 表示该中断被暂停 */
+	/* 表示该中断被暂停 */
 	IRQS_SUSPENDED		= 0x00000800,
 
 	IRQS_TIMINGS		= 0x00001000,
@@ -120,7 +120,7 @@ extern void unmask_threaded_irq(struct irq_desc *desc);
 #ifdef CONFIG_SPARSE_IRQ
 static inline void irq_mark_irq(unsigned int irq) { }
 #else
-//extern void irq_mark_irq(unsigned int irq);
+extern void irq_mark_irq(unsigned int irq);
 #endif
 
 extern int __irq_get_irqchip_state(struct irq_data *data,

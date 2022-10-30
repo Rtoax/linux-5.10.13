@@ -7,9 +7,9 @@
  * in the platform. It is used to size the static irq_map array,
  * so don't make it too big.
  */
-//#ifndef NR_IRQS
-//#define NR_IRQS 64
-//#endif
+#ifndef NR_IRQS
+#define NR_IRQS 64
+#endif
 
 static inline int irq_canonicalize(int irq)
 {
