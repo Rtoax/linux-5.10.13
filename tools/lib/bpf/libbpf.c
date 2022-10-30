@@ -7098,6 +7098,11 @@ __bpf_object__open(const char *path, const void *obj_buf, size_t obj_buf_sz,
 
 		if (prog->sec_def->is_sleepable)
 			prog->prog_flags |= BPF_F_SLEEPABLE;
+
+		/**
+		 * 这里如果 libbpf 无法识别程序类型，可以使用这个接口手动指定程序类型。可以
+		 * 参考连接 https://lore.kernel.org/lkml/tencent_7DD02046A8398BE3324F85E0F56ED41EB105@qq.com/
+		 */
 		bpf_program__set_type(prog, prog->sec_def->prog_type);
 		bpf_program__set_expected_attach_type(prog,
 				prog->sec_def->expected_attach_type);
