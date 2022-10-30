@@ -210,7 +210,7 @@ static inline void generic_handle_irq_desc(struct irq_desc *desc)
      *  handle_irq 在 __irq_do_set_handler() 中设置
      *
      *  x86 hpet 对应 handle_edge_irq()
-     *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+     *  arm gic SPI(共享外设中断) 类型中断，对应 handle_fasteio_irq()
      */
 	desc->handle_irq(desc);
 }

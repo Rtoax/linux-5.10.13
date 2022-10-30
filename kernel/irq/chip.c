@@ -446,9 +446,9 @@ void unmask_irq(struct irq_desc *desc)
 		return;
 
 	if (desc->irq_data.chip->irq_unmask) {
-        /**
-         *  解除屏蔽
-         */
+		/**
+		 *  解除屏蔽
+		 */
 		desc->irq_data.chip->irq_unmask(&desc->irq_data);
 		irq_state_clr_masked(desc);
 	}
@@ -668,9 +668,9 @@ void handle_level_irq(struct irq_desc *desc)
 
 	kstat_incr_irqs_this_cpu(desc);
 
-    /**
-     *  如果设备有一个已注册的处理例程，并发生了中断，这个函数将被调用
-     */
+	/**
+	 *  如果设备有一个已注册的处理例程，并发生了中断，这个函数将被调用
+	 */
 	handle_irq_event(desc);
 
 	cond_unmask_irq(desc);
@@ -735,14 +735,14 @@ void handle_fasteoi_irq(struct irq_desc *desc)
 	if (desc->istate & IRQS_ONESHOT)
 		mask_irq(desc);
 
-    /**
-     *  中断处理的核心函数
-     */
+	/**
+	 *  中断处理的核心函数
+	 */
 	handle_irq_event(desc);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	cond_unmask_eoi_irq(desc, chip);
 
 	raw_spin_unlock(&desc->lock);
@@ -801,6 +801,11 @@ EXPORT_SYMBOL_GPL(handle_fasteoi_nmi);
  *	of the loop which handles the interrupts which have arrived while
  *	the handler was running. If all pending interrupts are handled, the
  *	loop is left.
+ *
+ *  在 generic_handle_irq() 中被调用
+ *    -> generic_handle_irq_desc()
+ *      -> desc->handle_irq(desc); (if x86 hpet)
+ *        -> handle_edge_irq()
  */
 void handle_edge_irq(struct irq_desc *desc)
 {
@@ -846,13 +851,13 @@ void handle_edge_irq(struct irq_desc *desc)
 				unmask_irq(desc);
 		}
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		handle_irq_event(desc);
 
 	}
-    while ((desc->istate & IRQS_PENDING) && !irqd_irq_disabled(&desc->irq_data));
+	while ((desc->istate & IRQS_PENDING) && !irqd_irq_disabled(&desc->irq_data));
 
 out_unlock:
 	raw_spin_unlock(&desc->lock);
@@ -1076,9 +1081,9 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		desc->depth = 1;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	desc->handle_irq = handle;
 	desc->name = name;
 
@@ -1118,9 +1123,9 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 	if (!desc)
 		return;
-    /**
-     *  设置 desc->handle_irq 的回调函数
-     */
+	/**
+	 *  设置 desc->handle_irq 的回调函数
+	 */
 	__irq_do_set_handler(desc, handle, is_chained, name);
 	irq_put_desc_busunlock(desc, flags);
 }

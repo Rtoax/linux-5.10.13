@@ -693,6 +693,7 @@ void irq_init_desc(unsigned int irq)
  */
 int generic_handle_irq(unsigned int irq)
 {
+	/* 根据中断号，获得中断描述符 */
 	struct irq_desc *desc = irq_to_desc(irq);
 	struct irq_data *data;
 
@@ -700,7 +701,7 @@ int generic_handle_irq(unsigned int irq)
 		return -EINVAL;
 
 	/**
-	 *
+	 * return &desc->irq_data;
 	 */
 	data = irq_desc_get_irq_data(desc);
 
@@ -713,10 +714,11 @@ int generic_handle_irq(unsigned int irq)
 	/**
 	 *  调用回调函数
 	 *
+	 *  desc->handle_irq(desc);
 	 *  handle_irq 在 __irq_do_set_handler() 中设置
 	 *
 	 *  x86 hpet 对应 handle_edge_irq()
-	 *  arm gic SPI 类型中断，对应 handle_fasteio_irq()
+	 *  arm gic SPI(共享外设中断) 类型中断，对应 handle_fasteio_irq()
 	 */
 	generic_handle_irq_desc(desc);
 
