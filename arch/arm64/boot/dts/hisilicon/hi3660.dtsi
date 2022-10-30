@@ -505,6 +505,11 @@
 		uart3: serial@ffd74000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x0 0xffd74000 0x0 0x1000>;
+			/**
+			 * 中断类型 GIC_SPI -共享外设中断
+			 * 中断 ID - 114
+			 * 触发类型 - 高电平触发
+			 */
 			interrupts = <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&crg_ctrl HI3660_FACTOR_UART3>,
 				 <&crg_ctrl HI3660_PCLK>;
