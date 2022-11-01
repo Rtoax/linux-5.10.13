@@ -1612,7 +1612,6 @@ static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
 		goto invalid;
 
 	/**
-
 	 *  用名字查找
 	 */
 	if (symbol_name) {
@@ -1623,6 +1622,7 @@ static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
 
 	/**
 	 *  函数地址 + 偏移(这个偏移量是用户定义的)
+	 *  如果引入 offset 是不是在函数的任意地址都可以添加探测点
 	 */
 	addr = (kprobe_opcode_t *)(((char *)addr) + offset);
 	if (addr)
@@ -1633,7 +1633,6 @@ invalid:
 }
 
 /**
-
  *  获取被探测点的地址
  */
 static kprobe_opcode_t *kprobe_addr(struct kprobe *p)
