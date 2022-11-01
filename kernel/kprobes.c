@@ -79,10 +79,10 @@ static struct {
 kprobe_opcode_t * __weak kprobe_lookup_name(const char *name,
 					unsigned int __unused)
 {
-    /**
-     *  @name - 函数名
-     *  return - 指令地址
-     */
+	/**
+	 *  @name - 函数名
+	 *  return - 指令地址
+	 */
 	return ((kprobe_opcode_t *)(kallsyms_lookup_name(name)));
 }
 
@@ -383,22 +383,22 @@ struct kprobe *get_kprobe(void *addr)
 	struct hlist_head *head;
 	struct kprobe *p;
 
-    /**
+	/**
 
-     *  内核 kprobe 符号表 中查找
-     */
+	 *  内核 kprobe 符号表 中查找
+	 */
 	head = &kprobe_table[hash_ptr(addr, KPROBE_HASH_BITS)];
 
-    /**
+	/**
 
-     *  遍历 hlist
-     */
+	 *  遍历 hlist
+	 */
 	hlist_for_each_entry_rcu(p, head, hlist, lockdep_is_held(&kprobe_mutex)) {
 
-        /**
+		/**
 
-         *  找到，则返回 kprobe 地址
-         */
+		 *  找到，则返回 kprobe 地址
+		 */
 		if (p->addr == addr)
 			return p;
 	}
@@ -928,7 +928,7 @@ static void optimize_all_kprobes(void)
 		hlist_for_each_entry(p, head, hlist)
 			if (!kprobe_disabled(p)) {
 				optimize_kprobe(p);
-            }
+			}
 	}
 	cpus_read_unlock();
 	printk(KERN_INFO "Kprobes globally optimized\n");
@@ -999,23 +999,23 @@ static void __arm_kprobe(struct kprobe *p)
 {
 	struct kprobe *_p;
 
-    /**
-     *  优化
-     */
+	/**
+	 *  优化
+	 */
 	/* Check collision with other optimized kprobes */
 	_p = get_optimized_kprobe((unsigned long)p->addr);
 	if (unlikely(_p))
 		/* Fallback to unoptimized kprobe */
 		unoptimize_kprobe(_p, true);
 
-    /**
-     *  处理
-     */
+	/**
+	 *  处理
+	 */
 	arch_arm_kprobe(p);
 
-    /**
-     *  优化 kprobe
-     */
+	/**
+	 *  优化 kprobe
+	 */
 	optimize_kprobe(p);	/* Try to optimize (add kprobe to a list) */
 }
 
@@ -1058,15 +1058,15 @@ static int kprobe_ftrace_enabled;
 /* Must ensure p->addr is really on ftrace */
 static int prepare_kprobe(struct kprobe *p)
 {
-    /**
-     *  kprobe 没有使用 ftrace
-     */
+	/**
+	 *  kprobe 没有使用 ftrace
+	 */
 	if (!kprobe_ftrace(p))
 		return arch_prepare_kprobe(p);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return arch_prepare_kprobe_ftrace(p);
 }
 
@@ -1106,19 +1106,19 @@ err_ftrace:
 
 static int arm_kprobe_ftrace(struct kprobe *p)
 {
-    /*
-     original        kprobe
-       code        registered
-    |        |     |        |
-    | instr1 |     | instr1 |      / call pre_handler
-    |        |     |        |>----/  single step instr2
-    | instr2 |     |  trap  |<---\   call post_handler
-    |        |     |        |     \  continue
-    | instr3 |     | instr3 |
-    |        |     |        |
-    | instr4 |     | instr4 |
-       |     |        |
-    */
+	/*
+	 original        kprobe
+	   code        registered
+	|        |     |        |
+	| instr1 |     | instr1 |      / call pre_handler
+	|        |     |        |>----/  single step instr2
+	| instr2 |     |  trap  |<---\   call post_handler
+	|        |     |        |     \  continue
+	| instr3 |     | instr3 |
+	|        |     |        |
+	| instr4 |     | instr4 |
+	   |     |        |
+	*/
 	bool ipmodify = (p->post_handler != NULL);
 
 
@@ -1165,24 +1165,24 @@ dify ? &kprobe_ipmodify_ops : &kprobe_ftrace_ops,
 /* Arm a kprobe with text_mutex */
 static int arm_kprobe(struct kprobe *kp)
 {
-    /* 如果使用 ftrace 做probe */
+	/* 如果使用 ftrace 做probe */
 	if (unlikely(kprobe_ftrace(kp)))
 		return arm_kprobe_ftrace(kp);
 
-    /**
-     *  加锁
-     */
+	/**
+	 *  加锁
+	 */
 	cpus_read_lock();
 	mutex_lock(&text_mutex);
 
-    /**
-     *  内部函数
-     */
+	/**
+	 *  内部函数
+	 */
 	__arm_kprobe(kp);
 
-    /**
-     *  解锁
-     */
+	/**
+	 *  解锁
+	 */
 	mutex_unlock(&text_mutex);
 	cpus_read_unlock();
 
@@ -1482,9 +1482,9 @@ static int register_aggr_kprobe(struct kprobe *orig_p, struct kprobe *p)
 	jump_label_lock();
 	mutex_lock(&text_mutex);
 
-    /**
-     *  聚合探针
-     */
+	/**
+	 *  聚合探针
+	 */
 	if (!kprobe_aggrprobe(orig_p)) {
 		/* If orig_p is not an aggr_kprobe, create new aggr_kprobe. */
 		ap = alloc_aggr_kprobe(orig_p);
@@ -1611,19 +1611,19 @@ static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
 	if ((symbol_name && addr) || (!symbol_name && !addr))
 		goto invalid;
 
-    /**
+	/**
 
-     *  用名字查找
-     */
+	 *  用名字查找
+	 */
 	if (symbol_name) {
 		addr = kprobe_lookup_name(symbol_name, offset);
 		if (!addr)
 			return ERR_PTR(-ENOENT);
 	}
 
-    /**
-     *  函数地址 + 偏移(这个偏移量是用户定义的)
-     */
+	/**
+	 *  函数地址 + 偏移(这个偏移量是用户定义的)
+	 */
 	addr = (kprobe_opcode_t *)(((char *)addr) + offset);
 	if (addr)
 		return addr;
@@ -1648,18 +1648,18 @@ static struct kprobe *__get_valid_kprobe(struct kprobe *p)
 
 	lockdep_assert_held(&kprobe_mutex);
 
-    /**
+	/**
 
-     *  从哈希表中查找是否支持 这个 kprobe
-     */
+	 *  从哈希表中查找是否支持 这个 kprobe
+	 */
 	ap = get_kprobe(p->addr);
 	if (unlikely(!ap))
 		return NULL;
 
-    /**
+	/**
 
-     *  如果用户自己申请了一个 kprobe，这里不相等??
-     */
+	 *  如果用户自己申请了一个 kprobe，这里不相等??
+	 */
 	if (p != ap) {
 		list_for_each_entry(list_p, &ap->list, list)
 			if (list_p == p)
@@ -1678,10 +1678,10 @@ static inline int check_kprobe_rereg(struct kprobe *p)
 
 	mutex_lock(&kprobe_mutex);
 
-    /**
+	/**
 
-     *  是否合法
-     */
+	 *  是否合法
+	 */
 	if (__get_valid_kprobe(p))
 		ret = -EINVAL;
 	mutex_unlock(&kprobe_mutex);
@@ -1718,23 +1718,23 @@ static int check_kprobe_address_safe(struct kprobe *p, struct module **probed_mo
 	if (ret)
 		return ret;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	jump_label_lock();
 
-    /**
-     *  关闭抢占，为什么?（2021年8月31日17:15:39）
-     */
+	/**
+	 *  关闭抢占，为什么?（2021年8月31日17:15:39）
+	 */
 	preempt_disable();
 
-    /**
-     *  需要满足的条件
-     *  1. 必须为内核代码段
-     *  2. 不在 kprobe 黑名单中
-     *  3. 不是jump label 代码预留的
-     *  4. 不是 static key 预留的
-     */
+	/**
+	 *  需要满足的条件
+	 *  1. 必须为内核代码段
+	 *  2. 不在 kprobe 黑名单中
+	 *  3. 不是jump label 代码预留的
+	 *  4. 不是 static key 预留的
+	 */
 	/* Ensure it is not in reserved area nor out of text */
 	if (!kernel_text_address((unsigned long) p->addr) ||
 	    within_kprobe_blacklist((unsigned long) p->addr) ||
@@ -1745,14 +1745,14 @@ static int check_kprobe_address_safe(struct kprobe *p, struct module **probed_mo
 		goto out;
 	}
 
-    /**
-     *  从 模块中查找
-     */
+	/**
+	 *  从 模块中查找
+	 */
 	/* Check if are we probing a module */
 	*probed_mod = __module_text_address((unsigned long) p->addr);
-    /**
-     *  如果这个地址是 module 中的代码
-     */
+	/**
+	 *  如果这个地址是 module 中的代码
+	 */
 	if (*probed_mod) {
 		/*
 		 * We must hold a refcount of the probed module while updating
@@ -1782,7 +1782,6 @@ out:
 }
 
 /**
-
  *  注册一个 kprobe
  */
 int register_kprobe(struct kprobe *p)   //注册kprobe探测点
@@ -1792,65 +1791,62 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	struct module *probed_mod;
 	kprobe_opcode_t *addr;
 
-    /**
-
-     *  找到 op 操作符 地址
-     */
+	/**
+	 *  找到 op 操作符 地址
+	 */
 	/* Adjust probe address from symbol */
 	addr = kprobe_addr(p);
 	if (IS_ERR(addr))
 		return PTR_ERR(addr);
 
-    /**
-
-     *  保存
-     */
+	/**
+	 *  保存
+	 */
 	p->addr = addr;
 
-    /**
-
-     *  检查 合法性
-     */
+	/**
+	 *  检查 合法性
+	 */
 	ret = check_kprobe_rereg(p);
 	if (ret)
 		return ret;
 
 	/* User can pass only KPROBE_FLAG_DISABLED to register_kprobe */
-    /**
-     *  先暂时将这个      kprobe 关闭
-     */
+	/**
+	 *  先暂时将这个      kprobe 关闭
+	 */
 	p->flags &= KPROBE_FLAG_DISABLED;
 	p->nmissed = 0;
 
-    /**
-     *  在同一个挂载点的 多个 kprobe
-     */
+	/**
+	 *  在同一个挂载点的 多个 kprobe
+	 */
 	INIT_LIST_HEAD(&p->list);
 
-    /**
+	/**
 
-     *  地址是否 安全
-     */
+	 *  地址是否 安全
+	 */
 	ret = check_kprobe_address_safe(p, &probed_mod);
 	if (ret)
 		return ret;
 
 	mutex_lock(&kprobe_mutex);
 
-    /**
-     *  获取旧的probe，
-     *  也就是这个地址是否已经存在 kprobe
-     */
+	/**
+	 *  获取旧的probe，
+	 *  也就是这个地址是否已经存在 kprobe
+	 */
 	old_p = get_kprobe(p->addr);
-    /**
-     *  如果已经存在
-     */
+	/**
+	 *  如果已经存在
+	 */
 	if (old_p) {
 		/**
 		 *  Since this may unoptimize old_p, locking text_mutex.
-         *  这是该地址上的第二个或后续kprobe-处理复杂情况
-         *  TODO 2021年8月31日17:17:33
-         */
+		 *  这是该地址上的第二个或后续kprobe-处理复杂情况
+		 *  TODO 2021年8月31日17:17:33
+		 */
 		ret = register_aggr_kprobe(old_p, p);
 		goto out;
 	}
@@ -1859,9 +1855,9 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	/* Prevent text modification */
 	mutex_lock(&text_mutex);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = prepare_kprobe(p);
 	mutex_unlock(&text_mutex);
 	cpus_read_unlock();
@@ -1872,20 +1868,20 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 
 	INIT_HLIST_NODE(&p->hlist);
 
-    /**
-     *  添加到 kprobe
-     */
+	/**
+	 *  添加到 kprobe
+	 */
 	hlist_add_head_rcu(&p->hlist, &kprobe_table[hash_ptr(p->addr, KPROBE_HASH_BITS)]);
 
-    /**
-     *  如果 kprobe 现在使能， 直接使用 text_poke()  替换指令
-     */
+	/**
+	 *  如果 kprobe 现在使能， 直接使用 text_poke()  替换指令
+	 */
 	if (!kprobes_all_disarmed && !kprobe_disabled(p)) {
 
-        /**
-         *  处理一个   kprobe，用 int3   替换原有指令
-         *  enable_kprobe() 中将使用这个函数
-         */
+		/**
+		 *  处理一个   kprobe，用 int3   替换原有指令
+		 *  enable_kprobe() 中将使用这个函数
+		 */
 		ret = arm_kprobe(p);
 		if (ret) {
 			hlist_del_rcu(&p->hlist);
@@ -2049,13 +2045,13 @@ int register_kprobes(struct kprobe **kps, int num)  //注册多个kprobe探测�
 	if (num <= 0)
 		return -EINVAL;
 
-    /**
-     *  遍历
-     */
+	/**
+	 *  遍历
+	 */
 	for (i = 0; i < num; i++) {
-        /**
-         *  注册一个 kprobe
-         */
+		/**
+		 *  注册一个 kprobe
+		 */
 		ret = register_kprobe(kps[i]);
 		if (ret < 0) {
 			if (i > 0)
@@ -2087,9 +2083,9 @@ void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探�
 		return;
 	mutex_lock(&kprobe_mutex);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for (i = 0; i < num; i++)
 		if (__unregister_kprobe_top(kps[i]) < 0)
 			kps[i]->addr = NULL;
@@ -2098,9 +2094,9 @@ void unregister_kprobes(struct kprobe **kps, int num)   //卸载多个kprobe探�
 
 	synchronize_rcu();
 
-    /**
-     *  无需持有 mutex
-     */
+	/**
+	 *  无需持有 mutex
+	 */
 	for (i = 0; i < num; i++)
 		if (kps[i]->addr)
 			__unregister_kprobe_bottom(kps[i]);
@@ -2257,9 +2253,9 @@ static int pre_handler_kretprobe(struct kprobe *p, struct pt_regs *regs)
 		INIT_HLIST_NODE(&ri->hlist);
 		kretprobe_table_lock(hash, &flags);
 
-        /**
-         *  添加到哈希表
-         */
+		/**
+		 *  添加到哈希表
+		 */
 		hlist_add_head(&ri->hlist, &kretprobe_inst_table[hash]);
 		kretprobe_table_unlock(hash, &flags);
 	} else {
@@ -2770,18 +2766,18 @@ static int __init init_kprobes(void)
 		raw_spin_lock_init(&(kretprobe_table_locks[i].lock));
 	}
 
-    /**
-     *  遍历所有 的 kprobe 黑名单
-     */
+	/**
+	 *  遍历所有 的 kprobe 黑名单
+	 */
 	err = populate_kprobe_blacklist(__start_kprobe_blacklist, __stop_kprobe_blacklist);
 	if (err) {
 		pr_err("kprobes: failed to populate blacklist: %d\n", err);
 		pr_err("Please take care of using kprobes.\n");
 	}
 
-    /**
-     *  黑名单
-     */
+	/**
+	 *  黑名单
+	 */
 	if (kretprobe_blacklist_size) {
 		/* lookup the function address from its name */
 		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
@@ -2805,9 +2801,9 @@ static int __init init_kprobes(void)
 	/* By default, kprobes are armed */
 	kprobes_all_disarmed = false;
 
-    /**
-     *  体系相关的 初始化，x86 为空，返回 0
-     */
+	/**
+	 *  体系相关的 初始化，x86 为空，返回 0
+	 */
 	err = arch_init_kprobes();
 
 	if (!err)
@@ -2815,14 +2811,14 @@ static int __init init_kprobes(void)
 	if (!err)
 		err = register_module_notifier(&kprobe_module_nb);
 
-    /**
-     *  初始化标记
-     */
+	/**
+	 *  初始化标记
+	 */
 	kprobes_initialized = (err == 0);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!err)
 		init_test_probes();
 	return err;
@@ -2900,20 +2896,20 @@ static int show_kprobe_addr(struct seq_file *pi, void *v)
 	hlist_for_each_entry_rcu(p, head, hlist) {
 		sym = kallsyms_lookup((unsigned long)p->addr, NULL, &offset, &modname, namebuf);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (kprobe_aggrprobe(p)) {
 			list_for_each_entry_rcu(kp, &p->list, list) {
 				report_probe(pi, kp, sym, offset, modname, p);
-            }
+		}
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		} else {
 			report_probe(pi, p, sym, offset, modname, NULL);
-        }
+		}
 	}
 	preempt_enable();
 	return 0;
@@ -3046,18 +3042,18 @@ static int disarm_all_kprobes(void)
 
 	kprobes_all_disarmed = true;
 
-    /**
-     *  遍历
-     */
+	/**
+	 *  遍历
+	 */
 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
 		head = &kprobe_table[i];
 		/* Disarm all kprobes on a best-effort basis */
 		hlist_for_each_entry(p, head, hlist) {
 			if (!arch_trampoline_kprobe(p) && !kprobe_disabled(p)) {
 
-                /**
-                 *  不再处理
-                 */
+				/**
+				 *  不再处理
+				 */
 				err = disarm_kprobe(p, false);
 				if (err) {
 					errors++;
