@@ -999,9 +999,9 @@ static bool icmp_echo(struct sk_buff *skb)
 		icmp_param.offset	   = 0;
 		icmp_param.data_len	   = skb->len;
 		icmp_param.head_len	   = sizeof(struct icmphdr);
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		icmp_reply(&icmp_param, skb);
 	}
 	/* should there be an ICMP stat for ignored echos? */
@@ -1055,8 +1055,8 @@ static bool icmp_discard(struct sk_buff *skb)
 
 /*
  *	Deal with incoming ICMP packets.
- *  
- *  两个方向都会调用这个函数 
+ *
+ *  两个方向都会调用这个函数
  *  sudo bpftrace -e 'kprobe:icmp_rcv {printf("icmp_rcv\n");}'
  */
 int icmp_rcv(struct sk_buff *skb)
@@ -1131,9 +1131,9 @@ int icmp_rcv(struct sk_buff *skb)
 		}
 	}
 
-    /**
-     *  处理函数
-     */
+	/**
+	 *  处理函数
+	 */
 	success = icmp_pointers[icmph->type].handler(skb);
 
 	if (success)  {
@@ -1316,7 +1316,7 @@ static void __net_exit icmp_sk_exit(struct net *net)
 
 	for_each_possible_cpu(i) {
 		inet_ctl_sock_destroy(*per_cpu_ptr(net->ipv4.icmp_sk, i));
-    }
+	}
 	free_percpu(net->ipv4.icmp_sk);
 	net->ipv4.icmp_sk = NULL;
 }
@@ -1328,9 +1328,9 @@ static int __net_init icmp_sk_init(struct net *net)
 	net->ipv4.icmp_sk = alloc_percpu(struct sock *);
 	if (!net->ipv4.icmp_sk)
 		return -ENOMEM;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for_each_possible_cpu(i) {
 		struct sock *sk;
 
@@ -1384,11 +1384,11 @@ fail:
 }
 
 static struct pernet_operations __net_initdata icmp_sk_ops = {
-       .init = icmp_sk_init,
-       .exit = icmp_sk_exit,
+	   .init = icmp_sk_init,
+	   .exit = icmp_sk_exit,
 };
 /**
- *  
+ *
  */
 int __init icmp_init(void)
 {
