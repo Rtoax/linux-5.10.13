@@ -2597,11 +2597,21 @@ static inline bool libbpf_prog_needs_vmlinux_btf(struct bpf_program *prog)
 	return false;
 }
 
+/**
+ * @brief 加载 BTF (/sys/kernel/btf/vmlinux)
+ *
+ * @param obj
+ * @return int
+ */
 static int bpf_object__load_vmlinux_btf(struct bpf_object *obj)
 {
 	bool need_vmlinux_btf = false;
 	struct bpf_program *prog;
 	int i, err;
+
+	/**
+	 * 首先判断是否需要 BTF
+	 */
 
 	/* CO-RE relocations need kernel BTF */
 	if (obj->btf_ext && obj->btf_ext->core_relo_info.len)
@@ -2612,12 +2622,18 @@ static int bpf_object__load_vmlinux_btf(struct bpf_object *obj)
 		const struct extern_desc *ext;
 
 		ext = &obj->externs[i];
+		/**
+		 * EXT_KSYM = 2
+		 */
 		if (ext->type == EXT_KSYM && ext->ksym.type_id) {
 			need_vmlinux_btf = true;
 			break;
 		}
 	}
 
+	/**
+	 * 遍历目标 ELF 中的所有 BPF 程序
+	 */
 	bpf_object__for_each_program(prog, obj) {
 		if (!prog->load)
 			continue;
@@ -2627,9 +2643,14 @@ static int bpf_object__load_vmlinux_btf(struct bpf_object *obj)
 		}
 	}
 
+	/* 如果不需要，直接返回成功 */
 	if (!need_vmlinux_btf)
 		return 0;
 
+	/**
+	 * 获取 BTF 句柄
+	 * /sys/kernel/btf/vmlinux
+	 */
 	obj->btf_vmlinux = libbpf_find_kernel_btf();
 	if (IS_ERR(obj->btf_vmlinux)) {
 		err = PTR_ERR(obj->btf_vmlinux);
@@ -3809,6 +3830,11 @@ int bpf_map__resize(struct bpf_map *map, __u32 max_entries)
 	return bpf_map__set_max_entries(map, max_entries);
 }
 
+/**
+ * @brief - 为了确保可以加载，测试一下
+ *
+ * @param obj
+ */
 static int
 bpf_object__probe_loading(struct bpf_object *obj)
 {
@@ -7428,6 +7454,11 @@ static int bpf_object__resolve_externs(struct bpf_object *obj,
 	return 0;
 }
 
+/**
+ * @brief 加载 BPF 程序到内核
+ *
+ * @param attr - attr.obj = obj = bpf_object__open_file()
+ */
 int bpf_object__load_xattr(struct bpf_object_load_attr *attr)
 {
 	struct bpf_object *obj;
@@ -7439,13 +7470,23 @@ int bpf_object__load_xattr(struct bpf_object_load_attr *attr)
 	if (!obj)
 		return -EINVAL;
 
+	/* 已经加载过 */
 	if (obj->loaded) {
 		pr_warn("object '%s': load can't be attempted twice\n", obj->name);
 		return -EINVAL;
 	}
 
+	/* 为了确保可以加载，测试一下 */
 	err = bpf_object__probe_loading(obj);
+
+	/* /sys/kernel/btf/vmlinux */
 	err = err ? : bpf_object__load_vmlinux_btf(obj);
+
+	/**
+	 * 处理一些外部符号
+	 *
+	 * 如在 kallsyms 中的符号等
+	 */
 	err = err ? : bpf_object__resolve_externs(obj, obj->kconfig);
 	err = err ? : bpf_object__sanitize_and_load_btf(obj);
 	err = err ? : bpf_object__sanitize_maps(obj);
@@ -7474,6 +7515,11 @@ out:
 	return err;
 }
 
+/**
+ * @brief 加载 BPF 程序到内核
+ *
+ * @param obj - bpf_object__open_file() 打开的句柄
+ */
 int bpf_object__load(struct bpf_object *obj)
 {
 	struct bpf_object_load_attr attr = {

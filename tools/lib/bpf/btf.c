@@ -4502,6 +4502,7 @@ struct btf *libbpf_find_kernel_btf(void)
 	for (i = 0; i < ARRAY_SIZE(locations); i++) {
 		snprintf(path, PATH_MAX, locations[i].path_fmt, buf.release);
 
+		// 必须可读
 		if (access(path, R_OK))
 			continue;
 
