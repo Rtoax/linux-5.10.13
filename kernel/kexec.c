@@ -36,7 +36,7 @@ static int copy_user_segment_list(struct kimage *image,
 	return ret;
 }
 /**
- *  
+ *
  */
 static int kimage_alloc_init(struct kimage **rimage, unsigned long entry,
 			     unsigned long nr_segments,
@@ -61,13 +61,13 @@ static int kimage_alloc_init(struct kimage **rimage, unsigned long entry,
 
 	image->start = entry;
     /**
-     *  
+     *
      */
 	ret = copy_user_segment_list(image, nr_segments, segments);
 	if (ret)
 		goto out_free_image;
     /**
-     *  
+     *
      */
 	if (kexec_on_panic) {
 		/* Enable special crash kernel control page alloc policy. */
@@ -75,7 +75,7 @@ static int kimage_alloc_init(struct kimage **rimage, unsigned long entry,
 		image->type = KEXEC_TYPE_CRASH;
 	}
     /**
-     *  
+     *
      */
 	ret = sanity_check_segment_list(image);
 	if (ret)
@@ -111,7 +111,7 @@ out_free_image:
 	return ret;
 }
 /**
- *  
+ *
  */
 static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		struct kexec_segment __user *segments, unsigned long flags)
@@ -120,7 +120,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 	unsigned long i;
 	int ret;
     /**
-     *  
+     *
      */
 	if (flags & KEXEC_ON_CRASH) {
 		dest_image = &kexec_crash_image;
@@ -144,7 +144,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 		kimage_free(xchg(&kexec_crash_image, NULL));
 	}
     /**
-     *  
+     *
      */
 	ret = kimage_alloc_init(&image, entry, nr_segments, segments, flags);
 	if (ret)
@@ -153,7 +153,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 	if (flags & KEXEC_PRESERVE_CONTEXT)
 		image->preserve_context = 1;
     /**
-     *  
+     *
      */
 	ret = machine_kexec_prepare(image);
 	if (ret)
@@ -173,7 +173,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
 			goto out;
 	}
     /**
-     *  
+     *
      */
 	kimage_terminate(image);
 
@@ -252,6 +252,9 @@ static inline int kexec_load_check(unsigned long nr_segments,
 }
 
 /**
+ * load a new kernel for later execution
+ * 见 kexec(8) 加载一个内核
+ *
  *	long kexec_load(unsigned long entry, unsigned long nr_segments,
  *	               struct kexec_segment *segments, unsigned long flags);
  *
@@ -266,7 +269,7 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
 {
 	int result;
     /**
-     *  
+     *
      */
 	result = kexec_load_check(nr_segments, flags);
 	if (result)
@@ -288,7 +291,7 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
 	if (!mutex_trylock(&kexec_mutex))
 		return -EBUSY;
     /**
-     *  
+     *
      */
 	result = do_kexec_load(entry, nr_segments, segments, flags);
 

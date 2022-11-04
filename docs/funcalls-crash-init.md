@@ -29,7 +29,9 @@ subsys_initcall(crash_save_vmcoreinfo_init);
 ```
 
 
-# arm64 特殊部分
+# 为 crash 预留内存
+
+## arm64
 
 ```
 setup_arch()
@@ -40,10 +42,19 @@ setup_arch()
 ```
 
 
-# x86_64 特殊部分
+## x86_64
 
 ```
 
+```
+
+
+# crash 内存初始化
+
+```
+kexec_load(2) - 系统调用
+	do_kexec_load()
+		kimage_alloc_init()
 ```
 
 
@@ -53,4 +64,11 @@ setup_arch()
 start_kernel()
 	...
 	fs_initcall(vmcore_init);
+```
+
+
+# 释放
+
+```
+kexec_free_initrd()
 ```
