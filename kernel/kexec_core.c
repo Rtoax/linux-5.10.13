@@ -251,7 +251,7 @@ int sanity_check_segment_list(struct kimage *image)
 	return 0;
 }
 /**
- *  
+ *
  */
 struct kimage *do_kimage_alloc_init(void)
 {
@@ -491,6 +491,9 @@ struct page *kimage_alloc_control_pages(struct kimage *image,
 	case KEXEC_TYPE_DEFAULT:
 		pages = kimage_alloc_normal_control_pages(image, order);
 		break;
+	/**
+	 * crash
+	 */
 	case KEXEC_TYPE_CRASH:
 		pages = kimage_alloc_crash_control_pages(image, order);
 		break;
@@ -499,6 +502,11 @@ struct page *kimage_alloc_control_pages(struct kimage *image,
 	return pages;
 }
 
+/**
+ * @brief
+ *
+ * @param image
+ */
 int kimage_crash_copy_vmcoreinfo(struct kimage *image)
 {
 	struct page *vmcoreinfo_page;
@@ -515,6 +523,8 @@ int kimage_crash_copy_vmcoreinfo(struct kimage *image)
 	 * the other hand, we still need to operate it when crash
 	 * happens to generate vmcoreinfo note, hereby we rely on
 	 * vmap for this purpose.
+	 *
+	 * 分配一个 vmcoreinfo 页，从 crash 内存中拷贝
 	 */
 	vmcoreinfo_page = kimage_alloc_control_pages(image, 0);
 	if (!vmcoreinfo_page) {
