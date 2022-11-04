@@ -137,6 +137,9 @@ static int __init early_init_dt_scan_elfcorehdr(unsigned long node,
 	if (!reg || (len < (dt_root_addr_cells + dt_root_size_cells)))
 		return 1;
 
+	/**
+	 *
+	 */
 	elfcorehdr_addr = dt_mem_next_cell(dt_root_addr_cells, &reg);
 	elfcorehdr_size = dt_mem_next_cell(dt_root_size_cells, &reg);
 
@@ -158,6 +161,9 @@ static void __init reserve_elfcorehdr(void)
 	if (!elfcorehdr_size)
 		return;
 
+	/**
+	 * 从 memblock 为 crash vmcore 预留内存
+	 */
 	if (memblock_is_region_reserved(elfcorehdr_addr, elfcorehdr_size)) {
 		pr_warn("elfcorehdr is overlapped\n");
 		return;
