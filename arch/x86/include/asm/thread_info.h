@@ -86,7 +86,13 @@ struct thread_info {
 #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
 #define TIF_NOTIFY_RESUME	1	/* callback before returning to user */
 #define TIF_SIGPENDING		2	/* signal pending */
-#define TIF_NEED_RESCHED	3	/* rescheduling necessary 调度前需要设置调度标记 */
+/**
+ * TIF_NEED_RESCHED 调度前需要设置的调度标记
+ *
+ * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
+ * 程序终止时调度程序被调用。
+ */
+#define TIF_NEED_RESCHED	3	/* rescheduling necessary */
 #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
 #define TIF_SSBD		5	/* Speculative store bypass disable */
 #define TIF_SYSCALL_EMU		6	/* syscall emulation active */

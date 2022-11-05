@@ -353,6 +353,7 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
 	struct idle_timer *it = container_of(timer, struct idle_timer, timer);
 
 	WRITE_ONCE(it->done, 1);
+	/* 设置需要调度(TIF_NEED_RESCHED 标志位) */
 	set_tsk_need_resched(current);
 
 	return HRTIMER_NORESTART;
@@ -428,6 +429,7 @@ balance_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
  */
 static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags)
 {
+	/* 设置进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志 */
 	resched_curr(rq);
 }
 

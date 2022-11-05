@@ -4732,8 +4732,16 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 /*
  * Preempt the current task with a newly woken task if needed:
+ * (如果需要，使用新唤醒的任务抢占当前任务)
  *
- * 检查当前进程是否需要调度
+ * 检查当前进程是否需要被抢占
+ *
+ * 注意：
+ * Linux 的进程是抢占式的。如果进程进入 TASK_RUNNING 状态，内核检查他的动态优先级是否大于
+ * 当前正在运行的进程的优先级，如果是，current 的执行被中断，并调用调度程序选择另一个进程
+ * 运行（通常是刚刚变为可运行的进程）。当然，进程在他的时间片到期时，也可以被抢占。此时，当前
+ * 进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
+ * 程序终止时调度程序被调用。
  */
 static void
 check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
@@ -11744,7 +11752,10 @@ prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
 	 * this runqueue and our priority is higher than the current's
 	 */
 	if (rq->curr == p) {    /* 正在队列中运行 */
-		if (p->prio > oldprio)  /* 优先级变高，立马调度 */
+		/**
+		 * 优先级变高，设置进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志
+		 */
+		if (p->prio > oldprio)
 			resched_curr(rq);
 	} else
 		check_preempt_curr(rq, p, 0);

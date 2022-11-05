@@ -2397,14 +2397,19 @@ static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 }
 
 /**
- *  设置 需要调度标志位
+ * 设置 需要调度标志位
+ *
+ * TIF_NEED_RESCHED 调度前需要设置的调度标记
+ *
+ * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
+ * 程序终止时调度程序被调用。
  */
 static inline void set_tsk_need_resched(struct task_struct *tsk)
 {
 	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
 }
-
-static inline void clear_tsk_need_resched(struct task_struct *tsk)/* 需要重新调度 */
+/* 清理：不需要重新调度 */
+static inline void clear_tsk_need_resched(struct task_struct *tsk)
 {
 	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
 }

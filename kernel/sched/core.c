@@ -619,19 +619,22 @@ void wake_up_q(struct wake_q_head *head)
  * might also involve a cross-CPU call to trigger the scheduler on
  * the target CPU.
  *
- *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位
+ *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位(x86)
+ *
+ * $ sudo bpftrace -e 'kprobe:resched_curr { @[comm] = count(); }'
  */
 void resched_curr(struct rq *rq)
 {
+	/* runqueue 正在运行的进程 */
 	struct task_struct *curr = rq->curr;
 	int cpu;
 
 	lockdep_assert_held(&rq->lock);
 
 	/**
-	 *
+	 * 是否需要重新调度(检查 TIF_NEED_RESCHED 标志位)
 	 */
-	if (test_tsk_need_resched(curr))    /* 是否需要重新调度 */
+	if (test_tsk_need_resched(curr))
 		return;
 
 	cpu = cpu_of(rq);
@@ -639,7 +642,7 @@ void resched_curr(struct rq *rq)
 	if (cpu == smp_processor_id()) {
 
 		/**
-		 *  设置需要调度
+		 *  设置需要调度(TIF_NEED_RESCHED 标志位)
 		 */
 		set_tsk_need_resched(curr);
 		set_preempt_need_resched();
@@ -1749,7 +1752,14 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 }
 
 /**
+ * 是否可以抢占
  *
+ * 注意：
+ * Linux 的进程是抢占式的。如果进程进入 TASK_RUNNING 状态，内核检查他的动态优先级是否大于
+ * 当前正在运行的进程的优先级，如果是，current 的执行被中断，并调用调度程序选择另一个进程
+ * 运行（通常是刚刚变为可运行的进程）。当然，进程在他的时间片到期时，也可以被抢占。此时，当前
+ * 进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
+ * 程序终止时调度程序被调用。
  */
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
