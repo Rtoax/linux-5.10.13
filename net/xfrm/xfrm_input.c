@@ -820,7 +820,7 @@ void __init xfrm_input_init(void)
      *  
      */
 	for_each_possible_cpu(i) {
-	    
+
 		struct xfrm_trans_tasklet *trans;
 
 		trans = &per_cpu(xfrm_trans_tasklet, i);

@@ -182,7 +182,7 @@ int probe_irq_off(unsigned long val)
 
 		if (desc->istate & IRQS_AUTODETECT) {
             /**
-             *  IRQS_WAITING 表示某个 irq_desc 处于等待状态 
+             *  IRQS_WAITING 表示某个 irq_desc 处于等待状态
              *  IRQ 探测是通过为每个缺少中断处理例程的 IRQ 设置 IRQS_WAITING 状态位 来完成的
              *  当中断产生时，因为没有注册处理例程， do_IRQ 清除该标志位后返回。
              *  当 probe_irq_off() 被一个驱动程序调用的时候，只需要搜索那些 没有设置 IRQS_WAITING 位的 IRQ
