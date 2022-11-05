@@ -5468,6 +5468,9 @@ asmlinkage __visible void __sched schedule(void)
 		 */
 		sched_preempt_enable_no_resched();
 
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	} while (need_resched());
 
 	sched_update_worker(tsk);
@@ -5496,6 +5499,9 @@ void __sched schedule_idle(void)
 	WARN_ON_ONCE(current->state);
 	do {
 		__schedule(false);
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	} while (need_resched());
 }
 
@@ -5562,6 +5568,8 @@ static void __sched notrace preempt_schedule_common(void)
 		/*
 		 * Check again in case we missed a preemption opportunity
 		 * between schedule and now.
+		 *
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
 		 */
 	} while (need_resched());
 }
@@ -5639,6 +5647,9 @@ asmlinkage __visible void __sched notrace preempt_schedule_notrace(void)
 
 		preempt_latency_stop(1);
 		preempt_enable_no_resched_notrace();
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	} while (need_resched());
 }
 EXPORT_SYMBOL_GPL(preempt_schedule_notrace);
@@ -5668,6 +5679,9 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 		__schedule(true);
 		local_irq_disable();
 		sched_preempt_enable_no_resched();
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	} while (need_resched());
 
 	exception_exit(prev_state);
@@ -7173,6 +7187,13 @@ SYSCALL_DEFINE0(sched_yield)
  *  就会在抢占点到来时执行抢占；而在内核不可抢占系统中(如centos系统)，
  *  在内核态运行的程序可调用 cond_resched 主动让出cpu，防止其在内核态执行
  *  时间过长导致可能发生的soft lockup或者造成较大的调度延迟。
+ *
+ * commit b965f1ddb47d("preempt/dynamic: Provide cond_resched() and
+ * might_resched() static calls") 中被重命名为 __cond_resched(),并且上面的宏条件也
+ * 变为：
+ * #if !defined(CONFIG_PREEMPTION) || defined(CONFIG_PREEMPT_DYNAMIC)
+ *
+ * $ sudo bpftrace -e 'kprobe:__cond_resched { @[comm] = count(); }'
  */
 int __sched _cond_resched(void)
 {

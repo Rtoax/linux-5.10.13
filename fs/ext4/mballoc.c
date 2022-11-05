@@ -2607,7 +2607,7 @@ int ext4_mb_alloc_groupinfo(struct super_block *sb, ext4_group_t ngroups)
 	sbi->s_group_info_size = size / sizeof(*sbi->s_group_info);
 	if (old_groupinfo)
 		ext4_kvfree_array_rcu(old_groupinfo);
-	ext4_debug("allocated s_groupinfo array for %d meta_bg's\n", 
+	ext4_debug("allocated s_groupinfo array for %d meta_bg's\n",
 		   sbi->s_group_info_size);
 	return 0;
 }
@@ -5763,6 +5763,9 @@ ext4_trim_all_free(struct super_block *sb, ext4_group_t group,
 			break;
 		}
 
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched()) {
 			ext4_unlock_group(sb, group);
 			cond_resched();

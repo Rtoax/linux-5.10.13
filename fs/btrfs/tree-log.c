@@ -2979,7 +2979,7 @@ static inline void btrfs_remove_log_ctx(struct btrfs_root *root,
 	mutex_unlock(&root->log_mutex);
 }
 
-/* 
+/*
  * Invoked in log mutex context, or be sure there is no other task which
  * can access the list.
  */
@@ -3632,6 +3632,9 @@ search:
 			if (min_key.objectid != ino || min_key.type != key_type)
 				goto done;
 
+			/**
+			 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+			 */
 			if (need_resched()) {
 				btrfs_release_path(path);
 				cond_resched();

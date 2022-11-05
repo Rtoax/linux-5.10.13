@@ -59,6 +59,9 @@ static noinline int __cpuidle cpu_idle_poll(void)
 	rcu_idle_enter();
 	local_irq_enable();
 
+	/**
+	 * thread_info flags 没有设置 TIF_NEED_RESCHED 标志位
+	 */
 	while (!tif_need_resched() &&
 	       (cpu_idle_force_poll || tick_check_broadcast_expired()))
 		cpu_relax();
@@ -280,6 +283,9 @@ static void do_idle(void)
     //在空闲CPU上忽略调度时钟滴答 - `dyntick-idle` 模式；
 	tick_nohz_idle_enter();
 
+	/**
+	 * 当前进程没有设置 TIF_NEED_RESCHED 标志位
+	 */
 	while (!need_resched()) {
 		rmb();
 

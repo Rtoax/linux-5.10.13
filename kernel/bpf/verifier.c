@@ -9465,6 +9465,9 @@ static int do_check(struct bpf_verifier_env *env)
 		if (signal_pending(current))
 			return -EAGAIN;
 
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched())
 			cond_resched();
 

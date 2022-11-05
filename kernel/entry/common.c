@@ -359,6 +359,9 @@ void irqentry_exit_cond_resched(void)
 		rcu_irq_exit_check_preempt();
 		if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
 			WARN_ON_ONCE(!on_thread_stack());
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched())
 			preempt_schedule_irq();
 	}

@@ -659,6 +659,9 @@ static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem,
 	unsigned long flags;
 	bool ret = true;
 
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	if (need_resched()) {
 		lockevent_inc(rwsem_opt_fail);
 		return false;

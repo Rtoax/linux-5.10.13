@@ -151,7 +151,7 @@ static void tick_sched_do_timer(struct tick_sched *ts, ktime_t now)
 }
 
 /**
- *  
+ *
  */
 static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
 {
@@ -178,7 +178,7 @@ static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
 #endif
 
     /**
-     *  
+     *
      */
 	update_process_times(user_mode(regs));
 	profile_tick(CPU_PROFILING);
@@ -446,7 +446,7 @@ static int tick_nohz_cpu_down(unsigned int cpu)
 	return 0;
 }
 /**
- *  
+ *
  */
 void __init tick_nohz_init(void)    /* no-hz 减少时钟中断 */
 {
@@ -932,6 +932,9 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
 		return false;
 
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	if (need_resched())
 		return false;
 

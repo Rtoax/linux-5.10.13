@@ -1685,6 +1685,9 @@ static long writeback_sb_inodes(struct super_block *sb,
 		work->nr_pages -= write_chunk - wbc.nr_to_write;
 		wrote += write_chunk - wbc.nr_to_write;
 
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched()) {
 			/*
 			 * We're trying to balance between building up a nice

@@ -193,7 +193,7 @@ struct user;
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()
 #else
-//# define might_resched() do { } while (0)
+# define might_resched() do { } while (0)
 #endif
 
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP

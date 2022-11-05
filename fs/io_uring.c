@@ -252,7 +252,7 @@ struct io_sq_data {
 	struct wait_queue_head	wait;
 };
 /**
- *  
+ *
  */
 struct io_ring_ctx {
 	struct {
@@ -285,7 +285,7 @@ struct io_ring_ctx {
 		unsigned		sq_entries;
 		unsigned		sq_mask;
         /**
-         *  
+         *
          */
 		unsigned		sq_thread_idle;
 		unsigned		cached_sq_dropped;
@@ -298,10 +298,10 @@ struct io_ring_ctx {
 
 		wait_queue_head_t	inflight_wait;
         /**
-         *  
+         *
          */
 		struct io_uring_sqe	*sq_sqes;
-	}/* ____cacheline_aligned_in_smp---*/; 
+	}/* ____cacheline_aligned_in_smp---*/;
 
 	struct io_rings	*rings;
 
@@ -719,7 +719,7 @@ struct io_kiocb {
      *  io_req_task_submit()
      *  io_req_task_cancel()
      *  io_put_req_deferred_cb()
-     *  
+     *
      *  or set by `__io_async_wake()`
      */
 	struct callback_head		task_work;
@@ -999,7 +999,7 @@ static int io_setup_async_rw(struct io_kiocb *req, const struct iovec *iovec,
 static void io_req_drop_files(struct io_kiocb *req);
 static void io_req_task_queue(struct io_kiocb *req);
 /**
- *  
+ *
  */
 static struct kmem_cache *req_cachep;
 
@@ -1175,7 +1175,7 @@ static struct io_ring_ctx *io_ring_ctx_alloc(struct io_uring_params *p)
 		return NULL;
 
     /**
-     *  
+     *
      */
 	ctx->fallback_req = kmem_cache_alloc(req_cachep, GFP_KERNEL);
 	if (!ctx->fallback_req)
@@ -2058,7 +2058,7 @@ static struct io_kiocb *io_req_find_next(struct io_kiocb *req)
 	return __io_req_find_next(req);
 }
 /**
- *  
+ *
  */
 static int io_req_task_work_add(struct io_kiocb *req, bool twa_signal_ok)
 {
@@ -2142,7 +2142,7 @@ static void io_req_task_queue(struct io_kiocb *req)
 	percpu_ref_get(&req->ctx->refs);
 
     /**
-     *  
+     *
      */
 	ret = io_req_task_work_add(req, true);
 	if (unlikely(ret)) {
@@ -2355,7 +2355,7 @@ static inline bool io_run_task_work(void)
 		return false;
 
     /**
-     *  
+     *
      */
 	if (current->task_works) {
 		__set_current_state(TASK_RUNNING);
@@ -2514,6 +2514,8 @@ static void io_iopoll_try_reap_events(struct io_ring_ctx *ctx)
 		 * Ensure we allow local-to-the-cpu processing to take place,
 		 * in this case we need to ensure that we reap all events.
 		 * Also let task_work, etc. to progress by releasing the mutex
+		 *
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
 		 */
 		if (need_resched()) {
 			mutex_unlock(&ctx->uring_lock);
@@ -3366,7 +3368,7 @@ static int io_async_buf_func(struct wait_queue_entry *wait, unsigned mode,
 	list_del_init(&wait->entry);
 
     /**
-     *  
+     *
      */
 	init_task_work(&req->task_work, io_req_task_submit);
 	percpu_ref_get(&req->ctx->refs);
@@ -3420,7 +3422,7 @@ static bool io_rw_should_retry(struct io_kiocb *req)
 		return false;
 
     /**
-     *  
+     *
      */
 	wait->wait.func = io_async_buf_func;
 	wait->wait.private = req;
@@ -4878,7 +4880,7 @@ out:
 }
 #else /* !CONFIG_NET */
 /**
- *  
+ *
  */
 #endif /* CONFIG_NET */
 
@@ -6363,7 +6365,7 @@ static inline void io_queue_link_head(struct io_kiocb *req,
 		io_queue_sqe(req, NULL, cs);
 }
 /**
- *  
+ *
  */
 static int io_submit_sqe(struct io_kiocb *req, const struct io_uring_sqe *sqe,
 			 struct io_kiocb **link, struct io_comp_state *cs)
@@ -6595,7 +6597,7 @@ static int io_init_req(struct io_ring_ctx *ctx, struct io_kiocb *req,
 	return ret;
 }
 /**
- *  
+ *
  */
 static int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr)
 {
@@ -6625,7 +6627,7 @@ static int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr)
 		struct io_kiocb *req;
 		int err;
         /**
-         *  
+         *
          */
 		sqe = io_get_sqe(ctx);
 		if (unlikely(!sqe)) {
@@ -6633,7 +6635,7 @@ static int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr)
 			break;
 		}
         /**
-         *  
+         *
          */
 		req = io_alloc_req(ctx, &state);
 		if (unlikely(!req)) {
@@ -6642,14 +6644,14 @@ static int io_submit_sqes(struct io_ring_ctx *ctx, unsigned int nr)
 			break;
 		}
         /**
-         *  
+         *
          */
 		io_consume_sqe(ctx);
 		/* will complete beyond this point, count as submitted */
 		submitted++;
 
         /**
-         *  
+         *
          */
 		err = io_init_req(ctx, req, sqe, &state);
 		if (unlikely(err)) {
@@ -6663,7 +6665,7 @@ fail_req:
 						true, io_async_submit(ctx));
 
         /**
-         *  
+         *
          */
         err = io_submit_sqe(req, sqe, &link, &state.comp);
 		if (err)
@@ -6824,7 +6826,7 @@ static void io_sqd_init_new(struct io_sq_data *sqd)
 	}
 }
 /**
- *  
+ *
  */
 static int io_sq_thread(void *data)
 {
@@ -7017,7 +7019,7 @@ static int io_cqring_wait(struct io_ring_ctx *ctx, int min_events,
 	} while (1);
 
     /**
-     *  
+     *
      */
 	finish_wait(&ctx->wait, &iowq.wq);
 
@@ -7846,7 +7848,7 @@ out_fput:
 	return ret;
 }
 /**
- *  
+ *
  */
 static int io_uring_alloc_task_context(struct task_struct *task)
 {
@@ -7871,7 +7873,7 @@ static int io_uring_alloc_task_context(struct task_struct *task)
 	io_init_identity(&tctx->__identity);
 	tctx->identity = &tctx->__identity;
     /**
-     *  
+     *
      */
 	task->io_uring = tctx;
 	return 0;
@@ -7890,7 +7892,7 @@ void __io_uring_free(struct task_struct *tsk)
 	tsk->io_uring = NULL;
 }
 /**
- *  
+ *
  */
 static int io_sq_offload_create(struct io_ring_ctx *ctx,
 				struct io_uring_params *p)
@@ -7934,7 +7936,7 @@ static int io_sq_offload_create(struct io_ring_ctx *ctx,
 				goto err;
 
             /**
-             *  
+             *
              */
 			sqd->thread = kthread_create_on_cpu(io_sq_thread, sqd,
 							cpu, "io_uring-sq");
@@ -7948,7 +7950,7 @@ static int io_sq_offload_create(struct io_ring_ctx *ctx,
 			goto err;
 		}
         /**
-         *  
+         *
          */
 		ret = io_uring_alloc_task_context(sqd->thread);
 		if (ret)
@@ -8050,7 +8052,7 @@ static void io_mem_free(void *ptr)
 		free_compound_page(page);
 }
 /**
- *  
+ *
  */
 static void *io_mem_alloc(size_t size)
 {
@@ -8368,7 +8370,7 @@ static int io_eventfd_register(struct io_ring_ctx *ctx, void __user *arg)
 		return -EFAULT;
 
     /**
-     *  
+     *
      */
 	ctx->cq_ev_fd = eventfd_ctx_fdget(fd);
 	if (IS_ERR(ctx->cq_ev_fd)) {
@@ -8737,7 +8739,7 @@ static bool io_uring_cancel_files(struct io_ring_ctx *ctx,
 		/* cancellations _may_ trigger task work */
 		io_run_task_work();
         /**
-         *  
+         *
          */
 		schedule();
 		finish_wait(&ctx->inflight_wait, &wait);
@@ -9127,7 +9129,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 	struct fd f;
 
     /**
-     *  
+     *
      */
 	io_run_task_work();
 
@@ -9184,7 +9186,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 			goto out;
 		mutex_lock(&ctx->uring_lock);
         /**
-         *  
+         *
          */
 		submitted = io_submit_sqes(ctx, to_submit);
 		mutex_unlock(&ctx->uring_lock);
@@ -9210,7 +9212,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 			ret = io_iopoll_check(ctx, min_complete);
 		} else {
             /**
-             *  
+             *
              */
 			ret = io_cqring_wait(ctx, min_complete, sig, sigsz);
 		}
@@ -9360,7 +9362,7 @@ static int io_allocate_scq_urings(struct io_ring_ctx *ctx,
 		return -EOVERFLOW;
 
     /**
-     *  
+     *
      */
 	rings = io_mem_alloc(size);
 	if (!rings)
@@ -9508,7 +9510,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 	limit_mem = !capable(CAP_IPC_LOCK);
 
     /**
-     *  
+     *
      */
 	if (limit_mem) {
 		ret = __io_account_mem(user,
@@ -9520,7 +9522,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 	}
 
     /**
-     *  
+     *
      */
 	ctx = io_ring_ctx_alloc(p);
 	if (!ctx) {
@@ -9539,7 +9541,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 #endif
 
     /**
-     *  
+     *
      */
 	ctx->sqo_task = get_task_struct(current);
 
@@ -9589,7 +9591,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 		goto err;
 
     /**
-     *  
+     *
      */
 	ret = io_sq_offload_create(ctx, p);
 	if (ret)
@@ -9599,7 +9601,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 		io_sq_offload_start(ctx);
 
     /**
-     *  
+     *
      */
 	memset(&p->sq_off, 0, sizeof(p->sq_off));
 	p->sq_off.head = offsetof(struct io_rings, sq.head);
@@ -9625,7 +9627,7 @@ static int io_uring_create(unsigned entries, struct io_uring_params *p,
 			IORING_FEAT_POLL_32BITS;
 
     /**
-     *  
+     *
      */
 	if (copy_to_user(params, p, sizeof(*p))) {
 		ret = -EFAULT;
@@ -9680,7 +9682,7 @@ static long io_uring_setup(u32 entries, struct io_uring_params __user *params)
 		return -EFAULT;
 
     /**
-     *  
+     *
      */
 	for (i = 0; i < ARRAY_SIZE(p.resv); i++) {
 		if (p.resv[i])
@@ -9694,13 +9696,13 @@ static long io_uring_setup(u32 entries, struct io_uring_params __user *params)
 		return -EINVAL;
 
     /**
-     *  
+     *
      */
 	return  io_uring_create(entries, &p, params);
 }
 
 /**
- *  
+ *
  */
 int io_uring_setup(unsigned int entries, struct io_uring_params *p);
 SYSCALL_DEFINE2(io_uring_setup, u32, entries,
@@ -9882,7 +9884,7 @@ static bool io_register_op_must_quiesce(int op)
 	}
 }
 /**
- *  
+ *
  */
 static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 			       void __user *arg, unsigned nr_args)
@@ -9941,7 +9943,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 	}
 
     /**
-     *  
+     *
      */
 	switch (opcode) {
     /**
@@ -9973,7 +9975,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		break;
 
     /**
-     *  
+     *
      */
     case IORING_REGISTER_EVENTFD:
 	case IORING_REGISTER_EVENTFD_ASYNC:
@@ -9996,7 +9998,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		break;
 
     /**
-     *  
+     *
      */
     case IORING_REGISTER_PROBE:
 		ret = -EINVAL;
@@ -10005,7 +10007,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		ret = io_probe(ctx, arg, nr_args);
 		break;
     /**
-     *  
+     *
      */
     case IORING_REGISTER_PERSONALITY:
 		ret = -EINVAL;
@@ -10014,7 +10016,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		ret = io_register_personality(ctx);
 		break;
     /**
-     *  
+     *
      */
     case IORING_UNREGISTER_PERSONALITY:
 		ret = -EINVAL;
@@ -10023,7 +10025,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		ret = io_unregister_personality(ctx, nr_args);
 		break;
     /**
-     *  
+     *
      */
     case IORING_REGISTER_ENABLE_RINGS:
 		ret = -EINVAL;
@@ -10032,7 +10034,7 @@ static int __io_uring_register(struct io_ring_ctx *ctx, unsigned opcode,
 		ret = io_register_enable_rings(ctx);
 		break;
     /**
-     *  
+     *
      */
     case IORING_REGISTER_RESTRICTIONS:
 		ret = io_register_restrictions(ctx, arg, nr_args);
@@ -10053,7 +10055,7 @@ out_quiesce:
 }
 
 /**
- *  
+ *
  *
  * https://rtoax.blog.csdn.net/article/details/114180559
  */
@@ -10074,13 +10076,13 @@ SYSCALL_DEFINE4(io_uring_register, unsigned int, fd, unsigned int, opcode,
 		goto out_fput;
 
     /**
-     *  
+     *
      */
 	ctx = f.file->private_data;
 
 	mutex_lock(&ctx->uring_lock);
     /**
-     *  
+     *
      */
 	ret = __io_uring_register(ctx, opcode, arg, nr_args);
 	mutex_unlock(&ctx->uring_lock);
@@ -10105,7 +10107,7 @@ static int __init io_uring_init(void)
 	__BUILD_BUG_VERIFY_ELEMENT(struct io_uring_sqe, eoffset, etype, ename)
 
     /**
-     *  
+     *
      */
 	BUILD_BUG_ON(sizeof(struct io_uring_sqe) != 64);
 	BUILD_BUG_SQE_ELEM(0,  __u8,   opcode);
@@ -10141,7 +10143,7 @@ static int __init io_uring_init(void)
 	BUILD_BUG_ON(__REQ_F_LAST_BIT >= 8 * sizeof(int));
 
     /**
-     *  
+     *
      */
 	req_cachep = KMEM_CACHE(io_kiocb, SLAB_HWCACHE_ALIGN | SLAB_PANIC);
 	return 0;

@@ -646,6 +646,9 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
 	struct task_struct *owner;
 	int retval = 1;
 
+	/**
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 */
 	if (need_resched())
 		return 0;
 
@@ -791,12 +794,12 @@ fail:
 	return false;
 }
 #else
-//static __always_inline bool
-//mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
-//		      const bool use_ww_ctx, struct mutex_waiter *waiter)
-//{
-//	return false;
-//}
+static __always_inline bool
+mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
+		      const bool use_ww_ctx, struct mutex_waiter *waiter)
+{
+	return false;
+}
 #endif
 
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip);

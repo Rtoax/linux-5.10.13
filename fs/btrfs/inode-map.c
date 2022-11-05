@@ -76,6 +76,9 @@ again:
 			else if (ret > 0)
 				break;
 
+			/**
+			 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+			 */
 			if (need_resched() ||
 			    btrfs_transaction_in_commit(fs_info)) {
 				leaf = path->nodes[0];

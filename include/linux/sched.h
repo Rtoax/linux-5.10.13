@@ -2424,6 +2424,9 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
  * explicit rescheduling in places that are safe. The return
  * value indicates whether a reschedule was done in fact.
  * cond_resched_lock() will drop the spinlock before scheduling,
+ *
+ * cond_resched() 和 cond_resched_lock()：通过在安全的地方显式重新调度来减少延迟。
+ * 返回值指示是否确实执行了重新计划。cond_resched_lock() 将在调度之前丢弃自旋锁，
  */
 #ifndef CONFIG_PREEMPTION
 extern int _cond_resched(void);

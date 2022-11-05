@@ -6652,6 +6652,9 @@ count:
 		if (!loop_end || loop_end(loop_end_arg, start_time))
 			break;
 
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (unlikely(need_resched())) {
 			if (napi_poll)
 				busy_poll_stop(napi, have_poll_lock);

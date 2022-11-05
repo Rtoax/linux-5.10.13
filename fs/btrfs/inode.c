@@ -4986,6 +4986,10 @@ static void evict_inode_truncate_pages(struct inode *inode)
 		clear_bit(EXTENT_FLAG_LOGGING, &em->flags);
 		remove_extent_mapping(map_tree, em);
 		free_extent_map(em);
+
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched()) {
 			write_unlock(&map_tree->lock);
 			cond_resched();
@@ -5614,7 +5618,7 @@ static int btrfs_opendir(struct inode *inode, struct file *file)
 }
 
 /**
- *  
+ *
  */
 struct dir_entry {
 	u64 ino;

@@ -650,6 +650,8 @@ again:
 		 * We can have a ton of inodes to evict at unmount time given
 		 * enough memory, check to see if we need to go to sleep for a
 		 * bit so we don't livelock.
+		 *
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
 		 */
 		if (need_resched()) {
 			spin_unlock(&sb->s_inode_list_lock);
@@ -703,6 +705,9 @@ again:
 		inode_lru_list_del(inode);
 		spin_unlock(&inode->i_lock);
 		list_add(&inode->i_lru, &dispose);
+		/**
+		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+		 */
 		if (need_resched()) {
 			spin_unlock(&sb->s_inode_list_lock);
 			cond_resched();
