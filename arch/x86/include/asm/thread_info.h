@@ -91,6 +91,38 @@ struct thread_info {
  *
  * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
  * 程序终止时调度程序被调用。
+ *
+ * 内核的调度操作分为触发和执行两个部分，触发时仅仅设置一下当前进程的 TIF_NEED_RESCHED标志，
+ * 执行的时候则是通过schedule()函数来完成进程的选择和切换。当前进程的thread_info->flags中
+ * TIF_NEED_RESCHED 位表示需要调用 schedule() 函数进行调度。
+ *
+ * 内核在两种情况下会设置该标志，
+ *  1. 一个是在时钟中断进行周期性的检查时，
+ *  2. 一个是在被唤醒进程的优先级比正在运行的进程的优先级高时。
+ *
+ * 1. 周期性地更新当前任务的状态时：
+ *    定时中断处理函数中会调用 schedule_tick() 用于处理关于调度的周期性检查和处理，其调用
+ *    路径是和时钟处理有关的
+ *     tick_periodic()->update_process_times()->scheduler_tick()
+ *    或者
+ *     tick_sched_handle()->update_process_times()->scheduler_tick()
+ *    主要用于更新就绪队列的时钟、CPU负载和当前任务的运行时间统计等
+ *
+ * 2. 睡眠的任务被唤醒时：
+ *
+ * 当睡眠任务所等待的事件到达时，内核（例如驱动程序的中断处理函数）将会调用 wake_up() 唤醒
+ * 相关的任务，并最终调用 try_to_wake_up()。它完成三件事：
+ *
+ *  1. 将任务重新添加到就绪队列，
+ *  2. 将运行标志设置为 TASK_RUNNING，
+ *  3. 如果被唤醒的任务可以抢占当前运行任务则设置当前任务的 TIF_NEED_RESCHED 标志。
+ *
+ * 设置了 TIF_NEED_RESCHED 标志之后，真正调用执行 schedule()函数的时机只有两种，
+ *
+ *  1. 第一种是系统调用或者中断返回时，根据 TIF_NEED_RESCHED 标志决定是否调用
+ *     schedule()函数（从效率方面考虑，趁着还在内核态把该处理的事情处理完毕）；
+ *  2. 第二种情况是当前任务因为原因需要睡眠，进程睡眠后立即调用schedule()函数，
+ *     在内核中这种情况也比较多，比如磁盘、网卡等设备驱动程序中。
  */
 #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
 #define TIF_SINGLESTEP		4	/* reenable singlestep on user return*/
