@@ -2343,8 +2343,8 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 			resched_curr(rq);
 #else
 		/* For UP simply resched on drop of prio */
-//		if (oldprio < p->prio)
-//			resched_curr(rq);
+		if (oldprio < p->prio)
+			resched_curr(rq);
 #endif /* CONFIG_SMP */
 	} else {
 		/*

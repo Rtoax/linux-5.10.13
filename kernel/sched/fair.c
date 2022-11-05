@@ -1103,7 +1103,8 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	 */
 	curr->exec_start = now;
 
-	schedstat_set(curr->statistics.exec_max, max(delta_exec, curr->statistics.exec_max));
+	schedstat_set(curr->statistics.exec_max,
+		max(delta_exec, curr->statistics.exec_max));
 
 	/**
 	 *  更新当前进程总共执行的时间
@@ -3330,9 +3331,13 @@ dequeue_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
 {
+	/* 调度实体在运行队列上 */
 	if (se->on_rq) {
-		/* commit outstanding execution time */
-		if (cfs_rq->curr == se) /* 当前正在执行 */
+		/**
+		 * commit outstanding execution time
+		 * 运行队列总正在执行的进程
+		 */
+		if (cfs_rq->curr == se)
 			update_curr(cfs_rq);
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
@@ -4801,12 +4806,15 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 	/**
 	 *  curr->vruntime < se->vruntime
+	 *  这说明 当前进程的运行时间 小于 从红黑树调度队列中获取最左的虚拟运行时间
+	 *  该判断条件说明，当前进程不应该被抢占。
 	 */
 	if (delta < 0)
 		return;
 
 	/**
-	 *  差值 大于 理论运行时间，则会触发调度
+	 * 差值 大于 理论运行时间，则会触发调度（抢占），也就是当前进程可以被抢占。那么，就
+	 * 可以用新唤醒的进程抢占当前进程。
 	 */
 	if (delta > ideal_runtime)
 		resched_curr(rq_of(cfs_rq));
@@ -5001,9 +5009,10 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 		return;
 #endif
 
+	/* 当前运行队列中的进程 > 1 */
 	if (cfs_rq->nr_running > 1)
-	    /*
-		 * 检查当前进程是否需要调度
+		/*
+		 * 如果需要，使用新唤醒的任务抢占当前任务
 		 */
 		check_preempt_tick(cfs_rq, curr);
 }
