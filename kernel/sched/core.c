@@ -619,6 +619,9 @@ void wake_up_q(struct wake_q_head *head)
  * might also involve a cross-CPU call to trigger the scheduler on
  * the target CPU.
  *
+ * 单处理器(UP): 设置 need-resched 标志
+ * 多处理器(SMP):设置 need-resched 标志, 可能会通知目标 CPU
+ *
  *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位(x86)
  *
  * $ sudo bpftrace -e 'kprobe:resched_curr { @[comm] = count(); }'
@@ -639,10 +642,23 @@ void resched_curr(struct rq *rq)
 
 	cpu = cpu_of(rq);
 
+	/**
+	 * UP(单处理器)：恒为真
+	 * SMP(多处理器)：可能为真
+	 */
 	if (cpu == smp_processor_id()) {
 
 		/**
-		 *  设置需要调度(TIF_NEED_RESCHED 标志位)
+		 * 设置需要调度(TIF_NEED_RESCHED 标志位)
+		 *
+		 * 注意：
+		 * Linux 的进程是抢占式的。如果进程进入 TASK_RUNNING
+		 * 状态，内核检查他的动态优先级是否大于当前正在运行的进程
+		 * 的优先级，如果是，current 的执行被中断，并调用调度程
+		 * 序选择另一个进程运行（通常是刚刚变为可运行的进程）。
+		 * 当然，进程在他的时间片到期时，也可以被抢占。此时，当前
+		 * 进程的 thread_info 结构中的 flags TIF_NEED_RESCHED
+		 * 标志被设置，以便时钟中断处理程序终止时调度程序被调用。
 		 */
 		set_tsk_need_resched(curr);
 		set_preempt_need_resched();
@@ -650,6 +666,10 @@ void resched_curr(struct rq *rq)
 	}
 
 	if (set_nr_and_not_polling(curr))
+		/**
+		 * 通知 目标 CPU resched
+		 * 见本函数开头注释(SMP)。
+		 */
 		smp_send_reschedule(cpu);
 	else
 		trace_sched_wake_idle_without_ipi(cpu);

@@ -2403,6 +2403,15 @@ static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
  *
  * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
  * 程序终止时调度程序被调用。
+ *
+ * 注意：
+ * Linux 的进程是抢占式的。如果进程进入 TASK_RUNNING 状态，内核检查他的动态优先级是否大于
+ * 当前正在运行的进程的优先级，如果是，current 的执行被中断，并调用调度程序选择另一个进程
+ * 运行（通常是刚刚变为可运行的进程）。当然，进程在他的时间片到期时，也可以被抢占。此时，当前
+ * 进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
+ * 程序终止时调度程序被调用。
+ *
+ * 在 resched_curr() 函数中调用了这个函数用于设置 TIF_NEED_RESCHED 标志位。
  */
 static inline void set_tsk_need_resched(struct task_struct *tsk)
 {
