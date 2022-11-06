@@ -507,6 +507,11 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
 	return se->parent;
 }
 
+/**
+ *
+ * se: rq->curr->se
+ * pse: p->se
+ */
 static void
 find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 {
@@ -517,22 +522,34 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
 	 * both tasks until we find their ancestors who are siblings of common
 	 * parent.
+	 *
+	 * 可以在处于同一 cfs_rq 的兄弟姐妹实体（即具有共同的父级）之间进行抢占测试。
+	 * 沿着这两个任务的层次结构向上走，直到我们找到他们的祖先是共同父母的兄弟姐妹。
 	 */
 
 	/* First walk up until both entities are at same depth */
 	se_depth = (*se)->depth;
 	pse_depth = (*pse)->depth;
 
+	/**
+	 * 找到相同层级
+	 */
 	while (se_depth > pse_depth) {
 		se_depth--;
 		*se = parent_entity(*se);
 	}
 
+	/**
+	 * 找到相同层级
+	 */
 	while (pse_depth > se_depth) {
 		pse_depth--;
 		*pse = parent_entity(*pse);
 	}
 
+	/**
+	 * "不在同一组"为判断条件，直到在同一组在停止。
+	 */
 	while (!is_same_group(*se, *pse)) {
 		*se = parent_entity(*se);
 		*pse = parent_entity(*pse);
@@ -563,11 +580,6 @@ static inline void assert_list_leaf_cfs_rq(struct rq *rq)
 static inline struct sched_entity *parent_entity(struct sched_entity *se)
 {
     return NULL;
-}
-
-static inline void
-find_matching_se(struct sched_entity **se, struct sched_entity **pse)
-{
 }
 
 static inline int tg_is_idle(struct task_group *tg)
@@ -7590,8 +7602,14 @@ static void set_skip_buddy(struct sched_entity *se)
 	}  /* 队列中的 skip   = 当前调度实体*/
 }
 
-/*
+/**
+ * CFS: fair_sched_class->check_preempt_curr()
+ *
+ * 被调用的地方：
+ *  1. check_preempt_curr()
+ *
  * Preempt the current task with a newly woken task if needed:
+ * (如果需要，用新唤醒的进程抢占当前进程)
  */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
@@ -7627,11 +7645,18 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	 * enqueue of curr) will have resulted in resched being set.  This
 	 * prevents us from potentially nominating it as a false LAST_BUDDY
 	 * below.
+	 *
+	 * 运行队列中的当前进程设置了 TIF_NEED_RESCHED 标志，那么直接返回
+	 *
+	 * 注意：TODO
 	 */
 	if (test_tsk_need_resched(curr))
 		return;
 
-	/* Idle tasks are by definition preempted by non-idle tasks. */
+	/**
+	 * Idle tasks are by definition preempted by non-idle tasks.
+	 * 空闲进程一定会被非空闲进程抢占。
+	 */
 	if (unlikely(task_has_idle_policy(curr)) &&
 	    likely(!task_has_idle_policy(p)))
 		goto preempt;
@@ -7639,14 +7664,25 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	/*
 	 * Batch and idle tasks do not preempt non-idle tasks (their preemption
 	 * is driven by the tick):
+	 *
+	 * 批处理 和 空闲 进程不要抢占非空闲进程（他们的抢占是被 tick 驱动的）
 	 */
 	if (unlikely(p->policy != SCHED_NORMAL) || !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
+	/**
+	 * !CONFIG_FAIR_GROUP_SCHED 时，该函数为空
+	 *
+	 * se: rq->curr->se
+	 * pse: p->se
+	 *
+	 * 可以在处于同一 cfs_rq 的兄弟姐妹实体（即具有共同的父级）之间进行抢占测试。
+	 * 沿着这两个任务的层次结构向上走，直到我们找到他们的祖先是共同父母的兄弟姐妹。
+	 */
 	find_matching_se(&se, &pse);
 
 	/**
-	 *
+	 * 更新 se 的虚拟运行时间 vruntime 等
 	 */
 	update_curr(cfs_rq_of(se));
 
@@ -7664,7 +7700,12 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	return;
 
 preempt:
+	/**
+	 * 单处理器(UP): 设置 rq->curr need-resched 标志
+	 * 多处理器(SMP):设置 rq->curr need-resched 标志, 可能会通知目标 CPU
+	 */
 	resched_curr(rq);
+
 	/*
 	 * Only set the backward buddy when the current task is still
 	 * on the rq. This can happen when a wakeup gets interleaved

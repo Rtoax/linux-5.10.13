@@ -619,12 +619,25 @@ void wake_up_q(struct wake_q_head *head)
  * might also involve a cross-CPU call to trigger the scheduler on
  * the target CPU.
  *
- * 单处理器(UP): 设置 need-resched 标志
- * 多处理器(SMP):设置 need-resched 标志, 可能会通知目标 CPU
+ * 单处理器(UP): 设置 rq->curr need-resched 标志
+ * 多处理器(SMP):设置 rq->curr need-resched 标志, 可能会通知目标 CPU
  *
  *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位(x86)
  *
- * $ sudo bpftrace -e 'kprobe:resched_curr { @[comm] = count(); }'
+ * $ sudo bpftrace -e 'kprobe:resched_curr { @[comm] = count(); @ks[kstack] = count() }'
+ *
+ * 调用栈示例 1
+ *      resched_curr+1
+ *      check_preempt_wakeup+379
+ *      check_preempt_curr+90
+ *      ttwu_do_wakeup+23
+ *      try_to_wake_up+466
+ *
+ * 调用栈示例 2
+ *      resched_curr+1
+ *      check_preempt_curr+51
+ *      ttwu_do_wakeup+23
+ *      try_to_wake_up+466
  */
 void resched_curr(struct rq *rq)
 {
@@ -1783,13 +1796,28 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
  */
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
+	/**
+	 * 进程的调度类和运行队列中的当前进程调度类相同，那么使用运行队列正在运行的进程的
+	 * 调度类的 check_preempt_curr 方法。
+	 */
 	if (p->sched_class == rq->curr->sched_class)
 		/**
-		 *
+		 * fair: check_preempt_wakeup()
 		 */
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	/**
+	 * 这里我可以从 kallsym 中获对比结果
+	 * $ sudo cat /proc/kallsyms | grep _sched_class
+	 * ffffffffb9abaa60 D idle_sched_class
+	 * ffffffffb9abaa60 D __begin_sched_classes
+	 * ffffffffb9abab30 D fair_sched_class
+	 * ffffffffb9abac00 D rt_sched_class
+	 * ffffffffb9abacd0 D dl_sched_class
+	 * ffffffffb9abada0 D stop_sched_class
+	 * ffffffffb9abae70 D __end_sched_classes
 	 *
+	 * 例如 p 进程为 RT 或 DeadLine 调度类，当前运行队列中正在运行的进程为 CFS 调度类，
+	 * 那么，此判断条件是成立的。就需要设置进程 P 抢占当前运行队列正在运行的进程。
 	 */
 	else if (p->sched_class > rq->curr->sched_class)
 		resched_curr(rq);
@@ -1797,6 +1825,9 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 	/*
 	 * A queue event has occurred, and we're going to schedule.  In
 	 * this case, we can save a useless back to back clock update.
+	 *
+	 * 当前运行队列中 curr 已经入队，正准备被调度。这种情况，我们可以保存一个
+	 * 无用的背靠背时钟更新。TODO
 	 */
 	if (task_on_rq_queued(rq->curr) && test_tsk_need_resched(rq->curr))
 		rq_clock_skip_update(rq);
