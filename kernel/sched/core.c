@@ -3248,6 +3248,7 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
  *
  * TTWU - try_to_wake_up
  *
+ * $ sudo bpftrace -e 'kprobe:try_to_wake_up { @[kstack] = count();}'
  * 一个调用栈示例
  * @stack[
  *		try_to_wake_up+1
