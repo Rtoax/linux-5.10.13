@@ -7,7 +7,7 @@
 #include <linux/thread_info.h>
 
 /**
- *  
+ *
  *  =0 可以抢占
  *  >0 不可抢占
  *
@@ -44,7 +44,7 @@ int __percpu __preempt_count; //+++
  * We mask the PREEMPT_NEED_RESCHED bit so as not to confuse all current users
  * that think a non-zero value indicates we cannot preempt.
  *
- *   
+ *
  */
 static __always_inline int preempt_count(void)/* 可抢占？ */
 {
@@ -82,7 +82,27 @@ static __always_inline void preempt_count_set(int pc)
  * We invert the actual bit, so that when the decrement hits 0 we know we both
  * need to resched (the bit is cleared) and can resched (no preempt count).
  */
-
+/**
+ *
+ *  =0 可以抢占
+ *  >0 不可抢占
+ *
+ * 31              24  23            16 15             8 7               0
+ *  +----------------+--------+--------+----------------+----------------+
+ *  |                | f00000 | f0000  |   0x0000ff00   |   0x000000ff   |
+ *  +----------------+--------+--------+----------------+----------------+
+ *                   |        |        |                |                |
+ *                   |        |        |                |                |
+ *                   |        |        |                |                +----
+ *                   |        |        |                |                   PREEMPT_MASK
+ *                   |        |        |                +---------------------
+ *                   |        |        |                                    SOFTIRQ_MASK
+ *                   |        |        +--------------------------------------
+ *                   |        |                                             HARDIRQ_MASK
+ *                   |        +-----------------------------------------------
+ *                   |                                                      NMI_MASK
+ *                   +--------------------------------------------------------
+ */
 static __always_inline void set_preempt_need_resched(void)
 {
 	raw_cpu_and_4(__preempt_count, ~PREEMPT_NEED_RESCHED);
@@ -102,7 +122,7 @@ static __always_inline bool test_preempt_need_resched(void)
  * The various preempt_count add/sub methods
  */
 /**
- *  给preempt 增加 val 
+ *  给preempt 增加 val
  */
 static __always_inline void __preempt_count_add(int val)
 {
