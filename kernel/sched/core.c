@@ -2579,6 +2579,9 @@ void sched_set_stop_task(int cpu, struct task_struct *stop)
 
 #endif /* CONFIG_SMP */
 
+/**
+ *
+ */
 static void
 ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
@@ -2620,14 +2623,17 @@ ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 		__schedstat_inc(p->se.statistics.nr_wakeups_sync);
 }
 
-/*
+/**
  * Mark the task runnable and perform wakeup-preemption.
+ *
+ * 试图唤醒进程 P
  */
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 			   struct rq_flags *rf)
 {
 	/**
-	 *
+	 * 检查 P 进程是否可以抢占运行队列中的当前进程 rq->curr
+	 * 也就是设置 rq->curr 的 thread_info flags TIF_NEED_RESCHED 标志位
 	 */
 	check_preempt_curr(rq, p, wake_flags);
 
@@ -2635,8 +2641,10 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 	 * 莫挨老子，老子正在运行
 	 */
 	p->state = TASK_RUNNING;
+
 	/**
 	 * 唤醒结束，开始点 trace_sched_waking
+	 * $ sudo bpftrace -e 'tracepoint:sched:sched_wakeup { @[kstack] = count(); }'
 	 */
 	trace_sched_wakeup(p);
 
@@ -2681,6 +2689,11 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 }
 
 /**
+ * ttwu_do_activate():
+ * 1. rq->nr_uninterruptible--;
+ * 2. 入队: enqueue_task(rq, p, flags) 并设置标记：进程正在就绪队列中运行;
+ * 3. 试图唤醒进程 P(p->state = TASK_RUNNING), 并判定是否要抢占 rq->curr 进程;
+ *
  * 其中 TTWU_QUEUE 是内核调度的其中一个 feature，默认是打开的（true），
  * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
  * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了减少
@@ -2724,7 +2737,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 	activate_task(rq, p, en_flags);
 
 	/**
-	 *
+	 * 试图唤醒进程 P(p->state = TASK_RUNNING)
+	 * 并判定是否要抢占 rq->curr 进程
 	 */
 	ttwu_do_wakeup(rq, p, wake_flags, rf);
 }
@@ -2761,13 +2775,17 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	int ret = 0;
 
 	rq = __task_rq_lock(p, &rf);
+
+	/**
+	 * p->on_rq == TASK_ON_RQ_QUEUED;
+	 */
 	if (task_on_rq_queued(p)) {
 		/* check_preempt_curr() may use rq clock */
 		update_rq_clock(rq);
 
 		/**
-		 *
-		 *
+		 * 试图唤醒进程 P(p->state = TASK_RUNNING)
+		 * 并判定是否要抢占 rq->curr 进程
 		 */
 		ttwu_do_wakeup(rq, p, wake_flags, &rf);
 		ret = 1;
@@ -2786,9 +2804,7 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
  *   UNLOCK rq->lock
  *
  * ============================================
- * sudo bpftrace -e 'kprobe:sched_ttwu_pending { printf("%s\n", comm);@[kstack] = count();}'
- *
- * 该函数会被 swapper/xx(idle 进程) 调用
+ * sudo bpftrace -e 'kprobe:sched_ttwu_pending { @[kstack] = count();}'
  *
  * 一个调用栈示例
  *
@@ -2821,21 +2837,44 @@ void sched_ttwu_pending(void *arg)
 	WRITE_ONCE(rq->ttwu_pending, 0);
 
 	rq_lock_irqsave(rq, &rf);
+	/**
+	 *
+	 */
 	update_rq_clock(rq);
 
 	/**
-	 *
+	 * 遍历 wake list 中的进程
 	 * 在 __ttwu_queue_wakelist() 中加入链表
 	 */
 	llist_for_each_entry_safe(p, t, llist, wake_entry.llist) {
+		/**
+		 *
+		 */
 		if (WARN_ON_ONCE(p->on_cpu))
 			smp_cond_load_acquire(&p->on_cpu, !VAL);
 
+		/**
+		 * 设置进程 P 的 CPU
+		 */
 		if (WARN_ON_ONCE(task_cpu(p) != cpu_of(rq)))
 			set_task_cpu(p, cpu_of(rq));
 
 		/**
+		 * ttwu_do_activate():
+		 * 1. rq->nr_uninterruptible--;
+		 * 2. 入队: enqueue_task(rq, p, flags) 并设置标记：进程正在就绪队列中运行;
+		 * 3. 试图唤醒进程 P(p->state = TASK_RUNNING), 并判定是否要抢占 rq->curr 进程;
+		 *
 		 * sched_remote_wakeup: 是否发生迁移了，从一个 CPU 转到 另一个 CPU
+		 *
+		 * 其中 TTWU_QUEUE 是内核调度的其中一个 feature，默认是打开的（true），
+		 * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
+		 * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了减少
+		 * 运行队列的锁竞争，用中断代替。
+		 *
+		 * see /sys/kernel/debug/sched/features
+		 *
+		 * https://lore.kernel.org/lkml/1323275027.32012.114.camel@twins/
 		 */
 		ttwu_do_activate(rq, p, p->sched_remote_wakeup ? WF_MIGRATED : 0, &rf);
 	}
@@ -2981,7 +3020,9 @@ static inline bool ttwu_queue_cond(int cpu, int wake_flags)
 }
 
 /**
- *
+ * 将 task 插入 目标 CPU 的 wake_list，并且 如果有必要 用 IPI 唤醒 CPU。
+ * 接收到 IPI 的唤醒 CPU 将通过 sched_ttwu_wakeup() 对任务进行排队以进行激活，
+ * 因此 wakee 会产生唤醒成本，而不是 waker 。
  */
 static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 {
@@ -2994,7 +3035,14 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 			return false;
 
 		sched_clock_cpu(cpu); /* Sync clocks across CPUs */
+
+		/**
+		 * 将 task 插入 目标 CPU 的 wake_list，并且 如果有必要 用 IPI 唤醒 CPU。
+		 * 接收到 IPI 的唤醒 CPU 将通过 sched_ttwu_wakeup() 对任务进行排队以进行激活，
+		 * 因此 wakee 会产生唤醒成本，而不是 waker 。
+		 */
 		__ttwu_queue_wakelist(p, cpu, wake_flags);
+
 		return true;
 	}
 
@@ -3006,6 +3054,15 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
 #endif /* CONFIG_SMP */
 
 /**
+ * ttwu_queue():
+ * 1. ttwu_queue_wakelist() 插入 进程到 wake list, 发送 IPI，如果插入成功，直接返回;
+ * 如果（1）执行失败：
+ * 2. ttwu_do_activate()
+ *  2.1. rq->nr_uninterruptible--;
+ *  2.2. 入队: enqueue_task(rq, p, flags) 并设置标记：进程正在就绪队列中运行;
+ *  2.3. 试图唤醒进程 P(p->state = TASK_RUNNING), 并判定是否要抢占 rq->curr 进程;
+ *
+ * -----------------------------------------------------------------------------
  * 其中 TTWU_QUEUE 是内核调度的其中一个 feature ，默认是打开的（true），
  * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
  * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了
@@ -3014,7 +3071,7 @@ static bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
  * see /sys/kernel/debug/sched/features
  *
  * 示例输出：（实际在一行）
- *
+ * $ sudo cat /sys/kernel/debug/sched/features
  * GENTLE_FAIR_SLEEPERS START_DEBIT NO_NEXT_BUDDY LAST_BUDDY CACHE_HOT_BUDDY
  * WAKEUP_PREEMPTION NO_HRTICK NO_HRTICK_DL NO_DOUBLE_TICK NONTASK_CAPACITY
  * TTWU_QUEUE SIS_PROP NO_WARN_DOUBLE_CLOCK RT_PUSH_IPI NO_RT_RUNTIME_SHARE
@@ -3030,19 +3087,40 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 	struct rq_flags rf;
 
 	/**
-	 * 插入 wake list
-	 * 如果插入成功，直接返回
+	 * 插入 进程到 wake list, 发送 IPI，如果插入成功，直接返回
+	 *
+	 * 将 task 插入 目标 CPU 的 wake_list，并且 如果有必要 用 IPI 唤醒 CPU。
+	 * 接收到 IPI 的唤醒 CPU 将通过 sched_ttwu_wakeup() 对任务进行排队以进行激活，
+	 * 因此 wakee 会产生唤醒成本，而不是 waker 。
 	 */
 	if (ttwu_queue_wakelist(p, cpu, wake_flags))
 		return;
+
+	/**
+	 * 如果上面插入成功，ttwu_queue_wakelist() 返回 true，直接返回；
+	 * 如果上面插入失败，会执行下面的代码，直接唤醒进程 P；
+	 */
 
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
 
 	/**
+	 * ttwu_do_activate():
+	 * 1. rq->nr_uninterruptible--;
+	 * 2. 入队: enqueue_task(rq, p, flags) 并设置标记：进程正在就绪队列中运行;
+	 * 3. 试图唤醒进程 P(p->state = TASK_RUNNING), 并判定是否要抢占 rq->curr 进程;
 	 *
+	 * 其中 TTWU_QUEUE 是内核调度的其中一个 feature，默认是打开的（true），
+	 * 可以控制在远程唤醒时是否允许向目标 CPU 触发 IPI 中断，如果不允许远程唤醒，
+	 * 则需要通过对目标 CPU 的运行队列加锁进行处理。可知 TTWU_QUEUE 就是为了减少
+	 * 运行队列的锁竞争，用中断代替。
+	 *
+	 * see /sys/kernel/debug/sched/features
+	 *
+	 * https://lore.kernel.org/lkml/1323275027.32012.114.camel@twins/
 	 */
 	ttwu_do_activate(rq, p, wake_flags, &rf);
+
 	rq_unlock(rq, &rf);
 }
 
@@ -3206,10 +3284,16 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
+	/**
+	 * sched_ttwu_pending()    try_to_wake_up()
+	 *  STORE p->on_rq = 1      LOAD p->state
+	 */
+
 	unsigned long flags;
 	int cpu, success = 0;
 
-	preempt_disable();  /* 禁止抢占 */
+	/* 禁止抢占 */
+	preempt_disable();
 
 	/**
 	 * 当前线程
@@ -3223,8 +3307,15 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		 *
 		 * In particular:
 		 *  - we rely on Program-Order guarantees for all the ordering,
+		 *    (我们依靠 Program-Order 保证进行所有顺序)
 		 *  - we're serialized against set_special_state() by virtue of
 		 *    it disabling IRQs (this allows not taking ->pi_lock).
+		 *    (我们针对 set_special_state() 进行了序列化，因为它禁用了 IRQ
+		 *    （这允许不获取 ->pi_lock）)
+		 *
+		 * 正在唤醒 current，也就是说:
+		 * 1. p->on_rq == 1
+		 * 2. task_cpu(p) == smp_processor_id()
 		 */
 		if (!(p->state & state))
 			goto out;
@@ -3233,6 +3324,8 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		trace_sched_waking(p);
 		/**
 		 * 直接将 state 设置为 TASK_RUNNING
+		 * 6.1.0-rc3 中替换为：
+		 * WRITE_ONCE(p->__state, TASK_RUNNING);
 		 */
 		p->state = TASK_RUNNING;
 		trace_sched_wakeup(p);
@@ -3242,6 +3335,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	/**
 	 * 如果不是当前线程，从此继续运行
 	 */
+
 	/*
 	 * If we are going to wake up a thread waiting for CONDITION we
 	 * need to ensure that CONDITION=1 done by the caller can not be
@@ -3256,13 +3350,20 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	smp_mb__after_spinlock();
 
 	/**
+	 * 在 wake_up_process() 中调用 try_to_wake_up 传入的 state 为：
+	 * state=(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
 	 *
+	 * 一个调用栈示例：
+	 * hrtimer_wakeup()
+	 *   wake_up_process()
+	 *     try_to_wake_up()
 	 */
 	if (!(p->state & state))
 		goto unlock;
 
 	/**
 	 * 开始跟踪
+	 * $ sudo bpftrace -e 't:sched:sched_waking { @[kstack] = count();}'
 	 */
 	trace_sched_waking(p);
 
@@ -3295,6 +3396,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 */
 	smp_rmb();
 
+	/**
+	 * ttwu_runnable: p->on_rq == TASK_ON_RQ_QUEUED;
+	 */
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
 		goto unlock;
 
@@ -3337,7 +3441,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 *
 	 * 正在被唤醒
 	 */
-	p->state = TASK_WAKING;
+	p->state = TASK_WAKING/*0x0200*/;
 
 	/*
 	 * If the owning (remote) CPU is still in the middle of schedule() with
@@ -3361,6 +3465,11 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 *
 	 * to ensure we observe the correct CPU on which the task is currently
 	 * scheduling.
+	 *
+	 * ttwu_queue_wakelist():
+	 * 将 task 插入 目标 CPU 的 wake_list，并且 如果有必要 用 IPI 唤醒 CPU。
+	 * 接收到 IPI 的唤醒 CPU 将通过 sched_ttwu_wakeup() 对任务进行排队以进行激活，
+	 * 因此 wakee 会产生唤醒成本，而不是 waker 。
 	 */
 	if (smp_load_acquire(&p->on_cpu) &&
 	    ttwu_queue_wakelist(p, task_cpu(p), wake_flags | WF_ON_CPU))
@@ -3419,13 +3528,27 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	/**
 	 * 添加到队列
+	 *
+	 * ttwu_queue():
+	 * 1. ttwu_queue_wakelist() 插入 进程到 wake list, 发送 IPI，如果插入成功，直接返回;
+	 * 如果（1）执行失败：
+	 * 2. ttwu_do_activate()
+	 *  2.1. rq->nr_uninterruptible--;
+	 *  2.2. 入队: enqueue_task(rq, p, flags) 并设置标记：进程正在就绪队列中运行;
+	 *  2.3. 试图唤醒进程 P(p->state = TASK_RUNNING), 并判定是否要抢占 rq->curr 进程;
 	 */
 	ttwu_queue(p, cpu, wake_flags);
 
 unlock:
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 out:
+	/**
+	 * We're doing the wakeup (@success == 1)
+	 */
 	if (success)
+		/**
+		 * 统计 ttwu，只在 schedstat_enabled() 时统计
+		 */
 		ttwu_stat(p, task_cpu(p), wake_flags);
 
 	/**
@@ -3499,6 +3622,7 @@ int wake_up_process(struct task_struct *p)
 {
 	/**
 	 *  唤醒进程
+	 *  TASK_NORMAL	宏：(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
 	 */
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
@@ -5749,7 +5873,7 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	/**
 	 *  private 在 init_waitqueue_entry() 设置为 current
 	 */
-	return try_to_wake_up(curr->private/* 进程信息 */, mode, wake_flags);
+	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 EXPORT_SYMBOL(default_wake_function);
 

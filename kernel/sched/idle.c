@@ -500,7 +500,8 @@ static void update_curr_idle(struct rq *rq)
 
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
- */    const struct sched_class idle_sched_class, __idle_sched_class ;/* 我加的 */
+ */
+const struct sched_class idle_sched_class, __idle_sched_class ;/* 我加的 */
 const struct sched_class idle_sched_class
 	__section("__idle_sched_class") = {
 	/* no enqueue/yield_task for idle tasks */

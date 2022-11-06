@@ -1894,6 +1894,9 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 	0;
 #undef SCHED_FEAT
 
+/**
+ * 是否有 x 特性，如 TTWU_QUEUE
+ */
 #define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
 #endif /* SCHED_DEBUG */
