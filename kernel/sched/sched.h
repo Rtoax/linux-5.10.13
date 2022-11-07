@@ -1022,6 +1022,11 @@ DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
  * 每个 CPU 都会有一个就绪队列，是一个 per-CPU 变量 `runqueues`
  *
  * API有: `cpu_rq()`, `this_rq()`, `task_rq()`, `cpu_curr()`, `raw_rq()`
+ *
+ * 调度延迟（sched latency）：线程在运行队列中的等待时间，这主要来自三个方面：
+ * 1. 从idle cpu唤醒需要等待器件做好准备；
+ * 2. 等待更高优先级调度类线程执行完成；
+ * 3. 等待同调度类的线程时间片耗尽。
  */
 struct rq {
 

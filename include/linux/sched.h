@@ -405,6 +405,12 @@ struct sched_info {
  * @weight      调度实体的权重
  * @inv_weight  inverse weight，它是权重的一个中间计算结果
  *              见`sched_prio_to_wmult[]`
+ *
+ * CFS调度策略就是青天大老爷，它来到linux内核，只做三件事：
+ *
+ *     公平！公平！还是公平！
+ *
+ * 其公平规则紧紧围绕权重展开，理解了权重的作用，也就掌握了该调度策略的核心。
  */
 struct load_weight {    /* 负载权重 */
 	unsigned long   weight;
@@ -592,6 +598,11 @@ struct sched_statistics {   /* 调度统计 */
  * 调度实体
  *
  *  采用CFS算法调度的普通非实时进程的调度实体
+ *
+ * 时间片（sched slice）：
+ *   线程单次执行的时长。CFS调度策略存在调度周期，理想情况下，调度周期内运行
+ *   队列的每个线程都将执行一次，当运行队列中只有一个线程时，将总是由该线程分
+ *   得全部时间片。
  */
 struct sched_entity {
 	/**
