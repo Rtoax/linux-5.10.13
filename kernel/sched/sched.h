@@ -623,6 +623,9 @@ struct cfs_rq {
 	/**
 	 *  CFS 红黑树的根
 	 *  对应 sched_entity.run_node
+	 *
+	 *  cfs线程的队列维护是通过红黑树完成
+	 *  rt 线程的队列维护则是通过优先级链表完成
 	 */
 	struct rb_root_cached	tasks_timeline;
 
@@ -724,6 +727,8 @@ struct rt_rq {  /* 实时运行队列 */
 
 	/**
 	 *  优先级队列
+	 *  cfs线程的队列维护是通过红黑树完成
+	 *  rt 线程的队列维护则是通过优先级链表完成
 	 */
 	struct rt_prio_array	active;
 
@@ -1069,6 +1074,8 @@ struct rq {
 
 	/**
 	 *  三种调度类型的 队列
+	 *  cfs线程的队列维护是通过红黑树完成
+	 *  rt 线程的队列维护则是通过优先级链表完成
 	 */
 	struct cfs_rq		cfs;
 	struct rt_rq		rt;
@@ -2589,37 +2596,37 @@ extern void set_rq_offline(struct rq *rq);
 extern bool sched_smp_initialized;
 
 #else /* CONFIG_SMP */
-//
-///*
-// * double_rq_lock - safely lock two runqueues
-// *
-// * Note this does not disable interrupts like task_rq_lock,
-// * you need to do so manually before calling.
-// */
-//static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
-//	__acquires(rq1->lock)
-//	__acquires(rq2->lock)
-//{
-//	BUG_ON(!irqs_disabled());
-//	BUG_ON(rq1 != rq2);
-//	raw_spin_lock(&rq1->lock);
-//	__acquire(rq2->lock);	/* Fake it out ;) */
-//}
-//
-///*
-// * double_rq_unlock - safely unlock two runqueues
-// *
-// * Note this does not restore interrupts like task_rq_unlock,
-// * you need to do so manually after calling.
-// */
-//static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
-//	__releases(rq1->lock)
-//	__releases(rq2->lock)
-//{
-//	BUG_ON(rq1 != rq2);
-//	raw_spin_unlock(&rq1->lock);
-//	__release(rq2->lock);
-//}
+
+/*
+ * double_rq_lock - safely lock two runqueues
+ *
+ * Note this does not disable interrupts like task_rq_lock,
+ * you need to do so manually before calling.
+ */
+static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
+	__acquires(rq1->lock)
+	__acquires(rq2->lock)
+{
+	BUG_ON(!irqs_disabled());
+	BUG_ON(rq1 != rq2);
+	raw_spin_lock(&rq1->lock);
+	__acquire(rq2->lock);	/* Fake it out ;) */
+}
+
+/*
+ * double_rq_unlock - safely unlock two runqueues
+ *
+ * Note this does not restore interrupts like task_rq_unlock,
+ * you need to do so manually after calling.
+ */
+static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
+	__releases(rq1->lock)
+	__releases(rq2->lock)
+{
+	BUG_ON(rq1 != rq2);
+	raw_spin_unlock(&rq1->lock);
+	__release(rq2->lock);
+}
 
 #endif
 

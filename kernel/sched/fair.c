@@ -12226,44 +12226,70 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
 /*
  * All the scheduling class methods:
  */
-const struct sched_class fair_sched_class, __fair_sched_class;/* 我加的 *//* CFS 调度类 */
 const struct sched_class fair_sched_class
 	__section("__fair_sched_class") = {
-	fair_sched_class.enqueue_task		= enqueue_task_fair,    /* 入队 */
+	/* 入队 */
+	fair_sched_class.enqueue_task		= enqueue_task_fair,
+	/* 出队 */
 	fair_sched_class.dequeue_task		= dequeue_task_fair,
+	/* 当前运行的进程让出 CPU，yield(2) */
 	fair_sched_class.yield_task		= yield_task_fair,
+	/* 在 yield 的基础上，执行下一个执行线程 */
 	fair_sched_class.yield_to_task		= yield_to_task_fair,
 
+	/* 新唤醒线程的抢占处理逻辑 */
 	fair_sched_class.check_preempt_curr	= check_preempt_wakeup,
 
+	/* 从运行队列中选取下一个执行线程 */
 	fair_sched_class.pick_next_task		= __pick_next_task_fair,
+	/* 上一个执行线程处理函数 */
 	fair_sched_class.put_prev_task		= put_prev_task_fair,
+	/* 设置下一个执行线程 */
 	fair_sched_class.set_next_task          = set_next_task_fair,
 
 #ifdef CONFIG_SMP
+	/* 均衡其他 CPU 上的 CFS 线程到当前 CPU */
 	fair_sched_class.balance		= balance_fair,
+	/* 为线程选择合适的运行队列 */
 	fair_sched_class.select_task_rq		= select_task_rq_fair,
+	/* 将线程迁移到指定的 CPU 的预处理操作 */
 	fair_sched_class.migrate_task_rq	= migrate_task_rq_fair,
 
+	/* CPU 挂载的处理函数，如更新带宽限制配置 */
 	fair_sched_class.rq_online		= rq_online_fair,
+	/* CPU 下线的处理函数，如解除带宽限制 */
 	fair_sched_class.rq_offline		= rq_offline_fair,
 
+	/**
+	 * 线程销毁时，记录待移除的 PELT 相关统计信息
+	 *
+	 * commit 4042c1c791b6("PELT: Per-Entity Load Tracking.")
+	 */
 	fair_sched_class.task_dead		= task_dead_fair,
+	/* 设置线程的 CPU affinity，指定其可运行的 CPU */
 	fair_sched_class.set_cpus_allowed	= set_cpus_allowed_common,
 #endif
 
+	/* 调度器 tick 中断命中时进行处理，如更新负载 */
 	fair_sched_class.task_tick		= task_tick_fair,
+	/* 子线程创建时更新其虚拟时间 */
 	fair_sched_class.task_fork		= task_fork_fair,   /* fork 时候 会调用 */
 
+	/* 优先级变更时判断是否需要重新调度，发起抢占 */
 	fair_sched_class.prio_changed		= prio_changed_fair,
+	/* 由 CFS 调度类更改为其他调度类的处理函数 */
 	fair_sched_class.switched_from		= switched_from_fair,
+	/* 从 其他调度类更改为 CFS 调度类的处理函数 */
 	fair_sched_class.switched_to		= switched_to_fair,
 
+	/* 系统调用获取对应线程的时间片 */
 	fair_sched_class.get_rr_interval	= get_rr_interval_fair,
 
+	/* 更新当前执行线程的运行时间统计信息 */
 	fair_sched_class.update_curr		= update_curr_fair,
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+	/* 更新线程相关调度实体的层级 */
 	fair_sched_class.task_change_group	= task_change_group_fair,
 #endif
 
