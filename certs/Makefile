@@ -40,8 +40,16 @@ targets += x509_certificate_list
 # We do it this way rather than having a boolean option for enabling an
 # external private key, because 'make randconfig' might enable such a
 # boolean option and we unfortunately can't make it depend on !RANDCONFIG.
+#
+# 当私钥路径为默认路径"certs/signing_key.pem"时(源码树不存在这个文件)，
+# 内核将根据"certs/x.509.genkey"模板文件随机生成RSA私钥和自签名证书，并
+# 写入certs/signing_key.pem。
 ifeq ($(CONFIG_MODULE_SIG_KEY),certs/signing_key.pem)
 
+# 签名私钥文件通过内核选项 CONFIG_MODULE_SIG_KEY 指定，
+# 无论 CONFIG_MODULE_SIG_ALL 选项是否打开都必须指定私钥文件。
+# 私钥文件必须是RSA或ECDSA私钥，PEM格式且自带证书。
+# 签名私钥文件可以由用户预先生成，也可以在编译时由内核随机生成。
 keytype-$(CONFIG_MODULE_SIG_KEY_TYPE_ECDSA) := -newkey ec -pkeyopt ec_paramgen_curve:secp384r1
 
 quiet_cmd_gen_key = GENKEY  $@
@@ -54,6 +62,8 @@ $(obj)/signing_key.pem: $(obj)/x509.genkey FORCE
 
 targets += signing_key.pem
 
+# 编译者需要事先将模板拷贝到certs/x.509.genkey，如果certs/x.509.genkey不存在，
+# 内核将使用默认模板
 quiet_cmd_copy_x509_config = COPY    $@
       cmd_copy_x509_config = cat $(srctree)/$(src)/default_x509.genkey > $@
 

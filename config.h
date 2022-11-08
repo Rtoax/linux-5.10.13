@@ -2649,9 +2649,24 @@
 #define CONFIG_MODULE_FORCE_UNLOAD
 #define CONFIG_MODULES 1
 #define CONFIG_MODULE_SIG 1 /* 总开关, 打开支持模块签名 */
+/**
+ * 内核模块有两种签名方式，
+ *
+ * 1. 一种是在编译内核源码时自动签名，
+ * 2. 一种是脱离源码树对已经编译好的内核模块单独签名。
+ *
+ * 自动签名需要打开CONFIG_MODULE_SIG_ALL内核选项，打开该选项后内核会在
+ * make module_install阶段签名模块。
+ */
 #define CONFIG_MODULE_SIG_ALL 1
 #define CONFIG_MODULE_SIG_FORMAT 1
 #define CONFIG_MODULE_SIG_HASH "sha256"
+/**
+ * 签名私钥文件通过内核选项 CONFIG_MODULE_SIG_KEY 指定，
+ * 无论 CONFIG_MODULE_SIG_ALL 选项是否打开都必须指定私钥文件。
+ * 私钥文件必须是RSA或ECDSA私钥，PEM格式且自带证书。
+ * 签名私钥文件可以由用户预先生成，也可以在编译时由内核随机生成。
+ */
 #define CONFIG_MODULE_SIG_KEY "certs/signing_key.pem"
 #define CONFIG_MODULE_SIG_SHA256 1
 /**
