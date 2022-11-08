@@ -272,6 +272,19 @@ static void module_assert_mutex_or_preempt(void)
 #endif
 }
 
+/**
+ * 打开该选项强制校验模块,校验不通过禁止加载该模块
+ * (令module.sig_enforce的值永远为true)
+ *
+ * true：强制校验模块,校验不通过禁止加载该模块
+ * false：模块校验失败仍然允许加载，但会标记kernel tainted
+ *
+ * 如果CONFIG_MODULE_SIG_FORCE打开，则永远为true
+ *
+ * 注1：当UEFI SecureBoot使能时，内核会令module.sig_enforce永远为true,
+ *      即在开启安全启动的情况下，模块校验失败均禁止加载，不受cmdline影响。
+ * 注2：发行版通常不打开CONFIG_MODULE_SIG_FORCE, 包括CentOS、Ubuntu等。
+ */
 static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 module_param(sig_enforce, bool_enable_only, 0644);
 
@@ -3055,6 +3068,14 @@ static void kmemleak_load_module(const struct module *mod,
 #ifdef CONFIG_MODULE_SIG
 /**
  *  检测 sig 签名
+ *  分析基于Linux 5.15.13版本， 5.x相较4.x在签名证书来源上变化非常大。
+ *  Linux内核支持模块完整性校验.
+ *
+ *  此函数负责验证模块签名
+ *
+ *  refs:
+ *  https://www.kernel.org/doc/html/v5.15/admin-guide/module-signing.html
+ *  https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_monitoring_and_updating_the_kernel/signing-kernel-modules-for-secure-boot_managing-monitoring-and-updating-the-kernel
  */
 static int module_sig_check(struct load_info *info, int flags)
 {
@@ -3093,6 +3114,19 @@ static int module_sig_check(struct load_info *info, int flags)
 	case -ENOKEY:
 		reason = "Loading of module with unavailable key";
 	decide:
+		/**
+		 * 打开该选项强制校验模块,校验不通过禁止加载该模块
+		 * (令module.sig_enforce的值永远为true)
+		 *
+		 * true：强制校验模块,校验不通过禁止加载该模块
+		 * false：模块校验失败仍然允许加载，但会标记kernel tainted
+		 *
+		 * 如果CONFIG_MODULE_SIG_FORCE打开，则永远为true
+		 *
+		 * 注1：当UEFI SecureBoot使能时，内核会令module.sig_enforce永远为true,
+		 *      即在开启安全启动的情况下，模块校验失败均禁止加载，不受cmdline影响。
+		 * 注2：发行版通常不打开CONFIG_MODULE_SIG_FORCE, 包括CentOS、Ubuntu等。
+		 */
 		if (is_module_sig_enforced()) {
 			pr_notice("%s: %s is rejected\n", info->name, reason);
 			return -EKEYREJECTED;
@@ -3110,10 +3144,10 @@ static int module_sig_check(struct load_info *info, int flags)
 }
 
 #else /* !CONFIG_MODULE_SIG */
-//static int module_sig_check(struct load_info *info, int flags)
-//{
-//	return 0;
-//}
+static int module_sig_check(struct load_info *info, int flags)
+{
+	return 0;
+}
 #endif /* !CONFIG_MODULE_SIG */
 
 /**

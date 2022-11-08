@@ -2648,12 +2648,17 @@
 #define CONFIG_MODULE_FORCE_LOAD 1
 #define CONFIG_MODULE_FORCE_UNLOAD
 #define CONFIG_MODULES 1
-#define CONFIG_MODULE_SIG 1
+#define CONFIG_MODULE_SIG 1 /* 总开关, 打开支持模块签名 */
 #define CONFIG_MODULE_SIG_ALL 1
 #define CONFIG_MODULE_SIG_FORMAT 1
 #define CONFIG_MODULE_SIG_HASH "sha256"
 #define CONFIG_MODULE_SIG_KEY "certs/signing_key.pem"
 #define CONFIG_MODULE_SIG_SHA256 1
+/**
+ * 打开该选项强制校验模块,校验不通过禁止加载该模块
+ * (令module.sig_enforce的值永远为true)
+ */
+#define CONFIG_MODULE_SIG_FORCE 1
 #define CONFIG_MODULE_SRCVERSION_ALL 1
 #define CONFIG_MODULES_TREE_LOOKUP 1
 #define CONFIG_MODULES_USE_ELF_RELA 1
