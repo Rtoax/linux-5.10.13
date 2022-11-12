@@ -53,6 +53,11 @@
  */
 #define __khwcap_feature(x)		const_ilog2(HWCAP_ ## x)
 #define KERNEL_HWCAP_FP			__khwcap_feature(FP)
+/**
+ * lscpu: asimd
+ * HWCAP_ASIMD=2
+ * KERNEL_HWCAP_ASIMD=1
+ */
 #define KERNEL_HWCAP_ASIMD		__khwcap_feature(ASIMD)
 #define KERNEL_HWCAP_EVTSTRM		__khwcap_feature(EVTSTRM)
 #define KERNEL_HWCAP_AES		__khwcap_feature(AES)

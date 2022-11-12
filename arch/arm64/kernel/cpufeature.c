@@ -605,6 +605,10 @@ static const struct __ftr_reg_entry {
 
 	/* Op1 = 0, CRn = 1, CRm = 2 */
 	ARM64_FTR_REG(SYS_ZCR_EL1, ftr_zcr),
+    ARM64_FTR_REG(SYS_SMCR_EL1, ftr_smcr),
+
+    /* Op1 = 1, CRn = 0, CRm = 0 */
+    ARM64_FTR_REG(SYS_GMID_EL1, ftr_gmid),
 
 	/* Op1 = 3, CRn = 0, CRm = 0 */
 	{ SYS_CTR_EL0, &arm64_ftr_reg_ctrel0 },
@@ -1322,7 +1326,7 @@ static bool __meltdown_safe = true;
 
 /**
  *  KPTI - Kernel Page-Table Isolation 内核页表隔离
- *  
+ *
  *  KPTI 是吧每个进程使用的一张页表分隔成了两张，内核页表 和 用户页表
  */
 static int __kpti_forced; /* 0: not forced, >0: forced on, <0: forced off */
@@ -2211,6 +2215,47 @@ static const struct arm64_cpu_capabilities ptr_auth_hwcap_gen_matches[] = {
 };
 #endif
 
+/**
+ * Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
+ * ==============================================================
+ *
+ * 有些硬件或软件功能仅在某些 CPU 实现上和/或在具体某个内核配置上可用，但
+ * 对于处于 EL0 的用户空间代码没有可用的架构发现机制。内核通过在辅助向量表
+ * 公开一组称为 hwcaps 的标志而把这些功能暴露给用户空间。
+ *
+ * 用户空间软件可以通过获取辅助向量的 AT_HWCAP 或 AT_HWCAP2 条目来测试功能，
+ * 并测试是否设置了相关标志，例如:
+ *
+ *   unsigned long hwcaps = getauxval(AT_HWCAP);
+ *   if (hwcaps & HWCAP_FP)
+ *      return true;
+ *
+ * 如果软件依赖于 hwcap 描述的功能，在尝试使用该功能前则应检查相关的 hwcap
+ * 标志以验证该功能是否存在。
+ *
+ * 不能通过其他方式探查这些功能。当一个功能不可用时，尝试使用它可能导致不可
+ * 预测的行为，并且无法保证能确切的知道该功能不可用，例如 SIGILL.
+ *
+ * Hwcaps 的说明
+ * ============
+ *
+ * 大多数 hwcaps 旨在说明通过架构 ID 寄存器(处于 EL0 的用户空间代码无法访问)
+ * 描述的功能的存在。这些 hwcap 通过 ID 寄存器字段定义，并且应根据 ARM 体系
+ * 结构参考手册（ARM ARM）中定义的字段来解释说明。
+ *
+ * 这些 hwcaps 以下面的形式描述:
+ *
+ *    idreg.field == val 表示有某个功能。
+ *
+ * 当 idreg.field 中有 val 时，hwcaps 表示 ARM ARM 定义的功能是有效的，但是
+ * 并不是说要完全和 val 相等，也不是说 idreg.field 描述的其他功能就是缺失的。
+ *
+ * 其他 hwcaps 可能表明无法仅由 ID 寄存器描述的功能的存在。这些 hwcaps 可能
+ * 没有被 ID 寄存器描述，需要参考其他文档。
+ *
+ * Documentation/arm64/elf_hwcaps.rst
+ * Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
+ */
 static const struct arm64_cpu_capabilities arm64_elf_hwcaps[] = {
 	HWCAP_CAP(SYS_ID_AA64ISAR0_EL1, ID_AA64ISAR0_AES_SHIFT, FTR_UNSIGNED, 2, CAP_HWCAP, KERNEL_HWCAP_PMULL),
 	HWCAP_CAP(SYS_ID_AA64ISAR0_EL1, ID_AA64ISAR0_AES_SHIFT, FTR_UNSIGNED, 1, CAP_HWCAP, KERNEL_HWCAP_AES),
@@ -2230,6 +2275,9 @@ static const struct arm64_cpu_capabilities arm64_elf_hwcaps[] = {
 	HWCAP_CAP(SYS_ID_AA64ISAR0_EL1, ID_AA64ISAR0_RNDR_SHIFT, FTR_UNSIGNED, 1, CAP_HWCAP, KERNEL_HWCAP_RNG),
 	HWCAP_CAP(SYS_ID_AA64PFR0_EL1, ID_AA64PFR0_FP_SHIFT, FTR_SIGNED, 0, CAP_HWCAP, KERNEL_HWCAP_FP),
 	HWCAP_CAP(SYS_ID_AA64PFR0_EL1, ID_AA64PFR0_FP_SHIFT, FTR_SIGNED, 1, CAP_HWCAP, KERNEL_HWCAP_FPHP),
+	/**
+	 *
+	 */
 	HWCAP_CAP(SYS_ID_AA64PFR0_EL1, ID_AA64PFR0_ASIMD_SHIFT, FTR_SIGNED, 0, CAP_HWCAP, KERNEL_HWCAP_ASIMD),
 	HWCAP_CAP(SYS_ID_AA64PFR0_EL1, ID_AA64PFR0_ASIMD_SHIFT, FTR_SIGNED, 1, CAP_HWCAP, KERNEL_HWCAP_ASIMDHP),
 	HWCAP_CAP(SYS_ID_AA64PFR0_EL1, ID_AA64PFR0_DIT_SHIFT, FTR_SIGNED, 1, CAP_HWCAP, KERNEL_HWCAP_DIT),

@@ -42,9 +42,14 @@ static const char *icache_policy_str[] = {
 
 unsigned long __icache_flags;
 
+/**
+ * $ lscpu
+ * ...
+ * fp asimd evtstrm crc32 cpuid
+ */
 static const char *const hwcap_str[] = {
-	[KERNEL_HWCAP_FP]		= "fp",
-	[KERNEL_HWCAP_ASIMD]		= "asimd",
+	[KERNEL_HWCAP_FP/*0*/]		= "fp",
+	[KERNEL_HWCAP_ASIMD/*1*/]		= "asimd",
 	[KERNEL_HWCAP_EVTSTRM]		= "evtstrm",
 	[KERNEL_HWCAP_AES]		= "aes",
 	[KERNEL_HWCAP_PMULL]		= "pmull",

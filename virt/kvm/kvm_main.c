@@ -3350,13 +3350,21 @@ static struct file_operations kvm_vcpu_fops = {
 	KVM_COMPAT(kvm_vcpu_compat_ioctl),
 };
 
-/*
+/**
  * Allocates an inode for the vcpu.
+ * 为 VCPU 分配一个 fd，被 ioctl(2) 使用。
  */
 static int create_vcpu_fd(struct kvm_vcpu *vcpu)
 {
 	char name[8 + 1 + ITOA_MAX_LEN + 1];
 
+	/**
+	 * $ sudo tree /proc/$(pidof qemu-kvm)/fd/ | grep cpu
+	 * ├── 23 -> anon_inode:kvm-vcpu:0
+	 * ├── 24 -> anon_inode:kvm-vcpu:1
+	 * ├── 25 -> anon_inode:kvm-vcpu:2
+	 * ├── 26 -> anon_inode:kvm-vcpu:3
+	 */
 	snprintf(name, sizeof(name), "kvm-vcpu:%d", vcpu->vcpu_id);
 	/**
 	 * vcpu fd

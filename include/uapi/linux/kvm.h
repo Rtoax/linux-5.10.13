@@ -1747,7 +1747,11 @@ struct kvm_s390_ucas_mapping {
 #define KVM_SET_XCRS		  _IOW(KVMIO,  0xa7, struct kvm_xcrs)
 /* Available with KVM_CAP_SW_TLB */
 #define KVM_DIRTY_TLB		  _IOW(KVMIO,  0xaa, struct kvm_dirty_tlb)
-/* Available with KVM_CAP_ONE_REG */
+/**
+ * Available with KVM_CAP_ONE_REG
+ * KVM_GET_ONE_REG = 0x4010aeab
+ * KVM_SET_ONE_REG = 0x4010aeac
+ */
 #define KVM_GET_ONE_REG		  _IOW(KVMIO,  0xab, struct kvm_one_reg)
 #define KVM_SET_ONE_REG		  _IOW(KVMIO,  0xac, struct kvm_one_reg)
 /* VM is being stopped by host */

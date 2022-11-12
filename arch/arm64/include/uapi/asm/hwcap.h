@@ -21,6 +21,12 @@
  * HWCAP flags - for AT_HWCAP
  */
 #define HWCAP_FP		(1 << 0)
+/**
+ * ID_AA64PFR0_EL1.AdvSIMD == 0b0000 表示有此功能
+ * Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
+ *
+ * see also KERNEL_HWCAP_ASIMD
+ */
 #define HWCAP_ASIMD		(1 << 1)
 #define HWCAP_EVTSTRM		(1 << 2)
 #define HWCAP_AES		(1 << 3)
@@ -73,7 +79,23 @@
 #define HWCAP2_BF16		(1 << 14)
 #define HWCAP2_DGH		(1 << 15)
 #define HWCAP2_RNG		(1 << 16)
+// ID_AA64PFR0_EL1.BT == 0b0001 表示有此功能
 #define HWCAP2_BTI		(1 << 17)
 #define HWCAP2_MTE		(1 << 18)
+#define HWCAP2_ECV      (1 << 19)
+#define HWCAP2_AFP      (1 << 20)
+#define HWCAP2_RPRES        (1 << 21)
+#define HWCAP2_MTE3     (1 << 22)
+#define HWCAP2_SME      (1 << 23)
+#define HWCAP2_SME_I16I64   (1 << 24)
+#define HWCAP2_SME_F64F64   (1 << 25)
+#define HWCAP2_SME_I8I32    (1 << 26)
+#define HWCAP2_SME_F16F32   (1 << 27)
+#define HWCAP2_SME_B16F32   (1 << 28)
+#define HWCAP2_SME_F32F32   (1 << 29)
+#define HWCAP2_SME_FA64     (1 << 30)
+#define HWCAP2_WFXT     (1UL << 31)
+#define HWCAP2_EBF16        (1UL << 32)
+#define HWCAP2_SVE_EBF16    (1UL << 33)
 
 #endif /* _UAPI__ASM_HWCAP_H */
