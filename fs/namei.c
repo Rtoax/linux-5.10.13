@@ -3160,7 +3160,11 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 		}
 	}
 
-	/* Negative dentry, just create the file */
+	/**
+	 * Negative dentry, just create the file
+	 * 实际上，没有 inode 的 dentry 就是 Negative Dentry
+	 * 创建这个文件
+	 */
 	if (!dentry->d_inode && (open_flag & O_CREAT)) {
 		file->f_mode |= FMODE_CREATED;
 		audit_inode_child(dir_inode, dentry, AUDIT_TYPE_CHILD_CREATE);
@@ -3168,6 +3172,9 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 			error = -EACCES;
 			goto out_dput;
 		}
+		/**
+		 * 创建文件
+		 */
 		error = dir_inode->i_op->create(dir_inode, dentry, mode,
 						open_flag & O_EXCL);
 		if (error)
@@ -3242,7 +3249,12 @@ static const char *open_last_lookups(struct nameidata *nd,
 		inode_lock(dir->d_inode);
 	else
 		inode_lock_shared(dir->d_inode);
+
+	/**
+	 * 在已经打开的文件找 这个 dentry
+	 */
 	dentry = lookup_open(nd, file, op, got_write);
+	/* 没找到，尝试创建 */
 	if (!IS_ERR(dentry) && (file->f_mode & FMODE_CREATED))
 		fsnotify_create(dir->d_inode, dentry);
 	if (open_flag & O_CREAT)
