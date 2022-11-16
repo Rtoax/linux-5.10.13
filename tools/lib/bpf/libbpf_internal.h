@@ -253,6 +253,9 @@ struct bpf_line_info_min {
 enum bpf_core_relo_kind {
 	BPF_FIELD_BYTE_OFFSET = 0,	/* field byte offset */
 	BPF_FIELD_BYTE_SIZE = 1,	/* field size in bytes */
+	/**
+	 * bpf_core_field_exists()
+	 */
 	BPF_FIELD_EXISTS = 2,		/* field existence in target kernel */
 	BPF_FIELD_SIGNED = 3,		/* field signedness (0 - unsigned, 1 - signed) */
 	BPF_FIELD_LSHIFT_U64 = 4,	/* bitfield-specific left bitshift */
@@ -293,7 +296,7 @@ enum bpf_core_relo_kind {
  *
  *   struct sample *s = ...;
  *   int x = &s->a;     // encoded as "0:0" (a is field #0)
- *   int y = &s->b[5];  // encoded as "0:1:0:5" (anon struct is field #1, 
+ *   int y = &s->b[5];  // encoded as "0:1:0:5" (anon struct is field #1,
  *                      // b is field #0 inside anon struct, accessing elem #5)
  *   int z = &s[10]->b; // encoded as "10:1" (ptr is used as an array)
  *

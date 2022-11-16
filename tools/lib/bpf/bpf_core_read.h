@@ -13,6 +13,12 @@
 enum bpf_field_info_kind {
 	BPF_FIELD_BYTE_OFFSET = 0,	/* field byte offset */
 	BPF_FIELD_BYTE_SIZE = 1,
+	/**
+	 * bpf_core_field_exists()
+	 * __builtin_preserve_field_info() 是编译器的内建的函数，如下 GCC 链接
+	 * commit 068baae1864("bpf: add preserve_field_info builtin")
+	 * https://patchwork.sourceware.org/project/gcc/patch/20221025172443.6732-1-david.faust@oracle.com/
+	 */
 	BPF_FIELD_EXISTS = 2,		/* field existence in target kernel */
 	BPF_FIELD_SIGNED = 3,
 	BPF_FIELD_LSHIFT_U64 = 4,
@@ -107,6 +113,30 @@ enum bpf_enum_value_kind {
  * Returns:
  *    1, if matching field is present in target kernel;
  *    0, if no matching field found.
+ *
+ * 如下示例 (见 bcc/libbpf-tools/core_fixes.bpf.h)
+ * commit 2f064a59a1 ("sched: Change task_struct::state")
+ * https://github.com/torvalds/linux/commit/2f064a59a1
+ *
+ * struct task_struct___o {
+ *     volatile long int state;
+ * } __attribute__((preserve_access_index));
+ *
+ * struct task_struct___x {
+ *     unsigned int __state;
+ * } __attribute__((preserve_access_index));
+ *
+ * static __always_inline __s64 get_task_state(void *task)
+ * {
+ *     struct task_struct___x *t = task;
+ *
+ *     if (bpf_core_field_exists(t->__state))
+ * 	        return BPF_CORE_READ(t, __state);
+ *     return BPF_CORE_READ((struct task_struct___o *)task, state);
+ * }
+ *
+ * __builtin_preserve_field_info() 是编译器的内建的函数，如下 GCC 链接
+ * commit 068baae1864("bpf: add preserve_field_info builtin")
  */
 #define bpf_core_field_exists(field)					    \
 	__builtin_preserve_field_info(field, BPF_FIELD_EXISTS)

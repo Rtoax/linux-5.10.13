@@ -4506,6 +4506,9 @@ static const char *core_relo_kind_str(enum bpf_core_relo_kind kind)
 	switch (kind) {
 	case BPF_FIELD_BYTE_OFFSET: return "byte_off";
 	case BPF_FIELD_BYTE_SIZE: return "byte_sz";
+	/**
+	 * bpf_core_field_exists()
+	 */
 	case BPF_FIELD_EXISTS: return "field_exists";
 	case BPF_FIELD_SIGNED: return "signed";
 	case BPF_FIELD_LSHIFT_U64: return "lshift_u64";
@@ -4525,6 +4528,9 @@ static bool core_relo_is_field_based(enum bpf_core_relo_kind kind)
 	switch (kind) {
 	case BPF_FIELD_BYTE_OFFSET:
 	case BPF_FIELD_BYTE_SIZE:
+	/**
+	 * bpf_core_field_exists()
+	 */
 	case BPF_FIELD_EXISTS:
 	case BPF_FIELD_SIGNED:
 	case BPF_FIELD_LSHIFT_U64:
@@ -5204,6 +5210,9 @@ static int bpf_core_calc_field_relo(const struct bpf_program *prog,
 
 	*field_sz = 0;
 
+	/**
+	 * bpf_core_field_exists()
+	 */
 	if (relo->kind == BPF_FIELD_EXISTS) {
 		*val = spec ? 1 : 0;
 		return 0;
@@ -5306,6 +5315,9 @@ static int bpf_core_calc_field_relo(const struct bpf_program *prog,
 		if (validate)
 			*validate = true; /* right shift is never ambiguous */
 		break;
+	/**
+	 * bpf_core_field_exists()
+	 */
 	case BPF_FIELD_EXISTS:
 	default:
 		return -EOPNOTSUPP;
