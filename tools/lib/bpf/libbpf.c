@@ -5326,6 +5326,10 @@ static int bpf_core_calc_field_relo(const struct bpf_program *prog,
 	return 0;
 }
 
+/**
+ * kernel commit 3fc32f40c402("libbpf: Implement type-based CO-RE relocations
+ * support").
+ */
 static int bpf_core_calc_type_relo(const struct bpf_core_relo *relo,
 				   const struct bpf_core_spec *spec,
 				   __u32 *val)
@@ -7504,6 +7508,9 @@ int bpf_object__load_xattr(struct bpf_object_load_attr *attr)
 	err = err ? : bpf_object__sanitize_maps(obj);
 	err = err ? : bpf_object__init_kern_struct_ops_maps(obj);
 	err = err ? : bpf_object__create_maps(obj);
+	/**
+	 *
+	 */
 	err = err ? : bpf_object__relocate(obj, attr->target_btf_path);
 	err = err ? : bpf_object__load_progs(obj, attr->log_level);
 

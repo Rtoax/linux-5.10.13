@@ -18,6 +18,9 @@ enum bpf_field_info_kind {
 	 * __builtin_preserve_field_info() 是编译器的内建的函数，如下 GCC 链接
 	 * commit 068baae1864("bpf: add preserve_field_info builtin")
 	 * https://patchwork.sourceware.org/project/gcc/patch/20221025172443.6732-1-david.faust@oracle.com/
+	 *
+	 * $ git describe 068baae1864
+	 * basepoints/gcc-13-3512-g068baae1864
 	 */
 	BPF_FIELD_EXISTS = 2,		/* field existence in target kernel */
 	BPF_FIELD_SIGNED = 3,
