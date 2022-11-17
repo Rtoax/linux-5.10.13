@@ -49,6 +49,18 @@ enum cgroup_subsys_id {
      *  展开 #include <linux/cgroup_subsys.h>
      */
     cpuset_cgrp_id,
+	/**
+	 * CONFIG_CGROUP_PIDS
+	 *
+	 * BPF CO-RE 示例： https://nakryiko.com/posts/bpf-core-reference-guide/
+	 *
+	 * int id;
+	 *
+	 * if (bpf_core_enum_value_exists(enum cgroup_subsys_id, cpu_cgrp_id))
+	 *     id = bpf_core_enum_value(enum cgroup_subsys_id, cpu_cgrp_id);
+	 * else
+	 *     id = -1;
+	 */
     cpu_cgrp_id,
     cpuacct_cgrp_id,
     io_cgrp_id,

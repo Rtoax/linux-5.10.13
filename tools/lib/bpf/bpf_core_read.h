@@ -196,6 +196,21 @@ enum bpf_enum_value_kind {
  *    1, if specified enum type and its enumerator value are present in target
  *    kernel's BTF;
  *    0, if no matching enum and/or enum value within that enum is found.
+ *
+ * 示例：https://nakryiko.com/posts/bpf-core-reference-guide/
+ *
+ * enum bpf_func_id {
+ *     ...
+ *     BPF_FUNC_ringbuf_output = 130,
+ *     BPF_FUNC_ringbuf_reserve = 131,
+ *     ...
+ * };
+ *
+ * if (bpf_core_enum_value_exists(enum bpf_func_id, BPF_FUNC_ringbuf_reserve)) {
+ *      // use bpf_ringbuf_reserve() safely
+ * } else {
+ *      // fall back to using bpf_perf_event_output()
+ * }
  */
 #define bpf_core_enum_value_exists(enum_type, enum_value)		    \
 	__builtin_preserve_enum_value(*(typeof(enum_type) *)enum_value, BPF_ENUMVAL_EXISTS)
@@ -207,6 +222,10 @@ enum bpf_enum_value_kind {
  *    64-bit value, if specified enum type and its enumerator value are
  *    present in target kernel's BTF;
  *    0, if no matching enum and/or enum value within that enum is found.
+ *
+ * 示例：https://nakryiko.com/posts/bpf-core-reference-guide/
+ *
+ * int id = bpf_core_enum_value(enum cgroup_subsys_id, cpu_cgrp_id);
  */
 #define bpf_core_enum_value(enum_type, enum_value)			    \
 	__builtin_preserve_enum_value(*(typeof(enum_type) *)enum_value, BPF_ENUMVAL_VALUE)
@@ -366,6 +385,19 @@ enum bpf_enum_value_kind {
  *
  * N.B. Only up to 9 "field accessors" are supported, which should be more
  * than enough for any practical purpose.
+ *
+ * https://nakryiko.com/posts/bpf-core-reference-guide/
+ * -------------------------------------------------------------------
+ * 如果使用这个接口读取不存在 field，在 BPF verification 阶段就会报错。
+ * 同样，获取主机内核中不存在的枚举器（或类型）的枚举值（或类型大小）时，CO-RE 重定位将失败。
+ *
+ * 不幸的是，目前该错误非常神秘（但很快就会由libbpf改进），因此最好注意它，以防万一您不小心
+ * 遇到它。如果遇到类似于以下的错误，请知道这是因为 CO-RE 重定位无法找到相应的字段/类型/枚举：
+ *
+ * 1: (85) call unknown#195896080
+ * invalid func unknown#195896080
+ *
+ * 195896080 = 0xbad2310 ("bad relo")
  */
 #define BPF_CORE_READ(src, a, ...)					    \
 	({								    \
