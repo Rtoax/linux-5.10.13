@@ -21,6 +21,7 @@ Linux内核完全注释
 
 # 注释来源
 
+0. [Linux](https://www.kernel.org/doc/html/latest/)
 1. 我的个人理解
 2. 《奔跑吧，Linux内核》系列图书
 3. 《深入理解Linux内核》

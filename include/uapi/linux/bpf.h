@@ -172,14 +172,68 @@ enum bpf_cmd {
      *  系统调用 `bpf_prog_test_run()`
      */
 	BPF_PROG_TEST_RUN,
+	/**
+	 * In kernel, every loaded program, map or btf has a unique id.
+	 * The id won’t change during the lifetime of a program, map, or btf.
+	 *
+	 * The bpf syscall command BPF_{PROG,MAP}_GET_NEXT_ID returns all id’s,
+	 * one for each command, to user space, for bpf program or maps,
+	 * respectively, so an inspection tool can inspect all programs and maps.
+	 */
 	BPF_PROG_GET_NEXT_ID,
 	BPF_MAP_GET_NEXT_ID,
+	/**
+	 * An introspection tool cannot use id to get details about program or
+	 * maps. A file descriptor needs to be obtained first for
+	 * reference-counting purpose.
+	 *
+	 * 侦测工具无法使用 id 来获取有关程序或 map 的详细信息。
+	 * 出于引用计数目的，需要首先获取文件描述符。
+	 */
 	BPF_PROG_GET_FD_BY_ID,
 	BPF_MAP_GET_FD_BY_ID,
+	/**
+	 * Once a program/map fd is acquired, an introspection tool can
+	 * get the detailed information from kernel about this fd, some
+	 * of which are BTF-related. For example, bpf_map_info returns
+	 * btf_id and key/value type ids. bpf_prog_info returns btf_id,
+	 * func_info, and line info for translated bpf byte codes, and
+	 * jited_line_info.
+	 *
+	 * 一旦获取了程序/映射 fd，内省工具就可以从内核中获取有关此 fd 的详细信息，
+	 * 其中一些与 BTF 相关。例如， bpf_map_info 返回 btf_id 和键/值类型 ID。
+	 * bpf_prog_info 返回已转换的 BPF 字节码和 jited_line_info 的btf_id、
+	 * func_info 和行信息。
+	 */
 	BPF_OBJ_GET_INFO_BY_FD,
 	BPF_PROG_QUERY,
 	BPF_RAW_TRACEPOINT_OPEN,
+	/**
+	 * load a blob of BTF data into kernel
+	 * fd = sys_bpf(BPF_BTF_LOAD, &attr, sizeof(attr));
+	 */
 	BPF_BTF_LOAD,
+	/**
+	 * get a btf fd
+	 * With btf_id obtained in bpf_map_info and bpf_prog_info, bpf
+	 * syscall command BPF_BTF_GET_FD_BY_ID can retrieve a btf fd.
+	 * Then, with command BPF_OBJ_GET_INFO_BY_FD, the btf blob,
+	 * originally loaded into the kernel with BPF_BTF_LOAD, can be
+	 * retrieved.
+	 *
+	 * With the btf blob, bpf_map_info, and bpf_prog_info, an
+	 * introspection tool has full btf knowledge and is able to
+	 * pretty print map key/values, dump func signatures and line
+	 * info, along with byte/jit codes.
+	 *
+	 * 通过 bpf_map_info 和 bpf_prog_info 获得 btf_id ，bpf syscall 命令
+	 * BPF_BTF_GET_FD_BY_ID 可以检索 btf fd。然后，使用命令
+	 * BPF_OBJ_GET_INFO_BY_FD，可以检索最初随 BPF_BTF_LOAD 加载到内核中的
+	 * btf blob。
+	 *
+	 * 借助 btf blob、bpf_map_info 和 bpf_prog_info，内省工具具有完整的
+	 * btf 知识，能够漂亮地打印映射键/值、转储 func 签名和行信息以及字节/jit 代码。
+	 */
 	BPF_BTF_GET_FD_BY_ID,
 	BPF_TASK_FD_QUERY,
 
@@ -191,6 +245,10 @@ enum bpf_cmd {
      */
 	BPF_MAP_LOOKUP_AND_DELETE_ELEM,
 	BPF_MAP_FREEZE,
+	/**
+	 * In kernel, every loaded program, map or btf has a unique id.
+	 * The id won’t change during the lifetime of a program, map, or btf.
+	 */
 	BPF_BTF_GET_NEXT_ID,
 	BPF_MAP_LOOKUP_BATCH,
 	BPF_MAP_LOOKUP_AND_DELETE_BATCH,
@@ -199,6 +257,10 @@ enum bpf_cmd {
 	BPF_LINK_CREATE,
 	BPF_LINK_UPDATE,
 	BPF_LINK_GET_FD_BY_ID,
+	/**
+	 * In kernel, every loaded program, map or btf has a unique id.
+	 * The id won’t change during the lifetime of a program, map, or btf.
+	 */
 	BPF_LINK_GET_NEXT_ID,
 	BPF_ENABLE_STATS,
 	BPF_ITER_CREATE,
@@ -874,6 +936,25 @@ union bpf_attr {
          *
          */
 		__u32	map_ifindex;	/* ifindex of netdev to create on */
+
+		/**
+		 * https://www.kernel.org/doc/html/latest/bpf/btf.html
+		 *
+		 * A map can be created with btf_fd and specified key/value type id.
+		 * btf_fd = bpf(BPF_BTF_LOAD, ...)
+		 *
+		 * In libbpf, the map can be defined with extra annotation like below:
+		 *
+		 * struct {
+		 *     __uint(type, BPF_MAP_TYPE_ARRAY);
+		 *     __type(key, int);
+		 *     __type(value, struct ipv_counts);
+		 *     __uint(max_entries, 4);
+		 * } btf_map SEC(".maps");
+		 *
+		 * During ELF parsing, libbpf is able to extract key/value type_id’s and
+		 * assign them to BPF_MAP_CREATE attributes automatically.
+		 */
 		__u32	btf_fd;		/* fd pointing to a BTF type data *//* BPF Type Format */
 		__u32	btf_key_type_id;	/* BTF type_id of the key */
 		__u32	btf_value_type_id;	/* BTF type_id of the value */
@@ -917,7 +998,10 @@ union bpf_attr {
 	} batch;
 
     /**
-     *
+     * BPF_PROG_LOAD
+	 *
+	 * During prog_load, func_info and line_info can be passed to kernel with
+	 * proper values for the following attributes:
      */
 	struct { /* anonymous struct used by BPF_PROG_LOAD command */
 		__u32		prog_type;	/* one of enum bpf_prog_type */
@@ -948,6 +1032,18 @@ union bpf_attr {
 		 */
 		__u32		expected_attach_type;
 		__u32		prog_btf_fd;	/* fd pointing to BTF type data */
+		/**
+		 * The func_info and line_info are an array of below, respectively.:
+		 *
+		 * struct bpf_func_info {}
+		 * struct bpf_line_info {}
+		 *
+		 * func_info_rec_size: is the size of each func_info record
+		 * line_info_rec_size: is the size of each line_info record
+		 *
+		 * Passing the record size to kernel make it possible to extend the
+		 * record itself in the future.
+		 */
 		__u32		func_info_rec_size;	/* userspace bpf_func_info size */
 		__aligned_u64	func_info;	/* func info */
 		__u32		func_info_cnt;	/* number of bpf_func_info records */
