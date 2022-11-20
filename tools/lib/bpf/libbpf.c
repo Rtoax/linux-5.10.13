@@ -4752,6 +4752,12 @@ static int bpf_core_parse_spec(const struct btf *btf,
 	return 0;
 }
 
+/**
+ * 检测是否为 "X___Y" 类型字符串
+ *
+ * 见连接 “Handling incompatible field and type changes” 章节
+ * https://nakryiko.com/posts/bpf-core-reference-guide/
+ */
 static bool bpf_core_is_flavor_sep(const char *s)
 {
 	/* check X___Y name pattern, where X and Y are not underscores */
@@ -4766,9 +4772,22 @@ static bool bpf_core_is_flavor_sep(const char *s)
  */
 static size_t bpf_core_essential_name_len(const char *name)
 {
+	/**
+	 * 这个字符串可能为一个常规字符串，也可能为一个 ___suffix 字符串
+	 */
 	size_t n = strlen(name);
 	int i;
 
+	/**
+	 * 所以这里先直接跳过,如：
+	 *
+	 * "task_struct___x"
+	 *            ^
+	 * n = 15
+	 * i = 10
+	 *
+	 * return 10 + 1 = 11 => strlen("task_struct")
+	 */
 	for (i = n - 5; i >= 0; i--) {
 		if (bpf_core_is_flavor_sep(name + i))
 			return i + 1;
@@ -4847,9 +4866,16 @@ err_out:
 	return ERR_PTR(err);
 }
 
-/* Check two types for compatibility for the purpose of field access
+/**
+ * 检测两个类型的 field 访问的兼容性
+ *
+ * Check two types for compatibility for the purpose of field access
  * relocation. const/volatile/restrict and typedefs are skipped to ensure we
  * are relocating semantically compatible entities:
+ *
+ * 检查两种类型的兼容性，以便进行字段访问重定位。跳过 const/volatile/restrict 和 typedef，
+ * 以确保我们重新定位语义兼容的实体：
+ *
  *   - any two STRUCTs/UNIONs are compatible and can be mixed;
  *   - any two FWDs are compatible, if their names match (modulo flavor suffix);
  *   - any two PTRs are always compatible;
@@ -4860,8 +4886,23 @@ err_out:
  *   - for ARRAY, dimensionality is ignored, element types are checked for
  *     compatibility recursively;
  *   - everything else shouldn't be ever a target of relocation.
+ *
+ * - 任何两个结构/联合是兼容的，可以混合;
+ * - 任何两个 FWD 是兼容的，如果它们的名称匹配（模味后缀）;
+ * - 任何两个PTR始终兼容;
+ * - 对于枚举，名称应相同（忽略风味后缀），或者至少有一个枚举应是匿名的;
+ * - 对于枚举，检查大小、名称将被忽略;
+ * - 对于 INT，忽略大小和符号;
+ * - 对于 ARRAY，忽略维度，递归检查元素类型的兼容性;
+ * - 其他一切都不应该成为搬迁的目标。
+ *
  * These rules are not set in stone and probably will be adjusted as we get
  * more experience with using BPF CO-RE relocations.
+ *
+ * 这些规则不是一成不变的，随着我们在使用 BPF CO-RE 搬迁方面获得更多经验，这些规则可能会
+ * 进行调整。
+ *
+ * 例："task_struct___x" 会和 "task_struct" 匹配
  */
 static int bpf_core_fields_are_compat(const struct btf *local_btf,
 				      __u32 local_id,
@@ -4882,19 +4923,45 @@ recur:
 		return 0;
 
 	switch (btf_kind(local_type)) {
+	/**
+	 * 任何两个PTR始终兼容
+	 */
 	case BTF_KIND_PTR:
 		return 1;
+	/**
+	 * 任何两个 FWD 是兼容的，如果它们的名称匹配（模味后缀）
+	 */
 	case BTF_KIND_FWD:
+	/**
+	 * 对于枚举，名称应相同（忽略 ___suffix 后缀），或者至少有一个枚举应是匿名的;
+	 * 对于枚举，检查大小、名称将被忽略;
+	 */
 	case BTF_KIND_ENUM: {
 		const char *local_name, *targ_name;
 		size_t local_len, targ_len;
 
+		/**
+		 * 获取本地 field 类型
+		 */
 		local_name = btf__name_by_offset(local_btf,
 						 local_type->name_off);
 		targ_name = btf__name_by_offset(targ_btf, targ_type->name_off);
+
+		/**
+		 * 获取 field 名称长度,这里会忽略 后缀 ___suffix
+		 *
+		 * "task_struct___x" => strlen("task_struct") = 11
+		 *
+		 * 所以，这里 "task_struct___x" 会和 "task_struct" 匹配
+		 */
 		local_len = bpf_core_essential_name_len(local_name);
 		targ_len = bpf_core_essential_name_len(targ_name);
-		/* one of them is anonymous or both w/ same flavor-less names */
+
+		/**
+		 * one of them is anonymous or both w/ same flavor-less names
+		 *
+		 * "task_struct___x" 会和 "task_struct" 匹配
+		 */
 		return local_len == 0 || targ_len == 0 ||
 		       (local_len == targ_len &&
 			strncmp(local_name, targ_name, local_len) == 0);
@@ -4989,6 +5056,9 @@ static int bpf_core_match_member(const struct btf *local_btf,
 			targ_acc->name = targ_name;
 
 			*next_targ_id = m->type;
+			/**
+			 * 例："task_struct___x" 会和 "task_struct" 匹配
+			 */
 			found = bpf_core_fields_are_compat(local_btf,
 							   local_member->type,
 							   targ_btf, m->type);
@@ -5854,6 +5924,7 @@ static void *u32_as_hash_key(__u32 x)
  * 2. 对于每个候选类型，请尝试将本地规范与此候选目标类型匹配。匹配涉及查找相应的高级规范访问器，
  *    这意味着所有命名字段都应匹配，并且所有数组访问都应在实际范围内。此外，类型应兼容（有关
  *    详细信息，请参阅 bpf_core_fields_are_compat() ）。
+ *    例："task_struct___x" 会和 "task_struct" 匹配
  *
  * 3. It is supported and expected that there might be multiple flavors
  *    matching the spec. As long as all the specs resolve to the same set of
