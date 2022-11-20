@@ -4652,7 +4652,7 @@ static int bpf_core_parse_spec(const struct btf *btf,
 			++spec_str;
 		if (sscanf(spec_str, "%d%n", &access_idx, &parsed_len) != 1)
 			return -EINVAL;
-		if (spec->raw_len == BPF_CORE_SPEC_MAX_LEN)
+		if (spec->raw_len == BPF_CORE_SPEC_MAX_LEN/*64*/)
 			return -E2BIG;
 		spec_str += parsed_len;
 		spec->raw_spec[spec->raw_len++] = access_idx;
@@ -4989,14 +4989,21 @@ recur:
  * maintain low-level spec for target as well. Also keep updating target
  * bit offset.
  *
+ * 给定本地类型中的单个高级命名字段访问器，查找目标类型的相应高级访问器。在此过程中，
+ * 还要保持目标的低级规范。还要不断更新目标位偏移。
+ *
  * Searching is performed through recursive exhaustive enumeration of all
  * fields of a struct/union. If there are any anonymous (embedded)
  * structs/unions, they are recursively searched as well. If field with
  * desired name is found, check compatibility between local and target types,
  * before returning result.
  *
- * 1 is returned, if field is found.
- * 0 is returned if no compatible field is found.
+ * 搜索是通过对 struct/union 的所有字段的递归穷举枚举来执行的。如果有任何匿名（嵌入式）
+ * struct/union，也会递归搜索它们。如果找到具有所需名称的字段，请在返回结果之前检查本地
+ * 类型和目标类型之间的兼容性。
+ *
+ * 1 is returned, if field is found. 找到
+ * 0 is returned if no compatible field is found. 没找到
  * <0 is returned on error.
  */
 static int bpf_core_match_member(const struct btf *local_btf,
@@ -5024,28 +5031,52 @@ static int bpf_core_match_member(const struct btf *local_btf,
 	local_name = btf__name_by_offset(local_btf, local_member->name_off);
 
 	n = btf_vlen(targ_type);
+	/**
+	 * 数据类型的所有 field，m 可能为任何类型
+	 * (struct btf_member *)(targ_type + 1);
+	 */
 	m = btf_members(targ_type);
+	/**
+	 * 遍历所有 field
+	 */
 	for (i = 0; i < n; i++, m++) {
 		__u32 bit_offset;
 
 		bit_offset = btf_member_bit_offset(targ_type, i);
 
 		/* too deep struct/union/array nesting */
-		if (spec->raw_len == BPF_CORE_SPEC_MAX_LEN)
+		if (spec->raw_len == BPF_CORE_SPEC_MAX_LEN/*64*/)
 			return -E2BIG;
 
-		/* speculate this member will be the good one */
+		/**
+		 * speculate this member will be the good one
+		 * 推测这个成员会是对的人
+		 */
 		spec->bit_offset += bit_offset;
 		spec->raw_spec[spec->raw_len++] = i;
 
+		/**
+		 * 获取名称
+		 */
 		targ_name = btf__name_by_offset(targ_btf, m->name_off);
+
+		/**
+		 * !s || !s[0];
+		 */
 		if (str_is_empty(targ_name)) {
-			/* embedded struct/union, we need to go deeper */
+			/**
+			 * embedded struct/union, we need to go deeper
+			 *
+			 * 递归一波
+			 */
 			found = bpf_core_match_member(local_btf, local_acc,
 						      targ_btf, m->type,
 						      spec, next_targ_id);
 			if (found) /* either found or error */
 				return found;
+		/**
+		 * 如果匹配上了
+		 */
 		} else if (strcmp(local_name, targ_name) == 0) {
 			/* matching named field */
 			struct bpf_core_accessor *targ_acc;
@@ -5266,7 +5297,7 @@ static int bpf_core_spec_match(struct bpf_core_spec *local_spec,
 			}
 
 			/* too deep struct/union/array nesting */
-			if (targ_spec->raw_len == BPF_CORE_SPEC_MAX_LEN)
+			if (targ_spec->raw_len == BPF_CORE_SPEC_MAX_LEN/*64*/)
 				return -E2BIG;
 
 			targ_acc->type_id = targ_id;
