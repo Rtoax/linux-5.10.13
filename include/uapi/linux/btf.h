@@ -97,6 +97,9 @@ struct btf_type {
 /**
  * @brief BTF 类型
  *
+ * @ref https://nakryiko.com/posts/btf-dedup/
+ *
+ * @note notes/ebpf/btf.md
  */
 #define BTF_KIND_UNKN		0	/* Unknown	*/
 /**
@@ -125,6 +128,16 @@ struct btf_type {
 #define BTF_KIND_STRUCT		4	/* Struct	*/
 #define BTF_KIND_UNION		5	/* Union	*/
 #define BTF_KIND_ENUM		6	/* Enumeration	*/
+/**
+ * FWD 可能表示：
+ *
+ * 1.当前结构体中没有定义的结构，如：
+ *  struct A;
+ *  struct S {
+ *    volatile struct A* const a_ptr;
+ *  };
+ *  这里的 struct A 就是一个 FWD 类型。
+ */
 #define BTF_KIND_FWD		7	/* Forward	*/
 #define BTF_KIND_TYPEDEF	8	/* Typedef	*/
 #define BTF_KIND_VOLATILE	9	/* Volatile	*/
