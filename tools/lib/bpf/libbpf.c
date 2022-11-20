@@ -5871,6 +5871,12 @@ static void *u32_as_hash_key(__u32 x)
  *    between multiple relocations for the same type ID and is updated as some
  *    of the candidates are pruned due to structural incompatibility.
  *
+ * 4. 通过线性扫描目标 BTF 中的所有类型来执行候选类型搜索。预计这在内存方面总体上更有效，
+ *    并且与预构建从所有本地类型名称到候选类型名称列表的映射相比，CPU 方面并没有明显差（
+ *    如果不是更好的话）。它还通过为每个本地“根”类型 ID 缓存匹配候选项的解析列表来加快速度，
+ *    该 ID 至少有一个与之关联的 bpf_core_relo()。此列表在同一类型 ID 的多个重定位之间共享，
+ *    并在由于结构不兼容而修剪某些候选项时进行更新。
+ *
  * CO-RE 重新定位单个指令
  */
 static int bpf_core_apply_relo(struct bpf_program *prog,
@@ -5891,14 +5897,23 @@ static int bpf_core_apply_relo(struct bpf_program *prog,
 	int i, j, err;
 
 	local_id = relo->type_id;
+	/**
+	 * 获取 btf 类型，如 struct task_struct
+	 */
 	local_type = btf__type_by_id(local_btf, local_id);
 	if (!local_type)
 		return -EINVAL;
 
+	/**
+	 *
+	 */
 	local_name = btf__name_by_offset(local_btf, local_type->name_off);
 	if (!local_name)
 		return -EINVAL;
 
+	/**
+	 *
+	 */
 	spec_str = btf__name_by_offset(local_btf, relo->access_str_off);
 	if (str_is_empty(spec_str))
 		return -EINVAL;
@@ -5917,6 +5932,10 @@ static int bpf_core_apply_relo(struct bpf_program *prog,
 
 	pr_debug("prog '%s': relo #%d: kind <%s> (%d), spec is ", prog->name,
 		 relo_idx, core_relo_kind_str(relo->kind), relo->kind);
+
+	/**
+	 *
+	 */
 	bpf_core_dump_spec(LIBBPF_DEBUG, &local_spec);
 	libbpf_print(LIBBPF_DEBUG, "\n");
 
@@ -5951,6 +5970,9 @@ static int bpf_core_apply_relo(struct bpf_program *prog,
 		}
 	}
 
+	/**
+	 *
+	 */
 	for (i = 0, j = 0; i < cand_ids->len; i++) {
 		cand_id = cand_ids->data[i];
 		err = bpf_core_spec_match(&local_spec, targ_btf, cand_id, &cand_spec);
@@ -6044,6 +6066,9 @@ patch_insn:
 	return 0;
 }
 
+/**
+ *
+ */
 static int
 bpf_object__relocate_core(struct bpf_object *obj, const char *targ_btf_path)
 {
@@ -6118,6 +6143,9 @@ bpf_object__relocate_core(struct bpf_object *obj, const char *targ_btf_path)
 			if (!prog->load)
 				continue;
 
+			/**
+			 *
+			 */
 			err = bpf_core_apply_relo(prog, rec, i, obj->btf,
 						  targ_btf, cand_cache);
 			if (err) {
@@ -6574,6 +6602,9 @@ bpf_object__relocate_calls(struct bpf_object *obj, struct bpf_program *prog)
 	return 0;
 }
 
+/**
+ *
+ */
 static int
 bpf_object__relocate(struct bpf_object *obj, const char *targ_btf_path)
 {
@@ -7561,9 +7592,12 @@ int bpf_object__load_xattr(struct bpf_object_load_attr *attr)
 	err = err ? : bpf_object__init_kern_struct_ops_maps(obj);
 	err = err ? : bpf_object__create_maps(obj);
 	/**
-	 *
+	 * 处理重定位
 	 */
 	err = err ? : bpf_object__relocate(obj, attr->target_btf_path);
+	/**
+	 *
+	 */
 	err = err ? : bpf_object__load_progs(obj, attr->log_level);
 
 	btf__free(obj->btf_vmlinux);

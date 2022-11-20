@@ -47,7 +47,19 @@ struct btf_header {
 #define BTF_MAX_VLEN	0xffff
 
 /**
+ * Each type contains the following common data:
  *
+ * struct btf_type encoding requirement:
+ *
+ * BTF_KIND_INT
+ * 		name_off: any valid offset
+ * 		info.kind_flag: 0
+ * 		info.kind: BTF_KIND_INT
+ * 		info.vlen: 0
+ * 		size: the size of the int type in bytes.
+ *
+ * BTF_KIND_PTR
+ * ...
  */
 struct btf_type {
 	__u32 name_off;
@@ -55,6 +67,11 @@ struct btf_type {
 	 * bits  0-15: vlen (e.g. # of struct's members)
 	 * bits 16-23: unused
 	 * bits 24-27: kind (e.g. int, ptr, array...etc)
+	 * 		BTF_KIND_INT
+	 * 		BTF_KIND_PTR
+	 * 		...
+	 * 		BTF_KIND_UNION
+	 * 		BTF_KIND_ENUM
 	 * bits 28-30: unused
 	 * bit     31: kind_flag, currently used by
 	 *             struct, union and fwd
@@ -82,7 +99,27 @@ struct btf_type {
  *
  */
 #define BTF_KIND_UNKN		0	/* Unknown	*/
+/**
+ * BTF_KIND_INT
+ * struct btf_type encoding requirement:
+ * 		name_off: any valid offset
+ * 		info.kind_flag: 0
+ * 		info.kind: BTF_KIND_INT
+ * 		info.vlen: 0
+ * 		size: the size of the int type in bytes.
+ *
+ * see btf_int_show()
+ */
 #define BTF_KIND_INT		1	/* Integer	*/
+/**
+ * struct btf_type encoding requirement:
+ * 		name_off: 0
+ * 		info.kind_flag: 0
+ * 		info.kind: BTF_KIND_PTR
+ * 		info.vlen: 0
+ * 		type: the pointee type of the pointer
+ * No additional type data follow btf_type.
+ */
 #define BTF_KIND_PTR		2	/* Pointer	*/
 #define BTF_KIND_ARRAY		3	/* Array	*/
 #define BTF_KIND_STRUCT		4	/* Struct	*/
@@ -97,6 +134,13 @@ struct btf_type {
 #define BTF_KIND_FUNC_PROTO	13	/* Function Proto	*/
 #define BTF_KIND_VAR		14	/* Variable	*/
 #define BTF_KIND_DATASEC	15	/* Section	*/
+
+/* 下面是 5.10.13 以后添加的 Kind */
+
+#define BTF_KIND_FLOAT		16
+#define BTF_KIND_DECL_TAG	17
+#define BTF_KIND_TYPE_TAG	18
+#define BTF_KIND_ENUM64		19
 #define BTF_KIND_MAX		BTF_KIND_DATASEC
 #define NR_BTF_KINDS		(BTF_KIND_MAX + 1)
 
@@ -112,9 +156,9 @@ struct btf_type {
 #define BTF_INT_BITS(VAL)	((VAL)  & 0x000000ff)
 
 /* Attributes stored in the BTF_INT_ENCODING */
-#define BTF_INT_SIGNED	(1 << 0)
-#define BTF_INT_CHAR	(1 << 1)
-#define BTF_INT_BOOL	(1 << 2)
+#define BTF_INT_SIGNED	(1 << 0) // 是否有符号
+#define BTF_INT_CHAR	(1 << 1) // char
+#define BTF_INT_BOOL	(1 << 2) // bool
 
 /* BTF_KIND_ENUM is followed by multiple "struct btf_enum".
  * The exact number of btf_enum is stored in the vlen (of the

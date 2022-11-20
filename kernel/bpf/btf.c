@@ -641,6 +641,9 @@ static const struct btf_var *btf_type_var(const struct btf_type *t)
 	return (const struct btf_var *)(t + 1);
 }
 
+/**
+ * 获取处理操作符
+ */
 static const struct btf_kind_operations *btf_type_ops(const struct btf_type *t)
 {
 	return kind_ops[BTF_INFO_KIND(t->info)];
@@ -1002,6 +1005,9 @@ static const char *btf_show_delim(struct btf_show *show)
 	return ",";
 }
 
+/**
+ *
+ */
  static void btf_show(struct btf_show *show, const char *fmt, ...)
 {
 	va_list args;
@@ -2125,7 +2131,9 @@ static void btf_bitfield_show(void *data, u8 bits_offset,
 	btf_int128_print(show, print_num);
 }
 
-
+/**
+ *
+ */
 static void btf_int_bits_show(const struct btf *btf,
 			      const struct btf_type *t,
 			      void *data, u8 bits_offset,
@@ -2145,13 +2153,22 @@ static void btf_int_bits_show(const struct btf *btf,
 	btf_bitfield_show(data, bits_offset, nr_bits, show);
 }
 
+/**
+ * 显示 BTF 整形
+ */
 static void btf_int_show(const struct btf *btf, const struct btf_type *t,
 			 u32 type_id, void *data, u8 bits_offset,
 			 struct btf_show *show)
 {
+	/**
+	 * btf_type 结构后面，保存了数据
+	 */
 	u32 int_data = btf_type_int(t);
+
+	/* (((VAL) & 0x0f000000) >> 24) */
 	u8 encoding = BTF_INT_ENCODING(int_data);
-	bool sign = encoding & BTF_INT_SIGNED;
+	bool sign = encoding & BTF_INT_SIGNED/*(1 << 0)*/;
+	/* ((VAL)  & 0x000000ff) */
 	u8 nr_bits = BTF_INT_BITS(int_data);
 	void *safe_data;
 
@@ -2207,6 +2224,9 @@ static void btf_int_show(const struct btf *btf, const struct btf_type *t,
 		else
 			btf_show_type_value(show, "%u", *(u8 *)safe_data);
 		break;
+	/**
+	 * 其他 bit 数
+	 */
 	default:
 		btf_int_bits_show(btf, t, safe_data, bits_offset, show);
 		break;
@@ -2215,6 +2235,9 @@ out:
 	btf_show_end_type(show);
 }
 
+/**
+ * BTF_KIND_INT
+ */
 static const struct btf_kind_operations int_ops = {
 	.check_meta = btf_int_check_meta,
 	.resolve = btf_df_resolve,
@@ -3777,6 +3800,9 @@ static int btf_func_check(struct btf_verifier_env *env,
 	return 0;
 }
 
+/**
+ * 所有 BTF 类型的操作符
+ */
 static const struct btf_kind_operations * const kind_ops[NR_BTF_KINDS] = {
 	[BTF_KIND_INT] = &int_ops,
 	[BTF_KIND_PTR] = &ptr_ops,
