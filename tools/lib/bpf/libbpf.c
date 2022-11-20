@@ -2979,10 +2979,23 @@ static int bpf_object__elf_collect(struct bpf_object *obj)
 		// .maps
 		} else if (strcmp(name, MAPS_ELF_SEC) == 0) {
 			obj->efile.btf_maps_shndx = idx;
-		// .BTF
+		/**
+		 * .BTF
+		 * The .BTF section contains type and string data.
+		 */
 		} else if (strcmp(name, BTF_ELF_SEC) == 0) {
 			btf_data = data;
-		// .BTF.ext
+		/**
+		 * .BTF.ext
+		 * The .BTF.ext section encodes func_info and line_info which
+		 * needs loader manipulation before loading into the kernel.
+		 *
+		 * The specification for .BTF.ext section is defined at
+		 * tools/lib/bpf/btf.h and tools/lib/bpf/btf.c.
+		 *
+		 * The current header of .BTF.ext section:
+		 * struct btf_ext_header {}
+		 */
 		} else if (strcmp(name, BTF_EXT_ELF_SEC) == 0) {
 			btf_ext_data = data;
 		} else if (sh.sh_type == SHT_SYMTAB) {

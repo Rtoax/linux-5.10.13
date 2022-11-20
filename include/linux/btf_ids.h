@@ -22,6 +22,13 @@ struct btf_id_set {
  * tool logic.
  */
 
+/**
+ * The .BTF_ids section encodes BTF ID values that are used within the kernel.
+ *
+ * This section is created during the kernel compilation with the help of macros
+ * defined in include/linux/btf_ids.h header file. Kernel code can use them to
+ * create lists and sets (sorted lists) of BTF ID values.
+ */
 #define BTF_IDS_SECTION ".BTF_ids"
 
 /**
