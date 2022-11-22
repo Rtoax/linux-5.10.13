@@ -1475,6 +1475,11 @@ union bpf_attr {
  * 		limit to the number of successive tail calls that can be
  * 		performed.
  *
+ *      这个特殊的助手用于触发“尾部调用”，或者换句话说，跳转到另一个 eBPF 程序。
+ *      使用相同的堆栈帧（但被调用方无法访问堆栈和寄存器中的值）。此机制允许程序链接，
+ *      用于提高可用 eBPF 指令的最大数量，或在条件块中执行给定的程序。出于安全原因，
+ *      可以执行的连续尾调用数有上限。
+ *
  * 		Upon call of this helper, the program attempts to jump into a
  * 		program referenced at index *index* in *prog_array_map*, a
  * 		special map of type **BPF_MAP_TYPE_PROG_ARRAY**, and passes
