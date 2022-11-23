@@ -291,7 +291,30 @@ static long (*bpf_l3_csum_replace)(struct __sk_buff *skb, __u32 offset, __u64 fr
 static long (*bpf_l4_csum_replace)(struct __sk_buff *skb, __u32 offset, __u64 from, __u64 to, __u64 flags) = (void *) 11;
 
 /*
- * bpf_tail_call
+ * bpf_tail_call - 尾调用
+ *
+ * https://lwn.net/Articles/645169/
+ *
+ *  int bpf_prog(struct pt_regs *ctx) {
+ *   ...
+ *   bpf_tail_call(ctx, &jmp_table, index);
+ *   ...
+ *  }
+ *
+ *  上面的尾调用等于下面的程序:
+ *
+ *  int bpf_prog(struct pt_regs *ctx) {
+ *   ...
+ *   if (jmp_table[index])
+ *     return (*jmp_table[index])(ctx);
+ *   ...
+ *  }
+ *
+ *  https://lwn.net/Articles/645169/
+ *  The important detail that it's not a normal call, but a tail call.
+ *  The kernel stack is precious, so this helper reuses the current
+ *  stack frame and jumps into another BPF program without adding
+ *  extra call frame.
  *
  * 	This special helper is used to trigger a "tail call", or in
  * 	other words, to jump into another eBPF program. The same stack
@@ -303,10 +326,19 @@ static long (*bpf_l4_csum_replace)(struct __sk_buff *skb, __u32 offset, __u64 fr
  * 	limit to the number of successive tail calls that can be
  * 	performed.
  *
+ *  这个特殊的助手用于触发“尾部调用”，或者换句话说，跳转到另一个 eBPF 程序。
+ *  使用相同的堆栈帧（但被调用方无法访问堆栈和寄存器中的值）。此机制允许程序链接，
+ *  用于提高可用 eBPF 指令的最大数量，或在条件块中执行给定的程序。出于安全原因，
+ *  可以执行的连续尾调用数有上限。
+ *
  * 	Upon call of this helper, the program attempts to jump into a
  * 	program referenced at index *index* in *prog_array_map*, a
  * 	special map of type **BPF_MAP_TYPE_PROG_ARRAY**, and passes
  * 	*ctx*, a pointer to the context.
+ *
+ *  调用此帮助程序后，程序会尝试跳转到 *prog_array_map* 中的索引 *index*
+ * （类型为 **BPF_MAP_TYPE_PROG_ARRAY** 的特殊映射）引用的程序，并传递指向上下
+ *  文的指针 *ctx*。
  *
  * 	If the call succeeds, the kernel immediately runs the first
  * 	instruction of the new program. This is not a function call,
@@ -319,6 +351,12 @@ static long (*bpf_l4_csum_replace)(struct __sk_buff *skb, __u32 offset, __u64 fr
  * 	chain of programs. This limit is defined in the kernel by the
  * 	macro **MAX_TAIL_CALL_CNT** (not accessible to user space),
  * 	which is currently set to 33.
+ *
+ *  如果调用成功，内核将立即运行新程序的第一条指令。这不是函数调用，并且永远不会
+ *  返回到以前的程序。如果调用失败，则帮助程序不起作用，调用程序将继续运行其后续
+ *  指令。如果跳转的目标程序不存在（即 *index* 大于 *prog_array_map* 中的条
+ *  目数），或者如果已达到此程序链的最大尾调用数，则调用可能会失败。此限制在内核
+ *  中由宏 **MAX_TAIL_CALL_CNT**（用户空间无法访问）定义，当前设置为 32。
  *
  * Returns
  * 	0 on success, or a negative error in case of failure.

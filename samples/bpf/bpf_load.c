@@ -74,7 +74,7 @@ static int write_kprobe_events(const char *val)
 }
 
 static int load_and_attach(const char *event, struct bpf_insn *prog, int size)
-{   
+{
     /**
      *  识别 ELF 头
      */
@@ -103,7 +103,7 @@ static int load_and_attach(const char *event, struct bpf_insn *prog, int size)
 
 	if (is_socket) {
         /**
-         *  
+         *  SEC("socket")
          */
 		prog_type = BPF_PROG_TYPE_SOCKET_FILTER;
 	} else if (is_kprobe || is_kretprobe) {

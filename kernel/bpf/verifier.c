@@ -11183,6 +11183,9 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 			bpf_user_rnd_init_once();
 		if (insn->imm == BPF_FUNC_override_return)
 			prog->kprobe_override = 1;
+		/**
+		 * 尾调用 - enum bpf_func_id.BPF_FUNC_tail_call
+		 */
 		if (insn->imm == BPF_FUNC_tail_call) {
 			/* If we tail call into other programs, we
 			 * cannot make any assumptions since they can

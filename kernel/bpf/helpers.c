@@ -721,7 +721,9 @@ bpf_base_func_proto(enum bpf_func_id func_id)
 
     /**
      *  long bpf_tail_call(void *ctx, struct bpf_map *prog_array_map, u32 index)
-     */
+     *
+	 * 尾调用 - enum bpf_func_id.BPF_FUNC_tail_call
+	 */
 	case BPF_FUNC_tail_call:
 		return &bpf_tail_call_proto;
 	case BPF_FUNC_ktime_get_ns:

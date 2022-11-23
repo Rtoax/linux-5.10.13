@@ -1247,7 +1247,7 @@ union bpf_attr {
  * developers about the multiple available eBPF helper functions. It can be
  * parsed and used to produce a manual page. The workflow is the following,
  * and requires the rst2man utility:
- *
+ *     (上游已经没有这个脚本了)
  *     $ ./scripts/bpf_helpers_doc.py \
  *             --filename include/uapi/linux/bpf.h > /tmp/bpf-helpers.rst
  *     $ rst2man /tmp/bpf-helpers.rst > /tmp/bpf-helpers.7
@@ -1485,6 +1485,10 @@ union bpf_attr {
  * 		special map of type **BPF_MAP_TYPE_PROG_ARRAY**, and passes
  * 		*ctx*, a pointer to the context.
  *
+ *      调用此帮助程序后，程序会尝试跳转到 *prog_array_map* 中的索引 *index*
+ *     （类型为 **BPF_MAP_TYPE_PROG_ARRAY** 的特殊映射）引用的程序，并传递指向上下
+ *      文的指针 *ctx*。
+ *
  * 		If the call succeeds, the kernel immediately runs the first
  * 		instruction of the new program. This is not a function call,
  * 		and it never returns to the previous program. If the call
@@ -1496,6 +1500,13 @@ union bpf_attr {
  * 		chain of programs. This limit is defined in the kernel by the
  * 		macro **MAX_TAIL_CALL_CNT** (not accessible to user space),
  * 		which is currently set to 32.
+ *
+ *      如果调用成功，内核将立即运行新程序的第一条指令。这不是函数调用，并且永远不会
+ *      返回到以前的程序。如果调用失败，则帮助程序不起作用，调用程序将继续运行其后续
+ *      指令。如果跳转的目标程序不存在（即 *index* 大于 *prog_array_map* 中的条
+ *      目数），或者如果已达到此程序链的最大尾调用数，则调用可能会失败。此限制在内核
+ *      中由宏 **MAX_TAIL_CALL_CNT**（用户空间无法访问）定义，当前设置为 32。
+ *
  * 	Return
  * 		0 on success, or a negative error in case of failure.
  *

@@ -417,7 +417,10 @@ static int add_exception_handler(const struct bpf_insn *insn,
 	return 0;
 }
 
-/* JITs an eBPF instruction.
+/**
+ * JITs an eBPF instruction.
+ * 及时编译 和 eBPF 指令
+ *
  * Returns:
  * 0  - successfully JITed an 8-byte eBPF instruction.
  * >0 - successfully JITed a 16-byte eBPF instruction.
@@ -773,7 +776,9 @@ emit_cond_jmp:
 		emit(A64_MOV(1, r0, A64_R(0)), ctx);
 		break;
 	}
-	/* tail call */
+	/**
+	 * tail call - 尾调用
+	 */
 	case BPF_JMP | BPF_TAIL_CALL:
 		if (emit_bpf_tail_call(ctx))
 			return -EFAULT;
