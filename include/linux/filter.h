@@ -440,6 +440,19 @@ static inline bool insn_is_zext(const struct bpf_insn *insn)
 #define __BPF_MAP_4(m, v, t, a, ...) m(t, a), __BPF_MAP_3(m, v, __VA_ARGS__)
 #define __BPF_MAP_5(m, v, t, a, ...) m(t, a), __BPF_MAP_4(m, v, __VA_ARGS__)
 
+/**
+ * https://docs.cilium.io/en/stable/bpf/
+ *
+ * r0 contains the return value of a helper function call.
+ * r1 - r5 hold arguments from the BPF program to the kernel helper function.
+ * r6 - r9 are callee saved registers that will be preserved on helper function call.
+ */
+/**
+ * Register r0 is also the register containing the exit value for the BPF
+ * program. The semantics of the exit value are defined by the type of program.
+ * Furthermore, when handing execution back to the kernel, the exit value is
+ * passed as a 32 bit value.
+ */
 #define __BPF_REG_0(...) __BPF_PAD(5)
 #define __BPF_REG_1(...) __BPF_MAP(1, __VA_ARGS__), __BPF_PAD(4)
 #define __BPF_REG_2(...) __BPF_MAP(2, __VA_ARGS__), __BPF_PAD(3)

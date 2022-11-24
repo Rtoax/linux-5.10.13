@@ -55,6 +55,9 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	/**
+	 * 更新尾调用 fd
+	 */
 	bpf_object__for_each_program(prog, obj) {
 		fd = bpf_program__fd(prog);
 
@@ -72,7 +75,10 @@ int main(int argc, char **argv)
 
 	sock = open_raw_sock("lo");
 
-	/* attach BPF program to socket */
+	/**
+	 * attach BPF program to socket
+	 * 设置主程序
+	 */
 	assert(setsockopt(sock, SOL_SOCKET, SO_ATTACH_BPF, &main_prog_fd,
 			  sizeof(__u32)) == 0);
 

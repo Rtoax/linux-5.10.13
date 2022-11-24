@@ -28,7 +28,7 @@
 #define BPF_MODE(code)  ((code) & 0xe0)
 #define		BPF_IMM		0x00
 /**
- *  
+ *
  */
 #define		BPF_ABS		0x20
 #define		BPF_IND		0x40
@@ -58,13 +58,25 @@
 /**
  *  大于则跳转
  */
-#define		BPF_JGT		0x20
-#define		BPF_JGE		0x30
-#define		BPF_JSET        0x40
-#define BPF_SRC(code)   ((code) & 0x08)
+#define		BPF_JGT     0x20
+#define		BPF_JGE     0x30
+#define		BPF_JSET    0x40
+#define BPF_SRC(code)        ((code) & 0x08)
 #define		BPF_K		0x00
 #define		BPF_X		0x08
 
+/**
+ * BPF 的一般操作是 64 位，以遵循 64 位体系结构的自然模型，以便执行指针算术、传递指针以及
+ * 将 64 位值传递到帮助程序函数中，并允许 64 位原子操作。
+ *
+ * 每个程序的最大指令限制限制为 4096 BPF 指令，根据设计，这意味着任何程序都将快速终止。
+ * 对于高于 5.1 的内核，此限制已提升到 100 万条 BPF 指令。尽管指令集包含向前和向后跳转，
+ * 但内核内 BPF 验证器将禁止循环，以便始终保证终止。由于 BPF 程序在内核内运行，因此验证器
+ * 的工作是确保这些程序可以安全运行，而不会影响系统的稳定性。这意味着从指令集的角度来看，可
+ * 以实现循环，但验证器会限制这一点。但是，还有一个尾部调用的概念，它允许一个 BPF 程序跳转
+ * 到另一个 BPF 程序。这也附带了 33 次调用的嵌套上限，通常用于将部分程序逻辑解耦，例如，
+ * 分成阶段。
+ */
 #ifndef BPF_MAXINSNS
 #define BPF_MAXINSNS 4096
 #endif

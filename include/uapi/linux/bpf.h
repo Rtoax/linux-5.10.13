@@ -48,9 +48,38 @@
 
 /**
  *  Register numbers - BPF 寄存器
+ *
+ * https://docs.cilium.io/en/stable/bpf/
+ *
+ * r0 contains the return value of a helper function call.
+ * r1 - r5 hold arguments from the BPF program to the kernel helper function.
+ * r6 - r9 are callee saved registers that will be preserved on helper function call.
+ *
+ * The BPF calling convention is generic enough to map directly to x86_64, arm64
+ * and other ABIs, thus all BPF registers map one to one to HW CPU registers, so
+ * that a JIT only needs to issue a call instruction, but no additional extra
+ * moves for placing function arguments.
+ *
+ * ** Calls with 6 or more arguments are currently not supported. **
+ * (BPF_CALL_0() to BPF_CALL_5() functions)
+ *
  */
 enum {
+	/**
+	 * 寄存器 r0 也是包含 BPF 程序退出值的寄存器。退出值的语义由程序类型定义。此外，
+	 * 当将执行交回内核时，退出值作为 32 位值传递。
+	 */
 	BPF_REG_0 = 0,
+	/**
+	 * 寄存器 r1 - r5 是暂存寄存器，这意味着如果要在多个帮助程序函数调用中重用这些参数，
+	 * BPF 程序需要将它们溢出到 BPF 堆栈或将它们移动到被调用方保存的寄存器。溢出意味着
+	 * 寄存器中的变量被移动到 BPF 堆栈。将变量从 BPF 堆栈移动到寄存器的反向操作称为填充。
+	 * 溢出/填充的原因是由于寄存器数量有限。
+	 *
+	 * 进入 BPF 程序的执行后，寄存器 r1 最初包含该程序的上下文。上下文是程序的输入参数
+	 * （类似于典型 C 程序的 argc/argv 对）。BPF 仅限于在单个上下文上工作。上下文由程
+	 * 序类型定义，例如，网络程序可以将网络数据包 （skb） 的内核表示形式作为输入参数。
+	 */
 	BPF_REG_1,
 	BPF_REG_2,
 	BPF_REG_3,
