@@ -5518,6 +5518,7 @@ static void __sched notrace __schedule(bool preempt)
 
 		/**
 		 *  tracing
+		 *  tracepoint:sched:sched_switch
 		 *
 		 *  __schedule()
 		 *    trace_sched_switch()
