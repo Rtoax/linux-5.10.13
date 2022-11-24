@@ -2463,6 +2463,9 @@ bool tcp_check_oom(struct sock *sk, int shift)
 	return too_many_orphans || out_of_socket_memory;
 }
 
+/**
+ *
+ */
 void tcp_close(struct sock *sk, long timeout)
 {
 	struct sk_buff *skb;
@@ -2702,6 +2705,9 @@ int tcp_disconnect(struct sock *sk, int flags)
 		inet_csk_listen_stop(sk);
 	} else if (unlikely(tp->repair)) {
 		sk->sk_err = ECONNABORTED;
+	/**
+	 *
+	 */
 	} else if (tcp_need_reset(old_state) ||
 		   (tp->snd_nxt != tp->write_seq &&
 		    (1 << old_state) & (TCPF_CLOSING | TCPF_LAST_ACK))) {

@@ -1044,6 +1044,9 @@ int inet_shutdown(struct socket *sock, int how)
 		if (!(how & RCV_SHUTDOWN))
 			break;
 		fallthrough;
+	/**
+	 *
+	 */
 	case TCP_SYN_SENT:
 		err = sk->sk_prot->disconnect(sk, O_NONBLOCK);
 		sock->state = err ? SS_DISCONNECTING : SS_UNCONNECTED;
