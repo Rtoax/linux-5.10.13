@@ -2237,6 +2237,9 @@ static void task_numa_find_cpu(struct task_numa_env *env,
 	}
 }
 
+/**
+ * 迁移任务到新的 NUMA
+ */
 static int task_numa_migrate(struct task_struct *p)
 {
 	struct task_numa_env env = {
@@ -2354,6 +2357,9 @@ static int task_numa_migrate(struct task_struct *p)
 
 	best_rq = cpu_rq(env.best_cpu);
 	if (env.best_task == NULL) {
+		/**
+		 * 迁移进程到另一个 NUMA
+		 */
 		ret = migrate_task_to(p, env.best_cpu);
 		WRITE_ONCE(best_rq->numa_migrate_on, 0);
 		if (ret != 0)
@@ -2387,7 +2393,10 @@ static void numa_migrate_preferred(struct task_struct *p)
 	if (task_node(p) == p->numa_preferred_nid)
 		return;
 
-	/* Otherwise, try migrate to a CPU on the preferred node */
+	/**
+	 * Otherwise, try migrate to a CPU on the preferred node
+	 * 迁移任务到新的 NUMA
+	 */
 	task_numa_migrate(p);
 }
 
@@ -2955,6 +2964,9 @@ void task_numa_fault(int last_cpupid, int mem_node, int pages, int flags)
 	 */
 	if (time_after(jiffies, p->numa_migrate_retry)) {
 		task_numa_placement(p);
+		/**
+		 * Attempt to migrate a task to a CPU on the preferred node.
+		 */
 		numa_migrate_preferred(p);
 	}
 
