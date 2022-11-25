@@ -30,6 +30,11 @@
 
 /* change endianness of a register */
 #define BPF_END		0xd0	/* flags for endianness conversion: */
+/**
+ * 例子
+ * BPF_ALU | BPF_TO_LE | BPF_END with imm = 16
+ * dst_reg = htole16(dst_reg)
+ */
 #define BPF_TO_LE	0x00	/* convert to little-endian */
 #define BPF_TO_BE	0x08	/* convert to big-endian */
 #define BPF_FROM_LE	BPF_TO_LE
@@ -110,6 +115,180 @@ enum {
  * 义，其中还包括 linux/bpf_common.h。
  */
 struct bpf_insn {
+	/**
+	 * https://www.kernel.org/doc/html/latest/bpf/instruction-set.html
+	 *
+	 * OP 定义要执行的实际操作。大多数用于op的编码已经从cBPF重用。该操作可以基于
+	 * 寄存器或即时操作数。op 本身的编码提供了有关使用哪种模式的信息（BPF_X分别
+	 * 表示基于寄存器的操作，BPF_K表示基于立即的操作）。在后一种情况下，目标操作
+	 * 数始终是寄存器。dst_reg 和 src_reg 都提供了有关用于操作的寄存器操作数
+	 * （例如 r0 - r9）的附加信息。off在某些指令中用于提供相对偏移量，例如，用于
+	 * 寻址堆栈或BPF可用的其他缓冲区（例如映射值，数据包数据等），或跳转指令中的
+	 * 跳转目标。IMM 包含一个常量/即时值。
+	 *
+	 * # 指令类包括：
+	 * =========================================================================
+	 * 1. BPF_LD，BPF_LDX：这两个类都用于加载操作。
+	 * 2. BPF_ST，BPF_STX：这两个类都用于存储操作。
+	 * 3. BPF_ALU，BPF_ALU64：两个类都包含 ALU 操作。
+	 * 4. BPF_JMP，BPF_JMP32：此类专用于跳转操作。
+	 *
+	 * # 算数和跳转指令：BPF_ALU, BPF_ALU64, BPF_JMP and BPF_JMP32
+	 * =========================================================================
+	 * 可用的运算指令可分为各种指令类。这些类也在 op 字段中进行编码。op 字段分为
+	 * （从 MSB 到 LSB）代码，opcode分为三部分：
+	 *
+	 * Opcode结构： (MSB) code:4, source:1 and class:3 (LSB)
+	 *
+	 * class 是更通用的指令类，代码表示该类中的特定操作代码，source 告诉源操作
+	 * 数是寄存器还是即时值。
+	 *
+	 * ## 算数指令
+	 * -------------------------------------------------------------------------
+	 * source 操作数：
+	 *
+	 * * BPF_K	0x00	使用 32-bit 立即数作为源操作数
+	 * * BPF_X	0x08	使用 ‘src_reg’ 寄存器作为源操作数
+	 *
+	 * operation code编码的操作：
+	 *
+	 * * BPF_ADD	0x00	dst += src
+	 * * BPF_SUB	0x10	dst -= src
+	 * * BPF_MUL	0x20	dst *= src
+	 * * BPF_DIV	0x30	dst /= src
+	 * * BPF_OR	0x40	dst |= src
+	 * * BPF_AND	0x50	dst &= src
+	 * * BPF_LSH	0x60	dst <<= src
+	 * * BPF_RSH	0x70	dst >>= src
+	 * * BPF_NEG	0x80	dst = ~src
+	 * * BPF_MOD	0x90	dst %= src
+	 * * BPF_XOR	0xa0	dst ^= src
+	 * * BPF_MOV	0xb0	dst = src
+	 * * BPF_ARSH	0xc0	sign extending shift right
+	 * * BPF_END	0xd0	byte swap operations (see separate section below)
+	 *
+	 * 例子：
+	 * 1. BPF_XOR | BPF_K | BPF_ALU == src_reg = (u32) src_reg ^ (u32) imm32
+	 *
+	 * ## 字节交换指令
+	 * -------------------------------------------------------------------------
+	 * 仅对目标寄存器进行操作，不使用源寄存器或立即数
+	 *
+	 * source字段用于选择转换的字节序：
+	 *
+	 * * BPF_TO_LE	0x00	转换主机字节序到小端
+	 * * BPF_TO_BE	0x08	转换主机字节序到大端
+	 *
+	 * 立即数字段用于编码交换操作的宽度，可以是16/32/64
+	 *
+	 * 例子：
+	 * 1. BPF_ALU | BPF_TO_LE | BPF_END with imm = 16
+	 *    dst_reg = htole16(dst_reg)
+	 *
+	 * ## 跳转指令
+	 * -------------------------------------------------------------------------
+	 * * BPF_JA	0x00	PC += off	BPF_JMP only
+	 * * BPF_JEQ	0x10	PC += off if dst == src
+	 * * BPF_JGT	0x20	PC += off if dst > src	unsigned
+	 * * BPF_JGE	0x30	PC += off if dst >= src	unsigned
+	 * * BPF_JSET	0x40	PC += off if dst & src
+	 * * BPF_JNE	0x50	PC += off if dst != src
+	 * * BPF_JSGT	0x60	PC += off if dst > src	signed
+	 * * BPF_JSGE	0x70	PC += off if dst >= src	signed
+	 * * BPF_CALL	0x80	function call
+	 * * BPF_EXIT	0x90	function / program return	BPF_JMP only
+	 * * BPF_JLT	0xa0	PC += off if dst < src	unsigned
+	 * * BPF_JLE	0xb0	PC += off if dst <= src	unsigned
+	 * * BPF_JSLT	0xc0	PC += off if dst < src	signed
+	 * * BPF_JSLE	0xd0	PC += off if dst <= src	signed
+	 *
+	 * # 载入和存储指令
+	 * =========================================================================
+	 * 包括：BPF_LD, BPF_LDX, BPF_ST and BPF_STX
+	 *
+	 * Opcode结构：(MSB) mode:3, size:2, instruction class:3 (LSB)
+	 *
+	 * size修饰符
+	 *
+	 * * BPF_W	0x00	word (4 bytes)
+	 * * BPF_H	0x08	half word (2 bytes)
+	 * * BPF_B	0x10	byte
+	 * * BPF_DW	0x18	double word (8 bytes)
+	 *
+	 * mode修饰符
+	 *
+	 * * BPF_IMM	0x00	64-bit immediate instructions
+	 * * BPF_ABS	0x20	legacy BPF packet access (absolute)
+	 * * BPF_IND	0x40	legacy BPF packet access (indirect)
+	 * * BPF_MEM	0x60	regular load and store operations
+	 *                       寄存器和内存间传递数据的标准载入和存储指令
+	 * * BPF_ATOMIC	0xc0	atomic operations，原子操作
+	 *
+	 * 举例:
+	 * 1. 把立即数的值放到dst_reg+off的内存位置
+	 *    BPF_MEM | <size> | BPF_ST == *(size *) (dst_reg + off) = imm32
+	 *
+	 * ## 原子操作
+	 * -------------------------------------------------------------------------
+	 * 在内存上的操作，不会被中断或破坏，使用mode修饰符BPF_ATOMIC，只支持32位和64位操作，
+	 * 不支持8/16位。
+	 * 立即数字段用于编码实际的原子操作：
+	 *
+	 *   imm	value	description
+	 * * BPF_ADD	0x00	atomic add
+	 * * BPF_OR		0x40	atomic or
+	 * * BPF_AND	0x50	atomic and
+	 * * BPF_XOR	0xa0	atomic xor
+	 *
+	 * 例子：
+	 * 1. BPF_ATOMIC | BPF_W | BPF_STX with imm = BPF_ADD
+	 *    *(u32 *)(dst_reg + off16) += src_reg
+	 *
+	 * 除了简单原子操作，还有一个修饰符和两个复杂原子操作
+	 *
+	 * * BPF_FETCH		0x01	modifier: return old value
+	 * * BPF_XCHG		0xe0 | BPF_FETCH	atomic exchange
+	 * * BPF_CMPXCHG	0xf0 | BPF_FETCH	atomic compare and exchange
+	 *
+	 * 如果设置了BPF_FETCH，会使用修改前内存中的值覆盖src_reg
+	 * BPF_XCHG以原子操作交换src_reg的值和dst_reg + off地址的值
+	 * BPF_CMPXCHG以原子操作将dst_reg + off地址的值和R0进行比较，如果相等，
+	 * dst_reg + off地址的值将替换为src_reg。操作前dst_reg + off地址的值会被扩展零，
+	 * 然后加载回R0。
+	 *
+	 * > clang可以生成原子指令通过默认的 -mcpu=v3。
+	 * > 如果较低版本的 -mcpu被设置，clang只能生成不带 BPF_FETCH的 BPF_ADD
+	 * > 如果需要启用原子特征，并保持较低版本的 -mcpu，可以使用
+	 * >        -Xclang -target-feature -Xclang +alu32
+	 *
+	 * ## 64位立即数指令
+	 * -------------------------------------------------------------------------
+	 * 带有BPF_IMM mode修饰符的指令，对额外的64位立即数使用宽指令编码：
+	 *
+	 * BPF_LD | BPF_DW | BPF_IMM means dst_reg = imm64
+	 *
+	 * ## 传统的BPF Packet访问指令
+	 * -------------------------------------------------------------------------
+	 * 用于访问数据包数据，并且只能在程序上下文是指向网络数据包的指针时使用。
+	 *
+	 * 两种指令形式:
+	 *
+	 * * BPF_ABS | <size> | BPF_LD，BPF_ABS访问由立即数指定的绝对偏移的数据包数据
+	 * * BPF_IND | <size> | BPF_LD，BPF_IND访问除立即数外还包括寄存器值作为偏移的
+	 *                                      数据包数据。
+	 *
+	 * 七个隐式操作数：
+	 *
+	 * * R6，隐式输入，指向 struct sk_buff 的指针
+	 * * R0，隐式输出，从数据包中获取的数据
+	 * * R1-5，临时寄存器，在调用BPF_ABS | BPF_LD或BPF_IND | BPF_LD后被破坏
+	 *
+	 * 隐式的程序退出条件：当eBPF程序试图访问数据包边界外的数据时，执行将被终止。
+	 *
+	 * 例子：
+	 * 1. BPF_IND | BPF_W | BPF_LD
+	 *    R0 = ntohl(*(u32 *) (((struct sk_buff *) R6)->data + src_reg + imm32))
+	 */
 	__u8	code;		/* opcode */
 	__u8	dst_reg:4;	/* dest register */
 	__u8	src_reg:4;	/* source register */
