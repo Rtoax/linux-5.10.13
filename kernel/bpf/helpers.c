@@ -151,6 +151,22 @@ const struct bpf_func_proto bpf_get_numa_node_id_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+/* 展开 BPF_CALL_0(bpf_get_numa_node_id) */
+#ifdef ______bpf_get_numa_node_id__
+static __always_inline u64 ____bpf_get_numa_node_id(void);
+typedef u64 (*btf_bpf_get_numa_node_id)(void);
+u64 bpf_get_numa_node_id(u64 __ur_1, u64 __ur_2, u64 __ur_3, u64 __ur_4, u64 __ur_5);
+u64 bpf_get_numa_node_id(u64 __ur_1, u64 __ur_2, u64 __ur_3, u64 __ur_4, u64 __ur_5)
+{
+	return ((btf_bpf_get_numa_node_id)____bpf_get_numa_node_id)();
+}
+static __always_inline u64 ____bpf_get_numa_node_id(void)
+{
+	return numa_node_id();
+}
+#endif
+
+
 u64 bpf_ktime_get_ns(void);//+++
 BPF_CALL_0(bpf_ktime_get_ns)
 {

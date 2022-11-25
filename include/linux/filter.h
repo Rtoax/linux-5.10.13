@@ -490,6 +490,61 @@ static inline bool insn_is_zext(const struct bpf_insn *insn)
 	static __always_inline						       \
 	u64 ____##name(__BPF_MAP(x, __BPF_DECL_ARGS, __BPF_V, __VA_ARGS__))
 
+/**
+ * Helper Functions
+ *
+ * https://docs.cilium.io/en/stable/bpf/
+ *
+ * 帮助程序函数是一个概念，它使 BPF 程序能够查询一组核心内核定义的函数调用，
+ * 以便从内核检索/推送数据。可用的帮助程序函数可能因每种 BPF 程序类型而异，
+ * 例如，与附加到 tc 层的 BPF 程序相比，只允许连接到套接字的 BPF 程序调用
+ * 帮助程序的子集。用于轻量级隧道的封装和解封装帮助程序构成了仅适用于较低 tc
+ * 层的功能示例，而用于将通知推送到用户空间的事件输出帮助程序可用于 tc 和
+ * XDP 程序。
+ *
+ * 每个帮助程序函数都使用类似于系统调用的常用共享函数签名实现。签名定义为：
+ *
+ *  u64 fn(u64 r1, u64 r2, u64 r3, u64 r4, u64 r5)
+ *
+ * 内核将帮助程序函数抽象为宏 BPF_CALL_0（） 到 BPF_CALL_5（），类似于系
+ * 统调用的宏。以下示例是帮助程序函数的摘录，该函数通过调用相应的映射实现回调
+ * 来更新映射元素：
+ *
+ * // long bpf_get_numa_node_id(void);
+ * BPF_CALL_0(bpf_get_numa_node_id)
+ * {
+ * 	return numa_node_id();
+ * }
+ *
+ * const struct bpf_func_proto bpf_get_numa_node_id_proto = {
+ * 	.func		= bpf_get_numa_node_id,
+ * 	.gpl_only	= false,
+ * 	.ret_type	= RET_INTEGER,
+ * };
+ *
+ * > BPF_CALL_0(bpf_get_numa_node_id) 的展开见定义位置 helpers.c
+ *
+ * 这种方法有很多优点：虽然cBPF重载了其负载指令，以便以不可能的数据包偏移量
+ * 获取数据以调用辅助帮助程序函数，但每个cBPF JIT都需要实现对这种cBPF扩展
+ * 的支持。对于 eBPF，每个新添加的帮助程序函数都将以透明且高效的方式进行
+ * JIT 编译，这意味着 JIT 编译器只需要发出调用指令，因为寄存器映射的进行方
+ * 式是 BPF 寄存器分配已经与底层体系结构的调用约定匹配。这允许使用新的帮助
+ * 程序功能轻松扩展核心内核。所有 BPF 帮助程序函数都是核心内核的一部分，不
+ * 能通过内核模块进行扩展或添加。
+ *
+ * 上述函数签名还允许验证者执行类型检查。上面的结构 bpf_func_proto 用于将
+ * 需要了解的有关帮助程序的所有必要信息交给验证程序，以便验证程序可以确保来
+ * 自帮助程序的预期类型与 BPF 程序分析寄存器的当前内容匹配。
+ *
+ * 参数类型的范围可以从传入任何类型的值到受限内容，例如 BPF 堆栈缓冲区的
+ * 指针/大小对，帮助程序应读取或写入该内容。在后一种情况下，验证程序还可以
+ * 执行其他检查，例如，缓冲区之前是否已初始化。
+ *
+ * 可用的 BPF 帮助程序函数列表相当长且不断增长，例如，在撰写本文时，tc BPF
+ * 程序可以从 38 种不同的 BPF 帮助程序中进行选择。内核的结构
+ * bpf_verifier_ops 包含一个 get_func_proto 回调函数，该函数提供特定枚举
+ * bpf_func_id 到给定 BPF 程序类型的可用帮助程序之一的映射。
+ */
 #define BPF_CALL_0(name, ...)	BPF_CALL_x(0, name, __VA_ARGS__)
 #define BPF_CALL_1(name, ...)	BPF_CALL_x(1, name, __VA_ARGS__)
 #define BPF_CALL_2(name, ...)	BPF_CALL_x(2, name, __VA_ARGS__)
