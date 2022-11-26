@@ -63,7 +63,30 @@ struct ctl_table_header;
 #define MAX_BPF_EXT_REG		(MAX_BPF_REG + 1)
 #define MAX_BPF_JIT_REG		MAX_BPF_EXT_REG
 
-/* unused opcode to mark special call to bpf_tail_call() helper */
+/**
+ * unused opcode to mark special call to bpf_tail_call() helper
+ *
+ * 尾部调用可以看作是一种机制，它允许一个 BPF 程序调用另一个 BPF 程序，而无需返回到旧程序。
+ * 这样的调用具有最小的开销，因为与函数调用不同，它是作为 long jmp 实现的，重用相同的堆栈帧。
+ *
+ * 此类程序彼此独立地验证，因此对于传输状态，无论是将每个 CPU 映射作为暂存缓冲区，还是在 tc
+ * 程序的情况下，必须使用 skb 字段，例如 cb[] 区域。
+ *
+ * 只有同类型的程序才能被尾部调用，并且它们还需要在JIT编译方面匹配，因此可以调用JIT编译或仅
+ * 解释的程序，但不能混合在一起。
+ *
+ * # 执行尾部调用
+ *
+ * 执行尾部调用涉及两个组件：第一部分需要设置一个名为程序数组（BPF_MAP_TYPE_PROG_ARRAY）
+ * 的专用映射，该映射可以由用户空间填充键/值，其中值是称为BPF程序的尾的文件描述符，第二部分
+ * 是 bpf_tail_call() 帮助函数，其中上下文， 对程序数组和查找键的引用被传递给。然后内核
+ * 将此帮助程序调用直接内联到专门的 BPF 指令中。这样的程序数组目前是从用户空间端只写的。
+ *
+ * 内核从传递的文件描述符中查找相关的 BPF 程序，并以原子方式替换给定映射槽上的程序指针。
+ * 当在提供的键上找不到映射条目时，内核将“失败”并继续执行旧程序，并在 bpf_tail_call()
+ * 之后使用以下指令。尾调用是一个强大的实用程序，例如，解析网络标头可以通过尾部调用来构建。
+ * 在运行时，可以原子方式添加或替换功能，从而改变 BPF 程序的执行行为。
+ */
 #define BPF_TAIL_CALL	0xf0
 
 /* unused opcode to mark special load instruction. Same as BPF_ABS */
