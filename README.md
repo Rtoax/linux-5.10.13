@@ -17,6 +17,7 @@ Linux内核完全注释
 * 保留 `__LITTLE_ENDIAN` 分支代码, 恒为真
 * 删除或注释 `CONFIG_X86_32` 部分代码, 保留 `CONFIG_X86_64`
 * 具体配置请参见 `config.h` 或 `config`
+* 如果有需要，会从linux master 上合入代码
 
 
 # 注释来源
