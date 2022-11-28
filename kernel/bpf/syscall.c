@@ -5011,6 +5011,15 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 
 	/**
 	 *  检查 权限能力
+	 *
+	 * 内核提供了一个选项，用于通过 /proc/sys/kernel/unprivileged_bpf_disabled
+	 * sysctl 旋钮来禁用非特权用户使用 BPF(2) 系统调用。
+	 *
+	 * 这是故意的一次性终止开关，这意味着一旦设置为 1，在新内核重新启动之前，
+	 * 没有将其重置为 0 的选项。当设置时CAP_SYS_ADMIN初始命名空间之外的特权
+	 * 进程从此开始使用 bpf(2) 系统调用。启动时，Cilium 将此旋钮也设置为 1。
+	 *
+	 * echo 1 > /proc/sys/kernel/unprivileged_bpf_disabled
 	 */
 	if (sysctl_unprivileged_bpf_disabled && !bpf_capable())
 		return -EPERM;
