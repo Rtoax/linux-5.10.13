@@ -420,6 +420,17 @@
 #define CONFIG_BPFILTER
 #define CONFIG_BPFILTER_UMH
 #define CONFIG_BPF_JIT 1        /* BPF 及时编译器 */
+/**
+ * Linux 内核提供了选项CONFIG_BPF_JIT_ALWAYS_ON，该选项从内核中删除整个
+ * BPF 解释器并永久启用 JIT 编译器。这是作为 Spectre v2 上下文中缓解措施
+ * 的一部分开发的，因此在基于 VM 的设置中使用时，来宾内核在发起攻击时不
+ * 会再重用主机内核的 BPF 解释器。对于基于容器的环境，
+ * CONFIG_BPF_JIT_ALWAYS_ON配置选项是可选的，但如果在那里启用了 JIT，则
+ * 解释器也可以编译出来以降低内核的复杂性。因此，对于主流架构（如 x86_64
+ * 和 arm64），通常也建议将其用于广泛使用的 JIT。
+ *
+ * https://docs.cilium.io/en/stable/bpf/
+ */
 #define CONFIG_BPF_JIT_ALWAYS_ON 1
 #define CONFIG_BPF_JIT_DEFAULT_ON 1
 #define CONFIG_BPF_KPROBE_OVERRIDE 1

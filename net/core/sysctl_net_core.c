@@ -388,6 +388,17 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax_bpf_enable,
+/**
+ * Linux 内核提供了选项CONFIG_BPF_JIT_ALWAYS_ON，该选项从内核中删除整个
+ * BPF 解释器并永久启用 JIT 编译器。这是作为 Spectre v2 上下文中缓解措施
+ * 的一部分开发的，因此在基于 VM 的设置中使用时，来宾内核在发起攻击时不
+ * 会再重用主机内核的 BPF 解释器。对于基于容器的环境，
+ * CONFIG_BPF_JIT_ALWAYS_ON配置选项是可选的，但如果在那里启用了 JIT，则
+ * 解释器也可以编译出来以降低内核的复杂性。因此，对于主流架构（如 x86_64
+ * 和 arm64），通常也建议将其用于广泛使用的 JIT。
+ *
+ * https://docs.cilium.io/en/stable/bpf/
+ */
 # ifdef CONFIG_BPF_JIT_ALWAYS_ON
 		.extra1		= SYSCTL_ONE,
 		.extra2		= SYSCTL_ONE,
@@ -398,15 +409,65 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 	},
 # ifdef CONFIG_HAVE_EBPF_JIT
 	{
-	    /**
-	     *  /proc/sys/net/core/bpf_jit_harden
-	     *
-	     *  设置为 1 会为非特权用户（ unprivileged users）的 JIT
-	     *  编译做一些额外的加固工作。这些额外加固会稍微降低程序
-	     *  的性能，但在有非受信用户在系统上进行操作的情况下，
-	     *  能够有效地减小（潜在的）受攻击 面。但与完全切换到解释器相比，
-	     *  这些性能损失还是比较小的。
-	     */
+		/**
+		 *  /proc/sys/net/core/bpf_jit_harden
+		 *
+		 *  设置为 1 会为非特权用户（ unprivileged users）的 JIT
+		 *  编译做一些额外的加固工作。这些额外加固会稍微降低程序
+		 *  的性能，但在有非受信用户在系统上进行操作的情况下，
+		 *  能够有效地减小（潜在的）受攻击面。但与完全切换到解释器相比，
+		 *  这些性能损失还是比较小的。
+		 *
+		 *  https://docs.cilium.io/en/stable/bpf/
+		 *
+		 * Example of JITing a program with hardening disabled:
+		 *
+		 *  echo 0 > /proc/sys/net/core/bpf_jit_harden
+		 *  ffffffffa034f5e9 + <x>:
+		 *  [...]
+		 *  39:   mov    $0xa8909090,%eax
+		 *  3e:   mov    $0xa8909090,%eax
+		 *  43:   mov    $0xa8ff3148,%eax
+		 *  48:   mov    $0xa89081b4,%eax
+		 *  4d:   mov    $0xa8900bb0,%eax
+		 *  52:   mov    $0xa810e0c1,%eax
+		 *  57:   mov    $0xa8908eb4,%eax
+		 *  5c:   mov    $0xa89020b0,%eax
+		 *  [...]
+		 *
+		 * The same program gets constant blinded when loaded through BPF
+		 * as an unprivileged user in the case hardening is enabled:
+		 *
+		 *  echo 1 > /proc/sys/net/core/bpf_jit_harden
+		 *
+		 *  ffffffffa034f1e5 + <x>:
+		 *  [...]
+		 *  39:   mov    $0xe1192563,%r10d
+		 *  3f:   xor    $0x4989b5f3,%r10d
+		 *  46:   mov    %r10d,%eax
+		 *  49:   mov    $0xb8296d93,%r10d
+		 *  4f:   xor    $0x10b9fd03,%r10d
+		 *  56:   mov    %r10d,%eax
+		 *  59:   mov    $0x8c381146,%r10d
+		 *  5f:   xor    $0x24c7200e,%r10d
+		 *  66:   mov    %r10d,%eax
+		 *  69:   mov    $0xeb2a830e,%r10d
+		 *  6f:   xor    $0x43ba02ba,%r10d
+		 *  76:   mov    %r10d,%eax
+		 *  79:   mov    $0xd9730af,%r10d
+		 *  7f:   xor    $0xa5073b1f,%r10d
+		 *  86:   mov    %r10d,%eax
+		 *  89:   mov    $0x9a45662b,%r10d
+		 *  8f:   xor    $0x325586ea,%r10d
+		 *  96:   mov    %r10d,%eax
+		 *  [...]
+		 *
+		 *  这两个程序在语义上是相同的，只是在第二个程序的反汇编中不再
+		 *  可以看到原始的即时值。
+		 *
+		 *  同时，强化还会禁用特权用户的任何 JIT kallsyms 公开，从而防止
+		 *  JIT 映像地址不再向 /proc/kallsyms 公开。
+		 */
 		.procname	= "bpf_jit_harden", /* /proc/sys/net/core/ */
 		.data		= &bpf_jit_harden,
 		.maxlen		= sizeof(int),
@@ -495,7 +556,7 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 	},
 #endif /* CONFIG_NET_FLOW_LIMIT */
 #ifdef CONFIG_NET_RX_BUSY_POLL
-    //net.core.busy_poll = 0
+	//net.core.busy_poll = 0
 	{
 		.procname	= "busy_poll",  /* /proc/sys/net/core/busy_poll */
 		.data		= &sysctl_net_busy_poll,
