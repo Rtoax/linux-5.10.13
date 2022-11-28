@@ -380,6 +380,9 @@ static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 	},
 #ifdef CONFIG_BPF_JIT
 	{
+		/**
+		 * /proc/sys/net/core/bpf_jit_enable
+		 */
 		.procname	= "bpf_jit_enable", /* /proc/sys/net/core/ */
 		.data		= &bpf_jit_enable,
 		.maxlen		= sizeof(int),
@@ -664,3 +667,4 @@ static __init int sysctl_core_init(void)
 }
 
 fs_initcall(sysctl_core_init);  /* /proc/sys/net/core/xxx */
+
