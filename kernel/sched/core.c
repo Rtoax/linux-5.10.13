@@ -363,9 +363,16 @@ static void hrtick_clear(struct rq *rq)
 		hrtimer_cancel(&rq->hrtick_timer);
 }
 
-/*
+/**
+ * 高精度时钟调度 - hrtick()
+ *
  * High-resolution timer tick.
  * Runs from hardirq context with interrupts disabled.
+ *
+ * --------------------------------------------------------------------------
+ * * 高精度时钟调度，与周期性调度类似，不同点在于周期调度的精度为ms级别，而高精度调度的精度
+ *    为ns级别；
+ * * 高精度时钟调度，需要有对应的硬件支持；
  */
 static enum hrtimer_restart hrtick(struct hrtimer *timer)
 {
@@ -375,8 +382,19 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
 	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
 
 	rq_lock(rq, &rf);
+
 	update_rq_clock(rq);
+
+	/**
+	 *  当前调度类 的 任务 tick
+	 *
+	 *  task_tick_idle()
+	 *  task_tick_fair()
+	 *  task_tick_dl()
+	 *  task_tick_stop()
+	 */
 	rq->curr->sched_class->task_tick(rq, rq->curr, 1);
+
 	rq_unlock(rq, &rf);
 
 	return HRTIMER_NORESTART;
@@ -3608,6 +3626,8 @@ bool try_invoke_on_locked_down_task(struct task_struct *p, bool (*func)(struct t
 
 /**
  * wake_up_process - Wake up a specific process
+ * 进程唤醒时调度 - wake_up_process()
+ *
  * @p: The process to be woken up.
  *
  * Attempt to wake up the nominated process and move it to the set of runnable
@@ -3618,6 +3638,7 @@ bool try_invoke_on_locked_down_task(struct task_struct *p, bool (*func)(struct t
  * This function executes a full memory barrier before accessing the task state.
  *
  * 唤醒一个 进程
+ * 唤醒进程时调用 wake_up_process() 函数，被唤醒的进程可能抢占当前的进程；
  */
 int wake_up_process(struct task_struct *p)
 {
@@ -4777,7 +4798,9 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 	return ns;
 }
 
-/*
+/**
+ * 周期调度 - schedule_tick()
+ *
  * This function gets called by the timer code, with HZ frequency.
  * We call it with interrupts disabled.
  *
@@ -4811,6 +4834,14 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  *    或者
  *     tick_sched_handle()->update_process_times()->scheduler_tick()
  *    主要用于更新就绪队列的时钟、CPU负载和当前任务的运行时间统计等
+ *
+ * ---------------------------------------------------------------------
+ * * 时钟中断处理程序中，调用schedule_tick()函数；
+ * * 时钟中断是调度器的脉搏，内核依靠周期性的时钟来处理器CPU的控制权；
+ * * 时钟中断处理程序，检查当前进程的执行时间是否超额，如果超额则设置重新调度标志(
+ *    _TIF_NEED_RESCHED)；
+ * * 时钟中断处理函数返回时，被中断的进程如果在用户模式下运行，需要检查是否有重新调度标志，
+ *    设置了则调用schedule()调度；
  */
 void scheduler_tick(void)
 {
@@ -5615,7 +5646,11 @@ static void sched_update_worker(struct task_struct *tsk)
 }
 
 /**
- *  __schedule 的封装
+ * 主动调度 - __schedule() 的封装, 进程调度的核心函数
+ *
+ * 选择另外一个进程来替换掉当前运行的进程。进程的选择是通过进程所使用的调度器中的
+ * pick_next_task()函数来实现的，不同的调度器实现的方法不一样；进程的替换是通过
+ * context_switch()来完成切换的.
  */
 asmlinkage __visible void __sched schedule(void)
 {

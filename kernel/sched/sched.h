@@ -423,8 +423,17 @@ struct cfs_bandwidth {
 
 /**
  *  Task group related information
+ *  内核使用struct task_group来描述任务组
  *
  *  为解决 多用户情况下，进程多的用户，获取的总 CPU 时间多，引入了组调度机制。
+ *  利用任务分组的机制，可以设置或限制任务组对CPU的利用率，比如将某些任务限制在某个区间内，
+ *  从而不去影响其他任务的执行效率；
+ *
+ *  引入task_group后，调度器的调度对象不仅仅是进程了，Linux内核抽象出了
+ *  sched_entity/sched_rt_entity/sched_dl_entity描述调度实体，调度实体可以是进程或
+ *  task_group；
+ *  用数据结构struct task_group来描述任务组，任务组在每个CPU上都会维护一个CFS调度实体、
+ *  CFS运行队列，RT调度实体，RT运行队列；
  *
  *  组调度属于 cgroup 架构的 CPU 子系统
  *
@@ -443,6 +452,9 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	 */
 	struct cgroup_subsys_state css;
 
+	/**
+	 * 为每个CPU都分配一个CFS调度实体和CFS运行队列
+	 */
 #ifdef CONFIG_FAIR_GROUP_SCHED/* 公平组调度 */
 	/* schedulable entities of this group on each CPU */
 	struct sched_entity	**se;
@@ -460,6 +472,9 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 #endif
 #endif
 
+	/**
+	 * 为每个CPU都分配一个RT调度实体和RT运行队列
+	 */
 #ifdef CONFIG_RT_GROUP_SCHED/* 实时组调度 */
 	/**
 	 *
@@ -471,8 +486,9 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 #endif
 
 	/**
-	 *
+	 * task_group之间的组织关系
 	 */
+
 	struct rcu_head		rcu;
 	struct list_head	list;
 

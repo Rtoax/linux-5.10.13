@@ -35,6 +35,8 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 
 /**
  * kthread_run - create and wake a thread.
+ * 创建并且唤醒一个线程
+ *
  * @threadfn: the function to run until signal_pending(current).
  * @data: data ptr for @threadfn.
  * @namefmt: printf-style name for the thread.
