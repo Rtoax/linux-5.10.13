@@ -46,3 +46,8 @@ do_timer()
 
 # PELT（per entity load tracking）
 
+
+# 链接
+
+* [（二）Linux进程调度器-CPU负载](https://mp.weixin.qq.com/s/ou8UesjAR1XGtspCy2KA5Q)
+* [（三）Linux进程调度器-进程切换](https://mp.weixin.qq.com/s/_5FcTa_W19ZrjVs_QWRH3w)
