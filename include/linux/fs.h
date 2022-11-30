@@ -1442,7 +1442,22 @@ struct sb_writers {
 };
 
 /**
+ * 文件系统主要由super block（超级块）、inode表、data block（数据块）组成。
+ * 目前文件系统都比较大，如果将所有的inode和block放置在一起很不明智，这样
+ * 数量都太庞大，而且不易管理。故Ext文件系统在格式化的时候都是区分为多个块
+ * 组（block group），每个块组有独立的inode/block/superblock。就像当兵一样，
+ * 一个师里面有很多旅组成.
  *
+ * Super Block 是记录整个 文件系统相关信息的地方， 没有 Super Block ，就没
+ * 有这个文件系统了。它记录的信息主要有：
+ *
+ * 1. block 与inode 的总量；
+ * 2. 未使用与已使用的 inode / block 数量；
+ * 3. block 与 inode 的大小 (block 为 1, 2, 4K，inode 为 128 bytes)；
+ * 4. 文件系统 的挂载时间、最近一次写入数据的时间、最近一次检验磁盘 (fsck)
+ *    的时间等文件系统的相关信息；
+ * 5. 一个 valid bit 数值，若此文件系统已被挂载，则 valid bit 为 0 ，若未
+ *    被挂载，则 valid bit 为1 。
  */
 struct super_block {    /* 超级块 */
 	struct list_head	s_list;		/* Keep this first */
