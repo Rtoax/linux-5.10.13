@@ -101,7 +101,7 @@ static void tick_periodic(int cpu)
 	 * tick_periodic()->update_process_times()->scheduler_tick()
 	 *
 	 * 1. 周期性地更新当前任务的状态时：
-	 *    定时中断处理函数中会调用 schedule_tick() 用于处理关于调度的周期性检查和处理，其调用
+	 *    定时中断处理函数中会调用 scheduler_tick() 用于处理关于调度的周期性检查和处理，其调用
 	 *    路径是和时钟处理有关的
 	 *     tick_periodic()->update_process_times()->scheduler_tick()
 	 *    或者

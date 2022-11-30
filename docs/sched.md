@@ -9,9 +9,9 @@ sched
 > kernel/sched/core.c: schedule()
 
 
-## 周期调度 - schedule_tick()
+## 周期调度 - scheduler_tick()
 
-> kernel/sched/core.c: schedule_tick()
+> kernel/sched/core.c: scheduler_tick()
 
 
 ## 高精度时钟调度 - hrtick()

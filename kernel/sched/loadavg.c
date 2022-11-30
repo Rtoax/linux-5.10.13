@@ -59,10 +59,26 @@
 
 /* Variables and functions for calc_load */
 /**
+ * 新增的活动任务更新到全局变量 calc_load_tasks 中
  *
+ * 见 calc_global_load_tick()
  */
 atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
+
+/**
+ * 存放最近1/5/15分钟的平均CPU负载
+ *
+ * 计算CPU负载，可以让调度器更好的进行负载均衡处理，以便提高系统的运行效率。
+ *
+ * --------------------------------------------------------------------------
+ * * CPU的运行能力，就如大桥的通行能力，分别有满负荷，非满负荷，超负荷等状态，这几种状态对
+ *    应不同的cpu load值；
+ * * 单CPU满负荷运行时cpu_load为1，当多个CPU或多核时，相当于大桥有多个车道，满负荷运行时
+ *    cpu_load值为CPU数或多核数；
+ * * CPU负载的计算（以单CPU为例），假设一分钟内执行10个任务代表满负荷，当一分钟给出30个任
+ *    务时，CPU只能处理10个，剩余20个不能处理，cpu_load=3；
+ */
 unsigned long avenrun[3];   /* 为啥没有加锁？ 一分钟，五分钟，十五分钟的平均负载 */
 EXPORT_SYMBOL(avenrun); /* should be removed */
 
@@ -82,8 +98,7 @@ void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
 }
 
 /**
- *
- *
+ * 统计新增的活动任务，包含 running 和 uninterruptible
  */
 long calc_load_fold_active(struct rq *this_rq, long adjust)
 {
@@ -224,6 +239,11 @@ calc_load_n(unsigned long load, unsigned long exp,
 static atomic_long_t calc_load_nohz[2];
 static int calc_load_idx;
 
+/**
+ * 由于 NO_HZ 空闲效应而更改的CPU活动任务数量，存放在全局变量 calc_load_nohz[2] 中，
+ * 并且每 5 秒计算周期交替更换一次存储位置(calc_load_read_idx/calc_load_write_idx)，
+ * 其他程序可以去读取最近 5 秒内的活动任务变化的增量值。
+ */
 static inline int calc_load_write_idx(void)
 {
 	int idx = calc_load_idx;
@@ -244,6 +264,11 @@ static inline int calc_load_write_idx(void)
 	return idx & 1;
 }
 
+/**
+ * 由于 NO_HZ 空闲效应而更改的CPU活动任务数量，存放在全局变量 calc_load_nohz[2] 中，
+ * 并且每 5 秒计算周期交替更换一次存储位置(calc_load_read_idx/calc_load_write_idx)，
+ * 其他程序可以去读取最近 5 秒内的活动任务变化的增量值。
+ */
 static inline int calc_load_read_idx(void)
 {
 	return calc_load_idx & 1;
@@ -264,12 +289,16 @@ static void calc_load_nohz_fold(struct rq *rq)
 		int idx = calc_load_write_idx();
 
 		/**
-		 * +
+		 * + nohz 情况下保存 delta
 		 */
 		atomic_long_add(delta, &calc_load_nohz[idx]);
 	}
 }
 
+/**
+ * NO_HZ 调度开始
+ * 见 tick_nohz_stop_sched_tick()
+ */
 void calc_load_nohz_start(void)
 {
 	/*
@@ -288,6 +317,10 @@ void calc_load_nohz_remote(struct rq *rq)
 	calc_load_nohz_fold(rq);
 }
 
+/**
+ * NO_HZ 调度开始
+ * 见 tick_nohz_restart_sched_tick()
+ */
 void calc_load_nohz_stop(void)
 {
 	struct rq *this_rq = this_rq();
@@ -309,7 +342,13 @@ void calc_load_nohz_stop(void)
 }
 
 /**
- * 读取 delta
+ * 读取 NO_HZ 的 CPU 活动任务数量
+ *
+ * NO_HZ 模式下活动任务数量更改的计算
+ * --------------------------------------------------------------------------
+ * 由于 NO_HZ 空闲效应而更改的CPU活动任务数量，存放在全局变量 calc_load_nohz[2] 中，
+ * 并且每 5 秒计算周期交替更换一次存储位置(calc_load_read_idx/calc_load_write_idx)，
+ * 其他程序可以去读取最近 5 秒内的活动任务变化的增量值。
  */
 static long calc_load_nohz_read(void)
 {
@@ -372,6 +411,8 @@ static void calc_global_nohz(void)
  * calc_load - update the avenrun load estimates 10 ticks after the
  * CPUs have updated calc_load_tasks.
  *
+ * 确保在更新 calc_load_update 后的 10 个 tick 之后，再计算 CPU 负载
+ *
  * Called from the global timer code.
  *
  * sudo bpftrace -e 'kprobe:calc_global_load {printf("---\n");}'
@@ -381,29 +422,62 @@ void calc_global_load(void)
 	unsigned long sample_window;
 	long active, delta;
 
+	/**
+	 * 确保在更新 calc_load_update 后的 10 个 tick 之后，再计算 CPU 负载，否则返回。
+	 *
+	 * 系统默认每隔5秒钟会计算一次负载，如果由于 NO_HZ 空闲而错过了下一个CPU负载的计算周期，
+	 * 则需要再次进行更新。比如 NO_HZ 空闲20秒而无法更新CPU负载，前5秒负载已经更新，需要计
+	 * 算剩余的3个计算周期的负载来继续更新（见 LOAD_FREQ ）
+	 */
 	sample_window = READ_ONCE(calc_load_update);
 	if (time_before(jiffies, sample_window + 10))
 		return;
 
-	/*
+	/**
+	 * 计算 NO_HZ 模式下新增的活动任务
 	 * Fold the 'old' NO_HZ-delta to include all NO_HZ CPUs.
 	 */
 	delta = calc_load_nohz_read();
 	if (delta)
+		/**
+		 * 将新增的活动任务更新到全局变量 calc_load_tasks
+		 */
 		atomic_long_add(delta, &calc_load_tasks);
 
+	/**
+	 * 读取活动任务数
+	 *
+	 * 活动任务数包括两部分：1）周期性调度中新增加的活动任务；2）在NO_HZ期间增加的活动任务数；
+	 */
 	active = atomic_long_read(&calc_load_tasks);
+	/* FIXED_1 = 2048 */
 	active = active > 0 ? active * FIXED_1 : 0;
 
+	/**
+	 * 根据 active 值来计算全局 CPU 负载：1,5,15 分钟
+	 *
+	 * 根据活动任务数值，再结合全局变量值avenrun[]中的old value，来计算新的CPU负载值，
+	 * 并最终替换掉avenrun[]中的值；
+	 */
 	avenrun[0] = calc_load(avenrun[0], EXP_1, active);
 	avenrun[1] = calc_load(avenrun[1], EXP_5, active);
 	avenrun[2] = calc_load(avenrun[2], EXP_15, active);
 
+	/**
+	 * 每次计算完负载值后更新 calc_load_update 值，增加 5s 计算周期
+	 * LOAD_FREQ = (5*HZ+1)  5 sec intervals
+	 *
+	 * 系统默认每隔5秒钟会计算一次负载，如果由于 NO_HZ 空闲而错过了下一个CPU负载的计算周期，
+	 * 则需要再次进行更新。比如 NO_HZ 空闲20秒而无法更新CPU负载，前5秒负载已经更新，需要计
+	 * 算剩余的3个计算周期的负载来继续更新；
+	 */
 	WRITE_ONCE(calc_load_update, sample_window + LOAD_FREQ);
 
-	/*
+	/**
 	 * In case we went to NO_HZ for multiple LOAD_FREQ intervals
 	 * catch up in bulk.
+	 *
+	 * 若 NO_HZ 模式空闲超过 5s 的计算周期，则需要进行折算并再次更新 CPU 负载
 	 */
 	calc_global_nohz();
 }
@@ -411,6 +485,8 @@ void calc_global_load(void)
 /*
  * Called from scheduler_tick() to periodically update this CPU's
  * active count.
+ *
+ * 从 scheduler_tick（） 调用以定期更新此 CPU 的活动计数。
  */
 void calc_global_load_tick(struct rq *this_rq)
 {
@@ -419,8 +495,14 @@ void calc_global_load_tick(struct rq *this_rq)
 	if (time_before(jiffies, this_rq->calc_load_update))
 		return;
 
+	/**
+	 * 统计新增的活动任务，包含 running 和 uninterruptible
+	 */
 	delta  = calc_load_fold_active(this_rq, 0);
 	if (delta)
+		/**
+		 * 将新增的活动任务更新到全局变量 calc_load_tasks 中
+		 */
 		atomic_long_add(delta, &calc_load_tasks);
 
 	this_rq->calc_load_update += LOAD_FREQ;

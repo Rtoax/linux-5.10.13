@@ -15,15 +15,33 @@
 extern unsigned long avenrun[];		/* Load averages */
 extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 
+/**
+ * 采用11位精度的定点化计算，CPU负载 1.0 由整数2048表示
+ */
 #define FSHIFT		11		/* nr of bits of precision */
 #define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
 #define LOAD_FREQ	(5*HZ+1)	/* 5 sec intervals */
+/**
+ * 分别代表最近1/5/15分钟的定点化值的指数因子
+ */
 #define EXP_1		1884		/* 1/exp(5sec/1min) as fixed-point */
 #define EXP_5		2014		/* 1/exp(5sec/5min) */
 #define EXP_15		2037		/* 1/exp(5sec/15min) */
 
-/*
+/**
+ * @load - 值为旧的CPU负载值avenrun[]
+ * @exp - EXP_1/EXP_5/EXP_15，分别代表最近1/5/15分钟的定点化值的指数因子；
+ * @active - 根据读取calc_load_tasks的值来判断，大于0则乘以 FIXED_1(2048) 传入；
+ *          active = active * FIXED_1
+ *
  * a1 = a0 * e + a * (1 - e)
+ *
+ * calc_global_load() {
+ *  ...
+ *  avenrun[0] = calc_load(avenrun[0], EXP_1, active);
+ *  avenrun[1] = calc_load(avenrun[1], EXP_5, active);
+ *  avenrun[2] = calc_load(avenrun[2], EXP_15, active);
+ * }
  */
 static inline unsigned long
 calc_load(unsigned long load, unsigned long exp, unsigned long active)
@@ -31,6 +49,9 @@ calc_load(unsigned long load, unsigned long exp, unsigned long active)
 	unsigned long newload;
 
 	newload = load * exp + active * (FIXED_1 - exp);
+	/**
+	 * 根据active和load值的大小关系来决定是否需要加1，类似于四舍五入的机制；
+	 */
 	if (active >= load)
 		newload += FIXED_1-1;
 

@@ -101,7 +101,7 @@ struct thread_info {
  *  2. 一个是在被唤醒进程的优先级比正在运行的进程的优先级高时。
  *
  * 1. 周期性地更新当前任务的状态时：
- *    定时中断处理函数中会调用 schedule_tick() 用于处理关于调度的周期性检查和处理，其调用
+ *    定时中断处理函数中会调用 scheduler_tick() 用于处理关于调度的周期性检查和处理，其调用
  *    路径是和时钟处理有关的
  *     tick_periodic()->update_process_times()->scheduler_tick()
  *    或者

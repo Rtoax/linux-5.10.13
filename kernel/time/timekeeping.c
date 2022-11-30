@@ -2270,12 +2270,15 @@ void ktime_get_coarse_ts64(struct timespec64 *ts)
 }
 EXPORT_SYMBOL(ktime_get_coarse_ts64);
 
-/*
+/**
  * Must hold jiffies_lock
  */
 void do_timer(unsigned long ticks)
 {
 	jiffies_64 += ticks;
+	/**
+	 * 负载计算
+	 */
 	calc_global_load();
 }
 
@@ -2481,6 +2484,10 @@ void xtime_update(unsigned long ticks)
 {
 	raw_spin_lock(&jiffies_lock);
 	write_seqcount_begin(&jiffies_seq);
+
+	/**
+	 * 负载计算
+	 */
 	do_timer(ticks);
 	write_seqcount_end(&jiffies_seq);
 	raw_spin_unlock(&jiffies_lock);

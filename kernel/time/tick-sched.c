@@ -825,6 +825,9 @@ static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
 	 * the scheduler tick in nohz_restart_sched_tick.
 	 */
 	if (!ts->tick_stopped) {
+		/**
+		 *
+		 */
 		calc_load_nohz_start();
 		quiet_vmstat();
 
@@ -860,6 +863,9 @@ static void tick_nohz_retain_tick(struct tick_sched *ts)
 }
 
 #ifdef CONFIG_NO_HZ_FULL
+/**
+ * NO_HZ 调度开始
+ */
 static void tick_nohz_stop_sched_tick(struct tick_sched *ts, int cpu)
 {
 	if (tick_nohz_next_event(ts, cpu))
@@ -869,6 +875,9 @@ static void tick_nohz_stop_sched_tick(struct tick_sched *ts, int cpu)
 }
 #endif /* CONFIG_NO_HZ_FULL */
 
+/**
+ * NO_HZ 调度结束
+ */
 static void tick_nohz_restart_sched_tick(struct tick_sched *ts, ktime_t now)
 {
 	/* Update jiffies first */

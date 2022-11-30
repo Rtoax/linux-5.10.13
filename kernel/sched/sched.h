@@ -1069,7 +1069,8 @@ struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t		lock;
 
-	/* 就绪队列总可运行的进程数
+	/**
+	 * 就绪队列总可运行的进程数
 	 *
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.

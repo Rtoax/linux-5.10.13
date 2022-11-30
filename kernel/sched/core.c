@@ -4799,7 +4799,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 }
 
 /**
- * 周期调度 - schedule_tick()
+ * 周期调度 - scheduler_tick()
  *
  * This function gets called by the timer code, with HZ frequency.
  * We call it with interrupts disabled.
@@ -4828,7 +4828,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  *  2. 一个是在被唤醒进程的优先级比正在运行的进程的优先级高时。
  *
  * 1. 周期性地更新当前任务的状态时：
- *    定时中断处理函数中会调用 schedule_tick() 用于处理关于调度的周期性检查和处理，其调用
+ *    定时中断处理函数中会调用 scheduler_tick() 用于处理关于调度的周期性检查和处理，其调用
  *    路径是和时钟处理有关的
  *     tick_periodic()->update_process_times()->scheduler_tick()
  *    或者
@@ -4836,7 +4836,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  *    主要用于更新就绪队列的时钟、CPU负载和当前任务的运行时间统计等
  *
  * ---------------------------------------------------------------------
- * * 时钟中断处理程序中，调用schedule_tick()函数；
+ * * 时钟中断处理程序中，调用scheduler_tick()函数；
  * * 时钟中断是调度器的脉搏，内核依靠周期性的时钟来处理器CPU的控制权；
  * * 时钟中断处理程序，检查当前进程的执行时间是否超额，如果超额则设置重新调度标志(
  *    _TIF_NEED_RESCHED)；

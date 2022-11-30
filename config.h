@@ -3175,6 +3175,13 @@
 #define CONFIG_NLS_UTF8
 #define CONFIG_NLS_UTF8_MODULE 1
 #define CONFIG_NODES_SHIFT 10
+/**
+ * `NO_HZ`：我们都知道Linux内核每隔固定时间发出timer interrupt，而HZ是用来定义1秒中
+ * 的timer interrupts次数，HZ的倒数是tick，是系统的节拍器，每个tick会处理包括调度器、
+ * 时间管理、定时器等事务。周期性的时钟中断带来的问题是，不管CPU空闲或繁忙都会触发，会带
+ * 来额外的系统损耗，因此引入了NO_HZ模式，可以在CPU空闲时将周期性时钟关掉。在NO_HZ期间，
+ * 活动任务数量的改变也需要考虑，而它的计算不如周期性时钟模式下直观。
+ */
 #define CONFIG_NO_HZ 1          /*  enables the Linux kernel to run without a regular timer tick */
 #define CONFIG_NO_HZ_COMMON 1
 #define CONFIG_NO_HZ_FULL 1
