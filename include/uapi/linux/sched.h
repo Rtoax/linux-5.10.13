@@ -111,12 +111,20 @@ struct clone_args {
 /*
  * Scheduling policies
  *
+ * sched stop: 优先级最高的调度类，可以抢占其他所有进程，不能被其他进程抢占；
  * SCHED_DEADLINE：使task选择Deadline调度器来调度运行
  * SCHED_RR：时间片轮转，进程用完时间片后加入优先级对应运行队列的尾部，把CPU让给同优先级的其他进程；
  * SCHED_FIFO：先进先出调度没有时间片，没有更高优先级的情况下，只能等待主动让出CPU；
+ *            实时进程：prio 0 - 99
+ *
  * SCHED_NORMAL：使task选择CFS调度器来调度运行；
  * SCHED_BATCH：批量处理，使task选择CFS调度器来调度运行；
  * SCHED_IDLE：使task以最低优先级选择CFS调度器来调度运行；
+ *            普通进程： prio 100 - 139 (nice -20 - 19)
+ */
+
+/**
+ * 完全公平调度器，采用完全公平调度算法，引入虚拟运行时间概念；
  */
 #define SCHED_NORMAL		0
 
@@ -132,6 +140,7 @@ struct clone_args {
 
 /**
  *  时间片轮转，进程用完时间片后加入优先级对应运行队列的尾部，把CPU让给同优先级的其他进程；
+ *  实时调度器，为每个优先级维护一个队列；
  *  这个进程会一直运行下去，直到 下面的某个条件被满足：
  *
  *  1. 时间片用完
@@ -140,9 +149,20 @@ struct clone_args {
  *  4. 被更高优先级的进程抢占
  */
 #define SCHED_RR		2
+/**
+ * 普通进程调度策略，批量处理，使task选择CFS调度器来调度运行；
+ */
 #define SCHED_BATCH		3
 /* SCHED_ISO: reserved but not implemented yet */
+/**
+ * 空闲调度器，每个CPU都会有一个idle线程，当没有其他进程可以调度时，调度运行idle线程；
+ * 普通进程调度策略，使task以最低优先级选择CFS调度器来调度运行；
+ */
 #define SCHED_IDLE		5
+
+/**
+ * 使用红黑树，把进程按照绝对截止期限进行排序，选择最小进程进行调度运行；
+ */
 #define SCHED_DEADLINE		6
 
 /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */

@@ -266,8 +266,9 @@ struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1); /* include 1 bit for delimiter */
 
 	/**
-	 *  100 个优先级队列(0-99)
+	 * 实时调度器，为每个优先级维护一个队列；
 	 *
+	 *  100 个优先级队列(0-99)
 	 *
 	 *                  SCHED_FIFO                        SCHED_NORMAL
 	 *                  SCHED_RR                          SCHED_BATCH
@@ -278,6 +279,11 @@ struct rt_prio_array {
 	 *  +-------------------------------------------+---------------------+
 	 *
 	 *
+	 * 优先级队列:
+	 *  queue[0]: ()-()-()-()-()...
+	 *  queue[1]: ()-()-()-()-()...
+	 *  ...
+	 *  queue[99]: ()-()-()-()-()...
 	 */
 	struct list_head queue[MAX_RT_PRIO];
 };
@@ -729,6 +735,11 @@ struct rt_rq {  /* 实时运行队列 */
 	 *  优先级队列
 	 *  cfs线程的队列维护是通过红黑树完成
 	 *  rt 线程的队列维护则是通过优先级链表完成
+	 *   优先级队列:
+	 *    queue[0]: ()-()-()-()-()...
+	 *    queue[1]: ()-()-()-()-()...
+	 *    ...
+	 *    queue[99]: ()-()-()-()-()...
 	 */
 	struct rt_prio_array	active;
 
@@ -1022,6 +1033,12 @@ DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
  * 每个 CPU 都会有一个就绪队列，是一个 per-CPU 变量 `runqueues`
  *
  * API有: `cpu_rq()`, `this_rq()`, `task_rq()`, `cpu_curr()`, `raw_rq()`
+ *
+ * --------------------------------------------------------------------------
+ * * 每个CPU都有一个运行队列，每个调度器都作用于运行队列；
+ * * 分配给CPU的task，作为调度实体加入到运行队列中；
+ * * task首次运行时，如果可能，尽量将它加入到父task所在的运行队列中（分配
+ *   给相同的CPU，缓存affinity会更高，性能会有改善）；
  *
  * 调度延迟（sched latency）：线程在运行队列中的等待时间，这主要来自三个方面：
  * 1. 从idle cpu唤醒需要等待器件做好准备；
