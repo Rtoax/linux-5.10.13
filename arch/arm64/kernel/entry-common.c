@@ -63,6 +63,9 @@ static void noinstr exit_to_kernel_mode(struct pt_regs *regs)
 	}
 }
 
+/**
+ *
+ */
 void noinstr arm64_enter_nmi(struct pt_regs *regs)
 {
 	regs->lockdep_hardirqs = lockdep_hardirqs_enabled();
@@ -93,6 +96,9 @@ void noinstr arm64_exit_nmi(struct pt_regs *regs)
 	__nmi_exit();
 }
 
+/**
+ *
+ */
 asmlinkage void noinstr enter_el1_irq_or_nmi(struct pt_regs *regs)
 {
 	if (IS_ENABLED(CONFIG_ARM64_PSEUDO_NMI) && !interrupts_enabled(regs))
@@ -200,6 +206,9 @@ static void noinstr el1_fpac(struct pt_regs *regs, unsigned long esr)
 	exit_to_kernel_mode(regs);
 }
 
+/**
+ * el1_sync：当前处于内核态时，发生了指令执行异常、缺页中断（跳转地址或者取地址）
+ */
 asmlinkage void noinstr el1_sync_handler(struct pt_regs *regs)
 {
 	unsigned long esr = read_sysreg(esr_el1);

@@ -1943,6 +1943,8 @@ out_err:
  * Try to start up an interface.  Must be called with smi_infos_lock
  * held, primarily to keep smi_num consistent, we only one to do these
  * one at a time.
+ *
+ * SMI：系统管理中断，由旧系统上的中断事件生成的OS透明中断。
  */
 static int try_smi_init(struct smi_info *new_smi)
 {
@@ -2064,6 +2066,9 @@ static int try_smi_init(struct smi_info *new_smi)
 	}
 	new_smi->dev_group_added = true;
 
+	/**
+	 * SMI：系统管理中断，由旧系统上的中断事件生成的OS透明中断。
+	 */
 	rv = ipmi_register_smi(&handlers,
 			       new_smi,
 			       new_smi->io.dev,

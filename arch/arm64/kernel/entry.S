@@ -648,6 +648,10 @@ SYM_CODE_END(el1_error_invalid)
 /*
  * EL1 mode handlers.
  */
+/**
+ * el1_sync: 当前处于内核态时，发生了指令执行异常、缺页中断（跳转地址或者取地址）
+ *
+ */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el1_sync)
     /**
@@ -666,6 +670,8 @@ SYM_CODE_END(el1_sync)
  *  当 IRQ 发生在内核态，CPU 会根据异常向量表跳转到对应表项中，
  *  它对应的表项为 kernel_ventry 1, irq 
  *  然后跳转到 el1_irq 标签处
+ *
+ *  当前处于内核态时，发生硬件中断。
  */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el1_irq)

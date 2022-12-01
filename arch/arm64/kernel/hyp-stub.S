@@ -45,6 +45,10 @@ SYM_CODE_END(__hyp_stub_vectors)
 
 	.align 11
 
+/**
+ * 当前处于内核态时，发生了指令执行异常、缺页中断（跳转地址或者取地址）。
+ *
+ */
 SYM_CODE_START_LOCAL(el1_sync)
 	cmp	x0, #HVC_SET_VECTORS
 	b.ne	2f
