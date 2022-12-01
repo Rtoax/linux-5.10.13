@@ -10,12 +10,20 @@
 #include <linux/seqlock.h>
 #include <linux/time.h>
 
+/**
+ * /proc/loadavg
+ */
 static int loadavg_proc_show(struct seq_file *m, void *v)
 {
-//    $ sudo cat /proc/loadavg
-//    0.00 0.02 0.05 1/275 96511
+	/**
+	 * $ sudo cat /proc/loadavg
+	 * 0.00 0.02 0.05 1/275 96511
+	 */
 	unsigned long avnrun[3];
 
+	/**
+	 * FIXED_1/200 = 2048 / 200
+	 */
 	get_avenrun(avnrun, FIXED_1/200, 0);
 
 	seq_printf(m, "%lu.%02lu %lu.%02lu %lu.%02lu %ld/%d %d\n",
