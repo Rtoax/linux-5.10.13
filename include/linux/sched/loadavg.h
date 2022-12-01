@@ -23,6 +23,16 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 #define LOAD_FREQ	(5*HZ+1)	/* 5 sec intervals */
 /**
  * 分别代表最近1/5/15分钟的定点化值的指数因子
+ *
+ * 以 e 为底的指数函数:
+ *
+ *  float exp_1 = 1.0/exp(5.0 / 60.0) * 2048;
+ *  float exp_5 = 1.0/exp(5.0 / 300.0) * 2048;
+ *  float exp_15 = 1.0/exp(5.0 / 900.0) * 2048;
+ *
+ *  1884.250977
+ *  2014.149536
+ *  2036.653809
  */
 #define EXP_1		1884		/* 1/exp(5sec/1min) as fixed-point */
 #define EXP_5		2014		/* 1/exp(5sec/5min) */
@@ -48,9 +58,17 @@ calc_load(unsigned long load, unsigned long exp, unsigned long active)
 {
 	unsigned long newload;
 
-	newload = load * exp + active * (FIXED_1 - exp);
 	/**
-	 * 根据active和load值的大小关系来决定是否需要加1，类似于四舍五入的机制；
+	 * 例如 1分钟的负载
+	 *
+	 *                      1 * 2048                             1 * 2048
+	 * newload = load * ----------------- + active * ( 2048 - -------------- )
+	 *                    exp( 5 / 60 )                        exp( 5 / 60 )
+	 */
+	newload = load * exp + active * (FIXED_1 - exp);
+
+	/**
+	 * 根据active和load值的大小关系来决定是否需要加 2047；
 	 */
 	if (active >= load)
 		newload += FIXED_1-1;
