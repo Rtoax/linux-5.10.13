@@ -978,31 +978,61 @@ static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
 
 #ifdef CONFIG_HAS_IOPORT_MAP
 #ifndef CONFIG_GENERIC_IOMAP
-//#ifndef ioport_map
-//#define ioport_map ioport_map
-//static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
-//{
-//	port &= IO_SPACE_LIMIT;
-//	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
-//}
-//#define __pci_ioport_unmap __pci_ioport_unmap
-//static inline void __pci_ioport_unmap(void __iomem *p)
-//{
-//	uintptr_t start = (uintptr_t) PCI_IOBASE;
-//	uintptr_t addr = (uintptr_t) p;
-//
-//	if (addr >= start && addr < start + IO_SPACE_LIMIT)
-//		return;
-//	iounmap(p);
-//}
-//#endif
-//
-//#ifndef ioport_unmap
-//#define ioport_unmap ioport_unmap
-//static inline void ioport_unmap(void __iomem *p)
-//{
-//}
-//#endif
+#ifndef ioport_map
+#define ioport_map ioport_map
+static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
+{
+	/**
+	 * 解决问题的补丁
+	 *
+	 * 补丁1:
+	 * -------------------------------------------------------------------
+	 * - return PCI_IOBASE + (port & MMIO_UPPER_LIMIT);
+	 * + port &= IO_SPACE_LIMIT;
+	 * + return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
+	 *
+	 *  上述补丁解决了一个ioport map的问题，
+	 *
+     *  DF723(端口3000)，DF720(端口5000)，EF860（端口4000）NF2180M3（端口8000）
+     *  按照修改之前的逻辑，端口映射4000，5000会出现错误。
+     *   3000--->3000
+     *   4000--->0
+     *   5000--->1000
+	 *   8000--->8000
+	 *
+	 * > 查看端口
+	 * > $ lspci -vvv -s 09:00.0
+	 * > ...
+	 * > Region 2: I/O ports at 5000 [size=128]
+	 * > ...
+	 *
+	 * 所以根本原因还是服务器设置显卡硬件端口为4000/5000时触发了一个内核BUG
+	 * 导致花屏，另外一方面长城飞腾服务器只适配过麒麟操作系统（内核版本4.19），
+	 * 导致问题暴露。
+	 *
+	 * > 长城飞腾服务器-远程虚拟化-出现花屏现象，只能通过SOL控制台访问.
+	 */
+	port &= IO_SPACE_LIMIT;
+	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
+}
+#define __pci_ioport_unmap __pci_ioport_unmap
+static inline void __pci_ioport_unmap(void __iomem *p)
+{
+	uintptr_t start = (uintptr_t) PCI_IOBASE;
+	uintptr_t addr = (uintptr_t) p;
+
+	if (addr >= start && addr < start + IO_SPACE_LIMIT)
+		return;
+	iounmap(p);
+}
+#endif
+
+#ifndef ioport_unmap
+#define ioport_unmap ioport_unmap
+static inline void ioport_unmap(void __iomem *p)
+{
+}
+#endif
 #else /* CONFIG_GENERIC_IOMAP */
 extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
 extern void ioport_unmap(void __iomem *p);

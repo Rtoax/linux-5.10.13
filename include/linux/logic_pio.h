@@ -115,11 +115,16 @@ void logic_outsl(unsigned long addr, const void *buffer, unsigned int count);
  * We reserve 0x4000 bytes for Indirect IO as so far this library is only
  * used by the HiSilicon LPC Host. If needed, we can reserve a wider IO
  * area by redefining the macro below.
+ *
+ * 为 HiSilicon LPC Host 预留的 PIO
  */
 #define PIO_INDIRECT_SIZE 0x4000
 #else
 #define PIO_INDIRECT_SIZE 0
 #endif /* CONFIG_INDIRECT_PIO */
+/**
+ * IO_SPACE_LIMIT - 可能是一个 0xffff
+ */
 #define MMIO_UPPER_LIMIT (IO_SPACE_LIMIT - PIO_INDIRECT_SIZE)
 
 struct logic_pio_hwaddr *find_io_range_by_fwnode(struct fwnode_handle *fwnode);
