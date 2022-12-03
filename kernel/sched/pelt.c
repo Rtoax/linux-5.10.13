@@ -77,6 +77,8 @@ static u64 decay_load(u64 val, u64 n)
 	 *  此时 val < 32
 	 */
 	/**
+	 * 内核提供了一张表来避免浮点运算
+	 *
 	 *  val = (val*runnable_avg_yN_inv[local_n]>>32)
 	 *
 	 *  例
@@ -130,7 +132,16 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 	return c1 + c2 + c3;
 }
 
-/*
+/**
+ * PELT, Per-entity load tracking。在Linux引入PELT之前，CFS调度器在计算CPU
+ * 负载时，通过跟踪每个运行队列上的负载来计算；在引入PELT之后，通过跟踪每个调度实体
+ * 的负载贡献来计算。（其中，调度实体：指task或task_group）。
+ *
+ * 总体的计算思路：将调度实体的可运行状态时间（正在运行+等待CPU调度运行），按1024us
+ * 划分成不同的周期，计算每个周期内该调度实体对系统负载的贡献，最后完成累加。其中，每
+ * 个计算周期，随着时间的推移，需要乘以衰减因子y进行一次衰减操作。
+ *
+ *
  * Accumulate the three separate parts of the sum; d1 the remainder
  * of the last (incomplete) period, d2 the span of full periods and d3
  * the remainder of the (incomplete) current period.
@@ -152,6 +163,13 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
  *                     n=1
  *
  * 计算工作负载
+ *
+ * * 当前时间点的负载贡献 = 当前时间点负载 + 上个周期负载贡献 * 衰减因子；
+ * * 假设一个调度实体被调度运行，运行时间段可以分成三个段d1/d2/d3，这三个段是被1024us
+ *   的计算周期分割而成，period_contrib是调度实体last_update_time时在计算周期间的
+ *   贡献值
+ * * 总体的贡献值，也是根据d1/d2/d3来分段计算，最终相加即可；
+ * * y为衰减因子，每隔1024us就乘以y来衰减一次；
  */
 static __always_inline u32
 accumulate_sum(u64 delta, struct sched_avg *sa,
@@ -161,11 +179,19 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	u64 periods;
 
 	/**
+	 * 累加上个调度实体上次更新到本次整数周期内的剩余贡献值，再计算是否跨 1024
+	 * 的周期，用于分段处理。
+	 *
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
 	 *     |<->|<->|<----------------->|<--->|
 	 * ... |---x---|------| ... |------|-----x (now)
+	 *         |                             |
+	 *         |<---------- delta ---------->|
+	 *     |<-------------- delta + d0 ----->|
+	 *
+	 *     |<------------------------->|       periods 记录个数
 	 *
 	 *  d0: period_contrib 存放上一次周期总数不能凑成一个周期（1024us）的
 	 *      剩余时间
@@ -175,6 +201,11 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	/**
 	 *  periods 表示有多少个完整的周期
 	 *  上图中 d2 所占的整周期数
+	 *
+	 *  这里是：纳秒 转 微秒
+	 *
+	 *  ? 这里为什么不用移位操作？
+	 *  经过我的测试，移位和除法的耗时基本相同，甚至比除法还要多 1/1000
 	 */
 	periods = delta / 1024; /* A period is 1024us (~1ms) */
 
@@ -207,7 +238,10 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 		 *     |<->|<->|<----------------->|<--->|
 		 * ... |---x---|------| ... |------|-----x (now)
 		 *
-		 *  d3
+		 *     |<-------------- delta ---------->|
+		 *                                 |<--->| delta
+		 *
+		 *  d3: 这将用 period_contrib 记录，下次计算时当作“上个周期”的 d0 用
 		 */
 		delta %= 1024;
 		if (load) {
@@ -221,8 +255,11 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 			 * the below usage of @contrib to dissapear entirely,
 			 * so no point in calculating it.
 			 *
+			 * 将 d1/d2/d3 阶段的贡献值进行相加计算
 			 *
-			 *
+			 * d1: 1024 - sa->period_contrib
+			 * d2: periods
+			 * d3: delta
 			 */
 			contrib = __accumulate_pelt_segments(periods, 1024 - sa->period_contrib, delta);
 		}
@@ -234,8 +271,11 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	 *     |<->|<->|<----------------->|<--->|
 	 * ... |---x---|------| ... |------|-----x (now)
 	 *
+	 *                                 |<--->| delta
+	 *
 	 *  d3: period_contrib 存放上一次周期总数不能凑成一个周期（1024us）的
 	 *      剩余时间
+	 *  对于上个周期，对应 d0
 	 */
 	sa->period_contrib = delta;
 
@@ -260,7 +300,9 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
 	return periods;
 }
 
-/*
+/**
+ * PELT 的核心函数
+ *
  * We can represent the historical contribution to runnable average as the
  * coefficients of a geometric series.  To do this we sub-divide our runnable
  * history into segments of approximately 1ms (1024us); label the segment that
@@ -289,6 +331,12 @@ accumulate_sum(u64 delta, struct sched_avg *sa,
  *            = u_0 + u_1*y + u_2*y^2 + ... [re-labeling u_i --> u_{i+1}]
  *
  * 计算 工作 负载 之和
+ *
+ * 实例：
+ * $ sudo bpftrace -e 'kprobe:__update_load_avg_se {printf("now = %ld\n", arg0);}'
+ * now = 6210331474673
+ * now = 6210331478245
+ * ...
  */
 static __always_inline int
 ___update_load_sum(u64 now, struct sched_avg *sa,
@@ -297,6 +345,8 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	u64 delta;
 
 	/**
+	 * 计算当前点到上次更新的时间差
+	 *
 	 *      d0   d1          d2           d3
 	 *       ^   ^           ^            ^
 	 *       |   |           |            |
@@ -331,7 +381,9 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 *     |<->|<->|<----------------->|<--->|
 	 * ... |---x---|------| ... |------|-----x (now)
 	 *
+	 *     |<---------- delta -------->|
 	 *
+	 * 这里是：纳秒 转 微秒
 	 */
 	delta >>= 10;
 	if (!delta)
@@ -343,8 +395,10 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 *       |   |           |            |
 	 *     |<->|<->|<----------------->|<--->|
 	 * ... |---x---|------| ... |------|-----x (now)
-	 *                                 ^
-	 *                                 |
+	 *
+	 *     |<---------- delta -------->|
+	 *     |-------------------------->|
+	 *     ^                           ^
 	 *                          last_update_time
 	 */
 	sa->last_update_time += delta << 10;
@@ -367,8 +421,13 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 	 * Now we know we crossed measurement unit boundaries. The *_avg
 	 * accrues by two steps:
 	 *
+	 * 现在我们知道我们跨越了测量单位的界限。*_avg 通过两个步骤累积：
+	 *
 	 * Step 1: accumulate *_sum since last_update_time. If we haven't
 	 * crossed period boundaries, finish.
+	 *
+	 * 第 1 步：自 last_update_time 以来累积 *_sum。如果我们没有跨越周期界限，
+	 * 直接完成。
 	 *
 	 * 计算 工作负载
 	 */
@@ -464,6 +523,11 @@ int __update_load_avg_blocked_se(u64 now, struct sched_entity *se)
 
 /**
  *  更新调度实体 se 的负载信息
+ *
+ * $ sudo bpftrace -e 'kprobe:__update_load_avg_se {printf("now = %ld\n", arg0);}'
+ * now = 6210331474673
+ * now = 6210331478245
+ * ...
  */
 int __update_load_avg_se(u64 now, struct cfs_rq *cfs_rq, struct sched_entity *se)
 {

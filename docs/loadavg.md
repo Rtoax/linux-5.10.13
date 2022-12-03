@@ -46,6 +46,25 @@ do_timer()
 
 # PELT（per entity load tracking）
 
+PELT, Per-entity load tracking。在Linux引入PELT之前，CFS调度器在计算CPU负载时，通过跟踪每个运行队列上的负载来计算；在引入PELT之后，通过跟踪每个调度实体的负载贡献来计算。（其中，调度实体：指task或task_group）
+
+> 总体的计算思路：将调度实体的可运行状态时间（正在运行+等待CPU调度运行），按1024us划分成不同的周期，计算每个周期内该调度实体对系统负载的贡献，最后完成累加。其中，每个计算周期，随着时间的推移，需要乘以衰减因子y进行一次衰减操作。
+
+PELT 的核心函数为 `___update_load_sum`
+
+```
+__update_load_avg_cfs_rq()/__update_load_avg_se()/...
+  ___update_load_sum()
+    accumulate_sum()
+```
+
+如果是 CFS
+
+```
+update_load_avg()
+  __update_load_avg_se()
+```
+
 
 # 链接
 
