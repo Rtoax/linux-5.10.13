@@ -90,7 +90,7 @@ EXPORT_SYMBOL(avenrun); /* should be removed */
  *
  * These values are estimates at best, so no need for locking.
  *
- * 1. /proc/loadavg 中的调用
+ * 1. /proc/loadavg loadavg_proc_show() 中的调用
  *
  *   get_avenrun(avnrun, FIXED_1/200, 0);
  */

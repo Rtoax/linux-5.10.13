@@ -79,7 +79,13 @@ calc_load(unsigned long load, unsigned long exp, unsigned long active)
 extern unsigned long calc_load_n(unsigned long load, unsigned long exp,
 				 unsigned long active, unsigned int n);
 
+/**
+ * FSHIFT = 11
+ */
 #define LOAD_INT(x) ((x) >> FSHIFT)
+/**
+ * 100: 保留两位小数
+ */
 #define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
 
 extern void calc_global_load(void);

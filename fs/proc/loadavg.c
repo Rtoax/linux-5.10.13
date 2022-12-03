@@ -26,6 +26,11 @@ static int loadavg_proc_show(struct seq_file *m, void *v)
 	 */
 	get_avenrun(avnrun, FIXED_1/200, 0);
 
+	/**
+	 * 如果 avnrun = 2048，那么:
+	 *  整数部分为 1，等于 (2048 >> 11)
+	 *  小数部分为 0
+	 */
 	seq_printf(m, "%lu.%02lu %lu.%02lu %lu.%02lu %ld/%d %d\n",
 		LOAD_INT(avnrun[0]), LOAD_FRAC(avnrun[0]),
 		LOAD_INT(avnrun[1]), LOAD_FRAC(avnrun[1]),
