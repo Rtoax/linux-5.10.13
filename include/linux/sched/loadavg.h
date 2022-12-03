@@ -52,6 +52,31 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
  *  avenrun[1] = calc_load(avenrun[1], EXP_5, active);
  *  avenrun[2] = calc_load(avenrun[2], EXP_15, active);
  * }
+ *
+ * calc_load_n() 调用了 calc_load() 函数，并且注释如下（复制过来的）：
+ * -----------------------------------------------------------------
+ * a1 = a0 * e + a * (1 - e)
+ *
+ * a2 = a1 * e + a * (1 - e)
+ *    = (a0 * e + a * (1 - e)) * e + a * (1 - e)
+ *    = a0 * e^2 + a * (1 - e) * (1 + e)
+ *
+ * a3 = a2 * e + a * (1 - e)
+ *    = (a0 * e^2 + a * (1 - e) * (1 + e)) * e + a * (1 - e)
+ *    = a0 * e^3 + a * (1 - e) * (1 + e + e^2)
+ *
+ *  ...
+ *
+ * an = a0 * e^n + a * (1 - e) * (1 + e + ... + e^n-1) [1]
+ *    = a0 * e^n + a * (1 - e) * (1 - e^n)/(1 - e)
+ *    = a0 * e^n + a * (1 - e^n)
+ *
+ * [1] 几何级数的应用
+ * [1] application of the geometric series:
+ *
+ *              n         1 - x^(n+1)
+ *     S_n := \Sum x^i = -------------
+ *             i=0          1 - x
  */
 static inline unsigned long
 calc_load(unsigned long load, unsigned long exp, unsigned long active)
