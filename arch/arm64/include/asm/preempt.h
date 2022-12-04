@@ -7,6 +7,10 @@
 #define PREEMPT_NEED_RESCHED	BIT(32)
 #define PREEMPT_ENABLED	(PREEMPT_NEED_RESCHED)
 
+/**
+ * x86: 使用 __preempt_count 全局变量
+ * arm64: 在 struct thread_info {} 中
+ */
 static inline int preempt_count(void)
 {
 	return READ_ONCE(current_thread_info()->preempt.count);

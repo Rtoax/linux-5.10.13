@@ -46,7 +46,7 @@ int __percpu __preempt_count; //+++
  *
  *
  */
-static __always_inline int preempt_count(void)/* 可抢占？ */
+static __always_inline int preempt_count(void)
 {
 	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED;
 }

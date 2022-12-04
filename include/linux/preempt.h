@@ -82,7 +82,7 @@
 //*             NMI_MASK:    0x00f00000
 
 /**
- * 31              24  23            16 15             8 7               0
+ * 31              24  23   20 19    16 15             8 7               0
  *  +----------------+--------+--------+----------------+----------------+
  *  |                | f00000 | f0000  |   0x0000ff00   |   0x000000ff   |
  *  +----------------+--------+--------+----------------+----------------+
@@ -91,16 +91,19 @@
  *                   |        |        |                |                +----
  *                   |        |        |                |                   PREEMPT_MASK
  *                   |        |        |                +---------------------
- *                   |        |        |                                    SOFTIRQ_MASK
+ *                   |        |        |                                    SOFTIRQ_MASK  in_softirq()
  *                   |        |        +--------------------------------------
- *                   |        |                                             HARDIRQ_MASK
+ *                   |        |                                             HARDIRQ_MASK  in_irq()
  *                   |        +-----------------------------------------------
- *                   |                                                      NMI_MASK
+ *                   |                                                      NMI_MASK      in_nmi()
  *                   +--------------------------------------------------------
+ *
+ * <-----------------|----------------------------------|---------------------->
+ *   in_task()       |         in_interrupt()           |     in_task()
  */
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
-#define irq_count()	(preempt_count() & /*0x00ffff00*/(HARDIRQ_MASK | SOFTIRQ_MASK | NMI_MASK))
+#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK | NMI_MASK))
 
 /*
  * Are we doing bottom half or hardware interrupt processing?
@@ -120,7 +123,7 @@
 #define in_interrupt()		(irq_count())   /* 在中断上下文中 */
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET) /* 是否在软中断处理中 */
 #define in_nmi()		(preempt_count() & NMI_MASK) /* 在 NMI 中 */
-#define in_task()		/* 在进程上下文中 */(!(preempt_count() &  (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET)))
+#define in_task()		(!(preempt_count() &  (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET))) /* 在进程上下文中 */
 
 /*
  * The preempt_count offset after preempt_disable();
@@ -174,9 +177,9 @@ extern void preempt_count_sub(int val);
 #define preempt_count_dec_and_test() \
 	({ preempt_count_sub(1); should_resched(0); })
 #else
-//#define preempt_count_add(val)	__preempt_count_add(val)
-//#define preempt_count_sub(val)	__preempt_count_sub(val)
-//#define preempt_count_dec_and_test() __preempt_count_dec_and_test()
+#define preempt_count_add(val)	__preempt_count_add(val)
+#define preempt_count_sub(val)	__preempt_count_sub(val)
+#define preempt_count_dec_and_test() __preempt_count_dec_and_test()
 #endif
 
 #define __preempt_count_inc() __preempt_count_add(1)
