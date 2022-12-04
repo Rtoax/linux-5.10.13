@@ -634,6 +634,9 @@ static int ax25_setsockopt(struct socket *sock, int level, int optname,
 		ax25->paclen = opt;
 		break;
 
+	/**
+	 *
+	 */
 	case SO_BINDTODEVICE:
 		if (optlen > IFNAMSIZ - 1)
 			optlen = IFNAMSIZ - 1;

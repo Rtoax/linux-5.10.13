@@ -149,6 +149,11 @@ static int kcmp_epoll_target(struct task_struct *task1,
 }
 #endif
 
+/**
+ * kcmp(2)
+ *
+ * compare two processes to determine if they share a kernel resource
+ */
 SYSCALL_DEFINE5(kcmp, pid_t, pid1, pid_t, pid2, int, type,
 		unsigned long, idx1, unsigned long, idx2)
 {

@@ -1825,6 +1825,9 @@ SYSCALL_DEFINE1(umask, int, mask)
 	return mask;
 }
 
+/**
+ * PR_SET_MM_EXE_FILE
+ */
 static int prctl_set_mm_exe_file(struct mm_struct *mm, unsigned int fd)
 {
 	struct fd exe;
@@ -1851,8 +1854,10 @@ static int prctl_set_mm_exe_file(struct mm_struct *mm, unsigned int fd)
 	if (err)
 		goto exit;
 
-	/*
+	/**
 	 * Forbid mm->exe_file change if old file still mapped.
+	 *
+	 * 获取 mm 指向的磁盘 ELF 文件
 	 */
 	exe_file = get_mm_exe_file(mm);
 	err = -EBUSY;
@@ -2100,6 +2105,9 @@ static int prctl_set_auxv(struct mm_struct *mm, unsigned long addr,
 	return 0;
 }
 
+/**
+ * PR_SET_MM
+ */
 static int prctl_set_mm(int opt, unsigned long addr,
 			unsigned long arg4, unsigned long arg5)
 {
@@ -2125,6 +2133,23 @@ static int prctl_set_mm(int opt, unsigned long addr,
 	if (!capable(CAP_SYS_RESOURCE))
 		return -EPERM;
 
+	/**
+	 * man prctl(2)
+	 *
+	 * Supersede  the  /proc/pid/exe  symbolic  link with a new one pointing to a new executable file
+	 * identified by the file descriptor provided in arg3 argument.  The file  descriptor  should  be
+	 * obtained with a regular open(2) call.
+	 *
+	 * To  change the symbolic link, one needs to unmap all existing executable memory areas, includ‐
+	 * ing those created by the kernel itself (for example the kernel usually creates  at  least  one
+	 * executable memory area for the ELF .text section).
+	 *
+	 * In  Linux  4.9  and  earlier, the PR_SET_MM_EXE_FILE operation can be performed only once in a
+	 * process's lifetime; attempting to perform the operation a second time  results  in  the  error
+	 * EPERM.   This restriction was enforced for security reasons that were subsequently deemed spe‐
+	 * cious, and the restriction was removed in Linux  4.10  because  some  user-space  applications
+	 * needed to perform this operation more than once.
+	 */
 	if (opt == PR_SET_MM_EXE_FILE)
 		return prctl_set_mm_exe_file(mm, (unsigned int)addr);
 
@@ -2423,9 +2448,37 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 		else
 			error = PR_MCE_KILL_DEFAULT;
 		break;
+	/**
+	 * man prctl(2)
+	 *
+	 * Modify certain kernel memory map descriptor fields of the calling process.
+	 * Usually these fields are set by the kernel and dynamic loader (see ld.so(8)
+	 * for more information) and  a  regular  application should not use this
+	 * feature.  However, there are cases, such as self-modifying programs, where
+	 * a program might find it useful to change its own memory map.
+	 *
+	 * 包含：
+	 * PR_SET_MM_START_CODE
+	 * PR_SET_MM_END_CODE
+	 * PR_SET_MM_START_DATA
+	 * PR_SET_MM_END_DATA
+	 * ...
+	 */
 	case PR_SET_MM:
 		error = prctl_set_mm(arg2, arg3, arg4, arg5);
 		break;
+	/**
+	 * man prctl(2)
+	 *
+	 * Return the clear_child_tid address set by set_tid_address(2) and  the
+	 * clone(2)  CLONE_CHILD_CLEARTID flag,  in  the location pointed to by
+	 * (int **) arg2.  This feature is available only if the kernel is built
+	 * with the CONFIG_CHECKPOINT_RESTORE option enabled.  Note that since
+	 * the  prctl()  system  call does  not have a compat implementation for
+	 * the AMD64 x32 and MIPS n32 ABIs, and the kernel writes out a pointer
+	 * using the kernel's pointer size, this operation expects a user-space
+	 * buffer of  8  (not  4) bytes on these ABIs.
+	 */
 	case PR_GET_TID_ADDRESS:
 		error = prctl_get_tid_address(me, (int __user * __user *)arg2);
 		break;
