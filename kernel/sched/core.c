@@ -4483,7 +4483,7 @@ schedule_tail(struct task_struct *prev)
 	calculate_sigpending();
 }
 
-/*
+/**
  * context_switch - switch to the new MM and the new thread's register state.
  *
  * 进程上下文切换
@@ -4492,8 +4492,16 @@ schedule_tail(struct task_struct *prev)
  *    ->context_switch()
  *
  * 主要涉及到两部分：
- *  1. 进程地址空间切换
- *  2. 处理器状态切换：
+ *
+ *  1. 进程地址空间切换：切换的时候要判断切入的进程是否为内核线程，1）所有的用户进程都共用
+ *                    一个内核地址空间，而拥有不同的用户地址空间；2）内核线程本身没有用
+ *                    户地址空间。在进程在切换的过程中就需要对这些因素来考虑，涉及到页表
+ *                    的切换，以及cache/tlb的刷新等操作。
+ *  2. 处理器状态切换：包括CPU的通用寄存器切换、浮点寄存器切换，以及ARM处理器相关的其他一
+ *                   些寄存器的切换；
+ *
+ * 进程的切换，带来的开销不仅是页表切换和硬件上下文的切换，还包含了 Cache/TLB 刷新后带来的
+ * miss 的开销。在实际的开发中，也需要去评估新增进程带来的调度开销。
  */
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next,
@@ -5308,7 +5316,7 @@ restart:
 	BUG();
 }
 
-/*
+/**
  * __schedule() is the main scheduler function.
  *
  * The main means of driving the scheduler and thus entering this function are:
@@ -5348,6 +5356,11 @@ restart:
  * WARNING: must be called with preemption disabled!
  *
  * 调度器的核心函数
+ *
+ *  进程上下文：包含CPU的所有寄存器值、进程的运行状态、堆栈中的内容等，相当于进程某一时刻的
+ *  快照，包含了所有的软硬件信息；
+ *  进程切换时，完成的就是上下文的切换，进程上下文的信息会保存在每个struct task_struct结
+ *  构体中，以便在切换时能完成恢复工作；
  *
  *  让调度器选择 和 切换到一个合适的进程并运行，
  *
@@ -5389,6 +5402,8 @@ static void __sched notrace __schedule(bool preempt)
 
 	/**
 	 *  prev 指向当前队列中正在运行的进程
+	 *
+	 *  curr: 呜呜呜，这个时候就叫人家 prev 了！！
 	 */
 	prev = rq->curr;
 
@@ -5396,6 +5411,8 @@ static void __sched notrace __schedule(bool preempt)
 	 *  判断当前进程是否处于 atomic 上下文中
 	 *
 	 *  如果处于，那么内核将告警
+	 *
+	 *  时间调试和检查
 	 */
 	schedule_debug(prev, preempt);
 
@@ -5406,6 +5423,10 @@ static void __sched notrace __schedule(bool preempt)
 	 *  关闭 本地 CPU 中断
 	 */
 	local_irq_disable();
+
+	/**
+	 * 标识 RCU 停止状态
+	 */
 	rcu_note_context_switch(preempt);
 
 	/*
@@ -5428,6 +5449,10 @@ static void __sched notrace __schedule(bool preempt)
 
 	/* Promote REQ to ACT */
 	rq->clock_update_flags <<= 1;
+
+	/**
+	 * 更新运行队列时钟
+	 */
 	update_rq_clock(rq);
 
 	switch_count = &prev->nivcsw;
@@ -5442,16 +5467,27 @@ static void __sched notrace __schedule(bool preempt)
 	prev_state = prev->state;
 
 	/**
+	 * 任务未运行，且不是抢占
+	 *
 	 *  是否为抢占调度，即 是否中断返回前夕或者 系统调用返回用户空间 前夕发生的抢占调度
 	 *  如果发生了抢占调度，下面的 if 不执行
+	 *
+	 *  当进程主动调用 schedule() 时候， preempt=false（主动让出 CPU）
+	 *
 	 */
 	if (!preempt && prev_state) {
 
 		/**
-		 *
+		 * 有挂起的信号没有处理，那么，就不让出 CPU 了
 		 */
 		if (signal_pending_state(prev_state, prev)) {
+			/**
+			 * 任务状态切换到运行状态
+			 */
 			prev->state = TASK_RUNNING;
+		/**
+		 * 没有挂起的信号需要处理
+		 */
 		} else {
 			/**
 			 * 进程被调度时候，是否对load 有贡献
@@ -5501,7 +5537,8 @@ static void __sched notrace __schedule(bool preempt)
 	}
 
 	/**
-	 *  选择下一个合适的高优先级进程
+	 *  选择下一个合适的高优先级进程（需要切换到的任务）
+	 *
 	 *  从就绪队列中选择一个最优进程来执行
 	 *  fair: 理想情况下，选择红黑数的最左子树
 	 *
@@ -5572,6 +5609,9 @@ static void __sched notrace __schedule(bool preempt)
 		rq_unlock_irq(rq, &rf);
 	}
 
+	/**
+	 * 调用 RCU 的回调函数进行更新
+	 */
 	balance_callback(rq);
 }
 

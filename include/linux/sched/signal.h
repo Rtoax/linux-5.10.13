@@ -361,7 +361,7 @@ static inline int restart_syscall(void)
 /**
  *  检查当前进程是否有信号处理，返回不为0表示有信号需要处理
  */
-static inline int signal_pending(struct task_struct *p) //检测当前任务是否有一个挂起信号
+static inline int signal_pending(struct task_struct *p)
 {
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
 }
@@ -378,9 +378,15 @@ static inline int fatal_signal_pending(struct task_struct *p)
 
 static inline int signal_pending_state(long state, struct task_struct *p)
 {
-	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))//如果不包含这两个位，函数退出
+	/**
+	 * 如果不包含这两个位，函数退出
+	 */
+	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
 		return 0;
-	if (!signal_pending(p)) //检测当前任务是否有一个挂起信号
+	/**
+	 * 检测当前任务是否有一个挂起信号
+	 */
+	if (!signal_pending(p))
 		return 0;   //如果没有挂起信号函数退出
 
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
