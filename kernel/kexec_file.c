@@ -289,6 +289,9 @@ out:
 	return ret;
 }
 
+/**
+ *
+ */
 static int
 kimage_file_alloc_init(struct kimage **rimage, int kernel_fd,
 		       int initrd_fd, const char __user *cmdline_ptr,
@@ -298,6 +301,9 @@ kimage_file_alloc_init(struct kimage **rimage, int kernel_fd,
 	struct kimage *image;
 	bool kexec_on_panic = flags & KEXEC_FILE_ON_CRASH;
 
+	/**
+	 *
+	 */
 	image = do_kimage_alloc_init();
 	if (!image)
 		return -ENOMEM;
@@ -310,16 +316,26 @@ kimage_file_alloc_init(struct kimage **rimage, int kernel_fd,
 		image->type = KEXEC_TYPE_CRASH;
 	}
 
+	/**
+	 *
+	 */
 	ret = kimage_file_prepare_segments(image, kernel_fd, initrd_fd,
 					   cmdline_ptr, cmdline_len, flags);
 	if (ret)
 		goto out_free_image;
 
+	/**
+	 *
+	 */
 	ret = sanity_check_segment_list(image);
 	if (ret)
 		goto out_free_post_load_bufs;
 
 	ret = -ENOMEM;
+
+	/**
+	 *
+	 */
 	image->control_code_page = kimage_alloc_control_pages(image,
 					   get_order(KEXEC_CONTROL_PAGE_SIZE));
 	if (!image->control_code_page) {
@@ -346,6 +362,13 @@ out_free_image:
 	return ret;
 }
 
+/**
+ * kexec_file_load(2)
+ *
+ * long syscall(SYS_kexec_file_load, int kernel_fd, int initrd_fd,
+ *                    unsigned long cmdline_len, const char *cmdline,
+ *                    unsigned long flags);
+ */
 SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
 		unsigned long, cmdline_len, const char __user *, cmdline_ptr,
 		unsigned long, flags)
@@ -384,6 +407,9 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
 	if (flags & KEXEC_FILE_ON_CRASH)
 		kimage_free(xchg(&kexec_crash_image, NULL));
 
+	/**
+	 *
+	 */
 	ret = kimage_file_alloc_init(&image, kernel_fd, initrd_fd, cmdline_ptr,
 				     cmdline_len, flags);
 	if (ret)

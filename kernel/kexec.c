@@ -253,6 +253,8 @@ static inline int kexec_load_check(unsigned long nr_segments,
 
 /**
  * load a new kernel for later execution
+ * kexec_load(2)
+ *
  * 见 kexec(8) 加载一个内核
  *
  *	long kexec_load(unsigned long entry, unsigned long nr_segments,
