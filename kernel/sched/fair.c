@@ -4796,6 +4796,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 	    /**
 	     *  设置该进程 thread_info 中的 TIF_NEED_RESCHED 标志位
+		 *  也就是该进程可以被其他进程抢占了。
 	     */
 		resched_curr(rq_of(cfs_rq));
 		/*

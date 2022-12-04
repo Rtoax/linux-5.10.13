@@ -166,7 +166,9 @@ static bool set_one_prio_perm(struct task_struct *p)
 	return false;
 }
 
-/*
+/**
+ * nice(2)
+ *
  * set the priority of a task
  * - the caller must hold the RCU read lock
  */
@@ -189,6 +191,10 @@ static int set_one_prio(struct task_struct *p, int niceval, int error)
 	}
 	if (error == -ESRCH)
 		error = 0;
+
+	/**
+	 * 设置新的 nice 值
+	 */
 	set_user_nice(p, niceval);
 out:
 	return error;

@@ -189,6 +189,9 @@ struct completion;
 struct pt_regs;
 struct user;
 
+/**
+ * 自愿抢占，代码中增加抢占点，在中断退出后遇到抢占点时进行抢占切换；
+ */
 #ifdef CONFIG_PREEMPT_VOLUNTARY
 extern int _cond_resched(void);
 # define might_resched() _cond_resched()

@@ -911,6 +911,9 @@ static void do_signal(struct pt_regs *regs)
 	restore_saved_sigmask();
 }
 
+/**
+ * 在 arm64 中在 ret_to_user 中被调用
+ */
 asmlinkage void do_notify_resume(struct pt_regs *regs,
 				 unsigned long thread_flags)
 {
@@ -918,10 +921,16 @@ asmlinkage void do_notify_resume(struct pt_regs *regs,
 		/* Check valid user FS if needed */
 		addr_limit_user_check();
 
+		/**
+		 * 设置了 TIF_NEED_RESCHED 标志，表明需要发生抢占调度，自己可以被其他人抢占；
+		 */
 		if (thread_flags & _TIF_NEED_RESCHED) {
 			/* Unmask Debug and SError for the next task */
 			local_daif_restore(DAIF_PROCCTX_NOIRQ);
 
+			/**
+			 * 自己让出 CPU
+			 */
 			schedule();
 		} else {
 			local_daif_restore(DAIF_PROCCTX);

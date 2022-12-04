@@ -379,7 +379,7 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 }
 
 /**
- *  
+ *
  */
 asmlinkage void ret_from_fork(void) asm("ret_from_fork");
 
@@ -434,8 +434,8 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		 */
 		if (clone_flags & CLONE_SETTLS)
 			p->thread.uw.tp_value = tls;
-        
-	} 
+
+	}
     /**
      *  如果是内核线程
      */
@@ -444,7 +444,7 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		childregs->pstate = PSR_MODE_EL1h;
 
         /**
-         *  
+         *
          */
 		if (IS_ENABLED(CONFIG_ARM64_UAO) && cpus_have_const_cap(ARM64_HAS_UAO))
 			childregs->pstate |= PSR_UAO_BIT;
@@ -455,15 +455,15 @@ int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 			childregs->pmr_save = GIC_PRIO_IRQON;
 
         /**
-         *  stack_start 线程回调函数 
+         *  stack_start 线程回调函数
          *  stk_sz      回调函数的参数
          */
 		p->thread.cpu_context.x19 = stack_start;
 		p->thread.cpu_context.x20 = stk_sz;
 	}
-    
+
     /**
-     *  
+     *
      */
 	p->thread.cpu_context.pc = (unsigned long)ret_from_fork;
 
@@ -755,6 +755,9 @@ asmlinkage void __sched arm64_preempt_schedule_irq(void)
 	 * enabled.
 	 */
 	if (system_capabilities_finalized())
+		/**
+		 * 当中断退出后，如果遇到了更高优先级的任务，立即进行任务抢占；
+		 */
 		preempt_schedule_irq();
 }
 

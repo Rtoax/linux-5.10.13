@@ -13,6 +13,9 @@ static int xfer_to_guest_mode_work(struct kvm_vcpu *vcpu, unsigned long ti_work)
 			return -EINTR;
 		}
 
+		/**
+		 * 设置了 TIF_NEED_RESCHED 标志，表明需要发生抢占调度，自己可以被其他人抢占；
+		 */
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
 

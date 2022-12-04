@@ -60,7 +60,7 @@
 #define BAD_FIQ		2
 #define BAD_ERROR	3
     /**
-     *  
+     *
      */
 	.macro kernel_ventry, el, label, regsize = 64
 	.align 7
@@ -90,7 +90,7 @@ alternative_else_nop_endif
 	sub	x0, sp, x0			// x0'' = sp' - x0' = (sp + x0) - sp = x0
 	sub	sp, sp, x0			// sp'' = sp' - x0 = (sp + x0) - x0 = sp
 	/**
-     *  
+     *
      */
 	b	el\()\el\()_\label
 
@@ -534,7 +534,7 @@ SYM_CODE_START(vectors)
 	kernel_ventry	1, sync				// Synchronous EL1h
 	/**
      *  当 IRQ 发生在内核态，CPU 会根据异常向量表跳转到对应表项中，
-     *  它对应的表项为 kernel_ventry 1, irq 
+     *  它对应的表项为 kernel_ventry 1, irq
      *  然后跳转到 el1_irq 标签处
      */
 	kernel_ventry	1, irq				// IRQ EL1h
@@ -552,10 +552,10 @@ SYM_CODE_START(vectors)
 	kernel_ventry	0, fiq_invalid_compat, 32	// FIQ 32-bit EL0
 	kernel_ventry	0, error_compat, 32		// Error 32-bit EL0
 #else
-//	kernel_ventry	0, sync_invalid, 32		// Synchronous 32-bit EL0
-//	kernel_ventry	0, irq_invalid, 32		// IRQ 32-bit EL0
-//	kernel_ventry	0, fiq_invalid, 32		// FIQ 32-bit EL0
-//	kernel_ventry	0, error_invalid, 32		// Error 32-bit EL0
+	kernel_ventry	0, sync_invalid, 32		// Synchronous 32-bit EL0
+	kernel_ventry	0, irq_invalid, 32		// IRQ 32-bit EL0
+	kernel_ventry	0, fiq_invalid, 32		// FIQ 32-bit EL0
+	kernel_ventry	0, error_invalid, 32		// Error 32-bit EL0
 #endif
 SYM_CODE_END(vectors)
 
@@ -668,7 +668,7 @@ SYM_CODE_END(el1_sync)
 
 /**
  *  当 IRQ 发生在内核态，CPU 会根据异常向量表跳转到对应表项中，
- *  它对应的表项为 kernel_ventry 1, irq 
+ *  它对应的表项为 kernel_ventry 1, irq
  *  然后跳转到 el1_irq 标签处
  *
  *  当前处于内核态时，发生硬件中断。
@@ -761,6 +761,13 @@ SYM_CODE_END(el0_error_compat)
 
 /**
  *  中断处理 el0_irq
+ *
+ * ARMv8有4个Exception Level，其中:
+ *
+ *	用户程序运行在EL0，
+ *	OS运行在EL1，
+ *	Hypervisor运行在EL2，
+ *	Secure monitor运行在EL3；
  */
 	.align	6
 SYM_CODE_START_LOCAL_NOALIGN(el0_irq)
@@ -829,7 +836,7 @@ finish_ret_to_user:
  */
 work_pending:
 	mov	x0, sp				// 'regs'
-	mov	x1, x19
+	mov	x1, x19				// thread_flags
 	bl	do_notify_resume
 	ldr	x19, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
 	b	finish_ret_to_user
@@ -1007,7 +1014,7 @@ SYM_CODE_START(ret_from_fork)
      */
 	mov	x0, x20
 	blr	x19
-	
+
 1:	get_current_task tsk
 
     /**

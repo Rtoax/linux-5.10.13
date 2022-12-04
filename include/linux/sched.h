@@ -2479,6 +2479,7 @@ static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
  * 设置 需要调度标志位
  *
  * TIF_NEED_RESCHED 调度前需要设置的调度标记
+ * 设置了 TIF_NEED_RESCHED 标志，表明需要发生抢占调度；
  *
  * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
  * 程序终止时调度程序被调用。

@@ -66,6 +66,11 @@ void arch_release_task_struct(struct task_struct *tsk);
 #endif
 
 #define TIF_SIGPENDING		0	/* signal pending */
+/**
+ * 可以触发抢占的情况很多，比如进程的时间片耗尽、进程等待在某些资源上被唤醒时、进程优先级改变等。
+ * Linux内核是通过设置TIF_NEED_RESCHED标志来对进程进行标记的，设置该位则表明需要进行调度切换，
+ * 而实际的切换将在抢占执行点来完成。
+ */
 #define TIF_NEED_RESCHED	1	/* rescheduling necessary */
 #define TIF_NOTIFY_RESUME	2	/* callback before returning to user */
 #define TIF_FOREIGN_FPSTATE	3	/* CPU's FP state is not current's */

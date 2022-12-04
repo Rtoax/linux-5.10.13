@@ -3468,6 +3468,9 @@
 #define CONFIG_PREEMPT_RCU
 #define CONFIG_PREEMPT_RT
 #define CONFIG_PREEMPT_TRACER
+/**
+ * 自愿抢占，代码中增加抢占点，在中断退出后遇到抢占点时进行抢占切换；
+ */
 #define CONFIG_PREEMPT_VOLUNTARY 1  /* 自愿抢占 */
 #define CONFIG_PREVENT_FIRMWARE_BUILD 1
 #define CONFIG_PRINTER_MODULE 1

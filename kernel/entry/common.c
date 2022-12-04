@@ -148,6 +148,9 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 
 		local_irq_enable_exit_to_user(ti_work);
 
+		/**
+		 * 设置了 TIF_NEED_RESCHED 标志，表明需要发生抢占调度，自己可以被其他人抢占；
+		 */
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
 
@@ -363,6 +366,9 @@ void irqentry_exit_cond_resched(void)
 		 * 当前进程设置了 TIF_NEED_RESCHED 标志位
 		 */
 		if (need_resched())
+			/**
+			 * 当中断退出后，如果遇到了更高优先级的任务，立即进行任务抢占；
+			 */
 			preempt_schedule_irq();
 	}
 }

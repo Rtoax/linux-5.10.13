@@ -450,7 +450,7 @@ static bool is_write_abort(unsigned int esr)
 
 /**
  *  处理与页表访问或者权限相关的异常错误
- *  
+ *
  *  addr 异常发生的地址
  *  esr 异常放生时候的异常状态
  *  regs 异常发生时的 pt_regs
@@ -745,6 +745,16 @@ void do_mem_abort(unsigned long addr, unsigned int esr, struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(do_mem_abort);
 
+/**
+ *  中断处理 el0_irq
+ *
+ * ARMv8有4个Exception Level，其中:
+ *
+ *	用户程序运行在EL0，
+ *	OS运行在EL1，
+ *	Hypervisor运行在EL2，
+ *	Secure monitor运行在EL3；
+ */
 void do_el0_irq_bp_hardening(void)
 {
 	/* PC has already been checked in entry.S */

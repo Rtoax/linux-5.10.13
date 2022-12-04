@@ -5875,6 +5875,8 @@ EXPORT_SYMBOL_GPL(preempt_schedule_notrace);
  * protect us against recursive calling from irq.
  *
  * 用于可抢占 内核 的调度，从中断结束返回时调用该函数
+ * 当中断退出后，如果遇到了更高优先级的任务，立即进行任务抢占；
+ * 此函数被调用时，是关中断的，在中断上下文中调用
  */
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {
@@ -5886,13 +5888,23 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 	prev_state = exception_enter();
 
 	do {
+		/**
+		 * 禁止抢占
+		 */
 		preempt_disable();
+		/**
+		 * 开中断
+		 */
 		local_irq_enable();
+		/**
+		 * 自己让出 CPU
+		 */
 		__schedule(true);
 		local_irq_disable();
 		sched_preempt_enable_no_resched();
 	/**
 	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 * 那么，需要抢占当前进程。
 	 */
 	} while (need_resched());
 
@@ -6069,16 +6081,17 @@ static inline int rt_effective_prio(struct task_struct *p, int prio)
 
 
 /**
- *  设置 nice 值
+ * nice(2) - 设置 nice 值
  */
-void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
+void set_user_nice(struct task_struct *p, long nice)
 {
 	bool queued, running;
 	int old_prio;
 	struct rq_flags rf;
 	struct rq *rq;
 
-	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE) /* 合理值 */
+	/* 合理值 */
+	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE)
 		return;
 	/*
 	 * We have to be careful, if called from sys_setpriority(),
@@ -6092,8 +6105,10 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	 * allow the 'normal' nice value to be set - but as expected
 	 * it wont have any effect on scheduling until the task is
 	 * SCHED_DEADLINE, SCHED_FIFO or SCHED_RR:
+	 *
+	 * 实时 或者 最后期限 调度
 	 */
-	if (task_has_dl_policy(p) || task_has_rt_policy(p)) {   /* 实时 或者 最后期限 调度 */
+	if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
 		p->static_prio = NICE_TO_PRIO(nice);    /* nice + 120 */
 		goto out_unlock;
 	}
@@ -6102,7 +6117,7 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	queued = task_on_rq_queued(p);  /* 在队列里 */
 	running = task_current(rq, p);  /* 正在运行 */
 	if (queued)
-		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);    /* 溢出队列 */
+		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);
 	if (running)
 		put_prev_task(rq, p);
 
@@ -6114,22 +6129,25 @@ void set_user_nice(struct task_struct *p, long nice)    /* 设置nice 值 */
 	old_prio = p->prio;
 	p->prio = effective_prio(p);
 
-	if (queued) /* 再次入队 */
+	/* 再次入队 */
+	if (queued)
 		enqueue_task(rq, p, ENQUEUE_RESTORE | ENQUEUE_NOCLOCK);
-	if (running)    /* 下次要被执行 */
+	/* 下次要被执行 */
+	if (running)
 		set_next_task(rq, p);
 
-	/*
+	/**
 	 * If the task increased its priority or is running and
 	 * lowered its priority, then reschedule its CPU:
+	 *
+	 * fair_sched_class.prio_changed  =  prio_changed_fair
+	 * rt_sched_class.prio_changed    =  prio_changed_rt
+	 * dl_sched_class.prio_changed    =  prio_changed_dl
+	 * idle_sched_class.prio_changed  =  prio_changed_idle
+	 *
+	 * 修改调度类的优先级:
 	 */
-	/*
-		fair_sched_class.prio_changed  =  prio_changed_fair
-		rt_sched_class.prio_changed    =  prio_changed_rt
-		dl_sched_class.prio_changed    =  prio_changed_dl
-		idle_sched_class.prio_changed  =  prio_changed_idle
-	*/
-	p->sched_class->prio_changed(rq, p, old_prio);  /* 修改调度类的优先级 */
+	p->sched_class->prio_changed(rq, p, old_prio);
 
 out_unlock:
 	task_rq_unlock(rq, p, &rf);
