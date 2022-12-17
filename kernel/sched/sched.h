@@ -444,6 +444,33 @@ struct cfs_bandwidth {
  *  接口
  *  --------------------------
  *  sched_create_group: 创建和组织一个组调度
+ *
+ * 1. 内核维护了一个全局链表 task_groups, 创建的task_group会添加到这个链表中；
+ * 2. 内核定义了root_task_group全局结构，充当task_group的根节点，以它为根构建树状结构；
+ * 3. struct task_group的子节点，会加入到父节点的siblings链表中；
+ * 4. 每个struct task_group会分配运行队列数组和调度实体数组（以CFS为例，RT调度类似），
+ *    其中数组的个数为系统CPU的个数，也就是为每个CPU都分配了运行队列和调度实体；
+ *
+ *
+ *        Root (/sys/fs/cgroup/cpu/)
+ *        /|\
+ *       / | \
+ *      /  |  \
+ *     /   |   \
+ *    /    |    \
+ *  Task1 Task2 GroupA (/sys/fs/cgroup/cpu/A)
+ *                /|\
+ *               / | \
+ *              /  |  \
+ *             /   |   \
+ *            /    |    \
+ *         Task3  Task4 GroupB (/sys/fs/cgroup/cpu/A/B)
+ *                        /|
+ *                       / |
+ *                      /  |
+ *                     /   |
+ *                    /    |
+ *                  Task5 Task6
  */
 struct task_group {/* cgroup sched *//* cgroup调度 */
 
@@ -456,7 +483,12 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	 * 为每个CPU都分配一个CFS调度实体和CFS运行队列
 	 */
 #ifdef CONFIG_FAIR_GROUP_SCHED/* 公平组调度 */
-	/* schedulable entities of this group on each CPU */
+	/**
+	 * schedulable entities of this group on each CPU
+	 *
+	 * 每个struct task_group会分配运行队列数组和调度实体数组（以CFS为例，RT调度类似），
+	 * 其中数组的个数为系统CPU的个数，也就是为每个CPU都分配了运行队列和调度实体；
+	 */
 	struct sched_entity	**se;
 	/* runqueue "owned" by this group on each CPU */
 	struct cfs_rq		**cfs_rq;
@@ -493,6 +525,9 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	struct list_head	list;
 
 	struct task_group	*parent;
+	/**
+	 * struct task_group的子节点，会加入到父节点的siblings链表中；
+	 */
 	struct list_head	siblings;
 	struct list_head	children;
 

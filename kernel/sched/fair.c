@@ -7802,6 +7802,12 @@ again:
 	     *  选择红黑树中最左边的 se
 	     */
 		se = pick_next_entity(cfs_rq, curr);
+
+		/**
+		 * 调度器在调度的时候，比如调用 pick_next_task_fair 时，会从遍历队列，
+		 * 选择 sched_entity ，如果发现 sched_entity 对应的是 task_group ，
+		 * 则会继续往下选择；
+		 */
 		cfs_rq = group_cfs_rq(se);
 	} while (cfs_rq);
 

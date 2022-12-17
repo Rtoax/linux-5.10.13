@@ -8433,6 +8433,29 @@ int in_sched_functions(unsigned long addr)
  * Every task in system belongs to this group at bootup.
  *
  * 组调度的根
+ *
+ * 内核维护了一个全局链表 task_groups, 创建的task_group会添加到这个链表中；
+ * 内核定义了root_task_group全局结构，充当task_group的根节点，以它为根构建树状结构；
+ *
+ *        Root (/sys/fs/cgroup/cpu/)
+ *        /|\
+ *       / | \
+ *      /  |  \
+ *     /   |   \
+ *    /    |    \
+ *  Task1 Task2 GroupA (/sys/fs/cgroup/cpu/A)
+ *                /|\
+ *               / | \
+ *              /  |  \
+ *             /   |   \
+ *            /    |    \
+ *         Task3  Task4 GroupB (/sys/fs/cgroup/cpu/A/B)
+ *                        /|
+ *                       / |
+ *                      /  |
+ *                     /   |
+ *                    /    |
+ *                  Task5 Task6
  */
 struct task_group root_task_group;/* init_task.sched_task_group = &root_task_group; */
 LIST_HEAD(task_groups);
