@@ -9701,6 +9701,14 @@ static u64 cpu_rt_period_read_uint(struct cgroup_subsys_state *css,
 
 static struct cftype cpu_legacy_files[] = {
 #ifdef CONFIG_FAIR_GROUP_SCHED
+	/**
+	 * 进程或进程组都有权重的概念，调度器会根据权重来分配CPU的时间。
+	 *
+	 * 进程组的权重设置，可以通过/sys文件系统进行设置，比如操作/sys/fs/cgoup/cpu/A/shares；
+	 * 如: /sys/fs/cgoup/cpu/A/shares
+	 *
+	 * sched_group_set_shares() 来完成最终的设置；
+	 */
 	{
 		.name = "shares",
 		.read_u64 = cpu_shares_read_u64,
