@@ -234,6 +234,9 @@ static const __initconst struct idt_data apic_idts[] = {
  *  中断描述符表
  *  中断描述符表, 所有中断 256
  *
+ * To create an IDT, simply create a 256-entry array of descriptors.
+ * https://wiki.osdev.org/Interrupts_tutorial
+ *
  * IDT_ENTRIES = 256
  */
 static gate_desc __page_aligned_bss idt_table[IDT_ENTRIES];

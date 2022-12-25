@@ -172,16 +172,33 @@ typedef struct ldttss_desc tss_desc;    /* `Task State Segments` */
 //|                                      |                                        |
 // --------------------------------------------------------------------------------
 struct idt_bits {/* 中断 索引 */
-	u16		ist	: 3,    //* `IST` - 中断堆栈表；`Interrupt Stack Table` 是 `x86_64` 中的新机制
-	                    //代替传统的栈切换机制
+			/**
+			 * The IST in the TSS that the CPU will load into RSP;
+			 * set to zero for now.
+			 *
+			 * `IST` - 中断堆栈表；`Interrupt Stack Table` 是 `x86_64` 中的新机制
+			 * 代替传统的栈切换机制
+			 */
+	u16		ist	: 3,
 			zero	: 5,
-			type	: 5,    // `Type` 域描述了这一项的类型
-                            //* 任务描述符
-                            //* 中断描述符
-                            //* 陷阱描述符
-			dpl	: 2,    //* `DPL` - 描述符权限级别；还有个CPL(Current Privilege Level,`3`=用户空间级别)
-			            //
-			p	: 1;    //* `P` - 当前段标志；段存在标志；
+			/**
+			 * Type and attributes; see the IDT page
+			 *
+			 * `Type` 域描述了这一项的类型:
+			 * * 任务描述符
+			 * * 中断描述符
+			 * * 陷阱描述符
+			 */
+			type	: 5,
+			/**
+			 * `DPL` - 描述符权限级别；还有个CPL(Current Privilege Level,
+			 * `3`=用户空间级别)
+			 */
+			dpl	: 2,
+			/**
+			 * `P` - 当前段标志；段存在标志；
+			 */
+			p	: 1;
 } __attribute__((packed));
 
 /**
@@ -238,10 +255,23 @@ struct gate_struct {
 	 * `Selector` - 目标代码段的段选择子；
 	 */
 	u16		segment;
+	/**
+	 * The IST in the TSS that the CPU will load into RSP;
+	 * Type and attributes; see the IDT page
+	 */
 	struct idt_bits	bits;
+	/**
+	 * The higher 16 bits of the lower 32 bits of the ISR's address
+	 */
 	u16		offset_middle;
 #ifdef CONFIG_X86_64
+	/**
+	 * The higher 32 bits of the ISR's address
+	 */
 	u32		offset_high;
+	/**
+	 * Set to zero
+	 */
 	u32		reserved;
 #endif
 } __attribute__((packed));
