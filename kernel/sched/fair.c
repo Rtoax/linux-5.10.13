@@ -37,12 +37,13 @@
  *
  * 当进程数目小于(sched_nr_latency)8时，则调度周期等于6ms(sysctl_sched_latency)
  *
- *  /proc/sys/kernel/sched_latency_ns
+ * /proc/sys/kernel/sched_latency_ns
  *
- *  设置 CFS 就绪队列调度的总时间片，默认值为 6ms
- *  sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，它与运行队列的进程数有关，
- *  如果进程数超过 sysctl_nr_latency(默认值 为 8)，那么调度周期就是 sched_min_granularity_ns 乘以
- *  运行队列中的进程数，否则就是 sched_latency_ns.
+ * 设置 CFS 就绪队列调度的总时间片，默认值为 6ms
+ * sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，
+ * 它与运行队列的进程数有关，如果进程数超过 sysctl_nr_latency(默认值 为 8)，
+ * 那么调度周期就是 sched_min_granularity_ns 乘以运行队列中的进程数(这个值
+ * 系统默认为0.75ms)，否则就是 sched_latency_ns.
  */
 unsigned int sysctl_sched_latency			= 6000000ULL;   /* 6ms */
 static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
@@ -7802,6 +7803,11 @@ again:
 		goto idle;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+	/**
+	 * 当pre_task不是普通进程时，也就是调度类不是CFS，那么它就不使用 sched_entity
+	 * 的调度实体来参与调度，因此会执行 simple 分支
+	 *
+	 */
 	if (!prev || prev->sched_class != &fair_sched_class)
 		goto simple;
 
@@ -7881,13 +7887,24 @@ again:
 			}
 		}
 
+		/**
+		 * 用于切换任务前的准备工作，更新运行时的统计数据，并不进行 dequeue 的操作，
+		 * 其中需要将 CFS 队列的 curr 指针置位成 NULL；
+		 */
 		put_prev_entity(cfs_rq, pse);
+		/**
+		 * 设置下一个要运行的调度实体，设置CFS队列的curr指针
+		 */
 		set_next_entity(cfs_rq, se);
 	}
 
 	goto done;
+
 simple:
 #endif // CONFIG_FAIR_GROUP_SCHED
+	/**
+	 * 通知系统当前的任务需要被切换
+	 */
 	if (prev)
 		put_prev_task(rq, prev);
 
@@ -7909,6 +7926,9 @@ done: __maybe_unused;
 	list_move(&p->se.group_node, &rq->cfs_tasks);
 #endif // CONFIG_SMP
 
+	/**
+	 * 如果使能了 hrtimer，则将hrtimer的到期时间设置为调度实体的剩余运行时间；
+	 */
 	if (hrtick_enabled(rq))
 		hrtick_start_fair(rq, p);
 
@@ -11740,6 +11760,9 @@ static void rq_offline_fair(struct rq *rq)
  * parameters.
  *
  * 公平调度器如何处理时钟中断的
+ *
+ * 1. 系统中每个调度tick
+ * 2. hrtimer
  *
  * scheduler_tick()
  * 	curr->sched_class->task_tick() = task_tick_fair()

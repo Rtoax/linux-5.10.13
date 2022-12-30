@@ -748,7 +748,7 @@ struct sched_entity {
 	u64				prev_sum_exec_runtime;
 
 	/**
-	 *  该调度实体发生迁移的次数
+	 *  该调度实体发生迁移的次数，用于 负载均衡
 	 */
 	u64				nr_migrations;
 
@@ -761,11 +761,23 @@ struct sched_entity {
 	 *
 	 */
 #ifdef CONFIG_FAIR_GROUP_SCHED
+	/**
+	 * 任务组的深度，其中根任务组的深度为0，逐级往下增加
+	 */
 	int				depth;
+	/**
+	 * 指向调度实体的父对象
+	 */
 	struct sched_entity		*parent;
-	/* rq on which this entity is (to be) queued: */
+	/**
+	 * rq on which this entity is (to be) queued:
+	 * 指向调度实体归属的CFS队列，也就是需要入列的CFS队列
+	 */
 	struct cfs_rq			*cfs_rq;
-	/* rq "owned" by this entity/group: */
+	/**
+	 * rq "owned" by this entity/group:
+	 * 指向归属于当前调度实体的CFS队列，用于包含子任务或子的任务组
+	 */
 	struct cfs_rq			*my_q;
 	/**
 	 *  cached value of my_q->h_nr_running
@@ -777,7 +789,7 @@ struct sched_entity {
 
 #ifdef CONFIG_SMP
 	/**
-	 *  与负载相关的信息
+	 * 与负载相关的信息，用于调度实体的负载计算（`PELT`）
 	 *
 	 * Per entity load average tracking.
 	 * 每个实体的平均负载跟踪
