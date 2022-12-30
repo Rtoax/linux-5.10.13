@@ -5309,6 +5309,11 @@ static bool throttle_cfs_rq(struct cfs_rq *cfs_rq)
 }
 
 /**
+ *  会将 throttled_list 中的对应cfs_rq删除，并且从下往上遍历任务组，针对每个任务组
+ *  调用 tg_unthrottle_up 处理，最后也会根据 cfs_rq 对应的sched_entity从下往上遍历
+ *  处理，如果 sched_entity 不在运行队列上，那就重新 enqueue_entity 以便参与调度运行，
+ *  这个也就完成了解除限制的操作；
+ *
  *  unthrottle: 放开
  */
 void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
@@ -5410,6 +5415,27 @@ unthrottle_throttle:
 		resched_curr(rq);
 }
 
+/**
+ * 用于分发 tg->cfs_b 的全局运行时间 runtime，用于在该 task_group 中平衡
+ * 各个CPU上的 cfs_rq 的运行时间 runtime，示意图：
+ *
+ *  #####: CFS running
+ *  xxxxx: throttle
+ *
+ *             |
+ * tg->cfs_b:  |===============================================|
+ *             |<------- quota ------->|                       |
+ * CPU0:cfs_rq:|#####|#####|#####|xxxxx|#####|xxxxx|xxxxx|xxxxx|
+ *             |                       |                       |
+ * CPU1:cfs_rq:|#####|#####|xxxxx|xxxxx|#####|#####|xxxxx|xxxxx|
+ *             |                       |                       |
+ * ----------------------------------------------------------------> CPU time
+ *             |<------- period ------>|                       |
+ *
+ * * 系统中两个CPU，因此 task_group 针对每个cpu都维护了一个 cfs_rq，这些 cfs_rq
+ *   来共享该 task_group 的限额运行时间；
+ * * CPU0上的运行时间，超额了，那么在下一个周期的定时器点上会进行弥补处理；
+ */
 static void distribute_cfs_runtime(struct cfs_bandwidth *cfs_b)
 {
 	struct cfs_rq *cfs_rq;
@@ -5543,6 +5569,9 @@ static int runtime_refresh_within(struct cfs_bandwidth *cfs_b, u64 min_expire)
 	return 0;
 }
 
+/**
+ * 启动定时器运行
+ */
 static void start_cfs_slack_bandwidth(struct cfs_bandwidth *cfs_b)
 {
 	u64 min_left = cfs_bandwidth_slack_period + min_bandwidth_expiration;
@@ -5754,6 +5783,9 @@ static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
 }
 
+/**
+ * 初始化 cfs_bandwidth 结构体
+ */
 void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b)
 {
 	raw_spin_lock_init(&cfs_b->lock);
@@ -5762,10 +5794,21 @@ void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b)
 	cfs_b->period = ns_to_ktime(default_cfs_period());
 
 	INIT_LIST_HEAD(&cfs_b->throttled_cfs_rq);
+
+	/**
+	 * 高精度周期性定时器，用于在时间到期时重新填充关联的任务组的限额，并在适当
+	 * 的时候 unthrottle cfs 运行队列
+	 */
 	hrtimer_init(&cfs_b->period_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED);
 	cfs_b->period_timer.function = sched_cfs_period_timer;
+
+	/**
+	 * slack_timer 定时器，slack_period 周期默认为 5ms，在该定时器函数中
+	 * 也会调用 distribute_cfs_runtime() 从全局运行时间中分配 runtime；
+	 */
 	hrtimer_init(&cfs_b->slack_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	cfs_b->slack_timer.function = sched_cfs_slack_timer;
+
 	cfs_b->slack_started = false;
 }
 
@@ -5775,6 +5818,9 @@ static void init_cfs_rq_runtime(struct cfs_rq *cfs_rq)
 	INIT_LIST_HEAD(&cfs_rq->throttled_list);
 }
 
+/**
+ * 启动定时器运行
+ */
 void start_cfs_bandwidth(struct cfs_bandwidth *cfs_b)
 {
 	lockdep_assert_held(&cfs_b->lock);
@@ -12184,6 +12230,9 @@ void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
 
 static DEFINE_MUTEX(shares_mutex);
 
+/**
+ * 写节点操作可以通过 echo XXX > /sys/fs/cgroup/cpu/A/B/cpu.shares
+ */
 int sched_group_set_shares(struct task_group *tg, unsigned long shares)
 {
 	int i;

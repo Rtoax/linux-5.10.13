@@ -399,22 +399,65 @@ struct rt_rq;
 
 extern struct list_head task_groups;
 
+/**
+ * 参见 cfs_quota_us 和 cfs_period_us
+ *
+ * 在 period 期间内，用户组的CPU限额为 quota 值，当超过这个值的时候，用户组将
+ * 会被限制运行（throttle），等到下一个周期开始被解除限制（unthrottle）；
+ *
+ *   |<-quota->|      |
+ *   |#########|XXXXXX|#########|XXXXXX|#########|XXXXXX|
+ *   |                |                |                |
+ * -------------------------------------------------------------> CPU time
+ *   |<----period---->|                |                |
+ *
+ * 在每个周期内限制在 quota 的配额下，超过了就 throttle，下一个周期重新开始；
+ */
 struct cfs_bandwidth {
 #ifdef CONFIG_CFS_BANDWIDTH
 	raw_spinlock_t		lock;
+	/**
+	 * 周期值；
+	 */
 	ktime_t			period;
+	/**
+	 * 限额值；
+	 */
 	u64			quota;
+	/**
+	 * 记录限额剩余时间，会使用quota值来周期性赋值；
+	 */
 	u64			runtime;
+	/**
+	 * 层级管理任务组的限额比率；
+	 */
 	s64			hierarchical_quota;
 
+	/**
+	 * 空闲状态，不需要运行时分配；
+	 */
 	u8			idle;
+	/**
+	 * 周期性计时已经启动；
+	 */
 	u8			period_active;
 	u8			slack_started;
+	/**
+	 * 高精度周期性定时器，用于重新填充运行时间消耗；
+	 * 用于周期性的填充限额并进行时间分发处理;
+	 */
 	struct hrtimer		period_timer;
+	/**
+	 * 延迟定时器，在任务出列时，将剩余的运行时间返回到全局池里；
+	 * 用于将未用完的时间再返回到时间池中;
+	 */
 	struct hrtimer		slack_timer;
+	/**
+	 * 限流运行队列列表；
+	 */
 	struct list_head	throttled_cfs_rq;
 
-	/* Statistics: */
+	/* Statistics: 统计值 */
 	int			nr_periods;
 	int			nr_throttled;
 	u64			throttled_time;
@@ -623,14 +666,14 @@ extern int sched_group_set_shares(struct task_group *tg, unsigned long shares);
 extern void set_task_rq_fair(struct sched_entity *se,
 			     struct cfs_rq *prev, struct cfs_rq *next);
 #else /* !CONFIG_SMP */
-//static inline void set_task_rq_fair(struct sched_entity *se,
-//			     struct cfs_rq *prev, struct cfs_rq *next) { }
+static inline void set_task_rq_fair(struct sched_entity *se,
+			     struct cfs_rq *prev, struct cfs_rq *next) { }
 #endif /* CONFIG_SMP */
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 #else /* CONFIG_CGROUP_SCHED */
 
-//struct cfs_bandwidth { };
+struct cfs_bandwidth { };
 
 #endif	/* CONFIG_CGROUP_SCHED */
 
@@ -749,9 +792,12 @@ struct cfs_rq {
 	struct task_group	*tg;	/* group that "owns" this runqueue */
 
 #ifdef CONFIG_CFS_BANDWIDTH
+	/**
+	 * 周期计时器使能；
+	 */
 	int			runtime_enabled;
 	/**
-	 *  剩余
+	 * 剩余的运行时间；
 	 */
 	s64			runtime_remaining;
 

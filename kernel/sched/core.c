@@ -9409,6 +9409,10 @@ static const u64 max_cfs_runtime = MAX_BW * NSEC_PER_USEC;
 
 static int __cfs_schedulable(struct task_group *tg, u64 period, u64 runtime);
 
+/**
+ * /sys/fs/cgroup/cpu/cfs_quota_us
+ * /sys/fs/cgroup/cpu/cfs_period_us
+ */
 static int tg_set_cfs_bandwidth(struct task_group *tg, u64 period, u64 quota)
 {
 	int i, ret = 0, runtime_enabled, runtime_was_enabled;
@@ -9707,6 +9711,8 @@ static struct cftype cpu_legacy_files[] = {
 	 * 进程组的权重设置，可以通过/sys文件系统进行设置，比如操作/sys/fs/cgoup/cpu/A/shares；
 	 * 如: /sys/fs/cgoup/cpu/A/shares
 	 *
+	 * 写节点操作可以通过 echo XXX > /sys/fs/cgroup/cpu/A/B/cpu.shares
+	 *
 	 * sched_group_set_shares() 来完成最终的设置；
 	 */
 	{
@@ -9716,11 +9722,31 @@ static struct cftype cpu_legacy_files[] = {
 	},
 #endif
 #ifdef CONFIG_CFS_BANDWIDTH
+	/**
+	 * 在 period 期间内，用户组的CPU限额为 quota 值，当超过这个值的时候，用户组将
+	 * 会被限制运行（throttle），等到下一个周期开始被解除限制（unthrottle）；
+	 *
+	 *   |<-quota->|      |
+	 *   |#########|XXXXXX|#########|XXXXXX|#########|XXXXXX|
+	 *   |                |                |                |
+	 * -------------------------------------------------------------> CPU time
+	 *   |<----period---->|                |                |
+	 *
+	 * 在每个周期内限制在 quota 的配额下，超过了就 throttle，下一个周期重新开始；
+	 */
+	/**
+	 * quota 表示限额
+	 *
+	 * 操作 /sys/fs/cgoup/cpu/A/cpu.cfs_quota_us, 最终将调用 tg_set_cfs_bandwidth()
+	 */
 	{
 		.name = "cfs_quota_us",
 		.read_s64 = cpu_cfs_quota_read_s64,
 		.write_s64 = cpu_cfs_quota_write_s64,
 	},
+	/**
+	 * period 表示周期
+	 */
 	{
 		.name = "cfs_period_us",
 		.read_u64 = cpu_cfs_period_read_u64,
