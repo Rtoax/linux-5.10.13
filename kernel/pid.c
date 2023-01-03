@@ -403,6 +403,9 @@ struct pid *find_vpid(int nr)
 }
 EXPORT_SYMBOL_GPL(find_vpid);
 
+/**
+ *
+ */
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
 	return (type == PIDTYPE_PID) ?
@@ -480,6 +483,9 @@ void transfer_pid(struct task_struct *old, struct task_struct *new,
 	hlist_replace_rcu(&old->pid_links[type], &new->pid_links[type]);
 }
 
+/**
+ *
+ */
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;
@@ -525,10 +531,16 @@ struct task_struct *find_get_task_by_vpid(pid_t nr)
 	return task;
 }
 
+/**
+ * 获取 pid 结构
+ */
 struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 {
 	struct pid *pid;
 	rcu_read_lock();
+	/**
+	 *
+	 */
 	pid = get_pid(rcu_dereference(*task_pid_ptr(task, type)));
 	rcu_read_unlock();
 	return pid;

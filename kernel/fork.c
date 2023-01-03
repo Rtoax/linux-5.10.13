@@ -1994,6 +1994,9 @@ static inline void init_task_pid_links(struct task_struct *task)
 	}
 }
 
+/**
+ * 初始化 task_struct 的 pid
+ */
 static inline void
 init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 {
@@ -2291,16 +2294,19 @@ struct task_struct *copy_process(struct pid *pid,
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
-	if (signal_pending(current))    /* 检测当前进程是否由挂起的信号，如果有，返回 */
+	/**
+	 * 检测当前进程是否由挂起的信号，如果有，返回
+	 */
+	if (signal_pending(current))
 		goto fork_out;
 
 	retval = -ENOMEM;
 
 	/**
-	 *  拷贝 PCB
+	 *  拷贝分配一个 PCB
 	 *  为新进程分配一个进程描述符 和 内核栈
 	 */
-	p = dup_task_struct(current, node); /* 拷贝一个 task_struct 结构 */
+	p = dup_task_struct(current, node);
 	if (!p)
 		goto fork_out;
 
@@ -2326,20 +2332,26 @@ struct task_struct *copy_process(struct pid *pid,
 	 */
 	rt_mutex_init_task(p);
 
-	lockdep_assert_irqs_enabled();  /* 死锁检测 */
+	/* 死锁检测 */
+	lockdep_assert_irqs_enabled();
 
 #ifdef CONFIG_PROVE_LOCKING
-//	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
+	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
 #endif
 
 	retval = -EAGAIN;
+	/**
+	 * 用户进程数超限
+	 */
 	if (atomic_read(&p->real_cred->user->processes) >=
-			task_rlimit(p, RLIMIT_NPROC)) { /* 用户进程数超限 */
+			task_rlimit(p, RLIMIT_NPROC)) {
 		if (p->real_cred->user != INIT_USER /* 不是 init 进程 */&&
 		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
 			goto bad_fork_free;
 	}
-	current->flags &= ~PF_NPROC_EXCEEDED;   /* 清理超出位 */
+
+	/* 清理超出位 */
+	current->flags &= ~PF_NPROC_EXCEEDED;
 
 	/**
 	 *  复制父进程证书
@@ -2366,7 +2378,10 @@ struct task_struct *copy_process(struct pid *pid,
 	 *  清理超级用户，工作队列worker，空闲线程标志位
 	 */
 	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);
-	p->flags |= PF_FORKNOEXEC;  /* 暂时还不能运行， fork but didn't exec */
+	/**
+	 * 暂时还不能运行， fork but didn't exec
+	 */
+	p->flags |= PF_FORKNOEXEC;
 
 	/**
 	 *  初始化子进程和 兄弟进程链表
@@ -2375,17 +2390,22 @@ struct task_struct *copy_process(struct pid *pid,
 	INIT_LIST_HEAD(&p->sibling);
 	rcu_copy_process(p);
 	p->vfork_done = NULL;
-	spin_lock_init(&p->alloc_lock); /* 初始化spinlock */
+
+	/* 初始化spinlock */
+	spin_lock_init(&p->alloc_lock);
 
 	/**
-	 *  链表初始化
+	 * 信号挂起链表初始化
 	 */
-	init_sigpending(&p->pending);   /* 信号挂起链表初始化 */
+	init_sigpending(&p->pending);
 
-	p->utime = p->stime = p->gtime = 0; /* 时间清零 */
+	/**
+	 * 时间清零
+	 */
+	p->utime = p->stime = p->gtime = 0;
 
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
-//	p->utimescaled = p->stimescaled = 0;
+	p->utimescaled = p->stimescaled = 0;
 #endif
 
 	/**
@@ -2421,29 +2441,30 @@ struct task_struct *copy_process(struct pid *pid,
 #endif
 
 	/**
-	 *  IO统计信息
+	 *  IO统计信息清零
 	 */
-	task_io_accounting_init(&p->ioac);  /* 清零 */
-	acct_clear_integrals(p);    /* 清零 */
+	task_io_accounting_init(&p->ioac);
+	/* 清零 */
+	acct_clear_integrals(p);
 
 	/**
 	 *  定时器初始化
 	 */
-	posix_cputimers_init(&p->posix_cputimers);  /* 定时器初始化 */
+	posix_cputimers_init(&p->posix_cputimers);
 
 	p->io_context = NULL;
-	audit_set_context(p, NULL); /* 清 NULL */
+	audit_set_context(p, NULL);
 
 	/**
-	 *  cgroup 相关
+	 *  cgroup 相关初始化
 	 */
-	cgroup_fork(p);     /* 控制组初始化 */
+	cgroup_fork(p);
 
 #ifdef CONFIG_NUMA
 	/**
 	 *  内存策略
 	 */
-	p->mempolicy = mpol_dup(p->mempolicy);  /* 内存策略 numa 相关*/
+	p->mempolicy = mpol_dup(p->mempolicy);
 	if (IS_ERR(p->mempolicy)) {
 		retval = PTR_ERR(p->mempolicy);
 		p->mempolicy = NULL;
@@ -2489,35 +2510,35 @@ struct task_struct *copy_process(struct pid *pid,
 	 *  Perform scheduler related setup. Assign this task to a CPU.
 	 *  调度 - 初始化与进程调度相关的数据结构
 	 */
-	retval = sched_fork(clone_flags, p);    /* 调度 */
+	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
 	/**
 	 *
 	 */
-	retval = perf_event_init_task(p);   /* perf_event */
+	retval = perf_event_init_task(p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
 	/**
-	 *
+	 * 鉴权结构分配
 	 */
-	retval = audit_alloc(p);            /* 鉴权结构分配 */
+	retval = audit_alloc(p);
 	if (retval)
 		goto bad_fork_cleanup_perf;
 
 	/* copy all the process information */
 
 	/**
-	 *
+	 * System V 共享内存
 	 */
-	shm_init_task(p);   /* System V 共享内存 */
+	shm_init_task(p);
 
 	/**
-	 *
+	 * lsm 安全模块
 	 */
-	retval = security_task_alloc(p, clone_flags);   /* lsm 安全模块 */
+	retval = security_task_alloc(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_audit;
 
@@ -2529,37 +2550,37 @@ struct task_struct *copy_process(struct pid *pid,
 		goto bad_fork_cleanup_security;
 
 	/**
-	 *  复制父进程打开的文件等信息
+	 *  文件：复制父进程打开的文件等信息
 	 */
-	retval = copy_files(clone_flags, p);    /* 文件 */
+	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
 
 	/**
-	 *  复制父进程的 fs_struct 数据结构信息
+	 *  文件系统： 复制父进程的 fs_struct 数据结构信息
 	 */
-	retval = copy_fs(clone_flags, p);       /* 文件系统 */
+	retval = copy_fs(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_files;
 
 	/**
 	 *  信号处理 sigaction
 	 */
-	retval = copy_sighand(clone_flags, p);  /* 信号处理 */
+	retval = copy_sighand(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_fs;
 
 	/**
 	 *  信号 - 复制父进程的信号系统
 	 */
-	retval = copy_signal(clone_flags, p);   /* 信号 */
+	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_sighand;
 
 	/**
 	 *  拷贝 MM 结构
 	 */
-	retval = copy_mm(clone_flags, p);       /* mm 数据结构 */
+	retval = copy_mm(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_signal;
 
@@ -2568,14 +2589,14 @@ struct task_struct *copy_process(struct pid *pid,
 	 *
 	 * 复制父进程的命名空间
 	 */
-	retval = copy_namespaces(clone_flags, p);   /* 命名空间 */
+	retval = copy_namespaces(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_mm;
 
 	/**
 	 *  复制与 IO相关 的内容
 	 */
-	retval = copy_io(clone_flags, p);   /* IO */
+	retval = copy_io(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
 
@@ -2595,12 +2616,13 @@ struct task_struct *copy_process(struct pid *pid,
 	stackleak_task_init(p);
 
 	/**
-	 *	不是系统第一个静态 pid
+	 * 不是系统第一个静态 pid
+	 * 分配一个 PID 结构
 	 */
 	if (pid != &init_struct_pid) {
 
 	    /**
-	     *  为进程分配 PID 结构和 pid
+	     * 为进程分配 PID 结构和 pid
 	     */
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid, args->set_tid_size);
 		if (IS_ERR(pid)) {
@@ -2643,7 +2665,7 @@ struct task_struct *copy_process(struct pid *pid,
 	/**
 	 *
 	 */
-	futex_init_task(p); /* futex */
+	futex_init_task(p);
 
 	/*
 	 * sigaltstack should be cleared when sharing the same VM
@@ -2663,7 +2685,7 @@ struct task_struct *copy_process(struct pid *pid,
 	clear_tsk_latency_tracing(p);
 
 	/**
-	 *  设置group——leader 和TGID
+	 *  设置 group leader 和 TGID
 	 */
 	/* ok, now we should be set up.. */
 	p->pid = pid_nr(pid);
@@ -3076,7 +3098,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	trace_sched_process_fork(current, p);
 
 	/**
-	 *
+	 * 获取 PID
 	 */
 	pid = get_task_pid(p, PIDTYPE_PID);
 	nr = pid_vnr(pid);
