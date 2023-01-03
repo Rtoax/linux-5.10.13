@@ -3667,8 +3667,14 @@ void synchronize_rcu(void)
 			 lock_is_held(&rcu_lock_map) ||
 			 lock_is_held(&rcu_sched_lock_map),
 			 "Illegal synchronize_rcu() in RCU read-side critical section");
+	/**
+	 *
+	 */
 	if (rcu_blocking_is_gp())
 		return;
+	/**
+	 *
+	 */
 	if (rcu_gp_is_expedited())
 		synchronize_rcu_expedited();
 	else

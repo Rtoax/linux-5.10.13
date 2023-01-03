@@ -350,7 +350,7 @@ static inline void rcu_preempt_sleep_check(void) { }
 #define rcu_check_sparse(p, space) \
 	((void)(((typeof(*p) space *)p) == p))
 #else /* #ifdef __CHECKER__ */
-//#define rcu_check_sparse(p, space)
+#define rcu_check_sparse(p, space)
 #endif /* #else #ifdef __CHECKER__ */
 
 #define __rcu_access_pointer(p, space) \
@@ -420,6 +420,17 @@ static inline void rcu_preempt_sleep_check(void) { }
  * 通常用于 写者线程。
  * 在写者线程完成新数据的修改后，调用该函数，可以让被 RCU 保护的指针 指向新
  * 创建的数据，用 RCU 的术语是发布了更新后的数据。
+ *
+ * > rcu_assign_pointer 是发布，而 rcu_dereference 是订阅
+ *
+ * 示例
+ *  p->a = 1; // 1
+ *  p->b = 2; // 2
+ *  p->c = 3; // 3
+ *  rcu_assign_pointer(gp, p);
+ *
+ *  rcu_assign_pointer 能够保证从编译器和CPU层面上gp被赋值前，p指向的字段能够赋值完成。
+ *
  */
 #define rcu_assign_pointer(p, v)					      \
 do {									      \
@@ -565,6 +576,8 @@ do {									      \
  *
  * 用于获取 被 RCU 保护的指针，读者线程要访问 RCU保护的 共享数据，
  *  需要 使用该函数 创建一个 新指针， 并且指向被 RCU 保护的指针
+ *
+ * > rcu_assign_pointer 是发布，而 rcu_dereference 是订阅
  */
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 

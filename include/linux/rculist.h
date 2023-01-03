@@ -91,9 +91,13 @@ static inline void __list_add_rcu(struct list_head *new,
 	new->next = next;
 	new->prev = prev;
 
-    /**
-     *  
-     */
+	/**
+	 * 这里是不是也可以写成?
+	 *  prev->next = new;
+	 *  rcu_assign_pointer(list_prev_rcu(next), new);
+	 *
+	 * > RCU并不能保证在插入数据时读线程一定能够读到新数据。
+	 */
 	rcu_assign_pointer(list_next_rcu(prev), new);
 	next->prev = new;
 }
