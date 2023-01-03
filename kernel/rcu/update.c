@@ -368,6 +368,13 @@ EXPORT_SYMBOL_GPL(wakeme_after_rcu);
 
 /**
  * RCU: 等待各线程的完成，然后返回
+ *
+ * 写者修改数据前首先拷贝一个被修改元素的副本，然后在副本上进行修改，修改完毕后它向垃圾回收
+ * 器注册一个回调函数以便在适当的时机执行真正的修改操作。
+ *
+ * 在读取过程中，另外一个线程删除了一个节点。删除线程可以把这个节点从链表中移除，但它不能直
+ * 接销毁这个节点，必须等到所有的读取线程读取完成以后，才进行销毁操作。RCU中把这个过程称为
+ * 宽限期（Grace period）。
  */
 void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		   struct rcu_synchronize *rs_array)
