@@ -3096,6 +3096,8 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	 * might get invalid after that point, if the thread exits quickly.
 	 *
 	 * tracepoint:sched:sched_process_fork { ... }
+	 *
+	 * see also bpftrace/tools/pidpersec.bt
 	 */
 	trace_sched_process_fork(current, p);
 
