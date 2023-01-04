@@ -46,6 +46,11 @@ static enum hrtimer_restart sched_rt_period_timer(struct hrtimer *timer)
 	return idle ? HRTIMER_NORESTART : HRTIMER_RESTART;
 }
 
+/**
+ * init_rt_bandwidth()函数在创建分配RT任务组的时候调用，完成的工作是将 rt_bandwidth
+ * 结构体的相关字段进行初始化：设置好时间周期 rt_period 和运行时间限制 rt_runtime，
+ * 都设置成默认值；
+ */
 void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
 {
 	rt_b->rt_period = ns_to_ktime(period);
@@ -58,6 +63,10 @@ void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
 	rt_b->rt_period_timer.function = sched_rt_period_timer;
 }
 
+/**
+ * 在 enqueue_rt_entity() 将RT调度实体入列时，最终触发 start_rt_bandwidth()函数执行，
+ * 当高精度定时器到期时调用 do_sched_rt_period_timer() 函数；
+ */
 static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
 {
 	if (!rt_bandwidth_enabled() || rt_b->rt_runtime == RUNTIME_INF)
@@ -683,8 +692,12 @@ bool sched_rt_bandwidth_account(struct rt_rq *rt_rq)
 }
 
 #ifdef CONFIG_SMP
-/*
+/**
  * We ran out of runtime, see if we can borrow some from our neighbours.
+ *
+ * 在多个 CPU 之间进行时间均衡处理，简单点说，就是从其他 CPU 的 rt_rq 队列中匀出一
+ * 部分时间增加到当前 CPU 的 rt_rq 队列中，也就是将当前 rt_rq 运行队列的限制运行时
+ * 间 rt_runtime 增加一部分，其他 CPU 的 rt_rq 运行队列限制运行时间减少一部分。
  */
 static void do_balance_runtime(struct rt_rq *rt_rq)
 {
@@ -722,8 +735,15 @@ static void do_balance_runtime(struct rt_rq *rt_rq)
 			diff = div_u64((u64)diff, weight);
 			if (rt_rq->rt_runtime + diff > rt_period)
 				diff = rt_period - rt_rq->rt_runtime;
+			/**
+			 * 就是从其他 CPU 的 rt_rq 队列中匀出一部分时间增加到当前 CPU 的
+			 * rt_rq 队列中，也就是将当前 rt_rq 运行队列的限制运行时间
+			 * rt_runtime 增加一部分，其他 CPU 的 rt_rq 运行队列限制运行时间
+			 * 减少一部分。
+			 */
 			iter->rt_runtime -= diff;
 			rt_rq->rt_runtime += diff;
+
 			if (rt_rq->rt_runtime == rt_period) {
 				raw_spin_unlock(&iter->rt_runtime_lock);
 				break;
@@ -849,6 +869,10 @@ static void balance_runtime(struct rt_rq *rt_rq)
 	if (!sched_feat(RT_RUNTIME_SHARE))
 		return;
 
+	/**
+	 * 判断该RT运行队列的累计运行时间 rt_time 与设置的限制运行时间 rt_runtime 之间
+	 * 的大小关系，以确定是否限流的操作。
+	 */
 	if (rt_rq->rt_time > rt_rq->rt_runtime) {
 		raw_spin_unlock(&rt_rq->rt_runtime_lock);
 		do_balance_runtime(rt_rq);
@@ -859,6 +883,10 @@ static void balance_runtime(struct rt_rq *rt_rq)
 static inline void balance_runtime(struct rt_rq *rt_rq) {}
 #endif /* CONFIG_SMP */
 
+/**
+ * do_sched_rt_period_timer() 函数，会去判断该RT运行队列的累计运行时间 rt_time
+ * 与设置的限制运行时间 rt_runtime 之间的大小关系，以确定是否限流的操作。
+ */
 static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
 {
 	int i, idle = 1, throttled = 0;
@@ -903,8 +931,16 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
 			u64 runtime;
 
 			raw_spin_lock(&rt_rq->rt_runtime_lock);
+
+			/**
+			 * 如果已经进行了限流操作，会调用 balance_runtime 来在多个CPU之间
+			 * 进行时间均衡处理.
+			 *
+			 * CONFIG_SMP 时 balance_runtime() 函数才非空
+			*/
 			if (rt_rq->rt_throttled)
 				balance_runtime(rt_rq);
+
 			runtime = rt_rq->rt_runtime;
 			rt_rq->rt_time -= min(rt_rq->rt_time, overrun*runtime);
 			if (rt_rq->rt_throttled && rt_rq->rt_time < runtime) {
@@ -1001,6 +1037,10 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
 /*
  * Update the current task's runtime statistics. Skip current tasks that
  * are not in our scheduling class.
+ *
+ * 1. 运行时的统计数据更新
+ * 2. 如果运行时间超出了分配时间，进行时间均衡处理，并且判断是否需要进行限流，进行了限
+ *    流则需要将RT队列出队，并重新进行调度；
  */
 static void update_curr_rt(struct rq *rq)
 {
@@ -1610,6 +1650,9 @@ static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
 	struct list_head *queue;
 	int idx;
 
+	/**
+	 * 直接查找优先级队列的位图中，找到优先级最高的任务
+	 */
 	idx = sched_find_first_bit(array->bitmap);
 	BUG_ON(idx >= MAX_RT_PRIO);
 
@@ -1627,12 +1670,21 @@ static struct task_struct *_pick_next_task_rt(struct rq *rq)
 	do {
 		rt_se = pick_next_rt_entity(rq, rt_rq);
 		BUG_ON(!rt_se);
+		/**
+		 * 如果实时调度实体是task_group，则还需要继续往下进行遍历查找；
+		 */
 		rt_rq = group_rt_rq(rt_se);
+	/**
+	 * 果实时调度实体是task，则退出循环
+	 */
 	} while (rt_rq);
 
 	return rt_task_of(rt_se);
 }
 
+/**
+ * 调度器用于选择下一个执行任务
+ */
 static struct task_struct *pick_next_task_rt(struct rq *rq)
 {
 	struct task_struct *p;
@@ -2125,6 +2177,9 @@ void rto_push_irq_work_func(struct irq_work *work)
 }
 #endif /* HAVE_RT_PUSH_IPI */
 
+/**
+ *
+ */
 static void pull_rt_task(struct rq *this_rq)
 {
 	int this_cpu = this_rq->cpu, cpu;
@@ -2170,6 +2225,11 @@ static void pull_rt_task(struct rq *this_rq)
 		if (src_rq->rt.highest_prio.next >=
 		    this_rq->rt.highest_prio.curr)
 			continue;
+
+		/**
+		 * 当前CPU上的优先级任务不高，从另一个 CPU 的 pushable_tasks 链表中找
+		 * 优先级更高的任务来执行；
+		 */
 
 		/*
 		 * We can potentially drop this_rq's lock in
@@ -2586,6 +2646,11 @@ static int __rt_schedulable(struct task_group *tg, u64 period, u64 runtime)
 	return ret;
 }
 
+/**
+ * 带宽控制
+ *
+ * RT调度器在带宽控制中，调度时间周期设置的为1s，运行时间设置为0.95s
+ */
 static int tg_set_rt_bandwidth(struct task_group *tg,
 		u64 rt_period, u64 rt_runtime)
 {
@@ -2614,9 +2679,16 @@ static int tg_set_rt_bandwidth(struct task_group *tg,
 		goto unlock;
 
 	raw_spin_lock_irq(&tg->rt_bandwidth.rt_runtime_lock);
+
+	/**
+	 *
+	 */
 	tg->rt_bandwidth.rt_period = ns_to_ktime(rt_period);
 	tg->rt_bandwidth.rt_runtime = rt_runtime;
 
+	/**
+	 * 遍历每个 CPU 的 rt_rq 队列，设置 runtime 时间
+	 */
 	for_each_possible_cpu(i) {
 		struct rt_rq *rt_rq = tg->rt_rq[i];
 

@@ -30,7 +30,6 @@
 #define DEFAULT_PRIO /* 120 */		(MAX_RT_PRIO/* 100 */ + NICE_WIDTH/* 40 */ / 2)
 
 /**
- *
  *                  SCHED_FIFO                        SCHED_NORMAL
  *                  SCHED_RR                          SCHED_BATCH
  *                                                    SCHED_IDLE
@@ -38,8 +37,6 @@
  *  |                  0 - 99                   |       100 - 139     |
  *  |                                           |  nice(-20 ~ 19)     |
  *  +-------------------------------------------+---------------------+
- *
- *
  */
 
 /*

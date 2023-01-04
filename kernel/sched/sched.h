@@ -296,8 +296,17 @@ struct rt_prio_array {
 struct rt_bandwidth {
 	/* nests inside the rq lock: */
 	raw_spinlock_t		rt_runtime_lock;
+	/**
+	 * 时间周期
+	 */
 	ktime_t			rt_period;
+	/**
+	 * 一个时间周期内的运行时间，超过则限流，默认值为0.95ms
+	 */
 	u64			rt_runtime;
+	/**
+	 * 时间周期定时器
+	 */
 	struct hrtimer		rt_period_timer;
 	unsigned int		rt_period_active;
 };
@@ -515,7 +524,7 @@ struct cfs_bandwidth {
  *                    /    |
  *                  Task5 Task6
  */
-struct task_group {/* cgroup sched *//* cgroup调度 */
+struct task_group {
 
 	/**
 	 *
@@ -555,6 +564,10 @@ struct task_group {/* cgroup sched *//* cgroup调度 */
 	 *
 	 */
 	struct sched_rt_entity	**rt_se;
+	/**
+	 * 为每个CPU维护rt_rq，用于存放自己的子任务或者子任务组，子任务组又能往下级联，
+	 * 因此可以构造成树；
+	 */
 	struct rt_rq		**rt_rq;
 
 	struct rt_bandwidth	rt_bandwidth;
@@ -822,14 +835,17 @@ static inline int rt_bandwidth_enabled(void)
 #endif
 
 /**
+ * 实时运行队列
+ *
  *  Real-Time classes' related field in a runqueue:
  *  `SCHED_FIFO`
  *  `SCHED_RR`
 */
-struct rt_rq {  /* 实时运行队列 */
+struct rt_rq {
 
 	/**
 	 *  优先级队列
+	 *  100个优先级的链表，并定义了位图，用于快速查询
 	 *  cfs线程的队列维护是通过红黑树完成
 	 *  rt 线程的队列维护则是通过优先级链表完成
 	 *   优先级队列:
@@ -840,37 +856,83 @@ struct rt_rq {  /* 实时运行队列 */
 	 */
 	struct rt_prio_array	active;
 
+	/**
+	 * 在RT运行队列中所有活动的任务数
+	 */
 	unsigned int		rt_nr_running;
 	unsigned int		rr_nr_running;
 
 #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
 	struct {
+		/**
+		 * 当前RT任务的最高优先级
+		 */
 		int		curr; /* highest queued rt task prio */
 #ifdef CONFIG_SMP
+		/**
+		 * 下一个要运行的RT任务的优先级，如果两个任务都有最高优先级，
+		 * 则curr == next
+		 */
 		int		next; /* next highest */
 #endif
 	} highest_prio;
 #endif
 
 #ifdef CONFIG_SMP
+	/**
+	 * 任务没有绑定在某个CPU上时，这个值会增减，用于任务迁移
+	 */
 	unsigned long		rt_nr_migratory;
+	/**
+	 * 用于overload检查
+	 */
 	unsigned long		rt_nr_total;
+	/**
+	 * RT运行队列过载，则将任务推送到其他CPU
+	 */
 	int			overloaded;
+	/**
+	 * 基于优先级的双链表: 优先级列表，用于推送过载任务
+	 *
+	 * 若：当前CPU上的优先级任务不高，从另一个 CPU 的 pushable_tasks 链表中找
+	 *    优先级更高的任务来执行；
+	 */
 	struct plist_head	pushable_tasks;
 
 #endif /* CONFIG_SMP */
+	/**
+	 * 表示RT运行队列已经加入rq队列
+	 */
 	int			rt_queued;
 
+	/**
+	 * 用于限流操作
+	 */
 	int			rt_throttled;
+	/**
+	 * 累加的运行时，超出了本地rt_runtime时，则进行限制
+	 */
 	u64			rt_time;
+	/**
+	 * 分配给本地池的运行时
+	 */
 	u64			rt_runtime;
 	/* Nests inside the rq lock: */
 	raw_spinlock_t		rt_runtime_lock;
 
 #ifdef CONFIG_RT_GROUP_SCHED
+	/**
+	 * 用于优先级翻转问题解决
+	 */
 	unsigned long		rt_nr_boosted;
 
+	/**
+	 * 指向运行队列
+	 */
 	struct rq		*rq;
+	/**
+	 * 指向任务组
+	 */
 	struct task_group	*tg;
 #endif
 };

@@ -80,7 +80,10 @@ struct plist_head {
 	struct list_head node_list;
 };
 
-struct plist_node { /* 优先级队列： 类似于跳表，二维双向链表 */
+/**
+ * 优先级队列：类似于跳表，二维双向链表
+ */
+struct plist_node {
 	int			prio;
 	struct list_head	prio_list;
 	struct list_head	node_list;

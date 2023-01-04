@@ -75,6 +75,10 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
 /*
  * period over which we measure -rt task CPU usage in us.
  * default: 1s
+ *
+ * RT调度器在带宽控制中，调度时间周期设置的为1s，运行时间设置为0.95s：
+ *
+ * 见 /sys/fs/cgroup/cpu/rt_period_us
  */
 unsigned int sysctl_sched_rt_period = 1000000;
 
@@ -83,6 +87,10 @@ __read_mostly int scheduler_running;
 /*
  * part of the period that we allow rt tasks to run in us.
  * default: 0.95s
+ *
+ * RT调度器在带宽控制中，调度时间周期设置的为1s，运行时间设置为0.95s：
+ *
+ * 见 /sys/fs/cgroup/cpu/rt_runtime_us
  */
 int sysctl_sched_rt_runtime = 950000;
 
@@ -9758,11 +9766,19 @@ static struct cftype cpu_legacy_files[] = {
 	},
 #endif
 #ifdef CONFIG_RT_GROUP_SCHED
+	/**
+	 * /sys/fs/cgroup/cpu/rt_runtime_us
+	 * sysctl_sched_rt_period
+	 */
 	{
 		.name = "rt_runtime_us",
 		.read_s64 = cpu_rt_runtime_read,
 		.write_s64 = cpu_rt_runtime_write,
 	},
+	/**
+	 * /sys/fs/cgroup/cpu/rt_period_us
+	 * sysctl_sched_rt_period
+	 */
 	{
 		.name = "rt_period_us",
 		.read_u64 = cpu_rt_period_read_uint,

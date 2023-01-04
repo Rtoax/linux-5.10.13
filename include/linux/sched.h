@@ -808,22 +808,44 @@ struct sched_rt_entity {
 
 	/**
 	 *  链表头 rt_rq.active.queue[MAX_RT_PRIO]
+	 *  用于加入到优先级队列中
 	 */
 	struct list_head		run_list;
 
+	/**
+	 * 设置的时间超时
+	 */
 	unsigned long			timeout;
+	/**
+	 * 用于记录jiffies值
+	 */
 	unsigned long			watchdog_stamp;
+	/**
+	 * 时间片，100ms，
+	 */
 	unsigned int			time_slice;
 	unsigned short			on_rq;
 	unsigned short			on_list;
 
+	/**
+	 * 临时用于从上往下连接RT调度实体时使用
+	 */
 	struct sched_rt_entity		*back;
 
 #ifdef CONFIG_RT_GROUP_SCHED
+	/**
+	 * 指向父RT调度实体
+	 */
 	struct sched_rt_entity		*parent;
-	/* rq on which this entity is (to be) queued: */
+	/**
+	 * rq on which this entity is (to be) queued:
+	 * RT调度实体所属的实时运行队列，被调度
+	 */
 	struct rt_rq			*rt_rq;
-	/* rq "owned" by this entity/group: */
+	/**
+	 * rq "owned" by this entity/group:
+	 * RT调度实体所拥有的实时运行队列，用于管理子任务或子组任务
+	 */
 	struct rt_rq			*my_q;
 #endif
 } __randomize_layout;
@@ -1064,18 +1086,29 @@ struct task_struct {    /* PCB */
 	 *  MAX_RT_PRIO:100
 	 *  nice:[-20,19]
 	 *
-	 *  初始状态，这三个数值都相等，见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
+	 *  初始状态，这三个数值都相等，
+	 *  见 `sched_fork()`=>> p->prio = p->normal_prio = __normal_prio(p);
+	 *
+	 *                  SCHED_FIFO                        SCHED_NORMAL
+	 *                  SCHED_RR                          SCHED_BATCH
+	 *                                                    SCHED_IDLE
+	 *  +-------------------------------------------+---------------------+
+	 *  |                  0 - 99                   |       100 - 139     |
+	 *  |                                           |  nice(-20 ~ 19)     |
+	 *  +-------------------------------------------+---------------------+
+	 *                     实时进程                           普通进程
 	 */
 	/**
 	 *  The higher priority allows to get more time to run.
 	 *  `dynamic priority` which can't be changed during lifetime of
 	 *  a process based on its static priority and interactivity(交互性) of the process.
 	 *
-	 *  prio: 动态优先级：
-	 *      是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
-	 *        取值范围: [0,MAX_PRIO-1],即[0,139]
-	 *        普通进程: [0,MAX_RT_PRIO-1]即[0,99]
-	 *        实时进程: [MAX_RT_PRIO,MAX_PRIO]即[100,139] 计算方法:prio=MAX_RT_PRIO - 1 - rt_priority
+	 *  prio: 动态优先级：是调度类考虑的优先级，有些时候需要临时提高进程优先级(如 实时互斥锁)
+	 *
+	 *  取值范围: [0, MAX_PRIO-1], 即[0, 139]
+	 *  实时进程: [0, MAX_RT_PRIO-1], 即[0, 99]
+	 *           计算方法: prio = MAX_RT_PRIO - 1 - rt_priority
+	 *  普通进程: [MAX_RT_PRIO, MAX_PRIO], 即[100, 139]
 	 *
 	 */
 	int				prio;
@@ -1084,13 +1117,12 @@ struct task_struct {    /* PCB */
 	 *  initial priority most likely well-known to you `nice value`
 	 *  This value does not changed by the kernel if a user will not change it.
 	 *
-	 *      通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
-	 *      调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
-	 *        调整后的优先级为动态优先级(prio)
-	 *        计算方法:静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
-	 *        静态优先级与nice 关系
-	 *        static_prio=MAX_RT_PRIO(100)+nice+20
+	 *  通过系统调用nice去修改static_prio, 见 `nice(2)->set_user_nice()`
+	 *  调度程序通过或减少进程静态优先级来奖励IO消耗型进程或惩罚CPU消耗进程,
+	 *  调整后的优先级为动态优先级(prio)
 	 *
+	 *  计算方法: 静态优先级与进程交互性函数计算出来的,随任务的实际运行情况调整
+	 *  静态优先级与nice 关系: static_prio = MAX_RT_PRIO(100) + nice + 20
 	 */
 	int				static_prio;
 	/**
@@ -1098,19 +1130,17 @@ struct task_struct {    /* PCB */
 	 *  based on the value of the `static_prio` too,
 	 *  but also it depends on the scheduling policy of a process.
 	 *
-	 *      根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的 normal_prio
-	 *      对普通进程来说， normal_prio == static_prio
-	 *      对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
-	 *
+	 *  根据 static_prio 和 调度策略计算出来的优先级，在创建进程时，会继承父进程 的
+	 *  normal_prio.
+	 *  对普通进程来说， normal_prio == static_prio
+	 *  对实时进程来说， 会根据 rt_priority 重新计算 normal_prio
 	 */
 	int				normal_prio;
 
 	/**
-	 *  rt_priority: 实时优先级
-	 *      实时优先级只对实时进程有效
-	 *        实时进程的优先级与动态优先级成线性关系,不随时程运行而改变
-	 *        也就是说,如果一个进程是实时进程即在[0，99]之间优先级prio 与rt_priority之间的关系是固定的
-	 *
+	 *  rt_priority: 实时优先级: 实时优先级只对实时进程有效
+	 *  实时进程的优先级与动态优先级成线性关系,不随时程运行而改变。也就是说,如果一个
+	 *  进程是实时进程即在 [0，99] 之间优先级 prio 与 rt_priority 之间的关系是固定的
 	 */
 	unsigned int			rt_priority;
 
