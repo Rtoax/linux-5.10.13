@@ -122,6 +122,9 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	if ((int)id < start)
 		id = start;
 
+	/**
+	 * 分配一个 ID
+	 */
 	err = idr_alloc_u32(idr, ptr, &id, max, gfp);
 	if ((err == -ENOSPC) && (id > start)) {
 		id = start;

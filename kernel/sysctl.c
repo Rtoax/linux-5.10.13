@@ -2338,6 +2338,10 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= SYSCTL_ONE,
 	},
 #endif /* CONFIG_SMP */
+	/**
+	 * $ cat /proc/sys/kernel/pid_max
+	 * 4194304
+	 */
 	{
 		.procname	= "pid_max",
 		.data		= &pid_max,

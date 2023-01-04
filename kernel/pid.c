@@ -66,6 +66,9 @@ struct pid init_struct_pid = {/* PID 的哈希表 */
 	}, }
 };
 
+/**
+ * see also /proc/sys/kernel/pid_max
+ */
 int pid_max = PID_MAX_DEFAULT;
 
 #define RESERVED_PIDS		300
@@ -79,9 +82,10 @@ int pid_max_max = PID_MAX_LIMIT;
  * value does not cause lots of bitmaps to be allocated, but
  * the scheme scales to up to 4 million PIDs, runtime.
  * *
+ * 初始的 PID 命名空间(资源名称隔离)
  * 参见： init_nsproxy 全局变量
  */
-struct pid_namespace init_pid_ns = {/* 初始的 PID 命名空间(资源名称隔离) */
+struct pid_namespace init_pid_ns = {
 	/**
 	 *
 	 */
@@ -209,8 +213,10 @@ void free_pid(struct pid *pid)
 
 
 /**
- *  分配新的 struct pid
- *  为进程分配 PID 结构和 pid
+ * 分配新的 struct pid
+ * 为进程分配 PID 结构和 pid
+ *
+ * 见 test-linux: sched/pid/scripts/alloc_pid.bt
  */
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
@@ -251,6 +257,10 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			tid = set_tid[ns->level - i];
 
 			retval = -EINVAL;
+
+			/**
+			 * 超限
+			 */
 			if (tid < 1 || tid >= pid_max)
 				goto out_free;
 			/*
@@ -299,6 +309,9 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			goto out_free;
 		}
 
+		/**
+		 * 通常情况下，i == 0，这里的 nr 为 PID
+		 */
 		pid->numbers[i].nr = nr;
 		pid->numbers[i].ns = tmp;
 		tmp = tmp->parent;
@@ -572,11 +585,7 @@ struct pid *find_get_pid(pid_t nr)
 EXPORT_SYMBOL_GPL(find_get_pid);
 
 /**
- * @brief
- *
- * @param pid
- * @param ns
- * @return pid_t
+ * $ sudo bpftrace -e 'kretprobe:pid_nr_ns {printf(" %d\n", retval);}'
  */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
@@ -736,7 +745,7 @@ SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 /**
  *
  */
-void __init pid_idr_init(void)  /*   */
+void __init pid_idr_init(void)
 {
 	/* Verify no one has done anything silly: */
 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
@@ -755,7 +764,7 @@ void __init pid_idr_init(void)  /*   */
     /**
      *  初始分配
      */
-	init_pid_ns.pid_cachep = /* 分配缓存 */KMEM_CACHE(pid,
+	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }
 

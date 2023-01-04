@@ -317,7 +317,11 @@ bool cgroup_on_dfl(const struct cgroup *cgrp)
 	return cgrp->root == &cgrp_dfl_root;
 }
 
-/* IDR wrappers which synchronize using cgroup_idr_lock */
+/**
+ * IDR wrappers which synchronize using cgroup_idr_lock
+ *
+ * $ sudo bpftrace -e 'kretprobe:cgroup_idr_alloc.constprop.0 {printf("idr = %d\n", retval);}'
+ */
 static int cgroup_idr_alloc(struct idr *idr, void *ptr, int start, int end,
 			    gfp_t gfp_mask)
 {

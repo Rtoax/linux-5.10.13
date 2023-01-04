@@ -2684,10 +2684,12 @@ struct task_struct *copy_process(struct pid *pid,
 #endif
 	clear_tsk_latency_tracing(p);
 
-	/**
-	 *  设置 group leader 和 TGID
-	 */
 	/* ok, now we should be set up.. */
+	/**
+	 * 设置 group leader 和 TGID
+	 *
+	 * p->pid/p->tgid 是 pid_t 类型
+	 */
 	p->pid = pid_nr(pid);
 	/**
 	 *  子进程归属于父进程线程组
