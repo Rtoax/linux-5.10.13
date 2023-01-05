@@ -929,6 +929,9 @@ int bpf_link_get_fd_by_id(__u32 id)
 	return sys_bpf(BPF_LINK_GET_FD_BY_ID, &attr, sizeof(attr));
 }
 
+/**
+ *
+ */
 int bpf_obj_get_info_by_fd(int bpf_fd, void *info, __u32 *info_len)
 {
 	union bpf_attr attr;

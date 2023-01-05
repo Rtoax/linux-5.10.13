@@ -51,7 +51,9 @@ static void ringbuf_unmap_ring(struct ring_buffer *rb, struct ring *r)
 	}
 }
 
-/* Add extra RINGBUF maps to this ring buffer manager */
+/**
+ * Add extra RINGBUF maps to this ring buffer manager
+ */
 int ring_buffer__add(struct ring_buffer *rb, int map_fd,
 		     ring_buffer_sample_fn sample_cb, void *ctx)
 {
@@ -64,6 +66,9 @@ int ring_buffer__add(struct ring_buffer *rb, int map_fd,
 
 	memset(&info, 0, sizeof(info));
 
+	/**
+	 * 内部调用 sys_bpf(BPF_OBJ_GET_INFO_BY_FD, &attr, sizeof(attr));
+	 */
 	err = bpf_obj_get_info_by_fd(map_fd, &info, &len);
 	if (err) {
 		err = -errno;
@@ -78,25 +83,41 @@ int ring_buffer__add(struct ring_buffer *rb, int map_fd,
 		return -EINVAL;
 	}
 
+	/**
+	 * 多分配一个 ring 数据结构
+	 */
 	tmp = libbpf_reallocarray(rb->rings, rb->ring_cnt + 1, sizeof(*rb->rings));
 	if (!tmp)
 		return -ENOMEM;
 	rb->rings = tmp;
 
+	/**
+	 * 再分配一个 epoll event 结构
+	 */
 	tmp = libbpf_reallocarray(rb->events, rb->ring_cnt + 1, sizeof(*rb->events));
 	if (!tmp)
 		return -ENOMEM;
 	rb->events = tmp;
 
+	/**
+	 * 获取新的 ring 句柄
+	 */
 	r = &rb->rings[rb->ring_cnt];
 	memset(r, 0, sizeof(*r));
 
+	/**
+	 * 赋值
+	 */
 	r->map_fd = map_fd;
 	r->sample_cb = sample_cb;
 	r->ctx = ctx;
 	r->mask = info.max_entries - 1;
 
-	/* Map writable consumer page */
+	/**
+	 * Map writable consumer page
+	 *
+	 * 分配一个 page
+	 */
 	tmp = mmap(NULL, rb->page_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		   map_fd, 0);
 	if (tmp == MAP_FAILED) {
@@ -107,10 +128,14 @@ int ring_buffer__add(struct ring_buffer *rb, int map_fd,
 	}
 	r->consumer_pos = tmp;
 
-	/* Map read-only producer page and data pages. We map twice as big
+	/**
+	 * Map read-only producer page and data pages. We map twice as big
 	 * data size to allow simple reading of samples that wrap around the
 	 * end of a ring buffer. See kernel implementation for details.
-	 * */
+	 *
+	 * 映射只读生产者页和数据页。我们映射两倍的大数据大小，以便简单读取环绕环形缓冲区
+	 * 末端的样本。
+	 */
 	tmp = mmap(NULL, rb->page_size + 2 * info.max_entries, PROT_READ,
 		   MAP_SHARED, map_fd, rb->page_size);
 	if (tmp == MAP_FAILED) {
@@ -127,7 +152,15 @@ int ring_buffer__add(struct ring_buffer *rb, int map_fd,
 	memset(e, 0, sizeof(*e));
 
 	e->events = EPOLLIN;
+	/**
+	 * event 的 fd 记录 ring 在 ringbuf 中的索引，这将在 ring_buffer__poll() 中
+	 * 使用
+	 */
 	e->data.fd = rb->ring_cnt;
+
+	/**
+	 * 将这个 ring 加入 ringbuf 的 epoll 中
+	 */
 	if (epoll_ctl(rb->epoll_fd, EPOLL_CTL_ADD, map_fd, e) < 0) {
 		err = -errno;
 		ringbuf_unmap_ring(rb, r);
@@ -157,6 +190,9 @@ void ring_buffer__free(struct ring_buffer *rb)
 	free(rb);
 }
 
+/**
+ * 分配一个 ring buffer
+ */
 struct ring_buffer *
 ring_buffer__new(int map_fd, ring_buffer_sample_fn sample_cb, void *ctx,
 		 const struct ring_buffer_opts *opts)
@@ -213,7 +249,14 @@ static int ringbuf_process_ring(struct ring* r)
 	do {
 		got_new_data = false;
 		prod_pos = smp_load_acquire(r->producer_pos);
+
+		/**
+		 * 消费的位置 < 生产的位置
+		 */
 		while (cons_pos < prod_pos) {
+			/**
+			 * 获取此数据的长度
+			 */
 			len_ptr = r->data + (cons_pos & r->mask);
 			len = smp_load_acquire(len_ptr);
 
@@ -222,9 +265,16 @@ static int ringbuf_process_ring(struct ring* r)
 				goto done;
 
 			got_new_data = true;
+
+			/**
+			 * 消费了 len
+			 */
 			cons_pos += roundup_len(len);
 
 			if ((len & BPF_RINGBUF_DISCARD_BIT) == 0) {
+				/**
+				 * 获取数据(跳过 Header 大小: 8)
+				 */
 				sample = (void *)len_ptr + BPF_RINGBUF_HDR_SZ;
 				err = r->sample_cb(r->ctx, sample, len);
 				if (err) {
@@ -270,11 +320,27 @@ int ring_buffer__poll(struct ring_buffer *rb, int timeout_ms)
 {
 	int i, cnt, err, res = 0;
 
+	/**
+	 * 使用 epoll，不采用轮询的做法
+	 */
 	cnt = epoll_wait(rb->epoll_fd, rb->events, rb->ring_cnt, timeout_ms);
+	/**
+	 * 遍历所有 event
+	 */
 	for (i = 0; i < cnt; i++) {
+		/**
+		 * 获取 ring id
+		 */
 		__u32 ring_id = rb->events[i].data.fd;
+		/**
+		 * 获取 ring 结构
+		 * 这简直和我写的 fastq/fastlog 的方式一样
+		 */
 		struct ring *ring = &rb->rings[ring_id];
 
+		/**
+		 * 处理这个 ring
+		 */
 		err = ringbuf_process_ring(ring);
 		if (err < 0)
 			return err;
