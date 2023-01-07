@@ -174,7 +174,7 @@ void test_ringbuf(void)
 	      "err_prod_pos", "exp %ld, got %ld\n",
 	      3L * rec_sz, skel->bss->prod_pos);
 
-	/* poll for samples */
+	/* poll for samples: -1 表示永远等待直到事件来临 */
 	err = ring_buffer__poll(ringbuf, -1);
 
 	/* -EDONE is used as an indicator that we are done */
@@ -183,7 +183,7 @@ void test_ringbuf(void)
 	cnt = atomic_xchg(&sample_cnt, 0);
 	CHECK(cnt != 2, "cnt", "exp %d samples, got %d\n", 2, cnt);
 
-	/* we expect extra polling to return nothing */
+	/* we expect extra polling to return nothing: 0 表示没有事件立刻返回 */
 	err = ring_buffer__poll(ringbuf, 0);
 	if (CHECK(err != 0, "extra_samples", "poll result: %d\n", err))
 		goto cleanup;

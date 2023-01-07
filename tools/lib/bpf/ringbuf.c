@@ -229,7 +229,11 @@ err_out:
 
 static inline int roundup_len(__u32 len)
 {
-	/* clear out top 2 bits (discard and busy, if set) */
+	/**
+	 * clear out top 2 bits (discard and busy, if set)
+	 * 这里的性能基本上和 & 操作相同
+	 * value &= 0x3fffffff
+	 */
 	len <<= 2;
 	len >>= 2;
 	/* add length prefix */
