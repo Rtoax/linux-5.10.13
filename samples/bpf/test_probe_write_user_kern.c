@@ -40,6 +40,9 @@ int bpf_prog1(struct pt_regs *ctx)
 	if (sockaddr_len > sizeof(orig_addr))
 		return 0;
 
+	/**
+	 * 读取 connect(2) 的参数，这个参数是 __user 的
+	 */
 	if (bpf_probe_read_user(&orig_addr, sizeof(orig_addr), sockaddr_arg) != 0)
 		return 0;
 
