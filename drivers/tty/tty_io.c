@@ -1341,6 +1341,8 @@ static int tty_reopen(struct tty_struct *tty)
  * relaxed for the (most common) case of reopening a tty.
  *
  *	Return: returned tty structure
+ *
+ * 初始化一个 TTY（打开一个终端）
  */
 
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
