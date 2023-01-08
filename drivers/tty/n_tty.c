@@ -2350,6 +2350,13 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 
 			while (nr > 0) {
 				mutex_lock(&ldata->output_lock);
+				/**
+				 * 可能为
+				 *
+				 * pty_unix98_ops.write = pty_write()
+				 * tty_ops.write = ipw_write()
+				 * hvcs_ops.write = hvcs_write()
+				 */
 				c = tty->ops->write(tty, b, nr);
 				mutex_unlock(&ldata->output_lock);
 				if (c < 0) {

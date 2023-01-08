@@ -160,6 +160,9 @@ bpf_probe_read_user_common(void *dst, u32 size, const void __user *unsafe_ptr)
 	return ret;
 }
 
+/**
+ * 从用户态读取
+ */
 BPF_CALL_3(bpf_probe_read_user, void *, dst, u32, size,
 	   const void __user *, unsafe_ptr)
 {
@@ -228,6 +231,9 @@ fail:
 	return ret;
 }
 
+/**
+ * 从内核读取
+ */
 BPF_CALL_3(bpf_probe_read_kernel, void *, dst, u32, size,
 	   const void *, unsafe_ptr)
 {

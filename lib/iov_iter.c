@@ -625,6 +625,9 @@ static size_t csum_and_copy_to_pipe_iter(const void *addr, size_t bytes,
 	return bytes;
 }
 
+/**
+ *
+ */
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
 	const char *from = addr;
@@ -760,6 +763,9 @@ size_t _copy_mc_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 EXPORT_SYMBOL_GPL(_copy_mc_to_iter);
 #endif /* CONFIG_ARCH_HAS_COPY_MC */
 
+/**
+ * 从 iov_iter 读取数据到 addr
+ */
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 {
 	char *to = addr;
@@ -769,6 +775,9 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 	}
 	if (iter_is_iovec(i))
 		might_fault();
+	/**
+	 * iov_base 一定是 kernel 空间的？为什么 ttysnoop.py 中用 bpf_probe_read_user()?
+	 */
 	iterate_and_advance(i, bytes, v,
 		copyin((to += v.iov_len) - v.iov_len, v.iov_base, v.iov_len),
 		memcpy_from_page((to += v.bv_len) - v.bv_len, v.bv_page,

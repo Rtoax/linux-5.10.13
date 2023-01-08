@@ -25,6 +25,9 @@ static void *____memcpy(void *dest, const void *src, size_t n)
 	return dest;
 }
 #else
+/**
+ * dest 和 src 并不一定是内核空间还是用户空间？
+ */
 static void *____memcpy(void *dest, const void *src, size_t n)
 {
 	long d0, d1, d2;

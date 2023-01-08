@@ -779,6 +779,9 @@ static const struct tty_operations ptm_unix98_ops = {
 	.show_fdinfo = pty_show_fdinfo,
 };
 
+/**
+ *
+ */
 static const struct tty_operations pty_unix98_ops = {
 	.lookup = pts_unix98_lookup,
 	.install = pty_unix98_install,

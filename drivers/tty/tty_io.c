@@ -863,6 +863,9 @@ static ssize_t tty_read(struct file *file, char __user *buf, size_t count,
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return hung_up_tty_read(file, buf, count, ppos);
+	/**
+	 * 写到哪里了呢？
+	 */
 	if (ld->ops->read)
 		i = ld->ops->read(tty, file, buf, count);
 	else
@@ -956,9 +959,18 @@ static inline ssize_t do_tty_write(
 			size = chunk;
 
 		ret = -EFAULT;
+		/**
+		 * 从 iov_iter 读取
+		 */
 		if (copy_from_iter(tty->write_buf, size, from) != size)
 			break;
 
+		/**
+		 * write_buf 是内核空间的内存
+		 *
+		 * 可能为
+		 * N_TTY: n_tty_ops.write = n_tty_write()
+		 */
 		ret = write(tty, file, tty->write_buf, size);
 		if (ret <= 0)
 			break;
@@ -1051,6 +1063,10 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
 	return ret;
 }
 
+/**
+ *
+ * see ttysnoop.py
+ */
 static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 {
 	return file_tty_write(iocb->ki_filp, iocb, from);
@@ -2886,7 +2902,7 @@ static int this_tty(const void *t, struct file *file, unsigned fd)
 		return 0;
 	return file_tty(file) != t ? 0 : fd + 1;
 }
-	
+
 /*
  * This implements the "Secure Attention Key" ---  the idea is to
  * prevent trojan horses by killing all processes associated with this

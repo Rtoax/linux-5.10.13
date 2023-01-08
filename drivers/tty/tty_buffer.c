@@ -319,6 +319,10 @@ int tty_insert_flip_string_fixed_flag(struct tty_port *port,
 		struct tty_buffer *tb = port->buf.tail;
 		if (unlikely(space == 0))
 			break;
+
+		/**
+		 * 向 tty buffer 中拷贝
+		 */
 		memcpy(char_buf_ptr(tb, tb->used), chars, space);
 		if (~tb->flags & TTYB_NORMAL)
 			memset(flag_buf_ptr(tb, tb->used), flag, space);

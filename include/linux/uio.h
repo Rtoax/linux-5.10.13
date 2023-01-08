@@ -13,15 +13,18 @@ struct page;
 struct pipe_inode_info;
 
 /**
- *  
+ *
  */
 struct kvec {
+	/**
+	 * 这一定是 内核 空间的数据?
+	 */
 	void *iov_base; /* and that should *never* hold a userland pointer */
 	size_t iov_len;
 };
 
 /**
- *  
+ *
  */
 enum iter_type {
 	/* iter types */
@@ -33,7 +36,7 @@ enum iter_type {
 };
 
 /**
- *  
+ *
  */
 struct iov_iter {
 	/*

@@ -188,6 +188,9 @@ static void ipw_write_packet_sent_callback(void *callback_data,
 	tty->tx_bytes_queued -= packet_length;
 }
 
+/**
+ *
+ */
 static int ipw_write(struct tty_struct *linux_tty,
 		     const unsigned char *buf, int count)
 {
@@ -549,6 +552,9 @@ void ipwireless_tty_free(struct ipw_tty *tty)
 	}
 }
 
+/**
+ *
+ */
 static const struct tty_operations tty_ops = {
 	.open = ipw_open,
 	.close = ipw_close,

@@ -55,6 +55,9 @@ enum {
  */
 #define __DISABLED_CHAR '\0'
 
+/**
+ *
+ */
 struct tty_buffer {
 	union {
 		struct tty_buffer *next;
@@ -337,6 +340,9 @@ struct tty_struct {
 #define N_TTY_BUF_SIZE 4096
 
 	int closing;
+	/**
+	 * 在 do_tty_write() 中通过 kmalloc 申请
+	 */
 	unsigned char *write_buf;
 	int write_cnt;
 	/* If the tty has a pending do_SAK, queue it here - akpm */
