@@ -34,6 +34,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * virtio设备支持3种设备呈现模式：
+ * 1. Virtio Over PCI BUS，依旧遵循PCI规范，挂在到PCI总线上，作为virtio-pci设备呈现；
+ * 2. Virtio Over MMIO，部分不支持PCI协议的虚拟化平台可以使用这种工作模式，直接挂载到
+ *    系统总线上；
+ * 3. Virtio Over Channel I/O：主要用在s390平台上，virtio-ccw使用这种基于channel
+ *    I/O的机制。
  */
 
 #ifndef _LINUX_VIRTIO_PCI_H
@@ -41,7 +48,42 @@
 
 #include <linux/types.h>
 
+/**
+ * Virtio Over PCI BUS的使用比较广泛，作为PCI设备需按照规范要通过PCI配置空间来向操作
+ * 系统报告设备支持的特性集合， 这样操作系统才知道这是一个什么类型的virtio设备，并调用对
+ * 应的前端驱动和这个设备进行握手，进而将设备驱动起来。
+ *
+ * QEMU会给virtio设备模拟PCI配置空间，对于virtio设备来说PCI Vendor ID固定为0x1AF4，
+ * PCI Device ID 为 0x1000到0x107F之间的是virtio设备。
+ */
+
 #ifndef VIRTIO_PCI_NO_LEGACY
+
+/**
+ * virtio设备有feature bits，virtqueue等四要素，那么在virtio-pci模式下是如何呈现的呢？
+ * 从virtio spec来看，老的virtio协议和新的virtio协议在这一块有很大改动。
+ *
+ * virtio legacy（virtio 0.95）协议规定，对应的配置数据结构（virtio common
+ * configuration structure） 应该存放在设备的BAR0里面，我们称之为virtio legay
+ * interface，其结构如下：
+ *
+ *                    virtio legacy ==> Mapped into PCI BAR0
+ * +------------------------------------------------------------------+
+ * |                    Host Feature Bits[0:31]                       |
+ * +------------------------------------------------------------------+
+ * |                    Guest Feature Bits[0:31]                      |
+ * +------------------------------------------------------------------+
+ * |                    Virtqueue Address PFN                         |
+ * +---------------------------------+--------------------------------+
+ * |           Queue Select          |           Queue Size           |
+ * +----------------+----------------+--------------------------------+
+ * |   ISR Status   | Device Stat    |           Queue Notify         |
+ * +----------------+----------------+--------------------------------+
+ * |       MSI Config Vector         |         MSI Queue Vector       |
+ * +---------------------------------+--------------------------------+
+ *
+ * https://kernelgo.org/virtio-overview.html
+ */
 
 /* A 32-bit r/o bitmask of the features supported by the host */
 #define VIRTIO_PCI_HOST_FEATURES	0
@@ -103,6 +145,13 @@
 
 /* IDs for different capabilities.  Must all exist. */
 
+/**
+ * 对于新的virtio modern，协议将配置结构划分为5种类型：
+ *
+ * 每种配置结构是直接映射到virtio设备的BAR空间内，那么如何指定每种配置结构的位置呢？
+ * 答案是通过PCI Capability list方式去指定(struct virtio_pci_cap)，这和物理PCI设备
+ * 是一样的，体现了virtio-pci 的协议兼容性。
+ */
 /* Common configuration */
 #define VIRTIO_PCI_CAP_COMMON_CFG	1
 /* Notifications */
@@ -116,12 +165,30 @@
 /* Additional shared memory capability */
 #define VIRTIO_PCI_CAP_SHARED_MEMORY_CFG 8
 
-/* This is the PCI capability header: */
+/**
+ * This is the PCI capability header:
+ * virtio-pci 的 Capability 有一个统一的结构，每个Cap的具体结构定义可以参考 virtio spec
+ * 4.1.4.3小节。
+ *
+ * 例：
+ * lspci -vvvs 04:00.0
+ */
 struct virtio_pci_cap {
 	__u8 cap_vndr;		/* Generic PCI field: PCI_CAP_ID_VNDR */
 	__u8 cap_next;		/* Generic PCI field: next ptr. */
 	__u8 cap_len;		/* Generic PCI field: capability length */
+
+	/**
+	 * 这样每个配置结构都可以通过BAR空间直接访问，或者通过PCI配置空间的
+	 * VIRTIO_PCI_CAP_PCI_CFG 域进行访问。
+	 */
+	/**
+	 * cfg_type 表示Cap的类型
+	 */
 	__u8 cfg_type;		/* Identifies the structure. */
+	/**
+	 * bar 表示这个配置结构被映射到的BAR空间号.
+	 */
 	__u8 bar;		/* Where to find it. */
 	__u8 id;		/* Multiple capabilities of the same type */
 	__u8 padding[2];	/* Pad to full dword. */
@@ -129,7 +196,7 @@ struct virtio_pci_cap {
 	__le32 length;		/* Length of the structure, in bytes. */
 };
 /**
- *  
+ *
  */
 struct virtio_pci_cap64 {
 	struct virtio_pci_cap cap;

@@ -15,7 +15,7 @@
 /**
  *  驱动程序可通过查询外设的特定 ID 来识别其设备
  *
- *  
+ *
  */
 #define PCI_CLASS_NOT_DEFINED		0x0000
 #define PCI_CLASS_NOT_DEFINED_VGA	0x0001
@@ -2584,6 +2584,14 @@
 
 #define PCI_VENDOR_ID_AZWAVE		0x1a3b
 
+/**
+ * Virtio Over PCI BUS的使用比较广泛，作为PCI设备需按照规范要通过PCI配置空间来向操作
+ * 系统报告设备支持的特性集合， 这样操作系统才知道这是一个什么类型的virtio设备，并调用对
+ * 应的前端驱动和这个设备进行握手，进而将设备驱动起来。
+ *
+ * QEMU会给virtio设备模拟PCI配置空间，对于virtio设备来说PCI Vendor ID固定为0x1AF4，
+ * PCI Device ID 为 0x1000到0x107F之间的是virtio设备。
+ */
 #define PCI_VENDOR_ID_REDHAT_QUMRANET    0x1af4
 #define PCI_SUBVENDOR_ID_REDHAT_QUMRANET 0x1af4
 #define PCI_SUBDEVICE_ID_QEMU            0x1100
@@ -2701,7 +2709,7 @@
 
 /**
  *  设备ID，如我的环境
- *  [rongtao@localhost src]$ more /sys/bus/pci/devices/0000\:00\:00.0/device 
+ *  [rongtao@localhost src]$ more /sys/bus/pci/devices/0000\:00\:00.0/device
  *  0x1237
  */
 #define PCI_DEVICE_ID_INTEL_82441	0x1237

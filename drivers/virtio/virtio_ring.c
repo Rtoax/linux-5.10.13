@@ -85,9 +85,12 @@ struct vring_desc_extra_packed {
 };
 
 /**
- *  
+ *
  */
 struct vring_virtqueue {
+	/**
+	 *
+	 */
 	struct virtqueue vq;
 
 	/* Is this a packed ring? */
@@ -116,6 +119,13 @@ struct vring_virtqueue {
 	/* Last used index we've seen. */
 	u16 last_used_idx;
 
+	/**
+	 * 在virtio协议中，所有的设备都使用virtqueue来进行数据的传输。每个设备可以有 0 个或者多个
+	 * virtqueue，每个virtqueue占用2个或者更多个4K的物理页。virtqueue有 Split Virtqueues
+	 * 和 Packed Virtqueues 两种模式，在Split virtqueues模式下virtqueue被分成若干个部分，
+	 * 每个部分都是前端驱动或者后端单向可写的（不能两端同时写）。每个virtqueue都有一个 16bit 的
+	 * queue size参数，表示队列的总长度。
+	 */
 	union {
 		/* Available for split ring */
 		struct {
@@ -1840,6 +1850,12 @@ EXPORT_SYMBOL_GPL(virtqueue_kick_prepare);
  * This does not need to be serialized.
  *
  * Returns false if host notify failed or queue is broken, otherwise true.
+ *
+ * 整个virtio协议中设备IO请求的工作机制可以简单地概括为：
+ * 1. 前端驱动将IO请求放到 Descriptor Table中，然后将索引更新到 Available Ring 中，最后
+ *    kick后端去取数据；
+ * 2. 后端取出IO请求进行处理，然后将结果刷新到 Descriptor Table 中再更新 Using Ring，
+ *    然后发送中断notify前端。
  */
 bool virtqueue_notify(struct virtqueue *_vq)
 {
@@ -1868,6 +1884,12 @@ EXPORT_SYMBOL_GPL(virtqueue_notify);
  * operations at the same time (except where noted).
  *
  * Returns false if kick failed, otherwise true.
+ *
+ * 整个virtio协议中设备IO请求的工作机制可以简单地概括为：
+ * 1. 前端驱动将IO请求放到 Descriptor Table中，然后将索引更新到 Available Ring 中，最后
+ *    kick后端去取数据；
+ * 2. 后端取出IO请求进行处理，然后将结果刷新到 Descriptor Table 中再更新 Using Ring，
+ *    然后发送中断notify前端。
  */
 bool virtqueue_kick(struct virtqueue *vq)
 {
@@ -2135,7 +2157,7 @@ struct virtqueue *__vring_new_virtqueue(unsigned int index,
 EXPORT_SYMBOL_GPL(__vring_new_virtqueue);
 
 /**
- *  
+ *
  */
 struct virtqueue *vring_create_virtqueue(
 	unsigned int index,
@@ -2156,7 +2178,7 @@ struct virtqueue *vring_create_virtqueue(
 				context, notify, callback, name);
 
     /**
-     *  
+     *
      */
 	return vring_create_virtqueue_split(index, num, vring_align,
 			vdev, weak_barriers, may_reduce_num,
@@ -2184,7 +2206,7 @@ struct virtqueue *vring_new_virtqueue(unsigned int index,
 	vring_init(&_vring, num, pages, vring_align);
 
     /**
-     *  
+     *
      */
 	return __vring_new_virtqueue(index, _vring, vdev, weak_barriers, context,
 				     notify, callback, name);

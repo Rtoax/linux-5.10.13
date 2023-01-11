@@ -98,7 +98,16 @@
 
 /* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
 /**
- *  
+ * 每个virtqueue由3个部分组成：
+ * +-------------------+--------------------------------+-----------------------+
+ * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
+ * +-------------------+--------------------------------+-----------------------+
+ * Descriptor Table：存放IO传输请求信息；
+ * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ */
+/**
+ * Descriptor Table：存放IO传输请求信息；
  */
 struct vring_desc {
     /**
@@ -123,13 +132,14 @@ struct vring_desc {
 	__virtio16 next;
 };
 /**
- *  可用描述符区域
- *  在 CPU 从 guest 切换到 host模式后，模拟设备将检查可用描述符区域，
- *  如果有可用的描述符，就一次进行消费
+ * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ *
+ * 可用描述符区域，在 CPU 从 guest 切换到 host模式后，模拟设备将检查可用描述符区域，如果有
+ * 可用的描述符，就一次进行消费。
  */
 struct vring_avail {
     /**
-     *  
+     *
      */
 	__virtio16 flags;
     /**
@@ -138,7 +148,7 @@ struct vring_avail {
 	__virtio16 idx;
     /**
      *  驱动每次将IO request 转换为一个可用的 描述符链后，
-     *  就会向 数组 ring 中 追加一个元素 
+     *  就会向 数组 ring 中 追加一个元素
      *  最初，ring 是空的
      */
 	__virtio16 ring[];
@@ -156,9 +166,9 @@ typedef struct vring_used_elem __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_elem_t;
 
 /**
- *  已用描述符
- *  设备将已经处理的描述符记录起来，反馈给驱动
- *  这个“已用”也是相对于驱动而言的
+ * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ *
+ * 已用描述符，设备将已经处理的描述符记录起来，反馈给驱动，这个“已用”也是相对于驱动而言的。
  */
 struct vring_used {
 	__virtio16 flags;
@@ -188,7 +198,7 @@ typedef struct vring_used __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_t;
 
 /**
- *  
+ *
  *
  *  初始化 `vring_init()`
  */
@@ -233,7 +243,7 @@ struct vring {
 #define vring_used_event(vr) ((vr)->avail->ring[(vr)->num])
 #define vring_avail_event(vr) (*(__virtio16 *)&(vr)->used->ring[(vr)->num])
 /**
- *  
+ *
  */
 static inline void vring_init(struct vring *vr, unsigned int num, void *p,
 			      unsigned long align)
@@ -255,7 +265,7 @@ static inline void vring_init(struct vring *vr, unsigned int num, void *p,
      *  |       |
      *  +-------+
      *
-     *  
+     *
      */
 	vr->num = num;
 	vr->desc = p;

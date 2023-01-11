@@ -31,19 +31,44 @@
  * store and access that space differently. */
 #include <linux/types.h>
 
+/**
+ * 组成一个virtio设备的四要素包括：
+ * 1. 设备状态域，
+ * 2. feature bits，
+ * 3. 设备配置空间，
+ * 4. 一个或者多个virtqueue。
+ *
+ * 其中设备状态域包含6种状态：
+ */
 /* Status byte for guest to report progress, and synchronize features. */
-/* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
+/**
+ * We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO)
+ * GuestOS发现了这个设备，并且认为这是一个有效的virtio设备；
+ */
 #define VIRTIO_CONFIG_S_ACKNOWLEDGE	1
-/* We have found a driver for the device. */
+/**
+ * We have found a driver for the device.
+ * GuestOS知道该如何驱动这个设备；
+ */
 #define VIRTIO_CONFIG_S_DRIVER		2
-/* Driver has used its parts of the config, and is happy */
+/* Driver has used its parts of the config, and is happy
+ * 驱动加载完成，设备可以投入使用了；*/
 #define VIRTIO_CONFIG_S_DRIVER_OK	4
-/* Driver has finished configuring features */
+/**
+ * Driver has finished configuring features
+ * GuestOS认识所有的feature，并且feature协商一完成；
+ */
 #define VIRTIO_CONFIG_S_FEATURES_OK	8
-/* Device entered invalid state, driver must reset it */
+/**
+ * Device entered invalid state, driver must reset it
+ * 设备触发了错误，需要重置才能继续工作。
+ */
 #define VIRTIO_CONFIG_S_NEEDS_RESET	0x40
-/* We've given up on this device. */
-#define VIRTIO_CONFIG_S_FAILED		0x80
+/**
+ * We've given up on this device.
+ * GuestOS无法正常驱动这个设备，Something is wrong；
+ */
+#define VIRTIO_CONFIG_S_FAILED		0x80/*128*/
 
 /*
  * Virtio feature bits VIRTIO_TRANSPORT_F_START through
@@ -63,7 +88,9 @@
 #define VIRTIO_F_ANY_LAYOUT		27
 #endif /* VIRTIO_CONFIG_NO_LEGACY */
 
-/* v1.0 compliant. */
+/**
+ * v1.0 compliant. 表示设备是否支持 virtio 1.0 spec 标准
+ */
 #define VIRTIO_F_VERSION_1		32
 
 /*

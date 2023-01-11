@@ -30,10 +30,23 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * virtio设备支持3种设备呈现模式：
+ * 1. Virtio Over PCI BUS，依旧遵循PCI规范，挂在到PCI总线上，作为virtio-pci设备呈现；
+ * 2. Virtio Over MMIO，部分不支持PCI协议的虚拟化平台可以使用这种工作模式，直接挂载到
+ *    系统总线上；
+ * 3. Virtio Over Channel I/O：主要用在s390平台上，virtio-ccw使用这种基于channel
+ *    I/O的机制。
  */
 
 #ifndef _LINUX_VIRTIO_MMIO_H
 #define _LINUX_VIRTIO_MMIO_H
+
+/**
+ * 在不支持PCI协议的虚拟化平台上，virtio设备也可以直接通过MMIO进行呈现， virtio-spec 4.2
+ * Virtio Over MMIO有针对virtio-mmio设备呈现方式的详细描述，mmio相关信息可以直接通过内核
+ * 参数报告给Linux操作系统。
+ */
 
 /*
  * Control registers

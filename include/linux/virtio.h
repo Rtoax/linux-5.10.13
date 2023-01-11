@@ -26,8 +26,27 @@
  *
  * struct vring_virtqueue;
  *
+ * 在virtio协议中，所有的设备都使用virtqueue来进行数据的传输。每个设备可以有 0 个或者多个
+ * virtqueue，每个virtqueue占用2个或者更多个4K的物理页。virtqueue有 Split Virtqueues
+ * 和 Packed Virtqueues 两种模式，在Split virtqueues模式下virtqueue被分成若干个部分，
+ * 每个部分都是前端驱动或者后端单向可写的（不能两端同时写）。每个virtqueue都有一个 16bit 的
+ * queue size参数，表示队列的总长度。
+ *
+ * 每个virtqueue由3个部分组成：
+ * +-------------------+--------------------------------+-----------------------+
+ * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
+ * +-------------------+--------------------------------+-----------------------+
+ * Descriptor Table：存放IO传输请求信息；
+ * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ *
+ * 整个virtio协议中设备IO请求的工作机制可以简单地概括为：
+ * 1. 前端驱动将IO请求放到 Descriptor Table中，然后将索引更新到 Available Ring 中，最后
+ *    kick后端去取数据；
+ * 2. 后端取出IO请求进行处理，然后将结果刷新到 Descriptor Table 中再更新 Using Ring，
+ *    然后发送中断notify前端。
  */
-struct virtqueue {  /* virtio 队列 */
+struct virtqueue {
     /**
      *  这个设备的 virtqueues 的链表
      */
@@ -58,7 +77,6 @@ struct virtqueue {  /* virtio 队列 */
      */
 	void *priv;
 };
-typedef struct virtqueue * virtqueue_t;//+++
 
 int virtqueue_add_outbuf(struct virtqueue *vq,
 			 struct scatterlist sg[], unsigned int num,
@@ -131,6 +149,12 @@ dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq);
  * @priv: private pointer for the driver's use.
  *
  * 一个使用 virtio 的设备
+ *
+ * 组成一个virtio设备的四要素包括：
+ * 1. 设备状态域，见 VIRTIO_CONFIG_S_ACKNOWLEDGE ...
+ * 2. feature bits，
+ * 3. 设备配置空间，
+ * 4. 一个或者多个virtqueue。
  */
 struct virtio_device {
     /**
@@ -155,7 +179,18 @@ struct virtio_device {
 	const struct virtio_config_ops *config; /* 配置 virtio 的操作 */
 	const struct vringh_config_ops *vringh_config;  /* host VRing */
 	struct list_head vqs;
+
+	/**
+	 * feature bits: 用来标志设备支持哪个特性
+	 *
+	 * bit0-bit23 是特定设备可以使用的 feature bits
+	 * bit24-bit37 预给队列和 feature 协商机制
+	 * bit38 以上保留给未来其他用途
+	 *
+	 * 例如：对于 virtio-net 设备而言，feature bit0 表示网卡设备支持 checksum 校验。
+	 */
 	u64 features;
+
 	void *priv;
 };
 
