@@ -4113,6 +4113,34 @@ static long kvm_vm_ioctl(struct file *filp,
 		break;
 	}
 #endif
+	/**
+	 * QEMU/KVM使用irqfd机制来模拟MSIx中断
+	 *
+	 * 即设备申请MSIx中断的时候会为MSIx分配一个gsi（这个时候会刷新irq routing table），
+	 * 并为这个gsi绑定一个irqfd，最后在内核中去poll这个irqfd。 当QEMU处理完IO之后，就写
+	 * MSIx对应的irqfd，给前端注入一个MSIx中断，告知前端我已经处理好IO了你可以来取结果了。
+	 *
+	 * 例如，virtio-scsi从前端取出IO请求后会取做DMA操作（DMA是异步的，QEMU协程中负责处理）。
+	 * 当DMA完成后QEMU需要告知前端IO请求已完成（Complete），那么怎么去投递这个MSIx中断呢？
+	 * 答案是调用 virtio_notify_irqfd 注入一个MSIx中断。
+	 *
+	 *    +-------------+                +-------------+
+	 *    |             |                |             |
+	 *    |             |                |             |
+	 *    |   GuestOS   |                |     QEMU    |
+	 *    |             |                |             |
+	 *    |             |                |             |
+	 *    +---+---------+                +----+--------+
+	 *        |     ^                         |    ^
+	 *        |     |                         |    |
+	 *    +---|-----|-------------------------|----|---+
+	 *    |   |     |                irqfd    |    |   |
+	 *    |   |     +-------------------------+    |   |
+	 *    |   |  ioeventfd                         |   |
+	 *    |   +------------------------------------+   |
+	 *    |                   KVM                      |
+	 *    +--------------------------------------------+
+	 */
 	case KVM_IRQFD: {
 		struct kvm_irqfd data;
 
@@ -4123,7 +4151,20 @@ static long kvm_vm_ioctl(struct file *filp,
 		break;
 	}
 	/**
+	 * QEMU会为每个设备MMIO对应的 MemoryRegion 注册一个 ioeventfd。最后调用了一个
+	 * KVM_IOEVENTFD ioctl 到 KVM 内核里面，而在 KVM 内核中会将 MMIO 对应的（
+	 * gpa,len,eventfd）信息会注册到 KVM_FAST_MMIO_BUS 上。 这样当Guest访问
+	 * MMIO 地址范围退出后（触发EPT Misconfig），KVM 会查询一下访问的 GPA 是否
+	 * 落在某段MMIO地址空间range内部， 如果是的话就直接写 eventfd 告知 QEMU，
+	 * QEMU 就会从 coalesced mmio ring page 中取 MMIO 请求（注：pio page和
+	 * mmio page是 QEMU 和 KVM 内核之间的共享内存页，已经提前 mmap 好了）。
 	 *
+	 * EPT Misconfig: handle_ept_misconfig()
+	 *  MMIO处理流程中（handle_ept_misconfig）最后会调用到ioeventfd_write通知QEMU。
+	 *    kvm_vm_ioctl(KVM_IOEVENTFD)
+	 *      --> kvm_ioeventfd
+	 *        --> kvm_assign_ioeventfd
+	 *          --> kvm_assign_ioeventfd_idx
 	 */
 	case KVM_IOEVENTFD: {
 		struct kvm_ioeventfd data;

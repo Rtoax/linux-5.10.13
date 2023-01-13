@@ -99,6 +99,9 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
 	return vp_vring_interrupt(irq, opaque);
 }
 
+/**
+ *
+ */
 static int vp_request_msix_vectors(struct virtio_device *vdev, int nvectors,
 				   bool per_vq_vectors, struct irq_affinity *desc)
 {
@@ -172,7 +175,7 @@ error:
 }
 
 /**
- *  
+ *
  */
 static struct virtqueue *vp_setup_vq(struct virtio_device *vdev, unsigned index,
 				     void (*callback)(struct virtqueue *vq),
@@ -282,6 +285,14 @@ void vp_del_vqs(struct virtio_device *vdev)
 	vp_dev->vqs = NULL;
 }
 
+/**
+ * 为每virtqueue申请一个MSIx中断，通常收发各一个队列
+ *
+ * virtio-net(Guest 中的驱动)网卡至少申请了3个MSIx中断：
+ *
+ * 1. 一个是configuration change中断（配置空间发生变化后，QEMU通知前端）
+ * 2. 发送队列1个MSIx中断，接收队列1MSIx中断
+ */
 static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 		struct virtqueue *vqs[], vq_callback_t *callbacks[],
 		const char * const names[], bool per_vq_vectors,
@@ -307,6 +318,9 @@ static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 		nvectors = 2;
 	}
 
+	/**
+	 * 主要的 MSIx 中断申请逻辑都在这个函数里面
+	 */
 	err = vp_request_msix_vectors(vdev, nvectors, per_vq_vectors,
 				      per_vq_vectors ? desc : NULL);
 	if (err)
@@ -342,6 +356,9 @@ static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 			 sizeof *vp_dev->msix_names,
 			 "%s-%s",
 			 dev_name(&vp_dev->vdev.dev), names[i]);
+		/**
+		 * 注册中断处理函数
+		 */
 		err = request_irq(pci_irq_vector(vp_dev->pci_dev, msix_vec),
 				  vring_interrupt, 0,
 				  vp_dev->msix_names[msix_vec],
@@ -394,6 +411,12 @@ out_del_vqs:
 	return err;
 }
 
+/**
+ * virtio-net(Guest 中的驱动)网卡至少申请了3个MSIx中断：
+ *
+ * 1. 一个是configuration change中断（配置空间发生变化后，QEMU通知前端）
+ * 2. 发送队列1个MSIx中断，接收队列1MSIx中断
+ */
 /* the config->find_vqs() implementation */
 int vp_find_vqs(struct virtio_device *vdev, unsigned nvqs,
 		struct virtqueue *vqs[], vq_callback_t *callbacks[],

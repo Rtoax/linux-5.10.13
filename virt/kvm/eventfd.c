@@ -178,8 +178,33 @@ int __attribute__((weak)) kvm_arch_set_irq_inatomic(
 	return -EWOULDBLOCK;
 }
 
-/*
+/**
  * Called with wqh->lock held and interrupts disabled
+ *
+ * QEMU 写了这个 irqfd 后，KVM内核模块中的 irqfd poll 就收到一个POLL_IN事件，然后将
+ * MSIx 中断自动投递给对应的LAPIC。
+ *
+ * 大致流程是：
+ * POLL_IN
+ * -> kvm_arch_set_irq_inatomic
+ *  -> kvm_set_msi_irq, kvm_irq_delivery_to_apic_fast
+ *
+ *    +-------------+                +-------------+
+ *    |             |                |             |
+ *    |             |                |             |
+ *    |   GuestOS   |                |     QEMU    |
+ *    |             |                |             |
+ *    |             |                |             |
+ *    +---+---------+                +----+--------+
+ *        |     ^                         |    ^
+ *        |     |                         |    |
+ *    +---|-----|-------------------------|----|---+
+ *    |   |     |                irqfd    |    |   |
+ *    |   |     +-------------------------+    |   |
+ *    |   |  ioeventfd                         |   |
+ *    |   +------------------------------------+   |
+ *    |                   KVM                      |
+ *    +--------------------------------------------+
  */
 static int
 irqfd_wakeup(wait_queue_entry_t *wait, unsigned mode, int sync, void *key)
@@ -590,11 +615,22 @@ kvm_irqfd_deassign(struct kvm *kvm, struct kvm_irqfd *args)
  * ioeventfd 是 虚拟机内部操作系统通知 KVM/QEMU 的快捷通道
  * irqfd 是 KVM/QEMU 通知虚拟机内部操作系统的快捷通道
  *
- * +----------+      irqfd     +----------+
- * |          | -------------> |          |
- * | KVM/QEMU |                |     VM   |
- * |          | <------------- |          |
- * +----------+    ioeventfd   +----------+
+ *    +-------------+                +-------------+
+ *    |             |                |             |
+ *    |             |                |             |
+ *    |   GuestOS   |                |     QEMU    |
+ *    |             |                |             |
+ *    |             |                |             |
+ *    +---+---------+                +----+--------+
+ *        |     ^                         |    ^
+ *        |     |                         |    |
+ *    +---|-----|-------------------------|----|---+
+ *    |   |     |                irqfd    |    |   |
+ *    |   |     +-------------------------+    |   |
+ *    |   |  ioeventfd                         |   |
+ *    |   +------------------------------------+   |
+ *    |                   KVM                      |
+ *    +--------------------------------------------+
  *
  * KVM_IRQFD
  */
@@ -817,6 +853,9 @@ static enum kvm_bus ioeventfd_bus_from_flags(__u32 flags)
 	return KVM_MMIO_BUS;
 }
 
+/**
+ *
+ */
 static int kvm_assign_ioeventfd_idx(struct kvm *kvm,
 				enum kvm_bus bus_idx,
 				struct kvm_ioeventfd *args)
@@ -864,6 +903,10 @@ static int kvm_assign_ioeventfd_idx(struct kvm *kvm,
 		goto unlock_fail;
 
 	kvm_get_bus(kvm, bus_idx)->ioeventfd_count++;
+
+	/**
+	 *
+	 */
 	list_add_tail(&p->list, &kvm->ioeventfds);
 
 	mutex_unlock(&kvm->slots_lock);
@@ -989,6 +1032,9 @@ fail:
 	return ret;
 }
 
+/**
+ *
+ */
 int
 kvm_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
 {

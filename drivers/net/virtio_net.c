@@ -2766,6 +2766,10 @@ static int virtnet_find_vqs(struct virtnet_info *vi)
 			ctx[rxq2vq(i)] = true;
 	}
 
+	/**
+	 * 可能为：
+	 * vp_modern_find_vqs()
+	 */
 	ret = vi->vdev->config->find_vqs(vi->vdev, total_vqs, vqs, callbacks,
 					 names, ctx, NULL);
 	if (ret)
@@ -2847,6 +2851,9 @@ static int init_vqs(struct virtnet_info *vi)
 	if (ret)
 		goto err;
 
+	/**
+	 *
+	 */
 	ret = virtnet_find_vqs(vi);
 	if (ret)
 		goto err_free;
@@ -2953,6 +2960,39 @@ static int virtnet_validate(struct virtio_device *vdev)
 	return 0;
 }
 
+/**
+ * 网卡设备驱动加载的入口
+ *
+ * 内核流程mark一下，PCI设备驱动流程这个后面可以学习一下，先扫描PCI bus发现是virtio
+ * 设备再扫描virtio-bus。
+ *
+ * --> worker_thread
+ * --> process_one_work
+ * --> pciehp_power_thread
+ * --> pciehp_enable_slot
+ * --> pciehp_configure_device
+ * --> pci_bus_add_devices
+ * --> pci_bus_add_device
+ * --> device_attach
+ * --> __device_attach
+ * --> bus_for_each_drv
+ * --> __device_attach_driver
+ * --> driver_probe_device
+ * --> pci_device_probe
+ * --> local_pci_probe
+ * --> virtio_pci_probe
+ * --> register_virtio_device
+ * --> device_register
+ * --> device_add
+ * --> bus_probe_device
+ * --> device_initial_probe
+ * --> __device_attach
+ * --> bus_for_each_drv
+ * --> __device_attach_driver
+ * --> driver_probe_device
+ * --> virtio_dev_probe
+ * --> virtnet_probe
+ */
 static int virtnet_probe(struct virtio_device *vdev)
 {
 	int i, err = -ENOMEM;
@@ -3096,7 +3136,10 @@ static int virtnet_probe(struct virtio_device *vdev)
 		vi->curr_queue_pairs = num_online_cpus();
 	vi->max_queue_pairs = max_queue_pairs;
 
-	/* Allocate/initialize the rx/tx queues, and invoke find_vqs */
+	/**
+	 * Allocate/initialize the rx/tx queues, and invoke find_vqs
+	 * 分配/初始化 rx/tx 队列，并调用find_vqs
+	 */
 	err = init_vqs(vi);
 	if (err)
 		goto free;
@@ -3124,6 +3167,9 @@ static int virtnet_probe(struct virtio_device *vdev)
 		goto free_failover;
 	}
 
+	/**
+	 * 准备好的标志
+	 */
 	virtio_device_ready(vdev);
 
 	err = virtnet_cpu_notif_add(vi);

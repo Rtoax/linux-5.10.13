@@ -260,6 +260,10 @@ static int virtio_dev_probe(struct device *_d)
 	if (err)
 		goto err;
 
+	/**
+	 * 可能如下：
+	 * virtnet_probe()
+	 */
 	err = drv->probe(dev);
 	if (err)
 		goto err;

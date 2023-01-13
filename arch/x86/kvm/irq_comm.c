@@ -28,7 +28,7 @@
 #include "x86.h"
 
 /**
- *  
+ *
  */
 static int kvm_set_pic_irq(struct kvm_kernel_irq_routing_entry *e,
 			   struct kvm *kvm, int irq_source_id, int level,
@@ -39,7 +39,7 @@ static int kvm_set_pic_irq(struct kvm_kernel_irq_routing_entry *e,
 }
 
 /**
- *  
+ *
  */
 static int kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
 			      struct kvm *kvm, int irq_source_id, int level,
@@ -47,7 +47,7 @@ static int kvm_set_ioapic_irq(struct kvm_kernel_irq_routing_entry *e,
 {
 	struct kvm_ioapic *ioapic = kvm->arch.vioapic;
     /**
-     *  
+     *
      */
 	return kvm_ioapic_set_irq(ioapic, e->irqchip.pin, irq_source_id, level, line_status);
 }
@@ -91,14 +91,14 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 					irq->dest_id, irq->dest_mode))
 			continue;
         /**
-         *  
+         *
          */
 		if (!kvm_lowest_prio_delivery(irq)) {
 			if (r < 0)
 				r = 0;
 			r += kvm_apic_set_irq(vcpu, irq, dest_map);
         /**
-         *  
+         *
          */
 		} else if (kvm_apic_sw_enabled(vcpu->arch.apic)) {
 			if (!kvm_vector_hashing_enabled()) {
@@ -129,7 +129,8 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
 	return r;
 }
 
-/** 
+/**
+
  *  设置 MSI 中断
  */
 void kvm_set_msi_irq(struct kvm *kvm, struct kvm_kernel_irq_routing_entry *e,
@@ -139,8 +140,9 @@ void kvm_set_msi_irq(struct kvm *kvm, struct kvm_kernel_irq_routing_entry *e,
 	                                     (u64)e->msi.address_hi << 32 : 0),
 	                      e->msi.data);
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	irq->dest_id = (e->msi.address_lo &
 			MSI_ADDR_DEST_ID_MASK) >> MSI_ADDR_DEST_ID_SHIFT;
@@ -149,9 +151,10 @@ void kvm_set_msi_irq(struct kvm *kvm, struct kvm_kernel_irq_routing_entry *e,
 	irq->vector = (e->msi.data &
 			MSI_DATA_VECTOR_MASK) >> MSI_DATA_VECTOR_SHIFT;
 
-    /** 
-     *  
-     */        
+    /**
+
+     *
+     */
 	irq->dest_mode = kvm_lapic_irq_dest_mode(
 	    !!((1 << MSI_ADDR_DEST_MODE_SHIFT) & e->msi.address_lo));
 	irq->trig_mode = (1 << MSI_DATA_TRIGGER_SHIFT) & e->msi.data;
@@ -169,7 +172,8 @@ static inline bool kvm_msi_route_invalid(struct kvm *kvm,
 	return kvm->arch.x2apic_format && (e->msi.address_hi & 0xff);
 }
 
-/** 
+/**
+
  *  MSI(-X)
  */
 int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
@@ -177,8 +181,9 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
 {
 	struct kvm_lapic_irq irq;
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	if (kvm_msi_route_invalid(kvm, e))
 		return -EINVAL;
@@ -186,13 +191,15 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
 	if (!level)
 		return -1;
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	kvm_set_msi_irq(kvm, e, &irq);
 
-    /** 
-     *  
+    /**
+
+     *
      */
 	return kvm_irq_delivery_to_apic(kvm, NULL, &irq, NULL);
 }
@@ -208,6 +215,9 @@ static int kvm_hv_set_sint(struct kvm_kernel_irq_routing_entry *e,
 	return kvm_hv_synic_set_irq(kvm, e->hv_sint.vcpu, e->hv_sint.sint);
 }
 
+/**
+ * irqfd_wakeup() -> EPOLLIN -> kvm_arch_set_irq_inatomic()
+ */
 int kvm_arch_set_irq_inatomic(struct kvm_kernel_irq_routing_entry *e,
 			      struct kvm *kvm, int irq_source_id, int level,
 			      bool line_status)
@@ -319,8 +329,9 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
 	return irqchip_in_kernel(kvm);
 }
 
-/** 
- *  
+/**
+
+ *
  */
 int kvm_set_routing_entry(struct kvm *kvm,
 			  struct kvm_kernel_irq_routing_entry *e,
@@ -339,7 +350,8 @@ int kvm_set_routing_entry(struct kvm *kvm,
 		case KVM_IRQCHIP_PIC_SLAVE:
 			e->irqchip.pin += PIC_NUM_PINS / 2;
 			fallthrough;
-        /** 
+        /**
+
          *  8259A
          */
 		case KVM_IRQCHIP_PIC_MASTER:
@@ -347,7 +359,8 @@ int kvm_set_routing_entry(struct kvm *kvm,
 				return -EINVAL;
 			e->set = kvm_set_pic_irq;
 			break;
-        /** 
+        /**
+
          *  IOAPIC
          */
 		case KVM_IRQCHIP_IOAPIC:
@@ -360,7 +373,8 @@ int kvm_set_routing_entry(struct kvm *kvm,
 		}
 		e->irqchip.irqchip = ue->u.irqchip.irqchip;
 		break;
-    /** 
+    /**
+
      *  MSI(-X)
      */
 	case KVM_IRQ_ROUTING_MSI:
@@ -447,323 +461,323 @@ static const struct kvm_irq_routing_entry default_routing[] = {
 	ROUTING_ENTRY1(20), ROUTING_ENTRY1(21),
 	ROUTING_ENTRY1(22), ROUTING_ENTRY1(23),
 #ifdef __RTOAX___________________________________
-    
-     { 
+
+     {
     .gsi = 0,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (0)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 0,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(0),
      .pin = (0) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 1,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (1)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 1,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(1),
      .pin = (1) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 2,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (2)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 2,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(2),
      .pin = (2) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 3,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (3)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 3,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(3),
      .pin = (3) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 4,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (4)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 4,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(4),
      .pin = (4) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 5,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (5)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 5,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(5),
      .pin = (5) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 6,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (6)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 6,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(6),
      .pin = (6) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 7,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (7)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 7,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(7),
      .pin = (7) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 8,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (8)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 8,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(8),
      .pin = (8) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 9,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (9)
-     } 
-    }, { 
+     }
+    }, {
     .gsi = 9,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(9),
      .pin = (9) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 10,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (10)
-     } 
-    }, { 
+     }
+    }, {
     .gsi = 10,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(10),
      .pin = (10) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 11,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (11)
-     } 
-    }, { 
+     }
+    }, {
     .gsi = 11,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(11),
      .pin = (11) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 12,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (12)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 12,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(12),
      .pin = (12) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 13,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (13)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 13,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(13),
      .pin = (13) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 14,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (14)
-     } 
+     }
     },
-    { 
+    {
     .gsi = 14,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(14),
      .pin = (14) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 15,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (15)
-     } 
-    }, 
-    { 
+     }
+    },
+    {
     .gsi = 15,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = SELECT_PIC(15),
      .pin = (15) % 8
-     } 
+     }
     },
-     { 
+     {
     .gsi = 16,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (16)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 17,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (17)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 18,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (18)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 19,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (19)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 20,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (20)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 21,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (21)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 22,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (22)
-     } 
+     }
     },
-     { 
+     {
     .gsi = 23,
      .type = KVM_IRQ_ROUTING_IRQCHIP,
-     .u.irqchip = { 
+     .u.irqchip = {
     .irqchip = KVM_IRQCHIP_IOAPIC,
      .pin = (23)
-     } 
+     }
     },
 
 #endif//__RTOAX___________________________________

@@ -304,7 +304,7 @@ static u16 vp_config_vector(struct virtio_pci_device *vp_dev, u16 vector)
 	return vp_ioread16(&vp_dev->common->msix_config);
 }
 /**
- *  
+ *
  */
 static struct virtqueue *setup_vq(struct virtio_pci_device *vp_dev,
 				  struct virtio_pci_vq_info *info,
@@ -402,6 +402,9 @@ err_map_notify:
 	return ERR_PTR(err);
 }
 
+/**
+ *
+ */
 static int vp_modern_find_vqs(struct virtio_device *vdev, unsigned nvqs,
 			      struct virtqueue *vqs[],
 			      vq_callback_t *callbacks[],
