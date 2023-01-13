@@ -157,10 +157,10 @@
  * +-------------------------+-----------------+---------------+
  */
 struct vring_desc {
-    /**
-     *  指向存储数据的存储块的首地址
-     *  填充时，需要将 GVA 转化为 GPA
-     */
+	/**
+	 *  指向存储数据的存储块的首地址
+	 *  填充时，需要将 GVA 转化为 GPA
+	 */
 	/**
 	 * Address (guest-physical).
 	 * addr占用64bit存放了单个IO请求的GPA地址信息，例如addr可能表示某个DMA buffer的起
@@ -172,9 +172,9 @@ struct vring_desc {
 	 */
 	__virtio32 len;
 
-    /**
-     *  属性，如 `VRING_DESC_F_WRITE`
-     */
+	/**
+	 *  属性，如 `VRING_DESC_F_WRITE`
+	 */
 	/**
 	 * The flags as indicated above.
 	 * flags的取值有3种，
@@ -185,10 +185,10 @@ struct vring_desc {
 	 */
 	__virtio16 flags;
 
-    /**
-     * 如果 flags 标志有 `VRING_DESC_F_NEXT`, 则该字段有效，指向下一个 virtq_desc
+	/**
+	 * 如果 flags 标志有 `VRING_DESC_F_NEXT`, 则该字段有效，指向下一个 virtq_desc
 	 * 的索引号
-     */
+	 */
 	/* We chain unused descriptors via this, too */
 	__virtio16 next;
 };
@@ -206,21 +206,21 @@ struct vring_desc {
  * +--------------+-------------+--------------+---------------------+
  */
 struct vring_avail {
-    /**
-     * flags取值：
+	/**
+	 * flags取值：
 	 * VRING_AVAIL_F_NO_INTERRUPT 表示前端驱动告诉后端：“当你消耗完一个IO buffer的
 	 *                            时候，不要立刻给我发中断”（防止中断过多影响效率）。
-     */
+	 */
 	__virtio16 flags;
-    /**
-     *  记录 ring 中的位置，表示下次前端驱动要放置Descriptor Entry的地方。
-     */
+	/**
+	 *  记录 ring 中的位置，表示下次前端驱动要放置Descriptor Entry的地方。
+	 */
 	__virtio16 idx;
-    /**
-     *  驱动每次将IO request 转换为一个可用的 描述符链后，
-     *  就会向 数组 ring 中 追加一个元素
-     *  最初，ring 是空的
-     */
+	/**
+	 *  驱动每次将IO request 转换为一个可用的 描述符链后，
+	 *  就会向 数组 ring 中 追加一个元素
+	 *  最初，ring 是空的
+	 */
 	__virtio16 ring[];
 };
 
@@ -326,30 +326,30 @@ struct vring {
 static inline void vring_init(struct vring *vr, unsigned int num, void *p,
 			      unsigned long align)
 {
-    /**
-     *  +-------+ <- p <- vr->desc
-     *  |       | \
-     *  +-------+ |
-     *  |       | |
-     *  +-------+ |
-     *  |       | +- num
-     *  +-------+ |
-     *  |       | |
-     *  +-------+ |
-     *  |       | /
-     *  +-------+ <- vr->avail
-     *  |       |
-     *  +-------+
-     *  |       |
-     *  +-------+
-     *
-     *
-     */
+	/**
+	 *  +-------+ <- p <- vr->desc
+	 *  |       | \
+	 *  +-------+ |
+	 *  |       | |
+	 *  +-------+ |
+	 *  |       | +- num
+	 *  +-------+ |
+	 *  |       | |
+	 *  +-------+ |
+	 *  |       | /
+	 *  +-------+ <- vr->avail
+	 *  |       |
+	 *  +-------+
+	 *  |       |
+	 *  +-------+
+	 *
+	 *
+	 */
 	vr->num = num;
 	vr->desc = p;
-    /**
-     *  可用
-     */
+	/**
+	 *  可用
+	 */
 	vr->avail = (struct vring_avail *)((char *)p + num * sizeof(struct vring_desc));
 	vr->used = (void *)(((uintptr_t)&vr->avail->ring[num] + sizeof(__virtio16)
 		+ align-1) & ~(align - 1));
