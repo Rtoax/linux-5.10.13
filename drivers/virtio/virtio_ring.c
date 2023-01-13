@@ -282,6 +282,14 @@ size_t virtio_max_dma_size(struct virtio_device *vdev)
 }
 EXPORT_SYMBOL_GPL(virtio_max_dma_size);
 
+/**
+ * 创建队列
+ * 一个调用示例
+ * --> vp_setup_vq
+ *  --> vring_create_virtqueue
+ *   --> vring_create_virtqueue_split
+ *     --> vring_alloc_queue
+ */
 static void *vring_alloc_queue(struct virtio_device *vdev, size_t size,
 			      dma_addr_t *dma_handle, gfp_t flag)
 {
@@ -855,6 +863,14 @@ static void *virtqueue_detach_unused_buf_split(struct virtqueue *_vq)
 	return NULL;
 }
 
+/**
+ * 创建队列
+ * 一个调用示例
+ * --> vp_setup_vq
+ *  --> vring_create_virtqueue
+ *   --> vring_create_virtqueue_split
+ *     --> vring_alloc_queue
+ */
 static struct virtqueue *vring_create_virtqueue_split(
 	unsigned int index,
 	unsigned int num,
@@ -881,6 +897,9 @@ static struct virtqueue *vring_create_virtqueue_split(
 
 	/* TODO: allocate each queue chunk individually */
 	for (; num && vring_size(num, vring_align) > PAGE_SIZE; num /= 2) {
+		/**
+		 * 申请物理页，地址赋值给queue
+		 */
 		queue = vring_alloc_queue(vdev, vring_size(num, vring_align),
 					  &dma_addr,
 					  GFP_KERNEL|__GFP_NOWARN|__GFP_ZERO);
@@ -902,6 +921,10 @@ static struct virtqueue *vring_create_virtqueue_split(
 		return NULL;
 
 	queue_size_in_bytes = vring_size(num, vring_align);
+
+	/**
+	 *
+	 */
 	vring_init(&vring, num, queue, vring_align);
 
 	vq = __vring_new_virtqueue(index, vring, vdev, weak_barriers, context,
@@ -2057,6 +2080,9 @@ static inline bool more_used(const struct vring_virtqueue *vq)
 	return vq->packed_ring ? more_used_packed(vq) : more_used_split(vq);
 }
 
+/**
+ * virtqueue队列如果收到 MSIx 中断消息后，调用 hook 处理
+ */
 irqreturn_t vring_interrupt(int irq, void *_vq)
 {
 	struct vring_virtqueue *vq = to_vvq(_vq);
@@ -2070,6 +2096,12 @@ irqreturn_t vring_interrupt(int irq, void *_vq)
 		return IRQ_HANDLED;
 
 	pr_debug("virtqueue callback for %p (%p)\n", vq, vq->vq.callback);
+
+	/**
+	 * virtio-net:
+	 *  skb_recv_done() 接受队列的回调函数
+	 *  skb_xmit_done() 发送队列的回调函数
+	 */
 	if (vq->vq.callback)
 		vq->vq.callback(&vq->vq);
 

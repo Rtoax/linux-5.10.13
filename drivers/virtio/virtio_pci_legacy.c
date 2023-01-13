@@ -135,7 +135,7 @@ static struct virtqueue *setup_vq(struct virtio_pci_device *vp_dev,
 		return ERR_PTR(-ENOENT);
 
     /**
-     *  
+     *
      */
 	info->msix_vector = msix_vec;
 
@@ -214,7 +214,11 @@ static const struct virtio_config_ops virtio_pci_config_ops = {
 	.get_vq_affinity = vp_get_vq_affinity,
 };
 
-/* the PCI probing function */
+/**
+ * the PCI probing function
+ *
+ * 对于virtio legacy，协议规定设备的配置数据结构放在PCI BAR0里面。
+ */
 int virtio_pci_legacy_probe(struct virtio_pci_device *vp_dev)
 {
 	struct pci_dev *pci_dev = vp_dev->pci_dev;
@@ -245,11 +249,18 @@ int virtio_pci_legacy_probe(struct virtio_pci_device *vp_dev)
 	if (rc)
 		dev_warn(&pci_dev->dev, "Failed to enable 64-bit or 32-bit DMA.  Trying to continue, but this might not work.\n");
 
+	/**
+	 * 将设备的 BAR0 映射到物理地址空间
+	 */
 	rc = pci_request_region(pci_dev, 0, "virtio-pci-legacy");
 	if (rc)
 		return rc;
 
 	rc = -ENOMEM;
+
+	/**
+	 * 获得BAR0的内核地址
+	 */
 	vp_dev->ioaddr = pci_iomap(pci_dev, 0, 0);
 	if (!vp_dev->ioaddr)
 		goto err_iomap;

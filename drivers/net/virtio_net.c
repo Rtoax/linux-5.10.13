@@ -1529,6 +1529,9 @@ static int virtnet_poll_tx(struct napi_struct *napi, int budget)
 	return 0;
 }
 
+/**
+ * 将skb放到virtqueue队列中
+ */
 static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)
 {
 	struct virtio_net_hdr_mrg_rxbuf *hdr;
@@ -1576,6 +1579,10 @@ static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)
 	return virtqueue_add_outbuf(sq->vq, sq->sg, num_sg, skb, GFP_ATOMIC);
 }
 
+/**
+ * 网卡发包的时候调用ndo_start_xmit，将TCP/IP上层协议栈扔下来的数据发送出去。
+ * 就是将skb发送到virtqueue中， 然后调用virtqueue_kick通知qemu后端将数据包发送出去。
+ */
 static netdev_tx_t start_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	struct virtnet_info *vi = netdev_priv(dev);
@@ -1595,7 +1602,13 @@ static netdev_tx_t start_xmit(struct sk_buff *skb, struct net_device *dev)
 	/* timestamp packet in software */
 	skb_tx_timestamp(skb);
 
-	/* Try to transmit */
+	/**
+	 * Try to transmit: 将skb放到virtqueue队列中
+	 *
+	 * -> xmit_skb
+	 *  -> sg_init_table,virtqueue_add_outbuf
+	 *   -> virtqueue_add
+	 */
 	err = xmit_skb(sq, skb);
 
 	/* This should not happen! */
@@ -1640,8 +1653,39 @@ static netdev_tx_t start_xmit(struct sk_buff *skb, struct net_device *dev)
 	}
 
 	if (kick || netif_xmit_stopped(txq)) {
+		/**
+		 * kick通知qemu后端去取
+		 *
+		 * PS:
+		 * Guest Kick后端从KVM中VMExit出来退出到Qemu用户态（走的是ioeventfd）由
+		 * Qemu去将数据发送出去。 大致调用的流程是：
+		 *
+		 * -> virtio_queue_host_notifier_read
+		 *  -> virtio_net_handle_tx_bh
+		 *   -> virtio_net_flush_tx
+		 *   -> virtqueue_pop(skb) # 拿到发包
+		 *  -> qemu_sendv_packet_async # 报文放到发送队列上，写tap设备的fd去发包
+		 *   -> tap_receive_iov
+		 *    -> tap_write_packet # 把数据包发给tap设备投递出去
+		 *
+		 * 网卡收包的时候，tap设备先收到报文，对应的virtio-net网卡tap设备fd变为可读，
+		 * Qemu主循环收到POLL_IN事件调用回调函数收包。
+		 *
+		 * tap_send -> qemu_send_packet_async -> qemu_send_packet_async_with_flags
+		 *     -> qemu_net_queue_send
+		 *         -> qemu_net_queue_deliver
+		 *         -> qemu_deliver_packet_iov
+		 *             -> nc_sendv_compat
+		 *             -> virtio_net_receive
+		 *                 -> virtio_net_receive_rcu
+		 *
+		 * virtio-net网卡收报最终调用了virtio_net_receive_rcu， 和发包类似都是调用
+		 * virtqueue_pop从前端获取virtqueue element， 将报文数据填充到vring中然后
+		 * virtio_notify注入中断通知前端驱动取结果。
+		 */
 		if (virtqueue_kick_prepare(sq->vq) && virtqueue_notify(sq->vq)) {
 			u64_stats_update_begin(&sq->stats.syncp);
+			/* kick次数加1 */
 			sq->stats.kicks++;
 			u64_stats_update_end(&sq->stats.syncp);
 		}
@@ -2550,9 +2594,16 @@ static int virtnet_set_features(struct net_device *dev,
 	return 0;
 }
 
+/**
+ *
+ */
 static const struct net_device_ops virtnet_netdev = {
 	.ndo_open            = virtnet_open,
 	.ndo_stop   	     = virtnet_close,
+	/**
+	 * 网卡发包的时候调用ndo_start_xmit，将TCP/IP上层协议栈扔下来的数据发送出去。
+	 * 就是将skb发送到virtqueue中， 然后调用virtqueue_kick通知qemu后端将数据包发送出去。
+	 */
 	.ndo_start_xmit      = start_xmit,
 	.ndo_validate_addr   = eth_validate_addr,
 	.ndo_set_mac_address = virtnet_set_mac_address,
@@ -2756,6 +2807,13 @@ static int virtnet_find_vqs(struct virtnet_info *vi)
 
 	/* Allocate/initialize parameters for send/receive virtqueues */
 	for (i = 0; i < vi->max_queue_pairs; i++) {
+		/**
+		 * skb_recv_done() 接受队列的回调函数
+		 * skb_xmit_done() 发送队列的回调函数
+		 *
+		 * 收包：Hardware => Host Kernel => Qemu => Guest
+		 * 发包：Guest => Host Kernel => Qemu => Host Kernel => Hardware
+		 */
 		callbacks[rxq2vq(i)] = skb_recv_done;
 		callbacks[txq2vq(i)] = skb_xmit_done;
 		sprintf(vi->rq[i].name, "input.%d", i);
@@ -2842,6 +2900,9 @@ err_ctrl:
 	return -ENOMEM;
 }
 
+/**
+ *
+ */
 static int init_vqs(struct virtnet_info *vi)
 {
 	int ret;
@@ -3012,7 +3073,11 @@ static int virtnet_probe(struct virtio_device *vdev)
 	    !virtio_has_feature(vdev, VIRTIO_NET_F_CTRL_VQ))
 		max_queue_pairs = 1;
 
-	/* Allocate ourselves a network device with room for our info */
+	/**
+	 * Allocate ourselves a network device with room for our info
+	 *
+	 * check后端是否支持多队列，并按情况创建队列
+	 */
 	dev = alloc_etherdev_mq(sizeof(struct virtnet_info), max_queue_pairs);
 	if (!dev)
 		return -ENOMEM;
@@ -3022,6 +3087,9 @@ static int virtnet_probe(struct virtio_device *vdev)
 	dev->netdev_ops = &virtnet_netdev;
 	dev->features = NETIF_F_HIGHDMA;
 
+	/**
+	 * 定义一个网络设备并配置一些属性，例如MAC地址
+	 */
 	dev->ethtool_ops = &virtnet_ethtool_ops;
 	SET_NETDEV_DEV(dev, &vdev->dev);
 
@@ -3138,7 +3206,7 @@ static int virtnet_probe(struct virtio_device *vdev)
 
 	/**
 	 * Allocate/initialize the rx/tx queues, and invoke find_vqs
-	 * 分配/初始化 rx/tx 队列，并调用find_vqs
+	 * 初始化virtqueue: 分配/初始化 rx/tx 队列，并调用find_vqs
 	 */
 	err = init_vqs(vi);
 	if (err)
@@ -3161,6 +3229,9 @@ static int virtnet_probe(struct virtio_device *vdev)
 		}
 	}
 
+	/**
+	 * 注册一个网络设备
+	 */
 	err = register_netdev(dev);
 	if (err) {
 		pr_debug("virtio_net: registering device failed\n");
@@ -3168,7 +3239,7 @@ static int virtnet_probe(struct virtio_device *vdev)
 	}
 
 	/**
-	 * 准备好的标志
+	 * 写状态位DRIVER_OK，告诉后端，前端已经ready
 	 */
 	virtio_device_ready(vdev);
 
@@ -3188,6 +3259,9 @@ static int virtnet_probe(struct virtio_device *vdev)
 	} else {
 		vi->status = VIRTIO_NET_S_LINK_UP;
 		virtnet_update_settings(vi);
+		/**
+		 * 将网卡up起来
+		 */
 		netif_carrier_on(dev);
 	}
 

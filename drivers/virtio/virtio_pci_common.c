@@ -47,6 +47,7 @@ bool vp_notify(struct virtqueue *vq)
 }
 
 /* Handle a configuration change: Tell driver if it wants to know. */
+/* "configuration changed" 中断服务程序 */
 static irqreturn_t vp_config_changed(int irq, void *opaque)
 {
 	struct virtio_pci_device *vp_dev = opaque;
@@ -56,6 +57,9 @@ static irqreturn_t vp_config_changed(int irq, void *opaque)
 }
 
 /* Notify all virtqueues on an interrupt. */
+/**
+ * virtqueue队列的中断服务程序
+ */
 static irqreturn_t vp_vring_interrupt(int irq, void *opaque)
 {
 	struct virtio_pci_device *vp_dev = opaque;
@@ -92,10 +96,16 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
 	if (!isr)
 		return IRQ_NONE;
 
-	/* Configuration change?  Tell driver if it wants to know. */
+	/**
+	 * Configuration change?  Tell driver if it wants to know.
+	 * "configuration changed" 中断服务程序
+	 */
 	if (isr & VIRTIO_PCI_ISR_CONFIG)
 		vp_config_changed(irq, opaque);
 
+	/**
+	 * virtqueue队列的中断服务程序
+	 */
 	return vp_vring_interrupt(irq, opaque);
 }
 
@@ -143,6 +153,9 @@ static int vp_request_msix_vectors(struct virtio_device *vdev, int nvectors,
 	v = vp_dev->msix_used_vectors;
 	snprintf(vp_dev->msix_names[v], sizeof *vp_dev->msix_names,
 		 "%s-config", name);
+	/**
+	 * "configuration changed" 中断服务程序
+	 */
 	err = request_irq(pci_irq_vector(vp_dev->pci_dev, v),
 			  vp_config_changed, 0, vp_dev->msix_names[v],
 			  vp_dev);
@@ -162,6 +175,9 @@ static int vp_request_msix_vectors(struct virtio_device *vdev, int nvectors,
 		v = vp_dev->msix_used_vectors;
 		snprintf(vp_dev->msix_names[v], sizeof *vp_dev->msix_names,
 			 "%s-virtqueues", name);
+		/**
+		 * virtqueue队列的中断服务程序
+		 */
 		err = request_irq(pci_irq_vector(vp_dev->pci_dev, v),
 				  vp_vring_interrupt, 0, vp_dev->msix_names[v],
 				  vp_dev);
@@ -175,7 +191,10 @@ error:
 }
 
 /**
- *
+ * 创建队列 virtqueue
+ * --> vring_create_virtqueue
+ *  --> vring_create_virtqueue_split
+ *   --> vring_alloc_queue
  */
 static struct virtqueue *vp_setup_vq(struct virtio_device *vdev, unsigned index,
 				     void (*callback)(struct virtqueue *vq),
@@ -319,6 +338,7 @@ static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 	}
 
 	/**
+	 * 为configuration change申请MSIx中断
 	 * 主要的 MSIx 中断申请逻辑都在这个函数里面
 	 */
 	err = vp_request_msix_vectors(vdev, nvectors, per_vq_vectors,
@@ -340,6 +360,12 @@ static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 			msix_vec = allocated_vectors++;
 		else
 			msix_vec = VP_MSIX_VQ_VECTOR;
+		/**
+		 * 创建队列
+		 *  --> vring_create_virtqueue
+		 *   --> vring_create_virtqueue_split
+		 *     --> vring_alloc_queue
+		 */
 		vqs[i] = vp_setup_vq(vdev, queue_idx++, callbacks[i], names[i],
 				     ctx ? ctx[i] : false,
 				     msix_vec);
@@ -357,7 +383,7 @@ static int vp_find_vqs_msix(struct virtio_device *vdev, unsigned nvqs,
 			 "%s-%s",
 			 dev_name(&vp_dev->vdev.dev), names[i]);
 		/**
-		 * 注册中断处理函数
+		 * 注册中断处理函数: 每个队列申请一个MSIx中断
 		 */
 		err = request_irq(pci_irq_vector(vp_dev->pci_dev, msix_vec),
 				  vring_interrupt, 0,
@@ -571,6 +597,10 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 		goto err_enable_device;
 
 	if (force_legacy) {
+		/**
+		 * 尝试以virtio legacy方式读取设备配置数据结构
+		 * virtio legacy协议规定设备的配置数据结构放在PCI BAR0里面。
+		 */
 		rc = virtio_pci_legacy_probe(vp_dev);
 		/* Also try modern mode if we can't map BAR0 (no IO space). */
 		if (rc == -ENODEV || rc == -ENOMEM)
@@ -579,6 +609,7 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 			goto err_probe;
 	} else {
 		/**
+		 * 尝试以virtio modern方式读取设备配置数据结构
 		 * 初始化该 PCI 设备对应的 virtio 设备
 		 */
 		rc = virtio_pci_modern_probe(vp_dev);

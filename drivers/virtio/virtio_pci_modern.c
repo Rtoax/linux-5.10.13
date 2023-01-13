@@ -679,7 +679,11 @@ static inline void check_offsets(void)
 		     offsetof(struct virtio_pci_common_cfg, queue_used_hi));
 }
 
-/* the PCI probing function */
+/**
+ * the PCI probing function
+ *
+ * 对于virtio modern，通过capability方式报告配置数据结构的位置，配置数据结构有5种类型。
+ */
 int virtio_pci_modern_probe(struct virtio_pci_device *vp_dev)
 {
 	struct pci_dev *pci_dev = vp_dev->pci_dev;

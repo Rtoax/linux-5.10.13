@@ -1195,6 +1195,9 @@ err:
 	return err;
 }
 
+/**
+ *
+ */
 static int tap_sendmsg(struct socket *sock, struct msghdr *m,
 		       size_t total_len)
 {
@@ -1240,7 +1243,9 @@ static int tap_peek_len(struct socket *sock)
 	return PTR_RING_PEEK_CALL(&q->ring, __skb_array_len_with_tag);
 }
 
-/* Ops structure to mimic raw sockets with tun */
+/**
+ * Ops structure to mimic raw sockets with tun
+ */
 static const struct proto_ops tap_socket_ops = {
 	.sendmsg = tap_sendmsg,
 	.recvmsg = tap_recvmsg,

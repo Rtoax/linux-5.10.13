@@ -214,10 +214,16 @@ static int virtio_dev_probe(struct device *_d)
 	u64 driver_features;
 	u64 driver_features_legacy;
 
-	/* We have a driver! */
+	/**
+	 * We have a driver!
+	 * 更新status bit，这里要写配置数据结构
+	 */
 	virtio_add_status(dev, VIRTIO_CONFIG_S_DRIVER);
 
-	/* Figure out what features the device supports. */
+	/**
+	 * Figure out what features the device supports.
+	 * 查询后端支持哪些feature bits
+	 */
 	device_features = dev->config->get_features(dev);
 
 	/* Figure out what features the driver supports. */
@@ -256,13 +262,19 @@ static int virtio_dev_probe(struct device *_d)
 			goto err;
 	}
 
+	/**
+	 * feature set协商，取交集
+	 */
 	err = virtio_finalize_features(dev);
 	if (err)
 		goto err;
 
 	/**
+	 * 调用特定virtio设备的驱动程序probe
+	 *
 	 * 可能如下：
 	 * virtnet_probe()
+	 * virtblk_probe()
 	 */
 	err = drv->probe(dev);
 	if (err)
