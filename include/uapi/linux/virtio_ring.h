@@ -98,6 +98,16 @@
 
 /* Virtio ring descriptors: 16 bytes.  These can chain together via "next". */
 /**
+ * 传统的纯模拟设备在工作的时候，会触发频繁的陷入陷出， 而且IO请求的内容要进行多次拷贝传递，
+ * 严重影响了设备的IO性能。 virtio为了提升设备的IO性能，采用了共享内存机制， 前端驱动会提前
+ * 申请好一段物理地址空间用来存放IO请求，然后将这段地址的GPA告诉QEMU。 前端驱动在下发IO请求
+ * 后，QEMU可以直接从共享内存中取出请求，然后将完成后的结果又直接写到虚拟机对应地址上去。 整
+ * 个过程中可以做到直投直取，省去了不必要的数据拷贝开销。
+ *
+ * Virtqueue是整个virtio方案的灵魂所在。每个virtqueue都包含3张表， Descriptor Table存
+ * 放了IO请求描述符，Available Ring记录了当前哪些描述符是可用的， Used Ring记录了哪些描述
+ * 符已经被后端使用了。
+ *
  * 每个virtqueue由3个部分组成：
  * +-------------------+--------------------------------+-----------------------+
  * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
@@ -105,28 +115,79 @@
  * Descriptor Table：存放IO传输请求信息；
  * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
  * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ *
+ *
+ *          +------------------------------------+
+ *          |       virtio  guest driver         |
+ *          +-----------------+------------------+
+ *            /               |              ^
+ *           /                |               \
+ *          put            update             get
+ *         /                  |                 \
+ *        V                   V                  \
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *   | available|      | descriptor |        |   used   |
+ *   |   ring   |      |   table    |        |   ring   |
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *        \                   ^                   ^
+ *         \                  |                  /
+ *         get             update              put
+ *           \                |                /
+ *            V               |               /
+ *           +----------------+-------------------+
+ *           |       virtio host backend          |
+ *           +------------------------------------+
+ *
+ * https://kernelgo.org/virtio-overview.html
  */
 /**
- * Descriptor Table：存放IO传输请求信息；
+ * Descriptor Table：存放IO传输请求信息,是一个一个的virtq_desc元素，每个virq_desc元素
+ * 占用16个字节。
+ *
+ * +-----------------------------------------------------------+
+ * |                        addr/gpa [0:63]                    |
+ * +-------------------------+-----------------+---------------+
+ * |         len [0:31]      |  flags [0:15]   |  next [0:15]  |
+ * +-------------------------+-----------------+---------------+
  */
 struct vring_desc {
     /**
      *  指向存储数据的存储块的首地址
      *  填充时，需要将 GVA 转化为 GPA
      */
-	/* Address (guest-physical). */
+	/**
+	 * Address (guest-physical).
+	 * addr占用64bit存放了单个IO请求的GPA地址信息，例如addr可能表示某个DMA buffer的起
+	 * 始地址。
+	 */
 	__virtio64 addr;
-	/* Length. */
+	/**
+	 * Length. len占用32bit表示IO请求的长度
+	 */
 	__virtio32 len;
 
     /**
      *  属性，如 `VRING_DESC_F_WRITE`
      */
-	/* The flags as indicated above. */
+	/**
+	 * The flags as indicated above.
+	 * flags的取值有3种，
+	 * 1. VRING_DESC_F_NEXT 表示这个IO请求和下一个virtq_desc描述的是连续的，
+	 * 2. VRING_DESC_F_WRITE 表示这段buffer是write only的，
+	 * 3. VRING_DESC_F_INDIRECT 表示这段buffer里面放的内容是另外一组buffer的
+	 *    virtq_desc（相当于重定向）
+	 */
 	__virtio16 flags;
 
     /**
-     *  如果 flags 标志有 `VRING_DESC_F_NEXT`, 则该字段有效
+     * 如果 flags 标志有 `VRING_DESC_F_NEXT`, 则该字段有效，指向下一个 virtq_desc
+	 * 的索引号
      */
 	/* We chain unused descriptors via this, too */
 	__virtio16 next;
@@ -136,14 +197,23 @@ struct vring_desc {
  *
  * 可用描述符区域，在 CPU 从 guest 切换到 host模式后，模拟设备将检查可用描述符区域，如果有
  * 可用的描述符，就一次进行消费。
+ *
+ * Available Ring是前端驱动用来告知后端那些IO buffer是的请求需要处理，每个Ring中包含一个
+ * virtq_avail占用8个字节
+ *
+ * +--------------+-------------+--------------+---------------------+
+ * | flags [0:15] |  idx [0:15] |  ring[0:15]  |  used_event [0:15]  |
+ * +--------------+-------------+--------------+---------------------+
  */
 struct vring_avail {
     /**
-     *
+     * flags取值：
+	 * VRING_AVAIL_F_NO_INTERRUPT 表示前端驱动告诉后端：“当你消耗完一个IO buffer的
+	 *                            时候，不要立刻给我发中断”（防止中断过多影响效率）。
      */
 	__virtio16 flags;
     /**
-     *  记录 ring 中的位置
+     *  记录 ring 中的位置，表示下次前端驱动要放置Descriptor Entry的地方。
      */
 	__virtio16 idx;
     /**
@@ -171,6 +241,14 @@ typedef struct vring_used_elem __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
  * 已用描述符，设备将已经处理的描述符记录起来，反馈给驱动，这个“已用”也是相对于驱动而言的。
  */
 struct vring_used {
+	/**
+	 * flags的值如果为 VIRTIO_RING_F_EVENT_IDX，并且前后端协商 VIRTIO_RING_F_EVENT_IDX
+	 * feature 成功。那么 Guest 会将 used ring index 放在 available ring 的末尾，
+	 * 告诉后端说： “Hi 小老弟，当你处理完这个请求的时候，给我发个中断通知我一下”， 同时 host
+	 * 也会将 avail_event index 放到 used ring 的末尾，告诉guest说： “Hi 老兄，记得把
+	 * 这个 idx 的请求 kick 给我哈”。VIRTIO_RING_F_EVENT_IDX 对virtio通知/中断有一定的
+	 * 优化，在某些场景下能够提升IO性能。
+	 */
 	__virtio16 flags;
 	__virtio16 idx;
 	vring_used_elem_t ring[];
