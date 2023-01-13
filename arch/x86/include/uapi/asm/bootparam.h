@@ -121,6 +121,9 @@ struct setup_header {
      *  会进入保护模式并跳转到1M地址处执行head_64.S中start_32，
      */
 	__u32	code32_start;
+	/**
+	 * initramfs 加载地址和大小
+	 */
 	__u32	ramdisk_image;  /* get_ramdisk_image() */
 	__u32	ramdisk_size;   /* get_ramdisk_size() */
 	__u32	bootsect_kludge;

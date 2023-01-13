@@ -52,6 +52,9 @@ struct bzimage64_data {
 	void *bootparams_buf;
 };
 
+/**
+ * 设置 intiramfs 大小
+ */
 static int setup_initrd(struct boot_params *params,
 		unsigned long initrd_load_addr, unsigned long initrd_len)
 {

@@ -19,7 +19,7 @@ int initrd_below_start_ok;
 unsigned int real_root_dev;	/* do_proc_dointvec cannot handle kdev_t */
 static int __initdata mount_initrd = 1;
 /**
- *  
+ *
  */
 phys_addr_t __initdata phys_initrd_start ;
 unsigned long __initdata phys_initrd_size ;
@@ -32,6 +32,9 @@ static int __init no_initrd(char *str)
 
 __setup("noinitrd", no_initrd);
 
+/**
+ * 设置大小
+ */
 static int __init early_initrdmem(char *p)
 {
 	phys_addr_t start;
@@ -39,7 +42,7 @@ static int __init early_initrdmem(char *p)
 	char *endp;
 
     /**
-     *  
+     *
      */
 	start = memparse(p, &endp);
 	if (*endp == ',') {

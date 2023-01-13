@@ -183,11 +183,11 @@ EXPORT_SYMBOL(edd);
  */
 static inline void __init copy_edd(void) /* BIOS Enhanced Disk Drive Specification */
 {
-     memcpy(edd.mbr_signature, boot_params.edd_mbr_sig_buffer,
+	 memcpy(edd.mbr_signature, boot_params.edd_mbr_sig_buffer,
 	    sizeof(edd.mbr_signature));
-     memcpy(edd.edd_info, boot_params.eddbuf, sizeof(edd.edd_info));
-     edd.mbr_signature_nr = boot_params.edd_mbr_sig_buf_entries;
-     edd.edd_info_nr = boot_params.eddbuf_entries;
+	 memcpy(edd.edd_info, boot_params.eddbuf, sizeof(edd.edd_info));
+	 edd.mbr_signature_nr = boot_params.edd_mbr_sig_buf_entries;
+	 edd.edd_info_nr = boot_params.eddbuf_entries;
 }
 #else
 
@@ -245,19 +245,23 @@ static u64 __init get_ramdisk_image(void)   /* RAM */
 {
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
 
-    /**
-     *  initrd
-     */
+	/**
+	 *  initrd
+	 */
 	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
 
 	if (ramdisk_image == 0)
 		ramdisk_image = phys_initrd_start;
 
-    /**
-     *  initrd
-     */
+	/**
+	 *  initrd
+	 */
 	return ramdisk_image;
 }
+
+/**
+ * RAMFS 大小
+ */
 static u64 __init get_ramdisk_size(void)
 {
 	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
@@ -289,12 +293,10 @@ static void __init relocate_initrd(void)
 	initrd_start = relocated_ramdisk + PAGE_OFFSET;
 	initrd_end   = initrd_start + ramdisk_size;
 
-    //# sudo dmesg | grep RAM
-    //[    0.000000] RAMDISK: [mem 0x345ae000-0x362cefff]
 	printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
 	       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
 
-    /* 从 early_reserve_initrd() 预留的地方拷贝 */
+	/* 从 early_reserve_initrd() 预留的地方拷贝 */
 	copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
 
 	printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to"
@@ -304,26 +306,26 @@ static void __init relocate_initrd(void)
 }
 
 /* Linux初始RAM磁盘（initrd）是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。
-        根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移*/
+		根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移*/
 static void __init early_reserve_initrd(void)
 {
-    /**
-     *  //Documentation/x86/zero-page 中有
-     * 0C0/004		ALL	ext_ramdisk_image	ramdisk_image high 32bits
-     * 0C4/004		ALL	ext_ramdisk_size	ramdisk_size high 32bits
-     */
-    //所有的这些啊参数都来自于`boot_params`
+	/**
+	 *  //Documentation/x86/zero-page 中有
+	 * 0C0/004		ALL	ext_ramdisk_image	ramdisk_image high 32bits
+	 * 0C4/004		ALL	ext_ramdisk_size	ramdisk_size high 32bits
+	 */
+	//所有的这些啊参数都来自于`boot_params`
 	/* Assume only end is not page aligned */
 	u64 ramdisk_image = get_ramdisk_image();    /* struct setup_header */
 	u64 ramdisk_size  = get_ramdisk_size();     /* struct setup_header */
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-    //检查bootloader 提供的ramdisk信息
+	//检查bootloader 提供的ramdisk信息
 	if (!boot_params.hdr.type_of_loader ||
 	    !ramdisk_image || !ramdisk_size)
 		return;		/* No initrd provided by bootloader */
 
-    //保留内存块将ramdisk传输到最终的内存地址
+	//保留内存块将ramdisk传输到最终的内存地址
 	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);/* 预留 */
 }
 
@@ -346,19 +348,29 @@ static void __init reserve_initrd(void)
 	u64 ramdisk_size  = get_ramdisk_size();     /* struct setup_header */
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-    //检查bootloader 提供的ramdisk信息
+	//检查bootloader 提供的ramdisk信息
 	if (!boot_params.hdr.type_of_loader ||
 	    !ramdisk_image || !ramdisk_size)
 		return;		/* No initrd provided by bootloader */
 
 	initrd_start = 0;
 
+	/**
+	 * 这实际上显示的是 /boot/initramfs-xxx.img 文件的大小
+	 *
+	 * 我的环境：
+	 *
+	 * RAMDISK: [mem 0x5f66a000-0x63a22fff] ~= 67.72265529632568M
+	 *
+	 * $ sudo du -sh /boot/initramfs-5.14.0-229.el9.x86_64.img
+	 * 68M	/boot/initramfs-5.14.0-229.el9.x86_64.img
+	 */
 	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
 			ramdisk_end - 1);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
 				PFN_DOWN(ramdisk_end))) {
 		/* All are mapped, easy case */
@@ -367,13 +379,13 @@ static void __init reserve_initrd(void)
 		return;
 	}
 
-    /**
-     *
-     */
-    /* see early_reserve_initrd() */
+	/**
+	 *
+	 */
+	/* see early_reserve_initrd() */
 	relocate_initrd();
 
-    /* 对应将   early_reserve_initrd 中的 memblock_reserve 释放*/
+	/* 对应将   early_reserve_initrd 中的 memblock_reserve 释放*/
 	memblock_free(ramdisk_image, ramdisk_end - ramdisk_image);
 }
 
@@ -727,9 +739,9 @@ static void __init trim_bios_range(void)
 	 */
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 
-    /**
-     *  更新一波
-     */
+	/**
+	 *  更新一波
+	 */
 	e820__update_table(e820_table);
 }
 
@@ -739,9 +751,9 @@ static void __init trim_bios_range(void)
 /* called before trim_bios_range() to spare extra sanitize */
 static void __init e820_add_kernel_range(void)
 {
-    /**
-     *  获取内核代码段 的起始地址 ~ 内核 结束
-     */
+	/**
+	 *  获取内核代码段 的起始地址 ~ 内核 结束
+	 */
 	u64 start = __pa_symbol(_text);
 	u64 size = __pa_symbol(_end) - start;
 
@@ -753,39 +765,39 @@ static void __init e820_add_kernel_range(void)
 	 * we will crash later anyways.
 	 *
 	 * 将 内核 镜像 映射到 物理内存（RAM）中
-     *  遍历整个 table *
-     *  Physic Memory
-     *
-     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
-     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
-     *  |          |                         |     |                 |             |                |
-     *  |          |                         | ... |                 |             |                |
-     *  |          |                         |     |                 |             |                |
-     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
-     *  ^          ^                               ^                 ^             ^
-     *  |          |                               |                 |             |
-     *  | +--------+                               |                 |             |
-     *  | |     +----------------------------------+                 |             |
-     *  | |     | +--------------------------------------------------+             |
-     *  | |     | | +--------------------------------------------------------------+
-     *  | |     | | |
-     *  | |     | | |
-     * +-+-+---+-+-+-+-+-+-+-+-+
-     * | | |   | | | | | | | | |
-     * | | | . | | | | | | | | |
-     * | | | . | | | | | | | | |
-     * | | |   | | | | | | | | |
-     * +-+-+---+-+-+-+-+-+-+-+-+
-     *      e820_table
-     */
+	 *  遍历整个 table *
+	 *  Physic Memory
+	 *
+	 *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+	 *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+	 *  |          |                         |     |                 |             |                |
+	 *  |          |                         | ... |                 |             |                |
+	 *  |          |                         |     |                 |             |                |
+	 *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+	 *  ^          ^                               ^                 ^             ^
+	 *  |          |                               |                 |             |
+	 *  | +--------+                               |                 |             |
+	 *  | |     +----------------------------------+                 |             |
+	 *  | |     | +--------------------------------------------------+             |
+	 *  | |     | | +--------------------------------------------------------------+
+	 *  | |     | | |
+	 *  | |     | | |
+	 * +-+-+---+-+-+-+-+-+-+-+-+
+	 * | | |   | | | | | | | | |
+	 * | | | . | | | | | | | | |
+	 * | | | . | | | | | | | | |
+	 * | | |   | | | | | | | | |
+	 * +-+-+---+-+-+-+-+-+-+-+-+
+	 *      e820_table
+	 */
 	if (e820__mapped_all(start, start + size, E820_TYPE_RAM))
 		return;
 
 	pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
 
-    /**
-     *  出错流程
-     */
+	/**
+	 *  出错流程
+	 */
 	e820__range_remove(start, size, E820_TYPE_RAM, 0);
 	e820__range_add(start, size, E820_TYPE_RAM);
 }
@@ -814,7 +826,7 @@ static int __init parse_reservelow(char *p)
 
 early_param("reservelow", parse_reservelow);
 
-    //用于保留 `memblock` 中的前4KB页面
+	//用于保留 `memblock` 中的前4KB页面
 static void __init trim_low_memory_range(void)
 {
 	/*
@@ -863,10 +875,10 @@ dump_kernel_offset(struct notifier_block *self, unsigned long v, void *p)
 
 void __init setup_arch(char **cmdline_p)
 {
-    /**
-     *  此函数解析内核的段`_text`和`_data`来自于`_text`符号和`_bss_stop`,
-     *  arch/x86/kernel/head_64.S
-     *
+	/**
+	 *  此函数解析内核的段`_text`和`_data`来自于`_text`符号和`_bss_stop`,
+	 *  arch/x86/kernel/head_64.S
+	 *
 	 * Reserve the memory occupied by the kernel between _text and
 	 * __end_of_kernel_reserve symbols. Any kernel sections after the
 	 * __end_of_kernel_reserve symbol must be explicitly reserved with a
@@ -883,7 +895,7 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	memblock_reserve(0, PAGE_SIZE);/* 确保 page 0 被预留，因为可能会泄漏到用户进程 */
 
-    /**
+	/**
 	 * Linux初始RAM磁盘(initrd)是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。
 	 * 根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移
 	 */
@@ -912,10 +924,10 @@ void __init setup_arch(char **cmdline_p)
 			initial_page_table + KERNEL_PGD_BOUNDARY,
 			KERNEL_PGD_PTRS);
 
-    /**
-     * @brief 保存全局页表到 CR3 寄存器
-     *
-     */
+	/**
+	 * @brief 保存全局页表到 CR3 寄存器
+	 *
+	 */
 	load_cr3(swapper_pg_dir);
 	/*
 	 * Note: Quark X1000 CPUs advertise PGE incorrectly and require
@@ -952,14 +964,14 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	olpc_ofw_detect();
 
-    /**
-     *  中断描述符表
-     */
+	/**
+	 *  中断描述符表
+	 */
 	idt_setup_early_traps();
 
-    /**
-     *	收集 `CPU` 和其供应商的信息
-     */
+	/**
+	 *	收集 `CPU` 和其供应商的信息
+	 */
 	early_cpu_init();
 	arch_init_ideal_nops();
 	jump_label_init();
@@ -973,7 +985,7 @@ void __init setup_arch(char **cmdline_p)
 
 	setup_olpc_ofw_pgd();
 
-    /**
+	/**
 	 * 获取根设备的主次设备号
 	 * 后面 `initrd` 会通过 `do_mount_root` 函数挂载到这个根设备上
 	 *
@@ -984,10 +996,10 @@ void __init setup_arch(char **cmdline_p)
 	 * ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	 */
 
-    /**
-     *  设置与显示屏有关的参数
-     *      目前有行、列，视频页
-     */
+	/**
+	 *  设置与显示屏有关的参数
+	 *      目前有行、列，视频页
+	 */
 	screen_info = boot_params.screen_info;
 	edid_info = boot_params.edid_info;
 
@@ -1029,30 +1041,30 @@ void __init setup_arch(char **cmdline_p)
 	 * @brief /proc/iomem - 提供每个物理设备的系统内存映射地址
 	 *		根据不同属性划分为以十六进制符号表示的一段地址范围
 	 */
-        //cat /proc/iomem
-        //00000000-00000fff : reserved
-        //00001000-0009fbff : System RAM
-        //0009fc00-0009ffff : reserved
-        //000a0000-000bffff : PCI Bus 0000:00
-        //000c0000-000c95ff : Video ROM
-        //000c9800-000ca5ff : Adapter ROM
-        //000ca800-000ccbff : Adapter ROM
-        //000f0000-000fffff : reserved
-        //000f0000-000fffff : System ROM
-        //00100000-bff7ffff : System RAM
-        //2a000000-340fffff : Crash kernel
-        //bff80000-bfffffff : reserved
-        //c0000000-febfffff : PCI Bus 0000:00
-    //设置 `iomem` 的结束地址，我们需要这样做
+	//cat /proc/iomem
+	//00000000-00000fff : reserved
+	//00001000-0009fbff : System RAM
+	//0009fc00-0009ffff : reserved
+	//000a0000-000bffff : PCI Bus 0000:00
+	//000c0000-000c95ff : Video ROM
+	//000c9800-000ca5ff : Adapter ROM
+	//000ca800-000ccbff : Adapter ROM
+	//000f0000-000fffff : reserved
+	//000f0000-000fffff : System ROM
+	//00100000-bff7ffff : System RAM
+	//2a000000-340fffff : Crash kernel
+	//bff80000-bfffffff : reserved
+	//c0000000-febfffff : PCI Bus 0000:00
+	//设置 `iomem` 的结束地址，我们需要这样做
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 
-    /**
+	/**
 	 * 设置内存映射
 	 *
-     *  设置完根 `iomem` 的资源地址范围的结束地址后，下一步就是 设置内存映射
-     *
-     *  获取内存布局，从 BIOS 中拷贝一份新的 到 e802_table 中
-     */
+	 *  设置完根 `iomem` 的资源地址范围的结束地址后，下一步就是 设置内存映射
+	 *
+	 *  获取内存布局，从 BIOS 中拷贝一份新的 到 e802_table 中
+	 */
 	e820__memory_setup();
 
 	parse_setup_data();
@@ -1062,24 +1074,24 @@ void __init setup_arch(char **cmdline_p)
 	if (!boot_params.hdr.root_flags)
 		root_mountflags &= ~MS_RDONLY;
 
-    /**
-     *  在初始化阶段完成内存描述符中内核代码段，数据段和 `brk` 段的初始化
-     */
+	/**
+	 *  在初始化阶段完成内存描述符中内核代码段，数据段和 `brk` 段的初始化
+	 */
 	init_mm.start_code = (unsigned long) _text; /* 开始 代码段 */
 	init_mm.end_code = (unsigned long) _etext;  /* 结束 代码段 */
 	init_mm.end_data = (unsigned long) _edata;  /* 结束 数据段 */
 	init_mm.brk = _brk_end;                     /* brk 结束 */
 
-    /**
-     *  在初始化阶段完成内存描述符的设置后，下一步是完成 `Intel` 内存保护扩展的初始化
-     *
-     *    $ sudo cat /proc/iomem | grep "Kernel " -B 1
-     *
-     *    100000000-23fffffff : System RAM
-     *      164800000-164f9325e : Kernel code
-     *      164f9325f-16556817f : Kernel data
-     *      165762000-165a6efff : Kernel bss
-     */
+	/**
+	 *  在初始化阶段完成内存描述符的设置后，下一步是完成 `Intel` 内存保护扩展的初始化
+	 *
+	 *    $ sudo cat /proc/iomem | grep "Kernel " -B 1
+	 *
+	 *    100000000-23fffffff : System RAM
+	 *      164800000-164f9325e : Kernel code
+	 *      164f9325f-16556817f : Kernel data
+	 *      165762000-165a6efff : Kernel bss
+	 */
 	code_resource.start = __pa_symbol(_text);   /* 代码段 */
 	code_resource.end = __pa_symbol(_etext)-1;
 	rodata_resource.start = __pa_symbol(__start_rodata);    /* 只读区域 */
@@ -1114,23 +1126,23 @@ void __init setup_arch(char **cmdline_p)
 	 *
 	 * `NX` 配置。`NX-bit` 或者 `no-execute` 位是页目录条目的第 63 比特位。
 	 * 它的作用是控制被映射的物理页面是否具有执行代码的能力。
-     * 这个比特位只会在通过把 `EFER.NXE` 置为1使能 `no-execute` 页保护机制
-     * 的时候被使用/设置。在 `x86_configure_nx` 函数中会检查 `CPU` 是否支持
-     * `NX-bit`，以及是否被禁用。
-     *
-     *  see also x86_report_nx()
+	 * 这个比特位只会在通过把 `EFER.NXE` 置为1使能 `no-execute` 页保护机制
+	 * 的时候被使用/设置。在 `x86_configure_nx` 函数中会检查 `CPU` 是否支持
+	 * `NX-bit`，以及是否被禁用。
+	 *
+	 *  see also x86_report_nx()
 	 */
 	x86_configure_nx(); /* No Exec */
 
-    /**
+	/**
 	 * 解析 启动 cmdline
 	 * 解析内核命令行并且基于给定的参数创建不同的服务
 	 */
 	parse_early_param();
 
-    /**
-     *  在这之后所有基于早期命令行参数的服务都已经被创建
-     */
+	/**
+	 *  在这之后所有基于早期命令行参数的服务都已经被创建
+	 */
 
 	/**
 	 * @brief 如果是 EFI启动的
@@ -1163,58 +1175,58 @@ void __init setup_arch(char **cmdline_p)
 		memblock_set_bottom_up(true);
 #endif
 
-    /**
-     *  使用  `x86_report_nx`函数打印出关于 `NX` 的信息, see also x86_configure_nx()
-     *
-     * 注意`x86_report_nx` 函数不一定在 `x86_configure_nx` 函数之后调用，但是一定
-     * 在 `parse_early_param` 之后调用。答案很简单: 因为内核支持 `noexec` 参数，所
-     * 以我们一定在 `parse_early_param` 调用并且解析  `noexec` 参数之后才能调用
-     * `x86_report_nx`
-     *
-     * # sudo cat /var/log/messages | grep Execute
-     *  Mar  2 08:58:32 localhost kernel: NX (Execute Disable) protection: active
-     */
+	/**
+	 *  使用  `x86_report_nx`函数打印出关于 `NX` 的信息, see also x86_configure_nx()
+	 *
+	 * 注意`x86_report_nx` 函数不一定在 `x86_configure_nx` 函数之后调用，但是一定
+	 * 在 `parse_early_param` 之后调用。答案很简单: 因为内核支持 `noexec` 参数，所
+	 * 以我们一定在 `parse_early_param` 调用并且解析  `noexec` 参数之后才能调用
+	 * `x86_report_nx`
+	 *
+	 * # sudo cat /var/log/messages | grep Execute
+	 *  Mar  2 08:58:32 localhost kernel: NX (Execute Disable) protection: active
+	 */
 	x86_report_nx();    /* No Exec */
 
 	/**
 	 *  after early param, so could get panic from serial
-     *  为 `setup_data` 重新映射内存并保留内存块
-     */
+	 *  为 `setup_data` 重新映射内存并保留内存块
+	 */
 	memblock_x86_reserve_range_setup_data();
 
-    /**
-     *  检查内置的 `MPS` 又称 [多重处理器规范]
-     *
-     * 传递给内核的命令行选项中有 `acpi=off`、`acpi=noirq` 或者 `pci=noacpi` 参数,
-     * 就会输出警告信息, see parse_acpi()
-     *
-     * 返回1，表示禁用了本地 [APIC]
-     */
+	/**
+	 *  检查内置的 `MPS` 又称 [多重处理器规范]
+	 *
+	 * 传递给内核的命令行选项中有 `acpi=off`、`acpi=noirq` 或者 `pci=noacpi` 参数,
+	 * 就会输出警告信息, see parse_acpi()
+	 *
+	 * 返回1，表示禁用了本地 [APIC]
+	 */
 	if (acpi_mps_check()) {
 #ifdef CONFIG_X86_LOCAL_APIC
 		disable_apic = 1;
 #endif
-        /**
-         * @brief 清除了当前CPU中的 `X86_FEATURE_APIC` 位
-         *
-         */
+		/**
+		 * @brief 清除了当前CPU中的 `X86_FEATURE_APIC` 位
+		 *
+		 */
 		setup_clear_cpu_cap(X86_FEATURE_APIC);
 	}
 
-    /**
-     *  处理不同内存区域和 `e820` 槽 (e820是和BIOS相关的中断(int 0x15))
-     */
+	/**
+	 *  处理不同内存区域和 `e820` 槽 (e820是和BIOS相关的中断(int 0x15))
+	 */
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
 	if (efi_enabled(EFI_BOOT))
 		efi_init();
 
-    /**
-     *  DMI（直接媒体接口）
-     *
-     *  收集与 [桌面管理接口] 有关的所有信息(http://en.wikipedia.org/wiki/Desktop_Management_Interface)
-     */
+	/**
+	 *  DMI（直接媒体接口）
+	 *
+	 *  收集与 [桌面管理接口] 有关的所有信息(http://en.wikipedia.org/wiki/Desktop_Management_Interface)
+	 */
 	dmi_setup();
 
 	/*
@@ -1225,34 +1237,34 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	init_hypervisor_platform();
 
-    /* Time Stamp Counter */
+	/* Time Stamp Counter */
 	tsc_early_init();
 
 
 	x86_init.resources.probe_roms();    /* probe BIOS roms */
 
 	/* after parse_early_param, so could debug it */
-    //+-------------+      +-------------+
-    //|    parent   |------|    sibling  |
-    //+-------------+      +-------------+
-    //       |
-    //+-------------+
-    //|    child    |
-    //+-------------+
+	//+-------------+      +-------------+
+	//|    parent   |------|    sibling  |
+	//+-------------+      +-------------+
+	//       |
+	//+-------------+
+	//|    child    |
+	//+-------------+
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &rodata_resource);
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-    /**
-     *  将内核 的 _text ~ _end 与 RAM 建立联系
-     */
+	/**
+	 *  将内核 的 _text ~ _end 与 RAM 建立联系
+	 */
 	e820_add_kernel_range();
 
-    /**
-     *  从 e820 中移除 BIOS   的部分
-     */
-    trim_bios_range();
+	/**
+	 *  从 e820 中移除 BIOS   的部分
+	 */
+	trim_bios_range();
 
 
 #ifdef CONFIG_X86_32
@@ -1264,9 +1276,9 @@ void __init setup_arch(char **cmdline_p)
 		e820__print_table("bad_ppro");
 	}
 #else
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	early_gart_iommu_check();
 #endif
 
@@ -1283,15 +1295,15 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	mtrr_bp_init();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	max_possible_pfn = max_pfn;
 
 	/*
@@ -1314,10 +1326,10 @@ void __init setup_arch(char **cmdline_p)
 	find_low_pfn_range();
 #else
 
-    /**
-     * @brief 我估计这是 CPU 内部集成的APIC吧 - 荣涛 2021年7月1日
-     *
-     */
+	/**
+	 * @brief 我估计这是 CPU 内部集成的APIC吧 - 荣涛 2021年7月1日
+	 *
+	 */
 	check_x2apic(); /* APIC */
 
 	/* How many end-of-memory variables you have, grandma! */
@@ -1327,9 +1339,9 @@ void __init setup_arch(char **cmdline_p)
 	else
 		max_low_pfn = max_pfn;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
 
 #endif
@@ -1341,16 +1353,16 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	find_smp_config();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	reserve_ibft_region();
 
-    /**
-     *  在早期阶段分配页表缓冲区
-     *
-     *  在 brk 区域 申请 6页
-     */
+	/**
+	 *  在早期阶段分配页表缓冲区
+	 *
+	 *  在 brk 区域 申请 6页
+	 */
 	early_alloc_pgt_buf();
 
 	/*
@@ -1362,56 +1374,56 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	reserve_brk();
 
-    /**
-     *  释放内核映射中越界的内存区域
-     */
+	/**
+	 *  释放内核映射中越界的内存区域
+	 */
 	cleanup_highmap();
 
-    /**
-     *  为 `memblock` 分配内存设置一个界限
-     *  这个界限可以是 `ISA_END_ADDRESS` 或者 `0x100000`
-     */
+	/**
+	 *  为 `memblock` 分配内存设置一个界限
+	 *  这个界限可以是 `ISA_END_ADDRESS` 或者 `0x100000`
+	 */
 	memblock_set_current_limit(ISA_END_ADDRESS);
 
-    /**
-     *  将 e820 物理内存添加至 memblock
-     *
-     *  下面是 e820 table 格式
-     *
-     *  Physic Memory
-     *
-     *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
-     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
-     *  |          |                         |     |                 |             |                |
-     *  |          |                         | ... |                 |             |                |
-     *  |          |                         |     |                 |             |                |
-     *  +----------+-------------------------+-----+-----------------+-------------+----------------+
-     *  ^          ^                               ^                 ^             ^
-     *  |          |                               |                 |             |
-     *  | +--------+                               |                 |             |
-     *  | |     +----------------------------------+                 |             |
-     *  | |     | +--------------------------------------------------+             |
-     *  | |     | | +--------------------------------------------------------------+
-     *  | |     | | |
-     *  | |     | | |
-     * +-+-+---+-+-+-+-+-+-+-+-+
-     * | | |   | | | | | | | | |
-     * | | | . | | | | | | | | |
-     * | | | . | | | | | | | | |
-     * | | |   | | | | | | | | |
-     * +-+-+---+-+-+-+-+-+-+-+-+
-     *      e820_table
-     */
+	/**
+	 *  将 e820 物理内存添加至 memblock
+	 *
+	 *  下面是 e820 table 格式
+	 *
+	 *  Physic Memory
+	 *
+	 *  |<--16MB-->|<----------64MB--------->|     |<----reserved--->|<----RAM---->|<-----ACPI----->|
+	 *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+	 *  |          |                         |     |                 |             |                |
+	 *  |          |                         | ... |                 |             |                |
+	 *  |          |                         |     |                 |             |                |
+	 *  +----------+-------------------------+-----+-----------------+-------------+----------------+
+	 *  ^          ^                               ^                 ^             ^
+	 *  |          |                               |                 |             |
+	 *  | +--------+                               |                 |             |
+	 *  | |     +----------------------------------+                 |             |
+	 *  | |     | +--------------------------------------------------+             |
+	 *  | |     | | +--------------------------------------------------------------+
+	 *  | |     | | |
+	 *  | |     | | |
+	 * +-+-+---+-+-+-+-+-+-+-+-+
+	 * | | |   | | | | | | | | |
+	 * | | | . | | | | | | | | |
+	 * | | | . | | | | | | | | |
+	 * | | |   | | | | | | | | |
+	 * +-+-+---+-+-+-+-+-+-+-+-+
+	 *      e820_table
+	 */
 	e820__memblock_setup();
 
-    /**
-     * 在这之后我们就在 `.meminit.data` 区段拥有了为扩展BIOS数据区域预留的第一个  `memblock`
-     */
+	/**
+	 * 在这之后我们就在 `.meminit.data` 区段拥有了为扩展BIOS数据区域预留的第一个  `memblock`
+	 */
 	reserve_bios_regions();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	efi_fake_memmap();
 	efi_find_mirror();
 	efi_esrt_init();
@@ -1435,32 +1447,32 @@ void __init setup_arch(char **cmdline_p)
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 #endif
 
-    /**
-     *  用于保留从 `0x0` 到1M的低端内存用作到实模式的跳板(用于重启等...)
-     */
+	/**
+	 *  用于保留从 `0x0` 到1M的低端内存用作到实模式的跳板(用于重启等...)
+	 */
 	reserve_real_mode();
 
-    /**
-     * 用于清除掉以 `0x20050000`, `0x20110000` 等地址开头的内存空间
-     *
-     * 这些内存区域必须被排除在外，因为 [Sandy Bridge](http://en.wikipedia.org/wiki/Sandy_Bridge)
-     * 会在这些内存区域出现一些问题
-     */
+	/**
+	 * 用于清除掉以 `0x20050000`, `0x20110000` 等地址开头的内存空间
+	 *
+	 * 这些内存区域必须被排除在外，因为 [Sandy Bridge](http://en.wikipedia.org/wiki/Sandy_Bridge)
+	 * 会在这些内存区域出现一些问题
+	 */
 	trim_platform_memory_ranges();
 
-    /**
-     *  用于保留 `memblock` 中的前4KB页面
-     */
+	/**
+	 *  用于保留 `memblock` 中的前4KB页面
+	 */
 	trim_low_memory_range();
 
-    /**
-     *  用于在 `PAGE_OFFSET` 处重建物理内存的直接映射
-     */
+	/**
+	 *  用于在 `PAGE_OFFSET` 处重建物理内存的直接映射
+	 */
 	init_mem_mapping();
 
-    /**
-     *  用于建立 `#PF` 处理函数 (Page Fault)
-     */
+	/**
+	 *  用于建立 `#PF` 处理函数 (Page Fault)
+	 */
 	idt_setup_early_pf();
 
 	/*
@@ -1478,9 +1490,9 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
-    /**
-     *  为 `memblock` 分配内存设置一个界限
-     */
+	/**
+	 *  为 `memblock` 分配内存设置一个界限
+	 */
 	memblock_set_current_limit(get_max_mapped());
 
 	/*
@@ -1508,34 +1520,34 @@ void __init setup_arch(char **cmdline_p)
 			break;
 		}
 	}
-    /**
-     *  Linux初始RAM磁盘(initrd)是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。
-     *  根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移
-     *
-     *  Ram Disk - initRD - initrd
-     */
+	/**
+	 *  Linux初始RAM磁盘(initrd)是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。
+	 *  根文件系统就是通过这方式来进行初始化, 此函数获取RAM DISK的基地址以及大小以及大小加偏移
+	 *
+	 *  Ram Disk - initRD - initrd
+	 */
 	reserve_initrd();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	acpi_table_upgrade();   /* 电源管理 */
 
-    /**
-     *  VSMP - Virtual Symmetric Multiprocessing ??[No**]
-     *  VSMP - Versatile SMP 多功能SMP ??[No**]
-     *  VSMP - ScaleMP vSMP [Yes**]: techniques of parallel computing, TODO  2021年3月22日
-     */
+	/**
+	 *  VSMP - Virtual Symmetric Multiprocessing ??[No**]
+	 *  VSMP - Versatile SMP 多功能SMP ??[No**]
+	 *  VSMP - ScaleMP vSMP [Yes**]: techniques of parallel computing, TODO  2021年3月22日
+	 */
 	vsmp_init();
 
-    /**
-     *  This function allows to override  default I/O delay `0x80` port
-     */
+	/**
+	 *  This function allows to override  default I/O delay `0x80` port
+	 */
 	io_delay_init();
 
-    /**
-     *  quirks: 怪癖
-     */
+	/**
+	 *  quirks: 怪癖
+	 */
 	early_platform_quirks();
 
 	/*
@@ -1544,22 +1556,22 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	acpi_boot_table_init();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	early_acpi_boot_init();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	initmem_init(); /* x86_numa_init(); */
 
-    /**
-     *  Allocate area for DMA
-     *  `DMA` is a special mode when devices communicate with memory without CPU
-     *
-     *  reserve area(s) for contiguous memory handling
-     */
+	/**
+	 *  Allocate area for DMA
+	 *  `DMA` is a special mode when devices communicate with memory without CPU
+	 *
+	 *  reserve area(s) for contiguous memory handling
+	 */
 	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
 
 
@@ -1577,23 +1589,23 @@ void __init setup_arch(char **cmdline_p)
 	if (!early_xdbc_setup_hardware())
 		early_xdbc_register_console();
 
-    /**
-     *  Initialization of the sparse(稀疏) memory
-     *
-     *  struct x86_init_ops __initdata x86_init  = {
-     *     ...
-     *     .paging = {
-     *      .pagetable_init		= native_pagetable_init,
-     *     },
-     *  ...
-     *  };
-     *  #define native_pagetable_init        paging_init
-     *
-     * The `paging_init` function initializes sparse memory and zone sizes
-     */
+	/**
+	 *  Initialization of the sparse(稀疏) memory
+	 *
+	 *  struct x86_init_ops __initdata x86_init  = {
+	 *     ...
+	 *     .paging = {
+	 *      .pagetable_init		= native_pagetable_init,
+	 *     },
+	 *  ...
+	 *  };
+	 *  #define native_pagetable_init        paging_init
+	 *
+	 * The `paging_init` function initializes sparse memory and zone sizes
+	 */
 	x86_init.paging.pagetable_init(); //== paging_init()
 
-    /* Kernel Address Sanitizer,动态检测内存错误 */
+	/* Kernel Address Sanitizer,动态检测内存错误 */
 	kasan_init();
 
 	/*
@@ -1606,21 +1618,21 @@ void __init setup_arch(char **cmdline_p)
 
 	tboot_probe();
 
-    /**
-     *  vsyscall mapping
-     *  映射 vsyscall
-     */
+	/**
+	 *  vsyscall mapping
+	 *  映射 vsyscall
+	 */
 	map_vsyscall();
 
-    /**
-     *  x86-64 为 空
-     */
+	/**
+	 *  x86-64 为 空
+	 */
 	generic_apic_probe();
 
-    /**
-     *
-     * quirks: 怪异的性格(或行为); 怪癖; (尤指偶发的)怪事，奇事;
-     */
+	/**
+	 *
+	 * quirks: 怪异的性格(或行为); 怪癖; (尤指偶发的)怪事，奇事;
+	 */
 	early_quirks();
 
 	/*
@@ -1629,9 +1641,9 @@ void __init setup_arch(char **cmdline_p)
 	acpi_boot_init();
 	sfi_init();
 
-    /**
-     *  设备树
-     */
+	/**
+	 *  设备树
+	 */
 	x86_dtb_init();
 
 	/*
@@ -1648,55 +1660,55 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	init_apic_mappings();   /* 中断控制器 映射 */
 
-    /**
-     *  makes preliminary(初步的) filling of the possible CPU's `cpumask`
-     */
+	/**
+	 *  makes preliminary(初步的) filling of the possible CPU's `cpumask`
+	 */
 	prefill_possible_map();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	init_cpu_to_node();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	init_gi_nodes();    /* 通用启动器 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	io_apic_init_mappings();
 
-    /*
-        初始值: x86_init_noop()
-        后期可能为: xen_pv_guest_late_init()
-    */
+	/*
+		初始值: x86_init_noop()
+		后期可能为: xen_pv_guest_late_init()
+	*/
 	x86_init.hyper.guest_late_init();
 
-    /**
-     *  E820 内存管理器
-     *  memblock 添加到 iomem_resource
-     */
+	/**
+	 *  E820 内存管理器
+	 *  memblock 添加到 iomem_resource
+	 */
 	e820__reserve_resources();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	e820__register_nosave_regions(max_pfn);
 
-    /**
-     *  reserve standard I/O resources like `DMA`, `TIMER`, `FPU`, etc
-     *
-     *  实际调用: reserve_standard_io_resources()
-     *
-     *  ioport_resource <=(添加)==- standard_io_resources
-     */
+	/**
+	 *  reserve standard I/O resources like `DMA`, `TIMER`, `FPU`, etc
+	 *
+	 *  实际调用: reserve_standard_io_resources()
+	 *
+	 *  ioport_resource <=(添加)==- standard_io_resources
+	 */
 	x86_init.resources.reserve_resources();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	e820__setup_pci_gap();
 
 #ifdef CONFIG_VT
@@ -1706,20 +1718,20 @@ void __init setup_arch(char **cmdline_p)
 #endif
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	x86_init.oem.banner();  /* 内核+编译器 版本 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	x86_init.timers.wallclock_init();
 
-    //initializes `Machine check Exception`
+	//initializes `Machine check Exception`
 	mcheck_init();
 
-    //registers [jiffy]
+	//registers [jiffy]
 	register_refined_jiffies(CLOCK_TICK_RATE/* The clock frequency of the i8253/i8254 PIT */);
 
 #ifdef CONFIG_EFI
@@ -1727,7 +1739,7 @@ void __init setup_arch(char **cmdline_p)
 		efi_apply_memmap_quirks();
 #endif
 
-    /* 回溯 */
+	/* 回溯 */
 	unwind_init();
 }
 

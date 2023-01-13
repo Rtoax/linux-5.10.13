@@ -599,6 +599,9 @@ static void __init populate_initrd_image(char *err)
 }
 #endif /* CONFIG_BLK_DEV_RAM */
 
+/**
+ *
+ */
 static int __init populate_rootfs(void)
 {
 	/* Load the built in initramfs */
@@ -630,6 +633,7 @@ done:
 	 */
 	if (!do_retain_initrd && initrd_start && !kexec_free_initrd())
 		free_initrd_mem(initrd_start, initrd_end);
+
 	initrd_start = 0;
 	initrd_end = 0;
 
