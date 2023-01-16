@@ -79,6 +79,9 @@ struct kmem_cache_order_objects {
 
 /*
  * Slab cache management.
+ * SLUB 是对 slab 的优化
+ * slab - 三个链表
+ * slub - 一个链表
  */
 struct kmem_cache {
 	struct kmem_cache_cpu __percpu *cpu_slab;

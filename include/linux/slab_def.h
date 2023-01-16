@@ -8,7 +8,7 @@
  * Definitions unique to the original Linux SLAB allocator.
  */
 
-struct kmem_cache { /* slab 句柄 */
+struct kmem_cache {
 
 	struct array_cache __percpu *cpu_cache;
 
