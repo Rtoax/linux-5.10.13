@@ -85,6 +85,12 @@
  */
 #define EXIT_REASON_GDTR_IDTR           46
 #define EXIT_REASON_LDTR_TR             47
+/**
+ * EXIT_REASON_EPT_VIOLATION is similar to a "page not present" pagefault.
+ * EXIT_REASON_EPT_MISCONFIG is similar to a "reserved bit set" pagefault.
+ *
+ * EPT_VIOLATION表示的是对应的物理页不存在，而EPT_MISCONFIG表示EPT页表中有非法的域．
+ */
 #define EXIT_REASON_EPT_VIOLATION       48
 #define EXIT_REASON_EPT_MISCONFIG       49
 #define EXIT_REASON_INVEPT              50

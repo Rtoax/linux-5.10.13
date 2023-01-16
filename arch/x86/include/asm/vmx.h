@@ -624,7 +624,13 @@ static inline u8 vmx_eptp_page_walk_level(u64 eptp)
 	return 4;
 }
 
-/* The mask to use to trigger an EPT Misconfiguration in order to track MMIO */
+/**
+ * The mask to use to trigger an EPT Misconfiguration in order to track MMIO
+ *
+ * hardware_setup 时候虚拟机如果开启了ept支持就调用 ept_set_mmio_spte_mask 初始化
+ * shadow_mmio_mask， 设置EPT页表项最低3bit为：110b 就会触发ept_msconfig（110b表示
+ * 该页可读可写但是还未分配或者不存在，这显然是一个错误的 EPT 页表项）.
+ */
 #define VMX_EPT_MISCONFIG_WX_VALUE		(VMX_EPT_WRITABLE_MASK |       \
 						 VMX_EPT_EXECUTABLE_MASK)
 

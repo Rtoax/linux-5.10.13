@@ -4468,6 +4468,11 @@ static void vmx_compute_secondary_exec_control(struct vcpu_vmx *vmx)
 	vmx->secondary_exec_control = exec_control;
 }
 
+/**
+ * hardware_setup 时候虚拟机如果开启了ept支持就调用 ept_set_mmio_spte_mask 初始化
+ * shadow_mmio_mask， 设置EPT页表项最低3bit为：110b就会触发ept_msconfig（110b表示
+ * 该页可读可写但是还未分配或者不存在，这显然是一个错误的EPT页表项）.
+ */
 static void ept_set_mmio_spte_mask(void)
 {
 	/*
@@ -5652,7 +5657,7 @@ static int handle_task_switch(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  处理 EPT 异常
+ * 处理 EPT 异常: EPT_VIOLATION 表示的是对应的物理页不存在
  */
 static int handle_ept_violation(struct kvm_vcpu *vcpu)
 {
@@ -5733,7 +5738,27 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 }
 
 /**
+ * EPT_MISCONFIG表示EPT页表中有非法的域．
+ *
  * MMIO处理流程中（handle_ept_misconfig）最后会调用到ioeventfd_write通知QEMU。
+ *
+ * handle_ept_misconfig
+ * --> kvm_mmu_page_fault
+ *  --> x86_emulate_instruction
+ *   --> x86_emulate_insn
+ * writeback
+ *     --> segmented_write
+ *         --> emulator_write_emulated
+ *             --> emulator_read_write
+ *               --> emulator_read_write_onepage
+ *                 --> ops->read_write_mmio [write_mmio]
+ *                   --> vcpu_mmio_write
+ *                     --> kvm_io_bus_write
+ *                       --> __kvm_io_bus_write
+ *                         --> kvm_iodevice_write
+ *                           --> dev->ops->write [ioeventfd_write]
+ *
+ * 最后会调用到 ioeventfd_write()，写eventfd给QEMU发送通知事件
  */
 static int handle_ept_misconfig(struct kvm_vcpu *vcpu)
 {
@@ -5849,6 +5874,11 @@ static void vmx_enable_tdp(void)
 		cpu_has_vmx_ept_execute_only() ? 0ull : VMX_EPT_READABLE_MASK,
 		VMX_EPT_RWX_MASK, 0ull);
 
+	/**
+	 * hardware_setup 时候虚拟机如果开启了ept支持就调用 ept_set_mmio_spte_mask 初始化
+	 * shadow_mmio_mask， 设置EPT页表项最低3bit为：110b就会触发ept_msconfig（110b表示
+	 * 该页可读可写但是还未分配或者不存在，这显然是一个错误的EPT页表项）.
+	 */
 	ept_set_mmio_spte_mask();
 }
 
