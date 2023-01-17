@@ -8221,6 +8221,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	 *
 	 */
 	.deliver_posted_interrupt = vmx_deliver_posted_interrupt,
+	/**
+	 * 有挂起的 Posted Interrupt
+	 */
 	.dy_apicv_has_pending_interrupt = pi_has_pending_interrupt,
 
 	.set_tss_addr = vmx_set_tss_addr,

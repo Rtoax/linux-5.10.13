@@ -18,6 +18,13 @@ struct msi_msg;
 struct irq_alloc_info;
 
 enum irq_remap_cap {
+	/**
+	 * Interrupt Posting
+	 *
+	 * VT-d Interrupt Posting是基于Interrupt Remapping的一种扩展的中断处理方式，
+	 * 其主要用途是在虚拟化场景下， 可以大幅提升VMM处理直通设备中断的效率。硬件通过
+	 * Capability Register(CAP_REG)的PI位来报告interrupt posting capability。
+	 */
 	IRQ_POSTING_CAP = 0,
 };
 

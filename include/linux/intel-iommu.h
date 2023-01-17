@@ -152,6 +152,13 @@
  * Decoding Capability Register
  */
 #define cap_5lp_support(c)	(((c) >> 60) & 1)
+/**
+ * Interrupt Posting
+ *
+ * VT-d Interrupt Posting是基于Interrupt Remapping的一种扩展的中断处理方式，
+ * 其主要用途是在虚拟化场景下， 可以大幅提升VMM处理直通设备中断的效率。硬件通过
+ * Capability Register(CAP_REG)的PI位来报告interrupt posting capability。
+ */
 #define cap_pi_support(c)	(((c) >> 59) & 1)
 #define cap_fl1gp_support(c)	(((c) >> 56) & 1)
 #define cap_read_drain(c)	(((c) >> 55) & 1)

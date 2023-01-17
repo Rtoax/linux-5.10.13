@@ -228,6 +228,9 @@ void __init pi_init_cpu(int cpu)
 	spin_lock_init(&per_cpu(blocked_vcpu_on_cpu_lock, cpu));
 }
 
+/**
+ * 有挂起的 Posted Interrupt
+ */
 bool pi_has_pending_interrupt(struct kvm_vcpu *vcpu)
 {
 	struct pi_desc *pi_desc = vcpu_to_pi_desc(vcpu);

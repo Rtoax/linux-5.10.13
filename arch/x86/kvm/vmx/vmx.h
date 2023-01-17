@@ -271,7 +271,12 @@ struct vcpu_vmx {
 	 */
 	u32 exit_reason;
 
-	/* Posted interrupt descriptor */
+	/**
+	 * Posted interrupt descriptor
+	 *
+	 * 为虚拟机的每个VCPU分配一个 pi_desc 用来存放此 VCPU 的Posted Interrupt信息
+	 * （PD的地址会被记录到VCPU的VMSC里面）；
+	 */
 	struct pi_desc pi_desc;
 
 	/* Support for a guest hypervisor (nested VMX) */
