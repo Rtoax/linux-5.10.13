@@ -60,6 +60,13 @@ static struct task_struct __read_mostly *khugepaged_thread ;
 static DEFINE_MUTEX(khugepaged_mutex);
 
 /* default scan 8*512 pte (or vmas) every 30 second */
+/**
+ * /sys/kernel/mm/transparent_hugepage/khugepaged/pages_to_scan
+ *
+ * $ sudo bpftrace -e 'BEGIN {$pnr = kaddr("khugepaged_pages_to_scan"); printf("%d\n", *$pnr); exit();}'
+ * Attaching 1 probe...
+ * 4096
+ */
 static unsigned int __read_mostly khugepaged_pages_to_scan ;
 static unsigned int khugepaged_pages_collapsed;
 static unsigned int khugepaged_full_scans;
@@ -108,6 +115,8 @@ struct mm_slot {
  * @address: the next address inside that to be scanned
  *
  * There is only the one khugepaged_scan instance of this cursor structure.
+ *
+ * see test-linux: mm/khugepaged/scripts/khugepaged_scan.bt
  */
 struct khugepaged_scan {
 	struct list_head mm_head;
@@ -460,7 +469,7 @@ static bool hugepage_vma_check(struct vm_area_struct *vma,
 }
 
 /**
-*  
+*
 */
 int __khugepaged_enter(struct mm_struct *mm)
 {
@@ -2043,6 +2052,18 @@ static int khugepaged_collapse_pte_mapped_thps(struct mm_slot *mm_slot)
 }
 #endif
 
+/**
+ * $ sudo bpftrace -e 'kprobe:khugepaged_scan_mm_slot{printf("%s %d\n", comm, arg0);}
+ * Attaching 1 probe...
+ * khugepaged 1533 # 正常情况下打印的不是很频繁，一分钟打印一两行
+ * khugepaged 4096
+ * khugepaged 3583
+ * khugepaged 3070
+ * khugepaged 4096
+ * khugepaged 3583
+ * khugepaged 2558
+ * khugepaged 4096
+ */
 static unsigned int khugepaged_scan_mm_slot(unsigned int pages,
 					    struct page **hpage)
 	__releases(&khugepaged_mm_lock)
@@ -2185,13 +2206,16 @@ static void khugepaged_do_scan(void)
 {
 	struct page *hpage = NULL;
 	unsigned int progress = 0, pass_through_head = 0;
-	unsigned int pages = khugepaged_pages_to_scan;
+	unsigned int pages = khugepaged_pages_to_scan; /* 一般 4096 */
 	bool wait = true;
 
 	barrier(); /* write khugepaged_pages_to_scan to local stack */
 
 	lru_add_drain_all();
 
+	/**
+	 * 扫描四循环
+	 */
 	while (progress < pages) {
 		if (!khugepaged_prealloc_page(&hpage, &wait))
 			break;
@@ -2222,8 +2246,9 @@ static bool khugepaged_should_wakeup(void)
 	return kthread_should_stop() ||
 	       time_after_eq(jiffies, khugepaged_sleep_expire);
 }
+
 /**
- *  
+ * sudo bpftrace -e 'kprobe:khugepaged_wait_work {printf("%s\n", comm);}'
  */
 static void khugepaged_wait_work(void)
 {
@@ -2246,7 +2271,27 @@ static void khugepaged_wait_work(void)
 }
 
 /**
- *  
+ * "khugepaged" 进程回调函数
+ *
+ * 操作系统后台有一个叫做khugepaged的进程，它会一直扫描所有进程占用的内存，在可能
+ * 的情况下会把4kpage交换为Huge Pages，在这个过程中，对于操作的内存的各种分配活
+ * 动都需要各种内存锁，直接影响程序的内存访问性能，并且，这个过程对于应用是透明的，
+ * 在应用层面不可控制,对于专门为4k page优化的程序来说，可能会造成随机的性能下降现
+ * 象。
+ *
+ * 关闭方法：
+ * 1. kernel的启动参数可以通过传入transparent_hugepage=never
+ * 2. 系统启动后使用echo never > /sys/kernel/mm/transparent_hugepage/enabled
+ *
+ * 问题：当我在 centos-stream-9 上安装了 fedora37 虚拟机后，发现 Host 主机上
+ * 不时地 "khugepaged" 进程 CPU 利用率会非常高。环境信息：
+ *
+ * GuestOS: fedora37
+ *   kernel 6.1.5-200.fc37.x86_64
+ *
+ * HostOS:  centos stream9
+ *   kernel 5.14.0-229.el9.x86_64
+ *   qemu 7.2.0
  */
 static int khugepaged(void *none)
 {
@@ -2256,13 +2301,13 @@ static int khugepaged(void *none)
 	set_user_nice(current, MAX_NICE);
 
 	while (!kthread_should_stop()) {
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		khugepaged_do_scan();
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		khugepaged_wait_work();
 	}
 
@@ -2319,6 +2364,9 @@ static void set_recommended_min_free_kbytes(void)
 	setup_per_zone_wmarks();
 }
 
+/**
+ * 开启或关闭 "khugepaged" 进程
+ */
 int start_stop_khugepaged(void)
 {
 	int err = 0;

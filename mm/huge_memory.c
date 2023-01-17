@@ -322,6 +322,9 @@ static int __init hugepage_init_sysfs(struct kobject **hugepage_kobj)
 {
 	int err;
 
+	/**
+	 * /sys/kernel/mm/transparent_hugepage/
+	 */
 	*hugepage_kobj = kobject_create_and_add("transparent_hugepage", mm_kobj);
 	if (unlikely(!*hugepage_kobj)) {
 		pr_err("failed to create transparent hugepage kobject\n");
