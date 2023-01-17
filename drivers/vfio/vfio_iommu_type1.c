@@ -76,6 +76,19 @@ struct vfio_iommu {
 	bool			pinned_page_dirty_scope;
 };
 
+/**
+ * vfio_domain 这个概念尤其需要注意，这里绝不能把它理解成一个虚拟机domain，
+ * 它是一个与DRHD（即IOMMU硬件）相关的概念， 它的出现就是为了应对多IOMMU硬
+ * 件的场景，我们知道在大规格服务器上可能会有多个IOMMU硬件，不同的IOMMU硬件
+ * 有可能存在差异， 例如IOMMU 0支持IOMMU_CACHE而IOMMU 1不支持IOMMU_CACHE
+ * （当然这种情况少见，大部分平台上硬件功能是具备一致性的），这时候我们不能直
+ * 接将分别属于不同IOMMU硬件管理的设备直接加入到一个container中， 因为它们
+ * 的IOMMU页表SNP bit是不一致的。 因此，一种合理的解决办法就是把一个
+ * container划分多个vfio_domain，当然在大多数情况下我们只需要一个
+ * vfio_domain就足够了。 处在同一个vfio_domain中的设备共享IOMMU页表区域，
+ * 不同的vfio_domain的页表属性又可以不一致，这样我们就可以支持跨IOMMU硬件的
+ * 设备直通的混合场景。
+ */
 struct vfio_domain {
 	struct iommu_domain	*domain;
 	struct list_head	next;

@@ -179,6 +179,9 @@ struct vfio_group_status {
  * group containing the device must already be added to this context.
  * Return: new file descriptor on success, -errno on failure.
  * Availability: When attached to container
+ *
+ * VFIO中并没有为每个device单独创建一个文件，而是通过 VFIO_GROUP_GET_DEVICE_FD
+ * 这个ioctl来获取device的句柄，然后再通过这个句柄来管理设备。
  */
 #define VFIO_GROUP_GET_DEVICE_FD	_IO(VFIO_TYPE, VFIO_BASE + 6)
 
@@ -784,7 +787,7 @@ enum {
 	VFIO_PCI_BAR5_REGION_INDEX,
 	VFIO_PCI_ROM_REGION_INDEX,
 	/**
-	 *  
+	 *
 	 */
 	VFIO_PCI_CONFIG_REGION_INDEX,
 	/*

@@ -54,6 +54,10 @@ struct vfio_iommu_driver {
 	struct list_head			vfio_next;
 };
 
+/**
+ * Container 是一个和地址空间相关联的概念，这里可以简单把它理解为一个VM Domain的物理
+ * 内存空间。
+ */
 struct vfio_container {
 	struct kref			kref;
 	struct list_head		group_list;
@@ -68,6 +72,14 @@ struct vfio_unbound_dev {
 	struct list_head		unbound_next;
 };
 
+/**
+ * Group 是IOMMU能够进行DMA隔离的最小硬件单元，一个group内可能只有一个device，
+ * 也可能有多个device，这取决于物理平台上硬件的IOMMU拓扑结构。 设备直通的时候一个
+ * group里面的设备必须都直通给一个虚拟机。 不能够让一个group里的多个device分别从
+ * 属于2个不同的VM，也不允许部分device在host上而另一部分被分配到guest里， 因为就
+ * 这样一个guest中的device可以利用DMA攻击获取另外一个guest里的数据，就无法做到物
+ * 理上的DMA隔离。 另外，VFIO中的group和iommu group可以认为是同一个概念。
+ */
 struct vfio_group {
 	struct kref			kref;
 	int				minor;
@@ -90,6 +102,14 @@ struct vfio_group {
 	struct blocking_notifier_head	notifier;
 };
 
+/**
+ * Device 指的是我们要操作的硬件设备，不过这里的“设备”需要从IOMMU拓扑的角度去理解。
+ * 如果该设备是一个硬件拓扑上独立的设备，那么它自己就构成一个iommu group。 如果这里
+ * 是一个multi-function设备，那么它和其他的function一起组成一个iommu group，因
+ * 为多个function设备在物理硬件上就是互联的， 他们可以互相访问对方的数据，所以必须放
+ * 到一个group里隔离起来。值得一提的是，对于支持PCIe ACS特性的硬件设备，我们可以认为
+ * 他们在物理上是互相隔离的。
+ */
 struct vfio_device {
 	struct kref			kref;
 	struct device			*dev;
@@ -1544,6 +1564,9 @@ static long vfio_group_fops_unl_ioctl(struct file *filep,
 	case VFIO_GROUP_UNSET_CONTAINER:
 		ret = vfio_group_unset_container(group);
 		break;
+	/**
+	 * 通过 VFIO_GROUP_GET_DEVICE_FD 获取device的句柄，然后再通过这个句柄来管理设备。
+	 */
 	case VFIO_GROUP_GET_DEVICE_FD:
 	{
 		char *buf;
@@ -2339,6 +2362,10 @@ static char *vfio_devnode(struct device *dev, umode_t *mode)
 	return kasprintf(GFP_KERNEL, "vfio/%s", dev_name(dev));
 }
 
+/**
+ * VFIO驱动在加载的时候会创建一个名为 /dev/vfio/vfio 的文件，而这个文件的句柄
+ * 关联到了 vfio_container 上，用户态进程打开这个文件就可以初始化和访问 vfio_container
+ */
 static struct miscdevice vfio_dev = {
 	.minor = VFIO_MINOR,
 	.name = "vfio",
