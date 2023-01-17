@@ -625,6 +625,12 @@ static inline int dmar_walk_dmar_table(struct acpi_table_dmar *dmar,
 
 /**
  * parse_dmar_table - parses the DMA reporting table
+ *
+ * parse_dmar_table 的函数实现非常精妙，不禁让人感叹！
+ *
+ * 它将每种 Remapping Structure Types 的解析函数封装成 dmar_res_callback，
+ * 然后调用 dmar_walk_dmar_table 通过一个for循环撸一遍就完成了全部的解析，代
+ * 码精简思路清晰、一气呵成。
  */
 static int __init
 parse_dmar_table(void)
@@ -788,6 +794,9 @@ static int __init dmar_acpi_dev_scope_init(void)
 				       andd->device_name);
 				continue;
 			}
+			/**
+			 * 多层的遍历，建立了IOMMU和设备之间的映射关系。
+			 */
 			dmar_acpi_insert_dev_scope(andd->device_number, adev);
 		}
 	}
@@ -832,13 +841,22 @@ void __init dmar_register_bus_notifier(void)
 	bus_register_notifier(&pci_bus_type, &dmar_pci_bus_nb);
 }
 
-
+/**
+ * 完成了DMA Remapping相关的ACPI表解析流程
+ */
 int __init dmar_table_init(void)
 {
 	static int dmar_table_initialized;
 	int ret;
 
 	if (dmar_table_initialized == 0) {
+		/**
+		 * parse_dmar_table的函数实现非常精妙，不禁让人感叹！
+		 *
+		 * 它将每种 Remapping Structure Types 的解析函数封装成 dmar_res_callback，
+		 * 然后调用 dmar_walk_dmar_table 通过一个for循环撸一遍就完成了全部的解析，代
+		 * 码精简思路清晰、一气呵成。
+		 */
 		ret = parse_dmar_table();
 		if (ret < 0) {
 			if (ret != -ENODEV)
@@ -907,6 +925,9 @@ dmar_validate_one_drhd(struct acpi_dmar_header *entry, void *arg)
 	return 0;
 }
 
+/**
+ * 首先探测平台环境上是否有IOMMU硬件
+ */
 int __init detect_intel_iommu(void)
 {
 	int ret;
@@ -916,7 +937,14 @@ int __init detect_intel_iommu(void)
 	};
 
 	down_write(&dmar_global_lock);
+	/**
+	 * 从ACPI表中查询DMAR相关内容
+	 */
 	ret = dmar_table_detect();
+	/**
+	 * 如果查询到信息就 validate_drhd_cb 验证DRHD的有效性设置 iommu_detected = 1
+	 * 如果查询不到 DMAR 信息那么认为没有IOMMU硬件，跳过后续初始化流程。
+	 */
 	if (!ret)
 		ret = dmar_walk_dmar_table((struct acpi_table_dmar *)dmar_tbl,
 					   &validate_drhd_cb);
@@ -2054,6 +2082,9 @@ static int __init dmar_free_unused_resources(void)
 }
 
 late_initcall(dmar_free_unused_resources);
+/**
+ * 首先探测平台环境上是否有IOMMU硬件
+ */
 IOMMU_INIT_POST(detect_intel_iommu);
 
 /*

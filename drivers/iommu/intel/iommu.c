@@ -4886,6 +4886,23 @@ static int __init probe_acpi_namespace_devices(void)
 	return 0;
 }
 
+/**
+ * 初始化 Intel IOMMU
+ *
+ *     intel_iommu_init
+ *         |-> dmar_table_init -> parse_dmar_table -> dmar_walk_dmar_table //重点分析
+ *         |-> dmar_dev_scope_init
+ *             |-> dmar_acpi_dev_scope_init -> dmar_acpi_insert_dev_scope  //重点分析
+ *             |-> dmar_pci_bus_add_dev -> dmar_insert_dev_scope
+ *             |-> bus_register_notifier
+ *         |-> dmar_init_reserved_ranges   // init RMRR
+ *         |-> init_no_remapping_devices   // init no remapping devices
+ *         |-> init_dmars  //重点分析
+ *         |-> dma_ops = &intel_dma_ops
+ *         |-> iommu_device_sysfs_add, iommu_device_set_ops, iommu_device_register
+ *         |-> bus_set_iommu(&pci_bus_type, &intel_iommu_ops)
+ *         |-> bus_register_notifier(&pci_bus_type, &device_nb)
+ */
 int __init intel_iommu_init(void)
 {
 	int ret = -ENODEV;
@@ -4906,12 +4923,19 @@ int __init intel_iommu_init(void)
 	}
 
 	down_write(&dmar_global_lock);
+
+	/**
+	 * 完成了DMA Remapping相关的ACPI表解析流程
+	 */
 	if (dmar_table_init()) {
 		if (force_on)
 			panic("tboot: Failed to initialize DMAR table\n");
 		goto out_free_dmar;
 	}
 
+	/**
+	 * 负责完成 IOMMU 的 Device Scope 解析。
+	 */
 	if (dmar_dev_scope_init() < 0) {
 		if (force_on)
 			panic("tboot: Failed to initialize DMAR device scope\n");

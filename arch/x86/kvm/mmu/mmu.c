@@ -5,6 +5,14 @@
  * This module enables machines with Intel VT-x extensions to run virtual
  * machines without emulation or binary translation.
  *
+ * 对于Intel的硬件辅助虚拟化方案而言核心的两大技术分别是VT-x和VT-d。 其中VT-x中主要引
+ * 入了non-root模式(VMCS)以及EPT页表等技术，主要关注于vCPU的虚拟化和内存虚拟化。 而
+ * VT-d的引入则是重点关注设备直通(passthrough)方面（即IO虚拟化）。
+ *
+ * 1. VT-x中在non-root模式下，MMU直接使用EPT page table来完成 GPA->HVA->HPA 的两级翻译;
+ * 2. VT-d中在non-root模式下，则由IOMMU来使用Context Table和IOMMU page table完成设备
+ *    DMA请求过程中的 HPA->HVA->GPA 的翻译;
+ *
  * MMU support
  *
  * Copyright (C) 2006 Qumranet, Inc.

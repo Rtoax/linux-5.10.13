@@ -24,8 +24,12 @@
 #include <asm/cacheflush.h>
 #include <asm/iommu.h>
 
-/*
+/**
  * VT-d hardware uses 4KiB page size regardless of host page size.
+ *
+ * 对于Intel的硬件辅助虚拟化方案而言核心的两大技术分别是VT-x和VT-d。 其中VT-x中主要引
+ * 入了non-root模式(VMCS)以及EPT页表等技术，主要关注于vCPU的虚拟化和内存虚拟化。 而
+ * VT-d的引入则是重点关注设备直通(passthrough)方面（即IO虚拟化）。
  */
 #define VTD_PAGE_SHIFT		(12)
 #define VTD_PAGE_SIZE		(1UL << VTD_PAGE_SHIFT)
