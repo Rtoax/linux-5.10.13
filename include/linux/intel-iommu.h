@@ -82,6 +82,16 @@
 #define DMAR_IQ_SHIFT	4	/* Invalidation queue head/tail shift */
 #define DMAR_IQA_REG	0x90	/* Invalidation queue addr register */
 #define DMAR_ICS_REG	0x9c	/* Invalidation complete status register */
+/**
+ * IRTA: 中断重映射表的基址寄存器(Interrupt Remapping Table Address Register)
+ * IRTE: 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)
+ *
+ * 在Interrupt Remapping模式下，外设发起中断请求被IOMMU截获，然后硬件自动查询OS在
+ * 内存中预设的中断重映射表(Interrupt Remapping Table)根据表里的描述来投递中断。
+ * 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)构成，每个IRTE占
+ * 用16字节，中断重映射表的基地址存放在IRTA(Interrupt Remapping Table Address
+ * Register)寄存器中。
+ */
 #define DMAR_IRTA_REG	0xb8    /* Interrupt remapping table addr register */
 #define DMAR_PQH_REG	0xc0	/* Page request queue head register */
 #define DMAR_PQT_REG	0xc8	/* Page request queue tail register */
@@ -196,6 +206,20 @@
 #define ecap_qis(e)		((e) & 0x2)
 #define ecap_pass_through(e)	((e >> 6) & 0x1)
 #define ecap_eim_support(e)	((e >> 4) & 0x1)
+/**
+ * Interrupt Remapping
+ *
+ * Interrupt Remapping的出现改变了x86体系结构上的中断投递方式，外部中断源发出的中断
+ * 请求格式发生了较大的改变， 中断请求会先被中断重映射硬件（IOMMU）截获后再通过查询中断
+ * 重映射表的方式最终投递到目标CPU上。 这些外部设备中断源则包括了中断控制器(I/OxAPICs)
+ * 以及MSI/MSIX兼容设备PCI/PCIe设备等。 Interrupt Remapping是需要硬件来支持的，这
+ * 里的硬件应该主要是指的IOMMU（尽管intel手册并没有直接说明），Interrupt Remapping
+ * 的Capability是通过Extended Capability Register BIT3来报告的，如果该位为1表示
+ * 支持中断重映射。
+ *
+ * 见：
+ * ecap_ir_support()
+ */
 #define ecap_ir_support(e)	((e >> 3) & 0x1)
 #define ecap_dev_iotlb_support(e)	(((e) >> 2) & 0x1)
 #define ecap_max_handle_mask(e) ((e >> 20) & 0xf)
@@ -434,7 +458,7 @@ struct dmar_pci_notify_info;
 #ifdef CONFIG_IRQ_REMAP
 /* 1MB - maximum possible interrupt remapping table size */
 #define INTR_REMAP_PAGE_ORDER	8
-#define INTR_REMAP_TABLE_REG_SIZE	0xf
+#define INTR_REMAP_TABLE_REG_SIZE	0xf /* 1111 */
 #define INTR_REMAP_TABLE_REG_SIZE_MASK  0xf
 
 #define INTR_REMAP_TABLE_ENTRIES	65536
@@ -442,6 +466,9 @@ struct dmar_pci_notify_info;
 struct irq_domain;
 
 struct ir_table {
+	/**
+	 * 中断重映射表的基址（物理地址）
+	 */
 	struct irte *base;
 	unsigned long *bitmap;
 };

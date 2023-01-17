@@ -50,7 +50,14 @@
 					 MSI_ADDR_DEST_ID_MASK)
 #define MSI_ADDR_EXT_DEST_ID(dest)	((dest) & 0xffffff00)
 
+/**
+ * Address 的bit4为"1"表示 Request 为 Remapping format。
+ */
 #define MSI_ADDR_IR_EXT_INT		(1 << 4)
+/**
+ * 用来标志 Request 是否包含了 SubHandle ，当该位置位时表示 Data 字段的低 16bit 为
+ * SubHandle索引。
+ */
 #define MSI_ADDR_IR_SHV			(1 << 3)
 #define MSI_ADDR_IR_INDEX1(index)	((index & 0x8000) >> 13)
 #define MSI_ADDR_IR_INDEX2(index)	((index & 0x7fff) << 5)

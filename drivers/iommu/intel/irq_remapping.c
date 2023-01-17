@@ -102,6 +102,17 @@ static void init_ir_status(struct intel_iommu *iommu)
 		iommu->flags |= VTD_FLAG_IRQ_REMAP_PRE_ENABLED;
 }
 
+/**
+ * 分配一个IRTE
+ *
+ * IRTE: 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)
+ *
+ * 在Interrupt Remapping模式下，外设发起中断请求被IOMMU截获，然后硬件自动查询OS在
+ * 内存中预设的中断重映射表(Interrupt Remapping Table)根据表里的描述来投递中断。
+ * 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)构成，每个IRTE占
+ * 用16字节，中断重映射表的基地址存放在IRTA(Interrupt Remapping Table Address
+ * Register)寄存器中。
+ */
 static int alloc_irte(struct intel_iommu *iommu,
 		      struct irq_2_iommu *irq_iommu, u16 count)
 {
@@ -443,7 +454,11 @@ static int iommu_load_old_irte(struct intel_iommu *iommu)
 	size_t size;
 	u64 irta;
 
-	/* Check whether the old ir-table has the same size as ours */
+	/**
+	 * Check whether the old ir-table has the same size as ours
+	 *
+	 * 读取 Interrupt Remapping Table Address - IRTA 寄存器
+	 */
 	irta = dmar_readq(iommu->reg + DMAR_IRTA_REG);
 	if ((irta & INTR_REMAP_TABLE_REG_SIZE_MASK)
 	     != INTR_REMAP_TABLE_REG_SIZE)
@@ -483,10 +498,23 @@ static void iommu_set_irq_remapping(struct intel_iommu *iommu, int mode)
 	u64 addr;
 	u32 sts;
 
+	/**
+	 * 中断重映射表的基址
+	 */
 	addr = virt_to_phys((void *)iommu->ir_table->base);
 
 	raw_spin_lock_irqsave(&iommu->register_lock, flags);
 
+	/**
+	 * IRTA: 中断重映射表的基址寄存器(Interrupt Remapping Table Address Register)
+	 * IRTE: 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)
+	 *
+	 * 在Interrupt Remapping模式下，外设发起中断请求被IOMMU截获，然后硬件自动查询OS在
+	 * 内存中预设的中断重映射表(Interrupt Remapping Table)根据表里的描述来投递中断。
+	 * 中断重映射表由中断重映射表项(Interrupt Remapping Table Entry)构成，每个IRTE占
+	 * 用16字节，中断重映射表的基地址存放在IRTA(Interrupt Remapping Table Address
+	 * Register)寄存器中。
+	 */
 	dmar_writeq(iommu->reg + DMAR_IRTA_REG,
 		    (addr) | IR_X2APIC_MODE(mode) | INTR_REMAP_TABLE_REG_SIZE);
 
@@ -511,13 +539,29 @@ static void iommu_enable_irq_remapping(struct intel_iommu *iommu)
 
 	raw_spin_lock_irqsave(&iommu->register_lock, flags);
 
-	/* Enable interrupt-remapping */
+	/**
+	 * Enable interrupt-remapping
+	 *
+	 * 在开启了 Interrupt Remapping 之后，设备的中断请求格式称之为 Remapping format，
+	 * 其同样由一个32bit的Address和一个32bit的Data字段构成。但与 Compatibility
+	 * format 不同的是此时 Address 字段不再包含目标CPU的 APIC ID 信息而是仅包含了一个
+	 * 16bit的HANDLE索引，并且 Address 的bit4为"1"表示 Request 为 Remapping format。
+	 * 同时bit3是一个标识位(SHV)，用来标志 Request 是否包含了 SubHandle，当该位置
+	 * 位时表示Data字段的低16bit为 SubHandle 索引。
+	 */
 	iommu->gcmd |= DMA_GCMD_IRE;
 	writel(iommu->gcmd, iommu->reg + DMAR_GCMD_REG);
 	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG,
 		      readl, (sts & DMA_GSTS_IRES), sts);
 
-	/* Block compatibility-format MSIs */
+	/**
+	 * Block compatibility-format MSIs
+	 *
+	 * 在没有使能 Interrupt Remapping 的情况下，设备中断请求格式称之为
+	 * Compatibility format，主要包含一个32bit的Address和一个32bit的Data字段，
+	 * Address字段包含了中断要投递的目标CPU的APIC ID信息，Data字段主要包含了要投
+	 * 递的vecotr号和投递方式。
+	 */
 	if (sts & DMA_GSTS_CFIS) {
 		iommu->gcmd &= ~DMA_GCMD_CFI;
 		writel(iommu->gcmd, iommu->reg + DMAR_GCMD_REG);
@@ -673,6 +717,20 @@ static void iommu_disable_irq_remapping(struct intel_iommu *iommu)
 	unsigned long flags;
 	u32 sts;
 
+	/**
+	 * Interrupt Remapping
+	 *
+	 * Interrupt Remapping的出现改变了x86体系结构上的中断投递方式，外部中断源发出的中断
+	 * 请求格式发生了较大的改变， 中断请求会先被中断重映射硬件（IOMMU）截获后再通过查询中断
+	 * 重映射表的方式最终投递到目标CPU上。 这些外部设备中断源则包括了中断控制器(I/OxAPICs)
+	 * 以及MSI/MSIX兼容设备PCI/PCIe设备等。 Interrupt Remapping是需要硬件来支持的，这
+	 * 里的硬件应该主要是指的IOMMU（尽管intel手册并没有直接说明），Interrupt Remapping
+	 * 的Capability是通过Extended Capability Register BIT3来报告的，如果该位为1表示
+	 * 支持中断重映射。
+	 *
+	 * 见：
+	 * ecap_ir_support()
+	 */
 	if (!ecap_ir_support(iommu->ecap))
 		return;
 
@@ -1344,6 +1402,9 @@ static void intel_free_irq_resources(struct irq_domain *domain,
 	}
 }
 
+/**
+ * 分配
+ */
 static int intel_irq_remapping_alloc(struct irq_domain *domain,
 				     unsigned int virq, unsigned int nr_irqs,
 				     void *arg)
@@ -1378,6 +1439,9 @@ static int intel_irq_remapping_alloc(struct irq_domain *domain,
 		goto out_free_parent;
 
 	down_read(&dmar_global_lock);
+	/**
+	 * 分配一个IRTE
+	 */
 	index = alloc_irte(iommu, &data->irq_2_iommu, nr_irqs);
 	up_read(&dmar_global_lock);
 	if (index < 0) {
