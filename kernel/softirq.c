@@ -58,7 +58,9 @@ EXPORT_PER_CPU_SYMBOL(irq_stat);
 static struct softirq_action __cacheline_aligned_in_smp softirq_vec[NR_SOFTIRQS] ;
 
 /**
- *  软终端 线程 - 每个 CPU 一个
+ *  软中断 线程 - 每个 CPU 一个
+ *  从 top 命令看到的 %Cpu0   40 %si 的利用率，应该要比看到的 ksoftirqd/0 看到的
+ *  %CPU 要大。也就是说，软终端不一定是由 ksoftirqd 处理的。
  */
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 struct task_struct * ksoftirqd; //+++
@@ -410,7 +412,7 @@ restart:
 	h = softirq_vec;
 
 	/**
-	 *  从 软中断中获取中断，并以此处理。取出一位
+	 *  从 软中断中获取中断，并依次处理。取出一位
 	 */
 	while ((softirq_bit = ffs(pending))) {
 		unsigned int vec_nr;
