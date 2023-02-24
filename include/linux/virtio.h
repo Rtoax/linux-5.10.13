@@ -36,11 +36,13 @@
  * +-------------------+--------------------------------+-----------------------+
  * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
  * +-------------------+--------------------------------+-----------------------+
- * Descriptor Table：存放IO传输请求信息；
- * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
- * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ *
+ * - Descriptor Table：存放IO传输请求信息；
+ * - Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ * - Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
  *
  * 整个virtio协议中设备IO请求的工作机制可以简单地概括为：
+ *
  * 1. 前端驱动将IO请求放到 Descriptor Table中，然后将索引更新到 Available Ring 中，最后
  *    kick后端去取数据；
  * 2. 后端取出IO请求进行处理，然后将结果刷新到 Descriptor Table 中再更新 Using Ring，
@@ -148,13 +150,23 @@ dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq);
  * @features: the features supported by both driver and device.
  * @priv: private pointer for the driver's use.
  *
- * 一个使用 virtio 的设备
+ * 一个使用 virtio 的设备，virtio 设备是后端，驱动是前端
  *
  * 组成一个virtio设备的四要素包括：
  * 1. 设备状态域，见 VIRTIO_CONFIG_S_ACKNOWLEDGE ...
  * 2. feature bits，
  * 3. 设备配置空间，
  * 4. 一个或者多个virtqueue。
+ *
+ * VirtIO设备的核心职责是：
+ * - 接受来自相应前端VirtIO驱动程序的I/O请求
+ * - 通过将I/O操作分载到主机的物理硬件来处理请求
+ * - 使处理后的请求数据可用于VirtIO驱动程序
+ *
+ * 示例: virtio-SCSI驱动程序通知其设备对应方，让该设备知道它需要去并
+ * 检索实际物理硬件上的存储中的所请求的文档。virtio-scsi设备接受此请求并执行必要的调
+ * 用以从物理硬件检索数据。最后，设备通过将检索到的数据放到其共享的VirtQueue上，使驱
+ * 动程序可以使用这些数据。
  */
 struct virtio_device {
     /**
@@ -236,8 +248,22 @@ size_t virtio_max_dma_size(struct virtio_device *vdev);
  *    changes; may be called in interrupt context.
  * @freeze: optional function to call during suspend/hibernation.
  * @restore: optional function to call on resume.
+ *
+ * virtio 设备是后端，驱动是前端
+ *
+ * A VirtIO driver’s core responsibilities are:
+ * - accept I/O requests from user processes
+ * - 接受来自用户进程的I/O请求
+ * - transfer those I/O requests to the corresponding back-end VirtIO device
+ * - 将这些I/O请求传输到相应的后端VirtIO设备
+ * - retrieve completed requests from its VirtIO device counterpart
+ * - 从对应的VirtIO设备检索完成的请求
+ *
+ * 例如，来自virtio-scsi的I/O请求可能是用户希望从存储中检索文档。virtio-scsi驱动程序
+ * 接受检索所述文档的请求，并将请求发送到virtio-scsi设备（后端）。一旦VirtIO设备完成了
+ * 请求，文档就可供VirtIO驱动程序使用。VirtIO驱动程序检索文档并将其提供给用户。
  */
-struct virtio_driver {  /* virtio 驱动 */
+struct virtio_driver {
 	struct device_driver driver;
 	const struct virtio_device_id *id_table;
 	const unsigned int *feature_table;

@@ -316,7 +316,7 @@ static int virtio_dev_remove(struct device *_d)
 /**
  *
  */
-static struct bus_type virtio_bus = {   /* virtio  */
+static struct bus_type virtio_bus = {
 	.name  = "virtio",
 	.match = virtio_dev_match,
 	.dev_groups = virtio_dev_groups,
@@ -348,6 +348,10 @@ EXPORT_SYMBOL_GPL(unregister_virtio_driver);
  * as another code path may have obtained a reference to @dev.
  *
  * Returns: 0 on suceess, -error on failure
+ *
+ * 注册的 vritio 设备(句柄)在 QEMU 中，向上用来和 Guest 中的 驱动交互，向下和 KVM 交互。
+ * 在打开 QEMU VM 的时候，此函数不会被调用。
+ * virtio 设备是后端，驱动是前端
  */
 int register_virtio_device(struct virtio_device *dev)
 {

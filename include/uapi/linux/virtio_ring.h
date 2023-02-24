@@ -112,9 +112,10 @@
  * +-------------------+--------------------------------+-----------------------+
  * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
  * +-------------------+--------------------------------+-----------------------+
- * Descriptor Table：存放IO传输请求信息；
- * Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
- * Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
+ *
+ * - Descriptor Table：存放IO传输请求信息；
+ * - Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ * - Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
  *
  *
  *          +------------------------------------+
@@ -276,9 +277,44 @@ typedef struct vring_used __attribute__((aligned(VRING_USED_ALIGN_SIZE)))
 	vring_used_t;
 
 /**
+ * 每个virtqueue由3个部分组成：
+ * +-------------------+--------------------------------+-----------------------+
+ * | Descriptor Table  |   Available Ring  (padding)    |       Used Ring       |
+ * +-------------------+--------------------------------+-----------------------+
  *
+ * - Descriptor Table：存放IO传输请求信息；
+ * - Available Ring：记录了Descriptor Table表中的I/O请求下发信息，前端Driver可写后端只读；
+ * - Used Ring：记录Descriptor Table表中已被提交到硬件的信息，前端Driver只读后端可写。
  *
- *  初始化 `vring_init()`
+ *          +------------------------------------+
+ *          |       virtio  guest driver         |
+ *          +-----------------+------------------+
+ *            /               |              ^
+ *           /                |               \
+ *          put            update             get
+ *         /                  |                 \
+ *        V                   V                  \
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *   | available|      | descriptor |        |   used   |
+ *   |   ring   |      |   table    |        |   ring   |
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *   |          |      |            |        |          |
+ *   +----------+      +------------+        +----------+
+ *        \                   ^                   ^
+ *         \                  |                  /
+ *         get             update              put
+ *           \                |                /
+ *            V               |               /
+ *           +----------------+-------------------+
+ *           |       virtio host backend          |
+ *           +------------------------------------+
+ *
+ * 相关函数：
+ * - 初始化 `vring_init()`
  */
 struct vring {
 	unsigned int num;

@@ -129,7 +129,13 @@ struct vring_virtqueue {
 	union {
 		/* Available for split ring */
 		struct {
-			/* Actual memory layout for this queue. */
+			/**
+			 * Actual memory layout for this queue.
+			 * 每个virtqueue由3个部分组成：
+			 * +-------------------+------------------+-------------+
+			 * | Descriptor Table  |   Available Ring |  Used Ring  |
+			 * +-------------------+------------------+-------------+
+			 */
 			struct vring vring;
 
 			/* Last written value to avail->flags */
@@ -2027,6 +2033,10 @@ EXPORT_SYMBOL_GPL(virtqueue_poll);
  *
  * Caller must ensure we don't call this with other virtqueue
  * operations at the same time (except where noted).
+ *
+ * 您可以使用这些函数来启用和禁用回调过程（通过find_vq函数在virtqueue中初始化回调函数）。
+ * 注意，回调函数和hypervisor位于不同的地址空间中，因此调用通过间接hypervisor调用
+ * （如kvm_hypercall）进行。
  */
 bool virtqueue_enable_cb(struct virtqueue *_vq)
 {
