@@ -167,6 +167,8 @@ struct virtio_blk_config {
  * This comes first in the read scatter-gather list.
  * For legacy virtio, if VIRTIO_F_ANY_LAYOUT is not negotiated,
  * this is the first element of the read scatter-gather list.
+ *
+ * struct vring_desc.addr = GPA
  */
 struct virtio_blk_outhdr {
 	/* VIRTIO_BLK_T* */

@@ -3023,6 +3023,7 @@ static int virtnet_validate(struct virtio_device *vdev)
 
 /**
  * 网卡设备驱动加载的入口
+ * 执行设备相关的初始化工作，包括发现设备的 virtqueue，读写 virtio 设备的配置空间等。
  *
  * 内核流程mark一下，PCI设备驱动流程这个后面可以学习一下，先扫描PCI bus发现是virtio
  * 设备再扫描virtio-bus。

@@ -565,7 +565,8 @@ static void virtio_pci_release_dev(struct device *_d)
 }
 
 /**
- * PCI 扫描的时候会扫描到这个设备
+ * 由于 virtioPCI 代理设备的存在，PCI 扫描的时候会扫描到这个设备，并会调用相应驱动的
+ * probe 函数，该函数为 vritio_pci_driver 的 probe 函数。
  */
 static int virtio_pci_probe(struct pci_dev *pci_dev,
 			    const struct pci_device_id *id)
@@ -581,6 +582,10 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	if (!vp_dev)
 		return -ENOMEM;
 
+	/**
+	 * 分配一个 virtio_pci_device 结构体，用来表示一个 virtio PCI 代理设备。
+	 * 内部调用了 dev_set_drvdata(&pdev->dev, data);
+	 */
 	pci_set_drvdata(pci_dev, vp_dev);
 	vp_dev->vdev.dev.parent = &pci_dev->dev;
 	vp_dev->vdev.dev.release = virtio_pci_release_dev;
@@ -698,6 +703,10 @@ static int virtio_pci_sriov_configure(struct pci_dev *pci_dev, int num_vfs)
 static struct pci_driver virtio_pci_driver = {
 	.name		= "virtio-pci",
 	.id_table	= virtio_pci_id_table,
+	/**
+	 * 由于 virtioPCI 代理设备的存在，PCI 扫描的时候会扫描到这个设备，并会调用相应驱动的
+	 * probe 函数，该函数为 vritio_pci_driver 的 probe 函数。
+	 */
 	.probe		= virtio_pci_probe,
 	.remove		= virtio_pci_remove,
 #ifdef CONFIG_PM_SLEEP

@@ -167,6 +167,10 @@ void virtio_add_status(struct virtio_device *dev, unsigned int status)
 }
 EXPORT_SYMBOL_GPL(virtio_add_status);
 
+/**
+ * 设置 VIRTIO_CONFIG_S_FEATURES_OK 特性位，这之后， virtio 驱动就不会再接受新的
+ * 特性了，
+ */
 int virtio_finalize_features(struct virtio_device *dev)
 {
 	int ret = dev->config->finalize_features(dev);
@@ -196,6 +200,11 @@ int virtio_finalize_features(struct virtio_device *dev)
 
 	virtio_add_status(dev, VIRTIO_CONFIG_S_FEATURES_OK);
 	status = dev->config->get_status(dev);
+
+	/**
+	 * 确保设置了 VIRTIO_CONFIG_S_FEATURES_OK, 否则设备不支持 virtio 驱动设备的
+	 * 一些状态，表示设备不可用。
+	 */
 	if (!(status & VIRTIO_CONFIG_S_FEATURES_OK)) {
 		dev_err(&dev->dev, "virtio: device refuses features: %x\n",
 			status);
@@ -216,13 +225,15 @@ static int virtio_dev_probe(struct device *_d)
 
 	/**
 	 * We have a driver!
-	 * 更新status bit，这里要写配置数据结构
+	 * 设置 VIRTIO_CONFIG_S_DRIVER 状态位，表示 virtio 驱动已经知道了怎么驱动该设备.
 	 */
 	virtio_add_status(dev, VIRTIO_CONFIG_S_DRIVER);
 
 	/**
 	 * Figure out what features the device supports.
-	 * 查询后端支持哪些feature bits
+	 *
+	 * 读取 virtio 后端设备的 feature 位，求出驱动设置的 features,将两者计算交集，然后
+	 * 向设备写入这个交集特性，
 	 */
 	device_features = dev->config->get_features(dev);
 
@@ -264,23 +275,35 @@ static int virtio_dev_probe(struct device *_d)
 
 	/**
 	 * feature set协商，取交集
+	 *
+	 * 设置 VIRTIO_CONFIG_S_FEATURES_OK 特性位，这之后，virtio 驱动就不会再接受新的
+	 * 特性了，
 	 */
 	err = virtio_finalize_features(dev);
 	if (err)
 		goto err;
 
 	/**
-	 * 调用特定virtio设备的驱动程序probe
+	 * 调用特定virtio设备的驱动程序probe，执行设备相关的初始化工作，包括发现设备的
+	 * virtqueue，读写 virtio 设备的配置空间等。
 	 *
 	 * 可能如下：
 	 * virtnet_probe()
 	 * virtblk_probe()
+	 * virtballoon_probe()
 	 */
 	err = drv->probe(dev);
 	if (err)
 		goto err;
 
-	/* If probe didn't do it, mark device DRIVER_OK ourselves. */
+	/**
+	 * If probe didn't do it, mark device DRIVER_OK ourselves.
+	 *
+	 * 设置 VIRTIO_CONFIG_S_DRIVER_OK 状态位，这通常是在具体设备驱动的 probe 函数
+	 * 中通过调用 virtio_device_ready() 完成的。对于 virtio balloon 来说，是
+	 * virtballoon_probe() 完成的。如果设备驱动没有设置 DRIVER_OK 状态位，则会
+	 * 在此由总线的 probe 函数来设置。
+	 */
 	if (!(dev->config->get_status(dev) & VIRTIO_CONFIG_S_DRIVER_OK))
 		virtio_device_ready(dev);
 
@@ -372,11 +395,19 @@ int register_virtio_device(struct virtio_device *dev)
 	dev->config_enabled = false;
 	dev->config_change_pending = false;
 
-	/* We always start by resetting the device, in case a previous
-	 * driver messed it up.  This also tests that code path a little. */
+	/**
+	 * We always start by resetting the device, in case a previous
+	 * driver messed it up.  This also tests that code path a little.
+	 *
+	 * 重置设备
+	 */
 	dev->config->reset(dev);
 
-	/* Acknowledge that we've seen the device. */
+	/**
+	 * Acknowledge that we've seen the device.
+	 *
+	 * 设置 VIRTIO_CONFIG_S_ACKNOWLEDGE 状态位，表示 virtio 驱动已经知道了该设备
+	 */
 	virtio_add_status(dev, VIRTIO_CONFIG_S_ACKNOWLEDGE);
 
 	INIT_LIST_HEAD(&dev->vqs);

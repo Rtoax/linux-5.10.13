@@ -1232,8 +1232,15 @@ static inline int virtqueue_add_packed(struct virtqueue *_vq,
 	vq->packed.next_avail_idx = i;
 	vq->free_head = curr;
 
-	/* Store token. */
+	/**
+	 * Store token.
+	 *
+	 * 保存 token
+	 */
 	vq->packed.desc_state[id].num = descs_used;
+	/**
+	 * 可能为
+	 */
 	vq->packed.desc_state[id].data = data;
 	vq->packed.desc_state[id].indir_desc = ctx;
 	vq->packed.desc_state[id].last = prev;

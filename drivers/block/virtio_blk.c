@@ -146,7 +146,8 @@ static inline struct virtio_blk_vq *get_virtio_blk_vq(struct blk_mq_hw_ctx *hctx
 }
 
 /**
- *
+ * 向 virtio 队列中添加
+ * Guest 向 Host 发出的请求（virtio-driver -> virtio-device）
  */
 static int virtblk_add_req(struct virtqueue *vq, struct virtblk_req *vbr)
 {

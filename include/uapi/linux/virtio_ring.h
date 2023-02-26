@@ -166,6 +166,11 @@ struct vring_desc {
 	 * Address (guest-physical).
 	 * addr占用64bit存放了单个IO请求的GPA地址信息，例如addr可能表示某个DMA buffer的起
 	 * 始地址。
+	 *
+	 * struct vring_desc.addr = GPA
+	 *
+	 * 该字段可能为
+	 * struct virtio_blk_outhdr {}
 	 */
 	__virtio64 addr;
 	/**
