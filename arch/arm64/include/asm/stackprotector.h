@@ -27,6 +27,7 @@ extern unsigned long __stack_chk_guard;
  */
 static __always_inline void boot_init_stack_canary(void)
 {
+/* 栈保护 */
 #if defined(CONFIG_STACKPROTECTOR)
 	unsigned long canary;
 

@@ -479,9 +479,14 @@ struct fixed_percpu_data {
 	 * GCC hardcodes the stack canary as %gs:40.  Since the
 	 * irq_stack is the object at %gs:0, we reserve the bottom
 	 * 48 bytes of the irq stack for the canary.
+	 *
+	 * `gs_base` - 总是指向 `irqstack` 联合底部的 `gs` 寄存器
 	 */
-	char		gs_base[40]; //`gs_base` - 总是指向 `irqstack` 联合底部的 `gs` 寄存器
-	unsigned long	stack_canary;   /* 金丝雀: 对中断栈来说是一个用来验证栈是否已经被修改的 `栈保护者（stack protector）` */
+	char		gs_base[40];
+	/**
+	 * 金丝雀: 对中断栈来说是一个用来验证栈是否已经被修改的 栈保护者（stack protector）
+	 */
+	unsigned long	stack_canary;
 };
 
 //fixed_percpu_data 是 `percpu` 的第一个数据
@@ -499,21 +504,22 @@ extern asmlinkage void ignore_sysret(void);//仅返回 `-ENOSYS` 错误代码
 /* Save actual FS/GS selectors and bases to current->thread */
 void current_save_fsgs(void);
 #else	/* X86_64 */
-//#ifdef CONFIG_STACKPROTECTOR
-///*
-// * Make sure stack canary segment base is cached-aligned:
-// *   "For Intel Atom processors, avoid non zero segment base address
-// *    that is not aligned to cache line boundary at all cost."
-// * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
-// */
-//struct stack_canary {
-//	char __pad[20];		/* canary at %gs:20 */
-//	unsigned long canary;
-//};
-//DECLARE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
-//#endif
-///* Per CPU softirq stack pointer */
-//DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
+/* 栈保护 */
+#ifdef CONFIG_STACKPROTECTOR
+/*
+ * Make sure stack canary segment base is cached-aligned:
+ *   "For Intel Atom processors, avoid non zero segment base address
+ *    that is not aligned to cache line boundary at all cost."
+ * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
+ */
+struct stack_canary {
+	char __pad[20];		/* canary at %gs:20 */
+	unsigned long canary;
+};
+DECLARE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
+#endif
+/* Per CPU softirq stack pointer */
+DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 #endif	/* X86_64 */
 
 extern unsigned int fpu_kernel_xstate_size;

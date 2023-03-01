@@ -1382,8 +1382,11 @@ struct task_struct {    /* PCB */
 	pid_t				tgid;
 
 #ifdef CONFIG_STACKPROTECTOR
-	/* Canary(金丝雀) value for the -fstack-protector GCC feature: */
-	unsigned long			stack_canary;   /* 栈 金丝雀 保护 */
+	/**
+	 * Canary(金丝雀) value for the -fstack-protector GCC feature:
+	 * 栈 金丝雀 保护
+	 */
+	unsigned long			stack_canary;
 #endif
 
 	/*

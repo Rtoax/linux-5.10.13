@@ -45,6 +45,7 @@ PURGATORY_CFLAGS_REMOVE		+= $(CC_FLAGS_FTRACE)
 endif
 
 ifdef CONFIG_STACKPROTECTOR
+# 栈保护
 PURGATORY_CFLAGS_REMOVE		+= -fstack-protector
 endif
 

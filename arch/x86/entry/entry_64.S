@@ -251,6 +251,7 @@ SYM_FUNC_START(__switch_to_asm)
 	movq	%rsp, TASK_threadsp(%rdi)
 	movq	TASK_threadsp(%rsi), %rsp
 
+/* 栈保护 */
 #ifdef CONFIG_STACKPROTECTOR
 	movq	TASK_stack_canary(%rsi), %rbx
 	movq	%rbx, PER_CPU_VAR(fixed_percpu_data) + stack_canary_offset
