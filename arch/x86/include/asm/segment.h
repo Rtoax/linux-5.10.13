@@ -118,69 +118,69 @@
  *  30 - unused
  *  31 - TSS for double fault handler
  */
-//#define GDT_ENTRY_TLS_MIN		6
-//#define GDT_ENTRY_TLS_MAX 		(GDT_ENTRY_TLS_MIN + GDT_ENTRY_TLS_ENTRIES - 1)
+#define GDT_ENTRY_TLS_MIN		6
+#define GDT_ENTRY_TLS_MAX 		(GDT_ENTRY_TLS_MIN + GDT_ENTRY_TLS_ENTRIES - 1)
 
-//#define GDT_ENTRY_KERNEL_CS		12
-//#define GDT_ENTRY_KERNEL_DS		13
-//#define GDT_ENTRY_DEFAULT_USER_CS	14
-//#define GDT_ENTRY_DEFAULT_USER_DS	15
-//#define GDT_ENTRY_TSS			16
-//#define GDT_ENTRY_LDT			17
-//#define GDT_ENTRY_PNPBIOS_CS32		18
-//#define GDT_ENTRY_PNPBIOS_CS16		19
-//#define GDT_ENTRY_PNPBIOS_DS		20
-//#define GDT_ENTRY_PNPBIOS_TS1		21
-//#define GDT_ENTRY_PNPBIOS_TS2		22
-//#define GDT_ENTRY_APMBIOS_BASE		23
+#define GDT_ENTRY_KERNEL_CS		12
+#define GDT_ENTRY_KERNEL_DS		13
+#define GDT_ENTRY_DEFAULT_USER_CS	14
+#define GDT_ENTRY_DEFAULT_USER_DS	15
+#define GDT_ENTRY_TSS			16
+#define GDT_ENTRY_LDT			17
+#define GDT_ENTRY_PNPBIOS_CS32		18
+#define GDT_ENTRY_PNPBIOS_CS16		19
+#define GDT_ENTRY_PNPBIOS_DS		20
+#define GDT_ENTRY_PNPBIOS_TS1		21
+#define GDT_ENTRY_PNPBIOS_TS2		22
+#define GDT_ENTRY_APMBIOS_BASE		23
 
-//#define GDT_ENTRY_ESPFIX_SS		26
-//#define GDT_ENTRY_PERCPU		27
-//#define GDT_ENTRY_STACK_CANARY		28
+#define GDT_ENTRY_ESPFIX_SS		26
+#define GDT_ENTRY_PERCPU		27
+#define GDT_ENTRY_STACK_CANARY		28
 
-//#define GDT_ENTRY_DOUBLEFAULT_TSS	31
+#define GDT_ENTRY_DOUBLEFAULT_TSS	31
 
 /*
  * Number of entries in the GDT table:
  */
-//#define GDT_ENTRIES			32
+#define GDT_ENTRIES			32
 
 /*
  * Segment selector values corresponding to the above entries:
  */
 
-//#define __KERNEL_CS			(GDT_ENTRY_KERNEL_CS*8)
-//#define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
-//#define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
-//#define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-//#define __ESPFIX_SS			(GDT_ENTRY_ESPFIX_SS*8)
+#define __KERNEL_CS			(GDT_ENTRY_KERNEL_CS*8)
+#define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
+#define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
+#define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
+#define __ESPFIX_SS			(GDT_ENTRY_ESPFIX_SS*8)
 
 /* segment for calling fn: */
-//#define PNP_CS32			(GDT_ENTRY_PNPBIOS_CS32*8)
+#define PNP_CS32			(GDT_ENTRY_PNPBIOS_CS32*8)
 /* code segment for BIOS: */
-//#define PNP_CS16			(GDT_ENTRY_PNPBIOS_CS16*8)
+#define PNP_CS16			(GDT_ENTRY_PNPBIOS_CS16*8)
 
 /* "Is this PNP code selector (PNP_CS32 or PNP_CS16)?" */
-//#define SEGMENT_IS_PNP_CODE(x)		(((x) & 0xf4) == PNP_CS32)
+#define SEGMENT_IS_PNP_CODE(x)		(((x) & 0xf4) == PNP_CS32)
 
 /* data segment for BIOS: */
-//#define PNP_DS				(GDT_ENTRY_PNPBIOS_DS*8)
+#define PNP_DS				(GDT_ENTRY_PNPBIOS_DS*8)
 /* transfer data segment: */
-//#define PNP_TS1				(GDT_ENTRY_PNPBIOS_TS1*8)
+#define PNP_TS1				(GDT_ENTRY_PNPBIOS_TS1*8)
 /* another data segment: */
-//#define PNP_TS2				(GDT_ENTRY_PNPBIOS_TS2*8)
+#define PNP_TS2				(GDT_ENTRY_PNPBIOS_TS2*8)
 
-//#ifdef CONFIG_SMP
-//# define __KERNEL_PERCPU		(GDT_ENTRY_PERCPU*8)
-//#else
-//# define __KERNEL_PERCPU		0
-//#endif
-//
-//#ifdef CONFIG_STACKPROTECTOR
-//# define __KERNEL_STACK_CANARY		(GDT_ENTRY_STACK_CANARY*8)
-//#else
-//# define __KERNEL_STACK_CANARY		0
-//#endif
+#ifdef CONFIG_SMP
+# define __KERNEL_PERCPU		(GDT_ENTRY_PERCPU*8)
+#else
+# define __KERNEL_PERCPU		0
+#endif
+
+#ifdef CONFIG_STACKPROTECTOR
+# define __KERNEL_STACK_CANARY		(GDT_ENTRY_STACK_CANARY*8)
+#else
+# define __KERNEL_STACK_CANARY		0
+#endif
 
 #else /* 64-bit: */
 

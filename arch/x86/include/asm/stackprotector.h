@@ -62,8 +62,10 @@
  * stack protector is disabled. Alternatively, the caller should not end
  * with a function call which gets tail-call optimized as that would
  * lead to checking a modified canary value.
+ *
+ * 栈保护，在 start_kernel() 中被调用
  */
-static __always_inline void boot_init_stack_canary(void)    /*金丝雀，magic  */
+static __always_inline void boot_init_stack_canary(void)
 {
 	u64 canary;
 	u64 tsc;
@@ -76,21 +78,24 @@ static __always_inline void boot_init_stack_canary(void)    /*金丝雀，magic 
 	 * of randomness. The TSC only matters for very early init,
 	 * there it already has some randomness on most systems. Later
 	 * on during the bootup the random pool has true entropy too.
+	 *
+	 * 使用随机数和[时戳计数器] 计算新的 `canary` 值
 	 */
-	//使用随机数和[时戳计数器] 计算新的 `canary` 值
 	get_random_bytes(&canary, sizeof(canary));
-	tsc = rdtsc();  
+	tsc = rdtsc();
 	canary += tsc + (tsc << 32UL);
-	canary &= CANARY_MASK;  /* 产生金丝雀 */
+	canary &= CANARY_MASK;
 
 	current->stack_canary = canary;
 #ifdef CONFIG_X86_64
-    //将此值写入IRQ堆栈的顶部
-    //如果canary被设置, 关闭本地中断注册bootstrap CPU以及CPU maps
-    //将 `canary` 值写入 `fixed_percpu_data` 中
+    /**
+	 * 将此值写入IRQ堆栈的顶部
+	 * 如果canary被设置, 关闭本地中断注册bootstrap CPU以及CPU maps
+	 * 将 `canary` 值写入 `fixed_percpu_data` 中
+	 */
 	this_cpu_write(fixed_percpu_data.stack_canary, canary);
 #else
-//	this_cpu_write(stack_canary.canary, canary);
+	this_cpu_write(stack_canary.canary, canary);
 #endif
 }
 
@@ -99,7 +104,7 @@ static inline void cpu_init_stack_canary(int cpu, struct task_struct *idle)
 #ifdef CONFIG_X86_64
 	per_cpu(fixed_percpu_data.stack_canary, cpu) = idle->stack_canary;
 #else
-//	per_cpu(stack_canary.canary, cpu) = idle->stack_canary;
+	per_cpu(stack_canary.canary, cpu) = idle->stack_canary;
 #endif
 }
 

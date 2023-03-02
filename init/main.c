@@ -1062,7 +1062,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * Disable preemption - early bootup scheduling is extremely
 	 * fragile until we cpu_idle() for the first time.
 	 */
-	preempt_disable();  /* j禁止抢占 */
+	preempt_disable();  /* 禁止抢占 */
 
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
@@ -1100,9 +1100,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 */
 	early_irq_init();
 	/**
-	 *
+	 * 架构相关
 	 */
-	init_IRQ();             /* 架构相关 */
+	init_IRQ();
 	/**
 	 *
 	 */
@@ -1122,9 +1122,12 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 *
 	 */
 	init_timers();
-	hrtimers_init();        /* 高精度定时器 */
 
-	softirq_init();         /* tasklet 和 hi(高优先级) tasklet 初始化 */
+	/* 高精度定时器 */
+	hrtimers_init();
+
+	/* tasklet 和 hi(高优先级) tasklet 初始化 */
+	softirq_init();
 
 	timekeeping_init();
 
@@ -1137,9 +1140,13 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 * - adding command line entropy
 	 */
 	rand_initialize();
-	add_latent_entropy();   /* entropy:无序状态,熵?? */
+
+	/* entropy:无序状态,熵?? */
+	add_latent_entropy();
 	add_device_randomness(command_line, strlen(command_line));
-	boot_init_stack_canary();   /* 金丝雀， 保护区， magic number 防止中断栈溢出 */
+
+	/* 金丝雀， 保护区， magic number 防止中断栈溢出 */
+	boot_init_stack_canary();
 
 	time_init();
 
@@ -1148,7 +1155,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 */
 	perf_event_init();
 
-	profile_init();         /* 剖析 */
+	/* 剖析 */
+	profile_init();
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
