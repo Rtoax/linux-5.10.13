@@ -40,6 +40,14 @@ int main(void)
 #endif
   DEFINE(TSK_STACK,		offsetof(struct task_struct, stack));
 #ifdef CONFIG_STACKPROTECTOR
+  /**
+   * CONFIG_STACKPROTECTOR =y
+   * CONFIG_STACKPROTECTOR_STRONG =y
+   * CONFIG_STACKPROTECTOR_PER_TASK =y
+   *
+   * per-task canary时内核除了初始化外还需要负责为每个进程生成随机的canary，并负责
+   * 在进程切换时同步per-cpu的寄存器与进程的关系，此时内核新增的配置项和数据结构如下:
+   */
   DEFINE(TSK_STACK_CANARY,	offsetof(struct task_struct, stack_canary));
 #endif
   BLANK();
@@ -51,7 +59,7 @@ int main(void)
   BLANK();
   /**
    *    内核中定义了 很多宏 来访问 pt_regs 数据结构对应的栈框
-   *    
+   *
    */
   DEFINE(S_X0,			offsetof(struct pt_regs, regs[0]));
   DEFINE(S_X2,			offsetof(struct pt_regs, regs[2]));

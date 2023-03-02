@@ -60,7 +60,32 @@
 
 #if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_STACKPROTECTOR_PER_TASK)
 #include <linux/stackprotector.h>
-unsigned long __stack_chk_guard __read_mostly;
+/**
+ * 函数入口需要向函数栈push一个原始的canary，函数出口需要将函数栈中的
+ * canary(后续称为stack_canary)和原始值做对比，在此过程中原始值需要
+ * 保持不变并且可以被代码获取到.
+ *
+ * 默认stack canary使用全局符号(变量) __stack_chk_guard 作为原始
+ * 的canary(后续称为全局canary), 在gcc/clang中均使用相同的名字.
+ *
+ * 全局canary的优点在于:
+ * - 实现简单,开启stack_canary保护的代码中只需要定义一个全局变量__stack_chk_guard
+ *   并在初始化时为其赋值一个随机数即可.
+ *
+ * 全局canary的缺点在于:
+ * - 所有进程间共享同一个全局canary,只要某进程/线程中发生了infoleak，那么整个canary
+ *   机制就可以被绕过了.
+ * - 全局canary(__stack_chk_guard)的值在运行期间难以改变，否则会导致已有的函数返回
+ *   时直接crash
+ *
+ * 这里__stack_chk_guard被定义为一个变量, 实际上定义为 __ro_after_init 可能更好,
+ * 此变量可写通常也不会有太大问题，因为对此变量的修改通常会直接导致内核检测到栈溢出而crash
+ */
+unsigned long __stack_chk_guard __ro_after_init;
+/**
+ * 全局canary对于内核来说并没有太多的工作，只需要在系统启动时设置好__stack_chk_guard
+ * 并定义检测失败的回调__stack_chk_fail 即可，插桩代码均由编译器实现
+ */
 EXPORT_SYMBOL(__stack_chk_guard);
 #endif
 

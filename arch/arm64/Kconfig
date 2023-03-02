@@ -1822,6 +1822,13 @@ config RANDOMIZE_MODULE_REGION_FULL
 config CC_HAVE_STACKPROTECTOR_SYSREG
 	def_bool $(cc-option,-mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=0)
 
+# CONFIG_STACKPROTECTOR =y
+# CONFIG_STACKPROTECTOR_STRONG =y
+# CONFIG_STACKPROTECTOR_PER_TASK =y
+#
+# per-task canary时内核除了初始化外还需要负责为每个进程生成随机的canary，并负责
+# 在进程切换时同步per-cpu的寄存器与进程的关系，此时内核新增的配置项和数据结构如下:
+#
 config STACKPROTECTOR_PER_TASK
 	def_bool y
 	depends on STACKPROTECTOR && CC_HAVE_STACKPROTECTOR_SYSREG

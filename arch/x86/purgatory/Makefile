@@ -46,6 +46,9 @@ endif
 
 ifdef CONFIG_STACKPROTECTOR
 # 栈保护
+# gcc/llvm 均支持全局canary:
+#  gcc/llvm中编译选项-fstack-protector/-fstack-protector-strong均已支持,
+#  开启后函数出入口会从全局变量__stack_chk_guard中获取全局canary
 PURGATORY_CFLAGS_REMOVE		+= -fstack-protector
 endif
 

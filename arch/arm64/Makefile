@@ -57,8 +57,47 @@ KBUILD_CFLAGS	+= -fno-asynchronous-unwind-tables -fno-unwind-tables
 KBUILD_AFLAGS	+= -fno-asynchronous-unwind-tables -fno-unwind-tables
 
 # 栈保护
+# gcc/llvm 均支持aarch64的per-cpu canary:
+# - gcc通过-mstack-protector-guard*系列选项可以指定某系统寄存器作为stack canary
+#   per cpu的资源(后面称为sysreg)
+# - clang 主线目前也已支持-mstack-protector-guard* 系列选项,但目前尚无可用发行版
+# - clang --target=--target=aarch64-linux-android 中支持per cpu的stack canary，
+#   但其只能使用默认的 tpidr_el0系统寄存器作为索引, 偏移值也是默认的0x40
+#
+# -mstack-protector-guard*系列包含三个选项:
+#  * -mstack-protector-guard=sysreg:      使用系统寄存器作为per cpu canary的索引
+#  * -mstack-protector-guard-reg=sp_el0:  作为索引的系统寄存器名(必须是系统寄存器,
+#                                         代码中最终会生成msr/mrs作为访问指令)
+#  * -mstack-protector-guard-offset=16:   偏移地址,最终canary来自 *(sp_el0 + offset)
+#
+# CONFIG_STACKPROTECTOR =y
+# CONFIG_STACKPROTECTOR_STRONG =y
+# CONFIG_STACKPROTECTOR_PER_TASK =y
+#
+# per-task canary时内核除了初始化外还需要负责为每个进程生成随机的canary，并负责
+# 在进程切换时同步per-cpu的寄存器与进程的关系，此时内核新增的配置项和数据结构如下:
+#
+# https://blog.csdn.net/lidan113lidan/article/details/120318707
 ifeq ($(CONFIG_STACKPROTECTOR_PER_TASK),y)
 prepare: stack_protector_prepare
+#
+# 根据编译选项可知，per-task模式下内核指定编译器通过 *(sp_el0 + TSK_STACK_CANARY)
+# 来解引用per-cpu canary, sp_el0在内核中用来存储当前进程task_struct的指针，即对于
+# 内核来说对 *(sp_el0 + TSK_STACK_CANARY) 的解引用即相当于访问 current->stack_canary.
+#
+# 由于 sp_el0 在内核中是随着进程切换而切换的(见 __switch_to)，故stack canary特性并不需要做
+# 额外的操作，其只需要在每个线程创建时为其生成新的canary即可:
+#
+#   static struct task_struct *dup_task_struct(...)
+#   {
+#       ...
+#   #ifdef CONFIG_STACKPROTECTOR
+#       tsk->stack_canary = get_random_canary();
+#   #endif
+#       ...
+#   }
+#
+# https://blog.csdn.net/lidan113lidan/article/details/120318707
 stack_protector_prepare: prepare0
 	$(eval KBUILD_CFLAGS += -mstack-protector-guard=sysreg		  \
 				-mstack-protector-guard-reg=sp_el0	  \

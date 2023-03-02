@@ -1056,7 +1056,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->stack = stack; /* 进程栈 */
 
 #ifdef CONFIG_VMAP_STACK
-//	tsk->stack_vm_area = stack_vm_area;
+	tsk->stack_vm_area = stack_vm_area;
 #endif
 
 #ifdef CONFIG_THREAD_INFO_IN_TASK
@@ -1098,11 +1098,16 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	clear_tsk_need_resched(tsk);    /* 清理 标志位 */
 	set_task_stack_end_magic(tsk);  /* 设置栈边界 magic，用于溢出监测 */
 
+/**
+ * 这里不是 CONFIG_STACKPROTECTOR_PER_TASK 是因为x86平台此特性兼容的历史原因，
+ * 这里欠缺一点优雅
+ */
 #ifdef CONFIG_STACKPROTECTOR
 	/**
-	 *  金丝雀，栈保护
+	 * 金丝雀，栈保护
+	 * fork线程时总是新生成一个随机数作为新线程的canary
 	 */
-	tsk->stack_canary = get_random_canary();    /* 随机金丝雀 */
+	tsk->stack_canary = get_random_canary();
 #endif
 
 	/**

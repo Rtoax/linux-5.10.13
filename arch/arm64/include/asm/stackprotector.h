@@ -27,17 +27,36 @@ extern unsigned long __stack_chk_guard;
  */
 static __always_inline void boot_init_stack_canary(void)
 {
-/* 栈保护 */
+	/**
+	 * 栈保护
+	 *
+	 * 全局canary对于内核来说并没有太多的工作，只需要在系统启动时设置好__stack_chk_guard
+	 * 并定义检测失败的回调__stack_chk_fail 即可，插桩代码均由编译器实现
+	 */
 #if defined(CONFIG_STACKPROTECTOR)
 	unsigned long canary;
 
-	/* Try to get a semi random initial value. */
+	/**
+	 * Try to get a semi random initial value.
+	 * 获取一个半随机数
+	 */
 	get_random_bytes(&canary, sizeof(canary));
 	canary ^= LINUX_VERSION_CODE;
 	canary &= CANARY_MASK;
 
 	current->stack_canary = canary;
+	/**
+	 * 如果没指定 per thread,则初始化全局canary
+	 * 即：
+	 *  CONFIG_STACKPROTECTOR =y
+	 *  CONFIG_STACKPROTECTOR_STRONG =y
+	 *  CONFIG_STACKPROTECTOR_PER_TASK =n
+	 */
 	if (!IS_ENABLED(CONFIG_STACKPROTECTOR_PER_TASK))
+		/**
+		 * 默认stack canary使用全局符号(变量) __stack_chk_guard 作为原始
+		 * 的canary(后续称为全局canary), 在gcc/clang中均使用相同的名字.
+		 */
 		__stack_chk_guard = current->stack_canary;
 #endif
 	ptrauth_thread_init_kernel(current);

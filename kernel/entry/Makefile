@@ -6,6 +6,9 @@ KASAN_SANITIZE := n
 UBSAN_SANITIZE := n
 KCOV_INSTRUMENT := n
 
+# gcc/llvm 均支持全局canary:
+#  gcc/llvm中编译选项-fstack-protector/-fstack-protector-strong均已支持,
+#  开启后函数出入口会从全局变量__stack_chk_guard中获取全局canary
 CFLAGS_REMOVE_common.o	 = -fstack-protector -fstack-protector-strong
 CFLAGS_common.o		+= -fno-stack-protector
 
