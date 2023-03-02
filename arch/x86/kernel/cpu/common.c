@@ -226,84 +226,84 @@ static int __init x86_noinvpcid_setup(char *s)
 early_param("noinvpcid", x86_noinvpcid_setup);
 
 #ifdef CONFIG_X86_32
-//static int cachesize_override = -1;
-//static int disable_x86_serial_nr = 1;
-//
-//static int __init cachesize_setup(char *str)
-//{
-//	get_option(&str, &cachesize_override);
-//	return 1;
-//}
-//__setup("cachesize=", cachesize_setup);
-//
-//static int __init x86_sep_setup(char *s)
-//{
-//	setup_clear_cpu_cap(X86_FEATURE_SEP);
-//	return 1;
-//}
-//__setup("nosep", x86_sep_setup);
-//
-///* Standard macro to see if a specific flag is changeable */
-//static inline int flag_is_changeable_p(u32 flag)/* 看看 寄存器是不是都是可变的 */
-//{
-//	u32 f1, f2;
-//
-//	/*
-//	 * Cyrix and IDT cpus allow disabling of CPUID
-//	 * so the code below may return different results
-//	 * when it is executed before and after enabling
-//	 * the CPUID. Add "volatile" to not allow gcc to
-//	 * optimize the subsequent calls to this function.
-//	 */
-//	asm volatile ("pushfl		\n\t"
-//		      "pushfl		\n\t"
-//		      "popl %0		\n\t"
-//		      "movl %0, %1	\n\t"
-//		      "xorl %2, %0	\n\t"
-//		      "pushl %0		\n\t"
-//		      "popfl		\n\t"
-//		      "pushfl		\n\t"
-//		      "popl %0		\n\t"
-//		      "popfl		\n\t"
-//
-//		      : "=&r" (f1), "=&r" (f2)
-//		      : "ir" (flag));
-//
-//	return ((f1^f2) & flag) != 0;
-//}
-//
-///* Probe for the CPUID instruction */
-//int have_cpuid_p(void)
-//{
-//	return flag_is_changeable_p(X86_EFLAGS_ID);/* EFLAGS 寄存器 */
-//}
-//
-//static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-//{
-//	unsigned long lo, hi;
-//
-//	if (!cpu_has(c, X86_FEATURE_PN) || !disable_x86_serial_nr)
-//		return;
-//
-//	/* Disable processor serial number: */
-//
-//	rdmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-//	lo |= 0x200000;
-//	wrmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-//
-//	pr_notice("CPU serial number disabled.\n");
-//	clear_cpu_cap(c, X86_FEATURE_PN);
-//
-//	/* Disabling the serial number may affect the cpuid level */
-//	c->cpuid_level = cpuid_eax(0);
-//}
-//
-//static int __init x86_serial_nr_setup(char *s)
-//{
-//	disable_x86_serial_nr = 0;
-//	return 1;
-//}
-//__setup("serialnumber", x86_serial_nr_setup);
+static int cachesize_override = -1;
+static int disable_x86_serial_nr = 1;
+
+static int __init cachesize_setup(char *str)
+{
+	get_option(&str, &cachesize_override);
+	return 1;
+}
+__setup("cachesize=", cachesize_setup);
+
+static int __init x86_sep_setup(char *s)
+{
+	setup_clear_cpu_cap(X86_FEATURE_SEP);
+	return 1;
+}
+__setup("nosep", x86_sep_setup);
+
+/* Standard macro to see if a specific flag is changeable */
+static inline int flag_is_changeable_p(u32 flag)/* 看看 寄存器是不是都是可变的 */
+{
+	u32 f1, f2;
+
+	/*
+	 * Cyrix and IDT cpus allow disabling of CPUID
+	 * so the code below may return different results
+	 * when it is executed before and after enabling
+	 * the CPUID. Add "volatile" to not allow gcc to
+	 * optimize the subsequent calls to this function.
+	 */
+	asm volatile ("pushfl		\n\t"
+		      "pushfl		\n\t"
+		      "popl %0		\n\t"
+		      "movl %0, %1	\n\t"
+		      "xorl %2, %0	\n\t"
+		      "pushl %0		\n\t"
+		      "popfl		\n\t"
+		      "pushfl		\n\t"
+		      "popl %0		\n\t"
+		      "popfl		\n\t"
+
+		      : "=&r" (f1), "=&r" (f2)
+		      : "ir" (flag));
+
+	return ((f1^f2) & flag) != 0;
+}
+
+/* Probe for the CPUID instruction */
+int have_cpuid_p(void)
+{
+	return flag_is_changeable_p(X86_EFLAGS_ID);/* EFLAGS 寄存器 */
+}
+
+static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
+{
+	unsigned long lo, hi;
+
+	if (!cpu_has(c, X86_FEATURE_PN) || !disable_x86_serial_nr)
+		return;
+
+	/* Disable processor serial number: */
+
+	rdmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
+	lo |= 0x200000;
+	wrmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
+
+	pr_notice("CPU serial number disabled.\n");
+	clear_cpu_cap(c, X86_FEATURE_PN);
+
+	/* Disabling the serial number may affect the cpuid level */
+	c->cpuid_level = cpuid_eax(0);
+}
+
+static int __init x86_serial_nr_setup(char *s)
+{
+	disable_x86_serial_nr = 0;
+	return 1;
+}
+__setup("serialnumber", x86_serial_nr_setup);
 #else
 static inline int flag_is_changeable_p(u32 flag)
 {
@@ -626,19 +626,19 @@ void load_percpu_segment(int cpu)
 #ifdef CONFIG_X86_32
 	loadsegment(fs, __KERNEL_PERCPU);
 #else
-    /**
-     * `gs` 寄存器指向中断栈的栈底: `struct irq_stack` and `struct fixed_percpu_data`
-     *
-     */
+	/**
+	 * `gs` 寄存器指向中断栈的栈底: `struct irq_stack` and `struct fixed_percpu_data`
+	 *
+	 */
 	__loadsegment_simple(gs, 0);
 
-    /**
-     * 这个指令从 `edx:eax` 加载数据到 被 `ecx` 指向的[MSR寄存器]
-     *
-     */
+	/**
+	 * 这个指令从 `edx:eax` 加载数据到 被 `ecx` 指向的[MSR寄存器]
+	 *
+	 */
 	wrmsrl(MSR_GS_BASE, cpu_kernelmode_gs_base(cpu));
 #endif
-    /**
+	/**
 	 * writes the base address if the [IRQ] stack and setup stack
 	 */
 	load_stack_canary_segment();
@@ -653,7 +653,7 @@ DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 void load_direct_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;  //pointer to the `GDT` descriptor
-    //we already saw definition of a `desc_ptr` structure in the [Early interrupt and exception handling]
+	//we already saw definition of a `desc_ptr` structure in the [Early interrupt and exception handling]
 
 	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
 
@@ -1359,9 +1359,9 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 	c->x86_phys_bits = 36;/* 物理 */
 	c->x86_virt_bits = 48;/* 虚拟 */
 #else
-//	c->x86_clflush_size = 32;
-//	c->x86_phys_bits = 32;
-//	c->x86_virt_bits = 32;
+	c->x86_clflush_size = 32;
+	c->x86_phys_bits = 32;
+	c->x86_virt_bits = 32;
 #endif
 	c->x86_cache_alignment = c->x86_clflush_size;/* 缓存行 */
 
@@ -1391,16 +1391,16 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)/* TODO */
 	} else {
 		setup_clear_cpu_cap(X86_FEATURE_CPUID);
 	}
-    /* TODO */
+	/* TODO */
 	setup_force_cpu_cap(X86_FEATURE_ALWAYS);
 
 	cpu_set_bug_bits(c);
 
 	cpu_set_core_cap_bits(c);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	fpu__init_system(c);
 
 #ifdef CONFIG_X86_32
@@ -1437,7 +1437,7 @@ void __init early_cpu_init(void)/* CPU 初始化 -> 收集 `CPU` 和其供应商
 #ifdef CONFIG_PROCESSOR_SELECT
 	pr_info("KERNEL supported cpus:\n");
 #endif
-    /* arch/x86/kernel/vmlinux.lds.S:248 */
+	/* arch/x86/kernel/vmlinux.lds.S:248 */
 	for (cdev = __x86_cpu_dev_start/* CPU设备 */; cdev < __x86_cpu_dev_end; cdev++) {
 		const struct cpu_dev *cpudev = *cdev;
 
@@ -1820,27 +1820,27 @@ EXPORT_PER_CPU_SYMBOL(__preempt_count);
    执行系统调用入口的初始化 */
 void syscall_init(void)
 {
-    //特殊模块集寄存器`MSR_STAR` 的 `63:48` 为用户代码的代码段
-    //这些数据将加载至 `CS` 和  `SS` 段选择符，由提供将系统调用返回
-    //至相应特权级的用户代码功能的 `sysret` 指令使用。
-    //同时从内核代码来看， 当用户空间应用程序执行系统调用时，`MSR_STAR`
-    //的 `47:32` 将作为 `CS` and `SS`段选择寄存器的基地址
+	//特殊模块集寄存器`MSR_STAR` 的 `63:48` 为用户代码的代码段
+	//这些数据将加载至 `CS` 和  `SS` 段选择符，由提供将系统调用返回
+	//至相应特权级的用户代码功能的 `sysret` 指令使用。
+	//同时从内核代码来看， 当用户空间应用程序执行系统调用时，`MSR_STAR`
+	//的 `47:32` 将作为 `CS` and `SS`段选择寄存器的基地址
 	wrmsr(MSR_STAR, 0, (__USER32_CS << 16) | __KERNEL_CS);
 
-    //使用系统调用入口`entry_SYSCALL_64` 填充 `MSR_LSTAR` 寄存器
+	//使用系统调用入口`entry_SYSCALL_64` 填充 `MSR_LSTAR` 寄存器
 	wrmsrl(MSR_LSTAR, (unsigned long)entry_SYSCALL_64);
 
-    /**
-     *  设置系统调用的入口之后，需要以下特殊模式寄存器
-     *
-     * `MSR_CSTAR` - target `rip` for the compability mode callers;
-     * `MSR_IA32_SYSENTER_CS` - target `cs` for the `sysenter` instruction;
-     * `MSR_IA32_SYSENTER_ESP` - target `esp` for the `sysenter` instruction;
-     * `MSR_IA32_SYSENTER_EIP` - target `eip` for the `sysenter` instruction.
-     */
+	/**
+	 *  设置系统调用的入口之后，需要以下特殊模式寄存器
+	 *
+	 * `MSR_CSTAR` - target `rip` for the compability mode callers;
+	 * `MSR_IA32_SYSENTER_CS` - target `cs` for the `sysenter` instruction;
+	 * `MSR_IA32_SYSENTER_ESP` - target `esp` for the `sysenter` instruction;
+	 * `MSR_IA32_SYSENTER_EIP` - target `eip` for the `sysenter` instruction.
+	 */
 #ifdef CONFIG_IA32_EMULATION    //允许64字节内核运行32字节的程序
 
-    //把 `entry_SYSCALL_compat` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
+	//把 `entry_SYSCALL_compat` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
 	wrmsrl(MSR_CSTAR, (unsigned long)entry_SYSCALL_compat);
 	/*
 	 * This only works on Intel CPUs.
@@ -1853,49 +1853,49 @@ void syscall_init(void)
 	wrmsrl_safe(MSR_IA32_SYSENTER_ESP,
 		    (unsigned long)(cpu_entry_stack(smp_processor_id()) + 1));
 
-    //`entry_SYSENTER_compat`字的地址写入[指令指针]
+	//`entry_SYSENTER_compat`字的地址写入[指令指针]
 	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, (u64)entry_SYSENTER_compat);
 #else
-//    //把 `ignore_sysret` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
-//	wrmsrl(MSR_CSTAR, (unsigned long)ignore_sysret);
-//
-//    //将 [Global Descriptor Table]的无效段加载至 `MSR_IA32_SYSENTER_CS` 特殊模式寄存器
-//	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)GDT_ENTRY_INVALID_SEG/*0*/);
-//
-//    //用零填充 `MSR_IA32_SYSENTER_ESP` 和 `MSR_IA32_SYSENTER_EIP`
-//	wrmsrl_safe(MSR_IA32_SYSENTER_ESP, 0ULL);
-//	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, 0ULL);
+	//把 `ignore_sysret` 字写入`MSR_CSTAR`,仅返回 `-ENOSYS` 错误代码
+	wrmsrl(MSR_CSTAR, (unsigned long)ignore_sysret);
+
+	//将 [Global Descriptor Table]的无效段加载至 `MSR_IA32_SYSENTER_CS` 特殊模式寄存器
+	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)GDT_ENTRY_INVALID_SEG/*0*/);
+
+	//用零填充 `MSR_IA32_SYSENTER_ESP` 和 `MSR_IA32_SYSENTER_EIP`
+	wrmsrl_safe(MSR_IA32_SYSENTER_ESP, 0ULL);
+	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, 0ULL);
 #endif
 
 	/* Flags to clear on syscall */
-    //通过写入 `MSR_SYSCALL_MASK` 特殊寄存器的标志位，将 [标志寄存器] 中的标志位屏蔽
-    //这些标志位将在 syscall 初始化时清除
+	//通过写入 `MSR_SYSCALL_MASK` 特殊寄存器的标志位，将 [标志寄存器] 中的标志位屏蔽
+	//这些标志位将在 syscall 初始化时清除
 	wrmsrl(MSR_SYSCALL_MASK,
 	       X86_EFLAGS_TF|X86_EFLAGS_DF|X86_EFLAGS_IF|
 	       X86_EFLAGS_IOPL|X86_EFLAGS_AC|X86_EFLAGS_NT);
 
-    /* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
+	/* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
 }
 
 #else	/* CONFIG_X86_64 */
 
-//DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
-//EXPORT_PER_CPU_SYMBOL(current_task);
-//DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
-//EXPORT_PER_CPU_SYMBOL(__preempt_count);
-//
-///*
-// * On x86_32, vm86 modifies tss.sp0, so sp0 isn't a reliable way to find
-// * the top of the kernel stack.  Use an extra percpu variable to track the
-// * top of the kernel stack directly.
-// */
-//DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
-//	(unsigned long)&init_thread_union + THREAD_SIZE;
-//EXPORT_PER_CPU_SYMBOL(cpu_current_top_of_stack);
-//
-//#ifdef CONFIG_STACKPROTECTOR
-//DEFINE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
-//#endif
+DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
+EXPORT_PER_CPU_SYMBOL(current_task);
+DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
+EXPORT_PER_CPU_SYMBOL(__preempt_count);
+
+/*
+ * On x86_32, vm86 modifies tss.sp0, so sp0 isn't a reliable way to find
+ * the top of the kernel stack.  Use an extra percpu variable to track the
+ * top of the kernel stack directly.
+ */
+DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
+	(unsigned long)&init_thread_union + THREAD_SIZE;
+EXPORT_PER_CPU_SYMBOL(cpu_current_top_of_stack);
+
+#ifdef CONFIG_STACKPROTECTOR
+DEFINE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
+#endif
 
 #endif	/* CONFIG_X86_64 */
 
@@ -2007,7 +2007,7 @@ static inline void tss_setup_io_bitmap(struct tss_struct *tss)
  */
 void cpu_init_exception_handling(void)
 {
-    /* `Task State Segments` */
+	/* `Task State Segments` */
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
@@ -2018,10 +2018,10 @@ void cpu_init_exception_handling(void)
 	tss_setup_ist(tss);
 	tss_setup_io_bitmap(tss);
 
-    //writes given  descriptor to the `Global Descriptor Table` of the given processor
+	//writes given  descriptor to the `Global Descriptor Table` of the given processor
 	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
 
-    //expands to the `ltr` or `Load Task Register` instruction
+	//expands to the `ltr` or `Load Task Register` instruction
 	load_TR_desc();
 
 	/* Finally load the IDT */
@@ -2065,18 +2065,18 @@ void cpu_init(void)
 	 */
 	switch_to_new_gdt(cpu);
 
-    /* 加载中断描述符表 */
+	/* 加载中断描述符表 */
 	load_current_idt();
 
 	if (IS_ENABLED(CONFIG_X86_64)) {
 		loadsegment(fs, 0);
 		memset(cur->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
 
-        /**
-         *  syscall 系统调用初始化
-         */
+		/**
+		 *  syscall 系统调用初始化
+		 */
 		syscall_init();
-        /* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
+		/* 至此,  `syscall_init` 函数结束 也意味着系统调用已经可用 */
 
 		wrmsrl(MSR_FS_BASE, 0);
 		wrmsrl(MSR_KERNEL_GS_BASE, 0);
@@ -2103,7 +2103,7 @@ void cpu_init(void)
 	 */
 	load_sp0((unsigned long)(cpu_entry_stack(cpu) + 1));
 
-    /* 局部描述符表 */
+	/* 局部描述符表 */
 	load_mm_ldt(&init_mm);
 
 	clear_all_debug_regs(); /* 清零 所有u调试寄存器 DR0-DR7 */
