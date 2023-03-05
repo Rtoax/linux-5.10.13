@@ -4454,7 +4454,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_modinfo;
 
 	/**
-	 *
+	 * TODO: delete me if finish
 	 */
 	err = post_relocation(mod, info);
 	if (err < 0)
@@ -4630,7 +4630,7 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 	int err;
 
 	/**
-	 *
+	 * 判断是否支持插入模块
 	 */
 	err = may_init_module();
 	if (err)
