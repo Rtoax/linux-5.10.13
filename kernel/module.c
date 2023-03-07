@@ -3951,8 +3951,12 @@ int __weak module_finalize(const Elf_Ehdr *hdr,
 {
 	return 0;
 }
+
 /**
- *	重定位的最后处理
+ * 重定位的最后处理
+ * 1. 模块中的符号添加到 kallsyms
+ * 2. pre-CPU 变量
+ * 3. 架构相关
  */
 static int post_relocation(struct module *mod, const struct load_info *info)
 {
@@ -4454,7 +4458,10 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 		goto free_modinfo;
 
 	/**
-	 * TODO: delete me if finish
+	 * 重定位的最后处理
+	 * 1. 模块中的符号添加到 kallsyms
+	 * 2. pre-CPU 变量
+	 * 3. 架构相关
 	 */
 	err = post_relocation(mod, info);
 	if (err < 0)
