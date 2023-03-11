@@ -980,6 +980,9 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
  */
 static int load_elf_binary(struct linux_binprm *bprm)
 {
+	/**
+	 * [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+	 */
 	struct file *interpreter = NULL; /* to shut gcc up */
  	unsigned long load_addr = 0, load_bias = 0;
 	int load_addr_set = 0;
@@ -1012,7 +1015,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	retval = -ENOEXEC;
 
 	/**
-	 *  判断格式
+	 * 判断 .ELF 格式
 	 */
 	/* First of all, some simple consistency checks */
 	if (memcmp(elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
@@ -1045,9 +1048,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	elf_ppnt = elf_phdata;
 	/**
-	 *  遍历 elf 头信息
+	 *  遍历 elf 头信息，找出解释器
 	 */
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
+		/**
+		 * 解释器字符串（路径）
+		 * [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+		 */
 		char *elf_interpreter;
 
 		if (elf_ppnt->p_type == PT_GNU_PROPERTY) {
@@ -1072,6 +1079,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		retval = -ENOMEM;
 		/**
 		 *  解释器，分配解释器名称字符串
+		 *  [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
 		 */
 		elf_interpreter = kmalloc(elf_ppnt->p_filesz, GFP_KERNEL);
 		if (!elf_interpreter)
@@ -1089,7 +1097,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_interp;
 
 		/**
-		 *  打开 解释器文件
+		 *  打开 解释器文件，类似如下：
+		 *  [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
 		 */
 		interpreter = open_exec(elf_interpreter);
 
@@ -1127,6 +1136,9 @@ out_free_interp:
 		goto out_free_ph;
 	}
 
+	/**
+	 * 重新指向程序头指针
+	 */
 	elf_ppnt = elf_phdata;
 
 	/**
@@ -1138,7 +1150,7 @@ out_free_interp:
 		 */
 		switch (elf_ppnt->p_type) {
 		/**
-		 *
+		 * stack
 		 */
 		case PT_GNU_STACK:
 			if (elf_ppnt->p_flags & PF_X)
@@ -1167,6 +1179,7 @@ out_free_interp:
 
 	/**
 	 *  解释器可用
+	 *  [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
 	 */
 	/* Some simple consistency checks for the interpreter */
 	if (interpreter) {
