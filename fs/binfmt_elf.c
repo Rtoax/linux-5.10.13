@@ -513,14 +513,14 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	return(map_addr);
 }
 /**
- *  计算 总大小
+ *  计算 PT_LOAD 程序总大小
  */
 static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 {
 	int i, first_idx = -1, last_idx = -1;
 
 	/**
-	 *
+	 * 遍历所有 PT_LOAD 程序头，获取到第一个和最后一个
 	 */
 	for (i = 0; i < nr; i++) {
 		if (cmds[i].p_type == PT_LOAD) {
@@ -548,6 +548,24 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 	 *  |   |                          \|
 	 *  |   | <--- first.p_vaddr -----------
 	 *  +---+
+	 *
+	 *  这也就是计算下面的所有 LOAD 所占的空间大小
+	 *
+	 *   $ readelf -l /usr/bin/ls
+	 *   ...
+	 *   Program Headers:
+	 *   Type           Offset             VirtAddr           PhysAddr
+	 *                  FileSiz            MemSiz              Flags  Align
+	 *   ...
+	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+	 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+	 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+	 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+	 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+	 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+	 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+	 *   ...
 	 */
 	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
 				ELF_PAGESTART(cmds[first_idx].p_vaddr);
@@ -765,6 +783,25 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 	if (!interpreter->f_op->mmap)
 		goto out;
 
+	/**
+	 *  这也就是计算下面的所有 LOAD 所占的空间大小
+	 *
+	 *   $ readelf -l /usr/bin/ls
+	 *   ...
+	 *   Program Headers:
+	 *   Type           Offset             VirtAddr           PhysAddr
+	 *                  FileSiz            MemSiz              Flags  Align
+	 *   ...
+	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+	 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+	 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+	 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+	 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+	 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+	 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+	 *   ...
+	 */
 	total_size = total_mapping_size(interp_elf_phdata,
 					interp_elf_ex->e_phnum);
 	if (!total_size) {
@@ -1142,7 +1179,39 @@ out_free_interp:
 	elf_ppnt = elf_phdata;
 
 	/**
-	 *  遍历所有程序头
+	 *  遍历所有程序头 - 只处理 PT_GNU_STACK 和 PT_LOPROC ... PT_HIPROC
+	 *
+	 *   $ readelf -l /usr/bin/ls
+	 *   ...
+	 *   Program Headers:
+	 *   Type           Offset             VirtAddr           PhysAddr
+	 *                  FileSiz            MemSiz              Flags  Align
+	 *   PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040
+	 *                  0x00000000000002d8 0x00000000000002d8  R      0x8
+	 *   INTERP         0x0000000000000318 0x0000000000000318 0x0000000000000318
+	 *                  0x000000000000001c 0x000000000000001c  R      0x1
+	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+	 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+	 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+	 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+	 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+	 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+	 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+	 *   DYNAMIC        0x0000000000020a18 0x0000000000021a18 0x0000000000021a18
+	 *                  0x0000000000000210 0x0000000000000210  RW     0x8
+	 *   NOTE           0x0000000000000338 0x0000000000000338 0x0000000000000338
+	 *                  0x0000000000000030 0x0000000000000030  R      0x8
+	 *   NOTE           0x0000000000000368 0x0000000000000368 0x0000000000000368
+	 *                  0x0000000000000044 0x0000000000000044  R      0x4
+	 *   GNU_PROPERTY   0x0000000000000338 0x0000000000000338 0x0000000000000338
+	 *                  0x0000000000000030 0x0000000000000030  R      0x8
+	 *   GNU_EH_FRAME   0x000000000001cdec 0x000000000001cdec 0x000000000001cdec
+	 *                  0x000000000000056c 0x000000000000056c  R      0x4
+	 *   GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+	 *                  0x0000000000000000 0x0000000000000000  RW     0x10
+	 *   GNU_RELRO      0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+	 *                  0x0000000000001090 0x0000000000001090  R      0x1
 	 */
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++)
 		/**
@@ -1167,7 +1236,7 @@ out_free_interp:
 		 */
 		case PT_LOPROC ... PT_HIPROC:
 			/**
-			 *
+			 * 此包含范围内的值保留用于特定于处理器的语义。
 			 */
 			retval = arch_elf_pt_proc(elf_ex, elf_ppnt,
 						  bprm->file, false,
@@ -1201,8 +1270,9 @@ out_free_interp:
 		/* Pass PT_LOPROC..PT_HIPROC headers to arch code */
 		elf_property_phdata = NULL;
 		elf_ppnt = interp_elf_phdata;
+
 		/**
-		 *
+		 * 遍历解释器的程序头
 		 */
 		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
 			switch (elf_ppnt->p_type) {
@@ -1226,14 +1296,16 @@ out_free_interp:
 			}
 	}
 
-	/* 读取属性值 */
+	/**
+	 * 读取属性值
+	 */
 	retval = parse_elf_properties(interpreter ?: bprm->file,
 				      elf_property_phdata, &arch_state);
 	if (retval)
 		goto out_free_dentry;
 
 	/*
-	 * Allow arch code to reject the ELF at this point, whilst it's
+	 * Allow arch code to reject the ELF at this point, whilst(而) it's
 	 * still possible to return an error to the code that invoked
 	 * the exec syscall.
 	 */
@@ -1259,6 +1331,9 @@ out_free_interp:
 	if (elf_read_implies_exec(*elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
 
+	/**
+	 *
+	 */
 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
 		current->flags |= PF_RANDOMIZE;
 
@@ -1283,12 +1358,13 @@ out_free_interp:
 	start_data = 0;
 	end_data = 0;
 
-	/* Now we do a little grungy work by mmapping the ELF image into
+	/**
+	 * Now we do a little grungy work by mmapping the ELF image into
 	 * the correct location in memory.
-	 *  遍历 程序头
+	 *
+	 * 遍历 PT_LOAD 程序头，将程序加载到内存中
 	 */
-	for(i = 0, elf_ppnt = elf_phdata;
-	    i < elf_ex->e_phnum; i++, elf_ppnt++) {
+	for (i = 0, elf_ppnt = elf_phdata; i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
 		unsigned long k, vaddr;
 		unsigned long total_size = 0;
@@ -1305,16 +1381,23 @@ out_free_interp:
 		 *  程序头表中的可加载段条目以升序显示，按p_vaddr成员排序。
 		 *  ref: https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
 		 *
-		 *   LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
-		 *                  0x0000000000002338 0x0000000000002338  R      0x1000
-		 *   LOAD           0x0000000000003000 0x0000000000403000 0x0000000000403000
-		 *                  0x000000000000f005 0x000000000000f005  R E    0x1000
-		 *   LOAD           0x0000000000013000 0x0000000000413000 0x0000000000413000
-		 *                  0x0000000000007aa4 0x0000000000007aa4  R      0x1000
-		 *   LOAD           0x000000000001ac00 0x000000000041bc00 0x000000000041bc00
-		 *                  0x0000000000000d68 0x0000000000000fb0  RW     0x1000
+		 *   $ readelf -l /usr/bin/ls
+		 *   ...
+		 *   Program Headers:
+		 *   Type           Offset             VirtAddr           PhysAddr
+		 *                  FileSiz            MemSiz              Flags  Align
+		 *   ...
+		 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+		 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+		 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+		 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+		 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+		 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+		 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+		 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+		 *   ...
 		 *
-		 * 必须是 PT_LOAD 才会被加载进内存
+		 *  必须是 PT_LOAD 才会被加载进内存
 		 */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
@@ -1364,9 +1447,11 @@ out_free_interp:
 		 *  p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
 		 */
 		vaddr = elf_ppnt->p_vaddr;
-		/*
+
+		/**
 		 * If we are loading ET_EXEC or we have already performed
 		 * the ET_DYN load_addr calculations, proceed normally.
+		 *
 		 *  如果是 可执行文件 或者已经计算动态加载段地址
 		 */
 		if (elf_ex->e_type == ET_EXEC || load_addr_set) {
@@ -1376,7 +1461,7 @@ out_free_interp:
 			 */
 			elf_flags |= MAP_FIXED;
 		/**
-		 *
+		 * 如果是 ET_DYN 动态库
 		 */
 		} else if (elf_ex->e_type == ET_DYN) {
 			/*
@@ -1411,15 +1496,16 @@ out_free_interp:
 			 */
 			if (interpreter) {
 				/**
-				 *  加载的偏移量
+				 * 加载的偏移量
+				 * x86 中ia32为： 0x000400000UL
 				 */
-				load_bias = ELF_ET_DYN_BASE;    /* 从这个固定位置映射 */
+				load_bias = ELF_ET_DYN_BASE;
 				/**
 				 *  随机
 				 *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
 				 */
 				if (current->flags & PF_RANDOMIZE)
-					load_bias += arch_mmap_rnd();   /* 加上随机位置 */
+					load_bias += arch_mmap_rnd();
 
 				/**
 				 *  对齐
@@ -1452,7 +1538,7 @@ out_free_interp:
 			 * 其降低第一个 vaddr，以便基于 ELF vaddr 的剩余计算将
 			 * 正确偏移。 然后结果是页面对齐的。
 			 *
-			 * 为什么？
+			 * 也就是保证，能放下。
 			 *
 			 *  +---+
 			 *  |   |
@@ -1482,6 +1568,42 @@ out_free_interp:
 			 *  |   |                          \|
 			 *  |   | <--- first.p_vaddr -----------
 			 *  +---+
+			 *
+			 *  这也就是计算下面的所有 LOAD 所占的空间大小
+			 *
+			 *   $ readelf -l /usr/bin/ls
+			 *   ...
+			 *   Program Headers:
+			 *   Type           Offset             VirtAddr           PhysAddr
+			 *                  FileSiz            MemSiz              Flags  Align
+			 *   ...
+			 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+			 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+			 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+			 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+			 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+			 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+			 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+			 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+			 *   ...
+			 *
+			 * 在最新的内核(v6.3-rc2)中有注释：
+			 *
+			 * Calculate the entire size of the ELF mapping
+             * (total_size), used for the initial mapping,
+             * due to load_addr_set which is set to true later
+             * once the initial mapping is performed.
+             *
+             * Note that this is only sensible when the LOAD
+             * segments are contiguous (or overlapping). If
+             * used for LOADs that are far apart, this would
+             * cause the holes between LOADs to be mapped,
+             * running the risk of having the mapping fail,
+             * as it would be larger than the ELF file itself.
+             *
+             * As a result, only ET_DYN does this, since
+             * some ET_EXEC (e.g. ia64) may have large virtual
+             * memory holes between LOADs.
 			 */
 			total_size = total_mapping_size(elf_phdata,
 							elf_ex->e_phnum);
@@ -1494,8 +1616,8 @@ out_free_interp:
 		/**
 		 *  正经的映射 二进制可执行文件
 		 *
-		 *  起始地址需要注意 load_bias + vaddr 是上面计算出来的
-		 *  返回映射虚拟地址
+		 *  - 起始地址需要注意 load_bias + vaddr 是上面计算出来的
+		 *  - 返回映射虚拟地址
 		 *
 		 *  vaddr = elf_ppnt->p_vaddr;
 		 *
@@ -1514,15 +1636,48 @@ out_free_interp:
 		 */
 		if (!load_addr_set) {
 			/**
-			 *  下次不运行了hao'ma?
+			 *  下次不运行了?
 			 */
 			load_addr_set = 1;
+
 			/**
 			 *  加载地址 = 虚拟地址 - 偏移
+			 *
+			 *   $ readelf -l /usr/bin/ls
+			 *   ...
+			 *   Program Headers:
+			 *   Type           Offset             VirtAddr           PhysAddr
+			 *                  FileSiz            MemSiz              Flags  Align
+			 *   ...
+			 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+			 *                  0x0000000000003510 0x0000000000003510  R      0x1000
+			 *   LOAD           0x0000000000004000 0x0000000000004000 0x0000000000004000
+			 *                  0x0000000000013281 0x0000000000013281  R E    0x1000
+			 *   LOAD           0x0000000000018000 0x0000000000018000 0x0000000000018000
+			 *                  0x0000000000007480 0x0000000000007480  R      0x1000
+			 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
+			 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
+			 *   ...
 			 */
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
 			/**
-			 *  如果是动态段
+			 *  如果是动态库
+			 *   $ readelf -l /usr/lib64/libc.so.6
+			 *   Program Headers:
+			 *   Type           Offset             VirtAddr           PhysAddr
+			 *                  FileSiz            MemSiz              Flags  Align
+			 *   ...
+			 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+			 *                  0x0000000000027ed8 0x0000000000027ed8  R      0x1000
+			 *   LOAD           0x0000000000028000 0x0000000000028000 0x0000000000028000
+			 *                  0x00000000001742ec 0x00000000001742ec  R E    0x1000
+			 *   LOAD           0x000000000019d000 0x000000000019d000 0x000000000019d000
+			 *                  0x0000000000057d10 0x0000000000057d10  R      0x1000
+			 *   LOAD           0x00000000001f58d0 0x00000000001f68d0 0x00000000001f68d0
+			 *                  0x0000000000004fb8 0x00000000000126e0  RW     0x1000
+			 *   DYNAMIC        0x00000000001f8ba0 0x00000000001f9ba0 0x00000000001f9ba0
+			 *                  0x00000000000001e0 0x00000000000001e0  RW     0x8
+			 *   ...
 			 */
 			if (elf_ex->e_type == ET_DYN) {
 				/**
@@ -1544,6 +1699,7 @@ out_free_interp:
 		 *
 		 */
 		k = elf_ppnt->p_vaddr;
+
 		/**
 		 *  可执行
 		 */
@@ -1578,10 +1734,8 @@ out_free_interp:
 			bss_prot = elf_prot;
 			elf_brk = k;
 		}
-	/**
-	 *  遍历所有 程序头结束
-	 */
-	}
+	} /* 遍历所有 程序头结束 */
+
 	/**
 	 *  全部都要偏移一个随机地址，安全呗
 	 */
@@ -1606,7 +1760,9 @@ out_free_interp:
 		goto out_free_dentry;
 	}
 
-	/* 指定了解释器 */
+	/**
+	 * 指定了解释器
+	 */
 	if (interpreter) {
 		/**
 		 *  加载解释器

@@ -1204,7 +1204,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
     /**
      *  谁调用了 execv(2)
      */
-	struct task_struct *me = current;   /* 当前进程 */
+	struct task_struct *me = current;
 	int retval;
 
 	/* Once we are committed compute the creds */
@@ -1233,8 +1233,10 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	 */
 	set_mm_exe_file(bprm->mm, bprm->file);
 
-	/* If the binary is not readable then enforce mm->dumpable=0
-     如果不可读 */
+	/**
+	 * If the binary is not readable then enforce mm->dumpable=0
+     * 如果不可读
+	 */
 	would_dump(bprm, bprm->file);
 	if (bprm->have_execfd)
 		would_dump(bprm, bprm->executable);
@@ -1246,9 +1248,10 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 
     /**
      *  正经八百的 映射
+	 *  将这个 mm 映射到当前进程
      *  注意：我要换 mm_struct 结构啦????
      */
-	retval = exec_mmap(bprm->mm);   /* 将这个 mm 映射到当前进程 */
+	retval = exec_mmap(bprm->mm);
 	if (retval)
 		goto out;
 
@@ -1272,6 +1275,9 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	 */
 	force_uaccess_begin();
 
+	/**
+	 *
+	 */
 	me->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC | PF_KTHREAD |
 					PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
