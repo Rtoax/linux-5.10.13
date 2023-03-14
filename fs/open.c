@@ -561,9 +561,9 @@ out:
 int chroot(const char *path){}//+++
 SYSCALL_DEFINE1(chroot, const char __user *, filename)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct path _path;
 	int error;
 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
@@ -572,9 +572,9 @@ retry:
 	if (error)
 		goto out;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	error = inode_permission(_path.dentry->d_inode, MAY_EXEC | MAY_CHDIR);
 	if (error)
 		goto dput_and_out;
@@ -583,16 +583,16 @@ retry:
 	if (!ns_capable(current_user_ns(), CAP_SYS_CHROOT))
 		goto dput_and_out;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	error = security_path_chroot(&_path);
 	if (error)
 		goto dput_and_out;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	set_fs_root(current->fs, &_path);
 	error = 0;
 dput_and_out:
@@ -759,7 +759,7 @@ out:
 }
 
 int fchownat(int dirfd, const char *pathname,
-                    uid_t owner, gid_t group, int flags){}//+++
+			        uid_t owner, gid_t group, int flags){}//+++
 SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
 		gid_t, group, int, flag)
 {
@@ -848,17 +848,17 @@ static int do_dentry_open(struct file *f,
 	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
 		f->f_mode |= FMODE_ATOMIC_POS;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	f->f_op = fops_get(inode->i_fop);
 	if (WARN_ON(!f->f_op)) {
 		error = -ENODEV;
 		goto cleanup_all;
 	}
-    /**
-     *  安全打开
-     */
+	/**
+	 *  安全打开
+	 */
 	error = security_file_open(f);
 	if (error)
 		goto cleanup_all;
@@ -1060,7 +1060,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	int acc_mode = ACC_MODE(flags);
 
 	/* Must never be set by userspace */
-    //设置 `O_CLOSEXEC` 标志,第二个程序 [fork] + [execve] 操作时不会泄露文件描述符
+	//设置 `O_CLOSEXEC` 标志,第二个程序 [fork] + [execve] 操作时不会泄露文件描述符
 	flags &= ~(FMODE_NONOTIFY | O_CLOEXEC);
 
 	/*
@@ -1126,7 +1126,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	op->open_flag = flags;
 
 	/* O_TRUNC implies we need access checks for write permissions
-        `O_TRUNC` 标志表示如果已打开的文件之前已经存在则删节为 0 */
+		`O_TRUNC` 标志表示如果已打开的文件之前已经存在则删节为 0 */
 	if (flags & O_TRUNC)
 		acc_mode |= MAY_WRITE;
 
@@ -1138,11 +1138,11 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 
 	op->acc_mode = acc_mode;
 
-    //`intent`我们的目的，换句话说就是我们真正想对文件做什么，打开，新建，重命名等等操作
-    //如果我们的 flags 参数包含这个 `O_PATH` 标志，即我们不能对文件内容做任何事情，`open_flags` 会被设置为 0
+	//`intent`我们的目的，换句话说就是我们真正想对文件做什么，打开，新建，重命名等等操作
+	//如果我们的 flags 参数包含这个 `O_PATH` 标志，即我们不能对文件内容做任何事情，`open_flags` 会被设置为 0
 	op->intent = flags & O_PATH ? 0 : LOOKUP_OPEN;
 
-    //如果我们想要新建文件，我们可以设置 `LOOKUP_CREATE`，并且使用 `O_EXEC` 标志来确认文件之前不存在
+	//如果我们想要新建文件，我们可以设置 `LOOKUP_CREATE`，并且使用 `O_EXEC` 标志来确认文件之前不存在
 	if (flags & O_CREAT) {
 		op->intent |= LOOKUP_CREATE;
 		if (flags & O_EXCL) {
@@ -1151,11 +1151,11 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 		}
 	}
 
-    //想要打开一个目录，我们可以使用 `LOOKUP_DIRECTORY`
+	//想要打开一个目录，我们可以使用 `LOOKUP_DIRECTORY`
 	if (flags & O_DIRECTORY)
 		lookup_flags |= LOOKUP_DIRECTORY;
 
-    //如果想要遍历但不想使用[软链接]，可以使用 `LOOKUP_FOLLOW`
+	//如果想要遍历但不想使用[软链接]，可以使用 `LOOKUP_FOLLOW`
 	if (!(flags & O_NOFOLLOW))
 		lookup_flags |= LOOKUP_FOLLOW;
 
@@ -1243,22 +1243,30 @@ static long do_sys_openat2(int dfd, const char __user *str_filename, struct open
 	if (fd)
 		return fd;
 
-    //得到 `filename` 结构体
+	/**
+	 * 得到 `filename` 结构体
+	 */
 	tmp = getname(str_filename);
 	if (IS_ERR(tmp))
 		return PTR_ERR(tmp);
 
-    //获取当前程序打开文件的（文件描述符）表
+	/**
+	 * 获取当前程序打开文件的（文件描述符）表
+	 */
 	fd = get_unused_fd_flags(how->flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (fd >= 0) {
-        //解析给定的文件路径名到 `file` 结构体
+		/**
+		 * 解析给定的文件路径名到 `file` 结构体
+		 */
 		struct file *f = do_filp_open(dfd, tmp, &op);
 		if (IS_ERR(f)) {
-            //释放文件描述符
+			/**
+			 * 释放文件描述符
+			 */
 			put_unused_fd(fd);
 			fd = PTR_ERR(f);
 		} else {
@@ -1276,13 +1284,13 @@ static long do_sys_openat2(int dfd, const char __user *str_filename, struct open
  */
 long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
-    /**
-     *  如何打开
-     */
+	/**
+	 *  如何打开
+	 */
 	struct open_how how = build_open_how(flags, mode);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return do_sys_openat2(dfd, filename, &how);
 }
 
@@ -1294,12 +1302,13 @@ int open(const char *pathname, int flags);
 int open(const char *pathname, int flags, mode_t mode);
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
-	if (force_o_largefile()) /* x86_64 恒定为 true */
+	/* x86_64 恒定为 true */
+	if (force_o_largefile())
 		flags |= O_LARGEFILE;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return do_sys_open(AT_FDCWD, filename, flags, mode);
 }
 
@@ -1311,7 +1320,8 @@ int openat(int dirfd, const char *pathname, int flags, mode_t mode);
 SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
 		umode_t, mode)
 {
-	if (force_o_largefile())/* x86_64 恒定为 true */
+	/* x86_64 恒定为 true */
+	if (force_o_largefile())
 		flags |= O_LARGEFILE;
 	return do_sys_open(dfd, filename, flags, mode);
 }
@@ -1388,16 +1398,16 @@ int filp_close(struct file *filp, fl_owner_t id)
 		return 0;
 	}
 
-    /**
-     *  flush file
-     *  5.10.13 ext4, xfs is NULL
-     */
+	/**
+	 *  flush file
+	 *  5.10.13 ext4, xfs is NULL
+	 */
 	if (filp->f_op->flush)
 		retval = filp->f_op->flush(filp, id);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (likely(!(filp->f_mode & FMODE_PATH))) {
 		dnotify_flush(filp, id);
 		locks_remove_posix(filp, id);
@@ -1416,9 +1426,9 @@ EXPORT_SYMBOL(filp_close);
 int close(int fd){}//+++
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int retval = __close_fd(current->files, fd);
 
 	/* can't restart close syscall because file table entry was cleared */

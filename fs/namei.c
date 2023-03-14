@@ -137,9 +137,9 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 	if (result)
 		return result;
 
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	result = __getname();   /* kmem_alloc */
 	if (unlikely(!result))
 		return ERR_PTR(-ENOMEM);
@@ -151,7 +151,7 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 	kname = (char *)result->iname;
 	result->name = kname;
 
-    //复制传递给 `open` 系统调用的用户空间的文件名到内核空间
+	//复制传递给 `open` 系统调用的用户空间的文件名到内核空间
 	len = strncpy_from_user(kname, str_filename, EMBEDDED_NAME_MAX);
 	if (unlikely(len < 0)) {
 		__putname(result);
@@ -179,14 +179,14 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 			return ERR_PTR(-ENOMEM);
 		}
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		result->name = kname;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		len = strncpy_from_user(kname, str_filename, PATH_MAX);
 		if (unlikely(len < 0)) {
 			__putname(kname);
@@ -528,27 +528,27 @@ struct nameidata {
 	struct path	path;
 	struct qstr	last;
 	struct path	root;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct inode	*inode; /* path.dentry.d_inode */
 	unsigned int	flags;
 	unsigned	seq, m_seq, r_seq;
 	int		last_type;
 	unsigned	depth;
 	int		total_link_count;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct saved {
 		struct path link;
 		struct delayed_call done;
 		const char *name;
 		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct filename	*name;
 	struct nameidata *saved;
 	unsigned	root_seq;
@@ -2373,9 +2373,9 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		if (unlikely(err < 0))
 			s = ERR_PTR(err);
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	while (!(err = link_path_walk(s, nd)) &&
 	       (s = lookup_last(nd)) != NULL)
 		;
@@ -2394,9 +2394,9 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		nd->path.mnt = NULL;
 		nd->path.dentry = NULL;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	terminate_walk(nd);
 	return err;
 }
@@ -2407,9 +2407,9 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		    struct path *path, struct path *root)
 {
 	int retval;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct nameidata nd;
 
 	if (IS_ERR(name))
@@ -2418,14 +2418,14 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 		nd.root = *root;
 		flags |= LOOKUP_ROOT;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	set_nameidata(&nd, dfd, name);
 
-    /**
-     *  查找
-     */
+	/**
+	 *  查找
+	 */
 	retval = path_lookupat(&nd, flags | LOOKUP_RCU, path);
 	if (unlikely(retval == -ECHILD))
 		retval = path_lookupat(&nd, flags, path);
@@ -2708,9 +2708,9 @@ int path_pts(struct path *path)
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return filename_lookup(dfd, getname_flags(name, flags, empty),
 			       flags, path, NULL);
 }
@@ -3288,9 +3288,9 @@ finish_lookup:
  */
 static int do_open(struct nameidata *nd, struct file *rtoax_file, const struct open_flags *op)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int open_flag = op->open_flag;
 	bool do_truncate;
 	int acc_mode;
@@ -3329,14 +3329,14 @@ static int do_open(struct nameidata *nd, struct file *rtoax_file, const struct o
 		do_truncate = true;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	error = may_open(&nd->path, acc_mode, open_flag);
 	if (!error && !(rtoax_file->f_mode & FMODE_OPENED))
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		error = vfs_open(&nd->path, rtoax_file);
 	if (!error)
 		error = ima_file_check(rtoax_file, op->acc_mode);
@@ -3437,38 +3437,42 @@ static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 /**
  *
  */
-static struct file *path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
+static struct file *
+path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
 {
 	struct file *rtoax_file;
 	int error;
 
-    //分配 file 结构
+	/**
+	 * 分配 file 结构
+	 */
 	rtoax_file = alloc_empty_file(op->open_flag, current_cred());
 	if (IS_ERR(rtoax_file))
 		return rtoax_file;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (unlikely(rtoax_file->f_flags & __O_TMPFILE)) {
 		error = do_tmpfile(nd, flags, op, rtoax_file);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else if (unlikely(rtoax_file->f_flags & O_PATH)) {
 		error = do_o_path(nd, flags, rtoax_file);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else {
 		const char *s = path_init(nd, flags);
-		while (!(error = link_path_walk(s, nd)) && (s = open_last_lookups(nd, rtoax_file, op)) != NULL);
+		while (!(error = link_path_walk(s, nd)) &&
+				(s = open_last_lookups(nd, rtoax_file, op)) != NULL);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (!error)
 			error = do_open(nd, rtoax_file, op);  /* vfs_open() */
 		terminate_walk(nd);
@@ -3489,25 +3493,30 @@ static struct file *path_openat(struct nameidata *nd, const struct open_flags *o
 	return ERR_PTR(error);
 }
 
-//解析给定的文件路径名到 `file` 结构体
-struct file *do_filp_open(int dfd, struct filename *pathname, const struct open_flags *op)
+/**
+ * 解析给定的文件路径名到 `file` 结构体
+ */
+struct file *
+do_filp_open(int dfd, struct filename *pathname, const struct open_flags *op)
 {
 	struct nameidata nd;
 	int flags = op->lookup_flags;
 	struct file *filp;
 
-    //Linux 内核会以 [RCU]模式打开文件
-    //如果打开失败，内核进入正常模式
+	/**
+	 * Linux 内核会以 [RCU]模式打开文件
+	 * 如果打开失败，内核进入正常模式
+	 */
 	set_nameidata(&nd, dfd, pathname);
 
-    /**
-     *  打开这个文件
-     */
+	/**
+	 *  打开这个文件
+	 */
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);
 	if (unlikely(filp == ERR_PTR(-ESTALE)))

@@ -112,8 +112,8 @@ static int irq_affinity_list_proc_show(struct seq_file *m, void *v)
 }
 
 #ifndef CONFIG_AUTO_IRQ_AFFINITY
-//static inline int irq_select_affinity_usr(unsigned int irq)
-//{
+static inline int irq_select_affinity_usr(unsigned int irq)
+{
 	/*
 	 * If the interrupt is started up already then this fails. The
 	 * interrupt is assigned to an online CPU already. There is no
@@ -124,8 +124,8 @@ static int irq_affinity_list_proc_show(struct seq_file *m, void *v)
 	 * startup code invokes irq_setup_affinity() which will select
 	 * a online CPU anyway.
 	 */
-//	return -EINVAL;
-//}
+	return -EINVAL;
+}
 #else
 /* ALPHA magic affinity auto selector. Keep it for historical reasons. */
 static inline int irq_select_affinity_usr(unsigned int irq)
@@ -460,7 +460,7 @@ void init_irq_proc(void)
 	 */
 	for_each_irq_desc(irq, desc) {
 		register_irq_proc(irq, desc);
-    }
+	}
 }
 
 #ifdef CONFIG_GENERIC_IRQ_SHOW
@@ -492,9 +492,9 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 
 	unsigned long flags, any_count = 0;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int i = *(loff_t *) v, j;
 	struct irqaction *action;
 	struct irq_desc *desc;
@@ -502,22 +502,22 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 	if (i > ACTUAL_NR_IRQS)
 		return 0;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (i == ACTUAL_NR_IRQS)
-        /**
-         *
-         *  NMI:      28669      17014         51         53   Non-maskable interrupts
-         *  LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
-         *  SPU:          0          0          0          0   Spurious interrupts
-         *  PMI:      28663      17014         51         52   Performance monitoring interrupts
-         *  IWI:   20805501    6476678      11182     680442   IRQ work interrupts
-         *  RTR:          0          0          0          0   APIC ICR read retries
-         *  RES:   38245114   85428815      56773    5361991   Rescheduling interrupts
-         *  CAL:     332272    3971016     646975     646934   Function call interrupts
-         *  [...]
-         */
+		/**
+		 *
+		 *  NMI:      28669      17014         51         53   Non-maskable interrupts
+		 *  LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
+		 *  SPU:          0          0          0          0   Spurious interrupts
+		 *  PMI:      28663      17014         51         52   Performance monitoring interrupts
+		 *  IWI:   20805501    6476678      11182     680442   IRQ work interrupts
+		 *  RTR:          0          0          0          0   APIC ICR read retries
+		 *  RES:   38245114   85428815      56773    5361991   Rescheduling interrupts
+		 *  CAL:     332272    3971016     646975     646934   Function call interrupts
+		 *  [...]
+		 */
 		return arch_show_interrupts(p, prec);
 
 	/* print header and calculate the width of the first column */
@@ -538,12 +538,12 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 		goto outsparse;
 
 	if (desc->kstat_irqs)
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		for_each_online_cpu(j){
 			any_count |= *per_cpu_ptr(desc->kstat_irqs, j);
-        }
+		}
 
 	if ((!desc->action || irq_desc_is_chained(desc)) && !any_count)
 		goto outsparse;
@@ -552,7 +552,7 @@ int show_interrupts(struct seq_file *p, void *v)    /* /proc/interrupts */
 	for_each_online_cpu(j) {
 		seq_printf(p, "%10u ", desc->kstat_irqs ?
 					*per_cpu_ptr(desc->kstat_irqs, j) : 0);
-    }
+	}
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 	if (desc->irq_data.chip) {
