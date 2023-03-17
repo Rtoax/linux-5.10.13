@@ -1640,7 +1640,12 @@ static int __init parse_acpi(char *arg)
 	if (strcmp(arg, "off") == 0) {
 		disable_acpi();
 	}
-	/* acpi=force to over-ride black-list */
+	/**
+	 * acpi=force to over-ride black-list
+	 *
+	 * see https://github.com/rtoax/notes issue-debug/ipmi-bmc
+	 * ERROR: Could not open device at /dev/ipmi0
+	 */
 	else if (strcmp(arg, "force") == 0) {
 		acpi_force = 1;
 		acpi_disabled = 0;
