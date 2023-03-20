@@ -17,10 +17,12 @@
  */
 typedef struct qspinlock {
 	union {
-        //* `0-7` - 上锁字节(locked byte);
-        //* `8` - 未决位(pending bit);
-        //* `16-17` - 这两位代表了 `MCS` 锁的 `per_cpu` 数组；
-        //* `18-31` - 包括表明队列尾部的处理器数。
+        /**
+		 * `0-7` - 上锁字节(locked byte);
+         * `8` - 未决位(pending bit);
+         * `16-17` - 这两位代表了 `MCS` 锁的 `per_cpu` 数组；
+         * `18-31` - 包括表明队列尾部的处理器数。
+		 */
 		atomic_t val;
 
 		/*
@@ -59,15 +61,15 @@ typedef struct qspinlock {
 			u16	tail;
 		};
 #else
-//		struct {
-//			u16	tail;
-//			u16	locked_pending;
-//		};
-//		struct {
-//			u8	reserved[2];
-//			u8	pending;
-//			u8	locked;
-//		};
+		struct {
+			u16	tail;
+			u16	locked_pending;
+		};
+		struct {
+			u8	reserved[2];
+			u8	pending;
+			u8	locked;
+		};
 #endif
 	};
 } arch_spinlock_t;

@@ -47,8 +47,8 @@ typedef struct raw_spinlock {
 		.wait_type_inner = LD_WAIT_CONFIG,	\
 	}
 #else
-//# define RAW_SPIN_DEP_MAP_INIT(lockname)
-//# define SPIN_DEP_MAP_INIT(lockname)
+# define RAW_SPIN_DEP_MAP_INIT(lockname)
+# define SPIN_DEP_MAP_INIT(lockname)
 #endif
 
 #ifdef CONFIG_DEBUG_SPINLOCK
@@ -57,7 +57,7 @@ typedef struct raw_spinlock {
 	.owner_cpu = -1,			\
 	.owner = SPINLOCK_OWNER_INIT,
 #else
-//# define SPIN_DEBUG_INIT(lockname)
+# define SPIN_DEBUG_INIT(lockname)
 #endif
 
 #define __RAW_SPIN_LOCK_INITIALIZER(lockname)	\
