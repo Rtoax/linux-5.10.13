@@ -17,6 +17,9 @@
 
 #include "kernfs-internal.h"
 
+/**
+ *
+ */
 DEFINE_MUTEX(kernfs_mutex);
 static DEFINE_SPINLOCK(kernfs_rename_lock);	/* kn->parent and ->name */
 static char kernfs_pr_cont_buf[PATH_MAX];	/* protected by rename_lock */
@@ -548,6 +551,10 @@ void kernfs_put(struct kernfs_node *kn)
 }
 EXPORT_SYMBOL_GPL(kernfs_put);
 
+/**
+ *
+ * sudo bpftrace -e 'kprobe:kernfs_dop_revalidate{printf("comm = %s\n", comm);}'
+ */
 static int kernfs_dop_revalidate(struct dentry *dentry, unsigned int flags)
 {
 	struct kernfs_node *kn;

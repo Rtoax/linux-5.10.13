@@ -3452,6 +3452,9 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 	},
 #endif
 #ifdef CONFIG_AIO
+	/**
+	 * fs.aio-nr
+	 */
 	{
 		.procname	= "aio-nr",
 		.data		= &aio_nr,
@@ -3528,6 +3531,9 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 		.extra2		= &two,
 	},
 #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+	/**
+	 * fs.binfmt_misc
+	 */
 	{
 		.procname	= "binfmt_misc",
 		.mode		= 0555,
