@@ -160,6 +160,8 @@ void account_guest_time(struct task_struct *p, u64 cputime)
  * @p: the process that the CPU time gets accounted to
  * @cputime: the CPU time spent in kernel space since the last update
  * @index: pointer to cpustat field that has to be updated
+ *
+ * $ sudo bpftrace -e 'kprobe:account_system_index_time {@[kstack] = count();}'
  */
 void account_system_index_time(struct task_struct *p,
 			       u64 cputime, enum cpu_usage_stat index)
@@ -180,6 +182,8 @@ void account_system_index_time(struct task_struct *p,
  * @p: the process that the CPU time gets accounted to
  * @hardirq_offset: the offset to subtract from hardirq_count()
  * @cputime: the CPU time spent in kernel space since the last update
+ *
+ * $ sudo bpftrace -e 'kprobe:account_system_time {@[kstack] = count();}'
  */
 void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 {
@@ -192,6 +196,9 @@ void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 
 	if (hardirq_count() - hardirq_offset)
 		index = CPUTIME_IRQ;
+	/**
+	 * 在处理软中断
+	 */
 	else if (in_serving_softirq())
 		index = CPUTIME_SOFTIRQ;
 	else
@@ -385,6 +392,12 @@ static void irqtime_account_process_tick(struct task_struct *p, int user_tick,
 
 	cputime -= other;
 
+	/**
+	 * ksoftirqd 算入 mpstat %soft 或者 /proc/stat softirq 中。
+	 *
+	 * `top`/`mpstat` 是从 `/proc/stat` 中获取数据，该softirq是通过
+	 * cpustat[CPUTIME_SOFTIRQ]统计的。
+	 */
 	if (this_cpu_ksoftirqd() == p) {
 		/*
 		 * ksoftirqd time do not get accounted in cpu_softirq_time.

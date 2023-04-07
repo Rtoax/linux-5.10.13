@@ -97,6 +97,20 @@ const char * const softirq_to_name[NR_SOFTIRQS] = {
  * to the pending events, so lets the scheduler to balance
  * the softirq load for us.
  *
+ * ksoftirqd is a per-cpu kernel thread that runs when the machine is under
+ * heavy soft-interrupt load. Soft interrupts are normally serviced on return
+ * from a hard interrupt, but it’s possible for soft interrupts to be triggered
+ * more quickly than they can be serviced. If a soft interrupt is triggered for
+ * a second time while soft interrupts are being handled, the ksoftirq daemon is
+ * triggered to handle the soft interrupts in process context. If ksoftirqd is
+ * taking more than a tiny percentage of CPU time, this indicates the machine is
+ * under heavy soft interrupt load.
+ *
+ * ksoftirqd was introduced during the 2.3 development series as part of the
+ * softnet work by Alexey Kuznetsov and David Miller.
+ *
+ * https://man.cx/ksoftirqd(9)
+ *
  * 唤醒 ksoftirqd 线程
  *
  * [rongtao@localhost src]$ ps -ef | grep soft
@@ -111,7 +125,8 @@ static void wakeup_softirqd(void)
 	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
 
 	if (tsk && tsk->state != TASK_RUNNING) {
-		wake_up_process(tsk);   /* 唤醒这个 CPU 的 ksoftirwd 线程 */
+		/* 唤醒这个 CPU 的 ksoftirwd 线程 */
+		wake_up_process(tsk);
 	}
 }
 
@@ -312,39 +327,43 @@ EXPORT_SYMBOL(__local_bh_enable_ip);
  * not miss-qualify lock contexts and miss possible deadlocks.
  */
 
-//static inline bool lockdep_softirq_start(void)
-//{
-//	bool in_hardirq = false;
-//
-//	if (lockdep_hardirq_context()) {
-//		in_hardirq = true;
-//		lockdep_hardirq_exit();
-//	}
-//
-//	lockdep_softirq_enter();
-//
-//	return in_hardirq;
-//}
-//
-//static inline void lockdep_softirq_end(bool in_hardirq)
-//{
-//	lockdep_softirq_exit();
-//
-//	if (in_hardirq)
-//		lockdep_hardirq_enter();
-//}
+static inline bool lockdep_softirq_start(void)
+{
+	bool in_hardirq = false;
+
+	if (lockdep_hardirq_context()) {
+		in_hardirq = true;
+		lockdep_hardirq_exit();
+	}
+
+	lockdep_softirq_enter();
+
+	return in_hardirq;
+}
+
+static inline void lockdep_softirq_end(bool in_hardirq)
+{
+	lockdep_softirq_exit();
+
+	if (in_hardirq)
+		lockdep_hardirq_enter();
+}
 #else
 static inline bool lockdep_softirq_start(void) { return false; }
 static inline void lockdep_softirq_end(bool in_hardirq) { }
 #endif
 
-//During execution of a deferred（延期的） function, new pending `softirqs` might occur.
-//The main problem here that execution of the userspace code can be delayed for a long time
-//while the `__do_softirq` function will handle deferred interrupts. For this purpose,
-//it has the limit of the time when it must be finished
 /**
+ * During execution of a deferred（延期的） function, new pending `softirqs` might
+ * occur. The main problem here that execution of the userspace code can be
+ * delayed for a long time while the `__do_softirq` function will handle
+ * deferred interrupts. For this purpose, it has the limit of the time when it
+ * must be finished.
+ *
  *  处理软中断
  *  这是在中断上下文中发生的
+ *
+ * $ sudo bpftrace -e 'kprobe:__do_softirq {@[comm] = count();}'
  */
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
@@ -512,8 +531,18 @@ restart:
 		/**
 		 *  如果存在软中断未处理，但是又不满足上面的条件
 		 *  将唤醒 当前 CPU 后台 softirqd 线程
+		 *
+		 * ksoftirqd is a per-cpu kernel thread that runs when the machine
+		 * is under heavy soft-interrupt load. Soft interrupts are normally
+		 * serviced on return from a hard interrupt, but it’s possible for
+		 * soft interrupts to be triggered more quickly than they can be
+		 * serviced. If a soft interrupt is triggered for a second time
+		 * while soft interrupts are being handled, the ksoftirq daemon is
+		 * triggered to handle the soft interrupts in process context. If
+		 * ksoftirqd is taking more than a tiny percentage of CPU time, this
+		 * indicates the machine is under heavy soft interrupt load.
 		 */
-		wakeup_softirqd();  /* 唤醒 */
+		wakeup_softirqd();
 	}
 
 	/**

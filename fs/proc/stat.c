@@ -216,6 +216,9 @@ static int show_stat(struct seq_file *p, void *v)
 		idle		= get_idle_time(&kcpustat, i);
 		iowait		= get_iowait_time(&kcpustat, i);
 		irq		= cpustat[CPUTIME_IRQ];
+		/**
+		 * 每个 CPU 的 Softirq 统计
+		 */
 		softirq		= cpustat[CPUTIME_SOFTIRQ];
 		/**
 		 * Steal Time
@@ -263,8 +266,14 @@ static int show_stat(struct seq_file *p, void *v)
      */
 	seq_put_decimal_ull(p, "softirq ", (unsigned long long)sum_softirq);
 
+	/**
+	 * $ cat /proc/stat
+	 * ...
+	 * softirq 103851409 24567795 12300045 45 30237936 292567 0 232457 24280985 257 11939322
+	 */
 	for (i = 0; i < NR_SOFTIRQS; i++)
 		seq_put_decimal_ull(p, " ", per_softirq_sums[i]);
+
 	seq_putc(p, '\n');
 
 	return 0;
@@ -281,6 +290,28 @@ static int stat_open(struct inode *inode, struct file *file)
 
 /**
  * /proc/stat
+ *
+ * 例如：
+ * cpu  533615 2070 140979 125123804 44619 58816 64282 0 36050 0
+ * cpu0 51468 1059 13737 10422265 3842 2675 1808 0 4222 0
+ * cpu1 50157 201 11878 10426927 4264 2492 1710 0 3267 0
+ * cpu2 46841 29 11380 10431036 4874 2364 1611 0 3552 0
+ * cpu3 47467 232 10585 10432012 3751 2269 1490 0 2465 0
+ * cpu4 54771 29 10481 10425588 3421 2249 1517 0 3775 0
+ * cpu5 43408 12 10477 10436687 3698 2156 1491 0 2890 0
+ * cpu6 32151 113 9236 10423915 4357 18356 9647 0 3065 0
+ * cpu7 34054 127 9621 10404657 3104 9153 36735 0 3382 0
+ * cpu8 48753 71 18425 10421097 2537 2703 2229 0 2775 0
+ * cpu9 48333 97 11615 10431208 2926 2148 1325 0 2470 0
+ * cpu10 34220 49 11191 10432896 4156 9978 3114 0 1182 0
+ * cpu11 41986 44 12348 10435511 3684 2267 1599 0 3001 0
+ * intr 109182100 0 0 0 ...
+ * ctxt 207412605
+ * btime 1680743657
+ * processes 89545
+ * procs_running 1
+ * procs_blocked 0
+ * softirq 103851409 24567795 12300045 45 30237936 292567 0 232457 24280985 257 11939322
  */
 static const struct proc_ops stat_proc_ops = {
 	.proc_flags	= PROC_ENTRY_PERMANENT,

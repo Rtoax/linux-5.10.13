@@ -674,10 +674,10 @@ asmlinkage void __do_softirq(void);
 #ifdef __ARCH_HAS_DO_SOFTIRQ
 void do_softirq_own_stack(void);
 #else
-//static inline void do_softirq_own_stack(void)
-//{
-//	__do_softirq();
-//}
+static inline void do_softirq_own_stack(void)
+{
+	__do_softirq();
+}
 #endif
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
