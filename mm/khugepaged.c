@@ -119,11 +119,24 @@ struct mm_slot {
  * see test-linux: mm/khugepaged/scripts/khugepaged_scan.bt
  */
 struct khugepaged_scan {
+	/**
+	 * 需要被扫描的
+	 */
 	struct list_head mm_head;
+	/**
+	 * 正在扫描的
+	 */
 	struct mm_slot *mm_slot;
+	/**
+	 * 下一个被扫描的地址
+	 */
 	unsigned long address;
 };
 
+/**
+ * - 在 __khugepaged_enter() 中添加 mm 结构到 mm_slot
+ *
+ */
 static struct khugepaged_scan khugepaged_scan = {
 	.mm_head = LIST_HEAD_INIT(khugepaged_scan.mm_head),
 };
@@ -469,8 +482,10 @@ static bool hugepage_vma_check(struct vm_area_struct *vma,
 }
 
 /**
-*
-*/
+ * 向 khugepaged 添加被扫描的mm结构
+ *
+ * $ sudo bpftrace -e 'kprobe:__khugepaged_enter{printf("%-8s\n", comm);}'
+ */
 int __khugepaged_enter(struct mm_struct *mm)
 {
 	struct mm_slot *mm_slot;
@@ -488,12 +503,18 @@ int __khugepaged_enter(struct mm_struct *mm)
 	}
 
 	spin_lock(&khugepaged_mm_lock);
+	/**
+	 * 将 mm 插入 mm_slot
+	 */
 	insert_to_mm_slots_hash(mm, mm_slot);
 	/*
 	 * Insert just behind the scanning cursor, to let the area settle
 	 * down a little.
 	 */
 	wakeup = list_empty(&khugepaged_scan.mm_head);
+	/**
+	 * 添加
+	 */
 	list_add_tail(&mm_slot->mm_node, &khugepaged_scan.mm_head);
 	spin_unlock(&khugepaged_mm_lock);
 
@@ -1376,6 +1397,9 @@ out_unmap:
 		collapse_huge_page(mm, address, hpage, node,
 				referenced, unmapped);
 	}
+	/**
+	 *
+	 */
 out:
 	trace_mm_khugepaged_scan_pmd(mm, page, writable, referenced,
 				     none_or_zero, result, unmapped);
@@ -2088,6 +2112,9 @@ static unsigned int khugepaged_scan_mm_slot(unsigned int pages,
 	spin_unlock(&khugepaged_mm_lock);
 	khugepaged_collapse_pte_mapped_thps(mm_slot);
 
+	/**
+	 * 获取 mm 结构体
+	 */
 	mm = mm_slot->mm;
 	/*
 	 * Don't wait for semaphore (to avoid long wait times).  Just move to
@@ -2100,6 +2127,9 @@ static unsigned int khugepaged_scan_mm_slot(unsigned int pages,
 		vma = find_vma(mm, khugepaged_scan.address);
 
 	progress++;
+	/**
+	 * 遍历这个 MM 结构中的 VMA
+	 */
 	for (; vma; vma = vma->vm_next) {
 		unsigned long hstart, hend;
 
@@ -2144,6 +2174,9 @@ skip:
 				khugepaged_scan_file(mm, file, pgoff, hpage);
 				fput(file);
 			} else {
+				/**
+				 *
+				 */
 				ret = khugepaged_scan_pmd(mm, vma,
 						khugepaged_scan.address,
 						hpage);
@@ -2202,11 +2235,23 @@ static int khugepaged_wait_event(void)
 		kthread_should_stop();
 }
 
+/**
+ * khugepaged 扫描函数
+ *
+ * 操作系统后台有一个叫做khugepaged的进程，它会一直扫描所有进程占用的内存，在可能
+ * 的情况下会把4kpage交换为Huge Pages，在这个过程中，对于操作的内存的各种分配活
+ * 动都需要各种内存锁，直接影响程序的内存访问性能，并且，这个过程对于应用是透明的，
+ * 在应用层面不可控制,对于专门为4k page优化的程序来说，可能会造成随机的性能下降现
+ * 象。
+ */
 static void khugepaged_do_scan(void)
 {
 	struct page *hpage = NULL;
 	unsigned int progress = 0, pass_through_head = 0;
-	unsigned int pages = khugepaged_pages_to_scan; /* 一般 4096 */
+	/**
+	 * 一般 4096
+	 */
+	unsigned int pages = khugepaged_pages_to_scan;
 	bool wait = true;
 
 	barrier(); /* write khugepaged_pages_to_scan to local stack */
@@ -2214,7 +2259,7 @@ static void khugepaged_do_scan(void)
 	lru_add_drain_all();
 
 	/**
-	 * 扫描四循环
+	 * 扫描循环
 	 */
 	while (progress < pages) {
 		if (!khugepaged_prealloc_page(&hpage, &wait))
@@ -2228,6 +2273,10 @@ static void khugepaged_do_scan(void)
 		spin_lock(&khugepaged_mm_lock);
 		if (!khugepaged_scan.mm_slot)
 			pass_through_head++;
+
+		/**
+		 * khugepaged_scan.mm_head 不为空就是在工作
+		 */
 		if (khugepaged_has_work() &&
 		    pass_through_head < 2)
 			progress += khugepaged_scan_mm_slot(pages - progress,
@@ -2305,7 +2354,7 @@ static int khugepaged(void *none)
 
 	while (!kthread_should_stop()) {
 		/**
-		 *
+		 * 扫描
 		 */
 		khugepaged_do_scan();
 		/**

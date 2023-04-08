@@ -48,6 +48,9 @@ SCAN_STATUS
 #define EM(a, b)	{a, b},
 #define EMe(a, b)	{a, b}
 
+/**
+ *
+ */
 TRACE_EVENT(mm_khugepaged_scan_pmd,
 
 	TP_PROTO(struct mm_struct *mm, struct page *page, bool writable,
