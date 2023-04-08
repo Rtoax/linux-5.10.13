@@ -816,6 +816,9 @@ static void __show_smap(struct seq_file *m, const struct mem_size_stats *mss,
 	seq_puts(m, " kB\n");
 }
 
+/**
+ * /proc/[PID]/smaps
+ */
 static int show_smap(struct seq_file *m, void *v)
 {
 	struct vm_area_struct *vma = v;
@@ -834,6 +837,9 @@ static int show_smap(struct seq_file *m, void *v)
 
 	__show_smap(m, &mss, false);
 
+	/**
+	 * 资格(eligible)
+	 */
 	seq_printf(m, "THPeligible:    %d\n",
 		   transparent_hugepage_enabled(vma));
 

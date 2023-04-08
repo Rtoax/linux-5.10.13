@@ -2283,6 +2283,9 @@ static void khugepaged_wait_work(void)
  * 1. kernel的启动参数可以通过传入transparent_hugepage=never
  * 2. 系统启动后使用echo never > /sys/kernel/mm/transparent_hugepage/enabled
  *
+ * $ cat /sys/kernel/mm/transparent_hugepage/enabled
+ * always [madvise] never
+ *
  * 问题：当我在 centos-stream-9 上安装了 fedora37 虚拟机后，发现 Host 主机上
  * 不时地 "khugepaged" 进程 CPU 利用率会非常高。环境信息：
  *
@@ -2320,6 +2323,9 @@ static int khugepaged(void *none)
 	return 0;
 }
 
+/**
+ *
+ */
 static void set_recommended_min_free_kbytes(void)
 {
 	struct zone *zone;
@@ -2366,13 +2372,28 @@ static void set_recommended_min_free_kbytes(void)
 
 /**
  * 开启或关闭 "khugepaged" 进程
+ *
+ * 操作系统后台有一个叫做khugepaged的进程，它会一直扫描所有进程占用的内存，在可能
+ * 的情况下会把4kpage交换为Huge Pages，在这个过程中，对于操作的内存的各种分配活
+ * 动都需要各种内存锁，直接影响程序的内存访问性能，并且，这个过程对于应用是透明的，
+ * 在应用层面不可控制,对于专门为4k page优化的程序来说，可能会造成随机的性能下降现
+ * 象。
  */
 int start_stop_khugepaged(void)
 {
 	int err = 0;
 
 	mutex_lock(&khugepaged_mutex);
+
+	/**
+	 * 检测 transparent_hugepage_flags 标记位
+	 * - TRANSPARENT_HUGEPAGE_FLAG 或
+	 * - TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG
+	 */
 	if (khugepaged_enabled()) {
+		/**
+		 * 已经创建了，那么直接跳过
+		 */
 		if (!khugepaged_thread)
 			khugepaged_thread = kthread_run(khugepaged, NULL,
 							"khugepaged");
@@ -2383,10 +2404,19 @@ int start_stop_khugepaged(void)
 			goto fail;
 		}
 
+		/**
+		 * 扫描页不为空，唤醒
+		 */
 		if (!list_empty(&khugepaged_scan.mm_head))
 			wake_up_interruptible(&khugepaged_wait);
 
+		/**
+		 * 设置最小
+		 */
 		set_recommended_min_free_kbytes();
+	/**
+	 * 如果已经创建了 khugepaged 进程，那么停止
+	 */
 	} else if (khugepaged_thread) {
 		kthread_stop(khugepaged_thread);
 		khugepaged_thread = NULL;

@@ -45,12 +45,21 @@
  * enabled, it is for all mappings, and khugepaged scans all mappings.
  * Defrag is invoked by khugepaged hugepage allocations and by page faults
  * for all hugepage allocations.
+ *
+ * 透明大页设置
+ *
+ * $ cat /sys/kernel/mm/transparent_hugepage/enabled
+ * always [madvise] never
+ *
+ * 关闭
+ * $ grubby --update-kernel=/boot/vmlinuxz-`uname -r` \
+ * 		--args="transparent_hugepage=never"
  */
 unsigned long __read_mostly transparent_hugepage_flags  =
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS /* always */
 	(1<<TRANSPARENT_HUGEPAGE_FLAG)|
 #endif
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE_MADVISE
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE_MADVISE /* madvise */
 	(1<<TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG)|
 #endif
 	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_REQ_MADV_FLAG)|
@@ -69,6 +78,9 @@ bool transparent_hugepage_enabled(struct vm_area_struct *vma)
 
 	if (!transhuge_vma_suitable(vma, addr))
 		return false;
+	/**
+	 * 匿名页
+	 */
 	if (vma_is_anonymous(vma))
 		return __transparent_hugepage_enabled(vma);
 	if (vma_is_shmem(vma))
@@ -190,6 +202,15 @@ static ssize_t enabled_store(struct kobject *kobj,
 		ret = -EINVAL;
 
 	if (ret > 0) {
+		/**
+		 * 开启或关闭 "khugepaged" 进程
+		 *
+		 * 操作系统后台有一个叫做khugepaged的进程，它会一直扫描所有进程占用的内存，在可能
+		 * 的情况下会把4kpage交换为Huge Pages，在这个过程中，对于操作的内存的各种分配活
+		 * 动都需要各种内存锁，直接影响程序的内存访问性能，并且，这个过程对于应用是透明的，
+		 * 在应用层面不可控制,对于专门为4k page优化的程序来说，可能会造成随机的性能下降现
+		 * 象。
+		 */
 		int err = start_stop_khugepaged();
 		if (err)
 			ret = err;
@@ -367,6 +388,9 @@ static int __init hugepage_init(void)
 	int err;
 	struct kobject *hugepage_kobj;
 
+	/**
+	 * 是否开启了透明大页
+	 */
 	if (!has_transparent_hugepage()) {
 		transparent_hugepage_flags = 0;
 		return -EINVAL;
@@ -407,6 +431,15 @@ static int __init hugepage_init(void)
 		return 0;
 	}
 
+	/**
+	 * 开启或关闭 "khugepaged" 进程
+	 *
+	 * 操作系统后台有一个叫做khugepaged的进程，它会一直扫描所有进程占用的内存，在可能
+	 * 的情况下会把4kpage交换为Huge Pages，在这个过程中，对于操作的内存的各种分配活
+	 * 动都需要各种内存锁，直接影响程序的内存访问性能，并且，这个过程对于应用是透明的，
+	 * 在应用层面不可控制,对于专门为4k page优化的程序来说，可能会造成随机的性能下降现
+	 * 象。
+	 */
 	err = start_stop_khugepaged();
 	if (err)
 		goto err_khugepaged;
@@ -425,6 +458,16 @@ err_sysfs:
 }
 subsys_initcall(hugepage_init);
 
+/**
+ * 透明大页设置
+ *
+ * $ cat /sys/kernel/mm/transparent_hugepage/enabled
+ * always [madvise] never
+ *
+ * 关闭
+ * $ grubby --update-kernel=/boot/vmlinuxz-`uname -r` \
+ * 		--args="transparent_hugepage=never"
+ */
 static int __init setup_transparent_hugepage(char *str)
 {
 	int ret = 0;

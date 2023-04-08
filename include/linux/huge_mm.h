@@ -138,6 +138,9 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
 	if (test_bit(MMF_DISABLE_THP, &vma->vm_mm->flags))
 		return false;
 
+	/**
+	 * echo never > /sys/kernel/mm/transparent_hugepage/enabled
+	 */
 	if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
 		return true;
 	/*

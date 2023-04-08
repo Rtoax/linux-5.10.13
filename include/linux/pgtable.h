@@ -1464,7 +1464,7 @@ typedef unsigned int pgtbl_mod_mask;
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 #define has_transparent_hugepage() 1
 #else
-//#define has_transparent_hugepage() 0
+#define has_transparent_hugepage() 0
 #endif
 #endif
 
