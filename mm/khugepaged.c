@@ -364,6 +364,34 @@ struct attribute_group khugepaged_attr_group = {
 };
 #endif /* CONFIG_SYSFS */
 
+/**
+ * 以下内容见 madvise(2)
+ *
+ * MADV_HUGEPAGE
+ * -------------------
+ * 为由 addr 和长度指定的范围内的页面启用透明大页面 （THP）。 目前，透明大页面仅适用于
+ * 私有匿名页面（参见 mmap（2））。 内核将定期扫描标记为大页面候选的区域，以用大页面替
+ * 换它们。 当区域自然地与巨大的页面大小对齐时，内核也会直接分配大页面（参见
+ * posix_memalign（2））。
+ *
+ * 此功能主要针对使用大型数据映射并一次访问该内存的大区域的应用程序（例如，QEMU 等虚拟化系统）
+ * 它很容易浪费内存（例如，仅访问 1 字节的 2 MB 映射将导致 2 MB 的有线内存而不是一个 4 KB
+ * 的页面）。 有关更多详细信息，请参阅 Linux 内核源文件
+ * Documentation/admin-guide/mm/transhuge.rst 。
+ * https://www.kernel.org/doc/html/latest/admin-guide/mm/transhuge.html
+ *
+ * 默认情况下，大多数常见的内核配置都提供MADV_HUGEPAGE样式的行为，因此通常不需要
+ * MADV_HUGEPAGE。  它主要用于嵌入式系统，其中内核中可能默认不启用MADV_HUGEPAGE样式行为。
+ *
+ * 此类系统上，可以使用此标志有选择地启用 THP。 无论何时使用 MADV_HUGEPAGE，它都应始终位于
+ * 具有访问模式的内存区域中，开发人员事先知道，在启用透明 hugepages 时，不会有增加应用程序内
+ * 存占用的风险。
+ *
+ * 仅当内核配置了 CONFIG_TRANSPARENT_HUGEPAGE 时，MADV_HUGEPAGE和MADV_NOHUGEPAGE
+ * 操作才可用。
+
+ * $ sudo bpftrace -e 'kprobe:hugepage_madvise {printf("%s\n", kstack);}'
+ */
 int hugepage_madvise(struct vm_area_struct *vma,
 		     unsigned long *vm_flags, int advice)
 {
@@ -525,6 +553,12 @@ int __khugepaged_enter(struct mm_struct *mm)
 	return 0;
 }
 
+/**
+ * 该函数名已经修改为 khugepaged_enter_vma()，见 commit c791576c6028("mm:
+ * khugepaged: introduce khugepaged_enter_vma() helper")
+ *
+ * $ sudo bpftrace -e 'kprobe:khugepaged_enter_vma {printf("%s\n", comm);}'
+ */
 int khugepaged_enter_vma_merge(struct vm_area_struct *vma,
 			       unsigned long vm_flags)
 {

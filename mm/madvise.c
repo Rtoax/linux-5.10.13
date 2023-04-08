@@ -122,6 +122,10 @@ static long madvise_behavior(struct vm_area_struct *vma,
 		if (error)
 			goto out_convert_errno;
 		break;
+	/**
+	 * 透明巨大页面支持（Transparent HugePage Support，THP）是一种使用巨大页面来支持
+	 * 虚拟内存的替代方法，它支持页面大小的自动升级和降级，并且没有hugetlbfs的缺点。
+	 */
 	case MADV_HUGEPAGE:
 	case MADV_NOHUGEPAGE:
 		error = hugepage_madvise(vma, &new_flags, behavior);

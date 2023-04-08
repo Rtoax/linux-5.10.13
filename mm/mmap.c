@@ -1422,7 +1422,7 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
  * or other rmap walkers (if working on addresses beyond the "end"
  * parameter) may establish ptes with the wrong permissions of NNNN
  * instead of the right permissions of XXXX.
- */ /* vma 合并 */
+ */
 struct vm_area_struct *vma_merge(struct mm_struct *mm,
 			struct vm_area_struct *prev, unsigned long addr,
 			unsigned long end, unsigned long vm_flags,
@@ -1479,6 +1479,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 					 end, prev->vm_pgoff, NULL, prev);
 		if (err)
 			return NULL;
+
+		/**
+		 * 将此 VMA 对应的 mm 添加到 khugepaged_scan mm_slot 链表中
+		 * (需要满足一定条件)
+		 */
 		khugepaged_enter_vma_merge(prev, vm_flags);
 		return prev;
 	}
@@ -1506,6 +1511,10 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 		}
 		if (err)
 			return NULL;
+		/**
+		 * 将此 VMA 对应的 mm 添加到 khugepaged_scan mm_slot 链表中
+		 * (需要满足一定条件)
+		 */
 		khugepaged_enter_vma_merge(area, vm_flags);
 		return area;
 	}
@@ -2228,7 +2237,16 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
  *  在 do_mmap() 中调用
  *
  *  用 bpftrace kprobe 追踪
- *  >> sudo bpftrace -e 'kprobe:mmap_region {printf(">>>>>\n");}'
+ *  $ sudo bpftrace -e 'kprobe:vma_merge {printf("%s %s\n", comm, kstack);}'
+ *  Attaching 1 probe...
+ *  gnome-shell
+ *         vma_merge+1
+ *         mmap_region+1953
+ *         do_mmap+979
+ *         vm_mmap_pgoff+227
+ *         ksys_mmap_pgoff+387
+ *         do_syscall_64+88
+ *         entry_SYSCALL_64_after_hwframe+114
  */
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
@@ -3240,9 +3258,11 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 	struct vm_area_struct *prev;
 	int error = 0;
 
-	address &= PAGE_MASK;   /* 确认一下，页偏移部分为 0 */
+	/* 确认一下，页偏移部分为 0 */
+	address &= PAGE_MASK;
 
-	if (address < mmap_min_addr)    /* 地址错误，返回权限错误 */
+	/* 地址错误，返回权限错误 */
+	if (address < mmap_min_addr)
 		return -EPERM;
 
 	/* Enforce stack_guard_gap */
@@ -3284,7 +3304,7 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
      *        |<----size----->|
      *        |<-->| grow
      */
-	if (address < vma->vm_start) {  /* 小于 */
+	if (address < vma->vm_start) {
 
 		unsigned long size, grow;
 
@@ -3295,10 +3315,13 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		grow = (vma->vm_start - address) >> PAGE_SHIFT;
 
 		error = -ENOMEM;
-		if (grow <= vma->vm_pgoff) {    /* 小于在 page 中的偏移量 */
+		/* 小于在 page 中的偏移量 */
+		if (grow <= vma->vm_pgoff) {
 
-			error = acct_stack_growth(vma, size, grow); /* 鉴权与资源限制检测 */
-			if (!error) {   /* 没出错 */
+			/* 鉴权与资源限制检测 */
+			error = acct_stack_growth(vma, size, grow);
+			/* 没出错 */
+			if (!error) {
 				/*
 				 * vma_gap_update() doesn't support concurrent
 				 * updates, but we only hold a shared mmap_lock
@@ -3316,7 +3339,8 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 					mm->locked_vm += grow;
 				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
-				vma->vm_start = address;    /* 赋值 */
+				/* 赋值 */
+				vma->vm_start = address;
 				vma->vm_pgoff -= grow;
 				anon_vma_interval_tree_post_update_vma(vma);
 				vma_gap_update(vma);
@@ -3329,15 +3353,21 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 	}
 
 	anon_vma_unlock_write(vma->anon_vma);
+
+	/**
+	 * 将其添加到 khugepaged 扫描列表里（满足一定条件）
+	 */
 	khugepaged_enter_vma_merge(vma, vma->vm_flags);
 	validate_mm(mm);
 	return error;
 }
 
 /* enforced gap between the expanding stack and other mappings. */
-unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT/* 12 */;/* 默认 256 个 page 大小 */
+/* 默认 256 个 page 大小 */
+unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT/* 12 */;
 
-static int __init cmdline_parse_stack_guard_gap(char *p)    /* 可以重新设置 gap 大小 */
+/* 可以重新设置 gap 大小 */
+static int __init cmdline_parse_stack_guard_gap(char *p)
 {
 	unsigned long val;
 	char *endptr;

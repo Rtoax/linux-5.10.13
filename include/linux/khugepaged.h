@@ -58,6 +58,9 @@ static inline void khugepaged_exit(struct mm_struct *mm)
 static inline int khugepaged_enter(struct vm_area_struct *vma,
 				   unsigned long vm_flags)
 {
+	/**
+	 * MMF_VM_HUGEPAGE: set when VM_HUGEPAGE is set on vma
+	 */
 	if (!test_bit(MMF_VM_HUGEPAGE, &vma->vm_mm->flags))
 		if ((khugepaged_always() ||
 		     (khugepaged_req_madv() && (vm_flags & VM_HUGEPAGE))) &&
@@ -68,7 +71,33 @@ static inline int khugepaged_enter(struct vm_area_struct *vma,
 	return 0;
 }
 #else /* CONFIG_TRANSPARENT_HUGEPAGE */
+/**
+ * 在未开启透明大页时，函数都是空的
+ */
+static inline void khugepaged_fork(struct mm_struct *mm, struct mm_struct *oldmm)
+{
+}
+static inline void khugepaged_exit(struct mm_struct *mm)
+{
+}
+static inline void khugepaged_enter_vma_merge(struct vm_area_struct *vma,
+                    unsigned long vm_flags)
+{
+}
+static inline int collapse_pte_mapped_thp(struct mm_struct *mm,
+                      unsigned long addr, bool install_pmd)
+{
+    return 0;
+}
 
+static inline void khugepaged_min_free_kbytes_update(void)
+{
+}
+
+static inline bool current_is_khugepaged(void)
+{
+    return false;
+}
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 #endif /* _LINUX_KHUGEPAGED_H */
