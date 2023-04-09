@@ -436,9 +436,9 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
 	__FOP_RET(#op)
 
 asm(".pushsection .fixup, \"ax\"\n"
-    ".global kvm_fastop_exception \n"
-    "kvm_fastop_exception: xor %esi, %esi; ret\n"
-    ".popsection");
+	".global kvm_fastop_exception \n"
+	"kvm_fastop_exception: xor %esi, %esi; ret\n"
+	".popsection");
 
 FOP_START(setcc)
 FOP_SETCC(seto)
@@ -2329,13 +2329,13 @@ static int em_ret_far(struct x86_emulate_ctxt *ctxt)
 
 static int em_ret_far_imm(struct x86_emulate_ctxt *ctxt)
 {
-        int rc;
+	int rc;
 
-        rc = em_ret_far(ctxt);
-        if (rc != X86EMUL_CONTINUE)
-                return rc;
-        rsp_increment(ctxt, ctxt->src.val);
-        return X86EMUL_CONTINUE;
+	rc = em_ret_far(ctxt);
+	if (rc != X86EMUL_CONTINUE)
+		return rc;
+	rsp_increment(ctxt, ctxt->src.val);
+	return X86EMUL_CONTINUE;
 }
 
 static int em_cmpxchg(struct x86_emulate_ctxt *ctxt)
@@ -3505,6 +3505,9 @@ static int em_aad(struct x86_emulate_ctxt *ctxt)
 	return X86EMUL_CONTINUE;
 }
 
+/**
+ * 模拟 call 指令
+ */
 static int em_call(struct x86_emulate_ctxt *ctxt)
 {
 	int rc;
@@ -5236,9 +5239,9 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 			goto done;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	switch (mode) {
 	case X86EMUL_MODE_REAL:
 	case X86EMUL_MODE_VM86:
@@ -5266,11 +5269,11 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	ctxt->op_bytes = def_op_bytes;
 	ctxt->ad_bytes = def_ad_bytes;
 
-    /**
-     *  解析代码前缀
+	/**
+	 *  解析代码前缀
 	 *  一个长度为 3 的示例：0x66 0x89 0x3e
 	 *  参见 test-linux/kvm/scripts/kvm_emulate_insn.bt
-     */
+	 */
 	/* Legacy prefixes. */
 	for (;;) {
 		switch (ctxt->b = insn_fetch(u8, ctxt)) {
@@ -5338,10 +5341,10 @@ done_prefixes:
 	if (ctxt->rex_prefix & 8)
 		ctxt->op_bytes = 8;	/* REX.W */
 
-    /**
-     *  根据操作码判断指令操作数的寻址方式
-     */
-	/* Opcode byte(s). */
+	/**
+	 * Opcode byte(s).
+	 * 根据操作码判断指令操作数的寻址方式
+	 */
 	opcode = opcode_table[ctxt->b];
 	/* Two-byte opcode? */
 	if (ctxt->b == 0x0f) {
@@ -5358,9 +5361,9 @@ done_prefixes:
 	}
 	ctxt->d = opcode.flags;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (ctxt->d & ModRM)
 		ctxt->modrm = insn_fetch(u8, ctxt);
 
@@ -5370,9 +5373,9 @@ done_prefixes:
 		ctxt->d = NotImpl;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	while (ctxt->d & GroupMask) {
 		switch (ctxt->d & GroupMask) {
 		case Group:
@@ -5494,10 +5497,9 @@ done_prefixes:
 
 	ctxt->memop.addr.mem.seg = ctxt->seg_override;
 
-    /**
-     *  解析源操作数
-     */
-	/*
+	/**
+	 * 解析源操作数
+	 *
 	 * Decode and fetch the source operand: register, memory
 	 * or immediate.
 	 */
@@ -5513,15 +5515,15 @@ done_prefixes:
 	if (rc != X86EMUL_CONTINUE)
 		goto done;
 
-    /**
-     *  解析目的操作数
-     */
+	/**
+	 *  解析目的操作数
+	 */
 	/* Decode and fetch the destination operand: register or memory. */
 	rc = decode_operand(ctxt, &ctxt->dst, (ctxt->d >> DstShift) & OpMask);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (ctxt->rip_relative && likely(ctxt->memopp))
 		ctxt->memopp->addr.mem.ea = address_mask(ctxt,
 					ctxt->memopp->addr.mem.ea + ctxt->_eip);

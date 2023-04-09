@@ -1644,6 +1644,8 @@ static int skip_emulated_instruction(struct kvm_vcpu *vcpu)
 	 * VM_EXIT_INSTRUCTION_LEN on EPT misconfig, but other hypervisors
 	 * (namely Hyper-V) don't set it due to it being undefined behavior,
 	 * i.e. we end up advancing IP with some random value.
+	 *
+	 *
 	 */
 	if (!static_cpu_has(X86_FEATURE_HYPERVISOR) ||
 	    to_vmx(vcpu)->exit_reason != EXIT_REASON_EPT_MISCONFIG) {
