@@ -5198,13 +5198,13 @@ done:
  *  +----------+----------+----------+----------+----------+----------+
  *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
  *  +----------+----------+----------+----------+----------+----------+
- *  
+ *
  *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
  *  opcode - 操作码
  *  ModR/M, SIB - 操作数
  *  Displacement - 偏移
  *  Immediate - 立即数
- *  
+ *
  */
 int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 {
@@ -5224,6 +5224,10 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	ctxt->fetch.end = ctxt->fetch.data + insn_len;
 	ctxt->opcode_len = 1;
 	ctxt->intercept = x86_intercept_none;
+
+	/**
+	 * 拷贝
+	 */
 	if (insn_len > 0)
 		memcpy(ctxt->fetch.data, insn, insn_len);
 	else {
@@ -5233,7 +5237,7 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	}
 
     /**
-     *  
+     *
      */
 	switch (mode) {
 	case X86EMUL_MODE_REAL:
@@ -5264,6 +5268,8 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 
     /**
      *  解析代码前缀
+	 *  一个长度为 3 的示例：0x66 0x89 0x3e
+	 *  参见 test-linux/kvm/scripts/kvm_emulate_insn.bt
      */
 	/* Legacy prefixes. */
 	for (;;) {
@@ -5353,7 +5359,7 @@ done_prefixes:
 	ctxt->d = opcode.flags;
 
     /**
-     *  
+     *
      */
 	if (ctxt->d & ModRM)
 		ctxt->modrm = insn_fetch(u8, ctxt);
@@ -5365,7 +5371,7 @@ done_prefixes:
 	}
 
     /**
-     *  
+     *
      */
 	while (ctxt->d & GroupMask) {
 		switch (ctxt->d & GroupMask) {
@@ -5514,7 +5520,7 @@ done_prefixes:
 	rc = decode_operand(ctxt, &ctxt->dst, (ctxt->d >> DstShift) & OpMask);
 
     /**
-     *  
+     *
      */
 	if (ctxt->rip_relative && likely(ctxt->memopp))
 		ctxt->memopp->addr.mem.ea = address_mask(ctxt,
@@ -5600,7 +5606,7 @@ void init_decode_cache(struct x86_emulate_ctxt *ctxt)
 }
 
 /**
- *  
+ *
  */
 int x86_emulate_insn(struct x86_emulate_ctxt *ctxt)
 {

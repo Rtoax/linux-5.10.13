@@ -724,6 +724,10 @@ TRACE_EVENT(kvm_skinit,
 	flags;						\
 	})
 
+/**
+ * $ sudo bpftrace -e 'tracepoint:kvm:kvm_emulate_insn {printf("%-8s %lx\n", \
+ * 		comm, args->rip);}'
+ */
 TRACE_EVENT(kvm_emulate_insn,
 	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
 	TP_ARGS(vcpu, failed),

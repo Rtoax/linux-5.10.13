@@ -7473,13 +7473,16 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
 	    /**
-	     *
+	     * $ sudo bpftrace -e 'tracepoint:kvm:kvm_emulate_insn
+		 *    {printf("%-8s %lx\n", comm, args->rip);}'
+		 *
+		 * 见 test-linux/kvm/scripts/kvm_emulate_insn.bt
 	     */
 		trace_kvm_emulate_insn_start(vcpu);
 		++vcpu->stat.insn_emulation;
 
 	    /**
-	     *
+	     * 模拟失败
 	     */
 		if (r != EMULATION_OK)  {
 			if ((emulation_type & EMULTYPE_TRAP_UD) ||
@@ -7487,6 +7490,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 				kvm_queue_exception(vcpu, UD_VECTOR);
 				return 1;
 			}
+			/**
+			 * 重新执行指令
+			 */
 			if (reexecute_instruction(vcpu, cr2_or_gpa,
 						  write_fault_to_spt,
 						  emulation_type))
@@ -7498,6 +7504,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 				 */
 				WARN_ON_ONCE(ctxt->exception.vector == UD_VECTOR ||
 					     exception_type(ctxt->exception.vector) == EXCPT_TRAP);
+				/**
+				 * 注入一个异常
+				 */
 				inject_emulated_exception(vcpu);
 				return 1;
 			}

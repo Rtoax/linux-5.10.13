@@ -5697,6 +5697,10 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 
 	/**
 	 *  追踪 KVM 缺页
+	 *
+	 * 新内核这个 tracepoint 参数已经变了
+	 * $ sudo bpftrace -e 'tracepoint:kvm:kvm_page_fault {printf("%-8s %lx\n", \
+	 *   , args->error_code);}'
 	 */
 	trace_kvm_page_fault(gpa, exit_qualification);
 

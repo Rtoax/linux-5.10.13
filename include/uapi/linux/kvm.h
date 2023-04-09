@@ -274,7 +274,7 @@ CPU 7/KVM        144716   10       a0000            7fbcb0600000     65536
  * other bits are reserved for kvm internal use which are defined in
  * include/linux/kvm_host.h.
  *
- * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 应用层软件在需要进行脏页跟踪时，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
  * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
  * 当设置了这个标记后，所有的写访问都会产生 EPT violation 异常，产生 VM Exit

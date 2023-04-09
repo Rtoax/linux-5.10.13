@@ -274,7 +274,7 @@ static int print_exit_reason(struct trace_seq *s, struct tep_record *record,
 }
 
 /**
- *  
+ *
  */
 static int kvm_exit_handler(struct trace_seq *s, struct tep_record *record,
 			    struct tep_event *event, void *context)
@@ -459,6 +459,9 @@ int TEP_PLUGIN_LOADER(struct tep_handle *tep)
 	tep_register_event_handler(tep, -1, "kvm", "kvm_exit",
 				   kvm_exit_handler, NULL);
 
+	/**
+	 * 模拟指令？
+	 */
 	tep_register_event_handler(tep, -1, "kvm", "kvm_emulate_insn",
 				   kvm_emulate_insn_handler, NULL);
 

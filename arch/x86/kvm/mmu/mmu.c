@@ -3862,7 +3862,7 @@ static bool try_async_pf(struct kvm_vcpu *vcpu, bool prefault, gfn_t gfn,
 }
 
 /**
- *   Guest 缺页异常
+ * Guest 缺页异常
  *
  * 场景1. 脏页跟踪 KVM_MEM_LOG_DIRTY_PAGES
  * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
@@ -4015,7 +4015,8 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 }
 EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 
-/* 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+/**
+ * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
  * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
  * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
