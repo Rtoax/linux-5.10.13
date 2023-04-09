@@ -1645,7 +1645,11 @@ static int skip_emulated_instruction(struct kvm_vcpu *vcpu)
 	 * (namely Hyper-V) don't set it due to it being undefined behavior,
 	 * i.e. we end up advancing IP with some random value.
 	 *
-	 *
+	 * 使用 VMCS。EPT 配置错误 VM_EXIT_INSTRUCTION_LEN 取决于未定义的行为：
+	 * 英特尔的 SDM 不强制要求在发生 EPT 错误配置时设置 VMCS 字段。
+	 * 实际上，真正的硬件更新 VM_EXIT_INSTRUCTION_LEN EPT 配置错误，但其他
+	 * 虚拟机管理程序（即 Hyper-V）不会设置它，因为它是未定义的行为，即我们最
+	 * 终以一些随机值推进 IP。
 	 */
 	if (!static_cpu_has(X86_FEATURE_HYPERVISOR) ||
 	    to_vmx(vcpu)->exit_reason != EXIT_REASON_EPT_MISCONFIG) {
@@ -5733,6 +5737,10 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 	 * EPT_VIOLATION_ACC_WRITE bit is set.  Alternatively, if supported we
 	 * would also use advanced VM-exit information for EPT violations to
 	 * reconstruct the page fault error code.
+	 *
+	 * 检查 GPA 是否不超过物理内存限制，因为这是 Guest 页面错误。我们必须模拟这里的指令，
+	 * 因为如果非法地址是分页结构的地址，则设置 EPT_VIOLATION_ACC_WRITE 位。或者，
+	 * 如果支持，我们还将使用 EPT 违规的高级虚拟机退出信息来重建缺页代码。
 	 */
 	if (unlikely(allow_smaller_maxphyaddr && kvm_vcpu_is_illegal_gpa(vcpu, gpa)))
 		return kvm_emulate_instruction(vcpu, 0);
