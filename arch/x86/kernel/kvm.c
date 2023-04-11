@@ -303,7 +303,7 @@ static void __init paravirt_ops_setup(void)
 }
 
 /**
- * 
+ *
  */
 static void kvm_register_steal_time(void)
 {
@@ -845,7 +845,10 @@ arch_initcall(kvm_alloc_cpumask);
 
 #ifdef CONFIG_PARAVIRT_SPINLOCKS
 
-/* Kick a cpu by its apicid. Used to wake up a halted vcpu */
+/**
+ * Kick a cpu by its apicid. Used to wake up a halted vcpu
+ * 唤醒一个vcpu
+ */
 static void kvm_kick_cpu(int cpu)
 {
 	int apicid;

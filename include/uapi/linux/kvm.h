@@ -414,7 +414,14 @@ struct kvm_hyperv_exit {
 #define KVM_EXIT_UNKNOWN          0
 #define KVM_EXIT_EXCEPTION        1
 #define KVM_EXIT_IO               2
-#define KVM_EXIT_HYPERCALL        3
+/**
+ * 整个过程非常简洁和简单，hypercall机制给了Guest能够主动进入VMM的一种方式。
+ * 个人理解是：一旦Guest使用了这种机制，意味着Guest知道自己位于Guest中，也就
+ * 意味着所谓的半虚拟化。
+ *
+ * [0] https://www.cnblogs.com/dream397/p/14273395.html
+ */
+#define KVM_EXIT_HYPERCALL        3 /* kvm_emulate_hypercall() */
 #define KVM_EXIT_DEBUG            4
 #define KVM_EXIT_HLT              5
 #define KVM_EXIT_MMIO             6
@@ -442,6 +449,14 @@ struct kvm_hyperv_exit {
 #define KVM_EXIT_ARM_NISV         28
 #define KVM_EXIT_X86_RDMSR        29
 #define KVM_EXIT_X86_WRMSR        30
+#define KVM_EXIT_DIRTY_RING_FULL  31
+#define KVM_EXIT_AP_RESET_HOLD    32
+#define KVM_EXIT_X86_BUS_LOCK     33
+#define KVM_EXIT_XEN              34
+#define KVM_EXIT_RISCV_SBI        35
+#define KVM_EXIT_RISCV_CSR        36
+/* commit 2f4073e08f4c("KVM: VMX: Enable Notify VM exit") */
+#define KVM_EXIT_NOTIFY           37
 
 /* For KVM_EXIT_INTERNAL_ERROR */
 /* Emulate instruction failed. */
@@ -452,6 +467,9 @@ struct kvm_hyperv_exit {
 #define KVM_INTERNAL_ERROR_DELIVERY_EV	3
 /* Encounter unexpected vm-exit reason */
 #define KVM_INTERNAL_ERROR_UNEXPECTED_EXIT_REASON	4
+
+/* Flags that describe what fields in emulation_failure hold valid data. */
+#define KVM_INTERNAL_ERROR_EMULATION_FLAG_INSTRUCTION_BYTES (1ULL << 0)
 
 /**
  *  for KVM_RUN, returned by mmap(vcpu_fd, offset=0)

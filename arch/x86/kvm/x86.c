@@ -8188,6 +8188,13 @@ int kvm_emulate_halt(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(kvm_emulate_halt);
 
 #ifdef CONFIG_X86_64
+/**
+ * KVM_HC_CLOCK_PAIRING 同步VMM与VM的时钟。
+ *
+ * a0：主机拷贝的struct kvm_clock_offset结构体在VM中的物理地址
+ * a1: clock_type, ATM 只支持 KVM_CLOCK_PAIRING_WALLCLOCK (0) ，
+ *     (对应于主机host的 CLOCK_REALTIME 时钟)
+ */
 static int kvm_pv_clock_pairing(struct kvm_vcpu *vcpu, gpa_t paddr,
 			        unsigned long clock_type)
 {
@@ -8270,6 +8277,15 @@ static void kvm_sched_yield(struct kvm *kvm, unsigned long dest_id)
 		kvm_vcpu_yield_to(target);
 }
 
+/**
+ * KVM_EXIT_HYPERCALL
+ *
+ * 在Linux中，大家应该对syscall非常的了解和熟悉，其是用户态进入内核态的一种途径或者说是一种
+ * 方式，完成了两个模式之间的切换；
+ *
+ * 而在虚拟环境中，有没有一种类似于syscall这种方式，能够从no root模式切换到root模式呢？
+ * 答案是肯定的，KVM提供了Hypercall机制， x86体系架构也有相关的指令支持。
+ */
 int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
 {
 	unsigned long nr, a0, a1, a2, a3, ret;
@@ -8278,12 +8294,18 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
 	if (kvm_hv_hypercall_enabled(vcpu->kvm))
 		return kvm_hv_hypercall(vcpu);
 
+	/**
+	 * 取出参数
+	 */
 	nr = kvm_rax_read(vcpu);
 	a0 = kvm_rbx_read(vcpu);
 	a1 = kvm_rcx_read(vcpu);
 	a2 = kvm_rdx_read(vcpu);
 	a3 = kvm_rsi_read(vcpu);
 
+	/**
+	 *
+	 */
 	trace_kvm_hypercall(nr, a0, a1, a2, a3);
 
 	op_64_bit = is_64_bit_mode(vcpu);
@@ -8302,10 +8324,21 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
 
 	ret = -KVM_ENOSYS;
 
+	/* 根据调用号进行处理 */
 	switch (nr) {
+	/* 触发VM客户机退出，以便主机host再重新进入时检查挂起的中断。 */
 	case KVM_HC_VAPIC_POLL_IRQ:
 		ret = 0;
 		break;
+	/**
+	 * 将vcpu从HLT状态唤醒。
+	 *
+	 * 使用举例：
+	 * 客户机中某个vcpu正由于等待某个资源（比如spinlock），一旦忙于等待超过时间阈值，
+	 * 则可以执行HLT指令。执行了HLT指令，VMM会将该vcpu睡眠继续等待。然后该VM客户机的
+	 * 另一个vcpu可以通过KVM_HC_KICK_CPU hypercall来唤醒指定APIC ID（a1参数）的
+	 * vcpu，附加参数a0供以后使用。
+	 */
 	case KVM_HC_KICK_CPU:
 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_UNHALT))
 			break;
@@ -8315,16 +8348,31 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
 		ret = 0;
 		break;
 #ifdef CONFIG_X86_64
+	/**
+	 * KVM_HC_CLOCK_PAIRING 同步VMM与VM的时钟。
+	 *
+	 * a0：主机拷贝的struct kvm_clock_offset结构体在VM中的物理地址
+	 * a1: clock_type, ATM 只支持 KVM_CLOCK_PAIRING_WALLCLOCK (0) ，
+	 *     (对应于主机host的 CLOCK_REALTIME 时钟)
+	 */
 	case KVM_HC_CLOCK_PAIRING:
 		ret = kvm_pv_clock_pairing(vcpu, a0, a1);
 		break;
 #endif
+	/**
+	 * 发送核间中断至多个vCPUs。返回成功传送IPI的vCPU数量。
+	 * hypercall允许客户机发送多播IPI，64位下最多128个目的地址，32位下最多64个目的地址。
+	 */
 	case KVM_HC_SEND_IPI:
 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SEND_IPI))
 			break;
 
 		ret = kvm_pv_send_ipi(vcpu->kvm, a0, a1, a2, a3, op_64_bit);
 		break;
+	/**
+	 * 用于yield如果IPI目标vcpu中有被preempted的。
+	 * 当正在发送多播IPI目标时，如果目标中有vCPU被抢占了，则yield让出。
+	 */
 	case KVM_HC_SCHED_YIELD:
 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SCHED_YIELD))
 			break;
@@ -8339,6 +8387,9 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
 out:
 	if (!op_64_bit)
 		ret = (u32)ret;
+	/**
+	 * 将处理结果写入eax寄存器返回
+	 */
 	kvm_rax_write(vcpu, ret);
 
 	++vcpu->stat.hypercalls;

@@ -5512,6 +5512,15 @@ static int handle_interrupt_window(struct kvm_vcpu *vcpu)
 	return 1;
 }
 
+/**
+ * KVM_EXIT_HYPERCALL
+ *
+ * 在Linux中，大家应该对syscall非常的了解和熟悉，其是用户态进入内核态的一种途径或者说是一种
+ * 方式，完成了两个模式之间的切换；
+ *
+ * 而在虚拟环境中，有没有一种类似于syscall这种方式，能够从no root模式切换到root模式呢？
+ * 答案是肯定的，KVM提供了Hypercall机制， x86体系架构也有相关的指令支持。
+ */
 static int handle_vmcall(struct kvm_vcpu *vcpu)
 {
 	return kvm_emulate_hypercall(vcpu);
@@ -6081,7 +6090,11 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_INVLPG]		      = handle_invlpg,
 	[EXIT_REASON_RDPMC]                   = handle_rdpmc,
 	/**
+	 * 在Linux中，大家应该对syscall非常的了解和熟悉，其是用户态进入内核态的一种途径或者
+	 * 说是一种方式，完成了两个模式之间的切换；
 	 *
+	 * 而在虚拟环境中，有没有一种类似于syscall这种方式，能够从no root模式切换到root模
+	 * 式呢？ 答案是肯定的，KVM提供了Hypercall机制， x86体系架构也有相关的指令支持。
 	 */
 	[EXIT_REASON_VMCALL]                  = handle_vmcall,
 	[EXIT_REASON_VMCLEAR]		      = handle_vmx_instruction,

@@ -27,7 +27,11 @@ bool kvm_check_and_clear_guest_paused(void);
  * placed in rax.  No other registers will be clobbered unless explicitly
  * noted by the particular hypercall.
  */
-
+/**
+ * @nr可以认为是系统调用号
+ *
+ * 当Guest OS中调用该函数时，导致VM-EXIT，于是KVM内核模块开始接收到控制权：
+ */
 static inline long kvm_hypercall0(unsigned int nr)
 {
 	long ret;
