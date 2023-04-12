@@ -26,7 +26,7 @@
 #define CONFIG_ARM64_WORKAROUND_REPEAT_TLBI  1 /* y */
 #define CONFIG_ARM64_64K_PAGES  1 /* y */
 #define CONFIG_ARM64_USER_VA_BITS_52  1 /* y */
-#define CONFIG_ARM64_VA_BITS  1 /* 48 */
+#define CONFIG_ARM64_VA_BITS  48 /* 0xffff800000000000 */
 #define CONFIG_ARM64_PA_BITS_52  1 /* y */
 #define CONFIG_ARM64_PA_BITS  1 /* 52 */
 #define CONFIG_ARM64_SSBD  1 /* y */

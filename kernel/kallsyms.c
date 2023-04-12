@@ -106,6 +106,21 @@ tail:
 /*
  * Get symbol type information. This is encoded as a single char at the
  * beginning of the symbol name.
+ *
+ * $ sudo more /proc/kallsyms | awk '{print $2}' | sort | uniq
+ * a
+ * A
+ * b
+ * B
+ * d
+ * D
+ * r
+ * R
+ * t
+ * T
+ * V
+ * w
+ * W
  */
 static char kallsyms_get_symbol_type(unsigned int off)
 {
@@ -582,6 +597,10 @@ static unsigned long get_ksymbol_core(struct kallsym_iter *iter)
 	iter->module_name[0] = '\0';
 	iter->value = kallsyms_sym_address(iter->pos);
 
+	/**
+	 * /proc/kallsyms 中的第二列
+	 * abBdDrRtTVwW
+	 */
 	iter->type = kallsyms_get_symbol_type(off);
 
 	off = kallsyms_expand_symbol(off, iter->name, ARRAY_SIZE(iter->name));
@@ -667,7 +686,10 @@ static void s_stop(struct seq_file *m, void *p)
 {
 }
 
-static int s_show(struct seq_file *m, void *p)  /* /proc/kallsyms */
+/**
+ * /proc/kallsyms
+ */
+static int s_show(struct seq_file *m, void *p)
 {
 	void *value;
 	struct kallsym_iter *iter = m->private;
@@ -678,7 +700,26 @@ static int s_show(struct seq_file *m, void *p)  /* /proc/kallsyms */
 
 	value = iter->show_value ? (void *)iter->value : NULL;
 
-	if (iter->module_name[0]) { /* 属于某个模块 */
+	/**
+	 * 属于某个模块
+	 */
+	if (iter->module_name[0]) {
+		/**
+		 * $ sudo more /proc/kallsyms | awk '{print $2}' | sort | uniq
+		 * a
+		 * A
+		 * b
+		 * B
+		 * d
+		 * D
+		 * r
+		 * R
+		 * t
+		 * T
+		 * V
+		 * w
+		 * W
+		 */
 		char type;
 
 		/*
@@ -687,11 +728,15 @@ static int s_show(struct seq_file *m, void *p)  /* /proc/kallsyms */
 		 */
 		type = iter->exported ? toupper(iter->type) :
 					tolower(iter->type);
-//        0000000000000000 t disable_discard	[dm_mod]
+		/**
+		 * 0000000000000000 t disable_discard	[dm_mod]
+		 */
 		seq_printf(m, "%px %c %s\t[%s]\n", value,
 			   type, iter->name, iter->module_name);
 	} else
-//        0000000000000000 t ep_eventpoll_release
+		/**
+		 * 0000000000000000 t ep_eventpoll_release
+		 */
 		seq_printf(m, "%px %c %s\n", value,
 			   iter->type, iter->name);
 	return 0;
