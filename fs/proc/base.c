@@ -320,6 +320,9 @@ static ssize_t get_mm_cmdline(struct mm_struct *mm, char __user *buf,
 		int got;
 		size_t size = min_t(size_t, PAGE_SIZE, count);
 
+		/**
+		 * __access_remote_vm
+		 */
 		got = access_remote_vm(mm, pos, page, size, FOLL_ANON);
 		if (got <= 0)
 			break;
@@ -354,6 +357,9 @@ static ssize_t get_task_cmdline(struct task_struct *tsk, char __user *buf,
 	return ret;
 }
 
+/**
+ * /proc/[PID]/cmdline
+ */
 static ssize_t proc_pid_cmdline_read(struct file *file, char __user *buf,
 				     size_t count, loff_t *pos)
 {
@@ -480,7 +486,7 @@ static int proc_pid_schedstat(struct seq_file *m, struct pid_namespace *ns,
 	else
 		/**
 		 * 1. 总共运行的时间
-		 * 2. 
+		 * 2.
 		 */
 		seq_printf(m, "%llu %llu %lu\n",
 		   (unsigned long long)task->se.sum_exec_runtime,
