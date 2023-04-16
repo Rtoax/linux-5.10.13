@@ -43,24 +43,24 @@ typedef uint64_t u64;
 
 extern const char raid6_empty_zero_page[PAGE_SIZE];
 
-//#define noinline __attribute__((noinline))
+#define noinline __attribute__((noinline))
 
-//#define preempt_enable()
-//#define preempt_disable()
-//#define cpu_has_feature(x) 1
-//#define enable_kernel_altivec()
-//#define disable_kernel_altivec()
+#define preempt_enable()
+#define preempt_disable()
+#define cpu_has_feature(x) 1
+#define enable_kernel_altivec()
+#define disable_kernel_altivec()
 
-//#undef	EXPORT_SYMBOL
-//#define EXPORT_SYMBOL(sym)
-//#undef	EXPORT_SYMBOL_GPL
-//#define EXPORT_SYMBOL_GPL(sym)
-//#define MODULE_LICENSE(licence)
-//#define MODULE_DESCRIPTION(desc)
-//#define subsys_initcall(x)
-//#define module_exit(x)
+#undef	EXPORT_SYMBOL
+#define EXPORT_SYMBOL(sym)
+#undef	EXPORT_SYMBOL_GPL
+#define EXPORT_SYMBOL_GPL(sym)
+#define MODULE_LICENSE(licence)
+#define MODULE_DESCRIPTION(desc)
+#define subsys_initcall(x)
+#define module_exit(x)
 
-//#define IS_ENABLED(x) (x)
+#define IS_ENABLED(x) (x)
 #define CONFIG_RAID6_PQ_BENCHMARK 1
 #endif /* __KERNEL__ */
 
