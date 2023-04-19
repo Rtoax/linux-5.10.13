@@ -5442,12 +5442,12 @@ static void __sched notrace __schedule(bool preempt)
 	 * can't be reordered with __set_current_state(TASK_INTERRUPTIBLE)
 	 * done by the caller to avoid the race with signal_wake_up():
 	 *
-	 * __set_current_state(@state)		signal_wake_up()
-	 * schedule()				  set_tsk_thread_flag(p, TIF_SIGPENDING)
-	 *					  wake_up_state(p, state)
-	 *   LOCK rq->lock			    LOCK p->pi_state
-	 *   smp_mb__after_spinlock()		    smp_mb__after_spinlock()
-	 *     if (signal_pending_state())	    if (p->state & @state)
+	 * __set_current_state(@state)        signal_wake_up()
+	 * schedule()                           set_tsk_thread_flag(p, TIF_SIGPENDING)
+	 *                                        wake_up_state(p, state)
+	 *   LOCK rq->lock                          LOCK p->pi_state
+	 *   smp_mb__after_spinlock()               smp_mb__after_spinlock()
+	 *     if (signal_pending_state())          if (p->state & @state)
 	 *
 	 * Also, the membarrier system call requires a full memory barrier
 	 * after coming from user-space, before storing to rq->curr.
