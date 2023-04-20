@@ -450,7 +450,8 @@ SYM_DATA(initial_stack, .quad init_thread_union + THREAD_SIZE - SIZEOF_PTREGS)
 	__FINITDATA
 
 	__INIT
-SYM_CODE_START(early_idt_handler_array) //这段代码自动生成为前 `32` 个异常生成了中断处理程序
+// 这段代码自动生成为前 `32` 个异常生成了中断处理程序
+SYM_CODE_START(early_idt_handler_array)
 	i = 0
 	.rept NUM_EXCEPTION_VECTORS
 	.if ((EXCEPTION_ERRCODE_MASK >> i) & 1) == 0

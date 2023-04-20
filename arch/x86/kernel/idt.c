@@ -464,7 +464,10 @@ void __init idt_setup_early_handler(void)
 		set_intr_gate(i, early_idt_handler_array[i]);
 
 #ifdef CONFIG_X86_32
-    /* 忽略32 - 255 */
+    /**
+	 * 忽略32 - 255
+	 * NR_VECTORS = 256
+	 */
 	for ( ; i < NR_VECTORS; i++)
 		set_intr_gate(i, early_ignore_irq);
 #endif

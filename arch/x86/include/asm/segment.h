@@ -248,8 +248,10 @@
 
 #endif
 
-#define IDT_ENTRIES			256/* 总中断数 */
-#define NUM_EXCEPTION_VECTORS		32  /* CPU 架构师规定的 32 个异常，后面由操作系统自定义 */
+/* 总中断数 */
+#define IDT_ENTRIES			256
+/* CPU 架构师规定的 32 个异常，后面由操作系统自定义 */
+#define NUM_EXCEPTION_VECTORS		32
 //----------------------------------------------------------------------------------------------
 //|Vector|Mnemonic|Description         |Type |Error Code|Source                   |
 //----------------------------------------------------------------------------------------------
@@ -380,8 +382,11 @@ static inline void vdso_read_cpunode(unsigned *cpu, unsigned *node)
 
 #ifndef __ASSEMBLY__
 
-//`early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
-extern const char early_idt_handler_array[NUM_EXCEPTION_VECTORS][EARLY_IDT_HANDLER_SIZE];
+/**
+ * `early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
+ */
+extern const char
+early_idt_handler_array[NUM_EXCEPTION_VECTORS/*32*/][EARLY_IDT_HANDLER_SIZE/*9*/];
 extern void early_ignore_irq(void);
 //----------------------------------------------------------------------------------------------
 //|Vector|Mnemonic|Description         |Type |Error Code|Source                   |
