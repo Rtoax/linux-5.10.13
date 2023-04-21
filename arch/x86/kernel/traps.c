@@ -186,8 +186,10 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 	 * 4. VMEnter: 进入 VM，从驱动中返回，判断是否下面的代码需要继续执行；
 	 *
 	 * 比如：添加一个钩子，里面视情况执行驱动代码。
+	 * TRAP_HOOK();
+	 *
+	 * 但是这样，可能需要修改 Guest 的内核，有没有不用修改 Guest 内核的方案？
 	 */
-	TRAP_HOOK();
 
     /**
 	 * 这将会通知进程 信号 SIGXXX (如 SIGILL：#UD 非法指令->段错误)
