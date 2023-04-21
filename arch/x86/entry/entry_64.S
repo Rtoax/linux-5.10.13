@@ -614,7 +614,7 @@ idtentry X86_TRAP_SS asm_exc_stack_segment exc_stack_segment has_error_code=1;
 idtentry X86_TRAP_GP asm_exc_general_protection exc_general_protection has_error_code=1;
 idtentry X86_TRAP_AC asm_exc_alignment_check exc_alignment_check has_error_code=1;
 
-
+/* #UD */
 idtentry X86_TRAP_UD asm_exc_invalid_op exc_invalid_op has_error_code=0;
 idtentry X86_TRAP_BP asm_exc_int3 exc_int3 has_error_code=0;
 idtentry X86_TRAP_PF asm_exc_page_fault exc_page_fault has_error_code=1;

@@ -154,7 +154,12 @@ static void show_signal(struct task_struct *tsk, int signr,
 
 
 /**
- *
+ * 示例：
+ * asm_exc_invalid_op()
+ *  exc_invalid_op()
+ *    handle_invalid_op()
+ *      do_error_trap(..., X86_TRAP_UD, SIGILL, ILL_ILLOPN, ...)
+ *        do_trap()
  */
 static void
 do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
@@ -163,21 +168,36 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 	struct task_struct *tsk = current;
 
     /**
-     *  如果来自用户模式： 返回 -1, 否则 返回 0
-     *
+     * 如果来自用户模式： 返回 -1, 否则 返回 0
      */
 	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))
 		return;
 
 	show_signal(tsk, signr, "trap ", str, regs, error_code);
 
-    /* 这将会通知进程 信号 SIGXXX */
+	/**
+	 * 专利想法：
+	 * 能否在这里加上一个驱动钩子，当加载了这个驱动时，执行相应的函数。这在 KVM 热迁移中
+	 * 可能会有应用场景。在热迁移创建 VM 时，添加一个设备，Guest 根据这个设备加载驱动。
+	 *
+	 * 1. 从高指令集向低指令集热迁移；
+	 * 2. 迁移后，执行到非法指令 SIGILL，因为加载了驱动，所以需要执行驱动代码；
+	 * 3. VMExit: 驱动代码中退出到 VMM，进行指令模拟；（数据存储在 VMCS 里）
+	 * 4. VMEnter: 进入 VM，从驱动中返回，判断是否下面的代码需要继续执行；
+	 *
+	 * 比如：添加一个钩子，里面视情况执行驱动代码。
+	 */
+	TRAP_HOOK();
+
+    /**
+	 * 这将会通知进程 信号 SIGXXX (如 SIGILL：#UD 非法指令->段错误)
+	 */
 	if (!sicode)
 		force_sig(signr);
 	else
 		force_sig_fault(signr, sicode, addr);
 }
-NOKPROBE_SYMBOL(do_trap);
+NOKPROBE_SYMBOL(do_trap); /* 禁止 kprobe */
 
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
@@ -227,7 +247,7 @@ static inline void handle_invalid_op(struct pt_regs *regs)
 #endif
 {
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
-		      ILL_ILLOPN, error_get_trap_addr(regs));
+				ILL_ILLOPN, error_get_trap_addr(regs));
 }
 
 static noinstr bool handle_bug(struct pt_regs *regs)

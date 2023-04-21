@@ -20,7 +20,7 @@ asmlinkage __visible noinstr struct pt_regs *vc_switch_off_ist(struct pt_regs *e
 
 #ifdef CONFIG_X86_F00F_BUG
 /* For handling the FOOF bug */
-//void handle_invalid_op(struct pt_regs *regs);
+void handle_invalid_op(struct pt_regs *regs);
 #endif
 
 static inline int get_si_code(unsigned long condition)

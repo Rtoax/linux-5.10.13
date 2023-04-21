@@ -80,7 +80,7 @@ __irqentry_text_end:
 
 ## 1.3. arch\x86\include\asm\idtentry.h
 
-展开请见源文件，分为 
+展开请见源文件，分为
 
 ```c
 #ifdef __ASSEMBLY__
@@ -130,4 +130,24 @@ sysvec_apic_timer_interrupt
 			inc_irq_stat(apic_timer_irqs)
 			evt->event_handler(evt)
 		trace_local_timer_exit(LOCAL_TIMER_VECTOR)
+```
+
+# 示例分析
+
+## #UD
+
+```
+asm_exc_invalid_op()
+  exc_invalid_op()
+    handle_invalid_op()
+      do_error_trap(..., X86_TRAP_UD, SIGILL, ILL_ILLOPN, ...)
+        do_trap()
+```
+
+```
+handle_invalid_op()
+  kvm_queue_exception(vcpu, UD_VECTOR);
+
+
+  kvm_handle_invalid_op()
 ```
