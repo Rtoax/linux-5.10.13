@@ -564,8 +564,13 @@ static void kvm_multiple_exception(struct kvm_vcpu *vcpu,
 		vcpu->arch.exception.error_code = error_code;
 		vcpu->arch.exception.has_payload = has_payload;
 		vcpu->arch.exception.payload = payload;
+
+		/**
+		 *
+		 */
 		if (!is_guest_mode(vcpu))
 			kvm_deliver_exception_payload(vcpu);
+
 		return;
 	}
 

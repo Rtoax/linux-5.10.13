@@ -5935,6 +5935,9 @@ static int handle_mwait(struct kvm_vcpu *vcpu)
 	return handle_nop(vcpu);
 }
 
+/**
+ * #UD, SIGILL, Illgal Intructions
+ */
 static int handle_invalid_op(struct kvm_vcpu *vcpu)
 {
 	kvm_queue_exception(vcpu, UD_VECTOR);
