@@ -56,7 +56,7 @@
 /* 必须处理的 */
 #define EXIT_REASON_CPUID               10
 #define EXIT_REASON_HLT                 12
-/* 必须处理的 */
+/* 必须处理的 INVD — Invalidate Internal Caches */
 #define EXIT_REASON_INVD                13
 #define EXIT_REASON_INVLPG              14
 #define EXIT_REASON_RDPMC               15

@@ -5526,9 +5526,18 @@ static int handle_vmcall(struct kvm_vcpu *vcpu)
 	return kvm_emulate_hypercall(vcpu);
 }
 
+/**
+ * EXIT_REASON_INVD
+ */
 static int handle_invd(struct kvm_vcpu *vcpu)
 {
-	/* Treat an INVD instruction as a NOP and just skip it. */
+	/**
+	 * Treat an INVD instruction as a NOP and just skip it.
+	 *
+	 * 为什么 skip？
+	 * INVD — Invalidate Internal Caches
+	 * https://www.felixcloutier.com/x86/invd
+	 */
 	return kvm_skip_emulated_instruction(vcpu);
 }
 
