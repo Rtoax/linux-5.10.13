@@ -5673,6 +5673,10 @@ static int handle_task_switch(struct kvm_vcpu *vcpu)
 
 /**
  * 处理 EPT 异常: EPT_VIOLATION 表示的是对应的物理页不存在
+ *
+ * reason = EXIT_REASON_EPT_VIOLATION
+ *
+ * 返回值大于0，就直接切回客户模式。
  */
 static int handle_ept_violation(struct kvm_vcpu *vcpu)
 {
@@ -6078,6 +6082,9 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	 */
 	[EXIT_REASON_CR_ACCESS]               = handle_cr,
 	[EXIT_REASON_DR_ACCESS]               = handle_dr,
+	/**
+	 * 模拟 CPUID
+	 */
 	[EXIT_REASON_CPUID]                   = kvm_emulate_cpuid,
 	/**
 	 *  访问了MSR寄存器

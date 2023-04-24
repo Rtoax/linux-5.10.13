@@ -36,7 +36,15 @@
  *  直接进入 LAPIC 的处理函数
  */
 
+/**
+ * 当发生退出事件时要调用的函数：
+ *
+ * HOST_RIP-->VMMEntryPoint(VM-Exit处理程序) => kvm_vmx_exit_handlers[]
+ */
 
+/**
+ * (EXCEPTION_BITMAP)//异常信息可以拦截int3等异常
+ */
 #define EXIT_REASON_EXCEPTION_NMI       0
 #define EXIT_REASON_EXTERNAL_INTERRUPT  1
 #define EXIT_REASON_TRIPLE_FAULT        2
@@ -45,8 +53,10 @@
 #define EXIT_REASON_INTERRUPT_WINDOW    7
 #define EXIT_REASON_NMI_WINDOW          8
 #define EXIT_REASON_TASK_SWITCH         9
+/* 必须处理的 */
 #define EXIT_REASON_CPUID               10
 #define EXIT_REASON_HLT                 12
+/* 必须处理的 */
 #define EXIT_REASON_INVD                13
 #define EXIT_REASON_INVLPG              14
 #define EXIT_REASON_RDPMC               15
@@ -57,6 +67,8 @@
  *
  * 而在虚拟环境中，有没有一种类似于syscall这种方式，能够从no root模式切换到root模式呢？
  * 答案是肯定的，KVM提供了Hypercall机制， x86体系架构也有相关的指令支持。
+ *
+ * VMCALL： 必须处理，因为可能存在多个VT
  */
 #define EXIT_REASON_VMCALL              18
 #define EXIT_REASON_VMCLEAR             19
@@ -68,10 +80,15 @@
 #define EXIT_REASON_VMWRITE             25
 #define EXIT_REASON_VMOFF               26
 #define EXIT_REASON_VMON                27
+/* 必须处理的只要处理cr3寄存器 */
 #define EXIT_REASON_CR_ACCESS           28
+/* 可以监控硬件断点 */
 #define EXIT_REASON_DR_ACCESS           29
+/* 可以监控键盘鼠标输入输出 */
 #define EXIT_REASON_IO_INSTRUCTION      30
+/* 必须处理的 */
 #define EXIT_REASON_MSR_READ            31
+/* 必须处理的 */
 #define EXIT_REASON_MSR_WRITE           32
 #define EXIT_REASON_INVALID_STATE       33
 #define EXIT_REASON_MSR_LOAD_FAIL       34
@@ -117,6 +134,8 @@
 #define EXIT_REASON_XRSTORS             64
 #define EXIT_REASON_UMWAIT              67
 #define EXIT_REASON_TPAUSE              68
+#define EXIT_REASON_BUS_LOCK            74
+#define EXIT_REASON_NOTIFY              75
 
 #define VMX_EXIT_REASONS \
 	{ EXIT_REASON_EXCEPTION_NMI,         "EXCEPTION_NMI" }, \
@@ -177,7 +196,9 @@
 	{ EXIT_REASON_XSAVES,                "XSAVES" }, \
 	{ EXIT_REASON_XRSTORS,               "XRSTORS" }, \
 	{ EXIT_REASON_UMWAIT,                "UMWAIT" }, \
-	{ EXIT_REASON_TPAUSE,                "TPAUSE" }
+	{ EXIT_REASON_TPAUSE,                "TPAUSE" }, \
+	{ EXIT_REASON_BUS_LOCK,              "BUS_LOCK" }, \
+	{ EXIT_REASON_NOTIFY,                "NOTIFY" }
 
 #define VMX_EXIT_REASON_FLAGS \
 	{ VMX_EXIT_REASONS_FAILED_VMENTRY,	"FAILED_VMENTRY" }
