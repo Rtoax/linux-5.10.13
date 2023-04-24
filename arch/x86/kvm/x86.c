@@ -6950,6 +6950,9 @@ static bool emulator_get_cpuid(struct x86_emulate_ctxt *ctxt,
 			      u32 *eax, u32 *ebx, u32 *ecx, u32 *edx,
 			      bool exact_only)
 {
+	/**
+	 * $ sudo bpftrace -e 'kprobe:kvm_cpuid {printf("%s\n", comm);}'
+	 */
 	return kvm_cpuid(emul_to_vcpu(ctxt), eax, ebx, ecx, edx, exact_only);
 }
 
@@ -7009,6 +7012,7 @@ static int emulator_set_xcr(struct x86_emulate_ctxt *ctxt, u32 index, u64 xcr)
 	return __kvm_set_xcr(emul_to_vcpu(ctxt), index, xcr);
 }
 
+/* 指令模拟操作符 */
 static const struct x86_emulate_ops emulate_ops = {
 	.read_gpr            = emulator_read_gpr,
 	.write_gpr           = emulator_write_gpr,
@@ -7044,6 +7048,9 @@ static const struct x86_emulate_ops emulate_ops = {
 	.wbinvd              = emulator_wbinvd,
 	.fix_hypercall       = emulator_fix_hypercall,
 	.intercept           = emulator_intercept,
+	/**
+	 * 模拟 CPUID
+	 */
 	.get_cpuid           = emulator_get_cpuid,
 	.guest_has_long_mode = emulator_guest_has_long_mode,
 	.guest_has_movbe     = emulator_guest_has_movbe,

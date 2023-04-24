@@ -3826,6 +3826,9 @@ static const struct __x86_intercept {
 	[x86_intercept_rdtsc]		= POST_EX(SVM_EXIT_RDTSC),
 	[x86_intercept_rdmsr]		= POST_EX(SVM_EXIT_MSR),
 	[x86_intercept_rdpmc]		= POST_EX(SVM_EXIT_RDPMC),
+	/**
+	 *
+	 */
 	[x86_intercept_cpuid]		= PRE_EX(SVM_EXIT_CPUID),
 	[x86_intercept_rsm]		= PRE_EX(SVM_EXIT_RSM),
 	[x86_intercept_pause]		= PRE_EX(SVM_EXIT_PAUSE),

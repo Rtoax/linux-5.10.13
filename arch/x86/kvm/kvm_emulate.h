@@ -39,6 +39,9 @@ struct x86_exception {
  * instruction needs to be intercepted or not.
  */
 struct x86_instruction_info {
+	/**
+	 * 捕获
+	 */
 	u8  intercept;          /* which intercept                      */
 	u8  rep_prefix;         /* rep prefix?                          */
 	u8  modrm_mod;		/* mod part of modrm			*/
@@ -250,13 +253,13 @@ typedef u32 __attribute__((vector_size(16))) sse128_t;
  *  +----------+----------+----------+----------+----------+----------+
  *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
  *  +----------+----------+----------+----------+----------+----------+
- *  
+ *
  *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
  *  opcode - 操作码
  *  ModR/M, SIB - 操作数
  *  Displacement - 偏移
  *  Immediate - 立即数
- *  
+ *
  */
 
 /* Type, address-of, and value of an instruction's operand. */
@@ -325,20 +328,20 @@ struct fastop;
 typedef void (*fastop_t)(struct fastop *);
 
 /**
- *  
+ *
  *
  *  x86 指令格式
  *
  *  +----------+----------+----------+----------+----------+----------+
  *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
  *  +----------+----------+----------+----------+----------+----------+
- *  
+ *
  *  InstructionPrefix - 指令前缀，典型的如锁总线 LOCK
  *  opcode - 操作码
  *  ModR/M, SIB - 操作数
  *  Displacement - 偏移
  *  Immediate - 立即数
- *  
+ *
  */
 struct x86_emulate_ctxt {
 	void *vcpu;
@@ -470,13 +473,25 @@ static inline bool is_guest_vendor_hygon(u32 ebx, u32 ecx, u32 edx)
 	       edx == X86EMUL_CPUID_VENDOR_HygonGenuine_edx;
 }
 
+/**
+ * 捕获阶段
+ */
 enum x86_intercept_stage {
 	X86_ICTP_NONE = 0,   /* Allow zero-init to not match anything */
+	/**
+	 * 异常之前
+	 */
 	X86_ICPT_PRE_EXCEPT,
+	/**
+	 * 异常之后
+	 */
 	X86_ICPT_POST_EXCEPT,
 	X86_ICPT_POST_MEMACCESS,
 };
 
+/**
+ * 捕获类型
+ */
 enum x86_intercept {
 	x86_intercept_none,
 	x86_intercept_cr_read,

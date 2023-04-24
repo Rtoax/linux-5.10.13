@@ -4867,6 +4867,9 @@ static const struct opcode twobyte_table[256] = {
 	IIP(ImplicitOps, em_rdtsc, rdtsc, check_rdtsc),
 	II(ImplicitOps | Priv, em_rdmsr, rdmsr),
 	IIP(ImplicitOps, em_rdpmc, rdpmc, check_rdpmc),
+	/**
+	 * EmulateOnUD
+	 */
 	I(ImplicitOps | EmulateOnUD, em_sysenter),
 	I(ImplicitOps | Priv | EmulateOnUD, em_sysexit),
 	N, N,

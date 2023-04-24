@@ -7983,7 +7983,7 @@ static int vmx_check_intercept(struct kvm_vcpu *vcpu,
 	switch (info->intercept) {
 	/*
 	 * RDPID causes #UD if disabled through secondary execution controls.
-	 * Because it is marked as EmulateOnUD, we need to intercept it here.
+	 * Because it is marked as EmulateOnUD, we need to intercept(捕获) it here.
 	 */
 	case x86_intercept_rdtscp:
 		if (!nested_cpu_has2(vmcs12, SECONDARY_EXEC_ENABLE_RDTSCP)) {
