@@ -18,7 +18,7 @@
 #define BP_VECTOR 3
 #define OF_VECTOR 4
 #define BR_VECTOR 5
-#define UD_VECTOR 6
+#define UD_VECTOR 6   /* #UD(Undefined Instruction) */
 #define NM_VECTOR 7
 #define DF_VECTOR 8
 #define TS_VECTOR 10
@@ -113,7 +113,7 @@ struct kvm_ioapic_state {
 #define KVM_RUN_X86_SMM		 (1 << 0)
 
 /**
- *  for KVM_GET_REGS and KVM_SET_REGS 
+ *  for KVM_GET_REGS and KVM_SET_REGS
  *
  *  通用寄存器、标志寄存器
  */
@@ -133,14 +133,14 @@ struct kvm_lapic_state {
 };
 
 /**
- *  
+ *
  */
 struct kvm_segment {
     /**
      *  实模式下
      *  addr = (cs << 4) + offset
      *  为了简化计算
-     *  base = (cs << 4) 
+     *  base = (cs << 4)
      */
 	__u64 base;
 	__u32 limit;
@@ -162,7 +162,7 @@ struct kvm_dtable {
 
 
 /**
- *  for KVM_GET_SREGS and KVM_SET_SREGS 
+ *  for KVM_GET_SREGS and KVM_SET_SREGS
  *
  *  段寄存器、控制寄存器等
  */
@@ -255,7 +255,7 @@ struct kvm_cpuid_entry {
 
 /* for KVM_SET_CPUID */
 /**
- *  
+ *
  *  参见 `kvm_arch_vcpu_ioctl()`, 老版本内核为 `kvm_vcpu_ioctl()`
  *  `kvm_emulate_cpuid()`
  *
@@ -288,7 +288,7 @@ struct kvm_cpuid_entry2 {
 #define KVM_CPUID_FLAG_STATE_READ_NEXT		(1 << 2)
 
 /**
- *  for KVM_SET_CPUID2 
+ *  for KVM_SET_CPUID2
  *
  *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
  *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2

@@ -731,6 +731,7 @@ bool kvm_require_dr(struct kvm_vcpu *vcpu, int dr)
 	if ((dr != 4 && dr != 5) || !kvm_read_cr4_bits(vcpu, X86_CR4_DE))
 		return true;
 
+	/* #UD(Undefined Instruction) */
 	kvm_queue_exception(vcpu, UD_VECTOR);
 	return false;
 }
@@ -6187,9 +6188,17 @@ int kvm_write_guest_virt_system(struct kvm_vcpu *vcpu, gva_t addr, void *val,
 }
 EXPORT_SYMBOL_GPL(kvm_write_guest_virt_system);
 
+/**
+ * #UD(Undefined Instruction)， handle_ud() 由 Host执行（VMM）
+ */
 int handle_ud(struct kvm_vcpu *vcpu)
 {
+	/* __KVM_EMULATE_PREFIX = 0x0f,0x0b,0x6b,0x76,0x6d = ud2 ; .ascii "kvm" */
 	static const char kvm_emulate_prefix[] = { __KVM_EMULATE_PREFIX };
+
+	/**
+	 * 仅仅模拟标记为 EmulateOnUD 的指令
+	 */
 	int emul_type = EMULTYPE_TRAP_UD;
 	char sig[5]; /* ud2; .ascii "kvm" */
 	struct x86_exception e;
@@ -6197,10 +6206,18 @@ int handle_ud(struct kvm_vcpu *vcpu)
 	if (unlikely(!kvm_x86_ops.can_emulate_instruction(vcpu, NULL, 0)))
 		return 1;
 
+	/**
+	 * 读取 Guest 当前指令
+	 * 判断是否为： ’ud2; .ascii "kvm"‘
+	 */
 	if (force_emulation_prefix &&
 	    kvm_read_guest_virt(vcpu, kvm_get_linear_rip(vcpu),
 				sig, sizeof(sig), &e) == 0 &&
 	    memcmp(sig, kvm_emulate_prefix, sizeof(sig)) == 0) {
+
+		/**
+		 * 如果是 ‘ud2; .ascii "kvm"’，则跳过这个 #UD
+		 */
 		kvm_rip_write(vcpu, kvm_rip_read(vcpu) + sizeof(sig));
 		emul_type = EMULTYPE_TRAP_UD_FORCED;
 	}
@@ -7153,6 +7170,7 @@ static int handle_emulation_failure(struct kvm_vcpu *vcpu, int emulation_type)
 		return 0;
 	}
 
+	/* #UD(Undefined Instruction) */
 	kvm_queue_exception(vcpu, UD_VECTOR);
 
 	if (!is_guest_mode(vcpu) && kvm_x86_ops.get_cpl(vcpu) == 0) {
@@ -7452,6 +7470,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	vcpu->arch.write_fault_to_shadow_pgtable = false;
 	kvm_clear_exception_queue(vcpu);
 
+	/**
+	 *
+	 */
 	if (!(emulation_type & EMULTYPE_NO_DECODE)) {
 		init_emulate_ctxt(vcpu);
 
@@ -7470,10 +7491,13 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 		ctxt->exception.vector = -1;
 		ctxt->perm_ok = false;
 
+		/**
+		 * 是否为 #UD(undefined instruction)
+		 */
 		ctxt->ud = emulation_type & EMULTYPE_TRAP_UD;
 
 	    /**
-	     *
+	     * 解析指令
 	     */
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
@@ -7502,6 +7526,7 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 						  write_fault_to_spt,
 						  emulation_type))
 				return 1;
+
 			if (ctxt->have_exception) {
 				/*
 				 * #UD should result in just EMULATION_FAILED, and trap-like

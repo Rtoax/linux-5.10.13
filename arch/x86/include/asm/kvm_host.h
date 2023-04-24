@@ -1519,6 +1519,8 @@ extern u64 kvm_mce_cap_supported;
  *		      Indicates that only select instructions (tagged with
  *		      EmulateOnUD) should be emulated (to minimize the emulator
  *		      attack surface).  See also EMULTYPE_TRAP_UD_FORCED.
+ *            模拟从硬件截获 #UD 时设置。指示仅应模拟选择指令（标记为 EmulateOnUD ）
+ *           （以最大程度地减少模拟器攻击面）。 另请参阅 EMULTYPE_TRAP_UD_FORCED
  *
  * EMULTYPE_SKIP - Set when emulating solely to skip an instruction, i.e. to
  *		   decode the instruction length.  For use *only* by
@@ -1532,8 +1534,11 @@ extern u64 kvm_mce_cap_supported;
  *			     triggered by KVM's magic "force emulation" prefix,
  *			     which is opt in via module param (off by default).
  *			     Bypasses EmulateOnUD restriction despite emulating
- *			     due to an intercepted #UD (see EMULTYPE_TRAP_UD).
+ *			     due to an intercepted(拦截) #UD (see EMULTYPE_TRAP_UD).
  *			     Used to test the full emulator from userspace.
+ *               在模拟由 KVM 的神奇“强制仿真”前缀触发的截获 #UD 时设置，该前缀通过模块参数
+ *               选择加入（默认关闭）。绕过模拟 OnUD 限制，尽管由于拦截 #UD 而进行
+ *               模拟（请参阅 EMULTYPE_TRAP_UD ）。用于从用户空间测试完整的模拟器。
  *
  * EMULTYPE_VMWARE_GP - Set when emulating an intercepted #GP for VMware
  *			backdoor emulation, which is opt in via module param.

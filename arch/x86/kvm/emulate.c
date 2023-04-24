@@ -625,6 +625,9 @@ static int emulate_ss(struct x86_emulate_ctxt *ctxt, int err)
 	return emulate_exception(ctxt, SS_VECTOR, err, true);
 }
 
+/**
+ * #UD(Undefined Instruction)
+ */
 static int emulate_ud(struct x86_emulate_ctxt *ctxt)
 {
 	return emulate_exception(ctxt, UD_VECTOR, 0, false);
@@ -5441,6 +5444,9 @@ done_prefixes:
 
 	ctxt->execute = opcode.u.execute;
 
+	/**
+	 * 如果是未定义的指令，并且没有设置 EmulateOnUD，那么直接失败
+	 */
 	if (unlikely(ctxt->ud) && likely(!(ctxt->d & EmulateOnUD)))
 		return EMULATION_FAILED;
 
@@ -5531,6 +5537,7 @@ done_prefixes:
 done:
 	if (rc == X86EMUL_PROPAGATE_FAULT)
 		ctxt->have_exception = true;
+
 	return (rc != X86EMUL_CONTINUE) ? EMULATION_FAILED : EMULATION_OK;
 }
 

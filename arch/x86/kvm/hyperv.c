@@ -1746,6 +1746,9 @@ int kvm_hv_hypercall(struct kvm_vcpu *vcpu)
 	 * per HYPER-V spec
 	 */
 	if (kvm_x86_ops.get_cpl(vcpu) != 0 || !is_protmode(vcpu)) {
+		/**
+		 * #UD(Undefined Instruction)
+		 */
 		kvm_queue_exception(vcpu, UD_VECTOR);
 		return 1;
 	}

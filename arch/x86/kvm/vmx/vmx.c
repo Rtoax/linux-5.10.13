@@ -824,10 +824,22 @@ static u32 vmx_read_guest_seg_ar(struct vcpu_vmx *vmx, unsigned seg)
 	return *p;
 }
 
+/**
+ * 更新 exception bitmap
+ *
+ * 此代码是在 Host 上运行的。
+ */
 void update_exception_bitmap(struct kvm_vcpu *vcpu)
 {
 	u32 eb;
 
+	/**
+	 * PF_VECTOR: page fault
+	 * UD_VECTOR: undefined instruction
+	 * MC_VECTOR: Machine Check
+	 * DB_VECTOR: Reserved
+	 * AC_VECTOR: Alignment Check
+	 */
 	eb = (1u << PF_VECTOR) | (1u << UD_VECTOR) | (1u << MC_VECTOR) |
 	     (1u << DB_VECTOR) | (1u << AC_VECTOR);
 	/*
@@ -838,12 +850,18 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	 */
 	if (enable_vmware_backdoor)
 		eb |= (1u << GP_VECTOR);
+
 	if ((vcpu->guest_debug &
 	     (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP)) ==
 	    (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP))
 		eb |= 1u << BP_VECTOR;
+
 	if (to_vmx(vcpu)->rmode.vm86_active)
 		eb = ~0;
+	/**
+	 * 如果 VMX 不需要 Page Fault 拦截，那么取消 PF_VECTOR
+	 * intercept: 拦截
+	 */
 	if (!vmx_need_pf_intercept(vcpu))
 		eb &= ~(1u << PF_VECTOR);
 
@@ -851,9 +869,18 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	 * certain exception bitmap, we must trap the same exceptions and pass
 	 * them to L1. When running L2, we will only handle the exceptions
 	 * specified above if L1 did not want them.
+	 *
+	 * 将 嵌套虚拟机 exception bitmap 传给 第一层虚拟机
+	 * 那也就证明，此代码是在 Host 上运行的。
+	 */
+	/**
+	 * 是嵌套虚拟机的 Host OS（第一层 VM）
 	 */
 	if (is_guest_mode(vcpu))
 		eb |= get_vmcs12(vcpu)->exception_bitmap;
+	/**
+	 * 物理机
+	 */
 	else {
 		/*
 		 * If EPT is enabled, #PF is only trapped if MAXPHYADDR is mismatched
@@ -867,6 +894,9 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 		vmcs_write32(PAGE_FAULT_ERROR_CODE_MATCH, mask);
 	}
 
+	/**
+	 * 向 VMCS 写入 exception bitmap
+	 */
 	vmcs_write32(EXCEPTION_BITMAP, eb);
 }
 
@@ -4919,7 +4949,7 @@ static bool rmode_exception(struct kvm_vcpu *vcpu, int vec)
 	case DE_VECTOR:
 	case OF_VECTOR:
 	case BR_VECTOR:
-	case UD_VECTOR:
+	case UD_VECTOR: /* #UD(Undefined Instruction) */
 	case DF_VECTOR:
 	case SS_VECTOR:
 	case GP_VECTOR:
@@ -5002,7 +5032,18 @@ static inline bool guest_inject_ac(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  处理 异常
+ * 处理 异常中断 (EXIT_REASON_EXCEPTION_NMI)
+ *
+ * 当 Guest 内部发生 NMI 异常（#UD），那么 Host 上会运行这个函数进行处理。
+ *
+ * 追踪测试：
+ *
+ * - 在 Guest 上触发 #UD 异常（程序在 test-linux 仓库）
+ *   $ taskset -c 1 ./crash/examples/invalid_opcode_user
+ *
+ * - 在 Host 上追踪（程序在 test-linux 仓库）
+ *   $ ./kvm/interrupt/scripts/handle_exception_nmi.bt
+ *   15294    CPU 1/KVM
  */
 static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 {
@@ -5016,13 +5057,13 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	intr_info = vmx_get_intr_info(vcpu);
 
 	/**
-	 *  及其检测
+	 * 机器检测 #MC
 	 */
 	if (is_machine_check(intr_info) || is_nmi(intr_info))
 		return 1; /* handled by handle_exception_nmi_irqoff() */
 
 	/**
-	 *  不可用的操作符
+	 *  不可用的指令 #UD
 	 */
 	if (is_invalid_opcode(intr_info))
 		return handle_ud(vcpu);
@@ -5953,6 +5994,7 @@ static int handle_mwait(struct kvm_vcpu *vcpu)
  */
 static int handle_invalid_op(struct kvm_vcpu *vcpu)
 {
+	/* #UD(Undefined Instruction) */
 	kvm_queue_exception(vcpu, UD_VECTOR);
 	return 1;
 }
@@ -5968,6 +6010,10 @@ static int handle_monitor(struct kvm_vcpu *vcpu)
 	return handle_nop(vcpu);
 }
 
+/**
+ * INVPCID — Invalidate Process-Context Identifier
+ * 无效进程上下文标识符
+ */
 static int handle_invpcid(struct kvm_vcpu *vcpu)
 {
 	u32 vmx_instruction_info;
@@ -5979,6 +6025,7 @@ static int handle_invpcid(struct kvm_vcpu *vcpu)
 	} operand;
 
 	if (!guest_cpuid_has(vcpu, X86_FEATURE_INVPCID)) {
+		/* 非法指令 */
 		kvm_queue_exception(vcpu, UD_VECTOR);
 		return 1;
 	}
@@ -6566,6 +6613,8 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 
 	exit_reason = array_index_nospec(exit_reason,
 					 kvm_vmx_max_exit_handlers);
+
+	/* 没有定义函数 */
 	if (!kvm_vmx_exit_handlers[exit_reason])
 		goto unexpected_vmexit;
 
@@ -7921,6 +7970,9 @@ static int vmx_check_intercept_io(struct kvm_vcpu *vcpu,
 	return intercept ? X86EMUL_UNHANDLEABLE : X86EMUL_CONTINUE;
 }
 
+/**
+ * intercept(拦截)
+ */
 static int vmx_check_intercept(struct kvm_vcpu *vcpu,
 			       struct x86_instruction_info *info,
 			       enum x86_intercept_stage stage,
@@ -8177,7 +8229,7 @@ static bool vmx_check_apicv_inhibit_reasons(ulong bit)
 }
 
 /**
- *
+ * VMX
  */
 static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.hardware_unsetup = hardware_unsetup,

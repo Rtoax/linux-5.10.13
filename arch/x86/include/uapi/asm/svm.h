@@ -126,7 +126,7 @@
 	{ SVM_EXIT_EXCP_BASE + BP_VECTOR,       "BP excp" }, \
 	{ SVM_EXIT_EXCP_BASE + OF_VECTOR,       "OF excp" }, \
 	{ SVM_EXIT_EXCP_BASE + BR_VECTOR,       "BR excp" }, \
-	{ SVM_EXIT_EXCP_BASE + UD_VECTOR,       "UD excp" }, \
+	{ SVM_EXIT_EXCP_BASE + UD_VECTOR,       "UD excp" }, /* #UD(Undefined Instruction) */ \
 	{ SVM_EXIT_EXCP_BASE + NM_VECTOR,       "NM excp" }, \
 	{ SVM_EXIT_EXCP_BASE + DF_VECTOR,       "DF excp" }, \
 	{ SVM_EXIT_EXCP_BASE + TS_VECTOR,       "TS excp" }, \

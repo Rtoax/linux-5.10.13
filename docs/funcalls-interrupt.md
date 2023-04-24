@@ -151,3 +151,23 @@ handle_invalid_op()
 
   kvm_handle_invalid_op()
 ```
+
+### KVM
+
+```
+vmx_x86_ops.handle_exit = vmx_handle_exit,
+
+kvm_vmx_exit_handlers[] = {
+  [EXIT_REASON_EXCEPTION_NMI] = handle_exception_nmi,
+}
+
+vmx_handle_exit()
+  kvm_vmx_exit_handlers[EXIT_REASON_EXCEPTION_NMI] =
+  handle_exception_nmi()
+    handle_ud() #UD
+      if == ’ud2; .ascii "kvm"‘: skip
+      else kvm_emulate_instruction()
+
+kvm_emulate_instruction()
+  x86_emulate_instruction()
+```

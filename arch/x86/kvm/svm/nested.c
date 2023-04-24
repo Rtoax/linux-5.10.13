@@ -468,6 +468,7 @@ int nested_svm_vmrun(struct vcpu_svm *svm)
 	u64 vmcb12_gpa;
 
 	if (is_smm(&svm->vcpu)) {
+		/* #UD(Undefined Instruction) */
 		kvm_queue_exception(&svm->vcpu, UD_VECTOR);
 		return 1;
 	}
