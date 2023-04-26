@@ -437,6 +437,9 @@ struct x86_emulate_ctxt {
 #define X86EMUL_CPUID_VENDOR_AMDisbetterI_ecx 0x21726574
 #define X86EMUL_CPUID_VENDOR_AMDisbetterI_edx 0x74656273
 
+/**
+ * 海光
+ */
 #define X86EMUL_CPUID_VENDOR_HygonGenuine_ebx 0x6f677948
 #define X86EMUL_CPUID_VENDOR_HygonGenuine_ecx 0x656e6975
 #define X86EMUL_CPUID_VENDOR_HygonGenuine_edx 0x6e65476e

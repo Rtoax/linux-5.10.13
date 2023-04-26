@@ -88,6 +88,10 @@ static int kvm_check_cpuid(struct kvm_cpuid_entry2 *entries, int nent)
 
 		if (vaddr_bits != 48 && vaddr_bits != 57 && vaddr_bits != 0)
 			return -EINVAL;
+		/**
+		 * 物理的可以这样:
+		 * int phys_bits = eax & 0xff;
+		 */
 	}
 
 	return 0;
@@ -1000,7 +1004,7 @@ struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
 					      u32 function, u32 index)
 {
 	/**
-	 *
+	 * 比如  cpuid_entry2_find(entries, nent, 0x80000008, 0);
 	 */
 	return cpuid_entry2_find(vcpu->arch.cpuid_entries, vcpu->arch.cpuid_nent,
 				 function, index);
@@ -1045,6 +1049,9 @@ get_out_of_range_cpuid_entry(struct kvm_vcpu *vcpu, u32 *fn_ptr, u32 index)
 	if (!basic)
 		return NULL;
 
+	/**
+	 * AMD 或者 海光 直接返回，那也就是说，只有 Intel 支持 out_of_range 的喽？！
+	 */
 	if (is_guest_vendor_amd(basic->ebx, basic->ecx, basic->edx) ||
 	    is_guest_vendor_hygon(basic->ebx, basic->ecx, basic->edx))
 		return NULL;
@@ -1130,7 +1137,7 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 		}
 	}
 	/**
-	 *  tracepoint
+	 * tracepoint:kvm:kvm_cpuid
 	 */
 	trace_kvm_cpuid(orig_function, index, *eax, *ebx, *ecx, *edx, exact, used_max_basic);
 	return exact;
