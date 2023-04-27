@@ -1089,12 +1089,18 @@ struct kvm_ppc_resize_hpt {
  */
 #define KVM_GET_VCPU_MMAP_SIZE    _IO(KVMIO,   0x04) /* in bytes */
 /**
- * 获取 struct kvm_cpuid2 {}
+ * 获取 struct kvm_cpuid2 {}， 见 kvm_dev_ioctl_get_cpuid()
+ * KVM_CAP_EXT_CPUID
+ * 和 KVM_GET_EMULATED_CPUID 的区别？
  */
 #define KVM_GET_SUPPORTED_CPUID   _IOWR(KVMIO, 0x05, struct kvm_cpuid2)
 #define KVM_TRACE_ENABLE          __KVM_DEPRECATED_MAIN_W_0x06
 #define KVM_TRACE_PAUSE           __KVM_DEPRECATED_MAIN_0x07
 #define KVM_TRACE_DISABLE         __KVM_DEPRECATED_MAIN_0x08
+/**
+ * 获取 struct kvm_cpuid2 {}， 见 kvm_dev_ioctl_get_cpuid()
+ * 和 KVM_GET_SUPPORTED_CPUID 的区别？
+ */
 #define KVM_GET_EMULATED_CPUID	  _IOWR(KVMIO, 0x09, struct kvm_cpuid2)
 #define KVM_GET_MSR_FEATURE_INDEX_LIST    _IOWR(KVMIO, 0x0a, struct kvm_msr_list)
 

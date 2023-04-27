@@ -524,6 +524,10 @@ struct kvm_cpuid_array {
 	int nent;
 };
 
+/**
+ *
+ * $ sudo bpftrace -e 'kretprobe:do_host_cpuid {printf("%s %ld\n", comm, retval);}'
+ */
 static struct kvm_cpuid_entry2 *do_host_cpuid(struct kvm_cpuid_array *array,
 					      u32 function, u32 index)
 {
@@ -604,6 +608,9 @@ static inline int __do_cpuid_func(struct kvm_cpuid_array *array, u32 function)
 
 	r = -E2BIG;
 
+	/**
+	 *
+	 */
 	entry = do_host_cpuid(array, function, 0);
 	if (!entry)
 		goto out;
@@ -897,6 +904,9 @@ out:
 static int do_cpuid_func(struct kvm_cpuid_array *array, u32 func,
 			 unsigned int type)
 {
+	/**
+	 * 模拟
+	 */
 	if (type == KVM_GET_EMULATED_CPUID)
 		return __do_cpuid_func_emulated(array, func);
 
