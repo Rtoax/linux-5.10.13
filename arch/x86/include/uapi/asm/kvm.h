@@ -255,12 +255,11 @@ struct kvm_cpuid_entry {
 
 /* for KVM_SET_CPUID */
 /**
- *
  *  参见 `kvm_arch_vcpu_ioctl()`, 老版本内核为 `kvm_vcpu_ioctl()`
  *  `kvm_emulate_cpuid()`
  *
  *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
- *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
+ *  为此，KVM 后来实现了 2.0 版本的 cpuid 指令，即 cpuid2
  */
 struct kvm_cpuid {
 	__u32 nent;
@@ -270,7 +269,7 @@ struct kvm_cpuid {
 
 /**
  *  除了硬件支持的 CPU 特性外，KVM 内核模块还提供了一些软件方式模拟的特定
- *  为此，KVM 后来实现了 2.0 版本的cpuid指令，即 cpuid2
+ *  为此，KVM 后来实现了 2.0 版本的 cpuid 指令，即 cpuid2
  */
 struct kvm_cpuid_entry2 {
 	__u32 function;

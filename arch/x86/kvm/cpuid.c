@@ -970,8 +970,9 @@ int kvm_dev_ioctl_get_cpuid(struct kvm_cpuid2 *cpuid,
 	int r, i;
 
 	if (cpuid->nent < 1)
-		return -E2BIG;
-	if (cpuid->nent > KVM_MAX_CPUID_ENTRIES)
+		return -E2BIG; /*-7*/
+
+	if (cpuid->nent > KVM_MAX_CPUID_ENTRIES/*256*/)
 		cpuid->nent = KVM_MAX_CPUID_ENTRIES;
 
 	if (sanity_check_entries(entries, cpuid->nent, type))

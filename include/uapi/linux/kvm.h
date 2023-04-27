@@ -1088,6 +1088,9 @@ struct kvm_ppc_resize_hpt {
  * Get size for mmap(vcpu_fd)
  */
 #define KVM_GET_VCPU_MMAP_SIZE    _IO(KVMIO,   0x04) /* in bytes */
+/**
+ * 获取 struct kvm_cpuid2 {}
+ */
 #define KVM_GET_SUPPORTED_CPUID   _IOWR(KVMIO, 0x05, struct kvm_cpuid2)
 #define KVM_TRACE_ENABLE          __KVM_DEPRECATED_MAIN_W_0x06
 #define KVM_TRACE_PAUSE           __KVM_DEPRECATED_MAIN_0x07
