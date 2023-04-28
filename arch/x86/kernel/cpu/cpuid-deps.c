@@ -18,6 +18,8 @@ struct cpuid_dep {
  * Note this all is not __init / __initdata because it can be
  * called from cpu hotplug. It shouldn't do anything in this case,
  * but it's difficult to tell that to the init reference checker.
+ *
+ * 依赖关系
  */
 static const struct cpuid_dep cpuid_deps[] = {
 	{ X86_FEATURE_FXSR,			X86_FEATURE_FPU	      },

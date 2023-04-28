@@ -222,8 +222,10 @@ static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
-/*
+/**
  * Print values for NR_CPUS and offlined cpus
+ *
+ * /sys/devices/system/cpu/kernel_max
  */
 static ssize_t print_cpus_kernel_max(struct device *dev,
 				     struct device_attribute *attr, char *buf)
@@ -235,6 +237,9 @@ static DEVICE_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
 /* arch-optional setting to enable display of offline cpus >= nr_cpu_ids */
 unsigned int total_cpus;
 
+/**
+ * /sys/devices/system/cpu/offline
+ */
 static ssize_t print_cpus_offline(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
@@ -265,6 +270,9 @@ static ssize_t print_cpus_offline(struct device *dev,
 }
 static DEVICE_ATTR(offline, 0444, print_cpus_offline, NULL);
 
+/**
+ * /sys/devices/system/cpu/isolated
+ */
 static ssize_t print_cpus_isolated(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
@@ -285,6 +293,9 @@ static ssize_t print_cpus_isolated(struct device *dev,
 static DEVICE_ATTR(isolated, 0444, print_cpus_isolated, NULL);
 
 #ifdef CONFIG_NO_HZ_FULL
+/**
+ * /sys/devices/system/cpu/nohz_full
+ */
 static ssize_t print_cpus_nohz_full(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
@@ -313,6 +324,12 @@ static void cpu_device_release(struct device *dev)
 }
 
 #ifdef CONFIG_GENERIC_CPU_AUTOPROBE
+/**
+ * /sys/devices/system/cpu/modalias
+ *
+ * $ cat /sys/devices/system/cpu/modalias
+ * cpu:type:x86,ven0000fam0006mod00A6:feature:,0000,0001,0002,0003,0004,0005,0006,0007,0008,0009,000B,000C,000D,000E,000F,0010,0011,0013,0015,0016,0017,0018,0019,001A,001B,001C,001D,001F,002B,0034,003A,003B,003D,0068,006A,006B,006C,006D,006F,0070,0074,0075,0076,0078,0079,007C,0080,0081,0082,0083,0084,0085,0087,0088,0089,008B,008C,008D,008E,008F,0091,0093,0094,0095,0096,0097,0098,0099,009A,009B,009C,009D,009E,00C0,00C5,00C8,00E1,00E3,00E7,00F0,00F1,00F3,00F5,00F9,00FA,00FB,00FE,00FF,0100,0101,0102,0103,0104,0111,0120,0121,0122,0123,0125,0127,0128,0129,012A,012D,012E,0132,0133,0134,0137,0139,0140,0141,0142,0143,0164,0165,0168,0171,01C0,01C1,01C2,01C4,01C5,01C6,01C7,01C8,01C9,01CA,01CD,0249,024A,025A,025B,025C,025D,025F,0282
+ */
 static ssize_t print_cpu_modalias(struct device *dev,
 				  struct device_attribute *attr,
 				  char *buf)
@@ -465,14 +482,14 @@ static struct attribute *cpu_root_attrs[] = {
 	&cpu_attrs[0].attr.attr,
 	&cpu_attrs[1].attr.attr,
 	&cpu_attrs[2].attr.attr,
-	&dev_attr_kernel_max.attr,
-	&dev_attr_offline.attr,
-	&dev_attr_isolated.attr,
+	&dev_attr_kernel_max.attr, /* /sys/devices/system/cpu/kernel_max */
+	&dev_attr_offline.attr, /* /sys/devices/system/cpu/offline */
+	&dev_attr_isolated.attr, /* /sys/devices/system/cpu/isolated */
 #ifdef CONFIG_NO_HZ_FULL
-	&dev_attr_nohz_full.attr,
+	&dev_attr_nohz_full.attr, /* /sys/devices/system/cpu/nohz_full */
 #endif
 #ifdef CONFIG_GENERIC_CPU_AUTOPROBE
-	&dev_attr_modalias.attr,
+	&dev_attr_modalias.attr, /* /sys/devices/system/cpu/modalias */
 #endif
 	NULL
 };
@@ -590,6 +607,9 @@ static struct attribute *cpu_root_vulnerabilities_attrs[] = {
 };
 
 static const struct attribute_group cpu_root_vulnerabilities_group = {
+	/**
+	 * /sys/devices/system/cpu/vulnerabilities/
+	 */
 	.name  = "vulnerabilities",
 	.attrs = cpu_root_vulnerabilities_attrs,
 };

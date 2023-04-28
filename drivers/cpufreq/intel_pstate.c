@@ -2485,6 +2485,9 @@ static struct cpufreq_driver intel_pstate = {
 	.offline	= intel_pstate_cpu_offline,
 	.online		= intel_pstate_cpu_online,
 	.update_limits	= intel_pstate_update_limits,
+	/**
+	 * /sys/devices/system/cpu/intel_pstate/
+	 */
 	.name		= "intel_pstate",
 };
 
