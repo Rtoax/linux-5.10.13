@@ -34,6 +34,7 @@ dump_array()
 		[ "$VALUE" = '""' ] && continue
 
 		# Name is uppercase, VALUE is all lowercase
+		# 大小写转化
 		VALUE="$(echo "$VALUE" | tr A-Z a-z)"
 
         if [ -n "$POSTFIX" ]; then

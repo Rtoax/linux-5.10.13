@@ -1,3 +1,7 @@
+/**
+ * 这个文件是 Makefile 和 mkcapflags.sh 在编译内核过程生成的，为什么要在编译过程中生成？
+ * 是我不明白的地方。 荣涛 2023-04-28
+ */
 #ifndef _ASM_X86_CPUFEATURES_H
 #include <asm/cpufeatures.h>
 #endif
