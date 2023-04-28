@@ -220,6 +220,7 @@ static void c_stop(struct seq_file *m, void *v)
 {
 }
 
+/* /proc/cpuinfo */
 const struct seq_operations cpuinfo_op = {
 	.start	= c_start,
 	.next	= c_next,

@@ -33,7 +33,7 @@ enum cpuid_leafs
 };
 
 #ifdef CONFIG_X86_FEATURE_NAMES
-extern const char * const x86_cap_flags[NCAPINTS*32];
+extern const char * const x86_cap_flags[NCAPINTS*32]; /* /proc/cpuinfo: flags */
 extern const char * const x86_power_flags[32];
 #define X86_CAP_FMT "%s"
 #define x86_cap_flag(flag) x86_cap_flags[flag]

@@ -27,7 +27,7 @@ int main(void)
 
 	for (i = 0; i < NCAPINTS; i++) {
 		for (j = 0; j < 32; j++) {
-			str = x86_cap_flags[i*32+j];
+			str = x86_cap_flags[i*32+j]; /* /proc/cpuinfo: flags */
 
 			if (i == NCAPINTS-1 && j == 31) {
 				/* The last entry must be unconditional; this

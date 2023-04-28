@@ -39,7 +39,7 @@ static const struct cpuid_dep cpuid_deps[] = {
 	{ X86_FEATURE_XMM2,			X86_FEATURE_XMM       },
 	{ X86_FEATURE_XMM3,			X86_FEATURE_XMM2      },
 	{ X86_FEATURE_XMM4_1,			X86_FEATURE_XMM2      },
-	{ X86_FEATURE_XMM4_2,			X86_FEATURE_XMM2      },
+	{ X86_FEATURE_XMM4_2,			X86_FEATURE_XMM2      }, /* sse4_2: sse2 */
 	{ X86_FEATURE_XMM3,			X86_FEATURE_XMM2      },
 	{ X86_FEATURE_PCLMULQDQ,		X86_FEATURE_XMM2      },
 	{ X86_FEATURE_SSSE3,			X86_FEATURE_XMM2,     },

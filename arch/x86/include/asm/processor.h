@@ -77,8 +77,11 @@ extern u16 __read_mostly tlb_lld_1g[NR_INFO];
  *  Members of this structure are referenced in head_32.S, so think twice
  *  before touching them. [mj]
  */
-    /* /proc/cpuinfo */
-struct cpuinfo_x86 {/* x86 架构 CPU 信息 */
+/**
+ * x86 架构 CPU 信息 (/proc/cpuinfo)
+ *
+ */
+struct cpuinfo_x86 {
 	__u8			x86;		/* CPU family */
 	__u8			x86_vendor;	/* CPU vendor */
 	__u8			x86_model;
@@ -185,6 +188,7 @@ DECLARE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
 //#define cpu_data(cpu)		boot_cpu_data
 #endif
 
+/* /proc/cpuinfo */
 extern const struct seq_operations cpuinfo_op;
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
