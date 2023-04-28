@@ -9039,7 +9039,7 @@ EXPORT_SYMBOL_GPL(__kvm_request_immediate_exit);
  * exiting to the userspace.  Otherwise, the value will be returned to the
  * userspace.
  *
- *
+ * 这个函数里发生了 VM-Enter 和 VM-Exit
  */
 static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 {
@@ -9162,7 +9162,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 			kvm_check_async_pf_completion(vcpu);
 		if (kvm_check_request(KVM_REQ_MSR_FILTER_CHANGED, vcpu))
 			kvm_x86_ops.msr_filter_changed(vcpu);
-	}
+	} /* kvm_request_pending() */
 
 	if (kvm_check_request(KVM_REQ_EVENT, vcpu) || req_int_win) {
 		++vcpu->stat.req_event;
@@ -9183,17 +9183,19 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	}
 
 	/**
-	 *
+	 * 重新加载 MMU
 	 */
 	r = kvm_mmu_reload(vcpu);
 	if (unlikely(r)) {
 		goto cancel_injection;
 	}
 
+	/* 禁止抢占 */
 	preempt_disable();
 
 	/**
-	 *
+	 * 准备转换到 Guest OS
+	 * VMX: vmx_prepare_switch_to_guest()
 	 */
 	kvm_x86_ops.prepare_guest_switch(vcpu);
 
@@ -9203,6 +9205,10 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	 * result in virtual interrupt delivery.
 	 */
 	local_irq_disable();
+
+	/**
+	 * 运行在 Guest 模式了
+	 */
 	vcpu->mode = IN_GUEST_MODE;
 
 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
@@ -9263,7 +9269,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	}
 
 	/**
-	 *  运行
+	 * 运行 vCPU，这个函数退出，说明有 Exit 事件发生了
+	 *
 	 *  VMX: vmx_vcpu_run()
 	 */
 	exit_fastpath = kvm_x86_ops.run(vcpu);
@@ -9299,7 +9306,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	smp_wmb();
 
 	/**
-	 *
+	 * VMX: vmx_handle_exit_irqoff()
 	 */
 	kvm_x86_ops.handle_exit_irqoff(vcpu);
 
@@ -9344,7 +9351,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		kvm_lapic_sync_from_vapic(vcpu);
 
 	/**
-	 *
+	 * Handle VM-Exit
 	 */
 	r = kvm_x86_ops.handle_exit(vcpu, exit_fastpath);
 	return r;

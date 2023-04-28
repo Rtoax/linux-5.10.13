@@ -38,6 +38,13 @@ SHADOW_FIELD_RW(HOST_FS_SELECTOR, host_fs_selector)
 SHADOW_FIELD_RW(HOST_GS_SELECTOR, host_gs_selector)
 
 /* 32-bits */
+/**
+ * 退出原因，只读，也就是说，这是硬件保存的，软件不用关注。
+ *
+ * vmx->exit_reason
+ * EXIT_REASON_EXCEPTION_NMI (arch/x86/include/uapi/asm/vmx.h)
+ * 见 test-linux/kvm/exit_reason.bt
+ */
 SHADOW_FIELD_RO(VM_EXIT_REASON, vm_exit_reason)
 SHADOW_FIELD_RO(VM_EXIT_INTR_INFO, vm_exit_intr_info)
 SHADOW_FIELD_RO(VM_EXIT_INSTRUCTION_LEN, vm_exit_instruction_len)

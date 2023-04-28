@@ -7209,6 +7209,7 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 
 	/**
 	 * Run a vCPU via a transition to VMX guest mode
+	 * 传入了寄存器信息，这类似进程切换，可参考 sched_switch()
 	 */
 	vmx->fail = __vmx_vcpu_run(vmx, (unsigned long *)&vcpu->arch.regs,
 				   vmx->loaded_vmcs->launched);
@@ -7404,7 +7405,11 @@ reenter_guest:
 		return EXIT_FASTPATH_NONE;
 	}
 
-	/* 读取 VM 退出到 VMM 的原因 */
+	/**
+	 * 读取 VM 退出到 VMM 的原因
+	 * 见 arch/x86/kvm/vmx/vmcs_shadow_fields.h 中
+	 * SHADOW_FIELD_RO(VM_EXIT_REASON, vm_exit_reason)
+	 */
 	vmx->exit_reason = vmcs_read32(VM_EXIT_REASON);
 	if (unlikely((u16)vmx->exit_reason == EXIT_REASON_MCE_DURING_VMENTRY))
 		kvm_machine_check();
