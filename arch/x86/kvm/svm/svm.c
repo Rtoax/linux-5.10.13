@@ -4187,7 +4187,7 @@ static int svm_vm_init(struct kvm *kvm)
 }
 
 /**
- *
+ * SVM: AMD 的 KVM 虚拟化方案
  */
 static struct kvm_x86_ops __initdata svm_x86_ops  = {
 	.hardware_unsetup = svm_hardware_teardown,

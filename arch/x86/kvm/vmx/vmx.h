@@ -268,6 +268,7 @@ struct vcpu_vmx {
 	/**
 	 * VM_EXIT_REASON
 	 * VM Exit 信息区数据，记录 VM 退出到 VMM 的原因
+	 * 如 EXIT_REASON_CPUID
 	 */
 	u32 exit_reason;
 

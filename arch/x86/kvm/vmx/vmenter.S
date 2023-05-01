@@ -46,15 +46,17 @@
  * 注意：
  * 如果 VMRESUME/VMLAUNCH 执行错误会直接返回，
  * 如果成功，伴随 VM-Enter + VM-Exit 会直接跳转到 vmx_vmexit
+ *
+ * https://www.felixcloutier.com/x86/vmlaunch:vmresume
  */
 SYM_FUNC_START(vmx_vmenter)
 	/* EFLAGS.ZF is set if VMCS.LAUNCHED == 0 */
 	je 2f
 
-1:	vmresume
+1:	vmresume /* Resume virtual machine managed by current VMCS. */
 	ret
 
-2:	vmlaunch
+2:	vmlaunch /* Launch virtual machine managed by current VMCS. */
 	ret
 
 3:	cmpb $0, kvm_rebooting
@@ -66,6 +68,10 @@ SYM_FUNC_START(vmx_vmenter)
 	_ASM_EXTABLE(2b, 3b)
 
 SYM_FUNC_END(vmx_vmenter)
+
+/**
+ * 如果 vmx_vmenter 成功，伴随 VM-Enter + VM-Exit 会直接跳转到 vmx_vmexit
+ */
 
 /**
  * vmx_vmexit - Handle a VMX VM-Exit
@@ -176,7 +182,10 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	/* Reload @regs to RAX. */
 	mov WORD_SIZE(%_ASM_SP), %_ASM_AX
 
-	/* Save all guest registers, including RAX from the stack */
+	/**
+	 * Save all guest registers, including RAX from the stack
+	 * 保存 Guest 寄存器
+	 */
 	pop           VCPU_RAX(%_ASM_AX)
 	mov %_ASM_CX, VCPU_RCX(%_ASM_AX)
 	mov %_ASM_DX, VCPU_RDX(%_ASM_AX)

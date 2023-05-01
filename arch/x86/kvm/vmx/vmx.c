@@ -1253,6 +1253,9 @@ void vmx_set_host_fs_gs(struct vmcs_host_state *host, u16 fs_sel, u16 gs_sel,
 	}
 }
 
+/**
+ * 在 vcpu_enter_guest() 中调用
+ */
 void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -1316,7 +1319,9 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
 	}
 
 	/**
-	 *  write msr
+	 * write msr
+	 * MSR（Model Specific Register）是x86架构中的概念，指的是在x86架构处理器中，
+	 * 一系列用于控制CPU运行、功能开关、调试、跟踪程序执行、监测CPU性能等方面的寄存器。
 	 */
 	wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
 #else
@@ -5942,6 +5947,9 @@ static void shrink_ple_window(struct kvm_vcpu *vcpu)
 	}
 }
 
+/**
+ *
+ */
 static void vmx_enable_tdp(void)
 {
 	kvm_mmu_set_mask_ptes(VMX_EPT_READABLE_MASK,
@@ -6619,7 +6627,7 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		goto unexpected_vmexit;
 
 	/**
-	 *  处理
+	 * 如 kvm_vmx_exit_handlers[EXIT_REASON_CPUID] = kvm_emulate_cpuid()
 	 */
 	return kvm_vmx_exit_handlers[exit_reason](vcpu);
 
@@ -7159,6 +7167,8 @@ static fastpath_t vmx_exit_handlers_fastpath(struct kvm_vcpu *vcpu)
  *  arch/x86/kvm/vmx/vmenter.S - 汇编函数
  *
  * Run a vCPU via a transition to VMX guest mode
+ *
+ * return 0 on VM-Exit, 1 on VM-Fail
  */
 bool __vmx_vcpu_run(struct vcpu_vmx *vmx, unsigned long *regs, bool launched);
 
@@ -7210,6 +7220,8 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 	/**
 	 * Run a vCPU via a transition to VMX guest mode
 	 * 传入了寄存器信息，这类似进程切换，可参考 sched_switch()
+	 *
+	 * 0 on VM-Exit, 1 on VM-Fail
 	 */
 	vmx->fail = __vmx_vcpu_run(vmx, (unsigned long *)&vcpu->arch.regs,
 				   vmx->loaded_vmcs->launched);
@@ -7279,7 +7291,7 @@ reenter_guest:
 	WARN_ON_ONCE(vmx->nested.need_vmcs12_to_shadow_sync);
 
 	/**
-	 *
+	 * 设置 RSP 和 RIP
 	 */
 	if (kvm_register_is_dirty(vcpu, VCPU_REGS_RSP))
 		vmcs_writel(GUEST_RSP, vcpu->arch.regs[VCPU_REGS_RSP]);
@@ -7296,7 +7308,7 @@ reenter_guest:
 	}
 
 	/**
-	 *  读影子页表
+	 * CR4 - 包含了一组flags，这些flags使能很多架构相关扩展
 	 */
 	cr4 = cr4_read_shadow();
 	if (unlikely(cr4 != vmx->loaded_vmcs->host_state.cr4)) {
@@ -7337,7 +7349,11 @@ reenter_guest:
 	 */
 	x86_spec_ctrl_set_guest(vmx->spec_ctrl, 0);
 
-	/* The actual VMENTER/EXIT is in the .noinstr.text section. */
+	/**
+	 * The actual VMENTER/EXIT is in the .noinstr.text section.
+	 *
+	 * 在这里进行 vmenter/vmexit
+	 */
 	vmx_vcpu_enter_exit(vcpu, vmx);
 
 	/*
@@ -7406,7 +7422,7 @@ reenter_guest:
 	}
 
 	/**
-	 * 读取 VM 退出到 VMM 的原因
+	 * 从 VMCS 读取 VM 退出到 VMM 的原因
 	 * 见 arch/x86/kvm/vmx/vmcs_shadow_fields.h 中
 	 * SHADOW_FIELD_RO(VM_EXIT_REASON, vm_exit_reason)
 	 */
@@ -7417,6 +7433,8 @@ reenter_guest:
 	/**
 	 *  KVM 退出
 	 *  sudo bpftrace -e 'tracepoint:kvm:kvm_exit{printf("comm = %s\n", comm);}'
+	 *
+	 * trace_kvm_entry() 在 vcpu_enter_guest() 中
 	 */
 	trace_kvm_exit(vmx->exit_reason, vcpu, KVM_ISA_VMX);
 
@@ -8234,7 +8252,7 @@ static bool vmx_check_apicv_inhibit_reasons(ulong bit)
 }
 
 /**
- * VMX
+ * VMX - Intel 的 KVM 虚拟化方案
  */
 static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.hardware_unsetup = hardware_unsetup,
@@ -8254,6 +8272,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.vcpu_free = vmx_free_vcpu,
 	.vcpu_reset = vmx_vcpu_reset,
 
+	/**
+	 * 在vcpu_enter_guest() 中调用
+	 */
 	.prepare_guest_switch = vmx_prepare_switch_to_guest,
 	.vcpu_load = vmx_vcpu_load,
 	.vcpu_put = vmx_vcpu_put,

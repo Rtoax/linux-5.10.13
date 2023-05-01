@@ -67,7 +67,7 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 				u64 fault_address, char *insn, int insn_len);
 
 /**
- *
+ * VM-Enter 时，需要重新加载 vCPU 的 MMU
  */
 static inline int kvm_mmu_reload(struct kvm_vcpu *vcpu)
 {

@@ -3396,7 +3396,8 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 	unsigned i;
 
 	/**
-	 *
+	 * EPT 页表
+	 * 见 tdp_page_fault(): EPT的缺页处理函数，负责完成 GPA->HPA 转化
 	 */
 	if (vcpu->kvm->arch.tdp_mmu_enabled) {
 		root = kvm_tdp_mmu_get_vcpu_root_hpa(vcpu);
@@ -3412,7 +3413,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
 		 */
 		vcpu->arch.mmu->root_hpa = root;
 	/**
-	 *
+	 * 影子页表
 	 */
 	} else if (shadow_root_level >= PT64_ROOT_4LEVEL) {
 		root = mmu_alloc_root(vcpu, 0, 0, shadow_root_level, true);
@@ -3549,6 +3550,9 @@ static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
 	 */
 	if (vcpu->arch.mmu->direct_map)
 		return mmu_alloc_direct_roots(vcpu);
+	/**
+	 *
+	 */
 	else
 		return mmu_alloc_shadow_roots(vcpu);
 }
@@ -4016,6 +4020,8 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
 EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 
 /**
+ * EPT的缺页处理函数，负责完成 GPA->HPA 转化
+ *
  * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
  * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
@@ -5523,7 +5529,7 @@ void kvm_mmu_reset_context(struct kvm_vcpu *vcpu)
 EXPORT_SYMBOL_GPL(kvm_mmu_reset_context);
 
 /**
- *
+ * VM-Enter 时，需要重新加载 vCPU 的 MMU
  */
 int kvm_mmu_load(struct kvm_vcpu *vcpu)
 {
@@ -5537,7 +5543,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
 		goto out;
 
 	/**
-	 *  准备影子页表的地址
+	 * 准备EPT或影子页表的地址
 	 */
 	r = mmu_alloc_roots(vcpu);
 
@@ -5549,7 +5555,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
 		goto out;
 
 	/**
-	 *
+	 * 加载 PGD
 	 */
 	kvm_mmu_load_pgd(vcpu);
 

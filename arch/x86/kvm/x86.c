@@ -9051,6 +9051,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	bool req_immediate_exit = false;
 
+	/**
+	 * 检测是否有挂起的 请求
+	 */
 	if (kvm_request_pending(vcpu)) {
 		if (kvm_check_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu)) {
 			if (unlikely(!kvm_x86_ops.nested_ops->get_nested_state_pages(vcpu))) {
@@ -9164,6 +9167,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 			kvm_x86_ops.msr_filter_changed(vcpu);
 	} /* kvm_request_pending() */
 
+	/**
+	 *
+	 */
 	if (kvm_check_request(KVM_REQ_EVENT, vcpu) || req_int_win) {
 		++vcpu->stat.req_event;
 		kvm_apic_accept_events(vcpu);
@@ -9196,6 +9202,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	/**
 	 * 准备转换到 Guest OS
 	 * VMX: vmx_prepare_switch_to_guest()
+	 * SVM: svm_prepare_guest_switch()
 	 */
 	kvm_x86_ops.prepare_guest_switch(vcpu);
 
@@ -9230,8 +9237,14 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	/*
 	 * This handles the case where a posted interrupt was
 	 * notified with kvm_vcpu_kick.
+	 *
+	 * 如果使能了 lapic
 	 */
 	if (kvm_lapic_enabled(vcpu) && vcpu->arch.apicv_active)
+		/**
+		 * VMX: vmx_sync_pir_to_irr()
+		 * SVM: kvm_lapic_find_highest_irr()
+		 */
 		kvm_x86_ops.sync_pir_to_irr(vcpu);
 
 	if (kvm_vcpu_exit_request(vcpu)) {
@@ -9251,6 +9264,10 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	/**
 	 * sudo bpftrace -e 'tracepoint:kvm:kvm_entry{printf("comm = %s\n", comm);}'
+	 *
+	 * 退出点在
+	 * VMX: vmx_vcpu_run()
+	 * SVM: handle_exit()
 	 */
 	trace_kvm_entry(vcpu);
 
@@ -9352,6 +9369,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 
 	/**
 	 * Handle VM-Exit
+	 * 比如说 CPUID
+	 *
+	 * VMX: vmx_handle_exit()
 	 */
 	r = kvm_x86_ops.handle_exit(vcpu, exit_fastpath);
 	return r;
