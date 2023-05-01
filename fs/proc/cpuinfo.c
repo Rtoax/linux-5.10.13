@@ -16,7 +16,11 @@ static int cpuinfo_open(struct inode *inode, struct file *file)
 	return seq_open(file, &cpuinfo_op);
 }
 
-/* /proc/cpuinfo */
+/**
+ * /proc/cpuinfo
+ *
+ * 访问 /proc/cpuinfo 时，会执行 CPUID 指令(见 test-linux/kvm/exit_reason.bt)
+ */
 static const struct proc_ops cpuinfo_proc_ops = {
 	.proc_flags	= PROC_ENTRY_PERMANENT,
 	.proc_open	= cpuinfo_open,

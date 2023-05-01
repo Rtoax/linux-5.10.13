@@ -61,6 +61,8 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
 /**
  * /proc/cpuinfo
  *
+ * 访问 /proc/cpuinfo 时，会执行 CPUID 指令(见 test-linux/kvm/exit_reason.bt)
+ *
  * $ sudo bpftrace -e 'kprobe:show_cpuinfo {printf("%s\n", comm);}'
  */
 static int show_cpuinfo(struct seq_file *m, void *v)
@@ -208,7 +210,11 @@ static void c_stop(struct seq_file *m, void *v)
 {
 }
 
-/* /proc/cpuinfo */
+/**
+ * /proc/cpuinfo
+ *
+ * 访问 /proc/cpuinfo 时，会执行 CPUID 指令(见 test-linux/kvm/exit_reason.bt)
+ */
 const struct seq_operations cpuinfo_op = {
 	.start	= c_start,
 	.next	= c_next,
