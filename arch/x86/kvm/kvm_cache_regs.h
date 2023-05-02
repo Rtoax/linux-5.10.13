@@ -169,6 +169,9 @@ static inline void leave_guest_mode(struct kvm_vcpu *vcpu)
 	}
 }
 
+/**
+ * 在 Guest 中
+ */
 static inline bool is_guest_mode(struct kvm_vcpu *vcpu)
 {
 	return vcpu->arch.hflags & HF_GUEST_MASK;

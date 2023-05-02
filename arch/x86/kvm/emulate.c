@@ -5214,6 +5214,8 @@ done:
  *  Displacement - 偏移
  *  Immediate - 立即数
  *
+ * 跟踪：
+ * $ sudo ./test-linux/kvm/emulate/emulate_insn.bt
  */
 int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 {
@@ -5448,7 +5450,7 @@ done_prefixes:
 	ctxt->execute = opcode.u.execute;
 
 	/**
-	 * 如果是未定义的指令，并且没有设置 EmulateOnUD，那么直接失败
+	 * 如果是未定义的指令，并且没有设置 EmulateOnUD ，那么直接失败
 	 */
 	if (unlikely(ctxt->ud) && likely(!(ctxt->d & EmulateOnUD)))
 		return EMULATION_FAILED;

@@ -5062,13 +5062,16 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	intr_info = vmx_get_intr_info(vcpu);
 
 	/**
-	 * 机器检测 #MC
+	 * 机器检测 #MC 或者为 NMI
 	 */
 	if (is_machine_check(intr_info) || is_nmi(intr_info))
 		return 1; /* handled by handle_exception_nmi_irqoff() */
 
 	/**
-	 *  不可用的指令 #UD
+	 * 不可用的指令 #UD,在 Guest 中执行一条非法指令，将调用 handle_ud()
+	 *
+	 * PS: 这里可不可以通过模拟热迁移后 CPU 不支持的指令，达成从低指令集到高指令集
+	 *     虚拟机热迁移的工作呢？
 	 */
 	if (is_invalid_opcode(intr_info))
 		return handle_ud(vcpu);
@@ -6478,8 +6481,9 @@ void dump_vmcs(void)
 /*
  * The guest has exited.  See if we can fix it or if we need userspace
  * assistance.
+ * 看看我们是否需要在用户空间的帮助，也就是额外的操作。
  *
- *  VM Exit 处理
+ * VMX VM Exit 处理
  */
 static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 {
@@ -6570,6 +6574,9 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		vcpu->run->internal.data[0] = vectoring_info;
 		vcpu->run->internal.data[1] = exit_reason;
 		vcpu->run->internal.data[2] = vcpu->arch.exit_qualification;
+		/**
+		 * EPT_MISCONFIG 表示EPT页表中有非法的域
+		 */
 		if (exit_reason == EXIT_REASON_EPT_MISCONFIG) {
 			vcpu->run->internal.ndata++;
 			vcpu->run->internal.data[3] =
@@ -6599,12 +6606,22 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		}
 	}
 
+	/**
+	 * ???
+	 */
 	if (exit_fastpath != EXIT_FASTPATH_NONE)
 		return 1;
 
+	/**
+	 * 退出原因处理
+	 */
 	if (exit_reason >= kvm_vmx_max_exit_handlers)
 		goto unexpected_vmexit;
 #ifdef CONFIG_RETPOLINE
+	/**
+	 * MSR（Model Specific Register）是x86架构中的概念，指的是在x86架构处理器中，
+	 * 一系列用于控制CPU运行、功能开关、调试、跟踪程序执行、监测CPU性能等方面的寄存器
+	 */
 	if (exit_reason == EXIT_REASON_MSR_WRITE)
 		return kvm_emulate_wrmsr(vcpu);
 	else if (exit_reason == EXIT_REASON_PREEMPTION_TIMER)
@@ -6613,8 +6630,10 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		return handle_interrupt_window(vcpu);
 	else if (exit_reason == EXIT_REASON_EXTERNAL_INTERRUPT)
 		return handle_external_interrupt(vcpu);
+	/* hlt 指令 */
 	else if (exit_reason == EXIT_REASON_HLT)
 		return kvm_emulate_halt(vcpu);
+	/* EPT_MISCONFIG 表示EPT页表中有非法的域 */
 	else if (exit_reason == EXIT_REASON_EPT_MISCONFIG)
 		return handle_ept_misconfig(vcpu);
 #endif
@@ -6927,6 +6946,9 @@ static void handle_interrupt_nmi_irqoff(struct kvm_vcpu *vcpu, u32 intr_info)
 	kvm_after_interrupt(vcpu);
 }
 
+/**
+ *
+ */
 static void handle_exception_nmi_irqoff(struct vcpu_vmx *vmx)
 {
 	u32 intr_info = vmx_get_intr_info(&vmx->vcpu);

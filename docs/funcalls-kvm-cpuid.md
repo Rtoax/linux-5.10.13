@@ -6,6 +6,9 @@ EXIT_REASON_CPUID
 2. 硬件检测到这个指令，并将 EXIT_REASON_CPUID 保存到 VMCS 的 VM_EXIT_REASON 区域；
 3. 然后退出进行处理；
 
+
+# EXIT_REASON_CPUID
+
 ```
 ioctl(vcpufd, KVM_RUN, ...)
   kvm_arch_vcpu_ioctl_run()

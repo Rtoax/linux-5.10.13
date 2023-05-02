@@ -6193,6 +6193,16 @@ EXPORT_SYMBOL_GPL(kvm_write_guest_virt_system);
 
 /**
  * #UD(Undefined Instruction)， handle_ud() 由 Host执行（VMM）
+ * 在 Guest 中执行一条非法指令，将调用 handle_ud(),
+ *
+ * 追踪测试：
+ *
+ * - 在 Guest 上触发 #UD 异常（程序在 test-linux 仓库）
+ *   $ taskset -c 1 ./crash/examples/invalid_opcode_user
+ *
+ * - 在 Host 上追踪（程序在 test-linux 仓库）
+ *   $ ./kvm/interrupt/scripts/handle_exception_nmi.bt
+ *   15294    CPU 1/KVM
  */
 int handle_ud(struct kvm_vcpu *vcpu)
 {
@@ -6206,6 +6216,10 @@ int handle_ud(struct kvm_vcpu *vcpu)
 	char sig[5]; /* ud2; .ascii "kvm" */
 	struct x86_exception e;
 
+	/**
+	 * VMX: vmx_can_emulate_instruction() 直接返回 true
+	 * SVM: svm_can_emulate_instruction()
+	 */
 	if (unlikely(!kvm_x86_ops.can_emulate_instruction(vcpu, NULL, 0)))
 		return 1;
 
@@ -6225,6 +6239,9 @@ int handle_ud(struct kvm_vcpu *vcpu)
 		emul_type = EMULTYPE_TRAP_UD_FORCED;
 	}
 
+	/**
+	 * 进行指令模拟
+	 */
 	return kvm_emulate_instruction(vcpu, emul_type);
 }
 EXPORT_SYMBOL_GPL(handle_ud);
@@ -7457,7 +7474,7 @@ static bool is_vmware_backdoor_opcode(struct x86_emulate_ctxt *ctxt)
 }
 
 /**
- *
+ * 模拟指令，如 #UD
  */
 int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 			    int emulation_type, void *insn, int insn_len)
@@ -7508,6 +7525,9 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 
 	    /**
 	     * 解析指令
+		 * 举例：
+		 *
+		 * #UD 在这里会失败
 	     */
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
@@ -7523,7 +7543,7 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	    /**
 	     * 模拟失败
 	     */
-		if (r != EMULATION_OK)  {
+		if (r != EMULATION_OK/*0*/)  {
 			if ((emulation_type & EMULTYPE_TRAP_UD) ||
 			    (emulation_type & EMULTYPE_TRAP_UD_FORCED)) {
 				kvm_queue_exception(vcpu, UD_VECTOR);
@@ -7676,7 +7696,7 @@ restart:
 }
 
 /**
- *  模拟 指令
+ * 模拟 指令，如 #UD
  */
 int kvm_emulate_instruction(struct kvm_vcpu *vcpu, int emulation_type)
 {
@@ -9372,6 +9392,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	 * 比如说 CPUID
 	 *
 	 * VMX: vmx_handle_exit()
+	 * SVM: handle_exit()
 	 */
 	r = kvm_x86_ops.handle_exit(vcpu, exit_fastpath);
 	return r;

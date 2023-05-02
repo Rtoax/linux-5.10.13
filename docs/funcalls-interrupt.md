@@ -144,13 +144,8 @@ asm_exc_invalid_op()
         do_trap()
 ```
 
-```
-handle_invalid_op()
-  kvm_queue_exception(vcpu, UD_VECTOR);
+> KVM #UD 见 funcalls-kvm-nmi.md
 
-
-  kvm_handle_invalid_op()
-```
 
 ### KVM
 
