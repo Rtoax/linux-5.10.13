@@ -113,6 +113,11 @@ SYM_FUNC_END(vmx_vmexit)
  *	0 on VM-Exit, 1 on VM-Fail
  */
 SYM_FUNC_START(__vmx_vcpu_run)
+	/**
+	 * 将 Host 通用寄存器保存到栈中
+	 * 32bit: _ASM_BP = ebp
+	 * 64bit: _ASM_BP = rbp
+	 */
 	push %_ASM_BP
 	mov  %_ASM_SP, %_ASM_BP
 

@@ -44,6 +44,10 @@
 #define _ASM_CX		__ASM_REG(cx)
 #define _ASM_DX		__ASM_REG(dx)
 #define _ASM_SP		__ASM_REG(sp)
+/**
+ * 32bit: _ASM_BP = ebp
+ * 64bit: _ASM_BP = rbp
+ */
 #define _ASM_BP		__ASM_REG(bp)
 #define _ASM_SI		__ASM_REG(si)
 #define _ASM_DI		__ASM_REG(di)

@@ -220,17 +220,17 @@ enum vmcs_field {
 	TSC_OFFSET                      = 0x00002010,
 	TSC_OFFSET_HIGH                 = 0x00002011,
 	/**
-     *  在 APIC 中，物理 LAPIC 有一个页面大小的内存用来存放个寄存器的值，
-     *  Intel 称这个页面为 APIC-access page, CPU 采用 mmap 的方式访问这些寄存器
-     *  起初，一旦 Guest 访问这个页面，CPU将从Guest 模式切换到Host模式，KVM负责完成模拟，
-     *  将Guest 写给 LAPIC 的值写入虚拟 LAPIC的 APIC page，或者从虚拟LAPIC的APIC page读入值
-     *  给 Guest。
-     *  那么频繁的访问寄存器，就需要导致Guest和Host之间频繁的切换，而这些大量的切换带来很大的性能损失
-     *  为了减少VMexit，Intel设计了一个所谓 Virtual-APIC page替代 APIC-access page。就不需要 Guest和
-     *  Host之间的切换了.
-     *
-     *  CPU 从 VMCS 的 VIRTUAL_APIC_PAGE_ADDR 字段找到 virtual-APIC page
-     */
+	 *  在 APIC 中，物理 LAPIC 有一个页面大小的内存用来存放个寄存器的值，
+	 *  Intel 称这个页面为 APIC-access page, CPU 采用 mmap 的方式访问这些寄存器
+	 *  起初，一旦 Guest 访问这个页面，CPU将从Guest 模式切换到Host模式，KVM负责完成模拟，
+	 *  将Guest 写给 LAPIC 的值写入虚拟 LAPIC的 APIC page，或者从虚拟LAPIC的APIC page读入值
+	 *  给 Guest。
+	 *  那么频繁的访问寄存器，就需要导致Guest和Host之间频繁的切换，而这些大量的切换带来很大的性能损失
+	 *  为了减少VMexit，Intel设计了一个所谓 Virtual-APIC page替代 APIC-access page。就不需要 Guest和
+	 *  Host之间的切换了.
+	 *
+	 *  CPU 从 VMCS 的 VIRTUAL_APIC_PAGE_ADDR 字段找到 virtual-APIC page
+	 */
 	VIRTUAL_APIC_PAGE_ADDR          = 0x00002012,
 	VIRTUAL_APIC_PAGE_ADDR_HIGH     = 0x00002013,
 
@@ -241,9 +241,9 @@ enum vmcs_field {
 	VM_FUNCTION_CONTROL             = 0x00002018,
 	VM_FUNCTION_CONTROL_HIGH        = 0x00002019,
 	/**
-     *  如果启用了 EPT ，root_hpa 不再加载进 CR3 了，而是
-     *  加载进寄存器 EPT pointer 中
-     */
+	 *  如果启用了 EPT ，root_hpa 不再加载进 CR3 了，而是
+	 *  加载进寄存器 EPT pointer 中
+	 */
 	EPT_POINTER                     = 0x0000201a,
 	EPT_POINTER_HIGH                = 0x0000201b,
 	EOI_EXIT_BITMAP0                = 0x0000201c,
@@ -387,8 +387,8 @@ enum vmcs_field {
 	GUEST_CR4                       = 0x00006804,
 	GUEST_ES_BASE                   = 0x00006806,
 	/**
-     *
-     */
+	 *
+	 */
 	GUEST_CS_BASE                   = 0x00006808,
 	GUEST_SS_BASE                   = 0x0000680a,
 	GUEST_DS_BASE                   = 0x0000680c,
@@ -402,8 +402,8 @@ enum vmcs_field {
 	GUEST_RSP                       = 0x0000681c,
 	GUEST_RIP                       = 0x0000681e,
 	/**
-     *  对应 EFLAGS
-     */
+	 *  对应 EFLAGS
+	 */
 	GUEST_RFLAGS                    = 0x00006820,
 	GUEST_PENDING_DBG_EXCEPTIONS    = 0x00006822,
 	GUEST_SYSENTER_ESP              = 0x00006824,
@@ -419,8 +419,8 @@ enum vmcs_field {
 	HOST_IA32_SYSENTER_ESP          = 0x00006c10,
 	HOST_IA32_SYSENTER_EIP          = 0x00006c12,
 	/**
-     *
-     */
+	 * 在 Guest 退出时，CPU会自动将 VMCS 中 Host 的 RSP/ESP 恢复到物理 CPU 中，
+	 */
 	HOST_RSP                        = 0x00006c14,
 	HOST_RIP                        = 0x00006c16,
 };
