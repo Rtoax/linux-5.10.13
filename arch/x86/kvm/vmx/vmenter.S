@@ -53,9 +53,11 @@ SYM_FUNC_START(vmx_vmenter)
 	/* EFLAGS.ZF is set if VMCS.LAUNCHED == 0 */
 	je 2f
 
+	/* 如果首次运行 Guest，则使用 vmlaunch，否则运行 vmresume 指令 */
 1:	vmresume /* Resume virtual machine managed by current VMCS. */
 	ret
 
+	/* 如果首次运行 Guest，则使用 vmlaunch，否则运行 vmresume 指令 */
 2:	vmlaunch /* Launch virtual machine managed by current VMCS. */
 	ret
 

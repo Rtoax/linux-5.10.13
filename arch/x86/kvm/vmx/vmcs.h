@@ -148,6 +148,10 @@ struct loaded_vmcs {
 	struct vmcs *vmcs;
 	struct vmcs *shadow_vmcs;
 	int cpu;
+	/**
+	 * 如果首次运行 Guest，则使用 vmlaunch，否则运行 vmresume 指令
+	 * 见 vmx_vcpu_enter_exit() -> __vmx_vcpu_run()
+	 */
 	bool launched;
 	bool nmi_known_unmasked;
 	bool hv_timer_soft_disabled;

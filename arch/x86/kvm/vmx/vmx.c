@@ -7243,6 +7243,9 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
 	 * Run a vCPU via a transition to VMX guest mode
 	 * 传入了寄存器信息，这类似进程切换，可参考 sched_switch()
 	 *
+	 * __vmx_vcpu_run() 是汇编代码，
+	 * 如果首次运行 Guest，则使用 vmlaunch，否则运行 vmresume 指令
+	 *
 	 * 0 on VM-Exit, 1 on VM-Fail
 	 */
 	vmx->fail = __vmx_vcpu_run(vmx, (unsigned long *)&vcpu->arch.regs,
