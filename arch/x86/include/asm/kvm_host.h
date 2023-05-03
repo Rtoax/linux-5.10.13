@@ -158,9 +158,9 @@ enum kvm_reg {
 	VCPU_REGS_R14 = __VCPU_REGS_R14,
 	VCPU_REGS_R15 = __VCPU_REGS_R15,
 #endif
-    /**
-     *  指令指针
-     */
+	/**
+	 *  指令指针
+	 */
 	VCPU_REGS_RIP,
 	NR_VCPU_REGS,
 
@@ -190,14 +190,16 @@ enum {
  */
 enum exit_fastpath_completion {
 	EXIT_FASTPATH_NONE,
-    /**
-     *  从 Host 内核空间，再次进入 Guest
-     *
-     */
+	/**
+	 * 从 Host 内核空间，再次进入 Guest,也就是无须进入 Host 用户空间处理 Guest 退出。
+	 * 如果在内核空间可以成功处理虚拟机退出，或者是因为其他干扰比如中断导致的虚拟机退出
+	 * 等无须切换到 Host 的用户空间，则返回 1.
+	 */
 	EXIT_FASTPATH_REENTER_GUEST,
 	/**
-     *  退出到 Host 用户空间进行处理
-     */
+	 * 退出到 Host 用户空间进行处理
+	 * 需要到 Host 的用户空间处理虚拟机退出，比如需要KVM用户空间的模拟设备处理外设请求。
+	 */
 	EXIT_FASTPATH_EXIT_HANDLED,
 };
 typedef enum exit_fastpath_completion fastpath_t;
@@ -360,70 +362,70 @@ struct kvm_mmu_page;
  *
  */
 struct kvm_mmu {
-    /**
-     *  实模式下，初始化 `nonpaging_init_context()`
-     *  保护模式下，这将是 `get_cr3()`
-     */
+	/**
+	 *  实模式下，初始化 `nonpaging_init_context()`
+	 *  保护模式下，这将是 `get_cr3()`
+	 */
 	unsigned long (*get_guest_pgd)(struct kvm_vcpu *vcpu);
 	u64 (*get_pdptr)(struct kvm_vcpu *vcpu, int index);
 	int (*page_fault)(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u32 err,
 			  bool prefault);
-    /**
-     *  向 Guest 注入 缺页异常
-     *
-     *  可能为：
-     *  kvm_inject_page_fault()
-     *  vmx_inject_page_fault_nested()
-     */
-    void (*inject_page_fault)(struct kvm_vcpu *vcpu,
+	/**
+	 *  向 Guest 注入 缺页异常
+	 *
+	 *  可能为：
+	 *  kvm_inject_page_fault()
+	 *  vmx_inject_page_fault_nested()
+	 */
+	void (*inject_page_fault)(struct kvm_vcpu *vcpu,
 				  struct x86_exception *fault);
 
-    /**
-     *  可能为
-     *  nonpaging_gva_to_gpa()
-     *  paging64_gva_to_gpa()
-     *  paging32_gva_to_gpa()
-     *  ept_gva_to_gpa()
-     *  nonpaging_gva_to_gpa_nested()
-     *  paging64_gva_to_gpa_nested()
-     *  paging32_gva_to_gpa_nested()
-     */
-    gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gpa_t gva_or_gpa,
+	/**
+	 *  可能为
+	 *  nonpaging_gva_to_gpa()
+	 *  paging64_gva_to_gpa()
+	 *  paging32_gva_to_gpa()
+	 *  ept_gva_to_gpa()
+	 *  nonpaging_gva_to_gpa_nested()
+	 *  paging64_gva_to_gpa_nested()
+	 *  paging32_gva_to_gpa_nested()
+	 */
+	gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gpa_t gva_or_gpa,
 			    u32 access, struct x86_exception *exception);
-    /**
-     *  可能为
-     *  translate_gpa()
-     *  translate_nested_gpa()
-     */
-    gpa_t (*translate_gpa)(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
+	/**
+	 *  可能为
+	 *  translate_gpa()
+	 *  translate_nested_gpa()
+	 */
+	gpa_t (*translate_gpa)(struct kvm_vcpu *vcpu, gpa_t gpa, u32 access,
 			       struct x86_exception *exception);
 	int (*sync_page)(struct kvm_vcpu *vcpu,
 			 struct kvm_mmu_page *sp);
 	void (*invlpg)(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa);
 	void (*update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
 			   u64 *spte, const void *pte);
-    /**
-     *  ROOT Host Pysical Address
-     *  KVM 为 Guest 分配的专用页表的根页面的地址
-     *
-     *  在 `mmu_alloc_roots()` 中分配
-     *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
-     */
-    hpa_t root_hpa;
-    /**
-     *  ROOT Page Global Directory
-     */
+	/**
+	 *  ROOT Host Pysical Address
+	 *  KVM 为 Guest 分配的专用页表的根页面的地址
+	 *
+	 *  在 `mmu_alloc_roots()` 中分配
+	 *  在 `kvm_mmu_load_pgd()` 赋值给 CR3
+	 */
+	hpa_t root_hpa;
+	/**
+	 *  ROOT Page Global Directory
+	 */
 	gpa_t root_pgd;
 	union kvm_mmu_role mmu_role;
-    /**
-     *  页表级别-几级页表
-     */
+	/**
+	 *  页表级别-几级页表
+	 */
 	u8 root_level;
 	u8 shadow_root_level;
 	u8 ept_ad;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	bool direct_map;
 	struct kvm_mmu_root_info prev_roots[KVM_MMU_NUM_PREV_ROOTS];
 
@@ -590,9 +592,9 @@ struct kvm_vcpu_arch {
 	u32 regs_avail;
 	u32 regs_dirty;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long cr0;
 	unsigned long cr0_guest_owned_bits;
 	unsigned long cr2;
@@ -612,9 +614,9 @@ struct kvm_vcpu_arch {
 	DECLARE_BITMAP(ioapic_handled_vectors, 256);
 	unsigned long apic_attention;
 	int32_t apic_arb_prio;
-    /**
-     *  KVM_MP_STATE_XXX 如 `KVM_MP_STATE_UNINITIALIZED`
-     */
+	/**
+	 *  KVM_MP_STATE_XXX 如 `KVM_MP_STATE_UNINITIALIZED`
+	 */
 	int mp_state;
 	u64 ia32_misc_enable_msr;
 	u64 smbase;
@@ -681,9 +683,9 @@ struct kvm_vcpu_arch {
 
 	struct kvm_pio_request pio;
 
-    /**
-     *  在 `kvm_arch_vcpu_create()` 中赋值
-     */
+	/**
+	 *  在 `kvm_arch_vcpu_create()` 中赋值
+	 */
 	void *pio_data;
 
 	u8 event_exit_inst_len;
@@ -981,23 +983,23 @@ struct kvm_arch {
 	unsigned int indirect_shadow_pages;
 	u8 mmu_valid_gen;
 
-    /**
-     *  对于多任务的 Guest来说，多个任务分时轮转运行，某个暂时被换出的页表会再次被载入
-     *  如果每次都释放然后重建影子页表，性能开销太大。因此，KVM设计了 cache机制，除了首次
-     *  创建的影子页表需要从0开始构建，替他都是从cache中获取。
-     *
-     *  Guest 页表的根页面的帧号作为 hash 表的key。
-     *
-     *  见 `kvm_mmu_get_page()`
-     */
+	/**
+	 *  对于多任务的 Guest来说，多个任务分时轮转运行，某个暂时被换出的页表会再次被载入
+	 *  如果每次都释放然后重建影子页表，性能开销太大。因此，KVM设计了 cache机制，除了首次
+	 *  创建的影子页表需要从0开始构建，替他都是从cache中获取。
+	 *
+	 *  Guest 页表的根页面的帧号作为 hash 表的key。
+	 *
+	 *  见 `kvm_mmu_get_page()`
+	 */
 	struct hlist_head mmu_page_hash[KVM_NUM_MMU_PAGES];
 	/*
 	 * Hash table of struct kvm_mmu_page.
 	 */
 	/**
-     *  链表节点 `struct kvm_mmu_page.link`
-     *  在 `kvm_mmu_alloc_page()` 中添加
-     */
+	 *  链表节点 `struct kvm_mmu_page.link`
+	 *  在 `kvm_mmu_alloc_page()` 中添加
+	 */
 	struct list_head active_mmu_pages;
 	struct list_head zapped_obsolete_pages;
 	struct list_head lpage_disallowed_mmu_pages;
@@ -1246,14 +1248,14 @@ struct kvm_x86_ops {
 	 */
 	void (*tlb_flush_guest)(struct kvm_vcpu *vcpu);
 
-    /**
-     *  运行
+	/**
+	 *  运行
 	 *
 	 * 这是 VMEnter/VMExit 发生的函数
 	 *
 	 * 该函数在 vcpu_enter_guest() 中调用
 	 *  exit_fastpath = kvm_x86_ops.run(vcpu);
-     */
+	 */
 	enum exit_fastpath_completion (*run)(struct kvm_vcpu *vcpu);
 	int (*handle_exit)(struct kvm_vcpu *vcpu, enum exit_fastpath_completion exit_fastpath);
 	int (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);

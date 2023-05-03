@@ -1882,6 +1882,11 @@ fastpath_t handle_fastpath_set_msr_irqoff(struct kvm_vcpu *vcpu)
 		data = kvm_read_edx_eax(vcpu);
 		if (!handle_fastpath_set_x2apic_icr_irqoff(vcpu, data)) {
 			kvm_skip_emulated_instruction(vcpu);
+			/**
+			 * 退出到 Host 用户空间进行处理
+			 * 需要到 Host 的用户空间处理虚拟机退出，比如需要KVM用户空间的
+			 * 模拟设备处理外设请求。
+			 */
 			ret = EXIT_FASTPATH_EXIT_HANDLED;
 		}
 		break;
@@ -1889,6 +1894,13 @@ fastpath_t handle_fastpath_set_msr_irqoff(struct kvm_vcpu *vcpu)
 		data = kvm_read_edx_eax(vcpu);
 		if (!handle_fastpath_set_tscdeadline(vcpu, data)) {
 			kvm_skip_emulated_instruction(vcpu);
+			/**
+			 * 从 Host 内核空间，再次进入 Guest,也就是无须进入 Host
+			 * 用户空间处理 Guest 退出。
+			 * 如果在内核空间可以成功处理虚拟机退出，或者是因为其他干扰,
+			 * 比如中断导致的虚拟机退出等无须切换到 Host 的用户空间，
+			 * 则返回 EXIT_FASTPATH_REENTER_GUEST.
+			 */
 			ret = EXIT_FASTPATH_REENTER_GUEST;
 		}
 		break;
@@ -9308,7 +9320,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	/**
 	 * 运行 vCPU，这个函数退出，说明有 Exit 事件发生了
 	 *
-	 *  VMX: vmx_vcpu_run()
+	 * VMX: vmx_vcpu_run()
+	 * SVM: svm_vcpu_run()
 	 */
 	exit_fastpath = kvm_x86_ops.run(vcpu);
 

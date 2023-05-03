@@ -6092,6 +6092,11 @@ static fastpath_t handle_fastpath_preemption_timer(struct kvm_vcpu *vcpu)
 	if (!vmx->req_immediate_exit &&
 	    !unlikely(vmx->loaded_vmcs->hv_timer_soft_disabled)) {
 		kvm_lapic_expired_hv_timer(vcpu);
+		/**
+		 * 从 Host 内核空间，再次进入 Guest,也就是无须进入 Host 用户空间处理 Guest 退出。
+		 * 如果在内核空间可以成功处理虚拟机退出，或者是因为其他干扰比如中断导致的虚拟机退出
+		 * 等无须切换到 Host 的用户空间，则返回 EXIT_FASTPATH_REENTER_GUEST.
+		 */
 		return EXIT_FASTPATH_REENTER_GUEST;
 	}
 
@@ -6483,7 +6488,7 @@ void dump_vmcs(void)
  * assistance.
  * 看看我们是否需要在用户空间的帮助，也就是额外的操作。
  *
- * VMX VM Exit 处理
+ * VMX VM Exit 处理，在 vcpu_enter_guest() 中调用。
  */
 static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 {
@@ -7283,6 +7288,10 @@ static noinstr void vmx_vcpu_enter_exit(struct kvm_vcpu *vcpu,
  *
  * 该函数在 vcpu_enter_guest() 中调用
  *  exit_fastpath = kvm_x86_ops.run(vcpu);
+ *
+ * 从 Host 内核空间，再次进入 Guest,也就是无须进入 Host 用户空间处理 Guest 退出。
+ * 如果在内核空间可以成功处理虚拟机退出，或者是因为其他干扰比如中断导致的虚拟机退出
+ * 等无须切换到 Host 的用户空间，则返回 EXIT_FASTPATH_REENTER_GUEST.
  */
 static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
 {
@@ -7291,7 +7300,8 @@ static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
 	unsigned long cr3, cr4;
 
 /**
- * 准备进入 Guest
+ * - 准备进入 Guest
+ * - 无须切换到 Host 的用户空间，也就是 ioctl(fd, KVM_RUN, ...) 不会返回
  */
 reenter_guest:
 	/* Record the guest's net vcpu time for enforced NMI injections. */
@@ -7476,7 +7486,9 @@ reenter_guest:
 		return EXIT_FASTPATH_NONE;
 
 	/**
-	 *
+	 * 从 Host 内核空间，再次进入 Guest,也就是无须进入 Host 用户空间处理 Guest 退出。
+	 * 如果在内核空间可以成功处理虚拟机退出，或者是因为其他干扰比如中断导致的虚拟机退出
+	 * 等无须切换到 Host 的用户空间，则返回 EXIT_FASTPATH_REENTER_GUEST.
 	 */
 	exit_fastpath = vmx_exit_handlers_fastpath(vcpu);
 	if (exit_fastpath == EXIT_FASTPATH_REENTER_GUEST) {
@@ -7488,8 +7500,16 @@ reenter_guest:
 			 */
 			if (vcpu->arch.apicv_active)
 				vmx_sync_pir_to_irr(vcpu);
+			/**
+			 * 无须切换到 Host 的用户空间，也就是 ioctl(fd, KVM_RUN, ...) 不会返回
+			 */
 			goto reenter_guest;
 		}
+		/**
+		 * 退出到 Host 用户空间进行处理
+		 * 需要到 Host 的用户空间处理虚拟机退出，比如需要KVM用户空间的模拟设备
+		 * 处理外设请求。
+		 */
 		exit_fastpath = EXIT_FASTPATH_EXIT_HANDLED;
 	}
 
