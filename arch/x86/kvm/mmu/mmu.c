@@ -5822,7 +5822,7 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	r = RET_PF_INVALID;
 
 	/**
-	 *
+	 * 如果是 MMIO，常规 pagefault 处理函数是没法处理的
 	 */
 	if (unlikely(error_code & PFERR_RSVD_MASK)) {
 		r = handle_mmio_page_fault(vcpu, cr2_or_gpa, direct);
