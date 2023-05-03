@@ -72,7 +72,8 @@
 #endif
 
 /**
- * 我把 #define FNAME(name) FNAME_##name
+ *
+ 我把 #define FNAME(name) FNAME_##name
  *
  */
 
@@ -89,14 +90,14 @@
  * walker 存放的是 Guest 自身页表遍历的结果
  */
 struct guest_walker {
-    /**
-     *  页表级别
-     */
+	/**
+	 *  页表级别
+	 */
 	int level;
 	unsigned max_level;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	gfn_t table_gfn[PT_MAX_FULL_LEVELS];
 	pt_element_t ptes[PT_MAX_FULL_LEVELS];
 	pt_element_t prefetch_ptes[PTE_PREFETCH_NUM];
@@ -345,22 +346,22 @@ static int FNAME_walk_addr_generic(struct guest_walker *walker,
 	gpa_t real_gpa;
 	gfn_t gfn;
 
-    /**
-     *  遍历页表追踪点
-     */
+	/**
+	 *  遍历页表追踪点
+	 */
 	trace_kvm_mmu_pagetable_walk(addr, access);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 retry_walk:
-    /**
-     *  读取 页表级别
-     */
+	/**
+	 *  读取 页表级别
+	 */
 	walker->level = mmu->root_level;
-    /**
-     *  该函数为 : get_cr3()
-     */
+	/**
+	 *  该函数为 : get_cr3()
+	 */
 	pte           = mmu->get_guest_pgd(vcpu);
 	have_ad       = PT_HAVE_ACCESSED_DIRTY(mmu);
 
@@ -387,45 +388,45 @@ retry_walk:
 	pte_access = ~0;
 	++walker->level;
 
-    /**
-     *  遍历 Guest 页表， 取出 GPA
-     */
+	/**
+	 *  遍历 Guest 页表， 取出 GPA
+	 */
 	do {
 		unsigned long host_addr;
 
 		pt_access = pte_access;
 		--walker->level;
 
-        /**
-         *  取出 addr 对应页表级别的 索引
-         */
+		/**
+		 *  取出 addr 对应页表级别的 索引
+		 */
 		index = PT_INDEX(addr, walker->level);
 		table_gfn = gpte_to_gfn(pte);
 		offset    = index * sizeof(pt_element_t);
-        /**
-         *  从页表中读出页表项
-         */
+		/**
+		 *  从页表中读出页表项
+		 */
 		pte_gpa   = gfn_to_gpa(table_gfn) + offset;
 
-        /**
-         *  已经遍历到最后一级页表
-         */
+		/**
+		 *  已经遍历到最后一级页表
+		 */
 		BUG_ON(walker->level < 1);
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		walker->table_gfn[walker->level - 1] = table_gfn;
-        /**
-         *  将检查的页表项 记录在 walker 中
-         */
+		/**
+		 *  将检查的页表项 记录在 walker 中
+		 */
 		walker->pte_gpa[walker->level - 1] = pte_gpa;
 
-        /**
-         *  
-         *  可能为
-         *  translate_gpa()
-         *  translate_nested_gpa()
-         */
+		/**
+		 *
+		 *  可能为
+		 *  translate_gpa()
+		 *  translate_nested_gpa()
+		 */
 		real_gpa = mmu->translate_gpa(vcpu, gfn_to_gpa(table_gfn),
 					      nested_access,
 					      &walker->fault);
@@ -443,24 +444,24 @@ retry_walk:
 		if (unlikely(real_gpa == UNMAPPED_GVA))
 			return 0;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		host_addr = kvm_vcpu_gfn_to_hva_prot(vcpu, gpa_to_gfn(real_gpa),
 					    &walker->pte_writable[walker->level - 1]);
 		if (unlikely(kvm_is_error_hva(host_addr)))
 			goto error;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		ptep_user = (pt_element_t __user *)((void *)host_addr + offset);
 		if (unlikely(__get_user(pte, ptep_user)))
 			goto error;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		walker->ptep_user[walker->level - 1] = ptep_user;
 
 		trace_kvm_mmu_paging_element(pte, walker->level);
@@ -498,10 +499,10 @@ retry_walk:
 	if (PTTYPE == 32 && walker->level > PG_LEVEL_4K && is_cpuid_PSE36())
 		gfn += pse36_gfn_delta(pte);
 
-    /**
-     *  如果没有映射 GVA - GPA ，那么直接返回 0
-     *  这会导致 KVM 向 Guest 内核注入 缺页异常
-     */
+	/**
+	 *  如果没有映射 GVA - GPA ，那么直接返回 0
+	 *  这会导致 KVM 向 Guest 内核注入 缺页异常
+	 */
 	real_gpa = mmu->translate_gpa(vcpu, gfn_to_gpa(gfn), access, &walker->fault);
 	if (real_gpa == UNMAPPED_GVA)
 		return 0;
@@ -634,7 +635,7 @@ static void FNAME_update_pte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
 }
 
 /**
- *  
+ *
  */
 static bool FNAME_gpte_changed(struct kvm_vcpu *vcpu,
 				struct guest_walker *gw, int level)
@@ -715,7 +716,7 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 	top_level = vcpu->arch.mmu->root_level;
 	if (top_level == PT32E_ROOT_LEVEL)
 		top_level = PT32_ROOT_LEVEL;
-    
+
 	/*
 	 * Verify that the top-level gpte is still there.  Since the page
 	 * is a root page, it is either write protected (and cannot be
@@ -728,29 +729,29 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 	if (WARN_ON(!VALID_PAGE(vcpu->arch.mmu->root_hpa)))
 		goto out_gpte_changed;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (shadow_walk_init(&it, vcpu, addr);
 	     shadow_walk_okay(&it) && it.level > gw->level;
 	     shadow_walk_next(&it)) {
 		gfn_t table_gfn;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		clear_sp_write_flooding_count(it.sptep);
 		drop_large_spte(vcpu, it.sptep);
 
 		sp = NULL;
-        /**
-         *  如果这个 影子页表 页表项 不存在
-         */
+		/**
+		 *  如果这个 影子页表 页表项 不存在
+		 */
 		if (!is_shadow_present_pte(*it.sptep)) {
 			table_gfn = gw->table_gfn[it.level - 2];
-            /**
-             *  分配 
-             */
+			/**
+			 *  分配
+			 */
 			sp = kvm_mmu_get_page(vcpu, table_gfn, addr, it.level-1,
 					      false, access);
 		}
@@ -762,27 +763,27 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 		if (FNAME_gpte_changed(vcpu, gw, it.level - 1))
 			goto out_gpte_changed;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		if (sp)
 			link_shadow_page(vcpu, it.sptep, sp);
 	}
 
-    /**
-     *  Guest 使用大页
-     */
+	/**
+	 *  Guest 使用大页
+	 */
 	level = kvm_mmu_hugepage_adjust(vcpu, gw->gfn, max_level, &pfn,
 					huge_page_disallowed, &req_level);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	trace_kvm_mmu_spte_requested(addr, gw->level, pfn);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (; shadow_walk_okay(&it); shadow_walk_next(&it)) {
 		clear_sp_write_flooding_count(it.sptep);
 
@@ -795,9 +796,9 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 						   &pfn, &level);
 
 		base_gfn = gw->gfn & ~(KVM_PAGES_PER_HPAGE(it.level) - 1);
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		if (it.level == level)
 			break;
 
@@ -805,13 +806,13 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 
 		drop_large_spte(vcpu, it.sptep);
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		if (!is_shadow_present_pte(*it.sptep)) {
-            /**
-             *  
-             */
+			/**
+			 *
+			 */
 			sp = kvm_mmu_get_page(vcpu, base_gfn, addr,
 					      it.level - 1, true, direct_access);
 			link_shadow_page(vcpu, it.sptep, sp);
@@ -820,9 +821,9 @@ static int FNAME_fetch(struct kvm_vcpu *vcpu, gpa_t addr,
 		}
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	ret = mmu_set_spte(vcpu, it.sptep, gw->pte_access, write_fault,
 			   it.level, base_gfn, pfn, prefault, map_writable);
 	if (ret == RET_PF_SPURIOUS)
@@ -926,32 +927,32 @@ static int FNAME_page_fault(struct kvm_vcpu *vcpu, gpa_t addr, u32 error_code,
 	if (!r) {
 		pgprintk("%s: guest page fault\n", __func__);
 		if (!prefault)
-            /**
-             *  向 Guest 内核注入 缺页异常
-             */
+			/**
+			 *  向 Guest 内核注入 缺页异常
+			 */
 			kvm_inject_emulated_page_fault(vcpu, &walker.fault);
 
-        /**
-         *  上面流程见会建立 GVA-GPA 的映射，但是仍旧没有建立影子页表 GVA - HPA 的映射
-         *  所以这里是 retry?
-         */
+		/**
+		 *  上面流程见会建立 GVA-GPA 的映射，但是仍旧没有建立影子页表 GVA - HPA 的映射
+		 *  所以这里是 retry?
+		 */
 		return RET_PF_RETRY;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (page_fault_handle_page_track(vcpu, error_code, walker.gfn)) {
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		shadow_page_table_clear_flood(vcpu, addr);
 		return RET_PF_EMULATE;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = mmu_topup_memory_caches(vcpu, true);
 	if (r)
 		return r;
@@ -1003,23 +1004,23 @@ static int FNAME_page_fault(struct kvm_vcpu *vcpu, gpa_t addr, u32 error_code,
 
 	kvm_mmu_audit(vcpu, AUDIT_PRE_PAGE_FAULT);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = make_mmu_pages_available(vcpu);
 	if (r)
 		goto out_unlock;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = FNAME_fetch(vcpu, addr, &walker, error_code, max_level, pfn,
 			        map_writable, prefault);
 
-    /**
-     *  
-     */
-    kvm_mmu_audit(vcpu, AUDIT_POST_PAGE_FAULT);
+	/**
+	 *
+	 */
+	kvm_mmu_audit(vcpu, AUDIT_POST_PAGE_FAULT);
 
 out_unlock:
 	spin_unlock(&vcpu->kvm->mmu_lock);
@@ -1099,7 +1100,7 @@ static void FNAME_invlpg(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa)
 }
 
 /**
- *  
+ *
  */
 /* Note, @addr is a GPA when gva_to_gpa() translates an L2 GPA to an L1 GPA. */
 static gpa_t FNAME_gva_to_gpa(struct kvm_vcpu *vcpu, gpa_t addr, u32 access,
@@ -1109,9 +1110,9 @@ static gpa_t FNAME_gva_to_gpa(struct kvm_vcpu *vcpu, gpa_t addr, u32 access,
 	gpa_t gpa = UNMAPPED_GVA;
 	int r;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	r = FNAME_walk_addr(&walker, vcpu, addr, access);
 
 	if (r) {
