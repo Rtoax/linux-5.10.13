@@ -53,8 +53,14 @@
 #define EXIT_REASON_INTERRUPT_WINDOW    7
 #define EXIT_REASON_NMI_WINDOW          8
 #define EXIT_REASON_TASK_SWITCH         9
-/* 必须处理的 */
+/**
+ * 物理机执行 CPUID 和 Guest 中执行的 CPUID 是子集关系，所以，这是必须处理的。
+ * 见 《深度探索 Linux 系统虚拟化》P25
+ */
 #define EXIT_REASON_CPUID               10
+/**
+ *
+ */
 #define EXIT_REASON_HLT                 12
 /* 必须处理的 INVD — Invalidate Internal Caches */
 #define EXIT_REASON_INVD                13
