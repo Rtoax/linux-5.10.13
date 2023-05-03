@@ -6352,6 +6352,9 @@ static int write_emulate(struct kvm_vcpu *vcpu, gpa_t gpa,
 
 static int write_mmio(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes, void *val)
 {
+	/**
+	 * $ sudo bpftrace -e 'tracepoint:kvm:kvm_mmio{printf("%s\n", comm);}'
+	 */
 	trace_kvm_mmio(KVM_TRACE_MMIO_WRITE, bytes, gpa, val);
 	return vcpu_mmio_write(vcpu, gpa, bytes, val);
 }
@@ -6386,6 +6389,14 @@ static const struct read_write_emulator_ops write_emultor = {
 	.write = true,
 };
 
+/**
+ * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+ * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+ * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+ * 处理函数。
+ *
+ * emulate_ops.write_emulated = emulator_write_emulated()
+ */
 static int emulator_read_write_onepage(unsigned long addr, void *val,
 				       unsigned int bytes,
 				       struct x86_exception *exception,
@@ -6418,8 +6429,11 @@ static int emulator_read_write_onepage(unsigned long addr, void *val,
 	if (!ret && ops->read_write_emulate(vcpu, gpa, val, bytes))
 		return X86EMUL_CONTINUE;
 
-	/*
+	/**
 	 * Is this MMIO handled locally?
+	 *
+	 * read_emultor.read_write_mmio = vcpu_mmio_read()
+	 * write_emultor.read_write_mmio = write_mmio()
 	 */
 	handled = ops->read_write_mmio(vcpu, gpa, bytes, val);
 	if (handled == bytes)
@@ -6438,7 +6452,12 @@ static int emulator_read_write_onepage(unsigned long addr, void *val,
 }
 
 /**
+ * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+ * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+ * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+ * 处理函数。
  *
+ * emulate_ops.write_emulated = emulator_write_emulated()
  */
 static int emulator_read_write(struct x86_emulate_ctxt *ctxt,
 			unsigned long addr,
@@ -6503,12 +6522,21 @@ static int emulator_read_emulated(struct x86_emulate_ctxt *ctxt,
 				  unsigned int bytes,
 				  struct x86_exception *exception)
 {
+	/**
+	 * read_emultor.read_write_mmio = vcpu_mmio_read()
+	 * write_emultor.read_write_mmio = write_mmio()
+	 */
 	return emulator_read_write(ctxt, addr, val, bytes,
 				   exception, &read_emultor);
 }
 
 /**
+ * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+ * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+ * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+ * 处理函数。
  *
+ * emulate_ops.write_emulated = emulator_write_emulated()
  */
 static int emulator_write_emulated(struct x86_emulate_ctxt *ctxt,
 			    unsigned long addr,
@@ -6516,6 +6544,10 @@ static int emulator_write_emulated(struct x86_emulate_ctxt *ctxt,
 			    unsigned int bytes,
 			    struct x86_exception *exception)
 {
+	/**
+	 * read_emultor.read_write_mmio = vcpu_mmio_read()
+	 * write_emultor.read_write_mmio = write_mmio()
+	 */
 	return emulator_read_write(ctxt, addr, (void *)val, bytes,
 				   exception, &write_emultor);
 }
@@ -7053,6 +7085,11 @@ static const struct x86_emulate_ops emulate_ops = {
 	.read_phys           = kvm_read_guest_phys_system,
 	.fetch               = kvm_fetch_guest_virt,
 	.read_emulated       = emulator_read_emulated,
+	/**
+	 * 在下面这些函数中调用
+	 * - segmented_write()
+	 * ...
+	 */
 	.write_emulated      = emulator_write_emulated,
 	.cmpxchg_emulated    = emulator_cmpxchg_emulated,
 	.invlpg              = emulator_invlpg,

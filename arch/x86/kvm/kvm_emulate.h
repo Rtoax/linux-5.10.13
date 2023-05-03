@@ -26,9 +26,9 @@ struct x86_exception {
 	bool error_code_valid;
 	u16 error_code;
 	bool nested_page_fault;
-    /**
-     *  缺页中断地址
-     */
+	/**
+	 *  缺页中断地址
+	 */
 	u64 address; /* cr2 or nested page fault gpa */
 	u8 async_page_fault;
 };
@@ -406,15 +406,15 @@ struct x86_emulate_ctxt {
 	unsigned long _eip;
 
 	/* Here begins the usercopy section. */
-    /**
-     *  源操作数
-     */
+	/**
+	 *  源操作数
+	 */
 	struct operand src;
 	struct operand src2;
 
-    /**
-     *  目的操作数
-     */
+	/**
+	 *  目的操作数
+	 */
 	struct operand dst;
 	struct operand memop;
 	unsigned long _regs[NR_VCPU_REGS];

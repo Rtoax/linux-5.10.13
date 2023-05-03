@@ -1495,6 +1495,14 @@ static int segmented_write(struct x86_emulate_ctxt *ctxt,
 	rc = linearize(ctxt, addr, size, true, &linear);
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
+	/**
+	 * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+	 * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+	 * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+	 * 处理函数。
+	 *
+	 * emulate_ops.write_emulated = emulator_write_emulated()
+	 */
 	return ctxt->ops->write_emulated(ctxt, linear, data, size,
 					 &ctxt->exception);
 }
@@ -1843,6 +1851,12 @@ static void write_register_operand(struct operand *op)
 	return assign_register(op->addr.reg, op->val, op->bytes);
 }
 
+/**
+ * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+ * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+ * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+ * 处理函数。
+ */
 static int writeback(struct x86_emulate_ctxt *ctxt, struct operand *op)
 {
 	switch (op->type) {
@@ -5279,6 +5293,11 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 
 	/**
 	 *  解析代码前缀
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *  ^^^^^^^^^^^^
+	 *
 	 *  一个长度为 3 的示例：0x66 0x89 0x3e
 	 *  参见 test-linux/kvm/scripts/kvm_emulate_insn.bt
 	 */
@@ -5351,6 +5370,11 @@ done_prefixes:
 
 	/**
 	 * Opcode byte(s).
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *             ^^^^^^^^^^^^
+	 *
 	 * 根据操作码判断指令操作数的寻址方式
 	 */
 	opcode = opcode_table[ctxt->b];
@@ -5370,7 +5394,11 @@ done_prefixes:
 	ctxt->d = opcode.flags;
 
 	/**
-	 *
+	 *  解析源操作数
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *                        ^^^^^^^^^^^^
 	 */
 	if (ctxt->d & ModRM)
 		ctxt->modrm = insn_fetch(u8, ctxt);
@@ -5491,7 +5519,14 @@ done_prefixes:
 			ctxt->op_bytes = 8;
 	}
 
-	/* ModRM and SIB bytes. */
+	/**
+	 * ModRM and SIB bytes.
+	 *
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *  |insnPrefix|  opcode  |  ModR/M  |    SIB   |Displaceme| Immediate|
+	 *  +----------+----------+----------+----------+----------+----------+
+	 *                        ^^^^^^^^^^^^^^^^^^^^^^
+	 */
 	if (ctxt->d & ModRM) {
 		rc = decode_modrm(ctxt, &ctxt->memop);
 		if (!has_seg_override) {
@@ -5500,6 +5535,7 @@ done_prefixes:
 		}
 	} else if (ctxt->d & MemAbs)
 		rc = decode_abs(ctxt, &ctxt->memop);
+
 	if (rc != X86EMUL_CONTINUE)
 		goto done;
 
@@ -5848,6 +5884,12 @@ special_insn:
 	if (rc != X86EMUL_CONTINUE)
 		goto done;
 
+	/**
+	 * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+	 * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+	 * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+	 * 处理函数。
+	 */
 writeback:
 	if (ctxt->d & SrcWrite) {
 		BUG_ON(ctxt->src.type == OP_MEM || ctxt->src.type == OP_MEM_STR);
@@ -5903,7 +5945,11 @@ writeback:
 		ctxt->eflags &= ~X86_EFLAGS_RF;
 	}
 
+	/**
+	 * 更新 RIP 指令指针，否则会造成死循环
+	 */
 	ctxt->eip = ctxt->_eip;
+
 	if (ctxt->mode != X86EMUL_MODE_PROT64)
 		ctxt->eip = (u32)ctxt->_eip;
 
