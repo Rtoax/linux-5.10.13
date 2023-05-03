@@ -59,7 +59,11 @@
  */
 #define EXIT_REASON_CPUID               10
 /**
- *
+ * 处理器执行 hlt 后，将处于停机状态（halt）。对于开启了超线程的处理器，hlt指令
+ * 是停止的逻辑核，之后，如果收到 NMI, SMI 中断，或者 reset 信号，则恢复运行。
+ * 但是，对于虚拟机而言，如果任由 Guest 执行 hlt，将导致物理 CPU 停止运行，然而
+ * 我们需要停止的只是 Host 中用于模拟 vCPU 的线程。所以，Guest 执行 hlt 指令
+ * 时，需要陷入 KVM 中，由 KVM 挂起 vCPU 对应的线程，而不是停止物理 CPU。
  */
 #define EXIT_REASON_HLT                 12
 /* 必须处理的 INVD — Invalidate Internal Caches */
