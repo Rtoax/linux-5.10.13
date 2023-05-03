@@ -7863,7 +7863,7 @@ static int kvm_fast_pio_in(struct kvm_vcpu *vcpu, int size,
 }
 
 /**
- *  programmed IO (in,out,ins,outs)
+ * PIO: programmed IO (in,out,ins,outs)
  */
 int kvm_fast_pio(struct kvm_vcpu *vcpu, int size, unsigned short port, int in)
 {

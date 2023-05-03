@@ -5221,7 +5221,7 @@ static int handle_triple_fault(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  Guest 发生 IO 导致 VM exit
+ * PIO: Guest 发生 IO 导致 VM exit
  */
 static int handle_io(struct kvm_vcpu *vcpu)
 {
@@ -5230,10 +5230,10 @@ static int handle_io(struct kvm_vcpu *vcpu)
 	unsigned port;
 
 	/**
-	 *  读取字段
+	 * 从 VMCS 读取字段
 	 */
 	exit_qualification = vmx_get_exit_qual(vcpu);
-	string = (exit_qualification & 16) != 0;
+	string = (exit_qualification & 16) != 0; /* 普通的 IO 还是 stringIO */
 
 	++vcpu->stat.io_exits;
 
@@ -5253,8 +5253,8 @@ static int handle_io(struct kvm_vcpu *vcpu)
 	 *
 	 */
 	port = exit_qualification >> 16;
-	size = (exit_qualification & 7) + 1;
-	in = (exit_qualification & 8) != 0;
+	size = (exit_qualification & 7) + 1; /* 0-2bit, 大小 */
+	in = (exit_qualification & 8) != 0; /* 读还是写 */
 
 	/**
 	 *
@@ -6148,7 +6148,7 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_TRIPLE_FAULT]            = handle_triple_fault,
 	[EXIT_REASON_NMI_WINDOW]	      = handle_nmi_window,
 	/**
-	 *  Guest 发生 IO 导致 VM exit
+	 * PIO: Guest 发生 IO 导致 VM exit
 	 */
 	[EXIT_REASON_IO_INSTRUCTION]          = handle_io,
 	/**
