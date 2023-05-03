@@ -280,16 +280,16 @@ struct irq_data;
 struct apic {
 	/**
 	 *  Hotpath functions first
-        arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
-        arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
+	    arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
+	    arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
 	 */
 	void	(*eoi_write)(u32 reg, u32 v);
 	void	(*native_eoi_write)(u32 reg, u32 v);
@@ -337,9 +337,9 @@ struct apic {
 	u32	(*get_apic_id)(unsigned long x);
 	u32	(*set_apic_id)(unsigned int id);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* wakeup_secondary_cpu */
 	int	(*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
 
@@ -358,9 +358,9 @@ struct apic {
 	 */
 	int (*x86_32_early_logical_apicid)(int cpu);
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	char	*name;
 };
 
@@ -411,22 +411,25 @@ static inline u32 apic_read(u32 reg)
  */
 static inline void apic_write(u32 reg, u32 val)
 {
-	apic->write(reg, val); //native_apic_mem_write()
+	/**
+	 * native_apic_mem_write()
+	 */
+	apic->write(reg, val);
 }
 
 static inline void apic_eoi(void)
 {
-    /**
-        arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
-        arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
-        arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
-        arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
+	/**
+	    arch/x86/kernel/apic/apic_flat_64.c:151:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_flat_64.c:244:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_noop.c:136:	    .eoi_write			= noop_apic_write,
+	    arch/x86/kernel/apic/apic_numachip.c:282:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/apic_numachip.c:331:	.eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/bigsmp_32.c:163:	    .eoi_write			= native_apic_mem_write,
+	    arch/x86/kernel/apic/x2apic_cluster.c:219:	.eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/kernel/apic/x2apic_phys.c:192:	    .eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/kernel/apic/x2apic_uv_x.c:856:	    .eoi_write			= native_apic_msr_eoi_write,
+	    arch/x86/xen/apic.c:184:	                .eoi_write			= xen_apic_write,
 	 */
 	apic->eoi_write(APIC_EOI, APIC_EOI_ACK);
 }
@@ -511,7 +514,7 @@ static inline unsigned int read_apic_id(void)
 {
 	unsigned int reg = apic_read(APIC_ID);
 
-    //可能是: apic_flat->flat_get_apic_id()
+	//可能是: apic_flat->flat_get_apic_id()
 	return apic->get_apic_id(reg);
 }
 

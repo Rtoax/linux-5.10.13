@@ -10,6 +10,11 @@
  */
 
 #define IO_APIC_DEFAULT_PHYS_BASE	0xfec00000
+/**
+ * LAPIC 的 4KB 的设备内存分配的总线地址。
+ * LAPIC 各个寄存器都存储在这个 4KB 设备内存中，各个寄存器可以使用相对 4KB 内存的
+ * 偏移地址。
+ */
 #define	APIC_DEFAULT_PHYS_BASE		0xfee00000
 
 /*
@@ -26,7 +31,7 @@
 #define	GET_APIC_VERSION(x)	((x) & 0xFFu)
 #define	GET_APIC_MAXLVT(x)	(((x) >> 16) & 0xFFu)
 #ifdef CONFIG_X86_32
-//#  define	APIC_INTEGRATED(x)	((x) & 0xF0u)
+#  define	APIC_INTEGRATED(x)	((x) & 0xF0u)
 #else
 /**
  * 判断 LAPIC 是集成到 CPU 内部还是独立的

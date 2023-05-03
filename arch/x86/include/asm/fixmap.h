@@ -72,10 +72,12 @@
  *
  * TLB entries of such buffers will not be flushed across
  * task switches.
+ *
+ * 每个固定映射的地址都由一个整数索引表示
  */
-enum fixed_addresses {  /* 每个固定映射的地址都由一个整数索引表示 */
+enum fixed_addresses {
 #ifdef CONFIG_X86_32
-//	FIX_HOLE,
+	FIX_HOLE,
 #else
 #ifdef CONFIG_X86_VSYSCALL_EMULATION
 	VSYSCALL_PAGE = (FIXADDR_TOP - VSYSCALL_ADDR) >> PAGE_SHIFT,    /* =  `511`*/
@@ -94,17 +96,17 @@ enum fixed_addresses {  /* 每个固定映射的地址都由一个整数索引�
 	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS - 1,
 #endif
 #ifdef CONFIG_X86_32
-//	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
-//	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
-////#ifdef CONFIG_PCI_MMCONFIG
-////	FIX_PCIE_MCFG,
-////#endif
+	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+#ifdef CONFIG_PCI_MMCONFIG
+	FIX_PCIE_MCFG,
+#endif
 #endif
 #ifdef CONFIG_PARAVIRT_XXL
 	FIX_PARAVIRT_BOOTMAP,
 #endif
 #ifdef	CONFIG_X86_INTEL_MID
-//	FIX_LNW_VRTC,
+	FIX_LNW_VRTC,
 #endif
 
 #ifdef CONFIG_ACPI_APEI_GHES
@@ -122,9 +124,9 @@ enum fixed_addresses {  /* 每个固定映射的地址都由一个整数索引�
 	 * If necessary we round it up to the next 512 pages boundary so
 	 * that we can have a single pmd entry and a single pte table:
 	 */
-//#define NR_FIX_BTMAPS		64
-//#define FIX_BTMAPS_SLOTS	8
-//#define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
+#define NR_FIX_BTMAPS		64
+#define FIX_BTMAPS_SLOTS	8
+#define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
 	FIX_BTMAP_END =
 	 (__end_of_permanent_fixed_addresses ^
 	  (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) &
@@ -134,7 +136,7 @@ enum fixed_addresses {  /* 每个固定映射的地址都由一个整数索引�
 	 : __end_of_permanent_fixed_addresses,
 	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
 #ifdef CONFIG_X86_32
-//	FIX_WP_TEST,
+	FIX_WP_TEST,
 #endif
 #ifdef CONFIG_INTEL_TXT
 	FIX_TBOOT_BASE,
