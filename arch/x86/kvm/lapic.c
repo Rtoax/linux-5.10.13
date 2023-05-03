@@ -2105,7 +2105,13 @@ int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
 		break;
 	}
 	/**
-	 *  IPI：由CPU通过写入APIC的Interrupt Control Register (ICR)而主动发起，接收不需要额外配置
+	 * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+	 * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+	 * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+	 * 处理函数。
+	 *
+	 * IPI：由 CPU 通过写入 APIC 的 Interrupt Control Register (ICR)而主动发起，
+	 * 接收不需要额外配置.
 	 */
 	case APIC_ICR:
 		/* No delay here, so we always clear the pending bit */

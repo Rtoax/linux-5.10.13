@@ -100,6 +100,10 @@
 #define EXIT_REASON_TPR_BELOW_THRESHOLD 43
 /**
  * 为了提高效率和简化实现， Intel VMX 增加了 APIC ACCESS VMX EXIT
+ *
+ * 因为 LAPIC 访问非常频繁，所以 Intel 从硬件层面作了很多支持，比如为访问 LAPIC 的寄存器
+ * 增加了退出原因 EXIT_REASON_APIC_ACCESS，这样就不必首先进入缺页异常尝试处理，而是直接
+ * 进入 LAPIC 处理函数。
  */
 #define EXIT_REASON_APIC_ACCESS         44
 #define EXIT_REASON_EOI_INDUCED         45

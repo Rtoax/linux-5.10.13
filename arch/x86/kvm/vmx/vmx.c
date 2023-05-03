@@ -5626,6 +5626,8 @@ static int handle_xsetbv(struct kvm_vcpu *vcpu)
  *  比如 为 访问 LAPIC 寄存器增加了专门退出的原因，这样就不必首先进入缺页
  *  异常函数来尝试处理，当缺页异常函数无法处理后再进入指令模拟函数，而是
  *  直接进入 LAPIC 的处理函数
+ *
+ *  EXIT_REASON_APIC_ACCESS
  */
 static int handle_apic_access(struct kvm_vcpu *vcpu)
 {
@@ -6190,7 +6192,11 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu) = {
 	[EXIT_REASON_VMON]		      = handle_vmx_instruction,
 	[EXIT_REASON_TPR_BELOW_THRESHOLD]     = handle_tpr_below_threshold,
 	/**
-	 *  访问了APIC
+	 * 为了提高效率和简化实现， Intel VMX 增加了 APIC ACCESS VMX EXIT
+	 *
+	 * 因为 LAPIC 访问非常频繁，所以 Intel 从硬件层面作了很多支持，比如为访问
+	 * LAPIC 的寄存器增加了退出原因 EXIT_REASON_APIC_ACCESS，这样就不必首先
+	 * 进入缺页异常尝试处理，而是直接进入 LAPIC 处理函数。
 	 */
 	[EXIT_REASON_APIC_ACCESS]             = handle_apic_access,
 	/**

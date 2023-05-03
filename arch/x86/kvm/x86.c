@@ -5936,6 +5936,12 @@ static void kvm_init_msr_list(void)
 	}
 }
 
+/**
+ * 对于一个设备而言，仅仅简单把源操作数赋值给目的操作数指向的地址还不够，因为写寄存器
+ * 的操作可能伴随一些副作用，需要设备做一些额外的操作。比如：对于 APIC 而言，写 icr
+ * 寄存器可能需要 LAPIC 向另外一个处理器发出 IPI 中断，因此，还需要调用设备的相应
+ * 处理函数。
+ */
 static int vcpu_mmio_write(struct kvm_vcpu *vcpu, gpa_t addr, int len,
 			   const void *v)
 {
