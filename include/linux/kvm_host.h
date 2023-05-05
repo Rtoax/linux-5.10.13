@@ -524,6 +524,9 @@ struct kvm_memslots {
  *  在 ioctl(KVM_CREATE_VM, ...) 时候创建, see kvm_dev_ioctl_create_vm()
  */
 struct kvm {
+	/**
+	 * mmu_lock 表示操作虚拟机 MMU 数据的锁
+	 */
 	spinlock_t mmu_lock;
 	struct mutex slots_lock;
 	struct mm_struct *mm; /* userspace tied to this vm */

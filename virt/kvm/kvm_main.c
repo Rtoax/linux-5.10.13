@@ -763,6 +763,9 @@ static struct kvm *kvm_create_vm(unsigned long type)
 	if (!kvm)
 		return ERR_PTR(-ENOMEM);
 
+	/**
+	 * mmu_lock 表示操作虚拟机 MMU 数据的锁
+	 */
 	spin_lock_init(&kvm->mmu_lock);
 	mmgrab(current->mm);
 	/**
