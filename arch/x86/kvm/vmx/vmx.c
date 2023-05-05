@@ -8454,6 +8454,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.msr_filter_changed = vmx_msr_filter_changed,
 };
 
+/**
+ *
+ */
 static __init int hardware_setup(void)
 {
 	unsigned long host_bndcfgs;
@@ -8466,6 +8469,9 @@ static __init int hardware_setup(void)
 	for (i = 0; i < ARRAY_SIZE(vmx_uret_msrs_list); ++i)
 		kvm_define_user_return_msr(i, vmx_uret_msrs_list[i]);
 
+	/**
+	 * 初始化 VMCS
+	 */
 	if (setup_vmcs_config(&vmcs_config, &vmx_capability) < 0)
 		return -EIO;
 
@@ -8485,6 +8491,9 @@ static __init int hardware_setup(void)
 	    !(cpu_has_vmx_invvpid_single() || cpu_has_vmx_invvpid_global()))
 		enable_vpid = 0;
 
+	/**
+	 * 没有开启 EPT
+	 */
 	if (!cpu_has_vmx_ept() ||
 	    !cpu_has_vmx_ept_4levels() ||
 	    !cpu_has_vmx_ept_mt_wb() ||

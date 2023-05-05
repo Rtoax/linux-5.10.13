@@ -4442,11 +4442,18 @@ out:
 }
 
 static struct file_operations kvm_chardev_ops = {
+	/**
+	 * 仅仅支持 ioctl()
+	 * open(2) close(2) 会被 misc 框架处理
+	 */
 	.unlocked_ioctl = kvm_dev_ioctl,
 	.llseek		= noop_llseek,
 	KVM_COMPAT(kvm_dev_ioctl),
 };
 
+/**
+ * /dev/kvm misc 设备
+ */
 static struct miscdevice kvm_dev = {
 	KVM_MINOR,
 	"kvm",
@@ -5228,6 +5235,9 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 	int r;
 	int cpu;
 
+	/**
+	 * 初始化 KVM 架构相关
+	 */
 	r = kvm_arch_init(opaque);
 	if (r)
 		goto out_fail;
@@ -5248,6 +5258,9 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 		goto out_free_0;
 	}
 
+	/**
+	 *
+	 */
 	r = kvm_arch_hardware_setup(opaque);
 	if (r < 0)
 		goto out_free_1;
@@ -5288,6 +5301,9 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 	kvm_vm_fops.owner = module;
 	kvm_vcpu_fops.owner = module;
 
+	/**
+	 * 注册 /dev/kvm misc 设备
+	 */
 	r = misc_register(&kvm_dev);
 	if (r) {
 		pr_err("kvm: misc device register failed\n");

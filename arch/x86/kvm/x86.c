@@ -8158,6 +8158,9 @@ static struct notifier_block pvclock_gtod_notifier = {
 };
 #endif
 
+/**
+ * 初始化 KVM 架构相关
+ */
 int kvm_arch_init(void *opaque)
 {
 	struct kvm_x86_init_ops *ops = opaque;
@@ -8169,11 +8172,17 @@ int kvm_arch_init(void *opaque)
 		goto out;
 	}
 
+	/**
+	 * 通过 CPUID 查询，是否支持 KVM/VMX
+	 */
 	if (!ops->cpu_has_kvm_support()) {
 		pr_err_ratelimited("kvm: no hardware support\n");
 		r = -EOPNOTSUPP;
 		goto out;
 	}
+	/**
+	 * 通过 MSR 查询，VMX 是否被 BIOS 关闭
+	 */
 	if (ops->disabled_by_bios()) {
 		pr_err_ratelimited("kvm: disabled by bios\n");
 		r = -EOPNOTSUPP;
@@ -10729,6 +10738,10 @@ int kvm_arch_hardware_setup(void *opaque)
 	if (boot_cpu_has(X86_FEATURE_XSAVES))
 		rdmsrl(MSR_IA32_XSS, host_xss);
 
+	/**
+	 * VMX: hardware_setup()
+	 * SVM: svm_hardware_setup()
+	 */
 	r = ops->hardware_setup();
 	if (r != 0)
 		return r;
