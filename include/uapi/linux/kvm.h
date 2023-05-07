@@ -472,8 +472,9 @@ struct kvm_hyperv_exit {
 #define KVM_INTERNAL_ERROR_EMULATION_FLAG_INSTRUCTION_BYTES (1ULL << 0)
 
 /**
+ *  该结构用于 Qemu 和 KVM 进行基本的数据交互
  *  for KVM_RUN, returned by mmap(vcpu_fd, offset=0)
- *
+ *  使用 KVM_GET_VCPU_MMAP_SIZE 获取大小，见 kvm_dev_ioctl()
  */
 struct kvm_run {
 	/* in */

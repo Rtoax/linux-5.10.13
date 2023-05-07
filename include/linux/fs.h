@@ -1086,7 +1086,7 @@ struct file {
 	 *  pid 中对应 struct pid * 结构
 	 *  userfaultfd(2) 中对应 struct userfaultfd_ctx * 结构，见 userfaultfd(2)
 	 *  /proc/PID/mem 中对应 struct mm_struct * 结构，见 __mem_open(), mem_rw()
-	 *  kvm 中对应
+	 *  kvm_vcpu_fault() 中对应 struct kvm_vcpu * 结构
 	 *  [...]
 	 */
 	void			*private_data;

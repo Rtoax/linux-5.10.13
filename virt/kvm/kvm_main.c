@@ -3305,6 +3305,9 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
 }
 EXPORT_SYMBOL_GPL(kvm_vcpu_on_spin);
 
+/**
+ * int vcpufd = ioctl(vmfd, KVM_CREATE_VCPU, (unsigned long)0);
+ */
 static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
 {
 	struct kvm_vcpu *vcpu = vmf->vma->vm_file->private_data;
@@ -3327,6 +3330,9 @@ static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
 	return 0;
 }
 
+/**
+ *
+ */
 static const struct vm_operations_struct kvm_vcpu_vm_ops = {
 	.fault = kvm_vcpu_fault,
 };
@@ -3347,6 +3353,9 @@ static int kvm_vcpu_release(struct inode *inode, struct file *filp)
 
 /**
  * vcpu operations
+ *
+ * - struct kvm_vcpu {}
+ * - int vcpufd = ioctl(vmfd, KVM_CREATE_VCPU, (unsigned long)0);
  */
 static struct file_operations kvm_vcpu_fops = {
 	.release        = kvm_vcpu_release,
@@ -4433,9 +4442,17 @@ static long kvm_dev_ioctl(struct file *filp,
 			goto out;
 		r = PAGE_SIZE;     /* struct kvm_run */
 #ifdef CONFIG_X86
+		/**
+		 * Port IO (KVM_PIO_PAGE_OFFSET)
+		 * kvm_vcpu.arch.pio_data
+		 */
 		r += PAGE_SIZE;    /* pio data page */
 #endif
 #ifdef CONFIG_KVM_MMIO
+		/**
+		 * 聚合 MMIO (KVM_COALESCED_MMIO_PAGE_OFFSET)
+		 * kvm_vcpu.kvm->coalesced_mmio_ring
+		 */
 		r += PAGE_SIZE;    /* coalesced mmio ring page */
 #endif
 		break;

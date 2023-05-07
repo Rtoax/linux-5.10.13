@@ -10,6 +10,12 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 
+/**
+ * KVM_PIO_PAGE_OFFSET 一共三页，见 kvm_vcpu_fault()
+ * - 第一页 struct kvm_vcpu {}
+ * - 第二页 KVM_PIO_PAGE_OFFSET
+ * - 第三页 KVM_COALESCED_MMIO_PAGE_OFFSET
+ */
 #define KVM_PIO_PAGE_OFFSET 1
 #define KVM_COALESCED_MMIO_PAGE_OFFSET 2
 

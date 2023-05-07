@@ -5138,6 +5138,9 @@ out_nofree:
 	return r;
 }
 
+/**
+ * 在 kvm_vcpu_fault() 最后匹配不到任何 vmoff 的时候调用，直接返回 VM_FAULT_SIGBUS
+ */
 vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
 {
 	return VM_FAULT_SIGBUS;
