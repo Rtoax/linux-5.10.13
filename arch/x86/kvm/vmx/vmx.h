@@ -178,9 +178,15 @@ struct nested_vmx {
 };
 
 /**
- *
+ * VMX 的 vcpu 结构
  */
 struct vcpu_vmx {
+	/**
+	 * KVM 通用层 vCPU 结构。
+	 *
+	 * APIs:
+	 * 见 to_vmx() 宏
+	 */
 	struct kvm_vcpu       vcpu;
 	u8                    fail;
 	u8		      msr_bitmap_mode;
@@ -234,7 +240,7 @@ struct vcpu_vmx {
 	/*
 	 * loaded_vmcs points to the VMCS currently used in this vcpu. For a
 	 * non-nested (L1) guest, it always points to vmcs01. For a nested
-	 * guest (L2), it points to a different VMCS.
+	 * guest (L2), it points to a different VMCS(见 &vmx->nested.vmcs02).
 	 */
 	struct loaded_vmcs    vmcs01;
 	struct loaded_vmcs   *loaded_vmcs;
@@ -262,6 +268,14 @@ struct vcpu_vmx {
 			u32 ar;
 		} seg[8];
 	} segment_cache;
+
+	/**
+	 * vpid 用于开启 EPT 当前情况？？见 vmx_flush_tlb_guest()
+	 *
+	 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+	 *   全部清洗掉，以提高性能。
+	 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+	 */
 	int vpid;
 	bool emulation_required;
 

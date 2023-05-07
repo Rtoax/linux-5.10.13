@@ -3026,6 +3026,13 @@ static void kvm_vcpu_flush_tlb_all(struct kvm_vcpu *vcpu)
 static void kvm_vcpu_flush_tlb_guest(struct kvm_vcpu *vcpu)
 {
 	++vcpu->stat.tlb_flush;
+	/**
+	 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+	 *   全部清洗掉，以提高性能。
+	 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+	 *
+	 * x86: 这最终将调用 INVVPID — Invalidate Translations Based on VPID
+	 */
 	kvm_x86_ops.tlb_flush_guest(vcpu);
 }
 
@@ -3067,6 +3074,13 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
 	if (guest_pv_has(vcpu, KVM_FEATURE_PV_TLB_FLUSH)) {
 		trace_kvm_pv_tlb_flush(vcpu->vcpu_id,
 				       st->preempted & KVM_VCPU_FLUSH_TLB);
+		/**
+		 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+		 *   全部清洗掉，以提高性能。
+		 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+		 *
+		 * x86: 这最终将调用 INVVPID — Invalidate Translations Based on VPID
+		 */
 		if (xchg(&st->preempted, 0) & KVM_VCPU_FLUSH_TLB)
 			kvm_vcpu_flush_tlb_guest(vcpu);
 	}
@@ -9188,6 +9202,13 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		}
 		if (kvm_check_request(KVM_REQ_TLB_FLUSH_CURRENT, vcpu))
 			kvm_vcpu_flush_tlb_current(vcpu);
+		/**
+		 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+		 *   全部清洗掉，以提高性能。
+		 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+		 *
+		 * x86: 这最终将调用 INVVPID — Invalidate Translations Based on VPID
+		 */
 		if (kvm_check_request(KVM_REQ_HV_TLB_FLUSH, vcpu))
 			kvm_vcpu_flush_tlb_guest(vcpu);
 
@@ -10448,11 +10469,20 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
 	vcpu->arch.arch_capabilities = kvm_get_arch_capabilities();
 	vcpu->arch.msr_platform_info = MSR_PLATFORM_INFO_CPUID_FAULT;
 	kvm_vcpu_mtrr_init(vcpu);
+
+	/**
+	 * 在禁止抢占的情况下注册 VCPU 的 preempt_notifier, 即完成当前物理
+	 * CPU 与该 VCPU 的 VMCS 的绑定。
+	 */
 	vcpu_load(vcpu);
 	/**
-	 *
+	 * 对 kvm_vcpu 的成员进行初始化
 	 */
 	kvm_vcpu_reset(vcpu, false);
+
+	/**
+	 * 完成内存虚拟化的初始化
+	 */
 	kvm_init_mmu(vcpu, false);
 	vcpu_put(vcpu);
 	return 0;
@@ -10528,7 +10558,7 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  刚进入 Guest 内核时，需要进行 reset vcpu
+ *  刚进入 Guest 内核时，需要进行 reset vcpu，对 kvm_vcpu 的成员进行初始化
  */
 void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
 {

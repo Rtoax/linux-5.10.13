@@ -153,12 +153,12 @@ static __always_inline u64 vmcs_read64(unsigned long field)
 	vmcs_check64(field);
 	if (static_branch_unlikely(&enable_evmcs))
 		return evmcs_read64(field);
-    /**
-     *  https://zhuanlan.zhihu.com/p/49257842
-     *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
-     *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
-     *  的方法就是通过VMREAD和VMWRITE指令去访问。
-     */
+	/**
+	 *  https://zhuanlan.zhihu.com/p/49257842
+	 *  当VMCS数据结构被load到逻辑CPU上（即执行VMPTRLD指令）后，处理器并没法通过
+	 *  普通的内存访问指令去访问VMCS，如果那样做的话，会引起处理器报错，唯一可用
+	 *  的方法就是通过VMREAD和VMWRITE指令去访问。
+	 */
 #ifdef CONFIG_X86_64
 	return __vmcs_readl(field);
 #else
@@ -216,9 +216,9 @@ fault:									\
  */
 static __always_inline void __vmcs_writel(unsigned long field, unsigned long value)
 {
-    /**
-     *  注入
-     */
+	/**
+	 *  注入
+	 */
 	vmx_asm2(vmwrite, "r"(field), "rm"(value), field, value);
 }
 
@@ -309,9 +309,12 @@ static inline void vmcs_load(struct vmcs *vmcs)
 	if (static_branch_unlikely(&enable_evmcs))
 		return evmcs_load(phys_addr);
 
-    /**
-     *
-     */
+	/**
+	 * VMPTRLD — Load Pointer to Virtual-Machine Control Structure
+	 * 将当前VMCS指针标记为有效，并将其与指令操作数中的物理地址一起加载。
+	 *
+	 * https://www.felixcloutier.com/x86/vmptrld
+	 */
 	vmx_asm1(vmptrld, "m"(phys_addr), vmcs, phys_addr);
 }
 
@@ -323,6 +326,12 @@ static inline void __invvpid(unsigned long ext, u16 vpid, gva_t gva)
 		u64 gva;
 	} operand = { vpid, 0, gva };
 
+	/**
+	 * INVVPID — Invalidate Translations Based on VPID
+	 * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+	 *
+	 * https://www.felixcloutier.com/x86/invvpid
+	 */
 	vmx_asm2(invvpid, "r"(ext), "m"(operand), ext, vpid, gva);
 }
 

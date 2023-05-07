@@ -1981,6 +1981,11 @@ static int copy_vmcs12_to_enlightened(struct vcpu_vmx *vmx)
 /*
  * This is an equivalent of the nested hypervisor executing the vmptrld
  * instruction.
+ *
+ * VMPTRLD — Load Pointer to Virtual-Machine Control Structure
+ * 将当前VMCS指针标记为有效，并将其与指令操作数中的物理地址一起加载。
+ *
+ * https://www.felixcloutier.com/x86/vmptrld
  */
 static enum nested_evmptrld_status nested_vmx_handle_enlightened_vmptrld(
 	struct kvm_vcpu *vcpu, bool from_launch)
@@ -2182,6 +2187,9 @@ static void prepare_vmcs02_constant_state(struct vcpu_vmx *vmx)
 	 * and then back to vmcs01 on nested vmexit.  But since we flush
 	 * the log and reset GUEST_PML_INDEX on each vmexit, the PML
 	 * index is also effectively constant in vmcs02.
+	 *
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
 	 */
 	if (enable_pml) {
 		vmcs_write64(PML_ADDRESS, page_to_phys(vmx->pml_pg));
@@ -5202,7 +5210,14 @@ static void set_current_vmptr(struct vcpu_vmx *vmx, gpa_t vmptr)
 	vmx->nested.dirty_vmcs12 = true;
 }
 
-/* Emulate the VMPTRLD instruction */
+/**
+ * Emulate the VMPTRLD instruction
+ *
+ * VMPTRLD — Load Pointer to Virtual-Machine Control Structure
+ * 将当前VMCS指针标记为有效，并将其与指令操作数中的物理地址一起加载。
+ *
+ * https://www.felixcloutier.com/x86/vmptrld
+ */
 static int handle_vmptrld(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -5381,6 +5396,12 @@ static int handle_invept(struct kvm_vcpu *vcpu)
 	return nested_vmx_succeed(vcpu);
 }
 
+/**
+ * INVVPID — Invalidate Translations Based on VPID
+ * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+ *
+ * https://www.felixcloutier.com/x86/invvpid
+ */
 static int handle_invvpid(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -6591,6 +6612,12 @@ __init int nested_vmx_hardware_setup(int (*exit_handlers[])(struct kvm_vcpu *))
 
 	exit_handlers[EXIT_REASON_VMCLEAR]	= handle_vmclear;
 	exit_handlers[EXIT_REASON_VMLAUNCH]	= handle_vmlaunch;
+	/**
+	 * VMPTRLD — Load Pointer to Virtual-Machine Control Structure
+	 * 将当前VMCS指针标记为有效，并将其与指令操作数中的物理地址一起加载。
+	 *
+	 * https://www.felixcloutier.com/x86/vmptrld
+	 */
 	exit_handlers[EXIT_REASON_VMPTRLD]	= handle_vmptrld;
 	exit_handlers[EXIT_REASON_VMPTRST]	= handle_vmptrst;
 	exit_handlers[EXIT_REASON_VMREAD]	= handle_vmread;
@@ -6599,6 +6626,12 @@ __init int nested_vmx_hardware_setup(int (*exit_handlers[])(struct kvm_vcpu *))
 	exit_handlers[EXIT_REASON_VMOFF]	= handle_vmoff;
 	exit_handlers[EXIT_REASON_VMON]		= handle_vmon;
 	exit_handlers[EXIT_REASON_INVEPT]	= handle_invept;
+	/**
+	 * INVVPID — Invalidate Translations Based on VPID
+	 * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+	 *
+	 * https://www.felixcloutier.com/x86/invvpid
+	 */
 	exit_handlers[EXIT_REASON_INVVPID]	= handle_invvpid;
 	exit_handlers[EXIT_REASON_VMFUNC]	= handle_vmfunc;
 

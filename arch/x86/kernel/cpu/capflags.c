@@ -327,6 +327,12 @@ const char * const x86_vmx_flags[NVMXINTS*32] = {
 	[VMX_FEATURE_VIRTUAL_NMIS]	 = "vnmi",
 	[VMX_FEATURE_PREEMPTION_TIMER]	 = "preemption_timer",
 	[VMX_FEATURE_POSTED_INTR]	 = "posted_intr",
+	/**
+	 * INVVPID — Invalidate Translations Based on VPID
+	 * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+	 *
+	 * https://www.felixcloutier.com/x86/invvpid
+	 */
 	[VMX_FEATURE_INVVPID]		 = "invvpid",
 	[VMX_FEATURE_EPT_EXECUTE_ONLY]	 = "ept_x_only",
 	[VMX_FEATURE_EPT_AD]		 = "ept_ad",

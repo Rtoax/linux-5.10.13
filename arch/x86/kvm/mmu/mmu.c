@@ -5474,7 +5474,7 @@ static void init_kvm_nested_mmu(struct kvm_vcpu *vcpu)
 }
 
 /**
- *  重置 VCPU 对应的虚拟 MMU
+ * 完成内存虚拟化的初始化: 重置 VCPU 对应的虚拟 MMU
  */
 void kvm_init_mmu(struct kvm_vcpu *vcpu, bool reset_roots)
 {

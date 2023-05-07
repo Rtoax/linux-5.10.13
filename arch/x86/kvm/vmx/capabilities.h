@@ -331,6 +331,12 @@ static inline bool cpu_has_vmx_invept_global(void)
 	return vmx_capability.ept & VMX_EPT_EXTENT_GLOBAL_BIT;
 }
 
+/**
+ * INVVPID — Invalidate Translations Based on VPID
+ * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+ *
+ * https://www.felixcloutier.com/x86/invvpid
+ */
 static inline bool cpu_has_vmx_invvpid(void)
 {
 	return vmx_capability.vpid & VMX_VPID_INVVPID_BIT;

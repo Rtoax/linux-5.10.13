@@ -114,6 +114,10 @@ module_param(enable_apicv, bool, S_IRUGO);
 static bool __read_mostly nested = 1;
 module_param(nested, bool, S_IRUGO);
 
+/**
+ * PML: Page Modification Logging
+ * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
+ */
 bool __read_mostly enable_pml = 1;
 module_param_named(pml, enable_pml, bool, S_IRUGO);
 
@@ -395,11 +399,23 @@ noinline void vmclear_error(struct vmcs *vmcs, u64 phys_addr)
 	vmx_insn_failed("kvm: vmclear failed: %p/%llx\n", vmcs, phys_addr);
 }
 
+/**
+ * VMPTRLD — Load Pointer to Virtual-Machine Control Structure
+ * 将当前VMCS指针标记为有效，并将其与指令操作数中的物理地址一起加载。
+ *
+ * https://www.felixcloutier.com/x86/vmptrld
+ */
 noinline void vmptrld_error(struct vmcs *vmcs, u64 phys_addr)
 {
 	vmx_insn_failed("kvm: vmptrld failed: %p/%llx\n", vmcs, phys_addr);
 }
 
+/**
+ * INVVPID — Invalidate Translations Based on VPID
+ * 基于虚拟处理器标识符（VPID）使转换后备缓冲区（TLB）和分页结构缓存中的映射无效。
+ *
+ * https://www.felixcloutier.com/x86/invvpid
+ */
 noinline void invvpid_error(unsigned long ext, u16 vpid, gva_t gva)
 {
 	vmx_insn_failed("kvm: invvpid failed: ext=0x%lx vpid=%u gva=0x%lx\n",
@@ -1401,7 +1417,8 @@ static void vmx_write_guest_kernel_gs_base(struct vcpu_vmx *vmx, u64 data)
 #endif
 
 /**
- * @brief 为 vcpu 加载 vmcs 结构
+ * @brief 为 vcpu 加载 vmcs 结构，将 per-CPU 变量 current_vmcs 设置成刚刚分配的
+ *        VMCS，然后调用 vmptrld 指令。
  *
  * @param vcpu - KVM vcpu 结构
  * @param cpu - 逻辑 CPU
@@ -2761,6 +2778,9 @@ void free_loaded_vmcs(struct loaded_vmcs *__loaded_vmcs)
 	WARN_ON(__loaded_vmcs->shadow_vmcs != NULL);
 }
 
+/**
+ * 分配一个 VMCS
+ */
 int alloc_loaded_vmcs(struct loaded_vmcs *__loaded_vmcs)
 {
 	/**
@@ -3109,8 +3129,16 @@ static void vmx_flush_tlb_gva(struct kvm_vcpu *vcpu, gva_t addr)
 	vpid_sync_vcpu_addr(to_vmx(vcpu)->vpid, addr);
 }
 
+/**
+ * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+ *   全部清洗掉，以提高性能。
+ * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+ *
+ * 这最终将调用 INVVPID — Invalidate Translations Based on VPID
+ */
 static void vmx_flush_tlb_guest(struct kvm_vcpu *vcpu)
 {
+
 	/*
 	 * vpid_sync_context() is a nop if vmx->vpid==0, e.g. if enable_vpid==0
 	 * or a vpid couldn't be allocated for this vCPU.  VM-Enter and VM-Exit
@@ -4470,6 +4498,10 @@ static void vmx_compute_secondary_exec_control(struct vcpu_vmx *vmx)
 	*/
 	exec_control &= ~SECONDARY_EXEC_SHADOW_VMCS;
 
+	/**
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
+	 */
 	if (!enable_pml)
 		exec_control &= ~SECONDARY_EXEC_ENABLE_PML;
 
@@ -4606,6 +4638,10 @@ static void init_vmcs(struct vcpu_vmx *vmx)
 	if (cpu_has_vmx_xsaves())
 		vmcs_write64(XSS_EXIT_BITMAP, VMX_XSS_EXIT_BITMAP);
 
+	/**
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
+	 */
 	if (enable_pml) {
 		vmcs_write64(PML_ADDRESS, page_to_phys(vmx->pml_pg));
 		vmcs_write16(GUEST_PML_INDEX, PML_ENTITY_NUM - 1);
@@ -6508,6 +6544,9 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	 * querying dirty_bitmap, we only need to kick all vcpus out of guest
 	 * mode as if vcpus is in root mode, the PML buffer must has been
 	 * flushed already.
+	 *
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
 	 */
 	if (enable_pml)
 		vmx_flush_pml_buffer(vcpu);
@@ -7526,6 +7565,10 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 
+	/**
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
+	 */
 	if (enable_pml)
 		vmx_destroy_pml_buffer(vmx);
 	free_vpid(vmx->vpid);
@@ -7535,6 +7578,7 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
 
 /**
  * Called in kvm_arch_vcpu_create()
+ * VMX 创建 vcpu
  */
 static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 {
@@ -7546,6 +7590,15 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 
 	err = -ENOMEM;
 
+	/**
+	 * 分配一个 vpid
+	 *
+	 * vpid 用于开启 EPT 当前情况？？见 vmx_flush_tlb_guest()
+	 *
+	 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+	 *   全部清洗掉，以提高性能。
+	 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+	 */
 	vmx->vpid = allocate_vpid();
 
 	/*
@@ -7553,6 +7606,9 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 	 * of creating the vcpu, therefore we can simplify PML logic (by
 	 * avoiding dealing with cases, such as enabling PML partially on vcpus
 	 * for the guest), etc.
+	 *
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
 	 */
 	if (enable_pml) {
 		vmx->pml_pg = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
@@ -7562,6 +7618,9 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 
 	BUILD_BUG_ON(ARRAY_SIZE(vmx_uret_msrs_list) != MAX_NR_USER_RETURN_MSRS);
 
+	/**
+	 * - 分配保存虚拟机的 MSR 寄存器空间
+	 */
 	for (i = 0; i < ARRAY_SIZE(vmx_uret_msrs_list); ++i) {
 		u32 index = vmx_uret_msrs_list[i];
 		u32 data_low, data_high;
@@ -7590,6 +7649,9 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 		++vmx->nr_uret_msrs;
 	}
 
+	/**
+	 *
+	 */
 	err = alloc_loaded_vmcs(&vmx->vmcs01);
 	if (err < 0)
 		goto free_pml;
@@ -7615,6 +7677,9 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
 
 	vmx->loaded_vmcs = &vmx->vmcs01;
 	cpu = get_cpu();
+	/**
+	 *
+	 */
 	vmx_vcpu_load(vcpu, cpu);
 	vcpu->cpu = cpu;
 	init_vmcs(vmx);
@@ -8355,6 +8420,13 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.tlb_flush_all = vmx_flush_tlb_all,
 	.tlb_flush_current = vmx_flush_tlb_current,
 	.tlb_flush_gva = vmx_flush_tlb_gva,
+	/**
+	 * - 每个 VCPU 与一个 vpid 关联，在进行 VCPU 的切换时就可以不必将 TLB 中的数据
+	 *   全部清洗掉，以提高性能。
+	 * - 对应 VMCS 中的 VIRTUAL_PROCESSOR_ID
+	 *
+	 * 这最终将调用 INVVPID — Invalidate Translations Based on VPID
+	 */
 	.tlb_flush_guest = vmx_flush_tlb_guest,
 
 	/**
@@ -8573,6 +8645,10 @@ static __init int hardware_setup(void)
 	if (!enable_ept || !enable_ept_ad_bits || !cpu_has_vmx_pml())
 		enable_pml = 0;
 
+	/**
+	 * PML: Page Modification Logging
+	 * 用于在硬件层面记录虚拟机中访问的物理页面，能够实现快速标记脏页。在热迁移中应用。
+	 */
 	if (!enable_pml) {
 		vmx_x86_ops.slot_enable_log_dirty = NULL;
 		vmx_x86_ops.slot_disable_log_dirty = NULL;

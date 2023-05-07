@@ -260,7 +260,9 @@ struct kvm_mmio_fragment {
 };
 
 /**
- *  VMM 使用一个线程来代表 VCPU 这个实体
+ * VMM 使用一个线程来代表 VCPU 这个实体
+ *
+ * VMX: kvm_vcpu 是 struct vcpu_vmx {} 结构的第一个元素，使用 container_of() 获取
  */
 struct kvm_vcpu {
 	struct kvm *kvm;
@@ -531,7 +533,11 @@ struct kvm {
 	struct mutex slots_lock;
 	struct mm_struct *mm; /* userspace tied to this vm */
 	struct kvm_memslots __rcu *memslots[KVM_ADDRESS_SPACE_NUM];
-	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
+
+	/**
+	 * 虚拟机所有的 vcpu
+	 */
+	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS/*288*/];
 
 	/*
 	 * created_vcpus is protected by kvm->lock, and is incremented

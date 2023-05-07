@@ -199,8 +199,11 @@ bool kvm_is_transparent_hugepage(kvm_pfn_t pfn)
 	return is_transparent_hugepage(compound_head(page));
 }
 
-/*
+/**
  * Switches to specified vcpu, until a matching vcpu_put()
+ *
+ * 在禁止抢占的情况下注册 preempt_notifier，即完成当前物理 CPU 与该 VCPU 的 VMCS
+ * 的绑定。
  */
 void vcpu_load(struct kvm_vcpu *vcpu)
 {
@@ -3356,6 +3359,8 @@ static struct file_operations kvm_vcpu_fops = {
 /**
  * Allocates an inode for the vcpu.
  * 为 VCPU 分配一个 fd，被 ioctl(2) 使用。
+ *
+ * 例如: int vcpufd = ioctl(vmfd, KVM_CREATE_VCPU, (unsigned long)0);
  */
 static int create_vcpu_fd(struct kvm_vcpu *vcpu)
 {
@@ -3454,6 +3459,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 
 	/**
 	 *  架构相关 - 创建
+	 *  内部区分 VMX/SVM
 	 */
 	r = kvm_arch_vcpu_create(vcpu);
 	if (r)
@@ -3472,7 +3478,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
 	kvm_get_kvm(kvm);
 
 	/**
-	 *
+	 * 创建一个 VCPU fd
+	 * 例如: int vcpufd = ioctl(vmfd, KVM_CREATE_VCPU, (unsigned long)0);
 	 */
 	r = create_vcpu_fd(vcpu);
 	if (r < 0) {
@@ -5165,6 +5172,9 @@ struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
 	return container_of(pn, struct kvm_vcpu, preempt_notifier);
 }
 
+/**
+ * VCPU 被调度进 CPU 的函数
+ */
 static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
 {
 	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
@@ -5177,6 +5187,9 @@ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
 	kvm_arch_vcpu_load(vcpu, cpu);
 }
 
+/**
+ * VCPU 被调度出 CPU 的函数
+ */
 static void kvm_sched_out(struct preempt_notifier *pn,
 			  struct task_struct *next)
 {
@@ -5315,7 +5328,13 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
 
 	register_syscore_ops(&kvm_syscore_ops);
 
+	/**
+	 * VCPU 被调度到 CPU 上的函数
+	 */
 	kvm_preempt_ops.sched_in = kvm_sched_in;
+	/**
+	 * VCPU 被调度出 CPU 的函数
+	 */
 	kvm_preempt_ops.sched_out = kvm_sched_out;
 
 	kvm_init_debug();
