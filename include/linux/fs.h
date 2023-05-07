@@ -371,9 +371,9 @@ typedef int (*read_actor_t)(read_descriptor_t *, struct page *,
  *  交换缓存 地址空间 操作符 / 地址空间方法集
  */
 struct address_space_operations {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int (*writepage)(struct page *page, struct writeback_control *wbc);
 	int (*readpage)(struct file *, struct page *);
 
@@ -392,11 +392,11 @@ struct address_space_operations {
 	void (*readahead)(struct readahead_control *);
 
 	int (*write_begin)(struct file *, struct address_space *mapping,
-        				loff_t pos, unsigned len, unsigned flags,
-        				struct page **pagep, void **fsdata);
+						loff_t pos, unsigned len, unsigned flags,
+						struct page **pagep, void **fsdata);
 	int (*write_end)(struct file *, struct address_space *mapping,
-        				loff_t pos, unsigned len, unsigned copied,
-        				struct page *page, void *fsdata);
+						loff_t pos, unsigned len, unsigned copied,
+						struct page *page, void *fsdata);
 
 	/* Unfortunately this kludge is needed for FIBMAP. Don't use it */
 	sector_t (*bmap)(struct address_space *, sector_t);
@@ -481,9 +481,9 @@ struct address_space {
 	 */
 	struct inode		*host;
 
-    /**
-     *  cache pages 基数树
-     */
+	/**
+	 *  cache pages 基数树
+	 */
 	struct xarray		i_pages;
 	gfp_t			    gfp_mask;
 	atomic_t		    i_mmap_writable;
@@ -492,7 +492,7 @@ struct address_space {
 	/* number of thp, only for non-shmem files */
 	atomic_t		    nr_thps;
 #endif
-    /**
+	/**
 	 * 文件缓存的树？
 	 * 优先搜索树的树根
 	 * tree of private and shared mappings
@@ -684,17 +684,17 @@ struct inode {
 	struct posix_acl	*i_default_acl;
 #endif
 
-    /**
-     *  socket(2) => sockfs_inode_ops
-     */
+	/**
+	 *  socket(2) => sockfs_inode_ops
+	 */
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;          /* inode指向的 superblock */
 	struct address_space	*i_mapping; /* 文件缓存 */
 
 #ifdef CONFIG_SECURITY
-    /**
-     *  见 `selinux_inode()`
-     */
+	/**
+	 *  见 `selinux_inode()`
+	 */
 	void			*i_security;
 #endif
 
@@ -712,12 +712,12 @@ struct inode {
 		unsigned int __i_nlink;
 	};
 
-    /**
-     *  表示设备文件的 inode 结构，该字段包含了真正的设备编号
-     *
-     *  imajor() 主 inode 号
-     *  iminor() 次 inode 号
-     */
+	/**
+	 *  表示设备文件的 inode 结构，该字段包含了真正的设备编号
+	 *
+	 *  imajor() 主 inode 号
+	 *  iminor() 次 inode 号
+	 */
 	dev_t			i_rdev;
 	loff_t			i_size;
 	struct timespec64	i_atime;
@@ -767,8 +767,8 @@ struct inode {
 #endif
 	union {
 	    /**
-         *
-         */
+		 *
+		 */
 		const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 		void (*free_inode)(struct inode *);
 	};
@@ -776,16 +776,16 @@ struct inode {
 	struct address_space	i_data;
 	struct list_head	i_devices;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		struct pipe_inode_info	*i_pipe;    /* pipe info */
 		struct block_device	*i_bdev;
 
-        /**
-         *  字符设备
-         */
+		/**
+		 *  字符设备
+		 */
 		struct cdev		*i_cdev;
 		char			*i_link;
 		unsigned		i_dir_seq;
@@ -1014,20 +1014,20 @@ struct file {
 		struct rcu_head 	fu_rcuhead; /* 单链表+回调函数 */
 	} f_u;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct path		f_path;         /* 文件路径 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct inode		*f_inode;	/* cached value */
-    /**
-     *  文件描述符操作符
-     *  namespace -> ns_file_operations, see proc_ns_file()
+	/**
+	 *  文件描述符操作符
+	 *  namespace -> ns_file_operations, see proc_ns_file()
 	 *  eventfd(2) -> eventfd_fops, see do_eventfd()
-     */
+	 */
 	const struct file_operations	*f_op;  /* 文件操作符 */
 
 	/*
@@ -1038,26 +1038,26 @@ struct file {
 	enum rw_hint	f_write_hint;
 	atomic_long_t	f_count;
 
-    /**
-     *  文件标志
-     *  O_RDONLY - 只读
-     *  O_NONBLOCK - 检查是否非阻塞
-     *  O_SYNC -
-     *  [...]
-     */
+	/**
+	 *  文件标志
+	 *  O_RDONLY - 只读
+	 *  O_NONBLOCK - 检查是否非阻塞
+	 *  O_SYNC -
+	 *  [...]
+	 */
 	unsigned int 	f_flags;
-    /**
-     *  文件模式，
-     *  FMODE_READ - 文件可读
-     *  FMODE_WRITE - 文件可写
-     *  [...]
-     */
+	/**
+	 *  文件模式，
+	 *  FMODE_READ - 文件可读
+	 *  FMODE_WRITE - 文件可写
+	 *  [...]
+	 */
 	fmode_t			f_mode;
 	struct mutex	f_pos_lock;
 
-    /**
-     *  当前的读写位置
-     */
+	/**
+	 *  当前的读写位置
+	 */
 	loff_t			f_pos;
 	struct fown_struct	f_owner;    /* 文件拥有者 */
 	const struct cred	*f_cred;    /* 文件安全上下文 */
@@ -1065,35 +1065,35 @@ struct file {
 
 	u64			f_version;
 #ifdef CONFIG_SECURITY
-    /**
-     *  存储安全数据用的
-     *  参见函数
-     *  selinux_file()
-     */
+	/**
+	 *  存储安全数据用的
+	 *  参见函数
+	 *  selinux_file()
+	 */
 	void			*f_security;
 #endif
 	/* needed for tty driver, and maybe others */
 
-    /**
-     *  epoll(2) 中对应 struct eventpoll 结构
-     *  socket(2) 中对应 struct socket 结构
+	/**
+	 *  epoll(2) 中对应 struct eventpoll 结构
+	 *  socket(2) 中对应 struct socket 结构
 	 *  eventfd(2) 中对应 struct eventfd_ctx 结构
-     *  perf_event_open(2) 中对应 struct perf_event *group_leader 结构
-     *  io_uring(2) 中对应 struct io_ring_ctx * 结构
-     *  __bpf_map_get() 中对应 struct bpf_map * 结构
-     *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
-     *  seq_release() 中对应 struct seq_file * 结构
-     *  pid 中对应 struct pid * 结构
-     *  userfaultfd(2) 中对应 struct userfaultfd_ctx * 结构，见 userfaultfd(2)
-     *  /proc/PID/mem 中对应 struct mm_struct * 结构，见 __mem_open(), mem_rw()
+	 *  perf_event_open(2) 中对应 struct perf_event *group_leader 结构
+	 *  io_uring(2) 中对应 struct io_ring_ctx * 结构
+	 *  __bpf_map_get() 中对应 struct bpf_map * 结构
+	 *  ____bpf_prog_get() 中对应 struct bpf_prog * 结构
+	 *  seq_release() 中对应 struct seq_file * 结构
+	 *  pid 中对应 struct pid * 结构
+	 *  userfaultfd(2) 中对应 struct userfaultfd_ctx * 结构，见 userfaultfd(2)
+	 *  /proc/PID/mem 中对应 struct mm_struct * 结构，见 __mem_open(), mem_rw()
 	 *  kvm 中对应
-     *  [...]
-     */
+	 *  [...]
+	 */
 	void			*private_data;
 
-    /**
-     *  epoll
-     */
+	/**
+	 *  epoll
+	 */
 #ifdef CONFIG_EPOLL
 	/* Used by fs/eventpoll.c to link all the hooks to this file */
 	struct list_head	f_ep_links;/* 用于 epoll 链接所有 就绪的 files */
@@ -1101,15 +1101,15 @@ struct file {
 
 #endif /* #ifdef CONFIG_EPOLL */
 
-    /**
-     *  文件缓存
-     *  函数 `generic_perform_write()` 中 write(2) 会 调用
-     */
+	/**
+	 *  文件缓存
+	 *  函数 `generic_perform_write()` 中 write(2) 会 调用
+	 */
 	struct address_space	*f_mapping; /* 文件缓存 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	errseq_t		f_wb_err;
 	errseq_t		f_sb_err; /* for syncfs */
 } __randomize_layout
@@ -1875,130 +1875,130 @@ struct iov_iter;
  *  perf:   perf_fops;
  */
 struct file_operations {    /* 文件操作符 */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct module *owner;
 
-    /**
-     *  修改文件当前读写位置
-     */
+	/**
+	 *  修改文件当前读写位置
+	 */
 	loff_t (*llseek) (struct file *, loff_t, int);
 
-    /**
-     *
-     *  可能是谁？
-     *  ext4 为空
-     */
+	/**
+	 *
+	 *  可能是谁？
+	 *  ext4 为空
+	 */
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 
-    /**
-     *  可能是谁？
-     *  ext4 为空
-     */
+	/**
+	 *  可能是谁？
+	 *  ext4 为空
+	 */
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 
-    /**
-     *  原来叫做 readv/writev
-     *
-     *  ext4_file_operations.ext4_file_read_iter()
-     *  ext4_file_operations.ext4_file_write_iter()
-     */
+	/**
+	 *  原来叫做 readv/writev
+	 *
+	 *  ext4_file_operations.ext4_file_read_iter()
+	 *  ext4_file_operations.ext4_file_write_iter()
+	 */
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int (*iopoll)(struct kiocb *kiocb, bool spin);
 	int (*iterate) (struct file *, struct dir_context *);
 	int (*iterate_shared) (struct file *, struct dir_context *);
 
-    /**
-     *  poll, select, epoll 的后端实现
-     *  select - BSD Unix 引入
-     *  poll - System V 引入
-     *  epoll - 2.5.45 引入
-     *
-     *  如果 该poll 指针=NULL，则设备会被认为即可读也可写，并且不会被阻塞
-     *
-     *  该函数指针在 `vfs_poll()` 中被调用，可能的 函数如下：
-     *  -----------------------------------------------------
-     *  socket_file_ops.poll = sock_poll()
-     *  eventpoll_fops.poll = ep_eventpoll_poll()
-     *  perf_fops.poll = perf_poll()
-     *  [...]
-     */
+	/**
+	 *  poll, select, epoll 的后端实现
+	 *  select - BSD Unix 引入
+	 *  poll - System V 引入
+	 *  epoll - 2.5.45 引入
+	 *
+	 *  如果 该poll 指针=NULL，则设备会被认为即可读也可写，并且不会被阻塞
+	 *
+	 *  该函数指针在 `vfs_poll()` 中被调用，可能的 函数如下：
+	 *  -----------------------------------------------------
+	 *  socket_file_ops.poll = sock_poll()
+	 *  eventpoll_fops.poll = ep_eventpoll_poll()
+	 *  perf_fops.poll = perf_poll()
+	 *  [...]
+	 */
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 
-    /**
-     *	xfs - xfs_file_mmap()
-     */
+	/**
+	 *	xfs - xfs_file_mmap()
+	 */
 	int (*mmap) (struct file *, struct vm_area_struct *);
 
-    unsigned long mmap_supported_flags;
+	unsigned long mmap_supported_flags;
 
 	int (*open) (struct inode *, struct file *);
 
-    /**
-     *  发生在进程关闭设备文件描述符的时候
-     **
-     *  xfs_file_operations->flush      = NULL
-     *  ext2_file_operations->flush     = NULL
-     *  ext4_file_operations->flush     = NULL
-     */
+	/**
+	 *  发生在进程关闭设备文件描述符的时候
+	 **
+	 *  xfs_file_operations->flush      = NULL
+	 *  ext2_file_operations->flush     = NULL
+	 *  ext4_file_operations->flush     = NULL
+	 */
 	int (*flush) (struct file *, fl_owner_t id);
 
-    /**
-     *  struct file 结构被释放，将调用这个函数
-     */
+	/**
+	 *  struct file 结构被释放，将调用这个函数
+	 */
 	int (*release) (struct inode *, struct file *);
 
-    /**
-     *  fsync 系统调用的后端实现
-     *
-     *  @datasync: 用于区分 是 fsync 还是 fdatasync
-     *
-     *  在  `vfs_fsync_range()` 中调用
-     */
+	/**
+	 *  fsync 系统调用的后端实现
+	 *
+	 *  @datasync: 用于区分 是 fsync 还是 fdatasync
+	 *
+	 *  在  `vfs_fsync_range()` 中调用
+	 */
 	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
 	int (*fasync) (int, struct file *, int);
 
-    /**
-     *  用于实现文件锁定
-     */
+	/**
+	 *  用于实现文件锁定
+	 */
 	int (*lock) (struct file *, int, struct file_lock *);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 
-    /**
-     *  该方法的目的是为了在进程的地址空间中找到一个合适的位置，以便将底层设备中的内存段映射到这个位置。
-     *
-     *  xfs_file_operations->get_unmapped_area      = thp_get_unmapped_area
-     *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
-     *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
-     *  ext2_file_operations->get_unmapped_area     = thp_get_unmapped_area
-     *  ext4_file_operations->get_unmapped_area     = thp_get_unmapped_area,
-     *  hugetlbfs_file_operations->get_unmapped_area= hugetlb_get_unmapped_area,
-     *  proc_reg_file_ops->get_unmapped_area        = proc_reg_get_unmapped_area,
-     */
+	/**
+	 *  该方法的目的是为了在进程的地址空间中找到一个合适的位置，以便将底层设备中的内存段映射到这个位置。
+	 *
+	 *  xfs_file_operations->get_unmapped_area      = thp_get_unmapped_area
+	 *  ramfs_file_operations->get_unmapped_area    = ramfs_mmu_get_unmapped_area
+	 *  ramfs_file_operations->get_unmapped_area	= ramfs_nommu_get_unmapped_area
+	 *  ext2_file_operations->get_unmapped_area     = thp_get_unmapped_area
+	 *  ext4_file_operations->get_unmapped_area     = thp_get_unmapped_area,
+	 *  hugetlbfs_file_operations->get_unmapped_area= hugetlb_get_unmapped_area,
+	 *  proc_reg_file_ops->get_unmapped_area        = proc_reg_get_unmapped_area,
+	 */
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
-    /**
-     *  该方法允许模块检查传递给 fcntl(F_SETFL, ...)调用的标志
-     */
+	/**
+	 *  该方法允许模块检查传递给 fcntl(F_SETFL, ...)调用的标志
+	 */
 	int (*check_flags)(int);
 	int (*flock) (struct file *, int, struct file_lock *);
 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
@@ -2011,9 +2011,9 @@ struct file_operations {    /* 文件操作符 */
 #ifndef CONFIG_MMU
 	unsigned (*mmap_capabilities)(struct file *);
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
 			loff_t, size_t, unsigned int);
 	loff_t (*remap_file_range)(struct file *file_in, loff_t pos_in,
@@ -2052,16 +2052,16 @@ struct inode_operations {   /* inode 操作符 */
 	int (*rename) (struct inode *, struct dentry *,
 			struct inode *, struct dentry *, unsigned int);
 	int (*setattr) (struct dentry *, struct iattr *);
-    /**
-     * 可能的值
-     * ----------------------
-     *
-     *
-     *
+	/**
+	 * 可能的值
+	 * ----------------------
+	 *
+	 *
+	 *
  调用
-     * ----------------------
-     * vfs_getattr_nosec()
-     */
+	 * ----------------------
+	 * vfs_getattr_nosec()
+	 */
 	int (*getattr) (const struct path *, struct kstat *, u32, unsigned int);
 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
 	int (*fiemap)(struct inode *, struct fiemap_extent_info *, u64 start,
@@ -2085,32 +2085,32 @@ struct inode_operations {   /* inode 操作符 */
 static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
 				     struct iov_iter *iter)
 {
-    /**
-     *
-     *  ext4_file_operations.ext4_file_read_iter()
-     */
+	/**
+	 *
+	 *  ext4_file_operations.ext4_file_read_iter()
+	 */
 	return file->f_op->read_iter(kio, iter);
 }
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 				      struct iov_iter *iter)
 {
-    /**
-     *  pipe() -> pipefifo_fops.pipe_write()
-     *  ext4 -> ext4_file_operations.ext4_file_write_iter()
-     */
+	/**
+	 *  pipe() -> pipefifo_fops.pipe_write()
+	 *  ext4 -> ext4_file_operations.ext4_file_write_iter()
+	 */
 	return file->f_op->write_iter(kio, iter);
 }
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 {
-    /*
-     hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
-     shm_file_operations_huge.mmap = shm_mmap,
-     shmem_file_operations.mmap = shmem_mmap,
-     socket_file_ops.mmap = sock_mmap,
+	/*
+	 hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
+	 shm_file_operations_huge.mmap = shm_mmap,
+	 shmem_file_operations.mmap = shmem_mmap,
+	 socket_file_ops.mmap = sock_mmap,
 
-    */
+	*/
 	return file->f_op->mmap(file, vma);
 }
 
@@ -2681,9 +2681,9 @@ struct filename {
 	const __user char	*uptr;	/* 用户空间的原始指针 original userland pointer */
 	int			refcnt;         /* 引用计数 */
 	struct audit_names	*aname; /* 来自 audit 上下文的文件名 */
-    /**
-     *  用户态 stat(2) 时候传入的字符串
-     */
+	/**
+	 *  用户态 stat(2) 时候传入的字符串
+	 */
 	const char		iname[];    /* 文件名，长度小于 `PATH_MAX` */
 };
 
@@ -3324,7 +3324,7 @@ extern int simple_rmdir(struct inode *, struct dentry *);
 extern int simple_rename(struct inode *, struct dentry *,
 			 struct inode *, struct dentry *, unsigned int);
 extern void simple_recursive_removal(struct dentry *,
-                              void (*callback)(struct dentry *));
+		                      void (*callback)(struct dentry *));
 extern int noop_fsync(struct file *, loff_t, loff_t, int);
 extern int noop_set_page_dirty(struct page *page);
 extern void noop_invalidatepage(struct page *page, unsigned int offset,
@@ -3541,8 +3541,8 @@ int __init get_filesystem_list(char *buf);
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)
 
 #define ACC_MODE(x) ("\004\002\006\006"[(x)&O_ACCMODE]) //这个局部变量表示权限模式
-    //"\004\002\006\006" == {'\004', '\002', '\006', '\006'}
-    //`ACC_MODE` 宏就是通过 `[(x) & O_ACCMODE]` 索引展开这个数组里的值
+	//"\004\002\006\006" == {'\004', '\002', '\006', '\006'}
+	//`ACC_MODE` 宏就是通过 `[(x) & O_ACCMODE]` 索引展开这个数组里的值
 
 #define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 					    (flag & __FMODE_NONOTIFY)))
