@@ -102,7 +102,7 @@ static int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
 #endif
 
 /**
- *
+ * 获取高精度值
  */
 static __always_inline int
 do_hres(const struct vdso_data *vd, clockid_t clk,
@@ -140,7 +140,10 @@ do_hres(const struct vdso_data *vd, clockid_t clk,
 			return -1;
 
 		/**
+		 * 不同架构：
 		 *
+		 * x86: rdtsc_ordered()
+		 * aarch64: asm volatile("mrs %0, cntvct_el0" : "=r" (res) :: "memory");
 		 */
 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
 		if (unlikely(!vdso_cycles_ok(cycles)))

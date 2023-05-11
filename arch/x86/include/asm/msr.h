@@ -165,7 +165,7 @@ static inline unsigned long long native_read_msr_safe(unsigned int msr,
 	return EAX_EDX_VAL(val, low, high);
 }
 
-/* Can be uninlined because referenced by paravirt 
+/* Can be uninlined because referenced by paravirt
   //这个指令从 `edx:eax` 加载数据到 被 `ecx` 指向的[MSR寄存器]*/
 static inline void notrace
 native_write_msr(unsigned int msr, u32 low, u32 high)
@@ -217,7 +217,7 @@ static __always_inline unsigned long long rdtsc(void)
 	DECLARE_ARGS(val, low, high);
 
     /**
-     *  read tsc 
+     *  read tsc
      */
 	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
 
@@ -249,6 +249,16 @@ static __always_inline unsigned long long rdtsc_ordered(void)
 	 *
 	 * Thus, use the preferred barrier on the respective CPU, aiming for
 	 * RDTSCP as the default.
+	 *
+	 * RDTSC 指令相对于内存访问没有排序。 英特尔 SDM 和 AMD APM 在这一点上都含糊不清，
+	 * 但根据经验， RDTSC 指令可以在先前加载之前推测性地执行。 紧接在适当屏障之后的 RDTSC
+	 * 似乎被排序为正常加载，也就是说，它提供与从全局内存位置读取相同的排序保证，而某些其他
+	 * 虚构的 CPU 正在使用时间戳不断更新。
+	 *
+	 * 因此，在各自的 CPU 上使用首选屏障，以 RDTSCP 作为默认值。
+	 *
+	 * - https://www.felixcloutier.com/x86/rdtscp
+	 * - https://www.felixcloutier.com/x86/rdtsc
 	 */
 	asm volatile(ALTERNATIVE_2("rdtsc",
 				   "lfence; rdtsc", X86_FEATURE_LFENCE_RDTSC,

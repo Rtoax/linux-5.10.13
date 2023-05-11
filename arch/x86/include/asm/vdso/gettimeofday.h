@@ -277,6 +277,9 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
 	 * 使用 rdtsc 指令读取
 	 */
 	if (likely(clock_mode == VDSO_CLOCKMODE_TSC))
+		/**
+		 * 这里必须使用 order 的吗？rdtscp 要比 rdtsc 慢很多
+		 */
 		return (u64)rdtsc_ordered();
 	/*
 	 * For any memory-mapped vclock type, we need to make sure that gcc
