@@ -204,7 +204,12 @@ static int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
 	return 0;
 }
 #else
-
+static __always_inline
+int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
+                        struct __kernel_timespec *ts)
+{
+    return -1;
+}
 #endif
 
 /**
