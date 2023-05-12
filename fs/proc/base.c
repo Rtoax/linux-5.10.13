@@ -1518,11 +1518,11 @@ static int sched_open(struct inode *inode, struct file *filp)
  *  cat /proc/self/sched
  */
 static const struct file_operations proc_pid_sched_operations = {
-	proc_pid_sched_operations.open		= sched_open,
-	proc_pid_sched_operations.read		= seq_read,
-	proc_pid_sched_operations.write		= sched_write,
-	proc_pid_sched_operations.llseek		= seq_lseek,
-	proc_pid_sched_operations.release	= single_release,
+	.open		= sched_open,
+	.read		= seq_read,
+	.write		= sched_write,
+	.llseek		= seq_lseek,
+	.release	= single_release,
 };
 
 #endif
@@ -3592,6 +3592,9 @@ static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
 	ONE("personality", S_IRUSR, proc_pid_personality),
 	ONE("limits",	 S_IRUGO, proc_pid_limits),
 #ifdef CONFIG_SCHED_DEBUG
+	/**
+	 * /proc/[pid]/sched
+	 */
 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
 #endif
 	NOD("comm",      S_IFREG|S_IRUGO|S_IWUSR,
