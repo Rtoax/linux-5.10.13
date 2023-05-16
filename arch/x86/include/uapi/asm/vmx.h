@@ -44,6 +44,9 @@
 
 /**
  * (EXCEPTION_BITMAP)//异常信息可以拦截int3等异常
+ *
+ * 在 GuestOS VM 中发生下面的异常属于 NMI 异常
+ * - #UD 执行了未定义的指令
  */
 #define EXIT_REASON_EXCEPTION_NMI       0
 #define EXIT_REASON_EXTERNAL_INTERRUPT  1
