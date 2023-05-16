@@ -151,6 +151,9 @@ static inline const char *get_task_state(struct task_struct *tsk)
 	return task_state_array[task_state_index(tsk)];
 }
 
+/**
+ * /proc/[pid]/status
+ */
 static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
 				struct pid *pid, struct task_struct *p)
 {
@@ -215,6 +218,11 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
 	seq_puts(m, "\nNStgid:");
 	for (g = ns->level; g <= pid->level; g++)
 		seq_put_decimal_ull(m, "\t", task_tgid_nr_ns(p, pid->numbers[g].ns));
+	/**
+	 * $ grep -i nspid /proc/${host_pid}/status
+	 * 将打印出
+	 * ${host_pid} [pid in container]
+	 */
 	seq_puts(m, "\nNSpid:");
 	for (g = ns->level; g <= pid->level; g++)
 		seq_put_decimal_ull(m, "\t", task_pid_nr_ns(p, pid->numbers[g].ns));
@@ -405,6 +413,9 @@ static inline void task_thp_status(struct seq_file *m, struct mm_struct *mm)
 	seq_printf(m, "THP_enabled:\t%d\n", thp_enabled);
 }
 
+/**
+ * /proc/[pid]/status
+ */
 int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
 			struct pid *pid, struct task_struct *task)
 {
@@ -414,6 +425,7 @@ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
 	proc_task_name(m, task, true);
 	seq_putc(m, '\n');
 
+	/* /proc/[pid]/status */
 	task_state(m, ns, pid, task);
 
 	if (mm) {

@@ -3233,6 +3233,9 @@ static const struct pid_entry tgid_base_stuff[] = {
 #endif
 	REG("environ",    S_IRUSR, proc_environ_operations),
 	REG("auxv",       S_IRUSR, proc_auxv_operations),
+	/**
+	 * /proc/[pid]/status
+	 */
 	ONE("status",     S_IRUGO, proc_pid_status),
 	ONE("personality", S_IRUSR, proc_pid_personality),
 	ONE("limits",	  S_IRUGO, proc_pid_limits),
@@ -3588,6 +3591,9 @@ static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
 #endif
 	REG("environ",   S_IRUSR, proc_environ_operations),
 	REG("auxv",      S_IRUSR, proc_auxv_operations),
+	/**
+	 * /proc/[pid]/status
+	 */
 	ONE("status",    S_IRUGO, proc_pid_status),
 	ONE("personality", S_IRUSR, proc_pid_personality),
 	ONE("limits",	 S_IRUGO, proc_pid_limits),
