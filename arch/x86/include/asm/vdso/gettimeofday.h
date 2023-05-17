@@ -279,6 +279,15 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
 	if (likely(clock_mode == VDSO_CLOCKMODE_TSC))
 		/**
 		 * 这里必须使用 order 的吗？rdtscp 要比 rdtsc 慢很多
+		 * 答案是不行。
+		 *
+		 * That rdtsc_ordered() is not there to achieve precision.
+		 * It's there to guarantee correctness. The correctness
+		 * requirement is that reading clock MONOTONIC is strictly
+		 * monotonic, i.e. there is no way that you can observe
+		 * time going backwards. Neither locally nor accross CPUs.
+		 *
+		 * https://lore.kernel.org/lkml/87ttwc73za.ffs@tglx/
 		 */
 		return (u64)rdtsc_ordered();
 	/*
