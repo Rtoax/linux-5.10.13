@@ -1933,6 +1933,9 @@ static void _x86_pmu_read(struct perf_event *event)
 	x86_perf_event_update(event);
 }
 
+/**
+ * 硬件 perf event
+ */
 static int __init init_hw_perf_events(void)
 {
 	struct x86_pmu_quirk *quirk;
@@ -1947,7 +1950,7 @@ static int __init init_hw_perf_events(void)
 	case X86_VENDOR_AMD:
 		err = amd_pmu_init();
 		break;
-	case X86_VENDOR_HYGON:
+	case X86_VENDOR_HYGON: /* 海光 */
 		err = amd_pmu_init();
 		x86_pmu.name = "HYGON";
 		break;

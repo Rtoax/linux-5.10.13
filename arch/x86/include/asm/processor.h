@@ -84,6 +84,10 @@ extern u16 __read_mostly tlb_lld_1g[NR_INFO];
 struct cpuinfo_x86 {
 	__u8			x86;		/* CPU family */
 	__u8			x86_vendor;	/* CPU vendor */
+	/**
+	 * INTEL_FAM6_CORE_YONAH
+	 * INTEL_FAM6_CORE2_MEROM
+	 */
 	__u8			x86_model;
 	__u8			x86_stepping;
 #ifdef CONFIG_X86_64

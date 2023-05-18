@@ -4789,6 +4789,10 @@ static struct attribute *lbr_attrs[] = {
 	NULL
 };
 
+/**
+ * $ sudo bpftrace -e 'BEGIN{printf("pmu_name_str = %s\n", str(kaddr("pmu_name_str")));exit();}'
+ * pmu_name_str = skylake
+ */
 static char pmu_name_str[30];
 
 static ssize_t pmu_name_show(struct device *cdev,
@@ -4902,6 +4906,9 @@ static const struct attribute_group *attr_update[] = {
 
 static struct attribute *empty_attrs;
 
+/**
+ * 初始化 Intel PMU
+ */
 __init int intel_pmu_init(void)
 {
 	struct attribute **extra_skl_attr = &empty_attrs;
@@ -4934,6 +4941,7 @@ __init int intel_pmu_init(void)
 	/*
 	 * Check whether the Architectural PerfMon supports
 	 * Branch Misses Retired hw_event or not.
+	 * 检测是否支持 Branch Misses Retired
 	 */
 	cpuid(10, &eax.full, &ebx.full, &unused, &edx.full);
 	if (eax.split.mask_length < ARCH_PERFMON_EVENTS_COUNT)
@@ -4998,11 +5006,21 @@ __init int intel_pmu_init(void)
 	 * Install the hw-cache-events table:
 	 */
 	switch (boot_cpu_data.x86_model) {
+	/**
+	 * Yonah is the code name of Intel's first generation 65 nm process CPU cores,
+	 * https://en.wikipedia.org/wiki/Yonah_(microprocessor)
+	 */
 	case INTEL_FAM6_CORE_YONAH:
 		pr_cont("Core events, ");
 		name = "core";
 		break;
 
+	/**
+	 * Merom is the code name for various Intel processors that are sold as
+	 * Core 2 Duo, Core 2 Solo, Pentium Dual-Core and Celeron. It was the first
+	 * mobile processor to be based on the Core microarchitecture.
+	 * https://en.wikipedia.org/wiki/Merom_(microprocessor)
+	 */
 	case INTEL_FAM6_CORE2_MEROM:
 		x86_add_quirk(intel_clovertown_quirk);
 		fallthrough;
@@ -5492,6 +5510,9 @@ __init int intel_pmu_init(void)
 		}
 	}
 
+	/**
+	 * $ sudo bpftrace -e 'BEGIN{printf("pmu_name_str = %s\n", str(kaddr("pmu_name_str")));exit();}'
+	 */
 	snprintf(pmu_name_str, sizeof(pmu_name_str), "%s", name);
 
 

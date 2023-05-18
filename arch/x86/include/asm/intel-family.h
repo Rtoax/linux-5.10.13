@@ -38,8 +38,21 @@
 /* Wildcard match for FAM6 so X86_MATCH_INTEL_FAM6_MODEL(ANY) works */
 #define INTEL_FAM6_ANY			X86_MODEL_ANY
 
+/**
+ * struct cpuinfo_x86.x86_model
+ */
+/**
+ * Yonah is the code name of Intel's first generation 65 nm process CPU cores,
+ * https://en.wikipedia.org/wiki/Yonah_(microprocessor)
+ */
 #define INTEL_FAM6_CORE_YONAH		0x0E
 
+/**
+ * Merom is the code name for various Intel processors that are sold as
+ * Core 2 Duo, Core 2 Solo, Pentium Dual-Core and Celeron. It was the first
+ * mobile processor to be based on the Core microarchitecture.
+ * https://en.wikipedia.org/wiki/Merom_(microprocessor)
+ */
 #define INTEL_FAM6_CORE2_MEROM		0x0F
 #define INTEL_FAM6_CORE2_MEROM_L	0x16
 #define INTEL_FAM6_CORE2_PENRYN		0x17
@@ -125,8 +138,17 @@
 #define INTEL_FAM6_ATOM_TREMONT		0x96 /* Elkhart Lake */
 #define INTEL_FAM6_ATOM_TREMONT_L	0x9C /* Jasper Lake */
 
-/* Xeon Phi */
-
+/**
+ * Xeon Phi
+ *
+ * Xeon Phi was a series of x86 manycore processors designed and made by Intel.
+ * It was intended for use in supercomputers, servers, and high-end workstations.
+ *
+ * knl - Initially in the form of PCIe-based add-on cards, a second-generation
+ *       product, codenamed Knights Landing, was announced in June 2013.
+ *
+ * https://en.wikipedia.org/wiki/Xeon_Phi
+ */
 #define INTEL_FAM6_XEON_PHI_KNL		0x57 /* Knights Landing */
 #define INTEL_FAM6_XEON_PHI_KNM		0x85 /* Knights Mill */
 

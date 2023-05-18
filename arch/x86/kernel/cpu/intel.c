@@ -67,6 +67,10 @@ static bool __ro_after_init cpu_model_supports_sld ;
 static void check_memory_type_self_snoop_errata(struct cpuinfo_x86 *c)
 {
 	switch (c->x86_model) {
+	/**
+	 * Yonah is the code name of Intel's first generation 65 nm process CPU cores,
+	 * https://en.wikipedia.org/wiki/Yonah_(microprocessor)
+	 */
 	case INTEL_FAM6_CORE_YONAH:
 	case INTEL_FAM6_CORE2_MEROM:
 	case INTEL_FAM6_CORE2_MEROM_L:
