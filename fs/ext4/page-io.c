@@ -92,6 +92,10 @@ struct ext4_io_end_vec *ext4_last_io_end_vec(ext4_io_end_t *io_end)
  */
 static void buffer_io_error(struct buffer_head *bh)
 {
+	/**
+	 * Example:
+	 * Buffer I/O error on device nvme0n1, logical block 60184
+	 */
 	printk_ratelimited(KERN_ERR "Buffer I/O error on device %pg, logical block %llu\n",
 		       bh->b_bdev,
 			(unsigned long long)bh->b_blocknr);
