@@ -89,6 +89,10 @@ struct ext4_io_end_vec *ext4_last_io_end_vec(ext4_io_end_t *io_end)
  * buffer I/O error message.  We really need a unified error reporting
  * structure to userspace ala Digital Unix's uerf system, but it's
  * probably not going to happen in my lifetime, due to LKML politics...
+ *
+ * This issue occurs when one of the physical disks develop bad sectors.(扇区)[0]
+ * refs:
+ * [0] https://support.solarwinds.com/SuccessCenter/s/article/Buffer-I-O-error-on-device-sdaX-logical-block-XXXXXX
  */
 static void buffer_io_error(struct buffer_head *bh)
 {
