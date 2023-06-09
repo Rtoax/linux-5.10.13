@@ -125,7 +125,7 @@ extern struct cgroup_subsys cpuacct_cgrp_subsys;
 extern struct cgroup_subsys cpu_cgrp_subsys;
 extern struct cgroup_subsys cpuset_cgrp_subsys;
 extern struct cgroup_subsys debug_cgrp_subsys;
-extern struct cgroup_subsys devices_cgrp_subsys;
+extern struct cgroup_subsys devices_cgrp_subsys;	/* /sys/fs/cgroup/devices/?? */
 extern struct cgroup_subsys freezer_cgrp_subsys;
 extern struct cgroup_subsys hugetlb_cgrp_subsys;
 extern struct cgroup_subsys io_cgrp_subsys;
@@ -6751,9 +6751,12 @@ static struct attribute *cgroup_sysfs_attrs[] = {   /* 权限 */
 	NULL,
 };
 
-static const struct attribute_group cgroup_sysfs_attr_group = { /* /sys/fs */
+static const struct attribute_group cgroup_sysfs_attr_group = {
 	.attrs = cgroup_sysfs_attrs,
-	.name = "cgroup",   /* /sys/fs/cgroup/ */
+	/**
+	 * /sys/fs/cgroup/
+	 */
+	.name = "cgroup",
 };
 
 static int __init cgroup_sysfs_init(void)
