@@ -423,6 +423,9 @@ struct files_struct *get_files_struct(struct task_struct *task)
 	return files;
 }
 
+/**
+ * 清理打开的文件集合
+ */
 void put_files_struct(struct files_struct *files)
 {
 	if (atomic_dec_and_test(&files->count)) {
@@ -447,6 +450,9 @@ void reset_files_struct(struct files_struct *files)
 	put_files_struct(old);
 }
 
+/**
+ * 清理进程打开的文件
+ */
 void exit_files(struct task_struct *tsk)
 {
 	struct files_struct * files = tsk->files;
@@ -497,26 +503,34 @@ int __alloc_fd(struct files_struct *files,
 	int error;
 	struct fdtable *fdt;
 
-	spin_lock(&files->file_lock);/* 自旋锁 */
+	spin_lock(&files->file_lock);
 repeat:
-    //获取当前程序打开文件的（文件描述符）表
-	fdt = files_fdtable(files);/* 获取 files 的 fdtable: files->fdt */
+    /**
+	 * 获取当前程序打开文件的（文件描述符）表
+	 * 获取 files 的 fdtable: files->fdt
+	 */
+	fdt = files_fdtable(files);
 	fd = start;
 	if (fd < files->next_fd)
 		fd = files->next_fd;
 
 	if (fd < fdt->max_fds)
-		fd = find_next_fd(fdt, fd);/* 获取下一个 FD (bitmaps)*/
+		/**
+		 * 获取下一个 FD (bitmaps)
+		 */
+		fd = find_next_fd(fdt, fd);
 
 	/*
 	 * N.B. For clone tasks sharing a files structure, this test
 	 * will limit the total number of files that can be opened.
 	 */
 	error = -EMFILE;
-	if (fd >= end)/* 如果大于进程可打开的最大文件数，返回错误 */
+	/* 如果大于进程可打开的最大文件数，返回错误 */
+	if (fd >= end)
 		goto out;
 
-	error = expand_files(files, fd);/* 扩展 files */
+	/* 扩展 files */
+	error = expand_files(files, fd);
 	if (error < 0)
 		goto out;
 
@@ -530,7 +544,8 @@ repeat:
 	if (start <= files->next_fd)
 		files->next_fd = fd + 1;
 
-	__set_open_fd(fd, fdt);/* 给 bitmaps 置位 */
+	/* 给 bitmaps 置位 */
+	__set_open_fd(fd, fdt);
 	if (flags & O_CLOEXEC)
 		__set_close_on_exec(fd, fdt);
 	else
@@ -555,11 +570,12 @@ static int alloc_fd(unsigned start, unsigned flags)
 }
 
 /**
- *  未使用的 fd
+ *  未使用的 fd,进程当前打开的最大文件 FD
  */
-int __get_unused_fd_flags(unsigned flags, unsigned long nofile/* 进程当前打开的最大文件 FD */)
+int __get_unused_fd_flags(unsigned flags, unsigned long nofile)
 {
-	return __alloc_fd(current->files, 0, nofile, flags);/* 分配一个 FD */
+	/* 分配一个 FD */
+	return __alloc_fd(current->files, 0, nofile, flags);
 }
 
 /**
@@ -579,6 +595,9 @@ static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 		files->next_fd = fd;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:put_unused_fd{printf("close %s %d\n", comm, arg0);}'
+ */
 void put_unused_fd(unsigned int fd)
 {
 	struct files_struct *files = current->files;

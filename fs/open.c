@@ -1388,6 +1388,28 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 /*
  * "id" is the POSIX thread ID. We use the
  * files pointer for this..
+ *
+ * sudo bpftrace -e 'kprobe:filp_close {printf("%-16s %s\n", comm, kstack);}'
+ *
+ * 示例1：在进程申请了 socket(2) 后杀死进程
+ * server
+ *       filp_close+5
+ *       put_files_struct+124
+ *       do_exit+834
+ *       do_group_exit+49
+ *       get_signal+2469
+ *       arch_do_signal_or_restart+62
+ *       exit_to_user_mode_prepare+405
+ *       syscall_exit_to_user_mode+27
+ *       do_syscall_64+108
+ *       entry_SYSCALL_64_after_hwframe+110
+ *
+ * 示例2：调用 close(2)
+ * server
+ *        filp_close+5
+ *        __x64_sys_close+17
+ *        do_syscall_64+93
+ *        entry_SYSCALL_64_after_hwframe+110
  */
 int filp_close(struct file *filp, fl_owner_t id)
 {

@@ -821,9 +821,18 @@ static void check_stack_usage(void)
 #endif
 
 /**
- * @brief
+ * sudo bpftrace -e 'kprobe:do_exit {printf("%-16s %s\n", comm, kstack);}'
  *
- * @param code
+ * 可能的输出：
+ *  server
+ *        do_exit+5
+ *        do_group_exit+49
+ *        get_signal+2469
+ *        arch_do_signal_or_restart+62
+ *        exit_to_user_mode_prepare+405
+ *        syscall_exit_to_user_mode+27
+ *        do_syscall_64+108
+ *        entry_SYSCALL_64_after_hwframe+110
  */
 void __noreturn do_exit(long code)
 {
@@ -922,6 +931,9 @@ void __noreturn do_exit(long code)
 
 	exit_sem(tsk);
 	exit_shm(tsk);
+	/**
+	 * 释放打开的文件
+	 */
 	exit_files(tsk);
 	exit_fs(tsk);
 	if (group_dead)
@@ -1110,6 +1122,11 @@ eligible_child(struct wait_opts *wo, bool ptrace, struct task_struct *p)
  * read_lock(&tasklist_lock) on entry.  If we return zero, we still hold
  * the lock and this task is uninteresting.  If we return nonzero, we have
  * released the lock and the system call should return.
+ *
+ * 当一个子进程死亡，父进程还没有waitpid()的时候，子进程的状态就是僵死态。
+ * 僵死是一个非常短的临界状态，一旦父进程waitpid()后，子进程就“人间蒸发”消失了。
+ * 进程死亡进入僵死态后，进程名下的资源已经释放了，不可能出现内存泄露。
+ * Linux内核中，父进程可以通过内核提供的 wait4 得到子进程的退出码(死亡原因)
  */
 static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 {
