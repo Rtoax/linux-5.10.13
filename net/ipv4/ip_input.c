@@ -254,12 +254,12 @@ int ip_local_deliver(struct sk_buff *skb)
 			return 0;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	return NF_HOOK(NFPROTO_IPV4, NF_INET_LOCAL_IN,
-    		       net, NULL, skb, skb->dev, NULL,
-    		       ip_local_deliver_finish);
+			       net, NULL, skb, skb->dev, NULL,
+			       ip_local_deliver_finish);
 }
 
 static inline bool ip_rcv_options(struct sk_buff *skb, struct net_device *dev)
@@ -488,6 +488,9 @@ static struct sk_buff *ip_rcv_core(struct sk_buff *skb, struct net *net)
 	if (!pskb_may_pull(skb, iph->ihl*4))
 		goto inhdr_error;
 
+	/**
+	 * 这里和上面 iph 有重复吗？
+	 */
 	iph = ip_hdr(skb);
 
 	if (unlikely(ip_fast_csum((u8 *)iph, iph->ihl)))
@@ -509,6 +512,9 @@ static struct sk_buff *ip_rcv_core(struct sk_buff *skb, struct net *net)
 		goto drop;
 	}
 
+	/**
+	 * 这里和上面 iph 有重复吗？
+	 */
 	iph = ip_hdr(skb);
 	skb->transport_header = skb->network_header + iph->ihl*4;
 
@@ -544,21 +550,21 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt,
 	if (skb == NULL)
 		return NET_RX_DROP;
 
-    /**
-     *  netfilter
-     */
+	/**
+	 *  netfilter
+	 */
 	return NF_HOOK(NFPROTO_IPV4, NF_INET_PRE_ROUTING,
-    		       net, NULL, skb, dev, NULL,
-    		       ip_rcv_finish);
+			       net, NULL, skb, dev, NULL,
+			       ip_rcv_finish);
 }
 
 static void ip_sublist_rcv_finish(struct list_head *head)
 {
 	struct sk_buff *skb, *next;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	list_for_each_entry_safe(skb, next, head, list) {
 		skb_list_del_init(skb);
 		dst_input(skb);
