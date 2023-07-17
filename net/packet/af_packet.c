@@ -4553,6 +4553,9 @@ static const struct proto_ops packet_ops = {
 	.gettstamp =	sock_gettstamp,
 	.listen =	sock_no_listen,
 	.shutdown =	sock_no_shutdown,
+	/**
+	 * Called in __sys_setsockopt()
+	 */
 	.setsockopt =	packet_setsockopt,
 	.getsockopt =	packet_getsockopt,
 	.sendmsg =	packet_sendmsg,

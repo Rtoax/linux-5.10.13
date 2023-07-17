@@ -2394,6 +2394,9 @@ int __sys_setsockopt(int fd, int level, int optname, char __user *user_optval,
 	if (optlen < 0)
 		return -EINVAL;
 
+	/**
+	 * 检查 fd 是否存在
+	 */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		return err;
@@ -2420,6 +2423,10 @@ int __sys_setsockopt(int fd, int level, int optname, char __user *user_optval,
 	else if (unlikely(!sock->ops->setsockopt))
 		err = -EOPNOTSUPP;
 	else
+		/**
+		 * PF_INET: sock_common_setsockopt()
+		 * PF_PACKET: packet_setsockopt()
+		 */
 		err = sock->ops->setsockopt(sock, level, optname, optval,
 					    optlen);
 	kfree(kernel_optval);
