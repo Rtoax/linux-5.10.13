@@ -273,6 +273,9 @@ locks_get_lock_context(struct inode *inode, int type)
 		ctx = smp_load_acquire(&inode->i_flctx);
 	}
 out:
+	/**
+	 * sudo bpftrace -lv tracepoint:filelock:locks_get_lock_context
+	 */
 	trace_locks_get_lock_context(inode, type, ctx);
 	return ctx;
 }
@@ -491,6 +494,9 @@ flock_make_lock(struct file *filp, unsigned int cmd, struct file_lock *fl)
 		locks_init_lock(fl);
 	}
 
+	/**
+	 * 初始化 flock file_lock 结构体
+	 */
 	fl->fl_file = filp;
 	fl->fl_owner = filp;
 	fl->fl_pid = current->tgid;
@@ -1100,9 +1106,17 @@ static int flock_lock_inode(struct inode *inode, struct file_lock *request)
 	}
 
 find_conflict:
+	/**
+	 * 根据 抓取 flc_flock 链表中的 其他进程的 pid 可以获取到有那些进程占用了
+	 * 文件锁。见 test-linux commit e4d40d618407("syscall/samples:
+	 * filelock.py: Try to get owner pid")
+	 */
 	list_for_each_entry(fl, &ctx->flc_flock, fl_list) {
 		if (!flock_locks_conflict(request, fl))
 			continue;
+		/**
+		 * EWOULDBLOCK = EAGAIN = 11 (Resource temporarily unavailable)
+		 */
 		error = -EAGAIN;
 		if (!(request->fl_flags & FL_SLEEP))
 			goto out;
@@ -1124,10 +1138,18 @@ out:
 	if (new_fl)
 		locks_free_lock(new_fl);
 	locks_dispose_list(&dispose);
+
+	/**
+	 * sudo bpftrace -lv tracepoint:filelock:flock_lock_inode
+	 * sudo bpftrace -e 'tracepoint:filelock:flock_lock_inode {printf("%s\n", comm);}'
+	 */
 	trace_flock_lock_inode(inode, request, error);
 	return error;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:posix_lock_inode {printf("%s\n", comm);}'
+ */
 static int posix_lock_inode(struct inode *inode, struct file_lock *request,
 			    struct file_lock *conflock)
 {
@@ -1347,6 +1369,11 @@ static int posix_lock_inode(struct inode *inode, struct file_lock *request,
 	if (new_fl2)
 		locks_free_lock(new_fl2);
 	locks_dispose_list(&dispose);
+
+	/**
+	 * sudo bpftrace -lv tracepoint:filelock:posix_lock_inode
+	 * sudo bpftrace -e 'tracepoint:filelock:posix_lock_inode {printf("%s\n", comm);}'
+	 */
 	trace_posix_lock_inode(inode, request, error);
 
 	return error;
@@ -2184,6 +2211,8 @@ static int flock_lock_inode_wait(struct inode *inode, struct file_lock *fl)
  * @fl: The lock to be applied
  *
  * Apply a POSIX or FLOCK style lock request to an inode.
+ *
+ * sudo bpftrace -e 'kprobe:locks_lock_inode_wait {printf("%s %s\n", comm, probe);}'
  */
 int locks_lock_inode_wait(struct inode *inode, struct file_lock *fl)
 {
@@ -2213,6 +2242,7 @@ EXPORT_SYMBOL(locks_lock_inode_wait);
  *	- %LOCK_SH -- a shared lock.
  *	- %LOCK_EX -- an exclusive lock.
  *	- %LOCK_UN -- remove an existing lock.
+ *	- %LOCK_NB -- non-block 我加的
  *	- %LOCK_MAND -- a 'mandatory' flock.
  *	  This exists to emulate Windows Share Modes.
  *
@@ -2238,6 +2268,9 @@ SYSCALL_DEFINE2(flock, unsigned int, fd, unsigned int, cmd)
 	    !(f.file->f_mode & (FMODE_READ|FMODE_WRITE)))
 		goto out_putf;
 
+	/**
+	 * 分配 flock 锁
+	 */
 	lock = flock_make_lock(f.file, cmd, NULL);
 	if (IS_ERR(lock)) {
 		error = PTR_ERR(lock);
@@ -2251,6 +2284,10 @@ SYSCALL_DEFINE2(flock, unsigned int, fd, unsigned int, cmd)
 	if (error)
 		goto out_free;
 
+	/**
+	 * ramfs_file_operations.flock = NULL
+	 * xfs_file_operations.flock = NULL
+	 */
 	if (f.file->f_op->flock)
 		error = f.file->f_op->flock(f.file,
 					  (can_sleep) ? F_SETLKW : F_SETLK,
@@ -2454,6 +2491,8 @@ check_fmode_for_setlk(struct file_lock *fl)
 
 /* Apply the lock described by l to an open file descriptor.
  * This implements both the F_SETLK and F_SETLKW commands of fcntl().
+ *
+ * sudo bpftrace -e 'kprobe:fcntl_setlk {printf("%s %s\n", comm, probe);}'
  */
 int fcntl_setlk(unsigned int fd, struct file *filp, unsigned int cmd,
 		struct flock *flock)

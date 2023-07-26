@@ -772,6 +772,10 @@ struct inode {
 		const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 		void (*free_inode)(struct inode *);
 	};
+	/**
+	 * 见
+	 * locks_get_lock_context()
+	 */
 	struct file_lock_context	*i_flctx;
 	struct address_space	i_data;
 	struct list_head	i_devices;
@@ -1326,8 +1330,14 @@ static inline struct dentry *file_dentry(const struct file *file)
 	return d_real(file->f_path.dentry, file_inode(file));
 }
 
+/**
+ *
+ */
 static inline int locks_lock_file_wait(struct file *filp, struct file_lock *fl)
 {
+	/**
+	 * sudo bpftrace -e 'kprobe:locks_lock_inode_wait {printf("%s %s\n", comm, probe);}'
+	 */
 	return locks_lock_inode_wait(locks_inode(filp), fl);
 }
 
