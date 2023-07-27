@@ -1826,6 +1826,8 @@ int fcntl_getlease(struct file *filp)
  *
  * Check to see if there's an existing open fd on this file that would
  * conflict with the lease we're trying to set.
+ *
+ * sudo bpftrace -e 'kprobe:check_conflicting_open { printf("%d %s\n", pid, comm); }'
  */
 static int
 check_conflicting_open(struct file *filp, const long arg, int flags)
@@ -1862,6 +1864,9 @@ check_conflicting_open(struct file *filp, const long arg, int flags)
 	return 0;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:generic_add_lease { printf("%s\n", comm); }'
+ */
 static int
 generic_add_lease(struct file *filp, long arg, struct file_lock **flp, void **priv)
 {
@@ -2020,6 +2025,8 @@ static int generic_delete_lease(struct file *filp, void *owner)
  *
  *	The (input) flp->fl_lmops->lm_break function is required
  *	by break_lease().
+ *
+ *  sudo bpftrace -e 'kprobe:generic_setlease { printf("%s\n", comm); }'
  */
 int generic_setlease(struct file *filp, long arg, struct file_lock **flp,
 			void **priv)
