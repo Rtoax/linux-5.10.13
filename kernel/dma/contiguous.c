@@ -75,17 +75,22 @@ static phys_addr_t  __initdata size_cmdline  = -1;
 static phys_addr_t __initdata base_cmdline ;
 static phys_addr_t __initdata limit_cmdline ;
 
-//If we will not pass `cma` option to the kernel command line, `size_cmdline` will be equal to `-1`
+/**
+ * If we will not pass `cma` option to the kernel command line,
+ * `size_cmdline` will be equal to `-1`.
+ */
 static int __init early_cma(char *p)
 {
-    //cma=nn[MG]@[start[MG][-end[MG]]]
-    //	[ARM,X86,KNL]
-    //	Sets the size of kernel global memory area for
-    //	contiguous memory allocations and optionally the
-    //	placement constraint by the physical address range of
-    //	memory allocations. A value of 0 disables CMA
-    //	altogether. For more information, see
-    //	include/linux/dma-contiguous.h
+	/**
+	 * cma=nn[MG]@[start[MG][-end[MG]]]
+	 *	[ARM,X86,KNL]
+	 *	Sets the size of kernel global memory area for
+	 *	contiguous memory allocations and optionally the
+	 *	placement constraint by the physical address range of
+	 *	memory allocations. A value of 0 disables CMA
+	 *	altogether. For more information, see
+	 *	include/linux/dma-contiguous.h
+	 */
 
 	if (!p) {
 		pr_err("Config string not provided\n");
@@ -179,32 +184,39 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
 	phys_addr_t selected_size = 0;  //预留区大小
 	phys_addr_t selected_base = 0;  //预留区基地址
 	phys_addr_t selected_limit = limit; //预留区结束地址
-	bool fixed = false; //`fixed` is `1` we just reserve area with the `memblock_reserve`
-	                    //if it is `0` we allocate space with the `kmemleak_alloc`
+	/**
+	 * `fixed` is `1` we just reserve area with the `memblock_reserve`
+	 * if it is `0` we allocate space with the `kmemleak_alloc`
+	 */
+	bool fixed = false;
 
 	pr_debug("%s(limit %08lx)\n", __func__, (unsigned long)limit);
 
-    //check `size_cmdline` variable
+	/* check `size_cmdline` variable */
 	if (size_cmdline != -1) {
 
-        //fill all variables which you can see above with the values 
-        //  from the `cma` kernel command line parameter
-        // see early_cma()
+		/**
+		 * fill all variables which you can see above with the values
+		 * from the `cma` kernel command line parameter
+		 * see early_cma()
+		 */
 		selected_size = size_cmdline;
 		selected_base = base_cmdline;
 		selected_limit = min_not_zero(limit_cmdline, limit);
 		if (base_cmdline + size_cmdline == limit_cmdline)
 			fixed = true;
-        
+
 	} else {
-        //如果命令行中没有指定cma
-        //calculate size of the reserved area
-        //* `CONFIG_CMA_SIZE_SEL_MBYTES` - size in megabytes, default global `CMA` area, 
-        //                                  which is equal to `CMA_SIZE_MBYTES * SZ_1M` or
-        //                                  `CONFIG_CMA_SIZE_MBYTES * 1M`;
-        //* `CONFIG_CMA_SIZE_SEL_PERCENTAGE` - percentage of total memory;
-        //* `CONFIG_CMA_SIZE_SEL_MIN` - use lower value;
-        //* `CONFIG_CMA_SIZE_SEL_MAX` - use higher value.
+		/**
+		 * 如果命令行中没有指定cma
+		 * calculate size of the reserved area
+		 * `CONFIG_CMA_SIZE_SEL_MBYTES` - size in megabytes, default global `CMA` area,
+		 *                                  which is equal to `CMA_SIZE_MBYTES * SZ_1M` or
+		 *                                  `CONFIG_CMA_SIZE_MBYTES * 1M`;
+		 * `CONFIG_CMA_SIZE_SEL_PERCENTAGE` - percentage of total memory;
+		 * `CONFIG_CMA_SIZE_SEL_MIN` - use lower value;
+		 * `CONFIG_CMA_SIZE_SEL_MAX` - use higher value.
+		 */
 #ifdef CONFIG_CMA_SIZE_SEL_MBYTES
 		selected_size = size_bytes;
 #elif defined(CONFIG_CMA_SIZE_SEL_PERCENTAGE)
@@ -220,7 +232,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
 		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
 			 (unsigned long)selected_size / SZ_1M);
 
-        //reserve area with the call 
+		/* reserve area with the call */
 		dma_contiguous_reserve_area(selected_size, selected_base,
 					    selected_limit,
 					    &dma_contiguous_default_area,
@@ -256,7 +268,7 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
 {
 	int ret;
 
-    //reserves contiguous area from the given base address with given size
+	//reserves contiguous area from the given base address with given size
 	ret = cma_declare_contiguous(base, size, limit, 0, 0, fixed,
 					"reserved", res_cma);
 	if (ret)
@@ -327,6 +339,10 @@ static struct page *cma_alloc_aligned(struct cma *cma, size_t size, gfp_t gfp)
  * global area as the addresses within one page are always contiguous, so
  * there is no need to waste CMA pages for that kind; it also helps reduce
  * fragmentations.
+ *
+ * cma，全称（contiguous memory allocation）,在内存初始化时预留一块连续内存，可以在
+ * 内存碎片化严重时通过调用dma_alloc_contiguous接口并且gfp指定为 __GFP_DIRECT_RECLAIM
+ * 从预留的那块连续内存中分配大块连续内存。
  */
 struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
 {

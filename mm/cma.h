@@ -4,10 +4,20 @@
 
 #include <linux/debugfs.h>
 
-struct cma {    /* 连续内存访问 */
+/**
+ * 连续内存访问 cma，全称（contiguous memory allocation）
+ *
+ * 在内存初始化时预留一块连续内存，可以在内存碎片化严重时通过调用 dma_alloc_contiguous
+ * 接口并且gfp指定为 __GFP_DIRECT_RECLAIM 从预留的那块连续内存中分配大块连续内存。
+ */
+struct cma {
+	/* CMA区域物理地址的起始页帧号 */
 	unsigned long   base_pfn;
+	/* CMA区域总体的页数 */
 	unsigned long   count;
+	/* 位图，用于描述页的分配情况 */
 	unsigned long   *bitmap;
+	/* 位图中每个bit描述的物理页面的order值，其中页面数为2^order值 */
 	unsigned int order_per_bit; /* Order of pages represented by one bit */
 	struct mutex    lock;
 #ifdef CONFIG_CMA_DEBUGFS

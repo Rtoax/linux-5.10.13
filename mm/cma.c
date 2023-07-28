@@ -141,6 +141,11 @@ out_error:
 	return;
 }
 
+/**
+ * 在创建完CMA区域后，该内存区域成了保留区域，如果单纯给驱动使用，显然会造成内存的浪费，
+ * 因此内存管理模块会将CMA区域添加到Buddy System中，用于可移动页面的分配和管理。
+ * CMA区域是通过cma_init_reserved_areas接口来添加到Buddy System中的。
+ */
 static int __init cma_init_reserved_areas(void)
 {
 	int i;
@@ -407,6 +412,9 @@ static inline void cma_debug_show_areas(struct cma *cma) { }
  *
  * This function allocates part of contiguous memory on specific
  * contiguous memory area.
+ *
+ * CMA分配
+ * $ sudo bpftrace -e 'kprobe:cma_alloc { printf("%s\n", comm); }'
  */
 struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 		       bool no_warn)
@@ -422,7 +430,9 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 	if (!cma || !cma->count || !cma->bitmap)
 		return NULL;
 
-    //cat /sys/kernel/debug/dynamic_debug/control | grep cma_alloc
+    /**
+	 * cat /sys/kernel/debug/dynamic_debug/control | grep cma_alloc
+	 */
 	pr_debug("%s(cma %p, count %zu, align %d)\n", __func__, (void *)cma,
 		 count, align);
 
@@ -456,6 +466,10 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 
 		pfn = cma->base_pfn + (bitmap_no << cma->order_per_bit);
 		mutex_lock(&cma_mutex);
+
+		/**
+		 * 使用分配器来进行内存分配
+		 */
 		ret = alloc_contig_range(pfn, pfn + count, MIGRATE_CMA,
 				     GFP_KERNEL | (no_warn ? __GFP_NOWARN : 0));
 		mutex_unlock(&cma_mutex);

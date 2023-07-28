@@ -10506,6 +10506,8 @@ static int __alloc_contig_migrate_range(struct compact_control *cc,
  * Return: zero on success or negative error code.  On success all
  * pages which PFN is in [start, end) are allocated for the caller and
  * need to be freed with free_contig_range().
+ *
+ * $ sudo bpftrace -e 'kprobe:alloc_contig_range { printf("%s\n", comm); }'
  */
 int alloc_contig_range(unsigned long start, unsigned long end,
 		       unsigned migratetype, gfp_t gfp_mask)
@@ -10640,6 +10642,9 @@ done:
 }
 EXPORT_SYMBOL(alloc_contig_range);
 
+/**
+ * 分配物理连续内存
+ */
 static int __alloc_contig_pages(unsigned long start_pfn,
 				unsigned long nr_pages, gfp_t gfp_mask)
 {
@@ -10728,6 +10733,10 @@ struct page *alloc_contig_pages(unsigned long nr_pages, gfp_t gfp_mask,
 				 * and cause alloc_contig_range() to fail...
 				 */
 				spin_unlock_irqrestore(&zone->lock, flags);
+
+				/**
+				 * 分配物理连续内存
+				 */
 				ret = __alloc_contig_pages(pfn, nr_pages,
 							gfp_mask);
 				if (!ret)
