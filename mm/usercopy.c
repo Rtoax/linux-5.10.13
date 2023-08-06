@@ -252,6 +252,8 @@ static DEFINE_STATIC_KEY_FALSE_RO(bypass_usercopy_checks);
  * - fully contained by stack (or stack frame, when available)
  * - fully within SLAB object (or object whitelist area, when available)
  * - not in kernel text
+ *
+ * sudo bpftrace -e 'kprobe:__check_object_size{printf("%s %ld %ld\n", comm, arg1, arg2);}'
  */
 void __check_object_size(const void *ptr, unsigned long n, bool to_user)
 {
@@ -279,6 +281,24 @@ void __check_object_size(const void *ptr, unsigned long n, bool to_user)
 		 */
 		return;
 	default:
+		/**
+		 * 可能的调用栈：
+		 *
+			[ 4336.955719] Call Trace:
+			[ 4336.955720]  <TASK>
+			[ 4336.955722]  ? die+0x36/0x90
+			[ 4336.955726]  ? do_trap+0xda/0x100
+			[ 4336.955729]  ? usercopy_abort+0x6c/0x80
+			[ 4336.955732]  ? do_error_trap+0x6a/0x90
+			[ 4336.955734]  ? usercopy_abort+0x6c/0x80
+			[ 4336.955736]  ? exc_invalid_op+0x50/0x70
+			[ 4336.955739]  ? usercopy_abort+0x6c/0x80
+			[ 4336.955741]  ? asm_exc_invalid_op+0x1a/0x20
+			[ 4336.955746]  ? usercopy_abort+0x6c/0x80
+			[ 4336.955748]  ? usercopy_abort+0x6c/0x80
+			[ 4336.955751]  __check_object_size+0x2ba/0x2d0
+			[ 4336.955754]  kvm_stats_read+0x11e/0x250 [kvm]
+		*/
 		usercopy_abort("process stack", NULL, to_user, 0, n);
 	}
 
