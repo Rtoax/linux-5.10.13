@@ -896,6 +896,11 @@ static ssize_t name##_show(struct kobject *kobj, \
 	return sprintf(buf, "0x%lx\n", EFI_FIELD(name)); \
 }
 
+/**
+ * /sys/firmware/efi/fw_vendor    (可能值 0x6fa20818)
+ * /sys/firmware/efi/runtime      (可能值 0x6fba2b98)
+ * /sys/firmware/efi/config_table (可能值 0x6f9f9318)
+ */
 EFI_ATTR_SHOW(fw_vendor);
 EFI_ATTR_SHOW(runtime);
 EFI_ATTR_SHOW(config_table);
