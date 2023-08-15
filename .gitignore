@@ -2,3 +2,5 @@
 *.out
 *.o
 *.symvers
+*.tar
+*.tar.*
