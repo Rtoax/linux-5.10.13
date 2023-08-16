@@ -649,6 +649,14 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 		default:
 			return -EINVAL;
 		}
+/*
+Want to Patch?
+
+device_cgroup: Remove the return that cannot be reached
+
+When the type type of devices.{allow,deny} is judged to be illegal, return
+-EINVAL via switch-default, and return 0 at the end will never be run.
+*/
 		return 0;
 	case 'b': /* (block) */
 		ex.type = DEVCG_DEV_BLOCK;
