@@ -404,14 +404,14 @@ static bool verify_new_ex(struct dev_cgroup *dev_cgroup,
 			/*
 			 * new exception in the child doesn't matter, only
 			 * adding extra restrictions
-			 */ 
+			 */
 			return true;
 		} else {
 			/*
 			 * new exception in the child will add more devices
 			 * that can be acessed, so it can't match any of
 			 * parent's exceptions, even slightly
-			 */ 
+			 */
 			match = match_exception_partial(&dev_cgroup->exceptions,
 							refex->type,
 							refex->major,
@@ -594,6 +594,8 @@ static int propagate_exception(struct dev_cgroup *devcg_root,
  * Taking rules away is always allowed (given CAP_SYS_ADMIN).  Granting
  * new access is only allowed if you're in the top-level cgroup, or your
  * parent cgroup has the access you're asking for.
+ *
+ * $ sudo bpftrace -e 'kprobe:devcgroup_update_access{printf("%s\n", comm);}'
  */
 static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 				   int filetype, char *buffer)
@@ -610,13 +612,20 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 	memset(&ex, 0, sizeof(ex));
 	b = buffer;
 
+	/**
+	 * `a` (all), `c` (char), or `b` (block);
+	 */
 	switch (*b) {
-	case 'a':
+	case 'a': /* (all) */
 		switch (filetype) {
+		/* /sys/fs/cgroup/devices/XXX/devices.allow */
 		case DEVCG_ALLOW:
 			if (css_has_online_children(&devcgroup->css))
 				return -EINVAL;
 
+			/**
+			 * 父级不允许你这样写
+			 */
 			if (!may_allow_all(parent))
 				return -EPERM;
 			dev_exception_clean(devcgroup);
@@ -629,6 +638,7 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 			if (rc)
 				return rc;
 			break;
+		/* /sys/fs/cgroup/devices/XXX/devices.deny */
 		case DEVCG_DENY:
 			if (css_has_online_children(&devcgroup->css))
 				return -EINVAL;
@@ -640,19 +650,25 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 			return -EINVAL;
 		}
 		return 0;
-	case 'b':
+	case 'b': /* (block) */
 		ex.type = DEVCG_DEV_BLOCK;
 		break;
-	case 'c':
+	case 'c': /* (char) */
 		ex.type = DEVCG_DEV_CHAR;
 		break;
 	default:
 		return -EINVAL;
 	}
 	b++;
+	/**
+	 * 如果这里写了两个空格呢？
+	 * 在最后的 else 返回 -EINVAL 了。
+	 * 这里是不是可以优化？
+	 */
 	if (!isspace(*b))
 		return -EINVAL;
 	b++;
+	/* read major */
 	if (*b == '*') {
 		ex.major = ~0;
 		b++;
@@ -761,24 +777,42 @@ static ssize_t devcgroup_access_write(struct kernfs_open_file *of,
 	int retval;
 
 	mutex_lock(&devcgroup_mutex);
+	/**
+	 *
+	 */
 	retval = devcgroup_update_access(css_to_devcgroup(of_css(of)),
 					 of_cft(of)->private, strstrip(buf));
 	mutex_unlock(&devcgroup_mutex);
 	return retval ?: nbytes;
 }
 
+/**
+ * cgroup-v1: /sys/fs/cgroup/devices/
+ */
 static struct cftype dev_cgroup_files[] = {
 	{
+		/**
+		 * /sys/fs/cgroup/devices/XXX/devices.allow
+		 */
 		.name = "allow",
+		/**
+		 * 只能写？不能读？
+		 */
 		.write = devcgroup_access_write,
 		.private = DEVCG_ALLOW,
 	},
 	{
+		/**
+		 * /sys/fs/cgroup/devices/XXX/devices.deny
+		 */
 		.name = "deny",
 		.write = devcgroup_access_write,
 		.private = DEVCG_DENY,
 	},
 	{
+		/**
+		 * /sys/fs/cgroup/devices/XXX/devices.list
+		 */
 		.name = "list",
 		.seq_show = devcgroup_seq_show,
 		.private = DEVCG_LIST,

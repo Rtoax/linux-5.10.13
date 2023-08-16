@@ -724,6 +724,9 @@ static const struct argp_option opts[] = {
 	  "Get number of selected top-level tests " },
 	{ "list", ARG_LIST_TEST_NAMES, NULL, 0,
 	  "List test names that would run (without running them) " },
+	/**
+	 * /sys/fs/cgroup/devices/XXX/devices.allow
+	 */
 	{ "allow", ARG_TEST_NAME_GLOB_ALLOWLIST, "NAMES", 0,
 	  "Run tests with name matching the pattern (supports '*' wildcard)." },
 	{ "deny", ARG_TEST_NAME_GLOB_DENYLIST, "NAMES", 0,
