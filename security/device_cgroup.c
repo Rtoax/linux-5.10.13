@@ -620,6 +620,12 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 		switch (filetype) {
 		/* /sys/fs/cgroup/devices/XXX/devices.allow */
 		case DEVCG_ALLOW:
+			/**
+			 * Allowing or denying all by writing 'a' to devices.allow or
+			 * devices.deny will not be possible once the device cgroups
+			 * has children.
+			 * https://www.kernel.org/doc/Documentation/cgroup-v1/devices.txt
+			 */
 			if (css_has_online_children(&devcgroup->css))
 				return -EINVAL;
 
@@ -640,6 +646,12 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 			break;
 		/* /sys/fs/cgroup/devices/XXX/devices.deny */
 		case DEVCG_DENY:
+			/**
+			 * Allowing or denying all by writing 'a' to devices.allow or
+			 * devices.deny will not be possible once the device cgroups
+			 * has children.
+			 * https://www.kernel.org/doc/Documentation/cgroup-v1/devices.txt
+			 */
 			if (css_has_online_children(&devcgroup->css))
 				return -EINVAL;
 
@@ -649,14 +661,9 @@ static int devcgroup_update_access(struct dev_cgroup *devcgroup,
 		default:
 			return -EINVAL;
 		}
-/*
-Want to Patch?
-
-device_cgroup: Remove the return that cannot be reached
-
-When the type type of devices.{allow,deny} is judged to be illegal, return
--EINVAL via switch-default, and return 0 at the end will never be run.
-*/
+		/**
+		 * 如果设置 "a" 那么直接返回
+		 */
 		return 0;
 	case 'b': /* (block) */
 		ex.type = DEVCG_DEV_BLOCK;
