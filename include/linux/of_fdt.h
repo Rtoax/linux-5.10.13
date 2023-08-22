@@ -13,7 +13,9 @@
 #include <linux/init.h>
 #include <linux/errno.h>
 
-/* Definitions used by the flattened device tree */
+/* Definitions used by the flattened device tree
+ * 设备树编译后的 DTB格式文件 magic，以大端模式保存
+ */
 #define OF_DT_HEADER		0xd00dfeed	/* marker */
 
 #ifndef __ASSEMBLY__

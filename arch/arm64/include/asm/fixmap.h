@@ -43,6 +43,10 @@ enum fixed_addresses {
 	 * 2 MB alignment boundaries.
 	 *
 	 * Keep this at the top so it remains 2 MB aligned.
+	 *
+	 * 为 FDT 保留一个比支持的最大大小大 2 MB 的虚拟窗口，并将其放在修复映射区域的顶部。
+	 * 额外的空间确保任何不超过 MAX_FDT_SIZE 的FDT都可以映射，无论它是否跨越任何2 MB的对
+	 * 齐边界。
 	 */
 #define FIX_FDT_SIZE		(MAX_FDT_SIZE + SZ_2M)
 	FIX_FDT_END,
