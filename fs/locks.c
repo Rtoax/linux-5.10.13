@@ -1061,6 +1061,8 @@ static int posix_locks_deadlock(struct file_lock *caller_fl,
  * Note that if called with an FL_EXISTS argument, the caller may determine
  * whether or not a lock was successfully freed by testing the return
  * value for -ENOENT.
+ *
+ * $ sudo bpftrace -e 'kprobe:flock_lock_inode {printf("%s\n", comm);}'
  */
 static int flock_lock_inode(struct inode *inode, struct file_lock *request)
 {
@@ -1089,9 +1091,18 @@ static int flock_lock_inode(struct inode *inode, struct file_lock *request)
 	if (request->fl_flags & FL_ACCESS)
 		goto find_conflict;
 
+	/**
+	 * 遍历 inode 的 flock
+	 */
 	list_for_each_entry(fl, &ctx->flc_flock, fl_list) {
+		/**
+		 * 不是相同的打开的文件，跳过
+		 */
 		if (request->fl_file != fl->fl_file)
 			continue;
+		/**
+		 * flock 类型？啥意思？
+		 */
 		if (request->fl_type == fl->fl_type)
 			goto out;
 		found = true;
@@ -1112,9 +1123,13 @@ find_conflict:
 	 * filelock.py: Try to get owner pid")
 	 */
 	list_for_each_entry(fl, &ctx->flc_flock, fl_list) {
+		/**
+		 * flock 没有冲突
+		 */
 		if (!flock_locks_conflict(request, fl))
 			continue;
 		/**
+		 * 资源临时不可用
 		 * EWOULDBLOCK = EAGAIN = 11 (Resource temporarily unavailable)
 		 */
 		error = -EAGAIN;
