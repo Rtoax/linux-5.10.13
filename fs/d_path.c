@@ -224,9 +224,9 @@ static int path_with_deleted(const struct path *path,
 		if (error)
 			return error;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return prepend_path(path, root, buf, buflen);
 }
 
@@ -286,14 +286,14 @@ char *d_path(const struct path *_path, char *buf, int buflen)
 	    (!IS_ROOT(_path->dentry) || _path->dentry != _path->mnt->mnt_root))
 		return _path->dentry->d_op->d_dname(_path->dentry, buf, buflen);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	rcu_read_lock();
 	get_fs_root_rcu(current->fs, &root);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	error = path_with_deleted(_path, &root, &res, &buflen);
 	rcu_read_unlock();
 
