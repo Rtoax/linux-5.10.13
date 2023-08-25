@@ -225,7 +225,7 @@ static int path_with_deleted(const struct path *path,
 			return error;
 	}
     /**
-     *  
+     *
      */
 	return prepend_path(path, root, buf, buflen);
 }
@@ -235,7 +235,7 @@ static int prepend_unreachable(char **buffer, int *buflen)
 	return prepend(buffer, buflen, "(unreachable)", 13);
 }
 /**
- *  
+ *
  */
 static void get_fs_root_rcu(struct fs_struct *fs, struct path *root)
 {
@@ -262,6 +262,8 @@ static void get_fs_root_rcu(struct fs_struct *fs, struct path *root)
  * into the buffer, and may leave 0 bytes at the start.
  *
  * "buflen" should be positive.
+ *
+ * 获取文件路径： path ->> /path/to/file (buf)
  */
 char *d_path(const struct path *_path, char *buf, int buflen)
 {
@@ -285,12 +287,12 @@ char *d_path(const struct path *_path, char *buf, int buflen)
 		return _path->dentry->d_op->d_dname(_path->dentry, buf, buflen);
 
     /**
-     *  
+     *
      */
 	rcu_read_lock();
 	get_fs_root_rcu(current->fs, &root);
     /**
-     *  
+     *
      */
 	error = path_with_deleted(_path, &root, &res, &buflen);
 	rcu_read_unlock();
@@ -328,7 +330,7 @@ char *simple_dname(struct dentry *dentry, char *buffer, int buflen)
 	/* these dentries are never renamed, so d_lock is not needed */
 	if (prepend(&end, &buflen, " (deleted)", 11) ||
 	    prepend(&end, &buflen, dentry->d_name.name, dentry->d_name.len) ||
-	    prepend(&end, &buflen, "/", 1))  
+	    prepend(&end, &buflen, "/", 1))
 		end = ERR_PTR(-ENAMETOOLONG);
 	return end;
 }

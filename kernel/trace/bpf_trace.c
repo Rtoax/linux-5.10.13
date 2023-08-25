@@ -1153,6 +1153,9 @@ static const struct bpf_func_proto bpf_send_signal_thread_proto = {
 	.arg1_type	= ARG_ANYTHING,
 };
 
+/**
+ * 从 path 结构获取路径，保存到 buf
+ */
 BPF_CALL_3(bpf_d_path, struct path *, path, char *, buf, u32, sz)
 {
 	long len;
