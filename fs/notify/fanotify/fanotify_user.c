@@ -919,7 +919,11 @@ static struct fsnotify_event *fanotify_alloc_overflow_event(void)
 	return &oevent->fse;
 }
 
-/* fanotify syscalls */
+/**
+ * fanotify_init(2) fanotify syscalls
+ * 是一个notifier，对文件系统变化产生通知的机制
+ *
+ */
 SYSCALL_DEFINE2(fanotify_init, unsigned int, flags, unsigned int, event_f_flags)
 {
 	struct fsnotify_group *group;
