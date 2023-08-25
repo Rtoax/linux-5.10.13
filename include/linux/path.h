@@ -9,13 +9,15 @@ struct vfsmount;
  *
  */
 struct path {   /* 路径 */
-    /**
-     *  mount 的子结构，表示实体所在目录树的安装方式
-     */
+	/**
+	 * mount 的子结构，表示实体所在目录树的安装方式，描述的是一个独立文件系统的挂载信息。
+	 * 每个不同挂载点对应一个独立的vfsmount结构，属于同一文件系统的所有目录和文件隶属于同
+	 * 一个vfsmount。
+	 */
 	struct vfsmount *mnt;
-    /**
-     *  实体自身的 dentry 结构，表示实体本身
-     */
+	/**
+	 *  实体自身的 dentry 结构，表示实体本身
+	 */
 	struct dentry *dentry;
 } __randomize_layout;
 

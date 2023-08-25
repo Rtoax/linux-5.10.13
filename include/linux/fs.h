@@ -2045,7 +2045,7 @@ struct file_operations {    /* 文件操作符 */
  *  ext4_special_inode_operations
  */
 struct inode_operations {   /* inode 操作符 */
-	pdentry_t (*lookup) (struct inode *,struct dentry *, unsigned int);
+	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
 	const pchar_t (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
 	int (*permission) (struct inode *, int);
 	pposix_acl_t (*get_acl)(struct inode *, int);
@@ -2466,7 +2466,7 @@ struct file_system_type {   /* 文件系统类型 */
 #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move() during rename() internally. */
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
-	p_dentry (*mount) (struct file_system_type *, int,
+	struct dentry * (*mount) (struct file_system_type *, int,
 		       const char *, void *);
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;

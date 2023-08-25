@@ -3772,6 +3772,9 @@ int vfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (max_links && dir->i_nlink >= max_links)
 		return -EMLINK;
 
+	/**
+	 *
+	 */
 	error = dir->i_op->mkdir(dir, dentry, mode);
 	if (!error)
 		fsnotify_mkdir(dir, dentry);

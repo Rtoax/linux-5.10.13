@@ -82,11 +82,11 @@ extern struct dentry_stat_t dentry_stat;
 #ifdef CONFIG_64BIT
 # define DNAME_INLINE_LEN 32 /* 192 bytes */
 #else
-//# ifdef CONFIG_SMP
-//#  define DNAME_INLINE_LEN 36 /* 128 bytes */
-//# else
-//#  define DNAME_INLINE_LEN 40 /* 128 bytes */
-//# endif
+# ifdef CONFIG_SMP
+#  define DNAME_INLINE_LEN 36 /* 128 bytes */
+# else
+#  define DNAME_INLINE_LEN 40 /* 128 bytes */
+# endif
 #endif
 
 #define d_lock	d_lockref.lock
@@ -102,44 +102,43 @@ struct dentry {
 	unsigned int d_flags;		/* protected by d_lock */
 	seqcount_spinlock_t d_seq;	/* per dentry seqlock */
 
-    /**
-     *  系统为 dentry 结构的hash表，
-     *  利用 文件路径快速查 hash 表 dentry_hashtable
-     *  可以快速找到与之对应的 inode 结构
-     */
+	/**
+	 *  系统为 dentry 结构的hash表，
+	 *  利用 文件路径快速查 hash 表 dentry_hashtable
+	 *  可以快速找到与之对应的 inode 结构
+	 */
 	struct hlist_bl_node d_hash;	/* lookup hash list */
 
-    /**
-     *  父节点
-     */
+	/**
+	 *  父节点
+	 */
 	struct dentry *d_parent;	/* parent directory */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct qstr d_name;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */
 
-    /**
-     *
-     */
-    unsigned char d_iname[DNAME_INLINE_LEN];	/* small names */
+	/**
+	 *
+	 */
+	unsigned char d_iname[DNAME_INLINE_LEN];	/* small names */
 
 	/* Ref lookup also touches following */
 	struct lockref d_lockref;	/* per-dentry lock and refcount */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	const struct dentry_operations *d_op;
 
 	/**
-	 * @brief 所属的 super block
-	 *
+	 * 所属的 super block
 	 */
 	struct super_block *d_sb;	/* The root of the dentry tree */
 	unsigned long d_time;		/* used by d_revalidate */
@@ -174,9 +173,6 @@ struct dentry {
 	} d_u;
 } __randomize_layout;
 
-typedef struct dentry * p_dentry; //++
-typedef struct dentry * pdentry_t;//++
-
 /*
  * dentry->d_lock spinlock nesting subclasses:
  *
@@ -203,13 +199,13 @@ struct dentry_operations {
 	void (*d_release)(struct dentry *);
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pchar_t (*d_dname)(struct dentry *, char *, int);
 	vfsmount_t (*d_automount)(struct path *);
 	int (*d_manage)(const struct path *, bool);
-	p_dentry (*d_real)(struct dentry *, const struct inode *);
+	struct dentry * (*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;
 
 /*
@@ -228,15 +224,15 @@ struct dentry_operations {
 #define DCACHE_OP_PRUNE			0x00000010
 
 #define	DCACHE_DISCONNECTED		0x00000020
-     /* This dentry is possibly not currently connected to the dcache tree, in
-      * which case its parent will either be itself, or will have this flag as
-      * well.  nfsd will not use a dentry with this bit set, but will first
-      * endeavour to clear the bit either by discovering that it is connected,
-      * or by performing lookup operations.   Any filesystem which supports
-      * nfsd_operations MUST have a lookup function which, if it finds a
-      * directory inode with a DCACHE_DISCONNECTED dentry, will d_move that
-      * dentry into place and return that dentry rather than the passed one,
-      * typically using d_splice_alias. */
+	 /* This dentry is possibly not currently connected to the dcache tree, in
+	  * which case its parent will either be itself, or will have this flag as
+	  * well.  nfsd will not use a dentry with this bit set, but will first
+	  * endeavour to clear the bit either by discovering that it is connected,
+	  * or by performing lookup operations.   Any filesystem which supports
+	  * nfsd_operations MUST have a lookup function which, if it finds a
+	  * directory inode with a DCACHE_DISCONNECTED dentry, will d_move that
+	  * dentry into place and return that dentry rather than the passed one,
+	  * typically using d_splice_alias. */
 
 #define DCACHE_REFERENCED		0x00000040 /* 最近被使用过 Recently used, don't discard. */
 
@@ -249,11 +245,11 @@ struct dentry_operations {
 #define DCACHE_OP_WEAK_REVALIDATE	0x00000800
 
 #define DCACHE_NFSFS_RENAMED		0x00001000
-     /* this dentry has been "silly renamed" and has to be deleted on the last
-      * dput() */
+	 /* this dentry has been "silly renamed" and has to be deleted on the last
+	  * dput() */
 #define DCACHE_COOKIE			0x00002000 /* For use by dcookie subsystem */
 #define DCACHE_FSNOTIFY_PARENT_WATCHED	0x00004000
-     /* Parent inode is watched by some fsnotify listener */
+	 /* Parent inode is watched by some fsnotify listener */
 
 #define DCACHE_DENTRY_KILLED		0x00008000
 
