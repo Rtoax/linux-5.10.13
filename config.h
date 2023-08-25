@@ -433,6 +433,7 @@
  */
 #define CONFIG_BPF_JIT_ALWAYS_ON 1
 #define CONFIG_BPF_JIT_DEFAULT_ON 1
+/* 允许 kprobe 覆盖返回值，见 bpf_override_return() */
 #define CONFIG_BPF_KPROBE_OVERRIDE 1
 #define CONFIG_BPF_LSM 1        /* BPF Linux Security Module */
 #define CONFIG_BPF_STREAM_PARSER

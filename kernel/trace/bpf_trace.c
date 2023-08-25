@@ -133,8 +133,16 @@ unsigned int trace_call_bpf(struct trace_event_call *call, void *ctx)
 }
 
 #ifdef CONFIG_BPF_KPROBE_OVERRIDE
+/**
+ * 参见 bpftrace 的示例
+ * bpftrace -e 'k:__x64_sys_getuid /comm == "id"/ { override(2<<21); }' --unsafe -c id
+ */
 BPF_CALL_2(bpf_override_return, struct pt_regs *, regs, unsigned long, rc)
 {
+	/**
+	 * x86: regs->ax = rc;
+	 * arm64: regs->regs[0] = rc;
+	 */
 	regs_set_return_value(regs, rc);
 	override_function_with_return(regs);
 	return 0;
