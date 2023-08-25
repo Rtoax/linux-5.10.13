@@ -911,8 +911,14 @@ locks_delete_lock_ctx(struct file_lock *fl, struct list_head *dispose)
 static bool locks_conflict(struct file_lock *caller_fl,
 			   struct file_lock *sys_fl)
 {
+	/**
+	 * 系统正持有写锁
+	 */
 	if (sys_fl->fl_type == F_WRLCK)
 		return true;
+	/**
+	 * 调用者想持有写锁
+	 */
 	if (caller_fl->fl_type == F_WRLCK)
 		return true;
 	return false;
@@ -943,11 +949,16 @@ static bool posix_locks_conflict(struct file_lock *caller_fl,
 static bool flock_locks_conflict(struct file_lock *caller_fl,
 				 struct file_lock *sys_fl)
 {
-	/* FLOCK locks referring to the same filp do not conflict with
+	/**
+	 * FLOCK locks referring to the same filp do not conflict with
 	 * each other.
+	 * 引用了相同的 filp，那么不是冲突。
 	 */
 	if (caller_fl->fl_file == sys_fl->fl_file)
 		return false;
+	/**
+	 * LOCK_MAND: 这是强制性的
+	 */
 	if ((caller_fl->fl_type & LOCK_MAND) || (sys_fl->fl_type & LOCK_MAND))
 		return false;
 
@@ -2734,14 +2745,15 @@ struct locks_iterator {
 	loff_t	li_pos;
 };
 
+/**
+ * $ cat /proc/locks
+ * 1: FLOCK  ADVISORY  WRITE 1959 00:19:1874 0 EOF
+ * 2: FLOCK  ADVISORY  WRITE 89945 00:19:21084 0 EOF
+ * 3: POSIX  ADVISORY  WRITE 89924 00:19:21080 0 EOF
+ */
 static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 			    loff_t id, char *pfx)
-{//    $ sudo cat /proc/locks
-//    [sudo] rongtao 的密码：
-//    1: POSIX  ADVISORY  READ  1932 fd:00:5053436 4 4
-//    2: FLOCK  ADVISORY  WRITE 1972 fd:00:70676918 0 EOF
-//    3: FLOCK  ADVISORY  WRITE 1972 fd:00:70676915 0 EOF
-//    4: FLOCK  ADVISORY  WRITE 1972 fd:00:70676888 0 EOF
+{
 	struct inode *inode = NULL;
 	unsigned int fl_pid;
 	struct pid_namespace *proc_pidns = proc_pid_ns(file_inode(f->file)->i_sb);
@@ -2789,6 +2801,9 @@ static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 	} else {
 		seq_puts(f, "UNKNOWN UNKNOWN  ");
 	}
+	/**
+	 * LOCK_MAND: 强制
+	 */
 	if (fl->fl_type & LOCK_MAND) {
 		seq_printf(f, "%s ",
 			       (fl->fl_type & LOCK_READ)
@@ -2818,14 +2833,14 @@ static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 	}
 }
 
-static int locks_show(struct seq_file *f, void *v)    /* sudo cat /proc/locks */
+/**
+ * $ cat /proc/locks
+ * 1: FLOCK  ADVISORY  WRITE 1959 00:19:1874 0 EOF
+ * 2: FLOCK  ADVISORY  WRITE 89945 00:19:21084 0 EOF
+ * 3: POSIX  ADVISORY  WRITE 89924 00:19:21080 0 EOF
+ */
+static int locks_show(struct seq_file *f, void *v)
 {
-//    $ sudo cat /proc/locks
-//    [sudo] rongtao 的密码：
-//    1: POSIX  ADVISORY  READ  1932 fd:00:5053436 4 4
-//    2: FLOCK  ADVISORY  WRITE 1972 fd:00:70676918 0 EOF
-//    3: FLOCK  ADVISORY  WRITE 1972 fd:00:70676915 0 EOF
-//    4: FLOCK  ADVISORY  WRITE 1972 fd:00:70676888 0 EOF
 	struct locks_iterator *iter = f->private;
 	struct file_lock *fl, *bfl;
 	struct pid_namespace *proc_pidns = proc_pid_ns(file_inode(f->file)->i_sb);
@@ -2907,20 +2922,26 @@ static void locks_stop(struct seq_file *f, void *v)
 	percpu_up_write(&file_rwsem);
 }
 
-static const struct seq_operations locks_seq_operations = {   /* sudo cat /proc/locks */
+static const struct seq_operations locks_seq_operations = {
 	.start	= locks_start,
 	.next	= locks_next,
 	.stop	= locks_stop,
 	.show	= locks_show,
 };
 
+/**
+ * $ cat /proc/locks
+ * 1: FLOCK  ADVISORY  WRITE 1959 00:19:1874 0 EOF
+ * 2: FLOCK  ADVISORY  WRITE 89945 00:19:21084 0 EOF
+ * 3: POSIX  ADVISORY  WRITE 89924 00:19:21080 0 EOF
+ */
 static int __init proc_locks_init(void)
 {
 	proc_create_seq_private("locks", 0, NULL, &locks_seq_operations,
 			sizeof(struct locks_iterator), NULL);
 	return 0;
 }
-fs_initcall(proc_locks_init);  /* sudo cat /proc/locks */
+fs_initcall(proc_locks_init);
 #endif
 
 static int __init filelock_init(void)

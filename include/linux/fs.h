@@ -1233,6 +1233,9 @@ struct file_lock {
 	struct list_head fl_blocked_member;	/* node in
 						 * ->fl_blocker->fl_blocked_requests
 						 */
+	/**
+	 * void *
+	 */
 	fl_owner_t fl_owner;
 	unsigned int fl_flags;
 	unsigned char fl_type;

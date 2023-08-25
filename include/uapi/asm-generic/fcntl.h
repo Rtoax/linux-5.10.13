@@ -115,7 +115,7 @@
 
 /* a horrid kludge trying to make sure that this will fail on old kernels */
 #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
-#define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
+#define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)
 
 /**
  *  System V 对 O_NONBLOCK 的兼容性
@@ -211,7 +211,7 @@ struct f_owner_ex {
 				   blocking */
 #define LOCK_UN		8	/* remove lock */
 
-#define LOCK_MAND	32	/* This is a mandatory flock ... */
+#define LOCK_MAND	32	/* This is a mandatory flock ... 这是强制性的 */
 #define LOCK_READ	64	/* which allows concurrent read operations */
 #define LOCK_WRITE	128	/* which allows concurrent write operations */
 #define LOCK_RW		192	/* which allows concurrent read & write ops */
