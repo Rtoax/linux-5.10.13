@@ -499,6 +499,9 @@ flock_make_lock(struct file *filp, unsigned int cmd, struct file_lock *fl)
 	 */
 	fl->fl_file = filp;
 	fl->fl_owner = filp;
+	/**
+	 * tgid 为什么不是 gettid() 的值？
+	 */
 	fl->fl_pid = current->tgid;
 	fl->fl_flags = FL_FLOCK;
 	fl->fl_type = type;

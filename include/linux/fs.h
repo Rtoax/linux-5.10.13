@@ -1239,6 +1239,9 @@ struct file_lock {
 	fl_owner_t fl_owner;
 	unsigned int fl_flags;
 	unsigned char fl_type;
+	/**
+	 * 这里到底存放的是什么？好像是线程组ID。也就是进程 PID，这里能不能改成线程 TID 呢？
+	 */
 	unsigned int fl_pid;
 	int fl_link_cpu;		/* what cpu's list is this on? */
 	wait_queue_head_t fl_wait;
