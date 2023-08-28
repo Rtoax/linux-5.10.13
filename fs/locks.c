@@ -178,6 +178,9 @@
 #define IS_FLOCK(fl)	(fl->fl_flags & FL_FLOCK)
 #define IS_LEASE(fl)	(fl->fl_flags & (FL_LEASE|FL_DELEG|FL_LAYOUT))
 #define IS_OFDLCK(fl)	(fl->fl_flags & FL_OFDLCK)
+/**
+ *
+ */
 #define IS_REMOTELCK(fl)	(fl->fl_pid <= 0)
 
 static bool lease_breaking(struct file_lock *fl)
@@ -562,6 +565,9 @@ static int flock64_to_posix_lock(struct file *filp, struct file_lock *fl,
 		fl->fl_end = OFFSET_MAX;
 
 	fl->fl_owner = current->files;
+	/**
+	 *
+	 */
 	fl->fl_pid = current->tgid;
 	fl->fl_file = filp;
 	fl->fl_flags = FL_POSIX;
@@ -627,6 +633,9 @@ static int lease_init(struct file *filp, long type, struct file_lock *fl)
 		return -EINVAL;
 
 	fl->fl_owner = filp;
+	/**
+	 *
+	 */
 	fl->fl_pid = current->tgid;
 
 	fl->fl_file = filp;
@@ -1508,6 +1517,9 @@ int locks_mandatory_area(struct inode *inode, struct file *filp, loff_t start,
 	bool sleep = false;
 
 	locks_init_lock(&fl);
+	/**
+	 *
+	 */
 	fl.fl_pid = current->tgid;
 	fl.fl_file = filp;
 	fl.fl_flags = FL_POSIX | FL_ACCESS;
@@ -2643,6 +2655,9 @@ void locks_remove_posix(struct file *filp, fl_owner_t owner)
 	lock.fl_start = 0;
 	lock.fl_end = OFFSET_MAX;
 	lock.fl_owner = owner;
+	/**
+	 *
+	 */
 	lock.fl_pid = current->tgid;
 	lock.fl_file = filp;
 	lock.fl_ops = NULL;

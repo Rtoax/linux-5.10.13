@@ -1372,12 +1372,12 @@ struct task_struct {    /* PCB */
 	struct restart_block		restart_block;/* system call restart block */
 
 	/**
-	 *  实际上的 线程ID，top -Hp tgid 后显示的 pid
+	 * 实际上的 线程ID，top -Hp [tgid] 后显示的 pid
 	 */
 	pid_t				pid;
 
 	/**
-	 * 实际上的 进程ID， 线程组 ID， top -Hp tgid
+	 * 实际上的 进程ID， 线程组 ID， top -Hp [tgid]
 	 */
 	pid_t				tgid;
 

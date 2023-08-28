@@ -1234,7 +1234,8 @@ struct file_lock {
 						 * ->fl_blocker->fl_blocked_requests
 						 */
 	/**
-	 * void *
+	 * typedef void *
+	 * - struct file *
 	 */
 	fl_owner_t fl_owner;
 	unsigned int fl_flags;
