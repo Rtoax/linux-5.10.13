@@ -957,7 +957,9 @@ static bool flock_locks_conflict(struct file_lock *caller_fl,
 	if (caller_fl->fl_file == sys_fl->fl_file)
 		return false;
 	/**
-	 * LOCK_MAND: 这是强制性的
+	 * LOCK_MAND: 这是强制性的，当用户态设置了这个标志后，将不会“冲突”。
+	 * %LOCK_MAND can be combined with %LOCK_READ or %LOCK_WRITE to
+	 * allow other processes read and write access respectively.
 	 */
 	if ((caller_fl->fl_type & LOCK_MAND) || (sys_fl->fl_type & LOCK_MAND))
 		return false;
@@ -2276,7 +2278,7 @@ EXPORT_SYMBOL(locks_lock_inode_wait);
  *	- %LOCK_EX -- an exclusive lock.
  *	- %LOCK_UN -- remove an existing lock.
  *	- %LOCK_NB -- non-block 我加的
- *	- %LOCK_MAND -- a 'mandatory' flock.
+ *	- %LOCK_MAND -- a 'mandatory' flock. (强制锁)
  *	  This exists to emulate Windows Share Modes.
  *
  *	%LOCK_MAND can be combined with %LOCK_READ or %LOCK_WRITE to allow other
@@ -2802,7 +2804,8 @@ static void lock_get_status(struct seq_file *f, struct file_lock *fl,
 		seq_puts(f, "UNKNOWN UNKNOWN  ");
 	}
 	/**
-	 * LOCK_MAND: 强制
+	 * LOCK_MAND:
+	 *
 	 */
 	if (fl->fl_type & LOCK_MAND) {
 		seq_printf(f, "%s ",

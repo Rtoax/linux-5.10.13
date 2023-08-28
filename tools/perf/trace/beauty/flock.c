@@ -4,22 +4,6 @@
 #include <linux/kernel.h>
 #include <uapi/linux/fcntl.h>
 
-#ifndef LOCK_MAND
-#define LOCK_MAND	 32
-#endif
-
-#ifndef LOCK_READ
-#define LOCK_READ	 64
-#endif
-
-#ifndef LOCK_WRITE
-#define LOCK_WRITE	128
-#endif
-
-#ifndef LOCK_RW
-#define LOCK_RW		192
-#endif
-
 size_t syscall_arg__scnprintf_flock(char *bf, size_t size, struct syscall_arg *arg)
 {
 	bool show_prefix = arg->show_string_prefix;

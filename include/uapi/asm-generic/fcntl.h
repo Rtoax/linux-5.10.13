@@ -207,10 +207,13 @@ struct f_owner_ex {
 /* operations for bsd flock(), also used by the kernel implementation */
 #define LOCK_SH		1	/* shared lock */
 #define LOCK_EX		2	/* exclusive lock */
-#define LOCK_NB		4	/* or'd with one of the above to prevent
-				   blocking */
+#define LOCK_NB		4	/* or'd with one of the above to prevent blocking */
 #define LOCK_UN		8	/* remove lock */
 
+/**
+ * %LOCK_MAND can be combined with %LOCK_READ or %LOCK_WRITE to allow other
+ *	processes read and write access respectively.
+ */
 #define LOCK_MAND	32	/* This is a mandatory flock ... 这是强制性的 */
 #define LOCK_READ	64	/* which allows concurrent read operations */
 #define LOCK_WRITE	128	/* which allows concurrent write operations */
