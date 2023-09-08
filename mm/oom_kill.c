@@ -188,6 +188,8 @@ static bool is_dump_unreclaim_slabs(void)
 
 /**
  * oom_badness - heuristic function to determine which candidate task to kill
+ *               启发式函数，用于确定要终止的候选任务
+ *
  * @p: task struct of which task we should calculate
  * @totalpages: total present RAM allowed for page allocation
  *
@@ -223,6 +225,8 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 	/*
 	 * The baseline for the badness score is the proportion of RAM that each
 	 * task's rss, pagetable and swap space use.
+	 *
+	 * 进程的 RSS + SWAPENTS(?) + 页表
 	 */
 	points = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS) +
 		mm_pgtables_bytes(p->mm) / PAGE_SIZE;
@@ -302,11 +306,17 @@ static enum oom_constraint constrained_alloc(struct oom_control *oc)
 	return CONSTRAINT_NONE;
 }
 
+/**
+ * 评估一个进程是不是应该被杀死
+ */
 static int oom_evaluate_task(struct task_struct *task, void *arg)
 {
 	struct oom_control *oc = arg;
 	long points;
 
+	/**
+	 * 进程不能被杀死
+	 */
 	if (oom_unkillable_task(task))
 		goto next;
 
@@ -319,6 +329,9 @@ static int oom_evaluate_task(struct task_struct *task, void *arg)
 	 * Don't allow any other task to have access to the reserves unless
 	 * the task has MMF_OOM_SKIP because chances that it would release
 	 * any memory is quite low.
+	 *
+	 * 此任务已有权访问内存保留，并且正在被终止。除非任务已MMF_OOM_SKIP，否则不允许任何
+	 * 其他任务访问预留，因为它释放任何内存的可能性非常低。
 	 */
 	if (!is_sysrq_oom(oc) && tsk_is_oom_victim(task)) {
 		if (test_bit(MMF_OOM_SKIP, &task->signal->oom_mm->flags))
@@ -335,7 +348,14 @@ static int oom_evaluate_task(struct task_struct *task, void *arg)
 		goto select;
 	}
 
+	/**
+	 * 计算 task 占用的内存：
+	 * - RSS + SWAPENTS(?) + 页表
+	 */
 	points = oom_badness(task, oc->totalpages);
+	/**
+	 * 当前进程点数 < 已经选择的进程的点数，那么继续选择下一个进程
+	 */
 	if (points == LONG_MIN || points < oc->chosen_points)
 		goto next;
 
@@ -343,6 +363,10 @@ select:
 	if (oc->chosen)
 		put_task_struct(oc->chosen);
 	get_task_struct(task);
+
+	/**
+	 * 选择进程
+	 */
 	oc->chosen = task;
 	oc->chosen_points = points;
 next:
@@ -357,20 +381,36 @@ abort:
 /*
  * Simple selection loop. We choose the process with the highest number of
  * 'points'. In case scan was aborted, oc->chosen is set to -1.
+ *
+ * 选择将要被杀死的进程
  */
 static void select_bad_process(struct oom_control *oc)
 {
 	oc->chosen_points = LONG_MIN;
 
+	/**
+	 * cgroup
+	 */
 	if (is_memcg_oom(oc))
 		mem_cgroup_scan_tasks(oc->memcg, oom_evaluate_task, oc);
+	/**
+	 * 普通进程
+	 */
 	else {
 		struct task_struct *p;
 
 		rcu_read_lock();
-		for_each_process(p)
-			if (oom_evaluate_task(p, oc))
+		/**
+		 * 遍历系统所有进程
+		 */
+		for_each_process(p) {
+			if (oom_evaluate_task(p, oc)) {
+				/**
+				 * break 表示中止，否则将遍历系统中所有进程
+				 */
 				break;
+			}
+		}
 		rcu_read_unlock();
 	}
 }
@@ -852,7 +892,7 @@ static bool task_will_free_mem(struct task_struct *task)
 
 
 /**
- *
+ * OOM 杀死进程
  */
 static void __oom_kill_process(struct task_struct *victim, const char *message)
 {
@@ -860,6 +900,9 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	struct mm_struct *mm;
 	bool can_oom_reap = true;
 
+	/**
+	 * 遍历进程 threads，找到 mm 结构不为空的 task
+	 */
 	p = find_lock_task_mm(victim);
 	if (!p) {
 		pr_info("%s: OOM victim %d (%s) is already exiting. Skip killing the task\n",
@@ -874,6 +917,10 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 
 	/* Get a reference to safely compare mm after task_unlock(victim) */
 	mm = victim->mm;
+
+	/**
+	 * atomic_inc(&mm->mm_count);
+	 */
 	mmgrab(mm);
 
 	/* Raise event before sending signal: task reaper must see this */
@@ -884,9 +931,16 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	 * We should send SIGKILL before granting access to memory reserves
 	 * in order to prevent the OOM victim from depleting the memory
 	 * reserves from the user space under its control.
+	 *
+	 * 我们应该在授予对内存保留的访问权限之前发送 SIGKILL，以防止 OOM 受害者从其
+	 * 控制的用户空间中耗尽内存储备。
+	 *
+	 * PS: SIGKILL 不允许被捕获
 	 */
 	do_send_sig_info(SIGKILL, SEND_SIG_PRIV, victim, PIDTYPE_TGID);
+
 	mark_oom_victim(victim);
+
 	pr_err("%s: Killed process %d (%s) total-vm:%lukB, anon-rss:%lukB, file-rss:%lukB, shmem-rss:%lukB, UID:%u pgtables:%lukB oom_score_adj:%hd\n",
 		message, task_pid_nr(victim), victim->comm, K(mm->total_vm),
 		K(get_mm_counter(mm, MM_ANONPAGES)),
@@ -904,6 +958,12 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 	 * its contended by another thread trying to allocate memory itself.
 	 * That thread will now get access to memory reserves since it has a
 	 * pending fatal signal.
+	 *
+	 * 终止在其他线程组中共享 victim->mm 的所有用户进程（如果有）。
+	 * 但是，它们无法访问内存储备，以避免耗尽所有内存。
+	 * 这可以防止 mm->mmap_lock livelock 当 oom 终止线程无法退出时，因为
+	 * 它请求信号量，并且它被另一个尝试分配内存本身的线程争用。
+	 * 该线程现在将访问内存保留，因为它具有挂起的致命信号。
 	 */
 	rcu_read_lock();
 
@@ -937,7 +997,7 @@ static void __oom_kill_process(struct task_struct *victim, const char *message)
 		wake_oom_reaper(victim);
 
     /**
-     *
+     * atomic_dec_and_test(&mm->mm_count)，当引用计数=0,释放这个结构
      */
 	mmdrop(mm);
 	put_task_struct(victim);
@@ -959,7 +1019,7 @@ static int oom_kill_memcg_member(struct task_struct *task, void *message)
 }
 
 /**
- *
+ * OOM：杀死进程
  */
 static void oom_kill_process(struct oom_control *oc, const char *message)
 {
@@ -996,6 +1056,9 @@ static void oom_kill_process(struct oom_control *oc, const char *message)
 	 */
 	oom_group = mem_cgroup_get_oom_group(victim, oc->memcg);
 
+	/**
+	 * 杀死进程
+	 */
 	__oom_kill_process(victim, message);
 
 	/*
@@ -1038,6 +1101,9 @@ static void check_panic_on_oom(struct oom_control *oc)
 
 static BLOCKING_NOTIFIER_HEAD(oom_notify_list);
 
+/**
+ * 通知链，用于通知 OOM
+ */
 int register_oom_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_register(&oom_notify_list, nb);
@@ -1058,15 +1124,23 @@ EXPORT_SYMBOL_GPL(unregister_oom_notifier);
  * killing a random task (bad), letting the system crash (worse)
  * OR try to be smart about which process to kill. Note that we
  * don't have to be perfect here, we just have to be good.
+ *
+ * 当系统内存不足的时候，out_of_memory()被触发
  */
-bool out_of_memory(struct oom_control *oc)  /* OOM */
+bool out_of_memory(struct oom_control *oc)
 {
 	unsigned long freed = 0;
 
 	if (oom_killer_disabled)
 		return false;
 
+	/**
+	 * 不是 cgroup
+	 */
 	if (!is_memcg_oom(oc)) {
+		/**
+		 * 通知需要通知的人，
+		 */
 		blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 		if (freed > 0)
 			/* Got some memory back in the last second. */
@@ -1104,7 +1178,12 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 	check_panic_on_oom(oc);
 
     /**
-     *
+	 * 是否要杀死当前进程？
+	 *
+     * 1. 不是 cgroup 进程
+	 * 2. 允许杀死正在 alloc 进程
+	 * 3. 当前进程有 mm 结构
+	 * 4. 当前进程可杀死
      */
 	if (!is_memcg_oom(oc) && sysctl_oom_kill_allocating_task &&
 	    current->mm && !oom_unkillable_task(current) &&
@@ -1117,7 +1196,7 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 		get_task_struct(current);
 
         /**
-         *  选择这个进程
+         *  选择当前进程
          */
 		oc->chosen = current;
 
@@ -1128,7 +1207,11 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 		return true;
 	}
 
+	/**
+	 * 选择一个进程 'RSS + SWAPENTS(?) + 页表' 最多的
+	 */
 	select_bad_process(oc);
+
 	/* Found nothing?!?! */
 	if (!oc->chosen) {
 		dump_header(oc, NULL);
@@ -1141,9 +1224,17 @@ bool out_of_memory(struct oom_control *oc)  /* OOM */
 		if (!is_sysrq_oom(oc) && !is_memcg_oom(oc))
 			panic("System is deadlocked on memory\n");
 	}
+
+	/**
+	 * 杀死进程
+	 */
 	if (oc->chosen && oc->chosen != (void *)-1UL)
 		oom_kill_process(oc, !is_memcg_oom(oc) ? "Out of memory" :
 				 "Memory cgroup out of memory");
+
+	/**
+	 * 选中了进程吗？
+	 */
 	return !!oc->chosen;
 }
 
