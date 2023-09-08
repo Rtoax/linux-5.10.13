@@ -9060,7 +9060,8 @@ void sched_move_task(struct task_struct *tsk)
 		dequeue_task(rq, tsk, queue_flags);
 
 	/**
-	 *  如果进程正在运行，刚才已经调度 dequeue_task 将其移出就绪队列，在把他添加入就绪队列
+	 *  如果进程正在运行，刚才已经调度 dequeue_task 将其移出就绪队列，
+	 *  在把他添加入就绪队列
 	 */
 	if (running)
 		put_prev_task(rq, tsk);

@@ -362,14 +362,17 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 		vma_init(vma, mm);
 	return vma;
 }
-/* 复制一个 vma 结构
-当 拆分一个 vma 时候，将使用这个接口*/
+/**
+ * 复制一个 vma 结构
+ * 当 拆分一个 vma 时候，将使用这个接口
+ */
 struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 {
 	struct vm_area_struct *new = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);/* 分配内存 */
 
-	if (new) {  /* 分配成功 */
-		ASSERT_EXCLUSIVE_WRITER(orig->vm_flags);    /* 并发性检测内容 */
+	if (new) {
+		/* 并发性检测内容 */
+		ASSERT_EXCLUSIVE_WRITER(orig->vm_flags);
 		ASSERT_EXCLUSIVE_WRITER(orig->vm_file);
 		/*
 		 * orig->shared.rb may be modified concurrently, but the clone
@@ -418,28 +421,28 @@ static void account_kernel_stack(struct task_struct *tsk, int account)
 static int memcg_charge_kernel_stack(struct task_struct *tsk)
 {
 #ifdef CONFIG_VMAP_STACK
-//	struct vm_struct *vm = task_stack_vm_area(tsk);
-//	int ret;
-//
-//	BUILD_BUG_ON(IS_ENABLED(CONFIG_VMAP_STACK) && PAGE_SIZE % 1024 != 0);
-//
-//	if (vm) {
-//		int i;
-//
-//		BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
-//
-//		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++) {
-//			/*
-//			 * If memcg_kmem_charge_page() fails, page->mem_cgroup
-//			 * pointer is NULL, and memcg_kmem_uncharge_page() in
-//			 * free_thread_stack() will ignore this page.
-//			 */
-//			ret = memcg_kmem_charge_page(vm->pages[i], GFP_KERNEL,
-//						     0);
-//			if (ret)
-//				return ret;
-//		}
-//	}
+	struct vm_struct *vm = task_stack_vm_area(tsk);
+	int ret;
+
+	BUILD_BUG_ON(IS_ENABLED(CONFIG_VMAP_STACK) && PAGE_SIZE % 1024 != 0);
+
+	if (vm) {
+		int i;
+
+		BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
+
+		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++) {
+			/*
+			 * If memcg_kmem_charge_page() fails, page->mem_cgroup
+			 * pointer is NULL, and memcg_kmem_uncharge_page() in
+			 * free_thread_stack() will ignore this page.
+			 */
+			ret = memcg_kmem_charge_page(vm->pages[i], GFP_KERNEL,
+						     0);
+			if (ret)
+				return ret;
+		}
+	}
 #endif
 	return 0;
 }
@@ -608,7 +611,8 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 			 * Don't prepare anon_vma until fault since we don't
 			 * copy page for current vma.
 			 *
-			 * 这个标识位 将表明，在 fork 阶段不分配 anon_vma，而是在 缺页时候在分配
+			 * 这个标识位 将表明，在 fork 阶段不分配 anon_vma，而是在
+			 * 缺页时候在分配.
 			 *
 			 * 详情见 `  madvise(2) MADV_WIPEONFORK
 			 */
@@ -683,7 +687,8 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 
 	    /* 红黑树操作 */
 		__vma_link_rb(mm, tmp, rb_link, rb_parent);
-		rb_link = &tmp->vm_rb.rb_right; /* 往后(右)插入 */
+		/* 往后(右)插入 */
+		rb_link = &tmp->vm_rb.rb_right;
 		rb_parent = &tmp->vm_rb;
 
 		mm->map_count++;
@@ -3071,14 +3076,17 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	 * for the type of forking is enabled.
 	 */
 	if (!(clone_flags & CLONE_UNTRACED)) {  /* 如果不可追踪 */
-		if (clone_flags & CLONE_VFORK)  /* 如果是 vfork() */
+		/* 如果是 vfork() */
+		if (clone_flags & CLONE_VFORK)
 			trace = PTRACE_EVENT_VFORK;
-		else if (args->exit_signal != SIGCHLD)  /* 如果推出signal 不是 SIGCHLD */
+		/* 如果推出signal 不是 SIGCHLD */
+		else if (args->exit_signal != SIGCHLD)
 			trace = PTRACE_EVENT_CLONE; /* clone() */
 		else
 			trace = PTRACE_EVENT_FORK;  /* fork() */
-	    /* 检查标志位  ，如果没有设置 ptrace 标志位，trace=0*/
-		if (likely(!ptrace_event_enabled(current, trace)))  /* 追踪 */
+	    /* 检查标志位，如果没有设置 ptrace 标志位，trace=0*/
+		/* 追踪 */
+		if (likely(!ptrace_event_enabled(current, trace)))
 			trace = 0;  /* 不可追踪 */
 	}
 	/**
