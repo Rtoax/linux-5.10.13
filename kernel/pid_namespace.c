@@ -318,6 +318,12 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
 }
 
 #ifdef CONFIG_CHECKPOINT_RESTORE
+/**
+ * 使能够指定 PID 启动一个进程成为可能
+ * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b8f566b04d
+ *
+ * sudo bpftrace -e 'kprobe:pid_ns_ctl_handler {printf("%s\n", comm);}'
+ */
 static int pid_ns_ctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos)
 {
@@ -328,7 +334,8 @@ static int pid_ns_ctl_handler(struct ctl_table *table, int write,
 	if (write && !checkpoint_restore_ns_capable(pid_ns->user_ns))
 		return -EPERM;
 
-	/*
+	/**
+	 * 这里的 last_pid 注释错误了
 	 * Writing directly to ns' last_pid field is OK, since this field
 	 * is volatile in a living namespace anyway and a code writing to
 	 * it should synchronize its usage with external means.
@@ -347,6 +354,7 @@ static int pid_ns_ctl_handler(struct ctl_table *table, int write,
 extern int pid_max;
 static struct ctl_table pid_ns_ctl_table[] = {
 	{
+		/* /proc/sys/kernel/ns_last_pid */
 		.procname = "ns_last_pid",
 		.maxlen = sizeof(int),
 		.mode = 0666, /* permissions are checked in the handler */
@@ -522,6 +530,9 @@ static __init int pid_namespaces_init(void)
 	pid_ns_cachep = KMEM_CACHE(pid_namespace, SLAB_PANIC);
 
 #ifdef CONFIG_CHECKPOINT_RESTORE
+	/**
+	 * /proc/sys/kernel/ns_last_pid
+	 */
 	register_sysctl_paths(kern_path, pid_ns_ctl_table);
 #endif
 	return 0;

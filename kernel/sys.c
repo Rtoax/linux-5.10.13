@@ -2474,6 +2474,10 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 	 * PR_SET_MM_START_DATA
 	 * PR_SET_MM_END_DATA
 	 * ...
+	 *
+	 * PR_SET_MM 是从 CRIU(CONFIG_CHECKPOINT_RESTORE) 开始引入的
+	 *  https://criu.org/Upstream_kernel_commits
+	 *    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=028ee4be34
 	 */
 	case PR_SET_MM:
 		error = prctl_set_mm(arg2, arg3, arg4, arg5);

@@ -766,7 +766,10 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		spinlock_t arg_lock; /* protect the below fields 保护下面的参数*/
 
         /**
-         *  这些变量在 load_elf_binary() 中被赋值
+         * 这些变量在 load_elf_binary() 中被赋值
+		 * 部分是从 CRIU(CONFIG_CHECKPOINT_RESTORE) 开始引入的
+		 *  https://criu.org/Upstream_kernel_commits
+		 *    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=028ee4be34
          */
 		unsigned long start_code, end_code, start_data, end_data;   /* brk() */
 		unsigned long start_brk, brk, start_stack;

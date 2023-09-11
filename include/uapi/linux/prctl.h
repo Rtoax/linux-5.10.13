@@ -64,7 +64,7 @@
 # define PR_ENDIAN_PPC_LITTLE	2	/* "PowerPC" pseudo little endian */
 
 /**
- *  Get/set process seccomp mode 
+ *  Get/set process seccomp mode
  *
  *  见 `struct seccomp`
  */
@@ -109,8 +109,12 @@
 
 #define PR_MCE_KILL_GET 34
 
-/*
+/**
+ * CRIU
+ *
  * Tune up process memory map specifics.
+ * https://criu.org/Upstream_kernel_commits
+ *   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=028ee4be34
  */
 #define PR_SET_MM		35
 # define PR_SET_MM_START_CODE		1

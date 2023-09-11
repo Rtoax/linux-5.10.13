@@ -3225,6 +3225,12 @@ static const struct pid_entry tgid_base_stuff[] = {
      */
 	DIR("task",       S_IRUGO|S_IXUGO, proc_task_inode_operations, proc_task_operations),
 	DIR("fd",         S_IRUSR|S_IXUSR, proc_fd_inode_operations, proc_fd_operations), /* /proc/PID/fd/ */
+	/**
+	 * /proc/TGID/map_files
+	 * 这实际上是从 criu 开始引入（CONFIG_CHECKPOINT_RESTORE）
+	 * https://criu.org/Upstream_kernel_commits
+	 *  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=640708a2cf
+	 */
 	DIR("map_files",  S_IRUSR|S_IXUSR, proc_map_files_inode_operations, proc_map_files_operations),
 	DIR("fdinfo",     S_IRUSR|S_IXUSR, proc_fdinfo_inode_operations, proc_fdinfo_operations),
 	DIR("ns",	  S_IRUSR|S_IXUGO, proc_ns_dir_inode_operations, proc_ns_dir_operations),
