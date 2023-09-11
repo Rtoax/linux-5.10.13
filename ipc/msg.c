@@ -1141,10 +1141,6 @@ static inline void free_copy(struct msg_msg *copy)
 		free_msg(copy);
 }
 #else
-/**
- * @brief
- *
- */
 #endif
 
 static struct msg_msg *find_msg(struct msg_queue *msq, long *msgtyp, int mode)

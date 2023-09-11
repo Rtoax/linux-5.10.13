@@ -1973,7 +1973,8 @@ out:
 }
 
 #ifdef CONFIG_CHECKPOINT_RESTORE
-static int prctl_set_mm_map(int opt, const void __user *addr, unsigned long data_size)
+static int prctl_set_mm_map(int opt, const void __user *addr,
+				unsigned long data_size)
 {
 	struct prctl_mm_map prctl_map = { .exe_fd = (u32)-1, };
 	unsigned long user_auxv[AT_VECTOR_SIZE];
@@ -2142,18 +2143,22 @@ static int prctl_set_mm(int opt, unsigned long addr,
 	/**
 	 * man prctl(2)
 	 *
-	 * Supersede  the  /proc/pid/exe  symbolic  link with a new one pointing to a new executable file
-	 * identified by the file descriptor provided in arg3 argument.  The file  descriptor  should  be
-	 * obtained with a regular open(2) call.
+	 * Supersede  the  /proc/pid/exe  symbolic  link with a new one
+	 * pointing to a new executable file identified by the file
+	 * descriptor provided in arg3 argument.  The file  descriptor
+	 * should  be obtained with a regular open(2) call.
 	 *
-	 * To  change the symbolic link, one needs to unmap all existing executable memory areas, includ‐
-	 * ing those created by the kernel itself (for example the kernel usually creates  at  least  one
+	 * To  change the symbolic link, one needs to unmap all existing
+	 * executable memory areas, including those created by the kernel
+	 * itself (for example the kernel usually creates  at  least  one
 	 * executable memory area for the ELF .text section).
 	 *
-	 * In  Linux  4.9  and  earlier, the PR_SET_MM_EXE_FILE operation can be performed only once in a
-	 * process's lifetime; attempting to perform the operation a second time  results  in  the  error
-	 * EPERM.   This restriction was enforced for security reasons that were subsequently deemed spe‐
-	 * cious, and the restriction was removed in Linux  4.10  because  some  user-space  applications
+	 * In  Linux  4.9  and  earlier, the PR_SET_MM_EXE_FILE operation
+	 * can be performed only once in a process's lifetime; attempting
+	 * to perform the operation a second time  results  in  the  error
+	 * EPERM.   This restriction was enforced for security reasons that
+	 * were subsequently deemed specious, and the restriction was
+	 * removed in Linux  4.10  because  some  user-space  applications
 	 * needed to perform this operation more than once.
 	 */
 	if (opt == PR_SET_MM_EXE_FILE)
