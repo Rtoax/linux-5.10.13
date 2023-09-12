@@ -673,6 +673,9 @@ static inline struct audit_buffer *xfrm_audit_start(const char *op)
 {
 	struct audit_buffer *audit_buf = NULL;
 
+	/**
+	 * 审计（audit）未使能则直接返回
+	 */
 	if (audit_enabled == AUDIT_OFF)
 		return NULL;
 	audit_buf = audit_log_start(audit_context(), GFP_ATOMIC,

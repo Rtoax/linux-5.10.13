@@ -87,6 +87,9 @@ struct audit_buffer *netlbl_audit_start_common(int type,
 	char *secctx;
 	u32 secctx_len;
 
+	/**
+	 * 审计（audit）未使能则直接返回
+	 */
 	if (audit_enabled == AUDIT_OFF)
 		return NULL;
 

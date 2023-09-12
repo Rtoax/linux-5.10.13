@@ -91,6 +91,9 @@ static void tty_audit_buf_push(struct tty_audit_buf *buf)
 {
 	if (buf->valid == 0)
 		return;
+	/**
+	 * 审计（audit）未使能则直接返回
+	 */
 	if (audit_enabled == AUDIT_OFF) {
 		buf->valid = 0;
 		return;

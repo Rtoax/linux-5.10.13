@@ -69,6 +69,9 @@
 #define AUDIT_INITIALIZED	1
 static int	audit_initialized;
 
+/**
+ * 默认关闭
+ */
 u32		audit_enabled = AUDIT_OFF;
 bool		audit_ever_enabled = !!AUDIT_OFF;
 
@@ -407,7 +410,7 @@ static int audit_do_config_change(char *function_name, u32 *to_change, u32 new)
 	int allow_changes, rc = 0;
 	u32 old = *to_change;
 
-	/* check if we are locked */
+	/* check if we are locked *//* 默认关闭 */
 	if (audit_enabled == AUDIT_LOCKED)
 		allow_changes = 0;
 	else
@@ -1100,6 +1103,9 @@ static void audit_log_feature_change(int which, u32 old_feature, u32 new_feature
 {
 	struct audit_buffer *ab;
 
+	/**
+	 * 审计（audit）未使能则直接返回
+	 */
 	if (audit_enabled == AUDIT_OFF)
 		return;
 

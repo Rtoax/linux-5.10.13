@@ -2071,6 +2071,9 @@ static const char * const bpf_audit_str[BPF_AUDIT_MAX] = {
 	[BPF_AUDIT_UNLOAD] = "UNLOAD",
 };
 
+/**
+ *
+ */
 static void bpf_audit_prog(const struct bpf_prog *prog, unsigned int op)
 {
 	struct audit_context *ctx = NULL;
@@ -2078,10 +2081,19 @@ static void bpf_audit_prog(const struct bpf_prog *prog, unsigned int op)
 
 	if (WARN_ON_ONCE(op >= BPF_AUDIT_MAX))
 		return;
+
+	/**
+	 * 审计（audit）未使能则直接返回
+	 */
 	if (audit_enabled == AUDIT_OFF)
 		return;
+
 	if (op == BPF_AUDIT_LOAD)
 		ctx = audit_context();
+
+	/**
+	 *
+	 */
 	ab = audit_log_start(ctx, GFP_ATOMIC, AUDIT_BPF);
 	if (unlikely(!ab))
 		return;
@@ -2217,6 +2229,9 @@ static void __bpf_prog_put(struct bpf_prog *prog, bool do_idr_lock)
 {
 	if (atomic64_dec_and_test(&prog->aux->refcnt)) {
 		perf_event_bpf_event(prog, PERF_BPF_EVENT_PROG_UNLOAD, 0);
+		/**
+		 *
+		 */
 		bpf_audit_prog(prog, BPF_AUDIT_UNLOAD);
 		/* bpf_prog_free_id() must be called first */
 		bpf_prog_free_id(prog, do_idr_lock);
@@ -2833,6 +2848,10 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 	 */
 	bpf_prog_kallsyms_add(prog);
 	perf_event_bpf_event(prog, PERF_BPF_EVENT_PROG_LOAD, 0);
+
+	/**
+	 * audit: 审计
+	 */
 	bpf_audit_prog(prog, BPF_AUDIT_LOAD);
 
 	/**
