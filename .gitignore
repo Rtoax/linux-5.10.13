@@ -1,6 +1,8 @@
 .vscode/
 *.out
 *.o
+*.a
+*.cmd
 *.symvers
 *.tar
 *.tar.*

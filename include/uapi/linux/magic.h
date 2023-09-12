@@ -32,7 +32,7 @@
 #define JFFS2_SUPER_MAGIC	0x72b6
 #define XFS_SUPER_MAGIC		0x58465342	/* "XFSB" */
 #define PSTOREFS_MAGIC		0x6165676C
-#define EFIVARFS_MAGIC		0xde5e81e4
+#define EFIVARFS_MAGIC		0xde5e81e4 /* /sys/firmware/efi/efivars */
 #define HOSTFS_SUPER_MAGIC	0x00c0ffee
 #define OVERLAYFS_SUPER_MAGIC	0x794c7630
 
