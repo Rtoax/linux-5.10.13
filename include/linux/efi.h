@@ -240,7 +240,7 @@ typedef efi_status_t efi_get_variable_t (efi_char16_t *name, efi_guid_t *vendor,
 					 unsigned long *data_size, void *data);
 typedef efi_status_t efi_get_next_variable_t (unsigned long *name_size, efi_char16_t *name,
 					      efi_guid_t *vendor);
-typedef efi_status_t efi_set_variable_t (efi_char16_t *name, efi_guid_t *vendor, 
+typedef efi_status_t efi_set_variable_t (efi_char16_t *name, efi_guid_t *vendor,
 					 u32 attr, unsigned long data_size,
 					 void *data);
 typedef efi_status_t efi_get_next_high_mono_count_t (u32 *count);
@@ -812,42 +812,72 @@ static inline bool efi_rt_services_supported(unsigned int mask)
 	return (efi.runtime_supported_mask & mask) == mask;
 }
 #else
-//static inline bool efi_enabled(int feature)
-//{
-//	return false;
-//}
-//static inline void
-//efi_reboot(enum reboot_mode reboot_mode, const char *__unused) {}
-//
-//static inline bool
-//efi_capsule_pending(int *reset_type)
-//{
-//	return false;
-//}
-//
-//static inline bool efi_soft_reserve_enabled(void)
-//{
-//	return false;
-//}
-//
-//static inline bool efi_rt_services_supported(unsigned int mask)
-//{
-//	return false;
-//}
+static inline bool efi_enabled(int feature)
+{
+	return false;
+}
+static inline void
+efi_reboot(enum reboot_mode reboot_mode, const char *__unused) {}
+
+static inline bool
+efi_capsule_pending(int *reset_type)
+{
+	return false;
+}
+
+static inline bool efi_soft_reserve_enabled(void)
+{
+	return false;
+}
+
+static inline bool efi_rt_services_supported(unsigned int mask)
+{
+	return false;
+}
 #endif
 
 extern int efi_status_to_err(efi_status_t status);
 
 /*
  * Variable Attributes
+ *
+ * 前四个字节保存了 var 的属性
+ *
+ * 举例：
+ *
+ * $ efivar --list | grep Boot0000
+ * 8be4df61-93ca-11d2-aa0d-00e098032b8c-Boot0000
+ * $ efivar --name 8be4df61-93ca-11d2-aa0d-00e098032b8c-Boot0000 --print
+ * GUID: 8be4df61-93ca-11d2-aa0d-00e098032b8c
+ * Name: "Boot0000"
+ * Attributes:
+ * 	Non-Volatile
+ * 	Boot Service Access
+ * 	Runtime Service Access
+ * Value:
+ * 00000000  01 00 00 00 62 00 46 00  65 00 64 00 6f 00 72 00  |....b.F.e.d.o.r.|
+ * 00000010  61 00 00 00 04 01 2a 00  03 00 00 00 00 c8 32 00  |a.....*.......2.|
+ * 00000020  00 00 00 00 00 00 40 00  00 00 00 00 d2 c0 a8 c7  |......@.........|
+ * 00000030  47 72 74 43 a6 99 a4 ac  06 70 ef 9d 02 02 04 04  |GrtC.....p......|
+ * 00000040  34 00 5c 00 45 00 46 00  49 00 5c 00 46 00 45 00  |4.\.E.F.I.\.F.E.|
+ * 00000050  44 00 4f 00 52 00 41 00  5c 00 53 00 48 00 49 00  |D.O.R.A.\.S.H.I.|
+ * 00000060  4d 00 58 00 36 00 34 00  2e 00 45 00 46 00 49 00  |M.X.6.4...E.F.I.|
+ * 00000070  00 00 7f ff 04 00                                 |......          |
+ *
+ * ref
+ * https://uefi.org/specs/UEFI/2.10/08_Services_Runtime_Services.html#getvariable
  */
+/* non-volatile */
 #define EFI_VARIABLE_NON_VOLATILE       0x0000000000000001
+/* can be accessed at boot */
 #define EFI_VARIABLE_BOOTSERVICE_ACCESS 0x0000000000000002
+/* can be accessed at runtime. */
 #define EFI_VARIABLE_RUNTIME_ACCESS     0x0000000000000004
 #define EFI_VARIABLE_HARDWARE_ERROR_RECORD 0x0000000000000008
 #define EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS 0x0000000000000010
 #define EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS 0x0000000000000020
 #define EFI_VARIABLE_APPEND_WRITE	0x0000000000000040
+#define EFI_VARIABLE_ENHANCED_AUTHENTICATED_ACCESS 0x0000000000000080
 
 #define EFI_VARIABLE_MASK 	(EFI_VARIABLE_NON_VOLATILE | \
 				EFI_VARIABLE_BOOTSERVICE_ACCESS | \
@@ -855,7 +885,8 @@ extern int efi_status_to_err(efi_status_t status);
 				EFI_VARIABLE_HARDWARE_ERROR_RECORD | \
 				EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS | \
 				EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS | \
-				EFI_VARIABLE_APPEND_WRITE)
+				EFI_VARIABLE_APPEND_WRITE | \
+				EFI_VARIABLE_ENHANCED_AUTHENTICATED_ACCESS)
 /*
  * Length of a GUID string (strlen("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
  * not including trailing NUL
