@@ -31,8 +31,14 @@ static __always_inline void enter_from_user_mode(struct pt_regs *regs)  /* TODO 
 	instrumentation_end();
 }
 
+/**
+ *
+ */
 static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
 {
+	/**
+	 * current->audit_context
+	 */
 	if (unlikely(audit_context())) {
 		unsigned long args[6];
 
@@ -41,6 +47,9 @@ static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
 	}
 }
 
+/**
+ *
+ */
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 				unsigned long ti_work)
 {

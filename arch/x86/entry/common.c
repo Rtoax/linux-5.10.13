@@ -38,20 +38,24 @@
 #ifdef CONFIG_X86_64    /* entry_SYSCALL_64 调用 */
 __visible noinstr void do_syscall_64(unsigned long nr, struct pt_regs *regs)
 {
+	/**
+	 * 这会调用到的函数
+	 * - __audit_syscall_entry()
+	 */
 	nr = syscall_enter_from_user_mode(regs, nr);
 
 	instrumentation_begin();
 	if (likely(nr < NR_syscalls)) {
 		nr = array_index_nospec(nr, NR_syscalls);
 
-        //将系统调用处理的返回值入栈
+        /* 将系统调用处理的返回值入栈 */
 		regs->ax = sys_call_table[nr](regs);
 #ifdef CONFIG_X86_X32_ABI
-//	} else if (likely((nr & __X32_SYSCALL_BIT) &&
-//			  (nr & ~__X32_SYSCALL_BIT) < X32_NR_syscalls)) {
-//		nr = array_index_nospec(nr & ~__X32_SYSCALL_BIT,
-//					X32_NR_syscalls);
-//		regs->ax = x32_sys_call_table[nr](regs);
+	} else if (likely((nr & __X32_SYSCALL_BIT) &&
+			  (nr & ~__X32_SYSCALL_BIT) < X32_NR_syscalls)) {
+		nr = array_index_nospec(nr & ~__X32_SYSCALL_BIT,
+					X32_NR_syscalls);
+		regs->ax = x32_sys_call_table[nr](regs);
 #endif
 	}
 	instrumentation_end();

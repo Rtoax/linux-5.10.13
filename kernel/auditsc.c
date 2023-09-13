@@ -947,6 +947,7 @@ int audit_alloc(struct task_struct *tsk)
 	enum audit_state     state;
 	char *key = NULL;
 
+	/* 默认为 0，我的环境上是 1 */
 	if (likely(!audit_ever_enabled))
 		return 0; /* Return if not auditing. */
 
