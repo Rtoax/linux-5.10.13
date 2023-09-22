@@ -2234,6 +2234,9 @@ __setup("console_msg_format=", console_msg_format_setup);
 /*
  * Set up a console.  Called via do_early_param() in init/main.c
  * for each "console=" parameter in the boot command line.
+ *
+ * console=ttyS0,115200n8
+ * https://elinux.org/Serial_console
  */
 static int __init console_setup(char *str)
 {
@@ -2250,9 +2253,17 @@ static int __init console_setup(char *str)
 	/*
 	 * Decode str into name, index, options.
 	 */
+	/**
+	 * console=ttyS0,115200n8
+	 *             ^
+	 */
 	if (str[0] >= '0' && str[0] <= '9') {
 		strcpy(buf, "ttyS");
 		strncpy(buf + 4, str, sizeof(buf) - 5);
+	/**
+	 * console=ttyAMA1,115200n8 ?
+	 *             ^
+	 */
 	} else {
 		strncpy(buf, str, sizeof(buf) - 1);
 	}
@@ -2269,6 +2280,11 @@ static int __init console_setup(char *str)
 	for (s = buf; *s; s++)
 		if (isdigit(*s) || *s == ',')
 			break;
+	/**
+	 * console=ttyS0,115200n8
+	 *             ^
+	 * idx = 0
+	 */
 	idx = simple_strtoul(s, NULL, 10);
 	*s = 0;
 
