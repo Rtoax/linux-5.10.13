@@ -1078,6 +1078,9 @@ static int cpu_cache_level__read(struct cpu_cache_level *cache, u32 cpu, u16 lev
 	if (sysfs__read_int(file, (int *) &cache->level))
 		return -1;
 
+	/**
+	 * /sys/devices/system/cpu/cpu1/cache/index3/coherency_line_size
+	 */
 	scnprintf(file, PATH_MAX, "%s/coherency_line_size", path);
 	if (sysfs__read_int(file, (int *) &cache->line_size))
 		return -1;
