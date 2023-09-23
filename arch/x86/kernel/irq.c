@@ -78,97 +78,105 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 	seq_printf(p, "%*s: ", prec, "NMI");
 	for_each_online_cpu(j) {
 		seq_printf(p, "%10u ", irq_stats(j)->__nmi_count);
-    }
+	}
 	seq_puts(p, "  Non-maskable interrupts\n");
 #ifdef CONFIG_X86_LOCAL_APIC
-    //LOC:  502053985  336118524   26655420   27995239   Local timer interrupts
+	/**
+	 * LOC: Local timer interrupts
+	 */
 	seq_printf(p, "%*s: ", prec, "LOC");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
-    }
+	}
 	seq_puts(p, "  Local timer interrupts\n");
 
 	seq_printf(p, "%*s: ", prec, "SPU");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
-    }
+	}
 	seq_puts(p, "  Spurious interrupts\n");
 	seq_printf(p, "%*s: ", prec, "PMI");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
-    }
+	}
 	seq_puts(p, "  Performance monitoring interrupts\n");
 	seq_printf(p, "%*s: ", prec, "IWI");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->apic_irq_work_irqs);
-    }
+	}
 	seq_puts(p, "  IRQ work interrupts\n");
 	seq_printf(p, "%*s: ", prec, "RTR");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->icr_read_retry_count);
-    }
+	}
 	seq_puts(p, "  APIC ICR read retries\n");
 	if (x86_platform_ipi_callback) {
 		seq_printf(p, "%*s: ", prec, "PLT");
 		for_each_online_cpu(j){
 			seq_printf(p, "%10u ", irq_stats(j)->x86_platform_ipis);
-        }
+	    }
 		seq_puts(p, "  Platform interrupts\n");
 	}
 #endif
 #ifdef CONFIG_SMP
-    //Rescheduling interrupts
+	/**
+	 * RES: Rescheduling interrupts-调度中断
+	 *
+	 * 重新调度中断是Linux内核唤醒空闲CPU内核以调度线程的方式。
+	 * 在SMP系统上，这通常由调度程序完成，以便将负载分散到多个CPU内核中。
+	 *
+	 * 调度程序尝试将处理器活动分布到尽可能多的内核中。一般的经验法则是最好在低功耗（较低的
+	 * 时钟频率）下在所有内核上运行尽可能多的进程，而不是让一个内核真正忙于全速运行而其他内
+	 * 核正在休眠。
+	 */
 	seq_printf(p, "%*s: ", prec, "RES");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
-    }
-    /**
-     *  re-调度中断
-     */
+	}
 	seq_puts(p, "  Rescheduling interrupts\n");
 
 	seq_printf(p, "%*s: ", prec, "CAL");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);
-    }
+	}
 	seq_puts(p, "  Function call interrupts\n");
 	seq_printf(p, "%*s: ", prec, "TLB");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_tlb_count);
-    }
+	}
 	seq_puts(p, "  TLB shootdowns\n");
 #endif
 #ifdef CONFIG_X86_THERMAL_VECTOR
 	seq_printf(p, "%*s: ", prec, "TRM");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_thermal_count);
-    }
+	}
 	seq_puts(p, "  Thermal event interrupts\n");
 #endif
 #ifdef CONFIG_X86_MCE_THRESHOLD
 	seq_printf(p, "%*s: ", prec, "THR");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
-    }
+	}
 	seq_puts(p, "  Threshold APIC interrupts\n");
 #endif
 #ifdef CONFIG_X86_MCE_AMD
 	seq_printf(p, "%*s: ", prec, "DFR");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->irq_deferred_error_count);
-    }
+	}
 	seq_puts(p, "  Deferred Error APIC interrupts\n");
 #endif
 #ifdef CONFIG_X86_MCE
 	seq_printf(p, "%*s: ", prec, "MCE");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", per_cpu(mce_exception_count, j));
-    }
+	}
 	seq_puts(p, "  Machine check exceptions\n");
 	seq_printf(p, "%*s: ", prec, "MCP");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", per_cpu(mce_poll_count, j));
-    }
+	}
 	seq_puts(p, "  Machine check polls\n");
 #endif
 #ifdef CONFIG_X86_HV_CALLBACK_VECTOR
@@ -176,7 +184,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 		seq_printf(p, "%*s: ", prec, "HYP");
 		for_each_online_cpu(j){
 			seq_printf(p, "%10u ", irq_stats(j)->irq_hv_callback_count);
-        }
+	    }
 		seq_puts(p, "  Hypervisor callback interrupts\n");
 	}
 #endif
@@ -185,14 +193,14 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 		seq_printf(p, "%*s: ", prec, "HRE");
 		for_each_online_cpu(j){
 			seq_printf(p, "%10u ", irq_stats(j)->irq_hv_reenlightenment_count);
-        }
+	    }
 		seq_puts(p, "  Hyper-V reenlightenment interrupts\n");
 	}
 	if (test_bit(HYPERV_STIMER0_VECTOR, system_vectors)) {
 		seq_printf(p, "%*s: ", prec, "HVS");
 		for_each_online_cpu(j){
 			seq_printf(p, "%10u ", irq_stats(j)->hyperv_stimer0_count);
-        }
+	    }
 		seq_puts(p, "  Hyper-V stimer0 interrupts\n");
 	}
 #endif
@@ -204,19 +212,19 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 	seq_printf(p, "%*s: ", prec, "PIN");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->kvm_posted_intr_ipis);
-    }
+	}
 	seq_puts(p, "  Posted-interrupt notification event\n");
 
 	seq_printf(p, "%*s: ", prec, "NPI");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->kvm_posted_intr_nested_ipis);
-    }
+	}
 	seq_puts(p, "  Nested posted-interrupt event\n");
 
 	seq_printf(p, "%*s: ", prec, "PIW");
 	for_each_online_cpu(j){
 		seq_printf(p, "%10u ", irq_stats(j)->kvm_posted_intr_wakeup_ipis);
-    }
+	}
 	seq_puts(p, "  Posted-interrupt wakeup event\n");
 #endif
 	return 0;
@@ -267,15 +275,15 @@ u64 arch_irq_stat(void)
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (IS_ENABLED(CONFIG_X86_64))
 		run_irq_on_irqstack_cond(desc->handle_irq, desc, regs);
 	else
-        /**
-         *
-         */
+	    /**
+	     *
+	     */
 		__handle_irq(desc, regs);
 }
 
@@ -287,32 +295,32 @@ __visible void __irq_entry do_IRQ(struct pt_regs *regs){/* 这是老版本的 do
 void common_interrupt(struct pt_regs *regs, u8 vector){/* 这是新版本的 do_IRQ(); */}
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct pt_regs *old_regs = set_irq_regs(regs);//返回被保存的 `per-cpu` 中断寄存器指针
 	struct irq_desc *desc;
 
 	/* entry code tells RCU that we're not quiescent.  Check it. */
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "IRQ failed to wake up RCU");
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	desc = __this_cpu_read(vector_irq[vector]);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (likely(!IS_ERR_OR_NULL(desc))) {
-        /**
-         *
-         */
+	    /**
+	     *
+	     */
 		handle_irq(desc, regs);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} else {
 		ack_APIC_irq();
 
@@ -325,9 +333,9 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 		}
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	set_irq_regs(old_regs);
 }
 /*

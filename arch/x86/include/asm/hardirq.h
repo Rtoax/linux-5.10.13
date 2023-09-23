@@ -8,17 +8,17 @@
  *  通过一个 `irq_cpustat_t` 结构描述软中断状态信息
  */
 typedef struct {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	u16	     __softirq_pending;
-    
+
 #if IS_ENABLED(CONFIG_KVM_INTEL)
 	u8	     kvm_cpu_l1tf_flush_l1d;
 #endif
 	unsigned int __nmi_count;	/* arch dependent */
 #ifdef CONFIG_X86_LOCAL_APIC
-    //Local timer interrupts
+	//Local timer interrupts
 	unsigned int apic_timer_irqs;	/* arch dependent */
 	unsigned int irq_spurious_count;
 	unsigned int icr_read_retry_count;
@@ -32,9 +32,9 @@ typedef struct {
 	unsigned int apic_perf_irqs;
 	unsigned int apic_irq_work_irqs;
 #ifdef CONFIG_SMP
-    /**
-     * re-调度中断 Rescheduling interrupts
-     */
+	/**
+	 * RES: Rescheduling interrupts re-调度中断
+	 */
 	unsigned int irq_resched_count;
 	unsigned int irq_call_count;
 #endif

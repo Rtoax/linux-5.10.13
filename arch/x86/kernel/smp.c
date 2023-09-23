@@ -4,7 +4,7 @@
  *
  *	(c) 1995 Alan Cox, Building #3 <alan@lxorguk.ukuu.org.uk>
  *	(c) 1998-99, 2000, 2009 Ingo Molnar <mingo@redhat.com>
- *      (c) 2002,2003 Andi Kleen, SuSE Labs.
+ *	  (c) 2002,2003 Andi Kleen, SuSE Labs.
  *
  *	i386 and x86_64 integration by Glauber Costa <gcosta@redhat.com>
  */
@@ -141,7 +141,7 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_reboot)
 static int register_stop_handler(void)
 {
 	return register_nmi_handler(NMI_LOCAL, smp_stop_nmi_callback,
-				    NMI_FLAG_FIRST, "smp_stop");
+					NMI_FLAG_FIRST, "smp_stop");
 }
 
 static void native_stop_other_cpus(int wait)
@@ -225,17 +225,23 @@ static void native_stop_other_cpus(int wait)
 DEFINE_IDTENTRY_SYSVEC_SIMPLE(sysvec_reschedule_ipi)
 {
 	ack_APIC_irq();
-    //tracepoint:irq_vectors:reschedule_entry
+	/**
+	 * tracepoint:irq_vectors:reschedule_entry
+	 */
 	trace_reschedule_entry(RESCHEDULE_VECTOR);
-    /**
-     * @brief Rescheduling interrupts
-     *
-     */
+	/**
+	 * RES: Rescheduling interrupts
+	 *
+	 */
 	inc_irq_stat(irq_resched_count);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	scheduler_ipi();
+
+	/**
+	 * tracepoint:irq_vectors:reschedule_exit
+	 */
 	trace_reschedule_exit(RESCHEDULE_VECTOR);
 }
 
