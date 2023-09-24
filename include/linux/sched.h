@@ -2425,7 +2425,7 @@ static inline struct thread_info *task_thread_info(struct task_struct *task)
 	return &task->thread_info;
 }
 #elif !defined(__HAVE_THREAD_FUNCTIONS)
-//# define task_thread_info(task)	((struct thread_info *)(task)->stack)
+# define task_thread_info(task)	((struct thread_info *)(task)->stack)
 #endif
 
 /*
@@ -2454,7 +2454,7 @@ extern void wake_up_new_task(struct task_struct *tsk);
 #ifdef CONFIG_SMP
 extern void kick_process(struct task_struct *tsk);
 #else
-/**/
+static inline void kick_process(struct task_struct *tsk) { }
 #endif
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
@@ -2482,7 +2482,7 @@ static __always_inline void scheduler_ipi(void)
 }
 extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
 #else
-
+static inline void scheduler_ipi(void) { }
 #endif
 
 /*

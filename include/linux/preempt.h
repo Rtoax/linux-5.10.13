@@ -293,6 +293,9 @@ do { \
 do { \
 	set_preempt_need_resched(); \
 } while (0)
+/**
+ * #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
+ */
 #define preempt_fold_need_resched() \
 do { \
 	if (tif_need_resched()) \

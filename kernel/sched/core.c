@@ -7457,9 +7457,9 @@ SYSCALL_DEFINE0(sched_yield)
 
 #ifndef CONFIG_PREEMPTION
 /**
- *  主动让出 CPU？
+ *  主动让出 CPU
  *
- *  见  cond_resched 主动让出cpu . why??
+ *  见  cond_resched 主动让出cpu
  *
  *  在可抢占内核中，在内核态有很多抢占点，在有高优先级的进程需要运行时，
  *  就会在抢占点到来时执行抢占；而在内核不可抢占系统中(如centos系统)，

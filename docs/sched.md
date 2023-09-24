@@ -26,7 +26,7 @@ sched
 
 # 进程切换
 
-内核是通过设置TIF_NEED_RESCHED标志来对进程进行标记的，设置该位则表明需要进行调度切换，而实际的切换将在抢占执行点来完成。
+内核是通过设置TIF_NEED_RESCHED标志来对进程进行标记的，设置该位则表明需要进行调度切换，而实际的切换将在抢占执行点来完成。(详情见 arch/x86/include/asm/thread_info.h)
 
 * set_tsk_need_resched()
 * need_resched()
@@ -50,18 +50,26 @@ sched
 
 ## 抢占点
 
-用户抢占：抢占执行发生在进程处于用户态。抢占的执行，最明显的标志就是调用了schedule()函数，来完成任务的切换。具体来说，在用户态执行抢占在以下几种情况：
+用户抢占：抢占执行发生在进程处于用户态。抢占的执行，最明显的标志就是调用了 schedule() 函数，来完成任务的切换。
+
+具体来说，在用户态执行抢占在以下几种情况：
 
 * 异常处理后返回到用户态；
 * 中断处理后返回到用户态；
 * 系统调用后返回到用户态；
 
-> ARMv8有4个Exception Level，其中用户程序运行在EL0，OS运行在EL1，Hypervisor运行在EL2，Secure monitor运行在EL3；
+> ARMv8有4个Exception Level，其中
+>  用户程序运行在EL0，
+>  OS运行在EL1，
+>  Hypervisor运行在EL2，
+>  Secure monitor运行在EL3；
 > 用户程序在执行过程中，遇到异常或中断后，将会跳到ENTRY(vectors)向量表处开始执行；
-> 返回用户空间时进行标志位判断，设置了TIF_NEED_RESCHED则需要进行调度切换，没有设置该标志，则检查是否有收到信号，有信号未处理的话，还需要进行信号的处理操作；
+> 返回用户空间时进行标志位判断，设置了 TIF_NEED_RESCHED 则需要进行调度切换，没有设置该标志，则检查是否有收到信号，有信号未处理的话，还需要进行信号的处理操作；
 
 
 ### arm64
+
+> (el0 - userspace)
 
 * SYM_CODE_START(vectors)
     * el0_irq

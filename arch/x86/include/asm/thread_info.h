@@ -89,12 +89,17 @@ struct thread_info {
 /**
  * TIF_NEED_RESCHED 调度前需要设置的调度标记
  *
+ * 可以触发抢占的情况很多，比如进程的时间片耗尽、进程等待在某些资源上被唤醒时、进程优先级改变等。
+ * Linux内核是通过设置 TIF_NEED_RESCHED 标志来对进程进行标记的，设置该位则表明需要进行调度
+ * 切换，而实际的切换将在抢占执行点来完成。
+ *
  * 当前进程的 thread_info 结构中的 flags TIF_NEED_RESCHED 标志被设置，以便时钟中断处理
  * 程序终止时调度程序被调用。
  *
- * 内核的调度操作分为触发和执行两个部分，触发时仅仅设置一下当前进程的 TIF_NEED_RESCHED标志，
- * 执行的时候则是通过schedule()函数来完成进程的选择和切换。当前进程的thread_info->flags中
- * TIF_NEED_RESCHED 位表示需要调用 schedule() 函数进行调度。
+ * 内核的调度操作分为触发和执行两个部分，触发时仅仅设置一下当前进程的 TIF_NEED_RESCHED 标志，
+ * 执行的时候则是通过 schedule() 函数来完成进程的选择和切换。当前进程的
+ *   thread_info->flags 的 TIF_NEED_RESCHED 位
+ * 表示需要调用 schedule() 函数进行调度。
  *
  * 内核在两种情况下会设置该标志，
  *  1. 一个是在时钟中断进行周期性的检查时，
@@ -117,11 +122,11 @@ struct thread_info {
  *  2. 将运行标志设置为 TASK_RUNNING，
  *  3. 如果被唤醒的任务可以抢占当前运行任务则设置当前任务的 TIF_NEED_RESCHED 标志。
  *
- * 设置了 TIF_NEED_RESCHED 标志之后，真正调用执行 schedule()函数的时机只有两种，
+ * 设置了 TIF_NEED_RESCHED 标志之后，真正调用执行 schedule() 函数的时机只有两种，
  *
  *  1. 第一种是系统调用或者中断返回时，根据 TIF_NEED_RESCHED 标志决定是否调用
- *     schedule()函数（从效率方面考虑，趁着还在内核态把该处理的事情处理完毕）；
- *  2. 第二种情况是当前任务因为原因需要睡眠，进程睡眠后立即调用schedule()函数，
+ *     schedule() 函数（从效率方面考虑，趁着还在内核态把该处理的事情处理完毕）；
+ *  2. 第二种情况是当前任务因为原因需要睡眠，进程睡眠后立即调用 schedule() 函数，
  *     在内核中这种情况也比较多，比如磁盘、网卡等设备驱动程序中。
  */
 #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
@@ -189,14 +194,14 @@ struct thread_info {
 #ifdef CONFIG_SMP
 # define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE | _TIF_SPEC_IB)
 #else
-//# define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE)
+# define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE)
 #endif
 
 #ifdef CONFIG_X86_IOPL_IOPERM/* IO privilege level _ port IO permissions */
 # define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY | \
 				 _TIF_IO_BITMAP)
 #else
-//# define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY)
+# define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY)
 #endif
 
 #define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)

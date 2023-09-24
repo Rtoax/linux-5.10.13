@@ -10,8 +10,17 @@ preempt - 抢占
 
 * `CONFIG_PREEMPT_NONE`：不支持抢占，中断退出后，需要等到低优先级任务主动让出CPU才发生抢占切换；
 * `CONFIG_PREEMPT_VOLUNTARY`：自愿抢占，代码中增加抢占点，在中断退出后遇到抢占点时进行抢占切换；
+    * PREEMPT_VOLUNTARY 适用于有桌面的环境
+* `CONFIG_PREEMPT_DYNAMIC`:
 * `CONFIG_PREEMPT`：抢占，当中断退出后，如果遇到了更高优先级的任务，立即进行任务抢占；
+    * kernel 2.6 引入;
+    * CONFIG_PREEMPT 打开后可以在任何位置抢占，除非代码中禁止了本地中断；
+    * 一个无限循环不会抢占整个系统;
+    * CONFIG_PREEMPT 则可以用于桌面或者嵌入式;
 * `CONFIG_PREEMPT_RT`：
+* `CONFIG_PREEMPTION`:
+
+用户空间进程总是可抢占的，例如，用户空间写了一个无限循环，也不能够阻塞系统。
 
 
 * 图例
@@ -91,3 +100,7 @@ el1_irq: asm
  */
 ```
 
+# Links
+
+- https://kernelnewbies.org/FAQ/Preemption
+- https://blog.csdn.net/tiantao2012/article/details/56840183
