@@ -110,6 +110,9 @@ SECTIONS
 		/* 将所有输入文件中 .rodata 和 .rodata.* 段合并到这里 */
 		*(.rodata) *(.rodata.*)
 		. = ALIGN(32);
+		/**
+		 * 见宏 for_each_class()
+		 */
 		__begin_sched_classes = .;
 			*(__idle_sched_class)
 			*(__fair_sched_class)

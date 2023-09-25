@@ -101,12 +101,12 @@
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]*
 #define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
 #else
-//#define TEXT_MAIN .text
-//#define DATA_MAIN .data
-//#define SDATA_MAIN .sdata
-//#define RODATA_MAIN .rodata
-//#define BSS_MAIN .bss
-//#define SBSS_MAIN .sbss
+#define TEXT_MAIN .text
+#define DATA_MAIN .data
+#define SDATA_MAIN .sdata
+#define RODATA_MAIN .rodata
+#define BSS_MAIN .bss
+#define SBSS_MAIN .sbss
 #endif
 
 /*
@@ -124,14 +124,16 @@
  * The order of the sched class addresses are important, as they are
  * used to determine the order of the priority of each sched class in
  * relation to each other.
- */ /* ffffffff82afd720 - ffffffff82afdae0 */
+ */
 #define SCHED_DATA		/* 调度类 */		\
 	STRUCT_ALIGN();				\
 	__begin_sched_classes = .;	/* ffffffff82afd720 */	\
+	/* sched_class_lowest */ \
 	*(__idle_sched_class)	/* IDLE *//* idle_sched_class */		\
 	*(__fair_sched_class)	/* CFS *//* fair_sched_class */		\
 	*(__rt_sched_class)		/* 实时 *//*  rt_sched_class*/	\
 	*(__dl_sched_class)		/* deadline *//* dl_sched_class */	\
+	/* sched_class_highest */ \
 	*(__stop_sched_class)	/* stop_sched_class */		\
 	__end_sched_classes = .;    /* ffffffff82afdae0 */
 

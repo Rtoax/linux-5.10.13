@@ -2616,7 +2616,7 @@ static inline int spin_needbreak(spinlock_t *lock)
  */
 static __always_inline bool need_resched(void)
 {
-	// tif_need_resched() == test_thread_flag(TIF_NEED_RESCHED)
+	/* tif_need_resched() == test_thread_flag(TIF_NEED_RESCHED) */
 	return unlikely(tif_need_resched());
 }
 

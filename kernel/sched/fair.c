@@ -7789,6 +7789,8 @@ preempt:
  *   ...
  *   pick_next_task()
  *     cfs: pick_next_task_fair()
+ *
+ * TODO: https://zhuanlan.zhihu.com/p/363791563
  */
 struct task_struct *
 pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)

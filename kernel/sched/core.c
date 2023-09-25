@@ -682,6 +682,8 @@ void resched_curr(struct rq *rq)
 	cpu = cpu_of(rq);
 
 	/**
+	 * 进程所在 CPU 是当前 CPU
+	 *
 	 * UP(单处理器)：恒为真
 	 * SMP(多处理器)：可能为真
 	 */
@@ -1697,6 +1699,14 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_dec(rq, p);
+
+	/**
+	 * idle_sched_class: dequeue_task_idle()
+	 * stop_sched_class: dequeue_task_stop()
+	 * rt_sched_class: dequeue_task_rt()
+	 * fair_sched_class: dequeue_task_fair()
+	 * dl_sched_class: dequeue_task_dl()
+	 */
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -5276,12 +5286,16 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	 * higher scheduling class, because otherwise those loose the
 	 * opportunity to pull in more work from other CPUs.
 	 *
-	 * 优化
+	 * 优化 - 假设下一个运行的进程属于 cfs 调度器类，毕竟，系统中绝大多数的进程都是由 cfs
+	 * 调度器进行管理，这样做可以从整体上提高执行效率.
 	 * ---------------------------
 	 * 如果当前进程的调度类是 CFS 并且 CFS 就绪队列进程数量==该CPU就绪队列进程数量
 	 * 说明该 CPU 就绪队列只有普通进程，没有其他调度类进程，否则需要遍历整个调度类
+	 *
+	 * rq->nr_running 表示当前 runqueue 上所有进程的数量，包括组调度中的递归统计
 	 */
-	if (likely(prev->sched_class <= &fair_sched_class && rq->nr_running == rq->cfs.h_nr_running)) {
+	if (likely(prev->sched_class <= &fair_sched_class &&
+				rq->nr_running == rq->cfs.h_nr_running)) {
 
 		p = pick_next_task_fair(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
@@ -5300,9 +5314,13 @@ restart:
 	put_prev_task_balance(rq, prev, rf);
 
 	/**
-	 *  遍历整个调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
+	 * 遍历所有调度类，调用其中的 回调函数，找出最适合运行的下一个 进程。
+	 * 如 fair_sched_class
 	 *
-	 *  如 fair_sched_class
+	 * 由此可以看出，在系统的调度行为中，不同的调度器类拥有绝对的优先级区分，高优先级的
+	 * 调度器类并不会与低优先级的调度器类共享 CPU，而是独占(会有一些特殊情况，在具体实现
+	 * 中，实时进程会好心地让出那么一点 CPU 时间给非实时进程，这个时间可配置).
+	 * ref: https://zhuanlan.zhihu.com/p/363791563
 	 */
 	for_each_class(rtoax_class) {
 		/**
@@ -5416,11 +5434,16 @@ static void __sched notrace __schedule(bool preempt)
 	prev = rq->curr;
 
 	/**
-	 *  判断当前进程是否处于 atomic 上下文中
+	 * 假设错误代码
+	 *  preempt_disable
+	 *  schedule
+	 *		preempt_disable
+	 *		__schedule
+	 *			schedule_debug << 检查并纠正 preempt count 值
+	 *		preempt_enable
+	 *  preempt_enable
 	 *
-	 *  如果处于，那么内核将告警
-	 *
-	 *  时间调试和检查
+	 * ref: https://zhuanlan.zhihu.com/p/363791563
 	 */
 	schedule_debug(prev, preempt);
 
@@ -5460,6 +5483,7 @@ static void __sched notrace __schedule(bool preempt)
 
 	/**
 	 * 更新运行队列时钟
+	 * 更新本地 runqueue 的 clock 和 clock_task 变量，这两个变量代表 runqueue 的时间.
 	 */
 	update_rq_clock(rq);
 
@@ -5482,6 +5506,7 @@ static void __sched notrace __schedule(bool preempt)
 	 *
 	 *  当进程主动调用 schedule() 时候， preempt=false（主动让出 CPU）
 	 *
+	 * TASK_RUNNING = 0
 	 */
 	if (!preempt && prev_state) {
 
@@ -5528,7 +5553,7 @@ static void __sched notrace __schedule(bool preempt)
 			 *
 			 * After this, schedule() must not care about p->state any more.
 			 *
-			 * 把当前进程移除 就绪队列(从红黑树中删除)
+			 * 把当前进程移除 就绪队列(从红黑树中删除, dequeue_task)
 			 */
 			deactivate_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
@@ -5714,12 +5739,13 @@ asmlinkage __visible void __sched schedule(void)
 	 */
 	do {
 		/**
-		 *  关闭抢占
+		 * 关闭抢占
+		 * 在执行整个系统调度的过程中，需要关闭抢占，内核的抢占本身也是为了执行调度
 		 */
 		preempt_disable();
 
 		/**
-		 *
+		 * 调度
 		 */
 		__schedule(false);
 
@@ -5729,7 +5755,11 @@ asmlinkage __visible void __sched schedule(void)
 		sched_preempt_enable_no_resched();
 
 	/**
-	 * 当前进程设置了 TIF_NEED_RESCHED 标志位
+	 * 当前进程设置了 TIF_NEED_RESCHED 标志位, 存在高优先级进程可以抢占当前执行进程
+	 *
+	 * need_resched: tif_need_resched() == test_thread_flag(TIF_NEED_RESCHED)
+	 *
+	 * set_tsk_need_resched() 中设置
 	 */
 	} while (need_resched());
 

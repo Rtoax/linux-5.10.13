@@ -72,17 +72,24 @@ void schedule(void)
 
 /* check alarm, wake up any interruptible tasks that have got a signal */
 
-	for(p = &LAST_TASK ; p > &FIRST_TASK ; --p)
+	for(p = &LAST_TASK ; p > &FIRST_TASK ; --p) {
 		if (*p) {
 			if ((*p)->alarm && (*p)->alarm < jiffies) {
 					(*p)->signal |= (1<<(SIGALRM-1));
 					(*p)->alarm = 0;
 				}
+			/**
+			 * 进程可以被中断
+			 */
 			if ((*p)->signal && (*p)->state==TASK_INTERRUPTIBLE)
+				/**
+				 * 设置进程运行状态
+				 */
 				(*p)->state=TASK_RUNNING;
 		}
+	}
 
-/* this is the scheduler proper: */
+/* this is the scheduler proper: 这是调度程序 */
 
 	while (1) {
 		c = -1;
@@ -101,6 +108,9 @@ void schedule(void)
 				(*p)->counter = ((*p)->counter >> 1) +
 						(*p)->priority;
 	}
+	/**
+	 * 运行下一个进程
+	 */
 	switch_to(next);
 }
 

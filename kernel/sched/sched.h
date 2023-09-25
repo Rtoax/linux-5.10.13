@@ -1213,12 +1213,10 @@ struct rq {
 	raw_spinlock_t		lock;
 
 	/**
-	 * 就绪队列总可运行的进程数
+	 * 表示当前就绪队列 runqueue 上所有进程的数量，包括组调度中的递归统计
 	 *
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.
-	 *
-	 * 进程数
 	 */
 	unsigned int		nr_running;
 
@@ -2236,6 +2234,13 @@ struct sched_class {
 	 * idle_sched_class.enqueue_task   = NULL
 	 */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
+	/**
+	 * idle_sched_class: dequeue_task_idle()
+	 * stop_sched_class: dequeue_task_stop()
+	 * rt_sched_class: dequeue_task_rt()
+	 * fair_sched_class: dequeue_task_fair()
+	 * dl_sched_class: dequeue_task_dl()
+	 */
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
 
 	/**
@@ -2412,6 +2417,11 @@ static inline void set_next_task(struct rq *rq, struct task_struct *next)
 extern struct sched_class __begin_sched_classes[];
 extern struct sched_class __end_sched_classes[];
 
+/**
+ * 在多核架构中，最高优先级调度器类为 stop_sched_class, 其次是 dl_sched_class
+ * 单核架构中，最高优先级调度器类为 dl_sched_class
+ * 接下来依次是 rt_sched_class->fair_sched_class->idle_sched_class.
+ */
 #define sched_class_highest (__end_sched_classes - 1)
 #define sched_class_lowest  (__begin_sched_classes - 1)
 
