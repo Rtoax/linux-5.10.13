@@ -4891,6 +4891,23 @@ static const struct macb_config sama7g5_emac_config = {
 	.usrio = &sama7g5_usrio,
 };
 
+/**
+ * https://gitee.com/phytium_embedded/phytium-linux-kernel.git
+ */
+static const struct macb_config phytium_gem1p0_config = {
+    .caps = MACB_CAPS_GIGABIT_MODE_AVAILABLE |
+            MACB_CAPS_JUMBO |
+            MACB_CAPS_GEM_HAS_PTP |
+            MACB_CAPS_BD_RD_PREFETCH |
+            MACB_CAPS_SEL_CLK,
+    .dma_burst_length = 16,
+    .clk_init = macb_clk_init,
+    .init = macb_init,
+    .jumbo_max_len = 10240,
+    .sel_clk_hw = phytium_gem1p0_sel_clk,
+    .usrio = &macb_default_usrio,
+};
+
 static const struct macb_config versal_config = {
 	.caps = MACB_CAPS_GIGABIT_MODE_AVAILABLE | MACB_CAPS_JUMBO |
 		MACB_CAPS_GEM_HAS_PTP | MACB_CAPS_BD_RD_PREFETCH | MACB_CAPS_NEED_TSUCLK,
@@ -4921,6 +4938,9 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "microchip,mpfs-macb", .data = &mpfs_config },
 	{ .compatible = "microchip,sama7g5-gem", .data = &sama7g5_gem_config },
 	{ .compatible = "microchip,sama7g5-emac", .data = &sama7g5_emac_config },
+	/* 见 arch/arm64/boot/dts/phytium/phytium_e2000q_vpx_board.dts */
+	{ .compatible = "cdns,phytium-gem-1.0", .data = &phytium_gem1p0_config },
+	{ .compatible = "phytium,gem", .data = &phytium_gem1p0_config },
 	{ .compatible = "xlnx,zynqmp-gem", .data = &zynqmp_config},
 	{ .compatible = "xlnx,zynq-gem", .data = &zynq_config },
 	{ .compatible = "xlnx,versal-gem", .data = &versal_config},
