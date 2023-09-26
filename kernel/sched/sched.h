@@ -747,8 +747,21 @@ struct cfs_rq {
 	 * It is set to NULL otherwise (i.e when none are currently running).
 	 */
 	struct sched_entity	*curr;  /* 当前正在执行的 实体 */
+	/**
+	 * 如果存在 cfs_rq->next，说明内核特意地想让某个进程在下一次调度中运行，这个 next
+	 * 可以获得一些优先权。
+	 */
 	struct sched_entity	*next;  /* 用于切换下一个即将运行的进程 */
-	struct sched_entity	*last;  /* 用于抢占内核，当唤醒进程抢占了当前进程时，last指向这个当前进程 */
+	/**
+	 * 如果存在 cfs_rq->last，该 last 实体是上次在 CPU 上运行过的，对于该进程的数据
+	 * 很大概率还存在于cache中，执行它可以获得更高的效率，它可以获得一些优先权。
+	 *
+	 * 用于抢占内核，当唤醒进程抢占了当前进程时，last指向这个当前进程。
+	 */
+	struct sched_entity	*last;
+	/**
+	 * 如果存在其他可选的实体，不选择 cfs_rq->skip 实体作为下次运行的实体
+	 */
 	struct sched_entity	*skip;  /* sched_yield */
 
 #ifdef	CONFIG_SCHED_DEBUG

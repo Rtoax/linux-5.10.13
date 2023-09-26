@@ -4908,6 +4908,9 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	/*
 	 * If curr is set we have to see if its left of the leftmost entity
 	 * still in the tree, provided there was anything in the tree at all.
+	 *
+	 * 如果红黑树上 vruntime 最小的进程不存在或者其 vruntime 值大于当前运行的进程，
+	 * 则选择当前进程
 	 */
 	if (!left || (curr && entity_before(curr, left)))
 		left = curr;
@@ -4921,19 +4924,22 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	/*
 	 * Avoid running the skip buddy, if running something else can
 	 * be done without getting too unfair.
+	 *
+	 * 如果被选中的进程被设置为 skip 进程(sched_yield()->yield_task_fair())，
+	 * 表明系统并不想它在下次运行，就需要重新选择进程实体.
 	 */
 	if (cfs_rq->skip == se) {
 		struct sched_entity *second;
 
 		if (se == curr) {
-	        /**
-	         *  选择最左的那个调度实体 left
-	         */
+			/**
+			 * 选择最左的那个调度实体 left
+			 */
 			second = __pick_first_entity(cfs_rq);
 		} else {
-		    /**
-	         *  摘取红黑树上第二左的进程节点
-	         */
+			/**
+			 * 摘取红黑树上第二左的进程节点（vruntime 第二小）
+			 */
 			second = __pick_next_entity(se);
 			if (!second || (curr && entity_before(curr, second)))
 				second = curr;
@@ -4957,6 +4963,7 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 
 	clear_buddies(cfs_rq, se);
 
+	/* 终于选到了合适的进程 */
 	return se;
 }
 
@@ -7574,6 +7581,9 @@ balance_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 static unsigned long wakeup_gran(struct sched_entity *se)
 {
+	/**
+	 * 默认 1000000UL (1ms)
+	 */
 	unsigned long gran = sysctl_sched_wakeup_granularity;
 
 	/*
@@ -7594,6 +7604,7 @@ static unsigned long wakeup_gran(struct sched_entity *se)
 
 /*
  * Should 'se' preempt 'curr'.
+ * 判断 se 是否应该抢占 curr
  *
  *             |s1
  *        |s2
@@ -7611,9 +7622,16 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
 	s64 gran, vdiff = curr->vruntime - se->vruntime;
 
+	/**
+	 * se "抢占" curr 是有条件的，第一个自然是 se->vruntime 要小于 curr->vruntime.
+	 * 如果 curr 比 se 有更小的 vruntime，那么无法抢占。
+	 */
 	if (vdiff <= 0)
 		return -1;
 
+	/**
+	 * 这个差值要达到一定的阈值，这个阈值是动态计算的，由 se 的权重决定。
+	 */
 	gran = wakeup_gran(se);
 	if (vdiff > gran)
 		return 1;
@@ -7657,9 +7675,12 @@ static void set_next_buddy(struct sched_entity *se)
  */
 static void set_skip_buddy(struct sched_entity *se)
 {
-	for_each_sched_entity(se) {
+	/**
+	 *
+	 */
+	for_each_sched_entity(se)
 		cfs_rq_of(se)->skip = se;
-	}  /* 队列中的 skip   = 当前调度实体*/
+
 }
 
 /**
@@ -7785,12 +7806,10 @@ preempt:
 /**
  * 从运行队列中挑选下一个即将运行的进程
  *
- * schedule()
+ * schedule()->__schedule()
  *   ...
  *   pick_next_task()
  *     cfs: pick_next_task_fair()
- *
- * TODO: https://zhuanlan.zhihu.com/p/363791563
  */
 struct task_struct *
 pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
@@ -7804,6 +7823,9 @@ again:
 	if (!sched_fair_runnable(rq))
 		goto idle;
 
+	/**
+	 * 组调度的情况，需要递归地选出进程
+	 */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/**
 	 * 当pre_task不是普通进程时，也就是调度类不是CFS，那么它就不使用 sched_entity
@@ -7853,7 +7875,7 @@ again:
 		}
 
 	    /**
-	     *  选择红黑树中最左边的 se
+	     * 大致选择红黑树中最左边的 se
 	     */
 		se = pick_next_entity(cfs_rq, curr);
 
@@ -8007,7 +8029,8 @@ static void yield_task_fair(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	struct sched_entity *se = &curr->se;    /* 获取当前实体 */
+	/* 获取当前实体 */
+	struct sched_entity *se = &curr->se;
 
 	/*
 	 * Are we the only task in te?
@@ -8034,7 +8057,10 @@ static void yield_task_fair(struct rq *rq)
 		rq_clock_skip_update(rq);
 	}
 
-	set_skip_buddy(se); /* 设置 */
+	/**
+	 * 设置 skip
+	 */
+	set_skip_buddy(se);
 }
 
 static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)

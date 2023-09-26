@@ -4520,13 +4520,49 @@ schedule_tail(struct task_struct *prev)
  *
  * 进程的切换，带来的开销不仅是页表切换和硬件上下文的切换，还包含了 Cache/TLB 刷新后带来的
  * miss 的开销。在实际的开发中，也需要去评估新增进程带来的调度开销。
+ *
+ * ---------------------------------------------------------------------------
+ * 内核是统一的，并不像用户空间一样每个进程享有独立的空间，因此，从缓存的角度来看，对于内核部
+ * 分和用户空间部分的处理是完全不一样的。对于指令和数据 cache 而言，会随着程序的执行逐渐被替
+ * 换，用户空间的 cache 是必须要被 flush 的，而内核空间中的某些 cache 依旧可以利用在下一
+ * 个进程。
+ *
+ * 重点在于 TLB 的缓存处理，TLB 中缓存了页表对应的虚拟地址到物理地址的映射，有了这一层缓存，
+ * 对某片内存的重复访问只需要从缓存中取，而不需要重新执行翻译过程，当执行进程切换时，尽管每个
+ * 进程虚拟空间都是一致的，但是其对应的物理地址通常是不相等的，因此需要将上个进程的 TLB 缓存
+ * 清除，不然会影响下一个进程的执行。
+ *
+ * 但是实际情况却有一些优化空间，比如对于用户进程之间的互相切换，其用户空间的 TLB 缓存自然是
+ * 要刷新，但是内核空间可以保留，因为内核中是共用的。同时，linux 中的内核线程和用户空间没有
+ * 关系，假设存在这样的情况：用户进程 A 切换为内核线程 B，内核线程 B 运行完之后又切换回 A，
+ * 这时候从 A 切换到 B 的时候如果清除了 TLB 缓存，在 B 切换回 A 的时候，TLB 又需要重新填
+ * 充，实际上这种情况可以在切换到内核线程时保留用户空间的 TLB 缓存，如果又切换回 A 的时候就
+ * 正好可以直接使用，提升了效率。
+ *
+ * 如果此时从 B 切换到其它内核线程 C，TLB 缓存依旧可以保留，直到切换到下一个用户进程，如果
+ * 这个进程不是原本的 A，这时候才会把 TLB 清除，这就是我们经常听到的 "惰性 TLB"，这种
+ * lazy operation 可以在很多地方可以看到，比如 fork 的执行，动态库的绑定，其核心思想就是
+ * 直到资源在真正需要的时候才进行操作。
+ *
+ * 上面的源代码就是基于上述的逻辑，获取 next->mm ，这是待运行进程的 mm，同时获取
+ * oldmm = prev->active_mm，如果当前进程是用户进程，oldmm 等于 NULL，因为切换到其它用
+ * 户进程时 mm 是肯定需要替换的，而如果当前进程是内核线程，oldmm 就是上个进程保留的 mm，
+ * 当然，上个进程也可能是内核线程，这里保存的就是上一个用户进程的 mm。
+ * 判断如果待运行进程的 mm 为空，即为内核线程，那么就不需要切换 mm 结构，相对应的 TLB
+ * 也不需要刷新，而如果待运行进程是用户进程，分两种情况：第一个是缓存的 mm 正好是下一个
+ * 待运行进程，也就不需要做什么事，另一种情况就是当前进程不是缓存的 mm，那么就需要替换 mm，
+ * 然后刷新 TLB，同时只需要刷新用户空间的 TLB，而不需要刷新内核 TLB。
+ *
+ * ref: https://zhuanlan.zhihu.com/p/363791563
+ *
+ * schedule->__schedule->context_switch
  */
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next,
 	struct rq_flags *rf)
 {
 	/**
-	 *
+	 * 切换的准备工作，包括更新统计信息、设置 next->on_cpu 为 1 等
 	 */
 	prepare_task_switch(rq, prev, next);
 
@@ -4551,12 +4587,16 @@ context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next
 		enter_lazy_tlb(prev->active_mm, next);
 
 		/**
+		 * 如果是内核线程，依旧不需要切换 mm，依旧保存 active_mm，
 		 * active_mm 结构一直是内核 地址空间
 		 */
 		next->active_mm = prev->active_mm;
 
 		/**
-		 * 之前的线程是 用户态线程 -> 增加 active_mm 引用计数
+		 * user -> kernel
+		 *
+		 * 当前线程是 用户态线程 -> 增加 active_mm 引用计数
+		 * atomic_inc(&active_mm->mm_count)
 		 */
 		if (prev->mm)                           // from user
 			mmgrab(prev->active_mm);
@@ -5584,7 +5624,11 @@ static void __sched notrace __schedule(bool preempt)
 	next = pick_next_task(rq, prev, &rf);
 
 	/**
-	 *  清除 TIF_NEED_RESCHED 标志位，表明接下来他不会被调度
+	 * 终于选到了合适的进程
+	 */
+
+	/**
+	 * 清除 TIF_NEED_RESCHED 标志位，表明接下来他不会被调度
 	 */
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
@@ -5635,7 +5679,8 @@ static void __sched notrace __schedule(bool preempt)
 		rq = context_switch(rq, prev, next, &rf);
 	}
 	/**
-	 *
+	 * 资源调度和抢占调度两种方式选到的待运行进程都可能是当前进程，这种情况下就不需要
+	 * 做什么处理，直接清理调度设置准备退出。
 	 */
 	else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
@@ -7460,12 +7505,13 @@ static void do_sched_yield(void)
 	rq = this_rq_lock_irq(&rf);
 
 	schedstat_inc(rq->yld_count);
-	/*
-		fair_sched_class.yield_task = yield_task_fair
-		rt_sched_class.yield_task   = yield_task_rt
-		dl_sched_class.yield_task   = yield_task_dl
-	*/
-	current->sched_class->yield_task(rq);   /* 放弃 */
+	/**
+	 * yield: 放弃
+	 * fair_sched_class.yield_task = yield_task_fair
+	 * rt_sched_class.yield_task   = yield_task_rt
+	 * dl_sched_class.yield_task   = yield_task_dl
+	 */
+	current->sched_class->yield_task(rq);
 
 	preempt_disable();
 	rq_unlock_irq(rq, &rf);
