@@ -2523,6 +2523,9 @@ static int make_mmu_pages_available(struct kvm_vcpu *vcpu)
 {
 	unsigned long avail = kvm_mmu_available_pages(vcpu->kvm);
 
+	/**
+	 * 可用页判断
+	 */
 	if (likely(avail >= KVM_MIN_FREE_MMU_PAGES))
 		return 0;
 
@@ -2942,7 +2945,7 @@ void disallowed_hugepage_adjust(u64 spte, gfn_t gfn, int cur_level,
 }
 
 /**
- *
+ * 映射 gpa 和 hpa, 创建 EPT 页表项
  */
 static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 			int map_writable, int max_level, kvm_pfn_t pfn,
@@ -2968,7 +2971,7 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 					huge_page_disallowed, &req_level);
 
 	/**
-	 *
+	 * $ sudo bpftrace -e 'tracepoint:kvmmmu:kvm_mmu_spte_requested {printf("%s\n", comm);}'
 	 */
 	trace_kvm_mmu_spte_requested(gpa, level, pfn);
 
@@ -3013,7 +3016,7 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 	}
 
 	/**
-	 *
+	 * 建立 EPT gpa 和 HPA 表项
 	 */
 	ret = mmu_set_spte(vcpu, it.sptep, ACC_ALL,
 			   write, level, base_gfn, pfn, prefault,
@@ -3945,7 +3948,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		r = kvm_tdp_mmu_map(vcpu, gpa, error_code, map_writable, max_level,
 				    pfn, prefault);
 	/**
-	 *
+	 * 映射 gpa 和 hpa, 创建 EPT 页表项
 	 */
 	else
 		r = __direct_map(vcpu, gpa, error_code, map_writable, max_level, pfn,
@@ -4022,7 +4025,7 @@ EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
 /**
  * EPT的缺页处理函数，负责完成 GPA->HPA 转化
  *
- * 应用层软件在需要进行脏页跟踪是，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
+ * 应用层软件在需要进行脏页跟踪时，会设置 memslot flags KVM_MEM_LOG_DIRTY_PAGES
  * 标记内存脏页，当检测到这个标识的时候，会创建一个脏页位图.
  *
  * 当设置了这个标记后，所有的写访问都会长生 EPT violation 异常，产生 VM Exit
@@ -4042,11 +4045,17 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, gpa_t gpa, u32 error_code,
 		if (kvm_mtrr_check_gfn_range_consistency(vcpu, base, page_num))
 			break;
 	}
+
 	/**
-	 *
+	 * 缺页异常
 	 */
 	return direct_page_fault(vcpu, gpa, error_code, prefault,
 				 max_level, true);
+
+	/**
+	 * TODO: PATENT: 决定这里是否要进行 qemu OOM 以将虚拟机交换到 NVMe swap
+	 * 分区
+	 */
 }
 
 /**
@@ -5179,6 +5188,9 @@ kvm_calc_tdp_mmu_root_page_role(struct kvm_vcpu *vcpu, bool base_only)
 	return role;
 }
 
+/**
+ * 初始化 KVM MMU
+ */
 static void init_kvm_tdp_mmu(struct kvm_vcpu *vcpu)
 {
 	struct kvm_mmu *context = &vcpu->arch.root_mmu;
@@ -5831,11 +5843,11 @@ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa, u64 error_code,
 	}
 
 	/**
-	 *
+	 * 常规情况下会走这里
 	 */
 	if (r == RET_PF_INVALID) {
 		/**
-		 *
+		 * 1. ept 缺页处理
 		 */
 		r = kvm_mmu_do_page_fault(vcpu, cr2_or_gpa, lower_32_bits(error_code), false);
 		if (WARN_ON_ONCE(r == RET_PF_INVALID))

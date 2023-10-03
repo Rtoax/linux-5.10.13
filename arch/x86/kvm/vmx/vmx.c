@@ -5878,6 +5878,7 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
  *
  * handle_ept_misconfig
  * --> kvm_mmu_page_fault
+ *  --> kvm_mmu_do_page_fault
  *  --> x86_emulate_instruction
  *   --> x86_emulate_insn
  * writeback
