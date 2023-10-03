@@ -5771,8 +5771,18 @@ static int handle_task_switch(struct kvm_vcpu *vcpu)
  * 处理 EPT 异常: EPT_VIOLATION 表示的是对应的物理页不存在
  *
  * reason = EXIT_REASON_EPT_VIOLATION
+ * EPT: GPA -> HPA
  *
  * 返回值大于0，就直接切回客户模式。
+ *
+ * 调用栈（从结果看好像只有这一个调用栈）
+ *     handle_ept_violation+5
+ *     vmx_handle_exit+301
+ *     kvm_arch_vcpu_ioctl_run+3186
+ *     kvm_vcpu_ioctl+409
+ *     __x64_sys_ioctl+148
+ *     do_syscall_64+93
+ *     entry_SYSCALL_64_after_hwframe+110
  */
 static int handle_ept_violation(struct kvm_vcpu *vcpu)
 {
@@ -5855,7 +5865,8 @@ static int handle_ept_violation(struct kvm_vcpu *vcpu)
 		return kvm_emulate_instruction(vcpu, 0);
 
 	/**
-	 *  缺页异常
+	 * 缺页异常
+	 * 如果物理内存不够了，该怎么办?
 	 */
 	return kvm_mmu_page_fault(vcpu, gpa, error_code, NULL, 0);
 }
