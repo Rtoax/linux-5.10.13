@@ -4903,6 +4903,17 @@ unlock:
  * @param address
  * @param flags
  * @return vm_fault_t
+ *
+ * 调用栈示例
+ * [1467944.367372] Call trace:
+ * [1467944.367627]  queued_spin_lock_slowpath+0x188/0x308
+ * [1467944.368222]  __handle_mm_fault+0x4ec/0x590
+ * [1467944.368690]  handle_mm_fault+0xe0/0x180
+ * [1467944.369098]  do_page_fault+0x164/0x488
+ * [1467944.369568]  do_mem_abort+0x54/0xb0
+ * [1467944.369967]  do_el0_ia_bp_hardening+0x5c/0xa0
+ * [1467944.370411]  el0_ia+0x1c/0x20
+ *
  */
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 		unsigned long address, unsigned int flags)

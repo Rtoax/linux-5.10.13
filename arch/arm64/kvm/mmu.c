@@ -737,7 +737,22 @@ transparent_hugepage_adjust(struct kvm_memory_slot *memslot,
 	/* Use page mapping if we cannot use block mapping. */
 	return PAGE_SIZE;
 }
-
+/**
+ *
+ * 调用栈示例
+ * [1467947.937401] Call trace:
+ * [1467947.937671]  queued_spin_lock_slowpath+0xa0/0x308
+ * [1467947.938175]  user_mem_abort+0x880/0xab8
+ * [1467947.938578]  kvm_handle_guest_abort+0x114/0x4d0
+ * [1467947.939035]  handle_exit+0x15c/0x1c0
+ * [1467947.939416]  kvm_arch_vcpu_ioctl_run+0x3dc/0x7e0
+ * [1467947.939928]  kvm_vcpu_ioctl+0x480/0x958
+ * [1467947.940364]  do_vfs_ioctl+0xc8/0x7a8
+ * [1467947.940748]  ksys_ioctl+0x88/0xb8
+ * [1467947.941290]  __arm64_sys_ioctl+0x2c/0x40
+ * [1467947.941694]  el0_svc_handler+0xb4/0x188
+ * [1467947.942128]  el0_svc+0x8/0xc
+ */
 static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
 			  struct kvm_memory_slot *memslot, unsigned long hva,
 			  unsigned long fault_status)
@@ -769,7 +784,23 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
 		return -EFAULT;
 	}
 
-	/* Let's check if we will get back a huge page backed by hugetlbfs */
+	/* Let's check if we will get back a huge page backed by hugetlbfs
+	 *
+	 * 这个锁可能存在的竞争
+	 *
+	 * CPU 5/KVM:
+	 *  queued_spin_lock_slowpath
+	 *  user_mem_abort
+	 *  kvm_handle_guest_abort
+	 *  handle_exit
+	 *
+	 * 其他进程，如 fn_anonymous
+	 *  queued_spin_lock_slowpath
+	 *  __handle_mm_fault
+	 *  handle_mm_fault
+	 *  do_page_fault
+	 *  do_mem_abort
+	 */
 	mmap_read_lock(current->mm);
 	vma = find_vma_intersection(current->mm, hva, hva + 1);
 	if (unlikely(!vma)) {
@@ -947,6 +978,20 @@ static void handle_access_fault(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
  * can mean that the guest tried to access I/O memory, which is emulated by user
  * space. The distinction is based on the IPA causing the fault and whether this
  * memory region has been registered as standard RAM by user space.
+ *
+ * 调用栈示例
+ * [1467947.937401] Call trace:
+ * [1467947.937671]  queued_spin_lock_slowpath+0xa0/0x308
+ * [1467947.938175]  user_mem_abort+0x880/0xab8
+ * [1467947.938578]  kvm_handle_guest_abort+0x114/0x4d0
+ * [1467947.939035]  handle_exit+0x15c/0x1c0
+ * [1467947.939416]  kvm_arch_vcpu_ioctl_run+0x3dc/0x7e0
+ * [1467947.939928]  kvm_vcpu_ioctl+0x480/0x958
+ * [1467947.940364]  do_vfs_ioctl+0xc8/0x7a8
+ * [1467947.940748]  ksys_ioctl+0x88/0xb8
+ * [1467947.941290]  __arm64_sys_ioctl+0x2c/0x40
+ * [1467947.941694]  el0_svc_handler+0xb4/0x188
+ * [1467947.942128]  el0_svc+0x8/0xc
  */
 int kvm_handle_guest_abort(struct kvm_vcpu *vcpu)
 {
