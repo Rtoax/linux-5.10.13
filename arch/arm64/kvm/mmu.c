@@ -784,24 +784,12 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
 		return -EFAULT;
 	}
 
-	/* Let's check if we will get back a huge page backed by hugetlbfs
-	 *
-	 * 这个锁可能存在的竞争
-	 *
-	 * CPU 5/KVM:
-	 *  queued_spin_lock_slowpath
-	 *  user_mem_abort
-	 *  kvm_handle_guest_abort
-	 *  handle_exit
-	 *
-	 * 其他进程，如 fn_anonymous
-	 *  queued_spin_lock_slowpath
-	 *  __handle_mm_fault
-	 *  handle_mm_fault
-	 *  do_page_fault
-	 *  do_mem_abort
-	 */
+	/* Let's check if we will get back a huge page backed by hugetlbfs */
 	mmap_read_lock(current->mm);
+
+	/**
+	 * 找到 VMA 交集
+	 */
 	vma = find_vma_intersection(current->mm, hva, hva + 1);
 	if (unlikely(!vma)) {
 		kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
@@ -979,6 +967,10 @@ static void handle_access_fault(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
  * space. The distinction is based on the IPA causing the fault and whether this
  * memory region has been registered as standard RAM by user space.
  *
+ * 任何到达主机的中止几乎肯定是由缺少第二阶段转换表条目引起的，这可能意味着客户机只是需要更多
+ * 内存，我们必须分配适当的页面，或者可能意味着客户机尝试访问 I/O 内存，由用户空间模拟。
+ * 区别在于引起故障的 IPA 以及该内存区域是否已被用户空间注册为标准 RAM。
+ *
  * 调用栈示例
  * [1467947.937401] Call trace:
  * [1467947.937671]  queued_spin_lock_slowpath+0xa0/0x308
@@ -1005,7 +997,14 @@ int kvm_handle_guest_abort(struct kvm_vcpu *vcpu)
 
 	fault_status = kvm_vcpu_trap_get_fault_type(vcpu);
 
+	/**
+	 * GPA =  IPA(intermediate physical address) in arm64
+	 */
 	fault_ipa = kvm_vcpu_get_fault_ipa(vcpu);
+
+	/**
+	 * ESR_ELx_EC_IABT_LOW, ESR_ELx_EC_IABT_CUR
+	 */
 	is_iabt = kvm_vcpu_trap_is_iabt(vcpu);
 
 	/* Synchronous External Abort? */
@@ -1093,6 +1092,9 @@ int kvm_handle_guest_abort(struct kvm_vcpu *vcpu)
 		goto out_unlock;
 	}
 
+	/**
+	 * GPA =  IPA(intermediate physical address) in arm64
+	 */
 	ret = user_mem_abort(vcpu, fault_ipa, memslot, hva, fault_status);
 	if (ret == 0)
 		ret = 1;
