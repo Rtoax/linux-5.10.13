@@ -225,6 +225,10 @@ static int multi_cpu_stop(void *data)
 				break;
 			case MULTI_STOP_RUN:
 				if (is_active)
+					/**
+					 * fn 可能的值：
+					 * - migrate_swap() 中的 migrate_swap_stop()
+					 */
 					err = msdata->fn(msdata->data);
 				break;
 			default:
@@ -329,6 +333,10 @@ int stop_two_cpus(unsigned int cpu1, unsigned int cpu2, cpu_stop_fn_t fn, void *
 	struct multi_stop_data msdata;
 
 	msdata = (struct multi_stop_data){
+		/**
+		 * fn 可能的值
+		 * - migrate_swap() 中的 migrate_swap_stop()
+		 */
 		.fn = fn,
 		.data = arg,
 		.num_threads = 2,
