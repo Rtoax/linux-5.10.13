@@ -111,7 +111,8 @@ static int smpboot_thread_fn(void *data)
 
 	while (1) {
 		set_current_state(TASK_INTERRUPTIBLE);
-		preempt_disable();  /* 禁止抢占 */
+		/* 禁止抢占 */
+		preempt_disable();
 		if (kthread_should_stop()) {
 			__set_current_state(TASK_RUNNING);
 			preempt_enable();
@@ -156,13 +157,15 @@ static int smpboot_thread_fn(void *data)
 			continue;
 		}
 
-		if (!ht->thread_should_run(td->cpu)) {  /* 如果不应该执行，进行 调度 */
+		/* 如果不应该执行，进行 调度 */
+		if (!ht->thread_should_run(td->cpu)) {
 			preempt_enable_no_resched();
 			schedule();
 		} else {
 			__set_current_state(TASK_RUNNING);
 			preempt_enable();
-			ht->thread_fn(td->cpu); /* 执行线程 */
+			/* 执行线程 */
+			ht->thread_fn(td->cpu);
 		}
 	}
 }
@@ -212,6 +215,9 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 	return 0;
 }
 
+/**
+ * 每个 cpu core 创建一个线程
+ */
 int smpboot_create_threads(unsigned int cpu)
 {
 	struct smp_hotplug_thread *cur;
@@ -296,12 +302,13 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
 	get_online_cpus();
 	mutex_lock(&smpboot_threads_lock);
 	for_each_online_cpu(cpu) {
-		ret = __smpboot_create_thread(plug_thread, cpu);    /* 每个 CPU 创建一个线程 */
+		ret = __smpboot_create_thread(plug_thread, cpu);
 		if (ret) {
 			smpboot_destroy_threads(plug_thread);
 			goto out;
 		}
-		smpboot_unpark_thread(plug_thread, cpu);    /* 唤醒线程 */
+		/* 唤醒线程 */
+		smpboot_unpark_thread(plug_thread, cpu);
 	}
 	list_add(&plug_thread->list, &hotplug_threads);
 out:
