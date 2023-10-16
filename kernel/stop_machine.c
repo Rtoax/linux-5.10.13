@@ -231,6 +231,9 @@ static int multi_cpu_stop(void *data)
 				break;
 			}
 			ack_state(msdata);
+		/**
+		 * MULTI_STOP_PREPARE: Awaiting everyone to be scheduled
+		 */
 		} else if (curstate > MULTI_STOP_PREPARE) {
 			/*
 			 * At this stage all other CPUs we depend on must spin
@@ -501,6 +504,17 @@ repeat:
 
 		/* cpu stop callbacks must not sleep, make in_atomic() == T */
 		preempt_count_inc();
+
+		/**
+		 * 执行回调函数，如：
+		 *	move_queued_task+5
+		 *	migration_cpu_stop+817
+		 *	cpu_stopper_thread+148
+		 *	smpboot_thread_fn+217
+		 *	kthread+229
+		 *	ret_from_fork+49
+		 *	ret_from_fork_asm+27
+		 */
 		ret = fn(arg);
 		if (done) {
 			if (ret)
@@ -625,6 +639,10 @@ int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 
 	/* Set the initial state and stop all online cpus. */
 	set_state(&msdata, MULTI_STOP_PREPARE);
+
+	/**
+	 * 在所有 CPU 上执行 multi_cpu_stop
+	 */
 	return stop_cpus(cpu_online_mask, multi_cpu_stop, &msdata);
 }
 

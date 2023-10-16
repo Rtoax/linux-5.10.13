@@ -2915,10 +2915,17 @@ void task_numa_fault(int last_cpupid, int mem_node, int pages, int flags)
 	struct numa_group *ng;
 	int priv;
 
+	/**
+	 * NUMA balancing 是否打开
+	 * sysctl kernel.numa_balancing
+	 */
 	if (!static_branch_likely(&sched_numa_balancing))
 		return;
 
-	/* for example, ksmd faulting in a user's mm */
+	/**
+	 * for example, ksmd faulting in a user's mm
+	 *
+	 */
 	if (!p->mm)
 		return;
 

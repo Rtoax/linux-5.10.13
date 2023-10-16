@@ -4573,7 +4573,7 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page = NULL;
-	int page_nid = NUMA_NO_NODE;
+	int page_nid = NUMA_NO_NODE; /* (-1) */
 	int last_cpupid;
 	int target_nid;
 	bool migrated = false;
@@ -4654,7 +4654,10 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 		flags |= TNF_MIGRATE_FAIL;
 
 out:
-	if (page_nid != NUMA_NO_NODE)
+	/**
+	 *
+	 */
+	if (page_nid != NUMA_NO_NODE/* (-1) */)
 		task_numa_fault(last_cpupid, page_nid, 1, flags);
 	return 0;
 }
