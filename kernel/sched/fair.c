@@ -10817,6 +10817,11 @@ more_balance:
 			raw_spin_unlock_irqrestore(&busiest->lock, flags);
 
 			if (active_balance) {
+				/**
+				 * 将 work 发给目标 migration 线程并 wake 它后，migration
+				 * 线程将会 wakeup 执行 cpu_stopper_thread(), 从 works
+				 * 链表中取出 work, 并执行其 work function.
+				 */
 				stop_one_cpu_nowait(cpu_of(busiest),
 					active_load_balance_cpu_stop, busiest,
 					&busiest->active_balance_work);

@@ -1898,12 +1898,21 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
  *    it and puts it into the right queue.
  * 5) stopper completes and stop_one_cpu() returns and the migration
  *    is done.
+ *
+ * 1) 我们使用stop_one_cpu()在目标CPU上调用migration_cpu_stop()。
+ * 2) stopper开始运行（隐式强制迁移的线程脱离CPU）
+ * 3) 检查迁移后的任务是否仍在错误的运行队列中。
+ * 4) 如果它位于错误的运行队列中，则迁移线程会将其删除并将其放入正确的队列中。
+ * 5) stopper 完成并且 stop_one_cpu() 返回并且迁移完成。
  */
 
 /*
  * move_queued_task - move a queued task to new rq.
  *
  * Returns (locked) new rq. Old rq's lock is released.
+ *
+ * sudo bpftrace -e 'kfunc:move_queued_task { printf("%s moving %s to %d CPU\n",curtask->comm,args->p->comm,args->new_cpu); }'
+ * (ref: https://www.reddit.com/r/linux/comments/y5amud/the_linux_process_journey_migration_kernel_thread/)
  */
 static struct rq *move_queued_task(struct rq *rq, struct rq_flags *rf,
 				   struct task_struct *p, int new_cpu)
@@ -1959,9 +1968,13 @@ static struct rq *__migrate_task(struct rq *rq, struct rq_flags *rf,
  * migration_cpu_stop - this will be executed by a highprio stopper thread
  * and performs thread migration by bumping thread off CPU then
  * 'pushing' onto another runqueue.
+ *
+ * 这将由高优先级停止线程执行，并通过将线程从 CPU 中剔除然后“推送”到另一个运行队列来执行
+ * 线程迁移。
  */
 static int migration_cpu_stop(void *data)
 {
+	/* 只有两个字段 struct task_struct *task 和 int dest_cpu */
 	struct migration_arg *arg = data;
 	struct task_struct *p = arg->task;
 	struct rq *rq = this_rq();
@@ -2081,7 +2094,8 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 		goto out;
 	}
 
-	if (cpumask_equal(&p->cpus_mask, new_mask)) /* 如果相等 */
+	/* 如果相等 */
+	if (cpumask_equal(&p->cpus_mask, new_mask))
 		goto out;
 
 	/*
@@ -2090,12 +2104,14 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	 * immediately required to distribute the tasks within their new mask.
 	 */
 	dest_cpu = cpumask_any_and_distribute(cpu_valid_mask, new_mask);
-	if (dest_cpu >= nr_cpu_ids) {   /* CPU超限 */
+	/* CPU超限 */
+	if (dest_cpu >= nr_cpu_ids) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	do_set_cpus_allowed(p, new_mask);   /* 设置 */
+	/* 设置 */
+	do_set_cpus_allowed(p, new_mask);
 
 	if (p->flags & PF_KTHREAD) {
 		/*
@@ -2111,14 +2127,15 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	if (cpumask_test_cpu(task_cpu(p), new_mask))
 		goto out;
 
-	/* 如果进程真该运行或者正在唤醒 */
+	/* 如果进程正运行或者正在唤醒 */
 	if (task_running(rq, p) || p->state == TASK_WAKING) {
 		struct migration_arg arg = { p, dest_cpu };
 		/* Need help from migration thread: drop lock and wait. */
 		task_rq_unlock(rq, p, &rf);
 		stop_one_cpu(cpu_of(rq), migration_cpu_stop, &arg);
 		return 0;
-	} else if (task_on_rq_queued(p)) {  /* 如果进程在队列中 */
+	/* 如果进程在就绪队列中 */
+	} else if (task_on_rq_queued(p)) {
 		/*
 		 * OK, since we're going to drop the lock immediately
 		 * afterwards anyway.
@@ -2583,6 +2600,9 @@ int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 
 void sched_set_stop_task(int cpu, struct task_struct *stop)
 {
+	/**
+	 * SCHED_FIFO(RT), priority 是 99， 是 RT priority 里最低的优先级。
+	 */
 	struct sched_param param = { param.sched_priority = MAX_RT_PRIO - 1 };
 	struct task_struct *old_stop = cpu_rq(cpu)->stop;
 
@@ -4765,7 +4785,7 @@ unsigned long nr_iowait(void)
  * sched_exec - execve() is a valuable balancing opportunity, because at
  * this point the task has the smallest effective memory and cache footprint.
  *
- * sched_exec-execve（）是宝贵的平衡机会，因为此时任务具有最小的有效内存和高速缓存占用空间。
+ * sched_exec - execve（）是宝贵的平衡机会，因为此时任务具有最小的有效内存和高速缓存占用空间。
  */
 void sched_exec(void)
 {
@@ -4776,11 +4796,18 @@ void sched_exec(void)
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 
 	/*
-		fair_sched_class.select_task_rq = select_task_rq_fair()
-	*/
+	 * fair_sched_class.select_task_rq = select_task_rq_fair()
+	 * stop_sched_class.select_task_rq = select_task_rq_stop()
+	 * dl_sched_class.select_task_rq = select_task_rq_dl()
+	 */
 	dest_cpu = p->sched_class->select_task_rq(p, task_cpu(p), SD_BALANCE_EXEC, 0);
+
+	/**
+	 * 如果相等，则不用 migration
+	 */
 	if (dest_cpu == smp_processor_id())
 		goto unlock;
+
 	/**
 	 *
 	 */
@@ -4788,6 +4815,10 @@ void sched_exec(void)
 		struct migration_arg arg = { p, dest_cpu };
 
 		raw_spin_unlock_irqrestore(&p->pi_lock, flags);
+		/**
+		 * 唤醒 migration/CPU 线程，对 p 进行迁移
+		 *
+		 */
 		stop_one_cpu(task_cpu(p), migration_cpu_stop, &arg);
 		return;
 	}

@@ -73,7 +73,11 @@ static void __cpu_stop_queue_work(struct cpu_stopper *stopper,
 	wake_q_add(wakeq, stopper->thread);
 }
 
-/* queue @work to @stopper.  if offline, @work is completed immediately */
+/* queue @work to @stopper.  if offline, @work is completed immediately
+ *
+ * 将 work 发给目标 migration 线程并 wake 它后，migration 线程将会 wakeup 执行
+ * cpu_stopper_thread(), 从 works 链表中取出 work, 并执行其 work function.
+ */
 static bool cpu_stop_queue_work(unsigned int cpu, struct cpu_stop_work *work)
 {
 	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
@@ -329,6 +333,9 @@ int stop_two_cpus(unsigned int cpu1, unsigned int cpu2, cpu_stop_fn_t fn, void *
 	};
 
 	work1 = work2 = (struct cpu_stop_work){
+		/**
+		 * 由 migration/CPU 线程执行,见 cpu_stopper_thread()
+		 */
 		.fn = multi_cpu_stop,
 		.arg = &msdata,
 		.done = &done
@@ -363,6 +370,9 @@ int stop_two_cpus(unsigned int cpu1, unsigned int cpu2, cpu_stop_fn_t fn, void *
  * RETURNS:
  * true if cpu_stop_work was queued successfully and @fn will be called,
  * false otherwise.
+ *
+ * 将 work 发给目标 migration 线程并 wake 它后，migration 线程将会 wakeup 执行
+ * cpu_stopper_thread(), 从 works 链表中取出 work, 并执行其 work function.
  */
 bool stop_one_cpu_nowait(unsigned int cpu, cpu_stop_fn_t fn, void *arg,
 			struct cpu_stop_work *work_buf)
@@ -549,6 +559,10 @@ static struct smp_hotplug_thread cpu_stop_threads = {
 	 * 每个 Core 一个 migration 线程 ($ ps -ef | grep migration)
 	 */
 	.thread_comm		= "migration/%u",
+	/**
+	 * 设置调度类和优先级：
+	 * SCHED_FIFO(RT), priority 是 99， 是 RT priority 里最低的优先级。
+	 */
 	.create			= cpu_stop_create,
 	.park			= cpu_stop_park,
 	.selfparking		= true,
@@ -565,6 +579,9 @@ static int __init cpu_stop_init(void)
 		INIT_LIST_HEAD(&stopper->works);
 	}
 
+	/**
+	 * 在每个 CPU Core 上创建 migration/x 线程
+	 */
 	BUG_ON(smpboot_register_percpu_thread(&cpu_stop_threads));
 	stop_machine_unpark(raw_smp_processor_id());
 	stop_machine_initialized = true;
