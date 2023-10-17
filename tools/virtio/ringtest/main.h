@@ -51,14 +51,14 @@ static inline void vmexit(void)
 {
 	if (!do_exit)
 		return;
-	
+
 	wait_cycles(VMEXIT_CYCLES);
 }
 static inline void vmentry(void)
 {
 	if (!do_exit)
 		return;
-	
+
 	wait_cycles(VMENTRY_CYCLES);
 }
 
@@ -108,7 +108,7 @@ static inline void busy_wait(void)
 	else
 		/* prevent compiler from removing busy loops */
 		barrier();
-} 
+}
 
 #if defined(__x86_64__) || defined(__i386__)
 #define smp_mb()     asm volatile("lock; addl $0,-132(%%rsp)" ::: "memory", "cc")
@@ -178,20 +178,20 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
 	}
 }
 
-//#define READ_ONCE(x) \
-//({									\
-//	union { typeof(x) __val; char __c[1]; } __u;			\
-//	__read_once_size(&(x), __u.__c, sizeof(x));		\
-//	smp_read_barrier_depends(); /* Enforce dependency ordering from x */ \
-//	__u.__val;							\
-//})
-//
-//#define WRITE_ONCE(x, val) \
-//({							\
-//	union { typeof(x) __val; char __c[1]; } __u =	\
-//		{ .__val = (typeof(x)) (val) }; \
-//	__write_once_size(&(x), __u.__c, sizeof(x));	\
-//	__u.__val;					\
-//})
+#define READ_ONCE(x) \
+({									\
+	union { typeof(x) __val; char __c[1]; } __u;			\
+	__read_once_size(&(x), __u.__c, sizeof(x));		\
+	smp_read_barrier_depends(); /* Enforce dependency ordering from x */ \
+	__u.__val;							\
+})
+
+#define WRITE_ONCE(x, val) \
+({							\
+	union { typeof(x) __val; char __c[1]; } __u =	\
+		{ .__val = (typeof(x)) (val) }; \
+	__write_once_size(&(x), __u.__c, sizeof(x));	\
+	__u.__val;					\
+})
 
 #endif

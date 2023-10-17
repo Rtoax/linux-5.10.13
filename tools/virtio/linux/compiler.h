@@ -2,10 +2,10 @@
 #ifndef LINUX_COMPILER_H
 #define LINUX_COMPILER_H
 
-//#define WRITE_ONCE(var, val) \
-//	(*((volatile typeof(val) *)(&(var))) = (val))
-//
-//#define READ_ONCE(var) (*((volatile typeof(var) *)(&(var))))
+#define WRITE_ONCE(var, val) \
+	(*((volatile typeof(val) *)(&(var))) = (val))
+
+#define READ_ONCE(var) (*((volatile typeof(var) *)(&(var))))
 
 #define __aligned(x) __attribute((__aligned__(x)))
 #endif

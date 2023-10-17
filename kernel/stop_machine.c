@@ -215,11 +215,18 @@ static int multi_cpu_stop(void *data)
 	do {
 		/* Chill out and ensure we re-read multi_stop_state. */
 		stop_machine_yield(cpumask);
+		/**
+		 * linux commit b1fc58333575 ("stop_machine: Avoid potential
+		 * race behaviour") 使用了 READ_ONCE
+		 */
 		newstate = READ_ONCE(msdata->state);
 		if (newstate != curstate) {
 			curstate = newstate;
 			switch (curstate) {
 			case MULTI_STOP_DISABLE_IRQ:
+				/**
+				 * 这里关闭的中断，什么时候打开的？
+				 */
 				local_irq_disable();
 				hard_irq_disable();
 				break;
