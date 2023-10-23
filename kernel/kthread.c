@@ -68,7 +68,17 @@ struct kthread {    /* 内核线程 */
 
 enum KTHREAD_BITS {
 	KTHREAD_IS_PER_CPU = 0,
+	/**
+	 * 见
+	 * kthread_should_stop()
+	 * kthread_stop()
+	 */
 	KTHREAD_SHOULD_STOP,    /* 需要停止 */
+	/**
+	 * 见
+	 * kthread_should_park()
+	 * kthread_park()
+	 */
 	KTHREAD_SHOULD_PARK,    /* 需要停止搁置 */
 };
 
@@ -113,7 +123,7 @@ void free_kthread_struct(struct task_struct *k)
  * 当有人在 kthread 调用了 kthread_stop()， kthread 将被唤醒，并且 此函数 将
  * 返回 true。你应该返回，并且返回值将被传递给 kthread_stop()。
  */
-bool kthread_should_stop(void)/*  检查标志位*/
+bool kthread_should_stop(void)
 {
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
 }
@@ -513,7 +523,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
  * waits for it to return. If the thread is marked percpu then its
  * bound to the cpu again.
  */
-void kthread_unpark(struct task_struct *k)  /* 唤醒 */
+void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_kthread(k);
 
@@ -524,7 +534,7 @@ void kthread_unpark(struct task_struct *k)  /* 唤醒 */
 	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
 		__kthread_bind(k, kthread->cpu, TASK_PARKED);
 
-	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);    /* 清空标志位 */
+	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 	/*
 	 * __kthread_parkme() will either see !SHOULD_PARK or get the wakeup.
 	 */
