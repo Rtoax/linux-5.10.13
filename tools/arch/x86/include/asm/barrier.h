@@ -17,9 +17,9 @@
  * Some non-Intel clones support out of order store. wmb() ceases to be a
  * nop for these.
  */
-//#define mb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
-//#define rmb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
-//#define wmb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
+#define mb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
+#define rmb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
+#define wmb()	asm volatile("lock; addl $0,0(%%esp)" ::: "memory")
 #elif defined(__x86_64__)
 
 #define smp_rmb() barrier()

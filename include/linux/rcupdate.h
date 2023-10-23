@@ -61,6 +61,9 @@ void __rcu_read_unlock(void);
 void rcu_read_unlock_strict(void);
 #endif
 
+/**
+ * ! CONFIG_PREEMPT_RCU
+ */
 static inline void __rcu_read_lock(void)
 {
 	preempt_disable();
@@ -96,22 +99,22 @@ static inline void rcu_init_tasks_generic(void) { }
 void rcu_sysrq_start(void);
 void rcu_sysrq_end(void);
 #else /* #ifdef CONFIG_RCU_STALL_COMMON */
-//static inline void rcu_sysrq_start(void) { }
-//static inline void rcu_sysrq_end(void) { }
+static inline void rcu_sysrq_start(void) { }
+static inline void rcu_sysrq_end(void) { }
 #endif /* #else #ifdef CONFIG_RCU_STALL_COMMON */
 
 #ifdef CONFIG_NO_HZ_FULL
 void rcu_user_enter(void);
 void rcu_user_exit(void);
 #else
-//static inline void rcu_user_enter(void) { }
-//static inline void rcu_user_exit(void) { }
+static inline void rcu_user_enter(void) { }
+static inline void rcu_user_exit(void) { }
 #endif /* CONFIG_NO_HZ_FULL */
 
 #ifdef CONFIG_RCU_NOCB_CPU
 void rcu_init_nohz(void);
 #else /* #ifdef CONFIG_RCU_NOCB_CPU */
-//static inline void rcu_init_nohz(void) { }
+static inline void rcu_init_nohz(void) { }
 #endif /* #else #ifdef CONFIG_RCU_NOCB_CPU */
 
 /**
@@ -577,7 +580,13 @@ do {									      \
  * 用于获取 被 RCU 保护的指针，读者线程要访问 RCU保护的 共享数据，
  *  需要 使用该函数 创建一个 新指针， 并且指向被 RCU 保护的指针
  *
- * > rcu_assign_pointer 是发布，而 rcu_dereference 是订阅
+ * 使用示例：
+ *
+ *   old = rcu_dereference_protected(ptr, ...)
+ *   *new = *old;
+ *   rcu_assign_pointer(ptr, new);
+ *
+ * rcu_assign_pointer 是发布，而 rcu_dereference 是订阅
  */
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
@@ -630,6 +639,11 @@ do {									      \
  * sections, invocation of the corresponding RCU callback is deferred
  * until after the all the other CPUs exit their critical sections.
  *
+ * 当在一个 CPU 上调用 Synchronize_rcu() 而其他 CPU 位于 RCU 读端临界区时，则在
+ * 所有其他 CPU 退出其临界区之前，synchronize_rcu() 一定会阻塞。 类似地，如果在一个
+ * CPU 上调用 call_rcu()，而其他 CPU 位于 RCU 读端临界区中，则相应 RCU 回调的调用
+ * 将推迟到所有其他 CPU 退出其临界区之后。
+ *
  * Note, however, that RCU callbacks are permitted to run concurrently
  * with new RCU read-side critical sections.  One way that this can happen
  * is via the following sequence of events: (1) CPU 0 enters an RCU
@@ -642,14 +656,31 @@ do {									      \
  * callback would free up) has completed before the corresponding
  * RCU callback is invoked.
  *
+ * 但请注意，RCU 回调允许与新的 RCU 读端临界区同时运行。 发生这种情况的一种方法是
+ * 通过以下事件序列：
+ *
+ * (1) CPU 0 进入 RCU 读端临界区，
+ * (2) CPU 1 调用 call_rcu() 注册 RCU 回调，
+ * (3) CPU 0 退出 RCU 读取端临界区。 RCU读端临界区，
+ * (4) CPU 2 进入 RCU 读端临界区，
+ * (5) 调用 RCU 回调。
+ *
+ * 这是合法的，因为与 call_rcu() 并发运行的 RCU 读端临界区（因此可能引用相应 RCU
+ * 回调将释放的内容）在调用相应 RCU 回调之前已完成。
+ *
  * RCU read-side critical sections may be nested.  Any deferred actions
  * will be deferred until the outermost RCU read-side critical section
  * completes.
+ *
+ * RCU 读端临界区可以嵌套。 任何延迟的操作都将被延迟，直到最外面的 RCU 读端临界区完成。
  *
  * You can avoid reading and understanding the next paragraph by
  * following this rule: don't put anything in an rcu_read_lock() RCU
  * read-side critical section that would block in a !PREEMPTION kernel.
  * But if you want the full story, read on!
+ *
+ * 您可以通过遵循以下规则来避免阅读和理解下一段：不要在 rcu_read_lock() RCU 读端
+ * 临界区中放置任何会在 !PREEMPTION 内核中阻塞的内容。
  *
  * In non-preemptible RCU implementations (pure TREE_RCU and TINY_RCU),
  * it is illegal to block while in an RCU read-side critical section.
@@ -660,12 +691,25 @@ do {									      \
  * read-side critical sections may be preempted and they may also block, but
  * only when acquiring spinlocks that are subject to priority inheritance.
  *
- * 和 rcu_read_unlock 组成一个 RCU 读者 临界区
+ * 在非抢占式 RCU 实现（纯 TREE_RCU 和 TINY_RCU）中，在 RCU 读端临界区中阻塞是非法的。
+ * 在 CONFIG_PREEMPTION 内核构建中的可抢占 RCU 实现 (PREEMPT_RCU) 中，RCU 读端临界
+ * 区可能会被抢占，但显式阻塞是非法的。 最后，在实时（使用 -rt 补丁集）内核构建中的可抢占
+ * RCU 实现中，RCU 读端关键部分可能会被抢占，并且它们也可能会阻塞，但仅限于获取受优先级继
+ * 承约束的自旋锁时。
+ *
+ * rcu_read_lock 和 rcu_read_unlock 组成一个 RCU 读者 临界区
  */
 static __always_inline void rcu_read_lock(void)
 {
+	/**
+	 *
+	 */
 	__rcu_read_lock();
 	__acquire(RCU);
+
+	/**
+	 *
+	 */
 	rcu_lock_acquire(&rcu_lock_map);
 	RCU_LOCKDEP_WARN(!rcu_is_watching(),
 			 "rcu_read_lock() used illegally while idle");
