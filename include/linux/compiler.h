@@ -6,6 +6,7 @@
 
 #ifndef __ASSEMBLY__
 
+#define __KERNEL__ 1 /* for vscode */
 #ifdef __KERNEL__
 
 /*
@@ -191,6 +192,8 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 
 /**
  * data_race - mark an expression as containing intentional data races
+ *
+ * 将表达式标记为包含有意的数据竞争
  *
  * This data_race() macro is useful for situations in which data races
  * should be forgiven.  One example is diagnostic code that accesses

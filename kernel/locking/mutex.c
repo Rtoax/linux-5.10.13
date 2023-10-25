@@ -122,9 +122,9 @@ static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
 {
 	unsigned long owner, curr = (unsigned long)current;
 
-    /**
-     *  锁持有者
-     */
+	/**
+	 *  锁持有者
+	 */
 	owner = atomic_long_read(&lock->owner);
 
 	for (;;) { /* must loop, can race against a flag */
@@ -153,9 +153,9 @@ static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
 		 */
 		flags &= ~MUTEX_FLAG_HANDOFF;
 
-        /**
-         *  成功获取锁
-         */
+		/**
+		 *  成功获取锁
+		 */
 		old = atomic_long_cmpxchg_acquire(&lock->owner, owner, curr | flags);
 		if (old == owner)
 			return NULL;
@@ -163,9 +163,9 @@ static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
 		owner = old;
 	}
 
-    /**
-     *  持有者
-     */
+	/**
+	 *  持有者
+	 */
 	return __owner_task(owner);
 }
 
@@ -193,9 +193,9 @@ static __always_inline bool __mutex_trylock_fast(struct mutex *lock)
 	unsigned long curr = (unsigned long)current;
 	unsigned long zero = 0UL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (atomic_long_try_cmpxchg_acquire(&lock->owner, &zero, curr))
 		return true;
 
@@ -206,9 +206,9 @@ static __always_inline bool __mutex_unlock_fast(struct mutex *lock)
 {
 	unsigned long curr = (unsigned long)current;
 
-    /**
-     *  锁持有者是当前进程，那么直接释放就行了
-     */
+	/**
+	 *  锁持有者是当前进程，那么直接释放就行了
+	 */
 	if (atomic_long_cmpxchg_release(&lock->owner, curr, 0UL) == curr)
 		return true;
 
@@ -241,18 +241,18 @@ __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 {
 	debug_mutex_add_waiter(lock, waiter, current);
 
-    /**
-     *  添加到 mutex 的等待队列
-     */
+	/**
+	 *  添加到 mutex 的等待队列
+	 */
 	list_add_tail(&waiter->list, list);
 
-    /**
-     *  在等待链表里是第一个
-     */
+	/**
+	 *  在等待链表里是第一个
+	 */
 	if (__mutex_waiter_is_first(lock, waiter))
-        /**
-         *  设置标志位
-         */
+		/**
+		 *  设置标志位
+		 */
 		__mutex_set_flag(lock, MUTEX_FLAG_WAITERS);
 }
 
@@ -321,13 +321,13 @@ void __sched mutex_lock(struct mutex *lock)
 {
 	might_sleep();
 
-    /**
-     *  判断是否可以快速获取锁
-     */
+	/**
+	 *  判断是否可以快速获取锁
+	 */
 	if (!__mutex_trylock_fast(lock))
-        /**
-         *  慢速路径
-         */
+		/**
+		 *  慢速路径
+		 */
 		__mutex_lock_slowpath(lock);
 }
 EXPORT_SYMBOL(mutex_lock);
@@ -543,6 +543,10 @@ ww_mutex_set_context_fastpath(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	spin_unlock(&lock->base.wait_lock);
 }
 
+/**
+ * fedora 中 CONFIG_MUTEX_SPIN_ON_OWNER 是使能的
+ */
+#define CONFIG_MUTEX_SPIN_ON_OWNER 1
 #ifdef CONFIG_MUTEX_SPIN_ON_OWNER
 
 static inline
@@ -601,9 +605,9 @@ bool mutex_spin_on_owner(struct mutex *lock, struct task_struct *owner,
 
 	rcu_read_lock();
 
-    /**
-     *  锁持有者没发生变化
-     */
+	/**
+	 *  锁持有者没发生变化
+	 */
 	while (__mutex_owner(lock) == owner) {
 		/*
 		 * Ensure we emit the owner->on_cpu, dereference _after_
@@ -654,9 +658,9 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
 
 	rcu_read_lock();
 
-    /**
-     *  获取锁的持有者 tast_struct 结构
-     */
+	/**
+	 *  获取锁的持有者 tast_struct 结构
+	 */
 	owner = __mutex_owner(lock);
 
 	/*
@@ -664,10 +668,10 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
 	 * on cpu or its cpu is preempted
 	 */
 	if (owner)
-        /**
-         *  如果 持有锁的 task on_cpu 上(正在执行)，
-         *  也就是 mutex 正在在临界区中执行，这时候，应该自旋等待
-         */
+		/**
+		 *  如果 持有锁的 task on_cpu 上(正在执行)，
+		 *  也就是 mutex 正在在临界区中执行，这时候，应该自旋等待
+		 */
 		retval = owner->on_cpu && !vcpu_is_preempted(task_cpu(owner));
 	rcu_read_unlock();
 
@@ -706,9 +710,9 @@ static __always_inline bool
 mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		      const bool use_ww_ctx, struct mutex_waiter *waiter)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!waiter) {
 		/*
 		 * The purpose of the mutex_can_spin_on_owner() function is
@@ -718,7 +722,9 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		 * to call mutex_can_spin_on_owner().
 		 *
 		 * 是否需要乐观自旋等待
-		 * 根据 mutex 的拥有者，是否在 on_cpu CPU 上执行，如果是，则当前进程可以乐观自选
+		 *
+		 * 根据 mutex 的拥有者，是否在 on_cpu CPU 上执行，如果是，则当前进程
+		 * 可以乐观自旋。
 		 */
 		if (!mutex_can_spin_on_owner(lock))
 			goto fail;
@@ -734,16 +740,16 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 			goto fail;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for (;;) {
 		struct task_struct *owner;
 
 		/* Try to acquire the mutex... */
-        /**
-         *  尝试获取锁
-         */
+		/**
+		 *  尝试获取锁
+		 */
 		owner = __mutex_trylock_or_owner(lock);
 		if (!owner)
 			break;
@@ -820,15 +826,15 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 void __sched mutex_unlock(struct mutex *lock)
 {
 #ifndef CONFIG_DEBUG_LOCK_ALLOC
-    /**
-     *  快速路径 - 锁持有者是当前进程
-     */
+	/**
+	 *  快速路径 - 锁持有者是当前进程
+	 */
 	if (__mutex_unlock_fast(lock))
 		return;
 #endif
-    /**
-     *  慢速路径 -
-     */
+	/**
+	 *  慢速路径 -
+	 */
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }
 EXPORT_SYMBOL(mutex_unlock);
@@ -1019,9 +1025,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		    struct lockdep_map *nest_lock, unsigned long ip,
 		    struct ww_acquire_ctx *ww_ctx, const bool use_ww_ctx)
 {
-    /**
-     *  描述等待 mutex 失败的 进程
-     */
+	/**
+	 *  描述等待 mutex 失败的 进程
+	 */
 	struct mutex_waiter waiter;
 	bool first = false;
 	struct ww_mutex *ww;
@@ -1047,20 +1053,20 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 			ww_ctx->wounded = 0;
 	}
 
-    /**
-     *  关闭抢占
-     */
+	/**
+	 *  关闭抢占
+	 */
 	preempt_disable();
 	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, ip);
 
-    /**
-     *  __mutex_trylock         - 尝试获取 mutex
-     *  mutex_optimistic_spin   - 乐观自旋等待机制
-     */
+	/**
+	 *  __mutex_trylock         - 尝试获取 mutex
+	 *  mutex_optimistic_spin   - 乐观自旋等待机制
+	 */
 	if (__mutex_trylock(lock) || mutex_optimistic_spin(lock, ww_ctx, use_ww_ctx, NULL)) {
-        /**
-         *  获取到了锁
-         */
+		/**
+		 *  获取到了锁
+		 */
 		/* got the lock, yay! */
 		lock_acquired(&lock->dep_map, ip);
 		if (use_ww_ctx && ww_ctx)
@@ -1068,9 +1074,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		preempt_enable();
 		return 0;
 	}
-    /**
-     *  申请 等待链表的 自旋锁
-     */
+	/**
+	 *  申请 等待链表的 自旋锁
+	 */
 	spin_lock(&lock->wait_lock);
 	/*
 	 * After waiting to acquire the wait_lock, try again.
@@ -1089,9 +1095,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 	lock_contended(&lock->dep_map, ip);
 
 	if (!use_ww_ctx) {
-        /**
-         *  将当前进程添加到 mutex 的等待队列中
-         */
+		/**
+		 *  将当前进程添加到 mutex 的等待队列中
+		 */
 		/* add waiting tasks to the end of the waitqueue (FIFO): */
 		__mutex_add_waiter(lock, &waiter, &lock->wait_list);
 
@@ -1111,19 +1117,19 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		waiter.ww_ctx = ww_ctx;
 	}
 
-    /**
-     *  当前进程 加入 等待队列
-     */
+	/**
+	 *  当前进程 加入 等待队列
+	 */
 	waiter.task = current;
 
-    /**
-     *  设置进程状态
-     */
+	/**
+	 *  设置进程状态
+	 */
 	set_current_state(state);
 
-    /**
-     *  循环
-     */
+	/**
+	 *  循环
+	 */
 	for (;;) {
 		/*
 		 * Once we hold wait_lock, we're serialized against
@@ -1156,9 +1162,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 
 		spin_unlock(&lock->wait_lock);
 
-        /**
-         *  进程被调度出去，上面自旋锁的操作和 信号量中相同
-         */
+		/**
+		 *  进程被调度出去，上面自旋锁的操作和 信号量中相同
+		 */
 		schedule_preempt_disabled();
 
 		/*
@@ -1166,9 +1172,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		 * list is not FIFO ordered.
 		 */
 		if ((use_ww_ctx && ww_ctx) || !first) {
-            /**
-             *  判断进程是不是 等待队列中的第一位
-             */
+			/**
+			 *  判断进程是不是 等待队列中的第一位
+			 */
 			first = __mutex_waiter_is_first(lock, &waiter);
 			if (first)
 				__mutex_set_flag(lock, MUTEX_FLAG_HANDOFF);
@@ -1185,8 +1191,8 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		if (__mutex_trylock(lock) ||
 		    (first && mutex_optimistic_spin(lock, ww_ctx, use_ww_ctx, &waiter)))
 		    /**
-             *  获取到了，直接结束 for 循环
-             */
+			 *  获取到了，直接结束 for 循环
+			 */
 			break;
 
 		spin_lock(&lock->wait_lock);
@@ -1194,9 +1200,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 	spin_lock(&lock->wait_lock);
 acquired:
 
-    /**
-     *  设置进程运行
-     */
+	/**
+	 *  设置进程运行
+	 */
 	__set_current_state(TASK_RUNNING);
 
 	if (use_ww_ctx && ww_ctx) {
@@ -1209,9 +1215,9 @@ acquired:
 			__ww_mutex_check_waiters(lock, ww_ctx);
 	}
 
-    /**
-     *  从等待队列中删除
-     */
+	/**
+	 *  从等待队列中删除
+	 */
 	mutex_remove_waiter(lock, &waiter, current);
 	if (likely(list_empty(&lock->wait_list)))
 		__mutex_clear_flag(lock, MUTEX_FLAGS);
@@ -1225,14 +1231,14 @@ skip_wait:
 	if (use_ww_ctx && ww_ctx)
 		ww_mutex_lock_acquired(ww, ww_ctx);
 
-    /**
-     *  释放锁
-     */
+	/**
+	 *  释放锁
+	 */
 	spin_unlock(&lock->wait_lock);
 
-    /**
-     *  打开抢占
-     */
+	/**
+	 *  打开抢占
+	 */
 	preempt_enable();
 	return 0;
 
@@ -1374,11 +1380,11 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 {
 	struct task_struct *next = NULL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	DEFINE_WAKE_Q(wake_q);
-    struct wake_q_head wake_q = { WAKE_Q_TAIL, &wake_q.first };//+++
+	struct wake_q_head wake_q = { WAKE_Q_TAIL, &wake_q.first };//+++
 
 	unsigned long owner;
 
@@ -1395,9 +1401,9 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	 */
 	owner = atomic_long_read(&lock->owner);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for (;;) {
 		unsigned long old;
 
@@ -1423,42 +1429,42 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	spin_lock(&lock->wait_lock);
 	debug_mutex_unlock(lock);
 
-    /**
-     *  等待队列不为空 - 有其他进程等待这个 mutex
-     */
+	/**
+	 *  等待队列不为空 - 有其他进程等待这个 mutex
+	 */
 	if (!list_empty(&lock->wait_list)) {
-        /**
-         *  获取等待队列中的第一个进程
-         */
+		/**
+		 *  获取等待队列中的第一个进程
+		 */
 		/* get the first entry from the wait-list: */
 		struct mutex_waiter *waiter =
 			list_first_entry(&lock->wait_list,
 					 struct mutex_waiter, list);
 
-        /**
-         *  获取进程结构
-         */
+		/**
+		 *  获取进程结构
+		 */
 		next = waiter->task;
 
 		debug_mutex_wake_waiter(lock, waiter);
 
-        /**
-         *  添加到
-         */
+		/**
+		 *  添加到
+		 */
 		wake_q_add(&wake_q, next);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (owner & MUTEX_FLAG_HANDOFF)
 		__mutex_handoff(lock, next);
 
 	spin_unlock(&lock->wait_lock);
 
-    /**
-     *  唤醒 结构中的进程
-     */
+	/**
+	 *  唤醒 结构中的进程
+	 */
 	wake_up_q(&wake_q);
 }
 

@@ -7,9 +7,24 @@
  * An MCS like lock especially tailored for optimistic spinning for sleeping
  * lock implementations (mutex, rwsem, etc).
  *
+ * 类似 MCS 的锁，专门为休眠锁实现（互斥锁、rwsem 等）的乐观自旋而定制。
+ *
  * Using a single mcs node per CPU is safe because sleeping locks should not be
  * called from interrupt context and we have preemption disabled while
  * spinning.
+ *
+ * 每个 CPU 使用单个 mcs 节点是安全的，因为不应从中断上下文中调用睡眠锁，并且我们在自旋时禁
+ * 用了抢占。
+ *
+ * 每个 CPU 只有一个 optimistic_spin_node
+ *
+ * struct optimistic_spin_node {
+ *     struct optimistic_spin_node *next, *prev;
+ *     int locked;
+ *     int cpu;
+ * };
+ *
+ * 为什么这里不是每个 osq lock 都创建一个 per-CPU 变量呢？难道系统中只有一个地方用 osq_lock?
  */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct optimistic_spin_node, osq_node);
 
@@ -19,9 +34,9 @@ static DEFINE_PER_CPU_SHARED_ALIGNED(struct optimistic_spin_node, osq_node);
  */
 static inline int encode_cpu(int cpu_nr)
 {
-    /**
-     *  CPU0 = 1
-     */
+	/**
+	 *  CPU0 = 1
+	 */
 	return cpu_nr + 1;
 }
 
@@ -89,15 +104,18 @@ osq_wait_next(struct optimistic_spin_queue *lock,
 
 	return next;
 }
-/* optimistic spinning，乐观自旋，到底有多乐观呢？
- *  当发现锁被持有时，optimistic spinning相信持有者很快就能把锁释放，
- *  因此它选择自旋等待，而不是睡眠等待，这样也就能减少进程切换带来的开销了。
- *//* Spinner MCS lock 乐观自旋 */
-bool osq_lock(struct optimistic_spin_queue *lock)   
+
+/**
+ * optimistic spinning，乐观自旋，到底有多乐观呢？
+ *
+ * 当发现锁被持有时，optimistic spinning 相信持有者很快就能把锁释放，
+ * 因此它选择自旋等待，而不是睡眠等待，这样也就能减少进程切换带来的开销了。
+ */
+bool osq_lock(struct optimistic_spin_queue *lock)
 {
-    /**
-     *  指向当前CPU node
-     */
+	/**
+	 *  指向当前CPU node
+	 */
 	struct optimistic_spin_node *node = this_cpu_ptr(&osq_node);
 	struct optimistic_spin_node *prev, *next;
 	int curr = encode_cpu(smp_processor_id());
@@ -106,9 +124,9 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 	node->locked = 0;
 	node->next = NULL;
 
-    /**
-     *  CPU 编号 CPU0 = 1
-     */
+	/**
+	 *  CPU 编号 CPU0 = 1
+	 */
 	node->cpu = curr;
 
 	/*
@@ -121,15 +139,15 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 	 */
 	old = atomic_xchg(&lock->tail, curr);
 
-    /**
-     *  如果 旧值 == 初始化(0), 说明还没有 CPU 持有锁
-     */
+	/**
+	 *  如果 旧值 == 初始化(0), 说明还没有 CPU 持有锁
+	 */
 	if (old == OSQ_UNLOCKED_VAL)
 		return true;
 
-    /**
-     *  中速申请通道 - 已经有人持有锁
-     */
+	/**
+	 *  中速申请通道 - 已经有人持有锁
+	 */
 	prev = decode_cpu(old);
 	node->prev = prev;
 
@@ -161,12 +179,17 @@ bool osq_lock(struct optimistic_spin_queue *lock)
 	 * will come with an IPI, which will wake smp_cond_load_relaxed() if it
 	 * is implemented with a monitor-wait. vcpu_is_preempted() relies on
 	 * polling, be careful.
+	 *
+	 * 等待获取锁或取消。 请注意，need_resched() 将附带一个 IPI，如果使用监视器等待
+	 * 实现，它将唤醒 smp_cond_load_relaxed()。 vcpu_is_preempted() 依赖于轮询，
+	 * 请小心。
 	 */
 	if (smp_cond_load_relaxed(&node->locked, VAL || need_resched() ||
 				  vcpu_is_preempted(node_cpu(node->prev))))
 		return true;
 
-	/* unqueue */
+/* unqueue */
+
 	/*
 	 * Step - A  -- stabilize @prev
 	 *
@@ -245,7 +268,7 @@ void osq_unlock(struct optimistic_spin_queue *lock)
 		return;
 
 	/*
-	 * Second most likely case. 
+	 * Second most likely case.
 	 * 慢速通道
 	 */
 	node = this_cpu_ptr(&osq_node);

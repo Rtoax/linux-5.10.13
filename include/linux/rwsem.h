@@ -33,14 +33,32 @@
  * cacheline bouncing problem.
  */
 struct rw_semaphore {   /* 读写信号量 */
-    //`count` field of a `rw_semaphore` structure may have following values:
-    //
-    //* `0x0000000000000000` - `reader/writer semaphore` is in unlocked state and no one is waiting for a lock;
-    //* `0x000000000000000X` - `X` readers are active or attempting to acquire a lock and no writer waiting;
-    //* `0xffffffff0000000X` - may represent different cases. The first is - `X` readers are active or attempting to acquire a lock with waiters for the lock. The second is - one writer attempting a lock, no waiters for the lock. And the last - one writer is active and no waiters for the lock;
-    //* `0xffffffff00000001` - may represented two different cases. The first is - one reader is active or attempting to acquire a lock and exist waiters for the lock. The second case is one writer is active or attempting to acquire a lock and no waiters for the lock;
-    //* `0xffffffff00000000` - represents situation when there are readers or writers are queued, but no one is active or is in the process of acquire of a lock;
-    //* `0xfffffffe00000001` - a writer is active or attempting to acquire a lock and waiters are in queue.
+	/**
+	 * `count` field of a `rw_semaphore` structure may have following values:
+	 *
+	 ** `0x0000000000000000` - `reader/writer semaphore` is in unlocked
+	 *                          state and no one is waiting for a lock;
+	 ** `0x000000000000000X` - `X` readers are active or attempting to
+	 *                          acquire a lock and no writer waiting;
+	 ** `0xffffffff0000000X` - may represent different cases. The first
+	 *                         is - `X` readers are active or attempting
+	 *                         to acquire a lock with waiters for the lock.
+	 *                         The second is - one writer attempting a
+	 *                         lock, no waiters for the lock. And the
+	 *                         last - one writer is active and no waiters
+	 *                         for the lock;
+	 ** `0xffffffff00000001` - may represented two different cases. The
+	 *                         first is - one reader is active or
+	 *                         attempting to acquire a lock and exist
+	 *                         waiters for the lock. The second case is
+	 *                         one writer is active or attempting to
+	 *                         acquire a lock and no waiters for the lock;
+	 ** `0xffffffff00000000` - represents situation when there are readers
+	 *                         or writers are queued, but no one is active
+	 *                         or is in the process of acquire of a lock;
+	 ** `0xfffffffe00000001` - a writer is active or attempting to acquire
+	 *                         a lock and waiters are in queue.
+	 */
 	atomic_long_t count;
 	/*
 	 * Write owner or one of the read owners as well flags regarding
@@ -50,20 +68,21 @@ struct rw_semaphore {   /* 读写信号量 */
 	 * 当写者成功获取锁时，owner 指向 持有者 的 task_struct 数据结构
 	 */
 	atomic_long_t owner;
-    
+
 #ifdef CONFIG_RWSEM_SPIN_ON_OWNER
-    /**
-     *  MCS 锁
-     */
-	struct optimistic_spin_queue osq; /* spinner MCS lock 乐观锁 see also struct mutex; */
+	/**
+	 * 类 MCS 锁，一种 乐观锁
+	 */
+	struct optimistic_spin_queue osq; /* spinner MCS lock see also struct mutex; */
 #endif
 
-    /**
-     *  等待链表的 自旋锁
-     */
+	/**
+	 *  等待链表的 自旋锁
+	 */
 	raw_spinlock_t wait_lock;
-	struct list_head wait_list; /* 等待链表 */
-    
+	/* 等待链表 */
+	struct list_head wait_list;
+
 #ifdef CONFIG_DEBUG_RWSEMS
 	void *magic;
 #endif
@@ -79,7 +98,7 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 }
 
 /**
- *  
+ *
  */
 #define RWSEM_UNLOCKED_VALUE		0L
 #define __RWSEM_COUNT_INIT(name)	.count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE)

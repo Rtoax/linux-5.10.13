@@ -11,27 +11,29 @@
  * optimistic_spin_node 标识本地CPU 上的节点
  */
 struct optimistic_spin_node {
-    /**
-     *  本地 CPU 上的节点
-     */
+	/**
+	 *  本地 CPU 上的节点
+	 */
 	struct optimistic_spin_node *next, *prev;
 
-    /**
-     *  加锁状态
-     */
+	/**
+	 *  加锁状态
+	 */
 	int locked; /* 1 if lock acquired */
 
-    /**
-     *  重新编码CPU 编号，标识该节点在哪个 CPU 上
-     */
+	/**
+	 *  重新编码CPU 编号，标识该节点在哪个 CPU 上
+	 */
 	int cpu; /* encoded CPU # + 1 value */
 };
 
-struct optimistic_spin_queue {//乐观自旋
-	/* optimistic spinning，乐观自旋，到底有多乐观呢？
-	 *  当发现锁被持有时，optimistic spinning相信持有者很快就能把锁释放，
-	 *  因此它选择自旋等待，而不是睡眠等待，这样也就能减少进程切换带来的开销了。
-	 * 
+struct optimistic_spin_queue {
+	/**
+	 * optimistic spinning，乐观自旋
+	 *
+	 * 当发现锁被持有时，optimistic spinning相信持有者很快就能把锁释放，
+	 * 因此它选择自旋等待，而不是睡眠等待，这样也就能减少进程切换带来的开销了。
+	 *
 	 * Stores an encoded value of the CPU # of the tail node in the queue.
 	 * If the queue is empty, then it's set to OSQ_UNLOCKED_VAL.
 	 */
@@ -42,10 +44,11 @@ struct optimistic_spin_queue {//乐观自旋
 
 /* Init macro and function. */
 #define OSQ_LOCK_UNLOCKED { ATOMIC_INIT(OSQ_UNLOCKED_VAL) }
-    
+
+/* Spinner MCS lock 乐观自旋 */
 static inline void osq_lock_init(struct optimistic_spin_queue *lock)
-{/* Spinner MCS lock 乐观自旋 */
-	atomic_set(&lock->tail, OSQ_UNLOCKED_VAL);
+{
+	atomic_set(&lock->tail, OSQ_UNLOCKED_VAL/*0*/);
 }
 
 extern bool osq_lock(struct optimistic_spin_queue *lock);
