@@ -66,6 +66,9 @@
  */
 
 #include "mcs_spinlock.h"
+/**
+ * 4 分别对应四个上下文：线程上下文、软中断上下文、硬中断上下文 和 NMI 上下文
+ */
 #define MAX_NODES	4
 
 /*
@@ -118,15 +121,39 @@ static inline __pure u32 encode_tail(int cpu, int idx)
 {
 	u32 tail;
 
-	tail  = (cpu + 1) << _Q_TAIL_CPU_OFFSET;
-	tail |= idx << _Q_TAIL_IDX_OFFSET; /* assume < 4 */
+	/**
+	 * +------------------+------------------+
+	 * |      tail        |  locked_pending  |
+	 * +------------------+------------------+
+	 *
+	 *                17 16
+	 * +---------------+--+-------+-+--------+
+	 * |               |  |       | |        |
+	 * +------+--------+-++-------+-+----+---+
+	 *  31    ^      18  ^ 15    9 8 7   ^  0
+	 *        |          |         ^     |
+	 *        |          +         |     +
+	 *        |       tail_idx     |  locked
+	 *        |                    |
+	 *        +                    +
+	 *     tail_cpu              pending
+	 *
+	 * _Q_TAIL_IDX_MASK: 0x00000000030000 00000000000000110000000000000000
+	 * _Q_TAIL_CPU_MASK: 0x000000fffc0000 11111111111111000000000000000000
+	 */
+	tail  = (cpu + 1) << _Q_TAIL_CPU_OFFSET/*18*/;
+	tail |= idx << _Q_TAIL_IDX_OFFSET/*16*/; /* assume < 4 */
 
 	return tail;
 }
 
 static inline __pure struct mcs_spinlock *decode_tail(u32 tail)
 {
-	int cpu = (tail >> _Q_TAIL_CPU_OFFSET) - 1;
+	/**
+	 * _Q_TAIL_IDX_MASK: 0x00000000030000 00000000000000110000000000000000
+	 *
+	 */
+	int cpu = (tail >> _Q_TAIL_CPU_OFFSET/*18*/) - 1;
 	int idx = (tail &  _Q_TAIL_IDX_MASK) >> _Q_TAIL_IDX_OFFSET;
 
 	return per_cpu_ptr(&qnodes[idx].mcs, cpu);
@@ -138,6 +165,12 @@ struct mcs_spinlock *grab_mcs_node(struct mcs_spinlock *base, int idx)
 	return &((struct qnode *)base + idx)->mcs;
 }
 
+/**
+ * _Q_LOCKED_MASK         : 0x000000000000ff 00000000000000000000000011111111
+ * _Q_PENDING_MASK        : 0x0000000000ff00 00000000000000001111111100000000
+ * _Q_LOCKED_PENDING_MASK : 0x0000000000ffff 00000000000000001111111111111111
+ * (pending mask + locked mask)
+ */
 #define _Q_LOCKED_PENDING_MASK (_Q_LOCKED_MASK | _Q_PENDING_MASK)
 
 #if _Q_PENDING_BITS == 8
@@ -340,6 +373,9 @@ static __always_inline u32  __pv_wait_head_or_lock(struct qspinlock *lock,
  *
  * 这个名字通常因为 CONFIG_PARAVIRT_SPINLOCKS=y 被替换为
  *  native_queued_spin_lock_slowpath()
+ *
+ * refs:
+ * 1. https://www.wowotech.net/kernel_synchronization/queued_spinlock.html
  */
 void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 {
@@ -472,8 +508,11 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 		 * 这里自旋并不是轮询，而是通过 WFE 指令让 CPU 停下来，降低功耗。当 owner
 		 * 释放 spinlock 的时候会发送事件唤醒该CPU。
 		 *
-		 *   if (!(lock->val & _Q_LOCKED_MASK))
+		 *  for (;;) {
+		 *    // atomic-load lock->val
+		 *    if (!(lock->val & _Q_LOCKED_MASK))
 		 *       break;
+		 *  }
 		 */
 		atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_MASK));
 
@@ -492,14 +531,46 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	/*
 	 * End of pending bit optimistic spinning and beginning of MCS
 	 * queuing.
-	 *
-	 *
 	 */
 queue:
 	lockevent_inc(lock_slowpath);
 pv_queue:
+	/**
+	 * 获取 当前 CPU 的 struct mcs_spinlock 结构
+	 *
+	 * 当不能 pending 在 spinlock 的时候，当前执行线索需要挂入 MCS 队列。
+	 *
+	 */
 	node = this_cpu_ptr(&qnodes[0].mcs);
+
+	/**
+	 * 由于 spin_lock 可能会嵌套（在不同的自旋锁上嵌套，如果同一个那么就是死锁了）
+	 * 因此我们构建了多个 mcs node，每次递进一层。顺便一提的是：当 index 大于阀值
+	 * 的时候，会取消 qspinlock 机制，恢复原始自旋机制。
+	 */
 	idx = node->count++;
+
+	/**
+	 * +------------------+------------------+
+	 * |      tail        |  locked_pending  |
+	 * +------------------+------------------+
+	 *
+	 *                17 16
+	 * +---------------+--+-------+-+--------+
+	 * |               |  |       | |        |
+	 * +------+--------+-++-------+-+----+---+
+	 *  31    ^      18  ^ 15    9 8 7   ^  0
+	 *        |          |         ^     |
+	 *        |          +         |     +
+	 *        |       tail_idx     |  locked
+	 *        |                    |
+	 *        +                    +
+	 *     tail_cpu              pending
+	 *
+	 * 将 context index 和 cpu id 组合成 tail
+	 *
+	 * FYI: tail = tail_cpu & tail_idx;
+	 */
 	tail = encode_tail(smp_processor_id(), idx);
 
 	/*
@@ -510,6 +581,8 @@ pv_queue:
 	 * we fall back to spinning on the lock directly without using
 	 * any MCS node. This is not the most elegant solution, but is
 	 * simple enough.
+	 *
+	 * 当 index 大于阀值的时候，会取消 qspinlock 机制，恢复原始自旋机制。
 	 */
 	if (unlikely(idx >= MAX_NODES)) {
 		lockevent_inc(lock_no_node);
@@ -518,6 +591,9 @@ pv_queue:
 		goto release;
 	}
 
+	/**
+	 * 根据 mcs node 基地址和 index 找到对应的 mcs node
+	 */
 	node = grab_mcs_node(node, idx);
 
 	/*
@@ -532,6 +608,14 @@ pv_queue:
 	 */
 	barrier();
 
+	/**
+	 * 找到 mcs node 之后，我们需要挂入队列
+	 */
+
+	/**
+	 * 初始化 MCS lock 为未持锁状态（指mcs锁，注意和spinlock区分开），考虑到我们
+	 * 是尾部节点，next 设置为 NULL
+	 */
 	node->locked = 0;
 	node->next = NULL;
 	pv_init_node(node);
@@ -540,6 +624,9 @@ pv_queue:
 	 * We touched a (possibly) cold cacheline in the per-cpu queue node;
 	 * attempt the trylock once more in the hope someone let go while we
 	 * weren't watching.
+	 *
+	 * 试图获取锁，很可能在上面的过程中，pending thread 和 owner thread 都已经
+	 * 离开了临界区，这时候如果持锁成功，那么就可以长驱直入，进入临界区，无需排队。
 	 */
 	if (queued_spin_trylock(lock))
 		goto release;
@@ -551,12 +638,16 @@ pv_queue:
 	 */
 	smp_wmb();
 
-	/*
+	/**
 	 * Publish the updated tail.
 	 * We have already touched the queueing cacheline; don't bother with
 	 * pending stuff.
 	 *
 	 * p,*,* -> n,*,*
+	 *
+	 * 修改 qspinlock 的 tail 域，old 保存了旧值
+	 *
+	 * FYI: (tail, pending, locked)
 	 */
 	old = xchg_tail(lock, tail);
 	next = NULL;
@@ -564,14 +655,55 @@ pv_queue:
 	/*
 	 * if there was a previous node; link it and wait until reaching the
 	 * head of the waitqueue.
+	 *
+	 * 如果在本节点挂入队列之前，等待队列中已经有了 waiter，那么我们需要把 tail 指向
+	 * 的尾部节点和旧的 MCS 队列串联起来。
+	 *
+	 * +------------------+------------------+
+	 * |      tail        |  locked_pending  |
+	 * +------------------+------------------+
+	 *
+	 *                17 16
+	 * +---------------+--+-------+-+--------+
+	 * |               |  |       | |        |
+	 * +------+--------+-++-------+-+----+---+
+	 *  31    ^      18  ^ 15    9 8 7   ^  0
+	 *        |          |         ^     |
+	 *        |          +         |     +
+	 *        |       tail_idx     |  locked
+	 *        |                    |
+	 *        +                    +
+	 *     tail_cpu              pending
+	 *
+	 * _Q_TAIL_MASK     : 0x000000ffff0000 11111111111111110000000000000000
 	 */
 	if (old & _Q_TAIL_MASK) {
+		/**
+		 * 获取 mcs_spinlock 结构
+		 */
 		prev = decode_tail(old);
 
-		/* Link @node into the waitqueue. */
+		/**
+		 * Link @node into the waitqueue.
+		 *
+		 * 建立新 node 和旧的等待队列的关系。
+		 */
 		WRITE_ONCE(prev->next, node);
 
 		pv_wait_node(node, prev);
+
+		/**
+		 * ########### 自旋 ###########
+		 *
+		 * 至此，我们已经是处于 mcs queue 的队列尾部，自旋在自己的 mcs lock上，
+		 * 等待 locked 状态（是 mcs lock，不是 spinlock 的）变成1。
+		 *
+		 *  for (;;) {
+		 *    // atomic-load node->locked
+		 *    if (node->locked)
+		 *      break;
+		 *  }
+		 */
 		arch_mcs_spin_lock_contended(&node->locked);
 
 		/*
@@ -579,6 +711,11 @@ pv_queue:
 		 * been set by another lock waiter. We optimistically load
 		 * the next pointer & prefetch the cacheline for writing
 		 * to reduce latency in the upcoming MCS unlock operation.
+		 *
+		 * 执行至此，我们已经获得了 MCS lock，也就是说我们成为了队首。在我们自
+		 * 旋等待的时候，可能其他的竞争者也加入到链表了，next 不再是 null 了
+		 * （即我们不再是队尾了）。因此这里需要更新 next 变量，以便我们把 mcs
+		 * 锁禅让给下一个 node。
 		 */
 		next = READ_ONCE(node->next);
 		if (next)
@@ -609,6 +746,21 @@ pv_queue:
 	if ((val = pv_wait_head_or_lock(lock, node)))
 		goto locked;
 
+	/**
+	 * 在获取了 MCS lock 之后（排到了 mcs node queue 的头部），我们获准了在
+	 * spinlock 上自旋。这里等待 pending 和 owner 离开临界区。
+	 *
+	 * for (;;) {
+	 *     // atomic-load lock->val
+	 *     if (!(VAL & _Q_LOCKED_PENDING_MASK))
+	 *         break;
+	 * }
+	 *
+	 * _Q_LOCKED_PENDING_MASK : 0x0000000000ffff (pending + locked)
+	 *                          00000000000000001111111111111111
+	 *
+	 * (tail, pending, locked) = (?, 0, 0)
+	 */
 	val = atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_PENDING_MASK));
 
 locked:
@@ -632,9 +784,18 @@ locked:
 	 * Note: at this point: (val & _Q_PENDING_MASK) == 0, because of the
 	 *       above wait condition, therefore any concurrent setting of
 	 *       PENDING will make the uncontended transition fail.
+	 *
+	 * 如果本 mcs node 是队列中的最后一个节点
 	 */
 	if ((val & _Q_TAIL_MASK) == tail) {
+		/**
+		 * 如果本 mcs node 是队列中的最后一个节点，我们不需要处理 mcs lock
+		 * 传递，直接试图持锁
+		 */
 		if (atomic_try_cmpxchg_relaxed(&lock->val, &val, _Q_LOCKED_VAL/*1*/))
+			/**
+			 * 如果成功，完成持锁，进入临界区。
+			 */
 			goto release; /* No contention */
 	}
 
@@ -642,15 +803,23 @@ locked:
 	 * Either somebody is queued behind us or _Q_PENDING_VAL got set
 	 * which will then detect the remaining tail and queue behind us
 	 * ensuring we'll see a @next.
+	 *
+	 * 如果本 mcs node 不是队列尾部，那么不需要考虑竞争，直接持 spinlock
 	 */
 	set_locked(lock);
 
-	/*
+	/**
 	 * contended path; wait for next if not observed yet, release.
+	 *
+	 * 如果 next 为空，说明不存在下一个节点。不过也许在我们等自旋锁的时候，新的节点
+	 * 又挂入了，所以这里重新读一下 next 节点。
 	 */
 	if (!next)
 		next = smp_cond_load_relaxed(&node->next, (VAL));
 
+	/**
+	 * 把 mcs lock 传递给下一个节点，让其自旋在 spinlock 上。
+	 */
 	arch_mcs_spin_unlock_contended(&next->locked);
 	pv_kick_node(lock, next);
 

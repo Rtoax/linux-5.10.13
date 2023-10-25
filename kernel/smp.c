@@ -218,14 +218,14 @@ static __always_inline void csd_lock_wait(call_single_data_t *csd)
 }
 
 #else
-//static void csd_lock_record(call_single_data_t *csd)
-//{
-//}
+static void csd_lock_record(call_single_data_t *csd)
+{
+}
 
-//static __always_inline void csd_lock_wait(call_single_data_t *csd)
-//{
-//	smp_cond_load_acquire(&csd->flags, !(VAL & CSD_FLAG_LOCK));
-//}
+static __always_inline void csd_lock_wait(call_single_data_t *csd)
+{
+	smp_cond_load_acquire(&csd->flags, !(VAL & CSD_FLAG_LOCK));
+}
 #endif
 
 static __always_inline void csd_lock(call_single_data_t *csd)
