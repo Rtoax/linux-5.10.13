@@ -14,9 +14,9 @@
 #define __LINUX_MCS_SPINLOCK_H
 
 /**
- *  
+ * qspinlock 排队自选锁利用了 MCS 机制
  */
-struct mcs_spinlock {   /* MCS 锁 */
+struct mcs_spinlock {
 	struct mcs_spinlock *next;
 	int locked; /* 1 if lock acquired */
 	int count;  /* nesting count, see qspinlock.c */

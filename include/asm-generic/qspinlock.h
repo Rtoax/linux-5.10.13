@@ -72,23 +72,29 @@ extern void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
 
 #ifndef queued_spin_lock
 /**
- * queued_spin_lock - acquire a queued spinlock
+ * queued_spin_lock - acquire a queued spinlock (qspinlock 加锁)
  * @lock: Pointer to queued spinlock structure
  */
 static __always_inline void queued_spin_lock(struct qspinlock *lock)
 {
 	u32 val = 0;
 
-	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL)))
+	/**
+	 * 快速路径，一下就获取到锁了
+	 */
+	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL/*0*/)))
 		return;
 
+	/**
+	 * 慢速路径
+	 */
 	queued_spin_lock_slowpath(lock, val);
 }
 #endif
 
 #ifndef queued_spin_unlock
 /**
- * queued_spin_unlock - release a queued spinlock
+ * queued_spin_unlock - release a queued spinlock (qspinlock 释放锁，就是这么骚)
  * @lock : Pointer to queued spinlock structure
  */
 static __always_inline void queued_spin_unlock(struct qspinlock *lock)

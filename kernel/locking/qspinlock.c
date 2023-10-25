@@ -104,6 +104,8 @@ struct qnode {
  * Exactly fits one 64-byte cacheline on a 64-bit architecture.
  *
  * PV doubles the storage and uses the second cacheline for PV state.
+ *
+ * 4 分别对应四个上下文：task, softirq, hardirq, nmi.
  */
 static DEFINE_PER_CPU_ALIGNED(struct qnode, qnodes[MAX_NODES]);
 
@@ -311,6 +313,9 @@ static __always_inline u32  __pv_wait_head_or_lock(struct qspinlock *lock,
  *                       :       v                               |  :
  * contended             :    (*,x,y) +--> (*,0,0) ---> (*,0,1) -'  :
  *   queue               :         ^--'                             :
+ *
+ * 这个名字通常因为 CONFIG_PARAVIRT_SPINLOCKS=y 被替换为
+ *  native_queued_spin_lock_slowpath()
  */
 void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 {
