@@ -105,7 +105,7 @@ struct qnode {
  *
  * PV doubles the storage and uses the second cacheline for PV state.
  *
- * 4 分别对应四个上下文：task, softirq, hardirq, nmi.
+ * 4 分别对应四个上下文：线程上下文、软中断上下文、硬中断上下文 和 NMI 上下文
  */
 static DEFINE_PER_CPU_ALIGNED(struct qnode, qnodes[MAX_NODES]);
 
@@ -149,6 +149,9 @@ struct mcs_spinlock *grab_mcs_node(struct mcs_spinlock *base, int idx)
  */
 static __always_inline void clear_pending(struct qspinlock *lock)
 {
+	/**
+	 * (0,0,* -> 0,1,*)
+	 */
 	WRITE_ONCE(lock->pending, 0);
 }
 
@@ -162,7 +165,7 @@ static __always_inline void clear_pending(struct qspinlock *lock)
  */
 static __always_inline void clear_pending_set_locked(struct qspinlock *lock)
 {
-	WRITE_ONCE(lock->locked_pending, _Q_LOCKED_VAL);
+	WRITE_ONCE(lock->locked_pending, _Q_LOCKED_VAL/*1*/);
 }
 
 /*
@@ -186,6 +189,10 @@ static __always_inline u32 xchg_tail(struct qspinlock *lock, u32 tail)
 }
 
 #else /* _Q_PENDING_BITS == 8 */
+/**
+ * 以下这部分代码基本上不可能，因为，CONFIG_NR_CPUS >= (1U << 14) 才可能使用，这几乎
+ * 是不可能的。
+ */
 
 /**
  * clear_pending - clear the pending bit.
@@ -195,7 +202,7 @@ static __always_inline u32 xchg_tail(struct qspinlock *lock, u32 tail)
  */
 static __always_inline void clear_pending(struct qspinlock *lock)
 {
-	atomic_andnot(_Q_PENDING_VAL, &lock->val);
+	atomic_andnot(_Q_PENDING_VAL/*1<<8*/, &lock->val);
 }
 
 /**
@@ -206,7 +213,7 @@ static __always_inline void clear_pending(struct qspinlock *lock)
  */
 static __always_inline void clear_pending_set_locked(struct qspinlock *lock)
 {
-	atomic_add(-_Q_PENDING_VAL + _Q_LOCKED_VAL, &lock->val);
+	atomic_add(-_Q_PENDING_VAL/*1<<8*/ + _Q_LOCKED_VAL/*1*/, &lock->val);
 }
 
 /**
@@ -250,7 +257,10 @@ static __always_inline u32 xchg_tail(struct qspinlock *lock, u32 tail)
 #ifndef queued_fetch_set_pending_acquire
 static __always_inline u32 queued_fetch_set_pending_acquire(struct qspinlock *lock)
 {
-	return atomic_fetch_or_acquire(_Q_PENDING_VAL, &lock->val);
+	/**
+	 * lock->val | _Q_PENDING_VAL: *,*,* -> *,1,*
+	 */
+	return atomic_fetch_or_acquire(_Q_PENDING_VAL/*1<<8*/, &lock->val);
 }
 #endif
 
@@ -262,7 +272,7 @@ static __always_inline u32 queued_fetch_set_pending_acquire(struct qspinlock *lo
  */
 static __always_inline void set_locked(struct qspinlock *lock)
 {
-	WRITE_ONCE(lock->locked, _Q_LOCKED_VAL);
+	WRITE_ONCE(lock->locked, _Q_LOCKED_VAL/*1*/);
 }
 
 
@@ -298,6 +308,20 @@ static __always_inline u32  __pv_wait_head_or_lock(struct qspinlock *lock,
  * @lock: Pointer to queued spinlock structure
  * @val: Current value of the queued spinlock 32-bit word
  *
+ *                17 16
+ * +---------------+--+-------+-+--------+
+ * |               |  |       | |        |
+ * +------+--------+-++-------+-+----+---+
+ *  31    ^      18  ^ 15    9 8 7   ^  0
+ *        |          |         ^     |
+ *        |          +         |     +
+ *        |       tail_idx     |  locked
+ *        |                    |
+ *        +                    +
+ *     tail_cpu              pending
+ *
+ *
+ * (tail, pending, locked) 三元组
  * (queue tail, pending bit, lock value)
  *
  *              fast     :    slow                                  :    unlock
@@ -325,9 +349,15 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 
 	BUILD_BUG_ON(CONFIG_NR_CPUS >= (1U << _Q_TAIL_CPU_BITS));
 
+	/**
+	 * TODO
+	 */
 	if (pv_enabled())
 		goto pv_queue;
 
+	/**
+	 * TODO
+	 */
 	if (virt_spin_lock(lock))
 		return;
 
@@ -335,43 +365,85 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * Wait for in-progress pending->locked hand-overs with a bounded
 	 * number of spins so that we guarantee forward progress.
 	 *
+	 * 慢速路径的第一段代码是处理 Pengding 到 locked 的迁移。
+	 * 如果当前 spinlock 的值只有 pending 比特被设定，那么说明该 spinlock 正处于
+	 * owner 把锁转交给 pending owner 的过程中（即owner释放了锁，但是pending
+	 * owner还没有拾取该锁）
+	 *
+	 * (tail, pending, locked)
+	 *
 	 * 0,1,0 -> 0,0,1
 	 */
-	if (val == _Q_PENDING_VAL) {
+	if (val == _Q_PENDING_VAL/*1<<8*/) {
 		int cnt = _Q_PENDING_LOOPS;
+		/**
+		 * 在这种情况下，我们需要重读spinlock的值。
+		 * 当然，如果持续重读的结果仍然是仅pending比特被设定，那么在
+		 * _Q_PENDING_LOOPS 次循环读之后放弃。
+		 */
 		val = atomic_cond_read_relaxed(&lock->val,
 					       (VAL != _Q_PENDING_VAL) || !cnt--);
 	}
 
-	/*
+	/**
 	 * If we observe any contention; queue.
+	 *
+	 * val = (tail, pending, locked)
+	 *
+	 * _Q_LOCKED_MASK = 0x000000000000ff 00000000000000000000000011111111
+	 *
 	 * 检查锁 (`val`) 的状态是上锁还是待定的(pending)
+	 *
+	 * 如果有其他的线程已经自旋等待该 spinlock（pending域被设置为1）或者 挂入 MCS
+	 * 队列（设置了 tail 域），那么当前线程需要挂入 MCS 等待队列。
+	 * 否则，说明该线程是第一个等待持锁的，那么不需要排队，只要 pending 在自旋锁上就OK了。
 	 */
 	if (val & ~_Q_LOCKED_MASK)
 		goto queue;
 
-	/*
+	/**
+	 * 执行至此tail+pending都是0，看起来我们应该是第一个pending线程，通过
+	 * queued_fetch_set_pending_acquire 函数读取了spinlock 的旧值，同时
+	 * 设置 pending 比特标记状态。
+	 *
+	 * val = lock->val | _Q_PENDING_VAL (0,0,* -> 0,1,*)
+	 *
 	 * trylock || pending
 	 *
 	 * 0,0,* -> 0,1,* -> 0,0,1 pending, trylock
+	 *
 	 */
 	val = queued_fetch_set_pending_acquire(lock);
 
-	/*
+	/**
+	 * 在设置 pending 标记位之后，我们需要再次检查设置 pending 比特的时候，其他
+	 * 的竞争者是否也修改了 pending 或者 tail 域。
+	 *
 	 * If we observe contention, there is a concurrent locker.
 	 *
 	 * Undo and queue; our setting of PENDING might have made the
 	 * n,0,0 -> 0,0,0 transition fail and it will now be waiting
 	 * on @next to become !NULL.
+	 *
+	 * _Q_LOCKED_MASK = 0x000000000000ff 00000000000000000000000011111111
 	 */
 	if (unlikely(val & ~_Q_LOCKED_MASK)) {
 
+		/**
+		 * 如果其他线程已经抢先修改，那么本线程不能再 pending 在自旋锁上了，
+		 * 而是需要回退 pending 设置（如果需要的话），并且挂入自旋等待队列。
+		 */
 		/* Undo PENDING if we set it. */
 		if (!(val & _Q_PENDING_MASK))
 			clear_pending(lock);
 
 		goto queue;
 	}
+
+	/**
+	 * 如果没有其他线程插入，那么当前线程可以开始自旋在 spinlock 上，等待 owner
+	 * 释放锁了（我们称这种状态的线程被称为 pending owner）
+	 */
 
 	/*
 	 * We're pending, wait for the owner to go away.
@@ -383,11 +455,32 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * sequentiality; this is because not all
 	 * clear_pending_set_locked() implementations imply full
 	 * barriers.
+	 *
+	 * FYI: _Q_LOCKED_MASK = 0x000000000000ff 00000000000000000000000011111111
+	 * FYI: (tail, pending, locked)
+	 *
+	 * 至此，我们已经成为合法的 pending owner，距离获取 spinlock 仅一步之遥，属于
+	 * 是一人之下，万人之上（对比 pending 在 mcs lock 的线程而言）
 	 */
 	if (val & _Q_LOCKED_MASK)
+		/**
+		 * ########## qspinlock 自旋在此 ##########
+		 *
+		 * pending owner 通过 atomic_cond_read_acquire 函数自旋在 spinlock
+		 * 的 locked 域，直到 owner 释放 spinlock。
+		 *
+		 * 这里自旋并不是轮询，而是通过 WFE 指令让 CPU 停下来，降低功耗。当 owner
+		 * 释放 spinlock 的时候会发送事件唤醒该CPU。
+		 *
+		 *   if (!(lock->val & _Q_LOCKED_MASK))
+		 *       break;
+		 */
 		atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_MASK));
 
-	/*
+	/**
+	 * 发现 owner 已经释放了锁，那么 pending owner 解除自旋状态继续前行。清除
+	 * pending 标记，同时设定 locked 标记，持锁成功，进入临界区。
+	 *
 	 * take ownership and clear the pending bit.
 	 *
 	 * 0,1,0 -> 0,0,1
@@ -399,6 +492,8 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	/*
 	 * End of pending bit optimistic spinning and beginning of MCS
 	 * queuing.
+	 *
+	 *
 	 */
 queue:
 	lockevent_inc(lock_slowpath);
@@ -539,7 +634,7 @@ locked:
 	 *       PENDING will make the uncontended transition fail.
 	 */
 	if ((val & _Q_TAIL_MASK) == tail) {
-		if (atomic_try_cmpxchg_relaxed(&lock->val, &val, _Q_LOCKED_VAL))
+		if (atomic_try_cmpxchg_relaxed(&lock->val, &val, _Q_LOCKED_VAL/*1*/))
 			goto release; /* No contention */
 	}
 

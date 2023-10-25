@@ -22,7 +22,7 @@
 static __always_inline int queued_spin_is_locked(struct qspinlock *lock)
 {
 	/*
-	 * Any !0 state indicates it is locked, even if _Q_LOCKED_VAL
+	 * Any !0 state indicates it is locked, even if _Q_LOCKED_VAL(=1)
 	 * isn't immediately observable.
 	 */
 	return atomic_read(&lock->val);
@@ -65,7 +65,7 @@ static __always_inline int queued_spin_trylock(struct qspinlock *lock)
 	if (unlikely(val))
 		return 0;
 
-	return likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL));
+	return likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL/*1*/));
 }
 
 extern void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
@@ -82,7 +82,7 @@ static __always_inline void queued_spin_lock(struct qspinlock *lock)
 	/**
 	 * 快速路径，一下就获取到锁了
 	 */
-	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL/*0*/)))
+	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL/*1*/)))
 		return;
 
 	/**

@@ -88,7 +88,7 @@ static inline bool pv_hybrid_queued_unfair_trylock(struct qspinlock *lock)
 		int val = atomic_read(&lock->val);
 
 		if (!(val & _Q_LOCKED_PENDING_MASK) &&
-		   (cmpxchg_acquire(&lock->locked, 0, _Q_LOCKED_VAL) == 0)) {
+		   (cmpxchg_acquire(&lock->locked, 0, _Q_LOCKED_VAL/*1*/) == 0)) {
 			lockevent_inc(pv_lock_stealing);
 			return true;
 		}
@@ -120,12 +120,12 @@ static __always_inline int trylock_clear_pending(struct qspinlock *lock)
 {
 	return !READ_ONCE(lock->locked) &&
 	       (cmpxchg_acquire(&lock->locked_pending, _Q_PENDING_VAL,
-				_Q_LOCKED_VAL) == _Q_PENDING_VAL);
+				_Q_LOCKED_VAL/*1*/) == _Q_PENDING_VAL/*1<<8*/);
 }
 #else /* _Q_PENDING_BITS == 8 */
 static __always_inline void set_pending(struct qspinlock *lock)
 {
-	atomic_or(_Q_PENDING_VAL, &lock->val);
+	atomic_or(_Q_PENDING_VAL/*1<<8*/, &lock->val);
 }
 
 static __always_inline int trylock_clear_pending(struct qspinlock *lock)
@@ -459,7 +459,7 @@ pv_wait_head_or_lock(struct qspinlock *lock, struct mcs_spinlock *node)
 				 * Change the lock value back to _Q_LOCKED_VAL
 				 * and unhash the table.
 				 */
-				WRITE_ONCE(lock->locked, _Q_LOCKED_VAL);
+				WRITE_ONCE(lock->locked, _Q_LOCKED_VAL/*1*/);
 				WRITE_ONCE(*lp, NULL);
 				goto gotlock;
 			}
@@ -482,7 +482,7 @@ pv_wait_head_or_lock(struct qspinlock *lock, struct mcs_spinlock *node)
 	 * be nozero to enable better code optimization.
 	 */
 gotlock:
-	return (u32)(atomic_read(&lock->val) | _Q_LOCKED_VAL);
+	return (u32)(atomic_read(&lock->val) | _Q_LOCKED_VAL/*1*/);
 }
 
 /*
@@ -553,8 +553,8 @@ __visible void __pv_queued_spin_unlock(struct qspinlock *lock)
 	 * unhash. Otherwise it would be possible to have multiple @lock
 	 * entries, which would be BAD.
 	 */
-	locked = cmpxchg_release(&lock->locked, _Q_LOCKED_VAL, 0);
-	if (likely(locked == _Q_LOCKED_VAL))
+	locked = cmpxchg_release(&lock->locked, _Q_LOCKED_VAL/*1*/, 0);
+	if (likely(locked == _Q_LOCKED_VAL/*1*/))
 		return;
 
 	__pv_queued_spin_unlock_slowpath(lock, locked);

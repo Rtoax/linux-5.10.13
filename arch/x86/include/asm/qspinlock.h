@@ -21,7 +21,7 @@ static __always_inline u32 queued_fetch_set_pending_acquire(struct qspinlock *lo
 	 * statement expression, which GCC doesn't like.
 	 */
 	val = GEN_BINARY_RMWcc(LOCK_PREFIX "btsl", lock->val.counter, c,
-			       "I", _Q_PENDING_OFFSET) * _Q_PENDING_VAL;
+			       "I", _Q_PENDING_OFFSET) * _Q_PENDING_VAL/*1<<8*/;
 	val |= atomic_read(&lock->val) & ~_Q_PENDING_MASK;
 
 	return val;
@@ -98,7 +98,7 @@ static inline bool virt_spin_lock(struct qspinlock *lock)
 	do {
 		while (atomic_read(&lock->val) != 0)
 			cpu_relax();
-	} while (atomic_cmpxchg(&lock->val, 0, _Q_LOCKED_VAL) != 0);
+	} while (atomic_cmpxchg(&lock->val, 0, _Q_LOCKED_VAL/*1*/) != 0);
 
 	return true;
 }

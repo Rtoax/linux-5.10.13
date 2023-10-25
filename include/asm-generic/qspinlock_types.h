@@ -12,8 +12,23 @@
 #include <linux/types.h>
 
 /**
- *  排队自旋锁
+ * 排队自旋锁
  *
+ * @locked: 描述该spinlock的持锁状态，0 unlocked， 1 locked
+ * @pending: 描述该spinlock是否有pending thread（没有在mcs队列中，等待在locked字段上），
+ *           1 表示有 thread 正自旋在 spinlock 上（确切的说是自旋在locked这个域），
+ *           0 表示没有 pending thread。
+ * @tail: 指向 Mcs node 队列的尾部节点。这个队列中的 thread 有两种状态：
+ *        1. 头部的节点对应的 thread 自旋在 pending+locked 域（我们称之自旋在qspinlock上），
+ *        2. 其他节点自旋在其自己的 mcs lock 上（我们称之自旋在 mcs lock 上）
+ *
+ * spinlock的状态由 (tail, pending, locked) 三元组来表示
+ *
+ * (0,0,0) 空锁
+ * (0,0,1) 仅有一个 thread 持锁
+ * (0,1,1) 仅有一个 thread 持锁，有一个 pending thread
+ * (n,1,1) 仅有一个 thread 持锁，有一个 pending thread, MCS队列有一个节点
+ * (*,1,1) 仅有一个 thread 持锁，有一个 pending thread, MCS队列有多个节点
  */
 typedef struct qspinlock {
 	union {
@@ -101,8 +116,14 @@ typedef struct qspinlock {
 				      << _Q_ ## type ## _OFFSET)
 
 /*
-           qspinlock.Val
+              qspinlock
 +-------------------------------------+
+|                val                  |
++-------------------------------------+
+
++------------------+------------------+
+|      tail        |  locked_pending  |
++------------------+------------------+
 
                17 16
 +---------------+--+-------+-+--------+
@@ -115,6 +136,8 @@ typedef struct qspinlock {
        |                    |
        +                    +
     tail_cpu              pending
+
+tool: https://asciiflow.cn/
 */
 
 /**
@@ -149,7 +172,7 @@ typedef struct qspinlock {
 #define _Q_TAIL_OFFSET		_Q_TAIL_IDX_OFFSET
 #define _Q_TAIL_MASK		(_Q_TAIL_IDX_MASK | _Q_TAIL_CPU_MASK)
 
-#define _Q_LOCKED_VAL		(1U << _Q_LOCKED_OFFSET)
-#define _Q_PENDING_VAL		(1U << _Q_PENDING_OFFSET)
+#define _Q_LOCKED_VAL/*1*/		(1U << _Q_LOCKED_OFFSET/*0*/)
+#define _Q_PENDING_VAL/*1<<8*/		(1U << _Q_PENDING_OFFSET/*8*/)
 
 #endif /* __ASM_GENERIC_QSPINLOCK_TYPES_H */

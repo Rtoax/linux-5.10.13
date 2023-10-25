@@ -193,7 +193,7 @@ do {									\
 })
 
 /**
- *  自旋等待
+ * 自旋等待
  */
 #define smp_cond_load_relaxed(ptr, cond_expr)				\
 ({									\
@@ -209,7 +209,10 @@ do {									\
 })
 
 /**
- *  自旋等待
+ * 自旋等待
+ *
+ * - 例如 queued_spin_lock_slowpath() 中的
+ *   atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_MASK));
  */
 #define smp_cond_load_acquire(ptr, cond_expr)				\
 ({									\
