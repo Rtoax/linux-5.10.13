@@ -401,7 +401,7 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * Wait for in-progress pending->locked hand-overs with a bounded
 	 * number of spins so that we guarantee forward progress.
 	 *
-	 * 慢速路径的第一段代码是处理 Pengding 到 locked 的迁移。
+	 * 慢速路径的第一段代码是处理 Pending 到 locked 的迁移。
 	 * 如果当前 spinlock 的值只有 pending 比特被设定，那么说明该 spinlock 正处于
 	 * owner 把锁转交给 pending owner 的过程中（即owner释放了锁，但是pending
 	 * owner还没有拾取该锁）
@@ -503,7 +503,7 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * 释放锁了（我们称这种状态的线程被称为 pending owner）
 	 */
 
-	/*
+	/**
 	 * We're pending, wait for the owner to go away.
 	 *
 	 * 0,1,1 -> 0,1,0
@@ -529,6 +529,8 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 		 *
 		 * 这里自旋并不是轮询，而是通过 WFE 指令让 CPU 停下来，降低功耗。当 owner
 		 * 释放 spinlock 的时候会发送事件唤醒该CPU。
+		 *
+		 * FYI: _Q_LOCKED_MASK = 0x000000000000ff
 		 *
 		 *  for (;;) {
 		 *    // atomic-load lock->val

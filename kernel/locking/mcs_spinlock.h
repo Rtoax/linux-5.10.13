@@ -18,6 +18,11 @@
  */
 struct mcs_spinlock {
 	struct mcs_spinlock *next;
+
+	/**
+	 * 1 表示锁定
+	 * 0 表示未锁定
+	 */
 	int locked; /* 1 if lock acquired */
 	/**
 	 * +------------------+------------------+
