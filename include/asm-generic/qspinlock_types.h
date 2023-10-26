@@ -68,11 +68,12 @@ typedef struct qspinlock {
 			u16	locked_pending;
 			/**
 			 *  [16-17] tail_idx 域，用于获取 q_nodes ，
-			 *          目前支持4中上下文的 ncs_nodes
+			 *          目前支持 4 种上下文的 mcs_nodes
 			 *              进程上下文 - task
 			 *              软中断上下文 - softirq
 			 *              硬中断上下文 - hardirq
 			 *              不可屏蔽中断上下文 - nmi
+			 *
 			 *  [18-31] tail_cpu 域，用来标识等待队列末尾的 CPU
 			 */
 			u16	tail;

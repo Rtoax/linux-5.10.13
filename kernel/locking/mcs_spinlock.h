@@ -19,6 +19,29 @@
 struct mcs_spinlock {
 	struct mcs_spinlock *next;
 	int locked; /* 1 if lock acquired */
+	/**
+	 * +------------------+------------------+
+	 * |      tail        |  locked_pending  |
+	 * +------------------+------------------+
+	 *
+	 *                17 16
+	 * +---------------+--+-------+-+--------+
+	 * |               |  |       | |        |
+	 * +------+--------+-++-------+-+----+---+
+	 *  31    ^      18  ^ 15    9 8 7   ^  0
+	 *        |          |         ^     |
+	 *        |          +         |     +
+	 *        |       tail_idx     |  locked
+	 *        |                    |
+	 *        +                    +
+	 *     tail_cpu              pending
+	 *
+	 * 将 context index 和 cpu id 组合成 tail
+	 *
+	 * FYI: tail = tail_cpu & tail_idx;
+	 *
+	 * 这里的 count 对应 tail_idx
+	 */
 	int count;  /* nesting count, see qspinlock.c */
 };
 

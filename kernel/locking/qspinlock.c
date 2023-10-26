@@ -183,7 +183,7 @@ struct mcs_spinlock *grab_mcs_node(struct mcs_spinlock *base, int idx)
 static __always_inline void clear_pending(struct qspinlock *lock)
 {
 	/**
-	 * (0,0,* -> 0,1,*)
+	 * *,1,* -> *,0,*
 	 */
 	WRITE_ONCE(lock->pending, 0);
 }
@@ -413,9 +413,15 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	if (val == _Q_PENDING_VAL/*1<<8*/) {
 		int cnt = _Q_PENDING_LOOPS;
 		/**
-		 * 在这种情况下，我们需要重读spinlock的值。
-		 * 当然，如果持续重读的结果仍然是仅pending比特被设定，那么在
+		 * 在这种情况下，我们需要重读 spinlock 的值。
+		 * 当然，如果持续重读的结果仍然是仅 pending 比特被设定，那么在
 		 * _Q_PENDING_LOOPS 次循环读之后放弃。
+		 *
+		 * for (;;) {
+		 *     ## atomic load ##
+		 *     if ((lock->val != _Q_PENDING_VAL) || !cnt--)
+		 *         break;
+		 * }
 		 */
 		val = atomic_cond_read_relaxed(&lock->val,
 					       (VAL != _Q_PENDING_VAL) || !cnt--);
@@ -428,8 +434,6 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 *
 	 * _Q_LOCKED_MASK = 0x000000000000ff 00000000000000000000000011111111
 	 *
-	 * 检查锁 (`val`) 的状态是上锁还是待定的(pending)
-	 *
 	 * 如果有其他的线程已经自旋等待该 spinlock（pending域被设置为1）或者 挂入 MCS
 	 * 队列（设置了 tail 域），那么当前线程需要挂入 MCS 等待队列。
 	 * 否则，说明该线程是第一个等待持锁的，那么不需要排队，只要 pending 在自旋锁上就OK了。
@@ -438,12 +442,19 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 		goto queue;
 
 	/**
-	 * 执行至此tail+pending都是0，看起来我们应该是第一个pending线程，通过
-	 * queued_fetch_set_pending_acquire 函数读取了spinlock 的旧值，同时
-	 * 设置 pending 比特标记状态。
+	 * #### 中速路径 ####
+	 */
+
+	/**
+	 * 执行至此 tail+pending 都是0，看起来我们应该是第一个 pending 线程，通过
+	 * queued_fetch_set_pending_acquire 函数读取了 spinlock 的旧值，同时
+	 * 设置 pending 比特标记状态，表示自己是第一顺位继承者
 	 *
-	 * val = lock->val | _Q_PENDING_VAL (0,0,* -> 0,1,*)
+	 * ----------------------------------------------------------------
+	 * val = lock->val
+	 * lock->val |= _Q_PENDING_VAL, 也就是 (0,0,* -> 0,1,*)
 	 *
+	 * ----------------------------------------------------------------
 	 * trylock || pending
 	 *
 	 * 0,0,* -> 0,1,* -> 0,0,1 pending, trylock
@@ -452,9 +463,6 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	val = queued_fetch_set_pending_acquire(lock);
 
 	/**
-	 * 在设置 pending 标记位之后，我们需要再次检查设置 pending 比特的时候，其他
-	 * 的竞争者是否也修改了 pending 或者 tail 域。
-	 *
 	 * If we observe contention, there is a concurrent locker.
 	 *
 	 * Undo and queue; our setting of PENDING might have made the
@@ -462,17 +470,31 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * on @next to become !NULL.
 	 *
 	 * _Q_LOCKED_MASK = 0x000000000000ff 00000000000000000000000011111111
+	 * FYI: (tail, pending, locked)
+	 *
+	 * 在设置 pending 标记位之后，我们需要再次检查设置 pending 比特的时候，其他
+	 * 的竞争者是否也修改了 pending 或者 tail 域。
+	 *
+	 * 也就是在上面设置 pending 期间，有人设置了 tail 或 pending，那么 中速路径走不
+	 * 了，清理上面设置的 pending，表示自己不是第一顺位继承者
 	 */
 	if (unlikely(val & ~_Q_LOCKED_MASK)) {
 
 		/**
 		 * 如果其他线程已经抢先修改，那么本线程不能再 pending 在自旋锁上了，
 		 * 而是需要回退 pending 设置（如果需要的话），并且挂入自旋等待队列。
+		 *
+		 * _Q_PENDING_MASK : 0x0000000000ff00
+		 *
+		 * TODO: 为什么 val 没有设置 pending 时候，才清理 lock pending？
 		 */
 		/* Undo PENDING if we set it. */
 		if (!(val & _Q_PENDING_MASK))
 			clear_pending(lock);
 
+		/**
+		 * 去插队
+		 */
 		goto queue;
 	}
 
@@ -513,6 +535,8 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 		 *    if (!(lock->val & _Q_LOCKED_MASK))
 		 *       break;
 		 *  }
+		 *
+		 * queued_spin_unlock() 中将 lock->locked 置 0
 		 */
 		atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_MASK));
 
@@ -526,6 +550,10 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 */
 	clear_pending_set_locked(lock);
 	lockevent_inc(lock_pending);
+
+	/**
+	 * #### 中速路径持锁成功 ####
+	 */
 	return;
 
 	/*
@@ -581,6 +609,11 @@ pv_queue:
 	 * we fall back to spinning on the lock directly without using
 	 * any MCS node. This is not the most elegant solution, but is
 	 * simple enough.
+	 *
+	 * 4 个节点是根据假设不会有嵌套的 NMI 采用自旋锁来分配的。在某些架构中，这
+	 * 可能并非如此，即使需要超过 4 个节点的可能性仍然极小。发生这种情况时，我们
+	 * 回退到直接在锁上旋转，而不使用任何 MCS 节点。这不是最优雅的解决方案，但足
+	 * 够简单。
 	 *
 	 * 当 index 大于阀值的时候，会取消 qspinlock 机制，恢复原始自旋机制。
 	 */
@@ -648,6 +681,8 @@ pv_queue:
 	 * 修改 qspinlock 的 tail 域，old 保存了旧值
 	 *
 	 * FYI: (tail, pending, locked)
+	 * FYI: tail = tail_cpu & tail_idx;
+	 * FYI: _Q_TAIL_MASK : 0x000000ffff0000 11111111111111110000000000000000
 	 */
 	old = xchg_tail(lock, tail);
 	next = NULL;

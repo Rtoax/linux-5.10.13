@@ -81,6 +81,11 @@ static __always_inline void queued_spin_lock(struct qspinlock *lock)
 
 	/**
 	 * 快速路径，一下就获取到锁了
+	 *
+	 * val = (tail, pending, locked) = 0 = (0,0,0)
+	 *
+	 * - 如果 lock->val == 0, atomic_try_cmpxchg_acquire 返回 true，快速路径
+	 * - 如果 lock->val != 0, atomic_try_cmpxchg_acquire 返回 false， 慢速路径
 	 */
 	if (likely(atomic_try_cmpxchg_acquire(&lock->val, &val, _Q_LOCKED_VAL/*1*/)))
 		return;
