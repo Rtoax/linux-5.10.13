@@ -22,6 +22,7 @@
 #include <linux/prefetch.h>
 #include <asm/byteorder.h>
 #include <asm/qspinlock.h>
+#include <trace/events/lock.h>
 
 /*
  * Include queued spinlock statistics code
@@ -514,6 +515,12 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 *
 	 * 0,1,1 -> 0,1,0
 	 *
+	 * commit 4282494a20cd ("locking/qspinlock: Micro-optimize pending
+	 * state waitingfor unlock") 中进行了如下修改
+	 *
+	 * - 0,1,1 -> 0,1,0
+	 * + 0,1,1 -> *,1,0
+	 *
 	 * this wait loop must be a load-acquire such that we match the
 	 * store-release that clears the locked bit and create lock
 	 * sequentiality; this is because not all
@@ -546,7 +553,15 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 		 *
 		 * queued_spin_unlock() 中将 lock->locked 置 0
 		 */
+/**
+ * commit 4282494a20cd ("locking/qspinlock: Micro-optimize pending state waiting
+ * for unlock") 中进行了如下修改
+ */
+#if 0
 		atomic_cond_read_acquire(&lock->val, !(VAL & _Q_LOCKED_MASK));
+#elif 4282494a20cd /* commit 4282494a20cd */
+		smp_cond_load_acquire(&lock->locked, !VAL);
+#endif
 
 	/**
 	 * 发现 owner 已经释放了锁，那么 pending owner 解除自旋状态继续前行。清除
@@ -608,6 +623,12 @@ pv_queue:
 	 * FYI: tail = tail_cpu & tail_idx;
 	 */
 	tail = encode_tail(smp_processor_id(), idx);
+
+	/**
+	 * commit ee042be16cb4("locking: Apply contention tracepoints in the
+	 * slow path") v5.18-rc1-9-gee042be16cb4
+	 */
+	trace_contention_begin(lock, LCB_F_SPIN);
 
 	/*
 	 * 4 nodes are allocated based on the assumption that there will
@@ -867,6 +888,12 @@ locked:
 	pv_kick_node(lock, next);
 
 release:
+	/**
+	 * commit ee042be16cb4("locking: Apply contention tracepoints in the
+	 * slow path") v5.18-rc1-9-gee042be16cb4
+	 */
+	trace_contention_end(lock, 0);
+
 	/*
 	 * release the node
 	 */
