@@ -354,6 +354,8 @@ static __always_inline u32  __pv_wait_head_or_lock(struct qspinlock *lock,
  *     tail_cpu              pending
  *
  *
+ * uncontended: 无争议的
+ * contended: 有争议的
  * (tail, pending, locked) 三元组
  * (queue tail, pending bit, lock value)
  *
@@ -437,6 +439,8 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * 如果有其他的线程已经自旋等待该 spinlock（pending域被设置为1）或者 挂入 MCS
 	 * 队列（设置了 tail 域），那么当前线程需要挂入 MCS 等待队列。
 	 * 否则，说明该线程是第一个等待持锁的，那么不需要排队，只要 pending 在自旋锁上就OK了。
+	 *
+	 * 即 (tail, pending, locked) tail 或 pending 域有值
 	 */
 	if (val & ~_Q_LOCKED_MASK)
 		goto queue;
@@ -451,8 +455,10 @@ void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
 	 * 设置 pending 比特标记状态，表示自己是第一顺位继承者
 	 *
 	 * ----------------------------------------------------------------
-	 * val = lock->val
-	 * lock->val |= _Q_PENDING_VAL, 也就是 (0,0,* -> 0,1,*)
+	 * 设置 pending 位，展开该函数：
+	 *
+	 * 1. val = lock->val
+	 * 2. lock->val |= _Q_PENDING_VAL, 也就是 (0,0,* -> 0,1,*)
 	 *
 	 * ----------------------------------------------------------------
 	 * trylock || pending
