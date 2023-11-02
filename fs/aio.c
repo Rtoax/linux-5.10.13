@@ -759,6 +759,9 @@ static struct kioctx *ioctx_alloc(unsigned nr_events)
 	if (!ctx->cpu)
 		goto err;
 
+	/**
+	 * 每个 AIO 都有一个 ring
+	 */
 	err = aio_setup_ring(ctx, nr_events);
 	if (err < 0)
 		goto err;
@@ -1298,7 +1301,7 @@ static long read_events(struct kioctx *ctx, long min_nr, long nr,
 	return ret;
 }
 
-/* sys_io_setup:
+/* sys_io_setup: io_setup(2)
  *	Create an aio_context capable of receiving at least nr_events.
  *	ctxp must not point to an aio_context that already exists, and
  *	must be initialized to 0 prior to the call.  On successful
