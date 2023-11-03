@@ -1313,6 +1313,8 @@ static long read_events(struct kioctx *ctx, long min_nr, long nr,
  *	resources are available.  May fail with -EFAULT if an invalid
  *	pointer is passed for ctxp.  Will fail with -ENOSYS if not
  *	implemented.
+ *
+ * aio_context_t 对应内核中一个结构，为异步IO请求提供上下文环境。
  */
 SYSCALL_DEFINE2(io_setup, unsigned, nr_events, aio_context_t __user *, ctxp)
 {
@@ -1382,6 +1384,7 @@ out:
  *	AIOs and block on completion.  Will fail with -ENOSYS if not
  *	implemented.  May fail with -EINVAL if the context pointed to
  *	is invalid.
+ * 销毁IO任务
  */
 SYSCALL_DEFINE1(io_destroy, aio_context_t, ctx)
 {
@@ -1536,9 +1539,15 @@ static int aio_read(struct kiocb *req, const struct iocb *iocb,
 	if (unlikely(!file->f_op->read_iter))
 		return -EINVAL;
 
+	/**
+	 *
+	 */
 	ret = aio_setup_rw(READ, iocb, &iovec, vectored, compat, &iter);
 	if (ret < 0)
 		return ret;
+	/**
+	 *
+	 */
 	ret = rw_verify_area(READ, file, &req->ki_pos, iov_iter_count(&iter));
 	if (!ret)
 		aio_rw_done(req, call_read_iter(file, req, &iter));
@@ -1853,6 +1862,9 @@ static int __io_submit_one(struct kioctx *ctx, const struct iocb *iocb,
 	}
 }
 
+/**
+ * aio 提交一个请求
+ */
 static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
 			 bool compat)
 {
@@ -1911,6 +1923,8 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
  *	iocb is invalid.  May fail with -EAGAIN if insufficient resources
  *	are available to queue any iocbs.  Will return 0 if nr is 0.  Will
  *	fail with -ENOSYS if not implemented.
+ *
+ * 提交任务之前必须先填充iocb结构体，libaio提供的包装函数说明了需要完成的工作
  */
 SYSCALL_DEFINE3(io_submit, aio_context_t, ctx_id, long, nr,
 		struct iocb __user * __user *, iocbpp)
@@ -1934,6 +1948,10 @@ SYSCALL_DEFINE3(io_submit, aio_context_t, ctx_id, long, nr,
 
 	if (nr > AIO_PLUG_THRESHOLD)
 		blk_start_plug(&plug);
+
+	/**
+	 * 提交一个请求
+	 */
 	for (i = 0; i < nr; i++) {
 		struct iocb __user *user_iocb;
 
@@ -2079,6 +2097,9 @@ static long do_io_getevents(aio_context_t ctx_id,
  *	before sufficient events are available, where timeout == NULL
  *	specifies an infinite timeout. Note that the timeout pointed to by
  *	timeout is relative.  Will fail with -ENOSYS if not implemented.
+ *
+ * 提供一个 io_event 数组给内核拷贝完成的IO请求到这里，数组的大小是 io_setup 时指定的
+ * maxevents。timeout是指等待IO完成的超时时间，设置为NULL表示一直等待所有到IO的完成。
  */
 #ifdef CONFIG_64BIT
 

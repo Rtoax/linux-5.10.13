@@ -1012,13 +1012,13 @@ size_t iov_iter_copy_from_user_atomic(struct page *page,
 		return 0;
 	}
 	iterate_all_kinds(i, bytes, v,
-    		copyin((p += v.iov_len) - v.iov_len, v.iov_base, v.iov_len),
-    		memcpy_from_page((p += v.bv_len) - v.bv_len, v.bv_page,
-    				 v.bv_offset, v.bv_len),
-    		memcpy((p += v.iov_len) - v.iov_len, v.iov_base, v.iov_len)
-    	) {
+			copyin((p += v.iov_len) - v.iov_len, v.iov_base, v.iov_len),
+			memcpy_from_page((p += v.bv_len) - v.bv_len, v.bv_page,
+					 v.bv_offset, v.bv_len),
+			memcpy((p += v.iov_len) - v.iov_len, v.iov_base, v.iov_len)
+		) {
 	    kunmap_atomic(kaddr);
-    }
+	}
 	return bytes;
 }
 EXPORT_SYMBOL(iov_iter_copy_from_user_atomic);
@@ -1747,9 +1747,9 @@ struct iovec *iovec_from_user(const struct iovec __user *uvec,
 	if (compat)
 		ret = copy_compat_iovec_from_user(iov, uvec, nr_segs);
 	else
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		ret = copy_iovec_from_user(iov, uvec, nr_segs);
 	if (ret) {
 		if (iov != fast_iov)
@@ -1761,9 +1761,9 @@ struct iovec *iovec_from_user(const struct iovec __user *uvec,
 }
 
 /**
- *  用户传过来的是一个iovec的数组，里面有每个iov的len和base（base也是指向用户态的buffer的），
- *  传进内核的时候，内核会对iovec的地址进行check，保证它确实每个buffer都在用户空间，
- *  并且会把整个iovec数组拷贝到内核空间
+ * 用户传过来的是一个 iovec 的数组，里面有每个 iov 的 len 和 base（base也是指向用户态
+ * 的buffer的），传进内核的时候，内核会对 iovec 的地址进行 check，保证它确实每个buffer都在
+ * 用户空间，并且会把整个 iovec 数组拷贝到内核空间.
  */
 ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
@@ -1773,9 +1773,9 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 	unsigned long seg;
 	struct iovec *iov;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	iov = iovec_from_user(uvec, nr_segs, fast_segs, *iovp, compat);
 	if (IS_ERR(iov)) {
 		*iovp = NULL;
@@ -1790,14 +1790,14 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 	 * Linux caps all read/write calls to MAX_RW_COUNT, and avoids the
 	 * overflow case.
 	 *
-	 * 数组里面的每个buf都要被access_ok的检查
+	 * 数组里面的每个 buf 都要被 access_ok 的检查
 	 */
 	for (seg = 0; seg < nr_segs; seg++) {
 		ssize_t len = (ssize_t)iov[seg].iov_len;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (!access_ok(iov[seg].iov_base, len)) {
 			if (iov != *iovp)
 				kfree(iov);
@@ -1850,9 +1850,9 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs,
 		 struct iovec **iovp, struct iov_iter *i)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __import_iovec(type, uvec, nr_segs, fast_segs, iovp, i,
 			      in_compat_syscall());
 }

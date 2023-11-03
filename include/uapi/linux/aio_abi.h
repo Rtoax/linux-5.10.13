@@ -4,7 +4,7 @@
  *
  * Written by Benjamin LaHaise <bcrl@kvack.org>
  *
- * Distribute under the terms of the GPLv2 (see ../../COPYING) or under 
+ * Distribute under the terms of the GPLv2 (see ../../COPYING) or under
  * the following terms.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -78,8 +78,14 @@ struct iocb {
 	__kernel_rwf_t aio_rw_flags;	/* RWF_* flags */
 
 	/* common fields */
+	/**
+	 * 操作的类型：IO_CMD_PWRITE | IO_CMD_PREAD
+	 */
 	__u16	aio_lio_opcode;	/* see IOCB_CMD_ above */
 	__s16	aio_reqprio;
+	/**
+	 * 操作的文件fd
+	 */
 	__u32	aio_fildes;
 
 	__u64	aio_buf;
