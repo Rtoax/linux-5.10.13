@@ -276,9 +276,9 @@ void current_save_fsgs(void)
 
 	/* Interrupts need to be off for FSGSBASE */
 	local_irq_save(flags);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	save_fsgs(current);
 	local_irq_restore(flags);
 }
@@ -496,26 +496,26 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 {
 	WARN_ON_ONCE(regs != current_pt_regs());
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (static_cpu_has(X86_BUG_NULL_SEG)) {
 		/* Loading zero below won't clear the base. */
 		loadsegment(fs, __USER_DS);
 		load_gs_index(__USER_DS);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	loadsegment(fs, 0);
 	loadsegment(es, _ds);
 	loadsegment(ds, _ds);
 	load_gs_index(0);
 
-    /**
-     *  设置寄存器
-     */
+	/**
+	 *  设置寄存器
+	 */
 	regs->ip		= new_ip;
 	regs->sp		= new_sp;
 	regs->cs		= _cs;
@@ -528,9 +528,9 @@ start_thread_common(struct pt_regs *regs, unsigned long new_ip,
 void /* execv(2)类系统调用 */
 start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 {
-    /**
-     *  设置新的地址开始运行
-     */
+	/**
+	 *  设置新的地址开始运行
+	 */
 	start_thread_common(regs, new_ip, new_sp,
 			    __USER_CS, __USER_DS, 0);
 }
@@ -561,21 +561,21 @@ void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp)
 __visible __notrace_funcgraph struct task_struct *
 __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 {
-    /**
-     *  获取硬件上下文
-     */
+	/**
+	 *  获取硬件上下文
+	 */
 	struct thread_struct *prev = &prev_p->thread;
 	struct thread_struct *next = &next_p->thread;
 
-    /**
-     *  浮点运算单元
-     */
+	/**
+	 *  浮点运算单元
+	 */
 	struct fpu *prev_fpu = &prev->fpu;
 	struct fpu *next_fpu = &next->fpu;
 
-    /**
-     *  当前 CPU
-     */
+	/**
+	 *  当前 CPU
+	 */
 	int cpu = smp_processor_id();
 
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_DEBUG_ENTRY) &&
@@ -633,9 +633,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	if (unlikely(next->ds | prev->ds))
 		loadsegment(ds, next->ds);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	x86_fsgsbase_load(prev, next);
 
 	/*
@@ -646,9 +646,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	this_cpu_write(current_task, next_p);
 	this_cpu_write(cpu_current_top_of_stack, task_top_of_stack(next_p));
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	switch_fpu_finish(next_fpu);
 
 	/**
@@ -657,14 +657,14 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 */
 	update_task_stack(next_p);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	switch_to_extra(prev_p, next_p);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (static_cpu_has_bug(X86_BUG_SYSRET_SS_ATTRS)) {
 		/*
 		 * AMD CPUs have a misfeature: SYSRET sets the SS selector but
