@@ -213,6 +213,11 @@ const struct bpf_func_proto bpf_get_current_pid_tgid_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+/**
+ * TODO: Add bpf_get_parent_pid_tgid_proto
+ * 好像通过 current::real_parent 获取到
+ */
+
 u64 bpf_get_current_uid_gid(void);//+++
 BPF_CALL_0(bpf_get_current_uid_gid)
 {

@@ -1056,6 +1056,11 @@ const struct bpf_func_proto bpf_get_current_task_proto = {
 	.ret_type	= RET_INTEGER,
 };
 
+/**
+ * TODO: Add bpf_get_parent_task
+ * 好像通过 current::real_parent 获取到
+ */
+
 BPF_CALL_2(bpf_current_task_under_cgroup, struct bpf_map *, map, u32, idx)
 {
 	struct bpf_array *array = container_of(map, struct bpf_array, map);
