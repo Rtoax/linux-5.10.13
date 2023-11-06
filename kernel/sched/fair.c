@@ -11824,14 +11824,14 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	 *   => for (; se; se = NULL)
 	 */
 	for_each_sched_entity(se) {
-	    /**
-	     *  获取运行队列
-	     */
+		/**
+		 *  获取运行队列
+		 */
 		cfs_rq = cfs_rq_of(se);
 
-	    /**
-	     *  检查是否需要调度
-	     */
+		/**
+		 *  检查是否需要调度
+		 */
 		entity_tick(cfs_rq, se, queued);
 	}
 

@@ -4904,7 +4904,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  * 分时通过系统时钟中断调用，这个函数执行过程中，关闭中断
  *
  * 最频繁的调用栈示例
- *    scheduler_tick+1
+ *    scheduler_tick+1            <<<
  *    update_process_times+176
  *    tick_sched_handle+34
  *    tick_sched_timer+101
@@ -4945,12 +4945,12 @@ void scheduler_tick(void)
 	int cpu = smp_processor_id();
 
 	/**
-	 *  获取当前 CPU 上的队列
+	 * 获取当前 CPU 上的队列
 	 */
 	struct rq *rq = cpu_rq(cpu);
 
 	/**
-	 *   获取运行队列上正在运行的进程
+	 * 获取运行队列上正在运行的进程
 	 */
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
@@ -4969,7 +4969,7 @@ void scheduler_tick(void)
 	rq_lock(rq, &rf);
 
 	/**
-	 *  更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
+	 * 更新当前 CPU 就绪队列 rq 中的时钟计数 clock 和 clock_task 成员
 	 */
 	update_rq_clock(rq);
 
@@ -4984,12 +4984,12 @@ void scheduler_tick(void)
 	update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure);
 
 	/**
-	 *  当前调度类 的 任务 tick
+	 * 当前调度类 的 任务 tick
 	 *
-	 *  task_tick_idle()
-	 *  task_tick_fair()
-	 *  task_tick_dl()
-	 *  task_tick_stop()
+	 * task_tick_idle()
+	 * task_tick_fair()
+	 * task_tick_dl()
+	 * task_tick_stop()
 	 */
 	curr->sched_class->task_tick(rq, curr, 0);
 

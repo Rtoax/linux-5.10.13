@@ -120,9 +120,9 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	int cpu = smp_processor_id();
 	ktime_t next = dev->next_event;
 
-    /**
-     *  滴答
-     */
+	/**
+	 *  滴答
+	 */
 	tick_periodic(cpu);
 
 #if defined(CONFIG_HIGH_RES_TIMERS) || defined(CONFIG_NO_HZ_COMMON)
@@ -165,9 +165,9 @@ void tick_handle_periodic(struct clock_event_device *dev)
  */
 void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
-    /**
-     *  设置时钟滴答 回调函数
-     */
+	/**
+	 *  设置时钟滴答 回调函数
+	 */
 	tick_set_periodic_handler(dev, broadcast);
 
 	/* Broadcast setup ? */

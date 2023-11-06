@@ -151,7 +151,21 @@ static void tick_sched_do_timer(struct tick_sched *ts, ktime_t now)
 }
 
 /**
- *
+ *     scheduler_tick+5
+ *     update_process_times+156
+ *     tick_sched_handle+33                 <<<<
+ *     tick_nohz_highres_handler+111
+ *     __hrtimer_run_queues+271
+ *     hrtimer_interrupt+248
+ *     __sysvec_apic_timer_interrupt+77
+ *     sysvec_apic_timer_interrupt+109
+ *     asm_sysvec_apic_timer_interrupt+26
+ *     cpuidle_enter_state+204
+ *     cpuidle_enter+45
+ *     do_idle+525
+ *     cpu_startup_entry+42
+ *     start_secondary+286
+ *     secondary_startup_64_no_verify+381
  */
 static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
 {
@@ -177,9 +191,9 @@ static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
 	}
 #endif
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	update_process_times(user_mode(regs));
 	profile_tick(CPU_PROFILING);
 }
@@ -470,10 +484,10 @@ void __init tick_nohz_init(void)    /* no-hz 减少时钟中断 */
 	if (IS_ENABLED(CONFIG_PM_SLEEP_SMP) &&
 			!IS_ENABLED(CONFIG_PM_SLEEP_SMP_NONZERO_CPU)) {
 
-        //get the number of the current processor
+		//get the number of the current processor
 		cpu = smp_processor_id();
 
-        //check this processor in the `tick_nohz_full_mask`
+		//check this processor in the `tick_nohz_full_mask`
 		if (cpumask_test_cpu(cpu, tick_nohz_full_mask)) {
 			pr_warn("NO_HZ: Clearing %d from nohz_full range "
 				"for timekeeping\n", cpu);

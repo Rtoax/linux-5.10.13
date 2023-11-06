@@ -98,6 +98,7 @@ struct sched_clock_data {
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
 
+/* scd: sched clock data */
 static inline struct sched_clock_data *this_scd(void)
 {
 	return this_cpu_ptr(&sched_clock_data);
@@ -128,6 +129,8 @@ static void __set_sched_clock_stable(void)
 	 * to disable IRQs in order to get a consistent scd->tick* reading.
 	 */
 	local_irq_disable();
+
+	/* scd: sched clock data */
 	scd = this_scd();
 	/*
 	 * Attempt to make the (initial) unstable->stable transition continuous.
