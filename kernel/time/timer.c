@@ -1848,7 +1848,7 @@ void update_process_times(int user_tick)
 	account_process_tick(p, user_tick);
 
 	/**
-	 *  本地定时器
+	 * 本地定时器
 	 */
 	run_local_timers();
 
@@ -1952,7 +1952,7 @@ void run_local_timers(void)
 			return;
 	}
 	/**
-	 *  触发定时器软中断
+	 * 触发定时器软中断
 	 */
 	raise_softirq(TIMER_SOFTIRQ);
 }

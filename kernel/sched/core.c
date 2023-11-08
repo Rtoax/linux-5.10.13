@@ -4939,6 +4939,8 @@ unsigned long long task_sched_runtime(struct task_struct *p)
  *    _TIF_NEED_RESCHED)；
  * * 时钟中断处理函数返回时，被中断的进程如果在用户模式下运行，需要检查是否有重新调度标志，
  *    设置了则调用schedule()调度；
+ *
+ * sudo bpftrace -e 'kprobe:scheduler_tick { @map = count();} i:s:1{ print(@map); }'
  */
 void scheduler_tick(void)
 {
