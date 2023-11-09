@@ -800,16 +800,22 @@ int scsi_cmd_ioctl(struct request_queue *q, struct gendisk *bd_disk, fmode_t mod
 		case SG_EMULATED_HOST:
 			err = sg_emulated_host(q, arg);
 			break;
+		/**
+		 * ioctl(sg_fd, SG_IO, &io_hdr)
+		 */
 		case SG_IO: {
 			struct sg_io_hdr hdr;
 
+			/* copy_from_user */
 			err = get_sg_io_hdr(&hdr, arg);
 			if (err)
 				break;
+
 			err = sg_io(q, bd_disk, &hdr, mode);
 			if (err == -EFAULT)
 				break;
 
+			/* copy_to_user */
 			if (put_sg_io_hdr(&hdr, arg))
 				err = -EFAULT;
 			break;
