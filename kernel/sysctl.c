@@ -204,7 +204,7 @@ static int max_extfrag_threshold = 1000;
 
 #if defined(CONFIG_BPF_SYSCALL) && defined(CONFIG_SYSCTL)
 static int bpf_stats_handler(struct ctl_table *table, int write,
-			     void *buffer, size_t *lenp, loff_t *ppos)
+				 void *buffer, size_t *lenp, loff_t *ppos)
 {
 	struct static_key *key = (struct static_key *)table->data;
 	static int saved_val;
@@ -570,7 +570,7 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
 		  int write, void *buffer,
 		  size_t *lenp, loff_t *ppos,
 		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
-			      int write, void *data),
+				  int write, void *data),
 		  void *data)
 {
 	int *i, vleft, first = 1, err = 0;
@@ -608,8 +608,8 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
 			if (!left)
 				break;
 			err = proc_get_long(&p, &left, &lval, &neg,
-					     proc_wspace_sep,
-					     sizeof(proc_wspace_sep), NULL);
+						 proc_wspace_sep,
+						 sizeof(proc_wspace_sep), NULL);
 			if (err)
 				break;
 			if (conv(&neg, &lval, i, 1, data)) {
@@ -642,7 +642,7 @@ out:
 static int do_proc_dointvec(struct ctl_table *table, int write,
 		  void *buffer, size_t *lenp, loff_t *ppos,
 		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
-			      int write, void *data),
+				  int write, void *data),
 		  void *data)
 {
 	return __do_proc_dointvec(table->data, table, write,
@@ -650,13 +650,13 @@ static int do_proc_dointvec(struct ctl_table *table, int write,
 }
 
 static int do_proc_douintvec_w(unsigned int *tbl_data,
-			       struct ctl_table *table,
-			       void *buffer,
-			       size_t *lenp, loff_t *ppos,
-			       int (*conv)(unsigned long *lvalp,
+				   struct ctl_table *table,
+				   void *buffer,
+				   size_t *lenp, loff_t *ppos,
+				   int (*conv)(unsigned long *lvalp,
 					   unsigned int *valp,
 					   int write, void *data),
-			       void *data)
+				   void *data)
 {
 	unsigned long lval;
 	int err = 0;
@@ -679,8 +679,8 @@ static int do_proc_douintvec_w(unsigned int *tbl_data,
 	}
 
 	err = proc_get_long(&p, &left, &lval, &neg,
-			     proc_wspace_sep,
-			     sizeof(proc_wspace_sep), NULL);
+				 proc_wspace_sep,
+				 sizeof(proc_wspace_sep), NULL);
 	if (err || neg) {
 		err = -EINVAL;
 		goto out_free;
@@ -707,11 +707,11 @@ bail_early:
 }
 
 static int do_proc_douintvec_r(unsigned int *tbl_data, void *buffer,
-			       size_t *lenp, loff_t *ppos,
-			       int (*conv)(unsigned long *lvalp,
+				   size_t *lenp, loff_t *ppos,
+				   int (*conv)(unsigned long *lvalp,
 					   unsigned int *valp,
 					   int write, void *data),
-			       void *data)
+				   void *data)
 {
 	unsigned long lval;
 	int err = 0;
@@ -738,12 +738,12 @@ out:
 }
 
 static int __do_proc_douintvec(void *tbl_data, struct ctl_table *table,
-			       int write, void *buffer,
-			       size_t *lenp, loff_t *ppos,
-			       int (*conv)(unsigned long *lvalp,
+				   int write, void *buffer,
+				   size_t *lenp, loff_t *ppos,
+				   int (*conv)(unsigned long *lvalp,
 					   unsigned int *valp,
 					   int write, void *data),
-			       void *data)
+				   void *data)
 {
 	unsigned int *i, vleft;
 
@@ -774,11 +774,11 @@ static int __do_proc_douintvec(void *tbl_data, struct ctl_table *table,
 }
 
 static int do_proc_douintvec(struct ctl_table *table, int write,
-			     void *buffer, size_t *lenp, loff_t *ppos,
-			     int (*conv)(unsigned long *lvalp,
+				 void *buffer, size_t *lenp, loff_t *ppos,
+				 int (*conv)(unsigned long *lvalp,
 					 unsigned int *valp,
 					 int write, void *data),
-			     void *data)
+				 void *data)
 {
 	return __do_proc_douintvec(table->data, table, write,
 				   buffer, lenp, ppos, conv, data);
@@ -818,8 +818,8 @@ static int proc_dointvec_minmax_warn_RT_change(struct ctl_table *table,
 		return ret;
 	if (old != *(int *)table->data)
 		pr_warn_once("sysctl attribute %s changed by %s[%d]\n",
-			     table->procname, current->comm,
-			     task_pid_nr(current));
+				 table->procname, current->comm,
+				 task_pid_nr(current));
 	return ret;
 }
 #endif
@@ -849,7 +849,7 @@ int proc_douintvec(struct ctl_table *table, int write, void *buffer,
  * This means we can safely use a temporary.
  */
 static int proc_taint(struct ctl_table *table, int write,
-			       void *buffer, size_t *lenp, loff_t *ppos)
+				   void *buffer, size_t *lenp, loff_t *ppos)
 {
 	struct ctl_table t;
 	unsigned long tmptaint = get_taint();
@@ -930,7 +930,7 @@ static int do_proc_dointvec_minmax_conv(bool *negp, unsigned long *lvalp,
 
 	if (write) {
 		if ((param->min && *param->min > tmp) ||
-		    (param->max && *param->max < tmp))
+			(param->max && *param->max < tmp))
 			return -EINVAL;
 		*valp = tmp;
 	}
@@ -995,7 +995,7 @@ static int do_proc_douintvec_minmax_conv(unsigned long *lvalp,
 
 	if (write) {
 		if ((param->min && *param->min > tmp) ||
-		    (param->max && *param->max < tmp))
+			(param->max && *param->max < tmp))
 			return -ERANGE;
 
 		*valp = tmp;
@@ -1065,7 +1065,7 @@ static void validate_coredump_safety(void)
 {
 #ifdef CONFIG_COREDUMP
 	if (suid_dumpable == SUID_DUMP_ROOT &&
-	    core_pattern[0] != '/' && core_pattern[0] != '|') {
+		core_pattern[0] != '/' && core_pattern[0] != '|') {
 		printk(KERN_WARNING
 "Unsafe core_pattern used with fs.suid_dumpable=2.\n"
 "Pipe handler or fully qualified core dump path required.\n"
@@ -1114,7 +1114,7 @@ static int sysrq_sysctl_handler(struct ctl_table *table, int write,
 	tmp = sysrq_mask();
 
 	ret = __do_proc_dointvec(&tmp, table, write, buffer,
-			                    lenp, ppos, NULL, NULL);
+				                lenp, ppos, NULL, NULL);
 	if (ret || !write)
 		return ret;
 
@@ -1165,8 +1165,8 @@ static int __do_proc_doulongvec_minmax(void *data, struct ctl_table *table,
 				break;
 
 			err = proc_get_long(&p, &left, &val, &neg,
-					     proc_wspace_sep,
-					     sizeof(proc_wspace_sep), NULL);
+						 proc_wspace_sep,
+						 sizeof(proc_wspace_sep), NULL);
 			if (err)
 				break;
 			if (neg)
@@ -1245,10 +1245,10 @@ int proc_doulongvec_minmax(struct ctl_table *table, int write,
  * Returns 0 on success.
  */
 int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
-				      void *buffer, size_t *lenp, loff_t *ppos)
+					  void *buffer, size_t *lenp, loff_t *ppos)
 {
     return do_proc_doulongvec_minmax(table, write, buffer,
-				     lenp, ppos, HZ, 1000l);
+					 lenp, ppos, HZ, 1000l);
 }
 
 
@@ -1299,8 +1299,8 @@ static int do_proc_dointvec_userhz_jiffies_conv(bool *negp, unsigned long *lvalp
 }
 
 static int do_proc_dointvec_ms_jiffies_conv(bool *negp, unsigned long *lvalp,
-					    int *valp,
-					    int write, void *data)
+						int *valp,
+						int write, void *data)
 {
 	if (write) {
 		unsigned long jif = msecs_to_jiffies(*negp ? -*lvalp : *lvalp);
@@ -1342,7 +1342,7 @@ int proc_dointvec_jiffies(struct ctl_table *table, int write,
 			  void *buffer, size_t *lenp, loff_t *ppos)
 {
     return do_proc_dointvec(table,write,buffer,lenp,ppos,
-		    	    do_proc_dointvec_jiffies_conv,NULL);
+					do_proc_dointvec_jiffies_conv,NULL);
 }
 
 /**
@@ -1364,7 +1364,7 @@ int proc_dointvec_userhz_jiffies(struct ctl_table *table, int write,
 				 void *buffer, size_t *lenp, loff_t *ppos)
 {
     return do_proc_dointvec(table,write,buffer,lenp,ppos,
-		    	    do_proc_dointvec_userhz_jiffies_conv,NULL);
+					do_proc_dointvec_userhz_jiffies_conv,NULL);
 }
 
 /**
@@ -1400,7 +1400,7 @@ static int proc_do_cad_pid(struct ctl_table *table, int write, void *buffer,
 	tmp = pid_vnr(cad_pid);
 
 	r = __do_proc_dointvec(&tmp, table, write, buffer,
-			       lenp, ppos, NULL, NULL);
+				   lenp, ppos, NULL, NULL);
 	if (r || !write)
 		return r;
 
@@ -1467,7 +1467,7 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 			/* In case we stop parsing mid-number, we can reset */
 			saved_left = left;
 			err = proc_get_long(&p, &left, &val_a, &neg, tr_a,
-					     sizeof(tr_a), &c);
+						 sizeof(tr_a), &c);
 			/*
 			 * If we consumed the entirety of a truncated buffer or
 			 * only one char is left (may be a "-"), then stop here,
@@ -1493,8 +1493,8 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 
 			if (c == '-') {
 				err = proc_get_long(&p, &left, &val_b,
-						     &neg, tr_b, sizeof(tr_b),
-						     &c);
+							 &neg, tr_b, sizeof(tr_b),
+							 &c);
 				/*
 				 * If we consumed all of a truncated buffer or
 				 * then stop here, reset, & come back for more.
@@ -1507,7 +1507,7 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 				if (err)
 					break;
 				if (val_b >= bitmap_len || neg ||
-				    val_a > val_b) {
+					val_a > val_b) {
 					err = -EINVAL;
 					break;
 				}
@@ -1566,7 +1566,7 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 
 #if defined(CONFIG_SYSCTL)
 int proc_do_static_key(struct ctl_table *table, int write,
-		       void *buffer, size_t *lenp, loff_t *ppos)
+			   void *buffer, size_t *lenp, loff_t *ppos)
 {
 	struct static_key *key = (struct static_key *)table->data;
 	static DEFINE_MUTEX(static_key_mutex);
@@ -1603,11 +1603,11 @@ int proc_do_static_key(struct ctl_table *table, int write,
  */
 static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	{
-	    /**
-         *  /proc/sys/kernel/sched_child_runs_first
-         *
-         *  控制 fork 后，父进程先运行还是子进程先运行，默认 值为 0 -> 父进程先运行
-         */
+		/**
+		 *  /proc/sys/kernel/sched_child_runs_first
+		 *
+		 *  控制 fork 后，父进程先运行还是子进程先运行，默认 值为 0 -> 父进程先运行
+		 */
 		.procname	= "sched_child_runs_first",
 		.data		= &sysctl_sched_child_runs_first,
 		.maxlen		= sizeof(unsigned int),
@@ -1616,7 +1616,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SCHED_DEBUG
 	{
-	    /**
+		/**
          *  /proc/sys/kernel/sched_min_granularity_ns
          *
          *  设置 CPU 密集型 进程最小时间片，默认值为 0.75 ms
@@ -1630,14 +1630,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_granularity_ns,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/sched_latency_ns
-         *
-         *  设置 CFS 就绪队列调度的总时间片，默认值为 6ms
-         *  sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，它与运行队列的进程数有关，
-         *  如果进程数超过 sysctl_nr_latency(默认值 为 8)，那么调度周期就是 sched_min_granularity_ns 乘以
-         *  运行队列中的进程数，否则就是 sched_latency_ns.
-         */
+		/**
+		 *  /proc/sys/kernel/sched_latency_ns
+		 *
+		 *  设置 CFS 就绪队列调度的总时间片，默认值为 6ms
+		 *  sysctl_sched_latency 标识一个运行队列中所有进程运行一次的时间片，它与运行队列的进程数有关，
+		 *  如果进程数超过 sysctl_nr_latency(默认值 为 8)，那么调度周期就是 sched_min_granularity_ns 乘以
+		 *  运行队列中的进程数，否则就是 sched_latency_ns.
+		 */
 		.procname	= "sched_latency_ns",
 		.data		= &sysctl_sched_latency,
 		.maxlen		= sizeof(unsigned int),
@@ -1647,14 +1647,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_granularity_ns,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/sched_wakeup_granularity_ns
-         *
-         *  待唤醒进程会检查是否需要抢占当前进程，若 待唤醒进程的睡眠时间 小于 sched_wakeup_granularity_ns
-         *  ，那么不会抢占当前进程。
-         *  增加该值会减小待唤醒进程的抢占概率。
-         *  减小该值，那么发生抢占的概率就会越大。默认值为 1ms
-         */
+		/**
+		 *  /proc/sys/kernel/sched_wakeup_granularity_ns
+		 *
+		 *  待唤醒进程会检查是否需要抢占当前进程，若 待唤醒进程的睡眠时间 小于 sched_wakeup_granularity_ns
+		 *  ，那么不会抢占当前进程。
+		 *  增加该值会减小待唤醒进程的抢占概率。
+		 *  减小该值，那么发生抢占的概率就会越大。默认值为 1ms
+		 */
 		.procname	= "sched_wakeup_granularity_ns",
 		.data		= &sysctl_sched_wakeup_granularity,
 		.maxlen		= sizeof(unsigned int),
@@ -1665,11 +1665,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SMP
 	{
-	    /**
-         *  /proc/sys/kernel/sched_tunable_scaling
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/sched_tunable_scaling
+		 *
+		 *
+		 */
 		.procname	= "sched_tunable_scaling",
 		.data		= &sysctl_sched_tunable_scaling,
 		.maxlen		= sizeof(enum sched_tunable_scaling),
@@ -1679,13 +1679,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra2		= &max_sched_tunable_scaling,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/sched_migration_cost_ns
-         *
-         *  判断一个进程是否可以利用高速缓存的热度。
-         *  如果进程的运行时间(now - p->se.exec_start) 小于他，那么内核认为他的数据还在高速缓存里
-         *  所以，该进程可以利用高速缓存的认读，在迁移的时候不会考虑它。
-         */
+		/**
+		 *  /proc/sys/kernel/sched_migration_cost_ns
+		 *
+		 *  判断一个进程是否可以利用高速缓存的热度。
+		 *  如果进程的运行时间(now - p->se.exec_start) 小于他，那么内核认为
+		 *  他的数据还在高速缓存里.
+		 *  所以，该进程可以利用高速缓存的认读，在迁移的时候不会考虑它。
+		 */
 		.procname	= "sched_migration_cost_ns",
 		.data		= &sysctl_sched_migration_cost,
 		.maxlen		= sizeof(unsigned int),
@@ -1693,13 +1694,14 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/sched_nr_migrate
-         *
-         *  设置在 SMP 负载均衡机制里每次最多可以从目标 CPU 迁移多少个 进程到 源 CPU 里。
-         *  在迁移过程中 关闭了中断，包括 软中断机制，因此 增大该值会导致中断延迟，
-         *  同时，也增大了实时进程的延迟。 默认值为 32
-         */
+		/**
+		 *  /proc/sys/kernel/sched_nr_migrate
+		 *
+		 *  设置在 SMP 负载均衡机制里每次最多可以从目标 CPU 迁移多少个 进程到 源
+		 *  CPU 里。
+		 *  在迁移过程中 关闭了中断，包括 软中断机制，因此 增大该值会导致中断延迟，
+		 *  同时，也增大了实时进程的延迟。 默认值为 32
+		 */
 		.procname	= "sched_nr_migrate",
 		.data		= &sysctl_sched_nr_migrate,
 		.maxlen		= sizeof(unsigned int),
@@ -1708,11 +1710,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SCHEDSTATS
 	{
-	    /**
-         *  /proc/sys/kernel/sched_schedstats
-         *
-         *  用于打开调度统计信息
-         */
+		/**
+		 *  /proc/sys/kernel/sched_schedstats
+		 *
+		 *  用于打开调度统计信息
+		 */
 		.procname	= "sched_schedstats",
 		.data		= NULL,
 		.maxlen		= sizeof(unsigned int),
@@ -1725,11 +1727,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif /* CONFIG_SMP */
 #ifdef CONFIG_NUMA_BALANCING
 	{
-	    /**
-         *  /proc/sys/kernel/numa_balancing_scan_delay_ms
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/numa_balancing_scan_delay_ms
+		 *
+		 *
+		 */
 		.procname	= "numa_balancing_scan_delay_ms",
 		.data		= &sysctl_numa_balancing_scan_delay,
 		.maxlen		= sizeof(unsigned int),
@@ -1737,11 +1739,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "numa_balancing_scan_period_min_ms",
 		.data		= &sysctl_numa_balancing_scan_period_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1749,11 +1751,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "numa_balancing_scan_period_max_ms",
 		.data		= &sysctl_numa_balancing_scan_period_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1761,11 +1763,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "numa_balancing_scan_size_mb",
 		.data		= &sysctl_numa_balancing_scan_size,
 		.maxlen		= sizeof(unsigned int),
@@ -1774,11 +1776,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.extra1		= SYSCTL_ONE,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "numa_balancing",
 		.data		= NULL, /* filled in by handler */
 		.maxlen		= sizeof(unsigned int),
@@ -1790,11 +1792,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif /* CONFIG_NUMA_BALANCING */
 #endif /* CONFIG_SCHED_DEBUG */
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_rt_period_us",
 		.data		= &sysctl_sched_rt_period,
 		.maxlen		= sizeof(unsigned int),
@@ -1802,11 +1804,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sched_rt_handler,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_rt_runtime_us",
 		.data		= &sysctl_sched_rt_runtime,
 		.maxlen		= sizeof(int),
@@ -1814,11 +1816,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sched_rt_handler,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_deadline_period_max_us",
 		.data		= &sysctl_sched_dl_period_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1826,11 +1828,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_deadline_period_min_us",
 		.data		= &sysctl_sched_dl_period_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1838,11 +1840,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_rr_timeslice_ms",
 		.data		= &sysctl_sched_rr_timeslice,
 		.maxlen		= sizeof(int),
@@ -1851,11 +1853,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_UCLAMP_TASK
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_util_clamp_min",
 		.data		= &sysctl_sched_uclamp_util_min,
 		.maxlen		= sizeof(unsigned int),
@@ -1863,11 +1865,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sysctl_sched_uclamp_handler,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_util_clamp_max",
 		.data		= &sysctl_sched_uclamp_util_max,
 		.maxlen		= sizeof(unsigned int),
@@ -1875,11 +1877,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= sysctl_sched_uclamp_handler,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_util_clamp_min_rt_default",
 		.data		= &sysctl_sched_uclamp_util_min_rt_default,
 		.maxlen		= sizeof(unsigned int),
@@ -1889,11 +1891,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_SCHED_AUTOGROUP
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sched_autogroup_enabled",
 		.data		= &sysctl_sched_autogroup_enabled,
 		.maxlen		= sizeof(unsigned int),
@@ -1905,11 +1907,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_CFS_BANDWIDTH
 	{
-	    /**
-         *  /proc/sys/kernel/sched_cfs_bandwidth_slice_us
-         *
-         *  用于 CFS 的 带宽限制，默认值为 5ms
-         */
+		/**
+		 *  /proc/sys/kernel/sched_cfs_bandwidth_slice_us
+		 *
+		 *  用于 CFS 的 带宽限制，默认值为 5ms
+		 */
 		.procname	= "sched_cfs_bandwidth_slice_us",
 		.data		= &sysctl_sched_cfs_bandwidth_slice,
 		.maxlen		= sizeof(unsigned int),
@@ -1920,11 +1922,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
 	{
-	    /**
-         *  /proc/sys/kernel/sched_energy_aware
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/sched_energy_aware
+		 *
+		 *
+		 */
 		.procname	= "sched_energy_aware",
 		.data		= &sysctl_sched_energy_aware,
 		.maxlen		= sizeof(unsigned int),
@@ -1936,11 +1938,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_PROVE_LOCKING
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "prove_locking",
 		.data		= &prove_locking,
 		.maxlen		= sizeof(int),
@@ -1950,11 +1952,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_LOCK_STAT
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "lock_stat",
 		.data		= &lock_stat,
 		.maxlen		= sizeof(int),
@@ -1963,11 +1965,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "panic",
 		.data		= &panic_timeout,
 		.maxlen		= sizeof(int),
@@ -1976,11 +1978,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_COREDUMP
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "core_uses_pid",
 		.data		= &core_uses_pid,
 		.maxlen		= sizeof(int),
@@ -1988,11 +1990,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/core_pattern
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/core_pattern
+		 *
+		 *
+		 */
 		.procname	= "core_pattern",
 		.data		= core_pattern,
 		.maxlen		= CORENAME_MAX_SIZE,
@@ -2000,11 +2002,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dostring_coredump,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "core_pipe_limit",
 		.data		= &core_pipe_limit,
 		.maxlen		= sizeof(unsigned int),
@@ -2014,22 +2016,22 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_PROC_SYSCTL
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "tainted",
 		.maxlen 	= sizeof(long),
 		.mode		= 0644,
 		.proc_handler	= proc_taint,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "sysctl_writes_strict",
 		.data		= &sysctl_writes_strict,
 		.maxlen		= sizeof(int),
@@ -2041,11 +2043,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_LATENCYTOP
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "latencytop",
 		.data		= &latencytop_enabled,
 		.maxlen		= sizeof(int),
@@ -2055,11 +2057,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 #ifdef CONFIG_BLK_DEV_INITRD
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "real-root-dev",
 		.data		= &real_root_dev,
 		.maxlen		= sizeof(int),
@@ -2068,11 +2070,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "print-fatal-signals",
 		.data		= &print_fatal_signals,
 		.maxlen		= sizeof(int),
@@ -2081,11 +2083,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #ifdef CONFIG_SPARC
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "reboot-cmd",
 		.data		= reboot_command,
 		.maxlen		= 256,
@@ -2093,11 +2095,11 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dostring,
 	},
 	{
-	    /**
-         *  /proc/sys/kernel/
-         *
-         *
-         */
+		/**
+		 *  /proc/sys/kernel/
+		 *
+		 *
+		 */
 		.procname	= "stop-a",
 		.data		= &stop_a_enabled,
 		.maxlen		= sizeof (int),
@@ -2246,19 +2248,19 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 #endif
 #ifdef CONFIG_MAGIC_SYSRQ
-    /**
-     *  Linux Magic System Request Key Hacks
-     *
-     *  /proc/sys/kernel/sysrq
-     *
-     *  SysRq 魔法键
-     *
-     *  echo 1 > /proc/sys/kernel/sysrq 打开功能
-     *
-     *  -------------------------------------------
-     *  /proc/sysrq-trigger - 见 `sysrq_init_procfs()`
-     *
-     */
+	/**
+	 *  Linux Magic System Request Key Hacks
+	 *
+	 *  /proc/sys/kernel/sysrq
+	 *
+	 *  SysRq 魔法键
+	 *
+	 *  echo 1 > /proc/sys/kernel/sysrq 打开功能
+	 *
+	 *  -------------------------------------------
+	 *  /proc/sysrq-trigger - 见 `sysrq_init_procfs()`
+	 *
+	 */
 	{
 		.procname	= "sysrq",
 		.data		= NULL,
@@ -2841,7 +2843,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 
 static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	{
-	    ///proc/sys/vm/overcommit_memory
+		///proc/sys/vm/overcommit_memory
 		.procname	= "overcommit_memory",
 		.data		= &sysctl_overcommit_memory,
 		.maxlen		= sizeof(sysctl_overcommit_memory),
@@ -2851,7 +2853,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra2		= &two,
 	},
 	{
-	    ///proc/sys/vm/panic_on_oom
+		///proc/sys/vm/panic_on_oom
 		.procname	= "panic_on_oom",
 		.data		= &sysctl_panic_on_oom,
 		.maxlen		= sizeof(sysctl_panic_on_oom),
@@ -3055,7 +3057,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 	},
 #ifdef CONFIG_COMPACTION
 	{
-	    ///proc/sys/vm/compact_memory
+		///proc/sys/vm/compact_memory
 		.procname	= "compact_memory",
 		.data		= &sysctl_compact_memory,
 		.maxlen		= sizeof(int),
@@ -3081,7 +3083,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra2		= &max_extfrag_threshold,
 	},
 	{
-	    ///proc/sys/vm/compact_unevictable_allowed
+		///proc/sys/vm/compact_unevictable_allowed
 		.procname	= "compact_unevictable_allowed",
 		.data		= &sysctl_compact_unevictable_allowed,
 		.maxlen		= sizeof(int),
@@ -3109,7 +3111,7 @@ static struct ctl_table vm_table[] = {  /* /proc/sys/vm/xxx */
 		.extra1		= SYSCTL_ZERO,
 	},
 	{
-	    /**
+		/**
          *  高水位和低水位之间的距离是 系统总内存的 10/10000 = 0.1%
          *
          *  该数值最大为 1000， 也就是 1000/10000 = 10%

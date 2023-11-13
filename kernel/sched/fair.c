@@ -1491,7 +1491,12 @@ static void account_numa_dequeue(struct rq *rq, struct task_struct *p)
 /* Memory and CPU locality */
 #define NR_NUMA_HINT_FAULT_STATS (NR_NUMA_HINT_FAULT_TYPES * 2)
 
-/* Averaged statistics, and temporary buffers. */
+/**
+ * Averaged statistics, and temporary buffers.
+ *
+ * 四个：faults_memory, faults_cpu, faults_memory_buffer, faults_cpu_buffer
+ * 见 task_struct.numa_faults 注释
+ */
 #define NR_NUMA_HINT_FAULT_BUCKETS (NR_NUMA_HINT_FAULT_STATS * 2)
 
 pid_t task_numa_group_id(struct task_struct *p)
@@ -2943,8 +2948,15 @@ void task_numa_fault(int last_cpupid, int mem_node, int pages, int flags)
 	if (!p->mm)
 		return;
 
-	/* Allocate buffer to track faults on a per-node basis */
+	/**
+	 * Allocate buffer to track faults on a per-node basis
+	 */
 	if (unlikely(!p->numa_faults)) {
+		/**
+		 * 四个：faults_memory, faults_cpu,
+		 *      faults_memory_buffer, faults_cpu_buffer
+		 * 见 task_struct.numa_faults 注释
+		 */
 		int size = sizeof(*p->numa_faults) *
 			   NR_NUMA_HINT_FAULT_BUCKETS * nr_node_ids;
 
@@ -8357,7 +8369,7 @@ static int task_hot(struct task_struct *p, struct lb_env *env)
 
 #ifdef CONFIG_NUMA_BALANCING
 /*
- * Returns 1, if task migration degrades locality
+ * Returns 1, if task migration degrades(降解) locality
  * Returns 0, if task migration improves locality i.e migration preferred.
  * Returns -1, if task migration is not affected by locality.
  */

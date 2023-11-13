@@ -1761,6 +1761,9 @@ struct task_struct {    /* PCB */
 #endif
 #ifdef CONFIG_NUMA_BALANCING
 	int				numa_scan_seq;
+	/**
+	 * 扫描 周期
+	 */
 	unsigned int			numa_scan_period;
 	unsigned int			numa_scan_period_max;
 	int				numa_preferred_nid;
@@ -1794,6 +1797,8 @@ struct task_struct {    /* PCB */
 	 * faults_memory_buffer and faults_cpu_buffer: Record faults per node
 	 * during the current scan window. When the scan completes, the counts
 	 * in faults_memory and faults_cpu decay and these values are copied.
+	 *
+	 * 在 task_numa_fault() 分配内存
 	 */
 	unsigned long			*numa_faults;
 	unsigned long			total_numa_faults;
