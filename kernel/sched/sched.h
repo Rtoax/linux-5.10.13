@@ -2101,6 +2101,10 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 
 #endif /* SCHED_DEBUG */
 
+/**
+ * sysctl: kernel.numa_balancing
+ * proc: /proc/sys/kernel/numa_balancing
+ */
 extern struct static_key_false sched_numa_balancing;
 
 //echo 1 > /proc/sys/kernel/sched_schedstats

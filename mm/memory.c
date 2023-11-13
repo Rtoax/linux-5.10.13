@@ -4655,7 +4655,17 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 
 out:
 	/**
+	 * Got a PROT_NONE fault for a page on @node.
 	 *
+	 * numa balance功能的基本实现过程:
+	 * -----------------------------------
+	 * 1. 周期性扫描task的地址空间并且修改页表项为PAGE_NONE(没有读/写/执行权限，但是
+	 *    有对应的物理地址),之后访问该数据时会发生page fault。
+	 * 2. 在page fault中，重新修改页表为正确的权限使得后面能够继续执行
+	 * 3. 在page fault中会追踪两个数据: page被哪个节点和任务访问过，任务在各个节点上
+	 *    发生的缺页情况
+	 * 4. 根据历史记录，决定是否迁移页和任务迁移
+	 * ref: https://blog.csdn.net/faxiang1230/article/details/123709414
 	 */
 	if (page_nid != NUMA_NO_NODE/* (-1) */)
 		task_numa_fault(last_cpupid, page_nid, 1, flags);
@@ -4824,7 +4834,19 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		return do_swap_page(vmf);   /* 交换空间 */
 
 	/**
-	 * @brief 如果vma可访问，并且访问权限没有设置
+	 * 如果vma可访问，并且访问权限没有设置
+	 *
+	 * Got a PROT_NONE fault for a page on @node.
+	 *
+	 * numa balance功能的基本实现过程:
+	 * -----------------------------------
+	 * 1. 周期性扫描task的地址空间并且修改页表项为PAGE_NONE(没有读/写/执行权限，但是
+	 *    有对应的物理地址),之后访问该数据时会发生page fault。
+	 * 2. 在page fault中，重新修改页表为正确的权限使得后面能够继续执行
+	 * 3. 在page fault中会追踪两个数据: page被哪个节点和任务访问过，任务在各个节点上
+	 *    发生的缺页情况
+	 * 4. 根据历史记录，决定是否迁移页和任务迁移
+	 * ref: https://blog.csdn.net/faxiang1230/article/details/123709414
 	 */
 	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))
 		return do_numa_page(vmf);   /* numa pagefault */

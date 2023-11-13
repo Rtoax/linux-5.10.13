@@ -1588,6 +1588,17 @@ out:
 	if (anon_vma)
 		page_unlock_anon_vma_read(anon_vma);
 
+	/**
+	 * numa balance功能的基本实现过程:
+	 * -----------------------------------
+	 * 1. 周期性扫描task的地址空间并且修改页表项为PAGE_NONE(没有读/写/执行权限，但是
+	 *    有对应的物理地址),之后访问该数据时会发生page fault。
+	 * 2. 在page fault中，重新修改页表为正确的权限使得后面能够继续执行
+	 * 3. 在page fault中会追踪两个数据: page被哪个节点和任务访问过，任务在各个节点上
+	 *    发生的缺页情况
+	 * 4. 根据历史记录，决定是否迁移页和任务迁移
+	 * ref: https://blog.csdn.net/faxiang1230/article/details/123709414
+	 */
 	if (page_nid != NUMA_NO_NODE)
 		task_numa_fault(last_cpupid, page_nid, HPAGE_PMD_NR,
 				flags);

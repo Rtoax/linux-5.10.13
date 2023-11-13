@@ -2368,6 +2368,9 @@ static int task_numa_migrate(struct task_struct *p)
 		return ret;
 	}
 
+	/**
+	 *
+	 */
 	ret = migrate_swap(p, env.best_task, env.best_cpu, env.src_cpu);
 	WRITE_ONCE(best_rq->numa_migrate_on, 0);
 
@@ -2903,8 +2906,19 @@ void task_numa_free(struct task_struct *p, bool final)
 	}
 }
 
-/*
+/**
  * Got a PROT_NONE fault for a page on @node.
+ *
+ * numa balance功能的基本实现过程:
+ * -----------------------------------
+ * 1. 周期性扫描task的地址空间并且修改页表项为PAGE_NONE(没有读/写/执行权限，但是有对应
+ *    的物理地址),之后访问该数据时会发生page fault。
+ * 2. 在page fault中，重新修改页表为正确的权限使得后面能够继续执行
+ * 3. 在page fault中会追踪两个数据: page被哪个节点和任务访问过，任务在各个节点上发生的
+ *    缺页情况
+ * 4. 根据历史记录，决定是否迁移页和任务迁移
+ *
+ * ref: https://blog.csdn.net/faxiang1230/article/details/123709414
  */
 void task_numa_fault(int last_cpupid, int mem_node, int pages, int flags)
 {
@@ -3233,6 +3247,10 @@ static void update_scan_period(struct task_struct *p, int new_cpu)
 	int src_nid = cpu_to_node(task_cpu(p));
 	int dst_nid = cpu_to_node(new_cpu);
 
+	/**
+	 * sysctl: kernel.numa_balancing
+	 * proc: /proc/sys/kernel/numa_balancing
+	 */
 	if (!static_branch_likely(&sched_numa_balancing))
 		return;
 
@@ -3259,6 +3277,9 @@ static void update_scan_period(struct task_struct *p, int new_cpu)
 			return;
 	}
 
+	/**
+	 *
+	 */
 	p->numa_scan_period = task_scan_start(p);
 }
 
@@ -7423,9 +7444,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 			new_cpu = prev_cpu;
 		}
 
-	    /**
-	     *  标识有机会 采用 wakeup_cpu 或者 prev_cpu 来唤醒这个进程，这是一个快速优化路径。
-	     */
+		/**
+		 * 标识有机会 采用 wakeup_cpu 或者 prev_cpu 来唤醒这个进程，
+		 * 这是一个快速优化路径。
+		 */
 		want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
 	}
 
@@ -7443,27 +7465,26 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 		 *
 		 *  1. 这是一个唤醒的动作，
 		 *  2. wakeup_cpu 和 prev_cpu 在同一个调度域
-		 *  3. 调度域包含 SD_WAKE_AFFINE 标志位，标识运行唤醒进程的CPU 可以运行这个被唤醒的进程
+		 *  3. 调度域包含 SD_WAKE_AFFINE 标志位，标识运行唤醒进程的CPU
+		 *     可以运行这个被唤醒的进程
 		 */
 		if (want_affine && (tmp->flags & SD_WAKE_AFFINE) &&
 		    cpumask_test_cpu(prev_cpu, sched_domain_span(tmp))) {
 
-	        /**
-	         *  满足上面的三个条件， 进入快速路径
-	         */
+			/**
+			 *  满足上面的三个条件， 进入快速路径
+			 */
 
-	        /**
-	         *
-	         */
 			if (cpu != prev_cpu)
-	            /**
-	             *  重新计算 wakeup_cpu 和 prev_cpu CPU 的负载情况，并比较用哪个CPU唤醒最合适
-	             */
+				/**
+				 * 重新计算 wakeup_cpu 和 prev_cpu CPU 的负载情况，
+				 * 并比较用哪个CPU唤醒最合适
+				 */
 				new_cpu = wake_affine(tmp, p, cpu, prev_cpu, sync);
 
-	        /**
-	         *  找到合适 CPU 来唤醒进程时候，设置 sd = NULL， 并退出 for 循环
-	         */
+			/**
+			 *  找到合适 CPU 来唤醒进程时候，设置 sd = NULL， 并退出 for 循环
+			 */
 			sd = NULL; /* Prefer wake_affine over balance flags */
 			break;
 		}
@@ -7478,9 +7499,9 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 	 *  没有找到合适的 调度域，进入慢速路径
 	 */
 	if (unlikely(sd)) {
-	    /**
-	     *  慢速路径
-	     */
+		/**
+		 *  慢速路径
+		 */
 		/* Slow path - 找到一个 悠闲的 CPU */
 		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
 
@@ -7489,14 +7510,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 	 */
 	} else if (sd_flag & SD_BALANCE_WAKE) { /* XXX always ? */
 
-	    /**
-	     *  快速路径
-	     */
+		/**
+		 *  快速路径
+		 */
 		/* Fast path */
 
-	    /**
-	     *  选择一个合适的 CPU
-	     */
+		/**
+		 *  选择一个合适的 CPU
+		 */
 		new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
 
 		if (want_affine)
@@ -8346,6 +8367,10 @@ static int migrate_degrades_locality(struct task_struct *p, struct lb_env *env)
 	unsigned long src_weight, dst_weight;
 	int src_nid, dst_nid, dist;
 
+	/**
+	 * sysctl: kernel.numa_balancing
+	 * proc: /proc/sys/kernel/numa_balancing
+	 */
 	if (!static_branch_likely(&sched_numa_balancing))
 		return -1;
 

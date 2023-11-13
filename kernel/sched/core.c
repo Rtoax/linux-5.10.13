@@ -3766,6 +3766,10 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 #endif
 }
 
+/**
+ * sysctl: kernel.numa_balancing
+ * proc: /proc/sys/kernel/numa_balancing
+ */
 DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
 
 #ifdef CONFIG_NUMA_BALANCING
