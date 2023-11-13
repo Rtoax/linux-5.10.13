@@ -1772,6 +1772,11 @@ struct task_struct {    /* PCB */
 	u64				node_stamp;
 	u64				last_task_numa_placement;
 	u64				last_sum_exec_runtime;
+	/**
+	 * 函数调用：
+	 * init_numa_balancing()->init_task_work() (回调: task_numa_work())
+	 * task_tick_numa()->task_work_add()
+	 */
 	struct callback_head		numa_work;
 
 	/*

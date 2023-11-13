@@ -4563,11 +4563,17 @@ static int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
 		*flags |= TNF_FAULT_LOCAL;
 	}
 
+	/**
+	 * mpolicy()
+	 */
 	return mpol_misplaced(page, vma, addr);
 }
 
 /**
- *
+ * handle_mm_fault
+ * 	__handle_mm_fault
+ * 		handle_pte_fault
+ * 			do_numa_page
  */
 static vm_fault_t do_numa_page(struct vm_fault *vmf)
 {
@@ -4598,6 +4604,10 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 	 * accessible ptes, some can allow access by kernel mode.
 	 */
 	old_pte = ptep_modify_prot_start(vma, vmf->address, vmf->pte);
+
+	/**
+	 * 修改页表为原始权限，在下次扫描到该页时访问不再发生异常
+	 */
 	pte = pte_modify(old_pte, vma->vm_page_prot);
 	pte = pte_mkyoung(pte);
 	if (was_writable)
@@ -4637,6 +4647,12 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 
 	last_cpupid = page_cpupid_last(page);
 	page_nid = page_to_nid(page);
+
+	/**
+	 * 判断页是否符合 node 的 policy 设置。应用程序可以通过 mbind 对某块地址设置
+	 * 不同的策略，例如，当 bind 到某个 node 时就不能迁移到其他节点。
+	 * 返回值就是应该迁移的 node, 如果是 -1 则不应该迁移。
+	 */
 	target_nid = numa_migrate_prep(page, vma, vmf->address, page_nid,
 			&flags);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
@@ -4645,7 +4661,10 @@ static vm_fault_t do_numa_page(struct vm_fault *vmf)
 		goto out;
 	}
 
-	/* Migrate to the requested node */
+	/**
+	 * Migrate to the requested node
+	 * 迁移错误放置的 page 到 target node 上
+	 */
 	migrated = migrate_misplaced_page(page, vma, target_nid);
 	if (migrated) {
 		page_nid = target_nid;

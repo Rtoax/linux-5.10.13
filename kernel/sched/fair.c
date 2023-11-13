@@ -1703,6 +1703,13 @@ bool should_numa_migrate_memory(struct task_struct *p, struct page * page,
 	int dst_nid = cpu_to_node(dst_cpu);
 	int last_cpupid, this_cpupid;
 
+	/**
+	 * cpupid由8bit的cpu和8bit的pid组成，他要放在page->flags中，而page毕竟数据
+	 * 结构比较敏感。
+	 * 所以最终截取了部分的cpu/pid信息组成，所以后面根据cpupid来查找上一次存在误判
+	 * 的可能，特别是根据cpupid将不同的task组织到一个numa_group中时，有可能会误判。
+	 *
+	 */
 	this_cpupid = cpu_pid_to_cpupid(dst_cpu, current->pid);
 	last_cpupid = page_cpupid_xchg_last(page, this_cpupid);
 
@@ -3053,6 +3060,8 @@ static void task_numa_work(struct callback_head *work)
 	 * exit_task_work() happens _after_ exit_mm() so we could be called
 	 * without p->mm even though we still had it when we enqueued this
 	 * work.
+	 *
+	 * 进程正在退出
 	 */
 	if (p->flags & PF_EXITING)
 		return;
@@ -3175,7 +3184,7 @@ out:
 }
 
 /**
- *
+ * 在 __sched_fork 中调用
  */
 void init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 {
@@ -3199,6 +3208,9 @@ void init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 	p->last_task_numa_placement	= 0;
 	p->last_sum_exec_runtime	= 0;
 
+	/**
+	 * 初始化
+	 */
 	init_task_work(&p->numa_work, task_numa_work);
 
 	/* New address space, reset the preferred nid */
@@ -3249,6 +3261,9 @@ static void task_tick_numa(struct rq *rq, struct task_struct *curr)
 			curr->numa_scan_period = task_scan_start(curr);
 		curr->node_stamp += period;
 
+		/**
+		 * 再次加入到 work callback
+		 */
 		if (!time_before(jiffies, curr->mm->numa_next_scan))
 			task_work_add(curr, work, TWA_RESUME);
 	}
@@ -3266,6 +3281,12 @@ static void update_scan_period(struct task_struct *p, int new_cpu)
 	if (!static_branch_likely(&sched_numa_balancing))
 		return;
 
+	/**
+	 * 跳过：
+	 * 1. 内核进程
+	 * 2.
+	 * 3. 正在退出的进程
+	 */
 	if (!p->mm || !p->numa_faults || (p->flags & PF_EXITING))
 		return;
 

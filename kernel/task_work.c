@@ -40,9 +40,9 @@ int task_work_add(struct task_struct *task, struct callback_head *work,
 		if (unlikely(head == &work_exited))
 			return -ESRCH;
 		work->next = head;
-    /**
-     *  设置新的 work
-     */
+	/**
+	 *  设置新的 work
+	 */
 	} while (cmpxchg(&task->task_works, head, work) != head);
 
 	switch (notify) {
@@ -123,9 +123,9 @@ void task_work_run(void)
 	struct task_struct *task = current;
 	struct callback_head *work, *head, *next;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (;;) {
 		/*
 		 * work->func() can do task_work_add(), do not set
@@ -154,9 +154,9 @@ void task_work_run(void)
 
 		do {
 			next = work->next;
-            /**
-             *  调用函数
-             */
+			/**
+			 *  调用函数
+			 */
 			work->func(work);
 			work = next;
 			cond_resched();
