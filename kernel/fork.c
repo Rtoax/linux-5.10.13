@@ -2196,8 +2196,7 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
  *
  * 复制进程，并不运行
  */
-static __latent_entropy
-struct task_struct *copy_process(struct pid *pid,
+static __latent_entropy struct task_struct *copy_process(struct pid *pid,
 	        					int trace,
 	        					int node,
 	        					struct kernel_clone_args *args)
@@ -2723,6 +2722,10 @@ struct task_struct *copy_process(struct pid *pid,
 	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
+
+#ifdef CONFIG_RETHOOK
+	p->rethooks.first = NULL;
+#endif
 
 	/*
 	 * Ensure that the cgroup subsystem policies allow the new process to be
