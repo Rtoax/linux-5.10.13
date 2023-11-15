@@ -60,6 +60,7 @@ static int kprobes_initialized;
  *
  */
 static struct hlist_head kprobe_table[KPROBE_TABLE_SIZE];
+/* commit d741bf41d7c7 ("kprobes: Remove kretprobe hash") 中不再用这个 hashlist */
 static struct hlist_head kretprobe_inst_table[KPROBE_TABLE_SIZE];
 
 /* NOTE: change this value only with kprobe_mutex held */
@@ -68,6 +69,7 @@ static bool kprobes_all_disarmed;
 /* This protects kprobe_table and optimizing_list */
 static DEFINE_MUTEX(kprobe_mutex);
 static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+/* commit d741bf41d7c7 ("kprobes: Remove kretprobe hash") 中不再用这个锁 */
 static struct {
 	raw_spinlock_t ____cacheline_aligned_in_smp lock ;
 } kretprobe_table_locks[KPROBE_TABLE_SIZE];
