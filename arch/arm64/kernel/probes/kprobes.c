@@ -122,9 +122,9 @@ void __kprobes arch_arm_kprobe(struct kprobe *p)
 	void *addr = p->addr;
 	u32 insn = BRK64_OPCODE_KPROBES;
 
-    /**
-     *  补丁 text
-     */
+	/**
+	 * 补丁 text
+	 */
 	aarch64_insn_patch_text(&addr, &insn, 1);
 }
 
@@ -247,7 +247,7 @@ static int __kprobes reenter_kprobe(struct kprobe *p,
 
 
 /**
- *  
+ *
  */
 static void __kprobes
 post_kprobe_handler(struct kprobe_ctlblk *kcb, struct pt_regs *regs)
@@ -330,7 +330,7 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, unsigned int fsr)
 
 
 /**
- *  
+ *
  */
 static void __kprobes kprobe_handler(struct pt_regs *regs)
 {
@@ -411,7 +411,7 @@ static struct break_hook kprobes_break_ss_hook = {
 
 
 /**
- *  
+ *
  */
 static int __kprobes
 kprobe_breakpoint_handler(struct pt_regs *regs, unsigned int esr)

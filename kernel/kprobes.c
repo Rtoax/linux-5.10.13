@@ -1610,6 +1610,9 @@ bool within_kprobe_blacklist(unsigned long addr)
 static kprobe_opcode_t *_kprobe_addr(kprobe_opcode_t *addr,
 			const char *symbol_name, unsigned int offset)
 {
+	/**
+	 * 不能同时定义 addr 和 symbol_name
+	 */
 	if ((symbol_name && addr) || (!symbol_name && !addr))
 		goto invalid;
 
@@ -1785,7 +1788,7 @@ out:
 /**
  *  注册一个 kprobe
  */
-int register_kprobe(struct kprobe *p)   //注册kprobe探测点
+int register_kprobe(struct kprobe *p)
 {
 	int ret;
 	struct kprobe *old_p;
@@ -1793,7 +1796,8 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	kprobe_opcode_t *addr;
 
 	/**
-	 *  找到 op 操作符 地址
+	 * 找到 op 操作符 地址
+	 * addr = addr + offset
 	 */
 	/* Adjust probe address from symbol */
 	addr = kprobe_addr(p);
@@ -1825,7 +1829,6 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	INIT_LIST_HEAD(&p->list);
 
 	/**
-
 	 *  地址是否 安全
 	 */
 	ret = check_kprobe_address_safe(p, &probed_mod);
@@ -1857,7 +1860,7 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	mutex_lock(&text_mutex);
 
 	/**
-	 *
+	 * 做准备
 	 */
 	ret = prepare_kprobe(p);
 	mutex_unlock(&text_mutex);
@@ -1880,7 +1883,7 @@ int register_kprobe(struct kprobe *p)   //注册kprobe探测点
 	if (!kprobes_all_disarmed && !kprobe_disabled(p)) {
 
 		/**
-		 *  处理一个   kprobe，用 int3   替换原有指令
+		 *  处理一个 kprobe， 用 int3 替换原有指令
 		 *  enable_kprobe() 中将使用这个函数
 		 */
 		ret = arm_kprobe(p);

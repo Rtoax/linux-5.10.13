@@ -143,14 +143,14 @@ static int __kprobes __aarch64_insn_write(void *addr, __le32 insn)
 	int ret;
 
 	raw_spin_lock_irqsave(&patch_lock, flags);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	waddr = patch_map(addr, FIX_TEXT_POKE0);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = copy_to_kernel_nofault(waddr, &insn, AARCH64_INSN_SIZE);
 
 	patch_unmap(FIX_TEXT_POKE0);
@@ -194,11 +194,7 @@ bool __kprobes aarch64_insn_is_branch(u32 insn)
 }
 
 /**
- * @brief ftrace开启替换代码
- *
- * @param addr
- * @param insn
- * @return int
+ * 替换代码
  */
 int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 {
@@ -209,11 +205,14 @@ int __kprobes aarch64_insn_patch_text_nosync(void *addr, u32 insn)
 	if ((uintptr_t)tp & 0x3)
 		return -EINVAL;
 
-    /**
-     *  替换
-     */
+	/**
+	 *  替换
+	 */
 	ret = aarch64_insn_write(tp, insn);
 	if (ret == 0)
+		/**
+		 * 刷新缓存
+		 */
 		__flush_icache_range((uintptr_t)tp,
 				     (uintptr_t)tp + AARCH64_INSN_SIZE);
 
@@ -230,19 +229,26 @@ struct aarch64_insn_patch {
 static int __kprobes aarch64_insn_patch_text_cb(void *arg)
 {
 	int i, ret = 0;
+	/* 从 aarch64_insn_patch_text() 传过来的 */
 	struct aarch64_insn_patch *pp = arg;
 
-	/* The first CPU becomes master */
+	/**
+	 * The first CPU becomes master
+	 * 第一个 CPU 执行替换
+	 */
 	if (atomic_inc_return(&pp->cpu_count) == 1) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		for (i = 0; ret == 0 && i < pp->insn_cnt; i++)
 			ret = aarch64_insn_patch_text_nosync(pp->text_addrs[i],
 							     pp->new_insns[i]);
 		/* Notify other processors with an additional increment. */
 		atomic_inc(&pp->cpu_count);
 	} else {
+		/**
+		 * 所有 CPU 等待，直到完成 代码替换
+		 */
 		while (atomic_read(&pp->cpu_count) <= num_online_cpus())
 			cpu_relax();
 		isb();
@@ -256,9 +262,9 @@ static int __kprobes aarch64_insn_patch_text_cb(void *arg)
  */
 int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct aarch64_insn_patch patch = {
 		patch.text_addrs = addrs,
 		patch.new_insns = insns,
@@ -269,9 +275,9 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
 	if (cnt <= 0)
 		return -EINVAL;
 
-    /**
-     *
-     */
+	/**
+	 * stop_machine 机制：在所有 CPU 上执行
+	 */
 	return stop_machine_cpuslocked(aarch64_insn_patch_text_cb, &patch, cpu_online_mask);
 }
 
