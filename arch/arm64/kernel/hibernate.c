@@ -250,6 +250,7 @@ static int create_safe_exec_page(void *src_start, size_t length,
 		return -ENOMEM;
 
 	memcpy(page, src_start, length);
+	/* 让指令缓存失效 */
 	__flush_icache_range((unsigned long)page, (unsigned long)page + length);
 
 	trans_pgd = (void *)get_safe_page(GFP_ATOMIC);

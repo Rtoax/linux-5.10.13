@@ -60,6 +60,8 @@
  *		Ensure that the data held in page is written back.
  *		- kaddr  - page address
  *		- size   - region size
+ *
+ * 下面函数是汇编实现的
  */
 extern void __flush_icache_range(unsigned long start, unsigned long end);
 extern int  invalidate_icache_range(unsigned long start, unsigned long end);
@@ -75,9 +77,9 @@ extern void sync_icache_aliases(void *kaddr, unsigned long len);
  */
 static inline void flush_icache_range(unsigned long start, unsigned long end)
 {
-    /**
-     *	这是 汇编实现的函数
-     */
+	/**
+	 * 这是 汇编实现的函数
+	 */
 	__flush_icache_range(start, end);
 
 	/*

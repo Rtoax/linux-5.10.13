@@ -413,6 +413,12 @@ alternative_endif
 	sub	\tmp2, \tmp1, #1
 	bic	\tmp2, \start, \tmp2
 9997:
+/**
+ * ic ivau 指令来无效[start, end]地址空间对应的指令高速缓存
+ * ic指令 - 指令高速缓存维护指令
+ *
+ * https://zhuanlan.zhihu.com/p/490169673
+ */
 USER(\label, ic	ivau, \tmp2)			// invalidate I line PoU
 	add	\tmp2, \tmp2, \tmp1
 	cmp	\tmp2, \end
