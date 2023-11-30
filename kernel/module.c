@@ -4289,10 +4289,6 @@ static int unknown_module_param_cb(char *param, char *val, const char *modname,
  *  zero, and we rely on this for optional sections.
  *
  *  加载一个 ko 模块到内核
- *
- *  @info:
- *  @uargs:
- *  @flags:
  */
 static int load_module(struct load_info *info, const char __user *uargs, int flags)
 {
@@ -4595,7 +4591,6 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 /**
  *  insmod - 插入内核模块
  */
-int init_module(void *umod, unsigned long len, const char *uargs){}//+++
 SYSCALL_DEFINE3(init_module, void __user *, umod,
 		unsigned long, len, const char __user *, uargs)
 {
@@ -4629,7 +4624,6 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
  *  insmod - 插入内核模块
  *  这比 init_module 减少了 数据拷贝，更快乐
  */
-int finit_module(int fd, const char *param_values, int flags);
 SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 {
 	struct load_info info = { };
