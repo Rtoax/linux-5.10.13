@@ -997,9 +997,9 @@ ssize_t do_tcp_sendpages(struct sock *sk, struct page *page, int offset,
 
 	sk_clear_bit(SOCKWQ_ASYNC_NOSPACE, sk);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 	copied = 0;
 
@@ -1210,17 +1210,17 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	long timeo;
 
 	flags = msg->msg_flags;
-    /**
-     *  零拷贝
-     */
+	/**
+	 *  零拷贝
+	 */
 	if (flags & MSG_ZEROCOPY && size && sock_flag(sk, SOCK_ZEROCOPY)) {
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		skb = tcp_write_queue_tail(sk);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		uarg = sock_zerocopy_realloc(sk, size, skb_zcopy(skb));
 		if (!uarg) {
 			err = -ENOBUFS;
@@ -1231,9 +1231,9 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 		if (!zc)
 			uarg->zerocopy = 0;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (unlikely(flags & MSG_FASTOPEN || inet_sk(sk)->defer_connect) &&
 	    !tp->repair) {
 		err = tcp_sendmsg_fastopen(sk, msg, &copied_syn, size, uarg);
@@ -1242,13 +1242,13 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 		else if (err)
 			goto out_err;
 	}
-    /**
-     *  发送
-     */
+	/**
+	 *  发送
+	 */
 	timeo = sock_sndtimeo(sk, flags & MSG_DONTWAIT);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	tcp_rate_check_app_limited(sk);  /* is sending application-limited? */
 
 	/* Wait for a connection to finish. One exception is TCP Fast Open
@@ -1274,9 +1274,9 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 
 		/* 'common' sending to sendq */
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sockcm_init(&sockc, sk);
 	if (msg->msg_controllen) {
 		err = sock_cmsg_send(sk, msg, &sockc);
@@ -1293,22 +1293,22 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	copied = 0;
 
 restart:
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	mss_now = tcp_send_mss(sk, &size_goal, flags);
 
 	err = -EPIPE;
 	if (sk->sk_err || (sk->sk_shutdown & SEND_SHUTDOWN))
 		goto do_error;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	while (msg_data_left(msg)) {
 		int copy = 0;
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		skb = tcp_write_queue_tail(sk);
 		if (skb)
 			copy = size_goal - skb->len;
@@ -1377,9 +1377,9 @@ new_segment:
 
 			if (!sk_wmem_schedule(sk, copy))
 				goto wait_for_space;
-            /**
-             *  拷贝数据
-             */
+			/**
+			 *  拷贝数据
+			 */
 			err = skb_copy_to_page_nocache(sk, &msg->msg_iter, skb,
 						       pfrag->page,
 						       pfrag->offset,
@@ -1398,9 +1398,9 @@ new_segment:
 			pfrag->offset += copy;
 
 		} else {
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			err = skb_zerocopy_iter_stream(sk, skb, msg, copy, uarg);
 			if (err == -EMSGSIZE || err == -EEXIST) {
 				tcp_mark_push(tp, skb);
@@ -1483,9 +1483,9 @@ int tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
 	int ret;
 
 	lock_sock(sk);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = tcp_sendmsg_locked(sk, msg, size);
 	release_sock(sk);
 
@@ -2082,9 +2082,9 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 
 	if (unlikely(flags & MSG_ERRQUEUE))
 		return inet_recv_error(sk, msg, len, addr_len);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (sk_can_busy_loop(sk) && skb_queue_empty_lockless(&sk->sk_receive_queue) &&
 	    (sk->sk_state == TCP_ESTABLISHED))
 		sk_busy_loop(sk, nonblock);
@@ -2122,9 +2122,9 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		peek_seq = tp->copied_seq;
 		seq = &peek_seq;
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
 
 	do {
@@ -2323,9 +2323,9 @@ out:
 	return err;
 
 recv_urg:
-    /**
-     *  紧急？
-     */
+	/**
+	 *  紧急？
+	 */
 	err = tcp_recv_urg(sk, msg, len, flags);
 	goto out;
 
@@ -4203,12 +4203,12 @@ void __init tcp_init(void)
 	percpu_counter_init(&tcp_orphan_count, 0, GFP_KERNEL);
 	inet_hashinfo_init(&tcp_hashinfo);
 	inet_hashinfo2_init(&tcp_hashinfo, "tcp_listen_portaddr_hash",
-            			    thash_entries, 21,  /* one slot per 2 MB*/
-            			    0, 64 * 1024);
+						    thash_entries, 21,  /* one slot per 2 MB*/
+						    0, 64 * 1024);
 	tcp_hashinfo.bind_bucket_cachep =
-            		kmem_cache_create("tcp_bind_bucket",
-            				  sizeof(struct inet_bind_bucket), 0,
-            				  SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+					kmem_cache_create("tcp_bind_bucket",
+							  sizeof(struct inet_bind_bucket), 0,
+							  SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
 
 	/* Size and allocate the main established and bind bucket
 	 * hash tables.
@@ -4226,9 +4226,9 @@ void __init tcp_init(void)
 					0,
 					thash_entries ? 0 : 512 * 1024);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for (i = 0; i <= tcp_hashinfo.ehash_mask; i++)
 		INIT_HLIST_NULLS_HEAD(&tcp_hashinfo.ehash[i].chain, i);
 
@@ -4271,16 +4271,16 @@ void __init tcp_init(void)
 	pr_info("Hash tables configured (established %u bind %u)\n",
 		tcp_hashinfo.ehash_mask + 1, tcp_hashinfo.bhash_size);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	tcp_v4_init();
 	tcp_metrics_init();
 	BUG_ON(tcp_register_congestion_control(&tcp_reno) != 0);
 
-    /**
-     *  初始化 TCP tasklet
-     */
+	/**
+	 *  初始化 TCP tasklet
+	 */
 	tcp_tasklet_init();
 
 	mptcp_init();
