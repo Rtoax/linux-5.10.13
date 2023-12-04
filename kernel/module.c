@@ -2513,6 +2513,11 @@ static int apply_relocations(struct module *mod, const struct load_info *info)
 		/**
 		 *  32位采用 rel
 		 *  TODO: 2022年3月12日
+		 *
+		 * typedef struct {
+		 * 	Elf32_Addr		r_offset;
+		 * 	Elf32_Word		r_info;
+		 * } Elf32_Rel;
 		 */
 		else if (info->sechdrs[i].sh_type == SHT_REL)
 			err = apply_relocate(info->sechdrs, info->strtab,
@@ -2520,6 +2525,12 @@ static int apply_relocations(struct module *mod, const struct load_info *info)
 		/**
 		 *  重定位，rela，有 append 字段
 		 *  这是架构相关的
+		 *
+		 * typedef struct {
+		 * 	Elf32_Addr		r_offset;
+		 * 	Elf32_Word		r_info;
+		 * 	Elf32_Sword		r_addend;
+		 * } Elf32_Rela;
 		 */
 		else if (info->sechdrs[i].sh_type == SHT_RELA)
 			err = apply_relocate_add(info->sechdrs, info->strtab,
@@ -4439,7 +4450,7 @@ static int load_module(struct load_info *info, const char __user *uargs, int fla
 	setup_modinfo(mod, info);
 
 	/**
-	 *  修改符号的 st_value 值
+	 *  修改符号的 st_value 值，改为实际上内存需要的地址
 	 */
 	/* Fix up syms, so that st_value is a pointer to location. */
 	err = simplify_symbols(mod, info);
