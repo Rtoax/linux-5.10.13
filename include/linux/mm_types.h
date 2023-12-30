@@ -820,8 +820,16 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 #endif
 		struct user_namespace *user_ns;/* name space 资源的隔离，名字的隔离， cgroup 做资源的限制*/
 
-		/* store ref to file /proc/<pid>/exe symlink points to */
-		struct file __rcu *exe_file;    /* 符号链接 */
+		/**
+		 * store ref to file /proc/<pid>/exe symlink points to
+		 * 符号链接
+		 *
+		 * 在 加载 ELF 文件时，会通过
+		 *  load_elf_binary()
+		 *   ->begin_new_exec()
+		 *    ->set_mm_exe_file()
+		 */
+		struct file __rcu *exe_file;
 
 #ifdef CONFIG_MMU_NOTIFIER
         /**

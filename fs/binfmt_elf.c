@@ -566,6 +566,9 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 	 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
 	 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
 	 *   ...
+	 *
+	 * 以上面的例子：
+	 * return 0x0000000000020f70 + 0x00000000000025d0 - 0x0000000000000000
 	 */
 	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
 				ELF_PAGESTART(cmds[first_idx].p_vaddr);
@@ -1359,8 +1362,8 @@ out_free_interp:
 
 	/* Flush all traces of the currently running executable */
 	/**
-	 *  开始执行
-	 *  将交换 mm 结构
+	 * 1. mm->exe_file = bprm->file
+	 * 2. current->mm = bprm->mm
 	 */
 	retval = begin_new_exec(bprm);
 	if (retval)
@@ -1474,18 +1477,21 @@ out_free_interp:
 		}
 
 		/**
-		 *  权限
+		 * 获取 VMA 的权限
+		 * $ cat /proc/self/maps
+		 * 5557ef0000-5557ef9000 r-xp 00000000 b3:02 128986 /usr/bin/cat
+		 *                       ^^^^
 		 */
 		elf_prot = make_prot(elf_ppnt->p_flags, &arch_state,
 				     !!interpreter, false);
 
 		/**
-		 *  私有的，拒绝写，可执行的
+		 * 私有的，拒绝写，可执行的
 		 */
 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
 
 		/**
-		 *  p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
+		 * p_vaddr: 段的第一个字节驻留在内存中的虚拟地址。
 		 */
 		vaddr = elf_ppnt->p_vaddr;
 
@@ -1502,7 +1508,8 @@ out_free_interp:
 			 */
 			elf_flags |= MAP_FIXED;
 		/**
-		 * 如果是 ET_DYN 动态库
+		 * 非使用'-static'编译的可执行文件和动态库的 e_type = ET_DYN
+		 * https://www.codenong.com/50303305/
 		 */
 		} else if (elf_ex->e_type == ET_DYN) {
 			/*
@@ -1539,11 +1546,13 @@ out_free_interp:
 				/**
 				 * 加载的偏移量
 				 * x86 中ia32为： 0x000400000UL
+				 * aarch64: ELF_ET_DYN_BASE = 0x00005555555555
+				 * x86_64:  ELF_ET_DYN_BASE = 0x00555555554aaa
 				 */
 				load_bias = ELF_ET_DYN_BASE;
 				/**
-				 *  随机
-				 *  kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}
+				 * 随机
+				 * sudo bpftrace -e 'kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}'
 				 */
 				if (current->flags & PF_RANDOMIZE)
 					load_bias += arch_mmap_rnd();
@@ -1646,6 +1655,8 @@ out_free_interp:
 			 * As a result, only ET_DYN does this, since
 			 * some ET_EXEC (e.g. ia64) may have large virtual
 			 * memory holes between LOADs.
+			 *
+			 * 计算所有 PT_LOAD 所需要的内存
 			 */
 			total_size = total_mapping_size(elf_phdata,
 							elf_ex->e_phnum);
@@ -1681,6 +1692,17 @@ out_free_interp:
 		 * 7fa7d07000-7fa7d1c000 ---p 00187000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
 		 * 7fa7d1c000-7fa7d20000 r--p 0018c000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
 		 * 7fa7d20000-7fa7d22000 rw-p 00190000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
+		 *
+		 * $ sudo bpftrace -e 'kretprobe:elf_map { printf("%-8s %lx\n", comm, retval); }'
+		 * Attaching 1 probe...
+		 * cat      5571970000
+		 * cat      557198f000
+		 * cat      7fb1b4f000
+		 * cat      7fb1b8d000
+		 *
+		 * 有一个需要映射的就会执行一次 elf_map，比如上面的 /usr/bin/cat 和
+		 * /usr/lib/aarch64-linux-gnu/libc.so.6 各会调用一次 elf_map()
+		 * 返回成功的 error = 556faf0000
 		 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
@@ -1719,8 +1741,10 @@ out_free_interp:
 			 *   ...
 			 */
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
+
 			/**
-			 *  如果是动态库
+			 *  如果是动态库 或 非 '-static' 编译的 ELF 可执行文件
+			 *
 			 *   $ readelf -l /usr/lib64/libc.so.6
 			 *   Program Headers:
 			 *   Type           Offset             VirtAddr           PhysAddr
@@ -1740,16 +1764,17 @@ out_free_interp:
 			 */
 			if (elf_ex->e_type == ET_DYN) {
 				/**
-				 *  偏移 = 被映射的地址 - 计算出来的虚拟地址
+				 * 偏移 = 被映射的地址 - 计算出来的虚拟地址
+				 * error: 从 /proc/PID/maps 看到的 VMA.start 地址
 				 */
 				load_bias += error -
 				             ELF_PAGESTART(load_bias + vaddr);
 				/**
-				 *  真正被加载到的虚拟地址
+				 * 真正被加载到的虚拟地址
 				 */
 				load_addr += load_bias;
 				/**
-				 *  因为是 动态段，那么就需要重定位喽
+				 * 因为是 动态段，那么就需要重定位喽
 				 */
 				reloc_func_desc = load_bias;
 			}
@@ -1760,10 +1785,11 @@ out_free_interp:
 		k = elf_ppnt->p_vaddr;
 
 		/**
-		 *  可执行
+		 * 可执行
 		 */
 		if ((elf_ppnt->p_flags & PF_X) && k < start_code)
 			start_code = k;
+
 		if (start_data < k)
 			start_data = k;
 

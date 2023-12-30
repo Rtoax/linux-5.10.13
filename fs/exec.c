@@ -937,7 +937,8 @@ static int exec_mmap(struct mm_struct *mm)  /* 见`execve()` */
 
 	/* Notify parent that we're no longer interested in the old VM */
 	tsk = current;
-	old_mm = current->mm;   /* 老的 mm 结构存在 */
+	/* 老的 mm 结构存在 */
+	old_mm = current->mm;
 	exec_mm_release(tsk, old_mm);
 	if (old_mm)
 		sync_mm_rss(old_mm);
@@ -1203,6 +1204,8 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
  * seen by userspace since either the process is already taking a fatal
  * signal (via de_thread() or coredump), or will have SEGV raised
  * (after exec_mmap()) by search_binary_handler (see below).
+ *
+ * 1. 加载 ELF 文件时会调用: load_elf_binary()->begin_new_exec()
  */
 int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 {
@@ -1235,6 +1238,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	 * to be lockless.
 	 *
 	 * 必须在`exec_mmap()`前执行
+	 * mm->exe_file = bprm->file
 	 */
 	set_mm_exe_file(bprm->mm, bprm->file);
 
@@ -1252,9 +1256,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 	acct_arg_size(bprm, 0);
 
 	/**
-	 *  正经八百的 映射
-	 *  将这个 mm 映射到当前进程
-	 *  注意：我要换 mm_struct 结构啦????
+	 * 设置 current->mm = bprm->mm
 	 */
 	retval = exec_mmap(bprm->mm);
 	if (retval)
@@ -1330,7 +1332,7 @@ int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 		set_dumpable(current->mm, SUID_DUMP_USER);
 
 	/**
-	 *  perf
+	 * perf
 	 */
 	perf_event_exec();
 
