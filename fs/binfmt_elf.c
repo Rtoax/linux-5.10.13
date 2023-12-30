@@ -103,15 +103,15 @@ static int elf_core_dump(struct coredump_params *cprm);
 static struct linux_binfmt elf_format = {
 	.module		= THIS_MODULE,
 	/**
-	 *  加载elf
+	 * 加载elf
 	 */
 	.load_binary	= load_elf_binary,
 	/**
-	 *  加载库文件
+	 * 加载库文件，这个函数只有在 uselib(2)(CONFIG_USELIB) 中用到了
 	 */
 	.load_shlib	= load_elf_library,
 	/**
-	 *  生成 core dump文件
+	 * 生成 core dump文件
 	 */
 	.core_dump	= elf_core_dump,
 	.min_coredump	= ELF_EXEC_PAGESIZE,
@@ -809,21 +809,36 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 		goto out;
 	}
 
+	/**
+	 * 遍历程序头
+	 */
 	eppnt = interp_elf_phdata;
 	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
+		/**
+		 * 如果是需要加载道内存的
+		 */
 		if (eppnt->p_type == PT_LOAD) {
+			/**
+			 * 这个 PT_LOAD 的默认权限
+			 */
 			int elf_type = MAP_PRIVATE | MAP_DENYWRITE;
 			int elf_prot = make_prot(eppnt->p_flags, arch_state,
 						 true, true);
 			unsigned long vaddr = 0;
 			unsigned long k, map_addr;
 
+			/**
+			 *
+			 */
 			vaddr = eppnt->p_vaddr;
 			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
 				elf_type |= MAP_FIXED_NOREPLACE;
 			else if (no_base && interp_elf_ex->e_type == ET_DYN)
 				load_addr = -vaddr;
 
+			/**
+			 *
+			 */
 			map_addr = elf_map(interpreter, load_addr + vaddr,
 					eppnt, elf_prot, elf_type, total_size);
 			total_size = 0;
@@ -1021,6 +1036,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 * [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
 	 */
 	struct file *interpreter = NULL; /* to shut gcc up */
+	/**
+	 * 初始都是 0
+	 */
  	unsigned long load_addr = 0, load_bias = 0;
 	int load_addr_set = 0;
 	unsigned long error;
@@ -1101,6 +1119,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		/**
 		 *  查找 解释器
+		 * rongtao@rpi5:~$ readelf -l /usr/bin/cat
+		 * ...
+		 * Program Headers:
+		 * Type           Offset             VirtAddr           PhysAddr
+		 * 		FileSiz            MemSiz              Flags  Align
+		 * INTERP         0x0000000000000238 0x0000000000000238 0x0000000000000238
+		 * 		0x000000000000001b 0x000000000000001b  R      0x1
+		 * [Requesting program interpreter: /lib/ld-linux-aarch64.so.1]
 		 */
 		if (elf_ppnt->p_type != PT_INTERP)
 			continue;
@@ -1122,13 +1148,19 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (!elf_interpreter)
 			goto out_free_ph;
 
-		/* 读取分配器名称字符串 */
+		/**
+		 * 读取分配器名称字符串
+		 * 如 /lib/ld-linux-aarch64.so.1: p_filesz == 0x1b
+		 */
 		retval = elf_read(bprm->file, elf_interpreter, elf_ppnt->p_filesz,
 				  elf_ppnt->p_offset);
 		if (retval < 0)
 			goto out_free_interp;
 
-		/* make sure path is NULL terminated */
+		/* make sure path is NULL terminated
+		 * p_filesz == 0x1b
+		 * elf_interpreter = "/lib/ld-linux-aarch64.so.1"
+		 */
 		retval = -ENOEXEC;
 		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 			goto out_free_interp;
@@ -1152,7 +1184,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		would_dump(bprm, interpreter);
 
 		/**
-		 *  解释器的ELF头
+		 * 解释器的ELF头
+		 * struct elfhdr *interp_elf_ex;
 		 */
 		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
 		if (!interp_elf_ex) {
@@ -1160,7 +1193,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_ph;
 		}
 
-		/* Get the exec headers 读取解释器ELF文件头 */
+		/* Get the exec headers 读取解释器ELF文件头
+		 * struct file *interpreter;
+		 * struct elfhdr *interp_elf_ex;
+		 */
 		retval = elf_read(interpreter, interp_elf_ex,
 				  sizeof(*interp_elf_ex), 0);
 		if (retval < 0)
@@ -1219,7 +1255,7 @@ out_free_interp:
 		 */
 		switch (elf_ppnt->p_type) {
 		/**
-		 * stack
+		 * GNU_STACK
 		 */
 		case PT_GNU_STACK:
 			if (elf_ppnt->p_flags & PF_X)
@@ -1249,6 +1285,7 @@ out_free_interp:
 	/**
 	 *  解释器可用
 	 *  [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+	 *  struct file *interpreter;
 	 */
 	/* Some simple consistency checks for the interpreter */
 	if (interpreter) {
@@ -1310,6 +1347,10 @@ out_free_interp:
 	 * the exec syscall.
 	 */
 
+	/**
+	 * struct file *interpreter;
+	 * struct elfhdr *interp_elf_ex;
+	 */
 	retval = arch_check_elf(elf_ex,
 				!!interpreter, interp_elf_ex,
 				&arch_state);
@@ -1512,13 +1553,14 @@ out_free_interp:
 				 */
 				alignment = maximum_alignment(elf_phdata, elf_ex->e_phnum);
 				if (alignment)
-				    /**
-				     *  把 偏移量对齐
-				     */
+					/**
+					 *  把 偏移量对齐
+					 */
 					load_bias &= ~(alignment - 1);
 				/**
-				 *  MAP_FIXED标志的一个特性是：
-				 *  如果你指定的地址和已有的线性区重叠，那么就抛弃已有的线性区映射。
+				 * MAP_FIXED标志的一个特性是：
+				 * 如果你指定的地址和已有的线性区重叠，那么就抛弃已有的
+				 * 线性区映射。
 				 */
 				elf_flags |= MAP_FIXED;
 			} else
@@ -1590,20 +1632,20 @@ out_free_interp:
 			 * 在最新的内核(v6.3-rc2)中有注释：
 			 *
 			 * Calculate the entire size of the ELF mapping
-             * (total_size), used for the initial mapping,
-             * due to load_addr_set which is set to true later
-             * once the initial mapping is performed.
-             *
-             * Note that this is only sensible when the LOAD
-             * segments are contiguous (or overlapping). If
-             * used for LOADs that are far apart, this would
-             * cause the holes between LOADs to be mapped,
-             * running the risk of having the mapping fail,
-             * as it would be larger than the ELF file itself.
-             *
-             * As a result, only ET_DYN does this, since
-             * some ET_EXEC (e.g. ia64) may have large virtual
-             * memory holes between LOADs.
+			 * (total_size), used for the initial mapping,
+			 * due to load_addr_set which is set to true later
+			 * once the initial mapping is performed.
+			 *
+			 * Note that this is only sensible when the LOAD
+			 * segments are contiguous (or overlapping). If
+			 * used for LOADs that are far apart, this would
+			 * cause the holes between LOADs to be mapped,
+			 * running the risk of having the mapping fail,
+			 * as it would be larger than the ELF file itself.
+			 *
+			 * As a result, only ET_DYN does this, since
+			 * some ET_EXEC (e.g. ia64) may have large virtual
+			 * memory holes between LOADs.
 			 */
 			total_size = total_mapping_size(elf_phdata,
 							elf_ex->e_phnum);
@@ -1621,7 +1663,24 @@ out_free_interp:
 		 *
 		 *  vaddr = elf_ppnt->p_vaddr;
 		 *
-		 * sudo bpftrace -e 'kprobe:elf_map { printf("%lx\n", arg2); }
+		 * $ sudo bpftrace -e 'kprobe:elf_map { printf("%-8s %lx\n", comm, arg2); }'
+		 * Attaching 1 probe...
+		 * cat      ffffff813d88be70
+		 * cat      ffffff813d88bea8
+		 * cat      ffffff813d88b400
+		 * cat      ffffff813d88b438
+		 *
+		 * $ cat /proc/self/maps
+		 * 556faf0000-556faf9000 r-xp 00000000 b3:02 128986  /usr/bin/cat
+		 * 556fb0f000-556fb10000 r--p 0000f000 b3:02 128986  /usr/bin/cat
+		 * 556fb10000-556fb11000 rw-p 00010000 b3:02 128986  /usr/bin/cat
+		 * 5573da4000-5573dc5000 rw-p 00000000 00:00 0       [heap]
+		 * 7fa7af4000-7fa7b16000 rw-p 00000000 00:00 0
+		 * 7fa7b16000-7fa7b80000 r--p 00000000 b3:02 156466  /usr/lib/locale/locale-archive
+		 * 7fa7b80000-7fa7d07000 r-xp 00000000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
+		 * 7fa7d07000-7fa7d1c000 ---p 00187000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
+		 * 7fa7d1c000-7fa7d20000 r--p 0018c000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
+		 * 7fa7d20000-7fa7d22000 rw-p 00190000 b3:02 134589  /usr/lib/aarch64-linux-gnu/libc.so.6
 		 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);

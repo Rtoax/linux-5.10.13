@@ -40,7 +40,7 @@
  * KIMAGE_VADDR - the virtual address of the start of the kernel image.
  * VA_BITS - the maximum number of bits for virtual addresses.
  */
-#define VA_BITS			(CONFIG_ARM64_VA_BITS)
+#define VA_BITS			(CONFIG_ARM64_VA_BITS)/*48 maybe*/
 #define _PAGE_OFFSET(va)	(-(UL(1) << (va)))
 #define PAGE_OFFSET		(_PAGE_OFFSET(VA_BITS))
 #define KIMAGE_VADDR		(MODULES_END)
@@ -59,7 +59,7 @@
 #if VA_BITS > 48
 #define VA_BITS_MIN		(48)
 #else
-#define VA_BITS_MIN		(VA_BITS)
+#define VA_BITS_MIN		(VA_BITS)/*48 maybe*/
 #endif
 
 #define _PAGE_END(va)		(-(UL(1) << ((va) - 1)))

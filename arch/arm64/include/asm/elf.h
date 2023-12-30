@@ -130,7 +130,7 @@
 #ifdef CONFIG_ARM64_FORCE_52BIT
 #define ELF_ET_DYN_BASE		(2 * TASK_SIZE_64 / 3)
 #else
-#define ELF_ET_DYN_BASE		(2 * DEFAULT_MAP_WINDOW_64 / 3)
+#define ELF_ET_DYN_BASE		(2 * DEFAULT_MAP_WINDOW_64 / 3) /*1<<48*/
 #endif /* CONFIG_ARM64_FORCE_52BIT */
 
 #ifndef __ASSEMBLY__
