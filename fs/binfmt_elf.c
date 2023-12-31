@@ -391,7 +391,8 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 }
 
 /**
- *  映射 ELF文件
+ * 映射 ELF文件
+ * sudo bpftrace -e 'kretprobe:elf_map { printf("%-8s %lx %s\n", comm, retval, kstack); }'
  */
 static unsigned long elf_map(struct file *filep, unsigned long addr,
 		const struct elf_phdr *eppnt, int prot, int type,
@@ -818,7 +819,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 	eppnt = interp_elf_phdata;
 	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
 		/**
-		 * 如果是需要加载道内存的
+		 * 如果是需要加载到内存的
 		 */
 		if (eppnt->p_type == PT_LOAD) {
 			/**
@@ -1846,7 +1847,7 @@ out_free_interp:
 	}
 
 	/**
-	 * 指定了解释器
+	 * 指定了解释器，一般情况下，这一定会成立
 	 */
 	if (interpreter) {
 		/**
@@ -1910,7 +1911,6 @@ out_free_interp:
 	 *  查看方式：
 	 *  $ hexdump -x /proc/self/auxv
 	 */
-	/* 创建 elf table TODO */
 	retval = create_elf_tables(bprm, elf_ex,
 			  load_addr, interp_load_addr, e_entry);
 	if (retval < 0)
@@ -1992,6 +1992,10 @@ out_free_interp:
 	 *
 	 *  从当前的位置开始执行新的程序
 	 *  需要填入：当前寄存器的值，程序elf入口点，
+	 *
+	 *  elf_entry
+	 *  1. 当有解释器时，为解释器的加载地址
+	 *  2. 没有解释器时，为ELF程序入口点
 	 */
 	start_thread(regs, elf_entry, bprm->p); /* 给寄存器赋值 */
 	retval = 0;

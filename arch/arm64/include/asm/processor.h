@@ -187,7 +187,7 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 	__tls;								\
  })
 #else
-//#define task_user_tls(t)	(&(t)->thread.uw.tp_value)
+#define task_user_tls(t)	(&(t)->thread.uw.tp_value)
 #endif
 
 /* Sync TPIDR_EL0 back to thread_struct for current */
@@ -201,9 +201,9 @@ static inline void start_thread_common(struct pt_regs *regs, unsigned long pc)
 {
 	memset(regs, 0, sizeof(*regs));
 	forget_syscall(regs);
-    /**
-     *  从这里开始执行
-     */
+	/**
+	 *  从这里开始执行
+	 */
 	regs->pc = pc;
 
 	if (system_uses_irq_prio_masking())
@@ -215,9 +215,9 @@ static inline void start_thread_common(struct pt_regs *regs, unsigned long pc)
 static inline void start_thread(struct pt_regs *regs, unsigned long pc,
 				unsigned long sp)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	start_thread_common(regs, pc);
 	regs->pstate = PSR_MODE_EL0t;
 	spectre_v4_enable_task_mitigation(current);
