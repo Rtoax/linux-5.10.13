@@ -553,7 +553,9 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	return ret;
 }
 /**
- *  映射
+ * 映射文件
+ *
+ * sudo bpftrace -e 'kprobe:vm_mmap {printf("%-8s %-16lx %-8lx\n", comm, arg1, arg2);}'
  */
 unsigned long vm_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,

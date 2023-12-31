@@ -1725,6 +1725,10 @@ out_free_interp:
 			/**
 			 *  加载地址 = 虚拟地址 - 偏移
 			 *
+			 *  - p_offset（Program Header-File Offset）
+			 *    此字段（8 字节）给出本段内容在文件中的位置，即段内容的开始
+			 *    位置相对于文件开头的偏移量。
+			 *
 			 *   $ readelf -l /usr/bin/ls
 			 *   ...
 			 *   Program Headers:
