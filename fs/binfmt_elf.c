@@ -1552,7 +1552,8 @@ out_free_interp:
 				 */
 				load_bias = ELF_ET_DYN_BASE;
 				/**
-				 * 随机
+				 * 获取随机数，每次 exec(2) 之调用一次
+				 *
 				 * sudo bpftrace -e 'kretprobe:arch_mmap_rnd{printf("comm = %s %016lx\n", comm, retval);}'
 				 */
 				if (current->flags & PF_RANDOMIZE)
@@ -1598,7 +1599,7 @@ out_free_interp:
 			 *  |   |
 			 *  |   |   <-----------
 			 *  |   |     load_bias
-			 *  |   | <------------- vaddr
+			 *  |   | <------------- vaddr = elf_ppnt->p_vaddr
 			 *  |   |
 			 *  +---+
 			 */
