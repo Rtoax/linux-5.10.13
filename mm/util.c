@@ -495,15 +495,7 @@ int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
 EXPORT_SYMBOL_GPL(account_locked_vm);
 
 /**
- * @brief
  *
- * @param file
- * @param addr
- * @param len
- * @param prot
- * @param flag
- * @param pgoff
- * @return unsigned long
  */
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
@@ -514,10 +506,10 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long populate;
 	LIST_HEAD(uf);
 
-    /**
-     * @brief 映射文件 - 鉴权
-     *
-     */
+	/**
+	 * @brief 映射文件 - 鉴权
+	 *
+	 */
 	ret = security_mmap_file(file, prot, flag);
 	/**
 	 * @brief 鉴权成功，进行映射
@@ -530,10 +522,10 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		 */
 		if (mmap_write_lock_killable(mm))
 			return -EINTR;
-        /**
-         * @brief 核心函数
-         *
-         */
+		/**
+		 * @brief 核心函数
+		 *
+		 */
 		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate, &uf);
 
 		/**
@@ -543,10 +535,10 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		mmap_write_unlock(mm);
 		userfaultfd_unmap_complete(mm, &uf);
 
-        /**
-         * @brief 如果需要，立即填充vma对应的内存
-         *
-         */
+		/**
+		 * @brief 如果需要，立即填充vma对应的内存
+		 *
+		 */
 		if (populate)
 			mm_populate(ret, populate);
 	}
