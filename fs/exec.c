@@ -1206,6 +1206,9 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
  * (after exec_mmap()) by search_binary_handler (see below).
  *
  * 1. 加载 ELF 文件时会调用: load_elf_binary()->begin_new_exec()
+ *
+ * - mm->exe_file = bprm->file
+ * - current->mm = bprm->mm
  */
 int begin_new_exec(struct linux_binprm * bprm)  /* execve() */
 {
@@ -1411,6 +1414,11 @@ void setup_new_exec(struct linux_binprm * bprm)
 	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
 
+	/**
+	 * 赋值
+	 * mm->mmap_base
+	 * mm->get_unmapped_area
+	 */
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
 
 	arch_setup_new_exec();

@@ -86,13 +86,14 @@ static int elf_core_dump(struct coredump_params *cprm);
 #if ELF_EXEC_PAGESIZE > PAGE_SIZE
 #define ELF_MIN_ALIGN	ELF_EXEC_PAGESIZE
 #else
-#define ELF_MIN_ALIGN	PAGE_SIZE
+#define ELF_MIN_ALIGN	PAGE_SIZE /* 0x0000 0000 0000 1000 = 4096 */
 #endif
 
 #ifndef ELF_CORE_EFLAGS
 #define ELF_CORE_EFLAGS	0
 #endif
 
+/* 0xffff_ffff_ffff_f000 & _v */
 #define ELF_PAGESTART(_v) ((_v) & ~(unsigned long)(ELF_MIN_ALIGN-1))
 #define ELF_PAGEOFFSET(_v) ((_v) & (ELF_MIN_ALIGN-1))
 #define ELF_PAGEALIGN(_v) (((_v) + ELF_MIN_ALIGN - 1) & ~(ELF_MIN_ALIGN - 1))
@@ -473,7 +474,7 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	 * aarch64
 	 * =========================================================================
 	 */
-	addr = ELF_PAGESTART(addr);
+	addr = ELF_PAGESTART(addr); /* 0xffff_ffff_ffff_f000 & _v */
 	size = ELF_PAGEALIGN(size);
 
 	/* mmap() will return -EINVAL if given a zero size, but a
@@ -573,6 +574,7 @@ static unsigned long total_mapping_size(const struct elf_phdr *cmds, int nr)
 	 */
 	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
 				ELF_PAGESTART(cmds[first_idx].p_vaddr);
+				/* 0xffff_ffff_ffff_f000 & _v */
 }
 /**
  *
@@ -852,6 +854,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 
 			if (!load_addr_set &&
 			    interp_elf_ex->e_type == ET_DYN) {
+				/* map_addr - 0xffff_ffff_ffff_f000 & _v */
 				load_addr = map_addr - ELF_PAGESTART(vaddr);
 				load_addr_set = 1;
 			}
@@ -1171,6 +1174,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		/**
 		 *  打开 解释器文件，类似如下：
+		 *  struct file *interpreter
+		 *
 		 *  [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
 		 */
 		interpreter = open_exec(elf_interpreter);
@@ -1382,7 +1387,9 @@ out_free_interp:
 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
 		current->flags |= PF_RANDOMIZE;
 
-
+	/**
+	 * me->mm->task_size = TASK_SIZE, ...
+	 */
 	setup_new_exec(bprm);
 
 	/* Do this so that we can load the interpreter, if need be.  We will
@@ -1603,6 +1610,7 @@ out_free_interp:
 			 *  |   |
 			 *  +---+
 			 */
+			/* 0xffff_ffff_ffff_f000 & _v */
 			load_bias = ELF_PAGESTART(load_bias - vaddr);
 
 			/**

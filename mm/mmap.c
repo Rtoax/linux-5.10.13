@@ -1732,7 +1732,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 	*populate = 0;
 
-    /* 长度合法 */
+	/* 长度合法 */
 	if (!len)
 		return -EINVAL;
 
@@ -1743,9 +1743,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 *  mounted, in which case we dont add PROT_EXEC.)
 	 *
 	 * PROT_EXEC  Pages may be executed.
-     * PROT_READ  Pages may be read.
-     * PROT_WRITE Pages may be written.
-     * PROT_NONE  Pages may not be accessed.
+	 * PROT_READ  Pages may be read.
+	 * PROT_WRITE Pages may be written.
+	 * PROT_NONE  Pages may not be accessed.
 	 */
 
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
@@ -1756,9 +1756,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
 
-    /**
-     *	MAP_FIXED 将覆盖已映射的地址空间
-     */
+	/**
+	 *	MAP_FIXED 将覆盖已映射的地址空间
+	*/
 	if (!(flags & MAP_FIXED))
 		addr = round_hint_to_min(addr);
 
@@ -1799,11 +1799,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	if (IS_ERR_VALUE(addr))
 		return addr;
 
-    /**
-     *  不能覆盖已经存在的地址空间
-     */
+	/**
+	 *  不能覆盖已经存在的地址空间
+	 */
 	if (flags & MAP_FIXED_NOREPLACE) {
-        /**
+		/**
 		 * 查找最小的VMA，满足addr < vma->vm_end
 		 */
 		struct vm_area_struct *vma = find_vma(mm, addr);
@@ -1823,10 +1823,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			return -EEXIST;
 	}
 
-    /**
-     *  如果prot只指定了 PROT_EXEC(可执行的)
-     *  TODO 2021年7月9日
-     */
+	/**
+	 *  如果prot只指定了 PROT_EXEC(可执行的)
+	 *  TODO 2021年7月9日
+	 */
 	if (prot == PROT_EXEC) {
 		pkey = execute_only_pkey(mm);
 		if (pkey < 0)
@@ -1848,46 +1848,46 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		if (!can_do_mlock())
 			return -EPERM;
 
-    /**
+	/**
 	 * 如果指定了内存lock标志，但是lock的长度超标，出错返回
 	 *
 	 */
 	if (mlock_future_check(mm, vm_flags, len))
 		return -EAGAIN;
 
-    /**
-     *  文件映射
-     *
-     * 文件内存映射的一系列判断和处理
-     */
+	/**
+	 *  文件映射
+	 *
+	 * 文件内存映射的一系列判断和处理
+	 */
 	if (file) {
-        /* 获取inode */
+		/* 获取inode */
 		struct inode *inode = file_inode(file); /* file -> inode */
 		unsigned long flags_mask;
 
-        /**
-         * @brief 指定的page offset和len，需要在文件的合法长度内
-         *
-         */
+		/**
+		 * @brief 指定的page offset和len，需要在文件的合法长度内
+		 *
+		 */
 		if (!file_mmap_ok(file, inode, pgoff, len))
 			return -EOVERFLOW;
 
-        /**
-         * @brief 本文件支持的mask，和mmap()传递下来的flags进行判断
-         *
-         */
+		/**
+		 * @brief 本文件支持的mask，和mmap()传递下来的flags进行判断
+		 *
+		 */
 		flags_mask = LEGACY_MAP_MASK | file->f_op->mmap_supported_flags;
 
-        /**
-         * @brief 映射类型：私有，共享
-         *
-         * @param MAP_TYPE
-         */
+		/**
+		 * @brief 映射类型：私有，共享
+		 *
+		 * @param MAP_TYPE
+		 */
 		switch (flags & MAP_TYPE) {
-        /**
-         * @brief 共享映射
-         *
-         */
+		/**
+		 * @brief 共享映射
+		 *
+		 */
 		case MAP_SHARED:
 			/*
 			 * Force use of MAP_SHARED_VALIDATE with non-legacy
@@ -1899,18 +1899,18 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			flags &= LEGACY_MAP_MASK;
 			fallthrough;
 
-        /**
-         * @brief 共享&校验映射
-         *
-         */
+		/**
+		 * @brief 共享&校验映射
+		 *
+		 */
 		case MAP_SHARED_VALIDATE:
 			if (flags & ~flags_mask)
 				return -EOPNOTSUPP;
 			if (prot & PROT_WRITE) {
-                /* 写权限冲突 */
+				/* 写权限冲突 */
 				if (!(file->f_mode & FMODE_WRITE))
 					return -EACCES;
-                /* 不能写映射交换文件 */
+				/* 不能写映射交换文件 */
 				if (IS_SWAPFILE(file->f_mapping->host))
 					return -ETXTBSY;
 			}
@@ -1929,21 +1929,21 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			if (locks_verify_locked(file))
 				return -EAGAIN;
 
-            /* 将 vma 设置为 共享 */
+			/* 将 vma 设置为 共享 */
 			vm_flags |= VM_SHARED | VM_MAYSHARE;
 			if (!(file->f_mode & FMODE_WRITE))
 				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
 			fallthrough;
 
-        /**
-         * @brief 私有映射
-         *
-         */
+		/**
+		 * @brief 私有映射
+		 *
+		 */
 		case MAP_PRIVATE:
-            /**
-             * @brief 私有必须可读
-             *
-             */
+			/**
+			 * @brief 私有必须可读
+			 *
+			 */
 			if (!(file->f_mode & FMODE_READ))
 				return -EACCES;
 			if (path_noexec(&file->f_path)) {
@@ -1952,10 +1952,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 				vm_flags &= ~VM_MAYEXEC;/* 文件不可执行，vma也不可执行 */
 			}
 
-            /**
-             * @brief 文件操作符 mmap 指针不能为空
-             *
-             */
+			/**
+			 * @brief 文件操作符 mmap 指针不能为空
+			 *
+			 */
 			if (!file->f_op->mmap)  /* 如果 mmap 指针为空 */
 				return -ENODEV;     /* 没有这个设备 */
 			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))   /* vma 向上还是向下 */
@@ -1966,11 +1966,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			return -EINVAL;
 		}
 
-    /**
-     *  匿名映射
-     *
-     *  匿名内存映射的一系列判断和处理
-     */
+	/**
+	 *  匿名映射
+	 *
+	 *  匿名内存映射的一系列判断和处理
+	 */
 	} else {    /* 如果不是文件映射 */
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:    /* 共享的 */
@@ -2010,15 +2010,15 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			vm_flags |= VM_NORESERVE;           /* 大页内存不能 swap 交换 */
 	}
 
-    /**
-     *  核心 mmap 函数 , 上面还有个 `get_unmapped_area()`
-     *
-     *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
-     */
+	/**
+	 *  核心 mmap 函数 , 上面还有个 `get_unmapped_area()`
+	 *
+	 *  根据查找到的地址、flags，正式在线性地址红黑树中插入一个新的VMAs
+	 */
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
 
-    /* 默认只是分配vma，不进行实际的内存分配和mmu映射，延迟到page_fault时才处理
-        如果设置了立即填充的标志，在分配vma时就分配好内存 */
+	/* 默认只是分配vma，不进行实际的内存分配和mmu映射，延迟到page_fault时才处理
+	 * 如果设置了立即填充的标志，在分配vma时就分配好内存 */
 	if (!IS_ERR_VALUE(addr) &&
 	    ((vm_flags & VM_LOCKED) ||
 	     (flags & (MAP_POPULATE | MAP_NONBLOCK)) == MAP_POPULATE))
