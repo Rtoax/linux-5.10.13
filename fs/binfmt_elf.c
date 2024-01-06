@@ -514,6 +514,7 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	 */
 	return(map_addr);
 }
+
 /**
  *  计算 PT_LOAD 程序总大小
  */
@@ -1724,6 +1725,7 @@ out_free_interp:
 
 		/**
 		 *  加载地址，程序第一次遍历时候， load_addr_set=0
+		 *  这只是为了计算 load_addr
 		 */
 		if (!load_addr_set) {
 			/**
@@ -1753,6 +1755,8 @@ out_free_interp:
 			 *   LOAD           0x000000000001ff70 0x0000000000020f70 0x0000000000020f70
 			 *                  0x0000000000001308 0x00000000000025d0  RW     0x1000
 			 *   ...
+			 *   p_vaddr  段数据的第一个字节在内存中的虚拟地址 (只是一个偏移)
+			 *   p_offset 段数据的第一个字节相对于文件开头的偏移量
 			 */
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
 
@@ -1775,6 +1779,7 @@ out_free_interp:
 			 *   DYNAMIC        0x00000000001f8ba0 0x00000000001f9ba0 0x00000000001f9ba0
 			 *                  0x00000000000001e0 0x00000000000001e0  RW     0x8
 			 *   ...
+			 *   这里基本上不会运行吧？
 			 */
 			if (elf_ex->e_type == ET_DYN) {
 				/**
@@ -1836,7 +1841,7 @@ out_free_interp:
 	} /* 遍历所有 程序头结束 */
 
 	/**
-	 *  全部都要偏移一个随机地址，安全呗
+	 *
 	 */
 	e_entry = elf_ex->e_entry + load_bias;
 	elf_bss += load_bias;
@@ -1916,7 +1921,6 @@ out_free_interp:
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
 	/**
-	 *
 	 ** 设置辅助向量
 	 *  辅助向量是放在程序栈里的信息（通过内核的ELF常规加载方式加载）
 	 *  附带了传递给动态连接器的程序相关的特定信息。
@@ -1995,7 +1999,7 @@ out_free_interp:
 #endif
 
 	/**
-	 *
+	 * current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;
 	 */
 	finalize_exec(bprm);
 
@@ -2006,11 +2010,11 @@ out_free_interp:
 	 *  从当前的位置开始执行新的程序
 	 *  需要填入：当前寄存器的值，程序elf入口点，
 	 *
-	 *  elf_entry
+	 *  elf_entry - 给寄存器赋值
 	 *  1. 当有解释器时，为解释器的加载地址
 	 *  2. 没有解释器时，为ELF程序入口点
 	 */
-	start_thread(regs, elf_entry, bprm->p); /* 给寄存器赋值 */
+	start_thread(regs, elf_entry, bprm->p);
 	retval = 0;
 out:
 	return retval;
