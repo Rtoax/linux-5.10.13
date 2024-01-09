@@ -1535,7 +1535,7 @@ out_free_interp:
 			 * and loaders (ET_DYN without INTERP, since they
 			 * _are_ the ELF interpreter). The loaders must
 			 * be loaded away from programs since the program
-			 * may otherwise collide with the loader (especially
+			 * may otherwise collide(碰撞) with the loader (especially
 			 * for ET_EXEC which does not have a randomized
 			 * position). For example to handle invocations of
 			 * "./ld.so someprog" to test out a new version of
@@ -1550,6 +1550,8 @@ out_free_interp:
 			 * ELF_ET_DYN_BASE and loaders are loaded into the
 			 * independently randomized mmap region (0 load_bias
 			 * without MAP_FIXED).
+			 *
+			 * 如果有链接器，需要分配一块充足的区域
 			 */
 			if (interpreter) {
 				/**
