@@ -60,7 +60,8 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 #define SIZE_128M    (128 * 1024 * 1024UL)
 
 /**
- * 分为两种模式，legacy 和 modern
+ *
+ 分为两种模式，legacy 和 modern
  *  https://rtoax.blog.csdn.net/article/details/118602363
  */
 static int mmap_is_legacy(void)
@@ -148,22 +149,23 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 		unsigned long random_factor, unsigned long task_size,
 		struct rlimit *rlim_stack)
 {
-    /**
-     *  传统layout模式下，mmap的基址：
-     *  PAGE_ALIGN(task_size / 3) + rnd // 用户空间的1/3处，再加上随机偏移
-     *
-     *  https://rtoax.blog.csdn.net/article/details/118602363
-     */
+	/**
+	 *  传统layout模式下，mmap的基址：
+	 *  PAGE_ALIGN(task_size / 3) + rnd // 用户空间的1/3处，再加上随机偏移
+	 *
+	 *  https://rtoax.blog.csdn.net/article/details/118602363
+	 */
 	*legacy_base = mmap_legacy_base(random_factor, task_size);
 	if (mmap_is_legacy())
 		*base = *legacy_base;
 	else
-        /**
-         *  现代layout模式下，mmap的基址:
-         *  PAGE_ALIGN(task_size - stask_gap - rnd) // 用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
-         *
-         *  https://rtoax.blog.csdn.net/article/details/118602363
-         */
+		/**
+		 *  现代layout模式下，mmap的基址:
+		 *  PAGE_ALIGN(task_size - stask_gap - rnd)
+		 *  用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+		 *
+		 *  https://rtoax.blog.csdn.net/article/details/118602363
+		 */
 		*base = mmap_base(random_factor, task_size, rlim_stack);
 }
 
@@ -179,22 +181,22 @@ static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
  */
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
-    /**
-     *  (1) 给get_unmapped_area成员赋值
-     *  https://rtoax.blog.csdn.net/article/details/118602363
-     */
+	/**
+	 *  (1) 给get_unmapped_area成员赋值
+	 *  https://rtoax.blog.csdn.net/article/details/118602363
+	 */
 	if (mmap_is_legacy())
 		mm->get_unmapped_area = arch_get_unmapped_area;
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown; /* 64bit modern 模式 */
 
-    /**
-     *  (2) 计算64bit模式下，mmap的基地址
-     *       传统layout模式：用户空间的1/3处，再加上随机偏移
-     *       现代layout模式：用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
-     *
-     *  https://rtoax.blog.csdn.net/article/details/118602363
-     */
+	/**
+	 *  (2) 计算64bit模式下，mmap的基地址
+	 *       传统layout模式：用户空间的1/3处，再加上随机偏移
+	 *       现代layout模式：用户空间顶端减去堆栈和堆栈随机偏移，再减去随机偏移
+	 *
+	 *  https://rtoax.blog.csdn.net/article/details/118602363
+	 */
 	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base,
 			arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
 			rlim_stack);
@@ -274,10 +276,12 @@ const char *arch_vma_name(struct vm_area_struct *vma)
  */
 bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 {
-	if (TASK_SIZE/*0x0000 7fff ffff f000 约128T*/ - len < addr)
+	/* TASK_SIZE = 0x0000 7fff ffff f000 约 128T */
+	if (TASK_SIZE - len < addr)
 		return false;
 
-	return (addr > DEFAULT_MAP_WINDOW/*0x0000 7fff ffff f000 约128T*/) == (addr + len > DEFAULT_MAP_WINDOW);
+	/* DEFAULT_MAP_WINDOW = 0x0000 7fff ffff f000 约 128T */
+	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
 }
 
 /* Can we access it for direct reading/writing? Must be RAM: */

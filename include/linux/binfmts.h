@@ -21,8 +21,8 @@ struct linux_binprm {
 	struct vm_area_struct *vma;
 	unsigned long vma_pages;
 #else
-//# define MAX_ARG_PAGES	32
-//	struct page *page[MAX_ARG_PAGES];
+# define MAX_ARG_PAGES	32
+	struct page *page[MAX_ARG_PAGES];
 #endif
 	struct mm_struct *mm;
 	unsigned long p; /* current top of mem */
@@ -49,19 +49,19 @@ struct linux_binprm {
 #endif
 	struct file *executable; /* Executable to pass to the interpreter */
 	struct file *interpreter;
-    /**
-     *  打开的可执行文件句柄
-     */
+	/**
+	 *  打开的可执行文件句柄
+	 */
 	struct file *file;
 	struct cred *cred;	/* new credentials */
 	int unsafe;		/* how unsafe this exec is (mask of LSM_UNSAFE_*) */
 	unsigned int per_clear;	/* bits to clear in current->personality */
 	int argc, envc;
 	const char *filename;	/* Name of binary as seen by procps */
-    /**
-     *  可执行文件名
-     */
-    const char *interp;	/* Name of the binary really executed. Most
+	/**
+	 *  可执行文件名
+	 */
+	const char *interp;	/* Name of the binary really executed. Most
 				   of the time same as filename, but could be
 				   different for binfmt_{misc,script} */
 	const char *fdpath;	/* generated filename for execveat */
@@ -71,9 +71,9 @@ struct linux_binprm {
 
 	struct rlimit rlim_stack; /* Saved RLIMIT_STACK used during exec. */
 
-    /**
-     *  ehdr ->>> load_elf_binary()
-     */
+	/**
+	 *  ehdr ->>> load_elf_binary()
+	 */
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 

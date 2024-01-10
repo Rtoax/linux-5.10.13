@@ -370,7 +370,7 @@ void vm_area_free(struct vm_area_struct *);
 #endif
 
 #ifdef CONFIG_STACK_GROWSUP
-//#define VM_STACK	VM_GROWSUP
+#define VM_STACK	VM_GROWSUP
 #else
 #define VM_STACK	VM_GROWSDOWN
 #endif

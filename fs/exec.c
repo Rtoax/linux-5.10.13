@@ -298,6 +298,9 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	 */
 	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
 
+	/**
+	 *
+	 */
 	vma->vm_end = STACK_TOP_MAX;                /* 栈顶 */
 	vma->vm_start = vma->vm_end - PAGE_SIZE;    /* VMA底部 */
 	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
@@ -355,7 +358,7 @@ static int bprm_mm_init(struct linux_binprm *bprm)
 	task_unlock(current->group_leader);
 
 	/**
-	 *  分配vma，并将其加入 mm中
+	 *  分配 vma， 并将其加入 mm 中
 	 */
 	err = __bprm_mm_init(bprm);
 	if (err)
@@ -738,23 +741,23 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	unsigned long rlim_stack;
 
 #ifdef CONFIG_STACK_GROWSUP
-//	/* Limit stack size */
-//	stack_base = bprm->rlim_stack.rlim_max;
-//	if (stack_base > STACK_SIZE_MAX)
-//		stack_base = STACK_SIZE_MAX;
-//
-//	/* Add space for stack randomization. */
-//	stack_base += (STACK_RND_MASK << PAGE_SHIFT);
-//
-//	/* Make sure we didn't let the argument array grow too large. */
-//	if (vma->vm_end - vma->vm_start > stack_base)
-//		return -ENOMEM;
-//
-//	stack_base = PAGE_ALIGN(stack_top - stack_base);
-//
-//	stack_shift = vma->vm_start - stack_base;
-//	mm->arg_start = bprm->p - stack_shift;
-//	bprm->p = vma->vm_end - stack_shift;
+	/* Limit stack size */
+	stack_base = bprm->rlim_stack.rlim_max;
+	if (stack_base > STACK_SIZE_MAX)
+		stack_base = STACK_SIZE_MAX;
+
+	/* Add space for stack randomization. */
+	stack_base += (STACK_RND_MASK << PAGE_SHIFT);
+
+	/* Make sure we didn't let the argument array grow too large. */
+	if (vma->vm_end - vma->vm_start > stack_base)
+		return -ENOMEM;
+
+	stack_base = PAGE_ALIGN(stack_top - stack_base);
+
+	stack_shift = vma->vm_start - stack_base;
+	mm->arg_start = bprm->p - stack_shift;
+	bprm->p = vma->vm_end - stack_shift;
 #else
 	stack_top = arch_align_stack(stack_top);
 	stack_top = PAGE_ALIGN(stack_top);
@@ -790,6 +793,9 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	vm_flags |= mm->def_flags;
 	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
 
+	/**
+	 *
+	 */
 	ret = mprotect_fixup(vma, &prev, vma->vm_start, vma->vm_end,
 			vm_flags);
 	if (ret)
@@ -819,10 +825,10 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	 */
 	rlim_stack = bprm->rlim_stack.rlim_cur & PAGE_MASK;
 #ifdef CONFIG_STACK_GROWSUP
-//	if (stack_size + stack_expand > rlim_stack)
-//		stack_base = vma->vm_start + rlim_stack;
-//	else
-//		stack_base = vma->vm_end + stack_expand;
+	if (stack_size + stack_expand > rlim_stack)
+		stack_base = vma->vm_start + rlim_stack;
+	else
+		stack_base = vma->vm_end + stack_expand;
 #else
 	if (stack_size + stack_expand > rlim_stack)
 		stack_base = vma->vm_end - rlim_stack;
@@ -1508,11 +1514,12 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 
 		bprm->filename = bprm->fdpath;
 	}
-	bprm->interp = bprm->filename;  /* 二进制文件名 */
+	/* 二进制文件名 */
+	bprm->interp = bprm->filename;
 	/**
 	 *  mm 初始化
 	 */
-	retval = bprm_mm_init(bprm);    /* mm 初始化 */
+	retval = bprm_mm_init(bprm);
 	if (retval)
 		goto out_free;
 	return bprm;
@@ -2019,7 +2026,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 	/**
 	 *  执行
 	 */
-	retval = bprm_execve(bprm, fd, filename, flags);    /* 执行 */
+	retval = bprm_execve(bprm, fd, filename, flags);
 out_free:
 	free_bprm(bprm);
 
