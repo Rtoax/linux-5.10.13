@@ -268,8 +268,11 @@ static void show_vma_header_prefix(struct seq_file *m,
 	seq_putc(m, ' ');
 }
 
-/* /proc/PID/maps */
-/* /proc/PID/smaps */
+/**
+ * /proc/PID/maps
+ * /proc/PID/smaps
+ * sudo bpftrace -e 'kprobe:show_map_vma {printf("%s\n", comm);}'
+ */
 static void
 show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 {
@@ -334,7 +337,9 @@ done:
 	seq_putc(m, '\n');
 }
 
-/* /proc/PID/maps */
+/**
+ * /proc/PID/maps
+ */
 static int show_map(struct seq_file *m, void *v)
 {
 	show_map_vma(m, v);
@@ -348,14 +353,17 @@ static const struct seq_operations proc_pid_maps_op = {
 	.show	= show_map
 };
 
-/* /proc/PID/maps */
+/**
+ * /proc/PID/maps
+ * sudo bpftrace -e 'kprobe:pid_maps_open {printf("%s\n", comm);}'
+ */
 static int pid_maps_open(struct inode *inode, struct file *file)
 {
 	return do_maps_open(inode, file, &proc_pid_maps_op);
 }
 
 /* /proc/PID/maps */
-const struct file_operations proc_pid_maps_operations = {   /* /proc/PID/maps */
+const struct file_operations proc_pid_maps_operations = {
 	.open		= pid_maps_open,
 	.read		= seq_read,
 	.llseek		= seq_lseek,
