@@ -460,7 +460,7 @@ struct vm_userfaultfd_ctx {
 struct vm_area_struct { /* VMA */
 	/* The first cache line has the info for VMA tree walking. */
 
-    /* 这两个变量是页对齐的 */
+	/* 这两个变量是页对齐的 */
 	unsigned long vm_start;		/* Our start address within vm_mm. */
 	unsigned long vm_end;		/* The first byte after our end address
 					   within vm_mm. */
@@ -468,7 +468,7 @@ struct vm_area_struct { /* VMA */
 	/* linked list of VM areas per task, sorted by address */
 	struct vm_area_struct *vm_next, *vm_prev;   /* 双向链表 */
 
-    /* mm_struct.mm_rb */
+	/* mm_struct.mm_rb */
 	struct rb_node vm_rb;   /* 在 mm_struct 为根的节点 */
 
 	/*
@@ -514,11 +514,11 @@ struct vm_area_struct { /* VMA */
 	 */
 	struct list_head anon_vma_chain; /* Serialized by mmap_lock & page_table_lock */
 
-    /**
-     *  用于 RMAP ，指向 AV(struct anon_vma)结构
-     *
-     *
-     */
+	/**
+	 *  用于 RMAP ，指向 AV(struct anon_vma)结构
+	 *
+	 *
+	 */
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
 
 	/**
@@ -528,71 +528,71 @@ struct vm_area_struct { /* VMA */
 	 *  匿名页面该项 为 NULL
 	 *
 	 * 简单统计一下
-     * fs/zonefs/super.c:   zonefs_file_vm_ops
-     * fs/ubifs/file.c:   ubifs_file_vm_ops
-     * fs/vboxsf/file.c:   vboxsf_file_vm_ops
-     * fs/9p/vfs_file.c:   v9fs_file_vm_ops
-     * fs/9p/vfs_file.c:   v9fs_mmap_file_vm_ops
-     * fs/9p/vfs_file.c:   v9fs_file_vm_ops
-     * fs/9p/vfs_file.c:   v9fs_mmap_file_vm_ops
-     * fs/ext4/file.c:   ext4_dax_vm_ops
-     * fs/ext4/file.c:   ext4_file_vm_ops
-     * fs/nilfs2/file.c:   nilfs_file_vm_ops
-     * fs/cifs/file.c:   cifs_file_vm_ops
-     * fs/gfs2/file.c:   gfs2_vm_ops
-     * fs/ceph/addr.c:   ceph_vmops
-     * fs/nfs/file.c:   nfs_file_vm_ops
-     * fs/nfs/file.c:   nfs_file_vm_ops
-     * fs/fuse/dax.c:   fuse_dax_vm_ops
-     * fs/fuse/file.c:   fuse_file_vm_ops
-     * fs/orangefs/file.c:   orangefs_file_vm_ops
-     * fs/afs/file.c:   afs_vm_ops
-     * fs/f2fs/file.c:   f2fs_file_vm_ops
-     * fs/aio.c:   aio_ring_vm_ops
-     * fs/btrfs/file.c:   btrfs_file_vm_ops
-     * fs/xfs/xfs_file.c:   xfs_file_vm_ops
-     * fs/proc/vmcore.c:   vmcore_mmap_ops
-     * fs/ocfs2/mmap.c:   ocfs2_file_vm_ops
-     * fs/kernfs/file.c:   kernfs_vm_ops
-     * fs/coda/file.c:   vm_ops
-     * fs/ext2/file.c:   ext2_dax_vm_ops
-     * mm/filemap.c:  generic_file_vm_ops
-     * mm/mmap.c:   special_mapping_vmops
-     * mm/mmap.c:   legacy_special_mapping_vmops
-     * mm/shmem.c:   shmem_vm_ops
-     * mm/hugetlb.c:  hugetlb_vm_ops
-     * arch/x86/kernel/cpu/resctrl/pseudo_lock.c:   pseudo_mmap_ops
-     * arch/x86/entry/vsyscall/vsyscall_64.c:   gate_vma_ops
-     * kernel/bpf/syscall.c:   bpf_map_default_vmops
-     * kernel/events/core.c:   perf_mmap_vmops
-     * kernel/relay.c:   relay_file_mmap_ops
-     * ipc/shm.c:   shm_vm_ops
-     * net/packet/af_packet.c:   packet_mmap_ops
-     * net/ipv4/tcp.c:   tcp_vm_ops
-     * drivers/char/agp/alpha-agp.c:   alpha_core_agp_vm_ops
-     * drivers/char/mspec.c:   mspec_vm_ops
-     * drivers/char/mem.c:   mmap_mem_ops
-     * drivers/vfio/pci/vfio_pci_nvlink2.c:   vfio_pci_nvgpu_mmap_vmops
-     * drivers/vfio/pci/vfio_pci.c:   vfio_pci_mmap_ops
-     * include/media/videobuf2-memops.h:   vb2_common_vm_ops
-     * include/linux/hugetlb.h:   hugetlb_vm_ops
-     * include/linux/ramfs.h:   generic_file_vm_ops
-     * include/drm/drm_gem_cma_helper.h:   drm_gem_cma_vm_ops
-     * security/selinux/selinuxfs.c:   sel_mmap_policy_ops
-     *
+	 * fs/zonefs/super.c:   zonefs_file_vm_ops
+	 * fs/ubifs/file.c:   ubifs_file_vm_ops
+	 * fs/vboxsf/file.c:   vboxsf_file_vm_ops
+	 * fs/9p/vfs_file.c:   v9fs_file_vm_ops
+	 * fs/9p/vfs_file.c:   v9fs_mmap_file_vm_ops
+	 * fs/9p/vfs_file.c:   v9fs_file_vm_ops
+	 * fs/9p/vfs_file.c:   v9fs_mmap_file_vm_ops
+	 * fs/ext4/file.c:   ext4_dax_vm_ops
+	 * fs/ext4/file.c:   ext4_file_vm_ops
+	 * fs/nilfs2/file.c:   nilfs_file_vm_ops
+	 * fs/cifs/file.c:   cifs_file_vm_ops
+	 * fs/gfs2/file.c:   gfs2_vm_ops
+	 * fs/ceph/addr.c:   ceph_vmops
+	 * fs/nfs/file.c:   nfs_file_vm_ops
+	 * fs/nfs/file.c:   nfs_file_vm_ops
+	 * fs/fuse/dax.c:   fuse_dax_vm_ops
+	 * fs/fuse/file.c:   fuse_file_vm_ops
+	 * fs/orangefs/file.c:   orangefs_file_vm_ops
+	 * fs/afs/file.c:   afs_vm_ops
+	 * fs/f2fs/file.c:   f2fs_file_vm_ops
+	 * fs/aio.c:   aio_ring_vm_ops
+	 * fs/btrfs/file.c:   btrfs_file_vm_ops
+	 * fs/xfs/xfs_file.c:   xfs_file_vm_ops
+	 * fs/proc/vmcore.c:   vmcore_mmap_ops
+	 * fs/ocfs2/mmap.c:   ocfs2_file_vm_ops
+	 * fs/kernfs/file.c:   kernfs_vm_ops
+	 * fs/coda/file.c:   vm_ops
+	 * fs/ext2/file.c:   ext2_dax_vm_ops
+	 * mm/filemap.c:  generic_file_vm_ops
+	 * mm/mmap.c:   special_mapping_vmops
+	 * mm/mmap.c:   legacy_special_mapping_vmops
+	 * mm/shmem.c:   shmem_vm_ops
+	 * mm/hugetlb.c:  hugetlb_vm_ops
+	 * arch/x86/kernel/cpu/resctrl/pseudo_lock.c:   pseudo_mmap_ops
+	 * arch/x86/entry/vsyscall/vsyscall_64.c:   gate_vma_ops
+	 * kernel/bpf/syscall.c:   bpf_map_default_vmops
+	 * kernel/events/core.c:   perf_mmap_vmops
+	 * kernel/relay.c:   relay_file_mmap_ops
+	 * ipc/shm.c:   shm_vm_ops
+	 * net/packet/af_packet.c:   packet_mmap_ops
+	 * net/ipv4/tcp.c:   tcp_vm_ops
+	 * drivers/char/agp/alpha-agp.c:   alpha_core_agp_vm_ops
+	 * drivers/char/mspec.c:   mspec_vm_ops
+	 * drivers/char/mem.c:   mmap_mem_ops
+	 * drivers/vfio/pci/vfio_pci_nvlink2.c:   vfio_pci_nvgpu_mmap_vmops
+	 * drivers/vfio/pci/vfio_pci.c:   vfio_pci_mmap_ops
+	 * include/media/videobuf2-memops.h:   vb2_common_vm_ops
+	 * include/linux/hugetlb.h:   hugetlb_vm_ops
+	 * include/linux/ramfs.h:   generic_file_vm_ops
+	 * include/drm/drm_gem_cma_helper.h:   drm_gem_cma_vm_ops
+	 * security/selinux/selinuxfs.c:   sel_mmap_policy_ops
+	 *
 	 */
 	const struct vm_operations_struct *vm_ops;
 
 	/* Information about our backing store: */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE units */
 
-    /**
-     *
-     */
-    struct file * vm_file;		/* File we map to (can be NULL). */
+	/**
+	 *
+	 */
+	struct file * vm_file;		/* File we map to (can be NULL). */
 
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 
