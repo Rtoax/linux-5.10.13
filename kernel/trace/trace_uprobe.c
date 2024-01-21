@@ -720,9 +720,15 @@ static int create_or_delete_trace_uprobe(int argc, char **argv)
 {
 	int ret;
 
+	/**
+	 * 删除
+	 */
 	if (argv[0][0] == '-')
 		return dyn_event_release(argc, argv, &trace_uprobe_ops);
 
+	/**
+	 * 创建
+	 */
 	ret = trace_uprobe_create(argc, (const char **)argv);
 	return ret == -ECANCELED ? -EINVAL : ret;
 }
@@ -1647,7 +1653,7 @@ static __init int init_uprobe_trace(void)
 	ret = tracing_init_dentry();
 	if (ret)
 		return 0;
-    /* /sys/kernel/debug/tracing/uprobe_events */
+	/* /sys/kernel/debug/tracing/uprobe_events */
 	trace_create_file("uprobe_events", 0644, NULL,
 				    NULL, &uprobe_events_ops);
 	/* Profile interface */

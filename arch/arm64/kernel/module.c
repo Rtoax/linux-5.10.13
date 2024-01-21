@@ -69,11 +69,17 @@ enum aarch64_reloc_op {
 	RELOC_OP_PAGE,
 };
 
+/**
+ * https://docslib.org/doc/4448214/elf-for-the-arm-64-bit-architecture-aarch64
+ */
 static u64 do_reloc(enum aarch64_reloc_op reloc_op, __le32 *place, u64 val)
 {
 	switch (reloc_op) {
 	case RELOC_OP_ABS:
 		return val;
+	/**
+	 * S + A - P
+	 */
 	case RELOC_OP_PREL:
 		return val - (u64)place;
 	case RELOC_OP_PAGE:
@@ -253,7 +259,7 @@ static int reloc_insn_adrp(struct module *mod, Elf64_Shdr *sechdrs,
 	return 0;
 }
 /**
- *  
+ * https://docslib.org/doc/4448214/elf-for-the-arm-64-bit-architecture-aarch64
  */
 int apply_relocate_add(Elf64_Shdr *sechdrs,
 		       const char *strtab,
@@ -293,6 +299,11 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 			break;
 
 		/* Data relocations. */
+
+		/**
+		 * Operation: S + A
+		 * Overflow Check: None
+		 */
 		case R_AARCH64_ABS64:
 			overflow_check = false;
 			ovf = reloc_data(RELOC_OP_ABS, loc, val, 64);
