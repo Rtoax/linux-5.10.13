@@ -703,10 +703,10 @@ static inline bool is_livepatch_module(struct module *mod)
 	return mod->klp;
 }
 #else /* !CONFIG_LIVEPATCH */
-//static inline bool is_livepatch_module(struct module *mod)
-//{
-//	return false;
-//}
+static inline bool is_livepatch_module(struct module *mod)
+{
+	return false;
+}
 #endif /* CONFIG_LIVEPATCH */
 
 bool is_module_sig_enforced(void);
@@ -714,150 +714,150 @@ void set_module_sig_enforced(void);
 
 #else /* !CONFIG_MODULES... */
 
-//static inline struct module *__module_address(unsigned long addr)
-//{
-//	return NULL;
-//}
-//
-//static inline struct module *__module_text_address(unsigned long addr)
-//{
-//	return NULL;
-//}
-//
-//static inline bool is_module_address(unsigned long addr)
-//{
-//	return false;
-//}
-//
-//static inline bool is_module_percpu_address(unsigned long addr)
-//{
-//	return false;
-//}
-//
-//static inline bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
-//{
-//	return false;
-//}
-//
-//static inline bool is_module_text_address(unsigned long addr)
-//{
-//	return false;
-//}
-//
-//static inline bool within_module_core(unsigned long addr,
-//				      const struct module *mod)
-//{
-//	return false;
-//}
-//
-//static inline bool within_module_init(unsigned long addr,
-//				      const struct module *mod)
-//{
-//	return false;
-//}
-//
-//static inline bool within_module(unsigned long addr, const struct module *mod)
-//{
-//	return false;
-//}
+static inline struct module *__module_address(unsigned long addr)
+{
+	return NULL;
+}
 
-/* Get/put a kernel symbol (calls should be symmetric) */
-//#define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
-//#define symbol_put(x) do { } while (0)
-//#define symbol_put_addr(x) do { } while (0)
-//
-//static inline void __module_get(struct module *module)
-//{
-//}
-//
-//static inline bool try_module_get(struct module *module)
-//{
-//	return true;
-//}
-//
-//static inline void module_put(struct module *module)
-//{
-//}
-//
-//#define module_name(mod) "kernel"
+static inline struct module *__module_text_address(unsigned long addr)
+{
+	return NULL;
+}
 
-/* For kallsyms to ask for address resolution.  NULL means not found. */
-//static inline const char *module_address_lookup(unsigned long addr,
-//					  unsigned long *symbolsize,
-//					  unsigned long *offset,
-//					  char **modname,
-//					  char *namebuf)
-//{
-//	return NULL;
-//}
-//
-//static inline int lookup_module_symbol_name(unsigned long addr, char *symname)
-//{
-//	return -ERANGE;
-//}
-//
-//static inline int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
-//{
-//	return -ERANGE;
-//}
-//
-//static inline int module_get_kallsym(unsigned int symnum, unsigned long *value,
-//					char *type, char *name,
-//					char *module_name, int *exported)
-//{
-//	return -ERANGE;
-//}
-//
-//static inline unsigned long module_kallsyms_lookup_name(const char *name)
-//{
-//	return 0;
-//}
-//
-//static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-//							   struct module *,
-//							   unsigned long),
-//						 void *data)
-//{
-//	return 0;
-//}
-//
-//static inline int register_module_notifier(struct notifier_block *nb)
-//{
-//	/* no events will happen anyway, so this can always succeed */
-//	return 0;
-//}
-//
-//static inline int unregister_module_notifier(struct notifier_block *nb)
-//{
-//	return 0;
-//}
-//
-//#define module_put_and_exit(code) do_exit(code)
-//
-//static inline void print_modules(void)
-//{
-//}
-//
-//static inline bool module_requested_async_probing(struct module *module)
-//{
-//	return false;
-//}
-//
-//static inline bool is_module_sig_enforced(void)
-//{
-//	return false;
-//}
-//
-//static inline void set_module_sig_enforced(void)
-//{
-//}
-//
-///* Dereference module function descriptor */
-//static inline
-//void *dereference_module_function_descriptor(struct module *mod, void *ptr)
-//{
-//	return ptr;
-//}
+static inline bool is_module_address(unsigned long addr)
+{
+	return false;
+}
+
+static inline bool is_module_percpu_address(unsigned long addr)
+{
+	return false;
+}
+
+static inline bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
+{
+	return false;
+}
+
+static inline bool is_module_text_address(unsigned long addr)
+{
+	return false;
+}
+
+static inline bool within_module_core(unsigned long addr,
+				      const struct module *mod)
+{
+	return false;
+}
+
+static inline bool within_module_init(unsigned long addr,
+				      const struct module *mod)
+{
+	return false;
+}
+
+static inline bool within_module(unsigned long addr, const struct module *mod)
+{
+	return false;
+}
+
+ Get/put a kernel symbol (calls should be symmetric) */
+#define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
+#define symbol_put(x) do { } while (0)
+#define symbol_put_addr(x) do { } while (0)
+
+static inline void __module_get(struct module *module)
+{
+}
+
+static inline bool try_module_get(struct module *module)
+{
+	return true;
+}
+
+static inline void module_put(struct module *module)
+{
+}
+
+#define module_name(mod) "kernel"
+
+ For kallsyms to ask for address resolution.  NULL means not found. */
+static inline const char *module_address_lookup(unsigned long addr,
+					  unsigned long *symbolsize,
+					  unsigned long *offset,
+					  char **modname,
+					  char *namebuf)
+{
+	return NULL;
+}
+
+static inline int lookup_module_symbol_name(unsigned long addr, char *symname)
+{
+	return -ERANGE;
+}
+
+static inline int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
+{
+	return -ERANGE;
+}
+
+static inline int module_get_kallsym(unsigned int symnum, unsigned long *value,
+					char *type, char *name,
+					char *module_name, int *exported)
+{
+	return -ERANGE;
+}
+
+static inline unsigned long module_kallsyms_lookup_name(const char *name)
+{
+	return 0;
+}
+
+static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
+							   struct module *,
+							   unsigned long),
+						 void *data)
+{
+	return 0;
+}
+
+static inline int register_module_notifier(struct notifier_block *nb)
+{
+	/* no events will happen anyway, so this can always succeed */
+	return 0;
+}
+
+static inline int unregister_module_notifier(struct notifier_block *nb)
+{
+	return 0;
+}
+
+#define module_put_and_exit(code) do_exit(code)
+
+static inline void print_modules(void)
+{
+}
+
+static inline bool module_requested_async_probing(struct module *module)
+{
+	return false;
+}
+
+static inline bool is_module_sig_enforced(void)
+{
+	return false;
+}
+
+static inline void set_module_sig_enforced(void)
+{
+}
+
+/* Dereference module function descriptor */
+static inline
+void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+{
+	return ptr;
+}
 
 #endif /* CONFIG_MODULES */
 
