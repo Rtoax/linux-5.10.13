@@ -1557,8 +1557,9 @@ int do_prlimit(struct task_struct *tsk, unsigned int resource,
 	if (new_rlim) {
 		if (new_rlim->rlim_cur > new_rlim->rlim_max)
 			return -EINVAL;
+		/* cat /proc/sys/fs/nr_open */
 		if (resource == RLIMIT_NOFILE &&
-				new_rlim->rlim_max > sysctl_nr_open)    //cat /proc/sys/fs/nr_open
+				new_rlim->rlim_max > sysctl_nr_open)
 			return -EPERM;
 	}
 
@@ -1625,6 +1626,9 @@ static int check_prlimit_permission(struct task_struct *task,
 	return security_task_prlimit(cred, tcred, flags);
 }
 
+/**
+ * prlimit(2)
+ */
 SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 		const struct rlimit64 __user *, new_rlim,
 		struct rlimit64 __user *, old_rlim)
@@ -1672,6 +1676,9 @@ SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 	return ret;
 }
 
+/**
+ * setrlimit(2)
+ */
 SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
 	struct rlimit new_rlim;

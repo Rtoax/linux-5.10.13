@@ -936,9 +936,9 @@ void __init fork_init(void)
 {
 	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
-//#ifndef ARCH_MIN_TASKALIGN
-//#define ARCH_MIN_TASKALIGN	0
-//#endif
+#ifndef ARCH_MIN_TASKALIGN
+#define ARCH_MIN_TASKALIGN	0
+#endif
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
 	unsigned long useroffset, usersize;
 
@@ -988,7 +988,7 @@ void __init fork_init(void)
 }
 
 int __weak arch_dup_task_struct(struct task_struct *dst,
-					       struct task_struct *src)
+				struct task_struct *src)
 {
 	*dst = *src;
 	return 0;
@@ -1879,7 +1879,7 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 
 
 /**
- *  信号 - 复制父进程的信号系统
+ * 信号 - 继承父进程的信号系统
  */
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
