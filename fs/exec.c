@@ -2178,7 +2178,6 @@ void set_dumpable(struct mm_struct *mm, int value)
 /**
  *  execve(2)
  */
-int execve(const char *filename, char *const argv [], char *const envp[]){} /* +++ */
 SYSCALL_DEFINE3(execve,
 		const char __user *, filename,
 		const char __user *const __user *, argv,
