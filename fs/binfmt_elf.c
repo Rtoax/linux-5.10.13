@@ -70,7 +70,7 @@ static int load_elf_binary(struct linux_binprm *bprm);
 #ifdef CONFIG_USELIB
 static int load_elf_library(struct file *);
 #else
-//#define load_elf_library NULL
+#define load_elf_library NULL
 #endif
 
 /*
@@ -80,7 +80,7 @@ static int load_elf_library(struct file *);
 #ifdef CONFIG_ELF_CORE
 static int elf_core_dump(struct coredump_params *cprm);
 #else
-//#define elf_core_dump	NULL
+#define elf_core_dump	NULL
 #endif
 
 #if ELF_EXEC_PAGESIZE > PAGE_SIZE
