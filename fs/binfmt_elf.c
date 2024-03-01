@@ -1485,7 +1485,7 @@ out_free_interp:
 			 */
 			elf_flags |= MAP_FIXED;
 		/**
-		 * 非使用'-static'编译的可执行文件和动态库的 e_type = ET_DYN
+		 * PIE 可执行文件和动态库的 e_type = ET_DYN
 		 * https://www.codenong.com/50303305/
 		 */
 		} else if (elf_ex->e_type == ET_DYN) {
@@ -1980,7 +1980,8 @@ static int load_elf_library(struct file *file)
 	struct elfhdr elf_ex;
 
 	error = -ENOEXEC;
-	retval = elf_read(file, &elf_ex, sizeof(elf_ex), 0);    /* 读取ELF头 */
+	/* 读取ELF头 */
+	retval = elf_read(file, &elf_ex, sizeof(elf_ex), 0);
 	if (retval < 0)
 		goto out;
 
