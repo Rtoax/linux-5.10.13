@@ -20,7 +20,7 @@
 /**
  *  linux 内核提供了用来管理所有资源的一种通用 API。
  *  全局资源（比如 PICs 或者 I/O 端口）可以划分为与硬件总线插槽有关的子集
- *  
+ *
  *  一些全局变量
  *  --------------------
  *  ioport_resource : "PCI IO"
@@ -33,13 +33,13 @@ struct resource {
 	unsigned long flags;
 	unsigned long desc;
 	struct resource *parent, *sibling, *child;
-    //+-------------+      +-------------+
-    //|    parent   |------|    sibling  |
-    //+-------------+      +-------------+
-    //       |
-    //+-------------+
-    //|    child    | 
-    //+-------------+
+	//+-------------+      +-------------+
+	//|    parent   |------|    sibling  |
+	//+-------------+      +-------------+
+	//       |
+	//+-------------+
+	//|    child    |
+	//+-------------+
 };
 
 /*
@@ -249,7 +249,7 @@ static inline bool resource_contains(struct resource *r1, struct resource *r2)
 /* Convenience shorthand with allocation */
 /**
  * 这个函数告诉内核，我们要使用 起始于 first 的 n 个 端口，
- * 
+ *
  */
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
 #define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
@@ -267,7 +267,7 @@ extern struct resource * __request_region(struct resource *,
 /* Compatibility cruft */
 /**
  *  释放 端口 范围内的端口
- */                    
+ */
 #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
 #define release_mem_region(start,n)	__release_region(&iomem_resource, (start), (n))
 
@@ -322,7 +322,7 @@ walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
 /* True if any part of r1 overlaps r2 */
 static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
 {
-       return (r1->start <= r2->end && r1->end >= r2->start);
+	return (r1->start <= r2->end && r1->end >= r2->start);
 }
 
 struct resource *devm_request_free_mem_region(struct device *dev,

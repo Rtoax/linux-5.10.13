@@ -243,6 +243,9 @@ resource_size_t __weak pcibios_align_resource(void *data,
        return res->start;
 }
 
+/**
+ * PCI 分配资源
+ */
 static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
 		int resno, resource_size_t size, resource_size_t align)
 {
@@ -291,6 +294,9 @@ static int __pci_assign_resource(struct pci_bus *bus, struct pci_dev *dev,
 	return ret;
 }
 
+/**
+ * PCI 分配资源
+ */
 static int _pci_assign_resource(struct pci_dev *dev, int resno,
 				resource_size_t size, resource_size_t min_align)
 {
@@ -325,12 +331,20 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
 	}
 
 	size = resource_size(res);
+
+	/**
+	 * PCI 分配资源
+	 */
 	ret = _pci_assign_resource(dev, resno, size, align);
 
 	/*
 	 * If we failed to assign anything, let's try the address
 	 * where firmware left it.  That at least has a chance of
 	 * working, which is better than just leaving it disabled.
+	 *
+	 * 可能的打印是
+	 * pcieport 0000:e2:02.0: BAR 13: no space for [io  size 0x1000]
+	 * pcieport 0000:e2:02.0: BAR 13: failed to assign [io  size 0x1000]
 	 */
 	if (ret < 0) {
 		pci_info(dev, "BAR %d: no space for %pR\n", resno, res);

@@ -27,7 +27,6 @@
 #include <asm/io.h>
 
 /**
- *  
  *  可用 /proc/ioports 查看
  */
 struct resource ioport_resource = {
@@ -50,7 +49,10 @@ struct resource iomem_resource = {
 	iomem_resource.name	= "PCI mem",
 	iomem_resource.start	= 0,
 	iomem_resource.end	= -1,
-	iomem_resource.flags	= IORESOURCE_MEM,//0x00000200,定义了 `io` 内存的根地址范围
+	/*
+	 * 0x00000200,定义了 `io` 内存的根地址范围
+	 */
+	iomem_resource.flags	= IORESOURCE_MEM,
 };
 EXPORT_SYMBOL(iomem_resource);
 
@@ -148,31 +150,31 @@ static const struct seq_operations resource_op = {
 };
 
 /**
- *  
+ *
  */
 static int __init ioresources_init(void)
 {
-    /**
-     *  cat /proc/ioports
-     *  0000-0cf7 : PCI Bus 0000:00
-     *    0000-001f : dma1
-     *    0020-0021 : pic1
-     *    0040-0043 : timer0
-     *    0050-0053 : timer1
-     *    0060-0060 : keyboard
-     *  [...]
-     */
+	/**
+	 *  cat /proc/ioports
+	 *  0000-0cf7 : PCI Bus 0000:00
+	 *    0000-001f : dma1
+	 *    0020-0021 : pic1
+	 *    0040-0043 : timer0
+	 *    0050-0053 : timer1
+	 *    0060-0060 : keyboard
+	 *  [...]
+	 */
 	proc_create_seq_data("ioports", 0, NULL, &resource_op,&ioport_resource);
 
-    /**
-     *  cat /proc/iomem
-     *  00000000-00000fff : reserved
-     *  00001000-0009fbff : System RAM
-     *  0009fc00-0009ffff : reserved
-     *  000a0000-000bffff : PCI Bus 0000:00
-     *  [...]
-     */
-    proc_create_seq_data("iomem", 0, NULL, &resource_op, &iomem_resource);
+	/**
+	 *  cat /proc/iomem
+	 *  00000000-00000fff : reserved
+	 *  00001000-0009fbff : System RAM
+	 *  0009fc00-0009ffff : reserved
+	 *  000a0000-000bffff : PCI Bus 0000:00
+	 *  [...]
+	 */
+	proc_create_seq_data("iomem", 0, NULL, &resource_op, &iomem_resource);
 	return 0;
 }
 __initcall(ioresources_init);
@@ -195,7 +197,7 @@ static void free_resource(struct resource *res)
 }
 
 /**
- *  
+ *
  */
 static struct resource *alloc_resource(gfp_t flags)
 {
@@ -217,7 +219,7 @@ static struct resource *alloc_resource(gfp_t flags)
 }
 
 /**
- *  
+ *
  */
 /* Return the conflict entry if you can't request it */
 static struct resource * __request_resource(struct resource *root, struct resource *_new)
@@ -226,9 +228,9 @@ static struct resource * __request_resource(struct resource *root, struct resour
 	resource_size_t end = _new->end;
 	struct resource *tmp, **p;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (end < start)
 		return root;
 	if (start < root->start)
@@ -237,9 +239,9 @@ static struct resource * __request_resource(struct resource *root, struct resour
 		return root;
 	p = &root->child;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (;;) {
 		tmp = *p;
 		if (!tmp || tmp->start > end) {
@@ -826,22 +828,22 @@ struct resource *lookup_resource(struct resource *root, resource_size_t start)
  * Insert a resource into the resource tree. If successful, return NULL,
  * otherwise return the conflicting resource (compare to __request_resource())
  *
- * 
+ *
 //+-------------+      +-------------+
 //|    parent   |------|    sibling  |
 //+-------------+      +-------------+
 //       |
 //+-------------+
-//|    child    | 
+//|    child    |
 //+-------------+
  */
 static struct resource * __insert_resource(struct resource *parent, struct resource *rtoax_new)
 {
 	struct resource *first, *next;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (;; parent = first) {
 		first = __request_resource(parent, rtoax_new);
 		if (!first)
@@ -858,9 +860,9 @@ static struct resource * __insert_resource(struct resource *parent, struct resou
 			break;
 	}
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	for (next = first; ; next = next->sibling) {
 		/* Partial overlap? Bad, and unfixable */
 		if (next->start < rtoax_new->start || next->end > rtoax_new->end)
@@ -911,9 +913,9 @@ struct resource *insert_resource_conflict(struct resource *parent, struct resour
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
-    /**
-     *  插入
-     */
+	/**
+	 *  插入
+	 */
 	conflict = __insert_resource(parent, new);
 	write_unlock(&resource_lock);
 	return conflict;
@@ -933,9 +935,9 @@ int insert_resource(struct resource *parent, struct resource *_new)
 {
 	struct resource *conflict;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	conflict = insert_resource_conflict(parent, _new);
 	return conflict ? -EBUSY : 0;
 }
@@ -1190,7 +1192,7 @@ static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
  * @flags: IO resource flags
  *
  * 这个函数告诉内核，我们要使用 起始于 first 的 n 个 端口，
- * 
+ *
  */
 struct resource * __request_region(struct resource *parent,
 				   resource_size_t start, resource_size_t n,
@@ -1198,18 +1200,18 @@ struct resource * __request_region(struct resource *parent,
 {
 	DECLARE_WAITQUEUE(wait, current);
 
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	struct resource *res = alloc_resource(GFP_KERNEL);
 	struct resource *orig_parent = parent;
 
 	if (!res)
 		return NULL;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	res->name = name;
 	res->start = start;
 	res->end = start + n - 1;
@@ -1223,9 +1225,9 @@ struct resource * __request_region(struct resource *parent,
 		res->flags |= IORESOURCE_BUSY | flags;
 		res->desc = parent->desc;
 
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		conflict = __request_resource(parent, res);
 		if (!conflict)
 			break;
@@ -1260,9 +1262,9 @@ struct resource * __request_region(struct resource *parent,
 	}
 	write_unlock(&resource_lock);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	if (res && orig_parent == &iomem_resource)
 		revoke_devmem(res);
 
@@ -1725,6 +1727,7 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 	return err;
 }
 
+/* 一般默认打开 */
 #ifdef CONFIG_STRICT_DEVMEM
 static int strict_iomem_checks = 1;
 #else
@@ -1864,4 +1867,7 @@ static int __init strict_iomem(char *str)
 	return 1;
 }
 
+/**
+ * 比如 iomem=relaxed
+ */
 __setup("iomem=", strict_iomem);
