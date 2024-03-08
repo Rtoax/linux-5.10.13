@@ -65,6 +65,9 @@ void __init pci_iommu_alloc(void)   /*IOMMU分配  */
 /*
  * See <Documentation/x86/x86_64/boot-options.rst> for the iommu kernel
  * parameter documentation.
+ *
+ * 例如：
+ * iommu=pt
  */
 static __init int iommu_setup(char *p)
 {
