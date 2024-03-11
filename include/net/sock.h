@@ -190,13 +190,13 @@ struct sock_common {    /* 网络层 */
 		struct hlist_node	skc_bind_node;
 		struct hlist_node	skc_portaddr_node;
 	};
-    /**
-     *
-     * tcp_prot
-     * udp_prot
-     * raw_prot
-     * ping_prot
-     */
+	/**
+	 *
+	 * tcp_prot
+	 * udp_prot
+	 * raw_prot
+	 * ping_prot
+	 */
 	struct proto		*skc_prot;
 	possible_net_t		skc_net;
 
@@ -346,8 +346,10 @@ struct bpf_local_storage;
   *	@sk_txtime_deadline_mode: set deadline mode for SO_TXTIME
   *	@sk_txtime_report_errors: set report errors mode for SO_TXTIME
   *	@sk_txtime_unused: unused txtime flags
+  *
+  * 网络层 套接字 - IP层
   */
-struct sock {   /* 网络层 套接字 - IP层 */
+struct sock {
 	/*
 	 * Now struct inet_timewait_sock also uses sock_common, so please just
 	 * don't add nothing before this first member (__sk_common) --acme
@@ -444,9 +446,9 @@ struct sock {   /* 网络层 套接字 - IP层 */
 	unsigned long		sk_tsq_flags;
 	union {
 		struct sk_buff	*sk_send_head;
-        /**
-         *  tcp_rbtree_insert()
-         */
+		/**
+		 *  tcp_rbtree_insert()
+		 */
 		struct rb_root	tcp_rtx_queue;
 	};
 	struct sk_buff		*sk_tx_skb_cache;
@@ -490,17 +492,17 @@ struct sock {   /* 网络层 套接字 - IP层 */
 				sk_err_soft;
 	u32			sk_ack_backlog;
 
-    /**
-     *  ack backlog
-     */
+	/**
+	 *  ack backlog
+	 */
 	u32			sk_max_ack_backlog;
 	kuid_t			sk_uid;
 	struct pid		*sk_peer_pid;
 	const struct cred	*sk_peer_cred;
 
-    /**
-     *  超时接收时间
-     */
+	/**
+	 *  超时接收时间
+	 */
 	long			sk_rcvtimeo;
 	ktime_t			sk_stamp;
 
@@ -1233,9 +1235,9 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 	int			max_header;
 	bool			no_autobind;
 
-    /**
-     *  可能为空
-     */
+	/**
+	 *  可能为空
+	 */
 	struct kmem_cache	*slab;
 	unsigned int		obj_size;
 	slab_flags_t		slab_flags;
@@ -1912,20 +1914,20 @@ static inline void sock_graft(struct sock *sk, struct socket *parent)
 
 	rcu_assign_pointer(sk->sk_wq, &parent->wq);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	parent->sk = sk;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sk_set_socket(sk, parent);
 	sk->sk_uid = SOCK_INODE(parent)->i_uid;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	security_sock_graft(sk, parent);
 	write_unlock_bh(&sk->sk_callback_lock);
 }
