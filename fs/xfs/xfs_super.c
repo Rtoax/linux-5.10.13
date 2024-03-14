@@ -775,6 +775,9 @@ xfs_fs_sync_fs(
 	return 0;
 }
 
+/**
+ * xfs_super_operations.statfs = xfs_fs_statfs,
+ */
 STATIC int
 xfs_fs_statfs(
 	struct dentry		*dentry,
@@ -1112,6 +1115,10 @@ static const struct super_operations xfs_super_operations = {
 	.sync_fs		= xfs_fs_sync_fs,
 	.freeze_fs		= xfs_fs_freeze,
 	.unfreeze_fs		= xfs_fs_unfreeze,
+	/**
+	 * called in:
+	 * - statfs_by_dentry()
+	 */
 	.statfs			= xfs_fs_statfs,
 	.show_options		= xfs_fs_show_options,
 	.nr_cached_objects	= xfs_fs_nr_cached_objects,
@@ -1908,9 +1915,9 @@ xfs_init_zones(void)
 	if (!xfs_ifork_zone)
 		goto out_destroy_da_state_zone;
 
-    /**
-     *  分配 xfs 事务
-     */
+	/**
+	 *  分配 xfs 事务
+	 */
 	xfs_trans_zone = kmem_cache_create("xf_trans",
 					   sizeof(struct xfs_trans),
 					   0, 0, NULL);
