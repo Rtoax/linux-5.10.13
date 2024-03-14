@@ -291,6 +291,9 @@ void __init proc_root_init(void)
 	set_proc_pid_nlink();   /* /proc/PID/  */
 	proc_self_init();       /* /proc/self/ */
 	proc_thread_self_init();
+	/**
+	 * /proc/mounts -> self/mounts
+	 */
 	proc_symlink("mounts", NULL, "self/mounts");    /* /proc/PID/mounts */
 
 	proc_net_init();        /* /proc/net/ */

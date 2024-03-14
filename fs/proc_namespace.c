@@ -95,6 +95,9 @@ static void show_type(struct seq_file *m, struct super_block *sb)
 	}
 }
 
+/**
+ * /proc/PID/mounts
+ */
 static int show_vfsmnt(struct seq_file *m, struct vfsmount *mnt)
 {
 	struct proc_mounts *p = m->private;
@@ -129,6 +132,16 @@ out:
 	return err;
 }
 
+/**
+ * /proc/PID/mountinfo
+ *
+ * $ cat /proc/self/mountinfo
+ * 66 1 259:3 / / rw,relatime shared:1 - xfs /dev/nvme0n1p3 rw,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota
+ * 34 66 0:5 / /dev rw,nosuid shared:2 - devtmpfs devtmpfs rw,seclabel,size=4096k,nr_inodes=2002171,mode=755,inode64
+ * ...
+ * 52 46 259:1 / /boot/efi rw,relatime shared:54 - vfat /dev/nvme0n1p1 rw,fmask=0077,dmask=0077,codepage=437,iocharset=ascii,shortname=winnt,errors=remount-ro
+ * ...
+ */
 static int show_mountinfo(struct seq_file *m, struct vfsmount *mnt)
 {
 	struct proc_mounts *p = m->private;
@@ -318,6 +331,9 @@ static int mountstats_open(struct inode *inode, struct file *file)
 	return mounts_open_common(inode, file, show_vfsstat);
 }
 
+/**
+ * /proc/mounts -> self/mounts
+ */
 const struct file_operations proc_mounts_operations = {
 	.open		= mounts_open,
 	.read_iter	= seq_read_iter,
@@ -327,6 +343,9 @@ const struct file_operations proc_mounts_operations = {
 	.poll		= mounts_poll,
 };
 
+/**
+ * /proc/PID/mountinfo
+ */
 const struct file_operations proc_mountinfo_operations = {
 	.open		= mountinfo_open,
 	.read_iter	= seq_read_iter,

@@ -3277,6 +3277,9 @@ static const struct pid_entry tgid_base_stuff[] = {
 	LNK("cwd",        proc_cwd_link),
 	LNK("root",       proc_root_link),
 	LNK("exe",        proc_exe_link),
+	/**
+	 * /proc/mounts -> self/mounts
+	 */
 	REG("mounts",     S_IRUGO, proc_mounts_operations),
 	REG("mountinfo",  S_IRUGO, proc_mountinfo_operations),
 	REG("mountstats", S_IRUSR, proc_mountstats_operations),
@@ -3586,9 +3589,9 @@ static const struct inode_operations proc_tid_comm_inode_operations = {
 };
 
 /*
- * Tasks
+ * Tasks's /proc/PID/*
  */
-static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
+static const struct pid_entry tid_base_stuff[] = {
 	DIR("fd",        S_IRUSR|S_IXUSR, proc_fd_inode_operations, proc_fd_operations),
 	DIR("fdinfo",    S_IRUSR|S_IXUSR, proc_fdinfo_inode_operations, proc_fdinfo_operations),
 	DIR("ns",	 S_IRUSR|S_IXUGO, proc_ns_dir_inode_operations, proc_ns_dir_operations),
@@ -3629,6 +3632,9 @@ static const struct pid_entry tid_base_stuff[] /* /proc/PID/* 文件 */= {
 	LNK("cwd",       proc_cwd_link),
 	LNK("root",      proc_root_link),
 	LNK("exe",       proc_exe_link),
+	/**
+	 * /proc/mounts -> self/mounts
+	 */
 	REG("mounts",    S_IRUGO, proc_mounts_operations),
 	REG("mountinfo",  S_IRUGO, proc_mountinfo_operations),
 #ifdef CONFIG_PROC_PAGE_MONITOR
