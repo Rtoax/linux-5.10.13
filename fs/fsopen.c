@@ -310,6 +310,8 @@ static int vfs_fsconfig_locked(struct fs_context *fc, int cmd,
  *
  * (*) fsconfig_set_fd: An open file descriptor is specified.  @_value must be
  *     NULL and @aux indicates the file descriptor.
+ *
+ * fsconfig(2)
  */
 SYSCALL_DEFINE5(fsconfig,
 		int, fd,
