@@ -1475,8 +1475,9 @@ struct sb_writers {
  *    的时间等文件系统的相关信息；
  * 5. 一个 valid bit 数值，若此文件系统已被挂载，则 valid bit 为 0 ，若未
  *    被挂载，则 valid bit 为1 。
+ *
  */
-struct super_block {    /* 超级块 */
+struct super_block {
 	struct list_head	s_list;		/* Keep this first */
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
 	unsigned char		s_blocksize_bits;
@@ -1510,7 +1511,8 @@ struct super_block {    /* 超级块 */
 	__u16 s_encoding_flags;
 #endif
 	struct hlist_bl_head	s_roots;	/* alternate root dentries for NFS */
-	struct list_head	s_mounts;	/* list of mounts; _not_ for fs use *//* 链接所有的 struct mount */
+	/* 链接所有的 struct mount */
+	struct list_head	s_mounts;	/* list of mounts; _not_ for fs use */
 	struct block_device	*s_bdev;
 	struct backing_dev_info *s_bdi;
 	struct mtd_info		*s_mtd;
@@ -1525,7 +1527,10 @@ struct super_block {    /* 超级块 */
 	 * s_fsnotify_marks together for cache efficiency. They are frequently
 	 * accessed and rarely modified.
 	 */
-	void			*s_fs_info;	/* Filesystem private info, 大页内存时，结构为 `struct hugetlbfs_sb_info` */
+	/**
+	 * 大页内存时，结构为 `struct hugetlbfs_sb_info`
+	 */
+	void			*s_fs_info;	/* Filesystem private info */
 
 	/* Granularity of c/m/atime in ns (cannot be worse than a second) */
 	u32			s_time_gran;

@@ -8,17 +8,17 @@
  *  mount 名字空间
  */
 struct mnt_namespace {
-    /**
-     *  引用计数
-     */
+	/**
+	 *  引用计数
+	 */
 	atomic_t		count;
-    /**
-     *  名字空间超类
-     */
+	/**
+	 *  名字空间超类
+	 */
 	struct ns_common	ns;
-    /**
-     *  安装树的根
-     */
+	/**
+	 *  安装树的根
+	 */
 	struct mount *	root;
 	/*
 	 * Traversal and modification of .list is protected by either
@@ -28,37 +28,37 @@ struct mnt_namespace {
 	 * 名字空间的所有 mount 结构
 	 */
 	struct list_head	list;
-    /**
-     *  用于保证 list 结构的安全
-     */
+	/**
+	 *  用于保证 list 结构的安全
+	 */
 	spinlock_t		ns_lock;
-    /**
-     *  创建者的 USER 名字空间
-     */
+	/**
+	 *  创建者的 USER 名字空间
+	 */
 	struct user_namespace	*user_ns;
-    /**
-     *  用户空间的各类名字空间的实际数量
-     */
+	/**
+	 *  用户空间的各类名字空间的实际数量
+	 */
 	struct ucounts		*ucounts;
-    /**
-     *  序列号，用于确定名字空间的创建顺序
-     */
+	/**
+	 *  序列号，用于确定名字空间的创建顺序
+	 */
 	u64			seq;	/* Sequence number to prevent loops */
-    /**
-     *  等待名字空间变化的进程队列
-     */
+	/**
+	 *  等待名字空间变化的进程队列
+	 */
 	wait_queue_head_t poll;
-    /**
-     *  等待的事件
-     */
+	/**
+	 *  等待的事件
+	 */
 	u64 event;
-    /**
-     *  名字空间中的 mount 结构数量
-     */
+	/**
+	 *  名字空间中的 mount 结构数量
+	 */
 	unsigned int		mounts; /* # of mounts in the namespace */
-    /**
-     *  名字空间中正在安装的 mount 结构数量
-     */
+	/**
+	 *  名字空间中正在安装的 mount 结构数量
+	 */
 	unsigned int		pending_mounts;
 } __randomize_layout;
 
@@ -67,12 +67,12 @@ struct mnt_pcp {
 	int mnt_writers;
 };
 /**
- *  
+ *
  */
 struct mountpoint {
-    /**
-     *  全局变量 mountpoint_hashtable 的节点
-     */
+	/**
+	 *  全局变量 mountpoint_hashtable 的节点
+	 */
 	struct hlist_node m_hash;
 	struct dentry *m_dentry;
 	struct hlist_head m_list;
@@ -82,14 +82,14 @@ struct mountpoint {
 /**
  *  挂载点
  */
-struct mount {  /* 挂载点信息 */
-    /**
-     *  全局变量 mount_hashtable 中的节点
-     */
+struct mount {
+	/**
+	 *  全局变量 mount_hashtable 中的节点
+	 */
 	struct hlist_node mnt_hash;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct mount *mnt_parent;
 	struct dentry *mnt_mountpoint;
 	struct vfsmount mnt;
@@ -103,12 +103,12 @@ struct mount {  /* 挂载点信息 */
 	int mnt_count;
 	int mnt_writers;
 #endif
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct list_head mnt_mounts;	/* list of children, anchored here */
 	struct list_head mnt_child;	/* and going through their mnt_child */
-	struct list_head mnt_instance;	/* mount instance on sb->s_mounts */ 
+	struct list_head mnt_instance;	/* mount instance on sb->s_mounts */
                                 /* 在 super_block->s_mounts 链表的 节点 */
 	const char *mnt_devname;	/* Name of device e.g. /dev/dsk/hda1 */
 	struct list_head mnt_list;
