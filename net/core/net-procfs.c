@@ -75,6 +75,9 @@ static void dev_seq_stop(struct seq_file *seq, void *v)
 	rcu_read_unlock();
 }
 
+/**
+ * /proc/self/net/dev == /proc/net/dev
+ */
 static void dev_seq_printf_stats(struct seq_file *seq, struct net_device *dev)
 {
 	struct rtnl_link_stats64 temp;
@@ -100,8 +103,9 @@ static void dev_seq_printf_stats(struct seq_file *seq, struct net_device *dev)
 }
 
 /*
- *	Called from the PROCfs module. This now uses the new arbitrary sized
- *	/proc/net interface to create /proc/net/dev
+ * Called from the PROCfs module. This now uses the new arbitrary sized
+ * /proc/net interface to create /proc/net/dev
+ * /proc/self/net/dev == /proc/net/dev
  */
 static int dev_seq_show(struct seq_file *seq, void *v)
 {
@@ -179,6 +183,7 @@ static int softnet_seq_show(struct seq_file *seq, void *v)
 	return 0;
 }
 
+/* /proc/self/net/dev == /proc/net/dev */
 static const struct seq_operations dev_seq_ops = {
 	.start = dev_seq_start,
 	.next  = dev_seq_next,
@@ -293,7 +298,8 @@ static int __net_init dev_proc_net_init(struct net *net)
 {
 	int rc = -ENOMEM;
 
-	if (!proc_create_net("dev", 0444, net->proc_net, &dev_seq_ops,  /* /proc/self/net/dev */
+	/* /proc/self/net/dev == /proc/net/dev */
+	if (!proc_create_net("dev", 0444, net->proc_net, &dev_seq_ops,
 			sizeof(struct seq_net_private)))
 		goto out;
 	if (!proc_create_seq("softnet_stat", 0444, net->proc_net,       /* /proc/self/net/softnet_stat */

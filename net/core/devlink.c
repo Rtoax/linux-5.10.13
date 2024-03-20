@@ -9876,6 +9876,7 @@ void devlink_trap_report(struct devlink *devlink, struct sk_buff *skb,
 
 		devlink_trap_report_metadata_set(&metadata, trap_item,
 						 in_devlink_port, fa_cookie);
+		/* tracepoint:devlink:devlink_trap_report */
 		trace_devlink_trap_report(devlink, skb, &metadata);
 	}
 }
