@@ -36,6 +36,9 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
 	.store = pci_slot_attr_store,
 };
 
+/**
+ * /sys/bus/pci/slots/[ID]/address
+ */
 static ssize_t address_read_file(struct pci_slot *slot, char *buf)
 {
 	if (slot->number == 0xff)
@@ -54,6 +57,9 @@ static ssize_t bus_speed_read(enum pci_bus_speed speed, char *buf)
 	return sprintf(buf, "%s\n", pci_speed_string(speed));
 }
 
+/**
+ * /sys/bus/pci/slots/[ID]/max_bus_speed
+ */
 static ssize_t max_speed_read_file(struct pci_slot *slot, char *buf)
 {
 	return bus_speed_read(slot->bus->max_bus_speed, buf);
@@ -83,8 +89,14 @@ static void pci_slot_release(struct kobject *kobj)
 	kfree(slot);
 }
 
+/**
+ * /sys/bus/pci/slots/[ID]/address
+ */
 static struct pci_slot_attribute pci_slot_attr_address =
 	__ATTR(address, S_IRUGO, address_read_file, NULL);
+/**
+ * /sys/bus/pci/slots/[ID]/max_bus_speed
+ */
 static struct pci_slot_attribute pci_slot_attr_max_speed =
 	__ATTR(max_bus_speed, S_IRUGO, max_speed_read_file, NULL);
 static struct pci_slot_attribute pci_slot_attr_cur_speed =
