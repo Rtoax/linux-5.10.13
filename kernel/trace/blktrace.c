@@ -921,6 +921,9 @@ static void blk_add_trace_rq_issue(void *ignore,
 			 blk_trace_request_get_cgid(q, rq));
 }
 
+/**
+ * sudo bpftrace  -e 'tracepoint:block:block_rq_merge {printf("%s\n", comm);}'
+ */
 static void blk_add_trace_rq_merge(void *ignore,
 				   struct request_queue *q, struct request *rq)
 {

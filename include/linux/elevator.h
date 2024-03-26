@@ -16,7 +16,7 @@ struct blk_mq_debugfs_attr;
 /*
  * Return values from elevator merger
  *
- *   
+ *
  */
 enum elv_merge {
 	ELEVATOR_NO_MERGE	= 0,
@@ -29,7 +29,7 @@ struct blk_mq_alloc_data;
 struct blk_mq_hw_ctx;
 
 /**
- *  
+ *
  */
 struct elevator_mq_ops {
 	int (*init_sched)(struct request_queue *, struct elevator_type *);
@@ -47,12 +47,12 @@ struct elevator_mq_ops {
 	void (*prepare_request)(struct request *);
 	void (*finish_request)(struct request *);
 	void (*insert_requests)(struct blk_mq_hw_ctx *, struct list_head *, bool);
-	request_t (*dispatch_request)(struct blk_mq_hw_ctx *);
+	struct request * (*dispatch_request)(struct blk_mq_hw_ctx *);
 	bool (*has_work)(struct blk_mq_hw_ctx *);
 	void (*completed_request)(struct request *, u64);
 	void (*requeue_request)(struct request *);
-	request_t (*former_request)(struct request_queue *, struct request *);
-	request_t (*next_request)(struct request_queue *, struct request *);
+	struct request * (*former_request)(struct request_queue *, struct request *);
+	struct request * (*next_request)(struct request_queue *, struct request *);
 	void (*init_icq)(struct io_cq *);
 	void (*exit_icq)(struct io_cq *);
 };
@@ -60,7 +60,7 @@ struct elevator_mq_ops {
 #define ELV_NAME_MAX	(16)
 
 /**
- *  
+ *
  */
 struct elv_fs_entry {
 	struct attribute attr;

@@ -1728,6 +1728,22 @@ struct block_device *blkdev_get_by_dev(dev_t dev, fmode_t mode, void *holder)
 }
 EXPORT_SYMBOL(blkdev_get_by_dev);
 
+/**
+ * open("/dev/sda", ...) 会调用到这里
+ *
+ * $ sudo bpftrace  -e 'kprobe:blkdev_open {printf("%s %s\n", comm, kstack);}'
+ * ...
+ * storcli64
+        blkdev_open+1
+        do_dentry_open+332
+        do_open+542
+        path_openat+271
+        do_filp_open+178
+        do_sys_openat2+154
+        __x64_sys_open+85
+        do_syscall_64+56
+        entry_SYSCALL_64_after_hwframe+97
+ */
 static int blkdev_open(struct inode * inode, struct file * filp)
 {
 	struct block_device *bdev;
