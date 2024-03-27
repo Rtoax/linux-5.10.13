@@ -4,7 +4,7 @@
 
 /*
  * 	genhd.h Copyright (C) 1992 Drew Eckhardt
- *	Generic hard disk header file by  
+ *	Generic hard disk header file by
  * 		Drew Eckhardt
  *
  *		<drew@colorado.edu>
@@ -188,29 +188,29 @@ struct gendisk {
 	 * 主设备号
 	 */
 	int major;			/* major number of driver */
-    /**
-     *  次设备号 
-     *  如果有分区，每个分区都需要一个次设备号
-     */
+	/**
+	 *  次设备号
+	 *  如果有分区，每个分区都需要一个次设备号
+	 */
 	int first_minor;
-    /**
-     *  次设备的最大数目，未分区则 = 1
-     */
+	/**
+	 *  次设备的最大数目，未分区则 = 1
+	 */
 	int minors;                     /* maximum number of minors, =1 for
                                          * disks that can't be partitioned. */
-    /**
-     *  磁盘名字
-     */
+	/**
+	 *  磁盘名字
+	 */
 	char disk_name[DISK_NAME_LEN];	/* name of major driver */
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	unsigned short events;		/* supported events */
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	unsigned short event_flags;	/* flags related to event processing */
 
 	/* Array of pointers to partitions indexed by partno.
@@ -218,42 +218,42 @@ struct gendisk {
 	 * non-critical accesses use RCU.  Always access through
 	 * helpers.
 	 *
-	 * 
+	 *
 	 */
 	struct disk_part_tbl __rcu *part_tbl;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct hd_struct part0;
-    /**
-     *  块设备操作函数集合,类似字符设备驱动的file_operation结构体
-     */
+	/**
+	 *  块设备操作函数集合,类似字符设备驱动的file_operation结构体
+	 */
 	const struct block_device_operations *fops;
-    /**
-     *  请求队列
-     *  用来管理该设备的I/O请求，请求队列的相关函数：
-     */
+	/**
+	 *  请求队列
+	 *  用来管理该设备的I/O请求，请求队列的相关函数：
+	 */
 	struct request_queue *queue;
-    /**
-     *  指向私有数据的指针
-     */
+	/**
+	 *  指向私有数据的指针
+	 */
 	void *private_data;
 
-    /**
-     *  描述驱动器状态的标志
-     *  
-     *  GENHD_FL_REMOVABLE: 可移动介质
-     *  ...
-     */
+	/**
+	 *  描述驱动器状态的标志
+	 *
+	 *  GENHD_FL_REMOVABLE: 可移动介质
+	 *  ...
+	 */
 	int flags;
-    
+
 	unsigned long state;
 #define GD_NEED_PART_SCAN		0
 	struct rw_semaphore lookup_sem;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct kobject *slave_dir;
 
 	struct timer_rand_state *random;
@@ -267,9 +267,9 @@ struct gendisk {
 #if IS_ENABLED(CONFIG_CDROM)
 	struct cdrom_device_info *cdi;
 #endif
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	int node_id;
 	struct badblocks *bb;
 	struct lockdep_map lockdep_map;
@@ -416,7 +416,7 @@ extern void blk_register_region(dev_t devt, unsigned long range,
 extern void blk_unregister_region(dev_t devt, unsigned long range);
 
 /**
- *  
+ *
  */
 #define alloc_disk_node(minors, node_id)				\
 ({									\
@@ -435,7 +435,7 @@ extern void blk_unregister_region(dev_t devt, unsigned long range);
 })
 
 /**
- *  
+ *
  */
 #define alloc_disk(minors) alloc_disk_node(minors, NUMA_NO_NODE)
 

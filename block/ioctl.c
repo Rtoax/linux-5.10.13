@@ -493,6 +493,8 @@ static int blkdev_bszset(struct block_device *bdev, fmode_t mode,
  * Common commands that are handled the same way on native and compat
  * user space. Note the separate arg/argp parameters that are needed
  * to deal with the compat_ptr() conversion.
+ *
+ * 被 blkdev_ioctl() 调用
  */
 static int blkdev_common_ioctl(struct block_device *bdev, fmode_t mode,
 				unsigned cmd, unsigned long arg, void __user *argp)
@@ -585,6 +587,9 @@ static int blkdev_common_ioctl(struct block_device *bdev, fmode_t mode,
  * 3 = open("/dev/sda6", O_RDONLY|O_NONBLOCK)
  * ioctl(3, BLKTRACESETUP, {act_mask=65535,
  * ioctl(3, BLKTRACESTART, 0x608c20)
+ *
+ * 跟踪：
+ * $ sudo bpftrace  -e 'kprobe:blkdev_ioctl {printf("%s\n", comm);}'
  */
 int blkdev_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
 			unsigned long arg)
@@ -621,7 +626,6 @@ int blkdev_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
 		return put_u64(argp, i_size_read(bdev->bd_inode));
 
 	/* Incompatible alignment on i386 */
-	// 配置
 	case BLKTRACESETUP:
 		return blk_trace_ioctl(bdev, cmd, argp);
 	default:
