@@ -2126,6 +2126,9 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	if (S_ISCHR(mode)) {
 		inode->i_fop = &def_chr_fops;
 		inode->i_rdev = rdev;
+	/**
+	 * 块设备
+	 */
 	} else if (S_ISBLK(mode)) {
 		inode->i_fop = &def_blk_fops;
 		inode->i_rdev = rdev;
