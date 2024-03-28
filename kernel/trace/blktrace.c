@@ -312,6 +312,9 @@ record_it:
 	local_irq_restore(flags);
 }
 
+/**
+ *
+ */
 static void blk_trace_free(struct blk_trace *bt)
 {
 	debugfs_remove(bt->msg_file);
@@ -774,7 +777,7 @@ EXPORT_SYMBOL_GPL(blk_trace_startstop);
  * @cmd:	the ioctl cmd
  * @arg:	the argument data, if any
  *
- * 处理BLKTRACESETUP/BLKTRACESTART/BLKTRACESTOP/BLKTRACETEARDOWN四种情况，
+ * 处理 BLKTRACESETUP/BLKTRACESTART/BLKTRACESTOP/BLKTRACETEARDOWN 四种情况，
  * 分别表示配置、开始、停止、释放资源。
  **/
 int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
@@ -790,7 +793,9 @@ int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
 	mutex_lock(&q->debugfs_mutex);
 
 	switch (cmd) {
-	// 配置
+	/**
+	 * 配置
+	 */
 	case BLKTRACESETUP:
 		bdevname(bdev, b);
 		ret = __blk_trace_setup(q, b, bdev->bd_dev, bdev, arg);
@@ -801,15 +806,21 @@ int blk_trace_ioctl(struct block_device *bdev, unsigned cmd, char __user *arg)
 		ret = compat_blk_trace_setup(q, b, bdev->bd_dev, bdev, arg);
 		break;
 #endif
-	// 开始
+	/**
+	 * 开始
+	 */
 	case BLKTRACESTART:
 		start = 1;
 		fallthrough;
-	// 停止
+	/**
+	 * 停止
+	 */
 	case BLKTRACESTOP:
 		ret = __blk_trace_startstop(q, start);
 		break;
-	// 释放资源
+	/**
+	 * 释放资源
+	 */
 	case BLKTRACETEARDOWN:
 		ret = __blk_trace_remove(q);
 		break;
