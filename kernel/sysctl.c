@@ -3535,6 +3535,7 @@ static struct ctl_table fs_table[] = {  /* /proc/sys/fs/xxx */
 #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
 	/**
 	 * fs.binfmt_misc
+	 * /proc/sys/fs/binfmt_misc/
 	 */
 	{
 		.procname	= "binfmt_misc",

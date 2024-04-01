@@ -78,20 +78,25 @@ static int bprm_creds_from_file(struct linux_binprm *bprm);
 
 int suid_dumpable = 0;
 
-static struct list_head __rtoax_linux_binfmt_formats;    /* +++ */
 /**
  *  全局变量：
  *
  *  elf_format      ELF
  *  script_format   #!开头的文件
  */
-static LIST_HEAD(__rtoax_linux_binfmt_formats);  /* 链表头 典型的 `elf_format` 将被加入到这个链表中*/
+static LIST_HEAD(linux_binfmt_formats);  /* 链表头 典型的 `elf_format` 将被加入到这个链表中*/
 static DEFINE_RWLOCK(binfmt_lock);
 
 /**
  *  也可以自定义格式啊，
  *  那也就是说，如何写个合适的驱动，linux也可以运行 windows的应用程序，
- *  那是不是也就是说，wine这样的linux应用可以下岗了。
+ *  那是不是也就是说，wine这样的linux应用可以下岗了？错，实际上 wine 就是用这个机制实现的
+ *  (https://www.kernel.org/doc/Documentation/admin-guide/binfmt-misc.rst)
+ *
+ *  echo ':DOSWin:M::MZ::/usr/local/bin/wine:' > register
+ *
+ *  2024-04-01 发现
+ *  这实际上是应用于 qemu 跨架构模拟的应用场景。
  */
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
@@ -102,8 +107,8 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 	if (WARN_ON(!fmt->load_binary))
 		return;
 	write_lock(&binfmt_lock);
-	insert ? list_add(&fmt->lh, &__rtoax_linux_binfmt_formats) :
-		 list_add_tail(&fmt->lh, &__rtoax_linux_binfmt_formats);
+	insert ? list_add(&fmt->lh, &linux_binfmt_formats) :
+		 list_add_tail(&fmt->lh, &linux_binfmt_formats);
 	write_unlock(&binfmt_lock);
 }
 EXPORT_SYMBOL(__register_binfmt);
@@ -180,7 +185,7 @@ SYSCALL_DEFINE1(uselib, const char __user *, library)
 	error = -ENOEXEC;
 
 	read_lock(&binfmt_lock);
-	list_for_each_entry(fmt, &__rtoax_linux_binfmt_formats, lh) {
+	list_for_each_entry(fmt, &linux_binfmt_formats, lh) {
 		if (!fmt->load_shlib)
 			continue;
 		if (!try_module_get(fmt->module))
@@ -1491,6 +1496,7 @@ static void free_bprm(struct linux_binprm *bprm)
 	kfree(bprm->fdpath);
 	kfree(bprm);
 }
+
 /**
  *  分配用于保存 args 的数据结构
  */
@@ -1695,8 +1701,10 @@ out:
 EXPORT_SYMBOL(remove_arg_zero);
 
 #define printable(c) (((c)=='\t') || ((c)=='\n') || (0x20<=(c) && (c)<=0x7e))
-/*
+/**
  * cycle the list of binary formats handler, until one recognizes the image
+ *
+ * $ sudo bpftrace -e 'kprobe:search_binary_handler {printf("%s\n", comm);}'
  */
 static int search_binary_handler(struct linux_binprm *bprm)
 {
@@ -1725,7 +1733,7 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	/**
 	 * 各种二进制格式，ELF
 	 */
-	list_for_each_entry(fmt, &__rtoax_linux_binfmt_formats, lh) {
+	list_for_each_entry(fmt, &linux_binfmt_formats, lh) {
 		if (!try_module_get(fmt->module))
 			continue;
 		read_unlock(&binfmt_lock);
@@ -1757,6 +1765,7 @@ static int search_binary_handler(struct linux_binprm *bprm)
 
 	return retval;
 }
+
 /**
  *  执行
  */
@@ -1771,7 +1780,10 @@ static int exec_binprm(struct linux_binprm *bprm)
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();
 
-	/* This allows 4 levels of binfmt rewrites before failing hard. */
+	/**
+	 * This allows 4 levels of binfmt rewrites before failing hard.
+	 *
+	 */
 	for (depth = 0;; depth++) {
 		struct file *exec;
 		if (depth > 5)
@@ -1780,6 +1792,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 		/**
 		 *  加载二进制
 		 *  * 如果是ELF：加载 ELF - 调用 load_elf_binary()
+		 *  * 自定义 binfmt_misc - 调用 load_misc_binary()
 		 */
 		ret = search_binary_handler(bprm);
 		if (ret < 0)

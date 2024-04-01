@@ -40,6 +40,9 @@ enum {
 	VERBOSE_STATUS = 1 /* make it zero to save 400 bytes kernel memory */
 };
 
+/**
+ * 所有都将加入这个列表里
+ */
 static LIST_HEAD(entries);
 static int enabled = 1;
 
@@ -639,6 +642,11 @@ static const struct file_operations bm_entry_operations = {
 
 /* /register */
 
+/**
+ *
+ * buffer 可以是
+ * echo ":python-magic:M::\x23PYTHON::$(which python):OC" | sudo tee /proc/sys/fs/binfmt_misc/register
+ */
 static ssize_t bm_register_write(struct file *file, const char __user *buffer,
 			       size_t count, loff_t *ppos)
 {
@@ -713,6 +721,9 @@ out:
 	return count;
 }
 
+/**
+ * /proc/sys/fs/binfmt_misc/register
+ */
 static const struct file_operations bm_register_operations = {
 	.write		= bm_register_write,
 	.llseek		= noop_llseek,
@@ -720,6 +731,9 @@ static const struct file_operations bm_register_operations = {
 
 /* /status */
 
+/**
+ * /proc/sys/fs/binfmt_misc/status
+ */
 static ssize_t
 bm_status_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
@@ -728,6 +742,9 @@ bm_status_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 	return simple_read_from_buffer(buf, nbytes, ppos, s, strlen(s));
 }
 
+/**
+ * /proc/sys/fs/binfmt_misc/status
+ */
 static ssize_t bm_status_write(struct file *file, const char __user *buffer,
 		size_t count, loff_t *ppos)
 {
@@ -777,7 +794,13 @@ static int bm_fill_super(struct super_block *sb, struct fs_context *fc)
 {
 	int err;
 	static const struct tree_descr bm_files[] = {
+		/**
+		 * /proc/sys/fs/binfmt_misc/status
+		 */
 		[2] = {"status", &bm_status_operations, S_IWUSR|S_IRUGO},
+		/**
+		 * /proc/sys/fs/binfmt_misc/register
+		 */
 		[3] = {"register", &bm_register_operations, S_IWUSR},
 		/* last one */ {""}
 	};
@@ -803,6 +826,9 @@ static int bm_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
+/**
+ *
+ */
 static struct linux_binfmt misc_format = {
 	.module = THIS_MODULE,
 	.load_binary = load_misc_binary,
@@ -816,6 +842,9 @@ static struct file_system_type bm_fs_type = {
 };
 MODULE_ALIAS_FS("binfmt_misc");
 
+/**
+ * /proc/sys/fs/binfmt_misc/
+ */
 static int __init init_misc_binfmt(void)
 {
 	int err = register_filesystem(&bm_fs_type);
@@ -830,6 +859,9 @@ static void __exit exit_misc_binfmt(void)
 	unregister_filesystem(&bm_fs_type);
 }
 
+/**
+ * 内核启动过程就加载了
+ */
 core_initcall(init_misc_binfmt);
 module_exit(exit_misc_binfmt);
 MODULE_LICENSE("GPL");
