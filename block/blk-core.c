@@ -1684,6 +1684,9 @@ free_and_out:
 }
 EXPORT_SYMBOL_GPL(blk_rq_prep_clone);
 
+/**
+ *
+ */
 int kblockd_schedule_work(struct work_struct *work)
 {
 	return queue_work(kblockd_workqueue, work);
@@ -1834,7 +1837,13 @@ int __init blk_dev_init(void)
 	BUILD_BUG_ON(REQ_OP_BITS + REQ_FLAG_BITS > 8 *
 			sizeof_field(struct bio, bi_opf));
 
-	/* used for unplugging and affects IO latency/throughput - HIGHPRI */
+	/**
+	 * used for unplugging and affects IO latency/throughput - HIGHPRI
+	 *
+	 * $ ps -ef | grep kblock
+	 * [kworker/0:0H-kblockd]
+	 * ...
+	 */
 	kblockd_workqueue = alloc_workqueue("kblockd",
 					    WQ_MEM_RECLAIM | WQ_HIGHPRI, 0);
 	if (!kblockd_workqueue)
