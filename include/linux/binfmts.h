@@ -72,7 +72,7 @@ struct linux_binprm {
 	struct rlimit rlim_stack; /* Saved RLIMIT_STACK used during exec. */
 
 	/**
-	 *  ehdr ->>> load_elf_binary()
+	 *  load_elf_binary(): ehdr
 	 */
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;

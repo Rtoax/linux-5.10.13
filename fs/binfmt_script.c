@@ -31,14 +31,29 @@ static inline const char *next_terminator(const char *first, const char *last)
 	return NULL;
 }
 
-static int load_script(struct linux_binprm *bprm)   /* 加载脚本 */
+/**
+ * 加载脚本
+ *
+ * $ sudo bpftrace -e 'kprobe:load_script {printf("%s %s\n", comm, kstack);}'
+ * bash
+        load_script+5
+        bprm_execve+660
+        do_execveat_common.isra.0+429
+        __x64_sys_execve+54
+        do_syscall_64+97
+        entry_SYSCALL_64_after_hwframe+110
+ */
+static int load_script(struct linux_binprm *bprm)
 {
 	const char *i_name, *i_sep, *i_arg, *i_end, *buf_end;
 	struct file *file;
 	int retval;
 
-	/* Not ours to exec if we don't start with "#!". */
-	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!')) /* 不是#!开头直接不认识 */
+	/**
+	 * Not ours to exec if we don't start with "#!".
+	 * 不是 #! 开头直接不认识
+	 */
+	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!'))
 		return -ENOEXEC;
 
 	/*

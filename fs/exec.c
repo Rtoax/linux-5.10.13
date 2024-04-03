@@ -1536,6 +1536,15 @@ out:
 	return ERR_PTR(retval);
 }
 
+/**
+ * 替换解释器
+ *
+ * $ sudo bpftrace -e 'kprobe:bprm_change_interp {printf("%s %s\n", comm, str(arg0));}'
+ *
+ * 比如：
+ * - 将要执行的可执行文件替换为 /usr/bin/qemu-aarch64-static
+ * - 将 ./xxx.sh 替换为 /bin/bash
+ */
 int bprm_change_interp(const char *interp, struct linux_binprm *bprm)
 {
 	/* If a binfmt changed the interp, free it first. */
@@ -1731,7 +1740,9 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	read_lock(&binfmt_lock);
 
 	/**
-	 * 各种二进制格式，ELF
+	 * 各种二进制格式，script, ELF, misc
+	 *
+	 * 为什么要遍历所有呢？能不能不遍历？
 	 */
 	list_for_each_entry(fmt, &linux_binfmt_formats, lh) {
 		if (!try_module_get(fmt->module))
@@ -1740,7 +1751,10 @@ static int search_binary_handler(struct linux_binprm *bprm)
 
 		/**
 		 *  加载二进制文件
-		 *  elf_format.load_binary = load_elf_binary() -> start_thread(ip=elf_entry)
+		 *  elf_format.load_binary = load_elf_binary()
+		 *                           -> start_thread(ip=elf_entry)
+		 *  script_format.load_binary = load_script()
+		 *  misc_format.load_binary = load_misc_binary()
 		 */
 		retval = fmt->load_binary(bprm);
 

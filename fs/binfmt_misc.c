@@ -95,7 +95,9 @@ static Node *check_file(struct linux_binprm *bprm)
 	char *p = strrchr(bprm->interp, '.');
 	struct list_head *l;
 
-	/* Walk all the registered handlers. */
+	/**
+	 * Walk all the registered handlers.
+	 */
 	list_for_each(l, &entries) {
 		Node *e = list_entry(l, Node, list);
 		char *s;
@@ -129,8 +131,23 @@ static Node *check_file(struct linux_binprm *bprm)
 	return NULL;
 }
 
-/*
+/**
  * the loader itself
+ *
+ * $ sudo bpftrace -e 'kprobe:load_misc_binary {printf("%s %s\n", comm, kstack);}'
+ *  - 没执行一个命令，不管是什么，都会执行这个函数，为什么？有必要吗？
+ *  - 调用栈
+ *    bash
+ *       load_misc_binary+5
+ *       bprm_execve+660
+ *       do_execveat_common.isra.0+429
+ *       __x64_sys_execve+54
+ *       do_syscall_64+97
+ *       entry_SYSCALL_64_after_hwframe+110
+ *
+ * $ sudo bpftrace -e 'kretprobe:load_misc_binary {printf("%d\n", retval);}'
+ *  - 如果是在 x86 上模拟 arm，这会返回0 成功
+ *  - 如果执行普通程序，这将失败
  */
 static int load_misc_binary(struct linux_binprm *bprm)
 {
@@ -165,7 +182,10 @@ static int load_misc_binary(struct linux_binprm *bprm)
 	if (fmt->flags & MISC_FMT_OPEN_BINARY)
 		bprm->have_execfd = 1;
 
-	/* make argv[1] be the path to the binary */
+	/**
+	 * make argv[1] be the path to the binary
+	 * 也就是二进制的名字
+	 */
 	retval = copy_string_kernel(bprm->interp, bprm);
 	if (retval < 0)
 		goto ret;
@@ -177,7 +197,10 @@ static int load_misc_binary(struct linux_binprm *bprm)
 		goto ret;
 	bprm->argc++;
 
-	/* Update interp in case binfmt_script needs it. */
+	/**
+	 * Update interp in case binfmt_script needs it.
+	 * 比如 将 exec 的可执行文件替换为 /usr/bin/qemu-aarch64-static
+	 */
 	retval = bprm_change_interp(fmt->interpreter, bprm);
 	if (retval < 0)
 		goto ret;
@@ -193,6 +216,9 @@ static int load_misc_binary(struct linux_binprm *bprm)
 	if (IS_ERR(interp_file))
 		goto ret;
 
+	/**
+	 * 解释器打开的 struct file * 指针，如 /usr/bin/qemu-aarch64-static
+	 */
 	bprm->interpreter = interp_file;
 	if (fmt->flags & MISC_FMT_CREDENTIALS)
 		bprm->execfd_creds = 1;
