@@ -751,7 +751,11 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	tk_update_leap_state(tk);
 	tk_update_ktime_data(tk);
 
+	/**
+	 * 更新 [vvar]
+	 */
 	update_vsyscall(tk);
+
 	update_pvclock_gtod(tk, action & TK_CLOCK_WAS_SET);
 
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;

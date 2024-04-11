@@ -83,7 +83,10 @@ void update_vsyscall(struct timekeeper *tk)
 	s32 clock_mode;
 	u64 nsec;
 
-	/* copy vsyscall data */
+	/**
+	 * copy vsyscall data
+	 * 里面有内存屏障 smp_wmb()
+	 */
 	vdso_write_begin(vdata);
 
 	/**
@@ -125,6 +128,10 @@ void update_vsyscall(struct timekeeper *tk)
 
 	__arch_update_vsyscall(vdata, tk);
 
+	/**
+	 * 结束
+	 * smp_wmb()
+	 */
 	vdso_write_end(vdata);
 
 	__arch_sync_vdso_data(vdata);

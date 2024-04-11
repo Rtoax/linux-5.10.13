@@ -145,12 +145,12 @@ extern void update_vsyscall_tz(void);
 
 #else
 
-//static inline void update_vsyscall(struct timekeeper *tk)
-//{
-//}
-//static inline void update_vsyscall_tz(void)
-//{
-//}
+static inline void update_vsyscall(struct timekeeper *tk)
+{
+}
+static inline void update_vsyscall_tz(void)
+{
+}
 #endif
 
 #endif /* _LINUX_TIMEKEEPER_INTERNAL_H */
