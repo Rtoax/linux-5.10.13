@@ -810,6 +810,10 @@ static void timekeeping_forward_now(struct timekeeper *tk)
  *
  * Returns the time of day in a timespec64 (WARN if suspended).
  */
+/**
+ * CLOCK_REALTIME: ktime_get_real_ts64 [此函数]
+ * CLOCK_REALTIME_COARSE: ktime_get_coarse_real_ts64
+ */
 void ktime_get_real_ts64(struct timespec64 *ts)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
@@ -2243,6 +2247,10 @@ void getboottime64(struct timespec64 *ts)
 }
 EXPORT_SYMBOL_GPL(getboottime64);
 
+/**
+ * CLOCK_REALTIME: ktime_get_real_ts64
+ * CLOCK_REALTIME_COARSE: ktime_get_coarse_real_ts64 [此函数]
+ */
 void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
@@ -2256,6 +2264,9 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 }
 EXPORT_SYMBOL(ktime_get_coarse_real_ts64);
 
+/**
+ * CLOCK_MONOTONIC_COARSE 单调，粗略
+ */
 void ktime_get_coarse_ts64(struct timespec64 *ts)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;

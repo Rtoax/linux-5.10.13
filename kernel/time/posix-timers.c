@@ -167,6 +167,9 @@ static inline void unlock_timer(struct k_itimer *timr, unsigned long flags)
 }
 
 /* Get clock_realtime */
+/**
+ * CLOCK_REALTIME
+ */
 static int posix_get_realtime_timespec(clockid_t which_clock, struct timespec64 *tp)
 {
 	ktime_get_real_ts64(tp);
@@ -216,13 +219,18 @@ static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec64 *tp)
 	return 0;
 }
 
-
+/**
+ * CLOCK_REALTIME_COARSE
+ */
 static int posix_get_realtime_coarse(clockid_t which_clock, struct timespec64 *tp)
 {
 	ktime_get_coarse_real_ts64(tp);
 	return 0;
 }
 
+/**
+ * CLOCK_MONOTONIC_COARSE
+ */
 static int posix_get_monotonic_coarse(clockid_t which_clock,
 						struct timespec64 *tp)
 {
@@ -1306,6 +1314,9 @@ SYSCALL_DEFINE4(clock_nanosleep_time32, clockid_t, which_clock, int, flags,
 
 #endif
 
+/**
+ * CLOCK_REALTIME
+ */
 static const struct k_clock clock_realtime = {
 	.clock_getres		= posix_get_hrtimer_res,
 	.clock_get_timespec	= posix_get_realtime_timespec,
@@ -1347,6 +1358,9 @@ static const struct k_clock clock_monotonic_raw = {
 	.clock_get_timespec	= posix_get_monotonic_raw,
 };
 
+/**
+ * CLOCK_REALTIME_COARSE 粗略
+ */
 static const struct k_clock clock_realtime_coarse = {
 	.clock_getres		= posix_get_coarse_res,
 	.clock_get_timespec	= posix_get_realtime_coarse,
