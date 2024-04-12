@@ -197,6 +197,9 @@ static int posix_clock_realtime_adj(const clockid_t which_clock,
 /*
  * Get monotonic time for posix timers
  */
+/**
+ * CLOCK_MONOTONIC
+ */
 static int posix_get_monotonic_timespec(clockid_t which_clock, struct timespec64 *tp)
 {
 	ktime_get_ts64(tp);
@@ -211,6 +214,9 @@ static ktime_t posix_get_monotonic_ktime(clockid_t which_clock)
 
 /*
  * Get monotonic-raw time for posix timers
+ */
+/**
+ * CLOCK_MONOTONIC_RAW
  */
 static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec64 *tp)
 {
@@ -1098,15 +1104,15 @@ SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 	if (!kc)
 		return -EINVAL;
 
-    /**
-     *  posix_get_realtime_timespec,
-     *  posix_get_monotonic_timespec,
-     *  posix_get_monotonic_raw,
-     *  posix_get_realtime_coarse,
-     *  posix_get_monotonic_coarse,
-     *  posix_get_tai_timespec,
-     *  posix_get_boottime_timespec,
-     */
+	/**
+	 *  posix_get_realtime_timespec,
+	 *  posix_get_monotonic_timespec,
+	 *  posix_get_monotonic_raw,
+	 *  posix_get_realtime_coarse,
+	 *  posix_get_monotonic_coarse,
+	 *  posix_get_tai_timespec,
+	 *  posix_get_boottime_timespec,
+	 */
 	error = kc->clock_get_timespec(which_clock, &kernel_tp);
 
 	if (!error && put_timespec64(&kernel_tp, tp))
@@ -1371,6 +1377,9 @@ static const struct k_clock clock_monotonic_coarse = {
 	.clock_get_timespec	= posix_get_monotonic_coarse,
 };
 
+/**
+ * CLOCK_TAI
+ */
 static const struct k_clock clock_tai = {
 	.clock_getres		= posix_get_hrtimer_res,
 	.clock_get_ktime	= posix_get_tai_ktime,

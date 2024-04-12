@@ -85,38 +85,54 @@ struct module;
  * clocksource into your own struct. Depending on the amount of
  * information you need you should consider to cache line align that
  * structure.
+ *
+ * 硬件时钟源
  */
-struct clocksource {    /* 硬件时钟源 */
-    /**
-     *
-     */
+struct clocksource {
+	/**
+	 * 读取，如在如下函数中调用：
+	 * - tk_clock_read()
+	 *
+	 * read 可能为：
+	 * - kvm_clock::kvm_clock_get_cycles()
+	 * - clocksource_jiffies::jiffies_read()
+	 * - clocksource_tsc::read_tsc()
+	 * - clocksource_tsc_early::read_tsc()
+	 * - clocksource_hpet::read_hpet()
+	 * - clocksource_acpi_pm::acpi_pm_read()
+	 *
+	 * 时钟源
+	 *  /sys/devices/system/clocksource/clocksource0/available_clocksource
+	 *  /sys/devices/system/clocksource/clocksource0/current_clocksource
+	 *
+	 */
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
 
-    //`mult` and `shift` provide ability to convert time values specific to each clock source
-    //ns ~= (clocksource * mult) >> shift
+	//`mult` and `shift` provide ability to convert time values specific to each clock source
+	//ns ~= (clocksource * mult) >> shift
 	u32			mult;
 	u32			shift;
 
-    //max idle time permitted by the clocksource in nanoseconds
-    //We need in this field for the Linux kernel with enabled `CONFIG_NO_HZ` kernel configuration option.
+	//max idle time permitted by the clocksource in nanoseconds
+	//We need in this field for the Linux kernel with enabled `CONFIG_NO_HZ` kernel configuration option.
 	u64			max_idle_ns;
 
-    //the maximum adjustment value to `mult`
-    //The main formula by which we convert cycles to the nanoseconds:
-    //  ((u64) cycles * mult) >> shift
-    //allows clocksource API to avoid `mult` values that might overflow when adjusted.
+	//the maximum adjustment value to `mult`
+	//The main formula by which we convert cycles to the nanoseconds:
+	//  ((u64) cycles * mult) >> shift
+	//allows clocksource API to avoid `mult` values that might overflow when adjusted.
 	u32			maxadj;
 #ifdef CONFIG_ARCH_CLOCKSOURCE_DATA
 	struct arch_clocksource_data archdata;
 #endif
 
-    // represents maximum cycle value before potential overflow
+	// represents maximum cycle value before potential overflow
 	u64			max_cycles;
 	const char		*name;      /* the name of a counter */
 	struct list_head	list;   /* 时钟源链表 */
 
-    //`rating` field that helps to the Linux kernel to select the best clocksource and etc
+	//`rating` field that helps to the Linux kernel to select the best clocksource and etc
 	int			rating; /* rating of the [time stamp counter] is `300`
                            rating of the [high precision event timer] is `250`*/
 	enum vdso_clock_mode	vdso_clock_mode;

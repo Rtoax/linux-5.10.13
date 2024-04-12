@@ -193,9 +193,9 @@ static inline void tk_update_sleep_time(struct timekeeper *tk, ktime_t delta)
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
 	struct clocksource *clock = READ_ONCE(tkr->clock);
-    /**
-     *  从时钟源读取数据
-     */
+	/**
+	 * 从时钟源读取数据, 比如可能为 clocksource_tsc::read_tsc()
+	 */
 	return clock->read(clock);
 }
 
@@ -262,9 +262,9 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 		max = tkr->clock->max_cycles;
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
-    /**
-     *
-     */
+	/**
+	 * delta = (now - last) & mask;
+	 */
 	delta = clocksource_delta(now, last, mask);
 
 	/*
@@ -285,21 +285,21 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 	return delta;
 }
 #else
-//static inline void timekeeping_check_update(struct timekeeper *tk, u64 offset)
-//{
-//}
-//static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
-//{
-//	u64 cycle_now, delta;
-//
-//	/* read clocksource */
-//	cycle_now = tk_clock_read(tkr);
-//
-//	/* calculate the delta since the last update_wall_time */
-//	delta = clocksource_delta(cycle_now, tkr->cycle_last, tkr->mask);
-//
-//	return delta;
-//}
+static inline void timekeeping_check_update(struct timekeeper *tk, u64 offset)
+{
+}
+static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
+{
+	u64 cycle_now, delta;
+
+	/* read clocksource */
+	cycle_now = tk_clock_read(tkr);
+
+	/* calculate the delta since the last update_wall_time */
+	delta = clocksource_delta(cycle_now, tkr->cycle_last, tkr->mask);
+
+	return delta;
+}
 #endif
 
 /**

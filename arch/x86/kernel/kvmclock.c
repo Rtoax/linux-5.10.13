@@ -172,9 +172,9 @@ static int kvm_cs_enable(struct clocksource *cs)
  */
 struct clocksource kvm_clock = {
 	kvm_clock.name	= "kvm-clock",
-    /**
-     *  这个函数可能只调用一次
-     */
+	/**
+	 *  这个函数可能只调用一次
+	 */
 	kvm_clock.read	= kvm_clock_get_cycles,
 	kvm_clock.rating	= 400,
 	kvm_clock.mask	= CLOCKSOURCE_MASK(64),
@@ -356,7 +356,7 @@ void __init kvmclock_init(void)
 	kvm_sched_clock_init(flags & PVCLOCK_TSC_STABLE_BIT);
 
     /**
-     *  
+     *
      */
 	x86_platform.calibrate_tsc = kvm_get_tsc_khz;
 	x86_platform.calibrate_cpu = kvm_get_tsc_khz;
@@ -387,7 +387,7 @@ void __init kvmclock_init(void)
 		kvm_clock.rating = 299;
 
     /**
-     *  
+     *
      */
 	clocksource_register_hz(&kvm_clock, NSEC_PER_SEC);
 	pv_info.name = "KVM";

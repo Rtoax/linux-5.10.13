@@ -25,9 +25,9 @@
  * HZ=100.
  */
 #if HZ < 34
-//#define JIFFIES_SHIFT	6
+#define JIFFIES_SHIFT	6
 #elif HZ < 67
-//#define JIFFIES_SHIFT	7
+#define JIFFIES_SHIFT	7
 #else   /* HZ=1000 */
 #define JIFFIES_SHIFT	8
 #endif
