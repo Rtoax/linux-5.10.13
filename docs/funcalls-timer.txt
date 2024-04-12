@@ -1,64 +1,63 @@
  结构体
-------------------------------------------------------- 
-struct clocksource; struct clock_event_device; 
-        `clockevents_register_device()`  
+-------------------------------------------------------
+struct clocksource; struct clock_event_device;
+        `clockevents_register_device()`
 		`clockevents_config_and_register()`
 		`tick_check_new_device()`
-			->`tick_install_broadcast_device()` 
-struct tick_device; 每个CPU的本地定时器 
+			->`tick_install_broadcast_device()`
+struct tick_device; 每个CPU的本地定时器
 struct timer_list; struct timer_base;
 
 全局部变量
-------------------------------------------------------- 
-> jiffies = jiffies_64; 
-> u64 jiffies_64; 
-> struct bus_type clocksource_subsys ; 
-> struct device device_clocksource ; 
-> struct tick_device tick_broadcast_device; 
+-------------------------------------------------------
+> jiffies = jiffies_64;
+> u64 jiffies_64;
+> struct bus_type clocksource_subsys ;
+> struct device device_clocksource ;
+> struct tick_device tick_broadcast_device;
 > struct clock_event_device lapic_clockevent;
 
 时钟源
-------------------------------------------------------- 
-> struct clocksource clocksource_jiffies = {.name		= "jiffies", ...}; 
-> struct clocksource refined_jiffies;	=> `i8253/i8254` 
-> struct clocksource clocksource_tsc = {.name			= "tsc", ...}; 
-> struct clocksource clocksource_hpet; 
-> struct clocksource clocksource_acpi_pm; 
-> struct clocksource clocksource_tsc_early; 
-> struct clocksource clocksource_tsc; 
+-------------------------------------------------------
+> struct clocksource clocksource_jiffies = {.name		= "jiffies", ...};
+> struct clocksource refined_jiffies;	=> `i8253/i8254`
+> struct clocksource clocksource_tsc = {.name			= "tsc", ...};
+> struct clocksource clocksource_hpet;
+> struct clocksource clocksource_acpi_pm;
+> struct clocksource clocksource_tsc_early;
 > struct clocksource kvm_clock;
 
 函数调用关系
 1. 初始化
-------------------------------------------------------- 
-x86_64_start_kernel() 
-    x86_64_start_reservations() 
-        ... 
-        x86_intel_mid_early_setup() 
+-------------------------------------------------------
+x86_64_start_kernel()
+    x86_64_start_reservations()
+        ...
+        x86_intel_mid_early_setup()
             ...
             x86_init.timers.wallclock_init = intel_mid_rtc_init;
-            ... 
-            start_kernel() 
+            ...
+            start_kernel()
             ...
             // x86
             setup_arch() ...
                 x86_init.timers.wallclock_init() = intel_mid_rtc_init() ...
-                register_refined_jiffies(CLOCK_TICK_RATE) 
+                register_refined_jiffies(CLOCK_TICK_RATE)
                     __clocksource_register()
                     clocksource_register_hz()
-                    clocksource_register_khz() 
-                tick_init() 
+                    clocksource_register_khz()
+                tick_init()
                     tick_broadcast_init()
-                    tick_nohz_init() 
+                    tick_nohz_init()
                 init_timers()
                 ...
-                time_init() 
-                	late_time_init = x86_late_time_init; 
+                time_init()
+                	late_time_init = x86_late_time_init;
                 ...
-                if (late_time_init) 
-                    late_time_init(); -> x86_late_time_init() 
+                if (late_time_init)
+                    late_time_init(); -> x86_late_time_init()
                         x86_init.irqs.intr_mode_select() -> apic_intr_mode_select()
-                        x86_init.timers.timer_init() -> hpet_time_init() 
+                        x86_init.timers.timer_init() -> hpet_time_init()
                         x86_init.irqs.intr_mode_init() -> apic_intr_mode_init()
                         tsc_init()
 
@@ -66,8 +65,8 @@ x86_64_start_kernel()
 			setup_arch()
 				TODO
 2. 使用
-------------------------------------------------------- 
-get_jiffies_64() `human` time units. 
+-------------------------------------------------------
+get_jiffies_64() `human` time units.
     1. To get one second	jiffies / HZ
     2.  /* one minute from now */ unsigned long later = jiffies + 60*HZ;
         /* five minutes from now */
@@ -77,15 +76,15 @@ get_jiffies_64() `human` time units.
         /* Two minutes from now */
         jiffies + 120*HZ
         /* One millisecond from now */
-        jiffies + HZ / 1000 
+        jiffies + HZ / 1000
 3. 定时器
-------------------------------------------------------- 
-__init_timer() / __TIMER_INITIALIZER => `struct timer_list` 
+-------------------------------------------------------
+__init_timer() / __TIMER_INITIALIZER => `struct timer_list`
 add_timer() / del_timer()
 
 定时器频率
-------------------------------------------------------- 
-[ACPI PM] Frequency of the [ACPI] power management timer is `3.579545 MHz`. 
-[hpet] Frequency of the [High Precision Event Timer]  is at least `10 MHz`. 
+-------------------------------------------------------
+[ACPI PM] Frequency of the [ACPI] power management timer is `3.579545 MHz`.
+[hpet] Frequency of the [High Precision Event Timer]  is at least `10 MHz`.
 [tsc] Frequency of the [Time Stamp Counter] depends on processor.
 hpet 使用 `read_hpet()` 获取 `counter` 值
