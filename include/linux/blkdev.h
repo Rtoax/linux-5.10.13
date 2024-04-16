@@ -700,10 +700,10 @@ static inline enum rpm_status queue_rpm_status(struct request_queue *q)
 	return q->rpm_status;
 }
 #else
-//static inline enum rpm_status queue_rpm_status(struct request_queue *q)
-//{
-//	return RPM_ACTIVE;
-//}
+static inline enum rpm_status queue_rpm_status(struct request_queue *q)
+{
+	return RPM_ACTIVE;
+}
 #endif
 
 static inline enum blk_zoned_model

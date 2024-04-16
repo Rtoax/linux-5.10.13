@@ -41,6 +41,9 @@ struct virtio_fs_vq {
 	struct delayed_work dispatch_work;
 	struct fuse_dev *fud;
 	bool connected;
+	/**
+	 * 飞行中
+	 */
 	long in_flight;
 	struct completion in_flight_zero; /* No inflight requests */
 	char name[VQ_NAME_LEN];

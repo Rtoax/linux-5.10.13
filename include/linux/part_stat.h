@@ -10,6 +10,9 @@ struct disk_stats {
 	unsigned long ios[NR_STAT_GROUPS];
 	unsigned long merges[NR_STAT_GROUPS];
 	unsigned long io_ticks;
+	/**
+	 * /sys/block/[BLK]/inflight 飞行中
+	 */
 	local_t in_flight[2];
 };
 

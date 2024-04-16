@@ -782,6 +782,9 @@ static int wbt_background_show(void *data, struct seq_file *m)
 	return 0;
 }
 
+/**
+ *
+ */
 static const struct blk_mq_debugfs_attr wbt_debugfs_attrs[] = {
 	{"curr_win_nsec", 0400, wbt_curr_win_nsec_show},
 	{"enabled", 0400, wbt_enabled_show},

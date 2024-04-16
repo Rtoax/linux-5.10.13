@@ -1335,6 +1335,9 @@ ssize_t part_stat_show(struct device *dev,
 		(unsigned int)div_u64(stat.nsecs[STAT_FLUSH], NSEC_PER_MSEC));
 }
 
+/**
+ * /sys/block/[BLK]/inflight
+ */
 ssize_t part_inflight_show(struct device *dev, struct device_attribute *attr,
 			   char *buf)
 {
@@ -1386,6 +1389,9 @@ static DEVICE_ATTR(alignment_offset, 0444, disk_alignment_offset_show, NULL);
 static DEVICE_ATTR(discard_alignment, 0444, disk_discard_alignment_show, NULL);
 static DEVICE_ATTR(capability, 0444, disk_capability_show, NULL);
 static DEVICE_ATTR(stat, 0444, part_stat_show, NULL);
+/**
+ * /sys/block/[BLK]/inflight
+ */
 static DEVICE_ATTR(inflight, 0444, part_inflight_show, NULL);
 static DEVICE_ATTR(badblocks, 0644, disk_badblocks_show, disk_badblocks_store);
 
@@ -1575,7 +1581,7 @@ static void disk_release(struct device *dev)
 }
 
 /**
- *  
+ *
  */
 struct class block_class = {
 	block_class.name		= "block",
@@ -1723,7 +1729,7 @@ dev_t blk_lookup_devt(const char *name, int partno)
 }
 
 /**
- *  
+ *
  */
 struct gendisk *__alloc_disk_node(int minors, int node_id)
 {
@@ -1769,13 +1775,13 @@ struct gendisk *__alloc_disk_node(int minors, int node_id)
 		goto out_free_part0;
 
     /**
-     *  
+     *
      */
 	disk->minors = minors;
 	rand_initialize_disk(disk);
 
     /**
-     *  
+     *
      */
 	disk_to_dev(disk)->class = &block_class;
 	disk_to_dev(disk)->type = &disk_type;
