@@ -33,7 +33,7 @@
 #include <asm/cache.h>
 #include <asm/boot.h>
 
-#undef i386     /* in case the preprocessor is a 32bit one */
+#undef i386	 /* in case the preprocessor is a 32bit one */
 
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 
@@ -91,15 +91,15 @@ jiffies = jiffies_64;
 #endif
 
 PHDRS {
-	text PT_LOAD FLAGS(5);          /* R_E */
-	data PT_LOAD FLAGS(6);          /* RW_ */
+	text PT_LOAD FLAGS(5);		  /* R_E */
+	data PT_LOAD FLAGS(6);		  /* RW_ */
 #ifdef CONFIG_X86_64
 #ifdef CONFIG_SMP
-	percpu PT_LOAD FLAGS(6);        /* RW_ */
+	percpu PT_LOAD FLAGS(6);		/* RW_ */
 #endif
-	init PT_LOAD FLAGS(7);          /* RWE */
+	init PT_LOAD FLAGS(7);		  /* RWE */
 #endif
-	note PT_NOTE FLAGS(0);          /* ___ */
+	note PT_NOTE FLAGS(0);		  /* ___ */
 }
 
 SECTIONS
@@ -107,53 +107,53 @@ SECTIONS
 #ifdef CONFIG_X86_32
 
 #else
-    /* 0xffffffff81000000 */
+	/* 0xffffffff81000000 */
 	. = __START_KERNEL; /* __START_KERNEL = 0xffffffff81000000 = 0xffffffff80000000 + 0x1000000 */
 
-    /* 0x1000000 */
+	/* 0x1000000 */
 	phys_startup_64 = ABSOLUTE(startup_64 - LOAD_OFFSET);
-    /* phys_startup_64 = 0x1000000 = ffffffff81000000 - 0xffffffff80000000 */
+	/* phys_startup_64 = 0x1000000 = ffffffff81000000 - 0xffffffff80000000 */
 #endif
 
 	/* Text and read-only data  代码段  */
-    /* ffffffff81000000 - ffffffff82202137 */
+	/* ffffffff81000000 - ffffffff82202137 */
 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
 		_text = .;  /* ffffffff81000000 */
 		_stext = .; /* ffffffff81000000 */
 
 		/* bootstrapping code */
-        /* ffffffff81000000 */
+		/* ffffffff81000000 */
 
 		HEAD_TEXT   /* __HEAD  */
 		TEXT_TEXT
 
-        /* ffffffff81ef5fb0 - ffffffff81efde9c */
+		/* ffffffff81ef5fb0 - ffffffff81efde9c */
 		SCHED_TEXT  /* __sched */
 
-        /* ffffffff81efdea0 - ffffffff81efe7f8 */
+		/* ffffffff81efdea0 - ffffffff81efe7f8 */
 		CPUIDLE_TEXT/* __cpuidle */
 
-        /* ffffffff81efe7f8 - ffffffff81eff401 */
+		/* ffffffff81efe7f8 - ffffffff81eff401 */
 		LOCK_TEXT   /* __lockfunc */
 
-        /* ffffffff81eff408 - ffffffff81eff408 */
+		/* ffffffff81eff408 - ffffffff81eff408 */
 		KPROBES_TEXT/* __kprobes */
 
 		ALIGN_ENTRY_TEXT_BEGIN
 
-        /* ffffffff82000000 - ffffffff820017de */
-		ENTRY_TEXT              /* arch/x86/entry/entry_64.S */
+		/* ffffffff82000000 - ffffffff820017de */
+		ENTRY_TEXT			  /* arch/x86/entry/entry_64.S */
 
 		ALIGN_ENTRY_TEXT_END
 
-        /* ffffffff82200000 - ffffffff822003d6 */
-		SOFTIRQENTRY_TEXT       /* __softirq_entry */
+		/* ffffffff82200000 - ffffffff822003d6 */
+		SOFTIRQENTRY_TEXT	   /* __softirq_entry */
 
-        /* ffffffff822003d8 - ffffffff822018fd */
-		STATIC_CALL_TEXT        /* __ARCH_DEFINE_STATIC_CALL_TRAMP static_call */
+		/* ffffffff822003d8 - ffffffff822018fd */
+		STATIC_CALL_TEXT		/* __ARCH_DEFINE_STATIC_CALL_TRAMP static_call */
 
 
-		*(.fixup)           /* entry_64.S   emulate.c copy_user_64.S */
+		*(.fixup)		   /* entry_64.S   emulate.c copy_user_64.S */
 		*(.gnu.warning)
 
 #ifdef CONFIG_RETPOLINE
@@ -170,54 +170,54 @@ SECTIONS
 
 	X86_ALIGN_RODATA_BEGIN
 
-    /* ffffffff82400000 - ffffffff82b94000 */
-	RO_DATA(PAGE_SIZE)      /* 只读 数据段 */
+	/* ffffffff82400000 - ffffffff82b94000 */
+	RO_DATA(PAGE_SIZE)	  /* 只读 数据段 */
 
-	X86_ALIGN_RODATA_END    /* ffffffff82c00000 */
+	X86_ALIGN_RODATA_END	/* ffffffff82c00000 */
 
 	/* Data *//* 数据段 */
-    /* ffffffff82c00000 - ffffffff83675580 */
+	/* ffffffff82c00000 - ffffffff83675580 */
 	.data : AT(ADDR(.data) - LOAD_OFFSET)
 	{
 		/* Start of data section */
 		_sdata = .; /* ffffffff82c00000 */
 
-		/**     init_task 第一个进程
+		/**	 init_task 第一个进程
 		 *
-         *  ffffffff82c00000 D init_stack
-         *  ffffffff82c00000 D init_thread_union
-         *
-         *
-         *
-         *
-         */
-        /* ffffffff82c00000 - ffffffff82c08000 共 32K 大小 */
+		 *  ffffffff82c00000 D init_stack
+		 *  ffffffff82c00000 D init_thread_union
+		 *
+		 *
+		 *
+		 *
+		 */
+		/* ffffffff82c00000 - ffffffff82c08000 共 32K 大小 */
 		INIT_TASK_DATA(THREAD_SIZE/* 32K, 用于对齐 */)
 
-        /**
-         *  ffffffff82c08000 d bringup_idt_table
-         *  ffffffff82c09000 D __vsyscall_page
-         *  ...
-         *  ffffffff82c0d380 D vm_node_stat
-         *  ffffffff82c0d4c0 D vm_numa_stat
-         *  ffffffff82c0d500 D vm_zone_stat
-         *  ...
-         *  ffffffff82c1c100 D init_task
-         *  ffffffff82c1e5a0 d init_sighand
-         *  ffffffff82c1ede0 d init_signals
-         *  ...
-         *  ffffffff836249c0 D initial_code
-         *  ffffffff836249c8 D initial_gs
-         *  ffffffff836249d0 D initial_vc_handler
-         *  ffffffff836249d8 D initial_stack
-         *  ...
-         *  ffffffff836664e0 D node_data    (struct pglist_data *)
-         *  ...
-         *
-         *
-         *
-         *
-         */
+		/**
+		 *  ffffffff82c08000 d bringup_idt_table
+		 *  ffffffff82c09000 D __vsyscall_page
+		 *  ...
+		 *  ffffffff82c0d380 D vm_node_stat
+		 *  ffffffff82c0d4c0 D vm_numa_stat
+		 *  ffffffff82c0d500 D vm_zone_stat
+		 *  ...
+		 *  ffffffff82c1c100 D init_task
+		 *  ffffffff82c1e5a0 d init_sighand
+		 *  ffffffff82c1ede0 d init_signals
+		 *  ...
+		 *  ffffffff836249c0 D initial_code
+		 *  ffffffff836249c8 D initial_gs
+		 *  ffffffff836249d0 D initial_vc_handler
+		 *  ffffffff836249d8 D initial_stack
+		 *  ...
+		 *  ffffffff836664e0 D node_data	(struct pglist_data *)
+		 *  ...
+		 *
+		 *
+		 *
+		 *
+		 */
 
 #ifdef CONFIG_X86_32
 		/* 32 bit has nosave before _edata */
@@ -227,11 +227,11 @@ SECTIONS
 
 		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
 
-        /*  -  */
+		/*  -  */
 		DATA_DATA
 
 
-		CONSTRUCTORS    /* 构造函数 *//* 将C++的构造函数指针段合并到这里 */
+		CONSTRUCTORS	/* 构造函数 *//* 将C++的构造函数指针段合并到这里 */
 
 		/* rarely changed data like cpu maps */
 		READ_MOSTLY_DATA(INTERNODE_CACHE_BYTES)
@@ -240,20 +240,20 @@ SECTIONS
 		_edata = .; /* ffffffff83675580 */
 	} :data
 
-    /* ffffffff83675580 - ffffffff836974b0 */
+	/* ffffffff83675580 - ffffffff836974b0 */
 	BUG_TABLE
 
-    /* ffffffff836974b0 - ffffffff83bda604 */
+	/* ffffffff836974b0 - ffffffff83bda604 */
 	ORC_UNWIND_TABLE
 
 	. = ALIGN(PAGE_SIZE);
 
-    /* ffffffff83bdb000 */
+	/* ffffffff83bdb000 */
 	__vvar_page = .;
 
 	.vvar : AT(ADDR(.vvar) - LOAD_OFFSET) {
 		/* work around gold bug 13023 */
-        /* ffffffff83bdb000 */
+		/* ffffffff83bdb000 */
 		__vvar_beginning_hack = .;
 
 		/* Place all vvars at the offsets in asm/vvar.h. */
@@ -270,9 +270,9 @@ SECTIONS
 		 */
 		. = __vvar_beginning_hack + 128;
 		*(.vvar__vdso_data)
-        /**
-         *  ffffffff83bdb080 D _vdso_data
-         */
+		/**
+		 *  ffffffff83bdb080 D _vdso_data
+		 */
 #undef EMIT_VVAR
 
 		/*
@@ -288,7 +288,7 @@ SECTIONS
 	. = ALIGN(PAGE_SIZE);
 	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {
 
-        /* ffffffff83bdc000 D __init_begin */
+		/* ffffffff83bdc000 D __init_begin */
 		__init_begin = .; /* paired with __init_end */
 	}
 
@@ -299,103 +299,103 @@ SECTIONS
 	 * start another segment - init.
 	 */
 	/* include/linux/percpu-defs.h __percpu */
-    /* ffffffff83bdc000 -  */
+	/* ffffffff83bdc000 -  */
 	PERCPU_VADDR(INTERNODE_CACHE_BYTES, 0, :percpu)
 	ASSERT(SIZEOF(.data..percpu)/* 0x36000 */ < CONFIG_PHYSICAL_START/* 0x1000000 */,
-	            "per-CPU data too large - increase CONFIG_PHYSICAL_START")
+				"per-CPU data too large - increase CONFIG_PHYSICAL_START")
 #endif
 
-    /* TODO rtoax 2021年3月12日 */
-    /* ffffffff83c12000 - ffffffff83cb7eb1 */
-    /**
-     *  ffffffff83c12000 T _sinittext
-     *  ...
-     *  ffffffff83c12580 T x86_64_start_reservations
-     *  ffffffff83c125a0 T x86_64_start_kernel
-     *  ffffffff83c1262c T reserve_bios_regions
-     *  ffffffff83c126b9 T x86_early_init_platform_quirks
-     *  ...
-     *  ffffffff83c127e2 t debug_kernel
-     *  ffffffff83c12800 t quiet_kernel
-     *  ffffffff83c1281e t init_setup
-     *  ffffffff83c1285b t rdinit_setup
-     *  ffffffff83c12898 t ignore_unknown_bootoption
-     *  ffffffff83c128a0 t do_early_param
-     *  ...
-     *  ffffffff83c12de8 t initcall_blacklist
-     *  ffffffff83c12f8f t setup_command_line
-     *  ffffffff83c13015 T parse_early_options
-     *  ffffffff83c1303d T parse_early_param
-     *  ffffffff83c13086 W pgtable_cache_init
-     *  ffffffff83c1308c t mm_init
-     *  ffffffff83c13132 W arch_call_rest_init
-     *  ffffffff83c13142 W smp_setup_processor_id
-     *  ffffffff83c13148 W thread_stack_cache_init
-     *  ffffffff83c1314e T start_kernel
-     *  ...
-     *  ffffffff83c25190 T init_IRQ
-     *  ...
-     *  ffffffff83c27c38 t pci_iommu_init
-     *  ffffffff83c27c95 t iommu_setup
-     *  ffffffff83c27f33 T pci_iommu_alloc
-     *  ...
-     *  ffffffff83c2800b t topology_init
-     *  ...
-     *  ffffffff83c28aa9 T tsc_early_init
-     *  ffffffff83c28b31 T tsc_init
-     *  ...
-     *  ffffffff83c2af00 T early_cpu_init
-     *  ...
-     *  ffffffff83c2d1b3 T mcheck_init
-     *  ...
-     *  ffffffff83c323ce T acpi_boot_init
-     *  ...
-     *  ffffffff83c32c2d t reboot_init
-     *  ...
-     *  ffffffff83c46e37 t numa_setup
-     *  ...
-     *  ffffffff83c47caa t numa_init
-     *  ffffffff83c480d2 T x86_numa_init
-     *  ...
-     *  ...
-     *  ...
-     *  ...
-     *  ...
-     *  ffffffff83cb7eb1 T _einittext
-     */
+	/* TODO rtoax 2021年3月12日 */
+	/* ffffffff83c12000 - ffffffff83cb7eb1 */
+	/**
+	 *  ffffffff83c12000 T _sinittext
+	 *  ...
+	 *  ffffffff83c12580 T x86_64_start_reservations
+	 *  ffffffff83c125a0 T x86_64_start_kernel
+	 *  ffffffff83c1262c T reserve_bios_regions
+	 *  ffffffff83c126b9 T x86_early_init_platform_quirks
+	 *  ...
+	 *  ffffffff83c127e2 t debug_kernel
+	 *  ffffffff83c12800 t quiet_kernel
+	 *  ffffffff83c1281e t init_setup
+	 *  ffffffff83c1285b t rdinit_setup
+	 *  ffffffff83c12898 t ignore_unknown_bootoption
+	 *  ffffffff83c128a0 t do_early_param
+	 *  ...
+	 *  ffffffff83c12de8 t initcall_blacklist
+	 *  ffffffff83c12f8f t setup_command_line
+	 *  ffffffff83c13015 T parse_early_options
+	 *  ffffffff83c1303d T parse_early_param
+	 *  ffffffff83c13086 W pgtable_cache_init
+	 *  ffffffff83c1308c t mm_init
+	 *  ffffffff83c13132 W arch_call_rest_init
+	 *  ffffffff83c13142 W smp_setup_processor_id
+	 *  ffffffff83c13148 W thread_stack_cache_init
+	 *  ffffffff83c1314e T start_kernel
+	 *  ...
+	 *  ffffffff83c25190 T init_IRQ
+	 *  ...
+	 *  ffffffff83c27c38 t pci_iommu_init
+	 *  ffffffff83c27c95 t iommu_setup
+	 *  ffffffff83c27f33 T pci_iommu_alloc
+	 *  ...
+	 *  ffffffff83c2800b t topology_init
+	 *  ...
+	 *  ffffffff83c28aa9 T tsc_early_init
+	 *  ffffffff83c28b31 T tsc_init
+	 *  ...
+	 *  ffffffff83c2af00 T early_cpu_init
+	 *  ...
+	 *  ffffffff83c2d1b3 T mcheck_init
+	 *  ...
+	 *  ffffffff83c323ce T acpi_boot_init
+	 *  ...
+	 *  ffffffff83c32c2d t reboot_init
+	 *  ...
+	 *  ffffffff83c46e37 t numa_setup
+	 *  ...
+	 *  ffffffff83c47caa t numa_init
+	 *  ffffffff83c480d2 T x86_numa_init
+	 *  ...
+	 *  ...
+	 *  ...
+	 *  ...
+	 *  ...
+	 *  ffffffff83cb7eb1 T _einittext
+	 */
 	{INIT_TEXT_SECTION(PAGE_SIZE);}/*开头的 { 和结尾的 ;} 是我加的*/
 #ifdef CONFIG_X86_64
 	:init
 #endif
 
-    /** 还不知道这个放在那里
-     *
-     *  ffffffff83eca000   empty_zero_page -> arch/x86/include/asm/pgtable.h
-     *                           ZERO_PAGE -> arch/x86/include/asm/pgtable.h
-     *  ffffffff83ecb000   dummy_mapping
-     *  ...
-     *  ffffffff83ecc000  level3_user_vsyscall
-     *  ffffffff83ecd000  idt_table
-     *  ffffffff83ece000  espfix_pud_page
-     *  ffffffff83ecf000  bm_pte
-     *  ...
-     *  ffffffff83ed6240  ROOT_DEV
-     *  ...
-     *  ffffffff83edffe0  cpu_devs
-     *  ...
-     *  ffffffff83f4c1f8  efi_setup
-     *  ...
-     *  ffffffff83f4cd00  mm_cachep
-     *  ffffffff83f4cd40  vm_area_cachep
-     *  ffffffff83f4cd80  fs_cachep
-     *  ffffffff83f4cdc0  files_cachep
-     *  ffffffff83f4ce00  sighand_cachep
-     *  ffffffff83f4ce40  signal_cachep
-     *  ffffffff83f4ce80  task_struct_cachep
-     *  ...
-     *  (ffffffff83f54c40)  rootdir
-     *
-     */
+	/** 还不知道这个放在那里
+	 *
+	 *  ffffffff83eca000   empty_zero_page -> arch/x86/include/asm/pgtable.h
+	 *						   ZERO_PAGE -> arch/x86/include/asm/pgtable.h
+	 *  ffffffff83ecb000   dummy_mapping
+	 *  ...
+	 *  ffffffff83ecc000  level3_user_vsyscall
+	 *  ffffffff83ecd000  idt_table
+	 *  ffffffff83ece000  espfix_pud_page
+	 *  ffffffff83ecf000  bm_pte
+	 *  ...
+	 *  ffffffff83ed6240  ROOT_DEV
+	 *  ...
+	 *  ffffffff83edffe0  cpu_devs
+	 *  ...
+	 *  ffffffff83f4c1f8  efi_setup
+	 *  ...
+	 *  ffffffff83f4cd00  mm_cachep
+	 *  ffffffff83f4cd40  vm_area_cachep
+	 *  ffffffff83f4cd80  fs_cachep
+	 *  ffffffff83f4cdc0  files_cachep
+	 *  ffffffff83f4ce00  sighand_cachep
+	 *  ffffffff83f4ce40  signal_cachep
+	 *  ffffffff83f4ce80  task_struct_cachep
+	 *  ...
+	 *  (ffffffff83f54c40)  rootdir
+	 *
+	 */
 
 	/*
 	 * Section for code used exclusively before alternatives are run. All
@@ -405,12 +405,12 @@ SECTIONS
 	 * See static_cpu_has() for an example.
 	 */
 	.altinstr_aux : AT(ADDR(.altinstr_aux) - LOAD_OFFSET) {
-		*(.altinstr_aux)    /* arch/x86/include/asm/cpufeature.h _static_cpu_has */
+		*(.altinstr_aux)	/* arch/x86/include/asm/cpufeature.h _static_cpu_has */
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	INIT_DATA_SECTION(16)
 
 	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
@@ -595,11 +595,11 @@ SECTIONS
 	.got.plt (INFO) : { *(.got.plt) }
 	ASSERT(SIZEOF(.got.plt) == 0 ||
 #ifdef CONFIG_X86_64
-	       SIZEOF(.got.plt) == 0x18,
+		   SIZEOF(.got.plt) == 0x18,
 #else
-//	       SIZEOF(.got.plt) == 0xc,
+//		   SIZEOF(.got.plt) == 0xc,
 #endif
-	       "Unexpected GOT/PLT entries detected!")
+		   "Unexpected GOT/PLT entries detected!")
 
 	/*
 	 * Sections that should stay zero sized, which is safer to
@@ -650,7 +650,7 @@ INIT_PER_CPU(irq_stack_backing_store);
 
 #ifdef CONFIG_SMP
 . = ASSERT((fixed_percpu_data == 0),
-           "fixed_percpu_data is not at start of per-cpu area");
+		   "fixed_percpu_data is not at start of per-cpu area");
 #endif
 
 #endif /* CONFIG_X86_32 */
@@ -659,6 +659,6 @@ INIT_PER_CPU(irq_stack_backing_store);
 #include <asm/kexec.h>
 
 . = ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
-           "kexec control code size is too big");
+		   "kexec control code size is too big");
 #endif
 
