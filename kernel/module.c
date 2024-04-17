@@ -3033,10 +3033,15 @@ static void dynamic_debug_remove(struct module *mod, struct _ddebug *debug)
 		ddebug_remove_module(mod->name);
 }
 /**
- *  为 模块 layout 分配
+ * 为 模块 layout 分配
+ *
+ * arm64 有自己的 module_alloc()
  */
 void * __weak module_alloc(unsigned long size)
 {
+	/**
+	 * 模块实际的内存
+	 */
 	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
 			GFP_KERNEL, PAGE_KERNEL_EXEC, VM_FLUSH_RESET_PERMS,
 			NUMA_NO_NODE, __builtin_return_address(0));
@@ -3699,7 +3704,7 @@ static int move_module(struct module *mod, struct load_info *info)
 		return -ENOMEM;
 
 	/**
-	 *	零
+	 * 零
 	 */
 	memset(ptr, 0, mod->core_layout.size);
 	mod->core_layout.base = ptr;
@@ -3914,6 +3919,8 @@ static struct module *layout_and_allocate(struct load_info *info, int flags)
 	 * structures are never modified, with the exception of entries that
 	 * refer to code in the __init section, which are annotated as such
 	 * at module load time.
+	 *
+	 * __jump_table 的原理是什么？正常编译出来的是没有的
 	 */
 	ndx = find_sec(info, "__jump_table");
 	if (ndx)

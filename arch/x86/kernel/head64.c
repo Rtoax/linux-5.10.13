@@ -58,7 +58,8 @@ EXPORT_SYMBOL(ptrs_per_p4d);
 #endif
 
 #ifdef CONFIG_DYNAMIC_MEMORY_LAYOUT
-unsigned long __ro_after_init page_offset_base  = __PAGE_OFFSET_BASE_L4;    /* 0xffff 8880 0000 0000 */
+/* 0xffff 8880 0000 0000 */
+unsigned long __ro_after_init page_offset_base  = __PAGE_OFFSET_BASE_L4;
 EXPORT_SYMBOL(page_offset_base);
 unsigned long __ro_after_init vmalloc_base  = __VMALLOC_BASE_L4;
 EXPORT_SYMBOL(vmalloc_base);
@@ -66,13 +67,16 @@ unsigned long __ro_after_init vmemmap_base  = __VMEMMAP_BASE_L4;
 EXPORT_SYMBOL(vmemmap_base);
 #endif
 
-/*
+/**
  * GDT used on the boot CPU before switching to virtual addresses.
+ * 启动全局描述附表
  */
-static struct desc_struct startup_gdt[GDT_ENTRIES] = {  /* 启动全局描述附表 */
+static struct desc_struct startup_gdt[GDT_ENTRIES] = {
 	[GDT_ENTRY_KERNEL32_CS]         = GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
-	[GDT_ENTRY_KERNEL_CS]/* 代码段 */           = GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
-	[GDT_ENTRY_KERNEL_DS]/* 数据段 */           = GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
+	/* 代码段 */
+	[GDT_ENTRY_KERNEL_CS]           = GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
+	/* 数据段 */
+	[GDT_ENTRY_KERNEL_DS]           = GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
 };
 
 /*

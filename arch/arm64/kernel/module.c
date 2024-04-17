@@ -20,6 +20,9 @@
 #include <asm/insn.h>
 #include <asm/sections.h>
 
+/**
+ *
+ */
 void *module_alloc(unsigned long size)
 {
 	u64 module_alloc_end = module_alloc_base + MODULES_VSIZE;
