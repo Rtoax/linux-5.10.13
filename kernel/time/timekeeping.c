@@ -49,9 +49,9 @@ static struct {
 	seqcount_raw_spinlock_t	seq;
 	struct timekeeper	timekeeper;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 } ____cacheline_aligned tk_core  = {
 	tk_core.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
@@ -740,7 +740,11 @@ static inline void tk_update_ktime_data(struct timekeeper *tk)
 	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
 }
 
-/* must hold timekeeper_lock */
+/**
+ * must hold timekeeper_lock
+ *
+ * $ sudo bpftrace -e 'kprobe:timekeeping_update { @ = count();}'
+ */
 static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 {
 	if (action & TK_CLEAR_NTP) {
@@ -2134,6 +2138,24 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset,
 /*
  * timekeeping_advance - Updates the timekeeper to the current time and
  * current NTP tick length
+ *
+ * sudo bpftrace -e 'kprobe:timekeeping_advance { @ = count();}'
+ *
+ * 调用频率： 100/s 级别
+ * 频率比较高的调用栈：
+ *
+ *      timekeeping_advance+1
+ *      update_wall_time+16
+ *      tick_irq_enter+93
+ *      irq_enter_rcu+111
+ *      sysvec_apic_timer_interrupt+101
+ *      asm_sysvec_apic_timer_interrupt+26
+ *      cpuidle_enter_state+204
+ *      cpuidle_enter+45
+ *      do_idle+525
+ *      cpu_startup_entry+42
+ *      start_secondary+286
+ *      secondary_startup_64_no_verify+388
  */
 static void timekeeping_advance(enum timekeeping_adv_mode mode)
 {
@@ -2409,6 +2431,9 @@ static int timekeeping_validate_timex(const struct __kernel_timex *txc)
 
 /**
  * do_adjtimex() - Accessor function to NTP __do_adjtimex function
+ *
+ * 调用频率很低
+ * $ sudo bpftrace -e 'kprobe:do_adjtimex {printf("%s\n", comm);}'
  */
 int do_adjtimex(struct __kernel_timex *txc)
 {
