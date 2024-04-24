@@ -165,6 +165,8 @@ static void put_compound_head(struct page *page, int refs, unsigned int flags)
  * Return: true for success, or if no action was required (if neither FOLL_PIN
  * nor FOLL_GET was set, nothing is done). False for failure: FOLL_GET or
  * FOLL_PIN was set, but the page could not be grabbed.
+ *
+ * try_grab_page: 尝试申请物理页函数
  */
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
@@ -1043,10 +1045,11 @@ static long __get_user_pages(struct mm_struct *mm,
 		unsigned int page_increm;
 
 		/* first iteration or cross vma bound */
-        /* 地址跨区域的处理 */
+		/* 地址跨区域的处理 */
 		if (!vma |t >= vma->vm_end) {
 
-			vma = find_extend_vma(mm, start);   /* 查找并扩展vma */
+			/* 查找并扩展vma */
+			vma = find_extend_vma(mm, start);
 			/**
 			 * [vsyscall]
 			 */
@@ -1065,7 +1068,7 @@ static long __get_user_pages(struct mm_struct *mm,
 				goto out;
 			}
 
-            /* 如果是大页内存 */
+			/* 如果是大页内存 */
 			if (is_vm_hugetlb_page(vma)) {
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
 						&start, &nr_pages, i,
@@ -1095,21 +1098,23 @@ retry:
 			goto out;
 		}
 
-        /* 主动让出 CPU */
+		/* 主动让出 CPU */
 		cond_resched();
 
-        /**
-         *  follow_page_mask - 逐个查询vma中地址对应的page是否已经分配
-         *
-         * 用于返回在用户进程地址空间已经有映射的普通映射(normal mapping)页面的 page 数据结构。
-         * 通过 虚拟地址 address 查找相应的 物理页面。
-         * 遍历页表，并返回物理页面的 page 数据结构。
-         */
+		/**
+		 *  follow_page_mask - 逐个查询vma中地址对应的page是否已经分配
+		 *
+		 * 用于返回在用户进程地址空间已经有映射的普通映射(normal mapping)
+		 * 页面的 page 数据结构。
+		 * 通过 虚拟地址 address 查找相应的 物理页面。
+		 * 遍历页表，并返回物理页面的 page 数据结构。
+		 */
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		if (!page) {
-            /**
-             *  如果page没有分配，则使用缺页处理来分配page，人为的触发一个 缺页异常
-             */
+			/**
+			 * 如果page没有分配，则使用缺页处理来分配page，人为的触发一个
+			 * 缺页异常
+			 */
 			ret = faultin_page(vma, start, &foll_flags, locked);
 			switch (ret) {
 			case 0:
@@ -1278,7 +1283,7 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 		BUG_ON(*locked != 1);
 	}
 
-    /* pin 标志 */
+	/* pin 标志 */
 	if (flags & FOLL_PIN)
 		atomic_set(&mm->has_pinned, 1);
 
@@ -1291,10 +1296,11 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 	 * FOLL_PIN always expects pages to be non-null, but no need to assert
 	 * that here, as any failures will be obvious enough.
 	 *
-	 * FOLL_PIN 和 FOLL_GET 是互斥的。 传统行为是如果调用者想要填充 pages[]（但不小心未能指定 FOLL_GET），
+	 * FOLL_PIN 和 FOLL_GET 是互斥的。 传统行为是如果调用者想要填充 pages[]
+	 * （但不小心未能指定 FOLL_GET），
 	 * 则设置 FOLL_GET，所以继续这样做，但仅适用于 FOLL_GET，而不适用于较新的 FOLL_PIN。
-     *
-     * FOLL_PIN 总是期望页面为非空，但无需在这里断言，因为任何失败都足够明显。
+	 *
+	 * FOLL_PIN 总是期望页面为非空，但无需在这里断言，因为任何失败都足够明显。
 	 */
 	if (pages && !(flags & FOLL_PIN))
 		flags |= FOLL_GET;  /* 设置标志位 */
@@ -1303,9 +1309,9 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 	lock_dropped = false;
 
 	for (;;) {
-        /**
-         *  为地址空间分配物理内存 并建立映射关系
-         */
+		/**
+		 * 为地址空间分配物理内存 并建立映射关系
+		 */
 		ret = __get_user_pages(mm, start, nr_pages, flags, pages,
 				       vmas, locked);
 		if (!locked)
@@ -1714,12 +1720,12 @@ static long __gup_longterm_locked(struct mm_struct *mm,
 	unsigned long flags = 0;
 	long rc, i;
 
-    /* 处理 longterm 标志 */
+	/* 处理 longterm 标志 */
 	if (gup_flags & FOLL_LONGTERM) {
 		if (!pages)
 			return -EINVAL;
 
-        /* 如果为空，分配 vma，每个 page 一个 vma */
+		/* 如果为空，分配 vma，每个 page 一个 vma */
 		if (!vmas_tmp) {
 			vmas_tmp = kcalloc(nr_pages,
 					   sizeof(struct vm_area_struct *),
@@ -1730,7 +1736,7 @@ static long __gup_longterm_locked(struct mm_struct *mm,
 		flags = memalloc_nocma_save();
 	}
 
-    /* 核心函数 */
+	/* 核心函数 */
 	rc = __get_user_pages_locked(mm, start, nr_pages, pages,
 				     vmas_tmp, NULL, gup_flags);
 
@@ -1759,16 +1765,16 @@ out:
 	return rc;
 }
 #else /* !CONFIG_FS_DAX && !CONFIG_CMA */
-//static __always_inline long __gup_longterm_locked(struct mm_struct *mm,
-//						  unsigned long start,
-//						  unsigned long nr_pages,
-//						  struct page **pages,
-//						  struct vm_area_struct **vmas,
-//						  unsigned int flags)
-//{
-//	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-//				       NULL, flags);
-//}
+static __always_inline long __gup_longterm_locked(struct mm_struct *mm,
+						  unsigned long start,
+						  unsigned long nr_pages,
+						  struct page **pages,
+						  struct vm_area_struct **vmas,
+						  unsigned int flags)
+{
+	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
+				       NULL, flags);
+}
 #endif /* CONFIG_FS_DAX || CONFIG_CMA */
 
 static bool is_valid_gup_flags(unsigned int gup_flags)
@@ -1776,6 +1782,8 @@ static bool is_valid_gup_flags(unsigned int gup_flags)
 	/*
 	 * FOLL_PIN must only be set internally by the pin_user_pages*() APIs,
 	 * never directly by the caller, so enforce that with an assertion:
+	 *
+	 * gup flags 不能设置为FOLL_PIN（原因就是FOLL_PIN 和FOLL_GET 两个标记位互斥）
 	 */
 	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
 		return false;
@@ -1885,6 +1893,10 @@ long get_user_pages_remote(struct mm_struct *mm,
 		unsigned int gup_flags, struct page **pages,
 		struct vm_area_struct **vmas, int *locked)
 {
+	/**
+	 * 首先会对gup flag标记为进行检查，注意gup flags 不能设置为FOLL_PIN
+	 * （原因就是FOLL_PIN 和FOLL_GET 两个标记位互斥。
+	 */
 	if (!is_valid_gup_flags(gup_flags))
 		return -EINVAL;
 
@@ -1929,14 +1941,35 @@ static long __get_user_pages_remote(struct mm_struct *mm,
  *
  * 分配物理内存的API。
  * 主要用于锁住内存保证用户空间分配的内存不会被释放。
+ *
+ * 通常一个应用程序使用malloc或者mmap申请到的只是虚拟内存，只有在第一次访问该地址时触发 page
+ * fault才为其申请物理内存称为按需分配内存。整个映射过程其实用户是无法感知，但是触发一次page
+ * fault非常耗时。有时应用程序为了优化性能，通常采用pin memory的形式即使用mmap/malloc时提
+ * 前将虚拟内存与对应物理内存锁定，以提高性能，这也是很多程序常用优化方法。
+ *
+ * pin memory好处还有另外一个优势就是可以防止内存被swap out置换到存储器中，如果在进程切换时
+ * 该物理内存被swap out磁盘中，下次读取还需要从磁盘加载到内存中，整个过程非常耗时，通过使用
+ * pin memory可以将一些主要常用的内存锁住，以防止被置换出去同时防止进行各种原因造成的页迁移，
+ * 以提高程序性能。
+ *
+ * pin memory最大坏处就是：如果每个程序都大量使用pin memory，那么最后将会导致没有物理内存可
+ * 用，所以一般社区开发不建议在大量长期时候的内存使用pin memory类型内存。
+ *
+ * 除了应用程序使用pin memory之外，在很多驱动程序中也经常用到pin memory， 例如网卡会将用于
+ * 收报包内存使用pin memory内存以防止被置换出去。
+ *
+ * 内核中使用pin memory接口主要是 get_user_pages() 函数。
  */
 long get_user_pages(unsigned long start, unsigned long nr_pages,
 		unsigned int gup_flags, struct page **pages,
 		struct vm_area_struct **vmas)
 {
+	/**
+	 * 首先会对gup flag标记为进行检查，注意gup flags 不能设置为FOLL_PIN
+	 * （原因就是FOLL_PIN 和FOLL_GET 两个标记位互斥。
+	 */
 	if (!is_valid_gup_flags(gup_flags))
 		return -EINVAL;
-
 
 	return __gup_longterm_locked(current->mm, start, nr_pages,
 				     pages, vmas, gup_flags | FOLL_TOUCH);

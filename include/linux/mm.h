@@ -1266,6 +1266,8 @@ static inline void put_page(struct page *page)
  * and page_cache_gup_pin_speculative() provides safe operation for
  * get_user_pages and page_mkclean and other calls that race to set up page
  * table entries.
+ *
+ * 为了防止 pin memory 的物理页 page 被释放掉，采用了特殊计数 GUP_PIN_COUNTING_BIAS
  */
 #define GUP_PIN_COUNTING_BIAS (1U << 10)
 
