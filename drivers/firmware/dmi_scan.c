@@ -132,6 +132,9 @@ static void dmi_decode_table(u8 *buf,
 		dmi_len = data - buf;
 }
 
+/**
+ * /sys/firmware/dmi/tables/DMI
+ */
 static phys_addr_t dmi_base;
 
 static int __init dmi_walk_early(void (*decode)(const struct dmi_header *,
@@ -773,7 +776,14 @@ static ssize_t raw_table_read(struct file *file, struct kobject *kobj,
 	return count;
 }
 
+/**
+ * /sys/firmware/dmi/tables/smbios_entry_point
+ */
 static BIN_ATTR(smbios_entry_point, S_IRUSR, raw_table_read, NULL, 0);
+
+/**
+ * /sys/firmware/dmi/tables/DMI
+ */
 static BIN_ATTR(DMI, S_IRUSR, raw_table_read, NULL, 0);
 
 static int __init dmi_init(void)
@@ -796,7 +806,9 @@ static int __init dmi_init(void)
 	if (!dmi_kobj)
 		goto err;
 
-	// /sys/firmware/dmi/tables/
+	/**
+	 * /sys/firmware/dmi/tables/
+	 */
 	tables_kobj = kobject_create_and_add("tables", dmi_kobj);
 	if (!tables_kobj)
 		goto err;
@@ -817,9 +829,9 @@ static int __init dmi_init(void)
 
 	bin_attr_DMI.size = dmi_len;
 	bin_attr_DMI.private = dmi_table;
+
 	/**
 	 * /sys/firmware/dmi/tables/DMI
-	 *
 	 */
 	ret = sysfs_create_bin_file(tables_kobj, &bin_attr_DMI);
 	if (!ret)
