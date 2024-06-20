@@ -2822,14 +2822,14 @@ static __latent_entropy struct task_struct *copy_process(struct pid *pid,
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 
-	    /**
-	     *  领头进程
-	     */
+		/**
+		 *  领头进程
+		 */
 		if (thread_group_leader(p)) {
 
-	        /**
-	         *  设置 几个 ID
-	         */
+			/**
+			 *  设置 几个 ID
+			 */
 			init_task_pid(p, PIDTYPE_TGID, pid);
 			init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 			init_task_pid(p, PIDTYPE_SID, task_session(current));
@@ -2850,17 +2850,16 @@ static __latent_entropy struct task_struct *copy_process(struct pid *pid,
 			list_add_tail(&p->sibling, &p->real_parent->children);
 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
 
-	        /**
-	         *
-	         * 吧新进程添加到不同的 哈希表 中
-	         */
+			/**
+			 * 把新进程添加到不同的 哈希表 中
+			 */
 			attach_pid(p, PIDTYPE_TGID);
 			attach_pid(p, PIDTYPE_PGID);
 			attach_pid(p, PIDTYPE_SID);
 
-	        /**
-	         *  递增
-	         */
+			/**
+			 *  递增
+			 */
 			__this_cpu_inc(process_counts);
 
 		}
@@ -2870,16 +2869,16 @@ static __latent_entropy struct task_struct *copy_process(struct pid *pid,
 	    else {
 			current->signal->nr_threads++;
 
-	        /**
-	         *
-	         */
+			/**
+			 *
+			 */
 			atomic_inc(&current->signal->live);
 			refcount_inc(&current->signal->sigcnt);
 			task_join_group_stop(p);
 
-	        /**
-	         *
-	         */
+			/**
+			 *
+			 */
 			list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
 			list_add_tail_rcu(&p->thread_node, &p->signal->thread_head);
 		}
