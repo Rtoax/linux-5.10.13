@@ -200,7 +200,10 @@ void vhost_poll_init(struct vhost_poll *poll, vhost_work_fn_t fn,
 EXPORT_SYMBOL_GPL(vhost_poll_init);
 
 /* Start polling a file. We add ourselves to file's wait queue. The caller must
- * keep a reference to a file until after vhost_poll_stop is called. */
+ * keep a reference to a file until after vhost_poll_stop is called.
+ *
+ * $ sudo bpftrace -e 'kprobe:vhost_poll_start {printf("%ld %s\n", nsecs, comm);}'
+ */
 int vhost_poll_start(struct vhost_poll *poll, struct file *file)
 {
 	__poll_t mask;

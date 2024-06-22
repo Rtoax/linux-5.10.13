@@ -206,6 +206,9 @@ static int vhost_net_buf_peek_len(void *ptr)
 	return __skb_array_len_with_tag(ptr);
 }
 
+/**
+ * $ sudo bpftrace -e 'kfunc:vhost_net:vhost_net_buf_peek {printf("%ld %s\n", nsecs, comm);}'
+ */
 static int vhost_net_buf_peek(struct vhost_net_virtqueue *nvq)
 {
 	struct vhost_net_buf *rxq = &nvq->rxq;
@@ -456,6 +459,9 @@ static void vhost_net_signal_used(struct vhost_net_virtqueue *nvq)
 	nvq->done_idx = 0;
 }
 
+/**
+ * $ sudo bpftrace -e 'kprobe:vhost_tx_batch.isra.0 {printf("%ld %s %s\n", nsecs, comm, probe);}'
+ */
 static void vhost_tx_batch(struct vhost_net *net,
 			   struct vhost_net_virtqueue *nvq,
 			   struct socket *sock,
@@ -946,8 +952,13 @@ static void handle_tx_zerocopy(struct vhost_net *net, struct socket *sock)
 	} while (likely(!vhost_exceeds_weight(vq, ++sent_pkts, total_len)));
 }
 
-/* Expects to be always run from workqueue - which acts as
- * read-size critical section for our kind of RCU. */
+/**
+ * Expects to be always run from workqueue - which acts as
+ * read-size critical section for our kind of RCU.
+ *
+ * 每一个 ping，ssh 输入都会调用 handle_rx()
+ * $ sudo bpftrace -e 'kfunc:vhost_net:handle_tx {printf("%ld %s\n", nsecs, comm);}'
+ */
 static void handle_tx(struct vhost_net *net)
 {
 	struct vhost_net_virtqueue *nvq = &net->vqs[VHOST_NET_VQ_TX];
@@ -974,6 +985,9 @@ out:
 	mutex_unlock(&vq->mutex);
 }
 
+/**
+ *
+ */
 static int peek_head_len(struct vhost_net_virtqueue *rvq, struct sock *sk)
 {
 	struct sk_buff *head;
@@ -995,6 +1009,9 @@ static int peek_head_len(struct vhost_net_virtqueue *rvq, struct sock *sk)
 	return len;
 }
 
+/**
+ *
+ */
 static int vhost_net_rx_peek_head_len(struct vhost_net *net, struct sock *sk,
 				      bool *busyloop_intr)
 {
@@ -1093,8 +1110,13 @@ err:
 	return r;
 }
 
-/* Expects to be always run from workqueue - which acts as
- * read-size critical section for our kind of RCU. */
+/**
+ * Expects to be always run from workqueue - which acts as
+ * read-size critical section for our kind of RCU.
+ *
+ * 每一个 ping，ssh 输入都会调用 handle_rx()
+ * $ sudo bpftrace -e 'kfunc:vhost_net:handle_rx {printf("%ld %s\n", nsecs, comm);}'
+ */
 static void handle_rx(struct vhost_net *net)
 {
 	struct vhost_net_virtqueue *nvq = &net->vqs[VHOST_NET_VQ_RX];
@@ -1241,6 +1263,13 @@ out:
 	mutex_unlock(&vq->mutex);
 }
 
+/**
+ * $ sudo bpftrace -e 'kfunc:vhost_net:handle_tx* {printf("%ld %s %s\n", nsecs, comm, probe);}'
+ * Attaching 5 probes...
+ * 207213407202588 vhost-401920 kfunc:vhost_net:handle_tx_kick
+ * 207213407220844 vhost-401920 kfunc:vhost_net:handle_tx
+ * 207213407224099 vhost-401920 kfunc:vhost_net:handle_tx_copy
+ */
 static void handle_tx_kick(struct vhost_work *work)
 {
 	struct vhost_virtqueue *vq = container_of(work, struct vhost_virtqueue,

@@ -450,6 +450,9 @@ static blk_status_t virtblk_prep_rq(struct blk_mq_hw_ctx *hctx,
 	return BLK_STS_OK;
 }
 
+/**
+ *
+ */
 static blk_status_t virtio_queue_rq(struct blk_mq_hw_ctx *hctx,
 			   const struct blk_mq_queue_data *bd)
 {
