@@ -1008,7 +1008,11 @@ static unsigned int run_ebpf_filter(struct tun_struct *tun,
 	return len;
 }
 
-/* Net device start xmit */
+/**
+ * Net device start xmit
+ *
+ * sudo bpftrace -e 'kprobe:tun_net_xmit {printf("%-8d %-16s\n", pid, comm);}'
+ */
 static netdev_tx_t tun_net_xmit(struct sk_buff *skb, struct net_device *dev)
 {
 	struct tun_struct *tun = netdev_priv(dev);
@@ -3607,7 +3611,7 @@ static struct notifier_block __read_mostly tun_notifier_block  = {
 	.notifier_call	= tun_device_event,
 };
 /**
- *  
+ *
  */
 static int __init tun_init(void)
 {
