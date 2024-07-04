@@ -1256,9 +1256,9 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_SYSEMU_SINGLESTEP:
 #endif
 	case PTRACE_SYSCALL:
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	case PTRACE_CONT:
 		return ptrace_resume(child, request, data);
 
@@ -1339,9 +1339,9 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 		goto out;
 	}
 
-    /**
-     *  attach, seize
-     */
+	/**
+	 *  attach, seize
+	 */
 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
 		/**
 		 * @brief Attach 进程
@@ -1366,9 +1366,9 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 	if (ret < 0)
 		goto out_put_task_struct;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = arch_ptrace(child, request, addr, data);
 	if (ret || request != PTRACE_DETACH)
 		ptrace_unfreeze_traced(child);
