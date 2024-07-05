@@ -682,6 +682,8 @@ static inline void check_offsets(void)
 /**
  * the PCI probing function
  *
+ * 尝试以virtio modern方式读取设备配置数据结构，初始化该 PCI 设备对应的 virtio 设备
+ *
  * 对于virtio modern，通过capability方式报告配置数据结构的位置，配置数据结构有5种类型。
  */
 int virtio_pci_modern_probe(struct virtio_pci_device *vp_dev)

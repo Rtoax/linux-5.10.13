@@ -1071,6 +1071,13 @@ out:
 /*
  * Legacy naming scheme used for virtio devices.  We are stuck with it for
  * virtio blk but don't ever use it for any new driver.
+ *
+ * 命名规则：
+ * vdx                253:368  0  100G  0 disk
+ * vdy                253:384  0  100G  0 disk
+ * vdz                253:400  0  100G  0 disk
+ * vdaa               253:416  0  100G  0 disk
+ * vdab               253:432  0  100G  0 disk
  */
 static int virtblk_name_format(char *prefix, int index, char *buf, int buflen)
 {
@@ -1247,6 +1254,17 @@ static const struct blk_mq_ops virtio_mq_ops = {
 static unsigned int virtblk_queue_depth;
 module_param_named(queue_depth, virtblk_queue_depth, uint, 0444);
 
+/**
+ * 13:40:48 38224    kworker/u16:1    vde
+ *
+ *        device_add+1
+ *        device_add_disk+222
+ *        virtblk_probe+1128
+ *        virtio_dev_probe+431
+ *        really_probe+505
+ *
+ * 如果给虚拟机添加一个 blk qcow2 盘，这个函数会被调用一次。
+ */
 static int virtblk_probe(struct virtio_device *vdev)
 {
 	struct virtio_blk *vblk;
@@ -1335,6 +1353,9 @@ static int virtblk_probe(struct virtio_device *vdev)
 	}
 	q = vblk->disk->queue;
 
+	/**
+	 * **vda,vdb 在这里命名的**
+	 */
 	virtblk_name_format("vd", index, vblk->disk->disk_name, DISK_NAME_LEN);
 
 	vblk->disk->major = major;
@@ -1520,6 +1541,9 @@ static int virtblk_probe(struct virtio_device *vdev)
 	dev_info(&vdev->dev, "blk config size: %zu\n",
 		sizeof(struct virtio_blk_config));
 
+	/**
+	 * 添加块设备
+	 */
 	err = device_add_disk(&vdev->dev, vblk->disk, virtblk_attr_groups);
 	if (err)
 		goto out_cleanup_disk;

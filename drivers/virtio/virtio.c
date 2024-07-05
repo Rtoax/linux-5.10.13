@@ -214,6 +214,17 @@ int virtio_finalize_features(struct virtio_device *dev)
 }
 EXPORT_SYMBOL_GPL(virtio_finalize_features);
 
+/**
+ * 13:40:48 38224    kworker/u16:1    vde
+ *
+ *        device_add+1
+ *        device_add_disk+222
+ *        virtblk_probe+1128
+ *        virtio_dev_probe+431
+ *        really_probe+505
+ *
+ * 如果给虚拟机添加一个 blk qcow2 盘，这个函数会被调用一次。
+ */
 static int virtio_dev_probe(struct device *_d)
 {
 	int err, i;
@@ -375,12 +386,41 @@ EXPORT_SYMBOL_GPL(unregister_virtio_driver);
  * 注册的 vritio 设备(句柄)在 QEMU 中，向上用来和 Guest 中的 驱动交互，向下和 KVM 交互。
  * 在打开 QEMU VM 的时候，此函数不会被调用。
  * virtio 设备是后端，驱动是前端
+ *
+ * @kstacks[
+    device_add+1
+    register_virtio_device+199
+    virtio_pci_probe+179
+    local_pci_probe+69
+    pci_device_probe+257
+    really_probe+505
+    __driver_probe_device+214
+    driver_probe_device+30
+    __device_attach_driver+133
+    bus_for_each_drv+126
+    __device_attach+188
+    pci_bus_add_device+74
+    pci_bus_add_devices+44
+    enable_slot+805
+    acpiphp_check_bridge.part.0+279
+    hotplug_event+518
+    acpiphp_hotplug_notify+34
+    acpi_device_hotplug+138
+    acpi_hotplug_work_fn+61
+    process_one_work+491
+    worker_thread+83
+    kthread+295
+    ret_from_fork+34
  */
 int register_virtio_device(struct virtio_device *dev)
 {
 	int err;
 
 	dev->dev.bus = &virtio_bus;
+
+	/**
+	 * 初始化 struct device {} <赋值>
+	 */
 	device_initialize(&dev->dev);
 
 	/* Assign a unique device index and hence name. */
@@ -389,6 +429,12 @@ int register_virtio_device(struct virtio_device *dev)
 		goto out;
 
 	dev->index = err;
+
+	/**
+	 * 比如
+	 * /sys/devices/pci0000:00/0000:00:03.0/0000:09:00.0/virtio8/block/vdb
+	 *                                                   ^^^^^^^
+	 */
 	dev_set_name(&dev->dev, "virtio%u", dev->index);
 
 	spin_lock_init(&dev->config_lock);
@@ -415,6 +461,8 @@ int register_virtio_device(struct virtio_device *dev)
 	/*
 	 * device_add() causes the bus infrastructure to look for a matching
 	 * driver.
+	 *
+	 * 添加设备，并找到合适的驱动程序
 	 */
 	err = device_add(&dev->dev);
 	if (err)

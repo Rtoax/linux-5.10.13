@@ -593,9 +593,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	INIT_LIST_HEAD(&vp_dev->virtqueues);
 	spin_lock_init(&vp_dev->lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* enable the device */
 	rc = pci_enable_device(pci_dev);
 	if (rc)
@@ -614,8 +614,8 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 			goto err_probe;
 	} else {
 		/**
-		 * 尝试以virtio modern方式读取设备配置数据结构
-		 * 初始化该 PCI 设备对应的 virtio 设备
+		 * 尝试以virtio modern方式读取设备配置数据结构，初始化该 PCI 设备对应的
+		 * virtio 设备
 		 */
 		rc = virtio_pci_modern_probe(vp_dev);
 		if (rc == -ENODEV)
@@ -626,9 +626,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 
 	pci_set_master(pci_dev);
 
-    /**
-     * 将 virtio 设备注册到 系统中
-     */
+	/**
+	 * 将 virtio 设备注册到 系统中，比如插入一个 virtio 块设备
+	 */
 	rc = register_virtio_device(&vp_dev->vdev);
 	reg_dev = vp_dev;
 	if (rc)

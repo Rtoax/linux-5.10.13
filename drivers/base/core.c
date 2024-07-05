@@ -2425,8 +2425,10 @@ static void klist_children_put(struct klist_node *n)
  *
  * NOTE: Use put_device() to give up your reference instead of freeing
  * @dev directly once you have called this function.
+ *
+ * 初始化一个设备
  */
-void device_initialize(struct device *dev)  /* 初始化一个设备 */
+void device_initialize(struct device *dev)
 {
 	dev->kobj.kset = devices_kset;  /* /sys/devices/ */
 	kobject_init(&dev->kobj, &device_ktype);
@@ -2804,7 +2806,7 @@ static int device_private_init(struct device *dev)
 }
 
 /**
- * device_add - add device to device hierarchy等级制度.
+ * device_add - add device to device hierarchy（等级制度）.
  * @dev: device.
  *
  * This is part 2 of device_register(), though may be called
@@ -2829,6 +2831,8 @@ static int device_private_init(struct device *dev)
  * device_del() when you want to get rid of it. If device_add() has
  * *not* succeeded, use *only* put_device() to drop the reference
  * count.
+ *
+ * sudo bpftrace  -e 'kprobe:device_add {printf("%s %s\n", comm, kstack);}'
  */
 int device_add(struct device *dev)
 {
@@ -2852,14 +2856,25 @@ int device_add(struct device *dev)
 	 * for statically allocated devices, which should all be converted
 	 * some day, we need to initialize the name. We prevent reading back
 	 * the name, and force the use of dev_name()
+	 *
+	 * 通常情况下 init_name 为空，比如向 vm 添加一个 virtio qcow2 块设备时。此时，
+	 * 使用的是 dev->kobj.name 。
 	 */
 	if (dev->init_name) {
 		dev_set_name(dev, "%s", dev->init_name);
 		dev->init_name = NULL;
 	}
 
-	/* subsystems can specify simple device enumeration */
+	/**
+	 * subsystems can specify simple device enumeration
+	 *
+	 * 是否在这里设置了 vda sda 名称？ dev->kobj.name
+	 */
 	if (!dev_name(dev) && dev->bus && dev->bus->dev_name)
+		/**
+		 * dev->bus->dev_name 为 sda vda 等???
+		 * dev->id 为分区等???
+		 */
 		dev_set_name(dev, "%s%u", dev->bus->dev_name, dev->id);
 
 	if (!dev_name(dev)) {
@@ -2905,6 +2920,10 @@ int device_add(struct device *dev)
 	error = device_add_attrs(dev);
 	if (error)
 		goto AttrsError;
+
+	/**
+	 *
+	 */
 	error = bus_add_device(dev);
 	if (error)
 		goto BusError;

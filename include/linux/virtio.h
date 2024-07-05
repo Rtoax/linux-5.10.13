@@ -169,24 +169,24 @@ dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq);
  * 动程序可以使用这些数据。
  */
 struct virtio_device {
-    /**
-     *  在 virtio bus总线上的唯一位置
-     */
+	/**
+	 *  在 virtio bus总线上的唯一位置
+	 */
 	int index;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	bool failed;
 	bool config_enabled;
 	bool config_change_pending;
 	spinlock_t config_lock;
-    /**
-     *  底层设备
-     */
+	/**
+	 *  底层设备
+	 */
 	struct device dev;
-    /**
-     *  设备标识
-     */
+	/**
+	 *  设备标识
+	 */
 	struct virtio_device_id id; /* 设备，厂商 */
 	const struct virtio_config_ops *config; /* 配置 virtio 的操作 */
 	const struct vringh_config_ops *vringh_config;  /* host VRing */

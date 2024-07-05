@@ -236,6 +236,8 @@ EOF
 		exit 1
 	fi
 
+	# 虚拟机里的 vda vdb 是怎么来的？是 virtio 生成的盘符吗？
+
 	${QEMU_BINARY} \
 		-nodefaults \
 		-display none \

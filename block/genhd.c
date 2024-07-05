@@ -843,6 +843,9 @@ static void __device_add_disk(struct device *parent, struct gendisk *disk,
 	blk_integrity_add(disk);
 }
 
+/**
+ *
+ */
 void device_add_disk(struct device *parent, struct gendisk *disk,
 		     const struct attribute_group **groups)
 
@@ -2276,6 +2279,12 @@ static ssize_t disk_events_poll_msecs_store(struct device *dev,
 
 static const DEVICE_ATTR(events, 0444, disk_events_show, NULL);
 static const DEVICE_ATTR(events_async, 0444, disk_events_async_show, NULL);
+
+/**
+ * 可能的样子
+ *
+ * /sys/devices/pci0000:00/0000:00:03.0/0000:09:00.0/virtio8/block/vdb/events_poll_msecs
+ */
 static const DEVICE_ATTR(events_poll_msecs, 0644,
 			 disk_events_poll_msecs_show,
 			 disk_events_poll_msecs_store);
