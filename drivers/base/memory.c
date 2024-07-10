@@ -68,6 +68,9 @@ static inline unsigned long phys_to_block_id(unsigned long phys)
 static int memory_subsys_online(struct device *dev);
 static int memory_subsys_offline(struct device *dev);
 
+/**
+ * /sys/devices/system/memory/
+ */
 static struct bus_type memory_subsys = {
 	.name = MEMORY_CLASS_NAME,
 	.dev_name = MEMORY_CLASS_NAME,
@@ -377,6 +380,9 @@ static ssize_t block_size_bytes_show(struct device *dev,
 	return sysfs_emit(buf, "%lx\n", memory_block_size_bytes());
 }
 
+/**
+ * /sys/devices/system/memory/block_size_bytes
+ */
 static DEVICE_ATTR_RO(block_size_bytes);
 
 /*
@@ -484,6 +490,10 @@ static ssize_t hard_offline_page_store(struct device *dev,
 	return ret ? ret : count;
 }
 
+/**
+ * /sys/devices/system/memory/soft_offline_page
+ * /sys/devices/system/memory/hard_offline_page
+ */
 static DEVICE_ATTR_WO(soft_offline_page);
 static DEVICE_ATTR_WO(hard_offline_page);
 #endif
@@ -551,6 +561,9 @@ int register_memory(struct memory_block *memory)
 {
 	int ret;
 
+	/**
+	 * /sys/devices/system/memory/ ???
+	 */
 	memory->dev.bus = &memory_subsys;
 	memory->dev.id = memory->start_section_nr / sections_per_block;
 	memory->dev.release = memory_block_release;
