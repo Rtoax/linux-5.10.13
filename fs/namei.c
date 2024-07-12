@@ -127,7 +127,8 @@
 /**
  *  从用户空间复制文件路径到内核空间
  */
-struct filename *getname_flags(const char __user *str_filename, int flags, int *empty)
+struct filename *getname_flags(const char __user *str_filename, int flags,
+				int *empty)
 {
 	struct filename *result;
 	char *kname;
@@ -151,7 +152,9 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 	kname = (char *)result->iname;
 	result->name = kname;
 
-	//复制传递给 `open` 系统调用的用户空间的文件名到内核空间
+	/**
+	 * 复制用户空间的文件名到内核空间
+	 */
 	len = strncpy_from_user(kname, str_filename, EMBEDDED_NAME_MAX);
 	if (unlikely(len < 0)) {
 		__putname(result);
@@ -220,7 +223,7 @@ struct filename *getname_flags(const char __user *str_filename, int flags, int *
 /**
  *  得到 `filename` 结构体
  */
-struct filename *   getname(const char __user * filename)
+struct filename *getname(const char __user * filename)
 {
 	return getname_flags(filename, 0, NULL);
 }
@@ -557,6 +560,9 @@ struct nameidata {
 	umode_t		dir_mode;
 } __randomize_layout;
 
+/**
+ *
+ */
 static void set_nameidata(struct nameidata *p, int dfd, struct filename *name)
 {
 	struct nameidata *old = current->nameidata;
@@ -2424,7 +2430,7 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	set_nameidata(&nd, dfd, name);
 
 	/**
-	 *  查找
+	 * 查找
 	 */
 	retval = path_lookupat(&nd, flags | LOOKUP_RCU, path);
 	if (unlikely(retval == -ECHILD))
@@ -2467,6 +2473,10 @@ static struct filename *filename_parentat(int dfd, struct filename *name,
 	if (IS_ERR(name))
 		return name;
 	set_nameidata(&nd, dfd, name);
+
+	/**
+	 *
+	 */
 	retval = path_parentat(&nd, flags | LOOKUP_RCU, parent);
 	if (unlikely(retval == -ECHILD))
 		retval = path_parentat(&nd, flags, parent);
@@ -3572,6 +3582,9 @@ static struct dentry *filename_create(int dfd, struct filename *name,
 	 */
 	lookup_flags &= LOOKUP_REVAL;
 
+	/**
+	 *
+	 */
 	name = filename_parentat(dfd, name, lookup_flags, path, &last, &type);
 	if (IS_ERR(name))
 		return ERR_CAST(name);
@@ -3782,6 +3795,9 @@ int vfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 }
 EXPORT_SYMBOL(vfs_mkdir);
 
+/**
+ * 创建目录
+ */
 static long do_mkdirat(int dfd, const char __user *pathname, umode_t mode)
 {
 	struct dentry *dentry;
@@ -3790,6 +3806,9 @@ static long do_mkdirat(int dfd, const char __user *pathname, umode_t mode)
 	unsigned int lookup_flags = LOOKUP_DIRECTORY;
 
 retry:
+	/**
+	 * 创建一个目录 dentry
+	 */
 	dentry = user_path_create(dfd, pathname, &path, lookup_flags);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
@@ -3799,6 +3818,10 @@ retry:
 	error = security_path_mkdir(&path, dentry, mode);
 	if (!error)
 		error = vfs_mkdir(path.dentry->d_inode, dentry, mode);
+
+	/**
+	 * 释放锁什么的
+	 */
 	done_path_create(&path, dentry);
 	if (retry_estale(error, lookup_flags)) {
 		lookup_flags |= LOOKUP_REVAL;
@@ -3812,6 +3835,9 @@ SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
 	return do_mkdirat(dfd, pathname, mode);
 }
 
+/**
+ * mkdir(2)
+ */
 SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 {
 	return do_mkdirat(AT_FDCWD, pathname, mode);

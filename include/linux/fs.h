@@ -2699,7 +2699,9 @@ static inline int break_layout(struct inode *inode, bool wait)
 struct audit_names;
 
 /**
+ * 描述一个文件名
  *
+ * - getname_kernel()
  */
 struct filename {
 	const char		*name;	    /* 指向内核空间的文件路径指针 pointer to actual string */
