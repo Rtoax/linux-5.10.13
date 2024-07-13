@@ -420,7 +420,9 @@ static void get_fs_root_and_pwd_rcu(struct fs_struct *fs, struct path *root,
 	} while (read_seqcount_retry(&fs->seq, seq));
 }
 
-/*
+/**
+ * getcwd(2)
+ *
  * NOTE! The user-level library version returns a
  * character pointer. The kernel system call just
  * returns the length of the buffer filled (which
