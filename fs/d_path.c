@@ -439,6 +439,8 @@ static void get_fs_root_and_pwd_rcu(struct fs_struct *fs, struct path *root,
  *		errno = -retval;
  *		return NULL;
  *	}
+ *
+ * 如果想要添加 bpf_getcwd() 是否可以复用这块代码？
  */
 SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
 {
