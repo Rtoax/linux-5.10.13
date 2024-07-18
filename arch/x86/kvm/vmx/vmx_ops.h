@@ -93,8 +93,8 @@ static __always_inline unsigned long __vmcs_readl(unsigned long field)
 		      * VMREAD failed.  Push '0' for @fault, push the failing
 		      * @field, and bounce through the trampoline to preserve
 		      * volatile registers.
-			  *
-			  * vmread 失败
+		      *
+		      * vmread 失败
 		      */
 		     "push $0\n\t"
 		     "push %2\n\t"
