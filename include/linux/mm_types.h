@@ -631,33 +631,33 @@ struct kioctx_table;
  */
 struct mm_struct {  /* 进程虚拟地址空间 */
 	struct {
-        /* VMA 链表头 */
+		/* VMA 链表头 */
 		struct vm_area_struct *mmap;		/* list of VMAs, 将所有的 VMA 串联成串 */
 
-        /* 节点为 vm_area_struct.vm_rb */
+		/* 节点为 vm_area_struct.vm_rb */
 		struct rb_root mm_rb;               /* `mm_rb` 是虚拟内存区域的红黑树结构 */
 
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
-        /**
-         *  arch_get_unmapped_area(...), 对应 mmap
-         *
-         * arch_pick_mmap_layout():
-         *  arch_get_unmapped_area()
-         *  arch_get_unmapped_area_topdown()
-         */
+		/**
+		 *  arch_get_unmapped_area(...), 对应 mmap
+		 *
+		 * arch_pick_mmap_layout():
+		 *  arch_get_unmapped_area()
+		 *  arch_get_unmapped_area_topdown()
+		 */
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 #endif
-        /**
-         *  与经典布局不同的是：使用固定值限制栈的最大长度。由于栈是有界的，
-         *  因此安置内存映射的区域可以在栈末端的下方立即开始。这时mmap区是自顶向下扩展的。
-         *  由于堆仍然位于虚拟地址空间中较低的区域并向上增长，因此mmap区域和堆可以相对扩展，
-         *  直至耗尽虚拟地址空间中剩余的区域。
-         *
-         *  https://rtoax.blog.csdn.net/article/details/118602363
-         */
+		/**
+		 *  与经典布局不同的是：使用固定值限制栈的最大长度。由于栈是有界的，
+		 *  因此安置内存映射的区域可以在栈末端的下方立即开始。这时mmap区是自顶向下扩展的。
+		 *  由于堆仍然位于虚拟地址空间中较低的区域并向上增长，因此mmap区域和堆可以相对扩展，
+		 *  直至耗尽虚拟地址空间中剩余的区域。
+		 *
+		 *  https://rtoax.blog.csdn.net/article/details/118602363
+		 */
 		unsigned long mmap_base;	/* base of mmap area 虚拟地址空间中用于内存映射的起始地址 */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
 
@@ -668,15 +668,15 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 #endif
 		unsigned long task_size;	/* size of task vm space */
 
-        /**
-         *  虚拟地址  的上限
-         */
+		/**
+		 *  虚拟地址  的上限
+		 */
 		unsigned long highest_vm_end;	/* highest vma end address */
 
-        /**
-         *  x86 - CR3
-         *  Arm64 - TTBR0
-         */
+		/**
+		 *  x86 - CR3
+		 *  Arm64 - TTBR0
+		 */
 		pgd_t * pgd;    /* `pgd` 是全局页目录的指针 */
 
 #ifdef CONFIG_MEMBARRIER
@@ -731,9 +731,9 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 #endif
 		int map_count;			/* number of VMAs */
 
-        /**
-         *  用于保护进程页表
-         */
+		/**
+		 *  用于保护进程页表
+		 */
 		spinlock_t page_table_lock; /* Protects page tables and some
 					     * counters 保护页表和一些计数器
 					     */
@@ -765,20 +765,20 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 
 		spinlock_t arg_lock; /* protect the below fields 保护下面的参数*/
 
-        /**
-         * 这些变量在 load_elf_binary() 中被赋值
+		/**
+		 * 这些变量在 load_elf_binary() 中被赋值
 		 * 部分是从 CRIU(CONFIG_CHECKPOINT_RESTORE) 开始引入的
 		 *  https://criu.org/Upstream_kernel_commits
 		 *    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=028ee4be34
-         */
+		 */
 		unsigned long start_code, end_code, start_data, end_data;   /* brk() */
 		unsigned long start_brk, brk, start_stack;
 		unsigned long arg_start, arg_end, env_start, env_end;
 
-        /**
-         *  辅助向量
-         *  /proc/PID/auxv
-         */
+		/**
+		 *  辅助向量
+		 *  /proc/PID/auxv
+		 */
 		unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
 
 		/*
@@ -789,9 +789,9 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		 */
 		struct mm_rss_stat rss_stat;
 
-        /**
-         *  在 set_binfmt() 中赋值
-         */
+		/**
+		 *  在 set_binfmt() 中赋值
+		 */
 		struct linux_binfmt *binfmt;    /* ELF 对应`elf_format` */
 
 		/* Architecture-specific MM context */
@@ -832,9 +832,9 @@ struct mm_struct {  /* 进程虚拟地址空间 */
 		struct file __rcu *exe_file;
 
 #ifdef CONFIG_MMU_NOTIFIER
-        /**
-         *  MMU 通知
-         */
+		/**
+		 *  MMU 通知
+		 */
 		struct mmu_notifier_subscriptions *notifier_subscriptions;
 #endif
 

@@ -226,6 +226,11 @@ int traceprobe_split_symbol_offset(char *symbol, long *offset)
 }
 
 /* @buf must has MAX_EVENT_NAME_LEN size */
+/**
+ * example:
+ * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+ *   ^^^^^^^^^^^^^^^^  (pevent)
+ */
 int traceprobe_parse_event_name(const char **pevent, const char **pgroup,
 				char *buf, int offset)
 {

@@ -64,6 +64,9 @@ struct uprobe_task {
 	union {
 		struct {
 			struct arch_uprobe_task	autask;
+			/**
+			 * 参见 translate_user_vaddr() 如何做地址转化
+			 */
 			unsigned long		vaddr;
 		};
 

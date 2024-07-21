@@ -100,10 +100,10 @@ static int uretprobe_dispatcher(struct uprobe_consumer *con,
 				unsigned long func, struct pt_regs *regs);
 
 #ifdef CONFIG_STACK_GROWSUP
-//static unsigned long adjust_stack_addr(unsigned long addr, unsigned int n)
-//{
-//	return addr - (n * sizeof(long));
-//}
+static unsigned long adjust_stack_addr(unsigned long addr, unsigned int n)
+{
+	return addr - (n * sizeof(long));
+}
 #else
 static unsigned long adjust_stack_addr(unsigned long addr, unsigned int n)
 {
@@ -204,6 +204,9 @@ fetch_store_strlen_user(unsigned long addr)
 	return fetch_store_strlen(addr);
 }
 
+/**
+ * 翻译这个地址！！！！
+ */
 static unsigned long translate_user_vaddr(unsigned long file_offset)
 {
 	unsigned long base_addr;
@@ -494,6 +497,9 @@ static int register_trace_uprobe(struct trace_uprobe *tu)
 
 	mutex_lock(&event_mutex);
 
+	/**
+	 *
+	 */
 	ret = validate_ref_ctr_offset(tu);
 	if (ret)
 		goto end;
@@ -512,6 +518,9 @@ static int register_trace_uprobe(struct trace_uprobe *tu)
 		goto end;
 	}
 
+	/**
+	 *
+	 */
 	ret = register_uprobe_event(tu);
 	if (ret) {
 		pr_warn("Failed to register probe event(%d)\n", ret);
@@ -544,6 +553,11 @@ static int trace_uprobe_create(int argc, const char **argv)
 	ret = 0;
 	ref_ctr_offset = 0;
 
+	/**
+	 * example:
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 * ^
+	 */
 	switch (argv[0][0]) {
 	case 'r':
 		is_return = true;
@@ -557,17 +571,33 @@ static int trace_uprobe_create(int argc, const char **argv)
 	if (argc < 2)
 		return -ECANCELED;
 
+	/**
+	 * example:
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 *   ^^^^^^^^^^^^^^^^  (event)
+	 */
 	if (argv[0][1] == ':')
 		event = &argv[0][2];
 
 	if (!strchr(argv[1], '/'))
 		return -ECANCELED;
 
+	/**
+	 * example:
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 *                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  (filename)
+	 */
 	filename = kstrdup(argv[1], GFP_KERNEL);
 	if (!filename)
 		return -ENOMEM;
 
-	/* Find the last occurrence, in case the path contains ':' too. */
+	/***
+	 * Find the last occurrence, in case the path contains ':' too.
+	 *
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 *                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  (filename)
+	 *                             ^^^^^^^^^^^^^^^^^^^  (arg)
+	 */
 	arg = strrchr(filename, ':');
 	if (!arg || !isdigit(arg[1])) {
 		kfree(filename);
@@ -577,6 +607,13 @@ static int trace_uprobe_create(int argc, const char **argv)
 	trace_probe_log_init("trace_uprobe", argc, argv);
 	trace_probe_log_set_index(1);	/* filename is the 2nd argument */
 
+	/***
+	 * Find the last occurrence, in case the path contains ':' too.
+	 *
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 *                    ^^^^^^^^^  (filename)
+	 *                              ^^^^^^^^^^^^^^^^^^  (arg)
+	 */
 	*arg++ = '\0';
 	ret = kern_path(filename, LOOKUP_FOLLOW, &path);
 	if (ret) {
@@ -630,7 +667,13 @@ static int trace_uprobe_create(int argc, const char **argv)
 		}
 	}
 
-	/* Parse uprobe offset. */
+	/***
+	 * Parse uprobe offset.
+	 *
+	 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+	 *                              ^^^^^^^^^^^^^^^^^^  (arg)
+	 * offset = 0x00000000000d1c70
+	 */
 	ret = kstrtoul(arg, 0, &offset);
 	if (ret) {
 		trace_probe_log_err(arg - filename, BAD_UPROBE_OFFS);
@@ -640,6 +683,11 @@ static int trace_uprobe_create(int argc, const char **argv)
 	/* setup a probe */
 	trace_probe_log_set_index(0);
 	if (event) {
+		/**
+		 * example:
+		 * p:uprobes/readline /bin/bash:0x00000000000d1c70 %ip %ax
+		 *   ^^^^^^^^^^^^^^^^  (event)
+		 */
 		ret = traceprobe_parse_event_name(&event, &group, buf,
 						  event - argv[0]);
 		if (ret)
@@ -673,6 +721,10 @@ static int trace_uprobe_create(int argc, const char **argv)
 		WARN_ON_ONCE(ret != -ENOMEM);
 		goto fail_address_parse;
 	}
+
+	/**
+	 *
+	 */
 	tu->offset = offset;
 	tu->ref_ctr_offset = ref_ctr_offset;
 	tu->path = path;
@@ -698,6 +750,9 @@ static int trace_uprobe_create(int argc, const char **argv)
 	if (ret < 0)
 		goto error;
 
+	/**
+	 *
+	 */
 	ret = register_trace_uprobe(tu);
 	if (!ret)
 		goto out;
@@ -1490,6 +1545,9 @@ static int uprobe_dispatcher(struct uprobe_consumer *con, struct pt_regs *regs)
 	tu->nhit++;
 
 	udd.tu = tu;
+	/**
+	 * bp_addr = regs->pc;
+	 */
 	udd.bp_addr = instruction_pointer(regs);
 
 	current->utask->vaddr = (unsigned long) &udd;

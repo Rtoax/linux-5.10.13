@@ -128,6 +128,9 @@ static bool valid_vma(struct vm_area_struct *vma, bool is_register)
 	return vma->vm_file && (vma->vm_flags & flags) == VM_MAYEXEC;
 }
 
+/**
+ * 从 ELF 符号地址转化为内存中的符号地址
+ */
 static unsigned long offset_to_vaddr(struct vm_area_struct *vma, loff_t offset)
 {
 	return vma->vm_start + offset - ((loff_t)vma->vm_pgoff << PAGE_SHIFT);
@@ -1002,6 +1005,9 @@ build_map_info(struct address_space *mapping, loff_t offset, bool is_register)
 		curr = info;
 
 		info->mm = vma->vm_mm;
+		/**
+		 * 从 vma 和 偏移地址 计算实际虚拟地址
+		 */
 		info->vaddr = offset_to_vaddr(vma, offset);
 	}
 	i_mmap_unlock_read(mapping);
@@ -1032,6 +1038,9 @@ build_map_info(struct address_space *mapping, loff_t offset, bool is_register)
 	return curr;
 }
 
+/**
+ *
+ */
 static int
 register_for_each_vma(struct uprobe *uprobe, struct uprobe_consumer *new)
 {
@@ -1040,6 +1049,10 @@ register_for_each_vma(struct uprobe *uprobe, struct uprobe_consumer *new)
 	int err = 0;
 
 	percpu_down_write(&dup_mmap_sem);
+
+	/**
+	 * 构建一个 info
+	 */
 	info = build_map_info(uprobe->inode->i_mapping,
 					uprobe->offset, is_register);
 	if (IS_ERR(info)) {
@@ -1064,10 +1077,16 @@ register_for_each_vma(struct uprobe *uprobe, struct uprobe_consumer *new)
 		    vaddr_to_offset(vma, info->vaddr) != uprobe->offset)
 			goto unlock;
 
+		/**
+		 * 注册一个 uprobe
+		 */
 		if (is_register) {
 			/* consult only the "caller", new consumer. */
 			if (consumer_filter(new,
 					UPROBE_FILTER_REGISTER, mm))
+				/**
+				 * 安装
+				 */
 				err = install_breakpoint(uprobe, mm, vma, info->vaddr);
 		} else if (test_bit(MMF_HAS_UPROBES, &mm->flags)) {
 			if (!filter_chain(uprobe,
@@ -1390,6 +1409,9 @@ int uprobe_mmap(struct vm_area_struct *vma)
 	list_for_each_entry_safe(uprobe, u, &tmp_list, pending_list) {
 		if (!fatal_signal_pending(current) &&
 		    filter_chain(uprobe, UPROBE_FILTER_MMAP, vma->vm_mm)) {
+			/**
+			 * 从 ELF 符号地址转化为内存中的符号地址
+			 */
 			unsigned long vaddr = offset_to_vaddr(vma, uprobe->offset);
 			install_breakpoint(uprobe, vma->vm_mm, vma, vaddr);
 		}
