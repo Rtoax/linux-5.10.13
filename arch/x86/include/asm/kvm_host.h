@@ -704,6 +704,10 @@ struct kvm_vcpu_arch {
 	struct kvm_queued_interrupt {
 		bool injected;
 		bool soft;
+		/**
+		 * See
+		 * - vmx_inject_irq()
+		 */
 		u8 nr;
 	} interrupt;
 
