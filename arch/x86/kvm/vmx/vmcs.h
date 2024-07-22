@@ -100,6 +100,7 @@ struct vmcs {
 	 */
 	char data[];
 };
+
 /**
  * 初始化/分配： alloc_kvm_area()->alloc_vmcs_cpu()
  * VMCS 配置： vmcs_config, 由 setup_vmcs_config() 初始化
