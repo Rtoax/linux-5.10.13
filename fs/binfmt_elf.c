@@ -392,8 +392,13 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 }
 
 /**
- * 映射 ELF文件
+ * Map "eppnt->p_filesz" bytes from "filep" offset "eppnt->p_offset"
+ * into memory at "addr". (Note that p_filesz is rounded up to the
+ * next page, so any extra bytes from the file must be wiped.)
+ *
+ * 映射 ELF文件, elf_map() 只映射了 ld-linux 和 SELF
  * sudo bpftrace -e 'kretprobe:elf_map { printf("%-8s %lx %s\n", comm, retval, kstack); }'
+ *
  */
 static unsigned long elf_map(struct file *filep, unsigned long addr,
 		const struct elf_phdr *eppnt, int prot, int type,
@@ -403,65 +408,6 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 
 	/**
 	 *  文件中占用的大小 + 虚拟地址
-	 *
-	 *  ELF_PAGEOFFSET 获取页偏移
-	 *
-	 * #########################################################################
-	 * elf_map() 只映射了 ld-linux 和 SELF，见：
-	 * https://github.com/Rtoax/test-linux/blob/main/elf/scripts/bpftrace/elf_map.bt
-	 *
-	 * 以下内容为笔记，实际上 elf_map() 并不会映射共享库（如 libc.so.6）
-	 *
-	 * x86_64
-	 * getpagesize() = 4096 = 0x1000 = 4K
-	 * =========================================================================
-	 * $ readelf -l /usr/lib64/libc.so.6
-	 *
-	 * Program Headers:
-	 *   Type           Offset             VirtAddr           PhysAddr
-	 *                 FileSiz            MemSiz              Flags  Align
-	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
-	 *                  0x0000000000027ed8 0x0000000000027ed8  R      0x1000
-	 *   LOAD           0x0000000000028000 0x0000000000028000 0x0000000000028000
-	 *                  0x00000000001742fc 0x00000000001742fc  R E    0x1000
-	 *   LOAD           0x000000000019d000 0x000000000019d000 0x000000000019d000
-	 *                  0x0000000000057df8 0x0000000000057df8  R      0x1000
-	 *   LOAD           0x00000000001f58d0 0x00000000001f68d0 0x00000000001f68d0
-	 *                  0x0000000000004fb8 0x00000000000126e0  RW     0x1000
-	 *
-	 * $ cat /proc/self/maps
-	 * ...
-	 * 7f57f81bd000-7f57f81e5000 r--p 00000000 fd:00 67244016	/usr/lib64/libc.so.6
-	 * 7f57f81e5000-7f57f835a000 r-xp 00028000 fd:00 67244016	/usr/lib64/libc.so.6 << LOAD
-	 * 7f57f835a000-7f57f83b2000 r--p 0019d000 fd:00 67244016	/usr/lib64/libc.so.6
-	 * 7f57f83b2000-7f57f83b3000 ---p 001f5000 fd:00 67244016	/usr/lib64/libc.so.6
-	 * 7f57f83b3000-7f57f83b7000 r--p 001f5000 fd:00 67244016	/usr/lib64/libc.so.6
-	 * 7f57f83b7000-7f57f83b9000 rw-p 001f9000 fd:00 67244016	/usr/lib64/libc.so.6
-	 *
-	 *
-	 * aarch64
-	 * getpagesize() = 65536 = 0x10000 = 64K
-	 * =========================================================================
-	 * $ readelf -l /usr/lib64/libc.so.6
-	 *
-	 * Program Headers:
-	 *   Type           Offset             VirtAddr           PhysAddr
-	 *                 FileSiz            MemSiz              Flags  Align
-	 *   LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
-	 *                  0x0000000000159c14 0x0000000000159c14  R E    0x10000
-	 *   LOAD           0x000000000015cbc0 0x000000000016cbc0 0x000000000016cbc0
-	 *                  0x0000000000004a10 0x00000000000083c8  RW     0x10000
-	 *
-	 * $ cat /proc/self/maps
-	 * ffff8f280000-ffff8f3e0000 r-xp 00000000 fd:00 150995520	/usr/lib64/libc-2.28.so
-	 * ffff8f3e0000-ffff8f3f0000 r--p 00150000 fd:00 150995520	/usr/lib64/libc-2.28.so
-	 * ffff8f3f0000-ffff8f400000 rw-p 00160000 fd:00 150995520	/usr/lib64/libc-2.28.so
-	 *
-	 * size = 0x0000000000004a10 + ELF_PAGEOFFSET(0x000000000016cbc0)
-	 * 		= 0x0000000000004a10 + 0x000000000000cbc0
-	 * 		= 0x00000000000115d0
-	 * off	= 0x000000000015cbc0 - 0x000000000000cbc0
-	 * 		= 0x0000000000150000
 	 */
 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
 

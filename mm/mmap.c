@@ -1707,16 +1707,6 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 
 /**
  * @brief The caller must write-lock current->mm->mmap_lock.
- *
- * @param file	文件映射打开的 文件，可能为 NULL
- * @param addr	用户传入的 虚拟地址，可能为 0
- * @param len
- * @param prot
- * @param flags
- * @param pgoff
- * @param populate
- * @param uf
- * @return unsigned long
  */
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
@@ -1843,7 +1833,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
-    //MAP_LOCKED：不会被swap出去
+	//MAP_LOCKED：不会被swap出去
 	if (flags & MAP_LOCKED)
 		if (!can_do_mlock())
 			return -EPERM;
@@ -1947,9 +1937,12 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			if (!(file->f_mode & FMODE_READ))
 				return -EACCES;
 			if (path_noexec(&file->f_path)) {
-				if (vm_flags & VM_EXEC) /* vma 与 file  可执行权限不一样 */
-					return -EPERM;      /* 返回没有权限 */
-				vm_flags &= ~VM_MAYEXEC;/* 文件不可执行，vma也不可执行 */
+				/* vma 与 file  可执行权限不一样 */
+				if (vm_flags & VM_EXEC)
+					/* 返回没有权限 */
+					return -EPERM;
+				/* 文件不可执行，vma也不可执行 */
+				vm_flags &= ~VM_MAYEXEC;
 			}
 
 			/**
@@ -1958,7 +1951,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			 */
 			if (!file->f_op->mmap)  /* 如果 mmap 指针为空 */
 				return -ENODEV;     /* 没有这个设备 */
-			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))   /* vma 向上还是向下 */
+			/* vma 向上还是向下 */
+			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
 				return -EINVAL;
 			break;
 
@@ -2343,16 +2337,16 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		goto unacct_error;
 	}
 
-    /* 填充VMA结构体相关成员 */
+	/* 填充VMA结构体相关成员 */
 	vma->vm_start = addr;
 	vma->vm_end = addr + len;
 	vma->vm_flags = vm_flags;
 	vma->vm_page_prot = vm_get_page_prot(vm_flags);
 	vma->vm_pgoff = pgoff;
 
-    /**
-     *  文件内存映射
-     */
+	/**
+	 *  文件内存映射
+	 */
 	if (file) { /* 文件映射 */
 		if (vm_flags & VM_DENYWRITE) {
 			error = deny_write_access(file);
@@ -2373,11 +2367,12 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		/* 给vma->vm_file赋值 */
 		vma->vm_file = get_file(file);  /* 引用计数+1 */
 
-        /**
-         *  调用file->f_op->mmap，给vma->vm_ops赋值
-         *  例如ext4：vma->vm_ops = &ext4_file_vm_ops;
-         */
-		error = call_mmap(file, vma);   /* 调用文件对应的 mmap, 可能是 shm_mmap() */
+		/**
+		 *  调用文件对应的 mmap, 可能是 shm_mmap()
+		 *  调用file->f_op->mmap，给vma->vm_ops赋值
+		 *  例如ext4：vma->vm_ops = &ext4_file_vm_ops;
+		 */
+		error = call_mmap(file, vma);
 		if (error)
 			goto unmap_and_free_vma;
 
@@ -2439,13 +2434,13 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 			goto free_vma;
 	}
 
-    /**
-     *  将新的vma插入
-     *
-     *  1. 红黑树
-     *  2. 链表
-     *  3. 文件缓存/映射
-     */
+	/**
+	 *  将新的vma插入
+	 *
+	 *  1. 红黑树
+	 *  2. 链表
+	 *  3. 文件缓存/映射
+	 */
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 
 	/* Once vma denies write, undo our temporary denial count */
@@ -2460,9 +2455,9 @@ unmap_writable:
 	file = vma->vm_file;
 
 out:
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	perf_event_mmap(vma);
 
 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
@@ -2487,9 +2482,9 @@ out:
 	 * a completely new data area).
 	 */
 	vma->vm_flags |= VM_SOFTDIRTY;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	vma_set_page_prot(vma);
 
 	return addr;
