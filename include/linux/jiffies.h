@@ -376,9 +376,11 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
  * the HZ range specific helpers _msecs_to_jiffies() are called both
  * directly here and from __msecs_to_jiffies() in the case where
  * constant folding is not possible.
+ *
+ * jiffies是记录着从电脑开机到现在总共的时钟中断次数。在linux内核中jiffies远比xtime重要
  */
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
-{//jiffies是记录着从电脑开机到现在总共的时钟中断次数。在linux内核中jiffies远比xtime重要
+{
 	if (__builtin_constant_p(m)) {
 		if ((int)m < 0)
 			return MAX_JIFFY_OFFSET;
