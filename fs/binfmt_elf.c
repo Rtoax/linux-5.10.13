@@ -467,6 +467,9 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 
 	/**
 	 *  文件中的偏移量 - 虚拟地址
+	 * ELF_PAGEOFFSET(0xffff123UL) to 0000000000000123
+	 * p_offset = 0x000000000015cbc0
+	 * off      = 0x000000000015c000
 	 */
 	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
 
@@ -1716,7 +1719,7 @@ out_free_interp:
 			load_addr = (elf_ppnt->p_vaddr - elf_ppnt->p_offset);
 
 			/**
-			 *  如果是动态库 或 非 '-static' 编译的 ELF 可执行文件
+			 *  如果是动态库 或 PIE ELF 可执行文件
 			 */
 			if (elf_ex->e_type == ET_DYN) {
 				/**
