@@ -467,7 +467,9 @@ struct tss_struct {
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
 
-/* Per CPU interrupt stacks  `中断栈`*/
+/**
+ * Per CPU interrupt stacks  `中断栈`
+ */
 struct irq_stack {
 	char		stack[IRQ_STACK_SIZE];  /* 32KB */
 } __aligned(IRQ_STACK_SIZE);
@@ -475,7 +477,7 @@ struct irq_stack {
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 
 #ifdef CONFIG_X86_32
-//DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
+DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 #else
 /* The RO copy can't be accessed with this_cpu_xyz(), so use the RW copy. */
 #define cpu_current_top_of_stack cpu_tss_rw.x86_tss.sp1
@@ -512,8 +514,8 @@ extern asmlinkage void ignore_sysret(void);//仅返回 `-ENOSYS` 错误代码
 /* Save actual FS/GS selectors and bases to current->thread */
 void current_save_fsgs(void);
 #else	/* X86_64 */
-/* 栈保护 */
-#ifdef CONFIG_STACKPROTECTOR
+
+#ifdef CONFIG_STACKPROTECTOR /* 栈保护 */
 /*
  * Make sure stack canary segment base is cached-aligned:
  *   "For Intel Atom processors, avoid non zero segment base address
@@ -538,7 +540,7 @@ struct perf_event;
 /**
  *  X86 硬件上下文 - 存放和具体架构相关的信息
  */
-struct thread_struct {/* 硬件上下文存放: CPU 信息 */
+struct thread_struct {
 	/**
 	 *  Cached TLS descriptors:
 	 *  GDT_ENTRY_TLS_ENTRIES = 3
@@ -589,7 +591,7 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 
 #ifdef CONFIG_VM86
 	/* Virtual 86 mode info */
-//	struct vm86		*vm86;
+	struct vm86		*vm86;
 #endif
 	/* IO permissions: */
 	struct io_bitmap	*io_bitmap;
@@ -615,9 +617,9 @@ struct thread_struct {/* 硬件上下文存放: CPU 信息 */
 static inline void arch_thread_struct_whitelist(unsigned long *offset,
 						unsigned long *size)
 {
-    /**
-     *  FPU相关
-     */
+	/**
+	 *  FPU相关
+	 */
 	*offset = offsetof(struct thread_struct, fpu.state);
 	*size = fpu_kernel_xstate_size;
 }

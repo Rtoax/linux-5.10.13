@@ -30,10 +30,10 @@ struct thread_info {
 	u64			ttbr0;		/* saved TTBR0_EL1 */
 #endif
 	union {
-	    /**
-	     *  =0 可以抢占
-	     *  >0 不可抢占
-	     */
+		/**
+		 *  =0 可以抢占
+		 *  >0 不可抢占
+		 */
 		u64		preempt_count;	/* 0 => preemptible, <0 => bug */
 		struct {
 #ifdef CONFIG_CPU_BIG_ENDIAN
