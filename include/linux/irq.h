@@ -544,80 +544,80 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  *  硬件中断控制器底层操作相关的方法集
  */
 struct irq_chip {   /* 硬件中断 chip 描述符 */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct device	*parent_device;
 
 	const char	*name;  /* 设备名称， 用作 /proc/interrupts 中 */
 
-    /**
-     *  初始化一个中断
-     */
+	/**
+	 *  初始化一个中断
+	 */
 	unsigned int	(*irq_startup)(struct irq_data *data);  /* 开启中断，默认 enable */
 
-    /**
-     *  结束一个中断
-     */
+	/**
+	 *  结束一个中断
+	 */
 	void		(*irq_shutdown)(struct irq_data *data);     /* 关闭中断，默认 disable */
 
-    /**
-     *  使能一个中断
-     */
+	/**
+	 *  使能一个中断
+	 */
 	void		(*irq_enable)(struct irq_data *data);
 
-    /**
-     *  关闭一个中断
-     */
+	/**
+	 *  关闭一个中断
+	 */
 	void		(*irq_disable)(struct irq_data *data);
 
-    /**
-     *  应答一个中断
-     */
+	/**
+	 *  应答一个中断
+	 */
 	void		(*irq_ack)(struct irq_data *data);  /* 开启新的中断 */
-    /**
-     *  屏蔽一个中断源
-     */
+	/**
+	 *  屏蔽一个中断源
+	 */
 	void		(*irq_mask)(struct irq_data *data); /* 屏蔽中断 */
-    /**
-     *  应该并屏蔽该中断源
-     */
+	/**
+	 *  应该并屏蔽该中断源
+	 */
 	void		(*irq_mask_ack)(struct irq_data *data);
-    /**
-     *  解除屏蔽
-     */
+	/**
+	 *  解除屏蔽
+	 */
 	void		(*irq_unmask)(struct irq_data *data);/* 解除屏蔽 */
 
-    /**
-     *  发送 EOI 信号被中断控制器，标识硬件中断处理已经完成
-     *
-     *
-     */
+	/**
+	 *  发送 EOI 信号被中断控制器，标识硬件中断处理已经完成
+	 *
+	 *
+	 */
 	void		(*irq_eoi)(struct irq_data *data);
 
-    /**
-     *  绑定一个中断到某个 CPU 上
-     */
+	/**
+	 *  绑定一个中断到某个 CPU 上
+	 */
 	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
 
-    /**
-     *  重新发送中断到 CPU 上
-     */
+	/**
+	 *  重新发送中断到 CPU 上
+	 */
 	int		(*irq_retrigger)(struct irq_data *data);
 
-    /**
-     *  设置中断触发类型
-     */
+	/**
+	 *  设置中断触发类型
+	 */
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
 
-    /**
-     *  使能/关闭该中断在电源管理中的唤醒功能
-     */
+	/**
+	 *  使能/关闭该中断在电源管理中的唤醒功能
+	 */
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
 
-    /**
-     *  实现保护访问慢速设备的锁
-     */
+	/**
+	 *  实现保护访问慢速设备的锁
+	 */
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 
