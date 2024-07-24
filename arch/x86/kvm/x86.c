@@ -955,6 +955,19 @@ void kvm_load_host_xsave_state(struct kvm_vcpu *vcpu)
 }
 EXPORT_SYMBOL_GPL(kvm_load_host_xsave_state);
 
+/**
+ * 设置 cr0
+ *
+ * $ sudo bpftrace -e 'kprobe:__kvm_set_xcr {printf("%s\n", kstack);}'
+ *         __kvm_set_xcr+1
+ *         kvm_arch_vcpu_ioctl+450
+ *         kvm_vcpu_ioctl+1276
+ *         __x64_sys_ioctl+148
+ *         do_syscall_64+130
+ *         entry_SYSCALL_64_after_hwframe+118
+ *
+ * bpftrace: https://github.com/Rtoax/test-linux/commit/32cf3179b9704cd7d114b7d89a7e76b0306b3b83
+ */
 static int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
 {
 	u64 xcr0 = xcr;
@@ -973,6 +986,8 @@ static int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
 	 * Do not allow the guest to set bits that we do not support
 	 * saving.  However, xcr0 bit 0 is always set, even if the
 	 * emulated CPU does not support XSAVE (see fx_init).
+	 *
+	 * 搞清楚 guest_supported_xcr0 是怎么来的有助于理解 vCPU 特性
 	 */
 	valid_bits = vcpu->arch.guest_supported_xcr0 | XFEATURE_MASK_FP;
 	if (xcr0 & ~valid_bits)
@@ -982,6 +997,9 @@ static int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
 	    (!(xcr0 & XFEATURE_MASK_BNDCSR)))
 		return 1;
 
+	/**
+	 * AVX512 特性
+	 */
 	if (xcr0 & XFEATURE_MASK_AVX512) {
 		if (!(xcr0 & XFEATURE_MASK_YMM))
 			return 1;
@@ -4816,14 +4834,14 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
 		struct kvm_cpuid cpuid;
 
 		r = -EFAULT;
-	    /**
-	     *  复制
-	     */
+		/**
+		 *  复制
+		 */
 		if (copy_from_user(&cpuid, cpuid_arg, sizeof(cpuid)))
 			goto out;
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		r = kvm_vcpu_ioctl_set_cpuid(vcpu, &cpuid, cpuid_arg->entries);
 		break;
 	}
@@ -5002,6 +5020,10 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
 		r = 0;
 		break;
 	}
+	/**
+	 * 设置 CR
+	 * 会调用 __kvm_set_xcr()
+	 */
 	case KVM_SET_XCRS: {
 		u.xcrs = memdup_user(argp, sizeof(*u.xcrs));
 		if (IS_ERR(u.xcrs)) {

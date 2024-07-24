@@ -2528,9 +2528,9 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 	      CPU_BASED_CR8_LOAD_EXITING |
 	      CPU_BASED_CR8_STORE_EXITING |
 #endif
-		  /**
-		   *
-		   */
+		/**
+		 *
+		 */
 	      CPU_BASED_CR3_LOAD_EXITING |
 	      CPU_BASED_CR3_STORE_EXITING |
 	      CPU_BASED_UNCOND_IO_EXITING |
@@ -2780,6 +2780,17 @@ void free_loaded_vmcs(struct loaded_vmcs *__loaded_vmcs)
 
 /**
  * 分配一个 VMCS
+ * - 如果一个 VM 有 4 个 vCPU，那么将调用 4 次
+ *   sudo bpftrace -e 'kprobe:alloc_loaded_vmcs {printf("%s\n", kstack);}'
+ *
+ *       alloc_loaded_vmcs+5
+ *       vmx_vcpu_create+184
+ *       kvm_arch_vcpu_create+605
+ *       kvm_vm_ioctl+490
+ *       __x64_sys_ioctl+148
+ *       do_syscall_64+130
+ *       entry_SYSCALL_64_after_hwframe+118
+ *
  */
 int alloc_loaded_vmcs(struct loaded_vmcs *__loaded_vmcs)
 {
@@ -7784,6 +7795,9 @@ static int vmx_vm_init(struct kvm *kvm)
 	return 0;
 }
 
+/**
+ * 这在系统开机时调用
+ */
 static int __init vmx_check_processor_compat(void)
 {
 	struct vmcs_config vmcs_conf;

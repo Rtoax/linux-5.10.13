@@ -144,6 +144,8 @@ struct vmcs_controls_shadow {
  * loaded on this CPU (so we can clear them if the CPU goes down).
  *
  * 跟踪一个可能在特定 CPU 上加载的 VMCS
+ * 见：
+ * - alloc_loaded_vmcs(struct loaded_vmcs *__loaded_vmcs)
  */
 struct loaded_vmcs {
 	struct vmcs *vmcs;
