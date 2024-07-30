@@ -1457,7 +1457,11 @@ static bool inherit_taint(struct module *mod, struct module *owner)
 	return true;
 }
 
-/* Resolve a symbol for this module.  I.e. if we find one, record usage. */
+/**
+ * Resolve a symbol for this module.  I.e. if we find one, record usage.
+ *
+ * 解析一个符号地址时候，没有考虑到符号的类型？ko 中的符号是 STT_NOTYPE 类型的
+ */
 static const struct kernel_symbol *resolve_symbol(struct module *mod,
 						  const struct load_info *info,
 						  const char *name,
