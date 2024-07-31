@@ -2511,6 +2511,9 @@ static struct devinet_sysctl_table {
 		DEVINET_SYSCTL_RW_ENTRY(ACCEPT_REDIRECTS, "accept_redirects"),
 		DEVINET_SYSCTL_RW_ENTRY(SECURE_REDIRECTS, "secure_redirects"),
 		DEVINET_SYSCTL_RW_ENTRY(SHARED_MEDIA, "shared_media"),
+		/**
+		 * net.ipv4.conf.all.rp_filter
+		 */
 		DEVINET_SYSCTL_RW_ENTRY(RP_FILTER, "rp_filter"),
 		DEVINET_SYSCTL_RW_ENTRY(SEND_REDIRECTS, "send_redirects"),
 		DEVINET_SYSCTL_RW_ENTRY(ACCEPT_SOURCE_ROUTE,
