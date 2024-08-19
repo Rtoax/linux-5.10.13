@@ -60,6 +60,11 @@
 #include "braille.h"
 #include "internal.h"
 
+/**
+ * /proc/sys/kernel/printk
+ *
+ * default: 7 4 1 7
+ */
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,	/* console_loglevel */
 	MESSAGE_LOGLEVEL_DEFAULT,	/* default_message_loglevel */
