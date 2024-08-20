@@ -105,6 +105,9 @@ SYM_FUNC_END(vmx_vmexit)
 
 /**
  * __vmx_vcpu_run - Run a vCPU via a transition to VMX guest mode
+ *
+ * bool __vmx_vcpu_run(struct vcpu_vmx *vmx, unsigned long *regs, bool launched);
+ *
  * @vmx:	struct vcpu_vmx * (forwarded to vmx_update_host_rsp)
  * @regs:	unsigned long * (to guest registers)
  * @launched:	%true if the VMCS has been launched
@@ -121,9 +124,9 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	push %_ASM_BP
 	mov  %_ASM_SP, %_ASM_BP
 
-    /**
-     *  保存通用寄存器
-     */
+	/**
+	 *  保存通用寄存器
+	 */
 #ifdef CONFIG_X86_64
 	push %r15
 	push %r14
@@ -177,6 +180,9 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	/**
 	 * Enter guest mode
 	 * vmresume/vmlaunch
+	 *
+	 * 执行 Guest OS 代码
+	 * 如果首次运行 Guest，则使用 vmlaunch，否则运行 vmresume 指令
 	 */
 	call vmx_vmenter
 
@@ -211,7 +217,10 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	mov %r15, VCPU_R15(%_ASM_AX)
 #endif
 
-	/* Clear RAX to indicate VM-Exit (as opposed to VM-Fail). */
+	/**
+	 * Clear RAX to indicate VM-Exit (as opposed to VM-Fail).
+	 * 清空 eax，如果执行成功，则返回 eax=0
+	 */
 	xor %eax, %eax
 
 	/*
@@ -256,7 +265,10 @@ SYM_FUNC_START(__vmx_vcpu_run)
 	pop %_ASM_BP
 	ret
 
-	/* VM-Fail.  Out-of-line to avoid a taken Jcc after VM-Exit. */
+	/**
+	 * VM-Fail.  Out-of-line to avoid a taken Jcc after VM-Exit.
+	 * VM 执行失败，返回 1
+	 */
 2:	mov $1, %eax
 	jmp 1b
 SYM_FUNC_END(__vmx_vcpu_run)

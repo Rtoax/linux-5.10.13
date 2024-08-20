@@ -1101,6 +1101,15 @@ get_out_of_range_cpuid_entry(struct kvm_vcpu *vcpu, u32 *fn_ptr, u32 index)
  * $ sudo bpftrace -e 'kprobe:kvm_cpuid {printf("%s\n", comm);}'
  * CPU 1/KVM
  * ...
+ *
+ * kvm_cpuid+594
+ * kvm_emulate_cpuid+135
+ * vmx_handle_exit+322
+ * kvm_arch_vcpu_ioctl_run+3128
+ * kvm_vcpu_ioctl+409
+ * __x64_sys_ioctl+148
+ * do_syscall_64+130
+ * entry_SYSCALL_64_after_hwframe+118
  */
 bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 	       u32 *ecx, u32 *edx, bool exact_only)

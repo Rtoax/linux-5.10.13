@@ -9434,7 +9434,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 	}
 
 	/**
-	 * 运行 vCPU，这个函数退出，说明有 Exit 事件发生了
+	 * 运行 vCPU，这个函数返回，说明有 Exit 事件发生了
 	 *
 	 * VMX: vmx_vcpu_run()
 	 * SVM: svm_vcpu_run()

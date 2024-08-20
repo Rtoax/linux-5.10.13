@@ -1664,6 +1664,9 @@ static void __kvm_wait_lapic_expire(struct kvm_vcpu *vcpu)
 		adjust_lapic_timer_advance(vcpu, apic->lapic_timer.advance_expire_delta);
 }
 
+/**
+ *
+ */
 void kvm_wait_lapic_expire(struct kvm_vcpu *vcpu)
 {
 	if (lapic_in_kernel(vcpu) &&

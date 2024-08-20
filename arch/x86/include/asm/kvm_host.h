@@ -597,6 +597,9 @@ struct kvm_vcpu_arch {
 	 */
 	unsigned long cr0;
 	unsigned long cr0_guest_owned_bits;
+	/**
+	 * CR2 保存缺页地址
+	 */
 	unsigned long cr2;
 	unsigned long cr3;
 	unsigned long cr4;
@@ -1259,8 +1262,15 @@ struct kvm_x86_ops {
 	 *
 	 * 该函数在 vcpu_enter_guest() 中调用
 	 *  exit_fastpath = kvm_x86_ops.run(vcpu);
+	 *
+	 * VMX: vmx_vcpu_run()
+	 * SVM: svm_vcpu_run()
 	 */
 	enum exit_fastpath_completion (*run)(struct kvm_vcpu *vcpu);
+	/**
+	 * vmx: vmx_handle_exit()
+	 * svm: handle_exit()
+	 */
 	int (*handle_exit)(struct kvm_vcpu *vcpu, enum exit_fastpath_completion exit_fastpath);
 	int (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
 	void (*update_emulated_instruction)(struct kvm_vcpu *vcpu);
@@ -1313,6 +1323,9 @@ struct kvm_x86_ops {
 			       struct x86_instruction_info *info,
 			       enum x86_intercept_stage stage,
 			       struct x86_exception *exception);
+	/**
+	 * VMX: vmx_handle_exit_irqoff()
+	 */
 	void (*handle_exit_irqoff)(struct kvm_vcpu *vcpu);
 
 	void (*request_immediate_exit)(struct kvm_vcpu *vcpu);

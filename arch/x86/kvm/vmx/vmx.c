@@ -4325,6 +4325,9 @@ void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
 
 	vmcs_writel(HOST_IDTR_BASE, host_idt_base);   /* 22.2.4 */
 
+	/**
+	 * 设置从 Guest OS 退出后 Host 的执行点
+	 */
 	vmcs_writel(HOST_RIP, (unsigned long)vmx_vmexit); /* 22.2.5 */
 
 	rdmsr(MSR_IA32_SYSENTER_CS, low32, high32);
@@ -7017,6 +7020,9 @@ static void vmx_apicv_post_state_restore(struct kvm_vcpu *vcpu)
 
 void vmx_do_interrupt_nmi_irqoff(unsigned long entry);
 
+/**
+ *
+ */
 static void handle_interrupt_nmi_irqoff(struct kvm_vcpu *vcpu, u32 intr_info)
 {
 	unsigned int vector = intr_info & INTR_INFO_VECTOR_MASK;
@@ -7460,12 +7466,16 @@ reenter_guest:
 	 */
 	x86_spec_ctrl_set_guest(vmx->spec_ctrl, 0);
 
-	/**
+	/***********************************************************************
 	 * The actual VMENTER/EXIT is in the .noinstr.text section.
 	 *
 	 * 在这里进行 vmenter/vmexit
 	 */
 	vmx_vcpu_enter_exit(vcpu, vmx);
+
+	/**
+	 * 发生 VMExit，从 Guest OS 退出到 VMM（KVM）
+	 **********************************************************************/
 
 	/*
 	 * We do not use IBRS in the kernel. If this vCPU has used the
