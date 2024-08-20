@@ -31,7 +31,7 @@ vcpu_enter_guest()
 ```
 
 
-# #UD
+# #UD 未定义的指令
 
 > #UD 目前会因为没有设置 EmulateOnUD 而直接返回模拟失败。
 

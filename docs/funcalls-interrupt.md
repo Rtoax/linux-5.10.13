@@ -134,7 +134,7 @@ sysvec_apic_timer_interrupt
 
 # 示例分析
 
-## #UD
+## #UD 未定义的指令
 
 ```
 asm_exc_invalid_op()

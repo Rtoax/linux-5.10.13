@@ -5347,7 +5347,7 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
 }
 
 /**
- *
+ * 仅仅在 VM 初始化开机时候调用
  */
 int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_event,
 			bool line_status)
@@ -5356,7 +5356,7 @@ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_event,
 		return -ENXIO;
 
 	/**
-	 *  向 8259A 发送 中断请求
+	 * 向 8259A 发送 中断请求
 	 */
 	irq_event->status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
 					irq_event->irq, irq_event->level,
@@ -9603,18 +9603,18 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
 	 *
 	 */
 	for (;;) {
-	    /**
-	     *  正在运行
-	     */
+		/**
+		 *  正在运行
+		 */
 		if (kvm_vcpu_running(vcpu)) {
-	        /**
-	         *  enter Guest
-	         */
+			/**
+			 *  enter Guest
+			 */
 			r = vcpu_enter_guest(vcpu);
 		} else {
-		    /**
-	         *
-	         */
+			/**
+			 *
+			 */
 			r = vcpu_block(kvm, vcpu);
 		}
 

@@ -4208,7 +4208,7 @@ static long kvm_vm_ioctl(struct file *filp,
 #endif
 #ifdef __KVM_HAVE_IRQ_LINE
 	/**
-	 *  管脚号 和 管脚电平
+	 * 管脚号 和 管脚电平
 	 */
 	case KVM_IRQ_LINE_STATUS:
 	case KVM_IRQ_LINE: {
@@ -4218,7 +4218,7 @@ static long kvm_vm_ioctl(struct file *filp,
 		if (copy_from_user(&irq_event, argp, sizeof(irq_event)))
 			goto out;
 
-	    /**
+		/**
 		 *
 		 */
 		r = kvm_vm_ioctl_irq_line(kvm, &irq_event,

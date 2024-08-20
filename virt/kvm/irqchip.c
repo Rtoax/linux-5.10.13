@@ -32,11 +32,11 @@ int kvm_irq_map_gsi(struct kvm *kvm,
 	irq_rt = srcu_dereference_check(kvm->irq_routing, &kvm->irq_srcu,
 					lockdep_is_held(&kvm->irq_lock));
     /**
-     *  
+     *
      */
 	if (irq_rt && gsi < irq_rt->nr_rt_entries) {
         /**
-         *  
+         *
          */
 		hlist_for_each_entry(e, &irq_rt->map[gsi], link) {
 			entries[n] = *e;
@@ -82,14 +82,14 @@ int kvm_send_userspace_msi(struct kvm *kvm, struct kvm_msi *msi)
 int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level,
 		bool line_status)
 {
-    /**
-	 *  
+	/**
+	 *
 	 */
 	struct kvm_kernel_irq_routing_entry irq_set[KVM_NR_IRQCHIPS];
 	int ret = -1, i, idx;
 
-    /**
-	 *  追踪点
+	/**
+	 * tracepoint:kvm:kvm_set_irq
 	 */
 	trace_kvm_set_irq(irq, level, irq_source_id);
 
@@ -98,22 +98,22 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level,
 	 * writes to the unused one.
 	 */
 	idx = srcu_read_lock(&kvm->irq_srcu);
-    /**
-	 *  
+	/**
+	 *
 	 */
 	i = kvm_irq_map_gsi(kvm, irq_set, irq);
 	srcu_read_unlock(&kvm->irq_srcu, idx);
 
-    /**
-	 *  
+	/**
+	 *
 	 */
 	while (i--) {
 		int r;
-        /**
-         *  kvm_set_pic_irq()
-         *  kvm_set_ioapic_irq()
-         *  vgic_irqfd_set_irq()
-         */
+		/**
+		 *  kvm_set_pic_irq()
+		 *  kvm_set_ioapic_irq()
+		 *  vgic_irqfd_set_irq()
+		 */
 		r = irq_set[i].set(&irq_set[i], kvm, irq_source_id, level, line_status);
 		if (r < 0)
 			continue;

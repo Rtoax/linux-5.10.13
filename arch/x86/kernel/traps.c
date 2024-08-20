@@ -167,9 +167,9 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 {
 	struct task_struct *tsk = current;
 
-    /**
-     * 如果来自用户模式： 返回 -1, 否则 返回 0
-     */
+	/**
+	 * 如果来自用户模式： 返回 -1, 否则 返回 0
+	 */
 	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))
 		return;
 
@@ -189,9 +189,10 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 	 * TRAP_HOOK();
 	 *
 	 * 但是这样，可能需要修改 Guest 的内核，有没有不用修改 Guest 内核的方案？
+	 * 我觉得是可以的，参见 test-linux 和 notes 仓库。
 	 */
 
-    /**
+	/**
 	 * 这将会通知进程 信号 SIGXXX (如 SIGILL：#UD 非法指令->段错误)
 	 */
 	if (!sicode)

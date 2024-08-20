@@ -299,7 +299,7 @@ struct kvm_irq_level {
 	 * For ARM: See Documentation/virt/kvm/api.rst
 	 */
 	union {
-	    /**
+		/**
 		 *  管脚号
 		 */
 		__u32 irq;
@@ -1647,6 +1647,34 @@ struct kvm_s390_ucas_mapping {
 #define KVM_ASSIGN_SET_MSIX_ENTRY _IOW(KVMIO,  0x74, \
 				       struct kvm_assigned_msix_entry)
 #define KVM_DEASSIGN_DEV_IRQ      _IOW(KVMIO,  0x75, struct kvm_assigned_irq)
+/**
+ * QEMU/KVM使用irqfd机制来模拟MSIx中断
+ *
+ * 即设备申请MSIx中断的时候会为MSIx分配一个gsi（这个时候会刷新irq routing table），
+ * 并为这个gsi绑定一个irqfd，最后在内核中去poll这个irqfd。 当QEMU处理完IO之后，就写
+ * MSIx对应的irqfd，给前端注入一个MSIx中断，告知前端我已经处理好IO了你可以来取结果了。
+ *
+ * 例如，virtio-scsi从前端取出IO请求后会取做DMA操作（DMA是异步的，QEMU协程中负责处理）。
+ * 当DMA完成后QEMU需要告知前端IO请求已完成（Complete），那么怎么去投递这个MSIx中断呢？
+ * 答案是调用 virtio_notify_irqfd 注入一个MSIx中断。
+ *
+ *    +-------------+                +-------------+
+ *    |             |                |             |
+ *    |             |                |             |
+ *    |   GuestOS   |                |     QEMU    |
+ *    |             |                |             |
+ *    |             |                |             |
+ *    +---+---------+                +----+--------+
+ *        |     ^                         |    ^
+ *        |     |                         |    |
+ *    +---|-----|-------------------------|----|---+
+ *    |   |     |                irqfd    |    |   |
+ *    |   |     +-------------------------+    |   |
+ *    |   |  ioeventfd                         |   |
+ *    |   +------------------------------------+   |
+ *    |                   KVM                      |
+ *    +--------------------------------------------+
+ */
 #define KVM_IRQFD                 _IOW(KVMIO,  0x76, struct kvm_irqfd)
 #define KVM_CREATE_PIT2		  _IOW(KVMIO,  0x77, struct kvm_pit_config)
 #define KVM_SET_BOOT_CPU_ID       _IO(KVMIO,   0x78)

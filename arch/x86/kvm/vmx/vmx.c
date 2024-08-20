@@ -4843,6 +4843,9 @@ static void vmx_inject_irq(struct kvm_vcpu *vcpu)
 	vmx_clear_hlt(vcpu);
 }
 
+/**
+ * sudo virsh inject-nmi cclinux2209
+ */
 static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
@@ -8475,6 +8478,9 @@ static struct kvm_x86_ops __initdata vmx_x86_ops  = {
 	.get_interrupt_shadow = vmx_get_interrupt_shadow,
 	.patch_hypercall = vmx_patch_hypercall,
 	.set_irq = vmx_inject_irq,
+	/**
+	 * sudo virsh inject-nmi cclinux2209
+	 */
 	.set_nmi = vmx_inject_nmi,
 	.queue_exception = vmx_queue_exception,
 	.cancel_injection = vmx_cancel_injection,
