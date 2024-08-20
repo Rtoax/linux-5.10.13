@@ -7617,26 +7617,26 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 		 */
 		ctxt->ud = emulation_type & EMULTYPE_TRAP_UD;
 
-	    /**
-	     * 解析指令
+		/**
+		 * 解析指令
 		 * 举例：
 		 *
 		 * #UD 在这里会失败
-	     */
+		 */
 		r = x86_decode_insn(ctxt, insn, insn_len);
 
-	    /**
-	     * $ sudo bpftrace -e 'tracepoint:kvm:kvm_emulate_insn
+		/**
+		 * $ sudo bpftrace -e 'tracepoint:kvm:kvm_emulate_insn
 		 *    {printf("%-8s %lx\n", comm, args->rip);}'
 		 *
 		 * 见 test-linux/kvm/scripts/kvm_emulate_insn.bt
-	     */
+		 */
 		trace_kvm_emulate_insn_start(vcpu);
 		++vcpu->stat.insn_emulation;
 
-	    /**
-	     * 模拟失败
-	     */
+		/**
+		 * 模拟失败
+		 */
 		if (r != EMULATION_OK/*0*/)  {
 			if ((emulation_type & EMULTYPE_TRAP_UD) ||
 			    (emulation_type & EMULTYPE_TRAP_UD_FORCED)) {

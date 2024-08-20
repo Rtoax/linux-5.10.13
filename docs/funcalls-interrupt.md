@@ -159,6 +159,7 @@ kvm_vmx_exit_handlers[] = {
 vmx_handle_exit()
   kvm_vmx_exit_handlers[EXIT_REASON_EXCEPTION_NMI] =
   handle_exception_nmi()
+    # Guest中执行非法指令
     handle_ud() #UD
       if == ’ud2; .ascii "kvm"‘: skip
       else kvm_emulate_instruction()

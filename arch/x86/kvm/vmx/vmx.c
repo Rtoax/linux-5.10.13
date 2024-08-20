@@ -5119,6 +5119,7 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	 *
 	 * PS: 这里可不可以通过模拟热迁移后 CPU 不支持的指令，达成从低指令集到高指令集
 	 *     虚拟机热迁移的工作呢？
+	 * ANSWER: 我认为是可以的。
 	 */
 	if (is_invalid_opcode(intr_info))
 		return handle_ud(vcpu);

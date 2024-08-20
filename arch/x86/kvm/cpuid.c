@@ -61,7 +61,7 @@ static inline struct kvm_cpuid_entry2 *cpuid_entry2_find(
 	int i;
 
 	/**
-	 *  遍历查找 - 有点暴力，能不能优化? (荣涛 2021年9月7日)
+	 * 遍历查找 - 有点暴力，能不能优化? (荣涛 2021年9月7日)
 	 */
 	for (i = 0; i < nent; i++) {
 		e = &entries[i];
@@ -126,6 +126,7 @@ void kvm_update_cpuid_runtime(struct kvm_vcpu *vcpu)
 			   vcpu->arch.apic_base & MSR_IA32_APICBASE_ENABLE);
 	}
 
+	/*  */
 	best = kvm_find_cpuid_entry(vcpu, 7, 0);
 	if (best && boot_cpu_has(X86_FEATURE_PKU) && best->function == 0x7)
 		cpuid_entry_change(best, X86_FEATURE_OSPKE,
@@ -291,6 +292,9 @@ out_free_cpuid:
 	return r;
 }
 
+/**
+ * KVM_SET_CPUID2
+ */
 int kvm_vcpu_ioctl_set_cpuid2(struct kvm_vcpu *vcpu,
 			      struct kvm_cpuid2 *cpuid,
 			      struct kvm_cpuid_entry2 __user *entries)
