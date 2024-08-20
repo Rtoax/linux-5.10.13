@@ -9797,13 +9797,13 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 			r = -EINTR;
 			goto out;
 		}
-	    /**
-	     *  for(;;) schedule();
-	     */
+		/**
+		 *  for(;;) schedule();
+		 */
 		kvm_vcpu_block(vcpu);
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		kvm_apic_accept_events(vcpu);
 		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
 		r = -EAGAIN;
@@ -9849,9 +9849,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 	if (kvm_run->immediate_exit)
 		r = -EINTR;
 	else
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		r = vcpu_run(vcpu);
 
 out:

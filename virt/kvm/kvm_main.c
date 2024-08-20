@@ -3598,6 +3598,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
 		r = kvm_arch_vcpu_ioctl_run(vcpu);
 		/**
 		 * exit to Userspace
+		 * tracepoint:kvm:kvm_userspace_exit
 		 */
 		trace_kvm_userspace_exit(vcpu->run->exit_reason, r);
 		break;

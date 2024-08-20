@@ -434,6 +434,12 @@ struct kvm_hyperv_exit {
 #define KVM_EXIT_S390_SIEIC       13
 #define KVM_EXIT_S390_RESET       14
 #define KVM_EXIT_DCR              15 /* deprecated */
+/**
+ * Guest OS: #UD
+ *   VMM: handle_ud()
+ *     Qemu????
+ * FIXME: 目前还没有地方调用了 KVM_EXIT_NMI
+ */
 #define KVM_EXIT_NMI              16
 #define KVM_EXIT_INTERNAL_ERROR   17
 #define KVM_EXIT_OSI              18
