@@ -19,6 +19,9 @@
 #define KVM_PIO_PAGE_OFFSET 1
 #define KVM_COALESCED_MMIO_PAGE_OFFSET 2
 
+/**
+ *
+ */
 #define DE_VECTOR 0
 #define DB_VECTOR 1
 #define BP_VECTOR 3
@@ -31,10 +34,10 @@
 #define NP_VECTOR 11
 #define SS_VECTOR 12
 #define GP_VECTOR 13
-#define PF_VECTOR 14
+#define PF_VECTOR 14  /* page fault */
 #define MF_VECTOR 16
-#define AC_VECTOR 17
-#define MC_VECTOR 18
+#define AC_VECTOR 17  /* Alignment Check */
+#define MC_VECTOR 18  /* Machine Check */
 #define XM_VECTOR 19
 #define VE_VECTOR 20
 
