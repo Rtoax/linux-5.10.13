@@ -10251,6 +10251,10 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
 	 */
 	kvm_set_rflags(vcpu, rflags);
 
+	/**
+	 * vmx: update_exception_bitmap()
+	 * svm: update_exception_bitmap()
+	 */
 	kvm_x86_ops.update_exception_bitmap(vcpu);
 
 	r = 0;

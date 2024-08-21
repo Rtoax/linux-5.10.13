@@ -843,6 +843,8 @@ static u32 vmx_read_guest_seg_ar(struct vcpu_vmx *vmx, unsigned seg)
 /**
  * 更新 exception bitmap
  *
+ * 参见 VMCS VM-Execution control 区域
+ *
  * 此代码是在 Host 上运行的。
  */
 void update_exception_bitmap(struct kvm_vcpu *vcpu)
@@ -863,6 +865,8 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	 * trigger #GP because of TSS I/O permission bitmap.
 	 * We intercept those #GP and allow access to them anyway
 	 * as VMware does.
+	 *
+	 * backdoor 这名字取的真 NB！
 	 */
 	if (enable_vmware_backdoor)
 		eb |= (1u << GP_VECTOR);
@@ -898,8 +902,9 @@ void update_exception_bitmap(struct kvm_vcpu *vcpu)
 	 * 物理机
 	 */
 	else {
-		/*
-		 * If EPT is enabled, #PF is only trapped if MAXPHYADDR is mismatched
+		/**
+		 * If EPT is enabled, #PF(page fault) is only trapped if
+		 * MAXPHYADDR is mismatched
 		 * between guest and host.  In that case we only care about present
 		 * faults.  For vmcs02, however, PFEC_MASK and PFEC_MATCH are set in
 		 * prepare_vmcs02_rare.

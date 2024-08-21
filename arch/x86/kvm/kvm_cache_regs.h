@@ -171,6 +171,7 @@ static inline void leave_guest_mode(struct kvm_vcpu *vcpu)
 
 /**
  * 在 Guest 中
+ * Guest 中还执行这块代码，那么证明，此 VMM 是嵌套 VM 的第一层
  */
 static inline bool is_guest_mode(struct kvm_vcpu *vcpu)
 {
