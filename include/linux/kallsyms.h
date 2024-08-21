@@ -30,7 +30,7 @@ static inline int is_kernel_inittext(unsigned long addr)
 }
 
 /**
- *  
+ *
  */
 static inline int is_kernel_text(unsigned long addr)
 {
@@ -99,7 +99,8 @@ extern int sprint_symbol_no_offset(char *buffer, unsigned long address);
 extern int sprint_backtrace(char *buffer, unsigned long address);
 
 int lookup_symbol_name(unsigned long addr, char *symname);
-int lookup_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name);
+int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
+			unsigned long *offset, char *modname, char *name);
 
 /* How and when do we show kallsyms values? */
 extern bool kallsyms_show_value(const struct cred *cred);

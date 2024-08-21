@@ -193,32 +193,29 @@ unsigned long kallsyms_lookup_name(const char *name)
 	unsigned long i;
 	unsigned int off;
 
-    /**
-
-     *  内核符号表个数
-     */
+	/**
+	 *  内核符号表个数
+	 */
 	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
-        /**
-         *  从内核符号表中查找这个 函数名
-         *  并获取
-         */
+		/**
+		 *  从内核符号表中查找这个 函数名
+		 *  并获取
+		 */
 		off = kallsyms_expand_symbol(off, namebuf, ARRAY_SIZE(namebuf));
 
-        /**
-
-         *  和内核符号表的函数匹配上了
-         */
+		/**
+		 *  和内核符号表的函数匹配上了
+		 */
 		if (strcmp(namebuf, name) == 0)
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			return kallsyms_sym_address(i);
 	}
 
-    /**
-
-     *  没匹配上，就从 外部模块查找
-     */
+	/**
+	 *  没匹配上，就从 外部模块查找
+	 */
 	return module_kallsyms_lookup_name(name);
 }
 
