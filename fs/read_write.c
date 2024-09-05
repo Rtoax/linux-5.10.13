@@ -496,17 +496,17 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 		return ret;
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (file->f_op->read)
 		ret = file->f_op->read(file, buf, count, pos);
-    /**
-     *
-     *  ext4_file_operations.ext4_file_read_iter()
-     *  ext4_file_operations.ext4_file_write_iter()
-     */
-    else if (file->f_op->read_iter)
+	/**
+	 *
+	 *  ext4_file_operations.ext4_file_read_iter()
+	 *  ext4_file_operations.ext4_file_write_iter()
+	 */
+	else if (file->f_op->read_iter)
 		ret = new_sync_read(file, buf, count, pos);
 	else
 		ret = -EINVAL;
@@ -537,9 +537,9 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	init_sync_kiocb(&kiocb, filp);
 	kiocb.ki_pos = (ppos ? *ppos : 0);
 	iov_iter_init(&iter, WRITE, &iov, 1, len);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = call_write_iter(filp, &kiocb, &iter);
 	BUG_ON(ret == -EIOCBQUEUED);
 	if (ret > 0 && ppos)
@@ -628,33 +628,34 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 		count =  MAX_RW_COUNT;
 	file_start_write(file);
 
-    /**
-     *  看下打开文件的位置 对应的 f_op
-     *  ext4_file_operations 没有 write
-     */
+	/**
+	 *  看下打开文件的位置 对应的 f_op
+	 *  ext4_file_operations 没有 write
+	 */
 	if (file->f_op->write)  /* 首先查看 write() 操作 */
-		ret = file->f_op->write(file, buf, count, pos); /* 调用具体的 write */
-    /**
-     *  ext4_file_operations 有 ext4_file_write_iter()
-     */
-    else if (file->f_op->write_iter)
-        /* pipe() -> pipe_write() */
+		/* 调用具体的 write */
+		ret = file->f_op->write(file, buf, count, pos);
+	/**
+	 *  ext4_file_operations 有 ext4_file_write_iter()
+	 */
+	else if (file->f_op->write_iter)
+		/* pipe() -> pipe_write() */
 		ret = new_sync_write(file, buf, count, pos);
 	else
 		ret = -EINVAL;
 
-    /**
-     *
-     */
-    if (ret > 0) {
+	/**
+	 *
+	 */
+	if (ret > 0) {
 		fsnotify_modify(file);  /* notify通知 */
 		add_wchar(current, ret);
 	}
 
-    /**
-     *
-     */
-    inc_syscw(current);
+	/**
+	 *
+	 */
+	inc_syscw(current);
 	file_end_write(file);
 	return ret;
 }
@@ -671,24 +672,24 @@ ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
-    /**
-     *  必须要有打开的文件
-     */
+	/**
+	 *  必须要有打开的文件
+	 */
 	if (f.file) {
 		loff_t pos, *ppos = file_ppos(f.file);
 		if (ppos) {
 			pos = *ppos;
 			ppos = &pos;
 		}
-        /**
-         *  vfs read
-         */
+		/**
+		 *  vfs read
+		 */
 		ret = vfs_read(f.file, buf, count, ppos);
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
-        /**
-         *  设置位置
-         */
+		/**
+		 *  设置位置
+		 */
 		fdput_pos(f);
 	}
 	return ret;
@@ -708,35 +709,35 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
  */
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* write系统调用 */
 {
-    /**
-     *  获取 fd
-     */
+	/**
+	 *  获取 fd
+	 */
 	struct fd f = fdget_pos(fd);    /* fd 专为 struct fd{struct file; flags} */
 	ssize_t ret = -EBADF;
 
-    /**
-     *  如果文件已打开，fd 有效
-     */
+	/**
+	 *  如果文件已打开，fd 有效
+	 */
 	if (f.file) {
-        /**
-         *  获取打开文件当前位置
-         */
+		/**
+		 *  获取打开文件当前位置
+		 */
 		loff_t pos, *ppos = file_ppos(f.file);
 		if (ppos) {
 			pos = *ppos;
 			ppos = &pos;
 		}
 
-        /**
-         *  调用 vfs 层 api
-         */
+		/**
+		 *  调用 vfs 层 api
+		 */
 		ret = vfs_write(f.file, buf, count, ppos);  /* vfs_write->  */
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		fdput_pos(f);
 	}
 
@@ -749,9 +750,9 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)   /* w
 ssize_t write(int fd, const void *buf, size_t count);
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return ksys_write(fd, buf, count);
 }
 
