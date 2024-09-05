@@ -1085,24 +1085,24 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 {
 	unsigned long nr_switches;
 
-    //[rongtao@toa ~]$ cat /proc/self/sched
-    //cat (14954, #threads: 1)
-    //-------------------------------------------------------------------
-    //se.exec_start                                :      21075286.430420
-    //se.vruntime                                  :        368051.620235
-    //se.sum_exec_runtime                          :             2.591090
-    //se.nr_migrations                             :                    2
-    //nr_switches                                  :                    1
-    //nr_voluntary_switches                        :                    0
-    //nr_involuntary_switches                      :                    1
-    //se.load.weight                               :                 1024
-    //policy                                       :                    0
-    //prio                                         :                  120
-    //clock-delta                                  :                   11
-    //mm->numa_scan_seq                            :                    0
-    //numa_migrations, 0
-    //numa_faults_memory, 0, 0, 1, 0, -1
-    //numa_faults_memory, 1, 0, 0, 0, -1
+	//[rongtao@toa ~]$ cat /proc/self/sched
+	//cat (14954, #threads: 1)
+	//-------------------------------------------------------------------
+	//se.exec_start                                :      21075286.430420
+	//se.vruntime                                  :        368051.620235
+	//se.sum_exec_runtime                          :             2.591090
+	//se.nr_migrations                             :                    2
+	//nr_switches                                  :                    1
+	//nr_voluntary_switches                        :                    0
+	//nr_involuntary_switches                      :                    1
+	//se.load.weight                               :                 1024
+	//policy                                       :                    0
+	//prio                                         :                  120
+	//clock-delta                                  :                   11
+	//mm->numa_scan_seq                            :                    0
+	//numa_migrations, 0
+	//numa_faults_memory, 0, 0, 1, 0, -1
+	//numa_faults_memory, 1, 0, 0, 0, -1
 
 	SEQ_printf(m, "%s (%d, #threads: %d)\n", p->comm, task_pid_nr_ns(p, ns),
 						get_nr_threads(p));
@@ -1113,50 +1113,49 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 #define P_SCHEDSTAT(F)  __PS(#F, schedstat_val(p->F))
 #define PN_SCHEDSTAT(F) __PSN(#F, schedstat_val(p->F))
 
-    //se.exec_start                                :      21075286.430420
-    //se.vruntime                                  :        368051.620235
-    //se.sum_exec_runtime                          :             2.591090
+	//se.exec_start                                :      21075286.430420
+	//se.vruntime                                  :        368051.620235
+	//se.sum_exec_runtime                          :             2.591090
 	PN(se.exec_start);
 	PN(se.vruntime);
 	PN(se.sum_exec_runtime);
 
 	nr_switches = p->nvcsw + p->nivcsw;
 
-    //se.nr_migrations                             :                    2
 	P(se.nr_migrations);
 
-    //echo 1 > /proc/sys/kernel/sched_schedstats
+	//echo 1 > /proc/sys/kernel/sched_schedstats
 	if (schedstat_enabled()) {
 		u64 avg_atom, avg_per_cpu;
 
-        //[rongtao@toa ~]$ cat /proc/self/sched
-        //se.statistics->sum_sleep_runtime             :             0.031775
-        //se.statistics->wait_start                    :             0.000000
-        //se.statistics->sleep_start                   :             0.000000
-        //se.statistics->block_start                   :             0.000000
-        //se.statistics->sleep_max                     :             0.031775
-        //se.statistics->block_max                     :             0.000000
-        //se.statistics->exec_max                      :             0.556908
-        //se.statistics->slice_max                     :             0.000000
-        //se.statistics->wait_max                      :             0.099543
-        //se.statistics->wait_sum                      :             0.101735
-        //se.statistics->wait_count                    :                    4
-        //se.statistics->iowait_sum                    :             0.000000
-        //se.statistics->iowait_count                  :                    0
-        //se.statistics->nr_migrations_cold            :                    0
-        //se.statistics->nr_failed_migrations_affine   :                    0
-        //se.statistics->nr_failed_migrations_running  :                    0
-        //se.statistics->nr_failed_migrations_hot      :                    0
-        //se.statistics->nr_forced_migrations          :                    0
-        //se.statistics->nr_wakeups                    :                    1
-        //se.statistics->nr_wakeups_sync               :                    1
-        //se.statistics->nr_wakeups_migrate            :                    0
-        //se.statistics->nr_wakeups_local              :                    0
-        //se.statistics->nr_wakeups_remote             :                    1
-        //se.statistics->nr_wakeups_affine             :                    0
-        //se.statistics->nr_wakeups_affine_attempts    :                    1
-        //se.statistics->nr_wakeups_passive            :                    0
-        //se.statistics->nr_wakeups_idle               :                    0
+		//[rongtao@toa ~]$ cat /proc/self/sched
+		//se.statistics->sum_sleep_runtime             :             0.031775
+		//se.statistics->wait_start                    :             0.000000
+		//se.statistics->sleep_start                   :             0.000000
+		//se.statistics->block_start                   :             0.000000
+		//se.statistics->sleep_max                     :             0.031775
+		//se.statistics->block_max                     :             0.000000
+		//se.statistics->exec_max                      :             0.556908
+		//se.statistics->slice_max                     :             0.000000
+		//se.statistics->wait_max                      :             0.099543
+		//se.statistics->wait_sum                      :             0.101735
+		//se.statistics->wait_count                    :                    4
+		//se.statistics->iowait_sum                    :             0.000000
+		//se.statistics->iowait_count                  :                    0
+		//se.statistics->nr_migrations_cold            :                    0
+		//se.statistics->nr_failed_migrations_affine   :                    0
+		//se.statistics->nr_failed_migrations_running  :                    0
+		//se.statistics->nr_failed_migrations_hot      :                    0
+		//se.statistics->nr_forced_migrations          :                    0
+		//se.statistics->nr_wakeups                    :                    1
+		//se.statistics->nr_wakeups_sync               :                    1
+		//se.statistics->nr_wakeups_migrate            :                    0
+		//se.statistics->nr_wakeups_local              :                    0
+		//se.statistics->nr_wakeups_remote             :                    1
+		//se.statistics->nr_wakeups_affine             :                    0
+		//se.statistics->nr_wakeups_affine_attempts    :                    1
+		//se.statistics->nr_wakeups_passive            :                    0
+		//se.statistics->nr_wakeups_idle               :                    0
 
 		PN_SCHEDSTAT(se.statistics.sum_sleep_runtime);
 		PN_SCHEDSTAT(se.statistics.wait_start);
@@ -1205,12 +1204,12 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
 	}
 
 	__P(nr_switches);
-    //nr_voluntary_switches                        :                    0
-    //nr_involuntary_switches                      :                    1
+	//nr_voluntary_switches                        :                    0
+	//nr_involuntary_switches                      :                    1
 	__PS("nr_voluntary_switches", p->nvcsw);
 	__PS("nr_involuntary_switches", p->nivcsw);
 
-    //se.load.weight                               :                 1024
+	//se.load.weight                               :                 1024
 	P(se.load.weight);
 
 #ifdef CONFIG_SMP

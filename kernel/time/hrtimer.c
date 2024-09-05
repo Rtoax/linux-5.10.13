@@ -1477,9 +1477,9 @@ static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 	lockdep_assert_held(&cpu_base->lock);
 
 	debug_deactivate(timer);
-    /**
-     *  正在运行的 timer
-     */
+	/**
+	 *  正在运行的 timer
+	 */
 	base->running = timer;
 
 	/*
@@ -1491,13 +1491,13 @@ static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 	 */
 	raw_write_seqcount_barrier(&base->seq);
 
-    /**
-     *  先移除
-     */
+	/**
+	 *  先移除
+	 */
 	__remove_hrtimer(timer, base, HRTIMER_STATE_INACTIVE, 0);
-    /**
-     *  获取回调函数
-     */
+	/**
+	 *  获取回调函数
+	 */
 	fn = timer->function;   /* 回调函数 */
 
 	/*
@@ -1517,9 +1517,9 @@ static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 	trace_hrtimer_expire_entry(timer, now);
 	expires_in_hardirq = lockdep_hrtimer_enter(timer);
 
-    /**
-     *  执行一个函数
-     */
+	/**
+	 *  执行一个函数
+	 */
 	restart = fn(timer);    /* 执行回调函数 */
 
 	lockdep_hrtimer_exit(expires_in_hardirq);
@@ -1576,26 +1576,26 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 {
 	struct hrtimer_clock_base *base;
 	unsigned int active = cpu_base->active_bases & active_mask;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_active_base(base, cpu_base, active) {
-	    /**
-         *
-         */
+		/**
+		 *
+		 */
 		struct timerqueue_node *node;
 		ktime_t basenow;
 
 		basenow = ktime_add(now, base->offset);
-        /**
-         *  红黑树中获取
-         */
+		/**
+		 *  红黑树中获取
+		 */
 		while ((node = timerqueue_getnext(&base->active)/* 获取下一个 */)) {
 			struct hrtimer *timer;
 
-            /**
-             *  获取 timer 结构
-             */
+			/**
+			 *  获取 timer 结构
+			 */
 			timer = container_of(node, struct hrtimer, node);
 
 			/*
@@ -1612,14 +1612,14 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
 			 */
 			if (basenow < hrtimer_get_softexpires_tv64(timer))
 				break;
-                /* 运行 */
-            /**
-             *  运行一个
-             */
+
+			/**
+			 *  运行一个
+			 */
 			__run_hrtimer(cpu_base, base, timer, &basenow, flags);
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			if (active_mask == HRTIMER_ACTIVE_SOFT)
 				hrtimer_sync_wait_running(cpu_base, flags);
 		}
@@ -1656,6 +1656,7 @@ static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)
      __sysvec_apic_timer_interrupt+318
      sysvec_apic_timer_interrupt+102
      asm_sysvec_apic_timer_interrupt+18
+
  *  一个完整的调用栈
      __hrtimer_run_queues+1
     hrtimer_interrupt+711
@@ -1700,9 +1701,9 @@ retry:
 		cpu_base->softirq_activated = 1;
 		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
 	}
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__hrtimer_run_queues(cpu_base, now, flags, HRTIMER_ACTIVE_HARD);
 
 	/* Reevaluate the clock bases for the next expiry */

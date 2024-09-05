@@ -116,9 +116,9 @@ enum hrtimer_restart {
  * The hrtimer structure must be initialized by hrtimer_init()
  */
 struct hrtimer {    /* 高精度定时器 */
-    /**
-     *  见函数 `__hrtimer_run_queues()`
-     */
+	/**
+	 *  见函数 `__hrtimer_run_queues()`
+	 */
 	struct timerqueue_node		node;   /* 在红黑树中的节点 */
 	ktime_t				_softexpires;   /* 过期时间 */
 	enum hrtimer_restart		(*function)(struct hrtimer *);  /* 过期回调函数 */

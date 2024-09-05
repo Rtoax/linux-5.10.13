@@ -2314,7 +2314,8 @@ struct sched_class {
 	/**
 	 *  处理进程被唤醒的情况
 	 *
-	 *
+	 * rt: task_woken_rt()
+	 * dl: task_woken_dl()
 	 */
 	void (*task_woken)(struct rq *this_rq, struct task_struct *task);
 

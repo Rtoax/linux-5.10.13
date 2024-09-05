@@ -4130,7 +4130,8 @@ void wake_up_new_task(struct task_struct *p)
 		 */
 		rq_unpin_lock(__rq, &rf);
 		/**
-		 *
+		 * rt: task_woken_rt()
+		 * dl: task_woken_dl()
 		 */
 		p->sched_class->task_woken(__rq, p);
 		rq_repin_lock(__rq, &rf);

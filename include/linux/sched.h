@@ -1194,7 +1194,7 @@ struct task_struct {    /* PCB */
 	unsigned int			btrace_seq;
 #endif
 	/**
-	 *
+	 * 调度策略
 	 */
 	unsigned int			policy;
 

@@ -3086,7 +3086,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 			trace = PTRACE_EVENT_CLONE; /* clone() */
 		else
 			trace = PTRACE_EVENT_FORK;  /* fork() */
-	    /* 检查标志位，如果没有设置 ptrace 标志位，trace=0*/
+		/* 检查标志位，如果没有设置 ptrace 标志位，trace=0*/
 		/* 追踪 */
 		if (likely(!ptrace_event_enabled(current, trace)))
 			trace = 0;  /* 不可追踪 */
@@ -3133,7 +3133,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	 */
 	if (clone_flags & CLONE_VFORK) {
 		p->vfork_done = &vfork;
-	    /* VFORK 机制 使用completion完成 */
+		/* VFORK 机制 使用completion完成 */
 		init_completion(&vfork);
 		get_task_struct(p);
 	}

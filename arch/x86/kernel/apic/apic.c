@@ -1082,10 +1082,10 @@ static void local_apic_timer_interrupt(void)
 	 */
 	inc_irq_stat(apic_timer_irqs);
 
-    /**
-     *  回调
-     *  可能 = `hrtimer_interrupt()`
-     */
+	/**
+	 *  回调
+	 *  可能 = `hrtimer_interrupt()`
+	 */
 	evt->event_handler(evt);
 }
 
