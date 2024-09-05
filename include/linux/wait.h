@@ -84,14 +84,14 @@ struct wait_queue_entry {   /* 等待队列 */
  *  wake_up_interruptible()
  */
 struct wait_queue_head {
-    /**
-     *  保护链表的锁
-     */
+	/**
+	 *  保护链表的锁
+	 */
 	spinlock_t		lock;
-    /**
-     *  等待链表
-     *  节点为 struct wait_queue_entry.entry
-     */
+	/**
+	 *  等待链表
+	 *  节点为 struct wait_queue_entry.entry
+	 */
 	struct list_head	head;   /* wait_queue_entry 为 节点的链表 */
 };
 typedef struct wait_queue_head wait_queue_head_t;
@@ -234,14 +234,14 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 static inline void
 __add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	wq_entry->flags |= WQ_FLAG_EXCLUSIVE/* 独占的 */;
 
-    /**
-     *  添加到链表
-     */
+	/**
+	 *  添加到链表
+	 */
 	__add_wait_queue(wq_head, wq_entry);/* 添加到链表 */
 }
 

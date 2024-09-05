@@ -45,10 +45,10 @@ struct poll_table_struct;
 #define SUBSYS(_x) _x ## _cgrp_id,
 enum cgroup_subsys_id {
 #include <linux/cgroup_subsys.h>
-    /**
-     *  展开 #include <linux/cgroup_subsys.h>
-     */
-    cpuset_cgrp_id,
+	/**
+	 *  展开 #include <linux/cgroup_subsys.h>
+	 */
+	cpuset_cgrp_id,
 	/**
 	 * CONFIG_CGROUP_PIDS
 	 *
@@ -61,22 +61,22 @@ enum cgroup_subsys_id {
 	 * else
 	 *     id = -1;
 	 */
-    cpu_cgrp_id,
-    cpuacct_cgrp_id,
-    io_cgrp_id,
-    /**
-     *  内存
-     */
-    memory_cgrp_id,
-    devices_cgrp_id,
-    freezer_cgrp_id,
-    net_cls_cgrp_id,
-    perf_event_cgrp_id,
-    net_prio_cgrp_id,
-    hugetlb_cgrp_id,
-    pids_cgrp_id,
-    rdma_cgrp_id,
-    debug_cgrp_id,
+	cpu_cgrp_id,
+	cpuacct_cgrp_id,
+	io_cgrp_id,
+	/**
+	 *  内存
+	 */
+	memory_cgrp_id,
+	devices_cgrp_id,
+	freezer_cgrp_id,
+	net_cls_cgrp_id,
+	perf_event_cgrp_id,
+	net_prio_cgrp_id,
+	hugetlb_cgrp_id,
+	pids_cgrp_id,
+	rdma_cgrp_id,
+	debug_cgrp_id,
 	CGROUP_SUBSYS_COUNT,
 };
 #undef SUBSYS
@@ -801,9 +801,9 @@ struct cftype {
  * CSS(cgroup subsys state) 控制子系统
  */
 struct cgroup_subsys {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	cgroup_subsys_state_t (*css_alloc)(struct cgroup_subsys_state *parent_css);
 	int (*css_online)(struct cgroup_subsys_state *css); //在 cgroup 成功完成所有分配之后调用
 	void (*css_offline)(struct cgroup_subsys_state *css);//在 cgroup 成功释放之前调用
@@ -834,9 +834,9 @@ struct cgroup_subsys {
 	void (*release)(struct task_struct *task);
 	void (*bind)(struct cgroup_subsys_state *root_css);
 
-    /**
-     *  标记子系统是否要提前初始化
-     */
+	/**
+	 *  标记子系统是否要提前初始化
+	 */
 	bool early_init:1;
 
 	/*
@@ -881,22 +881,22 @@ struct cgroup_subsys {
 
 
 	/* the following two fields are initialized automtically during boot */
-    /**
-     *  在 cgroup 中已注册的子系统的唯一标识
-     */
+	/**
+	 *  在 cgroup 中已注册的子系统的唯一标识
+	 */
 	int id; //
 
-    /**
-     *  子系统的”名称“
-     */
+	/**
+	 *  子系统的”名称“
+	 */
 	const char *name;   //
 
 	/* optional, initialized automatically during boot if not set */
 	const char *legacy_name;
 
-    /**
-     *  `root` 字段指向 cgroup 层级结构的根
-     */
+	/**
+	 *  `root` 字段指向 cgroup 层级结构的根
+	 */
 	/* link to parent, protected by cgroup_lock() */
 	struct cgroup_root *root;   //
 
