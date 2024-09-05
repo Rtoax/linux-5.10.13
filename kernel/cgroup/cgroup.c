@@ -2428,6 +2428,10 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
 		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
 			if (ss->can_attach) {
 				tset->ssid = ssid;
+				/**
+				 * pids_cgrp_subsys: pids_can_attach()
+				 * cpuset_cgrp_subsys: cpuset_can_attach()
+				 */
 				ret = ss->can_attach(tset);
 				if (ret) {
 					failed_ssid = ssid;
@@ -2475,6 +2479,10 @@ static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
 		do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
 			if (ss->attach) {
 				tset->ssid = ssid;
+				/**
+				 * cpuset_cgrp_subsys: cpuset_attach()
+				 * freezer_cgrp_subsys: freezer_attach()
+				 */
 				ss->attach(tset);
 			}
 		} while_each_subsys_mask();
@@ -2490,6 +2498,10 @@ out_cancel_attach:
 				break;
 			if (ss->cancel_attach) {
 				tset->ssid = ssid;
+				/**
+				 * pids_cgrp_subsys: pids_cancel_attach()
+				 * cpuset_cgrp_subsys: cpuset_cancel_attach()
+				 */
 				ss->cancel_attach(tset);
 			}
 		} while_each_subsys_mask();

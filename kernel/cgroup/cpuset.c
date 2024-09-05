@@ -333,6 +333,9 @@ static struct cpuset top_cpuset = {
  * guidelines for accessing subsystem state in kernel/cgroup.c
  */
 
+/**
+ * 5.15.131 为 static DEFINE_MUTEX(cpuset_mutex);
+ */
 DEFINE_STATIC_PERCPU_RWSEM(cpuset_rwsem);
 
 void cpuset_read_lock(void)

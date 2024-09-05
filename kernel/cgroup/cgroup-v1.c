@@ -510,6 +510,12 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 	/**
 	 * @brief echo PID > /sys/fs/cgroup/xxxx/tasks
 	 *
+	 *     cgroup_procs_write_start+95
+	 *     __cgroup1_procs_write.constprop.0+89
+	 *     kernfs_fop_write_iter+292
+	 *     new_sync_write+284
+	 *     vfs_write+470
+	 *     kretprobe_trampoline+0
 	 */
 	task = cgroup_procs_write_start(buf, threadgroup, &locked);
 	ret = PTR_ERR_OR_ZERO(task);
@@ -537,6 +543,15 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 	ret = cgroup_attach_task(cgrp, task, threadgroup);
 
 out_finish:
+	/**
+	 *     percpu_up_write+1
+	 *     cgroup_procs_write_finish+100
+	 *     __cgroup1_procs_write.constprop.0+290
+	 *     kernfs_fop_write_iter+292
+	 *     new_sync_write+284
+	 *     vfs_write+470
+	 *     kretprobe_trampoline+0
+	 */
 	cgroup_procs_write_finish(task, locked);
 out_unlock:
 	cgroup_kn_unlock(of->kn);

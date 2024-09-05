@@ -516,9 +516,9 @@ struct cgroup {
 	/* self css with NULL ->ss, points back to this cgroup */
 	struct cgroup_subsys_state self;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long flags;		/* "unsigned long" so bitops work */
 
 	/*
@@ -580,15 +580,15 @@ struct cgroup {
 	u16 old_subtree_control;
 	u16 old_subtree_ss_mask;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* Private pointers for each registered subsystem */
 	struct cgroup_subsys_state __rcu *subsys[CGROUP_SUBSYS_COUNT];
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct cgroup_root *root;
 
 	/*
@@ -619,9 +619,9 @@ struct cgroup {
 	/* per-cpu recursive resource statistics */
 	struct cgroup_rstat_cpu __percpu *rstat_cpu;/* 再次资源统计 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct list_head rstat_css_list;
 
 	/* cgroup basic resource statistics */
@@ -664,9 +664,9 @@ struct cgroup {
  * internal to cgroup core.  Don't access directly from controllers.
  */
 struct cgroup_root {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct kernfs_root *kf_root;
 
 	/* The bitmask of subsystems attached to this hierarchy */
@@ -690,9 +690,9 @@ struct cgroup_root {
 	/* Hierarchy-specific flags */
 	unsigned int flags;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* The path to use for release notifications. */
 	char release_agent_path[PATH_MAX];
 
@@ -814,8 +814,20 @@ struct cgroup_subsys {
 	int (*css_extra_stat_show)(struct seq_file *seq,
 				   struct cgroup_subsys_state *css);
 
+	/**
+	 * pids_cgrp_subsys: pids_can_attach()
+	 * cpuset_cgrp_subsys: cpuset_can_attach()
+	 */
 	int (*can_attach)(struct cgroup_taskset *tset);
+	/**
+	 * pids_cgrp_subsys: pids_cancel_attach()
+	 * cpuset_cgrp_subsys: cpuset_cancel_attach()
+	 */
 	void (*cancel_attach)(struct cgroup_taskset *tset);
+	/**
+	 * cpuset_cgrp_subsys: cpuset_attach()
+	 * freezer_cgrp_subsys: freezer_attach()
+	 */
 	void (*attach)(struct cgroup_taskset *tset);
 	void (*post_attach)(void);
 	/**
