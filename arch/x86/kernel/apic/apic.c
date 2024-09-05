@@ -1116,28 +1116,34 @@ __visible noinstr void sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
     instrumentation_end();
     irqentry_exit(regs, state);
 }
-static __always_inline void __sysvec_apic_timer_interrupt(struct pt_regs *regs)//++++
+
+static __always_inline void __sysvec_apic_timer_interrupt(struct pt_regs *regs)
 #else
 DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
 #endif
 {
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
-    /**
-     *  给 APIC 回复 ack
-     */
+	/**
+	 *  给 APIC 回复 ack
+	 */
 	ack_APIC_irq();
-    //tracepoint:irq_vectors:local_timer_entry
-    //tracepoint:irq_vectors:local_timer_exit
+
+	//tracepoint:irq_vectors:local_timer_entry
 	trace_local_timer_entry(LOCAL_TIMER_VECTOR);
-    /**
-     *  Local timer entry
-     */
+	/**
+	 *  Local timer entry
+	 *
+	 *  它将调用 hrtimer_interrupt()
+	 */
 	local_apic_timer_interrupt();
+
+	//tracepoint:irq_vectors:local_timer_exit
 	trace_local_timer_exit(LOCAL_TIMER_VECTOR);
-    /**
-     *
-     */
+
+	/**
+	 *
+	 */
 	set_irq_regs(old_regs);
 }
 
