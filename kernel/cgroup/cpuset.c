@@ -334,7 +334,10 @@ static struct cpuset top_cpuset = {
  */
 
 /**
- * 5.15.131 为 static DEFINE_MUTEX(cpuset_mutex);
+ * 在 rwsem 和 mutex 中来回变换了几次, 参见 commit 2125c0034c5d ("cgroup/cpuset:
+ * Make cpuset hotplug processing synchronous")
+ *
+ * static DEFINE_MUTEX(cpuset_mutex);
  */
 DEFINE_STATIC_PERCPU_RWSEM(cpuset_rwsem);
 

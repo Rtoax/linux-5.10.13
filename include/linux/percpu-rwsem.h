@@ -12,6 +12,9 @@
 struct percpu_rw_semaphore {
 	struct rcu_sync		rss;
 	unsigned int __percpu	*read_count;
+	/**
+	 *
+	 */
 	struct rcuwait		writer;
 	wait_queue_head_t	waiters;
 	atomic_t		block;
