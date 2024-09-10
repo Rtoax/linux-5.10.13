@@ -2436,6 +2436,10 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
 				break;
 
 			ret = PTR_ERR(ksym) ?: -ENOENT;
+
+			/**
+			 * 这里不是报错，那么就是说模块之间可以互相依赖？
+			 */
 			pr_warn("%s: Unknown symbol %s (err %d)\n",
 				mod->name, name, ret);
 			break;
