@@ -973,10 +973,10 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u16			tc_index;	/* traffic control index */
 #endif
 
-    /**
-     *  校验和
-     */
-	union { /* 校验和 */
+	/**
+	 *  校验和
+	 */
+	union {
 		__wsum		csum;
 		struct {
 			__u16	csum_start;

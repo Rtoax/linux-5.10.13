@@ -755,6 +755,15 @@ void skb_dump(const char *level, const struct sk_buff *skb, bool full_pkt)
 	has_mac = skb_mac_header_was_set(skb);
 	has_trans = skb_transport_header_was_set(skb);
 
+	/**
+	 * For example:
+	 *
+	 * skb len=1500 headroom=78 headlen=1500 tailroom=22
+	 * mac=(64,14) net=(78,20) trans=98
+	 * shinfo(txflags=0 nr_frags=0 gso(size=0 type=0 segs=0))
+	 * csum(0x2d23ec14 ip_summed=2 complete_sw=0 valid=0 level=0)
+	 * hash(0x97ed2028 sw=0 l4=1) proto=0x0800 pkttype=0 iif=8
+	 */
 	printk("%sskb len=%u headroom=%u headlen=%u tailroom=%u\n"
 	       "mac=(%d,%d) net=(%d,%d) trans=%d\n"
 	       "shinfo(txflags=%u nr_frags=%u gso(size=%hu type=%u segs=%hu))\n"
@@ -773,6 +782,10 @@ void skb_dump(const char *level, const struct sk_buff *skb, bool full_pkt)
 	       skb->hash, skb->sw_hash, skb->l4_hash,
 	       ntohs(skb->protocol), skb->pkt_type, skb->skb_iif);
 
+	/**
+	 * for example:
+	 * dev name=bond1 feat=0x000020020fdd7ba9
+	 */
 	if (dev)
 		printk("%sdev name=%s feat=0x%pNF\n",
 		       level, dev->name, &dev->features);
@@ -2874,6 +2887,10 @@ __sum16 __skb_checksum_complete(struct sk_buff *skb)
 	 * between the original skb->csum and skb_checksum(). This means either
 	 * the original hardware checksum is incorrect or we screw up skb->csum
 	 * when moving skb->data around.
+	 *
+	 * 此检查是反向的，因为我们在调用此函数之前就已经知道硬件校验和无效。因此，如果
+	 * 重新计算的校验和有效，则原始 skb->csum 与 skb_checksum() 之间不匹配。这
+	 * 意味着原始硬件校验和不正确，或者我们在移动 skb->data 时搞砸了 skb->csum。
 	 */
 	if (likely(!sum)) {
 		if (unlikely(skb->ip_summed == CHECKSUM_COMPLETE) &&
