@@ -268,9 +268,15 @@ efi_status_t allocate_new_fdt_and_exit_boot(void *handle,
 			efi_info("Using DTB from configuration table\n");
 	}
 
+	/**
+	 * EFI stub: Generating empty DTB...
+	 */
 	if (!fdt_addr)
 		efi_info("Generating empty DTB\n");
 
+	/**
+	 * EFI stub: Exiting boot services...
+	 */
 	efi_info("Exiting boot services...\n");
 
 	status = efi_allocate_pages(MAX_FDT_SIZE, new_fdt_addr, ULONG_MAX);
