@@ -764,6 +764,10 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 	if (!printk_ratelimit())
 		return;
 
+	/**
+	 * 例如：
+	 * ulpatch_test[461728]: segfault at 558b07540492 ip 0000558b07540492 sp 00007ffebb87e208 error 15 in ulpatch_test[18b492,558b0752b000+16000] likely on CPU 6 (core 0, socket 0)
+	 */
 	printk("%s%s[%d]: segfault at %lx ip %px sp %px error %lx",
 		loglvl, tsk->comm, task_pid_nr(tsk), address,
 		(void *)regs->ip, (void *)regs->sp, error_code);
@@ -824,13 +828,13 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		if (si_code == SEGV_PKUERR)
 			force_sig_pkuerr((void __user *)address, pkey);
 
-        /**
-         *  段错误
-         *  /proc/sys/kernel/core_pattern & ulimit -c ulimited
-         */
+		/**
+		 *  段错误
+		 *  /proc/sys/kernel/core_pattern & ulimit -c ulimited
+		 */
 		force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
-        /* 关闭本地中断 */
+		/* 关闭本地中断 */
 		local_irq_disable();
 
 		return;
