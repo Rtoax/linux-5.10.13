@@ -117,7 +117,7 @@ struct bpf_raw_event_map {
 # define tracepoint_enabled(tp) \
 	static_key_false(&(__tracepoint_##tp).key)
 #else
-//# define tracepoint_enabled(tracepoint) false
+# define tracepoint_enabled(tracepoint) false
 #endif
 
 #endif

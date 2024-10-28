@@ -133,7 +133,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #ifdef CONFIG_HAVE_STATIC_CALL
 #define __DO_TRACE_CALL(name)	static_call(tp_func_##name)
 #else
-//#define __DO_TRACE_CALL(name)	__traceiter_##name
+#define __DO_TRACE_CALL(name)	__traceiter_##name
 #endif /* CONFIG_HAVE_STATIC_CALL */
 
 /*
@@ -195,7 +195,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 				TP_CONDITION(cond), 1);			\
 	}
 #else
-//#define __DECLARE_TRACE_RCU(name, proto, args, cond, data_proto, data_args)
+#define __DECLARE_TRACE_RCU(name, proto, args, cond, data_proto, data_args)
 #endif
 
 /*
@@ -492,6 +492,9 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	DECLARE_TRACE_CONDITION(name, PARAMS(proto),		\
 				PARAMS(args), PARAMS(cond))
 
+/**
+ * 参见 trace_sched_switch() 宏展开
+ */
 #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
 #define TRACE_EVENT_FN(name, proto, args, struct,		\
