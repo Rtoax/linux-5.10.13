@@ -4284,16 +4284,16 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	 */
 	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
 
-    /**
-     *	free_pages = 空闲页个数 - 不能使用的空闲页
-     */
+	/**
+	 *	free_pages = 空闲页个数 - 不能使用的空闲页
+	*/
 	/* free_pages may go negative - that's OK */
 	free_pages -= __zone_watermark_unusable_free(z, order, alloc_flags);
 
-    /**
-     * @brief ALLOC_HIGH 表示具有很高的优先级，能够访问
-     *
-     *  允许使用 最低警戒水位的 1/2
+	/**
+	 * @brief ALLOC_HIGH 表示具有很高的优先级，能够访问
+	 *
+	 *  允许使用 最低警戒水位的 1/2
 	 *
 	 * +----+ <------ min
 	 * |	|
@@ -4309,7 +4309,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	 * |	|
 	 * +----+
 	 *
-     */
+	*/
 	if (alloc_flags & ALLOC_HIGH)
 		min -= min / 2;
 
@@ -4410,28 +4410,28 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 		struct free_area *area = &z->free_area[o];
 		int mt;
 
-        /**
-         *  没有 free 页面了，找下一个 order 的
-         */
+		/**
+		 *  没有 free 页面了，找下一个 order 的
+		 */
 		if (!area->nr_free)
 			continue;
 
-        /**
-         *  若在下面的类型中 有满足分配 的空闲页块，也算是 满足分配请求
-         *
-         *  enum migratetype
-         *
-         *  +----------------------+
-         *  | MIGRATE_UNMOVABLE    | 不可移动
-         *  +----------------------+
-         *  | MIGRATE_MOVABLE      | 可移动
-         *  +----------------------+
-         *  | MIGRATE_RECLAIMABLE  | 可回收
-         *  +----------------------+
-         *  | MIGRATE_PCPTYPES     | <--- 只遍历到这里
-         *  | MIGRATE_HIGHATOMIC   |
-         *  +----------------------+
-         */
+		/**
+		 *  若在下面的类型中 有满足分配 的空闲页块，也算是 满足分配请求
+		 *
+		 *  enum migratetype
+		 *
+		 *  +----------------------+
+		 *  | MIGRATE_UNMOVABLE    | 不可移动
+		 *  +----------------------+
+		 *  | MIGRATE_MOVABLE      | 可移动
+		 *  +----------------------+
+		 *  | MIGRATE_RECLAIMABLE  | 可回收
+		 *  +----------------------+
+		 *  | MIGRATE_PCPTYPES     | <--- 只遍历到这里
+		 *  | MIGRATE_HIGHATOMIC   |
+		 *  +----------------------+
+		 */
 		for (mt = 0; mt < MIGRATE_PCPTYPES; mt++) {
 			/**
 			 * @brief 如果链表不为空，直接返回 true 了，也就是有空闲页能够满足分配
@@ -4455,9 +4455,9 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			return true;
 	}
 
-    /**
-     *  如果上面的条件都不满足，水位出现问题了就
-     */
+	/**
+	 *  如果上面的条件都不满足，水位出现问题了就
+	 */
 	return false;
 }
 
@@ -4467,9 +4467,9 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 		      int highest_zoneidx, unsigned int alloc_flags)
 {
-    /**
-     *  检查
-     */
+	/**
+	 *  检查
+	 */
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
 					            zone_page_state(z, NR_FREE_PAGES));
 }
@@ -4520,9 +4520,9 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 		if (fast_free > mark + z->lowmem_reserve[highest_zoneidx])
 			return true;
 	}
-    /**
-     * 如果分配多页，从 zone.free_area list链表 中查找是否有满足要求的页
-     *
+	/**
+	 * 如果分配多页，从 zone.free_area list链表 中查找是否有满足要求的页
+	 *
 	 * 各个 order 都有一个 free_area 结构
 	 *
 	*  free areas of different sizes
@@ -4566,20 +4566,20 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 			unsigned long mark, int highest_zoneidx)
 {
-    /**
-     *  获取当前 zone 空闲的 pages 个数
-     */
+	/**
+	 *  获取当前 zone 空闲的 pages 个数
+	 */
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (z->percpu_drift_mark && free_pages < z->percpu_drift_mark)
 		free_pages = zone_page_state_snapshot(z, NR_FREE_PAGES);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0,
 								free_pages);
 }
@@ -4689,24 +4689,24 @@ retry:
 	 */
 	no_fallback = alloc_flags & ALLOC_NOFRAGMENT;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	z = ac->preferred_zoneref;  /* 这是偏好的 zone */
 
-    /**
-     *  遍历所有 NODE 的 zonelist, 找到一个 zoneref->zone_idx <= highest_zoneidx 的
-     */
+	/**
+	 *  遍历所有 NODE 的 zonelist, 找到一个 zoneref->zone_idx <= highest_zoneidx 的
+	 */
 	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx, ac->nodemask) {
 
 		struct page *page;
 		unsigned long mark;
 
-        /**
-         *  1. cpuset 使能
-         *  2. ALLOC_CPUSET？
-         *  3. __cpuset_zone_allowed
-         */
+		/**
+		 *  1. cpuset 使能
+		 *  2. ALLOC_CPUSET？
+		 *  3. __cpuset_zone_allowed
+		 */
 		if (cpusets_enabled() &&
 			(alloc_flags & ALLOC_CPUSET) &&
 			!__cpuset_zone_allowed(zone, gfp_mask))
@@ -4740,10 +4740,10 @@ retry:
 			}
 		}
 
-        /**
-         *  no_fallback 避免混合页面块类型？
-         *  node 数量大于1
-         */
+		/**
+		 *  no_fallback 避免混合页面块类型？
+		 *  node 数量大于1
+		 */
 		if (no_fallback && nr_online_nodes > 1 && zone != ac->preferred_zoneref->zone) {
 
 			int local_nid;
@@ -4759,15 +4759,15 @@ retry:
 			/* 本地/更倾向的 NODE */
 			local_nid = zone_to_nid(ac->preferred_zoneref->zone);
 
-            /* 遍历的 zone 所属 NODE 不是本地 NODE */
+			/* 遍历的 zone 所属 NODE 不是本地 NODE */
 			if (zone_to_nid(zone) != local_nid) {   /* 如果不是本地node */
 				alloc_flags &= ~ALLOC_NOFRAGMENT;   /* 清理标记位 */
 				goto retry;
 			}
 		}
-        /**
-         *	获取水位高度
-         */
+		/**
+		 *	获取水位高度
+		*/
 		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);   /* 获取 */
 		/**
 		 * @brief 判断是否能够快速分配
@@ -4802,27 +4802,27 @@ retry:
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
 				goto try_this_zone;
 
-            /**
-             *  vm.zone_reclaim_mode = 0
-             *
-             *  不能回收，那就遍历下一个 zone
+			/**
+			 *  vm.zone_reclaim_mode = 0
 			 *
-			 * node_reclaim_mode
-			 *  =0 表示可以从下一个内存管理区或下一个内存节点分配内存
-			 * !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
-			 *
-			 * sudo bpftrace  -e \
-			 *  'BEGIN{$min = kaddr("node_reclaim_mode"); \
-			 * 	printf("node_reclaim_mode = %d\n", *$min);}'
-             */
+			 *  不能回收，那就遍历下一个 zone
+			*
+			* node_reclaim_mode
+			*  =0 表示可以从下一个内存管理区或下一个内存节点分配内存
+			* !=0 否则表示可以再这个内存管理区进行一些内存回收，然后继续尝试在该zone中分配内存
+			*
+			* sudo bpftrace  -e \
+			*  'BEGIN{$min = kaddr("node_reclaim_mode"); \
+			* 	printf("node_reclaim_mode = %d\n", *$min);}'
+			 */
 			if (node_reclaim_mode == 0 ||   /* 回收模式 没开启 */
 			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone)) /* NODE 之间的距离超限 */
 				continue;
 
-            /**
-             *  允许回收, 进入回收流程 - *** 直接回收 或者 唤醒kswapd ***
-             *  传入 zone 对应的 NODE
-             */
+		/**
+		 *  允许回收, 进入回收流程 - *** 直接回收 或者 唤醒kswapd ***
+		 *  传入 zone 对应的 NODE
+		 */
 			ret = node_reclaim(zone->zone_pgdat, gfp_mask, order);
 			switch (ret) {
 			case NODE_RECLAIM_NOSCAN:
@@ -4846,17 +4846,17 @@ retry:
 
 try_this_zone:
 
-        /**
-         *  从已知 NODE 中分配 page
-         *  1. 剩余内存够用，直接分配
-         *  2. 剩余内存够用，但是分配后进入 low 水位，唤醒 kswapd 进行异步回收
-         */
+		/**
+		 *  从已知 NODE 中分配 page
+		 *  1. 剩余内存够用，直接分配
+		 *  2. 剩余内存够用，但是分配后进入 low 水位，唤醒 kswapd 进行异步回收
+		 */
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 				        gfp_mask, alloc_flags, ac->migratetype);
 
-        /**
-         *  分配成功
-         */
+		/**
+		 *  分配成功
+		 */
 		if (page) {
 			/**
 			 * @brief 预处理
@@ -5085,20 +5085,20 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	if (!order)
 		return NULL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	psi_memstall_enter(&pflags);
 	noreclaim_flag = memalloc_noreclaim_save();
 
-    /**
-     *  尝试 规整页面
-     */
+	/**
+	 *  尝试 规整页面
+	 */
 	*_compact_result = try_to_compact_pages(gfp_mask, order, alloc_flags, ac, prio, &page);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	memalloc_noreclaim_restore(noreclaim_flag);
 	psi_memstall_leave(&pflags);
 
@@ -5112,16 +5112,16 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	if (page)
 		prep_new_page(page, order, gfp_mask, alloc_flags);
 
-    /**
-     *  内存规整后，尝试分配
-     */
+	/**
+	 *  内存规整后，尝试分配
+	 */
 	/* Try get a page from the freelist if available */
 	if (!page)
 		page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (page) {
 		struct zone *zone = page_zone(page);
 
@@ -5137,9 +5137,9 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	 */
 	count_vm_event(COMPACTFAIL);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	cond_resched();
 
 	return NULL;
@@ -5330,9 +5330,9 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 	unsigned int noreclaim_flag;
 	unsigned long pflags, progress;
 
-    /**
-     *  让出 CPU 防止 soft lockup
-     */
+	/**
+	 *  让出 CPU 防止 soft lockup
+	 */
 	cond_resched();
 
 	/**
@@ -5343,9 +5343,9 @@ __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 	fs_reclaim_acquire(gfp_mask);
 	noreclaim_flag = memalloc_noreclaim_save();
 
-    /**
-     *  回收
-     */
+	/**
+	 *  回收
+	 */
 	progress = try_to_free_pages(ac->zonelist, order, gfp_mask,
 								ac->nodemask);
 
@@ -5370,17 +5370,17 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	struct page *page = NULL;
 	bool drained = false;
 
-    /**
-     *  执行同步的内存回收
-     */
+	/**
+	 *  执行同步的内存回收
+	 */
 	*did_some_progress = __perform_reclaim(gfp_mask, order, ac);
 	if (unlikely(!(*did_some_progress)))
 		return NULL;
 
 retry:
-    /**
-     *  回收后 重新分配
-     */
+	/**
+	 *  回收后 重新分配
+	 */
 	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
 
 	/*
@@ -5409,19 +5409,19 @@ static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
 	pg_data_t *last_pgdat = NULL;
 	enum zone_type highest_zoneidx = ac->highest_zoneidx;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist, highest_zoneidx,
 					ac->nodemask) {
-	    /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (last_pgdat != zone->zone_pgdat)
 			wakeup_kswapd(zone, gfp_mask, order, highest_zoneidx);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		last_pgdat = zone->zone_pgdat;
 	}
 }
@@ -5454,9 +5454,9 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 	alloc_flags |= (__force int)
 		(gfp_mask & (__GFP_HIGH | __GFP_KSWAPD_RECLAIM));
 
-    /**
-     *  这次分配在中断上下文中进行，则需要设置 ALLOC_HARDER
-     */
+	/**
+	 *  这次分配在中断上下文中进行，则需要设置 ALLOC_HARDER
+	 */
 	if (gfp_mask & __GFP_ATOMIC) {
 		/*
 		 * Not worth trying to allocate harder for __GFP_NOMEMALLOC even
@@ -5470,15 +5470,15 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 		 */
 		alloc_flags &= ~ALLOC_CPUSET;
 
-    /**
-     *  实时进程，也要设置 ALLOC_HARDER
-     */
+	/**
+	 *  实时进程，也要设置 ALLOC_HARDER
+	 */
 	} else if (unlikely(rt_task(current)) && !in_interrupt())
 		alloc_flags |= ALLOC_HARDER;
 
-    /**
-     *  CMA 相关
-     */
+	/**
+	 *  CMA 相关
+	 */
 	alloc_flags = current_alloc_flags(gfp_mask, alloc_flags);
 
 	return alloc_flags;
@@ -5675,14 +5675,14 @@ check_retry_cpuset(int cpuset_mems_cookie, struct alloc_context *ac)
 static inline struct page * /* 慢速分配页 */
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order, struct alloc_context *ac)
 {
-    /**
-     *  是否允许直接页面回收
-     */
+	/**
+	 *  是否允许直接页面回收
+	 */
 	bool can_direct_reclaim = gfp_mask & __GFP_DIRECT_RECLAIM;
 
-    /**
-     *  会形成一定的内存分配压力
-     */
+	/**
+	 *  会形成一定的内存分配压力
+	 */
 	const bool costly_order = order > PAGE_ALLOC_COSTLY_ORDER;
 	struct page *page = NULL;
 	unsigned int alloc_flags;
@@ -5702,14 +5702,14 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order, struct alloc_context 
 	 */
 	if (WARN_ON_ONCE((gfp_mask & (__GFP_ATOMIC|__GFP_DIRECT_RECLAIM)) ==
 				(__GFP_ATOMIC|__GFP_DIRECT_RECLAIM)))
-	    /**
-         *  去除 该位
-         */
+		/**
+		 *  去除 该位
+		 */
 		gfp_mask &= ~__GFP_ATOMIC;
 
-    /**
-     *
-     */
+/**
+ *
+ */
 retry_cpuset:
 	compaction_retries = 0;
 	no_progress_loops = 0;
@@ -5738,9 +5738,9 @@ retry_cpuset:
 	if (!ac->preferred_zoneref->zone)
 		goto nopage;
 
-    /**
-     *  唤醒 kswapd 线程
-     */
+	/**
+	 *  唤醒 kswapd 线程
+	 */
 	if (alloc_flags & ALLOC_KSWAPD)
 		wake_all_kswapds(order, gfp_mask, ac);
 
@@ -5754,9 +5754,9 @@ retry_cpuset:
 	if (page)
 		goto got_pg;
 
-    /**
-     *  如果分配不成功，继续往下看
-     */
+	/**
+	 *  如果分配不成功，继续往下看
+	 */
 
 	/*
 	 * For costly allocations, try direct compaction first, as it's likely
@@ -5777,17 +5777,17 @@ retry_cpuset:
 			(costly_order ||
 			   (order > 0 && ac->migratetype != MIGRATE_MOVABLE))
 			&& !gfp_pfmemalloc_allowed(gfp_mask)) {
-	    /**
-         *  当分配大块物理内存，低水位 情况下分配失败时唤醒 kswapd 线程，但依然无法 分配出内存，
-         *  因此调用 此函数 来 压缩内存，并尝试分配出 所需要的内存
-         *
-         * @gfp_mask        传递给页面分配器的分配掩码
-         * @order           请求分配页面大小
-         * @alloc_flags     页面分配器内部使用的分配标志位
-         * @ac              页面分配器内部使用的分配上下文
-         * @prio            内存规整优先级
-         * @compact_result  内存规整结果
-         */
+		/**
+		 *  当分配大块物理内存，低水位 情况下分配失败时唤醒 kswapd 线程，但依然无法 分配出内存，
+		 *  因此调用 此函数 来 压缩内存，并尝试分配出 所需要的内存
+		 *
+		 * @gfp_mask        传递给页面分配器的分配掩码
+		 * @order           请求分配页面大小
+		 * @alloc_flags     页面分配器内部使用的分配标志位
+		 * @ac              页面分配器内部使用的分配上下文
+		 * @prio            内存规整优先级
+		 * @compact_result  内存规整结果
+		 */
 		page = __alloc_pages_direct_compact(gfp_mask, order,
                     						alloc_flags, ac,
                     						INIT_COMPACT_PRIORITY,
@@ -8024,9 +8024,9 @@ static unsigned long __init zone_spanned_pages_in_node(int nid,
 					unsigned long *zone_start_pfn,
 					unsigned long *zone_end_pfn)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
 	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
 
@@ -8038,9 +8038,9 @@ static unsigned long __init zone_spanned_pages_in_node(int nid,
 	*zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
 	*zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	adjust_zone_range_for_zone_movable(nid, zone_type,
                         				node_start_pfn, node_end_pfn,
                         				zone_start_pfn, zone_end_pfn);
@@ -8112,9 +8112,9 @@ static unsigned long __init zone_absent_pages_in_node(int nid,
 	zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
 	zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	adjust_zone_range_for_zone_movable(nid, zone_type,
                         			node_start_pfn, node_end_pfn,
                         			&zone_start_pfn, &zone_end_pfn);
@@ -8161,95 +8161,95 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 	unsigned long realtotalpages = 0, totalpages = 0;
 	enum zone_type i;
 
-    /**
-     *  遍历 node 所有 zone
-     */
+	/**
+	 *  遍历 node 所有 zone
+	 */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
 
-        /**
-         *  获取 zone 结构
-         */
+		/**
+		 *  获取 zone 结构
+		 */
 		struct zone *zone = pgdat->node_zones + i;
 
 		unsigned long zone_start_pfn, zone_end_pfn;
 		unsigned long spanned, absent;
 		unsigned long size, real_size;
 
-        /**
-         *
-         * 返回一个区域在一个节点中跨越的页数，包括空洞
-         *  present_pages = zone_spanned_pages_in_node() - zone_absent_pages_in_node()
-         */
+		/**
+		 *
+		 * 返回一个区域在一个节点中跨越的页数，包括空洞
+		 *  present_pages = zone_spanned_pages_in_node() - zone_absent_pages_in_node()
+		 */
 		spanned/*跨越*/ = zone_spanned_pages_in_node(pgdat->node_id, i,
                 						     node_start_pfn,
                 						     node_end_pfn,
                 						     &zone_start_pfn,
                 						     &zone_end_pfn);
-        /**
-         *  返回节点上某个区域的孔中的页框数
-         */
+		/**
+		 *  返回节点上某个区域的孔中的页框数
+		 */
 		absent/*缺席的*/ = zone_absent_pages_in_node(pgdat->node_id, i,
                 						   node_start_pfn,
                 						   node_end_pfn);
 
 		size = spanned;
 
-        /**
-         *  真实的大小
-         */
+		/**
+		 *  真实的大小
+		 */
 		real_size = size - absent;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (size)
 			zone->zone_start_pfn = zone_start_pfn;
 		else
 			zone->zone_start_pfn = 0;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		zone->spanned_pages = size;         //包含的页面数量
 		zone->present_pages = real_size;    //ZONE 中实际管理的 物理页 数量
 
-        /**
-         *  统计 node 数值
-         */
+		/**
+		 *  统计 node 数值
+		 */
 		totalpages += size;
 		realtotalpages += real_size;
 	}
 
-    /**
-     *  NODE  赋值
-     */
+	/**
+	 *  NODE  赋值
+	 */
 	pgdat->node_spanned_pages = totalpages;
 	pgdat->node_present_pages = realtotalpages;
 
-    /**
-     *  我的虚拟机 是8GB
-     */
-    //[    0.000000] On node 0 totalpages: 2096926 -> 8GB
+	/**
+	 *  我的虚拟机 是8GB
+	 */
+	//[    0.000000] On node 0 totalpages: 2096926 -> 8GB
 
-    /**
-     *  在 服务器上
-     */
-    //[root@localhost ~]# dmesg | grep totalpage
-    //[    0.000000] On node 0 totalpages: 8300508
-    //[    0.000000] On node 1 totalpages: 8388608
-    //
-    //[root@localhost ~]# numactl --hardware
-    //available: 2 nodes (0-1)
-    //node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
-    //node 0 size: 32423 MB
-    //node 0 free: 13516 MB
-    //node 1 cpus: 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
-    //node 1 size: 32768 MB
-    //node 1 free: 14993 MB
-    //node distances:
-    //node   0   1
-    //0:  10  21
-    //1:  21  10
+	/**
+	 *  在 服务器上
+	 */
+	//[root@localhost ~]# dmesg | grep totalpage
+	//[    0.000000] On node 0 totalpages: 8300508
+	//[    0.000000] On node 1 totalpages: 8388608
+	//
+	//[root@localhost ~]# numactl --hardware
+	//available: 2 nodes (0-1)
+	//node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+	//node 0 size: 32423 MB
+	//node 0 free: 13516 MB
+	//node 1 cpus: 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
+	//node 1 size: 32768 MB
+	//node 1 free: 14993 MB
+	//node distances:
+	//node   0   1
+	//0:  10  21
+	//1:  21  10
 	printk(KERN_DEBUG "On node %d totalpages: %lu\n", pgdat->node_id, realtotalpages);
 }
 
@@ -8270,9 +8270,9 @@ static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned l
 {
 	unsigned long usemapsize;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	zonesize += zone_start_pfn & (pageblock_nr_pages-1);
 	usemapsize = roundup(zonesize, pageblock_nr_pages);
 	usemapsize = usemapsize >> pageblock_order;
@@ -8290,17 +8290,17 @@ static void __ref setup_usemap(struct pglist_data *pgdat,
 				unsigned long zone_start_pfn,
 				unsigned long zonesize)
 {
-    /**
-     *  进行四舍五入
-     */
+	/**
+	 *  进行四舍五入
+	 */
 	unsigned long usemapsize = usemap_size(zone_start_pfn, zonesize);
 
 	zone->pageblock_flags = NULL;
 
-    /**
-     *
-     */
-    if (usemapsize) {
+	/**
+	 *
+	 */
+	if (usemapsize) {
 		zone->pageblock_flags = memblock_alloc_node(usemapsize, SMP_CACHE_BYTES, pgdat->node_id);
 		if (!zone->pageblock_flags)
 			panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n",
@@ -8372,10 +8372,10 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 	if (spanned_pages > present_pages + (present_pages >> 4) && IS_ENABLED(CONFIG_SPARSEMEM))
 		pages = present_pages;
 
-    /**
-     *  pages 需要的字节数 >> 12 = 需要的页数
-     *  也就是说计算需要存储 struct page 一共需要多少个物理页；
-     */
+	/**
+	 *  pages 需要的字节数 >> 12 = 需要的页数
+	 *  也就是说计算需要存储 struct page 一共需要多少个物理页；
+	 */
 	return PAGE_ALIGN(pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
@@ -8406,24 +8406,24 @@ static void pgdat_init_kcompactd(struct pglist_data *pgdat)
  */
 static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 {
-    /**
-     *  初始化 自旋锁
-     */
+	/**
+	 *  初始化 自旋锁
+	 */
 	pgdat_resize_init(pgdat);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pgdat_init_split_queue(pgdat);
 
-    /**
-     *  内存规整等待队列
-     */
+	/**
+	 *  内存规整等待队列
+	 */
 	pgdat_init_kcompactd(pgdat);
 
-    /**
-     *  初始化等待队列
-     */
+	/**
+	 *  初始化等待队列
+	 */
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 
@@ -8441,38 +8441,38 @@ static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx, int nid,
 							unsigned long remaining_pages)
 {
-    /**
-     *  管理的页面
-     *
-     * 将减去 管理 页面需要的内存空间后的remainning pages 添加到 zone 管理的页面中
-     */
+	/**
+	 *  管理的页面
+	 *
+	 * 将减去 管理 页面需要的内存空间后的remainning pages 添加到 zone 管理的页面中
+	 */
 	atomic_long_set(&zone->managed_pages, remaining_pages);
 
-    /**
-     *  设置nid
-     */
+	/**
+	 *  设置nid
+	 */
 	zone_set_nid(zone, nid);
 
-    /**
-     *  设置 zone名称
-     */
+	/**
+	 *  设置 zone名称
+	 */
 	zone->name = zone_names[idx];
 
 
-    /**
-     *  zone 隶属 node
-     */
+	/**
+	 *  zone 隶属 node
+	 */
 	zone->zone_pgdat = NODE_DATA(nid);
 
-    /**
-     *  锁初始化
-     */
+	/**
+	 *  锁初始化
+	 */
 	spin_lock_init(&zone->lock);
 	zone_seqlock_init(zone);
 
-    /**
-     *  per-CPU pages
-     */
+	/**
+	 *  per-CPU pages
+	 */
 	zone_pcp_init(zone);
 }
 
@@ -8520,42 +8520,42 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 	enum zone_type j;
 	int nid = pgdat->node_id;
 
-    /**
-     *  初始化 NODE 数据结构
-     */
+	/**
+	 *  初始化 NODE 数据结构
+	 */
 	pgdat_init_internals(pgdat);
 
-    /**
-     *  统计信息初始化
-     */
+	/**
+	 *  统计信息初始化
+	 */
 	pgdat->per_cpu_nodestats = &boot_nodestats;
 
-    /**
-     *  遍历 zone
-     */
+	/**
+	 *  遍历 zone
+	 */
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 
-        /**
-         *  获取 zone 结构
-         */
+		/**
+		 *  获取 zone 结构
+		 */
 		struct zone *zone = pgdat->node_zones + j;
 
 		unsigned long size, freesize, memmap_pages;
 		unsigned long zone_start_pfn = zone->zone_start_pfn;
 
-        /**
-         *  获取 zone 管理的pages 总大小
-         */
+		/**
+		 *  获取 zone 管理的pages 总大小
+		 */
 		size = zone->spanned_pages;
 		freesize = zone->present_pages;
 
-        //[    0.000000]   DMA zone: 64 pages used for memmap
-        //[    0.000000]   DMA zone: 21 pages reserved
-        //[    0.000000]   DMA zone: 3998 pages, LIFO batch:0
-        //[    0.000000]   DMA32 zone: 12222 pages used for memmap
-        //[    0.000000]   DMA32 zone: 782208 pages, LIFO batch:31
-        //[    0.000000]   Normal zone: 20480 pages used for memmap
-        //[    0.000000]   Normal zone: 1310720 pages, LIFO batch:31
+		//[    0.000000]   DMA zone: 64 pages used for memmap
+		//[    0.000000]   DMA zone: 21 pages reserved
+		//[    0.000000]   DMA zone: 3998 pages, LIFO batch:0
+		//[    0.000000]   DMA32 zone: 12222 pages used for memmap
+		//[    0.000000]   DMA32 zone: 782208 pages, LIFO batch:31
+		//[    0.000000]   Normal zone: 20480 pages used for memmap
+		//[    0.000000]   Normal zone: 1310720 pages, LIFO batch:31
 
 		/*
 		 * Adjust freesize so that it accounts for how much memory
@@ -8567,33 +8567,33 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		 */
 		memmap_pages = calc_memmap_size(size, freesize);
 
-        /**
-         *  如果不是highmem, x86-64 恒成立
-         */
+		/**
+		 *  如果不是highmem, x86-64 恒成立
+		 */
 		if (!is_highmem_idx(j)) {
 
-            /**
-             *  我觉得这肯定成立，不能说内存还不够方管理数据结构page吧
-             */
+			/**
+			 *  我觉得这肯定成立，不能说内存还不够方管理数据结构page吧
+			 */
 			if (freesize >= memmap_pages) {
 
-                /**
-                 *  减去 用于管理的 pages 数量
-                 */
+				/**
+				 *  减去 用于管理的 pages 数量
+				 */
 				freesize -= memmap_pages;
 
-                //在我的虚拟机上
-                //[rongtao@localhost src]$ dmesg | grep "pages use"
-                //[    0.000000]   DMA zone: 64 pages used for memmap
-                //[    0.000000]   DMA32 zone: 12222 pages used for memmap
-                //[    0.000000]   Normal zone: 20480 pages used for memmap
-                //
-                //在物理服务器上
-                //[root@localhost ~]# dmesg | grep "pages use"
-                //[    0.000000]   DMA zone: 64 pages used for memmap
-                //[    0.000000]   DMA32 zone: 6754 pages used for memmap
-                //[    0.000000]   Normal zone: 122880 pages used for memmap
-                //[    0.000000]   Normal zone: 131072 pages used for memmap
+				//在我的虚拟机上
+				//[rongtao@localhost src]$ dmesg | grep "pages use"
+				//[    0.000000]   DMA zone: 64 pages used for memmap
+				//[    0.000000]   DMA32 zone: 12222 pages used for memmap
+				//[    0.000000]   Normal zone: 20480 pages used for memmap
+				//
+				//在物理服务器上
+				//[root@localhost ~]# dmesg | grep "pages use"
+				//[    0.000000]   DMA zone: 64 pages used for memmap
+				//[    0.000000]   DMA32 zone: 6754 pages used for memmap
+				//[    0.000000]   Normal zone: 122880 pages used for memmap
+				//[    0.000000]   Normal zone: 131072 pages used for memmap
 				if (memmap_pages)
 					printk(KERN_DEBUG
 					       "  %s zone: %lu pages used for memmap\n",
@@ -8611,13 +8611,13 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 		/* Account for reserved pages 预留的页 */
 
-        ////在我的虚拟机上
-        //[rongtao@localhost src]$ dmesg | grep "pages reserved"
-        //[    0.000000]   DMA zone: 21 pages reserved
-        //
-        ////在物理服务器上
-        //[root@localhost ~]# dmesg | grep "pages reserved"
-        //[    0.000000]   DMA zone: 21 pages reserved
+		////在我的虚拟机上
+		//[rongtao@localhost src]$ dmesg | grep "pages reserved"
+		//[    0.000000]   DMA zone: 21 pages reserved
+		//
+		////在物理服务器上
+		//[root@localhost ~]# dmesg | grep "pages reserved"
+		//[    0.000000]   DMA zone: 21 pages reserved
 		if (j == 0 && freesize > dma_reserve) {
 			freesize -= dma_reserve;
 			printk(KERN_DEBUG "  %s zone: %lu pages reserved\n",
@@ -8648,24 +8648,24 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (!size)
 			continue;
 
-        /**
-         *  空
-         */
+		/**
+		 *  空
+		 */
 		set_pageblock_order();
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		setup_usemap(pgdat, zone, zone_start_pfn, size);
 
-        /**
-         *  初始化 zone 以及其内部 free_area 链表初始化
-         */
-        init_currently_empty_zone(zone, zone_start_pfn, size);
+		/**
+		 *  初始化 zone 以及其内部 free_area 链表初始化
+		 */
+		init_currently_empty_zone(zone, zone_start_pfn, size);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		memmap_init(size, nid, j, zone_start_pfn);
 	}
 }
@@ -8749,53 +8749,53 @@ static void __init free_area_init_node(int nid)
 	/* pg_data_t should be reset to zero when it's allocated */
 	WARN_ON(pgdat->nr_zones || pgdat->kswapd_highest_zoneidx);
 
-    /**
-     *  获取最大和最小 物理页帧号
-     */
+	/**
+	 *  获取最大和最小 物理页帧号
+	 */
 	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
 
-    /**
-     *  初始化 NUMA    NODE 结构
-     *
-     *  起始页帧号
-     */
+	/**
+	 *  初始化 NUMA    NODE 结构
+	 *
+	 *  起始页帧号
+	 */
 	pgdat->node_id = nid;
 	pgdat->node_start_pfn = start_pfn;
 	pgdat->per_cpu_nodestats = NULL;
 
-    //[    0.000000] Initmem setup node 0 [mem 0x00001000-0x23fffffff]
+	//[    0.000000] Initmem setup node 0 [mem 0x00001000-0x23fffffff]
 	pr_info("Initmem setup node %d [mem %#018Lx-%#018Lx]\n", nid,
         		(u64)start_pfn << PAGE_SHIFT,
         		end_pfn ? ((u64)end_pfn << PAGE_SHIFT) - 1 : 0);
-    /**
-     *  初始化所有 node 的 管理 zone ，设计到 具体 absent 页 等
-     *
-     *  [rongtao@localhost src]$ dmesg | grep totalpages
-     *  [    0.000000] On node 0 totalpages: 2096926
-     */
+	/**
+	 *  初始化所有 node 的 管理 zone ，设计到 具体 absent 页 等
+	 *
+	 *  [rongtao@localhost src]$ dmesg | grep totalpages
+	 *  [    0.000000] On node 0 totalpages: 2096926
+	 */
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
 
-    /**
-     *  空
-     */
+	/**
+	 *  空
+	 */
 	alloc_node_mem_map(pgdat);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pgdat_set_deferred_range(pgdat);
 
-    /**
-     *  初始化 zone 的 free_list
-     *
-    //[    0.000000]   DMA zone: 64 pages used for memmap
-    //[    0.000000]   DMA zone: 21 pages reserved
-    //[    0.000000]   DMA zone: 3998 pages, LIFO batch:0
-    //[    0.000000]   DMA32 zone: 12222 pages used for memmap
-    //[    0.000000]   DMA32 zone: 782208 pages, LIFO batch:31
-    //[    0.000000]   Normal zone: 20480 pages used for memmap
-    //[    0.000000]   Normal zone: 1310720 pages, LIFO batch:31
-     */
+	/**
+	 *  初始化 zone 的 free_list
+	 *
+	 //[    0.000000]   DMA zone: 64 pages used for memmap
+	//[    0.000000]   DMA zone: 21 pages reserved
+	//[    0.000000]   DMA zone: 3998 pages, LIFO batch:0
+	//[    0.000000]   DMA32 zone: 12222 pages used for memmap
+	//[    0.000000]   DMA32 zone: 782208 pages, LIFO batch:31
+	//[    0.000000]   Normal zone: 20480 pages used for memmap
+	//[    0.000000]   Normal zone: 1310720 pages, LIFO batch:31
+	*/
 	free_area_init_core(pgdat);
 }
 
@@ -8859,14 +8859,14 @@ static void __init init_unavailable_mem(void)
 	 */
 	pgcnt = 0;
 
-    /**
-     *  遍历 memblock.memory 的所有 range
-     */
+	/**
+	 *  遍历 memblock.memory 的所有 range
+	 */
 	for_each_mem_range(i, &start, &end) {
 
-        /**
-         *  next = 上一块的末尾 [start, end)
-         */
+		/**
+		 *  next = 上一块的末尾 [start, end)
+		 */
 		if (next < start)
 			pgcnt += init_unavailable_range(PFN_DOWN(next), PFN_UP(start));
 
@@ -8890,9 +8890,9 @@ static void __init init_unavailable_mem(void)
 		pr_info("Zeroed struct page in unavailable ranges: %lld pages", pgcnt);
 }
 #else
-//static inline void __init init_unavailable_mem(void)
-//{
-//}
+static inline void __init init_unavailable_mem(void)
+{
+}
 #endif /* !CONFIG_FLAT_NODE_MEM_MAP */
 
 #if MAX_NUMNODES > 1
@@ -8903,14 +8903,14 @@ void __init setup_nr_node_ids(void)
 {
 	unsigned int highest;
 
-    /**
-     *  查找最后一个不是 0 的 bit
-     */
+	/**
+	 *  查找最后一个不是 0 的 bit
+	 */
 	highest = find_last_bit(node_possible_map.bits, MAX_NUMNODES);
 
-    /**
-     *  NODE 数
-     */
+	/**
+	 *  NODE 数
+	 */
 	nr_node_ids = highest + 1;
 }
 #endif
@@ -9027,27 +9027,27 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 	 */
 	if (movable_node_is_enabled()) {
 
-        /**
-         *  遍历 memblock 所有 memory.region
-         */
+		/**
+		 *  遍历 memblock 所有 memory.region
+		 */
 		for_each_mem_region(r) {
 
 			if (!memblock_is_hotpluggable(r))
 				continue;
 
-            /**
-             *  NODE ID
-             */
+			/**
+			 *  NODE ID
+			 */
 			nid = memblock_get_region_node(r);
 
-            /**
-             *  这个 region 起始 pfn
-             */
+			/**
+			 *  这个 region 起始 pfn
+			 */
 			usable_startpfn = PFN_DOWN(r->base);
 
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			zone_movable_pfn[nid] = zone_movable_pfn[nid] ?
                     				min(usable_startpfn, zone_movable_pfn[nid]) : usable_startpfn;
 		}
@@ -9061,14 +9061,14 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 	if (mirrored_kernelcore) {
 		bool mem_below_4gb_not_mirrored = false;
 
-        /**
-         *  遍历
-         */
+		/**
+		 *  遍历
+		 */
 		for_each_mem_region(r) {
 
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			if (memblock_is_mirror(r))
 				continue;
 
@@ -9237,16 +9237,16 @@ static void check_for_memory(pg_data_t *pgdat, int nid)
 {
 	enum zone_type zone_type;
 
-    /**
-     *  遍历
-     */
+	/**
+	 *  遍历
+	 */
 	for (zone_type = 0; zone_type <= ZONE_MOVABLE - 1; zone_type++) {
 		struct zone *zone = &pgdat->node_zones[zone_type];
 		if (populated_zone(zone)) {
 
-            /**
-             *  统计值
-             */
+			/**
+			 *  统计值
+			 */
 			if (IS_ENABLED(CONFIG_HIGHMEM))
 				node_set_state(nid, N_HIGH_MEMORY);
 			if (zone_type <= ZONE_NORMAL)
@@ -9292,34 +9292,34 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memset(arch_zone_lowest_possible_pfn, 0, sizeof(arch_zone_lowest_possible_pfn));
 	memset(arch_zone_highest_possible_pfn, 0, sizeof(arch_zone_highest_possible_pfn));
 
-    /**
-     *  memblock 最小物理地址
-     */
+	/**
+	 *  memblock 最小物理地址
+	 */
 	start_pfn = find_min_pfn_with_active_regions();
 
-    /**
-     *  空 函数 = false
-     */
+	/**
+	 *  空 函数 = false
+	 */
 	descending = arch_has_descending_max_zone_pfns();//=false
 
-    /**
-     *  遍历所有 zone
-     */
+	/**
+	 *  遍历所有 zone
+	 */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
 		if (descending/* =false */)
 			zone = MAX_NR_ZONES - i - 1;
 		else
 			zone = i;
 
-        /**
-         *  不考虑 MOVABLE
-         */
+		/**
+		 *  不考虑 MOVABLE
+		 */
 		if (zone == ZONE_MOVABLE)
 			continue;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		end_pfn = max(max_zone_pfn[zone], start_pfn);
 		arch_zone_lowest_possible_pfn[zone] = start_pfn;
 		arch_zone_highest_possible_pfn[zone] = end_pfn;
@@ -9330,26 +9330,26 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	/* Find the PFNs that ZONE_MOVABLE begins at in each node */
 	memset(zone_movable_pfn, 0, sizeof(zone_movable_pfn));
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	find_zone_movable_pfns_for_nodes();
 
 	/* Print out the zone ranges */
 	pr_info("Zone ranges:\n");
-    //[    0.000000] Zone ranges:
-    //[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]     = 15MB
-    //[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]     = 4079MB
-    //[    0.000000]   Normal   [mem 0x100000000-0x23fffffff]   = 5119MB
-    //
-    //下面是一个物理机的场景
-    //[root@localhost ~]# dmesg | grep Zone -A 5
-    //[    0.000000] Zone ranges:
-    //[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]
-    //[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]
-    //[    0.000000]   Normal   [mem 0x100000000-0x107fffffff]
-    //[    0.000000] Movable zone start for each node
-    //[    0.000000] Early memory node ranges
+	//[    0.000000] Zone ranges:
+	//[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]     = 15MB
+	//[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]     = 4079MB
+	//[    0.000000]   Normal   [mem 0x100000000-0x23fffffff]   = 5119MB
+	//
+	//下面是一个物理机的场景
+	//[root@localhost ~]# dmesg | grep Zone -A 5
+	//[    0.000000] Zone ranges:
+	//[    0.000000]   DMA      [mem 0x00001000-0x00ffffff]
+	//[    0.000000]   DMA32    [mem 0x01000000-0xffffffff]
+	//[    0.000000]   Normal   [mem 0x100000000-0x107fffffff]
+	//[    0.000000] Movable zone start for each node
+	//[    0.000000] Early memory node ranges
 	for (i = 0; i < MAX_NR_ZONES; i++) {
 
         /**
@@ -9367,9 +9367,9 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				((u64)arch_zone_highest_possible_pfn[i] << PAGE_SHIFT) - 1);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* Print out the PFNs ZONE_MOVABLE begins at in each node */
 	pr_info("Movable zone start for each node\n");
 	for (i = 0; i < MAX_NUMNODES; i++) {
@@ -9389,26 +9389,25 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	 * subsection-map relative to active online memory ranges to
 	 * enable future "sub-section" extensions of the memory map.
 	 */
-    //物理机服务器如下
-    //[    0.000000] Early memory node ranges
-    //[    0.000000]   node   0: [mem 0x00001000-0x00099fff]
-    //[    0.000000]   node   0: [mem 0x00100000-0x5cdc3fff]
-    //[    0.000000]   node   0: [mem 0x5d1a1000-0x676f8fff]
-    //[    0.000000]   node   0: [mem 0x697f9000-0x69c43fff]
-    //[    0.000000]   node   0: [mem 0x6cf24000-0x6fffffff]
-    //[    0.000000]   node   0: [mem 0x100000000-0x87fffffff]
-    //[    0.000000]   node   1: [mem 0x880000000-0x107fffffff]
-    //我的虚拟机为
-    //[    0.000000] Early memory node ranges
-    //[    0.000000]   node   0: [mem 0x00001000-0x0009efff]
-    //[    0.000000]   node   0: [mem 0x00100000-0xbff7ffff]
-    //[    0.000000]   node   0: [mem 0x100000000-0x23fffffff]
+	//物理机服务器如下
+	//[    0.000000] Early memory node ranges
+	//[    0.000000]   node   0: [mem 0x00001000-0x00099fff]
+	//[    0.000000]   node   0: [mem 0x00100000-0x5cdc3fff]
+	//[    0.000000]   node   0: [mem 0x5d1a1000-0x676f8fff]
+	//[    0.000000]   node   0: [mem 0x697f9000-0x69c43fff]
+	//[    0.000000]   node   0: [mem 0x6cf24000-0x6fffffff]
+	//[    0.000000]   node   0: [mem 0x100000000-0x87fffffff]
+	//[    0.000000]   node   1: [mem 0x880000000-0x107fffffff]
+	//我的虚拟机为
+	//[    0.000000] Early memory node ranges
+	//[    0.000000]   node   0: [mem 0x00001000-0x0009efff]
+	//[    0.000000]   node   0: [mem 0x00100000-0xbff7ffff]
+	//[    0.000000]   node   0: [mem 0x100000000-0x23fffffff]
 	pr_info("Early memory node ranges\n");
 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
-
-        //[    0.000000]   node   0: [mem 0x00001000-0x0009efff]
-        //[    0.000000]   node   0: [mem 0x00100000-0xbff7ffff]
-        //[    0.000000]   node   0: [mem 0x100000000-0x23fffffff]
+		//[    0.000000]   node   0: [mem 0x00001000-0x0009efff]
+		//[    0.000000]   node   0: [mem 0x00100000-0xbff7ffff]
+		//[    0.000000]   node   0: [mem 0x100000000-0x23fffffff]
 		pr_info("  node %3d: [mem %#018Lx-%#018Lx]\n", nid,
         			(u64)start_pfn << PAGE_SHIFT,
         			((u64)end_pfn << PAGE_SHIFT) - 1);
@@ -9416,44 +9415,44 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		subsection_map_init(start_pfn, end_pfn - start_pfn);
 	}
 
-    /**
-     *  打印 布局信息
-     */
+	/**
+	 *  打印 布局信息
+	 */
 	/* Initialise every node */
 	mminit_verify_pageflags_layout();
 
-    /**
-     *  辨析内存节点数
-     */
+	/**
+	 *  辨析内存节点数
+	 */
 	setup_nr_node_ids();
 
-    /**
-     *  不可用 内存
-     */
+	/**
+	 *  不可用 内存
+	 */
 	init_unavailable_mem();
 
-    /**
-     *  遍历 NODE ID
-     */
+	/**
+	 *  遍历 NODE ID
+	 */
 	for_each_online_node(nid) {
 
-        /**
-         *  获取 node
-         */
+		/**
+		 *  获取 node
+		 */
 		pg_data_t *pgdat = NODE_DATA(nid);
 
-        /*****************************************\
-         *  "初始化所有node和zone"
-        \*****************************************/
+		/*****************************************\
+		 *  "初始化所有node和zone"
+		\*****************************************/
 		free_area_init_node(nid);
 
 		/* Any memory on that node */
 		if (pgdat->node_present_pages)
 			node_set_state(nid, N_MEMORY);
 
-        /**
-         *  统计值(总页数，内存量等)
-         */
+		/**
+		 *  统计值(总页数，内存量等)
+		 */
 		check_for_memory(pgdat, nid);
 	}
 }
