@@ -1341,33 +1341,33 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 				unsigned long *out_start_pfn,
 				unsigned long *out_end_pfn, int *out_nid)
 {
-    /**
-     *  从 memblock 接管内存
-     */
+	/**
+	 *  从 memblock 接管内存
+	 */
 	struct memblock_type *type = &memblock.memory;
 	struct memblock_region *r;
 	int r_nid;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	while (++*idx < type->cnt) {
 		r = &type->regions[*idx];
 
-        /**
-         *  获取 node ID
-         */
+		/**
+		 *  获取 node ID
+		 */
 		r_nid = memblock_get_region_node(r);
 
-        /**
-         *  检查地址合理性
-         */
+		/**
+		 *  检查地址合理性
+		 */
 		if (PFN_UP(r->base) >= PFN_DOWN(r->base + r->size))
 			continue;
 
-        /**
-         *  nid 合理性，找到了 nid，然后获取 pfn
-         */
+		/**
+		 *  nid 合理性，找到了 nid，然后获取 pfn
+		 */
 		if (nid == MAX_NUMNODES || nid == r_nid)
 			break;
 	}
@@ -1377,9 +1377,9 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 		return;
 	}
 
-    /**
-     *  返回这个 memblock region 的  物理帧号 范围
-     */
+	/**
+	 *  返回这个 memblock region 的  物理帧号 范围
+	 */
 	if (out_start_pfn)
 		*out_start_pfn = PFN_UP(r->base);
 	if (out_end_pfn)

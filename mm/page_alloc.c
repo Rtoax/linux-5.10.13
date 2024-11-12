@@ -7634,26 +7634,26 @@ void __meminit __weak memmap_init(unsigned long size, int nid,
 	unsigned long range_end_pfn = range_start_pfn + size;
 	int i;
 
-    /**
-     *  遍历 memblock.memory
-     */
+	/**
+	 *  遍历 memblock.memory
+	 */
 	for_each_mem_pfn_range(i, nid, &start_pfn, &end_pfn, NULL) {
 
-        /**
-         *  计算物理块 的         start 和 end 物理页帧
-         */
+		/**
+		 *  计算物理块 的         start 和 end 物理页帧
+		 */
 		start_pfn = clamp(start_pfn, range_start_pfn, range_end_pfn);
 		end_pfn = clamp(end_pfn, range_start_pfn, range_end_pfn);
 
-        /**
-         *  当然 这是成立的，除了某些对齐后 翻转以外
-         */
+		/**
+		 *  当然 这是成立的，除了某些对齐后 翻转以外
+		 */
 		if (end_pfn > start_pfn) {
 			size = end_pfn - start_pfn;
 
-            /**
-             *  将物理页映射到 对应的  zone中
-             */
+			/**
+			 *  将物理页映射到 对应的  zone中
+			 */
 			memmap_init_zone(size, nid, zone, start_pfn, range_end_pfn,
 					        MEMINIT_EARLY, NULL, MIGRATE_MOVABLE);
 		}
