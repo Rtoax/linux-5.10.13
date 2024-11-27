@@ -387,9 +387,10 @@ void __init map_vsyscall(void)
 {
 	extern char __vsyscall_page;
 
-    //stores physical address of the `__vsyscall_page` symbol
-    //通过宏 `__pa_symbol` 获取了 `vsyscall` 内存页的物理地址
-	unsigned long physaddr_vsyscall = __pa_symbol(&__vsyscall_page); //映射内存页的物理地址
+	//stores physical address of the `__vsyscall_page` symbol
+	//通过宏 `__pa_symbol` 获取了 `vsyscall` 内存页的物理地址
+	//映射内存页的物理地址
+	unsigned long physaddr_vsyscall = __pa_symbol(&__vsyscall_page);
 
 	/*
 	 * For full emulation, the page needs to exist for real.  In
@@ -397,7 +398,7 @@ void __init map_vsyscall(void)
 	 * page.
 	 */
 	if (vsyscall_mode == EMULATE) {
-        //固定映射
+		//固定映射
 		__set_fixmap(VSYSCALL_PAGE, physaddr_vsyscall,
 			     PAGE_KERNEL_VVAR/*内存页的标志位*/);
 		set_vsyscall_pgtable_user_bits(swapper_pg_dir);
@@ -406,20 +407,20 @@ void __init map_vsyscall(void)
 	if (vsyscall_mode == XONLY)
 		gate_vma.vm_flags = VM_EXEC;
 
-    //check that virtual address of the `VSYSCALL_PAGE` (which is first index in the `fixed_addresses`)
-    //is not greater than `VSYSCALL_ADDR` which is `-10UL << 20` or `ffffffffff600000` with the `BUILD_BUG_ON` macro
-    //
-    //       +-----------+-----------------+---------------+------------------+
-    //       |           |                 |               |                  |
-    //       |kernel text|      kernel     |               |    vsyscalls     |
-    //       | mapping   |       text      |    Modules    |    fix-mapped    |
-    //       |from phys 0|       data      |               |    addresses     |
-    //       |           |                 |               |                  |
-    //       +-----------+-----------------+---------------+------------------+
-    //__START_KERNEL_map   __START_KERNEL    MODULES_VADDR            0xffffffffffffffff
-    //宏检查  `vsyscall` 内存页的虚拟地址是否等于变量 `VSYSCALL_ADDR`
+	//check that virtual address of the `VSYSCALL_PAGE` (which is first index in the `fixed_addresses`)
+	//is not greater than `VSYSCALL_ADDR` which is `-10UL << 20` or `ffffffffff600000` with the `BUILD_BUG_ON` macro
+	//
+	//       +-----------+-----------------+---------------+------------------+
+	//       |           |                 |               |                  |
+	//       |kernel text|      kernel     |               |    vsyscalls     |
+	//       | mapping   |       text      |    Modules    |    fix-mapped    |
+	//       |from phys 0|       data      |               |    addresses     |
+	//       |           |                 |               |                  |
+	//       +-----------+-----------------+---------------+------------------+
+	//__START_KERNEL_map   __START_KERNEL    MODULES_VADDR            0xffffffffffffffff
+	//宏检查  `vsyscall` 内存页的虚拟地址是否等于变量 `VSYSCALL_ADDR`
 	BUILD_BUG_ON((unsigned long)__fix_to_virt(VSYSCALL_PAGE) !=
 		     (unsigned long)VSYSCALL_ADDR);
 
-    // 就这样`vsyscall` 内存页设置完毕
+	// 就这样`vsyscall` 内存页设置完毕
 }
