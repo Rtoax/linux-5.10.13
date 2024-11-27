@@ -124,6 +124,9 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 
 #endif
 
+/**
+ * vfork(2) CLONE_VFORK
+ */
 static inline bool in_vfork(struct task_struct *tsk)
 {
 	bool ret;

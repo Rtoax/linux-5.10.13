@@ -1670,20 +1670,24 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	vmacache_flush(tsk);    /* 清零 */
 
 	/**
-	 *  如果克隆了 VM ，直接指向 父进程 VM
+	 *  vfork(2): clone_flags = CLONE_VFORK | CLONE_VM
+	 *
+	 *  如果克隆 VM ，直接指向 父进程 VM
 	 *
 	 *  pthread_create ->>>
-	 *  clone(..., flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|
-	                     CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, ...)
+	 *  clone(..., flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
+	 *                   CLONE_THREAD|
+	 *                   CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|
+	 *                   CLONE_CHILD_CLEARTID, ...)
 	 */
 	if (clone_flags & CLONE_VM) {   /* 如果共享 VM 区，直接返回 */
 
-	    /**
-	     *  引用计数
-	     *
-	     *  pthread_create 会执行这里 父进程和子进程共享 mm
-	     *  然后直接返回
-	     */
+		/**
+		 *  引用计数
+		 *
+		 *  pthread_create 会执行这里 父进程和子进程共享 mm
+		 *  然后直接返回
+		 */
 		mmget(oldmm);
 		mm = oldmm;
 		goto good_mm;
@@ -1694,13 +1698,13 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	/**
 	 *  复制 mm
 	 */
-	mm = dup_mm(tsk, current->mm);  /* dup */
+	mm = dup_mm(tsk, current->mm);
 	if (!mm)
 		goto fail_nomem;
 
 good_mm:
-	tsk->mm = mm;   /* 赋值 */
-	tsk->active_mm = mm;    /* 赋值 */
+	tsk->mm = mm;
+	tsk->active_mm = mm;
 	return 0;
 
 fail_nomem:
@@ -2630,9 +2634,9 @@ static __latent_entropy struct task_struct *copy_process(struct pid *pid,
 	 */
 	if (pid != &init_struct_pid) {
 
-	    /**
-	     * 为进程分配 PID 结构和 pid
-	     */
+		/**
+		 * 为进程分配 PID 结构和 pid
+		 */
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid, args->set_tid_size);
 		if (IS_ERR(pid)) {
 			retval = PTR_ERR(pid);
@@ -3039,11 +3043,9 @@ struct mm_struct *copy_init_mm(void)
  * it and waits for it to finish using the VM if required.
  *
  * args->exit_signal is expected to be checked for sanity by the caller.
- *
- * 老版本内核，这里为 _do_fork()
  */
-pid_t do_fork();    /* +++ linux-5.0 */
-pid_t _do_fork();   /* +++ linux-5.0 */
+pid_t do_fork();    /* 老版本内核为 linux-5.0 */
+pid_t _do_fork();   /* 老版本内核为 linux-5.0 */
 pid_t kernel_clone(struct kernel_clone_args *args)
 {
 	u64 clone_flags = args->flags;
@@ -3092,11 +3094,10 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 			trace = 0;  /* 不可追踪 */
 	}
 	/**
-	 *  复制进程，并不运行
-	 *
-	 *
+	 * 复制进程，并不运行
+	 * trace: 追踪状态
 	 */
-	p = copy_process(NULL, trace/* 追踪状态 */, NUMA_NO_NODE, args);
+	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
 
 	/**
 	 *
@@ -3203,6 +3204,9 @@ pid_t vfork(void);
 SYSCALL_DEFINE0(vfork)
 {
 	struct kernel_clone_args args = {
+		/**
+		 * CLONE_VFORK | CLONE_VM
+		 */
 		args.flags		= CLONE_VFORK | CLONE_VM,
 		args.exit_signal	= SIGCHLD,
 	};
