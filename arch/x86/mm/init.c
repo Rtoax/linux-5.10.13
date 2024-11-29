@@ -830,15 +830,25 @@ void __init poking_init(void)
  * disallowed are flagged as being "zero filled" instead of rejected.
  * Access has to be given to non-kernel-ram areas as well, these contain the
  * PCI mmio resources as well as potential bios/acpi data regions.
+ *
+ * $ sudo bpftrace -e 'kprobe:devmem_is_allowed {printf("nr=%ld(0x%lx)\n", arg0, arg0);} kretprobe:devmem_is_allowed {printf("ret=%ld\n", retval);}'
+ *
+ * 内核默认 CONFIG_STRICT_DEVMEM=y，不允许通过 /dev/mem 访问内存（只允许访问1MB）
  */
 int devmem_is_allowed(unsigned long pagenr)
 {
+	/**
+	 * sudo bpftrace -e 'kretprobe:region_intersects {printf("ret1=%ld\n", retval);} kretprobe:devmem_is_allowed {printf("ret2=%ld\n", retval);}'
+	 */
 	if (region_intersects(PFN_PHYS(pagenr), PAGE_SIZE,
 				IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE)
 			!= REGION_DISJOINT) {
 		/*
 		 * For disallowed memory regions in the low 1MB range,
 		 * request that the page be shown as all zeros.
+		 *
+		 * 内核默认 CONFIG_STRICT_DEVMEM=y，不允许通过 /dev/mem 访问内存
+		 * （只允许访问1MB）
 		 */
 		if (pagenr < 256)
 			return 2;

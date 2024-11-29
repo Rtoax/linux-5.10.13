@@ -64,6 +64,9 @@ static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
 }
 #endif
 
+/**
+ * /dev/mem
+ */
 #ifdef CONFIG_STRICT_DEVMEM
 static inline int page_is_allowed(unsigned long pfn)
 {
@@ -111,6 +114,8 @@ static inline bool should_stop_iteration(void)
 /*
  * This funcion reads the *physical* memory. The f_pos points directly to the
  * memory location.
+ *
+ * 读 /dev/mem
  */
 static ssize_t read_mem(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
@@ -199,6 +204,7 @@ failed:
 	return err;
 }
 
+/* 写 /dev/mem */
 static ssize_t write_mem(struct file *file, const char __user *buf,
 			 size_t count, loff_t *ppos)
 {
@@ -964,19 +970,20 @@ static const struct memdev {
 	umode_t mode;
 	const struct file_operations *fops;
 	fmode_t fmode;
-} devlist[] = { /* 字符 设备列表 */
+/* 字符 设备列表 */
+} devlist[] = {
 #ifdef CONFIG_DEVMEM    /* /dev/mem */
 	 [DEVMEM_MINOR] = { "mem", 0, &mem_fops, FMODE_UNSIGNED_OFFSET },
 #endif
 #ifdef CONFIG_DEVKMEM   /* /dev/kmem */
 	 [2] = { "kmem", 0, &kmem_fops, FMODE_UNSIGNED_OFFSET },
 #endif
-     /* /dev/null */
+	/* /dev/null */
 	 [3] = { "null", 0666, &null_fops, 0 },
 #ifdef CONFIG_DEVPORT   /* /dev/port */
 	 [4] = { "port", 0, &port_fops, 0 },
 #endif
-    /* /dev/zero */
+	/* /dev/zero */
 	 [5] = { "zero", 0666, &zero_fops, 0 },
 	 [7] = { "full", 0666, &full_fops, 0 },
 	 /* /dev/random */

@@ -582,6 +582,8 @@ EXPORT_SYMBOL_GPL(page_is_ram);
  * region_intersect() is used by memory remapping functions to ensure
  * the user is not remapping RAM and is a vast speed up over walking
  * through the resource table page by page.
+ *
+ * 内核默认 CONFIG_STRICT_DEVMEM=y，不允许通过 /dev/mem 访问内存（只允许访问1MB）
  */
 int region_intersects(resource_size_t start, size_t size, unsigned long flags,
 		      unsigned long desc)
@@ -599,6 +601,9 @@ int region_intersects(resource_size_t start, size_t size, unsigned long flags,
 				((desc == IORES_DESC_NONE) ||
 				 (desc == p->desc)));
 
+		/**
+		 *
+		 */
 		if (resource_overlaps(p, &res))
 			is_type ? type++ : other++;
 	}
@@ -1728,7 +1733,7 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 }
 
 /* 一般默认打开 */
-#ifdef CONFIG_STRICT_DEVMEM
+#ifdef CONFIG_STRICT_DEVMEM /* /dev/mem */
 static int strict_iomem_checks = 1;
 #else
 static int strict_iomem_checks;
@@ -1737,6 +1742,8 @@ static int strict_iomem_checks;
 /*
  * check if an address is reserved in the iomem resource tree
  * returns true if reserved, false if not reserved.
+ *
+ * sudo bpftrace -e 'kprobe:iomem_is_exclusive {printf("addr=%lx\n", arg0);} kretprobe:iomem_is_exclusive {printf("%ld\n", retval);}'
  */
 bool iomem_is_exclusive(u64 addr)
 {
