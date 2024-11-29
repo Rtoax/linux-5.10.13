@@ -1071,6 +1071,9 @@ static int migrate_page_add(struct page *page, struct list_head *pagelist,
 /*
  * Migrate pages from one node to a target node.
  * Returns error or the number of pages not migrated.
+ *
+ * called in:
+ * migrate_pages(2)
  */
 static int migrate_to_node(struct mm_struct *mm, int source, int dest,
 			   int flags)
@@ -1092,10 +1095,17 @@ static int migrate_to_node(struct mm_struct *mm, int source, int dest,
 	 * space range and MPOL_MF_DISCONTIG_OK, this call can not fail.
 	 */
 	VM_BUG_ON(!(flags & (MPOL_MF_MOVE | MPOL_MF_MOVE_ALL)));
+
+	/**
+	 * 查询所有的 pages
+	 */
 	queue_pages_range(mm, mm->mmap->vm_start, mm->task_size, &nmask,
 			flags | MPOL_MF_DISCONTIG_OK, &pagelist);
 
 	if (!list_empty(&pagelist)) {
+		/**
+		 * 迁移
+		 */
 		err = migrate_pages(&pagelist, alloc_migration_target, NULL,
 				(unsigned long)&mtc, MIGRATE_SYNC, MR_SYSCALL);
 		if (err)
@@ -1110,6 +1120,9 @@ static int migrate_to_node(struct mm_struct *mm, int source, int dest,
  * layout as much as possible.
  *
  * Returns the number of page that could not be moved.
+ *
+ * called in:
+ * migrate_pages(2)
  */
 int do_migrate_pages(struct mm_struct *mm, const nodemask_t *from,
 		     const nodemask_t *to, int flags)
@@ -1492,6 +1505,7 @@ SYSCALL_DEFINE3(set_mempolicy, int, mode, const unsigned long __user *, nmask,
 	return kernel_set_mempolicy(mode, nmask, maxnode);
 }
 
+/* migrate_pages(2) */
 static int kernel_migrate_pages(pid_t pid, unsigned long maxnode,
 				const unsigned long __user *old_nodes,
 				const unsigned long __user *new_nodes)
@@ -1581,11 +1595,8 @@ out_put:
 }
 
 /**
- *  系统调用
+ *  系统调用 migrate_pages(2)
  */
-long migrate_pages(int pid, unsigned long maxnode,
-                          const unsigned long *old_nodes,
-                          const unsigned long *new_nodes);
 SYSCALL_DEFINE4(migrate_pages, pid_t, pid, unsigned long, maxnode,
 		const unsigned long __user *, old_nodes,
 		const unsigned long __user *, new_nodes)

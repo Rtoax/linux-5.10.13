@@ -40,12 +40,12 @@ static int walk_pte_range_inner(pte_t *pte, unsigned long addr,
 
 /**
  * @brief Walk PTE range
- * 
- * @param pmd 
- * @param addr 
- * @param end 
- * @param walk 
- * @return int 
+ *
+ * @param pmd
+ * @param addr
+ * @param end
+ * @param walk
+ * @return int
  */
 static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -69,12 +69,12 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 
 /**
  * @brief Walk PMD range
- * 
- * @param pud 
- * @param addr 
- * @param end 
- * @param walk 
- * @return int 
+ *
+ * @param pud
+ * @param addr
+ * @param end
+ * @param walk
+ * @return int
  */
 static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -127,8 +127,8 @@ again:
 		}
 
 		/**
-		 * @brief 
-		 * 
+		 * @brief
+		 *
 		 */
 		err = walk_pte_range(pmd, addr, next, walk);
 		if (err)
@@ -181,7 +181,7 @@ static int walk_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 
 		/**
 		 * @brief PMD range
-		 * 
+		 *
 		 */
 		err = walk_pmd_range(pud, addr, next, walk);
 		if (err)
@@ -191,7 +191,7 @@ static int walk_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 	return err;
 }
 /**
- *  
+ *
  */
 static int walk_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -202,13 +202,13 @@ static int walk_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	int err = 0;
 	int depth = real_depth(1);
     /**
-     *  
+     *
      */
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
         /**
-         *  
+         *
          */
 		if (p4d_none_or_clear_bad(p4d)) {
 			if (ops->pte_hole)
@@ -218,7 +218,7 @@ static int walk_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			continue;
 		}
         /**
-         *  
+         *
          */
 		if (ops->p4d_entry) {
 			err = ops->p4d_entry(p4d, addr, next, walk);
@@ -234,7 +234,7 @@ static int walk_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	return err;
 }
 /**
- *  
+ *
  */
 static int walk_pgd_range(unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -244,7 +244,7 @@ static int walk_pgd_range(unsigned long addr, unsigned long end,
 	const struct mm_walk_ops *ops = walk->ops;
 	int err = 0;
     /**
-     *  
+     *
      */
 	if (walk->pgd)
 		pgd = walk->pgd + pgd_index(addr);
@@ -252,7 +252,7 @@ static int walk_pgd_range(unsigned long addr, unsigned long end,
 		pgd = pgd_offset(walk->mm, addr);
 
     /**
-     *  
+     *
      */
     do {
 		next = pgd_addr_end(addr, end);
@@ -264,7 +264,7 @@ static int walk_pgd_range(unsigned long addr, unsigned long end,
 			continue;
 		}
         /**
-         *  
+         *
          */
 		if (ops->pgd_entry) {
 			err = ops->pgd_entry(pgd, addr, next, walk);
@@ -274,7 +274,7 @@ static int walk_pgd_range(unsigned long addr, unsigned long end,
 		if (ops->p4d_entry || ops->pud_entry || ops->pmd_entry ||
 		    ops->pte_entry)
 		    /**
-             *  
+             *
              */
 			err = walk_p4d_range(pgd, addr, next, walk);
 		if (err)
@@ -361,7 +361,7 @@ static int walk_page_test(unsigned long start, unsigned long end,
 	return 0;
 }
 /**
- *  
+ *
  */
 static int __walk_page_range(unsigned long start, unsigned long end,
 			struct mm_walk *walk)
@@ -501,9 +501,9 @@ int walk_page_range_novma(struct mm_struct *mm, unsigned long start,
 			  pgd_t *pgd,
 			  void *private)
 {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct mm_walk walk = {
 		.ops		= ops,
 		.mm		= mm,

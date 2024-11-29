@@ -355,6 +355,9 @@ static inline void copy_highpage(struct page *to, struct page *from)
 	vfrom = kmap_atomic(from);
 	vto = kmap_atomic(to);
 
+	/**
+	 * 拷贝：汇编实现
+	 */
 	copy_page(vto, vfrom);
 
 	kunmap_atomic(vto);

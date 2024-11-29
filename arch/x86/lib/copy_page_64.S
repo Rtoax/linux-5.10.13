@@ -11,6 +11,8 @@
  * It is also a lot simpler. Use this when possible. But, don't use streaming
  * copy unless the CPU indicates X86_FEATURE_REP_GOOD. Could vary the
  * prefetch distance based on SMP/UP.
+ *
+ * copy_page(char *to, char *from)
  */
 	ALIGN
 SYM_FUNC_START(copy_page)
