@@ -68,7 +68,7 @@ enum {
 #define TC_ACT_UNSPEC	(-1)
 #define TC_ACT_OK		0
 #define TC_ACT_RECLASSIFY	1
-#define TC_ACT_SHOT		2
+#define TC_ACT_SHOT		2 /* 丢弃 */
 #define TC_ACT_PIPE		3
 #define TC_ACT_STOLEN		4
 #define TC_ACT_QUEUED		5
@@ -723,7 +723,7 @@ struct tcf_ematch_hdr {
 };
 
 /*  0                   1
- *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  * +-----------------------+-+-+---+
  * |         Unused        |S|I| R |
  * +-----------------------+-+-+---+
