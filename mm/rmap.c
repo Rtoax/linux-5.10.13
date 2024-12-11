@@ -1002,45 +1002,45 @@ int page_referenced(struct page *page,
 {
 	int we_locked = 0;
 
-    /* page 引用 arg */
+	/* page 引用 arg */
 	struct page_referenced_arg pra = {
 		pra.mapcount = total_mapcount(page),    /* page _mapcount 数 */
 		pra.memcg = memcg,  /* memory cgroup */
 	};
 
-    /* RMAP 遍历 控制结构 */
+	/* RMAP 遍历 控制结构 */
 	struct rmap_walk_control rwc = {
 		rwc.rmap_one = page_referenced_one,
 		rwc.arg = (void *)&pra,
 		rwc.anon_lock = page_lock_anon_vma_read,
 	};
 
-    /* 清理标志位 */
+	/* 清理标志位 */
 	*vm_flags = 0;
 
-    /* 如果 mapcount == 0 */
+	/* 如果 mapcount == 0 */
 	if (!pra.mapcount)
 		return 0;
 
-    /**
-     *  如果 page->mapping 为空，表明 page 没有对应的 页框，直接返回0
-     */
+	/**
+	 *  如果 page->mapping 为空，表明 page 没有对应的 页框，直接返回0
+	 */
 	if (!page_rmapping(page))
 		return 0;
 
-    /**
-     *  如果
-     *  1. 页面没有锁定 并且
-     *  2. 页面不是 匿名页面 或 页面是 KSM 页面
-     *
-     *  也就是两种情况:
-     *
-     *  1. 未锁定的 KSM 页面
-     *  2. 未锁定的 文件映射
-     */
+	/**
+	 *  如果
+	 *  1. 页面没有锁定 并且
+	 *  2. 页面不是 匿名页面 或 页面是 KSM 页面
+	 *
+	 *  也就是两种情况:
+	 *
+	 *  1. 未锁定的 KSM 页面
+	 *  2. 未锁定的 文件映射
+	 */
 	if (!is_locked && (!PageAnon(page) || PageKsm(page))) {
 
-        /* 尝试锁定 */
+		/* 尝试锁定 */
 		we_locked = trylock_page(page);
 		if (!we_locked) /* 锁定失败，表明该页面被锁定，返回 1 */
 			return 1;
@@ -1057,19 +1057,19 @@ int page_referenced(struct page *page,
 		rwc.invalid_vma = invalid_page_referenced_vma;
 	}
 
-    /**
-     *  利用 RMAP 遍历
-     */
+	/**
+	 *  利用 RMAP 遍历
+	 */
 	rmap_walk(page, &rwc);
 
-    /* 获取 flags */
+	/* 获取 flags */
 	*vm_flags = pra.vm_flags;
 
-    /* 在上面种锁定成功了，进行 解锁 */
+	/* 在上面种锁定成功了，进行 解锁 */
 	if (we_locked)
 		unlock_page(page);
 
-    /* 返回页面被引用的次数 */
+	/* 返回页面被引用的次数 */
 	return pra.referenced;
 }
 
@@ -1547,7 +1547,7 @@ void page_remove_rmap(struct page *page, bool compound)
 {
 	lock_page_memcg(page);
 
-    /* 如果不是匿名页面 */
+	/* 如果不是匿名页面 */
 	if (!PageAnon(page)) {
 
         /* 去除 文件 RMAP */
@@ -1555,7 +1555,7 @@ void page_remove_rmap(struct page *page, bool compound)
 		goto out;
 	}
 
-    /* 复合 page */
+	/* 复合 page */
 	if (compound) { /* 可能是大页 */
 
 
@@ -1900,9 +1900,9 @@ static bool try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 				spin_unlock(&mmlist_lock);
 			}
 
-            /**
-             *  计数 - 匿名页面转换为 交换空间页面
-             */
+			/**
+			 *  计数 - 匿名页面转换为 交换空间页面
+			 */
 			dec_mm_counter(mm, MM_ANONPAGES);
 			inc_mm_counter(mm, MM_SWAPENTS);
 			swp_pte = swp_entry_to_pte(entry);
@@ -1970,9 +1970,9 @@ static int page_mapcount_is_zero(struct page *page)
 bool try_to_unmap(struct page *page, enum ttu_flags flags)
 {
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct rmap_walk_control rwc = {
 		rwc.rmap_one = try_to_unmap_one,
 		rwc.arg = (void *)flags,
@@ -2036,7 +2036,8 @@ void __put_anon_vma(struct anon_vma *anon_vma)
 
 	anon_vma_free(anon_vma);
 
-	if (root != anon_vma && atomic_dec_and_test(&root->refcount))   /* 如果 root 的引用计数为0，将被释放 */
+	if (root != anon_vma && atomic_dec_and_test(&root->refcount))
+		/* 如果 root 的引用计数为0，将被释放 */
 		anon_vma_free(root);
 }
 
@@ -2049,13 +2050,13 @@ static struct anon_vma *rmap_walk_anon_lock(struct page *page,
 {
 	struct anon_vma *anon_vma;
 
-    /**
-     *  可能为以下回调
-     *
-     *  `page_referenced()` ==> `page_lock_anon_vma_read()`
-     *  `try_to_unmap()`    ==> `page_lock_anon_vma_read()`
-     *  其他TODO
-     */
+	/**
+	 *  可能为以下回调
+	 *
+	 *  `page_referenced()` ==> `page_lock_anon_vma_read()`
+	 *  `try_to_unmap()`    ==> `page_lock_anon_vma_read()`
+	 *  其他TODO
+	 */
 	if (rwc->anon_lock)
 		return rwc->anon_lock(page);
 
@@ -2071,7 +2072,7 @@ static struct anon_vma *rmap_walk_anon_lock(struct page *page,
 	if (!anon_vma)
 		return NULL;
 
-    /* 读 down */
+	/* 读 down */
 	anon_vma_lock_read(anon_vma);
 	return anon_vma;
 }
@@ -2100,20 +2101,20 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
 	pgoff_t pgoff_start, pgoff_end;
 	struct anon_vma_chain *avc;
 
-    /**
-     *  rmap_walk 中为 false
-     */
+	/**
+	 *  rmap_walk 中为 false
+	 */
 	if (locked) {
-        /* 匿名映射 page->mapping 结构指向 struct anon_vma 结构 */
+		/* 匿名映射 page->mapping 结构指向 struct anon_vma 结构 */
 		anon_vma = page_anon_vma(page);
 		/* anon_vma disappear under us? */
 		VM_BUG_ON_PAGE(!anon_vma, page);
 	} else {
-        /* 获取 anon_vma 结构 */
+		/* 获取 anon_vma 结构 */
 		anon_vma = rmap_walk_anon_lock(page, rwc);  /* 获取 读 信号量 */
 	}
 
-    /* 不存在 AV 直接退出 */
+	/* 不存在 AV 直接退出 */
 	if (!anon_vma)
 		return;
 
@@ -2121,53 +2122,53 @@ static void rmap_walk_anon(struct page *page, struct rmap_walk_control *rwc,
 	pgoff_start = page_to_pgoff(page);
 	pgoff_end = pgoff_start + thp_nr_pages(page)/* 页数 */ - 1;
 
-    /**
-     *  遍历 红黑树 ， anon_vma 是由 vm_pgoff 排序的
-     */
+	/**
+	 *  遍历 红黑树 ， anon_vma 是由 vm_pgoff 排序的
+	 */
 	anon_vma_interval_tree_foreach(avc, &anon_vma->rb_root, pgoff_start, pgoff_end) {
 
-        /**
-         *  vma 映射在 page 页
-         *
-         *  下面将调用对应的 struct rmap_walk_control 一系列的回调函数
-         */
+		/**
+		 *  vma 映射在 page 页
+		 *
+		 *  下面将调用对应的 struct rmap_walk_control 一系列的回调函数
+		 */
 		struct vm_area_struct *vma = avc->vma;
 
-        /* VMA 的起始虚拟地址 */
+		/* VMA 的起始虚拟地址 */
 		unsigned long address = vma_address(page, vma);
 
-        /* TODO */
+		/* TODO */
 		cond_resched();
 
-        /**
-         *  不可用，继续下一个，为下列的回调
-         *
-         *  `page_referenced()` ==> `invalid_page_referenced_vma()`(memcg!=NULL) -> memcg 和当前进程的不匹配
-         *  `try_to_unmap()`    ==> `invalid_migration_vma()` TODO
-         *  MORE
-         *
-         */
+		/**
+		 *  不可用，继续下一个，为下列的回调
+		 *
+		 *  `page_referenced()` ==> `invalid_page_referenced_vma()`(memcg!=NULL) -> memcg 和当前进程的不匹配
+		 *  `try_to_unmap()`    ==> `invalid_migration_vma()` TODO
+		 *  MORE
+		 *
+		 */
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
 			continue;
 
-        /**
-         *  RMAP 的一个处理
-         *
-         *  `page_referenced()` ==> `page_referenced_one()`
-         *  `try_to_unmap()`    ==> `try_to_unmap_one()` TODO
-         *  MORE
-         *
-         */
+		/**
+		 *  RMAP 的一个处理
+		 *
+		 *  `page_referenced()` ==> `page_referenced_one()`
+		 *  `try_to_unmap()`    ==> `try_to_unmap_one()` TODO
+		 *  MORE
+		 *
+		 */
 		if (!rwc->rmap_one(page, vma, address, rwc->arg))
 			break;
 
-        /**
-         *  完成
-         *
-         *  `page_referenced()` ==> NULL
-         *  `try_to_unmap()`    ==> `page_mapcount_is_zero()` TODO
-         *  MORE
-         */
+		/**
+		 *  完成
+		 *
+		 *  `page_referenced()` ==> NULL
+		 *  `try_to_unmap()`    ==> `page_mapcount_is_zero()` TODO
+		 *  MORE
+		 */
 		if (rwc->done && rwc->done(page))
 			break;
 	}
@@ -2209,17 +2210,17 @@ static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 	if (!mapping)
 		return;
 
-    /* TODO */
+	/* TODO */
 	pgoff_start = page_to_pgoff(page);
 	pgoff_end = pgoff_start + thp_nr_pages(page) - 1;
 
 	if (!locked)
 		i_mmap_lock_read(mapping);
 
-    /**
-     *
-     *
-     */
+	/**
+	 *
+	 *
+	 */
 	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff_start, pgoff_end) {
 
 		unsigned long address = vma_address(page, vma);
@@ -2229,7 +2230,7 @@ static void rmap_walk_file(struct page *page, struct rmap_walk_control *rwc,
 		if (rwc->invalid_vma && rwc->invalid_vma(vma, rwc->arg))
 			continue;
 
-        /* 回调 */
+		/* 回调 */
 		if (!rwc->rmap_one(page, vma, address, rwc->arg))
 			goto done;
 
@@ -2256,22 +2257,22 @@ done:
  */
 void rmap_walk(struct page *page, struct rmap_walk_control *rwc)
 {
-    /**
-     *  KSM 页面
-     */
+	/**
+	 *  KSM 页面
+	 */
 	if (unlikely(PageKsm(page)))
 		rmap_walk_ksm(page, rwc);
 
-    /**
-     *  匿名页面
-     *
-     */
+	/**
+	 *  匿名页面
+	 *
+	 */
 	else if (PageAnon(page))
 		rmap_walk_anon(page, rwc, false);
 
-    /**
-     *  文件映射   TODO
-     */
+	/**
+	 *  文件映射   TODO
+	 */
 	else
 		rmap_walk_file(page, rwc, false);
 }
@@ -2282,15 +2283,15 @@ void rmap_walk_locked(struct page *page, struct rmap_walk_control *rwc)
 	/* no ksm support for now，还不支持 */
 	VM_BUG_ON_PAGE(PageKsm(page), page);
 
-    /**
-     *  匿名页面
-     *
-     */
+	/**
+	 *  匿名页面
+	 *
+	 */
 	if (PageAnon(page))
 		rmap_walk_anon(page, rwc, true);
-    /**
-     *  文件映射   TODO
-     */
+	/**
+	 *  文件映射   TODO
+	 */
 	else
 		rmap_walk_file(page, rwc, true);
 }

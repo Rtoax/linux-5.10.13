@@ -359,9 +359,9 @@ void workingset_refault(struct page *page, void *shadow)
 	bool workingset;
 	int memcgid;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unpack_shadow(shadow, &memcgid, &pgdat, &eviction, &workingset);
 
 	rcu_read_lock();
