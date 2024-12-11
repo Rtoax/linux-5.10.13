@@ -8712,6 +8712,9 @@ static const struct bpf_sec_def section_defs[] = {
 	SEC_DEF("kretprobe/", KPROBE,
 		.attach_fn = attach_kprobe),
 	BPF_PROG_SEC("uretprobe/",		BPF_PROG_TYPE_KPROBE),
+	/**
+	 * 网络包分配
+	 */
 	BPF_PROG_SEC("classifier",		BPF_PROG_TYPE_SCHED_CLS),
 	BPF_PROG_SEC("action",			BPF_PROG_TYPE_SCHED_ACT),
 	SEC_DEF("tracepoint/", TRACEPOINT,

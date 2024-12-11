@@ -709,6 +709,8 @@ enum bpf_map_type {
  * therefore break existing tracing BPF programs. Tracing BPF
  * programs correspond to /a/ specific kernel which is to be
  * analyzed, and not /a/ specific kernel /and/ all future ones.
+ *
+ * section 的字符串匹配，参见数据结构 section_defs[]
  */
 enum bpf_prog_type {
 	BPF_PROG_TYPE_UNSPEC,
@@ -905,6 +907,9 @@ enum bpf_attach_type {
 	BPF_LSM_CGROUP,
 	BPF_STRUCT_OPS,
 	BPF_NETFILTER,
+	/**
+	 * BPF_PROG_TYPE_SCHED_CLS
+	 */
 	BPF_TCX_INGRESS,
 	BPF_TCX_EGRESS,
 	BPF_TRACE_UPROBE_MULTI,
