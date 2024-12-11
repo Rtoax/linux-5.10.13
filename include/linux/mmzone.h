@@ -229,8 +229,19 @@ enum zone_stat_item {   /* ZONE 状态 */
  */
 enum node_stat_item {
 	NR_LRU_BASE,
+	/**
+	 * 属于进程的数据，如 Stacks、Heaps 等。可以被进一步分解为
+	 * - 活动内存（active_anon）
+	 * - 非活动内存（inactive_anon），非活动内存可以被交换到磁盘
+	 */
 	NR_INACTIVE_ANON = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */
 	NR_ACTIVE_ANON,		/*  "     "     "   "       "         */
+
+	/**
+	 * 缓存存储器存储当前保存在内存中的磁盘数据。可以进一步分解为
+	 * - 活动内存（active_file）
+	 * - 非活动内存（inactive_file），必要时，首先回收非活动内存
+	 */
 	NR_INACTIVE_FILE,	/*  "     "     "   "       "         */
 	NR_ACTIVE_FILE,		/*  "     "     "   "       "         */
 	NR_UNEVICTABLE,		/*  "     "     "   "       "         */
@@ -239,9 +250,9 @@ enum node_stat_item {
 	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	WORKINGSET_NODES,
 	WORKINGSET_REFAULT_BASE,
 	WORKINGSET_REFAULT_ANON = WORKINGSET_REFAULT_BASE,

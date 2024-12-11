@@ -6685,16 +6685,16 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 	struct zone *zone;
 	pg_data_t *pgdat;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_populated_zone(zone) {
 		if (show_mem_node_skip(filter, zone_to_nid(zone), nodemask))
 			continue;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		for_each_online_cpu(cpu) {
 			free_pcp += per_cpu_ptr(zone->pageset, cpu)->pcp.count;
         }
@@ -6725,9 +6725,9 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 		free_pcp,
 		global_zone_page_state(NR_FREE_CMA_PAGES));
 
-    /**
-     *  遍历每个 NODE
-     */
+	/**
+	 *  遍历每个 NODE
+	 */
 	for_each_online_pgdat(pgdat) {
 		if (show_mem_node_skip(filter, pgdat->node_id, nodemask))
 			continue;
