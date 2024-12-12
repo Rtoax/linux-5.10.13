@@ -764,7 +764,7 @@ enum bpf_prog_type {
 	BPF_PROG_TYPE_CGROUP_SKB,
 
 	/**
-	 *  对打开套集资的程序组提供安全性和访问控制，而不必单独限制每个进程的功能
+	 *  对打开套接字的程序组提供安全性和访问控制，而不必单独限制每个进程的功能
 	 */
 	BPF_PROG_TYPE_CGROUP_SOCK,
 
