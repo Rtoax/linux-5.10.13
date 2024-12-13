@@ -830,14 +830,17 @@ enum bpf_prog_type {
 	 *      SK_PASS - 通知内核启动端口重用
 	 *      SK_DROP - 防止程序重复使用端口
 	 *
-	 *  与 `BPF_MAP_TYPE_REUSEPORT_SOCKARRAY` 一起使用，可以决定如何过滤和处理网络设备的传入数据包
+	 *  与 `BPF_MAP_TYPE_REUSEPORT_SOCKARRAY` 一起使用，可以决定如何过滤和处理
+	 *  网络设备的传入数据包
 	 */
 	BPF_PROG_TYPE_SK_REUSEPORT,
 
 	/**
 	 *  流量解析程序
-	 *  流量解析器(Flower分类器)是一个内核组件，被防火墙和其他过滤设备使用，用来决定如何处理特定数据包
-	 *  BPF_PROG_TYPE_FLOW_DISSECTOR 即将程序挂钩在 流量解析器路径上，提供了内核解析器没有的安全功能等
+	 *  流量解析器(Flower分类器)是一个内核组件，被防火墙和其他过滤设备使用，用来决定
+	 *  如何处理特定数据包.
+	 *  BPF_PROG_TYPE_FLOW_DISSECTOR 即将程序挂钩在 流量解析器路径上，提供了内核
+	 *  解析器没有的安全功能等.
 	 */
 	BPF_PROG_TYPE_FLOW_DISSECTOR,
 
@@ -845,8 +848,12 @@ enum bpf_prog_type {
 	 *
 	 */
 	BPF_PROG_TYPE_CGROUP_SYSCTL,
+	/**
+	 *
+	 */
 	BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
 	BPF_PROG_TYPE_CGROUP_SOCKOPT,
+
 	/**
 	 * kfunc, ...
 	 */

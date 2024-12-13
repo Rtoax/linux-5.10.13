@@ -143,17 +143,17 @@ TRACE_EVENT(sched_switch,
 
 	TP_ARGS(preempt, prev, next),
 
-    /**
-     *  # bpftrace -lv "tracepoint:sched:sched_switch"
-     *  tracepoint:sched:sched_switch
-     *      char prev_comm[16];
-     *      pid_t prev_pid;
-     *      int prev_prio;
-     *      long prev_state;
-     *      char next_comm[16];
-     *      pid_t next_pid;
-     *      int next_prio;
-     */
+	/**
+	 *  # bpftrace -lv "tracepoint:sched:sched_switch"
+	 *  tracepoint:sched:sched_switch
+	 *      char prev_comm[16];
+	 *      pid_t prev_pid;
+	 *      int prev_prio;
+	 *      long prev_state;
+	 *      char next_comm[16];
+	 *      pid_t next_pid;
+	 *      int next_prio;
+	 */
 	TP_STRUCT__entry(
 		__array(	char,	prev_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	prev_pid			)
@@ -203,8 +203,8 @@ TRACE_EVENT(sched_switch,
 /**
  *  按照 include/trace/define_trace.h 中展开
  */
-static const char __section("__tracepoints_strings") __tpstrtab_sched_switch[] = "sched_switch";            
-extern struct static_call_key STATIC_CALL_KEY(tp_func_sched_switch); 
+static const char __section("__tracepoints_strings") __tpstrtab_sched_switch[] = "sched_switch";
+extern struct static_call_key STATIC_CALL_KEY(tp_func_sched_switch);
 extern struct static_call_key tp_func_sched_switch; //+++实际展开名称不是这个
 int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next);
 
@@ -213,23 +213,23 @@ int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *pre
  *
  *  __schedule()->trace_sched_switch()
  */
-struct tracepoint __used __section("__tracepoints") __tracepoint_sched_switch = {                  
-    __tracepoint_sched_switch.name = __tpstrtab_sched_switch,             
-    __tracepoint_sched_switch.key = STATIC_KEY_INIT_FALSE,    
+struct tracepoint __used __section("__tracepoints") __tracepoint_sched_switch = {
+    __tracepoint_sched_switch.name = __tpstrtab_sched_switch,
+    __tracepoint_sched_switch.key = STATIC_KEY_INIT_FALSE,
 
     /**
-     *  
+     *
      */
-    __tracepoint_sched_switch.static_call_key = &STATIC_CALL_KEY(tp_func_sched_switch),   
-    __tracepoint_sched_switch.static_call_tramp = STATIC_CALL_TRAMP_ADDR(tp_func_sched_switch), 
-    __tracepoint_sched_switch.iterator = &__traceiter_sched_switch,           
-    __tracepoint_sched_switch.regfunc = NULL,                    
-    __tracepoint_sched_switch.unregfunc = NULL,                    
-    __tracepoint_sched_switch.funcs = NULL 
-};                    
+    __tracepoint_sched_switch.static_call_key = &STATIC_CALL_KEY(tp_func_sched_switch),
+    __tracepoint_sched_switch.static_call_tramp = STATIC_CALL_TRAMP_ADDR(tp_func_sched_switch),
+    __tracepoint_sched_switch.iterator = &__traceiter_sched_switch,
+    __tracepoint_sched_switch.regfunc = NULL,
+    __tracepoint_sched_switch.unregfunc = NULL,
+    __tracepoint_sched_switch.funcs = NULL
+};
 
 /**
- *  
+ *
  */
 asm("   .section \"__tracepoints_ptrs\", \"a\"      \n" \
     "   .balign 4                   \n" \
@@ -241,25 +241,25 @@ asm("   .section \"__tracepoints_ptrs\", \"a\"      \n" \
  *    trace_sched_switch()
  *      __traceiter_sched_switch()
  */
-int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next)            
-{                               
-    struct tracepoint_func *it_func_ptr;            
-    void *it_func;                      
+int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next)
+{
+    struct tracepoint_func *it_func_ptr;
+    void *it_func;
 
     /**
-     *  
+     *
      */
-    it_func_ptr = rcu_dereference_raw((&__tracepoint_sched_switch)->funcs); 
-    do {                            
-        it_func = (it_func_ptr)->func;          
-        __data = (it_func_ptr)->data;           
+    it_func_ptr = rcu_dereference_raw((&__tracepoint_sched_switch)->funcs);
+    do {
+        it_func = (it_func_ptr)->func;
+        __data = (it_func_ptr)->data;
         /**
          *  调用函数
          */
-        ((void(*)(void *, bool preempt, struct task_struct *prev, struct task_struct *next))(it_func))(__data, preempt, prev, next); 
-    } while ((++it_func_ptr)->func);            
-    return 0;                       
-}                               
+        ((void(*)(void *, bool preempt, struct task_struct *prev, struct task_struct *next))(it_func))(__data, preempt, prev, next);
+    } while ((++it_func_ptr)->func);
+    return 0;
+}
 DEFINE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);
 
 
@@ -269,8 +269,8 @@ DEFINE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);
  */
 
 extern int __traceiter_sched_switch(void *__data, bool preempt, struct task_struct *prev, struct task_struct *next);
-DECLARE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);    
-extern struct tracepoint __tracepoint_sched_switch; 
+DECLARE_STATIC_CALL(tp_func_sched_switch, __traceiter_sched_switch);
+extern struct tracepoint __tracepoint_sched_switch;
 
 /**
  *  调度 `__schedule()`时，调用这个函数
@@ -315,72 +315,72 @@ static inline void trace_sched_switch(bool preempt, struct task_struct *prev, st
         }
 
         /**
-         *  
+         *
          */
-		it_func_ptr = rcu_dereference_raw((&__tracepoint_sched_switch)->funcs); 
-		if (it_func_ptr) {					
-			__data = (it_func_ptr)->data;			
+		it_func_ptr = rcu_dereference_raw((&__tracepoint_sched_switch)->funcs);
+		if (it_func_ptr) {
+			__data = (it_func_ptr)->data;
 
             /**
-             *  
+             *
              */
-//			__DO_TRACE_CALL(sched_switch)(__data, preempt, prev, next);	
+//			__DO_TRACE_CALL(sched_switch)(__data, preempt, prev, next);
             __traceiter_sched_switch(__data, preempt, prev, next);	 /* 这里最终对应这个函数 */
 		}
 
-		if (0) {						
-			rcu_irq_exit_irqson();				
+		if (0) {
+			rcu_irq_exit_irqson();
 			srcu_read_unlock_notrace(&tracepoint_srcu, __idx);
-		}							
-									
-		preempt_enable_notrace();				
-	} 
+		}
+
+		preempt_enable_notrace();
+	}
 
     /**
      *  这里也会被执行
      */
-    if (IS_ENABLED(CONFIG_LOCKDEP) && (cpu_online(raw_smp_processor_id()))) {     
-        rcu_read_lock_sched_notrace();          
+    if (IS_ENABLED(CONFIG_LOCKDEP) && (cpu_online(raw_smp_processor_id()))) {
+        rcu_read_lock_sched_notrace();
         rcu_dereference_sched(__tracepoint_sched_switch.funcs);
-        rcu_read_unlock_sched_notrace();        
-    }                           
-}                               
+        rcu_read_unlock_sched_notrace();
+    }
+}
 
 #ifndef MODULE
-static inline void trace_sched_switch_rcuidle(proto)		
-{								
-	if (static_key_false(&__tracepoint_sched_switch.key))		
-		/* 同上static_key_false 部分代码  */		
+static inline void trace_sched_switch_rcuidle(proto)
+{
+	if (static_key_false(&__tracepoint_sched_switch.key))
+		/* 同上static_key_false 部分代码  */
 }
 #endif
 
 /**
  *  注册 tracepoint
  */
-static inline int                       
+static inline int
 register_trace_sched_switch(void (*probe)(void *, bool , struct task_struct *, struct task_struct *),
-                                void *data)    
-{                          
+                                void *data)
+{
     /**
      *  注册
      */
-    return tracepoint_probe_register(&__tracepoint_sched_switch, (void *)probe, data);   
-}                               
-static inline int                       
+    return tracepoint_probe_register(&__tracepoint_sched_switch, (void *)probe, data);
+}
+static inline int
 register_trace_prio_sched_switch(void (*probe)(void *, bool , struct task_struct *, struct task_struct *),
                                     void *data,
                                     int prio)
-{                               
-    return tracepoint_probe_register_prio(&__tracepoint_sched_switch, (void *)probe, data, prio); 
-}                               
-static inline int                       
-unregister_trace_sched_switch(void (*probe)(void *, bool , struct task_struct *, struct task_struct *), 
-                                void *data)  
-{                               
-    return tracepoint_probe_unregister(&__tracepoint_sched_switch, (void *)probe, data);   
-}                               
+{
+    return tracepoint_probe_register_prio(&__tracepoint_sched_switch, (void *)probe, data, prio);
+}
+static inline int
+unregister_trace_sched_switch(void (*probe)(void *, bool , struct task_struct *, struct task_struct *),
+                                void *data)
+{
+    return tracepoint_probe_unregister(&__tracepoint_sched_switch, (void *)probe, data);
+}
 static inline void
-check_trace_callback_type_sched_switch(void (*cb)(void *, bool , struct task_struct *, struct task_struct *))    
+check_trace_callback_type_sched_switch(void (*cb)(void *, bool , struct task_struct *, struct task_struct *))
 {
 }
 
@@ -390,7 +390,7 @@ check_trace_callback_type_sched_switch(void (*cb)(void *, bool , struct task_str
 static inline bool
 trace_sched_switch_enabled(void)
 {
-    return static_key_false(&__tracepoint_sched_switch.key);  
+    return static_key_false(&__tracepoint_sched_switch.key);
 }
 
 
@@ -405,7 +405,7 @@ trace_sched_switch_enabled(void)
 #endif //__RTOAX_tracepoint_sched_switch______________________________
 
 /*
- * Tracepoint for a task being migrated: 
+ * Tracepoint for a task being migrated:
  * 跟踪 一个进程从 一个 CPU 迁移到 另一个 CPU 上
  */
 void trace_sched_migrate_task(struct task_struct *p, int new_cpu);
