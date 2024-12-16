@@ -1488,7 +1488,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 		pr_info_once("%s uses obsolete (PF_INET,SOCK_PACKET)\n", current->comm);
 		family = PF_PACKET;
 	}
-    /* 安全钩子 是否 有权限*/
+	/* 安全钩子 是否 有权限*/
 	err = security_socket_create(family, type, protocol, kern);
 	if (err)
 		return err;
@@ -1505,9 +1505,9 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 				   closest posix thing */
 	}
 
-    /**
-     *  类型： 字节流、数据报等
-     */
+	/**
+	 *  类型： 字节流、数据报等
+	 */
 	sock->type = type;  /* 如 SOCK_STREAM */
 
 #ifdef CONFIG_MODULES
@@ -1523,7 +1523,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 
 	rcu_read_lock();
 
-    /* 协议族 */
+	/* 协议族 */
 	pf = rcu_dereference(net_families[family]);
 	err = -EAFNOSUPPORT;
 	if (!pf)
@@ -1539,11 +1539,11 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	/* Now protected by module ref count */
 	rcu_read_unlock();
 
-    /* 如
-     *  AF_INET->inet_family_ops->inet_create()
-     *  AF_UNIX->unix_family_ops->unix_create()
-     *  AF_PACKET->packet_family_ops->packet_create()
-     */
+	/* 如
+	*  AF_INET->inet_family_ops->inet_create()
+	*  AF_UNIX->unix_family_ops->unix_create()
+	*  AF_PACKET->packet_family_ops->packet_create()
+	*/
 	err = pf->create(net, sock, protocol, kern);    /* create */
 	if (err < 0)
 		goto out_module_put;
