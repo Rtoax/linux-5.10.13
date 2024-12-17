@@ -64,6 +64,10 @@ struct bpf_struct_ops_map {
  * stored at the map->btf_vmlinux_value_type_id.
  *
  */
+
+/**
+ * 作为 map 类型的 value 对象存储
+ */
 #define BPF_STRUCT_OPS_TYPE(_name)				\
 extern struct bpf_struct_ops bpf_##_name;			\
 								\
@@ -81,6 +85,12 @@ enum {
 	__NR_BPF_STRUCT_OPS_TYPE,
 };
 
+/**
+ * 作为数组变量
+ *
+ * 其中 bpf_tcp_congestion_ops 即为 /net/ipv4/bpf_tcp_ca.c 文件中定义的变量（包含了
+ * 各种操作的函数指针）
+ */
 static struct bpf_struct_ops * const bpf_struct_ops[] = {
 #define BPF_STRUCT_OPS_TYPE(_name)				\
 	[BPF_STRUCT_OPS_TYPE_##_name] = &bpf_##_name,
@@ -106,7 +116,11 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 	const char *mname;
 	u32 i, j;
 
-	/* Ensure BTF type is emitted for "struct bpf_struct_ops_##_name" */
+	/**
+	 * Ensure BTF type is emitted for "struct bpf_struct_ops_##_name"
+	 *
+	 * #define BTF_TYPE_EMIT(type) ((void)(type *)0)
+	 */
 #define BPF_STRUCT_OPS_TYPE(_name) BTF_TYPE_EMIT(struct bpf_struct_ops_##_name);
 #include "bpf_struct_ops_types.h"
 #undef BPF_STRUCT_OPS_TYPE

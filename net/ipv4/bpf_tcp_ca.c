@@ -177,9 +177,22 @@ bpf_tcp_ca_get_func_proto(enum bpf_func_id func_id,
 	}
 }
 
+/**
+ * 用于验证器（verfier）的判断
+ */
 static const struct bpf_verifier_ops bpf_tcp_ca_verifier_ops = {
+	/**
+	 * 验证器使用的函数原型，用于验证是否允许在 eBPF 程序中的BPF_CALL 内核内的辅助函数，
+	 * 并在验证后调整 BPF_CALL 指令中的 imm32 域。
+	 */
 	.get_func_proto		= bpf_tcp_ca_get_func_proto,
+	/**
+	 * 是否是合法的访问
+	 */
 	.is_valid_access	= bpf_tcp_ca_is_valid_access,
+	/**
+	 * 用于判断 btf 中结构体是否可以被访问
+	 */
 	.btf_struct_access	= bpf_tcp_ca_btf_struct_access,
 };
 
@@ -243,12 +256,36 @@ static void bpf_tcp_ca_unreg(void *kdata)
 /* Avoid sparse warning.  It is only used in bpf_struct_ops.c. */
 extern struct bpf_struct_ops bpf_tcp_congestion_ops;
 
+/**
+ * https://www.ebpf.top/post/ebpf_struct_ops/
+ */
 struct bpf_struct_ops bpf_tcp_congestion_ops = {
+	/**
+	 * verifier_ops 结构有一些函数，用于验证各个替换函数是否可以安全执行；
+	 */
 	.verifier_ops = &bpf_tcp_ca_verifier_ops,
+	/**
+	 * reg() 函数在检查通过后实际注册了替换结构；在拥塞控制的情况下，它将把
+	 * tcp_congestion_ops 结构（带有用于函数指针的适当的 BPF 蹦床（trampolines ））
+	 * 安装在网络堆栈将使用它的地方；
+	 */
 	.reg = bpf_tcp_ca_reg,
+	/**
+	 * unreg() 撤销注册；
+	 */
 	.unreg = bpf_tcp_ca_unreg,
+	/**
+	 * check_member() 确定目标结构的特定成员是否允许在 BPF 中实现；
+	 */
 	.check_member = bpf_tcp_ca_check_member,
+	/**
+	 * init_member() 则验证该结构中任何字段的确切值。特别是，init_member() 可以
+	 * 验证非函数字段（例如，标志字段）；
+	 */
 	.init_member = bpf_tcp_ca_init_member,
+	/**
+	 * init() 函数将被首先调用，以进行任何需要的全局设置；
+	 */
 	.init = bpf_tcp_ca_init,
 	.name = "tcp_congestion_ops",
 };
