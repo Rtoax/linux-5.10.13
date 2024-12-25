@@ -3821,7 +3821,8 @@ int tcf_qevent_validate_change(struct tcf_qevent *qe, struct nlattr *block_index
 }
 EXPORT_SYMBOL(tcf_qevent_validate_change);
 
-struct sk_buff *tcf_qevent_handle(struct tcf_qevent *qe, struct Qdisc *sch, struct sk_buff *skb,
+struct sk_buff *tcf_qevent_handle(struct tcf_qevent *qe, struct Qdisc *sch,
+				  struct sk_buff *skb,
 				  struct sk_buff **to_free, int *ret)
 {
 	struct tcf_result cl_res;

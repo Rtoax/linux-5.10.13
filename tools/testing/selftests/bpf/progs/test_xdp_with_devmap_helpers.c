@@ -24,8 +24,11 @@ int xdp_dummy_prog(struct xdp_md *ctx)
 	return XDP_PASS;
 }
 
-/* valid program on DEVMAP entry via SEC name;
+/**
+ * valid program on DEVMAP entry via SEC name;
  * has access to egress and ingress ifindex
+ *
+ * only display!!! rongtao
  */
 SEC("xdp/devmap")
 int xdp_dummy_dm(struct xdp_md *ctx)
@@ -35,6 +38,9 @@ int xdp_dummy_dm(struct xdp_md *ctx)
 	void *data = (void *)(long)ctx->data;
 	unsigned int len = data_end - data;
 
+	/**
+	 * deny access egress_ifindex in 'xdp/' program.
+	 */
 	bpf_trace_printk(fmt, sizeof(fmt),
 			 ctx->ingress_ifindex, ctx->egress_ifindex, len);
 

@@ -2216,6 +2216,9 @@ bool is_skb_forwardable(const struct net_device *dev, const struct sk_buff *skb)
 }
 EXPORT_SYMBOL_GPL(is_skb_forwardable);
 
+/**
+ *
+ */
 int __dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
 {
 	int ret = ____dev_forward_skb(dev, skb);
@@ -2263,10 +2266,10 @@ static inline int deliver_skb(struct sk_buff *skb,
 	if (unlikely(skb_orphan_frags_rx(skb, GFP_ATOMIC)))
 		return -ENOMEM;
 	refcount_inc(&skb->users);
-    /**
-     *  调用协议中的回调函数
-     *  packet_rcv(): tcpdump 等
-     */
+	/**
+	 *  调用协议中的回调函数
+	 *  packet_rcv(): tcpdump 等
+	 */
 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
 }
 
@@ -2326,9 +2329,9 @@ void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
 
 	rcu_read_lock();
 again:
-    /**
-     *  遍历  ptype_all 中的协议，并依次调用 deliver_skb
-     */
+	/**
+	 *  遍历  ptype_all 中的协议，并依次调用 deliver_skb
+	 */
 	list_for_each_entry_rcu(ptype, ptype_list, list) {
 		if (ptype->ignore_outgoing)
 			continue;
@@ -4989,6 +4992,9 @@ int __read_mostly (*br_fdb_test_addr_hook)(struct net_device *dev,
 EXPORT_SYMBOL_GPL(br_fdb_test_addr_hook);
 #endif
 
+/**
+ *
+ */
 static inline struct sk_buff *
 sch_handle_ingress(struct sk_buff *skb, struct packet_type **pt_prev, int *ret,
 		   struct net_device *orig_dev, bool *another)
@@ -5158,7 +5164,7 @@ static inline int nf_ingress(struct sk_buff *skb, struct packet_type **pt_prev,
 }
 
 /**
- *
+ * receive packet
  */
 static int __netif_receive_skb_core(struct sk_buff **pskb, bool pfmemalloc,
 				    struct packet_type **ppt_prev)
@@ -5216,18 +5222,18 @@ another_round:
 	if (pfmemalloc)
 		goto skip_taps;
 
-    /**
-     *  遍历 ptype_all （tcpdump 在这里挂了虚拟协议）
-     */
+	/**
+	 *  遍历 ptype_all （tcpdump 在这里挂了虚拟协议）
+	 */
 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
 		if (pt_prev)
 			ret = deliver_skb(skb, pt_prev, orig_dev);
 		pt_prev = ptype;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_for_each_entry_rcu(ptype, &skb->dev->ptype_all, list) {
 		if (pt_prev)
 			ret = deliver_skb(skb, pt_prev, orig_dev);
@@ -5269,6 +5275,9 @@ skip_classify:
 	rx_handler = rcu_dereference(skb->dev->rx_handler);
 	if (rx_handler) {
 		if (pt_prev) {
+			/**
+			 *
+			 */
 			ret = deliver_skb(skb, pt_prev, orig_dev);
 			pt_prev = NULL;
 		}
@@ -9166,6 +9175,9 @@ static int dev_xdp_attach(struct net_device *dev, struct netlink_ext_ack *extack
 			NL_SET_ERR_MSG(extack, "Using device-bound program without HW_MODE flag is not supported");
 			return -EINVAL;
 		}
+		/**
+		 *
+		 */
 		if (new_prog->expected_attach_type == BPF_XDP_DEVMAP) {
 			NL_SET_ERR_MSG(extack, "BPF_XDP_DEVMAP programs can not be attached to a device");
 			return -EINVAL;

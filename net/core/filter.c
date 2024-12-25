@@ -2141,6 +2141,9 @@ static int __bpf_redirect_no_mac(struct sk_buff *skb, struct net_device *dev,
 	       __bpf_rx_skb_no_mac(dev, skb) : __bpf_tx_skb(dev, skb);
 }
 
+/**
+ *
+ */
 static int __bpf_redirect_common(struct sk_buff *skb, struct net_device *dev,
 				 u32 flags)
 {
@@ -2155,6 +2158,9 @@ static int __bpf_redirect_common(struct sk_buff *skb, struct net_device *dev,
 	       __bpf_rx_skb(dev, skb) : __bpf_tx_skb(dev, skb);
 }
 
+/**
+ *
+ */
 static int __bpf_redirect(struct sk_buff *skb, struct net_device *dev,
 			  u32 flags)
 {
@@ -2457,9 +2463,15 @@ static const struct bpf_func_proto bpf_clone_redirect_proto = {
 	.arg3_type      = ARG_ANYTHING,
 };
 
+/**
+ * more to see XDP DEVMAP/CPUMAP ...
+ */
 DEFINE_PER_CPU(struct bpf_redirect_info, bpf_redirect_info);
 EXPORT_PER_CPU_SYMBOL_GPL(bpf_redirect_info);
 
+/**
+ * 重定向
+ */
 int skb_do_redirect(struct sk_buff *skb)
 {
 	struct bpf_redirect_info *ri = this_cpu_ptr(&bpf_redirect_info);
@@ -2483,6 +2495,9 @@ int skb_do_redirect(struct sk_buff *skb)
 			     !is_skb_forwardable(dev, skb) ||
 			     net_eq(net, dev_net(dev))))
 			goto out_drop;
+		/**
+		 * 换了 设备 dev
+		 */
 		skb->dev = dev;
 		return -EAGAIN;
 	}
@@ -4106,6 +4121,9 @@ BPF_CALL_2(bpf_xdp_redirect, u32, ifindex, u64, flags)
 	return XDP_REDIRECT;
 }
 
+/**
+ * bpf_redirect()
+ */
 static const struct bpf_func_proto bpf_xdp_redirect_proto = {
 	.func           = bpf_xdp_redirect,
 	.gpl_only       = false,
@@ -4115,9 +4133,10 @@ static const struct bpf_func_proto bpf_xdp_redirect_proto = {
 };
 
 /**
- *
+ * https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_XDP/
+ * BPF_MAP_TYPE_DEVMAP
  */
-long bpf_xdp_redirect_map(struct bpf_map *map, u32 ifindex, u64 flags);//+++
+long bpf_xdp_redirect_map(struct bpf_map *map, u32 ifindex, u64 flags) {}//+++
 BPF_CALL_3(bpf_xdp_redirect_map, struct bpf_map *, map, u32, ifindex, u64, flags)
 {
 	struct bpf_redirect_info *ri = this_cpu_ptr(&bpf_redirect_info);
@@ -4144,6 +4163,10 @@ BPF_CALL_3(bpf_xdp_redirect_map, struct bpf_map *, map, u32, ifindex, u64, flags
 	return XDP_REDIRECT;
 }
 
+/**
+ * BPF_FUNC_redirect_map
+ * https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_XDP/
+ */
 static const struct bpf_func_proto bpf_xdp_redirect_map_proto = {
 	.func           = bpf_xdp_redirect_map,
 	.gpl_only       = false,
@@ -7233,8 +7256,14 @@ xdp_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_xdp_adjust_head_proto;
 	case BPF_FUNC_xdp_adjust_meta:
 		return &bpf_xdp_adjust_meta_proto;
+	/**
+	 * bpf_redirect()
+	 */
 	case BPF_FUNC_redirect:
 		return &bpf_xdp_redirect_proto;
+	/**
+	 * bpf_redirect_map()
+	 */
 	case BPF_FUNC_redirect_map:
 		return &bpf_xdp_redirect_map_proto;
 	case BPF_FUNC_xdp_adjust_tail:

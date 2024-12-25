@@ -272,6 +272,9 @@ static int dev_map_get_next_key(struct bpf_map *map, void *key, void *next_key)
 	return 0;
 }
 
+/**
+ * BPF_MAP_TYPE_DEVMAP_HASH
+ */
 struct bpf_dtab_netdev *__dev_map_hash_lookup_elem(struct bpf_map *map, u32 key)
 {
 	struct bpf_dtab *dtab = container_of(map, struct bpf_dtab, map);
@@ -749,6 +752,11 @@ static int dev_map_hash_update_elem(struct bpf_map *map, void *key, void *value,
 }
 
 static int dev_map_btf_id;
+
+/**
+ * refs
+ * - https://docs.ebpf.io/linux/map-type/BPF_MAP_TYPE_DEVMAP/
+ */
 const struct bpf_map_ops dev_map_ops = {
 	.map_meta_equal = bpf_map_meta_equal,
 	.map_alloc = dev_map_alloc,
@@ -762,6 +770,10 @@ const struct bpf_map_ops dev_map_ops = {
 	.map_btf_id = &dev_map_btf_id,
 };
 
+/**
+ * refs:
+ * - https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_XDP/
+ */
 static int dev_map_hash_map_btf_id;
 const struct bpf_map_ops dev_map_hash_ops = {
 	.map_meta_equal = bpf_map_meta_equal,

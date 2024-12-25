@@ -5265,7 +5265,7 @@ bool skb_try_coalesce(struct sk_buff *to, struct sk_buff *from,
 EXPORT_SYMBOL(skb_try_coalesce);
 
 /**
- * skb_scrub_packet - scrub an skb
+ * skb_scrub_packet - scrub(擦洗) an skb
  *
  * @skb: buffer to clean
  * @xnet: packet is crossing netns
