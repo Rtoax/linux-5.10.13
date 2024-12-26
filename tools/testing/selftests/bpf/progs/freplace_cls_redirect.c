@@ -23,7 +23,7 @@ int freplace_cls_redirect_test(struct __sk_buff *skb)
 
 	sk = bpf_map_lookup_elem(&sock_map, &zero);
 	if (!sk)
-		return TC_ACT_SHOT;
+		return TC_ACT_SHOT;/* 丢弃 */
 
 	ret = bpf_map_update_elem(&sock_map, &zero, sk, 0);
 	bpf_sk_release(sk);
