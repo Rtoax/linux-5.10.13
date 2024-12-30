@@ -151,6 +151,9 @@ static int xdp_umem_account_pages(struct xdp_umem *umem)
 	return 0;
 }
 
+/**
+ * sudo bpftrace  -e 'kretprobe:xdp_umem* {printf("%s : %ld(%lx)\n", probe, retval, retval);}'
+ */
 static int xdp_umem_reg(struct xdp_umem *umem, struct xdp_umem_reg *mr)
 {
 	u32 npgs_rem, chunk_size = mr->chunk_size, headroom = mr->headroom;
