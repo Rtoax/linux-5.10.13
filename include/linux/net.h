@@ -160,48 +160,48 @@ struct proto_ops {  /* struct socket 操作 */
 	unsigned int	flags;
 	struct module	*owner;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	int		(*release)   (struct socket *sock);
 
-    /**
-     *
-     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_bind()
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_bind()
-     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_bind()
-     */
+	/**
+	 *
+	 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_bind()
+	 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_bind()
+	 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_bind()
+	 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_bind()
+	 */
 	int		(*bind)	     (struct socket *sock,
 				      struct sockaddr *myaddr,
 				      int sockaddr_len);
-    /**
-     *
-     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
-     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_dgram_connect()
-     */
-    int		(*connect)   (struct socket *sock,
+	/**
+	 *
+	 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_stream_connect()
+	 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_dgram_connect()
+	 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_stream_connect()
+	 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_dgram_connect()
+	 */
+	int		(*connect)   (struct socket *sock,
 				      struct sockaddr *vaddr,
 				      int sockaddr_len, int flags);
 	int		(*socketpair)(struct socket *sock1,
 				      struct socket *sock2);
-    /**
-     *
-     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> sock_no_accept()
-     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> sock_no_accept()
-     */
-    int		(*accept)    (struct socket *sock,
+	/**
+	 *
+	 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_accept()
+	 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> sock_no_accept()
+	 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_accept()
+	 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> sock_no_accept()
+	 */
+	int		(*accept)    (struct socket *sock,
 				      struct socket *newsock, int flags, bool kern);
 	int		(*getname)   (struct socket *sock,
 				      struct sockaddr *addr,
 				      int peer);
-    /**
-     *
-     */
+	/**
+	 *  (AF_XDP, SOCK_RAW) -> xsk_proto_ops -> xsk_poll()
+	 */
 	__poll_t	(*poll)	     (struct file *file, struct socket *sock,
 				      struct poll_table_struct *wait);
 	int		(*ioctl)     (struct socket *sock, unsigned int cmd,
@@ -212,14 +212,14 @@ struct proto_ops {  /* struct socket 操作 */
 #endif
 	int		(*gettstamp) (struct socket *sock, void __user *userstamp,
 				      bool timeval, bool time32);
-    /**
-     *
-     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
-     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_listen()
-     */
-    int		(*listen)    (struct socket *sock, int len);
+	/**
+	 *
+	 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops  -> inet_listen()
+	 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops   -> inet_listen()
+	 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops  -> unix_listen()
+	 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops   -> unix_listen()
+	 */
+	int		(*listen)    (struct socket *sock, int len);
 	int		(*shutdown)  (struct socket *sock, int flags);
 	int		(*setsockopt)(struct socket *sock, int level,
 				      int optname, sockptr_t optval,

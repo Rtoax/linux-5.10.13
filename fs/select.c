@@ -998,6 +998,9 @@ static inline __poll_t do_pollfd(struct pollfd *pollfd, poll_table *pwait,
 	/* userland u16 ->events contains POLL... bitmap */
 	filter = demangle_poll(pollfd->events) | EPOLLERR | EPOLLHUP;
 	pwait->_key = filter | busy_flag;
+	/**
+	 *
+	 */
 	mask = vfs_poll(f.file, pwait);
 	if (mask & busy_flag)
 		*can_busy_poll = true;
@@ -1011,7 +1014,7 @@ out:
 }
 
 /**
- *
+ * $ sudo bpftrace -e 'kprobe:do_poll.constprop.0 {if (comm == "xdp_xskmap") {printf("%s %d %s\n", comm, pid, kstack);}}'
  */
 static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 		   struct timespec64 *end_time)
@@ -1144,17 +1147,17 @@ static int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds,
 		}
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	poll_initwait(&table);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	fdcount = do_poll(head, &table, end_time);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	poll_freewait(&table);
 
 	if (!user_write_access_begin(ufds, nfds * sizeof(*ufds)))
@@ -1168,9 +1171,9 @@ static int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds,
 			unsafe_put_user(fds->revents, &ufds->revents, Efault);
   	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	user_write_access_end();
 
 	err = fdcount;

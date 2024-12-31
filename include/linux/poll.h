@@ -105,11 +105,11 @@ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
  */
 static inline bool file_can_poll(struct file *file)
 {
-    /**
-     *  其中如下的 poll 回调
-     *
-     *  socket_file_ops.poll = sock_poll()
-     */
+	/**
+	 *  其中如下的 poll 回调
+	 *
+	 *  socket_file_ops.poll = sock_poll()
+	 */
 	return file->f_op->poll;
 }
 
@@ -121,11 +121,12 @@ static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
 	if (unlikely(!file->f_op->poll))
 		return DEFAULT_POLLMASK;
 
-    /**
-     *
-     *  socket_file_ops.poll = sock_poll()
-     *  eventpoll_fops.poll = ep_eventpoll_poll()
-     */
+	/**
+	 *
+	 *  socket_file_ops.poll = sock_poll()
+	 *  eventpoll_fops.poll = ep_eventpoll_poll()
+	 *  xsk_proto_ops.poll = xsk_poll()
+	 */
 	return file->f_op->poll(file, pt);
 }
 
@@ -133,14 +134,14 @@ static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
  *
  */
 struct poll_table_entry {   /* 轮询表项 */
-    /**
-     *  打开的文件
-     */
+	/**
+	 *  打开的文件
+	 */
 	struct file *filp;      /* 文件指针 */
 	__poll_t key;           /* key */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	wait_queue_entry_t wait;/* 等待队列 entry */
 	wait_queue_head_t *wait_address;    /* 等待队列 */
 };

@@ -485,6 +485,9 @@ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
 	return __xsk_sendmsg(sk);
 }
 
+/**
+ * $ sudo bpftrace -e 'kprobe:xsk_poll {printf("%s %d\n", comm, pid);}'
+ */
 static __poll_t xsk_poll(struct file *file, struct socket *sock,
 			     struct poll_table_struct *wait)
 {
@@ -1135,6 +1138,9 @@ static struct proto xsk_proto = {
 	.obj_size =	sizeof(struct xdp_sock),
 };
 
+/**
+ * AF_XDP
+ */
 static const struct proto_ops xsk_proto_ops = {
 	.family		= PF_XDP,
 	.owner		= THIS_MODULE,
@@ -1169,6 +1175,9 @@ static void xsk_destruct(struct sock *sk)
 	sk_refcnt_debug_dec(sk);
 }
 
+/**
+ * AF_XDP
+ */
 static int xsk_create(struct net *net, struct socket *sock, int protocol,
 		      int kern)
 {
@@ -1219,6 +1228,9 @@ static int xsk_create(struct net *net, struct socket *sock, int protocol,
 	return 0;
 }
 
+/**
+ * AF_XDP
+ */
 static const struct net_proto_family xsk_family_ops = {
 	.family = PF_XDP,
 	.create = xsk_create,
