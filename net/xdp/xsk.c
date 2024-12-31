@@ -487,6 +487,7 @@ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
 
 /**
  * $ sudo bpftrace -e 'kprobe:xsk_poll {printf("%s %d\n", comm, pid);}'
+ * $ sudo bpftrace -e 'kprobe:xsk_poll {time("%S ");printf("%s %d, ", comm, pid); } kretprobe:xsk_poll {printf("ret = 0x%lx, ", retval); @cnt = count(); print(@cnt);}'
  */
 static __poll_t xsk_poll(struct file *file, struct socket *sock,
 			     struct poll_table_struct *wait)
@@ -825,6 +826,11 @@ static int xsk_setsockopt(struct socket *sock, int level, int optname,
 		return -ENOPROTOOPT;
 
 	switch (optname) {
+	/**
+	 * sock_fd = socket(AF_XDP, SOCK_RAW | SOCK_CLOEXEC, 0);
+	 * setsockopt(sock_fd, SOL_XDP, XDP_RX_RING, &ring_size, sizeof(ring_size));
+	 * setsockopt(sock_fd, SOL_XDP, XDP_TX_RING, &ring_size, sizeof(ring_size));
+	 */
 	case XDP_RX_RING:
 	case XDP_TX_RING:
 	{
@@ -849,6 +855,9 @@ static int xsk_setsockopt(struct socket *sock, int level, int optname,
 		mutex_unlock(&xs->mutex);
 		return err;
 	}
+	/**
+	 * register xdp_umem_reg to AF_XDP
+	 */
 	case XDP_UMEM_REG:
 	{
 		size_t mr_size = sizeof(struct xdp_umem_reg);
@@ -981,6 +990,11 @@ static int xsk_getsockopt(struct socket *sock, int level, int optname,
 
 		return 0;
 	}
+	/**
+	 * struct xdp_mmap_offsets off = {0};
+	 * socklen_t optlen = sizeof(off);
+	 * getsockopt(sock_fd, SOL_XDP, XDP_MMAP_OFFSETS, &off, &optlen)
+	 */
 	case XDP_MMAP_OFFSETS:
 	{
 		struct xdp_mmap_offsets off;
@@ -1073,6 +1087,9 @@ static int xsk_mmap(struct file *file, struct socket *sock,
 	if (READ_ONCE(xs->state) != XSK_READY)
 		return -EBUSY;
 
+	/**
+	 * mmap(NULL, ..., sock_fd, XDP_PGOFF_RX_RING);
+	 */
 	if (offset == XDP_PGOFF_RX_RING) {
 		q = READ_ONCE(xs->rx);
 	} else if (offset == XDP_PGOFF_TX_RING) {
@@ -1080,6 +1097,9 @@ static int xsk_mmap(struct file *file, struct socket *sock,
 	} else {
 		/* Matches the smp_wmb() in XDP_UMEM_REG */
 		smp_rmb();
+		/**
+		 * mmap(NULL, ..., sock_fd, XDP_UMEM_PGOFF_FILL_RING);
+		 */
 		if (offset == XDP_UMEM_PGOFF_FILL_RING)
 			q = READ_ONCE(xs->fq_tmp);
 		else if (offset == XDP_UMEM_PGOFF_COMPLETION_RING)

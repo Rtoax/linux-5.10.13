@@ -237,6 +237,9 @@ out_account:
 	return err;
 }
 
+/**
+ * setsockopt(sock_fd, SOL_XDP, XDP_UMEM_REG, &umem_reg, sizeof(umem_reg));
+ */
 struct xdp_umem *xdp_umem_create(struct xdp_umem_reg *mr)
 {
 	struct xdp_umem *umem;

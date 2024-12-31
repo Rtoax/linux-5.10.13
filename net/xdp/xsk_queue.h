@@ -357,6 +357,9 @@ static inline void xskq_prod_submit_n(struct xsk_queue *q, u32 nb_entries)
 	__xskq_prod_submit(q, q->ring->producer + nb_entries);
 }
 
+/**
+ * producer is empty
+ */
 static inline bool xskq_prod_is_empty(struct xsk_queue *q)
 {
 	/* No barriers needed since data is not accessed */
