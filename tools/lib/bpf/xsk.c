@@ -719,6 +719,9 @@ int xsk_socket__create_shared(struct xsk_socket **xsk_ptr,
 		goto out_xsk_alloc;
 	}
 
+	/**
+	 * umem and xsk has different fd??
+	 */
 	if (umem->refcount++ > 0) {
 		xsk->fd = socket(AF_XDP, SOCK_RAW, 0);
 		if (xsk->fd < 0) {
