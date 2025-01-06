@@ -231,6 +231,9 @@ static int xsk_create_umem_rings(struct xsk_umem *umem, int fd,
 	if (err)
 		return -errno;
 
+	/**
+	 * why sizeof(__u64), not sizeof(struct xdp_desc)
+	 */
 	map = mmap(NULL, off.fr.desc + umem->config.fill_size * sizeof(__u64),
 		   PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd,
 		   XDP_UMEM_PGOFF_FILL_RING);

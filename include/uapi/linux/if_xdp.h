@@ -43,6 +43,9 @@ struct sockaddr_xdp {
 struct xdp_ring_offset {
 	__u64 producer;
 	__u64 consumer;
+	/**
+	 *
+	 */
 	__u64 desc;
 	__u64 flags;
 };

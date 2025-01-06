@@ -174,8 +174,15 @@ static inline __u32 xsk_prod_nb_free(struct xsk_ring_prod *r, __u32 nb)
 	return r->cached_cons - r->cached_prod;
 }
 
+/**
+ * called in
+ * xsk_ring_cons__peek()
+ */
 static inline __u32 xsk_cons_nb_avail(struct xsk_ring_cons *r, __u32 nb)
 {
+	/**
+	 * number = producer - consumer
+	 */
 	__u32 entries = r->cached_prod - r->cached_cons;
 
 	if (entries == 0) {
@@ -186,7 +193,8 @@ static inline __u32 xsk_cons_nb_avail(struct xsk_ring_cons *r, __u32 nb)
 	return (entries > nb) ? nb : entries;
 }
 
-static inline __u32 xsk_ring_prod__reserve(struct xsk_ring_prod *prod, __u32 nb, __u32 *idx)
+static inline __u32 xsk_ring_prod__reserve(struct xsk_ring_prod *prod, __u32 nb,
+					   __u32 *idx)
 {
 	if (xsk_prod_nb_free(prod, nb) < nb)
 		return 0;
@@ -205,7 +213,9 @@ static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, __u32 nb)
 	libbpf_smp_store_release(prod->producer, *prod->producer + nb);
 }
 
-static inline __u32 xsk_ring_cons__peek(struct xsk_ring_cons *cons, __u32 nb, __u32 *idx)
+/* peek 窥视 */
+static inline __u32 xsk_ring_cons__peek(struct xsk_ring_cons *cons, __u32 nb,
+					__u32 *idx)
 {
 	__u32 entries = xsk_cons_nb_avail(cons, nb);
 

@@ -858,6 +858,10 @@ static bool is_pkt_valid(struct pkt *pkt, void *buffer, u64 addr, u32 len)
 	return true;
 }
 
+/**
+ * Also, when XDP_USE_NEED_WAKEUP is set, the sending of packets queued in the
+ * TX buffer only happens when triggered by the sendto syscall like so:
+ */
 static void kick_tx(struct xsk_socket_info *xsk)
 {
 	int ret;
@@ -872,6 +876,10 @@ static void kick_tx(struct xsk_socket_info *xsk)
 	exit_with_error(errno);
 }
 
+/**
+ * When XDP_USE_NEED_WAKEUP is set, the consuming of the FILL ring buffer must
+ * be triggered by a recvfrom syscall like so:
+ */
 static void kick_rx(struct xsk_socket_info *xsk)
 {
 	int ret;
@@ -906,6 +914,9 @@ static int complete_pkts(struct xsk_socket_info *xsk, int batch_size)
 	return TEST_PASS;
 }
 
+/**
+ * XSK receive packets
+ */
 static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 {
 	struct timeval tv_end, tv_now, tv_timeout = {THREAD_TMOUT, 0};
@@ -932,6 +943,10 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 			return TEST_FAILURE;
 		}
 
+		/**
+		 * When XDP_USE_NEED_WAKEUP is set, the consuming of the FILL
+		 * ring buffer must be triggered by a recvfrom syscall
+		 */
 		kick_rx(xsk);
 		if (ifobj->use_poll) {
 			ret = poll(fds, 1, POLL_TMOUT);
@@ -951,6 +966,7 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 				continue;
 		}
 
+		/* peek 窥视 */
 		rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
 		if (!rcvd)
 			continue;
