@@ -67,13 +67,13 @@ EXPORT_SYMBOL(generic_fillattr);
 int vfs_getattr_nosec(const struct path *path, struct kstat *stat,
 		      u32 request_mask, unsigned int query_flags)
 {
-    /**
-     *  获取 inode
-     */
+	/**
+	 *  获取 inode
+	 */
 	struct inode *inode = d_backing_inode(path->dentry);
-    /**
-     *  置零
-     */
+	/**
+	 *  置零
+	 */
 	memset(stat, 0, sizeof(*stat));
 	stat->result_mask |= STATX_BASIC_STATS;
 	query_flags &= AT_STATX_SYNC_TYPE;
@@ -88,15 +88,15 @@ int vfs_getattr_nosec(const struct path *path, struct kstat *stat,
 	if (IS_DAX(inode))
 		stat->attributes |= STATX_ATTR_DAX;
 
-    /**
-     *  调用 inode 的 getattr(), 见 inode_operations 结构体
-     */
+	/**
+	 *  调用 inode 的 getattr(), 见 inode_operations 结构体
+	 */
 	if (inode->i_op->getattr)
 		return inode->i_op->getattr(path, stat, request_mask,
 					    query_flags);
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	generic_fillattr(inode, stat);
 	return 0;
 }
@@ -127,16 +127,16 @@ int vfs_getattr(const struct path *path, struct kstat *stat,
 		u32 request_mask, unsigned int query_flags)
 {
 	int retval;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	retval = security_inode_getattr(path);
 	if (retval)
 		return retval;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	return vfs_getattr_nosec(path, stat, request_mask, query_flags);
 }
 EXPORT_SYMBOL(vfs_getattr);
@@ -179,7 +179,7 @@ int vfs_fstat(int fd, struct kstat *stat)
  *
  * 0 will be returned on success, and a -ve error code if unsuccessful.
  *
- * 获取文件属性  
+ * 获取文件属性
  */
 static int vfs_statx(int dfd, const char __user *filename, int flags,
 	      struct kstat *stat, u32 request_mask)
@@ -200,16 +200,16 @@ static int vfs_statx(int dfd, const char __user *filename, int flags,
 		lookup_flags |= LOOKUP_EMPTY;
 
 retry:
-    /**
-     *  找到这个文件
-     */
+	/**
+	 *  找到这个文件
+	 */
 	error = user_path_at(dfd, filename, lookup_flags, &_path);
 	if (error)
 		goto out;
 
-    /**
-     *  获取属性信息
-     */
+	/**
+	 *  获取属性信息
+	 */
 	error = vfs_getattr(&_path, stat, request_mask, flags);
 	stat->mnt_id = real_mount(_path.mnt)->mnt_id;
 	stat->result_mask |= STATX_MNT_ID;
@@ -289,7 +289,7 @@ SYSCALL_DEFINE2(stat, const char __user *, filename,
 	if (error)
 		return error;
     /**
-     *  
+     *
      */
 	return cp_old_stat(&stat, statbuf);
 }
@@ -451,7 +451,7 @@ retry:
 	}
 	return error;
 }
-             
+
 ssize_t readlinkat(int dirfd, const char *pathname,
                        char *buf, size_t bufsiz){}//++++
 SYSCALL_DEFINE4(readlinkat, int, dfd, const char __user *, pathname,
@@ -522,7 +522,7 @@ SYSCALL_DEFINE2(stat64, const char __user *, filename,
 
 	return error;
 }
-        
+
 int lstat64(const char *pathname, struct stat64 *statbuf){}//++++
 SYSCALL_DEFINE2(lstat64, const char __user *, filename,
 		struct stat64 __user *, statbuf)
