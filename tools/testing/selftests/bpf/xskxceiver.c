@@ -894,9 +894,19 @@ static int complete_pkts(struct xsk_socket_info *xsk, int batch_size)
 	unsigned int rcvd;
 	u32 idx;
 
+	/**
+	 * call kick_tx()
+	 */
 	if (xsk_ring_prod__needs_wakeup(&xsk->tx))
 		kick_tx(xsk);
 
+	/**
+	 * Check for new packets in the ring. returns the number of packets that
+	 * are available in the consumer ring (idx).
+	 *
+	 * It can be less than or equal to the number of packets requested to
+	 * peek.
+	 */
 	rcvd = xsk_ring_cons__peek(&xsk->umem->cq, batch_size, &idx);
 	if (rcvd) {
 		if (rcvd > xsk->outstanding_tx) {
@@ -907,6 +917,13 @@ static int complete_pkts(struct xsk_socket_info *xsk, int batch_size)
 			return TEST_FAILURE;
 		}
 
+		/**
+		 * clear pkt in completion ring.
+		 *
+		 * The kernel will see the pending packet, consume the TX
+		 * buffer, and send out the packet on the NIC. It will then
+		 * return the chunk on the COMPLETION buffer.
+		 */
 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
 		xsk->outstanding_tx -= rcvd;
 	}
@@ -997,6 +1014,11 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 				return TEST_FAILURE;
 
 			if (ifobj->use_fill_ring)
+				/**
+				 * Use this function to get a pointer to a slot
+				 * in the fill ring to set the address of a
+				 * packet buffer.
+				 */
 				*xsk_ring_prod__fill_addr(&umem->fq, idx_fq++) = orig;
 			pkt = pkt_stream_get_next_rx_pkt(pkt_stream, &pkts_sent);
 		}
@@ -1024,6 +1046,9 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 	bool use_poll = ifobject->use_poll;
 	u32 i, idx = 0, ret, valid_pkts = 0;
 
+	/**
+	 * reserve slots from tx ring.
+	 */
 	while (xsk_ring_prod__reserve(&xsk->tx, BATCH_SIZE, &idx) < BATCH_SIZE) {
 		if (use_poll) {
 			ret = poll(fds, 1, POLL_TMOUT);
@@ -1044,10 +1069,17 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 			}
 		}
 
+		/**
+		 * call kick_tx() and clear completion ring.
+		 */
 		complete_pkts(xsk, BATCH_SIZE);
 	}
 
 	for (i = 0; i < BATCH_SIZE; i++) {
+		/**
+		 * This function allow to access a specific transmit descriptor
+		 * in the TX ring.
+		 */
 		struct xdp_desc *tx_desc = xsk_ring_prod__tx_desc(&xsk->tx, idx + i);
 		struct pkt *pkt = pkt_generate(ifobject, *pkt_nb);
 
@@ -1070,6 +1102,9 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 	}
 	pthread_mutex_unlock(&pacing_mutex);
 
+	/**
+	 * submit to tx ring. (i is number of chunks)
+	 */
 	xsk_ring_prod__submit(&xsk->tx, i);
 	xsk->outstanding_tx += valid_pkts;
 
@@ -1085,6 +1120,9 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 	}
 
 	if (!timeout) {
+		/**
+		 * call kick_tx() and clear completion ring.
+		 */
 		if (complete_pkts(xsk, i))
 			return TEST_FAILURE;
 

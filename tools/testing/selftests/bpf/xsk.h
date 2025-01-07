@@ -117,6 +117,12 @@ DEFINE_XSK_RING(xsk_ring_cons);
 struct xsk_umem;
 struct xsk_socket;
 
+/**
+ * Use this function to get a pointer to a slot in the fill ring to set the
+ * address of a packet buffer.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_prod__fill_addr/
+ */
 static inline __u64 *xsk_ring_prod__fill_addr(struct xsk_ring_prod *fill,
 					      __u32 idx)
 {
@@ -125,6 +131,11 @@ static inline __u64 *xsk_ring_prod__fill_addr(struct xsk_ring_prod *fill,
 	return &addrs[idx & fill->mask];
 }
 
+/**
+ * This function is to read the address of a specific entry in the consumer ring.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_cons__comp_addr/
+ */
 static inline const __u64 *
 xsk_ring_cons__comp_addr(const struct xsk_ring_cons *comp, __u32 idx)
 {
@@ -133,6 +144,11 @@ xsk_ring_cons__comp_addr(const struct xsk_ring_cons *comp, __u32 idx)
 	return &addrs[idx & comp->mask];
 }
 
+/**
+ * This function allow to access a specific transmit descriptor in the TX ring.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_prod__tx_desc/
+ */
 static inline struct xdp_desc *xsk_ring_prod__tx_desc(struct xsk_ring_prod *tx,
 						      __u32 idx)
 {
@@ -141,6 +157,12 @@ static inline struct xdp_desc *xsk_ring_prod__tx_desc(struct xsk_ring_prod *tx,
 	return &descs[idx & tx->mask];
 }
 
+/**
+ * This function is used to retrieve the receive descriptor at a specific index
+ * in the Rx ring.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_cons__rx_desc/
+ */
 static inline const struct xdp_desc *
 xsk_ring_cons__rx_desc(const struct xsk_ring_cons *rx, __u32 idx)
 {
@@ -149,6 +171,12 @@ xsk_ring_cons__rx_desc(const struct xsk_ring_cons *rx, __u32 idx)
 	return &descs[idx & rx->mask];
 }
 
+/**
+ * This function function checks if the kernel needs to be woken up to process
+ * the producer ring.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_prod__needs_wakeup/
+ */
 static inline int xsk_ring_prod__needs_wakeup(const struct xsk_ring_prod *r)
 {
 	return *r->flags & XDP_RING_NEED_WAKEUP;
@@ -193,6 +221,11 @@ static inline __u32 xsk_cons_nb_avail(struct xsk_ring_cons *r, __u32 nb)
 	return (entries > nb) ? nb : entries;
 }
 
+/**
+ * Reserve one or more slots in a producer ring.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_prod__reserve/
+ */
 static inline __u32 xsk_ring_prod__reserve(struct xsk_ring_prod *prod, __u32 nb,
 					   __u32 *idx)
 {
@@ -205,6 +238,11 @@ static inline __u32 xsk_ring_prod__reserve(struct xsk_ring_prod *prod, __u32 nb,
 	return nb;
 }
 
+/**
+ * Submit the filled slots so the kernel can process them.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_prod__submit/
+ */
 static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, __u32 nb)
 {
 	/* Make sure everything has been written to the ring before indicating
@@ -213,6 +251,13 @@ static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, __u32 nb)
 	libbpf_smp_store_release(prod->producer, *prod->producer + nb);
 }
 
+/**
+ * Check for new packets in the ring.
+ *
+ * __u32 returns the number of packets that are available in the consumer ring (idx).
+ *
+ * It can be less than or equal to the number of packets requested to peek.
+ */
 /* peek 窥视 */
 static inline __u32 xsk_ring_cons__peek(struct xsk_ring_cons *cons, __u32 nb,
 					__u32 *idx)
@@ -227,6 +272,9 @@ static inline __u32 xsk_ring_cons__peek(struct xsk_ring_cons *cons, __u32 nb,
 	return entries;
 }
 
+/**
+ * Cancel the reservation of one or more slots in a consumer ring.
+ */
 static inline void xsk_ring_cons__cancel(struct xsk_ring_cons *cons, __u32 nb)
 {
 	cons->cached_cons -= nb;

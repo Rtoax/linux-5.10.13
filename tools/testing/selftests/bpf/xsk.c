@@ -282,6 +282,9 @@ out_mmap:
 	return err;
 }
 
+/**
+ * Create an umem area.
+ */
 int xsk_umem__create(struct xsk_umem **umem_ptr, void *umem_area,
 		     __u64 size, struct xsk_ring_prod *fill,
 		     struct xsk_ring_cons *comp,

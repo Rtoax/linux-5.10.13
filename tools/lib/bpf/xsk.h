@@ -135,6 +135,13 @@ static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, size_t nb)
 	*prod->producer += nb;
 }
 
+/**
+ * Check for new packets in the ring.
+ *
+ * __u32 returns the number of packets that are available in the consumer ring (idx).
+ *
+ * It can be less than or equal to the number of packets requested to peek.
+ */
 static inline size_t xsk_ring_cons__peek(struct xsk_ring_cons *cons,
 					 size_t nb, __u32 *idx)
 {
