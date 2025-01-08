@@ -884,6 +884,9 @@ static void kick_rx(struct xsk_socket_info *xsk)
 {
 	int ret;
 
+	/**
+	 * see struct proto_ops xsk_proto_ops.recvmsg = sock_no_recvmsg()
+	 */
 	ret = recvfrom(xsk_socket__fd(xsk->xsk), NULL, 0, MSG_DONTWAIT, NULL, NULL);
 	if (ret < 0)
 		exit_with_error(errno);
@@ -963,6 +966,8 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 		/**
 		 * When XDP_USE_NEED_WAKEUP is set, the consuming of the FILL
 		 * ring buffer must be triggered by a recvfrom syscall
+		 *
+		 * tell kernel could consume FILL RING.
 		 */
 		kick_rx(xsk);
 		if (ifobj->use_poll) {

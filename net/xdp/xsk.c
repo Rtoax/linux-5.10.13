@@ -1155,6 +1155,9 @@ static int xsk_notifier(struct notifier_block *this,
 	return NOTIFY_DONE;
 }
 
+/**
+ *
+ */
 static struct proto xsk_proto = {
 	.name =		"XDP",
 	.owner =	THIS_MODULE,
@@ -1180,6 +1183,9 @@ static const struct proto_ops xsk_proto_ops = {
 	.setsockopt	= xsk_setsockopt,
 	.getsockopt	= xsk_getsockopt,
 	.sendmsg	= xsk_sendmsg,
+	/**
+	 * kick_rx()
+	 */
 	.recvmsg	= sock_no_recvmsg,
 	.mmap		= xsk_mmap,
 	.sendpage	= sock_no_sendpage,
@@ -1225,6 +1231,9 @@ static int xsk_create(struct net *net, struct socket *sock, int protocol,
 
 	sock_init_data(sock, sk);
 
+	/**
+	 *
+	 */
 	sk->sk_family = PF_XDP;
 
 	sk->sk_destruct = xsk_destruct;
@@ -1252,7 +1261,7 @@ static int xsk_create(struct net *net, struct socket *sock, int protocol,
 }
 
 /**
- * AF_XDP
+ * AF_XDP xsk
  */
 static const struct net_proto_family xsk_family_ops = {
 	.family = PF_XDP,

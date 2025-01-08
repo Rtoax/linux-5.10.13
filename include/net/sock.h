@@ -1151,120 +1151,108 @@ static inline void sk_prot_clear_nulls(struct sock *sk, int size)
  * udp_prot
  * raw_prot
  * ping_prot
+ * xsk_proto
  *
  */
 struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输层的接口)*/
-	void			(*close)(struct sock *sk,
-					long timeout);
-	int			(*pre_connect)(struct sock *sk,
-					struct sockaddr *uaddr,
-					int addr_len);
-	int			(*connect)(struct sock *sk,
-					struct sockaddr *uaddr,
-					int addr_len);
-	int			(*disconnect)(struct sock *sk, int flags);
+	void (*close)(struct sock *sk, long timeout);
+	int (*pre_connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
+	int (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
+	int (*disconnect)(struct sock *sk, int flags);
 
-	sock_t		(*accept)(struct sock *sk, int flags, int *err,
-					  bool kern);
+	sock_t (*accept)(struct sock *sk, int flags, int *err, bool kern);
 
-	int			(*ioctl)(struct sock *sk, int cmd,
-					 unsigned long arg);
-	int			(*init)(struct sock *sk);
-	void			(*destroy)(struct sock *sk);
-	void			(*shutdown)(struct sock *sk, int how);
-	int			(*setsockopt)(struct sock *sk, int level,
-					int optname, sockptr_t optval,
-					unsigned int optlen);
-	int			(*getsockopt)(struct sock *sk, int level,
-					int optname, char __user *optval,
-					int __user *option);
-	void			(*keepalive)(struct sock *sk, int valbool);
+	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
+	int (*init)(struct sock *sk);
+	void (*destroy)(struct sock *sk);
+	void (*shutdown)(struct sock *sk, int how);
+	int (*setsockopt)(struct sock *sk, int level, int optname, sockptr_t optval,
+		   unsigned int optlen);
+	int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval,
+		   int __user *option);
+	void (*keepalive)(struct sock *sk, int valbool);
 #ifdef CONFIG_COMPAT
-	int			(*compat_ioctl)(struct sock *sk,
-					unsigned int cmd, unsigned long arg);
+	int (*compat_ioctl)(struct sock *sk, unsigned int cmd, unsigned long arg);
 #endif
-	int			(*sendmsg)(struct sock *sk, struct msghdr *msg,
-					   size_t len);
-	int			(*recvmsg)(struct sock *sk, struct msghdr *msg,
-					   size_t len, int noblock, int flags,
-					   int *addr_len);
-	int			(*sendpage)(struct sock *sk, struct page *page,
-					int offset, size_t size, int flags);
-	int			(*bind)(struct sock *sk,
-					struct sockaddr *addr, int addr_len);
-	int			(*bind_add)(struct sock *sk,
-					struct sockaddr *addr, int addr_len);
+	int (*sendmsg)(struct sock *sk, struct msghdr *msg, size_t len);
+	/**
+	 *
+	 */
+	int (*recvmsg)(struct sock *sk, struct msghdr *msg, size_t len,
+		int noblock, int flags, int *addr_len);
+	int (*sendpage)(struct sock *sk, struct page *page, int offset, size_t size, int flags);
+	int (*bind)(struct sock *sk, struct sockaddr *addr, int addr_len);
+	int (*bind_add)(struct sock *sk, struct sockaddr *addr, int addr_len);
 
-	int			(*backlog_rcv) (struct sock *sk,
-						struct sk_buff *skb);
+	int (*backlog_rcv) (struct sock *sk, struct sk_buff *skb);
 
-	void		(*release_cb)(struct sock *sk);
+	void  (*release_cb)(struct sock *sk);
 
 	/* Keeping track of sk's, looking them up, and port selection methods. */
-	int			(*hash)(struct sock *sk);
-	void			(*unhash)(struct sock *sk);
-	void			(*rehash)(struct sock *sk);
-	int			(*get_port)(struct sock *sk, unsigned short snum);
+	int (*hash)(struct sock *sk);
+	void (*unhash)(struct sock *sk);
+	void (*rehash)(struct sock *sk);
+	int (*get_port)(struct sock *sk, unsigned short snum);
 
 	/* Keeping track of sockets in use */
 #ifdef CONFIG_PROC_FS
-	unsigned int		inuse_idx;
+	unsigned int  inuse_idx;
 #endif
 
-	bool			(*stream_memory_free)(const struct sock *sk, int wake);
-	bool			(*stream_memory_read)(const struct sock *sk);
+	bool (*stream_memory_free)(const struct sock *sk, int wake);
+	bool (*stream_memory_read)(const struct sock *sk);
 	/* Memory pressure */
-	void			(*enter_memory_pressure)(struct sock *sk);
-	void			(*leave_memory_pressure)(struct sock *sk);
-	atomic_long_t		*memory_allocated;	/* Current allocated memory. */
-	struct percpu_counter	*sockets_allocated;	/* Current number of sockets. */
+	void (*enter_memory_pressure)(struct sock *sk);
+	void (*leave_memory_pressure)(struct sock *sk);
+	atomic_long_t  *memory_allocated; /* Current allocated memory. */
+	struct percpu_counter *sockets_allocated; /* Current number of sockets. */
 	/*
 	 * Pressure flag: try to collapse.
 	 * Technical note: it is used by multiple contexts non atomically.
 	 * All the __sk_mem_schedule() is of this nature: accounting
 	 * is strict, actions are advisory and have some latency.
 	 */
-	unsigned long		*memory_pressure;
-	long			*sysctl_mem;
+	unsigned long *memory_pressure;
+	long *sysctl_mem;
 
-	int			*sysctl_wmem;
-	int			*sysctl_rmem;
-	u32			sysctl_wmem_offset;
-	u32			sysctl_rmem_offset;
+	int *sysctl_wmem;
+	int *sysctl_rmem;
+	u32 sysctl_wmem_offset;
+	u32 sysctl_rmem_offset;
 
-	int			max_header;
-	bool			no_autobind;
+	int max_header;
+	bool no_autobind;
 
 	/**
 	 *  可能为空
 	 */
-	struct kmem_cache	*slab;
-	unsigned int		obj_size;
-	slab_flags_t		slab_flags;
-	unsigned int		useroffset;	/* Usercopy region offset */
-	unsigned int		usersize;	/* Usercopy region size */
+	struct kmem_cache *slab;
+	unsigned int  obj_size;
+	slab_flags_t  slab_flags;
+	unsigned int  useroffset; /* Usercopy region offset */
+	unsigned int  usersize; /* Usercopy region size */
 
-	struct percpu_counter	*orphan_count;
+	struct percpu_counter *orphan_count;
 
-	struct request_sock_ops	*rsk_prot;
+	struct request_sock_ops *rsk_prot;
 	struct timewait_sock_ops *twsk_prot;
 
 	union {
-		struct inet_hashinfo	*hashinfo;
-		struct udp_table	*udp_table;
-		struct raw_hashinfo	*raw_hash;
-		struct smc_hashinfo	*smc_hash;
+		struct inet_hashinfo *hashinfo;
+		struct udp_table *udp_table;
+		struct raw_hashinfo *raw_hash;
+		struct smc_hashinfo *smc_hash;
 	} h;
 
-	struct module		*owner;
+	struct module  *owner;
 
-	char			name[32];
+	char   name[32];
 
-	struct list_head	node;
+	struct list_head node;
 #ifdef SOCK_REFCNT_DEBUG
-	atomic_t		socks;
+	atomic_t  socks;
 #endif
-	int			(*diag_destroy)(struct sock *sk, int err);
+	int (*diag_destroy)(struct sock *sk, int err);
 } __randomize_layout;
 
 int proto_register(struct proto *prot, int alloc_slab);
