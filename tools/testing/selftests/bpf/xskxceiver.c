@@ -581,6 +581,9 @@ static struct pkt *pkt_stream_get_pkt(struct pkt_stream *pkt_stream, u32 pkt_nb)
 
 static struct pkt *pkt_stream_get_next_rx_pkt(struct pkt_stream *pkt_stream, u32 *pkts_sent)
 {
+	/**
+	 *
+	 */
 	while (pkt_stream->rx_pkt_nb < pkt_stream->nb_pkts) {
 		(*pkts_sent)++;
 		if (pkt_stream->pkts[pkt_stream->rx_pkt_nb].valid)
@@ -709,8 +712,14 @@ static void pkt_stream_receive_half(struct test_spec *test)
 		pkt_stream->pkts[i].valid = false;
 }
 
+/**
+ * genrate packet
+ */
 static struct pkt *pkt_generate(struct ifobject *ifobject, u32 pkt_nb)
 {
+	/**
+	 *
+	 */
 	struct pkt *pkt = pkt_stream_get_pkt(ifobject->pkt_stream, pkt_nb);
 	struct udphdr *udp_hdr;
 	struct ethhdr *eth_hdr;
@@ -953,6 +962,9 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 		exit_with_error(errno);
 	timeradd(&tv_now, &tv_timeout, &tv_end);
 
+	/**
+	 * _MUST_ need valid slot in pkt_stream.
+	 */
 	pkt = pkt_stream_get_next_rx_pkt(pkt_stream, &pkts_sent);
 	while (pkt) {
 		ret = gettimeofday(&tv_now, NULL);
@@ -988,12 +1000,22 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 				continue;
 		}
 
-		/* peek 窥视 */
+		/**
+		 * have 'rcvd' number rx pkts
+		 *
+		 * peek 窥视
+		 */
 		rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
 		if (!rcvd)
 			continue;
 
 		if (ifobj->use_fill_ring) {
+			/**
+			 * reserve fill ring, Reserve one or more slots in a
+			 * producer ring.
+			 *
+			 * If rx pkts, fill producer should add pkts.
+			 */
 			ret = xsk_ring_prod__reserve(&umem->fq, rcvd, &idx_fq);
 			while (ret != rcvd) {
 				if (ret < 0)
@@ -1007,7 +1029,16 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 			}
 		}
 
+		/**
+		 * handle each slot of rx ring
+		 */
 		for (i = 0; i < rcvd; i++) {
+			/**
+			 * get desc from rx ring slot
+			 *
+			 * This function is used to retrieve(取回) the receive
+			 * descriptor at a specific index in the Rx ring.
+			 */
 			const struct xdp_desc *desc = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx++);
 			u64 addr = desc->addr, orig;
 
@@ -1025,11 +1056,29 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 				 * packet buffer.
 				 */
 				*xsk_ring_prod__fill_addr(&umem->fq, idx_fq++) = orig;
+			/**
+			 * get valid pkt_stream slot
+			 */
 			pkt = pkt_stream_get_next_rx_pkt(pkt_stream, &pkts_sent);
+
+			/**
+			 * Does we could fill pkt fields here?
+			 */
 		}
 
+		/**
+		 * fill ring: Submit the filled slots so the kernel can process
+		 * them.
+		 */
 		if (ifobj->use_fill_ring)
 			xsk_ring_prod__submit(&umem->fq, rcvd);
+		/**
+		 * This function releases a specified number of packets that
+		 * have been processed from the consumer ring back to the
+		 * kernel. Indicates to the kernel that these packets have
+		 * been consumed and the buffers can be reused for new
+		 * incoming packets.
+		 */
 		if (ifobj->release_rx)
 			xsk_ring_cons__release(&xsk->rx, rcvd);
 
@@ -1086,6 +1135,9 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 		 * in the TX ring.
 		 */
 		struct xdp_desc *tx_desc = xsk_ring_prod__tx_desc(&xsk->tx, idx + i);
+		/**
+		 * genrate packet
+		 */
 		struct pkt *pkt = pkt_generate(ifobject, *pkt_nb);
 
 		if (!pkt)
@@ -1109,6 +1161,8 @@ static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fd
 
 	/**
 	 * submit to tx ring. (i is number of chunks)
+	 *
+	 * Submit the filled slots so the kernel can process them.
 	 */
 	xsk_ring_prod__submit(&xsk->tx, i);
 	xsk->outstanding_tx += valid_pkts;
@@ -1357,6 +1411,9 @@ static void thread_common_ops(struct test_spec *test, struct ifobject *ifobject)
 	if (ret)
 		exit_with_error(-ret);
 
+	/**
+	 * make kernel could use fill ring to rx pkts.
+	 */
 	xsk_populate_fill_ring(ifobject->umem, ifobject->pkt_stream);
 
 	xsk_configure_socket(test, ifobject, ifobject->umem, false);
@@ -1410,6 +1467,9 @@ static void *worker_testapp_validate_tx(void *arg)
 
 	print_verbose("Sending %d packets on interface %s\n", ifobject->pkt_stream->nb_pkts,
 		      ifobject->ifname);
+	/**
+	 *
+	 */
 	err = send_pkts(test, ifobject);
 
 	if (!err && ifobject->validation_func)

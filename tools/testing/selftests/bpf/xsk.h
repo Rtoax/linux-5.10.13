@@ -158,8 +158,8 @@ static inline struct xdp_desc *xsk_ring_prod__tx_desc(struct xsk_ring_prod *tx,
 }
 
 /**
- * This function is used to retrieve the receive descriptor at a specific index
- * in the Rx ring.
+ * This function is used to retrieve(取回) the receive descriptor at a specific
+ * index in the Rx ring.
  *
  * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_cons__rx_desc/
  */
@@ -280,6 +280,14 @@ static inline void xsk_ring_cons__cancel(struct xsk_ring_cons *cons, __u32 nb)
 	cons->cached_cons -= nb;
 }
 
+/**
+ * This function releases a specified number of packets that have been processed
+ * from the consumer ring back to the kernel. Indicates to the kernel that these
+ * packets have been consumed and the buffers can be reused for new incoming
+ * packets.
+ *
+ * https://docs.ebpf.io/ebpf-library/libxdp/functions/xsk_ring_cons__release/
+ */
 static inline void xsk_ring_cons__release(struct xsk_ring_cons *cons, __u32 nb)
 {
 	/* Make sure data has been read before indicating we are done
@@ -294,6 +302,9 @@ static inline void *xsk_umem__get_data(void *umem_area, __u64 addr)
 	return &((char *)umem_area)[addr];
 }
 
+/**
+ * This function extract the memory address in unaligned mode.
+ */
 static inline __u64 xsk_umem__extract_addr(__u64 addr)
 {
 	return addr & XSK_UNALIGNED_BUF_ADDR_MASK;
