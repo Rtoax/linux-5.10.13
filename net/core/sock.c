@@ -2360,6 +2360,9 @@ failure:
 }
 EXPORT_SYMBOL(sock_alloc_send_pskb);
 
+/**
+ *
+ */
 struct sk_buff *sock_alloc_send_skb(struct sock *sk, unsigned long size,
 				    int noblock, int *errcode)
 {

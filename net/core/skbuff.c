@@ -2584,8 +2584,9 @@ EXPORT_SYMBOL_GPL(skb_send_sock_locked);
  *	Copy the specified number of bytes from the source buffer to the
  *	destination skb.  This function handles all the messy bits of
  *	traversing fragment lists and such.
+ *
+ * $ sudo bpftrace  -e 'kprobe:skb_store_bits {printf("%s, buffer %lx, %s\n", comm, arg2, kstack);}'
  */
-
 int skb_store_bits(struct sk_buff *skb, int offset, const void *from, int len)
 {
 	int start = skb_headlen(skb);

@@ -179,6 +179,9 @@ static inline bool xskq_cons_is_valid_desc(struct xsk_queue *q,
 	return true;
 }
 
+/**
+ * read desc from tx ring
+ */
 static inline bool xskq_cons_read_desc(struct xsk_queue *q,
 				       struct xdp_desc *desc,
 				       struct xsk_buff_pool *pool)

@@ -4207,6 +4207,9 @@ int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev)
 }
 EXPORT_SYMBOL(dev_queue_xmit_accel);
 
+/**
+ * $ sudo bpftrace  -e 'kprobe:__dev_direct_xmit {printf("%s, queue_id %ld, %s\n", comm, arg1, kstack);}'
+ */
 int __dev_direct_xmit(struct sk_buff *skb, u16 queue_id)
 {
 	struct net_device *dev = skb->dev;

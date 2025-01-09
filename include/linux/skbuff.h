@@ -736,36 +736,38 @@ typedef struct sk_buff* psk_buff_t; //我加的
  *  dev_kfree_skb   内存释放
  */
 struct sk_buff {    /* 网络协议栈 包结构 */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		struct {
 			/* These two members must be first. */
-            /**
-             *  见 sk_buff_head 的 next 和 prev 组成双向链表
-             */
-            /**
-             *  sk_buff 链表中的下一个缓冲区
-             */
+			/**
+			 *  见 sk_buff_head 的 next 和 prev 组成双向链表
+			 *
+			 *  sk_buff 链表中的下一个缓冲区
+			 */
 			struct sk_buff		*next;
 
-            /**
-             *  sk_buff 链表中的下一个缓冲区，这两个变量将 sk_buff 链接到一个双向链表中
-             */
+			/**
+			 * sk_buff 链表中的下一个缓冲区，这两个变量将 sk_buff 链接
+			 * 到一个双向链表中
+			 */
 			struct sk_buff		*prev;
 
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			union {
-                /**
-                 *  收到此报文的网络设备
-                 *  dev代表的设备的作用取决于缓冲区中存储的数据包是要发送还是刚刚被接收。
-                 *
-                 *  1. 当收到数据包后，设备驱动程序会使用指向接收数据接口的指针来更新此字段。
-                 *  2. 当要发送数据包时，此参数表示将通过其发送出去的设备。
-                 */
+				/**
+				 *  收到此报文的网络设备
+				 *  dev代表的设备的作用取决于缓冲区中存储的数据包是要
+				 *  发送还是刚刚被接收。
+				 *
+				 *  1. 当收到数据包后，设备驱动程序会使用指向接收数据接
+				 *     口的指针来更新此字段。
+				 *  2. 当要发送数据包时，此参数表示将通过其发送出去的设备。
+				 */
 				struct net_device	*dev;
 				/* Some protocols might use this space to store information,
 				 * while device pointer would be NULL.
@@ -774,33 +776,33 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 				unsigned long		dev_scratch;
 			};
 		};
-        /**
-         *  红黑树的根为 `struct sock->tcp_rtx_queue`
-         *  在 `tcp_rbtree_insert()` 插入
-         */
+		/**
+		 *  红黑树的根为 `struct sock->tcp_rtx_queue`
+		 *  在 `tcp_rbtree_insert()` 插入
+		 */
 		struct rb_node		rbnode; /* used in netem, ip4 defrag, and tcp stack */
 		struct list_head	list;
 	};
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
-        /**
-         *  本网络 报文所属的 sock 结构
-         *  此值 仅在本机发出的报文中有效，从网络收到的报文此值为空
-         */
+		/**
+		 *  本网络 报文所属的 sock 结构
+		 *  此值 仅在本机发出的报文中有效，从网络收到的报文此值为空
+		 */
 		struct sock		*sk;
 		int			ip_defrag_offset;
 	};
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
-        /**
-         *  报文收到的时间戳
-         */
+		/**
+		 *  报文收到的时间戳
+		 */
 		ktime_t		tstamp;
 		u64		skb_mstamp_ns; /* earliest departure time */
 	};
@@ -818,20 +820,23 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	 */
 	char		__aligned8	cb[48] ;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		struct {
 			unsigned long	_skb_refdst;
 
-            /**
-             *  这个函数指针能够在运行时被赋值，从而在一个 buffer 被移除时，执行一些操作。
-             *
-             *  1. 当一个 buffer 不属于一个 socket 时，这个函数指针通常为空。
-             *  2. 当一个 buffer 属于一个 socket 时，这个函数指针通常被设置为 sock_rfree 或 sock_wfree
-             *      两个 sock_xxx 函数用于更新 socket 在它的队列中持有的大量内存。
-             */
+			/**
+			 *  这个函数指针能够在运行时被赋值，从而在一个 buffer 被移除时，
+			 *  执行一些操作。
+			 *
+			 *  1. 当一个 buffer 不属于一个 socket 时，这个函数指针通常为空。
+			 *  2. 当一个 buffer 属于一个 socket 时，这个函数指针通常被设置
+			 *     为 sock_rfree 或 sock_wfree
+			 *
+			 *  两个 sock_xxx 函数用于更新 socket 在它的队列中持有的大量内存。
+			 */
 			void		(*destructor)(struct sk_buff *skb);
 		};
 		struct list_head	tcp_tsorted_anchor;
@@ -841,20 +846,20 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	unsigned long		 _nfct;
 #endif
 
-    /**
-     *  len     表示在 buffer 中数据区域的大小。
-     *          该长度既包括主缓冲区的数据长度，也包括片段中的数据。
-     *          因为协议头在向上传递中会被丢弃，在向下传递中会被添加，
-     *          所以它的值会随着 buffer 在各层间传递而改变。
-     *
-     *  data_len    和 len 不同的是，data_len 只记录分段中的数据大小。
-     */
+	/**
+	 *  len     表示在 buffer 中数据区域的大小。
+	 *          该长度既包括主缓冲区的数据长度，也包括片段中的数据。
+	 *          因为协议头在向上传递中会被丢弃，在向下传递中会被添加，
+	 *          所以它的值会随着 buffer 在各层间传递而改变。
+	 *
+	 *  data_len    和 len 不同的是，data_len 只记录分段中的数据大小。
+	 */
 	unsigned int		len, data_len;
 
-    /**
-     *  mac_len MAC 头部的长度
-     *  hdr_len
-     */
+	/**
+	 *  mac_len MAC 头部的长度
+	 *  hdr_len
+	 */
 	__u16			mac_len, hdr_len;
 
 	/* Following fields are _not_ copied in __copy_skb_header()
@@ -874,9 +879,9 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	__u8			__cloned_offset[0];
 
 	/* public: */
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u8			cloned:1,
 				nohdr:1,
 				fclone:2,
@@ -904,24 +909,24 @@ struct sk_buff {    /* 网络协议栈 包结构 */
 	/* private: */
 	__u8			__pkt_type_offset[0];
 	/* public: */
-    /**
-     *  该字段根据 L2 目的地址对帧的类型进行分类。
-     *  可能的值在 include/linux/if_packet.h 中列出。对于以太网设备，此参数由函数 eth_type_trans 初始化。
-     *
-     *  主要的一些值：
-     *
-     *  1. PACKET_HOST: 接收到的帧的目的地址就是当前接收接口。也就是说，数据包已到达其目的地
-     *  2. PACKET_MULTICAST: 接收到的帧的目标地址是当前接收接口已注册过的的多播地址之一
-     */
+	/**
+	 *  该字段根据 L2 目的地址对帧的类型进行分类。
+	 *  可能的值在 include/linux/if_packet.h 中列出。对于以太网设备，此参数由函数 eth_type_trans 初始化。
+	 *
+	 *  主要的一些值：
+	 *
+	 *  1. PACKET_HOST: 接收到的帧的目的地址就是当前接收接口。也就是说，数据包已到达其目的地
+	 *  2. PACKET_MULTICAST: 接收到的帧的目标地址是当前接收接口已注册过的的多播地址之一
+	 */
 	__u8			pkt_type:3;
 	__u8			ignore_df:1;
 	__u8			nf_trace:1;
 	__u8			ip_summed:2;
 	__u8			ooo_okay:1;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__u8			l4_hash:1;
 	__u8			sw_hash:1;
 	__u8			wifi_acked_valid:1;

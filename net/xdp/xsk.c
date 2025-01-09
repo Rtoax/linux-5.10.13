@@ -371,6 +371,9 @@ static void xsk_destruct_skb(struct sk_buff *skb)
 	sock_wfree(skb);
 }
 
+/**
+ * $ sudo bpftrace  -e 'kprobe:xsk_generic_xmit {printf("%s, %s\n", comm, kstack);}'
+ */
 static int xsk_generic_xmit(struct sock *sk)
 {
 	struct xdp_sock *xs = xdp_sk(sk);
@@ -386,6 +389,9 @@ static int xsk_generic_xmit(struct sock *sk)
 	if (xs->queue_id >= xs->dev->real_num_tx_queues)
 		goto out;
 
+	/**
+	 * from tx ring get desc.
+	 */
 	while (xskq_cons_peek_desc(xs->tx, &desc, xs->pool)) {
 		char *buffer;
 		u64 addr;
@@ -397,6 +403,9 @@ static int xsk_generic_xmit(struct sock *sk)
 		}
 
 		len = desc.len;
+		/**
+		 *
+		 */
 		skb = sock_alloc_send_skb(sk, len, 1, &err);
 		if (unlikely(!skb))
 			goto out;
@@ -471,6 +480,11 @@ static int __xsk_sendmsg(struct sock *sk)
 	return xs->zc ? xsk_zc_xmit(xs) : xsk_generic_xmit(sk);
 }
 
+/**
+ * $ sudo bpftrace  -e 'kprobe:xsk_sendmsg {printf("%s, len %ld, %s\n", comm, arg2, kstack);}'
+ *
+ * see kick_tx()
+ */
 static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
 {
 	bool need_wait = !(m->msg_flags & MSG_DONTWAIT);
@@ -504,6 +518,9 @@ static __poll_t xsk_poll(struct file *file, struct socket *sock,
 
 	pool = xs->pool;
 
+	/**
+	 *
+	 */
 	if (pool->cached_need_wakeup) {
 		if (xs->zc)
 			xsk_wakeup(xs, pool->cached_need_wakeup);

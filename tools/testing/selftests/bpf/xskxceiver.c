@@ -1049,6 +1049,10 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 			    !is_offset_correct(umem, pkt_stream, addr, pkt->addr))
 				return TEST_FAILURE;
 
+			/**
+			 *
+			 */
+
 			if (ifobj->use_fill_ring)
 				/**
 				 * Use this function to get a pointer to a slot
@@ -1056,13 +1060,24 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 				 * packet buffer.
 				 */
 				*xsk_ring_prod__fill_addr(&umem->fq, idx_fq++) = orig;
+
 			/**
 			 * get valid pkt_stream slot
 			 */
 			pkt = pkt_stream_get_next_rx_pkt(pkt_stream, &pkts_sent);
 
 			/**
+			 * Use
+			 *
+			 * xsk_umem__get_data(umem_info->buffer, addr)
+			 *
+			 * to get buffer of this packet
+			 */
+
+			/**
 			 * Does we could fill pkt fields here?
+			 *
+			 * Never parsing rx pkt ????????????
 			 */
 		}
 
@@ -1093,6 +1108,9 @@ static int receive_pkts(struct test_spec *test, struct pollfd *fds)
 	return TEST_PASS;
 }
 
+/**
+ * tx pkts
+ */
 static int __send_pkts(struct ifobject *ifobject, u32 *pkt_nb, struct pollfd *fds,
 		       bool timeout)
 {
@@ -1356,7 +1374,8 @@ static void thread_common_ops_tx(struct test_spec *test, struct ifobject *ifobje
 	memcpy(ifobject->umem, test->ifobj_rx->umem, sizeof(struct xsk_umem_info));
 }
 
-static void xsk_populate_fill_ring(struct xsk_umem_info *umem, struct pkt_stream *pkt_stream)
+static void xsk_populate_fill_ring(struct xsk_umem_info *umem,
+				   struct pkt_stream *pkt_stream)
 {
 	u32 idx = 0, i, buffers_to_fill;
 	int ret;
