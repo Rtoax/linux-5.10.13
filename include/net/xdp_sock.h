@@ -27,7 +27,7 @@ struct xdp_umem {
 	struct user_struct *user;
 	refcount_t users;
 	u8 flags;
-	bool zc;
+	bool zc; /* zero copy*/
 	struct page **pgs;
 	int id;
 	struct list_head xsk_dma_list;
@@ -49,6 +49,9 @@ struct xdp_sock {
 	struct list_head flush_node;
 	struct xsk_buff_pool *pool;
 	u16 queue_id;
+	/**
+	 * zerocopy
+	 */
 	bool zc;
 	enum {
 		XSK_READY = 0,

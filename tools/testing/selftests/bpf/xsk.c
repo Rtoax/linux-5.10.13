@@ -320,6 +320,9 @@ int xsk_umem__create(struct xsk_umem **umem_ptr, void *umem_area,
 	mr.headroom = umem->config.frame_headroom;
 	mr.flags = umem->config.flags;
 
+	/**
+	 *
+	 */
 	err = setsockopt(umem->fd, SOL_XDP, XDP_UMEM_REG, &mr, sizeof(mr));
 	if (err) {
 		err = -errno;

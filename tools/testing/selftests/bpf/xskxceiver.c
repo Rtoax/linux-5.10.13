@@ -1426,6 +1426,9 @@ static void thread_common_ops(struct test_spec *test, struct ifobject *ifobject)
 	if (bufs == MAP_FAILED)
 		exit_with_error(errno);
 
+	/**
+	 * create umem
+	 */
 	ret = xsk_configure_umem(ifobject->umem, bufs, umem_sz);
 	if (ret)
 		exit_with_error(-ret);

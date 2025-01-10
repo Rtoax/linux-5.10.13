@@ -127,7 +127,8 @@ int  xdp_prognum0(struct xdp_md *ctx)
 		if (ntohs(eth->h_proto) < ETH_P_802_3_MIN)
 			return XDP_ABORTED;
 
-		/* XDP_TX requires changing MAC-addrs, else HW may drop.
+		/**
+		 * XDP_TX requires changing MAC-addrs, else HW may drop.
 		 * Can also be enabled with --swapmac (for test purposes)
 		 */
 		if (unlikely(config->options & SWAP_MAC))

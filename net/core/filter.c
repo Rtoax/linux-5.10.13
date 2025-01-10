@@ -3972,6 +3972,9 @@ static inline void *__xdp_map_lookup_elem(struct bpf_map *map, u32 index)
 		return __dev_map_hash_lookup_elem(map, index);
 	case BPF_MAP_TYPE_CPUMAP:
 		return __cpu_map_lookup_elem(map, index);
+	/**
+	 *
+	 */
 	case BPF_MAP_TYPE_XSKMAP:
 		return __xsk_map_lookup_elem(map, index);
 	default:

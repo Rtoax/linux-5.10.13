@@ -568,7 +568,9 @@ int main(int argc, char **argv)
 	}
 	cfg.action = action;
 
-	/* XDP_TX requires changing MAC-addrs, else HW may drop */
+	/**
+	 * XDP_TX requires changing MAC-addrs, else HW may drop
+	 */
 	if (action == XDP_TX)
 		cfg_options |= SWAP_MAC;
 	cfg.options = cfg_options;

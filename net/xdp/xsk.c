@@ -468,6 +468,183 @@ out:
 	return err;
 }
 
+#if defined(____________________linux_5_15_131_________________________________)
+
+static struct sk_buff *xsk_build_skb_zerocopy(struct xdp_sock *xs,
+					      struct xdp_desc *desc)
+{
+	struct xsk_buff_pool *pool = xs->pool;
+	u32 hr, len, ts, offset, copy, copied;
+	struct sk_buff *skb;
+	struct page *page;
+	void *buffer;
+	int err, i;
+	u64 addr;
+
+	hr = max(NET_SKB_PAD, L1_CACHE_ALIGN(xs->dev->needed_headroom));
+
+	skb = sock_alloc_send_skb(&xs->sk, hr, 1, &err);
+	if (unlikely(!skb))
+		return ERR_PTR(err);
+
+	skb_reserve(skb, hr);
+
+	addr = desc->addr;
+	len = desc->len;
+	ts = pool->unaligned ? len : pool->chunk_size;
+
+	buffer = xsk_buff_raw_get_data(pool, addr);
+	offset = offset_in_page(buffer);
+	addr = buffer - pool->addrs;
+
+	for (copied = 0, i = 0; copied < len; i++) {
+		page = pool->umem->pgs[addr >> PAGE_SHIFT];
+		get_page(page);
+
+		copy = min_t(u32, PAGE_SIZE - offset, len - copied);
+		skb_fill_page_desc(skb, i, page, offset, copy);
+
+		copied += copy;
+		addr += copy;
+		offset = 0;
+	}
+
+	skb->len += len;
+	skb->data_len += len;
+	skb->truesize += ts;
+
+	refcount_add(ts, &xs->sk.sk_wmem_alloc);
+
+	return skb;
+}
+
+static struct sk_buff *xsk_build_skb(struct xdp_sock *xs,
+				     struct xdp_desc *desc)
+{
+	struct net_device *dev = xs->dev;
+	struct sk_buff *skb;
+
+	if (dev->priv_flags & IFF_TX_SKB_NO_LINEAR) {
+		skb = xsk_build_skb_zerocopy(xs, desc);
+		if (IS_ERR(skb))
+			return skb;
+	} else {
+		u32 hr, tr, len;
+		void *buffer;
+		int err;
+
+		hr = max(NET_SKB_PAD, L1_CACHE_ALIGN(dev->needed_headroom));
+		tr = dev->needed_tailroom;
+		len = desc->len;
+
+		skb = sock_alloc_send_skb(&xs->sk, hr + len + tr, 1, &err);
+		if (unlikely(!skb))
+			return ERR_PTR(err);
+
+		skb_reserve(skb, hr);
+		skb_put(skb, len);
+
+		buffer = xsk_buff_raw_get_data(xs->pool, desc->addr);
+		err = skb_store_bits(skb, 0, buffer, len);
+		if (unlikely(err)) {
+			kfree_skb(skb);
+			return ERR_PTR(err);
+		}
+	}
+
+	skb->dev = dev;
+	skb->priority = xs->sk.sk_priority;
+	skb->mark = xs->sk.sk_mark;
+	skb_shinfo(skb)->destructor_arg = (void *)(long)desc->addr;
+	skb->destructor = xsk_destruct_skb;
+
+	return skb;
+}
+
+static int xsk_generic_xmit(struct sock *sk)
+{
+	struct xdp_sock *xs = xdp_sk(sk);
+	u32 max_batch = TX_BATCH_SIZE;
+	bool sent_frame = false;
+	struct xdp_desc desc;
+	struct sk_buff *skb;
+	unsigned long flags;
+	int err = 0;
+
+	mutex_lock(&xs->mutex);
+
+	/* Since we dropped the RCU read lock, the socket state might have changed. */
+	if (unlikely(!xsk_is_bound(xs))) {
+		err = -ENXIO;
+		goto out;
+	}
+
+	if (xs->queue_id >= xs->dev->real_num_tx_queues)
+		goto out;
+
+	while (xskq_cons_peek_desc(xs->tx, &desc, xs->pool)) {
+		if (max_batch-- == 0) {
+			err = -EAGAIN;
+			goto out;
+		}
+
+		/* This is the backpressure mechanism for the Tx path.
+		 * Reserve space in the completion queue and only proceed
+		 * if there is space in it. This avoids having to implement
+		 * any buffering in the Tx path.
+		 */
+		spin_lock_irqsave(&xs->pool->cq_lock, flags);
+		if (xskq_prod_reserve(xs->pool->cq)) {
+			spin_unlock_irqrestore(&xs->pool->cq_lock, flags);
+			goto out;
+		}
+		spin_unlock_irqrestore(&xs->pool->cq_lock, flags);
+
+		skb = xsk_build_skb(xs, &desc);
+		if (IS_ERR(skb)) {
+			err = PTR_ERR(skb);
+			spin_lock_irqsave(&xs->pool->cq_lock, flags);
+			xskq_prod_cancel(xs->pool->cq);
+			spin_unlock_irqrestore(&xs->pool->cq_lock, flags);
+			goto out;
+		}
+
+		err = __dev_direct_xmit(skb, xs->queue_id);
+		if  (err == NETDEV_TX_BUSY) {
+			/* Tell user-space to retry the send */
+			skb->destructor = sock_wfree;
+			spin_lock_irqsave(&xs->pool->cq_lock, flags);
+			xskq_prod_cancel(xs->pool->cq);
+			spin_unlock_irqrestore(&xs->pool->cq_lock, flags);
+			/* Free skb without triggering the perf drop trace */
+			consume_skb(skb);
+			err = -EAGAIN;
+			goto out;
+		}
+
+		xskq_cons_release(xs->tx);
+		/* Ignore NET_XMIT_CN as packet might have been sent */
+		if (err == NET_XMIT_DROP) {
+			/* SKB completed but not sent */
+			err = -EBUSY;
+			goto out;
+		}
+
+		sent_frame = true;
+	}
+
+	xs->tx->queue_empty_descs++;
+
+out:
+	if (sent_frame)
+		if (xsk_tx_writeable(xs))
+			sk->sk_write_space(sk);
+
+	mutex_unlock(&xs->mutex);
+	return err;
+}
+#endif
+
 static int __xsk_sendmsg(struct sock *sk)
 {
 	struct xdp_sock *xs = xdp_sk(sk);
@@ -539,6 +716,69 @@ static __poll_t xsk_poll(struct file *file, struct socket *sock,
 
 	return mask;
 }
+
+#if defined(___linux_v5_15_131______)
+
+static int xsk_xmit(struct sock *sk)
+{
+	struct xdp_sock *xs = xdp_sk(sk);
+	int ret;
+
+	if (unlikely(!(xs->dev->flags & IFF_UP)))
+		return -ENETDOWN;
+	if (unlikely(!xs->tx))
+		return -ENOBUFS;
+
+	if (xs->zc)
+		return xsk_wakeup(xs, XDP_WAKEUP_TX);
+
+	/* Drop the RCU lock since the SKB path might sleep. */
+	rcu_read_unlock();
+	ret = xsk_generic_xmit(sk);
+	/* Reaquire RCU lock before going into common code. */
+	rcu_read_lock();
+
+	return ret;
+}
+
+static __poll_t xsk_poll(struct file *file, struct socket *sock,
+			     struct poll_table_struct *wait)
+{
+	__poll_t mask = 0;
+	struct sock *sk = sock->sk;
+	struct xdp_sock *xs = xdp_sk(sk);
+	struct xsk_buff_pool *pool;
+
+	sock_poll_wait(file, sock, wait);
+
+	rcu_read_lock();
+	if (unlikely(!xsk_is_bound(xs))) {
+		rcu_read_unlock();
+		return mask;
+	}
+
+	pool = xs->pool;
+
+	if (pool->cached_need_wakeup) {
+		/**
+		 * Zero copy
+		 */
+		if (xs->zc)
+			xsk_wakeup(xs, pool->cached_need_wakeup);
+		else
+			/* Poll needs to drive Tx also in copy mode */
+			xsk_xmit(sk);
+	}
+
+	if (xs->rx && !xskq_prod_is_empty(xs->rx))
+		mask |= EPOLLIN | EPOLLRDNORM;
+	if (xs->tx && xsk_tx_writeable(xs))
+		mask |= EPOLLOUT | EPOLLWRNORM;
+
+	rcu_read_unlock();
+	return mask;
+}
+#endif
 
 static int xsk_init_queue(u32 entries, struct xsk_queue **queue,
 			  bool umem_queue)
