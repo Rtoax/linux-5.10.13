@@ -4139,7 +4139,13 @@ static const struct bpf_func_proto bpf_xdp_redirect_proto = {
  * https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_XDP/
  * BPF_MAP_TYPE_DEVMAP
  */
-long bpf_xdp_redirect_map(struct bpf_map *map, u32 ifindex, u64 flags) {}//+++
+#if defined(bpf_xdp_redirect_map)
+long bpf_xdp_redirect_map(struct bpf_map *map, u32 ifindex, u64 flags)
+{
+	/* Just for vscode search */
+	return XDP_REDIRECT;
+}
+#endif
 BPF_CALL_3(bpf_xdp_redirect_map, struct bpf_map *, map, u32, ifindex, u64, flags)
 {
 	struct bpf_redirect_info *ri = this_cpu_ptr(&bpf_redirect_info);
@@ -4168,6 +4174,9 @@ BPF_CALL_3(bpf_xdp_redirect_map, struct bpf_map *, map, u32, ifindex, u64, flags
 
 /**
  * BPF_FUNC_redirect_map
+ *
+ * long bpf_redirect_map(struct bpf_map *map, u32 key, u64 flags)
+ *
  * https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_XDP/
  */
 static const struct bpf_func_proto bpf_xdp_redirect_map_proto = {
@@ -7265,7 +7274,7 @@ xdp_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 	case BPF_FUNC_redirect:
 		return &bpf_xdp_redirect_proto;
 	/**
-	 * bpf_redirect_map()
+	 * long bpf_redirect_map(struct bpf_map *map, u32 key, u64 flags)
 	 */
 	case BPF_FUNC_redirect_map:
 		return &bpf_xdp_redirect_map_proto;
@@ -7403,6 +7412,9 @@ sk_skb_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
 		return &bpf_get_socket_cookie_proto;
 	case BPF_FUNC_get_socket_uid:
 		return &bpf_get_socket_uid_proto;
+	/**
+	 * bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags)
+	 */
 	case BPF_FUNC_sk_redirect_map:
 		return &bpf_sk_redirect_map_proto;
 	case BPF_FUNC_sk_redirect_hash:

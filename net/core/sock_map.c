@@ -687,7 +687,11 @@ const struct bpf_func_proto bpf_sock_map_update_proto = {
 /**
  *
  */
-long bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags){}//+++
+#ifdef bpf_sk_redirect_map
+long bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags)
+{
+}
+#endif
 BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 	   struct bpf_map *, map, u32, key, u64, flags)
 {
@@ -697,9 +701,9 @@ BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 	if (unlikely(flags & ~(BPF_F_INGRESS)))
 		return SK_DROP;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	sk = __sock_map_lookup_elem(map, key);
 	if (unlikely(!sk || !sock_map_redirect_allowed(sk)))
 		return SK_DROP;
@@ -709,6 +713,11 @@ BPF_CALL_4(bpf_sk_redirect_map, struct sk_buff *, skb,
 	return SK_PASS;
 }
 
+/**
+ * BPF_FUNC_sk_redirect_map
+ *
+ * bpf_sk_redirect_map(struct sk_buff *skb, struct bpf_map *map, u32 key, u64 flags)
+ */
 const struct bpf_func_proto bpf_sk_redirect_map_proto = {
 	.func           = bpf_sk_redirect_map,
 	.gpl_only       = false,
