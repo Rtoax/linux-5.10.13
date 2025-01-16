@@ -1881,6 +1881,9 @@ repeat:
  * 查找 并 获取 一个 page 引用
  *
  * sudo bpftrace -e 'kprobe:pagecache_get_page {printf("%8d %s\n", pid, comm);}'
+ * sudo bpftrace -e 'kretprobe:pagecache_get_page {printf("%8d %s %lx\n", pid, comm, retval);}'
+ *
+ * sudo bpftrace -e 'kretprobe:pagecache_get_page / comm == "virt2phy" / {printf("%8d %s %lx %s\n", pid, comm, retval, kstack);}'
  */
 struct page *
 pagecache_get_page(struct address_space *mapping, pgoff_t index,
@@ -2883,8 +2886,13 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	if (unlikely(offset >= max_off))
 		return VM_FAULT_SIGBUS;
 
-	/*
+	/**
 	 * Do we have something in the page cache already?
+	 *
+	 * call filemap_get_folio() in higher linux version, if that:
+	 *
+	 *   sudo bpftrace -e 'kprobe:__filemap_get_folio {printf("%8d %s\n", pid, comm);}'
+	 *   sudo bpftrace -e 'kretprobe:__filemap_get_folio {printf("%8d %s ret %lx\n", pid, comm, retval);}'
 	 */
 	page = find_get_page(mapping, offset);
 	if (likely(page) && !(vmf->flags & FAULT_FLAG_TRIED)) {
@@ -2900,7 +2908,11 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	} else if (!page) {
 		/* No page in the page cache at all */
 		count_vm_event(PGMAJFAULT);
+		/**
+		 * memcg
+		 */
 		count_memcg_event_mm(vmf->vma->vm_mm, PGMAJFAULT);
+
 		ret = VM_FAULT_MAJOR;
 		fpin = do_sync_mmap_readahead(vmf);
 retry_find:

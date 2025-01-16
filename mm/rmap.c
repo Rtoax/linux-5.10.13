@@ -1364,20 +1364,20 @@ void do_page_add_anon_rmap(struct page *page,
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
 {
-    /**
-     *  compound(复合): page是复合 还是 小 page
-     *  1. do_anonymous_page() 传入 false
-     *
-     * 大页内存时，compound 为 true
-     */
+	/**
+	 *  compound(复合): page是复合 还是 小 page
+	 *  1. do_anonymous_page() 传入 false
+	 *
+	 * 大页内存时，compound 为 true
+	 */
 	int nr = compound ? thp_nr_pages(page) : 1;
 
 	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 
-    /* 交换回 */
-    __SetPageSwapBacked(page);
+	/* 交换回 */
+	__SetPageSwapBacked(page);
 
-    /* 复合页面 */
+	/* 复合页面 */
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
 		/* increment count (starts at -1) */
@@ -1387,20 +1387,20 @@ void page_add_new_anon_rmap(struct page *page,
 
 		__inc_lruvec_page_state(page, NR_ANON_THPS);
 	}
-    /* 普通页面 */
-    else {
+	/* 普通页面 */
+	else {
 		/* Anon THP always mapped first with PMD */
 		VM_BUG_ON_PAGE(PageTransCompound(page), page);
 		/* increment count (starts at -1) */
 		atomic_set(&page->_mapcount, 0);
 	}
 
-    /* 页面回收等 TODO */
+	/* 页面回收等 TODO */
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
 
-    /**
-     *  设置这个页面为匿名映射
-     */
+	/**
+	 *  设置这个页面为匿名映射
+	 */
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 
@@ -1410,13 +1410,20 @@ void page_add_new_anon_rmap(struct page *page,
  * @compound: charge the page as compound or small page
  *
  * The caller needs to hold the pte lock.
+ *
+ * sudo bpftrace -e 'kprobe:page_add_file_rmap {printf("%8d %s %s\n", pid, comm, kstack);}'
  */
 void page_add_file_rmap(struct page *page, bool compound)
 {
 	int i, nr = 1;
 
 	VM_BUG_ON_PAGE(compound && !PageTransHuge(page), page);
+
+	/**
+	 *
+	 */
 	lock_page_memcg(page);
+
 	if (compound && PageTransHuge(page)) {
 		for (i = 0, nr = 0; i < thp_nr_pages(page); i++) {
 			if (atomic_inc_and_test(&page[i]._mapcount))

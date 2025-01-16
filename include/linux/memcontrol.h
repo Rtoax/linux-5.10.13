@@ -952,6 +952,9 @@ static inline void count_memcg_page_event(struct page *page,
 		count_memcg_events(page->mem_cgroup, idx, 1);
 }
 
+/**
+ *
+ */
 static inline void count_memcg_event_mm(struct mm_struct *mm,
 					enum vm_event_item idx)
 {

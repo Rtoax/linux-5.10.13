@@ -3948,10 +3948,11 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	}
 
 	/**
-	 *  具体文件系统的 fault() 回调函数
+	 * 具体文件系统的 fault() 回调函数
+	 * fs/ext2/file.c:   ext2_dax_vm_ops.fault = ext2_dax_fault()
+	 * ...
 	 *
-	 *  以 ext2/// 为例
-	 *  fs/ext2/file.c:   ext2_dax_vm_ops.fault = ext2_dax_fault()
+	 * set vmf->page
 	 */
 	ret = vma->vm_ops->fault(vmf);  /* 调用回调 */
 
@@ -4154,6 +4155,10 @@ vm_fault_t alloc_set_pte(struct vm_fault *vmf, struct page *page)
 	}
 
 	flush_icache_page(vma, page);
+
+	/**
+	 *
+	 */
 	entry = mk_pte(page, vma->vm_page_prot);
 	entry = pte_sw_mkyoung(entry);
 	if (write)
@@ -4165,8 +4170,16 @@ vm_fault_t alloc_set_pte(struct vm_fault *vmf, struct page *page)
 		lru_cache_add_inactive_or_unevictable(page, vma);
 	} else {
 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
+
+		/**
+		 * 添加文件到逆向映射(只读)
+		 */
 		page_add_file_rmap(page, false);
 	}
+
+	/**
+	 * 绑定虚拟地址和PTE的关系
+	 */
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
 
 	/* no need to invalidate: a not-present page won't be cached */
@@ -4337,6 +4350,8 @@ out:
 /**
  *  文件映射的缺页中断处理-读内存
  *  在 `do_fault()` 中被调用
+ *
+ *  sudo bpftrace -e 'kprobe:do_read_fault {printf("%8d %s %s\n", pid, comm, kstack);}'
  */
 static vm_fault_t do_read_fault(struct vm_fault *vmf)
 {
@@ -4355,10 +4370,15 @@ static vm_fault_t do_read_fault(struct vm_fault *vmf)
 	}
 
 	ret = __do_fault(vmf);  /* 读 fault */
+
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		return ret;
 
+	/**
+	 * vmf->page,
+	 */
 	ret |= finish_fault(vmf);
+
 	unlock_page(vmf->page);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		put_page(vmf->page);
@@ -4474,6 +4494,8 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
  * do_read_fault       文件映射读
  * do_cow_fault        文件映射写
  * do_shared_fault     共享文件映射写
+ *
+ * sudo bpftrace -e 'kprobe:do_fault {printf("%8d %s %s\n", pid, comm, kstack);}'
  */
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
