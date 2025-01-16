@@ -4468,17 +4468,12 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
  * If mmap_lock is released, vma may become invalid (for example
  * by other thread calling munmap()).
  *
+ * 文件映射的缺页中断
  *
- 文件映射的缺页中断
- *
- *
- do_fault            文件映射
- *
-	do_read_fault       文件映射读
- *
-	do_cow_fault        文件映射写
- *
-	do_shared_fault     共享文件映射写
+ * do_fault            文件映射
+ * do_read_fault       文件映射读
+ * do_cow_fault        文件映射写
+ * do_shared_fault     共享文件映射写
  */
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
@@ -4528,19 +4523,19 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	 *  3. 共享内存 缺页 - 进程间通信方式
 	 */
 	else if (!(vmf->flags & FAULT_FLAG_WRITE))
-	    /**
-	     *  文件映射的缺页中断处理-读内存
-	     */
+		/**
+		 *  文件映射的缺页中断处理-读内存
+		 */
 		ret = do_read_fault(vmf);   /* 读 fault */
 	else if (!(vma->vm_flags & VM_SHARED))
-	    /**
-	     *  文件映射的缺页中断处理-写内存
-	     */
+		/**
+		 *  文件映射的缺页中断处理-写内存
+		 */
 		ret = do_cow_fault(vmf);    /* 写时复制 */
 	else
-	    /**
-	     *  共享文件映射中 发生 写 缺页
-	     */
+		/**
+		 *  共享文件映射中 发生 写 缺页
+		 */
 		ret = do_shared_fault(vmf); /* 共享 */
 
 	/* preallocated pagetable is unused: free it */

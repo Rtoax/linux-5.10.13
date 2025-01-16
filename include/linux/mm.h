@@ -508,31 +508,31 @@ static inline bool fault_flag_allow_retry_first(unsigned int flags)
 struct vm_fault {       /* 缺页异常/中断 */
 	struct vm_area_struct *vma;	/* Target VMA */
 
-    /* 与进程内存描述符相关的标志位 */
+	/* 与进程内存描述符相关的标志位 */
 	unsigned int flags;		/* FAULT_FLAG_xxx(FAULT_FLAG_WRITE) flags */
 
-    /* 分配掩码 */
+	/* 分配掩码 */
 	gfp_t gfp_mask;			/* gfp mask to be used for allocations */
 
-    /* VMA 中的偏移量 */
+	/* VMA 中的偏移量 */
 	pgoff_t pgoff;			/* Logical page offset based on vma */
 
-    /* 发生缺页的虚拟地址 */
+	/* 发生缺页的虚拟地址 */
 	unsigned long address;		/* Faulting virtual address */
 
-    /* 对应 PMD  页表项 */
+	/* 对应 PMD  页表项 */
 	pmd_t *pmd;			/* Pointer to pmd entry matching
 					        * the 'address' */
 	pud_t *pud;			/* Pointer to pud entry matching
     					 * the 'address'
     					 */
-    /* 发生缺页时，address 对应的 pte 的内容 */
+	/* 发生缺页时，address 对应的 pte 的内容 */
 	pte_t orig_pte;			/* Value of PTE at the time of fault */
 
-    /* 处理写时复制时用的页面 */
+ 	/* 处理写时复制时用的页面 */
 	struct page *cow_page;		/* Page handler may use for COW fault */
 
-    /* 缺页异常处理程序最终会返回一个 page 实例 */
+	/* 缺页异常处理程序最终会返回一个 page 实例 */
 	struct page *page;		/* ->fault handlers should return a
 					 * page here, unless VM_FAULT_NOPAGE
 					 * is set (which is also implied by
@@ -587,6 +587,10 @@ struct vm_operations_struct {
 	 */
 	int (*split)(struct vm_area_struct * area, unsigned long addr);
 	int (*mremap)(struct vm_area_struct * area);
+	/**
+	 * fs/ext2/file.c:	ext2_dax_vm_ops.fault = ext2_dax_fault()
+	 * fs/xfs/xfs_file.c:	xfs_file_vm_ops.fault = xfs_filemap_fault()
+	 */
 	vm_fault_t (*fault)(struct vm_fault *vmf);
 	vm_fault_t (*huge_fault)(struct vm_fault *vmf,
 			enum page_entry_size pe_size);
@@ -597,14 +601,14 @@ struct vm_operations_struct {
 	/* notification that a previously read-only page is about to become
 	 * writable, if an error is returned it will cause a SIGBUS
 	 *
-     * fs/ubifs/file.c              -> .page_mkwrite = ubifs_vm_page_mkwrite,
-     * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
-     * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
-     * fs/cifs/file.c               -> .page_mkwrite = cifs_page_mkwrite,
-     * fs/gfs2/file.c               -> .page_mkwrite = gfs2_page_mkwrite,
-     * fs/nfs/file.c                -> nfs_file_vm_ops.page_mkwrite = nfs_vm_page_mkwrite,
-     * fs/orangefs/file.c           -> .page_mkwrite = orangefs_page_mkwrite,
-     * security/selinux/selinuxfs.c -> sel_mmap_policy_ops.page_mkwrite = sel_mmap_policy_fault,
+	 * fs/ubifs/file.c              -> .page_mkwrite = ubifs_vm_page_mkwrite,
+	 * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
+	 * fs/9p/vfs_file.c             -> .page_mkwrite = v9fs_vm_page_mkwrite,
+	 * fs/cifs/file.c               -> .page_mkwrite = cifs_page_mkwrite,
+	 * fs/gfs2/file.c               -> .page_mkwrite = gfs2_page_mkwrite,
+	 * fs/nfs/file.c                -> nfs_file_vm_ops.page_mkwrite = nfs_vm_page_mkwrite,
+	 * fs/orangefs/file.c           -> .page_mkwrite = orangefs_page_mkwrite,
+	 * security/selinux/selinuxfs.c -> sel_mmap_policy_ops.page_mkwrite = sel_mmap_policy_fault,
 	 */
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 

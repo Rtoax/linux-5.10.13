@@ -1879,6 +1879,8 @@ repeat:
  * Return: The found page or %NULL otherwise.
  *
  * 查找 并 获取 一个 page 引用
+ *
+ * sudo bpftrace -e 'kprobe:pagecache_get_page {printf("%8d %s\n", pid, comm);}'
  */
 struct page *
 pagecache_get_page(struct address_space *mapping, pgoff_t index,
@@ -1887,9 +1889,9 @@ pagecache_get_page(struct address_space *mapping, pgoff_t index,
 	struct page *page;
 
 repeat:
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	page = find_get_entry(mapping, index);
 	if (xa_is_value(page))
 		page = NULL;
@@ -1937,9 +1939,9 @@ no_page:
 		if (fgp_flags & FGP_NOFS)
 			gfp_mask &= ~__GFP_FS;
 
-        /**
-         *	分配新的 page cache
-         */
+		/**
+		 * 分配新的 page cache
+		*/
 		page = __page_cache_alloc(gfp_mask);
 		if (!page)
 			return NULL;
@@ -2860,6 +2862,9 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
  * We never return with VM_FAULT_RETRY and a bit from VM_FAULT_ERROR set.
  *
  * Return: bitwise-OR of %VM_FAULT_ codes.
+ *
+ * sudo bpftrace -e 'kprobe:filemap_fault {printf("%8d %s\n", pid, comm);}'
+ * sudo bpftrace -e 'kretprobe:filemap_fault {printf("%8d %s ret = %lx\n", pid, comm, retval);}'
  */
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {

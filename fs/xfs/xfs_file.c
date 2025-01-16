@@ -1279,6 +1279,10 @@ __xfs_filemap_fault(
 	}
 
 	xfs_ilock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
+
+	/**
+	 * DAX: Direct Access, avoiding the page cache
+	 */
 	if (IS_DAX(inode)) {
 		pfn_t pfn;
 
@@ -1289,12 +1293,14 @@ __xfs_filemap_fault(
 		if (ret & VM_FAULT_NEEDDSYNC)
 			ret = dax_finish_sync_fault(vmf, pe_size, pfn);
 	} else {
+		/**
+		 * write permission page fault
+		 */
 		if (write_fault)
 			ret = iomap_page_mkwrite(vmf,
 					&xfs_buffered_write_iomap_ops);
 		else
 			/**
-			 * @brief
 			 *
 			 */
 			ret = filemap_fault(vmf);
@@ -1372,9 +1378,9 @@ xfs_filemap_map_pages(
 	struct inode		*inode = file_inode(vmf->vma->vm_file);
 
 	xfs_ilock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	filemap_map_pages(vmf, start_pgoff, end_pgoff);
 	xfs_iunlock(XFS_I(inode), XFS_MMAPLOCK_SHARED);
 }
@@ -1410,9 +1416,9 @@ xfs_file_mmap(
 	 */
 	if (!daxdev_mapping_supported(vma, target->bt_daxdev))
 		return -EOPNOTSUPP;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	file_accessed(file);
 	vma->vm_ops = &xfs_file_vm_ops;
 	if (IS_DAX(inode))

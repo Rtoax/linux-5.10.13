@@ -71,24 +71,24 @@ struct mem_cgroup;
  *
  */
 struct page {
-    /**
-     *  +----------+---------+----------+--------+----------+
-     *  |  section |   node  |   zone   |  ...   |   flag   |
-     *  +----------+---------+----------+--------+----------+
-     *
-     *  struct page->flags
-     *
-     * 63    62 61  60 59             44 43                                               0
-     *  +------+------+-----------------+-------------------------------------------------+
-     *  | node | zone |    LAST_CPUPID  |                   flags                         |
-     *  +------+------+-----------------+-------------------------------------------------+
-     *
-     *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
-     * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
+	/**
+	 *  +----------+---------+----------+--------+----------+
+	 *  |  section |   node  |   zone   |  ...   |   flag   |
+	 *  +----------+---------+----------+--------+----------+
+	 *
+	 *  struct page->flags
+	 *
+	 * 63    62 61  60 59             44 43                                               0
+	 *  +------+------+-----------------+-------------------------------------------------+
+	 *  | node | zone |    LAST_CPUPID  |                   flags                         |
+	 *  +------+------+-----------------+-------------------------------------------------+
+	 *
+	 *  整体布局如下，但是可能和上面的不太一样，不同的配置，所占位数有差异
+	 * Page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS |
 	 *
 	 * 见 `set_page_links()`
 	 * flags -> enum pageflags
-     */
+	 */
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
 	/*
@@ -110,64 +110,65 @@ struct page {
 			 * by the page owner.
 			 *
 			 * 链表头(不一定是链表头，可能是链表节点)，主要有3个用途：
-             * a: page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
-             * b: page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
-             * c: page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
-             * d: page回收时,见`reclaim_pages()`
-             *
-             * a. `zone->free_area->free_list` 为链表头的链表,见`get_page_from_free_area()`
+			 * a: page处于伙伴系统中时，用于链接相同阶的伙伴（只使用伙伴中的第一个page的lru即可达到目的）。
+			 * b: page属于slab时，page->lru.next指向page驻留的的缓存的管理结构，page->lru.prec指向保存该page的slab的管理结构。
+			 * c: page被用户态使用或被当做页缓存使用时，用于将该page连入zone中相应的lru链表，供内存回收时使用。
+			 * d: page回收时,见`reclaim_pages()`
+			 *
+			 * a. `zone->free_area->free_list` 为链表头的链表,见`get_page_from_free_area()`
 			 */
 			struct list_head lru;   /* 串入 zone->freelist *//* struct lruvec->lists[lru] */
 
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
-            /**
-             *  页面指向的地址空间,一个指针，两个用途
-             *  -----------------------------------------------
-             *  1. 文件映射页面，`struct address_space`
-             *  2. 匿名映射页面，`struct anon_vma`. 见`PageAnon()`,`PAGE_MAPPING_ANON`
-             *  3. 交换高速缓存页面，`swapper_spaces`
-             *  4. KSM页面对应 `struct stable_node`结构
-             *
-             * 因为 `struct address_space` 为 8bytes 对齐，所以可将 mapping 成员的低两位用作：
-             *
-             * bit[0] 页面是否为 匿名页面，见`PageAnon()`,`PAGE_MAPPING_ANON`
-             * bit[1] 页面是否为 非 LRU 页面
-             * 若bit[0-1]均未置位,表明这是一个 KSM 页面
-             *
-             * page_rmapping(): 清除 低2位
-             * page_mapping():  返回 page->mapping 成员指向的地址空间
-             * page_mapped():   是否映射到用户 PTE
-             *
-             * ================================================
-             * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；`page_mapping`返回NULL的情况
-             *                  当需要使用地址空间时会指定交换分区的地址空间swapper_space。
-             * 如果 mapping != 0，
-             *      bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间address_space。
-             *      bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
-             *
-             * 通过mapping恢复anon_vma的方法：
+			/**
+			 *  页面指向的地址空间,一个指针，两个用途
+			 *  -----------------------------------------------
+			 *  1. 文件映射页面，`struct address_space`
+			 *  2. 匿名映射页面，`struct anon_vma`. 见`PageAnon()`,`PAGE_MAPPING_ANON`
+			 *  3. 交换高速缓存页面，`swapper_spaces`
+			 *  4. KSM页面对应 `struct stable_node`结构
+			 *
+			 * 因为 `struct address_space` 为 8bytes 对齐，所以可将 mapping 成员的低两位用作：
+			 *
+			 * bit[0] 页面是否为 匿名页面，见`PageAnon()`,`PAGE_MAPPING_ANON`
+			 * bit[1] 页面是否为 非 LRU 页面
+			 * 若bit[0-1]均未置位,表明这是一个 KSM 页面
+			 *
+			 * page_rmapping(): 清除 低2位
+			 * page_mapping():  返回 page->mapping 成员指向的地址空间
+			 * page_mapped():   是否映射到用户 PTE
+			 *
+			 * ================================================
+			 * 如果 mapping = 0，说明该page属于交换缓存（swap cache）；`page_mapping`返回NULL的情况
+			 *                  当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+			 * 如果 mapping != 0，
+			 *      bit[0] = 0，说明该page属于页缓存或文件映射，mapping指向文件的地址空间
+			 *                  address_space。
+			 *      bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
+			 *
+			 * 通过mapping恢复anon_vma的方法：
 			 *  anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
-             */
+			 */
 			struct address_space *mapping;
 
-            /**
-             *  在映射的虚拟空间（vma_area）内的偏移；
-             *
-             *  一个文件可能只映射一部分，假设映射了1M的空间，
-             *  index指的是在1M空间内的偏移，而不是在整个文件内的偏移。
-             *
-             *  如果多个VMA的虚拟页面同时映射了同一个匿名页面，那么 index 值为多少?
-             *
-             *  1. 对于父子进程同时映射了一个 匿名页面， index 相同，见
-             *      rmap_walk_anon()
-             *        vma_address()
-             *          __vma_address()
-             *            page_to_pgoff()
-             *
-             *  2. 对于KSM页面，由内容相同的两个匿名页面合并而成，他们可以使不相干的进程的VMA
-             *      也可以是 父子进程的 VMA
-             *      对于 KSM页面来说， index 等于 第一次 映射该页面 的 VMA 中的偏移量
-             */
+			/**
+			 *  在映射的虚拟空间（vma_area）内的偏移；
+			 *
+			 *  一个文件可能只映射一部分，假设映射了1M的空间，
+			 *  index指的是在1M空间内的偏移，而不是在整个文件内的偏移。
+			 *
+			 *  如果多个VMA的虚拟页面同时映射了同一个匿名页面，那么 index 值为多少?
+			 *
+			 *  1. 对于父子进程同时映射了一个 匿名页面， index 相同，见
+			 *      rmap_walk_anon()
+			 *        vma_address()
+			 *          __vma_address()
+			 *            page_to_pgoff()
+			 *
+			 *  2. 对于KSM页面，由内容相同的两个匿名页面合并而成，他们可以使不相干的进程的VMA
+			 *      也可以是 父子进程的 VMA
+			 *      对于 KSM页面来说， index 等于 第一次 映射该页面 的 VMA 中的偏移量
+			 */
 			pgoff_t index;		/* Our offset within mapping. */
 
 			/**
@@ -212,9 +213,10 @@ struct page {
 				};
 			};
 
-            struct kmem_cache *slab_cache; /* not slob */
+			struct kmem_cache *slab_cache; /* not slob */
+
 			/* Double-word boundary */
-            /* 管理区 */
+			/* 管理区 */
 			void *freelist;		/* first free object */
 
 			union {
@@ -228,7 +230,7 @@ struct page {
 			};
 		};
 
-        /* TODO */
+		/* TODO */
 		struct {	/* Tail pages of compound(复合) page */
 			unsigned long compound_head;	/* Bit zero is set */
 
@@ -255,9 +257,9 @@ struct page {
 				atomic_t pt_frag_refcount; /* powerpc */
 			};
 
-            /**
-             *  页表自旋锁
-             */
+			/**
+			 *  页表自旋锁
+			 */
 #if ALLOC_SPLIT_PTLOCKS
 			spinlock_t *ptl;
 #else
@@ -304,11 +306,11 @@ struct page {
 		 * 初始值为-1，如果只被一个进程的页表映射了，该值为0 。
 		 * 如果该page处于伙伴系统中，该值为`PAGE_BUDDY_MAPCOUNT_VALUE`（-128），
 		 * 内核通过判断该值是否为`PAGE_BUDDY_MAPCOUNT_VALUE`来确定该page是否属于伙伴系统。
-         * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
-         * 被映射了不一定在使用，但要使用必须先映射。
-         *
-         *  通常情况下，page_count(page) == page_mapcount(page)
-         *          即   page->_refcount = page->_mapcount + 1
+		 * 注意区分_count和_mapcount，_mapcount表示的是映射次数，而_count表示的是使用次数；
+		 * 被映射了不一定在使用，但要使用必须先映射。
+		 *
+		 *  通常情况下，page_count(page) == page_mapcount(page)
+		 *          即   page->_refcount = page->_mapcount + 1
 		 */
 		atomic_t _mapcount;
 
@@ -320,11 +322,11 @@ struct page {
 		 */
 		unsigned int page_type;
 
-        /**
-         *  slab 分配器中活跃的对象的数量
-         *
-         *  =0: 标识没有活跃对象，可以销毁这个slab 分配器
-         */
+		/**
+		 *  slab 分配器中活跃的对象的数量
+		 *
+		 *  =0: 标识没有活跃对象，可以销毁这个slab 分配器
+		 */
 		unsigned int active;		/* SLAB */
 		int units;			/* SLOB */
 	};
@@ -337,16 +339,16 @@ struct page {
 	 *  >0 该页面 已经被分配，且内核正在使用，暂时不会被释放
 	 *
 	 *  操作 _refcount 的函数 `get_page()`,`put_page()`
-     *
-     *  通常情况下，page_count(page) == page_mapcount(page)
-     *          即   page->_refcount = page->_mapcount + 1
-     *
-     *  _refcount 有以下四种来源：
-     *  =============================================
-     *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
-     *  2. 被用户态 PTE 引用， _refcount 和 _mapcount 都会增加计数
-     *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
-     *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
+	 *
+	 *  通常情况下，page_count(page) == page_mapcount(page)
+	 *          即   page->_refcount = page->_mapcount + 1
+	 *
+	 *  _refcount 有以下四种来源：
+	 *  =============================================
+	 *  1. 页面高速缓存在 radix tree 上， KSM 不考虑 页面高速缓存的情况
+	 *  2. 被用户态 PTE 引用， _refcount 和 _mapcount 都会增加计数
+	 *  3. page->private 数据也会增加 _refcount，对于匿名页面，需要判断他是否在交换缓存中
+	 *  4. 内核操作某些页面时会增加 _refcount, 如 follow_page(),get_user_pages_fast()
 	 */
 	atomic_t _refcount;
 

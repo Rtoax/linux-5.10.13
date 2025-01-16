@@ -2224,7 +2224,7 @@ struct super_operations {   /* 超级块操作符 */
 #ifdef CONFIG_FS_DAX    /* Direct Access, avoiding the page cache */
 #define S_DAX		(1 << 13) /* Direct Access, avoiding the page cache */
 #else
-//#define S_DAX		0	  /* Make all the DAX code disappear */
+#define S_DAX		0	  /* Make all the DAX code disappear */
 #endif
 #define S_ENCRYPTED	(1 << 14) /* Encrypted file (using fs/crypto/) */
 #define S_CASEFOLD	(1 << 15) /* Casefolded file */
@@ -2267,6 +2267,9 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_IMA(inode)		((inode)->i_flags & S_IMA)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
+/**
+ * Direct Access, avoiding the page cache
+ */
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
 #define IS_ENCRYPTED(inode)	((inode)->i_flags & S_ENCRYPTED)
 #define IS_CASEFOLDED(inode)	((inode)->i_flags & S_CASEFOLD)

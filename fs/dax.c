@@ -1244,6 +1244,9 @@ static bool dax_fault_is_synchronous(unsigned long flags,
 		&& (iomap->flags & IOMAP_F_DIRTY);
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:dax_iomap_pte_fault {printf("%8d %s\n", pid, comm);}'
+ */
 static vm_fault_t dax_iomap_pte_fault(struct vm_fault *vmf, pfn_t *pfnp,
 			       int *iomap_errp, const struct iomap_ops *ops)
 {
@@ -1332,7 +1335,7 @@ static vm_fault_t dax_iomap_pte_fault(struct vm_fault *vmf, pfn_t *pfnp,
 		if (error)
 			goto error_finish_iomap;
 
-        /* 可以用了 */
+		/* 可以用了 */
 		__SetPageUptodate(vmf->cow_page);
 		ret = finish_fault(vmf);
 		if (!ret)
@@ -1467,6 +1470,9 @@ fallback:
 	return VM_FAULT_FALLBACK;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:dax_iomap_pmd_fault {printf("%8d %s\n", pid, comm);}'
+ */
 static vm_fault_t dax_iomap_pmd_fault(struct vm_fault *vmf, pfn_t *pfnp,
 			       const struct iomap_ops *ops)
 {
@@ -1648,6 +1654,8 @@ static vm_fault_t dax_iomap_pmd_fault(struct vm_fault *vmf, pfn_t *pfnp,
  * their fault handler for DAX files. dax_iomap_fault() assumes the caller
  * has done all the necessary locking for page fault to proceed
  * successfully.
+ *
+ * sudo bpftrace -e 'kprobe:dax_iomap_fault {printf("%8d %s\n", pid, comm);}'
  */
 vm_fault_t dax_iomap_fault(struct vm_fault *vmf, enum page_entry_size pe_size,
 		    pfn_t *pfnp, int *iomap_errp, const struct iomap_ops *ops)
