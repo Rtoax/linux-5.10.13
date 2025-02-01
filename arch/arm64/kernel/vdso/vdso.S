@@ -11,6 +11,9 @@
 #include <asm/assembler.h>
 #include <asm/page.h>
 
+	/**
+	* arm64 的 vdso ELF 文件
+	*/
 	.globl vdso_start, vdso_end
 	.section .rodata
 	.balign PAGE_SIZE

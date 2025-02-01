@@ -5,6 +5,10 @@
  * This script controls its layout.
  */
 
+/**
+ * x86 的 vdso ELF 文件布局
+ */
+
 SECTIONS
 {
 	. = VDSO_PRELINK + SIZEOF_HEADERS;
