@@ -72,6 +72,11 @@ unsigned int __read_mostly vdso64_enabled = 1;
 
 /**
  * 初始化 vdso_image_64
+ * 
+ * <subsys_initcall>
+ * init_vdso() {
+ *   init_vdso_image();
+ * }
  */
 void __init init_vdso_image(const struct vdso_image *image)
 {
@@ -525,6 +530,9 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 #endif
 
 #ifdef CONFIG_X86_64
+/**
+ * 可以关闭 vdso 功能
+ */
 static __init int vdso_setup(char *s)
 {
 	vdso64_enabled = simple_strtoul(s, NULL, 0);
