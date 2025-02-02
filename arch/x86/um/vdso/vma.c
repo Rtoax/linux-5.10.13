@@ -10,6 +10,9 @@
 #include <asm/elf.h>
 #include <linux/init.h>
 
+/**
+ * cmdline: vdso=[0|1]
+ */
 static unsigned int __read_mostly vdso_enabled = 1;
 unsigned long um_vdso_addr;
 
@@ -55,6 +58,9 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	int err;
 	struct mm_struct *mm = current->mm;
 
+	/**
+	 * cmdline: vdso=[0|1]
+	 */
 	if (!vdso_enabled)
 		return 0;
 

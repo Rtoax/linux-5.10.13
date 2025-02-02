@@ -143,6 +143,9 @@ static void vdso_fix_landing(const struct vdso_image *image,
 #endif
 }
 
+/**
+ * mremap(2)
+ */
 static int vdso_mremap(const struct vm_special_mapping *sm,
 		struct vm_area_struct *new_vma)
 {
@@ -152,6 +155,9 @@ static int vdso_mremap(const struct vm_special_mapping *sm,
 	if (image->size != new_size)
 		return -EINVAL;
 
+	/**
+	 * 这并没改变物理地址，只是改变了虚拟地址？
+	 */
 	vdso_fix_landing(image, new_vma);
 	current->mm->context.vdso = (void __user *)new_vma->vm_start;
 
@@ -319,7 +325,13 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
  */
 static const struct vm_special_mapping vdso_mapping = {
 	.name = "[vdso]",
+	/**
+	 * page fault of [vdso]
+	 */
 	.fault = vdso_fault,
+	/**
+	 * 
+	 */
 	.mremap = vdso_mremap,
 };
 /**
