@@ -385,6 +385,12 @@ SECTIONS
 	}
 
 	. = ALIGN((1 << 12));
+	/**
+	 * for example:
+	 * ffffffffbe290000 D __vvar_page
+	 * ffffffffbe290000 D __vvar_beginning_hack
+	 * ffffffffbe290080 D _vdso_data
+	 */
 	__vvar_page = .;
 	.vvar : AT(ADDR(.vvar) - 0xffffffff80000000)
 	{

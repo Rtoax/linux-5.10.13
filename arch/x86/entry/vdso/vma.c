@@ -72,7 +72,7 @@ unsigned int __read_mostly vdso64_enabled = 1;
 
 /**
  * 初始化 vdso_image_64
- * 
+ *
  * <subsys_initcall>
  * init_vdso() {
  *   init_vdso_image();
@@ -224,7 +224,7 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
 #endif
 
 /**
- *
+ * /proc/PID/maps [vvar]
  */
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		      struct vm_area_struct *vma, struct vm_fault *vmf)
@@ -330,7 +330,7 @@ static const struct vm_special_mapping vdso_mapping = {
 	 */
 	.fault = vdso_fault,
 	/**
-	 * 
+	 *
 	 */
 	.mremap = vdso_mremap,
 };
@@ -463,8 +463,12 @@ static unsigned long vdso_addr(unsigned long start, unsigned len)
  */
 static int map_vdso_randomized(const struct vdso_image *image)
 {
-	unsigned long addr = vdso_addr(current->mm->start_stack, image->size-image->sym_vvar_start);
+	unsigned long addr = vdso_addr(current->mm->start_stack,
+				image->size - image->sym_vvar_start);
 
+	/**
+	 *
+	 */
 	return map_vdso(image, addr);
 }
 #endif
