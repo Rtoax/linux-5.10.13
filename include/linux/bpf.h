@@ -64,9 +64,9 @@ typedef struct bpf_map * p_bpf_map_t;/* 我加的 */
  */
 struct bpf_map_ops {
 	/* funcs callable from userspace (via syscall) */
-    /**
-     *  array_map_alloc_check
-     */
+	/**
+	 *  array_map_alloc_check
+	 */
 	int (*map_alloc_check)(union bpf_attr *attr);
 	p_bpf_map_t (*map_alloc)(union bpf_attr *attr);
 	void (*map_release)(struct bpf_map *map, struct file *map_file);
@@ -89,10 +89,10 @@ struct bpf_map_ops {
 	int (*map_update_elem)(struct bpf_map *map, void *key, void *value, u64 flags);
 	int (*map_delete_elem)(struct bpf_map *map, void *key);
 	int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags);
-    /**
-     *
-     */
-    int (*map_pop_elem)(struct bpf_map *map, void *value);
+	/**
+	 *
+	 */
+	int (*map_pop_elem)(struct bpf_map *map, void *value);
 	int (*map_peek_elem)(struct bpf_map *map, void *value);
 
 	/* funcs called by prog_array and perf_event_array map */
@@ -171,30 +171,29 @@ struct bpf_map {
 	void *security;
 #endif
 
-    /**
-     *  映射类型
-     */
+	/**
+	 *  映射类型
+	 */
 	enum bpf_map_type map_type;
 	u32 key_size;
 	u32 value_size;
 	u32 max_entries;
 	u32 map_flags;
 	int spin_lock_off; /* >=0 valid offset, <0 error */
-    /**
-     *  bpf_map_alloc_id()
-     */
+	/**
+	 *  bpf_map_alloc_id()
+	 */
 	u32 id;
 	int numa_node;
 	u32 btf_key_type_id;
 	u32 btf_value_type_id;
 	struct btf *btf;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct bpf_map_memory memory;
-	// BPF_OBJ_NAME_LEN = 16U
-	char name[BPF_OBJ_NAME_LEN];
+	char name[BPF_OBJ_NAME_LEN/*=16*/];
 	u32 btf_vmlinux_value_type_id;
 	bool bypass_spec_v1;
 	bool frozen; /* write-once; write-protected by freeze_mutex */
@@ -254,10 +253,10 @@ struct bpf_map_dev_ops {
 			                void *key, void *value);
 	int (*map_update_elem)(struct bpf_offloaded_map *map,
 			                void *key, void *value, u64 flags);
-    /**
-     *
-     */
-    int (*map_delete_elem)(struct bpf_offloaded_map *map, void *key);
+	/**
+	 *
+	 */
+	int (*map_delete_elem)(struct bpf_offloaded_map *map, void *key);
 };
 
 struct bpf_offloaded_map {
