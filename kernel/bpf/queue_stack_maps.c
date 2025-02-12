@@ -14,7 +14,7 @@
 	(BPF_F_NUMA_NODE | BPF_F_ACCESS_MASK)
 
 /**
- *  
+ *
  */
 struct bpf_queue_stack {
 	struct bpf_map map;
@@ -45,7 +45,11 @@ static bool queue_stack_map_is_full(struct bpf_queue_stack *qs)
 	return head == qs->tail;
 }
 
-/* Called from syscall */
+/**
+ * Called from syscall
+ *
+ * sudo bpftrace -e 'kretprobe:queue_stack_map_alloc_check {printf("ret %d\n", retval);}'
+ */
 static int queue_stack_map_alloc_check(union bpf_attr *attr)
 {
 	if (!bpf_capable())
@@ -108,7 +112,7 @@ static void queue_stack_map_free(struct bpf_map *map)
 }
 
 /**
- *  
+ *
  */
 static int __queue_map_get(struct bpf_map *map, void *_value, bool delete)
 {
@@ -263,7 +267,7 @@ static int queue_stack_map_get_next_key(struct bpf_map *map, void *key,
 
 
 /**
- *  
+ *
  */
 static int queue_map_btf_id;
 const struct bpf_map_ops queue_map_ops = {
@@ -283,7 +287,7 @@ const struct bpf_map_ops queue_map_ops = {
 };
 
 /**
- *  
+ *
  */
 static int stack_map_btf_id;
 const struct bpf_map_ops stack_map_ops = {
