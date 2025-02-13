@@ -439,9 +439,16 @@ int bpf_percpu_array_update(struct bpf_map *map, void *key, void *value,
 	return 0;
 }
 
-/* Called from syscall or from eBPF program */
+/**
+ * Called from syscall or from eBPF program
+ *
+ * $ sudo bpftrace -e 'kretprobe:array_map_delete_elem {printf("%d\n", retval);}'
+ */
 static int array_map_delete_elem(struct bpf_map *map, void *key)
 {
+	/**
+	 * array not support DELETE ???
+	 */
 	return -EINVAL;
 }
 
