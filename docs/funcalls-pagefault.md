@@ -28,6 +28,8 @@ __handle_mm_fault(struct vm_fault)	/* 普通 page 缺页 */
 ```
 handle_pte_fault
     do_anonymous_page   匿名页
+        if (!(vmf->flags & FAULT_FLAG_WRITE))
+            entry = ... my_zero_pfn();
     do_fault            文件映射
         do_read_fault
         do_cow_fault
@@ -77,7 +79,12 @@ do_wp_page          写时复制
     wp_page_shared    处理 可写的并且共享的普通映射 页面
 ```
 
+# memfd_create()
 
-
-
-
+```
+shmem_file_operations.mmap = shmem_mmap()
+vma->vm_ops = &shmem_vm_ops;
+    shmem_fault() {
+        alloc_pages_vma();
+    }
+```
