@@ -247,6 +247,15 @@ long memfd_fcntl(struct file *file, unsigned int cmd, unsigned long arg)
 
 #define MFD_ALL_FLAGS (MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_HUGETLB)
 
+/**
+ * int memfd_create(const char *name, unsigned int flags);
+ *
+ * shmem_file_operations.mmap = shmem_mmap()
+ * vma->vm_ops = &shmem_vm_ops;
+ * 	shmem_fault() {
+ * 		alloc_pages_vma();
+ * 	}
+ */
 SYSCALL_DEFINE2(memfd_create,
 		const char __user *, uname,
 		unsigned int, flags)
@@ -304,7 +313,12 @@ SYSCALL_DEFINE2(memfd_create,
 					(flags >> MFD_HUGE_SHIFT) &
 					MFD_HUGE_MASK);
 	} else
+		/**
+		 * use shmem_file_operations
+		 * shmem_file_operations.mmap = shmem_mmap()
+		 */
 		file = shmem_file_setup(name, 0, VM_NORESERVE);
+
 	if (IS_ERR(file)) {
 		error = PTR_ERR(file);
 		goto err_fd;

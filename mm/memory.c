@@ -3738,7 +3738,7 @@ out_release:
  * but allow concurrent faults), and pte mapped but not yet locked.
  * We return with mmap_lock still held, but pte unmapped and unlocked.
  *
- * 匿名页的缺页中断，在 handle_pte_fault 中被调用
+ * 匿名页的缺页中断，在 handle_pte_fault() 中被调用
  */
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
@@ -3784,8 +3784,8 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		!mm_forbids_zeropage(vma->vm_mm)/* 没有禁止 零页 */) {
 		/**
 		 *  鸡贼的内核，直接返回零页
+		 *  设置 特殊标志位，标志是个 系统零页
 		 */
-		/* 设置 特殊标志位，标志是个 系统零页 */
 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address), vma->vm_page_prot));
 
 		/**

@@ -79,10 +79,10 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #endif
 
 #if defined(CONFIG_HIGHPTE)
-//#define pte_offset_map(dir, address)				\
-//	((pte_t *)kmap_atomic(pmd_page(*(dir))) +		\
-//	 pte_index((address)))
-//#define pte_unmap(pte) kunmap_atomic((pte))
+#define pte_offset_map(dir, address)				\
+	((pte_t *)kmap_atomic(pmd_page(*(dir))) +		\
+	 pte_index((address)))
+#define pte_unmap(pte) kunmap_atomic((pte))
 #else
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	/* NOP */
@@ -927,81 +927,81 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 
 #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
 #ifndef CONFIG_ARCH_ENABLE_THP_MIGRATION
-//static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
-//
-//static inline int pmd_swp_soft_dirty(pmd_t pmd)
-//{
-//	return 0;
-//}
-//
-//static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
+static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
+
+static inline int pmd_swp_soft_dirty(pmd_t pmd)
+{
+	return 0;
+}
+
+static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
 #endif
 #else /* !CONFIG_HAVE_ARCH_SOFT_DIRTY */
-//static inline int pte_soft_dirty(pte_t pte)
-//{
-//	return 0;
-//}
-//
-//static inline int pmd_soft_dirty(pmd_t pmd)
-//{
-//	return 0;
-//}
-//
-//static inline pte_t pte_mksoft_dirty(pte_t pte)
-//{
-//	return pte;
-//}
-//
-//static inline pmd_t pmd_mksoft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
-//
-//static inline pte_t pte_clear_soft_dirty(pte_t pte)
-//{
-//	return pte;
-//}
-//
-//static inline pmd_t pmd_clear_soft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
-//
-//static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-//{
-//	return pte;
-//}
-//
-//static inline int pte_swp_soft_dirty(pte_t pte)
-//{
-//	return 0;
-//}
-//
-//static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-//{
-//	return pte;
-//}
-//
-//static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
-//
-//static inline int pmd_swp_soft_dirty(pmd_t pmd)
-//{
-//	return 0;
-//}
-//
-//static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-//{
-//	return pmd;
-//}
+static inline int pte_soft_dirty(pte_t pte)
+{
+	return 0;
+}
+
+static inline int pmd_soft_dirty(pmd_t pmd)
+{
+	return 0;
+}
+
+static inline pte_t pte_mksoft_dirty(pte_t pte)
+{
+	return pte;
+}
+
+static inline pmd_t pmd_mksoft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
+
+static inline pte_t pte_clear_soft_dirty(pte_t pte)
+{
+	return pte;
+}
+
+static inline pmd_t pmd_clear_soft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
+
+static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
+{
+	return pte;
+}
+
+static inline int pte_swp_soft_dirty(pte_t pte)
+{
+	return 0;
+}
+
+static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
+{
+	return pte;
+}
+
+static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
+
+static inline int pmd_swp_soft_dirty(pmd_t pmd)
+{
+	return 0;
+}
+
+static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
+{
+	return pmd;
+}
 #endif
 
 #ifndef __HAVE_PFNMAP_TRACKING
@@ -1015,47 +1015,47 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
  * track_pfn_remap is called when a _new_ pfn mapping is being established
  * by remap_pfn_range() for physical range indicated by pfn and size.
  */
-//static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-//				  unsigned long pfn, unsigned long addr,
-//				  unsigned long size)
-//{
-//	return 0;
-//}
-//
-///*
-// * track_pfn_insert is called when a _new_ single pfn is established
-// * by vmf_insert_pfn().
-// */
-//static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-//				    pfn_t pfn)
-//{
-//}
-//
-///*
-// * track_pfn_copy is called when vma that is covering the pfnmap gets
-// * copied through copy_page_range().
-// */
-//static inline int track_pfn_copy(struct vm_area_struct *vma)
-//{
-//	return 0;
-//}
-//
-///*
-// * untrack_pfn is called while unmapping a pfnmap for a region.
-// * untrack can be called for a specific region indicated by pfn and size or
-// * can be for the entire vma (in which case pfn, size are zero).
-// */
-//static inline void untrack_pfn(struct vm_area_struct *vma,
-//			       unsigned long pfn, unsigned long size)
-//{
-//}
-//
-///*
-// * untrack_pfn_moved is called while mremapping a pfnmap for a new region.
-// */
-//static inline void untrack_pfn_moved(struct vm_area_struct *vma)
-//{
-//}
+static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
+				  unsigned long pfn, unsigned long addr,
+				  unsigned long size)
+{
+	return 0;
+}
+
+/*
+ * track_pfn_insert is called when a _new_ single pfn is established
+ * by vmf_insert_pfn().
+ */
+static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
+				    pfn_t pfn)
+{
+}
+
+/*
+ * track_pfn_copy is called when vma that is covering the pfnmap gets
+ * copied through copy_page_range().
+ */
+static inline int track_pfn_copy(struct vm_area_struct *vma)
+{
+	return 0;
+}
+
+/*
+ * untrack_pfn is called while unmapping a pfnmap for a region.
+ * untrack can be called for a specific region indicated by pfn and size or
+ * can be for the entire vma (in which case pfn, size are zero).
+ */
+static inline void untrack_pfn(struct vm_area_struct *vma,
+			       unsigned long pfn, unsigned long size)
+{
+}
+
+/*
+ * untrack_pfn_moved is called while mremapping a pfnmap for a new region.
+ */
+static inline void untrack_pfn_moved(struct vm_area_struct *vma)
+{
+}
 #else
 extern int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
 			   unsigned long pfn, unsigned long addr,
@@ -1069,14 +1069,14 @@ extern void untrack_pfn_moved(struct vm_area_struct *vma);
 #endif
 
 #ifdef __HAVE_COLOR_ZERO_PAGE
-//static inline int is_zero_pfn(unsigned long pfn)    /* 系统零页(zero page) */
-//{
-//	extern unsigned long zero_pfn;
-//	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
-//	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
-//}
-//
-//#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
+static inline int is_zero_pfn(unsigned long pfn)    /* 系统零页(zero page) */
+{
+	extern unsigned long zero_pfn;
+	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
+	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
+}
+
+#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
 
 #else
 /**
@@ -1107,49 +1107,49 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 #ifdef CONFIG_MMU
 
 #ifndef CONFIG_TRANSPARENT_HUGEPAGE
-//static inline int pmd_trans_huge(pmd_t pmd)
-//{
-//	return 0;
-//}
-//#ifndef pmd_write
-//static inline int pmd_write(pmd_t pmd)
-//{
-//	BUG();
-//	return 0;
-//}
-//#endif /* pmd_write */
+static inline int pmd_trans_huge(pmd_t pmd)
+{
+	return 0;
+}
+#ifndef pmd_write
+static inline int pmd_write(pmd_t pmd)
+{
+	BUG();
+	return 0;
+}
+#endif /* pmd_write */
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
-//#ifndef pud_write
-//static inline int pud_write(pud_t pud)
-//{
-//	BUG();
-//	return 0;
-//}
-//#endif /* pud_write */
+#ifndef pud_write
+static inline int pud_write(pud_t pud)
+{
+	BUG();
+	return 0;
+}
+#endif /* pud_write */
 
 #if !defined(CONFIG_ARCH_HAS_PTE_DEVMAP) || !defined(CONFIG_TRANSPARENT_HUGEPAGE)
-//static inline int pmd_devmap(pmd_t pmd)
-//{
-//	return 0;
-//}
-//static inline int pud_devmap(pud_t pud)
-//{
-//	return 0;
-//}
-//static inline int pgd_devmap(pgd_t pgd)
-//{
-//	return 0;
-//}
+static inline int pmd_devmap(pmd_t pmd)
+{
+	return 0;
+}
+static inline int pud_devmap(pud_t pud)
+{
+	return 0;
+}
+static inline int pgd_devmap(pgd_t pgd)
+{
+	return 0;
+}
 #endif
 
 #if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
 	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
 	 !defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD))
-//static inline int pud_trans_huge(pud_t pud)
-//{
-//	return 0;
-//}
+static inline int pud_trans_huge(pud_t pud)
+{
+	return 0;
+}
 #endif
 
 /* See pmd_none_or_trans_huge_or_clear_bad for discussion. */
@@ -1173,7 +1173,7 @@ static inline int pud_trans_unstable(pud_t *pud)
 	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
 	return pud_none_or_trans_huge_or_dev_or_clear_bad(pud);
 #else
-//	return 0;
+	return 0;
 #endif
 }
 
@@ -1275,7 +1275,7 @@ static inline int pmd_trans_unstable(pmd_t *pmd)
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 	return pmd_none_or_trans_huge_or_clear_bad(pmd);
 #else
-//	return 0;
+	return 0;
 #endif
 }
 
@@ -1288,15 +1288,15 @@ static inline int pmd_trans_unstable(pmd_t *pmd)
  * is the responsibility of the caller to distinguish between PROT_NONE
  * protections and NUMA hinting fault protections.
  */
-//static inline int pte_protnone(pte_t pte)
-//{
-//	return 0;
-//}
-//
-//static inline int pmd_protnone(pmd_t pmd)
-//{
-//	return 0;
-//}
+static inline int pte_protnone(pte_t pte)
+{
+	return 0;
+}
+
+static inline int pmd_protnone(pmd_t pmd)
+{
+	return 0;
+}
 #endif /* CONFIG_NUMA_BALANCING */
 
 #endif /* CONFIG_MMU */
@@ -1307,14 +1307,14 @@ static inline int pmd_trans_unstable(pmd_t *pmd)
 int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot);
 int p4d_clear_huge(p4d_t *p4d);
 #else
-//static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
-//{
-//	return 0;
-//}
-//static inline int p4d_clear_huge(p4d_t *p4d)
-//{
-//	return 0;
-//}
+static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
+{
+	return 0;
+}
+static inline int p4d_clear_huge(p4d_t *p4d)
+{
+	return 0;
+}
 #endif /* !__PAGETABLE_P4D_FOLDED */
 
 int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot);
@@ -1325,42 +1325,42 @@ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr);
 int pud_free_pmd_page(pud_t *pud, unsigned long addr);
 int pmd_free_pte_page(pmd_t *pmd, unsigned long addr);
 #else	/* !CONFIG_HAVE_ARCH_HUGE_VMAP */
-//static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
-//{
-//	return 0;
-//}
-//static inline int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
-//{
-//	return 0;
-//}
-//static inline int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
-//{
-//	return 0;
-//}
-//static inline int p4d_clear_huge(p4d_t *p4d)
-//{
-//	return 0;
-//}
-//static inline int pud_clear_huge(pud_t *pud)
-//{
-//	return 0;
-//}
-//static inline int pmd_clear_huge(pmd_t *pmd)
-//{
-//	return 0;
-//}
-//static inline int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
-//{
-//	return 0;
-//}
-//static inline int pud_free_pmd_page(pud_t *pud, unsigned long addr)
-//{
-//	return 0;
-//}
-//static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
-//{
-//	return 0;
-//}
+static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
+{
+	return 0;
+}
+static inline int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
+{
+	return 0;
+}
+static inline int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
+{
+	return 0;
+}
+static inline int p4d_clear_huge(p4d_t *p4d)
+{
+	return 0;
+}
+static inline int pud_clear_huge(pud_t *pud)
+{
+	return 0;
+}
+static inline int pmd_clear_huge(pmd_t *pmd)
+{
+	return 0;
+}
+static inline int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
+{
+	return 0;
+}
+static inline int pud_free_pmd_page(pud_t *pud, unsigned long addr)
+{
+	return 0;
+}
+static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
+{
+	return 0;
+}
 #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
 #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
@@ -1377,8 +1377,8 @@ int pmd_free_pte_page(pmd_t *pmd, unsigned long addr);
 #define flush_pmd_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
 #define flush_pud_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
 #else
-//#define flush_pmd_tlb_range(vma, addr, end)	BUILD_BUG()
-//#define flush_pud_tlb_range(vma, addr, end)	BUILD_BUG()
+#define flush_pmd_tlb_range(vma, addr, end)	BUILD_BUG()
+#define flush_pud_tlb_range(vma, addr, end)	BUILD_BUG()
 #endif
 #endif
 
@@ -1387,21 +1387,21 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
 			unsigned long size, pgprot_t *vma_prot);
 
 #ifndef CONFIG_X86_ESPFIX64
-//static inline void init_espfix_bsp(void) { }
+static inline void init_espfix_bsp(void) { }
 #endif
 
 extern void __init pgtable_cache_init(void);
 
 #ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
-//static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
-//{
-//	return true;
-//}
+static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
+{
+	return true;
+}
 
-//static inline bool arch_has_pfn_modify_check(void)
-//{
-//	return false;
-//}
+static inline bool arch_has_pfn_modify_check(void)
+{
+	return false;
+}
 #endif /* !_HAVE_ARCH_PFN_MODIFY_ALLOWED */
 
 /*

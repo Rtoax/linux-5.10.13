@@ -1819,9 +1819,9 @@ repeat:
 	sbinfo = SHMEM_SB(inode->i_sb);
 	charge_mm = vma ? vma->vm_mm : current->mm;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	page = find_lock_entry(mapping, index);
 	if (xa_is_value(page)) {
 		error = shmem_swapin_page(inode, index, &page, sgp, gfp, vma, fault_type);
@@ -2038,16 +2038,19 @@ static int synchronous_wake_function(wait_queue_entry_t *wait, unsigned mode, in
 }
 
 /**
- *  shmem 共享内存
+ * shmem 共享内存
+ *
+ * call here:
+ * - memfd_create(2)
  */
 static vm_fault_t shmem_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct inode *inode = file_inode(vma->vm_file);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	gfp_t gfp = mapping_gfp_mask(inode->i_mapping);
 	enum sgp_type sgp;
 	int err;
@@ -2093,9 +2096,9 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 			prepare_to_wait(shmem_falloc_waitq, &shmem_fault_wait, TASK_UNINTERRUPTIBLE);
 			spin_unlock(&inode->i_lock);
 
-            /**
-             *
-             */
+			/**
+			 *
+			 */
 			schedule();
 
 			/*
@@ -2124,9 +2127,9 @@ static vm_fault_t shmem_fault(struct vm_fault *vmf)
 	else if (vma->vm_flags & VM_HUGEPAGE)
 		sgp = SGP_HUGE;
 
-    /**
-     *  分配页
-     */
+	/**
+	 *  分配页
+	 */
 	err = shmem_getpage_gfp(inode, vmf->pgoff, &vmf->page, sgp, gfp, vma, vmf, &ret);
 	if (err)
 		return vmf_error(err);
@@ -4164,6 +4167,10 @@ bool shmem_huge_enabled(struct vm_area_struct *vma)
 
 /* common code */
 
+/**
+ * use:
+ * - memfd_create(2)
+ */
 static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, loff_t size,
 				       unsigned long flags, unsigned int i_flags)
 {
@@ -4190,9 +4197,9 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, l
 	clear_nlink(inode);	/* It is unlinked */
 	res = ERR_PTR(ramfs_nommu_expand_for_mapping(inode, size));
 	if (!IS_ERR(res))
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		res = alloc_file_pseudo(inode, mnt, name, O_RDWR, &shmem_file_operations);
 	if (IS_ERR(res))
 		iput(inode);

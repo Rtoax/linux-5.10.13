@@ -1966,7 +1966,12 @@ struct file_operations {    /* 文件操作符 */
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 
 	/**
-	 *	xfs - xfs_file_mmap()
+	 * xfs - xfs_file_mmap()
+	 *
+	 * hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
+	 * shm_file_operations_huge.mmap = shm_mmap,
+	 * shmem_file_operations.mmap = shmem_mmap,
+	 * socket_file_ops.mmap = sock_mmap,
 	 */
 	int (*mmap) (struct file *, struct vm_area_struct *);
 
@@ -2129,13 +2134,12 @@ static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	/*
-	 hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
-	 shm_file_operations_huge.mmap = shm_mmap,
-	 shmem_file_operations.mmap = shmem_mmap,
-	 socket_file_ops.mmap = sock_mmap,
-
-	*/
+	/**
+	 * hugetlbfs_file_operations.mmap = hugetlbfs_file_mmap,
+	 * shm_file_operations_huge.mmap = shm_mmap,
+	 * shmem_file_operations.mmap = shmem_mmap,
+	 * socket_file_ops.mmap = sock_mmap,
+	 */
 	return file->f_op->mmap(file, vma);
 }
 
