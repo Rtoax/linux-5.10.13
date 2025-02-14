@@ -281,6 +281,9 @@ LSM_HOOK(int, 0, socket_connect, struct socket *sock, struct sockaddr *address,
 	 int addrlen)
 LSM_HOOK(int, 0, socket_listen, struct socket *sock, int backlog)
 LSM_HOOK(int, 0, socket_accept, struct socket *sock, struct socket *newsock)
+/**
+ * selinux_socket_sendmsg()
+ */
 LSM_HOOK(int, 0, socket_sendmsg, struct socket *sock, struct msghdr *msg,
 	 int size)
 LSM_HOOK(int, 0, socket_recvmsg, struct socket *sock, struct msghdr *msg,

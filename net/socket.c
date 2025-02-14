@@ -736,15 +736,15 @@ static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
  */
 int sock_sendmsg(struct socket *sock, struct msghdr *msg)
 {
-    /**
-     *  安全发送
-     *  selinux 的 回调钩子将在这里调用
-     */
+	/**
+	 *  安全发送
+	 *  selinux 的 回调钩子将在这里调用
+	 */
 	int err = security_socket_sendmsg(sock, msg,
 					  msg_data_left(msg));
 
-    //-1?"true":"false" => true
-    // 如果有权限，err=0，执行`sock_sendmsg_nosec`;
+	//-1?"true":"false" => true
+	// 如果有权限，err=0，执行`sock_sendmsg_nosec`;
 	return err ?: sock_sendmsg_nosec(sock, msg);
 }
 EXPORT_SYMBOL(sock_sendmsg);

@@ -2179,7 +2179,7 @@ int security_socket_accept(struct socket *sock, struct socket *newsock)
 
 int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
 {
-    //security/selinux/hooks.c:	LSM_HOOK_INIT(socket_sendmsg, selinux_socket_sendmsg),
+	//security/selinux/hooks.c:	LSM_HOOK_INIT(socket_sendmsg, selinux_socket_sendmsg),
 	return call_int_hook(socket_sendmsg, 0, sock, msg, size);
 }
 

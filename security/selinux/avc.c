@@ -74,7 +74,7 @@ struct avc_xperms_node {
 	struct list_head xpd_head; /* list head of extended_perms_decision */
 };
 /**
- *  
+ *
  */
 struct avc_cache {
 	struct hlist_head	slots[AVC_CACHE_SLOTS]; /* head for avc_node->list */
@@ -94,7 +94,7 @@ struct avc_callback_node {
 DEFINE_PER_CPU(struct avc_cache_stats, avc_cache_stats) = { 0 };
 #endif
 /**
- *  
+ *
  */
 struct selinux_avc {
 	unsigned int avc_cache_threshold;
@@ -1159,7 +1159,7 @@ inline int avc_has_perm_noaudit(struct selinux_state *state,
 
 	rcu_read_lock();
     /**
-     *  
+     *
      */
 	node = avc_lookup(state->avc, ssid, tsid, tclass);
 	if (unlikely(!node))
@@ -1167,7 +1167,7 @@ inline int avc_has_perm_noaudit(struct selinux_state *state,
 	else
 		memcpy(avd, &node->ae.avd, sizeof(*avd));
     /**
-     *  
+     *
      */
 	denied = requested & ~(avd->allowed);
 	if (unlikely(denied))
@@ -1199,14 +1199,14 @@ int avc_has_perm(struct selinux_state *state, u32 ssid, u32 tsid, u16 tclass,
 {
 	struct av_decision avd;
 	int rc, rc2;
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	rc = avc_has_perm_noaudit(state, ssid, tsid, tclass, requested, 0,
 				  &avd);
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	rc2 = avc_audit(state, ssid, tsid, tclass, requested, &avd, rc,
 			auditdata, 0);
 	if (rc2)

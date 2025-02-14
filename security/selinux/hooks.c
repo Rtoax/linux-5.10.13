@@ -231,7 +231,7 @@ static inline u32 cred_sid(const struct cred *cred)
 {
 	const struct task_security_struct *tsec;
     /**
-     *  
+     *
      */
 	tsec = selinux_cred(cred);
 	return tsec->sid;
@@ -1698,7 +1698,7 @@ static inline int path_has_perm(const struct cred *cred,
 }
 
 /**
- *  Same as path_has_perm, but uses the inode from the file struct. 
+ *  Same as path_has_perm, but uses the inode from the file struct.
  *  根据证书、file、access vector 三个结构判定文件是否有权限
  */
 static inline int file_path_has_perm(const struct cred *cred,
@@ -1956,7 +1956,7 @@ static int superblock_has_perm(const struct cred *cred,
 
 	sbsec = sb->s_security;
     /**
-     *  
+     *
      */
 	return avc_has_perm(&selinux_state,
 			    sid, sbsec->sid, SECCLASS_FILESYSTEM, perms, ad);
@@ -1991,7 +1991,7 @@ static inline u32 file_mask_to_av(int mode, int mask)
 }
 
 /**
- *  Convert a Linux file to an access vector. 
+ *  Convert a Linux file to an access vector.
  *  访问向量
  */
 static inline u32 file_to_av(struct file *file)
@@ -2028,7 +2028,7 @@ static inline u32 open_file_to_av(struct file *file)
 	u32 av = file_to_av(file);
 	struct inode *inode = file_inode(file);
     /**
-     *  
+     *
      */
 	if (selinux_policycap_openperm() &&
 	    inode->i_sb->s_magic != SOCKFS_MAGIC)
@@ -2796,7 +2796,7 @@ static int selinux_mount(const char *dev_name,
 					   FILESYSTEM__REMOUNT, NULL);
 	else
         /**
-     *  
+     *
      */
 		return path_has_perm(cred, path, FILE__MOUNTON);
 }
@@ -4214,7 +4214,7 @@ static int selinux_task_movememory(struct task_struct *p)
 			    PROCESS__SETSCHED, NULL);
 }
 /**
- *  kill 执行会调用这个函数， 
+ *  kill 执行会调用这个函数，
  *  尝试 kill 1
  *  在另一个终端进行tracing
  *  sudo bpftrace -e 'kprobe:selinux_task_kill {printf("selinux_task_kill\n");}'
@@ -4234,7 +4234,7 @@ static int selinux_task_kill(struct task_struct *p, struct kernel_siginfo *info,
 	else
 		secid = cred_sid(cred);
     /**
-     *  
+     *
      */
 	return avc_has_perm(&selinux_state,
 			    secid, task_sid(p), SECCLASS_PROCESS, perm, NULL);
@@ -4559,6 +4559,9 @@ static int socket_sockcreate_sid(const struct task_security_struct *tsec,
 				       secclass, NULL, socksid);
 }
 
+/**
+ * perms: SOCKET__WRITE ...
+ */
 static int sock_has_perm(struct sock *sk, u32 perms)
 {
 	struct sk_security_struct *sksec = sk->sk_security;
@@ -4916,6 +4919,9 @@ static int selinux_socket_accept(struct socket *sock, struct socket *newsock)
 	return 0;
 }
 
+/**
+ *
+ */
 static int selinux_socket_sendmsg(struct socket *sock, struct msghdr *msg,
 				  int size)
 {
@@ -7334,7 +7340,7 @@ static __init int selinux_init(void)
 	hashtab_cache_init();
 
     /**
-     *  
+     *
      */
 	security_add_hooks(selinux_hooks, ARRAY_SIZE(selinux_hooks), "selinux");
 
@@ -7350,7 +7356,7 @@ static __init int selinux_init(void)
 		pr_debug("SELinux:  Starting in permissive mode\n");
 
     /**
-     *  
+     *
      */
 	fs_validate_description("selinux", selinux_fs_parameters);
 
@@ -7484,7 +7490,7 @@ int selinux_disable(struct selinux_state *state)
 		return -EINVAL;
 	}
     /**
-     *  
+     *
      */
 	selinux_mark_disabled(state);
 

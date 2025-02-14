@@ -1074,6 +1074,9 @@ static int nvme_tcp_try_send_data(struct nvme_tcp_request *req)
 
 		bvec_set_page(&bvec, page, len, offset);
 		iov_iter_bvec(&msg.msg_iter, ITER_SOURCE, &bvec, 1, len);
+		/**
+		 *
+		 */
 		ret = sock_sendmsg(queue->sock, &msg);
 		if (ret <= 0)
 			return ret;
@@ -1245,6 +1248,9 @@ static int nvme_tcp_try_send(struct nvme_tcp_queue *queue)
 			goto done;
 	}
 
+	/**
+	 *
+	 */
 	if (req->state == NVME_TCP_SEND_DATA) {
 		ret = nvme_tcp_try_send_data(req);
 		if (ret <= 0)
@@ -1257,6 +1263,9 @@ done:
 	if (ret == -EAGAIN) {
 		ret = 0;
 	} else if (ret < 0) {
+		/**
+		 * nvme nvme2: failed to send request -13
+		 */
 		dev_err(queue->ctrl->ctrl.device,
 			"failed to send request %d\n", ret);
 		nvme_tcp_fail_request(queue->request);
