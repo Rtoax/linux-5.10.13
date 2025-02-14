@@ -713,9 +713,11 @@ INDIRECT_CALLABLE_DECLARE(int inet6_sendmsg(struct socket *, struct msghdr *,
 /* sendto(...) */
 static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
 {
-    /* 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是 inet_sendmsg */
-    /* 按照 优先级，
-        inet6_sendmsg > inet_snedmsg > sock->ops->sendmsg */
+	/* 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是 inet_sendmsg */
+	/**
+	 * 按照 优先级，
+	 * inet6_sendmsg > inet_snedmsg > sock->ops->sendmsg
+	 */
 
 	int ret = INDIRECT_CALL_INET(sock->ops->sendmsg, inet6_sendmsg,
 				     inet_sendmsg, sock, msg,
@@ -743,8 +745,10 @@ int sock_sendmsg(struct socket *sock, struct msghdr *msg)
 	int err = security_socket_sendmsg(sock, msg,
 					  msg_data_left(msg));
 
-	//-1?"true":"false" => true
-	// 如果有权限，err=0，执行`sock_sendmsg_nosec`;
+	/**
+	 * -1?"true":"false" => true
+	 * 如果有权限，err=0，执行`sock_sendmsg_nosec`;
+	 */
 	return err ?: sock_sendmsg_nosec(sock, msg);
 }
 EXPORT_SYMBOL(sock_sendmsg);

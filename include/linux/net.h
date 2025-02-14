@@ -273,12 +273,12 @@ struct proto_ops {  /* struct socket 操作 */
  */
 struct net_proto_family {
 	int		family;
-    /**
-     *
-     *  AF_INET->inet_family_ops->inet_create()
-     *  AF_UNIX->unix_family_ops->unix_create()
-     *  AF_PACKET->packet_family_ops->packet_create()
-     */
+	/**
+	 *
+	 *  AF_INET->inet_family_ops->inet_create()
+	 *  AF_UNIX->unix_family_ops->unix_create()
+	 *  AF_PACKET->packet_family_ops->packet_create()
+	 */
 	int		(*create)(struct net *net, struct socket *sock,
 				        int protocol, int kern);
 	struct module	*owner;
@@ -344,14 +344,14 @@ do {									\
 		                   ##__VA_ARGS__);			\
 } while (0)
 #elif defined(DEBUG)
-//#define net_dbg_ratelimited(fmt, ...)				\
-//	net_ratelimited_function(pr_debug, fmt, ##__VA_ARGS__)
+#define net_dbg_ratelimited(fmt, ...)				\
+	net_ratelimited_function(pr_debug, fmt, ##__VA_ARGS__)
 #else
-//#define net_dbg_ratelimited(fmt, ...)				\
-//	do {							\
-//		if (0)						\
-//			no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); \
-//	} while (0)
+#define net_dbg_ratelimited(fmt, ...)				\
+	do {							\
+		if (0)						\
+			no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); \
+	} while (0)
 #endif
 
 #define net_get_random_once(buf, nbytes)			\
