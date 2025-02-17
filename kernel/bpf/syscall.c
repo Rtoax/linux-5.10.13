@@ -272,10 +272,13 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 	 *
 	 */
 	} else if (map->map_type == BPF_MAP_TYPE_CPUMAP ||
-		       map->map_type == BPF_MAP_TYPE_STRUCT_OPS) {
+#if add_from_upsteam(v6.14-rc1-48-g4eb93fea5919)
+			map->map_type == BPF_MAP_TYPE_ARENA ||
+#endif /* v6.14-rc1-48-g4eb93fea5919 */
+			map->map_type == BPF_MAP_TYPE_STRUCT_OPS) {
 		/**
-	     *
-	     */
+		 *
+		 */
 		return map->ops->map_update_elem(map, key, _value, flags);
 
 	/**
@@ -351,9 +354,9 @@ static int bpf_map_update_value(struct bpf_map *map, struct fd f, void *key,
 	 */
 	} else {
 		rcu_read_lock();
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		err = map->ops->map_update_elem(map, key, _value, flags);
 		rcu_read_unlock();
 	}
@@ -1082,6 +1085,11 @@ static int map_create(union bpf_attr *attr)
 	} else if (attr->btf_key_type_id && !attr->btf_value_type_id) {
 		return -EINVAL;
 	}
+
+	if (attr->map_type != BPF_MAP_TYPE_BLOOM_FILTER &&
+		attr->map_type != BPF_MAP_TYPE_ARENA &&
+		attr->map_extra != 0)
+		return -EINVAL;
 
 	/**
 	 *

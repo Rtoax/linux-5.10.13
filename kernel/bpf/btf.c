@@ -4283,14 +4283,14 @@ extern char __weak __start_BTF[];
 extern char __weak __stop_BTF[];
 extern struct btf *btf_vmlinux;
 
-//#define BPF_MAP_TYPE(_id, _ops)
-//#define BPF_LINK_TYPE(_id, _name)
+#define BPF_MAP_TYPE(_id, _ops)
+#define BPF_LINK_TYPE(_id, _name)
 static union {
 	struct bpf_ctx_convert {
-//#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
-//	prog_ctx_type _id##_prog; \
-//	kern_ctx_type _id##_kern;
-//#include <linux/bpf_types.h>
+#define BPF_PROG_TYPE(_id, _name, prog_ctx_type, kern_ctx_type) \
+	prog_ctx_type _id##_prog; \
+	kern_ctx_type _id##_kern;
+#include <linux/bpf_types.h>
 /**
  *  展开 #include <linux/bpf_types.h>
  */
