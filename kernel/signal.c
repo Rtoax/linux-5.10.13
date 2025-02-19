@@ -1184,6 +1184,9 @@ out_set:
 
 	complete_signal(sig, t, type);
 ret:
+	/**
+	 * sudo bpftrace -e 'tracepoint:signal:signal_generate {printf ("%s %s\n", comm, kstack);}'
+	 */
 	trace_signal_generate(sig, info, t, type != PIDTYPE_PID, result);
 	return ret;
 }
@@ -1890,6 +1893,9 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 	complete_signal(sig, t, type);
 	result = TRACE_SIGNAL_DELIVERED;
 out:
+	/**
+	 * sudo bpftrace -e 'tracepoint:signal:signal_generate {printf ("%s %s\n", comm, kstack);}'
+	 */
 	trace_signal_generate(sig, &q->info, t, type != PIDTYPE_PID, result);
 	unlock_task_sighand(t, &flags);
 ret:

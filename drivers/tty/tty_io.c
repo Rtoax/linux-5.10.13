@@ -657,6 +657,9 @@ static void __tty_hangup(struct tty_struct *tty, int exit_session)
 		fput(f);
 }
 
+/**
+ * terminate the terminal will call this func
+ */
 static void do_tty_hangup(struct work_struct *work)
 {
 	struct tty_struct *tty =
