@@ -6645,9 +6645,9 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 	 * 不是因为 fork(2)
 	 */
 	if (!(sd_flag & SD_BALANCE_FORK))
-	    /**
-	     *  更新系统负载信息
-	     */
+		/**
+		 *  更新系统负载信息
+		 */
 		sync_entity_load_avg(&p->se);
 
 	/**
@@ -6663,18 +6663,18 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 			continue;
 		}
 
-	    /**
-	     *  查找最空闲的一个调度组
-	     */
+		/**
+		 *  查找最空闲的一个调度组
+		 */
 		group = find_idlest_group(sd, p, cpu);
 		if (!group) {
 			sd = sd->child;
 			continue;
 		}
 
-	    /**
-	     *  从上述 调度组中找出一个 负载值最小的 CPU 作为最佳候选者
-	     */
+		/**
+		 *  从上述 调度组中找出一个 负载值最小的 CPU 作为最佳候选者
+		 */
 		new_cpu = find_idlest_group_cpu(group, p, cpu);
 		if (new_cpu == cpu) {
 			/* Now try balancing at a lower domain level of 'cpu': */
@@ -6687,9 +6687,9 @@ static inline int find_idlest_cpu(struct sched_domain *sd, struct task_struct *p
 		weight = sd->span_weight;
 		sd = NULL;
 
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		for_each_domain(cpu, tmp) {
 			if (weight <= tmp->span_weight)
 				break;

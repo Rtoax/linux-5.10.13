@@ -193,26 +193,26 @@ static inline void free_task_struct(struct task_struct *tsk)
  * vmalloc() is a bit slow, and calling vfree() enough times will force a TLB
  * flush.  Try to minimize the number of calls by caching stacks.
  */
-//#define NR_CACHED_STACKS 2
-//static DEFINE_PER_CPU(struct vm_struct *, cached_stacks[NR_CACHED_STACKS]);
+#define NR_CACHED_STACKS 2
+static DEFINE_PER_CPU(struct vm_struct *, cached_stacks[NR_CACHED_STACKS]);
 
-//static int free_vm_stack_cache(unsigned int cpu)
-//{
-//	struct vm_struct **cached_vm_stacks = per_cpu_ptr(cached_stacks, cpu);
-//	int i;
-//
-//	for (i = 0; i < NR_CACHED_STACKS; i++) {
-//		struct vm_struct *vm_stack = cached_vm_stacks[i];
-//
-//		if (!vm_stack)
-//			continue;
-//
-//		vfree(vm_stack->addr);
-//		cached_vm_stacks[i] = NULL;
-//	}
-//
-//	return 0;
-//}
+static int free_vm_stack_cache(unsigned int cpu)
+{
+	struct vm_struct **cached_vm_stacks = per_cpu_ptr(cached_stacks, cpu);
+	int i;
+
+	for (i = 0; i < NR_CACHED_STACKS; i++) {
+		struct vm_struct *vm_stack = cached_vm_stacks[i];
+
+		if (!vm_stack)
+			continue;
+
+		vfree(vm_stack->addr);
+		cached_vm_stacks[i] = NULL;
+	}
+
+	return 0;
+}
 #endif
 
 /**
@@ -221,49 +221,49 @@ static inline void free_task_struct(struct task_struct *tsk)
 static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
 #ifdef CONFIG_VMAP_STACK
-//	void *stack;
-//	int i;
-//
-//	for (i = 0; i < NR_CACHED_STACKS; i++) {
-//		struct vm_struct *s;
-//
-//		s = this_cpu_xchg(cached_stacks[i], NULL);
-//
-//		if (!s)
-//			continue;
-//
-//		/* Clear the KASAN shadow of the stack. */
-//		kasan_unpoison_shadow(s->addr, THREAD_SIZE);
-//
-//		/* Clear stale pointers from reused stack. */
-//		memset(s->addr, 0, THREAD_SIZE);
-//
-//		tsk->stack_vm_area = s;
-//		tsk->stack = s->addr;
-//		return s->addr;
-//	}
-//
-//	/*
-//	 * Allocated stacks are cached and later reused by new threads,
-//	 * so memcg accounting is performed manually on assigning/releasing
-//	 * stacks to tasks. Drop __GFP_ACCOUNT.
-//	 */
-//	stack = __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN,
-//				     VMALLOC_START, VMALLOC_END,
-//				     THREADINFO_GFP & ~__GFP_ACCOUNT,
-//				     PAGE_KERNEL,
-//				     0, node, __builtin_return_address(0));
-//
-//	/*
-//	 * We can't call find_vm_area() in interrupt context, and
-//	 * free_thread_stack() can be called in interrupt context,
-//	 * so cache the vm_struct.
-//	 */
-//	if (stack) {
-//		tsk->stack_vm_area = find_vm_area(stack);
-//		tsk->stack = stack;
-//	}
-//	return stack;
+	void *stack;
+	int i;
+
+	for (i = 0; i < NR_CACHED_STACKS; i++) {
+		struct vm_struct *s;
+
+		s = this_cpu_xchg(cached_stacks[i], NULL);
+
+		if (!s)
+			continue;
+
+		/* Clear the KASAN shadow of the stack. */
+		kasan_unpoison_shadow(s->addr, THREAD_SIZE);
+
+		/* Clear stale pointers from reused stack. */
+		memset(s->addr, 0, THREAD_SIZE);
+
+		tsk->stack_vm_area = s;
+		tsk->stack = s->addr;
+		return s->addr;
+	}
+
+	/*
+	 * Allocated stacks are cached and later reused by new threads,
+	 * so memcg accounting is performed manually on assigning/releasing
+	 * stacks to tasks. Drop __GFP_ACCOUNT.
+	 */
+	stack = __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN,
+				     VMALLOC_START, VMALLOC_END,
+				     THREADINFO_GFP & ~__GFP_ACCOUNT,
+				     PAGE_KERNEL,
+				     0, node, __builtin_return_address(0));
+
+	/*
+	 * We can't call find_vm_area() in interrupt context, and
+	 * free_thread_stack() can be called in interrupt context,
+	 * so cache the vm_struct.
+	 */
+	if (stack) {
+		tsk->stack_vm_area = find_vm_area(stack);
+		tsk->stack = stack;
+	}
+	return stack;
 #else
 	/**
 	 *  为栈分配 page
@@ -284,54 +284,54 @@ static unsigned long *alloc_thread_stack_node(struct task_struct *tsk, int node)
 static inline void free_thread_stack(struct task_struct *tsk)
 {
 #ifdef CONFIG_VMAP_STACK
-//	struct vm_struct *vm = task_stack_vm_area(tsk);
-//
-//	if (vm) {
-//		int i;
-//
-//		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
-//			memcg_kmem_uncharge_page(vm->pages[i], 0);
-//
-//		for (i = 0; i < NR_CACHED_STACKS; i++) {
-//			if (this_cpu_cmpxchg(cached_stacks[i],
-//					NULL, tsk->stack_vm_area) != NULL)
-//				continue;
-//
-//			return;
-//		}
-//
-//		vfree_atomic(tsk->stack);
-//		return;
-//	}
+	struct vm_struct *vm = task_stack_vm_area(tsk);
+
+	if (vm) {
+		int i;
+
+		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
+			memcg_kmem_uncharge_page(vm->pages[i], 0);
+
+		for (i = 0; i < NR_CACHED_STACKS; i++) {
+			if (this_cpu_cmpxchg(cached_stacks[i],
+					NULL, tsk->stack_vm_area) != NULL)
+				continue;
+
+			return;
+		}
+
+		vfree_atomic(tsk->stack);
+		return;
+	}
 #endif
 
 	__free_pages(virt_to_page(tsk->stack), THREAD_SIZE_ORDER);
 }
 # else
-//static struct kmem_cache *thread_stack_cache;
-//
-//static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
-//						  int node)
-//{
-//	unsigned long *stack;
-//	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
-//	stack = kasan_reset_tag(stack);
-//	tsk->stack = stack;
-//	return stack;
-//}
-//
-//static void free_thread_stack(struct task_struct *tsk)
-//{
-//	kmem_cache_free(thread_stack_cache, tsk->stack);
-//}
-//
-//void thread_stack_cache_init(void)  /*线程栈  */
-//{
-//	thread_stack_cache = kmem_cache_create_usercopy("thread_stack",
-//					THREAD_SIZE, THREAD_SIZE, 0, 0,
-//					THREAD_SIZE, NULL);
-//	BUG_ON(thread_stack_cache == NULL);
-//}
+static struct kmem_cache *thread_stack_cache;
+
+static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
+						  int node)
+{
+	unsigned long *stack;
+	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
+	stack = kasan_reset_tag(stack);
+	tsk->stack = stack;
+	return stack;
+}
+
+static void free_thread_stack(struct task_struct *tsk)
+{
+	kmem_cache_free(thread_stack_cache, tsk->stack);
+}
+
+void thread_stack_cache_init(void)  /*线程栈  */
+{
+	thread_stack_cache = kmem_cache_create_usercopy("thread_stack",
+					THREAD_SIZE, THREAD_SIZE, 0, 0,
+					THREAD_SIZE, NULL);
+	BUG_ON(thread_stack_cache == NULL);
+}
 # endif
 #endif
 
@@ -586,17 +586,17 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 			charge = len;
 		}
 
-	    /* 分配内存与初始化 */
+		/* 分配内存与初始化 */
 		tmp = vm_area_dup(mpnt);
 		if (!tmp)
 			goto fail_nomem;
 
-	    /* 策略 */
+		/* 策略 */
 		retval = vma_dup_policy(mpnt, tmp);
 		if (retval)
 			goto fail_nomem_policy;
 
-	    /* 赋值 */
+		/* 赋值 */
 		tmp->vm_mm = mm;
 
 
@@ -625,29 +625,29 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	    else if (anon_vma_fork(tmp, mpnt))
 			goto fail_nomem_anon_vma_fork;
 
-	    /**
-	     *
-	     */
+		/**
+		 *
+		 */
 		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
 
-	    /**
-	     *  这个 vma 是 文件映射
-	     */
+		/**
+		 *  这个 vma 是 文件映射
+		 */
 		file = tmp->vm_file;
 		if (file) {
-	        /**
-	         *  获得这个文件
-	         */
+			/**
+			 *  获得这个文件
+			 */
 			struct inode *inode = file_inode(file);
 
-	        /**
-	         *  缓存
-	         */
+			/**
+			 *  缓存
+			 */
 			struct address_space *mapping = file->f_mapping;
 
-	        /**
-	         *  引用计数
-	         */
+			/**
+			 *  引用计数
+			 */
 			get_file(file);
 			if (tmp->vm_flags & VM_DENYWRITE)
 				put_write_access(inode);
@@ -655,9 +655,9 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 			if (tmp->vm_flags & VM_SHARED)
 				mapping_allow_writable(mapping);
 
-	        /**
-	         *
-	         */
+			/**
+			 *
+			 */
 			flush_dcache_mmap_lock(mapping);
 
 			/**
@@ -685,7 +685,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		tmp->vm_prev = prev;
 		prev = tmp;
 
-	    /* 红黑树操作 */
+		/* 红黑树操作 */
 		__vma_link_rb(mm, tmp, rb_link, rb_parent);
 		/* 往后(右)插入 */
 		rb_link = &tmp->vm_rb.rb_right;
@@ -861,16 +861,16 @@ EXPORT_SYMBOL_GPL(__put_task_struct);
 
 void __init __weak arch_task_cache_init(void) { }
 //在老本版内核中，该函数可能为：
-//void arch_task_cache_init(void)
-//{
-////the `task_xstate` which represents [FPU](http://en.wikipedia.org/wiki/Floating-point_unit)
-//
-//    task_xstate_cachep =
-//            kmem_cache_create("task_xstate", xstate_size,
-//                              __alignof__(union thread_xstate),
-//                              SLAB_PANIC | SLAB_NOTRACK, NULL);
-//    setup_xstate_comp();
-//}
+void arch_task_cache_init(void)
+{
+//the `task_xstate` which represents [FPU](http://en.wikipedia.org/wiki/Floating-point_unit)
+
+    task_xstate_cachep =
+            kmem_cache_create("task_xstate", xstate_size,
+                              __alignof__(union thread_xstate),
+                              SLAB_PANIC | SLAB_NOTRACK, NULL);
+    setup_xstate_comp();
+}
 
 
 /*
@@ -1849,9 +1849,9 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 
 	/* Reset all signal handler not set to SIG_IGN to SIG_DFL. */
 	if (clone_flags & CLONE_CLEAR_SIGHAND)
-	    /**
-	     *  清理 默认值
-	     */
+		/**
+		 *  清理 默认值
+		 */
 		flush_signal_handlers(tsk, 0);
 
 	return 0;
