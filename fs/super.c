@@ -42,6 +42,9 @@
 
 static int thaw_super_locked(struct super_block *sb);
 
+/**
+ * super_block link list head and lock.
+ */
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
@@ -753,7 +756,6 @@ void iterate_supers_type(struct file_system_type *type,
 		__put_super(p);
 	spin_unlock(&sb_lock);
 }
-
 EXPORT_SYMBOL(iterate_supers_type);
 
 static struct super_block *__get_super(struct block_device *bdev, bool excl)

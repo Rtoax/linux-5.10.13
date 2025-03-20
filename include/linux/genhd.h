@@ -50,6 +50,9 @@ struct partition_meta_info {
 	u8 volname[PARTITION_META_INFO_VOLNAMELTH];
 };
 
+/**
+ *
+ */
 struct hd_struct {
 	sector_t start_sect;
 	/*

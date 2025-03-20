@@ -1478,6 +1478,9 @@ struct sb_writers {
  *
  */
 struct super_block {
+	/**
+	 * see link list: super_blocks
+	 */
 	struct list_head	s_list;		/* Keep this first */
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
 	unsigned char		s_blocksize_bits;

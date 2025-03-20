@@ -545,18 +545,18 @@ static struct kobj_map *bdev_map;
 static int blk_mangle_minor(int minor)
 {
 #ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
-//	int i;
-//
-//	for (i = 0; i < MINORBITS / 2; i++) {
-//		int low = minor & (1 << i);
-//		int high = minor & (1 << (MINORBITS - 1 - i));
-//		int distance = MINORBITS - 1 - 2 * i;
-//
-//		minor ^= low | high;	/* clear both bits */
-//		low <<= distance;	/* swap the positions */
-//		high >>= distance;
-//		minor |= low | high;	/* and set */
-//	}
+	int i;
+
+	for (i = 0; i < MINORBITS / 2; i++) {
+		int low = minor & (1 << i);
+		int high = minor & (1 << (MINORBITS - 1 - i));
+		int distance = MINORBITS - 1 - 2 * i;
+
+		minor ^= low | high;	/* clear both bits */
+		low <<= distance;	/* swap the positions */
+		high >>= distance;
+		minor |= low | high;	/* and set */
+	}
 #endif
 	return minor;
 }
@@ -1294,6 +1294,9 @@ ssize_t part_size_show(struct device *dev,
 		(unsigned long long)part_nr_sects_read(p));
 }
 
+/**
+ * /sys/block/nvme0n1/stat
+ */
 ssize_t part_stat_show(struct device *dev,
 		       struct device_attribute *attr, char *buf)
 {
