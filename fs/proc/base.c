@@ -1273,6 +1273,9 @@ out:
 	return err < 0 ? err : count;
 }
 
+/**
+ * /proc/PID/oom_score_adj
+ */
 static const struct file_operations proc_oom_score_adj_operations = {
 	.read		= oom_score_adj_read,
 	.write		= oom_score_adj_write,

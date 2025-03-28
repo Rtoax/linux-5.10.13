@@ -14,7 +14,7 @@
  * purposes.
  */
 #define OOM_DISABLE (-17)
-/* inclusive */
+/* inclusive 包容性 */
 #define OOM_ADJUST_MIN (-16)
 #define OOM_ADJUST_MAX 15
 
