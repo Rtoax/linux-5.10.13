@@ -1219,6 +1219,9 @@ out:
 	return err < 0 ? err : count;
 }
 
+/**
+ * /proc/PID/oom_adj
+ */
 static const struct file_operations proc_oom_adj_operations = {
 	.read		= oom_adj_read,
 	.write		= oom_adj_write,
