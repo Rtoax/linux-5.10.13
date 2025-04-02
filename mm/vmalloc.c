@@ -259,16 +259,16 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 		if (WARN_ON(!__page))
 			return -ENOMEM;
 
-        /**
-         *  设置 PTE value
-         */
+		/**
+		 *  设置 PTE value
+		 */
 		set_pte_at(&init_mm, addr, pte, mk_pte(__page, prot));
 		(*nr)++;
 	} while (pte++, addr += PAGE_SIZE, addr != end);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	*mask |= PGTBL_PTE_MODIFIED;
 	return 0;
 }
@@ -292,9 +292,9 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr,
      */
     do {
 		next = pmd_addr_end(addr, end);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (vmap_pte_range(pmd, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (pmd++, addr = next, addr != end);
@@ -311,9 +311,9 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
 	pud_t *pud;
 	unsigned long next;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
 	if (!pud)
 		return -ENOMEM;
@@ -323,9 +323,9 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
      */
     do {
 		next = pud_addr_end(addr, end);
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
     /**
@@ -345,29 +345,29 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
 	p4d_t *p4d;
 	unsigned long next;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
 	if (!p4d)
 		return -ENOMEM;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	do {
 		next = p4d_addr_end(addr, end);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (vmap_pud_range(p4d, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
 	} while (p4d++, addr = next, addr != end);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return 0;
 }
 
@@ -402,34 +402,34 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
 
 	BUG_ON(addr >= end);
 
-    /**
-     *  获取内核态 - pgd
-     *  pgd = pgd_offset(&init_mm, (address))
-     */
+	/**
+	 *  获取内核态 - pgd
+	 *  pgd = pgd_offset(&init_mm, (address))
+	 */
 	pgd = pgd_offset_k(addr);
 	do {
-        /**
-         *  vmalloc 内存块 虚拟地址的结束地址
-         */
+		/**
+		 *  vmalloc 内存块 虚拟地址的结束地址
+		 */
 		next = pgd_addr_end(addr, end);
 		if (pgd_bad(*pgd))
 			mask |= PGTBL_PGD_MODIFIED;
 
-        /**
-         *  映射 p4d
-         */
+		/**
+		 *  映射 p4d
+		 */
 		err = vmap_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
 		if (err)
 			return err;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	} while (pgd++, addr = next, addr != end);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
 		arch_sync_kernel_mappings(start, end);
 
@@ -444,15 +444,15 @@ int map_kernel_range(unsigned long start, unsigned long size, pgprot_t prot,
 {
 	int ret;
 
-    /**
-     *  映射
-     *  start ~ start+size
-     */
+	/**
+	 *  映射
+	 *  start ~ start+size
+	 */
 	ret = map_kernel_range_noflush(start, size, prot, pages);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	flush_cache_vmap(start, start + size);
 	return ret;
 }
@@ -519,9 +519,9 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
 	ptep = pte_offset_map(pmd, addr);
 	pte = *ptep;
 
-    /**
-     *  pte 存在
-     */
+	/**
+	 *  pte 存在
+	 */
 	if (pte_present(pte))
 		page = pte_page(pte);
 	pte_unmap(ptep);
@@ -2348,14 +2348,14 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	if (unlikely(!size))
 		return NULL;
 
-    /* 如果是 IOREMAP 的区域 */
+	/* 如果是 IOREMAP 的区域 */
 	if (flags & VM_IOREMAP)
 		align = 1ul << clamp_t(int, get_count_order_long(size),
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 
-    /**
-     *  分配一个 area 结构
-     */
+	/**
+	 *  分配一个 area 结构
+	 */
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
 		return NULL;
@@ -2363,24 +2363,24 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	if (!(flags & VM_NO_GUARD))
 		size += PAGE_SIZE;
 
-    /**
-     *  从 vmalloc 区间分配
-     */
+	/**
+	 *  从 vmalloc 区间分配
+	 */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {
 		kfree(area);
 		return NULL;
 	}
 
-    /**
-     *
-     */
-    /* kasan： 设置 redzone */
+	/**
+	 *
+	 */
+	/* kasan： 设置 redzone */
 	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	setup_vmalloc_vm(area, va, flags, caller);
 
 	return area;
@@ -2461,9 +2461,9 @@ struct vm_struct *remove_vm_area(const void *addr)
 
 	spin_lock(&vmap_area_lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	va = __find_vmap_area((unsigned long)addr);
 	if (va && va->vm) {
 		struct vm_struct *vm = va->vm;
@@ -2473,9 +2473,9 @@ struct vm_struct *remove_vm_area(const void *addr)
 
 		kasan_free_shadow(vm);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		free_unmap_vmap_area(va);
 
 		return vm;
@@ -2506,9 +2506,9 @@ static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
 	int flush_dmap = 0;
 	int i;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	remove_vm_area(area->addr);
 
 	/* If this is not VM_FLUSH_RESET_PERMS memory, no need for the below. */
@@ -2544,9 +2544,9 @@ static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
 	 * reset the direct map permissions to the default.
 	 */
 	set_area_direct_map(area, set_direct_map_invalid_noflush);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	_vm_unmap_aliases(start, end, flush_dmap);
 	set_area_direct_map(area, set_direct_map_default_noflush);
 }
@@ -2565,9 +2565,9 @@ static void __vunmap(const void *addr, int deallocate_pages)
 			addr))
 		return;
 
-    /**
-     *  查找到 va 结构
-     */
+	/**
+	 *  查找到 va 结构
+	 */
 	area = find_vm_area(addr);
 	if (unlikely(!area)) {
 		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
@@ -2580,17 +2580,17 @@ static void __vunmap(const void *addr, int deallocate_pages)
 
 	kasan_poison_vmalloc(area->addr, get_vm_area_size(area));
 
-    /**
-     *  取消 虚拟地址 和 page 的映射
-     */
+	/**
+	 *  取消 虚拟地址 和 page 的映射
+	 */
 	vm_remove_mappings(area, deallocate_pages);
 
 	if (deallocate_pages) {
 		int i;
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		for (i = 0; i < area->nr_pages; i++) {
 			struct page *page = area->pages[i];
 
@@ -2599,9 +2599,9 @@ static void __vunmap(const void *addr, int deallocate_pages)
 		}
 		atomic_long_sub(area->nr_pages, &nr_vmalloc_pages);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		kvfree(area->pages);
 	}
 
@@ -2649,9 +2649,9 @@ static void __vfree(const void *addr)
 	if (unlikely(in_interrupt()))
 		__vfree_deferred(addr);
 	else
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		__vunmap(addr, 1);
 }
 
@@ -2683,9 +2683,9 @@ void vfree(const void *addr)
 	if (!addr)
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	__vfree(addr);
 }
 EXPORT_SYMBOL(vfree);
@@ -2813,88 +2813,88 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	if (!(gfp_mask & (GFP_DMA | GFP_DMA32)))
 		gfp_mask |= __GFP_HIGHMEM;
 
-    /**
-     *  分配 page 数据结构
-     */
+	/**
+	 *  分配 page 数据结构
+	 */
 	/**
 	 *  Please note that the recursion is strictly bounded.
 	 *  请注意，递归是严格有界的
 	 */
 	if (array_size > PAGE_SIZE) {
-        /**
-         *  页数太多的话，需要进行 递归
-         *  但是需要注意终止条件
-         */
+		/**
+		 *  页数太多的话，需要进行 递归
+		 *  但是需要注意终止条件
+		 */
 		pages = __vmalloc_node(array_size, 1, nested_gfp, node, area->caller);
 
 	} else {
-	    /**
-	     *  分配 页 二维指针 数据结构
-	     */
+		/**
+		 *  分配 页 二维指针 数据结构
+		 */
 		pages = kmalloc_node(array_size, nested_gfp, node);
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!pages) {
 		remove_vm_area(area->addr);
 		kfree(area);
 		return NULL;
 	}
 
-    /**
-     *  赋值
-     */
+	/**
+	 *  赋值
+	 */
 	area->pages = pages;
 	area->nr_pages = nr_pages;
 
-    /**
-     *  具体需要申请多少个页
-     */
+	/**
+	 *  具体需要申请多少个页
+	 */
 	for (i = 0; i < area->nr_pages; i++) {
 		struct page *page;
 
-        /**
-         *  分配物理页
-         */
+		/**
+		 *  分配物理页
+		 */
 		if (node == NUMA_NO_NODE)
 			page = alloc_page(gfp_mask);
 		else
 			page = alloc_pages_node(node, gfp_mask, 0);
 
-        /**
-         *  分配失败
-         */
+		/**
+		 *  分配失败
+		 */
 		if (unlikely(!page)) {
 			/* Successfully allocated i pages, free them in __vfree() */
 			area->nr_pages = i;
 			atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 			goto fail;
 		}
-        /**
-         *  页面放到管理区
-         */
+		/**
+		 *  页面放到管理区
+		 */
 		area->pages[i] = page;
 
 		if (gfpflags_allow_blocking(gfp_mask))
 			cond_resched();
 	}
 
-    /**
-     *
-     */
-    atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
+	/**
+	 *
+	 */
+	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 
-    /**
-     *  映射到虚拟地址空间
-     */
+	/**
+	 *  映射到虚拟地址空间
+	 */
 	if (map_kernel_range((unsigned long)area->addr, get_vm_area_size(area), prot, pages) < 0)
 		goto fail;
 
-    /**
-     *  返回虚拟地址
-     */
+	/**
+	 *  返回虚拟地址
+	 */
 	return area->addr;
 
 fail:
@@ -2930,9 +2930,9 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			pgprot_t prot, unsigned long vm_flags, int node,
 			const void *caller)
 {
-    /**
-     *  vmalloc 管理区的一个节点
-     */
+	/**
+	 *  vmalloc 管理区的一个节点
+	 */
 	struct vm_struct *area;
 	void *addr;
 	unsigned long real_size = size;
@@ -2941,17 +2941,17 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages())
 		goto fail;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	area = __get_vm_area_node(real_size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);
 	if (!area)
 		goto fail;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
 	if (!addr)
 		return NULL;
@@ -2965,9 +2965,9 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 
 	kmemleak_vmalloc(area, size, gfp_mask);
 
-    /**
-     *  返回 vmalloc 分配的虚拟地址
-     */
+	/**
+	 *  返回 vmalloc 分配的虚拟地址
+	 */
 	return addr;
 
 fail:
@@ -3000,9 +3000,9 @@ fail:
 void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, int node, const void *caller)
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
 				gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
@@ -3056,9 +3056,9 @@ EXPORT_SYMBOL(__vmalloc);
  */
 void *vmalloc(unsigned long size)   /* 从 vmalloc 区分配内存 */
 {
-    /**
-     *  分配
-     */
+	/**
+	 *  分配
+	 */
 	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE, __builtin_return_address(0));
 }
 EXPORT_SYMBOL(vmalloc);

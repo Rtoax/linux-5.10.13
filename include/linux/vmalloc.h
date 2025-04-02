@@ -236,18 +236,18 @@ struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
 
 void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
 # else
-//static inline struct vm_struct **
-//pcpu_get_vm_areas(const unsigned long *offsets,
-//		const size_t *sizes, int nr_vms,
-//		size_t align)
-//{
-//	return NULL;
-//}
+static inline struct vm_struct **
+pcpu_get_vm_areas(const unsigned long *offsets,
+		const size_t *sizes, int nr_vms,
+		size_t align)
+{
+	return NULL;
+}
 
-//static inline void
-//pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms)
-//{
-//}
+static inline void
+pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms)
+{
+}
 # endif
 #endif
 
