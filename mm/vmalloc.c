@@ -1381,9 +1381,9 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	might_sleep();
 	gfp_mask = gfp_mask & GFP_RECLAIM_MASK;
 
-    /**
-     *  分配 va 结构
-     */
+	/**
+	 *  分配 va 结构
+	 */
 	va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
@@ -1422,9 +1422,9 @@ retry:
 		 */
 		pva = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	spin_lock(&free_vmap_area_lock);
 
 	if (pva && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, pva))
@@ -1443,18 +1443,18 @@ retry:
 	if (unlikely(addr == vend))
 		goto overflow;
 
-    /* 给 va 赋值 */
+	/* 给 va 赋值 */
 	va->va_start = addr;    /* 赋值 */
 	va->va_end = addr + size;
 	va->vm = NULL;
 
 
-    /* 插入到红黑树和链表中 */
+	/* 插入到红黑树和链表中 */
 	spin_lock(&vmap_area_lock);
 
-    /**
-     *  插入到红黑树和链表
-     */
+	/**
+	 *  插入到红黑树和链表
+	 */
 	insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
 	spin_unlock(&vmap_area_lock);
 
@@ -1462,10 +1462,10 @@ retry:
 	BUG_ON(va->va_start < vstart);
 	BUG_ON(va->va_end > vend);
 
-    /**
-     *
-     */
-    /* kasan overflow监控 */
+	/**
+	 *
+	 */
+	/* kasan overflow监控 */
 	ret = kasan_populate_vmalloc(addr, size);
 	if (ret) {
 		free_vmap_area(va);
@@ -1801,9 +1801,9 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 	if (unlikely(!vb))
 		return ERR_PTR(-ENOMEM);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	va = alloc_vmap_area(VMAP_BLOCK_SIZE, VMAP_BLOCK_SIZE,
         					VMALLOC_START, VMALLOC_END,
         					node, gfp_mask);
@@ -1834,9 +1834,9 @@ static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
 	vbq = &get_cpu_var(vmap_block_queue);
 	spin_lock(&vbq->lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	list_add_tail_rcu(&vb->free_list, &vbq->free);
 	spin_unlock(&vbq->lock);
 	put_cpu_var(vmap_block_queue);
