@@ -21,7 +21,8 @@
 #include <asm/sections.h>
 
 /**
- *
+ * test-linux commit modules: arm64: test MODULES_VSIZE
+ * https://github.com/Rtoax/test-linux/commit/ef353cfd410007fdd2f816301f0cce197ff244c9
  */
 void *module_alloc(unsigned long size)
 {
@@ -41,8 +42,15 @@ void *module_alloc(unsigned long size)
 				module_alloc_end, gfp_mask, PAGE_KERNEL, 0,
 				NUMA_NO_NODE, __builtin_return_address(0));
 
+#ifdef linux_5_15_131
+	if (!p && IS_ENABLED(CONFIG_ARM64_MODULE_PLTS) &&
+		(IS_ENABLED(CONFIG_KASAN_VMALLOC) ||
+			(!IS_ENABLED(CONFIG_KASAN_GENERIC) &&
+			!IS_ENABLED(CONFIG_KASAN_SW_TAGS))))
+#else // 5.10.13
 	if (!p && IS_ENABLED(CONFIG_ARM64_MODULE_PLTS) &&
 	    !IS_ENABLED(CONFIG_KASAN))
+#endif
 		/*
 		 * KASAN can only deal with module allocations being served
 		 * from the reserved module region, since the remainder of

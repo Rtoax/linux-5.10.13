@@ -2314,9 +2314,9 @@ static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 			      unsigned long flags, const void *caller)
 {
 	spin_lock(&vmap_area_lock);
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	setup_vmalloc_vm_locked(vm, va, flags, caller);
 	spin_unlock(&vmap_area_lock);
 }

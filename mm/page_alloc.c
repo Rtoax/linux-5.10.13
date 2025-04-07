@@ -5832,16 +5832,16 @@ retry_cpuset:
 
 retry:
 
-    /**
-     *  确保 kswapd 不会睡眠，再次唤醒他
-     */
+	/**
+	 *  确保 kswapd 不会睡眠，再次唤醒他
+	 */
 	/* Ensure kswapd doesn't accidentally go to sleep as long as we loop */
 	if (alloc_flags & ALLOC_KSWAPD)
 		wake_all_kswapds(order, gfp_mask, ac);
 
-    /**
-     *  是否允许访问系统预留的内存
-     */
+	/**
+	 *  是否允许访问系统预留的内存
+	 */
 	reserve_flags = __gfp_pfmemalloc_flags(gfp_mask);
 	if (reserve_flags)
 		alloc_flags = current_alloc_flags(gfp_mask, reserve_flags);
@@ -5872,18 +5872,18 @@ retry:
 	if (current->flags & PF_MEMALLOC)
 		goto nopage;
 
-    /**
-     *  尝试直接回收
-     */
+	/**
+	 *  尝试直接回收
+	 */
 	/* Try direct reclaim and then allocating */
 	page = __alloc_pages_direct_reclaim(gfp_mask, order, alloc_flags, ac,
 							&did_some_progress);
 	if (page)
 		goto got_pg;
 
-    /**
-     *  尝试直接规整
-     */
+	/**
+	 *  尝试直接规整
+	 */
 	/* Try direct compaction and then allocating */
 	page = __alloc_pages_direct_compact(gfp_mask, order, alloc_flags, ac,
 					                    compact_priority, &_compact_result);
@@ -5901,9 +5901,9 @@ retry:
 	if (costly_order && !(gfp_mask & __GFP_RETRY_MAYFAIL))
 		goto nopage;
 
-    /**
-     *  是否需要重试 直接页面回收
-     */
+	/**
+	 *  是否需要重试 直接页面回收
+	 */
 	if (should_reclaim_retry(gfp_mask, order, ac, alloc_flags,
 				 did_some_progress > 0, &no_progress_loops))
 		goto retry;
