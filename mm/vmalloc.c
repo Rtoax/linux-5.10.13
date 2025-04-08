@@ -233,9 +233,9 @@ void unmap_kernel_range_noflush(unsigned long start, unsigned long size)
 /**
  *  vmalloc pages 到 虚拟地址的映射
  */
-static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
-                    		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
-                    		pgtbl_mod_mask *mask)
+static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+			pgprot_t prot, struct page **pages, int *nr,
+			pgtbl_mod_mask *mask)
 {
 	pte_t *pte;
 
@@ -248,10 +248,10 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
 	if (!pte)
 		return -ENOMEM;
 
-    /**
-     *
-     */
-    do {
+	/**
+	 *
+	 */
+	do {
 		struct page *__page = pages[*nr];
 
 		if (WARN_ON(!pte_none(*pte)))
@@ -318,20 +318,20 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr,
 	if (!pud)
 		return -ENOMEM;
 
-    /**
-     *
-     */
-    do {
+	/**
+	 *
+	 */
+	do {
 		next = pud_addr_end(addr, end);
 		/**
 		 *
 		 */
 		if (vmap_pmd_range(pud, addr, next, prot, pages, nr, mask))
 			return -ENOMEM;
-    /**
-     *
-     */
-    } while (pud++, addr = next, addr != end);
+	/**
+	 *
+	 */
+	} while (pud++, addr = next, addr != end);
 	return 0;
 }
 
@@ -564,6 +564,9 @@ static LLIST_HEAD(vmap_purge_list);
  *  vmalloc 管理区的 红黑树
  */
 static struct rb_root vmap_area_root = RB_ROOT; /* struct vmap_area *va; 的红黑树根 */
+/**
+ * sudo bpftrace  -e 'BEGIN{ $addr = kaddr("vmap_initialized"); printf("%d\n", *$addr);exit();}'
+ */
 static bool __read_mostly vmap_initialized ; /* 根 */
 
 /*
@@ -1018,9 +1021,9 @@ is_within_this_va(struct vmap_area *va, unsigned long size,
 			nva_start_addr < vstart)
 		return false;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return (nva_start_addr + size <= va->va_end);   /* 在 VA 区间内 */
 }
 
@@ -1045,25 +1048,22 @@ find_vmap_lowest_match(unsigned long size,
 	/* Adjust the search size for alignment overhead. */
 	length = size + align - 1;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	while (node) {
 		va = rb_entry(node, struct vmap_area, rb_node);
 
-        /**
-         *  左子树的大小的和
-         */
+		/**
+		 *  左子树的大小的和
+		 */
 		if (get_subtree_max_size(node->rb_left) >= length && vstart < va->va_start) {
-
-
 			node = node->rb_left;
-
 		} else {
 
-            /**
-             *  在这个区间内
-             */
+			/**
+			 *  在这个区间内
+			 */
 			if (is_within_this_va(va, size, align, vstart))
 				return va;
 
@@ -1089,15 +1089,15 @@ find_vmap_lowest_match(unsigned long size,
 			while ((node = rb_parent(node))) {
 				va = rb_entry(node, struct vmap_area, rb_node);
 
-                /**
-                 *
-                 */
+				/**
+				 *
+				 */
 				if (is_within_this_va(va, size, align, vstart))
 					return va;
 
-                /**
-                 *
-                 */
+				/**
+				 *
+				 */
 				if (get_subtree_max_size(node->rb_right) >= length &&
 						vstart <= va->va_start) {
 					node = node->rb_right;
@@ -1297,16 +1297,16 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 	enum fit_type type;
 	int ret;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	va = find_vmap_lowest_match(size, align, vstart);
 	if (unlikely(!va))
 		return vend;
 
-    /**
-     *  对齐
-     */
+	/**
+	 *  对齐
+	 */
 	if (va->va_start > vstart)
 		nva_start_addr = ALIGN(va->va_start, align);
 	else
@@ -1337,6 +1337,8 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 
 /*
  * Free a region of KVA allocated by alloc_vmap_area
+ *
+ * sudo bpftrace  -e 'kprobe:free_vmap_area / comm == "insmod" / {printf("%lx\n", arg0);}'
  */
 static void free_vmap_area(struct vmap_area *va)
 {
@@ -1359,7 +1361,10 @@ static void free_vmap_area(struct vmap_area *va)
  * Allocate a region of KVA of the specified size and alignment, within the
  * vstart and vend.
  *
- *   分配 va 结构
+ * 分配 va 结构
+ *
+ * sudo bpftrace  -e 'kprobe:alloc_vmap_area / comm == "insmod" / {printf("%lx %lx-%lx\n", arg0, arg2, arg3);}'
+ * sudo bpftrace  -e 'kretprobe:alloc_vmap_area / comm == "insmod" / {printf("%lx\n", retval);}'
  */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
                 				unsigned long align,
@@ -1998,9 +2003,9 @@ static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 
 	might_sleep();
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	for_each_possible_cpu(cpu) {
 		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
 		struct vmap_block *vb;
@@ -2232,7 +2237,7 @@ static void vmap_init_free_space(void)  /*  初始化 vmalloc 区域内存*/
  *  然后逐页分配内存来从物理上填充hole。
  */
 void __init vmalloc_init(void)  /* vmalloc 初始化 initializes `vmalloc` */
-{//
+{
 	struct vmap_area *va;
 	struct vm_struct *tmp;
 	int i;
@@ -2333,11 +2338,20 @@ static void clear_vm_uninitialized_flag(struct vm_struct *vm)
 }
 
 /**
- *  分配 vm_struct 结构
+ * 分配 vm_struct 结构
+ *
+ * $ sudo bpftrace  -e 'kretprobe:__get_vm_area_node.constprop.0 / comm == "insmod" / {printf("%lx\n", retval);}'
  */
+#ifdef linux_5_15_131
+static struct vm_struct *__get_vm_area_node(unsigned long size,
+	unsigned long align, unsigned long shift, unsigned long flags,
+	unsigned long start, unsigned long end, int node,
+	gfp_t gfp_mask, const void *caller)
+#else // 5.10.13
 static struct vm_struct *__get_vm_area_node(unsigned long size,
 		unsigned long align, unsigned long flags, unsigned long start,
 		unsigned long end, int node, gfp_t gfp_mask, const void *caller)
+#endif
 {
 	struct vmap_area *va;   /* VM中的一小段 - 等同于 VMA */
 	struct vm_struct *area; /* 管理区：红黑树+链表 */
@@ -2365,6 +2379,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 
 	/**
 	 *  从 vmalloc 区间分配
+	 *
 	 */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {

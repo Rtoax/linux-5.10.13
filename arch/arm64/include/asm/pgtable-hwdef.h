@@ -146,7 +146,7 @@
  *  ==1: 页表对应TLB表项是进程独有的，需要使用 ASID 来识别
  *  ==0: 页表对应TLB表项是全局的
  */
-#define PTE_NG			(_AT(pteval_t, 1) << 11)	/* nG -  */
+#define PTE_NG			(_AT(pteval_t, 1) << 11)	/* nG - =0x800 */
 #define PTE_GP			(_AT(pteval_t, 1) << 50)	/* BTI guarded */
 #define PTE_DBM			(_AT(pteval_t, 1) << 51)	/* Dirty Bit Management */
 #define PTE_CONT		(_AT(pteval_t, 1) << 52)	/* Contiguous range */

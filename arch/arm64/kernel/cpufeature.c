@@ -101,6 +101,10 @@ static struct arm64_cpu_capabilities const __ro_after_init *cpu_hwcaps_ptrs[ARM6
 /* Need also bit for ARM64_CB_PATCH */
 DECLARE_BITMAP(boot_capabilities, ARM64_NPATCHABLE);
 
+/**
+ * see also PTE_NG
+ * sudo bpftrace  -e 'BEGIN {printf("%ld\n", *kaddr("arm64_use_ng_mappings"));exit()}'
+ */
 bool arm64_use_ng_mappings = false;
 EXPORT_SYMBOL(arm64_use_ng_mappings);
 
