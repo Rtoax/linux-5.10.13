@@ -22,6 +22,9 @@
 
 enum kaslr_status {
 	KASLR_ENABLED,
+	/**
+	 * kaslr disable
+	 */
 	KASLR_DISABLED_CMDLINE,
 	KASLR_DISABLED_NO_SEED,
 	KASLR_DISABLED_FDT_REMAP,
