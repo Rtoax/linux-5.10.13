@@ -10,6 +10,30 @@
 
 #define BTF_TYPE_EMIT(type) ((void)(type *)0)
 
+#ifdef __linux_upstream_6_15_0_rc4 /* v6.15-rc4 */
+/*
+ * Tag marking a kernel function as a kfunc. This is meant to minimize the
+ * amount of copy-paste that kfunc authors have to include for correctness so
+ * as to avoid issues such as the compiler inlining or eliding either a static
+ * kfunc, or a global kfunc in an LTO build.
+ */
+#define __bpf_kfunc __used __retain noinline
+
+/**
+ * 主要是为了取消编译告警
+ */
+#define __bpf_kfunc_start_defs()					       \
+	__diag_push();							       \
+	__diag_ignore_all("-Wmissing-declarations",			       \
+			  "Global kfuncs as their definitions will be in BTF");\
+	__diag_ignore_all("-Wmissing-prototypes",			       \
+			  "Global kfuncs as their definitions will be in BTF")
+
+#define __bpf_kfunc_end_defs() __diag_pop()
+#define __bpf_hook_start() __bpf_kfunc_start_defs()
+#define __bpf_hook_end() __bpf_kfunc_end_defs()
+#endif /* v6.15-rc4 */
+
 struct btf;
 struct btf_member;
 struct btf_type;

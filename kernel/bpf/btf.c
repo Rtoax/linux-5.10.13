@@ -316,6 +316,10 @@ static const char * const btf_kind_str[NR_BTF_KINDS] = {
 	[BTF_KIND_FUNC_PROTO]	= "FUNC_PROTO",
 	[BTF_KIND_VAR]		= "VAR",
 	[BTF_KIND_DATASEC]	= "DATASEC",
+        [BTF_KIND_FLOAT]        = "FLOAT",
+        [BTF_KIND_DECL_TAG]     = "DECL_TAG",
+        [BTF_KIND_TYPE_TAG]     = "TYPE_TAG",
+        [BTF_KIND_ENUM64]       = "ENUM64",
 };
 
 static const char *btf_type_str(const struct btf_type *t)
@@ -498,6 +502,11 @@ static bool btf_type_is_datasec(const struct btf_type *t)
 	return BTF_INFO_KIND(t->info) == BTF_KIND_DATASEC;
 }
 
+static bool btf_type_is_decl_tag(const struct btf_type *t)
+{
+        return BTF_INFO_KIND(t->info) == BTF_KIND_DECL_TAG;
+}
+
 s32 btf_find_by_name_kind(const struct btf *btf, const char *name, u8 kind)
 {
 	const struct btf_type *t;
@@ -601,6 +610,8 @@ static bool btf_type_has_size(const struct btf_type *t)
 	case BTF_KIND_UNION:
 	case BTF_KIND_ENUM:
 	case BTF_KIND_DATASEC:
+	case BTF_KIND_FLOAT:
+	case BTF_KIND_ENUM64:
 		return true;
 	}
 
@@ -1706,6 +1717,8 @@ __btf_resolve_size(const struct btf *btf, const struct btf_type *type,
 		case BTF_KIND_STRUCT:
 		case BTF_KIND_UNION:
 		case BTF_KIND_ENUM:
+		case BTF_KIND_FLOAT:
+		case BTF_KIND_ENUM64:
 			size = type->size;
 			goto resolved;
 
@@ -1718,6 +1731,7 @@ __btf_resolve_size(const struct btf *btf, const struct btf_type *type,
 		case BTF_KIND_VOLATILE:
 		case BTF_KIND_CONST:
 		case BTF_KIND_RESTRICT:
+		case BTF_KIND_TYPE_TAG:
 			id = type->type;
 			type = btf_type_by_id(btf, type->type);
 			break;
@@ -3800,6 +3814,28 @@ static int btf_func_check(struct btf_verifier_env *env,
 	return 0;
 }
 
+#if __linux_6_15_0_rc4
+/* 这些处理函数没有粘贴 */
+static const struct btf_kind_operations float_ops = {
+	.check_meta = btf_float_check_meta,
+	.resolve = btf_df_resolve,
+	.check_member = btf_float_check_member,
+	.check_kflag_member = btf_generic_check_kflag_member,
+	.log_details = btf_float_log,
+	.show = btf_df_show,
+};
+
+/* 这些处理函数没有粘贴 */
+static const struct btf_kind_operations decl_tag_ops = {
+	.check_meta = btf_decl_tag_check_meta,
+	.resolve = btf_decl_tag_resolve,
+	.check_member = btf_df_check_member,
+	.check_kflag_member = btf_df_check_kflag_member,
+	.log_details = btf_decl_tag_log,
+	.show = btf_df_show,
+};
+#endif
+
 /**
  * 所有 BTF 类型的操作符
  */
@@ -3819,6 +3855,10 @@ static const struct btf_kind_operations * const kind_ops[NR_BTF_KINDS] = {
 	[BTF_KIND_FUNC_PROTO] = &func_proto_ops,
 	[BTF_KIND_VAR] = &var_ops,
 	[BTF_KIND_DATASEC] = &datasec_ops,
+	[BTF_KIND_FLOAT] = &float_ops,
+	[BTF_KIND_DECL_TAG] = &decl_tag_ops,
+	[BTF_KIND_TYPE_TAG] = &modifier_ops,
+	[BTF_KIND_ENUM64] = &enum64_ops,
 };
 
 static s32 btf_check_meta(struct btf_verifier_env *env,

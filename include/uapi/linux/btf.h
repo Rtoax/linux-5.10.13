@@ -72,6 +72,9 @@ struct btf_type {
 	 * 		...
 	 * 		BTF_KIND_UNION
 	 * 		BTF_KIND_ENUM
+	 * 		...
+	 * 		BTF_KIND_DECL_TAG
+	 * 		...
 	 * bits 28-30: unused
 	 * bit     31: kind_flag, currently used by
 	 *             struct, union and fwd
@@ -95,7 +98,7 @@ struct btf_type {
 #define BTF_INFO_KFLAG(info)	((info) >> 31)
 
 /**
- * @brief BTF 类型
+ * @brief BTF 类型 (新内核里已经变成枚举值了)
  *
  * @ref https://nakryiko.com/posts/btf-dedup/
  *
@@ -151,6 +154,9 @@ struct btf_type {
 /* 下面是 5.10.13 以后添加的 Kind */
 
 #define BTF_KIND_FLOAT		16
+/**
+ *
+ */
 #define BTF_KIND_DECL_TAG	17
 #define BTF_KIND_TYPE_TAG	18
 #define BTF_KIND_ENUM64		19
