@@ -240,6 +240,8 @@ bool rcu_segcblist_nextgp(struct rcu_segcblist *rsclp, unsigned long *lp)
  * if it must post a callback on this structure, and it is OK
  * for rcu_barrier() to sometimes post callbacks needlessly, but
  * absolutely not OK for it to ever miss posting a callback.
+ *
+ * 将回调函数加入 RCU 链表，见 call_rcu(xxx, cb)
  */
 void rcu_segcblist_enqueue(struct rcu_segcblist *rsclp,
 			   struct rcu_head *rhp)

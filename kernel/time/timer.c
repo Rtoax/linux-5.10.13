@@ -1820,6 +1820,8 @@ void timer_clear_idle(void)
  * Called from the timer interrupt handler to charge one tick to the current
  * process.  user_tick is 1 if the tick is user time, 0 for system.
  *
+ * $ sudo bpftrace -e 'kprobe:update_process_times {printf("%ld\n", arg0);}'
+ *
  * 从时钟中断回调中被调用
  *
  *     scheduler_tick+5
@@ -1852,7 +1854,11 @@ void update_process_times(int user_tick)
 	 */
 	run_local_timers();
 
+	/**
+	 * RCU 中断
+	 */
 	rcu_sched_clock_irq(user_tick);
+
 #ifdef CONFIG_IRQ_WORK
 	if (in_irq())
 		irq_work_tick();

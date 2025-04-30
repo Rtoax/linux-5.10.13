@@ -79,6 +79,9 @@
 #define RCU_DYNTICK_CTRL_MASK 0x1
 #define RCU_DYNTICK_CTRL_CTR  (RCU_DYNTICK_CTRL_MASK + 1)
 
+/**
+ *
+ */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_data, rcu_data) = {
 	.dynticks_nesting = 1,
 	.dynticks_nmi_nesting = DYNTICK_IRQ_NONIDLE,
@@ -2552,10 +2555,18 @@ static void rcu_do_batch(struct rcu_data *rdp)
  * core processing.  If the current grace period has gone on too long,
  * it will ask the scheduler to manufacture a context switch for the sole
  * purpose of providing a providing the needed quiescent state.
+ *
+ * 此函数在每个调度时钟中断时调用，用于检查当前 CPU 是否处于非上下文切换的静止状态，
+ * 例如用户模式或空闲循环。它还会调度 RCU 核心处理。如果当前宽限期已过长，它将请求调度器
+ * 进行上下文切换，其唯一目的是提供所需的静止状态。
  */
 void rcu_sched_clock_irq(int user)
 {
+	/**
+	 * $ sudo bpftrace -e 'tracepoint:rcu:rcu_utilization{printf("%s\n", str(args->s));}'
+	 */
 	trace_rcu_utilization(TPS("Start scheduler-tick"));
+
 	raw_cpu_inc(rcu_data.ticks_this_gp);
 	/* The load-acquire pairs with the store-release setting to true. */
 	if (smp_load_acquire(this_cpu_ptr(&rcu_data.rcu_urgent_qs))) {
@@ -2567,6 +2578,7 @@ void rcu_sched_clock_irq(int user)
 		__this_cpu_write(rcu_data.rcu_urgent_qs, false);
 	}
 	rcu_flavor_sched_clock_irq(user);
+
 	if (rcu_pending(user))
 		invoke_rcu_core();
 
@@ -2954,6 +2966,10 @@ __call_rcu(struct rcu_head *head, rcu_callback_t func)
 	head->next = NULL;
 	local_irq_save(flags);
 	kasan_record_aux_stack(head);
+
+	/**
+	 * 当前 CPU 的
+	 */
 	rdp = this_cpu_ptr(&rcu_data);
 
 	/* Add the callback to our list. */
@@ -2970,8 +2986,13 @@ __call_rcu(struct rcu_head *head, rcu_callback_t func)
 	check_cb_ovld(rdp);
 	if (rcu_nocb_try_bypass(rdp, head, &was_alldone, flags))
 		return; // Enqueued onto ->nocb_bypass, so just leave.
+
+	/**
+	 * 添加到当前 CPU 的 rcu callback 链表中
+	 */
 	// If no-CBs CPU gets here, rcu_nocb_try_bypass() acquired ->nocb_lock.
 	rcu_segcblist_enqueue(&rdp->cblist, head);
+
 	if (__is_kvfree_rcu_offset((unsigned long)func))
 		trace_rcu_kvfree_callback(rcu_state.name, head,
 					 (unsigned long)func,
@@ -3736,7 +3757,10 @@ static int rcu_pending(int user)
 	struct rcu_data *rdp = this_cpu_ptr(&rcu_data);
 	struct rcu_node *rnp = rdp->mynode;
 
-	/* Check for CPU stalls, if enabled. */
+	/**
+	 * Check for CPU stalls, if enabled.
+	 * 检测是否发生 CPU/任务停顿
+	 */
 	check_cpu_stall(rdp);
 
 	/* Does this CPU need a deferred NOCB wakeup? */
@@ -4261,6 +4285,19 @@ static int __init rcu_spawn_gp_kthread(void)
 			 kthread_prio, kthread_prio_in);
 
 	rcu_scheduler_fully_active = 1;
+
+	/**
+	 * 创建 rcu 线程
+	 *
+	 * ----- 5.15.131 -----
+	 * $ ps -ef | grep rcu
+	 * root  3       2  0 Apr17 ?        00:00:00 [rcu_gp]
+	 * root  4       2  0 Apr17 ?        00:00:00 [rcu_par_gp]
+	 * root 12       2  0 Apr17 ?        00:00:00 [rcu_tasks_kthre]
+	 * root 13       2  0 Apr17 ?        00:00:00 [rcu_tasks_rude_]
+	 * root 14       2  0 Apr17 ?        00:00:00 [rcu_tasks_trace]
+	 * root 16       2  0 Apr17 ?        00:05:56 [rcu_sched]
+	 */
 	t = kthread_create(rcu_gp_kthread, NULL, "%s", rcu_state.name);
 	if (WARN_ONCE(IS_ERR(t), "%s: Could not start grace-period kthread, OOM is now expected behavior\n", __func__))
 		return 0;

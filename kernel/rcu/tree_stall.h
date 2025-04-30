@@ -396,6 +396,12 @@ static bool rcu_is_gp_kthread_starving(unsigned long *jp)
  * if the CPU was aware of the previous grace period.
  *
  * Also print out idle and (if CONFIG_RCU_FAST_NO_HZ) idle-entry info.
+ *
+ * ----- 示例 -----
+ * rcu: INFO: rcu_sched detected stalls on CPUs/tasks:
+ * rcu:   16-...!: (44 ticks this GP) idle=aed/1/0x4000000000000000 softirq=113900756/113900756 fqs=1
+ * ...
+ * rcu:   0-...0: (1 GPs behind) idle=38b/1/0x4000000000000000 softirq=918578258/918578259 fqs=1427
  */
 static void print_cpu_stall_info(int cpu)
 {
@@ -416,7 +422,7 @@ static void print_cpu_stall_info(int cpu)
 	if (ticks_value) {
 		ticks_title = "GPs behind";
 	} else {
-		ticks_title = "ticks this GP";
+		ticks_title = "ticks this GP"; /*Grace period (GP) 宽限期*/
 		ticks_value = rdp->ticks_this_gp;
 	}
 	print_cpu_stall_fast_no_hz(fast_no_hz, cpu);
@@ -481,6 +487,12 @@ static void print_other_cpu_stall(unsigned long gp_seq, unsigned long gps)
 	 * OK, time to rat on our buddy...
 	 * See Documentation/RCU/stallwarn.rst for info on how to debug
 	 * RCU CPU stall warnings.
+	 *
+	 * ----- log example -----
+	 * rcu: INFO: rcu_sched detected stalls on CPUs/tasks:
+	 * rcu:   16-...!: (44 ticks this GP) idle=aed/1/0x4000000000000000 softirq=113900756/113900756 fqs=1
+	 * ...
+	 * rcu:   0-...0: (1 GPs behind) idle=38b/1/0x4000000000000000 softirq=918578258/918578259 fqs=1427
 	 */
 	pr_err("INFO: %s detected stalls on CPUs/tasks:\n", rcu_state.name);
 	rcu_for_each_leaf_node(rnp) {
@@ -582,6 +594,11 @@ static void print_cpu_stall(unsigned long gps)
 	set_preempt_need_resched();
 }
 
+/**
+ * 检测是否发生 CPU/任务停顿
+ *
+ * $ sudo bpftrace -e 'kprobe:check_cpu_stall {printf("%s\n", comm);}'
+ */
 static void check_cpu_stall(struct rcu_data *rdp)
 {
 	unsigned long gs1;
@@ -629,6 +646,8 @@ static void check_cpu_stall(struct rcu_data *rdp)
 		return; /* No stall or GP completed since entering function. */
 	rnp = rdp->mynode;
 	jn = jiffies + 3 * rcu_jiffies_till_stall_check() + 3;
+
+
 	if (rcu_gp_in_progress() &&
 	    (READ_ONCE(rnp->qsmask) & rdp->grpmask) &&
 	    cmpxchg(&rcu_state.jiffies_stall, js, jn) == js) {
@@ -639,7 +658,7 @@ static void check_cpu_stall(struct rcu_data *rdp)
 			rcu_ftrace_dump(DUMP_ALL);
 
 	} else if (rcu_gp_in_progress() &&
-		   ULONG_CMP_GE(j, js + RCU_STALL_RAT_DELAY) &&
+		   ULONG_CMP_GE(j, js + RCU_STALL_RAT_DELAY/*2*/) &&
 		   cmpxchg(&rcu_state.jiffies_stall, js, jn) == js) {
 
 		/* They had a few time units to dump stack, so complain. */
