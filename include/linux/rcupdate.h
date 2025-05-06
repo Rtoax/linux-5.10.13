@@ -639,8 +639,8 @@ do {									      \
  * sections, invocation of the corresponding RCU callback is deferred
  * until after the all the other CPUs exit their critical sections.
  *
- * 当在一个 CPU 上调用 Synchronize_rcu() 而其他 CPU 位于 RCU 读端临界区时，则在
- * 所有其他 CPU 退出其临界区之前，synchronize_rcu() 一定会阻塞。 类似地，如果在一个
+ * 当在一个 CPU 上调用 synchronize_rcu() 而其他 CPU 位于 RCU 读端临界区时，则在
+ * 所有其他 CPU 退出其临界区之前， synchronize_rcu() 一定会阻塞。 类似地，如果在一个
  * CPU 上调用 call_rcu()，而其他 CPU 位于 RCU 读端临界区中，则相应 RCU 回调的调用
  * 将推迟到所有其他 CPU 退出其临界区之后。
  *

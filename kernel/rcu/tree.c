@@ -3626,7 +3626,7 @@ void __init kfree_rcu_scheduler_running(void)
  * During early boot, any blocking grace-period wait automatically
  * implies a grace period.  Later on, this is never the case for PREEMPTION.
  *
- * Howevr, because a context switch is a grace period for !PREEMPTION, any
+ * However, because a context switch is a grace period for !PREEMPTION, any
  * blocking grace-period wait automatically implies a grace period if
  * there is only one CPU online at any point time during execution of
  * either synchronize_rcu() or synchronize_rcu_expedited().  It is OK to
@@ -3646,6 +3646,26 @@ static int rcu_blocking_is_gp(void)
 	preempt_enable();
 	return ret;
 }
+#ifdef __linux_6_15__ /*v6.15-rc5-22-g01f95500a162*/
+/*
+ * During early boot, any blocking grace-period wait automatically
+ * implies a grace period.
+ *
+ * Later on, this could in theory be the case for kernels built with
+ * CONFIG_SMP=y && CONFIG_PREEMPTION=y running on a single CPU, but this
+ * is not a common case.  Furthermore, this optimization would cause
+ * the rcu_gp_oldstate structure to expand by 50%, so this potential
+ * grace-period optimization is ignored once the scheduler is running.
+ */
+static int rcu_blocking_is_gp(void)
+{
+	if (rcu_scheduler_active != RCU_SCHEDULER_INACTIVE) {
+		might_sleep();
+		return false;
+	}
+	return true;
+}
+#endif
 
 /**
  * synchronize_rcu - wait until a grace period has elapsed.
@@ -4575,7 +4595,7 @@ static void __init kfree_rcu_batch_init(void)
 }
 
 /**
- *
+ * call in start_kernel()
  */
 void __init rcu_init(void)
 {
@@ -4585,21 +4605,20 @@ void __init rcu_init(void)
 
 	kfree_rcu_batch_init();
 
-    //prints information about the `RCU`
+	//prints information about the `RCU`
 	rcu_bootup_announce();
 
-    //computes the node tree geometry(几何学) depends on the amount of CPUs
-    //calculate the total number of `rcu_node` structures
+	//computes the node tree geometry(几何学) depends on the amount of CPUs
+	//calculate the total number of `rcu_node` structures
 	rcu_init_geometry();
 
-    //
 	rcu_init_one();
 	if (dump_tree)
 		rcu_dump_rcu_node_tree();
 
-    /**
-     *
-     */
+	/**
+	 * /proc/softirqs
+	 */
 	if (use_softirq)
 		open_softirq(RCU_SOFTIRQ, rcu_core_si);
 
@@ -4620,6 +4639,7 @@ void __init rcu_init(void)
 	WARN_ON(!rcu_gp_wq);
 	rcu_par_gp_wq = alloc_workqueue("rcu_par_gp", WQ_MEM_RECLAIM, 0);
 	WARN_ON(!rcu_par_gp_wq);
+
 	srcu_init();
 
 	/* Fill in default value for rcutree.qovld boot parameter. */

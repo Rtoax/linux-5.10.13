@@ -153,6 +153,32 @@ void synchronize_rcu(void)
 			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
 EXPORT_SYMBOL_GPL(synchronize_rcu);
+#ifdef __linux_6_15__ /* v6.15-rc5-22-g01f95500a162 */
+/*
+ * Wait for a grace period to elapse.  But it is illegal to invoke
+ * synchronize_rcu() from within an RCU read-side critical section.
+ * Therefore, any legal call to synchronize_rcu() is a quiescent state,
+ * and so on a UP system, synchronize_rcu() need do nothing, other than
+ * let the polled APIs know that another grace period elapsed.
+ *
+ * (But Lai Jiangshan points out the benefits of doing might_sleep()
+ * to reduce latency.)
+ *
+ * Cool, huh?  (Due to Josh Triplett.)
+ */
+void synchronize_rcu(void)
+{
+	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
+			lock_is_held(&rcu_lock_map) ||
+			lock_is_held(&rcu_sched_lock_map),
+			"Illegal synchronize_rcu() in RCU read-side critical section");
+	preempt_disable();
+	WRITE_ONCE(rcu_ctrlblk.gp_seq, rcu_ctrlblk.gp_seq + 2);
+	preempt_enable();
+}
+EXPORT_SYMBOL_GPL(synchronize_rcu);
+#endif
+
 
 /*
  * Post an RCU callback to be invoked after the end of an RCU grace
@@ -182,7 +208,7 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 EXPORT_SYMBOL_GPL(call_rcu);
 
 /**
- *  
+ * call in start_kernel()
  */
 void __init rcu_init(void)
 {

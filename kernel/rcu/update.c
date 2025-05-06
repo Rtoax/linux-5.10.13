@@ -150,6 +150,8 @@ static atomic_t rcu_expedited_nesting = ATOMIC_INIT(1);
  * sysfs/boot variable and rcu_scheduler_active into account as well
  * as the rcu_expedite_gp() nesting.  So looping on rcu_unexpedite_gp()
  * until rcu_gp_is_expedited() returns false is a -really- bad idea.
+ *
+ * expedited: 加急
  */
 bool rcu_gp_is_expedited(void)
 {
