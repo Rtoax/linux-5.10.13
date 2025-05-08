@@ -101,7 +101,37 @@ send(fd, buff, ..., addr, ...) {
                                                     struct Qdisc *q = rcu_dereference_bh(txq->qdisc);
                                                     /* trigger tracepoint:net:net_dev_queue */
                                                     __dev_xmit_skb(skb, q, dev, txq) {
-                                                      /* TODO */
+                                                      if ((q->flags & TCQ_F_CAN_BYPASS) {
+                                                        sch_direct_xmit(skb, q, dev, txq, ...) {
+                                                          HARD_TX_LOCK(dev, txq, smp_processor_id()) {
+                                                            __netif_tx_lock() {
+                                                              spin_lock(&txq->_xmit_lock);
+                                                            }
+                                                          }
+                                                          skb = dev_hard_start_xmit(skb, dev, txq, &ret) {
+                                                            while (/*have next*/) {
+                                                              xmit_one(skb, dev, txq, ...) {
+                                                                /* tracepoint:net:net_dev_start_xmit */
+                                                                netdev_start_xmit(skb, dev, txq, ...) {
+                                                                  const struct net_device_ops *ops = dev->netdev_ops;
+                                                                  rc = __netdev_start_xmit(ops, skb, dev, ...) {
+                                                                    ops->ndo_start_xmit(skb, dev);
+                                                                    /* for example: e1000e_netdev_ops.ndo_start_xmit */
+                                                                    e1000_xmit_frame(skb, dev) {
+                                                                      e1000_tx_map();
+                                                                      e1000_tx_queue();
+                                                                    }
+                                                                  }
+                                                                  if (rc == NETDEV_TX_OK)
+                                                                    txq_trans_update(txq);
+                                                                }
+                                                                /* tracepoint:net:net_dev_xmit */
+                                                              }
+                                                            }
+                                                          }
+                                                          HARD_TX_UNLOCK(dev, txq);
+                                                        }
+                                                      }
                                                     }
                                                     rcu_read_unlock_bh();
                                                   }

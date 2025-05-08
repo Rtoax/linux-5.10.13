@@ -4772,6 +4772,9 @@ void __skb_tstamp_tx(struct sk_buff *orig_skb,
 		skb_shinfo(skb)->tskey = skb_shinfo(orig_skb)->tskey;
 	}
 
+	/**
+	 * 硬件时间辍
+	 */
 	if (hwtstamps)
 		*skb_hwtstamps(skb) = *hwtstamps;
 	else

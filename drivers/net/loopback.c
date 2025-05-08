@@ -62,8 +62,11 @@
 struct net_device *blackhole_netdev;
 EXPORT_SYMBOL(blackhole_netdev);
 
-/* The higher levels take care of making this non-reentrant (it's
+/**
+ * The higher levels take care of making this non-reentrant (it's
  * called with bh's disabled).
+ *
+ * $ sudo bpftrace -e 'kprobe:loopback_xmit {printf("%s\n", comm);}'
  */
 static netdev_tx_t loopback_xmit(struct sk_buff *skb,
 				 struct net_device *dev)

@@ -3573,6 +3573,9 @@ netdev_features_t netif_skb_features(struct sk_buff *skb)
 }
 EXPORT_SYMBOL(netif_skb_features);
 
+/**
+ *
+ */
 static int xmit_one(struct sk_buff *skb, struct net_device *dev,
 		    struct netdev_queue *txq, bool more)
 {
@@ -3584,15 +3587,22 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
 
 	len = skb->len;
 	PRANDOM_ADD_NOISE(skb, dev, txq, len + jiffies);
+	/**
+	 * tracepoint:net:net_dev_start_xmit
+	 */
 	trace_net_dev_start_xmit(skb, dev);
+
 	rc = netdev_start_xmit(skb, dev, txq, more);
+	/**
+	 * tracepoint:net:net_dev_xmit
+	 */
 	trace_net_dev_xmit(skb, rc, dev, len);
 
 	return rc;
 }
 
 /**
- *
+ * 发送包到设备队列
  */
 struct sk_buff *dev_hard_start_xmit(struct sk_buff *first, struct net_device *dev,
 				    struct netdev_queue *txq, int *ret)

@@ -522,15 +522,16 @@ int skb_zerocopy_iter_stream(struct sock *sk, struct sk_buff *skb,
 struct skb_shared_info {
 	__u8		__unused;
 	__u8		meta_len;
+	/* frags[] 的个数 */
 	__u8		nr_frags;
 	__u8		tx_flags;
 	unsigned short	gso_size;
 	/* Warning: this field is not always filled in (UFO)! */
 	unsigned short	gso_segs;
 
-    /**
-     *  这是一个数组
-     */
+	/**
+	 *  这是一个数组
+	 */
 	struct sk_buff	*frag_list;
 	struct skb_shared_hwtstamps hwtstamps;
 	unsigned int	gso_type;
@@ -545,7 +546,11 @@ struct skb_shared_info {
 	 * remains valid until skb destructor */
 	void *		destructor_arg;
 
-	/* must be last field, see pskb_expand_head() */
+	/**
+	 * must be last field, see pskb_expand_head()
+	 *
+	 * 个数为 nr_frags
+	 */
 	skb_frag_t	frags[MAX_SKB_FRAGS];
 };
 

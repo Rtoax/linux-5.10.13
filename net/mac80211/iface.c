@@ -712,6 +712,9 @@ ieee80211_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *stats)
 	dev_fetch_sw_netstats(stats, dev->tstats);
 }
 
+/**
+ * WLAN/Wi-Fi
+ */
 static const struct net_device_ops ieee80211_dataif_ops = {
 	.ndo_open		= ieee80211_open,
 	.ndo_stop		= ieee80211_stop,
@@ -751,6 +754,9 @@ static u16 ieee80211_monitor_select_queue(struct net_device *dev,
 	return ieee80211_select_queue_80211(sdata, skb, hdr);
 }
 
+/**
+ * ieee80211(WLAN/WI-Fi)
+ */
 static const struct net_device_ops ieee80211_monitorif_ops = {
 	.ndo_open		= ieee80211_open,
 	.ndo_stop		= ieee80211_stop,
@@ -762,6 +768,9 @@ static const struct net_device_ops ieee80211_monitorif_ops = {
 	.ndo_get_stats64	= ieee80211_get_stats64,
 };
 
+/**
+ * ieee80211(WLAN/WI-Fi)
+ */
 static const struct net_device_ops ieee80211_dataif_8023_ops = {
 	.ndo_open		= ieee80211_open,
 	.ndo_stop		= ieee80211_stop,

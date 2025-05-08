@@ -1291,6 +1291,30 @@ struct netdev_net_notifier {
  * struct net_device *(*ndo_get_peer_dev)(struct net_device *dev);
  *	If a device is paired with a peer device, return the peer instance.
  *	The caller must be under RCU read context.
+ *
+ * 可能的操作 ops
+ *
+ * tun_netdev_ops
+ * fwnet_netdev_ops
+ * loopback_ops
+ * macvlan_netdev_ops
+ * tun_netdev_ops
+ * tap_netdev_ops
+ * veth_netdev_ops
+ * virtnet_netdev
+ * vlan_netdev_ops
+ * vxlan_netdev_ether_ops
+ * vxlan_netdev_raw_ops
+ * ipip_netdev_ops
+ * ip6_tnl_netdev_ops
+ * l2tp_eth_netdev_ops
+ * ieee80211_dataif_ops (WLAN/Wi-Fi)
+ * ieee80211_monitorif_ops
+ * ieee80211_dataif_8023_ops
+ * mac802154_wpan_ops
+ * mac802154_monitor_ops
+ * e1000e_netdev_ops (drivers/net/ethernet/intel/e1000e/)
+ * e1000_netdev_ops (drivers/net/ethernet/intel/e1000/)
  */
 struct net_device_ops { /* 网络设备操作 */
 	int			(*ndo_init)(struct net_device *dev);
@@ -4753,9 +4777,15 @@ static inline bool netdev_xmit_more(void)
 	return __this_cpu_read(softnet_data.xmit.more);
 }
 
+/**
+ * 发送一个 skb
+ */
 static inline netdev_tx_t netdev_start_xmit(struct sk_buff *skb, struct net_device *dev,
 					    struct netdev_queue *txq, bool more)
 {
+	/**
+	 *
+	 */
 	const struct net_device_ops *ops = dev->netdev_ops;
 	netdev_tx_t rc;
 

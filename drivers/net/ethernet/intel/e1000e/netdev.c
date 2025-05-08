@@ -5587,6 +5587,9 @@ static int e1000_tx_map(struct e1000_ring *tx_ring, struct sk_buff *skb,
 	}
 
 	for (f = 0; f < nr_frags; f++) {
+		/**
+		 * 从 skb 中提取 frags
+		 */
 		const skb_frag_t *frag = &skb_shinfo(skb)->frags[f];
 
 		len = skb_frag_size(frag);
@@ -5603,6 +5606,9 @@ static int e1000_tx_map(struct e1000_ring *tx_ring, struct sk_buff *skb,
 			buffer_info->length = size;
 			buffer_info->time_stamp = jiffies;
 			buffer_info->next_to_watch = i;
+			/**
+			 * 使用 dma
+			 */
 			buffer_info->dma = skb_frag_dma_map(&pdev->dev, frag,
 							    offset, size,
 							    DMA_TO_DEVICE);
@@ -5780,6 +5786,10 @@ static int e1000_maybe_stop_tx(struct e1000_ring *tx_ring, int size)
 	return __e1000_maybe_stop_tx(tx_ring, size);
 }
 
+/**
+ * $ sudo bpftrace -e 'kprobe:e1000_xmit_frame {printf("%s\n", comm);}'
+ *
+ */
 static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
 				    struct net_device *netdev)
 {
@@ -5903,10 +5913,17 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
 			}
 		}
 
+		/**
+		 *
+		 */
 		skb_tx_timestamp(skb);
 
 		netdev_sent_queue(netdev, skb->len);
+		/**
+		 *
+		 */
 		e1000_tx_queue(tx_ring, tx_flags, count);
+
 		/* Make sure there is space in the ring for the next send. */
 		e1000_maybe_stop_tx(tx_ring,
 				    ((MAX_SKB_FRAGS + 1) *
@@ -7329,6 +7346,10 @@ static int e1000_set_features(struct net_device *netdev,
 	return 1;
 }
 
+/**
+ * $ sudo ethtool -i eno1
+ * driver: e1000e
+ */
 static const struct net_device_ops e1000e_netdev_ops = {
 	.ndo_open		= e1000e_open,
 	.ndo_stop		= e1000e_close,
