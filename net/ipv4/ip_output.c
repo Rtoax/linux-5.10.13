@@ -201,7 +201,8 @@ int ip_build_and_send_pkt(struct sk_buff *skb, const struct sock *sk,
 }
 EXPORT_SYMBOL_GPL(ip_build_and_send_pkt);
 
-static int ip_finish_output2(struct net *net, struct sock *sk, struct sk_buff *skb)
+static int ip_finish_output2(struct net *net, struct sock *sk,
+			struct sk_buff *skb)
 {
 	struct dst_entry *dst = skb_dst(skb);
 	struct rtable *rt = (struct rtable *)dst;
@@ -314,7 +315,8 @@ static int ip_finish_output_gso(struct net *net, struct sock *sk,
 	return ret;
 }
 
-static int __ip_finish_output(struct net *net, struct sock *sk, struct sk_buff *skb)
+static int __ip_finish_output(struct net *net, struct sock *sk,
+				struct sk_buff *skb)
 {
 	unsigned int mtu;
 
@@ -568,7 +570,9 @@ packet_routed:
 	skb->mark = sk->sk_mark;
 
 	/**
-	 *
+	 * 处理本地生成的 IPv4 数据包。
+	 * 它是网络栈中的重要一环，负责将本地应用程序生成的数据包从内核传输到网络设备驱动层，
+	 * 最终发送到网络。
 	 */
 	res = ip_local_out(net, sk, skb);
 	rcu_read_unlock();

@@ -67,13 +67,18 @@ send(fd, buff, ..., addr, ...) {
                   }
                 }
                 /* ... */
-                tcp_push_one(sock, ...) {
+                tcp_push_one(sock, ...) { /* or __tcp_push_pending_frames() */
                   tcp_write_xmit(sock, ...) {
+                    /* For each skb info sock */
                     while ((skb = tcp_send_head(sock))) {
                       /* ...处理小包（nagle算法），TSO等... */
                       tcp_transmit_skb(sock, skb, clone_it=1, ...) {
                         __tcp_transmit_skb(sock, skb, clone_it=1, ...) {
-                          struct tcphdr *th = (struct tcphdr *)skb->data;
+                          struct inet_sock *inet = inet_sk(sock);
+                          struct tcphdr *th = (struct tcphdr *)skb->data; /* Build TCP Header */
+                          th->source = inet->inet_sport;
+                          th->dest = inet->inet_dport;
+                          /* ... */
                           /* build TCP header, set Urge here */
                           /* send to IP, inet6_csk_xmit if ipv6 */
                           ip_queue_xmit(sock, skb) {
@@ -81,8 +86,12 @@ send(fd, buff, ..., addr, ...) {
                               struct inet_sock *inet = inet_sk(sock);
                               struct net *net = sock_net(sock);
                               rcu_read_lock();
-                              struct iphdr *iph = ip_hdr(skb);
-                              /* build IP header... */
+                              struct iphdr *iph = ip_hdr(skb); /* Build IP header... */
+                              iph->ttl = /*...*/;
+                              iph->protocol = sock->sk_protocol;
+                              ip_copy_addrs(iph, flowi4); /* saddr, daddr */
+
+                              /* Handle IPv4 packet */
                               ip_local_out(net, sock, skb) {
                                 __ip_local_out(net, sock, skb) {
                                   /* checksum, netfilter, ... */
@@ -92,6 +101,8 @@ send(fd, buff, ..., addr, ...) {
                                       struct net_device *dev = skb_dst(skb)->dev;
                                       struct net_device *indev = skb->dev;
                                       skb->dev = dev;
+                                      skb->protocol = htons(ETH_P_IP);
+
                                       ip_finish_output(net, sock, skb) {
                                         __ip_finish_output(net, sock, skb) {
                                           if (/* Generic TCP Segmentation Offload */) {

@@ -1298,6 +1298,8 @@ INDIRECT_CALLABLE_DECLARE(void tcp_v4_send_check(struct sock *sk, struct sk_buff
  * SKB, or a fresh unique copy made by the retransmit engine.
  *
  * 将 TCP 缓冲区的 SKB 片段发送到网卡队列。
+ *
+ * 组件 tcp 头
  */
 static int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 			      int clone_it, gfp_t gfp_mask, u32 rcv_nxt)
@@ -2758,6 +2760,9 @@ static bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
 		if (TCP_SKB_CB(skb)->end_seq == TCP_SKB_CB(skb)->seq)
 			break;
 
+		/**
+		 *
+		 */
 		if (unlikely(tcp_transmit_skb(sk, skb, 1, gfp)))
 			break;
 
