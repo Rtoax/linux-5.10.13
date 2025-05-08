@@ -57,7 +57,15 @@ send(fd, buff, ..., addr, ...) {
                     }
                   }
                 }
-                skb_fill_page_desc()
+
+                skb_fill_page_desc(skb, ..., page, off, size) {
+                  __skb_fill_page_desc(skb, ..., page, off, size) {
+                    skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
+                    frag->bv_page		  = page;
+                    frag->bv_offset		  = off;
+                    skb_frag_size_set(frag, size);
+                  }
+                }
                 /* ... */
                 tcp_push_one(sock, ...) {
                   tcp_write_xmit(sock, ...) {
