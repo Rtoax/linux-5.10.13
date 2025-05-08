@@ -1500,7 +1500,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 		pr_info_once("%s uses obsolete (PF_INET,SOCK_PACKET)\n", current->comm);
 		family = PF_PACKET;
 	}
-	/* 安全钩子 是否 有权限*/
+	/* 安全钩子 是否 有权限 */
 	err = security_socket_create(family, type, protocol, kern);
 	if (err)
 		return err;
@@ -1535,7 +1535,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 
 	rcu_read_lock();
 
-	/* 协议族 */
+	/* 协议族，如 PF_INET */
 	pf = rcu_dereference(net_families[family]);
 	err = -EAFNOSUPPORT;
 	if (!pf)
