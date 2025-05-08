@@ -1002,9 +1002,9 @@ static unsigned int tcp_established_options(struct sock *sk, struct sk_buff *skb
 struct tsq_tasklet {
 	struct tasklet_struct	tasklet;
 
-    /**
-     *  节点为 tcp_sock.tsq_node
-     */
+	/**
+	 *  节点为 tcp_sock.tsq_node
+	 */
 	struct list_head	head; /* queue of tcp sockets */
 };
 
@@ -1024,9 +1024,9 @@ static void tcp_tsq_write(struct sock *sk)
 	     TCPF_CLOSE_WAIT  | TCPF_LAST_ACK)) {
 		struct tcp_sock *tp = tcp_sk(sk);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		if (tp->lost_out > tp->retrans_out && tp->snd_cwnd > tcp_packets_in_flight(tp)) {
 			tcp_mstamp_refresh(tp);
 			tcp_xmit_retransmit_queue(sk);
@@ -1279,7 +1279,8 @@ INDIRECT_CALLABLE_DECLARE(int ip_queue_xmit(struct sock *sk, struct sk_buff *skb
 INDIRECT_CALLABLE_DECLARE(int inet6_csk_xmit(struct sock *sk, struct sk_buff *skb, struct flowi *fl));
 INDIRECT_CALLABLE_DECLARE(void tcp_v4_send_check(struct sock *sk, struct sk_buff *skb));
 
-/* This routine actually transmits TCP packets queued in by
+/**
+ * This routine actually transmits TCP packets queued in by
  * tcp_do_sendmsg().  This is used by both the initial
  * transmission and possible later retransmissions.
  * All SKB's seen here are completely headerless.  It is our
@@ -1287,8 +1288,16 @@ INDIRECT_CALLABLE_DECLARE(void tcp_v4_send_check(struct sock *sk, struct sk_buff
  * IP so it can do the same plus pass the packet off to the
  * device.
  *
+ * 此例程实际上会传输由 tcp_do_sendmsg() 排队的 TCP 数据包。初始传输和
+ * 后续可能的重传都会用到它。
+ *
+ * 此处看到的所有 SKB 都是完全无报头的。我们的工作是构建 TCP 报头，并将
+ * 数据包传递给 IP 层，以便 IP 层也能执行相同的操作，并将数据包传递给设备。
+ *
  * We are working here with either a clone of the original
  * SKB, or a fresh unique copy made by the retransmit engine.
+ *
+ * 将 TCP 缓冲区的 SKB 片段发送到网卡队列。
  */
 static int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 			      int clone_it, gfp_t gfp_mask, u32 rcv_nxt)
@@ -1413,6 +1422,7 @@ static int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 		 */
 		th->window	= htons(min(tp->rcv_wnd, 65535U));
 	}
+
 #ifdef CONFIG_TCP_MD5SIG
 	/* Calculate the MD5 hash, as we have all we need now */
 	if (md5) {
@@ -1455,6 +1465,9 @@ static int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 
 	tcp_add_tx_delay(skb, tp);
 
+	/**
+	 * 将 skb 发送到 IP 层
+	 */
 	err = INDIRECT_CALL_INET(icsk->icsk_af_ops->queue_xmit,
 				 inet6_csk_xmit, ip_queue_xmit,
 				 sk, skb, &inet->cork.fl);
@@ -1470,6 +1483,9 @@ static int __tcp_transmit_skb(struct sock *sk, struct sk_buff *skb,
 	return err;
 }
 
+/**
+ * 将 TCP 缓冲区的 SKB 片段发送到网卡队列。
+ */
 static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
 			    gfp_t gfp_mask)
 {
@@ -2644,6 +2660,8 @@ void tcp_chrono_stop(struct sock *sk, const enum tcp_chrono type)
 
  * Returns true, if no segments are in flight and we have queued segments,
  * but cannot send anything now because of SWS or another problem.
+ *
+ * 负责将 TCP 写缓冲区的内容发送到传输层或网卡队列。
  */
 static bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
 			   int push_one, gfp_t gfp)
@@ -2670,6 +2688,10 @@ static bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
 	}
 
 	max_segs = tcp_tso_segs(sk, mss_now);
+
+	/**
+	 * 如果有 sk_buff 需要发送
+	 */
 	while ((skb = tcp_send_head(sk))) {
 		unsigned int limit;
 

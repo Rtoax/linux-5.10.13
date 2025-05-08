@@ -52,12 +52,12 @@ struct uncached_list;
  */
 struct rtable {
     /**
-     *  
+     *
      */
 	struct dst_entry	dst;
 
     /**
-     *  
+     *
      */
 	int			rt_genid;
 
@@ -77,7 +77,7 @@ struct rtable {
 	unsigned int		rt_flags;
 
     /**
-     *  
+     *
      */
 	__u16			rt_type;
 
@@ -99,7 +99,7 @@ struct rtable {
 	int			rt_iif;
 
     /**
-     *  
+     *
      */
 	u8			rt_gw_family;
 	/* Info on neighbour */
@@ -109,7 +109,7 @@ struct rtable {
 	};
 
     /**
-     *  
+     *
      */
 	/* Miscellaneous cached information */
 	u32			rt_mtu_locked:1,
@@ -349,7 +349,7 @@ static inline void ip_route_connect_init(struct flowi4 *fl4, __be32 dst, __be32 
 		flow_flags |= FLOWI_FLAG_ANYSRC;
 
     /**
-     *  
+     *
      */
 	flowi4_init_output(fl4, oif, sk->sk_mark, tos, RT_SCOPE_UNIVERSE,
         			   protocol, flow_flags, dst, src, dport, sport,
@@ -357,7 +357,7 @@ static inline void ip_route_connect_init(struct flowi4 *fl4, __be32 dst, __be32 
 }
 
 /**
- *  
+ *
  */
 static inline struct rtable *ip_route_connect(struct flowi4 *fl4,
 					      __be32 dst, __be32 src, u32 tos,
@@ -369,7 +369,7 @@ static inline struct rtable *ip_route_connect(struct flowi4 *fl4,
 	struct rtable *rt;
 
     /**
-     *  
+     *
      */
 	ip_route_connect_init(fl4, dst, src, tos, oif, protocol, sport, dport, sk);
 
@@ -380,14 +380,14 @@ static inline struct rtable *ip_route_connect(struct flowi4 *fl4,
 		ip_rt_put(rt);
 		flowi4_update_output(fl4, oif, tos, fl4->daddr, fl4->saddr);
 	}
-    
+
     /**
-     *  
+     *
      */
 	security_sk_classify_flow(sk, flowi4_to_flowi(fl4));
 
     /**
-     *  
+     *
      */
 	return ip_route_output_flow(net, fl4, sk);
 }
@@ -442,6 +442,13 @@ static inline struct neighbour *ip_neigh_gw4(struct net_device *dev,
 	return neigh;
 }
 
+/**
+ * ip_neigh_for_gw 函数用于根据路由表信息和网络包，返回一个指向网关地址的邻居条目
+ *  (struct neighbour)。
+ *
+ * 该函数是 Linux 网络栈中的一个关键部分，用于在数据包即将发送到下一跳时，找到对应的
+ * 网关邻居，进而通过邻居条目与链路层设备通信。
+ */
 static inline struct neighbour *ip_neigh_for_gw(struct rtable *rt,
 						struct sk_buff *skb,
 						bool *is_v6gw)

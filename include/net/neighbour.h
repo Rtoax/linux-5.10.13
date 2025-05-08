@@ -131,6 +131,9 @@ struct neigh_statistics {
 
 #define NEIGH_CACHE_STAT_INC(tbl, field) this_cpu_inc((tbl)->stats->field)
 
+/**
+ * 表示目标邻居的结构体，包含了目标的链路层地址等信息。
+ */
 struct neighbour {
 	struct neighbour __rcu	*next;
 	struct neigh_table	*tbl;
@@ -152,7 +155,10 @@ struct neighbour {
 	seqlock_t		ha_lock;
 	unsigned char		ha[ALIGN(MAX_ADDR_LEN, sizeof(unsigned long))] __aligned(8);
 	struct hh_cache		hh;
-	int			(*output)(struct neighbour *, struct sk_buff *);
+	/**
+	 *
+	 */
+	int (*output)(struct neighbour *, struct sk_buff *);
 	const struct neigh_ops	*ops;
 	struct list_head	gc_list;
 	struct rcu_head		rcu;
@@ -499,13 +505,33 @@ static inline int neigh_hh_output(const struct hh_cache *hh, struct sk_buff *skb
 	return dev_queue_xmit(skb);
 }
 
+/**
+ * 将一个数据包 (skb) 通过邻居子系统发送到指定的邻居目标 (struct neighbour)。
+ *
+ * @skip_cache: 是否跳过缓存的硬件头信息。
+ *
+ * 应用场景
+ * neigh_output 通常在以下场景中使用：
+ * - 邻居解析完成后的数据包发送：在确定目标链路层地址后，通过该函数发送数据包。
+ * - 链路层封装：使用邻居缓存的硬件头信息进行快速封装。
+ * - 网络设备驱动程序交互：最终调用底层驱动程序发送数据包。
+ */
 static inline int neigh_output(struct neighbour *n, struct sk_buff *skb,
 			       bool skip_cache)
 {
 	const struct hh_cache *hh = &n->hh;
 
+	/**
+	 * 缓存检查: 如果 skip_cache 为 false 且目标邻居状态为 NUD_CONNECTED
+	 * 且硬件头缓存存在 (hh->hh_len > 0)，调用 neigh_hh_output 使用缓存的
+	 * 硬件头发送数据包。
+	 */
 	if ((n->nud_state & NUD_CONNECTED) && hh->hh_len && !skip_cache)
 		return neigh_hh_output(hh, skb);
+	/**
+	 * 否则，直接调用输出函数: 如果跳过缓存或缓存无效，直接调用邻居的 output
+	 * 函数 (n->output) 发送数据包。
+	 */
 	else
 		return n->output(n, skb);
 }

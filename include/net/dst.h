@@ -22,29 +22,37 @@
 struct sk_buff;
 
 /**
- *  
+ *
  */
 struct dst_entry {
 	struct net_device       *dev;
 	struct  dst_ops	        *ops;
 	unsigned long		_metrics;
 	unsigned long           expires;
-    
+
 #ifdef CONFIG_XFRM
 	struct xfrm_state	*xfrm;
 #else
 	void			*__pad1;
 #endif
-    /**
-     *  dst_entry 对象最重要的成员是名为input 和output 的两个回调
-     *  在路由查找过程中，根据路由查找结果将这些回调分配为适当的处理程序
-     */
-	int			(*input)(struct sk_buff *);
-	int			(*output)(struct net *net, struct sock *sk, struct sk_buff *skb);
+	/**
+	 *  dst_entry 对象最重要的成员是名为input 和output 的两个回调
+	 *  在路由查找过程中，根据路由查找结果将这些回调分配为适当的处理程序
+	 */
+	/**
+	 * 可能的值
+	 * ip_local_deliver()
+	 */
+	int (*input)(struct sk_buff *);
+	/**
+	 * 可能的值
+	 * ip_output()
+	 */
+	int (*output)(struct net *net, struct sock *sk, struct sk_buff *skb);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	unsigned short		flags;
 #define DST_NOXFRM		0x0002
 #define DST_NOPOLICY		0x0004
@@ -448,9 +456,18 @@ static inline void dst_set_expires(struct dst_entry *dst, int timeout)
 		dst->expires = expires;
 }
 
-/* Output packet to network from transport.  */
-static inline int dst_output(struct net *net, struct sock *sk, struct sk_buff *skb)
+/**
+ * Output packet to network from transport.
+ *
+ * 将数据包发送到下一步处理（通常是路由层）。
+ */
+static inline int dst_output(struct net *net, struct sock *sk,
+	struct sk_buff *skb)
 {
+	/**
+	 * 可能为
+	 * ip_output()
+	 */
 	return skb_dst(skb)->output(net, sk, skb);
 }
 

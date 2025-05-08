@@ -713,12 +713,14 @@ INDIRECT_CALLABLE_DECLARE(int inet6_sendmsg(struct socket *, struct msghdr *,
 /* sendto(...) */
 static inline int sock_sendmsg_nosec(struct socket *sock, struct msghdr *msg)
 {
-	/* 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是 inet_sendmsg */
+	/**
+	 * 这里会根据 CONFIG_IPV6 和 CONFIG_INET 决定使用 inet6_sendmsg 还是
+	 * inet_sendmsg
+	 */
 	/**
 	 * 按照 优先级，
-	 * inet6_sendmsg > inet_snedmsg > sock->ops->sendmsg
+	 * inet6_sendmsg > inet_sendmsg > sock->ops->sendmsg
 	 */
-
 	int ret = INDIRECT_CALL_INET(sock->ops->sendmsg, inet6_sendmsg,
 				     inet_sendmsg, sock, msg,
 				     msg_data_left(msg));
@@ -2222,26 +2224,26 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		 struct sockaddr __user *addr,  int addr_len)
 {
 	struct socket *sock;
-    /**
-     *  目的  数据结构
-     */
+	/**
+	 *  目的  数据结构
+	 */
 	struct sockaddr_storage address;
 	int err;
 	struct msghdr msg;
 	struct iovec iov;
 	int fput_needed;
 
-    /* 转换成 iovec      / iov_iter */
+	/* 转换成 iovec      / iov_iter */
 	err = import_single_range(WRITE, buff, len, &iov, &msg.msg_iter);
 	if (unlikely(err))
 		return err;
 
-    /* 查找 socket 结构 */
+	/* 查找 socket 结构 */
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
 
-    /* 转化成 msghdr */
+	/* 转化成 msghdr */
 	msg.msg_name = NULL;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
@@ -2254,14 +2256,14 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		msg.msg_name = (struct sockaddr *)&address;
 		msg.msg_namelen = addr_len;
 	}
-    /**
-     *  根据用户设置的flag设置 DONTWAIT 位
-     */
+	/**
+	 *  根据用户设置的flag设置 DONTWAIT 位
+	 */
 	if (sock->file->f_flags & O_NONBLOCK)   /* 是否阻塞 */
 		flags |= MSG_DONTWAIT;  /* 根据是否阻塞，设定 MSG_DONTWAIT 标志位 */
 	msg.msg_flags = flags;
 
-    /* 发送 */
+	/* 发送 */
 	err = sock_sendmsg(sock, &msg);
 
 out_put:

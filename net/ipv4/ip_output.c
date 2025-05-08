@@ -97,7 +97,7 @@ void ip_send_check(struct iphdr *iph)
 EXPORT_SYMBOL(ip_send_check);
 
 /**
- *
+ * 检查数据包的完整性，并设置 IP 报头的总长度字段和校验和。
  */
 int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
@@ -115,21 +115,29 @@ int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 
 	skb->protocol = htons(ETH_P_IP);
 
+	/**
+	 * 数据包经过 Netfilter 的 NF_INET_LOCAL_OUT 钩子，用于执行防火墙规则、
+	 * 网络地址转换（NAT）等操作。
+	 *
+	 * 如果数据包通过了前面的钩子和检查，调用 dst_output 函数将数据包发送到下
+	 * 一步处理（通常是路由层）。
+	 */
 	return nf_hook(NFPROTO_IPV4, NF_INET_LOCAL_OUT,
 		       net, sk, skb, NULL, skb_dst(skb)->dev,
 		       dst_output);
 }
 
 /**
- *
+ * 处理本地生成的 IPv4 数据包。它是网络栈中的重要一环，负责将本地应用程序生成的数据包
+ * 从内核传输到网络设备驱动层，最终发送到网络。
  */
 int ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
 	int err;
 
-    /**
-     *
-     */
+	/**
+	 * 检查数据包的完整性，并设置 IP 报头的总长度字段和校验和。
+	 */
 	err = __ip_local_out(net, sk, skb);
 	if (likely(err == 1))
 		err = dst_output(net, sk, skb);
@@ -222,6 +230,9 @@ static int ip_finish_output2(struct net *net, struct sock *sk, struct sk_buff *s
 		skb = skb2;
 	}
 
+	/**
+	 *
+	 */
 	if (lwtunnel_xmit_redirect(dst->lwtstate)) {
 		int res = lwtunnel_xmit(skb);
 
@@ -230,6 +241,13 @@ static int ip_finish_output2(struct net *net, struct sock *sk, struct sk_buff *s
 	}
 
 	rcu_read_lock_bh();
+	/**
+	 * ip_neigh_for_gw 函数用于根据路由表信息和网络包，返回一个指向网关地址的
+	 * 邻居条目 (struct neighbour)。
+	 *
+	 * 该函数是 Linux 网络栈中的一个关键部分，用于在数据包即将发送到下一跳时，
+	 * 找到对应的网关邻居，进而通过邻居条目与链路层设备通信。
+	 */
 	neigh = ip_neigh_for_gw(rt, skb, &is_v6gw);
 	if (!IS_ERR(neigh)) {
 		int res;
@@ -311,9 +329,9 @@ static int __ip_finish_output(struct net *net, struct sock *sk, struct sk_buff *
 	if (skb_is_gso(skb))
 		return ip_finish_output_gso(net, sk, skb, mtu);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (skb->len > mtu || IPCB(skb)->frag_max_size)
 		return ip_fragment(net, sk, skb, mtu, ip_finish_output2);
 
@@ -432,6 +450,11 @@ int ip_mc_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 			    !(IPCB(skb)->flags & IPSKB_REROUTED));
 }
 
+/**
+ *
+ * caller 可能是
+ * dst_output()
+ */
 int ip_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 {
 	struct net_device *dev = skb_dst(skb)->dev, *indev = skb->dev;
@@ -441,6 +464,9 @@ int ip_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 	skb->dev = dev;
 	skb->protocol = htons(ETH_P_IP);
 
+	/**
+	 * netfilter
+	 */
 	return NF_HOOK_COND(NFPROTO_IPV4, NF_INET_POST_ROUTING,
 			    net, sk, skb, indev, dev,
 			    ip_finish_output,
@@ -541,6 +567,9 @@ packet_routed:
 	skb->priority = sk->sk_priority;
 	skb->mark = sk->sk_mark;
 
+	/**
+	 *
+	 */
 	res = ip_local_out(net, sk, skb);
 	rcu_read_unlock();
 	return res;

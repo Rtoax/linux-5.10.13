@@ -241,6 +241,9 @@ struct netdev_hw_addr_list {
 #define netdev_for_each_mc_addr(ha, dev) \
 	netdev_hw_addr_list_for_each(ha, &(dev)->mc)
 
+/**
+ * 硬件头缓存
+ */
 struct hh_cache {
 	unsigned int	hh_len;
 	seqlock_t	hh_lock;

@@ -824,7 +824,7 @@ static inline u64 tcp_skb_timestamp_us(const struct sk_buff *skb)
  * This is 44 bytes if IPV6 is enabled.
  * If this grows please adjust skbuff.h:skbuff->cb[xxx] size appropriately.
  *
- * 这实际上对应 sk_buff.cb 私有数据, 见宏 `TCP_SKB_CB()`, 
+ * 这实际上对应 sk_buff.cb 私有数据, 见宏 `TCP_SKB_CB()`,
  *  其中 TCP 模块在收到分段后填写 cb 结构：`tcp_v4_fill_cb()`
  */
 struct tcp_skb_cb {
@@ -1777,9 +1777,9 @@ static inline struct sk_buff *tcp_write_queue_head(const struct sock *sk)
 
 static inline struct sk_buff *tcp_write_queue_tail(const struct sock *sk)
 {
-    /**
-     *  添加到队尾
-     */
+	/**
+	 *  添加到队尾
+	 */
 	return skb_peek_tail(&sk->sk_write_queue);
 }
 
@@ -1787,13 +1787,13 @@ static inline struct sk_buff *tcp_write_queue_tail(const struct sock *sk)
 	skb_queue_walk_from_safe(&(sk)->sk_write_queue, skb, tmp)
 
 /**
- *  
+ *
  */
 static inline struct sk_buff *tcp_send_head(const struct sock *sk)
 {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	return skb_peek(&sk->sk_write_queue);
 }
 
