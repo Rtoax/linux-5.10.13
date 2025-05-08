@@ -820,6 +820,9 @@ EXPORT_SYMBOL(sock_set_mark);
  *	at the socket level. Everything here is generic.
  */
 
+ /**
+  * $ sudo bpftrace -e 'kprobe:sock_setsockopt {printf("buf 0x%lx, len %ld\n", arg3, arg4);}'
+  */
 int sock_setsockopt(struct socket *sock, int level, int optname,
 		    sockptr_t optval, unsigned int optlen)
 {
@@ -831,7 +834,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
 	int ret = 0;
 
 	/*
-	 *	Options without arguments
+	 * Options without arguments
 	 */
 
 	if (optname == SO_BINDTODEVICE)
@@ -873,7 +876,10 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
 	case SO_BROADCAST:
 		sock_valbool_flag(sk, SOCK_BROADCAST, valbool);
 		break;
-	case SO_SNDBUF:
+	/**
+	 * setsockopt(fd, SOL_SOCKET, SO_SNDBUF, ...)
+	 */
+	case SO_SNDBUF/*7*/:
 		/* Don't error on this BSD doesn't and if you think
 		 * about it this is right. Otherwise apps have to
 		 * play 'guess the biggest size' games. RCVBUF/SNDBUF
@@ -905,6 +911,9 @@ set_sndbuf:
 			val = 0;
 		goto set_sndbuf;
 
+	/**
+	 * setsockopt(fd, SOL_SOCKET, SO_RCVBUF, ...)
+	 */
 	case SO_RCVBUF:
 		/* Don't error on this BSD doesn't and if you think
 		 * about it this is right. Otherwise apps have to
@@ -3259,8 +3268,10 @@ int sock_common_recvmsg(struct socket *sock, struct msghdr *msg, size_t size,
 }
 EXPORT_SYMBOL(sock_common_recvmsg);
 
-/*
- *	Set socket options on an inet socket.
+/**
+ * Set socket options on an inet socket.
+ *
+ * $ sudo bpftrace -e 'kprobe:sock_common_setsockopt {printf("buf 0x%lx, len %ld\n", arg3, arg4);}'
  */
 int sock_common_setsockopt(struct socket *sock, int level, int optname,
 			   sockptr_t optval, unsigned int optlen)
@@ -3268,7 +3279,7 @@ int sock_common_setsockopt(struct socket *sock, int level, int optname,
 	struct sock *sk = sock->sk;
 
 	/**
-	 *
+	 * tcp_prot.setsockopt = tcp_setsockopt()
 	 */
 	return sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
 }

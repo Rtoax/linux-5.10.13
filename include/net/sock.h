@@ -1166,6 +1166,9 @@ struct proto {  /* socket层 和 传输层 之间的接口 (应用层和传输�
 	int (*init)(struct sock *sk);
 	void (*destroy)(struct sock *sk);
 	void (*shutdown)(struct sock *sk, int how);
+	/**
+	 *
+	 */
 	int (*setsockopt)(struct sock *sk, int level, int optname, sockptr_t optval,
 		   unsigned int optlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval,

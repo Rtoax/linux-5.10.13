@@ -126,13 +126,13 @@ struct socket { /* 套接字结构 */
 	struct file		*file;          /* 打开的文件 */
 	struct sock		*sk;            /* 网络层 sock */
 
-    /**
-     *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops
-     *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops
-     *  (AF_INET, SOCK_RAW)     -> inet_sockraw_ops
-     *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops
-     *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops
-     */
+	/**
+	 *  (AF_INET, SOCK_STREAM)  -> inet_stream_ops
+	 *  (AF_INET, SOCK_DGRAM)   -> inet_dgram_ops
+	 *  (AF_INET, SOCK_RAW)     -> inet_sockraw_ops
+	 *  (AF_UNIX, SOCK_STREAM)  -> unix_stream_ops
+	 *  (AF_UNIX, SOCK_DGRAM)   -> unix_dgram_ops
+	 */
 	const struct proto_ops	*ops;   /* 操作 - 系统调用 */
 	struct socket_wq	wq;         /* 等待队列 */
 };
@@ -221,6 +221,10 @@ struct proto_ops {  /* struct socket 操作 */
 	 */
 	int		(*listen)    (struct socket *sock, int len);
 	int		(*shutdown)  (struct socket *sock, int flags);
+	/**
+	 * PF_INET: sock_common_setsockopt()
+	 * PF_PACKET: packet_setsockopt()
+	 */
 	int		(*setsockopt)(struct socket *sock, int level,
 				      int optname, sockptr_t optval,
 				      unsigned int optlen);

@@ -2386,9 +2386,15 @@ static bool sock_use_custom_sol_socket(const struct socket *sock)
 }
 
 /*
- *	Set a socket option. Because we don't know the option lengths we have
- *	to pass the user mode parameter for the protocols to sort out.
+ * Set a socket option. Because we don't know the option lengths we have
+ * to pass the user mode parameter for the protocols to sort out.
+ *
+ * $ sudo bpftrace -e 'kprobe:__sys_setsockopt {printf("opt %d, buf 0x%lx, len %ld\n", arg2, arg3, arg4);}'
  */
+#ifdef __linux_6_15___ /* v6.15-rc5-22-g01f95500a162 */
+int do_sock_setsockopt(struct socket *sock, bool compat, int level,
+	int optname, sockptr_t optval, int optlen)
+#endif
 int __sys_setsockopt(int fd, int level, int optname, char __user *user_optval,
 		int optlen)
 {
@@ -2424,6 +2430,10 @@ int __sys_setsockopt(int fd, int level, int optname, char __user *user_optval,
 
 	if (kernel_optval)
 		optval = KERNEL_SOCKPTR(kernel_optval);
+
+	/**
+	 * setsockopt(fd, SOL_SOCKET, ...)
+	 */
 	if (level == SOL_SOCKET && !sock_use_custom_sol_socket(sock))
 		err = sock_setsockopt(sock, level, optname, optval, optlen);
 	else if (unlikely(!sock->ops->setsockopt))
@@ -2441,6 +2451,12 @@ out_put:
 	return err;
 }
 
+/**
+ * setsockopt(2)
+ */
+int setsockopt(int sockfd, int level, int optname,
+		const void optval[.optlen],
+		socklen_t optlen);
 SYSCALL_DEFINE5(setsockopt, int, fd, int, level, int, optname,
 		char __user *, optval, int, optlen)
 {

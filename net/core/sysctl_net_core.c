@@ -310,8 +310,12 @@ proc_dolongvec_minmax_bpf_restricted(struct ctl_table *table, int write,
 
 static struct ctl_table net_core_table[] = {    /* /proc/sys/net/core/ */
 #ifdef CONFIG_NET
+	/**
+	 * net.core.wmem_max
+	 * /proc/sys/net/core/wmem_max
+	 */
 	{
-		.procname	= "wmem_max",   /* /proc/sys/net/core/somaxconn */
+		.procname	= "wmem_max",
 		.data		= &sysctl_wmem_max,
 		.maxlen		= sizeof(int),
 		.mode		= 0644,

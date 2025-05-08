@@ -3394,6 +3394,9 @@ static int do_tcp_setsockopt(struct sock *sk, int level, int optname,
 	return err;
 }
 
+/**
+ * $ sudo bpftrace -e 'kprobe:tcp_setsockopt {printf("buf 0x%lx, len %ld\n", arg3, arg4);}'
+ */
 int tcp_setsockopt(struct sock *sk, int level, int optname, sockptr_t optval,
 		   unsigned int optlen)
 {
