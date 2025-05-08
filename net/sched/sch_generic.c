@@ -630,6 +630,9 @@ static int pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc,
 	unsigned int pkt_len = qdisc_pkt_len(skb);
 	int err;
 
+	/**
+	 *
+	 */
 	err = skb_array_produce(q, skb);
 
 	if (unlikely(err)) {
@@ -794,18 +797,18 @@ static int pfifo_fast_change_tx_queue_len(struct Qdisc *sch,
  *  默认排队方式 `default_qdisc_ops = &pfifo_fast_ops`
  */
 struct Qdisc_ops __read_mostly pfifo_fast_ops  = {
-	pfifo_fast_ops.id		=	"pfifo_fast",
-	pfifo_fast_ops.priv_size	=	sizeof(struct pfifo_fast_priv),
-	pfifo_fast_ops.enqueue	=	pfifo_fast_enqueue,
-	pfifo_fast_ops.dequeue	=	pfifo_fast_dequeue,
-	pfifo_fast_ops.peek		=	pfifo_fast_peek,
-	pfifo_fast_ops.init		=	pfifo_fast_init,
-	pfifo_fast_ops.destroy	=	pfifo_fast_destroy,
-	pfifo_fast_ops.reset		=	pfifo_fast_reset,
-	pfifo_fast_ops.dump		=	pfifo_fast_dump,
-	pfifo_fast_ops.change_tx_queue_len =  pfifo_fast_change_tx_queue_len,
-	pfifo_fast_ops.owner		=	THIS_MODULE,
-	pfifo_fast_ops.static_flags	=	TCQ_F_NOLOCK | TCQ_F_CPUSTATS,
+	.id		=	"pfifo_fast",
+	.priv_size	=	sizeof(struct pfifo_fast_priv),
+	.enqueue	=	pfifo_fast_enqueue,
+	.dequeue	=	pfifo_fast_dequeue,
+	.peek		=	pfifo_fast_peek,
+	.init		=	pfifo_fast_init,
+	.destroy	=	pfifo_fast_destroy,
+	.reset		=	pfifo_fast_reset,
+	.dump		=	pfifo_fast_dump,
+	.change_tx_queue_len =  pfifo_fast_change_tx_queue_len,
+	.owner		=	THIS_MODULE,
+	.static_flags	=	TCQ_F_NOLOCK | TCQ_F_CPUSTATS,
 };
 EXPORT_SYMBOL(pfifo_fast_ops);
 

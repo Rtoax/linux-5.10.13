@@ -3766,6 +3766,9 @@ static void qdisc_pkt_len_init(struct sk_buff *skb)
 	}
 }
 
+/**
+ * 网络设备发送队列的入口函数
+ */
 static inline int __dev_xmit_skb(struct sk_buff *skb, struct Qdisc *q,
 				 struct net_device *dev,
 				 struct netdev_queue *txq)
@@ -3810,23 +3813,42 @@ static inline int __dev_xmit_skb(struct sk_buff *skb, struct Qdisc *q,
 
 		qdisc_bstats_update(q, skb);
 
+		/**
+		 * 尝试直接发送数据包（无队列缓存）
+		 */
 		if (sch_direct_xmit(skb, q, dev, txq, root_lock, true)) {
 			if (unlikely(contended)) {
 				spin_unlock(&q->busylock);
 				contended = false;
 			}
+			/**
+			 * 启动队列处理
+			 */
 			__qdisc_run(q);
 		}
 
 		qdisc_run_end(q);
 		rc = NET_XMIT_SUCCESS;
 	} else {
+		/**
+		 * 将数据包加入队列
+		 *
+		 * 根据设备配置的流量控制策略（如 pfifo_fast、htb、fq_codel 等），将
+		 * skb 提交到队列中。
+		 *
+		 * Examples:
+		 * - pfifo_fast_ops.enqueue = pfifo_fast_enqueue()
+		 * - fq_codel_qdisc_ops.enqueue = fq_codel_enqueue()
+		 */
 		rc = q->enqueue(skb, q, &to_free) & NET_XMIT_MASK;
 		if (qdisc_run_begin(q)) {
 			if (unlikely(contended)) {
 				spin_unlock(&q->busylock);
 				contended = false;
 			}
+			/**
+			 * 启动队列处理
+			 */
 			__qdisc_run(q);
 			qdisc_run_end(q);
 		}

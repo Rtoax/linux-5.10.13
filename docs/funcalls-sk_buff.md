@@ -71,7 +71,21 @@ send(fd, buff, ..., addr, ...) {
                                               }
                                               sock_confirm_neigh(skb, neigh);
                                               neigh_output(neigh, skb) {
-
+                                                /* 直接或简介调用 dev_queue_xmit() */
+                                                dev_queue_xmit(skb) {
+                                                  /* Queue a buffer for transmission to a network device */
+                                                  __dev_queue_xmit(skb, ...) {
+                                                    rcu_read_lock_bh();
+                                                    struct net_device *dev = skb->dev;
+                                                    struct netdev_queue *txq = netdev_core_pick_tx(dev, skb, ...);
+                                                    struct Qdisc *q = rcu_dereference_bh(txq->qdisc);
+                                                    /* trigger tracepoint:net:net_dev_queue */
+                                                    __dev_xmit_skb(skb, q, dev, txq) {
+                                                      /* TODO */
+                                                    }
+                                                    rcu_read_unlock_bh();
+                                                  }
+                                                }
                                               }
                                               rcu_read_unlock_bh();
                                             }

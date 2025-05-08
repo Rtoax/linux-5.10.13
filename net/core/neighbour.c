@@ -90,6 +90,11 @@ static const struct seq_operations neigh_stat_seq_ops;
    not make callbacks to neighbour tables.
  */
 
+ /**
+  * 静默丢弃数据包并返回错误（如 -ENETDOWN）。
+  *
+  * 场景：邻居条目无效或网络设备不可用（如接口关闭）。
+  */
 static int neigh_blackhole(struct neighbour *neigh, struct sk_buff *skb)
 {
 	kfree_skb(skb);
@@ -1468,10 +1473,19 @@ static void neigh_hh_init(struct neighbour *n)
 
 /* Slow and careful. */
 
+/**
+ * 当邻居的链路层地址（如MAC地址）尚未解析时，此函数负责触发地址解析（如发送ARP请求），并
+ * 缓存待发送的数据包。解析完成后，数据包会被发送。
+ *
+ * 场景：邻居状态为 NUD_NONE 或 NUD_INCOMPLETE（需要解析）。
+ */
 int neigh_resolve_output(struct neighbour *neigh, struct sk_buff *skb)
 {
 	int rc = 0;
 
+	/**
+	 * 检查邻居是否可达。若不可达，启动地址解析（如发送ARP请求）。
+	 */
 	if (!neigh_event_send(neigh, skb)) {
 		int err;
 		struct net_device *dev = neigh->dev;
@@ -1503,6 +1517,12 @@ EXPORT_SYMBOL(neigh_resolve_output);
 
 /* As fast as possible without hh cache */
 
+/**
+ * 当邻居已确认可达时（如ARP缓存有效），直接调用 dev_queue_xmit 将数据包传递给网络设备队列。
+ *
+ * 场景：邻居状态为 NUD_REACHABLE（已解析且有效）。
+ * 特点：绕过地址解析，直接发送数据，效率更高。
+ */
 int neigh_connected_output(struct neighbour *neigh, struct sk_buff *skb)
 {
 	struct net_device *dev = neigh->dev;
@@ -1526,12 +1546,22 @@ int neigh_connected_output(struct neighbour *neigh, struct sk_buff *skb)
 }
 EXPORT_SYMBOL(neigh_connected_output);
 
+/**
+ * 直接调用 dev_queue_xmit 发送数据包，通常用于无需链路层地址的场景（如回环设备）。
+ *
+ * 场景：邻居层被绕过（如 lo 接口）或特殊配置。
+ */
 int neigh_direct_output(struct neighbour *neigh, struct sk_buff *skb)
 {
 	return dev_queue_xmit(skb);
 }
 EXPORT_SYMBOL(neigh_direct_output);
 
+/**
+ * 处理代理ARP请求，将数据包转发给代理的邻居。
+ *
+ * 场景：启用代理ARP时（如路由器响应其他主机的ARP请求）。
+ */
 static void neigh_proxy_process(struct timer_list *t)
 {
 	struct neigh_table *tbl = from_timer(tbl, t, proxy_timer);

@@ -156,7 +156,19 @@ struct neighbour {
 	unsigned char		ha[ALIGN(MAX_ADDR_LEN, sizeof(unsigned long))] __aligned(8);
 	struct hh_cache		hh;
 	/**
+	 * 可能的值：
+	 * - neigh_resolve_output()
+	 * - neigh_connected_output()
+	 * - neigh_direct_output()
+	 * - neigh_blackhole()
+	 * - neigh_proxy_process()
+	 * - neigh_event_send()
 	 *
+	 * 函数指针的动态切换
+	 * output 指针会根据邻居状态动态调整。例如：
+	 * - 初始状态：neigh_resolve_output（需要解析地址）。
+	 * - 解析成功后：切换到 neigh_connected_output（直接发送）。
+	 * - 接口关闭时：切换到 neigh_blackhole（丢弃数据包）。
 	 */
 	int (*output)(struct neighbour *, struct sk_buff *);
 	const struct neigh_ops	*ops;
@@ -170,8 +182,18 @@ struct neigh_ops {
 	int			family;
 	void			(*solicit)(struct neighbour *, struct sk_buff *);
 	void			(*error_report)(struct neighbour *, struct sk_buff *);
-	int			(*output)(struct neighbour *, struct sk_buff *);
-	int			(*connected_output)(struct neighbour *, struct sk_buff *);
+	/**
+	 * arp_generic_ops.output = neigh_resolve_output()
+	 * arp_hh_ops.output = neigh_resolve_output()
+	 * ndisc_direct_ops.output = neigh_direct_output()
+	 */
+	int (*output)(struct neighbour *, struct sk_buff *);
+	/**
+	 * arp_generic_ops.connected_output = neigh_connected_output()
+	 * arp_hh_ops.connected_output = neigh_resolve_output()
+	 * ndisc_direct_ops.connected_output = neigh_direct_output()
+	 */
+	int (*connected_output)(struct neighbour *, struct sk_buff *);
 };
 
 struct pneigh_entry {
@@ -440,6 +462,11 @@ static inline struct neighbour * neigh_clone(struct neighbour *neigh)
 
 #define neigh_hold(n)	refcount_inc(&(n)->refcnt)
 
+/**
+ * 在地址解析过程中触发事件（如重传ARP请求）。
+ *
+ * 场景：地址解析超时或需要重试时。
+ */
 static inline int neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 {
 	unsigned long now = jiffies;
@@ -527,12 +554,18 @@ static inline int neigh_output(struct neighbour *n, struct sk_buff *skb,
 	 * 硬件头发送数据包。
 	 */
 	if ((n->nud_state & NUD_CONNECTED) && hh->hh_len && !skip_cache)
+		/**
+		 * 调用 dev_queue_xmit()
+		 */
 		return neigh_hh_output(hh, skb);
 	/**
 	 * 否则，直接调用输出函数: 如果跳过缓存或缓存无效，直接调用邻居的 output
 	 * 函数 (n->output) 发送数据包。
 	 */
 	else
+		/**
+		 * 直接或简介调用 dev_queue_xmit() 或直接将 skb 丢弃
+		 */
 		return n->output(n, skb);
 }
 
