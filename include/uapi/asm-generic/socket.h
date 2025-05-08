@@ -14,6 +14,7 @@
 #define SO_ERROR	4
 #define SO_DONTROUTE	5
 #define SO_BROADCAST	6
+/* 套接字的发送缓冲区大小，见 struct sock.sk_sndbuf */
 #define SO_SNDBUF	7
 #define SO_RCVBUF	8
 #define SO_SNDBUFFORCE	32

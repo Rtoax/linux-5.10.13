@@ -438,6 +438,18 @@ struct sock {
 	struct dst_entry	*sk_rx_dst;
 	struct dst_entry __rcu	*sk_dst_cache;
 	atomic_t		sk_omem_alloc;
+	/**
+	 * 套接字的发送缓冲区大小， 见 SO_SNDBUF SO_SNDBUFFORCE
+	 *
+	 * 参见 sock_wmalloc() 分配时候的大小检测
+	 *
+	 * - 限制发送数据量: 如果发送缓冲区已满，应用程序的发送操作(如 send,write)会阻塞
+	 *   （对于阻塞套接字）或返回一个错误（对于非阻塞套接字，比如 EAGAIN 或 EWOULDBLOCK）。
+	 * - 影响网络吞吐量: 较大的 sk_sndbuf 值允许更多的数据缓冲，从而提高网络吞吐量，
+	 *   特别是在高延迟或高带宽的网络中。
+	 * - 系统默认值: 由系统参数 /proc/sys/net/core/wmem_default 决定。
+	 *             最大值受 /proc/sys/net/core/wmem_max 限制。
+	 */
 	int			sk_sndbuf;
 
 	/* ===== cache line for TX ===== */
@@ -452,6 +464,10 @@ struct sock {
 		struct rb_root	tcp_rtx_queue;
 	};
 	struct sk_buff		*sk_tx_skb_cache;
+	/**
+	 * 发送队列
+	 * 初始化见 sk_init_common()
+	 */
 	struct sk_buff_head	sk_write_queue;
 	__s32			sk_peek_off;
 	int			sk_write_pending;
@@ -529,7 +545,11 @@ struct sock {
 	struct mem_cgroup	*sk_memcg;
 	void			(*sk_state_change)(struct sock *sk);
 	void			(*sk_data_ready)(struct sock *sk);
-	void			(*sk_write_space)(struct sock *sk);
+	/**
+	 * xs_tcp_write_space()
+	 * xs_udp_write_space()
+	 */
+	void (*sk_write_space)(struct sock *sk);
 	void			(*sk_error_report)(struct sock *sk);
 	int			(*sk_backlog_rcv)(struct sock *sk,
 						  struct sk_buff *skb);
@@ -959,6 +979,9 @@ static inline int sk_stream_min_wspace(const struct sock *sk)
 	return READ_ONCE(sk->sk_wmem_queued) >> 1;
 }
 
+/**
+ *
+ */
 static inline int sk_stream_wspace(const struct sock *sk)
 {
 	return READ_ONCE(sk->sk_sndbuf) - READ_ONCE(sk->sk_wmem_queued);

@@ -892,9 +892,17 @@ set_sndbuf:
 		 */
 		val = min_t(int, val, INT_MAX / 2);
 		sk->sk_userlocks |= SOCK_SNDBUF_LOCK;
+		/**
+		 * 实际设置了两被大小的值
+		 */
 		WRITE_ONCE(sk->sk_sndbuf,
 			   max_t(int, val * 2, SOCK_MIN_SNDBUF));
-		/* Wake up sending tasks if we upped the value. */
+		/**
+		 * Wake up sending tasks if we upped the value.
+		 *
+		 * xs_tcp_write_space()
+		 * xs_udp_write_space()
+		 */
 		sk->sk_write_space(sk);
 		break;
 
@@ -1858,6 +1866,9 @@ EXPORT_SYMBOL(sk_free);
 static void sk_init_common(struct sock *sk)
 {
 	skb_queue_head_init(&sk->sk_receive_queue);
+	/**
+	 * 发送队列初始化
+	 */
 	skb_queue_head_init(&sk->sk_write_queue);
 	skb_queue_head_init(&sk->sk_error_queue);
 

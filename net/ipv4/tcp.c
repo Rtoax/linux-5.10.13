@@ -885,6 +885,9 @@ struct sk_buff *sk_stream_alloc_skb(struct sock *sk, int size, gfp_t gfp,
 	if (unlikely(tcp_under_memory_pressure(sk)))
 		sk_mem_reclaim_partial(sk);
 
+	/**
+	 *
+	 */
 	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
 	if (likely(skb)) {
 		bool mem_scheduled;

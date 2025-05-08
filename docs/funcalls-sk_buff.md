@@ -23,7 +23,27 @@ send(fd, buff, ..., addr, ...) {
               #endif
               sockcm_init(&sockc, sock);
               while (msg_data_left(msg)) {
-                skb = tcp_write_queue_tail(sk);
+                skb = tcp_write_queue_tail(sock) {
+                  return skb_peek_tail(&sock->sk_write_queue);
+                }
+                if (skb)
+                  copy = size_goal - skb->len;
+                if (copy <= 0 || !tcp_skb_can_collapse_to(skb)) {
+                  skb = sk_stream_alloc_skb(sock, ...) {
+                    skb = alloc_skb_fclone(size, ...) {
+                      return __alloc_skb();
+                    }
+                  }
+                  skb_entail(sock, skb) {
+                    tcp_add_write_queue_tail(sock, skb) {
+                      __skb_queue_tail(&sock->sk_write_queue, skb) {
+                        __skb_queue_before() {
+                          __skb_insert();
+                        }
+                      }
+                    }
+                  }
+                }
                 /* ... */
                 skb_copy_to_page_nocache(sock, msg, skb);
                 /* ... */
