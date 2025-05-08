@@ -453,6 +453,9 @@ struct sock {
 	int			sk_sndbuf;
 
 	/* ===== cache line for TX ===== */
+	/**
+	 * 已经入队的数据
+	 */
 	int			sk_wmem_queued;
 	refcount_t		sk_wmem_alloc;
 	unsigned long		sk_tsq_flags;
@@ -983,10 +986,16 @@ static inline int sk_stream_min_wspace(const struct sock *sk)
 }
 
 /**
+ * For certain protocols like TCP, the buffer size can be dynamically adjusted
+ * to optimize performance.
  *
+ * 参见 __sk_mem_raise_allocated() 中对 sk_sndbuf 和 sk_wmem_queued 的比较
  */
 static inline int sk_stream_wspace(const struct sock *sk)
 {
+	/**
+	 * = 允许的值 - 已经入队准备发送的值
+	 */
 	return READ_ONCE(sk->sk_sndbuf) - READ_ONCE(sk->sk_wmem_queued);
 }
 

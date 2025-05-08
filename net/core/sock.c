@@ -2681,10 +2681,25 @@ suppress_allocation:
 	if (kind == SK_MEM_SEND && sk->sk_type == SOCK_STREAM) {
 		sk_stream_moderate_sndbuf(sk);
 
-		/* Fail only if socket is _under_ its sndbuf.
+		/**
+		 * Before queuing data for transmission, the kernel checks
+		 * if the data size will exceed sk->sk_sndbuf.
+		 *
+		 * If the queued data (sk->sk_wmem_queued) plus the new data
+		 * size exceeds the buffer limit, the system may block, drop,
+		 * or reject the data depending on the context.
+		 *
+		 * Fail only if socket is _under_ its sndbuf.
 		 * In this case we cannot block, so that we have to fail.
 		 */
 		if (sk->sk_wmem_queued + size >= sk->sk_sndbuf)
+#ifdef __linux_6_15__ /*v6.15-rc5-22-g01f95500a162*/
+			/* Force charge with __GFP_NOFAIL */
+			if (memcg && !charged) {
+				mem_cgroup_charge_skmem(memcg, amt,
+					gfp_memcg_charge() | __GFP_NOFAIL);
+			}
+#endif
 			return 1;
 	}
 
@@ -2702,6 +2717,8 @@ EXPORT_SYMBOL(__sk_mem_raise_allocated);
 
 /**
  *	__sk_mem_schedule - increase sk_forward_alloc and memory_allocated
+ *		增加 sk_forward_alloc 和 memory_allocated
+ *
  *	@sk: socket
  *	@size: memory size to allocate
  *	@kind: allocation type
@@ -2715,6 +2732,9 @@ int __sk_mem_schedule(struct sock *sk, int size, int kind)
 	int ret, amt = sk_mem_pages(size);
 
 	sk->sk_forward_alloc += amt << SK_MEM_QUANTUM_SHIFT;
+	/**
+	 * 检测已经入队的是否超过 sk_sndbuf
+	 */
 	ret = __sk_mem_raise_allocated(sk, size, amt, kind);
 	if (!ret)
 		sk->sk_forward_alloc -= amt << SK_MEM_QUANTUM_SHIFT;
