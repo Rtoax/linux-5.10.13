@@ -478,7 +478,10 @@ struct sock {
 	__u32			sk_priority;
 	__u32			sk_mark;
 	unsigned long		sk_pacing_rate; /* bytes per second */
-	unsigned long		sk_max_pacing_rate;
+	unsigned long		sk_max_pacing_rate;1
+	/**
+	 * 用于保存拷贝的用户态数据
+	 */
 	struct page_frag	sk_frag;
 	netdev_features_t	sk_route_caps;
 	netdev_features_t	sk_route_nocaps;

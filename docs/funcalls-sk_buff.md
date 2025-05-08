@@ -45,7 +45,19 @@ send(fd, buff, ..., addr, ...) {
                   }
                 }
                 /* ... */
-                skb_copy_to_page_nocache(sock, msg, skb);
+                skb_copy_to_page_nocache(sock, msg, skb, ...) {
+                  skb_do_copy_data_nocache(sock, skb, msg, ...) {
+                    copy_from_iter_full(addr, bytes, iov_iter) {
+                      _copy_from_iter_full(addr, bytes, iov_iter) {
+                        iterate_all_kinds(...) {
+                          /* copy memory from userspace to kernels */
+                          memcpy(...);
+                        }
+                      }
+                    }
+                  }
+                }
+                skb_fill_page_desc()
                 /* ... */
                 tcp_push_one(sock, ...) {
                   tcp_write_xmit(sock, ...) {

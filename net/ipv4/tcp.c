@@ -1362,6 +1362,9 @@ new_segment:
 		} else if (!zc) {
 			bool merge = true;
 			int i = skb_shinfo(skb)->nr_frags;
+			/**
+			 * sock 结构中有 page frag，用于保存从用户台拷贝的数据
+			 */
 			struct page_frag *pfrag = sk_page_frag(sk);
 
 			if (!sk_page_frag_refill(sk, pfrag))
@@ -1383,19 +1386,24 @@ new_segment:
 			/**
 			 *  拷贝数据
 			 */
-			err = skb_copy_to_page_nocache(sk, &msg->msg_iter, skb,
+			err = skb_copy_to_page_nocache(sk, &msg->msg_iter,
+						       skb,
 						       pfrag->page,
 						       pfrag->offset,
 						       copy);
 			if (err)
 				goto do_error;
 
-			/* Update the skb. */
+			/**
+			 * Update the skb.
+			 * 使用从用户台拷贝的数据，填充 skb 数据结构
+			 */
 			if (merge) {
 				skb_frag_size_add(&skb_shinfo(skb)->frags[i - 1], copy);
 			} else {
 				skb_fill_page_desc(skb, i, pfrag->page,
 						   pfrag->offset, copy);
+				/* 引用计数 */
 				page_ref_inc(pfrag->page);
 			}
 			pfrag->offset += copy;
