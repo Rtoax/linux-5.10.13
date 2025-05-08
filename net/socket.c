@@ -155,18 +155,18 @@ static const struct file_operations socket_file_ops = { /* socket */
 	socket_file_ops.read_iter =	sock_read_iter,
 	socket_file_ops.write_iter =	sock_write_iter,
 
-    /**
-     *  poll 回调 在 epoll 中会用到，没有poll，eventpoll 将 ADD 失败
-     */
+	/**
+	 *  poll 回调 在 epoll 中会用到，没有poll，eventpoll 将 ADD 失败
+	 */
 	socket_file_ops.poll =		sock_poll,
 	socket_file_ops.unlocked_ioctl = sock_ioctl,
 
 #ifdef CONFIG_COMPAT
 	socket_file_ops.compat_ioctl = compat_sock_ioctl,
 #endif
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	socket_file_ops.mmap =		sock_mmap,
 	socket_file_ops.release =	sock_close,
 	socket_file_ops.fasync =	sock_fasync,
@@ -184,16 +184,22 @@ static DEFINE_SPINLOCK(net_family_lock);
 /**
  *  协议族
  */
-static const struct net_proto_family __rcu __read_mostly *net_families[NPROTO]  = {
-    /* 以下 填充部分是我+的 */
-    [PF_INET]       = &inet_family_ops,
-    [PF_INET6]      = &inet6_family_ops,
-    [PF_UNIX]       = &unix_family_ops,
-    [PF_LOCAL]      = &unix_family_ops,
-    [PF_PACKET]     = &packet_family_ops,
-    [PF_NETLINK]    = &netlink_family_ops
-
-    /* MORE */
+static const struct net_proto_family __rcu __read_mostly
+*net_families[NPROTO]  = {
+	/* 以下 填充部分是我+的 */
+	[PF_INET]		= &inet_family_ops,
+	[PF_INET6]		= &inet6_family_ops,
+	[PF_UNIX]		= &unix_family_ops,
+	[PF_LOCAL]		= &unix_family_ops,
+	[PF_PACKET]		= &packet_family_ops,
+	[PF_NETLINK]		= &netlink_family_ops,
+	[PF_ALG]		= &alg_family,
+	[PF_APPLETALK]		= &atalk_family_ops,
+	[PF_ATMPVC]		= &pvc_family_ops,
+	[PF_NFC]		= &nfc_sock_family_ops,
+	[PF_NETLINK]		= &netlink_family_ops,
+	[PF_XDP]		= &xsk_family_ops,
+	/* MORE */
 };
 
 /*
@@ -221,9 +227,9 @@ int move_addr_to_kernel(void __user *uaddr, int ulen, struct sockaddr_storage *k
 		return -EINVAL;
 	if (ulen == 0)
 		return 0;
-    /**
-     *  拷贝到内核 - 这将造成一次数据拷贝，拷贝的IP地址
-     */
+	/**
+	 *  拷贝到内核 - 这将造成一次数据拷贝，拷贝的IP地址
+	 */
 	if (copy_from_user(kaddr, uaddr, ulen))
 		return -EFAULT;
 	return audit_sockaddr(ulen, kaddr);
@@ -1478,7 +1484,7 @@ int __sock_create(struct net *net, int family, int type, int protocol,
 	const struct net_proto_family *pf;
 
 	/*
-	 *      Check protocol is in range
+	 * Check protocol is in range
 	 */
 	if (family < 0 || family >= NPROTO)
 		return -EAFNOSUPPORT;
@@ -1597,11 +1603,14 @@ EXPORT_SYMBOL(__sock_create);
  *
  *	A wrapper around __sock_create().
  *	Returns 0 or an error. This function internally uses GFP_KERNEL.
+ *
+ *	创建 socket
  */
-int sock_create(int family, int type, int protocol, struct socket **res)    /* 创建 socket */
+int sock_create(int family, int type, int protocol, struct socket **res)
 {
-    /* 在当前进程的 网络命名空间 上创建socket */
-	return __sock_create(current->nsproxy->net_ns, family, type, protocol, res, 0);
+	/* 在当前进程的 网络命名空间 上创建socket */
+	return __sock_create(current->nsproxy->net_ns, family, type, protocol,
+				res, 0);
 }
 EXPORT_SYMBOL(sock_create);
 
@@ -1644,31 +1653,27 @@ int __sys_socket(int family, int type, int protocol)    /* socket(...) */
 
 	type &= SOCK_TYPE_MASK;
 
-    /* 标志位 */
+	/* 标志位 */
 	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
 		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
 
-    /* 创建 socket */
+	/* 创建 socket */
 	retval = sock_create(family, type, protocol, &sock);
 	if (retval < 0)
 		return retval;
 
-    /**
-     *  分配一个 fd
-     */
+	/**
+	 *  分配一个 fd
+	 */
 	return sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
 }
 
 /**
- *
+ * socket 系统调用
  */
-/* socket 系统调用 */
-int socket(int domain, int type, int protocol){ /* ++ */ }
+int socket(int domain, int type, int protocol);
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
-    /**
-     *
-     */
 	return __sys_socket(family, type, protocol);
 }
 

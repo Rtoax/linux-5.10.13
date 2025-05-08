@@ -1265,13 +1265,14 @@ static const struct proto_ops inet_sockraw_ops = {
 /**
  *  IPv4 协议族
  */
-static const struct net_proto_family inet_family_ops = {    /* IPv4 */
+static const struct net_proto_family inet_family_ops = {
 	inet_family_ops.family = PF_INET,
-	inet_family_ops.create = inet_create,  /* inet_create() */
+	inet_family_ops.create = inet_create,
 	inet_family_ops.owner	= THIS_MODULE,
 };
 
-/* Upon startup we insert all the elements in inetsw_array[] into
+/**
+ * Upon startup we insert all the elements in inetsw_array[] into
  * the linked list inetsw.
  *
  * 协议
