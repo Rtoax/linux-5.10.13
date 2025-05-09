@@ -33,6 +33,24 @@ send(fd, buff, ..., addr, ...) {
                     skb = alloc_skb_fclone(size, ...) {
                       return __alloc_skb();
                     }
+                    if (likely(skb)) {
+                      mem_scheduled = sk_wmem_schedule(sock, skb->truesize) {
+                        return __sk_mem_schedule(sock, size, ...) {
+                          return __sk_mem_raise_allocated(sk, size) {
+                            /* ... */
+                            /* 超出 buf 限制 */
+                            if (sk->sk_wmem_queued + size >= sk->sk_sndbuf)
+                              return 1;
+                          }
+                        }
+                      }
+                      if (likely(mem_scheduled)) {
+                        skb_reserve(skb, sk->sk_prot->max_header);
+                        return skb;
+                      }
+                      __kfree_skb(skb);
+                      return NULL;
+                    }
                   }
                   skb_entail(sock, skb) {
                     tcp_add_write_queue_tail(sock, skb) {

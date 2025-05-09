@@ -3920,37 +3920,37 @@ int tcp_connect(struct sock *sk)
 		return 0;
 	}
 
-    /**
-     *  分配一个 sk_buff
-     */
+	/**
+	 *  分配一个 sk_buff
+	 */
 	buff = sk_stream_alloc_skb(sk, 0, sk->sk_allocation, true);
 	if (unlikely(!buff))
 		return -ENOBUFS;
 
-    /**
-     *  设置 SYN
-     */
+	/**
+	 *  设置 SYN
+	 */
 	tcp_init_nondata_skb(buff, tp->write_seq++, TCPHDR_SYN);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	tcp_mstamp_refresh(tp);
 
-    /**
-     *  时间戳
-     */
+	/**
+	 *  时间戳
+	 */
 	tp->retrans_stamp = tcp_time_stamp(tp);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	tcp_connect_queue_skb(sk, buff);
 	tcp_ecn_send_syn(sk, buff);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	tcp_rbtree_insert(&sk->tcp_rtx_queue, buff);
 
 	/* Send off SYN; include data in Fast Open. */
@@ -3965,9 +3965,9 @@ int tcp_connect(struct sock *sk)
 	WRITE_ONCE(tp->snd_nxt, tp->write_seq);
 	tp->pushed_seq = tp->write_seq;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	buff = tcp_send_head(sk);
 	if (unlikely(buff)) {
 		WRITE_ONCE(tp->snd_nxt, TCP_SKB_CB(buff)->seq);

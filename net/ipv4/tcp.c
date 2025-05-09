@@ -896,6 +896,9 @@ struct sk_buff *sk_stream_alloc_skb(struct sock *sk, int size, gfp_t gfp,
 			mem_scheduled = true;
 			sk_forced_mem_schedule(sk, skb->truesize);
 		} else {
+			/**
+			 * 检测是否超出 sk_sndbuf 限制
+			 */
 			mem_scheduled = sk_wmem_schedule(sk, skb->truesize);
 		}
 		if (likely(mem_scheduled)) {
@@ -1329,6 +1332,9 @@ new_segment:
 					goto restart;
 			}
 			first_skb = tcp_rtx_and_write_queues_empty(sk);
+			/**
+			 * 分配一个 skb，里面会进行 sk_sndbuf 检测
+			 */
 			skb = sk_stream_alloc_skb(sk, 0, sk->sk_allocation,
 						  first_skb);
 			if (!skb)
