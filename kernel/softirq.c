@@ -808,8 +808,10 @@ inline void raise_softirq_irqoff(unsigned int nr)
 }
 
 /**
- *  主动触发一个软中断
- *  延期的中断由`open_softirq`打开，使用`raise_softirq`激活
+ * 主动触发一个软中断
+ * 延期的中断由`open_softirq`打开，使用`raise_softirq`激活
+ *
+ * $ sudo bpftrace -e 'kprobe:raise_softirq{@[arg0] = count();}'
  */
 void raise_softirq(unsigned int nr)
 {

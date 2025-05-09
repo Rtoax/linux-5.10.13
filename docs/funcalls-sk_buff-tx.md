@@ -2,6 +2,23 @@
 # send(2)
 
 ```c
+// 用户态到内核态
+sys_sendto(), sys_sendmsg() -> sock_sendmsg()
+
+// TCP 层
+tcp_sendmsg(), tcp_write_xmit(), tcp_transmit_skb()
+
+// IP 层
+ip_queue_xmit(), ip_local_out()
+
+// 网络设备与驱动层
+dev_queue_xmit(), ndo_start_xmit()
+
+// 中断与软中断
+NET_TX_SOFTIRQ, napi_schedule(), napi_poll()
+```
+
+```c
 send(fd, buff, ..., addr, ...) {
   __sys_sendto(fd, buff, ..., addr) {
     struct socket *sock = sockfd_lookup_light(fd, ...);

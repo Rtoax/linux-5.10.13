@@ -619,16 +619,16 @@ extern bool force_irqthreads;
  */
 enum    /* softirq 软中断 */
 {
-	HI_SOFTIRQ=0,   /* HI:high-priority tasklets 高优先级 tasklet */
-	TIMER_SOFTIRQ,  /* 定时器 TIMER, 数据结构`timer_list` */
-	NET_TX_SOFTIRQ, /* 网络发包 */
-	NET_RX_SOFTIRQ, /* 网络收包 */
-	BLOCK_SOFTIRQ,      /* BLOCK - 用于块设备的软中断 */
-	IRQ_POLL_SOFTIRQ,   /* IRQ_POLL */
-	TASKLET_SOFTIRQ,/* tasklet */
-	SCHED_SOFTIRQ,  /* 调度软中断 和 负载均衡软中断 */
-	HRTIMER_SOFTIRQ,/* 高精度定时器 */
-	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
+	HI_SOFTIRQ = 0,		/* HI:high-priority tasklets 高优先级 tasklet */
+	TIMER_SOFTIRQ,		/* 定时器 TIMER, 数据结构`timer_list` */
+	NET_TX_SOFTIRQ,		/* 网络发包 */
+	NET_RX_SOFTIRQ,		/* 网络收包 */
+	BLOCK_SOFTIRQ,		/* BLOCK - 用于块设备的软中断 */
+	IRQ_POLL_SOFTIRQ,	/* IRQ_POLL */
+	TASKLET_SOFTIRQ,	/* tasklet */
+	SCHED_SOFTIRQ,		/* 调度软中断 和 负载均衡软中断 */
+	HRTIMER_SOFTIRQ,	/* 高精度定时器 */
+	RCU_SOFTIRQ,		/* Preferable RCU should always be the last softirq */
 
 	NR_SOFTIRQS
 };
@@ -649,22 +649,22 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
  */
 struct softirq_action
 {
-    /**
-     *  在 open_softirq 中设置
-     *  在 __do_softirq 中执行
-     *
-     * open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
-     * open_softirq(TASKLET_SOFTIRQ, tasklet_action);
-     * open_softirq(HI_SOFTIRQ, tasklet_hi_action);
-     * open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
-     * open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-     * open_softirq(RCU_SOFTIRQ, rcu_core_si);
-     * open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
-     * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
-     * open_softirq(NET_TX_SOFTIRQ, net_tx_action);
-     * open_softirq(NET_RX_SOFTIRQ, net_rx_action);
-     * open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
-     */
+	/**
+	 *  在 open_softirq 中设置
+	 *  在 __do_softirq 中执行
+	 *
+	 * open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
+	 * open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+	 * open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+	 * open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+	 * open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+	 * open_softirq(RCU_SOFTIRQ, rcu_core_si);
+	 * open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);
+	 * open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+	 * open_softirq(NET_TX_SOFTIRQ, net_tx_action);
+	 * open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+	 * open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
+	 */
 	void	(*action)(struct softirq_action *);
 };
 

@@ -247,6 +247,9 @@ static void __exit e1000_exit_module(void)
 
 module_exit(e1000_exit_module);
 
+/**
+ * 注册中断
+ */
 static int e1000_request_irq(struct e1000_adapter *adapter)
 {
 	struct net_device *netdev = adapter->netdev;
@@ -826,6 +829,9 @@ static int e1000_set_features(struct net_device *netdev,
 static const struct net_device_ops e1000_netdev_ops = {
 	.ndo_open		= e1000_open,
 	.ndo_stop		= e1000_close,
+	/**
+	 * send(2) 最终会调用到这里
+	 */
 	.ndo_start_xmit		= e1000_xmit_frame,
 	.ndo_set_rx_mode	= e1000_set_rx_mode,
 	.ndo_set_mac_address	= e1000_set_mac,
@@ -836,6 +842,9 @@ static const struct net_device_ops e1000_netdev_ops = {
 	.ndo_vlan_rx_add_vid	= e1000_vlan_rx_add_vid,
 	.ndo_vlan_rx_kill_vid	= e1000_vlan_rx_kill_vid,
 #ifdef CONFIG_NET_POLL_CONTROLLER
+	/**
+	 *
+	 */
 	.ndo_poll_controller	= e1000_netpoll,
 #endif
 	.ndo_fix_features	= e1000_fix_features,
@@ -3745,7 +3754,21 @@ void e1000_update_stats(struct e1000_adapter *adapter)
  * e1000_intr - Interrupt Handler
  * @irq: interrupt number
  * @data: pointer to a network interface device structure
- **/
+ *
+ * 网卡发送完成后，通过硬件中断（如MSI-X、MSI或传统IRQ）通知CPU。
+ *
+ * 在网络设备发送数据包时，硬中断会通知内核数据包发送完成。在发送完成后，网卡会触发一个中断，
+ * 内核处理这个中断的函数通常是驱动特定的。比如，对于e1000网卡驱动，中断处理函数可能是
+ * e1000_intr 或 e1000_msix_ring ，具体取决于是否使用 MSI-X 。
+ *
+ * - MSI(Message Signaled Interrupts)是一种通过在内存中写入信息来产生中断的方式，其中
+ *   内存地址由设备驱动程序和硬件设备协商确定。MSI与传统的中断线不同，它不需要单独的中断线，
+ *   而是通过PCI总线进行通信。
+ * - MSI-X(Extended Message Signaled Interrupts)是在MSI的基础上扩展的一种中断方式，
+ *  它允许设备使用多个独立的中断信号，从而提高了中断处理的效率。这对于那些需要高速响应的应用
+ *  程序尤其有用，例如虚拟化或者高性能计算。
+ *
+ */
 static irqreturn_t e1000_intr(int irq, void *data)
 {
 	struct net_device *netdev = data;
@@ -3779,6 +3802,9 @@ static irqreturn_t e1000_intr(int irq, void *data)
 		adapter->total_tx_packets = 0;
 		adapter->total_rx_bytes = 0;
 		adapter->total_rx_packets = 0;
+		/**
+		 * 触发NAPI调度（进入软中断上下文）
+		 */
 		__napi_schedule(&adapter->napi);
 	} else {
 		/* this really should not happen! if it does it is basically a

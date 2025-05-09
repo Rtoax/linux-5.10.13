@@ -1321,6 +1321,10 @@ struct net_device_ops { /* 网络设备操作 */
 	void			(*ndo_uninit)(struct net_device *dev);
 	int			(*ndo_open)(struct net_device *dev);
 	int			(*ndo_stop)(struct net_device *dev);
+
+	/**
+	 * send(2) 最终会调用到这里
+	 */
 	netdev_tx_t		(*ndo_start_xmit)(struct sk_buff *skb,
 						  struct net_device *dev);
 	netdev_features_t	(*ndo_features_check)(struct sk_buff *skb,
@@ -1359,6 +1363,9 @@ struct net_device_ops { /* 网络设备操作 */
 	int			(*ndo_vlan_rx_kill_vid)(struct net_device *dev,
 						        __be16 proto, u16 vid);
 #ifdef CONFIG_NET_POLL_CONTROLLER
+	/**
+	 * e1000_netpoll()
+	 */
 	void                    (*ndo_poll_controller)(struct net_device *dev);
 	int			(*ndo_netpoll_setup)(struct net_device *dev,
 						     struct netpoll_info *info);
@@ -3234,6 +3241,9 @@ struct softnet_data {
 #endif
 	struct Qdisc		*output_queue;
 	struct Qdisc		**output_queue_tailp;
+	/**
+	 *
+	 */
 	struct sk_buff		*completion_queue;
 #ifdef CONFIG_XFRM_OFFLOAD
 	struct sk_buff_head	xfrm_backlog;
@@ -3849,6 +3859,9 @@ static inline void dev_kfree_skb_irq(struct sk_buff *skb)
 	__dev_kfree_skb_irq(skb, SKB_REASON_DROPPED);
 }
 
+/**
+ * 消费一个 skb
+ */
 static inline void dev_consume_skb_irq(struct sk_buff *skb)
 {
 	__dev_kfree_skb_irq(skb, SKB_REASON_CONSUMED);
@@ -4791,6 +4804,9 @@ static inline netdev_tx_t netdev_start_xmit(struct sk_buff *skb, struct net_devi
 
 	rc = __netdev_start_xmit(ops, skb, dev, more);
 	if (rc == NETDEV_TX_OK)
+		/**
+		 *
+		 */
 		txq_trans_update(txq);
 
 	return rc;

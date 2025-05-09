@@ -1079,6 +1079,9 @@ static void e1000_put_txbuf(struct e1000_ring *tx_ring,
 			dev_kfree_skb_any(buffer_info->skb);
 		else
 			dev_consume_skb_any(buffer_info->skb);
+		/**
+		 * 更新队列指针
+		 */
 		buffer_info->skb = NULL;
 	}
 	buffer_info->time_stamp = 0;
@@ -1207,6 +1210,8 @@ static void e1000e_tx_hwtstamp_work(struct work_struct *work)
 
 /**
  * e1000_clean_tx_irq - Reclaim resources after transmit completes
+ * e1000驱动的发送队列清理函数
+ *
  * @tx_ring: Tx descriptor ring
  *
  * the return value indicates whether actual cleaning was done, there
@@ -1227,6 +1232,10 @@ static bool e1000_clean_tx_irq(struct e1000_ring *tx_ring)
 	i = tx_ring->next_to_clean;
 	eop = tx_ring->buffer_info[i].next_to_watch;
 	eop_desc = E1000_TX_DESC(*tx_ring, eop);
+
+	/**
+	 * 遍历发送队列，释放已确认发送的SKB
+	 */
 
 	while ((eop_desc->upper.data & cpu_to_le32(E1000_TXD_STAT_DD)) &&
 	       (count < tx_ring->count)) {
@@ -1275,6 +1284,9 @@ static bool e1000_clean_tx_irq(struct e1000_ring *tx_ring)
 
 		if (netif_queue_stopped(netdev) &&
 		    !(test_bit(__E1000_DOWN, &adapter->state))) {
+			/**
+			 * 唤醒发送队列（若之前因队列满而阻塞）
+			 */
 			netif_wake_queue(netdev);
 			++adapter->restart_queue;
 		}
@@ -1743,15 +1755,26 @@ static void e1000e_downshift_workaround(struct work_struct *work)
 }
 
 /**
- * e1000_intr_msi - Interrupt Handler
+ * e1000_intr_msi - Interrupt Handler (see also e1000_intr())
  * @irq: interrupt number
  * @data: pointer to a network interface device structure
+ *
+ * MSI(Message Signaled Interrupts)是一种通过在内存中写入信息来产生中断的方式，其中内存
+ * 地址由设备驱动程序和硬件设备协商确定。MSI与传统的中断线不同，它不需要单独的中断线，而是通过
+ * PCI总线进行通信。
+ *
+ * $ sudo bpftrace -e 'kprobe:e1000_intr_msi{@[kstack] = count();}'
  **/
 static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
 {
 	struct net_device *netdev = data;
 	struct e1000_adapter *adapter = netdev_priv(netdev);
 	struct e1000_hw *hw = &adapter->hw;
+
+	/**
+	 * ICR 表示 "Interrupt Cause Register"，是一个寄存器，用于存储网络设备中断的
+	 * 触发原因。
+	 */
 	u32 icr = er32(ICR);
 
 	/* read ICR disables interrupts using IAM */
@@ -1781,7 +1804,9 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
 	}
 
-	/* Reset on uncorrectable ECC error */
+	/**
+	 * Reset on uncorrectable ECC error
+	 */
 	if ((icr & E1000_ICR_ECCER) && (hw->mac.type >= e1000_pch_lpt)) {
 		u32 pbeccsts = er32(PBECCSTS);
 
@@ -1802,6 +1827,9 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
 		adapter->total_tx_packets = 0;
 		adapter->total_rx_bytes = 0;
 		adapter->total_rx_packets = 0;
+		/**
+		 * 触发NAPI调度（进入软中断上下文）
+		 */
 		__napi_schedule(&adapter->napi);
 	}
 
@@ -1809,9 +1837,11 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
 }
 
 /**
- * e1000_intr - Interrupt Handler
+ * e1000_intr - Interrupt Handler (see also e1000_intr_msi())
  * @irq: interrupt number
  * @data: pointer to a network interface device structure
+ *
+ * 网卡发送完成后，通过硬件中断（如MSI-X、MSI或传统IRQ）通知CPU。中断处理函数由网卡驱动注册
  **/
 static irqreturn_t e1000_intr(int __always_unused irq, void *data)
 {
@@ -1910,6 +1940,9 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
 	return IRQ_HANDLED;
 }
 
+/**
+ *
+ */
 static irqreturn_t e1000_intr_msix_tx(int __always_unused irq, void *data)
 {
 	struct net_device *netdev = data;
@@ -2166,6 +2199,9 @@ static int e1000_request_irq(struct e1000_adapter *adapter)
 		e1000e_set_interrupt_capability(adapter);
 	}
 	if (adapter->flags & FLAG_MSI_ENABLED) {
+		/**
+		 * 注册 MSI 中断处理函数
+		 */
 		err = request_irq(adapter->pdev->irq, e1000_intr_msi, 0,
 				  netdev->name, netdev);
 		if (!err)
@@ -4652,6 +4688,9 @@ int e1000e_open(struct net_device *netdev)
 	 */
 	e1000_configure(adapter);
 
+	/**
+	 * 注册中断
+	 */
 	err = e1000_request_irq(adapter);
 	if (err)
 		goto err_req_irq;
@@ -5789,6 +5828,7 @@ static int e1000_maybe_stop_tx(struct e1000_ring *tx_ring, int size)
 /**
  * $ sudo bpftrace -e 'kprobe:e1000_xmit_frame {printf("%s\n", comm);}'
  *
+ * 将数据包发送到网卡
  */
 static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
 				    struct net_device *netdev)
@@ -7094,6 +7134,11 @@ static void e1000_shutdown(struct pci_dev *pdev)
 
 #ifdef CONFIG_NET_POLL_CONTROLLER
 
+/**
+ * MSI-X(Extended Message Signaled Interrupts)是在MSI的基础上扩展的一种中断方式，它
+ * 允许设备使用多个独立的中断信号，从而提高了中断处理的效率。这对于那些需要高速响应的应用程序
+ * 尤其有用，例如虚拟化或者高性能计算。
+ */
 static irqreturn_t e1000_intr_msix(int __always_unused irq, void *data)
 {
 	struct net_device *netdev = data;
@@ -7137,9 +7182,19 @@ static void e1000_netpoll(struct net_device *netdev)
 	struct e1000_adapter *adapter = netdev_priv(netdev);
 
 	switch (adapter->int_mode) {
+	/**
+	 * MSI-X(Extended Message Signaled Interrupts)是在MSI的基础上扩展的一种中断
+	 * 方式，它允许设备使用多个独立的中断信号，从而提高了中断处理的效率。这对于那些需要高
+	 * 速响应的应用程序尤其有用，例如虚拟化或者高性能计算。
+	 */
 	case E1000E_INT_MODE_MSIX:
 		e1000_intr_msix(adapter->pdev->irq, netdev);
 		break;
+	/**
+	 * MSI(Message Signaled Interrupts)是一种通过在内存中写入信息来产生中断的方式，
+	 * 其中内存地址由设备驱动程序和硬件设备协商确定。MSI与传统的中断线不同，它不需要单独
+	 * 的中断线，而是通过PCI总线进行通信。
+	 */
 	case E1000E_INT_MODE_MSI:
 		if (disable_hardirq(adapter->pdev->irq))
 			e1000_intr_msi(adapter->pdev->irq, netdev);
@@ -7365,6 +7420,9 @@ static const struct net_device_ops e1000e_netdev_ops = {
 	.ndo_vlan_rx_add_vid	= e1000_vlan_rx_add_vid,
 	.ndo_vlan_rx_kill_vid	= e1000_vlan_rx_kill_vid,
 #ifdef CONFIG_NET_POLL_CONTROLLER
+	/**
+	 *
+	 */
 	.ndo_poll_controller	= e1000_netpoll,
 #endif
 	.ndo_set_features = e1000_set_features,

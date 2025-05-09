@@ -1686,6 +1686,9 @@ struct e1000_hw {
 #define E1000_RAH_AV  0x80000000	/* Receive descriptor valid */
 
 /* Interrupt Cause Read */
+/**
+ * ICR 表示 "Interrupt Cause Register"，是一个寄存器，用于存储网络设备中断的触发原因。
+ */
 #define E1000_ICR_TXDW          0x00000001	/* Transmit desc written back */
 #define E1000_ICR_TXQE          0x00000002	/* Transmit Queue empty */
 #define E1000_ICR_LSC           0x00000004	/* Link Status Change */

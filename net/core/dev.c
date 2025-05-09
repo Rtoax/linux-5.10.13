@@ -3100,6 +3100,9 @@ void netif_tx_wake_queue(struct netdev_queue *dev_queue)
 }
 EXPORT_SYMBOL(netif_tx_wake_queue);
 
+/**
+ *
+ */
 void __dev_kfree_skb_irq(struct sk_buff *skb, enum skb_free_reason reason)
 {
 	unsigned long flags;
@@ -4198,6 +4201,9 @@ static int __dev_queue_xmit(struct sk_buff *skb, struct net_device *sb_dev)
 				dev_xmit_recursion_inc();
 				skb = dev_hard_start_xmit(skb, dev, txq, &rc);
 				dev_xmit_recursion_dec();
+				/**
+				 *
+				 */
 				if (dev_xmit_complete(rc)) {
 					HARD_TX_UNLOCK(dev, txq);
 					goto out;
@@ -4316,9 +4322,9 @@ static inline void ____napi_schedule(struct softnet_data *sd,
 				     struct napi_struct *napi)
 {
 	list_add_tail(&napi->poll_list, &sd->poll_list);
-    /**
-     *  raise 一个 softirq
-     */
+	/**
+	 *  raise 一个 softirq
+	 */
 	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
 }
 
@@ -4953,7 +4959,9 @@ int netif_rx_any_context(struct sk_buff *skb)
 EXPORT_SYMBOL(netif_rx_any_context);
 
 /**
+ * 软中断处理函数
  *
+ * open_softirq(NET_TX_SOFTIRQ, net_tx_action);
  */
 static __latent_entropy void net_tx_action(struct softirq_action *h)
 {
@@ -5011,6 +5019,9 @@ static __latent_entropy void net_tx_action(struct softirq_action *h)
 			 */
 			smp_mb__before_atomic();
 			clear_bit(__QDISC_STATE_SCHED, &q->state);
+			/**
+			 * Qdisc
+			 */
 			qdisc_run(q);
 			if (root_lock)
 				spin_unlock(root_lock);
@@ -6464,6 +6475,8 @@ static int process_backlog(struct napi_struct *napi, int quota)
  *
  * The entry's receive function will be scheduled to run.
  * Consider using __napi_schedule_irqoff() if hard irqs are masked.
+ *
+ * $ sudo bpftrace -e 'kprobe:__napi_schedule{@[kstack] = count();}'
  */
 void __napi_schedule(struct napi_struct *n)
 {
@@ -11323,9 +11336,9 @@ static int __init net_dev_init(void)    /* 网络设备初始化 */
 	if (register_pernet_device(&default_device_ops))
 		goto out;
 
-    /**
-     *
-     */
+	/**
+	 * 软中断的注册
+	 */
 	open_softirq(NET_TX_SOFTIRQ, net_tx_action);    /* 发 */
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action);    /* 收 */
 
