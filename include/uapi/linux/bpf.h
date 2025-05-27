@@ -4812,6 +4812,68 @@ union bpf_attr {
 	FN(per_cpu_ptr),		\
 	FN(this_cpu_ptr),		\
 	FN(redirect_peer),		\
+	FN(task_storage_get, 156, ##ctx)                \
+	FN(task_storage_delete, 157, ##ctx)             \
+	FN(get_current_task_btf, 158, ##ctx)            \
+	FN(bprm_opts_set, 159, ##ctx)                   \
+	FN(ktime_get_coarse_ns, 160, ##ctx)             \
+	FN(ima_inode_hash, 161, ##ctx)                  \
+	FN(sock_from_file, 162, ##ctx)                  \
+	FN(check_mtu, 163, ##ctx)                       \
+	FN(for_each_map_elem, 164, ##ctx)               \
+	FN(snprintf, 165, ##ctx)                        \
+	FN(sys_bpf, 166, ##ctx)                         \
+	FN(btf_find_by_name_kind, 167, ##ctx)           \
+	FN(sys_close, 168, ##ctx)                       \
+	FN(timer_init, 169, ##ctx)                      \
+	FN(timer_set_callback, 170, ##ctx)              \
+	FN(timer_start, 171, ##ctx)                     \
+	FN(timer_cancel, 172, ##ctx)                    \
+	FN(get_func_ip, 173, ##ctx)                     \
+	FN(get_attach_cookie, 174, ##ctx)               \
+	FN(task_pt_regs, 175, ##ctx)                    \
+	FN(get_branch_snapshot, 176, ##ctx)             \
+	FN(trace_vprintk, 177, ##ctx)                   \
+	FN(skc_to_unix_sock, 178, ##ctx)                \
+	FN(kallsyms_lookup_name, 179, ##ctx)            \
+	FN(find_vma, 180, ##ctx)                        \
+	FN(loop, 181, ##ctx)                            \
+	FN(strncmp, 182, ##ctx)                         \
+	FN(get_func_arg, 183, ##ctx)                    \
+	FN(get_func_ret, 184, ##ctx)                    \
+	FN(get_func_arg_cnt, 185, ##ctx)                \
+	FN(get_retval, 186, ##ctx)                      \
+	FN(set_retval, 187, ##ctx)                      \
+	FN(xdp_get_buff_len, 188, ##ctx)                \
+	FN(xdp_load_bytes, 189, ##ctx)                  \
+	FN(xdp_store_bytes, 190, ##ctx)                 \
+	FN(copy_from_user_task, 191, ##ctx)             \
+	FN(skb_set_tstamp, 192, ##ctx)                  \
+	FN(ima_file_hash, 193, ##ctx)                   \
+	FN(kptr_xchg, 194, ##ctx)                       \
+	FN(map_lookup_percpu_elem, 195, ##ctx)          \
+	FN(skc_to_mptcp_sock, 196, ##ctx)               \
+	FN(dynptr_from_mem, 197, ##ctx)                 \
+	FN(ringbuf_reserve_dynptr, 198, ##ctx)          \
+	FN(ringbuf_submit_dynptr, 199, ##ctx)           \
+	FN(ringbuf_discard_dynptr, 200, ##ctx)          \
+	FN(dynptr_read, 201, ##ctx)                     \
+	FN(dynptr_write, 202, ##ctx)                    \
+	FN(dynptr_data, 203, ##ctx)                     \
+	FN(tcp_raw_gen_syncookie_ipv4, 204, ##ctx)      \
+	FN(tcp_raw_gen_syncookie_ipv6, 205, ##ctx)      \
+	FN(tcp_raw_check_syncookie_ipv4, 206, ##ctx)    \
+	FN(tcp_raw_check_syncookie_ipv6, 207, ##ctx)    \
+	FN(ktime_get_tai_ns, 208, ##ctx)                \
+	FN(user_ringbuf_drain, 209, ##ctx)              \
+	FN(cgrp_storage_get, 210, ##ctx)                \
+	FN(cgrp_storage_delete, 211, ##ctx)             \
+	/* cgrp_storage_delete: v6.0-11954-gc4bcfb38a95e */
+
+	/* This helper list is effectively frozen. If you are trying to \
+	 * add a new helper, you should add a kfunc instead which has   \
+	 * less stability guarantees. See Documentation/bpf/kfuncs.rst  \
+	 */
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
@@ -4981,7 +5043,63 @@ enum bpf_func_id {
 	BPF_FUNC_per_cpu_ptr,
 	BPF_FUNC_this_cpu_ptr,
 	BPF_FUNC_redirect_peer,
-
+	/* add from upstream */
+	BPF_FUNC_task_storage_get,
+	BPF_FUNC_task_storage_delete,
+	BPF_FUNC_get_current_task_btf,
+	BPF_FUNC_bprm_opts_set,
+	BPF_FUNC_ktime_get_coarse_ns,
+	BPF_FUNC_ima_inode_hash,
+	BPF_FUNC_sock_from_file,
+	BPF_FUNC_check_mtu,
+	BPF_FUNC_for_each_map_elem,
+	BPF_FUNC_snprintf,
+	BPF_FUNC_sys_bpf,
+	BPF_FUNC_btf_find_by_name_kind,
+	BPF_FUNC_sys_close,
+	BPF_FUNC_timer_init,
+	BPF_FUNC_timer_set_callback,
+	BPF_FUNC_timer_start,
+	BPF_FUNC_timer_cancel,
+	BPF_FUNC_get_func_ip,
+	BPF_FUNC_get_attach_cookie,
+	BPF_FUNC_task_pt_regs,
+	BPF_FUNC_get_branch_snapshot,
+	BPF_FUNC_trace_vprintk,
+	BPF_FUNC_skc_to_unix_sock,
+	BPF_FUNC_kallsyms_lookup_name,
+	BPF_FUNC_find_vma,
+	BPF_FUNC_loop,
+	BPF_FUNC_strncmp,
+	BPF_FUNC_get_func_arg,
+	BPF_FUNC_get_func_ret,
+	BPF_FUNC_get_func_arg_cnt,
+	BPF_FUNC_get_retval,
+	BPF_FUNC_set_retval,
+	BPF_FUNC_xdp_get_buff_len,
+	BPF_FUNC_xdp_load_bytes,
+	BPF_FUNC_xdp_store_bytes,
+	BPF_FUNC_copy_from_user_task,
+	BPF_FUNC_skb_set_tstamp,
+	BPF_FUNC_ima_file_hash,
+	BPF_FUNC_kptr_xchg,
+	BPF_FUNC_map_lookup_percpu_elem,
+	BPF_FUNC_skc_to_mptcp_sock,
+	BPF_FUNC_dynptr_from_mem,
+	BPF_FUNC_ringbuf_reserve_dynptr,
+	BPF_FUNC_ringbuf_submit_dynptr,
+	BPF_FUNC_ringbuf_discard_dynptr,
+	BPF_FUNC_dynptr_read,
+	BPF_FUNC_dynptr_write,
+	BPF_FUNC_dynptr_data,
+	BPF_FUNC_tcp_raw_gen_syncookie_ipv4,
+	BPF_FUNC_tcp_raw_gen_syncookie_ipv6,
+	BPF_FUNC_tcp_raw_check_syncookie_ipv4,
+	BPF_FUNC_tcp_raw_check_syncookie_ipv6,
+	BPF_FUNC_ktime_get_tai_ns,
+	BPF_FUNC_user_ringbuf_drain,
+	BPF_FUNC_cgrp_storage_get,
+	BPF_FUNC_cgrp_storage_delete,/* v6.0-11954-gc4bcfb38a95e */
 #endif //#elif __RTOAX_______________________________
 	__BPF_FUNC_MAX_ID,
 };
