@@ -989,6 +989,9 @@ int vfs_open(const struct path *path, struct file *file)
 	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
 }
 
+/**
+ * $ sudo bpftrace -e 'fentry:dentry_open {printf("%s", path(args->path));}'
+ */
 struct file *dentry_open(const struct path *path, int flags,
 			 const struct cred *cred)
 {

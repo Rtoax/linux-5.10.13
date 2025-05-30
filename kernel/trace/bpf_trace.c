@@ -1168,6 +1168,7 @@ static const struct bpf_func_proto bpf_send_signal_thread_proto = {
 
 /**
  * 从 path 结构获取路径，保存到 buf
+ * v5.9-rc1-187-g6e22ab9da793 ("bpf: Add d_path helper")
  */
 BPF_CALL_3(bpf_d_path, struct path *, path, char *, buf, u32, sz)
 {
@@ -1188,12 +1189,11 @@ BPF_CALL_3(bpf_d_path, struct path *, path, char *, buf, u32, sz)
 	return len;
 }
 
+/**
+ * v5.9-rc1-187-g6e22ab9da793 ("bpf: Add d_path helper")
+ */
 BTF_SET_START(btf_allowlist_d_path)
 #ifdef CONFIG_SECURITY
-/**
- * @brief 添加这个函数
- *
- */
 BTF_ID(func, security_file_permission)
 BTF_ID(func, security_inode_getattr)
 BTF_ID(func, security_file_open)
@@ -1203,9 +1203,9 @@ BTF_ID(func, security_path_truncate)
 #endif
 /**
  * $ sudo bpftrace -l | grep vfs_truncate
- * kfunc:vfs_truncate
+ * kfunc:vfs_truncate [old]
+ * fentry:vmlinux:vfs_truncate [new]
  * kprobe:vfs_truncate
- *
  */
 BTF_ID(func, vfs_truncate)
 BTF_ID(func, vfs_fallocate)
@@ -1236,14 +1236,7 @@ static const struct bpf_func_proto bpf_d_path_proto = {
 			 BTF_F_PTR_RAW | BTF_F_ZERO)
 
 /**
- * @brief
  *
- * @param ptr
- * @param btf_ptr_size
- * @param flags
- * @param btf
- * @param btf_id
- * @return int
  */
 static int bpf_btf_printf_prepare(struct btf_ptr *ptr, u32 btf_ptr_size,
 				  u64 flags, const struct btf **btf,
