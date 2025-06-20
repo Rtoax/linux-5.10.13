@@ -5894,7 +5894,7 @@ void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b)
 
 	/**
 	 * 高精度周期性定时器，用于在时间到期时重新填充关联的任务组的限额，并在适当
-	 * 的时候 unthrottle cfs 运行队列
+	 * 的时候 unthrottle(解除节流) cfs 运行队列
 	 */
 	hrtimer_init(&cfs_b->period_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED);
 	cfs_b->period_timer.function = sched_cfs_period_timer;
