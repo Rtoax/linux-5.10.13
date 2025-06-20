@@ -5551,8 +5551,12 @@ next:
  * cfs_rqs as appropriate. If there has been no activity within the last
  * period the timer is deactivated until scheduling resumes; cfs_b->idle is
  * used to track this state.
+ *
+ * 负责补充 task_group 的带宽，并根据需要取消对其 cfs_rqs 的限制。如果在上一个周期
+ * 内没有任何活动，则计时器将被停用，直到调度恢复；cfs_b->idle 用于跟踪此状态。
  */
-static int do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b, int overrun, unsigned long flags)
+static int do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b,
+	int overrun, unsigned long flags)
 {
 	int throttled;
 
@@ -5798,6 +5802,27 @@ static enum hrtimer_restart sched_cfs_slack_timer(struct hrtimer *timer)
 
 extern const u64 max_cfs_quota_period;
 
+/**
+ * 此函数是 Linux 内核调度器（Completely Fair Scheduler, CFS）中的一个关键定时器
+ * 回调函数。它的主要作用是：
+ *
+ * - 定期触发 CFS 的带宽控制机制（CFS bandwidth controller），用于限制和管理特定
+ *   cgroup 或任务组的 CPU 使用配额。
+ *
+ * - 当设置了 CPU cgroup 限制（比如 cpu.cfs_quota_us 和 cpu.cfs_period_us）时，
+ *   此函数 会在每个调度周期到来时被调用，检查并重置各任务组的 quota，确保不会超出分配
+ *   的 CPU 时间。
+ *
+ * - 如果某个任务组在当前周期已经用完了配额，该组内的进程会被暂停，直到下一个周期 timer
+ *   到来，由 此函数 恢复其运行资格。
+ *
+ * 简言之，此函数负责按周期“刷新”CFS 带宽控制的配额，保证任务组的 CPU 使用不会超过设定
+ * 的上限。
+ *
+ * $ echo 1200 | sudo tee /sys/fs/cgroup/cpu,cpuacct/test1/cpu.cfs_quota_us
+ * $ sudo bpftrace -e 'kprobe:sched_cfs_period_timer {printf("%s\n", comm);}'
+ * swapper/125
+ */
 static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
 {
 	struct cfs_bandwidth *cfs_b =
@@ -5809,6 +5834,9 @@ static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
 
 	raw_spin_lock_irqsave(&cfs_b->lock, flags);
 	for (;;) {
+		/**
+		 *
+		 */
 		overrun = hrtimer_forward_now(timer, cfs_b->period);
 		if (!overrun)
 			break;
