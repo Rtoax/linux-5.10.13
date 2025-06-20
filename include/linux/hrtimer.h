@@ -492,6 +492,8 @@ hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval);
 
 /**
  * hrtimer_forward_now - forward the timer expiry so it expires after now
+ *                       将定时器到期时间提前，使其在现在之后到期
+ *
  * @timer:	hrtimer to forward
  * @interval:	the interval to forward
  *

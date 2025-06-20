@@ -5835,7 +5835,7 @@ static enum hrtimer_restart sched_cfs_period_timer(struct hrtimer *timer)
 	raw_spin_lock_irqsave(&cfs_b->lock, flags);
 	for (;;) {
 		/**
-		 *
+		 * overrun: 超限
 		 */
 		overrun = hrtimer_forward_now(timer, cfs_b->period);
 		if (!overrun)
