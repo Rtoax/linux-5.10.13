@@ -35,6 +35,10 @@ struct ptr_ring {
 	spinlock_t consumer_lock;
 	/* Shared consumer/producer data */
 	/* Read-only by both the producer and the consumer */
+	/**
+	 * 见：
+	 * - struct net_device::tx_queue_len
+	 */
 	int size ____cacheline_aligned_in_smp; /* max entries in queue */
 	int batch; /* number of entries to consume in a batch */
 	void **queue;

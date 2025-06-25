@@ -1195,6 +1195,9 @@ static int tun_net_change_carrier(struct net_device *dev, bool new_carrier)
 	return 0;
 }
 
+/**
+ * tun
+ */
 static const struct net_device_ops tun_netdev_ops = {
 	.ndo_uninit		= tun_net_uninit,
 	.ndo_open		= tun_net_open,
