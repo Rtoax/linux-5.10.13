@@ -2098,6 +2098,9 @@ struct net_device {
 	unsigned int		num_tx_queues;
 	unsigned int		real_num_tx_queues;
 	struct Qdisc		*qdisc;
+	/**
+	 * ip link set tap0 txqueuelen 10000
+	 */
 	unsigned int		tx_queue_len;
 	spinlock_t		tx_global_lock;
 

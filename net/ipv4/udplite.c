@@ -2,6 +2,10 @@
 /*
  *  UDPLITE     An implementation of the UDP-Lite protocol (RFC 3828).
  *
+ * UDP-Lite（Lightweight User Datagram Protocol）是 UDP 协议的扩展变体，
+ * 专为容忍数据损坏的应用场景设计。它通过创新的部分校验和机制，在保持 UDP 简单性
+ * 的同时，提供了对数据传输错误的更高容忍度。
+ *
  *  Authors:    Gerrit Renker       <gerrit@erg.abdn.ac.uk>
  *
  *  Changes:

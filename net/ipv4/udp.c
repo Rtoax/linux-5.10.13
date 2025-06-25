@@ -478,8 +478,13 @@ static struct sock *udp4_lookup_run_bpf(struct net *net,
 	return sk;
 }
 
-/* UDP is nearly always wildcards out the wazoo, it makes no sense to try
+/**
+ * UDP is nearly always wildcards out the wazoo, it makes no sense to try
  * harder than this. -DaveM
+ *
+ * UDP 几乎总是通配符，没有必要再这么努力了。-DaveM
+ *
+ * sudo bpftrace -e 'kprobe:__udp4_lib_lookup {@[comm] = count();}'
  */
 struct sock *__udp4_lib_lookup(struct net *net, __be32 saddr,
 		__be16 sport, __be32 daddr, __be16 dport, int dif,
@@ -2208,6 +2213,9 @@ drop:
 	return -1;
 }
 
+/**
+ * sudo bpftrace  -e 'kprobe:udp_queue_rcv_skb {printf("%s\n", comm);}'
+ */
 static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb)
 {
 	struct sk_buff *next, *segs;
@@ -2361,8 +2369,11 @@ static inline int udp4_csum_init(struct sk_buff *skb, struct udphdr *uh,
 	return 0;
 }
 
-/* wrapper for udp_queue_rcv_skb tacking care of csum conversion and
+/**
+ * wrapper for udp_queue_rcv_skb tacking care of csum conversion and
  * return code conversion for ip layer consumption
+ *
+ * sudo bpftrace -e 'kprobe:udp_unicast_rcv_skb {@[comm] = count();}'
  */
 static int udp_unicast_rcv_skb(struct sock *sk, struct sk_buff *skb,
 			       struct udphdr *uh)
@@ -2386,6 +2397,10 @@ static int udp_unicast_rcv_skb(struct sock *sk, struct sk_buff *skb,
  *	All we need to do is get the socket, and then do a checksum.
  */
 
+ /**
+  * sudo bpftrace  -e 'kfunc:__udp4_lib_rcv {printf("%s\n", comm);}'
+  * sudo bpftrace -e 'kprobe:__udp4_lib_rcv {@[comm] = count();}'
+  */
 int __udp4_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 		   int proto)
 {
@@ -2421,7 +2436,13 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 	if (udp4_csum_init(skb, uh, proto))
 		goto csum_error;
 
+	/**
+	 * 获取 sock 结构，
+	 */
 	sk = skb_steal_sock(skb, &refcounted);
+	/**
+	 * 目标端口有监听这个套接字
+	 */
 	if (sk) {
 		struct dst_entry *dst = skb_dst(skb);
 		int ret;
@@ -2435,11 +2456,20 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 		return ret;
 	}
 
+	/**
+	 * 广播或者多播
+	 */
 	if (rt->rt_flags & (RTCF_BROADCAST|RTCF_MULTICAST))
 		return __udp4_lib_mcast_deliver(net, skb, uh,
 						saddr, daddr, udptable, proto);
 
+	/**
+	 * 单播
+	 */
 	sk = __udp4_lib_lookup_skb(skb, uh->source, uh->dest, udptable);
+	/**
+	 * 如果没有 sock 监听，将直接被丢弃，不入队. 这能不能添加一个 drop reason ？？
+	 */
 	if (sk)
 		return udp_unicast_rcv_skb(sk, skb, uh);
 
@@ -2447,7 +2477,10 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct udp_table *udptable,
 		goto drop;
 	nf_reset_ct(skb);
 
-	/* No socket. Drop packet silently, if checksum is wrong */
+	/**
+	 * No socket. Drop packet silently, if checksum is wrong
+	 * 这能不能添加一个 drop reason ？？
+	 */
 	if (udp_lib_checksum_complete(skb))
 		goto csum_error;
 

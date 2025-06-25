@@ -4291,7 +4291,7 @@ EXPORT_SYMBOL(__dev_direct_xmit);
  *************************************************************************/
 
 /**
- * 网卡最大接收数据包量，超过就丢包
+ * 网卡最大接收数据包量，超过就丢包。用于软中断收包队列
  *
  * /proc/sys/net/core/netdev_max_backlog
  */
@@ -6889,6 +6889,9 @@ static int napi_poll(struct napi_struct *n, struct list_head *repoll)
 	 */
 	work = 0;
 	if (test_bit(NAPI_STATE_SCHED, &n->state)) {
+		/**
+		 *
+		 */
 		work = n->poll(n, weight);
 		trace_napi_poll(n, work, weight);
 	}
@@ -6936,6 +6939,9 @@ out_unlock:
 	return work;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:net_rx_action {@[comm] = count();}'
+ */
 static __latent_entropy void net_rx_action(struct softirq_action *h)
 {
 	struct softnet_data *sd = this_cpu_ptr(&softnet_data);

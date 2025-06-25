@@ -11,6 +11,9 @@
 
 #define NO_DEV "(no_device)"
 
+/**
+ * tracepoint:napi:napi_poll
+ */
 TRACE_EVENT(napi_poll,
 
 	TP_PROTO(struct napi_struct *napi, int work, int budget),

@@ -444,6 +444,9 @@ static struct sk_buff *udp_gro_receive_segment(struct list_head *head,
 	return NULL;
 }
 
+/**
+ * sudo bpftrace -e 'kprobe:udp_gro_receive {@[probe] = count();}'
+ */
 struct sk_buff *udp_gro_receive(struct list_head *head, struct sk_buff *skb,
 				struct udphdr *uh, struct sock *sk)
 {

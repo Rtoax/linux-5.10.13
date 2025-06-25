@@ -978,7 +978,9 @@ EXPORT_SYMBOL(inet_sendpage);
 INDIRECT_CALLABLE_DECLARE(int udp_recvmsg(struct sock *, struct msghdr *,
 					  size_t, int, int, int *));
 /**
- *  IPv4 接收数据
+ * IPv4 接收数据
+ *
+ * sudo bpftrace  -e 'kprobe:inet_recvmsg{printf("%s\n", comm);}'
  */
 int inet_recvmsg(struct socket *sock, struct msghdr *msg, size_t size,
 		 int flags)
