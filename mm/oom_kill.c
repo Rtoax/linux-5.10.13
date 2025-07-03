@@ -160,10 +160,14 @@ static inline bool is_sysrq_oom(struct oom_control *oc)
 /* return true if the task is not adequate as candidate victim task. */
 static bool oom_unkillable_task(struct task_struct *p)
 {
+	/* 一号进程不能被杀死 */
 	if (is_global_init(p))
 		return true;
+
+	/* 内核线程不能被杀死 */
 	if (p->flags & PF_KTHREAD)
 		return true;
+
 	return false;
 }
 
@@ -196,15 +200,26 @@ static bool is_dump_unreclaim_slabs(void)
  * The heuristic for determining which task to kill is made to be as simple and
  * predictable as possible.  The goal is to return the highest value for the
  * task consuming the most memory to avoid subsequent oom failures.
+ *
+ * 用于确定要终止哪个任务的启发式方法尽可能简单且可预测。目标是为消耗最多内存的任务返回最高值，
+ * 以避免后续出现内存不足 (OOM) 故障。
+ *
+ * 是否可以引入内存分配速率这一元素综合评选被杀死的进程？专利是否可行？
  */
 long oom_badness(struct task_struct *p, unsigned long totalpages)
 {
 	long points;
 	long adj;
 
+	/**
+	 * init 进程 和 内核线程
+	 */
 	if (oom_unkillable_task(p))
 		return LONG_MIN;
 
+	/**
+	 *
+	 */
 	p = find_lock_task_mm(p);
 	if (!p)
 		return LONG_MIN;
@@ -213,6 +228,8 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 	 * Do not even consider tasks which are explicitly marked oom
 	 * unkillable or have been already oom reaped or the are in
 	 * the middle of vfork
+	 *
+	 * 跳过标记为不能杀的进程，或者在 vfork 中途的进程
 	 */
 	adj = (long)p->signal->oom_score_adj;
 	if (adj == OOM_SCORE_ADJ_MIN ||

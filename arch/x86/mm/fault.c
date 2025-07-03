@@ -1241,7 +1241,7 @@ NOKPROBE_SYMBOL(do_kern_addr_fault);
  * 			处理缺页异常/中断
  *
  * @param regs
- * @param hw_error_code
+ * @param hw_error_code: error_code: x86: enum x86_pf_error_code
  * @param address
  */
 static inline
@@ -1255,9 +1255,9 @@ void do_user_addr_fault(struct pt_regs *regs,
 	vm_fault_t fault;
 	unsigned int flags = FAULT_FLAG_DEFAULT;
 
-    /**
-     *  当前进程处理自己的缺页异常
-     */
+	/**
+	 *  当前进程处理自己的缺页异常
+	 */
 	tsk = current;
 	mm = tsk->mm;   /* 获取 mm 结构 */
 
@@ -1493,7 +1493,7 @@ trace_page_fault_entries(struct pt_regs *regs, unsigned long error_code,
  * @brief 缺页中断
  *
  * @param regs
- * @param error_code
+ * @param error_code: x86: enum x86_pf_error_code
  * @param address
  */
 static __always_inline void
@@ -1507,18 +1507,20 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 		return;
 
 	/* Was the fault on kernel-controlled part of the address space?
-       `kmemcheck` fault, spurious fault, [kprobes] fault and etc
-    */
-	if (unlikely(fault_in_kernel_space(address))) { /* 内核小概率 才会发生缺页 */
-        /**
-         *  内核中的缺页，是不可能事件
-         */
+	`kmemcheck` fault, spurious fault, [kprobes] fault and etc
+	*/
+	if (unlikely(fault_in_kernel_space(address))) {
+		/* 内核小概率 才会发生缺页 */
+		/**
+		 *  内核中的缺页，是不可能事件
+		 */
 		do_kern_addr_fault(regs, error_code, address);
 	} else {
-	    /**
-         *  用户态的缺页异常
-         */
-		do_user_addr_fault(regs, error_code, address);  /* 用户态发生缺页 */
+		/**
+		 *  用户态的缺页异常
+		 */
+		do_user_addr_fault(regs, error_code, address);
+		/* 用户态发生缺页 */
 		/*
 		 * User address page fault handling might have reenabled
 		 * interrupts. Fixing up all potential exit points of
@@ -1539,11 +1541,11 @@ void do_page_fault(struct pt_regs *regs, int error_code){/* +++ */}
 void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* +++ */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 {
-    struct pt_regs *regs/* 我加的 */;
-    int error_code/* 我加的 */;
-    /**
-     *  读取缺页地址
-     */
+	struct pt_regs *regs/* 我加的 */;
+	int error_code/* 我加的 */;
+	/**
+	 *  读取缺页地址
+	 */
 	unsigned long address = read_cr2(); /* cr2 = 引发缺页中断的 线性地址 */
 	irqentry_state_t state;
 
@@ -1587,7 +1589,10 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 
 	instrumentation_begin();    /* 用于调试， 插入 nop 指令 */
 
-    /* 处理缺页异常/中断 */
+	/**
+	 * 处理缺页异常/中断
+	 * error_code: x86: enum x86_pf_error_code
+	 */
 	handle_page_fault(regs, error_code, address);   /* 处理缺页异常 */
 
 	instrumentation_end();
