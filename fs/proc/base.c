@@ -556,7 +556,9 @@ static const struct file_operations proc_lstats_operations = {
 
 #endif
 
-/* /proc/self/oom_score */
+/**
+ * /proc/self/oom_score
+ */
 static int proc_oom_score(struct seq_file *m, struct pid_namespace *ns,
 			  struct pid *pid, struct task_struct *task)
 {
