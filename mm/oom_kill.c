@@ -212,7 +212,7 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 	long adj;
 
 	/**
-	 * init 进程 和 内核线程
+	 * init 进程 和 内核线程 不能被杀死
 	 */
 	if (oom_unkillable_task(p))
 		return LONG_MIN;
@@ -249,7 +249,10 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 		mm_pgtables_bytes(p->mm) / PAGE_SIZE;
 	task_unlock(p);
 
-	/* Normalize to oom_score_adj units */
+	/**
+	 * Normalize to oom_score_adj units
+	 * 归一化
+	 */
 	adj *= totalpages / 1000;
 	points += adj;
 
@@ -377,6 +380,9 @@ static int oom_evaluate_task(struct task_struct *task, void *arg)
 		goto next;
 
 select:
+	/**
+	 * 如果已经选中一个进程，放弃老进程，标记新的进程将被杀死
+	 */
 	if (oc->chosen)
 		put_task_struct(oc->chosen);
 	get_task_struct(task);
@@ -423,7 +429,8 @@ static void select_bad_process(struct oom_control *oc)
 		for_each_process(p) {
 			if (oom_evaluate_task(p, oc)) {
 				/**
-				 * break 表示中止，否则将遍历系统中所有进程
+				 * break 表示中止，否则将遍历系统中所有进程。
+				 * 这是一个特殊的情况，一般会遍历所有进程，找到分数最高的。
 				 */
 				break;
 			}
