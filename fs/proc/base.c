@@ -573,6 +573,13 @@ static int proc_oom_score(struct seq_file *m, struct pid_namespace *ns,
 	if (badness != LONG_MIN)
 		points = (1000 + badness * 1000 / (long)totalpages) * 2 / 3;
 
+/*
+matrix {
+	points = (RSS + SWAP + PAGETABLE) + adj * frac {TOTALPAGES} {1000} ##
+	score = (1000 + points * frac {1000} {TOTALPAGES} ) * ({2} over {3} )
+}
+*/
+
 	seq_printf(m, "%lu\n", points);
 
 	return 0;

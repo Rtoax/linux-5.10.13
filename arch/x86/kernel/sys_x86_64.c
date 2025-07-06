@@ -100,9 +100,9 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, unsigned long, len,
 	error = -EINVAL;
 	if (off & ~PAGE_MASK)
 		goto out;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	error = ksys_mmap_pgoff(addr, len, prot, flags, fd, off >> PAGE_SHIFT);
 out:
 	return error;
@@ -124,7 +124,7 @@ out:
 static void find_start_end(unsigned long addr, unsigned long flags,
 		unsigned long *begin, unsigned long *end)
 {
-    /* 32 位 */
+	/* 32 位 */
 	if (!in_32bit_syscall() && (flags & MAP_32BIT)) {
 		/* This is usually used needed to map code in small
 		   model, so it needs to be in the first 31bit. Limit

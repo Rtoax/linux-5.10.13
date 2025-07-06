@@ -2037,10 +2037,10 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	struct file *file = NULL;
 	unsigned long retval;
 
-    /**
-     *  不是匿名 ANONYMOUS
-     *
-     */
+	/**
+	 *  不是匿名 ANONYMOUS
+	 *
+	 */
 	if (!(flags & MAP_ANONYMOUS)) {
 		/**
 		 * @brief 查找这个FD
@@ -2052,17 +2052,17 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 		 *
 		 */
 		file = fget(fd);
-        /**
-         * @brief 没有打开的文件
-         * 返回 EBADF
-         */
+		/**
+		 * @brief 没有打开的文件
+		 * 返回 EBADF
+		 */
 		if (!file)
 			return -EBADF;
 
-        /**
-         * @brief 如果是 大页文件 映射的 内存
-         *
-         */
+		/**
+		 * @brief 如果是 大页文件 映射的 内存
+		 *
+		 */
 		if (is_file_hugepages(file)) {
 			len = ALIGN(len, huge_page_size(hstate_file(file)));
 		/**
@@ -2108,10 +2108,10 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	 */
 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
 
-    /**
-     * @brief 核心函数
-     *
-     */
+	/**
+	 * @brief 核心函数
+	 *
+	 */
 	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);    /* 最终执行的 */
 out_fput:
 	if (file)
@@ -2253,39 +2253,39 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	unsigned long charged = 0;
 
 	/* Check against address space limit. */
-    /**
-     *  判断地址空间大小是否已经超标
-     *   总的空间：mm->total_vm + npages > rlimit(RLIMIT_AS) >> PAGE_SHIFT
-     *   数据空间：mm->data_vm + npages > rlimit(RLIMIT_DATA) >> PAGE_SHIFT
-     *
-     *  当再 加上 `len >> PAGE_SHIFT` 页的时候，ulimit 还满足吗
-     */
+	/**
+	 *  判断地址空间大小是否已经超标
+	 *   总的空间：mm->total_vm + npages > rlimit(RLIMIT_AS) >> PAGE_SHIFT
+	 *   数据空间：mm->data_vm + npages > rlimit(RLIMIT_DATA) >> PAGE_SHIFT
+	 *
+	 *  当再 加上 `len >> PAGE_SHIFT` 页的时候，ulimit 还满足吗
+	 */
 	if (!may_expand_vm(mm, vm_flags, len >> PAGE_SHIFT)) {
 
-        /**
-         * 如果 VM 不能扩展了(超出 ULimit 限制)
-         */
+		/**
+		 * 如果 VM 不能扩展了(超出 ULimit 限制)
+		 */
 		unsigned long nr_pages;
 
 		/*
 		 * MAP_FIXED may remove pages of mappings that intersects with
 		 * requested mapping. Account for the pages it would unmap.
 		 *
-		 *  `MAP_FIXED`固定映射指定地址的情况下，地址空间可能和已有的VMA重叠，其他情况下不会重叠
-         *  需要先unmap移除掉和新地址交错的vma地址
-         *  所以可以先减去这部分空间，再判断大小是否超标
-         *
-         * 这个 接口计算 区间内的 page 数量
-         */
+		 * `MAP_FIXED`固定映射指定地址的情况下，地址空间可能和已有的VMA重叠，
+		 * 其他情况下不会重叠 需要先unmap移除掉和新地址交错的vma地址,所以可以
+		 * 先减去这部分空间，再判断大小是否超标
+		 *
+		 * 这个 接口计算 区间内的 page 数量
+		 */
 		nr_pages = count_vma_pages_range(mm, addr, addr + len);
 
-        /**
-         *  判断地址空间大小是否已经超标
-         *
-         *  需要添加的 page - 已经存在的 page = 地址空间内 还可放的 page 数
-         *  因为当为固定映射时候`MAP_FIXED`,需要先释放区间内已经映射的内存。
-         *  如果能放下就行呗。
-         */
+		/**
+		 *  判断地址空间大小是否已经超标
+		 *
+		 *  需要添加的 page - 已经存在的 page = 地址空间内 还可放的 page 数
+		 *  因为当为固定映射时候`MAP_FIXED`,需要先释放区间内已经映射的内存。
+		 *  如果能放下就行呗。
+		 */
 		if (!may_expand_vm(mm, vm_flags, (len >> PAGE_SHIFT) - nr_pages))
 			return -ENOMEM;
 	}
@@ -2419,9 +2419,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		if (error)
 			goto free_vma;
 	} else {
-	    /**
-	     *  匿名
-	     */
+		/**
+		 *  匿名
+		 */
 		vma_set_anonymous(vma);
 	}
 

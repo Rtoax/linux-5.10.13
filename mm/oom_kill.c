@@ -249,6 +249,13 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 		mm_pgtables_bytes(p->mm) / PAGE_SIZE;
 	task_unlock(p);
 
+/*
+matrix {
+	points = (RSS + SWAP + PAGETABLE) + adj * frac {TOTALPAGES} {1000} ##
+	score = (1000 + points * frac {1000} {TOTALPAGES} ) * ({2} over {3} )
+}
+*/
+
 	/* Normalize to oom_score_adj units */
 	adj *= totalpages / 1000;
 	points += adj;
@@ -1194,32 +1201,32 @@ bool out_of_memory(struct oom_control *oc)
 		oc->nodemask = NULL;
 	check_panic_on_oom(oc);
 
-    /**
+	/**
 	 * 是否要杀死当前进程？
 	 *
-     * 1. 不是 cgroup 进程
+	 * 1. 不是 cgroup 进程
 	 * 2. 允许杀死正在 alloc 进程
 	 * 3. 当前进程有 mm 结构
 	 * 4. 当前进程可杀死
-     */
+	 */
 	if (!is_memcg_oom(oc) && sysctl_oom_kill_allocating_task &&
 	    current->mm && !oom_unkillable_task(current) &&
 	    oom_cpuset_eligible(current, oc) &&
 	    current->signal->oom_score_adj != OOM_SCORE_ADJ_MIN) {
 
-        /**
-         *  引用计数+1
-         */
+		/**
+		 *  引用计数+1
+		 */
 		get_task_struct(current);
 
-        /**
-         *  选择当前进程
-         */
+		/**
+		 *  选择当前进程
+		 */
 		oc->chosen = current;
 
-        /**
-         *  开杀
-         */
+		/**
+		 *  开杀
+		 */
 		oom_kill_process(oc, "Out of memory (oom_kill_allocating_task)");
 		return true;
 	}
