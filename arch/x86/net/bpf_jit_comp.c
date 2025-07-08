@@ -18,12 +18,10 @@
 #include <asm/asm-prototypes.h>
 
 /**
- * @brief 解析一条指令到 prog 指向的内存里
+ * 解析一条指令到 prog 指向的内存里
  *
- * @param ptr
- * @param bytes
- * @param len
- * @return u8*
+ * 比如：
+ * b4 01 00 00 01 00 00 00	w1 = 0x1
  */
 static u8 *emit_code(u8 *ptr, u32 bytes, unsigned int len)
 {
@@ -798,15 +796,7 @@ static void detect_reg_usage(struct bpf_insn *insn, int insn_cnt,
 }
 
 /**
- * @brief bpf jit
- *
- * @param bpf_prog
- * @param addrs
- * @param image
- * @param oldproglen
- * @param ctx
- * @return int
- *
+ * $ sudo bpftrace -e 'kprobe:do_jit{@[kstack] = count();}'
  * $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
  *
  * do_jit+1
@@ -852,7 +842,6 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 
 	/**
 	 * @brief 遍历所有指令
-	 *
 	 */
 	for (i = 1; i <= insn_cnt; i++, insn++) {
 		const s32 imm32 = insn->imm;
@@ -868,7 +857,6 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 			/* ALU */
 		/**
 		 * @brief 算术指令
-		 *
 		 */
 		case BPF_ALU | BPF_ADD | BPF_X:
 		case BPF_ALU | BPF_SUB | BPF_X:
@@ -931,6 +919,9 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 			 * in case dst is eax/rax.
 			 */
 			switch (BPF_OP(insn->code)) {
+			/**
+			 * 例如：0x48, 0x83, 0xc0, 0x04, add $4, %rax
+			 */
 			case BPF_ADD:
 				b3 = 0xC0;
 				b2 = 0x05;
@@ -953,6 +944,9 @@ static int do_jit(struct bpf_prog *bpf_prog, int *addrs, u8 *image,
 				break;
 			}
 
+			/**
+			 * 例如：0x48, 0x83, 0xc0, 0x04, add $4, %rax
+			 */
 			if (is_imm8(imm32))
 				EMIT3(0x83, add_1reg(b3, dst_reg), imm32);
 			else if (is_axreg(dst_reg))
@@ -2054,18 +2048,16 @@ struct x64_jit_data {
 };
 
 /**
-* $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
-*
-* do_jit+1
-* bpf_int_jit_compile+329
-* bpf_prog_select_runtime+267
-* bpf_prog_load+1191
-* __sys_bpf+431
-*
- * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
+ * $ sudo bpftrace -e 'kprobe:do_jit { @[kstack] = count(); }'
+ * $ sudo bpftrace -e 'kprobe:do_jit { printf("%s\n", kstack); }'
  *
- * @param prog
- * @return struct bpf_prog*
+ * do_jit+1
+ * bpf_int_jit_compile+329
+ * bpf_prog_select_runtime+267
+ * bpf_prog_load+1191
+ * __sys_bpf+431
+ *
+ * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
  */
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {

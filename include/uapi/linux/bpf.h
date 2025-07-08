@@ -102,7 +102,9 @@ enum {
 #define MAX_BPF_REG	__MAX_BPF_REG
 
 /**
- *  bpf 指令
+ * bpf 指令
+ *
+ * RFC 9669 https://www.rfc-editor.org/rfc/rfc9669.html
  *
  * 指令格式建模为两个操作数指令，这有助于在 JIT 阶段将 BPF 指令映射到本机指令。
  * 指令集的大小是固定的，这意味着每条指令都有 64 位编码。目前，已经实现了 87 条
