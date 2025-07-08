@@ -426,7 +426,7 @@ static int add_exception_handler(const struct bpf_insn *insn,
  * >0 - successfully JITed a 16-byte eBPF instruction.
  * <0 - failed to JIT.
  *
- * 和 x86_64 类似
+ * 和 x86_64 的 do_jit() 类似
  */
 static int build_insn(const struct bpf_insn *insn, struct jit_ctx *ctx,
 		      bool extra_pass)
@@ -994,8 +994,7 @@ struct arm64_jit_data {
 /**
  * @brief 将传入的 BPF 伪代码加以编译，编译结果取代原有的处理函数
  *
- * @param prog
- * @return struct bpf_prog*
+ * $ sudo bpftrace -e 'kprobe:do_jit { @[kstack] = count(); }'
  */
 struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *prog)
 {
