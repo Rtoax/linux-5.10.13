@@ -12073,13 +12073,10 @@ struct btf *bpf_get_btf_vmlinux(void)
 }
 
 /**
- * @brief  eBPF 验证器
+ *  run eBPF verifier
+ *  运行 eBPF 验证器
  *
- *
- * @param prog
- * @param attr
- * @param uattr
- * @return int
+ *  eBPF 验证器 - 2021年9月1日17:48:33
  *
  *  第一项检查 - 静态分析
  *      创建 有向无环图(DAG) ，并执行深度优先搜索(DFS) 确保程序不包含危险路径
@@ -12268,7 +12265,7 @@ skip_full_check:
 	kvfree(env->explored_states);
 
 	/**
-	 *	检查栈深度
+	 * 检查栈深度
 	 */
 	if (ret == 0)
 		ret = check_max_stack_depth(env);
