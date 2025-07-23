@@ -440,7 +440,7 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 		prepare_to_wait_exclusive(sk_sleep(sk), &wait, TASK_INTERRUPTIBLE);
 
         /**
-         *  
+         *
          */
 		release_sock(sk);
         /**
@@ -450,7 +450,7 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 			timeo = schedule_timeout(timeo);
 
         /**
-         *  
+         *
          */
 		sched_annotate_sleep();
 		lock_sock(sk);
@@ -466,7 +466,7 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 			break;
 
         /**
-         *  
+         *
          */
 		err = sock_intr_errno(timeo);
 		if (signal_pending(current))
@@ -481,7 +481,7 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 
 /*
  * This will accept the next outstanding connection.
- *  
+ *
  *  accept(2)
  */
 struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
@@ -517,7 +517,7 @@ struct sock *inet_csk_accept(struct sock *sk, int flags, int *err, bool kern)
 			goto out_err;
 
         /**
-         *  
+         *
          */
 		error = inet_csk_wait_for_connect(sk, timeo);
 		if (error)
@@ -563,7 +563,7 @@ out:
 		 */
 		amt = sk_mem_pages(newsk->sk_forward_alloc + atomic_read(&newsk->sk_rmem_alloc));
         /**
-         *  
+         *
          */
 		mem_cgroup_sk_alloc(newsk);
 		if (newsk->sk_memcg && amt)
@@ -573,7 +573,7 @@ out:
 	}
 	if (req)
 		reqsk_put(req);
-    
+
 	return newsk;
 out_err:
 	newsk = NULL;
@@ -952,7 +952,7 @@ void inet_csk_prepare_forced_close(struct sock *sk)
 EXPORT_SYMBOL(inet_csk_prepare_forced_close);
 
 /**
- *  
+ *
  */
 int inet_csk_listen_start(struct sock *sk, int backlog)
 {
@@ -960,14 +960,14 @@ int inet_csk_listen_start(struct sock *sk, int backlog)
 	struct inet_sock *inet = inet_sk(sk);
 	int err = -EADDRINUSE;
 
-    /**
-     *  分配 请求队列
-     */
+	/**
+	 *  分配 请求队列
+	 */
 	reqsk_queue_alloc(&icsk->icsk_accept_queue);
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	sk->sk_ack_backlog = 0;
 	inet_csk_delack_init(sk);
 
@@ -995,9 +995,9 @@ EXPORT_SYMBOL_GPL(inet_csk_listen_start);
 static void inet_child_forget(struct sock *sk, struct request_sock *req,
 			      struct sock *child)
 {
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	sk->sk_prot->disconnect(child, O_NONBLOCK);
 
 	sock_orphan(child);

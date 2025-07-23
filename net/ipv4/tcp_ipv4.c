@@ -203,9 +203,9 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	struct sockaddr_in *usin = (struct sockaddr_in *)uaddr;
 	struct inet_sock *inet = inet_sk(sk);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	struct tcp_sock *tp = tcp_sk(sk);
 	__be16 orig_sport, orig_dport;
 	__be32 daddr, nexthop;
@@ -221,14 +221,14 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	if (usin->sin_family != AF_INET)
 		return -EAFNOSUPPORT;
 
-    /**
-     *  目的地址 - 服务器地址
-     */
+	/**
+	 *  目的地址 - 服务器地址
+	 */
 	nexthop = daddr = usin->sin_addr.s_addr;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	inet_opt = rcu_dereference_protected(inet->inet_opt, lockdep_sock_is_held(sk));
 	if (inet_opt && inet_opt->opt.srr) {
 		if (!daddr)
@@ -236,20 +236,20 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		nexthop = inet_opt->opt.faddr;
 	}
 
-    /**
-     *  源端口和目的端口
-     */
+	/**
+	 *  源端口和目的端口
+	 */
 	orig_sport = inet->inet_sport;
 	orig_dport = usin->sin_port;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	fl4 = &inet->cork.fl.u.ip4;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	rt = ip_route_connect(fl4, nexthop, inet->inet_saddr,
         			      RT_CONN_FLAGS(sk), sk->sk_bound_dev_if,
         			      IPPROTO_TCP,
@@ -273,9 +273,9 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 		inet->inet_saddr = fl4->saddr;
 	sk_rcv_saddr_set(sk, inet->inet_saddr);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (tp->rx_opt.ts_recent_stamp && inet->inet_daddr != daddr) {
 		/* Reset inherited state */
 		tp->rx_opt.ts_recent	   = 0;
@@ -305,9 +305,9 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 
 	sk_set_txhash(sk);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	rt = ip_route_newports(fl4, rt, orig_sport, orig_dport,
 			                inet->inet_sport, inet->inet_dport, sk);
 	if (IS_ERR(rt)) {
@@ -320,9 +320,9 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	sk_setup_caps(sk, &rt->dst);
 	rt = NULL;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (likely(!tp->repair)) {
 		if (!tp->write_seq)
 			WRITE_ONCE(tp->write_seq,
@@ -342,9 +342,9 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
 	if (err)
 		goto failure;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	err = tcp_connect(sk);
 
 	if (err)
