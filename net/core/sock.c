@@ -1672,9 +1672,9 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 
 	slab = prot->slab;
 
-    /**
-     *  不为空，从 slab 中申请
-     */
+	/**
+	 *  不为空，从 slab 中申请
+	 */
 	if (slab != NULL) {
 		sk = kmem_cache_alloc(slab, priority & ~__GFP_ZERO);
 		if (!sk)
@@ -1682,14 +1682,14 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		if (want_init_on_alloc(priority))
 			sk_prot_clear_nulls(sk, prot->obj_size);
 	} else
-    /**
-     *  否则从 kmalloc 中分配
-     */
+		/**
+		 *  否则从 kmalloc 中分配
+		 */
 		sk = kmalloc(prot->obj_size, priority);
 
-    /**
-     *  分配成功
-     */
+	/**
+	 *  分配成功
+	 */
 	if (sk != NULL) {
 		if (security_sk_alloc(sk, family, priority))
 			goto out_free;
@@ -1741,9 +1741,9 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		                struct proto *prot, int kern)
 {
 	struct sock *sk;
-    /**
-     *  从 slab 或 kmalloc 申请
-     */
+	/**
+	 *  从 slab 或 kmalloc 申请
+	 */
 	sk = sk_prot_alloc(prot, priority | __GFP_ZERO, family);
 	if (sk) {
 		sk->sk_family = family;
@@ -1751,8 +1751,8 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		 * See comment in struct sock definition to understand
 		 * why we need sk_prot_creator -acme
 		 *
-         *
-         */
+		 *
+		 */
 		sk->sk_prot = sk->sk_prot_creator = prot;
 		sk->sk_kern_sock = kern;
 
@@ -1766,14 +1766,14 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
 		sock_net_set(sk, net);
 		refcount_set(&sk->sk_wmem_alloc, 1);
 
-        /**
-         *  memory cgroup
-         */
+		/**
+		 *  memory cgroup
+		 */
 		mem_cgroup_sk_alloc(sk);
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		cgroup_sk_alloc(&sk->sk_cgrp_data);
 		sock_update_classid(&sk->sk_cgrp_data);
 		sock_update_netprioidx(&sk->sk_cgrp_data);
