@@ -224,9 +224,9 @@ struct obj_cgroup {
  * 内存控制器数据结构，控制每个cgroup的 pagecache 和 RSS。
  */
 struct mem_cgroup {
-    /**
-     *  子系统状态结构
-     */
+	/**
+	 *  子系统状态结构
+	 */
 	struct cgroup_subsys_state css;
 
 	/* Private memcg ID. Used to ID objects that outlive the cgroup */
@@ -235,9 +235,9 @@ struct mem_cgroup {
 	/* Accounted resources */
 	struct page_counter memory;		/* Both v1 & v2 */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		struct page_counter swap;	/* v2 only */
 		struct page_counter memsw;	/* v1 only */
@@ -247,15 +247,15 @@ struct mem_cgroup {
 	struct page_counter kmem;		/* v1 only */
 	struct page_counter tcpmem;		/* v1 only */
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	/* Range enforcement for interrupt charges */
 	struct work_struct high_work;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	unsigned long soft_limit;
 
 	/* vmpressure notifications */
