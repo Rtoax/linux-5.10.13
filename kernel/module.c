@@ -2276,6 +2276,7 @@ static void free_module(struct module *mod)
 	module_memfree(mod->core_layout.base);
 }
 
+#ifdef __linux_5_10_13__
 void *__symbol_get(const char *symbol)
 {
 	struct module *owner;
@@ -2290,6 +2291,34 @@ void *__symbol_get(const char *symbol)
 	return sym ? (void *)kernel_symbol_value(sym) : NULL;
 }
 EXPORT_SYMBOL_GPL(__symbol_get);
+#else /* v6.16 */
+/**
+ * v6.5-rc1-11-g9011e49d54dc
+ * v6.14-rc6-10-g2ff49f8931be
+ */
+void *__symbol_get(const char *symbol)
+{
+        struct find_symbol_arg fsa = {
+                .name   = symbol,
+                .gplok  = true,
+                .warn   = true,
+        };
+
+        scoped_guard(rcu) {
+                if (!find_symbol(&fsa))
+                        return NULL;
+                if (fsa.license != GPL_ONLY) {
+                        pr_warn("failing symbol_get of non-GPLONLY symbol %s.\n",
+                                symbol);
+                        return NULL;
+                }
+                if (strong_try_module_get(fsa.owner))
+                        return NULL;
+        }
+        return (void *)kernel_symbol_value(fsa.sym);
+}
+EXPORT_SYMBOL_GPL(__symbol_get);
+#endif
 
 /*
  * Ensure that an exported symbol [global namespace] does not already exist
