@@ -1073,9 +1073,9 @@ static void oom_kill_process(struct oom_control *oc, const char *message)
 	}
 	task_unlock(victim);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (__ratelimit(&oom_rs))
 		dump_header(oc, victim);
 
