@@ -231,13 +231,13 @@ static __always_inline void __user *error_get_trap_addr(struct pt_regs *regs)
 {
 	return (void __user *)uprobe_get_trap_addr(regs);
 }
-void exc_divide_error(struct pt_regs *regs){/* 我加的 */}
+void exc_divide_error(struct pt_regs *regs);
 DEFINE_IDTENTRY(exc_divide_error)
 {
 	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE,
 		      FPE_INTDIV, error_get_trap_addr(regs));
 }
-void exc_overflow(struct pt_regs *regs){/* 我加的 */}
+void exc_overflow(struct pt_regs *regs);
 DEFINE_IDTENTRY(exc_overflow)
 {
 	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
@@ -565,7 +565,7 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 }
 
 #define GPFSTR "general protection fault"
-void exc_general_protection(struct pt_regs *regs){/* 我加的 */}
+void exc_general_protection(struct pt_regs *regs);
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
 	char desc[sizeof(GPFSTR) + 50 + 2*sizeof(unsigned long) + 1] = GPFSTR;
@@ -574,7 +574,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	unsigned long gp_addr;
 	int ret;
 
-    //enable interrupts if they were disabled
+	//enable interrupts if they were disabled
 	cond_local_irq_enable(regs);
 
 	if (static_cpu_has(X86_FEATURE_UMIP)) {
@@ -582,7 +582,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 			goto exit;
 	}
 
-    //check that we came from the [Virtual 8086]
+	//check that we came from the [Virtual 8086]
 	if (v8086_mode(regs)) {
 		local_irq_enable();
 		handle_vm86_fault((struct kernel_vm86_regs *) regs, error_code);
@@ -590,21 +590,21 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		return;
 	}
 
-    /* 获取当前进程 */
+	/* 获取当前进程 */
 	tsk = current;
 
-    /* USER 模式 */
+	/* USER 模式 */
 	if (user_mode(regs)) {
 		tsk->thread.error_code = error_code;
 		tsk->thread.trap_nr = X86_TRAP_GP;
 
-        /* 用户态进程， 段错误 */
+		/* 用户态进程， 段错误 */
 		show_signal(tsk, SIGSEGV, "", desc, regs, error_code);
 		force_sig(SIGSEGV);
 		goto exit;
 	}
 
-    /* 我们可以 fixup 这个异常 */
+	/* 我们可以 fixup 这个异常 */
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
 
@@ -622,9 +622,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	    kprobe_fault_handler(regs, X86_TRAP_GP))
 		goto exit;
 
-    /**
-     *  如果上面的抢救措施都不行，只能 通知   段错误
-     */
+	/**
+	 *  如果上面的抢救措施都不行，只能 通知   段错误
+	 */
 	ret = notify_die(DIE_GPF, desc, regs, error_code, X86_TRAP_GP, SIGSEGV);
 	if (ret == NOTIFY_STOP)
 		goto exit;
@@ -679,17 +679,17 @@ static bool do_int3(struct pt_regs *regs)
 		return true;
 #endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
 
-    /**
-     *  调用 kprobe.pre_handler 和 原始指令
-     */
+	/**
+	 *  调用 kprobe.pre_handler 和 原始指令
+	 */
 #ifdef CONFIG_KPROBES
 	if (kprobe_int3_handler(regs))
 		return true;
 #endif
 
-    /**
-     *  int3_exception_notify()
-     */
+	/**
+	 *  int3_exception_notify()
+	 */
 	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 
 	return res == NOTIFY_STOP;
@@ -703,14 +703,14 @@ static void do_int3_user(struct pt_regs *regs)
 	if (do_int3(regs))
 		return;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	cond_local_irq_enable(regs);
 
-    /**
-     *  处理 SIGTRAP
-     */
+	/**
+	 *  处理 SIGTRAP
+	 */
 	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
 
 	cond_local_irq_disable(regs);
@@ -743,23 +743,23 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 		irqentry_enter_from_user_mode(regs);
 		instrumentation_begin();
 
-        /**
-         *  处理 int3
-         */
+		/**
+		 *  处理 int3
+		 */
 		do_int3_user(regs);
 		instrumentation_end();
 		irqentry_exit_to_user_mode(regs);
 
-    /**
-     *  内核态
-     */
+	/**
+	 *  内核态
+	 */
 	} else {
 		bool irq_state = idtentry_enter_nmi(regs);
 		instrumentation_begin();
 
-        /**
-         *  int3 中断
-         */
+		/**
+		 *  int3 中断
+		 */
 		if (!do_int3(regs))
 			die("int3", regs, 0);
 

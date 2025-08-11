@@ -1534,9 +1534,8 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 
 /**
  *  缺页中断/缺页异常
- *
- * 老版本的内核叫做 do_page_fault() 这个名字
  */
+/* 老版本的内核叫做 do_page_fault() */
 void do_page_fault(struct pt_regs *regs, int error_code){/* +++ */}
 void exc_page_fault(struct pt_regs *regs, unsigned long error_code){/* +++ */}
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
@@ -1593,7 +1592,7 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 	 * 处理缺页异常/中断
 	 * error_code: x86: enum x86_pf_error_code
 	 */
-	handle_page_fault(regs, error_code, address);   /* 处理缺页异常 */
+	handle_page_fault(regs, error_code, address);
 
 	instrumentation_end();
 

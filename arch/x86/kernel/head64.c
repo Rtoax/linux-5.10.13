@@ -424,11 +424,15 @@ static bool __init early_make_pgtable(unsigned long address)
  */
 void __init do_early_exception(struct pt_regs *regs, int trapnr)
 {
-	if (trapnr == X86_TRAP_PF/*缺页中断（Page Fault）*/ &&
-	    early_make_pgtable(native_read_cr2())) /* Create a new PMD entry */
+	/**
+	 * - 缺页中断（Page Fault）
+	 * - Create a new PMD entry
+	 */
+	if (trapnr == X86_TRAP_PF &&
+	    early_make_pgtable(native_read_cr2()))
 		return;
 
-    /* 硬件虚拟化之vmm接管异常中断 */
+	/* 硬件虚拟化之vmm接管异常中断 */
 	if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT) &&
 	    trapnr == X86_TRAP_VC && handle_vc_boot_ghcb(regs))
 		return;

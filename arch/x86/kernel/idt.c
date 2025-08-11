@@ -268,17 +268,17 @@ void load_current_idt(void)
 static __init void
 idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys)
 {
-    /* 门 */
+	/* 门 */
 	gate_desc desc;
 
 	for (; size > 0; t++, size--) {
-        /**
-         *  初始化
-         */
+		/**
+		 *  初始化
+		 */
 		idt_init_desc(&desc, t);
-        /**
-         *  将 desc 拷贝至 idt 对应 vector 中(写入 CPU)
-         */
+		/**
+		 *  将 desc 拷贝至 idt 对应 vector 中(写入 CPU)
+		 */
 		write_idt_entry(idt, t->vector, &desc);
 		if (sys)
 			set_bit(t->vector, system_vectors);
@@ -295,16 +295,16 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 {
 	struct idt_data data;
 
-    /**
-     * @brief 生成一个中断门(赋值)
-     *
-     */
+	/**
+	 * @brief 生成一个中断门(赋值)
+	 *
+	 */
 	init_idt_data(&data, n, addr);
 
-    /**
-     * @brief 将中断门插入至 `IDT` 表中
-     *
-     */
+	/**
+	 * @brief 将中断门插入至 `IDT` 表中
+	 *
+	 */
 	idt_setup_from_table(idt_table, &data, 1, false);
 }
 
@@ -319,12 +319,12 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
  */
 void __init idt_setup_early_traps(void)
 {
-    /**
-     *  拷贝
-     */
+	/**
+	 *  拷贝
+	 */
 	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
 
-    //调用 `load_idt` 函数来执行 `ldtr` 指令来重新加载 `IDT` 表
+	//调用 `load_idt` 函数来执行 `ldtr` 指令来重新加载 `IDT` 表
 	load_idt(&idt_descr);/* 中断描述符 */
 }
 
@@ -333,7 +333,7 @@ void __init idt_setup_early_traps(void)
  */
 void __init idt_setup_traps(void)   /*  中断描述符表*/
 {
-    /* 默认的中断描述附表 */
+	/* 默认的中断描述附表 */
 	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
 }
 
@@ -343,7 +343,7 @@ void __init idt_setup_traps(void)   /*  中断描述符表*/
  * stacks work only after cpu_init().
  */
 static const __initconst struct idt_data early_pf_idts[] = {
-    //exc_page_fault(struct pt_regs *regs, int error_code) ???
+	//exc_page_fault(struct pt_regs *regs, int error_code) ???
 	INTG(X86_TRAP_PF,		asm_exc_page_fault),    /* Page Fault */
 };
 
@@ -454,17 +454,17 @@ void __init idt_setup_apic_and_irq_gates(void)
 void __init idt_setup_early_handler(void)
 {
 	int i;
-    /**
-     * 在整个初期设置阶段，中断是禁用的
-     * early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
+	/**
+	 * 在整个初期设置阶段，中断是禁用的
+	 * early_idt_handler_array` 数组中的每一项指向的都是同一个通用中断处理程序
 	 *
 	 * NUM_EXCEPTION_VECTORS=32
-     */
+	 */
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
 		set_intr_gate(i, early_idt_handler_array[i]);
 
 #ifdef CONFIG_X86_32
-    /**
+	/**
 	 * 忽略32 - 255
 	 * NR_VECTORS = 256
 	 */
@@ -472,9 +472,9 @@ void __init idt_setup_early_handler(void)
 		set_intr_gate(i, early_ignore_irq);
 #endif
 
-    /**
-     *  加载到lidt 寄存器
-     */
+	/**
+	 *  加载到lidt 寄存器
+	 */
 	load_idt(&idt_descr);
 }
 

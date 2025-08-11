@@ -114,6 +114,10 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
 			}
 
 			oldpte = ptep_modify_prot_start(vma, addr, pte);
+
+			/**
+			 * 修改 PTE 权限
+			 */
 			ptent = pte_modify(oldpte, newprot);
 			if (preserve_write)
 				ptent = pte_mk_savedwrite(ptent);
@@ -463,6 +467,9 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
 
 	*pprev = vma;
 
+	/**
+	 * 设置了不同的权限后， vma 将会被拆分
+	 */
 	if (start != vma->vm_start) {
 		error = split_vma(mm, vma, start, 1);
 		if (error)
@@ -484,6 +491,9 @@ success:
 	dirty_accountable = vma_wants_writenotify(vma, vma->vm_page_prot);
 	vma_set_page_prot(vma);
 
+	/**
+	 *
+	 */
 	change_protection(vma, start, end, vma->vm_page_prot,
 			  dirty_accountable ? MM_CP_DIRTY_ACCT : 0);
 
@@ -616,6 +626,10 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
 		tmp = vma->vm_end;
 		if (tmp > end)
 			tmp = end;
+
+		/**
+		 *
+		 */
 		error = mprotect_fixup(vma, &prev, nstart, tmp, newflags);
 		if (error)
 			goto out;
@@ -638,6 +652,7 @@ out:
 	return error;
 }
 
+int mprotect(void addr[.len], size_t len, int prot);
 SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
 		unsigned long, prot)
 {
@@ -646,6 +661,7 @@ SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
 
 #ifdef CONFIG_ARCH_HAS_PKEYS
 
+int pkey_mprotect(void addr[.len], size_t len, int prot, int pkey);
 SYSCALL_DEFINE4(pkey_mprotect, unsigned long, start, size_t, len,
 		unsigned long, prot, int, pkey)
 {

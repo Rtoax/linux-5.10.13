@@ -9,6 +9,7 @@
 
 #define FIRST_USER_ADDRESS	0UL
 
+/* 用于指示该页表项所描述的页面是否存在于物理内存中 */
 #define _PAGE_BIT_PRESENT	0	/* is present 存在位 */
 #define _PAGE_BIT_RW		1	/* writeable */
 #define _PAGE_BIT_USER		2	/* userspace addressable 用户空间可寻址地址*/
@@ -40,6 +41,7 @@
 /* - if the user mapped it with PROT_NONE; pte_present gives true */
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL    /* 8 */
 
+/* 用于指示该页表项所描述的页面是否存在于物理内存中 */
 #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
 #define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)

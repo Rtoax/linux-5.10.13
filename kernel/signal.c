@@ -1625,7 +1625,7 @@ send_sig(int sig, struct task_struct *p, int priv)
 EXPORT_SYMBOL(send_sig);
 
 /**
- *
+ * $ sudo bpftrace -e 'kprobe:force_sig{printf("%s %p\n %s", comm, pid, kstack)}'
  */
 void force_sig(int sig)
 {

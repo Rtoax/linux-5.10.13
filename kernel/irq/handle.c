@@ -38,17 +38,17 @@ void handle_bad_irq(struct irq_desc *desc)
 {
 	unsigned int irq = irq_desc_get_irq(desc);
 
-    /**
-     *  打印
-     */
+	/**
+	 *  打印
+	 */
 	print_irq_desc(irq, desc);
-    /**
-     *  统计
-     */
+	/**
+	 *  统计
+	 */
 	kstat_incr_irqs_this_cpu(desc);
-    /**
-     *  ACK 就 tm 神奇
-     */
+	/**
+	 *  ACK 就 tm 神奇
+	 */
 	ack_bad_irq(irq);
 }
 EXPORT_SYMBOL_GPL(handle_bad_irq);
@@ -162,9 +162,9 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
 	 */
 	atomic_inc(&desc->threads_active);
 
-    /**
-     *  唤醒中断线程
-     */
+	/**
+	 *  唤醒中断线程
+	 */
 	wake_up_process(action->thread);
 }
 
@@ -179,9 +179,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 
 	record_irq_time(desc);
 
-    /**
-     *  遍历此中断的 action 链表
-     */
+	/**
+	 *  遍历此中断的 action 链表
+	 */
 	for_each_action_of_desc(desc, action) {
 		irqreturn_t res;
 
@@ -193,9 +193,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 			lockdep_hardirq_threaded();
 
 		trace_irq_handler_entry(irq, action);
-        /**
-         *  调用该中断所有的 action handler
-         */
+		/**
+		 *  调用该中断所有的 action handler
+		 */
 		res = action->handler(irq, action->dev_id);
 		trace_irq_handler_exit(irq, action, res);
 
@@ -203,13 +203,13 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 			      irq, action->handler))
 			local_irq_disable();
 
-        /**
-         *
-         */
+		/**
+		 *
+		 */
 		switch (res) {
-        /**
-         *  需要唤醒内核的中断线程
-         */
+		/**
+		 *  需要唤醒内核的中断线程
+		 */
 		case IRQ_WAKE_THREAD:
 			/*
 			 * Catch drivers which return WAKE_THREAD but
@@ -220,9 +220,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc, unsigned int *flags
 				break;
 			}
 
-            /**
-             *  唤醒
-             */
+			/**
+			 *  唤醒
+			 */
 			__irq_wake_thread(desc, action);
 
 			fallthrough;	/* to add to randomness */
@@ -251,14 +251,14 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 	irqreturn_t retval;
 	unsigned int flags = 0;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	retval = __handle_irq_event_percpu(desc, &flags);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	add_interrupt_randomness(desc->irq_data.irq, flags);
 
 	if (!noirqdebug)
@@ -275,27 +275,27 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
 {
 	irqreturn_t ret;
 
-    /**
-     *  pending 标志位清零
-     */
+	/**
+	 *  pending 标志位清零
+	 */
 	desc->istate &= ~IRQS_PENDING;
 
-    /**
-     *  设置标志位，表示该中断正在处理
-     */
+	/**
+	 *  设置标志位，表示该中断正在处理
+	 */
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	raw_spin_unlock(&desc->lock);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	ret = handle_irq_event_percpu(desc);
 
 	raw_spin_lock(&desc->lock);
 
-    /**
-     *  清除标记位
-     */
+	/**
+	 *  清除标记位
+	 */
 	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	return ret;
 }
