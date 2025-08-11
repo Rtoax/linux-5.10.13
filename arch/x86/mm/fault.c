@@ -619,7 +619,7 @@ static void set_signal_archinfo(unsigned long address,
 	if (address >= TASK_SIZE_MAX)
 		error_code |= X86_PF_PROT;
 
-    /* 保存硬件上下文信息 */
+	/* 保存硬件上下文信息 */
 	tsk->thread.trap_nr = X86_TRAP_PF;
 	tsk->thread.error_code = error_code | X86_PF_USER;
 	tsk->thread.cr2 = address;  /* 发生 page fault 的位置 */
