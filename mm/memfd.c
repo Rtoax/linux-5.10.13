@@ -255,6 +255,8 @@ long memfd_fcntl(struct file *file, unsigned int cmd, unsigned long arg)
  * 	shmem_fault() {
  * 		alloc_pages_vma();
  * 	}
+ *
+ * fd 并没有默认设置大小，除非使用 ftruncate 设置，否则时自由扩展的。
  */
 SYSCALL_DEFINE2(memfd_create,
 		const char __user *, uname,

@@ -1369,54 +1369,54 @@ retry:
 		might_sleep();
 	}
 
-    /**
-     *  查找 当前进程 address 所在的 vma 结构
-     */
+	/**
+	 *  查找 当前进程 address 所在的 vma 结构
+	 */
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
 		bad_area(regs, hw_error_code, address);
 		return;
 	}
 
-    /**
-     *  +---+ vm_end
-     *  |   |
-     *  |   |
-     *  |   |   <--- address
-     *  |   |
-     *  |   |
-     *  +---+ vm_start
-     */
+	/**
+	 *  +---+ vm_end
+	 *  |   |
+	 *  |   |
+	 *  |   |   <--- address
+	 *  |   |
+	 *  |   |
+	 *  +---+ vm_start
+	 */
 	if (likely(vma->vm_start <= address))   /* 如果vma的起始地址小于address， 那么地址合法 */
 		goto good_area;
 
-    /**
-     *  +---+ vm_end
-     *  |   |
-     *  |   |
-     *  |   |
-     *  |   |
-     *  |   |
-     *  +---+ vm_start
-     *
-     *          <--- address
-     */
+	/**
+	 *  +---+ vm_end
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  +---+ vm_start
+	 *
+	 *          <--- address
+	 */
 	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {    /*向下增长   */
 		bad_area(regs, hw_error_code, address);
 		return;
 	}
 
-    /**
-     *  +---+ vm_end
-     *  |   |
-     *  |   |
-     *  |   |
-     *  |   |
-     *  |   |
-     *  +---+ vm_start
-     *  |   |       扩展这个 vma
-     *  +---+   <--- address
-     */
+	/**
+	 *  +---+ vm_end
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  |   |
+	 *  +---+ vm_start
+	 *  |   |       扩展这个 vma
+	 *  +---+   <--- address
+	 */
 	if (unlikely(expand_stack(vma, address))) {
 		bad_area(regs, hw_error_code, address);
 		return;
@@ -1500,7 +1500,7 @@ static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
-    /* trace point */
+	/* trace point */
 	trace_page_fault_entries(regs, error_code, address);
 
 	if (unlikely(kmmio_fault(regs, address))) /* TODO */
