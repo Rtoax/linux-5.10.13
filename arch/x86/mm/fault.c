@@ -1150,9 +1150,16 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 	return 0;
 }
 
-//内核空间的错误
-//`kmemcheck` fault, spurious fault, [kprobes] fault and etc
-bool fault_in_kernel_space(unsigned long address)   /* 根据地址，判定缺页发生在内核态还是用户态 */
+/**
+ * 内核空间的异常 - 根据地址，判定缺页发生在内核态还是用户态
+ *
+ * - page fault
+ * - kmemcheck fault,
+ * - spurious fault,
+ * - [kprobes] fault，
+ * - etc
+ */
+bool fault_in_kernel_space(unsigned long address)
 {
 	/*
 	 * On 64-bit systems, the vsyscall page is at an address above
@@ -1162,10 +1169,10 @@ bool fault_in_kernel_space(unsigned long address)   /* 根据地址，判定缺�
 	if (IS_ENABLED(CONFIG_X86_64) && is_vsyscall_vaddr(address))
 		return false;
 
-    /*
-     * 五级页表时 = 0x00ff ffff ffff f000
-     * 四级页表时 = 0x0000 7fff ffff f000
-     */
+	/*
+	* 五级页表时 = 0x00ff ffff ffff f000
+	* 四级页表时 = 0x0000 7fff ffff f000
+	*/
 	return address >= TASK_SIZE_MAX;
 }
 
@@ -1210,10 +1217,10 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 	 * exist as the vmalloc mappings don't need to be synchronized
 	 * there.
 	 */
-//	if (!(hw_error_code & (X86_PF_RSVD | X86_PF_USER | X86_PF_PROT))) {
-//		if (vmalloc_fault(address) >= 0)
-//			return;
-//	}
+	if (!(hw_error_code & (X86_PF_RSVD | X86_PF_USER | X86_PF_PROT))) {
+		if (vmalloc_fault(address) >= 0)
+			return;
+	}
 #endif
 
 	/* Was the fault spurious, caused by lazy TLB invalidation? */
@@ -1373,12 +1380,15 @@ retry:
 	 *  查找 当前进程 address 所在的 vma 结构
 	 */
 	vma = find_vma(mm, address);
-	if (unlikely(!vma)) { /* 没找到 vma ，访问了不存在地址 */
+	/* 没找到 vma ，访问了不存在地址 */
+	if (unlikely(!vma)) {
 		bad_area(regs, hw_error_code, address);
 		return;
 	}
 
 	/**
+	 * 如果vma的起始地址小于address， 那么地址合法
+	 *
 	 *  +---+ vm_end
 	 *  |   |
 	 *  |   |
@@ -1387,10 +1397,12 @@ retry:
 	 *  |   |
 	 *  +---+ vm_start
 	 */
-	if (likely(vma->vm_start <= address))   /* 如果vma的起始地址小于address， 那么地址合法 */
+	if (likely(vma->vm_start <= address))
 		goto good_area;
 
 	/**
+	 * 向下增长
+	 *
 	 *  +---+ vm_end
 	 *  |   |
 	 *  |   |
@@ -1401,7 +1413,7 @@ retry:
 	 *
 	 *          <--- address
 	 */
-	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {    /*向下增长   */
+	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
 		bad_area(regs, hw_error_code, address);
 		return;
 	}
