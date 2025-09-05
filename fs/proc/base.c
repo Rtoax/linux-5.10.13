@@ -3278,6 +3278,7 @@ static const struct pid_entry tgid_base_stuff[] = {
 	ONE("syscall",    S_IRUSR, proc_pid_syscall),
 #endif
 	REG("cmdline",    S_IRUGO, proc_pid_cmdline_ops),
+	/* /proc/self/stat */
 	ONE("stat",       S_IRUGO, proc_tgid_stat),
 	ONE("statm",      S_IRUGO, proc_pid_statm),
 

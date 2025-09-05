@@ -443,6 +443,9 @@ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
 	return 0;
 }
 
+/**
+ * /proc/self/stat
+ */
 static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
 			struct pid *pid, struct task_struct *task, int whole)
 {
@@ -642,6 +645,7 @@ int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns,
 	return do_task_stat(m, ns, pid, task, 0);
 }
 
+/* /proc/self/stat */
 int proc_tgid_stat(struct seq_file *m, struct pid_namespace *ns,
 			struct pid *pid, struct task_struct *task)
 {
