@@ -430,6 +430,13 @@ static void init_translation_status(struct intel_iommu *iommu)
 		iommu->flags |= VTD_FLAG_TRANS_PRE_ENABLED;
 }
 
+/**
+ * 在Linux内核中，intel_iommu=参数是专门针对Intel IOMMU驱动的参数，它用于控制Intel VT-d
+ * （Virtualization Technology for Directed I/O）的功能。对于AMD平台，它们使用不同的
+ * IOMMU技术（AMD-Vi），因此这个参数不适用于AMD。
+ *
+ * see also： amd_iommu=on iommu=pt
+ */
 static int __init intel_iommu_setup(char *str)
 {
 	if (!str)

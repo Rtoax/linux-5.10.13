@@ -3141,6 +3141,9 @@ static int __init parse_amd_iommu_intr(char *str)
 static int __init parse_amd_iommu_options(char *str)
 {
 	for (; *str; ++str) {
+		/**
+		 * 在每次IOTLB刷新时执行完整刷新（可能更慢但更安全）
+		 */
 		if (strncmp(str, "fullflush", 9) == 0) {
 			pr_warn("amd_iommu=fullflush deprecated; use iommu.strict=1 instead\n");
 			iommu_set_dma_strict();
@@ -3149,6 +3152,9 @@ static int __init parse_amd_iommu_options(char *str)
 			amd_iommu_force_enable = true;
 		if (strncmp(str, "off", 3) == 0)
 			amd_iommu_disabled = true;
+		/**
+		 * 强制对所有设备使用IOMMU隔离（即使ACS未支持）
+		 */
 		if (strncmp(str, "force_isolation", 15) == 0)
 			amd_iommu_force_isolation = true;
 	}
@@ -3305,6 +3311,9 @@ found:
 }
 
 __setup("amd_iommu_dump",	parse_amd_iommu_dump);
+/**
+ * 在AMD平台上，通常使用amd_iommu=参数来控制AMD IOMMU的行为。
+ */
 __setup("amd_iommu=",		parse_amd_iommu_options);
 __setup("amd_iommu_intr=",	parse_amd_iommu_intr);
 __setup("ivrs_ioapic",		parse_ivrs_ioapic);

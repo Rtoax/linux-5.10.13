@@ -2744,6 +2744,9 @@ struct iommu_resv_region *iommu_alloc_resv_region(phys_addr_t start,
 }
 EXPORT_SYMBOL_GPL(iommu_alloc_resv_region);
 
+/**
+ * iommu=pt
+ */
 void iommu_set_default_passthrough(bool cmd_line)
 {
 	if (cmd_line)

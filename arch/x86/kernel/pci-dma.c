@@ -79,6 +79,9 @@ static __init int iommu_setup(char *p)
 	while (*p) {
 		if (!strncmp(p, "off", 3))
 			no_iommu = 1;
+		/**
+		 * 强制启用，忽略硬件问题
+		 */
 		/* gart_parse_options has more force support */
 		if (!strncmp(p, "force", 5))
 			force_iommu = 1;
@@ -115,6 +118,9 @@ static __init int iommu_setup(char *p)
 		if (!strncmp(p, "soft", 4))
 			swiotlb = 1;
 #endif
+		/**
+		 * Passthrough - 仅直通设备使用IOMMU, 最小开销
+		 */
 		if (!strncmp(p, "pt", 2))
 			iommu_set_default_passthrough(true);
 		if (!strncmp(p, "nopt", 4))
