@@ -229,6 +229,15 @@ struct iommu_iotlb_gather {
  *		- 0: use the default setting
  * @pgsize_bitmap: bitmap of all possible supported page sizes
  * @owner: Driver module providing these ops
+ *
+ * 值：
+ * amd_iommu_ops
+ * ipmmu_ops
+ * msm_iommu_ops
+ * mtk_iommu_ops
+ * omap_iommu_ops
+ * viommu_ops
+ * ...
  */
 struct iommu_ops {
 	bool (*capable)(enum iommu_cap);

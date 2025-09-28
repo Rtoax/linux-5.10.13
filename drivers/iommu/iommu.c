@@ -2399,6 +2399,11 @@ static int __iommu_map(struct iommu_domain *domain, unsigned long iova,
 
 		pr_debug("mapping: iova 0x%lx pa %pa pgsize 0x%zx\n",
 			 iova, &paddr, pgsize);
+
+		/**
+		 * amd_iommu_map()
+		 * ....
+		 */
 		ret = ops->map(domain, iova, paddr, pgsize, prot, gfp);
 
 		if (ret)
