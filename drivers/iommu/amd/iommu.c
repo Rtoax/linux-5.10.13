@@ -473,6 +473,12 @@ static void amd_iommu_report_rmp_fault(volatile u32 *event)
 		pci_dev_put(pdev);
 }
 
+/**
+ * AMD IOMMU驱动中处理页面故障（Page Fault）的核心函数。当设备通过DMA访问内存时，如果遇到
+ * 地址转换问题，IOMMU会触发页面故障。
+ *
+ * @address: 引发页面故障的I/O虚拟地址（IOVA）
+ */
 static void amd_iommu_report_page_fault(u16 devid, u16 domain_id,
 					u64 address, int flags)
 {
@@ -485,6 +491,9 @@ static void amd_iommu_report_page_fault(u16 devid, u16 domain_id,
 		dev_data = dev_iommu_priv_get(&pdev->dev);
 
 	if (dev_data) {
+		/**
+		 * AMD-V1: Event logged [IO_PAGE_FAULT ...
+		 */
 		if (__ratelimit(&dev_data->rs)) {
 			pci_err(pdev, "Event logged [IO_PAGE_FAULT domain=0x%04x address=0x%llx flags=0x%04x]\n",
 				domain_id, address, flags);

@@ -1228,6 +1228,9 @@ static int vfio_iommu_map(struct vfio_iommu *iommu, dma_addr_t iova,
 	int ret;
 
 	list_for_each_entry(d, &iommu->domain_list, next) {
+		/**
+		 *
+		 */
 		ret = iommu_map(d->domain, iova, (phys_addr_t)pfn << PAGE_SHIFT,
 				npage << PAGE_SHIFT, prot | d->prot);
 		if (ret)
@@ -1319,7 +1322,9 @@ static int vfio_dma_do_map(struct vfio_iommu *iommu,
 	size_t pgsize;
 	struct vfio_dma *dma;
 
-	/* Verify that none of our __u64 fields overflow */
+	/**
+	 * Verify that none of our __u64 fields overflow
+	 */
 	if (map->size != size || map->vaddr != vaddr || map->iova != iova)
 		return -EINVAL;
 
@@ -1340,7 +1345,10 @@ static int vfio_dma_do_map(struct vfio_iommu *iommu,
 		goto out_unlock;
 	}
 
-	/* Don't allow IOVA or virtual address wrap */
+	/**
+	 * Don't allow IOVA or virtual address wrap
+	 * 不允许 IOVA 或虚拟地址换行
+	 */
 	if (iova + size - 1 < iova || vaddr + size - 1 < vaddr) {
 		ret = -EINVAL;
 		goto out_unlock;
@@ -1406,7 +1414,9 @@ static int vfio_dma_do_map(struct vfio_iommu *iommu,
 	/* Insert zero-sized and grow as we map chunks of it */
 	vfio_link_dma(iommu, dma);
 
-	/* Don't pin and map if container doesn't contain IOMMU capable domain*/
+	/**
+	 * Don't pin and map if container doesn't contain IOMMU capable domain
+	 */
 	if (!IS_IOMMU_CAP_DOMAIN_IN_CONTAINER(iommu))
 		dma->size = size;
 	else
@@ -2874,6 +2884,9 @@ static long vfio_iommu_type1_ioctl(void *iommu_data,
 		return vfio_iommu_type1_check_extension(iommu, arg);
 	case VFIO_IOMMU_GET_INFO:
 		return vfio_iommu_type1_get_info(iommu, arg);
+	/**
+	 *
+	 */
 	case VFIO_IOMMU_MAP_DMA:
 		return vfio_iommu_type1_map_dma(iommu, arg);
 	case VFIO_IOMMU_UNMAP_DMA:
