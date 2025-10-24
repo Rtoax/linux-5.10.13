@@ -127,6 +127,9 @@ static const struct bpf_verifier_ops * const bpf_verifier_ops[] = {
  * can be: PTR_TO_MAP_VALUE, PTR_TO_CTX, PTR_TO_STACK, PTR_TO_SOCKET. These are
  * four pointer types recognized by check_mem_access() function.
  *
+ * 当验证程序看到加载或存储指令时，基址寄存器的类型可以是：PTR_TO_MAP_VALUE、PTR_TO_CTX、
+ * PTR_TO_STACK、PTR_TO_SOCKET。这是 check_mem_access() 函数识别的四种指针类型。
+ *
  * PTR_TO_MAP_VALUE means that this register is pointing to 'map element value'
  * and the range of [ptr, ptr + map's value_size) is accessible.
  *
@@ -626,6 +629,25 @@ const char *kernel_type_name(u32 id)
 				  btf_type_by_id(btf_vmlinux, id)->name_off);
 }
 
+/**
+ * 打印一条指令
+ *
+ * 例如：
+ *
+ * -----------------------------------------------------------------------------
+ * https://github.com/bpftrace/bpftrace/pull/4746
+ * ;  @ strings.bpf.c:85
+ * 24: (25) if r3 > 0x223 goto pc+8      ; R3_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=547,var_off=(0x0; 0x3ff))
+ * 25: (57) r2 &= 1023                   ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1023,var_off=(0x0; 0x3ff))
+ * ;  @ strings.bpf.c:87
+ * 26: (67) r2 <<= 6                     ; R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffc0,var_off=(0x0; 0xffc0))
+ * 27: (18) r1 = 0xffffd02b8efa5010      ; R1_w=map_value(map=25a80ac0.rodata,ks=4,vs=35152,off=16)
+ * 29: (0f) r1 += r2                     ; R1_w=map_value(map=25a80ac0.rodata,ks=4,vs=35152,off=16,smin=smin32=0,smax=umax=smax32=umax32=0xffc0,var_off=(0x0; 0xffc0)) R2_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=0xffc0,var_off=(0x0; 0xffc0))
+ * 30: (71) r2 = *(u8 *)(r1 +0)
+ *
+ * 注释：
+ * 0xffc0=65472
+ */
 static void print_verifier_state(struct bpf_verifier_env *env,
 				 const struct bpf_func_state *state)
 {
@@ -635,7 +657,8 @@ static void print_verifier_state(struct bpf_verifier_env *env,
 
 	if (state->frameno)
 		verbose(env, " frame%d:", state->frameno);
-	for (i = 0; i < MAX_BPF_REG; i++) {
+
+	for (i = 0; i < MAX_BPF_REG/*=11, 10个通用寄存器*/; i++) {
 		reg = &state->regs[i];
 		t = reg->type;
 		if (t == NOT_INIT)
@@ -664,6 +687,9 @@ static void print_verifier_state(struct bpf_verifier_env *env,
 			else if (t == CONST_PTR_TO_MAP ||
 				 t == PTR_TO_MAP_VALUE ||
 				 t == PTR_TO_MAP_VALUE_OR_NULL)
+				 /**
+				  *
+				  */
 				verbose(env, ",ks=%d,vs=%d",
 					reg->map_ptr->key_size,
 					reg->map_ptr->value_size);
@@ -2661,7 +2687,11 @@ static int check_map_access_type(struct bpf_verifier_env *env, u32 regno,
 	return 0;
 }
 
-/* check read/write into memory region (e.g., map value, ringbuf sample, etc) */
+/**
+ * check read/write into memory region (e.g., map value, ringbuf sample, etc)
+ *
+ * v6.18-rc2-120-g6fab32bb6508 没变化
+ */
 static int __check_mem_access(struct bpf_verifier_env *env, int regno,
 			      int off, int size, u32 mem_size,
 			      bool zero_size_allowed)
@@ -2675,6 +2705,12 @@ static int __check_mem_access(struct bpf_verifier_env *env, int regno,
 	reg = &cur_regs(env)[regno];
 	switch (reg->type) {
 	case PTR_TO_MAP_VALUE:
+		/**
+		 * example:
+		 * 30: (71) r2 = *(u8 *)(r1 +0)
+		 * invalid access to map value, value_size=35152 off=65488 size=1
+		 * R1 max value is outside of the allowed memory range
+		 */
 		verbose(env, "invalid access to map value, value_size=%d off=%d size=%d\n",
 			mem_size, off, size);
 		break;
@@ -2715,6 +2751,8 @@ static int check_mem_region_access(struct bpf_verifier_env *env, u32 regno,
 	 * value is 0.  If we are using signed variables for our
 	 * index'es we need to make sure that whatever we use
 	 * will have a set floor within our range.
+	 *
+	 * 有符号，无符号，最小值，最大值
 	 */
 	if (reg->smin_value < 0 &&
 	    (reg->smin_value == S64_MIN ||
@@ -2724,6 +2762,9 @@ static int check_mem_region_access(struct bpf_verifier_env *env, u32 regno,
 			regno);
 		return -EACCES;
 	}
+	/**
+	 * 检查
+	 */
 	err = __check_mem_access(env, regno, reg->smin_value + off, size,
 				 mem_size, zero_size_allowed);
 	if (err) {
@@ -2741,6 +2782,13 @@ static int check_mem_region_access(struct bpf_verifier_env *env, u32 regno,
 			regno);
 		return -EACCES;
 	}
+	/**
+	 * 示例:
+	 *
+	 * 30: (71) r2 = *(u8 *)(r1 +0)
+	 * invalid access to map value, value_size=35152 off=65488 size=1
+	 * R1 max value is outside of the allowed memory range
+	 */
 	err = __check_mem_access(env, regno, reg->umax_value + off, size,
 				 mem_size, zero_size_allowed);
 	if (err) {
@@ -3513,6 +3561,29 @@ static int check_ptr_to_map_access(struct bpf_verifier_env *env,
  * if t==read, value_regno is a register which will receive the value from memory
  * if t==write && value_regno==-1, some unknown value is stored into memory
  * if t==read && value_regno==-1, don't care what we read from memory
+ *
+ * 当验证程序看到加载或存储指令时，基址寄存器的类型可以是：PTR_TO_MAP_VALUE、PTR_TO_CTX、
+ * PTR_TO_STACK、PTR_TO_SOCKET。这是 check_mem_access() 函数识别的四种指针类型。
+ *
+ * v5.10.13
+ * - PTR_TO_MAP_VALUE
+ * - PTR_TO_MEM
+ * - PTR_TO_CTX
+ * - PTR_TO_STACK
+ * ...
+ *
+ * v6.18-rc2-120-g6fab32bb6508
+ * - PTR_TO_MAP_KEY
+ * - PTR_TO_MAP_VALUE
+ * - PTR_TO_MEM
+ * - PTR_TO_CTX
+ * - PTR_TO_STACK
+ * - PTR_TO_FLOW_KEYS
+ * - PTR_TO_TP_BUFFER
+ * - CONST_PTR_TO_MAP
+ * - PTR_TO_BUF
+ * - PTR_TO_ARENA
+ * - ...
  */
 static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regno,
 			    int off, int bpf_size, enum bpf_access_type t,
@@ -3535,15 +3606,27 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 	/* for access checks, reg->off is just part of off */
 	off += reg->off;
 
+	/**
+	 * 指向BPF map中值的指针。
+	 * 这种指针是通过bpf_map_lookup_elem等 helper function 获得的。
+	 * 验证器会确保访问在map值的大小范围内，并且可能会检查对齐和类型。
+	 * 例如，如果map的值类型是一个结构体，那么通过这个指针访问结构体的字段是允许的，但必须确保不越界。
+	 */
 	if (reg->type == PTR_TO_MAP_VALUE) {
 		if (t == BPF_WRITE && value_regno >= 0 &&
 		    is_pointer_value(env, value_regno)) {
 			verbose(env, "R%d leaks addr into map\n", value_regno);
 			return -EACCES;
 		}
+		/**
+		 * 检查读写权限
+		 */
 		err = check_map_access_type(env, regno, off, size, t);
 		if (err)
 			return err;
+		/**
+		 * 检查
+		 */
 		err = check_map_access(env, regno, off, size, false);
 		if (!err && t == BPF_READ && value_regno >= 0) {
 			struct bpf_map *map = reg->map_ptr;
@@ -3576,6 +3659,11 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 					      reg->mem_size, false);
 		if (!err && t == BPF_READ && value_regno >= 0)
 			mark_reg_unknown(env, regs, value_regno);
+	/**
+	 * 指向BPF程序上下文的指针。上下文是BPF程序的输入，它包含了程序运行时的数据。
+	 * 例如，在socket filter程序中，上下文是struct __sk_buff，在XDP程序中是struct xdp_md。
+	 * 验证器会检查对上下文指针的访问，确保不会访问超出上下文结构定义的范围，并且访问的字段必须是上下文结构中存在的。
+	 */
 	} else if (reg->type == PTR_TO_CTX) {
 		enum bpf_reg_type reg_type = SCALAR_VALUE;
 		u32 btf_id = 0;
@@ -9507,14 +9595,16 @@ static int do_check(struct bpf_verifier_env *env)
 		prev_insn_idx = env->insn_idx;
 
 		/**
-		 * @brief
-		 *
+		 * 算术指令
 		 */
 		if (class == BPF_ALU || class == BPF_ALU64) {
 			err = check_alu_op(env, insn);
 			if (err)
 				return err;
 
+		/**
+		 * Load加载指令，要访问内存，【你写的很多bpf程序报错都是发生在这里】
+		 */
 		} else if (class == BPF_LDX) {
 			enum bpf_reg_type *prev_src_type, src_reg_type;
 
@@ -9531,7 +9621,8 @@ static int do_check(struct bpf_verifier_env *env)
 
 			src_reg_type = regs[insn->src_reg].type;
 
-			/* check that memory (src_reg + off) is readable,
+			/**
+			 * check that memory (src_reg + off) is readable,
 			 * the state of dst_reg will be updated by this func
 			 */
 			err = check_mem_access(env, env->insn_idx, insn->src_reg,
@@ -9561,6 +9652,9 @@ static int do_check(struct bpf_verifier_env *env)
 				return -EINVAL;
 			}
 
+		/**
+		 * Store存储指令，要存储内存
+		 */
 		} else if (class == BPF_STX) {
 			enum bpf_reg_type *prev_dst_type, dst_reg_type;
 
@@ -11488,7 +11582,9 @@ static int do_check_common(struct bpf_verifier_env *env, int subprog)
 
 	env->prev_linfo = NULL;
 
-	// pass_cnt 计算 do_check_common() 运行的次数
+	/**
+	 * pass_cnt 计算 do_check_common() 运行的次数
+	 */
 	env->pass_cnt++;
 
 	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);

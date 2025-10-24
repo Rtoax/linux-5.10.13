@@ -409,15 +409,36 @@ enum bpf_access_type {
 enum bpf_reg_type {
 	NOT_INIT = 0,		 /* nothing was written into register */
 	SCALAR_VALUE,		 /* reg doesn't contain a valid pointer */
+	/**
+	 * 指向BPF程序上下文的指针。上下文是BPF程序的输入，它包含了程序运行时的数据。
+	 * 例如，在socket filter程序中，上下文是struct __sk_buff，在XDP程序中是struct xdp_md。
+	 * 验证器会检查对上下文指针的访问，确保不会访问超出上下文结构定义的范围，并且访问的字段必须是上下文结构中存在的。
+	 */
 	PTR_TO_CTX,		 /* reg points to bpf_context */
 	CONST_PTR_TO_MAP,	 /* reg points to struct bpf_map */
+	/**
+	 * 指向BPF map中值的指针。
+	 * 这种指针是通过bpf_map_lookup_elem等 helper function 获得的。
+	 * 验证器会确保访问在map值的大小范围内，并且可能会检查对齐和类型。
+	 * 例如，如果map的值类型是一个结构体，那么通过这个指针访问结构体的字段是允许的，但必须确保不越界。
+	 */
 	PTR_TO_MAP_VALUE,	 /* reg points to map element value */
 	PTR_TO_MAP_VALUE_OR_NULL,/* points to map elem value or NULL */
+	/**
+	 * 指向BPF栈的指针。BPF栈是每个程序调用固定大小的栈（通常为512字节），用于存储局部变量等。
+	 * 验证器会检查栈指针的访问是否在栈的范围内，并且确保不会出现栈溢出。
+	 * 栈指针通常通过r10寄存器（帧指针）加上一个偏移来访问。
+	 */
 	PTR_TO_STACK,		 /* reg == frame_pointer + offset */
 	PTR_TO_PACKET_META,	 /* skb->data - meta_len */
 	PTR_TO_PACKET,		 /* reg points to skb->data */
 	PTR_TO_PACKET_END,	 /* skb->data + headlen */
 	PTR_TO_FLOW_KEYS,	 /* reg points to bpf_flow_keys */
+	/**
+	 * 指向sock的指针。这种指针通常是通过bpf_sk_lookup_xxx helper function 获得的。
+	 * 它用于访问socket的信息，并且只能通过特定的helper function（如bpf_sk_release）来释放。
+	 * 验证器会确保这种指针只能传递给允许的helper function，并且不能进行任意的指针运算。
+	 */
 	PTR_TO_SOCKET,		 /* reg points to struct bpf_sock */
 	PTR_TO_SOCKET_OR_NULL,	 /* reg points to struct bpf_sock or NULL */
 	PTR_TO_SOCK_COMMON,	 /* reg points to sock_common */

@@ -118,10 +118,22 @@ struct bpf_reg_state {
 	 * with the same id as us.
 	 */
 	struct tnum var_off;
-	/* Used to determine if any memory access using this register will
+	/**
+	 * Used to determine if any memory access using this register will
 	 * result in a bad access.
+	 * 用于确定使用此寄存器的任何内存访问是否会导致错误访问。
+	 *
 	 * These refer to the same value as var_off, not necessarily the actual
 	 * contents of the register.
+	 * 这些值与 var_off 相同，不一定是寄存器的实际内容。
+	 *
+	 * 为什么需要两种范围？
+	 * int a = -1;              // smin=-1, smax=-1, umin=UINT_MAX, umax=UINT_MAX
+	 * unsigned b = 0xFFFFFFFF; // smin=-1, smax=-1, umin=UINT_MAX, umax=UINT_MAX
+	 *
+	 * 比较操作结果不同
+	 * a < 0    // true  (有符号比较)
+	 * b < 0    // false (无符号比较)
 	 */
 	s64 smin_value; /* minimum possible (s64)value */
 	s64 smax_value; /* maximum possible (s64)value */
