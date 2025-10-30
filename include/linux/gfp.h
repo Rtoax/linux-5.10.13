@@ -608,9 +608,9 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 static inline struct page * /* 分配 page */
 __alloc_pages(gfp_t gfp_mask, unsigned int order, int preferred_nid)    /* TODO */
 {
-    /**
-     *  最终调用函数
-     */
+	/**
+	 *  最终调用函数
+	 */
 	return __alloc_pages_nodemask(gfp_mask, order, preferred_nid, NULL);
 }
 
@@ -624,9 +624,9 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) /* TODO */
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp_mask & __GFP_THISNODE) && !node_online(nid));
 
-    /**
-     *  分配物理页
-     */
+	/**
+	 *  分配物理页
+	 */
 	return __alloc_pages(gfp_mask, order, nid);
 }
 
@@ -643,9 +643,9 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned in
 	if (nid == NUMA_NO_NODE)
 		nid = numa_mem_id();
 
-    /**
-     *  内部分配函数
-     */
+	/**
+	 *  内部分配函数
+	 */
 	return __alloc_pages_node(nid, gfp_mask, order);
 }
 

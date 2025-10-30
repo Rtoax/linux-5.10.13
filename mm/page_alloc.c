@@ -6103,7 +6103,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	unsigned int alloc_flags = ALLOC_WMARK_LOW; /* 初始化为低水位 */
 	gfp_t alloc_mask; /* The gfp_t that was actually used for allocation */
 
-    /* 分配信息 */
+	/* 分配信息 */
 	struct alloc_context ac = { };
 
 	/*
@@ -6122,13 +6122,13 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	gfp_mask &= gfp_allowed_mask;
 	alloc_mask = gfp_mask;
 
-    /**
-     *  计算
-     *
-     *  struct alloc_context 结构
-     *  gfp_t alloc_mask
-     *  alloc_flags
-     */
+	/**
+	 *  计算
+	 *
+	 *  struct alloc_context 结构
+	 *  gfp_t alloc_mask
+	 *  alloc_flags
+	 */
 	if (!prepare_alloc_pages(gfp_mask, order, preferred_nid, nodemask, &ac, &alloc_mask, &alloc_flags))
 		return NULL;
 
@@ -6162,16 +6162,16 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order, int preferred_nid,
 	 */
 	ac.nodemask = nodemask;
 
-    /**
-     *  如果上面申请失败，则进入慢速路径
-     *  内部将 唤醒 kswapd 进程
-     */
+	/**
+	 *  如果上面申请失败，则进入慢速路径
+	 *  内部将 唤醒 kswapd 进程
+	 */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
 
 out:
-    /**
-     *  memory control(cgroup)
-     */
+	/**
+	 *  memory control(cgroup)
+	 */
 	if (memcg_kmem_enabled()/* memory cgroup */ &&
         (gfp_mask & __GFP_ACCOUNT) &&
         page &&
@@ -6182,9 +6182,9 @@ out:
 		__free_pages(page, order);
 		page = NULL;
 	}
-    /**
-     *  分配页
-     */
+	/**
+	 *  分配页
+	 */
 	trace_mm_page_alloc(page, order, alloc_mask, ac.migratetype);
 
 	return page;
@@ -6204,9 +6204,9 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)  /* 获取物
 {
 	struct page *page;
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	page = alloc_pages(gfp_mask & ~__GFP_HIGHMEM, order);   /* 不是 高端内存 */
 	if (!page)
 		return 0;
@@ -6219,9 +6219,9 @@ EXPORT_SYMBOL(__get_free_pages);
  */
 unsigned long get_zeroed_page(gfp_t gfp_mask)   /* 获取一个零页 */
 {
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	return __get_free_pages(gfp_mask | __GFP_ZERO, 0);  /* 被填充为 0 */
 }
 EXPORT_SYMBOL(get_zeroed_page);

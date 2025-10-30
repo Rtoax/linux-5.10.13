@@ -3091,7 +3091,7 @@ static inline struct page *__dev_alloc_pages(gfp_t gfp_mask,
 {
 	/* This piece of code contains several assumptions.
 	 * 1.  This is for device Rx, therefor a cold page is preferred.
-	 * 2.  The expectation is the user wants a compound page.
+	 * 2.  The expectation is the user wants a compound page（复合页）.
 	 * 3.  If requesting a order 0 page it will not be compound
 	 *     due to the check to see if order has a value in prep_new_page
 	 * 4.  __GFP_MEMALLOC is ignored if __GFP_NOMEMALLOC is set due to
