@@ -1,5 +1,7 @@
 # e1000e
 
+## 分配
+
 ```c
 struct net_device netdev.ethtool_ops = e1000_ethtool_ops = {
   .set_ringparam		= e1000_set_ringparam() {
@@ -19,6 +21,15 @@ struct net_device netdev.ethtool_ops = e1000_ethtool_ops = {
   },
 };
 ```
+
+## 接收
+
+```c
+e1000_clean_rx_irq() {
+}
+```
+
+## 发送
 
 
 # dma_alloc_coherent()

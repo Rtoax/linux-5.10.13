@@ -2156,7 +2156,8 @@ static void e1000_clean_all_rx_rings(struct e1000_adapter *adapter)
 		e1000_clean_rx_ring(adapter, &adapter->rx_ring[i]);
 }
 
-/* The 82542 2.0 (revision 2) needs to have the receive unit in reset
+/**
+ * The 82542 2.0 (revision 2) needs to have the receive unit in reset
  * and memory write and invalidate disabled for certain operations
  */
 static void e1000_enter_82542_rst(struct e1000_adapter *adapter)
@@ -4343,8 +4344,11 @@ next_desc:
 	return cleaned;
 }
 
-/* this should improve performance for small packets with large amounts
+/**
+ * this should improve performance for small packets with large amounts
  * of reassembly being done in the stack
+ *
+ * 从 DMA ringbuffer 里取包
  */
 static struct sk_buff *e1000_copybreak(struct e1000_adapter *adapter,
 				       struct e1000_rx_buffer *buffer_info,
@@ -4369,6 +4373,8 @@ static struct sk_buff *e1000_copybreak(struct e1000_adapter *adapter,
 
 /**
  * e1000_clean_rx_irq - Send received data up the network stack; legacy
+ * 将收到的内容送向上层协议栈
+ *
  * @adapter: board private structure
  * @rx_ring: ring to clean
  * @work_done: amount of napi work completed this call
@@ -4405,8 +4411,15 @@ static bool e1000_clean_rx_irq(struct e1000_adapter *adapter,
 		status = rx_desc->status;
 		length = le16_to_cpu(rx_desc->length);
 
+		/**
+		 * data 是 DMA ringbuffer 里的内容
+		 */
 		data = buffer_info->rxbuf.data;
 		prefetch(data);
+
+		/**
+		 * 直接返回 skb
+		 */
 		skb = e1000_copybreak(adapter, buffer_info, length, data);
 		if (!skb) {
 			unsigned int frag_len = e1000_frag_len(adapter);
