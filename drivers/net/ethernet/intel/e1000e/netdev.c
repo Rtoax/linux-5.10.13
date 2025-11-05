@@ -2345,6 +2345,9 @@ static int e1000_alloc_ring_dma(struct e1000_adapter *adapter,
 {
 	struct pci_dev *pdev = adapter->pdev;
 
+	/**
+	 * 调用 DMA 函数
+	 */
 	ring->desc = dma_alloc_coherent(&pdev->dev, ring->size, &ring->dma,
 					GFP_KERNEL);
 	if (!ring->desc)
@@ -2392,6 +2395,9 @@ err:
  * @rx_ring: Rx descriptor ring
  *
  * Returns 0 on success, negative on failure
+ *
+ * 分配资源：
+ * - 接收队列内存
  **/
 int e1000e_setup_rx_resources(struct e1000_ring *rx_ring)
 {
@@ -2419,6 +2425,9 @@ int e1000e_setup_rx_resources(struct e1000_ring *rx_ring)
 	rx_ring->size = rx_ring->count * desc_len;
 	rx_ring->size = ALIGN(rx_ring->size, 4096);
 
+	/**
+	 * 接收队列
+	 */
 	err = e1000_alloc_ring_dma(adapter, rx_ring);
 	if (err)
 		goto err_pages;

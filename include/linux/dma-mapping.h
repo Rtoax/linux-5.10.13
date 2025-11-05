@@ -389,10 +389,20 @@ static inline void dma_sync_sgtable_for_device(struct device *dev,
 #define dma_get_sgtable(d, t, v, h, s) dma_get_sgtable_attrs(d, t, v, h, s, 0)
 #define dma_mmap_coherent(d, v, c, h, s) dma_mmap_attrs(d, v, c, h, s, 0)
 
+/**
+ * 分配一致性 DMA 内存的重要函数，它确保 CPU 和设备可以同时访问同一块内存而不会出现缓存
+ * 一致性问题。
+ *
+ * @dev: 执行 DMA 操作的设备指针
+ * @size: 要分配的内存大小（字节）
+ * @dma_handle: 输出参数，返回 DMA 总线地址
+ * @flag: 内存分配标志（如 GFP_KERNEL, GFP_ATOMIC）
+ *
+ * 比如分配网卡队列内存
+ */
 static inline void *dma_alloc_coherent(struct device *dev, size_t size,
 		dma_addr_t *dma_handle, gfp_t gfp)
 {
-
 	return dma_alloc_attrs(dev, size, dma_handle, gfp,
 			(gfp & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0);
 }

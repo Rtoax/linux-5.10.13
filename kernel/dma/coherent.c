@@ -10,6 +10,9 @@
 #include <linux/dma-direct.h>
 #include <linux/dma-map-ops.h>
 
+/**
+ * coherent: 相干
+ */
 struct dma_coherent_mem {
 	void		*virt_base;
 	dma_addr_t	device_base;
@@ -112,17 +115,28 @@ static int dma_assign_coherent_memory(struct device *dev,
  * is asked for coherent memory for this device.  This shall only be used
  * from platform code, usually based on the device tree description.
  *
+ * 声明一个内存区域，当 dma_alloc_coherent() 被请求为该设备分配一致性内存时，该区域将被分配。
+ * 此内存区域仅供平台代码使用，通常基于设备树描述。
+ *
  * phys_addr is the CPU physical address to which the memory is currently
  * assigned (this will be ioremapped so the CPU can access the region).
+ *
+ * phys_addr 是 CPU 物理地址，该地址当前分配给内存（这将进行 ioremapped，以便 CPU 可以
+ * 访问该区域）。
  *
  * device_addr is the DMA address the device needs to be programmed with to
  * actually address this memory (this will be handed out as the dma_addr_t in
  * dma_alloc_coherent()).
  *
+ * device_addr 是需要对设备进行编程以实际寻址此内存的 DMA 地址（这将在 dma_alloc_coherent()
+ * 中作为 dma_addr_t 分发）。
+ *
  * size is the size of the area (must be a multiple of PAGE_SIZE).
  *
  * As a simplification for the platforms, only *one* such region of memory may
  * be declared per device.
+ *
+ * 为了简化平台，每个设备只能声明一个这样的内存区域。
  */
 int dma_declare_coherent_memory(struct device *dev, phys_addr_t phys_addr,
 				dma_addr_t device_addr, size_t size)
@@ -185,6 +199,8 @@ err:
  *
  * Returns 0 if dma_alloc_coherent should continue with allocating from
  * generic memory areas, or !0 if dma_alloc_coherent should return @ret.
+ *
+ * coherent: 相干
  */
 int dma_alloc_from_dev_coherent(struct device *dev, ssize_t size,
 		dma_addr_t *dma_handle, void **ret)
@@ -194,6 +210,9 @@ int dma_alloc_from_dev_coherent(struct device *dev, ssize_t size,
 	if (!mem)
 		return 0;
 
+	/**
+	 *
+	 */
 	*ret = __dma_alloc_from_coherent(dev, mem, size, dma_handle);
 	return 1;
 }
