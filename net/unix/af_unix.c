@@ -2084,6 +2084,10 @@ static void unix_copy_addr(struct msghdr *msg, struct sock *sk)
 	}
 }
 
+/**
+ * nc -luU /var/tmp/unixsocket.1
+ * nc -uU /var/tmp/unixsocket.1
+ */
 static int unix_dgram_recvmsg(struct socket *sock, struct msghdr *msg,
 			      size_t size, int flags)
 {
@@ -2144,10 +2148,18 @@ static int unix_dgram_recvmsg(struct socket *sock, struct msghdr *msg,
 	else if (size < skb->len - skip)
 		msg->msg_flags |= MSG_TRUNC;
 
+	/**
+	 * 用 msg 组装 skb
+	 */
 	err = skb_copy_datagram_msg(skb, skip, msg, size);
 	if (err)
 		goto out_free;
 
+	/**
+	 * SOCK_RCVTSTAMP 是一个套接字选项，用于在接收数据包时启用时间戳功能。
+	 * 当这个选项被启用时，系统会在数据包被接收时记录时间戳，并将这个时间戳
+	 * 提供给应用程序。
+	 */
 	if (sock_flag(sk, SOCK_RCVTSTAMP))
 		__sock_recv_timestamp(msg, sk, skb);
 
@@ -2182,6 +2194,9 @@ static int unix_dgram_recvmsg(struct socket *sock, struct msghdr *msg,
 	}
 	err = (flags & MSG_TRUNC) ? skb->len - skip : size;
 
+	/**
+	 *
+	 */
 	scm_recv(sock, msg, &scm, flags);
 
 out_free:
@@ -2374,6 +2389,9 @@ unlock:
 
 		chunk = min_t(unsigned int, unix_skb_len(skb) - skip, size);
 		skb_get(skb);
+		/**
+		 *
+		 */
 		chunk = state->recv_actor(skb, skip, chunk, state);
 		drop_skb = !unix_skb_len(skb);
 		/* skb is only safe to use if !drop_skb */
@@ -2460,6 +2478,10 @@ static int unix_stream_read_actor(struct sk_buff *skb,
 	return ret ?: chunk;
 }
 
+/**
+ * nc -lU /var/tmp/unixsocket
+ * nc -U /var/tmp/unixsocket
+ */
 static int unix_stream_recvmsg(struct socket *sock, struct msghdr *msg,
 			       size_t size, int flags)
 {

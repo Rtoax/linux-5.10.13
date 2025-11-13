@@ -893,6 +893,11 @@ enum sock_flags {
 	SOCK_ZAPPED,
 	SOCK_USE_WRITE_QUEUE, /* whether to call sk->sk_write_space in sock_wfree */
 	SOCK_DBG, /* %SO_DEBUG setting */
+	/**
+	 * SOCK_RCVTSTAMP 是一个套接字选项，用于在接收数据包时启用时间戳功能。
+	 * 当这个选项被启用时，系统会在数据包被接收时记录时间戳，并将这个时间戳
+	 * 提供给应用程序。
+	 */
 	SOCK_RCVTSTAMP, /* %SO_TIMESTAMP setting */
 	SOCK_RCVTSTAMPNS, /* %SO_TIMESTAMPNS setting */
 	SOCK_LOCALROUTE, /* route locally only, %SO_DONTROUTE setting */
