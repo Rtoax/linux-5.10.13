@@ -40,11 +40,21 @@ enum scx_public_consts {
  *    V: For LOCAL_ON DSQ IDs, a CPU number. For others, a pre-defined value.
  */
 enum scx_dsq_id_flags {
+	/**
+	 * 1代表build-in类型，0代表ops-created user类型
+	 * build-in DSQs又可以细分是local（本地）还是global（全局）类型
+	 */
 	SCX_DSQ_FLAG_BUILTIN	= 1LLU << 63,
 	SCX_DSQ_FLAG_LOCAL_ON	= 1LLU << 62,
 
 	SCX_DSQ_INVALID		= SCX_DSQ_FLAG_BUILTIN | 0,
+	/**
+	 * global_dsq内置默认数量为1
+	 */
 	SCX_DSQ_GLOBAL		= SCX_DSQ_FLAG_BUILTIN | 1,
+	/**
+	 * local_dsq由每个cpu各自维护一个
+	 */
 	SCX_DSQ_LOCAL		= SCX_DSQ_FLAG_BUILTIN | 2,
 	SCX_DSQ_LOCAL_ON	= SCX_DSQ_FLAG_BUILTIN | SCX_DSQ_FLAG_LOCAL_ON,
 	SCX_DSQ_LOCAL_CPU_MASK	= 0xffffffffLLU,

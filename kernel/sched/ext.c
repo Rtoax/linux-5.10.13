@@ -115,6 +115,9 @@ struct scx_dsp_ctx {
 	struct scx_dsp_buf_ent	buf[];
 };
 
+/**
+ *
+ */
 static struct scx_dsp_ctx __percpu *scx_dsp_ctx;
 
 /* string formatting from BPF */
@@ -5428,7 +5431,12 @@ __bpf_kfunc_start_defs();
  * exhaustion. If zero, the current residual slice is maintained. If
  * %SCX_SLICE_INF, @p never expires and the BPF scheduler must kick the CPU with
  * scx_bpf_kick_cpu() to trigger scheduling.
+ *
+ * 将任务分派给DSQ: scx_bpf_dispatch() 已重命名为 scx_bpf_dsq_insert()
  */
+
+__bpf_kfunc void scx_bpf_dispatch(struct task_struct *p, u64 dsq_id, u64 slice,
+				    u64 enq_flags) {}
 __bpf_kfunc void scx_bpf_dsq_insert(struct task_struct *p, u64 dsq_id, u64 slice,
 				    u64 enq_flags)
 {
@@ -6000,6 +6008,9 @@ out:
  * trigger rescheduling on a busy CPU. This can be called from any online
  * scx_ops operation and the actual kicking is performed asynchronously through
  * an irq work.
+ *
+ * 选择CPU的副作用是将其从空闲状态唤醒。虽然BPF调度程序可以使用scx_bpf_kick_cpu()助手唤醒
+ * 任何CPU，但明智地使用ops.select_cpu()可以更简单，更高效。
  */
 __bpf_kfunc void scx_bpf_kick_cpu(s32 cpu, u64 flags)
 {

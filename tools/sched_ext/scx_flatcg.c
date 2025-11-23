@@ -3,6 +3,12 @@
  * Copyright (c) 2023 Meta Platforms, Inc. and affiliates.
  * Copyright (c) 2023 Tejun Heo <tj@kernel.org>
  * Copyright (c) 2023 David Vernet <dvernet@meta.com>
+ *
+ * scx_flatcg调度程序，它为cgroups提供了一个扁平的分层vtree。这个调度器没有考虑cgroups
+ * 之间的群体问题，因此可能不适合包含在CFS中。然而，在一个简单的基准测试中，在apache上使用
+ * wrk服务CGI脚本计算一个小文件的sha1sum，在禁用CPU控制器的情况下，它比CFS的性能高出约3%，
+ * 在两个apache实例以2：1的权重比嵌套四级深度竞争的情况下，它比CFS的性能高出约10%。
+ * https://sched-ext.com/docs/OVERVIEW
  */
 #include <stdio.h>
 #include <signal.h>

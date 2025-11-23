@@ -267,6 +267,9 @@ struct scx_dump_ctx {
  *
  * BPF 调度器可以通过在此表中实现和加载操作来实现任意调度策略。请注意，也可以使用 BPF
  * 调度器作为中间层来实现用户空间的调度策略。
+ *
+ * Refs:
+ * https://docs.ebpf.io/linux/program-type/BPF_PROG_TYPE_STRUCT_OPS/sched_ext_ops/
  */
 struct sched_ext_ops {
 	/**
@@ -293,6 +296,21 @@ struct sched_ext_ops {
 	 * on a single CPU or tasks with migration disabled, as they don't have
 	 * the option to select a different CPU. See select_task_rq() for
 	 * details.
+	 *
+	 * 当任务被唤醒时，ops.select_cpu()是第一个被调用的操作。这有两个目的。
+	 * 一、CPU选型优化提示。
+	 * 二，唤醒所选的CPU，如果空闲。
+	 *
+	 * ops.select_cpu()选择的CPU是优化提示，不绑定。实际的决策是在调度的最后一步做出的。
+	 * 但是，如果CPU ops.select_cpu()返回与任务最终运行的CPU相匹配，则会有少量性能提升。
+	 *
+	 * 选择CPU的副作用是将其从空闲状态唤醒。虽然BPF调度程序可以使用scx_bpf_kick_cpu()助手
+	 * 唤醒任何CPU，但明智地使用ops.select_cpu()可以更简单，更高效。
+	 *
+	 * 通过调用ops.select_cpu()，可以立即将任务从scx_bpf_dispatch()分派到DSQ。
+	 * 如果任务从SCX_DSQ_LOCAL被调度到ops.select_cpu()，则它将被调度到从
+	 * ops.select_cpu()返回的任何CPU的本地DSQ。此外，直接从ops.select_cpu()调度
+	 * 将导致ops.enqueue()回调被跳过。
 	 */
 	s32 (*select_cpu)(struct task_struct *p, s32 prev_cpu, u64 wake_flags);
 

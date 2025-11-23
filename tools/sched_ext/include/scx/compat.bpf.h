@@ -87,6 +87,9 @@ int bpf_cpumask_populate(struct cpumask *dst, void *src, size_t src__sz) __ksym 
 	(bpf_ksym_exists(bpf_cpumask_populate) ?			\
 	 (bpf_cpumask_populate(cpumask, src, size__sz)) : -EOPNOTSUPP)
 
+/**
+ * 将任务分派给DSQ: scx_bpf_dispatch() 重命名为 scx_bpf_dsq_insert()
+ */
 #define scx_bpf_dispatch(p, dsq_id, slice, enq_flags)				\
 	_Static_assert(false, "scx_bpf_dispatch() renamed to scx_bpf_dsq_insert()")
 

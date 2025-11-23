@@ -3,6 +3,15 @@
  * Copyright (c) 2022 Meta Platforms, Inc. and affiliates.
  * Copyright (c) 2022 Tejun Heo <tj@kernel.org>
  * Copyright (c) 2022 David Vernet <dvernet@meta.com>
+ *
+ * https://sched-ext.com/docs/OVERVIEW
+ *
+ * 谷歌还尝试了一些有前途的、新颖的调度策略。一个例子是“中央”调度，其中单个CPU为整个系统做出
+ * 所有调度决策。这允许系统上的大多数核心完全专用于运行工作负载，并且可以在某些用例中显着提高
+ * 性能。
+ *
+ * 例如，使用VCPU的集中调度可以避免昂贵的vmexit和缓存刷新，而是将抢占检查的责任从tick委托
+ * 给单个CPU。
  */
 #define _GNU_SOURCE
 #include <sched.h>

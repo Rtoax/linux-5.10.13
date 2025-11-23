@@ -44,6 +44,12 @@
  * Copyright (c) 2022 Meta Platforms, Inc. and affiliates.
  * Copyright (c) 2022 Tejun Heo <tj@kernel.org>
  * Copyright (c) 2022 David Vernet <dvernet@meta.com>
+ *
+ * “中央”调度，其中单个CPU为整个系统做出所有调度决策。这允许系统上的大多数核心完全专用于运行
+ * 工作负载，并且可以在某些用例中显着提高性能。例如，使用VCPU的集中调度可以避免昂贵的vmexit
+ * 和缓存刷新，而是将抢占检查的责任从tick委托给单个CPU。
+ * https://sched-ext.com/docs/OVERVIEW
+ *
  */
 #include <scx/common.bpf.h>
 

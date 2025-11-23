@@ -3,6 +3,8 @@
  */
 #define __KERNEL__
 
+#define CONFIG_SCHED_CLASS_EXT  1
+
 /* 一些 ARM 相关 配置 */
 #define CONFIG_ARM64  1 /* y */
 #define CONFIG_ARM64_PAGE_SHIFT  1 /* 16 */
