@@ -258,11 +258,15 @@ struct scx_dump_ctx {
 
 /**
  * struct sched_ext_ops - Operation table for BPF scheduler implementation
+ *                        BPF 调度器实现的操作表
  *
  * A BPF scheduler can implement an arbitrary scheduling policy by
  * implementing and loading operations in this table. Note that a userland
  * scheduling policy can also be implemented using the BPF scheduler
  * as a shim layer.
+ *
+ * BPF 调度器可以通过在此表中实现和加载操作来实现任意调度策略。请注意，也可以使用 BPF
+ * 调度器作为中间层来实现用户空间的调度策略。
  */
 struct sched_ext_ops {
 	/**

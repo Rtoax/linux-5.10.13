@@ -4073,6 +4073,9 @@ static void scx_disable(enum scx_exit_kind kind)
 
 static void dump_newline(struct seq_buf *s)
 {
+	/**
+	 * tracepoint:sched_ext:sched_ext_dump
+	 */
 	trace_sched_ext_dump("");
 
 	/* @s may be zero sized and seq_buf triggers WARN if so */
@@ -4093,6 +4096,9 @@ static __printf(2, 3) void dump_line(struct seq_buf *s, const char *fmt, ...)
 		vscnprintf(line_buf, sizeof(line_buf), fmt, args);
 		va_end(args);
 
+		/**
+		 * tracepoint:sched_ext:sched_ext_dump
+		 */
 		trace_sched_ext_dump(line_buf);
 	}
 #endif
@@ -6771,6 +6777,9 @@ static const struct btf_kfunc_id_set scx_kfunc_set_any = {
 	.set			= &scx_kfunc_ids_any,
 };
 
+/**
+ * sched-ext 初始化
+ */
 static int __init scx_init(void)
 {
 	int ret;
