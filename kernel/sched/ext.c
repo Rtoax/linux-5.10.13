@@ -16,6 +16,11 @@
  * necessary otherwise. Naked scx_root dereferences trigger sparse warnings but
  * are used as temporary markers to indicate that the dereferences need to be
  * updated to point to the associated scheduler instances rather than scx_root.
+ *
+ * 注意：sched_ext 正在逐步扩展对多个调度器的支持，scx_root 的使用也处于过渡阶段。如果
+ * 调用者是附加到 SCX 的任务之一，则直接进行解引用是安全的；否则，需要显式地进行 RCU 解引用。
+ * 直接进行 scx_root 解引用会触发稀疏警告，但这些解引用仅用作临时标记，表明需要将解引用更新
+ * 为指向关联的调度器实例，而不是 scx_root。
  */
 static struct scx_sched __rcu *scx_root;
 
