@@ -534,6 +534,8 @@ TRACE_EVENT(sched_process_fork,
 
 /*
  * Tracepoint for exec:
+ * trace_sched_process_exec()
+ * trace_event_raw_event_sched_process_exec()
  */
 TRACE_EVENT(sched_process_exec,
 

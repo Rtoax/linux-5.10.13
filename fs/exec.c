@@ -1834,7 +1834,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	audit_bprm(bprm);
 
 	/**
-	 *  跟踪点
+	 * 跟踪点，实际上已完成了 CPU IP 的切换，这是“新的进程”执行的trace
 	 */
 	trace_sched_process_exec(current, old_pid, bprm);
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
