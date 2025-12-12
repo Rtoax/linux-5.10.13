@@ -92,6 +92,9 @@ const char *bdevname(struct block_device *bdev, char *buf)
 }
 EXPORT_SYMBOL(bdevname);
 
+/**
+ * 获取 /sys/block/BLK/stat
+ */
 static void part_stat_read_all(struct hd_struct *part, struct disk_stats *stat)
 {
 	int cpu;
@@ -1295,6 +1298,9 @@ ssize_t part_size_show(struct device *dev,
 }
 
 /**
+ * /sys/block/BLK/stat
+ *
+ * For examples:
  * /sys/block/nvme0n1/stat
  */
 ssize_t part_stat_show(struct device *dev,
@@ -1305,12 +1311,19 @@ ssize_t part_stat_show(struct device *dev,
 	struct disk_stats stat;
 	unsigned int inflight;
 
+	/**
+	 *
+	 */
 	part_stat_read_all(p, &stat);
 	if (queue_is_mq(q))
 		inflight = blk_mq_in_flight(q, p);
 	else
 		inflight = part_in_flight(p);
 
+	/**
+	 * rongtao@NUC10:~$ sudo cat /sys/block/nvme0n1/stat
+	 * 402179     3617 19015700   140736   294453    18532 21205968  2160477        0   693032  2597527        0        0        0        0    17792   296313
+	 */
 	return sprintf(buf,
 		"%8lu %8lu %8llu %8u "
 		"%8lu %8lu %8llu %8u "
@@ -1318,26 +1331,83 @@ ssize_t part_stat_show(struct device *dev,
 		"%8lu %8lu %8llu %8u "
 		"%8lu %8u"
 		"\n",
+		/**
+		 * 成功完成的读操作次数。指合并后、最终发送给设备的读请求数量。
+		 */
 		stat.ios[STAT_READ],
+		/**
+		 * 读请求合并次数。相邻的读请求被合并为一个更大的请求，以提高效率。
+		 * 数值越高，通常说明顺序读越好。
+		 */
 		stat.merges[STAT_READ],
+		/**
+		 * 读取的扇区总数。1扇区通常为512字节。
+		 * 要转换为字节数：字节数 = read_sectors * 512。
+		 */
 		(unsigned long long)stat.sectors[STAT_READ],
+		/**
+		 * 所有读请求消耗的总时间（毫秒）。从请求进入队列到完成所花费的时间总和。
+		 * 可用于计算平均读延迟。
+		 */
 		(unsigned int)div_u64(stat.nsecs[STAT_READ], NSEC_PER_MSEC),
+		/**
+		 * 成功完成的写操作次数。指合并后、最终发送给设备的写请求数量。
+		 */
 		stat.ios[STAT_WRITE],
+		/**
+		 * 写请求合并次数。相邻的写请求被合并为一个更大的请求。
+		 * 对NVMe SSD来说，这个值可能较低。
+		 */
 		stat.merges[STAT_WRITE],
+		/**
+		 * 写入的扇区总数。转换为字节：字节数 = write_sectors * 512。
+		 */
 		(unsigned long long)stat.sectors[STAT_WRITE],
+		/**
+		 * 所有写请求消耗的总时间（毫秒）。从请求进入队列到完成所花费的时间总和。
+		 */
 		(unsigned int)div_u64(stat.nsecs[STAT_WRITE], NSEC_PER_MSEC),
-		inflight,
+		/**
+		 * 当前正在处理的I/O请求数。在采样时刻，设备队列中正在处理（in-flight）的
+		 * 请求数量。
+		 */
+		inflight, /* 飞行中 */
+		/**
+		 * 设备处于活动状态的总时间（毫秒）。只要设备队列中有请求（即使正在处理），
+		 * 该计时器就会累加。
+		 */
 		jiffies_to_msecs(stat.io_ticks),
+		/**
+		 *
+		 */
 		(unsigned int)div_u64(stat.nsecs[STAT_READ] +
 				      stat.nsecs[STAT_WRITE] +
 				      stat.nsecs[STAT_DISCARD] +
 				      stat.nsecs[STAT_FLUSH],
 						NSEC_PER_MSEC),
+		/**
+		 * 成功完成的丢弃（Discard/TRIM）操作次数。
+		 */
 		stat.ios[STAT_DISCARD],
+		/**
+		 * 丢弃请求合并次数。
+		 */
 		stat.merges[STAT_DISCARD],
+		/**
+		 * 被丢弃的扇区总数。
+		 */
 		(unsigned long long)stat.sectors[STAT_DISCARD],
+		/**
+		 * 所有丢弃操作消耗的总时间。
+		 */
 		(unsigned int)div_u64(stat.nsecs[STAT_DISCARD], NSEC_PER_MSEC),
+		/**
+		 * 成功完成的刷新（Flush）缓存操作次数。
+		 */
 		stat.ios[STAT_FLUSH],
+		/**
+		 * 所有刷新（Flush）操作消耗的总时间。
+		 */
 		(unsigned int)div_u64(stat.nsecs[STAT_FLUSH], NSEC_PER_MSEC));
 }
 
@@ -1394,6 +1464,9 @@ static DEVICE_ATTR(size, 0444, part_size_show, NULL);
 static DEVICE_ATTR(alignment_offset, 0444, disk_alignment_offset_show, NULL);
 static DEVICE_ATTR(discard_alignment, 0444, disk_discard_alignment_show, NULL);
 static DEVICE_ATTR(capability, 0444, disk_capability_show, NULL);
+/**
+ * /sys/block/BLOCK/stat
+ */
 static DEVICE_ATTR(stat, 0444, part_stat_show, NULL);
 /**
  * /sys/block/[BLK]/inflight
