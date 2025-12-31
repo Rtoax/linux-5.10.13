@@ -26,7 +26,7 @@ typedef struct {
 #endif
 	refcount_t	pinned;
 	/**
-	 * vDSO:
+	 * vDSO: 地址
 	 */
 	void		*vdso;
 	unsigned long	flags;

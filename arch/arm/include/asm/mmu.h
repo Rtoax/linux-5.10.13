@@ -13,6 +13,9 @@ typedef struct {
 	atomic_t	vmalloc_seq;
 	unsigned long	sigpage;
 #ifdef CONFIG_VDSO
+	/**
+	 * vDSO 地址
+	 */
 	unsigned long	vdso;
 #endif
 #ifdef CONFIG_BINFMT_ELF_FDPIC

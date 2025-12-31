@@ -39,7 +39,7 @@ typedef struct {    /* MMU 硬件上下文 */
 
 	struct mutex lock;
 	/**
-	 * vDSO: 用户态
+	 * vDSO: 用户态地址
 	 */
 	void __user *vdso;			/* vdso base address */
 	/**
