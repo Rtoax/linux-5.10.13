@@ -367,8 +367,20 @@ static struct ctl_table pid_ns_ctl_table[] = {
 static struct ctl_path kern_path[] = { { .procname = "kernel", }, { } };
 #endif	/* CONFIG_CHECKPOINT_RESTORE */
 
+/**
+ * 如果在容器里执行 reboot，会调用这个函数
+ *
+ * $ sudo bpftrace -e 'kprobe:reboot_pid_ns {printf("%s\n", comm)}'
+ * $ sudo bpftrace -e 'kretprobe:reboot_pid_ns {printf("%s %d\n", comm, retval)}'
+ */
 int reboot_pid_ns(struct pid_namespace *pid_ns, int cmd)
 {
+	/**
+	 * 所以，只要让容器的 pid namespace 等于 init_pid_ns 就可以了，但是好像无法实现？
+	 *
+	 * 答案是：可以！
+	 * 设置podman的参数 --pid=host 即可
+	 */
 	if (pid_ns == &init_pid_ns)
 		return 0;
 
@@ -382,6 +394,9 @@ int reboot_pid_ns(struct pid_namespace *pid_ns, int cmd)
 	case LINUX_REBOOT_CMD_HALT:
 		pid_ns->reboot = SIGINT;
 		break;
+	/**
+	 * 不支持设置 Ctrl-Alt-Del / CAD 等
+	 */
 	default:
 		return -EINVAL;
 	}
@@ -390,6 +405,9 @@ int reboot_pid_ns(struct pid_namespace *pid_ns, int cmd)
 	send_sig(SIGKILL, pid_ns->child_reaper, 1);
 	read_unlock(&tasklist_lock);
 
+	/**
+	 * 直接退出了，所以这个函数不会返回
+	 */
 	do_exit(0);
 
 	/* Not reached */
