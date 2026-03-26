@@ -1241,6 +1241,9 @@ void clear_local_APIC(void)
  * but it has to be guaranteed that no interrupt is sent to the APIC while
  * in that state and it's not clear from the SDM whether it still responds
  * to INIT/SIPI messages. Stay on the safe side and use software disable.
+ *
+ * 谁会调用：
+ * - reboot(2)
  */
 void apic_soft_disable(void)
 {
@@ -1256,6 +1259,9 @@ void apic_soft_disable(void)
 
 /**
  * disable_local_APIC - clear and disable the local APIC
+ *
+ * 谁会调用：
+ * - reboot(2)
  */
 void disable_local_APIC(void)
 {

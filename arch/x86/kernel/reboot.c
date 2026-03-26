@@ -726,6 +726,10 @@ static void __machine_emergency_restart(int emergency)
 	machine_ops.emergency_restart();
 }
 
+/**
+ * 调用者：
+ * - reboot(2)
+ */
 static void native_machine_restart(char *__unused)
 {
 	pr_notice("machine restart\n");
@@ -745,6 +749,10 @@ static void native_machine_halt(void)
 	stop_this_cpu(NULL);
 }
 
+/**
+ * 调用者：
+ * - reboot(2)
+ */
 static void native_machine_power_off(void)
 {
 	if (pm_power_off) {
@@ -756,6 +764,10 @@ static void native_machine_power_off(void)
 	tboot_shutdown(TB_SHUTDOWN_HALT);
 }
 
+/**
+ * 调用者：
+ * - reboot(2)
+ */
 struct machine_ops __ro_after_init machine_ops  = {
 	.power_off = native_machine_power_off,
 	.shutdown = native_machine_shutdown,

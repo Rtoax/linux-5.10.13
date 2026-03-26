@@ -209,6 +209,9 @@ void machine_power_off(void)
  * doesn't have to co-ordinate with other CPUs to ensure they aren't still
  * executing pre-reset code, and using RAM that the primary CPU's code wishes
  * to use. Implementing such co-ordination would be essentially impossible.
+ *
+ * 调用者：
+ * - reboot(2)
  */
 void machine_restart(char *cmd)
 {
@@ -233,6 +236,8 @@ void machine_restart(char *cmd)
 	 * Whoops - the architecture was unable to reboot.
 	 */
 	printk("Reboot failed -- System halted\n");
+
+	/* 死循环 */
 	while (1);
 }
 

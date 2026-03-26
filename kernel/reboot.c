@@ -280,9 +280,9 @@ void kernel_halt(void)
 EXPORT_SYMBOL_GPL(kernel_halt);
 
 /**
- *	kernel_power_off - power_off the system
+ * kernel_power_off - power_off the system
  *
- *	Shutdown everything and perform a clean system power_off.
+ * Shutdown everything and perform a clean system power_off.
  */
 void kernel_power_off(void)
 {

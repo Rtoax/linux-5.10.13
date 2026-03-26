@@ -10,6 +10,10 @@ static struct sys_off_handler *efi_sys_off_handler;
 
 int efi_reboot_quirk_mode = -1;
 
+/**
+ * 调用者：
+ * - reboot(2)
+ */
 void efi_reboot(enum reboot_mode reboot_mode, const char *__unused)
 {
 	const char *str[] = { "cold", "warm", "shutdown", "platform" };

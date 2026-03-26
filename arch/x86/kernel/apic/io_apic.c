@@ -583,6 +583,10 @@ static void eoi_ioapic_pin(int vector, struct mp_chip_data *data)
 	raw_spin_unlock_irqrestore(&ioapic_lock, flags);
 }
 
+/**
+ * 会调用的流程：
+ * - reboot(2)
+ */
 static void clear_IO_APIC_pin(unsigned int apic, unsigned int pin)
 {
 	struct IO_APIC_route_entry entry;
