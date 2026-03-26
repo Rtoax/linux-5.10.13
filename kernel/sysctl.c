@@ -2071,9 +2071,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #endif
 	{
 		/**
-		 *  /proc/sys/kernel/
-		 *
-		 *
+		 * /proc/sys/kernel/
 		 */
 		.procname	= "print-fatal-signals",
 		.data		= &print_fatal_signals,
@@ -2084,9 +2082,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 #ifdef CONFIG_SPARC
 	{
 		/**
-		 *  /proc/sys/kernel/
-		 *
-		 *
+		 * /proc/sys/kernel/
 		 */
 		.procname	= "reboot-cmd",
 		.data		= reboot_command,
@@ -2096,9 +2092,7 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 	},
 	{
 		/**
-		 *  /proc/sys/kernel/
-		 *
-		 *
+		 * /proc/sys/kernel/
 		 */
 		.procname	= "stop-a",
 		.data		= &stop_a_enabled,
@@ -2141,6 +2135,9 @@ static struct ctl_table kern_table[] = {    /* /proc/sys/kernel/ */
 		.proc_handler	= proc_dointvec,
 	},
 #endif
+	/**
+	 * /proc/sys/kernel/ctrl-alt-del
+	 */
 	{
 		.procname	= "ctrl-alt-del",
 		.data		= &C_A_D,

@@ -6,6 +6,10 @@
  * Magic values required to use _reboot() system call.
  */
 
+/**
+ * reboot(2)
+ */
+
 #define	LINUX_REBOOT_MAGIC1	0xfee1dead
 #define	LINUX_REBOOT_MAGIC2	672274793
 #define	LINUX_REBOOT_MAGIC2A	85072278

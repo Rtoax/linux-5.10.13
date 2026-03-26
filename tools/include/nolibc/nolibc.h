@@ -235,7 +235,7 @@ struct rusage {
 #define SEEK_CUR        1
 #define SEEK_END        2
 
-/* reboot */
+/* reboot(2) */
 #define LINUX_REBOOT_MAGIC1         0xfee1dead
 #define LINUX_REBOOT_MAGIC2         0x28121969
 #define LINUX_REBOOT_CMD_HALT       0xcdef0123

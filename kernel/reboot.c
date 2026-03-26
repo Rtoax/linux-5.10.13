@@ -306,6 +306,9 @@ DEFINE_MUTEX(system_transition_mutex);
  * You can also set the meaning of the ctrl-alt-del-key here.
  *
  * reboot doesn't sync: do that yourself before calling this.
+ *
+ * linux: int reboot(int magic, int magic2, int op, void *arg);
+ * glibc: int reboot(int op);
  */
 int reboot(int magic, int magic2, int cmd, void *arg);
 SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
