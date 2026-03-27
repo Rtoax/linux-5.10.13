@@ -461,11 +461,13 @@ static int fw_decompress_xz(struct device *dev, struct fw_priv *fw_priv,
 }
 #endif /* CONFIG_FW_LOADER_COMPRESS */
 
-/* direct firmware loading support */
+/**
+ * direct firmware loading support
+ */
 static char fw_path_para[256];
 static const char * const fw_path[] = {
 	fw_path_para,
-	"/lib/firmware/updates/" UTS_RELEASE,
+	"/lib/firmware/updates/" UTS_RELEASE /*"5.10.13"*/,
 	"/lib/firmware/updates",
 	"/lib/firmware/" UTS_RELEASE,
 	"/lib/firmware"
@@ -504,6 +506,9 @@ fw_get_filesystem_firmware(struct device *device, struct fw_priv *fw_priv,
 	if (!path)
 		return -ENOMEM;
 
+	/**
+	 * 遍历所有 fw 路径，如 "/lib/firmware"
+	 */
 	for (i = 0; i < ARRAY_SIZE(fw_path); i++) {
 		size_t file_size = 0;
 		size_t *file_size_ptr = NULL;
