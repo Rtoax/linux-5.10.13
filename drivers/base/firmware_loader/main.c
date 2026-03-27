@@ -868,6 +868,20 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
  *
  *	The function can be called safely inside device's suspend and
  *	resume callback.
+ *
+ * 在 Linux 系统中，/lib/firmware/ 目录下的固件是由内核驱动根据需要主动请求，然后由用户空间
+ * 的辅助工具（如 udev）找到并加载给内核，最终由驱动写入硬件设备的。这个过程涉及内核与用户空间
+ * 的协同工作，核心是 固件加载机制。
+ *
+ * 1. 内核驱动发起请求：硬件驱动通过 request_firmware() 等内核 API 发出固件请求。
+ * 2. 内核创建通信接口：内核在 /sys/class/firmware/ 下创建临时接口，并通过 uevent 通知用
+ *    户空间。
+ * 3. 用户空间响应请求：udev 等系统服务收到通知后，在 /lib/firmware/ 等路径下找到固件文件。
+ * 4. 传递固件数据：用户空间将固件数据写入内核创建的 data 接口。
+ * 5. 驱动加载固件：内核将收到的数据通过硬件总线（如 I2C、USB、SDIO）传输到硬件设备上，完成
+ *    加载。
+ *
+ * request_firmware()：同步请求，内核会等待固件加载完成或失败才继续执行。
  **/
 int
 request_firmware(const struct firmware **firmware_p, const char *name,
@@ -1111,6 +1125,9 @@ static void request_firmware_work_func(struct work_struct *work)
  *		  @gfp is GFP_KERNEL.
  *
  *		- can't sleep at all if @gfp is GFP_ATOMIC.
+ *
+ * request_firmware_nowait()：异步请求，不会阻塞，适合在系统启动早期或不能长时间等待的场景
+ * 下使用。 see also request_firmware().
  **/
 int
 request_firmware_nowait(
@@ -1545,6 +1562,19 @@ static struct notifier_block fw_shutdown_nb = {
 	.notifier_call = fw_shutdown_notify,
 };
 
+/**
+ * 在 Linux 系统中，/lib/firmware/ 目录下的固件是由内核驱动根据需要主动请求，然后由用户空间
+ * 的辅助工具（如 udev）找到并加载给内核，最终由驱动写入硬件设备的。这个过程涉及内核与用户空间
+ * 的协同工作，核心是 固件加载机制。
+ *
+ * 1. 内核驱动发起请求：硬件驱动通过 request_firmware() 等内核 API 发出固件请求。
+ * 2. 内核创建通信接口：内核在 /sys/class/firmware/ 下创建临时接口，并通过 uevent 通知用
+ *    户空间。
+ * 3. 用户空间响应请求：udev 等系统服务收到通知后，在 /lib/firmware/ 等路径下找到固件文件。
+ * 4. 传递固件数据：用户空间将固件数据写入内核创建的 data 接口。
+ * 5. 驱动加载固件：内核将收到的数据通过硬件总线（如 I2C、USB、SDIO）传输到硬件设备上，完成
+ *    加载。
+ */
 static int __init firmware_class_init(void)
 {
 	int ret;

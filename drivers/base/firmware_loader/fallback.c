@@ -191,6 +191,9 @@ static int firmware_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return err;
 }
 
+/**
+ * /sys/class/firmware/
+ */
 static struct class firmware_class = {
 	.name		= "firmware",
 	.class_groups	= firmware_class_groups,
