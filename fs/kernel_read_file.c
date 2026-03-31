@@ -43,27 +43,27 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	void *allocated = NULL;
 	bool whole_file;
 	int ret;
-    /**
-     *  参数有效
-     */
+	/**
+	 *  参数有效
+	 */
 	if (offset != 0 && (!*buf || !file_size))
 		return -EINVAL;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return -EINVAL;
 
-    /**
-     *  是否拒绝访问？
-     */
+	/**
+	 *  是否拒绝访问？
+	 */
 	ret = deny_write_access(file);
 	if (ret)
 		return ret;
 
-    /**
-     *  文件大小，这是直接从磁盘读取的
-     */
+	/**
+	 *  文件大小，这是直接从磁盘读取的
+	 */
 	i_size = i_size_read(file_inode(file));
 	if (i_size <= 0) {
 		ret = -EINVAL;
@@ -85,15 +85,15 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	if (ret)
 		goto out;
 
-    /**
-     *  文件 大小
-     */
+	/**
+	 *  文件 大小
+	 */
 	if (file_size)
 		*file_size = i_size;
 
-    /**
-     *  分配文件大小的内存空间
-     */
+	/**
+	 *  分配文件大小的内存空间
+	 */
 	if (!*buf)
 		*buf = allocated = vmalloc(i_size);
 	if (!*buf) {
@@ -104,17 +104,17 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 	pos = offset;
 	copied = 0;
 
-    /**
-     *  复制内容到内存
-     */
+	/**
+	 *  复制内容到内存
+	 */
 	while (copied < buf_size) {
 		ssize_t bytes;
 		size_t wanted = min_t(size_t, buf_size - copied,
 					      i_size - pos);
 
-        /**
-         *  读取
-         */
+		/**
+		 *  读取
+		 */
 		bytes = kernel_read(file, *buf + copied, wanted, &pos);
 		if (bytes < 0) {
 			ret = bytes;
@@ -126,9 +126,9 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		copied += bytes;
 	}
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	if (whole_file) {
 		if (pos != i_size) {
 			ret = -EIO;
@@ -172,6 +172,9 @@ int kernel_read_file_from_path(const char *path, loff_t offset, void **buf,
 }
 EXPORT_SYMBOL_GPL(kernel_read_file_from_path);
 
+/**
+ * 读取一个文件
+ */
 int kernel_read_file_from_path_initns(const char *path, loff_t offset,
 				      void **buf, size_t buf_size,
 				      size_t *file_size,
@@ -206,17 +209,17 @@ int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
                 			     size_t buf_size, size_t *file_size,
                 			     enum kernel_read_file_id id)
 {
-    /**
-     *  获取 fd 结构
-     */
+	/**
+	 *  获取 fd 结构
+	 */
 	struct fd f = fdget(fd);
 	int ret = -EBADF;
 
 	if (!f.file)
 		goto out;
-    /**
-     *  从 磁盘读取数据到内核中
-     */
+	/**
+	 *  从 磁盘读取数据到内核中
+	 */
 	ret = kernel_read_file(f.file, offset, buf, buf_size, file_size, id);
 out:
 	fdput(f);

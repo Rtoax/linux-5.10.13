@@ -48,7 +48,8 @@
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
 #define __init		__section(".init.text")     __cold  __latent_entropy __noinitretpoline
-#define __initdata	__section(".init.data")     /* 使用 `__initdata` 定义，这意味着这些内存都会在内核初始化结束后释放掉 */
+/* 使用 `__initdata` 定义，这意味着这些内存都会在内核初始化结束后释放掉 */
+#define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
 #define __exitdata	__section(".exit.data")
 #define __exit_call	__used __section(".exitcall.exit")
@@ -92,9 +93,9 @@
 #define __memexitconst   __section(".memexit.rodata")   /* vmlinux.lds.S  */
 
 /* For assembly routines */
-            //.head.text是该部分的名称，并且ax是一组标志表明该部分是可执行的
-            //这意味着具有此选项集的Linux内核可以从不同的地址引导
-            //从技术上讲，这是通过将解压缩器编译为与位置无关的代码来完成的
+//.head.text是该部分的名称，并且ax是一组标志表明该部分是可执行的
+//这意味着具有此选项集的Linux内核可以从不同的地址引导
+//从技术上讲，这是通过将解压缩器编译为与位置无关的代码来完成的
 #define __HEAD		.section	".head.text","ax"   /* HEAD_TEXT */
 #define __INIT		.section	".init.text","ax"
 #define __FINIT		.previous
@@ -193,9 +194,9 @@ extern bool initcall_debug;
 	    ".long	" #fn " - .			\n"	\
 	    ".previous					\n");
 #else
-//#define ___define_initcall(fn, id, __sec) \
-//	static initcall_t __initcall_##fn##id __used \
-//		__attribute__((__section__(#__sec ".init"))) = fn;  /* vmlinux.lds.S  */
+#define ___define_initcall(fn, id, __sec) \
+	static initcall_t __initcall_##fn##id __used \
+		__attribute__((__section__(#__sec ".init"))) = fn;  /* vmlinux.lds.S  */
 #endif
 
 /**
@@ -216,7 +217,9 @@ extern bool initcall_debug;
  *
  * This only exists for built-in code, not for modules.
  * Keep main.c:initcall_level_names[] in sync.
- *//* 数字越小，优先级越高 */
+ *
+ * 数字越小，优先级越高
+ */
 #define pure_initcall(fn)		__define_initcall(fn, 0)
 
 #define core_initcall(fn)		__define_initcall(fn, 1)

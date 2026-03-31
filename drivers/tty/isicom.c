@@ -1376,6 +1376,9 @@ static int load_firmware(struct pci_dev *pdev,
 
 	retval = -EIO;
 
+	/**
+	 * 使用 fw 数据
+	 */
 	for (frame = (struct stframe *)fw->data;
 			frame < (struct stframe *)(fw->data + fw->size);
 			frame = (struct stframe *)((u8 *)(frame + 1) +

@@ -107,6 +107,9 @@ static void fw_copy_to_prealloc_buf(struct firmware *fw,
 	memcpy(buf, fw->data, fw->size);
 }
 
+/**
+ * 内建的固件
+ */
 static bool fw_get_builtin_firmware(struct firmware *fw, const char *name,
 				    void *buf, size_t size)
 {
@@ -507,7 +510,7 @@ fw_get_filesystem_firmware(struct device *device, struct fw_priv *fw_priv,
 		return -ENOMEM;
 
 	/**
-	 * 遍历所有 fw 路径，如 "/lib/firmware"
+	 * 遍历所有 fw 路径，如 "/lib/firmware"(fw_path[])
 	 */
 	for (i = 0; i < ARRAY_SIZE(fw_path); i++) {
 		size_t file_size = 0;
@@ -552,6 +555,9 @@ fw_get_filesystem_firmware(struct device *device, struct fw_priv *fw_priv,
 		rc = 0;
 
 		dev_dbg(device, "Loading firmware from %s\n", path);
+		/**
+		 * 解压
+		 */
 		if (decompress) {
 			dev_dbg(device, "f/w decompressing %s\n",
 				fw_priv->fw_name);
@@ -741,6 +747,9 @@ _request_firmware_prepare(struct firmware **firmware_p, const char *name,
 		return -ENOMEM;
 	}
 
+	/**
+	 * 是否为内建的固件
+	 */
 	if (fw_get_builtin_firmware(firmware, name, dbuf, size)) {
 		dev_dbg(device, "using built-in %s\n", name);
 		return 0; /* assigned */
@@ -813,6 +822,9 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
 	if (ret <= 0) /* error or already assigned */
 		goto out;
 
+	/**
+	 *
+	 */
 	ret = fw_get_filesystem_firmware(device, fw->priv, "", NULL);
 
 	/* Only full reads can support decompression, platform, and sysfs. */
