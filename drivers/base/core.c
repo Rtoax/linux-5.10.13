@@ -2951,6 +2951,9 @@ int device_add(struct device *dev)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_ADD_DEVICE, dev);
 
+	/**
+	 * 发送 uevent
+	 */
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
 
 	/*

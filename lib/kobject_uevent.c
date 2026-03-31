@@ -589,6 +589,10 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		mutex_unlock(&uevent_sock_mutex);
 		goto exit;
 	}
+
+	/**
+	 *
+	 */
 	retval = kobject_uevent_net_broadcast(kobj, env, action_string,
 					      devpath);
 	mutex_unlock(&uevent_sock_mutex);
@@ -766,6 +770,16 @@ static int uevent_net_init(struct net *net)
 	if (!ue_sk)
 		return -ENOMEM;
 
+	/**
+	 * systemd-udev 会打开 socket(AF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
+	 * 见 systemd::src/udev/udev-manager.c
+	 *
+	 * 此时 udevd 还没启动，内核不发消息，只存在内核缓冲区里。
+	 * udevd 启动后做的第一件事：主动读取内核缓冲区，重放所有错过的 ADD 事件！
+	 *
+	 * 更关键的是：udevd 会遍历 /sys/devices/**， 把所有已经存在的设备，全部重新触发
+	 * 一次 uevent！
+	 */
 	ue_sk->sk = netlink_kernel_create(net, NETLINK_KOBJECT_UEVENT, &cfg);
 	if (!ue_sk->sk) {
 		pr_err("kobject_uevent: unable to create netlink socket!\n");

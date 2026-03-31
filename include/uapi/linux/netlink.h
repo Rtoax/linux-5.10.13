@@ -27,6 +27,10 @@
 #define NETLINK_NETFILTER	12	/* netfilter subsystem */
 #define NETLINK_IP6_FW		13
 #define NETLINK_DNRTMSG		14	/* DECnet routing messages */
+/**
+ * Q: 内核启动早于 udevd，内核发 uevent 时，udevd 还没跑，消息岂不是丢了？
+ * A: 内核会把所有 uevent 缓存起来，udevd 启动后会重放所有错过的事件！
+ */
 #define NETLINK_KOBJECT_UEVENT	15	/* Kernel messages to userspace */
 #define NETLINK_GENERIC		16
 /* leave room for NETLINK_DM (DM Events) */
