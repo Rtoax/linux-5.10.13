@@ -38,7 +38,7 @@ const struct pci_raw_ops *__read_mostly raw_pci_ops;
 const struct pci_raw_ops *__read_mostly raw_pci_ext_ops;
 
 /**
- *  
+ *
  */
 int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
 						int reg, int len, u32 *val)
@@ -458,6 +458,9 @@ void __init dmi_check_pciprobe(void)
 	dmi_check_system(pciprobe_dmi_table);
 }
 
+/**
+ * 扫描 pci 设备
+ */
 void pcibios_scan_root(int busnum)
 {
 	struct pci_bus *bus;

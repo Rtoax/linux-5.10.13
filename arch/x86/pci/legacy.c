@@ -55,6 +55,9 @@ void pcibios_scan_specific_bus(int busn)
 }
 EXPORT_SYMBOL_GPL(pcibios_scan_specific_bus);
 
+/**
+ * 初始化 pci 系统
+ */
 static int __init pci_subsys_init(void)
 {
 	/*

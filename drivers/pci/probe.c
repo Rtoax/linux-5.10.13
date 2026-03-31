@@ -3135,6 +3135,9 @@ int pci_scan_root_bus_bridge(struct pci_host_bridge *bridge)
 }
 EXPORT_SYMBOL(pci_scan_root_bus_bridge);
 
+/**
+ * 扫描 pci 设备
+ */
 struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
 		struct pci_ops *ops, void *sysdata, struct list_head *resources)
 {
