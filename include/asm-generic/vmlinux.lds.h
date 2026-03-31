@@ -1004,6 +1004,9 @@ ffffffff83e80330 t __setup_vsyscall_setup
 		KEEP(*(.initcall##level##.init))			\
 		KEEP(*(.initcall##level##s.init))			\
 
+/**
+ * early_initcall(), ...
+ */
 #define INIT_CALLS							\
 		__initcall_start = .;					\
 		KEEP(*(.initcallearly.init))				\

@@ -196,7 +196,9 @@ extern bool initcall_debug;
 #else
 #define ___define_initcall(fn, id, __sec) \
 	static initcall_t __initcall_##fn##id __used \
-		__attribute__((__section__(#__sec ".init"))) = fn;  /* vmlinux.lds.S  */
+		/* 见 vmlinux.lds.S  */ \
+		__attribute__((__section__(#__sec ".init"))) = fn;
+
 #endif
 
 /**

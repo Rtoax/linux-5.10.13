@@ -544,6 +544,9 @@ SECTIONS
 		KEEP(*(.init.setup))
 		__setup_end = .;
 
+		/**
+		 * early_initcall(), ...
+		 */
 		__initcall_start = .;
 
 			KEEP(*(.initcallearly.init))

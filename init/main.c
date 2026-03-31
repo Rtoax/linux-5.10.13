@@ -1412,11 +1412,19 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	if (initcall_blacklisted(fn))
 		return -EPERM;
 
+	/**
+	 * tracepoint:initcall:initcall_start
+	 */
 	do_trace_initcall_start(fn);
+
 	/**
 	 *  模块 执行 init 函数
 	 */
 	ret = fn();
+
+	/**
+	 * tracepoint:initcall:initcall_finish
+	 */
 	do_trace_initcall_finish(fn, ret);
 
 	msgbuf[0] = 0;
@@ -1447,7 +1455,7 @@ extern initcall_entry_t __initcall6_start[];
 extern initcall_entry_t __initcall7_start[];
 extern initcall_entry_t __initcall_end[];
 
-static initcall_entry_t __initdata*initcall_levels[]  = {
+static initcall_entry_t __initdata *initcall_levels[]  = {
 	__initcall0_start,
 	__initcall1_start,
 	__initcall2_start,
@@ -1460,7 +1468,7 @@ static initcall_entry_t __initdata*initcall_levels[]  = {
 };
 
 /* Keep these in sync with initcalls in include/linux/init.h */
-static const char __initdata*initcall_level_names[]  = {
+static const char __initdata *initcall_level_names[]  = {
 	"pure",
 	"core",
 	"postcore",

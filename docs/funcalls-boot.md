@@ -219,7 +219,11 @@ kernel_thread(kernel_init, NULL, CLONE_FS)
       workqueue_init()
       init_mm_internals()
       rcu_init_tasks_generic()
-      do_pre_smp_initcalls()
+      do_pre_smp_initcalls() {
+        for (fn = __initcall_start; fn < __initcall0_start; fn++) {
+          do_one_initcall(...);
+	}
+      }
       lockup_detector_init()
       smp_init()
       sched_init_smp()
@@ -230,6 +234,7 @@ kernel_thread(kernel_init, NULL, CLONE_FS)
         do_initcalls()
           do_initcall_level()
             do_one_initcall()
+              // core_initcall(), arch_initcall(), fs_initcall(), ...
               xxx__initcall()
       kunit_run_all_tests()
       console_on_rootfs()
