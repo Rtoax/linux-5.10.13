@@ -571,6 +571,8 @@ struct ethtool_channels {
  * receive pause frames according to the result of autonegotiation.
  * Otherwise, it is configured directly based on the @rx_pause and
  * @tx_pause flags.
+ *
+ * 见: ethtool [-a|--show-pause] eno1
  */
 struct ethtool_pauseparam {
 	__u32	cmd;
