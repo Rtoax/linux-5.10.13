@@ -1407,7 +1407,9 @@ struct task_struct {    /* PCB */
 	struct list_head		children;
 	struct list_head		sibling;
 
-	/* 线程组 领头 ,见`copy_process()` */
+	/**
+	 * 线程组 领头 ,见`copy_process()`
+	 */
 	struct task_struct		*group_leader;
 
 	/*
