@@ -269,6 +269,31 @@ static void noinstr el0_da(struct pt_regs *regs, unsigned long esr)
 	do_mem_abort(far, esr, regs);
 }
 
+/**
+ * Stack示例:
+ * -----------------------------
+ * 示例1:异常
+ *         __send_signal+612
+ *         __send_signal+612
+ *         send_signal+220
+ *         force_sig_info_to_task+244
+ *         force_sig+80
+ *         arm64_notify_die+160
+ *         do_mem_abort+120
+ *         el0_ia+104
+ *         el0t_64_sync_handler+292
+ *         el0t_64_sync+416
+ *
+ * 示例2: 缺页中断
+ * [1467944.367372] Call trace:
+ * [1467944.367627]  queued_spin_lock_slowpath+0x188/0x308
+ * [1467944.368222]  __handle_mm_fault+0x4ec/0x590
+ * [1467944.368690]  handle_mm_fault+0xe0/0x180
+ * [1467944.369098]  do_page_fault+0x164/0x488
+ * [1467944.369568]  do_mem_abort+0x54/0xb0
+ * [1467944.369967]  do_el0_ia_bp_hardening+0x5c/0xa0
+ * [1467944.370411]  el0_ia+0x1c/0x20
+ */
 static void noinstr el0_ia(struct pt_regs *regs, unsigned long esr)
 {
 	unsigned long far = read_sysreg(far_el1);

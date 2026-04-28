@@ -222,6 +222,14 @@ static inline void forget_syscall(struct pt_regs *regs)
 #define compat_thumb_mode(regs) (0)
 #endif
 
+/**
+ * ARMv8有4个Exception Level，其中:
+ *
+ *	用户程序运行在EL0，
+ *	OS运行在EL1，
+ *	Hypervisor运行在EL2，
+ *	Secure monitor运行在EL3；
+ */
 #define user_mode(regs)	\
 	(((regs)->pstate & PSR_MODE_MASK) == PSR_MODE_EL0t)
 

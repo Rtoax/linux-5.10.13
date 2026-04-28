@@ -1312,6 +1312,8 @@ int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p
  *
  * We don't want to have recursive SIGSEGV's etc, for example,
  * that is why we also clear SIGNAL_UNKILLABLE.
+ *
+ * sudo bpftrace -e 'kprobe:force_sig_info_to_task{printf("%s %s\n", comm, ustack);}'
  */
 static int
 force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t)

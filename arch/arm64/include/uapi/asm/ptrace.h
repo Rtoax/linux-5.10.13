@@ -29,6 +29,14 @@
 /*
  * PSR bits
  */
+/**
+ * ARMv8有4个Exception Level，其中:
+ *
+ *	用户程序运行在EL0，
+ *	OS运行在EL1，
+ *	Hypervisor运行在EL2，
+ *	Secure monitor运行在EL3；
+ */
 #define PSR_MODE_EL0t	0x00000000
 #define PSR_MODE_EL1t	0x00000004
 #define PSR_MODE_EL1h	0x00000005
