@@ -46,6 +46,17 @@ enum {
  * 'info' is not a pointer and you can't access its field. Instead,
  * SEND_SIG_NOINFO means that si_code is SI_USER, and SEND_SIG_PRIV
  * means that si_code is SI_KERNEL.
+ *
+ * trace_signal_generate() 函数
+ *
+ * tracepoint:signal:signal_generate
+ *     int sig
+ *     int errno
+ *     int code
+ *     char comm[16]
+ *     pid_t pid
+ *     int group
+ *     int result
  */
 TRACE_EVENT(signal_generate,
 

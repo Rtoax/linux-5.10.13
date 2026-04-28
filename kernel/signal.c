@@ -1854,6 +1854,9 @@ void sigqueue_free(struct sigqueue *q)
 		__sigqueue_free(q);
 }
 
+/**
+ *
+ */
 int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 {
 	int sig = q->info.si_signo;
@@ -1866,6 +1869,10 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 
 	ret = -1;
 	rcu_read_lock();
+
+	/**
+	 * 目标进程
+	 */
 	t = pid_task(pid, type);
 	if (!t || !likely(lock_task_sighand(t, &flags)))
 		goto ret;
