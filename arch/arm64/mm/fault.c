@@ -712,6 +712,11 @@ static const struct fault_info fault_info[] = {
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 45"			},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 46"			},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 47"			},
+	/**
+	 * 示例：
+	 * flb-pipeline[2566318]: unhandled exception: IABT (lower EL), ESR 0x0000000082000030, TLB conflict abort in libc.so.6[ffffbd620000+190000]
+	 * qemu-kvm[1104774]: unhandled exception: IABT (lower EL), ESR 0x0000000082000030, TLB conflict abort in qemu-system-aarch64[aaaabde40000+a70000]
+	 */
 	{ do_bad,		SIGKILL, SI_KERNEL,	"TLB conflict abort"		},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"Unsupported atomic hardware update fault"	},
 	{ do_bad,		SIGKILL, SI_KERNEL,	"unknown 50"			},

@@ -10,6 +10,25 @@
 #include <asm/memory.h>
 #include <asm/sysreg.h>
 
+/**
+ * ESR: Exception Syndrome Register (异常综合征寄存器)
+ *
+ * ARMv8-A 架构中一个核心系统寄存器，用于在异常发生时，记录导致异常的“病因”。
+ * 当一个同步异常发生（比如程序访问了非法内存），硬件会自动将状态信息填入 ESR 寄存器。
+ *
+ * EC (Exception Class)：症状类别。占据 bits [31:26]，这是最重要的6位。它告诉你这是一场“心脏病”还是“骨折”等宏观症状。
+ * IL (Instruction Length)：指令长度。占据 bit [25]，用于指明触发异常的指令长度（0表示16位，1表示32位）。
+ * ISS (Instruction Specific Syndrome)：具体细节。占据 bits [24:0]。这部分的格式完全取决于EC，比如对于数据中止(DABT)，它会进一步描述是“读”还是“写”操作等细节。
+ * ISS2：扩展细节。从 bits [55:32] 开始，随架构发展新增的字段，用于提供更丰富的诊断信息
+ *
+ * 例子： ESR 0x0000000082000030
+ *
+ *       0x82000030 = 1000 0010 0000 0000 0000 0000 0011 0000
+ * EC (bits[31:26]) = 1000 00                                 = 0x20 = ESR_ELx_EC_IABT_LOW
+ * IL (bit[25])     =        1                                = 1 （32位）
+ * ISS (bits[24:0]) =         0 0000 0000 0000 0000 0011 0000 = 0x30
+ */
+
 #define ESR_ELx_EC_UNKNOWN	(0x00)
 #define ESR_ELx_EC_WFx		(0x01)
 /* Unallocated EC: 0x02 */
@@ -23,28 +42,35 @@
 /* Unallocated EC: 0x0A - 0x0B */
 #define ESR_ELx_EC_CP14_64	(0x0C)
 #define ESR_ELx_EC_BTI		(0x0D)
-#define ESR_ELx_EC_ILL		(0x0E)
+#define ESR_ELx_EC_ILL		(0x0E)	/* 未定义的指令 */
 /* Unallocated EC: 0x0F - 0x10 */
 #define ESR_ELx_EC_SVC32	(0x11)
 #define ESR_ELx_EC_HVC32	(0x12)	/* EL2 only */
 #define ESR_ELx_EC_SMC32	(0x13)	/* EL2 and above */
 /* Unallocated EC: 0x14 */
-#define ESR_ELx_EC_SVC64	(0x15)
-#define ESR_ELx_EC_HVC64	(0x16)	/* EL2 and above */
-#define ESR_ELx_EC_SMC64	(0x17)	/* EL2 and above */
-#define ESR_ELx_EC_SYS64	(0x18)
-#define ESR_ELx_EC_SVE		(0x19)
-#define ESR_ELx_EC_ERET		(0x1a)	/* EL2 only */
+#define ESR_ELx_EC_SVC64	(0x15)	/* AArch64 系统调用 */
+#define ESR_ELx_EC_HVC64	(0x16)	/* EL2 and above，Hypervisor 调用 */
+#define ESR_ELx_EC_SMC64	(0x17)	/* EL2 and above，安全监控器调用 */
+#define ESR_ELx_EC_SYS64	(0x18)	/* 系统寄存器访问 */
+#define ESR_ELx_EC_SVE		(0x19)	/* SVE 指令 */
+#define ESR_ELx_EC_ERET		(0x1a)	/* EL2 only，异常返回指令 (ERET) 问题 */
 /* Unallocated EC: 0x1B */
-#define ESR_ELx_EC_FPAC		(0x1C)	/* EL1 and above */
-/* Unallocated EC: 0x1D - 0x1E */
+#define ESR_ELx_EC_FPAC		(0x1C)	/* EL1 and above，指针认证 (PAC) 失败 */
+#define ESR_ELx_EC_SME          (0x1D)	/* SME 指令 */
+/* Unallocated EC: 0x1E */
 #define ESR_ELx_EC_IMP_DEF	(0x1f)	/* EL3 only */
-#define ESR_ELx_EC_IABT_LOW	(0x20)
-#define ESR_ELx_EC_IABT_CUR	(0x21)
-#define ESR_ELx_EC_PC_ALIGN	(0x22)
+
+/**
+ * IABT (Instruction Abort)
+ * - 处理器在较低的特权级（EL0）尝试执行一条指令时，发生了错误；
+ * - 指处理器在“取指”阶段，无法从目标内存地址正常读取并执行指令；
+ */
+#define ESR_ELx_EC_IABT_LOW	(0x20)	/* 指令中止，来自低异常级别 (EL0) */
+#define ESR_ELx_EC_IABT_CUR	(0x21)	/* 指令中止，来自当前异常级别 (EL1) */
+#define ESR_ELx_EC_PC_ALIGN	(0x22)	/* PC 对齐错误 */
 /* Unallocated EC: 0x23 */
-#define ESR_ELx_EC_DABT_LOW	(0x24)
-#define ESR_ELx_EC_DABT_CUR	(0x25)
+#define ESR_ELx_EC_DABT_LOW	(0x24)	/* 数据中止，来自低异常级别 (EL0) */
+#define ESR_ELx_EC_DABT_CUR	(0x25)	/* 数据中止，来自当前异常级别 (EL1) */
 #define ESR_ELx_EC_SP_ALIGN	(0x26)
 /* Unallocated EC: 0x27 */
 #define ESR_ELx_EC_FP_EXC32	(0x28)

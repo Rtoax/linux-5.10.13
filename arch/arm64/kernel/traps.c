@@ -147,6 +147,11 @@ void die(const char *str, struct pt_regs *regs, int err)
 		do_exit(SIGSEGV);
 }
 
+/**
+ * 示例输出：
+ * qemu-kvm[1104774]: unhandled exception: IABT (lower EL), ESR 0x0000000082000030, TLB conflict abort in qemu-system-aarch64[aaaabde40000+a70000]
+ * flb-pipeline[2566318]: unhandled exception: IABT (lower EL), ESR 0x0000000082000030, TLB conflict abort in libc.so.6[ffffbd620000+190000]
+ */
 static void arm64_show_signal(int signo, const char *str)
 {
 	static DEFINE_RATELIMIT_STATE(rs, DEFAULT_RATELIMIT_INTERVAL,
@@ -171,6 +176,9 @@ static void arm64_show_signal(int signo, const char *str)
 	__show_regs(regs);
 }
 
+/**
+ *
+ */
 void arm64_force_sig_fault(int signo, int code, void __user *addr,
 			   const char *str)
 {
@@ -700,6 +708,12 @@ void do_sysinstr(unsigned int esr, struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(do_sysinstr);
 
+/**
+ * ESR: Exception Syndrome Register (异常综合征寄存器)
+ *
+ * ARMv8-A 架构中一个核心系统寄存器，用于在异常发生时，记录导致异常的“病因”。
+ * 当一个同步异常发生（比如程序访问了非法内存），硬件会自动将状态信息填入 ESR 寄存器。
+ */
 static const char *esr_class_str[] = {
 	[0 ... ESR_ELx_EC_MAX]		= "UNRECOGNIZED EC",
 	[ESR_ELx_EC_UNKNOWN]		= "Unknown/Uncategorized",
@@ -725,6 +739,9 @@ static const char *esr_class_str[] = {
 	[ESR_ELx_EC_ERET]		= "ERET/ERETAA/ERETAB",
 	[ESR_ELx_EC_FPAC]		= "FPAC",
 	[ESR_ELx_EC_IMP_DEF]		= "EL3 IMP DEF",
+	/**
+	 * EL 代表 Exception Level（异常级别）
+	 */
 	[ESR_ELx_EC_IABT_LOW]		= "IABT (lower EL)",
 	[ESR_ELx_EC_IABT_CUR]		= "IABT (current EL)",
 	[ESR_ELx_EC_PC_ALIGN]		= "PC Alignment",

@@ -5585,8 +5585,35 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr,
 }
 EXPORT_SYMBOL_GPL(access_process_vm);
 
-/*
+/**
  * Print the name of a VMA.
+ */
+#ifdef __linux_7_1__ /* v7.1-rc1-55-g3b3bea6d4b9c */
+void print_vma_addr(char *prefix, unsigned long ip)
+{
+	struct mm_struct *mm = current->mm;
+	struct vm_area_struct *vma;
+
+	/*
+	 * we might be running from an atomic context so we cannot sleep
+	 */
+	if (!mmap_read_trylock(mm))
+		return;
+
+	vma = vma_lookup(mm, ip);
+	if (vma && vma->vm_file) {
+		struct file *f = vma->vm_file;
+		ip -= vma->vm_start;
+		ip += vma->vm_pgoff << PAGE_SHIFT;
+		printk("%s%pD[%lx,%lx+%lx]", prefix, f, ip,
+				vma->vm_start,
+				vma->vm_end - vma->vm_start);
+	}
+	mmap_read_unlock(mm);
+}
+#else
+/**
+ * 格式：libc.so.6[ffffbd620000+190000]
  */
 void print_vma_addr(char *prefix, unsigned long ip)
 {
@@ -5617,6 +5644,7 @@ void print_vma_addr(char *prefix, unsigned long ip)
 	}
 	mmap_read_unlock(mm);
 }
+#endif
 
 #if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP)
 /**
