@@ -63,6 +63,12 @@
 #define ARM64_HAS_32BIT_EL1			53
 #define ARM64_BTI				54
 #define ARM64_HAS_ARMv8_4_TTL			55
+/**
+ * TLB range maintenance instructions TLB 范围维护指令
+ * 现代处理器架构（尤其是 ARMv8.4 及以上版本）引入的一项重要优化特性。它允许操作系统或底层软件
+ * 一次性使 TLB 中一个地址范围内的所有映射条目失效，从而替代传统的单页遍历刷新方式，显著提升内
+ * 存管理效率。
+ */
 #define ARM64_HAS_TLB_RANGE			56
 #define ARM64_MTE				57
 #define ARM64_WORKAROUND_1508412		58

@@ -98,6 +98,12 @@
 #define KERNEL_HWCAP_SVEBITPERM		__khwcap2_feature(SVEBITPERM)
 #define KERNEL_HWCAP_SVESHA3		__khwcap2_feature(SVESHA3)
 #define KERNEL_HWCAP_SVESM4		__khwcap2_feature(SVESM4)
+/**
+ * flagm2 是 ARMv8.5-A 架构引入的第二代标志位操作扩展，官方名称为 FEAT_FlagM2，
+ * 是第一代 flagm（FEAT_FlagM，ARMv8.4-A）的增强版本。它专门设计用于高效处理条件
+ * 标志位的复杂操作，极大地加速了 x86/x86_64 二进制翻译（如 Rosetta 2、QEMU TCG、
+ * FEX-Emu）。
+ */
 #define KERNEL_HWCAP_FLAGM2		__khwcap2_feature(FLAGM2)
 #define KERNEL_HWCAP_FRINT		__khwcap2_feature(FRINT)
 #define KERNEL_HWCAP_SVEI8MM		__khwcap2_feature(SVEI8MM)

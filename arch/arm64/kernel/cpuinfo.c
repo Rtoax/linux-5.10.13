@@ -49,7 +49,7 @@ unsigned long __icache_flags;
  */
 static const char *const hwcap_str[] = {
 	[KERNEL_HWCAP_FP/*0*/]		= "fp",
-	[KERNEL_HWCAP_ASIMD/*1*/]		= "asimd",
+	[KERNEL_HWCAP_ASIMD/*1*/]	= "asimd",
 	[KERNEL_HWCAP_EVTSTRM]		= "evtstrm",
 	[KERNEL_HWCAP_AES]		= "aes",
 	[KERNEL_HWCAP_PMULL]		= "pmull",
@@ -87,6 +87,9 @@ static const char *const hwcap_str[] = {
 	[KERNEL_HWCAP_SVEBITPERM]	= "svebitperm",
 	[KERNEL_HWCAP_SVESHA3]		= "svesha3",
 	[KERNEL_HWCAP_SVESM4]		= "svesm4",
+	/**
+	 *
+	 */
 	[KERNEL_HWCAP_FLAGM2]		= "flagm2",
 	[KERNEL_HWCAP_FRINT]		= "frint",
 	[KERNEL_HWCAP_SVEI8MM]		= "svei8mm",
