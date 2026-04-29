@@ -133,6 +133,9 @@ static struct bpf_map *stack_map_alloc(union bpf_attr *attr)
 	smap->map.value_size = value_size;
 	smap->n_buckets = n_buckets;
 
+	/**
+	 *
+	 */
 	err = get_callchain_buffers(sysctl_perf_event_max_stack);
 	if (err)
 		goto free_charge;
@@ -473,7 +476,7 @@ static long __bpf_get_stackid(struct bpf_map *map,
 /**
  *  BPF_MAP_TYPE_STACK_TRACE
  */
-long bpf_get_stackid(void *ctx, struct bpf_map *map, u64 flags){}//+++
+long bpf_get_stackid(void *ctx, struct bpf_map *map, u64 flags) {}
 BPF_CALL_3(bpf_get_stackid, struct pt_regs *, regs, struct bpf_map *, map,
 	   u64, flags)
 {
@@ -491,6 +494,9 @@ BPF_CALL_3(bpf_get_stackid, struct pt_regs *, regs, struct bpf_map *, map,
 			       BPF_F_FAST_STACK_CMP | BPF_F_REUSE_STACKID)))
 		return -EINVAL;
 
+	/**
+	 *
+	 */
 	trace = get_perf_callchain(regs, init_nr, kernel, user,
 				   sysctl_perf_event_max_stack, false, false);
 

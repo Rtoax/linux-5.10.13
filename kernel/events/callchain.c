@@ -15,7 +15,7 @@
 #include "internal.h"
 
 /**
- *  
+ *
  */
 struct callchain_cpus_entries {
 	struct rcu_head			rcu_head;
@@ -26,11 +26,14 @@ struct callchain_cpus_entries {
  * @sample_max_stack: Max number of frame pointers in a callchain,
  *		      should be < /proc/sys/kernel/perf_event_max_stack
  */
-int __read_mostly sysctl_perf_event_max_stack  = PERF_MAX_STACK_DEPTH;
-int __read_mostly sysctl_perf_event_max_contexts_per_stack  = PERF_MAX_CONTEXTS_PER_STACK;
+int __read_mostly sysctl_perf_event_max_stack  = PERF_MAX_STACK_DEPTH/* 127 */;
+int __read_mostly sysctl_perf_event_max_contexts_per_stack  = PERF_MAX_CONTEXTS_PER_STACK /* 8 */;
 
 static inline size_t perf_callchain_entry__sizeof(void)
 {
+	/**
+	 * struct perf_callchain_entry + N * u64
+	 */
 	return (sizeof(struct perf_callchain_entry) +
 		sizeof(__u64) * (sysctl_perf_event_max_stack +
 				 sysctl_perf_event_max_contexts_per_stack));
@@ -75,16 +78,16 @@ static void release_callchain_buffers(void)
 }
 
 /**
- *  
+ *
  */
 static int alloc_callchain_buffers(void)
 {
 	int cpu;
 	int size;
 
-    /**
-     *  
-     */
+	/**
+	 *
+	 */
 	struct callchain_cpus_entries *entries;
 
 	/*
@@ -98,15 +101,15 @@ static int alloc_callchain_buffers(void)
 	if (!entries)
 		return -ENOMEM;
 
-	size = perf_callchain_entry__sizeof() * PERF_NR_CONTEXTS;
+	size = perf_callchain_entry__sizeof() * PERF_NR_CONTEXTS /* 4 */;
 
-    /**
-     *  
-     */
+	/**
+	 * 每个CPU一个 perf_callchain_entry 指针
+	 */
 	for_each_possible_cpu(cpu) {
-	    /**
-         *  分配
-         */
+		/**
+		 * 分配 perf_callchain_entry[]
+		 */
 		entries->cpu_entries[cpu] = kmalloc_node(size, GFP_KERNEL, cpu_to_node(cpu));
 		if (!entries->cpu_entries[cpu])
 			goto fail;
@@ -126,7 +129,7 @@ fail:
 }
 
 /**
- *  
+ *
  */
 int get_callchain_buffers(int event_max_stack)
 {
@@ -199,6 +202,9 @@ put_callchain_entry(int rctx)
 	put_recursion_context(this_cpu_ptr(callchain_recursion), rctx);
 }
 
+/**
+ * @regs:
+ */
 struct perf_callchain_entry *
 get_perf_callchain(struct pt_regs *regs, u32 init_nr, bool kernel, bool user,
 		   u32 max_stack, bool crosstask, bool add_mark)
