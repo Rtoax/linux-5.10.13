@@ -91,9 +91,9 @@ _head:
 	.long	pe_header - _head		// Offset to the PE header.
 
 pe_header:
-    /**
-     *  定义在 arch/arm64/kernel/efi-head.S
-     */
+	/**
+	*  定义在 arch/arm64/kernel/efi-head.S
+	*/
 	__EFI_PE_HEADER
 #else
 	.long	0				// reserved
@@ -977,13 +977,13 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 	mov	x19, x0				// preserve new SCTLR_EL1 value
 	mrs	x20, sctlr_el1			// preserve old SCTLR_EL1 value
 #endif
-    /**
-     *
-     */
+	/**
+	*
+	*/
 	adrp	x1, init_pg_dir
 	/**
-     *  使能 MMU
-     */
+	*  使能 MMU
+	*/
 	bl	__enable_mmu
 #ifdef CONFIG_RELOCATABLE
 #ifdef CONFIG_RELR
@@ -1021,7 +1021,7 @@ SYM_FUNC_START_LOCAL(__primary_switch)
 	ldr	x8, =__primary_switched
 	adrp	x0, __PHYS_OFFSET
 	/**
-     *  跳转到 __primary_switched
-     */
+	*  跳转到 __primary_switched
+	*/
 	br	x8
 SYM_FUNC_END(__primary_switch)
