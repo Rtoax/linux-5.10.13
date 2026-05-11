@@ -7,6 +7,7 @@ config EFI_ESRT
 	depends on EFI
 	default y
 
+#
 config EFI_VARS_PSTORE
 	tristate "Register efivars backend for pstore"
 	depends on PSTORE

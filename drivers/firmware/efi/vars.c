@@ -76,6 +76,9 @@ int efivars_register(struct efivars *efivars,
 
 	efivars->ops = ops;
 
+	/**
+	 * 设置全局变量
+	 */
 	__efivars = efivars;
 
 	if (efivar_supports_writes())
@@ -180,6 +183,8 @@ EXPORT_SYMBOL_NS_GPL(efivar_unlock, EFIVAR);
  * efivar_get_variable() - retrieve a variable identified by name/vendor
  *
  * Must be called with efivars_lock held.
+ *
+ * 从 efivar 获取数据
  */
 efi_status_t efivar_get_variable(efi_char16_t *name, efi_guid_t *vendor,
 				 u32 *attr, unsigned long *size, void *data)

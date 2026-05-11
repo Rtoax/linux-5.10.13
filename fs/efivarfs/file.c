@@ -106,6 +106,9 @@ out_free:
 	return size;
 }
 
+/**
+ * /sys/firmware/efi/efivars/
+ */
 const struct file_operations efivarfs_file_operations = {
 	.open	= simple_open,
 	.read	= efivarfs_file_read,

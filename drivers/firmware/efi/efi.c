@@ -212,6 +212,9 @@ static bool generic_ops_supported(void)
 	return true;
 }
 
+/**
+ *
+ */
 static int generic_ops_register(void)
 {
 	if (!generic_ops_supported())
