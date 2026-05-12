@@ -108,6 +108,9 @@ out_free:
 
 /**
  * /sys/firmware/efi/efivars/
+ *
+ * 示例
+ * /sys/firmware/efi/efivars/Boot0000-8be4df61-93ca-11d2-aa0d-00e098032b8c
  */
 const struct file_operations efivarfs_file_operations = {
 	.open	= simple_open,

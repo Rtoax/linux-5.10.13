@@ -28,10 +28,17 @@ struct inode *efivarfs_get_inode(struct super_block *sb,
 		inode->i_atime = inode->i_mtime = inode_set_ctime_current(inode);
 		inode->i_flags = is_removable ? 0 : S_IMMUTABLE;
 		switch (mode & S_IFMT) {
+		/**
+		 * 示例：
+		 * /sys/firmware/efi/efivars/Boot0000-8be4df61-93ca-11d2-aa0d-00e098032b8c
+		 */
 		case S_IFREG:
 			inode->i_op = &efivarfs_file_inode_operations;
 			inode->i_fop = &efivarfs_file_operations;
 			break;
+		/**
+		 * /sys/firmware/efi/efivars
+		 */
 		case S_IFDIR:
 			inode->i_op = &efivarfs_dir_inode_operations;
 			inode->i_fop = &simple_dir_operations;
@@ -70,6 +77,9 @@ bool efivarfs_valid_name(const char *str, int len)
 	return uuid_is_valid(s);
 }
 
+/**
+ * 创建一个 /sys/firmware/efi/efivars 文件
+ */
 static int efivarfs_create(struct mnt_idmap *idmap, struct inode *dir,
 			   struct dentry *dentry, umode_t mode, bool excl)
 {
@@ -88,6 +98,9 @@ static int efivarfs_create(struct mnt_idmap *idmap, struct inode *dir,
 	/* length of the variable name itself: remove GUID and separator */
 	namelen = dentry->d_name.len - EFI_VARIABLE_GUID_LEN - 1;
 
+	/**
+	 * 获取参数
+	 */
 	err = guid_parse(dentry->d_name.name + namelen + 1, &var->var.VendorGuid);
 	if (err)
 		goto out;
@@ -114,6 +127,9 @@ static int efivarfs_create(struct mnt_idmap *idmap, struct inode *dir,
 	inode->i_private = var;
 	kmemleak_ignore(var);
 
+	/**
+	 * 添加到链表，新内核中已经删除这个链表
+	 */
 	err = efivar_entry_add(var, &efivarfs_list);
 	if (err)
 		goto out;
@@ -141,6 +157,9 @@ static int efivarfs_unlink(struct inode *dir, struct dentry *dentry)
 	return 0;
 };
 
+/**
+ * /sys/firmware/efi/efivars
+ */
 const struct inode_operations efivarfs_dir_inode_operations = {
 	.lookup = simple_lookup,
 	.unlink = efivarfs_unlink,
