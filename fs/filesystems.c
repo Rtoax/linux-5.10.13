@@ -264,7 +264,7 @@ static struct file_system_type *__get_fs_type(const char *name, int len)
 }
 
 /**
- *
+ * @name: "xfs", "ext4", ...
  */
 struct file_system_type *get_fs_type(const char *name)
 {
