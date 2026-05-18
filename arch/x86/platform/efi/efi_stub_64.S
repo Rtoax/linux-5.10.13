@@ -10,6 +10,9 @@
 #include <linux/linkage.h>
 #include <asm/nospec-branch.h>
 
+/**
+ *
+ */
 SYM_FUNC_START(__efi_call)
 	pushq %rbp
 	movq %rsp, %rbp

@@ -36,6 +36,9 @@
 
 #include <asm/early_ioremap.h>
 
+/**
+ * 静态变量
+ */
 struct efi __read_mostly efi = {
 	.runtime_supported_mask = EFI_RT_SUPPORTED_ALL,
 	.acpi			= EFI_INVALID_TABLE_ADDR,
@@ -95,6 +98,9 @@ bool __pure __efi_soft_reserve_enabled(void)
 	return !efi_enabled(EFI_MEM_NO_SOFT_RESERVE);
 }
 
+/**
+ * efi=[debug|noruntime|runtime|nosoftreserve]
+ */
 static int __init parse_efi_cmdline(char *str)
 {
 	if (!str) {
@@ -229,6 +235,9 @@ static int generic_ops_register(void)
 		generic_ops.set_variable = efi.set_variable;
 		generic_ops.set_variable_nonblocking = efi.set_variable_nonblocking;
 	}
+	/**
+	 * 注册
+	 */
 	return efivars_register(&generic_efivars, &generic_ops);
 }
 

@@ -10,7 +10,7 @@
 #include <linux/efi.h>
 
 /**
- * 见  /sys/firmware/efi/efivars
+ * 见 /sys/firmware/efi/efivars
  */
 struct efi_variable {
 	efi_char16_t  VariableName[EFI_VAR_NAME_LEN/*1024*//sizeof(efi_char16_t)];
@@ -26,6 +26,31 @@ struct efivar_entry {
 	struct list_head list;
 	struct kobject kobj;
 };
+
+#ifdef __linux_7_0_rc3__ /* v7.1-rc3-9-g1d5dcaa3bd65 */
+struct efivarfs_mount_opts {
+	kuid_t uid;
+	kgid_t gid;
+};
+
+struct efivarfs_fs_info {
+	struct efivarfs_mount_opts mount_opts;
+	struct super_block *sb;
+	struct notifier_block nb;
+};
+
+struct efi_variable {
+	efi_char16_t  VariableName[EFI_VAR_NAME_LEN/sizeof(efi_char16_t)];
+	efi_guid_t    VendorGuid;
+};
+
+struct efivar_entry {
+	struct efi_variable var;
+	struct inode vfs_inode;
+	unsigned long open_count;
+	bool removed;
+};
+#endif
 
 int efivar_init(int (*func)(efi_char16_t *, efi_guid_t, unsigned long, void *),
 		void *data, bool duplicates, struct list_head *head);

@@ -121,6 +121,7 @@ struct efi_runtime_work efi_rts_work;
 /*
  * efi_queue_work:	Queue EFI runtime service call and wait for completion
  * @_rts:		EFI runtime service function identifier
+ * 			例如 GET_VARIABLE
  * @_args:		Arguments to pass to the EFI runtime service
  *
  * Accesses to efi_runtime_services() are serialized by a binary
@@ -243,6 +244,9 @@ static void __nocfi efi_call_rts(struct work_struct *work)
 				       args->SET_WAKEUP_TIME.enable,
 				       args->SET_WAKEUP_TIME.time);
 		break;
+	/**
+	 *
+	 */
 	case EFI_GET_VARIABLE:
 		status = efi_call_virt(get_variable,
 				       args->GET_VARIABLE.name,
@@ -257,6 +261,9 @@ static void __nocfi efi_call_rts(struct work_struct *work)
 				       args->GET_NEXT_VARIABLE.name,
 				       args->GET_NEXT_VARIABLE.vendor);
 		break;
+	/**
+	 * 如：设置启动项
+	 */
 	case EFI_SET_VARIABLE:
 		status = efi_call_virt(set_variable,
 				       args->SET_VARIABLE.name,
@@ -312,6 +319,9 @@ static void __nocfi efi_call_rts(struct work_struct *work)
 	complete(&efi_rts_work.efi_rts_comp);
 }
 
+/**
+ * @id: 例如 EFI_GET_VARIABLE
+ */
 static efi_status_t __efi_queue_work(enum efi_rts_ids id,
 				     union efi_rts_args *args)
 {
@@ -552,6 +562,9 @@ static efi_status_t virt_efi_query_capsule_caps(efi_capsule_header_t **capsules,
 	return status;
 }
 
+/**
+ *
+ */
 void __init efi_native_runtime_setup(void)
 {
 	efi.get_time			    = virt_efi_get_time;

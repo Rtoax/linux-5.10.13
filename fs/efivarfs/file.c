@@ -92,6 +92,9 @@ static ssize_t efivarfs_file_read(struct file *file, char __user *userbuf,
 	if (!data)
 		return -ENOMEM;
 
+	/**
+	 *
+	 */
 	size = efivar_entry_get(var, &attributes, &datasize,
 				data + sizeof(attributes));
 	if (size)

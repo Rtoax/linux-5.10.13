@@ -189,6 +189,11 @@ EXPORT_SYMBOL_NS_GPL(efivar_unlock, EFIVAR);
 efi_status_t efivar_get_variable(efi_char16_t *name, efi_guid_t *vendor,
 				 u32 *attr, unsigned long *size, void *data)
 {
+	/**
+	 * 可能为：
+	 * virt_efi_get_variable()
+	 * efi_thunk_get_variable()
+	 */
 	return __efivars->ops->get_variable(name, vendor, attr, size, data);
 }
 EXPORT_SYMBOL_NS_GPL(efivar_get_variable, EFIVAR);

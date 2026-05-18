@@ -358,7 +358,7 @@ extern void efi_find_mirror(void);
 extern void efi_reserve_boot_services(void);
 #else
 /**
-     *  
+     *
      */
 #endif /* CONFIG_EFI */
 
