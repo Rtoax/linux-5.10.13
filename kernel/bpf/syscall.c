@@ -2691,7 +2691,7 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		return -EPERM;
 
 	/**
-	 *	简单处理 BPF_PROG_TYPE_CGROUP_SOCK
+	 * 简单处理 BPF_PROG_TYPE_CGROUP_SOCK
 	 */
 	bpf_prog_load_fixup_attach_type(attr);
 
@@ -2739,7 +2739,6 @@ static int bpf_prog_load(union bpf_attr *attr, union bpf_attr __user *uattr)
 		goto free_prog_nouncharge;
 
 	/**
-	 * @brief
 	 *
 	 */
 	err = bpf_prog_charge_memlock(prog);
@@ -5059,7 +5058,7 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 		return err;
 
 	/**
-	 *	取 一个 bpf_attr 大小
+	 * 取 一个 bpf_attr 大小
 	 */
 	size = min_t(u32, size, sizeof(attr));
 
@@ -5113,7 +5112,10 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	case BPF_MAP_FREEZE:
 		err = map_freeze(&attr);
 		break;
-	case BPF_PROG_LOAD:         /* 加载程序 */
+	/**
+	 * 加载程序
+	 */
+	case BPF_PROG_LOAD:
 		err = bpf_prog_load(&attr, uattr);
 		break;
 	/**
