@@ -1502,6 +1502,9 @@ static int btf_alloc_id(struct btf *btf)
 
 	idr_preload(GFP_KERNEL);
 	spin_lock_bh(&btf_idr_lock);
+	/**
+	 * BTF ID 从 1 开始，也就是说 vmlinux 的 BTF ID 是 1
+	 */
 	id = idr_alloc_cyclic(&btf_idr, btf, 1, INT_MAX, GFP_ATOMIC);
 	if (id > 0)
 		btf->id = id;
