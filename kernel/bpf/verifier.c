@@ -12424,8 +12424,8 @@ skip_full_check:
 	if (ret == 0 && env->used_map_cnt) {
 		/* if program passed verifier, update used_maps in bpf_prog_info */
 		env->prog->aux->used_maps = kmalloc_array(env->used_map_cnt,
-							  sizeof(env->used_maps[0]),
-							  GFP_KERNEL);
+			sizeof(env->used_maps[0]),
+			GFP_KERNEL);
 
 		if (!env->prog->aux->used_maps) {
 			ret = -ENOMEM;
