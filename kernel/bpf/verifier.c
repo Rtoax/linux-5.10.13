@@ -1560,10 +1560,11 @@ static int add_subprog(struct bpf_verifier_env *env, int off)
 	/**
 	 * 太多的子程序
 	 */
-	if (env->subprog_cnt >= BPF_MAX_SUBPROGS) {
+	if (env->subprog_cnt >= BPF_MAX_SUBPROGS/*=256*/) {
 		verbose(env, "too many subprograms\n");
 		return -E2BIG;
 	}
+
 	/**
 	 * 保存并排序所有子程序
 	 * 这里的性能有待提升
@@ -1576,10 +1577,7 @@ static int add_subprog(struct bpf_verifier_env *env, int off)
 }
 
 /**
- * @brief 检查子程序
- *
- * @param env
- * @return int
+ * 检查子程序
  */
 static int check_subprogs(struct bpf_verifier_env *env)
 {
@@ -1595,10 +1593,12 @@ static int check_subprogs(struct bpf_verifier_env *env)
 
 	/* determine subprog starts. The end is one before the next starts */
 	for (i = 0; i < insn_cnt; i++) {
-		// 当 jmp 或者 call 的时候，才代表有 子程序
+		/**
+		 * 当 jmp 或者 call 的时候，才代表有 子程序
+		 */
 		if (insn[i].code != (BPF_JMP | BPF_CALL))
 			continue;
-		// 源寄存器
+		/* 源寄存器 */
 		if (insn[i].src_reg != BPF_PSEUDO_CALL)
 			continue;
 		if (!env->bpf_capable) {
@@ -1615,7 +1615,8 @@ static int check_subprogs(struct bpf_verifier_env *env)
 			return ret;
 	}
 
-	/* Add a fake 'exit' subprog which could simplify subprog iteration
+	/**
+	 * Add a fake 'exit' subprog which could simplify subprog iteration
 	 * logic. 'subprog_cnt' should not be increased.
 	 */
 	subprog[env->subprog_cnt].start = insn_cnt;
@@ -1629,8 +1630,7 @@ static int check_subprogs(struct bpf_verifier_env *env)
 	subprog_end = subprog[cur_subprog + 1].start;
 
 	/**
-	 * @brief 遍历所有指令
-	 *
+	 * 遍历所有指令
 	 */
 	for (i = 0; i < insn_cnt; i++) {
 		u8 code = insn[i].code;
@@ -1667,15 +1667,19 @@ static int check_subprogs(struct bpf_verifier_env *env)
 		}
 next:
 		if (i == subprog_end - 1) {
-			/* to avoid fall-through from one subprog into another
+			/**
+			 * to avoid fall-through from one subprog into another
 			 * the last insn of the subprog should be either exit
 			 * or unconditional jump back
+			 *
+			 * 最后一个指令不是 exit 或 jmp，报错
 			 */
 			if (code != (BPF_JMP | BPF_EXIT) &&
 			    code != (BPF_JMP | BPF_JA)) {
 				verbose(env, "last insn is not an exit or jmp\n");
 				return -EINVAL;
 			}
+
 			/**
 			 * 进入下一个 子程序
 			 */
@@ -9496,10 +9500,7 @@ static bool reg_type_mismatch(enum bpf_reg_type src, enum bpf_reg_type prev)
 }
 
 /**
- * @brief
  *
- * @param env
- * @return int
  */
 static int do_check(struct bpf_verifier_env *env)
 {
@@ -9719,7 +9720,7 @@ static int do_check(struct bpf_verifier_env *env)
 				return err;
 
 		/**
-		 * @brief 跳转指令
+		 * 跳转指令
 		 *
 		 */
 		} else if (class == BPF_JMP || class == BPF_JMP32) {
@@ -9753,7 +9754,9 @@ static int do_check(struct bpf_verifier_env *env)
 				if (err)
 					return err;
 
-			//
+			/**
+			 *
+			 */
 			} else if (opcode == BPF_JA) {
 				if (BPF_SRC(insn->code) != BPF_K ||
 				    insn->imm != 0 ||
@@ -9767,7 +9770,9 @@ static int do_check(struct bpf_verifier_env *env)
 				env->insn_idx += insn->off + 1;
 				continue;
 
-			// 退出
+			/**
+			 * 退出
+			 */
 			} else if (opcode == BPF_EXIT) {
 				if (BPF_SRC(insn->code) != BPF_K ||
 				    insn->imm != 0 ||
@@ -11135,7 +11140,8 @@ static int fixup_call_args(struct bpf_verifier_env *env)
 	return err;
 }
 
-/* fixup insn->imm field of bpf_call instructions
+/**
+ * fixup insn->imm field of bpf_call instructions
  * and inline eligible helpers as explicit sequence of BPF instructions
  *
  * this function is called after eBPF program passed verification
@@ -11154,6 +11160,9 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 	struct bpf_map *map_ptr;
 	int i, ret, cnt, delta = 0;
 
+	/**
+	 * 遍历所有指令
+	 */
 	for (i = 0; i < insn_cnt; i++, insn++) {
 		if (insn->code == (BPF_ALU64 | BPF_MOD | BPF_X) ||
 		    insn->code == (BPF_ALU64 | BPF_DIV | BPF_X) ||
@@ -11271,6 +11280,9 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 		if (insn->src_reg == BPF_PSEUDO_CALL)
 			continue;
 
+		/**
+		 * BPF helper
+		 */
 		if (insn->imm == BPF_FUNC_get_route_realm)
 			prog->dst_needed = 1;
 		if (insn->imm == BPF_FUNC_get_prandom_u32)
@@ -11355,7 +11367,8 @@ static int fixup_bpf_calls(struct bpf_verifier_env *env)
 			continue;
 		}
 
-		/* BPF_EMIT_CALL() assumptions in some of the map_gen_lookup
+		/**
+		 * BPF_EMIT_CALL() assumptions in some of the map_gen_lookup
 		 * and other inlining handlers are currently limited to 64 bit
 		 * only.
 		 */
@@ -11634,7 +11647,6 @@ static int do_check_common(struct bpf_verifier_env *env, int subprog)
 	}
 
 	/**
-	 * @brief
 	 *
 	 */
 	ret = do_check(env);
@@ -11694,7 +11706,6 @@ static int do_check_subprogs(struct bpf_verifier_env *env)
 		env->insn_idx = env->subprog_info[i].start;
 		WARN_ON_ONCE(env->insn_idx == 0);
 		/**
-		 * @brief
 		 *
 		 */
 		ret = do_check_common(env, i);
@@ -12209,13 +12220,11 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	log = &env->log;
 
 	/**
-	 * @brief bpf 注入程序长度
-	 *
+	 * bpf 注入程序长度
 	 */
 	len = (*prog)->len;
 	/**
-	 * @brief 指令辅助数据
-	 *
+	 * 指令辅助数据
 	 */
 	env->insn_aux_data =
 		vzalloc(array_size(sizeof(struct bpf_insn_aux_data), len));
@@ -12229,8 +12238,8 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 
 	/**
 	 * 如：
-	 * [BPF_PROG_TYPE_KPROBE] = & kprobe_verifier_ops,
-	 * [BPF_PROG_TYPE_TRACING] = & tracing_verifier_ops,
+	 * [BPF_PROG_TYPE_KPROBE] = &kprobe_verifier_ops,
+	 * [BPF_PROG_TYPE_TRACING] = &tracing_verifier_ops,
 	 */
 	env->ops = bpf_verifier_ops[env->prog->type];
 	is_priv = bpf_capable();
@@ -12246,8 +12255,7 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		mutex_lock(&bpf_verifier_lock);
 
 	/**
-	 * @brief
-	 *
+	 * 日志
 	 */
 	if (attr->log_level || attr->log_buf || attr->log_size) {
 		/* user requested verbose verifier output
@@ -12272,7 +12280,7 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 	}
 
 	/**
-	 * @brief 严格的对齐
+	 * 严格的对齐
 	 *
 	 */
 	env->strict_alignment = !!(attr->prog_flags & BPF_F_STRICT_ALIGNMENT);
@@ -12282,7 +12290,6 @@ int bpf_check(struct bpf_prog **prog, union bpf_attr *attr,
 		env->strict_alignment = false;
 
 	/**
-	 * @brief
 	 *
 	 */
 	env->allow_ptr_leaks = bpf_allow_ptr_leaks();
@@ -12390,7 +12397,11 @@ skip_full_check:
 	 *
 	 */
 	if (ret == 0)
+#ifdef __Linux_7_2__ /* v7.2-rc5-300-g8ba098e6b6ff */
+		ret = bpf_do_misc_fixups();
+#else
 		ret = fixup_bpf_calls(env);
+#endif
 
 	/* do 32-bit optimization after insn patching has done so those patched
 	 * insns could be handled correctly.

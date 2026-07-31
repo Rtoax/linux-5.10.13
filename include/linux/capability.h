@@ -229,9 +229,10 @@ static inline bool perfmon_capable(void)
  */
 static inline bool bpf_capable(void)
 {
-    /**
-     *  bpf 必须 root 用户？
-     */
+	/**
+	 * bpf 必须 root 用户？
+	 * linux v7.2-rc5-300-g8ba098e6b6ff 仍然没有发生变化
+	 */
 	return capable(CAP_BPF) || capable(CAP_SYS_ADMIN);
 }
 
