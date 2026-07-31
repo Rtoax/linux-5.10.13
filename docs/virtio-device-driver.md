@@ -1,7 +1,6 @@
 VirtIO 设备和驱动
 ===============
 
-
 # VirtIO 驱动初始化一个设备的过程
 
 1. 重置设备:
@@ -48,11 +47,3 @@ VirtIO 设备和驱动
     virtio_dev_probe()
         virtio_device_ready()
 ```
-
-
-# VirtIO 驱动的初始化
-
-
-
-
-
