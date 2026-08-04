@@ -2703,6 +2703,9 @@ static int __check_mem_access(struct bpf_verifier_env *env, int regno,
 	bool size_ok = size > 0 || (size == 0 && zero_size_allowed);
 	struct bpf_reg_state *reg;
 
+	/**
+	 * 内存访问合法
+	 */
 	if (off >= 0 && size_ok && (u64)off + size <= mem_size)
 		return 0;
 
@@ -2724,6 +2727,12 @@ static int __check_mem_access(struct bpf_verifier_env *env, int regno,
 		verbose(env, "invalid access to packet, off=%d size=%d, R%d(id=%d,off=%d,r=%d)\n",
 			off, size, regno, reg->id, off, mem_size);
 		break;
+#ifdef __Linux_7_2__ /* v7.2-rc5-300-g8ba098e6b6ff */
+	case PTR_TO_CTX:
+		verbose(env, "invalid access to context, ctx_size=%d off=%d size=%d\n",
+			mem_size, off, size);
+		break;
+#endif
 	case PTR_TO_MEM:
 	default:
 		verbose(env, "invalid access to memory, mem_size=%u off=%d size=%d\n",
@@ -2733,7 +2742,11 @@ static int __check_mem_access(struct bpf_verifier_env *env, int regno,
 	return -EACCES;
 }
 
-/* check read/write into a memory region with possible variable offset */
+/**
+ * check read/write into a memory region with possible variable offset
+ *
+ * @mem_size: 内存区域大小
+ */
 static int check_mem_region_access(struct bpf_verifier_env *env, u32 regno,
 				   int off, int size, u32 mem_size,
 				   bool zero_size_allowed)
@@ -3612,9 +3625,11 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 
 	/**
 	 * 指向BPF map中值的指针。
+	 *
 	 * 这种指针是通过bpf_map_lookup_elem等 helper function 获得的。
 	 * 验证器会确保访问在map值的大小范围内，并且可能会检查对齐和类型。
-	 * 例如，如果map的值类型是一个结构体，那么通过这个指针访问结构体的字段是允许的，但必须确保不越界。
+	 * 例如，如果map的值类型是一个结构体，那么通过这个指针访问结构体的字段是允许的，
+	 * 但必须确保不越界。
 	 */
 	if (reg->type == PTR_TO_MAP_VALUE) {
 		if (t == BPF_WRITE && value_regno >= 0 &&
@@ -3653,6 +3668,9 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 				mark_reg_unknown(env, regs, value_regno);
 			}
 		}
+	/**
+	 * reg points to valid memory region
+	 */
 	} else if (reg->type == PTR_TO_MEM) {
 		if (t == BPF_WRITE && value_regno >= 0 &&
 		    is_pointer_value(env, value_regno)) {
@@ -3666,7 +3684,8 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 	/**
 	 * 指向BPF程序上下文的指针。上下文是BPF程序的输入，它包含了程序运行时的数据。
 	 * 例如，在socket filter程序中，上下文是struct __sk_buff，在XDP程序中是struct xdp_md。
-	 * 验证器会检查对上下文指针的访问，确保不会访问超出上下文结构定义的范围，并且访问的字段必须是上下文结构中存在的。
+	 * 验证器会检查对上下文指针的访问，确保不会访问超出上下文结构定义的范围，并且访问的
+	 * 字段必须是上下文结构中存在的。
 	 */
 	} else if (reg->type == PTR_TO_CTX) {
 		enum bpf_reg_type reg_type = SCALAR_VALUE;
@@ -9500,7 +9519,7 @@ static bool reg_type_mismatch(enum bpf_reg_type src, enum bpf_reg_type prev)
 }
 
 /**
- *
+ * BPF Verifier
  */
 static int do_check(struct bpf_verifier_env *env)
 {
@@ -9527,7 +9546,10 @@ static int do_check(struct bpf_verifier_env *env)
 		insn = &insns[env->insn_idx];
 		class = BPF_CLASS(insn->code);
 
-		if (++env->insn_processed > BPF_COMPLEXITY_LIMIT_INSNS) {
+		/**
+		 * 指令数不能大于 1M
+		 */
+		if (++env->insn_processed > BPF_COMPLEXITY_LIMIT_INSNS/*1000000=1M*/) {
 			verbose(env,
 				"BPF program is too large. Processed %d insn\n",
 				env->insn_processed);
@@ -9821,6 +9843,9 @@ process_bpf_exit:
 				if (err)
 					return err;
 			}
+		/**
+		 * Load
+		 */
 		} else if (class == BPF_LD) {
 			u8 mode = BPF_MODE(insn->code);
 
@@ -11647,7 +11672,7 @@ static int do_check_common(struct bpf_verifier_env *env, int subprog)
 	}
 
 	/**
-	 *
+	 * BPF Verifier
 	 */
 	ret = do_check(env);
 
@@ -11753,7 +11778,7 @@ static void print_verification_stats(struct bpf_verifier_env *env)
 	}
 	verbose(env, "processed %d insns (limit %d) max_states_per_insn %d "
 		"total_states %d peak_states %d mark_read %d\n",
-		env->insn_processed, BPF_COMPLEXITY_LIMIT_INSNS,
+		env->insn_processed, BPF_COMPLEXITY_LIMIT_INSNS/*1000000=1M*/,
 		env->max_states_per_insn, env->total_states,
 		env->peak_states, env->longest_mark_read_walk);
 }

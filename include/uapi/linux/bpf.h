@@ -52,7 +52,7 @@
 #define BPF_EXIT	0x90	/* function return */
 
 /**
- *  Register numbers - BPF 寄存器
+ * Register numbers - BPF 寄存器
  *
  * https://docs.cilium.io/en/stable/bpf/
  *
@@ -90,16 +90,17 @@ enum {
 	BPF_REG_3,
 	BPF_REG_4,
 	BPF_REG_5,
+
 	BPF_REG_6,
 	BPF_REG_7,
 	BPF_REG_8,
 	BPF_REG_9,
 	BPF_REG_10,
-	__MAX_BPF_REG,
+	__MAX_BPF_REG, /*=11, 10个通用寄存器*/
 };
 
 /* BPF has 10 general purpose 64-bit registers and stack frame. */
-#define MAX_BPF_REG	__MAX_BPF_REG
+#define MAX_BPF_REG	__MAX_BPF_REG /*=11, 10个通用寄存器*/
 
 /**
  * bpf 指令

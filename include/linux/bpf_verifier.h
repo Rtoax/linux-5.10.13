@@ -52,9 +52,18 @@ struct bpf_reg_state {
 		 */
 		struct bpf_map *map_ptr;
 
-		u32 btf_id; /* for PTR_TO_BTF_ID */
+		/* for PTR_TO_BTF_ID */
+		u32 btf_id;
 
-		u32 mem_size; /* for PTR_TO_MEM | PTR_TO_MEM_OR_NULL */
+		/**
+		 * for
+		 * - PTR_TO_MEM
+		 * - PTR_TO_MEM_OR_NULL
+		 *
+		 * 使用：
+		 * - check_mem_access() 中检测内存访问范围是否合法
+		 */
+		u32 mem_size;
 
 		/* Max size from any of the above. */
 		unsigned long raw;

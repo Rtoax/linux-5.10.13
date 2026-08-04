@@ -464,6 +464,9 @@ enum bpf_reg_type {
 	 */
 	PTR_TO_BTF_ID_OR_NULL,
 
+	/**
+	 *
+	 */
 	PTR_TO_MEM,		 /* reg points to valid memory region */
 	PTR_TO_MEM_OR_NULL,	 /* reg points to valid memory region or NULL */
 	PTR_TO_RDONLY_BUF,	 /* reg points to a readonly buffer */
@@ -970,18 +973,18 @@ static inline void bpf_module_put(const void *data, struct module *owner)
  */
 struct bpf_array {
 	struct bpf_map map;
-    /**
-     *  元素大小
-     */
+	/**
+	 *  元素大小
+	 */
 	u32 elem_size;
 	u32 index_mask;
-    /**
-     *  辅助信息
-     */
+	/**
+	 *  辅助信息
+	 */
 	struct bpf_array_aux *aux;
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	union {
 		char __aligned(8) value[0] ;
 		void __aligned(8) *ptrs[0] ;
@@ -989,7 +992,11 @@ struct bpf_array {
 	};
 };
 
+/**
+ * v7.2-rc5-300-g8ba098e6b6ff still 1000000
+ */
 #define BPF_COMPLEXITY_LIMIT_INSNS      1000000 /* yes. 1M insns */
+
 /**
  * 最大尾调用数，见 bpf_tail_call()
  */
