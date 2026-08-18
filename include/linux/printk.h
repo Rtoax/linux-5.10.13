@@ -186,7 +186,7 @@ int printk(const char *fmt, ...);
  * printk_ratelimited() or plain old __ratelimit().
  *
  * 当驱动程序产生错误，停止运行，可能使用 printk 会一直循环打印错误信息。
- *  我们不希望这样， `printk_ratelimit()` 解决了这个问题
+ * 我们不希望这样， `printk_ratelimit()` 解决了这个问题
  */
 extern int __printk_ratelimit(const char *func);
 #define printk_ratelimit() __printk_ratelimit(__func__)
@@ -489,11 +489,11 @@ do {									\
 		__dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS__);	\
 } while (0)
 #elif defined(DEBUG)
-//#define pr_debug_ratelimited(fmt, ...)					\
-//	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_debug_ratelimited(fmt, ...)					\
+	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #else
-//#define pr_debug_ratelimited(fmt, ...) \
-//	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_debug_ratelimited(fmt, ...) \
+	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 extern const struct file_operations kmsg_fops;
@@ -521,10 +521,10 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
 	dynamic_hex_dump(prefix_str, prefix_type, rowsize,	\
 			 groupsize, buf, len, ascii)
 #elif defined(DEBUG)
-//#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
-//			     groupsize, buf, len, ascii)		\
-//	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
-//		       groupsize, buf, len, ascii)
+#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
+			     groupsize, buf, len, ascii)		\
+	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
+		       groupsize, buf, len, ascii)
 #else
 
 #endif

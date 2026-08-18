@@ -364,21 +364,21 @@ void __printk_safe_exit(void)
  */
 int vprintk_func(const char *fmt, va_list args)
 {
-    /**
-     *  kgdb
-     */
+	/**
+	 *  kgdb
+	 */
 #ifdef CONFIG_KGDB_KDB
 	/* Allow to pass printk() to kdb but avoid a recursion. */
 	if (unlikely(kdb_trap_printk && kdb_printf_cpu < 0))
-        /**
-         *  
-         */
+		/**
+		 *
+		 */
 		return vkdb_printf(KDB_MSGSRC_PRINTK, fmt, args);
 #endif
 
-    /**
-     *  每个CPU 的 printk 标志不同
-     */
+	/**
+	 * 每个CPU 的 printk 标志不同
+	 */
 	/*
 	 * Try to use the main logbuf even in NMI. But avoid calling console
 	 * drivers that might have their own locks.
@@ -401,10 +401,9 @@ int vprintk_func(const char *fmt, va_list args)
 	if (this_cpu_read(printk_context) & PRINTK_SAFE_CONTEXT_MASK)
 		return vprintk_safe(fmt, args);
 
-    /**
-     *  
-     */
-	/* No obstacles. */
+	/**
+	 * No obstacles(障碍).
+	 */
 	return vprintk_default(fmt, args);
 }
 

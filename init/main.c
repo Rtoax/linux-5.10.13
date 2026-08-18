@@ -959,10 +959,13 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	page_address_init();                /* 页地址初始化 (此函数不执行任何操作，因为只有当所有内存不能直接映射的时候才会执行)*/
 
 	/**
-	 *  Linux 内核的第一条打印信息
+	 * Linux 内核的第一条打印信息(版本信息: 内核的版本号以及编译环境信息)
+	 *
+	 * Examples:
+	 * ----------------------------------------------------
+	 * [    0.000000] Linux version 7.1.8-200.fc44.x86_64 (mockbuild@79d5d8bc7b174d9c91204c7736be3f39) (gcc (GCC) 16.1.1 20260515 (Red Hat 16.1.1-2), GNU ld version 2.46.1-1.fc44) #1 SMP PREEMPT_DYNAMIC Mon Aug 10 03:35:23 UTC 2026
 	 */
-
-	pr_notice("%s", linux_banner);      /* 版本信息: 内核的版本号以及编译环境信息 */
+	pr_notice("%s", linux_banner);
 
 	/**
 	 *

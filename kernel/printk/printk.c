@@ -413,7 +413,7 @@ static u64 clear_seq;
 #ifdef CONFIG_PRINTK_CALLER
 #define PREFIX_MAX		48
 #else
-//#define PREFIX_MAX		32
+#define PREFIX_MAX		32
 #endif
 #define LOG_LINE_MAX		(1024 - PREFIX_MAX)
 
@@ -1992,10 +1992,9 @@ static size_t log_output(int facility, int level, enum log_flags lflags,
 		}
 	}
 
-    /**
-     *
-     */
-	/* Store it in the record log */
+	/**
+	 * Store it in the record log
+	 */
 	return log_store(caller_id, facility, level, lflags, 0,
 			         dev_info, text, text_len);
 }
@@ -2008,9 +2007,9 @@ int vprintk_store(int facility, int level,
 		  const struct dev_printk_info *dev_info,
 		  const char *fmt, va_list args)
 {
-    /**
-     *  静态字符串
-     */
+	/**
+	 *  静态字符串
+	 */
 	static char textbuf[LOG_LINE_MAX];
 	char *text = textbuf;
 	size_t text_len;
@@ -2053,9 +2052,9 @@ int vprintk_store(int facility, int level,
 	if (dev_info)
 		lflags |= LOG_NEWLINE;
 
-    /**
-     *  输出这条 日志
-     */
+	/**
+	 *  输出这条 日志
+	 */
 	return log_output(facility, level, lflags, dev_info, text, text_len);
 }
 
@@ -2085,9 +2084,9 @@ asmlinkage int vprintk_emit(int facility, int level,
 	/* This stops the holder of console_sem just where we want him */
 	logbuf_lock_irqsave(flags);
 
-    /**
-     *  vprintk
-     */
+	/**
+	 *  vprintk
+	 */
 	printed_len = vprintk_store(facility, level, dev_info, fmt, args);
 	logbuf_unlock_irqrestore(flags);
 
@@ -2158,9 +2157,9 @@ asmlinkage __visible int printk(const char *fmt, ...)
 	int r;
 
 	va_start(args, fmt);
-    /**
-     *  printk
-     */
+	/**
+	 * printk
+	 */
 	r = vprintk_func(fmt, args);
 	va_end(args);
 
@@ -2188,6 +2187,9 @@ asmlinkage __visible void early_printk(const char *fmt, ...)
 	n = vscnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 
+	/**
+	 * 写 Console
+	 */
 	early_console->write(early_console, buf, n);
 }
 #endif
