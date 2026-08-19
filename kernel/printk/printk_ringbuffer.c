@@ -1477,7 +1477,7 @@ static void desc_make_final(struct prb_desc_ring *desc_ring, unsigned long id)
  *            order for data to be readable and/or extended. Its value
  *            is initialized to 0.
  *
- * 从 buffer 中预留
+ * 从 print buffer 中预留
  */
 bool prb_reserve(struct prb_reserved_entry *e, struct printk_ringbuffer *rb,
 		 struct printk_record *r)

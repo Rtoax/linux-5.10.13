@@ -521,14 +521,14 @@ static int log_store(u32 caller_id, int facility, int level,
 
 	prb_rec_init_wr(&r, text_len);
 
-    /**
-     *  从 buffer 中预留
-     */
+	/**
+	 *  从 buffer 中预留
+	 */
 	if (!prb_reserve(&e, prb, &r)) {
 
-        /**
-         *  太长就截断
-         */
+		/**
+		 *  太长就截断
+		 */
 		/* truncate the message if it is too long for empty buffer */
 		truncate_msg(&text_len, &trunc_msg_len);
 		prb_rec_init_wr(&r, text_len + trunc_msg_len);
@@ -542,9 +542,9 @@ static int log_store(u32 caller_id, int facility, int level,
 	if (trunc_msg_len)
 		memcpy(&r.text_buf[text_len], trunc_msg, trunc_msg_len);
 
-    /**
-     *
-     */
+	/**
+	 *
+	 */
 	r.info->text_len = text_len + trunc_msg_len;
 	r.info->facility = facility;
 	r.info->level = level & 7;
@@ -557,9 +557,9 @@ static int log_store(u32 caller_id, int facility, int level,
 	if (dev_info)
 		memcpy(&r.info->dev_info, dev_info, sizeof(r.info->dev_info));
 
-    /**
-     *  写完就提交
-     */
+	/**
+	 *  写完就提交
+	 */
 	/* A message without a trailing newline can be continued. */
 	if (!(flags & LOG_NEWLINE))
 		prb_commit(&e);
@@ -618,6 +618,12 @@ static void append_char(char **pp, char *e, char c)
 		*(*pp)++ = c;
 }
 
+/**
+ * $ sudo more /dev/kmsg
+ * ....
+ * 6,2,0,-;BIOS-provided physical RAM map:
+ * ....
+ */
 static ssize_t info_print_ext_header(char *buf, size_t size,
 				     struct printk_info *info)
 {
@@ -700,7 +706,7 @@ struct devkmsg_user {
 	u64 seq;
 	struct ratelimit_state rs;
 	struct mutex lock;
-	char buf[CONSOLE_EXT_LOG_MAX];
+	char buf[CONSOLE_EXT_LOG_MAX/*8192*/];
 
 	struct printk_info info;
 	char text_buf[CONSOLE_EXT_LOG_MAX];
@@ -720,11 +726,14 @@ int devkmsg_emit(int facility, int level, const char *fmt, ...)
 	return r;
 }
 
+/**
+ *
+ */
 static ssize_t devkmsg_write(struct kiocb *iocb, struct iov_iter *from)
 {
 	char *buf, *line;
 	int level = default_message_loglevel;
-	int facility = 1;	/* LOG_USER */
+	int facility = 1;	/* LOG_USER (设施) */
 	struct file *file = iocb->ki_filp;
 	struct devkmsg_user *user = file->private_data;
 	size_t len = iov_iter_count(from);
@@ -756,7 +765,7 @@ static ssize_t devkmsg_write(struct kiocb *iocb, struct iov_iter *from)
 	/*
 	 * Extract and skip the syslog prefix <[0-9]*>. Coming from userspace
 	 * the decimal value represents 32bit, the lower 3 bit are the log
-	 * level, the rest are the log facility.
+	 * level, the rest are the log facility(设施).
 	 *
 	 * If no prefix or no userspace facility is specified, we
 	 * enforce LOG_USER, to be able to reliably distinguish
@@ -783,6 +792,10 @@ static ssize_t devkmsg_write(struct kiocb *iocb, struct iov_iter *from)
 	return ret;
 }
 
+/**
+ * 格式：
+ * 6,2,0,-;BIOS-provided physical RAM map:
+ */
 static ssize_t devkmsg_read(struct file *file, char __user *buf,
 			    size_t count, loff_t *ppos)
 {
@@ -961,6 +974,10 @@ static int devkmsg_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+/**
+ * 设备: /dev/kmsg
+ * dmesg/journalctl 都是从这里读取的日志
+ */
 const struct file_operations kmsg_fops = {
 	.open = devkmsg_open,
 	.read = devkmsg_read,
@@ -1128,7 +1145,8 @@ static unsigned int __init add_to_rb(struct printk_ringbuffer *rb,
 	dest_r.info->flags = r->info->flags;
 	dest_r.info->ts_nsec = r->info->ts_nsec;
 	dest_r.info->caller_id = r->info->caller_id;
-	memcpy(&dest_r.info->dev_info, &r->info->dev_info, sizeof(dest_r.info->dev_info));
+	memcpy(&dest_r.info->dev_info, &r->info->dev_info,
+		sizeof(dest_r.info->dev_info));
 
 	prb_final_commit(&e);
 
@@ -1329,6 +1347,11 @@ static size_t print_syslog(unsigned int level, char *buf)
 	return sprintf(buf, "<%u>", level);
 }
 
+/**
+ * $ dmesg
+ * ....
+ * [    0.000000] BIOS-provided physical RAM map:
+ */
 static size_t print_time(u64 ts, char *buf)
 {
 	unsigned long rem_nsec = do_div(ts, 1000000000);
@@ -1350,6 +1373,9 @@ static size_t print_caller(u32 id, char *buf)
 #define print_caller(id, buf) 0
 #endif
 
+/**
+ * 日志的信息头
+ */
 static size_t info_print_prefix(const struct printk_info  *info, bool syslog,
 				bool time, char *buf)
 {

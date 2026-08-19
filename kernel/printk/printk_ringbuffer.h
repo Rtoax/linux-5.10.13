@@ -14,6 +14,9 @@
  */
 struct printk_info {
 	u64	seq;		/* sequence number */
+	/**
+	 * 时间辍
+	 */
 	u64	ts_nsec;	/* timestamp in nanoseconds */
 	u16	text_len;	/* length of text message */
 	u8	facility;	/* syslog facility */
